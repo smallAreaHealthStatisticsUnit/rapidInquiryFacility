@@ -1,0 +1,1487 @@
+package rifServices.test.services;
+
+
+import rifServices.ProductionRIFJobSubmissionService;
+
+import rifServices.businessConceptLayer.*;
+import rifServices.system.*;
+import rifServices.test.AbstractRIFTestCase;
+import rifServices.util.FieldValidationUtility;
+
+import java.util.ArrayList;
+
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
+
+/**
+ *
+ *
+ * <hr>
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * <p>
+ * Copyright 2014 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ * </p>
+ *
+ * <pre> 
+ * This file is part of the Rapid Inquiry Facility (RIF) project.
+ * RIF is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RIF is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
+ * </pre>
+ *
+ * <hr>
+ * Kevin Garwood
+ * @author kgarwood
+ * @version
+ */
+/*
+ * Code Road Map:
+ * --------------
+ * Code is organised into the following sections.  Wherever possible, 
+ * methods are classified based on an order of precedence described in 
+ * parentheses (..).  For example, if you're trying to find a method 
+ * 'getName(...)' that is both an interface method and an accessor 
+ * method, the order tells you it should appear under interface.
+ * 
+ * Order of 
+ * Precedence     Section
+ * ==========     ======
+ * (1)            Section Constants
+ * (2)            Section Properties
+ * (3)            Section Construction
+ * (7)            Section Accessors and Mutators
+ * (6)            Section Errors and Validation
+ * (5)            Section Interfaces
+ * (4)            Section Override
+ *
+ */
+
+public class TestRIFContextFeatures extends AbstractRIFTestCase {
+
+	// ==========================================
+	// Section Constants
+	// ==========================================
+
+	// ==========================================
+	// Section Properties
+	// ==========================================
+	/** The service. */
+	private ProductionRIFJobSubmissionService service;
+	
+	/** The test user. */
+	private User testUser;
+	
+	/** The non existent user. */
+	private User nonExistentUser;
+	
+	/** The invalid user. */
+	private User invalidUser;
+	
+	/** The malicious user. */
+	private User maliciousUser;
+	
+	/** The sahsu geography. */
+	private Geography sahsuGeography;
+	
+	/** The non existent geography. */
+	private Geography nonExistentGeography;
+	
+	/** The invalid geography. */
+	private Geography invalidGeography;
+	
+	/** The malicious geography. */
+	private Geography maliciousGeography;
+	
+	/** The valid sahsu geo level select value. */
+	private GeoLevelSelect validSAHSUGeoLevelSelectValue;
+	
+	/** The non existent geo level select value. */
+	private GeoLevelSelect nonExistentGeoLevelSelectValue;
+	
+	/** The invalid geo level select value. */
+	private GeoLevelSelect invalidGeoLevelSelectValue;
+	
+	/** The cancer health theme. */
+	private HealthTheme cancerHealthTheme;
+	
+	/** The non existent health theme. */
+	private HealthTheme nonExistentHealthTheme;
+	
+	/** The invalid health theme. */
+	private HealthTheme invalidHealthTheme;
+	
+	// ==========================================
+	// Section Construction
+	// ==========================================
+
+	/**
+	 * Instantiates a new test rif context features.
+	 */
+	public TestRIFContextFeatures() {
+		service
+			= new ProductionRIFJobSubmissionService();
+		FieldValidationUtility fieldValidationUtility 
+			= new FieldValidationUtility();
+		String maliciousFieldValue 
+			= fieldValidationUtility.getTestMaliciousFieldValue();
+
+		sahsuGeography
+			= Geography.newInstance("SAHSU", "stuff about sahsuland");
+		nonExistentGeography
+			= Geography.newInstance("NeverEverLand", "something something");
+		invalidGeography
+			= Geography.newInstance("", "");
+		maliciousGeography
+			= Geography.newInstance(maliciousFieldValue, "");
+		
+		cancerHealthTheme
+			= HealthTheme.newInstance("SAHSU land cancer incidence example data", "");
+		nonExistentHealthTheme
+			= HealthTheme.newInstance("non-existent health theme");
+		invalidHealthTheme
+			= HealthTheme.newInstance("");
+		
+		validSAHSUGeoLevelSelectValue
+			= GeoLevelSelect.newInstance("LEVEL2");
+		nonExistentGeoLevelSelectValue
+			= GeoLevelSelect.newInstance("Blah-de-blah");
+		invalidGeoLevelSelectValue
+			= GeoLevelSelect.newInstance(null);
+				
+		testUser = User.newInstance("keving", "11.111.11.228");
+		nonExistentUser = User.newInstance("nobody", "11.111.11.228");
+		invalidUser = User.newInstance(null, "11.111.11.228");
+		maliciousUser = User.newInstance(maliciousFieldValue, "11.111.11.228");
+		
+		try {
+			service.login("keving", "a");			
+		}
+		catch(RIFServiceException exception) {
+			exception.printStackTrace(System.out);
+		}
+
+	
+	}
+	
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+
+	/**
+	 * Gets the geographies n1.
+	 *
+	 * @return the geographies n1
+	 */
+	@Test
+	public void getGeographiesN1() {
+		try {
+			ArrayList<Geography> geographies
+				= service.getGeographies(testUser);
+			assertEquals(1, geographies.size());
+			Geography sahsuGeography = geographies.get(0);
+			assertEquals("SAHSU", sahsuGeography.getName());
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}		
+	}
+	
+	/**
+	 * Gets the geographies e1.
+	 *
+	 * @return the geographies e1
+	 */
+	@Test
+	/**
+	 * check null method parameters
+	 */
+	public void getGeographiesE1() {
+		try {
+			service.getGeographies(null);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER, 
+				1);
+		}		
+	}
+
+	/**
+	 * Gets the geographies e2.
+	 *
+	 * @return the geographies e2
+	 */
+	@Test
+	/**
+	 * check invalid parameters
+	 */
+	public void getGeographiesE2() {
+		try {
+			service.getGeographies(invalidUser);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_USER, 
+				1);
+		}		
+	}	
+	
+	/**
+	 * Gets the geographies e3.
+	 *
+	 * @return the geographies e3
+	 */
+	@Test
+	/**
+	 * check non-existent parameters
+	 */
+	public void getGeographiesE3() {
+		try {
+			service.getGeographies(nonExistentUser);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION, 
+				1);
+		}		
+	}
+	
+	/**
+	 * Gets the geographies s1.
+	 *
+	 * @return the geographies s1
+	 */
+	@Test
+	/**
+	 * check non-existent parameters
+	 */
+	public void getGeographiesS1() {
+		try {
+			service.getGeographies(maliciousUser);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION, 
+				1);
+		}			
+	}
+	
+	/**
+	 * Gets the health themes n1.
+	 *
+	 * @return the health themes n1
+	 */
+	@Test
+	public void getHealthThemesN1() {
+		try {
+			ArrayList<HealthTheme> healthThemes
+				= service.getHealthThemes(testUser, sahsuGeography);
+			//there should be one health theme
+			HealthTheme sahsuCancerTheme = healthThemes.get(0);
+
+			assertEquals(
+				"SAHSU land cancer incidence example data",
+				sahsuCancerTheme.getName());
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}		
+	}
+	
+	/**
+	 * Gets the health themes e1.
+	 *
+	 * @return the health themes e1
+	 */
+	@Test
+	/**
+	 * check for null method parameters
+	 */
+	public void getHealthThemesE1() {
+		try {
+			service.getHealthThemes(null, sahsuGeography);
+			//there should be one health theme
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				1);
+		}
+		
+		try {
+			service.getHealthThemes(testUser, null);
+			//there should be one health theme
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				1);
+		}		
+	}
+
+
+	/**
+	 * Gets the health themes e2.
+	 *
+	 * @return the health themes e2
+	 */
+	@Test
+	/**
+	 * Test invalid parameters
+	 */
+	public void getHealthThemesE2() {
+		try {
+
+			service.getHealthThemes(invalidUser, sahsuGeography);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_USER,
+				1);
+		}		
+		
+		try {
+			service.getHealthThemes(testUser, invalidGeography);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_GEOGRAPHY,
+				1);
+		}		
+	}
+	
+	/**
+	 * Gets the health themes e3.
+	 *
+	 * @return the health themes e3
+	 */
+	@Test
+	/**
+	 * Test non-existent parameters
+	 */
+	public void getHealthThemesE3() {
+		try {
+
+			service.getHealthThemes(nonExistentUser, sahsuGeography);
+			//there should be one health theme
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}		
+		
+		try {
+			service.getHealthThemes(testUser, nonExistentGeography);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_GEOGRAPHY,
+				1);
+		}		
+	}
+
+	/**
+	 * Gets the health themes s1.
+	 *
+	 * @return the health themes s1
+	 */
+	@Test
+	/**
+	 * check for security violations
+	 */
+	public void getHealthThemesS1() {
+		try {
+			service.getHealthThemes(maliciousUser, sahsuGeography);
+			//there should be one health theme
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}
+		
+		try {
+			service.getHealthThemes(testUser, maliciousGeography);
+			//there should be one health theme
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}
+	}
+	
+	/**
+	 * Gets the numerator denominator pair n1.
+	 *
+	 * @return the numerator denominator pair n1
+	 */
+	@Test
+	public void getNumeratorDenominatorPairN1() {
+		try {
+			service.getNumeratorDenominatorPairs(
+				testUser, 
+				sahsuGeography, 
+				cancerHealthTheme);	
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}				
+	}
+	
+	/**
+	 * Gets the numerator denominator pair e1.
+	 *
+	 * @return the numerator denominator pair e1
+	 */
+	@Test
+	/**
+	 * check null method parameters
+	 */
+	public void getNumeratorDenominatorPairE1() {
+		try {
+			service.getNumeratorDenominatorPairs(
+				null, 
+				sahsuGeography, 
+				cancerHealthTheme);	
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				1);
+		}
+		
+		try {
+			service.getNumeratorDenominatorPairs(
+				testUser, 
+				null, 
+				cancerHealthTheme);	
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				1);
+		}
+		
+		try {
+			service.getNumeratorDenominatorPairs(
+				testUser, 
+				sahsuGeography, 
+				null);	
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				1);
+		}
+	}
+	
+
+	/**
+	 * Gets the numerator denominator pair e2.
+	 *
+	 * @return the numerator denominator pair e2
+	 */
+	@Test
+	/**
+	 * Checking invalid parameters
+	 */
+	public void getNumeratorDenominatorPairE2() {
+		try {
+			service.getNumeratorDenominatorPairs(
+				invalidUser, 
+				sahsuGeography, 
+				cancerHealthTheme);	
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_USER,
+				1);
+		}
+
+		try {
+			service.getNumeratorDenominatorPairs(
+				testUser, 
+				invalidGeography, 
+				cancerHealthTheme);	
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_GEOGRAPHY,
+				1);
+		}
+	
+		try {
+			service.getNumeratorDenominatorPairs(
+				testUser, 
+				sahsuGeography, 
+				invalidHealthTheme);	
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_HEALTH_THEME,
+				1);
+		}
+	}	
+	
+	
+	
+	/**
+	 * Gets the numerator denominator pair e3.
+	 *
+	 * @return the numerator denominator pair e3
+	 */
+	@Test
+	/**
+	 * Checking nonexistent parameters
+	 */
+	public void getNumeratorDenominatorPairE3() {
+		try {
+			service.getNumeratorDenominatorPairs(
+				nonExistentUser, 
+				sahsuGeography, 
+				cancerHealthTheme);	
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}
+
+		try {
+			service.getNumeratorDenominatorPairs(
+				testUser, 
+				nonExistentGeography, 
+				cancerHealthTheme);	
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_GEOGRAPHY,
+				1);
+		}
+	
+		try {
+			service.getNumeratorDenominatorPairs(
+				testUser, 
+				sahsuGeography, 
+				nonExistentHealthTheme);	
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_HEALTH_THEME,
+				1);
+		}
+	}	
+	
+	/**
+	 * Gets the geo level select values n1.
+	 *
+	 * @return the geo level select values n1
+	 */
+	@Test
+	public void getGeoLevelSelectValuesN1() {
+		try {
+			ArrayList<Geography> geographies
+				= service.getGeographies(testUser);
+			//the first one should be "SAHSU"
+			Geography sahsuGeography = geographies.get(0);
+
+			ArrayList<GeoLevelSelect> geoLevelSelectValues
+				= service.getGeographicalLevelSelectValues(
+					testUser, 
+					sahsuGeography);
+				
+			//The list of all geo levels is: LEVEL1, LEVEL2, LEVEL3, LEVEL4
+			//But we will exclude LEVEL4.  Otherwise, when GeoLevelSelect is LEVEL4
+			//it will be impossible to choose a GeoLevelView or GeoLevelToMap
+			//value.  Both of these values must be at least one level lower
+			assertEquals(3, geoLevelSelectValues.size());
+			
+			//first one should be LEVEL1
+			GeoLevelSelect firstValue = geoLevelSelectValues.get(0);
+			assertEquals("LEVEL1", firstValue.getName().toUpperCase());
+						
+			//last one should be LEVEL3
+			GeoLevelSelect lastValue = geoLevelSelectValues.get(2);
+			assertEquals("LEVEL3", lastValue.getName().toUpperCase());		
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}
+	}
+		
+	/**
+	 * Gets the geo level select value e1.
+	 *
+	 * @return the geo level select value e1
+	 */
+	@Test
+	/**
+	 * check null parameters
+	 */
+	public void getGeoLevelSelectValueE1() {
+		try {
+			service.getGeographicalLevelSelectValues(
+				null, 
+				sahsuGeography);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER, 
+				1);		
+		}
+
+		try {
+			service.getGeographicalLevelSelectValues(
+				testUser, 
+				null);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER, 
+				1);		
+		}		
+	}
+
+	/**
+	 * Gets the geo level select values e2.
+	 *
+	 * @return the geo level select values e2
+	 */
+	@Test
+	/**
+	 * check for invalid method parameters
+	 */
+	public void getGeoLevelSelectValuesE2() {
+		
+		//try to get results using invalid user
+		try {
+			service.getGeographicalLevelSelectValues(
+				invalidUser, 
+				sahsuGeography);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_USER, 
+				1);
+		}
+		
+		//try to get results using invalid user
+		try {
+			service.getGeographicalLevelSelectValues(
+				testUser, 
+				invalidGeography);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_GEOGRAPHY, 
+				1);
+		}
+	}
+
+	/**
+	 * Gets the geo level select values e3.
+	 *
+	 * @return the geo level select values e3
+	 */
+	@Test
+	/**
+	 * check for non-existent parameters
+	 */
+	public void getGeoLevelSelectValuesE3() {
+		
+		//try to get results using invalid user
+		try {
+			service.getGeographicalLevelSelectValues(
+				nonExistentUser, 
+				sahsuGeography);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION, 
+				1);
+		}
+		
+		//try to get results using invalid user
+		try {
+			service.getGeographicalLevelSelectValues(
+				testUser, 
+				nonExistentGeography);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_GEOGRAPHY, 
+				1);
+		}
+	}
+	
+	/**
+	 * Gets the default geo level select value n1.
+	 *
+	 * @return the default geo level select value n1
+	 */
+	@Test
+	public void getDefaultGeoLevelSelectValueN1() {
+		try {
+			
+			GeoLevelSelect defaultSelectValue
+				= service.getDefaultGeoLevelSelectValue(
+					testUser, 
+					sahsuGeography);
+			assertEquals("LEVEL2", defaultSelectValue.getName());
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}		
+	}
+
+	/**
+	 * Gets the default geo level select value e1.
+	 *
+	 * @return the default geo level select value e1
+	 */
+	@Test
+	/**
+	 * check null parameter values
+	 */
+	public void getDefaultGeoLevelSelectValueE1() {
+
+		try {
+			service.getDefaultGeoLevelSelectValue(
+				null, 
+				sahsuGeography);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				1);
+		}
+
+		try {			
+			service.getDefaultGeoLevelSelectValue(
+				testUser, 
+				null);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				1);
+		}		
+	}
+	
+	/**
+	 * Gets the default geo level select value e2.
+	 *
+	 * @return the default geo level select value e2
+	 */
+	@Test
+	/**
+	 * check invalid parameter values
+	 */
+	public void getDefaultGeoLevelSelectValueE2() {
+		try {
+			
+			service.getDefaultGeoLevelSelectValue(
+				invalidUser, 
+				sahsuGeography);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			this.printErrors("WER", rifServiceException);
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_USER,
+				1);
+		}		
+
+		try {
+			
+			service.getDefaultGeoLevelSelectValue(
+				testUser, 
+				invalidGeography);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_GEOGRAPHY,
+				1);
+		}
+	}
+	
+
+	/**
+	 * Gets the default geo level select value e3.
+	 *
+	 * @return the default geo level select value e3
+	 */
+	@Test
+	/**
+	 * check non-existent parameter values
+	 */
+	public void getDefaultGeoLevelSelectValueE3() {
+		try {
+			
+			service.getDefaultGeoLevelSelectValue(
+				nonExistentUser, 
+				sahsuGeography);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}
+		
+		try {
+				service.getDefaultGeoLevelSelectValue(
+					testUser, 
+					nonExistentGeography);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_GEOGRAPHY,
+				1);
+		}				
+	}
+	
+	/**
+	 * Gets the geo level areas values n1.
+	 *
+	 * @return the geo level areas values n1
+	 */
+	@Test
+	public void getGeoLevelAreasValuesN1() {
+		try {
+			ArrayList<GeoLevelArea> geoLevelAreaValues
+				= service.getGeoLevelAreaValues(
+					testUser, 
+					sahsuGeography, 
+					validSAHSUGeoLevelSelectValue);
+			assertEquals(17, geoLevelAreaValues.size());
+			GeoLevelArea firstResult = geoLevelAreaValues.get(0);
+			assertEquals("Abellan", firstResult.getName());
+			
+			GeoLevelArea lastResult = geoLevelAreaValues.get(16);
+			assertEquals("Tirado", lastResult.getName());
+		}
+		catch(RIFServiceException rifServiceException) {
+			this.printErrors("RRR", rifServiceException);
+			fail();
+		}
+	}
+
+	/**
+	 * Gets the geo level areas values e1.
+	 *
+	 * @return the geo level areas values e1
+	 */
+	@Test
+	/**
+	 * check for null parameter values
+	 */
+	public void getGeoLevelAreasValuesE1() {
+		
+		try {
+			service.getGeoLevelAreaValues(
+				null, 
+				sahsuGeography, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				1);
+		}
+		
+		try {
+			service.getGeoLevelAreaValues(
+				testUser, 
+				null, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+					rifServiceException,
+					RIFServiceError.NULL_API_METHOD_PARAMETER,
+					1);
+		}
+		
+		try {
+			service.getGeoLevelAreaValues(
+				testUser, 
+				sahsuGeography, 
+				null);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				1);
+		}		
+	}
+	
+	/**
+	 * Gets the geo level areas values e2.
+	 *
+	 * @return the geo level areas values e2
+	 */
+	@Test
+	/**
+	 * Test invalid method parameters
+	 */
+	public void getGeoLevelAreasValuesE2() {
+
+		try {
+			service.getGeoLevelAreaValues(
+				invalidUser, 
+				sahsuGeography, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_USER,
+				1);	
+		}
+		
+		try {
+			service.getGeoLevelAreaValues(
+				testUser, 
+				invalidGeography, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_GEOGRAPHY,
+				1);	
+		}
+
+		try {
+			service.getGeoLevelAreaValues(
+				testUser, 
+				sahsuGeography, 
+				invalidGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_GEOLEVEL_SELECT,
+				1);	
+		}
+	}
+	
+	/**
+	 * Gets the geo level areas values e3.
+	 *
+	 * @return the geo level areas values e3
+	 */
+	@Test
+	/**
+	 * Test non-existent parameters
+	 */
+	public void getGeoLevelAreasValuesE3() {
+
+		try {
+			service.getGeoLevelAreaValues(
+				nonExistentUser, 
+				sahsuGeography, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);	
+		}
+		
+		try {
+			service.getGeoLevelAreaValues(
+				testUser, 
+				nonExistentGeography, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_GEOGRAPHY,
+				1);	
+		}
+
+		try {
+			service.getGeoLevelAreaValues(
+				testUser, 
+				sahsuGeography, 
+				nonExistentGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_GEOLEVEL_SELECT_VALUE,
+				1);	
+		}
+	}
+	
+
+	
+	/**
+	 * Gets the geo level view values n1.
+	 *
+	 * @return the geo level view values n1
+	 */
+	@Test
+	public void getGeoLevelViewValuesN1() {
+		try {
+			service.getGeoLevelViewValues(
+				testUser, 
+				sahsuGeography, 
+				validSAHSUGeoLevelSelectValue);
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}
+	}
+	
+	/**
+	 * Gets the geo level view values e1.
+	 *
+	 * @return the geo level view values e1
+	 */
+	@Test
+	/**
+	 * check null parameters
+	 */
+	public void getGeoLevelViewValuesE1() {
+		try {
+			service.getGeoLevelViewValues(
+				null, 
+				sahsuGeography, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				1);
+		}
+
+		try {
+			service.getGeoLevelViewValues(
+				testUser, 
+				null, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				1);
+		}
+		
+		try {
+			service.getGeoLevelViewValues(
+				testUser, 
+				sahsuGeography, 
+				null);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				1);
+		}
+	}
+
+	/**
+	 * Gets the geo level view values e2.
+	 *
+	 * @return the geo level view values e2
+	 */
+	@Test
+	/**
+	 * check invalid parameters
+	 */
+	public void getGeoLevelViewValuesE2() {
+		try {
+			service.getGeoLevelViewValues(
+				invalidUser, 
+				sahsuGeography, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_USER,
+				1);
+		}
+
+		try {
+			service.getGeoLevelViewValues(
+				testUser, 
+				invalidGeography, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_GEOGRAPHY,
+				1);
+		}
+		
+		try {
+			service.getGeoLevelViewValues(
+				testUser, 
+				sahsuGeography, 
+				invalidGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_GEOLEVEL_SELECT,
+				1);
+		}
+	}
+	
+	/**
+	 * Gets the geo level view values e3.
+	 *
+	 * @return the geo level view values e3
+	 */
+	@Test
+	/**
+	 * check non-existent parameters
+	 */
+	public void getGeoLevelViewValuesE3() {
+		try {
+			service.getGeoLevelViewValues(
+				nonExistentUser, 
+				sahsuGeography, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}
+
+		try {
+			service.getGeoLevelViewValues(
+				testUser, 
+				nonExistentGeography, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_GEOGRAPHY,
+				1);
+		}
+		
+		try {
+			service.getGeoLevelViewValues(
+				testUser, 
+				sahsuGeography, 
+				nonExistentGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_GEOLEVEL_SELECT_VALUE,
+				1);
+		}		
+	}
+	
+	/**
+	 * Gets the geo level to map values n1.
+	 *
+	 * @return the geo level to map values n1
+	 */
+	@Test
+	public void getGeoLevelToMapValuesN1() {
+		try {
+			service.getGeoLevelToMapValues(
+				testUser, 
+				sahsuGeography, 
+				validSAHSUGeoLevelSelectValue);
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}
+	}
+
+	/**
+	 * Gets the geo level to map values e1.
+	 *
+	 * @return the geo level to map values e1
+	 */
+	@Test
+	/**
+	 * check null parameters
+	 */
+	public void getGeoLevelToMapValuesE1() {
+		try {
+			service.getGeoLevelToMapValues(
+				null, 
+				sahsuGeography, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				1);
+		}
+
+		try {
+			service.getGeoLevelToMapValues(
+				testUser, 
+				null, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				1);
+		}
+		
+		try {
+			service.getGeoLevelToMapValues(
+				testUser, 
+				sahsuGeography, 
+				null);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				1);
+		}
+	}
+
+	/**
+	 * Gets the geo level to map values e2.
+	 *
+	 * @return the geo level to map values e2
+	 */
+	@Test
+	/**
+	 * check invalid parameters
+	 */
+	public void getGeoLevelToMapValuesE2() {
+		try {
+			service.getGeoLevelToMapValues(
+				invalidUser, 
+				sahsuGeography, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_USER,
+				1);
+		}
+
+		try {
+			service.getGeoLevelToMapValues(
+				testUser, 
+				invalidGeography, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_GEOGRAPHY,
+				1);
+		}
+		
+		try {
+			service.getGeoLevelViewValues(
+				testUser, 
+				sahsuGeography, 
+				invalidGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_GEOLEVEL_SELECT,
+				1);
+		}
+	}
+	
+	/**
+	 * Gets the geo level to map values e3.
+	 *
+	 * @return the geo level to map values e3
+	 */
+	@Test
+	/**
+	 * check non-existent parameters
+	 */
+	public void getGeoLevelToMapValuesE3() {
+		try {
+			service.getGeoLevelToMapValues(
+				nonExistentUser, 
+				sahsuGeography, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}
+
+		try {
+			service.getGeoLevelViewValues(
+				testUser, 
+				nonExistentGeography, 
+				validSAHSUGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_GEOGRAPHY,
+				1);
+		}
+		
+		try {
+			service.getGeoLevelViewValues(
+				testUser, 
+				sahsuGeography, 
+				nonExistentGeoLevelSelectValue);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_GEOLEVEL_SELECT_VALUE,
+				1);
+		}		
+	}
+		
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
+	// ==========================================
+	// Section Interfaces
+	// ==========================================
+
+	// ==========================================
+	// Section Override
+	// ==========================================
+}

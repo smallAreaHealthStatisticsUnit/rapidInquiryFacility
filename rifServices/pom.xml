@@ -1,0 +1,20 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>rapidInquiryFacility</groupId>
+    <artifactId>rapidInquiryFacility</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <groupId>rifServices</groupId>
+  <artifactId>rifServices</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>RIF Middleware</name>
+  <description>Contains the code for the middleware used by the tools of the RIF Tool Suite</description>
+  <dependencies>
+  	<dependency>
+  		<groupId>org.postgresql</groupId>
+  		<artifactId>postgresql</artifactId>
+  		<version>9.2-1003-jdbc4</version>
+  	</dependency>
+  </dependencies>
+</project>
