@@ -1,0 +1,151 @@
+####################################################################################
+#
+# RIF properties file for SAHSU Private Network Linux
+#
+# Uses JGSS, GSSAPI (thence Kerberos) and JGSS internal SSL
+#
+####################################################################################
+#
+# Location of the JAAS logon config file for GSSAPI
+#
+java.security.auth.login.config=rif.conf
+#
+# Use native platform GSS integration (default: use JGSS internal)
+#
+# sun.security.jgss.native=true
+#
+# This does NOT work under Redhat Linux
+# GSSException: Unsupported mechanism requested: 1.2.840.113554.1.2.2
+# 1.2.840.113554.1.2.2 is Kerberos 5
+#
+# Set the library location if Java cannot find it
+#
+#sun.security.jgss.lib=/usr/lib64/libgssapi.so.2.0.0
+#
+# Location of krb5.conf:
+#
+# a) /etc/krb5.conf on Linux,
+# b) %JAVA_HOME/lib/security/krb5.conf or %WINDOWS_ROOT%/krb5.ini on Windows
+#    (%WINDOWS_ROOT% on Server 2003 is: C:\Documents and Settings\peterh\WINDOWS)
+# c) java.security.krb5.conf
+# 
+# java.security.krb5.conf
+#
+# or:
+# d) Windows specific setting used by Logon.java (so both systems uses the
+#    same config)
+#
+rif.logon.windows.krb5.conf=krb5.ini
+#
+# SSL Certificate location and password
+#
+javax.net.ssl.trustStore=/usr/java/jre1.6.0_17/lib/security/rif
+javax.net.ssl.trustStorePassword=rifrif
+#
+# SSL Certificates
+#
+# Convert existing server certificate to DER format; import to RIF keystore
+#
+# Linux: in $PGDATA directory
+#
+# openssl x509 -in server.crt -out server.crt.der -outform der
+#
+# /usr/java/jre1.6.0_17/bin/keytool -import -keystore /usr/java/jre1.6.0_17/lib/security/rif -alias postgresql -file server.crt.der -storepass rifrif
+#
+# YOU MUST USE THE JAVA KEYTOOL 
+#
+# You can test the CA using:
+#
+# $JAVA_HOME/bin/keytool -list -keystore $JAVA_HOME/lib/security/rif -alias postgresql
+# /usr/java/jre1.6.0_17/bin/keytool -list -keystore /usr/java/jre1.6.0_17/lib/security/rif -alias postgresql -storepass rifrif
+# postgresql, Jul 3, 2013, trustedCertEntry,
+# Certificate fingerprint (MD5): 6C:8B:8A:55:07:BD:C5:6C:E6:72:20:5F:2D:43:F6:CC
+#
+# Fix permissions: chgrp G_SAHSU /usr/java/jre1.6.0_17/lib/security/rif
+#
+# javax.net.ssl.trustStore must be set to /usr/java/jre1.6.0_17/lib/security/rif
+# javax.net.ssl.trustStorePassword must be set is a password was set by keytool
+#
+# JDBC driver (default is Postgres)
+#
+rif.logon.driver=org.postgresql.Driver
+#
+# JDBC database connection URL
+#
+rif.logon.url=jdbc:postgresql://wpea-rif1/sahsuland
+#
+# DO NOT SET THE Username if you are using GSSAPI/SSPI unless
+# 
+# a) You want to create a ticket from scratch (i.e. do not use pre-existing credentials)
+# b) You want to use a different username from your logon one. GSSAPI will still work if there
+#    is a username mapping setup.
+#    Password must be set if using MD5 authentication; may be set if using Java internal GSSAPI
+#    Must NOT be set if using libgss.so (i.e. Linux GSS services)	
+#
+#rif.logon.user
+#rif.logon.password
+#
+# JASS Application name and service name (postgres). Do not change KerberosServerName unless you really
+# really know what you are doing
+# 
+rif.logon.jaasApplicationName=rif
+rif.logon.KerberosServerName=postgres
+# 
+rif.logon.ssl=true
+# Disable certificate verifcation (DO NOT DO THIS)
+rif.logon.sslfactory=org.postgresql.ssl.NonValidatingFactory
+#
+# Debug flags
+#
+# a) GSSAPI
+#
+sun.security.krb5.debug=true
+sun.security.jgss.debug=true
+#
+# Troubleshooting Java secuirity
+# 
+# java -Djava.security.debug=help
+# 
+java.security.debug=all
+#
+#all           turn on all debugging
+#access        print all checkPermission results
+#combiner      SubjectDomainCombiner debugging
+#gssloginconfig
+#configfile    JAAS ConfigFile loading
+#configparser  JAAS ConfigFile parsing
+#              GSS LoginConfigImpl debugging
+#jar           jar verification
+#logincontext  login context results
+#policy        loading and granting
+#provider      security provider debugging
+#scl           permissions SecureClassLoader assigns
+#
+#The following can be used with access:
+#
+#stack         include stack trace
+#domain        dump all domains in context
+#failure       before throwing exception, dump stack
+#              and domain that didn't have permission
+#
+#The following can be used with stack and domain:
+#
+#permission=<classname>
+#              only dump output if specified permission
+              is being checked
+codebase=<URL>
+              only dump output if specified codebase
+              is being checked
+
+Note: Separate multiple options with a comma
+
+#
+# b) SSL
+#
+# javax.net.debug=ssl
+#
+# c) Postgres JDBC driver log level  - 0: None, 1: Not much, 2: Loads. Default NONE	
+#
+rif.logon.loglevel=2
+#
+# Eof

@@ -1,0 +1,10 @@
+"N00-N39(xN09,N24),580-599",All Urinary diseases,ICD,"%s BETWEEN 'N00' AND 'N08~' OR
+%s BETWEEN 'N10' AND 'N23~' OR
+%s BETWEEN 'N25' AND 'N39~' OR
+%s BETWEEN '580' AND '599~'"
+"N17-N19,584-586",Renal failure,ICD,"%s BETWEEN '584' AND '586~' OR
+%s BETWEEN 'N17' and 'N19~'"
+"N00-N99,580-629",All Genitourinary diseases,ICD,"%s BETWEEN 'N00' AND 'N99~' OR
+%s BETWEEN '580' AND '629~'"
+LOW_BIRTHWEIGHT,Low birth weight (<2500g),BIRTHWEIGHT,%s < 2500
+VERY_LOW_BIRTHWEIGHT,Very low birth weight (<1500g),BIRTHWEIGHT,%s < 1500
