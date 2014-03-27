@@ -1,0 +1,47 @@
+.chart svg {
+  font: 12px Arial, Helvetica, sans-serif;
+}
+ 
+.chart .y.axis path {
+  display: none;
+}
+ 
+.chart .y.axis line {
+  stroke: #fff;
+  stroke-opacity: .2;
+  shape-rendering: crispEdges;
+}
+ 
+.chart .y.axis .zero line {
+  stroke: #CCC;
+  stroke-opacity: 1;
+  stroke-width:3;
+}
+text{
+  fill:#777777;
+ }
+.chart .title {
+  font: 300 38px Helvetica Neue;
+  fill: #666;
+text-anchor: end;
+}
+ 
+.chart .birthyear,
+.chart .age {
+  text-anchor: middle;
+  fill: #666666;
+}
+ 
+.chart .birthyear {
+  fill: #fff;
+}
+ 
+.chart rect {
+  fill-opacity: .6;
+  fill: #e377c2;
+}
+ 
+.chart rect:first-child {
+  fill: #1f77b4;
+}
+ 
