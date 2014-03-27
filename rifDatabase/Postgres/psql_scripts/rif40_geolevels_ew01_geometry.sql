@@ -1,20 +1,20 @@
--- *************************************************************************************************
+-- ************************************************************************
+-- *
+-- * DO NOT EDIT THIS SCRIPT OR MODIFY THE RIF SCHEMA - USE ALTER SCRIPTS
+-- *
+-- ************************************************************************
 --
--- CVS/RCS Header
+-- ************************************************************************
 --
--- $Author: peterh $
--- $Date: 2014/02/28 10:54:02 $
--- Type: Postgres PSQL script
--- $RCSfile: rif40_geolevels_ew01_geometry.sql,v $
--- $Source: /home/EPH/CVS/repository/SAHSU/projects/rif/V4.0/database/postgres/psql_scripts/rif40_geolevels_ew01_geometry.sql,v $
--- $Revision: 1.3 $
--- $Id: rif40_geolevels_ew01_geometry.sql,v 1.3 2014/02/28 10:54:02 peterh Exp $
--- $State: Exp $
--- $Locker:  $
+-- GIT Header
+--
+-- $Format:Git ID: (%h) %ci$
+-- $Id$
+-- Version hash: $Format:%H$
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) -  Create and populate rif40_geolevels_geometry, intersection and lookup tables (Geographic processing) - SAHSULAND version
+-- Rapid Enquiry Facility (RIF) - Create and populate rif40_geolevels_geometry, intersection and lookup tables (Geographic processing) - SAHSULAND version
 --
 -- Copyright:
 --

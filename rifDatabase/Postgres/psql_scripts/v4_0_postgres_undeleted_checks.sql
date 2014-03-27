@@ -1,16 +1,16 @@
--- *************************************************************************************************
+-- ************************************************************************
+-- *
+-- * DO NOT EDIT THIS SCRIPT OR MODIFY THE RIF SCHEMA - USE ALTER SCRIPTS
+-- *
+-- ************************************************************************
 --
--- CVS/RCS Header
+-- ************************************************************************
 --
--- $Author: peterh $
--- $Date: 2013/09/02 14:08:33 $
--- Type: Postgres PSQL script
--- $RCSfile: v4_0_postgres_undeleted_checks.sql,v $
--- $Source: /home/EPH/CVS/repository/SAHSU/projects/rif/V4.0/database/postgres/psql_scripts/v4_0_postgres_undeleted_checks.sql,v $
--- $Revision: 1.2 $
--- $Id: v4_0_postgres_undeleted_checks.sql,v 1.2 2013/09/02 14:08:33 peterh Exp $
--- $State: Exp $
--- $Locker:  $
+-- GIT Header
+--
+-- $Format:Git ID: (%h) %ci$
+-- $Id$
+-- Version hash: $Format:%H$
 --
 -- Description:
 --
@@ -18,72 +18,68 @@
 --
 -- Copyright:
 --
--- The RIF is free software; you can redistribute it and/or modify it under
--- the terms of the GNU General Public License as published by the Free
--- Software Foundation; either version 2, or (at your option) any later
--- version.
+-- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+-- that rapidly addresses epidemiological and public health questions using 
+-- routinely collected health and population data and generates standardised 
+-- rates and relative risks for any given health outcome, for specified age 
+-- and year ranges, for any given geographical area.
 --
--- The RIF is distributed in the hope that it will be useful, but WITHOUT ANY
--- WARRANTY; without even the implied warranty of MERCHANTABILITY or
--- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
--- for more details.
+-- Copyright 2014 Imperial College London, developed by the Small Area
+-- Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+-- is funded by the Public Health England as part of the MRC-PHE Centre for 
+-- Environment and Health. Funding for this project has also been received 
+-- from the Centers for Disease Control and Prevention.  
 --
--- You should have received a copy of the GNU General Public License
--- along with this file; see the file LICENCE.  If not, write to:
+-- This file is part of the Rapid Inquiry Facility (RIF) project.
+-- RIF is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU Lesser General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
 --
--- UK Small Area Health Statistics Unit,
--- Dept. of Epidemiology and Biostatistics
--- Imperial College School of Medicine (St. Mary's Campus),
--- Norfolk Place,
--- Paddington,
--- London, W2 1PG
--- United Kingdom
+-- RIF is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+-- GNU Lesser General Public License for more details.
 --
--- The RIF uses Oracle 11g, PL/SQL, PostGres and PostGIS as part of its implementation.
+-- You should have received a copy of the GNU Lesser General Public License
+-- along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+-- to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+-- Boston, MA 02110-1301 USA
 --
--- Oracle11g, PL/SQL and Pro*C are trademarks of the Oracle Corporation.
+-- Author:
 --
--- All terms mentioned in this software and supporting documentation that are known to be trademarks
--- or service marks have been appropriately capitalised. Imperial College cannot attest to the accuracy
--- of this information. The use of a term in this software or supporting documentation should NOT be
--- regarded as affecting the validity of any trademark or service mark.
+-- Peter Hambly, SAHSU
 --
--- Summary of functions/procedures:
+\set ECHO all
+\set ON_ERROR_STOP ON
+\timing
+
 --
--- To be added
+-- Check user is rif40
 --
--- Error handling strategy:
+DO LANGUAGE plpgsql $$
+BEGIN
+	IF user = 'rif40' THEN
+		RAISE INFO 'User check: %', user;	
+	ELSE
+		RAISE EXCEPTION 'C20900: User check failed: % is not rif40', user;	
+	END IF;
+END;
+$$;
+
 --
--- Output and logging procedures do not HANDLE or PROPAGATE errors. This makes them safe to use
--- in package initialisation and NON recursive.
+-- Check database is sahsuland_dev
 --
--- References:
---
--- 	None
---
--- Dependencies:
---
---	Packages: None
---
--- 	<This should include: packages, non packages procedures and functions, tables, views, objects>
---
--- Portability:
---
---	Linux, Windows 2003/2008, Oracle 11gR1
---
--- Limitations:
---
--- Change log:
---
--- $Log: v4_0_postgres_undeleted_checks.sql,v $
--- Revision 1.2  2013/09/02 14:08:33  peterh
---
--- Baseline after full trigger implmentation
---
--- Revision 1.1  2013/03/14 17:35:39  peterh
--- Baseline for TX to laptop
---
---
+DO LANGUAGE plpgsql $$
+BEGIN
+	IF current_database() = 'sahsuland_dev' THEN
+		RAISE INFO 'Database check: %', current_database();	
+	ELSE
+		RAISE EXCEPTION 'C20901: Database check failed: % is not sahsuland_dev', current_database();	
+	END IF;
+END;
+$$;
+
 \echo Checking all tables/views/FDW tables/temporary tables/sequences/function/triggers deleted...
 \set ECHO all
 \set ON_ERROR_STOP OFF
