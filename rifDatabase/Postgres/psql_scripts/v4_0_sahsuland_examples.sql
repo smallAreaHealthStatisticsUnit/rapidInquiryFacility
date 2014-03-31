@@ -55,14 +55,14 @@
 \timing
 
 --
--- Check user is rif40
+-- Check user is NOT rif40
 --
 DO LANGUAGE plpgsql $$
 BEGIN
-	IF user = 'rif40' THEN
+	IF user != 'rif40' THEN
 		RAISE INFO 'User check: %', user;	
 	ELSE
-		RAISE EXCEPTION 'C20900: User check failed: % is not rif40', user;	
+		RAISE EXCEPTION 'C20902: User check failed: % is rif40', user;	
 	END IF;
 END;
 $$;

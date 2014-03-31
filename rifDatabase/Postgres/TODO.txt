@@ -87,6 +87,19 @@ To be defined. Expected to include:
 9. SAHSUland.dump:
    * Must NOT contain: ew01/uk91 GIS tables (far, far too big); ICD9/10 tables (WHO copyright issues). ICD9/10 reduced to Lung Cancer rows
    * Also applies to github source files
+10. The following SQL snippet from rif40_geo_pkg.populate_hierarchy_table() 
+    causes ERROR:  invalid join selectivity: 1.000000 
+    in PostGIS 2.1.1 (fixed in 2.2.1/2.1.2 - to be release May 3rd 2014)
+
+See: http://trac.osgeo.org/postgis/ticket/2543
+
+SELECT a2.area_id AS level2, a3.area_id AS level3,
+       ST_Area(a3.optimised_geometry) AS a3_area,
+       ST_Area(ST_Intersection(a2.optimised_geometry, a3.optimised_geometry)) AS a23_area
+  FROM t_rif40_geolevels_geometry_sahsu_level3 a3, t_rif40_geolevels_geometry_sahsu_level2 a2  
+ WHERE ST_Intersects(a2.optimised_geometry, a3.optimised_geometry);
+
+Currently sahsuland_geography is loaded from the CSV file as a workaround
 
 2.2.1 Issues to be handled better on startup
       --------------------------------------

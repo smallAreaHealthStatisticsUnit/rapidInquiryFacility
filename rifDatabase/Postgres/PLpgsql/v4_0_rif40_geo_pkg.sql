@@ -1196,7 +1196,19 @@ SELECT /* Select y intersection, eliminating duplicates using selecting the lowe
    AND max45 = test45
    AND max56 = test56
    AND max67 = test67
- ORDER BY 1, 2, 3, 4';
+ ORDER BY 1, 2, 3, 4
+
+The following SQL snippet causes ERROR:  invalid join selectivity: 1.000000 in PostGIS 2.1.1 (fixed in 2.2.1/2.1.2 - to be release May 3rd 2014)
+
+See: http://trac.osgeo.org/postgis/ticket/2543
+
+SELECT a2.area_id AS level2, a3.area_id AS level3,
+       ST_Area(a3.optimised_geometry) AS a3_area,
+       ST_Area(ST_Intersection(a2.optimised_geometry, a3.optimised_geometry)) AS a23_area
+  FROM t_rif40_geolevels_geometry_sahsu_level3 a3, t_rif40_geolevels_geometry_sahsu_level2 a2  
+ WHERE ST_Intersects(a2.optimised_geometry, a3.optimised_geometry);
+
+';
 
 CREATE OR REPLACE FUNCTION rif40_geo_pkg.fix_null_geolevel_names()
 RETURNS void 

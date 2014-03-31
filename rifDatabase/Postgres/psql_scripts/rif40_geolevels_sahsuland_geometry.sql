@@ -158,19 +158,45 @@ BEGIN
 --
 -- Populate hierarchy tables
 --
-	PERFORM rif40_geo_pkg.populate_hierarchy_table('SAHSU'); 
+-- The following SQL snippet from rif40_geo_pkg.populate_hierarchy_table() 
+-- causes ERROR:  invalid join selectivity: 1.000000 in PostGIS 2.1.1 (fixed in 2.2.1/2.1.2 - to be release May 3rd 2014)
+--
+-- See: http://trac.osgeo.org/postgis/ticket/2543
+--
+-- SELECT a2.area_id AS level2, a3.area_id AS level3,
+--       ST_Area(a3.optimised_geometry) AS a3_area,
+--       ST_Area(ST_Intersection(a2.optimised_geometry, a3.optimised_geometry)) AS a23_area
+--  FROM t_rif40_geolevels_geometry_sahsu_level3 a3, t_rif40_geolevels_geometry_sahsu_level2 a2  
+-- WHERE ST_Intersects(a2.optimised_geometry, a3.optimised_geometry);
+--
+--	PERFORM rif40_geo_pkg.populate_hierarchy_table('SAHSU'); 
 --
 -- Add denominator population table to geography geolevel geomtry data
 --
-	PERFORM rif40_geo_pkg.add_population_to_rif40_geolevels_geometry('SAHSU', 'SAHSULAND_POP'); 
+--	PERFORM rif40_geo_pkg.add_population_to_rif40_geolevels_geometry('SAHSU', 'SAHSULAND_POP'); 
 --
 -- Fix NULL geolevel names in geography geolevel geometry and lookup table data 
 --
-	PERFORM rif40_geo_pkg.fix_null_geolevel_names('SAHSU'); 
+--	PERFORM rif40_geo_pkg.fix_null_geolevel_names('SAHSU'); 
 --
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
 	RAISE INFO 'Processed SAHSU geography: %s', took;
+--
+END;
+$$;
+
+--
+-- Temporary workaround for: http://trac.osgeo.org/postgis/ticket/2543
+--
+\COPY sahsuland_geography(level1, level2, level3, level4) FROM  '../sahsuland/data/sahsuland_geography.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+CREATE UNIQUE INDEX sahsuland_geography_pk ON sahsuland_geography(level4);
+-- For vi's benefit
+
+DO LANGUAGE plpgsql $$
+BEGIN
+	PERFORM rif40_geo_pkg.add_population_to_rif40_geolevels_geometry('SAHSU', 'SAHSULAND_POP'); 
+	PERFORM rif40_geo_pkg.fix_null_geolevel_names('SAHSU'); 
 --
 END;
 $$;
@@ -307,6 +333,7 @@ SELECT geography, geolevel_name, avg_npoints_geom, avg_npoints_opt, file_geojson
 
 -- \dS+ rif40_geolevels_geometry
 
+\echo Created and populated rif40_geolevels_geometry, intersection and lookup tables (Geographic processing)- SAHSULAND version.
 \q
 
 --
@@ -317,8 +344,6 @@ SELECT geography, geolevel_name, avg_npoints_geom, avg_npoints_opt, file_geojson
 \copy (SELECT encode(ST_asPNG(ST_asRaster(shapefile_geometry, 1000, 1000)), 'hex') AS png FROM t_rif40_sahsu_geometry WHERE geolevel_name = 'LEVEL4' AND area_id IN (SELECT DISTINCT level4 FROM sahsuland_geography WHERE level2 = '01.004')) to ../postgres/GeoJSON_tester/geojson_data/sahsu_level2.hex
 \! xxd -p -r ../postgres/GeoJSON_tester/geojson_data/sahsu_level2.hex ../postgres/GeoJSON_tester/geojson_data/sahsu_level2.png
 -- \! display -verbose ../postgres/GeoJSON_tester/geojson_data/sahsu_level2.png &
-
-\echo Created and populated rif40_geolevels_geometry, intersection and lookup tables (Geographic processing)- SAHSULAND version.
 
 -- 
 -- Eof

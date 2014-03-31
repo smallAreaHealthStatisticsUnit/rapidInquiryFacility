@@ -482,12 +482,12 @@ SELECT rif40_sm_pkg.cleanup_orphaned_extract_and_map_tables(TRUE /* Truncate */)
 --
 -- Initialise user
 --
-\c sahsuland peterh
+\c sahsuland_dev pch
 \i ../psql_scripts/v4_0_user.sql      
 --
 -- Test user access
 --
-\c sahsuland peterh
+\c sahsuland_dev pch
 \i ../psql_scripts/v4_0_sahsuland_examples.sql      
 
 --

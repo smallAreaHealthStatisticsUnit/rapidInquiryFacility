@@ -4,6 +4,8 @@ This README assumes a knowledge of how V3.1 RIF works.
 
 See the TODO.txt file for the current state of the development.
 
+WARNING: The RIF requires Postgres 9.3 to work. 9.1 will not work, 9.2 may but is not tested. In particular PL/pgsql GET STACKED DIAGNOSTICS is used which is a post 9.2 option.
+
 Development History
 -------------------
 

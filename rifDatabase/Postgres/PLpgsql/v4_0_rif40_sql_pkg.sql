@@ -2620,7 +2620,7 @@ Description:	Oracle compatability function SYS_CONTEXT
 DECLARE
 	ret	VARCHAR;
 	c1 CURSOR FOR
-		SELECT procpid||'.'||TO_CHAR(backend_start, 'J.SSSS.US') audsid 
+		SELECT pid /* Procpid in 9.2 */ ||'.'||TO_CHAR(backend_start, 'J.SSSS.US') audsid 
 			/* Backend PID.Julian day.Seconds from midnight.uSeconds (backend start) */
 		  FROM pg_stat_activity
 		 WHERE datname     = current_database()
@@ -2737,7 +2737,7 @@ DECLARE
 --
 	error_message VARCHAR;
 	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
---	v_version BOOLEAN:=(string_to_array(version()::Text, ' '::Text))[2] >= '9.2'; /* Check Postgres server version */
+	v_version BOOLEAN:=(string_to_array(version()::Text, ' '::Text))[2] >= '9.2'; /* Check Postgres server version */
 BEGIN
 	IF table_or_view IS NULL THEN 
 		RETURN;
@@ -2772,9 +2772,9 @@ EXCEPTION
 -- 
 -- Not supported until 9.2
 --
---		IF v_version THEN
---			GET STACKED DIAGNOTICS v_detail = PG_EXCETION_DETAIL;
---		END IF;
+		IF v_version THEN
+			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+		END IF;
 		error_message:='rif40_drop_user_table_or_view() caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||'Detail: '||v_detail::VARCHAR;
 		RAISE INFO '1: %', error_message;
 --
