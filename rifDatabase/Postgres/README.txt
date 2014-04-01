@@ -4,6 +4,8 @@ This README assumes a knowledge of how V3.1 RIF works.
 
 See the TODO.txt file for the current state of the development.
 
+See Install.docx for installation instructions. You will need to get a clean dump of the database from SAHSU or create it yourself from sahsuland_dev
+
 WARNING: The RIF requires Postgres 9.3 to work. 9.1 will not work, 9.2 may but is not tested. In particular PL/pgsql GET STACKED DIAGNOSTICS is used which is a post 9.2 option.
 
 Development History
@@ -54,6 +56,10 @@ The principal build script is v4_0_create_sahsuland.sql, It must be run as the s
 
 cd rifDatabase\Postgres\psql
 psql -U rif40 -d sahsuland_dev -w -e -f v4_0_create_sahsuland.sql
+
+To create sahsuland.dmp, excluding UK91, EW01 shapefiles from non dev dumps:
+
+pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland > C:\Users\pch\sahsuland.dump
 
 As of March 2014, the Java test programs (dumpdata) and the installation notes and scripts are not in the repository. They will be added when tidied come more.
 
