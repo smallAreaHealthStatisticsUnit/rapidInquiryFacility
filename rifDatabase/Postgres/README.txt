@@ -55,13 +55,26 @@ The directory structure is rifDatabase\Postgres\:
 The principal build script is v4_0_create_sahsuland.sql, It must be run as the schema owner (rif40) on sahsuland_dev only. sahusland is always created afresh from an empty database using pg_restore. E.g
 
 cd rifDatabase\Postgres\psql
+
+psql -U postgres -d postgres
+
+Create the SAHSULAND_DEV tablespace:
+
+CREATE TABLESPACE sahsuland_dev LOCATION 'C:\\PostgresDB\\sahsuland_dev';
+
+(Re-)create sahsland_Dev database. This requires sahsuland_dev.dump, otherwise edit create_sahsuland_dev_db.sql to build direct from scripts:
+
+psql -U postgres -d postgres -w -e -f create_sahsuland_dev_db.sql
+
+Check sahsuland builds from the scripts:
+
 psql -U rif40 -d sahsuland_dev -w -e -f v4_0_create_sahsuland.sql
 
 To create sahsuland.dmp, excluding UK91, EW01 shapefiles from non dev dumps:
 
 pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland > C:\Users\pch\sahsuland.dump
 
-As of March 2014, the Java test programs (dumpdata) and the installation notes and scripts are not in the repository. They will be added when tidied come more.
+As of March 2014, the Java test programs (dumpdata) and the installation notes and scripts are not in the repository. They will be added when tidied some more.
 
 Design Documenation
 -------------------

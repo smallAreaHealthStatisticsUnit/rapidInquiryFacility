@@ -2,7 +2,7 @@ RIF database TOOD List
 ======================
 
 Peter Hambly.
-Last update: 28/3/2014
+Last update: 4/4/2014
 
 Current highest priority is [Urgent] and [Enhancements - GIS]
 
@@ -75,6 +75,9 @@ To be defined. Expected to include:
 2. AUDSID is missing from rif_studies view [FIXED]. 
 4. remove age_group from t_rif40_studies and add aggregation code to rif40_studies view. Likewise year. [FIXED]
 5. No comments rif40_results [FIXED]
+9. SAHSUland.dump:
+   * Must NOT contain: ew01/uk91 GIS tables (far, far too big); ICD9/10 tables (WHO copyright issues). ICD9/10 reduced to Lung Cancer rows
+   * Also applies to github source files 
 
 2.2 Outstanding
     -----------
@@ -84,9 +87,6 @@ To be defined. Expected to include:
    replacements changed to use views if possible. [Security bug]6. Fix documentation fault in dbmstools (see Documentation)
 7. Make INV_1 INV_<inv_id> in results and results maps
 8. Make sure user cannot change AUDSID
-9. SAHSUland.dump:
-   * Must NOT contain: ew01/uk91 GIS tables (far, far too big); ICD9/10 tables (WHO copyright issues). ICD9/10 reduced to Lung Cancer rows
-   * Also applies to github source files
 10. The following SQL snippet from rif40_geo_pkg.populate_hierarchy_table() 
     causes ERROR:  invalid join selectivity: 1.000000 
     in PostGIS 2.1.1 (fixed in 2.2.1/2.1.2 - to be release May 3rd 2014)
@@ -106,6 +106,8 @@ Currently sahsuland_geography is loaded from the CSV file as a workaround
 
 These are problem with the startup procedure: rif40_sql_pkg.rif40_startup()
 
+ERROR(1):
+
 C:\Users\pch\Documents\database\postgres\psql_scripts>psql
 You are connected to database "sahsuland" as user "pch" on host "localhost" at port "5432".
 SSL connection (cipher: DHE-RSA-AES256-SHA, bits: 256)
@@ -116,17 +118,31 @@ Type "help" for help.
 
 CAUSE: No parameter set in postgresql.conf
 
-Unable to find rif40 tables.
+FIX: Add rif40.* to postgresql.conf (See install.docx)
+
+ERROR(2): Unable to find rif40 tables.
 
 CAUSE: RIF40 not in search path
 
-ALTER DATABASE sahsuland SET search_path TO rif40,public,topology,gis,pop,rif40_sql_pkg;
+FIX: ALTER DATABASE sahsuland SET search_path TO rif40,public,topology,gis,pop,rif40_sql_pkg;
 
-Schema error on startup:
+ERROR(3) Schema error on startup:
 
 psql:C:/Program Files/PostgreSQL/9.3/etc/psqlrc:36: ERROR:  schema "pch" does not exist
 
 CAUSE: User owned schema not created
+
+FIX: Create
+
+ERROR(4): psql:C:/Program Files/PostgreSQL/9.3/etc/psqlrc:36: WARNING:  rif40_ddl(): SQL in error> CREATE TABLE pch.t_rif40_num_denom (
+        geography              VARCHAR(50)     NOT NULL,
+        numerator_table        VARCHAR(30)     NOT NULL,
+        denominator_table      VARCHAR(30)     NOT NULL);
+psql:C:/Program Files/PostgreSQL/9.3/etc/psqlrc:36: ERROR:  permission denied for schema pch
+
+CAUSE: Schema pch not granted ro role pch
+
+FIX: GRANT ALL ON SCHEMA pch TO pch;
 
 2.3 Schema Issues
     -------------
