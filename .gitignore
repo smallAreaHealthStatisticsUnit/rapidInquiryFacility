@@ -3,3 +3,7 @@ target/
 *~
 *.swp
 afiedt.buf
+#eclipse-specific git ignore settings
+.metadata
+.project
+.classpath
