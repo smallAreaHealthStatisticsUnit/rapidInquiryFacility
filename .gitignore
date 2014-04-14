@@ -3,3 +3,6 @@ target/
 *~
 *.swp
 afiedt.buf
+rifDatabase/Postgres/example_data/sahsuland_example_bands.csv
+rifDatabase/Postgres/example_data/sahsuland_example_extract.csv
+rifDatabase/Postgres/example_data/sahsuland_example_map.csv

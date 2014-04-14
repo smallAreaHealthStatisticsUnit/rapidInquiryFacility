@@ -1481,7 +1481,7 @@ EXCEPTION
 -- 
 -- Not supported until 9.2
 --
---		GET STACKED DIAGNOTICS v_detail = PG_EXCETION_DETAIL;
+		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 		error_message:='rif40_create_fdw_table() caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||'for FDW '||
 			LOWER(numerator_table)::VARCHAR||' on '||fdwservertype::VARCHAR||' server '||fdwservername::VARCHAR||E'\n'||'Detail: '||v_detail::VARCHAR;
 		RAISE INFO '1: %', error_message;
@@ -1555,7 +1555,7 @@ EXCEPTION
 -- 
 -- Not supported until 9.2
 --
---		GET STACKED DIAGNOTICS v_detail = PG_EXCETION_DETAIL;
+		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 		IF sql_stmt IS NULL THEN
 			error_message:='rif40_update_fdw_tables() caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL> (Not known, probably CURSOR c1ufdw)'||E'\n'||'Detail: '||v_detail::VARCHAR;
 		ELSE
@@ -1938,7 +1938,7 @@ EXCEPTION
 -- 
 -- Not supported until 9.2
 --
---		GET STACKED DIAGNOTICS v_detail = PG_EXCETION_DETAIL;
+		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 		error_message:='rif40_fdw_table_select_test() caught: '||E'\n'||SQLERRM::VARCHAR||' in: '||E'\n'||'SQL> '||sql_stmt::VARCHAR||E'\n'||'for FDW '||
 			l_table_name::VARCHAR||'.'||l_column_name::VARCHAR||' on '||fdwservertype::VARCHAR||' server '||fdwservername::VARCHAR||E'\n'||'Detail: '||v_detail::VARCHAR;
 		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_fdw_table_select_test', 'Caught exception: % [IGNORED]', 
@@ -2536,8 +2536,9 @@ EXCEPTION
 	WHEN SQLSTATE '02000' /* No data found */ THEN
 		RAISE;
 	WHEN others THEN
-		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl', 'SQL in error> %;', 
-			sql_stmt::VARCHAR); 
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl', 'SQL in error (%)> %;', 
+			SQLSTATE::VARCHAR /* SQL error state */,
+			sql_stmt::VARCHAR /* SQL statement */); 
 		RAISE;
 END;
 $func$
@@ -3006,7 +3007,7 @@ EXCEPTION
 -- 
 -- Not supported until 9.2
 --
---		GET STACKED DIAGNOTICS v_detail = PG_EXCEPTION_DETAIL;
+		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 		error_message:='rif40_method4('''||coalesce(title::VARCHAR, '')||''') caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||'Detail: '||v_detail::VARCHAR;
 		RAISE INFO '1: %', error_message;
 --
@@ -3052,34 +3053,7 @@ Returns:	Nothing
 Description:	Hash partition schema.table on column
 ';
 
-CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_range_partition(l_schema VARCHAR, t_table VARCHAR, l_ciolumn VARCHAR)
-RETURNS void
-SECURITY INVOKER
-AS $func$
-/*
-Function: 	rif40_range_partition()
-Parameters:	Schema, table, column
-Returns:	Nothing
-Description:	Range partition schema.table on column
-
- */
-DECLARE
-BEGIN
---
--- Must be rif40 or have rif_user or rif_manager role
---
-	IF USER != 'rif40' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_range_partition', 'User % must be rif40 or have rif_user or rif_manager role', 
-			USER::VARCHAR);
-	END IF;
-END;
-$func$ LANGUAGE plpgsql;
-
-COMMENT ON FUNCTION rif40_sql_pkg.rif40_range_partition(VARCHAR, VARCHAR, VARCHAR) IS 'Function: 	rif40_method4()
-Parameters:	Schema, table, column
-Returns:	Nothing
-Description:	Range partition schema.table on column
-';
+\i ../PLpgsql/rif40_sql_pkg/rif40_range_partition.sql
 
 --
 -- Add DDL checks (now run separately)

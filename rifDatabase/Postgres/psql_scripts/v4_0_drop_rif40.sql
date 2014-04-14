@@ -2,6 +2,8 @@
 -- *
 -- * DO NOT EDIT THIS SCRIPT OR MODIFY THE RIF SCHEMA - USE ALTER SCRIPTS
 -- *
+-- * Except for: PL/pgsql functions
+-- *
 -- ************************************************************************
 --
 -- ************************************************************************
@@ -33,7 +35,7 @@
 -- This file is part of the Rapid Inquiry Facility (RIF) project.
 -- RIF is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU Lesser General Public License as published by
--- the Free Software Foundation, either version 3 of the License, or
+-- the Free Software Foundation, either verquote_ident(l_schema)||'.'||quote_ident(l_tablesion 3 of the License, or
 -- (at your option) any later version.
 --
 -- RIF is distributed in the hope that it will be useful,
@@ -80,7 +82,7 @@ BEGIN
 END;
 $$;
 
-\echo Dropping all objects...
+\echo Dropping all objects...quote_ident(l_schema)||'.'||quote_ident(l_table
 
 \set ON_ERROR_STOP OFF
 
@@ -138,6 +140,7 @@ DROP FUNCTION rif40_sql_pkg.rif40_drop_user_table_or_view(VARCHAR) CASCADE;
 DROP FUNCTION rif40_sql_pkg.rif40_method4(VARCHAR, VARCHAR) CASCADE; 
 DROP FUNCTION rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR);
 DROP FUNCTION rif40_sql_pkg.rif40_range_partition(VARCHAR, VARCHAR, VARCHAR);
+DROP FUNCTION rif40_sql_pkg._rif40_range_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR);
 
 DROP TRIGGER trg_rif40_parameters ON rif40_parameters;
 DROP FUNCTION rif40_trg_pkg.trgf_rif40_parameters();

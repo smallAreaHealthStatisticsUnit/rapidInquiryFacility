@@ -90,6 +90,7 @@ To be defined. Expected to include:
 10. The following SQL snippet from rif40_geo_pkg.populate_hierarchy_table() 
     causes ERROR:  invalid join selectivity: 1.000000 
     in PostGIS 2.1.1 (fixed in 2.2.1/2.1.2 - to be release May 3rd 2014)
+11. /missing comments in RIF40_STUIES (year_stop, start etc)
 
 See: http://trac.osgeo.org/postgis/ticket/2543
 

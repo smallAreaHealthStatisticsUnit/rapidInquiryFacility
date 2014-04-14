@@ -8,7 +8,7 @@
 -- $RCSfile: v4_0_year_partitions.sql,v $
 -- $Source: /home/EPH/CVS/repository/SAHSU/projects/rif/V4.0/database/postgres/psql_scripts/v4_0_year_partitions.sql,v $
 -- $Revision: 1.2 $
--- $Id: v4_0_year_partitions.sql,v 1.2 2014/02/27 11:29:40 peterh Exp $
+-- $Id$
 -- $State: Exp $
 -- $Locker:  $
 --
@@ -95,13 +95,20 @@
 \set ON_ERROR_STOP ON
 \timing
 
-\echo Partition all tables with study_id as a column...
-
+\echo Range partition all tables with study_id as a column...
 --
 -- Check user is rif40
 --
+--\set ON_ERROR_STOP OFF
+\set VERBOSITY terse
 DO LANGUAGE plpgsql $$
 DECLARE
+--
+	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_range_partition',
+							'_rif40_range_partition_create',
+							'rif40_ddl'];
+	l_function 			VARCHAR;
+--
 	c1 CURSOR FOR
 		SELECT a.tablename AS tablename, b.attname AS columnname, schemaname AS schemaname	/* Tables */
 		  FROM pg_tables a, pg_attribute b, pg_class c
@@ -122,14 +129,26 @@ BEGIN
 	ELSE
 		RAISE EXCEPTION 'C209xx: User check failed: % is not rif40', user;	
 	END IF;
+	--
+--
+-- Turn on some debug
+--
+        PERFORM rif40_log_pkg.rif40_log_setup();
+        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+--
+-- Enabled debug on select rif40_sm_pkg functions
+--
+	FOREACH l_function IN ARRAY rif40_sql_pkg_functions LOOP
+		RAISE INFO 'Enable debug for function: %', l_function;
+		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
+	END LOOP;
 --
 	FOR c1_rec IN c1 LOOP
-		RAISE INFO 'Range partitioning by year: %.%', c1_rec.schemaname, c1_rec.tablename;
 		PERFORM rif40_sql_pkg.rif40_range_partition(c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR, 'year'::VARCHAR);
 	END LOOP;
 END;
 $$;
 
-\echo Partitioning of all tables with year as a column complete.
+\echo Range partitioning of all tables with year as a column complete.
 --
 -- Eof

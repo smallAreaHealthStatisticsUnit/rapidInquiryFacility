@@ -150,12 +150,12 @@ $$;
 \i ../psql_scripts/create_v4_0_postgres_ddl_control_views.sql
 
 --
--- Partition all tables with study_id as a column
+-- Hash partition all tables with study_id as a column
 --
 \i ../psql_scripts/v4_0_study_id_partitions.sql
 
 --
--- Partition all tables with year as a column
+-- Range partition all tables with year as a column
 --
 \i ../psql_scripts/v4_0_year_partitions.sql
 
