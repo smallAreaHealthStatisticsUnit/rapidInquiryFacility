@@ -78,7 +78,7 @@ Description:	Automatic range partition schema.table on column
 * Copy to temp table, truncate (dont panic - Postgres DDL is part of a transaction)
 * Do not partition if table has only one distinct row
 * Do not partition if table has no rows
-* Create auto range trigger functionm
+* Create auto range trigger function
 
 CREATE OR REPLACE FUNCTION rif40.sahsuland_cancer_insert()
   RETURNS trigger AS
@@ -100,9 +100,15 @@ BEGIN
         END IF;
         p_table:=quote_ident('sahsuland_cancer_'||NEW.year::Text);
         p_value:=NEW.year::Text;
-        sql_stmt:='INSERT INTO '||p_table||' VALUES (NEW.*) -* Partition: '||p_value||' -/';
         BEGIN
-                PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+--
+-- Copy columns from NEW
+--
+                sql_stmt:= 'INSERT INTO '||p_table||' VALUES ($1, $2, $3, $4, $5, $6, $7, $8) /- Partition: '||p_value||' -/';
+--              PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'sahsuland_cancer_insert',
+--                      'SQL> %; rec: %', sql_stmt::VARCHAR, rec::VARCHAR);
+                EXECUTE sql_stmt USING NEW.year, NEW.age_sex_group, NEW.level1, NEW.level2, NEW.level3, NEW.level4, NEW.icd, NEW.tot
+al;
         EXCEPTION
                 WHEN undefined_table /- e.g. 42p01: relation "rif40.rif40_population_europe_1991" does not exist -/ THEN
                         PERFORM rif40_log_pkg.rif40_log('INFO', 'sahsuland_cancer_insert',
@@ -112,16 +118,22 @@ BEGIN
 -- Add partition
 --
                        PERFORM rif40_sql_pkg._rif40_range_partition_create('rif40', 'sahsuland_cancer', p_table, 'year', p_value);
+--
+-- Re-insert failed row
+--
+                        EXECUTE sql_stmt USING NEW.year, NEW.age_sex_group, NEW.level1, NEW.level2, NEW.level3, NEW.level4, NEW.icd,
+ NEW.total;
+                        RETURN NEW;
                 WHEN others THEN
                         GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
                         error_message:='sahsuland_cancer_insert() caught: ||SQLSTATE::VARCHAR'||E'\n'||SQLERRM::VARCHAR||' in SQL (s
-ee previous trapped error)'||E'\n'||'Detail: '||v_detail::VARCHAR||' ';
+ee previous trapped error)'||E'\n'||'Detail: '||'('||SQLSTATE||') '||v_detail::VARCHAR||' ';
                         RAISE INFO '3: %', error_message;
 --
                         RAISE;
         END;
--- '||quote_ident(l_schema)||'.'||quote_ident(l_table)
-        RETURN NULL;
+--
+        RETURN NEW;
 END;
 $BODY$
   LANGUAGE plpgsql;
@@ -130,7 +142,7 @@ COMMENT ON FUNCTION  rif40.sahsuland_cancer_insert() IS 'Partition INSERT functi
 * Add trigger to existing table
 
 CREATE TRIGGER sahsuland_cancer_insert
-  BEFORE INSERT OR UPDATE ON rif40.sahsuland_cancer
+  BEFORE INSERT ON rif40.sahsuland_cancer
   FOR EACH ROW
   EXECUTE PROCEDURE sahsuland_cancer_insert();
 COMMENT ON TRIGGER sahsuland_cancer_insert
@@ -143,15 +155,24 @@ INSERT INTO sahsuland_cancer
  SELECT * FROM rif40_range_partition -* Temporary table *- ORDER BY year;
 INSERT INTO sahsuland_cancer_1989 VALUES (NEW.*) -* Partition: 1989 *-;
 
-* If table is a numerator, cluster
+* If table is a numerator, clusterl_table
 
 * Re-anaylse
 
  */
 DECLARE
  	c1gangep 		REFCURSOR;
-
+	c2gangep CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR
+		SELECT *
+	          FROM information_schema.columns
+	         WHERE table_schema = l_schema
+	           AND table_name   = l_table
+	         ORDER BY ordinal_position;
+--
+	c2_rec 			RECORD;
 	sql_stmt 		VARCHAR;
+	rec_list		VARCHAR;
+	bind_list		VARCHAR;
 	ddl_stmt 		VARCHAR[];
 	num_partitions		INTEGER;
 	l_rows			INTEGER:=0;
@@ -194,10 +215,10 @@ BEGIN
 -- Check table name length - must be 25 chars or less (assuming the limit is 30)
 --
 	table_length:=length(quote_ident(l_table));
-	IF table_length > 25 THEN
+	IF table_length > name_length_limit-5 THEN
 		PERFORM rif40_log_pkg.rif40_error(-20997, 'rif40_range_partition', 
-			'Automatic range partitioning by %: %.%; table name is too long %,limit is 25', 
-			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, table_length::VARCHAR);
+			'Automatic range partitioning by %: %.%; table name is too long %, limit is %', 
+			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, table_length::VARCHAR, (name_length_limit-5)::VARCHAR);
 -- 
 -- IF yes, copy to temporary table, truncate
 --
@@ -295,9 +316,25 @@ SELECT year AS value,
 '	END IF;'||E'\n'||
 '	p_table:=quote_ident('||''''||l_table||'_''||NEW.'||l_column||'::Text'||');'||E'\n'||
 '	p_value:=NEW.'||l_column||'::Text;'||E'\n'||
-'	sql_stmt:=''INSERT INTO ''||p_table||'' VALUES (NEW.*) /* Partition: ''||p_value||'' */'';'||E'\n'||
 '	BEGIN'||E'\n'||
-'		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);'||E'\n'||
+'--'||E'\n'||
+'-- Copy columns from NEW'||E'\n'||
+'--'||E'\n';
+	FOR c2_rec IN c2gangep(l_schema, l_table) LOOP
+		i:=i+1;
+		IF rec_list IS NULL THEN
+			rec_list:='NEW.'||c2_rec.column_name;
+			bind_list:='$'||i::Text;
+		ELSE
+			rec_list:=rec_list||', NEW.'||c2_rec.column_name;
+			bind_list:=bind_list||', $'||i::Text;
+		END IF;
+	END LOOP;
+	ddl_stmt[array_length(ddl_stmt, 1)]:=ddl_stmt[array_length(ddl_stmt, 1)]||
+'		sql_stmt:= ''INSERT INTO ''||p_table||'' VALUES ('||bind_list||') /* Partition: ''||p_value||'' */'';'||E'\n'||
+'--		PERFORM rif40_log_pkg.rif40_log(''DEBUG2'', '''||quote_ident(l_table||'_insert')||''','||E'\n'||
+'--			''SQL> %; rec: %'', sql_stmt::VARCHAR, rec::VARCHAR);'||E'\n'||
+'		EXECUTE sql_stmt USING '||rec_list||';'||E'\n'||
 '	EXCEPTION'||E'\n'||
 '		WHEN undefined_table /* e.g. 42p01: relation "rif40.rif40_population_europe_1991" does not exist */ THEN'||E'\n'||
 '			PERFORM rif40_log_pkg.rif40_log(''INFO'', '''||quote_ident(l_table||'_insert')||''','||E'\n'||
@@ -310,9 +347,7 @@ SELECT year AS value,
 '--'||E'\n'||
 '-- Re-insert failed row'||E'\n'||
 '--'||E'\n'||
-'--			sql_stmt:=''INSERT INTO ''||p_table||'' VALUES (NEW.*) /* Partition: ''||p_value||'' Attempt: 2 */'';'||E'\n'||
-'			sql_stmt:=''SELECT ''||p_table||''_ins(); /* Partition: ''||p_value||'' Attempt: 2 */'';'||E'\n'||
-'			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);'||E'\n'||
+'			EXECUTE sql_stmt USING '||rec_list||';'||E'\n'||
 '			RETURN NEW;'||E'\n'||
 '		WHEN others THEN'||E'\n'||
 '			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;'||E'\n'||
@@ -334,7 +369,7 @@ SELECT year AS value,
 -- Add trigger to existing table
 --
 	ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE TRIGGER '||quote_ident(l_table||'_insert')||E'\n'||
-'  BEFORE INSERT OR UPDATE ON '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||
+'  BEFORE INSERT ON '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||
 '  FOR EACH ROW'||E'\n'||
 '  EXECUTE PROCEDURE '||quote_ident(l_table||'_insert')||'()';
 	ddl_stmt[array_length(ddl_stmt, 1)+1]:='COMMENT ON TRIGGER '||quote_ident(l_table||'_insert')||E'\n'||
@@ -388,13 +423,13 @@ Returns:	Nothing
 Description:	Create range partition schema.table_<value> on column <column> value <value>, inheriting from <mnaster table>.
 		Comment columns
 
-Runs as RIF40 (so can create partitions)
+Runs as RIF40 (so can create partitiol_tablens)
 
 Generates the following SQL to create a partition>
 	
 CREATE TABLE sahsuland_cancer_1989 (
  CONSTRAINT sahsuland_cancer_1989_ck CHECK (year::text = '1989'::text)
-) INHERITS (sahsuland_cancer);
+) INHERITS (sahsuland_cancer);l_table
 COMMENT ON TABLE sahsuland_cancer_1989 IS 'Range partition: sahsuland_cancer_1989 for value 1989 on column: year; master: rif40.sahsuland_cancer';
 COMMENT ON COLUMN sahsuland_cancer_1989.age_sex_group IS 'Age sex group';
 COMMENT ON COLUMN sahsuland_cancer_1989.icd IS 'ICD';
@@ -427,9 +462,19 @@ DECLARE
 		  FROM b
 			LEFT OUTER JOIN pg_description c ON (c.objoid = b.oid AND c.objsubid = b.ordinal_position)
 		 ORDER BY 1;	
+	c3rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR
+		SELECT *
+	          FROM information_schema.columns
+	         WHERE table_schema = l_schema
+	           AND table_name   = l_table
+	         ORDER BY ordinal_position;
+--
+	c2_rec 			RECORD;
 	c1_rec RECORD;
+	c3_rec RECORD;
 --
 	ddl_stmt	VARCHAR[];
+	rec_list 	VARCHAR;
 --
 	error_message VARCHAR;
 	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
@@ -465,22 +510,6 @@ BEGIN
 		ddl_stmt[array_length(ddl_stmt, 1)+1]:='COMMENT ON COLUMN '||quote_ident(partition_table)||'.'||c1_rec.column_name||
 		' IS '''||c1_rec.description||'''';
 	END LOOP;
---
---  Create the partition INSERT function
---
-	ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE OR REPLACE FUNCTION  '||quote_ident(l_schema)||'.'||quote_ident(partition_table||'_ins')||'()'||E'\n'||
-'  RETURNS trigger AS'||E'\n'||
-'$BODY$'||E'\n'||
-'DECLARE'||E'\n'||
-'BEGIN'||E'\n'||
-'	INSERT INTO '||quote_ident(l_schema)||'.'||quote_ident(partition_table)||' VALUES (NEW.*);'||E'\n'||
-'	RETURN NEW;'||E'\n'||
-'END;'||E'\n'||
-'$BODY$'||E'\n'||
-'LANGUAGE plpgsql;';
-	ddl_stmt[array_length(ddl_stmt, 1)+1]:='COMMENT ON FUNCTION '||quote_ident(l_schema)||'.'||quote_ident(partition_table||'_ins')||'() IS ''INSERT function for partition when called from master table INSERT trigger function''';
-	ddl_stmt[array_length(ddl_stmt, 1)+1]:='GRANT EXECUTE ON FUNCTION '||quote_ident(l_schema)||'.'||quote_ident(partition_table||'_ins')||'() TO rif_user';
-	ddl_stmt[array_length(ddl_stmt, 1)+1]:='GRANT EXECUTE ON FUNCTION '||quote_ident(l_schema)||'.'||quote_ident(partition_table||'_ins')||'() TO rif_manager';
 --
 -- Run
 --
