@@ -153,10 +153,11 @@ COMMENT ON TRIGGER sahsuland_cancer_insert
 
 INSERT INTO sahsuland_cancer
  SELECT * FROM rif40_range_partition -* Temporary table *- ORDER BY year;
-INSERT INTO sahsuland_cancer_1989 VALUES (NEW.*) -* Partition: 1989 *-;
+EXECUTE 'INSERT INTO sahsuland_pop_1990 VALUES ($1, $2, $3, $4, $5, $6, $7) -* Partition: 1990 -/' USING new.year, ...;
 
-* If table is a numerator, clusterl_table
+* If table is a numerator, cluster
 
+* Check number of rows match original, truncate rif40_range_partition temporary table
 * Re-anaylse
 
  */
@@ -168,17 +169,57 @@ DECLARE
 	         WHERE table_schema = l_schema
 	           AND table_name   = l_table
 	         ORDER BY ordinal_position;
+	c3gangep CURSOR(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR) FOR
+		SELECT n.nspname AS schema_name, t.relname AS table_name, 
+		       i.relname AS index_name, array_to_string(array_agg(a.attname), ', ') AS column_names, ix.indisprimary
+		 FROM pg_class t, pg_class i, pg_index ix, pg_attribute a, pg_namespace n
+		 WHERE t.oid          = ix.indrelid
+		   AND i.oid          = ix.indexrelid
+		   AND a.attrelid     = t.oid
+		   AND a.attnum       = ANY(ix.indkey)
+		   AND t.relkind      = 'r'
+		   AND ix.indisunique = TRUE
+		   AND t.relnamespace = n.oid 
+		   AND n.nspname      = l_schema
+		   AND t.relname      = l_table
+		   AND a.attname      != l_column
+		 GROUP BY n.nspname, t.relname, i.relname, ix.indisprimary
+		 ORDER BY n.nspname, t.relname, i.relname, ix.indisprimary DESC;		
+	c4gangep CURSOR(l_table VARCHAR) FOR
+		SELECT table_name
+	       	  FROM rif40_tables
+	       	 WHERE isindirectdenominator = 1 
+		   AND table_name            = UPPER(l_table);
+	c5gangep CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR
+		SELECT nmsp_parent.nspname AS parent_schema,
+	   	       parent.relname      AS master_table,
+		       nmsp_child.nspname  AS partition_schema,
+		       child.relname       AS partition
+		  FROM pg_inherits, pg_class parent, pg_class child, pg_namespace nmsp_parent, pg_namespace nmsp_child 
+		 WHERE pg_inherits.inhparent = parent.oid
+		   AND pg_inherits.inhrelid  = child.oid
+		   AND nmsp_parent.oid       = parent.relnamespace 
+		   AND nmsp_child.oid        = child.relnamespace
+	       	   AND parent.relname        = l_table 
+		   AND nmsp_parent.nspname   = l_schema;
 --
 	c2_rec 			RECORD;
+	c3_rec 			RECORD;
+	c3a_rec 		RECORD;
+	c4_rec 			RECORD;
+	c5_rec 			RECORD;
 	sql_stmt 		VARCHAR;
 	rec_list		VARCHAR;
 	bind_list		VARCHAR;
 	ddl_stmt 		VARCHAR[];
 	num_partitions		INTEGER;
+	total_rows		INTEGER;
+	n_num_partitions	INTEGER;
+	n_total_rows		INTEGER;
 	l_rows			INTEGER:=0;
 	table_length		INTEGER:=0;
 	i			INTEGER:=0;
-	name_length_limit	INTEGER:=30;	/* You may want to set this higher */
+	name_length_limit	INTEGER:=40;	/* You may want to set this higher */
 	part_test_rec		RECORD;
 --
 	error_message 		VARCHAR;
@@ -195,10 +236,10 @@ BEGIN
 -- Check if table is valid
 --
 	BEGIN
-		sql_stmt:='SELECT COUNT(DISTINCT('||quote_ident(l_column)||')) AS total FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||' LIMIT 1'; 
+		sql_stmt:='SELECT COUNT(DISTINCT('||quote_ident(l_column)||')) AS num_partitions, COUNT('||quote_ident(l_column)||') AS total_rows FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||' LIMIT 1'; 
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_range_partition', 'SQL> %;', sql_stmt::VARCHAR);
 		OPEN c1gangep FOR EXECUTE sql_stmt;
-		FETCH c1gangep INTO num_partitions;
+		FETCH c1gangep INTO num_partitions, total_rows;
 		GET DIAGNOSTICS l_rows = ROW_COUNT;
 		CLOSE c1gangep;
 		
@@ -213,7 +254,7 @@ BEGIN
 	END;
 --
 -- Check table name length - must be 25 chars or less (assuming the limit is 30)
---
+--rif40_range_partition
 	table_length:=length(quote_ident(l_table));
 	IF table_length > name_length_limit-5 THEN
 		PERFORM rif40_log_pkg.rif40_error(-20997, 'rif40_range_partition', 
@@ -273,7 +314,7 @@ SELECT year AS value,
 --
 -- Copy to temp table, truncate (dont panic - Postgres DDL is part of a transaction)
 --
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_range_partition', 'Copy data to temporary table: %.%', 
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_range_partition', 'Copy data to temporary table fron: %.%', 
 			l_schema::VARCHAR, l_table::VARCHAR);
 		ddl_stmt[1]:='CREATE TEMPORARY TABLE rif40_range_partition AS SELECT * FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table);
 		ddl_stmt[array_length(ddl_stmt, 1)+1]:='TRUNCATE TABLE '||quote_ident(l_schema)||'.'||quote_ident(l_table);
@@ -332,8 +373,8 @@ SELECT year AS value,
 	END LOOP;
 	ddl_stmt[array_length(ddl_stmt, 1)]:=ddl_stmt[array_length(ddl_stmt, 1)]||
 '		sql_stmt:= ''INSERT INTO ''||p_table||'' VALUES ('||bind_list||') /* Partition: ''||p_value||'' */'';'||E'\n'||
-'--		PERFORM rif40_log_pkg.rif40_log(''DEBUG2'', '''||quote_ident(l_table||'_insert')||''','||E'\n'||
-'--			''SQL> %; rec: %'', sql_stmt::VARCHAR, rec::VARCHAR);'||E'\n'||
+'--		PERFORM rif40_log_pkg.rif40_log(''DEBUG3'', '''||quote_ident(l_table||'_insert')||''','||E'\n'||
+'--			''Row N SQL> EXECUTE ''''%'''' USING '||rec_list||'; /* rec: % */'', sql_stmt::VARCHAR, NEW.*::VARCHAR);'||E'\n'||
 '		EXECUTE sql_stmt USING '||rec_list||';'||E'\n'||
 '	EXCEPTION'||E'\n'||
 '		WHEN undefined_table /* e.g. 42p01: relation "rif40.rif40_population_europe_1991" does not exist */ THEN'||E'\n'||
@@ -345,10 +386,12 @@ SELECT year AS value,
 '--'||E'\n'||
 '                       PERFORM rif40_sql_pkg._rif40_range_partition_create('''||l_schema||''', '''||l_table||''', p_table, '''||l_column||''', p_value);'||E'\n'||
 '--'||E'\n'||
-'-- Re-insert failed row'||E'\n'||
+'-- Re-insert failed first row'||E'\n'||
 '--'||E'\n'||
+'			PERFORM rif40_log_pkg.rif40_log(''DEBUG1'', '''||quote_ident(l_table||'_insert')||''','||E'\n'||
+'				''Row 1 SQL> EXECUTE ''''%'''' USING '||rec_list||'; /* rec: % */'', sql_stmt::VARCHAR, NEW.*::VARCHAR);'||E'\n'||
 '			EXECUTE sql_stmt USING '||rec_list||';'||E'\n'||
-'			RETURN NEW;'||E'\n'||
+'			RETURN NULL;'||E'\n'||
 '		WHEN others THEN'||E'\n'||
 '			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;'||E'\n'||
 '			error_message:='''||quote_ident(l_table||'_insert')||'() caught: ||SQLSTATE::VARCHAR''||E''\n''||SQLERRM::VARCHAR||'' in SQL (see previous trapped error)''||E''\n''||''Detail: ''||''(''||SQLSTATE||'') ''||v_detail::VARCHAR||'' '';'||E'\n'|| 
@@ -357,7 +400,7 @@ SELECT year AS value,
 '			RAISE;'||E'\n'||
 '	END;'||E'\n'||
 '--'||E'\n'||
-'	RETURN NEW;'||E'\n'||
+'	RETURN NULL /* You must return NULL or you will INSERT into the master table... */;'||E'\n'||
 'END;'||E'\n'||
 '$BODY$'||E'\n'||
 '  LANGUAGE plpgsql';
@@ -376,36 +419,127 @@ SELECT year AS value,
 		' ON '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||
 		' IS ''Partition INSERT trigger by '||quote_ident(l_column)||' for: '||quote_ident(l_schema)||'.'||quote_ident(l_table)||
 		'; calls '||quote_ident(l_table||'_insert')||'(). Automatically creates partitions''';
+--
+-- GET PK/unique index column
+--
+	OPEN c3gangep(l_schema, l_table, l_column);
+	FETCH c3gangep INTO c3_rec;
+	CLOSE c3gangep;
 -- 
 -- Bring data back, order by range partition, primary key
 --
 	IF l_rows > 0 THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_range_partition', 'Restore data from temporary table: %.%', 
 			l_schema::VARCHAR, l_table::VARCHAR);
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:='INSERT INTO '||quote_ident(l_table)||E'\n'||
-			' SELECT * FROM rif40_range_partition /* Temporary table */ ORDER BY year';
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:='DROP TABLE rif40_range_partition /* Temporary table */';
+		IF c3_rec.column_names IS NOT NULL THEN
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:='INSERT INTO '||quote_ident(l_table)||E'\n'||
+				' SELECT * FROM rif40_range_partition /* Temporary table */ ORDER BY '||l_column||' /* Partition column */, '||
+					c3_rec.column_names||' /* [Rest of ] primary key */';
+		ELSE
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:='INSERT INTO '||quote_ident(l_table)||E'\n'||
+				' SELECT * FROM rif40_range_partition /* Temporary table */ ORDER BY '||l_column||' /* Partition column */, '||
+					' /* NO [Rest of ] primary key - no unique index found */';
+		END IF;
 	END IF;
 
 --
 -- If table is a numerator, cluster
 --
-
---
--- Re-anaylse
---
-	ddl_stmt[array_length(ddl_stmt, 1)+1]:='ANALYZE '||quote_ident(l_schema)||'.'||quote_ident(l_table);
+	OPEN c4gangep(l_table);
+	FETCH c4gangep INTO c4_rec;
+	CLOSE c4gangep;
+-- 
+	IF c4_rec.table_name IS NOT NULL AND c3_rec.index_name IS NOT NULL THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_range_partition', 'Rebuild master cluster: %.%', 
+			l_schema::VARCHAR, l_table::VARCHAR);
+		ddl_stmt[array_length(ddl_stmt, 1)+1]:='CLUSTER VERBOSE '||quote_ident(l_schema)||'.'||quote_ident(l_table)||
+			' USING '||c3_rec.index_name;
+	END IF;
 
 --
 -- Run
 --
 	PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
 
+--
+-- Check number of rows match original, truncate rif40_range_partition temporary table
+--
+	sql_stmt:='SELECT COUNT(DISTINCT('||quote_ident(l_column)||')) AS num_partitions, COUNT('||quote_ident(l_column)||') AS total_rows FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||' LIMIT 1'; 
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_range_partition', 'SQL> %;', sql_stmt::VARCHAR);
+	OPEN c1gangep FOR EXECUTE sql_stmt;
+	FETCH c1gangep INTO n_num_partitions, n_total_rows;
+	CLOSE c1gangep;
+--
+	IF num_partitions = n_num_partitions AND total_rows = n_total_rows THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_range_partition', 'Partition of: %.% created % partitions, % rows total', 
+			l_schema::VARCHAR, l_table::VARCHAR, num_partitions::VARCHAR, total_rows::VARCHAR);
+	ELSIF total_rows != n_total_rows THEN
+		PERFORM rif40_log_pkg.rif40_error(-20190, 'rif40_range_partition', 'Partition of: %.% rows mismatch: expected: %, got % rows total', 
+			l_schema::VARCHAR, l_table::VARCHAR, total_rows::VARCHAR, n_total_rows::VARCHAR);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_error(-20191, 'rif40_range_partition', 'Partition of: %.% partition mismatch: expected: %, got % partition total', 
+			l_schema::VARCHAR, l_table::VARCHAR, num_partitions::VARCHAR, n_num_partitions::VARCHAR);
+	END IF;
+--
+	ddl_stmt:=NULL;
+--
+-- Cluster partitions
+-- 
+	i:=1;
+	IF c4_rec.table_name IS NOT NULL AND c3_rec.index_name IS NOT NULL THEN
+		FOR c5_rec IN c5gangep(l_schema, l_table) LOOP
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_range_partition', 'Cluster: %.%', 
+				c5_rec.partition_schema::VARCHAR, c5_rec.partition::VARCHAR);
+--
+-- GET PK/unique index column
+--
+			OPEN c3gangep(c5_rec.partition_schema, c5_rec.partition, l_column);	
+			FETCH c3gangep INTO c3a_rec;
+			CLOSE c3gangep;
+			ddl_stmt[i]:='CLUSTER VERBOSE '||c5_rec.partition_schema||'.'||c5_rec.partition||
+				' USING '||c3a_rec.index_name;
+			i:=i+1;
+		END LOOP;
+	END IF;
+--
+-- Re-anaylse
+--
+	ddl_stmt[i]:='ANALYZE VERBOSE '||quote_ident(l_schema)||'.'||quote_ident(l_table);
+--
+-- Drop
+--
+	ddl_stmt[array_length(ddl_stmt, 1)+1]:='DROP TABLE rif40_range_partition /* Temporary table */';
+
+--
+-- Run 2
+--
+	PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
+
+	IF c4_rec.table_name IS NOT NULL AND c3_rec.index_name IS NOT NULL THEN
+		RAISE plpgsql_error;
+	END IF;
 END;
 $func$ 
 LANGUAGE plpgsql;
 
-COMMENT ON FUNCTION rif40_sql_pkg.rif40_range_partition(VARCHAR,VARCHAR, VARCHAR) IS '';
+COMMENT ON FUNCTION rif40_sql_pkg.rif40_range_partition(VARCHAR,VARCHAR, VARCHAR) IS 'Function: 	rif40_range_partition()
+Parameters:	Schema, table, column
+Returns:	Nothing
+Description:	Automatic range partition schema.table on column
+
+* Must be rif40 or have rif_user or rif_manager role
+* Check if table is valid
+* Check table name length - must be 25 chars or less (assuming the limit is 30)
+* Check data is partitionable 
+* Copy to temp table, truncate (dont panic - Postgres DDL is part of a transaction)
+* Do not partition if table has only one distinct row
+* Do not partition if table has no rows
+* Create auto range trigger function
+* Add trigger to existing table
+* Bring data back, order by range partition, primary key
+* If table is a numerator, cluster
+* Check number of rows match original, truncate rif40_range_partition temporary table
+* Re-anaylse';
 
 CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_range_partition_create(
 	l_schema 	VARCHAR, 
@@ -429,7 +563,7 @@ Generates the following SQL to create a partition>
 	
 CREATE TABLE sahsuland_cancer_1989 (
  CONSTRAINT sahsuland_cancer_1989_ck CHECK (year::text = '1989'::text)
-) INHERITS (sahsuland_cancer);l_table
+) INHERITS (sahsuland_cancer);
 COMMENT ON TABLE sahsuland_cancer_1989 IS 'Range partition: sahsuland_cancer_1989 for value 1989 on column: year; master: rif40.sahsuland_cancer';
 COMMENT ON COLUMN sahsuland_cancer_1989.age_sex_group IS 'Age sex group';
 COMMENT ON COLUMN sahsuland_cancer_1989.icd IS 'ICD';
