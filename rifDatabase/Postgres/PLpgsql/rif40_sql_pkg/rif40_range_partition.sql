@@ -648,11 +648,79 @@ DECLARE
 		   AND a.attname      != l_column
 		 GROUP BY n.nspname, t.relname, i.relname, ix.indisprimary, ix.indisunique, i.oid
 		 ORDER BY n.nspname, t.relname, i.relname, ix.indisprimary DESC, ix.indisunique DESC, i.oid;
+	c5rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get foreign keys */
+		SELECT con.contype,
+		       con.conname,
+		       cl.relname AS parent_table, 
+		       CASE 
+				WHEN con.oid IS NOT NULL THEN 'ALTER TABLE '||con.schema_name||'.'||con.table_name||
+					' ADD CONSTRAINT '||con.conname||' '||pg_get_constraintdef(con.oid) 
+				ELSE NULL 
+		       END AS constraint_def, 
+		       array_to_string(array_agg(child_att.attname), ', ') AS child_columns, 
+		       array_to_string(array_agg(parent_att.attname), ', ') AS parent_columns
+		  FROM (
+			SELECT unnest(con1.conkey) as parent, 
+		               unnest(con1.confkey) as child, 
+		               con1.contype, 
+		               con1.conname, 
+		               con1.confrelid, 
+		               con1.conrelid,
+		               con1.oid,
+ 		               cl.relname AS table_name,
+			       ns.nspname AS schema_name  
+			    FROM pg_class cl
+			        LEFT OUTER JOIN pg_namespace ns ON (cl.relnamespace = ns.oid)
+		        	LEFT OUTER JOIN pg_constraint con1 ON (con1.conrelid = cl.oid)
+			   WHERE cl.relname   = l_table
+ 		     	     AND ns.nspname   = l_schema
+			     AND con1.contype = 'f'
+		   ) con /* Foreign keys */
+		   LEFT OUTER JOIN pg_attribute parent_att ON
+		       (parent_att.attrelid = con.confrelid AND parent_att.attnum = con.child)
+		   LEFT OUTER JOIN pg_class cl ON
+		       (cl.oid = con.confrelid)
+		   LEFT OUTER JOIN pg_attribute child_att ON
+ 		      (child_att.attrelid = con.conrelid AND child_att.attnum = con.parent)
+		 GROUP BY con.contype,
+		       con.conname,
+ 		       cl.relname, 
+		       CASE 
+				WHEN con.oid IS NOT NULL THEN 'ALTER TABLE '||con.schema_name||'.'||con.table_name||
+					' ADD CONSTRAINT '||con.conname||' '||pg_get_constraintdef(con.oid) 
+				ELSE NULL 
+		       END;
+	c6rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get trigger, unique, check and exclusion constraints */
+		SELECT CASE
+				WHEN con.contype = 'x' THEN 'Exclusion'
+				WHEN con.contype = 'c' THEN 'Check'
+				WHEN con.contype = 't' THEN 'Trigger'
+				WHEN con.contype = 'u' THEN 'Unique'
+				ELSE '???????'
+		       END AS constraint_type,	
+	               con.conname, 
+	               con.oid,
+		       ns.nspname AS schema_name,
+		       cl.relname AS table_name,
+		       CASE 
+				WHEN con.oid IS NOT NULL THEN 'ALTER TABLE '||ns.nspname||'.'||cl.relname||
+					' ADD CONSTRAINT '||con.conname||' '||pg_get_constraintdef(con.oid) 
+				ELSE NULL 
+		       END AS constraint_def
+		  FROM pg_constraint con
+		        LEFT OUTER JOIN pg_namespace ns ON (con.connamespace = ns.oid)
+		        LEFT OUTER JOIN pg_class cl ON (con.conrelid = cl.oid)
+		 WHERE ns.nspname   = l_schema
+		   AND cl.relname   = l_table
+		   AND con.contype IN  ('x', 'c', 't', 'u') /* trigger, unique, check and exclusion constraints */;
+
 --
 	c1_rec 		RECORD;
 	c2_rec 		RECORD;
 	c3_rec 		RECORD;
 	c4_rec 		RECORD;
+	c5_rec 		RECORD;
+	c6_rec 		RECORD;
 --
 	ddl_stmt	VARCHAR[];
 	rec_list 	VARCHAR;
@@ -719,11 +787,58 @@ BEGIN
 --
 -- Add foreign keys
 --
+	i:=0;
+	FOR c5_rec IN c5rpcr(l_schema, master_table) LOOP
+		I:=i+1;
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'FK Constraint[%] % on: %.%(%)', 
+			i::VARCHAR,
+			c5_rec.conname::VARCHAR, 
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR, 
+			c5_rec.child_column::VARCHAR);
+		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c5_rec.constraint_def, master_table, partition_table);
+	END LOOP;
+	IF i > 0 THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Added % foreign keys to partition: %.%', 
+			i::VARCHAR,
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Added no foreign keys to partition: %.%', 
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR);
+	END IF;
 
 --
--- Add triggers
+-- Add trigger, unique, check and exclusion constraints
 --
+	i:=0;
+	FOR c6_rec IN c6rpcr(l_schema, master_table) LOOP
+		I:=i+1;
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', '% constraint[%] % on: %.%(%)', 
+			c6_rec.constraint_type::VARCHAR,
+			i::VARCHAR,
+			c6_rec.conname::VARCHAR, 
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR, 
+			c6_rec.child_column::VARCHAR);
+		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c6_rec.constraint_def, master_table, partition_table);
+	END LOOP;
+	IF i > 0 THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Added % trigger, unique, check and exclusion constraints to partition: %.%', 
+			i::VARCHAR,
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Added no trigger, unique, check and exclusion constraints to partition: %.%', 
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR);
+	END IF;
 
+--
+-- Validation triggers
+--
+	
 --
 -- Add grants
 --
