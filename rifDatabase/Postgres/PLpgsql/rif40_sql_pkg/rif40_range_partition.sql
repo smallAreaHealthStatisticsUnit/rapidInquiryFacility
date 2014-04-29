@@ -163,13 +163,13 @@ EXECUTE 'INSERT INTO sahsuland_pop_1990 VALUES ($1, $2, $3, $4, $5, $6, $7) -* P
  */
 DECLARE
  	c1gangep 		REFCURSOR;
-	c2gangep CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR
+	c2gangep CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR			/* List of columns in original order */
 		SELECT *
 	          FROM information_schema.columns
 	         WHERE table_schema = l_schema
 	           AND table_name   = l_table
 	         ORDER BY ordinal_position;
-	c3gangep CURSOR(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR) FOR
+	c3gangep CURSOR(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR) FOR /* GET PK/unique index column */
 		SELECT n.nspname AS schema_name, t.relname AS table_name, 
 		       i.relname AS index_name, array_to_string(array_agg(a.attname), ', ') AS column_names, ix.indisprimary
 		 FROM pg_class t, pg_class i, pg_index ix, pg_attribute a, pg_namespace n
@@ -185,12 +185,12 @@ DECLARE
 		   AND a.attname      != l_column
 		 GROUP BY n.nspname, t.relname, i.relname, ix.indisprimary
 		 ORDER BY n.nspname, t.relname, i.relname, ix.indisprimary DESC;		
-	c4gangep CURSOR(l_table VARCHAR) FOR
+	c4gangep CURSOR(l_table VARCHAR) FOR					/* Is table indirect denominator */
 		SELECT table_name
 	       	  FROM rif40_tables
 	       	 WHERE isindirectdenominator = 1 
 		   AND table_name            = UPPER(l_table);
-	c5gangep CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR
+	c5gangep CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR			/* List of partitions */
 		SELECT nmsp_parent.nspname AS parent_schema,
 	   	       parent.relname      AS master_table,
 		       nmsp_child.nspname  AS partition_schema,
@@ -219,6 +219,7 @@ DECLARE
 	l_rows			INTEGER:=0;
 	table_length		INTEGER:=0;
 	i			INTEGER:=0;
+	warnings		INTEGER:=0;
 	name_length_limit	INTEGER:=40;	/* You may want to set this higher */
 	part_test_rec		RECORD;
 --
@@ -254,7 +255,7 @@ BEGIN
 	END;
 --
 -- Check table name length - must be 25 chars or less (assuming the limit is 30)
---rif40_range_partition
+--
 	table_length:=length(quote_ident(l_table));
 	IF table_length > name_length_limit-5 THEN
 		PERFORM rif40_log_pkg.rif40_error(-20997, 'rif40_range_partition', 
@@ -496,11 +497,28 @@ SELECT year AS value,
 			OPEN c3gangep(c5_rec.partition_schema, c5_rec.partition, l_column);	
 			FETCH c3gangep INTO c3a_rec;
 			CLOSE c3gangep;
-			ddl_stmt[i]:='CLUSTER VERBOSE '||c5_rec.partition_schema||'.'||c5_rec.partition||
-				' USING '||c3a_rec.index_name;
-			i:=i+1;
+			IF c3a_rec.index_name IS NOT NULL THEN
+				ddl_stmt[i]:='CLUSTER VERBOSE '||c5_rec.partition_schema||'.'||c5_rec.partition||
+					' USING '||c3a_rec.index_name;
+				i:=i+1;
+			ELSE
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_range_partition', 
+					'Unable to cluster: %.%:%; no unique index or primary key found', 
+					c5_rec.partition_schema::VARCHAR	/* Schema */, 
+					l_table::VARCHAR 			/* Master table */,
+					c5_rec.partition::VARCHAR		/* Partition */);
+				warnings:=warnings+1;
+			END IF;
 		END LOOP;
 	END IF;
+--
+	IF warnings > 0 THEN
+                PERFORM rif40_log_pkg.rif40_error(-19005, 'rif40_range_partition',
+			'Unable to cluster: %.%; no unique indexes or primary keys found for % partitions', 
+			l_schema::VARCHAR	/* Schema */, 
+			l_table::VARCHAR 	/* Master table */,
+			warnings::VARCHAR	/* Warnings */);
+		END IF;		
 --
 -- Re-anaylse
 --
@@ -564,6 +582,13 @@ Generates the following SQL to create a partition>
 CREATE TABLE sahsuland_cancer_1989 (
  CONSTRAINT sahsuland_cancer_1989_ck CHECK (year::text = '1989'::text)
 ) INHERITS (sahsuland_cancer);
+CREATE INDEX sahsuland_cancer_1989_age_sex_group ON sahsuland_cancer_1989 USING btree (age_sex_group);
+CREATE INDEX sahsuland_cancer_1989_icd ON sahsuland_cancer_1989 USING btree (icd);
+CREATE INDEX sahsuland_cancer_1989_level1 ON sahsuland_cancer_1989 USING btree (level1);
+CREATE INDEX sahsuland_cancer_1989_level2 ON sahsuland_cancer_1989 USING btree (level2);
+CREATE INDEX sahsuland_cancer_1989_level3 ON sahsuland_cancer_1989 USING btree (level3);
+CREATE INDEX sahsuland_cancer_1989_level4 ON sahsuland_cancer_1989 USING btree (level4);
+CREATE UNIQUE INDEX sahsuland_cancer_1989_pk ON sahsuland_cancer_1989 USING btree (year, level4, age_sex_group, icd);
 COMMENT ON TABLE sahsuland_cancer_1989 IS 'Range partition: sahsuland_cancer_1989 for value 1989 on column: year; master: rif40.sahsuland_cancer';
 COMMENT ON COLUMN sahsuland_cancer_1989.age_sex_group IS 'Age sex group';
 COMMENT ON COLUMN sahsuland_cancer_1989.icd IS 'ICD';
@@ -602,13 +627,37 @@ DECLARE
 	         WHERE table_schema = l_schema
 	           AND table_name   = l_table
 	         ORDER BY ordinal_position;
+	c4rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR) FOR /* GET PK/unique index column */
+		SELECT n.nspname AS schema_name, 
+		       t.relname AS table_name, 
+		       i.relname AS index_name, 
+		       array_to_string(array_agg(a.attname), ', ') AS column_names, 
+		       pg_get_indexdef(i.oid) AS index_def,
+		       CASE WHEN ix.indisprimary THEN pg_get_constraintdef(i.oid) ELSE NULL END AS constraint_def,
+		       ix.indisprimary,
+		       ix.indisunique
+		 FROM pg_class t, pg_class i, pg_index ix, pg_attribute a, pg_namespace n
+		 WHERE t.oid          = ix.indrelid
+		   AND i.oid          = ix.indexrelid
+		   AND a.attrelid     = t.oid
+		   AND a.attnum       = ANY(ix.indkey)
+		   AND t.relkind      = 'r'
+		   AND t.relnamespace = n.oid 
+		   AND n.nspname      = l_schema
+		   AND t.relname      = l_table
+		   AND a.attname      != l_column
+		 GROUP BY n.nspname, t.relname, i.relname, ix.indisprimary, ix.indisunique, i.oid
+		 ORDER BY n.nspname, t.relname, i.relname, ix.indisprimary DESC, ix.indisunique DESC, i.oid;
 --
-	c2_rec 			RECORD;
-	c1_rec RECORD;
-	c3_rec RECORD;
+	c1_rec 		RECORD;
+	c2_rec 		RECORD;
+	c3_rec 		RECORD;
+	c4_rec 		RECORD;
 --
 	ddl_stmt	VARCHAR[];
 	rec_list 	VARCHAR;
+--
+	i		INTEGER:=0;
 --
 	error_message VARCHAR;
 	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
@@ -635,6 +684,50 @@ BEGIN
 	ddl_stmt[1]:='CREATE TABLE '||quote_ident(partition_table)||' ('||E'\n'||
 		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('||quote_ident(l_column)||'::text = '''||l_value||'''::text)'||E'\n'||
 		') INHERITS ('||quote_ident(master_table)||')';
+
+--
+-- Add indexes, primary key
+--
+	FOR c4_rec IN c4rpcr(l_schema, master_table, l_column) LOOP
+		I:=i+1;
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Index[%] % on: %.%(%); PK: %, Unique: %', 
+			i::VARCHAR,
+			c4_rec.index_name::VARCHAR, 
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR, 
+			c4_rec.column_names::VARCHAR, 
+			c4_rec.indisprimary::VARCHAR, 
+			c4_rec.indisunique::VARCHAR);
+--		
+		IF c4_rec.indisunique AND c4_rec.indisprimary THEN
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c4_rec.constraint_def::VARCHAR, master_table, partition_table);
+		ELSE
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c4_rec.index_def::VARCHAR, master_table, partition_table);
+		END IF;
+	END LOOP;
+	IF i > 0 THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Added % indexes to partition: %.%', 
+			i::VARCHAR,
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_range_partition_create', 'Added no indexes to partition: %.%', 
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR);
+	END IF;
+
+--
+-- Add foreign keys
+--
+
+--
+-- Add triggers
+--
+
+--
+-- Add grants
+--
+
 --
 -- Comments
 --
@@ -663,6 +756,13 @@ Generates the following SQL>
 CREATE TABLE sahsuland_cancer_1989 (
  CONSTRAINT sahsuland_cancer_1989_ck CHECK (year::text = ''1989''::text)
 ) INHERITS (sahsuland_cancer);
+CREATE INDEX sahsuland_cancer_1989_age_sex_group ON sahsuland_cancer_1989 USING btree (age_sex_group);
+CREATE INDEX sahsuland_cancer_1989_icd ON sahsuland_cancer_1989 USING btree (icd);
+CREATE INDEX sahsuland_cancer_1989_level1 ON sahsuland_cancer_1989 USING btree (level1);
+CREATE INDEX sahsuland_cancer_1989_level2 ON sahsuland_cancer_1989 USING btree (level2);
+CREATE INDEX sahsuland_cancer_1989_level3 ON sahsuland_cancer_1989 USING btree (level3);
+CREATE INDEX sahsuland_cancer_1989_level4 ON sahsuland_cancer_1989 USING btree (level4);
+CREATE UNIQUE INDEX sahsuland_cancer_1989_pk ON sahsuland_cancer_1989 USING btree (year, level4, age_sex_group, icd);
 COMMENT ON TABLE sahsuland_cancer_1989 IS ''Range partition: sahsuland_cancer_1989 for value 1989 on column: year; master: rif40.sahsuland_cancer'';
 COMMENT ON COLUMN sahsuland_cancer_1989.age_sex_group IS ''Age sex group'';
 COMMENT ON COLUMN sahsuland_cancer_1989.icd IS ''ICD'';
