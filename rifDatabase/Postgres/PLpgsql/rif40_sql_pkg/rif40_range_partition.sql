@@ -8,7 +8,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - Create SAHSULAND rif40 exmaple schema
+-- Rapid Enquiry Facility (RIF) - Auto range partitioning functions
 --
 -- Copyright:
 --
@@ -76,6 +76,10 @@ Description:	Automatic range partition schema.table on column
 * Check table name length - must be 25 chars or less (assuming the limit is 30)
 * Check data is partitionable 
 * Copy to temp table, truncate (dont panic - Postgres DDL is part of a transaction)
+
+CREATE TEMPORARY TABLE rif40_range_partition AS SELECT * FROM rif40.sahsuland_cancer;
+TRUNCATE TABLE rif40.sahsuland_cancer;
+
 * Do not partition if table has only one distinct row
 * Do not partition if table has no rows
 * Create auto range trigger function
@@ -139,6 +143,10 @@ $BODY$
   LANGUAGE plpgsql;
 COMMENT ON FUNCTION  rif40.sahsuland_cancer_insert() IS 'Partition INSERT function for geography: SAHSU';
 
+* If debug is enabled add newly created function 
+
+SELECT rif40_log_pkg.rif40_add_to_debug('sahsuland_cancer_insert:DEBUG1');
+
 * Add trigger to existing table
 
 CREATE TRIGGER sahsuland_cancer_insert
@@ -152,13 +160,49 @@ COMMENT ON TRIGGER sahsuland_cancer_insert
 * Bring data back, order by range partition, primary key
 
 INSERT INTO sahsuland_cancer
- SELECT * FROM rif40_range_partition -* Temporary table *- ORDER BY year;
-EXECUTE 'INSERT INTO sahsuland_pop_1990 VALUES ($1, $2, $3, $4, $5, $6, $7) -* Partition: 1990 -/' USING new.year, ...;
+ SELECT * FROM rif40_range_partition /- Temporary table -/ ORDER BY year /- Partition column -/, age_sex_group, icd, level4 /- [Rest of ] primary key -/;
 
-* If table is a numerator, cluster
+* The trigger created earlier fires and calls sahsuland_cancer_insert();
+  This then call _rif40_range_partition_create() for the first row in a partition (detected by trapping the undefined_table EXCEPTION 
+  e.g. 42p01: relation "rif40.rif40_population_europe_1991" does not exist 
+
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  _rif40_range_partition_create(): Create range partition: sahsuland_cancer_1989 for value 1989 on column: year; master: rif40.sahsuland_cancer
+
+  The trigger then re-fires to redo the bind insert. NEW.<column name> must be explicitly defined unlike in conventional INSERT triggers
+
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  [DEBUG1] sahsuland_cancer_insert(): Row 1 SQL> EXECUTE 
+'INSERT INTO sahsuland_cancer_1989 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) /- Partition: 1989 -/' 
+USING NEW.year, NEW.age_sex_group, NEW.level1, NEW.level2, NEW.level3, NEW.level4, NEW.icd, NEW.total; 
+/- rec: (1989,100,01,01.008,01.008.006800,01.008.006800.1,1890,2) -/
+
+* If table is a numerator, cluster each partition (not the master table)
+
+CLUSTER VERBOSE rif40.sahsuland_pop_1989 USING sahsuland_pop_1989_pk;
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  clustering "rif40.sahsuland_pop_1989" using sequential scan and sort
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_pop_1989": found 0 removable, 54120 nonremovable row versions in 558 pages
 
 * Check number of rows match original, truncate rif40_range_partition temporary table
+
+SELECT COUNT(DISTINCT(year)) AS num_partitions, COUNT(year) AS total_rows FROM rif40.sahsuland_cancer LIMIT 1;
+
 * Re-anaylse
+
+ANALYZE VERBOSE rif40.sahsuland_cancer;
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  analyzing "rif40.sahsuland_cancer"
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer": scanned 0 of 0 pages, containing 0 live rows and 0 dead rows; 0 rows in sample, 0 estimated total rows
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  analyzing "rif40.sahsuland_cancer" inheritance tree
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer_1989": scanned 93 of 93 pages, containing 8103 live rows and 0 dead rows; 3523 rows in sample, 8103 estimated total rows
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer_1990": scanned 94 of 94 pages, containing 8244 live rows and 0 dead rows; 3561 rows in sample, 8244 estimated total rows
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer_1991": scanned 95 of 95 pages, containing 8357 live rows and 0 dead rows; 3598 rows in sample, 8357 estimated total rows
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer_1992": scanned 102 of 102 pages, containing 8971 live rows and 0 dead rows; 3864 rows in sample, 8971 estimated total rows
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer_1993": scanned 103 of 103 pages, containing 9052 live rows and 0 dead rows; 3902 rows in sample, 9052 estimated total rows
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer_1994": scanned 103 of 103 pages, containing 8978 live rows and 0 dead rows; 3902 rows in sample, 8978 estimated total rows
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer_1995": scanned 103 of 103 pages, containing 9043 live rows and 0 dead rows; 3902 rows in sample, 9043 estimated total rows
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer_1996": scanned 99 of 99 pages, containing 8707 live rows and 0 dead rows; 3748 rows in sample, 8707 estimated total rows
+
+* Drop temporary table:
+
+DROP TABLE rif40_range_partition /- Temporary table -/;
 
  */
 DECLARE
@@ -408,7 +452,12 @@ SELECT year AS value,
 
 	ddl_stmt[array_length(ddl_stmt, 1)+1]:='COMMENT ON FUNCTION  '||quote_ident(l_schema)||'.'||quote_ident(l_table||'_insert')||'()'||
        		' IS ''Partition INSERT function for geography: SAHSU''';
-	ddl_stmt[array_length(ddl_stmt, 1)+1]:='SELECT rif40_log_pkg.rif40_add_to_debug('''||quote_ident(l_table||'_insert')||':DEBUG1'')';
+--
+-- If debug is enabled add newly created function 
+--
+	IF rif40_log_pkg.rif40_is_debug_enabled('rif40_range_partition', 'DEBUG1') THEN
+		ddl_stmt[array_length(ddl_stmt, 1)+1]:='SELECT rif40_log_pkg.rif40_add_to_debug('''||quote_ident(l_table||'_insert')||':DEBUG1'')';
+	END IF;
 -- 
 -- Add trigger to existing table
 --
@@ -566,7 +615,7 @@ CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_range_partition_create(
 	l_column	VARCHAR, 
 	l_value		VARCHAR)
 RETURNS void
-SECURITY INVOKER
+SECURITY DEFINER
 AS $func$
 /*
 Function: 	_rif40_range_partition_create()
@@ -575,199 +624,27 @@ Returns:	Nothing
 Description:	Create range partition schema.table_<value> on column <column> value <value>, inheriting from <mnaster table>.
 		Comment columns
 
-Runs as RIF40 (so can create partitiol_tablens)
+Runs as RIF40 (so can create partition tables)
 
 Generates the following SQL to create a partition>
 	
 CREATE TABLE sahsuland_cancer_1989 (
  CONSTRAINT sahsuland_cancer_1989_ck CHECK (year::text = '1989'::text)
 ) INHERITS (sahsuland_cancer);
-CREATE INDEX sahsuland_cancer_1989_age_sex_group ON sahsuland_cancer_1989 USING btree (age_sex_group);
-CREATE INDEX sahsuland_cancer_1989_icd ON sahsuland_cancer_1989 USING btree (icd);
-CREATE INDEX sahsuland_cancer_1989_level1 ON sahsuland_cancer_1989 USING btree (level1);
-CREATE INDEX sahsuland_cancer_1989_level2 ON sahsuland_cancer_1989 USING btree (level2);
-CREATE INDEX sahsuland_cancer_1989_level3 ON sahsuland_cancer_1989 USING btree (level3);
-CREATE INDEX sahsuland_cancer_1989_level4 ON sahsuland_cancer_1989 USING btree (level4);
-CREATE UNIQUE INDEX sahsuland_cancer_1989_pk ON sahsuland_cancer_1989 USING btree (year, level4, age_sex_group, icd);
-COMMENT ON TABLE sahsuland_cancer_1989 IS 'Range partition: sahsuland_cancer_1989 for value 1989 on column: year; master: rif40.sahsuland_cancer';
-COMMENT ON COLUMN sahsuland_cancer_1989.age_sex_group IS 'Age sex group';
-COMMENT ON COLUMN sahsuland_cancer_1989.icd IS 'ICD';
-COMMENT ON COLUMN sahsuland_cancer_1989.level1 IS 'level1';
-COMMENT ON COLUMN sahsuland_cancer_1989.level2 IS 'level2';
-COMMENT ON COLUMN sahsuland_cancer_1989.level3 IS 'level3';
-COMMENT ON COLUMN sahsuland_cancer_1989.level4 IS 'level4';
-COMMENT ON COLUMN sahsuland_cancer_1989.total IS 'Total';
-COMMENT ON COLUMN sahsuland_cancer_1989.year IS 'Year';
 
-Then runs the following SQL to create the partition INSERT function>
+Call rif40_sql_pkg._rif40_common_partition_create to:
+
+* Add indexes, primary key
+* Add foreign keys
+* Add trigger, unique, check and exclusion constraints
+* Validation triggers
+* Add grants
+* Table and column comments
 
  */
 DECLARE
-	c1rpcr CURSOR(l_schema VARCHAR, l_master_table VARCHAR) FOR /* Column comment */
-		WITH a AS (
-	 		SELECT table_name, column_name, ordinal_position
-			  FROM information_schema.columns a
-				LEFT OUTER JOIN pg_tables b1 ON 
-					(b1.schemaname = a.table_schema AND a.table_name = b1.tablename) 
-			 WHERE table_schema = l_schema 
-			   AND table_name   = l_master_table
-		), b AS (
-			SELECT table_name, column_name, ordinal_position, b.oid
-  			  FROM a, pg_class b
-			 WHERE b.relowner IN (SELECT oid FROM pg_roles WHERE rolname = l_schema) 
-			   AND b.relname    = a.table_name
-		)
-		SELECT column_name, ordinal_position, c.description
-		  FROM b
-			LEFT OUTER JOIN pg_description c ON (c.objoid = b.oid AND c.objsubid = b.ordinal_position)
-		 ORDER BY 1;	
-	c3rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR
-		SELECT *
-	          FROM information_schema.columns
-	         WHERE table_schema = l_schema
-	           AND table_name   = l_table
-	         ORDER BY ordinal_position;
-	c4rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR) FOR /* GET PK/unique index column */
-		SELECT n.nspname AS schema_name, 
-		       t.relname AS table_name, 
-		       i.relname AS index_name, 
-		       array_to_string(array_agg(a.attname), ', ') AS column_names, 
-		       pg_get_indexdef(i.oid) AS index_def,
-		       CASE WHEN ix.indisprimary THEN pg_get_constraintdef(i.oid) ELSE NULL END AS constraint_def,
-		       ix.indisprimary,
-		       ix.indisunique
-		 FROM pg_class t, pg_class i, pg_index ix, pg_attribute a, pg_namespace n
-		 WHERE t.oid          = ix.indrelid
-		   AND i.oid          = ix.indexrelid
-		   AND a.attrelid     = t.oid
-		   AND a.attnum       = ANY(ix.indkey)
-		   AND t.relkind      = 'r'
-		   AND t.relnamespace = n.oid 
-		   AND n.nspname      = l_schema
-		   AND t.relname      = l_table
-		   AND a.attname      != l_column
-		 GROUP BY n.nspname, t.relname, i.relname, ix.indisprimary, ix.indisunique, i.oid
-		 ORDER BY n.nspname, t.relname, i.relname, ix.indisprimary DESC, ix.indisunique DESC, i.oid;
-	c5rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get foreign keys */
-		SELECT con.contype,
-		       con.conname,
-		       cl.relname AS parent_table, 
-		       CASE 
-				WHEN con.oid IS NOT NULL THEN 'ALTER TABLE '||con.schema_name||'.'||con.table_name||
-					' ADD CONSTRAINT '||con.conname||' '||pg_get_constraintdef(con.oid) 
-				ELSE NULL 
-		       END AS constraint_def, 
-		       array_to_string(array_agg(child_att.attname), ', ') AS child_columns, 
-		       array_to_string(array_agg(parent_att.attname), ', ') AS parent_columns
-		  FROM (
-			SELECT unnest(con1.conkey) as parent, 
-		               unnest(con1.confkey) as child, 
-		               con1.contype, 
-		               con1.conname, 
-		               con1.confrelid, 
-		               con1.conrelid,
-		               con1.oid,
- 		               cl.relname AS table_name,
-			       ns.nspname AS schema_name  
-			    FROM pg_class cl
-			        LEFT OUTER JOIN pg_namespace ns ON (cl.relnamespace = ns.oid)
-		        	LEFT OUTER JOIN pg_constraint con1 ON (con1.conrelid = cl.oid)
-			   WHERE cl.relname   = l_table
- 		     	     AND ns.nspname   = l_schema
-			     AND con1.contype = 'f'
-		   ) con /* Foreign keys */
-		   LEFT OUTER JOIN pg_attribute parent_att ON
-		       (parent_att.attrelid = con.confrelid AND parent_att.attnum = con.child)
-		   LEFT OUTER JOIN pg_class cl ON
-		       (cl.oid = con.confrelid)
-		   LEFT OUTER JOIN pg_attribute child_att ON
- 		      (child_att.attrelid = con.conrelid AND child_att.attnum = con.parent)
-		 GROUP BY con.contype,
-		       con.conname,
- 		       cl.relname, 
-		       CASE 
-				WHEN con.oid IS NOT NULL THEN 'ALTER TABLE '||con.schema_name||'.'||con.table_name||
-					' ADD CONSTRAINT '||con.conname||' '||pg_get_constraintdef(con.oid) 
-				ELSE NULL 
-		       END;
-	c6rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get trigger, unique, check and exclusion constraints */
-		SELECT CASE
-				WHEN con.contype = 'x' THEN 'Exclusion'
-				WHEN con.contype = 'c' THEN 'Check'
-				WHEN con.contype = 't' THEN 'Trigger'
-				WHEN con.contype = 'u' THEN 'Unique'
-				ELSE '???????'
-		       END AS constraint_type,	
-	               con.conname, 
-	               con.oid,
-		       ns.nspname AS schema_name,
-		       cl.relname AS table_name,
-		       CASE 
-				WHEN con.oid IS NOT NULL THEN 'ALTER TABLE '||ns.nspname||'.'||cl.relname||
-					' ADD CONSTRAINT '||con.conname||' '||pg_get_constraintdef(con.oid) 
-				ELSE NULL 
-		       END AS constraint_def
-		  FROM pg_constraint con
-		        LEFT OUTER JOIN pg_namespace ns ON (con.connamespace = ns.oid)
-		        LEFT OUTER JOIN pg_class cl ON (con.conrelid = cl.oid)
-		 WHERE ns.nspname   = l_schema
-		   AND cl.relname   = l_table
-		   AND con.contype IN ('x', 'c', 't', 'u') /* trigger, unique, check and exclusion constraints */;
-	c7rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get triggers */
-		SELECT tg.tgname,
-		       ns.nspname AS schema_name,
-		       cl.relname AS table_name,
-		       pc.proname AS function_name,
-		       CASE
-				WHEN tg.oid IS NOT NULL THEN pg_get_triggerdef(tg.oid)
-				ELSE NULL
-		       END AS trigger_def,
-		       CASE
-				WHEN tg.oid IS NOT NULL AND obj_description(tg.oid, 'pg_trigger') IS NOT NULL THEN 
-					'COMMENT ON TRIGGER '||tg.tgname||' ON '||cl.relname||
-					' IS '''||obj_description(tg.oid, 'pg_trigger')||''''
-				ELSE NULL
-		       END AS comment_def
-		  FROM pg_trigger tg, pg_proc pc, pg_class cl
-		        LEFT OUTER JOIN pg_namespace ns ON (cl.relnamespace = ns.oid)
-		 WHERE tg.tgrelid            = cl.oid
-		   AND ns.nspname            = l_schema
-		   AND cl.relname            = l_table
-		   AND cl.relname||'_insert' != pc.proname /* Ignore partition INSERT function */
-		   AND tg.tgfoid             = pc.oid
-		   AND tg.tgisinternal       = FALSE	  /* Ignore constraints triggers */;
-	c8rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get triggers */
-		SELECT table_name, grantee, grantor, table_schema, is_grantable,
-                       array_to_string(array_agg(privilege_type::Text), ', ') AS privilege_types,
-		       CASE 
-				WHEN is_grantable = 'YES' THEN
-				       'GRANT '||array_to_string(array_agg(privilege_type::Text), ', ')||
-						' ON '||table_schema||'.'||table_name||' TO '||grantee||' WITH GRANT OPTION'
-				ELSE
-				       'GRANT '||array_to_string(array_agg(privilege_type::Text), ', ')||
-						' ON '||table_schema||'.'||table_name||' TO '||grantee
-		       END AS grant_def
-		  FROM information_schema.role_table_grants 
-		 WHERE table_name   = l_table
-		   AND table_schema = l_schema
-		 GROUP BY table_name, grantee, grantor, table_schema, is_grantable;
---
-	c1_rec 		RECORD;
-	c2_rec 		RECORD;
-	c3_rec 		RECORD;
-	c4_rec 		RECORD;
-	c5_rec 		RECORD;
-	c6_rec 		RECORD;
-	c7_rec 		RECORD;
-	c8_rec 		RECORD;
---
 	ddl_stmt	VARCHAR[];
-	rec_list 	VARCHAR;
 --
-	i		INTEGER:=0;
---
-	error_message VARCHAR;
-	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
 BEGIN
 --
 -- Must be rif40 or have rif_user or rif_manager role
@@ -791,153 +668,22 @@ BEGIN
 	ddl_stmt[1]:='CREATE TABLE '||quote_ident(partition_table)||' ('||E'\n'||
 		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('||quote_ident(l_column)||'::text = '''||l_value||'''::text)'||E'\n'||
 		') INHERITS ('||quote_ident(master_table)||')';
-
---
--- Add indexes, primary key
---
-	FOR c4_rec IN c4rpcr(l_schema, master_table, l_column) LOOP
-		I:=i+1;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Index[%] % on: %.%(%); PK: %, Unique: %', 
-			i::VARCHAR,
-			c4_rec.index_name::VARCHAR, 
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR, 
-			c4_rec.column_names::VARCHAR, 
-			c4_rec.indisprimary::VARCHAR, 
-			c4_rec.indisunique::VARCHAR);
---		
-		IF c4_rec.indisunique AND c4_rec.indisprimary THEN
-			ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c4_rec.constraint_def::VARCHAR, master_table, partition_table);
-		ELSE
-			ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c4_rec.index_def::VARCHAR, master_table, partition_table);
-		END IF;
-	END LOOP;
-	IF i > 0 THEN
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Added % indexes to partition: %.%', 
-			i::VARCHAR,
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR);
-	ELSE
-		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_range_partition_create', 'Added no indexes to partition: %.%', 
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR);
-	END IF;
-
---
--- Add foreign keys
---
-	i:=0;
-	FOR c5_rec IN c5rpcr(l_schema, master_table) LOOP
-		I:=i+1;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'FK Constraint[%] % on: %.%(%)', 
-			i::VARCHAR,
-			c5_rec.conname::VARCHAR, 
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR, 
-			c5_rec.child_column::VARCHAR);
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c5_rec.constraint_def, master_table, partition_table);
-	END LOOP;
-	IF i > 0 THEN
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Added % foreign keys to partition: %.%', 
-			i::VARCHAR,
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR);
-	ELSE
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Added no foreign keys to partition: %.%', 
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR);
-	END IF;
-
---
--- Add trigger, unique, check and exclusion constraints
---
-	i:=0;
-	FOR c6_rec IN c6rpcr(l_schema, master_table) LOOP
-		I:=i+1;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', '% constraint[%] % on: %.%(%)', 
-			c6_rec.constraint_type::VARCHAR,
-			i::VARCHAR,
-			c6_rec.conname::VARCHAR, 
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR, 
-			c6_rec.child_column::VARCHAR);
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c6_rec.constraint_def, master_table, partition_table);
-	END LOOP;
-	IF i > 0 THEN
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Added % trigger, unique, check and exclusion constraints to partition: %.%', 
-			i::VARCHAR,
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR);
-	ELSE
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Added no trigger, unique, check and exclusion constraints to partition: %.%', 
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR);
-	END IF;
-
---
--- Validation triggers
---
-	i:=0;
-	FOR c7_rec IN c7rpcr(l_schema, master_table) LOOP
-		I:=i+1;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Validation trigger[%] % on: %.% calls %', 
-			i::VARCHAR,
-			c7_rec.tgname::VARCHAR, 
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR,
-			c7_rec.function_name::VARCHAR);
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c7_rec.trigger_def, master_table, partition_table);
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c7_rec.comment_def, master_table, partition_table);
-	END LOOP;
-	IF i > 0 THEN
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Added % validation triggers to partition: %.%', 
-			i::VARCHAR,
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR);
-	ELSE
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Added no validation triggers to partition: %.%', 
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR);
-	END IF;	
---
--- Add grants
---
-	i:=0;
-	FOR c8_rec IN c8rpcr(l_schema, master_table) LOOP
-		I:=i+1;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Grant[%] % on: %.% to %; grant option: %', 
-			i::VARCHAR,
-			c8_rec.privilege_types::VARCHAR, 
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR,
-			c8_rec.grantee::VARCHAR,
-			c8_rec.is_grantable::VARCHAR);
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c8_rec.grant_def, master_table, partition_table);
-	END LOOP;
-	IF i > 0 THEN
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Added % grants to partition: %.%', 
-			i::VARCHAR,
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR);
-	ELSE
-		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_range_partition_create', 'Added no grants to partition: %.%', 
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR);
-	END IF;	
-
---
--- Comments
---
-	ddl_stmt[array_length(ddl_stmt, 1)+1]:='COMMENT ON TABLE '||quote_ident(partition_table)||
-		' IS ''Range partition: '||partition_table||' for value '||l_value||' on column: '||l_column||'; master: '||l_schema||'.'||master_table||'''';
-	FOR c1_rec IN c1rpcr(l_schema, master_table) LOOP
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:='COMMENT ON COLUMN '||quote_ident(partition_table)||'.'||c1_rec.column_name||
-		' IS '''||c1_rec.description||'''';
-	END LOOP;
 --
 -- Run
 --
 	PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
+
+--
+-- Call rif40_sql_pkg._rif40_common_partition_create to:
+-- * Add indexes, primary key
+-- * Add foreign keys
+-- * Add trigger, unique, check and exclusion constraints
+-- * Validation triggers
+-- * Add grants
+-- * Table and column comments
+--
+	PERFORM rif40_sql_pkg._rif40_common_partition_create(l_schema, master_table, partition_table, l_column, l_value);
+
 END;
 $func$ 
 LANGUAGE plpgsql;
@@ -948,27 +694,23 @@ Returns:	Nothing
 Description:	Create range partition schema.table_<value> on column <column> value <value>, inheriting from <mnaster table>.
 		Comment columns
 
-Generates the following SQL>
+Runs as RIF40 (so can create partition tables)
+
+Generates the following SQL to create a partition>
+	
 	
 CREATE TABLE sahsuland_cancer_1989 (
  CONSTRAINT sahsuland_cancer_1989_ck CHECK (year::text = ''1989''::text)
 ) INHERITS (sahsuland_cancer);
-CREATE INDEX sahsuland_cancer_1989_age_sex_group ON sahsuland_cancer_1989 USING btree (age_sex_group);
-CREATE INDEX sahsuland_cancer_1989_icd ON sahsuland_cancer_1989 USING btree (icd);
-CREATE INDEX sahsuland_cancer_1989_level1 ON sahsuland_cancer_1989 USING btree (level1);
-CREATE INDEX sahsuland_cancer_1989_level2 ON sahsuland_cancer_1989 USING btree (level2);
-CREATE INDEX sahsuland_cancer_1989_level3 ON sahsuland_cancer_1989 USING btree (level3);
-CREATE INDEX sahsuland_cancer_1989_level4 ON sahsuland_cancer_1989 USING btree (level4);
-CREATE UNIQUE INDEX sahsuland_cancer_1989_pk ON sahsuland_cancer_1989 USING btree (year, level4, age_sex_group, icd);
-COMMENT ON TABLE sahsuland_cancer_1989 IS ''Range partition: sahsuland_cancer_1989 for value 1989 on column: year; master: rif40.sahsuland_cancer'';
-COMMENT ON COLUMN sahsuland_cancer_1989.age_sex_group IS ''Age sex group'';
-COMMENT ON COLUMN sahsuland_cancer_1989.icd IS ''ICD'';
-COMMENT ON COLUMN sahsuland_cancer_1989.level1 IS ''level1'';
-COMMENT ON COLUMN sahsuland_cancer_1989.level2 IS ''level2'';
-COMMENT ON COLUMN sahsuland_cancer_1989.level3 IS ''level3'';
-COMMENT ON COLUMN sahsuland_cancer_1989.level4 IS ''level4'';
-COMMENT ON COLUMN sahsuland_cancer_1989.total IS ''Total'';
-COMMENT ON COLUMN sahsuland_cancer_1989.year IS ''Year'';';
+
+Call rif40_sql_pkg._rif40_common_partition_create to:
+
+* Add indexes, primary key
+* Add foreign keys
+* Add trigger, unique, check and exclusion constraints
+* Validation triggers
+* Add grants
+* Table and column comments';
 
 --
 -- Eof

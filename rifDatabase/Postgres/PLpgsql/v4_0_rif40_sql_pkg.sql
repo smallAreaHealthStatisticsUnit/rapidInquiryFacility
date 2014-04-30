@@ -3054,6 +3054,7 @@ Description:	Hash partition schema.table on column
 ';
 
 \i ../PLpgsql/rif40_sql_pkg/rif40_range_partition.sql
+\i ../PLpgsql/rif40_sql_pkg/_rif40_common_partition_create.sql
 
 --
 -- Add DDL checks (now run separately)

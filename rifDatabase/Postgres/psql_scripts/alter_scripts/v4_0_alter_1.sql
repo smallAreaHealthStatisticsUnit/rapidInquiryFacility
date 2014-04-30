@@ -73,6 +73,14 @@ END;
 $$;
 
 --
+-- Drop statements if already run
+--
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_range_partition(VARCHAR, VARCHAR, VARCHAR);
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_range_partition(VARCHAR,VARCHAR, VARCHAR);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR);
+DROP FUNCTION IF EXISTS  rif40_sql_pkg._rif40_common_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR);
+
+--
 -- PG psql code (SQL and Oracle compatibility processing)
 --
 \i ../PLpgsql/v4_0_rif40_sql_pkg.sql
