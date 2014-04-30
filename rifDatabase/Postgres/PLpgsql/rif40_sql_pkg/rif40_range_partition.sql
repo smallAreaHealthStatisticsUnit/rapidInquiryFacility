@@ -712,8 +712,45 @@ DECLARE
 		        LEFT OUTER JOIN pg_class cl ON (con.conrelid = cl.oid)
 		 WHERE ns.nspname   = l_schema
 		   AND cl.relname   = l_table
-		   AND con.contype IN  ('x', 'c', 't', 'u') /* trigger, unique, check and exclusion constraints */;
-
+		   AND con.contype IN ('x', 'c', 't', 'u') /* trigger, unique, check and exclusion constraints */;
+	c7rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get triggers */
+		SELECT tg.tgname,
+		       ns.nspname AS schema_name,
+		       cl.relname AS table_name,
+		       pc.proname AS function_name,
+		       CASE
+				WHEN tg.oid IS NOT NULL THEN pg_get_triggerdef(tg.oid)
+				ELSE NULL
+		       END AS trigger_def,
+		       CASE
+				WHEN tg.oid IS NOT NULL AND obj_description(tg.oid, 'pg_trigger') IS NOT NULL THEN 
+					'COMMENT ON TRIGGER '||tg.tgname||' ON '||cl.relname||
+					' IS '''||obj_description(tg.oid, 'pg_trigger')||''''
+				ELSE NULL
+		       END AS comment_def
+		  FROM pg_trigger tg, pg_proc pc, pg_class cl
+		        LEFT OUTER JOIN pg_namespace ns ON (cl.relnamespace = ns.oid)
+		 WHERE tg.tgrelid            = cl.oid
+		   AND ns.nspname            = l_schema
+		   AND cl.relname            = l_table
+		   AND cl.relname||'_insert' != pc.proname /* Ignore partition INSERT function */
+		   AND tg.tgfoid             = pc.oid
+		   AND tg.tgisinternal       = FALSE	  /* Ignore constraints triggers */;
+	c8rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get triggers */
+		SELECT table_name, grantee, grantor, table_schema, is_grantable,
+                       array_to_string(array_agg(privilege_type::Text), ', ') AS privilege_types,
+		       CASE 
+				WHEN is_grantable = 'YES' THEN
+				       'GRANT '||array_to_string(array_agg(privilege_type::Text), ', ')||
+						' ON '||table_schema||'.'||table_name||' TO '||grantee||' WITH GRANT OPTION'
+				ELSE
+				       'GRANT '||array_to_string(array_agg(privilege_type::Text), ', ')||
+						' ON '||table_schema||'.'||table_name||' TO '||grantee
+		       END AS grant_def
+		  FROM information_schema.role_table_grants 
+		 WHERE table_name   = l_table
+		   AND table_schema = l_schema
+		 GROUP BY table_name, grantee, grantor, table_schema, is_grantable;
 --
 	c1_rec 		RECORD;
 	c2_rec 		RECORD;
@@ -721,6 +758,8 @@ DECLARE
 	c4_rec 		RECORD;
 	c5_rec 		RECORD;
 	c6_rec 		RECORD;
+	c7_rec 		RECORD;
+	c8_rec 		RECORD;
 --
 	ddl_stmt	VARCHAR[];
 	rec_list 	VARCHAR;
@@ -838,10 +877,53 @@ BEGIN
 --
 -- Validation triggers
 --
-	
+	i:=0;
+	FOR c7_rec IN c7rpcr(l_schema, master_table) LOOP
+		I:=i+1;
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Validation trigger[%] % on: %.% calls %', 
+			i::VARCHAR,
+			c7_rec.tgname::VARCHAR, 
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR,
+			c7_rec.function_name::VARCHAR);
+		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c7_rec.trigger_def, master_table, partition_table);
+		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c7_rec.comment_def, master_table, partition_table);
+	END LOOP;
+	IF i > 0 THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Added % validation triggers to partition: %.%', 
+			i::VARCHAR,
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Added no validation triggers to partition: %.%', 
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR);
+	END IF;	
 --
 -- Add grants
 --
+	i:=0;
+	FOR c8_rec IN c8rpcr(l_schema, master_table) LOOP
+		I:=i+1;
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Grant[%] % on: %.% to %; grant option: %', 
+			i::VARCHAR,
+			c8_rec.privilege_types::VARCHAR, 
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR,
+			c8_rec.grantee::VARCHAR,
+			c8_rec.is_grantable::VARCHAR);
+		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c8_rec.grant_def, master_table, partition_table);
+	END LOOP;
+	IF i > 0 THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create', 'Added % grants to partition: %.%', 
+			i::VARCHAR,
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_range_partition_create', 'Added no grants to partition: %.%', 
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR);
+	END IF;	
 
 --
 -- Comments
