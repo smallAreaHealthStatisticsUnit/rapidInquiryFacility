@@ -423,11 +423,13 @@ BEGIN
 --
 	PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
 --
-	PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create', 
-		'% warnings in cloning common attributes from master for partition: %.%', 
-		warnings::VARCHAR,
-		l_schema::VARCHAR, 
-		partition_table::VARCHAR);
+	IF warnings > 0 THEN
+		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create', 
+			'% warnings in cloning common attributes from master for partition: %.%', 
+			warnings::VARCHAR,
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR);
+	END IF;	
 END;
 $func$ 
 LANGUAGE plpgsql;
@@ -463,6 +465,183 @@ COMMENT ON COLUMN sahsuland_cancer_1989.level3 IS ''level3'';
 COMMENT ON COLUMN sahsuland_cancer_1989.level4 IS ''level4'';
 COMMENT ON COLUMN sahsuland_cancer_1989.total IS ''Total'';
 COMMENT ON COLUMN sahsuland_cancer_1989.year IS ''Year'';';
+
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_create_2(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR,
+       OUT ddl_stmt VARCHAR[], OUT num_partitions INTEGER, OUT total_rows INTEGER, OUT warnings INTEGER)
+RETURNS RECORD
+SECURITY DEFINER
+AS $func$
+/*
+Function: 	_rif40_common_partition_create_2()
+Parameters:	Schema, table, column, 
+                [OUT] ddl statement array, [OUT] num_partitions, [OUT] total_rows, [OUT] warnings
+Returns:	Nothing
+ 		DDL statement array is NULL if the function is unable to partition
+Description:	Automatic range partition schema.table on column
+
+* Must be rif40 or have rif_user or rif_manager role
+* Check if table is valid
+* Check table name length - must be 25 chars or less (assuming the limit is 30)
+* Check data is partitionable 
+* Copy to temp table, truncate (dont panic - Postgres DDL is part of a transaction)
+
+  Add to DDL statement list:
+
+	CREATE TEMPORARY TABLE rif40_range_partition AS SELECT * FROM rif40.sahsuland_cancer;
+	TRUNCATE TABLE rif40.sahsuland_cancer;
+
+* Do not partition if table has only one distinct row
+* Do not partition if table has no rows
+
+ */
+DECLARE
+	c1gangep 		REFCURSOR;
+--
+	sql_stmt 		VARCHAR;
+	l_rows			INTEGER:=0;
+	table_length		INTEGER:=0;
+	name_length_limit	INTEGER:=40;	/* You may want to set this higher */
+	i			INTEGER:=0;
+	part_test_rec		RECORD;
+--
+	error_message 		VARCHAR;
+	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
+BEGIN
+--
+-- Must be rif40 or have rif_user or rif_manager role
+--
+	IF USER != 'rif40' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
+		PERFORM rif40_log_pkg.rif40_error(-20999, '_rif40_common_partition_create_2', 'User % must be rif40 or have rif_user or rif_manager role', 
+			USER::VARCHAR);
+	END IF;
+	warnings:=0;
+--
+-- Check if table is valid
+--
+	BEGIN
+		sql_stmt:='SELECT COUNT(DISTINCT('||quote_ident(l_column)||')) AS num_partitions, COUNT('||quote_ident(l_column)||') AS total_rows FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||' LIMIT 1'; 
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_2', 'SQL> %;', sql_stmt::VARCHAR);
+		OPEN c1gangep FOR EXECUTE sql_stmt;
+		FETCH c1gangep INTO num_partitions, total_rows;
+		GET DIAGNOSTICS l_rows = ROW_COUNT;
+		CLOSE c1gangep;
+		
+	EXCEPTION
+		WHEN others THEN
+			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+			error_message:='_rif40_common_partition_create_2() caught: '||E'\n'||
+				SQLERRM::VARCHAR||' in SQL> '||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
+			RAISE INFO '2: %', error_message;
+--
+			RAISE;
+	END;
+--
+-- Check table name length - must be 25 chars or less (assuming the limit is 30)
+--
+	table_length:=length(quote_ident(l_table));
+	IF table_length > name_length_limit-5 THEN
+		PERFORM rif40_log_pkg.rif40_error(-20997, '_rif40_common_partition_create_2', 
+			'Automatic range partitioning by %: %.%; table name is too long %, limit is %', 
+			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, table_length::VARCHAR, (name_length_limit-5)::VARCHAR);
+-- 
+-- IF yes, copy to temporary table, truncate
+--
+	ELSIF l_rows > 0 AND num_partitions > 1 THEN
+--
+		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_common_partition_create_2', 
+			'Automatic range partitioning by %: %.%; % partitions', 
+			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, num_partitions::VARCHAR);
+--
+-- Check data is partitionable 
+--
+/*
+SELECT year AS value,
+       SUBSTRING(year::Text FROM '[[:alnum:]_]{1,5}') AS valid_chars,
+       COUNT(year) as total
+  FROM rif40.sahsuland_cancer
+ WHERE SUBSTRING(year::Text FROM '[[:alnum:]_]{1,5}') != year::Text
+ GROUP BY year
+ ORDER BY year;
+*/
+		BEGIN
+			sql_stmt:='SELECT '||quote_ident(l_column)||' AS value, '||E'\n'||
+'       SUBSTRING('||quote_ident(l_column)||'::Text FROM ''[[:alnum:]_]{1,'||(name_length_limit-table_length-1)::VARCHAR||'}'') AS valid_chars,'||E'\n'||
+'       COUNT('||quote_ident(l_column)||') as total'||E'\n'||
+'  FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||
+' WHERE SUBSTRING('||quote_ident(l_column)||'::Text FROM ''[[:alnum:]_]{1,'||(name_length_limit-table_length-1)::VARCHAR||'}'') != '||quote_ident(l_column)||'::Text'||E'\n'||
+' GROUP BY '||quote_ident(l_column)||E'\n'||
+' ORDER BY '||quote_ident(l_column)||'';
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_2', 'SQL> %;', sql_stmt::VARCHAR);
+			FOR part_test_rec IN EXECUTE sql_stmt LOOP
+				i:=i+1;
+				PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_2', 
+					'Automatic range partitioning by %: %.%; partition % contains invalid characters to be part of a partition table name', 
+					l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, part_test_rec.value::VARCHAR);
+			END LOOP;
+--
+			IF i > 0 THEN
+				PERFORM rif40_log_pkg.rif40_error(-20998, '_rif40_common_partition_create_2',
+					'Automatic range partitioning by %: %.%; % partitions contains invalid characters to be part of partition table names', 
+					l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, i::VARCHAR);
+			END IF;
+		EXCEPTION
+			WHEN others THEN
+				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+				error_message:='_rif40_common_partition_create_2() caught: '||E'\n'||
+					SQLERRM::VARCHAR||' in SQL> '||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
+				RAISE INFO '2: %', error_message;
+--
+				RAISE;
+		END;
+
+--
+-- Copy to temp table, truncate (dont panic - Postgres DDL is part of a transaction)
+--
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_2', 'Copy data to temporary table fron: %.%', 
+			l_schema::VARCHAR, l_table::VARCHAR);
+		ddl_stmt[1]:='CREATE TEMPORARY TABLE rif40_range_partition AS SELECT * FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table);
+		ddl_stmt[array_length(ddl_stmt, 1)+1]:='TRUNCATE TABLE '||quote_ident(l_schema)||'.'||quote_ident(l_table);
+
+	ELSIF num_partitions > 1 THEN
+--
+-- Do not partition if table has only one distinct row
+--
+		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_2', 'Unable to automatic range partitioning by %: %.%; Not partitionable, only 1 distinct row', 
+			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR);
+	ELSE
+--
+-- Do not partition if table has no rows
+--
+		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_2', 'Unable to automatic range partitioning by %: %.%; Not partitionable, no rows', 
+			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR);
+	END IF;
+
+END;
+$func$ 
+LANGUAGE plpgsql;
+
+--\df+ rif40_sql_pkg._rif40_common_partition_create_2
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_common_partition_create_2(VARCHAR, VARCHAR, VARCHAR, OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER) IS 'Function: 	_rif40_common_partition_create_2()
+Parameters:	Schema, table, column, 
+                [OUT] ddl statement array, [OUT] num_partitions, [OUT] total_rows, [OUT] warnings
+Returns:	Nothing
+ 		DDL statement array is NULL if the function is unable to partition
+Description:	Automatic range partition schema.table on column
+
+* Must be rif40 or have rif_user or rif_manager role
+* Check if table is valid
+* Check table name length - must be 25 chars or less (assuming the limit is 30)
+* Check data is partitionable 
+* Copy to temp table, truncate (dont panic - Postgres DDL is part of a transaction)
+
+  Add to DDL statement list:
+
+	CREATE TEMPORARY TABLE rif40_range_partition AS SELECT * FROM rif40.sahsuland_cancer;
+	TRUNCATE TABLE rif40.sahsuland_cancer;
+
+* Do not partition if table has only one distinct row
+* Do not partition if table has no rows';
 
 --
 -- Eof

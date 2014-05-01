@@ -106,6 +106,8 @@ DECLARE
 --
 	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_range_partition',
 							'_rif40_range_partition_create',
+							'_rif40_common_partition_create',
+							'_rif40_common_partition_create_2',
 							'rif40_ddl'];
 	l_function 			VARCHAR;
 --
@@ -129,7 +131,6 @@ BEGIN
 	ELSE
 		RAISE EXCEPTION 'C209xx: User check failed: % is not rif40', user;	
 	END IF;
-	--
 --
 -- Turn on some debug
 --

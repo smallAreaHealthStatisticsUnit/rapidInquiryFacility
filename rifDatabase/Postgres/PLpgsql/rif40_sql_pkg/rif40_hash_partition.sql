@@ -1,11 +1,4 @@
 -- ************************************************************************
--- *
--- * THIS IS A SCHEMA ALTER SCRIPT - IT CAN BE RE-RUN BUT THEY MUST BE RUN 
--- * IN NUMERIC ORDER
--- *
--- ************************************************************************
---
--- ************************************************************************
 --
 -- GIT Header
 --
@@ -15,7 +8,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - Create SAHSULAND rif40 exmaple schema
+-- Rapid Enquiry Facility (RIF) - Common partitioning functions
 --
 -- Copyright:
 --
@@ -55,10 +48,6 @@
 \set ON_ERROR_STOP ON
 \timing
 
-\echo Running SAHSULAND schema alter script #1 (Hash and range partitioning, automatic clustering of denominator tables)...
-
-BEGIN;
-
 --
 -- Check user is rif40
 --
@@ -72,44 +61,39 @@ BEGIN
 END;
 $$;
 
---
--- Drop statements if already run
---
-DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR);
-DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_range_partition(VARCHAR, VARCHAR, VARCHAR);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR);
-DROP FUNCTION IF EXISTS  rif40_sql_pkg._rif40_common_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR);
+CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_hash_partition(l_schema VARCHAR, t_table VARCHAR, l_ciolumn VARCHAR)
+RETURNS void
+SECURITY INVOKER
+AS $func$
+/*
+Function: 	rif40_hash_partition()
+Parameters:	Schema, table, column
+Returns:	Nothing
+Description:	Hash partition schema.table on column
 
---
--- Run common code on al pre-existing partitions (i.e. geolevel partitions)
--- to add indexes, grants etc
---
-
---
--- PG psql code (SQL and Oracle compatibility processing)
---
-\i ../PLpgsql/v4_0_rif40_sql_pkg.sql
-
---
--- Hash partition all tables with study_id as a column
--- This will cope with data already present in the table
---
-\i ../psql_scripts/v4_0_study_id_partitions.sql
-
---
--- Range partition all tables with year as a column
--- This will cope with data already present in the table
---
-\i ../psql_scripts/v4_0_year_partitions.sql
-
-DO LANGUAGE plpgsql $$
+ */
+DECLARE
 BEGIN
-	RAISE INFO 'Aborting (script being tested)';
-	RAISE EXCEPTION 'C20999: Abort';
-END;
-$$;
+--
+-- Must be rif40 or have rif_user or rif_manager role
+--
+	IF USER != 'rif40' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
+		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_hash_partition', 'User % must be rif40 or have rif_user or rif_manager role', 
+			USER::VARCHAR);
+	END IF;
 
+--
+-- Used to halt alter_1.sql for testing
+--
+--	RAISE plpgsql_error;
 END;
+$func$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR) IS 'Function: 	rif40_hash_partition()
+Parameters:	Schema, table, column
+Returns:	Nothing
+Description:	Hash partition schema.table on column
+';
 
 --
 -- Eof

@@ -87,6 +87,14 @@ $$;
 --
 DO LANGUAGE plpgsql $$
 DECLARE
+--
+	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_hash_partition',
+							'_rif40_hash_partition_create',
+							'_rif40_common_partition_create',
+							'_rif40_common_partition_create_2',
+							'rif40_ddl'];
+	l_function 			VARCHAR;
+--
 	c1 CURSOR FOR
 		SELECT a.tablename AS tablename, b.attname AS columnname, schemaname AS schemaname	/* Tables */
 		  FROM pg_tables a, pg_attribute b, pg_class c
@@ -107,6 +115,18 @@ BEGIN
 	ELSE
 		RAISE EXCEPTION 'C209xx: User check failed: % is not rif40', user;	
 	END IF;
+--
+-- Turn on some debug
+--
+        PERFORM rif40_log_pkg.rif40_log_setup();
+        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+--
+-- Enabled debug on select rif40_sm_pkg functions
+--
+	FOREACH l_function IN ARRAY rif40_sql_pkg_functions LOOP
+		RAISE INFO 'Enable debug for function: %', l_function;
+		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
+	END LOOP;
 --
 	FOR c1_rec IN c1 LOOP
 		RAISE INFO 'Hash partitioning: %.%', c1_rec.schemaname, c1_rec.tablename;

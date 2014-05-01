@@ -3024,35 +3024,7 @@ Returns:	Nothing
 Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement
 ';
 
-CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_hash_partition(l_schema VARCHAR, t_table VARCHAR, l_ciolumn VARCHAR)
-RETURNS void
-SECURITY INVOKER
-AS $func$
-/*
-Function: 	rif40_hash_partition()
-Parameters:	Schema, table, column
-Returns:	Nothing
-Description:	Hash partition schema.table on column
-
- */
-DECLARE
-BEGIN
---
--- Must be rif40 or have rif_user or rif_manager role
---
-	IF USER != 'rif40' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_hash_partition', 'User % must be rif40 or have rif_user or rif_manager role', 
-			USER::VARCHAR);
-	END IF;
-END;
-$func$ LANGUAGE plpgsql;
-
-COMMENT ON FUNCTION rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR) IS 'Function: 	rif40_method4()
-Parameters:	Schema, table, column
-Returns:	Nothing
-Description:	Hash partition schema.table on column
-';
-
+\i ../PLpgsql/rif40_sql_pkg/rif40_hash_partition.sql
 \i ../PLpgsql/rif40_sql_pkg/rif40_range_partition.sql
 \i ../PLpgsql/rif40_sql_pkg/_rif40_common_partition_create.sql
 
