@@ -107,7 +107,9 @@ DECLARE
 	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_range_partition',
 							'_rif40_range_partition_create',
 							'_rif40_common_partition_create',
-							'_rif40_common_partition_create_2',
+							'_rif40_common_partition_create_setup',
+							'_rif40_common_partition_create_insert',
+							'_rif40_common_partition_create_complete',
 							'rif40_ddl'];
 	l_function 			VARCHAR;
 --
@@ -126,6 +128,9 @@ DECLARE
 --
 	sql_stmt VARCHAR[];
 BEGIN
+--
+-- Check user is rif40
+--
 	IF user = 'rif40' THEN
 		RAISE INFO 'User check: %', user;	
 	ELSE

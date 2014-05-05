@@ -79,6 +79,10 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VAR
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_range_partition(VARCHAR, VARCHAR, VARCHAR);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR);
 DROP FUNCTION IF EXISTS  rif40_sql_pkg._rif40_common_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_insert(VARCHAR, VARCHAR, VARCHAR, INTEGER, OUT VARCHAR[], OUT VARCHAR);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_complete(VARCHAR, VARCHAR, VARCHAR, VARCHAR);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_triggers(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[];
 
 --
 -- Run common code on al pre-existing partitions (i.e. geolevel partitions)
@@ -89,6 +93,8 @@ DROP FUNCTION IF EXISTS  rif40_sql_pkg._rif40_common_partition_create(VARCHAR, V
 -- PG psql code (SQL and Oracle compatibility processing)
 --
 \i ../PLpgsql/v4_0_rif40_sql_pkg.sql
+
+--\df+ rif40_sql_pkg._rif40_common_partition_triggers
 
 --
 -- Hash partition all tables with study_id as a column

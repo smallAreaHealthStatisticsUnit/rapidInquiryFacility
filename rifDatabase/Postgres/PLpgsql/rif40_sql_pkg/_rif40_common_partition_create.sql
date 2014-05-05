@@ -61,6 +61,42 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_triggers(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, enable_or_disable VARCHAR, OUT ddl_stmt VARCHAR[])
+RETURNS VARCHAR[]
+SECURITY INVOKER
+AS $func$
+/*
+Function: 	_rif40_common_partition_triggers()
+Parameters:	Schema, table, column, enable or disable
+Returns:	DDL statement array
+Description:	Automatic range partitioning schema.table on column: ENABLE or DISABLE ON-INSERT triggers
+ */
+DECLARE
+BEGIN
+--
+-- Must be rif40 or have rif_user or rif_manager role
+--
+	IF USER != 'rif40' AND NOT rif40_sql_pkg._rif40_common_partition_triggers() THEN
+		PERFORM rif40_log_pkg.rif40_error(-20999, '_rif40_common_partition_create_insert', 'User % must be rif40 or have rif_user or rif_manager role', 
+			USER::VARCHAR);
+	END IF;
+--
+-- Check enable or disable parameter
+--
+	IF enable_or_disable NOT IN ('ENABLE', 'DISABLE') THEN
+		PERFORM rif40_log_pkg.rif40_error(-20997, '_rif40_common_partition_create_insert', 'Invalid parameter: % must be ''ENABLE'', ''DISABLE''',
+			enable_or_disable::VARCHAR);
+	END IF;
+--
+END;
+$func$ 
+LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_common_partition_triggers(VARCHAR, VARCHAR, VARCHAR, VARCHAR, OUT VARCHAR[]) IS 'Function: 	_rif40_common_partition_triggers()
+Parameters:	Schema, table, column, enable or disable
+Returns:	DDL statement array
+Description:	Automatic range partitioning schema.table on column: ENABLE or DISABLE ON-INSERT triggers';
+
 CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_create(
 	l_schema 	VARCHAR, 
 	master_table 	VARCHAR, 
@@ -466,18 +502,19 @@ COMMENT ON COLUMN sahsuland_cancer_1989.level4 IS ''level4'';
 COMMENT ON COLUMN sahsuland_cancer_1989.total IS ''Total'';
 COMMENT ON COLUMN sahsuland_cancer_1989.year IS ''Year'';';
 
-CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_create_2(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR,
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_create_setup(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR,
        OUT ddl_stmt VARCHAR[], OUT num_partitions INTEGER, OUT total_rows INTEGER, OUT warnings INTEGER)
 RETURNS RECORD
 SECURITY DEFINER
 AS $func$
 /*
-Function: 	_rif40_common_partition_create_2()
+Function: 	_rif40_common_partition_create_setup()
 Parameters:	Schema, table, column, 
                 [OUT] ddl statement array, [OUT] num_partitions, [OUT] total_rows, [OUT] warnings
-Returns:	Nothing
+Returns:	OUT parameters as a record
  		DDL statement array is NULL if the function is unable to partition
-Description:	Automatic range partition schema.table on column
+Description:	Automatic range/hash partition schema.table on column
+		Prequiste checks, COPY <table> to rif40_auto_partition, truncate <table>
 
 * Must be rif40 or have rif_user or rif_manager role
 * Check if table is valid
@@ -487,7 +524,7 @@ Description:	Automatic range partition schema.table on column
 
   Add to DDL statement list:
 
-	CREATE TEMPORARY TABLE rif40_range_partition AS SELECT * FROM rif40.sahsuland_cancer;
+	CREATE TEMPORARY TABLE rif40_auto_partition AS SELECT * FROM rif40.sahsuland_cancer;
 	TRUNCATE TABLE rif40.sahsuland_cancer;
 
 * Do not partition if table has only one distinct row
@@ -511,7 +548,7 @@ BEGIN
 -- Must be rif40 or have rif_user or rif_manager role
 --
 	IF USER != 'rif40' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, '_rif40_common_partition_create_2', 'User % must be rif40 or have rif_user or rif_manager role', 
+		PERFORM rif40_log_pkg.rif40_error(-20999, '_rif40_common_partition_create_setup', 'User % must be rif40 or have rif_user or rif_manager role', 
 			USER::VARCHAR);
 	END IF;
 	warnings:=0;
@@ -520,7 +557,7 @@ BEGIN
 --
 	BEGIN
 		sql_stmt:='SELECT COUNT(DISTINCT('||quote_ident(l_column)||')) AS num_partitions, COUNT('||quote_ident(l_column)||') AS total_rows FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||' LIMIT 1'; 
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_2', 'SQL> %;', sql_stmt::VARCHAR);
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', 'SQL> %;', sql_stmt::VARCHAR);
 		OPEN c1gangep FOR EXECUTE sql_stmt;
 		FETCH c1gangep INTO num_partitions, total_rows;
 		GET DIAGNOSTICS l_rows = ROW_COUNT;
@@ -529,7 +566,7 @@ BEGIN
 	EXCEPTION
 		WHEN others THEN
 			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
-			error_message:='_rif40_common_partition_create_2() caught: '||E'\n'||
+			error_message:='_rif40_common_partition_create_setup() caught: '||E'\n'||
 				SQLERRM::VARCHAR||' in SQL> '||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
 			RAISE INFO '2: %', error_message;
 --
@@ -540,16 +577,16 @@ BEGIN
 --
 	table_length:=length(quote_ident(l_table));
 	IF table_length > name_length_limit-5 THEN
-		PERFORM rif40_log_pkg.rif40_error(-20997, '_rif40_common_partition_create_2', 
-			'Automatic range partitioning by %: %.%; table name is too long %, limit is %', 
+		PERFORM rif40_log_pkg.rif40_error(-20997, '_rif40_common_partition_create_setup', 
+			'Automatic range/hash partition by %: %.%; table name is too long %, limit is %', 
 			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, table_length::VARCHAR, (name_length_limit-5)::VARCHAR);
 -- 
 -- IF yes, copy to temporary table, truncate
 --
 	ELSIF l_rows > 0 AND num_partitions > 1 THEN
 --
-		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_common_partition_create_2', 
-			'Automatic range partitioning by %: %.%; % partitions', 
+		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_common_partition_create_setup', 
+			'Automatic range/hash partition by %: %.%; % partitions', 
 			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, num_partitions::VARCHAR);
 --
 -- Check data is partitionable 
@@ -571,23 +608,23 @@ SELECT year AS value,
 ' WHERE SUBSTRING('||quote_ident(l_column)||'::Text FROM ''[[:alnum:]_]{1,'||(name_length_limit-table_length-1)::VARCHAR||'}'') != '||quote_ident(l_column)||'::Text'||E'\n'||
 ' GROUP BY '||quote_ident(l_column)||E'\n'||
 ' ORDER BY '||quote_ident(l_column)||'';
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_2', 'SQL> %;', sql_stmt::VARCHAR);
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', 'SQL> %;', sql_stmt::VARCHAR);
 			FOR part_test_rec IN EXECUTE sql_stmt LOOP
 				i:=i+1;
-				PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_2', 
-					'Automatic range partitioning by %: %.%; partition % contains invalid characters to be part of a partition table name', 
+				PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_setup', 
+					'Automatic range/hash partition by %: %.%; partition % contains invalid characters to be part of a partition table name', 
 					l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, part_test_rec.value::VARCHAR);
 			END LOOP;
 --
 			IF i > 0 THEN
-				PERFORM rif40_log_pkg.rif40_error(-20998, '_rif40_common_partition_create_2',
-					'Automatic range partitioning by %: %.%; % partitions contains invalid characters to be part of partition table names', 
+				PERFORM rif40_log_pkg.rif40_error(-20998, '_rif40_common_partition_create_setup',
+					'Automatic range/hash partition by %: %.%; % partitions contains invalid characters to be part of partition table names', 
 					l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, i::VARCHAR);
 			END IF;
 		EXCEPTION
 			WHEN others THEN
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
-				error_message:='_rif40_common_partition_create_2() caught: '||E'\n'||
+				error_message:='_rif40_common_partition_create_setup() caught: '||E'\n'||
 					SQLERRM::VARCHAR||' in SQL> '||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
 				RAISE INFO '2: %', error_message;
 --
@@ -597,37 +634,47 @@ SELECT year AS value,
 --
 -- Copy to temp table, truncate (dont panic - Postgres DDL is part of a transaction)
 --
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_2', 'Copy data to temporary table fron: %.%', 
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', 'Copy data to temporary table fron: %.%', 
 			l_schema::VARCHAR, l_table::VARCHAR);
-		ddl_stmt[1]:='CREATE TEMPORARY TABLE rif40_range_partition AS SELECT * FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table);
+		ddl_stmt[1]:='CREATE TEMPORARY TABLE rif40_auto_partition AS SELECT * FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table);
 		ddl_stmt[array_length(ddl_stmt, 1)+1]:='TRUNCATE TABLE '||quote_ident(l_schema)||'.'||quote_ident(l_table);
 
 	ELSIF num_partitions > 1 THEN
 --
 -- Do not partition if table has only one distinct row
 --
-		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_2', 'Unable to automatic range partitioning by %: %.%; Not partitionable, only 1 distinct row', 
+		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_setup', 'Unable to automatic range/hash partition by %: %.%; Not partitionable, only 1 distinct row', 
 			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR);
 	ELSE
 --
--- Do not partition if table has no rows
+-- Warn if table has no rows or only 1 partition
 --
-		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_2', 'Unable to automatic range partitioning by %: %.%; Not partitionable, no rows', 
-			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR);
+		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_setup', 'Automatic range/hash partition by %: %.%; no rows (%)/only 1 partition (%)', 
+			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR,
+			l_rows::VARCHAR, num_partitions::VARCHAR);
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', 'Copy data to temporary table fron: %.%', 
+			l_schema::VARCHAR, l_table::VARCHAR);
+--
+-- Copy to temp table, truncate (dont panic - Postgres DDL is part of a transaction)
+--
+
+		ddl_stmt[1]:='CREATE TEMPORARY TABLE rif40_auto_partition AS SELECT * FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table);
+		ddl_stmt[array_length(ddl_stmt, 1)+1]:='TRUNCATE TABLE '||quote_ident(l_schema)||'.'||quote_ident(l_table);
 	END IF;
 
 END;
 $func$ 
 LANGUAGE plpgsql;
 
---\df+ rif40_sql_pkg._rif40_common_partition_create_2
+--\df+ rif40_sql_pkg._rif40_common_partition_create_setup
 
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_common_partition_create_2(VARCHAR, VARCHAR, VARCHAR, OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER) IS 'Function: 	_rif40_common_partition_create_2()
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER) IS 'Function: 	_rif40_common_partition_create_setup()
 Parameters:	Schema, table, column, 
                 [OUT] ddl statement array, [OUT] num_partitions, [OUT] total_rows, [OUT] warnings
-Returns:	Nothing
+Returns:	OUT parameters as a record
  		DDL statement array is NULL if the function is unable to partition
-Description:	Automatic range partition schema.table on column
+Description:	Automatic range/hash partition schema.table on column
+		Prequiste checks, COPY <table> to rif40_auto_partition, truncate <table>
 
 * Must be rif40 or have rif_user or rif_manager role
 * Check if table is valid
@@ -637,11 +684,373 @@ Description:	Automatic range partition schema.table on column
 
   Add to DDL statement list:
 
-	CREATE TEMPORARY TABLE rif40_range_partition AS SELECT * FROM rif40.sahsuland_cancer;
+	CREATE TEMPORARY TABLE rif40_auto_partition AS SELECT * FROM rif40.sahsuland_cancer;
 	TRUNCATE TABLE rif40.sahsuland_cancer;
 
 * Do not partition if table has only one distinct row
 * Do not partition if table has no rows';
+
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_create_insert(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, total_rows INTEGER,
+	OUT ddl_stmt VARCHAR[], OUT index_name VARCHAR)
+RETURNS RECORD
+SECURITY DEFINER
+AS $func$
+/*
+Function: 	_rif40_common_partition_create_insert()
+Parameters:	Schema, table, column, total rows
+                [OUT] ddl statement array, [PK/UK] index name
+Returns:	OUT parameters as a record
+ 		DDL statement array is NULL if the function is unable to partition
+Description:	Automatic range/hash partition schema.table on column
+		INSERT
+
+* Foreach partition:
++	INSERT 1 rows. This creates the partition
+
+	INSERT INTO sahsuland_cancer /- Create partition 1989 -/
+	SELECT * FROM rif40_range_partition /- Temporary table -/
+	 WHERE year = '1989'
+	 LIMIT 1;
+
++	TRUNCATE partition
+
+	TRUNCATE TABLE rif40.sahsuland_cancer_1989 /- Empty newly created partition 1989 -/;
+
++ 	Bring data back by partition, order by range partition, primary key
+
+	INSERT INTO sahsuland_cancer_1989 /- Directly populate partition: 1989, total rows expected: 8103 -/
+	SELECT * FROM rif40_range_partition /- Temporary table -/
+	 WHERE year = '1989'
+	 ORDER BY year /- Partition column -/, age_sex_group, icd, level4 /- [Rest of ] primary key -/;
+
+* The trigger created earlier fires and calls sahsuland_cancer_insert();
+  This then call _rif40_range_partition_create() for the first row in a partition (detected by trapping the undefined_table EXCEPTION 
+  e.g. 42p01: relation "rif40.rif40_population_europe_1991" does not exist) 
+
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  _rif40_range_partition_create(): Create range partition: sahsuland_cancer_1989 for value 1989 on column: year; master: rif40.sahsuland_cancer
+
+  The trigger then re-fires to redo the bind insert. NEW.<column name> must be explicitly defined unlike in conventional INSERT triggers
+
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  [DEBUG1] sahsuland_cancer_insert(): Row 1 SQL> EXECUTE 
+'INSERT INTO sahsuland_cancer_1989 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) /- Partition: 1989 -/' 
+USING NEW.year, NEW.age_sex_group, NEW.level1, NEW.level2, NEW.level3, NEW.level4, NEW.icd, NEW.total; 
+/- rec: (1989,100,01,01.008,01.008.006800,01.008.006800.1,1890,2) -/
+
+ */
+DECLARE
+	c3gangep CURSOR(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR) FOR /* GET PK/unique index column */
+		SELECT n.nspname AS schema_name, t.relname AS table_name, 
+		       i.relname AS index_name, array_to_string(array_agg(a.attname), ', ') AS column_names, ix.indisprimary
+		 FROM pg_class t, pg_class i, pg_index ix, pg_attribute a, pg_namespace n
+		 WHERE t.oid          = ix.indrelid
+		   AND i.oid          = ix.indexrelid
+		   AND a.attrelid     = t.oid
+		   AND a.attnum       = ANY(ix.indkey)
+		   AND t.relkind      = 'r'
+		   AND ix.indisunique = TRUE
+		   AND t.relnamespace = n.oid 
+		   AND n.nspname      = l_schema
+		   AND t.relname      = l_table
+		   AND a.attname      != l_column
+		 GROUP BY n.nspname, t.relname, i.relname, ix.indisprimary
+		 ORDER BY n.nspname, t.relname, i.relname, ix.indisprimary DESC;
+	c3_rec 			RECORD;
+	c6_rec 			RECORD;
+--
+	sql_stmt		VARCHAR;
+	l_ddl_stmt		VARCHAR[];
+--
+	error_message 		VARCHAR;
+	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
+BEGIN
+--
+-- Must be rif40 or have rif_user or rif_manager role
+--
+	IF USER != 'rif40' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
+		PERFORM rif40_log_pkg.rif40_error(-20999, '_rif40_common_partition_create_insert', 'User % must be rif40 or have rif_user or rif_manager role', 
+			USER::VARCHAR);
+	END IF;
+--
+-- Disable ON-INSERT triggers to avoid:
+--
+-- /* psql:../psql_scripts/v4_0_study_id_partitions.sql:139: WARNING:  rif40_ddl(): SQL in error (P0001)> INSERT INTO rif40_study_shares /* Create partition 1 */
+-- SELECT * FROM rif40_auto_partition /* Temporary table */
+--  WHERE study_id = '1'
+--  LIMIT 1;
+-- psql:../psql_scripts/v4_0_study_id_partitions.sql:139: ERROR:  rif40_trg_pkg.trigger_fct_rif40_study_shares_checks(): RIF40_STUDY_SHARES study_id: 1 grantor username: pch is not USER: rif40 or a RIF40_MANAGER
+--
+--	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(l_schema, l_table, l_column, 'DISABLE'::VARCHAR);
+--	FOR i IN 1 .. array_length(l_ddl_stmt, 1) LOOP
+--		ddl_stmt[array_length(ddl_stmt, 1)+1]:=l_ddl_stmt[i];
+--	END LOOP;
+	
+--
+-- Copy out parameters
+--
+
+--
+-- GET PK/unique index column
+--
+	OPEN c3gangep(l_schema, l_table, l_column);
+	FETCH c3gangep INTO c3_rec;
+	CLOSE c3gangep;
+	index_name:=c3_rec.index_name;
+--
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_insert', 'Restore data from temporary table: %.%', 
+		l_schema::VARCHAR, l_table::VARCHAR);
+--
+-- Create list of potential partitions
+--
+	IF total_rows > 0 THEN
+		BEGIN
+			sql_stmt:='SELECT '||quote_ident(l_column)||' AS partition_value, COUNT('||quote_ident(l_column)||') AS total_rows'||E'\n'||
+				'  FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||
+				' GROUP BY '||quote_ident(l_column)||E'\n'||
+				' ORDER BY 1'; 
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_insert', 'SQL> %;', sql_stmt::VARCHAR);
+			FOR c6_rec IN EXECUTE sql_stmt LOOP
+--
+				IF ddl_stmt IS NULL THEN
+					ddl_stmt[1]:='INSERT INTO '||quote_ident(l_table)||
+						' /* Create partition '||c6_rec.partition_value||' */'||E'\n'||
+						'SELECT * FROM rif40_auto_partition /* Temporary table */'||E'\n'||
+						' WHERE '||l_column||' = '''||c6_rec.partition_value||''''||E'\n'||
+						' LIMIT 1';
+				ELSE
+					ddl_stmt[array_length(ddl_stmt, 1)+1]:='INSERT INTO '||quote_ident(l_table)||
+						' /* Create partition '||c6_rec.partition_value||' */'||E'\n'||
+						'SELECT * FROM rif40_auto_partition /* Temporary table */'||E'\n'||
+						' WHERE '||l_column||' = '''||c6_rec.partition_value||''''||E'\n'||
+						' LIMIT 1';
+				END IF;
+				ddl_stmt[array_length(ddl_stmt, 1)+1]:='TRUNCATE TABLE '||
+					quote_ident(l_schema)||'.'||quote_ident(l_table)||'_'||c6_rec.partition_value||
+					' /* Empty newly created partition '||c6_rec.partition_value||' */';
+--				
+-- Bring data back, order by range partition, primary key
+--
+				IF c3_rec.column_names IS NOT NULL THEN
+					ddl_stmt[array_length(ddl_stmt, 1)+1]:='INSERT INTO '||quote_ident(l_table)||'_'||c6_rec.partition_value||
+						' /* Directly populate partition: '||c6_rec.partition_value||
+						', total rows expected: '||c6_rec.total_rows||' */'||E'\n'||
+						'SELECT * FROM rif40_auto_partition /* Temporary table */'||E'\n'||
+						' WHERE '||l_column||' = '''||c6_rec.partition_value||''''||E'\n'||
+						' ORDER BY '||l_column||' /* Partition column */, '||
+						c3_rec.column_names||' /* [Rest of ] primary key */';
+				ELSE
+					ddl_stmt[array_length(ddl_stmt, 1)+1]:='INSERT INTO '||quote_ident(l_table)||'_'||c6_rec.partition_value||
+						' /* Directly populate partition: '||c6_rec.partition_value||
+						', total rows expected: '||c6_rec.total_rows||' */'||E'\n'||
+						'SELECT * FROM rif40_auto_partition /* Temporary table */'||E'\n'||
+						' WHERE '||l_column||' = '''||c6_rec.partition_value||''''||E'\n'||
+						' ORDER BY '||l_column||' /* Partition column */, '||
+						' /* NO [Rest of ] primary key - no unique index found */';
+				END IF;
+--
+			END LOOP;	
+		EXCEPTION
+			WHEN others THEN
+				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+				error_message:='_rif40_common_partition_create_insert() caught: '||E'\n'||
+					SQLERRM::VARCHAR||' in SQL> '||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
+				RAISE INFO '2: %', error_message;
+--
+				RAISE;
+		END;
+	END IF;
+--
+-- Re-enable ON-INSERT triggers
+--
+--	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(l_schema, l_table, l_column, 'ENABLE'::VARCHAR);
+--	FOR i IN 1 .. array_length(l_ddl_stmt, 1) LOOP
+--		ddl_stmt[array_length(ddl_stmt, 1)+1]:=l_ddl_stmt[i];
+--	END LOOP;
+
+--
+END;
+$func$ 
+LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_common_partition_create_insert(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, total_rows INTEGER,
+	OUT ddl_stmt VARCHAR[], OUT index_name VARCHAR) IS 'Function: 	_rif40_common_partition_create_insert()
+Parameters:	Schema, table, column, total rows
+                [OUT] ddl statement array, [PK/UK] index name
+Returns:	OUT parameters as a record
+ 		DDL statement array is NULL if the function is unable to partition
+Description:	Automatic range/hash partition schema.table on column
+		INSERT
+
+* Foreach partition:
+Call: _rif40_common_partition_create_insert()
+
+* Foreach partition:
++	INSERT 1 rows. This creates the partition
++	TRUNCATE partition
++ 	Bring data back by partition, order by range partition, primary key
+[End of _rif40_common_partition_create_insert()]';
+
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_create_complete(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, index_name VARCHAR)
+RETURNS void
+SECURITY INVOKER
+AS $func$
+/*
+Function: 	_rif40_common_partition_create_complete()
+Parameters:	Schema, table, column, UK/PK indexname
+Returns:	Nothing
+Description:	Automatic range partition schema.table on column
+		Completion tasks
+
+* If table is a numerator, cluster each partition (not the master table)
+
+CLUSTER VERBOSE rif40.sahsuland_pop_1989 USING sahsuland_pop_1989_pk;
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  clustering "rif40.sahsuland_pop_1989" using sequential scan and sort
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_pop_1989": found 0 removable, 54120 nonremovable row versions in 558 pages
+
+* Re-anaylse
+
+ANALYZE VERBOSE rif40.sahsuland_cancer;
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  analyzing "rif40.sahsuland_cancer"
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer": scanned 0 of 0 pages, containing 0 live rows and 0 dead rows; 0 rows in sample, 0 estimated total rows
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  analyzing "rif40.sahsuland_cancer" inheritance tree
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer_1989": scanned 93 of 93 pages, containing 8103 live rows and 0 dead rows; 3523 rows in sample, 8103 estimated total rows
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer_1990": scanned 94 of 94 pages, containing 8244 live rows and 0 dead rows; 3561 rows in sample, 8244 estimated total rows
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer_1991": scanned 95 of 95 pages, containing 8357 live rows and 0 dead rows; 3598 rows in sample, 8357 estimated total rows
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer_1992": scanned 102 of 102 pages, containing 8971 live rows and 0 dead rows; 3864 rows in sample, 8971 estimated total rows
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer_1993": scanned 103 of 103 pages, containing 9052 live rows and 0 dead rows; 3902 rows in sample, 9052 estimated total rows
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer_1994": scanned 103 of 103 pages, containing 8978 live rows and 0 dead rows; 3902 rows in sample, 8978 estimated total rows
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer_1995": scanned 103 of 103 pages, containing 9043 live rows and 0 dead rows; 3902 rows in sample, 9043 estimated total rows
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  "sahsuland_cancer_1996": scanned 99 of 99 pages, containing 8707 live rows and 0 dead rows; 3748 rows in sample, 8707 estimated total rows
+
+* Drop temporary table:
+
+DROP TABLE rif40_range_partition /- Temporary table -/;
+
+ */
+DECLARE
+	c3gangep CURSOR(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR) FOR /* GET PK/unique index column */
+		SELECT n.nspname AS schema_name, t.relname AS table_name, 
+		       i.relname AS index_name, array_to_string(array_agg(a.attname), ', ') AS column_names, ix.indisprimary
+		 FROM pg_class t, pg_class i, pg_index ix, pg_attribute a, pg_namespace n
+		 WHERE t.oid          = ix.indrelid
+		   AND i.oid          = ix.indexrelid
+		   AND a.attrelid     = t.oid
+		   AND a.attnum       = ANY(ix.indkey)
+		   AND t.relkind      = 'r'
+		   AND ix.indisunique = TRUE
+		   AND t.relnamespace = n.oid 
+		   AND n.nspname      = l_schema
+		   AND t.relname      = l_table
+		   AND a.attname      != l_column
+		 GROUP BY n.nspname, t.relname, i.relname, ix.indisprimary
+		 ORDER BY n.nspname, t.relname, i.relname, ix.indisprimary DESC;		
+	c4gangep CURSOR(l_table VARCHAR) FOR					/* Is table indirect denominator */
+		SELECT table_name
+	       	  FROM rif40_tables
+	       	 WHERE isindirectdenominator = 1 
+		   AND table_name            = UPPER(l_table);
+	c5gangep CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR			/* List of partitions */
+		SELECT nmsp_parent.nspname AS parent_schema,
+	   	       parent.relname      AS master_table,
+		       nmsp_child.nspname  AS partition_schema,
+		       child.relname       AS partition
+		  FROM pg_inherits, pg_class parent, pg_class child, pg_namespace nmsp_parent, pg_namespace nmsp_child 
+		 WHERE pg_inherits.inhparent = parent.oid
+		   AND pg_inherits.inhrelid  = child.oid
+		   AND nmsp_parent.oid       = parent.relnamespace 
+		   AND nmsp_child.oid        = child.relnamespace
+	       	   AND parent.relname        = l_table 
+		   AND nmsp_parent.nspname   = l_schema;
+--	
+	c3a_rec 	RECORD;
+	c4_rec 		RECORD;
+	c5_rec 		RECORD;
+--
+	ddl_stmt	VARCHAR[];
+	i 		INTEGER;
+	warnings	INTEGER:=0;
+BEGIN
+--
+-- Must be rif40 or have rif_user or rif_manager role
+--
+	IF USER != 'rif40' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
+		PERFORM rif40_log_pkg.rif40_error(-20999, '_rif40_common_partition_create_insert', 'User % must be rif40 or have rif_user or rif_manager role', 
+			USER::VARCHAR);
+	END IF;
+--
+-- If table is a numerator, cluster
+--
+	OPEN c4gangep(l_table);
+	FETCH c4gangep INTO c4_rec;
+	CLOSE c4gangep;
+-- 
+	IF c4_rec.table_name IS NOT NULL AND index_name IS NOT NULL THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_complete', 'Rebuild master cluster: %.%', 
+			l_schema::VARCHAR, l_table::VARCHAR);
+		ddl_stmt[1]:='CLUSTER VERBOSE '||quote_ident(l_schema)||'.'||quote_ident(l_table)||
+			' USING '||index_name;
+	END IF;
+--
+-- Cluster partitions
+-- 
+	i:=2;
+	IF c4_rec.table_name IS NOT NULL AND index_name IS NOT NULL THEN
+		FOR c5_rec IN c5gangep(l_schema, l_table) LOOP
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_complete', 'Cluster: %.%', 
+				c5_rec.partition_schema::VARCHAR, c5_rec.partition::VARCHAR);
+--
+-- GET PK/unique index column
+--
+			OPEN c3gangep(c5_rec.partition_schema, c5_rec.partition, l_column);	
+			FETCH c3gangep INTO c3a_rec;
+			CLOSE c3gangep;
+			IF c3a_rec.index_name IS NOT NULL THEN
+				ddl_stmt[i]:='CLUSTER VERBOSE '||c5_rec.partition_schema||'.'||c5_rec.partition||
+					' USING '||c3a_rec.index_name;
+				i:=i+1;
+			ELSE
+				PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_complete', 
+					'Unable to cluster: %.%:%; no unique index or primary key found', 
+					c5_rec.partition_schema::VARCHAR	/* Schema */, 
+					l_table::VARCHAR 			/* Master table */,
+					c5_rec.partition::VARCHAR		/* Partition */);
+				warnings:=warnings+1;
+			END IF;
+		END LOOP;
+	END IF;
+--
+	IF warnings > 0 THEN
+                PERFORM rif40_log_pkg.rif40_error(-19005, '_rif40_common_partition_create_complete',
+			'Unable to cluster: %.%; no unique indexes or primary keys found for % partitions', 
+			l_schema::VARCHAR	/* Schema */, 
+			l_table::VARCHAR 	/* Master table */,
+			warnings::VARCHAR	/* Warnings */);
+		END IF;		
+--
+-- Re-anaylse
+--
+	ddl_stmt[i]:='ANALYZE VERBOSE '||quote_ident(l_schema)||'.'||quote_ident(l_table);
+--
+-- Drop
+--
+	ddl_stmt[array_length(ddl_stmt, 1)+1]:='DROP TABLE rif40_auto_partition /* Temporary table */';
+
+--
+-- Run 2
+--
+	PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
+--
+END;
+$func$ 
+LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_common_partition_create_complete(VARCHAR, VARCHAR, VARCHAR, VARCHAR) IS 'Function: 	_rif40_common_partition_create_complete()
+Parameters:	Schema, table, column, UK/PK indexname
+Returns:	Nothing
+Description:	Automatic range partition schema.table on column
+		Completion tasks
+
+* If table is a numerator, cluster each partition (not the master table)
+* Re-anaylse';
 
 --
 -- Eof
