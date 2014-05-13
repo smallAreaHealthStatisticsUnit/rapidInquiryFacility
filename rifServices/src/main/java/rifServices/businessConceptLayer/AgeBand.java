@@ -1,6 +1,7 @@
 package rifServices.businessConceptLayer;
 
 import rifServices.system.RIFServiceError;
+
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceSecurityException;
@@ -9,6 +10,13 @@ import rifServices.util.FieldValidationUtility;
 
 import java.util.ArrayList;
 import java.text.Collator;
+
+
+import javax.xml.bind.annotation.XmlAttribute; 
+import javax.xml.bind.annotation.XmlAccessType; 
+import javax.xml.bind.annotation.XmlAccessorType; 
+import javax.xml.bind.annotation.XmlRootElement; 
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter; 
 
 
 /**
@@ -271,7 +279,7 @@ public final class AgeBand
 	 * @param ageBands the age bands
 	 * @return the array list
 	 */
-	private static ArrayList<AgeBand> sortAgeBands(
+	public static ArrayList<AgeBand> sortAgeBands(
 		final ArrayList<AgeBand> ageBands) {
 		
 		DisplayableItemSorter sorter = new DisplayableItemSorter();
