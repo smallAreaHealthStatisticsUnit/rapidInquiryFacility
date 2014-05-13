@@ -341,5 +341,25 @@ public enum RIFServiceError {
 	XML_PROBLEM_READING_HEALTH_CODE_TAXONOMY,
 	
 	/** The xml taxonomy reader no input file specified. */
-	XML_TAXONOMY_READER_NO_INPUT_FILE_SPECIFIED
+	XML_TAXONOMY_READER_NO_INPUT_FILE_SPECIFIED,
+	
+	/** unable to add a study to the database */
+	UNABLE_TO_ADD_STUDY,
+	
+	/** covariate does not exist */
+	NON_EXISTENT_COVARIATE,
+	
+	/** unable to delete all studies from the database */
+	UNABLE_DELETE_STUDIES,
+	
+	MAXIMUM_READ_CONNECTIONS_EXCEEDED,
+	
+	MAXIMUM_WRITE_CONNECTIONS_EXCEEDED,
+	
+	NO_ND_PAIR_FOR_NUMERATOR_TABLE_NAME,
+	
+	NO_HEALTH_TAXONOMY_FOR_NAMESPACE,
+	
+	HEALTH_CODE_NOT_KNOWN_TO_PROVIDER
+	
 }
