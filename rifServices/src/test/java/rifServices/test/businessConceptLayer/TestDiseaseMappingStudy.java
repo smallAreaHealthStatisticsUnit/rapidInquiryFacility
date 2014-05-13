@@ -336,7 +336,50 @@ public class TestDiseaseMappingStudy extends AbstractRIFTestCase {
 				3);
 		}		
 	}
+
 	
+	@Test
+	public void rejectInvestigationsWithDifferentDenominators() {
+		
+		DiseaseMappingStudy diseaseMappingStudy
+			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+		diseaseMappingStudy.clearInvestigations();
+		
+		SampleTestObjectGenerator generator 
+			= new SampleTestObjectGenerator();
+		Investigation investigation1
+			= generator.createSampleInvestigation("Investigation 1");
+		NumeratorDenominatorPair ndPair1
+			= investigation1.getNdPair();
+		ndPair1.setDenominatorTableName("denominator_table_name1");
+		diseaseMappingStudy.addInvestigation(investigation1);
+		
+		Investigation investigation2
+			= generator.createSampleInvestigation("Investigation 2");
+		NumeratorDenominatorPair ndPair2
+			= investigation2.getNdPair();
+		ndPair2.setDenominatorTableName("denominator_table_name2");
+		diseaseMappingStudy.addInvestigation(investigation2);
+
+		Investigation investigation3
+			= generator.createSampleInvestigation("Investigation 3");
+		NumeratorDenominatorPair ndPair3
+			= investigation3.getNdPair();
+		ndPair3.setDenominatorTableName("denominator_table_name1");
+		diseaseMappingStudy.addInvestigation(investigation3);
+
+		try {
+			diseaseMappingStudy.checkErrors();
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY,
+				1);			
+		}
+		
+	}
 	/**
 	 * Test security violations.
 	 */
