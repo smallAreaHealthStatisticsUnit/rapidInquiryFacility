@@ -1,11 +1,11 @@
 package rifServices.taxonomyServices;
 
 import rifServices.businessConceptLayer.HealthCode;
+
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.Parameter;
 import rifServices.system.RIFServiceException;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 
 
@@ -122,7 +122,6 @@ public interface HealthCodeProvider {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<HealthCode> getHealthCodes(
-		final Connection connection,
 		final String searchText)
 		throws RIFServiceException;
 	
@@ -133,8 +132,7 @@ public interface HealthCodeProvider {
 	 * @return the top level codes
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<HealthCode> getTopLevelCodes(
-		final Connection connection) 
+	public ArrayList<HealthCode> getTopLevelCodes() 
 		throws RIFServiceException;
 	
 	/**
@@ -146,7 +144,6 @@ public interface HealthCodeProvider {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<HealthCode> getImmediateSubterms(
-		final Connection connection,
 		final HealthCode parentHealthCode) 
 		throws RIFServiceException;
 
@@ -159,8 +156,12 @@ public interface HealthCodeProvider {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public HealthCode getParentHealthCode(
-		final Connection connection,
 		final HealthCode childHealthCode) 
+		throws RIFServiceException;
+	
+	public HealthCode getHealthCode(
+		final String code,
+		final String nameSpace) 
 		throws RIFServiceException;
 	
 }
