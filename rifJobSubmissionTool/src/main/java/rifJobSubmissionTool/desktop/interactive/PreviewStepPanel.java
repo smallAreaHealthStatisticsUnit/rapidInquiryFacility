@@ -5,18 +5,23 @@ import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
 import rifJobSubmissionTool.util.UserInterfaceFactory;
-
+import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.ComparisonArea;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.RIFJobSubmission;
 import rifServices.io.RIFJobSubmissionHTMLWriter;
 import rifServices.system.RIFServiceException;
+import rifServices.system.RIFServiceMessages;
 
 import java.awt.GridBagConstraints;
+
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
+import javax.swing.JTextArea;
 import javax.swing.JPanel;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
+import javax.swing.border.LineBorder;
 
 
 
@@ -103,6 +108,9 @@ public class PreviewStepPanel extends AbstractStepPanel {
 	/** The preview report html pane. */
 	private JEditorPane previewReportHTMLPane;
 	
+	private JTextArea otherNotesTextArea;
+	
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -124,6 +132,8 @@ public class PreviewStepPanel extends AbstractStepPanel {
 		previewReportHTMLPane = userInterfaceFactory.createHTMLEditorPane();	
 		scrollPane 
 			= userInterfaceFactory.createScrollPane(previewReportHTMLPane);
+		
+		otherNotesTextArea = userInterfaceFactory.createTextArea(4, 20);
 	}
 
 	/**
@@ -159,10 +169,52 @@ public class PreviewStepPanel extends AbstractStepPanel {
 		
 		panelGC.gridy++;		
 		panelGC.fill = GridBagConstraints.BOTH;
-		panelGC.weighty = 1;
+		panelGC.weightx = 1;
+		panelGC.weighty = 0.80;
 		
-		panel.add(scrollPane, panelGC);
-		scrollPane.getVerticalScrollBar().setValue(0);		
+		panel.add(scrollPane, panelGC);		
+		scrollPane.getVerticalScrollBar().setValue(0);
+		
+		panelGC.gridy++;
+		panelGC.weighty = 0.20;
+		panel.add(createOtherNotesPanel(), panelGC);
+		
+	}
+	
+	private JPanel createOtherNotesPanel() {
+		UserInterfaceFactory userInterfaceFactory
+			= getUserInterfaceFactory();
+		JPanel panel 
+			= userInterfaceFactory.createPanel();
+		GridBagConstraints panelGC 
+			= userInterfaceFactory.createGridBagConstraints();
+		String otherNotesLabelText
+			= RIFServiceMessages.getMessage("abstractStudy.otherNotes.label");
+		JLabel otherNotesLabel
+			= userInterfaceFactory.createLabel(otherNotesLabelText);
+		panel.add(otherNotesLabel, panelGC);
+
+		panelGC.gridy++;
+		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weightx = 1;
+		panelGC.weighty = 0;
+		String otherNotesInstructionsText
+			= RIFJobSubmissionToolMessages.getMessage("previewStepPanel.otherNotesInstructions");
+		JLabel instructionsLabel
+			= userInterfaceFactory.createInstructionLabel(otherNotesInstructionsText);
+		instructionsLabel.setText(otherNotesInstructionsText);
+		instructionsLabel.setBorder(LineBorder.createGrayLineBorder());
+		panel.add(instructionsLabel, panelGC);
+		
+		panelGC.gridy++;
+		panelGC.fill = GridBagConstraints.BOTH;
+		panelGC.weightx = 1;
+		panelGC.weighty = 1;
+		JScrollPane otherNotesScrollPane
+			 = userInterfaceFactory.createScrollPane(otherNotesTextArea);
+		panel.add(otherNotesScrollPane, panelGC);
+		
+		return panel;
 	}
 	
 	// ==========================================
@@ -197,6 +249,9 @@ public class PreviewStepPanel extends AbstractStepPanel {
 			String htmlReport
 				= rifJobSubmissionWriter.writeJobSubmission(originalJobSubmission);
 			previewReportHTMLPane.setText(htmlReport);	
+		
+			AbstractStudy study = originalJobSubmission.getStudy();
+			otherNotesTextArea.setText(study.getOtherNotes());
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(getParentDialog(), rifServiceException);
@@ -226,6 +281,11 @@ public class PreviewStepPanel extends AbstractStepPanel {
 		originalStudy.setComparisonArea(workingCopyComparisonArea);
 		
 		rifSession.addCommittedActivityStep(RIFActivityStep.CHOOSE_COMPARISON_AREA);
+		
+		
+		AbstractStudy study
+			= originalJobSubmission.getStudy();
+		study.setOtherNotes(otherNotesTextArea.getText().trim());
 	}
 	
 	/**
