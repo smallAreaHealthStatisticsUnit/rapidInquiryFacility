@@ -517,6 +517,42 @@ public class Investigation
 		
 		yearIntervals.add(yearInterval);
 	}
+	
+	/**
+	 * @TODO
+	 * the minimum age group of the minimum Age Band
+	 * @return
+	 */
+	public AgeGroup getMinimumAgeGroup() {
+		
+		ArrayList<AgeBand> sortedAgeBands
+			= AgeBand.sortAgeBands(ageBands);
+		if (sortedAgeBands.isEmpty()) {
+			return null;
+		}
+		
+		AgeBand lowestAgeBand = sortedAgeBands.get(0);
+		return lowestAgeBand.getLowerLimitAgeGroup();
+	}	
+	
+	/**
+	 * @TODO
+	 * the maximum age group of the maximum Age Band
+	 * @return
+	 */
+	public AgeGroup getMaximumAgeGroup() {
+
+		ArrayList<AgeBand> sortedAgeBands
+			= AgeBand.sortAgeBands(ageBands);
+		if (sortedAgeBands.isEmpty()) {
+			return null;
+		}
+	
+		AgeBand highestAgeBand 
+			= sortedAgeBands.get(sortedAgeBands.size() - 1);
+		return highestAgeBand.getUpperLimitAgeGroup();		
+	}
+	
 
 	/**
 	 * Checks for identical contents.
