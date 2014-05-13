@@ -1,13 +1,18 @@
 package rifServices.test.services;
 
 
-import rifServices.ProductionRIFJobSubmissionService;
+import rifServices.test.TestRIFSubmissionService;
+
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 import rifServices.test.AbstractRIFTestCase;
 
 import java.util.ArrayList;
+
 import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 
@@ -85,7 +90,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 	// Section Properties
 	// ==========================================
 	/** The service. */
-	private ProductionRIFJobSubmissionService service;
+	private TestRIFSubmissionService service;
 	
 	/** The sahsu geography. */
 	private Geography sahsuGeography;
@@ -141,18 +146,10 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 	 */
 	public TestCovariateFeatures() {
 		service
-			= new ProductionRIFJobSubmissionService();
-		
-		try {
-			service.login("keving", "a");			
-		}
-		catch(RIFServiceException exception) {
-			exception.printStackTrace(System.out);
-		}
-	
+			= new TestRIFSubmissionService();
+		service.initialiseService();
 
 		
-
 		sahsuGeography
 			= Geography.newInstance("SAHSU", "stuff about sahsuland");
 		invalidGeography
@@ -193,6 +190,28 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 	
 	}
 
+	
+	@Before
+	public void setUp() {
+		try {
+			service.login("keving", new String("a").toCharArray());			
+		}
+		catch(RIFServiceException exception) {
+			exception.printStackTrace(System.out);
+		}		
+	}
+	
+	@After
+	public void tearDown() {
+		try {
+			service.deregisterAllUsers();		
+		}
+		catch(RIFServiceException exception) {
+			exception.printStackTrace(System.out);
+		}				
+	}
+	
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
@@ -309,6 +328,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 	 */
 	public void getCovariatesE2() {
 		try {
+			System.out.println("TestCovariates - getCovariatesE2 START");
 			service.getCovariates(
 				invalidUser, 
 				sahsuGeography,

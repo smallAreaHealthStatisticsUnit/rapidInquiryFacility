@@ -1,12 +1,12 @@
 package rifServices.test.services;
 
 
-import rifServices.ProductionRIFJobSubmissionService;
-
+import rifServices.test.TestRIFSubmissionService;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.GeoLevelToMap;
+import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.system.RIFServiceError;
@@ -16,6 +16,8 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 
@@ -94,7 +96,7 @@ public class TestMapAreaFeatures extends AbstractRIFTestCase {
 	// ==========================================
 	
 	/** The service. */
-	private ProductionRIFJobSubmissionService service;
+	private TestRIFSubmissionService service;
 	
 	/** The valid user. */
 	private User validUser;
@@ -152,7 +154,9 @@ public class TestMapAreaFeatures extends AbstractRIFTestCase {
 	 */
 	public TestMapAreaFeatures() {
 		service
-			= new ProductionRIFJobSubmissionService();
+			= new TestRIFSubmissionService();
+		service.initialiseService();
+
 
 		validUser = User.newInstance("keving", "11.111.11.228");
 		invalidUser = User.newInstance(null, "11.111.11.228");
@@ -187,19 +191,32 @@ public class TestMapAreaFeatures extends AbstractRIFTestCase {
 		invalidGeoLevelToMap
 			= GeoLevelToMap.newInstance("");
 		nonExistentGeoLevelToMap
-			= GeoLevelToMap.newInstance("non existent geolevel");
-		
+			= GeoLevelToMap.newInstance("non existent geolevel");	
+	}
+
+	
+	@Before
+	public void setUp() {
 		try {
-			service.login("keving", "a");			
+			service.login("keving", new String("a").toCharArray());			
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
-		}
-
-		
-		
+		}		
 	}
-
+	
+	@After
+	public void tearDown() {
+		try {
+			service.deregisterAllUsers();		
+		}
+		catch(RIFServiceException exception) {
+			exception.printStackTrace(System.out);
+		}				
+	}
+	
+	
+	
 	/**
 	 * Gets the map areas n1.
 	 *

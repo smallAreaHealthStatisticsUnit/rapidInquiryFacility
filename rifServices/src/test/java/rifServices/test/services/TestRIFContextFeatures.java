@@ -1,17 +1,20 @@
 package rifServices.test.services;
 
 
-import rifServices.ProductionRIFJobSubmissionService;
+import rifServices.test.TestRIFSubmissionService;
 
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 import rifServices.test.AbstractRIFTestCase;
+import rifServices.util.DisplayableItemSorter;
 import rifServices.util.FieldValidationUtility;
 
 import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 
@@ -88,7 +91,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	// Section Properties
 	// ==========================================
 	/** The service. */
-	private ProductionRIFJobSubmissionService service;
+	private TestRIFSubmissionService service;
 	
 	/** The test user. */
 	private User testUser;
@@ -141,7 +144,9 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public TestRIFContextFeatures() {
 		service
-			= new ProductionRIFJobSubmissionService();
+			= new TestRIFSubmissionService();
+		service.initialiseService();
+
 		FieldValidationUtility fieldValidationUtility 
 			= new FieldValidationUtility();
 		String maliciousFieldValue 
@@ -175,15 +180,29 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		invalidUser = User.newInstance(null, "11.111.11.228");
 		maliciousUser = User.newInstance(maliciousFieldValue, "11.111.11.228");
 		
+	}
+	
+	
+	@Before
+	public void setUp() {
 		try {
-			service.login("keving", "a");			
+			service.login("keving", new String("a").toCharArray());			
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
-		}
-
-	
+		}		
 	}
+	
+	@After
+	public void tearDown() {
+		try {
+			service.deregisterAllUsers();		
+		}
+		catch(RIFServiceException exception) {
+			exception.printStackTrace(System.out);
+		}				
+	}
+	
 	
 	// ==========================================
 	// Section Accessors and Mutators
@@ -199,8 +218,15 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		try {
 			ArrayList<Geography> geographies
 				= service.getGeographies(testUser);
-			assertEquals(1, geographies.size());
-			Geography sahsuGeography = geographies.get(0);
+			assertEquals(3, geographies.size());
+			
+			DisplayableItemSorter sorter = new DisplayableItemSorter();
+			for (Geography geography : geographies) {
+				sorter.addDisplayableListItem(geography);
+			}			
+
+			Geography sahsuGeography
+				= (Geography) sorter.sortList().get(1);
 			assertEquals("SAHSU", sahsuGeography.getName());
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -439,12 +465,16 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
+			System.out.println("TestRIFContextFeatures 3");
 			checkErrorType(
 				rifServiceException,
 				RIFServiceError.SECURITY_VIOLATION,
 				1);
-		}
-		
+		}		
+	}
+	
+	@Test
+	public void getHealthThemesS2() {
 		try {
 			service.getHealthThemes(testUser, maliciousGeography);
 			//there should be one health theme
@@ -637,7 +667,8 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 				1);
 		}
 	}	
-	
+
+		
 	/**
 	 * Gets the geo level select values n1.
 	 *
@@ -648,9 +679,22 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		try {
 			ArrayList<Geography> geographies
 				= service.getGeographies(testUser);
-			//the first one should be "SAHSU"
-			Geography sahsuGeography = geographies.get(0);
+			assertEquals(3, geographies.size());
+			
+			DisplayableItemSorter sorter = new DisplayableItemSorter();
+			for (Geography geography : geographies) {
+				sorter.addDisplayableListItem(geography);
+			}
+			//Three geographies should be returned
+			//EW01
+			//SAHSU
+			//UK91
 
+			//the second one should be "SAHSU"
+			Geography sahsuGeography 
+				= (Geography) sorter.sortList().get(1);
+			assertEquals("SAHSU", sahsuGeography.getDisplayName());
+			
 			ArrayList<GeoLevelSelect> geoLevelSelectValues
 				= service.getGeographicalLevelSelectValues(
 					testUser, 
@@ -1473,6 +1517,27 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}		
 	}
 		
+	private static ArrayList<AbstractCovariate> sortCovariates(
+			final ArrayList<AbstractCovariate> covariates) {
+			DisplayableItemSorter sorter = new DisplayableItemSorter();
+				
+			for (AbstractCovariate covariate : covariates) {
+				sorter.addDisplayableListItem(covariate);
+			}
+				
+			ArrayList<AbstractCovariate> results = new ArrayList<AbstractCovariate>();
+			ArrayList<String> identifiers = sorter.sortIdentifiersList();
+			for (String identifier : identifiers) {
+				AbstractCovariate sortedCovariate 
+					= (AbstractCovariate) sorter.getItemFromIdentifier(identifier);
+				results.add(sortedCovariate);
+			}
+				
+			return results;
+		}
+
+	
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

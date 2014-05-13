@@ -1,7 +1,7 @@
 package rifServices.test.services;
 
 
-import rifServices.ProductionRIFJobSubmissionService;
+import rifServices.test.TestRIFSubmissionService;
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 import rifServices.test.AbstractRIFTestCase;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
-import org.junit.Test;
+import org.junit.*;
 
 
 /**
@@ -86,7 +86,7 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 	// Section Properties
 	// ==========================================
 	/** The service. */
-	private ProductionRIFJobSubmissionService service;
+	private TestRIFSubmissionService service;
 	
 	/** The sahsu geography. */
 	private Geography sahsuGeography;
@@ -128,18 +128,10 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 	 */
 	public TestAgeGenderYearsServiceFeatures() {
 		service
-			= new ProductionRIFJobSubmissionService();
-		
-		
-		try {
-			service.login("keving", "a");			
-		}
-		catch(RIFServiceException exception) {
-			exception.printStackTrace(System.out);
-		}
+			= new TestRIFSubmissionService();
+		service.initialiseService();
 
-		
-		
+				
 		masterHealthCode = HealthCode.newInstance();
 		masterHealthCode.setCode("0880");
 		masterHealthCode.setDescription("obstetric air embolism");
@@ -177,7 +169,26 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 				"description of denom table");		
 	}
 
-
+	@Before
+	public void setUp() {
+		try {
+			service.login("keving", new String("a").toCharArray());			
+		}
+		catch(RIFServiceException exception) {
+			exception.printStackTrace(System.out);
+		}		
+	}
+	
+	@After
+	public void tearDown() {
+		try {
+			service.deregisterAllUsers();		
+		}
+		catch(RIFServiceException exception) {
+			exception.printStackTrace(System.out);
+		}				
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================

@@ -1,16 +1,20 @@
 package rifServices.test.services;
 
 
-import rifServices.ProductionRIFJobSubmissionService;
+import rifServices.test.TestRIFSubmissionService;
+
+
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 import rifServices.test.AbstractRIFTestCase;
-
-import java.util.ArrayList;
-
+import rifServices.util.DisplayableItemSorter;
 import static org.junit.Assert.*;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
 
 
 /**
@@ -77,7 +81,7 @@ import org.junit.Test;
  *
  */
 
-public class TestHealthOutcomeFeatures extends AbstractRIFTestCase {
+public class TestHealthCodeProvider extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -87,7 +91,7 @@ public class TestHealthOutcomeFeatures extends AbstractRIFTestCase {
 	// Section Properties
 	// ==========================================
 	/** The service. */
-	private ProductionRIFJobSubmissionService service;
+	private TestRIFSubmissionService service;
 	
 	/** The icd10 health code taxonomy. */
 	private HealthCodeTaxonomy icd10HealthCodeTaxonomy;
@@ -99,8 +103,13 @@ public class TestHealthOutcomeFeatures extends AbstractRIFTestCase {
 	private User invalidUser;
 	
 	/** The master health code. */
-	private HealthCode masterHealthCode;
-		
+	//private HealthCode masterHealthCode;
+	
+	private HealthCode masterChapter02HealthCode;
+	private HealthCode masterC34HealthCode;
+	private HealthCode masterC342HealthCode;
+	
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -108,21 +117,36 @@ public class TestHealthOutcomeFeatures extends AbstractRIFTestCase {
 	/**
 	 * Instantiates a new test health outcome features.
 	 */
-	public TestHealthOutcomeFeatures() {
-		service
-			= new ProductionRIFJobSubmissionService();
+	public TestHealthCodeProvider() {
+		service = new TestRIFSubmissionService();
+		service.initialiseService();
+
 		
 		testUser = User.newInstance("keving", "11.111.11.228");
 		invalidUser = User.newInstance("nobody", "11.111.11.228");
 	
-		masterHealthCode = HealthCode.newInstance();
-		masterHealthCode.setCode("0880");
-		masterHealthCode.setDescription("obstetric air embolism");
-		masterHealthCode.setNameSpace("icd10");
+		masterChapter02HealthCode = HealthCode.newInstance();
+		masterChapter02HealthCode.setCode("Chapter 02");
+		masterChapter02HealthCode.setDescription("Chapter 02; Neoplasms");
+		masterChapter02HealthCode.setNameSpace("icd10");
+		masterChapter02HealthCode.setTopLevelTerm(true);
+
+		masterC34HealthCode = HealthCode.newInstance();
+		masterC34HealthCode.setCode("C34");
+		masterC34HealthCode.setDescription("malignant neoplasm of bronchus and lung");
+		masterC34HealthCode.setNameSpace("icd10");
+	
+		masterC342HealthCode = HealthCode.newInstance();
+		masterC342HealthCode.setCode("C342");
+		masterC342HealthCode.setDescription("middle lobe, bronchus or lung");
+		masterC342HealthCode.setNameSpace("icd10");
 		
+	}
+
+	@Before
+	public void setUp() {
 		try {
-			service.login("keving", "a");	
-			
+			service.login("keving", new String("a").toCharArray());			
 			ArrayList<HealthCodeTaxonomy> healthCodeTaxonomies
 				= service.getHealthCodeTaxonomies(testUser);
 			icd10HealthCodeTaxonomy
@@ -130,10 +154,19 @@ public class TestHealthOutcomeFeatures extends AbstractRIFTestCase {
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
-		}
-		
+		}		
 	}
-
+	
+	@After
+	public void tearDown() {
+		try {
+			service.clearHealthCodeProviders(testUser);
+			service.deregisterAllUsers();		
+		}
+		catch(RIFServiceException exception) {
+			exception.printStackTrace(System.out);
+		}				
+	}
 
 	// ==========================================
 	// Section Accessors and Mutators
@@ -145,11 +178,11 @@ public class TestHealthOutcomeFeatures extends AbstractRIFTestCase {
 	 * @return the top level code n1
 	 */
 	@Test
-	public void getTopLevelCodeN1() {
+	public void getTopLevelCodesN1() {
 		try {			
 			ArrayList<HealthCode> topLevelICD10Codes
 				= service.getTopLevelCodes(testUser, icd10HealthCodeTaxonomy);
-			assertEquals(20, topLevelICD10Codes.size());
+			assertEquals(2, topLevelICD10Codes.size());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -184,56 +217,47 @@ public class TestHealthOutcomeFeatures extends AbstractRIFTestCase {
 	@Test
 	public void getImmediateSubTermsN1() {
 		try {		
+			HealthCode chapter02
+				= HealthCode.createCopy(masterChapter02HealthCode);
 
-			System.out.println("TEST getImmediateSubTerms START ===================");
-			HealthCode chapter15
-				= HealthCode.newInstance(
-					"Chapter 15",
-					"icd10",
-					"Chapter 15; Pregnancy, childbirth and the puerperium",
-					true);
-			ArrayList<HealthCode> level3Codes
+			ArrayList<HealthCode> firstGenerationCodes
 				= service.getImmediateSubterms(
 					testUser, 
-					chapter15);			
-			assertEquals(60, level3Codes.size());
-			HealthCode firstLevel3Code = level3Codes.get(0);
-			assertEquals("O00", firstLevel3Code.getCode());
-			assertEquals("ECTOPIC PREGNANCY", firstLevel3Code.getDescription());
-			int lastLevel3Index = level3Codes.size() - 1;
-			HealthCode lastLevel3Code = level3Codes.get(lastLevel3Index);
-			assertEquals("O99", lastLevel3Code.getCode());
-						
-			HealthCode codeO87
-				= HealthCode.newInstance(
-					"O87",
-					"icd10",
-					"venous complications in the puerperium",
-					false);
-			ArrayList<HealthCode> level4Codes
-				= service.getImmediateSubterms(
-					testUser, 
-					codeO87);
-			assertEquals(6, level4Codes.size());
-			HealthCode firstSubTerm = level4Codes.get(0);
-			assertEquals("O870", firstSubTerm.getCode());
+					chapter02);			
+			assertEquals(2, firstGenerationCodes.size());
 			
-			HealthCode lastSubTerm = level4Codes.get(5);
-			assertEquals("O879", lastSubTerm.getCode());	
-						
-			HealthCode codeO872
-				= HealthCode.newInstance(
-					"O872",
-					"icd10",
-					"haemorrhoids in the puerperium",
-					false);
+			DisplayableItemSorter sorter = new DisplayableItemSorter();
+			for (HealthCode firstGenerationCode : firstGenerationCodes) {
+				sorter.addDisplayableListItem(firstGenerationCode);
+			}
 			
-			ArrayList<HealthCode> level5Codes
+			HealthCode currentResult = (HealthCode) sorter.sortList().get(0);
+			assertEquals("C34", currentResult.getCode());
+			
+			ArrayList<HealthCode> secondGenerationCodes
 				= service.getImmediateSubterms(
 					testUser, 
-					codeO872);
-			assertEquals(0, level5Codes.size());	
-			System.out.println("TEST getImmediateSubTerms END ===================");
+					currentResult);			
+			assertEquals(3, secondGenerationCodes.size());
+			
+			sorter = new DisplayableItemSorter();
+			for (HealthCode secondGenerationCode : secondGenerationCodes) {
+				sorter.addDisplayableListItem(secondGenerationCode);
+			}
+
+			currentResult = (HealthCode) sorter.sortList().get(0);
+			assertEquals("C340", currentResult.getCode());		
+			currentResult = (HealthCode) sorter.sortList().get(1);
+			assertEquals("C341", currentResult.getCode());			
+			currentResult = (HealthCode) sorter.sortList().get(2);
+			assertEquals("C342", currentResult.getCode());
+
+			//C342 should have no children
+			ArrayList<HealthCode> thirdGenerationCodes
+				= service.getImmediateSubterms(
+					testUser, 
+					currentResult);			
+			assertEquals(0, thirdGenerationCodes.size());
 
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -249,11 +273,11 @@ public class TestHealthOutcomeFeatures extends AbstractRIFTestCase {
 	 */
 	@Test
 	/**
-	 * Check for invalid health code 
+	 * Check that service tries to validate a health code
 	 */
 	public void getImmediateSubTermsE1() {
 		HealthCode healthCode 
-			= HealthCode.createCopy(masterHealthCode);
+			= HealthCode.createCopy(masterC34HealthCode);
 		healthCode.setDescription("");
 		healthCode.setCode(null);
 		
@@ -278,45 +302,18 @@ public class TestHealthOutcomeFeatures extends AbstractRIFTestCase {
 	 */
 	@Test
 	/**
-	 * Check for valid health code that violates ICD rules 
+	 * Check for non-existent health code 
 	 */
 	public void getImmediateSubTermsE2() {
 		HealthCode healthCode 
-			= HealthCode.createCopy(masterHealthCode);
-		//RIF does not support two digit code
-		healthCode.setCode("08");
-		try {
-			service.getImmediateSubterms(
-				testUser, 
-				healthCode);			
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException, 
-				RIFServiceError.INVALID_ICD_CODE, 
-				1);
-		}
-	}	
-	
-	/**
-	 * Gets the immediate sub terms e3.
-	 *
-	 * @return the immediate sub terms e3
-	 */
-	@Test
-	/**
-	 * Check for non-existent health code 
-	 */
-	public void getImmediateSubTermsE3() {
-		HealthCode healthCode 
-			= HealthCode.createCopy(masterHealthCode);		
+			= HealthCode.createCopy(masterC34HealthCode);		
 		//this code guaranteed not to exist in ICD10
 		healthCode.setCode("XYZ");
 	
 		try {
-			service.getImmediateSubterms(
-				testUser, 
-				healthCode);			
+				service.getImmediateSubterms(
+					testUser, 
+					healthCode);			
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -327,25 +324,21 @@ public class TestHealthOutcomeFeatures extends AbstractRIFTestCase {
 	}
 	
 	/**
-	 * Gets the immediate sub terms e4.
+	 * Gets the immediate sub terms e3.
 	 *
-	 * @return the immediate sub terms e4
+	 * @return the immediate sub terms e3
 	 */
 	@Test
 	/**
 	 * Check for invalid user 
 	 */
-	public void getImmediateSubTermsE4() {
+	public void getImmediateSubTermsE3() {
 		try {
-			HealthCode codeO872
-				= HealthCode.newInstance(
-					"O872",
-					"icd10",
-					"haemorrhoids in the puerperium",
-					false);
+			HealthCode healthCode
+				= HealthCode.createCopy(masterC34HealthCode);
 			service.getImmediateSubterms(
 				invalidUser, 
-				codeO872);		
+				healthCode);		
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -364,29 +357,28 @@ public class TestHealthOutcomeFeatures extends AbstractRIFTestCase {
 	@Test 
 	public void getParentHealthCodeN1() {
 		try {
-			HealthCode codeO872
-				= HealthCode.newInstance(
-					"O872",
-					"icd10",
-					"haemorrhoids in the puerperium",
-					false);
-			HealthCode level3ParentCode
-				= service.getParentHealthCode(
-					testUser, 
-					codeO872);
-			assertNotNull(level3ParentCode);
-			assertEquals("O87", level3ParentCode.getCode());
-			assertEquals(false, level3ParentCode.isTopLevelTerm());
-			assertEquals(
-				"VENOUS COMPLICATIONS IN THE PUERPERIUM",
-				level3ParentCode.getDescription());
+			
+			HealthCode healthCode 
+				= HealthCode.createCopy(masterC342HealthCode);
 
-			HealthCode level1ParentCode
+			HealthCode parentCode
 				= service.getParentHealthCode(
 					testUser, 
-					level3ParentCode);
-			assertEquals("Chapter 15", level1ParentCode.getCode());
-			assertEquals(true, level1ParentCode.isTopLevelTerm());
+					healthCode);
+			assertNotNull(parentCode);
+			assertEquals(masterC34HealthCode.getCode(), parentCode.getCode());
+			assertEquals(false, parentCode.isTopLevelTerm());
+			assertEquals(
+				masterC34HealthCode.getDescription(),
+				parentCode.getDescription());
+
+			HealthCode grandParentHealthCode
+				= service.getParentHealthCode(
+					testUser, 
+					parentCode);
+			assertEquals(masterChapter02HealthCode.getCode(), grandParentHealthCode.getCode());
+			System.out.println("getParentHealthCodeN1 grandParentHealthCode=="+grandParentHealthCode.getDisplayName()+"==");
+			assertEquals(true, grandParentHealthCode.isTopLevelTerm());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -405,7 +397,7 @@ public class TestHealthOutcomeFeatures extends AbstractRIFTestCase {
 	public void getParentHealthCodeE1() {
 		try {
 			HealthCode healthCode 
-				= HealthCode.createCopy(masterHealthCode);
+				= HealthCode.createCopy(masterC342HealthCode);
 			healthCode.setCode("");
 			healthCode.setDescription(null);
 						
@@ -422,6 +414,7 @@ public class TestHealthOutcomeFeatures extends AbstractRIFTestCase {
 		
 	}
 
+	
 	/**
 	 * Gets the parent health code e2.
 	 *
@@ -429,39 +422,12 @@ public class TestHealthOutcomeFeatures extends AbstractRIFTestCase {
 	 */
 	@Test
 	/**
-	 * Check for valid health code that violates ICD rules 
+	 * Check for non-existent health code 
 	 */
 	public void getParentHealthCodeE2() {
 		try {
 			HealthCode healthCode 
-				= HealthCode.createCopy(masterHealthCode);
-			healthCode.setCode("80");
-
-			service.getParentHealthCode(
-				testUser, 
-				healthCode);			
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException, 
-				RIFServiceError.INVALID_ICD_CODE,
-				1);
-		}
-	}
-	
-	/**
-	 * Gets the parent health code e3.
-	 *
-	 * @return the parent health code e3
-	 */
-	@Test
-	/**
-	 * Check for non-existent health code 
-	 */
-	public void getParentHealthCodeE3() {
-		try {
-			HealthCode healthCode 
-				= HealthCode.createCopy(masterHealthCode);
+				= HealthCode.createCopy(masterC342HealthCode);
 			healthCode.setCode("XYZ");
 
 			service.getParentHealthCode(
@@ -478,26 +444,22 @@ public class TestHealthOutcomeFeatures extends AbstractRIFTestCase {
 	
 
 	/**
-	 * Gets the parent health code e4.
+	 * Gets the parent health code e3.
 	 *
-	 * @return the parent health code e4
+	 * @return the parent health code e3
 	 */
 	@Test
 	/**
 	 * Check for invalid user 
 	 */
-	public void getParentHealthCodeE4() {
+	public void getParentHealthCodeE3() {
 		try {
-			HealthCode codeO872
-				= HealthCode.newInstance(
-					"O872",
-					"icd10",
-					"haemorrhoids in the puerperium",
-					false);
-
+			HealthCode healthCode
+				= HealthCode.createCopy(masterC342HealthCode);
+			
 			service.getParentHealthCode(
 				invalidUser, 
-				codeO872);			
+				healthCode);			
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -520,3 +482,4 @@ public class TestHealthOutcomeFeatures extends AbstractRIFTestCase {
 	// Section Override
 	// ==========================================
 }
+
