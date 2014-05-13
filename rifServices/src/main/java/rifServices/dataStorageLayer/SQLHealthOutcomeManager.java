@@ -1,6 +1,7 @@
 package rifServices.dataStorageLayer;
 
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
+
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.Investigation;
@@ -9,13 +10,16 @@ import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
+import rifServices.util.RIFLogger;
 import rifServices.taxonomyServices.HealthCodeProvider;
-import rifServices.taxonomyServices.ICD10TaxonomyProvider;
-import rifServices.taxonomyServices.ICD9TaxonomyProvider;
 import rifServices.taxonomyServices.RIFXMLTaxonomyProvider;
 
 import java.util.ArrayList;
+import java.io.File;
 import java.sql.*;
+import java.text.Collator;
+
 
 
 /**
@@ -103,9 +107,87 @@ public class SQLHealthOutcomeManager
 	/**
 	 * Instantiates a new SQL health outcome manager.
 	 */
-	public SQLHealthOutcomeManager() {
+	public SQLHealthOutcomeManager(RIFServiceStartupOptions rifServiceStartupOptions) {
 		healthCodeProviders = new ArrayList<HealthCodeProvider>();
 		
+		String targetPathValue
+			= rifServiceStartupOptions.getWebApplicationFilePath();
+		if (targetPathValue == null) {
+			targetPathValue = RIFServiceMessages.getRIFServicesClassRootLocation();
+		}
+		//initialise each health code provider
+		try {			
+			StringBuilder icd9CodesFileLocation = new StringBuilder();
+			icd9CodesFileLocation.append(targetPathValue);
+			icd9CodesFileLocation.append(File.separator);
+			icd9CodesFileLocation.append("ExampleICD9Codes.xml");
+
+			RIFXMLTaxonomyProvider icd9TaxonomyProvider = new RIFXMLTaxonomyProvider();
+			ArrayList<Parameter> parameters = new ArrayList<Parameter>();
+			Parameter inputFileParameter = Parameter.newInstance();
+			inputFileParameter.setName("input_file");		
+			inputFileParameter.setValue(icd9CodesFileLocation.toString());
+			parameters.add(inputFileParameter);
+			icd9TaxonomyProvider.initialise(parameters);
+			healthCodeProviders.add(icd9TaxonomyProvider);
+		}
+		catch(RIFServiceException rifServiceException) {
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLHealthOutcomeManager.class, 
+				"constructor", 
+				rifServiceException);
+		}
+				
+		try {			
+			StringBuilder icd10CodesFileLocation = new StringBuilder();
+			icd10CodesFileLocation.append(targetPathValue);
+			icd10CodesFileLocation.append(File.separator);
+			icd10CodesFileLocation.append("ExampleICD10Codes.xml");
+
+			RIFXMLTaxonomyProvider icd10TaxonomyProvider = new RIFXMLTaxonomyProvider();
+			ArrayList<Parameter> parameters = new ArrayList<Parameter>();
+			Parameter inputFileParameter = Parameter.newInstance();
+			inputFileParameter.setName("input_file");		
+			inputFileParameter.setValue(icd10CodesFileLocation.toString());
+			parameters.add(inputFileParameter);
+			icd10TaxonomyProvider.initialise(parameters);
+			healthCodeProviders.add(icd10TaxonomyProvider);
+		}
+		catch(RIFServiceException rifServiceException) {
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLHealthOutcomeManager.class, 
+				"constructor", 
+				rifServiceException);
+		}
+		
+		try {			
+			StringBuilder opcsCodesFileLocation = new StringBuilder();
+			opcsCodesFileLocation.append(targetPathValue);
+			opcsCodesFileLocation.append(File.separator);
+			opcsCodesFileLocation.append("ExampleOPCSCodes.xml");
+	
+			RIFXMLTaxonomyProvider opcsCodeProvider = new RIFXMLTaxonomyProvider();
+			ArrayList<Parameter> parameters2 = new ArrayList<Parameter>();
+			Parameter inputFileParameter2 = Parameter.newInstance();
+			inputFileParameter2.setName("input_file");
+			inputFileParameter2.setValue(opcsCodesFileLocation.toString());
+			parameters2.add(inputFileParameter2);
+	
+			opcsCodeProvider.initialise(parameters2);
+			healthCodeProviders.add(opcsCodeProvider);	
+		}
+		catch(RIFServiceException rifServiceException) {
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLHealthOutcomeManager.class, 
+				"constructor", 
+				rifServiceException);
+		}
+
+		
+		/*
 		ICD9TaxonomyProvider icd9TaxonomyProvider 
 			= new ICD9TaxonomyProvider();
 		healthCodeProviders.add(icd9TaxonomyProvider);		
@@ -113,34 +195,18 @@ public class SQLHealthOutcomeManager
 		ICD10TaxonomyProvider icd10TaxonomyProvider 
 			= new ICD10TaxonomyProvider();
 		healthCodeProviders.add(icd10TaxonomyProvider);		
+		*/		
 	}
 
 	/**
-	 * Initialise taxomies.
+	 * Initialise taxonomies.
 	 *
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public void initialiseTaxomies() 
 		throws RIFServiceException {
-		//@TODO
 
-		RIFXMLTaxonomyProvider icd10TaxonomyProvider = new RIFXMLTaxonomyProvider();
-		ArrayList<Parameter> parameters = new ArrayList<Parameter>();
-		Parameter inputFileParameter = Parameter.newInstance();
-		inputFileParameter.setName("input_file");
-		inputFileParameter.setValue("C://icd10_taxonomy//ExampleICD10Codes.xml");
-		parameters.add(inputFileParameter);
-		icd10TaxonomyProvider.initialise(parameters);
-		healthCodeProviders.add(icd10TaxonomyProvider);
 		
-		RIFXMLTaxonomyProvider opcsCodeProvider = new RIFXMLTaxonomyProvider();
-		ArrayList<Parameter> parameters2 = new ArrayList<Parameter>();
-		Parameter inputFileParameter2 = Parameter.newInstance();
-		inputFileParameter2.setName("input_file");
-		inputFileParameter2.setValue("C://icd10_taxonomy//ExampleOPCSCodes.xml");
-		parameters2.add(inputFileParameter2);
-		opcsCodeProvider.initialise(parameters2);
-		healthCodeProviders.add(opcsCodeProvider);				
 	}
 	
 	// ==========================================
@@ -178,6 +244,37 @@ public class SQLHealthOutcomeManager
 		final HealthCodeProvider healthCodeProvider) {
 
 		healthCodeProviders.clear();	
+	}
+	
+	/**
+	 * Gets the health code taxonomies.
+	 *
+	 * @return the health code taxonomies
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	public HealthCodeTaxonomy getHealthCodeTaxonomyFromNameSpace(
+		String healthCodeTaxonomyNameSpace)
+		throws RIFServiceException {
+
+
+		HealthCodeProvider healthCodeProvider
+			= getRelevantHealthCodeProvider(healthCodeTaxonomyNameSpace);
+
+		if (healthCodeProvider == null) {
+			//ERROR: no taxonomy for given name space
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"healthOutcomeManager.error.noHealthCodeTaxonomyForNameSpace",
+					healthCodeTaxonomyNameSpace);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.NO_HEALTH_TAXONOMY_FOR_NAMESPACE, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		else {
+			return healthCodeProvider.getHealthCodeTaxonomy();
+		}
 	}
 	
 	/**
@@ -252,9 +349,16 @@ public class SQLHealthOutcomeManager
 		catch(Exception exception) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
-					"covariateManager.db.unableToGetHealthOutcomesForInvestigation",
+					"healthOutcomeManager.db.unableToGetHealthOutcomesForInvestigation",
 					diseaseMappingStudy.getDisplayName(),
 					investigation.getDisplayName());
+			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLHealthOutcomeManager.class, 
+				errorMessage, 
+				exception);
+			
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.GET_HEALTH_OUTCOMES_FOR_INVESTIGATION, 
@@ -279,7 +383,6 @@ public class SQLHealthOutcomeManager
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<HealthCode> getTopLevelCodes(
-		final Connection connection,
 		final HealthCodeTaxonomy healthCodeTaxonomy) 
 		throws RIFServiceException {
 
@@ -288,7 +391,7 @@ public class SQLHealthOutcomeManager
 		
 		HealthCodeProvider healthCodeProvider
 			= getRelevantHealthCodeProvider(healthCodeTaxonomy);		
-		return healthCodeProvider.getTopLevelCodes(connection);
+		return healthCodeProvider.getTopLevelCodes();
 	}
 	
 	/**
@@ -300,7 +403,6 @@ public class SQLHealthOutcomeManager
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<HealthCode> getImmediateSubterms(
-		final Connection connection,
 		final HealthCode parentHealthCode) 
 		throws RIFServiceException {
 		
@@ -309,10 +411,32 @@ public class SQLHealthOutcomeManager
 		
 		HealthCodeProvider healthCodeProvider
 			= getRelevantHealthCodeProvider(parentHealthCode);		
-		return healthCodeProvider.getImmediateSubterms(connection, parentHealthCode);		
+		return healthCodeProvider.getImmediateSubterms(parentHealthCode);		
 	}
 	
-	
+	public HealthCode getHealthCode(
+		final String code,
+		final String nameSpace)
+		throws RIFServiceException {
+		
+		
+		HealthCodeProvider healthCodeProvider
+			= getRelevantHealthCodeProvider(nameSpace);	
+		if (healthCodeProvider == null) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"healthOutcomeManager.error.noHealthCodeTaxonomyForNameSpace",
+					nameSpace);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.NO_HEALTH_TAXONOMY_FOR_NAMESPACE, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		
+		return healthCodeProvider.getHealthCode(code, nameSpace);
+	}
+		
 	/**
 	 * Gets the parent health code.
 	 *
@@ -322,7 +446,6 @@ public class SQLHealthOutcomeManager
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public HealthCode getParentHealthCode(
-		final Connection connection,
 		final HealthCode childHealthCode) 
 		throws RIFServiceException {
 				
@@ -331,7 +454,7 @@ public class SQLHealthOutcomeManager
 				
 		HealthCodeProvider healthCodeProvider
 			= getRelevantHealthCodeProvider(childHealthCode);		
-		return healthCodeProvider.getParentHealthCode(connection, childHealthCode);		
+		return healthCodeProvider.getParentHealthCode(childHealthCode);		
 	}
 
 	/**
@@ -366,6 +489,23 @@ public class SQLHealthOutcomeManager
 		return relevantHealthCodeProvider;
 	}
 
+	private HealthCodeProvider getRelevantHealthCodeProvider(
+		final String nameSpace) {
+		
+		Collator collator = RIFServiceMessages.getCollator();
+		for (HealthCodeProvider healthCodeProvider : healthCodeProviders) {
+			HealthCodeTaxonomy healthCodeTaxonomy
+				= healthCodeProvider.getHealthCodeTaxonomy();
+			String currentTaxonomyNameSpace
+				= healthCodeTaxonomy.getNameSpace();
+			if (collator.equals(nameSpace, currentTaxonomyNameSpace)) {
+				return healthCodeProvider;
+			}			
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Gets the relevant health code provider.
 	 *
@@ -401,7 +541,7 @@ public class SQLHealthOutcomeManager
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-		
+			
 	/**
 	 * Gets the health codes.
 	 *
@@ -412,16 +552,14 @@ public class SQLHealthOutcomeManager
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<HealthCode> getHealthCodes(
-		final Connection connection,
 		final HealthCodeTaxonomy healthCodeTaxonomy,
 		final String searchText) 
 		throws RIFServiceException {
 		
 		HealthCodeProvider healthCodeProvider
-			= getRelevantHealthCodeProvider(healthCodeTaxonomy);		
-		return healthCodeProvider.getHealthCodes(
-			connection,
-			searchText);
+			= getRelevantHealthCodeProvider(healthCodeTaxonomy);
+		
+		return healthCodeProvider.getHealthCodes(searchText);
 		
 	}
 	
