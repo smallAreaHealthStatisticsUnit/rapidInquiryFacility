@@ -1,5 +1,6 @@
 package rifServices.system;
 
+import java.io.File;
 import java.text.Collator;
 import java.text.MessageFormat;
 import java.text.ParseException;
@@ -362,6 +363,38 @@ public class RIFServiceMessages {
 		collator = _collator;
 	}
 	
+    public static String getRIFServicesClassRootLocation() {
+    	String classPath = System.getProperty("java.class.path");
+    	
+    	//we will get every directory used in the classpath.  Now we want to 
+    	//find the directory that is the start of where the class files for the
+    	//rifServices project are located.  This location can be used to find
+    	//other resource files (eg: text and XML files).
+		String[] classPathEntries
+			= classPath.split(File.pathSeparator);
+		StringBuilder pathToFind = new StringBuilder();
+		pathToFind.append("rapidInquiryFacility");
+		pathToFind.append(File.separator);
+		pathToFind.append("rifServices");
+		pathToFind.append(File.separator);
+		pathToFind.append("target");
+		pathToFind.append(File.separator);
+		pathToFind.append("classes");
+    	
+		String targetClassesEntry = null;
+		System.out.println("RIFServiceMessages - there are=="+classPathEntries.length+"== entries");
+    	for (String classPathEntry : classPathEntries) {
+    		System.out.println("classPathEntry =="+classPathEntry+"==");
+    		if (classPathEntry.endsWith(pathToFind.toString())) {
+    			targetClassesEntry = classPathEntry;
+    			break;
+    		}
+    	}
+    	
+    	return targetClassesEntry;
+    	
+    }
+    
     // ==========================================
     // Section Validation
     // ==========================================

@@ -151,6 +151,7 @@ final public class User {
 		return userID;
 	}
 	
+	
 	/**
 	 * Gets the record type.
 	 *

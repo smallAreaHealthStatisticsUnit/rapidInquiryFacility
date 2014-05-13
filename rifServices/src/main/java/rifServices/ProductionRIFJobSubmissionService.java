@@ -2,13 +2,12 @@ package rifServices;
 
 import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.*;
-import rifServices.io.RIFZipFileWriter;
 import rifServices.system.*;
 import rifServices.taxonomyServices.HealthCodeProvider;
 import rifServices.util.FieldValidationUtility;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import rifServices.util.RIFLogger;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -142,8 +141,6 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The rif service startup options. */
-	private RIFServiceStartupOptions rifServiceStartupOptions;
 	
 	/** The health outcome manager. */
 	private SQLHealthOutcomeManager healthOutcomeManager;
@@ -166,6 +163,8 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 	/** The disease mapping study manager. */
 	private SQLDiseaseMappingStudyManager diseaseMappingStudyManager;
 	
+	private SQLRIFSubmissionManager rifSubmissionManager;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -175,9 +174,15 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 	 */
 	public ProductionRIFJobSubmissionService() {
 		
-		rifServiceStartupOptions = new RIFServiceStartupOptions();
+	}
+
+	public void initialiseService() {
+		initialiseService(new RIFServiceStartupOptions());
+	}
+	
+	public void initialiseService(RIFServiceStartupOptions rifServiceStartupOptions) {
 		sqlConnectionManager = new SQLConnectionManager(rifServiceStartupOptions);
-		healthOutcomeManager = new SQLHealthOutcomeManager();
+		healthOutcomeManager = new SQLHealthOutcomeManager(rifServiceStartupOptions);
 		sqlRIFContextManager = new SQLRIFContextManager();
 		sqlAgeGenderYearManager 
 			= new SQLAgeGenderYearManager(sqlRIFContextManager);
@@ -188,15 +193,21 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		covariateManager = new SQLCovariateManager(sqlRIFContextManager);
 		diseaseMappingStudyManager = new SQLDiseaseMappingStudyManager();
 		
+		rifSubmissionManager 
+			= new SQLRIFSubmissionManager(
+				sqlRIFContextManager,
+				sqlAgeGenderYearManager,
+				covariateManager);
+		
 		try {
 			healthOutcomeManager.initialiseTaxomies();			
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printStackTrace(System.out);
 		}
-		
 	}
-
+	
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
@@ -212,8 +223,12 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 	 * @param user the user
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	private void validateUser(final User user) throws RIFServiceException {
+	private void validateUser(
+		final User user) throws RIFServiceException {
+				
 		user.checkErrors();
+		user.checkSecurityViolations();
+				
 		if (sqlConnectionManager.userExists(user.getUserID())) {
 			//user exists so valid
 			//KLG: expand this feature later to handle things like
@@ -236,16 +251,29 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		final String methodName,
 		final RIFServiceException rifServiceException) 
 		throws RIFServiceException {
-			
+		
+		boolean userDeregistered = false;
 		if (rifServiceException instanceof RIFServiceSecurityException) {
-			//gives opportunity to log and deregister user
-			sqlConnectionManager.addUserIDToBlock(user.getUserID());
+			//gives opportunity to log security issue and deregister user
+			sqlConnectionManager.addUserIDToBlock(user);
 			sqlConnectionManager.deregisterUser(user);
+			userDeregistered = true;
 		}
 
-		Logger logger = LoggerFactory.getLogger(ProductionRIFJobSubmissionService.class);
-		logger.error(methodName, rifServiceException);			
-		
+		if (userDeregistered == false) {
+			//this helps service recover when one call generates an exception
+			//and subsequent calls have one less available connection
+			//because the try...catch setup didn't allow connection to
+			//be put back in the "unused pile".
+			sqlConnectionManager.resetConnectionPoolsForUser(user);					
+		}
+				
+		RIFLogger rifLogger = new RIFLogger();
+		rifLogger.error(
+			ProductionRIFJobSubmissionService.class, 
+			methodName, 
+			rifServiceException);
+	
 		throw rifServiceException;
 	}
 	
@@ -258,7 +286,7 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 	 */
 	public void login(
 		final String userID,
-		final String password) 
+		final char[] password) 
 		throws RIFServiceException {
 
 		//Part I: Defensively copy parameters
@@ -284,7 +312,7 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 				"login",
 				"userID",
 				userID);
-			fieldValidationUtility.checkMaliciousMethodParameter(
+			fieldValidationUtility.checkMaliciousPasswordValue(
 				"login",
 				"password",
 				password);
@@ -293,9 +321,13 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 			sqlConnectionManager.registerUser(userID, password);		
 		}
 		catch(RIFServiceException rifServiceException) {
+
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				ProductionRIFJobSubmissionService.class, 
+				"login", 
+				rifServiceException);
 			
-			Logger logger = LoggerFactory.getLogger(ProductionRIFJobSubmissionService.class);
-			logger.error("login", rifServiceException);				
 		}
 		
 	}
@@ -342,7 +374,10 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
-
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		
 		RIFServiceInformation result = null;
 		try {
 
@@ -381,6 +416,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 
 		ArrayList<RIFOutputOption> results
 			= new ArrayList<RIFOutputOption>();
@@ -420,6 +458,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 
 		ArrayList<CalculationMethod> results 
 			= new ArrayList<CalculationMethod>();
@@ -460,6 +501,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 
 		ArrayList<DiseaseMappingStudy> results
 			= new ArrayList<DiseaseMappingStudy>();
@@ -498,6 +542,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 				
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		Geography geography = Geography.createCopy(_geography);
 		NumeratorDenominatorPair ndPair
 			= NumeratorDenominatorPair.createCopy(_ndPair);
@@ -532,13 +579,17 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 			//Part IV: Perform operation
 			Connection connection
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			results
 				= sqlAgeGenderYearManager.getAgeGroups(
 					connection,
 					geography,
 					ndPair,
 					sortingOrder);
+
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -560,6 +611,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		
 		ArrayList<Sex> results = new ArrayList<Sex>();
 		try {
@@ -600,6 +654,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 		//Part I: Defensively copy parameters
 		User adminUser = User.createCopy(_adminUser);
+		if (sqlConnectionManager.isUserBlocked(adminUser) == true) {
+			return;
+		}
 		
 		//Part II: Check for security violations
 		try {
@@ -625,6 +682,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 		//Part I: Defensively copy parameters
 		User adminUser = User.createCopy(_adminUser);
+		if (sqlConnectionManager.isUserBlocked(adminUser) == true) {
+			return;
+		}
 		
 		try {
 			//Part II: Check for security violations
@@ -639,6 +699,60 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		}
 	}
 		
+	
+	/**
+	 * Gets the health code taxonomy given the name space
+	 *
+	 * @param user the user
+	 * @return the health code taxonomy corresponding to the name space
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	public HealthCodeTaxonomy getHealthCodeTaxonomyFromNameSpace(
+		final User _user, 
+		final String healthCodeTaxonomyNameSpace) throws RIFServiceException {
+		
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		
+		HealthCodeTaxonomy result = null;
+		try {
+			//Part II: Check for security violations
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getHealthCodeTaxonomyFromNameSpace",
+				"user",
+				user);		
+			fieldValidationUtility.checkNullMethodParameter(
+				"getHealthCodeTaxonomyFromNameSpace",
+				"healthCodeTaxonomyNameSpace",
+				healthCodeTaxonomyNameSpace);
+			
+			//Part III: Check for security violations
+			validateUser(user);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getHealthCodeTaxonomyFromNameSpace", 
+				"healthCodeTaxonomyNameSpace", 
+				healthCodeTaxonomyNameSpace);
+
+			result 
+				= healthOutcomeManager.getHealthCodeTaxonomyFromNameSpace(
+					healthCodeTaxonomyNameSpace);
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"getHealthCodeTaxonomies",
+				rifServiceException);
+		}
+		
+		return result;
+		
+	}
+	
 	/* (non-Javadoc)
 	 * @see rifServices.businessConceptLayer.RIFJobSubmissionAPI#getHealthCodeTaxonomies(rifServices.businessConceptLayer.User)
 	 */
@@ -648,6 +762,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 
 		ArrayList<HealthCodeTaxonomy> results = new ArrayList<HealthCodeTaxonomy>();
 		//Part II: Check for security violations
@@ -676,6 +793,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		
 		//Part II: Check for empty parameter values
 		ArrayList<HealthCode> results = new ArrayList<HealthCode>();
@@ -698,11 +818,15 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 			//Part IIV: Perform operation
 			Connection connection
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			results 
 				= healthOutcomeManager.getTopLevelCodes(
-						connection, 
-						healthCodeTaxonomy);			
+						healthCodeTaxonomy);	
+			
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);
+			
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -714,6 +838,224 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		return results;
 	}
 	
+	
+	/**
+	 * Test method used to ensure that service can identify age groups that
+	 * don't exist in the age groups providers
+	 * @param user
+	 * @param connection
+	 * @param healthCodes
+	 * @throws RIFServiceException
+	 */
+	protected void checkNonExistentAgeGroups(
+		User _user,
+		ArrayList<AgeBand> _ageBands) 
+		throws RIFServiceException {
+
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return;
+		}
+		ArrayList<AgeBand> ageBands
+			= AgeBand.createCopy(_ageBands);
+			
+		//no need to defensively copy sortingOrder because
+		//it is an enumerated type
+			
+		try {			
+			//Part II: Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"checkNonExistentAgeGroups",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"checkNonExistentAgeGroups",
+				"ageBands",
+				ageBands);
+
+			//sortingOrder can be null, it just means that the
+			//order will be ascending lower limit
+			
+			//Part III: Check for security violations
+			validateUser(user);
+			for (AgeBand ageBand : ageBands) {
+				ageBand.checkSecurityViolations();					
+			}
+
+			//Part IV: Perform operation
+			Connection connection
+				= sqlConnectionManager.getReadConnection(user);
+
+			sqlAgeGenderYearManager.checkNonExistentAgeGroups(
+				connection,
+				ageBands); 
+			
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);
+				
+
+		
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"checkNonExistentAgeGroups",
+				rifServiceException);
+		}			
+	}	
+		
+	/**
+	 * Test method used to ensure that service can identify age groups that
+	 * don't exist in the age groups providers
+	 * @param user
+	 * @param connection
+	 * @param healthCodes
+	 * @throws RIFServiceException
+	 */
+	protected void checkNonExistentCovariates(
+		User _user,
+		ArrayList<AbstractCovariate> _covariates) 
+		throws RIFServiceException {
+
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return;
+		}
+		ArrayList<AbstractCovariate> covariates = new ArrayList<AbstractCovariate>();	
+		for (AbstractCovariate _covariate : _covariates) {
+			if (_covariate instanceof AdjustableCovariate) {
+				//adjustable covariate
+				AdjustableCovariate adjustableCovariate
+					= (AdjustableCovariate) _covariate;
+				covariates.add(AdjustableCovariate.createCopy(adjustableCovariate));
+			}
+			else {
+				//exposure covariate
+				ExposureCovariate exposureCovariate
+					= (ExposureCovariate) _covariate;
+				covariates.add(ExposureCovariate.createCopy(exposureCovariate));				
+			}			
+		}
+		
+		//no need to defensively copy sortingOrder because
+		//it is an enumerated type
+			
+		try {			
+			//Part II: Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"checkNonExistentCovariates",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"checkNonExistentCovariates",
+				"covariates",
+				covariates);
+
+			//sortingOrder can be null, it just means that the
+			//order will be ascending lower limit
+			
+			//Part III: Check for security violations
+			validateUser(user);
+			for (AbstractCovariate covariate : covariates) {
+				covariate.checkSecurityViolations();					
+			}
+
+			//Part IV: Perform operation
+			Connection connection
+				= sqlConnectionManager.getReadConnection(user);
+
+			covariateManager.checkNonExistentCovariates(
+				connection,
+				covariates); 		
+
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);
+
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"checkNonExistentCovariates",
+				rifServiceException);
+		}			
+	}	
+	
+	/**
+	 * a helper method used to support web services that pass single string values rather than
+	 * a java object to represent a record.  This method uses two values, healthCodeName and
+	 * healthCodeNameSpace, to retrieve a fully populated HealthCode object.  The object can
+	 * then be available to make successive calls to other parts of the RIFJobSubmissionAPI.
+	 * @param _user
+	 * @param healthCodeName
+	 * @param healthCodeNameSpace
+	 * @return
+	 * @throws RIFServiceException
+	 */
+	public HealthCode getHealthCode(
+		User _user,
+		String healthCodeName,
+		String healthCodeNameSpace) throws RIFServiceException {
+	
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+	
+		HealthCode result = null;
+		try {
+
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getHealthCode",
+				"user",
+				user);		
+			fieldValidationUtility.checkNullMethodParameter(
+				"getHealthCode",
+				"healthCodeName",
+				healthCodeName);		
+			fieldValidationUtility.checkNullMethodParameter(
+				"getHealthCode",
+				"healthCodeNameSpace",
+				healthCodeName);		
+
+			//Part III: Check for security violations
+			validateUser(user);		
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getHealthCode",
+				"healthCodeName",
+				healthCodeName);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getHealthCode", 
+				"healthCodeNameSpace",
+				healthCodeNameSpace);
+			
+			result
+				= healthOutcomeManager.getHealthCode(
+					healthCodeName, 
+					healthCodeNameSpace);
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"getHealthCode",
+				rifServiceException);
+		}
+		
+		return result;
+		
+	}
+		
 	/* (non-Javadoc)
 	 * @see rifServices.businessConceptLayer.RIFJobSubmissionAPI#getImmediateSubterms(rifServices.businessConceptLayer.User, rifServices.businessConceptLayer.HealthCode)
 	 */
@@ -724,6 +1066,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		HealthCode parentHealthCode = HealthCode.createCopy(_parentHealthCode);
 		
 		//Part II: Check for empty parameter values
@@ -746,11 +1091,14 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 				
 			//Part IV: Perform operation
 			Connection connection
-				= sqlConnectionManager.getConnection(user);		
+				= sqlConnectionManager.getReadConnection(user);		
 			results
 				= healthOutcomeManager.getImmediateSubterms(
-					connection, 
 					parentHealthCode);			
+
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);		
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -772,6 +1120,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		HealthCode childHealthCode = HealthCode.createCopy(_childHealthCode);
 		
 		//Part II: Check for empty parameter values
@@ -795,11 +1146,15 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 			//Part IV: Perform operation
 			Connection connection
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			result
 				= healthOutcomeManager.getParentHealthCode(
-					connection, 
 					childHealthCode);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);
+
+		
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -822,6 +1177,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		HealthCodeTaxonomy healthCodeTaxonomy
 			= HealthCodeTaxonomy.createCopy(_healthCodeTaxonomy);
 		
@@ -853,12 +1211,15 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 			//Part IV: Perform operation		
 			Connection connection
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			results 
 				= healthOutcomeManager.getHealthCodes(
-					connection, 
 					healthCodeTaxonomy, 
 					searchText);
+
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -883,6 +1244,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		Geography geography = Geography.createCopy(_geography);
 		GeoLevelSelect geoLevelSelect 
 			= GeoLevelSelect.createCopy(_geoLevelSelect);
@@ -914,20 +1278,32 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 				geoLevelToMap);
 						
 			//Part III: Check for security violations
+			System.out.println("ProfRIFSubmissionService getCovariates 1");
 			validateUser(user);
+			System.out.println("ProfRIFSubmissionService getCovariates 2");
 			geography.checkSecurityViolations();
 			geoLevelSelect.checkSecurityViolations();
 			geoLevelToMap.checkSecurityViolations();
 
 			//Part IV: Perform operation		
+			System.out.println("ProfRIFSubmissionService getCovariates 3");
 			Connection connection
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
+			System.out.println("ProfRIFSubmissionService getCovariates 4");
 			results 
 				= covariateManager.getCovariates(
 					connection, 
 					geography, 
 					geoLevelSelect,
 					geoLevelToMap);
+
+			System.out.println("ProfRIFSubmissionService getCovariates 5");
+			
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);
+			System.out.println("ProfRIFSubmissionService getCovariates 6");
+
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -951,9 +1327,12 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		final User _user,
 		final Geography _geography) 
 		throws RIFServiceException {
-
+		
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		Geography geography = Geography.createCopy(_geography);
 
 		ArrayList<Geography> results = new ArrayList<Geography>();
@@ -977,8 +1356,12 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 				
 			//Part IV: Perform operation		
 			Connection connection
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			results = sqlRIFContextManager.getGeographies(connection);
+			
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);			
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1002,6 +1385,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		
 		ArrayList<Geography> results = new ArrayList<Geography>();
 		try {
@@ -1018,9 +1404,12 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 			//Part IV: Perform operation
 			Connection connection 
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			results
 				= sqlRIFContextManager.getGeographies(connection);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);			
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1042,6 +1431,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		Geography geography = Geography.createCopy(_geography);
 		
 		ArrayList<HealthTheme> results = new ArrayList<HealthTheme>();
@@ -1065,9 +1457,12 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 			//Part IV: Perform operation
 			Connection connection 
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			results
 				= sqlRIFContextManager.getHealthThemes(connection, geography);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);			
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1090,6 +1485,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		HealthTheme healthTheme = HealthTheme.createCopy(_healthTheme);
 		Geography geography = Geography.createCopy(_geography);
 		
@@ -1120,12 +1518,15 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 			//Part IV: Perform operation
 			Connection connection 
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			results
 				= sqlRIFContextManager.getNumeratorDenominatorPairs(
 					connection, 
 					geography,
 					healthTheme);			
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);			
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1138,6 +1539,78 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 	}
 
 
+	/**
+	 * Convenience method to obtain everything that is needed to get 
+	 * @param user
+	 * @param geography
+	 * @param healthTheme
+	 * @param numeratorTableName
+	 * @return
+	 * @throws RIFServiceException
+	 */
+	public NumeratorDenominatorPair getNumeratorDenominatorPairFromNumeratorTable(
+		final User _user,
+		final Geography _geography,
+		final String numeratorTableName) 
+		throws RIFServiceException {
+
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+
+		Geography geography = Geography.createCopy(_geography);
+		
+		
+		NumeratorDenominatorPair result = null; 
+		try {
+			
+			//Part II: Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getNumeratorDenominatorPairFromNumeratorTable",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getNumeratorDenominatorPairFromNumeratorTable",
+				"geography",
+				geography);		
+			
+			//Part III: Check for security violations
+			validateUser(user);
+			geography.checkSecurityViolations();
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getNumeratorDenominatorPairFromNumeratorTable", 
+				"numeratorTableName", 
+				numeratorTableName);
+			
+			//Part IV: Perform operation
+			Connection connection 
+				= sqlConnectionManager.getReadConnection(user);
+			
+			result
+				= sqlRIFContextManager.getNDPairFromNumeratorTableName(
+					connection, 
+					geography,
+					numeratorTableName);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);			
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"getNumeratorDenominatorPair",
+				rifServiceException);	
+		}
+
+		return result;
+	
+	}
+	
+	
 	/* (non-Javadoc)
 	 * @see rifServices.businessConceptLayer.RIFJobSubmissionAPI#getGeographicalLevelSelectValues(rifServices.businessConceptLayer.User, rifServices.businessConceptLayer.Geography)
 	 */
@@ -1148,6 +1621,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 			
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		Geography geography 
 			= Geography.createCopy(_geography);
 
@@ -1172,11 +1648,14 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 			//Part IV: Perform operation
 			Connection connection 
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			results
 				= sqlRIFContextManager.getGeoLevelSelectValues(
 					connection, 
 					geography);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);			
 		
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -1199,6 +1678,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		Geography geography 
 			= Geography.createCopy(_geography);
 
@@ -1223,11 +1705,14 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 			//Part IV: Perform operation
 			Connection connection 
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			result
 				= sqlRIFContextManager.getDefaultGeoLevelSelectValue(
 					connection, 
 					geography);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);			
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1251,6 +1736,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		Geography geography 
 			= Geography.createCopy(_geography);
 		GeoLevelSelect geoLevelSelect
@@ -1282,12 +1770,16 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 			//Part IV: Perform operation
 				Connection connection 
-					= sqlConnectionManager.getConnection(user);
+					= sqlConnectionManager.getReadConnection(user);
 				results
 					= sqlRIFContextManager.getGeoLevelAreaValues(
 						connection, 
 						geography,
 						geoLevelSelect);
+
+				sqlConnectionManager.releaseReadConnection(
+					user, 
+					connection);			
 
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -1311,6 +1803,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		Geography geography 
 			= Geography.createCopy(_geography);
 		GeoLevelSelect geoLevelSelect
@@ -1342,12 +1837,17 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 	
 			//Part IV: Perform operation
 			Connection connection 
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			results
 				= sqlRIFContextManager.getGeoLevelViewValues(
 					connection, 
 					geography,
 					geoLevelSelect);
+
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);			
+		
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1370,6 +1870,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		Geography geography 
 			= Geography.createCopy(_geography);
 		GeoLevelSelect geoLevelSelect
@@ -1401,12 +1904,17 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 			//Part IV: Perform operation
 			Connection connection 
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			results
 				= sqlRIFContextManager.getGeoLevelToMapValues(
 					connection, 
 					geography,
 					geoLevelSelect);
+
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);			
+			
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1429,6 +1937,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);		
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		Geography geography 
 			= Geography.createCopy(_geography);
 		NumeratorDenominatorPair ndPair
@@ -1460,12 +1971,17 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 			//Part IV: Perform operation
 			Connection connection 
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			result
 				= sqlAgeGenderYearManager.getYearRange(
 					connection, 
 					geography,
 					ndPair);
+
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);			
+
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1489,6 +2005,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);		
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		Geography geography 
 			= Geography.createCopy(_geography);
 		GeoLevelSelect geoLevelSelect
@@ -1534,7 +2053,7 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 	
 			//Part IV: Perform operation
 			Connection connection 
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 
 			result
 				= sqlMapDataManager.getSummaryDataForExtentAreas(
@@ -1543,6 +2062,10 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 					geoLevelSelect,
 					geoLevelArea,
 					geoLevelToMap);
+
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);		
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1566,6 +2089,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 			
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);		
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		Geography geography 
 			= Geography.createCopy(_geography);
 		GeoLevelSelect geoLevelSelect
@@ -1611,7 +2137,7 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 			//Part IV: Perform operation
 			Connection connection 
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			
 			results
 				= sqlMapDataManager.getMapAreas(
@@ -1620,6 +2146,11 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 					geoLevelSelect,
 					geoLevelArea,
 					geoLevelToMap);
+
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);		
+		
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1645,6 +2176,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);		
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		Geography geography 
 			= Geography.createCopy(_geography);
 		GeoLevelSelect geoLevelSelect
@@ -1690,7 +2224,7 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 			//Part IV: Perform operation
 			Connection connection 
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 		
 			results
 				= sqlMapDataManager.getMapAreas(
@@ -1701,6 +2235,11 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 					geoLevelToMap,
 					startIndex,
 					endIndex);
+
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);		
+		
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1726,6 +2265,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 	
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		Geography geography = Geography.createCopy(_geography);
 		GeoLevelSelect geoLevelSelect 
 			= GeoLevelSelect.createCopy(_geoLevelSelect);
@@ -1777,7 +2319,7 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 			//Part IV: Perform operation
 			Connection connection 
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			
 			result
 				= sqlMapDataManager.getMapAreaSummaryInformation(
@@ -1787,6 +2329,10 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 					geoLevelArea,
 					geoLevelToMap,
 					mapAreas);
+
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);		
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1811,6 +2357,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		Geography geography = Geography.createCopy(_geography);
 		GeoLevelSelect geoLevelSelect 
 			= GeoLevelSelect.createCopy(_geoLevelSelect);
@@ -1877,6 +2426,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		
 		ArrayList<Project> results = new ArrayList<Project>();
 		try {
@@ -1894,11 +2446,17 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 			//Part IV: Perform operation
 			Connection connection 
-				= sqlConnectionManager.getConnection(user);			
+				= sqlConnectionManager.getReadConnection(user);			
 			results
 				= diseaseMappingStudyManager.getProjects(
 					connection,
-				user);		
+					user);		
+			
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);		
+				
+
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1920,6 +2478,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		Project project = Project.createCopy(_project);
 		
 		ArrayList<AbstractStudy> results = new ArrayList<AbstractStudy>();
@@ -1943,13 +2504,19 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 			//Part IV: Perform operation
 			Connection connection 
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			
 			results
 				= diseaseMappingStudyManager.getStudies(
 					connection,
 					user,
 					project);
+
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);		
+		
+		
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1974,6 +2541,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
 		GeoLevelSelect geoLevelSelect
 			= GeoLevelSelect.createCopy(_geoLevelSelect);
 		GeoLevelArea geoLevelArea
@@ -2021,7 +2591,7 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 			//Part IV: Perform operation
 			Connection connection 
-				= sqlConnectionManager.getConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			
 			result
 				= sqlMapDataManager.getImage(
@@ -2030,6 +2600,11 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 					geoLevelArea,
 					geoLevelView,
 					mapAreas);
+
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);		
+		
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -2051,6 +2626,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return;
+		}
 		RIFJobSubmission rifJobSubmission
 			= RIFJobSubmission.createCopy(_rifJobSubmission);
 		
@@ -2078,18 +2656,29 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 			rifJobSubmission.checkSecurityViolations();
 		
 			rifJobSubmission.checkErrors();		
-			Logger logger 
-				= LoggerFactory.getLogger(ProductionRIFJobSubmissionService.class);
-		
+
+			RIFLogger rifLogger = new RIFLogger();	
+			
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.submittingStudy",
 					user.getUserID(),
 					user.getIPAddress(),
 					rifJobSubmission.getDisplayName());
-			logger.info(auditTrailMessage);
+			rifLogger.info(
+				ProductionRIFJobSubmissionService.class,
+				auditTrailMessage);
 		
-			RIFZipFileWriter rifZipFileWriter = new RIFZipFileWriter();
-			rifZipFileWriter.writeZipFile(outputFile, rifJobSubmission);		
+			/*
+			Connection connection
+				= sqlConnectionManager.getWriteConnection(user);
+			rifSubmissionManager.addRIFJobSubmission(
+				connection, 
+				user, 
+				rifJobSubmission);
+			*/
+			
+			//RIFZipFileWriter rifZipFileWriter = new RIFZipFileWriter();
+			//rifZipFileWriter.writeZipFile(outputFile, rifJobSubmission);		
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -2098,6 +2687,53 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 				rifServiceException);	
 		}
 
+	}
+	
+	protected void clearRIFJobSubmissions(
+		User _adminUser) 
+		throws RIFServiceException {
+
+		//Part I: Defensively copy parameters
+		User adminUser = User.createCopy(_adminUser);
+		if (sqlConnectionManager.isUserBlocked(adminUser) == true) {
+			return;
+		}
+		
+		try {
+			
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"clearRIFJobSubmissions",
+				"adminUser",
+				adminUser);	
+
+			//Part III: Check for security violations
+			validateUser(adminUser);
+
+			//Part IV: Perform operation
+			Connection connection 
+				= sqlConnectionManager.getReadConnection(adminUser);
+
+			rifSubmissionManager.clearRIFJobSubmissions(connection);
+
+			sqlConnectionManager.releaseReadConnection(
+				adminUser, 
+				connection);		
+		
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				adminUser,
+				"clearRIFJobSubmissions",
+				rifServiceException);	
+		}
+		
+	}	
+	
+	protected void deregisterAllUsers() throws RIFServiceException {		
+		sqlConnectionManager.deregisterAllUsers();
 	}
 	
 	// ==========================================
