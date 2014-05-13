@@ -423,7 +423,7 @@ public class TestDiseaseMappingStudy extends AbstractRIFTestCase {
 		
 		maliciousDiseaseMappingStudy
 			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
-		maliciousDiseaseMappingStudy.setKnownIssues(getTestMaliciousValue());
+		maliciousDiseaseMappingStudy.setOtherNotes(getTestMaliciousValue());
 		try {
 			maliciousDiseaseMappingStudy.checkSecurityViolations();
 			fail();
