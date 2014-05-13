@@ -3,9 +3,6 @@ package rifServices.dataStorageLayer;
 import java.util.ArrayList;
 import java.sql.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
@@ -13,6 +10,7 @@ import rifServices.businessConceptLayer.Project;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
+import rifServices.util.RIFLogger;
 import rifServices.SampleTestObjectGenerator;
 
 
@@ -156,10 +154,11 @@ public class SQLDiseaseMappingStudyManager {
 					"diseaseMappingStudyManager.error.unableToGetProjects",
 					user.getUserID());
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLDiseaseMappingStudyManager.class);
-			logger.error(errorMessage, sqlException);				
-				
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+					SQLDiseaseMappingStudyManager.class, 
+				errorMessage, 
+				sqlException);
 			
 			RIFServiceException rifServiceException
 				= new RIFServiceException(

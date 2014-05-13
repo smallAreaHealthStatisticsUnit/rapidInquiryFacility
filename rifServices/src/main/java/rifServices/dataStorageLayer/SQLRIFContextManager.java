@@ -10,6 +10,7 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
+import rifServices.util.RIFLogger;
 
 import java.util.ArrayList;
 import java.sql.Connection;
@@ -17,8 +18,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -94,7 +93,7 @@ public class SQLRIFContextManager
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -127,7 +126,7 @@ public class SQLRIFContextManager
 		SQLSelectQueryFormatter query = new SQLSelectQueryFormatter();
 		query.setUseDistinct(true);
 		query.addSelectField("geography");
-		query.addFromTable("rif40_num_denom");
+		query.addFromTable("rif40_geographies");
 		query.addOrderByCondition("geography");
 		
 		//Parameterise and execute query		
@@ -151,9 +150,12 @@ public class SQLRIFContextManager
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeographies");
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(errorMessage, sqlException);				
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);					
+			
 																		
 			RIFServiceException rifServiceException
 				= new RIFServiceException(RIFServiceError.GET_GEOGRAPHIES, errorMessage);
@@ -168,6 +170,7 @@ public class SQLRIFContextManager
 		return results;
 		
 	}
+
 	
 	/**
 	 * Gets the health themes.
@@ -218,10 +221,12 @@ public class SQLRIFContextManager
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetHealthThemes");
 
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(errorMessage, sqlException);				
-																				
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);					
+																							
 			RIFServiceException rifServiceException
 				= new RIFServiceException(RIFServiceError.GET_HEALTH_THEMES, errorMessage);
 			throw rifServiceException;
@@ -233,6 +238,108 @@ public class SQLRIFContextManager
 		}
 		
 		return results;
+	}
+	
+	/**
+	 * A helper method used by services which are deployed within web resources. 
+	 * When users build up their queries using web-based forms, the forms obtain field values
+	 * by making calls to the web services.  The URL is supposed to contain all the
+	 * parameter values that are necessary to retrieve the correct information.  
+	 * The parameter values are strings, not complete Java objects.  The web resource needs
+	 * a means of creating Java objects for the api of the RIFJobSubmissionService.  This 
+	 * method helps obtain a numerator denominator pair given the numerator table name
+	 * @param connection
+	 * @param geography
+	 * @param numeratorTableName
+	 * @return
+	 * @throws RIFServiceException
+	 */
+	public NumeratorDenominatorPair getNDPairFromNumeratorTableName(
+		final Connection connection,
+		final Geography geography,
+		final String numeratorTableName) 
+		throws RIFServiceException {
+		
+		validateCommonMethodParameters(
+				connection,
+				geography,
+				null,
+				null);
+				
+		//Create SQL query		
+		SQLSelectQueryFormatter query = new SQLSelectQueryFormatter();
+		query.setUseDistinct(true);
+		query.addSelectField("numerator_description");
+		query.addSelectField("denominator_table");
+		query.addSelectField("denominator_description");		
+		query.addFromTable("rif40_num_denom");
+		query.addWhereParameter("numerator_table");
+
+		//Parameterise and execute query		
+		ArrayList<NumeratorDenominatorPair> results 
+			= new ArrayList<NumeratorDenominatorPair>();;
+		PreparedStatement statement = null;
+		ResultSet dbResultSet = null;
+		
+		try {
+			statement
+				= connection.prepareStatement(query.generateQuery());
+			statement.setString(1, numeratorTableName);			
+			
+			dbResultSet = statement.executeQuery();
+			while (dbResultSet.next()) {
+				String numeratorDescription = dbResultSet.getString(1);
+				String denominatorTable = dbResultSet.getString(2);
+				String denominatorDescription = dbResultSet.getString(3);
+				
+				NumeratorDenominatorPair result
+					= NumeratorDenominatorPair.newInstance(
+						numeratorTableName,
+						numeratorDescription,
+						denominatorTable,
+						denominatorDescription);			
+				results.add(result);				
+			}
+			
+			if (results.size() == 0) {
+				//ERROR: There is no numerator denominator pair for this health theme
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"sqlRIFContextManager.error.noNDPairForNumeratorTableName",
+						numeratorTableName);
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.NO_ND_PAIR_FOR_NUMERATOR_TABLE_NAME,
+						errorMessage);
+				throw rifServiceException;
+			}
+			
+			return results.get(0);
+			
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlRIFContextManager.error.unableToGetNumeratorDenominatorPair");
+			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);					
+																							
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.GET_NUMERATOR_DENOMINATOR_PAIR,
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			//Cleanup database resources			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);			
+		}
+		
 	}
 	
 	/**
@@ -275,7 +382,7 @@ public class SQLRIFContextManager
 		try {
 			statement
 				= connection.prepareStatement(query.generateQuery());
-			statement.setString(1, healthTheme.getName());			
+			statement.setString(1, healthTheme.getDescription());			
 			
 			dbResultSet = statement.executeQuery();
 			while (dbResultSet.next()) {
@@ -298,7 +405,7 @@ public class SQLRIFContextManager
 				String errorMessage
 					= RIFServiceMessages.getMessage(
 						"sqlRIFContextManager.error.noNDPairForHealthTheme",
-						healthTheme.getName());
+						healthTheme.getDescription());
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
 						RIFServiceError.NO_ND_PAIR_FOR_HEALTH_THEME,
@@ -311,10 +418,12 @@ public class SQLRIFContextManager
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetNumeratorDenominatorPair");
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(errorMessage, sqlException);				
-		
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);					
+																							
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.GET_NUMERATOR_DENOMINATOR_PAIR,
@@ -329,6 +438,7 @@ public class SQLRIFContextManager
 		
 		return results;
 	}
+	
 	
 	/**
 	 * Gets the geo level select values.
@@ -367,20 +477,26 @@ public class SQLRIFContextManager
 			= new SQLMinMaxQueryFormatter(SQLMinMaxQueryFormatter.OperationType.MAX);
 		maximumGeoLevelIDQueryFormatter.setCountableFieldName("geolevel_id");
 		maximumGeoLevelIDQueryFormatter.setFromTable("rif40_geolevels");
+		maximumGeoLevelIDQueryFormatter.addWhereParameter("geography");
+		
+		
 		PreparedStatement getMaxGeoLevelIDStatement = null;
 		ResultSet getMaxGeoLevelIDResultSet = null;
 		try {
 			getMaxGeoLevelIDStatement
 				= connection.prepareStatement(maximumGeoLevelIDQueryFormatter.generateQuery());
+			getMaxGeoLevelIDStatement.setString(1, geography.getName());
 			getMaxGeoLevelIDResultSet
 				= getMaxGeoLevelIDStatement.executeQuery();
 			getMaxGeoLevelIDResultSet.next();
 			maximumGeoLevelID = getMaxGeoLevelIDResultSet.getInt(1);
 		}
 		catch(SQLException sqlException) {			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(errorMessage, sqlException);					
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);										
 			throw getGeoLevelSelectValuesException;
 		}
 		finally {
@@ -421,9 +537,11 @@ public class SQLRIFContextManager
 			}			
 		}
 		catch(SQLException sqlException) {
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(errorMessage, sqlException);			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);										
 			throw getGeoLevelSelectValuesException;
 		}
 		finally {
@@ -489,9 +607,11 @@ public class SQLRIFContextManager
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelSelect");
 
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(errorMessage, sqlException);			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);										
 
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
@@ -568,10 +688,11 @@ public class SQLRIFContextManager
 			}
 		}
 		catch(SQLException sqlException) {
-			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(errorMessage, sqlException);			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);										
 					
 			throw rifServiceException;
 		}
@@ -621,10 +742,11 @@ public class SQLRIFContextManager
 			}
 		}
 		catch(SQLException sqlException) {
-			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(errorMessage, sqlException);			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);										
 							
 			throw rifServiceException;
 		}
@@ -696,9 +818,11 @@ public class SQLRIFContextManager
 		}
 		catch(SQLException sqlException) {
 
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(errorMessage, sqlException);			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);										
 						
 			throw rifServiceException;
 		}
@@ -735,9 +859,11 @@ public class SQLRIFContextManager
 		}
 		catch(SQLException sqlException) {
 
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(errorMessage, sqlException);			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);										
 					
 			throw rifServiceException;			
 		}
@@ -808,9 +934,11 @@ public class SQLRIFContextManager
 		}
 		catch(SQLException sqlException) {
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(errorMessage, sqlException);			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);										
 								
 			throw rifServiceException;
 		}
@@ -847,9 +975,11 @@ public class SQLRIFContextManager
 		}
 		catch(SQLException sqlException) {
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(errorMessage, sqlException);			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);										
 								
 			throw rifServiceException;
 		}
@@ -947,18 +1077,20 @@ public class SQLRIFContextManager
 				throw rifServiceException;
 			}
 		}
-		catch(SQLException sqlException) {			
+		catch(SQLException sqlException) {	
+			sqlException.printStackTrace(System.out);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
 					geography.getRecordType(),
 					geography.getDisplayName());
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(errorMessage, sqlException);			
-					
-			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);										
+								
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DB_UNABLE_CHECK_NONEXISTENT_RECORD, 
@@ -1015,7 +1147,7 @@ public class SQLRIFContextManager
 					= RIFServiceMessages.getMessage(
 						"general.validation.nonExistentRecord",
 						recordType,
-						geography.getDisplayName());
+						geoLevelSelect.getDisplayName());
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_GEOLEVEL_SELECT_VALUE, 
@@ -1030,9 +1162,11 @@ public class SQLRIFContextManager
 					geography.getRecordType(),
 					geography.getDisplayName());
 
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(errorMessage, sqlException);			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);										
 					
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
@@ -1092,10 +1226,12 @@ public class SQLRIFContextManager
 		}
 		catch(SQLException sqlException) {
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(unableToCheckGeoLevelArea, sqlException);			
-								
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				unableToCheckGeoLevelArea, 
+				sqlException);										
+			
 			throw unableToCheckGeoLevelAreaExistsException;
 		}
 		finally {
@@ -1113,15 +1249,18 @@ public class SQLRIFContextManager
 			= new SQLRecordExistsQueryFormatter();
 		recordExistsFormatter.setFromTable(geoLevelSelectLookupTable);
 		String keyFieldName
-			= useAppropriateFieldNameCase(geoLevelSelect.getName());
+        	= useAppropriateFieldNameCase("name");
+		//String keyFieldName
+        // = useAppropriateFieldNameCase(geoLevelSelect.getName());
 		recordExistsFormatter.setLookupKeyFieldName(keyFieldName);
 		PreparedStatement geoLevelAreaExistsStatement = null;
 		ResultSet geoLevelAreaExistsResultSet = null;
 		
 		try {
+			System.out.println("SQLRIFContextManager recordExists query=="+recordExistsFormatter.generateQuery()+"==geolevelArea id=="+geoLevelArea.getIdentifier()+"==name=="+geoLevelArea.getName()+"==");
 			geoLevelAreaExistsStatement
 				= connection.prepareStatement(recordExistsFormatter.generateQuery());
-			geoLevelAreaExistsStatement.setString(1, geoLevelArea.getIdentifier());
+			geoLevelAreaExistsStatement.setString(1, geoLevelArea.getName());
 			geoLevelAreaExistsResultSet
 				= geoLevelAreaExistsStatement.executeQuery();
 			if (geoLevelAreaExistsResultSet.next() == false) {
@@ -1140,10 +1279,12 @@ public class SQLRIFContextManager
 			}
 		}
 		catch(SQLException sqlException) {
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(unableToCheckGeoLevelArea, sqlException);			
-			
+
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				unableToCheckGeoLevelArea, 
+				sqlException);			
 			throw unableToCheckGeoLevelAreaExistsException;			
 		}
 		finally {
@@ -1151,6 +1292,13 @@ public class SQLRIFContextManager
 			SQLQueryUtility.close(getLookupTableStatement);
 			SQLQueryUtility.close(getLookupTableResultSet);			
 		}	
+		
+		
+		
+		
+		
+		
+		
 	}
 	
 	/**
@@ -1203,9 +1351,11 @@ public class SQLRIFContextManager
 		}	
 		catch(SQLException sqlException) {
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(unableToGetGeoLevelToMap, sqlException);			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				unableToGetGeoLevelToMap, 
+				sqlException);			
 										
 			throw unableToCheckGeoLevelMapExistsException;
 		}
@@ -1249,9 +1399,11 @@ public class SQLRIFContextManager
 		}
 		catch(SQLException sqlException) {
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(unableToGetGeoLevelToMap, sqlException);			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				unableToGetGeoLevelToMap, 
+				sqlException);			
 												
 			throw unableToCheckGeoLevelMapExistsException;
 		}
@@ -1269,7 +1421,7 @@ public class SQLRIFContextManager
 	 * @param healthTheme the health theme
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	private void checkNonExistentHealthTheme(
+	public void checkNonExistentHealthTheme(
 		final Connection connection,
 		final HealthTheme healthTheme)
 		throws RIFServiceException {
@@ -1284,7 +1436,7 @@ public class SQLRIFContextManager
 		try {
 			checkHealthThemeExistsStatement
 				= connection.prepareStatement(query.generateQuery());
-			checkHealthThemeExistsStatement.setString(1, healthTheme.getName());
+			checkHealthThemeExistsStatement.setString(1, healthTheme.getDescription());
 			checkHealthThemeExistsResultSet 
 				= checkHealthThemeExistsStatement.executeQuery();
 			if (checkHealthThemeExistsResultSet.next() == false) {
@@ -1295,6 +1447,8 @@ public class SQLRIFContextManager
 						"general.validation.nonExistentRecord",
 						recordType,
 						healthTheme.getDisplayName());
+				
+				System.out.println("SQLRIFContextManager == XXXXXXXXXXXXXX errorMessage=="+errorMessage+"==");
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_HEALTH_THEME,
@@ -1309,10 +1463,12 @@ public class SQLRIFContextManager
 					healthTheme.getRecordType(),
 					healthTheme.getDisplayName());
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(errorMessage, sqlException);			
-														
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);			
+												
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DB_UNABLE_CHECK_NONEXISTENT_RECORD, 
@@ -1380,10 +1536,12 @@ public class SQLRIFContextManager
 					ndPair.getRecordType(),
 					ndPair.getDisplayName());
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFContextManager.class);
-			logger.error(errorMessage, sqlException);			
-																
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);			
+												
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DB_UNABLE_CHECK_NONEXISTENT_RECORD, 

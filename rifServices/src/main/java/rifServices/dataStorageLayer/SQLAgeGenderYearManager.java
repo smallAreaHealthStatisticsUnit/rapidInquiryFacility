@@ -1,6 +1,7 @@
 package rifServices.dataStorageLayer;
 
 import rifServices.businessConceptLayer.AgeGroup;
+import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
@@ -9,6 +10,7 @@ import rifServices.businessConceptLayer.YearRange;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
+import rifServices.util.RIFLogger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,8 +18,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -178,9 +178,11 @@ public class SQLAgeGenderYearManager
 					"sqlAgeGenderYearManager.error.unableToGetAgeGroupID",
 					ndPair.getNumeratorTableDescription());
 
-			Logger logger 
-				= LoggerFactory.getLogger(SQLAgeGenderYearManager.class);
-			logger.error(errorMessage, sqlException);
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLAgeGenderYearManager.class, 
+				errorMessage, 
+				sqlException);
 			
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
@@ -206,6 +208,7 @@ public class SQLAgeGenderYearManager
 		//After obtaining the list of age groups having the correct age group id
 		//sort them by low_age
 		SQLSelectQueryFormatter formatter = new SQLSelectQueryFormatter();
+		formatter.addSelectField("age_group_id");
 		formatter.addSelectField("low_age");
 		formatter.addSelectField("high_age");
 		formatter.addSelectField("fieldname");
@@ -246,10 +249,11 @@ public class SQLAgeGenderYearManager
 			dbResultSet = statement.executeQuery();
 
 			while (dbResultSet.next()) {
-				AgeGroup ageGroup = AgeGroup.newInstance();								
-				ageGroup.setLowerLimit(String.valueOf(dbResultSet.getInt(1)));
-				ageGroup.setUpperLimit(String.valueOf(dbResultSet.getInt(2)));
-				ageGroup.setName(dbResultSet.getString(3));
+				AgeGroup ageGroup = AgeGroup.newInstance();
+				ageGroup.setIdentifier(String.valueOf(dbResultSet.getInt(1)));
+				ageGroup.setLowerLimit(String.valueOf(dbResultSet.getInt(2)));
+				ageGroup.setUpperLimit(String.valueOf(dbResultSet.getInt(3)));
+				ageGroup.setName(dbResultSet.getString(4));
 				results.add(ageGroup);
 			}
 		}
@@ -257,10 +261,12 @@ public class SQLAgeGenderYearManager
 			String errorMessage
 				= RIFServiceMessages.getMessage("ageGroup.error.unableToGetAgeGroups");
 
-			Logger logger 
-				= LoggerFactory.getLogger(SQLAgeGenderYearManager.class);
-			logger.error(errorMessage, sqlException);	
-			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLAgeGenderYearManager.class, 
+				errorMessage, 
+				sqlException);
+						
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.UNABLE_GET_AGE_GROUPS,
@@ -275,6 +281,10 @@ public class SQLAgeGenderYearManager
 		return results;		
 	}
 
+	
+	
+	
+	
 	/**
 	 * Gets the genders.
 	 *
@@ -356,10 +366,12 @@ public class SQLAgeGenderYearManager
 					"sqlAgeGenderYearManager.error.unableToGetStartEndYear",
 					ndPair.getDisplayName());
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLAgeGenderYearManager.class);
-			logger.error(errorMessage, sqlException);				
-
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLAgeGenderYearManager.class, 
+				errorMessage, 
+				sqlException);
+						
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DB_UNABLE_GET_START_END_YEAR, 
@@ -408,6 +420,91 @@ public class SQLAgeGenderYearManager
 				ndPair);			
 		}
 	}
+
+	public void checkNonExistentAgeGroups(
+			Connection connection,
+			ArrayList<AgeBand> ageBands) 
+			throws RIFServiceException {
+			
+			for (AgeBand ageBand : ageBands) {
+				AgeGroup lowerAgeGroup = ageBand.getLowerLimitAgeGroup();
+				checkNonExistentAgeGroup(
+					connection, 
+					lowerAgeGroup);
+				AgeGroup upperAgeGroup = ageBand.getUpperLimitAgeGroup();
+				checkNonExistentAgeGroup(
+					connection, 
+					upperAgeGroup);
+				
+			}
+			
+			
+		}
+		
+		private void checkNonExistentAgeGroup(
+			Connection connection,
+			AgeGroup ageGroup) 
+			throws RIFServiceException {
+			
+			Integer id = Integer.valueOf(ageGroup.getIdentifier());
+			
+			SQLRecordExistsQueryFormatter ageGroupExistsQueryFormatter
+				= new SQLRecordExistsQueryFormatter();
+			ageGroupExistsQueryFormatter.setFromTable("rif40_age_groups");
+			ageGroupExistsQueryFormatter.setLookupKeyFieldName("age_group_id");
+			PreparedStatement statement = null;
+			ResultSet resultSet = null;
+			try {
+				statement 
+					= connection.prepareStatement(ageGroupExistsQueryFormatter.generateQuery());
+				statement.setInt(1, id);
+				
+				resultSet = statement.executeQuery();		
+				if (resultSet.next() == false) {
+
+					//ERROR: no such age group exists
+					String recordType
+						= ageGroup.getRecordType();
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"general.validation.nonExistentRecord",
+							recordType,
+							ageGroup.getDisplayName());
+
+					RIFServiceException rifServiceException
+						= new RIFServiceException(
+							RIFServiceError.NON_EXISTENT_AGE_GROUP, 
+							errorMessage);
+					throw rifServiceException;
+				}		
+			}
+			catch(SQLException sqlException) {
+				sqlException.printStackTrace(System.out);
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"general.validation.unableCheckNonExistentRecord",
+						ageGroup.getRecordType(),
+						ageGroup.getDisplayName());
+
+				RIFLogger rifLogger = new RIFLogger();
+				rifLogger.error(
+					SQLAgeGenderYearManager.class, 
+					errorMessage, 
+					sqlException);										
+					
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.DB_UNABLE_CHECK_NONEXISTENT_RECORD, 
+						errorMessage);
+				throw rifServiceException;
+			}
+			finally {
+				SQLQueryUtility.close(statement);
+				SQLQueryUtility.close(resultSet);
+			}			
+		}
+	
+	
 	
 	// ==========================================
 	// Section Interfaces
