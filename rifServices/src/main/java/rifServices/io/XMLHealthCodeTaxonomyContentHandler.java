@@ -310,7 +310,8 @@ public class XMLHealthCodeTaxonomyContentHandler
 		TaxonomyTerm parentTerm
 			= getTerm(parentTermLabel, parentTermNameSpace);
 		if (parentTerm == null) {
-			return null;
+			ArrayList<TaxonomyTerm> results = new ArrayList<TaxonomyTerm>();
+			return results;
 		}
 		
 		return parentTerm.getSubTerms();		
@@ -345,7 +346,7 @@ public class XMLHealthCodeTaxonomyContentHandler
 	 * @param nameSpace the name space
 	 * @return the term
 	 */
-	private TaxonomyTerm getTerm(
+	public TaxonomyTerm getTerm(
 		final String label,
 		final String nameSpace) {
 		
