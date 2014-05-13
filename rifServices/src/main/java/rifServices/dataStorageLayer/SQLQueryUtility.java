@@ -3,14 +3,14 @@ package rifServices.dataStorageLayer;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
+import rifServices.util.RIFLogger;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.SQLException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 
 
@@ -125,10 +125,12 @@ public class SQLQueryUtility {
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlConnectionManager.error.unableToCloseResource");
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLMapDataManager.class);
-			logger.error(errorMessage, sqlException);				
-													
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLQueryUtility.class, 
+				errorMessage, 
+				sqlException);
+																
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DB_UNABLE_CLOSE_RESOURCE,
@@ -160,10 +162,12 @@ public class SQLQueryUtility {
 				= RIFServiceMessages.getMessage(
 					"sqlConnectionManager.error.unableToCloseResource");
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLQueryUtility.class);
-			logger.error(errorMessage, sqlException);				
-															
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLQueryUtility.class, 
+				errorMessage, 
+				sqlException);
+																		
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DB_UNABLE_CLOSE_RESOURCE,
@@ -194,10 +198,12 @@ public class SQLQueryUtility {
 				= RIFServiceMessages.getMessage(
 					"sqlConnectionManager.error.unableToCloseResource");
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLQueryUtility.class);
-			logger.error(errorMessage, sqlException);				
-																
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLQueryUtility.class, 
+				errorMessage, 
+				sqlException);
+																		
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DB_UNABLE_CLOSE_RESOURCE,
