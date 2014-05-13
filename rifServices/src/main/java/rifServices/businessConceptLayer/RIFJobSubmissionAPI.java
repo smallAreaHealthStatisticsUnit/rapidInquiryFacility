@@ -1,6 +1,7 @@
 package rifServices.businessConceptLayer;
 
 import rifServices.system.RIFServiceException;
+import rifServices.system.RIFServiceStartupOptions;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -91,6 +92,11 @@ public interface RIFJobSubmissionAPI {
 		DESCENDING_UPPER_LIMIT
 	};
 
+	
+	public void initialiseService();
+	
+	public void initialiseService(RIFServiceStartupOptions rifServiceStartupOptions);
+	
 	/**
 	 * Login.
 	 *
@@ -100,7 +106,7 @@ public interface RIFJobSubmissionAPI {
 	 */
 	public void login(
 		final String userID, 
-		final String password) 
+		final char[] password) 
 		throws RIFServiceException;
 	
 	/**
@@ -309,7 +315,19 @@ public interface RIFJobSubmissionAPI {
 	public ArrayList<HealthCodeTaxonomy> getHealthCodeTaxonomies(
 		final User user)
 		throws RIFServiceException;
-		
+
+	
+	/**
+	 * Gets the health code taxonomy given the name space
+	 *
+	 * @param user the user
+	 * @return the health code taxonomy corresponding to the name space
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	public HealthCodeTaxonomy getHealthCodeTaxonomyFromNameSpace(
+		final User user, 
+		final String healthCodeTaxonomyNameSpace) throws RIFServiceException;	
+	
 	/**
 	 * Gets the top level codes.
 	 *
