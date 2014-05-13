@@ -2,6 +2,7 @@ package rifServices.taxonomyServices;
 
 
 import rifServices.businessConceptLayer.HealthCode;
+
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.Parameter;
 import rifServices.io.XMLHealthCodeTaxonomyContentHandler;
@@ -10,7 +11,6 @@ import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
 import java.io.File;
-import java.sql.Connection;
 import java.text.Collator;
 import java.util.ArrayList;
 
@@ -125,8 +125,7 @@ public class RIFXMLTaxonomyProvider
 		}
 		
 		File healthCodeListFile
-			= new File(inputFileParameterValue);
-		
+			= new File(inputFileParameterValue.toString());
 		taxonomyReader.readFile(healthCodeListFile);
 		healthCodeTaxonomy = taxonomyReader.getHealthCodeTaxonomy();
 	}
@@ -184,7 +183,7 @@ public class RIFXMLTaxonomyProvider
 		
 		return false;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see rifServices.taxonomyServices.HealthCodeProvider#supportsTaxonomy(rifServices.businessConceptLayer.HealthCode)
 	 */
@@ -207,7 +206,6 @@ public class RIFXMLTaxonomyProvider
 	 * @see rifServices.taxonomyServices.HealthCodeProvider#getHealthCodes(java.sql.Connection, java.lang.String)
 	 */
 	public ArrayList<HealthCode> getHealthCodes(
-		final Connection connection,
 		final String searchText) 
 		throws RIFServiceException {
 		
@@ -219,8 +217,7 @@ public class RIFXMLTaxonomyProvider
 	/* (non-Javadoc)
 	 * @see rifServices.taxonomyServices.HealthCodeProvider#getTopLevelCodes(java.sql.Connection)
 	 */
-	public ArrayList<HealthCode> getTopLevelCodes(
-		final Connection connection)
+	public ArrayList<HealthCode> getTopLevelCodes()
 		throws RIFServiceException {
 				
 		ArrayList<TaxonomyTerm> taxonomyTerms
@@ -255,15 +252,19 @@ public class RIFXMLTaxonomyProvider
 	 * @see rifServices.taxonomyServices.HealthCodeProvider#getImmediateSubterms(java.sql.Connection, rifServices.businessConceptLayer.HealthCode)
 	 */
 	public ArrayList<HealthCode> getImmediateSubterms(
-		final Connection connection,
 		final HealthCode parentHealthCode) 
 		throws RIFServiceException {
+		
+		checkHealthCodeExists(
+			parentHealthCode.getCode(), 
+			parentHealthCode.getNameSpace());
+		
 		
 		ArrayList<TaxonomyTerm> results
 			= taxonomyReader.getImmediateSubterms(
 				parentHealthCode.getCode(), 
 				parentHealthCode.getNameSpace());
-		
+				
 		return convertToHealthCodes(results);
 	}
 
@@ -271,9 +272,12 @@ public class RIFXMLTaxonomyProvider
 	 * @see rifServices.taxonomyServices.HealthCodeProvider#getParentHealthCode(java.sql.Connection, rifServices.businessConceptLayer.HealthCode)
 	 */
 	public HealthCode getParentHealthCode(
-		final Connection connection,
 		final HealthCode childHealthCode) 
 		throws RIFServiceException {
+		
+		checkHealthCodeExists(
+			childHealthCode.getCode(), 
+			childHealthCode.getNameSpace());
 		
 		TaxonomyTerm parentTerm
 			= taxonomyReader.getParentHealthCode(
@@ -287,9 +291,75 @@ public class RIFXMLTaxonomyProvider
 		parentHealthCode.setCode(parentTerm.getLabel());
 		parentHealthCode.setDescription(parentTerm.getDescription());
 		parentHealthCode.setNameSpace(parentTerm.getNameSpace());
-		
+		if (parentTerm.getParentTerm() == null) {
+			parentHealthCode.setTopLevelTerm(true);
+		}
+		else {
+			parentHealthCode.setTopLevelTerm(false);			
+		}
 		return parentHealthCode;
 	}
+	
+	
+	public HealthCode getHealthCode(
+		final String code,
+		final String nameSpace) throws RIFServiceException {
+		
+		TaxonomyTerm term
+			= taxonomyReader.getTerm(
+				code, 
+				nameSpace);
+
+		if (term == null) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"healthCodeProvider.error.nonExistentHealthCode", 
+					code, 
+					healthCodeTaxonomy.getDisplayName());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.HEALTH_CODE_NOT_KNOWN_TO_PROVIDER, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		
+		HealthCode healthCode = HealthCode.newInstance();
+		healthCode.setCode(code);
+		healthCode.setDescription(term.getDescription());
+		healthCode.setNameSpace(nameSpace);
+		if (term.getParentTerm() == null) {
+			healthCode.setTopLevelTerm(true);
+		}
+		else {
+			healthCode.setTopLevelTerm(false);			
+		}
+		
+		return healthCode;
+		
+	}
+	
+	private void checkHealthCodeExists(
+		String code, 
+		String nameSpace) throws RIFServiceException {
+		
+		TaxonomyTerm term
+			= taxonomyReader.getTerm(
+				code, 
+				nameSpace);
+		if (term == null) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"healthCodeProvider.error.nonExistentHealthCode", 
+					code, 
+					healthCodeTaxonomy.getDisplayName());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.HEALTH_CODE_NOT_KNOWN_TO_PROVIDER, 
+					errorMessage);
+			throw rifServiceException;
+		}		
+	}
+	
 
 	/**
 	 * Gets the number of terms.
