@@ -128,13 +128,31 @@ public class TestInvestigation extends AbstractRIFTestCase {
 				false);
 		masterInvestigation.addHealthCode(healthCode2);
 		
-		AgeGroup lowerAgeGroup 
+		
+		//intentionally mixing up order to test sort routine later
+		AgeGroup lowerAgeGroup1 
 			= AgeGroup.newInstance("123", "10", "12", "10-12");
-		AgeGroup upperAgeGroup 
+		AgeGroup upperAgeGroup1 
 			= AgeGroup.newInstance("123", "20", "22", "20-22");		
 		AgeBand ageBand1 
-			= AgeBand.newInstance(lowerAgeGroup, upperAgeGroup);
+			= AgeBand.newInstance(lowerAgeGroup1, upperAgeGroup1);
 		masterInvestigation.addAgeBand(ageBand1);
+
+		AgeGroup lowerAgeGroup3 
+			= AgeGroup.newInstance("789", "31", "33", "31-33");
+		AgeGroup upperAgeGroup3 
+			= AgeGroup.newInstance("789", "48", "50", "48-50");		
+		AgeBand ageBand3 
+			= AgeBand.newInstance(lowerAgeGroup3, upperAgeGroup3);
+		masterInvestigation.addAgeBand(ageBand3);
+		
+		AgeGroup lowerAgeGroup2 
+			= AgeGroup.newInstance("456", "23", "25", "23-25");
+		AgeGroup upperAgeGroup2 
+			= AgeGroup.newInstance("456", "28", "30", "28-30");		
+		AgeBand ageBand2 
+			= AgeBand.newInstance(lowerAgeGroup2, upperAgeGroup2);
+		masterInvestigation.addAgeBand(ageBand2);
 		
 		masterInvestigation.setSex(Sex.BOTH);
 		YearRange yearRange = YearRange.newInstance("1992", "1997");
@@ -331,10 +349,10 @@ public class TestInvestigation extends AbstractRIFTestCase {
 	}
 		
 	/**
-	 * An investigation is invalid if it has no age group specified.
+	 * An investigation is invalid if it has no age bands specified.
 	 */
 	@Test
-	public void rejectBlankAgeGroup() {
+	public void rejectNoAgeBands() {
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -360,7 +378,7 @@ public class TestInvestigation extends AbstractRIFTestCase {
 	 * will also be invalid.  Therefore the total error count will be 3 + 3 + 1 = 7.
 	 */
 	@Test
-	public void rejectInvalidAgeGroup() {
+	public void rejectInvalidAgeBand() {
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -376,7 +394,7 @@ public class TestInvestigation extends AbstractRIFTestCase {
 				7);
 		}	
 	}
-		
+	
 	/**
 	 * An investigation is invalid if it has no sex specified.
 	 */
@@ -702,6 +720,34 @@ public class TestInvestigation extends AbstractRIFTestCase {
 				RIFServiceError.INVALID_INVESTIGATION, 
 				1);
 		}
+	}
+
+	/**
+	 * Tests whether the investigation can sort its age bands and
+	 * provide the correct lowest age group and highest age group
+	 * amongst its age bands
+	 */
+	@Test
+	public void correctlySortsAgeBands() {
+		Investigation investigation
+			= Investigation.createCopy(masterInvestigation);	
+		
+		ArrayList<AgeBand> sortedAgeBands
+			= AgeBand.sortAgeBands(investigation.getAgeBands());
+		assertEquals(3, sortedAgeBands.size());
+		
+		//first age band should be [10, 12]....[20,22]
+		assertEquals(
+			"10-12",
+			sortedAgeBands.get(0).getLowerLimitAgeGroup().getName());
+
+		assertEquals(
+			"23-25",
+			sortedAgeBands.get(1).getLowerLimitAgeGroup().getName());
+		
+		assertEquals(
+			"31-33",
+			sortedAgeBands.get(2).getLowerLimitAgeGroup().getName());	
 	}
 	
 	/**
