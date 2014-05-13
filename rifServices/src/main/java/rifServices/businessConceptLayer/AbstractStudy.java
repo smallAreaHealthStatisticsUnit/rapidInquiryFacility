@@ -102,7 +102,7 @@ abstract public class AbstractStudy
 	private String description;
 	
 	/** The known issues. */
-	private String knownIssues;
+	private String otherNotes;
 	
 	/** The geography. */
 	private Geography geography;
@@ -123,7 +123,7 @@ abstract public class AbstractStudy
     	
 		name = "";
 		description = "";
-		knownIssues = "";
+		otherNotes = "";
 
 		geography = Geography.newInstance();
 		comparisonArea = ComparisonArea.newInstance();
@@ -179,22 +179,22 @@ abstract public class AbstractStudy
 	/**
 	 * Gets the known issues.
 	 *
-	 * @return the known issues
+	 * @return the other notes
 	 */
-	public String getKnownIssues() {
+	public String getOtherNotes() {
 		
-		return knownIssues;
+		return otherNotes;
 	}
 
 	/**
-	 * Sets the known issues.
+	 * Sets the other notes.
 	 *
 	 * @param knownIssues the new known issues
 	 */
-	public void setKnownIssues(
-		final String knownIssues) {
+	public void setOtherNotes(
+		final String otherNotes) {
 		
-		this.knownIssues = knownIssues;
+		this.otherNotes = otherNotes;
 	}
 	
 	/**
@@ -290,7 +290,7 @@ abstract public class AbstractStudy
 		
 		String otherName = otherStudy.getName();
 		String otherDescription = otherStudy.getDescription();
-		String otherKnownIssues = otherStudy.getKnownIssues();
+		String otherKnownIssues = otherStudy.getOtherNotes();
 
 		Collator collator = Collator.getInstance();
 		
@@ -320,13 +320,13 @@ abstract public class AbstractStudy
 			}
 		}
 		
-		if (FieldValidationUtility.hasDifferentNullity(knownIssues, otherKnownIssues)) {
+		if (FieldValidationUtility.hasDifferentNullity(otherNotes, otherKnownIssues)) {
 			//reject if one is null and the other is non-null
 			return false;
 		}
-		else if (knownIssues != null) {
+		else if (otherNotes != null) {
 			//they must both be non-null
-			if (collator.equals(knownIssues, otherKnownIssues) == false) {
+			if (collator.equals(otherNotes, otherKnownIssues) == false) {
 				return false;
 			}
 		}
@@ -394,7 +394,7 @@ abstract public class AbstractStudy
 		fieldValidationUtility.checkMaliciousCode(
 			recordType, 
 			knownIssuesFieldLabel, 
-			knownIssues);
+			otherNotes);
 
 		
 		geography.checkSecurityViolations();
