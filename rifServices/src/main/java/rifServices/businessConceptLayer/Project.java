@@ -418,10 +418,13 @@ public class Project
 			}
 		}
 		
+		
 		String endDateFieldName
 			= RIFServiceMessages.getMessage("project.endDate.label");
 		String endDatePhrase = getEndDate();
 		Date endDate = null;
+
+		/*
 		if (fieldValidationUtility.isEmpty(endDatePhrase)) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -430,7 +433,10 @@ public class Project
 					endDateFieldName);
 			errorMessages.add(errorMessage);			
 		}
-		else {
+		*/
+		
+		if (fieldValidationUtility.isEmpty(endDatePhrase) == false) {
+//		else {
 			endDate = RIFServiceMessages.getDate(endDatePhrase);		
 			if (endDate == null) {
 				String errorMessage
