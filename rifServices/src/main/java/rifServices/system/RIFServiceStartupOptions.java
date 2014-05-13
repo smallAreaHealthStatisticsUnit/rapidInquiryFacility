@@ -96,6 +96,8 @@ public final class RIFServiceStartupOptions {
 	/** The server side cache directory. */
 	private File serverSideCacheDirectory;
 		
+	private String webApplicationFilePath;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -233,6 +235,15 @@ public final class RIFServiceStartupOptions {
 		String recordType
 			= RIFServiceMessages.getMessage("rifServiceStartupOptions.label");
 		return recordType;
+	}
+	
+	
+	public String getWebApplicationFilePath() {
+		return webApplicationFilePath;
+	}
+	
+	public void setWebApplicationFilePath(String webApplicationFilePath) {
+		this.webApplicationFilePath = webApplicationFilePath;
 	}
 	
 	// ==========================================
