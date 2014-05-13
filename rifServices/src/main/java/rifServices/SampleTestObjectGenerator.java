@@ -100,7 +100,7 @@ public class SampleTestObjectGenerator {
 	 *
 	 * @return the sample rif job submission
 	 */
-	public RIFJobSubmission getSampleRIFJobSubmission() {
+	public RIFJobSubmission createSampleRIFJobSubmission() {
 		RIFJobSubmission rifJobSubmission = RIFJobSubmission.newInstance();
 		rifJobSubmission.setNewRecord(false);
 
