@@ -12,8 +12,8 @@ import rifServices.taxonomyServices.HealthCodeProvider;
 import rifServices.taxonomyServices.RIFXMLTaxonomyProvider;
 import rifServices.util.DisplayableItemSorter;
 import rifServices.test.AbstractRIFTestCase;
-
 import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -114,7 +114,7 @@ public class TestTaxonomyProviders extends AbstractRIFTestCase {
 	 */
 	private TestService createTestService() throws RIFServiceException {
 		TestService service = new TestService();
-		service.login("keving", "a");	
+		service.login("keving", new String("a").toCharArray());			
 				
 		RIFXMLTaxonomyProvider icdTaxonomyProvider = new RIFXMLTaxonomyProvider();
 		ArrayList<Parameter> parameters = new ArrayList<Parameter>();
@@ -138,7 +138,7 @@ public class TestTaxonomyProviders extends AbstractRIFTestCase {
 		
 		try {
 			TestService service = new TestService();
-			service.login("keving", "a");	
+			service.login("keving", new String("a").toCharArray());			
 					
 			RIFXMLTaxonomyProvider icdTaxonomyProvider = new RIFXMLTaxonomyProvider();
 			ArrayList<Parameter> parameters = new ArrayList<Parameter>();

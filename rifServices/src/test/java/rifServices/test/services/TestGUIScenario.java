@@ -108,7 +108,8 @@ public class TestGUIScenario {
 		try {
 			ProductionRIFJobSubmissionService service
 				= new ProductionRIFJobSubmissionService();
-			service.login("keving", "a");			
+			service.initialiseService();			
+			service.login("keving", new String("a").toCharArray());			
 			
 			System.out.println("Logging on as keving...");
 			User testUser = User.newInstance("keving", "11.111.11.228");

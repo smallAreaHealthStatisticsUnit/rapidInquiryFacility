@@ -158,6 +158,7 @@ public class TestYearRangeYearInterval extends AbstractRIFTestCase {
 	public TestYearRangeYearInterval() {
 		service
 			= new ProductionRIFJobSubmissionService();
+		service.initialiseService();
 
 		masterInterval91 = YearInterval.newInstance("1991", "1991");
 		masterInterval92 = YearInterval.newInstance("1992", "1992");
@@ -182,7 +183,7 @@ public class TestYearRangeYearInterval extends AbstractRIFTestCase {
 		masterInterval959697 = YearInterval.newInstance("1995", "1997");
 
 		try {
-			service.login("keving", "a");			
+			service.login("keving", new String("a").toCharArray());			
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
