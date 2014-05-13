@@ -12,6 +12,7 @@ import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.util.FieldValidationUtility;
+import rifServices.util.RIFLogger;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -24,9 +25,6 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -275,10 +273,12 @@ public class SQLMapDataManager
 					geography.getName(),
 					geoLevelToMap.getName());
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLMapDataManager.class);
-			logger.error(errorMessage, sqlException);				
-						
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLMapDataManager.class, 
+				errorMessage, 
+				sqlException);
+			
 			RIFServiceException rifServiceException
 				= new RIFServiceException(RIFServiceError.DB_UNABLE_COUNT_MAP_AREAS_FOR_EXTENT, 
 					errorMessage);
@@ -416,9 +416,11 @@ public class SQLMapDataManager
 					geography.getName(),
 					geoLevelToMap.getName());
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLMapDataManager.class);
-			logger.error(errorMessage, sqlException);				
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLMapDataManager.class, 
+				errorMessage, 
+				sqlException);
 								
 			RIFServiceException rifServiceException
 				= new RIFServiceException(RIFServiceError.DB_UNABLE_GET_MAP_AREAS, 
@@ -597,10 +599,12 @@ public class SQLMapDataManager
 					geography.getName(),
 					geoLevelToMap.getName());
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLMapDataManager.class);
-			logger.error(errorMessage, sqlException);				
-							
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLMapDataManager.class, 
+				errorMessage, 
+				sqlException);
+								
 			RIFServiceException rifServiceException
 				= new RIFServiceException(RIFServiceError.DB_UNABLE_GET_MAP_AREAS, 
 					errorMessage);
@@ -664,9 +668,11 @@ public class SQLMapDataManager
 					geography.getName(),
 					resolutionLevel);
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLMapDataManager.class);
-			logger.error(errorMessage, sqlException);				
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLMapDataManager.class, 
+				errorMessage, 
+				sqlException);
 									
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
@@ -725,9 +731,11 @@ public class SQLMapDataManager
 					"sqlMapDataManager.error.unableToGetHierarchyTable",
 					geography.getName());
 
-			Logger logger 
-				= LoggerFactory.getLogger(SQLMapDataManager.class);
-			logger.error(errorMessage, sqlException);				
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLMapDataManager.class, 
+				errorMessage, 
+				sqlException);
 											
 			RIFServiceException rifServiceException
 				= new RIFServiceException(

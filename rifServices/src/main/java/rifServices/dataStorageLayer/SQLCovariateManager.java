@@ -12,6 +12,7 @@ import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+import rifServices.util.RIFLogger;
 
 import java.util.ArrayList;
 import java.sql.Connection;
@@ -19,8 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -268,11 +267,13 @@ public class SQLCovariateManager
 		catch(SQLException sqlException) {
 			String errorMessage
 				= RIFServiceMessages.getMessage("covariateManager.db.unableToGetCovariates");
+
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLCovariateManager.class, 
+				errorMessage, 
+				sqlException);
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLCovariateManager.class);
-			logger.error(errorMessage, sqlException);				
-					
 			RIFServiceException rifServiceException
 				= new RIFServiceException(RIFServiceError.GET_COVARIATES, errorMessage);
 			throw rifServiceException;
@@ -329,6 +330,71 @@ public class SQLCovariateManager
 			
 		}	
 	}
+	
+	
+	public void checkNonExistentCovariates(
+		Connection connection,
+		ArrayList<AbstractCovariate> covariates)
+		throws RIFServiceException {
+				
+		SQLRecordExistsQueryFormatter covariateExistsQueryFormatter
+			= new SQLRecordExistsQueryFormatter();
+		covariateExistsQueryFormatter.setFromTable("rif40_covariates");
+		covariateExistsQueryFormatter.setLookupKeyFieldName("covariate_name");
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;		
+		AbstractCovariate currentCovariate = null;
+		try {
+			statement 
+				= connection.prepareStatement(covariateExistsQueryFormatter.generateQuery());
+			
+			for (AbstractCovariate covariate : covariates) {
+				statement.setString(1, covariate.getName());
+				resultSet = statement.executeQuery();
+				if (resultSet.next() == false) {
+					String recordType = covariate.getRecordType();
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"general.validation.nonExistentRecord",
+							recordType,
+							covariate.getDisplayName());
+
+					RIFServiceException rifServiceException
+						= new RIFServiceException(
+							RIFServiceError.NON_EXISTENT_COVARIATE, 
+							errorMessage);
+					throw rifServiceException;				
+				}
+			}
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.unableCheckNonExistentRecord",
+					currentCovariate.getRecordType(),
+					currentCovariate.getDisplayName());
+
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLCovariateManager.class, 
+				errorMessage, 
+				sqlException);										
+			
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DB_UNABLE_CHECK_NONEXISTENT_RECORD, 
+					errorMessage);
+			throw rifServiceException;			
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		
+	}
+
+	
 	
 	// ==========================================
 	// Section Interfaces

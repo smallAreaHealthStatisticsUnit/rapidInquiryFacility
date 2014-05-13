@@ -6,6 +6,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
+import rifServices.util.RIFLogger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,9 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.ArrayList;
 
 
 /**
@@ -101,15 +100,26 @@ public class SQLConnectionManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	private static final int POOLED_CONNECTIONS_PER_PERSON = 1;
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
 	/** The rif service startup options. */
 	private final RIFServiceStartupOptions rifServiceStartupOptions;
 	
-	/** The connection from user. */
-	private final HashMap<String, Connection> connectionFromUser;
+	/** The read connection from user. */
+	private final HashMap<String, ArrayList<Connection>> availableReadConnectionsFromUser;
+
+	/** The read connection from user. */
+	private final HashMap<String, ArrayList<Connection>> usedReadConnectionsFromUser;
+	
+	/** The read connection from user. */
+	private final HashMap<String, ArrayList<Connection>> usedWriteConnectionsFromUser;
+		
+	/** The write connection from user. */
+	private final HashMap<String, ArrayList<Connection>> availableWriteConnectionsFromUser;
+	
 	
 	/** The initialisation query. */
 	private final String initialisationQuery;
@@ -117,7 +127,9 @@ public class SQLConnectionManager {
 	/** The database url. */
 	private final String databaseURL;
 	
+	private HashSet<String> registeredUserIDs;
 	private HashSet<String> userIDsToBlock;
+	
 	
 	// ==========================================
 	// Section Construction
@@ -132,9 +144,15 @@ public class SQLConnectionManager {
 		final RIFServiceStartupOptions rifServiceStartupOptions) {
 
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
-		connectionFromUser = new HashMap<String, Connection>();
+		usedReadConnectionsFromUser = new HashMap<String, ArrayList<Connection>>();
+		availableReadConnectionsFromUser = new HashMap<String, ArrayList<Connection>>();
+
+		usedWriteConnectionsFromUser = new HashMap<String, ArrayList<Connection>>();
+		availableWriteConnectionsFromUser = new HashMap<String, ArrayList<Connection>>();
+		
 		
 		userIDsToBlock = new HashSet<String>();
+		registeredUserIDs = new HashSet<String>();
 		
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT ");
@@ -176,18 +194,42 @@ public class SQLConnectionManager {
 	 */
 	public boolean userExists(
 		final String userID) {
-
-		Connection connection = connectionFromUser.get(userID);
-		if (connection != null) {
-			return true;
+		
+		return registeredUserIDs.contains(userID);
+	}
+	
+	public boolean isUserBlocked(
+		final User user) {
+		
+		if (user == null) {
+			return false;
 		}
-		return false;
+		
+		String userID = user.getUserID();
+		if (userID == null) {
+			return false;
+		}
+		
+		return userIDsToBlock.contains(userID);
 	}
 	
 	public void addUserIDToBlock(
-		final String userID) 
+		final User user) 
 		throws RIFServiceException {
 			
+		if (user == null) {
+			return;
+		}
+		
+		String userID = user.getUserID();
+		if (userID == null) {
+			return;
+		}
+		
+		if (userIDsToBlock.contains(userID)) {
+			return;
+		}
+		
 		userIDsToBlock.add(userID);
 	}	
 	
@@ -199,32 +241,58 @@ public class SQLConnectionManager {
 	 * @return the connection
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public Connection registerUser(
+	public void registerUser(
 		final String userID,
-		final String password) 
+		final char[] password) 
 		throws RIFServiceException {
 	
 		if (userIDsToBlock.contains(userID)) {
-			return null;
+			return;
 		}
 		
-		Connection connection = connectionFromUser.get(userID);
-		if (connection != null) {
-			return connection;
-		}
+		Connection currentConnection = null;
 		PreparedStatement statement = null;
 		try {
 			Class.forName("org.postgresql.Driver");
-			connection 
-				= DriverManager.getConnection(
-					databaseURL,
-					userID,
-					password);
-			statement
-				= connection.prepareStatement(initialisationQuery);
-			statement.execute();
-			statement.close();
-			connectionFromUser.put(userID, connection);
+
+			//Establish read-only connections
+			ArrayList<Connection> readOnlyConnections 
+				= new ArrayList<Connection>();
+			for (int i = 0; i < POOLED_CONNECTIONS_PER_PERSON; i++) {
+				currentConnection 
+					= DriverManager.getConnection(
+						databaseURL,
+						userID,
+						new String(password));
+				statement
+					= currentConnection.prepareStatement(initialisationQuery);
+				statement.execute();
+				statement.close();
+				currentConnection.setReadOnly(false);
+				readOnlyConnections.add(currentConnection);
+			}			
+			availableReadConnectionsFromUser.put(userID, readOnlyConnections);
+			usedReadConnectionsFromUser.put(userID, new ArrayList<Connection>());
+			
+			//Establish write-only connections
+			ArrayList<Connection> writeOnlyConnections 
+				= new ArrayList<Connection>();
+			for (int i = 0; i < POOLED_CONNECTIONS_PER_PERSON; i++) {
+				currentConnection 
+					= DriverManager.getConnection(
+						databaseURL,
+						userID,
+						new String(password));
+				statement
+					= currentConnection.prepareStatement(initialisationQuery);
+				statement.execute();
+				statement.close();
+				writeOnlyConnections.add(currentConnection);
+			}			
+			availableWriteConnectionsFromUser.put(userID, writeOnlyConnections);
+			usedWriteConnectionsFromUser.put(userID, new ArrayList<Connection>());
+			
+			registeredUserIDs.add(userID);
 		}
 		catch(ClassNotFoundException classNotFoundException) {
 			classNotFoundException.printStackTrace(System.out);
@@ -239,15 +307,18 @@ public class SQLConnectionManager {
 			throw rifServiceException;			
 		}
 		catch(SQLException sqlException) {
+			sqlException.printStackTrace(System.out);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlConnectionManager.error.unableToRegisterUser",
 					userID);
-
-			Logger logger 
-				= LoggerFactory.getLogger(SQLConnectionManager.class);
-			logger.error(errorMessage, sqlException);				
 			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+					SQLConnectionManager.class, 
+				errorMessage, 
+				sqlException);
+									
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DB_UNABLE_REGISTER_USER,
@@ -257,7 +328,6 @@ public class SQLConnectionManager {
 		finally {
 			SQLQueryUtility.close(statement);
 		}
-		return connection;
 	}
 	
 	/**
@@ -267,7 +337,7 @@ public class SQLConnectionManager {
 	 * @return the connection
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public Connection getConnection(
+	public Connection getReadConnection(
 		final User user) 
 		throws RIFServiceException {
 		
@@ -275,12 +345,130 @@ public class SQLConnectionManager {
 		if (userIDsToBlock.contains(userID)) {
 			return null;
 		}
-
-		Connection connection 
-			= connectionFromUser.get(userID);
-		return connection;			
+		
+		ArrayList<Connection> availableReadConnections
+			= availableReadConnectionsFromUser.get(user.getUserID());
+		if (availableReadConnections.isEmpty()) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlConnectionmanager.error.maximumReadConnectionsExceeded",
+					user.getUserID());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.MAXIMUM_READ_CONNECTIONS_EXCEEDED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		else {
+			Connection connection = availableReadConnections.get(0);
+			ArrayList<Connection> usedReadConnections
+				= usedReadConnectionsFromUser.get(user.getUserID());
+			availableReadConnections.remove(0);
+			
+			usedReadConnections.add(connection);
+			return connection;
+		}
 	}
 	
+	public void releaseReadConnection(
+		User user, 
+		Connection connection) 
+		throws RIFServiceException {
+		
+		ArrayList<Connection> usedReadConnections
+			= usedReadConnectionsFromUser.get(user.getUserID());
+		usedReadConnections.remove(connection);
+		
+		ArrayList<Connection> availableReadConnections
+			= availableReadConnectionsFromUser.get(user.getUserID());
+		availableReadConnections.add(connection);		
+	}
+	
+	public void releaseWriteConnection(
+		User user, 
+		Connection connection) 
+		throws RIFServiceException {
+		
+		ArrayList<Connection> usedWriteConnections
+			= usedWriteConnectionsFromUser.get(user.getUserID());
+		usedWriteConnections.remove(connection);
+		
+		ArrayList<Connection> availableWriteConnections
+			= availableWriteConnectionsFromUser.get(user.getUserID());
+		availableWriteConnections.add(connection);				
+		
+	}
+	
+	/**
+	 * Assumes that user is valid.  This method used a connection object that
+	 * has been configured for write operations
+	 *
+	 * @param user the user
+	 * @return the connection
+	 * @throws RIFServiceException the RIF service exception
+	 */
+
+	/**
+	 * Assumes that user is valid.
+	 *
+	 * @param user the user
+	 * @return the connection
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	public Connection getWriteConnection(
+		final User user) 
+		throws RIFServiceException {
+			
+		String userID = user.getUserID();
+		if (userIDsToBlock.contains(userID)) {
+			return null;
+		}
+			
+		ArrayList<Connection> availableWriteConnections
+			= availableWriteConnectionsFromUser.get(user.getUserID());
+		if (availableWriteConnections.isEmpty()) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlConnectionmanager.error.maximumWriteConnectionsExceeded",
+					user.getUserID());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.MAXIMUM_READ_CONNECTIONS_EXCEEDED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		else {
+			Connection connection = availableWriteConnections.get(0);
+			ArrayList<Connection> usedWriteConnections
+				= usedWriteConnectionsFromUser.get(user.getUserID());
+			availableWriteConnections.remove(0);
+			usedWriteConnections.add(connection);
+			return connection;
+		}
+	}
+
+	public void deregisterUser(
+		final User user) 
+		throws RIFServiceException {
+		
+		if (user == null) {
+			return;
+		}
+		
+		String userID = user.getUserID();
+		if (userID == null) {
+			return;
+		}
+		
+		if (registeredUserIDs.contains(userID) == false) {
+			//Here we anticipate the possibility that the user
+			//may not be registered.  In this case, there is no chance
+			//that there are connections that need to be closed for that ID
+			return;
+		}
+		
+		closeConnectionsForUser(userID);
+	}
 	
 	/**
 	 * Deregister user.
@@ -288,29 +476,46 @@ public class SQLConnectionManager {
 	 * @param user the user
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void deregisterUser(
-		final User user) 
+	public void closeConnectionsForUser(
+		final String userID) 
 		throws RIFServiceException {
-
-		Connection connection = null;
+				
 		try {
-			connection 
-				= connectionFromUser.get(user.getUserID());
-			if (connection != null) {
-				connectionFromUser.remove(user);
+			ArrayList<Connection> availableReadConnections
+				= availableReadConnectionsFromUser.get(userID);
+			for (Connection connection : availableReadConnections) {
 				connection.close();				
 			}
+			
+			ArrayList<Connection> usedReadConnections
+				= availableReadConnectionsFromUser.get(userID);
+			for (Connection connection : usedReadConnections) {
+				connection.close();				
+			}
+						
+			ArrayList<Connection> availableWriteConnections
+				= availableWriteConnectionsFromUser.get(userID);
+			for (Connection connection : availableWriteConnections) {
+				connection.close();				
+			}
+			ArrayList<Connection> usedWriteConnections
+				= usedWriteConnectionsFromUser.get(userID);
+			for (Connection connection : usedWriteConnections) {
+				connection.close();				
+			}
+
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlConnectionManager.error.unableToDeregisterUser",
-					user.getUserID());
+					userID);
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLConnectionManager.class);
-			logger.error(errorMessage, sqlException);				
-		
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+					SQLConnectionManager.class, 
+				errorMessage, 
+				sqlException);
 			
 			RIFServiceException serviceException
 				= new RIFServiceException(
@@ -322,7 +527,42 @@ public class SQLConnectionManager {
 		//We ignore the finally clause because it is essentially doing
 		//the close action of the connection
 	}
+
+	public void resetConnectionPoolsForUser(User user) {
+		if (user == null) {
+			return;
+		}
+		String userID = user.getUserID();
+		if (userID == null) {
+			return;
+		}
+		
+		//adding all the used read connections back to the available
+		//connections pool
+		ArrayList<Connection> availableReadConnections
+			= availableReadConnectionsFromUser.get(userID);
+		ArrayList<Connection> usedReadConnections
+			= usedReadConnectionsFromUser.get(userID);
+		availableReadConnections.addAll(usedReadConnections);
+		usedReadConnections.clear();
+		
+		//adding all the used write connections back to the available
+		//connections pool
+		ArrayList<Connection> availableWriteConnections
+			= availableWriteConnectionsFromUser.get(userID);
+		ArrayList<Connection> usedWriteConnections
+			= usedWriteConnectionsFromUser.get(userID);
+		availableWriteConnections.addAll(usedWriteConnections);
+		usedWriteConnections.clear();		
+	}
 	
+	public void deregisterAllUsers() throws RIFServiceException {
+		for (String registeredUserID : registeredUserIDs) {
+			closeConnectionsForUser(registeredUserID);
+		}
+		
+		registeredUserIDs.clear();
+	}
 		
 	// ==========================================
 	// Section Errors and Validation
