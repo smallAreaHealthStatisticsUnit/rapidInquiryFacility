@@ -103,7 +103,7 @@ public class DisplayableItemSorter {
 		final DisplayableListItem displayableListItem) {
 		
 		displayableItemFromIdentifier.put(
-			displayableListItem.getIdentifier(),
+			displayableListItem.getDisplayName(),
 			displayableListItem);
 	}
 
