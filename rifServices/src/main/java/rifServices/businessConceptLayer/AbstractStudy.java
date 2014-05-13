@@ -3,6 +3,7 @@ package rifServices.businessConceptLayer;
 
 import rifServices.businessConceptLayer.AbstractRIFConcept;
 
+
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceMessages;
@@ -11,6 +12,7 @@ import rifServices.util.FieldValidationUtility;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Hashtable;
 
 
 /**
@@ -524,9 +526,64 @@ abstract public class AbstractStudy
 					uniqueInvestigationTitles.add(currentInvestigationTitle);
 				}
 			}
+			
+			//go through investigations
+			String differentDenominatorsResult
+				= identifyDifferentDenominators(investigations);
+			if (differentDenominatorsResult != null) {
+				errorMessages.add(differentDenominatorsResult);
+			}
 		}		
 	}
+
+	/**
+	 * Assumes that investigations have a valid ND pair
+	 * @param investigations
+	 * @return
+	 */
+	public static String identifyDifferentDenominators(
+		final ArrayList<Investigation> investigations) {
 		
+		if (investigations.size() < 2) {
+			return null;
+		}
+		
+		//all of the investigations should have the same 
+		Hashtable<String, ArrayList<Investigation>> investigationsForDenominatorTableNames 
+			= new Hashtable<String, ArrayList<Investigation>>();
+		for (Investigation investigation : investigations) {
+			NumeratorDenominatorPair ndPair = investigation.getNdPair();
+			assert(ndPair != null);
+			String denominatorTableName = ndPair.getDenominatorTableName();
+			ArrayList<Investigation> investigationsForDenominator
+				= investigationsForDenominatorTableNames.get(denominatorTableName);
+			if (investigationsForDenominator == null) {
+				investigationsForDenominator
+					= new ArrayList<Investigation>();
+				investigationsForDenominatorTableNames.put(
+					denominatorTableName,
+					investigationsForDenominator);
+			}
+			
+			investigationsForDenominator.add(investigation);			
+		}
+		
+		//we should only have one denominator table name
+		ArrayList<String> denominatorTableNameKeys 
+			= new ArrayList<String>();
+		denominatorTableNameKeys.addAll(investigationsForDenominatorTableNames.keySet());
+		if (denominatorTableNameKeys.size() > 1) {
+			String errorMessage
+				= RIFServiceMessages.getMessage("abstractStudy.error.inconsistentDenominatorTables");
+			return errorMessage;
+		}
+		else {
+			return null;
+		}			
+	}
+
+	
+	
 // ==========================================
 // Section Interfaces
 // ==========================================
