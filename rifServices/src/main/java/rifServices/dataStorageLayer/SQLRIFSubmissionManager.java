@@ -1,27 +1,15 @@
 package rifServices.dataStorageLayer;
 
+import rifServices.businessConceptLayer.*;
 
-import rifServices.businessConceptLayer.AbstractCovariate;
-import rifServices.businessConceptLayer.DiseaseMappingStudy;
-import rifServices.businessConceptLayer.DiseaseMappingStudyArea;
-import rifServices.businessConceptLayer.HealthCode;
-import rifServices.businessConceptLayer.Investigation;
-import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.businessConceptLayer.RIFJobSubmission;
-import rifServices.businessConceptLayer.User;
-import rifServices.businessConceptLayer.YearRange;
-import rifServices.system.RIFServiceException;
-import rifServices.system.RIFServiceMessages;
+import rifServices.system.*;
+import rifServices.util.RIFLogger;
 
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.sql.Date;
 
 
 
@@ -97,7 +85,10 @@ public class SQLRIFSubmissionManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private SQLRIFContextManager rifContextManager;
+	private SQLAgeGenderYearManager ageGenderYearManager;
+	private SQLCovariateManager covariateManager;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -105,197 +96,63 @@ public class SQLRIFSubmissionManager {
 	/**
 	 * Instantiates a new SQLRIF submission manager.
 	 */
-	public SQLRIFSubmissionManager() {
+	public SQLRIFSubmissionManager(
+		SQLRIFContextManager rifContextManager,
+		SQLAgeGenderYearManager ageGenderYearManager,
+		SQLCovariateManager covariateManager) {
 
+		this.rifContextManager = rifContextManager;
+		this.ageGenderYearManager = ageGenderYearManager;
+		this.covariateManager = covariateManager;		
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
-	/*
-	public ArrayList<RIFJobSubmissionSummary> getRIFJobSubmissionsForUser(
-		Connection connection,
-		User user) {
 	
-		StringBuilder query = new StringBuilder();
-			
-		ArrayList<RIFJobSubmissionSummary> results
-			= new ArrayList<RIFJobSubmissionSummary>();
-		
-		SQLSelectQueryFormatter formatter = new SQLSelectQueryFormatter();
-		formatter.addFromTable("study_name");
-		formatter.addSelectField("summary");
-		formatter.addFromTable("t_rif40_studies");
-		formatter.addOrderByCondition("study_name");
-		formatter.addWhereParameter("username");
-		
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		
-		try {
-			statement = connection.prepareStatement(formatter.generateQuery());
-			statement.setString(1, user.getUserID());
-			resultSet
-				= statement.executeQuery();
-			while (resultSet.next()) {
-				String studyIdentifier = resultSet.getString(1);
-				String studyName = resultSet.getString(2);
-				String studySummary = resultSet.getString(3);				
-				
-				RIFJobSubmissionSummary jobSubmissionSummary
-					= RIFJobSubmissionSummary.newInstance(							
-						studyIdentifier, 
-						studyName, 
-						studySummary);
+	
+	/**
+	 * Used as a test method to clear rif job submissions.
+	 * @param connection
+	 * @throws RIFServiceException
+	 */
+	public void clearRIFJobSubmissions(
+		Connection connection)
+		throws RIFServiceException {
+	
+		/*
+		SQLDeleteQueryFormatter deleteStudiesQueryFormatter
+			= new SQLDeleteQueryFormatter();
+		deleteStudiesQueryFormatter.setFromTable("rif40_studies");
 
-				results.add(jobSubmissionSummary);				
-			}
+		SQLDeleteQueryFormatter deleteInvestigationsQueryFormatter
+			= new SQLDeleteQueryFormatter();
+		deleteInvestigationsQueryFormatter.setFromTable("rif40_investigations");
+		
+		
+		PreparedStatement deleteStudiesStatement = null;
+		PreparedStatement deleteInvestigationsStatement = null;		
+		try {
+			deleteStudiesStatement 
+				= connection.prepareStatement(deleteStudiesQueryFormatter.generateQuery());
+			deleteStudiesStatement.executeQuery();
 		}
-		catch(SQLException exception) {
+		catch(SQLException sqlException) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
-					"", 
-					user.getUserID());
+					"rifJobSubmissionManager.error.unableToDeleteStudies");
 			RIFServiceException rifServiceException
-				= new RIFServiceException(RIFServiceError, errorMessage);
+				= new RIFServiceException(
+					RIFServiceError.UNABLE_DELETE_STUDIES, 
+					errorMessage);
 			throw rifServiceException;
 		}
 		finally {
-			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);			
+			SQLQueryUtility.close(deleteStudiesStatement);
+			SQLQueryUtility.close(deleteInvestigationsStatement);
 		}
-		
+		*/	
 	}
-	*/
-
-	/*
-
-	public RIFJobSubmission getRIFJobSubmissionForUser(
-		Connection connection,
-		User user,
-		RIFJobSubmissionSummary jobSubmissionSummary) throws RIFServiceException {
-		
-		
-		
-		RIFJobSubmission result
-			= RIFJobSubmission.newInstance();
-		
-		SQLSelectQueryFormatter formatter
-			= new SQLSelectQueryFormatter();
-		formatter.addSelectField("geography");
-		formatter.addSelectField("project");
-		formatter.addSelectField("");
-		
-		
-		formatter.addFromTable("t_rif40_studies");
-		
-		
-		
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		
-		try {
-			Integer studyID
-				= Integer.valueOf(jobSubmissionSummary.getStudyIdentifier());
-			
-			
-			
-		}
-		catch(Exception exception) {
-			
-		}
-		finally {
-			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
-		}
-	}
-	*/
-	
-	/*
-	private ArrayList<Investigation> getInvestigationsForStudy(
-		Connection connection,
-		AbstractStudy study) throws SQLException {
-		
-		
-	}
-	*/
-	
-	/*
-	private ArrayList<HealthCode> getHealthOutcomesForStudy(
-		Connection connection,
-		AbstractStudy study) throws SQLException {
-		
-		ArrayList<HealthCode> results = new ArrayList<HealthCode>();
-		
-		
-		return results;
-	}
-	
-	private ArrayList<AbstractCovariate> getCovariatesForInvestigation(
-		Connection connection,
-		User user,
-		Integer studyID,
-		Integer investigationID,
-		Investigation investigation) throws Exception {
-			
-		SQLSelectQueryFormatter formatter 
-			= new SQLSelectQueryFormatter();
-		formatter.addSelectField("covariate_name");
-		formatter.addSelectField("min");
-		formatter.addSelectField("max");
-		formatter.addFromTable("t_rif40_inv_covariates");
-		formatter.addWhereParameter("inv_id");
-		formatter.addWhereParameter("study_id");
-		
-		ArrayList<AbstractCovariate> results 
-			= new ArrayList<AbstractCovariate>();
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-
-		try {
-			statement
-				= connection.prepareStatement(formatter.generateQuery());
-			statement.setInt(1, investigationID);
-			statement.setInt(2, studyID);
-			resultSet
-				= statement.executeQuery();
-			while (resultSet.next()) {
-				String name = resultSet.getString(1);
-				Double minimumValue = resultSet.getDouble(2);
-				Double maximumValue = resultSet.getDouble(3);
-				
-				//TODO: KLG find out where we can find out what type the variable is
-				CovariateType covariateType = CovariateType.CONTINUOUS_VARIABLE;
-				AdjustableCovariate adjustableCovariate
-					= AdjustableCovariate.newInstance(
-						name, 
-						String.valueOf(minimumValue), 
-						String.valueOf(maximumValue), 
-						covariateType);	
-				results.add(adjustableCovariate);
-			}
-			return results;
-		}
-		finally {
-			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
-		}	
-				
-		return results;		
-	}
-	
-	
-	*/
-	
-	
-	
-	
-	
-	
 	
 	
 	/**
@@ -315,109 +172,296 @@ public class SQLRIFSubmissionManager {
 		DiseaseMappingStudy diseaseMappingStudy
 			= (DiseaseMappingStudy) rifJobSubmission.getStudy();
 
-		String geographyName
-			= diseaseMappingStudy.getGeography().getName();
-		DiseaseMappingStudyArea diseaseMappingStudyArea
-			= diseaseMappingStudy.getDiseaseMappingStudyArea();
-		String geoLevelViewName
-			= diseaseMappingStudyArea.getGeoLevelView().getName();
-		String geoLevelAreaName
-			= diseaseMappingStudyArea.getGeoLevelArea().getName();
-		String geoLevelToMapName
-			= diseaseMappingStudyArea.getGeoLevelToMap().getName();
-		String geoLevelSelectName
-			= diseaseMappingStudyArea.getGeoLevelSelect().getName();
+		//verify that year range checks against the database
 		
-		String projectName
-			= rifJobSubmission.getProject().getName();
-		String studyName
-			= diseaseMappingStudy.getName();
-		Investigation firstInvestigation
-			= diseaseMappingStudy.getInvestigations().get(0);
-		NumeratorDenominatorPair ndPair
-			= firstInvestigation.getNdPair();
-		String denominatorTableName
-			= ndPair.getDenominatorTableName();
-		String numeratorTableName
-			= ndPair.getNumeratorTableName();
-		YearRange yearRange
-			= firstInvestigation.getYearRange();
-		String yearStart
-			= yearRange.getLowerBound();
-		String yearStop
-			= yearRange.getUpperBound();
-		
-		//build array of health codes
-		ArrayList<HealthCode> healthCodes
-			= firstInvestigation.getHealthCodes();
-		int numberOfHealthCodes = healthCodes.size();
-		String[] healthCodeNames = new String[numberOfHealthCodes];
-		for (int i = 0; i < numberOfHealthCodes; i++) {
-			healthCodeNames[i] = healthCodes.get(i).getCode();
-		}
-		
-		//build array of investigation descriptions
-		String[] investigationDescriptions = new String[1];
-		investigationDescriptions[0] = firstInvestigation.getTitle();
+		//verify that all the age groups of all the age bands are
+		//in the database
 
-		ArrayList<AbstractCovariate> covariates
-			= firstInvestigation.getCovariates();
-		int numberOfCovariates = covariates.size();		
-		String[] covariateNames = new String[numberOfCovariates];
-		for (int i = 0; i < numberOfCovariates; i++) {
-			covariateNames[i] = covariates.get(i).getName();
-		}
+		//Step 1: Add an entry to the study view
 		
-		StringBuilder query = new StringBuilder();
-		query.append("SELECT klg_create_disease_mapping_study(");
-		query.append("?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) AS result;");
+		SQLInsertQueryFormatter insertStudyQueryFormatter
+			= new SQLInsertQueryFormatter();
+		insertStudyQueryFormatter.setIntoTable("rif40_studies");
+		insertStudyQueryFormatter.addInsertField("username");
+		//insertStudyQueryFormatter.addInsertField("study_id");
+		//insertStudyQueryFormatter.addInsertField("extract_table");
+
+		insertStudyQueryFormatter.addInsertField("project");
+		insertStudyQueryFormatter.addInsertField("project_description");
+		insertStudyQueryFormatter.addInsertField("study_name");
+		insertStudyQueryFormatter.addInsertField("summary");
+		insertStudyQueryFormatter.addInsertField("description");
+		insertStudyQueryFormatter.addInsertField("other_notes");
+		//insertStudyQueryFormatter.addInsertField("study_date");
+		insertStudyQueryFormatter.addInsertField("geography");
+		//Until we develop risk analysis studies, study_type will
+		//be '1'
+		insertStudyQueryFormatter.addInsertField("study_type");
+		//Here, study state will always be 'C' for created
+		insertStudyQueryFormatter.addInsertField("study_state");
 		
-		ResultSet resultSet = null;
-		PreparedStatement statement = null;
+		//@TODO probably geo level view?? clarify meaning
+		insertStudyQueryFormatter.addInsertField("comparison_geolevel_name");
+		insertStudyQueryFormatter.addInsertField("denom_tab");
+		
+		//???
+		//insertStudyQueryFormatter.addInsertField("direct_stand_tab");
+
+		/**
+		 * @TODO
+		 * year_start, year_stop, max_age_group, min_age_group
+		 * should not be in a study but at the investigation
+		 * for now, just use data from the first investigation
+		 */
+		insertStudyQueryFormatter.addInsertField("year_start");
+		insertStudyQueryFormatter.addInsertField("year_stop");
+		
+		//@TODO: min and max will be the min age group and max
+		//age group taken across consecutive age bands
+		insertStudyQueryFormatter.addInsertField("max_age_group");
+		insertStudyQueryFormatter.addInsertField("min_age_group");
+		insertStudyQueryFormatter.addInsertField("study_geolevel_name");
+		
+		//@TODO: clarify where this comes from
+		//insertStudyQueryFormatter.addInsertField("map_table");
+		//@TODO specify this as an option.  For now, have a default of 5
+		insertStudyQueryFormatter.addInsertField("suppression_value");
+		
+		//@TODOFor now, put '1' for true
+		insertStudyQueryFormatter.addInsertField("extract_permitted");
+		//@TODO For now, put '1' for true
+		insertStudyQueryFormatter.addInsertField("transfer_permitted");
+		insertStudyQueryFormatter.addInsertField("authorised_by");
+		//@TODO for now, put NOW() time stamp
+		insertStudyQueryFormatter.addInsertField("authorised_on");
+		//@TODO for now, put empty string
+		insertStudyQueryFormatter.addInsertField("authorised_notes");
+
+		//@TODO clarify meaning
+		//insertStudyQueryFormatter.addInsertField("audsid");
+		//@TODO clarify whether what values this can have in PostGresQL
+		//for now, assume 4 is OK
+		insertStudyQueryFormatter.addInsertField("partition_parallelisation");
+
+		//@TODO: Where to obtain this?
+		insertStudyQueryFormatter.addInsertField("covariate_table");
+
+		PreparedStatement addStudyStatement = null;
 		try {
-			statement = connection.prepareStatement(query.toString());
-			statement.setString(1, geographyName);
-			statement.setString(2, geoLevelViewName);
-			statement.setString(3, geoLevelAreaName);
-			statement.setString(4, geoLevelToMapName);
-			statement.setString(5, geoLevelSelectName);
-			statement.setString(6, "geolevel_selection");
-			statement.setString(7, projectName);
-			statement.setString(8, studyName);
-			statement.setString(9, denominatorTableName);
-			statement.setString(10, numeratorTableName);
-			statement.setString(11, yearStart);
-			statement.setString(12, yearStop);
-			Array healthCodeArray
-				= connection.createArrayOf("varchar", healthCodeNames);
-			statement.setArray(13, healthCodeArray);
-			Array investigationDescriptionArray
-				= connection.createArrayOf("varchar", investigationDescriptions);
-			statement.setArray(14, investigationDescriptionArray);
-			Array covariateNameArray
-				= connection.createArrayOf("varchar", covariateNames);
-			statement.setArray(15, covariateNameArray);
+			addStudyStatement 
+				= connection.prepareStatement(insertStudyQueryFormatter.generateQuery());
+			addStudyStatement.setString(1, user.getUserID());
+			
+			Project project = rifJobSubmission.getProject();
+			addStudyStatement.setString(2, project.getName());
+			addStudyStatement.setString(3, project.getDescription());
 
-			resultSet = statement.executeQuery();
-			resultSet.next();
-			String result = resultSet.getString(1);
+			DiseaseMappingStudy study 
+				= (DiseaseMappingStudy) rifJobSubmission.getStudy();
+			addStudyStatement.setString(4, study.getName());
+			//For now, put empty string for 'summary'
+			addStudyStatement.setString(5, "");
+			addStudyStatement.setString(6, study.getDescription());
+
+			//@TODO: We need to obtain 'other_notes', which appears
+			//at the end, just before the users preview their study
+			//for now, put empty string
+			addStudyStatement.setString(7, "");
+			
+			Geography geography = study.getGeography();
+			addStudyStatement.setString(8, geography.getName());
+
+			//Set '1' for disease mapping study
+			addStudyStatement.setInt(9, 1);
+			
+			//Set 'C' for created but not verified
+			addStudyStatement.setString(10, "C");
+			
+			//setting comparison_geolevel_name
+			ComparisonArea comparisonArea = study.getComparisonArea();
+			GeoLevelToMap comparisonAreaGeoLevelToMap
+				= comparisonArea.getGeoLevelToMap();
+			addStudyStatement.setString(11, comparisonAreaGeoLevelToMap.getName());
+			
+			//set denom_tab
+			//Note that this varies from investigation to investigation
+			//and does not belong at study level.  For now, just take
+			//the numerator denominator pair from the first investigation
+			ArrayList<Investigation> investigations
+				= study.getInvestigations();
+			Investigation firstInvestigation = investigations.get(0);
+			NumeratorDenominatorPair ndPair
+				= firstInvestigation.getNdPair();
+			addStudyStatement.setString(12, ndPair.getDenominatorTableName());
+			
+			YearRange yearRange = firstInvestigation.getYearRange();
+			
+			//setting year_start
+			addStudyStatement.setInt(13, Integer.valueOf(yearRange.getLowerBound()));
+			//setting year_stop
+			addStudyStatement.setInt(14, Integer.valueOf(yearRange.getUpperBound()));
+			
+			AgeGroup maximumAgeGroup
+				= firstInvestigation.getMaximumAgeGroup();
+			//setting max_age_group
+			addStudyStatement.setInt(15, Integer.valueOf(maximumAgeGroup.getUpperLimit()));
+			AgeGroup minimumAgeGroup
+				= firstInvestigation.getMinimumAgeGroup();
+			//setting min_age_group
+			addStudyStatement.setInt(16, Integer.valueOf(minimumAgeGroup.getLowerLimit()));
+			
+			//study_geolevel_name : for now, just use the same geoLevelView
+			//as above
+			DiseaseMappingStudyArea studyArea
+				= study.getDiseaseMappingStudyArea();
+			GeoLevelToMap studyGeoLevelToMap 
+				= studyArea.getGeoLevelToMap();
+			addStudyStatement.setString(17, studyGeoLevelToMap.getName());
+			
+			//suppression_value: for now, set it to 5
+			addStudyStatement.setInt(18, 5);
+			
+			//extract_permitted: for now, '1' for true
+			addStudyStatement.setInt(19, 1);
+
+			//transfer_permitted: for now, '1' for true
+			addStudyStatement.setInt(20, 1);
+			
+			//authorised_by: for now, put user name
+			addStudyStatement.setString(21, user.getUserID());
+
+			//study_date
+	
+			addStudyStatement.setDate(22, new Date(System.currentTimeMillis()));
+			//authorised_notes: for now, use empty string
+			addStudyStatement.setString(23, "");
+			
+			//partition_parallelisation: for now, put 4
+			addStudyStatement.setInt(24, 4);
+					
+			addStudyStatement.setString(25, "some_covariate_table");
+			
+			
+			
+			addStudyStatement.executeUpdate();
+						
+			/*
+			addInvestigations(
+				connection,
+				user,
+				geography,
+				study);
+			*/
 		}
 		catch(SQLException sqlException) {
-			String errorMessage
+			sqlException.printStackTrace(System.out);
+			String errorMessage 
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToAddSubmission",
 					rifJobSubmission.getDisplayName());
 			
-			Logger logger 
-				= LoggerFactory.getLogger(SQLRIFSubmissionManager.class);
-			logger.error(errorMessage, sqlException);			
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFSubmissionManager.class, 
+				errorMessage, 
+				sqlException);
+			
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.UNABLE_TO_ADD_STUDY, 
+					errorMessage);
+			throw rifServiceException;			
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(addStudyStatement);
 		}
 	}
+	
+	private void addInvestigations(
+		Connection connection,
+		User user,
+		Geography geography,
+		AbstractStudy study) 
+		throws SQLException,
+		RIFServiceException {
+		
+		SQLInsertQueryFormatter insertInvestigationQueryFormatter
+			= new SQLInsertQueryFormatter();
+		insertInvestigationQueryFormatter.setIntoTable("rif40_investigations");
+		insertInvestigationQueryFormatter.addInsertField("username");
+		//insertInvestigationQueryFormatter.addInsertField("inv_id");
+		//insertInvestigationQueryFormatter.addInsertField("study_id");
+		insertInvestigationQueryFormatter.addInsertField("inv_name");
+		insertInvestigationQueryFormatter.addInsertField("inv_description");
+		insertInvestigationQueryFormatter.addInsertField("year_start");
+		insertInvestigationQueryFormatter.addInsertField("year_stop");
+		insertInvestigationQueryFormatter.addInsertField("max_age_group");
+		insertInvestigationQueryFormatter.addInsertField("min_age_group");
+		insertInvestigationQueryFormatter.addInsertField("genders");
+		insertInvestigationQueryFormatter.addInsertField("numer_tab");
+		//insertInvestigationQueryFormatter.addInsertField("mh_test_type");
+		insertInvestigationQueryFormatter.addInsertField("geography");
+		//insertInvestigationQueryFormatter.addInsertField("classifier");
+		insertInvestigationQueryFormatter.addInsertField("classifier_bands");
+		insertInvestigationQueryFormatter.addInsertField("investigation_state");
+		
+		ArrayList<Investigation> investigations = study.getInvestigations();
+		PreparedStatement insertInvestigationStatement = null;
+		
+		//@TODO
+		//This field should not appear in investigations for future releases
+		String geographyName = geography.getName();
+		try {
+			insertInvestigationStatement
+				 = connection.prepareStatement(insertInvestigationQueryFormatter.generateQuery());
+			
+			for (Investigation investigation : investigations) {
+				insertInvestigationStatement.setString(1, user.getUserID());
+				insertInvestigationStatement.setString(2, investigation.getTitle());
+				
+				//@TODO investigation should have its own description field
+				insertInvestigationStatement.setString(3, "");
+				
+				YearRange yearRange = investigation.getYearRange();
+				//year_start
+				insertInvestigationStatement.setInt(4, Integer.valueOf(yearRange.getLowerBound()));
+				//year_stop
+				insertInvestigationStatement.setInt(5, Integer.valueOf(yearRange.getUpperBound()));
+				//max_age_group
+				AgeGroup maximumAgeGroup = investigation.getMaximumAgeGroup();
+				insertInvestigationStatement.setInt(6, Integer.valueOf(maximumAgeGroup.getUpperLimit()));
+				//min_age_group
+				AgeGroup minimumAgeGroup = investigation.getMinimumAgeGroup();
+				insertInvestigationStatement.setInt(7, Integer.valueOf(minimumAgeGroup.getLowerLimit()));
+				//genders
+				Sex sex = investigation.getSex();
+				if (sex == Sex.MALES) {
+					insertInvestigationStatement.setInt(8, 1);	
+				}
+				else if (sex == Sex.FEMALES){
+					insertInvestigationStatement.setInt(8, 2);	
+				}	
+				else {
+					//assume both
+					insertInvestigationStatement.setInt(8, 3);	
+				}
+				//numer_tab
+				NumeratorDenominatorPair ndPair = investigation.getNdPair();
+				insertInvestigationStatement.setString(9, ndPair.getNumeratorTableName());
+				insertInvestigationStatement.setString(10, geographyName);
+				//classifier_bands default: 5
+				insertInvestigationStatement.setInt(11, 5);
+				//investigation_state: put 'C' for created but not verified
+				insertInvestigationStatement.setString(12, "C");
+				
+				insertInvestigationStatement.executeUpdate();
+			}		
+		}
+		finally {
+			SQLQueryUtility.close(insertInvestigationStatement);
+		}	
+	}	
 	
 /*	
 	private ArrayList<Investigation> getInvestigationsForStudy(
