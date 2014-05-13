@@ -215,7 +215,7 @@ public final class HealthTheme
 	public String getRecordType() {
 		
 		String recordType
-			= RIFServiceMessages.getMessage("geography.label");
+			= RIFServiceMessages.getMessage("healthTheme.label");
 		return recordType;
 	}
 	
@@ -225,7 +225,7 @@ public final class HealthTheme
 	@Override
 	public String getDisplayName() {	
 		
-		return getName();
+		return getDescription();
 	}	
 	
 	/* (non-Javadoc)
