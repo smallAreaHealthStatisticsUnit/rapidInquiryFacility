@@ -92,6 +92,7 @@ DECLARE
 							'_rif40_common_partition_create_setup',
 							'_rif40_common_partition_create_insert',
 							'_rif40_common_partition_create_complete',
+							'_rif40_common_partition_triggers',
 							'rif40_ddl'];
 	l_function 			VARCHAR;
 --

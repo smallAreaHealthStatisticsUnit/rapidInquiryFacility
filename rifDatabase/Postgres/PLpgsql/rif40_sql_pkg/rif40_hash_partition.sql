@@ -61,13 +61,13 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_hash_partition(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR)
+CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_hash_partition(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, l_num_partitions INTEGER DEFAULT 16)
 RETURNS void
 SECURITY INVOKER
 AS $func$
 /*
 Function: 	rif40_hash_partition()
-Parameters:	Schema, table, column
+Parameters:	Schema, table, column, number of partitions
 Returns:	Nothing
 Description:	Hash partition schema.table on column
 
@@ -127,7 +127,8 @@ BEGIN
 'DECLARE'||E'\n'||
 '	sql_stmt 	VARCHAR;'||E'\n'||
 '	p_table		VARCHAR;'||E'\n'||
-'	p_value		VARCHAR;'||E'\n'||
+'	p_hash		VARCHAR;'||E'\n'||
+'	num_partitions	VARCHAR:='||l_num_partitions::Text||';'||E'\n'||
 '--'||E'\n'||
 '	error_message VARCHAR;'||E'\n'||
 '	v_detail VARCHAR:=''(Not supported until 9.2; type SQL statement into psql to see remote error)'';'||E'\n'||
@@ -139,8 +140,8 @@ BEGIN
 '		PERFORM rif40_log_pkg.rif40_error(-19001, '''||quote_ident(l_table||'_insert')||''','||E'\n'||
 '		       	''NULL value for partition column '||quote_ident(l_column)||''');'||E'\n'||
 '	END IF;'||E'\n'||
-'	p_table:=quote_ident('||''''||l_table||'_''||NEW.'||l_column||'::Text'||');'||E'\n'||
-'	p_value:=NEW.'||l_column||'::Text;'||E'\n'||
+'	p_hash:=rif40_sql_pkg._rif40_hash(NEW.'||l_column||'::text, '||l_num_partitions::Text||')::Text;'||E'\n'||
+'	p_table:=quote_ident('||''''||l_table||'_p''||p_hash);'||E'\n'||
 '	BEGIN'||E'\n'||
 '--'||E'\n'||
 '-- Copy columns from NEW'||E'\n'||
@@ -156,29 +157,14 @@ BEGIN
 		END IF;
 	END LOOP;
 	ddl_stmt[array_length(ddl_stmt, 1)]:=ddl_stmt[array_length(ddl_stmt, 1)]||
-'		sql_stmt:= ''INSERT INTO ''||p_table||'' VALUES ('||bind_list||') /* Partition: ''||p_value||'' */'';'||E'\n'||
+'		sql_stmt:= ''INSERT INTO ''||p_table||'' VALUES ('||bind_list||') /* Partition: ''||p_hash||'' of ''||num_partitions||'' */'';'||E'\n'||
 '--		PERFORM rif40_log_pkg.rif40_log(''DEBUG3'', '''||quote_ident(l_table||'_insert')||''','||E'\n'||
 '--			''Row N SQL> EXECUTE ''''%'''' USING '||rec_list||'; /* rec: % */'', sql_stmt::VARCHAR, NEW.*::VARCHAR);'||E'\n'||
 '		EXECUTE sql_stmt USING '||rec_list||';'||E'\n'||
 '	EXCEPTION'||E'\n'||
-'		WHEN undefined_table /* e.g. 42p01: relation "rif40.rif40_population_europe_1991" does not exist */ THEN'||E'\n'||
-'			PERFORM rif40_log_pkg.rif40_log(''INFO'', '''||quote_ident(l_table||'_insert')||''','||E'\n'||
-'			       	''Adding partition for '||quote_ident(l_column)||': % to table: %'','||E'\n'||
-'				NEW.'||quote_ident(l_column)||'::VARCHAR, '''||quote_ident(l_table)||'''::VARCHAR);'||E'\n'||
-'--'||E'\n'||
-'-- Add partition'||E'\n'||
-'--'||E'\n'||
-'                       PERFORM rif40_sql_pkg._rif40_hash_partition_create('''||l_schema||''', '''||l_table||''', p_table, '''||l_column||''', p_value);'||E'\n'||
-'--'||E'\n'||
-'-- Re-insert failed first row'||E'\n'||
-'--'||E'\n'||
-'			PERFORM rif40_log_pkg.rif40_log(''DEBUG1'', '''||quote_ident(l_table||'_insert')||''','||E'\n'||
-'				''Row 1 SQL> EXECUTE ''''%'''' USING '||rec_list||'; /* rec: % */'', sql_stmt::VARCHAR, NEW.*::VARCHAR);'||E'\n'||
-'			EXECUTE sql_stmt USING '||rec_list||';'||E'\n'||
-'			RETURN NULL;'||E'\n'||
 '		WHEN others THEN'||E'\n'||
 '			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;'||E'\n'||
-'			error_message:='''||quote_ident(l_table||'_insert')||'() caught: ||SQLSTATE::VARCHAR''||E''\n''||SQLERRM::VARCHAR||'' in SQL (see previous trapped error)''||E''\n''||''Detail: ''||''(''||SQLSTATE||'') ''||v_detail::VARCHAR||'' '';'||E'\n'|| 
+'			error_message:='''||quote_ident(l_table||'_insert')||'() caught: ''||SQLSTATE::VARCHAR||E''\n''||SQLERRM::VARCHAR||'' in SQL>''||E''\n''||sql_stmt||'';''||E''\n''||''(see previous trapped error)''||E''\n''||''Detail: ''||''(''||SQLSTATE||'') ''||v_detail::VARCHAR||'' '';'||E'\n'|| 
 '			RAISE INFO ''3: %'', error_message;'||E'\n'||
 '--'||E'\n'||
 '			RAISE;'||E'\n'||
@@ -190,7 +176,7 @@ BEGIN
 '  LANGUAGE plpgsql';
 
 	ddl_stmt[array_length(ddl_stmt, 1)+1]:='COMMENT ON FUNCTION  '||quote_ident(l_schema)||'.'||quote_ident(l_table||'_insert')||'()'||
-       		' IS ''Partition INSERT function for geography: SAHSU''';
+       		' IS ''Hash partition INSERT function for table: '||l_table||'''';
 --
 -- If debug is enabled add newly created function 
 --
@@ -208,6 +194,13 @@ BEGIN
 		' ON '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||
 		' IS ''Partition INSERT trigger by '||quote_ident(l_column)||' for: '||quote_ident(l_schema)||'.'||quote_ident(l_table)||
 		'; calls '||quote_ident(l_table||'_insert')||'(). Automatically creates partitions''';
+--
+-- Create hash partitions
+--
+	FOR i IN 1 .. num_partitions LOOP
+		PERFORM _rif40_hash_partition_create(l_schema, l_table, l_table||'_p'||i::Text, l_column, i, num_partitions);
+	END LOOP;
+
 --
 -- Call: _rif40_common_partition_create_insert()
 --
@@ -260,11 +253,116 @@ BEGIN
 END;
 $func$ LANGUAGE plpgsql;
 
-COMMENT ON FUNCTION rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR) IS 'Function: 	rif40_hash_partition()
+COMMENT ON FUNCTION rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR, INTEGER) IS 'Function: 	rif40_hash_partition()
 Parameters:	Schema, table, column
 Returns:	Nothing
 Description:	Hash partition schema.table on column
 ';
+
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash_partition_create(
+	l_schema 	VARCHAR, 
+	master_table 	VARCHAR, 
+	partition_table VARCHAR, 
+	l_column	VARCHAR, 
+	l_value		INTEGER,
+	num_partitions	INTEGER)
+RETURNS void
+SECURITY DEFINER
+AS $func$
+/*
+Function: 	_rif40_hash_partition_create()
+Parameters:	Schema, master table, partition table, column, hash value, total partitions
+Returns:	Nothing
+Description:	Create hash partition schema.table_<value> on column <column> value <value>, inheriting from <mnaster table>.
+		Comment columns
+
+Runs as RIF40 (so can create partition tables)
+
+Generates the following SQL to create a partition>
+	
+CREATE TABLE sahsuland_cancer_1989 (
+ CONSTRAINT sahsuland_cancer_1989_ck CHECK (year::text = '1989'::text)
+) INHERITS (sahsuland_cancer);
+
+Call rif40_sql_pkg._rif40_common_partition_create to:
+
+* Add indexes, primary key
+* Add foreign keys
+* Add trigger, unique, check and exclusion constraints
+* Validation triggers
+* Add grants
+* Table and column comments
+
+ */
+DECLARE
+	ddl_stmt	VARCHAR[];
+--
+BEGIN
+--
+-- Must be rif40 or have rif_user or rif_manager role
+--
+	IF USER != 'rif40' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
+		PERFORM rif40_log_pkg.rif40_error(-20999, '_rif40_hash_partition_create', 'User % must be rif40 or have rif_user or rif_manager role', 
+			USER::VARCHAR);
+	END IF;
+--
+	PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_hash_partition_create', 
+		'Create hash partition: % for value % on column: %; master: %.%', 
+		partition_table::VARCHAR	/* Partition table */,
+		l_value::VARCHAR		/* Partition hash value */,
+		l_column::VARCHAR		/* Partition column */,
+		l_schema::VARCHAR		/* Schema */, 
+		master_table::VARCHAR		/* Master table inheriting from */);
+
+--
+-- Create partition table inheriting from master
+--
+	ddl_stmt[1]:='CREATE TABLE '||quote_ident(partition_table)||' ('||E'\n'||
+		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('||l_value||' = rif40_sql_pkg._rif40_hash('''||quote_ident(l_column)||'''::text, '||num_partitions::Text||'))'||E'\n'||
+		') INHERITS ('||quote_ident(master_table)||')';
+--
+-- Run
+--
+	PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
+
+--
+-- Call rif40_sql_pkg._rif40_common_partition_create to:
+-- * Add indexes, primary key
+-- * Add foreign keys
+-- * Add trigger, unique, check and exclusion constraints
+-- * Validation triggers
+-- * Add grants
+-- * Table and column comments
+--
+--	PERFORM rif40_sql_pkg._rif40_common_partition_create(l_schema, master_table, partition_table, l_column, l_value::VARCHAR);
+
+END;
+$func$ 
+LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_hash_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, INTEGER, INTEGER) IS 'Function: 	_rif40_hash_partition_create()
+Parameters:	Schema, master table, partition table, column, hash value, number of partitions
+Returns:	Nothing
+Description:	Create hash partition schema.table_<value> on column <column> value <value>, inheriting from <mnaster table>.
+		Comment columns
+
+Runs as RIF40 (so can create partition tables)
+
+Generates the following SQL to create a partition>
+	
+	
+CREATE TABLE sahsuland_cancer_1989 (
+ CONSTRAINT sahsuland_cancer_1989_ck CHECK (year::text = ''1989''::text)
+) INHERITS (sahsuland_cancer);
+
+Call rif40_sql_pkg._rif40_common_partition_create to:
+
+* Add indexes, primary key
+* Add foreign keys
+* Add trigger, unique, check and exclusion constraints
+* Validation triggers
+* Add grants
+* Table and column comments';
 
 --
 -- Eof

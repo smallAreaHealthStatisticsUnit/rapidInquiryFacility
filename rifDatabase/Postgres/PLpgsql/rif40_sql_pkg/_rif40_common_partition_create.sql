@@ -61,6 +61,27 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash(l_value VARCHAR, l_bucket INTEGER)
+RETURNS INTEGER
+AS $func$
+/*
+Function: 	_rif40_hash()
+Parameters:	Value (must be cast if required), number of buckets
+Returns:	Hash in the range 1 .. l_bucket 
+Description:	Hashing function
+ */
+DECLARE
+BEGIN
+	RETURN (ABS(hashtext(l_value))%l_bucket)+1;
+END;
+$func$ 
+LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_hash(VARCHAR, INTEGER) IS 'Function: 	_rif40_hash()
+Parameters:	Value (must be cast if required), number of buckets
+Returns:	Hash in the range 1 .. l_bucket 
+Description:	Hashing function';
+
 CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_triggers(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, enable_or_disable VARCHAR, OUT ddl_stmt VARCHAR[])
 RETURNS VARCHAR[]
 SECURITY INVOKER
@@ -72,22 +93,56 @@ Returns:	DDL statement array
 Description:	Automatic range partitioning schema.table on column: ENABLE or DISABLE ON-INSERT triggers
  */
 DECLARE
+	c1rpct CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get triggers */
+		SELECT tg.tgname,
+		       ns.nspname AS schema_name,
+		       cl.relname AS table_name,
+		       pc.proname AS function_name,
+		       CASE
+				WHEN tg.oid IS NOT NULL THEN pg_get_triggerdef(tg.oid)
+				ELSE NULL
+		       END AS trigger_def
+		  FROM pg_trigger tg, pg_proc pc, information_schema.triggers tgi, pg_class cl
+		        LEFT OUTER JOIN pg_namespace ns ON (cl.relnamespace = ns.oid)
+		 WHERE tg.tgrelid              = cl.oid
+		   AND ns.nspname              = l_schema
+		   AND cl.relname              = l_table
+		   AND tgi.event_object_table  = l_table
+		   AND tgi.event_object_schema = l_schema
+		   AND tgi.trigger_name        = tg.tgname
+		   AND tgi.event_manipulation  = 'INSERT'
+		   AND cl.relname||'_insert'  != pc.proname /* Ignore partition INSERT function */
+		   AND tg.tgfoid               = pc.oid
+		   AND tg.tgisinternal         = FALSE	   /* Ignore constraints triggers */;
+	c1_rec RECORD;
+--
+	i INTEGER:=0;
 BEGIN
 --
 -- Must be rif40 or have rif_user or rif_manager role
 --
-	IF USER != 'rif40' AND NOT rif40_sql_pkg._rif40_common_partition_triggers() THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, '_rif40_common_partition_create_insert', 'User % must be rif40 or have rif_user or rif_manager role', 
+	IF USER != 'rif40' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
+		PERFORM rif40_log_pkg.rif40_error(-20999, '_rif40_common_partition_triggers', 'User % must be rif40 or have rif_user or rif_manager role', 
 			USER::VARCHAR);
 	END IF;
 --
 -- Check enable or disable parameter
 --
 	IF enable_or_disable NOT IN ('ENABLE', 'DISABLE') THEN
-		PERFORM rif40_log_pkg.rif40_error(-20997, '_rif40_common_partition_create_insert', 'Invalid parameter: % must be ''ENABLE'', ''DISABLE''',
+		PERFORM rif40_log_pkg.rif40_error(-20997, '_rif40_common_partition_triggers', 'Invalid parameter: % must be ''ENABLE'', ''DISABLE''',
 			enable_or_disable::VARCHAR);
 	END IF;
 --
+	FOR c1_rec IN c1rpct(l_schema, l_table) LOOP
+		i:=i+1;
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_triggers', 'Trigger [%] %.%(%): %', 
+			i::VARCHAR,
+			l_schema::VARCHAR, 
+			c1_rec.tgname::VARCHAR, 
+			c1_rec.function_name::VARCHAR, 
+			enable_or_disable::VARCHAR);
+		ddl_stmt[i]:='ALTER TABLE '||l_schema||'.'||l_table||' '||enable_or_disable||' TRIGGER '||c1_rec.tgname;
+	END LOOP;
 END;
 $func$ 
 LANGUAGE plpgsql;
@@ -779,14 +834,15 @@ BEGIN
 --  LIMIT 1;
 -- psql:../psql_scripts/v4_0_study_id_partitions.sql:139: ERROR:  rif40_trg_pkg.trigger_fct_rif40_study_shares_checks(): RIF40_STUDY_SHARES study_id: 1 grantor username: pch is not USER: rif40 or a RIF40_MANAGER
 --
---	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(l_schema, l_table, l_column, 'DISABLE'::VARCHAR);
---	FOR i IN 1 .. array_length(l_ddl_stmt, 1) LOOP
---		ddl_stmt[array_length(ddl_stmt, 1)+1]:=l_ddl_stmt[i];
---	END LOOP;
-	
+	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(l_schema, l_table, l_column, 'DISABLE'::VARCHAR);
+	IF l_ddl_stmt IS NOT NULL THEN
 --
 -- Copy out parameters
 --
+		FOR i IN 1 .. array_length(l_ddl_stmt, 1) LOOP
+			ddl_stmt[i]:=l_ddl_stmt[i];
+		END LOOP;
+	END IF;
 
 --
 -- GET PK/unique index column
@@ -861,10 +917,12 @@ BEGIN
 --
 -- Re-enable ON-INSERT triggers
 --
---	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(l_schema, l_table, l_column, 'ENABLE'::VARCHAR);
---	FOR i IN 1 .. array_length(l_ddl_stmt, 1) LOOP
---		ddl_stmt[array_length(ddl_stmt, 1)+1]:=l_ddl_stmt[i];
---	END LOOP;
+	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(l_schema, l_table, l_column, 'ENABLE'::VARCHAR);
+	IF l_ddl_stmt IS NOT NULL THEN
+		FOR i IN 1 .. array_length(l_ddl_stmt, 1) LOOP
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:=l_ddl_stmt[i];
+		END LOOP;
+	END IF;
 
 --
 END;
