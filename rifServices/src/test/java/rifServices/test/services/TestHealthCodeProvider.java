@@ -318,7 +318,7 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.NON_EXISTENT_HEALTH_CODE, 
+				RIFServiceError.HEALTH_CODE_NOT_KNOWN_TO_PROVIDER, 
 				1);
 		}		
 	}
@@ -437,7 +437,7 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.NON_EXISTENT_HEALTH_CODE,
+				RIFServiceError.HEALTH_CODE_NOT_KNOWN_TO_PROVIDER,
 				1);			
 		}		
 	}
