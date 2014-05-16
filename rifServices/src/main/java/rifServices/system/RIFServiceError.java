@@ -133,9 +133,6 @@ public enum RIFServiceError {
 	/** The invalid health code taxonomy. */
 	INVALID_HEALTH_CODE_TAXONOMY,
 	
-	/** The non existent health code. */
-	NON_EXISTENT_HEALTH_CODE,
-	
 	/** The db unable check non existent health code. */
 	DB_UNABLE_CHECK_NON_EXISTENT_HEALTH_CODE,
 	
@@ -350,7 +347,9 @@ public enum RIFServiceError {
 	NON_EXISTENT_COVARIATE,
 	
 	/** unable to delete all studies from the database */
-	UNABLE_DELETE_STUDIES,
+	UNABLE_DELETE_STUDIES_FOR_USER,
+	
+	
 	
 	MAXIMUM_READ_CONNECTIONS_EXCEEDED,
 	
