@@ -162,9 +162,9 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 			= Geography.newInstance(maliciousFieldValue, "");
 		
 		cancerHealthTheme
-			= HealthTheme.newInstance("SAHSU land cancer incidence example data", "");
+			= HealthTheme.newInstance("SAHSULAND",  "SAHSU land cancer incidence example data");
 		nonExistentHealthTheme
-			= HealthTheme.newInstance("non-existent health theme");
+			= HealthTheme.newInstance("Blah", "non-existent health theme");
 		invalidHealthTheme
 			= HealthTheme.newInstance("");
 		
@@ -502,6 +502,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 				cancerHealthTheme);	
 		}
 		catch(RIFServiceException rifServiceException) {
+			printErrors("getNumeratorDenomPairN1", rifServiceException);
 			fail();
 		}				
 	}
