@@ -108,8 +108,9 @@ DECLARE
 							'_rif40_range_partition_create',
 							'_rif40_common_partition_create',
 							'_rif40_common_partition_create_setup',
-							'_rif40_common_partition_create_insert',
+							'_rif40_range_partition_create_insert',
 							'_rif40_common_partition_create_complete',
+							'_rif40_method4',
 							'rif40_ddl'];
 	l_function 			VARCHAR;
 --

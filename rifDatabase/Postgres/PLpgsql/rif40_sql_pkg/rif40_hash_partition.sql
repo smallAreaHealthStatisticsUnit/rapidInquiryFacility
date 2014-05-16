@@ -61,6 +61,27 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash(l_value VARCHAR, l_bucket INTEGER)
+RETURNS INTEGER
+AS $func$
+/*
+Function: 	_rif40_hash()
+Parameters:	Value (must be cast if required), number of buckets
+Returns:	Hash in the range 1 .. l_bucket 
+Description:	Hashing function
+ */
+DECLARE
+BEGIN
+	RETURN (ABS(hashtext(l_value))%l_bucket)+1;
+END;
+$func$ 
+LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_hash(VARCHAR, INTEGER) IS 'Function: 	_rif40_hash()
+Parameters:	Value (must be cast if required), number of buckets
+Returns:	Hash in the range 1 .. l_bucket 
+Description:	Hashing function';
+
 CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_hash_partition(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, l_num_partitions INTEGER DEFAULT 16)
 RETURNS void
 SECURITY INVOKER
@@ -89,11 +110,13 @@ DECLARE
 	rec_list		VARCHAR;
 	bind_list		VARCHAR;
 	ddl_stmt 		VARCHAR[];
+	l_ddl_stmt 		VARCHAR[];
 	num_partitions		INTEGER;
 	total_rows		INTEGER;
 	n_num_partitions	INTEGER;
 	n_total_rows		INTEGER;
 	i			INTEGER:=0;
+	j			INTEGER:=0;
 	warnings		INTEGER:=0;
 --
 	error_message 		VARCHAR;
@@ -197,14 +220,19 @@ BEGIN
 --
 -- Create hash partitions
 --
-	FOR i IN 1 .. num_partitions LOOP
-		PERFORM _rif40_hash_partition_create(l_schema, l_table, l_table||'_p'||i::Text, l_column, i, num_partitions);
+	FOR i IN 1 .. l_num_partitions LOOP
+		PERFORM _rif40_hash_partition_create(l_schema, l_table, l_table||'_p'||i::Text, l_column, i, l_num_partitions);
 	END LOOP;
 
 --
--- Call: _rif40_common_partition_create_insert()
+-- Remove INSERT triggers from master table so they don't fire twice
 --
-	create_insert:=rif40_sql_pkg._rif40_common_partition_create_insert(l_schema, l_table, l_column, total_rows);
+	PERFORM rif40_sql_pkg._rif40_drop_master_trigger(l_schema, l_table);
+
+--
+-- Call: _rif40_hash_partition_create_insert()
+--
+	create_insert:=rif40_sql_pkg._rif40_hash_partition_create_insert(l_schema, l_table, l_column, total_rows, l_num_partitions);
 	IF create_insert.ddl_stmt IS NULL THEN /* Un partitionable */
 		RETURN;
 	END IF;
@@ -295,7 +323,7 @@ Call rif40_sql_pkg._rif40_common_partition_create to:
 
  */
 DECLARE
-	ddl_stmt	VARCHAR[];
+	ddl_stmt VARCHAR[];
 --
 BEGIN
 --
@@ -307,9 +335,10 @@ BEGIN
 	END IF;
 --
 	PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_hash_partition_create', 
-		'Create hash partition: % for value % on column: %; master: %.%', 
+		'Create hash partition: % for hash value % (of %) on column: %; master: %.%', 
 		partition_table::VARCHAR	/* Partition table */,
 		l_value::VARCHAR		/* Partition hash value */,
+		num_partitions::VARCHAR		/* Total partitions */,
 		l_column::VARCHAR		/* Partition column */,
 		l_schema::VARCHAR		/* Schema */, 
 		master_table::VARCHAR		/* Master table inheriting from */);
@@ -318,13 +347,13 @@ BEGIN
 -- Create partition table inheriting from master
 --
 	ddl_stmt[1]:='CREATE TABLE '||quote_ident(partition_table)||' ('||E'\n'||
-		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('||l_value||' = rif40_sql_pkg._rif40_hash('''||quote_ident(l_column)||'''::text, '||num_partitions::Text||'))'||E'\n'||
+		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('''||l_value||''' = rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, '||num_partitions::Text||')::VARCHAR)'||E'\n'||
 		') INHERITS ('||quote_ident(master_table)||')';
 --
 -- Run
 --
 	PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
-
+	ddl_stmt:=NULL;
 --
 -- Call rif40_sql_pkg._rif40_common_partition_create to:
 -- * Add indexes, primary key
@@ -334,7 +363,7 @@ BEGIN
 -- * Add grants
 -- * Table and column comments
 --
---	PERFORM rif40_sql_pkg._rif40_common_partition_create(l_schema, master_table, partition_table, l_column, l_value::VARCHAR);
+	PERFORM rif40_sql_pkg._rif40_common_partition_create(l_schema, master_table, partition_table, l_column, l_value::VARCHAR);
 
 END;
 $func$ 
@@ -363,6 +392,233 @@ Call rif40_sql_pkg._rif40_common_partition_create to:
 * Validation triggers
 * Add grants
 * Table and column comments';
+
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash_partition_create_insert(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, 
+	total_rows INTEGER, num_partitions INTEGER,
+	OUT ddl_stmt VARCHAR[], OUT index_name VARCHAR)
+RETURNS RECORD
+SECURITY DEFINER
+AS $func$
+/*
+Function: 	_rif40_hash_partition_create_insert()
+Parameters:	Schema, table, column, total rows, number of partitions
+                [OUT] ddl statement array, [PK/UK] index name
+Returns:	OUT parameters as a record
+ 		DDL statement array is NULL if the function is unable to partition
+Description:	Automatic range/hash partition schema.table on column
+		INSERT
+
+* Foreach partition:
++	INSERT 1 rows. This creates the partition
+
+	INSERT INTO sahsuland_cancer /- Create partition 1989 -/
+	SELECT * FROM rif40_hash_partition /- Temporary table -/
+	 WHERE year = '1989'
+	 LIMIT 1;
+
++	TRUNCATE partition
+
+	TRUNCATE TABLE rif40.sahsuland_cancer_1989 /- Empty newly created partition 1989 -/;
+
++ 	Bring data back by partition, order by range partition, primary key
+
+	INSERT INTO sahsuland_cancer_1989 /- Directly populate partition: 1989, total rows expected: 8103 -/
+	SELECT * FROM rif40_hash_partition /- Temporary table -/
+	 WHERE year = '1989'
+	 ORDER BY year /- Partition column -/, age_sex_group, icd, level4 /- [Rest of ] primary key -/;
+
+* The trigger created earlier fires and calls sahsuland_cancer_insert();
+  This then call _rif40_hash_partition_create() for the first row in a partition (detected by trapping the undefined_table EXCEPTION 
+  e.g. 42p01: relation "rif40.rif40_population_europe_1991" does not exist) 
+
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  _rif40_hash_partition_create(): Create range partition: sahsuland_cancer_1989 for value 1989 on column: year; master: rif40.sahsuland_cancer
+
+  The trigger then re-fires to redo the bind insert. NEW.<column name> must be explicitly defined unlike in conventional INSERT triggers
+
+psql:../psql_scripts/v4_0_year_partitions.sql:150: INFO:  [DEBUG1] sahsuland_cancer_insert(): Row 1 SQL> EXECUTE 
+'INSERT INTO sahsuland_cancer_1989 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) /- Partition: 1989 -/' 
+USING NEW.year, NEW.age_sex_group, NEW.level1, NEW.level2, NEW.level3, NEW.level4, NEW.icd, NEW.total; 
+/- rec: (1989,100,01,01.008,01.008.006800,01.008.006800.1,1890,2) -/
+
+ */
+DECLARE
+	c3gangep CURSOR(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR) FOR /* GET PK/unique index column */
+		SELECT n.nspname AS schema_name, t.relname AS table_name, 
+		       i.relname AS index_name, array_to_string(array_agg(a.attname), ', ') AS column_names, ix.indisprimary
+		 FROM pg_class t, pg_class i, pg_index ix, pg_attribute a, pg_namespace n
+		 WHERE t.oid          = ix.indrelid
+		   AND i.oid          = ix.indexrelid
+		   AND a.attrelid     = t.oid
+		   AND a.attnum       = ANY(ix.indkey)
+		   AND t.relkind      = 'r'
+		   AND ix.indisunique = TRUE
+		   AND t.relnamespace = n.oid 
+		   AND n.nspname      = l_schema
+		   AND t.relname      = l_table
+		   AND a.attname      != l_column
+		 GROUP BY n.nspname, t.relname, i.relname, ix.indisprimary
+		 ORDER BY n.nspname, t.relname, i.relname, ix.indisprimary DESC;
+	c3_rec 			RECORD;
+	c6_rec 			RECORD;
+--
+	sql_stmt		VARCHAR;
+	l_ddl_stmt		VARCHAR[];
+	first_partition		VARCHAR;
+	min_first_part_value	VARCHAR;
+	first_hash		INTEGER;
+--
+	error_message 		VARCHAR;
+	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
+BEGIN
+--
+-- Must be rif40 or have rif_user or rif_manager role
+--
+	IF USER != 'rif40' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
+		PERFORM rif40_log_pkg.rif40_error(-20999, '_rif40_hash_partition_create_insert', 'User % must be rif40 or have rif_user or rif_manager role', 
+			USER::VARCHAR);
+	END IF;
+--
+-- Disable ON-INSERT triggers to avoid:
+--
+-- /* psql:../psql_scripts/v4_0_study_id_partitions.sql:139: WARNING:  rif40_ddl(): SQL in error (P0001)> INSERT INTO rif40_study_shares /* Create partition 1 */
+-- SELECT * FROM rif40_auto_partition /* Temporary table */
+--  WHERE study_id = '1'
+--  LIMIT 1;
+-- psql:../psql_scripts/v4_0_study_id_partitions.sql:139: ERROR:  rif40_trg_pkg.trigger_fct_rif40_study_shares_checks(): RIF40_STUDY_SHARES study_id: 1 grantor username: pch is not USER: rif40 or a RIF40_MANAGER
+--
+	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(l_schema, l_table, l_column, 'DISABLE'::VARCHAR);
+	IF l_ddl_stmt IS NOT NULL THEN
+--
+-- Copy out parameters
+--
+		FOR i IN 1 .. array_length(l_ddl_stmt, 1) LOOP
+			ddl_stmt[i]:=l_ddl_stmt[i];
+		END LOOP;
+	END IF;
+
+--
+-- GET PK/unique index column
+--
+	OPEN c3gangep(l_schema, l_table, l_column);
+	FETCH c3gangep INTO c3_rec;
+	CLOSE c3gangep;
+	index_name:=c3_rec.index_name;
+--
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_hash_partition_create_insert', 'Restore data from temporary table: %.%', 
+		l_schema::VARCHAR, l_table::VARCHAR);
+--
+-- Create list of potential partitions
+--
+	IF total_rows > 0 THEN
+		BEGIN
+			sql_stmt:='SELECT rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, '||
+				num_partitions||') AS partition_value, '||
+			        '         MIN('||quote_ident(l_column)||'::VARCHAR) AS min_first_part_value,'||E'\n'||
+			        '         COUNT('||quote_ident(l_column)||') AS total_rows'||E'\n'||
+				'  FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||
+				' GROUP BY rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, '||num_partitions||')'||E'\n'||
+				' ORDER BY 1'; 
+			PERFORM rif40_sql_pkg.rif40_method4(sql_stmt, 'Partition EXPLAIN test');
+			
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_hash_partition_create_insert', 'SQL> %;', sql_stmt::VARCHAR);
+			FOR c6_rec IN EXECUTE sql_stmt LOOP
+				IF first_hash IS NULL THEN
+					first_hash:=c6_rec.partition_value;
+					min_first_part_value:=c6_rec.min_first_part_value;
+				END IF;
+
+--				
+-- Bring data back, order by range partition, primary key
+--
+/*
+psql:../psql_scripts/v4_0_study_id_partitions.sql:140: INFO:  [DEBUG1] rif40_ddl(): SQL> CREATE TABLE rif40_study_shares_p8 (
+ CONSTRAINT rif40_study_shares_p8_ck CHECK ('8' = rif40_sql_pkg._rif40_hash('study_id'::VARCHAR, 16)::VARCHAR)
+) INHERITS (rif40_study_shares);
+
+psql:../psql_scripts/v4_0_study_id_partitions.sql:140: WARNING:  rif40_ddl(): SQL in error (23514)> INSERT INTO rif40_study_shares_p8 
+SELECT * FROM rif40_auto_partition
+ WHERE rif40_sql_pkg._rif40_hash(study_id::VARCHAR, 16)::VARCHAR = '8'
+ ORDER BY study_id , grantee_username
+psql:../psql_scripts/v4_0_study_id_partitions.sql:140: ERROR:  new row for relation "rif40_study_shares_p8" violates check constraint "rif40_study_shares_p8_ck"
+
+EXPLAIN ANALYZE VERBOSE SELECT rif40_sql_pkg._rif40_hash(study_id::VARCHAR, 16), study_id, grantor, grantee_username FROM rif40_study_shares
+ WHERE rif40_sql_pkg._rif40_hash(study_id::VARCHAR, 16)::VARCHAR = '8'
+ ORDER BY study_id , grantee_username;
+
+ */
+--
+				IF c3_rec.column_names IS NOT NULL THEN
+					ddl_stmt[array_length(ddl_stmt, 1)+1]:='INSERT INTO '||quote_ident(l_table)||'_p'||c6_rec.partition_value||
+						' /* Directly populate partition: p'||c6_rec.partition_value||
+						', total rows expected: '||c6_rec.total_rows||' */'||E'\n'||
+						'SELECT * FROM rif40_auto_partition /* Temporary table */'||E'\n'||
+						' WHERE rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, '||num_partitions||')::VARCHAR = '''||c6_rec.partition_value||''''||E'\n'||
+						' ORDER BY '||l_column||' /* Partition column */, '||
+						c3_rec.column_names||' /* [Rest of ] primary key */';
+				ELSE
+					ddl_stmt[array_length(ddl_stmt, 1)+1]:='INSERT INTO '||quote_ident(l_table)||'_p'||c6_rec.partition_value||
+						' /* Directly populate partition: p'||c6_rec.partition_value||
+						', total rows expected: '||c6_rec.total_rows||' */'||E'\n'||
+						'SELECT * FROM rif40_auto_partition /* Temporary table */'||E'\n'||
+						' WHERE rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, '||num_partitions||')::VARCHAR = '''||c6_rec.partition_value||''''||E'\n'||
+						' ORDER BY '||l_column||' /* Partition column */, '||
+						' /* NO [Rest of ] primary key - no unique index found */';
+				END IF;
+--
+			END LOOP;	
+		EXCEPTION
+			WHEN others THEN
+				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+				error_message:='_rif40_hash_partition_create_insert() caught: '||E'\n'||
+					SQLERRM::VARCHAR||' in SQL> '||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
+				RAISE INFO '2: %', error_message;
+--
+				RAISE;
+		END;
+--
+--
+--
+		sql_stmt:='SELECT rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, '||
+				num_partitions||') AS partition_value, COUNT('||quote_ident(l_column)||') AS total_rows'||E'\n'||
+			'  FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||
+			'  WHERE '||quote_ident(l_column)||'::VARCHAR = '''||min_first_part_value||''''||E'\n'||
+			' GROUP BY rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, '||num_partitions||')'||E'\n'||
+			' ORDER BY 1'; 
+		PERFORM rif40_sql_pkg.rif40_method4(sql_stmt, 'Partition EXPLAIN test 2');
+		RAISE plpgsql_error;
+	END IF;
+--
+-- Re-enable ON-INSERT triggers
+--
+	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(l_schema, l_table, l_column, 'ENABLE'::VARCHAR);
+	IF l_ddl_stmt IS NOT NULL THEN
+		FOR i IN 1 .. array_length(l_ddl_stmt, 1) LOOP
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:=l_ddl_stmt[i];
+		END LOOP;
+	END IF;
+
+--
+END;
+$func$ 
+LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_hash_partition_create_insert(VARCHAR, VARCHAR, VARCHAR, INTEGER, INTEGER,
+	OUT ddl_stmt VARCHAR[], OUT index_name VARCHAR) IS 'Function: 	_rif40_hash_partition_create_insert()
+Parameters:	Schema, table, column, total rows, number of partitions,
+                [OUT] ddl statement array, [PK/UK] index name
+Returns:	OUT parameters as a record
+ 		DDL statement array is NULL if the function is unable to partition
+Description:	Automatic range/hash partition schema.table on column
+		INSERT
+
+* Foreach partition:
+Call: _rif40_hash_partition_create_insert()
+
+* Foreach partition:
++	INSERT 1 rows. This creates the partition
++	TRUNCATE partition
++ 	Bring data back by partition, order by range partition, primary key
+[End of _rif40_hash_partition_create_insert()]';
 
 --
 -- Eof

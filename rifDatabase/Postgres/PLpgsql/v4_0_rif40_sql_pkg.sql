@@ -408,7 +408,7 @@ CREATE OR REPLACE VIEW peterh.rif40_user_version AS SELECT CAST('1.10' AS numeri
 
  */
 DECLARE
-	c1 CURSOR FOR
+	c1start CURSOR FOR
 		SELECT COUNT(tablename) AS total
 		  FROM pg_tables
 		 WHERE tablename IN ('rif40_geographies', 'rif40_tables', 'rif40_health_study_themes');
@@ -670,9 +670,9 @@ BEGIN
 --
 -- Check rif40_geographies, rif40_tables, rif40_health_study_themes exist
 --
-	OPEN c1;
-	FETCH c1 INTO c1_rec;
-	CLOSE c1;
+	OPEN c1start;
+	FETCH c1start INTO c1_rec;
+	CLOSE c1start;
 --
 -- Check user objects exist
 --
@@ -2123,7 +2123,7 @@ Will need OracleFDW objects to check remote access
 
  */
 DECLARE
-	c1 CURSOR FOR
+	c1resolv CURSOR FOR
 		SELECT REPLACE(regexp_split_to_table(setting, E'\\s+'), ',', '') AS schemaname
 	 	  FROM pg_settings
 		 WHERE name = 'search_path';
@@ -2165,7 +2165,7 @@ BEGIN
 		RETURN 0;
 	END IF;
 --
-	FOR c1_rec IN c1 LOOP
+	FOR c1_rec IN c1resolv LOOP
 		OPEN c2(c1_rec.schemaname, l_table_name);
 		FETCH c2 INTO c2_rec;
 --
@@ -2309,7 +2309,7 @@ Description:	Automatic (Able to be used in automatic RIF40_NUM_DENOM (0/1, defau
 		Cannot be applied to direct standardisation denominator) is restricted to 1 denominator per geography.
  */
 DECLARE
-	c1 CURSOR(l_table VARCHAR) IS
+	c1autoin CURSOR(l_table VARCHAR) IS
 		SELECT isindirectdenominator, isnumerator, automatic
 		  FROM rif40_tables
 		 WHERE l_table = table_name;
@@ -2361,9 +2361,9 @@ BEGIN
 --
 -- automatic indirect denominator checks
 --
-	OPEN c1(l_table_name);
-	FETCH c1 INTO c1_rec;
-	CLOSE c1;
+	OPEN c1autoin(l_table_name);
+	FETCH c1autoin INTO c1_rec;
+	CLOSE c1autoin;
 	IF c1_rec.automatic = 0 OR c1_rec.isindirectdenominator != 1 OR c1_rec.isnumerator = 1 THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_auto_indirect_checks', 'table: % is not an automatic indirect denominator', 
 			l_table_name::VARCHAR);
@@ -2420,183 +2420,6 @@ Description:	Automatic (Able to be used in automatic RIF40_NUM_DENOM (0/1, defau
 
 \df rif40_sql_pkg.rif40_auto_indirect_checks
 
-CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_explain_ddl(sql_stmt VARCHAR)
-RETURNS TABLE(explain_line	TEXT)
-SECURITY INVOKER
-AS $func$
-/*
-Function: 	_rif40_explain_ddl()
-Parameters:	SQL statement
-Returns: 	TABLE of explain_line
-Description:	Coerce EXPLAIN output into a table with a known column
-		Supports EXPLAIN and EXPLAIN ANALYZE as text ONLY
- */
-BEGIN
---
--- Must be rifupg34, rif40 or have rif_user or rif_manager role
---
-	IF USER != 'rifupg34' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, '_rif40_explain_ddl', 'User % must be rif40 or have rif_user or rif_manager role', 
-			USER::VARCHAR);
-	END IF;
---
-	RETURN QUERY EXECUTE sql_stmt;
-END;
-$func$
-LANGUAGE PLPGSQL;
-
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_explain_ddl(VARCHAR) IS 'Function: 	_rif40_explain_ddl()
-Parameters:	SQL statement
-Returns: 	TABLE of explain_line
-Description:	Coerce EXPLAIN output into a table with a known column. 
-		Supports EXPLAIN and EXPLAIN ANALYZE as text ONLY.';
-
-\df rif40_sql_pkg._rif40_explain_ddl
-
-CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_ddl(sql_stmt VARCHAR)
-RETURNS integer
-SECURITY INVOKER
-AS $func$
-
-/*
-
-Function: 	rif40_ddl()
-Parameters:	SQL statement
-Returns:	Rows
-Description:	Log and execute SQL (rif40 schema create version)
-		If NULL SQL raises no data exception (02000) with message "ERROR:  rif40_ddl() Null SQL statement"
-		Supports EXPLAIN and EXPLAIN ANALYZE as text ONLY
-
- */
-DECLARE
-	stp TIMESTAMP WITH TIME ZONE;
-	etp TIMESTAMP WITH TIME ZONE;
-	took INTERVAL;
-	l_rows INTEGER:=NULL;
-	l_pos INTEGER:=NULL;
---
-	explain_rec	RECORD;
-	explain_text	VARCHAR;
-BEGIN
---
--- Must be rifupg34, rif40 or have rif_user or rif_manager role
---
-	IF USER != 'rifupg34' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_ddl', 'User % must be rif40 or have rif_user or rif_manager role', 
-			USER::VARCHAR);
-	END IF;
---
-	IF sql_stmt IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl', 'Null SQL statement');
-		RAISE SQLSTATE '02000' /* No data found */ USING MESSAGE='rif40_ddl() Null SQL statement';
-	END IF;
---
-	stp:=clock_timestamp();
-	l_pos:=position('EXPLAIN' IN UPPER(sql_stmt));
-	IF l_pos = 1 THEN /* EXPLAIN ANALYZE statement */
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_ddl', 'EXPLAIN SQL> %;', sql_stmt::VARCHAR);
-		sql_stmt:='SELECT explain_line FROM rif40_sql_pkg._rif40_explain_ddl('||quote_literal(sql_stmt)||')';
-		FOR explain_rec IN EXECUTE sql_stmt LOOP
-			IF explain_text IS NULL THEN
-				explain_text:=explain_rec.explain_line::VARCHAR;
-			ELSE
-				explain_text:=explain_text||E'\n'||explain_rec.explain_line::VARCHAR;
-			END IF;
-		END LOOP;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_ddl', '%', explain_text::VARCHAR);
-	ELSE
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_ddl', 'SQL> %;', sql_stmt::VARCHAR);
-		EXECUTE sql_stmt;
-	END IF;
-	GET DIAGNOSTICS l_rows = ROW_COUNT;
-	etp:=clock_timestamp();
-	took:=age(etp, stp);
---	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_ddl', 'Statement took: % (%)', 
---			took::VARCHAR, EXTRACT ('epoch' FROM took)::VARCHAR);
-	if (EXTRACT ('epoch' FROM took) > 1) THEN
-		IF l_rows IS NULL THEN
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_ddl', 'Statement took: %', 
-				took::VARCHAR);
-		ELSE
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_ddl', 'Statement took: %, proccessed % rows', 
-				took::VARCHAR, l_rows::VARCHAR);
-		END IF;
-	ELSE
-		IF l_rows IS NULL THEN
-			PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_ddl', 'Statement took: %', 
-				took::VARCHAR);
-		ELSE
-			PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_ddl', 'Statement took: %, proccessed % rows', 
-				took::VARCHAR, l_rows::VARCHAR);
-		END IF;
-	END IF;
---
-	RETURN l_rows;
-EXCEPTION
-	WHEN SQLSTATE '02000' /* No data found */ THEN
-		RAISE;
-	WHEN others THEN
-		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl', 'SQL in error (%)> %;', 
-			SQLSTATE::VARCHAR /* SQL error state */,
-			sql_stmt::VARCHAR /* SQL statement */); 
-		RAISE;
-END;
-$func$
-LANGUAGE PLPGSQL;
-
-COMMENT ON FUNCTION rif40_sql_pkg.rif40_ddl(VARCHAR) IS 'Function: 	rif40_ddl()
-Parameters:	SQL statement
-Returns:	Rows
-Description:	Log and execute SQL (rif40 schema create version)
-';
-
-CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_ddl(sql_stmt VARCHAR[])
-RETURNS integer
-SECURITY INVOKER
-AS $func$
-
-/*
-
-Function: 	rif40_ddl()
-Parameters:	SQL statement array (0+ statements; not multiline statements)
-Returns:	Rows
-Description:	Log and execute SQL (rif40 schema create version) - ARRAY VERSION
-
- */
-DECLARE
-	l_rows INTEGER:=NULL;
-	l2_rows INTEGER:=0;
---
-	l_sql_stmt VARCHAR;
-	l_idx INTEGER;
-BEGIN
---
-	IF sql_stmt IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-20997, 'rif40_ddl', 'Null SQL statement array');
-	END IF;
---
-	FOR i IN array_lower(sql_stmt, 1) .. array_upper(sql_stmt, 1) LOOP
-		l_idx:=i;
-		l_sql_stmt:=sql_stmt[l_idx];
-		l_rows:=rif40_sql_pkg.rif40_ddl(l_sql_stmt);
-		IF l_rows IS NOT NULL THEN
-			l2_rows:=l2_rows+l_rows;
-		END IF;
-	END LOOP;
---
-	RETURN l2_rows;
-END;
-$func$
-LANGUAGE PLPGSQL;
-
-COMMENT ON FUNCTION rif40_sql_pkg.rif40_ddl(VARCHAR[]) IS 'Function: 	rif40_ddl()
-Parameters:	SQL statement array (0+ statements; not multiline statements)
-Returns:	Rows
-Description:	Log and execute SQL (rif40 schema create version) - ARRAY VERSION
-';
-
-\df rif40_sql_pkg.rif40_ddl
-
 --
 -- Oracle compatibility objects
 --
@@ -2620,7 +2443,7 @@ Description:	Oracle compatability function SYS_CONTEXT
  */
 DECLARE
 	ret	VARCHAR;
-	c1 CURSOR FOR
+	c1syscon CURSOR FOR
 		SELECT pid /* Procpid in 9.2 */ ||'.'||TO_CHAR(backend_start, 'J.SSSS.US') audsid 
 			/* Backend PID.Julian day.Seconds from midnight.uSeconds (backend start) */
 		  FROM pg_stat_activity
@@ -2652,9 +2475,9 @@ BEGIN
 		ELSIF parameter = 'CURRENT_SCHEMA' THEN 
 			ret:=current_schema();
 		ELSIF parameter = 'AUDSID' OR parameter = 'SESSIONID' THEN 
-			OPEN c1;
-			FETCH c1 INTO ret;
-			CLOSE c1;
+			OPEN c1syscon;
+			FETCH c1syscon INTO ret;
+			CLOSE c1syscon;
 		ELSIF namespace IS NULL THEN
 			PERFORM rif40_log_pkg.rif40_error(-20999, 'sys_context', 'namespace: NULL invalid parameter: %', 
 				parameter::VARCHAR);
@@ -2828,202 +2651,8 @@ Description:	Check if database role exists.';
 
 SELECT rif40_sql_pkg.rif40_does_role_exist('rif_student');
 
---
--- Dynamic SQL method 4 (Oracle name) SELECT 
---
-CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_method4(select_stmt VARCHAR, title VARCHAR)
-RETURNS void
-SECURITY INVOKER
-AS $func$
-/*
-Function: 	rif40_method4()
-Parameters:	SQL SELECT statement, title
-Returns:	Nothing
-Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement
-
-SELECT column_name, data_type, character_maximum_length, character_octet_length, numeric_precision, numeric_precision_radix, numeric_scale, datetime_precision
-  FROM information_schema.columns a, pg_tables b 
-		 WHERE b.schemaname = a.table_schema
-		   AND a.table_name = b.tablename
-		   AND b.tablename  = 'rif40_geographies';
- */
-DECLARE
-	sql_stmt 	VARCHAR;
-	drop_stmt 	VARCHAR;
-	select_text	VARCHAR:=NULL;
-	temp_table 	VARCHAR:=NULL;
---
-	c1m4 CURSOR(l_table VARCHAR) FOR /* Extra table/view columns */
-		SELECT table_name, column_name,
-		       CASE 													/* Work out column length */
-				WHEN numeric_precision IS NOT NULL /* bits */ AND
-				     LENGTH((2^numeric_precision)::Text) > LENGTH(column_name) AND 
-				     LENGTH((2^numeric_precision)::Text) <= 40							THEN LENGTH((2^numeric_precision)::Text)
-				WHEN numeric_precision IS NOT NULL /* bits */ AND
-				     LENGTH((2^numeric_precision)::Text) > LENGTH(column_name) AND 
-				     LENGTH((2^numeric_precision)::Text) > 40							THEN 40 /* Truncate at 40 characters */
-				WHEN datetime_precision IS NOT NULL /* bits */  AND
-				     LENGTH((2^datetime_precision)::Text) > LENGTH(column_name) AND 
-				     LENGTH((2^datetime_precision)::Text) <= 40							THEN LENGTH((2^datetime_precision)::Text)
-				WHEN datetime_precision IS NOT NULL /* bits */  AND
-				     LENGTH((2^datetime_precision)::Text) > LENGTH(column_name) AND 
-				     LENGTH((2^datetime_precision)::Text) > 40							THEN 40 /* Truncate at 40 characters */
-				WHEN character_maximum_length > LENGTH(column_name) AND 
-				     character_maximum_length <= 40 								THEN character_maximum_length
-				WHEN character_maximum_length > LENGTH(column_name) AND 
-				     character_maximum_length > 40 								THEN 40 /* Truncate at 40 characters */
-				ELSE LENGTH(column_name)
-		       END column_length
-		  FROM information_schema.columns a, pg_tables b 
-		 WHERE b.schemaname = a.table_schema
-		   AND a.table_name = b.tablename
-		   AND b.tableowner = USER
-		   AND b.tablename  = l_table; 
-	c2m4 REFCURSOR;
-	c1m4_rec RECORD;
-	c2m4_result_row	VARCHAR[];
---
-	stp 		TIMESTAMP WITH TIME ZONE;
-	etp 		TIMESTAMP WITH TIME ZONE;
-	took 		INTERVAL;
-	l_rows 		INTEGER:=0;
-	j 		INTEGER:=0;
-	display_len	INTEGER:=0;
-	column_len	INTEGER[];
---
-	error_message VARCHAR;
-	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
-BEGIN
---
--- Must be rifupg34, rif40 or have rif_user or rif_manager role
---
-	IF USER != 'rifupg34' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_method4', 'User % must be rif40 or have rif_user or rif_manager role', 
-			USER::VARCHAR);
-	END IF;
---
-	IF select_stmt IS NULL THEN
-		RETURN;
-	END IF;
-	stp:=clock_timestamp();
---
--- Create results temporary table
---
-	temp_table:='l_'||REPLACE(rif40_sql_pkg.sys_context(NULL, 'AUDSID'), '.', '_');
---
--- This could do with checking first to remove the notice:
--- psql:v4_0_rif40_sql_pkg.sql:3601: NOTICE:  table "l_7388_2456528_62637_130282_7388" does not exist, skipping
--- CONTEXT:  SQL statement "DROP TABLE IF EXISTS l_7388_2456528_62637_130282"
--- PL/pgSQL function "rif40_ddl" line 32 at EXECUTE statement
---
-	drop_stmt:='DROP TABLE IF EXISTS '||temp_table;
-	PERFORM rif40_sql_pkg.rif40_drop_user_table_or_view(temp_table);
---
--- SQL injection check
---
--- ADD
-
---
-	sql_stmt:='EXPLAIN ANALYZE VERBOSE CREATE TEMPORARY TABLE '||temp_table||' AS '||E'\n'||select_stmt;
-	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
---
--- Process table header
---
-	FOR c1m4_rec IN c1m4(temp_table) LOOP
-		j:=j+1;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG3', 'rif40_method4', 'Column[%] %.%, length: %', 
-			j::Text, 
-			c1m4_rec.table_name, 
-			c1m4_rec.column_name, 
-			c1m4_rec.column_length::Text);
-		display_len:=display_len+c1m4_rec.column_length+3;
-		column_len[j]:=c1m4_rec.column_length;
-		IF select_text IS NULL THEN
-			select_text:=E'\n'||RPAD(c1m4_rec.column_name, c1m4_rec.column_length);
-		ELSE
-			select_text:=select_text||' | '||RPAD(c1m4_rec.column_name, c1m4_rec.column_length);
-		END IF;
-	END LOOP;
-	select_text:=select_text||E'\n'||RPAD('-', display_len, '-');
---
--- Title
---
-	IF title IS NOT NULL THEN
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_method4', E'\n'||title||E'\n'||RPAD('-', LENGTH(title), '-'));
-	END IF;
---
--- FETCH from temporary table as an array
---
-	sql_stmt:='SELECT TRANSLATE(string_to_array(x.*::Text, '','')::Text, ''()'', '''')::text[] FROM '||temp_table||' AS x';
-	PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_method4', 'SQL> %;', 
-		select_stmt::VARCHAR);
-	OPEN c2m4 FOR EXECUTE sql_stmt;
-	LOOP
-		FETCH c2m4 INTO c2m4_result_row;
-		IF NOT FOUND THEN EXIT; END IF;
---  
-		l_rows:=l_rows+1;
-		select_text:=select_text||E'\n';
---
--- Process row array
---
-		FOR i IN 1 .. j LOOP
-			IF i = 1 THEN
-				select_text:=select_text||RPAD(c2m4_result_row[i], column_len[i]);
-			ELSE
-				select_text:=select_text||' | '||RPAD(c2m4_result_row[i], column_len[i]);
-			END IF;
-		END LOOP;
-	END LOOP;
-	CLOSE c2m4;
---
-	IF l_rows = 0 THEN
-		select_text:=select_text||E'\n'||'(no rows)';
-	ELSIF l_rows = 1 THEN
-		select_text:=select_text||E'\n'||'('||l_rows::Text||' row)';
-	ELSE
-		select_text:=select_text||E'\n'||'('||l_rows::Text||' rows)';
-	END IF;
---
--- Print SELECT
---
-	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_method4', select_text);
---
-	etp:=clock_timestamp();
-	took:=age(etp, stp);
-	IF l_rows IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_method4', 'Statement took: %', 
-			took::VARCHAR);
-	ELSE
-		PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_method4', 'Statement took: %, proccessed % rows', 
-			took::VARCHAR, l_rows::VARCHAR);
-	END IF;
---
-	PERFORM rif40_sql_pkg.rif40_ddl(drop_stmt);
---
-	RETURN;
-EXCEPTION
-	WHEN others THEN
--- 
--- Not supported until 9.2
---
-		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
-		error_message:='rif40_method4('''||coalesce(title::VARCHAR, '')||''') caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||'Detail: '||v_detail::VARCHAR;
-		RAISE INFO '1: %', error_message;
---
--- This will not work if the cursor is open, but as it is a temporary table it will be deleted on session end
---
-		PERFORM rif40_sql_pkg.rif40_ddl(drop_stmt);
-		RAISE;
-END;
-$func$ LANGUAGE plpgsql;
-
-COMMENT ON FUNCTION rif40_sql_pkg.rif40_method4(VARCHAR, VARCHAR) IS 'Function: 	rif40_method4()
-Parameters:	SQL SELECT statement
-Returns:	Nothing
-Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement
-';
-
+\i ../PLpgsql/rif40_sql_pkg/rif40_method4.sql
+\i ../PLpgsql/rif40_sql_pkg/rif40_ddl.sql
 \i ../PLpgsql/rif40_sql_pkg/rif40_hash_partition.sql
 \i ../PLpgsql/rif40_sql_pkg/rif40_range_partition.sql
 \i ../PLpgsql/rif40_sql_pkg/_rif40_common_partition_create.sql
