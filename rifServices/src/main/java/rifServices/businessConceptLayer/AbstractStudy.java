@@ -372,8 +372,8 @@ abstract public class AbstractStudy
 			= RIFServiceMessages.getMessage("abstractStudy.name.label");
 		String descriptionFieldLabel
 			= RIFServiceMessages.getMessage("abstractStudy.description.label");
-		String knownIssuesFieldLabel
-			= RIFServiceMessages.getMessage("abstractStudy.knownIssues.label");
+		String otherNotesFieldLabel
+			= RIFServiceMessages.getMessage("abstractStudy.otherNotes.label");
 				
 		//Extract field values
 		
@@ -393,7 +393,7 @@ abstract public class AbstractStudy
 
 		fieldValidationUtility.checkMaliciousCode(
 			recordType, 
-			knownIssuesFieldLabel, 
+			otherNotesFieldLabel, 
 			otherNotes);
 
 		
