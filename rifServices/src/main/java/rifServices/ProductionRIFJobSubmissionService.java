@@ -2668,14 +2668,12 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 				ProductionRIFJobSubmissionService.class,
 				auditTrailMessage);
 		
-			/*
 			Connection connection
 				= sqlConnectionManager.getWriteConnection(user);
 			rifSubmissionManager.addRIFJobSubmission(
 				connection, 
 				user, 
 				rifJobSubmission);
-			*/
 			
 			//RIFZipFileWriter rifZipFileWriter = new RIFZipFileWriter();
 			//rifZipFileWriter.writeZipFile(outputFile, rifJobSubmission);		
@@ -2689,13 +2687,13 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 
 	}
 	
-	protected void clearRIFJobSubmissions(
-		User _adminUser) 
+	protected void clearRIFJobSubmissionsForUser(
+		User _user) 
 		throws RIFServiceException {
 
 		//Part I: Defensively copy parameters
-		User adminUser = User.createCopy(_adminUser);
-		if (sqlConnectionManager.isUserBlocked(adminUser) == true) {
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return;
 		}
 		
@@ -2707,25 +2705,25 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 			fieldValidationUtility.checkNullMethodParameter(
 				"clearRIFJobSubmissions",
 				"adminUser",
-				adminUser);	
+				user);	
 
 			//Part III: Check for security violations
-			validateUser(adminUser);
+			validateUser(user);
 
 			//Part IV: Perform operation
 			Connection connection 
-				= sqlConnectionManager.getReadConnection(adminUser);
+				= sqlConnectionManager.getReadConnection(user);
 
-			rifSubmissionManager.clearRIFJobSubmissions(connection);
+			rifSubmissionManager.clearRIFJobSubmissionsForUser(connection, user);
 
 			sqlConnectionManager.releaseReadConnection(
-				adminUser, 
+				user, 
 				connection);		
 		
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
-				adminUser,
+				user,
 				"clearRIFJobSubmissions",
 				rifServiceException);	
 		}
