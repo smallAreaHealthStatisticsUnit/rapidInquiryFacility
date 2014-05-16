@@ -88,6 +88,10 @@ public class Investigation
 	/** The title. */
 	private String title;
 	
+	
+	/** The description */
+	private String description;
+	
 	/** The health theme. */
 	private HealthTheme healthTheme;
 	
@@ -125,6 +129,7 @@ public class Investigation
 	private Investigation() {
 
 		title = "";
+		description = "";
 		healthTheme = HealthTheme.newInstance();
 		ndPair = NumeratorDenominatorPair.newInstance();
 		
@@ -174,6 +179,7 @@ public class Investigation
 		Investigation cloneInvestigation = new Investigation();
 		
 		cloneInvestigation.setTitle(originalInvestigation.getTitle());
+		cloneInvestigation.setDescription(originalInvestigation.getDescription());
 		HealthTheme cloneHealthTheme 
 			= HealthTheme.createCopy(originalInvestigation.getHealthTheme());
 		cloneInvestigation.setHealthTheme(cloneHealthTheme);
@@ -242,6 +248,23 @@ public class Investigation
 		this.title = title;
 	}
 
+	
+	/**
+	 * Sets the description
+	 * @param description
+	 */
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
+	/**
+	 * Gets the description
+	 * @return
+	 */
+	public String getDescription() {
+		return description;
+	}
+	
 	/**
 	 * Gets the health theme.
 	 *
@@ -584,11 +607,11 @@ public class Investigation
 			
 		int numberOfHealthCodes = investigationsA.size();
 		for (int i = 0; i < numberOfHealthCodes; i++) {
-			Investigation healthCodeA
+			Investigation investigationA
 				= investigationsA.get(i);				
-			Investigation healthCodeB
+			Investigation investigationB
 				= investigationsB.get(i);
-			if (healthCodeA.hasIdenticalContents(healthCodeB) == false) {					
+			if (investigationA.hasIdenticalContents(investigationB) == false) {					
 				return false;
 			}			
 		}
@@ -638,6 +661,7 @@ public class Investigation
 		Collator collator = Collator.getInstance();
 
 		String otherTitle = otherInvestigation.getTitle();
+		String otherDescription = otherInvestigation.getDescription();
 		HealthTheme otherHealthTheme = otherInvestigation.getHealthTheme();
 		NumeratorDenominatorPair otherNDPair
 			= otherInvestigation.getNdPair();
@@ -662,6 +686,18 @@ public class Investigation
 				return false;
 			}			
 		}
+		
+		if (FieldValidationUtility.hasDifferentNullity(description, otherDescription)) {
+			//reject if one is null and the other is non-null
+			return false;
+		}
+		else if (description != null) {
+			//they must both be non-null
+			if (collator.equals(description, otherDescription) == false) {
+				return false;
+			}			
+		}
+		
 		
 		if (healthTheme == null) {
 			if (otherHealthTheme != null) {
@@ -768,7 +804,7 @@ public class Investigation
 				recordType,
 				intervalFieldName,
 				interval);
-		}			
+		}	
 		
 		if (title != null) {
 			String titleFieldName
@@ -778,6 +814,17 @@ public class Investigation
 				titleFieldName,
 				title);
 		}
+		
+		if (description != null) {
+			String titleFieldName
+				= RIFServiceMessages.getMessage("investigation.description.label");
+			fieldValidationUtility.checkMaliciousCode(
+				recordType,
+				titleFieldName,
+				description);
+		}
+
+		
 		
 		if (healthTheme != null) {
 			healthTheme.checkSecurityViolations();
@@ -840,6 +887,10 @@ public class Investigation
 					"investigation.title.label");
 			errorMessages.add(errorMessage);
 		}
+		
+		/**
+		 * Allow the description field to be empty
+		 */
 		
 		if (healthTheme == null) {
 			String healthTheme
