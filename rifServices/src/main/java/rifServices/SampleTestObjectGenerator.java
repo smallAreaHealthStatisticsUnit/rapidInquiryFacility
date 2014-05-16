@@ -108,6 +108,11 @@ public class SampleTestObjectGenerator {
 		rifJobSubmission.setUser(user);
 		rifJobSubmission.setJobSubmissionTime(new Date());
 		
+		Project project = Project.newInstance();
+		project.setName("SAHSU");
+		project.setDescription("SAHSU Project used for all old projects on import. Disabled after import");
+		rifJobSubmission.setProject(project);
+		
 		SampleTestObjectGenerator generator
 			= new SampleTestObjectGenerator();
 		DiseaseMappingStudy diseaseMappingStudy
@@ -256,22 +261,22 @@ public class SampleTestObjectGenerator {
 		diseaseMappingStudy.setNewRecord(false);
 		diseaseMappingStudy.setName("public health study");
 		diseaseMappingStudy.setDescription("Examining air pollution");
-
-		Geography geography = Geography.newInstance("SAHSULAND", "");
+		
+		Geography geography = Geography.newInstance("SAHSU", "xxx");
 		diseaseMappingStudy.setGeography(geography);
 		
 		GeoLevelSelect geoLevelSelect = GeoLevelSelect.newInstance("LEVEL2");
 		geoLevelSelect.setNewRecord(false);
-		GeoLevelArea geoLevelArea = GeoLevelArea.newInstance("Hambly");
+		GeoLevelArea geoLevelArea = GeoLevelArea.newInstance("Clarke");
 		geoLevelArea.setNewRecord(false);
-		GeoLevelView geoLevelView = GeoLevelView.newInstance("LEVEL3");
+		GeoLevelView geoLevelView = GeoLevelView.newInstance("LEVEL4");
 		geoLevelView.setNewRecord(false);
-		GeoLevelToMap geoLevelToMap = GeoLevelToMap.newInstance("LEVEL3");
+		GeoLevelToMap geoLevelToMap = GeoLevelToMap.newInstance("LEVEL4");
 		geoLevelToMap.setNewRecord(false);
 	
-		MapArea mapArea1 = MapArea.newInstance("111", "Brent");
+		MapArea mapArea1 = MapArea.newInstance("01.011.012600.1", "Clarke LEVEL4(01.011.012600.1)");
 		mapArea1.setNewRecord(false);
-		MapArea mapArea2 = MapArea.newInstance("222", "Barnet");
+		MapArea mapArea2 = MapArea.newInstance("01.011.012600.2", "Clarke LEVEL4(01.011.012600.2)");
 		mapArea2.setNewRecord(false);
 			
 		ComparisonArea comparisonArea
@@ -298,12 +303,14 @@ public class SampleTestObjectGenerator {
 	
 		SampleTestObjectGenerator generator
 			= new SampleTestObjectGenerator();
+		//Investigation sampleInvestigation1
+		//	= generator.createSampleInvestigation("Lung cancer study");
 		Investigation sampleInvestigation1
-			= generator.createSampleInvestigation("Lung cancer study");
+			= generator.createSampleInvestigation("CANCERSTUDY1");
 		sampleInvestigation1.setNewRecord(false);		
 		diseaseMappingStudy.addInvestigation(sampleInvestigation1);
 		Investigation sampleInvestigation2
-			= generator.createSampleInvestigation("Brain cancer study");
+			= generator.createSampleInvestigation("BRAINCANCERSTUDY");
 		sampleInvestigation2.setNewRecord(false);		
 		diseaseMappingStudy.addInvestigation(sampleInvestigation2);	
 		
