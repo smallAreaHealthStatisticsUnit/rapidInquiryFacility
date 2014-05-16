@@ -124,11 +124,11 @@ public class TestRIFSubmissionService extends ProductionRIFJobSubmissionService 
 		super.addHealthCodeProvider(adminUser, healthCodeProvider);		
 	}	
 	
-	public void clearStudies(
-		User adminUser) 
+	public void clearStudiesForUser(
+		User user) 
 		throws RIFServiceException {
 		
-		super.clearRIFJobSubmissions(adminUser);
+		super.clearRIFJobSubmissionsForUser(user);
 	}
 	
 	public void checkNonExistentAgeGroups(
