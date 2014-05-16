@@ -217,6 +217,18 @@ protected AbstractGeographicalArea() {
 		mapAreas.add(mapArea);
 	}
 	
+	
+	public String[] getMapAreaIdentifiers() {
+		String[] areaIdentifiers
+			= new String[mapAreas.size()];
+		for (int i = 0; i < mapAreas.size(); i++) {
+			areaIdentifiers[i] = mapAreas.get(i).getIdentifier();
+		}
+		
+		return areaIdentifiers;
+		
+	}
+	
 	/**
 	 * Adds the map area.
 	 *
