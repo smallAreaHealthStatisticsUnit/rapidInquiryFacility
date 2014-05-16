@@ -113,7 +113,8 @@ public class TestRIFSubmissionFeature extends AbstractRIFTestCase {
 	@Before
 	public void setUp() {
 		try {
-			service.login("keving", new String("a").toCharArray());			
+			service.login("keving", new String("a").toCharArray());		
+			service.clearStudiesForUser(testUser);
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
@@ -130,7 +131,7 @@ public class TestRIFSubmissionFeature extends AbstractRIFTestCase {
 		}				
 	}
 	
-	
+	@Test
 	public void acceptRIFJobSubmission1() {
 		RIFJobSubmission rifJobSubmission
 			= RIFJobSubmission.createCopy(masterRIFJobSubmission);
