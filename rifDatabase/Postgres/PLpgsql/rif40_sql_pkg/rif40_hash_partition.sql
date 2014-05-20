@@ -75,12 +75,40 @@ BEGIN
 	RETURN (ABS(hashtext(l_value))%l_bucket)+1;
 END;
 $func$ 
-LANGUAGE plpgsql;
+LANGUAGE plpgsql IMMUTABLE STRICT;
 
 COMMENT ON FUNCTION rif40_sql_pkg._rif40_hash(VARCHAR, INTEGER) IS 'Function: 	_rif40_hash()
 Parameters:	Value (must be cast if required), number of buckets
 Returns:	Hash in the range 1 .. l_bucket 
 Description:	Hashing function';
+
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash_partition_functional_index(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, 
+	num_partitions INTEGER,
+	OUT ddl_stmt VARCHAR[])
+RETURNS VARCHAR[]
+AS $func$
+/*
+Function: 	_rif40_hash_partition_functional_index()
+Parameters:	Schema, table, columnn, number of partitions
+Returns:	DDL statement array
+Description:	Create indexes by partition on hashing function
+ */
+DECLARE
+ 	i INTEGER:=0;
+--
+BEGIN
+	FOR i IN 1 .. num_partitions LOOP
+		ddl_stmt[i]:='CREATE INDEX '||l_table||'_p'||i||'_hash ON '||l_schema||'.'||l_table||'_p'||i||
+			'(rif40_sql_pkg._rif40_hash('||l_column||'::VARCHAR, '||num_partitions||'))';
+	END LOOP;
+END;
+$func$ 
+LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_hash_partition_functional_index(VARCHAR, VARCHAR, VARCHAR, INTEGER, OUT VARCHAR[]) IS 'Function: 	_rif40_hash_partition_functional_index()
+Parameters:	Schema, table, columnn, number of partitions
+Returns:	DDL statement array
+Description:	Create indexes by partition on hashing function';
 
 CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_hash_partition(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, l_num_partitions INTEGER DEFAULT 16)
 RETURNS void
@@ -225,9 +253,9 @@ BEGIN
 	END LOOP;
 
 --
--- Remove INSERT triggers from master table so they don't fire twice
+-- Remove INSERT triggers from master table so they don't fire twice (replace with no re-enable 
 --
-	PERFORM rif40_sql_pkg._rif40_drop_master_trigger(l_schema, l_table);
+--	PERFORM rif40_sql_pkg._rif40_drop_master_trigger(l_schema, l_table);
 
 --
 -- Call: _rif40_hash_partition_create_insert()
@@ -275,9 +303,18 @@ BEGIN
 	PERFORM rif40_sql_pkg._rif40_common_partition_create_complete(l_schema, l_table, l_column, create_insert.index_name);
 
 --
+-- Test partition exclusion
+--
+--'  WHERE '||quote_ident(l_column)||'::VARCHAR = ''1''/* ||min_first_part_value */'||E'\n'||
+	sql_stmt:='SELECT *, rif40_sql_pkg._rif40_hash(study_id::VARCHAR, 16)'||E'\n'||
+		'  FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||
+		' WHERE study_id = 1'||E'\n'||
+		' ORDER BY 1'; 
+	PERFORM rif40_sql_pkg.rif40_method4(sql_stmt, 'Partition EXPLAIN test 2');
+--
 -- Used to halt alter_1.sql for testing
 --
-	RAISE plpgsql_error;
+--	RAISE plpgsql_error;
 END;
 $func$ LANGUAGE plpgsql;
 
@@ -496,6 +533,7 @@ BEGIN
 		END LOOP;
 	END IF;
 
+
 --
 -- GET PK/unique index column
 --
@@ -575,23 +613,25 @@ EXPLAIN ANALYZE VERBOSE SELECT rif40_sql_pkg._rif40_hash(study_id::VARCHAR, 16),
 --
 				RAISE;
 		END;
---
---
---
-		sql_stmt:='SELECT rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, '||
-				num_partitions||') AS partition_value, COUNT('||quote_ident(l_column)||') AS total_rows'||E'\n'||
-			'  FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||
-			'  WHERE '||quote_ident(l_column)||'::VARCHAR = '''||min_first_part_value||''''||E'\n'||
-			' GROUP BY rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, '||num_partitions||')'||E'\n'||
-			' ORDER BY 1'; 
-		PERFORM rif40_sql_pkg.rif40_method4(sql_stmt, 'Partition EXPLAIN test 2');
-		RAISE plpgsql_error;
+
 	END IF;
 --
 -- Re-enable ON-INSERT triggers
 --
 	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(l_schema, l_table, l_column, 'ENABLE'::VARCHAR);
 	IF l_ddl_stmt IS NOT NULL THEN
+		FOR i IN 1 .. array_length(l_ddl_stmt, 1) LOOP
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:=l_ddl_stmt[i];
+		END LOOP;
+	END IF;
+--
+-- Add functional index on hash function to add sub partitions
+--
+	l_ddl_stmt:=rif40_sql_pkg._rif40_hash_partition_functional_index(l_schema, l_table, l_column, num_partitions);
+	IF l_ddl_stmt IS NOT NULL THEN
+--
+-- Copy out parameters
+--
 		FOR i IN 1 .. array_length(l_ddl_stmt, 1) LOOP
 			ddl_stmt[array_length(ddl_stmt, 1)+1]:=l_ddl_stmt[i];
 		END LOOP;

@@ -200,6 +200,7 @@ Description:	Automatic range/hash partitioning schema.table on column: ENABLE or
 DECLARE
 	c1rpct CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get triggers */
 		SELECT tg.tgname,
+		       tg.tgenabled,
 		       ns.nspname AS schema_name,
 		       cl.relname AS table_name,
 		       pc.proname AS function_name,
@@ -219,7 +220,7 @@ DECLARE
 		   AND cl.relname||'_insert'  != pc.proname /* Ignore partition INSERT function */
 		   AND tg.tgfoid               = pc.oid
 		   AND tg.tgisinternal         = FALSE	   /* Ignore constraints triggers */;
-	c2rpct CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get triggers */
+	c2rpct CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get partitions */
 		SELECT i.inhseqno, 
 		       ns1.nspname AS child_schema,
 		       c.relname AS child, 
@@ -254,14 +255,20 @@ BEGIN
 	END IF;
 --
 	FOR c1_rec IN c1rpct(l_schema, l_table) LOOP
-		i:=i+1;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_triggers', 'Trigger [%] %.%(%): %', 
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_triggers', 'Trigger [%] %.%(%): (state %)%', 
 			i::VARCHAR,
 			l_schema::VARCHAR, 
 			c1_rec.tgname::VARCHAR, 
 			c1_rec.function_name::VARCHAR, 
+			c1_rec.tgenabled::VARCHAR, 
 			enable_or_disable::VARCHAR);
-		ddl_stmt[i]:='ALTER TABLE '||l_schema||'.'||l_table||' '||enable_or_disable||' TRIGGER '||c1_rec.tgname;
+--
+-- Do not re-eable master triggers
+--
+		IF enable_or_disable = 'DISABLE' THEN
+			i:=i+1;
+			ddl_stmt[i]:='ALTER TABLE '||l_schema||'.'||l_table||' '||enable_or_disable||' TRIGGER '||c1_rec.tgname;
+		END IF;
 	END LOOP;
 --
 -- Now do inherited tables
@@ -269,11 +276,12 @@ BEGIN
 	FOR c2_rec IN c2rpct(l_schema, l_table) LOOP
 		FOR c1_rec IN c1rpct(l_schema, c2_rec.child) LOOP
 			i:=i+1;
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_triggers', 'Child trigger [%] %.%(%): %', 
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_triggers', 'Child trigger [%] %.%(%): (%)%', 
 				i::VARCHAR,
 				l_schema::VARCHAR, 
 				c1_rec.tgname::VARCHAR, 
 				c1_rec.function_name::VARCHAR, 
+				c1_rec.tgenabled::VARCHAR, 
 				enable_or_disable::VARCHAR);
 			ddl_stmt[i]:='ALTER TABLE '||l_schema||'.'||c2_rec.child||' '||enable_or_disable||' TRIGGER '||c1_rec.tgname;
 		END LOOP;
@@ -984,7 +992,7 @@ DECLARE
 	c5_rec 		RECORD;
 --
 	ddl_stmt	VARCHAR[];
-	i 		INTEGER;
+	i 		INTEGER:=1;
 	warnings	INTEGER:=0;
 BEGIN
 --
@@ -1004,13 +1012,13 @@ BEGIN
 	IF c4_rec.table_name IS NOT NULL AND index_name IS NOT NULL THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_complete', 'Rebuild master cluster: %.%', 
 			l_schema::VARCHAR, l_table::VARCHAR);
-		ddl_stmt[1]:='CLUSTER VERBOSE '||quote_ident(l_schema)||'.'||quote_ident(l_table)||
+		ddl_stmt[i]:='CLUSTER VERBOSE '||quote_ident(l_schema)||'.'||quote_ident(l_table)||
 			' USING '||index_name;
+		i:=i+1;
 	END IF;
 --
 -- Cluster partitions
 -- 
-	i:=2;
 	IF c4_rec.table_name IS NOT NULL AND index_name IS NOT NULL THEN
 		FOR c5_rec IN c5gangep(l_schema, l_table) LOOP
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_complete', 'Cluster: %.%', 
@@ -1047,10 +1055,15 @@ BEGIN
 -- Re-anaylse
 --
 	ddl_stmt[i]:='ANALYZE VERBOSE '||quote_ident(l_schema)||'.'||quote_ident(l_table);
+	i:=i+1;
+	FOR c5_rec IN c5gangep(l_schema, l_table) LOOP
+		ddl_stmt[i]:='ANALYZE VERBOSE '||quote_ident(c5_rec.partition_schema)||'.'||quote_ident(c5_rec.partition);
+		i:=i+1;
+	END LOOP;
 --
 -- Drop
 --
-	ddl_stmt[array_length(ddl_stmt, 1)+1]:='DROP TABLE rif40_auto_partition /* Temporary table */';
+	ddl_stmt[i]:='DROP TABLE rif40_auto_partition /* Temporary table */';
 
 --
 -- Run 2
