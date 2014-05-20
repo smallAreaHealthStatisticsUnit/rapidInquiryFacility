@@ -87,6 +87,14 @@ RIF.manager = (function () {
                 firer: ["resizable"],
                 method: "resizeMap"
             },
+
+			//Map - Table
+			addTabularData:{
+				subscribers: ["table"],
+                firer: ["map"],
+                method: "getTabularData"
+			},
+			
 			//Map - Menu
 			addZoomIdentifiers: {
                 subscribers: ["menu"],
@@ -104,6 +112,19 @@ RIF.manager = (function () {
 			    subscribers: ["menu"],
                 firer: ["map"],
                 method: "getScaleRange"
+			},
+			
+			//Resizable - Table
+			resizeTable: {
+				subscribers: ["table"],
+                firer: ["resizable"],
+                method: "resizeTable"
+			},
+			//Menu - Table 
+			filterCols: {
+				subscribers: ["table"],
+                firer: ["menu"],
+                method: "filterCols"
 			},
 			
             //Chart - Pyramid 	

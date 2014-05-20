@@ -1,9 +1,6 @@
 RIF.menu.settings = (function(){
 	
 	var parent = this,
-	    
-		/* firers */
-	    
 		
 		/* geolevel obj */
 	    _p = {
@@ -13,13 +10,15 @@ RIF.menu.settings = (function(){
 			},
 			
 			/* DOM elements */
+			save:       $(".save-fld"),
+			hoverSlct:  $('#fldSlct'),
+			settings:   $(".settings"),
+			colsFilter: $('#colsFilter'),
+	        colsFilterName : "filterCols",
 			
-			save: $(".save-fld"),
-			hoverSlct: $('#fldSlct'),
-			settings: $(".settings"),
-	        
 			avlbFieldsClbkSettings: function(){
 				parent.dropDown( this, _p.hoverSlct );
+				parent.fieldCheckboxes( this, _p.colsFilter, _p.colsFilterName );
 			},
 			
 			/* events */
@@ -30,6 +29,8 @@ RIF.menu.settings = (function(){
 				});	
 				
 				this.save.click(function(){
+					var fields = parent.getCheckedValues( _p.colsFilterName );
+					parent.facade.filterTablebyCols( fields );
 					parent.facade.hoverFieldChange(_p.hoverSlct.val());
 					$("#settings").hide();
 				});

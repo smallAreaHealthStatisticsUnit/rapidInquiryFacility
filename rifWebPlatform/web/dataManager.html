@@ -12,14 +12,19 @@
     <link href="css/manager.css" rel="stylesheet" media="screen" />
     <link href="css/pyramid.css" rel="stylesheet" media="screen" />
     <link href="css/dataTable.css" rel="stylesheet" media="screen" />
+	<link href="css/slickgrid/slick.grid.css" rel="stylesheet" media="screen" />
 
     <!-- libraries -->
     <script type="text/javascript" src="js/libs/jquery-2.0.3.js"></script>
-    <script type="text/javascript" src="js/libs/jquery-ui-1.10.3.custom.min.js"></script>
+    <script type="text/javascript" src="js/libs/jquery-ui-1.10.4.custom.min.js"></script>
+	<script type="text/javascript" src="js/libs/slickgrid/lib/jquery.event.drag-2.2.js"></script>
     <script type="text/javascript" src="js/libs/leaflet-src-0.7.js"></script>
     <script src="js/libs/d3.v3.min.js" charset="utf-8"></script>
 	<script src="js/libs/sstatistics.js" charset="utf-8"></script>
 	<script src="js/libs/topojson.v1.min.js" charset="utf-8"></script>
+	<script src="js/libs/slickgrid/slick.core.js" charset="utf-8"></script>
+	<script src="js/libs/slickgrid/slick.grid.js" charset="utf-8"></script>
+	
     
     <!-- RIF4 -->
 	<!-- The order on which the RIf files are downloaded must be maintained -->
@@ -54,6 +59,8 @@
     <script type="text/javascript" src="js/v2/components/chart/chart.js"></script>
     <!-- table -->
     <script type="text/javascript" src="js/v2/components/table/table.js"></script>
+	<script type="text/javascript" src="js/v2/components/table/table.settings.js"></script>
+	<script type="text/javascript" src="js/v2/components/table/table.renderer.js"></script>
     <!-- abstraction -->
     <script type="text/javascript" src="js/v2/abstractions/data.js"></script>
     <script type="text/javascript" src="js/v2/abstractions/export_data.js"></script>
@@ -184,12 +191,16 @@
 					<h2>Settings</h2>
 					<a class="modal_close" href="#"></a>
 				</div>
-				<form action="">
+				<form action="" >
 					<div class="txt-fld">
-						<label for="fldSlct">Hover field:</label>
+						<label for="fldSlct">Map hover field:</label>
 						<select id='fldSlct'>
 						<option value=''> </option>
 						</select>
+					</div>
+					<div class="txt-fld" id="tableSettings">
+						<label for="fldSlct" >Table fields:</label>
+						<div id ="colsFilter"></div>	
 					</div>
 					<div class="save-fld">
 						<input type="button" value="save">
@@ -249,8 +260,8 @@
 						<select id='classification'>
 						    <option value='quantile'>Quantile</option>
 							<option value='jenks'>Jenks</option>
-							<option value='standardDeviation '> Standard Deviation</option>
-							<option value='logarithmic'>Logarithmic</option>
+							<option value='standardDeviation'> Standard Deviation</option>
+							<!--<option value='logarithmic'>Logarithmic</option>-->
 						</select>
 						<div class="editBreaks"><a href='#'> edit </a> </div>
 						<div id="breaks"></div>

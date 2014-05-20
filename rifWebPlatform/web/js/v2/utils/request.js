@@ -100,7 +100,24 @@
 			       args = '?table='+ params[0];
 			   
 			   xhr( 'getFullExtent.php' + args,  myCallback );
-		    }
+		    },
+			
+			
+			/* Table */
+			getTabularData: function( myCallback, params ){
+				var msg = "Retrieving data for table",
+			       args = '?geolevel='+ params[0] ;
+				
+				if( typeof params[1] !== 'undefined'){
+					var l = params[1].length;
+					while(l--){
+						args += '&fields[]='+params[1][l];
+					}
+				}   
+
+			    xhr( 'getDataTable.php' + args,  myCallback );
+			}
+			
 	    };
 	
 	

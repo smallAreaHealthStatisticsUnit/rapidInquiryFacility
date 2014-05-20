@@ -4,7 +4,7 @@ RIF.menu.geoLevel = (function(){
 	    
 		/* geolevel obj */
 	    _p = {
-        
+			
 			init: function(){
 				this.events();
 				RIF.getGeolevels( _p.geolevelsClbk );
@@ -19,6 +19,7 @@ RIF.menu.geoLevel = (function(){
 			geolevelsClbk: function(){ // called once only
 				if ( this.length > 0 ){
 				    parent.dropDown( this , _p.geolevels );
+					_p.setGeolevel( this[0][0] );
 				    parent.facade.addGeolevel( this[0][0] );
 				}	
 			},
@@ -35,6 +36,14 @@ RIF.menu.geoLevel = (function(){
 				parent.dropDown( this, z.el );
 			},
 			
+			setGeolevel: function(geolvl){
+				_p.currentGeolvl = geolvl;
+			},
+			
+			getGeolevel: function(geolvl){
+				return _p.currentGeolvl;
+			},
+			
 			/* events */
 			events: function(){
 				this.zoomTo.on('change', function() {
@@ -42,6 +51,7 @@ RIF.menu.geoLevel = (function(){
 				});
 				
 				this.geolevels.on('change', function() {
+					_p.setGeolevel( this.value );
 					parent.facade.addGeolevel( this.value );
 				});
 			}

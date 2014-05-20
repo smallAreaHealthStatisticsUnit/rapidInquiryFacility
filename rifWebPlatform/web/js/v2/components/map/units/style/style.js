@@ -5,8 +5,9 @@ RIF.style = (function (json) {
         colors: {},
 		mappedField: {},
         default: {
-            fill: "#EAEAEA",
-			stroke: "#D1D1D1"
+            fill: "#9BCD9B",
+			stroke: "#F8F8FF",
+			"stroke-width" : 0.5
         },
 		
         hover: {
@@ -14,9 +15,9 @@ RIF.style = (function (json) {
         },
 		
         slctd: {
-            fill: '#FF0000',
-			stroke: '#FFFF00',
-			"stroke-width": 2
+            fill: '#FF7F24',
+			stroke: '#F8F8FF',
+			"stroke-width" : 0.5
         },
 
         getStyle: function (id, renderType) { 
@@ -40,8 +41,9 @@ RIF.style = (function (json) {
         },
 
         svgStyle: function (id) {
-			var c = this.getRandom( id );
-            return  "fill:" + c + ";stroke:" + style.default.stroke ;
+			var c = this.default.fill;//this.getRandom( id );
+			this.setAreaColor ( id, c);
+            return "fill:" + c + ";stroke:" + this.default.stroke + ";stroke-width" + this.default["stroke-width"];
         },
 		
 		canvasStyle: function (id) {
@@ -56,8 +58,6 @@ RIF.style = (function (json) {
 		    c = "hsl(" + rando(140, 150) +
                 ", " + rando(20, 60) +
                 "%, " + rando(40, 95) + "%)";
-				
-            this.setAreaColor ( id, c);
 			
             return c; 			     
         },
@@ -79,22 +79,22 @@ RIF.style = (function (json) {
 		setChoropleth: function( values, params, updateLegend ){
 			
 			if( params.domain.length === 0){
-			    params.values = d3.values(values).map(function(d) { return +d; });
+			    params.values = d3.values( values ).map(function(d) { return +d; });
 			};
 			
-			params.max = d3.max( params.domain) || d3.max(params.values );
-			params.min = d3.min( params.domain) || d3.min(params.values );
+			params.max = d3.max( params.domain ) || d3.max( params.values );
+			params.min = d3.min( params.domain ) || d3.min( params.values );
 			
             this.setColorBrewer( params["colorScale"], params["intervals"] );			
 			this.setScale( params );
-			this.setScaleBreaks(params);
+			this.setScaleBreaks( params );
 			
 			if( updateLegend ){
 			    this.updateLegend();
 			};	
 		},
 		
-		setSingleColor: function(params){
+		setSingleColor: function( params ){
 		    this.setColorBrewer( params["colorScale"], params["intervals"] );
 			this.updateColors();
 		},
@@ -104,7 +104,7 @@ RIF.style = (function (json) {
 			this.scale.breaks = [];
 			while(l--){
 			    var r = style.scale.invertExtent(l);
-				this.scale.breaks.push(d3.round(r[1], 0));
+				this.scale.breaks.push(d3.format(".2f")(r[1]));
 			}
 		},
 		
@@ -140,13 +140,13 @@ RIF.style = (function (json) {
 		
 		updateColors: function( values ){
 		    if(typeof values !== 'object'){
-				    var values = this.colors,
-				        singleColor = style.colorbrewer[0];
+			    var values = this.colors,
+				    singleColor = style.colorbrewer[0];
 			};
 			
 			for (var key in values) {
-					var col = singleColor || style.colorbrewer[style.scale(values[key])];
-					this.colors[key] = col;
+				var col = singleColor || style.colorbrewer[style.scale(values[key])];
+				this.colors[key] = col;
 			};
 			
 			style.repaint();	

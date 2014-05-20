@@ -36,6 +36,17 @@ RIF.menu = (function(menus){
 				}
 			},
 			
+			fieldCheckboxes: function( obj , el , name ){
+				el.empty();
+				var counter = 0, checked = true;
+				for (var key in obj) {
+					var id = "filterCols" + counter++,
+					    p  = _p.getCheckBoxLabel( name, obj[key], obj[key], id , checked );
+					 
+					 el.prepend( '<div>' + p + '</div>'); 	 
+				}
+			},
+			
 			greyOut: function (el){
 				el.find("select, button").prop('disabled', 'disabled').css({opacity:'0.5'});
 			},
@@ -58,14 +69,29 @@ RIF.menu = (function(menus){
 			      slct.prepend( "<option value="+ val +">"+ option_text + "</option>" )
 			},
 			
+			getCheckBoxLabel: function( name, val_txt , id, checked ){
+				  var c = (checked) ? "checked" : "",
+			          p = '<input type="checkbox" name="'+name+'" value="'+val_txt+'" id="'+id+'" class="colsChoice" '+c+' />' + 
+						   '<label for="'+id+'" class="colsChoiceLbl">'+ val_txt +'</label>';
+				  
+				   return p;
+			},
+			
+			getCheckedValues: function( name ){
+				var checkedValues = $('input[name="'+name+'"]:checked').map(function() {
+					return this.value;
+				}).get();
+				
+				return checkedValues;
+			},
+			
 			getAvlbFields: function( arg ){
-			    RIF.getFields(  _p.avlbFieldsClbkSettings, [arg] );
+			    RIF.getFields( _p.avlbFieldsClbkSettings , [arg] );
 			},
 			
 			getNumericFields: function( arg ){
 			    RIF.getNumericFields(  _p.avlbFieldsClbkChoro, [arg] );
 			},
-			
 			
 			facade: {
 				/* Subscribers */
@@ -93,7 +119,12 @@ RIF.menu = (function(menus){
 				
 				hoverFieldChange: function( field ){
 					this.fire('hoverFieldChange', field);
+				},
+				
+				filterTablebyCols: function( fields ){
+					this.fire('filterCols', [fields, _p.getGeolevel() ]);
 				}
+				
 			}	
 		};
 	

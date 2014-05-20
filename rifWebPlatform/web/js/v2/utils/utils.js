@@ -89,6 +89,16 @@
 			return [d[0],d[1]];
 		},
 		
+		arraysEqual: function(arr1, arr2) {
+			if(arr1.length !== arr2.length)
+				return false;
+			for(var i = arr1.length; i--;) {
+				if(arr1[i] !== arr2[i])
+					return false;
+			}
+			return true;
+		},
+		
 		xhr: function () {
 			/* 
 				   mime Types : https://github.com/mbostock/d3/wiki/Requests#wiki-d3_json

@@ -12,7 +12,7 @@ RIF.map = (function (type) {
     var _p = {
 	
         init: function () {
-            this.map = new L.Map("map");
+            this.map = new L.Map("map", {attributionControl: false});
 			this.events().addLegend();
 			
             new L.geoJson({
@@ -130,6 +130,10 @@ RIF.map = (function (type) {
 			
 			addAvlbFields: function(args){/* [geolevel] */
 			    this.fire('addAvlbFields', args);
+			},
+			
+			addTabularData: function(args){/* [geolevel] */
+				this.fire('addTabularData', args);
 			},
 			
 			scaleRange: function(args){/* scale */

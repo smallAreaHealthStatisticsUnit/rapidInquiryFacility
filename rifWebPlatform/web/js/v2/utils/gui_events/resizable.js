@@ -13,7 +13,8 @@ RIF.resizable = function(){
 		    $("#data").resizable({
                 handles: "n",
                 resize: function (event, ui) {
-                    ui.size.width = ui.originalSize.width;	
+                    ui.size.width = ui.originalSize.width;
+					resizable.fire('resizeTable');
                 }
             });
 		}(),

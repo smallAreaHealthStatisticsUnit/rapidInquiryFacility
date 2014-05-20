@@ -1,6 +1,6 @@
 // This product includes color specifications and designs developed by Cynthia Brewer (http://colorbrewer.org/).
 RIF.colorbrewer = {lightGreen: {
-1: ["#D9F0A3"]
+1: ["#9BCD9B"]
 },YlGn: {
 3: ["#f7fcb9","#addd8e","#31a354"],
 4: ["#ffffcc","#c2e699","#78c679","#238443"],

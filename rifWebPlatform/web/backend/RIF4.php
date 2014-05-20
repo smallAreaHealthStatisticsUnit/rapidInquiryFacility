@@ -253,6 +253,30 @@ $r = RIF4::Instance();
 		}	
 	}
 	
+	public function getAllFieldsAsSingleArray( $table ){
+		try{
+		    $geom = $this->getGeometryCol( $table );
+		    $sql = "select column_name from information_schema.columns where table_name='". $table ."'
+					and  NOT column_name = '".$geom."' ";
+					
+			$hndl = self::$dbh -> prepare($sql);
+			$hndl ->execute(array());	
+			$res = $hndl -> fetchAll(PDO::FETCH_NUM);
+			self :: $dbh->commit();
+			
+			$length = count($res) - 1 ;
+			$myFields = array();
+			while($length >= 0){
+				array_push($myFields, $res[$length--][0] );
+			};
+			
+			return $myFields;
+			
+		}catch(PDOException $pe){
+			self :: $dbh->rollback();
+		 	die( $pe->getMessage());
+		}	
+	}
 	
 	public function getCentroid($table){
 		try{
@@ -265,6 +289,32 @@ $r = RIF4::Instance();
 			$res = $hndl -> fetch(PDO::FETCH_NUM);
 			self :: $dbh->commit();
 			return $res;
+			
+		}catch(PDOException $pe){
+			self :: $dbh->rollback();
+		 	die( $pe->getMessage());
+		}	
+	}
+	
+	public function getTabularData($table, $fields){
+		try{
+			
+			if ( !isset( $fields ) ){
+				$fields = $this->getAllFieldsAsSingleArray( $table );
+			}
+			
+			$cols = implode( ",", $fields );
+		    $sql = "select $cols from $table" ;
+			
+			$hndl = self::$dbh -> prepare($sql);
+			$hndl ->execute(array());	
+			$res = $hndl -> fetchAll(PDO::FETCH_ASSOC);
+			self :: $dbh->commit();
+		   /*
+			* Return fields and data separately
+			* Data comes in a standard array, avoiding to repeat column names 
+			*/
+			return array( $fields , $res );	
 			
 		}catch(PDOException $pe){
 			self :: $dbh->rollback();

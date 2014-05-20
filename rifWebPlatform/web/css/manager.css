@@ -282,10 +282,10 @@ a:hover{
 	*
 	*/
 	#data{
-		height: 5%;
 		overflow:hidden;
 		border-bottom: 1px solid #C1C1C1;
-}
+    }
+	
 	#data div.dataLbl{
 		background-color: #F5F5F5;
 		border-top: 1px solid #E3E3E3;
@@ -293,7 +293,7 @@ a:hover{
 		text-transform: uppercase;
 		padding: 0.6%;
 		height: 100%;
-		font-size: 1.6em;
+		/*font-size: 1.6em;*/
 		border-bottom: 1px solid #E3E3E3;
 		color: #B6B6B6;
 	}
@@ -435,6 +435,36 @@ a:hover{
 		height:100px;
 	}
 	
+	.msettings #tableSettings{
+	   overflow:auto;
+	}
+	
+	.msettings #tableSettings div#colsFilter { 
+		height: auto;
+		width: 180px;
+		margin: 5px 0 0 100px;
+		position: relative;
+		min-height: 20px;
+	}
+	
+	.msettings #tableSettings div#colsFilter div { 
+		height: 20px;
+		min-width:85px;
+		display:block;
+		float:left
+	}
+	
+	.msettings #tableSettings  div#colsFilter input.colsChoice { 
+		float: left;
+		margin: 6px 3px;
+	}
+	
+	.msettings #tableSettings div#colsFilter label.colsChoiceLbl { 
+		width: auto;
+		padding: 2px 8px 0 0px;
+	}
+	
+	
 	.msettings .txt-fld #breaks input {
 	    float:left;
 		width:60px;
@@ -453,7 +483,7 @@ a:hover{
 	.msettings .txt-fld label {
 		display: block;
 		float: left;
-		width: 90px;
+		width: 100px;
 		padding-top: 6px;
 		font-size: 1.1em;
 		text-align: left;
@@ -476,7 +506,7 @@ a:hover{
 
    /* General dropdown styles */      
     .dropdown { 
-	     margin-left: 90px;
+	     margin-left: 100px;
     }   
 	.dropdown dd, .dropdown dt, .dropdown ul { 
 	    margin:0px;

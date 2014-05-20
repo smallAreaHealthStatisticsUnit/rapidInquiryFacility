@@ -17,6 +17,7 @@ RIF.map.layer = (function (type, sett) {
 					
 					init: function (layerType) {			
 						RIF.map.layer[layerType].call(layer);
+						map.facade.addTabularData( layer.geoLevel );
 					},
 					
 					add: { 
@@ -32,6 +33,7 @@ RIF.map.layer = (function (type, sett) {
 						tile: function(){ 
 							map.facade.addAvlbFields( layer.geoLevel );
 							map.facade.addZoomIdentifiers( layer.geoLevel );
+							
 						},
 						topojson: function(){}
 					},
