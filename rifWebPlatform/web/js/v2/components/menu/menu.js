@@ -80,7 +80,7 @@ RIF.menu = (function(menus){
 			getCheckedValues: function( name ){
 				var checkedValues = $('input[name="'+name+'"]:checked').map(function() {
 					return this.value;
-				}).get();
+				}).get().reverse();
 				
 				return checkedValues;
 			},

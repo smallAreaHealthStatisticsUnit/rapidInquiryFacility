@@ -437,6 +437,7 @@ a:hover{
 	
 	.msettings #tableSettings{
 	   overflow:auto;
+	   max-height: 80px;
 	}
 	
 	.msettings #tableSettings div#colsFilter { 
@@ -475,7 +476,7 @@ a:hover{
 		background:#F7F7F7
 	}
 	
-	.msettings .txt-fld, #msettings .save-fld{
+	.msettings .txt-fld, #msettings .save-fld, #msettings .save-fld-settings{
 	    position: relative;
 	    text-align: right;
 	}
@@ -496,10 +497,10 @@ a:hover{
 		font-size: 1em;
 		background: #F7F7F7;
     }
-	.msettings .save-fld {
+	.msettings .save-fld, .save-fld-settings {
 		padding: 8px 20px;
 	}
-	.save-fld input {
+	.save-fld input, .save-fld-settings input {
 		padding: 2px 11px;
 		color: #7D7D7D;
     }
@@ -596,4 +597,11 @@ a:hover{
     }
 	#tooltip #geoname{
 		position:relative;
+	}
+
+  /*
+   * Slick Grid Edits 
+   */
+   .slick-row:hover { 
+		background-color: #D1EEEE; 
 	}

@@ -253,11 +253,11 @@ $r = RIF4::Instance();
 		}	
 	}
 	
-	public function getAllFieldsAsSingleArray( $table ){
+	public function getFieldsAsSingleArray( $table ){
 		try{
 		    $geom = $this->getGeometryCol( $table );
 		    $sql = "select column_name from information_schema.columns where table_name='". $table ."'
-					and  NOT column_name = '".$geom."' ";
+					and  NOT column_name = ANY ( ARRAY['".$geom."' , 'gid', 'id'])";
 					
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());	
@@ -300,11 +300,20 @@ $r = RIF4::Instance();
 		try{
 			
 			if ( !isset( $fields ) ){
-				$fields = $this->getAllFieldsAsSingleArray( $table );
+				$fields = $this->getFieldsAsSingleArray( $table );
 			}
 			
 			$cols = implode( ",", $fields );
-		    $sql = "select $cols from $table" ;
+			 
+		    /*Need to create a uniqque id by using the GID which is a reference to the area plus a sequence identifying the stratum
+			* This is because an area have multiple rows (Many age groups, gender etc..) 
+			*/
+			
+			$sql = "drop sequence  if exists uniqueids;create temp sequence uniqueids";
+			$hndl = self::$dbh -> prepare($sql);
+			$hndl ->execute(array());
+			
+			$sql = "select gid||'_'||cast( nextval('uniqueids') as varchar) as id, $cols from $table ;";
 			
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());	

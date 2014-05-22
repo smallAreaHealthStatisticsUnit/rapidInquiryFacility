@@ -129,12 +129,13 @@ RIF.style = (function (json) {
 		},
 		
 		repaint: function( values ){
-		
 			d3.select(".leaflet-zoom-animated").selectAll("path")
-			    .each(function(d,i){
-				    var pathId = RIF.addG(d.id);
-					this.style.fill =  style.colors[pathId] ;	
-					this.style.stroke =  style.default.stroke ;
+			    .each(function(d,i){	
+					if(typeof d !== 'undefined'){
+						var pathId = RIF.addG(d.id);
+						this.style.fill =  style.colors[pathId] ;	
+						this.style.stroke =  style.default.stroke ;
+					}	
 				});
 		},
 		
@@ -145,10 +146,14 @@ RIF.style = (function (json) {
 			};
 			
 			for (var key in values) {
-				var col = singleColor || style.colorbrewer[style.scale(values[key])];
+				
+				var col = singleColor || 
+					//( values[key] === 0 ) ? style.colorbrewer[0] : 
+					style.colorbrewer[style.scale(values[key])];
+				
 				this.colors[key] = col;
 			};
-			
+		
 			style.repaint();	
 		}
 		

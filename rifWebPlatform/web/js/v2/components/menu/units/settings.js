@@ -10,7 +10,7 @@ RIF.menu.settings = (function(){
 			},
 			
 			/* DOM elements */
-			save:       $(".save-fld"),
+			save:       $(".save-fld-settings"),
 			hoverSlct:  $('#fldSlct'),
 			settings:   $(".settings"),
 			colsFilter: $('#colsFilter'),

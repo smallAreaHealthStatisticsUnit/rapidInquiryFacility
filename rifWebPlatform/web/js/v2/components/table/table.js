@@ -41,7 +41,6 @@ RIF.table = (function(){
 	    }	
 	});
 	
-	
 	_p.init();
 	return _p.facade;
 	
