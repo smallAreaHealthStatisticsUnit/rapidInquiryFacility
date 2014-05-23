@@ -46,11 +46,13 @@
     <script type="text/javascript" src="js/v2/components/map/units/layer.settings.js"></script>
 	<script type="text/javascript" src="js/v2/components/map/units/layer.hover.js"></script>
     <script type="text/javascript" src="js/v2/components/map/units/style/style.js"></script>
-	<script type="text/javascript" src="js/v2/components/map/units/style/scales.js"></script>
-    <script type="text/javascript" src="js/v2/components/map/units/layers/tilesvg.js"></script>
-	<script type="text/javascript" src="js/v2/components/map/units/layers/tilecanvas.js"></script>
-    <script type="text/javascript" src="js/v2/components/map/units/layers/plugins/leaflet_d3_tilegeojson.js"></script>
-	<script type="text/javascript" src="js/v2/components/map/units/layers/plugins/tileCanvas_topojson.js"></script>
+	<script type="text/javascript" src="js/v2/components/map/units/style/style.tilesvg.js"></script> 
+	<script type="text/javascript" src="js/v2/components/map/units/style/style.tilecanvas.js"></script> 
+	<script type="text/javascript" src="js/v2/components/map/units/style/style.scales.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/units/layerTypes/tilesvg.js"></script>
+	<script type="text/javascript" src="js/v2/components/map/units/layerTypes/tilecanvas.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/units/layerTypes/plugins/leaflet_d3_tilegeojson.js"></script>
+	<script type="text/javascript" src="js/v2/components/map/units/layerTypes/plugins/tileCanvas_topojson.js"></script>
     <!-- menu -->
     <script type="text/javascript" src="js/v2/components/menu/menu.js"></script>
 	<script type="text/javascript" src="js/v2/components/menu/units/geoLevel.js"></script>
@@ -116,11 +118,11 @@
                     </a>
                 </div>
                 <div class='mapOpts'>
-                    <a href='#' class='mapOpt'>
-                        <img src="images/map.png" id="choroplethBtn">
+                    <a href='#' class='mapOpt' title="Make a choropleth map">
+                        <img src="images/map.png" id="choroplethBtn" alt="choropleth">
                     </a>
                 </div>
-                <a href='#msettings' rel='leanModal' class='settings'>
+                <a href='#msettings' rel='leanModal' class='settings' title="Settings">
                     <img src="images/settings.png">
                 </a>
             </div>

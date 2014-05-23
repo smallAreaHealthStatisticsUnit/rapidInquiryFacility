@@ -1,10 +1,21 @@
-RIF.style = (function (json) {
+/*
+ * RIF.style extend RIF.style[ "tilesvg" | "tilecanvas" ] specific styles renderer for SVG or CANVAS
+ * The following methods must be implemented by :
+ * 
+ * @style(id)
+ * @repaint()
+ *
+ */
 
-    var style = {
+RIF.style = (function ( type ) {
+
+	var style = RIF.mix( RIF.style[type](), {
 
         colors: {},
+		
 		mappedField: {},
-        default: {
+        
+		default: {
             fill: "#9BCD9B",
 			stroke: "#F8F8FF",
 			"stroke-width" : 0.5
@@ -19,47 +30,20 @@ RIF.style = (function (json) {
 			stroke: '#F8F8FF',
 			"stroke-width" : 0.5
         },
-
+		
         getStyle: function (id, renderType) { 
-		    var c = this.colors[id];
+		    
+			var c = this.colors[id];
 			this.setAreaColor( id, c);
 			
 			if (typeof c !== 'undefined') {
-				
 				var s = (renderType === 'tilesvg' ) ? 
 				     "fill:" + c + ";stroke:" + style.default.stroke  :
 				    { color: c, outline:{ color: "transparent", size: 0} };
-				
 				return s;	
 			};
 			
-			if( renderType == 'tilesvg' ){
-                return this.svgStyle(id);
-			}else if ( renderType == 'tilecanvas' ){
-				return this.canvasStyle(id); 
-			}	   
-        },
-
-        svgStyle: function (id) {
-			var c = this.default.fill;//this.getRandom( id );
-			this.setAreaColor ( id, c);
-            return "fill:" + c + ";stroke:" + this.default.stroke + ";stroke-width" + this.default["stroke-width"];
-        },
-		
-		canvasStyle: function (id) {
-            var c = this.getRandom( id );
-            return { color: c, outline:{ color: "transparent", size: 1} };
-        },
-		
-		getRandom: function (id) {
-		    var rando = function(min, max){
-			    return Math.floor(Math.random() * (max - min + 1)) + min;
-			},
-		    c = "hsl(" + rando(140, 150) +
-                ", " + rando(20, 60) +
-                "%, " + rando(40, 95) + "%)";
-			
-            return c; 			     
+			return this.style(id);   
         },
 		
 		setAreaColor: function( id , c , override ){
@@ -76,24 +60,6 @@ RIF.style = (function (json) {
 		    this.colorbrewer = RIF.colorbrewer[colorScale][intervals];
 		},
 		
-		setChoropleth: function( values, params, updateLegend ){
-			
-			if( params.domain.length === 0){
-			    params.values = d3.values( values ).map(function(d) { return +d; });
-			};
-			
-			params.max = d3.max( params.domain ) || d3.max( params.values );
-			params.min = d3.min( params.domain ) || d3.min( params.values );
-			
-            this.setColorBrewer( params["colorScale"], params["intervals"] );			
-			this.setScale( params );
-			this.setScaleBreaks( params );
-			
-			if( updateLegend ){
-			    this.updateLegend();
-			};	
-		},
-		
 		setSingleColor: function( params ){
 		    this.setColorBrewer( params["colorScale"], params["intervals"] );
 			this.updateColors();
@@ -106,6 +72,20 @@ RIF.style = (function (json) {
 			    var r = style.scale.invertExtent(l);
 				this.scale.breaks.push(d3.format(".2f")(r[1]));
 			}
+		},
+		
+		updateColors: function( values ){
+		    if(typeof values !== 'object'){
+			    var values = this.colors,
+				    singleColor = style.colorbrewer[0];
+			};
+			
+			for (var key in values) {
+				var col = singleColor || 
+					style.colorbrewer[style.scale(values[key])];
+				this.colors[key] = col;
+			};
+			style.repaint();	
 		},
 		
 		updateLegend: function( ){
@@ -128,36 +108,24 @@ RIF.style = (function (json) {
 				 });
 		},
 		
-		repaint: function( values ){
-			d3.select(".leaflet-zoom-animated").selectAll("path")
-			    .each(function(d,i){	
-					if(typeof d !== 'undefined'){
-						var pathId = RIF.addG(d.id);
-						this.style.fill =  style.colors[pathId] ;	
-						this.style.stroke =  style.default.stroke ;
-					}	
-				});
-		},
-		
-		updateColors: function( values ){
-		    if(typeof values !== 'object'){
-			    var values = this.colors,
-				    singleColor = style.colorbrewer[0];
+		setChoropleth: function( values, params, updateLegend ){
+			if( params.domain.length === 0){
+			    params.values = d3.values( values ).map(function(d) { return +d; });
 			};
 			
-			for (var key in values) {
-				
-				var col = singleColor || 
-					//( values[key] === 0 ) ? style.colorbrewer[0] : 
-					style.colorbrewer[style.scale(values[key])];
-				
-				this.colors[key] = col;
-			};
-		
-			style.repaint();	
+			params.max = d3.max( params.domain ) || d3.max( params.values );
+			params.min = d3.min( params.domain ) || d3.min( params.values );
+			
+            this.setColorBrewer( params["colorScale"], params["intervals"] );			
+			this.setScale( params );
+			this.setScaleBreaks( params );
+			
+			if( updateLegend ){
+			    this.updateLegend();
+			};	
 		}
 		
-    };
+    });
 
     return style;
 });

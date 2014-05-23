@@ -1,13 +1,18 @@
-/* context passed by calling object 
-   type: "geojson"| "tilegeojson"| "topojson"| "tiletopojson",
-*/
+/*  context passed by calling object 
+ *  type: "geojson"| "tilegeojson"| "topojson"| "tiletopojson",
+ *  
+ *   Layer Types must implement the following methods:
+ *   
+ *   @highlight(id,scltd) // allows to select a map area
+ *   @slct(id) // selects an area and call highlight method
+ */
 RIF.map.layer = (function (type, sett) {
 
 	var map = this,
         
 		layer = RIF.mix(
 			      
-				  RIF.map.layer.settings(sett), 
+				  RIF.map.layer.settings( sett, type), 
 			      RIF.map.layer.hover(),
 				  
 				  {	
@@ -72,6 +77,16 @@ RIF.map.layer = (function (type, sett) {
 						 RIF.getSingleFieldChoro( getScale, [ layer.geoLevel, params.field ] )
 					},
 					
+					 resetSlctd: function () {
+						if (!layer.isTiled()) {
+							return;
+						}
+						for (var key in layer.selection) {
+							var e = $("#" + key);
+							e[0].style.fill = style.colors[key];
+						}
+					},
+					
 					repaintSlctd: function(){
 						for (var key in this.selection) {
 							layer.highlight(key);
@@ -85,33 +100,20 @@ RIF.map.layer = (function (type, sett) {
 						return true;
 					},
 					
-					highlight: function(id, slctd){
-						var isSlctd = slctd || layer.isSlctd(id),
-						    fill = (isSlctd) ? layer.style.slctd.fill : layer.style.colors[id],
-						    stroke = (isSlctd) ? layer.style.slctd.stroke : layer.style.default.stroke ;
-						
-						d3.select("#"+id)
-						 .style("fill", fill)
-						 .style("stroke", stroke)
-						 .style("stroke-width", 2);
-					},
-					
-					slct: function (id) {
-						if (typeof this.selection[id] === 'undefined') {
-							this.selection[id] = 1;
-						} else {
-							delete this.selection[id];
-						}
-						this.highlight(id);
+					getLayerStyle: function(){
+						return {
+						    isSlctd : slctd || layer.isSlctd(id),
+							fill : (isSlctd) ? layer.style.slctd.fill : layer.style.colors[id],
+							stroke: (isSlctd) ? layer.style.slctd.stroke : layer.style.default.stroke,
+							stroke_width : layer.style.slctd["stroke-width"]
+						}	
 					},
 					
 					clearLegend: function(){
 					    $('.map-legend').empty();
-					}
-					
+					}	
 				});
 			
     layer.init( type );
-	
     return layer;
 });

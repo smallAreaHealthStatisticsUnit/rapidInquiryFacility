@@ -10,7 +10,7 @@
 RIF.map = (function (type) {
 
     var _p = {
-	
+		extentSet: 0,
         init: function () {
             this.map = new L.Map("map", {attributionControl: false});
 			this.events().addLegend();
@@ -63,8 +63,11 @@ RIF.map = (function (type) {
 		},
 		
         addTiled: function (lyr, geoTable) {
-            this.getFullExtent(geoTable);
-			 _p.map.addLayer(lyr);
+            if( !this.extentSet){
+				this.setFullExtent(geoTable);
+			};	
+			
+			_p.map.addLayer(lyr);	
         },
 		
 		getZoom: function(){
@@ -75,7 +78,8 @@ RIF.map = (function (type) {
             RIF.xhr('getCentroid.php?table=' + t, clbk);
         },
 		
-		getFullExtent: function( geolevel ){
+		setFullExtent: function( geolevel ){
+			this.extentSet = 1;
 		    RIF.getFullExtent( this.zoomTo, [geolevel]);
 		},
 		
