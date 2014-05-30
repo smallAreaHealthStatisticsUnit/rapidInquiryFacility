@@ -602,6 +602,7 @@ a:hover{
   /*
    * Slick Grid Edits 
    */
-   .slick-row:hover { 
+   .slick-row:hover ,.slick-row	.selected	{ 
 		background-color: #D1EEEE; 
 	}
+	

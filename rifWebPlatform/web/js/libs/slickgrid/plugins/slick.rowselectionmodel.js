@@ -21,7 +21,7 @@
       _options = $.extend(true, {}, _defaults, options);
       _grid = grid;
       _handler.subscribe(_grid.onActiveCellChanged,
-          wrapHandler(handleActiveCellChange));
+          wrapHandler(handleActiveCellChange)); 
       _handler.subscribe(_grid.onKeyDown,
           wrapHandler(handleKeyDown));
       _handler.subscribe(_grid.onClick,

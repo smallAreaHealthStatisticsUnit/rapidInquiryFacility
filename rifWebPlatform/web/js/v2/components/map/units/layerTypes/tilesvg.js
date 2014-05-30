@@ -73,7 +73,7 @@ RIF.map.layer.tilesvg = (function () {
 			
 			highlight: function(id, slctd){
 			
-				var s = layer.getLayerStyle();
+				var s = layer.getLayerStyle(id, slctd);
 						
 				d3.select(" #" + id)
 				   .style("fill", s.fill)
@@ -82,10 +82,10 @@ RIF.map.layer.tilesvg = (function () {
 			},
 			
 			slct: function (id) {
-				if (typeof this.selection[id] === 'undefined') {
+				if (typeof layer.selection[id] === 'undefined') {
 					layer.selection[id] = 1;
 				} else {
-				    delete this.selection[id];
+				    delete layer.selection[id];
 				}
 				this.highlight(id);
 			},
@@ -135,7 +135,7 @@ RIF.map.layer.tilesvg = (function () {
 				var isSlctd = layer.isSlctd(this.id);
 				switch (c) {
 					case "click":
-						layer.slct(this.id, isSlctd);
+						tiled.slct(this.id, isSlctd);
 						break;
 					case "mouseout":
 						if (!isSlctd) {

@@ -296,7 +296,7 @@ $r = RIF4::Instance();
 		}	
 	}
 	
-	public function getTabularData($table, $fields){
+	public function getTabularData($table, $fields, $from , $to){
 		try{
 			
 			if ( !isset( $fields ) ){
@@ -313,8 +313,9 @@ $r = RIF4::Instance();
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());
 			
-			$sql = "select gid||'_'||cast( nextval('uniqueids') as varchar) as id, $cols from $table ;";
-			
+			$limit = $to - $from;
+			$sql = "select gid||'_'||cast( nextval('uniqueids') as varchar) as id, $cols from $table limit  $limit  offset $from";
+
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());	
 			$res = $hndl -> fetchAll(PDO::FETCH_ASSOC);
@@ -323,7 +324,7 @@ $r = RIF4::Instance();
 			* Return fields and data separately
 			* Data comes in a standard array, avoiding to repeat column names 
 			*/
-			return array( $fields , $res );	
+			return $res;/*array( $fields , $res )*/;	
 			
 		}catch(PDOException $pe){
 			self :: $dbh->rollback();

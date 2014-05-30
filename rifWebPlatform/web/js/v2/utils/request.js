@@ -43,7 +43,12 @@
 		
 		
 		requests = {
-
+			
+			getGeneralRequest: function( url, myCallback ){  
+			    xhr( url,  myCallback );
+				return {};
+			},
+			
 			getGeolevels: function( myCallback ){
 				var msg = "Retrieving geolevels";
 				xhr( "getGeoAvailable.php" , myCallback, msg );
@@ -80,6 +85,13 @@
 				xhr( "getFieldsAvailable.php" + args , myCallback, msg );
 			},
 			
+			getTableFields: function( myCallback, params ){
+				var msg = "Retrieving table fields",
+				    args = "?geolevel=" + params[0];
+					
+				xhr( "getTableFieldsAvailable.php" + args , myCallback, msg );
+			},
+			
 			getNumericFields: function( myCallback, params ){
 				var msg = "Retrieving numeric fields",
 				    args = "?geolevel=" + params[0];
@@ -102,19 +114,17 @@
 			   xhr( 'getFullExtent.php' + args,  myCallback );
 		    },
 			
-			
-			/* Table */
 			getTabularData: function( myCallback, params ){
 				var msg = "Retrieving data for table",
-			       args = '?geolevel='+ params[0] ;
-				
-				if( typeof params[1] !== 'undefined'){
-					var l = params[1].length;
+			       args = '?geolevel='+ params[0] +
+				   '&from='+ params[1]  + '&to='+ params[2]
+
+				if( typeof params[3] !== 'undefined'){
+					var l = params[3].length;
 					while(l--){
-						args += '&fields[]='+params[1][l];
+						args += '&fields[]='+params[3][l];
 					}
 				}   
-
 			    xhr( 'getDataTable.php' + args,  myCallback );
 			}
 			

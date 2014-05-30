@@ -1,49 +1,84 @@
 RIF.table.renderer = (function () {
 	
-	var grid,
+	var grid, 
+		loader,
+		request = 0,
+		onDataLoaded = new Slick.Event(),
 	   
-       _p = RIF.mix( RIF.table.settings(), {
-		
-			cols     : [],
+	   _p = RIF.mix( RIF.table.settings(), {
 			
-			render: function(){
-				/*
-				 * this = [columns, data]
-				 */
-				 _p.setDataView( this[1] );
-				 _p.cols = this[0];
-				 grid = new Slick.Grid(".dataLbl", _p.dataView , _p.formatCols(this[0]), _p.toptions);
-				 _p.resize(_p.defaultSize);
+			initGrid: function() {
+			
+				 request = 0; 
+				 
+				 loader = new Slick.Data.RemoteModel(_p);
+				 
+				 _p.dataView = new Slick.Data.DataView( { inlineFilters: true } ); 
+				
+				 grid = new Slick.Grid(".dataLbl", _p.dataView , _p.gridCols , _p.toptions); 
+				 grid.setSelectionModel(new Slick.RowSelectionModel());
+				 
+				 RIF.table.events(grid, loader, _p);		 
 			},
 			
-			setDataView: function (data) {
-				_p.dataView = new Slick.Data.DataView();
+			setUpGrid: function(){
+				
+				var callback = function(){ 
+					_p.setFields(this); 
+					_p.initGrid();
+				}
+				
+				RIF.getTableFields( callback , [_p.geolevel] );
+			},
+			
+			request: function( from, to ){ /*Called by slick.remotemodel.ensureData() */
+			    var params = [ _p.geolevel, from, to, _p.fields];
+			    RIF.getTabularData(_p.render, params);
+		    },
+			
+			render: function(){
+				// this = data 
+				if( request === 0){
+					request++;
+					grid.setData( this );
+					_p.resize(_p.defaultSize);
+				}else {
+					_p.addRows( this );
+				}
+				
+				onDataLoaded.notify({from: 0, to: _p.nRows});
+			},
+			
+			setGeolevel: function( geolevel ){
+				_p.geolevel = geolevel;
+			},
+			
+			setFields: function( fields ){
+				_p.fields = fields; // array of fields
+				_p.gridCols = _p.formatCols(fields);// used to render grid columns
+			},
+			
+			addRows: function( rows ){
+				var l = rows.length,
+				    data = grid.getData();
+				
+				while(l--){
+					data.push(rows[l]);
+				}
+				
+				grid.updateRowCount();
+				grid.render();		
+			},
+			
+			setDataView: function (data) {  
+				_p.dataView = new Slick.Data.DataView( { inlineFilters: true } );
 				_p.dataView.setItems( data );
 			},
 			
-			setClickEvnt: function(){	
-				grid.onClick.subscribe(function(e, args) {
-				  var item = _p.dataView.getItem(args.row);
-				  // Split item id with "_" to get gid to be used to higlight map area
-				});
-			},
-			
-			getData: function( geolevel, fields /*optional*/ ){
-				return RIF.getTabularData(this.render, [geolevel, fields] );
-			},
-			
-			filterCols: function ( fields, geolevel ){
-				var eq = RIF.arraysEqual( fields, _p.cols);
-				console.log(eq)
-				if ( !eq ){
-					_p.getData( geolevel , fields );
-				}
-			},
-			
-			formatCols: function(cols){
+			formatCols: function(gridCols){
 				var columns =  [];
-				for(var i = 0; i < cols.length; i++ ){
-					columns[i] = { id: cols[i], name: cols[i], field: cols[i], minWidth: _p.minColumnWidth };
+				for(var i = 0; i < gridCols.length; i++ ){
+					columns[i] = { id: gridCols[i], name: gridCols[i], field: gridCols[i], minWidth: _p.minColumnWidth };
 				}
 				
 				return columns;
@@ -56,8 +91,8 @@ RIF.table.renderer = (function () {
 				
 				grid.resizeCanvas();
 			}
+		});
 
-	});
 	
     return _p;
 	

@@ -100,9 +100,9 @@ RIF.map.layer = (function (type, sett) {
 						return true;
 					},
 					
-					getLayerStyle: function(){
+					getLayerStyle: function( id, slctd){
+						var isSlctd = slctd || this.isSlctd(id);
 						return {
-						    isSlctd : slctd || layer.isSlctd(id),
 							fill : (isSlctd) ? layer.style.slctd.fill : layer.style.colors[id],
 							stroke: (isSlctd) ? layer.style.slctd.stroke : layer.style.default.stroke,
 							stroke_width : layer.style.slctd["stroke-width"]
@@ -111,7 +111,8 @@ RIF.map.layer = (function (type, sett) {
 					
 					clearLegend: function(){
 					    $('.map-legend').empty();
-					}	
+					}
+	
 				});
 			
     layer.init( type );

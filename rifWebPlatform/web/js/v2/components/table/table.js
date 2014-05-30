@@ -5,18 +5,25 @@ RIF.table = (function(){
 	 * Data
 	 * options	
 	 */
-	 
 	var _p = RIF.mix( RIF.table.renderer(), {
 		
-		init:( function(){
-			var a = 1;
-		}),
+		init: function( geolevel, fields ){
+			_p.setGeolevel(geolevel);
+
+			if( typeof fields === 'object'){
+				_p.setFields( fields );
+				_p.initGrid();
+				return;
+			}
+				
+			_p.setUpGrid();
+		},	
 		
 		facade: {
 			
 			/* Subscribed Events */
 			getTabularData: function( geolevel ){
-				_p.getData( geolevel );
+				_p.init( geolevel );
 			},	
 		
 			resizeTable: function(){
@@ -28,8 +35,12 @@ RIF.table = (function(){
 				 * args[0] = fields
 				 * args[1] = geolevel
 				 */
-				_p.filterCols( args[0], args[1] );
+				var eq = RIF.arraysEqual( args[0], _p.fields);
+				if ( !eq ){
+					_p.init( args[1] , args[0] );
+				}
 			}
+			
 			
             /*addSelection: function(a){
 			    console.log("Table selection added " + a);
@@ -41,7 +52,7 @@ RIF.table = (function(){
 	    }	
 	});
 	
-	_p.init();
+
 	return _p.facade;
 	
 });
