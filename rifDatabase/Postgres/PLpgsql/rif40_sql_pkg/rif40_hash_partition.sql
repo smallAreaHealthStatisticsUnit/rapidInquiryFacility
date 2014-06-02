@@ -70,6 +70,15 @@ Parameters:	Value (must be cast if required), number of buckets
 Returns:	Hash in the range 1 .. l_bucket 
 Description:	Hashing function';
 
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash_bucket_check(l_value ANYELEMENT, l_bucket INTEGER, l_bucket_requested INTEGER)
+RETURNS ANYELEMENT
+AS 'SELECT CASE WHEN l_bucket_requested IS NULL THEN NULL WHEN l_bucket_requested = (ABS(hashtext(l_value::TEXT))%l_bucket)+1 THEN l_value ELSE NULL END;' LANGUAGE sql IMMUTABLE STRICT;
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_hash_bucket_check(ANYELEMENT, INTEGER, INTEGER) IS 'Function: 	_rif40_hash()
+Parameters:	Value, number of buckets, bucket number requested
+Returns:	Value if bucket number requested = Hash computed in the range 1 .. l_bucket; NULL otherwise 
+Description:	Hashing function; suitable for partition elimination equalities';
+
 CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash_partition_functional_index(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, 
 	num_partitions INTEGER,
 	OUT ddl_stmt VARCHAR[])
@@ -87,14 +96,14 @@ DECLARE
 BEGIN
 	FOR i IN 1 .. num_partitions LOOP
 		ddl_stmt[i]:='CREATE INDEX '||l_table||'_p'||i||'_hash ON '||l_schema||'.'||l_table||'_p'||i||
-			'(rif40_sql_pkg._rif40_hash('||l_column||'::VARCHAR, '||num_partitions||'))';
+			'(rif40_sql_pkg._rif40_hash_bucket_check('||l_column||', '||num_partitions||' /* total buckets */, '||i||' /* bucket requested */))';
 	END LOOP;
 END;
 $func$ 
 LANGUAGE plpgsql;
 
 COMMENT ON FUNCTION rif40_sql_pkg._rif40_hash_partition_functional_index(VARCHAR, VARCHAR, VARCHAR, INTEGER, OUT VARCHAR[]) IS 'Function: 	_rif40_hash_partition_functional_index()
-Parameters:	Schema, table, columnn, number of partitions
+Parameters:	Schema, table, columnn, number of partitions, partition value
 Returns:	DDL statement array
 Description:	Create indexes by partition on hashing function';
 
@@ -291,10 +300,15 @@ BEGIN
 	PERFORM rif40_sql_pkg._rif40_common_partition_create_complete(l_schema, l_table, l_column, create_insert.index_name);
 
 --
--- Test partition exclusion
+-- Test partition exclusion. This currently does not work and Postgres only supports range values (e.g. year = 1999; not 
+-- study_id = rif40_sql_pkg._rif40_hash_bucket_check(study_id, 16 /* total buckets */, 15 /* bucket requested */)
+--
+-- Need a simpler example and look at the code in predtest.c
 --
 --'  WHERE '||quote_ident(l_column)||'::VARCHAR = ''1''/* ||min_first_part_value */'||E'\n'||
-	sql_stmt:='SELECT *, rif40_sql_pkg._rif40_hash(study_id::VARCHAR, 16)'||E'\n'||
+	sql_stmt:='SELECT *, rif40_sql_pkg._rif40_hash(study_id::VARCHAR, 16) AS hash,'||E'\n'||
+	        '         rif40_sql_pkg._rif40_hash_bucket_check(study_id::VARCHAR, 16, '||E'\n'||
+	        '               rif40_sql_pkg._rif40_hash(study_id::VARCHAR, 16)) AS hash_check'||E'\n'||
 		'  FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||
 		' WHERE study_id = 1'||E'\n'||
 		' ORDER BY 1'; 
@@ -333,9 +347,9 @@ Runs as RIF40 (so can create partition tables)
 
 Generates the following SQL to create a partition>
 	
-CREATE TABLE sahsuland_cancer_1989 (
- CONSTRAINT sahsuland_cancer_1989_ck CHECK (year::text = '1989'::text)
-) INHERITS (sahsuland_cancer);
+CREATE TABLE rif40_study_shares_p15 (
+ CONSTRAINT rif40_study_shares_p15_ck CHECK (study_id = rif40_sql_pkg._rif40_hash_bucket_check(study_id, 16 /- total buckets -/, 15 /- bucket requested -/))
+) INHERITS (rif40_study_shares);
 
 Call rif40_sql_pkg._rif40_common_partition_create to:
 
@@ -372,7 +386,8 @@ BEGIN
 -- Create partition table inheriting from master
 --
 	ddl_stmt[1]:='CREATE TABLE '||quote_ident(partition_table)||' ('||E'\n'||
-		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('''||l_value||''' = rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, '||num_partitions::Text||')::VARCHAR)'||E'\n'||
+--		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('''||l_value||''' = rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, '||num_partitions::Text||')::VARCHAR)'||E'\n'||
+		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('||l_column||' = rif40_sql_pkg._rif40_hash_bucket_check('||quote_ident(l_column)||', '||num_partitions::Text||' /* total buckets */, '||l_value||' /* bucket requested */))'||E'\n'||
 		') INHERITS ('||quote_ident(master_table)||')';
 --
 -- Run
@@ -404,10 +419,9 @@ Runs as RIF40 (so can create partition tables)
 
 Generates the following SQL to create a partition>
 	
-	
-CREATE TABLE sahsuland_cancer_1989 (
- CONSTRAINT sahsuland_cancer_1989_ck CHECK (year::text = ''1989''::text)
-) INHERITS (sahsuland_cancer);
+CREATE TABLE rif40_study_shares_p15 (
+ CONSTRAINT rif40_study_shares_p15_ck CHECK (study_id = rif40_sql_pkg._rif40_hash_bucket_check(study_id, 16 /* total buckets */, 15 /* bucket requested */))
+) INHERITS (rif40_study_shares);
 
 Call rif40_sql_pkg._rif40_common_partition_create to:
 
