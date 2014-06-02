@@ -526,20 +526,24 @@ BEGIN
 		partition_table::VARCHAR);
 	FOR c4_rec IN c4rpcr(l_schema, master_table, l_column) LOOP
 		I:=i+1;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Index[%] % on: %.%(%); PK: %, Unique: %', 
+		IF c4_rec.indisunique AND c4_rec.indisprimary AND c4_rec.constraint_def IS NOT NULL THEN
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c4_rec.constraint_def::VARCHAR, master_table, partition_table);
+		ELSE
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(
+								REPLACE(c4_rec.index_def::VARCHAR, master_table, partition_table),
+									c4_rec.index_name, c4_rec.index_name||'_p'||l_value 
+									/* Handle indexes without master table in name */);
+		END IF;
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Index[%] % on: %.%(%); PK: %, Unique: %'||E'\n'||'SQL> %;', 
 			i::VARCHAR,
 			c4_rec.index_name::VARCHAR, 
 			l_schema::VARCHAR, 
 			partition_table::VARCHAR, 
 			c4_rec.column_names::VARCHAR, 
 			c4_rec.indisprimary::VARCHAR, 
-			c4_rec.indisunique::VARCHAR);
+			c4_rec.indisunique::VARCHAR,
+			ddl_stmt[array_length(ddl_stmt, 1)]::VARCHAR);
 --		
-		IF c4_rec.indisunique AND c4_rec.indisprimary AND c4_rec.constraint_def IS NOT NULL THEN
-			ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c4_rec.constraint_def::VARCHAR, master_table, partition_table);
-		ELSE
-			ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c4_rec.index_def::VARCHAR, master_table, partition_table);
-		END IF;
 	END LOOP;
 	IF i > 0 THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Added % indexes to partition: %.%', 
@@ -568,7 +572,10 @@ BEGIN
 			l_schema::VARCHAR, 
 			partition_table::VARCHAR, 
 			c5_rec.child_columns::VARCHAR);
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c5_rec.constraint_def, master_table, partition_table);
+		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(
+							REPLACE(c5_rec.constraint_def, master_table, partition_table),
+								c5_rec.conname, c5_rec.conname||'_p'||l_value
+								/* Handle constraints without master table in name */);
 	END LOOP;
 	IF i > 0 THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Added % foreign keys to partition: %.%', 
@@ -590,14 +597,24 @@ BEGIN
 	i:=0;
 	FOR c6_rec IN c6rpcr(l_schema, master_table) LOOP
 		I:=i+1;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', '% constraint[%] % on: %.%(%)', 
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', '% constraint[%] % on: %.%', 
 			c6_rec.constraint_type::VARCHAR,
 			i::VARCHAR,
 			c6_rec.conname::VARCHAR, 
 			l_schema::VARCHAR, 
-			partition_table::VARCHAR, 
-			c6_rec.child_columns::VARCHAR);
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c6_rec.constraint_def, master_table, partition_table);
+			partition_table::VARCHAR);
+		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(
+							REPLACE(c6_rec.constraint_def, master_table, partition_table),
+								c6_rec.conname, c6_rec.conname||'_p'||l_value
+								/* Handle constraints without master table in name */);
+		IF ddl_stmt[array_length(ddl_stmt, 1)] IS NULL THEN
+			PERFORM rif40_log_pkg.rif40_error(-20555, '_rif40_common_partition_create',  '% constraint[%] % on: %.% NULL SQL statement', 
+			c6_rec.constraint_type::VARCHAR,
+			i::VARCHAR,
+			c6_rec.conname::VARCHAR, 
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR);
+		END IF;	
 	END LOOP;
 	IF i > 0 THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Added % trigger, unique, check and exclusion constraints to partition: %.%', 
@@ -636,7 +653,18 @@ BEGIN
 		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(
 								REPLACE(c7_rec.trigger_def, master_table, partition_table),
 									REPLACE(c7_rec.function_name, master_table, partition_table),												 c7_rec.function_name /* Put the function name back! */);
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c7_rec.comment_def, master_table, partition_table);
+		
+		IF ddl_stmt[array_length(ddl_stmt, 1)] IS NULL THEN
+			PERFORM rif40_log_pkg.rif40_error(-20555, '_rif40_common_partition_create',  'Validation trigger[%] % on: %.% calls % NULL SQL statement', 
+			i::VARCHAR,
+			c7_rec.tgname::VARCHAR, 
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR,
+			c7_rec.function_name::VARCHAR);
+		END IF;
+		IF c7_rec.comment_def IS NOT NULL THEN
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c7_rec.comment_def, master_table, partition_table);
+		END IF;
 	END LOOP;
 	IF i > 0 THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Added % validation triggers to partition: %.%', 

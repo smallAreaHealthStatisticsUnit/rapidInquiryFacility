@@ -63,19 +63,7 @@ $$;
 
 CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash(l_value VARCHAR, l_bucket INTEGER)
 RETURNS INTEGER
-AS $func$
-/*
-Function: 	_rif40_hash()
-Parameters:	Value (must be cast if required), number of buckets
-Returns:	Hash in the range 1 .. l_bucket 
-Description:	Hashing function
- */
-DECLARE
-BEGIN
-	RETURN (ABS(hashtext(l_value))%l_bucket)+1;
-END;
-$func$ 
-LANGUAGE plpgsql IMMUTABLE STRICT;
+AS 'SELECT (ABS(hashtext(l_value))%l_bucket)+1;' LANGUAGE sql IMMUTABLE STRICT;
 
 COMMENT ON FUNCTION rif40_sql_pkg._rif40_hash(VARCHAR, INTEGER) IS 'Function: 	_rif40_hash()
 Parameters:	Value (must be cast if required), number of buckets
