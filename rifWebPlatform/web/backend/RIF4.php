@@ -239,7 +239,7 @@ $r = RIF4::Instance();
 		try{
 		    $geom = $this->getGeometryCol( $table );
 		    $sql = "select column_name from information_schema.columns where table_name='". $table ."'
-         			and  NOT (column_name = ANY ( ARRAY['".$geom."' , 'gid']))  " ;
+         			and  NOT (column_name = ANY ( ARRAY['".$geom."' , 'gid', 'row_index']))  " ;
 					
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());	
@@ -257,7 +257,7 @@ $r = RIF4::Instance();
 		try{
 		    $geom = $this->getGeometryCol( $table );
 		    $sql = "select column_name from information_schema.columns where table_name='". $table ."'
-					and  NOT column_name = ANY ( ARRAY['".$geom."' , 'gid', 'id'])";
+					and  NOT column_name = ANY ( ARRAY['".$geom."' , 'gid', 'id','row_index'])";
 					
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());	
@@ -296,26 +296,30 @@ $r = RIF4::Instance();
 		}	
 	}
 	
-	public function getTabularData($table, $fields, $from , $to){
+	public function getTabularData($table, $fields, $from , $to, $gids){
 		try{
+			
+			/*
+			 * Assumes the corresponding tabulat data is stored in a table called $table + '_data'
+			 */
 			
 			if ( !isset( $fields ) ){
 				$fields = $this->getFieldsAsSingleArray( $table );
 			}
 			
+			if ( isset( $gids ) ){
+				$whereClause = " where " . $this->getGidClause( $gids, " != ", " and ");
+			}
+			
 			$cols = implode( ",", $fields );
 			 
-		    /*Need to create a uniqque id by using the GID which is a reference to the area plus a sequence identifying the stratum
-			* This is because an area have multiple rows (Many age groups, gender etc..) 
+		    /*
+			  Need to create a uniqque id by using the GID which is a reference to the area plus a sequence identifying the stratum
+			  This is because an area have multiple rows (Many age groups, gender etc..) 
 			*/
 			
-			$sql = "drop sequence  if exists uniqueids;create temp sequence uniqueids";
-			$hndl = self::$dbh -> prepare($sql);
-			$hndl ->execute(array());
-			
 			$limit = $to - $from;
-			$sql = "select gid||'_'||cast( nextval('uniqueids') as varchar) as id, $cols from $table limit  $limit  offset $from";
-
+			$sql = "select distinct gid||'_'||row_index as id, $cols from $table $whereClause limit  $limit  offset $from";
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());	
 			$res = $hndl -> fetchAll(PDO::FETCH_ASSOC);
@@ -332,7 +336,36 @@ $r = RIF4::Instance();
 		}	
 	}
 	
-    
+	public function getTableRows($table, $fields, $gids){
+		try{
+			
+			$cols = implode( ",", $fields );
+			$whereClause = $this->getGidClause($gids, " = ", " 	or ");
+			$sql = "select distinct gid||'_'||row_index as id, $cols from $table where $whereClause";
+
+			$hndl = self::$dbh -> prepare($sql);
+			$hndl ->execute(array());	
+			$res = $hndl -> fetchAll(PDO::FETCH_ASSOC);
+			self :: $dbh->commit();
+	
+			return $res;	
+			
+		}catch(PDOException $pe){
+			self :: $dbh->rollback();
+		 	die( $pe->getMessage());
+		}	
+	}
+	
+    private function getGidClause($gids, $operator, $andor){
+		$where = array();
+		foreach($gids as $gid){
+			array_push($where, "gid $operator $gid"); 	
+		}
+		$whereClause = implode(  $andor , $where );
+		return $whereClause;
+	}
+	
+	
 }
 
 ?>

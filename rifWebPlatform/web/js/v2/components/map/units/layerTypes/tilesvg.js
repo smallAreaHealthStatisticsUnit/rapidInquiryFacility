@@ -22,7 +22,8 @@ RIF.map.layer.tilesvg = (function () {
 				    
 					registerTitles = function(){
 						 layer.hoverLbls =  this;
-                         layer.add.tile( tiled.getLayer(sett) );						 
+                         layer.add.tile( tiled.getLayer(sett) );	
+						 layer.highlight = tiled.highlight;	// register select function					 
 					};
 					
 				RIF.getSingleFieldData( registerTitles , [ layer.geoLevel, layer.selectionField ] );
@@ -70,24 +71,16 @@ RIF.map.layer.tilesvg = (function () {
 				return [coords_x_4326, coords_y_4326];
 
 			},
-			
+			/*
+			 *  Should move highlight method to style.tilesvg
+			 */
 			highlight: function(id, slctd){
-			
 				var s = layer.getLayerStyle(id, slctd);
-						
+				
 				d3.select(" #" + id)
 				   .style("fill", s.fill)
 				   .style("stroke", s.stroke)
 				   .style("stroke-width", s.stroke_width);
-			},
-			
-			slct: function (id) {
-				if (typeof layer.selection[id] === 'undefined') {
-					layer.selection[id] = 1;
-				} else {
-				    delete layer.selection[id];
-				}
-				this.highlight(id);
 			},
 
             getStyle: function (d) {
@@ -135,7 +128,8 @@ RIF.map.layer.tilesvg = (function () {
 				var isSlctd = layer.isSlctd(this.id);
 				switch (c) {
 					case "click":
-						tiled.slct(this.id, isSlctd);
+						layer.slct(this.id, isSlctd);
+						layer.selectionChanged();
 						break;
 					case "mouseout":
 						if (!isSlctd) {

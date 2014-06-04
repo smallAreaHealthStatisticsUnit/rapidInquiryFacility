@@ -7,7 +7,7 @@
   function RemoteModel( parent ) { /* Passing Table renderer context*/
     // private
     var PAGESIZE = 5000;
-	var optimalRequestRangeSize = 5000;
+	var optimalRequestRangeSize = 1000;
     var data = {length: 0};
     var searchstr = "";
     var sortcol = null;
@@ -21,7 +21,8 @@
 
 
     function init() {
-		ensureData(0, 1000, []);
+		optimalRequestRangeSize = parent.nRows;
+		ensureData(0, parent.nRows, []);
     }
 
 
@@ -48,7 +49,7 @@
       if (from < 0) {from = 0;}
         while (data[from] !== undefined && from < to) {from++;}
         while (data[to] !== undefined && from < to) {to--;}
-
+		
         // no need to load anything
         if (data[from] !== undefined) {
             return;
@@ -104,7 +105,7 @@
             }
 			
 			onDataLoading.notify({from: from, to: to});
-			parent.request(from, to);
+			parent.request(from, to + 1);
 			
       }, 100);
     }

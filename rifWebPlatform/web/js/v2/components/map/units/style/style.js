@@ -26,9 +26,9 @@ RIF.style = (function ( type ) {
         },
 		
         slctd: {
-            fill: '#FF7F24',
-			stroke: '#F8F8FF',
-			"stroke-width" : 0.5
+            fill: '#FFE1FF',
+			stroke: '#9BCD9B',
+			"stroke-width" : 0.1
         },
 		
         getStyle: function (id, renderType) { 

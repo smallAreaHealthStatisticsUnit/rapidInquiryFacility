@@ -70,6 +70,11 @@ RIF.menu.choropleth = (function(){
 			},
 			
 			updateIntervals: function(n){
+				
+				if($("#selectedScale").children().length === 1){
+					n = 1;
+				}
+				
 				var intervals = [],
 					maxIntervals = ( n > 1 ) ? 3 : 1;
 				for( ;n >= maxIntervals; n--){
@@ -130,6 +135,11 @@ RIF.menu.choropleth = (function(){
 					$("#choropleth").show();
 				});	
                 
+				$("dl.dropdown").click(function(){					
+					_p.updateIntervals($("#selectedScale").children().length);
+				});	
+				
+				
 				this.edit.click(function(){
 				     _p.breaksEdited = false;
 					 var slctd = _p.selected();
@@ -147,6 +157,8 @@ RIF.menu.choropleth = (function(){
 					$("#choropleth").hide();
 
 					var slctd = _p.selected();
+					
+					console.log(slctd);
 					
 					if( slctd.field !== "N/A" ){
 						parent.facade.fire("mapStyleChange", slctd );

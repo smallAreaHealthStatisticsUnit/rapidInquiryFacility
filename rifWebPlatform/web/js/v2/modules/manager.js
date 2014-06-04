@@ -44,10 +44,17 @@ RIF.manager = (function () {
             },
 			
             // Map/Table
-            updateSelection: {
-                subscribers: ["map", "table"],
+            updateSelectionMap: {
+                subscribers: ["map"],
                 firer: ["study"],
-                method: "addSelection"
+                method: "updateSelection"
+            },
+			
+			// Map/Table
+            updateSelectionTable: {
+                subscribers: ["table"],
+                firer: ["study"],
+                method: "updateSelection"
             },
 
             // Map	

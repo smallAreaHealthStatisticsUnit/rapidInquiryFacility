@@ -99,7 +99,9 @@ RIF.map = (function (type) {
         facade: {
             /* Subscribed Events */
             updateSelection: function (a) {
-                console.log("Map selection updated " + a);
+				_p.layer.selection = {};
+				_p.layer.style.repaint();		
+                _p.layer.selectAreas(a);
             },
 			
             zoomTo: function (a) {
@@ -142,6 +144,10 @@ RIF.map = (function (type) {
 			
 			scaleRange: function(args){/* scale */
 			    this.fire('scaleRangeReady', args);
+			},
+			
+			selectionChanged: function( selection ){
+				this.fire('selectionchange', [ selection, 'map'] )
 			}
         }
     };

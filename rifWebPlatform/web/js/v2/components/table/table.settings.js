@@ -1,10 +1,11 @@
 RIF.table.settings = (function () {
 
     var settings = {
-		fromRow: 0,
-		nRows: 5000,
+		fromRow: 1,
+		nRows: 500,
 		fields: [],
 		selectedRows: [],
+		missing: [], 
 		geolevel: "",
 		defaultSize: {'height':'202px', 'top' : '-163px'},
 		minColumnWidth: 100,

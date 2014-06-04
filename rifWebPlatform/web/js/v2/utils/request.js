@@ -63,38 +63,43 @@
 			},
 			
 			getSingleFieldData: function( myCallback, params ){
-				var msg = "Retrieving values",
-				    args = "?geolevel=" + params[0] + 
+				var dataTable = params[0] +'_data' ,
+					msg = "Retrieving values",
+				    args = "?geolevel=" + dataTable + 
 					       "&identifier=" + params[1];	
 						   
 				xhr("getIdentifiers.php" + args , myCallback, msg );
 			},
 			
 			getSingleFieldChoro: function( myCallback, params ){
-				var msg = "Retrieving choropleth fields",
-				    args = "?geolevel=" + params[0] + 
+				var dataTable = params[0] +'_data' ,
+					msg = "Retrieving choropleth fields",
+				    args = "?geolevel=" + dataTable + 
 					       "&identifier=" + params[1];	
 						   
 				xhr("getSingleFieldChoro.php" + args , myCallback, msg );
 			},
 			
 			getFields: function( myCallback, params ){
-				var msg = "Retrieving available fields",
-				    args = "?geolevel=" + params[0];
+				var dataTable = params[0] +'_data',
+					msg = "Retrieving available fields",
+				    args = "?geolevel=" + dataTable;
 					
 				xhr( "getFieldsAvailable.php" + args , myCallback, msg );
 			},
 			
 			getTableFields: function( myCallback, params ){
-				var msg = "Retrieving table fields",
-				    args = "?geolevel=" + params[0];
+				var dataTable = params[0] +'_data' ,
+					msg = "Retrieving table fields",
+				    args = "?geolevel=" + dataTable;
 					
 				xhr( "getTableFieldsAvailable.php" + args , myCallback, msg );
 			},
 			
 			getNumericFields: function( myCallback, params ){
-				var msg = "Retrieving numeric fields",
-				    args = "?geolevel=" + params[0];
+				var dataTable = params[0] +'_data' ,
+					msg = "Retrieving numeric fields",
+				    args = "?geolevel=" + dataTable;
 					
 				xhr( "getNumericFields.php" + args , myCallback );
 			},
@@ -115,18 +120,49 @@
 		    },
 			
 			getTabularData: function( myCallback, params ){
-				var msg = "Retrieving data for table",
-			       args = '?geolevel='+ params[0] +
-				   '&from='+ params[1]  + '&to='+ params[2]
+				var dataTable = params[0] +'_data' ,
+				    msg = "Retrieving data for table",
+			        args = '?geolevel='+ dataTable + 
+				    '&from='+ params[1]  + '&to='+ params[2]
 
 				if( typeof params[3] !== 'undefined'){
 					var l = params[3].length;
 					while(l--){
 						args += '&fields[]='+params[3][l];
 					}
-				}   
+				};
+
+				if( typeof params[4] !== 'undefined'){
+					var l = params[4].length;
+					while(l--){
+						args += '&gids[]='+params[4	][l];
+					}
+				};
+				
 			    xhr( 'getDataTable.php' + args,  myCallback );
-			}
+			},
+			
+			getTableRows: function( myCallback, params ){
+				var dataTable = params[0] +'_data' ,
+				    msg = "Retrieving rows for table",
+			        args = '?geolevel='+ dataTable ;
+
+				if( typeof params[1] !== 'undefined'){
+					var l = params[1].length;
+					while(l--){
+						args += '&fields[]='+params[1][l];
+					}
+				} 
+				
+				if( typeof params[2] !== 'undefined'){
+					var l = params[2].length;
+					while(l--){
+						args += '&gids[]='+params[2][l];
+					}
+				} 
+
+			   xhr( 'getTableRows.php' + args,  myCallback );
+			},
 			
 	    };
 	
