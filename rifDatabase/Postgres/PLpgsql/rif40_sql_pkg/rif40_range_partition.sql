@@ -249,6 +249,7 @@ DECLARE
 	rec_list		VARCHAR;
 	bind_list		VARCHAR;
 	ddl_stmt 		VARCHAR[];
+	fk_stmt 		VARCHAR[];
 	num_partitions		INTEGER;
 	total_rows		INTEGER;
 	n_num_partitions	INTEGER;
@@ -277,6 +278,7 @@ BEGIN
 -- Copy out parameters
 --
 	ddl_stmt:=create_setup.ddl_stmt;
+	fk_stmt:=create_setup.fk_stmt;
 	num_partitions:=create_setup.num_partitions;
 	warnings:=create_setup.warnings;
 	total_rows:=create_setup.total_rows;
@@ -393,6 +395,12 @@ BEGIN
 -- Run
 --
 	PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
+--
+-- Put back foreign keys
+--
+	IF fk_stmt IS NOT NULL THEN
+		PERFORM rif40_sql_pkg.rif40_ddl(fk_stmt);
+	END IF;
 
 --
 -- Check number of rows match original

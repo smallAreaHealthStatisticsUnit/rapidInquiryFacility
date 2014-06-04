@@ -263,7 +263,7 @@ BEGIN
 			c1_rec.tgenabled::VARCHAR, 
 			enable_or_disable::VARCHAR);
 --
--- Do not re-eable master triggers
+-- Do not re-enable master triggers
 --
 		IF enable_or_disable = 'DISABLE' THEN
 			i:=i+1;
@@ -756,14 +756,15 @@ COMMENT ON COLUMN sahsuland_cancer_1989.total IS ''Total'';
 COMMENT ON COLUMN sahsuland_cancer_1989.year IS ''Year'';';
 
 CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_create_setup(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR,
-       OUT ddl_stmt VARCHAR[], OUT num_partitions INTEGER, OUT total_rows INTEGER, OUT warnings INTEGER)
+       OUT ddl_stmt VARCHAR[], OUT fk_stmt VARCHAR[], OUT num_partitions INTEGER, OUT total_rows INTEGER, OUT warnings INTEGER)
 RETURNS RECORD
 SECURITY DEFINER
 AS $func$
 /*
 Function: 	_rif40_common_partition_create_setup()
 Parameters:	Schema, table, column, 
-                [OUT] ddl statement array, [OUT] num_partitions, [OUT] total_rows, [OUT] warnings
+                [OUT] ddl statement array, [OUT] foreign key statement (re-)creation array,
+	       	[OUT] num_partitions, [OUT] total_rows, [OUT] warnings
 Returns:	OUT parameters as a record
  		DDL statement array is NULL if the function is unable to partition
 Description:	Automatic range/hash partition schema.table on column
@@ -773,19 +774,83 @@ Description:	Automatic range/hash partition schema.table on column
 * Check if table is valid
 * Check table name length - must be 25 chars or less (assuming the limit is 30)
 * Check data is partitionable 
-* Copy to temp table, truncate (dont panic - Postgres DDL is part of a transaction)
+* Copy to temp table, disable foreign keys on tables referencing this table, create foreign key statement (re-)creation array [OUT parameter], 
+  truncate (dont panic - Postgres DDL is part of a transaction)
 
   Add to DDL statement list:
 
-	CREATE TEMPORARY TABLE rif40_auto_partition AS SELECT * FROM rif40.sahsuland_cancer;
-	TRUNCATE TABLE rif40.sahsuland_cancer;
+	CREATE TEMPORARY TABLE rif40_auto_partition AS SELECT * FROM rif40.rif40_study_shares;
+	ALTER TABLE rif40.rif40_study_shares DROP CONSTRAINT rif40_study_shares_study_id_fk;
+	TRUNCATE TABLE rif40.rif40_study_shares;
+
+  Add to foreign key DDL statement list for tables referencing this table via foreign keys, but not for:
+	a) The master tables referencing this table (as they have no data):
+	b) This table is a master (as they also have no data):
+
+	ALTER TABLE rif40.rif40_study_shares ADD CONSTRAINT rif40_study_shares_study_id_fk FOREIGN KEY (study_id) REFERENCES t_rif40_studies(study_id);
 
 * Do not partition if table has only one distinct row
 * Do not partition if table has no rows
 
+Foreign keys need to be disabled to avoid:
+
+psql:../psql_scripts/v4_0_study_id_partitions.sql:141: WARNING:  rif40_ddl(): SQL in error (0A000)> TRUNCATE TABLE rif40.t_rif40_investigations;
+psql:../psql_scripts/v4_0_study_id_partitions.sql:141: ERROR:  cannot truncate a table referenced in a foreign key constraint
+
  */
 DECLARE
 	c1gangep 		REFCURSOR;
+	c2gangep CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get trigger, unique, check and exclusion constraints */
+		WITH a AS (
+			SELECT con.conname, 
+			       con.oid,
+			       ns1.nspname AS con_schema_name,
+			       c1.relname AS table_name,
+			       c2.relname AS ref_fk_table_name,
+			       c1.relnamespace AS schema_oid,
+			       c2.relnamespace AS ref_fk_schema_oid,
+			       c1.relhassubclass AS is_partitioned,
+			       c2.relhassubclass AS is_ref_fk_partitioned,
+		               CASE WHEN ih2.inhrelid IS NOT NULL THEN TRUE ELSE FALSE END is_a_ref_fk_partition
+			  FROM pg_constraint con
+			        LEFT OUTER JOIN pg_namespace ns1 ON (con.connamespace = ns1.oid)
+			        LEFT OUTER JOIN pg_class c1 ON (con.confrelid = c1.oid) /* Foreign keys referencing this table */
+			        LEFT OUTER JOIN pg_class c2 ON (con.conrelid  = c2.oid) /* Tables referencing this table by foreign keys */
+		        	LEFT OUTER JOIN pg_inherits ih2 ON (c2.oid    = ih2.inhrelid)
+							/* Is the table referencing this table inheriting (i.e. is a partition) */
+			 WHERE ns1.nspname   = l_schema
+			   AND c1.relname    = l_table 	/* This table */
+			   AND con.contype   = 'f'     	/* Foreign key constraints */
+		)
+		SELECT conname, oid, con_schema_name, ref_fk_table_name, table_name,
+	               ns2.nspname AS schema_name, ns3.nspname AS ref_fk_schema_name,
+		       is_partitioned, is_ref_fk_partitioned, is_a_ref_fk_partition,
+		       CASE 
+				WHEN oid IS NOT NULL THEN 'ALTER TABLE '||ns3.nspname||'.'||ref_fk_table_name||
+					' MODIFY CONSTRAINT '||conname||' DEFERRABLE INITIALLY IMMEDIATE /* '||
+					pg_get_constraintdef(oid)||' */'
+				ELSE NULL 
+		       END AS defer_constraint_def,
+		       CASE 
+				WHEN oid IS NOT NULL THEN 'ALTER TABLE '||ns3.nspname||'.'||ref_fk_table_name||
+					' DROP CONSTRAINT '||conname||' /* '||
+					pg_get_constraintdef(oid)||' */'
+				ELSE NULL 
+		       END AS drop_constraint_def,
+		       CASE 
+				WHEN oid IS NOT NULL THEN 'ALTER TABLE '||ns3.nspname||'.'||ref_fk_table_name||
+					' ADD CONSTRAINT '||conname||' '||
+					pg_get_constraintdef(oid)||
+					'/* has partitions: '||is_ref_fk_partitioned::VARCHAR||', is a partition: '||is_a_ref_fk_partition::VARCHAR||' */'
+				ELSE NULL 
+		       END AS add_constraint_def,
+		       pg_get_constraintdef(oid) AS constraintdef
+		  FROM a
+		        LEFT OUTER JOIN pg_namespace ns2 ON (a.schema_oid = ns2.oid)
+		        LEFT OUTER JOIN pg_namespace ns3 ON (a.ref_fk_schema_oid = ns3.oid)
+		 ORDER BY con_schema_name, conname;
+--
+	c2_rec			RECORD;
 --
 	sql_stmt 		VARCHAR;
 	l_rows			INTEGER:=0;
@@ -884,20 +949,13 @@ SELECT year AS value,
 				RAISE;
 		END;
 
---
--- Copy to temp table, truncate (dont panic - Postgres DDL is part of a transaction)
---
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', 'Copy data to temporary table fron: %.%', 
-			l_schema::VARCHAR, l_table::VARCHAR);
-		ddl_stmt[1]:='CREATE TEMPORARY TABLE rif40_auto_partition AS SELECT * FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table);
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:='TRUNCATE TABLE '||quote_ident(l_schema)||'.'||quote_ident(l_table);
-
 	ELSIF num_partitions > 1 THEN
 --
 -- Do not partition if table has only one distinct row
 --
 		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_setup', 'Unable to automatic range/hash partition by %: %.%; Not partitionable, only 1 distinct row', 
 			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR);
+		RETURN;
 	ELSE
 --
 -- Warn if table has no rows or only 1 partition
@@ -905,25 +963,92 @@ SELECT year AS value,
 		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_setup', 'Automatic range/hash partition by %: %.%; no rows (%)/only 1 partition (%)', 
 			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR,
 			l_rows::VARCHAR, num_partitions::VARCHAR);
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', 'Copy data to temporary table fron: %.%', 
-			l_schema::VARCHAR, l_table::VARCHAR);
---
--- Copy to temp table, truncate (dont panic - Postgres DDL is part of a transaction)
---
-
-		ddl_stmt[1]:='CREATE TEMPORARY TABLE rif40_auto_partition AS SELECT * FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table);
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:='TRUNCATE TABLE '||quote_ident(l_schema)||'.'||quote_ident(l_table);
 	END IF;
 
+--
+-- Copy to temp table, defer foreign key constraint triggers on table, truncate (dont panic - Postgres DDL is part of a transaction)
+--
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', 'Copy data to temporary table fron: %.%', 
+		l_schema::VARCHAR, l_table::VARCHAR);
+--
+-- Foreign key constraints cause:
+--
+-- psql:../psql_scripts/v4_0_study_id_partitions.sql:141: WARNING:  rif40_ddl(): SQL in error (0A000)> TRUNCATE TABLE rif40.t_rif40_investigations;
+-- psql:../psql_scripts/v4_0_study_id_partitions.sql:141: ERROR:  cannot truncate a table referenced in a foreign key constraint
+-- 
+-- It would be better to defer foreign key constraints, but
+-- defer needs Postgres 9.4; so drop and re-create
+--
+	ddl_stmt[1]:='CREATE TEMPORARY TABLE rif40_auto_partition AS SELECT * FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table);
+	i:=0;
+	FOR c2_rec IN c2gangep(l_schema, l_table) LOOP
+		IF c2_rec.defer_constraint_def IS NOT NULL THEN
+			i:=i+1;
+--			ddl_stmt[array_length(ddl_stmt, 1)+1]:=c2_rec.defer_constraint_def;
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:=c2_rec.drop_constraint_def;
+--
+-- Only add back referenced foreign key constraints if they are on a a) partitioned table or b) table is not partitioned, or
+-- you will get:
+--
+-- psql:../psql_scripts/v4_0_study_id_partitions.sql:141: WARNING:  rif40_ddl(): SQL in error (23503)> ALTER TABLE rif40.t_rif40_inv_conditions_p8 ADD CONSTRAINT t_rif40_inv_conditions_p8_si_fk FOREIGN KEY (study_id, inv_id) REFERENCES t_rif40_investigations(study_id, inv_id);
+-- psql:../psql_scripts/v4_0_study_id_partitions.sql:141: ERROR:  insert or update on table "t_rif40_inv_conditions_p8" violates foreign key constraint "t_rif40_inv_conditions_p8_si_fk"
+-- 
+-- This is because the master table you are creating has no rows...
+--
+-- or:
+--
+-- psql:../psql_scripts/v4_0_study_id_partitions.sql:141: WARNING:  rif40_ddl(): SQL in error (23503)> ALTER TABLE rif40.t_rif40_inv_conditions_p8 ADD CONSTRAINT t_rif40_inv_conditions_p8_si_fk FOREIGN KEY (study_id, inv_id) REFERENCES t_rif40_investigations(study_id, inv_id)/* has partitions: false, is a partition: true */;
+-- psql:../psql_scripts/v4_0_study_id_partitions.sql:141: ERROR:  insert or update on table "t_rif40_inv_conditions_p8" violates foreign key constraint "t_rif40_inv_conditions_p8_si_fk"
+-- 
+--
+			IF c2_rec.is_ref_fk_partitioned = TRUE /* has partitions */ AND 
+			   c2_rec.is_a_ref_fk_partition = FALSE /* is NOT a partition */ THEN
+				PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_setup', 
+					'Drop, suppress re-create referenced foreign key constraint[%] (partitions has: %, is a: %): % on: %.% from: %.% (%)', 
+					i::VARCHAR,
+					c2_rec.is_ref_fk_partitioned::VARCHAR	/* has partitions */,
+					c2_rec.is_a_ref_fk_partition::VARCHAR	/* is a partition */,
+					c2_rec.conname::VARCHAR			/* Foreign key constraint */,
+					l_schema::VARCHAR, 
+					l_table::VARCHAR,
+					c2_rec.ref_fk_schema_name::VARCHAR	/* Schema of table referencing foreign key */,
+					c2_rec.ref_fk_table_name::VARCHAR	/* Table referencing foreign key */,
+					c2_rec.constraintdef::VARCHAR)		/* Foregin key */;
+			ELSE
+				IF fk_stmt IS NULL THEN
+					fk_stmt[1]:=c2_rec.add_constraint_def;
+				ELSE
+					fk_stmt[array_length(fk_stmt, 1)+1]:=c2_rec.add_constraint_def;
+				END IF;
+				PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', 
+					'Drop, re-create [later after data re import] referenced foreign key constraint[%] (partitions has: %, is a: %): % on: %.% from: %.% (%)', 
+					i::VARCHAR,
+					c2_rec.is_ref_fk_partitioned::VARCHAR	/* has partitions */,
+					c2_rec.is_a_ref_fk_partition::VARCHAR	/* is a partition */,
+					c2_rec.conname::VARCHAR			/* Foreign key constraint */,
+					l_schema::VARCHAR, 
+					l_table::VARCHAR,
+					c2_rec.ref_fk_schema_name::VARCHAR	/* Schema of table referencing foreign key */,
+					c2_rec.ref_fk_table_name::VARCHAR	/* Table referencing foreign key */,
+					c2_rec.constraintdef::VARCHAR)		/* Foregin key */;
+			END IF;	
+		END IF;
+	END LOOP;
+	IF l_table = 't_rif40_investigations' THEN
+--		RAISE plpgsql_error;
+	END IF;
+--	ddl_stmt[array_length(ddl_stmt, 1)+1]:='SET CONSTRAINTS ALL DEFERRED';
+	ddl_stmt[array_length(ddl_stmt, 1)+1]:='TRUNCATE TABLE '||quote_ident(l_schema)||'.'||quote_ident(l_table);
 END;
 $func$ 
 LANGUAGE plpgsql;
 
 --\df+ rif40_sql_pkg._rif40_common_partition_create_setup
 
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER) IS 'Function: 	_rif40_common_partition_create_setup()
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, OUT VARCHAR[], OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER) IS 'Function: 	_rif40_common_partition_create_setup()
 Parameters:	Schema, table, column, 
-                [OUT] ddl statement array, [OUT] num_partitions, [OUT] total_rows, [OUT] warnings
+                [OUT] ddl statement array, [OUT] foreign key statement (re-)creation array,
+	       	[OUT] num_partitions, [OUT] total_rows, [OUT] warnings
 Returns:	OUT parameters as a record
  		DDL statement array is NULL if the function is unable to partition
 Description:	Automatic range/hash partition schema.table on column
@@ -933,12 +1058,18 @@ Description:	Automatic range/hash partition schema.table on column
 * Check if table is valid
 * Check table name length - must be 25 chars or less (assuming the limit is 30)
 * Check data is partitionable 
-* Copy to temp table, truncate (dont panic - Postgres DDL is part of a transaction)
+* Copy to temp table, disable foreign keys on table, create foreign key statement (re-)creation array [OUT parameter], 
+  truncate (dont panic - Postgres DDL is part of a transaction)
 
   Add to DDL statement list:
 
-	CREATE TEMPORARY TABLE rif40_auto_partition AS SELECT * FROM rif40.sahsuland_cancer;
-	TRUNCATE TABLE rif40.sahsuland_cancer;
+	CREATE TEMPORARY TABLE rif40_auto_partition AS SELECT * FROM rif40.rif40_study_shares;
+	ALTER TABLE rif40.rif40_study_shares DROP CONSTRAINT rif40_study_shares_study_id_fk;
+	TRUNCATE TABLE rif40.rif40_study_shares;
+
+  Add to foreign key DDL statement list:
+
+	ALTER TABLE rif40.rif40_study_shares ADD CONSTRAINT rif40_study_shares_study_id_fk FOREIGN KEY (study_id) REFERENCES t_rif40_studies(study_id);
 
 * Do not partition if table has only one distinct row
 * Do not partition if table has no rows';

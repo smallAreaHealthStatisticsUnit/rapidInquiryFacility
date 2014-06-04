@@ -135,6 +135,7 @@ DECLARE
 	rec_list		VARCHAR;
 	bind_list		VARCHAR;
 	ddl_stmt 		VARCHAR[];
+	fk_stmt 		VARCHAR[];
 	l_ddl_stmt 		VARCHAR[];
 	num_partitions		INTEGER;
 	total_rows		INTEGER;
@@ -158,6 +159,7 @@ BEGIN
 -- Copy out parameters
 --
 	ddl_stmt:=create_setup.ddl_stmt;
+	fk_stmt:=create_setup.fk_stmt;
 	num_partitions:=create_setup.num_partitions;
 	warnings:=create_setup.warnings;
 	total_rows:=create_setup.total_rows;
@@ -273,6 +275,16 @@ BEGIN
 --
 	PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
 
+--
+-- Put back foreign keys
+--
+	IF fk_stmt IS NOT NULL THEN
+		PERFORM rif40_sql_pkg.rif40_ddl(fk_stmt);
+--		RAISE plpgsql_error;
+	END IF;
+	IF l_table = 't_rif40_investigations' THEN
+		RAISE plpgsql_error;
+	END IF;
 --
 -- Check number of rows match original
 --
