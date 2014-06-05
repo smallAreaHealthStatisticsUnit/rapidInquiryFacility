@@ -1,5 +1,11 @@
 RIF.resizable = function(){
 
+	var rightCol = function(){
+		/*if($('#leftcol').width() > 500) {
+			$('#rightcol').css('margin-left','35%');
+		};*/
+	}();
+
 	var resizable = {
 		
 		clientH: screen.height,

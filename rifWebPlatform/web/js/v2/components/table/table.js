@@ -55,6 +55,11 @@ RIF.table = (function(){
 				}
 			},
 			
+			clearSelection: function(){
+				_p.renderer.setSelected([]);
+			},
+			
+			
 			/* FIRERS */	
             rowClicked: function(a){
 			    this.fire('selectionchange', [a, 'table'] );

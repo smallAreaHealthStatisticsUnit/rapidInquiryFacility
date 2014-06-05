@@ -133,12 +133,9 @@ a:hover{
 	}
 
 	#submenu div a img{
-		margin:5px 10px;
-		text-transform:uppercase;
-		-moz-opacity: 0.4;
-		-khtml-opacity: 0.4;
-		opacity: 0.4;
+		margin:5px 0px;
 	}
+	
 	#submenu div {
 		height:100%;
 	}
@@ -153,16 +150,51 @@ a:hover{
 		float:right
 	} 
 	
-	#submenu div a.mapOpt{
-		position: absolute; 
-		width: 32%;
-   }
+	#submenu a.	 {
+		width:32px;
+		height:32px;
+	} 
+	
    .chartOpts {
-    width: 35%;  min-width: 500px;  float: left;
+       width: 35%;  
+	   min-width: 500px;  
+	   float: left;
 	}
 	.mapOpts {
-		width: 30%;  float: left;
+		width: 30%;  
+		float: left;
 	}
+	
+	#choroplethBtn{
+		background: transparent url("../images/map.png") no-repeat;
+	}
+	
+	#clearSelection{
+		background: transparent url("../images/empty-icon.png") no-repeat;
+	}
+	
+	#zoomExtent{
+	    background: transparent url("../images/globe-icon.png") no-repeat;
+	}
+	
+	.mapOpts .mapOpt{
+		width:32px;
+		height:32px;
+		display:block;
+		float:left;
+		-moz-opacity: 0.7;
+		-khtml-opacity: 0.7;
+		opacity: 0.7;
+		margin: 5px 0px 0px 5px;
+	}
+	
+	.mapOpts a.mapOpt:hover{
+		-moz-opacity: 1;
+		-khtml-opacity: 1;
+		opacity: 1;
+	}
+	
+	
 	
 	#content{
 		/* Firefox */
@@ -180,7 +212,8 @@ a:hover{
 		position: relative;
 		height: 100%;
 		border-bottom:1px solid #C1C1C1;
-		width: 500px;
+		min-width: 500px;
+		width:35%;
 		float: left;
 	}
 	#content #leftcol .options, #content #leftcol #pyramid{
@@ -249,12 +282,10 @@ a:hover{
 	#content #rightcol{
 		position: relative;
 		height: 100%;
-	
-		margin-left: 500px;
 }
 	#content #rightcol #map{
 		height: 95%;
-		width:99.5%;
+		display:block;
 		background-color:transparent;
 	}
 	#content #rightcol #map .slctd{	
@@ -291,14 +322,10 @@ a:hover{
 		border-top: 1px solid #E3E3E3;
 		border-bottom: 1px solid #E3E3E3;
 		text-transform: uppercase;
-		padding: 0.6%;
 		height: 100%;
-		/*font-size: 1.6em;*/
 		border-bottom: 1px solid #E3E3E3;
 		color: #B6B6B6;
 	}
-
-	
 	/*
 	 *  Map Container
 	 */

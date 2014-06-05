@@ -13,6 +13,14 @@ RIF.menu = (function(menus){
 					$(".dropdown .palette").toggle();
 				});
 				
+				$("#clearSelection").click(function() {
+					_p.facade.clearMapTable();
+				});
+				
+				$("#zoomExtent").click(function() {
+					_p.facade.zoomToExtent();
+				});
+				
 			}(),
 			
 		    dropDown: function( data, el ){
@@ -108,6 +116,10 @@ RIF.menu = (function(menus){
 					_p.showScaleRange( args );
 				},
 				
+				zoomToExtent: function(){
+					this.fire('zoomToExtent', []);
+				},
+				
 				/* firers */
 				addGeolevel: function( geolvl ){
 					this.fire('addGeolevel', { "geoLevel" : geolvl });
@@ -123,6 +135,10 @@ RIF.menu = (function(menus){
 				
 				filterTablebyCols: function( fields ){
 					this.fire('filterCols', [fields, _p.getGeolevel() ]);
+				},
+				
+				clearMapTable: function(){
+					this.fire('clearMapTable', []);
 				}
 				
 			}	

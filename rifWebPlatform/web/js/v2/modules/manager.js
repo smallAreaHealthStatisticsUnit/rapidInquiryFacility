@@ -42,15 +42,34 @@ RIF.manager = (function () {
                 firer: ["menu"],
                 method: "cGeoLvl"
             },
+						
+			clearMapTable:{
+			    subscribers: ["sync"],
+                firer: ["menu"],
+                method: "clearMapTable"
+			},
 			
-            // Map/Table
+			// sync - map/table
+            clearSelection: {
+                subscribers: ["map", "table"],
+                firer: ["sync"],
+                method: "clearSelection"
+            },
+			
+            // sync - map
             updateSelectionMap: {
                 subscribers: ["map"],
                 firer: ["sync"],
                 method: "updateSelection"
             },
 			
-			// Map/Table
+			zoomToExtent: {
+                subscribers: ["map"],
+                firer: ["menu"],
+                method: "zoomToExtent"
+            },
+			
+			// sync - table
             updateSelectionTable: {
                 subscribers: ["table"],
                 firer: ["sync"],

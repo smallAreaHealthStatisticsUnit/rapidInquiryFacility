@@ -24,7 +24,10 @@ RIF.study = (function(type){
 				 if( params[1] === 'map' ){
 					_study[type].fire('updateSelectionTable', _study[type].selection);
 				};
+			},
 			
+			clear: function(){
+				console.log("Clearing")
 			}
 			
         },
@@ -38,7 +41,11 @@ RIF.study = (function(type){
 				
                 uAreaSelection: function( params ){	
 					_shared.mapSync( params );
-                }
+                },
+				
+				clearSelection: function(){
+					_shared.clear();
+				}
 				
 			},
 			

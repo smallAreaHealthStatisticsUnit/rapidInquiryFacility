@@ -40,7 +40,7 @@ RIF.table.renderer = (function () {
 				// this = data 
 				if( request === 0){
 					request++;
-					_p.dataView.setItems( this );
+					_p.setItems( this );
 					table.resize(_p.defaultSize);
 				}else {
 					_p.addRows( this );
@@ -66,15 +66,23 @@ RIF.table.renderer = (function () {
 					data.push(rows[l]);
 				};
 				
-				_p.dataView.setItems( data );
-				
-				grid.updateRowCount();
-				grid.render();		
+				_p.setItems( data );		
 			},
-
+			
+			setItems: function( data ){
+				_p.dataView.setItems( data );
+				grid.updateRowCount();
+				grid.render();
+			},
+			
+			setSelected: function( data ){
+				grid.setSelectedRows( data );
+				grid.render();
+			},
+			
 			setDataView: function (data) {  
 				_p.dataView = new Slick.Data.DataView( { inlineFilters: true } );
-				_p.dataView.setItems( data );
+				_p.setItems( data );
 			},
 
 			formatCols: function(gridCols){
@@ -127,25 +135,30 @@ RIF.table.renderer = (function () {
 			},
 			
 			selectRows: function(ids){
-				
 				_p.evts.stopRowChange = true;
-				
+			
 				var l = ids.length, indxs = grid.getSelectedRows();
 				while(l--){
-					var id = ids[l]+"_1",
-						rowN = _p.dataView.getIdxById(id),
-						indx = indxs.indexOf(rowN);
+					var rowIndex = 1;//llop through all rows representing a single area
+					do {
+					    var id = ids[l]+ "_" + rowIndex++,
+						    rowN = _p.dataView.getIdxById(id),
+						    indx = indxs.indexOf(rowN);
 						
-					if( indx >= 0 ){	
-						indxs.splice( indx , 1 );	
-					}else{
-						indxs.splice( 0, 0 , rowN);
-					}	
+						if( typeof rowN === 'undefined' ){
+							break
+						};
+						
+						if( indx >= 0 ){	
+						    indxs.splice( indx , 1 );	
+					    }else{
+						    indxs.splice( 0, 0 , rowN);
+					    };		
+						
+					} while(typeof rowN !== 'undefined');	
 				};
 				
-				grid.setSelectedRows(indxs);
-				grid.render();
-				
+				_p.setSelected(indxs);
 				_p.evts.stopRowChange = false;
 			},
 			

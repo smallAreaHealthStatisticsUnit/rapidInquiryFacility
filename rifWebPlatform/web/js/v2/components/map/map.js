@@ -128,6 +128,13 @@ RIF.map = (function (type) {
 			editBreaks: function(a){
 			    _p.layer.getBreaks(a);
 			},
+			zoomToExtent: function(){
+				_p.setFullExtent(_p.layer.geoLevel);
+			},
+			
+			clearSelection: function(){
+				//Not Implemented. Data table clearSelection event fires another change event which clears the highlighted map areas
+			},
 			
 			/* Firers */
 			addZoomIdentifiers: function(args){/* [geolevel, selectionField] */

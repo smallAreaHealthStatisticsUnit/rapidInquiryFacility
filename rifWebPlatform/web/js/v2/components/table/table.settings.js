@@ -7,7 +7,7 @@ RIF.table.settings = (function () {
 		selectedRows: [],
 		missing: [], 
 		geolevel: "",
-		defaultSize: {'height':'202px', 'top' : '-163px'},
+		defaultSize: {'height':'215px', 'top' : '-173px'},
 		minColumnWidth: 100,
 		toptions: {
 			enableCellNavigation: true,

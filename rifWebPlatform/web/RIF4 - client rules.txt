@@ -3,8 +3,8 @@
 ----------------------------------------------------------------------------------- 
    Database:
    - Each Geolevel is composed:
-		1. Geometry table which must have a GID
-		2. Corresponding data table which must have a GID field ( which identifies the area hence foreign key to geometry table) and a code field.
+		1. Geometry table which must have a GID and a code field
+		2. Data table which must have a GID field ( which identifies the area hence foreign key to geometry table) and a code field (as per geometry).
 		
    - Client:
 		1.Map
