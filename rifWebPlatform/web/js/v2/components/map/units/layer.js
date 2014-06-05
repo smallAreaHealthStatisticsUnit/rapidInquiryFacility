@@ -37,8 +37,7 @@ RIF.map.layer = (function (type, sett) {
 					clbk: { /* called after layer is rendered */
 						tile: function(){ 
 							map.facade.addAvlbFields( layer.geoLevel );
-							map.facade.addZoomIdentifiers( layer.geoLevel );
-							
+							map.facade.addZoomIdentifiers( layer.geoLevel );	
 						},
 						topojson: function(){}
 					},
@@ -100,6 +99,24 @@ RIF.map.layer = (function (type, sett) {
 						return true;
 					},
 					
+					slct: function (id) {
+						if (typeof this.selection[id] === 'undefined') {
+							this.selection[id] = 1;
+						} else {
+							delete this.selection[id];
+						}
+
+						this.highlight(id);
+					},
+					
+					selectAreas: function (ids){
+						var l = ids.length;
+						while(l--){
+							var id = "g" + ids[l];
+							this.slct( id );
+						}
+					},
+					
 					getLayerStyle: function( id, slctd){
 						var isSlctd = slctd || this.isSlctd(id);
 						return {
@@ -111,6 +128,16 @@ RIF.map.layer = (function (type, sett) {
 					
 					clearLegend: function(){
 					    $('.map-legend').empty();
+					},
+					
+					
+					selectionChanged: function(){
+						var selection = [];
+						for (var key in layer.selection) {
+							var key = key.substring(1);// remove 'g' from id
+							selection.push(key);
+						}
+						map.facade.selectionChanged(selection);
 					}
 	
 				});

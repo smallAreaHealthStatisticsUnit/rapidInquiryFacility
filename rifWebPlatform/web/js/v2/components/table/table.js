@@ -5,18 +5,28 @@ RIF.table = (function(){
 	 * Data
 	 * options	
 	 */
-	var _p = RIF.mix( RIF.table.renderer(), {
+	var _p =  {
 		
 		init: function( geolevel, fields ){
-			_p.setGeolevel(geolevel);
+			
+			_p.renderer = RIF.table.renderer.call(this);
+			
+			_p.renderer.setGeolevel(geolevel);
 
 			if( typeof fields === 'object'){
-				_p.setFields( fields );
-				_p.initGrid();
+				_p.renderer.setFields( fields );
+				_p.renderer.initGrid();
 				return;
 			}
 				
-			_p.setUpGrid();
+			_p.renderer.setUpGrid();
+		},
+
+		resize: function( dimensions ){
+			if( typeof dimensions !== 'undefined' ){
+				$("#data").css(dimensions);
+			}
+			_p.renderer.resize();
 		},	
 		
 		facade: {
@@ -30,27 +40,27 @@ RIF.table = (function(){
 				_p.resize();
 			},
 			
+			updateSelection: function( ids ){
+				_p.renderer.mapToRows(ids);
+			},
+			
 			filterCols: function( args ){
 				/*
 				 * args[0] = fields
 				 * args[1] = geolevel
 				 */
-				var eq = RIF.arraysEqual( args[0], _p.fields);
+				var eq = RIF.arraysEqual( args[0], _p.renderer.fields);
 				if ( !eq ){
-					_p.init( args[1] , args[0] );
+					_p.init( args[1] , args[0].reverse() );
 				}
-			}
+			},
 			
-			
-            /*addSelection: function(a){
-			    console.log("Table selection added " + a);
-            },
-		
-		    removeSelection: function(a){
-			    console.log("Table selection removed " + a);	
-            }*/
+			/* FIRERS */	
+            rowClicked: function(a){
+			    this.fire('selectionchange', [a, 'table'] );
+            }
 	    }	
-	});
+	};
 	
 
 	return _p.facade;

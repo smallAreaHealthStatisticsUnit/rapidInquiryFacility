@@ -1,7 +1,9 @@
-RIF.table.events = (function ( grid, loader, parent ) {
+RIF.table.events = (function ( grid, loader, rowClicked, dataView ) {
 	
 	var selectedRows = [];
 	var _p = {
+	
+			stopRowChange: false,
 			
 			init: function(){
 				this.setEvents();
@@ -11,6 +13,7 @@ RIF.table.events = (function ( grid, loader, parent ) {
 			setEvents: function(){
 				
 				return {
+					
 					setViewPortChanged: function(){
 						grid.onViewportChanged.subscribe(function (e, args) {
 							var vp = grid.getViewport();
@@ -36,24 +39,39 @@ RIF.table.events = (function ( grid, loader, parent ) {
 							grid.render();
 						});	
 					}(),
-					rowChanged: function(){			
+					
+					rowChanged: function(){
 						grid.onSelectedRowsChanged.subscribe(function(e, args) {
-							selectedRows = grid.getSelectedRows();
-							console.log(selectedRows)
-							
-						})
+						  
+						  if(_p.stopRowChange){
+							  return;
+						  };
+						  
+						  var rows = args.rows,
+							  slctd = args.rows.length, rowsslctd = [];
+							  
+						  while(slctd--){
+						    var id = (dataView.getItemByIdx(rows[slctd])).id;
+							id = id.split("_")[0];
+							rowsslctd.push(id);	
+						  };
+						  
+						  rowClicked.call(null, rowsslctd);
+						  
+						});
 					}(),	
 					
 					setClickEvnt: function(){	
 						grid.onClick.subscribe(function(e, args) {
-						    //console.log(parent.dataView.getItem(args.row))
+							console.log("click")
 						});
-					}()
+						
+					}()	
 				}	
 			}	
 		
 	};
 	
 	_p.init();
-		
+	return _p;	
 });

@@ -80,6 +80,29 @@
 			return child;
 		},
 		
+		unique: function( array ){
+			var a = array.concat();
+			for(var i=0; i<a.length; ++i) {
+				for(var j=i+1; j<a.length; ++j) {
+					if(a[i] === a[j])
+						a.splice(j--, 1);
+				}
+			}
+			return a;
+		},
+		
+		difference: function arr_diff(a1, a2){
+	        var a=[], diff=[];
+			for(var i=0;i<a1.length;i++)
+				a[a1[i]]=true;
+			for(var i=0;i<a2.length;i++)
+				if(a[a2[i]]) delete a[a2[i]];
+				else a[a2[i]]=true;
+		    for(var k in a)
+				diff.push(k);
+			return diff;
+		},
+		
 		replaceAll: function(find, replace, str) {
 			return str.replace(new RegExp(find, 'g'), replace);
 		},
