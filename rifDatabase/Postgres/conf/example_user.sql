@@ -1,0 +1,8 @@
+CREATE ROLE mdouglas LOGIN
+  NOSUPERUSER INHERIT NOCREATEDB CREATEROLE NOREPLICATION;
+GRANT rif_manager TO mdouglas;
+GRANT rif_user TO mdouglas;
+CREATE SCHEMA mdouglas
+  AUTHORIZATION mdouglas;
+GRANT ALL ON SCHEMA mdouglas TO mdouglas;
+
