@@ -251,6 +251,7 @@ DECLARE
 	ddl_stmt 		VARCHAR[];
 	fk_stmt 		VARCHAR[];
 	num_partitions		INTEGER;
+	min_value		VARCHAR;
 	total_rows		INTEGER;
 	n_num_partitions	INTEGER;
 	n_total_rows		INTEGER;
@@ -280,6 +281,7 @@ BEGIN
 	ddl_stmt:=create_setup.ddl_stmt;
 	fk_stmt:=create_setup.fk_stmt;
 	num_partitions:=create_setup.num_partitions;
+	min_value:=create_setup.min_value;
 	warnings:=create_setup.warnings;
 	total_rows:=create_setup.total_rows;
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_range_partition', 
@@ -429,6 +431,50 @@ BEGIN
 	PERFORM rif40_sql_pkg._rif40_common_partition_create_complete(l_schema, l_table, l_column, create_insert.index_name);
 
 --
+-- Test partition exclusion. Works. Note any cast will break it!!!
+--
+	sql_stmt:='SELECT *'||E'\n'||
+		'  FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||
+		' WHERE '||quote_ident(l_column)||' = '||min_value||E'\n'||
+	        ' ORDER BY 1 LIMIT 10'; 
+	PERFORM rif40_sql_pkg.rif40_method4(sql_stmt, 'Partition EXPLAIN test 2');
+/*
+psql:../psql_scripts/v4_0_year_partitions.sql:157: INFO:  [DEBUG1] rif40_ddl(): EXPLAIN SQL> EXPLAIN ANALYZE VERBOSE CREATE TEMPORARY TABLE l_3448_2456814_53253_979000 AS
+SELECT *
+  FROM rif40.sahsuland_pop
+ WHERE year = 1989
+ ORDER BY 1 LIMIT 10;
+psql:../psql_scripts/v4_0_year_partitions.sql:157: INFO:  [DEBUG1] rif40_ddl(): Limit  (cost=0.00..0.23 rows=10 width=52) (actual time=0.013..0.024 rows=10 loops=1)
+  Output: sahsuland_pop.year, sahsuland_pop.age_sex_group, sahsuland_pop.level1, sahsuland_pop.level2, sahsuland_pop.level3, sahsuland_pop.level4, sahsuland_pop.total
+  ->  Append  (cost=0.00..1234.50 rows=54121 width=52) (actual time=0.012..0.019 rows=10 loops=1)
+        ->  Seq Scan on rif40.sahsuland_pop  (cost=0.00..0.00 rows=1 width=52) (actual time=0.001..0.001 rows=0 loops=1)
+              Output: sahsuland_pop.year, sahsuland_pop.age_sex_group, sahsuland_pop.level1, sahsuland_pop.level2, sahsuland_pop.level3, sahsuland_pop.level4, sahsuland_pop.total
+              Filter: (sahsuland_pop.year = 1989)
+        ->  Seq Scan on rif40.sahsuland_pop_1989  (cost=0.00..1234.50 rows=54120 width=52) (actual time=0.010..0.014 rows=10 loops=1)
+              Output: sahsuland_pop_1989.year, sahsuland_pop_1989.age_sex_group, sahsuland_pop_1989.level1, sahsuland_pop_1989.level2, sahsuland_pop_1989.level3, sahsuland_pop_1989
+.level4, sahsuland_pop_1989.total
+              Filter: (sahsuland_pop_1989.year = 1989)
+Total runtime: 1.521 ms
+psql:../psql_scripts/v4_0_year_partitions.sql:157: INFO:  rif40_method4():
+Partition EXPLAIN test 2
+------------------------
+psql:../psql_scripts/v4_0_year_partitions.sql:157: INFO:  rif40_method4():
+year  | age_sex_group | level1               | level2               | level3               | level4               | total
+--------------------------------------------------------------------------------------------------------------------------------------------
+1989  | 100           | 01                   | 01.001               | 01.001.000100        | 01.001.000100.1      | 34
+1989  | 101           | 01                   | 01.001               | 01.001.000100        | 01.001.000100.1      | 34
+1989  | 102           | 01                   | 01.001               | 01.001.000100        | 01.001.000100.1      | 34
+1989  | 103           | 01                   | 01.001               | 01.001.000100        | 01.001.000100.1      | 34
+1989  | 104           | 01                   | 01.001               | 01.001.000100        | 01.001.000100.1      | 34
+1989  | 105           | 01                   | 01.001               | 01.001.000100        | 01.001.000100.1      | 134
+1989  | 106           | 01                   | 01.001               | 01.001.000100        | 01.001.000100.1      | 112
+1989  | 107           | 01                   | 01.001               | 01.001.000100        | 01.001.000100.1      | 334
+1989  | 108           | 01                   | 01.001               | 01.001.000100        | 01.001.000100.1      | 828
+1989  | 109           | 01                   | 01.001               | 01.001.000100        | 01.001.000100.1      | 702
+(10 rows)
+ */
+
+--
 -- Used to halt alter_1.sql for testing
 --
 --	RAISE plpgsql_error;
@@ -492,7 +538,7 @@ Runs as RIF40 (so can create partition tables)
 Generates the following SQL to create a partition>
 	
 CREATE TABLE sahsuland_cancer_1989 (
- CONSTRAINT sahsuland_cancer_1989_ck CHECK (year::text = '1989'::text)
+ CONSTRAINT sahsuland_cancer_1989_ck CHECK (year = 1989)
 ) INHERITS (sahsuland_cancer);
 
 Call rif40_sql_pkg._rif40_common_partition_create to:
@@ -528,9 +574,15 @@ BEGIN
 --
 -- Create partition table inheriting from master
 --
-	ddl_stmt[1]:='CREATE TABLE '||quote_ident(partition_table)||' ('||E'\n'||
-		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('||quote_ident(l_column)||'::text = '''||l_value||'''::text)'||E'\n'||
-		') INHERITS ('||quote_ident(master_table)||')';
+	IF l_value ~ '^[0-9]*.?[0-9]*$' THEN /* isnumeric */	
+		ddl_stmt[1]:='CREATE TABLE '||quote_ident(partition_table)||' ('||E'\n'||
+			' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('||quote_ident(l_column)||' = '||l_value||')'||E'\n'||
+			') INHERITS ('||quote_ident(master_table)||')';
+	ELSE
+		ddl_stmt[1]:='CREATE TABLE '||quote_ident(partition_table)||' ('||E'\n'||
+			' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('||quote_ident(l_column)||' = '''||l_value||''')'||E'\n'||
+			') INHERITS ('||quote_ident(master_table)||')';
+	END IF;
 --
 -- Run
 --
@@ -563,7 +615,7 @@ Generates the following SQL to create a partition>
 	
 	
 CREATE TABLE sahsuland_cancer_1989 (
- CONSTRAINT sahsuland_cancer_1989_ck CHECK (year::text = ''1989''::text)
+ CONSTRAINT sahsuland_cancer_1989_ck CHECK (year = 1989)
 ) INHERITS (sahsuland_cancer);
 
 Call rif40_sql_pkg._rif40_common_partition_create to:

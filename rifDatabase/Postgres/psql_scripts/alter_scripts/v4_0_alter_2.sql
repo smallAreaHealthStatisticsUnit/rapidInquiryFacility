@@ -15,7 +15,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - RIF alter script 3
+-- Rapid Enquiry Facility (RIF) - RIF alter script 2
 --
 -- Copyright:
 --
@@ -55,7 +55,7 @@
 \set ON_ERROR_STOP ON
 \timing
 
-\echo Running SAHSULAND schema alter script #3 Hash partitioning...
+\echo Running SAHSULAND schema alter script #2 Miscelleanous database chnages...
 
 BEGIN;
 
@@ -71,24 +71,6 @@ BEGIN
 	END IF;
 END;
 $$;
-
---
--- Run common code on al pre-existing partitions (i.e. geolevel partitions)
--- to add indexes, grants etc
---
-
---
--- PG psql code (SQL and Oracle compatibility processing)
---
-\i ../PLpgsql/v4_0_rif40_sql_pkg.sql
-
---\df+ rif40_sql_pkg._rif40_common_partition_triggers
-
---
--- Hash partition all tables with study_id as a column
--- This will cope with data already present in the table
---
-\i ../psql_scripts/v4_0_study_id_partitions.sql
 
 DO LANGUAGE plpgsql $$
 BEGIN

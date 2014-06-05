@@ -107,7 +107,8 @@ Parameters:	Schema, table, columnn, number of partitions, partition value
 Returns:	DDL statement array
 Description:	Create indexes by partition on hashing function';
 
-CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_hash_partition(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, l_num_partitions INTEGER DEFAULT 16)
+CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_hash_partition(
+	l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, l_num_partitions INTEGER DEFAULT 16)
 RETURNS void
 SECURITY INVOKER
 AS $func$
@@ -138,6 +139,7 @@ DECLARE
 	fk_stmt 		VARCHAR[];
 	l_ddl_stmt 		VARCHAR[];
 	num_partitions		INTEGER;
+	min_value		VARCHAR;
 	total_rows		INTEGER;
 	n_num_partitions	INTEGER;
 	n_total_rows		INTEGER;
@@ -161,6 +163,7 @@ BEGIN
 	ddl_stmt:=create_setup.ddl_stmt;
 	fk_stmt:=create_setup.fk_stmt;
 	num_partitions:=create_setup.num_partitions;
+	min_value:=create_setup.min_value;
 	warnings:=create_setup.warnings;
 	total_rows:=create_setup.total_rows;
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_hash_partition', 
@@ -318,12 +321,12 @@ BEGIN
 -- Need a simpler example and look at the code in predtest.c
 --
 --'  WHERE '||quote_ident(l_column)||'::VARCHAR = ''1''/* ||min_first_part_value */'||E'\n'||
-	sql_stmt:='SELECT *, rif40_sql_pkg._rif40_hash(study_id::VARCHAR, 16) AS hash,'||E'\n'||
-	        '         rif40_sql_pkg._rif40_hash_bucket_check(study_id::VARCHAR, 16, '||E'\n'||
-	        '               rif40_sql_pkg._rif40_hash(study_id::VARCHAR, 16)) AS hash_check'||E'\n'||
+	sql_stmt:='SELECT *, rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, 16) AS hash,'||E'\n'||
+	        '         rif40_sql_pkg._rif40_hash_bucket_check('||quote_ident(l_column)||'::VARCHAR, 16, '||E'\n'||
+	        '               rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, 16)) AS hash_check'||E'\n'||
 		'  FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||
-		' WHERE study_id = 1'||E'\n'||
-		' ORDER BY 1'; 
+		' WHERE '||quote_ident(l_column)||' = '||min_value||E'\n'||
+	        ' ORDER BY 1 LIMIT 10'; 
 	PERFORM rif40_sql_pkg.rif40_method4(sql_stmt, 'Partition EXPLAIN test 2');
 --
 -- Used to halt alter_1.sql for testing
@@ -333,7 +336,7 @@ END;
 $func$ LANGUAGE plpgsql;
 
 COMMENT ON FUNCTION rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR, INTEGER) IS 'Function: 	rif40_hash_partition()
-Parameters:	Schema, table, column
+Parameters:	Schema, table, columnn, number of partitions
 Returns:	Nothing
 Description:	Hash partition schema.table on column
 ';
@@ -396,6 +399,9 @@ BEGIN
 
 --
 -- Create partition table inheriting from master
+--
+--	IF l_value ~ '^[0-9]*.?[0-9]*$' THEN /* isnumeric */	
+-- May need type specific _rif40_hash_bucket_check functions to avoid implicit cast which may break the equality checks in partition elimination
 --
 	ddl_stmt[1]:='CREATE TABLE '||quote_ident(partition_table)||' ('||E'\n'||
 --		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('''||l_value||''' = rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, '||num_partitions::Text||')::VARCHAR)'||E'\n'||

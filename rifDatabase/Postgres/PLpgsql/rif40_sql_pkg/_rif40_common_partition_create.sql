@@ -756,7 +756,7 @@ COMMENT ON COLUMN sahsuland_cancer_1989.total IS ''Total'';
 COMMENT ON COLUMN sahsuland_cancer_1989.year IS ''Year'';';
 
 CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_create_setup(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR,
-       OUT ddl_stmt VARCHAR[], OUT fk_stmt VARCHAR[], OUT num_partitions INTEGER, OUT total_rows INTEGER, OUT warnings INTEGER)
+       OUT ddl_stmt VARCHAR[], OUT fk_stmt VARCHAR[], OUT num_partitions INTEGER, OUT min_value VARCHAR, OUT total_rows INTEGER, OUT warnings INTEGER)
 RETURNS RECORD
 SECURITY DEFINER
 AS $func$
@@ -764,7 +764,7 @@ AS $func$
 Function: 	_rif40_common_partition_create_setup()
 Parameters:	Schema, table, column, 
                 [OUT] ddl statement array, [OUT] foreign key statement (re-)creation array,
-	       	[OUT] num_partitions, [OUT] total_rows, [OUT] warnings
+	       	[OUT] num_partitions, [OUT] min_value, [OUT] total_rows, [OUT] warnings
 Returns:	OUT parameters as a record
  		DDL statement array is NULL if the function is unable to partition
 Description:	Automatic range/hash partition schema.table on column
@@ -858,6 +858,7 @@ DECLARE
 	name_length_limit	INTEGER:=40;	/* You may want to set this higher */
 	i			INTEGER:=0;
 	part_test_rec		RECORD;
+	l_min_value		VARCHAR;
 --
 	error_message 		VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
@@ -874,13 +875,17 @@ BEGIN
 -- Check if table is valid
 --
 	BEGIN
-		sql_stmt:='SELECT COUNT(DISTINCT('||quote_ident(l_column)||')) AS num_partitions, COUNT('||quote_ident(l_column)||') AS total_rows FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||' LIMIT 1'; 
+		sql_stmt:='SELECT COUNT(DISTINCT('||quote_ident(l_column)||')) AS num_partitions, COUNT('||quote_ident(l_column)||') AS total_rows, MIN('||quote_ident(l_column)||')::VARCHAR AS l_min_value FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||' LIMIT 1'; 
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', 'SQL> %;', sql_stmt::VARCHAR);
 		OPEN c1gangep FOR EXECUTE sql_stmt;
-		FETCH c1gangep INTO num_partitions, total_rows;
+		FETCH c1gangep INTO num_partitions, total_rows, l_min_value;
 		GET DIAGNOSTICS l_rows = ROW_COUNT;
 		CLOSE c1gangep;
-		
+		IF l_min_value ~ '^[0-9]*.?[0-9]*$' THEN /* isnumeric */	
+			min_value:=l_min_value;
+		ELSE
+			min_value:=''''||l_min_value||'''';
+		END IF;
 	EXCEPTION
 		WHEN others THEN
 			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
@@ -1045,10 +1050,10 @@ LANGUAGE plpgsql;
 
 --\df+ rif40_sql_pkg._rif40_common_partition_create_setup
 
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, OUT VARCHAR[], OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER) IS 'Function: 	_rif40_common_partition_create_setup()
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, OUT VARCHAR[], OUT VARCHAR[], OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER) IS 'Function: 	_rif40_common_partition_create_setup()
 Parameters:	Schema, table, column, 
                 [OUT] ddl statement array, [OUT] foreign key statement (re-)creation array,
-	       	[OUT] num_partitions, [OUT] total_rows, [OUT] warnings
+	       	[OUT] num_partitions, [OUT] min_value, [OUT] total_rows, [OUT] warnings
 Returns:	OUT parameters as a record
  		DDL statement array is NULL if the function is unable to partition
 Description:	Automatic range/hash partition schema.table on column

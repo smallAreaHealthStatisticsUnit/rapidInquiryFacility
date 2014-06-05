@@ -15,7 +15,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - Create SAHSULAND rif40 exmaple schema
+-- Rapid Enquiry Facility (RIF) - RIF alter script 1
 --
 -- Copyright:
 --
@@ -82,10 +82,10 @@ DROP FUNCTION IF EXISTS  rif40_sql_pkg._rif40_common_partition_create(VARCHAR, V
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_insert(VARCHAR, VARCHAR, VARCHAR, INTEGER, OUT VARCHAR[], OUT VARCHAR);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_complete(VARCHAR, VARCHAR, VARCHAR, VARCHAR);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_triggers(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[];
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_triggers(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[]);
 
 --
--- Run common code on al pre-existing partitions (i.e. geolevel partitions)
+-- Run common code on all pre-existing partitions (i.e. geolevel partitions)
 -- to add indexes, grants etc
 --
 
@@ -93,8 +93,6 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_triggers(VARCHAR, 
 -- PG psql code (SQL and Oracle compatibility processing)
 --
 \i ../PLpgsql/v4_0_rif40_sql_pkg.sql
-
---\df+ rif40_sql_pkg._rif40_common_partition_triggers
 
 --
 -- Range partition all tables with year as a column
