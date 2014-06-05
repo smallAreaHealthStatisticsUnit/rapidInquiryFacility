@@ -87,10 +87,13 @@ RIF.table.renderer = (function () {
 			},
 			
 			mapToRows: function(ids){
-				_p.currentSel = _p.getIdsRowSelected();
 				
-				var d = RIF.difference(_p.currentSel,ids),
-					missing = _p.getMissingRows(d);
+				var rowsSlctd = _p.getIdsRowSelected(),
+					newSelection = RIF.difference( rowsSlctd ,ids);
+				
+				_p.currentSel = RIF.unique(ids, rowsSlctd);
+				
+				var missing = _p.getMissingRows(_p.currentSel);
 				
 				if( missing.length > 0){
 					_p.missing = _p.missing.concat(missing);
@@ -105,7 +108,7 @@ RIF.table.renderer = (function () {
 					return;
 				};
 				
-				_p.selectRows(d);
+				_p.selectRows( newSelection );
 					
 			},
 			
@@ -124,14 +127,25 @@ RIF.table.renderer = (function () {
 			},
 			
 			selectRows: function(ids){
+				
 				_p.evts.stopRowChange = true;
+				
 				var l = ids.length, indxs = grid.getSelectedRows();
 				while(l--){
-					var id = ids[l]+"_1";
-					indxs.push(_p.dataView.getIdxById(id));
-				}
+					var id = ids[l]+"_1",
+						rowN = _p.dataView.getIdxById(id),
+						indx = indxs.indexOf(rowN);
+						
+					if( indx >= 0 ){	
+						indxs.splice( indx , 1 );	
+					}else{
+						indxs.splice( 0, 0 , rowN);
+					}	
+				};
+				
 				grid.setSelectedRows(indxs);
 				grid.render();
+				
 				_p.evts.stopRowChange = false;
 			},
 			

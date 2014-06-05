@@ -58,11 +58,7 @@ RIF.table = (function(){
 			/* FIRERS */	
             rowClicked: function(a){
 			    this.fire('selectionchange', [a, 'table'] );
-            },
-		
-		    /*removeSelection: function(a){
-			    console.log("Table selection removed " + a);	
-            }*/
+            }
 	    }	
 	};
 	

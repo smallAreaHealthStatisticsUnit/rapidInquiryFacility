@@ -1,4 +1,4 @@
-RIF.study = (function(type){
+RIF.sync = (function(type){
     
 	var _shared = {
             
@@ -24,7 +24,7 @@ RIF.study = (function(type){
 				 if( params[1] === 'map' ){
 					_study[type].fire('updateSelectionTable', _study[type].selection);
 				};
-			
+				console.log(_study[type].selection)
 			}
 			
         },
@@ -32,21 +32,16 @@ RIF.study = (function(type){
 	    _study = {    
 			
 			manager: {
-                geoLevel: "",
-                selectionField: "",
  			    selection : [],
-				
                 uAreaSelection: function( params ){	
 					_shared.mapSync( params );
-                }
-				
+                }		
 			},
 			
 			diseaseMapping: {},
             
-			riskAnalysis: {},
-        
+			riskAnalysis: {}
 		};
 	
-	return  RIF.extend(_sharedMethods,_study[type]);	
+	return  RIF.extend(_shared, _study[type]);	
 });

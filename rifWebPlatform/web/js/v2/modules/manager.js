@@ -21,7 +21,7 @@ RIF.manager = (function () {
     var _p = {
 
         components: {
-            study: 'manager',
+            sync: 'manager',
             map: 'tilesvg',
             table: 'click2row',
             chart: ['pyramid', 'histogram'],
@@ -30,15 +30,15 @@ RIF.manager = (function () {
         },
 
         events: {
-            // Study
+            // sync
             selectionchange: {
-                subscribers: ["study"],
+                subscribers: ["sync"],
                 firer: ["map", "table", "menu"],
                 method: "uAreaSelection"
             },
 
             geolvlchange: {
-                subscribers: ["study"],
+                subscribers: ["sync"],
                 firer: ["menu"],
                 method: "cGeoLvl"
             },
@@ -46,14 +46,14 @@ RIF.manager = (function () {
             // Map/Table
             updateSelectionMap: {
                 subscribers: ["map"],
-                firer: ["study"],
+                firer: ["sync"],
                 method: "updateSelection"
             },
 			
 			// Map/Table
             updateSelectionTable: {
                 subscribers: ["table"],
-                firer: ["study"],
+                firer: ["sync"],
                 method: "updateSelection"
             },
 
