@@ -80,19 +80,146 @@ $$;
 --    Add: gid_rowindex (i.e 1_1). Where gid corresponds to gid in geometry table
 --         row_index is an incremental serial aggregated by gid ( starts from one for each gid)
 -- 
+-- This may be run before or after alter_1.sql (range partitioning of all health tables)
+\set VERBOSITY terse
+DO LANGUAGE plpgsql $$
+DECLARE
+--
+	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl'];
+	c1alter2 CURSOR FOR
+		SELECT *
+		  FROM rif40_geographies;
+	c2alter2 CURSOR(l_geography VARCHAR) FOR
+		SELECT *
+		  FROM rif40_geolevels
+		 WHERE geography = l_geography;
+	c3alter2 CURSOR(l_table VARCHAR) FOR
+		SELECT relhassubclass 
+		  FROM pg_class t, pg_namespace n
+		 WHERE t.relname = l_table AND t.relkind = 'r' /* Table */ AND n.nspname = 'rif40'  AND t.relnamespace = n.oid ;
+	c4alter2 CURSOR(l_table VARCHAR, l_column VARCHAR) FOR
+		SELECT column_name 
+		  FROM information_schema.columns 
+		  WHERE table_name = l_table AND column_name = l_column;	
+--
+	c1_rec RECORD;
+	c2_rec RECORD;
+	c3_rec RECORD;
+	c4_rec RECORD;
+--
+	l_function 			VARCHAR;
+	ddl_stmt			VARCHAR[];
+	l_partition			VARCHAr;
+BEGIN
+--
+-- Turn on some debug
+--
+        PERFORM rif40_log_pkg.rif40_log_setup();
+        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+--
+-- Enabled debug on select rif40_sm_pkg functions
+--
+	FOREACH l_function IN ARRAY rif40_sql_pkg_functions LOOP
+		RAISE INFO 'Enable debug for function: %', l_function;
+		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
+	END LOOP;
+	FOR c1_rec IN c1alter2 LOOP
+		OPEN c3alter2('t_rif40_'||LOWER(c1_rec.geography)||'_geometry');
+		FETCH c3alter2 INTO c3_rec;
+		CLOSE c3alter2;
+		OPEN c4alter2('t_rif40_'||LOWER(c1_rec.geography)||'_geometry', 'gid_rowindex');
+		FETCH c4alter2 INTO c4_rec;
+		CLOSE c4alter2;
+-- Geometry table exists and column has not been added yet
+		IF c3_rec.relhassubclass AND c4_rec.column_name IS NULL THEN
+-- Add column to master table
+			IF ddl_stmt IS NULL THEN
+				ddl_stmt[1]:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||' ADD COLUMN gid_rowindex VARCHAR(50)';
+			ELSE
+				ddl_stmt[array_length(ddl_stmt, 1)+1]:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||
+					' ADD COLUMN gid_rowindex INTEGER';
+			END IF;
+-- Comment master and inherited partitions
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||
+				'.gid_rowindex IS ''GID rowindex record locator unique key''';
+--
+			FOR c2_rec IN c2alter2(c1_rec.geography) LOOP
+				l_partition:=quote_ident('t_rif40_geolevels_geometry_'||LOWER(c2_rec.geography)||'_'||LOWER(c2_rec.geolevel_name));
+				ddl_stmt[array_length(ddl_stmt, 1)+1]:='COMMENT ON COLUMN '||l_partition||
+					'.gid_rowindex IS ''GID rowindex record locator unique key''';
+/*
+Other databases may have issue with this CTE update syntax:
+
+WITH a AS (
+	SELECT area_id, gid, gid||'_'||ROW_NUMBER() OVER(PARTITION BY gid ORDER BY area_id) AS gid_rowindex
+	  FROM t_rif40_geolevels_geometry_sahsu_level2
+)
+UPDATE t_rif40_geolevels_geometry_sahsu_level2 b
+   SET gid_rowindex = a.gid_rowindex
+  FROM a
+ WHERE b.area_id = a.area_id;
+
+ */
+-- Update
+				ddl_stmt[array_length(ddl_stmt, 1)+1]:='WITH a AS ('||E'\n'||
+E'\t'||'SELECT area_id, gid, gid||''_''||ROW_NUMBER() OVER(PARTITION BY gid ORDER BY area_id) AS gid_rowindex'||E'\n'||
+E'\t'||'  FROM '||l_partition||E'\n'||
+')'||E'\n'||
+'UPDATE '||l_partition||' b'||E'\n'||
+'   SET gid_rowindex = a.gid_rowindex'||E'\n'||
+'  FROM a'||E'\n'||
+' WHERE b.area_id = a.area_id';
+-- Create unqiue index
+				ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE UNIQUE INDEX '||l_partition||'_gidr  ON '||l_partition||'(gid_rowindex)';
+-- Make not null
+				ddl_stmt[array_length(ddl_stmt, 1)+1]:='ALTER TABLE '||l_partition||' ALTER COLUMN gid_rowindex SET NOT NULL';
+-- Analyse
+				ddl_stmt[array_length(ddl_stmt, 1)+1]:='ANALYZE VERBOSE '||l_partition;
+			END LOOP;
+
+-- Analyze at master level
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:='ANALYZE VERBOSE '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry');
+		END IF;
+	END LOOP;
+--
+	PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
+END;
+$$;
 
 --
 -- Middleware enhancements as required by Kev (being specified):
 --
 --    Remove: foreign key t_rif40_inv_geography_fk from t_rif40_investigations, NUll data, remove column
 -- 
+-- This must be run before alter_3.sql (hash partitioning of all tables with study_id as a column)
+-- Check if partitioned
+DO LANGUAGE plpgsql $$
+DECLARE
+--
+	c1alter2 CURSOR FOR
+		SELECT relhassubclass 
+		  FROM pg_class t, pg_namespace n
+		 WHERE t.relname = 't_rif40_investigations' AND t.relkind = 'r' /* Table */ AND n.nspname = 'rif40'  AND t.relnamespace = n.oid ;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1alter2;
+	FETCH c1alter2 INTO c1_rec;
+	CLOSE c1alter2;
+--
+	IF c1_rec.relhassubclass IS NULL THEN
+		RAISE EXCEPTION 'C20900: t_rif40_investigations does not exist';	
+	ELSIF c1_rec.relhassubclass THEN
+		RAISE EXCEPTION 'C20900: t_rif40_investigations is partitioned, alter_3.sql has been run';	
+	END IF;
+END;
+$$;
+
 -- Drop constraint
 ALTER TABLE t_rif40_investigations DROP CONSTRAINT IF EXISTS t_rif40_inv_geography_fk;
 -- Drop trigger
 DROP TRIGGER t_rif40_investigations_checks ON t_rif40_investigations;
 
 DO LANGUAGE plpgsql $$
-DECLARE
 DECLARE
 --
 	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl'];
