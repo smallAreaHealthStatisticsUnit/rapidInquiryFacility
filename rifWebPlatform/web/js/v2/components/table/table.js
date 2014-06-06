@@ -8,9 +8,8 @@ RIF.table = (function(){
 	var _p =  {
 		
 		init: function( geolevel, fields ){
-			
 			_p.renderer = RIF.table.renderer.call(this);
-			
+
 			_p.renderer.setGeolevel(geolevel);
 
 			if( typeof fields === 'object'){
@@ -18,7 +17,7 @@ RIF.table = (function(){
 				_p.renderer.initGrid();
 				return;
 			}
-				
+
 			_p.renderer.setUpGrid();
 		},
 
@@ -51,7 +50,8 @@ RIF.table = (function(){
 				 */
 				var eq = RIF.arraysEqual( args[0], _p.renderer.fields);
 				if ( !eq ){
-					_p.init( args[1] , args[0].reverse() );
+					_p.init( args[1], args[0].reverse());
+					 this.fire('selectionchange', [[], 'table'] );
 				}
 			},
 			

@@ -133,7 +133,7 @@ RIF.map = (function (type) {
 			},
 			
 			clearSelection: function(){
-				//Not Implemented. Data table clearSelection event fires another change event which clears the highlighted map areas
+				_p.layer.clearSelection();
 			},
 			
 			/* Firers */
@@ -154,7 +154,7 @@ RIF.map = (function (type) {
 			},
 			
 			selectionChanged: function( selection ){
-				this.fire('selectionchange', [ selection, 'map'] )
+				this.fire('selectionchange', [ selection, 'map'] );
 			}
         }
     };

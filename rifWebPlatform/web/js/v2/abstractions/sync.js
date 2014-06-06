@@ -24,7 +24,7 @@ RIF.sync = (function(type){
 				 if( params[1] === 'map' ){
 					_study[type].fire('updateSelectionTable', _study[type].selection);
 				};
-				//console.log(_study[type].selection)
+
 			},
 			
 			clear: function(){
@@ -43,7 +43,8 @@ RIF.sync = (function(type){
 				
 				clearMapTable: function(){
 					_shared.clear();
-				}				
+				}
+
 			},
 			
 			diseaseMapping: {},

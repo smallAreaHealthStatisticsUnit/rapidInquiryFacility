@@ -76,10 +76,10 @@ RIF.map.layer = (function (type, sett) {
 						 RIF.getSingleFieldChoro( getScale, [ layer.geoLevel, params.field ] )
 					},
 					
-					 resetSlctd: function () {
-						if (!layer.isTiled()) {
+					resetSlctd: function () {
+						/*if (!layer.isTiled()) {
 							return;
-						}
+						}*/
 						for (var key in layer.selection) {
 							var e = $("#" + key);
 							e[0].style.fill = style.colors[key];
@@ -130,6 +130,11 @@ RIF.map.layer = (function (type, sett) {
 					    $('.map-legend').empty();
 					},
 					
+					clearSelection: function(){
+						this.selection = [];
+						this.resetSlctd();
+						this.style.repaint();
+					},
 					
 					selectionChanged: function(){
 						var selection = [];

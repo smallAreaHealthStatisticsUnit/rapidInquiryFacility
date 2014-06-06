@@ -42,17 +42,18 @@ RIF.table.events = (function ( grid, loader, rowClicked, dataView ) {
 					
 					rowChanged: function(){
 						grid.onSelectedRowsChanged.subscribe(function(e, args) {
-						  
-						  if(_p.stopRowChange){
+
+						  if(_p.stopRowChange){		
 							  return;
 						  };
-						  
+						  						  
 						  var rows = args.rows,
-							  slctd = args.rows.length, rowsslctd = [];
+							  slctd = args.rows.length, 
+							  rowsslctd = [];
 							  
 						  while(slctd--){
-						    var id = (dataView.getItemByIdx(rows[slctd])).id;
-							id = id.split("_")[0];
+							var item = dataView.getItemByIdx(rows[slctd]);
+						    var id = item.id.split("_")[0];;
 							rowsslctd.push(id);	
 						  };
 						  
