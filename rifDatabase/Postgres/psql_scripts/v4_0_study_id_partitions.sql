@@ -82,6 +82,8 @@ $$;
 
 \echo Partition all tables with study_id as a column...
 
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR);
+
 \set VERBOSITY terse
 DO LANGUAGE plpgsql $$
 DECLARE
@@ -133,9 +135,11 @@ BEGIN
 		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
 	END LOOP;
 --
+-- Enable hash partitioning on each table in turn
+--
 	FOR c1_rec IN c1 LOOP
 		RAISE INFO 'Hash partitioning: %.%', c1_rec.schemaname, c1_rec.tablename;
-		PERFORM rif40_sql_pkg.rif40_hash_partition(c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR, 'study_id'::VARCHAR);
+		PERFORM rif40_sql_pkg.rif40_hash_partition(c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR, 'study_id');
 	END LOOP;
 END;
 $$;

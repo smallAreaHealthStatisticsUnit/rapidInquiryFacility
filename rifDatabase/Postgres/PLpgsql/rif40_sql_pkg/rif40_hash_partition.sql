@@ -70,11 +70,26 @@ Parameters:	Value (must be cast if required), number of buckets
 Returns:	Hash in the range 1 .. l_bucket 
 Description:	Hashing function';
 
-CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash_bucket_check(l_value ANYELEMENT, l_bucket INTEGER, l_bucket_requested INTEGER)
-RETURNS ANYELEMENT
+--
+-- CHECK constraint functions for partition elimination. Do not work - suspect IMMUTABLE functions not supported in C
+-- All apart from INTEGER are commented out. Usage:
+--
+-- CREATE TABLE rif40_study_shares_p15 (
+-- CONSTRAINT rif40_study_shares_p15_ck CHECK (study_id = rif40_sql_pkg._rif40_hash_bucket_check(study_id, 16 /* total buckets */, 15 /* bucket requested */))
+-- ) INHERITS (rif40_study_shares);
+--
+--CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash_bucket_check(l_value VARCHAR, l_bucket INTEGER, l_bucket_requested INTEGER)
+--RETURNS VARCHAR
+--AS 'SELECT CASE WHEN l_bucket_requested IS NULL THEN NULL WHEN l_bucket_requested = (ABS(hashtext(l_value))%l_bucket)+1 THEN l_value ELSE NULL END;' LANGUAGE sql IMMUTABLE STRICT;
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash_bucket_check(l_value INTEGER, l_bucket INTEGER, l_bucket_requested INTEGER)
+RETURNS INTEGER
 AS 'SELECT CASE WHEN l_bucket_requested IS NULL THEN NULL WHEN l_bucket_requested = (ABS(hashtext(l_value::TEXT))%l_bucket)+1 THEN l_value ELSE NULL END;' LANGUAGE sql IMMUTABLE STRICT;
 
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_hash_bucket_check(ANYELEMENT, INTEGER, INTEGER) IS 'Function: 	_rif40_hash()
+--COMMENT ON FUNCTION rif40_sql_pkg._rif40_hash_bucket_check(VARCHAR, INTEGER, INTEGER) IS 'Function: 	_rif40_hash()
+--Parameters:	Value, number of buckets, bucket number requested
+--Returns:	Value if bucket number requested = Hash computed in the range 1 .. l_bucket; NULL otherwise 
+--Description:	Hashing function; suitable for partition elimination equalities';
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_hash_bucket_check(INTEGER, INTEGER, INTEGER) IS 'Function: 	_rif40_hash()
 Parameters:	Value, number of buckets, bucket number requested
 Returns:	Value if bucket number requested = Hash computed in the range 1 .. l_bucket; NULL otherwise 
 Description:	Hashing function; suitable for partition elimination equalities';
@@ -154,9 +169,13 @@ BEGIN
 -- Call: _rif40_common_partition_create_setup()
 --
 	create_setup:=rif40_sql_pkg._rif40_common_partition_create_setup(l_schema, l_table, l_column);
-	IF create_setup.ddl_stmt IS NULL THEN /* Un partitionable */
+--
+-- Force creation - tables are mainly empty in dev.
+--
+--	IF create_setup.ddl_stmt IS NULL THEN /* Un partitionable */
 --		RETURN;
-	END IF;
+--	END IF;
+
 --
 -- Copy out parameters
 --
@@ -174,7 +193,7 @@ BEGIN
 --
 -- Create auto hash trigger function
 --
-	ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE OR REPLACE FUNCTION '||quote_ident(l_schema)||'.'||quote_ident(l_table||'_insert')||'()'||E'\n'||
+	ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE FUNCTION '||quote_ident(l_schema)||'.'||quote_ident(l_table||'_insert')||'()'||E'\n'||
 '  RETURNS trigger AS'||E'\n'||
 '$BODY$'||E'\n'||
 'DECLARE'||E'\n'||
@@ -255,7 +274,7 @@ BEGIN
 	END LOOP;
 
 --
--- Remove INSERT triggers from master table so they don't fire twice (replace with no re-enable 
+-- Remove INSERT triggers from master table so they don't fire twice (replace with no re-enable) 
 --
 --	PERFORM rif40_sql_pkg._rif40_drop_master_trigger(l_schema, l_table);
 
@@ -322,7 +341,7 @@ BEGIN
 --
 --'  WHERE '||quote_ident(l_column)||'::VARCHAR = ''1''/* ||min_first_part_value */'||E'\n'||
 	sql_stmt:='SELECT *, rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, 16) AS hash,'||E'\n'||
-	        '         rif40_sql_pkg._rif40_hash_bucket_check('||quote_ident(l_column)||'::VARCHAR, 16, '||E'\n'||
+	        '         rif40_sql_pkg._rif40_hash_bucket_check('||quote_ident(l_column)||', 16, '||E'\n'||
 	        '               rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, 16)) AS hash_check'||E'\n'||
 		'  FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||
 		' WHERE '||quote_ident(l_column)||' = '||min_value||E'\n'||
@@ -331,7 +350,7 @@ BEGIN
 --
 -- Used to halt alter_1.sql for testing
 --
---	RAISE plpgsql_error;
+	RAISE plpgsql_error;
 END;
 $func$ LANGUAGE plpgsql;
 
@@ -405,7 +424,7 @@ BEGIN
 --
 	ddl_stmt[1]:='CREATE TABLE '||quote_ident(partition_table)||' ('||E'\n'||
 --		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('''||l_value||''' = rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, '||num_partitions::Text||')::VARCHAR)'||E'\n'||
-		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('||l_column||' = rif40_sql_pkg._rif40_hash_bucket_check('||quote_ident(l_column)||', '||num_partitions::Text||' /* total buckets */, '||l_value||' /* bucket requested */))'||E'\n'||
+		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('||l_column||' = rif40_sql_pkg._rif40_hash_bucket_check('||quote_ident(l_column)||', '||num_partitions||' /* total buckets */, '||l_value||' /* bucket requested */))'||E'\n'||
 		') INHERITS ('||quote_ident(master_table)||')';
 --
 -- Run
