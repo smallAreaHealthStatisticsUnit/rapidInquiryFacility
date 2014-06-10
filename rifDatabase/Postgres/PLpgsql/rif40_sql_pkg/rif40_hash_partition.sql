@@ -75,7 +75,7 @@ Description:	Hashing function';
 -- All apart from INTEGER are commented out. Usage:
 --
 -- CREATE TABLE rif40_study_shares_p15 (
--- CONSTRAINT rif40_study_shares_p15_ck CHECK (study_id = rif40_sql_pkg._rif40_hash_bucket_check(study_id, 16 /* total buckets */, 15 /* bucket requested */))
+-- CONSTRAINT rif40_study_shares_p15_ck CHECK (hash_partition_number = 15 /* bucket requested */)
 -- ) INHERITS (rif40_study_shares);
 --
 --CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash_bucket_check(l_value VARCHAR, l_bucket INTEGER, l_bucket_requested INTEGER)
@@ -110,8 +110,10 @@ DECLARE
 --
 BEGIN
 	FOR i IN 1 .. num_partitions LOOP
+--		ddl_stmt[i]:='CREATE INDEX '||l_table||'_p'||i||'_hash ON '||l_schema||'.'||l_table||'_p'||i||
+--			'(rif40_sql_pkg._rif40_hash_bucket_check('||l_column||', '||num_partitions||' /* total buckets */, '||i||' /* bucket requested */))';
 		ddl_stmt[i]:='CREATE INDEX '||l_table||'_p'||i||'_hash ON '||l_schema||'.'||l_table||'_p'||i||
-			'(rif40_sql_pkg._rif40_hash_bucket_check('||l_column||', '||num_partitions||' /* total buckets */, '||i||' /* bucket requested */))';
+			'(rif40_sql_pkg._rif40_hash('||l_column||'::VARCHAR, '||num_partitions||' /* total buckets */))';
 	END LOOP;
 END;
 $func$ 
@@ -165,6 +167,17 @@ DECLARE
 	error_message 		VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
 BEGIN
+
+--
+-- Add hash_partition_number if required
+--
+	ddl_stmt[1]:='ALTER TABLE '||l_schema||'.'||quote_ident(l_table)||' ADD COLUMN hash_partition_number INTEGER';
+	ddl_stmt[2]:='COMMENT ON COLUMN '||l_schema||'.'||quote_ident(l_table)||'.hash_partition_number IS ''Hash partition number (for partition elimination)''';
+--
+-- Run
+--
+	PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
+
 --
 -- Call: _rif40_common_partition_create_setup()
 --
@@ -340,13 +353,64 @@ BEGIN
 -- Need a simpler example and look at the code in predtest.c
 --
 --'  WHERE '||quote_ident(l_column)||'::VARCHAR = ''1''/* ||min_first_part_value */'||E'\n'||
+	sql_stmt:='WITH a AS (SELECT rif40_sql_pkg._rif40_hash('||min_value||'::VARCHAR, 16) AS part_no )'||E'\n'||
+	        'SELECT b.*, rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, 16) AS hash,'||E'\n'||
+	        '         rif40_sql_pkg._rif40_hash_bucket_check('||quote_ident(l_column)||', 16, '||E'\n'||
+	        '               rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, 16)) AS hash_check'||E'\n'||
+		'  FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||' b, a'||E'\n'||
+		' WHERE '||quote_ident(l_column)||' = '||min_value||E'\n'||
+		'   AND rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, 16) = hash_partition_number'||E'\n'||
+		'   AND hash_partition_number = a.part_no'||E'\n'||
+--		'   AND 8 = hash_partition_number'||E'\n'|| /* Eliminates */
+	        ' ORDER BY 1 LIMIT 10'; 
+--
+-- Turn on parser debugging. This appears mainly in the eventlog/syslog; not stderr
+--
+-- debug_print_parse (boolean)
+-- debug_print_rewritten (boolean)
+-- debug_print_plan (boolean)
+-- 
+/*
+	ddl_stmt:=NULL;
+	ddl_stmt[1]:='SET SESSION client_min_messages = DEBUG5';
+	ddl_stmt[array_length(ddl_stmt, 1)+1]:='SET SESSION log_min_messages = DEBUG5';
+	ddl_stmt[array_length(ddl_stmt, 1)+1]:='SET SESSION debug_print_parse = TRUE';
+	ddl_stmt[array_length(ddl_stmt, 1)+1]:='SET SESSION debug_print_rewritten = TRUE';
+	ddl_stmt[array_length(ddl_stmt, 1)+1]:='SET SESSION debug_print_plan = TRUE';
+	PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
+ */
+--
+-- This will eliminate; at a cost in all queries needing to use this format
+-- rif40_sql_pkg._rif40_hash(study_id) = hash_partition_number will NOT eliminate;  almost certainly because
+-- it cannot be evavulated at parse time; this is also true of the earlier CHECK constraint which also does not work.
+-- CONSTRAINT rif40_study_shares_p15_ck CHECK (study_id = rif40_sql_pkg._rif40_hash_bucket_check(study_id, 16 /* total buckets */, 15 /* bucket requested */))
+--
 	sql_stmt:='SELECT *, rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, 16) AS hash,'||E'\n'||
 	        '         rif40_sql_pkg._rif40_hash_bucket_check('||quote_ident(l_column)||', 16, '||E'\n'||
 	        '               rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, 16)) AS hash_check'||E'\n'||
 		'  FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||
-		' WHERE '||quote_ident(l_column)||' = '||min_value||E'\n'||
+		' WHERE rif40_sql_pkg._rif40_hash('||min_value||'::VARCHAR, 16) = hash_partition_number /* Elininates */'||E'\n'||
+		'   AND '||quote_ident(l_column)||' = '||min_value||E'\n'||
 	        ' ORDER BY 1 LIMIT 10'; 
-	PERFORM rif40_sql_pkg.rif40_method4(sql_stmt, 'Partition EXPLAIN test 2');
+	PERFORM rif40_sql_pkg.rif40_method4(sql_stmt, 'Partition EXPLAIN test 2 (Elinination)');
+/*
+psql:../psql_scripts/v4_0_study_id_partitions.sql:145: INFO:  [DEBUG1] rif40_ddl(): Limit  (cost=0.00..1.58 rows=2 width=210) (actual time=0.085..0.087 rows=1 loops=1)
+  Output: rif40_study_shares.study_id, rif40_study_shares.grantor, rif40_study_shares.grantee_username, rif40_study_shares.hash_partition_number, (((abs(hashtext(((rif40_study_shar
+es.study_id)::character varying)::text)) % 16) + 1)), (_rif40_hash_bucket_check(rif40_study_shares.study_id, 16, ((abs(hashtext(((rif40_study_shares.study_id)::character varying)::
+text)) % 16) + 1)))
+  ->  Result  (cost=0.00..1.58 rows=2 width=210) (actual time=0.082..0.083 rows=1 loops=1)
+        Output: rif40_study_shares.study_id, rif40_study_shares.grantor, rif40_study_shares.grantee_username, rif40_study_shares.hash_partition_number, ((abs(hashtext(((rif40_study
+_shares.study_id)::character varying)::text)) % 16) + 1), _rif40_hash_bucket_check(rif40_study_shares.study_id, 16, ((abs(hashtext(((rif40_study_shares.study_id)::character varying
+)::text)) % 16) + 1))
+        ->  Append  (cost=0.00..1.01 rows=2 width=210) (actual time=0.007..0.008 rows=1 loops=1)
+              ->  Seq Scan on rif40.rif40_study_shares  (cost=0.00..0.00 rows=1 width=404) (actual time=0.001..0.001 rows=0 loops=1)
+                    Output: rif40_study_shares.study_id, rif40_study_shares.grantor, rif40_study_shares.grantee_username, rif40_study_shares.hash_partition_number
+                    Filter: ((8 = rif40_study_shares.hash_partition_number) AND (rif40_study_shares.study_id = 1))
+              ->  Seq Scan on rif40.rif40_study_shares_p8  (cost=0.00..1.01 rows=1 width=16) (actual time=0.005..0.006 rows=1 loops=1)
+                    Output: rif40_study_shares_p8.study_id, rif40_study_shares_p8.grantor, rif40_study_shares_p8.grantee_username, rif40_study_shares_p8.hash_partition_number
+                    Filter: ((8 = rif40_study_shares_p8.hash_partition_number) AND (rif40_study_shares_p8.study_id = 1))
+Total runtime: 1.310 ms
+ */
 --
 -- Used to halt alter_1.sql for testing
 --
@@ -382,7 +446,7 @@ Runs as RIF40 (so can create partition tables)
 Generates the following SQL to create a partition>
 	
 CREATE TABLE rif40_study_shares_p15 (
- CONSTRAINT rif40_study_shares_p15_ck CHECK (study_id = rif40_sql_pkg._rif40_hash_bucket_check(study_id, 16 /- total buckets -/, 15 /- bucket requested -/))
+ CONSTRAINT rif40_study_shares_p15_ck CHECK (hash_partition_number = 15 /- bucket requested -/)
 ) INHERITS (rif40_study_shares);
 
 Call rif40_sql_pkg._rif40_common_partition_create to:
@@ -424,7 +488,8 @@ BEGIN
 --
 	ddl_stmt[1]:='CREATE TABLE '||quote_ident(partition_table)||' ('||E'\n'||
 --		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('''||l_value||''' = rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, '||num_partitions::Text||')::VARCHAR)'||E'\n'||
-		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('||l_column||' = rif40_sql_pkg._rif40_hash_bucket_check('||quote_ident(l_column)||', '||num_partitions||' /* total buckets */, '||l_value||' /* bucket requested */))'||E'\n'||
+--		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK ('||l_column||' = rif40_sql_pkg._rif40_hash_bucket_check('||quote_ident(l_column)||', '||num_partitions||' /* total buckets */, '||l_value||' /* bucket requested */))'||E'\n'||
+		' CONSTRAINT '||quote_ident(partition_table||'_ck')||' CHECK (hash_partition_number = '||l_value||' /* bucket requested */)'||E'\n'||
 		') INHERITS ('||quote_ident(master_table)||')';
 --
 -- Run
@@ -457,7 +522,7 @@ Runs as RIF40 (so can create partition tables)
 Generates the following SQL to create a partition>
 	
 CREATE TABLE rif40_study_shares_p15 (
- CONSTRAINT rif40_study_shares_p15_ck CHECK (study_id = rif40_sql_pkg._rif40_hash_bucket_check(study_id, 16 /* total buckets */, 15 /* bucket requested */))
+ CONSTRAINT rif40_study_shares_p15_ck CHECK (hash_partition_number = 15 /* bucket requested */)
 ) INHERITS (rif40_study_shares);
 
 Call rif40_sql_pkg._rif40_common_partition_create to:
@@ -607,28 +672,12 @@ BEGIN
 --				
 -- Bring data back, order by range partition, primary key
 --
-/*
-psql:../psql_scripts/v4_0_study_id_partitions.sql:140: INFO:  [DEBUG1] rif40_ddl(): SQL> CREATE TABLE rif40_study_shares_p8 (
- CONSTRAINT rif40_study_shares_p8_ck CHECK ('8' = rif40_sql_pkg._rif40_hash('study_id'::VARCHAR, 16)::VARCHAR)
-) INHERITS (rif40_study_shares);
-
-psql:../psql_scripts/v4_0_study_id_partitions.sql:140: WARNING:  rif40_ddl(): SQL in error (23514)> INSERT INTO rif40_study_shares_p8 
-SELECT * FROM rif40_auto_partition
- WHERE rif40_sql_pkg._rif40_hash(study_id::VARCHAR, 16)::VARCHAR = '8'
- ORDER BY study_id , grantee_username
-psql:../psql_scripts/v4_0_study_id_partitions.sql:140: ERROR:  new row for relation "rif40_study_shares_p8" violates check constraint "rif40_study_shares_p8_ck"
-
-EXPLAIN ANALYZE VERBOSE SELECT rif40_sql_pkg._rif40_hash(study_id::VARCHAR, 16), study_id, grantor, grantee_username FROM rif40_study_shares
- WHERE rif40_sql_pkg._rif40_hash(study_id::VARCHAR, 16)::VARCHAR = '8'
- ORDER BY study_id , grantee_username;
-
- */
---
 				IF c3_rec.column_names IS NOT NULL THEN
 					ddl_stmt[array_length(ddl_stmt, 1)+1]:='INSERT INTO '||quote_ident(l_table)||'_p'||c6_rec.partition_value||
 						' /* Directly populate partition: p'||c6_rec.partition_value||
 						', total rows expected: '||c6_rec.total_rows||' */'||E'\n'||
-						'SELECT * FROM rif40_auto_partition /* Temporary table */'||E'\n'||
+						'SELECT *'||E'\n'||
+						'  FROM rif40_auto_partition /* Temporary table */'||E'\n'||
 						' WHERE rif40_sql_pkg._rif40_hash('||quote_ident(l_column)||'::VARCHAR, '||num_partitions||')::VARCHAR = '''||c6_rec.partition_value||''''||E'\n'||
 						' ORDER BY '||l_column||' /* Partition column */, '||
 						c3_rec.column_names||' /* [Rest of ] primary key */';
@@ -641,6 +690,8 @@ EXPLAIN ANALYZE VERBOSE SELECT rif40_sql_pkg._rif40_hash(study_id::VARCHAR, 16),
 						' ORDER BY '||l_column||' /* Partition column */, '||
 						' /* NO [Rest of ] primary key - no unique index found */';
 				END IF;
+				ddl_stmt[array_length(ddl_stmt, 1)+1]:='UPDATE '||quote_ident(l_table)||'_p'||c6_rec.partition_value||E'\n'||
+					'SET hash_partition_number = '||c6_rec.partition_value;
 --
 			END LOOP;	
 		EXCEPTION
