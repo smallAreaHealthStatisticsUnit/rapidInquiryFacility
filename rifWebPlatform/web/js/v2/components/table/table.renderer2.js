@@ -25,7 +25,7 @@ RIF.table.renderer = (function () {
 			setUpGrid: function(){
 
 				var callback = function(){ 
-					    _p.setFields(this); 
+						_p.setFields(this); 
 						_p.initGrid();
 				};
 
@@ -33,7 +33,7 @@ RIF.table.renderer = (function () {
 			},
 
 			request: function( from, to  ){ /*Called by slick.remotemodel.ensureData() */
-			    var params = [ _p.geolevel, from, to, _p.fields];
+			    var params = [ _p.geolevel, from, to, _p.fields, _p.missing];
 			    RIF.getTabularData(_p.render, params);
 		    },
 
@@ -49,7 +49,7 @@ RIF.table.renderer = (function () {
 				}else{
 					_p.addRows( this );
 				}
-				
+			
 				onDataLoaded.notify({from: 0, to: _p.nRows});
 			},
 
@@ -67,7 +67,7 @@ RIF.table.renderer = (function () {
 					data = _p.getRows();
 					
 				while(l--){
-					data.push( rows[l] );
+					data.push(rows[l] );
 				};
 				
 				_p.setItems( data );		
@@ -78,15 +78,14 @@ RIF.table.renderer = (function () {
 					data = _p.getRows(),
 					slctd = _p.getSelected(),
 					indxShift = 0;
-				
-						
+					
 				while(l--){
 					data.splice( 0, 0, rows[l] );
 					indxShift++;
 				};
 				
 				_p.setItems( data );
-			    _p.updateSelected( slctd, indxShift );		
+				_p.updateSelected( slctd, indxShift );		
 			},
 			
 			updateSelected: function( slctd, shift ){
@@ -112,7 +111,7 @@ RIF.table.renderer = (function () {
 				grid.updateRowCount();
 				grid.render();
 				_p.evts.stopRowChange = false;
-				_p.scrollToRow(10);
+				
 			},
 			
 			setDataView: function (data) {  
@@ -130,17 +129,30 @@ RIF.table.renderer = (function () {
 			},
 			
 			mapToRows: function(ids){
-				var rowsSlctd = _p.getIdsRowSelected();
+				
+				var rowsSlctd = _p.getIdsRowSelected(),
+					newSelection = RIF.difference( rowsSlctd ,ids);
 				
 				_p.currentSel = RIF.unique(ids, rowsSlctd);
 				
-			    var params = [ _p.geolevel, _p.fields, ids],
+				//var missing = _p.getMissingRows(_p.currentSel);
+				
+				if( _p.currentSel.length > 0){
+					
+					//_p.missing = _p.missing.concat(missing);
+					
+					var params = [ _p.geolevel, _p.fields, _p.currentSel],
 						callback = function(){
 							_p.render.call(this, true);
 							_p.selectRows(_p.currentSel);
 						};
 					
-				RIF.getTableRows( callback, params);	
+					RIF.getTableRows( callback, params);
+					return;
+				};
+				
+				_p.selectRows( newSelection );
+					
 			},
 			
 			getIdsRowSelected: function(){
@@ -157,16 +169,11 @@ RIF.table.renderer = (function () {
 			},
 			
 			selectRows: function(ids){
-				var indxs = _p.getSelected(),
-				    idSlctd = _p.getIdsRowSelected();
-					
-				ids = RIF.difference( idSlctd , ids);	
-				var l = ids.length;
+				var l = ids.length, indxs = _p.getSelected();
 				while(l--){
-					var rowIndex = 1;//loop through all rows representing a single area
+					var rowIndex = 1;//llop through all rows representing a single area
 					do {
-					    
-						var id = ids[l]+ "_" + rowIndex++,
+					    var id = ids[l]+ "_" + rowIndex++,
 						    rowN = _p.dataView.getIdxById(id),
 						    indx = indxs.indexOf(rowN);
 						
@@ -178,17 +185,37 @@ RIF.table.renderer = (function () {
 						    indxs.splice( indx , 1 );	
 					    }else{
 						    indxs.splice( 0, 0 , rowN);
-					    };
-						
+					    };				
 					} while(typeof rowN !== 'undefined');	
 				};
 				
 				_p.setSelected(indxs);
-				_p.scrollToRow(indxs[0]);
 			},
 			
-			scrollToRow: function( rowindex){
-				grid.scrollRowIntoView( rowindex, false);
+			removeRows: function( slct ){
+				var l = ids.length, missing = [];
+				while(l--){
+					if(typeof _p.getRowIndex(ids[l]) === 'undefined'){
+						if(_p.missing.indexOf(ids[l]) === -1 ){
+						    missing.push(ids[l]);
+						}	
+					}
+				};
+				
+				return missing;
+			},
+			
+			getMissingRows: function(ids){
+				var l = ids.length, missing = [];
+				while(l--){
+					if(typeof _p.getRowIndex(ids[l]) === 'undefined'){
+						if(_p.missing.indexOf(ids[l]) === -1 ){
+						    missing.push(ids[l]);
+						}	
+					}
+				};
+				
+				return missing;
 			},
 			
 			getRows: function(){
@@ -202,6 +229,12 @@ RIF.table.renderer = (function () {
 				return 	null;
 			},
 			
+			getRowIndex: function(id){
+				id = id + '_1';// at least one rowIndex must exist if row exist
+				var idx = _p.dataView.getIdxById(id);
+				return idx;
+			},
+			
 			fireRowClick: function( rows ){
 				table.selectedRows = rows;
 				table.facade.rowClicked( rows );
@@ -209,33 +242,8 @@ RIF.table.renderer = (function () {
 			
 			resize: function(){
 				grid.resizeCanvas();
-			},
+			}	
 			
-			/*
-		   getRowIndex: function(id){
-				var idx = "";
-				for(var i = 1; i<=2 ; i++){
-					idx = _p.dataView.getIdxById(id + "_" + i);
-				};
-				console.log(idx)
-				return idx;
-			},*/
-			
-			//NO LONGER NEEDED
-			/*
-			getMissingRows: function(ids){
-				var l = ids.length, missing = [];
-				while(l--){
-					if(typeof _p.getRowIndex(ids[l]) === 'undefined'){
-						if(_p.missing.indexOf(ids[l]) === -1 ){
-						    missing.push(ids[l]);
-						}	
-					}
-				};
-				
-				return missing;
-			},*/
-				
 		});
 
 

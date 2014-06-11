@@ -164,6 +164,11 @@
 			   xhr( 'getTableRows.php' + args,  myCallback );
 			},
 			
+			dropDatatable: function(){	
+				var empty = function(){};
+			    xhr( 'dropDatatable.php',  empty );
+			}
+			
 	    };
 	
 	

@@ -296,7 +296,7 @@ $r = RIF4::Instance();
 		}	
 	}
 	
-	public function getTabularData($table, $fields, $from , $to, $gids){
+	public function getTabularData($table, $fields, $from , $to){
 		try{
 			
 			/*
@@ -305,30 +305,69 @@ $r = RIF4::Instance();
 			
 			if ( !isset( $fields ) ){
 				$fields = $this->getFieldsAsSingleArray( $table );
-			}
-			
-			if ( isset( $gids ) ){
-				$whereClause = " where " . $this->getGidClause( $gids, " != ", " and ");
-			}
-			
+			};
+
 			$cols = implode( ",", $fields );
-			 
-		    /*
-			  Need to create a uniqque id by using the GID which is a reference to the area plus a sequence identifying the stratum
-			  This is because an area have multiple rows (Many age groups, gender etc..) 
-			*/
-			
 			$limit = $to - $from;
-			$sql = "select distinct gid||'_'||row_index as id, $cols from $table $whereClause limit  $limit  offset $from";
+			
+			$plgsql = 
+			"DO $$
+			DECLARE
+			current_stmt varchar ;
+			data_stmt varchar;
+			countrow integer ;
+		
+			 BEGIN  
+			   
+			   select count(*)  into countrow  from information_schema.tables where table_name ='datatable' ;
+			   
+			   IF countrow = 1 THEN
+				current_stmt := 
+				'drop table  if exists currentselection;		
+				create  table currentselection as 
+				  with a as(
+					  select 
+					   concat(concat(gid,''_''), row_index)  as rowid
+					   from  $table  order by rowid asc  limit   $limit    offset   $from 
+				   )select  rowid from a where rowid not in (select  rowid from datatable)';
+				
+				data_stmt := 
+				'create table datatable2 as 
+					select  rowid from currentselection 
+					  union 
+					   select  rowid from datatable;  
+				drop table datatable;		
+				alter table datatable2 rename  to datatable ;';
+				
+			   ELSE 
+				current_stmt := 
+				 'create  table currentselection as 
+				  select 
+				   concat(concat(gid,''_''), row_index)  as rowid 
+				    from $table order by rowid asc limit  $limit    offset   $from ';	
+				
+				data_stmt := 
+				'create table datatable as 
+					select rowid from currentselection' ; 
+					
+			   END IF;
+			   
+			   EXECUTE (current_stmt);
+			   EXECUTE (data_stmt);
+			   
+			END;
+			$$"."language plpgsql;";
+			//echo $plgsql;
+			$hndl = self::$dbh -> query($plgsql);
+
+			$sql = "select rowid as id, $cols from currentselection a inner join  $table b on a.rowid = b.gid ||'_'|| b.row_index";
+			//echo $sql;
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());	
 			$res = $hndl -> fetchAll(PDO::FETCH_ASSOC);
 			self :: $dbh->commit();
-		   /*
-			* Return fields and data separately
-			* Data comes in a standard array, avoiding to repeat column names 
-			*/
-			return $res;/*array( $fields , $res )*/;	
+			
+		    return $res;	
 			
 		}catch(PDOException $pe){
 			self :: $dbh->rollback();
@@ -340,9 +379,63 @@ $r = RIF4::Instance();
 		try{
 			
 			$cols = implode( ",", $fields );
-			$whereClause = $this->getGidClause($gids, " = ", " 	or ");
-			$sql = "select distinct gid||'_'||row_index as id, $cols from $table where $whereClause";
-
+			$whereClause = "";
+			if(isset($gids)){
+			    $whereClause =  $this->getGidClause($gids, " = ", " 	or ");
+			}
+			
+			$plgsql = 
+			"DO $$
+			DECLARE
+			current_stmt varchar ;
+			data_stmt varchar;
+			countrow integer ;
+		
+			 BEGIN  
+			   
+			   select count(*)  into countrow  from information_schema.tables where table_name ='datatable' ;
+			   
+			   IF countrow = 1 THEN
+				current_stmt := 
+				'drop table  if exists currentselection;		
+				create  table currentselection as 
+				  with a as(
+					  select 
+					   concat(concat(gid,''_''), row_index)  as rowid
+					   from  $table  $whereClause 
+				   )select  rowid from a where rowid not in (select  rowid from datatable)';
+				
+				data_stmt := 
+				'create table datatable2 as 
+					select  rowid from currentselection 
+					  union 
+					   select  rowid from datatable;  
+				drop table datatable;		
+				alter table datatable2 rename  to datatable ;';
+				
+			   ELSE 
+				current_stmt := 
+				 'create  table currentselection as 
+				  select 
+				   concat(concat(gid,''_''), row_index)  as rowid 
+				    from $table  $whereClause ';	
+				
+				data_stmt := 
+				'create table datatable as 
+					select rowid from currentselection' ; 
+					
+			   END IF;
+			   
+			   EXECUTE (current_stmt);
+			   EXECUTE (data_stmt);
+			   
+			END;
+			$$"."language plpgsql;";
+			
+			$hndl = self::$dbh -> query($plgsql);
+			
+			$sql = "select rowid as id, $cols from currentselection a inner join  $table b on a.rowid = b.gid ||'_'|| b.row_index";
+			
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());	
 			$res = $hndl -> fetchAll(PDO::FETCH_ASSOC);
@@ -356,12 +449,28 @@ $r = RIF4::Instance();
 		}	
 	}
 	
+	public function dropDatatable(){
+		try{
+			
+			$sql = "drop table  if exists datatable;drop table  if exists currentselection;";
+			$hndl = self::$dbh -> query($sql);
+			self :: $dbh->commit();	
+			
+		}catch(PDOException $pe){
+			self :: $dbh->rollback();
+		 	die( $pe->getMessage());
+		}
+	
+	}
+	
+	
     private function getGidClause($gids, $operator, $andor){
 		$where = array();
+		$whereClause = "  where  ";
 		foreach($gids as $gid){
-			array_push($where, "gid $operator $gid"); 	
+			array_push($where, " gid $operator $gid "); 	
 		}
-		$whereClause = implode(  $andor , $where );
+		$whereClause .= implode(  $andor , $where );
 		return $whereClause;
 	}
 	

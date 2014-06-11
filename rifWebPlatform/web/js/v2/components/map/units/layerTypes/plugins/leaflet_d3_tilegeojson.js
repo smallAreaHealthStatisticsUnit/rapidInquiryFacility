@@ -61,7 +61,10 @@ L.TileLayer.d3_geoJSON = L.TileLayer.extend({
         
 		return function (r) {   
 
-		   drag.on('drag', function(d,i) { self.drag = 1;});	           
+		   drag.on('drag', function(d,i) { 
+				self.drag = 1;
+		   });
+		   
 		   tile.xhr = null;
 
 		   if (r.responseText === "-1") {
@@ -92,6 +95,9 @@ L.TileLayer.d3_geoJSON = L.TileLayer.extend({
                 })
 				.on("mousedown", function () {
                     self.drag = -1;
+                })
+				.on("mouseup", function () {
+
                 })
                 .on("mouseover", function () {
                     opt.evntHndl.call( this, "mouseover");	

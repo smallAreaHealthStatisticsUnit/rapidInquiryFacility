@@ -105,9 +105,9 @@
             }
 			
 			onDataLoading.notify({from: from, to: to});
-			parent.request(from, to + 1);
+			parent.request(from, to + 1	);
 			
-      }, 100);
+      }, 500);
     }
 
 

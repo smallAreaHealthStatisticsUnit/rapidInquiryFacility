@@ -103,6 +103,8 @@
       for (var i = startingIndex, l = items.length; i < l; i++) {
         id = items[i][idProperty];
         if (id === undefined) {
+			console.log(i)
+			console.log(items)
           throw "Each data element must implement a unique 'id' property";
         }
         idxById[id] = i;
@@ -127,10 +129,11 @@
       if (objectIdProperty !== undefined) {
         idProperty = objectIdProperty;
       }
+
       items = filteredItems = data;
       idxById = {};
       updateIdxById();
-      ensureIdUniqueness();
+      //ensureIdUniqueness();
       refresh();
     }
 

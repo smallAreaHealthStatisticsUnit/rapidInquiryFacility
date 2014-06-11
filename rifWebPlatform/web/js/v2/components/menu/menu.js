@@ -122,6 +122,7 @@ RIF.menu = (function(menus){
 				
 				/* firers */
 				addGeolevel: function( geolvl ){
+					RIF.dropDatatable();
 					this.fire('addGeolevel', { "geoLevel" : geolvl });
 				},
 				
