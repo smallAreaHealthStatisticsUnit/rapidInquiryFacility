@@ -257,6 +257,7 @@ DECLARE
 	n_total_rows		INTEGER;
 	i			INTEGER:=0;
 	warnings		INTEGER:=0;
+	total_partitions	INTEGER;
 --
 	error_message 		VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
@@ -268,6 +269,16 @@ BEGIN
 		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_range_partition', 'User % must be rif40 or have rif_user or rif_manager role', 
 			USER::VARCHAR);
 	END IF;
+--
+-- Check if table is already partitioned
+--
+	total_partitions:=rif40_sql_pkg._rif40_partition_count(l_schema, l_table);
+	IF total_partitions >= 1 THEN
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_range_partition', 
+			'Automatic range partition by %: %.%; table name is already partitioned into: % partitions', 
+			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, total_partitions::VARCHAR);
+	END IF;
+
 --
 -- Call: _rif40_common_partition_create_setup()
 --

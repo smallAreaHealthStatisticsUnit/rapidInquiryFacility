@@ -144,6 +144,29 @@ BEGIN
 END;
 $$;
 
+--
+-- Fix views to include hash_partition_number
+--
+\i ../views/rif40_comparision_areas.sql
+
+CREATE OR REPLACE VIEW "rif40_contextual_stats" ("username", "study_id", "inv_id", "area_id", "area_population", 
+	"area_observed", "total_comparision_population", "variance_high", "variance_low", "hash_partition_number") 
+AS 
+SELECT  username, c.study_id, inv_id, area_id, area_population, area_observed, total_comparision_population, variance_high, variance_low, hash_partition_number
+   FROM t_rif40_contextual_stats c
+	LEFT OUTER JOIN rif40_study_shares s ON (c.study_id = s.study_id AND s.grantee_username = USER)
+ WHERE username = USER OR
+       ('RIF_MANAGER' = (SELECT granted_role FROM user_role_privs WHERE granted_role = 'RIF_MANAGER')) OR
+       (s.grantee_username IS NOT NULL AND s.grantee_username::text <> '')
+ ORDER BY 1;
+--
+-- Re-create instead of triggers
+--
+
+--
+-- Check all vieww for t_ tables now have hash_partition_number
+--
+
 \echo Partitioning of all tables with study_id as a column complete.
 --
 -- Eof

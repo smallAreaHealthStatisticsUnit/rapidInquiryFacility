@@ -80,13 +80,8 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE VIEW "rif40_comparison_areas" ("username", "study_id", "area_id") AS SELECT  username, c.study_id, area_id
-   FROM t_rif40_comparison_areas c
-	LEFT OUTER JOIN rif40_study_shares s ON (c.study_id = s.study_id AND s.grantee_username = USER)
- WHERE username = USER OR
-       ('RIF_MANAGER' = (SELECT granted_role FROM user_role_privs WHERE granted_role = 'RIF_MANAGER')) OR
-       (s.grantee_username IS NOT NULL AND s.grantee_username::text <> '')
- ORDER BY 1;
+\i ../views/rif40_comparision_areas.sql
+
 CREATE OR REPLACE VIEW "rif40_contextual_stats" ("username", "study_id", "inv_id", "area_id", "area_population", "area_observed", "total_comparision_population", "variance_high", "variance_low") AS SELECT  username, c.study_id, inv_id, area_id, area_population, area_observed, total_comparision_population, variance_high, variance_low
    FROM t_rif40_contextual_stats c
 	LEFT OUTER JOIN rif40_study_shares s ON (c.study_id = s.study_id AND s.grantee_username = USER)

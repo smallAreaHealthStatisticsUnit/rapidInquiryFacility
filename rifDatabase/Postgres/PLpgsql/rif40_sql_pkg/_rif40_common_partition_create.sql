@@ -61,6 +61,56 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_partition_count(l_schema VARCHAR, l_table VARCHAR)
+RETURNS INTEGER
+SECURITY INVOKER
+AS $func$
+/*
+Function: 	_rif40_partition_count()
+Parameters:	Schema, table
+Returns:	Number of partitions (sub partitions). NULL if not partitioned
+Description:    Count number of partitions
+
+		SELECT nmsp_parent.nspname AS parent_schema,
+	   	       parent.relname      AS master_table,
+		       nmsp_child.nspname  AS partition_schema,
+		       child.relname       AS partition
+		  FROM pg_inherits, pg_class parent, pg_class child, pg_namespace nmsp_parent, pg_namespace nmsp_child 
+		 WHERE pg_inherits.inhparent = parent.oid
+		   AND pg_inherits.inhrelid  = child.oid
+		   AND nmsp_parent.oid       = parent.relnamespace 
+		   AND nmsp_child.oid        = child.relnamespace
+	       	   AND parent.relname        = 'sahsuland_cancer'
+		   AND nmsp_parent.nspname   = 'rif40';
+--	
+
+ */
+DECLARE
+	c1tpct CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get triggers */
+		SELECT COUNT(child.relname) AS total_partitions
+		  FROM pg_inherits, pg_class parent, pg_class child, pg_namespace nmsp_parent, pg_namespace nmsp_child 
+		 WHERE pg_inherits.inhparent = parent.oid
+		   AND pg_inherits.inhrelid  = child.oid
+		   AND nmsp_parent.oid       = parent.relnamespace 
+		   AND nmsp_child.oid        = child.relnamespace
+	       	   AND parent.relname        = l_table 
+		   AND nmsp_parent.nspname   = l_schema;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1tpct(l_schema, l_table);
+	FETCH c1tpct INTO c1_rec;
+	CLOSE c1tpct;
+--
+	RETURN c1_rec.total_partitions;	
+END;
+$func$ 
+LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_partition_count(VARCHAR, VARCHAR) IS 'Function: 	_rif40_partition_count()
+Parameters:	Schema, table
+Returns:	Number of partitions (sub partitions). NULL if not partitioned
+Description:    Count number of partitions';
+
 CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_drop_master_trigger(l_schema VARCHAR, l_table VARCHAR)
 RETURNS void
 SECURITY INVOKER
@@ -68,7 +118,7 @@ AS $func$
 /*
 Function: 	_rif40_drop_master_trigger()
 Parameters:	Schema, table
-Returns:	Drop
+Returns:	Nothing
 Description:	Automatic range/hash partitioning schema.table on column: remove ON-INSERT triggers
   		on naster table (so only inherited table triggers fire). This avoids:
 
@@ -859,6 +909,7 @@ DECLARE
 	i			INTEGER:=0;
 	part_test_rec		RECORD;
 	l_min_value		VARCHAR;
+	total_partitions	INTEGER;
 --
 	error_message 		VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
@@ -911,6 +962,15 @@ BEGIN
 		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_common_partition_create_setup', 
 			'Automatic range/hash partition by %: %.%; % partitions', 
 			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, num_partitions::VARCHAR);
+--
+-- Check if table is already partitioned
+--
+		total_partitions:=rif40_sql_pkg._rif40_partition_count(l_schema, l_table);
+		IF total_partitions >= 1 THEN
+			PERFORM rif40_log_pkg.rif40_error(-20991, '_rif40_common_partition_create_setup', 
+				'Automatic range/hash partition by %: %.%; table name is already partitioned into: % partitions', 
+				l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, total_partitions::VARCHAR);
+		END IF;
 --
 -- Check data is partitionable 
 --

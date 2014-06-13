@@ -163,10 +163,20 @@ DECLARE
 	i			INTEGER:=0;
 	j			INTEGER:=0;
 	warnings		INTEGER:=0;
+	total_partitions	INTEGER;
 --
 	error_message 		VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
 BEGIN
+--
+-- Check if table is already partitioned
+--
+	total_partitions:=rif40_sql_pkg._rif40_partition_count(l_schema, l_table);
+	IF total_partitions >= 1 THEN
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_hash_partition', 
+			'Automatic hash partition by %: %.%; table name is already partitioned into: % partitions', 
+			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, total_partitions::VARCHAR);
+	END IF;
 
 --
 -- Add hash_partition_number if required
