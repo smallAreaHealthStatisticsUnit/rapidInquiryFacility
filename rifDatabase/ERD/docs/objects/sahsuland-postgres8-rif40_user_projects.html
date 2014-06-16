@@ -1,0 +1,17 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+<title>View: rif40_user_projects</title>
+<link href="../schema.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<table class="item-table">
+<tr class="item-header"><td class="item-header" colspan="4"><a name="View-rif40_user_projects">View: rif40.rif40_user_projects</a></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">View definition</td></tr>
+<tr class="item-element"><td class="item-element" colspan="4"><tt class="no-background">
+SELECT a.project, a.username, a.grant_date, a.revoke_date, b.description, b.date_started, b.date_ended FROM t_rif40_user_projects a, t_rif40_projects b WHERE ((((a.project)::text = (b.project)::text) AND ((a.username)::name = current_user())) OR ('RIF_MANAGER'::text = (SELECT user_role_privs.granted_role FROM user_role_privs WHERE (user_role_privs.granted_role = 'RIF_MANAGER'::text)))) ORDER BY a.project;
+</tt></td></tr>
+<tr class="item-element"><td class="item-element" colspan="4">
+</table><p>
+</body></html>

@@ -1,0 +1,17 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+<title>View: rif40_study_sql_log</title>
+<link href="../schema.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<table class="item-table">
+<tr class="item-header"><td class="item-header" colspan="4"><a name="View-rif40_study_sql_log">View: rif40.rif40_study_sql_log</a></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">View definition</td></tr>
+<tr class="item-element"><td class="item-element" colspan="4"><tt class="no-background">
+SELECT c.username, c.study_id, c.statement_type, c.statement_number, c.log_message, c.audsid, c.log_sqlcode, c.rowcount, c.start_time, c.elapsed_time FROM (t_rif40_study_sql_log c LEFT JOIN rif40_study_shares s ON (((c.study_id = s.study_id) AND ((s.grantee_username)::name = current_user())))) WHERE ((((c.username)::name = current_user()) OR ('RIF_MANAGER'::text = (SELECT user_role_privs.granted_role FROM user_role_privs WHERE (user_role_privs.granted_role = 'RIF_MANAGER'::text)))) OR ((s.grantee_username IS NOT NULL) AND ((s.grantee_username) IS NULL))) ORDER BY c.username;
+</tt></td></tr>
+<tr class="item-element"><td class="item-element" colspan="4">
+</table><p>
+</body></html>

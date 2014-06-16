@@ -1,0 +1,17 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+<title>View: rif40_parameters</title>
+<link href="../schema.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<table class="item-table">
+<tr class="item-header"><td class="item-header" colspan="4"><a name="View-rif40_parameters">View: rif40.rif40_parameters</a></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">View definition</td></tr>
+<tr class="item-element"><td class="item-element" colspan="4"><tt class="no-background">
+(SELECT t_rif40_parameters.param_name, t_rif40_parameters.param_value, t_rif40_parameters.param_description FROM t_rif40_parameters WHERE ((t_rif40_parameters.param_name)::text != 'SuppressionValue'::text) UNION SELECT p.param_name, CASE WHEN (a.total = 1) THEN '0'::character varying ELSE p.param_value END AS param_value, p.param_description FROM t_rif40_parameters p, (SELECT count(*) AS total FROM user_role_privs WHERE (user_role_privs.granted_role = 'RIF_NO_SUPPRESSION'::text)) a WHERE ((p.param_name)::text = 'SuppressionValue'::text)) UNION SELECT 'RifParametersTable'::character varying AS param_name, 'Virtual'::character varying AS param_value, 'Is this the T_RIF40_PARAMETERS table or the VIRTUAL view'::character varying AS param_description ORDER BY 1;
+</tt></td></tr>
+<tr class="item-element"><td class="item-element" colspan="4">
+</table><p>
+</body></html>

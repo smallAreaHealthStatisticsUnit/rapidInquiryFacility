@@ -1,0 +1,40 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+<title>Table: t_rif40_fdw_tables</title>
+<link href="../schema.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<table class="item-table">
+<tr class="item-header"><td class="item-header" colspan="4"><a name="Tab-t_rif40_fdw_tables">Table: rif40.t_rif40_fdw_tables</a></td></tr>
+<tr class="item-element"><td class="item-element" colspan="4"><span class="description">RIF numerator tables which are Foreign data wrappers in Postgres</span></td></tr>
+<tr class="item-element"><td class="item-element" colspan="4">Size: medium, Select frequency: medium, Update frequency: medium</td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Columns</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3">Type</td><td class="item-header-3">Constraints</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-t_rif40_fdw_tables-username">username</a></td><td class="item-element">VARCHAR (90)</td><td class="item-element"></td><td class="item-element"><span class="description">User name</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-t_rif40_fdw_tables-table_name"><span class="pk-fk-col">table_name</span></a></td><td class="item-element">VARCHAR (30)</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">RIF table name. Normally the schema owner will not be able to see the health data tables, so no error is raised if the table cannot be resolved to an acceisble object. The schema owner must have access to automatic indirect standardisation denominators.</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-t_rif40_fdw_tables-create_status">create_status</a></td><td class="item-element">VARCHAR (1)</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">Create status: C (Created, no errors), E(Created, errors in test SELECT), N(Not created, errors)</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-t_rif40_fdw_tables-error_message">error_message</a></td><td class="item-element">VARCHAR (300)</td><td class="item-element"></td><td class="item-element"><span class="description">Error message when create status is: E(Created, errors in test SELECT, N(Not created, errors)</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-t_rif40_fdw_tables-date_created">date_created</a></td><td class="item-element">TIMESTAMP</td><td class="item-element"></td><td class="item-element"><span class="description">Date FDW table created (or attempted to be)</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-t_rif40_fdw_tables-rowtest_passed">rowtest_passed</a></td><td class="item-element">SMALLINT</td><td class="item-element"></td><td class="item-element"><span class="description">SELECT rowtest passed (0/1)</span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Primary key</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3" colspan="2">Columns</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element">t_rif40_fdw_tables_pk</td><td colspan="2" class="item-element"><a href="../objects/sahsuland-postgres8-t_rif40_fdw_tables.html#Col-t_rif40_fdw_tables-table_name">table_name</a></td><td class="item-element"><span class="description"></span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Foreign keys</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3">Columns</td><td class="item-header-3">Referenced table</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element"><a name="FK-t_rif40_fdw_tables-t_rif40_fdw_tables_tn_fk">t_rif40_fdw_tables_tn_fk</a></td><td class="item-element"><a href="../objects/sahsuland-postgres8-t_rif40_fdw_tables.html#Col-t_rif40_fdw_tables-table_name">table_name</a></td><td class="item-element"><a href="../objects/sahsuland-postgres8-rif40_tables.html#Tab-rif40_tables">rif40_tables</a></td><td class="item-element"><span class="description"></span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Grants</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Role</td><td class="item-header-3" colspan="2">Actions</td><td class="item-header-3">&nbsp;</td></tr>
+<tr class="item-element"><td class="item-element">rif_manager</td><td colspan="2" class="item-element">select, insert, delete, update</td><td class="item-element">&nbsp;</td></tr>
+<tr class="item-element"><td class="item-element">rif_user</td><td colspan="2" class="item-element">select, insert, delete, update</td><td class="item-element">&nbsp;</td></tr>
+<tr class="item-element"><td class="item-element">rif40</td><td colspan="2" class="item-element">select, references, insert, delete, update</td><td class="item-element">&nbsp;</td></tr>
+<tr class="item-element"><td class="item-element">PUBLIC</td><td colspan="2" class="item-element">select, references</td><td class="item-element">&nbsp;</td></tr>
+</table><p>
+<img src="../images/sahsuland-postgres8-t_rif40_fdw_tables.png" usemap="#TableGraph" align="middle" alt="Schema diagram" border="0">
+<map id="TableGraph" name="TableGraph">
+<area shape="rect" id="node1" href="../objects/sahsuland-postgres8-t_rif40_fdw_tables.html" target="detailFrame" title="t_rif40_fdw_tables" alt="" coords="205,71,333,196"/>
+<area shape="rect" id="node2" href="../objects/sahsuland-postgres8-rif40_tables.html" target="detailFrame" title="rif40_tables" alt="" coords="6,5,186,262"/>
+</map>
+
+</body></html>

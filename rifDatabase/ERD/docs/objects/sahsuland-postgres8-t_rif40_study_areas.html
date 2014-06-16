@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+<title>Table: t_rif40_study_areas</title>
+<link href="../schema.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<table class="item-table">
+<tr class="item-header"><td class="item-header" colspan="4"><a name="Tab-t_rif40_study_areas">Table: rif40.t_rif40_study_areas</a></td></tr>
+<tr class="item-element"><td class="item-element" colspan="4"><span class="description">Links study areas and bands for a given study.</span></td></tr>
+<tr class="item-element"><td class="item-element" colspan="4">Size: medium, Select frequency: medium, Update frequency: medium</td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Columns</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3">Type</td><td class="item-header-3">Constraints</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-t_rif40_study_areas-username">username</a></td><td class="item-element">VARCHAR (90)</td><td class="item-element"></td><td class="item-element"><span class="description">Username</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-t_rif40_study_areas-study_id"><span class="pk-fk-col">study_id</span></a></td><td class="item-element">INTEGER</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-t_rif40_study_areas-area_id"><span class="pk-col">area_id</span></a></td><td class="item-element">VARCHAR (300)</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-t_rif40_study_areas-band_id">band_id</a></td><td class="item-element">INTEGER</td><td class="item-element"></td><td class="item-element"><span class="description">A band allocated to the area</span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Primary key</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3" colspan="2">Columns</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element">t_rif40_study_areas_pk</td><td colspan="2" class="item-element"><a href="../objects/sahsuland-postgres8-t_rif40_study_areas.html#Col-t_rif40_study_areas-study_id">study_id</a>, <a href="../objects/sahsuland-postgres8-t_rif40_study_areas.html#Col-t_rif40_study_areas-area_id">area_id</a></td><td class="item-element"><span class="description"></span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Foreign keys</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3">Columns</td><td class="item-header-3">Referenced table</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element"><a name="FK-t_rif40_study_areas-t_rif40_studyareas_study_id_fk">t_rif40_studyareas_study_id_fk</a></td><td class="item-element"><a href="../objects/sahsuland-postgres8-t_rif40_study_areas.html#Col-t_rif40_study_areas-study_id">study_id</a></td><td class="item-element"><a href="../objects/sahsuland-postgres8-t_rif40_studies.html#Tab-t_rif40_studies">t_rif40_studies</a></td><td class="item-element"><span class="description"></span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Indexes</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3" colspan="2">Columns</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element">t_rif40_study_areas_band_id</td><td colspan="2" class="item-element"><a href="../objects/sahsuland-postgres8-t_rif40_study_areas.html#Col-t_rif40_study_areas-band_id">band_id</a></td><td class="item-element"><span class="description"></span></td></tr>
+<tr class="item-element"><td class="item-element">t_rif40_study_areas_uname</td><td colspan="2" class="item-element"><a href="../objects/sahsuland-postgres8-t_rif40_study_areas.html#Col-t_rif40_study_areas-username">username</a></td><td class="item-element"><span class="description"></span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Grants</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Role</td><td class="item-header-3" colspan="2">Actions</td><td class="item-header-3">&nbsp;</td></tr>
+<tr class="item-element"><td class="item-element">rif_manager</td><td colspan="2" class="item-element">select, insert, delete, update</td><td class="item-element">&nbsp;</td></tr>
+<tr class="item-element"><td class="item-element">rif_user</td><td colspan="2" class="item-element">select, insert, delete, update</td><td class="item-element">&nbsp;</td></tr>
+<tr class="item-element"><td class="item-element">rif40</td><td colspan="2" class="item-element">select, references, insert, delete, update</td><td class="item-element">&nbsp;</td></tr>
+</table><p>
+<img src="../images/sahsuland-postgres8-t_rif40_study_areas.png" usemap="#TableGraph" align="middle" alt="Schema diagram" border="0">
+<map id="TableGraph" name="TableGraph">
+<area shape="rect" id="node1" href="../objects/sahsuland-postgres8-t_rif40_study_areas.html" target="detailFrame" title="t_rif40_study_areas" alt="" coords="208,152,344,248"/>
+<area shape="rect" id="node2" href="../objects/sahsuland-postgres8-t_rif40_studies.html" target="detailFrame" title="t_rif40_studies" alt="" coords="6,5,189,395"/>
+</map>
+
+</body></html>
