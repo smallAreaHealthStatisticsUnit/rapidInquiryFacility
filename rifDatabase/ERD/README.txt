@@ -1,9 +1,13 @@
-The ERD was created by reverse engineering SAHUSland using pgmodeler (https://github.com/pgmodeler/pgmodeler)
+The ERD was created by reverse engineering SAHSUland using pgmodeler (https://github.com/pgmodeler/pgmodeler)
 
 It will be re-organised tidyly shortly.
 
-The documents in docs can be generated using dbmstools. The paths are relative to the Oracle install directory on turing
+The documents in docs can be generated using dbmstools (http://dbmstools.sourceforge.net/). The paths are relative to the Oracle create directory on turing
 
+Can be viewed using Github for Windows as: github-windows://openRepo/https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility?branch=master&filepath=rifDatabase%2FERD%2Fdocs%2Findex-sahsuland-postgres8.html
+
+[You will need to have rapidInquiryFacility as a local repository]
+ 
 Create XML schema
 
 HOST ../dbmstools-0.4.5rc1/main/dbmsjy.py db2xml.py -j jdbc:postgresql://turing.private.net:5432/sahsuland\?user=rif40\&password=^1 -o ../install/xml/sahsuland.xml -d postgres8 -s rif40 -g -v
@@ -12,6 +16,8 @@ Edit documentation to remove:
 
 1. <." in code. Really this should be declared as CDATA
 2. Functional indexes
+
+E.g. 
 
 Traceback (most recent call last):
   File "../dbmstools-0.4.5rc1/main/xml2doc.py", line 990, in ?
