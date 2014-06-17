@@ -50,40 +50,6 @@ $r = RIF4::Instance();
 		self :: $dbh->exec($sql);
 	}
 	
-	/*public function getTiles($p){
-		
-		try{
-			self :: $dbh->beginTransaction();
-			
-			$xtile = $p['tiley'];
-			$ytile = $p['tilex'];
-			$zoom = $p['zoom'];
-			$slctField = $p['field']; 
-			$geoLvl = $p['geolevel']; 
-		
-			
-		    $n = pow(2, $zoom);
-			$lon_1 = $xtile / $n * 360.0 - 180.0;
-			$lat_1 = rad2deg(atan(sinh(pi() * (1 - 2 * $ytile / $n))));
-			$lon_2 = ($xtile+1) / $n * 360.0 - 180.0;
-			$lat_2 = rad2deg(atan(sinh(pi() * (1 - 2 * ($ytile+1) / $n))));
-			
-			$sql = "select gid ,  $slctField  as fieldScltd , st_asGeoJSON(geom,3,0) as geom 
-				     from $geoLvl  x 
-					  where x.geom &&
-				       st_MakeEnvelope (  $lon_1, $lat_1, $lon_2 , $lat_2 , 4326 )";	
-			echo $sql;		   
-			$hndl = self::$dbh -> query($sql);		
-			$stmt = $hndl -> fetchAll(PDO::FETCH_ASSOC);
-			self :: $dbh->commit();
-			return $stmt;
-			
-		}catch(PDOException $pe){
-			self :: $dbh->rollback();
-		    die( $pe->getMessage());
-		}	
-		
-	}*/
 	public function getTiles($p){
 		
 		try{
@@ -120,7 +86,6 @@ $r = RIF4::Instance();
 		    $sql = "with a as 
 				    (select st_extent(geom) as g from $table where gid = " . $gid . ")
 				      select st_ymax(g),st_xmax(g),st_ymin(g),st_xmin(g)  from a";	
-			
 				
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());		
@@ -175,7 +140,11 @@ $r = RIF4::Instance();
 			$hndl ->execute(array());	
 			$res = $hndl -> fetchAll(PDO::FETCH_NUM);
 			self :: $dbh->commit();
-			return $res;
+			$geos = array();
+			foreach($res as $geo){
+				array_push($geos, $geo[0]); 	
+			}
+			return $geos;
 			
 		}catch(PDOException $pe){
 			self :: $dbh->rollback();
@@ -205,6 +174,7 @@ $r = RIF4::Instance();
 			$hndl ->execute(array());	
 			$res = $hndl -> fetch(PDO::FETCH_NUM);
 			self :: $dbh->commit();
+			
 			return $res[0];
 			
 		}catch(PDOException $pe){
@@ -220,13 +190,18 @@ $r = RIF4::Instance();
          			and  NOT (column_name = ANY ( ARRAY['".$geom."' , 'gid'])) and 
 					(data_type = ANY ( ARRAY ['smallint' ,  'integer' , 'bigint', 'decimal', 'numeric', 'real', 'double precision',
 					 'smallserial', 'serial', 'bigserial' ]))" ;
-			
-			//echo $sql;	
+				
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());	
 			$res = $hndl -> fetchAll(PDO::FETCH_NUM);
 			self :: $dbh->commit();
-			return $res;
+			
+			$fields = array();
+			foreach($res as $field){
+				array_push($fields, $field[0]); 	
+			}
+			
+			return $fields;
 			
 		}catch(PDOException $pe){
 			self :: $dbh->rollback();
@@ -240,11 +215,18 @@ $r = RIF4::Instance();
 		    $geom = $this->getGeometryCol( $table );
 		    $sql = "select column_name from information_schema.columns where table_name='". $table ."'
          			and  NOT (column_name = ANY ( ARRAY['".$geom."' , 'gid', 'row_index']))  " ;
-					
+			
+	
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());	
 			$res = $hndl -> fetchAll(PDO::FETCH_NUM);
 			self :: $dbh->commit();
+			
+			$fields = array();
+			foreach($res as $field){
+				array_push($fields, $field[0]); 	
+			}
+			
 			return $res;
 			
 		}catch(PDOException $pe){
@@ -447,6 +429,14 @@ $r = RIF4::Instance();
 			self :: $dbh->rollback();
 		 	die( $pe->getMessage());
 		}	
+	}
+	public function getDataSetsAvailable( $geolevel){
+		/*
+		 * This has to be replaced with a query that check for 
+		 * all data tables available for the specific geolevel
+		 */
+		 $dataset= $geolevel . "_data";
+		return array( $dataset); 
 	}
 	
 	public function dropDatatable(){

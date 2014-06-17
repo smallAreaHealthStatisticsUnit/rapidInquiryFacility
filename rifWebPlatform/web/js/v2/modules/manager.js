@@ -117,7 +117,7 @@ RIF.manager = (function () {
 			//Map - Table
 			addTabularData:{
 				subscribers: ["table"],
-                firer: ["map"],
+                firer: ["menu"],
                 method: "getTabularData"
 			},
 			
@@ -151,6 +151,12 @@ RIF.manager = (function () {
 				subscribers: ["table"],
                 firer: ["menu"],
                 method: "filterCols"
+			},
+			
+			changeNumRows: {
+				subscribers: ["table"],
+                firer: ["menu"],
+                method: "changeNumRows"
 			},
 			
             //Chart - Pyramid 	

@@ -63,7 +63,7 @@
 			},
 			
 			getSingleFieldData: function( myCallback, params ){
-				var dataTable = params[0] +'_data' ,
+				var dataTable = params[0]  ,
 					msg = "Retrieving values",
 				    args = "?geolevel=" + dataTable + 
 					       "&identifier=" + params[1];	
@@ -72,7 +72,7 @@
 			},
 			
 			getSingleFieldChoro: function( myCallback, params ){
-				var dataTable = params[0] +'_data' ,
+				var dataTable = params[0]  ,
 					msg = "Retrieving choropleth fields",
 				    args = "?geolevel=" + dataTable + 
 					       "&identifier=" + params[1];	
@@ -81,23 +81,30 @@
 			},
 			
 			getFields: function( myCallback, params ){
-				var dataTable = params[0] +'_data',
+				var dataTable = params[0] ,
 					msg = "Retrieving available fields",
-				    args = "?geolevel=" + dataTable;
+				    args = "?table=" + dataTable;
 					
 				xhr( "getFieldsAvailable.php" + args , myCallback, msg );
 			},
 			
 			getTableFields: function( myCallback, params ){
-				var dataTable = params[0] +'_data' ,
+				var dataTable = params[0],
 					msg = "Retrieving table fields",
-				    args = "?geolevel=" + dataTable;
+				    args = "?table=" + dataTable;
 					
 				xhr( "getTableFieldsAvailable.php" + args , myCallback, msg );
 			},
 			
+			getDataSetsAvailable: function( myCallback, params ){
+				var msg = "Retrieving Data Sets available",
+				    args = "?geolevel=" + params[0];
+					
+				xhr( "getDataSetsAvailable.php" + args , myCallback, msg );
+			},
+			
 			getNumericFields: function( myCallback, params ){
-				var dataTable = params[0] +'_data' ,
+				var dataTable = params[0] ,
 					msg = "Retrieving numeric fields",
 				    args = "?geolevel=" + dataTable;
 					
@@ -120,9 +127,9 @@
 		    },
 			
 			getTabularData: function( myCallback, params ){
-				var dataTable = params[0] +'_data' ,
+				var dataTable = params[0] ,
 				    msg = "Retrieving data for table",
-			        args = '?geolevel='+ dataTable + 
+			        args = '?table='+ dataTable + 
 				    '&from='+ params[1]  + '&to='+ params[2]
 
 				if( typeof params[3] !== 'undefined'){
@@ -143,9 +150,9 @@
 			},
 			
 			getTableRows: function( myCallback, params ){
-				var dataTable = params[0] +'_data' ,
+				var dataTable = params[0]  ,
 				    msg = "Retrieving rows for table",
-			        args = '?geolevel='+ dataTable ;
+			        args = '?table='+ dataTable ;
 
 				if( typeof params[1] !== 'undefined'){
 					var l = params[1].length;

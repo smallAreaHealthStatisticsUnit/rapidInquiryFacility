@@ -105,7 +105,7 @@ RIF.menu.choropleth = (function(){
 				var domain = [];
 				if(_p.breaksEdited){
 					d3.selectAll("#breaks input").each(function(){
-						domain.push(parseInt(this.value));
+						domain.push(parseFloat(this.value));
 					});
 				};
 				domain.sort(d3.ascending);
@@ -157,8 +157,6 @@ RIF.menu.choropleth = (function(){
 					$("#choropleth").hide();
 
 					var slctd = _p.selected();
-					
-					console.log(slctd);
 					
 					if( slctd.field !== "N/A" ){
 						parent.facade.fire("mapStyleChange", slctd );

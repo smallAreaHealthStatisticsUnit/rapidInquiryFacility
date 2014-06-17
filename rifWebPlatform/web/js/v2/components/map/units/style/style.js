@@ -53,7 +53,7 @@ RIF.style = (function ( type ) {
 		},
 		
 		setScale: function( params, min, max ){
-			this.scale = RIF.style.scales( params, min, max ); 
+			this.scale = RIF.style.scales.call(this, params, min, max ); 
 		},
 		
 		setColorBrewer: function( colorScale, intervals ){
@@ -63,15 +63,6 @@ RIF.style = (function ( type ) {
 		setSingleColor: function( params ){
 		    this.setColorBrewer( params["colorScale"], params["intervals"] );
 			this.updateColors();
-		},
-		
-		setScaleBreaks: function(params){
-			var l = params.intervals;
-			this.scale.breaks = [];
-			while(l--){
-			    var r = style.scale.invertExtent(l);
-				this.scale.breaks.push(d3.format(".2f")(r[1]));
-			}
 		},
 		
 		updateColors: function( values ){
@@ -88,37 +79,41 @@ RIF.style = (function ( type ) {
 			style.repaint();	
 		},
 		
-		updateLegend: function( ){
-						
+		updateLegend: function( ){		
 			var legend = d3.select('.map-legend');
 			$(legend[0]).empty();
 			legend.append('ul')
 				.attr('class', 'list-inline');
 			
-			var length = style.scale.breaks.length,		
+			var length = style.breaks.length,		
 			    keys = legend.selectAll('li.key')
-				 .data(style.scale.breaks);//reverve to order legend from min to max
+				 .data(style.breaks);//reverve to order legend from min to max
 				
 			keys.enter().append('li')
-				.attr('class', 'key')
+				.attr('class', function(d,i){ 
+					if( i === 0  ){
+						return 'key maxkey';
+					 }
+					return 'key'
+				})
 				.style('border-left-color', function(d,i){return  style.colorbrewer[length - (i + 1)];})
 				.append('a')
 				 .text(function(d,i) { 
 					 return d;
-				 });
+				 }); 
 		},
 		
 		setChoropleth: function( values, params, updateLegend ){
-			if( params.domain.length === 0){
-			    params.values = d3.values( values ).map(function(d) { return +d; });
-			};
+			//if( params.domain.length === 0){
+			params.values = d3.values( values ).map(function(d) { return +d; });
+			//};
 			
 			params.max = d3.max( params.domain ) || d3.max( params.values );
 			params.min = d3.min( params.domain ) || d3.min( params.values );
 			
             this.setColorBrewer( params["colorScale"], params["intervals"] );			
 			this.setScale( params );
-			this.setScaleBreaks( params );
+			//this.setScaleBreaks( params );
 			
 			if( updateLegend ){
 			    this.updateLegend();

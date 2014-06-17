@@ -96,6 +96,14 @@ RIF.map = (function (type) {
 			_p.map.fitBounds(bounds);	
 		},
 		
+		setDataset: function( dataset){
+			this.currentDataset = dataset;
+		},
+		
+		getDataset: function(){
+			return this.currentDataset;
+		},
+		
         facade: {
             /* Subscribed Events */
             updateSelection: function (a) {
@@ -108,9 +116,10 @@ RIF.map = (function (type) {
 				_p.getBounds(a);
             },
 			
-			uGeolevel: function(a){
+			uGeolevel: function( args ){
 				_p.removeLayer();
-				_p.addLayer(a);
+				_p.addLayer({ "geoLevel" : args.geoLevel } );
+				_p.setDataset(args.dataset);
 			},
 			
 			resizeMap: function(){
@@ -141,12 +150,12 @@ RIF.map = (function (type) {
 				this.fire('addZoomIdentifiers', args);
 			},
 			
-			addAvlbFields: function(args){/* [geolevel] */
-			    this.fire('addAvlbFields', args);
+			addAvlbFields: function(){/* [geolevel] */
+			    this.fire('addAvlbFields');
 			},
 			
-			addTabularData: function(args){/* [geolevel] */
-				this.fire('addTabularData', args);
+			addTabularData: function( dataSets ){
+				this.fire('addTabularData', dataSets);
 			},
 			
 			scaleRange: function(args){/* scale */

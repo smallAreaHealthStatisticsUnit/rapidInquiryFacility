@@ -2,7 +2,7 @@ RIF.table.settings = (function () {
 
     var settings = {
 		fromRow: 1,
-		nRows: 1000,
+		nRows: 115,
 		fields: [],
 		selectedRows: [],
 		missing: [], 

@@ -91,16 +91,18 @@ a:hover{
 	}
 
 	#buttons>div {
-		position:absolute;
+		float:left;
 	}
 	#buttons .export{
 		margin: 14px 2px 0 8px	;
+		min-width:500px;
+		width:35%;
 	}
 	#buttons .export a{
 		margin:4px 4px 4px 0;
 		display: block;
 		float: left;
-		padding: 3px 5px;
+		padding: 3px 1px;
 		font-size: 22px;
 		text-align: center;
 		text-transform: uppercase;
@@ -116,10 +118,12 @@ a:hover{
 		width: 49%;
 }
 	#buttons .geoDrops>div{
-		float: right;
-		margin:0 0 0 3px;
-		padding:6px;
+		float: left;
+		padding: 6px 8px 0 0;
 		font-size:11px
+	}
+	#buttons .geoDrops>div select{
+		margin:0;
 	}
 	#buttons .geoDrops>div span {
 		text-transform:uppercase
@@ -137,8 +141,9 @@ a:hover{
 	}
 	
 	#submenu div {
-		height:100%;
-	}
+		height: 100%;
+	
+}
 	
 	#submenu div a img.active{
 		-moz-opacity: 1;
@@ -160,6 +165,11 @@ a:hover{
 	   min-width: 500px;  
 	   float: left;
 	}
+	
+	.chartOpts a{ 
+		padding-left:8px;
+	}
+	
 	.mapOpts {
 		width: 30%;  
 		float: left;
@@ -225,11 +235,10 @@ a:hover{
 		border: 1px solid #cccccc;
 		color:#999999;
 		font-size:11px;
-		display:block;
+		display: block;
+		padding: 0;
 	}
-    select option{
-        width: 50%
-	}
+
 	#content #leftcol div.summary dl{
 		height:auto;
 		display:block;
@@ -342,14 +351,25 @@ a:hover{
 		border-left-style: solid;
 		font-size: .80em;
 		padding-left: 5px;
-		list-style-type:none
+		list-style-type:none;
 	}
+	
 	li.key  a{
-		vertical-align:top;
+		vertical-align:bottom;
 		color:#cccccc;
 		height: 25px;
 		display:table-cell;
+		line-height:0;
 	}
+	
+	li.maxkey{
+		border:none;
+	}
+	
+	li.maxkey a{
+		padding-left:10px
+	}
+	
    /*
 	* Polygon rendering style using D3
     */
@@ -495,7 +515,7 @@ a:hover{
 	
 	.msettings .txt-fld #breaks input {
 	    float:left;
-		width:60px;
+		width:58px;
 		margin:5px 10px 5px 0px;
 		font-size: 1.1em;
 		color:#CCC;
@@ -516,14 +536,20 @@ a:hover{
 		font-size: 1.1em;
 		text-align: left;
 	}
-	.msettings .txt-fld select  {
+	.msettings .txt-fld select ,.msettings .txt-fld input[type="text"] {
 		width: 180px;
 		padding: 4px 2px;
 		border-radius: 4px;
 		-moz-border-radius: 4px;
 		font-size: 1em;
 		background: #F7F7F7;
+		border:1px solid #cccccc;
+		color:#999999;
     }
+	
+	.msettings .txt-fld input[name="numOfRows"]{
+			float:left
+	}
 	.msettings .save-fld, .save-fld-settings {
 		padding: 8px 20px;
 	}

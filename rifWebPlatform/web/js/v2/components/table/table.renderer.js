@@ -29,11 +29,12 @@ RIF.table.renderer = (function () {
 						_p.initGrid();
 				};
 
-				RIF.getTableFields( callback , [_p.geolevel] );
+				RIF.getTableFields( callback , [_p.dataset] );
 			},
 
 			request: function( from, to  ){ /*Called by slick.remotemodel.ensureData() */
-			    var params = [ _p.geolevel, from, to, _p.fields];
+				console.log(from + "_" + to)
+			    var params = [ _p.dataset, from, to, _p.fields];
 			    RIF.getTabularData(_p.render, params);
 		    },
 
@@ -53,10 +54,16 @@ RIF.table.renderer = (function () {
 				onDataLoaded.notify({from: 0, to: _p.nRows});
 			},
 
-			setGeolevel: function( geolevel ){
-				_p.geolevel = geolevel;
+			setDataSet: function( dataset ){
+				_p.dataset = dataset;
 			},
-
+			
+			setNRows: function( nRows ){
+				if(typeof nRows !== 'undefined'){
+					_p.nRows = nRows;
+				}	
+			},
+			
 			setFields: function( fields ){
 				_p.fields = fields; // array of fields
 				_p.gridCols = _p.formatCols(fields);// used to render grid columns
@@ -134,7 +141,7 @@ RIF.table.renderer = (function () {
 				
 				_p.currentSel = RIF.unique(ids, rowsSlctd);
 				
-			    var params = [ _p.geolevel, _p.fields, ids],
+			    var params = [ _p.dataset, _p.fields, ids],
 						callback = function(){
 							_p.render.call(this, true);
 							_p.selectRows(_p.currentSel);
@@ -209,32 +216,7 @@ RIF.table.renderer = (function () {
 			
 			resize: function(){
 				grid.resizeCanvas();
-			},
-			
-			/*
-		   getRowIndex: function(id){
-				var idx = "";
-				for(var i = 1; i<=2 ; i++){
-					idx = _p.dataView.getIdxById(id + "_" + i);
-				};
-				console.log(idx)
-				return idx;
-			},*/
-			
-			//NO LONGER NEEDED
-			/*
-			getMissingRows: function(ids){
-				var l = ids.length, missing = [];
-				while(l--){
-					if(typeof _p.getRowIndex(ids[l]) === 'undefined'){
-						if(_p.missing.indexOf(ids[l]) === -1 ){
-						    missing.push(ids[l]);
-						}	
-					}
-				};
-				
-				return missing;
-			},*/
+			}
 				
 		});
 

@@ -22,7 +22,6 @@ RIF.map.layer = (function (type, sett) {
 					
 					init: function (layerType) {			
 						RIF.map.layer[layerType].call(layer);
-						map.facade.addTabularData( layer.geoLevel );
 					},
 					
 					add: { 
@@ -36,7 +35,7 @@ RIF.map.layer = (function (type, sett) {
 					
 					clbk: { /* called after layer is rendered */
 						tile: function(){ 
-							map.facade.addAvlbFields( layer.geoLevel );
+							map.facade.addAvlbFields();
 							map.facade.addZoomIdentifiers( layer.geoLevel );	
 						},
 						topojson: function(){}
@@ -47,7 +46,7 @@ RIF.map.layer = (function (type, sett) {
 							layer.hoverLbls = this;
 						};
 						layer.selectionField = field || layer.selectionField;
-						RIF.getSingleFieldData( join, [layer.geoLevel, layer.selectionField] );
+						RIF.getSingleFieldData( join, [map.getDataset(), layer.selectionField] );
 					},
 					
 					uStyle: function(params){ /* {classification: , colorScale: , field: , intervals:  }  */
@@ -64,16 +63,16 @@ RIF.map.layer = (function (type, sett) {
                             layer.repaintSlctd();		
 						};
 						
-						RIF.getSingleFieldChoro( doChoro, [ layer.geoLevel, params.field ] )
+						RIF.getSingleFieldChoro( doChoro, [ map.getDataset(), params.field ] )
 					},
 					
 					getBreaks: function( params ){
 						 var getScale = function(){
 							 layer.style.setChoropleth( this, params, false ); 
-							 map.facade.scaleRange(layer.style.scale.breaks);
+							 map.facade.scaleRange(layer.style.breaks);
 						 };
 						 
-						 RIF.getSingleFieldChoro( getScale, [ layer.geoLevel, params.field ] )
+						 RIF.getSingleFieldChoro( getScale, [ map.getDataset(), params.field ] )
 					},
 					
 					resetSlctd: function () {

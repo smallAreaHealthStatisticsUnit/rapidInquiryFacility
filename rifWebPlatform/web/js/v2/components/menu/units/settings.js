@@ -14,6 +14,7 @@ RIF.menu.settings = (function(){
 			hoverSlct:  $('#fldSlct'),
 			settings:   $(".settings"),
 			colsFilter: $('#colsFilter'),
+			numRows:    $('#numOfRows'),
 	        colsFilterName : "filterCols",
 			
 			avlbFieldsClbkSettings: function(){
@@ -31,6 +32,7 @@ RIF.menu.settings = (function(){
 				this.save.click(function(){
 					var fields = parent.getCheckedValues( _p.colsFilterName );
 					parent.facade.filterTablebyCols( fields );
+					parent.facade.changeNumRows( _p.numRows.val() );
 					parent.facade.hoverFieldChange(_p.hoverSlct.val());
 					$("#settings").hide();
 				});

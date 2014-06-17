@@ -7,7 +7,7 @@
   function RemoteModel( parent ) { /* Passing Table renderer context*/
     // private
     var PAGESIZE = 5000;
-	var optimalRequestRangeSize = 1000;
+	var optimalRequestRangeSize = 0;
     var data = {length: 0};
     var searchstr = "";
     var sortcol = null;
@@ -46,6 +46,7 @@
 
 
     function ensureData(from, to, fields) {
+	  console.log(from + "--" + to);	
       if (from < 0) {from = 0;}
         while (data[from] !== undefined && from < to) {from++;}
         while (data[to] !== undefined && from < to) {to--;}

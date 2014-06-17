@@ -37,10 +37,8 @@ RIF.menu = (function(menus){
 			dropDownFromArray: function(arr, el){
 				var l = arr.length;
 				while(l--){
-					var val = (arr[l][0]) ? arr[l][0].replace(/\s+/g, '_') : arr[l],
-					    option_text = ( arr[l][1] ) ? arr[l][1] : (arr[l][0]) ? arr[l][0] : val ;
-						
-					_p.addSelectOption( el, val, option_text );
+					var val = arr[l];	
+					_p.addSelectOption( el, val, val );
 				}
 			},
 			
@@ -93,12 +91,12 @@ RIF.menu = (function(menus){
 				return checkedValues;
 			},
 			
-			getAvlbFields: function( arg ){
-			    RIF.getFields( _p.avlbFieldsClbkSettings , [arg] );
+			getAvlbFields: function(){
+			    RIF.getFields( _p.avlbFieldsClbkSettings , [_p.getDataset()] );
 			},
 			
 			getNumericFields: function( arg ){
-			    RIF.getNumericFields(  _p.avlbFieldsClbkChoro, [arg] );
+			    RIF.getNumericFields(  _p.avlbFieldsClbkChoro, [_p.getDataset()] );
 			},
 			
 			facade: {
@@ -107,9 +105,9 @@ RIF.menu = (function(menus){
 					_p.getZoomIdentifiers(args);
 				},
 				
-				uAvlbFlds: function(args){
-					_p.getAvlbFields(args);
-					_p.getNumericFields(args);
+				uAvlbFlds: function(){
+					_p.getAvlbFields();
+					_p.getNumericFields();
 				},
 				
 				getScaleRange: function(args){
@@ -121,9 +119,13 @@ RIF.menu = (function(menus){
 				},
 				
 				/* firers */
-				addGeolevel: function( geolvl ){
+				addGeolevel: function( geolvl, dataSet ){
 					RIF.dropDatatable();
-					this.fire('addGeolevel', { "geoLevel" : geolvl });
+					this.fire('addGeolevel', { "geoLevel" : geolvl, "dataset": dataSet });
+				},
+				
+				addTabularData: function( dataSets ){
+					this.fire('addTabularData', dataSets);
 				},
 				
 				zoomTo: function( id ){
@@ -140,8 +142,11 @@ RIF.menu = (function(menus){
 				
 				clearMapTable: function(){
 					this.fire('clearMapTable', []);
-				}
+				},
 				
+				changeNumRows: function( nRows ){
+					//this.fire('changeNumRows', nRows);
+				}
 			}	
 		};
 	

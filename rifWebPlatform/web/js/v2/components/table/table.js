@@ -7,10 +7,11 @@ RIF.table = (function(){
 	 */
 	var _p =  {
 		
-		init: function( geolevel, fields ){
+		init: function( dataset, fields , rows ){
+			RIF.dropDatatable();
 			_p.renderer = RIF.table.renderer.call(this);
-
-			_p.renderer.setGeolevel(geolevel);
+			_p.renderer.setNRows( rows );
+			_p.renderer.setDataSet(dataset);
 
 			if( typeof fields === 'object'){
 				_p.renderer.setFields( fields );
@@ -31,8 +32,8 @@ RIF.table = (function(){
 		facade: {
 			
 			/* Subscribed Events */
-			getTabularData: function( geolevel ){
-				_p.init( geolevel );
+			getTabularData: function( dataset ){
+				_p.init( dataset );
 			},	
 		
 			resizeTable: function(){
@@ -43,6 +44,12 @@ RIF.table = (function(){
 				_p.renderer.mapToRows(ids);
 			},
 			
+			changeNumRows: function( nRows ){
+				if( nRows !== _p.renderer.nRows ){
+					_p.init( _p.renderer.dataset, _p.renderer.fields, nRows);
+				}
+			},
+			
 			filterCols: function( args ){
 				/*
 				 * args[0] = fields
@@ -50,7 +57,7 @@ RIF.table = (function(){
 				 */
 				var eq = RIF.arraysEqual( args[0], _p.renderer.fields);
 				if ( !eq ){
-					_p.init( args[1], args[0].reverse());
+					_p.init( _p.renderer.dataset, args[0].reverse());
 					 this.fire('selectionchange', [[], 'table'] );
 				}
 			},

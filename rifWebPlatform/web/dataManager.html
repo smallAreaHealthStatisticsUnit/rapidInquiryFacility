@@ -43,7 +43,8 @@
 	<script type="text/javascript" src="js/v2/utils/colorBrewer.js"></script>
     <!-- modules -->
     <script type="text/javascript" src="js/v2/modules/manager.js"></script>
-    <!-- components -->
+    
+	<!-- components -->
     <!-- map -->
     <script type="text/javascript" src="js/v2/components/map/map.js"></script>
     <script type="text/javascript" src="js/v2/components/map/units/layer.js"></script>
@@ -92,7 +93,7 @@
                 <a href='#'>Export</a>
             </div>
             <div class='geoDrops'>
-                <div>
+				<div>
                     <div id='geolevel'>
                         <div>Geolevel:</div>
                         <select>
@@ -103,6 +104,12 @@
                             <option>5</option>
                         </select>
                     </div>
+                </div>
+				<div id='dataSet'>
+                    <div>Data set:</div>
+                    <select>
+                        <option></option>
+                    </select>
                 </div>
                 <div id='zoomTo'>
                     <div>Zoom to:</div>
@@ -123,15 +130,9 @@
                     </a>
                 </div>
                 <div class='mapOpts'>
-                    <a href='#' class='mapOpt' id="choroplethBtn" title="Make a choropleth map">
-                        <!--<img src="images/map.png" id="choroplethBtn" alt="choropleth">-->
-                    </a>
-					<a href='#' class='mapOpt' id="clearSelection" title="Clear selection">
-                        <!--<img src="images/empty-icon.png" id="" alt="clear">-->
-                    </a>
-					<a href='#' class='mapOpt' id="zoomExtent" title="Zoom to extent">
-                        <!--<img src="images/globe-icon.png" id="" alt="Zoom to extent-->
-                    </a>	
+                    <a href='#' class='mapOpt' id="choroplethBtn" title="Make a choropleth map"></a>
+					<a href='#' class='mapOpt' id="clearSelection" title="Clear selection"></a>
+					<a href='#' class='mapOpt' id="zoomExtent" title="Zoom to extent"></a>	
                 </div>
                 <a href='#' rel='leanModal' class='settings' title="Settings">
                     <img src="images/settings.png">
@@ -140,7 +141,7 @@
         </div>
         <div id="content">
             <div id="leftcol">
-                <div class='options'>
+                <!--<div class='options'>
                     <select id='pyrFldsAvlb'>
                         <option>Fields Available</option>
                         <option>2</option>
@@ -155,9 +156,9 @@
                         <option>4</option>
                         <option>5</option>
                     </select>
-                    <!--<div id='redraw'>
+                    <div id='redraw'>
 							<a href='#'>Redraw</a>
-						</div>-->
+					</div>
                 </div>
                 <div id='pyramid'>
                     <div class='summary'>
@@ -171,6 +172,7 @@
                     </div>
                     <div class='chart'></div>
                 </div>
+				-->
             </div>
             <div id="rightcol">
                 <div id="map"></div>
@@ -205,6 +207,10 @@
 						<option value=''> </option>
 						</select>
 					</div>
+					<!--<div class="txt-fld" id="tableSettings">
+						<label for="numOfRows" >Table rows N.:</label>
+						<input type="text" id="numOfRows" name="numOfRows" value="500">
+					</div>-->
 					<div class="txt-fld" id="tableSettings">
 						<label for="fldSlct" >Table fields:</label>
 						<div id ="colsFilter"></div>	
@@ -216,9 +222,7 @@
 			</div>
 		</div>
 	</div>
-	<!------------------->
-    <!-- Modal Dialogs -->
-    <!------------------->
+
 	<div class="overlay" id="statusbar">
 		<div class="info"></div>
 	</div>
@@ -284,7 +288,7 @@
 	
     <script>
     (function() {
-        RIF.manager();;
+        RIF.manager();
     })();
     </script>
 </body>

@@ -12,16 +12,32 @@ RIF.menu.geoLevel = (function(){
 			
 			/* DOM elements */
 			geolevels: $('#geolevel select'),
-			zoomTo:    $('#zoomTo select'),		
+			zoomTo:    $('#zoomTo select'),
+			dataSet:   $('#dataSet select'),	
 			avlbFlds:  $(''),
 
 			/* callbacks */
 			geolevelsClbk: function(){ // called once only
 				if ( this.length > 0 ){
 				    parent.dropDown( this , _p.geolevels );
-					_p.setGeolevel( this[0][0] );
-				    parent.facade.addGeolevel( this[0][0] );
+					_p.setGeolevel( this[0] ); //First geolevel in list
+					_p.getDataSets();
 				}	
+			},
+			
+			getDataSets: function(){
+				RIF.getDataSetsAvailable( _p.dataSetsClbk, [_p.currentGeolvl] );		
+			},
+			
+			dataSetsClbk: function(){
+				_p.setDataset( this[0] );
+				parent.dropDown( this , _p.dataSet );
+				_p.updateOtherComponents();
+			},
+			
+			updateOtherComponents: function(){
+				parent.facade.addGeolevel( _p.currentGeolvl, _p.currentdataset );
+				parent.facade.addTabularData( _p.currentdataset );
 			},
 			
 			getZoomIdentifiers: function ( args ){
@@ -40,8 +56,16 @@ RIF.menu.geoLevel = (function(){
 				_p.currentGeolvl = geolvl;
 			},
 			
+			setDataset: function(dataset){
+				_p.currentdataset = dataset;
+			},
+			
 			getGeolevel: function(geolvl){
 				return _p.currentGeolvl;
+			},
+			
+			getDataset: function(geolvl){
+				return _p.currentdataset;
 			},
 			
 			/* events */
@@ -50,9 +74,13 @@ RIF.menu.geoLevel = (function(){
 					parent.facade.zoomTo( RIF.replaceAll('_',' ', this.value) );
 				});
 				
+				this.dataSet.on('change', function() {
+					parent.facade.addTabularData(  this.value );
+				});
+				
 				this.geolevels.on('change', function() {
 					_p.setGeolevel( this.value );
-					parent.facade.addGeolevel( this.value );
+					_p.getDataSets();
 				});
 			}
 	    };
