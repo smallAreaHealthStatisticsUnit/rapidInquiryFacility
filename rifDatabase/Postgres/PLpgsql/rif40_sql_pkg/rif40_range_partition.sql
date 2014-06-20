@@ -282,7 +282,7 @@ BEGIN
 --
 -- Call: _rif40_common_partition_create_setup()
 --
-	create_setup:=rif40_sql_pkg._rif40_common_partition_create_setup(l_schema, l_table, l_column);
+	create_setup:=rif40_sql_pkg._rif40_common_partition_create_setup(l_schema, l_table, l_column, NULL /* Not a hash partition */);
 	IF create_setup.ddl_stmt IS NULL THEN /* Un partitionable */
 		RETURN;
 	END IF;

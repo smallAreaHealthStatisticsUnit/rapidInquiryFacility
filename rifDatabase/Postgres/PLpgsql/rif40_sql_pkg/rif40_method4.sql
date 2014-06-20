@@ -136,6 +136,11 @@ BEGIN
 	END IF;
 --
 	IF select_stmt IS NULL THEN
+		IF title IS NULL THEN
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_method4', 'NULL SQL statement, NULL title');
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_method4', 'NULL SQL statement for: %', title::VARCHAR);
+		END IF;
 		RETURN;
 	END IF;
 	stp:=clock_timestamp();
@@ -201,6 +206,10 @@ BEGIN
 -- Process row array
 --
 		FOR i IN 1 .. j LOOP
+			IF LENGTH(c2m4_result_row[i]) > column_len[i] THEN
+				column_len[i]:=LENGTH(c2m4_result_row[i]);
+			END IF;
+--
 			IF i = 1 THEN
 				select_text:=select_text||RPAD(c2m4_result_row[i], column_len[i]);
 			ELSE

@@ -191,7 +191,7 @@ BEGIN
 --
 -- Call: _rif40_common_partition_create_setup()
 --
-	create_setup:=rif40_sql_pkg._rif40_common_partition_create_setup(l_schema, l_table, l_column);
+	create_setup:=rif40_sql_pkg._rif40_common_partition_create_setup(l_schema, l_table, l_column, l_num_partitions);
 --
 -- Force creation - tables are mainly empty in dev.
 --
@@ -296,6 +296,9 @@ BEGIN
 		PERFORM _rif40_hash_partition_create(l_schema, l_table, l_table||'_p'||i::Text, l_column, i, l_num_partitions);
 	END LOOP;
 
+	IF l_table = 't_rif40_investigations' THEN
+--		RAISE plpgsql_error;
+	END IF;
 --
 -- Remove INSERT triggers from master table so they don't fire twice (replace with no re-enable) 
 --
@@ -320,16 +323,7 @@ BEGIN
 --
 	PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
 
---
--- Put back foreign keys
---
-	IF fk_stmt IS NOT NULL THEN
-		PERFORM rif40_sql_pkg.rif40_ddl(fk_stmt);
---		RAISE plpgsql_error;
-	END IF;
-	IF l_table = 't_rif40_investigations' THEN
-		RAISE plpgsql_error;
-	END IF;
+
 --
 -- Check number of rows match original
 --
@@ -346,6 +340,8 @@ BEGIN
 	ELSIF total_rows != n_total_rows THEN
 		PERFORM rif40_log_pkg.rif40_error(-20190, 'rif40_hash_partition', 'Partition of: %.% rows mismatch: expected: %, got % rows total', 
 			l_schema::VARCHAR, l_table::VARCHAR, total_rows::VARCHAR, n_total_rows::VARCHAR);
+	ELSIF l_num_partitions = num_partitions THEN
+-- Hash partition - test not valid
 	ELSE
 		PERFORM rif40_log_pkg.rif40_error(-20191, 'rif40_hash_partition', 'Partition of: %.% partition mismatch: expected: %, got % partition total', 
 			l_schema::VARCHAR, l_table::VARCHAR, num_partitions::VARCHAR, n_num_partitions::VARCHAR);
@@ -354,7 +350,64 @@ BEGIN
 --
 -- Call: _rif40_common_partition_create_complete()
 --
-	PERFORM rif40_sql_pkg._rif40_common_partition_create_complete(l_schema, l_table, l_column, create_insert.index_name);
+	BEGIN
+		PERFORM rif40_sql_pkg._rif40_common_partition_create_complete(l_schema, l_table, l_column, create_insert.index_name);
+	EXCEPTION
+		WHEN others THEN
+			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+			error_message:='rif40_hash_partition() caught in _rif40_common_partition_create_complete(): '||E'\n'||
+				SQLERRM::VARCHAR||' in SQL> '||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
+			RAISE INFO '2: %', error_message;
+--
+			RAISE;
+	END;
+
+--
+-- Put back foreign keys, e.g.
+--
+/*
+CREATE TRIGGER t_rif40_investigations_p16_checks BEFORE INSERT OR UPDATE OF username, inv_name, inv_description, year_start, year_stop, max_age_group, min_age_group, genders, numer_tab, investigation_state, geography, study_id, inv_id, classifier, classifier_bands, mh_test_type ON t_rif40_investigations_p16 FOR EACH ROW WHEN ((((((((((((((((((new.username IS NOT NULL) AND ((new.username)::text <> ''::text)) OR ((new.inv_name IS NOT NULL) AND ((new.inv_name)::text <> ''::text))) OR ((new.inv_description IS NOT NULL) AND ((new.inv_description)::text <> ''::text))) OR ((new.year_start IS NOT NULL) AND ((new.year_start)::text <> ''::text))) OR ((new.year_stop IS NOT NULL) AND ((new.year_stop)::text <> ''::text))) OR ((new.max_age_group IS NOT NULL) AND ((new.max_age_group)::text <> ''::text))) OR ((new.min_age_group IS NOT NULL) AND ((new.min_age_group)::text <> ''::text))) OR ((new.genders IS NOT NULL) AND ((new.genders)::text <> ''::text))) OR ((new.investigation_state IS NOT NULL) AND ((new.investigation_state)::text <> ''::text))) OR ((new.numer_tab IS NOT NULL) AND ((new.numer_tab)::text <> ''::text))) OR ((new.geography IS NOT NULL) AND ((new.geography)::text <> ''::text))) OR ((new.study_id IS NOT NULL) AND ((new.study_id)::text <> ''::text))) OR ((new.inv_id IS NOT NULL) AND ((new.inv_id)::text <> ''::text))) OR ((new.classifier IS NOT NULL) AND ((new.classifier)::text <> ''::text))) OR ((new.classifier_bands IS NOT NULL) AND ((new.classifier_bands)::text <> ''::text))) OR ((new.mh_test_type IS NOT NULL) AND ((new.mh_test_type)::text <> ''::text)))) EXECUTE PROCEDURE rif40_trg_pkg.trigger_fct_t_rif40_investigations_checks();
+ */
+-- 
+--
+	IF fk_stmt IS NOT NULL THEN
+		BEGIN
+			PERFORM rif40_sql_pkg.rif40_ddl(fk_stmt);
+--			RAISE plpgsql_error;
+		EXCEPTION
+			WHEN others THEN
+--
+-- Catch foregin key errors:
+--
+-- psql:../psql_scripts/v4_0_study_id_partitions.sql:145: INFO:  [DEBUG1] rif40_ddl(): SQL> ALTER TABLE rif40.rif40_study_shares_p10
+--       ADD CONSTRAINT /* Add support for local partitions */ rif40_study_shares_p10_study_id_fk FOREIGN KEY (study_id) REFERENCES t_rif40_studies_p10(study_id)
+-- /* Referenced foreign key table: rif40.rif40_study_shares_p10 has partitions: false, is a partition: true */
+-- /* Referenced foreign key partition: 10 of 16 */;
+-- psql:../psql_scripts/v4_0_study_id_partitions.sql:145: WARNING:  rif40_ddl(): SQL in error (42830)> ALTER TABLE rif40.rif40_study_shares_p10
+--        ADD CONSTRAINT /* Add support for local partitions */ rif40_study_shares_p10_study_id_fk
+-- FOREIGN KEY (study_id) REFERENCES t_rif40_studies_p10(study_id)
+-- /* Referenced foreign key table: rif40.rif40_study_shares_p10 has partitions: false, is a partition: true */
+-- /* Referenced foreign key partition: 10 of 16 */;
+-- psql:../psql_scripts/v4_0_study_id_partitions.sql:145: ERROR:  there is no unique constraint matching given keys for referenced table "t_rif40_studies_p10"
+-- Time: 205205.927 ms
+--
+-- [this is caused by a missing PRIMARY KEY on t_rif40_studies_p10]
+--
+				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+				error_message:='rif40_hash_partition() caught in rif40_ddl(fk_stmt): '||E'\n'||
+					SQLERRM::VARCHAR||' in SQL> '||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
+				RAISE INFO '2: %', error_message;
+--				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM rif40_study_shares_p10', 'rif40_study_shares_p10');
+--				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM rif40_study_shares', 'rif40_study_shares');
+--				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM t_rif40_studies_p10', 't_rif40_studies_p10');
+--				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM t_rif40_studies', 't_rif40_studies');
+--
+				RAISE;
+		END;
+	END IF;
+	IF l_table = 't_rif40_studies' THEN
+--		RAISE plpgsql_error;
+	END IF;
 
 --
 -- Test partition exclusion. This currently does not work and Postgres only supports range values (e.g. year = 1999; not 
@@ -424,7 +477,7 @@ Total runtime: 1.310 ms
 --
 -- Used to halt alter_1.sql for testing
 --
-	RAISE plpgsql_error;
+--	RAISE plpgsql_error;
 END;
 $func$ LANGUAGE plpgsql;
 
