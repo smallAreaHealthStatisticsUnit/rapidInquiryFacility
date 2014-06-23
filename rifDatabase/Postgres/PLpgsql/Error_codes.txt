@@ -1,0 +1,6 @@
+Error codes assignment (see PLpgsql\Error_codes.txt):
+
+rif40_xml_pkg:
+
+_rif40_getGeoLevelExtentCommon: 	50000 to 50099
+rif40_get_geojson_as_js: 		50200 to 50199

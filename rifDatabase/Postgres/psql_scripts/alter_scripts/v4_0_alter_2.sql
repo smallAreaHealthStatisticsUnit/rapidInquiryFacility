@@ -73,6 +73,12 @@ END;
 $$;
 
 --
+-- Add web services
+--
+\i ../PLpgsql/v4_0_rif40_geo_pkg.sql
+\i ../PLpgsql/v4_0_rif40_xml_pkg.sql
+
+--
 -- This alter script can be run >once
 --
 -- Additional tables/columns as required by Fred (being specified):
@@ -85,7 +91,8 @@ $$;
 DO LANGUAGE plpgsql $$
 DECLARE
 --
-	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl'];
+	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 
+		'rif40_get_geojson_as_js', '_rif40_getGeoLevelExtentCommon'];
 	c1alter2 CURSOR FOR
 		SELECT *
 		  FROM rif40_geographies;
@@ -160,7 +167,16 @@ UPDATE t_rif40_geolevels_geometry_sahsu_level2 b
  WHERE b.area_id = a.area_id;
 
  */
--- Update
+-- Fix gid so it it unique per area_id /(ST_Union'ed together - so are)
+				ddl_stmt[array_length(ddl_stmt, 1)+1]:='WITH a AS ('||E'\n'||
+E'\t'||'SELECT area_id, gid, ROW_NUMBER() OVER() AS new_gid'||E'\n'||
+E'\t'||'  FROM '||l_partition||E'\n'||
+')'||E'\n'||
+'UPDATE '||l_partition||' b'||E'\n'||
+'   SET gid = a.new_gid'||E'\n'||
+'  FROM a'||E'\n'||
+' WHERE b.area_id = a.area_id';
+-- Update gid_rowindex
 				ddl_stmt[array_length(ddl_stmt, 1)+1]:='WITH a AS ('||E'\n'||
 E'\t'||'SELECT area_id, gid, gid||''_''||ROW_NUMBER() OVER(PARTITION BY gid ORDER BY area_id) AS gid_rowindex'||E'\n'||
 E'\t'||'  FROM '||l_partition||E'\n'||
@@ -169,8 +185,9 @@ E'\t'||'  FROM '||l_partition||E'\n'||
 '   SET gid_rowindex = a.gid_rowindex'||E'\n'||
 '  FROM a'||E'\n'||
 ' WHERE b.area_id = a.area_id';
--- Create unqiue index
+-- Create unqiue indexes
 				ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE UNIQUE INDEX '||l_partition||'_gidr  ON '||l_partition||'(gid_rowindex)';
+				ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE UNIQUE INDEX '||l_partition||'_gid  ON '||l_partition||'(gid)';
 -- Make not null
 				ddl_stmt[array_length(ddl_stmt, 1)+1]:='ALTER TABLE '||l_partition||' ALTER COLUMN gid_rowindex SET NOT NULL';
 -- Analyse
@@ -336,6 +353,15 @@ COMMENT ON TRIGGER trg_rif40_investigations ON rif40_investigations IS 'INSTEAD 
 -- FINALLY: Drop the column
 ALTER TABLE t_rif40_investigations DROP COLUMN IF EXISTS geography;
 --\dS+ t_rif40_investigations
+
+SElECT area_id, name, gid, gid_rowindex
+  FROM t_rif40_sahsu_geometry
+ WHERE geolevel_name = 'LEVEL2'
+ ORDER BY gid;
+
+SELECT rif40_xml_pkg.rif40_getGeoLevelFullExtent('SAHSU', 'LEVEL2');
+SELECT rif40_xml_pkg.rif40_getGeoLevelFullExtentForStudy('SAHSU', 'LEVEL4', 1);
+SELECT rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004');
 
 DO LANGUAGE plpgsql $$
 BEGIN
