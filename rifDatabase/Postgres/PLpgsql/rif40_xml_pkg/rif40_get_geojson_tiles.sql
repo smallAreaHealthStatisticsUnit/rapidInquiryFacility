@@ -9,6 +9,7 @@
 -- Description:
 --
 -- Rapid Enquiry Facility (RIF) - Web services integration functions for middleware
+--     				  Encapulate geoJSON in Javascript
 --
 -- Copyright:
 --
@@ -64,24 +65,52 @@ $$;
 --
 -- Error codes assignment (see PLpgsql\Error_codes.txt):
 --
--- rif40_xml_pkg:
+-- rif40_xml_pkgt.rif40_get_geojson_tiles: 		50200 to 50399
 --
--- _rif40_getGeoLevelExtentCommon: 	50000 to 50099
--- rif40_get_geojson_as_js: 		50200 to 50399
--- rif40_get_geojson_tiles: 		50400 to 50599
---
--- Include common code
---
-\i ../PLpgsql/rif40_xml_pkg/_rif40_getGeoLevelExtentCommon.sql
+CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(
+	l_geography 	VARCHAR, 
+	l_geolevel_view VARCHAR,
+	y_max 	REAL,
+	x_max 	REAL, 
+	y_min 	REAL, 
+	x_min 	REAL)
+RETURNS text 
+SECURITY INVOKER
+AS $body$
+/*
 
+Function: 	rif40_get_geojson_tiles()
+Parameters:	Geography, geolevel_view, Y max, X max, Y min, X min as a record.
+Returns:	Text
+Description:	Get GeoJSON data as a Javascript variable. 
+		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
+		SRID is 4326 (WGS84)
+		Note: that this is NOT box 2d. Box 2d is defined as a box composed of x min, ymin, xmax, ymax. 
+
+Execute a SQL statement like and return JS text:
+
+*/
+DECLARE
+BEGIN
 --
--- Include functions
---
-\i ../PLpgsql/rif40_xml_pkg/rif40_get_geojson_as_js.sql
-\i ../PLpgsql/rif40_xml_pkg/rif40_get_geojson_tiles.sql
-\i ../PLpgsql/rif40_xml_pkg/rif40_getGeoLevelFullExtent.sql
-\i ../PLpgsql/rif40_xml_pkg/rif40_getGeoLevelFullExtentForStudy.sql
-\i ../PLpgsql/rif40_xml_pkg/rif40_getGeoLevelBoundsForArea.sql
+	RETURN 'Hello world';
+END;
+$body$
+LANGUAGE PLPGSQL;
+
+COMMENT ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL) IS 'Function: 	rif40_get_geojson_tiles()
+Parameters:	Geography, geolevel_view, Y max, X max, Y min, X min as a record.
+Returns:	Text table
+Description:	Get GeoJSON data as a Javascript variable. 
+		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
+		SRID is 4326 (WGS84)
+		Note: that this is NOT box 2d. Box 2d is defined as a box composed of x min, ymin, xmax, ymax. 
+
+Execute a SQL statement like and return JS text:
+';
+
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL) TO rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL) TO rif_user;
 
 --
 -- Eof

@@ -92,7 +92,7 @@ DO LANGUAGE plpgsql $$
 DECLARE
 --
 	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 
-		'rif40_get_geojson_as_js', '_rif40_getGeoLevelExtentCommon'];
+		'rif40_get_geojson_as_js', '_rif40_getGeoLevelExtentCommon', 'rif40_get_geojson_tiles'];
 	c1alter2 CURSOR FOR
 		SELECT *
 		  FROM rif40_geographies;
@@ -362,6 +362,15 @@ SElECT area_id, name, gid, gid_rowindex
 SELECT rif40_xml_pkg.rif40_getGeoLevelFullExtent('SAHSU', 'LEVEL2');
 SELECT rif40_xml_pkg.rif40_getGeoLevelFullExtentForStudy('SAHSU', 'LEVEL4', 1);
 SELECT rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004');
+
+--
+-- View the <geolevel view> (e.g. GOR2001) of <geolevel area> (e.g. London) and select at <geolevel select> (e.g. LADUA2001) level.
+-- or in this case: 
+-- "View the <geolevel view> (e.g. LEVEL4) of <geolevel area> (e.g. 01.004) and select at <geolevel select> (e.g. LEVEL2) level".
+--
+\copy (SELECT * FROM rif40_xml_pkg.rif40_get_geojson_as_js('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, 'LEVEL2' /* geolevel area */, '01.004' /* geolevel area id */)) to ../tests/sahsu_geojson_test_01.js 
+
+-- \copy (WITH a AS (SELECT rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004') AS ab) SELECT rif40_xml_pkg.rif40_get_geojson_tiles('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, a.ab.y_max, a.ab.x_max, a.ab.y_min, a.ab.x_min) FROM a) to ../tests/sahsu_geojson_test_02.js
 
 DO LANGUAGE plpgsql $$
 BEGIN

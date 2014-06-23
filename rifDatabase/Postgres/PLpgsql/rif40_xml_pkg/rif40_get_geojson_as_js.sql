@@ -65,7 +65,7 @@ $$;
 --
 -- Error codes assignment (see PLpgsql\Error_codes.txt):
 --
--- rif40_xml_pkgt.rif40_get_geojson_as_js: 		50200 to 50199
+-- rif40_xml_pkgt.rif40_get_geojson_as_js: 		50200 to 50399
 --
 CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_get_geojson_as_js(l_geography VARCHAR, geolevel_view VARCHAR, geolevel_area VARCHAR, geolevel_area_id VARCHAR)
 RETURNS SETOF text 
@@ -83,20 +83,23 @@ Description:	Get GeoJSON data as a Javascript variable.
 Execute a SQL statement like and return JS text:
 
 WITH a AS (
-        SELECT 0 ord, ''var spatialData={ "type": "FeatureCollection","features": [ /- Start -/'' js
+        SELECT 0 ord, 'Header' AS name, 'var spatialData={ "type": "FeatureCollection","features": [ /- Start -/' js
         UNION
-        SELECT row_number() over() ord,
-               ''{"type": "Feature","properties":{"area_id":"''||area_id||''","name":"''||COALESCE(name, '')||''"},"geometry": ''||optimised_geojson||''} -/ ''||row_number() over()||'' : ''||area_id||'' : ''||'' : ''||COALESCE(name, '')||'' -/'' AS js
-          FROM t_rif40_ew01_geometry
-         WHERE geolevel_name = ''LADUA2001'' /- <geolevel view> -/ AND area_id IN (
-                SELECT DISTINCT ladua2001 /- <geolevel view> -/
-                  FROM ew2001_geography /- Heirarchy table /- WHERE gor2001 /- <geolevel area> -/ = ''H'' /- <geolevel area id> -/)
-                UNION
-                SELECT 999999 ord, '']} /- End -/'' js
+        SELECT row_number() over() ord, area_id AS name,
+               '{"type": "Feature","properties":{"area_id":"'||area_id||'","name":"'||
+               COALESCE(name, '')||'"},"geometry": '||optimised_geojson||'} /- '||
+               row_number() over()||' : '||area_id||' : '||' : '||COALESCE(name, '')||' -/ ' AS js
+          FROM t_rif40_sahsu_geometry
+         WHERE geolevel_name = $1 /- <geolevel view> -/ AND area_id IN (
+                SELECT DISTINCT level4 /- <geolevel view> -/
+                  FROM sahsuland_geography /- Heirarchy table -/
+                 WHERE level2 /- <geolevel area> -/ = $2 /- <geolevel area id> [/)
+        UNION
+        SELECT 999999 ord, 'footer' AS name, ']} /- End -/' js
 )
-SELECT CASE WHEN ord BETWEEN 2 AND 999998 THEN '',''||js ELSE js END AS js
+SELECT ord, name, CASE WHEN ord BETWEEN 2 AND 999998 THEN ','||js ELSE js END AS js
   FROM a
- ORDER BY ord LIMIT 2;'
+ ORDER BY ord;
 
 */
 DECLARE
@@ -122,20 +125,24 @@ DECLARE
 	c3_rec RECORD;
 	c4_rec RECORD;
 --
-	sql_stmt VARCHAR;
+	sql_stmt 		VARCHAR;
+	i 			INTEGER:=0;
+--
+	error_message 		VARCHAR;
+	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN
 --
 -- Must be rif40 or have rif_user or rif_manager role
 --
 	IF NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-10001, 'rif40_get_geojson_as_js', 'User % must be rif40 or have rif_user or rif_manager role', 
+		PERFORM rif40_log_pkg.rif40_error(-50200, 'rif40_get_geojson_as_js', 'User % must be rif40 or have rif_user or rif_manager role', 
 			USER::VARCHAR	/* Username */);
 	END IF;
 --
 -- Test geography
 --
 	IF l_geography IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-10007, 'rif40_get_geojson_as_js', 'NULL geography parameter');
+		PERFORM rif40_log_pkg.rif40_error(-50201, 'rif40_get_geojson_as_js', 'NULL geography parameter');
 	END IF;	
 --
 	OPEN c1(l_geography);
@@ -143,7 +150,7 @@ BEGIN
 	CLOSE c1;
 --
 	IF c1_rec.geography IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-10008, 'rif40_get_geojson_as_js', 'geography: % not found', 
+		PERFORM rif40_log_pkg.rif40_error(-50202, 'rif40_get_geojson_as_js', 'geography: % not found', 
 			l_geography::VARCHAR	/* Geography */);
 	END IF;	
 --
@@ -154,7 +161,7 @@ BEGIN
 	CLOSE c2;
 --
 	IF c2a_rec.geolevel_name IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-10009, 'rif40_get_geojson_as_js', 'geography: %, <geoevel view> %: not found', 
+		PERFORM rif40_log_pkg.rif40_error(-50203, 'rif40_get_geojson_as_js', 'geography: %, <geoevel view> %: not found', 
 			l_geography::VARCHAR	/* Geography */, 
 			geolevel_view::VARCHAR	/* geolevel view */);
 	END IF;	
@@ -164,7 +171,7 @@ BEGIN
 	CLOSE c2b;
 --
 	IF c2b_rec.geolevel_name IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-10010, 'rif40_get_geojson_as_js', 'geography: %, <geoevel area> %: not found', 
+		PERFORM rif40_log_pkg.rif40_error(-50204, 'rif40_get_geojson_as_js', 'geography: %, <geoevel area> %: not found', 
 			l_geography::VARCHAR	/* Geography */, 
 			geolevel_area::VARCHAR	/* Geoelvel area */);
 	END IF;	
@@ -174,13 +181,15 @@ BEGIN
 -- get_geojson_as_js() geography: EW01, <geoevel area> GOR2001 resolution (3) is NOT higher than <geoevel view> OA2001 resolution (7)
 --
 	IF c2a_rec.geolevel_id /* <geoevel view> */ < c2b_rec.geolevel_id /* <geoevel area> */ THEN
-		PERFORM rif40_log_pkg.rif40_error(-10011, 'rif40_get_geojson_as_js', 'geography: %, <geoevel area> % resolution (%) higher than <geoevel view> % resolution (%)', 			
+		PERFORM rif40_log_pkg.rif40_error(-50205, 'rif40_get_geojson_as_js', 
+			'geography: %, <geoevel area> % resolution (%) higher than <geoevel view> % resolution (%)', 			
 			l_geography::VARCHAR		/* Geography */, 
 			geolevel_area::VARCHAR		/* Geolevel area */, 
 			c2b_rec.geolevel_id::VARCHAR, 	/* Geolevel area ID (resolution) */
 			geolevel_view::VARCHAR		/* geolevel view */, c2a_rec.geolevel_id::VARCHAR);
 	ELSE
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_as_js', 'geography: %, <geoevel area> % resolution (%) is NOT higher than <geoevel view> % resolution (%)', 		
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_as_js', 
+			'[50206] Geography: %, <geoevel area> % resolution (%) is NOT higher than <geoevel view> % resolution (%)', 		
 			l_geography::VARCHAR		/* Geography */, 
 			geolevel_area::VARCHAR		/* Geolevel area */, 
 			c2b_rec.geolevel_id::VARCHAR	/* Geolevel area ID (resolution) */, 
@@ -192,19 +201,23 @@ BEGIN
 -- 
 	sql_stmt:='SELECT COUNT(DISTINCT('||quote_ident(LOWER(geolevel_view))||')) AS total'||E'\n'||
 		  '  FROM '||quote_ident(LOWER(c1_rec.hierarchytable))||E'\n'||
-		  ' WHERE '||quote_ident(LOWER(geolevel_area))||' = '||quote_literal(geolevel_area_id);
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_as_js', 'SQL> %;', sql_stmt::VARCHAR);
-	OPEN c3 FOR EXECUTE sql_stmt;
+		  ' WHERE '||quote_ident(LOWER(geolevel_area))||' = $1';
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_as_js', '[50207] <geolevel area id> SQL> [using %]'||E'\n'||'%;',
+		geolevel_area_id::VARCHAR	/* Geolevel area ID */,
+		sql_stmt::VARCHAR		/* SQL statement */);
+	OPEN c3 FOR EXECUTE sql_stmt USING geolevel_area_id;
 	FETCH c3 INTO c3_rec;
 	CLOSE c3;
 	IF c3_rec.total = 0 THEN
-		PERFORM rif40_log_pkg.rif40_error(-10012, 'rif40_get_geojson_as_js', 'geography: %, <geoevel area> % id % does not exist in hierarchy table: %', 			
+		PERFORM rif40_log_pkg.rif40_error(-10012, 'rif40_get_geojson_as_js', 
+			'[50208] Geography: %, <geoevel area> % id % does not exist in hierarchy table: %', 			
 			l_geography::VARCHAR			/* Geography */, 
 			geolevel_area::VARCHAR			/* Geoelvel area */,  
 			geolevel_area_id::VARCHAR		/* Geoelvel area ID */, 
 			LOWER(c1_rec.hierarchytable)::VARCHAR	/* Hierarchy table */);
 	ELSE
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_as_js', 'geography: %, <geoevel area> % id % will return: % area_id', 		
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_as_js', 
+			'[50209] Geography: %, <geoevel area> % id % will return: % area_id', 		
 			l_geography::VARCHAR		/* Geography */, 
 			geolevel_area::VARCHAR		/* Geoelvel area */, 
 			geolevel_area_id::VARCHAR	/* Geoelvel area ID */, 
@@ -214,29 +227,66 @@ BEGIN
 -- Create SQL statement
 -- 
 	sql_stmt:='WITH a AS ('||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'SELECT 0 ord, ''var spatialData={ "type": "FeatureCollection","features": [ /* Start */'' js'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'SELECT 0 ord, ''Header'' AS name, ''var spatialData={ "type": "FeatureCollection","features": [ /* Start */'' js'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'UNION'||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'SELECT row_number() over() ord,'||E'\n'; 
-	sql_stmt:=sql_stmt||E'\t'||'       ''{"type": "Feature","properties":{"area_id":"''||area_id||''","name":"''||COALESCE(name, '''')||''"},"geometry": ''||optimised_geojson||''} /* ''||'||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'row_number() over()||'' : ''||area_id||'' : ''||'' : ''||COALESCE(name, '''')||'' */ '' AS js'||E'\n'; 
+	sql_stmt:=sql_stmt||E'\t'||'SELECT row_number() over() ord, area_id AS name,'||E'\n'; 
+	sql_stmt:=sql_stmt||E'\t'||'       ''{"type": "Feature","properties":{"area_id":"''||area_id||''","name":"''||'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'       COALESCE(name, '''')||''"},"geometry": ''||optimised_geojson||''} /* ''||'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'       row_number() over()||'' : ''||area_id||'' : ''||'' : ''||COALESCE(name, '''')||'' */ '' AS js'||E'\n'; 
 	sql_stmt:=sql_stmt||E'\t'||'  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||' WHERE geolevel_name = '''||quote_ident(UPPER(geolevel_view))||''' /* <geolevel view> */ AND area_id IN ('||E'\n'; 
+	sql_stmt:=sql_stmt||E'\t'||' WHERE geolevel_name = $1 /* <geolevel view> */ AND area_id IN ('||E'\n'; 
 	sql_stmt:=sql_stmt||E'\t'||E'\t'||'SELECT DISTINCT '||quote_ident(LOWER(geolevel_view))||' /* <geolevel view> */'||E'\n'; 
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||'  FROM '||quote_ident(LOWER(c1_rec.hierarchytable))||' /* Heirarchy table */ WHERE '||
-		quote_ident(LOWER(geolevel_area))||' /* <geolevel area> */ = '||quote_literal(geolevel_area_id)||' /* <geolevel area id> */)'||E'\n'; 
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||'UNION'||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||'SELECT 999999 ord, '']} /* End */'' js'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||E'\t'||'  FROM '||quote_ident(LOWER(c1_rec.hierarchytable))||' /* Heirarchy table */'||E'\n'; 
+	sql_stmt:=sql_stmt||E'\t'||E'\t'||' WHERE '||quote_ident(LOWER(geolevel_area))||' /* <geolevel area> */ = $2 /* <geolevel area id> */)'||E'\n'; 
+	sql_stmt:=sql_stmt||E'\t'||'UNION'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'SELECT 999999 ord, ''footer'' AS name, '']} /* End */'' js'||E'\n';
 	sql_stmt:=sql_stmt||')'||E'\n';
-	sql_stmt:=sql_stmt||'SELECT CASE WHEN ord BETWEEN 2 AND 999998 THEN '',''||js ELSE js END AS js'||E'\n';
+	sql_stmt:=sql_stmt||'SELECT ord, name, CASE WHEN ord BETWEEN 2 AND 999998 THEN '',''||js ELSE js END AS js'||E'\n';
 	sql_stmt:=sql_stmt||'  FROM a'||E'\n';
 	sql_stmt:=sql_stmt||' ORDER BY ord';
 --
 -- Execute SQL statement, returning JS
 --
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_as_js', 'SQL> %;', sql_stmt::VARCHAR);
-	FOR c4_rec IN EXECUTE sql_stmt LOOP
-		RETURN NEXT c4_rec.js;
-	END LOOP;
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_as_js', '[50210] Results SQL> [using: %, %]'||E'\n'||'%;', 
+		geolevel_view::VARCHAR, 
+		geolevel_area_id::VARCHAR,
+		sql_stmt::VARCHAR		/* SQL statement */);
+	BEGIN
+		FOR c4_rec IN EXECUTE sql_stmt USING geolevel_view, geolevel_area_id LOOP
+			i:=i+1;
+--			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_as_js', 'Ord: %, name: %', 
+--				c4_rec.ord::VARCHAR, c4_rec.name::VARCHAR); 
+			RETURN NEXT c4_rec.js;
+		END LOOP;
+	EXCEPTION
+		WHEN others THEN
+--
+-- Print exception to INFO, re-raise
+--
+			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+			error_message:='_rif40_getGeoLevelExtentCommon() caught: '||E'\n'||
+				SQLERRM::VARCHAR||' in SQL> '||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
+			RAISE INFO '50211: %', error_message;
+--
+			RAISE;
+	END;
+--
+-- Check number of rows processed
+--
+	IF i = 2 THEN
+		PERFORM rif40_log_pkg.rif40_error(-50212, 'rif40_get_geojson_as_js', 'geography: %, <geoevel area> % id % SQL no area rows.', 			
+			l_geography::VARCHAR			/* Geography */, 
+			geolevel_area::VARCHAR			/* Geoelvel area */,  
+			geolevel_area_id::VARCHAR		/* Geoelvel area ID */);
+	ELSIF i != c3_rec.total+2 THEN
+		PERFORM rif40_log_pkg.rif40_error(-50213, 'rif40_get_geojson_as_js', 
+			'geography: %, <geoevel area> % id % SQL wrong number of area rows, expecting: %, got: %.', 			
+			l_geography::VARCHAR			/* Geography */, 
+			geolevel_area::VARCHAR			/* Geoelvel area */,  
+			geolevel_area_id::VARCHAR		/* Geoelvel area ID */,
+			(c3_rec.total+2)::VARCHAR		/* Expected rows */,
+			i::VARCHAR				/* Actual */);
+	END IF;
 --
 	RETURN;
 END;
@@ -253,18 +303,21 @@ Description:	Get GeoJSON data as a Javascript variable.
 Execute a SQL statement like and return JS text:
 
 WITH a AS (
-        SELECT 0 ord, ''var spatialData={ "type": "FeatureCollection","features": [ /* Start */'' js
+        SELECT 0 ord, ''Header'' AS name, ''var spatialData={ "type": "FeatureCollection","features": [ /* Start */'' js
         UNION
-        SELECT row_number() over() ord,
-               ''{"type": "Feature","properties":{"area_id":"''||area_id||''","name":"''||COALESCE(name, '')||''"},"geometry": ''||topo_optimised_geojson||''} /* ''||row_number() over()||'' : ''||area_id||'' : ''||'' : ''||COALESCE(name, '')||'' */'' AS js
-          FROM t_rif40_ew01_geometry
-         WHERE geolevel_name = ''LADUA2001'' /* <geolevel view> */ AND area_id IN (
-                SELECT DISTINCT ladua2001 /* <geolevel view> */
-                  FROM ew2001_geography /* Heirarchy table */ WHERE gor2001 /* <geolevel area> */ = ''H'' /* <geolevel area id> */)
-                UNION
-                SELECT 999999 ord, '']} /* End */'' js
+        SELECT row_number() over() ord, area_id AS name,
+               ''{"type": "Feature","properties":{"area_id":"''||area_id||''","name":"''||
+               COALESCE(name, '''')||''"},"geometry": ''||optimised_geojson||''} /* ''||
+               row_number() over()||'' : ''||area_id||'' : ''||'' : ''||COALESCE(name, '''')||'' */ '' AS js
+          FROM t_rif40_sahsu_geometry
+         WHERE geolevel_name = $1 /* <geolevel view> */ AND area_id IN (
+                SELECT DISTINCT level4 /* <geolevel view> */
+                  FROM sahsuland_geography /* Heirarchy table */
+                 WHERE level2 /* <geolevel area> */ = $2 /* <geolevel area id> */)
+        UNION
+        SELECT 999999 ord, ''footer'' AS name, '']} /* End */'' js
 )
-SELECT CASE WHEN ord BETWEEN 2 AND 999998 THEN '',''||js ELSE js END AS js
+SELECT ord, name, CASE WHEN ord BETWEEN 2 AND 999998 THEN '',''||js ELSE js END AS js
   FROM a
  ORDER BY ord;';
 
