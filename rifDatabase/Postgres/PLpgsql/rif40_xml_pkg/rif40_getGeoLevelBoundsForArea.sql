@@ -100,12 +100,11 @@ WITH a AS (
         SELECT ST_Ymax(g)::REAL AS ymax, ST_Xmax(g)::REAL AS xmax, ST_Ymin(g)::REAL AS ymin, ST_Xmin(g)::REAL AS xmin
           FROM a;
 
-e.g. SELECT rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004');
-
-   rif40_getgeolevelboundsforarea
--------------------------------------
- (55.0122,-6.32507,54.6456,-6.68853)
-(1 row)
+e.g.
+SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004');
+  y_max  |  x_max   |  y_min  |  x_min
+---------+----------+---------+----------
+ 55.0122 | -6.32507 | 54.6456 | -6.68853
 
 Generated SQL can raise exceptions; these are trapped, printed to INFO and re-raised
  */
@@ -162,12 +161,11 @@ WITH a AS (
         SELECT ST_Ymax(g)::REAL AS ymax, ST_Xmax(g)::REAL AS xmax, ST_Ymin(g)::REAL AS ymin, ST_Xmin(g)::REAL AS xmin
           FROM a;
 
-e.g. SELECT rif40_xml_pkg.rif40_getGeoLevelBoundsForArea(''SAHSU'', ''LEVEL2'', ''01.004'');
-
-   rif40_getgeolevelboundsforarea
--------------------------------------
- (55.0122,-6.32507,54.6456,-6.68853)
-(1 row)
+e.g.
+SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea(''SAHSU'', ''LEVEL2'', ''01.004'');
+  y_max  |  x_max   |  y_min  |  x_min
+---------+----------+---------+----------
+ 55.0122 | -6.32507 | 54.6456 | -6.68853
 
 Generated SQL can raise exceptions; these are trapped, printed to INFO and re-raised';
 

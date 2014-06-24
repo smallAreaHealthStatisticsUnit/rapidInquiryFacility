@@ -121,11 +121,11 @@ WITH a AS (
         SELECT ST_Ymax(g)::REAL AS ymax, ST_Xmax(g)::REAL AS xmax, ST_Ymin(g)::REAL AS ymin, ST_Xmin(g)::REAL AS xmin
           FROM a;
 
-e.g. SELECT rif40_xml_pkg.rif40_getGeoLevelFullExtent('SAHSU', 'LEVEL2');
+e.g. SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelFullExtent('SAHSU', 'LEVEL2');
 
-     rif40_getgeolevelfullextent
--------------------------------------
- (55.5268,-4.88654,52.6875,-7.58829)
+  y_max  |  x_max   |  y_min  |  x_min
+---------+----------+---------+----------
+ 55.0122 | -6.32507 | 54.6456 | -6.68853
 (1 row)
 
 Generated SQL can raise exceptions; these are trapped, printed to INFO and re-raised
@@ -220,7 +220,7 @@ BEGIN
 E'\t'||'  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||' /* '||l_geography||' */'||E'\n'||
 E'\t'||' WHERE geolevel_name = $1 /* <Geolevel view> */'||E'\n'||
 E'\t'||'   AND area_id       = $2 /* <map area> */';
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '[50005] rif40_getGeoLevelExtentCommon', 'c3geofullext SQL>'||E'\n'||'%;', sql_stmt::VARCHAR);
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_getGeoLevelExtentCommon', '[50005] c3geofullext SQL>'||E'\n'||'%;', sql_stmt::VARCHAR);
 --
 -- Execute
 --
@@ -407,11 +407,11 @@ WITH a AS (
         SELECT ST_Ymax(g)::REAL AS ymax, ST_Xmax(g)::REAL AS xmax, ST_Ymin(g)::REAL AS ymin, ST_Xmin(g)::REAL AS xmin
           FROM a;
 
-e.g. SELECT rif40_xml_pkg.rif40_getGeoLevelFullExtent(''SAHSU'', ''LEVEL2'');
+	e.g. SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelFullExtent(''SAHSU'', ''LEVEL2'');
 
-     rif40_getgeolevelfullextent
--------------------------------------
- (55.5268,-4.88654,52.6875,-7.58829)
+  y_max  |  x_max   |  y_min  |  x_min
+---------+----------+---------+----------
+ 55.0122 | -6.32507 | 54.6456 | -6.68853
 (1 row)
 
 Generated SQL can raise exceptions; these are trapped, printed to INFO and re-raised';

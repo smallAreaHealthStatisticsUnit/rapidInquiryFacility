@@ -101,11 +101,11 @@ Generates SQL> WITH a AS (
         SELECT ST_Ymax(g)::REAL AS ymax, ST_Xmax(g)::REAL AS xmax, ST_Ymin(g)::REAL AS ymin, ST_Xmin(g)::REAL AS xmin
           FROM a;
 	
-e.g. SELECT rif40_xml_pkg.rif40_getGeoLevelFullExtentForStudy('SAHSU', 'LEVEL4', 1);
+e.g. SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelFullExtentForStudy('SAHSU', 'LEVEL4', 1);
 
- rif40_getgeolevelfullextentforstudy
--------------------------------------
- (55.5268,-4.88654,52.6875,-7.58829)
+  y_max  |  x_max   |  y_min  |  x_min
+---------+----------+---------+----------
+ 55.5268 | -4.88654 | 52.6875 | -7.58829
 (1 row)
 
 Generated SQL can raise exceptions; these are trapped, printed to INFO and re-raised
@@ -164,11 +164,11 @@ Generates SQL> WITH a AS (
         SELECT ST_Ymax(g)::REAL AS ymax, ST_Xmax(g)::REAL AS xmax, ST_Ymin(g)::REAL AS ymin, ST_Xmin(g)::REAL AS xmin
           FROM a;
 	
-e.g. SELECT rif40_xml_pkg.rif40_getGeoLevelFullExtentForStudy(''SAHSU'', ''LEVEL4'', 1);
+e.g. SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelFullExtentForStudy(''SAHSU'', ''LEVEL4'', 1);
 
- rif40_getgeolevelfullextentforstudy
--------------------------------------
- (55.5268,-4.88654,52.6875,-7.58829)
+  y_max  |  x_max   |  y_min  |  x_min
+---------+----------+---------+----------
+ 55.5268 | -4.88654 | 52.6875 | -7.58829
 (1 row)
 
 Generated SQL can raise exceptions; these are trapped, printed to INFO and re-raised';
