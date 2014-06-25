@@ -51,12 +51,35 @@
 --
 -- Peter Hambly, SAHSU
 --
+-- To run:
+--
+-- Sync github to current
+-- cd to: <Github repository>\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts
+-- e.g. P:\Github\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts
+-- Run script alter_scripts\v4_0_alter_2.sql using psql on sahusland_dev as rif40 (schema owner)
+-- The relative path is important!
+-- P:\Github\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>psql -U rif40 -d sahsuland_dev -w -e -f alter_scripts\v4_0_alter_2.sql
+-- Beware: script discards all changes whilst under development!:
+/* At end of script>>>
+--
+-- Disable script by discarding all changes
+--
+DO LANGUAGE plpgsql $$
+BEGIN
+	RAISE INFO 'Aborting (script being tested)';
+	RAISE EXCEPTION 'C20999: Abort';
+END;
+$$;
+ */
 \set ECHO all
 \set ON_ERROR_STOP ON
 \timing
 
-\echo Running SAHSULAND schema alter script #2 Miscelleanous database changes...
+\echo Running SAHSULAND schema alter script #2 Miscelleanous database changes, web services...
 
+--
+-- Note gid fix for geometry tables not yet (25/6/2014) fixed in geometry load functions
+--
 BEGIN;
 
 --
@@ -87,12 +110,15 @@ $$;
 --         row_index is an incremental serial aggregated by gid ( starts from one for each gid)
 -- 
 -- This may be run before or after alter_1.sql (range partitioning of all health tables)
-\set VERBOSITY terse
+--\set VERBOSITY terse
 DO LANGUAGE plpgsql $$
 DECLARE
 --
+-- Functions to enable debug for
+--
 	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 
 		'rif40_get_geojson_as_js', '_rif40_get_geojson_as_js', '_rif40_getGeoLevelExtentCommon', 'rif40_get_geojson_tiles'];
+--
 	c1alter2 CURSOR FOR
 		SELECT *
 		  FROM rif40_geographies;
@@ -239,7 +265,10 @@ DROP TRIGGER t_rif40_investigations_checks ON t_rif40_investigations;
 DO LANGUAGE plpgsql $$
 DECLARE
 --
+-- Functions to enable debug for
+--
 	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl'];
+--
 	c1alter2 CURSOR FOR
 		SELECT column_name 
 		  FROM information_schema.columns 
@@ -359,27 +388,63 @@ SElECT area_id, name, gid, gid_rowindex
  WHERE geolevel_name = 'LEVEL2'
  ORDER BY gid;
 
-SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelFullExtent('SAHSU', 'LEVEL2');
-SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelFullExtentForStudy('SAHSU', 'LEVEL4', 1);
-SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004');
+--
+-- Bounding box functions
+--
+SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelFullExtent('SAHSU' /* Geography */, 'LEVEL2' /* Geolevel view */);
+SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelFullExtentForStudy('SAHSU' /* Geography */, 'LEVEL4' /* Geolevel view */, 1 /* Study ID */);
+SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU' /* Geography */, 'LEVEL2' /* Geolevel view */, '01.004' /* Map area ID */);
+/*
+  y_max  |  x_max   |  y_min  |  x_min
+---------+----------+---------+----------
+ 55.0122 | -6.32507 | 54.6456 | -6.68853
+(1 row)
+ */
 
+--
+-- Old rif40_get_geojson_as_js() - technically not part of the new web services interface
 --
 -- View the <geolevel view> (e.g. GOR2001) of <geolevel area> (e.g. London) and select at <geolevel select> (e.g. LADUA2001) level.
 -- or in this case: 
 -- "View the <geolevel view> (e.g. LEVEL4) of <geolevel area> (e.g. 01.004) and select at <geolevel select> (e.g. LEVEL2) level".
 --
-\copy (SELECT * FROM rif40_xml_pkg.rif40_get_geojson_as_js('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, 'LEVEL2' /* geolevel area */, '01.004' /* geolevel area id */)) to ../tests/sahsu_geojson_test_01.js 
+\copy (SELECT * FROM rif40_xml_pkg.rif40_get_geojson_as_js('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, 'LEVEL2' /* geolevel area */, '01.004' /* geolevel area id */, FALSE /* Output multiple rows so it is readable! */)) to ../tests/sahsu_geojson_test_01.js 
 
-/*
+--
+-- GetGeoJsonTiles interface
+--
 WITH a AS (
-	SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
+	SELECT *
+          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
 ) 
-SELECT rif40_xml_pkg.rif40_get_geojson_tiles('SAHSU' /- Geography -/, 'LEVEL4' /- geolevel view -/, a.y_max, a.x_max, a.y_min, a.x_min)
- FROM a;
-
+SELECT SUBSTRING(
+		rif40_xml_pkg.rif40_get_geojson_tiles(
+			'SAHSU' 	/* Geography */, 
+			'LEVEL4' 	/* geolevel view */, 
+			a.y_max, a.x_max, a.y_min, a.x_min, /* Bounding box - from cte */
+			FALSE /* Output multiple rows so it is readable! */) FROM 1 FOR 160) AS js 
+  FROM a LIMIT 4;
+/*
+                                                                                js
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+ var spatialData={ "type": "FeatureCollection","features": [ /- Start -/
+ {"type": "Feature","properties":{"area_id":"01.001.000100.1","name":"Abellan LEVEL4(01.001.000100.1)","area":"238.40","total_males":"4924.00","total_females":"5
+ ,{"type": "Feature","properties":{"area_id":"01.002.001100.1","name":"Cobley LEVEL4(01.002.001100.1)","area":"10.00","total_males":"5246.00","total_females":"54
+ ,{"type": "Feature","properties":{"area_id":"01.002.001300.5","name":"Cobley LEVEL4(01.002.001300.5)","area":"2.80","total_males":"2344.00","total_females":"218
+(4 rows)
  */
-\copy (WITH a AS (SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')) SELECT rif40_xml_pkg.rif40_get_geojson_tiles('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, a.y_max, a.x_max, a.y_min, a.x_min) FROM a) to ../tests/sahsu_geojson_test_02.js
+--
+-- Use copy to create a Javascript file that can be tested
+--
+\copy (WITH a AS (SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')) SELECT rif40_xml_pkg.rif40_get_geojson_tiles('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, a.y_max, a.x_max, a.y_min, a.x_min, FALSE /* Output multiple rows so it is readable! */) FROM a) to ../tests/sahsu_geojson_test_02.js
 
+--
+-- Done
+--
+
+--
+-- Disable script by discarding all changes
+--
 DO LANGUAGE plpgsql $$
 BEGIN
 	RAISE INFO 'Aborting (script being tested)';

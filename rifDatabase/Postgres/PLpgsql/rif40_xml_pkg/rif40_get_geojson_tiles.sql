@@ -65,52 +65,422 @@ $$;
 --
 -- Error codes assignment (see PLpgsql\Error_codes.txt):
 --
--- rif40_xml_pkgt.rif40_get_geojson_tiles: 		50200 to 50399
+-- rif40_xml_pkg.rif40_get_geojson_tiles: 		50400 to 50599
 --
 CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(
-	l_geography 	VARCHAR, 
-	l_geolevel_view VARCHAR,
-	y_max 	REAL,
-	x_max 	REAL, 
-	y_min 	REAL, 
-	x_min 	REAL)
-RETURNS text 
+	l_geography 		VARCHAR, 
+	l_geolevel_view 	VARCHAR,
+	y_max 			REAL,
+	x_max 			REAL, 
+	y_min 			REAL, 
+	x_min 			REAL, 
+	return_one_row 		BOOLEAN DEFAULT TRUE)
+RETURNS SETOF text
 SECURITY INVOKER
 AS $body$
 /*
 
 Function: 	rif40_get_geojson_tiles()
-Parameters:	Geography, geolevel_view, Y max, X max, Y min, X min as a record.
-Returns:	Text
+Parameters:	Geography, geolevel_view, Y max, X max, Y min, X min as a record, return one row (TRUE/FALSE)
+Returns:	Text table [1 or more rows dependent on return_one_row]
 Description:	Get GeoJSON data as a Javascript variable. 
 		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
 		SRID is 4326 (WGS84)
 		Note: that this is NOT box 2d. Box 2d is defined as a box composed of x min, ymin, xmax, ymax. 
 
-Execute a SQL statement like and return JS text:
+		1 row means 1 row, no CRLFs etc!
+		If return_one_row is false then a header, 1 rows/area_id and a footer is returned so the Javascript is easier to read
+
+Calls: _rif40_get_geojson_as_js to extract the data using the following SQL:
+
+WITH a AS (
+        SELECT 0 ord, 'var spatialData={ "type": "FeatureCollection","features": [ /- Start -/' js
+        UNION
+        SELECT ROW_NUMBER() OVER(ORDER BY area_id) ord,
+               '{"type": "Feature","properties":'||
+                        '{"area_id":"'||area_id||'",'||
+                         '"name":"'||COALESCE(name, '')||'",'||
+                         '"area":"'||COALESCE(area::Text, '')||'",'||
+                         '"total_males":"'||COALESCE(total_males::Text, '')||'",'||
+                         '"total_females":"'||COALESCE(total_females::Text, '')||'",'||
+                         '"population_year":"'||COALESCE(LTRIM(TO_CHAR(population_year, '9990')), '')||'",'||
+                         '"gid":"'||gid||'"},'||
+                         '"geometry": '||optimised_geojson||'} /- '||
+               row_number() over()||' : '||area_id||' : '||' : '||COALESCE(name, '')||' -/ ' AS js
+          FROM t_rif40_sahsu_geometry
+         WHERE geolevel_name = $1 /- <geolevel view> -/ AND area_id IN (SELECT UNNEST($2) /- <geolevel area id list> -/)
+        UNION
+        SELECT 999999 ord, ']} /- End: total expected rows: 59 -/' js
+)
+SELECT CASE WHEN ord BETWEEN 2 AND 999998 THEN ','||js ELSE js END::VARCHAR AS js
+  FROM a
+ ORDER BY ord;
+
+Generates a Javascript variable encapulation geoJSON that looks (when prettified using http://jsbeautifier.org/) like:
+
+var spatialData = {
+    "type": "FeatureCollection",
+    "features": [ /- Start -/ {
+        "type": "Feature",
+        "properties": {
+            "area_id": "01.004.011100.1",
+            "name": "Hambly LEVEL4(01.004.011100.1)",
+            "area": "20.60",
+            "total_males": "2540.00",
+            "total_females": "2710.00",
+            "population_year": "1996",
+            "gid": "231"
+        },
+        "geometry": {
+            "type": "MultiPolygon",
+            "coordinates": [
+                [
+                    [
+                        [-6.53098091, 55.01219818],
+                        [-6.53098091, 55.01219818],
+                        [-6.53096899, 55.0120511],
+
+...
+
+                        [-6.54086072, 55.0093148],
+                        [-6.53129474, 55.01219097],
+                        [-6.53098091, 55.01219818]
+                    ]
+                ]
+            ]
+        }
+    } /- 1 : 01.004.011100.1 :  : Hambly LEVEL4(01.004.011100.1) -/ , {
+        "type": "Feature",
+        "properties": {
+            "area_id": "01.004.011100.2",
+            "name": "Hambly LEVEL4(01.004.011100.2)",
+            "area": "17.70",
+            "total_males": "8560.00",
+            "total_females": "8678.00",
+            "population_year": "1996",
+            "gid": "233"
+        },
+        "geometry": {
+            "type": "MultiPolygon",
+            "coordinates": [
+                [
+                    [
+                        [-6.5047827, 54.96467527],
+                        [-6.5047827, 54.96467527],
+                        [-6.50468401, 54.96445045],
+
+...
+
+                        [-6.45468136, 54.66232533],
+                        [-6.45341036, 54.66048396],
+                        [-6.45273179, 54.65880877]
+                    ]
+                ]
+            ]
+        }
+    } /- 57 : 01.004.011900.3 :  : Hambly LEVEL4(01.004.011900.3) -/ ]
+} /- End: total expected rows: 59 -/ ;
+
+Validated with JSlint: http://www.javascriptlint.com/online_lint.php
 
 */
 DECLARE
+	c1geojson2 CURSOR(l_geography VARCHAR) FOR
+		SELECT *
+		  FROM rif40_geographies
+		 WHERE geography = l_geography;
+	c2geojson2 CURSOR(l_geography VARCHAR, l_geolevel VARCHAR) FOR
+		SELECT *
+		  FROM rif40_geolevels
+		 WHERE geography     = l_geography
+		   AND geolevel_name = l_geolevel;
+	c3geojson2 REFCURSOR;
+	c5geojson2 CURSOR(l_geography VARCHAR, l_geolevel_view VARCHAR, l_geolevel_area_id_list VARCHAR[], l_expected_rows INTEGER) FOR
+		WITH a AS (
+			SELECT js FROM rif40_xml_pkg._rif40_get_geojson_as_js(
+						l_geography, l_geolevel_view, l_geolevel_area_id_list, l_expected_rows)
+		)
+		SELECT ARRAY_AGG(js) AS js
+		  FROM a;
+--
+	c1_rec rif40_geographies%ROWTYPE;
+	c2a_rec rif40_geolevels%ROWTYPE;
+	c3_rec RECORD;
+	c5_rec RECORD;
+--
+	sql_stmt 		VARCHAR;
+	i 			INTEGER:=0;
+	geolevel_area_id_list	VARCHAR[];
+	js			VARCHAR[];
+	js_text			VARCHAR;
+--
+	error_message 		VARCHAR;
+	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN
 --
-	RETURN 'Hello world';
+-- Must be rif40 or have rif_user or rif_manager role
+--
+	IF NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
+		PERFORM rif40_log_pkg.rif40_error(-50400, 'rif40_get_geojson_tiles', 'User % must be rif40 or have rif_user or rif_manager role', 
+			USER::VARCHAR	/* Username */);
+	END IF;
+--
+-- Test geography
+--
+	IF l_geography IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-50401, 'rif40_get_geojson_tiles', 'NULL geography parameter');
+	END IF;	
+--
+	OPEN c1geojson2(l_geography);
+	FETCH c1geojson2 INTO c1_rec;
+	CLOSE c1geojson2;
+--
+	IF c1_rec.geography IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-50402, 'rif40_get_geojson_tiles', 'geography: % not found', 
+			l_geography::VARCHAR	/* Geography */);
+	END IF;	
+--
+-- Test <geolevel view/area> exist
+--
+	OPEN c2geojson2(l_geography, l_geolevel_view);
+	FETCH c2geojson2 INTO c2a_rec;
+	CLOSE c2geojson2;
+--
+	IF c2a_rec.geolevel_name IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-50403, 'rif40_get_geojson_tiles', 'geography: %, <geoevel view> %: not found', 
+			l_geography::VARCHAR	/* Geography */, 
+			geolevel_view::VARCHAR	/* geolevel view */);
+	END IF;	
+--
+-- Test  <eolevel area id list> is valid
+--
+/* 
+WITH a AS (
+        SELECT area_id, ST_MakeEnvelope($1 /- Xmin -/, $2 /- Ymin -/, $3 /- Xmax -/, $4 /- YMax -/) AS geom
+          FROM t_rif40_sahsu_geometry
+         WHERE optimised_geometry && ST_MakeEnvelope($1 /- Xmin -/, $2 /- Ymin -/, $3 /- Xmax -/, $4 /- YMax -/)
+           AND geolevel_name = $5
+)
+SELECT COUNT(DISTINCT(a.area_id)) AS total,
+       ARRAY_AGG(a.area_id) AS area_id_list,
+       ST_IsValid(a.geom) AS is_valid,
+       ST_Area(a.geom) AS area
+  FROM a
+ GROUP BY ST_IsValid(a.geom), ST_Area(a.geom);
+*/
+	sql_stmt:='WITH a AS ('||E'\n'||
+		  '	SELECT area_id, ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */) AS geom'||E'\n'||
+		  '	  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||E'\n'||
+		  '	 WHERE optimised_geometry && ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */)'||E'\n'||
+		  '	   AND geolevel_name = $5'||E'\n'||
+		  ')'||E'\n'||
+		  'SELECT COUNT(DISTINCT(a.area_id)) AS total,'||E'\n'||
+		  '       ARRAY_AGG(a.area_id) AS area_id_list,'||E'\n'||
+		  '       ST_IsValid(a.geom) AS is_valid,'||E'\n'||
+		  '       ST_Area(a.geom) AS area'||E'\n'||
+		  '  FROM a'||E'\n'||
+		  ' GROUP BY ST_IsValid(a.geom), ST_Area(a.geom)';
+--
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', '[50404] <geolevel area id list> SQL> [using %, %, %, %, %]'||E'\n'||'%;',
+		x_min::VARCHAR			/* Xmin */,
+		y_min::VARCHAR			/* Ymin */,
+		x_max::VARCHAR			/* Xmax */,
+		y_max::VARCHAR			/* Ymax */,
+		l_geolevel_view::VARCHAR	/* Geolevel view */,
+		sql_stmt::VARCHAR		/* SQL statement */);
+	BEGIN
+		OPEN c3geojson2 FOR EXECUTE sql_stmt USING x_min, y_min, x_max, y_max, l_geolevel_view;
+		FETCH c3geojson2 INTO c3_rec;
+		CLOSE c3geojson2;
+	EXCEPTION
+		WHEN others THEN
+--
+-- Print exception to INFO, re-raise
+--
+			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+			error_message:='rif40_get_geojson_tiles() caught: '||E'\n'||
+				SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
+			RAISE INFO '50405: %', error_message;
+--
+			RAISE;
+	END;
+--
+-- Chec kerror flags
+--
+	IF c3_rec.is_valid = FALSE THEN
+		PERFORM rif40_log_pkg.rif40_error(-50406, 'rif40_get_geojson_tiles', 
+			'Geography: %, <geoevel view> % bound [%, %, %, %] is invalid', 			
+			l_geography::VARCHAR			/* Geography */, 
+			l_geolevel_view::VARCHAR		/* Geoelvel view */,  
+			x_min::VARCHAR				/* Xmin */,
+			y_min::VARCHAR				/* Ymin */,
+			x_max::VARCHAR				/* Xmax */,
+			y_max::VARCHAR				/* Ymax */);
+	ELSIF c3_rec.total = 0 THEN
+		PERFORM rif40_log_pkg.rif40_error(-50407, 'rif40_get_geojson_tiles', 
+			'Geography: %, <geoevel view> % bound [%, %, %, %] returns no area IDs', 			
+			l_geography::VARCHAR			/* Geography */, 
+			l_geolevel_view::VARCHAR		/* Geoelvel view */,  
+			x_min::VARCHAR				/* Xmin */,
+			y_min::VARCHAR				/* Ymin */,
+			x_max::VARCHAR				/* Xmax */,
+			y_max::VARCHAR				/* Ymax */);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
+			'[50408] Geography: %, <geoevel view> % bound [%, %, %, %] will return: % area_id', 		
+			l_geography::VARCHAR			/* Geography */, 
+			l_geolevel_view::VARCHAR		/* Geoelvel view */, 
+			x_min::VARCHAR				/* Xmin */,
+			y_min::VARCHAR				/* Ymin */,
+			x_max::VARCHAR				/* Xmax */,
+			y_max::VARCHAR				/* Ymax */,
+			c3_rec.total::VARCHAR			/* Number of area_ids */,
+		        c3_rec.area::VARCHAR			/* Area of ST_MakeEnvelope() */);
+	END IF;
+--
+-- List of area IDs to dump
+--
+	geolevel_area_id_list:=c3_rec.area_id_list; 
+--
+-- Call  rif40_xml_pkg._rif40_get_geojson_as_js()
+--
+	OPEN c5geojson2(l_geography, l_geolevel_view, geolevel_area_id_list, (c3_rec.total+2)::INTEGER /* l_expected_rows */);
+	FETCH c5geojson2 INTO c5_rec;
+	CLOSE c5geojson2;
+--
+-- Return as one row
+--
+	IF return_one_row THEN
+		FOR i IN array_lower(c5_rec.js, 1) .. array_upper(c5_rec.js, 1) LOOP
+			IF i = 1 THEN
+				js_text:=c5_rec.js[i];
+			ELSE
+				js_text:=js_text||c5_rec.js[i]; /* Do not add CRLF or CR - it irritates psql copy command */
+			END IF;
+--			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_as_js', '[50200] i: %, length c5_rec.js[i]: %, js_text: %', 
+--				i::VARCHAR, LENGTH(c5_rec.js[i])::VARCHAR, LENGTH(js_text)::VARCHAR);
+		END LOOP;
+		RETURN NEXT js_text;
+	ELSE
+--
+-- Multi row return
+--
+		FOR i IN array_lower(c5_rec.js, 1) .. array_upper(c5_rec.js, 1) LOOP
+			RETURN NEXT c5_rec.js[i];
+		END LOOP;
+	END IF;
+--
+	RETURN;
 END;
 $body$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL) IS 'Function: 	rif40_get_geojson_tiles()
-Parameters:	Geography, geolevel_view, Y max, X max, Y min, X min as a record.
-Returns:	Text table
+COMMENT ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, BOOLEAN) IS 'Function: 	rif40_get_geojson_tiles()
+Function: 	rif40_get_geojson_tiles()
+Parameters:	Geography, geolevel_view, Y max, X max, Y min, X min as a record, return one row (TRUE/FALSE)
+Returns:	Text table [1 or more rows dependent on return_one_row]
 Description:	Get GeoJSON data as a Javascript variable. 
 		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
 		SRID is 4326 (WGS84)
 		Note: that this is NOT box 2d. Box 2d is defined as a box composed of x min, ymin, xmax, ymax. 
 
-Execute a SQL statement like and return JS text:
-';
+		1 row means 1 row, no CRLFs etc!
+		If return_one_row is false then a header, 1 rows/area_id and a footer is returned so the Javascript is easier to read
 
-GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL) TO rif_manager;
-GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL) TO rif_user;
+Calls: _rif40_get_geojson_as_js to extract the data using the following SQL:
+
+WITH a AS (
+        SELECT 0 ord, ''var spatialData={ "type": "FeatureCollection","features": [ /* Start */'' js
+        UNION
+        SELECT ROW_NUMBER() OVER(ORDER BY area_id) ord,
+               ''{"type": "Feature","properties":''||
+                        ''{"area_id":"''||area_id||''",''||
+                         ''"name":"''||COALESCE(name, '''')||''",''||
+                         ''"area":"''||COALESCE(area::Text, '''')||''",''||
+                         ''"total_males":"''||COALESCE(total_males::Text, '''')||''",''||
+                         ''"total_females":"''||COALESCE(total_females::Text, '''')||''",''||
+                         ''"population_year":"''||COALESCE(LTRIM(TO_CHAR(population_year, ''9990'')), '''')||''",''||
+                         ''"gid":"''||gid||''"},''||
+                         ''"geometry": ''||optimised_geojson||''} /* ''||
+               row_number() over()||'' : ''||area_id||'' : ''||'' : ''||COALESCE(name, '''')||'' */ '' AS js
+          FROM t_rif40_sahsu_geometry
+         WHERE geolevel_name = $1 /* <geolevel view> */ AND area_id IN (SELECT UNNEST($2) /* <geolevel area id list> */)
+        UNION
+        SELECT 999999 ord, '']} /* End: total expected rows: 59 */'' js
+)
+SELECT CASE WHEN ord BETWEEN 2 AND 999998 THEN '',''||js ELSE js END::VARCHAR AS js
+  FROM a
+ ORDER BY ord;
+
+Generates a Javascript variable encapulation geoJSON that looks (when prettified using http://jsbeautifier.org/) like:
+
+var spatialData = {
+    "type": "FeatureCollection",
+    "features": [ /* Start */ {
+        "type": "Feature",
+        "properties": {
+            "area_id": "01.004.011100.1",
+            "name": "Hambly LEVEL4(01.004.011100.1)",
+            "area": "20.60",
+            "total_males": "2540.00",
+            "total_females": "2710.00",
+            "population_year": "1996",
+            "gid": "231"
+        },
+        "geometry": {
+            "type": "MultiPolygon",
+            "coordinates": [
+                [
+                    [
+                        [-6.53098091, 55.01219818],
+                        [-6.53098091, 55.01219818],
+                        [-6.53096899, 55.0120511],
+
+...
+
+                        [-6.54086072, 55.0093148],
+                        [-6.53129474, 55.01219097],
+                        [-6.53098091, 55.01219818]
+                    ]
+                ]
+            ]
+        }
+    } /* 1 : 01.004.011100.1 :  : Hambly LEVEL4(01.004.011100.1) */ , {
+        "type": "Feature",
+        "properties": {
+            "area_id": "01.004.011100.2",
+            "name": "Hambly LEVEL4(01.004.011100.2)",
+            "area": "17.70",
+            "total_males": "8560.00",
+            "total_females": "8678.00",
+            "population_year": "1996",
+            "gid": "233"
+        },
+        "geometry": {
+            "type": "MultiPolygon",
+            "coordinates": [
+                [
+                    [
+                        [-6.5047827, 54.96467527],
+                        [-6.5047827, 54.96467527],
+                        [-6.50468401, 54.96445045],
+
+...
+
+                        [-6.45468136, 54.66232533],
+                        [-6.45341036, 54.66048396],
+                        [-6.45273179, 54.65880877]
+                    ]
+                ]
+            ]
+        }
+    } /* 57 : 01.004.011900.3 :  : Hambly LEVEL4(01.004.011900.3) */ ]
+} /* End: total expected rows: 59 */ ;
+
+Validated with JSlint: http://www.javascriptlint.com/online_lint.php';
+
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, BOOLEAN) TO rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, BOOLEAN) TO rif_user;
 
 --
 -- Eof
