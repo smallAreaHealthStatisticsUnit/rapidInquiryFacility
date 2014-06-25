@@ -125,22 +125,8 @@
 			var args = Array.prototype.slice.call(arguments, 0),
 				mime = args[2] || "text/plain",
 				url = "backend/gets/" + args[0];
-			
+				
 			d3.xhr(url, mime, args[1]);
-			
-			/*var options = $.extend(options || {}, {
-				dataType: "json",
-				cache: false,
-				url: "backend/gets/" +  args[0],
-				success: function(){
-				    return args[1].call(this)
-				},
-				error:function(xhr, ajaxOptions, thrownError) {
-					alert("An Error occured"+xhr.status);
-					console.log(xhr)
-				}
-		    };
-			jQuery.ajax( url , options );*/
 			
 		}
 	};

@@ -28,9 +28,9 @@
 			myFuncts.call(data);
 		},
          		
-		xhr = function( url , clbk, msg){
+		xhr = function( url , clbk, msg, mime){
 			statusBar( msg, true);
-		    RIF.xhr(  url , c( clbk, "")  );
+		    RIF.xhr(  url , c( clbk, ""), mime  );
 		},
 		
 		statusBar = function( msg, showOrHide ){
@@ -108,7 +108,7 @@
 					msg = "Retrieving numeric fields",
 				    args = "?geolevel=" + dataTable;
 					
-				xhr( "getNumericFields.php" + args , myCallback );
+				xhr( "getNumericFields.php" + args , myCallback, msg );
 			},
 			
 			/* Map */
@@ -116,14 +116,14 @@
 				var msg = "Retrieving bounds", 
 				    args = '?table='+ params[0] + '&id='+ params[1] ;	
 					
-		        xhr( "getBounds.php" + args , myCallback );
+		        xhr( "getBounds.php" + args , myCallback, msg );
 	        },
 			
 			getFullExtent: function( myCallback, params ){
 			   var msg = "Retrieving full extent",
 			       args = '?table='+ params[0];
 			   
-			   xhr( 'getFullExtent.php' + args,  myCallback );
+			   xhr( 'getFullExtent.php' + args,  myCallback, msg );
 		    },
 			
 			getTabularData: function( myCallback, params ){
@@ -146,7 +146,7 @@
 					}
 				};
 				
-			    xhr( 'getDataTable.php' + args,  myCallback );
+			    xhr( 'getDataTable.php' + args,  myCallback, msg );
 			},
 			
 			getTableRows: function( myCallback, params ){
@@ -168,7 +168,35 @@
 					}
 				} 
 
-			   xhr( 'getTableRows.php' + args,  myCallback );
+			   xhr( 'getTableRows.php' + args,  myCallback, msg );
+			},
+			
+			getAgeGroups: function( myCallback, params ){
+			   var msg = "Retrieving Age groups structure",
+			       args = '?geolevel='+ params[0];
+			   
+			   xhr( 'getAgeGroupsStructure.php' + args,  myCallback, msg );
+		    },
+			
+			getPyramidData: function (  myCallback, params ){
+				var msg = "Retrieving age group data",
+			        args = '?geolevel='+ params[0] +
+				    '&field='+ params[1] ;
+				
+				//in case of a selection	
+				if( typeof params[2] !== 'undefined'){
+					var l = params[2].length;
+					while(l--){
+						args += '&gids[]=' +params[2][l];
+					}
+				};
+
+				//in case of a selection	
+				if( typeof params[3] !== 'undefined'){
+					args += '&year='+ params[3];
+				};		
+				
+				xhr( 'getPyramidData.php' + args,  myCallback, msg, "text/csv" );
 			},
 			
 			dropDatatable: function(){	

@@ -24,7 +24,7 @@ RIF.manager = (function () {
             sync: 'manager',
             map: 'tilesvg',
             table: 'click2row',
-            chart: ['pyramid', 'histogram'],
+            chart: ['pyramid'],
             menu: [/*'export',*/ 'geoLevel', 'choropleth' , 'settings'],
 			resizable: ''
         },
@@ -84,7 +84,7 @@ RIF.manager = (function () {
             },
 			
 			addGeolevel: {
-                subscribers: ["map"],
+                subscribers: ["map", "chart"],
                 firer: ["menu"],
                 method: "uGeolevel"
             },

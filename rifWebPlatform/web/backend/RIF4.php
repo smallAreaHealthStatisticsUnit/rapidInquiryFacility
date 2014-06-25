@@ -464,6 +464,104 @@ $r = RIF4::Instance();
 		return $whereClause;
 	}
 	
+	public function getAgeGroups($geolevel){
+		try{
+			//age group definition for particular geolevel
+			$sql = "select distinct age_group as agegroup, minage, maxage from age_groups order by age_group asc";
+			$hndl = self::$dbh -> prepare($sql);
+			$hndl ->execute(array());
+			$res = $hndl -> fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+			
+		}catch(PDOException $pe){
+			self :: $dbh->rollback();
+		 	die( $pe->getMessage());
+		}
+	}
+	
+	public function getPyramidData($geolevel, $field, $gids){
+	
+		try{
+
+			$agegrouptable = $geolevel ."_agegroups";
+			
+			$gidClause = "";
+			if(isset($gids)){
+				$gidClause = " and ";
+				$gidClause .= getGidClause( $gids, '=' , 'or');
+			}
+			
+			$groupby = "";
+			
+		    $sql = "select age_group, sex, random() * sum($field) 
+					  from $agegrouptable 
+					      $gidClause
+					      group by age_group,sex
+						   order by age_group asc";
+				
+			$hndl = self::$dbh -> prepare($sql);
+			$hndl ->execute(array());	
+			
+			$csv = "agegroup,sex,$field" . "\n";
+			
+			while ($row = $hndl -> fetch(PDO::FETCH_ASSOC)){
+				$csv .=  implode($row, ',') . "\n" ;
+			}
+			
+			self :: $dbh->commit();
+			
+			return $csv;
+			
+		}catch(PDOException $pe){
+			self :: $dbh->rollback();
+		 	die( $pe->getMessage());
+		}
+	
+	}
+
+		public function getPyramidDataByYear($geolevel, $field, $year, $gids){
+	
+		try{
+
+			$agegrouptable = $geolevel ."_agegroups";
+			
+			$yearClause = "";
+			if(isset($year)){
+				$yearClause = "year = " . $year;
+			}
+			
+			$gidClause = "";
+			if(isset($gids)){
+				$gidClause = " and ";
+				$gidClause .= getGidClause( $gids, '=' , 'or');
+			}
+			
+			
+		    $sql = "select age_group, sex, random() * sum($field) 
+					  from $agegrouptable 
+					      $gidClause $yearClause
+					       group by age_group,sex
+						    order by age_group";
+				
+			$hndl = self::$dbh -> prepare($sql);
+			$hndl ->execute(array());	
+			
+			$csv = "agegroup,sex,$field" . "\n";
+			
+			while ($row = $hndl -> fetch(PDO::FETCH_ASSOC)){
+				$csv .=  implode($row, ',') . "\n" ;
+			}
+			
+			self :: $dbh->commit();
+			
+			return $csv;
+			
+		}catch(PDOException $pe){
+			self :: $dbh->rollback();
+		 	die( $pe->getMessage());
+		}
+	
+	}
 	
 }
 

@@ -104,16 +104,13 @@ RIF.style = (function ( type ) {
 		},
 		
 		setChoropleth: function( values, params, updateLegend ){
-			//if( params.domain.length === 0){
-			params.values = d3.values( values ).map(function(d) { return +d; });
-			//};
 			
+			params.values = d3.values( values ).map(function(d) { return +d; });
 			params.max = d3.max( params.domain ) || d3.max( params.values );
 			params.min = d3.min( params.domain ) || d3.min( params.values );
 			
             this.setColorBrewer( params["colorScale"], params["intervals"] );			
 			this.setScale( params );
-			//this.setScaleBreaks( params );
 			
 			if( updateLegend ){
 			    this.updateLegend();

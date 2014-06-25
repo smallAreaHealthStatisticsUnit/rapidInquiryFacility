@@ -1,40 +1,32 @@
-RIF.chart = (function () {
+RIF.chart = (function (charts) {
     
-	var _p = {
+	var c = charts.length,
+	   
+ 	   _p = {
             
-			init: function(study){
-                this.study = study;
+			init: function(){
+                
             },
 
 			facade: {
-			
-			    updatePyramidWithSelection: function(a){
-                    console.log("update pyramid")
-                },
-		
-                changePyramidField: function(a){
-                    console.log("Change pyramid field")
-                },
-		
-                changePyramidYear: function(a){
-                    console.log("Pyramid year changed")
-                },
-		
-                updateHistWithSelection: function(a){
-                    console.log("update hist")
-                },
-		
-                changeHistField: function(a){
-                    console.log("Change hist field")
-                },
-		
-                changeHistYear: function(a){
-                    console.log("hist year changed")
-                }	
+			    /* subscribers */
+				uGeolevel: function( args ){
+					_p.updatePyramid( { 
+						geolevel: args.geoLevel		
+					});
+				} 	
             }
 		};
 	
-	_p.init();
-	return _p.facade;
 	
+	/* Extend _p with all charts */ 
+	(function(){
+		while(c--){ 
+		    var r = RIF.chart[charts[c]].call(_p );
+		    _p = RIF.mix(r , _p);		
+		}
+	}());
+	
+	
+	return _p.facade;
 });
