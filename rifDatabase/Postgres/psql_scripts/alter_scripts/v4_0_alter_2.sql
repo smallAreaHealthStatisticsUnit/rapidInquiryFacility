@@ -110,7 +110,7 @@ $$;
 --         row_index is an incremental serial aggregated by gid ( starts from one for each gid)
 -- 
 -- This may be run before or after alter_1.sql (range partitioning of all health tables)
---\set VERBOSITY terse
+\set VERBOSITY terse
 DO LANGUAGE plpgsql $$
 DECLARE
 --

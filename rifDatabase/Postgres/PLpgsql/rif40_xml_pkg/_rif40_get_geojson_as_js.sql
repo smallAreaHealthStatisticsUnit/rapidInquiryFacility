@@ -81,7 +81,7 @@ Returns:	Text table
 Description:	Get GeoJSON data as a Javascript variable. 
 
 Execute a SQL statement as below and return a Javascript variable. Check rows are as expected.
-EXPLIAN ANALYZE the query.
+EXPLAIN ANALYZE VERBOSE the query if DEBUG2 set for function.
 
 WITH a AS (
         SELECT 0 ord, 'var spatialData={ "type": "FeatureCollection","features": [ /- Start -/' js
@@ -189,7 +189,8 @@ BEGIN
 --
 -- Create unique results temporary table
 --
-	temp_table:='l_'||REPLACE(rif40_sql_pkg.sys_context(NULL, 'AUDSID'), '.', '_');
+	IF rif40_log_pkg.rif40_is_debug_enabled('_rif40_get_geojson_as_js', 'DEBUG2') THEN
+		temp_table:='l_'||REPLACE(rif40_sql_pkg.sys_context(NULL, 'AUDSID'), '.', '_');
 --
 -- Drop results temporary table
 --
@@ -198,13 +199,16 @@ BEGIN
 -- CONTEXT:  SQL statement "DROP TABLE IF EXISTS l_7388_2456528_62637_130282"
 -- PL/pgSQL function "rif40_ddl" line 32 at EXECUTE statement
 --
-	drop_stmt:='DROP TABLE IF EXISTS '||temp_table;
-	PERFORM rif40_sql_pkg.rif40_ddl(drop_stmt);
+		drop_stmt:='DROP TABLE IF EXISTS '||temp_table;
+		PERFORM rif40_sql_pkg.rif40_ddl(drop_stmt);
+		sql_stmt:='EXPLAIN ANALYZE VERBOSE CREATE TEMPORARY TABLE '||temp_table||' AS '||E'\n';
+		sql_stmt:=sql_stmt||'WITH a AS ('||E'\n';
+	ELSE
+		sql_stmt:='WITH a AS ('||E'\n';
+	END IF;
 --
 -- Create SQL statement
 -- 
-	sql_stmt:='EXPLAIN ANALYZE VERBOSE CREATE TEMPORARY TABLE '||temp_table||' AS '||E'\n';
-	sql_stmt:=sql_stmt||'WITH a AS ('||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'SELECT 0 ord, ''var spatialData={ "type": "FeatureCollection","features": [ /* Start */'' js'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'UNION'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'SELECT ROW_NUMBER() OVER(ORDER BY area_id) ord,'||E'\n'; 
@@ -223,11 +227,15 @@ BEGIN
 	sql_stmt:=sql_stmt||E'\t'||'UNION'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'SELECT 999999 ord, '']} /* End: total expected rows: '||l_expected_rows||' */'' js'||E'\n';
 	sql_stmt:=sql_stmt||')'||E'\n';
-	sql_stmt:=sql_stmt||'SELECT ord, CASE WHEN ord BETWEEN 2 AND 999998 THEN '',''||js ELSE js END::VARCHAR AS js'||E'\n';
+	IF rif40_log_pkg.rif40_is_debug_enabled('_rif40_get_geojson_as_js', 'DEBUG2') THEN
+		sql_stmt:=sql_stmt||'SELECT ord, CASE WHEN ord BETWEEN 2 AND 999998 THEN '',''||js ELSE js END::VARCHAR AS js'||E'\n';
+	ELSE
+		sql_stmt:=sql_stmt||'SELECT CASE WHEN ord BETWEEN 2 AND 999998 THEN '',''||js ELSE js END::VARCHAR AS js'||E'\n';
+	END IF;
 	sql_stmt:=sql_stmt||'  FROM a'||E'\n';
 	sql_stmt:=sql_stmt||' ORDER BY ord';
 --
--- Execute SQL statement, returning JS
+-- Execute SQL statement, returning Javascript
 --
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_get_geojson_as_js', '[50210] Results EXPLAIN SQL> [using: %, %]'||E'\n'||'%;', 
 		geolevel_view::VARCHAR, 
@@ -236,56 +244,79 @@ BEGIN
 --
 -- Begin execution block to trap parse errors
 --
-	BEGIN
+-- EXPLAIN PLAN version
+--
+	IF rif40_log_pkg.rif40_is_debug_enabled('_rif40_get_geojson_as_js', 'DEBUG2') THEN
+		BEGIN
 --
 -- Create results temporary table, extract explain plan  using _rif40_geojson_explain_ddl() helper function.
 -- This ensures the EXPLAIN PLAN output is a field called explain_line 
 --
-		sql_stmt:='SELECT explain_line FROM rif40_sql_pkg._rif40_geojson_explain_ddl('||quote_literal(sql_stmt)||', $1, $2)';
-		FOR c3_rec IN EXECUTE sql_stmt USING geolevel_view, geolevel_area_id_list LOOP
-			IF explain_text IS NULL THEN
-				explain_text:=c3_rec.explain_line;
-			ELSE
-				explain_text:=explain_text||E'\n'||c3_rec.explain_line;
-			END IF;
-		END LOOP;
+			sql_stmt:='SELECT explain_line FROM rif40_sql_pkg._rif40_geojson_explain_ddl('||quote_literal(sql_stmt)||', $1, $2)';
+			FOR c3_rec IN EXECUTE sql_stmt USING geolevel_view, geolevel_area_id_list LOOP
+				IF explain_text IS NULL THEN
+					explain_text:=c3_rec.explain_line;
+				ELSE
+					explain_text:=explain_text||E'\n'||c3_rec.explain_line;
+				END IF;
+			END LOOP;
 --
 -- Now extract actual results from temp table
---
-		sql_stmt:='SELECT js FROM '||temp_table||' ORDER BY ord';
-		RETURN QUERY EXECUTE sql_stmt;
-		GET DIAGNOSTICS i = ROW_COUNT;
-	EXCEPTION
-		WHEN others THEN
+--	
+			sql_stmt:='SELECT js FROM '||temp_table||' ORDER BY ord';
+			RETURN QUERY EXECUTE sql_stmt;
+			GET DIAGNOSTICS i = ROW_COUNT;
+		EXCEPTION
+			WHEN others THEN
 --
 -- Print exception to INFO, re-raise
 --
-			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
-			error_message:='_rif40_get_geojson_as_js() caught: '||E'\n'||
-				SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
-			RAISE INFO '50211: %', error_message;
+				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+				error_message:='_rif40_get_geojson_as_js() caught: '||E'\n'||
+					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
+				RAISE INFO '50211: %', error_message;
 --
-			RAISE;
-	END;
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_get_geojson_as_js', '[50212] Results EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);
+				RAISE;
+		END;
+		PERFORM rif40_log_pkg.rif40_log('DEBUG2', '_rif40_get_geojson_as_js', '[50212] Results EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);
+--
+-- Non EXPLAIN PLAN version
+--
+	ELSE
+		BEGIN
+			RETURN QUERY EXECUTE sql_stmt USING geolevel_view, geolevel_area_id_list;
+			GET DIAGNOSTICS i = ROW_COUNT;
+		EXCEPTION
+			WHEN others THEN
+--
+-- Print exception to INFO, re-raise
+--
+				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+				error_message:='_rif40_get_geojson_as_js() caught: '||E'\n'||
+					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
+				RAISE INFO '50213: %', error_message;
+--
+				RAISE;
+		END;
+	END IF;
 --
 -- Check number of rows processed
 --
 	IF i IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-50213, '_rif40_get_geojson_as_js', 'geography: %, SQL fetch returned NULL area rows.', 
+		PERFORM rif40_log_pkg.rif40_error(-50214, '_rif40_get_geojson_as_js', 'geography: %, SQL fetch returned NULL area rows.', 
 			l_geography::VARCHAR			/* Geography */);
 	ELSIF i = 2 THEN
-		PERFORM rif40_log_pkg.rif40_error(-50214, '_rif40_get_geojson_as_js', 'geography: %, SQL fetch returned no area rows.', 
+		PERFORM rif40_log_pkg.rif40_error(-50215, '_rif40_get_geojson_as_js', 'geography: %, SQL fetch returned no area rows.', 
 			l_geography::VARCHAR			/* Geography */);
 	ELSIF i != l_expected_rows THEN
-		PERFORM rif40_log_pkg.rif40_error(-50215, '_rif40_get_geojson_as_js', 
+		PERFORM rif40_log_pkg.rif40_error(-50216, '_rif40_get_geojson_as_js', 
 			'geography: %, SQL fetch returned wrong number of area rows, expecting: %, got: %.', 			
 			l_geography::VARCHAR			/* Geography */, 
 			l_expected_rows::VARCHAR		/* Expected rows */,
 			i::VARCHAR				/* Actual */);
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_get_geojson_as_js', 
-			'[50216] Geography: %, SQL fetch returned correct number of area rows, got: %.', 			
+			'[50217] Geography: %, SQL fetch returned correct number of area rows, got: %.', 			
 			l_geography::VARCHAR			/* Geography */, 
 			i::VARCHAR				/* Actual */);
 	END IF;
@@ -301,7 +332,7 @@ Returns:	Text table
 Description:	Get GeoJSON data as a Javascript variable. 
 
 Execute a SQL statement as below and return a Javascript variable. Check rows are as expected.
-EXPLIAN ANALYZE the query.
+EXPLAIN ANALYZE VERBOSE the query if DEBUG2 set for function.
 
 WITH a AS (
         SELECT 0 ord, ''var spatialData={ "type": "FeatureCollection","features": [ /* Start */'' js
