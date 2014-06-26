@@ -77,10 +77,41 @@ RETURNS TABLE(
 		attribute_name		VARCHAR, 
 		theme			rif40_xml_pkg.rif40_geolevelAttributeTheme,
 		source_description	VARCHAR,
-		name_description	VARCHAR)
+		name_description	VARCHAR,
+		is_numeric		BOOLEAN)
 SECURITY INVOKER
 AS $func$
 /*
+Function: 	rif40_getAllAttributesForGeoLevelAttributeTheme()
+Parameters:	Geography, <geolevel select>, theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme)
+Returns:	Table: attribute_source, ttribute_name, theme, source_description, name_description, is_numeric
+Description:	Get all atrributes for geography geolevel theme
+
+E.g.
+
+SELECT * FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'covariate');
+      attribute_source       | attribute_name |   theme   |       source_description       |                         name_descriptio
+n                          | is_numeric
+-----------------------------+----------------+-----------+--------------------------------+----------------------------------------
+---------------------------+------------
+ sahsuland_covariates_level4 | areatri1km     | covariate | SAHSU land covariates - level4 | Toxic Release Inventory within 1km of a
+rea (0=no/1=yes)           | t
+ sahsuland_covariates_level4 | near_dist      | covariate | SAHSU land covariates - level4 | Distance (m) from area centroid to near
+est TRI site               | t
+ sahsuland_covariates_level4 | ses            | covariate | SAHSU land covariates - level4 | Social Economic Status (quintiles)
+                           | t
+ sahsuland_covariates_level4 | tri_1km        | covariate | SAHSU land covariates - level4 | Toxic Release Inventory within 1km of a
+reai centroid (0=no/1=yes) | t
+(4 rows)
+
+Warning: this is slow as it uses rif40_num_denom, takes 408mS on my laptop to fetch all attributes for all themes
+
+- User must be rif40 or have rif_user or rif_manager role
+- Test geography
+- Process themes
+
+Uses column comment where present to provide descriptions
+
  */
 DECLARE
 	c1getallatt4theme CURSOR(l_geography VARCHAR) FOR
@@ -97,14 +128,14 @@ DECLARE
 	c2_rec RECORD;
 BEGIN
 --
--- Must be rif40 or have rif_user or rif_manager role
+-- User must be rif40 or have rif_user or rif_manager role
 --
 	IF NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
 		PERFORM rif40_log_pkg.rif40_error(-50800, 'rif40_getAllAttributesForGeoLevelAttributeTheme', 
 			'User % must be rif40 or have rif_user or rif_manager role', 
 			USER::VARCHAR	/* Username */);
 	END IF;
-	--
+--
 -- Test geography
 --
 	IF l_geography IS NULL THEN
@@ -135,6 +166,40 @@ BEGIN
 --
 -- Process themes
 --
+/*
+
+DEtecting nujmeric data_types: information_schema.columns.numeric_precision IS NOT NULL
+sahsuland_dev=> select data_type, count(data_type), max(numeric_precision) from information_schema.columns group by data_type order
+by 3;
+          data_type          | count | max
+-----------------------------+-------+-----
+ numeric                     |    50 |  12
+ smallint                    |    96 |  16
+ real                        |     7 |  24
+ integer                     |   236 |  32
+ double precision            |    89 |  53
+ bigint                      |   148 |  64
+ bytea                       |     1 |
+ pg_node_tree                |     9 |
+ timestamp without time zone |    22 |
+ interval                    |     2 |
+ character varying           |   935 |
+ abstime                     |     1 |
+ USER-DEFINED                |    32 |
+ boolean                     |    95 |
+ ARRAY                       |    53 |
+ oid                         |   179 |
+ regproc                     |    40 |
+ anyarray                    |     3 |
+ text                        |    76 |
+ inet                        |     2 |
+ "char"                      |    25 |
+ timestamp with time zone    |    26 |
+ xid                         |     6 |
+ name                        |   137 |
+(24 rows)
+
+ */
 	IF l_theme = 'covariate' THEN
 		RETURN QUERY
 			WITH a AS (
@@ -152,7 +217,8 @@ BEGIN
 			       	       COALESCE(obj_description(a.covariate_table::regclass, 'pg_class' /* Obj id */), 
 						'[Table not found]') AS source_description,
 		    		       COALESCE(col_description(a.covariate_table::regclass /* Obj id */, 
-						b.ordinal_position /* Column number */), '[Column not found]') AS name_description
+						b.ordinal_position /* Column number */), '[Column not found]') AS name_description,
+				       CASE WHEN b.numeric_precision IS NOT NULL THEN true ELSE false END is_numeric
 				  FROM a
 				LEFT OUTER JOIN information_schema.columns b ON 
 					(quote_ident(LOWER(a.covariate_table)) = b.table_name AND 
@@ -162,7 +228,8 @@ BEGIN
 			       LOWER(b.covariate_name)::VARCHAR AS attribute_name,  
 			       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
 			       b.source_description::VARCHAR AS source_description,
-			       b.name_description::VARCHAR AS name_description 
+			       b.name_description::VARCHAR AS name_description,
+		       	       b.is_numeric::BOOLEAN AS is_numeric	
 			  FROM b
 			 ORDER BY 1, 2;
 	ELSIF l_theme = 'health' THEN
@@ -176,7 +243,8 @@ BEGIN
 				       b.column_name,
 				       a.source_description,
 		    		       COALESCE(col_description((a.numerator_table)::regclass /* Obj id */, 
-						b.ordinal_position /* Column number */), '[Column not found]') AS name_description
+						b.ordinal_position /* Column number */), '[Column not found]') AS name_description,
+				       CASE WHEN b.numeric_precision IS NOT NULL THEN true ELSE false END is_numeric
 				  FROM a, information_schema.columns b 
 				 WHERE quote_ident(LOWER(a.numerator_table)) = b.table_name
 				   AND LOWER(b.column_name) != LOWER(l_geolevel_select) 	/* You get this anyway!!! */
@@ -185,7 +253,8 @@ BEGIN
 			       b.column_name::VARCHAR AS attribute_name,
 			       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
 			       b.source_description::VARCHAR AS source_description,
-			       b.name_description::VARCHAR AS name_description
+			       b.name_description::VARCHAR AS name_description,
+		       	       b.is_numeric::BOOLEAN AS is_numeric	
 			  FROM b
 			 ORDER BY 1, 2;
 	ELSIF l_theme = 'extract' THEN
@@ -203,7 +272,8 @@ BEGIN
 				       b.column_name,
 				       a.source_description,
 		    		       COALESCE(col_description(('rif_studies.'||a.extract_table)::regclass /* Obj id */, 
-						b.ordinal_position /* Column number */), '[Column not found]') AS name_description
+						b.ordinal_position /* Column number */), '[Column not found]') AS name_description,
+				       CASE WHEN b.numeric_precision IS NOT NULL THEN true ELSE false END is_numeric
 				  FROM a, information_schema.columns b 
 				 WHERE quote_ident(LOWER(a.extract_table)) = b.table_name
 				   AND b.column_name != 'area_id' 	/* You get this anyway!!! */
@@ -212,7 +282,8 @@ BEGIN
 			       b.column_name::VARCHAR AS attribute_name,
 			       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
 			       b.source_description::VARCHAR AS source_description,
-			       b.name_description::VARCHAR AS name_description
+			       b.name_description::VARCHAR AS name_description,
+		       	       b.is_numeric::BOOLEAN AS is_numeric	
 			  FROM b
 			 ORDER BY 1, 2;
 	ELSIF l_theme = 'results' THEN
@@ -230,7 +301,8 @@ BEGIN
 				       b.column_name,
 				       a.source_description,
 		    		       COALESCE(col_description(('rif_studies.'||a.map_table)::regclass /* Obj id */, 
-						b.ordinal_position /* Column number */), '[Column not found]') AS name_description
+						b.ordinal_position /* Column number */), '[Column not found]') AS name_description,
+				       CASE WHEN b.numeric_precision IS NOT NULL THEN true ELSE false END is_numeric
 				  FROM a, information_schema.columns b 
 				 WHERE quote_ident(LOWER(a.map_table)) = b.table_name
 				   AND b.column_name != 'area_id' 	/* You get this anyway!!! */
@@ -239,7 +311,8 @@ BEGIN
 			       b.column_name::VARCHAR AS attribute_name,
 			       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
 			       b.source_description::VARCHAR AS source_description,
-			       b.name_description::VARCHAR AS name_description
+			       b.name_description::VARCHAR AS name_description,
+		       	       b.is_numeric::BOOLEAN AS is_numeric	
 			  FROM b
 			 ORDER BY 1, 2;
 	ELSIF l_theme = 'population' THEN
@@ -253,7 +326,8 @@ BEGIN
 				       b.column_name,
 				       a.source_description,
 		    		       COALESCE(col_description((a.denominator_table)::regclass /* Obj id */, 
-						b.ordinal_position /* Column number */), '[Column not found]') AS name_description
+						b.ordinal_position /* Column number */), '[Column not found]') AS name_description,
+				       CASE WHEN b.numeric_precision IS NOT NULL THEN true ELSE false END is_numeric
 				  FROM a, information_schema.columns b 
 				 WHERE quote_ident(LOWER(a.denominator_table)) = b.table_name
 				   AND LOWER(b.column_name) != LOWER(l_geolevel_select) 	/* You get this anyway!!! */
@@ -262,10 +336,37 @@ BEGIN
 			       b.column_name::VARCHAR AS attribute_name,
 			       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
 			       b.source_description::VARCHAR AS source_description,
-			       b.name_description::VARCHAR AS name_description
+			       b.name_description::VARCHAR AS name_description,
+		       	       b.is_numeric::BOOLEAN AS is_numeric	
 			  FROM b
 			 ORDER BY 1, 2;
 	ELSIF l_theme = 'geometry' THEN
+		RETURN QUERY
+			WITH a AS (
+				SELECT 't_rif40_'||LOWER(a.geography)||'_geometry' AS geometry_table,
+				       a.description AS source_description
+				  FROM rif40_geographies a
+			), b AS (
+				SELECT a.geometry_table,
+				       b.column_name,
+				       a.source_description,
+		    		       COALESCE(col_description((a.geometry_table)::regclass /* Obj id */, 
+						b.ordinal_position /* Column number */), '[Column not found]') AS name_description,
+				       CASE WHEN b.numeric_precision IS NOT NULL THEN true ELSE false END is_numeric
+				  FROM a, information_schema.columns b 
+				 WHERE quote_ident(LOWER(a.geometry_table)) = b.table_name
+				   AND b.column_name NOT IN ('area_id', 'geolevel_name', 'gid', 'gid_rowindex',
+					'optimised_geometry', 'shapefile_geometry', 'optimised_geojson', 'geography') 	
+					/* Not relevant/You get this anyway!!! */
+		 	)
+			SELECT LOWER(b.geometry_table)::VARCHAR AS attribute_source,
+			       b.column_name::VARCHAR AS attribute_name,
+			       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
+			       b.source_description::VARCHAR AS source_description,
+			       b.name_description::VARCHAR AS name_description,
+		       	       b.is_numeric::BOOLEAN AS is_numeric	
+			  FROM b
+			 ORDER BY 1, 2;
 	ELSE
 --
 -- This may mean the theme is not supported yet...
@@ -280,7 +381,35 @@ END;
 $func$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme) IS '';
+COMMENT ON FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme) IS 'Function: 	rif40_getAllAttributesForGeoLevelAttributeTheme()
+Parameters:	Geography, <geolevel select>, theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme)
+Returns:	Table: attribute_source, ttribute_name, theme, source_description, name_description, is_numeric
+Description:	Get all atrributes for geography geolevel theme
+
+E.g.
+
+SELECT * FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(''SAHSU'', ''LEVEL4'', ''covariate'');
+      attribute_source       | attribute_name |   theme   |       source_description       |                         name_descriptio
+n                          | is_numeric
+-----------------------------+----------------+-----------+--------------------------------+----------------------------------------
+---------------------------+------------
+ sahsuland_covariates_level4 | areatri1km     | covariate | SAHSU land covariates - level4 | Toxic Release Inventory within 1km of a
+rea (0=no/1=yes)           | t
+ sahsuland_covariates_level4 | near_dist      | covariate | SAHSU land covariates - level4 | Distance (m) from area centroid to near
+est TRI site               | t
+ sahsuland_covariates_level4 | ses            | covariate | SAHSU land covariates - level4 | Social Economic Status (quintiles)
+                           | t
+ sahsuland_covariates_level4 | tri_1km        | covariate | SAHSU land covariates - level4 | Toxic Release Inventory within 1km of a
+reai centroid (0=no/1=yes) | t
+(4 rows)
+
+Warning: this is slow as it uses rif40_num_denom, takes 408mS on my laptop to fetch all attributes for all themes
+
+- User must be rif40 or have rif_user or rif_manager role
+- Test geography
+- Process themes
+
+Uses column comment where present to provide descriptions';
 
 GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme) TO rif_manager;
 GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme) TO rif_user;
