@@ -408,7 +408,7 @@ SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU' /* Geography 
 -- or in this case: 
 -- "View the <geolevel view> (e.g. LEVEL4) of <geolevel area> (e.g. 01.004) and select at <geolevel select> (e.g. LEVEL2) level".
 --
-\copy (SELECT * FROM rif40_xml_pkg.rif40_get_geojson_as_js('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, 'LEVEL2' /* geolevel area */, '01.004' /* geolevel area id */, FALSE /* Output multiple rows so it is readable! */)) to ../tests/sahsu_geojson_test_01.js 
+\copy (SELECT * FROM rif40_xml_pkg.rif40_get_geojson_as_js('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, 'LEVEL2' /* geolevel area */, '01.004' /* geolevel area id */, FALSE /* return_one_row flag: output multiple rows so it is readable! */)) to ../tests/sahsu_geojson_test_01.js 
 
 --
 -- GetGeoJsonTiles interface
@@ -422,7 +422,7 @@ SELECT SUBSTRING(
 			'SAHSU' 	/* Geography */, 
 			'LEVEL4' 	/* geolevel view */, 
 			a.y_max, a.x_max, a.y_min, a.x_min, /* Bounding box - from cte */
-			FALSE /* return_onme_row flag: output multiple rows so it is readable! */) FROM 1 FOR 160) AS js 
+			FALSE /* return_one_row flag: output multiple rows so it is readable! */) FROM 1 FOR 160) AS js 
   FROM a LIMIT 4;
 /*
                                                                                 js
@@ -436,7 +436,27 @@ SELECT SUBSTRING(
 --
 -- Use copy to create a Javascript file that can be tested
 --
-\copy (WITH a AS (SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')) SELECT rif40_xml_pkg.rif40_get_geojson_tiles('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, a.y_max, a.x_max, a.y_min, a.x_min, FALSE /* return_onme_row flag: output multiple rows so it is readable! */) FROM a) to ../tests/sahsu_geojson_test_02.js
+\copy (WITH a AS (SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')) SELECT rif40_xml_pkg.rif40_get_geojson_tiles('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, a.y_max, a.x_max, a.y_min, a.x_min, FALSE /* return_one_row flag: output multiple rows so it is readable! */) FROM a) to ../tests/sahsu_geojson_test_02.js
+
+--
+-- Attribute fetch functions
+--
+SELECT * FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'covariate');
+
+--
+-- Dump all attributes and themes
+--
+WITH a AS (
+	SELECT e.enumlabel, e.enumsortorder
+          FROM pg_type t, pg_enum e
+ 	 WHERE t.oid = e.enumtypid
+	   AND  t.typname = 'rif40_geolevelattributetheme'
+	 ORDER BY enumsortorder
+)	
+SELECT b.*
+  FROM a, rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(
+	'SAHSU'::VARCHAR, 'LEVEL4'::VARCHAR, a.enumlabel::rif40_xml_pkg.rif40_geolevelAttributeTheme) b
+ ORDER BY  3, 1, 2;
 
 --
 -- Done

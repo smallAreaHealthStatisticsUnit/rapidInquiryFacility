@@ -66,10 +66,20 @@ $$;
 --
 -- rif40_xml_pkg:
 --
--- _rif40_getGeoLevelExtentCommon: 	50000 to 50099
--- rif40_get_geojson_as_js: 		50200 to 50399
--- rif40_get_geojson_tiles: 		50400 to 50599
--- _rif40_get_geojson_as_js: 		50600 to 50799
+-- _rif40_getGeoLevelExtentCommon: 			50000 to 50099
+-- rif40_get_geojson_as_js: 				50200 to 50399
+-- rif40_get_geojson_tiles: 				50400 to 50599
+-- _rif40_get_geojson_as_js: 				50600 to 50799
+-- getAllAttributesForGeoLevelAttributeTheme: 		50800 to 50999
+--
+
+--
+-- Add enumerated type for geolevelAttributeTheme
+--
+DROP TYPE IF EXISTS rif40_xml_pkg.rif40_geolevelAttributeTheme;
+CREATE TYPE rif40_xml_pkg.rif40_geolevelAttributeTheme AS ENUM (
+	'covariate', 'health', 'extract', 'results', 'population', 'geometry');
+
 --
 -- Include common code
 --
@@ -84,6 +94,7 @@ $$;
 \i ../PLpgsql/rif40_xml_pkg/rif40_getGeoLevelFullExtent.sql
 \i ../PLpgsql/rif40_xml_pkg/rif40_getGeoLevelFullExtentForStudy.sql
 \i ../PLpgsql/rif40_xml_pkg/rif40_getGeoLevelBoundsForArea.sql
+\i ../PLpgsql/rif40_xml_pkg/rif40_getAllAttributesForGeoLevelAttributeTheme.sql
 
 COMMENT ON SCHEMA rif40_xml_pkg
   IS 'RIF XML support.
