@@ -14,6 +14,9 @@ RIF.chart = (function (charts) {
 					_p.updatePyramid( { 
 						geolevel: args.geoLevel		
 					});
+					_p.drawHisto( { 
+						geolevel: args.geoLevel		
+					});
 				} 	
             }
 		};

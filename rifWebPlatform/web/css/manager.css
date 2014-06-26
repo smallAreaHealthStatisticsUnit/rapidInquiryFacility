@@ -114,8 +114,7 @@ a:hover{
 		background-color: #85e0a5;
 	}
 	#buttons .geoDrops{	
-		min-width: 770px;
-		width: 49%;
+		width: auto;
 }
 	#buttons .geoDrops>div{
 		float: left;
@@ -226,9 +225,7 @@ a:hover{
 		width:35%;
 		float: left;
 	}
-	#content #leftcol .options, #content #leftcol #pyramid{
-		margin:10px;
-	}	
+	
 	select {
 		width: 120px;
 		background-color: #ffffff;
@@ -244,8 +241,19 @@ a:hover{
 		display:block;
 		line-height:15px;
 		text-transform:uppercase;
-		font-size:11px
+		font-size:11px;
 	}
+	
+	#content #leftcol div.summary dl dt{
+		float: left;
+		width: 100px;
+	}
+	
+	#content #leftcol div.summary {
+		margin: 10px 50px 0 50px;
+		height: 10px;
+	}
+	
 	.clearslctd	{
 		display: block;
 		text-align: center;
@@ -266,6 +274,7 @@ a:hover{
 		float:right;
 		width:auto;
 	}
+	
 	#content #leftcol #redraw {
 		width:100px
 	}
@@ -279,16 +288,28 @@ a:hover{
 	#content #leftcol > div.btn-toolbar{
 		float:right;
 	}
+	
+    /* CHARTS */
+    	
 	#content #leftcol  div#pyramid{
-		height:98%;
-		width:98%;
+		height:56%;
+		position:relative;
+		top:2%;
 	}
-	#content #leftcol  div#pyramid .chart{
-		height: 96%;
-		margin: 0;
-		position: relative;
-}
-
+	
+	#content #leftcol  div#distHisto{
+		height:30%;
+		border-bottom: 3px solid #E3E3E3;
+		padding-bottom:6%;
+	}
+	
+	#pyramid, #distHisto {
+		margin-left:auto;
+		margin-right:auto;
+		margin-top:3%;
+		width:90%;
+	}
+	
 	#content #rightcol{
 		position: relative;
 		height: 100%;
@@ -612,6 +633,7 @@ a:hover{
 	  overflow-y: scroll;
 	  z-index:9999;
 	}
+	
 	.palette div {
 	    height:20px;
 		z-index:9999;
@@ -649,6 +671,7 @@ a:hover{
 		padding:5px 10px;
 		display:block;
     }
+	
 	#tooltip #geoname{
 		position:relative;
 	}
@@ -659,4 +682,9 @@ a:hover{
    .slick-row:hover ,.slick-row	.selected,.slick-row.odd:hover	{ 
 		background-color: #D1EEEE; 
 	}
+	
+   /*
+	*
+	*/
+
 	

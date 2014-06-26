@@ -32,7 +32,7 @@ RIF.chart.pyramid.d3renderer = (function( opt, data ){
 	// An SVG element with a bottom right origin.
 	var svg = d3.select('#' + id ).append("svg")
 		.attr("width", width + margin.left + margin.right)
-		.attr("height", height + margin.top + margin.bottom)
+		.attr("height", height + margin.top + 20)
 	  .append("g")
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 	
@@ -70,7 +70,7 @@ RIF.chart.pyramid.d3renderer = (function( opt, data ){
 	  // Add an axis to show the population values.
 	  svg.append("g")
 		  .attr("class", "y axis")
-		  .attr("transform", "translate(0," + height + ")")
+		  .attr("transform", "translate(0," + height +")")
 		  .call(xAxis)
 		.selectAll("g")
 		.filter(function(value) { return !value; })

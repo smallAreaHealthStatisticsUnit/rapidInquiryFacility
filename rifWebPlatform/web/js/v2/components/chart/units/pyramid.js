@@ -14,13 +14,13 @@ RIF.chart.pyramid = (function( geolevel ) {
 			margin: {
 				top: 0, 
 				right: 20, 
-				bottom: 30, 
+				bottom: 10, 
 				left: 35
 			},
 			
 			dimensions:{ 
-				width: $('#pyramid').width() - 50,
-				height: $('#pyramid').height() -30
+				width: $('#pyramid').width() - 40 ,
+				height: $('#pyramid').height() -20
 			}
     }, 
 	

@@ -24,7 +24,7 @@ RIF.manager = (function () {
             sync: 'manager',
             map: 'tilesvg',
             table: 'click2row',
-            chart: ['pyramid'],
+            chart: ['pyramid','histogram'],
             menu: [/*'export',*/ 'geoLevel', 'choropleth' , 'settings'],
 			resizable: ''
         },

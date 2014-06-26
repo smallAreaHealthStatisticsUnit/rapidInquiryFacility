@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/leaflet/leaflet.css" />
     <link href="css/manager.css" rel="stylesheet" media="screen" />
     <link href="css/pyramid.css" rel="stylesheet" media="screen" />
+	<link href="css/histogram.css" rel="stylesheet" media="screen" />
     <link href="css/dataTable.css" rel="stylesheet" media="screen" />
 	<link href="css/slickgrid/slick.grid.css" rel="stylesheet" media="screen" />
 	<link href="css/slickgrid/slick-default-theme.css" rel="stylesheet" media="screen" />
@@ -67,6 +68,8 @@
     <script type="text/javascript" src="js/v2/components/chart/chart.js"></script>
 	<script type="text/javascript" src="js/v2/components/chart/units/pyramid.js"></script>
 	<script type="text/javascript" src="js/v2/components/chart/units/d3renderers/pyramid.d3renderer.js"></script>
+	<script type="text/javascript" src="js/v2/components/chart/units/histogram.js"></script>
+	<script type="text/javascript" src="js/v2/components/chart/units/d3renderers/histogram.d3renderer.js"></script>
     <!-- table -->
     <script type="text/javascript" src="js/v2/components/table/table.js"></script>
 	<script type="text/javascript" src="js/v2/components/table/table.settings.js"></script>
@@ -143,8 +146,15 @@
         </div>
         <div id="content">
             <div id="leftcol">
-				
-                <div id='pyramid'></div>
+				<!--<div class='summary'>
+					<dl>
+						<dt> Count : <span> 8800 </span> </dt>
+						<dt> Male : <span> 8800 </span></dt>
+						<dt> Female : <span> 8800 </span></dt>
+					</dl>
+				</div>-->
+				<div id='distHisto'></div>
+				<div id='pyramid'></div>
             </div>
             <div id="rightcol">
                 <div id="map"></div>
