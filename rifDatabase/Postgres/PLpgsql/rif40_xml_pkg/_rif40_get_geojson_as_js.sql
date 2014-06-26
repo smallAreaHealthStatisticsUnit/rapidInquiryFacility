@@ -183,6 +183,11 @@ DECLARE
 --
 	explain_text 		VARCHAR;
 	temp_table 		VARCHAR;
+--
+	stp 		TIMESTAMP WITH TIME ZONE:=clock_timestamp();
+	etp 		TIMESTAMP WITH TIME ZONE;
+	took 		INTERVAL;
+--
 	error_message 		VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN
@@ -201,6 +206,10 @@ BEGIN
 --
 		drop_stmt:='DROP TABLE IF EXISTS '||temp_table;
 		PERFORM rif40_sql_pkg.rif40_ddl(drop_stmt);
+--
+-- If DEBUG2 is enabled, the do an EXPLAIN PLAN
+-- As EXPLAIN PLAN returns the plan as the output rows; the actual is placed in a temporary and extracted after the EXPLAIN PLAN
+--
 		sql_stmt:='EXPLAIN ANALYZE VERBOSE CREATE TEMPORARY TABLE '||temp_table||' AS '||E'\n';
 		sql_stmt:=sql_stmt||'WITH a AS ('||E'\n';
 	ELSE
@@ -227,6 +236,9 @@ BEGIN
 	sql_stmt:=sql_stmt||E'\t'||'UNION'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'SELECT 999999 ord, '']} /* End: total expected rows: '||l_expected_rows||' */'' js'||E'\n';
 	sql_stmt:=sql_stmt||')'||E'\n';
+--
+-- EXPLAIN plan version has the ord field so they TEMP table can be ordered correctly
+--
 	IF rif40_log_pkg.rif40_is_debug_enabled('_rif40_get_geojson_as_js', 'DEBUG2') THEN
 		sql_stmt:=sql_stmt||'SELECT ord, CASE WHEN ord BETWEEN 2 AND 999998 THEN '',''||js ELSE js END::VARCHAR AS js'||E'\n';
 	ELSE
@@ -280,7 +292,7 @@ BEGIN
 		END;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG2', '_rif40_get_geojson_as_js', '[50212] Results EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);
 --
--- Non EXPLAIN PLAN version
+-- Non EXPLAIN PLAN version (i.e. normal execution path)
 --
 	ELSE
 		BEGIN
@@ -300,25 +312,34 @@ BEGIN
 		END;
 	END IF;
 --
+-- Instrument
+--
+	etp:=clock_timestamp();
+	took:=age(etp, stp);
+--
 -- Check number of rows processed
 --
 	IF i IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-50214, '_rif40_get_geojson_as_js', 'geography: %, SQL fetch returned NULL area rows.', 
-			l_geography::VARCHAR			/* Geography */);
+		PERFORM rif40_log_pkg.rif40_error(-50214, '_rif40_get_geojson_as_js', 'geography: %, SQL fetch returned NULL area rows, took: %.', 
+			l_geography::VARCHAR			/* Geography */,
+			took::VARCHAR				/* Time taken */);
 	ELSIF i = 2 THEN
-		PERFORM rif40_log_pkg.rif40_error(-50215, '_rif40_get_geojson_as_js', 'geography: %, SQL fetch returned no area rows.', 
-			l_geography::VARCHAR			/* Geography */);
+		PERFORM rif40_log_pkg.rif40_error(-50215, '_rif40_get_geojson_as_js', 'geography: %, SQL fetch returned no area rows, took: %.', 
+			l_geography::VARCHAR			/* Geography */,
+			took::VARCHAR				/* Time taken */);
 	ELSIF i != l_expected_rows THEN
 		PERFORM rif40_log_pkg.rif40_error(-50216, '_rif40_get_geojson_as_js', 
-			'geography: %, SQL fetch returned wrong number of area rows, expecting: %, got: %.', 			
+			'geography: %, SQL fetch returned wrong number of area rows, expecting: %, got: %, took: %.', 			
 			l_geography::VARCHAR			/* Geography */, 
 			l_expected_rows::VARCHAR		/* Expected rows */,
-			i::VARCHAR				/* Actual */);
+			i::VARCHAR				/* Actual */,
+			took::VARCHAR				/* Time taken */);
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_get_geojson_as_js', 
-			'[50217] Geography: %, SQL fetch returned correct number of area rows, got: %.', 			
+			'[50217] Geography: %, SQL fetch returned correct number of area rows, got: %, took: %.', 			
 			l_geography::VARCHAR			/* Geography */, 
-			i::VARCHAR				/* Actual */);
+			i::VARCHAR				/* Actual */,
+			took::VARCHAR				/* Time taken */);
 	END IF;
 --
 	RETURN;
@@ -454,6 +475,37 @@ Parameters:	SQL statement, geolevel view, geolevel area ID list
 Returns: 	TABLE of explain_line
 Description:	Coerce EXPLAIN output into a table with a known column. 
 		Supports EXPLAIN and EXPLAIN ANALYZE for _rif40_get_geojson_as_js() ONLY.';
+
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_geojson_explain_ddl2(sql_stmt VARCHAR, x_min REAL, y_min REAL, x_max REAL, y_max REAL, l_geolevel_view VARCHAR)
+RETURNS TABLE(explain_line	TEXT)
+SECURITY INVOKER
+AS $func$
+/*
+Function: 	_rif40_geojson_explain_ddl2()
+Parameters:	SQL statement, x_min, y_min, x_max, y_max, l_geolevel_view
+Returns: 	TABLE of explain_line
+Description:	Coerce EXPLAIN output into a table with a known column. 
+		Supports EXPLAIN and EXPLAIN ANALYZE for rif40_get_geojson_tiles() ONLY.
+ */
+BEGIN
+--
+-- Must be rifupg34, rif40 or have rif_user or rif_manager role
+--
+	IF USER != 'rifupg34' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
+		PERFORM rif40_log_pkg.rif40_error(-50298, '_rif40_geojson_explain_ddl2', 'User % must be rif40 or have rif_user or rif_manager role', 
+			USER::VARCHAR);
+	END IF;
+--
+	RETURN QUERY EXECUTE sql_stmt USING x_min, y_min, x_max, y_max, l_geolevel_view;
+END;
+$func$
+LANGUAGE PLPGSQL;
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_geojson_explain_ddl2(VARCHAR, REAL, REAL, REAL, REAL, VARCHAR) IS 'Function: 	_rif40_geojson_explain_ddl2()
+Parameters:	SQL statement, x_min, y_min, x_max, y_max, l_geolevel_view
+Returns: 	TABLE of explain_line
+Description:	Coerce EXPLAIN output into a table with a known column. 
+		Supports EXPLAIN and EXPLAIN ANALYZE for rif40_get_geojson_tiles() ONLY.';
 
 --
 -- No GRANTS - private function
