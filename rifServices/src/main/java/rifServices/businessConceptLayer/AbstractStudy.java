@@ -533,6 +533,44 @@ abstract public class AbstractStudy
 			if (differentDenominatorsResult != null) {
 				errorMessages.add(differentDenominatorsResult);
 			}
+			
+			//ensure that the set of covariates used in each investigation is the
+			//same
+			int numberOfInvestigations = investigations.size();
+			if (numberOfInvestigations > 1) {
+				Investigation firstInvestigation
+					= investigations.get(0);
+				ArrayList<String> differencesInCovariateCollections
+					= new ArrayList<String>();
+				for (int i = 1; i < numberOfInvestigations; i++) {
+					Investigation currentInvestigation
+						= investigations.get(i);
+					ArrayList<String> differences
+						= firstInvestigation.getDifferencesInCovariates(currentInvestigation);
+					differencesInCovariateCollections.addAll(differences);
+				}
+				
+				int totalNumberOfDifferences = differencesInCovariateCollections.size();
+				if (totalNumberOfDifferences > 0) {
+					//differences in covariate collections were detected
+					//amongst the investigations
+					StringBuilder listOfDifferences = new StringBuilder();
+					for (int i = 0; i < totalNumberOfDifferences; i++) {
+						if (i != 0) {
+							listOfDifferences.append(",");
+						}
+						listOfDifferences.append(differencesInCovariateCollections.get(i));
+					}
+					
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"abstractStudy.error.inconsistentCovariates",
+							listOfDifferences.toString());
+					errorMessages.add(errorMessage);
+				}				
+			}
+			
+			
 		}		
 	}
 
