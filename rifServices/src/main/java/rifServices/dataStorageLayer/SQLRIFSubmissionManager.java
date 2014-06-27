@@ -10,7 +10,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.sql.Date;
 
 
 
@@ -410,6 +409,40 @@ public class SQLRIFSubmissionManager {
 
 	}
 
+	/*
+	private ComparisonArea getComparisonArea(
+		Connection connection,
+		String studyID)
+		throws SQLException,
+		RIFServiceException {
+		
+		ComparisonArea result = null;
+		SQLSelectQueryFormatter queryFormatter
+			= new SQLSelectQueryFormatter();
+		queryFormatter.addSelectField("area_id");
+		queryFormatter.addFromTable("rif40_comparison_areas");
+		queryFormatter.addWhereParameter("study_id");
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement.setString(1, studyID);
+			resultSet = statement.executeQuery();
+			
+			
+			
+			
+			
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+	}
+	
+	*/
+	
 	private void addComparisonArea(
 		Connection connection,
 		ComparisonArea comparisonArea)
@@ -438,6 +471,8 @@ public class SQLRIFSubmissionManager {
 			SQLQueryUtility.close(statement);
 		}
 	}
+	
+	
 	
 	private void addInvestigation(
 		Connection connection,
@@ -496,8 +531,7 @@ public class SQLRIFSubmissionManager {
 			statement.setString(8, ndPair.getNumeratorTableName());
 			
 			statement.setString(9, geography.getName());
-			statement.executeUpdate();
-
+			statement.executeUpdate();			
 		}
 		finally {
 			SQLQueryUtility.close(statement);
@@ -506,46 +540,310 @@ public class SQLRIFSubmissionManager {
 	}
 	
 	
+	private ArrayList<Investigation> getInvestigationsForStudy(
+		Connection connection,
+		String userID,
+		String studyID) 
+		throws SQLException,
+		RIFServiceException {
+		
+		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		queryFormatter.addSelectField("inv_description");
+		queryFormatter.addSelectField("year_start");
+		queryFormatter.addSelectField("year_stop");
+		queryFormatter.addSelectField("max_age_group");
+		queryFormatter.addSelectField("min_age_group");
+		queryFormatter.addSelectField("genders");
+		queryFormatter.addSelectField("numer_tab");		
+		queryFormatter.addFromTable("rif40_investigations");
+		queryFormatter.addWhereParameter("username");
+		queryFormatter.addWhereParameter("study_id");
+				
+		ArrayList<Investigation> results = new ArrayList<Investigation>();
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement 
+				= connection.prepareStatement(queryFormatter.generateQuery());
+			statement.setString(1, userID);
+			statement.setString(2, studyID);
+			resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+				Investigation investigation 
+					= Investigation.newInstance();
+				investigation.setDescription(resultSet.getString(1));
+				
+				String lowerYearBound = resultSet.getString(2);
+				String upperYearBound = resultSet.getString(3);
+				YearRange yearRange 
+					= YearRange.newInstance(lowerYearBound, upperYearBound);			
+				investigation.setYearRange(yearRange);
+				
+				//@TODO KLG
+				//Here is where we lose information.  Because we only have
+				//one age band, we will lose finer categories.  For example,
+				//the set of age bands [0-5], [6-10], [11-15] could be part of 
+				//a submitted investigation.  However, when it is retrieved,
+				//it will become [0,15] when it is retrieved.  This is because
+				//the schema does not yet have the capacity to store multiple
+				//age bands
+				int minimumAgeGroupCode = resultSet.getInt(4);
+				AgeGroup minimumAgeGroup
+					= getAgeGroupFromCode(
+						connection, 
+						minimumAgeGroupCode);
+				int maximumAgeGroupCode = resultSet.getInt(5);
+				AgeGroup maximumAgeGroup
+					= getAgeGroupFromCode(
+						connection, 
+						maximumAgeGroupCode);			 
+				AgeBand ageBand 
+					= AgeBand.newInstance(
+						minimumAgeGroup, 
+						maximumAgeGroup);
+				investigation.addAgeBand(ageBand);
+				
+				int sexCode = resultSet.getInt(6);
+				if (sexCode == 1) {
+					investigation.setSex(Sex.MALES);
+				}
+				else if (sexCode == 2) {
+					investigation.setSex(Sex.FEMALES);					
+				}
+				else if (sexCode == 3) {
+					investigation.setSex(Sex.BOTH);					
+				}
+				else {
+					//it is required and should only be 1, 2, or 3.
+					assert false;
+				}
+				
+				//set numerator denominator pair
+				String numeratorTableName
+					= resultSet.getString(7);
+				NumeratorDenominatorPair ndPair
+					= getNDPairForNumeratorTableName(
+						connection, 
+						numeratorTableName);
+				investigation.setNdPair(ndPair);
+				
+/*				
+				//get study area
+				DiseaseMappingStudyArea diseaseMappingStudyArea
+					= getDiseaseMappingStudyArea(
+						userID,
+						studyID);
+				
+				
+				//get comparison area
+				ComparisonArea comparisonArea
+					= getComparisonArea(
+						userID,
+						studyID);
+*/				
+				
+				
+				
+			}
+			
+			
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		
+		return results;
+	}
+
+	private AgeGroup getAgeGroupFromCode(
+		Connection connection, 
+		int ageGroupCode) 
+		throws SQLException,
+		RIFServiceException {
+		
+		AgeGroup result = null;
+		
+		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		queryFormatter.addSelectField("low_age");
+		queryFormatter.addSelectField("high_age");
+		queryFormatter.addFromTable("rif40_age_groups");
+		queryFormatter.addWhereParameter("age_group_id");
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement 
+				= connection.prepareStatement(queryFormatter.generateQuery());
+			statement.setInt(1, ageGroupCode);
+			//assume we get a result
+			resultSet = statement.executeQuery();
+			int lowAge = resultSet.getInt(1);
+			int highAge = resultSet.getInt(2);
+			AgeGroup ageGroup = AgeGroup.newInstance();
+			ageGroup.setIdentifier(String.valueOf(ageGroupCode));
+			ageGroup.setLowerLimit(String.valueOf(lowAge));
+			ageGroup.setUpperLimit(String.valueOf(highAge));
+			result = ageGroup;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+
+		return result;
+	}
+
+	private NumeratorDenominatorPair getNDPairForNumeratorTableName(
+		Connection connection,
+		String numeratorTableName) 
+		throws SQLException,
+		RIFServiceException {
+		
+		
+		NumeratorDenominatorPair result = null;
+		
+		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		queryFormatter.setUseDistinct(true);
+		queryFormatter.addSelectField("numerator_description");
+		queryFormatter.addSelectField("denominator_table");
+		queryFormatter.addSelectField("denominator_description");		
+		queryFormatter.addFromTable("rif40_num_denom");
+		queryFormatter.addWhereParameter("numerator_table");
+		
+		PreparedStatement statement 
+			= connection.prepareStatement(queryFormatter.generateQuery());
+		statement.setString(1, numeratorTableName);
+		ResultSet resultSet = null;
+		try {
+			resultSet = statement.executeQuery();
+			resultSet.next();
+			result = NumeratorDenominatorPair.newInstance();
+			result.setNumeratorTableName(numeratorTableName);
+			result.setNumeratorTableDescription(resultSet.getString(1));
+			result.setDenominatorTableName(resultSet.getString(2));
+			result.setDenominatorTableDescription(resultSet.getString(3));
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		
+		return result;
+	}
 	
-/*	
+	private void addCovariates(
+		Connection connection,
+		Geography geography,
+		Investigation investigation) {
+		
+		//add in covariates
+		SQLInsertQueryFormatter insertCovariatesQueryFormatter
+			= new SQLInsertQueryFormatter();
+		insertCovariatesQueryFormatter.setIntoTable("rif40_inv_covariates");
+		insertCovariatesQueryFormatter.addInsertField("covariate_name");		
+		insertCovariatesQueryFormatter.addInsertField("min");
+		insertCovariatesQueryFormatter.addInsertField("max");
+		insertCovariatesQueryFormatter.addInsertField("geography");
+		insertCovariatesQueryFormatter.addInsertField("study_geolevel_name");			
+		
+		PreparedStatement statement = null;
+		
+		/*
+		try {
+			statement 
+				= connection.prepareStatement(insertCovariatesQueryFormatter.generateQuery());			
+			statement.setString(1, )
+			
+			
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+		*/
+	}
+	
+	private ArrayList<AdjustableCovariate> getCovariatesForInvestigation(
+		Connection connection,
+		String userID,
+		String studyID,
+		String investigationID) 
+		throws SQLException,
+		RIFServiceException {
+		
+		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		queryFormatter.addSelectField("covariate_name");
+		queryFormatter.addSelectField("min");
+		queryFormatter.addSelectField("max");
+		queryFormatter.addFromTable("rif40_inv_covariates");
+		queryFormatter.addWhereParameter("username");
+		queryFormatter.addWhereParameter("study_id");
+		queryFormatter.addWhereParameter("inv_id");
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		ArrayList<AdjustableCovariate> results 
+			= new ArrayList<AdjustableCovariate>();
+		try {
+			statement 
+				= connection.prepareStatement(queryFormatter.generateQuery());
+			statement.setString(1, userID);
+			statement.setString(2, studyID);
+			statement.setString(3, investigationID);
+			resultSet = statement.executeQuery();
+			while (resultSet.next() ) {
+				AdjustableCovariate adjustableCovariate
+					= AdjustableCovariate.newInstance();
+				adjustableCovariate.setCovariateType(CovariateType.NTILE_INTEGER_SCORE);
+				adjustableCovariate.setName(resultSet.getString(1));
+				String minimumValue = String.valueOf(resultSet.getDouble(2));
+				adjustableCovariate.setMinimumValue(minimumValue);
+				String maximumValue = String.valueOf(resultSet.getDouble(3));
+				adjustableCovariate.setMaximumValue(maximumValue);
+				results.add(adjustableCovariate);				
+			}
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);			
+		}
+		
+		return results;		
+	}
+		
+
+	
+	
+	
+	/*
+	
 	private ArrayList<Investigation> getInvestigationsForStudy(
 		Connection connection,
 		User user,
 		DiseaseMappingStudy diseaseMappingStudy) {
 				
 				
-				SQLSelectQueryFormatter formatter
-					= new SQLSelectQueryFormatter();
-				formatter.addSelectField("inv_id");
-				formatter.addSelectField("geography");
-				formatter.addSelectField("inv_name");
-				formatter.addSelectField("inv_description");
-				formatter.addSelectField("classifier");
-				formatter.addSelectField("classifier_bands");
-				formatter.addSelectField("genders");
-				formatter.addSelectField("numer_tab");
-				formatter.addSelectField("year_start");
-				formatter.addSelectField("year_stop");
-				formatter.addSelectField("max_age_group");
-				formatter.addSelectField("min_age_group");
-				formatter.addSelectField("investigation_state");
+		SQLSelectQueryFormatter formatter
+			= new SQLSelectQueryFormatter();
+		formatter.addSelectField("inv_id");
+		formatter.addSelectField("geography");
+		formatter.addSelectField("inv_name");
+		formatter.addSelectField("inv_description");
+		formatter.addSelectField("classifier");
+		formatter.addSelectField("classifier_bands");
+		formatter.addSelectField("genders");
+		formatter.addSelectField("numer_tab");
+		formatter.addSelectField("year_start");
+		formatter.addSelectField("year_stop");
+		formatter.addSelectField("max_age_group");
+		formatter.addSelectField("min_age_group");
+		formatter.addSelectField("investigation_state");
+					
+		formatter.addFromTable("t_rif40_investigations");
 				
-				
-				formatter.addFromTable("t_rif40_investigations");
-				
-				
-				
-				
-				
-				
-		
-		
-		
-		
-		
 	}
 	
-*/
+	*/
 	
 	/*
 	public ArrayList<RIFJobSubmission> getRIFJobSubmissionsForUser(
@@ -566,8 +864,7 @@ public class SQLRIFSubmissionManager {
 		
 		
 	}
-		*/
-	
+	*/
 	
 	// ==========================================
 	// Section Errors and Validation
