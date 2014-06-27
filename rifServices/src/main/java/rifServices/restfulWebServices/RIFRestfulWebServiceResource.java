@@ -21,6 +21,8 @@ import javax.ws.rs.QueryParam;
 
 
 
+
+import java.sql.Connection;
 import java.text.Collator;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -903,35 +905,7 @@ public class RIFRestfulWebServiceResource {
 		return result;
 	}
 
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getParentHealthCode")
-	public String getParentHealthCode(
-		@QueryParam("userID") String userID,
-		@QueryParam("healthCode") String healthCodeName,
-		@QueryParam("healthCodeNameSpace") String healthCodeNameSpace) {
 
-		String result = "";
-		try {			
-			User user = User.newInstance(userID, "xxx");
-						
-			HealthCode childHealthCode
-				= service.getHealthCode(
-					user, 
-					healthCodeName, 
-					healthCodeNameSpace);
-			HealthCode parentHealthCode
-				= service.getParentHealthCode(user, childHealthCode);
-			result = serialiseResult(parentHealthCode);					
-		}
-		catch(Exception exception) {
-			result = serialiseException(exception);			
-		}
-	
-		return result;
-	}
-	
-	
 	/**
 	 * takes advantage of the Jackson project library to serialise objects
 	 * for the JSON format.
