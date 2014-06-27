@@ -2,6 +2,7 @@ package rifServices.businessConceptLayer;
 
 
 import rifServices.system.RIFServiceError;
+
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceSecurityException;
@@ -10,6 +11,7 @@ import rifServices.util.FieldValidationUtility;
 
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 
 /**
@@ -783,6 +785,59 @@ public class Investigation
 		return super.hasIdenticalContents(otherInvestigation);
 	}
 	
+	public ArrayList<String> getDifferencesInCovariates(
+		final Investigation otherInvestigation) {
+
+		ArrayList<String> covariateNames = new ArrayList<String>();
+		for (AbstractCovariate covariate : covariates) {
+			covariateNames.add(covariate.getName());
+		}
+		
+		ArrayList<AbstractCovariate> otherCovariates
+			= otherInvestigation.getCovariates();
+	
+		String otherInvestigationTitle = otherInvestigation.getTitle();
+		ArrayList<String> otherCovariateNames = new ArrayList<String>();
+		for (AbstractCovariate otherCovariate : otherCovariates) {
+			otherCovariateNames.add(otherCovariate.getName());			
+		}
+	
+		ArrayList<String> differenceMessages = new ArrayList<String>();
+		
+		/**
+		 * Covariates that are in this investigation but not the other investigation
+		 */
+		for (String covariateName : covariateNames) {
+			if (otherCovariateNames.contains(covariateName) == false) {
+				String differenceMessage
+					= RIFServiceMessages.getMessage(
+						"investigation.covariateDifferences",
+						covariateName,
+						title,
+						otherInvestigationTitle);
+				differenceMessages.add(differenceMessage);
+			}
+		}
+		
+		/**
+		 * Covariates that are in the other investigation but not in this one
+		 */
+		for (String otherCovariateName : otherCovariateNames) {
+			if (covariateNames.contains(otherCovariateName) == false) {
+				String differenceMessage
+					= RIFServiceMessages.getMessage(
+						"investigation.covariateDifferences",
+						otherCovariateName,
+						otherInvestigationTitle,
+						title);
+				differenceMessages.add(differenceMessage);
+			}
+		}
+		
+		return differenceMessages;
+	}	
+		
+		
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -822,9 +877,7 @@ public class Investigation
 				recordType,
 				titleFieldName,
 				description);
-		}
-
-		
+		}	
 		
 		if (healthTheme != null) {
 			healthTheme.checkSecurityViolations();
@@ -886,6 +939,19 @@ public class Investigation
 					recordType,
 					"investigation.title.label");
 			errorMessages.add(errorMessage);
+		}
+		else {
+			
+			//Ensuring that the 
+			String adjustedTableName
+				= fieldValidationUtility.convertToDatabaseTableName(title);
+			if (fieldValidationUtility.isValidDatabaseTableName(adjustedTableName) == false) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"investigation.error.titleContainsIllegalCharacters",
+						title);
+				errorMessages.add(errorMessage);
+			}
 		}
 		
 		/**
@@ -1109,6 +1175,9 @@ public class Investigation
 
 		countErrors(RIFServiceError.INVALID_INVESTIGATION, errorMessages);
 	}
+	
+	
+	
 	
 	// ==========================================
 	// Section Interfaces
