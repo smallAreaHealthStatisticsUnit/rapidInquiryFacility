@@ -129,6 +129,9 @@ public class InvestigationEditorDialog
 	private JDialog dialog;	
 	/** The title text field. */
 	private JTextField titleTextField;	
+	/** The description field */
+	private JTextArea descriptionTextArea;
+		
 	/** The health theme combo box. */
 	private OrderedListComboBox healthThemeComboBox;			
 	/** The numerator denominator combo box. */
@@ -161,7 +164,10 @@ public class InvestigationEditorDialog
 		userInterfaceFactory = rifSession.getUIFactory();
 
 		currentInvestigation = Investigation.newInstance();
-		
+		titleTextField
+			= userInterfaceFactory.createTextField(50);
+		descriptionTextArea
+			= userInterfaceFactory.createTextArea(5, 30);
 		healthThemeComboBox 
 			= new OrderedListComboBox(userInterfaceFactory);
 		numeratorDenominatorComboBox 
@@ -248,14 +254,30 @@ public class InvestigationEditorDialog
 		String titleLabelToolTipText
 			= RIFServiceMessages.getMessage("investigation.title.label.toolTip");
 		titleLabel.setToolTipText(titleLabelToolTipText);
-
 		panel.add(titleLabel, panelGC);		
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1.0;
-		titleTextField
-			= userInterfaceFactory.createTextField(50);
 		panel.add(titleTextField, panelGC);
+		
+		panelGC.gridy++;
+		
+		//Add the investigation description field
+		panelGC.gridx = 0;
+		String descriptionLabelText
+			= RIFServiceMessages.getMessage("investigation.description.label");
+		JLabel descriptionLabel
+			= userInterfaceFactory.createLabel(descriptionLabelText);
+		String descriptionLabelToolTipText
+			= RIFServiceMessages.getMessage("investigation.description.label.toolTip");
+		descriptionLabel.setToolTipText(descriptionLabelToolTipText);	
+		panel.add(descriptionLabel, panelGC);
+		panelGC.gridx++;
+		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weightx = 1.0;		
+		JScrollPane investigationDescriptionScrollPane
+			= userInterfaceFactory.createScrollPane(descriptionTextArea);
+		panel.add(investigationDescriptionScrollPane, panelGC);
 		
 		panelGC.gridy++;
 		
