@@ -254,6 +254,27 @@ public class SQLSelectQueryFormatter
 	}
 
 	/**
+	 * Adds the where BETWEEN with limits
+	 *
+	 * @param fieldName the field name
+	 * @param operator the operator
+	 */
+	public void addWhereBetweenParameter(
+		final String fieldName,
+		final String startValue,
+		final String endValue) {
+
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(fieldName);
+		whereCondition.append(" BETWEEN ");
+		whereCondition.append(startValue);
+		whereCondition.append(" AND ");
+		whereCondition.append(endValue);		
+		whereConditions.add(whereCondition.toString());
+	}
+	
+	
+	/**
 	 * Adds the where like field name.
 	 *
 	 * @param fieldName the field name
