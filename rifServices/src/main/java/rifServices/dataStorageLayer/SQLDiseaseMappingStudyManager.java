@@ -215,7 +215,60 @@ public class SQLDiseaseMappingStudyManager {
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-
+	public void checkDiseaseMappingStudyExists(
+		final Connection connection,
+		final DiseaseMappingStudy diseaseMappingStudy)
+		throws RIFServiceException {
+		
+		SQLRecordExistsQueryFormatter diseaseMappingStudyExistsQuery
+			= new SQLRecordExistsQueryFormatter();
+		diseaseMappingStudyExistsQuery.setFromTable("rif40_studies");
+		diseaseMappingStudyExistsQuery.setLookupKeyFieldName("study_id");
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement 
+				= connection.prepareStatement(diseaseMappingStudyExistsQuery.generateQuery());
+			statement.setString(1, diseaseMappingStudy.getIdentifier());
+			resultSet = statement.executeQuery();
+			
+			if (resultSet.next() == false) {
+				String recordType
+					= diseaseMappingStudy.getRecordType();
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"general.validation.nonExistentRecord",
+						recordType,
+						diseaseMappingStudy.getDisplayName());
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.NON_EXISTENT_DISEASE_MAPPING_STUDY, 
+						errorMessage);
+				throw rifServiceException;
+			}
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.unableCheckNonExistentRecord",
+					diseaseMappingStudy.getRecordType(),
+					diseaseMappingStudy.getDisplayName());			
+						
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DB_UNABLE_CHECK_NONEXISTENT_RECORD, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		
+		
+	}
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
