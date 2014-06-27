@@ -327,7 +327,11 @@ public class SampleTestObjectGenerator {
 		Investigation investigation = Investigation.newInstance();
 		investigation.setNewRecord(false);
 		investigation.setTitle(investigationTitle);
-		HealthTheme healthTheme = HealthTheme.newInstance("cancer");
+		
+		HealthTheme healthTheme
+			= HealthTheme.newInstance(
+				"SAHSULAND",  
+				"SAHSU land cancer incidence example data");
 		investigation.setHealthTheme(healthTheme);
 
 		NumeratorDenominatorPair ndPair
