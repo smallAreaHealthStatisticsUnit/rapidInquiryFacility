@@ -197,9 +197,10 @@ public class SQLRIFContextManager
 		//Create SQL query		
 		SQLSelectQueryFormatter formatter = new SQLSelectQueryFormatter();
 		formatter.setUseDistinct(true);
-		formatter.addSelectField("theme_description");
-		formatter.addFromTable("rif40_num_denom");
-		formatter.addOrderByCondition("theme_description");
+		formatter.addSelectField("theme");
+		formatter.addSelectField("description");
+		formatter.addFromTable("rif40_health_study_themes");
+		formatter.addOrderByCondition("description");
 		
 		//Parameterise and execute query		
 		PreparedStatement statement = null;
@@ -211,8 +212,7 @@ public class SQLRIFContextManager
 			while (dbResultSet.next()) {
 				HealthTheme healthTheme = HealthTheme.newInstance();
 				healthTheme.setName(dbResultSet.getString(1));
-				//KLG: we need a description field for health theme
-				healthTheme.setDescription("");
+				healthTheme.setDescription(dbResultSet.getString(2));
 				results.add(healthTheme);
 			}
 		}
@@ -1014,17 +1014,17 @@ public class SQLRIFContextManager
 
 		if (geography != null) {
 			geography.checkErrors();			
-			checkNonExistentGeography(connection, geography);
+			checkGeographyExists(connection, geography);
 		}
 		
 		if (healthTheme != null) {
 			healthTheme.checkErrors();			
-			checkNonExistentHealthTheme(connection, healthTheme);
+			checkHealthThemeExists(connection, healthTheme);
 		}
 		
 		if (geoLevelSelect != null) {
 			geoLevelSelect.checkErrors();
-			checkNonExistentGeoLevelSelect(
+			checkGeoLevelSelectExists(
 				connection, 
 				geography, 
 				geoLevelSelect);			
@@ -1038,7 +1038,7 @@ public class SQLRIFContextManager
 	 * @param geography the geography
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void checkNonExistentGeography(
+	public void checkGeographyExists(
 		final Connection connection,
 		final Geography geography) 
 		throws RIFServiceException {
@@ -1112,7 +1112,7 @@ public class SQLRIFContextManager
 	 * @param geoLevelSelect the geo level select
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void checkNonExistentGeoLevelSelect(
+	public void checkGeoLevelSelectExists(
 		final Connection connection,
 		final Geography geography,
 		final GeoLevelSelect geoLevelSelect)
@@ -1190,7 +1190,7 @@ public class SQLRIFContextManager
 	 * @param geoLevelArea the geo level area
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void checkNonExistentGeoLevelArea(
+	public void checkGeoLevelAreaExists(
 		final Connection connection,
 		final Geography geography,
 		final GeoLevelSelect geoLevelSelect,
@@ -1257,7 +1257,6 @@ public class SQLRIFContextManager
 		ResultSet geoLevelAreaExistsResultSet = null;
 		
 		try {
-			System.out.println("SQLRIFContextManager recordExists query=="+recordExistsFormatter.generateQuery()+"==geolevelArea id=="+geoLevelArea.getIdentifier()+"==name=="+geoLevelArea.getName()+"==");
 			geoLevelAreaExistsStatement
 				= connection.prepareStatement(recordExistsFormatter.generateQuery());
 			geoLevelAreaExistsStatement.setString(1, geoLevelArea.getName());
@@ -1293,12 +1292,6 @@ public class SQLRIFContextManager
 			SQLQueryUtility.close(getLookupTableResultSet);			
 		}	
 		
-		
-		
-		
-		
-		
-		
 	}
 	
 	/**
@@ -1310,7 +1303,7 @@ public class SQLRIFContextManager
 	 * @param geoLevelToMap the geo level to map
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void checkNonExistentGeoLevelToMapValue(
+	public void checkGeoLevelToMapValueExists(
 		final Connection connection,
 		final Geography geography,
 		final GeoLevelSelect geoLevelSelect,
@@ -1421,7 +1414,7 @@ public class SQLRIFContextManager
 	 * @param healthTheme the health theme
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void checkNonExistentHealthTheme(
+	public void checkHealthThemeExists(
 		final Connection connection,
 		final HealthTheme healthTheme)
 		throws RIFServiceException {
@@ -1490,7 +1483,7 @@ public class SQLRIFContextManager
 	 * @param ndPair the nd pair
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void checkNonExistentNDPair(
+	public void checkNDPairExists(
 		final Connection connection,
 		final Geography geography,
 		final NumeratorDenominatorPair ndPair) 

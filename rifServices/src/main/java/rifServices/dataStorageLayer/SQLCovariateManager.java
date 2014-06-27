@@ -307,14 +307,14 @@ public class SQLCovariateManager
 
 		if (geography != null) {
 			geography.checkErrors();
-			sqlRIFContextManager.checkNonExistentGeography(
+			sqlRIFContextManager.checkGeographyExists(
 				connection, 
 				geography);			
 		}
 		
 		if (geoLevelSelect != null) {
 			geoLevelSelect.checkErrors();
-			sqlRIFContextManager.checkNonExistentGeoLevelSelect(
+			sqlRIFContextManager.checkGeoLevelSelectExists(
 				connection,
 				geography, 
 				geoLevelSelect);			
@@ -322,7 +322,7 @@ public class SQLCovariateManager
 		
 		if (geoLevelToMap != null) {
 			geoLevelToMap.checkErrors();
-			sqlRIFContextManager.checkNonExistentGeoLevelToMapValue(
+			sqlRIFContextManager.checkGeoLevelToMapValueExists(
 				connection,
 				geography,
 				geoLevelSelect,

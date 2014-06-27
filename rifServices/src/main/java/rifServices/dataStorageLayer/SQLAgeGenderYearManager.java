@@ -408,13 +408,13 @@ public class SQLAgeGenderYearManager
 		if (geography != null) {
 			geography.checkErrors();
 		
-			sqlRIFContextManager.checkNonExistentGeography(
+			sqlRIFContextManager.checkGeographyExists(
 				connection, 
 				geography);	
 		}
 		if (ndPair != null) {
 			ndPair.checkErrors();
-			sqlRIFContextManager.checkNonExistentNDPair(
+			sqlRIFContextManager.checkNDPairExists(
 				connection, 
 				geography,
 				ndPair);			
@@ -479,7 +479,6 @@ public class SQLAgeGenderYearManager
 				}		
 			}
 			catch(SQLException sqlException) {
-				sqlException.printStackTrace(System.out);
 				String errorMessage
 					= RIFServiceMessages.getMessage(
 						"general.validation.unableCheckNonExistentRecord",

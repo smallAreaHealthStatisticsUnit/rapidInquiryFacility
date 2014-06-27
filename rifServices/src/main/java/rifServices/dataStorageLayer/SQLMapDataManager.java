@@ -867,14 +867,14 @@ public class SQLMapDataManager
 		//Validate parameters
 		if (geography != null) {
 			geography.checkErrors();
-			sqlRIFContextManager.checkNonExistentGeography(
+			sqlRIFContextManager.checkGeographyExists(
 				connection, 
 				geography);			
 		}
 
 		if (geoLevelSelect != null) {
 			geoLevelSelect.checkErrors();
-			sqlRIFContextManager.checkNonExistentGeoLevelSelect(
+			sqlRIFContextManager.checkGeoLevelSelectExists(
 				connection, 
 				geography, 
 				geoLevelSelect);
@@ -883,7 +883,7 @@ public class SQLMapDataManager
 
 		if (geoLevelArea != null) {
 			geoLevelArea.checkErrors();	
-			sqlRIFContextManager.checkNonExistentGeoLevelArea(
+			sqlRIFContextManager.checkGeoLevelAreaExists(
 				connection,
 				geography,
 				geoLevelSelect,
@@ -892,7 +892,7 @@ public class SQLMapDataManager
 		
 		if (geoLevelToMap != null) {
 			geoLevelToMap.checkErrors();			
-			sqlRIFContextManager.checkNonExistentGeoLevelToMapValue(
+			sqlRIFContextManager.checkGeoLevelToMapValueExists(
 				connection, 
 				geography, 
 				geoLevelSelect, 
