@@ -1,7 +1,13 @@
 package rifServices.dataStorageLayer;
 
+import rifServices.businessConceptLayer.AbstractStudy;
+import rifServices.businessConceptLayer.Investigation;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceException;
+import rifServices.system.RIFServiceMessages;
+import rifServices.util.RIFLogger;
 
-
+import java.sql.*;
 
 /**
  *
@@ -117,11 +123,6 @@ public class SQLInvestigationManager
 		
 		formatter.addFromTable("t_rif40_investigations");
 		
-		
-		
-		
-		
-		
 	}
 		
 */		
@@ -130,7 +131,73 @@ public class SQLInvestigationManager
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
+	public void checkInvestigationExists(
+		final Connection connection,
+		final AbstractStudy study,
+		final Investigation investigation) 
+		throws RIFServiceException {
+		
+		SQLRecordExistsQueryFormatter investigationExistsQuery
+			= new SQLRecordExistsQueryFormatter();
+		investigationExistsQuery.setFromTable("rif40_investigations");
+		investigationExistsQuery.addWhereParameter("study_id");
+		investigationExistsQuery.addWhereParameter("inv_id");
 
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement 
+				= connection.prepareStatement(investigationExistsQuery.generateQuery());
+			statement.setString(1, study.getIdentifier());
+			statement.setString(2, investigation.getIdentifier());
+			resultSet = statement.executeQuery();
+			
+			if (resultSet.next() == false) {
+				String recordType
+					= investigation.getRecordType();
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"general.validation.nonExistentRecord",
+						recordType,
+						investigation.getDisplayName());
+
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.NON_EXISTENT_AGE_GROUP, 
+						errorMessage);
+				throw rifServiceException;
+			}
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.unableCheckNonExistentRecord",
+					investigation.getRecordType(),
+					investigation.getDisplayName());
+
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLInvestigationManager.class, 
+				errorMessage, 
+				sqlException);										
+			
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DB_UNABLE_CHECK_NONEXISTENT_RECORD, 
+					errorMessage);
+			throw rifServiceException;			
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		
+		
+		
+	}
+		
+	
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
