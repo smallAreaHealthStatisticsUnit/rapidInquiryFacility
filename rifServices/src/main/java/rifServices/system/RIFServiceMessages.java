@@ -317,6 +317,36 @@ public class RIFServiceMessages {
     }
 
     /**
+     * Gets the message.
+     *
+     * @param key the key
+     * @param parameter0 the parameter0
+     * @param parameter1 the parameter1
+     * @param parameter2 the parameter2
+     * @param parameter3 the parameter3
+     * @param parameter3 the parameter4
+     * @return the message
+     */
+    static public String getMessage(
+		final String key,
+        final String parameter0,
+        final String parameter1,
+        final String parameter2,
+        final String parameter3,
+        final String parameter4) {
+
+        String[] parameters = new String[5];
+        parameters[0] = parameter0;
+        parameters[1] = parameter1;
+        parameters[2] = parameter2;
+        parameters[3] = parameter3;
+        parameters[4] = parameter4;
+        return fillInTheBlanks(key,
+        	parameters);
+
+    }
+    
+    /**
      * Fill in the blanks.
      *
      * @param key the key
