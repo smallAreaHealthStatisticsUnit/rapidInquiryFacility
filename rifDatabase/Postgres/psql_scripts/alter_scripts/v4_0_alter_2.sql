@@ -117,7 +117,8 @@ DECLARE
 -- Functions to enable debug for
 --
 	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 
-		'rif40_get_geojson_as_js', '_rif40_get_geojson_as_js', '_rif40_getGeoLevelExtentCommon', 'rif40_get_geojson_tiles'];
+		'rif40_get_geojson_as_js', '_rif40_get_geojson_as_js', '_rif40_getGeoLevelExtentCommon', 'rif40_get_geojson_tiles', 
+		'rif40_getAllAttributesForGeoLevelAttributeTheme', 'rif40_GetGeometryColumnNames', 'rif40_GetMapAreaAttributeValue'];
 --
 	c1alter2 CURSOR FOR
 		SELECT *
@@ -441,7 +442,20 @@ SELECT SUBSTRING(
 --
 -- Attribute fetch functions
 --
-SELECT * FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'covariate');
+SELECT * 
+  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'covariate');
+/*
+rif40_getNumericAttributesForGeoLevelAttributeTheme() not implemented, use the is_numeric BOOLEAN flag in above
+rif40_AttributeExistsForGeoLevelAttributeTheme() not implemented, use the attribute name filter to select by named attribute
+
+Note there is currently no support for health themes.
+ */
+SELECT * 
+  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'population')
+ WHERE is_numeric /* rif40_getNumericAttributesForGeoLevelAttributeTheme() example */;
+SELECT * 
+  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'covariate', 
+		ARRAY['SES'] /* rif40_AttributeExistsForGeoLevelAttributeTheme() example */);
 
 --
 -- Dump all attributes and themes
@@ -457,6 +471,60 @@ SELECT b.*
   FROM a, rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(
 	'SAHSU'::VARCHAR, 'LEVEL4'::VARCHAR, a.enumlabel::rif40_xml_pkg.rif40_geolevelAttributeTheme) b
  ORDER BY  3, 1, 2;
+
+--
+-- rif40_GetGeoLevelAttributeTheme() not implemented, purpose unclear
+-- rif40_GetGeometryColumnNames() 
+--
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetGeometryColumnNames('SAHSU');
+
+--
+-- rif40_GetMapAreaAttributeValue();
+--
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
+		'c4getallatt4theme_1' /* Must be unique with a TX */, 
+		'SAHSU', 'LEVEL4', 'covariate', 'sahsuland_covariates_level4', ARRAY['SES', 'year']);
+FETCH FORWARD 5 IN c4getallatt4theme_1;
+
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
+		'c4getallatt4theme_2' /* Must be unique with a TX */, 
+		'SAHSU', 'LEVEL2', 'health', 'sahsuland_cancer');
+FETCH FORWARD 5 IN c4getallatt4theme_2;
+
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
+		'c4getallatt4theme_3' /* Must be unique with a TX */, 
+		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop');
+FETCH FORWARD 5 IN c4getallatt4theme_3;
+
+/*
+
+This does not work as RIF40, needs to be study owner, rif_manager or shared to:
+
+psql:alter_scripts/v4_0_alter_2.sql:506: INFO:  [DEBUG1] rif40_getAllAttributesForGeoLevelAttributeTheme(): [50807] Geography: SAHSU, geolevel select: LEVEL4, theme: extract; SQL f
+etch returned 0 attribute names, took: 00:00:00.
+psql:alter_scripts/v4_0_alter_2.sql:506: WARNING:  rif40_get_error_code_action() function name rif40_GetMapAreaAttributeValue() NO ERROR MESSAGE FOUND IN DB FOR: -51204.
+psql:alter_scripts/v4_0_alter_2.sql:506: ERROR:  rif40_xml_pkg.rif40_getmapareaattributevalue(): geography: SAHSU, <geolevel select> LEVEL4, attribute_source: s1_extracts; no attri
+butes found
+Time: 129.860 ms
+
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
+		'c4getallatt4theme_4', 
+		'SAHSU', 'LEVEL4', 'extract', 's1_extract');
+FETCH FORWARD 5 IN c4getallatt4theme_4;
+
+[it did work when I changed rif40_studies to t_rif40_studies in ]
+ */
+
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
+		'c4getallatt4theme_5' /* Must be unique with a TX */, 
+		'SAHSU', 'LEVEL2', 'geometry', 't_rif40_sahsu_geometry');
+FETCH FORWARD 5 IN c4getallatt4theme_5;
 
 --
 -- Done

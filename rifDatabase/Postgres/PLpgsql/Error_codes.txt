@@ -2,7 +2,11 @@ Error codes assignment (see PLpgsql\Error_codes.txt):
 
 rif40_xml_pkg:
 
-_rif40_getGeoLevelExtentCommon: 	50000 to 50099
-rif40_get_geojson_as_js: 		50200 to 50399
-rif40_get_geojson_tiles: 		50400 to 50599
-_rif40_get_geojson_as_js: 		50600 to 50799
+_rif40_getGeoLevelExtentCommon: 		50000 to 50099
+rif40_get_geojson_as_js: 			50200 to 50399
+rif40_get_geojson_tiles: 			50400 to 50599
+_rif40_get_geojson_as_js: 			50600 to 50799
+etAllAttributesForGeoLevelAttributeTheme: 	50800 to 50999
+rif40_GetGeometryColumnNames: 			51000 to 51199
+rif40_GetMapAreaAttributeValue: 		51200 to 51399
+
