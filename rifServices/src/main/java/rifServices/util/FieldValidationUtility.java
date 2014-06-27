@@ -205,6 +205,50 @@ public final class FieldValidationUtility {
 		}
 	}
 	
+	
+	/**
+	 * Check malicious method parameter.
+	 *
+	 * @param methodName the method name
+	 * @param parameterName the parameter name
+	 * @param parameterValue the parameter value
+	 * @throws RIFServiceSecurityException the RIF service security exception
+	 */
+	public void checkMaliciousMethodParameter(
+		final String methodName,
+		final String parameterName,
+		final String[] parameterValues) 
+		throws RIFServiceSecurityException {
+
+		if (parameterValues == null) {
+			return;
+		}
+		
+		if (parameterValues.length == 0) {
+			return;
+		}
+		
+		ArrayList<Pattern> maliciousCodePatterns = new ArrayList<Pattern>();
+		maliciousCodePatterns.addAll(maliciousCodePatternFromString.values());
+		
+		for (String parameterValue : parameterValues) {		
+			for (Pattern maliciousCodePattern : maliciousCodePatterns) {
+				Matcher matcher = maliciousCodePattern.matcher(parameterValue);
+				if (matcher.find()) {
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"genaral.validation.maliciousMethodParameterDetected",
+							methodName,
+							parameterName,
+							parameterValue);
+					RIFServiceSecurityException rifServiceSecurityException
+						= new RIFServiceSecurityException(errorMessage);
+					throw rifServiceSecurityException;
+				}
+			}		
+		}
+	}
+	
 	/**
 	 * Check malicious method parameter.
 	 *
@@ -284,6 +328,27 @@ public final class FieldValidationUtility {
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Assumes that the spaces have all been replaced by 
+	 * @param candidateDatabaseTableName
+	 * @return
+	 */
+	public boolean isValidDatabaseTableName(String candidateDatabaseTableName) {
+		Pattern pattern = Pattern.compile("^[A-Za-z][A-Za-z0-9_]*$");
+		Matcher matcher = pattern.matcher(candidateDatabaseTableName);
+		return matcher.matches();
+	}
+
+	/**
+	 * replaces all spaces with underscores and then converts all letters to 
+	 * upper case.
+	 * @param candidateTableName
+	 * @return
+	 */
+	public String convertToDatabaseTableName(String candidateTableName) {
+		return candidateTableName.replace(" ", "_").toUpperCase();
 	}
 	
 	/**
