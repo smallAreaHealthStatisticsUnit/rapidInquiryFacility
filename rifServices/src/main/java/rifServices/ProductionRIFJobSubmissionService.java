@@ -9,10 +9,12 @@ import rifServices.util.FieldValidationUtility;
 
 import rifServices.util.RIFLogger;
 
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.awt.Point;
 
 /**
  * Main implementation of the RIF middle ware.  
@@ -165,6 +167,10 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 	
 	private SQLRIFSubmissionManager rifSubmissionManager;
 	
+	private SQLResultsQueryManager rifResultsQueryManager;
+	
+	private SQLInvestigationManager investigationManager;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -193,11 +199,19 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		covariateManager = new SQLCovariateManager(sqlRIFContextManager);
 		diseaseMappingStudyManager = new SQLDiseaseMappingStudyManager();
 		
+		investigationManager = new SQLInvestigationManager();
+		
 		rifSubmissionManager 
 			= new SQLRIFSubmissionManager(
 				sqlRIFContextManager,
 				sqlAgeGenderYearManager,
 				covariateManager);
+		
+		rifResultsQueryManager
+			= new SQLResultsQueryManager(
+				sqlRIFContextManager,
+				diseaseMappingStudyManager,
+				investigationManager);
 		
 		try {
 			healthOutcomeManager.initialiseTaxomies();			
@@ -378,7 +392,7 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 			return null;
 		}
 		
-		RIFServiceInformation result = null;
+		RIFServiceInformation result = RIFServiceInformation.newInstance();
 		try {
 
 			//Part II: Check for empty parameters
@@ -717,7 +731,7 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 			return null;
 		}
 		
-		HealthCodeTaxonomy result = null;
+		HealthCodeTaxonomy result = HealthCodeTaxonomy.newInstance();
 		try {
 			//Part II: Check for security violations
 			FieldValidationUtility fieldValidationUtility
@@ -895,10 +909,7 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 			
 			sqlConnectionManager.releaseReadConnection(
 				user, 
-				connection);
-				
-
-		
+				connection);		
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1009,7 +1020,7 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 			return null;
 		}
 	
-		HealthCode result = null;
+		HealthCode result = HealthCode.newInstance();
 		try {
 
 			//Part II: Check for empty parameter values
@@ -1492,8 +1503,7 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		Geography geography = Geography.createCopy(_geography);
 		
 		ArrayList<NumeratorDenominatorPair> results = 
-			new ArrayList<NumeratorDenominatorPair>();
-		
+			new ArrayList<NumeratorDenominatorPair>();		
 		try {
 			
 			//Part II: Check for empty parameters
@@ -1563,7 +1573,7 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		Geography geography = Geography.createCopy(_geography);
 		
 		
-		NumeratorDenominatorPair result = null; 
+		NumeratorDenominatorPair result = NumeratorDenominatorPair.newInstance(); 
 		try {
 			
 			//Part II: Check for empty parameters
@@ -1628,6 +1638,7 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 			= Geography.createCopy(_geography);
 
 		ArrayList<GeoLevelSelect> results = new ArrayList<GeoLevelSelect>();
+		
 		try {
 			
 			//Part II: Check for empty parameters
@@ -1997,11 +2008,11 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 	 * @see rifServices.businessConceptLayer.RIFJobSubmissionAPI#getSummaryDataForCurrentExtent(rifServices.businessConceptLayer.User, rifServices.businessConceptLayer.Geography, rifServices.businessConceptLayer.GeoLevelSelect, rifServices.businessConceptLayer.GeoLevelArea, rifServices.businessConceptLayer.GeoLevelToMap)
 	 */
 	public MapAreaSummaryData getSummaryDataForCurrentExtent(
-			User _user,
-			Geography _geography,
-			GeoLevelSelect _geoLevelSelect,
-			GeoLevelArea _geoLevelArea,
-			GeoLevelToMap _geoLevelToMap) throws RIFServiceException {
+		User _user,
+		Geography _geography,
+		GeoLevelSelect _geoLevelSelect,
+		GeoLevelArea _geoLevelArea,
+		GeoLevelToMap _geoLevelToMap) throws RIFServiceException {
 
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);		
@@ -2252,9 +2263,6 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 	}
 	
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.RIFJobSubmissionAPI#getMapAreaSummaryInformation(rifServices.businessConceptLayer.User, rifServices.businessConceptLayer.Geography, rifServices.businessConceptLayer.GeoLevelSelect, rifServices.businessConceptLayer.GeoLevelArea, rifServices.businessConceptLayer.GeoLevelToMap, java.util.ArrayList)
-	 */
 	public MapAreaSummaryData getMapAreaSummaryInformation(
 		final User _user,
 		final Geography _geography,
@@ -2345,9 +2353,6 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 	}
 	
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.RIFJobSubmissionAPI#getGeometry(rifServices.businessConceptLayer.User, rifServices.businessConceptLayer.Geography, rifServices.businessConceptLayer.GeoLevelSelect, rifServices.businessConceptLayer.GeoLevelToMap, java.util.ArrayList)
-	 */
 	public String getGeometry(
 		final User _user,
 		final Geography _geography,
@@ -2468,9 +2473,6 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		return results;			
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.RIFJobSubmissionAPI#getStudies(rifServices.businessConceptLayer.User, rifServices.businessConceptLayer.Project)
-	 */
 	public ArrayList<AbstractStudy> getStudies(
 		final User _user,
 		final Project _project) 
@@ -2528,9 +2530,6 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		return results;				
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.RIFJobSubmissionAPI#getImage(rifServices.businessConceptLayer.User, rifServices.businessConceptLayer.GeoLevelSelect, rifServices.businessConceptLayer.GeoLevelArea, rifServices.businessConceptLayer.GeoLevelView, java.util.ArrayList)
-	 */
 	public BufferedImage getImage(
 		final User _user,
 		final GeoLevelSelect _geoLevelSelect,
@@ -2553,7 +2552,9 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		ArrayList<MapArea> mapAreas
 			= MapArea.createCopy(_mapAreas);
 				
-		BufferedImage result = null;
+		BufferedImage result = new 
+			BufferedImage(100,100,BufferedImage.TYPE_INT_RGB);
+		
 		try {
 			
 			//Part II: Check for empty parameter values
@@ -2616,9 +2617,6 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		return result;
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.RIFJobSubmissionAPI#submitStudy(rifServices.businessConceptLayer.User, rifServices.businessConceptLayer.RIFJobSubmission, java.io.File)
-	 */
 	public void submitStudy(
 		User _user,
 		RIFJobSubmission _rifJobSubmission,
@@ -2670,10 +2668,10 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		
 			Connection connection
 				= sqlConnectionManager.getWriteConnection(user);
-			rifSubmissionManager.addRIFJobSubmission(
-				connection, 
-				user, 
-				rifJobSubmission);
+			//rifSubmissionManager.addRIFJobSubmission(
+			//	connection, 
+			//	user, 
+			//	rifJobSubmission);
 			
 			//RIFZipFileWriter rifZipFileWriter = new RIFZipFileWriter();
 			//rifZipFileWriter.writeZipFile(outputFile, rifJobSubmission);		
@@ -2686,6 +2684,923 @@ public class ProductionRIFJobSubmissionService implements RIFJobSubmissionAPI {
 		}
 
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	//Calls to obtain geographical extents of areas
+	
+	
+	public Rectangle2D.Double getGeoLevelBoundsForArea(
+		final User _user,
+		final Geography _geography,
+		final GeoLevelSelect _geoLevelSelect,
+		final MapArea _mapArea)
+		throws RIFServiceException {
+		
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		Geography geography = Geography.createCopy(_geography);
+		GeoLevelSelect geoLevelSelect = GeoLevelSelect.createCopy(_geoLevelSelect);
+		MapArea mapArea = MapArea.createCopy(_mapArea);
+				
+		Rectangle2D.Double result = new Rectangle2D.Double(0,0,0,0);
+		try {			
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelBoundsForArea",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelBoundsForArea",
+				"geography",
+				geography);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelBoundsForArea",
+				"geoLevelSelect",
+				geoLevelSelect);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelBoundsForArea",
+				"mapArea",
+				mapArea);
+			
+		
+			//Part III: Check for security violations
+			validateUser(user);
+			geography.checkSecurityViolations();
+			geoLevelSelect.checkSecurityViolations();
+			mapArea.checkSecurityViolations();
+			
+			RIFLogger rifLogger = new RIFLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getGeoLevelBoundsForArea",
+					user.getUserID(),
+					user.getIPAddress(),
+					mapArea.getDisplayName());
+			rifLogger.info(
+				ProductionRIFJobSubmissionService.class,
+				auditTrailMessage);
+		
+			Connection connection
+				= sqlConnectionManager.getWriteConnection(user);
+			
+			result
+				= rifResultsQueryManager.getGeoLevelBoundsForArea(
+					connection,
+					user,
+					geography,
+					geoLevelSelect,
+					mapArea);
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"getGeoLevelBoundsForArea",
+				rifServiceException);	
+		}		
+		
+		return result;
+	}
+	
+	public Rectangle2D.Double getGeoLevelFullExtentForStudy(
+		final User _user,
+		final Geography _geography,
+		final GeoLevelSelect _geoLevelSelect,
+		final DiseaseMappingStudy _diseaseMappingStudy)
+		throws RIFServiceException {
+
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		Geography geography = Geography.createCopy(_geography);
+		GeoLevelSelect geoLevelSelect = GeoLevelSelect.createCopy(_geoLevelSelect);
+		DiseaseMappingStudy diseaseMappingStudy
+			=  DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
+		
+		
+		Rectangle2D.Double result = new Rectangle2D.Double(0,0,0,0);
+		try {
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelFullExtentForStudy",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelFullExtentForStudy",
+				"geography",
+				geography);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelFullExtentForStudy",
+				"geoLevelSelect",
+				geoLevelSelect);				
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelFullExtentForStudy",
+				"diseaseMappingStudy",
+				diseaseMappingStudy);				
+
+			
+			//Part III: Check for security violations
+			validateUser(user);
+			geography.checkSecurityViolations();
+			geoLevelSelect.checkSecurityViolations();
+			diseaseMappingStudy.checkSecurityViolations();
+			
+			RIFLogger rifLogger = new RIFLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getGeoLevelFullExtentForStudy",
+					user.getUserID(),
+					user.getIPAddress(),
+					diseaseMappingStudy.getDisplayName());
+			rifLogger.info(
+				ProductionRIFJobSubmissionService.class,
+				auditTrailMessage);
+			
+			Connection connection
+				= sqlConnectionManager.getWriteConnection(user);
+			result
+				= rifResultsQueryManager.getGeoLevelFullExtentForStudy(
+					connection,
+					user,
+					geography,
+					geoLevelSelect,
+					diseaseMappingStudy);
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"getGeoLevelFullExtentForStudy",
+				rifServiceException);			
+		}
+		return result;
+	}
+	
+	public Rectangle2D.Double getGeoLevelFullExtent(
+		final User _user,
+		final Geography _geography,
+		final GeoLevelSelect _geoLevelSelect)
+		throws RIFServiceException {
+
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		Geography geography = Geography.createCopy(_geography);
+		GeoLevelSelect geoLevelSelect = GeoLevelSelect.createCopy(_geoLevelSelect);
+			
+		Rectangle2D.Double result = new Rectangle2D.Double(0,0,0,0);
+		try {
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelFullExtentForStudy",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelFullExtentForStudy",
+				"geography",
+				geography);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelFullExtentForStudy",
+				"geoLevelSelect",
+				geoLevelSelect);
+
+				
+			//Part III: Check for security violations
+			validateUser(user);
+			geography.checkSecurityViolations();
+			geoLevelSelect.checkSecurityViolations();
+				
+			RIFLogger rifLogger = new RIFLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getGeoLevelFullExtent",
+					user.getUserID(),
+					user.getIPAddress(),
+					geoLevelSelect.getDisplayName());
+			rifLogger.info(
+				ProductionRIFJobSubmissionService.class,
+				auditTrailMessage);
+			
+			Connection connection
+				= sqlConnectionManager.getWriteConnection(user);
+			result
+				= rifResultsQueryManager.getGeoLevelFullExtent(
+					connection,
+					user,
+					geography,
+					geoLevelSelect);
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"getGeoLevelFullExtent",
+				rifServiceException);			
+		}
+		return result;
+	}
+	
+	public String getTiles(
+		final User _user,
+		final Geography geography,
+		final GeoLevelSelect _geoLevelSelect,
+		final Integer zoomFactor,
+		final String tileIdentifier)
+		throws RIFServiceException {
+
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		GeoLevelSelect geoLevelSelect 
+			= GeoLevelSelect.createCopy(_geoLevelSelect);
+				
+		String result = "";
+		try {
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getTiles",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getTiles",
+				"getLevelSelect",
+				geoLevelSelect);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getTiles",
+				"zoomFactor",
+				zoomFactor);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getTiles",
+				"tileIdentifier",
+				tileIdentifier);	
+			
+			//Part III: Check for security violations
+			validateUser(user);
+			geoLevelSelect.checkSecurityViolations();
+			fieldValidationUtility.checkMaliciousMethodParameter(			
+				"getTiles",
+				"tileIdentifier",
+				tileIdentifier);	
+
+			RIFLogger rifLogger = new RIFLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getTiles",
+					user.getUserID(),
+					user.getIPAddress(),
+					tileIdentifier);
+			rifLogger.info(
+				ProductionRIFJobSubmissionService.class,
+				auditTrailMessage);
+			
+			Connection connection
+				= sqlConnectionManager.getWriteConnection(user);
+			result
+				= rifResultsQueryManager.getTiles(
+					connection,
+					user,
+					geography,
+					geoLevelSelect,
+					zoomFactor,
+					tileIdentifier);
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"getTiles",
+				rifServiceException);			
+		}
+		return result;
+		
+	}
+	
+	public ArrayList<MapAreaAttributeValue> getMapAreaAttributeValues(
+		final User _user,
+		final Geography _geography,
+		final GeoLevelSelect _geoLevelSelect,
+		final String geoLevelAttribute)
+		throws RIFServiceException {
+			
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		Geography geography = Geography.createCopy(_geography);
+		GeoLevelSelect geoLevelSelect
+			= GeoLevelSelect.createCopy(_geoLevelSelect);
+		
+		ArrayList<MapAreaAttributeValue> results
+			= new ArrayList<MapAreaAttributeValue>();
+		try {
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getMapAreaAttributeValues",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getMapAreaAttributeValues",
+				"geography",
+				geography);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getMapAreaAttributeValues",
+				"getLevelSelect",
+				geoLevelSelect);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getMapAreaAttributeValues",
+				"geoLevelAttribute",
+				geoLevelAttribute);	
+		
+			//Part III: Check for security violations
+			validateUser(user);
+			geography.checkSecurityViolations();
+			geoLevelSelect.checkSecurityViolations();
+			fieldValidationUtility.checkMaliciousMethodParameter(			
+				"getMapAreaAttributeValues",
+				"geoLevelAttribute",
+				geoLevelAttribute);	
+
+			RIFLogger rifLogger = new RIFLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getMapAreaAttributeValues",
+					user.getUserID(),
+					user.getIPAddress(),
+					geoLevelAttribute);
+			rifLogger.info(
+				ProductionRIFJobSubmissionService.class,
+				auditTrailMessage);
+		
+			Connection connection
+				= sqlConnectionManager.getWriteConnection(user);
+			results
+				= rifResultsQueryManager.getMapAreaAttributeValues(
+					connection,
+					user,
+					geography,
+					geoLevelSelect,
+					geoLevelAttribute);
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"getMapAreaAttributeValues",
+				rifServiceException);			
+		}
+		
+		return results;
+	}
+		
+	
+	public ArrayList<GeoLevelAttributeTheme> getGeoLevelAttributeThemes(
+		final User _user,
+		final Geography _geography,
+		final GeoLevelSelect _geoLevelSelect)
+		throws RIFServiceException {
+		
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		Geography geography = Geography.createCopy(_geography);
+		GeoLevelSelect geoLevelSelect
+			= GeoLevelSelect.createCopy(_geoLevelSelect);
+		
+		ArrayList<GeoLevelAttributeTheme> results 
+			= new ArrayList<GeoLevelAttributeTheme>();
+		
+		try {
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getMapAreaAttributeValues",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getMapAreaAttributeValues",
+				"geography",
+				geography);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getMapAreaAttributeValues",
+				"getLevelSelect",
+				geoLevelSelect);	
+
+			
+			//Part III: Check for security violations
+			validateUser(user);
+			geography.checkSecurityViolations();
+			geoLevelSelect.checkSecurityViolations();
+						
+			RIFLogger rifLogger = new RIFLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getGeoLevelAttributeThemes",
+					user.getUserID(),
+					user.getIPAddress(),
+					geography.getDisplayName(),
+					geoLevelSelect.getDisplayName());
+			rifLogger.info(
+				ProductionRIFJobSubmissionService.class,
+				auditTrailMessage);
+		
+			Connection connection
+				= sqlConnectionManager.getWriteConnection(user);
+			
+			results
+				= rifResultsQueryManager.getGeoLevelAttributeThemes(
+					connection,
+					user,
+					geography,
+					geoLevelSelect);
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"getGeoLevelAttributeThemes",
+				rifServiceException);						
+		}
+				
+		return results;
+	}
+
+	public String[] getAllAttributesForGeoLevelAttributeTheme(
+		final User _user,
+		final Geography _geography,
+		final GeoLevelSelect _geoLevelSelect,
+		final GeoLevelAttributeTheme _geoLevelAttributeTheme)
+		throws RIFServiceException {
+			
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		Geography geography = Geography.createCopy(_geography);
+		GeoLevelSelect geoLevelSelect
+			= GeoLevelSelect.createCopy(_geoLevelSelect);
+		GeoLevelAttributeTheme geoLevelAttributeTheme
+			= GeoLevelAttributeTheme.createCopy(_geoLevelAttributeTheme);
+			String[] results = new String[0];
+		try {
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getAllAttributesForGeoLevelAttributeTheme",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getAllAttributesForGeoLevelAttributeTheme",
+				"geography",
+				geography);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getAllAttributesForGeoLevelAttributeTheme",
+				"geoLevelSelect",
+				geoLevelSelect);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getAllAttributesForGeoLevelAttributeTheme",
+				"geoLevelAttributeTheme",
+				geoLevelAttributeTheme);	
+				
+			RIFLogger rifLogger = new RIFLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getAllAttributesForGeoLevelAttributeTheme",
+					user.getUserID(),
+					user.getIPAddress(),
+					geography.getDisplayName(),
+					geoLevelSelect.getDisplayName());
+			rifLogger.info(
+				ProductionRIFJobSubmissionService.class,
+				auditTrailMessage);
+			
+			Connection connection
+				= sqlConnectionManager.getWriteConnection(user);
+			
+			results
+				= rifResultsQueryManager.getAllAttributesForGeoLevelAttributeTheme(
+					connection,
+					user,
+					geography,
+					geoLevelSelect,
+					geoLevelAttributeTheme);
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"getGeoLevelAttributeThemes",
+				rifServiceException);						
+		}
+					
+		return results;
+	}
+
+	
+	public String[] getNumericAttributesForGeoLevelAttributeTheme(
+		final User _user,
+		final Geography _geography,
+		final GeoLevelSelect _geoLevelSelect,
+		final GeoLevelAttributeTheme _geoLevelAttributeTheme)
+		throws RIFServiceException {
+				
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		Geography geography = Geography.createCopy(_geography);
+		GeoLevelSelect geoLevelSelect
+			= GeoLevelSelect.createCopy(_geoLevelSelect);
+		GeoLevelAttributeTheme geoLevelAttributeTheme
+			= GeoLevelAttributeTheme.createCopy(_geoLevelAttributeTheme);
+			String[] results = new String[0];
+		try {
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getNumericAttributesForGeoLevelAttributeTheme",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getNumericAttributesForGeoLevelAttributeTheme",
+				"geography",
+				geography);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getNumericAttributesForGeoLevelAttributeTheme",
+				"geoLevelSelect",
+				geoLevelSelect);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getNumericAttributesForGeoLevelAttributeTheme",
+				"geoLevelAttributeTheme",
+				geoLevelAttributeTheme);	
+					
+			RIFLogger rifLogger = new RIFLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getNumericAttributesForGeoLevelAttributeTheme",
+					user.getUserID(),
+					user.getIPAddress(),
+					geography.getDisplayName(),
+					geoLevelSelect.getDisplayName());
+			rifLogger.info(
+				ProductionRIFJobSubmissionService.class,
+				auditTrailMessage);
+			
+			Connection connection
+				= sqlConnectionManager.getWriteConnection(user);
+				
+			results
+				= rifResultsQueryManager.getAllAttributesForGeoLevelAttributeTheme(
+					connection,
+					user,
+					geography,
+					geoLevelSelect,
+					geoLevelAttributeTheme);
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"getNumericAttributesForGeoLevelAttributeTheme",
+				rifServiceException);						
+		}
+						
+		return results;
+	}
+	
+	public RIFResultTable getCalculatedResultsByBlock(
+		User _user,
+		DiseaseMappingStudy _diseaseMappingStudy,
+		String[] calculatedResultColumnFieldNames,
+		Integer startRowIndex,
+		Integer endRowIndex)
+		throws RIFServiceException {
+
+		
+		RIFResultTable results = new RIFResultTable();
+	
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return results;
+		}
+		DiseaseMappingStudy diseaseMappingStudy
+			= DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
+					
+		try {
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();			
+			//Part II: Check for empty parameter values
+			fieldValidationUtility.checkNullMethodParameter(
+				"getCalculatedResultsByBlock",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getCalculatedResultsByBlock",
+				"diseaseMappingStudy",
+				diseaseMappingStudy);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getCalculatedResultsByBlock",
+				"calculatedResultColumnFieldNames",
+				calculatedResultColumnFieldNames);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getCalculatedResultsByBlock",
+				"endRowIndex",
+				endRowIndex);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getCalculatedResultsByBlock",
+				"startRowIndex",
+				startRowIndex);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getCalculatedResultsByBlock",
+				"endRowIndex",
+				endRowIndex);	
+			
+			for (String calculatedResultColumnFieldName : calculatedResultColumnFieldNames) {
+				fieldValidationUtility.checkMaliciousMethodParameter(
+					"getCalculatedResultsByBlock", 
+					"calculatedResultColumnFieldNames", 
+					calculatedResultColumnFieldName);
+			}
+			
+			//Part III: Check for security violations
+			validateUser(user);
+			diseaseMappingStudy.checkSecurityViolations();
+				
+			RIFLogger rifLogger = new RIFLogger();			
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage(
+					"logging.getCalculatedResultsByBlock",
+					user.getUserID(),
+					user.getIPAddress(),
+					diseaseMappingStudy.getDisplayName(),
+					String.valueOf(startRowIndex),
+					String.valueOf(endRowIndex));
+			rifLogger.info(
+				ProductionRIFJobSubmissionService.class,
+				auditTrailMessage);
+	
+			Connection connection
+				= sqlConnectionManager.getWriteConnection(user);
+			results
+				= rifResultsQueryManager.getCalculatedResultsByBlock(
+					connection,
+					user,
+					diseaseMappingStudy,
+					calculatedResultColumnFieldNames,
+					startRowIndex,
+					endRowIndex);
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"getCalculatedResultsByBlock",
+				rifServiceException);	
+		}	
+		
+		return results;
+	}
+	
+	public RIFResultTable getExtractByBlock(
+		User _user,
+		DiseaseMappingStudy _diseaseMappingStudy,
+		String[] calculatedResultColumnFieldNames,
+		Integer startRowIndex,
+		Integer endRowIndex)
+		throws RIFServiceException {
+
+			
+		RIFResultTable results = new RIFResultTable();
+		
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return results;
+		}
+		DiseaseMappingStudy diseaseMappingStudy
+			= DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
+					
+		try {
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();			
+			//Part II: Check for empty parameter values
+			fieldValidationUtility.checkNullMethodParameter(
+				"getExtractByBlock",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getExtractByBlock",
+				"diseaseMappingStudy",
+				diseaseMappingStudy);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getExtractByBlock",
+				"startRowIndex",
+				startRowIndex);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getExtractByBlock",
+				"endRowIndex",
+				endRowIndex);	
+
+			//Part III: Check for security violations
+			validateUser(user);
+			diseaseMappingStudy.checkSecurityViolations();
+					
+			RIFLogger rifLogger = new RIFLogger();			
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage(
+					"logging.getExtractByBlock",
+					user.getUserID(),
+					user.getIPAddress(),
+					diseaseMappingStudy.getDisplayName(),
+					String.valueOf(startRowIndex),
+					String.valueOf(endRowIndex));
+			rifLogger.info(
+				ProductionRIFJobSubmissionService.class,
+				auditTrailMessage);
+		
+			Connection connection
+				= sqlConnectionManager.getWriteConnection(user);
+			results
+				= rifResultsQueryManager.getExtractByBlock(
+					connection,
+					user,
+					diseaseMappingStudy,
+					calculatedResultColumnFieldNames,
+					startRowIndex,
+					endRowIndex);
+		}
+		catch(RIFServiceException rifServiceException) {	
+			logException(
+				user,
+				"getExtractByBlock",
+				rifServiceException);	
+		}	
+			
+		return results;
+	}
+			
+	public RIFResultTable getResultsStratifiedByGenderAndAgeGroup(
+		User _user,
+		Geography _geography,
+		GeoLevelSelect _geoLevelSelect,
+		DiseaseMappingStudy _diseaseMappingStudy,
+		GeoLevelAttributeTheme _geoLevelAttributeTheme,
+		String geoLevelAttribute,
+		ArrayList<MapArea> _mapAreas,
+		Integer year)
+		throws RIFServiceException {
+		
+		
+		RIFResultTable results = new RIFResultTable();
+		
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return results;
+		}
+		Geography geography = Geography.createCopy(_geography);
+		GeoLevelSelect geoLevelSelect = GeoLevelSelect.createCopy(_geoLevelSelect);
+		DiseaseMappingStudy diseaseMappingStudy
+			= DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
+		GeoLevelAttributeTheme geoLevelAttributeTheme
+			= GeoLevelAttributeTheme.createCopy(_geoLevelAttributeTheme);
+		ArrayList<MapArea> mapAreas = MapArea.createCopy(_mapAreas);
+		
+		try {
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();			
+			//Part II: Check for empty parameter values
+			fieldValidationUtility.checkNullMethodParameter(
+				"getResultsStratifiedByGenderAndAgeGroup",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getResultsStratifiedByGenderAndAgeGroup",
+				"geography",
+				geography);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getResultsStratifiedByGenderAndAgeGroup",
+				"geoLevelSelect",
+				geoLevelSelect);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getResultsStratifiedByGenderAndAgeGroup",
+				"diseaseMappingStudy",
+				diseaseMappingStudy);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getResultsStratifiedByGenderAndAgeGroup",
+				"geoLevelAttributeTheme",
+				geoLevelAttributeTheme);		
+			fieldValidationUtility.checkNullMethodParameter(
+				"getResultsStratifiedByGenderAndAgeGroup",
+				"geoLevelAttribute",
+				geoLevelAttribute);	
+			
+			
+			//Part III: Check for security violations
+			validateUser(user);
+			geography.checkSecurityViolations();
+			geoLevelSelect.checkSecurityViolations();		
+			diseaseMappingStudy.checkSecurityViolations();
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getResultsStratifiedByGenderAndAgeGroup", 
+				"geoLevelAttribute", 
+				geoLevelAttribute);		
+			if (mapAreas != null) {
+				for (MapArea mapArea : mapAreas) {
+					mapArea.checkSecurityViolations();
+				}
+			}
+			
+			RIFLogger rifLogger = new RIFLogger();			
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage(
+					"logging.getResultsStratifiedByGenderAndAgeGroup",
+					user.getUserID(),
+					user.getIPAddress(),
+					geography.getDisplayName(),
+					geoLevelSelect.getDisplayName(),
+					diseaseMappingStudy.getDisplayName());
+			rifLogger.info(
+				ProductionRIFJobSubmissionService.class,
+				auditTrailMessage);
+		
+			Connection connection
+				= sqlConnectionManager.getWriteConnection(user);
+			
+			results
+				= rifResultsQueryManager.getResultsStratifiedByGenderAndAgeGroup(
+					connection,
+					user,
+					geography,
+					geoLevelSelect,
+					diseaseMappingStudy,
+					geoLevelAttributeTheme,
+					geoLevelAttribute,
+					mapAreas,
+					year);
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"getResultsStratifiedByGenderAndAgeGroup",
+				rifServiceException);	
+			
+		}
+		
+		return results;
+	}
+	
+	
+	
 	
 	protected void clearRIFJobSubmissionsForUser(
 		User _user) 

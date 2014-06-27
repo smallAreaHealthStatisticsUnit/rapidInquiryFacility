@@ -1,11 +1,16 @@
 package rifServices.businessConceptLayer;
 
 import rifServices.system.RIFServiceException;
+
+
 import rifServices.system.RIFServiceStartupOptions;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.io.File;
+import java.awt.Point;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.Rectangle2D.Double;
 
 
 /**
@@ -575,4 +580,195 @@ public interface RIFJobSubmissionAPI {
 		final File outputFile) 
 		throws RIFServiceException;
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	//Calls to obtain geographical extents of areas
+	
+	/**
+	 * gets the bounds for one single area identifier
+	 * @param user
+	 * @param geography
+	 * @param geoLevelSelect
+	 * @param mapArea
+	 * @return
+	 * @throws RIFServiceException
+	 */
+	public Rectangle2D.Double getGeoLevelBoundsForArea(
+		final User user,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect,
+		final MapArea mapArea)
+		throws RIFServiceException;
+	
+	/**
+	 * gets the extent for only areas on the study area and not the 
+	 * whole geolevel
+	 * 
+	 * @param user
+	 * @param geography
+	 * @param geoLevelSelect
+	 * @param study
+	 * @return
+	 * @throws RIFServiceException
+	 */
+	public Rectangle2D.Double getGeoLevelFullExtentForStudy(
+		final User user,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect,
+		final DiseaseMappingStudy study) 
+		throws RIFServiceException;	
+	
+	
+	
+	public Rectangle2D.Double getGeoLevelFullExtent(
+		final User user,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect) 
+		throws RIFServiceException;
+
+
+	/*
+	 * Returns JSON stream for a given tile identifier
+	 * 
+	 * geom - contains geoJson
+	 * 
+	 */
+	public String getTiles(
+		final User user,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect,
+		final Integer zoomFactor,
+		final String tileIdentifier) 
+		throws RIFServiceException;
+
+	/**
+	 * Given a given geo level and an attribute theme, returns 
+	 * a collection of map areas that are associated with a specific
+	 * type of value.  For example, if the attribute theme were
+	 * @param user
+	 * @param geography
+	 * @param geoLevelSelect
+	 * @param geoLevelAttribute - the name of an attribute eg: "area", "total_males", etc
+	 * @return
+	 * @throws RIFServiceException
+	 */
+	public ArrayList<MapAreaAttributeValue> getMapAreaAttributeValues(
+		final User user,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect,
+		final String geoLevelAttribute) 
+		throws RIFServiceException;
+	
+	
+	public ArrayList<GeoLevelAttributeTheme> getGeoLevelAttributeThemes(
+		final User user,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect)
+		throws RIFServiceException;
+
+	
+	/**
+	 * There are multiple data attributes that may be associated at a given 
+	 * geo level (eg: "region", "district").  There may be many attributes so they 
+	 * have been organised into various themes (eg: health, geometry)
+	 * 
+	 * @param user
+	 * @param geoLevelSelect
+	 * @param geoLevelAttributeTheme
+	 * @return list of data attributes that are available for the 
+	 * @throws RIFServiceException
+	 */
+	public String[] getAllAttributesForGeoLevelAttributeTheme(
+		final User user,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect,
+		final GeoLevelAttributeTheme geoLevelAttributeTheme)
+		throws RIFServiceException;
+		
+	public String[] getNumericAttributesForGeoLevelAttributeTheme(
+		final User user,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect,
+		final GeoLevelAttributeTheme geoLevelAttributeTheme) 
+		throws RIFServiceException;
+
+	
+	/**
+	 * just displays the statistically calculated data
+	 * @param user
+	 * @param study
+	 * @param investigation
+	 * @param startRowIndex
+	 * @param endRowIndex
+	 * @return
+	 * @throws RIFServiceException
+	 */
+	public RIFResultTable getCalculatedResultsByBlock(
+		User user,
+		DiseaseMappingStudy diseaseMappingStudy,
+		String[] calculatedResultColumnFieldNames,
+		Integer startRowIndex,
+		Integer endRowIndex)
+		throws RIFServiceException;
+	
+	
+	/**
+	 * accessing data from sources such as the health theme,
+	 * the covariates,or data from the extract table
+	 * @param user
+	 * @param study
+	 * @param investigation
+	 * @param startRowIndex
+	 * @param endRowIndex
+	 * @return
+	 * @throws RIFServiceException
+	 */
+	public RIFResultTable getExtractByBlock(
+		User user,
+		DiseaseMappingStudy diseaseMappingStudy,
+		String[] calculatedResultColumnFieldNames,			
+		Integer startRowIndex,
+		Integer endRowIndex)
+		throws RIFServiceException;	
+	
+	/**
+	 * 
+	 * returns a table with the following fields:
+	 * age group  |  sex  |  popcount
+	 * 
+	 * @param user
+	 * @param geography
+	 * @param geoLevelSelect
+	 * @param diseaseMappingStudy
+	 * @param geoLevelAttributeTheme
+	 * @param geoLevelAttribute
+	 * @param mapAreas
+	 * @param year
+	 * @return
+	 * @throws RIFServiceException
+	 */
+	public RIFResultTable getResultsStratifiedByGenderAndAgeGroup(
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect,
+		DiseaseMappingStudy diseaseMappingStudy,
+		GeoLevelAttributeTheme geoLevelAttributeTheme,
+		String geoLevelAttribute,
+		ArrayList<MapArea> mapAreas,
+		Integer year)
+		throws RIFServiceException;
 }
