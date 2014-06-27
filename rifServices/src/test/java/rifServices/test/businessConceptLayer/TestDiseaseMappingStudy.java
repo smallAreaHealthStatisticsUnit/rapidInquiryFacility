@@ -86,7 +86,12 @@ public class TestDiseaseMappingStudy extends AbstractRIFTestCase {
 	// Section Properties
 	// ==========================================
 	/** The master disease mapping study. */
+	private SampleTestObjectGenerator generator;
 	private DiseaseMappingStudy masterDiseaseMappingStudy;
+
+	private AdjustableCovariate masterNearDistCovariate;
+	private AdjustableCovariate masterSESCovariate;
+	private AdjustableCovariate masterTri1KMCovariate;
 	
 	// ==========================================
 	// Section Construction
@@ -96,10 +101,32 @@ public class TestDiseaseMappingStudy extends AbstractRIFTestCase {
 	 * Instantiates a new test disease mapping study.
 	 */
 	public TestDiseaseMappingStudy() {
-		SampleTestObjectGenerator generator
+		generator
 			= new SampleTestObjectGenerator();
 		masterDiseaseMappingStudy 
 			= generator.createSampleDiseaseMappingStudy();
+
+		
+		CovariateType covariateType = CovariateType.CONTINUOUS_VARIABLE;
+		masterNearDistCovariate
+			= AdjustableCovariate.newInstance(
+				"NEAR_DIST", 
+				String.valueOf("358.28"), 
+				String.valueOf("78786.62"), 
+				covariateType);	
+		masterSESCovariate
+			= AdjustableCovariate.newInstance(
+				"SES", 
+				String.valueOf("1"), 
+				String.valueOf("5"), 
+				covariateType);	
+		masterTri1KMCovariate
+			= AdjustableCovariate.newInstance(
+				"TRI_1KM", 
+				String.valueOf("0"), 
+				String.valueOf("1"), 
+				covariateType);			
+		
 	}
 	
 	// ==========================================
@@ -380,6 +407,140 @@ public class TestDiseaseMappingStudy extends AbstractRIFTestCase {
 		}
 		
 	}
+	
+	@Test
+	/**
+	 * 
+	 */
+	public void acceptInvestigationsWithIdenticalCovariates() {
+		
+		/**
+		 * Investigation 1 has {nearDist, ses}
+		 * Investigation 2 has {tri1KM}
+		 */
+		try {			
+			DiseaseMappingStudy diseaseMappingStudy
+				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			diseaseMappingStudy.clearInvestigations();
+			
+			Investigation investigation1 
+				= generator.createSampleInvestigation("investigation1");
+			investigation1.clearCovariates();
+			AdjustableCovariate nearDistCovariate1
+				= AdjustableCovariate.createCopy(masterNearDistCovariate);			
+			investigation1.addCovariate(nearDistCovariate1);
+			AdjustableCovariate sesCovariate1
+				= AdjustableCovariate.createCopy(masterSESCovariate);			
+			investigation1.addCovariate(sesCovariate1);
+			diseaseMappingStudy.addInvestigation(investigation1);
+			
+			Investigation investigation2 
+				= generator.createSampleInvestigation("investigation2");
+			investigation2.clearCovariates();
+			AdjustableCovariate nearDistCovariate2
+				= AdjustableCovariate.createCopy(masterNearDistCovariate);			
+			investigation2.addCovariate(nearDistCovariate2);
+			AdjustableCovariate sesCovariate2
+				= AdjustableCovariate.createCopy(masterSESCovariate);			
+			investigation2.addCovariate(sesCovariate2);
+			diseaseMappingStudy.addInvestigation(investigation2);
+			
+			diseaseMappingStudy.checkErrors();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}
+	}
+	
+	/**
+	 * 
+	 */
+	@Test
+	public void rejectInvestigationsWithDifferentCovariatesE1() {
+
+		
+		/**
+		 * Investigation 1 has {nearDist, ses}
+		 * Investigation 2 has {tri1KM}
+		 */
+		try {			
+			DiseaseMappingStudy diseaseMappingStudy
+				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			diseaseMappingStudy.clearInvestigations();
+			
+			Investigation investigation1 
+				= generator.createSampleInvestigation("investigation1");
+			investigation1.clearCovariates();
+			AdjustableCovariate nearDistCovariate1
+				= AdjustableCovariate.createCopy(masterNearDistCovariate);			
+			investigation1.addCovariate(nearDistCovariate1);
+			AdjustableCovariate sesCovariate1
+				= AdjustableCovariate.createCopy(masterSESCovariate);			
+			investigation1.addCovariate(sesCovariate1);
+			diseaseMappingStudy.addInvestigation(investigation1);
+			
+			Investigation investigation2 
+				= generator.createSampleInvestigation("investigation2");
+			investigation2.clearCovariates();
+			AdjustableCovariate tri1KMCovariate
+				= AdjustableCovariate.createCopy(masterTri1KMCovariate);
+			investigation2.addCovariate(tri1KMCovariate);
+			diseaseMappingStudy.addInvestigation(investigation2);
+			
+			diseaseMappingStudy.checkErrors();
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY,
+				1);			
+		}
+
+		/**
+		 * Investigation 1 has {nearDist}
+		 * Investigation 2 has {nearDist, ses}
+		 */
+		try {			
+			DiseaseMappingStudy diseaseMappingStudy
+				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			diseaseMappingStudy.clearInvestigations();
+			
+			Investigation investigation1 
+				= generator.createSampleInvestigation("investigation1");
+			investigation1.clearCovariates();
+			AdjustableCovariate nearDistCovariate1
+				= AdjustableCovariate.createCopy(masterNearDistCovariate);			
+			investigation1.addCovariate(nearDistCovariate1);
+			diseaseMappingStudy.addInvestigation(investigation1);
+			
+			Investigation investigation2 
+				= generator.createSampleInvestigation("investigation2");
+			investigation2.clearCovariates();
+			AdjustableCovariate nearDistCovariate2
+				= AdjustableCovariate.createCopy(masterNearDistCovariate);
+			AdjustableCovariate sesCovariate2
+				= AdjustableCovariate.createCopy(masterSESCovariate);			
+			investigation2.addCovariate(nearDistCovariate2);
+			investigation2.addCovariate(sesCovariate2);		
+			diseaseMappingStudy.addInvestigation(investigation2);
+			
+			diseaseMappingStudy.checkErrors();
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY,
+				1);			
+		}
+		
+		
+		
+		
+	}
+	
+	
 	/**
 	 * Test security violations.
 	 */
