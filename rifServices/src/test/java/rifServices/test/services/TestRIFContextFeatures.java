@@ -336,7 +336,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 			HealthTheme sahsuCancerTheme = healthThemes.get(0);
 
 			assertEquals(
-				"SAHSU land cancer incidence example data",
+				"SAHSULAND",
 				sahsuCancerTheme.getName());
 		}
 		catch(RIFServiceException rifServiceException) {
