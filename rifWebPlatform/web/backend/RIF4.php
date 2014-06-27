@@ -560,7 +560,16 @@ $r = RIF4::Instance();
 			self :: $dbh->rollback();
 		 	die( $pe->getMessage());
 		}
+	}
 	
+	public function getFieldsStratifiedByAgeGroup($theme){
+		/*
+		 * Retrieve all fields for the given theme stratifified by age group and gender
+		 * HARDCODED FOR NOW
+		 *
+		 */
+		return "popcount";
+			
 	}
 	
 }

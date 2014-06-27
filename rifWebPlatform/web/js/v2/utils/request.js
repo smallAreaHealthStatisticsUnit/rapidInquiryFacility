@@ -178,6 +178,13 @@
 			   xhr( 'getAgeGroupsStructure.php' + args,  myCallback, msg );
 		    },
 			
+			getFieldsStratifiedByAgeGroup: function (  myCallback, params ){
+				var msg = "Retrieving fields stratified by age group",
+			        args = '?geolevel='+ params[0]+'theme='+ params[1];		
+				
+				xhr( 'getFieldsStratifiedByAgeGroup.php' + args,  myCallback, msg );
+			},
+			
 			getPyramidData: function (  myCallback, params ){
 				var msg = "Retrieving age group data",
 			        args = '?geolevel='+ params[0] +

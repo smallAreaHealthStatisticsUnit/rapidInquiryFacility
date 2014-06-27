@@ -12,14 +12,24 @@ RIF.menu.settings = (function(){
 			/* DOM elements */
 			save:       $(".save-fld-settings"),
 			hoverSlct:  $('#fldSlct'),
+			histoSlct:  $('#fldHistogram'),
+			pyramidSlct:$('#fldPyramid'),
 			settings:   $(".settings"),
 			colsFilter: $('#colsFilter'),
 			numRows:    $('#numOfRows'),
 	        colsFilterName : "filterCols",
 			
-			avlbFieldsClbkSettings: function(){
+			avlbFieldsSettings: function(){
 				parent.dropDown( this, _p.hoverSlct );
 				parent.fieldCheckboxes( this, _p.colsFilter, _p.colsFilterName );
+			},
+			
+			avlbFieldsHistogram: function(){
+				parent.dropDown( this, _p.histoSlct );
+			},
+			
+			avlbFieldsPyramid: function(){
+				parent.dropDown( this, _p.pyramidSlct );
 			},
 			
 			/* events */

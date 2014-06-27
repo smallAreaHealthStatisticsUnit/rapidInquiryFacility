@@ -224,6 +224,7 @@ a:hover{
 		min-width: 500px;
 		width:35%;
 		float: left;
+		z-index:99999;
 	}
 	
 	select {
@@ -290,25 +291,40 @@ a:hover{
 	}
 	
     /* CHARTS */
-    	
+    a#pyramidField , a#distHistoField {
+		padding: 3%;
+		font-size: 130%;
+		right: 3%;
+		text-transform: uppercase;
+		position: absolute;
+		z-index: 9999999;
+		text-decoration:none;
+	}	
+	
+	
+	div#pyramidField a:hover, div#distHistoField a:hover{
+		cursor:pointer;
+		background-color: #85e0a5;
+		font-weight:bold;
+	}
+		
 	#content #leftcol  div#pyramid{
 		height:56%;
-		position:relative;
-		top:2%;
 	}
 	
 	#content #leftcol  div#distHisto{
-		height:30%;
+		height:32%;
 		border-bottom: 3px solid #E3E3E3;
-		padding-bottom:6%;
+		padding-bottom: 2%;
 	}
 	
 	#pyramid, #distHisto {
 		margin-left:auto;
 		margin-right:auto;
-		margin-top:3%;
-		width:90%;
-	}
+		width: 90%;
+	
+		margin-top: 5%;
+}
 	
 	#content #rightcol{
 		position: relative;
@@ -579,7 +595,17 @@ a:hover{
 		padding: 2px 11px;
 		color: #7D7D7D;
     }
+	
+	.msettings .fldHistogramContainer{
+		height:50px
+	}
+	
+	.msettings #fldHistogram{
+		margin-top:15px;
+	}
+	
 
+	
    /* General dropdown styles */      
     .dropdown { 
 	     margin-left: 100px;
@@ -683,8 +709,5 @@ a:hover{
 		background-color: #D1EEEE; 
 	}
 	
-   /*
-	*
-	*/
 
 	

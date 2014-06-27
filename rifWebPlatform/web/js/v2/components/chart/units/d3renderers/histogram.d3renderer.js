@@ -14,7 +14,7 @@ RIF.chart.histogram.d3renderer = (function( opt, values ){
 	
 	// Generate a Bates distribution of 10 random variables.
 	var values = d3.range(1000).map(d3.random.bates(10));
-
+	console.log(values);
 	// A formatter for counts.
 	var formatCount = d3.format(",.0f");
 
@@ -38,10 +38,18 @@ RIF.chart.histogram.d3renderer = (function( opt, values ){
 
 	var svg = d3.select("#distHisto").append("svg")
 		.attr("width", width + margin.left + margin.right)
-		.attr("height", height + margin.top + margin.bottom)
+		.attr("height", height + margin.top + margin.bottom)		
 	  .append("g")
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
+			
+	
+	// A label for the current year.
+	/*var title = svg.append("text")
+		.attr("class", "title")
+		.attr("dy", ".55em")		
+			.attr("dx", opt.dimensions.width)
+			.text("leukemia");*/
+	
 	var bar = svg.selectAll(".bar")
 		.data(data)
 	  .enter().append("g")
@@ -64,5 +72,6 @@ RIF.chart.histogram.d3renderer = (function( opt, values ){
 		.attr("class", "x axis")
 		.attr("transform", "translate(0," + height + ")")
 		.call(xAxis);
+		
 
 });

@@ -17,3 +17,9 @@
 #distHisto .tick text {
 	fill: #8F8F8F;
 }
+#distHisto .title {
+  font: 20px Helvetica Neue;
+  fill: #8F8F8F;
+  text-anchor: end;
+}
+ 

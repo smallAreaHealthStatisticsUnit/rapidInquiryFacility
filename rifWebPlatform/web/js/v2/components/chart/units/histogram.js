@@ -1,5 +1,6 @@
 RIF.chart.histogram = (function( geolevel ) {
-    
+
+	
 	var chart = this,
 	    
 		settings = {
@@ -9,7 +10,7 @@ RIF.chart.histogram = (function( geolevel ) {
 			year: null,
 			
 			margin: {
-				top: 10, 
+				top: 0, 
 				right: 10, 
 				bottom: 20, 
 				left: 10

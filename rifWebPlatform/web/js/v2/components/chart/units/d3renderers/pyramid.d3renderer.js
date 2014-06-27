@@ -36,16 +36,19 @@ RIF.chart.pyramid.d3renderer = (function( opt, data ){
 	  .append("g")
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 	
+	
+		// A label for the current year.
+	/*var title = svg.append("text")
+		.attr("class", "title")
+		.attr("dy", ".71em")
+			.attr("x", width )
+			.text("POPULATION");*/
+	
 	// A sliding container to hold the bars by birthyear.
 	var birthyears = svg.append("g")
 		.attr("class", "birthyears");
  
-	// A label for the current year.
-	/*var title = svg.append("text")
-		.attr("class", "title")
-		.attr("dy", ".71em")
-			.attr("x", width)
-			.text(2000);*/
+
  
 	  // Convert strings to numbers.
 	  data.forEach(function(d) {

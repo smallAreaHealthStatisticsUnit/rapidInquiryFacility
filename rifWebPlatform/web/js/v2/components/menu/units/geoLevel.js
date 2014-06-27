@@ -76,6 +76,7 @@ RIF.menu.geoLevel = (function(){
 				
 				this.dataSet.on('change', function() {
 					parent.facade.addTabularData(  this.value );
+					parent.updateSettings(  this.value );
 				});
 				
 				this.geolevels.on('change', function() {

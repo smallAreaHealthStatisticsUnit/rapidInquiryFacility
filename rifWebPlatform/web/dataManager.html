@@ -146,14 +146,9 @@
         </div>
         <div id="content">
             <div id="leftcol">
-				<!--<div class='summary'>
-					<dl>
-						<dt> Count : <span> 8800 </span> </dt>
-						<dt> Male : <span> 8800 </span></dt>
-						<dt> Female : <span> 8800 </span></dt>
-					</dl>
-				</div>-->
+				<a  id="distHistoField" href="#">Leukemia</a>
 				<div id='distHisto'></div>
+			    <a id="pyramidField" href="#">Population</a>
 				<div id='pyramid'></div>
             </div>
             <div id="rightcol">
@@ -175,6 +170,7 @@
     <!------------------->
     <!-- Modal Dialogs -->
     <!------------------->
+	
 	<div class="overlay" id="settings">
 		<div class="msettings">
 			<div class="msettings-ct">
@@ -186,6 +182,18 @@
 					<div class="txt-fld">
 						<label for="fldSlct">Map hover field:</label>
 						<select id='fldSlct'>
+						<option value=''> </option>
+						</select>
+					</div>
+					<div class="txt-fld fldHistogramContainer">
+						<label for="fldHistogram">Distribution Histogram field:</label>
+						<select id='fldHistogram'>
+							<option value=''> </option>
+						</select>
+					</div>
+					<div class="txt-fld">
+						<label for="fldPyramid">Pyramid field:</label>
+						<select id='fldPyramid'>
 						<option value=''> </option>
 						</select>
 					</div>

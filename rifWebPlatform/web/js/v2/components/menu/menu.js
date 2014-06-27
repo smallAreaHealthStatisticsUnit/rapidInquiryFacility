@@ -92,11 +92,19 @@ RIF.menu = (function(menus){
 			},
 			
 			getAvlbFields: function(){
-			    RIF.getFields( _p.avlbFieldsClbkSettings , [_p.getDataset()] );
+			    RIF.getFields( _p.avlbFieldsSettings , [_p.getDataset()] );
 			},
 			
 			getNumericFields: function( arg ){
-			    RIF.getNumericFields(  _p.avlbFieldsClbkChoro, [_p.getDataset()] );
+			    RIF.getNumericFields(  [_p.avlbFieldsClbkChoro, _p.avlbFieldsHistogram], [_p.getDataset()] );
+			},
+			
+			getFieldsStratifiedByAgeGroup: function( arg ){
+			    RIF.getFieldsStratifiedByAgeGroup(  _p.avlbFieldsPyramid , [_p.getGeolevel(),_p.getDataset()] );
+			},
+			
+			updateSettings: function( dataset ){
+				console.log(dataset);
 			},
 			
 			facade: {
