@@ -1,5 +1,6 @@
 package rifServices.dataStorageLayer;
 
+import java.sql.SQLException;
 
 /**
  *
@@ -116,10 +117,15 @@ public abstract class AbstractSQLManager {
 	}
 	
 	
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
 
+	protected void logSQLException(SQLException sqlException) {
+		
+	}
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
