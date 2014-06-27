@@ -201,9 +201,94 @@ public class TestInvestigation extends AbstractRIFTestCase {
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();			
+		}
+	}
+	
+	@Test
+	/**
+	 * Ensures that the table is able to accept a minimal value for a table name
+	 */
+	public void acceptBriefTitle() {
+		try {
+			Investigation investigation
+				= Investigation.createCopy(masterInvestigation);
+			investigation.setTitle("b");
+			investigation.checkErrors();
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();			
 		}		
 	}
 	
+	@Test
+	/**
+	 * Reject invalid titles. The title of the investigation needs to be such
+	 * that it can be converted to a valid name for a database table.
+	 * For now we're not sure what kind of restrictions apply across 
+	 * PostgreSQL, Oracle and SQL Server.  
+	 */
+	public void rejectInvalidTitle() {
+		try {
+			//should not begin with a number
+			Investigation investigation
+				= Investigation.createCopy(masterInvestigation);
+			investigation.setTitle("1 very interesting investigation");
+			investigation.checkErrors();
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_INVESTIGATION, 
+				1);			
+		}
+
+		try {
+			//should not begin with a space
+			Investigation investigation
+				= Investigation.createCopy(masterInvestigation);
+			investigation.setTitle(" very interesting investigation");
+			investigation.checkErrors();
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_INVESTIGATION, 
+				1);			
+		}
+				
+		try {
+			//should not begin with an underscore
+			Investigation investigation
+				= Investigation.createCopy(masterInvestigation);
+			investigation.setTitle("_my_investigation");
+			investigation.checkErrors();
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_INVESTIGATION, 
+				1);			
+		}
+		
+		try {
+			//should not contain characters that are not letter, number or underscore
+			Investigation investigation
+				= Investigation.createCopy(masterInvestigation);
+			investigation.setTitle("My qur+$%y investigation");
+			investigation.checkErrors();
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_INVESTIGATION, 
+				1);			
+		}
+	}
+		
 	/**
 	 * Reject blank health theme.
 	 */
