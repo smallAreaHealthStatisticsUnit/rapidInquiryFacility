@@ -79,13 +79,14 @@ RETURNS TABLE(
 		theme			rif40_xml_pkg.rif40_geolevelAttributeTheme,
 		source_description	VARCHAR,
 		name_description	VARCHAR,
+		ordinal_position	INTEGER,
 		is_numeric		BOOLEAN)
 SECURITY INVOKER
 AS $func$
 /*
 Function: 	rif40_getAllAttributesForGeoLevelAttributeTheme()
 Parameters:	Geography, <geolevel select>, theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme), attribute name array [Default: NULL - do not filter, return all attributes]
-Returns:	Table: attribute_source, attribute_name, theme, source_description, name_description, is_numeric
+Returns:	Table: attribute_source, attribute_name, theme, source_description, name_description, ordinal_position, is_numeric
 Description:	Get all atrributes for geography geolevel theme
 
 E.g.
@@ -243,6 +244,7 @@ by 3;
 					   AND has_any_column_privilege(quote_ident(LOWER(b.covariate_table)), 'SELECT'::Text) /* Can user access covariate table */
 				), b AS (	
 		       			SELECT b.column_name,  
+					       b.ordinal_position,
 					       a.covariate_table,
 				       	       COALESCE(obj_description(quote_ident(LOWER(a.covariate_table))::regclass, 'pg_class' /* Obj id */), 
 							'[Table not found]') AS source_description,
@@ -260,9 +262,10 @@ by 3;
 				       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
 				       b.source_description::VARCHAR AS source_description,
 				       b.name_description::VARCHAR AS name_description,
+				       b.ordinal_position::INTEGER AS ordinal_position,
 			       	       b.is_numeric::BOOLEAN AS is_numeric	
 					  FROM b
-				 ORDER BY 1, 2 /* covariate */;
+				 ORDER BY 1, 6 /* covariate */;
 		ELSIF l_theme = 'health' THEN
 			RETURN QUERY
 				WITH a AS (
@@ -272,6 +275,7 @@ by 3;
 					), b AS (
 					SELECT a.numerator_table,
 					       b.column_name,
+					       b.ordinal_position,
 					       a.source_description,
 			    		       COALESCE(col_description((quote_ident(LOWER(a.numerator_table)))::regclass /* Obj id */, 
 							b.ordinal_position /* Column number */), '[Health column not found]') AS name_description,
@@ -286,9 +290,10 @@ by 3;
 				       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
 				       b.source_description::VARCHAR AS source_description,
 				       b.name_description::VARCHAR AS name_description,
+				       b.ordinal_position::INTEGER AS ordinal_position,
 			       	       b.is_numeric::BOOLEAN AS is_numeric	
 				  FROM b
-				 ORDER BY 1, 2 /* health */;
+				 ORDER BY 1, 6 /* health */;
 		ELSIF l_theme = 'extract' THEN
 			RETURN QUERY
 				WITH a AS (
@@ -302,6 +307,7 @@ by 3;
 					), b AS (
 					SELECT a.extract_table,
 					       b.column_name,
+					       b.ordinal_position,
 					       a.source_description,
 			    		       COALESCE(col_description(('rif_studies.'||quote_ident(LOWER(a.extract_table)))::regclass /* Obj id */, 
 							b.ordinal_position /* Column number */), '[Extract column not found]') AS name_description,
@@ -316,9 +322,10 @@ by 3;
 				       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
 				       b.source_description::VARCHAR AS source_description,
 				       b.name_description::VARCHAR AS name_description,
+				       b.ordinal_position::INTEGER AS ordinal_position,
 			       	       b.is_numeric::BOOLEAN AS is_numeric	
 				  FROM b
-				 ORDER BY 1, 2 /* extract */;
+				 ORDER BY 1, 6 /* extract */;
 		ELSIF l_theme = 'results' THEN
 			RETURN QUERY
 				WITH a AS (
@@ -332,6 +339,7 @@ by 3;
 					), b AS (
 					SELECT a.map_table,
 					       b.column_name,
+					       b.ordinal_position,
 					       a.source_description,
 			    		       COALESCE(col_description(('rif_studies.'||quote_ident(LOWER(a.map_table)))::regclass /* Obj id */, 
 							b.ordinal_position /* Column number */), '[Results column not found]') AS name_description,
@@ -346,9 +354,10 @@ by 3;
 				       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
 				       b.source_description::VARCHAR AS source_description,
 				       b.name_description::VARCHAR AS name_description,
+				       b.ordinal_position::INTEGER AS ordinal_position,
 			       	       b.is_numeric::BOOLEAN AS is_numeric	
 				  FROM b
-				 ORDER BY 1, 2 /* results */;
+				 ORDER BY 1, 6 /* results */;
 		ELSIF l_theme = 'population' THEN
 			RETURN QUERY
 				WITH a AS (
@@ -358,6 +367,7 @@ by 3;
 				), b AS (
 					SELECT a.denominator_table,
 					       b.column_name,
+					       b.ordinal_position,
 					       a.source_description,
 			    		       COALESCE(col_description((quote_ident(LOWER(a.denominator_table)))::regclass /* Obj id */, 
 							b.ordinal_position /* Column number */), '[Population column not found]') AS name_description,
@@ -372,9 +382,10 @@ by 3;
 				       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
 				       b.source_description::VARCHAR AS source_description,
 				       b.name_description::VARCHAR AS name_description,
+				       b.ordinal_position::INTEGER AS ordinal_position,
 			       	       b.is_numeric::BOOLEAN AS is_numeric	
 				  FROM b
-				 ORDER BY 1, 2 /* population */;
+				 ORDER BY 1, 6 /* population */;
 		ELSIF l_theme = 'geometry' THEN
 			RETURN QUERY
 				WITH a AS (
@@ -384,6 +395,7 @@ by 3;
 				), b AS (
 					SELECT a.geometry_table,
 					       b.column_name,
+					       b.ordinal_position,
 					       a.source_description,
 				    	       COALESCE(col_description(quote_ident(LOWER((a.geometry_table)))::regclass /* Obj id */, 
 							b.ordinal_position /* Column number */), '[Geometry column not found]') AS name_description,
@@ -400,9 +412,10 @@ by 3;
 				       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
 				       b.source_description::VARCHAR AS source_description,
 				       b.name_description::VARCHAR AS name_description,
+				       b.ordinal_position::INTEGER AS ordinal_position,
 		       		       b.is_numeric::BOOLEAN AS is_numeric	
 				  FROM b
-				 ORDER BY 1, 2 /* geometry */;
+				 ORDER BY 1, 6 /* geometry */;
 		ELSE	
 --	
 -- This may mean the theme is not supported yet...

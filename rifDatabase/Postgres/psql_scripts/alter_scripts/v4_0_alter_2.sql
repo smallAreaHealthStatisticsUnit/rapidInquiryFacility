@@ -205,7 +205,8 @@ E'\t'||'  FROM '||l_partition||E'\n'||
 ' WHERE b.area_id = a.area_id';
 -- Update gid_rowindex
 				ddl_stmt[array_length(ddl_stmt, 1)+1]:='WITH a AS ('||E'\n'||
-E'\t'||'SELECT area_id, gid, gid||''_''||ROW_NUMBER() OVER(PARTITION BY gid ORDER BY area_id) AS gid_rowindex'||E'\n'||
+E'\t'||'SELECT area_id, gid,'||E'\n'||
+E'\t'||'       LPAD(gid::Text, 10, ''0''::Text)||''_''||LPAD(ROW_NUMBER() OVER(PARTITION BY gid ORDER BY area_id)::Text, 10, ''0''::Text) AS gid_rowindex'||E'\n'||
 E'\t'||'  FROM '||l_partition||E'\n'||
 ')'||E'\n'||
 'UPDATE '||l_partition||' b'||E'\n'||
