@@ -91,16 +91,18 @@ a:hover{
 	}
 
 	#buttons>div {
-		position:absolute;
+		float:left;
 	}
 	#buttons .export{
 		margin: 14px 2px 0 8px	;
+		min-width:500px;
+		width:35%;
 	}
 	#buttons .export a{
 		margin:4px 4px 4px 0;
 		display: block;
 		float: left;
-		padding: 3px 5px;
+		padding: 3px 1px;
 		font-size: 22px;
 		text-align: center;
 		text-transform: uppercase;
@@ -112,14 +114,15 @@ a:hover{
 		background-color: #85e0a5;
 	}
 	#buttons .geoDrops{	
-		min-width: 770px;
-		width: 49%;
+		width: auto;
 }
 	#buttons .geoDrops>div{
-		float: right;
-		margin:0 0 0 3px;
-		padding:6px;
+		float: left;
+		padding: 6px 8px 0 0;
 		font-size:11px
+	}
+	#buttons .geoDrops>div select{
+		margin:0;
 	}
 	#buttons .geoDrops>div span {
 		text-transform:uppercase
@@ -133,15 +136,13 @@ a:hover{
 	}
 
 	#submenu div a img{
-		margin:5px 10px;
-		text-transform:uppercase;
-		-moz-opacity: 0.4;
-		-khtml-opacity: 0.4;
-		opacity: 0.4;
+		margin:5px 0px;
 	}
+	
 	#submenu div {
-		height:100%;
-	}
+		height: 100%;
+	
+}
 	
 	#submenu div a img.active{
 		-moz-opacity: 1;
@@ -153,16 +154,56 @@ a:hover{
 		float:right
 	} 
 	
-	#submenu div a.mapOpt{
-		position: absolute; 
-		width: 32%;
-   }
+	#submenu a.	 {
+		width:32px;
+		height:32px;
+	} 
+	
    .chartOpts {
-    width: 35%;  min-width: 500px;  float: left;
+       width: 35%;  
+	   min-width: 500px;  
+	   float: left;
 	}
+	
+	.chartOpts a{ 
+		padding-left:8px;
+	}
+	
 	.mapOpts {
-		width: 30%;  float: left;
+		width: 30%;  
+		float: left;
 	}
+	
+	#choroplethBtn{
+		background: transparent url("../images/map.png") no-repeat;
+	}
+	
+	#clearSelection{
+		background: transparent url("../images/empty-icon.png") no-repeat;
+	}
+	
+	#zoomExtent{
+	    background: transparent url("../images/globe-icon.png") no-repeat;
+	}
+	
+	.mapOpts .mapOpt{
+		width:32px;
+		height:32px;
+		display:block;
+		float:left;
+		-moz-opacity: 0.7;
+		-khtml-opacity: 0.7;
+		opacity: 0.7;
+		margin: 5px 0px 0px 5px;
+	}
+	
+	.mapOpts a.mapOpt:hover{
+		-moz-opacity: 1;
+		-khtml-opacity: 1;
+		opacity: 1;
+	}
+	
+	
 	
 	#content{
 		/* Firefox */
@@ -180,30 +221,40 @@ a:hover{
 		position: relative;
 		height: 100%;
 		border-bottom:1px solid #C1C1C1;
-		width: 500px;
+		min-width: 500px;
+		width:35%;
 		float: left;
+		z-index:99999;
 	}
-	#content #leftcol .options, #content #leftcol #pyramid{
-		margin:10px;
-	}	
+	
 	select {
 		width: 120px;
 		background-color: #ffffff;
 		border: 1px solid #cccccc;
 		color:#999999;
 		font-size:11px;
-		display:block;
+		display: block;
+		padding: 0;
 	}
-    select option{
-        width: 50%
-	}
+
 	#content #leftcol div.summary dl{
 		height:auto;
 		display:block;
 		line-height:15px;
 		text-transform:uppercase;
-		font-size:11px
+		font-size:11px;
 	}
+	
+	#content #leftcol div.summary dl dt{
+		float: left;
+		width: 100px;
+	}
+	
+	#content #leftcol div.summary {
+		margin: 10px 50px 0 50px;
+		height: 10px;
+	}
+	
 	.clearslctd	{
 		display: block;
 		text-align: center;
@@ -224,6 +275,7 @@ a:hover{
 		float:right;
 		width:auto;
 	}
+	
 	#content #leftcol #redraw {
 		width:100px
 	}
@@ -237,24 +289,50 @@ a:hover{
 	#content #leftcol > div.btn-toolbar{
 		float:right;
 	}
-	#content #leftcol  div#pyramid{
-		height:98%;
+	
+    /* CHARTS */
+    a#pyramidField , a#distHistoField {
+		padding: 3%;
+		font-size: 130%;
+		right: 3%;
+		text-transform: uppercase;
+		position: absolute;
+		z-index: 9999999;
+		text-decoration:none;
+	}	
+	
+	
+	div#pyramidField a:hover, div#distHistoField a:hover{
+		cursor:pointer;
+		background-color: #85e0a5;
+		font-weight:bold;
 	}
-	#content #leftcol  div#pyramid .chart{
-		height: 96%;
-		margin: 0;
-		position: relative;
+		
+	#content #leftcol  div#pyramid{
+		height:56%;
+	}
+	
+	#content #leftcol  div#distHisto{
+		height:32%;
+		border-bottom: 3px solid #E3E3E3;
+		padding-bottom: 2%;
+	}
+	
+	#pyramid, #distHisto {
+		margin-left:auto;
+		margin-right:auto;
+		width: 90%;
+	
+		margin-top: 5%;
 }
-
+	
 	#content #rightcol{
 		position: relative;
 		height: 100%;
-	
-		margin-left: 500px;
 }
 	#content #rightcol #map{
 		height: 95%;
-		width:99.5%;
+		display:block;
 		background-color:transparent;
 	}
 	#content #rightcol #map .slctd{	
@@ -282,23 +360,19 @@ a:hover{
 	*
 	*/
 	#data{
-		height: 5%;
 		overflow:hidden;
 		border-bottom: 1px solid #C1C1C1;
-}
+    }
+	
 	#data div.dataLbl{
 		background-color: #F5F5F5;
 		border-top: 1px solid #E3E3E3;
 		border-bottom: 1px solid #E3E3E3;
 		text-transform: uppercase;
-		padding: 0.6%;
 		height: 100%;
-		font-size: 1.6em;
 		border-bottom: 1px solid #E3E3E3;
 		color: #B6B6B6;
 	}
-
-	
 	/*
 	 *  Map Container
 	 */
@@ -315,14 +389,25 @@ a:hover{
 		border-left-style: solid;
 		font-size: .80em;
 		padding-left: 5px;
-		list-style-type:none
+		list-style-type:none;
 	}
+	
 	li.key  a{
-		vertical-align:top;
+		vertical-align:bottom;
 		color:#cccccc;
 		height: 25px;
 		display:table-cell;
+		line-height:0;
 	}
+	
+	li.maxkey{
+		border:none;
+	}
+	
+	li.maxkey a{
+		padding-left:10px
+	}
+	
    /*
 	* Polygon rendering style using D3
     */
@@ -435,9 +520,40 @@ a:hover{
 		height:100px;
 	}
 	
+	.msettings #tableSettings{
+	   overflow:auto;
+	   max-height: 80px;
+	}
+	
+	.msettings #tableSettings div#colsFilter { 
+		height: auto;
+		width: 180px;
+		margin: 5px 0 0 100px;
+		position: relative;
+		min-height: 20px;
+	}
+	
+	.msettings #tableSettings div#colsFilter div { 
+		height: 20px;
+		min-width:85px;
+		display:block;
+		float:left
+	}
+	
+	.msettings #tableSettings  div#colsFilter input.colsChoice { 
+		float: left;
+		margin: 6px 3px;
+	}
+	
+	.msettings #tableSettings div#colsFilter label.colsChoiceLbl { 
+		width: auto;
+		padding: 2px 8px 0 0px;
+	}
+	
+	
 	.msettings .txt-fld #breaks input {
 	    float:left;
-		width:60px;
+		width:58px;
 		margin:5px 10px 5px 0px;
 		font-size: 1.1em;
 		color:#CCC;
@@ -445,7 +561,7 @@ a:hover{
 		background:#F7F7F7
 	}
 	
-	.msettings .txt-fld, #msettings .save-fld{
+	.msettings .txt-fld, #msettings .save-fld, #msettings .save-fld-settings{
 	    position: relative;
 	    text-align: right;
 	}
@@ -453,30 +569,46 @@ a:hover{
 	.msettings .txt-fld label {
 		display: block;
 		float: left;
-		width: 90px;
+		width: 100px;
 		padding-top: 6px;
 		font-size: 1.1em;
 		text-align: left;
 	}
-	.msettings .txt-fld select  {
+	.msettings .txt-fld select ,.msettings .txt-fld input[type="text"] {
 		width: 180px;
 		padding: 4px 2px;
 		border-radius: 4px;
 		-moz-border-radius: 4px;
 		font-size: 1em;
 		background: #F7F7F7;
+		border:1px solid #cccccc;
+		color:#999999;
     }
-	.msettings .save-fld {
+	
+	.msettings .txt-fld input[name="numOfRows"]{
+			float:left
+	}
+	.msettings .save-fld, .save-fld-settings {
 		padding: 8px 20px;
 	}
-	.save-fld input {
+	.save-fld input, .save-fld-settings input {
 		padding: 2px 11px;
 		color: #7D7D7D;
     }
+	
+	.msettings .fldHistogramContainer{
+		height:50px
+	}
+	
+	.msettings #fldHistogram{
+		margin-top:15px;
+	}
+	
 
+	
    /* General dropdown styles */      
     .dropdown { 
-	     margin-left: 90px;
+	     margin-left: 100px;
     }   
 	.dropdown dd, .dropdown dt, .dropdown ul { 
 	    margin:0px;
@@ -527,6 +659,7 @@ a:hover{
 	  overflow-y: scroll;
 	  z-index:9999;
 	}
+	
 	.palette div {
 	    height:20px;
 		z-index:9999;
@@ -564,6 +697,17 @@ a:hover{
 		padding:5px 10px;
 		display:block;
     }
+	
 	#tooltip #geoname{
 		position:relative;
 	}
+
+  /*
+   * Slick Grid Edits 
+   */
+   .slick-row:hover ,.slick-row	.selected,.slick-row.odd:hover	{ 
+		background-color: #D1EEEE; 
+	}
+	
+
+	

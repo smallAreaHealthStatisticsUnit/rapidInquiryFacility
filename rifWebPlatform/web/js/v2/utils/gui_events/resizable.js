@@ -1,5 +1,11 @@
 RIF.resizable = function(){
 
+	var rightCol = function(){
+		/*if($('#leftcol').width() > 500) {
+			$('#rightcol').css('margin-left','35%');
+		};*/
+	}();
+
 	var resizable = {
 		
 		clientH: screen.height,
@@ -13,7 +19,8 @@ RIF.resizable = function(){
 		    $("#data").resizable({
                 handles: "n",
                 resize: function (event, ui) {
-                    ui.size.width = ui.originalSize.width;	
+                    ui.size.width = ui.originalSize.width;
+					resizable.fire('resizeTable');
                 }
             });
 		}(),

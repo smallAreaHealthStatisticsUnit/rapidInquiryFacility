@@ -22,14 +22,16 @@ PH - Study extract to observed, triggers, GIS simplification
 1.2 RIF Block II
     ------------
 
-Was Dec-Jan, now Mar-Apr
+Was Dec-Jan, then Mar-Apr, now Jun-Jul
 
 FF - Rif manager database/middleware integration; RIF study creation
      prototype, charting
 KG - Java frontend/middleware working demo, web services
-PH - TopoJSON support, GIS enhancements, expected, R integration, partitioning
+PH - TopoJSON support, GIS enhancements, partitioning
      and related performance enhancements
+MD - Expected, R integration
 AL - R calculations from expected
+RH - SQL server port to sahsuland
 
 1.2.3 Database work queue
       -------------------
@@ -55,14 +57,13 @@ May be deferred to block III:
            Missing covariates, no numerators should be an error either globally or within a year.
 * Make state machine capable of handling year/age group gaps at the investigation level.
 
-
 1.3 RIF Block III
     -------------
 
-To be defined. Expected to include:
+Aug-Sep. Expected to include:
 
 * Completion of R integration
-* Remote health database support (Oracle and SQL server)
+* Remote health database support (Oracle only)
 * Full support for age/sex/age_sex_group)
 
 2. Current Faults  
@@ -77,7 +78,7 @@ To be defined. Expected to include:
 5. No comments rif40_results [FIXED]
 9. SAHSUland.dump:
    * Must NOT contain: ew01/uk91 GIS tables (far, far too big); ICD9/10 tables (WHO copyright issues). ICD9/10 reduced to Lung Cancer rows
-   * Also applies to github source files 
+   * Also applies to github source files [FIXED]
 
 2.2 Outstanding
     -----------
@@ -90,7 +91,7 @@ To be defined. Expected to include:
 10. The following SQL snippet from rif40_geo_pkg.populate_hierarchy_table() 
     causes ERROR:  invalid join selectivity: 1.000000 
     in PostGIS 2.1.1 (fixed in 2.2.1/2.1.2 - to be release May 3rd 2014)
-11. /missing comments in RIF40_STUIES (year_stop, start etc)
+11. Missing comments in RIF40_STUDIES (year_stop, start etc)
 
 See: http://trac.osgeo.org/postgis/ticket/2543
 
@@ -261,7 +262,11 @@ In progress
 * Integrate geolevel intersection code (preserving old intersection table;
   verify in rif40/sahsuland builds) [DONE for SAHSUland]
 * All processed geometry to be in 4326 [DONE]
-* Add additional tables/columns as required by Fred (to be specified)
+* Add additional tables/columns as required by Fred (being specified):
+ 
+    Add: gid_rowindex (i.e 1_1). Where gid corresponds to gid in geometry table
+         row_index is an incremental serial aggregated by gid ( starts from one for each gid)
+
 * Add default_study_geolevel to RIF40_GEOGRAPHY [DONE]
 * PNG selection map (by study ID and by array list)
 * Add male, female population totals to geolevel lookup tables [DONE for SAHSUland]
@@ -277,6 +282,10 @@ In progress
 
 6.5 Enhancements - General
     ----------------------
+
+* Middleware enhancements as required by Kev (being specified):
+
+  Remove foreign key t_rif40_inv_geography_fk from t_rif40_investigations, NUll data, remove column
 
 * Check for comments on views [Done]
 * VACUUM After Kerberos username update
@@ -298,7 +307,7 @@ In progress
 
 * Partitioning support - SAHSULAND example tables (Cancer+pop), study_id tables
 * Cluster population tables (i.e. IOT) [DONE for SAHSUland]
-* Check partition elimination works [OK]
+* Check partition elimination works [OK for ranges, not for hashes]
 * Determine the cost of single year extraction vs 2/4/all 
 * Test cluster of SAHSULAND example tables, RIF40_RESULTS, extract and map
   tables

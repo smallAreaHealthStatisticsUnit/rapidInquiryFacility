@@ -60,10 +60,10 @@ L.TileLayer.d3_geoJSON = L.TileLayer.extend({
 		    drag = d3.behavior.drag();
         
 		return function (r) {   
-		
-		   drag.on('drag', function(d,i) { self.drag = 1});	           
+
+		   drag.on('drag', function(d,i) { self.drag = 1;});	           
 		   tile.xhr = null;
-		   
+
 		   if (r.responseText === "-1") {
 			    self._tileOnLoad.call(tile);
                 return;
@@ -71,13 +71,13 @@ L.TileLayer.d3_geoJSON = L.TileLayer.extend({
 			var mytopo = jQuery.parseJSON(r.responseText.split("________")[1]),
 			    o =  mytopo.objects[obj];
 				o.geometries = o.geometries.filter(function(d) { return opt.deduplicate.call(self, d)});
-		    
+
 			var geoJS = topojson.feature( mytopo, o ).features;
-			
+
 			if (geoJS === 'undefined') {
                 return;
             }
-			
+
             tile.nodes = d3.select("#map").select("svg").append("g");
             tile.nodes.selectAll("path")
                 .data(geoJS)
@@ -103,7 +103,7 @@ L.TileLayer.d3_geoJSON = L.TileLayer.extend({
 					opt.evntHndl.call( this, "click");				
                 })
 				.call(drag);
-		
+
             self._tileOnLoad.call(tile);
         }
     },

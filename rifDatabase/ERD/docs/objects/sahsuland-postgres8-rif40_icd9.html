@@ -1,0 +1,35 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+<title>Table: rif40_icd9</title>
+<link href="../schema.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<table class="item-table">
+<tr class="item-header"><td class="item-header" colspan="4"><a name="Tab-rif40_icd9">Table: rif40.rif40_icd9</a></td></tr>
+<tr class="item-element"><td class="item-element" colspan="4"><span class="description">ICD9 code (SAHSU historic version, needs to be updated)</span></td></tr>
+<tr class="item-element"><td class="item-element" colspan="4">Size: medium, Select frequency: medium, Update frequency: medium</td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Columns</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3">Type</td><td class="item-header-3">Constraints</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_icd9-icd9_3char">icd9_3char</a></td><td class="item-element">VARCHAR (3)</td><td class="item-element"></td><td class="item-element"><span class="description">3 Character ICD9 code</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_icd9-icd9_4char"><span class="pk-col">icd9_4char</span></a></td><td class="item-element">VARCHAR (4)</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">4 Character ICD9 code</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_icd9-text_3char">text_3char</a></td><td class="item-element">VARCHAR (250)</td><td class="item-element"></td><td class="item-element"><span class="description">3 Character ICD9 textual description</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_icd9-text_4char">text_4char</a></td><td class="item-element">VARCHAR (250)</td><td class="item-element"></td><td class="item-element"><span class="description">4 Character ICD9 textual description</span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Primary key</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3" colspan="2">Columns</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element">rif40_icd9_pk</td><td colspan="2" class="item-element"><a href="../objects/sahsuland-postgres8-rif40_icd9.html#Col-rif40_icd9-icd9_4char">icd9_4char</a></td><td class="item-element"><span class="description"></span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Indexes</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3" colspan="2">Columns</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element">rif40_icd9_3char_bm</td><td colspan="2" class="item-element"><a href="../objects/sahsuland-postgres8-rif40_icd9.html#Col-rif40_icd9-icd9_3char">icd9_3char</a></td><td class="item-element"><span class="description"></span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Grants</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Role</td><td class="item-header-3" colspan="2">Actions</td><td class="item-header-3">&nbsp;</td></tr>
+<tr class="item-element"><td class="item-element">rif40</td><td colspan="2" class="item-element">select, references, insert, delete, update</td><td class="item-element">&nbsp;</td></tr>
+<tr class="item-element"><td class="item-element">PUBLIC</td><td colspan="2" class="item-element">select</td><td class="item-element">&nbsp;</td></tr>
+</table><p>
+<img src="../images/sahsuland-postgres8-rif40_icd9.png" usemap="#TableGraph" align="middle" alt="Schema diagram" border="0">
+<map id="TableGraph" name="TableGraph">
+<area shape="rect" id="node1" href="../objects/sahsuland-postgres8-rif40_icd9.html" target="detailFrame" title="rif40_icd9" alt="" coords="5,4,91,100"/>
+</map>
+
+</body></html>

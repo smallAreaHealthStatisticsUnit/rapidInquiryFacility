@@ -21,33 +21,59 @@ RIF.manager = (function () {
     var _p = {
 
         components: {
-            study: 'manager',
+            sync: 'manager',
             map: 'tilesvg',
             table: 'click2row',
-            chart: ['pyramid', 'histogram'],
+            chart: ['pyramid','histogram'],
             menu: [/*'export',*/ 'geoLevel', 'choropleth' , 'settings'],
 			resizable: ''
         },
 
         events: {
-            // Study
+            // sync
             selectionchange: {
-                subscribers: ["study"],
+                subscribers: ["sync"],
                 firer: ["map", "table", "menu"],
                 method: "uAreaSelection"
             },
 
             geolvlchange: {
-                subscribers: ["study"],
+                subscribers: ["sync"],
                 firer: ["menu"],
                 method: "cGeoLvl"
             },
+						
+			clearMapTable:{
+			    subscribers: ["sync"],
+                firer: ["menu"],
+                method: "clearMapTable"
+			},
 			
-            // Map/Table
-            updateSelection: {
+			// sync - map/table
+            clearSelection: {
                 subscribers: ["map", "table"],
-                firer: ["study"],
-                method: "addSelection"
+                firer: ["sync"],
+                method: "clearSelection"
+            },
+			
+            // sync - map
+            updateSelectionMap: {
+                subscribers: ["map"],
+                firer: ["sync"],
+                method: "updateSelection"
+            },
+			
+			zoomToExtent: {
+                subscribers: ["map"],
+                firer: ["menu"],
+                method: "zoomToExtent"
+            },
+			
+			// sync - table
+            updateSelectionTable: {
+                subscribers: ["table"],
+                firer: ["sync"],
+                method: "updateSelection"
             },
 
             // Map	
@@ -58,7 +84,7 @@ RIF.manager = (function () {
             },
 			
 			addGeolevel: {
-                subscribers: ["map"],
+                subscribers: ["map", "chart"],
                 firer: ["menu"],
                 method: "uGeolevel"
             },
@@ -87,6 +113,14 @@ RIF.manager = (function () {
                 firer: ["resizable"],
                 method: "resizeMap"
             },
+
+			//Map - Table
+			addTabularData:{
+				subscribers: ["table"],
+                firer: ["menu"],
+                method: "getTabularData"
+			},
+			
 			//Map - Menu
 			addZoomIdentifiers: {
                 subscribers: ["menu"],
@@ -104,6 +138,25 @@ RIF.manager = (function () {
 			    subscribers: ["menu"],
                 firer: ["map"],
                 method: "getScaleRange"
+			},
+			
+			//Resizable - Table
+			resizeTable: {
+				subscribers: ["table"],
+                firer: ["resizable"],
+                method: "resizeTable"
+			},
+			//Menu - Table 
+			filterCols: {
+				subscribers: ["table"],
+                firer: ["menu"],
+                method: "filterCols"
+			},
+			
+			changeNumRows: {
+				subscribers: ["table"],
+                firer: ["menu"],
+                method: "changeNumRows"
 			},
 			
             //Chart - Pyramid 	

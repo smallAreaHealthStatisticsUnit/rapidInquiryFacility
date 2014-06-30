@@ -1,13 +1,18 @@
-/* context passed by calling object 
-   type: "geojson"| "tilegeojson"| "topojson"| "tiletopojson",
-*/
+/*  context passed by calling object 
+ *  type: "geojson"| "tilegeojson"| "topojson"| "tiletopojson",
+ *  
+ *   Layer Types must implement the following methods:
+ *   
+ *   @highlight(id,scltd) // allows to select a map area
+ *   @slct(id) // selects an area and call highlight method
+ */
 RIF.map.layer = (function (type, sett) {
 
 	var map = this,
         
 		layer = RIF.mix(
 			      
-				  RIF.map.layer.settings(sett), 
+				  RIF.map.layer.settings( sett, type), 
 			      RIF.map.layer.hover(),
 				  
 				  {	
@@ -30,8 +35,8 @@ RIF.map.layer = (function (type, sett) {
 					
 					clbk: { /* called after layer is rendered */
 						tile: function(){ 
-							map.facade.addAvlbFields( layer.geoLevel );
-							map.facade.addZoomIdentifiers( layer.geoLevel );
+							map.facade.addAvlbFields();
+							map.facade.addZoomIdentifiers( layer.geoLevel );	
 						},
 						topojson: function(){}
 					},
@@ -41,7 +46,7 @@ RIF.map.layer = (function (type, sett) {
 							layer.hoverLbls = this;
 						};
 						layer.selectionField = field || layer.selectionField;
-						RIF.getSingleFieldData( join, [layer.geoLevel, layer.selectionField] );
+						RIF.getSingleFieldData( join, [map.getDataset(), layer.selectionField] );
 					},
 					
 					uStyle: function(params){ /* {classification: , colorScale: , field: , intervals:  }  */
@@ -58,16 +63,26 @@ RIF.map.layer = (function (type, sett) {
                             layer.repaintSlctd();		
 						};
 						
-						RIF.getSingleFieldChoro( doChoro, [ layer.geoLevel, params.field ] )
+						RIF.getSingleFieldChoro( doChoro, [ map.getDataset(), params.field ] )
 					},
 					
 					getBreaks: function( params ){
 						 var getScale = function(){
 							 layer.style.setChoropleth( this, params, false ); 
-							 map.facade.scaleRange(layer.style.scale.breaks);
+							 map.facade.scaleRange(layer.style.breaks);
 						 };
 						 
-						 RIF.getSingleFieldChoro( getScale, [ layer.geoLevel, params.field ] )
+						 RIF.getSingleFieldChoro( getScale, [ map.getDataset(), params.field ] )
+					},
+					
+					resetSlctd: function () {
+						/*if (!layer.isTiled()) {
+							return;
+						}*/
+						for (var key in layer.selection) {
+							var e = $("#" + key);
+							e[0].style.fill = style.colors[key];
+						}
 					},
 					
 					repaintSlctd: function(){
@@ -83,33 +98,54 @@ RIF.map.layer = (function (type, sett) {
 						return true;
 					},
 					
-					highlight: function(id, slctd){
-						var isSlctd = slctd || layer.isSlctd(id),
-						    fill = (isSlctd) ? layer.style.slctd.fill : layer.style.colors[id],
-						    stroke = (isSlctd) ? layer.style.slctd.stroke : layer.style.default.stroke ;
-						
-						d3.select("#"+id)
-						 .style("fill", fill)
-						 .style("stroke", stroke)
-						 .style("stroke-width", 2);
-					},
-					
 					slct: function (id) {
 						if (typeof this.selection[id] === 'undefined') {
 							this.selection[id] = 1;
 						} else {
 							delete this.selection[id];
 						}
+
 						this.highlight(id);
+					},
+					
+					selectAreas: function (ids){
+						var l = ids.length;
+						while(l--){
+							var id = "g" + ids[l];
+							this.slct( id );
+						}
+					},
+					
+					getLayerStyle: function( id, slctd){
+						var isSlctd = slctd || this.isSlctd(id);
+						return {
+							fill : (isSlctd) ? layer.style.slctd.fill : layer.style.colors[id],
+							stroke: (isSlctd) ? layer.style.slctd.stroke : layer.style.default.stroke,
+							stroke_width : layer.style.slctd["stroke-width"]
+						}	
 					},
 					
 					clearLegend: function(){
 					    $('.map-legend').empty();
-					}
+					},
 					
+					clearSelection: function(){
+						this.selection = [];
+						this.resetSlctd();
+						this.style.repaint();
+					},
+					
+					selectionChanged: function(){
+						var selection = [];
+						for (var key in layer.selection) {
+							var key = key.substring(1);// remove 'g' from id
+							selection.push(key);
+						}
+						map.facade.selectionChanged(selection);
+					}
+	
 				});
 			
     layer.init( type );
-	
     return layer;
 });

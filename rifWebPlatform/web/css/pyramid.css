@@ -1,47 +1,48 @@
-.chart svg {
+#pyramid svg {
   font: 12px Arial, Helvetica, sans-serif;
 }
  
-.chart .y.axis path {
+#pyramid .y.axis path {
   display: none;
 }
  
-.chart .y.axis line {
+#pyramid .y.axis line {
   stroke: #fff;
   stroke-opacity: .2;
   shape-rendering: crispEdges;
 }
  
-.chart .y.axis .zero line {
-  stroke: #CCC;
+#pyramid .y.axis .zero line {
+  stroke: #E3E3E3;
   stroke-opacity: 1;
   stroke-width:3;
 }
-text{
-  fill:#777777;
- }
-.chart .title {
-  font: 300 38px Helvetica Neue;
-  fill: #666;
-text-anchor: end;
+
+#pyramid .y.axis  text {
+  fill: #8F8F8F;
+} 
+
+#pyramid .title {
+  font: 20px Helvetica Neue;
+  fill: #8F8F8F;
+  text-anchor: end;
 }
  
-.chart .birthyear,
-.chart .age {
+#pyramid .birthyear,
+#pyramid .age {
   text-anchor: middle;
-  fill: #666666;
 }
  
-.chart .birthyear {
+#pyramid .birthyear {
   fill: #fff;
 }
  
-.chart rect {
+#pyramid rect {
   fill-opacity: .6;
   fill: #e377c2;
 }
  
-.chart rect:first-child {
+#pyramid rect:first-child {
   fill: #1f77b4;
 }
  

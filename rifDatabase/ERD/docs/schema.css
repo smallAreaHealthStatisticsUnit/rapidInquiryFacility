@@ -1,0 +1,151 @@
+/*
+    Default stylesheet for DB schema documentation - see xml2doc
+
+    $Id: schema.css 743 2007-11-26 22:18:54Z johnd $
+*/
+
+/* Defaults and general styles */
+BODY {
+    font-family: Helvetica, Arial;
+}
+
+TABLE {
+    border-collapse: collapse;
+    empty-cells: show;
+    font-size: 90%;
+    border-spacing: 0;
+}
+
+H1 {
+    font-size: 160%;
+    font-weight: bold;
+}
+
+H2 {
+    font-size: 120%;
+    font-weight: bold;
+}
+
+H3 {
+    font-weight: bold;
+    font-style: italic;
+}
+
+A.link {
+    font-size: 120%;
+    font-weight: bold;
+}
+
+TT {
+    font-size: 150%;
+    background-color: #dddddd;
+}
+
+TT.no-background {
+    font-size: 150%;
+    background-color: #fff;
+}
+
+/* ========================================================================== */
+/* Index table styles */
+
+TABLE.index-table {
+    border: 2px solid black;
+    width: 100%;
+}
+TR.index-header {
+    border-top: 3px solid black;
+    border-bottom: 3px solid black;
+    background-color: #ccccff;
+    font-size: 140%;
+    font-weight: bold;
+    padding: 0 1em 0.1em 0;
+}
+TR.index-element {
+    padding: 0 1em 0.1em 0;
+}
+
+TABLE.index-table-frames {
+    width: 100%;
+}
+TR.index-header-frames {
+    background-color: white;
+    font-size: 140%;
+    font-weight: bold;
+    padding: 0 1em 0.1em 0;
+}
+
+FONT.item-header {
+    font-size: 140%;
+    font-weight: bold;
+}
+
+FONT.item-sub-header {
+    font-size: 100%;
+    font-weight: bold;
+}
+
+A.item-link {
+    font-size: 90%;
+}
+
+
+/* ========================================================================== */
+/* Summary table styles (frames only) */
+
+TR.summary-element {
+    padding: 0 1em 0.1em 0;
+    border-top: 1px dotted black;
+}
+
+TD.summary-element {
+    vertical-align: top;
+}
+
+
+/* ========================================================================== */
+/* Styles for tables displaying DB tables etc. */
+TABLE.item-table {
+    border-spacing: 2px;
+    width: 100%;
+    margin-top: 1em;
+    border: 2px solid black;
+}
+/* Title row for the table */
+TR.item-header {
+    border-top: 3px solid black;
+    border-bottom: 3px solid black;
+    background-color: #ccccff;
+    font-size: 140%;
+    font-weight: bold;
+    padding: 0 1em 0.1em 1em;
+}
+/* Subtitle row */
+TR.item-header-2 {
+    border-top: 2px solid black;
+    background-color: #e0e0e0;
+    font-size: larger;
+    font-weight: bold;
+    padding: 0 1em 0.1em 1em;
+}
+/* Column headings row under subtitle  */
+TR.item-header-3 {
+    border-bottom: 2px solid black;
+    background-color: #e0e0e0;
+    font-weight: bold;
+    padding: 0 1em 0.1em 1em;
+}
+/* Standard row and cell */
+TR.item-element {
+    border: 1px dotted black;
+    padding: 0 1em 0.1em 1em;
+}
+TD.item-element {
+    padding: 0 0.5em 0 0.5em;
+}
+
+/* ========================================================================== */
+/*SPAN.description {font-style: italic}*/
+SPAN.pk-col {text-decoration: underline}
+SPAN.fk-col {font-style: italic}
+SPAN.pk-fk-col {font-style: italic; text-decoration: underline}

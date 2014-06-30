@@ -60,15 +60,21 @@ $geoJson.=']} ';
 if( $length > 0 ){   
    file_put_contents($geo, $geoJson);
    //see https://github.com/mbostock/topojson/wiki/Command-Line-Reference#quantization
-   $quantization = ($zoom < 7) ? 500 :
+   $quantization = ($zoom < 7) ? 1000 :
    ($zoom < 8) ? 5000 :
    ($zoom < 9 ) ? 10000 :
    ($zoom < 10 ) ? 100000 : 1000000;
+   
+   /*$simplification = ($zoom < 7) ? 0.01 :
+   ($zoom < 8) ? 0.005 :
+   ($zoom < 9 ) ? 0.01 :
+   ($zoom < 10 ) ? 100000 : 0.005;*/
+   
    /* 
     The following command ouput unwanted verbose messages, hence the need of  a separator ________
-    to be able then to split in Javascriot and get the output of file_get_contents($topo) only
+    to be able then to split in Javascript and get the output of file_get_contents($topo) only
    */
-   shell_exec ("topojson  -o $topo -q $quantization -s 0  $geo"); 
+   shell_exec ("topojson  -o $topo  -q $quantization $geo"); 
    // Ugly, very ugly. 
    echo "________";
    echo file_get_contents($topo);

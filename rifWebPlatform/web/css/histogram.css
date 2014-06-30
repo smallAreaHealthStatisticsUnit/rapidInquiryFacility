@@ -1,0 +1,25 @@
+#distHisto .bar rect {
+  fill: #B0C4DE;
+  shape-rendering: crispEdges;
+}
+
+#distHisto .bar text {
+  fill: #fff;
+  font-size:10px
+}
+
+#distHisto .axis path, .axis line {
+  fill: none;
+  stroke: #E3E3E3;
+  shape-rendering: crispEdges;
+}
+
+#distHisto .tick text {
+	fill: #8F8F8F;
+}
+#distHisto .title {
+  font: 20px Helvetica Neue;
+  fill: #8F8F8F;
+  text-anchor: end;
+}
+ 

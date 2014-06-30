@@ -80,7 +80,9 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE VIEW "rif40_comparison_areas" ("username", "study_id", "area_id") AS SELECT  username, c.study_id, area_id
+CREATE OR REPLACE VIEW "rif40_comparison_areas" ("username", "study_id", "area_id") 
+AS 
+SELECT  username, c.study_id, area_id
    FROM t_rif40_comparison_areas c
 	LEFT OUTER JOIN rif40_study_shares s ON (c.study_id = s.study_id AND s.grantee_username = USER)
  WHERE username = USER OR

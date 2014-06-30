@@ -70,8 +70,13 @@ RIF.menu.choropleth = (function(){
 			},
 			
 			updateIntervals: function(n){
+				
+				if($("#selectedScale").children().length === 1){
+					n = 1;
+				}
+				
 				var intervals = [],
-					maxIntervals = (n>1) ? 3 : 1;
+					maxIntervals = ( n > 1 ) ? 3 : 1;
 				for( ;n >= maxIntervals; n--){
 				    intervals.push(n);
 				};
@@ -100,7 +105,7 @@ RIF.menu.choropleth = (function(){
 				var domain = [];
 				if(_p.breaksEdited){
 					d3.selectAll("#breaks input").each(function(){
-						domain.push(parseInt(this.value));
+						domain.push(parseFloat(this.value));
 					});
 				};
 				domain.sort(d3.ascending);
@@ -122,10 +127,19 @@ RIF.menu.choropleth = (function(){
 					$("#breaks").hide();
 				});
 				
+				$("#classification").change(function(){
+					_p.updateIntervals($("#selectedScale").children().length);
+				});
+				
 				this.choroplethBtn.click(function(){					
 					$("#choropleth").show();
 				});	
                 
+				$("dl.dropdown").click(function(){					
+					_p.updateIntervals($("#selectedScale").children().length);
+				});	
+				
+				
 				this.edit.click(function(){
 				     _p.breaksEdited = false;
 					 var slctd = _p.selected();
@@ -135,11 +149,20 @@ RIF.menu.choropleth = (function(){
 				});
 				
 				this.save.click(function(){
+					
+					if($("#classification").val() === 'standardDeviation'){
+						_p.updateIntervals(5);
+					};
+					
 					$("#choropleth").hide();
+
 					var slctd = _p.selected();
+					
 					if( slctd.field !== "N/A" ){
 						parent.facade.fire("mapStyleChange", slctd );
-					};	
+						parent.facade.hoverFieldChange(slctd.field);
+					};
+						
 				});
 			}	
 	    };

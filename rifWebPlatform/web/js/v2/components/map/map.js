@@ -10,9 +10,9 @@
 RIF.map = (function (type) {
 
     var _p = {
-	
+		extentSet: 0,
         init: function () {
-            this.map = new L.Map("map");
+            this.map = new L.Map("map", {attributionControl: false});
 			this.events().addLegend();
 			
             new L.geoJson({
@@ -63,8 +63,11 @@ RIF.map = (function (type) {
 		},
 		
         addTiled: function (lyr, geoTable) {
-            this.getFullExtent(geoTable);
-			 _p.map.addLayer(lyr);
+            if( !this.extentSet){
+				this.setFullExtent(geoTable);
+			};	
+			
+			_p.map.addLayer(lyr);	
         },
 		
 		getZoom: function(){
@@ -75,7 +78,8 @@ RIF.map = (function (type) {
             RIF.xhr('getCentroid.php?table=' + t, clbk);
         },
 		
-		getFullExtent: function( geolevel ){
+		setFullExtent: function( geolevel ){
+			this.extentSet = 1;
 		    RIF.getFullExtent( this.zoomTo, [geolevel]);
 		},
 		
@@ -92,19 +96,30 @@ RIF.map = (function (type) {
 			_p.map.fitBounds(bounds);	
 		},
 		
+		setDataset: function( dataset){
+			this.currentDataset = dataset;
+		},
+		
+		getDataset: function(){
+			return this.currentDataset;
+		},
+		
         facade: {
             /* Subscribed Events */
             updateSelection: function (a) {
-                console.log("Map selection updated " + a);
+				_p.layer.selection = {};
+				_p.layer.style.repaint();		
+                _p.layer.selectAreas(a);
             },
 			
             zoomTo: function (a) {
 				_p.getBounds(a);
             },
 			
-			uGeolevel: function(a){
+			uGeolevel: function( args ){
 				_p.removeLayer();
-				_p.addLayer(a);
+				_p.addLayer({ "geoLevel" : args.geoLevel } );
+				_p.setDataset(args.dataset);
 			},
 			
 			resizeMap: function(){
@@ -122,18 +137,33 @@ RIF.map = (function (type) {
 			editBreaks: function(a){
 			    _p.layer.getBreaks(a);
 			},
+			zoomToExtent: function(){
+				_p.setFullExtent(_p.layer.geoLevel);
+			},
+			
+			clearSelection: function(){
+				_p.layer.clearSelection();
+			},
 			
 			/* Firers */
 			addZoomIdentifiers: function(args){/* [geolevel, selectionField] */
 				this.fire('addZoomIdentifiers', args);
 			},
 			
-			addAvlbFields: function(args){/* [geolevel] */
-			    this.fire('addAvlbFields', args);
+			addAvlbFields: function(){/* [geolevel] */
+			    this.fire('addAvlbFields');
+			},
+			
+			addTabularData: function( dataSets ){
+				this.fire('addTabularData', dataSets);
 			},
 			
 			scaleRange: function(args){/* scale */
 			    this.fire('scaleRangeReady', args);
+			},
+			
+			selectionChanged: function( selection ){
+				this.fire('selectionchange', [ selection, 'map'] );
 			}
         }
     };

@@ -82,6 +82,8 @@ $$;
 
 \echo Partition all tables with study_id as a column...
 
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR);
+
 \set VERBOSITY terse
 DO LANGUAGE plpgsql $$
 DECLARE
@@ -90,8 +92,10 @@ DECLARE
 							'_rif40_hash_partition_create',
 							'_rif40_common_partition_create',
 							'_rif40_common_partition_create_setup',
-							'_rif40_common_partition_create_insert',
+							'_rif40_hash_partition_create_insert',
 							'_rif40_common_partition_create_complete',
+							'_rif40_common_partition_triggers',
+							'rif40_method4',
 							'rif40_ddl'];
 	l_function 			VARCHAR;
 --
@@ -131,12 +135,28 @@ BEGIN
 		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
 	END LOOP;
 --
+-- Enable hash partitioning on each table in turn
+--
 	FOR c1_rec IN c1 LOOP
 		RAISE INFO 'Hash partitioning: %.%', c1_rec.schemaname, c1_rec.tablename;
-		PERFORM rif40_sql_pkg.rif40_hash_partition(c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR, 'study_id'::VARCHAR);
+		PERFORM rif40_sql_pkg.rif40_hash_partition(c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR, 'study_id');
 	END LOOP;
 END;
 $$;
+
+--
+-- Fix views to include hash_partition_number
+--
+\i ../views/rif40_comparision_areas.sql
+\i ../views/rif40_contextual_stats.sql
+
+--
+-- Re-create instead of triggers
+--
+
+--
+-- Check all vieww for t_ tables now have hash_partition_number
+--
 
 \echo Partitioning of all tables with study_id as a column complete.
 --

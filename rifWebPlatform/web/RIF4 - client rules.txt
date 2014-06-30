@@ -1,0 +1,36 @@
+----------------------------------------------------------------------------------- 
+-- RIF.4.0.rules constraints (HTML 5 client) --
+----------------------------------------------------------------------------------- 
+   Database:
+   - Each Geolevel is composed:
+		1. Geometry table which must have a GID and a code field
+		2. Data table which must have a GID field ( which identifies the area hence foreign key to geometry table) and a code field (as per geometry).
+		
+   - Client:
+		1.Map
+		   - Each area has an ID assigned equivalent to : 'g' + gid (i.e g1,g2 etc)
+		2. Table 
+		   - rows IDs have the following  format:
+			  gid_rowindex (i.e 1_1)
+			  gid corresponds to gid in geometry table
+			  row_index is an incremental serial aggregated by gid ( starts from one for each gid)
+			  
+   - Backend:
+		1.TOPOJSON
+		   - Currently spatial data retrieved in from PostGIS in json format is converted into GEOJSON in PHP ( using a custom iterative function). 
+		   The GEOJSON is then saved in the cachedTiles folder and converted using the TOPOJSON command line function ( Requires node.js ) called via PHP shell_exec() . 
+		   Using	the shell_exec function outputs verbose messages which are very INCONVENIENT, therefore to differentiate the actual 
+		   output from those messages an arbitrary separator has been used : "________" .
+		   This is ugly and it's a hit on performance as splicing large data in javascript by doing spatialdata.splice("________") 
+		   is only meant to be a temporary workaround to verbose messages which must either be switched off or we need to find a 
+		   better way of calling/creating TOPOJSONs from GEOJSON. The final TOPOJSON is also saved in the cachedTiles folder.
+		   
+		   - As mentioned above when the client uses TOPOJSON to render the map the GEOJSON is only needed 
+		   temporary and can therefore be deleted after the TOPOJSON is created, currently both types are 
+		   kept which may be convenient as this can easilly take up a considerable drive space.
+
+
+  
+
+
+	
