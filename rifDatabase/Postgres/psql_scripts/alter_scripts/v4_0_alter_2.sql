@@ -532,11 +532,13 @@ Time: 6559.317 ms
 -- REF_CURSOR takes 12 secnds to parse and execute (caused by the rowindex sort)
 -- FETCH takes 7 seconds - i.e. copies results (hopefully in server)!
 --
+-- Only sorting when the attribute list is specified sppeds things up 4x
+--
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
 		'c4getallatt4theme_3' /* Must be unique with a TX */, 
 		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop', NULL /* All attributes */, 0 /* No offset */, NULL /* No row limit */);
-FETCH FORWARD 5 IN c4getallatt4theme_3 /* 19 seconds with no row limit, no gid/gid_rowindex columns built in */;
+FETCH FORWARD 5 IN c4getallatt4theme_3 /* 19 seconds with no row limit, full sort list, no gid/gid_rowindex columns built in */;
 
 --
 -- Test cursor close. Does not release resources!!!!

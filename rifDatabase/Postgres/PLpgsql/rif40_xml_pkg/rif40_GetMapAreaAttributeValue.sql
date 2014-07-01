@@ -85,8 +85,13 @@ Function: 	rif40_GetMapAreaAttributeValue()
 Parameters:	REFCURSOR, Geography, <geolevel select>, theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme), attribute source, 
  		attribute name array [Default NULL - All attributes], offset [Default 0], row limit [Default 1000 rows]
 Returns:	Table: area_id, attribute_value, is_numeric
-Description:	Get all the SRID 4326 (WGS84) geometry column names for geography
+Description:	Get all values for attributes source, attribute names, geography and geolevel select
 		This function returns a REFCURSOR, so only parses the SQL and does not execute it.
+		Offset and row limit are used for cursor control
+		Specifing an attribute name list will cause a sort of the attribute source (table)
+
+		GID is the same GID in t_rif40_<geography>_geometry. It links via the area_id
+		GID_ROWINDEX is guaranteed to be unqiue but is specific to this query (i.e. cannot be connected to naything else)
 
 Beware: the cursor name in the FETCH statement (c4getallatt4theme_5) must be unqiue for each open (the SELECT just before)
 Beware: even if you close the cursor the cursor name is not released until commit;
@@ -167,17 +172,21 @@ DECLARE
 	c4_rec RECORD;
 	c5_rec RECORD;
 --
-	explain_text 		VARCHAR;
-	sql_stmt		VARCHAR;
-	select_list		VARCHAR;
+	explain_text 			VARCHAR;
+	sql_stmt			VARCHAR;
+	select_list			VARCHAR;
 	invalid_attribute_source	INTEGER:=0;
+	attribute_name_list		VARCHAR[];
+	ordinal_position_list		INTEGER[];
+	sorted_attribute_name_list	VARCHAR[];
+	sorted_ordinal_position_list	INTEGER[];
 --
-	stp 			TIMESTAMP WITH TIME ZONE:=clock_timestamp();
-	etp 			TIMESTAMP WITH TIME ZONE;
-	took 			INTERVAL;
+	stp 				TIMESTAMP WITH TIME ZONE:=clock_timestamp();
+	etp 				TIMESTAMP WITH TIME ZONE;
+	took 				INTERVAL;
 --
-	error_message 		VARCHAR;
-	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
+	error_message 			VARCHAR;
+	v_detail 			VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN
 --
 -- User must be rif40 or have rif_user or rif_manager role
@@ -230,17 +239,67 @@ BEGIN
 			l_geolevel_select::VARCHAR	/* geolevel select */);
 	END IF;	
 --
--- Check attribute exists, build SQL injection proof select list
+-- Check attribute exists
 --
 	FOR c3_rec IN c3getallatt4theme(l_geography, l_geolevel_select, l_theme, l_attribute_name_array) LOOP
-		IF c3_rec.attribute_source = l_attribute_source THEN
-			IF select_list IS NULL THEN
-				select_list:='       a.'||quote_ident(c3_rec.attribute_name)||' /* ord_pos: '||c3_rec.ordinal_position||' */';
+		IF c3_rec.attribute_source = LOWER(l_attribute_source) THEN
+			IF attribute_name_list IS NULL THEN
+				attribute_name_list[1]:=c3_rec.attribute_name;
+				ordinal_position_list[1]:=c3_rec.ordinal_position;
 			ELSE
-				select_list:=select_list||','||E'\n'||'       a.'||quote_ident(c3_rec.attribute_name)||' /* ord_pos: '||c3_rec.ordinal_position||' */';
+				attribute_name_list[array_length(attribute_name_list, 1) +1]:=c3_rec.attribute_name;
+				ordinal_position_list[array_length(ordinal_position_list, 1) +1]:=c3_rec.ordinal_position;
 			END IF;
 		ELSE
 			invalid_attribute_source:=invalid_attribute_source+1;
+		END IF;
+	END LOOP;
+
+--
+-- Sort if the attribute name array is set, otherwise except the default (ordinal_position order)
+--
+	IF l_attribute_name_array IS NULL THEN
+		sorted_attribute_name_list:=attribute_name_list;
+		sorted_ordinal_position_list:=ordinal_position_list;
+	ELSE
+		FOR i IN 1 .. array_length(l_attribute_name_array, 1) LOOP /* Orignal sort out as specified to function */
+			FOR j IN 1 .. array_length(attribute_name_list, 1) LOOP
+				IF attribute_name_list[j] = LOWER(l_attribute_name_array[i]) THEN /* Found */
+					sorted_attribute_name_list[i]:=attribute_name_list[j];
+					sorted_ordinal_position_list[i]:=ordinal_position_list[j];
+				END IF;
+			END LOOP;
+		END LOOP;
+	END IF;
+--
+-- Check all present
+--
+	IF sorted_attribute_name_list IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-51205, 'rif40_GetMapAreaAttributeValue', 
+			'geography: %, <geolevel select> %, <attribute source>: %s; sorted attribute list is null', 
+			l_geography::VARCHAR			/* Geography */, 
+			l_geolevel_select::VARCHAR		/* Geolevel select */,
+			l_attribute_source::VARCHAR		/* Attribute source */);
+	ELSIF array_length(attribute_name_list, 1) != array_length(sorted_attribute_name_list, 1) THEN
+		PERFORM rif40_log_pkg.rif40_error(-51206, 'rif40_GetMapAreaAttributeValue', 
+			'geography: %, <geolevel select> %, <attribute source>: %s; sorted attribute list is not the same length as the original', 
+			l_geography::VARCHAR			/* Geography */, 
+			l_geolevel_select::VARCHAR		/* Geolevel select */,
+			l_attribute_source::VARCHAR		/* Attribute source */,
+			array_length(sorted_attribute_name_list, 1)::VARCHAR	/* Sorted attribute list */,
+			array_length(attribute_name_list, 1)::VARCHAR	/* Orignal attribute list  */);
+	END IF;
+
+--
+-- Build SQL injection proof select list
+--
+	FOR i IN 1 .. array_length(sorted_attribute_name_list, 1) LOOP
+		IF select_list IS NULL THEN
+			select_list:='       a.'||quote_ident(sorted_attribute_name_list[i])||
+				' /* ordinal_position: '||sorted_ordinal_position_list[i]||' */';
+		ELSE
+			select_list:=select_list||','||E'\n'||'       a.'||quote_ident(sorted_attribute_name_list[i])||
+				' /* ordinal_position: '||sorted_ordinal_position_list[i]||' */';
 		END IF;
 	END LOOP;
 
@@ -250,7 +309,7 @@ BEGIN
 -- [the function rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme()]
 --
 	IF select_list IS NULL AND invalid_attribute_source > 0 THEN
-		PERFORM rif40_log_pkg.rif40_error(-51205, 'rif40_GetMapAreaAttributeValue', 
+		PERFORM rif40_log_pkg.rif40_error(-51207, 'rif40_GetMapAreaAttributeValue', 
 			'geography: %, <geolevel select> %, <attribute source>: %s; no attributes found, % of % <attribute source> were invalid', 
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_select::VARCHAR		/* Geolevel select */,
@@ -258,7 +317,7 @@ BEGIN
 			invalid_attribute_source::VARCHAR	/* Invalid attribute sources */,
 			array_length(l_attribute_name_array, 1)::VARCHAR	/* Total attributes */);
 	ELSIF select_list IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-51206, 'rif40_GetMapAreaAttributeValue', 
+		PERFORM rif40_log_pkg.rif40_error(-51208, 'rif40_GetMapAreaAttributeValue', 
 			'geography: %, <geolevel select> %, <attribute source>: %s; no attributes found', 
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_select::VARCHAR		/* Geolevel select */,
@@ -276,17 +335,37 @@ BEGIN
 -- Gid is derived from the GID in the geometry table, gid_rowindex is calculated on the fly from the selection order
 --
 	IF l_theme IN ('covariate', 'health', 'population') THEN
-		select_list:='a.'||quote_ident(LOWER(l_geolevel_select))||' /* Map <geolevel select> to area_id */ AS area_id, '||E'\n'||
-			  '       g.gid, '||E'\n'||
-		          '       LPAD(g.gid::Text, 10, ''0''::Text)||''_''||'||
-			  		'LPAD(ROW_NUMBER() OVER(PARTITION BY '||quote_ident(LOWER(l_geolevel_select))||' ORDER BY '||select_list||')::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
-		          select_list;
+		IF l_attribute_name_array IS NULL THEN
+			select_list:='a.'||quote_ident(LOWER(l_geolevel_select))||' /* Map <geolevel select> to area_id */ AS area_id, '||E'\n'||
+				  '       g.gid, '||E'\n'||
+			          '       LPAD(g.gid::Text, 10, ''0''::Text)||''_''||'||
+				  		'LPAD(ROW_NUMBER() OVER(PARTITION BY '||quote_ident(LOWER(l_geolevel_select))||
+						' /* Use default table order */)::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
+			          select_list;
+		ELSE /* Sort order specified */
+			select_list:='a.'||quote_ident(LOWER(l_geolevel_select))||' /* Map <geolevel select> to area_id */ AS area_id, '||E'\n'||
+				  '       g.gid, '||E'\n'||
+			          '       LPAD(g.gid::Text, 10, ''0''::Text)||''_''||'||
+				  		'LPAD(ROW_NUMBER() OVER(PARTITION BY '||quote_ident(LOWER(l_geolevel_select))||
+						' ORDER BY '||select_list||')::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
+			          select_list;
+		END IF;
 	ELSIF l_theme IN ('extract', 'results') THEN
-		select_list:='a.area_id, '||E'\n'||
-			  '       g.gid, '||E'\n'||
-		          '       LPAD(g.gid::Text, 10, ''0''::Text)||''_''||'||
-					'LPAD(ROW_NUMBER() OVER(PARTITION BY area_id ORDER BY '||select_list||')::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
-		          select_list;
+		IF l_attribute_name_array IS NULL THEN
+			select_list:='a.area_id, '||E'\n'||
+				  '       g.gid, '||E'\n'||
+			          '       LPAD(g.gid::Text, 10, ''0''::Text)||''_''||'||
+						'LPAD(ROW_NUMBER() OVER(PARTITION BY area_id'||
+						' /* Use default table order */)::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
+			          select_list;
+		ELSE /* Sort order specified */
+			select_list:='a.area_id, '||E'\n'||
+				  '       g.gid, '||E'\n'||
+			          '       LPAD(g.gid::Text, 10, ''0''::Text)||''_''||'||
+						'LPAD(ROW_NUMBER() OVER(PARTITION BY area_id'||
+						' ORDER BY '||select_list||')::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
+			          select_list;
+		END IF;
 --
 -- Geometry tables must have gid and gid_rowindex
 --
@@ -299,7 +378,7 @@ BEGIN
 --	
 -- This may mean the theme is not supported yet...
 --
-		PERFORM rif40_log_pkg.rif40_error(-51207, 'rif40_GetMapAreaAttributeValue', 
+		PERFORM rif40_log_pkg.rif40_error(-51209, 'rif40_GetMapAreaAttributeValue', 
 			'Invalid theme: %',
 			l_theme::VARCHAR);
 	END IF;
@@ -364,7 +443,7 @@ BEGIN
 --
 -- Create temporary table
 --
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue', '[51208] c4getallatt4theme EXPLAIN SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue', '[51210] c4getallatt4theme EXPLAIN SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
 			sql_stmt:='EXPLAIN ANALYZE VERBOSE CREATE TEMPORARY TABLE '||LOWER(quote_ident(c4getallatt4theme::Text))||E'\n'||'AS'||E'\n'||sql_stmt;
 --
 -- Create results temporary table, extract explain plan  using _rif40_geojson_explain_ddl() helper function.
@@ -386,11 +465,11 @@ BEGIN
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 				error_message:='rif40_GetMapAreaAttributeValue() caught: '||E'\n'||
 					SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
-				RAISE INFO '51209: %', error_message;
+				RAISE INFO '51211: %', error_message;
 --
 				RAISE;
 		END;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_get_geojson_as_js', '[51210] c4getallatt4theme EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_get_geojson_as_js', '[51212] c4getallatt4theme EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);
 	ELSE
 --
 -- Non EXPLAIN PLAN version
@@ -399,7 +478,7 @@ BEGIN
 --
 -- Create temporary table
 --
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue', '[51211] c4getallatt4theme SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue', '[51213] c4getallatt4theme SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
 			sql_stmt:='CREATE TEMPORARY TABLE '||LOWER(quote_ident(c4getallatt4theme::Text))||E'\n'||'AS'||E'\n'||sql_stmt;
 			EXECUTE sql_stmT USING l_geography, l_geolevel_select, l_offset, l_row_limit;
 		EXCEPTION
@@ -410,7 +489,7 @@ BEGIN
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 				error_message:='rif40_GetMapAreaAttributeValue() caught: '||E'\n'||
 					SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
-				RAISE INFO '51212: %', error_message;
+				RAISE INFO '51214: %', error_message;
 --
 				RAISE;
 		END;
@@ -430,7 +509,7 @@ BEGIN
 			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 			error_message:='rif40_GetMapAreaAttributeValue() caught: '||E'\n'||
 				SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
-			RAISE INFO '51213: %', error_message;
+			RAISE INFO '51215: %', error_message;
 --
 			RAISE;
 	END;
@@ -440,13 +519,15 @@ BEGIN
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue', 
-		'[51214] Cursor: %, geography: %, geolevel select: %, theme: %, attribute names: [%], source: %; SQL parse took: %.', 			
+		'[51215] Cursor: %, geography: %, geolevel select: %, theme: %, attribute names: [%], source: %; offset: %, row limit: %, SQL parse took: %.', 			
 		LOWER(quote_ident(c4getallatt4theme::Text))::VARCHAR	/* Cursor name */, 
 		l_geography::VARCHAR					/* Geography */, 
 		l_geolevel_select::VARCHAR				/* Geolevel select */, 
 		l_theme::VARCHAR					/* Theme */, 
 		array_to_string(l_attribute_name_array, ',')::VARCHAR	/* attribute names */, 
 		l_attribute_source::VARCHAR				/* attribute source table */, 
+		l_offset::VARCHAR					/* Offset */,
+		l_row_limit::VARCHAR					/* Row limit */,
 		took::VARCHAR						/* Time taken */);
 --
 	RETURN c4getallatt4theme;
