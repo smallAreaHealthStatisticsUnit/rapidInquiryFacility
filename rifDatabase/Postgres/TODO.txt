@@ -264,8 +264,9 @@ In progress
 * All processed geometry to be in 4326 [DONE]
 * Add additional tables/columns as required by Fred (being specified):
  
-    Add: gid_rowindex (i.e 1_1). Where gid corresponds to gid in geometry table
-         row_index is an incremental serial aggregated by gid ( starts from one for each gid)
+    Add: gid_rowindex (i.e 0000000001_0000000001). Where gid corresponds to gid in geometry table
+         row_index is an incremental serial aggregated by gid ( starts from one for each gid). 
+         GID is unique for the geolevel [Done]
 
 * Add default_study_geolevel to RIF40_GEOGRAPHY [DONE]
 * PNG selection map (by study ID and by array list)
@@ -285,7 +286,7 @@ In progress
 
 * Middleware enhancements as required by Kev (being specified):
 
-  Remove foreign key t_rif40_inv_geography_fk from t_rif40_investigations, NUll data, remove column
+  Remove foreign key t_rif40_inv_geography_fk from t_rif40_investigations, NUll data, remove column [Done]
 
 * Check for comments on views [Done]
 * VACUUM After Kerberos username update
@@ -293,7 +294,7 @@ In progress
 * Auto setup rif40_geolevels.listing =1 if name is not null and not the same and the area_id value
 * Move schema checks to a separate package.
 * Order in themes?
-* PK constraints on G_ tables. Remove "GLOBAL" keyword
+* PK constraints on G_ tables. Remove "GLOBAL" keyword [Done]
 * It is possible to remove resolution, comparea, listing from rif40_geolevels
   if topoJSON performs as well as expected
 * Add: RIF40_INV_HEALTH_OUTCOMES
@@ -542,8 +543,17 @@ Use Slony replication (logical standby) in preference physical standby
 * Turn on auto vacuum
 * Create batch job to rebuild indexes
 
+10 Alter scripts
+   -------------
 
+10.1 Alter 1
+     -------
 
+a) gid_rowindex (i.e 0000000001_0000000001). Where gid corresponds to gid in geometry table
+   row_index is an incremental serial aggregated by gid ( starts from one for each gid). 
+   GID is unique for the geolevel
+b) Remove foreign key t_rif40_inv_geography_fk from t_rif40_investigations, NUll data, remove column
+c) Add middleware support functions
 
 
 
