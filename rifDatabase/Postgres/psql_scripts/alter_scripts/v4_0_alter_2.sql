@@ -171,7 +171,7 @@ BEGIN
 				ddl_stmt[1]:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||' ADD COLUMN gid_rowindex VARCHAR(50)';
 			ELSE
 				ddl_stmt[array_length(ddl_stmt, 1)+1]:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||
-					' ADD COLUMN gid_rowindex INTEGER';
+					' ADD COLUMN gid_rowindex VARCHAR(50)';
 			END IF;
 -- Comment master and inherited partitions
 			ddl_stmt[array_length(ddl_stmt, 1)+1]:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||
@@ -196,13 +196,17 @@ UPDATE t_rif40_geolevels_geometry_sahsu_level2 b
  */
 -- Fix gid so it it unique per area_id /(ST_Union'ed together - so are)
 				ddl_stmt[array_length(ddl_stmt, 1)+1]:='WITH a AS ('||E'\n'||
-E'\t'||'SELECT area_id, gid, ROW_NUMBER() OVER() AS new_gid'||E'\n'||
+E'\t'||'SELECT area_id, gid'||E'\n'||
 E'\t'||'  FROM '||l_partition||E'\n'||
+E'\t'||'  ORDER BY area_id '||E'\n'||
+'), b AS ('||E'\n'||
+E'\t'||'SELECT a.area_id, a.gid, ROW_NUMBER() OVER() AS new_gid'||E'\n'||
+E'\t'||'  FROM a'||E'\n'||
 ')'||E'\n'||
-'UPDATE '||l_partition||' b'||E'\n'||
-'   SET gid = a.new_gid'||E'\n'||
-'  FROM a'||E'\n'||
-' WHERE b.area_id = a.area_id';
+'UPDATE '||l_partition||' c'||E'\n'||
+'   SET gid = b.new_gid'||E'\n'||
+'  FROM b'||E'\n'||
+' WHERE c.area_id = b.area_id';
 -- Update gid_rowindex
 				ddl_stmt[array_length(ddl_stmt, 1)+1]:='WITH a AS ('||E'\n'||
 E'\t'||'SELECT area_id, gid,'||E'\n'||
@@ -468,10 +472,9 @@ WITH a AS (
 	   AND  t.typname = 'rif40_geolevelattributetheme'
 	 ORDER BY enumsortorder
 )	
-SELECT b.*
+SELECT b.theme, b.attribute_source, b.attribute_name, b.name_description, b.ordinal_position, b.is_numeric
   FROM a, rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(
-	'SAHSU'::VARCHAR, 'LEVEL4'::VARCHAR, a.enumlabel::rif40_xml_pkg.rif40_geolevelAttributeTheme) b
- ORDER BY  3, 1, 2;
+	'SAHSU'::VARCHAR, 'LEVEL4'::VARCHAR, a.enumlabel::rif40_xml_pkg.rif40_geolevelAttributeTheme) b;
 
 --
 -- rif40_GetGeoLevelAttributeTheme() not implemented, purpose unclear
@@ -498,7 +501,7 @@ FETCH FORWARD 5 IN c4getallatt4theme_2;
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
 		'c4getallatt4theme_3' /* Must be unique with a TX */, 
-		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop');
+		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop', NULL /* All attributes */, 1000 /* Row limit */);
 FETCH FORWARD 5 IN c4getallatt4theme_3;
 
 /*
@@ -524,8 +527,8 @@ FETCH FORWARD 5 IN c4getallatt4theme_4;
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
 		'c4getallatt4theme_5' /* Must be unique with a TX */, 
-		'SAHSU', 'LEVEL2', 'geometry', 't_rif40_sahsu_geometry');
-FETCH FORWARD 5 IN c4getallatt4theme_5;
+		'SAHSU', 'LEVEL2', 'geometry', 't_rif40_sahsu_geometry', NULL /* All attributes */, 10 /* Row limit */);
+FETCH FORWARD 15 IN c4getallatt4theme_5;
 
 --
 -- Done
