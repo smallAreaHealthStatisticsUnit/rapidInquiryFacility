@@ -88,7 +88,7 @@ Returns:	Table: area_id, attribute_value, is_numeric
 Description:	Get all values for attributes source, attribute names, geography and geolevel select
 		This function returns a REFCURSOR, so only parses the SQL and does not execute it.
 		Offset and row limit are used for cursor control
-		Specifing an attribute name list will cause a sort of the attribute source (table)
+		Specifing an attribute name list will cause a sort of the attribute source (table).
 
 		GID is the same GID in t_rif40_<geography>_geometry. It links via the area_id
 		GID_ROWINDEX is guaranteed to be unqiue but is specific to this query (i.e. cannot be connected to naything else)
@@ -143,6 +143,12 @@ FETCH FORWARD 5 IN c4getallatt4theme_5;
 
 Time: 10.770 ms
 
+Timings: sahsuland_population
+
+REF_CURSOR: NO limit, force sort of all attributes - 12 seconds, FETCH 5 rows - 4 seconds
+REF_CURSOR: 1000 rows limit, force sort of all attributes - 12 seconds, FETCH 5 rows - 0.2 seconds
+REF_CURSOR: 1000 rows limit, all attributes default (no soert in GID_ROWINDEX create) - 4 seconds, FETCH 5 rows - 0.2 seconds
+
  */
 DECLARE
 	c1getallatt4theme CURSOR(l_geography VARCHAR) FOR
@@ -165,12 +171,20 @@ DECLARE
 		SELECT *
 		  FROM pg_cursors
 		 WHERE name     = l_c4getallatt4theme;
+	c6_6getallatt4theme CURSOR(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR) FOR
+		SELECT column_name 
+		  FROM information_schema.columns 
+		 WHERE table_schema = l_schema
+		   AND table_name   = l_table 
+	           AND column_name  = l_column;
 --
 	c1_rec RECORD;
 	c2_rec RECORD;
 	c3_rec RECORD;
 	c4_rec RECORD;
 	c5_rec RECORD;
+	c6a_rec RECORD;
+	c6b_rec RECORD;
 --
 	explain_text 			VARCHAR;
 	sql_stmt			VARCHAR;
@@ -327,7 +341,37 @@ BEGIN
 --
 -- Check if GID, gid_rowindex exist [they do not have to, but the query runs quicker if they do]
 --
-
+	IF l_theme IN ('extract', 'results') THEN
+		OPEN c6_6getallatt4theme('rif_studies', lower(l_attribute_source), 'gid');
+	ELSE
+		OPEN c6_6getallatt4theme('rif40', lower(l_attribute_source), 'gid');
+	END IF;
+	FETCH c6_6getallatt4theme INTO c6a_rec;
+	CLOSE c6_6getallatt4theme;
+	IF l_theme IN ('extract', 'results') THEN
+		OPEN c6_6getallatt4theme('rif_studies', lower(l_attribute_source), 'gid_rowindex');
+	ELSE
+		OPEN c6_6getallatt4theme('rif40', lower(l_attribute_source), 'gid_rowindex');
+	END IF;
+	FETCH c6_6getallatt4theme INTO c6b_rec;
+	CLOSE c6_6getallatt4theme;
+	IF c6a_rec.column_name = 'gid' AND c6b_rec.column_name = 'gid_rowindex' THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue',
+			'[50209] Both gid and gid_rowindex columns are present in attrribute source table: %',
+			l_attribute_source::VARCHAR);
+	ELSIF c6a_rec.column_name = 'gid' AND c6b_rec.column_name IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue',
+			'[50210] Only the gid column is present in attrribute source table: %',
+			l_attribute_source::VARCHAR);
+	ELSIF c6a_rec.column_name IS NULL AND c6b_rec.column_name = 'gid_rowindex' THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue',
+			'[50211] Only the gid_rowindex column is present in attrribute source table: %',
+			l_attribute_source::VARCHAR);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue',
+			'[50212] Neither gid or gid_rowindex columns are present in attrribute source table: %',
+			l_attribute_source::VARCHAR);
+	END IF;
 
 --
 -- Process themes
@@ -378,7 +422,7 @@ BEGIN
 --	
 -- This may mean the theme is not supported yet...
 --
-		PERFORM rif40_log_pkg.rif40_error(-51209, 'rif40_GetMapAreaAttributeValue', 
+		PERFORM rif40_log_pkg.rif40_error(-51213, 'rif40_GetMapAreaAttributeValue', 
 			'Invalid theme: %',
 			l_theme::VARCHAR);
 	END IF;
@@ -443,7 +487,7 @@ BEGIN
 --
 -- Create temporary table
 --
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue', '[51210] c4getallatt4theme EXPLAIN SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue', '[51214] c4getallatt4theme EXPLAIN SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
 			sql_stmt:='EXPLAIN ANALYZE VERBOSE CREATE TEMPORARY TABLE '||LOWER(quote_ident(c4getallatt4theme::Text))||E'\n'||'AS'||E'\n'||sql_stmt;
 --
 -- Create results temporary table, extract explain plan  using _rif40_geojson_explain_ddl() helper function.
@@ -465,11 +509,12 @@ BEGIN
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 				error_message:='rif40_GetMapAreaAttributeValue() caught: '||E'\n'||
 					SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
-				RAISE INFO '51211: %', error_message;
+				RAISE INFO '51215: %', error_message;
 --
 				RAISE;
 		END;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_get_geojson_as_js', '[51212] c4getallatt4theme EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue', 
+			'[51216] c4getallatt4theme EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);
 	ELSE
 --
 -- Non EXPLAIN PLAN version
@@ -478,7 +523,8 @@ BEGIN
 --
 -- Create temporary table
 --
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue', '[51213] c4getallatt4theme SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue', 
+				'[51217] c4getallatt4theme SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
 			sql_stmt:='CREATE TEMPORARY TABLE '||LOWER(quote_ident(c4getallatt4theme::Text))||E'\n'||'AS'||E'\n'||sql_stmt;
 			EXECUTE sql_stmT USING l_geography, l_geolevel_select, l_offset, l_row_limit;
 		EXCEPTION
@@ -489,7 +535,7 @@ BEGIN
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 				error_message:='rif40_GetMapAreaAttributeValue() caught: '||E'\n'||
 					SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
-				RAISE INFO '51214: %', error_message;
+				RAISE INFO '51218: %', error_message;
 --
 				RAISE;
 		END;
@@ -509,7 +555,7 @@ BEGIN
 			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 			error_message:='rif40_GetMapAreaAttributeValue() caught: '||E'\n'||
 				SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
-			RAISE INFO '51215: %', error_message;
+			RAISE INFO '51219: %', error_message;
 --
 			RAISE;
 	END;
@@ -519,7 +565,7 @@ BEGIN
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue', 
-		'[51215] Cursor: %, geography: %, geolevel select: %, theme: %, attribute names: [%], source: %; offset: %, row limit: %, SQL parse took: %.', 			
+		'[51220] Cursor: %, geography: %, geolevel select: %, theme: %, attribute names: [%], source: %; offset: %, row limit: %, SQL parse took: %.', 			
 		LOWER(quote_ident(c4getallatt4theme::Text))::VARCHAR	/* Cursor name */, 
 		l_geography::VARCHAR					/* Geography */, 
 		l_geolevel_select::VARCHAR				/* Geolevel select */, 
