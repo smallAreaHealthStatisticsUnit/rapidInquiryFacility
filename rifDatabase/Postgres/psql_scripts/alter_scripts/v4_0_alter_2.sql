@@ -118,7 +118,8 @@ DECLARE
 --
 	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 
 		'rif40_get_geojson_as_js', '_rif40_get_geojson_as_js', '_rif40_getGeoLevelExtentCommon', 'rif40_get_geojson_tiles', 
-		'rif40_getAllAttributesForGeoLevelAttributeTheme', 'rif40_GetGeometryColumnNames', 'rif40_GetMapAreaAttributeValue'];
+		'rif40_getAllAttributesForGeoLevelAttributeTheme', 'rif40_GetGeometryColumnNames', 'rif40_GetMapAreaAttributeValue',
+		'rif40_closeGetMapAreaAttributeCursor'];
 --
 	c1alter2 CURSOR FOR
 		SELECT *
@@ -486,23 +487,107 @@ SELECT *
 --
 -- rif40_GetMapAreaAttributeValue();
 --
-SELECT * 
-  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
-		'c4getallatt4theme_1' /* Must be unique with a TX */, 
-		'SAHSU', 'LEVEL4', 'covariate', 'sahsuland_covariates_level4', ARRAY['SES', 'year']);
-FETCH FORWARD 5 IN c4getallatt4theme_1;
 
+--
+-- Demo 1. Sahsuland cancer. All defaults (i.e. all columns, fetch 1000 rows at offset 0)
+--
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
 		'c4getallatt4theme_2' /* Must be unique with a TX */, 
 		'SAHSU', 'LEVEL2', 'health', 'sahsuland_cancer');
 FETCH FORWARD 5 IN c4getallatt4theme_2;
 
+--
+-- Demo 2. covariate theme; specified columns (forcing re-sort); otherwise defaults
+--
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
+		'c4getallatt4theme_1' /* Must be unique with a TX */, 
+		'SAHSU', 'LEVEL4', 'covariate', 'sahsuland_covariates_level4', ARRAY['SES', 'year']);
+FETCH FORWARD 5 IN c4getallatt4theme_1;
+
+/*
+psql:alter_scripts/v4_0_alter_2.sql:504: INFO:  [DEBUG1] rif40_GetMapAreaAttributeValue(): [51214] Cursor: c4getallatt4theme_3, geog
+raphy: SAHSU, geolevel select: LEVEL2, theme: population, attribute names: [], source: sahsuland_pop; SQL parse took: 00:00:12.027.
+ rif40_getmapareaattributevalue
+--------------------------------
+ c4getallatt4theme_3
+(1 row)
+
+Time: 12174.738 ms
+FETCH FORWARD 5 IN c4getallatt4theme_3;
+ area_id | gid |     gid_rowindex      | year | age_sex_group | level1 |    level3     |     level4      | total
+---------+-----+-----------------------+------+---------------+--------+---------------+-----------------+-------
+ 01.001  |   1 | 0000000001_0000000001 | 1989 |           100 | 01     | 01.001.000100 | 01.001.000100.1 |    34
+ 01.001  |   1 | 0000000001_0000000002 | 1989 |           100 | 01     | 01.001.000100 | 01.001.000100.2 |    30
+ 01.001  |   1 | 0000000001_0000000003 | 1989 |           100 | 01     | 01.001.000200 | 01.001.000200.1 |    64
+ 01.001  |   1 | 0000000001_0000000004 | 1989 |           100 | 01     | 01.001.000300 | 01.001.000300.1 |    80
+ 01.001  |   1 | 0000000001_0000000005 | 1989 |           101 | 01     | 01.001.000100 | 01.001.000100.1 |    34
+(5 rows)
+
+Time: 6559.317 ms
+ */
+--
+-- Demo 3: Poor performance on large tables with gid, gid_rowindex built in
+-- REF_CURSOR takes 12 secnds to parse and execute (caused by the rowindex sort)
+-- FETCH takes 7 seconds - i.e. copies results (hopefully in server)!
+--
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
 		'c4getallatt4theme_3' /* Must be unique with a TX */, 
-		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop', NULL /* All attributes */, 1000 /* Row limit */);
-FETCH FORWARD 5 IN c4getallatt4theme_3;
+		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop', NULL /* All attributes */, 0 /* No offset */, NULL /* No row limit */);
+FETCH FORWARD 5 IN c4getallatt4theme_3 /* 19 seconds with no row limit, no gid/gid_rowindex columns built in */;
+
+--
+-- Test cursor close. Does not release resources!!!!
+--
+/*
+Close the cursor!!!! Interestingly,the SQL statement is that of the FETCH and not the PARSE phase.
+
+psql:alter_scripts/v4_0_alter_2.sql:510: ERROR:  rif40_xml_pkg.rif40_getmapareaattributevalue(): Cursor: c4getallatt4theme_3 is use,
+ created: 2014-07-01 08:44:49.073+01, SQL>
+SELECT * FROM c4getallatt4theme_3 ORDER BY 1, 3;
+
+The cursor name is not released until commit;
+
+psql:alter_scripts/v4_0_alter_2.sql:540: INFO:  51209: rif40_GetMapAreaAttributeValue() caught:
+relation "c4getallatt4theme_3" already exists, detail:
+psql:alter_scripts/v4_0_alter_2.sql:540: ERROR:  relation "c4getallatt4theme_3" already exists
+
+ */
+SELECT rif40_xml_pkg.rif40_closeGetMapAreaAttributeCursor('c4getallatt4theme_3');
+
+--
+-- OK, so add gid, gid_rowindex to sahsuland_pop and cancer
+--
+
+--
+-- Now retry the performance
+--
+/*
+psql:alter_scripts/v4_0_alter_2.sql:547: INFO:  [DEBUG1] rif40_GetMapAreaAttributeValue(): [51214] Cursor: c4getallatt4theme_3a, geo
+graphy: SAHSU, geolevel select: LEVEL2, theme: population, attribute names: [], source: sahsuland_pop; SQL parse took: 00:00:08.268.
+
+ rif40_getmapareaattributevalue
+--------------------------------
+ c4getallatt4theme_3a
+(1 row)
+ */
+--
+-- Demo 4: Use of offset and row limit, cursor control using FETCH
+--
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
+		'c4getallatt4theme_3a' /* Must be unique with a TX */, 
+		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop', NULL /* All attributes */, 0 /* Offset */, 1000 /* Row limit */);
+FETCH FORWARD 5 IN c4getallatt4theme_3a /* 12 seconds parse refcursor seconds with 1000 row limit, cursor fetch is fast, no gid/gid_rowindex columns built in */;
+MOVE ABSOLUTE 995 IN c4getallatt4theme_3a /* move to row 995 */;
+FETCH FORWARD 5 IN c4getallatt4theme_3a /* Fetch last 5 rows */;
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
+		'c4getallatt4theme_3b' /* Must be unique with a TX */, 
+		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop', NULL /* All attributes */, 1000 /* Offset */, 1000 /* Row limit */);
+FETCH FORWARD 5 IN c4getallatt4theme_3b;
 
 /*
 
@@ -524,11 +609,20 @@ FETCH FORWARD 5 IN c4getallatt4theme_4;
 [it did work when I changed rif40_studies to t_rif40_studies in ]
  */
 
+--
+-- Demo 5: Check offset works OK
+--
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
 		'c4getallatt4theme_5' /* Must be unique with a TX */, 
-		'SAHSU', 'LEVEL2', 'geometry', 't_rif40_sahsu_geometry', NULL /* All attributes */, 10 /* Row limit */);
-FETCH FORWARD 15 IN c4getallatt4theme_5;
+		'SAHSU', 'LEVEL2', 'geometry', 't_rif40_sahsu_geometry', NULL /* All attributes */, 0 /* Offset */, 10 /* Row limit */);
+FETCH FORWARD 15 IN c4getallatt4theme_5 /* Only fetches 10... */;
+
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
+		'c4getallatt4theme_5a' /* Must be unique with a TX */, 
+		'SAHSU', 'LEVEL2', 'geometry', 't_rif40_sahsu_geometry', NULL /* All attributes */, 5 /* Offset */, 10 /* Row limit */);
+FETCH FORWARD 15 IN c4getallatt4theme_5a /* Only fetches 10... */;
 
 --
 -- Done

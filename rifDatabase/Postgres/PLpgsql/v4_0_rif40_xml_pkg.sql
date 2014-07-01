@@ -73,6 +73,7 @@ $$;
 -- getAllAttributesForGeoLevelAttributeTheme: 		50800 to 50999
 -- rif40_GetGeometryColumnNames: 			51000 to 51199
 -- rif40_GetMapAreaAttributeValue: 			51200 to 51399
+-- rif40_closeGetMapAreaAttributeCursor: 		51400 to 51599
 --
 
 --
@@ -99,6 +100,7 @@ CREATE TYPE rif40_xml_pkg.rif40_geolevelAttributeTheme AS ENUM (
 \i ../PLpgsql/rif40_xml_pkg/rif40_getAllAttributesForGeoLevelAttributeTheme.sql
 \i ../PLpgsql/rif40_xml_pkg/rif40_GetGeometryColumnNames.sql
 \i ../PLpgsql/rif40_xml_pkg/rif40_GetMapAreaAttributeValue.sql
+\i ../PLpgsql/rif40_xml_pkg/rif40_closeGetMapAreaAttributeCursor.sql
 
 COMMENT ON SCHEMA rif40_xml_pkg
   IS 'RIF XML support.

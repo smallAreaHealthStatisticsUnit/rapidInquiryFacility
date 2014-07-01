@@ -75,19 +75,25 @@ CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
 	l_theme			rif40_xml_pkg.rif40_geolevelAttributeTheme,
 	l_attribute_source	VARCHAR,
 	l_attribute_name_array	VARCHAR[]	DEFAULT NULL,
-	l_row_limit		INTEGER		DEFAULT NULL)
+	l_offset		INTEGER		DEFAULT 0,
+	l_row_limit		INTEGER		DEFAULT 1000)
 RETURNS REFCURSOR
 SECURITY INVOKER
 AS $func$
 /*
 Function: 	rif40_GetMapAreaAttributeValue()
 Parameters:	REFCURSOR, Geography, <geolevel select>, theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme), attribute source, 
- 		attribute name array [Default NULL - All attributes], row limit [Default NULL - All rows]
+ 		attribute name array [Default NULL - All attributes], offset [Default 0], row limit [Default 1000 rows]
 Returns:	Table: area_id, attribute_value, is_numeric
 Description:	Get all the SRID 4326 (WGS84) geometry column names for geography
 		This function returns a REFCURSOR, so only parses the SQL and does not execute it.
 
 Beware: the cursor name in the FETCH statement (c4getallatt4theme_5) must be unqiue for each open (the SELECT just before)
+Beware: even if you close the cursor the cursor name is not released until commit;
+
+psql:alter_scripts/v4_0_alter_2.sql:540: INFO:  51209: rif40_GetMapAreaAttributeValue() caught:
+relation "c4getallatt4theme_3" already exists, detail:
+psql:alter_scripts/v4_0_alter_2.sql:540: ERROR:  relation "c4getallatt4theme_3" already exists
 
 Warning: this can be slow as it uses rif40_num_denom, takes 398mS on my laptop to fetch rows to RI40_NUM_DEMON based (health and population) themes
 
@@ -150,11 +156,16 @@ DECLARE
 			l_attribute_name_array 	VARCHAR[]) FOR
 		SELECT * 
 		  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(l_geography, l_geolevel_select, l_theme, l_attribute_name_array);
+	c5getallatt4theme CURSOR(l_c4getallatt4theme VARCHAR) FOR
+		SELECT *
+		  FROM pg_cursors
+		 WHERE name     = l_c4getallatt4theme;
 --
 	c1_rec RECORD;
 	c2_rec RECORD;
 	c3_rec RECORD;
 	c4_rec RECORD;
+	c5_rec RECORD;
 --
 	explain_text 		VARCHAR;
 	sql_stmt		VARCHAR;
@@ -176,11 +187,25 @@ BEGIN
 			'User % must be rif40 or have rif_user or rif_manager role', 
 			USER::VARCHAR	/* Username */);
 	END IF;
+
+--
+-- Check if cursor exists
+--
+	OPEN c5getallatt4theme(LOWER(quote_ident(c4getallatt4theme::Text)));
+	FETCH c5getallatt4theme INTO c5_rec;
+	CLOSE c5getallatt4theme;
+	IF c5_rec.name IS NOT NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-51201, 'rif40_GetMapAreaAttributeValue', 'Cursor: % is use, created: %, SQL>'||E'\n'||'%;',
+			c5_rec.name::VARCHAR		/* Cursor name */,
+			c5_rec.creation_time::VARCHAR	/* Created */,
+			c5_rec.statement::VARCHAR	/* SQL */);
+	END IF;
+
 --
 -- Test geography
 --
 	IF l_geography IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-51201, 'rif40_GetMapAreaAttributeValue', 'NULL geography parameter');
+		PERFORM rif40_log_pkg.rif40_error(-51202, 'rif40_GetMapAreaAttributeValue', 'NULL geography parameter');
 	END IF;	
 --
 	OPEN c1getallatt4theme(l_geography);
@@ -188,7 +213,7 @@ BEGIN
 	CLOSE c1getallatt4theme;
 --
 	IF c1_rec.geography IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-51202, 'rif40_GetMapAreaAttributeValue', 'geography: % not found', 
+		PERFORM rif40_log_pkg.rif40_error(-51203, 'rif40_GetMapAreaAttributeValue', 'geography: % not found', 
 			l_geography::VARCHAR		/* Geography */);
 	END IF;	
 --
@@ -199,7 +224,7 @@ BEGIN
 	CLOSE c2getallatt4theme;
 --
 	IF c2_rec.geolevel_name IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-51203, 'rif40_GetMapAreaAttributeValue', 
+		PERFORM rif40_log_pkg.rif40_error(-51204, 'rif40_GetMapAreaAttributeValue', 
 			'geography: %, <geolevel select> %: not found', 
 			l_geography::VARCHAR		/* Geography */, 
 			l_geolevel_select::VARCHAR	/* geolevel select */);
@@ -225,7 +250,7 @@ BEGIN
 -- [the function rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme()]
 --
 	IF select_list IS NULL AND invalid_attribute_source > 0 THEN
-		PERFORM rif40_log_pkg.rif40_error(-51204, 'rif40_GetMapAreaAttributeValue', 
+		PERFORM rif40_log_pkg.rif40_error(-51205, 'rif40_GetMapAreaAttributeValue', 
 			'geography: %, <geolevel select> %, <attribute source>: %s; no attributes found, % of % <attribute source> were invalid', 
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_select::VARCHAR		/* Geolevel select */,
@@ -233,12 +258,17 @@ BEGIN
 			invalid_attribute_source::VARCHAR	/* Invalid attribute sources */,
 			array_length(l_attribute_name_array, 1)::VARCHAR	/* Total attributes */);
 	ELSIF select_list IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-51205, 'rif40_GetMapAreaAttributeValue', 
+		PERFORM rif40_log_pkg.rif40_error(-51206, 'rif40_GetMapAreaAttributeValue', 
 			'geography: %, <geolevel select> %, <attribute source>: %s; no attributes found', 
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_select::VARCHAR		/* Geolevel select */,
 			l_attribute_source::VARCHAR		/* Attribute source */);
 	END IF;	
+
+--
+-- Check if GID, gid_rowindex exist [they do not have to, but the query runs quicker if they do]
+--
+
 
 --
 -- Process themes
@@ -250,13 +280,13 @@ BEGIN
 			  '       g.gid, '||E'\n'||
 		          '       LPAD(g.gid::Text, 10, ''0''::Text)||''_''||'||
 			  		'LPAD(ROW_NUMBER() OVER(PARTITION BY '||quote_ident(LOWER(l_geolevel_select))||' ORDER BY '||select_list||')::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
-		          '       '||select_list;
+		          select_list;
 	ELSIF l_theme IN ('extract', 'results') THEN
 		select_list:='a.area_id, '||E'\n'||
 			  '       g.gid, '||E'\n'||
 		          '       LPAD(g.gid::Text, 10, ''0''::Text)||''_''||'||
 					'LPAD(ROW_NUMBER() OVER(PARTITION BY area_id ORDER BY '||select_list||')::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
-		          '       '||select_list;
+		          select_list;
 --
 -- Geometry tables must have gid and gid_rowindex
 --
@@ -264,46 +294,59 @@ BEGIN
 		select_list:='a.area_id, '||E'\n'||
 			  '       a.gid, '||E'\n'||
 			  '       a.gid_rowindex, '||E'\n'||
-		          '       '||select_list;
+		          select_list;
 	ELSE	
 --	
 -- This may mean the theme is not supported yet...
 --
-		PERFORM rif40_log_pkg.rif40_error(-51205, 'rif40_GetMapAreaAttributeValue', 
+		PERFORM rif40_log_pkg.rif40_error(-51207, 'rif40_GetMapAreaAttributeValue', 
 			'Invalid theme: %',
 			l_theme::VARCHAR);
 	END IF;
-
 --
 -- Build SELECT statement
 --
 	IF l_theme IN ('covariate', 'health', 'population') THEN
-		sql_stmt:='SELECT '||select_list||E'\n'||
-			  '  FROM '||quote_ident(lower(l_attribute_source))||' a,'||E'\n'||
-			  '       '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||' g'||E'\n'||
-			  ' WHERE g.geography     = $1'||E'\n'||
-			  '   AND g.geolevel_name = $2 /* Partition elimination */'||E'\n'||
-			  '   AND g.area_id       = a.'||quote_ident(LOWER(l_geolevel_select))||' /* Link gid */'||E'\n';
+		sql_stmt:='WITH a AS ('||E'\n'||
+			  E'\t'||'SELECT '||select_list||E'\n'||
+			  E'\t'||'  FROM '||quote_ident(lower(l_attribute_source))||' a,'||E'\n'||
+			  E'\t'||'       '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||' g'||E'\n'||
+			  E'\t'||' WHERE g.geography     = $1'||E'\n'||
+			  E'\t'||'   AND g.geolevel_name = $2 /* Partition elimination */'||E'\n'||
+			  E'\t'||'   AND g.area_id       = a.'||quote_ident(LOWER(l_geolevel_select))||' /* Link gid */'||E'\n';
 	ELSIF l_theme IN ('extract', 'results') THEN
-		sql_stmt:='SELECT '||select_list||E'\n'||
-			  '  FROM rif_studies.'||quote_ident(lower(l_attribute_source))||' /* Needs path adding */'||' a,'||E'\n'||
-			  '       '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||' g'||E'\n'||
-			  ' WHERE g.geography     = $1'||E'\n'||
-			  '   AND g.geolevel_name = $2 /* Partition elimination */'||E'\n'||
-			  '   AND g.area_id       = a.area_id /* Link gid */'||E'\n';
+		sql_stmt:='WITH a AS ('||E'\n'||
+			  E'\t'||'SELECT '||select_list||E'\n'||
+			  E'\t'||'  FROM rif_studies.'||quote_ident(lower(l_attribute_source))||' /* Needs path adding */'||' a,'||E'\n'||
+			  E'\t'||'       '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||' g'||E'\n'||
+			  E'\t'||' WHERE g.geography     = $1'||E'\n'||
+			  E'\t'||'   AND g.geolevel_name = $2 /* Partition elimination */'||E'\n'||
+			  E'\t'||'   AND g.area_id       = a.area_id /* Link gid */'||E'\n';
 	ELSIF l_theme = 'geometry' THEN
-		sql_stmt:='SELECT '||select_list||E'\n'||
-			  '  FROM '||quote_ident(lower(l_attribute_source))||' a'||E'\n'||
-			  ' WHERE a.geography     = $1'||E'\n'||
-			  '   AND a.geolevel_name = $2 /* Partition elimination */'||E'\n';
-	END IF;				
+		sql_stmt:='WITH a AS ('||E'\n'||
+			  E'\t'||'SELECT '||select_list||E'\n'||
+			  E'\t'||'  FROM '||quote_ident(lower(l_attribute_source))||' a'||E'\n'||
+			  E'\t'||' WHERE a.geography     = $1'||E'\n'||
+			  E'\t'||'   AND a.geolevel_name = $2 /* Partition elimination */'||E'\n';
+	END IF;	
+	sql_stmt:=sql_stmt||') /* Force CTE to be executed entirely */'||E'\n'||
+			  'SELECT *'||E'\n'||
+			  '  FROM a'||E'\n';
 --
--- Row limit control
+-- Row limit and offset control
 --
-	IF l_row_limit IS NOT NULL THEN
-		sql_stmt:=sql_stmt||' ORDER BY 3 /* gid_rowindex */ LIMIT $3';
+	IF l_offset IS NOT NULL THEN
+		IF l_row_limit IS NOT NULL THEN
+			sql_stmt:=sql_stmt||' ORDER BY 3 /* gid_rowindex */ OFFSET $3 LIMIT $4';
+		ELSE
+			sql_stmt:=sql_stmt||' ORDER BY 3 /* gid_rowindex */ OFFSET $3';
+		END IF;				
 	ELSE
-		sql_stmt:=sql_stmt||' ORDER BY 3 /* gid_rowindex */';
+		IF l_row_limit IS NOT NULL THEN
+			sql_stmt:=sql_stmt||' ORDER BY 3 /* gid_rowindex */ LIMIT $4';
+		ELSE
+			sql_stmt:=sql_stmt||' ORDER BY 3 /* gid_rowindex */';
+		END IF;				
 	END IF;				
 --
 -- As function returns a REFCURSOR it only parses and does NOT execute
@@ -321,14 +364,14 @@ BEGIN
 --
 -- Create temporary table
 --
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue', '[51206] c4getallatt4theme EXPLAIN SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue', '[51208] c4getallatt4theme EXPLAIN SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
 			sql_stmt:='EXPLAIN ANALYZE VERBOSE CREATE TEMPORARY TABLE '||LOWER(quote_ident(c4getallatt4theme::Text))||E'\n'||'AS'||E'\n'||sql_stmt;
 --
 -- Create results temporary table, extract explain plan  using _rif40_geojson_explain_ddl() helper function.
 -- This ensures the EXPLAIN PLAN output is a field called explain_line 
 --
-			sql_stmt:='SELECT explain_line FROM rif40_sql_pkg._rif40_GetMapAreaAttributeValue_explain_ddl('||quote_literal(sql_stmt)||', $1, $2, $3)';
-			FOR c4_rec IN EXECUTE sql_stmt USING l_geography, l_geolevel_select, l_row_limit LOOP
+			sql_stmt:='SELECT explain_line FROM rif40_sql_pkg._rif40_GetMapAreaAttributeValue_explain_ddl('||quote_literal(sql_stmt)||', $1, $2, $3, $4)';
+			FOR c4_rec IN EXECUTE sql_stmt USING l_geography, l_geolevel_select, l_offset, l_row_limit LOOP
 				IF explain_text IS NULL THEN
 					explain_text:=c4_rec.explain_line;
 				ELSE
@@ -343,11 +386,11 @@ BEGIN
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 				error_message:='rif40_GetMapAreaAttributeValue() caught: '||E'\n'||
 					SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
-				RAISE INFO '51207: %', error_message;
+				RAISE INFO '51209: %', error_message;
 --
 				RAISE;
 		END;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_get_geojson_as_js', '[51208] c4getallatt4theme EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_get_geojson_as_js', '[51210] c4getallatt4theme EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);
 	ELSE
 --
 -- Non EXPLAIN PLAN version
@@ -356,9 +399,9 @@ BEGIN
 --
 -- Create temporary table
 --
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue', '[51209] c4getallatt4theme SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue', '[51211] c4getallatt4theme SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
 			sql_stmt:='CREATE TEMPORARY TABLE '||LOWER(quote_ident(c4getallatt4theme::Text))||E'\n'||'AS'||E'\n'||sql_stmt;
-			EXECUTE sql_stm USING l_geography, l_geolevel_select, l_row_limit;
+			EXECUTE sql_stmT USING l_geography, l_geolevel_select, l_offset, l_row_limit;
 		EXCEPTION
 			WHEN others THEN
 --
@@ -367,7 +410,7 @@ BEGIN
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 				error_message:='rif40_GetMapAreaAttributeValue() caught: '||E'\n'||
 					SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
-				RAISE INFO '51210: %', error_message;
+				RAISE INFO '51212: %', error_message;
 --
 				RAISE;
 		END;
@@ -387,7 +430,7 @@ BEGIN
 			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 			error_message:='rif40_GetMapAreaAttributeValue() caught: '||E'\n'||
 				SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
-			RAISE INFO '51211: %', error_message;
+			RAISE INFO '51213: %', error_message;
 --
 			RAISE;
 	END;
@@ -397,7 +440,7 @@ BEGIN
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreaAttributeValue', 
-		'[51212] Cursor: %, geography: %, geolevel select: %, theme: %, attribute names: [%], source: %; SQL parse took: %.', 			
+		'[51214] Cursor: %, geography: %, geolevel select: %, theme: %, attribute names: [%], source: %; SQL parse took: %.', 			
 		LOWER(quote_ident(c4getallatt4theme::Text))::VARCHAR	/* Cursor name */, 
 		l_geography::VARCHAR					/* Geography */, 
 		l_geolevel_select::VARCHAR				/* Geolevel select */, 
@@ -411,14 +454,19 @@ END;
 $func$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_xml_pkg.rif40_GetMapAreaAttributeValue(REFCURSOR, VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR, VARCHAR[], INTEGER) IS 'Function: 	rif40_GetMapAreaAttributeValue()
+COMMENT ON FUNCTION rif40_xml_pkg.rif40_GetMapAreaAttributeValue(REFCURSOR, VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR, VARCHAR[], INTEGER, INTEGER) IS 'Function: 	rif40_GetMapAreaAttributeValue()
 Parameters:	REFCURSOR, Geography, <geolevel select>, theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme), attribute source, 
-		attribute name array [Default NULL - All attributes], row limit [Default NULL - All rows]
+		attribute name array [Default NULL - All attributes], offset [Default 0], row limit [Default 1000 rows]
 Returns:	Table: area_id, attribute_value, is_numeric
 Description:	Get all the SRID 4326 (WGS84) geometry column names for geography
 		This function returns a REFCURSOR, so only parses the SQL and does not execute it.
 
 Beware: the cursor name in the FETCH statement (c4getallatt4theme_5) must be unqiue for each open (the SELECT just before)
+Beware: even if you close the cursor the cursor name is not released until commit;
+
+psql:alter_scripts/v4_0_alter_2.sql:540: INFO:  51209: rif40_GetMapAreaAttributeValue() caught:
+relation "c4getallatt4theme_3" already exists, detail:
+psql:alter_scripts/v4_0_alter_2.sql:540: ERROR:  relation "c4getallatt4theme_3" already exists
 
 Warning: this can be slow as it uses rif40_num_denom, takes 398mS on my laptop to fetch rows to RI40_NUM_DEMON based (health and population) themes
 
@@ -464,18 +512,18 @@ FETCH FORWARD 5 IN c4getallatt4theme_5;
 Time: 10.770 ms';
 
 GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
-	REFCURSOR, VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR, VARCHAR[], INTEGER) TO rif_manager;
+	REFCURSOR, VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR, VARCHAR[], INTEGER, INTEGER) TO rif_manager;
 GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
-	REFCURSOR, VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR, VARCHAR[], INTEGER) TO rif_user;
+	REFCURSOR, VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR, VARCHAR[], INTEGER, INTEGER) TO rif_user;
 
 CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_GetMapAreaAttributeValue_explain_ddl(
-	sql_stmt VARCHAR, l_geography VARCHAR, l_geolevel_select VARCHAR, l_row_limit INTEGER)
+	sql_stmt VARCHAR, l_geography VARCHAR, l_geolevel_select VARCHAR, l_offset INTEGER, l_row_limit INTEGER)
 RETURNS TABLE(explain_line	TEXT)
 SECURITY INVOKER
 AS $func$
 /*
 Function: 	_rif40_GetMapAreaAttributeValue_explain_ddl()
-Parameters:	SQL statement, geography, geolevel select, row limit
+Parameters:	SQL statement, geography, geolevel select, offset, row limit
 Returns: 	TABLE of explain_line
 Description:	Coerce EXPLAIN output into a table with a known column. 
 		Supports EXPLAIN and EXPLAIN ANALYZE for rif40_geolevelAttributeTheme() ONLY.
@@ -489,13 +537,13 @@ BEGIN
 			USER::VARCHAR);
 	END IF;
 --
-	RETURN QUERY EXECUTE sql_stmt USING l_geography, l_geolevel_select, l_row_limit;
+	RETURN QUERY EXECUTE sql_stmt USING l_geography, l_geolevel_select, l_offset, l_row_limit;
 END;
 $func$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_GetMapAreaAttributeValue_explain_ddl(VARCHAR, VARCHAR, VARCHAR, INTEGER) IS 'Function: 	rif40_GetMapAreaAttributeValue_explain_ddl()
-Parameters:	SQL statement, geography, geolevel select, row limit
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_GetMapAreaAttributeValue_explain_ddl(VARCHAR, VARCHAR, VARCHAR, INTEGER, INTEGER) IS 'Function: 	rif40_GetMapAreaAttributeValue_explain_ddl()
+Parameters:	SQL statement, geography, geolevel select, offset, row limit
 Returns: 	TABLE of explain_line
 Description:	Coerce EXPLAIN output into a table with a known column. 
 		Supports EXPLAIN and EXPLAIN ANALYZE for rif40_geolevelAttributeTheme() ONLY.';

@@ -87,7 +87,8 @@ AS $func$
 Function: 	rif40_getAllAttributesForGeoLevelAttributeTheme()
 Parameters:	Geography, <geolevel select>, theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme), attribute name array [Default: NULL - do not filter, return all attributes]
 Returns:	Table: attribute_source, attribute_name, theme, source_description, name_description, ordinal_position, is_numeric
-Description:	Get all atrributes for geography geolevel theme
+Description:	Get all atrributes for geography geolevel theme. The attribute order is the original table order (i.e. by
+		ordinal_position)
 
 E.g.
 
