@@ -79,7 +79,7 @@ $$;
 --
 -- Add enumerated type for geolevelAttributeTheme
 --
-DROP TYPE IF EXISTS rif40_xml_pkg.rif40_geolevelAttributeTheme;
+DROP TYPE IF EXISTS rif40_xml_pkg.rif40_geolevelAttributeTheme CASCADE;
 CREATE TYPE rif40_xml_pkg.rif40_geolevelAttributeTheme AS ENUM (
 	'covariate', 'health', 'extract', 'results', 'population', 'geometry');
 

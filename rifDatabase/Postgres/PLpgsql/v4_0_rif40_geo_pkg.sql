@@ -3776,7 +3776,7 @@ UPDATE t_rif40_geolevels a
 --
 -- Moved to XML package
 --
-DROP FUNCTION rif40_geo_pkg.get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR, VARCHAR);
+DROP FUNCTION IF EXISTS rif40_geo_pkg.get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR, VARCHAR);
 
 CREATE OR REPLACE FUNCTION rif40_geo_pkg.rif40_get_default_comparison_area(
 	l_geography VARCHAR, geolevel_select VARCHAR, geolevel_selection VARCHAR[])

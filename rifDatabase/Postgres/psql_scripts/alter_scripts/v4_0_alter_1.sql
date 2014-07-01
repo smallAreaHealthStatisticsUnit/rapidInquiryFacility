@@ -109,8 +109,8 @@ $$;
 --    Add: gid_rowindex (i.e 1_1). Where gid corresponds to gid in geometry table
 --         row_index is an incremental serial aggregated by gid ( starts from one for each gid)
 -- 
--- This may be run before or after alter_1.sql (range partitioning of all health tables)
-\set VERBOSITY terse
+-- This may be run before or after alter_2.sql (range partitioning of all health tables)
+--\set VERBOSITY terse
 DO LANGUAGE plpgsql $$
 DECLARE
 --
@@ -232,7 +232,11 @@ E'\t'||'  FROM '||l_partition||E'\n'||
 		END IF;
 	END LOOP;
 --
-	PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
+	IF ddl_stmt IS NOT NULL THEN
+		PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
+	ELSE
+		RAISE INFO 'GID and GID_ROWINDEX support already added';
+	END IF;
 END;
 $$;
 
@@ -628,16 +632,28 @@ FETCH FORWARD 15 IN c4getallatt4theme_5a /* Only fetches 10... */;
 --
 DO LANGUAGE plpgsql $$
 BEGIN
-	RAISE INFO 'Aborting (script being tested)';
-	RAISE EXCEPTION 'C20999: Abort';
+--
+--	RAISE INFO 'Aborting (script being tested)';
+--	RAISE EXCEPTION 'C20999: Abort';
+--
+	RAISE INFO 'alter_1.sql completed OK';
 END;
 $$;
 
 --
 -- End of transaction
 --
-	RAISE INFO 'alter_2.sql completed OK';
 END;
+
+--
+-- Vacuum geometry tables, partitions and t_rif40_investigations
+--
+VACUUM ANALYSE VERBOSE t_rif40_sahsu_geometry;
+VACUUM ANALYSE VERBOSE t_rif40_geolevels_geometry_sahsu_level1;
+VACUUM ANALYSE VERBOSE t_rif40_geolevels_geometry_sahsu_level2;
+VACUUM ANALYSE VERBOSE t_rif40_geolevels_geometry_sahsu_level3;
+VACUUM ANALYSE VERBOSE t_rif40_geolevels_geometry_sahsu_level4;
+VACUUM ANALYSE VERBOSE t_rif40_investigations;
 
 --
 -- Eof
