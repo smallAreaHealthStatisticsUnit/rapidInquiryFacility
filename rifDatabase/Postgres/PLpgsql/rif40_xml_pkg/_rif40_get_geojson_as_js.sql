@@ -264,7 +264,7 @@ BEGIN
 -- Create results temporary table, extract explain plan  using _rif40_geojson_explain_ddl() helper function.
 -- This ensures the EXPLAIN PLAN output is a field called explain_line 
 --
-			sql_stmt:='SELECT explain_line FROM rif40_sql_pkg._rif40_geojson_explain_ddl('||quote_literal(sql_stmt)||', $1, $2)';
+			sql_stmt:='SELECT explain_line FROM rif40_xml_pkg._rif40_geojson_explain_ddl('||quote_literal(sql_stmt)||', $1, $2)';
 			FOR c3_rec IN EXECUTE sql_stmt USING geolevel_view, geolevel_area_id_list LOOP
 				IF explain_text IS NULL THEN
 					explain_text:=c3_rec.explain_line;
@@ -445,7 +445,7 @@ var spatialData = {
 
 Validated with JSlint: http://www.javascriptlint.com/online_lint.php';
 
-CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_geojson_explain_ddl(sql_stmt VARCHAR, geolevel_view VARCHAR, geolevel_area_id_list VARCHAR[])
+CREATE OR REPLACE FUNCTION rif40_xml_pkg._rif40_geojson_explain_ddl(sql_stmt VARCHAR, geolevel_view VARCHAR, geolevel_area_id_list VARCHAR[])
 RETURNS TABLE(explain_line	TEXT)
 SECURITY INVOKER
 AS $func$
@@ -470,13 +470,13 @@ END;
 $func$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_geojson_explain_ddl(VARCHAR, VARCHAR, VARCHAR[]) IS 'Function: 	_rif40_geojson_explain_ddl()
+COMMENT ON FUNCTION rif40_xml_pkg._rif40_geojson_explain_ddl(VARCHAR, VARCHAR, VARCHAR[]) IS 'Function: 	_rif40_geojson_explain_ddl()
 Parameters:	SQL statement, geolevel view, geolevel area ID list
 Returns: 	TABLE of explain_line
 Description:	Coerce EXPLAIN output into a table with a known column. 
 		Supports EXPLAIN and EXPLAIN ANALYZE for _rif40_get_geojson_as_js() ONLY.';
 
-CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_geojson_explain_ddl2(sql_stmt VARCHAR, x_min REAL, y_min REAL, x_max REAL, y_max REAL, l_geolevel_view VARCHAR)
+CREATE OR REPLACE FUNCTION rif40_xml_pkg._rif40_geojson_explain_ddl2(sql_stmt VARCHAR, x_min REAL, y_min REAL, x_max REAL, y_max REAL, l_geolevel_view VARCHAR)
 RETURNS TABLE(explain_line	TEXT)
 SECURITY INVOKER
 AS $func$
@@ -501,7 +501,7 @@ END;
 $func$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_geojson_explain_ddl2(VARCHAR, REAL, REAL, REAL, REAL, VARCHAR) IS 'Function: 	_rif40_geojson_explain_ddl2()
+COMMENT ON FUNCTION rif40_xml_pkg._rif40_geojson_explain_ddl2(VARCHAR, REAL, REAL, REAL, REAL, VARCHAR) IS 'Function: 	_rif40_geojson_explain_ddl2()
 Parameters:	SQL statement, x_min, y_min, x_max, y_max, l_geolevel_view
 Returns: 	TABLE of explain_line
 Description:	Coerce EXPLAIN output into a table with a known column. 

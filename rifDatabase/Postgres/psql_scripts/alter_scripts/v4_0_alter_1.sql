@@ -528,17 +528,26 @@ FETCH FORWARD 5 IN c4getallatt4theme_3;
 Time: 6559.317 ms
  */
 --
--- Demo 3: Poor performance on large tables with gid, gid_rowindex built in
--- REF_CURSOR takes 12 secnds to parse and execute (caused by the rowindex sort)
--- FETCH takes 7 seconds - i.e. copies results (hopefully in server)!
+-- Demo 3: Poor performance on large tables without gid, gid_rowindex built in and a sort
+-- REF_CURSOR takes 12 secnds to parse and execute (caused by the rowindex sort) with explain plan
+-- FETCH originally took 7 seconds - i.e. copies results (hopefully in server)! Fixed by creating scrollable REFCURSOR
 --
 -- Only sorting when the attribute list is specified sppeds things up 4x
+--
+-- Performance is fine on SAHSULAND_POP
 --
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
 		'c4getallatt4theme_3' /* Must be unique with a TX */, 
 		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop', NULL /* All attributes */, 0 /* No offset */, NULL /* No row limit */);
-FETCH FORWARD 5 IN c4getallatt4theme_3 /* 19 seconds with no row limit, full sort list, no gid/gid_rowindex columns built in */;
+\timing
+FETCH FORWARD 5 IN c4getallatt4theme_3 /* 1.3 seconds with no row limit, no sort list, no gid/gid_rowindex columns built in */;
+MOVE ABSOLUTE 1000 IN c4getallatt4theme_3 /* move to row 1000 */;
+FETCH FORWARD 5 IN c4getallatt4theme_3;
+MOVE ABSOLUTE 10000 IN c4getallatt4theme_3 /* move to row 10000 */;
+FETCH FORWARD 5 IN c4getallatt4theme_3;
+MOVE ABSOLUTE 432958 IN c4getallatt4theme_3 /* move to row 432958 - two from the end */;
+FETCH FORWARD 5 IN c4getallatt4theme_3;
 
 --
 -- Test cursor close. Does not release resources!!!!
@@ -559,22 +568,6 @@ psql:alter_scripts/v4_0_alter_2.sql:540: ERROR:  relation "c4getallatt4theme_3" 
  */
 SELECT rif40_xml_pkg.rif40_closeGetMapAreaAttributeCursor('c4getallatt4theme_3');
 
---
--- OK, so add gid, gid_rowindex to sahsuland_pop and cancer
---
-
---
--- Now retry the performance
---
-/*
-psql:alter_scripts/v4_0_alter_2.sql:547: INFO:  [DEBUG1] rif40_GetMapAreaAttributeValue(): [51214] Cursor: c4getallatt4theme_3a, geo
-graphy: SAHSU, geolevel select: LEVEL2, theme: population, attribute names: [], source: sahsuland_pop; SQL parse took: 00:00:08.268.
-
- rif40_getmapareaattributevalue
---------------------------------
- c4getallatt4theme_3a
-(1 row)
- */
 --
 -- Demo 4: Use of offset and row limit, cursor control using FETCH
 --

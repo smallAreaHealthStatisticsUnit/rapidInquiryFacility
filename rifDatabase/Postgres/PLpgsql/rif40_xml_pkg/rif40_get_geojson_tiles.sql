@@ -364,7 +364,7 @@ Total runtime: 19.472 ms
 -- Create results temporary table, extract explain plan  using _rif40_geojson_explain_ddl2() helper function.
 -- This ensures the EXPLAIN PLAN output is a field called explain_line 
 --
-			sql_stmt:='SELECT explain_line FROM rif40_sql_pkg._rif40_geojson_explain_ddl2('||quote_literal(
+			sql_stmt:='SELECT explain_line FROM rif40_xml_pkg._rif40_geojson_explain_ddl2('||quote_literal(
 					'EXPLAIN ANALYZE VERBOSE CREATE TEMPORARY TABLE '||temp_table||' AS '||E'\n'||sql_stmt)||', $1, $2, $3, $4, $5)';
 			FOR c4_rec IN EXECUTE sql_stmt USING x_min, y_min, x_max, y_max, l_geolevel_view LOOP
 				IF explain_text IS NULL THEN
