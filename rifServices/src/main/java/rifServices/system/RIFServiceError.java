@@ -85,21 +85,9 @@ public enum RIFServiceError {
 	
 	/** The db unable deregister user. */
 	DB_UNABLE_DEREGISTER_USER,
-	
-	/** The db unable check nonexistent record. */
-	DB_UNABLE_CHECK_NONEXISTENT_RECORD,
-	
-	/** The db unable get geo level lookup table. */
-	DB_UNABLE_GET_GEO_LEVEL_LOOKUP_TABLE,
-	
-	/** The db unable get geo level hierarchy table. */
-	DB_UNABLE_GET_GEO_LEVEL_HIERARCHY_TABLE,
-	
+		
 	/** The db unable check geo level area exists. */
 	DB_UNABLE_CHECK_GEO_LEVEL_AREA_EXISTS,
-	
-	/** The unable get age groups. */
-	UNABLE_GET_AGE_GROUPS,
 	
 	/** The get top level icd terms. */
 	GET_TOP_LEVEL_ICD_TERMS,
@@ -134,8 +122,6 @@ public enum RIFServiceError {
 	/** The invalid health code taxonomy. */
 	INVALID_HEALTH_CODE_TAXONOMY,
 	
-	/** The db unable check non existent health code. */
-	DB_UNABLE_CHECK_NON_EXISTENT_HEALTH_CODE,
 	
 	/** The invalid adjustable covariate. */
 	INVALID_ADJUSTABLE_COVARIATE,
@@ -217,22 +203,10 @@ public enum RIFServiceError {
 	
 	/** The no age group id for numerator. */
 	NO_AGE_GROUP_ID_FOR_NUMERATOR,
-	
-	/** The db unable get age group id. */
-	DB_UNABLE_GET_AGE_GROUP_ID,
-	
+		
 	/** The no start end year for numerator. */
 	NO_START_END_YEAR_FOR_NUMERATOR,
-	
-	/** The db unable get start end year. */
-	DB_UNABLE_GET_START_END_YEAR,
-	
-	/** The db unable get projects. */
-	DB_UNABLE_GET_PROJECTS,
-	
-	/** The db unable get studies. */
-	DB_UNABLE_GET_STUDIES,
-	
+
 	/** The non existent nd pair. */
 	NON_EXISTENT_ND_PAIR,
 	
@@ -247,12 +221,6 @@ public enum RIFServiceError {
 	
 	/** The map area start index more than end index. */
 	MAP_AREA_START_INDEX_MORE_THAN_END_INDEX,
-	
-	/** The db unable get map areas. */
-	DB_UNABLE_GET_MAP_AREAS,
-	
-	/** The db unable count map areas for extent. */
-	DB_UNABLE_COUNT_MAP_AREAS_FOR_EXTENT,
 	
 	/** The no lookup table for map areas. */
 	NO_LOOKUP_TABLE_FOR_MAP_AREAS,
@@ -320,9 +288,6 @@ public enum RIFServiceError {
 	/** The xml problem reading map area list. */
 	XML_PROBLEM_READING_MAP_AREA_LIST,
 	
-	/** The unable to retrieve map image. */
-	UNABLE_TO_RETRIEVE_MAP_IMAGE,
-	
 	/** The get covariates for investigation. */
 	GET_COVARIATES_FOR_INVESTIGATION,
 	
@@ -347,50 +312,25 @@ public enum RIFServiceError {
 	/** covariate does not exist */
 	NON_EXISTENT_COVARIATE,
 	
-	/** unable to delete all studies from the database */
-	UNABLE_DELETE_STUDIES_FOR_USER,
-	
-	
-	
 	MAXIMUM_READ_CONNECTIONS_EXCEEDED,
-	
 	MAXIMUM_WRITE_CONNECTIONS_EXCEEDED,
-	
 	NO_ND_PAIR_FOR_NUMERATOR_TABLE_NAME,
-	
-	NO_HEALTH_TAXONOMY_FOR_NAMESPACE,
-	
+	NO_HEALTH_TAXONOMY_FOR_NAMESPACE,	
 	HEALTH_CODE_NOT_KNOWN_TO_PROVIDER,
-
 	UNREALISTIC_RESULT_BLOCK_START_ROW,
 	RESULT_BLOCK_START_MORE_THAN_END,
 	NON_EXISTENT_RESULT_TABLE,
 	NON_EXISTENT_RESULT_TABLE_FIELD_NAME,
 	NON_EXISTENT_MAP_AREA,
-	UNABLE_TO_GET_RESULTS_BY_BLOCK,
-	UNABLE_TO_CHECK_MAP_AREA_EXISTS,
 	INVALID_GEO_LEVEL_ATTRIBUTE_THEME,
 	NON_EXISTENT_DISEASE_MAPPING_STUDY,
-	UNABLE_TO_GET_BOUNDS_FOR_AREA,
-	UNABLE_TO_GET_EXTENT_FOR_STUDY,
-	UNABLE_TO_GET_EXTENT_FOR_GEOLEVEL,
-	UNABLE_TO_GET_TILES,
 	UNABLE_TO_GET_EXTRACT_TABLE_NAME,
 	UNABLE_TO_COUNT_ROWS_IN_RESULT_TABLE,
 	UNABLE_TO_GET_GEOMETRY_COLUMN_NAMES,
-	UNABLE_TO_GET_MAP_AREA_VALUES_FOR_ATTRIBUTE,
-	UNABLE_TO_GET_GEO_LEVEL_ATTRIBUTE_THEMES,
-	UNABLE_TO_GET_CALCULATED_RESULTS_TABLE_FOR_STUDY,
-	UNABLE_TO_GET_EXTRACT_RESULTS_TABLE_FOR_STUDY,
-	UNABLE_TO_GET_ATTRIBUTES_FOR_RESULT_ATTRIBUTE_THEME,
-	UNABLE_TO_GET_NUMERIC_ATTRIBUTES_FOR_RESULT_ATTRIBUTE_THEME,
 	UNABLE_TO_DETERMINE_EXTRACT_PERMISSION_FOR_STUDY,
 	EXTRACT_NOT_PERMITTED_FOR_STUDY,
-	UNABLE_TO_CHECK_RESULT_TABLE_EXISTS,
-	UNABLE_TO_CHECK_RESULT_TABLE_FIELD_EXISTS,
 	NON_EXISTENT_GEO_LEVEL_ATTRIBUTE_THEME,
-	UNABLE_TO_CHECK_GEO_LEVEL_ATTRIBUTE_THEME_EXISTS,
 	NON_EXISTENT_GEO_LEVEL_ATTRIBUTE,
-	UNABLE_TO_CHECK_GEO_LEVEL_ATTRIBUTE_EXISTS
+	DATABASE_QUERY_FAILED
 	
 }

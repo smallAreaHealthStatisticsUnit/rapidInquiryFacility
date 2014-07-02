@@ -162,7 +162,7 @@ public class SQLDiseaseMappingStudyManager {
 			
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_GET_PROJECTS,
+					RIFServiceError.DATABASE_QUERY_FAILED,
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -210,7 +210,14 @@ public class SQLDiseaseMappingStudyManager {
 		return results;
 	}
 	
-	
+	public void clearStudiesForUser(
+		final Connection connection,
+		final User user) 
+		throws RIFServiceException {
+		
+		//KLG: To Do
+		
+	}
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -257,7 +264,7 @@ public class SQLDiseaseMappingStudyManager {
 						
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_CHECK_NONEXISTENT_RECORD, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}

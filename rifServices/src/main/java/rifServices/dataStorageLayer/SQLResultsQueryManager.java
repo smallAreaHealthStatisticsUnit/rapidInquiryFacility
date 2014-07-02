@@ -12,6 +12,14 @@ import rifServices.system.RIFServiceError;
 
 
 
+
+
+
+
+
+
+
+
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -100,7 +108,6 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 	// ==========================================
 	private SQLRIFContextManager sqlRIFContextManager;
 	private SQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager;
-	private SQLInvestigationManager sqlInvestigationManager;
 	
 	// ==========================================
 	// Section Construction
@@ -108,12 +115,10 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 
 	public SQLResultsQueryManager(
 		SQLRIFContextManager sqlRIFContextManager,
-		SQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager,
-		SQLInvestigationManager sqlInvestigationManager) {
+		SQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager) {
 		
 		this.sqlRIFContextManager = sqlRIFContextManager;
 		this.sqlDiseaseMappingStudyManager = sqlDiseaseMappingStudyManager;
-		this.sqlInvestigationManager = sqlInvestigationManager;
 	}
 
 	// ==========================================
@@ -152,7 +157,6 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 		query.setNumberOfFunctionParameters(3);
 		
 		//Execute query and generate results
-
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
@@ -194,7 +198,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					geoLevelSelect.getDisplayName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_GET_BOUNDS_FOR_AREA, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;			
 		}
@@ -268,7 +272,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					geoLevelSelect.getDisplayName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_GET_EXTENT_FOR_STUDY, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -332,7 +336,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					geography.getDisplayName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_GET_EXTENT_FOR_GEOLEVEL, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -393,7 +397,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					geography.getDisplayName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_GET_TILES,
+					RIFServiceError.DATABASE_QUERY_FAILED,
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -545,7 +549,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					endRowPhrase);
 			RIFServiceException rifServiceException	
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_GET_RESULTS_BY_BLOCK, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -603,7 +607,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					diseaseMappingStudy.getDisplayName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_GET_CALCULATED_RESULTS_TABLE_FOR_STUDY, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -673,7 +677,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					geoLevelSelect.getDisplayName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_GET_MAP_AREA_VALUES_FOR_ATTRIBUTE, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -685,6 +689,69 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 		
 	}
 	
+	
+	public ArrayList<GeoLevelAttributeSource> getGeoLevelAttributeSources(
+		final Connection connection,
+		final User user,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect,
+		final DiseaseMappingStudy diseaseMappingStudy) 
+		throws RIFServiceException {
+		
+		//Validate parameters
+		validateCommonParameters(
+			connection,
+			user,
+			geography,
+			geoLevelSelect);		
+		
+		//Create query		
+		ArrayList<GeoLevelAttributeSource> results
+			= new ArrayList<GeoLevelAttributeSource>();
+		
+		SQLFunctionCallerQueryFormatter query
+			= new SQLFunctionCallerQueryFormatter();
+		query.setSchema("rif40_xml_pkg");
+		query.setFunctionName("");
+		query.setNumberOfFunctionParameters(2);
+		
+		
+		//Execute query and generate results
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement 
+				= connection.prepareStatement(query.generateQuery());
+			statement.setString(1, geography.getName());
+			statement.setString(2, geoLevelSelect.getName());
+			resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+				GeoLevelAttributeSource geoLevelAttributeSource
+					= GeoLevelAttributeSource.newInstance(resultSet.getString(1));
+				results.add(geoLevelAttributeSource);
+			}
+			return results;
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.error.unableToGetGeoLevelAttributeSources",
+					diseaseMappingStudy.getDisplayName(),
+					geography.getDisplayName(),
+					geoLevelSelect.getDisplayName());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			//Cleanup database resources
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}				
+	}
 	
 	//CHECKED
 	// -- what function to call go get attribute themes?
@@ -738,7 +805,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					geoLevelSelect.getDisplayName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_GET_GEO_LEVEL_ATTRIBUTE_THEMES, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -754,6 +821,8 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 		final User user,
 		final Geography geography,
 		final GeoLevelSelect geoLevelSelect,
+		final DiseaseMappingStudy diseaseMappingStudy,
+		final GeoLevelAttributeSource geoLevelAttributeSource,
 		final GeoLevelAttributeTheme geoLevelAttributeTheme)
 		throws RIFServiceException {
 			
@@ -762,11 +831,23 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 			connection,
 			user,
 			geography,
-			geoLevelSelect);		
+			geoLevelSelect);
+		diseaseMappingStudy.checkErrors();
+		
+		geoLevelAttributeSource.checkErrors();		
+		checkGeoLevelAttributeSourceExists(
+			connection, 
+			geography,
+			geoLevelSelect,
+			diseaseMappingStudy,
+			geoLevelAttributeSource);
+		geoLevelAttributeTheme.checkErrors();
 		checkGeoLevelAttributeThemeExists(
 			connection, 
 			geography,
 			geoLevelSelect,
+			diseaseMappingStudy,
+			geoLevelAttributeSource,
 			geoLevelAttributeTheme);
 		
 		//Create query		
@@ -785,7 +866,9 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 				= connection.prepareStatement(query.generateQuery());
 			statement.setString(1, geography.getName());
 			statement.setString(2, geoLevelSelect.getName());
-			statement.setString(3, geoLevelAttributeTheme.getName());
+			statement.setString(3, diseaseMappingStudy.getName());
+			statement.setString(4, geoLevelAttributeSource.getName());
+			statement.setString(5, geoLevelAttributeTheme.getName());
 			resultSet = statement.executeQuery();
 			ArrayList<String> attributes = new ArrayList<String>();
 			while (resultSet.next()) {
@@ -806,7 +889,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					geoLevelSelect.getDisplayName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_GET_ATTRIBUTES_FOR_RESULT_ATTRIBUTE_THEME,
+					RIFServiceError.DATABASE_QUERY_FAILED,
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -822,7 +905,9 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 		Connection connection,
 		User user,
 		Geography geography,
+		DiseaseMappingStudy diseaseMappingStudy,
 		GeoLevelSelect geoLevelSelect,
+		GeoLevelAttributeSource geoLevelAttributeSource,
 		GeoLevelAttributeTheme geoLevelAttributeTheme) 
 		throws RIFServiceException {
 			
@@ -832,10 +917,22 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 			user,
 			geography,
 			geoLevelSelect);
+		geoLevelAttributeSource.checkErrors();
+		
+		checkGeoLevelAttributeSourceExists(
+			connection, 
+			geography,
+			geoLevelSelect,
+			diseaseMappingStudy,
+			geoLevelAttributeSource);
+		
+		geoLevelAttributeTheme.checkErrors();
 		checkGeoLevelAttributeThemeExists(
 			connection, 
 			geography,
 			geoLevelSelect,
+			diseaseMappingStudy,
+			geoLevelAttributeSource,
 			geoLevelAttributeTheme);
 			
 		String[] results = new String[0]; 
@@ -876,7 +973,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					geoLevelSelect.getDisplayName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_GET_NUMERIC_ATTRIBUTES_FOR_RESULT_ATTRIBUTE_THEME,
+					RIFServiceError.DATABASE_QUERY_FAILED,
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -1014,7 +1111,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					endRowPhrase);
 			RIFServiceException rifServiceException	
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_GET_RESULTS_BY_BLOCK, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -1077,7 +1174,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					study.getDisplayName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_GET_EXTRACT_TABLE_NAME,
+					RIFServiceError.DATABASE_QUERY_FAILED,
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -1137,7 +1234,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 			logSQLException(sqlException);
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_GET_GEOMETRY_COLUMN_NAMES, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -1186,7 +1283,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 			logSQLException(sqlException);
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_COUNT_ROWS_IN_RESULT_TABLE, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -1307,7 +1404,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					diseaseMappingStudy.getDisplayName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_DETERMINE_EXTRACT_PERMISSION_FOR_STUDY, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -1358,7 +1455,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					diseaseMappingStudy.getDisplayName());
 			RIFServiceException rifServiceException
 				 = new RIFServiceException(
-					RIFServiceError.UNABLE_TO_CHECK_RESULT_TABLE_EXISTS,
+					RIFServiceError.DATABASE_QUERY_FAILED,
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -1368,7 +1465,6 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 			SQLQueryUtility.close(resultSet);			
 		}		
 	}
-	
 	
 	private void checkResultsTableFieldExists(
 		Connection connection,
@@ -1412,7 +1508,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					diseaseMappingStudy.getDisplayName());
 			RIFServiceException rifServiceException	
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_CHECK_RESULT_TABLE_FIELD_EXISTS, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -1477,7 +1573,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					geoLevelSelect.getDisplayName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_CHECK_MAP_AREA_EXISTS, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -1537,7 +1633,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					geoLevelSelect.getDisplayName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_CHECK_GEO_LEVEL_ATTRIBUTE_EXISTS, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -1548,11 +1644,24 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 		
 	}
 
+	private void checkGeoLevelAttributeSourceExists(
+		Connection connection,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect,
+		DiseaseMappingStudy diseaseMappingStudy,
+		GeoLevelAttributeSource geoLevelAttributeSource)
+		throws RIFServiceException {
+		
+			
+			
+	}
 	
 	private void checkGeoLevelAttributeThemeExists(
 		Connection connection, 
 		Geography geography,
 		GeoLevelSelect geoLevelSelect,
+		DiseaseMappingStudy diseaseMappingStudy,
+		GeoLevelAttributeSource geoLevelAttributeSource,
 		GeoLevelAttributeTheme geoLevelAttributeTheme)
 		throws RIFServiceException {
 		
@@ -1598,7 +1707,7 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 					geoLevelSelect.getDisplayName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_CHECK_GEO_LEVEL_ATTRIBUTE_THEME_EXISTS, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -1609,6 +1718,336 @@ public class SQLResultsQueryManager extends AbstractSQLManager {
 		
 	}
 	
+	public RIFResultTable getPyramidData(
+		final Connection connection,
+		final User user,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect,
+		final GeoLevelAttributeSource geoLevelSource,
+		final String geoLevelAttribute) 
+		throws RIFServiceException {
+		
+		RIFResultTable result = new RIFResultTable();
+		return result;		
+	}	
+	
+	public RIFResultTable getPyramidDataByYear(
+		Connection connection,
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect,
+		GeoLevelAttributeSource geoLevelSource,
+		String geoLevelAttribute,
+		Integer year) 
+		throws RIFServiceException {
+		
+		RIFResultTable result = new RIFResultTable();
+		
+		
+		
+		return result;
+	}
+	
+	public RIFResultTable getPyramidDataByMapAreas(
+		Connection connection,
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect,
+		GeoLevelAttributeSource geoLevelSource,
+		String geoLevelAttribute,
+		ArrayList<MapArea> mapAreas) 
+		throws RIFServiceException {
+	
+		RIFResultTable results = new RIFResultTable();
+		
+		
+		return results;
+	}
+	
+	public String[] getResultFieldsStratifiedByAgeGroup(
+		Connection connection,
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect,
+		DiseaseMappingStudy diseaseMappingStudy,
+		GeoLevelAttributeTheme geoLevelAttributeTheme,
+		GeoLevelAttributeSource geoLevelAttributeSource)
+		throws RIFServiceException {
+	
+		String[] results = new String[0];
+	
+		
+		return results;
+	}
+	
+	public RIFResultTable getSMRValues(
+		Connection connection,
+		User user,
+		DiseaseMappingStudy diseaseMappingStudy)
+		throws RIFServiceException {
+	
+		diseaseMappingStudy.checkErrors();
+		
+		RIFResultTable results = new RIFResultTable();
+		/*
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		
+		try {
+			statement 
+				= connection.prepareStatement(query.toString());
+			resultSet = statement.executeQuery();
+
+	
+			//Obtain the column names
+			ResultSetMetaData resultSetMetaData
+				= resultSet.getMetaData();
+			int numberOfColumns = resultSetMetaData.getColumnCount();
+			String[] resultFieldNames = new String[numberOfColumns];
+			for (int i = 0; i < resultFieldNames.length; i++) {
+				resultFieldNames[i] = resultSetMetaData.getColumnName(i+1);
+			}
+			results.setFieldNames(resultFieldNames);
+			
+			//Obtain the data
+			int totalResultRows = 0;
+			String[][] resultsBlockData
+				= new String[totalResultRows][resultFieldNames.length];
+			
+			int ithRow = 0;
+			while (resultSet.next()) {
+				for (int i = 1; i < resultFieldNames.length; i++) {
+					resultsBlockData[ithRow][i] = resultSet.getString(i + 1);
+				}			
+				ithRow = ithRow + 1;
+			}
+			results.setData(resultsBlockData);
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		*/
+		return results;
+	}
+	
+	
+	public RIFResultTable getRRValues(
+		Connection connection,
+		User user,
+		DiseaseMappingStudy diseaseMappingStudy)
+		throws RIFServiceException {
+				
+		diseaseMappingStudy.checkErrors();
+		
+		RIFResultTable results = new RIFResultTable();
+		/*
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		
+		try {
+			statement 
+				= connection.prepareStatement(query.toString());
+			resultSet = statement.executeQuery();
+
+	
+			//Obtain the column names
+			ResultSetMetaData resultSetMetaData
+				= resultSet.getMetaData();
+			int numberOfColumns = resultSetMetaData.getColumnCount();
+			String[] resultFieldNames = new String[numberOfColumns];
+			for (int i = 0; i < resultFieldNames.length; i++) {
+				resultFieldNames[i] = resultSetMetaData.getColumnName(i+1);
+			}
+			results.setFieldNames(resultFieldNames);
+			
+			//Obtain the data
+			int totalResultRows = 0;
+			String[][] resultsBlockData
+				= new String[totalResultRows][resultFieldNames.length];
+			
+			int ithRow = 0;
+			while (resultSet.next()) {
+				for (int i = 1; i < resultFieldNames.length; i++) {
+					resultsBlockData[ithRow][i] = resultSet.getString(i + 1);
+				}			
+				ithRow = ithRow + 1;
+			}
+			results.setData(resultsBlockData);
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		*/
+		return results;		
+	}
+
+	public RIFResultTable getRRUnadjustedValues(
+		Connection connection,
+		User user,
+		DiseaseMappingStudy diseaseMappingStudy)
+		throws RIFServiceException {
+				
+		diseaseMappingStudy.checkErrors();
+		
+		RIFResultTable results = new RIFResultTable();
+		/*
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		
+		try {
+			statement 
+				= connection.prepareStatement(query.toString());
+			resultSet = statement.executeQuery();
+
+	
+			//Obtain the column names
+			ResultSetMetaData resultSetMetaData
+				= resultSet.getMetaData();
+			int numberOfColumns = resultSetMetaData.getColumnCount();
+			String[] resultFieldNames = new String[numberOfColumns];
+			for (int i = 0; i < resultFieldNames.length; i++) {
+				resultFieldNames[i] = resultSetMetaData.getColumnName(i+1);
+			}
+			results.setFieldNames(resultFieldNames);
+			
+			//Obtain the data
+			int totalResultRows = 0;
+			String[][] resultsBlockData
+				= new String[totalResultRows][resultFieldNames.length];
+			
+			int ithRow = 0;
+			while (resultSet.next()) {
+				for (int i = 1; i < resultFieldNames.length; i++) {
+					resultsBlockData[ithRow][i] = resultSet.getString(i + 1);
+				}			
+				ithRow = ithRow + 1;
+			}
+			results.setData(resultsBlockData);
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		*/
+		return results;		
+	}
+	
+	public RIFResultTable getResultStudyGeneralInfo(
+		Connection connection,
+		User user,
+		DiseaseMappingStudy diseaseMappingStudy)
+		throws RIFServiceException {
+	
+		diseaseMappingStudy.checkErrors();
+		
+		RIFResultTable results = new RIFResultTable();
+		
+		/*
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;		
+		try {
+			
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+			throw rifServiceException;			
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);			
+		}
+		*/
+		return results;
+	}
+
+	public ArrayList<AgeGroup> getResultAgeGroups(
+		final Connection connection,
+		final User user,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect,
+		final DiseaseMappingStudy diseaseMappingStudy,
+		final GeoLevelAttributeTheme geoLevelAttributeTheme,
+		final GeoLevelAttributeSource geoLevelAttributeSource,
+		final String geoLevalAttribute)
+		throws RIFServiceException {
+		
+		geography.checkErrors();
+		geoLevelSelect.checkErrors();
+		diseaseMappingStudy.checkErrors();
+		geoLevelAttributeTheme.checkErrors();
+		geoLevelAttributeSource.checkErrors();
+
+		StringBuilder query = new StringBuilder();
+		
+		
+		ArrayList<AgeGroup> results = new ArrayList<AgeGroup>();
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = connection.prepareStatement(query.toString());
+			resultSet = statement.executeQuery();
+			
+			while (resultSet.next()) {
+				AgeGroup ageGroup = AgeGroup.newInstance();
+				results.add(ageGroup);
+			}
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage("");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		
+		return results;
+	}
+			
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

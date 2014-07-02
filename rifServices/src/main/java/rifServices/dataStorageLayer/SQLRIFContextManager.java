@@ -1093,7 +1093,7 @@ public class SQLRIFContextManager
 								
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_CHECK_NONEXISTENT_RECORD, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -1170,7 +1170,7 @@ public class SQLRIFContextManager
 					
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_CHECK_NONEXISTENT_RECORD, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -1464,7 +1464,7 @@ public class SQLRIFContextManager
 												
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_CHECK_NONEXISTENT_RECORD, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -1537,7 +1537,7 @@ public class SQLRIFContextManager
 												
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_CHECK_NONEXISTENT_RECORD, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}

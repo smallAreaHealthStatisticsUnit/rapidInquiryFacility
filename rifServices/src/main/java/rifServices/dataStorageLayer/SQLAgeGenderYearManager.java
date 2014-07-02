@@ -3,7 +3,7 @@ package rifServices.dataStorageLayer;
 import rifServices.businessConceptLayer.AgeGroup;
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.Geography;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearRange;
@@ -128,7 +128,7 @@ public class SQLAgeGenderYearManager
 		final Connection connection,
 		final Geography geography,
 		final NumeratorDenominatorPair ndPair,
-		final RIFJobSubmissionAPI.AgeGroupSortingOption sortingOrder)
+		final RIFStudySubmissionAPI.AgeGroupSortingOption sortingOrder)
 		throws RIFServiceException {
 				
 		//Validate parameters
@@ -137,15 +137,13 @@ public class SQLAgeGenderYearManager
 			geography,
 			ndPair);
 		
-		//Create SQL queries
+		//Create query
 		Integer ageGroupID = null;
 		SQLSelectQueryFormatter getAgeIDQuery = new SQLSelectQueryFormatter();
 		getAgeIDQuery.addSelectField("age_group_id");
 		getAgeIDQuery.addFromTable("rif40_tables");
 		getAgeIDQuery.addWhereParameter("table_name");
 		getAgeIDQuery.addWhereParameter("isnumerator");
-		
-		ArrayList<AgeGroup> results = new ArrayList<AgeGroup>();
 		
 		PreparedStatement getAgeIDStatement = null;
 		ResultSet getAgeIDResultSet = null;		
@@ -186,7 +184,7 @@ public class SQLAgeGenderYearManager
 			
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_GET_AGE_GROUP_ID, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -196,6 +194,7 @@ public class SQLAgeGenderYearManager
 			SQLQueryUtility.close(getAgeIDResultSet);			
 		}
 
+		ArrayList<AgeGroup> results = new ArrayList<AgeGroup>();		
 		if (ageGroupID == null) {
 			return results;
 		}
@@ -207,44 +206,44 @@ public class SQLAgeGenderYearManager
 		//"2" may represent age ranges that are broken down every 4 years
 		//After obtaining the list of age groups having the correct age group id
 		//sort them by low_age
-		SQLSelectQueryFormatter formatter = new SQLSelectQueryFormatter();
-		formatter.addSelectField("age_group_id");
-		formatter.addSelectField("low_age");
-		formatter.addSelectField("high_age");
-		formatter.addSelectField("fieldname");
-		formatter.addFromTable("rif40_age_groups");
-		formatter.addWhereParameter("age_group_id");
+		SQLSelectQueryFormatter getAgesForAgeGroupID = new SQLSelectQueryFormatter();
+		getAgesForAgeGroupID.addSelectField("age_group_id");
+		getAgesForAgeGroupID.addSelectField("low_age");
+		getAgesForAgeGroupID.addSelectField("high_age");
+		getAgesForAgeGroupID.addSelectField("fieldname");
+		getAgesForAgeGroupID.addFromTable("rif40_age_groups");
+		getAgesForAgeGroupID.addWhereParameter("age_group_id");
 		
 		if ((sortingOrder == null) ||
-			(sortingOrder == RIFJobSubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT)) {
-			formatter.addOrderByCondition(
+			(sortingOrder == RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT)) {
+			getAgesForAgeGroupID.addOrderByCondition(
 				"low_age", 
 				SQLSelectQueryFormatter.SortOrder.ASCENDING);			
 		}
-		else if (sortingOrder == RIFJobSubmissionAPI.AgeGroupSortingOption.DESCENDING_LOWER_LIMIT) {
-			formatter.addOrderByCondition(
+		else if (sortingOrder == RIFStudySubmissionAPI.AgeGroupSortingOption.DESCENDING_LOWER_LIMIT) {
+			getAgesForAgeGroupID.addOrderByCondition(
 				"low_age",
 				SQLSelectQueryFormatter.SortOrder.DESCENDING);
 		}
-		else if (sortingOrder == RIFJobSubmissionAPI.AgeGroupSortingOption.ASCENDING_UPPER_LIMIT) {
-			formatter.addOrderByCondition(
+		else if (sortingOrder == RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_UPPER_LIMIT) {
+			getAgesForAgeGroupID.addOrderByCondition(
 				"high_age",
 				SQLSelectQueryFormatter.SortOrder.ASCENDING);		
 		}
 		else {
 			//it must be descending lower limit.		
-			formatter.addOrderByCondition(
+			getAgesForAgeGroupID.addOrderByCondition(
 				"high_age",
 				SQLSelectQueryFormatter.SortOrder.DESCENDING);		
-			assert sortingOrder == RIFJobSubmissionAPI.AgeGroupSortingOption.DESCENDING_UPPER_LIMIT;			
+			assert sortingOrder == RIFStudySubmissionAPI.AgeGroupSortingOption.DESCENDING_UPPER_LIMIT;			
 		}
 		
-		//Parameterise and execute query
+		//Execute query and generate results
 		PreparedStatement statement = null;
 		ResultSet dbResultSet = null;
 		try {
 			statement 
-				= connection.prepareStatement(formatter.generateQuery());
+				= connection.prepareStatement(getAgesForAgeGroupID.generateQuery());
 			statement.setInt(1, ageGroupID);
 			dbResultSet = statement.executeQuery();
 
@@ -269,7 +268,7 @@ public class SQLAgeGenderYearManager
 						
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_GET_AGE_GROUPS,
+					RIFServiceError.DATABASE_QUERY_FAILED,
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -280,10 +279,6 @@ public class SQLAgeGenderYearManager
 		}
 		return results;		
 	}
-
-	
-	
-	
 	
 	/**
 	 * Gets the genders.
@@ -294,7 +289,6 @@ public class SQLAgeGenderYearManager
 	public ArrayList<Sex> getGenders()
 		throws RIFServiceException {
 		
-		//Perform operation
 		ArrayList<Sex> results = new ArrayList<Sex>();
 		results.add(Sex.MALES);
 		results.add(Sex.FEMALES);
@@ -324,23 +318,22 @@ public class SQLAgeGenderYearManager
 			geography,
 			ndPair);
 		
-		//Create SQL query		
+		//Create query
 		SQLSelectQueryFormatter query = new SQLSelectQueryFormatter();
 		query.addSelectField("year_start");
 		query.addSelectField("year_stop");
 		query.addFromTable("rif40_tables");
 		query.addWhereParameter("table_name");
 		
-		YearRange result = null;
-		PreparedStatement getYearRangeStatement = null;
-		ResultSet getYearRangeResultSet = null;
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
 		try {
-			getYearRangeStatement = connection.prepareStatement(query.generateQuery());
-			getYearRangeStatement.setString(1, ndPair.getNumeratorTableName());
-			getYearRangeResultSet = getYearRangeStatement.executeQuery();
+			statement = connection.prepareStatement(query.generateQuery());
+			statement.setString(1, ndPair.getNumeratorTableName());
+			resultSet = statement.executeQuery();
 			
 			//there should be exactly one result
-			if (getYearRangeResultSet.next() == false) {
+			if (resultSet.next() == false) {
 				//no entry found in the rif40 tables
 				String errorMessage
 					= RIFServiceMessages.getMessage(
@@ -353,12 +346,13 @@ public class SQLAgeGenderYearManager
 				throw rifServiceException;
 			}
 			
-			int yearStartValue = getYearRangeResultSet.getInt(1);
-			int yearEndValue = getYearRangeResultSet.getInt(2);
-			result 
+			int yearStartValue = resultSet.getInt(1);
+			int yearEndValue = resultSet.getInt(2);
+			YearRange result 
 				= YearRange.newInstance(
 						String.valueOf(yearStartValue), 
 						String.valueOf(yearEndValue));
+			return result;
 		}
 		catch(SQLException sqlException) {			
 			String errorMessage
@@ -374,19 +368,17 @@ public class SQLAgeGenderYearManager
 						
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_GET_START_END_YEAR, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
 		finally {
 			//Cleanup database resources
-			SQLQueryUtility.close(getYearRangeStatement);
-			SQLQueryUtility.close(getYearRangeResultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);			
 		}
-		return result;				
 	}
 	
-
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -422,89 +414,89 @@ public class SQLAgeGenderYearManager
 	}
 
 	public void checkNonExistentAgeGroups(
-			Connection connection,
-			ArrayList<AgeBand> ageBands) 
-			throws RIFServiceException {
+		Connection connection,
+		ArrayList<AgeBand> ageBands) 
+		throws RIFServiceException {
 			
-			for (AgeBand ageBand : ageBands) {
-				AgeGroup lowerAgeGroup = ageBand.getLowerLimitAgeGroup();
-				checkNonExistentAgeGroup(
-					connection, 
-					lowerAgeGroup);
-				AgeGroup upperAgeGroup = ageBand.getUpperLimitAgeGroup();
-				checkNonExistentAgeGroup(
-					connection, 
-					upperAgeGroup);
-				
-			}
-			
-			
+		for (AgeBand ageBand : ageBands) {
+			AgeGroup lowerAgeGroup = ageBand.getLowerLimitAgeGroup();
+			checkNonExistentAgeGroup(
+				connection, 
+				lowerAgeGroup);
+			AgeGroup upperAgeGroup = ageBand.getUpperLimitAgeGroup();
+			checkNonExistentAgeGroup(
+				connection, 
+				upperAgeGroup);				
 		}
+	}
 		
-		private void checkNonExistentAgeGroup(
-			Connection connection,
-			AgeGroup ageGroup) 
-			throws RIFServiceException {
+	private void checkNonExistentAgeGroup(
+		Connection connection,
+		AgeGroup ageGroup) 
+		throws RIFServiceException {
 			
-			Integer id = Integer.valueOf(ageGroup.getIdentifier());
-			
-			SQLRecordExistsQueryFormatter ageGroupExistsQueryFormatter
-				= new SQLRecordExistsQueryFormatter();
-			ageGroupExistsQueryFormatter.setFromTable("rif40_age_groups");
-			ageGroupExistsQueryFormatter.setLookupKeyFieldName("age_group_id");
-			PreparedStatement statement = null;
-			ResultSet resultSet = null;
-			try {
-				statement 
-					= connection.prepareStatement(ageGroupExistsQueryFormatter.generateQuery());
-				statement.setInt(1, id);
+		Integer id = Integer.valueOf(ageGroup.getIdentifier());
+		
+		//Create query
+		SQLRecordExistsQueryFormatter query
+			= new SQLRecordExistsQueryFormatter();
+		query.setFromTable("rif40_age_groups");
+		query.setLookupKeyFieldName("age_group_id");
+
+		
+		//Execute query and generate results
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement 
+				= connection.prepareStatement(query.generateQuery());
+			statement.setInt(1, id);
 				
-				resultSet = statement.executeQuery();		
-				if (resultSet.next() == false) {
-
-					//ERROR: no such age group exists
-					String recordType
-						= ageGroup.getRecordType();
-					String errorMessage
-						= RIFServiceMessages.getMessage(
-							"general.validation.nonExistentRecord",
-							recordType,
-							ageGroup.getDisplayName());
-
-					RIFServiceException rifServiceException
-						= new RIFServiceException(
-							RIFServiceError.NON_EXISTENT_AGE_GROUP, 
-							errorMessage);
-					throw rifServiceException;
-				}		
-			}
-			catch(SQLException sqlException) {
+			resultSet = statement.executeQuery();		
+			if (resultSet.next() == false) {
+				//ERROR: no such age group exists
+				String recordType
+					= ageGroup.getRecordType();
 				String errorMessage
 					= RIFServiceMessages.getMessage(
-						"general.validation.unableCheckNonExistentRecord",
-						ageGroup.getRecordType(),
+						"general.validation.nonExistentRecord",
+						recordType,
 						ageGroup.getDisplayName());
 
-				RIFLogger rifLogger = new RIFLogger();
-				rifLogger.error(
-					SQLAgeGenderYearManager.class, 
-					errorMessage, 
-					sqlException);										
-					
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
-						RIFServiceError.DB_UNABLE_CHECK_NONEXISTENT_RECORD, 
+						RIFServiceError.NON_EXISTENT_AGE_GROUP, 
 						errorMessage);
 				throw rifServiceException;
-			}
-			finally {
-				SQLQueryUtility.close(statement);
-				SQLQueryUtility.close(resultSet);
-			}			
+			}		
 		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.unableCheckNonExistentRecord",
+					ageGroup.getRecordType(),
+					ageGroup.getDisplayName());
+
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLAgeGenderYearManager.class, 
+				errorMessage, 
+				sqlException);										
+					
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			//Cleanup database resources
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}			
+	}
 	
-	
-	
+		
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

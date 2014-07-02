@@ -167,14 +167,13 @@ public class SQLRIFSubmissionManager {
 
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToClearSubmissionsForUser",
 					user.getUserID());
 			RIFServiceException rifServiceException	
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_DELETE_STUDIES_FOR_USER, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}

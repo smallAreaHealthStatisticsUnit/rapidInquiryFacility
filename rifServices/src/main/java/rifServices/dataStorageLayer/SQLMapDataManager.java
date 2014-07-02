@@ -280,7 +280,7 @@ public class SQLMapDataManager
 				sqlException);
 			
 			RIFServiceException rifServiceException
-				= new RIFServiceException(RIFServiceError.DB_UNABLE_COUNT_MAP_AREAS_FOR_EXTENT, 
+				= new RIFServiceException(RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -423,7 +423,7 @@ public class SQLMapDataManager
 				sqlException);
 								
 			RIFServiceException rifServiceException
-				= new RIFServiceException(RIFServiceError.DB_UNABLE_GET_MAP_AREAS, 
+				= new RIFServiceException(RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -606,7 +606,7 @@ public class SQLMapDataManager
 				sqlException);
 								
 			RIFServiceException rifServiceException
-				= new RIFServiceException(RIFServiceError.DB_UNABLE_GET_MAP_AREAS, 
+				= new RIFServiceException(RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -676,7 +676,7 @@ public class SQLMapDataManager
 									
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_GET_GEO_LEVEL_LOOKUP_TABLE, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -739,7 +739,7 @@ public class SQLMapDataManager
 											
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_GET_GEO_LEVEL_HIERARCHY_TABLE, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -792,7 +792,7 @@ public class SQLMapDataManager
 				= RIFServiceMessages.getMessage("io.error.problemsReadingMapImageData");
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_RETRIEVE_MAP_IMAGE, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
