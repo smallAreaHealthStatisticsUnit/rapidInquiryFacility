@@ -3082,7 +3082,7 @@ BEGIN
  	   NEW.min_age_group = OLD.min_age_group AND
  	   NEW.genders = OLD.genders AND
  	   NEW.numer_tab = OLD.numer_tab AND
- 	   NEW.geography = OLD.geography AND
+ --	   NEW.geography = OLD.geography AND
  	   NEW.study_id = OLD.study_id AND
  	   NEW.inv_id = OLD.inv_id AND
  	   NEW.classifier = OLD.classifier AND
@@ -3508,13 +3508,24 @@ Delayed RIF40_TABLES numerator checks: Column <TABLE_NAME>.TOTAL_FIELD, SEX_FIEL
 CREATE TRIGGER t_rif40_investigations_checks
 	BEFORE INSERT OR UPDATE OF username, inv_name, inv_description, year_start, year_stop,
 		max_age_group, min_age_group, genders, numer_tab, investigation_state,
-	        geography, study_id, inv_id, classifier, classifier_bands, mh_test_type ON t_rif40_investigations
+	        /* geography, */ study_id, inv_id, classifier, classifier_bands, mh_test_type ON t_rif40_investigations
 	FOR EACH ROW	
-	WHEN ((NEW.username IS NOT NULL AND NEW.username::text <> '') OR (NEW.inv_name IS NOT NULL AND NEW.inv_name::text <> '') OR (NEW.inv_description IS NOT NULL AND NEW.inv_description::text <> '') OR
-		(NEW.year_start IS NOT NULL AND NEW.year_start::text <> '') OR (NEW.year_stop IS NOT NULL AND NEW.year_stop::text <> '') OR (NEW.max_age_group IS NOT NULL AND NEW.max_age_group::text <> '') OR (NEW.min_age_group IS NOT NULL AND NEW.min_age_group::text <> '') OR
-		(NEW.genders IS NOT NULL AND NEW.genders::text <> '') OR (NEW.investigation_state IS NOT NULL AND NEW.investigation_state::text <> '') OR (NEW.numer_tab IS NOT NULL AND NEW.numer_tab::text <> '') OR
-		(NEW.geography IS NOT NULL AND NEW.geography::text <> '') OR (NEW.study_id IS NOT NULL AND NEW.study_id::text <> '') OR (NEW.inv_id IS NOT NULL AND NEW.inv_id::text <> '') OR
-		(NEW.classifier IS NOT NULL AND NEW.classifier::text <> '') OR (NEW.classifier_bands IS NOT NULL AND NEW.classifier_bands::text <> '') OR (NEW.mh_test_type IS NOT NULL AND NEW.mh_test_type::text <> ''))
+	WHEN (	(NEW.username IS NOT NULL AND NEW.username::text <> '') OR 
+		(NEW.inv_name IS NOT NULL AND NEW.inv_name::text <> '') OR 
+		(NEW.inv_description IS NOT NULL AND NEW.inv_description::text <> '') OR
+		(NEW.year_start IS NOT NULL AND NEW.year_start::text <> '') OR 
+		(NEW.year_stop IS NOT NULL AND NEW.year_stop::text <> '') OR 
+		(NEW.max_age_group IS NOT NULL AND NEW.max_age_group::text <> '') OR 
+		(NEW.min_age_group IS NOT NULL AND NEW.min_age_group::text <> '') OR
+		(NEW.genders IS NOT NULL AND NEW.genders::text <> '') OR 
+		(NEW.investigation_state IS NOT NULL AND NEW.investigation_state::text <> '') OR 
+		(NEW.numer_tab IS NOT NULL AND NEW.numer_tab::text <> '') OR
+		/* (NEW.geography IS NOT NULL AND NEW.geography::text <> '') OR */ 
+		(NEW.study_id IS NOT NULL AND NEW.study_id::text <> '') OR 
+		(NEW.inv_id IS NOT NULL AND NEW.inv_id::text <> '') OR
+		(NEW.classifier IS NOT NULL AND NEW.classifier::text <> '') OR 
+		(NEW.classifier_bands IS NOT NULL AND NEW.classifier_bands::text <> '') OR 
+		(NEW.mh_test_type IS NOT NULL AND NEW.mh_test_type::text <> ''))
 	EXECUTE PROCEDURE rif40_trg_pkg.trigger_fct_t_rif40_investigations_checks();
 COMMENT ON TRIGGER t_rif40_investigations_checks ON t_rif40_investigations IS 'INSERT OR UPDATE trigger: calls rif40_trg_pkg.trigger_fct_t_rif40_investigations_checks()';
 

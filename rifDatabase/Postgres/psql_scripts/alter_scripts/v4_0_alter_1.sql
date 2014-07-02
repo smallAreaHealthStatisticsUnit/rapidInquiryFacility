@@ -382,6 +382,102 @@ COMMENT ON COLUMN rif40_investigations.inv_description IS 'Description of invest
 COMMENT ON COLUMN rif40_investigations.classifier IS 'Maps classifier. EQUAL_INTERVAL: each classifier band represents the same sized range and intervals change based on max an min, JENKS: Jenks natural breaks, QUANTILE: equiheight (even number) distribution, STANDARD_DEVIATION, UNIQUE_INTERVAL: a version of EQUAL_INTERVAL that takes into account unique values, &lt;BESPOKE&gt;; default QUANTILE. &lt;BESPOKE&gt; classification bands are defined in: RIF40_CLASSFIER_BANDS, RIF40_CLASSFIER_BAND_NAMES and are used to create maps that are comparable accross investigations';
 COMMENT ON COLUMN rif40_investigations.classifier_bands IS 'Map classifier bands; default 5. Must be between 2 and 20';
 COMMENT ON COLUMN rif40_investigations.investigation_state IS 'Investigation state - C: created, not verfied; V: verified, but no other work done; E - extracted imported or created, but no results or maps created; R: results computed; U: upgraded record from V3.1 RIF (has an indeterminate state; probably R.';
+CREATE OR REPLACE FUNCTION rif40_trg_pkg.trgf_rif40_investigations()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+	IF TG_OP = 'INSERT' THEN
+--
+-- Check (USER = NEW.username OR NULL) and USER is a RIF user; if OK INSERT
+--
+		IF (USER = NEW.username OR NEW.username IS NULL /* Will be defaulted */) AND rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
+			INSERT INTO t_rif40_investigations (
+				username,
+				inv_id,
+				study_id,
+				inv_name,
+				year_start,
+				year_stop,
+				max_age_group,
+				min_age_group,
+				genders,
+				numer_tab,
+				mh_test_type,
+				inv_description,
+				classifier,
+				classifier_bands,
+				investigation_state)
+			VALUES(
+				coalesce(NEW.username, "current_user"()),
+				coalesce(NEW.inv_id, (nextval('rif40_inv_id_seq'::regclass))::integer),
+				coalesce(NEW.study_id, (currval('rif40_study_id_seq'::regclass))::integer),
+				NEW.inv_name /* no default value */,
+				NEW.year_start /* no default value */,
+				NEW.year_stop /* no default value */,
+				NEW.max_age_group /* no default value */,
+				NEW.min_age_group /* no default value */,
+				NEW.genders /* no default value */,
+				NEW.numer_tab /* no default value */,
+				coalesce(NEW.mh_test_type, 'No Test'::character varying),
+				NEW.inv_description /* no default value */,
+				coalesce(NEW.classifier, 'QUANTILE'::character varying),
+				coalesce(NEW.classifier_bands, 5),
+				coalesce(NEW.investigation_state, 'C'::character varying));
+		ELSE
+			PERFORM rif40_log_pkg.rif40_error(-20999, 'trg_rif40_investigations',
+				'Cannot INSERT: User % must have rif_user or rif_manager role, NEW.username (%) must be USER or NULL', USER::VARCHAR, NEW.username::VARCHAR);
+		END IF;
+		RETURN NEW;
+	ELSIF TG_OP = 'UPDATE' THEN
+--
+-- Check USER = OLD.username and NEW.username = OLD.username; if OK UPDATE
+--
+		IF USER = OLD.username AND NEW.username = OLD.username THEN
+			UPDATE t_rif40_investigations
+			   SET username=NEW.username,
+			       inv_id=NEW.inv_id,
+			       study_id=NEW.study_id,
+			       inv_name=NEW.inv_name,
+			       year_start=NEW.year_start,
+			       year_stop=NEW.year_stop,
+			       max_age_group=NEW.max_age_group,
+			       min_age_group=NEW.min_age_group,
+			       genders=NEW.genders,
+			       numer_tab=NEW.numer_tab,
+			       mh_test_type=NEW.mh_test_type,
+			       inv_description=NEW.inv_description,
+			       classifier=NEW.classifier,
+			       classifier_bands=NEW.classifier_bands,
+			       investigation_state=NEW.investigation_state
+			 WHERE inv_id=OLD.inv_id
+			   AND study_id=OLD.study_id;
+		ELSE
+			PERFORM rif40_log_pkg.rif40_error(-20999, 'trg_rif40_investigations',
+				'Cannot UPDATE: User % is not the owner (%) of the record', USER::VARCHAR, OLD.username::VARCHAR);
+		END IF;
+		RETURN NEW;
+	ELSIF TG_OP = 'DELETE' THEN
+--
+-- Check USER = OLD.username; if OK DELETE
+--
+		IF USER = OLD.username THEN
+			DELETE FROM t_rif40_investigations
+			 WHERE inv_id=OLD.inv_id
+			   AND study_id=OLD.study_id;
+		ELSE
+			PERFORM rif40_log_pkg.rif40_error(-20999, 'trg_rif40_investigations',
+				'Cannot DELETE: User % is not the owner (%) of the record', USER::VARCHAR, OLD.username::VARCHAR);
+		END IF;
+		RETURN NULL;
+	END IF;
+	RETURN NEW;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+COMMENT ON FUNCTION rif40_trg_pkg.trgf_rif40_investigations() IS 'INSTEAD OF trigger for view T_RIF40_INVESTIGATIONS to allow INSERT/UPDATE/DELETE. INSERT/UPDATE/DELETE of another users data is NOT permitted. 
+ [NO TABLE/VIEW comments available]';
+	
 CREATE TRIGGER trg_rif40_investigations
   INSTEAD OF INSERT OR UPDATE OR DELETE
   ON rif40_investigations
@@ -648,12 +744,19 @@ END;
 --
 -- Vacuum geometry tables, partitions and t_rif40_investigations
 --
-VACUUM ANALYSE VERBOSE t_rif40_sahsu_geometry;
-VACUUM ANALYSE VERBOSE t_rif40_geolevels_geometry_sahsu_level1;
-VACUUM ANALYSE VERBOSE t_rif40_geolevels_geometry_sahsu_level2;
-VACUUM ANALYSE VERBOSE t_rif40_geolevels_geometry_sahsu_level3;
-VACUUM ANALYSE VERBOSE t_rif40_geolevels_geometry_sahsu_level4;
-VACUUM ANALYSE VERBOSE t_rif40_investigations;
+VACUUM ANALYS t_rif40_sahsu_geometry;
+VACUUM ANALYSE t_rif40_geolevels_geometry_sahsu_level1;
+VACUUM ANALYSE t_rif40_geolevels_geometry_sahsu_level2;
+VACUUM ANALYSE t_rif40_geolevels_geometry_sahsu_level3;
+VACUUM ANALYSE t_rif40_geolevels_geometry_sahsu_level4;
+VACUUM ANALYSE t_rif40_investigations;
+
+DO LANGUAGE plpgsql $$
+BEGIN
+--
+	RAISE INFO 'alter_2.sql completed OK, VACUUM ANALYZE OK';
+END;
+$$;
 
 --
 -- Eof

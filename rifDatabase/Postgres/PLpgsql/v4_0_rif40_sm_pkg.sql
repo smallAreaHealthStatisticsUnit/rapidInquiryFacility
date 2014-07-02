@@ -2537,9 +2537,9 @@ BEGIN
 	sql_stmt[7]:='INSERT INTO rif40_inv_conditions(condition) SELECT condition FROM rif40_inv_conditions WHERE study_id = '||study_id::VARCHAR;
 	sql_stmt[6]:='INSERT INTO rif40_inv_covariates(geography, covariate_name, study_geolevel_name, min, max)
 		 SELECT geography, covariate_name, study_geolevel_name, min, max FROM rif40_inv_covariates WHERE study_id = '||study_id::VARCHAR;
-	sql_stmt[5]:='INSERT INTO rif40_investigations(geography, inv_name, inv_description, genders, numer_tab, 
+	sql_stmt[5]:='INSERT INTO rif40_investigations(/* geography, */ inv_name, inv_description, genders, numer_tab, 
 			year_start, year_stop, max_age_group, min_age_group) 
-			SELECT geography, inv_name, inv_description, genders, numer_tab, 
+			SELECT /* geography, */ inv_name, inv_description, genders, numer_tab, 
 			year_start, year_stop, max_age_group, min_age_group FROM rif40_investigations WHERE study_id = '||study_id::VARCHAR;
 	sql_stmt[4]:='INSERT INTO rif40_study_areas(area_id, band_id) SELECT area_id, band_id FROM rif40_study_areas WHERE study_id = '||study_id::VARCHAR;
 	sql_stmt[3]:='INSERT INTO rif40_comparison_areas(area_id) SELECT area_id FROM rif40_comparison_areas WHERE study_id = '||study_id::VARCHAR;
@@ -2901,7 +2901,7 @@ BEGIN
 		i:=i+1;
 		l_inv_name:='INV_'||i::VARCHAR;
 		INSERT INTO rif40_investigations(
-			geography,
+/* 			geography, */
 			inv_name,
 			inv_description,
 			genders,
@@ -2912,7 +2912,7 @@ BEGIN
 			min_age_group
 		)
 		VALUES (
-		 	geography 		/* geography */,
+		 	/* geography, 		/- geography */
 			l_inv_name 		/* inv_name */,  
 			investigation_desc_array[i]	/* inv_description */,
 			3			/* genders [both] */,

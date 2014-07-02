@@ -89,12 +89,33 @@ $$;
 
 DO LANGUAGE plpgsql $$
 BEGIN
-	RAISE INFO 'Aborting (script being tested)';
-	RAISE EXCEPTION 'C20999: Abort';
+	RAISE INFO 'alter_2.sql completed OK';
+--
+--	RAISE INFO 'Aborting (script being tested)';
+--	RAISE EXCEPTION 'C20999: Abort';
 END;
 $$;
 
 END;
 
+--
+-- Will need to quit here when in production
+--
+--\q
+\c sahsuland_dev pch
+--
+--
+-- Test in a single transaction
+--
+\i ../psql_scripts/v4_0_sahsuland_examples.sql   
+
+DO LANGUAGE plpgsql $$
+BEGIN
+--
+	RAISE INFO 'alter_2.sql tested OK';
+END;
+$$;
+
+\c sahsuland_dev rif40
 --
 -- Eof
