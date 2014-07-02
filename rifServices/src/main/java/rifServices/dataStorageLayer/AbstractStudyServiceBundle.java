@@ -1,7 +1,6 @@
-package rifServices;
+package rifServices.dataStorageLayer;
 
 
-import rifServices.dataStorageLayer.SQLConnectionManager;
 import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;

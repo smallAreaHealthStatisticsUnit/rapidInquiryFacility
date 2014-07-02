@@ -1,4 +1,4 @@
-package rifServices;
+package rifServices.dataStorageLayer;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -21,11 +21,6 @@ import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceSecurityException;
 import rifServices.util.FieldValidationUtility;
 import rifServices.util.RIFLogger;
-import rifServices.dataStorageLayer.SQLConnectionManager;
-import rifServices.dataStorageLayer.SQLRIFContextManager;
-import rifServices.dataStorageLayer.SQLAgeGenderYearManager;
-import rifServices.dataStorageLayer.SQLCovariateManager;
-import rifServices.dataStorageLayer.SQLDiseaseMappingStudyManager;
 
 
 /**

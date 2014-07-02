@@ -1,4 +1,4 @@
-package rifServices;
+package rifServices.dataStorageLayer;
 
 /**
  *
@@ -60,8 +60,8 @@ package rifServices;
  *
  */
 
-public final class TestRIFStudyRetrievalService 
-	extends AbstractRIFStudyRetrievalService {
+public final class ProductionRIFStudySubmissionService 
+	extends AbstractRIFStudySubmissionService {
 
 	// ==========================================
 	// Section Constants
@@ -75,7 +75,7 @@ public final class TestRIFStudyRetrievalService
 	// Section Construction
 	// ==========================================
 
-	public TestRIFStudyRetrievalService() {
+	public ProductionRIFStudySubmissionService() {
 
 	}
 

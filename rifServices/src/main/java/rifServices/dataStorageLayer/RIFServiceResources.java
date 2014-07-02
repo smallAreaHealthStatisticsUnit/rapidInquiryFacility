@@ -1,17 +1,7 @@
-package rifServices;
+package rifServices.dataStorageLayer;
 
 import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.dataStorageLayer.SQLAgeGenderYearManager;
-import rifServices.dataStorageLayer.SQLConnectionManager;
-import rifServices.dataStorageLayer.SQLCovariateManager;
-import rifServices.dataStorageLayer.SQLDiseaseMappingStudyManager;
-import rifServices.dataStorageLayer.SQLHealthOutcomeManager;
-import rifServices.dataStorageLayer.SQLInvestigationManager;
-import rifServices.dataStorageLayer.SQLMapDataManager;
-import rifServices.dataStorageLayer.SQLRIFContextManager;
-import rifServices.dataStorageLayer.SQLRIFSubmissionManager;
-import rifServices.dataStorageLayer.SQLResultsQueryManager;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceStartupOptions;
 

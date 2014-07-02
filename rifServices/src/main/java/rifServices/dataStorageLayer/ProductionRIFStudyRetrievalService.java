@@ -1,15 +1,17 @@
-package rifServices;
+package rifServices.dataStorageLayer;
 
-import java.util.ArrayList;
-
-import rifServices.businessConceptLayer.AbstractCovariate;
-import rifServices.businessConceptLayer.AgeBand;
-import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceException;
-import rifServices.taxonomyServices.HealthCodeProvider;
 
 /**
- *
+ * The purpose of this service is to provide a secure implementation of 
+ * {@link rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI} which
+ * is final - meaning that it cannot be overridden by the client.  
+ * 
+ * <p>
+ * The main reason for having this class is to help 'close off' any protected 
+ * method that might generate a security concern or might only serve a testing 
+ * purpose.
+ * </p>
+ * 
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
  * that rapidly addresses epidemiological and public health questions using 
@@ -68,8 +70,8 @@ import rifServices.taxonomyServices.HealthCodeProvider;
  *
  */
 
-public final class TestRIFStudySubmissionService 
-	extends AbstractRIFStudySubmissionService {
+final class ProductionRIFStudyRetrievalService 
+	extends AbstractRIFStudyRetrievalService {
 
 	// ==========================================
 	// Section Constants
@@ -83,16 +85,14 @@ public final class TestRIFStudySubmissionService
 	// Section Construction
 	// ==========================================
 
-	public TestRIFStudySubmissionService() {
+	public ProductionRIFStudyRetrievalService() {
 
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
-
-	
+		
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -104,53 +104,5 @@ public final class TestRIFStudySubmissionService
 	// ==========================================
 	// Section Override
 	// ==========================================
-	
-	public void checkNonExistentAgeGroups(
-		User user,
-		ArrayList<AgeBand> ageBands) 
-		throws RIFServiceException {	
-	
-		super.checkNonExistentAgeGroups(
-			user,
-			ageBands);
-	}
-	
-	public void checkNonExistentCovariates(
-		User user,
-		ArrayList<AbstractCovariate> covariates) 
-		throws RIFServiceException {	
-	
-		super.checkNonExistentCovariates(
-			user,
-			covariates);		
-	}
-	
-	public void addHealthCodeProvider(
-		User user,
-		HealthCodeProvider healthCodeProvider) throws RIFServiceException {	
-		
-		super.addHealthCodeProvider(
-			user,
-			healthCodeProvider);
-	}
-	
-	public void clearHealthCodeProviders(User user) 
-		throws RIFServiceException {
-		
-		super.clearHealthCodeProviders(user);
-	}
-	
-	public void clearRIFJobSubmissionsForUser(
-		User user) 
-		throws RIFServiceException {
 
-		super.clearRIFJobSubmissionsForUser(user);
-	}
-	
-	public void clearStudiesForUser(
-		User user) 
-		throws RIFServiceException {
-		
-		super.clearStudiesForUser(user);
-	}
 }

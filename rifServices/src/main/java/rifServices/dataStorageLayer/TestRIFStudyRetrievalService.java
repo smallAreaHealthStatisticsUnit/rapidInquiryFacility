@@ -1,17 +1,7 @@
-package rifServices;
-
+package rifServices.dataStorageLayer;
 
 /**
- * The purpose of this service is to provide a secure implementation of 
- * {@link rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI} which
- * is final - meaning that it cannot be overridden by the client.  
- * 
- * <p>
- * The main reason for having this class is to help 'close off' any protected 
- * method that might generate a security concern or might only serve a testing 
- * purpose.
- * </p>
- * 
+ *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
  * that rapidly addresses epidemiological and public health questions using 
@@ -70,7 +60,7 @@ package rifServices;
  *
  */
 
-final class ProductionRIFStudyRetrievalService 
+public final class TestRIFStudyRetrievalService 
 	extends AbstractRIFStudyRetrievalService {
 
 	// ==========================================
@@ -85,14 +75,14 @@ final class ProductionRIFStudyRetrievalService
 	// Section Construction
 	// ==========================================
 
-	public ProductionRIFStudyRetrievalService() {
+	public TestRIFStudyRetrievalService() {
 
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-		
+
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -104,5 +94,4 @@ final class ProductionRIFStudyRetrievalService
 	// ==========================================
 	// Section Override
 	// ==========================================
-
 }

@@ -2,13 +2,13 @@ package rifServices.test.services;
 
 
 
-import rifServices.SampleTestObjectGenerator;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.RIFJobSubmission;
+import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceException;
 import rifServices.test.AbstractRIFTestCase;
-
 import static org.junit.Assert.*;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

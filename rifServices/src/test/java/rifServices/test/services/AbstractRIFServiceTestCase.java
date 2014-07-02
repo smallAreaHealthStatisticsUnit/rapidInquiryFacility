@@ -1,10 +1,9 @@
 package rifServices.test.services;
 
 import rifServices.test.AbstractRIFTestCase;
-
-import rifServices.TestRIFStudyServiceBundle;
-import rifServices.TestRIFStudyRetrievalService;
-import rifServices.TestRIFStudySubmissionService;
+import rifServices.dataStorageLayer.TestRIFStudyRetrievalService;
+import rifServices.dataStorageLayer.TestRIFStudyServiceBundle;
+import rifServices.dataStorageLayer.TestRIFStudySubmissionService;
 import rifServices.system.RIFServiceException;
 
 /**

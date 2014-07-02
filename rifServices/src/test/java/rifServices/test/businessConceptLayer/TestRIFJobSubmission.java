@@ -1,9 +1,9 @@
 package rifServices.test.businessConceptLayer;
 
-import rifServices.SampleTestObjectGenerator;
 
 
 import rifServices.businessConceptLayer.*;
+import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
@@ -11,6 +11,7 @@ import rifServices.test.AbstractRIFTestCase;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+
 import java.util.Date;
 
 

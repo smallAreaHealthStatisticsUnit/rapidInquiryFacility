@@ -1,14 +1,13 @@
 package rifJobSubmissionTool.desktop.batch;
 
 import rifJobSubmissionTool.desktop.interactive.ErrorDialog;
-
 import rifJobSubmissionTool.system.RIFSession;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.util.UserInterfaceFactory;
-import rifServices.ProductionRIFStudyServiceBundle;
-import rifServices.ProductionRIFStudySubmissionService;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
+import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
+import rifServices.dataStorageLayer.ProductionRIFStudySubmissionService;
 import rifServices.system.RIFServiceException;
 
 import java.net.InetAddress;

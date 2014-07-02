@@ -1,8 +1,6 @@
 package rifJobSubmissionTool.system;
 
 import rifJobSubmissionTool.util.UserInterfaceFactory;
-
-import rifServices.ProductionRIFStudyServiceBundle;
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.ComparisonArea;
@@ -17,6 +15,7 @@ import rifServices.businessConceptLayer.RIFOutputOption;
 import rifServices.businessConceptLayer.RIFJobSubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
+import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
 
 import java.util.ArrayList;
 import java.io.File;

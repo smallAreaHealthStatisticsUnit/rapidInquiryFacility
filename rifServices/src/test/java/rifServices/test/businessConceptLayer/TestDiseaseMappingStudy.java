@@ -1,9 +1,8 @@
 package rifServices.test.businessConceptLayer;
 
 
-import rifServices.SampleTestObjectGenerator;
-
 import rifServices.businessConceptLayer.*;
+import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;

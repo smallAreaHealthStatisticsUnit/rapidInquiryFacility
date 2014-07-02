@@ -1,4 +1,12 @@
-package rifServices;
+package rifServices.dataStorageLayer;
+
+import java.util.ArrayList;
+
+import rifServices.businessConceptLayer.AbstractCovariate;
+import rifServices.businessConceptLayer.AgeBand;
+import rifServices.businessConceptLayer.User;
+import rifServices.system.RIFServiceException;
+import rifServices.taxonomyServices.HealthCodeProvider;
 
 /**
  *
@@ -60,8 +68,8 @@ package rifServices;
  *
  */
 
-public final class ProductionRIFStudyServiceBundle 
-	extends AbstractStudyServiceBundle {
+public final class TestRIFStudySubmissionService 
+	extends AbstractRIFStudySubmissionService {
 
 	// ==========================================
 	// Section Constants
@@ -75,7 +83,7 @@ public final class ProductionRIFStudyServiceBundle
 	// Section Construction
 	// ==========================================
 
-	public ProductionRIFStudyServiceBundle() {
+	public TestRIFStudySubmissionService() {
 
 	}
 
@@ -83,6 +91,8 @@ public final class ProductionRIFStudyServiceBundle
 	// Section Accessors and Mutators
 	// ==========================================
 
+
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -94,4 +104,53 @@ public final class ProductionRIFStudyServiceBundle
 	// ==========================================
 	// Section Override
 	// ==========================================
+	
+	public void checkNonExistentAgeGroups(
+		User user,
+		ArrayList<AgeBand> ageBands) 
+		throws RIFServiceException {	
+	
+		super.checkNonExistentAgeGroups(
+			user,
+			ageBands);
+	}
+	
+	public void checkNonExistentCovariates(
+		User user,
+		ArrayList<AbstractCovariate> covariates) 
+		throws RIFServiceException {	
+	
+		super.checkNonExistentCovariates(
+			user,
+			covariates);		
+	}
+	
+	public void addHealthCodeProvider(
+		User user,
+		HealthCodeProvider healthCodeProvider) throws RIFServiceException {	
+		
+		super.addHealthCodeProvider(
+			user,
+			healthCodeProvider);
+	}
+	
+	public void clearHealthCodeProviders(User user) 
+		throws RIFServiceException {
+		
+		super.clearHealthCodeProviders(user);
+	}
+	
+	public void clearRIFJobSubmissionsForUser(
+		User user) 
+		throws RIFServiceException {
+
+		super.clearRIFJobSubmissionsForUser(user);
+	}
+	
+	public void clearStudiesForUser(
+		User user) 
+		throws RIFServiceException {
+		
+		super.clearStudiesForUser(user);
+	}
 }

@@ -1,4 +1,6 @@
-package rifServices;
+package rifServices.dataStorageLayer;
+
+import rifServices.system.RIFServiceException;
 
 /**
  *
@@ -60,8 +62,8 @@ package rifServices;
  *
  */
 
-public final class ProductionRIFStudySubmissionService 
-	extends AbstractRIFStudySubmissionService {
+public final class TestRIFStudyServiceBundle 
+	extends AbstractStudyServiceBundle {
 
 	// ==========================================
 	// Section Constants
@@ -75,14 +77,39 @@ public final class ProductionRIFStudySubmissionService
 	// Section Construction
 	// ==========================================
 
-	public ProductionRIFStudySubmissionService() {
+	public TestRIFStudyServiceBundle() {
 
 	}
 
+	@Override
+	public void initialise() 
+		throws RIFServiceException {
+		System.out.println("TestRIFStudyServiceBundle initialise 1");
+			
+		RIFServiceResources rifServiceResources
+			= RIFServiceResources.newInstance();
+		setRIFServiceResources(rifServiceResources);
+
+		TestRIFStudySubmissionService rifStudySubmissionService
+			= new TestRIFStudySubmissionService();
+		rifStudySubmissionService.initialise(rifServiceResources);
+		setRIFStudySubmissionService(rifStudySubmissionService);
+			
+		TestRIFStudyRetrievalService rifStudyRetrievalService
+			= new TestRIFStudyRetrievalService();
+		rifStudyRetrievalService.initialise(rifServiceResources);
+		setRIFStudyRetrievalService(rifStudyRetrievalService);
+	}		
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public void deregisterAllUsers() 
+		throws RIFServiceException {
+
+		super.deregisterAllUsers();
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
