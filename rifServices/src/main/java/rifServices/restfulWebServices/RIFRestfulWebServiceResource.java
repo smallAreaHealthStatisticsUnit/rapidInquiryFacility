@@ -1,7 +1,8 @@
 package rifServices.restfulWebServices;
 
 
-import rifServices.ProductionRIFJobSubmissionService;
+import rifServices.ProductionRIFStudyServiceBundle;
+
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
@@ -13,16 +14,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
 
-
-
-
-
-
-
-
-
-
-import java.sql.Connection;
 import java.text.Collator;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -122,7 +113,7 @@ public class RIFRestfulWebServiceResource {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private ProductionRIFJobSubmissionService service;
+	private RIFStudySubmissionAPI service;
 	
 	private SimpleDateFormat sd;
 	private Date startTime;
@@ -154,11 +145,14 @@ public class RIFRestfulWebServiceResource {
 		webApplicationFolderPath.append(File.separator);
 		webApplicationFolderPath.append("classes");
 		rifServiceStartupOptions.setWebApplicationFilePath(webApplicationFolderPath.toString());
-		service = new ProductionRIFJobSubmissionService();
-		service.initialiseService(rifServiceStartupOptions);
+
+		ProductionRIFStudyServiceBundle rifStudyServiceBundle
+			= new ProductionRIFStudyServiceBundle();
 
 		try {
-			service.login("keving", new String("a").toCharArray());
+			rifStudyServiceBundle.initialise(rifServiceStartupOptions);
+			service = rifStudyServiceBundle.getRIFStudySubmissionService();
+			rifStudyServiceBundle.login("keving", new String("a").toCharArray());
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
@@ -704,7 +698,7 @@ public class RIFRestfulWebServiceResource {
 					user, 
 					geography, 
 					ndPair, 
-					RIFJobSubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+					RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			
 			ArrayList<AgeGroupProxy> ageGroupProxies = new ArrayList<AgeGroupProxy>();
 			for (AgeGroup ageGroup : ageGroups) {
@@ -880,7 +874,10 @@ public class RIFRestfulWebServiceResource {
 			User user = User.newInstance(userID, "xxx");
 			
 			HealthCode parentHealthCode
-				= service.getHealthCode(user, healthCode, healthCodeNameSpace);
+				= service.getHealthCode(
+					user, 
+					healthCode, 
+					healthCodeNameSpace);
 			ArrayList<HealthCode> healthCodes
 				= service.getImmediateSubterms(user, parentHealthCode);
 			
