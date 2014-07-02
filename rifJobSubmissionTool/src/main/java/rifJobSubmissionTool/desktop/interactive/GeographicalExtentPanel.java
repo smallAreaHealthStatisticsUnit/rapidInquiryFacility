@@ -2,6 +2,7 @@ package rifJobSubmissionTool.desktop.interactive;
 
 
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
+
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
@@ -17,7 +18,7 @@ import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.MapAreaSummaryData;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -611,8 +612,8 @@ public class GeographicalExtentPanel
 				= rifSession.getUser();
 			Geography currentGeography
 				= rifSession.getCurrentGeography();
-			RIFJobSubmissionAPI service
-				= rifSession.getService();
+			RIFStudySubmissionAPI service
+				= rifSession.getRIFStudySubmissionService();
 			ArrayList<GeoLevelSelect> geoLevelSelects
 				= service.getGeographicalLevelSelectValues(currentUser, currentGeography);
 			for (GeoLevelSelect geoLevelSelect : geoLevelSelects) {
@@ -637,7 +638,7 @@ public class GeographicalExtentPanel
 	private void updateGeoLevelAreaViewAndToMapValues() 
 		throws RIFServiceException {
 
-		RIFJobSubmissionAPI service = rifSession.getService();
+		RIFStudySubmissionAPI service = rifSession.getRIFStudySubmissionService();
 		User currentUser = rifSession.getUser();
 		Geography currentGeography
 			= rifSession.getCurrentGeography();
@@ -703,7 +704,8 @@ public class GeographicalExtentPanel
 			= (GeoLevelToMap) geoLevelToMapComboBox.getSelectedItem();
 
 		try {
-			RIFJobSubmissionAPI service = rifSession.getService();
+			RIFStudySubmissionAPI service 
+				= rifSession.getRIFStudySubmissionService();
 			
 			MapAreaSummaryData mapAreaSummaryData
 				= service.getSummaryDataForCurrentExtent(

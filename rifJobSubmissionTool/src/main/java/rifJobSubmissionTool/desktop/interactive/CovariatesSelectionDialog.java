@@ -3,12 +3,13 @@ package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.util.UserInterfaceFactory;
 
+
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
 
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.DisplayableListItem;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.Geography;
@@ -115,7 +116,7 @@ public class CovariatesSelectionDialog
 	/** The rif session. */
 	private RIFSession rifSession;	
 	/** The service. */
-	private RIFJobSubmissionAPI service;
+	private RIFStudySubmissionAPI service;
 	/** The is cancelled. */
 	private boolean isCancelled;
 	
@@ -142,7 +143,7 @@ public class CovariatesSelectionDialog
 		RIFSession rifSession) {
 
 		this.rifSession = rifSession;
-    	service = rifSession.getService();
+    	service = rifSession.getRIFStudySubmissionService();
 		this.userInterfaceFactory = rifSession.getUIFactory();
 		isCancelled = false;
 

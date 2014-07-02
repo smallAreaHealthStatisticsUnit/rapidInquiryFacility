@@ -1,9 +1,11 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
 
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+
+import rifJobSubmissionTool.system.RIFSession;
+import rifServices.ProductionRIFStudyServiceBundle;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 
@@ -138,10 +140,12 @@ public class ShutdownManager extends WindowAdapter {
 		}
 		
 		User user = rifSession.getUser();
-		RIFJobSubmissionAPI service
-			= rifSession.getService();
+		RIFStudySubmissionAPI service
+			= rifSession.getRIFStudySubmissionService();
 		try {
-			service.logout(user);
+			ProductionRIFStudyServiceBundle rifStudyServiceBundle
+				= rifSession.getRIFStudyServiceBundle();
+			rifStudyServiceBundle.logout(user);
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(parentDialog, rifServiceException);

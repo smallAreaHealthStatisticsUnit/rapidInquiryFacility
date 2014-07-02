@@ -1,6 +1,7 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.RIFSession;
+
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.util.UserInterfaceFactory;
 
@@ -9,7 +10,7 @@ import rifServices.businessConceptLayer.AgeGroup;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceException;
@@ -316,8 +317,8 @@ public class AgeBandEditorDialog
 	 */
 	private void initialiseAgeGroupChoices() {
 		
-		RIFJobSubmissionAPI service
-			= rifSession.getService();
+		RIFStudySubmissionAPI service
+			= rifSession.getRIFStudySubmissionService();
 		
 		try {
 			//update the Year List
@@ -334,7 +335,7 @@ public class AgeBandEditorDialog
 					currentUser, 
 					currentGeography, 
 					currentNDPair,
-					RIFJobSubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+					RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 
 			for (AgeGroup ageGroupByLowerLimit : ageGroupsByLowerLimit) {
 				ageGroupByLowerLimit.showOnlyLowerLimitInDisplayName();
@@ -346,7 +347,7 @@ public class AgeBandEditorDialog
 					currentUser, 
 					currentGeography, 
 					currentNDPair,
-					RIFJobSubmissionAPI.AgeGroupSortingOption.DESCENDING_UPPER_LIMIT);
+					RIFStudySubmissionAPI.AgeGroupSortingOption.DESCENDING_UPPER_LIMIT);
 
 			for (AgeGroup ageGroupByUpperLimit : ageGroupsByUpperLimit) {
 				ageGroupByUpperLimit.showOnlyUpperLimitInDisplayName();

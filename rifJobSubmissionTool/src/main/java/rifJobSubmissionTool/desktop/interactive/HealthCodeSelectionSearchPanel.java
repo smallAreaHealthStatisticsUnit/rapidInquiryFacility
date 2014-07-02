@@ -1,12 +1,13 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.desktop.interactive.HealthCodeTableModel;
+
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
 import rifJobSubmissionTool.util.UserInterfaceFactory;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.system.RIFServiceException;
 
 import java.awt.GridBagConstraints;
@@ -316,7 +317,7 @@ public class HealthCodeSelectionSearchPanel
 		
 		String searchText = searchTextField.getText().trim();
 		
-		RIFJobSubmissionAPI service = session.getService();
+		RIFStudySubmissionAPI service = session.getRIFStudySubmissionService();
 		try {
 			ArrayList<HealthCode> searchResults
 				= service.getHealthCodes(

@@ -2,6 +2,7 @@ package rifJobSubmissionTool.system;
 
 import rifJobSubmissionTool.util.UserInterfaceFactory;
 
+import rifServices.ProductionRIFStudyServiceBundle;
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.ComparisonArea;
@@ -14,7 +15,7 @@ import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.RIFOutputOption;
 import rifServices.businessConceptLayer.RIFJobSubmission;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 
 import java.util.ArrayList;
@@ -93,8 +94,9 @@ public class RIFSession {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The service. */
-	private RIFJobSubmissionAPI service;
+	
+	private ProductionRIFStudyServiceBundle rifStudyServiceBundle;
+	
 	
 	/** The ui factory. */
 	private UserInterfaceFactory uiFactory;
@@ -128,10 +130,10 @@ public class RIFSession {
 	 * @param user the user
 	 */
 	public RIFSession(
-		RIFJobSubmissionAPI service, 
+		ProductionRIFStudyServiceBundle rifStudyServiceBundle,
 		User user) {
 
-		this.service = service;
+		this.rifStudyServiceBundle = rifStudyServiceBundle;
 		this.user = user;		
 		uiFactory = new UserInterfaceFactory();
 		committedActivitySteps = new ArrayList<RIFActivityStep>();
@@ -424,15 +426,18 @@ public class RIFSession {
 		
 		return user;
 	}
-		
+	
+	public ProductionRIFStudyServiceBundle getRIFStudyServiceBundle() {
+		return rifStudyServiceBundle;
+	}
+	
 	/**
 	 * Gets the service.
 	 *
 	 * @return the service
 	 */
-	public RIFJobSubmissionAPI getService() {
-		
-		return service;
+	public RIFStudySubmissionAPI getRIFStudySubmissionService() {		
+		return rifStudyServiceBundle.getRIFStudySubmissionService();
 	}
 	
 	/**

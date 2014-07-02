@@ -3,6 +3,7 @@ package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.util.UserInterfaceFactory;
 
+
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
 
@@ -13,7 +14,7 @@ import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.YearInterval;
 import rifServices.businessConceptLayer.YearRange;
@@ -112,7 +113,7 @@ public class InvestigationEditorDialog
 	
 	//Data
 	/** The service. */
-	private RIFJobSubmissionAPI service;	
+	private RIFStudySubmissionAPI service;	
 	/** The rif session. */
 	private RIFSession rifSession;	
 	/** The current user. */
@@ -159,7 +160,7 @@ public class InvestigationEditorDialog
 		RIFSession rifSession) {
    
 		this.rifSession = rifSession;
-    	service = rifSession.getService();
+    	service = rifSession.getRIFStudySubmissionService();
     	currentUser = rifSession.getUser();
 		userInterfaceFactory = rifSession.getUIFactory();
 

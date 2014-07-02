@@ -1,6 +1,7 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.RIFActivityStep;
+
 import rifJobSubmissionTool.system.RIFSession;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
@@ -11,7 +12,7 @@ import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFJobSubmission;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 
 import java.awt.GridBagConstraints;
@@ -260,7 +261,8 @@ public class CreateOrCopyStudyStepPanel
 		//User has changed their selection of the current project
 		try {
 			RIFSession rifSession = getRIFSession();
-			RIFJobSubmissionAPI service = rifSession.getService();
+			RIFStudySubmissionAPI service 
+				= rifSession.getRIFStudySubmissionService();
 			User currentUser = rifSession.getUser();
 			ArrayList<AbstractStudy> studies
 				= service.getStudies(currentUser, selectedProject);

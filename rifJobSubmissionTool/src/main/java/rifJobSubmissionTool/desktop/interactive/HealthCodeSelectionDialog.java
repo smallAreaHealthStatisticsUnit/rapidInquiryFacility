@@ -2,12 +2,13 @@ package rifJobSubmissionTool.desktop.interactive;
 
 
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
+
 import rifJobSubmissionTool.system.RIFSession;
 import rifJobSubmissionTool.util.UserInterfaceFactory;
 
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.system.RIFServiceException;
 
 import java.awt.Component;
@@ -100,7 +101,7 @@ public class HealthCodeSelectionDialog
 	/** The session. */
 	private RIFSession session;	
 	/** The service. */
-	private RIFJobSubmissionAPI service;
+	private RIFStudySubmissionAPI service;
 	/** The selected health codes. */
 	private ArrayList<HealthCode> selectedHealthCodes;
 	/** The existing health codes for investigation. */
@@ -139,7 +140,7 @@ public class HealthCodeSelectionDialog
 
 		this.session = session;		
 		uiFactory = session.getUIFactory();
-		service = session.getService();
+		service = session.getRIFStudySubmissionService();
 
 		selectedHealthCodes = new ArrayList<HealthCode>();
 		

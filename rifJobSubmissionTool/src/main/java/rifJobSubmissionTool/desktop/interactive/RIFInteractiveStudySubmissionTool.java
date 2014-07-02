@@ -5,9 +5,9 @@ import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
 import rifJobSubmissionTool.util.UserInterfaceFactory;
-import rifServices.ProductionRIFJobSubmissionService;
+import rifServices.ProductionRIFStudyServiceBundle;
 import rifServices.businessConceptLayer.RIFJobSubmission;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 
@@ -100,20 +100,22 @@ public class RIFInteractiveStudySubmissionTool
 	 * @param args the arguments
 	 */
 	public static void main(String[] args) {
-		try {		
-			RIFJobSubmissionAPI service = new ProductionRIFJobSubmissionService();
-			service.initialiseService();
-			service.login("keving", new String("a").toCharArray());			
+		try {	
+			ProductionRIFStudyServiceBundle rifStudyServiceBundle
+				= new ProductionRIFStudyServiceBundle();
+			rifStudyServiceBundle.initialise();
+			rifStudyServiceBundle.login("keving", new String("a").toCharArray());				
 
 			String ipAddress = InetAddress.getLocalHost().getHostAddress();
 			
 			User testUser = User.newInstance("keving", ipAddress);
-			RIFSession rifSession = new RIFSession(service, testUser);
+			RIFSession rifSession 
+				= new RIFSession(rifStudyServiceBundle, testUser);
 						
 			RIFInteractiveStudySubmissionTool rifStudySubmissionTool
 				= new RIFInteractiveStudySubmissionTool(rifSession);
 			rifStudySubmissionTool.show();
-			service.logout(testUser);
+			rifStudyServiceBundle.logout(testUser);
 			System.exit(0);
 		}
 		catch(UnknownHostException unknownHostException) {

@@ -1,6 +1,7 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.RIFActivityStep;
+
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
@@ -10,7 +11,7 @@ import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFJobSubmission;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -292,8 +293,8 @@ public class DescribeStudyStepPanel
 		//set the geography settings
 		try {
 			User currentUser = rifSession.getUser();
-			RIFJobSubmissionAPI service
-				= rifSession.getService();
+			RIFStudySubmissionAPI service
+				= rifSession.getRIFStudySubmissionService();
 			ArrayList<Geography> geographies
 				= service.getGeographies(currentUser);
 			geographyComboBox.clearList();

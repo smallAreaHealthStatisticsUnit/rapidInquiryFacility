@@ -1,11 +1,12 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
+
 import rifJobSubmissionTool.system.RIFSession;
 import rifJobSubmissionTool.util.UserInterfaceFactory;
 
 import rifServices.businessConceptLayer.CalculationMethod;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 
@@ -99,7 +100,7 @@ public class CalculationMethodSelectionDialog
 	/** The rif session. */
 	private RIFSession rifSession;		
 	/** The service. */
-	private RIFJobSubmissionAPI service;
+	private RIFStudySubmissionAPI service;
 	/** The is cancelled. */
 	private boolean isCancelled;
 	
@@ -130,7 +131,7 @@ public class CalculationMethodSelectionDialog
     	ArrayList<CalculationMethod> currentlyUsedCalculationMethods) {
     
     	this.rifSession = rifSession;   	
-    	this.service = rifSession.getService();
+    	this.service = rifSession.getRIFStudySubmissionService();
     	this.userInterfaceFactory = rifSession.getUIFactory();
 
 		isCancelled = false;

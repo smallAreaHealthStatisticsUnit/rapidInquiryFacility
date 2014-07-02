@@ -2,6 +2,7 @@ package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.RIFSession;
 
+
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.util.UserInterfaceFactory;
@@ -13,7 +14,7 @@ import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.MapAreaSummaryData;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 
@@ -123,7 +124,7 @@ public class MapAreaSelectionTableView
 	/** The rif session. */
 	private RIFSession rifSession;
 	/** The service. */
-	private RIFJobSubmissionAPI service;
+	private RIFStudySubmissionAPI service;
 	/** The is data source service. */
 	private boolean isDataSourceService;
 	
@@ -165,7 +166,7 @@ public class MapAreaSelectionTableView
 		
 		this.parentDialog = parentDialog;
 		this.rifSession = rifSession;
-		this.service = rifSession.getService();
+		this.service = rifSession.getRIFStudySubmissionService();
 		this.userInterfaceFactory = rifSession.getUIFactory();
 		this.isDataSourceService = isDataSourceService;
 		mapAreaSelectionTable = new MapAreaSelectionTable(userInterfaceFactory);
@@ -512,8 +513,8 @@ public class MapAreaSelectionTableView
 		throws RIFServiceException {
 		
 		if (isDataSourceService) {
-			RIFJobSubmissionAPI service
-				= rifSession.getService();
+			RIFStudySubmissionAPI service
+				= rifSession.getRIFStudySubmissionService();
 			User currentUser = rifSession.getUser();
 			Geography currentGeography
 				= rifSession.getCurrentGeography();

@@ -1,6 +1,7 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
+
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
 import rifJobSubmissionTool.system.MapAreaSelectionEvent;
@@ -15,7 +16,7 @@ import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.MapAreaSummaryData;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.io.MapAreaListReader;
 import rifServices.io.MapAreaListWriter;
@@ -457,8 +458,8 @@ public class MapAreaListSelectionPanel
 	private void updateBasketStatusPanel() {
 		
 		try {			
-			RIFJobSubmissionAPI service
-				= rifSession.getService();
+			RIFStudySubmissionAPI service
+				= rifSession.getRIFStudySubmissionService();
 			User currentUser = rifSession.getUser();
 			Geography currentGeography
 				= rifSession.getCurrentGeography();
@@ -658,7 +659,8 @@ public class MapAreaListSelectionPanel
 
 		ArrayList<MapArea> mapAreas = currentMapAreaSelectionBasket.getMapAreas();
 		try {
-			RIFJobSubmissionAPI service = rifSession.getService();
+			RIFStudySubmissionAPI service 
+				= rifSession.getRIFStudySubmissionService();
 			User currentUser = rifSession.getUser();
 			BufferedImage bufferedImage
 				= service.getImage(
@@ -791,7 +793,8 @@ public class MapAreaListSelectionPanel
 		}
 
 		//Update the image of the map panel
-		RIFJobSubmissionAPI service = rifSession.getService();
+		RIFStudySubmissionAPI service 
+			= rifSession.getRIFStudySubmissionService();
 		User currentUser = rifSession.getUser();
 		GeoLevelSelect geoLevelSelect = currentGeographicalArea.getGeoLevelSelect();
 		GeoLevelView geoLevelView = currentGeographicalArea.getGeoLevelView();

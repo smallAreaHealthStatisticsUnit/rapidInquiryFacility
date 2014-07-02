@@ -1,10 +1,11 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.RIFSession;
+
 import rifJobSubmissionTool.util.UserInterfaceFactory;
 
 import rifServices.businessConceptLayer.Project;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -241,8 +242,8 @@ public class ProjectSelectionPanel implements ActionListener {
 		//first visible one
 		try {
 			User currentUser = rifSession.getUser();
-			RIFJobSubmissionAPI service
-				= rifSession.getService();
+			RIFStudySubmissionAPI service
+				= rifSession.getRIFStudySubmissionService();
 			ArrayList<Project> projects
 				= service.getProjects(currentUser);
 						

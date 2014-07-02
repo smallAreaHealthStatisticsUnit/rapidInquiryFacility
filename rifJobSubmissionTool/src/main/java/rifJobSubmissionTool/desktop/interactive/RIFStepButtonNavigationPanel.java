@@ -1,13 +1,14 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.RIFActivityStep;
+
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
 import rifJobSubmissionTool.util.UserInterfaceFactory;
 
 import rifServices.businessConceptLayer.RIFJobSubmission;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.io.RIFZFileFilter;
 import rifServices.system.RIFServiceException;
@@ -306,7 +307,7 @@ public class RIFStepButtonNavigationPanel
 				= rifSession.getUser();
 			RIFJobSubmission currentRIFJobSubmission
 				= rifSession.getRIFJobSubmission();
-			RIFJobSubmissionAPI service = rifSession.getService();
+			RIFStudySubmissionAPI service = rifSession.getRIFStudySubmissionService();
 						
 			File selectedFile 
 				= RIFZFileFilter.ensureFileNameEndsWithExtension(fileChooser.getSelectedFile());

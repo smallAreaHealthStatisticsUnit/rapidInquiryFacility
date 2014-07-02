@@ -2,6 +2,7 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.util.UserInterfaceFactory;
+
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
 
@@ -12,7 +13,7 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearInterval;
 import rifServices.businessConceptLayer.YearRange;
@@ -119,7 +120,7 @@ public class AgeSexYearBandPanel
 	/** The rif session. */
 	private RIFSession rifSession;	
 	/** The service. */
-	private RIFJobSubmissionAPI service;
+	private RIFStudySubmissionAPI service;
 	
 	//GUI Components
 	/** The parent dialog. */
@@ -156,7 +157,7 @@ public class AgeSexYearBandPanel
     	this.parentDialog = parentDialog;
     	this.rifSession = rifSession;
     	userInterfaceFactory = rifSession.getUIFactory();
-    	service = rifSession.getService();
+    	service = rifSession.getRIFStudySubmissionService();
     	//user = rifSession.getUser();
 
 		panel = userInterfaceFactory.createPanel();

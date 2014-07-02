@@ -1,12 +1,13 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.RIFSession;
+
 import rifJobSubmissionTool.util.UserInterfaceFactory;
 
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
-import rifServices.businessConceptLayer.RIFJobSubmissionAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.system.RIFServiceException;
 
 import java.awt.event.MouseEvent;
@@ -99,7 +100,7 @@ public class HealthCodeSelectionTree
 	/** The session. */
 	private RIFSession session;	
 	/** The service. */
-	private RIFJobSubmissionAPI service;
+	private RIFStudySubmissionAPI service;
 	
 	//GUI Components
 	/** The tree. */
@@ -128,7 +129,7 @@ public class HealthCodeSelectionTree
 
 		this.session = session;
 		this.user = session.getUser();
-		this.service = session.getService();
+		this.service = session.getRIFStudySubmissionService();
 		this.parentDialog = parentDialog;
 		
 		UserInterfaceFactory uiFactory = session.getUIFactory();
