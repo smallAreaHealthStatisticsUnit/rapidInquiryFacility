@@ -94,13 +94,20 @@ Description:	Get all values for attributes source, attribute names, geography an
 		GID_ROWINDEX is guaranteed to be unqiue but is specific to this query (i.e. cannot be connected to naything else)
 
 		GID is currently always linked to the geometry table for the geography; it is itended to pre do this for the extract 
-		and results files to speed things up, GID_ROWINDEX must always be created if a) a sort takes place or b) GID is linked
+		and results files to speed things up, GID_ROWINDEX must always be created if a) a sort takes place or b) GID is linked.
+                GID_<geolevel name> fields may also be supported in health (but not population) tables to remove the need for some or all links.
 
 Warnings: 
 
-a) This function can be slow as if uses rif40_num_denom, takes 398mS on my laptop to fetch rows to RI40_NUM_DEMON based (health and population) themes
+a) This function can be slow as if uses rif40_num_denom, takes 398mS on my laptop to fetch rows to RI40_NUM_DEMON based
+   (health and population) themes
 b) Beware: the cursor name in the FETCH statement (c4getallatt4theme_5) must be unqiue for each open (the SELECT just before)
 c) Beware: even if you close the cursor the cursor name is not released until commit;
+d) This function is VOLATILE. Calling it twice with the same parameters will not necessarily return the same set of rows in the same order.
+   This is because databases to not guarantee data block access order, even without parallelisation.
+   To minimise the volatility:
+	i)  Set the row limit to NULL (all rows). This has a slight performance cost.
+	ii) Define a sort order. This has a severe performance cost for large tables.
 
 psql:alter_scripts/v4_0_alter_2.sql:540: INFO:  51209: rif40_GetMapAreaAttributeValue() caught:
 relation "c4getallatt4theme_3" already exists, detail:
@@ -722,14 +729,20 @@ Description:	Get all values for attributes source, attribute names, geography an
 		GID_ROWINDEX is guaranteed to be unqiue but is specific to this query (i.e. cannot be connected to naything else)
 
 		GID is currently always linked to the geometry table for the geography; it is itended to pre do this for the extract 
-		and results files to speed things up, GID_ROWINDEX must always be created if a) a sort takes place or b) GID is linked
+		and results files to speed things up, GID_ROWINDEX must always be created if a) a sort takes place or b) GID is linked.
+                GID_<geolevel name> fields may also be supported in health (but not population) tables to remove the need for some or all links.
 
 Warnings: 
 
-a) This function can be slow as if uses rif40_num_denom, takes 398mS on my laptop to fetch rows to RI40_NUM_DEMON based (health and population) themes
+a) This function can be slow as if uses rif40_num_denom, takes 398mS on my laptop to fetch rows to RI40_NUM_DEMON based
+   (health and population) themes
 b) Beware: the cursor name in the FETCH statement (c4getallatt4theme_5) must be unqiue for each open (the SELECT just before)
 c) Beware: even if you close the cursor the cursor name is not released until commit;
-
+d) This function is VOLATILE. Calling it twice with the same parameters will not necessarily return the same set of rows in the same order.
+   This is because databases to not guarantee data block access order, even without parallelisation.
+   To minimise the volatility:
+	i)  Set the row limit to NULL (all rows). This has a slight performance cost.
+	ii) Define a sort order. This has a severe performance cost for large tables.
 psql:alter_scripts/v4_0_alter_2.sql:540: INFO:  51209: rif40_GetMapAreaAttributeValue() caught:
 relation "c4getallatt4theme_3" already exists, detail:
 psql:alter_scripts/v4_0_alter_2.sql:540: ERROR:  relation "c4getallatt4theme_3" already exists
