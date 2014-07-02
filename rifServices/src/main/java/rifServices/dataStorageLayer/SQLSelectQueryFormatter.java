@@ -378,9 +378,6 @@ public class SQLSelectQueryFormatter
 		orderByConditions.add(orderByCondition.toString());
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.dataStorageLayer.SQLQueryFormatter#generateQuery()
-	 */
 	public String generateQuery() {
 		
 		query = new StringBuilder();
