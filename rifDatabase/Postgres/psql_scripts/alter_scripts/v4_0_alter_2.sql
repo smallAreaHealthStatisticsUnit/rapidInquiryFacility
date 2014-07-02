@@ -15,7 +15,11 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - RIF alter script 2 - range partitioning
+-- Rapid Enquiry Facility (RIF) - RIF alter script 3:
+--
+-- Add covariates to comparision area extract;
+-- GID, GID_ROWINDEX support in extracts/maps; 
+-- Make INV_1 INV_<inv_id> in results and results maps
 --
 -- Copyright:
 --
@@ -55,7 +59,7 @@
 \set ON_ERROR_STOP ON
 \timing
 
-\echo Running SAHSULAND schema alter script #2 (Range partitioning, automatic clustering of denominator tables)...
+\echo Running SAHSULAND schema alter script #2 (Add covariates to comparision area extract; GID, GID_ROWINDEX support in extracts/maps; Make INV_1 INV_<inv_id> in results and results maps)...
 
 BEGIN;
 
@@ -75,30 +79,13 @@ $$;
 --
 -- Drop statements if already run
 --
-DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR);
-DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_range_partition(VARCHAR, VARCHAR, VARCHAR);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR);
-DROP FUNCTION IF EXISTS  rif40_sql_pkg._rif40_common_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_insert(VARCHAR, VARCHAR, VARCHAR, INTEGER, OUT VARCHAR[], OUT VARCHAR);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_complete(VARCHAR, VARCHAR, VARCHAR, VARCHAR);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_triggers(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[]);
 
 --
--- Run common code on all pre-existing partitions (i.e. geolevel partitions)
--- to add indexes, grants etc
---
-
---
+-- Run common code for state machine
 -- PG psql code (SQL and Oracle compatibility processing)
 --
 \i ../PLpgsql/v4_0_rif40_sql_pkg.sql
-
---
--- Range partition all tables with year as a column
--- This will cope with data already present in the table
---
-\i ../psql_scripts/v4_0_year_partitions.sql
+\i ../PLpgsql/v4_0_rif40_sm_pkg.sql
 
 DO LANGUAGE plpgsql $$
 BEGIN

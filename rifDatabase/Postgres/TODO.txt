@@ -391,7 +391,7 @@ update_process_table=true
   random; aggregate the rest to LEVEL4 (intended to be a super "ward"). Name 
   levels 3 and 4 using gazettear. Build all tables using the same mapping; 
   destroy mapping after use.
-* Add RIF_ROW support (order by highest resolution study geolevel, event date, 
+* Add GID_<fgeolevel>, GID_ROWINDEX support (order by highest resolution study geolevel, event date, 
   postcode, record order number) and index 
 
 6.10 Remote Health Database Support
@@ -555,5 +555,12 @@ a) gid_rowindex (i.e 0000000001_0000000001). Where gid corresponds to gid in geo
 b) Remove foreign key t_rif40_inv_geography_fk from t_rif40_investigations, NUll data, remove column
 c) Add middleware support functions
 
+Completed 1/7/2014
 
+10.2 Alter 2
+     -------
+
+a) Add covariates to comparision area extract
+b) GID, GID_ROWINDEX support in extracts/maps
+c) Make INV_1 INV_<inv_id> in results and results maps
 

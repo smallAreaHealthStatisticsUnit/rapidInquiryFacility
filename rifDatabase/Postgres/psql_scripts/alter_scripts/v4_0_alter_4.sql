@@ -15,7 +15,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - RIF alter script 3 - range partitioning
+-- Rapid Enquiry Facility (RIF) - RIF alter script 4 - Hash partitioning
 --
 -- Copyright:
 --
@@ -55,7 +55,7 @@
 \set ON_ERROR_STOP ON
 \timing
 
-\echo Running SAHSULAND schema alter script #3 (Range partitioning, automatic clustering of denominator tables)...
+\echo Running SAHSULAND schema alter script #4 Hash partitioning...
 
 BEGIN;
 
@@ -73,19 +73,7 @@ END;
 $$;
 
 --
--- Drop statements if already run
---
-DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR);
-DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_range_partition(VARCHAR, VARCHAR, VARCHAR);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR);
-DROP FUNCTION IF EXISTS  rif40_sql_pkg._rif40_common_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_insert(VARCHAR, VARCHAR, VARCHAR, INTEGER, OUT VARCHAR[], OUT VARCHAR);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_complete(VARCHAR, VARCHAR, VARCHAR, VARCHAR);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_triggers(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[]);
-
---
--- Run common code on all pre-existing partitions (i.e. geolevel partitions)
+-- Run common code on al pre-existing partitions (i.e. geolevel partitions)
 -- to add indexes, grants etc
 --
 
@@ -94,11 +82,13 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_triggers(VARCHAR, 
 --
 \i ../PLpgsql/v4_0_rif40_sql_pkg.sql
 
+--\df+ rif40_sql_pkg._rif40_common_partition_triggers
+
 --
--- Range partition all tables with year as a column
+-- Hash partition all tables with study_id as a column
 -- This will cope with data already present in the table
 --
-\i ../psql_scripts/v4_0_year_partitions.sql
+\i ../psql_scripts/v4_0_study_id_partitions.sql
 
 DO LANGUAGE plpgsql $$
 BEGIN
