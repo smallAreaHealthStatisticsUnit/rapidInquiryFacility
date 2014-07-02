@@ -1,7 +1,7 @@
 package rifServices.test.businessConceptLayer;
 
 
-import rifServices.ProductionRIFJobSubmissionService;
+import rifServices.TestRIFStudyServiceBundle;
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 import rifServices.test.AbstractRIFTestCase;
@@ -87,7 +87,9 @@ public class TestYearRangeYearInterval extends AbstractRIFTestCase {
 	// Section Properties
 	// ==========================================
 	/** The service. */
-	private ProductionRIFJobSubmissionService service;
+	
+	private TestRIFStudyServiceBundle rifStudyServiceBundle;
+	private RIFStudySubmissionAPI service;
 
 	
 	/** The master interval91. */
@@ -156,9 +158,7 @@ public class TestYearRangeYearInterval extends AbstractRIFTestCase {
 	 * Instantiates a new test year range year interval.
 	 */
 	public TestYearRangeYearInterval() {
-		service
-			= new ProductionRIFJobSubmissionService();
-		service.initialiseService();
+		
 
 		masterInterval91 = YearInterval.newInstance("1991", "1991");
 		masterInterval92 = YearInterval.newInstance("1992", "1992");
@@ -183,7 +183,15 @@ public class TestYearRangeYearInterval extends AbstractRIFTestCase {
 		masterInterval959697 = YearInterval.newInstance("1995", "1997");
 
 		try {
-			service.login("keving", new String("a").toCharArray());			
+			rifStudyServiceBundle
+				= new TestRIFStudyServiceBundle();
+			rifStudyServiceBundle.initialise();
+		
+			service
+				= rifStudyServiceBundle.getRIFStudySubmissionService();
+			rifStudyServiceBundle.login(
+				"keving", 
+				new String("a").toCharArray());			
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);

@@ -1,11 +1,9 @@
 package rifServices.test.services;
 
 
-import rifServices.test.TestRIFSubmissionService;
 
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
-import rifServices.test.AbstractRIFTestCase;
 import rifServices.util.DisplayableItemSorter;
 import rifServices.util.FieldValidationUtility;
 
@@ -81,7 +79,7 @@ import org.junit.Test;
  *
  */
 
-public class TestRIFContextFeatures extends AbstractRIFTestCase {
+public class TestRIFContextFeatures extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -90,8 +88,6 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The service. */
-	private TestRIFSubmissionService service;
 	
 	/** The test user. */
 	private User testUser;
@@ -143,9 +139,6 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 * Instantiates a new test rif context features.
 	 */
 	public TestRIFContextFeatures() {
-		service
-			= new TestRIFSubmissionService();
-		service.initialiseService();
 
 		FieldValidationUtility fieldValidationUtility 
 			= new FieldValidationUtility();
@@ -180,13 +173,22 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		invalidUser = User.newInstance(null, "11.111.11.228");
 		maliciousUser = User.newInstance(maliciousFieldValue, "11.111.11.228");
 		
+		
+		try {
+			initialiseService();
+		}
+		catch(RIFServiceException rifServiceException) {
+			this.printErrors("TestRIFContextFeatures", rifServiceException);
+		}		
+		
+		
 	}
 	
 	
 	@Before
 	public void setUp() {
 		try {
-			service.login("keving", new String("a").toCharArray());			
+			rifServiceBundle.login("keving", new String("a").toCharArray());			
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
@@ -196,7 +198,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	@After
 	public void tearDown() {
 		try {
-			service.deregisterAllUsers();		
+			rifServiceBundle.deregisterAllUsers();		
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
@@ -217,7 +219,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	public void getGeographiesN1() {
 		try {
 			ArrayList<Geography> geographies
-				= service.getGeographies(testUser);
+				= rifStudySubmissionService.getGeographies(testUser);
 			assertEquals(3, geographies.size());
 			
 			DisplayableItemSorter sorter = new DisplayableItemSorter();
@@ -245,7 +247,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public void getGeographiesE1() {
 		try {
-			service.getGeographies(null);
+			rifStudySubmissionService.getGeographies(null);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -267,7 +269,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public void getGeographiesE2() {
 		try {
-			service.getGeographies(invalidUser);
+			rifStudySubmissionService.getGeographies(invalidUser);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -289,7 +291,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public void getGeographiesE3() {
 		try {
-			service.getGeographies(nonExistentUser);
+			rifStudySubmissionService.getGeographies(nonExistentUser);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -311,7 +313,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public void getGeographiesS1() {
 		try {
-			service.getGeographies(maliciousUser);
+			rifStudySubmissionService.getGeographies(maliciousUser);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -331,7 +333,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	public void getHealthThemesN1() {
 		try {
 			ArrayList<HealthTheme> healthThemes
-				= service.getHealthThemes(testUser, sahsuGeography);
+				= rifStudySubmissionService.getHealthThemes(testUser, sahsuGeography);
 			//there should be one health theme
 			HealthTheme sahsuCancerTheme = healthThemes.get(0);
 
@@ -355,7 +357,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public void getHealthThemesE1() {
 		try {
-			service.getHealthThemes(null, sahsuGeography);
+			rifStudySubmissionService.getHealthThemes(null, sahsuGeography);
 			//there should be one health theme
 			fail();
 		}
@@ -367,7 +369,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getHealthThemes(testUser, null);
+			rifStudySubmissionService.getHealthThemes(testUser, null);
 			//there should be one health theme
 			fail();
 		}
@@ -392,7 +394,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	public void getHealthThemesE2() {
 		try {
 
-			service.getHealthThemes(invalidUser, sahsuGeography);
+			rifStudySubmissionService.getHealthThemes(invalidUser, sahsuGeography);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -403,7 +405,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}		
 		
 		try {
-			service.getHealthThemes(testUser, invalidGeography);
+			rifStudySubmissionService.getHealthThemes(testUser, invalidGeography);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -426,7 +428,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	public void getHealthThemesE3() {
 		try {
 
-			service.getHealthThemes(nonExistentUser, sahsuGeography);
+			rifStudySubmissionService.getHealthThemes(nonExistentUser, sahsuGeography);
 			//there should be one health theme
 			fail();
 		}
@@ -438,7 +440,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}		
 		
 		try {
-			service.getHealthThemes(testUser, nonExistentGeography);
+			rifStudySubmissionService.getHealthThemes(testUser, nonExistentGeography);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -460,7 +462,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public void getHealthThemesS1() {
 		try {
-			service.getHealthThemes(maliciousUser, sahsuGeography);
+			rifStudySubmissionService.getHealthThemes(maliciousUser, sahsuGeography);
 			//there should be one health theme
 			fail();
 		}
@@ -476,7 +478,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	@Test
 	public void getHealthThemesS2() {
 		try {
-			service.getHealthThemes(testUser, maliciousGeography);
+			rifStudySubmissionService.getHealthThemes(testUser, maliciousGeography);
 			//there should be one health theme
 			fail();
 		}
@@ -496,7 +498,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	@Test
 	public void getNumeratorDenominatorPairN1() {
 		try {
-			service.getNumeratorDenominatorPairs(
+			rifStudySubmissionService.getNumeratorDenominatorPairs(
 				testUser, 
 				sahsuGeography, 
 				cancerHealthTheme);	
@@ -518,7 +520,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public void getNumeratorDenominatorPairE1() {
 		try {
-			service.getNumeratorDenominatorPairs(
+			rifStudySubmissionService.getNumeratorDenominatorPairs(
 				null, 
 				sahsuGeography, 
 				cancerHealthTheme);	
@@ -532,7 +534,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getNumeratorDenominatorPairs(
+			rifStudySubmissionService.getNumeratorDenominatorPairs(
 				testUser, 
 				null, 
 				cancerHealthTheme);	
@@ -546,7 +548,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getNumeratorDenominatorPairs(
+			rifStudySubmissionService.getNumeratorDenominatorPairs(
 				testUser, 
 				sahsuGeography, 
 				null);	
@@ -572,7 +574,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public void getNumeratorDenominatorPairE2() {
 		try {
-			service.getNumeratorDenominatorPairs(
+			rifStudySubmissionService.getNumeratorDenominatorPairs(
 				invalidUser, 
 				sahsuGeography, 
 				cancerHealthTheme);	
@@ -586,7 +588,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 
 		try {
-			service.getNumeratorDenominatorPairs(
+			rifStudySubmissionService.getNumeratorDenominatorPairs(
 				testUser, 
 				invalidGeography, 
 				cancerHealthTheme);	
@@ -600,7 +602,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 	
 		try {
-			service.getNumeratorDenominatorPairs(
+			rifStudySubmissionService.getNumeratorDenominatorPairs(
 				testUser, 
 				sahsuGeography, 
 				invalidHealthTheme);	
@@ -627,7 +629,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public void getNumeratorDenominatorPairE3() {
 		try {
-			service.getNumeratorDenominatorPairs(
+			rifStudySubmissionService.getNumeratorDenominatorPairs(
 				nonExistentUser, 
 				sahsuGeography, 
 				cancerHealthTheme);	
@@ -641,7 +643,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 
 		try {
-			service.getNumeratorDenominatorPairs(
+			rifStudySubmissionService.getNumeratorDenominatorPairs(
 				testUser, 
 				nonExistentGeography, 
 				cancerHealthTheme);	
@@ -655,7 +657,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 	
 		try {
-			service.getNumeratorDenominatorPairs(
+			rifStudySubmissionService.getNumeratorDenominatorPairs(
 				testUser, 
 				sahsuGeography, 
 				nonExistentHealthTheme);	
@@ -679,7 +681,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	public void getGeoLevelSelectValuesN1() {
 		try {
 			ArrayList<Geography> geographies
-				= service.getGeographies(testUser);
+				= rifStudySubmissionService.getGeographies(testUser);
 			assertEquals(3, geographies.size());
 			
 			DisplayableItemSorter sorter = new DisplayableItemSorter();
@@ -697,7 +699,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 			assertEquals("SAHSU", sahsuGeography.getDisplayName());
 			
 			ArrayList<GeoLevelSelect> geoLevelSelectValues
-				= service.getGeographicalLevelSelectValues(
+				= rifStudySubmissionService.getGeographicalLevelSelectValues(
 					testUser, 
 					sahsuGeography);
 				
@@ -731,7 +733,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public void getGeoLevelSelectValueE1() {
 		try {
-			service.getGeographicalLevelSelectValues(
+			rifStudySubmissionService.getGeographicalLevelSelectValues(
 				null, 
 				sahsuGeography);
 			fail();
@@ -744,7 +746,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 
 		try {
-			service.getGeographicalLevelSelectValues(
+			rifStudySubmissionService.getGeographicalLevelSelectValues(
 				testUser, 
 				null);
 			fail();
@@ -770,7 +772,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		
 		//try to get results using invalid user
 		try {
-			service.getGeographicalLevelSelectValues(
+			rifStudySubmissionService.getGeographicalLevelSelectValues(
 				invalidUser, 
 				sahsuGeography);
 			fail();
@@ -784,7 +786,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		
 		//try to get results using invalid user
 		try {
-			service.getGeographicalLevelSelectValues(
+			rifStudySubmissionService.getGeographicalLevelSelectValues(
 				testUser, 
 				invalidGeography);
 			fail();
@@ -810,7 +812,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		
 		//try to get results using invalid user
 		try {
-			service.getGeographicalLevelSelectValues(
+			rifStudySubmissionService.getGeographicalLevelSelectValues(
 				nonExistentUser, 
 				sahsuGeography);
 			fail();
@@ -824,7 +826,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		
 		//try to get results using invalid user
 		try {
-			service.getGeographicalLevelSelectValues(
+			rifStudySubmissionService.getGeographicalLevelSelectValues(
 				testUser, 
 				nonExistentGeography);
 			fail();
@@ -847,7 +849,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		try {
 			
 			GeoLevelSelect defaultSelectValue
-				= service.getDefaultGeoLevelSelectValue(
+				= rifStudySubmissionService.getDefaultGeoLevelSelectValue(
 					testUser, 
 					sahsuGeography);
 			assertEquals("LEVEL2", defaultSelectValue.getName());
@@ -869,7 +871,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	public void getDefaultGeoLevelSelectValueE1() {
 
 		try {
-			service.getDefaultGeoLevelSelectValue(
+			rifStudySubmissionService.getDefaultGeoLevelSelectValue(
 				null, 
 				sahsuGeography);
 			fail();
@@ -882,7 +884,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 
 		try {			
-			service.getDefaultGeoLevelSelectValue(
+			rifStudySubmissionService.getDefaultGeoLevelSelectValue(
 				testUser, 
 				null);
 			fail();
@@ -907,7 +909,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	public void getDefaultGeoLevelSelectValueE2() {
 		try {
 			
-			service.getDefaultGeoLevelSelectValue(
+			rifStudySubmissionService.getDefaultGeoLevelSelectValue(
 				invalidUser, 
 				sahsuGeography);
 			fail();
@@ -922,7 +924,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 
 		try {
 			
-			service.getDefaultGeoLevelSelectValue(
+			rifStudySubmissionService.getDefaultGeoLevelSelectValue(
 				testUser, 
 				invalidGeography);
 			fail();
@@ -948,7 +950,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	public void getDefaultGeoLevelSelectValueE3() {
 		try {
 			
-			service.getDefaultGeoLevelSelectValue(
+			rifStudySubmissionService.getDefaultGeoLevelSelectValue(
 				nonExistentUser, 
 				sahsuGeography);
 			fail();
@@ -961,7 +963,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-				service.getDefaultGeoLevelSelectValue(
+				rifStudySubmissionService.getDefaultGeoLevelSelectValue(
 					testUser, 
 					nonExistentGeography);
 			fail();
@@ -983,7 +985,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	public void getGeoLevelAreasValuesN1() {
 		try {
 			ArrayList<GeoLevelArea> geoLevelAreaValues
-				= service.getGeoLevelAreaValues(
+				= rifStudySubmissionService.getGeoLevelAreaValues(
 					testUser, 
 					sahsuGeography, 
 					validSAHSUGeoLevelSelectValue);
@@ -1012,7 +1014,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	public void getGeoLevelAreasValuesE1() {
 		
 		try {
-			service.getGeoLevelAreaValues(
+			rifStudySubmissionService.getGeoLevelAreaValues(
 				null, 
 				sahsuGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1026,7 +1028,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getGeoLevelAreaValues(
+			rifStudySubmissionService.getGeoLevelAreaValues(
 				testUser, 
 				null, 
 				validSAHSUGeoLevelSelectValue);
@@ -1040,7 +1042,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getGeoLevelAreaValues(
+			rifStudySubmissionService.getGeoLevelAreaValues(
 				testUser, 
 				sahsuGeography, 
 				null);
@@ -1066,7 +1068,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	public void getGeoLevelAreasValuesE2() {
 
 		try {
-			service.getGeoLevelAreaValues(
+			rifStudySubmissionService.getGeoLevelAreaValues(
 				invalidUser, 
 				sahsuGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1080,7 +1082,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getGeoLevelAreaValues(
+			rifStudySubmissionService.getGeoLevelAreaValues(
 				testUser, 
 				invalidGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1094,7 +1096,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 
 		try {
-			service.getGeoLevelAreaValues(
+			rifStudySubmissionService.getGeoLevelAreaValues(
 				testUser, 
 				sahsuGeography, 
 				invalidGeoLevelSelectValue);
@@ -1120,7 +1122,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	public void getGeoLevelAreasValuesE3() {
 
 		try {
-			service.getGeoLevelAreaValues(
+			rifStudySubmissionService.getGeoLevelAreaValues(
 				nonExistentUser, 
 				sahsuGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1134,7 +1136,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getGeoLevelAreaValues(
+			rifStudySubmissionService.getGeoLevelAreaValues(
 				testUser, 
 				nonExistentGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1148,7 +1150,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 
 		try {
-			service.getGeoLevelAreaValues(
+			rifStudySubmissionService.getGeoLevelAreaValues(
 				testUser, 
 				sahsuGeography, 
 				nonExistentGeoLevelSelectValue);
@@ -1172,7 +1174,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	@Test
 	public void getGeoLevelViewValuesN1() {
 		try {
-			service.getGeoLevelViewValues(
+			rifStudySubmissionService.getGeoLevelViewValues(
 				testUser, 
 				sahsuGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1193,7 +1195,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public void getGeoLevelViewValuesE1() {
 		try {
-			service.getGeoLevelViewValues(
+			rifStudySubmissionService.getGeoLevelViewValues(
 				null, 
 				sahsuGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1207,7 +1209,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 
 		try {
-			service.getGeoLevelViewValues(
+			rifStudySubmissionService.getGeoLevelViewValues(
 				testUser, 
 				null, 
 				validSAHSUGeoLevelSelectValue);
@@ -1221,7 +1223,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getGeoLevelViewValues(
+			rifStudySubmissionService.getGeoLevelViewValues(
 				testUser, 
 				sahsuGeography, 
 				null);
@@ -1246,7 +1248,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public void getGeoLevelViewValuesE2() {
 		try {
-			service.getGeoLevelViewValues(
+			rifStudySubmissionService.getGeoLevelViewValues(
 				invalidUser, 
 				sahsuGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1260,7 +1262,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 
 		try {
-			service.getGeoLevelViewValues(
+			rifStudySubmissionService.getGeoLevelViewValues(
 				testUser, 
 				invalidGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1274,7 +1276,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getGeoLevelViewValues(
+			rifStudySubmissionService.getGeoLevelViewValues(
 				testUser, 
 				sahsuGeography, 
 				invalidGeoLevelSelectValue);
@@ -1299,7 +1301,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public void getGeoLevelViewValuesE3() {
 		try {
-			service.getGeoLevelViewValues(
+			rifStudySubmissionService.getGeoLevelViewValues(
 				nonExistentUser, 
 				sahsuGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1313,7 +1315,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 
 		try {
-			service.getGeoLevelViewValues(
+			rifStudySubmissionService.getGeoLevelViewValues(
 				testUser, 
 				nonExistentGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1327,7 +1329,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getGeoLevelViewValues(
+			rifStudySubmissionService.getGeoLevelViewValues(
 				testUser, 
 				sahsuGeography, 
 				nonExistentGeoLevelSelectValue);
@@ -1349,7 +1351,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	@Test
 	public void getGeoLevelToMapValuesN1() {
 		try {
-			service.getGeoLevelToMapValues(
+			rifStudySubmissionService.getGeoLevelToMapValues(
 				testUser, 
 				sahsuGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1370,7 +1372,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public void getGeoLevelToMapValuesE1() {
 		try {
-			service.getGeoLevelToMapValues(
+			rifStudySubmissionService.getGeoLevelToMapValues(
 				null, 
 				sahsuGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1384,7 +1386,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 
 		try {
-			service.getGeoLevelToMapValues(
+			rifStudySubmissionService.getGeoLevelToMapValues(
 				testUser, 
 				null, 
 				validSAHSUGeoLevelSelectValue);
@@ -1398,7 +1400,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getGeoLevelToMapValues(
+			rifStudySubmissionService.getGeoLevelToMapValues(
 				testUser, 
 				sahsuGeography, 
 				null);
@@ -1423,7 +1425,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public void getGeoLevelToMapValuesE2() {
 		try {
-			service.getGeoLevelToMapValues(
+			rifStudySubmissionService.getGeoLevelToMapValues(
 				invalidUser, 
 				sahsuGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1437,7 +1439,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 
 		try {
-			service.getGeoLevelToMapValues(
+			rifStudySubmissionService.getGeoLevelToMapValues(
 				testUser, 
 				invalidGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1451,7 +1453,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getGeoLevelViewValues(
+			rifStudySubmissionService.getGeoLevelViewValues(
 				testUser, 
 				sahsuGeography, 
 				invalidGeoLevelSelectValue);
@@ -1476,7 +1478,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 	 */
 	public void getGeoLevelToMapValuesE3() {
 		try {
-			service.getGeoLevelToMapValues(
+			rifStudySubmissionService.getGeoLevelToMapValues(
 				nonExistentUser, 
 				sahsuGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1490,7 +1492,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 
 		try {
-			service.getGeoLevelViewValues(
+			rifStudySubmissionService.getGeoLevelViewValues(
 				testUser, 
 				nonExistentGeography, 
 				validSAHSUGeoLevelSelectValue);
@@ -1504,7 +1506,7 @@ public class TestRIFContextFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getGeoLevelViewValues(
+			rifStudySubmissionService.getGeoLevelViewValues(
 				testUser, 
 				sahsuGeography, 
 				nonExistentGeoLevelSelectValue);

@@ -1,6 +1,5 @@
 package rifServices.test.services;
 
-import rifServices.ProductionRIFJobSubmissionService;
 import rifServices.system.*;
 import rifServices.businessConceptLayer.*;
 
@@ -70,7 +69,7 @@ import java.util.ArrayList;
  *
  */
 
-public class TestGUIScenario {
+public class TestGUIScenario extends AbstractRIFServiceTestCase {
 
 	/**
 	 * The main method.
@@ -106,10 +105,8 @@ public class TestGUIScenario {
 	 */
 	public void runScenario() {
 		try {
-			ProductionRIFJobSubmissionService service
-				= new ProductionRIFJobSubmissionService();
-			service.initialiseService();			
-			service.login("keving", new String("a").toCharArray());			
+			initialiseService();
+			rifServiceBundle.login("keving", new String("a").toCharArray());			
 			
 			System.out.println("Logging on as keving...");
 			User testUser = User.newInstance("keving", "11.111.11.228");
@@ -117,7 +114,7 @@ public class TestGUIScenario {
 			System.out.println();
 			System.out.println("Getting available geographies...");
 			ArrayList<Geography> geographies
-				= service.getGeographies(testUser);
+				= rifStudySubmissionService.getGeographies(testUser);
 			for (Geography geography : geographies) {
 				System.out.println("GEOGRAPHY:=="+geography.getDisplayName()+"==");
 			}
@@ -127,7 +124,7 @@ public class TestGUIScenario {
 			Geography sahsuGeography
 				= Geography.newInstance("SAHSU", "stuff about sahsuland");
 			ArrayList<HealthTheme> healthThemes
-				= service.getHealthThemes(testUser, sahsuGeography);
+				= rifStudySubmissionService.getHealthThemes(testUser, sahsuGeography);
 			for (HealthTheme healthTheme : healthThemes) {
 				System.out.println("HEALTH THEME:=="+healthTheme.getDisplayName()+"==");			
 			}
@@ -137,7 +134,7 @@ public class TestGUIScenario {
 			HealthTheme cancerHealthTheme
 				= HealthTheme.newInstance("SAHSU land cancer incidence example data", "");
 			ArrayList<NumeratorDenominatorPair> cancerNDPairs
-				= service.getNumeratorDenominatorPairs(
+				= rifStudySubmissionService.getNumeratorDenominatorPairs(
 					testUser, 
 					sahsuGeography, 
 					cancerHealthTheme);
@@ -152,14 +149,14 @@ public class TestGUIScenario {
 			System.out.println("Now let's focus on the levels of geographic resolution");
 			System.out.println("GeoLevel select values:");
 			ArrayList<GeoLevelSelect> geoLevelSelectValues
-				= service.getGeographicalLevelSelectValues(testUser, sahsuGeography);
+				= rifStudySubmissionService.getGeographicalLevelSelectValues(testUser, sahsuGeography);
 			for (GeoLevelSelect geoLevelSelectValue : geoLevelSelectValues) {
 				System.out.println("GEOLEVELSELECT:=="+geoLevelSelectValue.getDisplayName()+"==");
 			}
 			System.out.println();
 			System.out.println("Obtain the default geo level select:");
 			GeoLevelSelect defaultGeoLevelSelect
-				= service.getDefaultGeoLevelSelectValue(testUser, sahsuGeography);
+				= rifStudySubmissionService.getDefaultGeoLevelSelectValue(testUser, sahsuGeography);
 			System.out.println("DEFAULT GEOLEVELSELECT:=="+defaultGeoLevelSelect.getDisplayName()+"==");
 			
 			System.out.println();
@@ -167,7 +164,7 @@ public class TestGUIScenario {
 			GeoLevelSelect validSAHSUGeoLevelSelectValue
 				= GeoLevelSelect.newInstance("LEVEL2");
 			ArrayList<GeoLevelArea> geoLevelAreas
-				= service.getGeoLevelAreaValues(
+				= rifStudySubmissionService.getGeoLevelAreaValues(
 					testUser, 
 					sahsuGeography, 
 					validSAHSUGeoLevelSelectValue);
@@ -178,7 +175,7 @@ public class TestGUIScenario {
 			System.out.println();
 			System.out.println("Now get geo level view objects appropriate for geolevelSelect=="+validSAHSUGeoLevelSelectValue.getDisplayName()+"==");
 			ArrayList<GeoLevelView> geoLevelViews
-				= service.getGeoLevelViewValues(testUser, sahsuGeography, validSAHSUGeoLevelSelectValue);
+				= rifStudySubmissionService.getGeoLevelViewValues(testUser, sahsuGeography, validSAHSUGeoLevelSelectValue);
 			for (GeoLevelView geoLevelView : geoLevelViews) {
 				System.out.println("GEOLEVELVIEW:=="+geoLevelView.getDisplayName()+"==");
 			}
@@ -186,7 +183,7 @@ public class TestGUIScenario {
 			System.out.println();
 			System.out.println("Now get geo level view objects appropriate for geolevelSelect=="+validSAHSUGeoLevelSelectValue.getDisplayName()+"==");
 			ArrayList<GeoLevelToMap> geoLevelToMaps
-				= service.getGeoLevelToMapValues(
+				= rifStudySubmissionService.getGeoLevelToMapValues(
 					testUser, 
 					sahsuGeography, 
 					validSAHSUGeoLevelSelectValue);
@@ -197,11 +194,11 @@ public class TestGUIScenario {
 			System.out.println();
 			System.out.println("Get Age groups for the ND pair=="+cancerNDPair.getDisplayName()+"==");
 			ArrayList<AgeGroup> ageGroups
-				= service.getAgeGroups(
+				= rifStudySubmissionService.getAgeGroups(
 					testUser, 
 					sahsuGeography, 
 					cancerNDPair,
-					RIFJobSubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+					RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			for (AgeGroup ageGroup : ageGroups) {
 				System.out.println("AGEGROUP:=="+ageGroup.getDisplayName()+"==");
 			}
@@ -209,7 +206,7 @@ public class TestGUIScenario {
 			System.out.println();
 			System.out.println("Get Year limits that are appropriate for ND Pair=="+cancerNDPair.getDisplayName()+"==");
 			YearRange yearRange
-				= service.getYearRange(testUser, sahsuGeography, cancerNDPair);
+				= rifStudySubmissionService.getYearRange(testUser, sahsuGeography, cancerNDPair);
 			System.out.println("GUI should show min year=="+yearRange.getLowerBound()+"==max year=="+yearRange.getUpperBound()+"==");
 
 			System.out.println();
@@ -223,7 +220,7 @@ public class TestGUIScenario {
 			System.out.println();
 			System.out.println("Get sex values");
 			ArrayList<Sex> sexs
-				= service.getGenders(testUser);
+				= rifStudySubmissionService.getGenders(testUser);
 			for (Sex sex : sexs) {
 				System.out.println("GENDER:=="+sex.getName()+"==");
 			}
@@ -232,7 +229,7 @@ public class TestGUIScenario {
 			System.out.println("Get covariates using a geoLevelToMap of 'LEVEL4'");
 			GeoLevelToMap geoLevelToMap = GeoLevelToMap.newInstance("LEVEL4");
 			ArrayList<AbstractCovariate> covariates
-				= service.getCovariates(
+				= rifStudySubmissionService.getCovariates(
 					testUser, 
 					sahsuGeography, 
 					validSAHSUGeoLevelSelectValue, 
@@ -246,12 +243,12 @@ public class TestGUIScenario {
 			System.out.println("Start at the very top of ICD10");
 			
 			ArrayList<HealthCodeTaxonomy> healthCodeTaxonomies
-				= service.getHealthCodeTaxonomies(testUser);
+				= rifStudySubmissionService.getHealthCodeTaxonomies(testUser);
 			HealthCodeTaxonomy icdHealthCodeTaxonomy
 				= healthCodeTaxonomies.get(1);
 			
 			ArrayList<HealthCode> topLevelHealthCodes
-				= service.getTopLevelCodes(testUser, icdHealthCodeTaxonomy);
+				= rifStudySubmissionService.getTopLevelCodes(testUser, icdHealthCodeTaxonomy);
 			for (HealthCode topLevelHealthCode : topLevelHealthCodes) {
 				System.out.println("TOP LEVEL ICD10 CATEGORY:=="+topLevelHealthCode.getDisplayName()+"==");			
 			}
@@ -264,7 +261,7 @@ public class TestGUIScenario {
 					"Chapter 02; Neoplasms",
 					true);
 			ArrayList<HealthCode> level3Codes
-				= service.getImmediateSubterms(testUser, chapter2ICD10HealthCode);
+				= rifStudySubmissionService.getImmediateSubterms(testUser, chapter2ICD10HealthCode);
 			for (HealthCode level3Code : level3Codes) {
 				System.out.println("3 CHAR ICD10 CATEGORY:=="+level3Code.getDisplayName()+"==");			
 			}
@@ -277,7 +274,7 @@ public class TestGUIScenario {
 					"other and unspecified types of non-hodgkin's lymphoma",
 					false);
 			ArrayList<HealthCode> level4Codes
-				= service.getImmediateSubterms(
+				= rifStudySubmissionService.getImmediateSubterms(
 					testUser, 
 					otherNonHodgkinsICD10HealthCode);
 			for (HealthCode level4Code : level4Codes) {

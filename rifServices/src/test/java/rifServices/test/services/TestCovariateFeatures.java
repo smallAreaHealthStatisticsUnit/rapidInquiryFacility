@@ -1,11 +1,8 @@
 package rifServices.test.services;
 
 
-import rifServices.test.TestRIFSubmissionService;
-
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
-import rifServices.test.AbstractRIFTestCase;
 
 import java.util.ArrayList;
 
@@ -80,7 +77,7 @@ import org.junit.Test;
  *
  */
 
-public class TestCovariateFeatures extends AbstractRIFTestCase {
+public class TestCovariateFeatures extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -89,8 +86,6 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The service. */
-	private TestRIFSubmissionService service;
 	
 	/** The sahsu geography. */
 	private Geography sahsuGeography;
@@ -145,11 +140,6 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 	 * Instantiates a new test covariate features.
 	 */
 	public TestCovariateFeatures() {
-		service
-			= new TestRIFSubmissionService();
-		service.initialiseService();
-
-		
 		sahsuGeography
 			= Geography.newInstance("SAHSU", "stuff about sahsuland");
 		invalidGeography
@@ -187,6 +177,13 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 			= GeoLevelToMap.newInstance(null);
 		nonExistentGeoLevelToMap
 			= GeoLevelToMap.newInstance("non-existent level");
+		
+		try {
+			initialiseService();
+		}
+		catch(RIFServiceException rifServiceException) {
+			this.printErrors("TestCovariateFeatures", rifServiceException);
+		}
 	
 	}
 
@@ -194,7 +191,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 	@Before
 	public void setUp() {
 		try {
-			service.login("keving", new String("a").toCharArray());			
+			rifServiceBundle.login("keving", new String("a").toCharArray());			
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
@@ -204,7 +201,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 	@After
 	public void tearDown() {
 		try {
-			service.deregisterAllUsers();		
+			rifServiceBundle.deregisterAllUsers();		
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
@@ -225,7 +222,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 	public void getCovariatesN1() {
 		try {
 			ArrayList<AbstractCovariate> results
-				= service.getCovariates(
+				= rifStudySubmissionService.getCovariates(
 					testUser, 
 					sahsuGeography,
 					validGeoLevelSelect,
@@ -256,7 +253,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 	 */
 	public void getCovariatesE1() {
 		try {
-			service.getCovariates(
+			rifStudySubmissionService.getCovariates(
 				null, 
 				sahsuGeography,
 				validGeoLevelSelect,
@@ -271,7 +268,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 		}		
 
 		try {
-			service.getCovariates(
+			rifStudySubmissionService.getCovariates(
 				testUser, 
 				null,
 				validGeoLevelSelect,
@@ -286,7 +283,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 		}		
 	
 		try {
-			service.getCovariates(
+			rifStudySubmissionService.getCovariates(
 				testUser, 
 				sahsuGeography,
 				null,
@@ -301,7 +298,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 		}		
 	
 		try {
-			service.getCovariates(
+			rifStudySubmissionService.getCovariates(
 				testUser, 
 				sahsuGeography,
 				validGeoLevelSelect,
@@ -329,7 +326,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 	public void getCovariatesE2() {
 		try {
 			System.out.println("TestCovariates - getCovariatesE2 START");
-			service.getCovariates(
+			rifStudySubmissionService.getCovariates(
 				invalidUser, 
 				sahsuGeography,
 				validGeoLevelSelect,
@@ -344,7 +341,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 		}		
 
 		try {
-			service.getCovariates(
+			rifStudySubmissionService.getCovariates(
 				testUser, 
 				invalidGeography,
 				validGeoLevelSelect,
@@ -359,7 +356,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 		}		
 	
 		try {
-			service.getCovariates(
+			rifStudySubmissionService.getCovariates(
 				testUser, 
 				sahsuGeography,
 				invalidGeoLevelSelect,
@@ -374,7 +371,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 		}		
 	
 		try {
-			service.getCovariates(
+			rifStudySubmissionService.getCovariates(
 				testUser, 
 				sahsuGeography,
 				validGeoLevelSelect,
@@ -400,7 +397,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 	 */
 	public void getCovariatesE3() {
 		try {
-			service.getCovariates(
+			rifStudySubmissionService.getCovariates(
 				nonExistentUser, 
 				sahsuGeography,
 				validGeoLevelSelect,
@@ -415,7 +412,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 		}		
 
 		try {
-			service.getCovariates(
+			rifStudySubmissionService.getCovariates(
 				testUser, 
 				nonExistentGeography,
 				validGeoLevelSelect,
@@ -430,7 +427,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 		}		
 	
 		try {
-			service.getCovariates(
+			rifStudySubmissionService.getCovariates(
 				testUser, 
 				sahsuGeography,
 				nonExistentGeoLevelSelect,
@@ -445,7 +442,7 @@ public class TestCovariateFeatures extends AbstractRIFTestCase {
 		}		
 	
 		try {
-			service.getCovariates(
+			rifStudySubmissionService.getCovariates(
 				testUser, 
 				sahsuGeography,
 				validGeoLevelSelect,

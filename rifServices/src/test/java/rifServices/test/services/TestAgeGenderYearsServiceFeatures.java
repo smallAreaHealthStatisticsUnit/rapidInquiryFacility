@@ -1,10 +1,9 @@
 package rifServices.test.services;
 
 
-import rifServices.test.TestRIFSubmissionService;
+
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
-import rifServices.test.AbstractRIFTestCase;
 
 import java.util.ArrayList;
 
@@ -76,7 +75,8 @@ import org.junit.*;
  *
  */
 
-public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
+public class TestAgeGenderYearsServiceFeatures 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -85,8 +85,6 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The service. */
-	private TestRIFSubmissionService service;
 	
 	/** The sahsu geography. */
 	private Geography sahsuGeography;
@@ -127,10 +125,6 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 	 * Instantiates a new test age gender years service features.
 	 */
 	public TestAgeGenderYearsServiceFeatures() {
-		service
-			= new TestRIFSubmissionService();
-		service.initialiseService();
-
 				
 		masterHealthCode = HealthCode.newInstance();
 		masterHealthCode.setCode("0880");
@@ -167,12 +161,19 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 				"description of num table", 
 				"NON_EXISTENT_DENOM_TABLE",
 				"description of denom table");		
+		
+		try {
+			initialiseService();
+		}
+		catch(RIFServiceException rifServiceException) {
+			this.printErrors("TestAgeGenderYearsServiceFeatures", rifServiceException);
+		}		
 	}
 
 	@Before
 	public void setUp() {
 		try {
-			service.login("keving", new String("a").toCharArray());			
+			rifServiceBundle.login("keving", new String("a").toCharArray());			
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
@@ -182,7 +183,7 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 	@After
 	public void tearDown() {
 		try {
-			service.deregisterAllUsers();		
+			rifServiceBundle.deregisterAllUsers();		
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
@@ -201,11 +202,11 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 	public void getAgeGroupsAcceptValidInputs() {
 		try {
 			ArrayList<AgeGroup> ageGroups
-				= service.getAgeGroups(
+				= rifStudySubmissionService.getAgeGroups(
 					testUser, 
 					sahsuGeography, 
 					sahsuCancerNDPair, 
-					RIFJobSubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+					RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			if (ageGroups.size() == 0) {
 				fail();
 			}
@@ -222,11 +223,11 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 	 */
 	public void getAgeGroupsRejectNullParameters() {
 		try {
-			service.getAgeGroups(
+			rifStudySubmissionService.getAgeGroups(
 				null, 
 				sahsuGeography, 
 				sahsuCancerNDPair,
-				RIFJobSubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -237,11 +238,11 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getAgeGroups(
+			rifStudySubmissionService.getAgeGroups(
 				testUser, 
 				null, 
 				sahsuCancerNDPair,
-				RIFJobSubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -252,11 +253,11 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getAgeGroups(
+			rifStudySubmissionService.getAgeGroups(
 				testUser, 
 				sahsuGeography, 
 				null,
-				RIFJobSubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -278,11 +279,11 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 	 */
 	public void getAgeGroupsRejectInvalidParameters() {
 		try {
-			service.getAgeGroups(
+			rifStudySubmissionService.getAgeGroups(
 				invalidUser, 
 				sahsuGeography, 
 				sahsuCancerNDPair,
-				RIFJobSubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -293,11 +294,11 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getAgeGroups(
+			rifStudySubmissionService.getAgeGroups(
 				testUser, 
 				invalidGeography, 
 				sahsuCancerNDPair,
-				RIFJobSubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -308,11 +309,11 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getAgeGroups(
+			rifStudySubmissionService.getAgeGroups(
 				testUser, 
 				sahsuGeography, 
 				invalidNDPair,
-				RIFJobSubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -334,11 +335,11 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 	 */
 	public void getAgeGroupsRejectNonExistentParameters() {
 		try {
-			service.getAgeGroups(
+			rifStudySubmissionService.getAgeGroups(
 				nonExistentUser, 
 				sahsuGeography, 
 				sahsuCancerNDPair,
-				RIFJobSubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -349,11 +350,11 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getAgeGroups(
+			rifStudySubmissionService.getAgeGroups(
 				testUser, 
 				nonExistentGeography, 
 				sahsuCancerNDPair,
-				RIFJobSubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -364,11 +365,11 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 		}
 		
 		try {
-			service.getAgeGroups(
+			rifStudySubmissionService.getAgeGroups(
 				testUser, 
 				sahsuGeography, 
 				nonExistentNDPair,
-				RIFJobSubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -388,7 +389,7 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 	public void getGendersAcceptValidInputs() {
 		try {
 			ArrayList<Sex> sexs
-				= service.getGenders(testUser);
+				= rifStudySubmissionService.getGenders(testUser);
 			assertEquals(3, sexs.size());
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -407,7 +408,7 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 	 */
 	public void getGendersRejectNullParameters() {
 		try {
-			service.getGenders(null);
+			rifStudySubmissionService.getGenders(null);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -429,7 +430,7 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 	 */
 	public void getGendersRejectInvalidParameters() {
 		try {
-			service.getGenders(invalidUser);
+			rifStudySubmissionService.getGenders(invalidUser);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -451,7 +452,7 @@ public class TestAgeGenderYearsServiceFeatures extends AbstractRIFTestCase {
 	 */
 	public void getGendersRejectNonExistentParameters() {
 		try {
-			service.getGenders(nonExistentUser);
+			rifStudySubmissionService.getGenders(nonExistentUser);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

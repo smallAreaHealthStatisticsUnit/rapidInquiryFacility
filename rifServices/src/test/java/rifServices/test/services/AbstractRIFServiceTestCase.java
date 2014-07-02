@@ -1,17 +1,14 @@
-package rifServices.util;
+package rifServices.test.services;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import rifServices.test.AbstractRIFTestCase;
+
+import rifServices.TestRIFStudyServiceBundle;
+import rifServices.TestRIFStudyRetrievalService;
+import rifServices.TestRIFStudySubmissionService;
+import rifServices.system.RIFServiceException;
 
 /**
- * This is a class used for error logging and provides a facade to the underlying
- * SL4J logging facilities.  The class has been developed as part of a temporary
- * work-around for transitivity problems we've encountered with classes in the 
- * SL4J jars.  By using this class, we've reduced the number of times that SL4J
- * is explicitly called in the code base.  For now we're commenting out references
- * to SL4J until the transitive dependencies problems can be addressed.
- * 
- * 
+ *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
  * that rapidly addresses epidemiological and public health questions using 
@@ -70,7 +67,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 
-public class RIFLogger {
+public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -79,38 +76,29 @@ public class RIFLogger {
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	protected TestRIFStudyServiceBundle rifServiceBundle;
+	protected TestRIFStudySubmissionService rifStudySubmissionService;
+	protected TestRIFStudyRetrievalService rifStudyRetrievalService;
 
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public RIFLogger() {
-
+	public AbstractRIFServiceTestCase() {
+		rifServiceBundle
+			= new TestRIFStudyServiceBundle();
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void error(
-		Class callingClass,
-		String errorHeading,
-		Throwable throwableItem) {
-		
-		StringBuilder buffer = new StringBuilder();
-		buffer.append(callingClass.getName());
-		buffer.append(".");
-		buffer.append(errorHeading);
-		
-		throwableItem.printStackTrace(System.out);
-		//Logger logger = LoggerFactory.getLogger(ProductionRIFJobSubmissionService.class);
-		//logger.error(methodName, rifServiceException);
-	}
-	
-	public void info(
-		Class callingClass,			
-		String message) {
-		
-
+	protected void initialiseService() throws RIFServiceException {
+		rifServiceBundle = new TestRIFStudyServiceBundle();
+		rifServiceBundle.initialise();
+		rifStudySubmissionService 
+			= (TestRIFStudySubmissionService) rifServiceBundle.getRIFStudySubmissionService();
+		rifStudyRetrievalService
+			= (TestRIFStudyRetrievalService) rifServiceBundle.getRIFStudyRetrievalService();
 	}
 	
 	// ==========================================

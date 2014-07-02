@@ -7,7 +7,6 @@ import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.RIFJobSubmission;
 import rifServices.system.RIFServiceException;
 import rifServices.test.AbstractRIFTestCase;
-import rifServices.test.TestRIFSubmissionService;
 
 import static org.junit.Assert.*;
 import org.junit.After;
@@ -75,7 +74,7 @@ import org.junit.Test;
  *
  */
 
-public class TestRIFSubmissionFeature extends AbstractRIFTestCase {
+public class TestRIFSubmissionFeature extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -84,8 +83,6 @@ public class TestRIFSubmissionFeature extends AbstractRIFTestCase {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The service. */
-	private TestRIFSubmissionService service;
 	
 	/** The test user. */
 	private User testUser;
@@ -96,11 +93,7 @@ public class TestRIFSubmissionFeature extends AbstractRIFTestCase {
 	// Section Construction
 	// ==========================================
 
-	public TestRIFSubmissionFeature() {
-		service = new TestRIFSubmissionService();
-		service.initialiseService();
-
-		
+	public TestRIFSubmissionFeature() {		
 		testUser 
 			= User.newInstance("keving", "11.111.11.228");
 		SampleTestObjectGenerator generator
@@ -108,13 +101,19 @@ public class TestRIFSubmissionFeature extends AbstractRIFTestCase {
 		masterRIFJobSubmission
 			= generator.createSampleRIFJobSubmission();
 
+		try {
+			initialiseService();
+		}
+		catch(RIFServiceException rifServiceException) {
+			this.printErrors("TestRIFSubmissionFeature", rifServiceException);
+		}
 	}
 
 	@Before
 	public void setUp() {
 		try {
-			service.login("keving", new String("a").toCharArray());		
-			service.clearStudiesForUser(testUser);
+			rifServiceBundle.login("keving", new String("a").toCharArray());		
+			rifStudySubmissionService.clearStudiesForUser(testUser);
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
@@ -124,7 +123,7 @@ public class TestRIFSubmissionFeature extends AbstractRIFTestCase {
 	@After
 	public void tearDown() {
 		try {
-			service.deregisterAllUsers();		
+			rifServiceBundle.deregisterAllUsers();		
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
@@ -136,7 +135,7 @@ public class TestRIFSubmissionFeature extends AbstractRIFTestCase {
 		RIFJobSubmission rifJobSubmission
 			= RIFJobSubmission.createCopy(masterRIFJobSubmission);
 		try {
-			service.submitStudy(
+			rifStudySubmissionService.submitStudy(
 				testUser, 
 				rifJobSubmission, 
 				null);

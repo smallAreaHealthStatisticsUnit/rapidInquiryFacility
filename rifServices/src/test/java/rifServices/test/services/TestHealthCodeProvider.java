@@ -1,9 +1,6 @@
 package rifServices.test.services;
 
 
-import rifServices.test.TestRIFSubmissionService;
-
-
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 import rifServices.test.AbstractRIFTestCase;
@@ -81,7 +78,7 @@ import java.util.ArrayList;
  *
  */
 
-public class TestHealthCodeProvider extends AbstractRIFTestCase {
+public class TestHealthCodeProvider extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -90,8 +87,6 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The service. */
-	private TestRIFSubmissionService service;
 	
 	/** The icd10 health code taxonomy. */
 	private HealthCodeTaxonomy icd10HealthCodeTaxonomy;
@@ -118,9 +113,6 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 	 * Instantiates a new test health outcome features.
 	 */
 	public TestHealthCodeProvider() {
-		service = new TestRIFSubmissionService();
-		service.initialiseService();
-
 		
 		testUser = User.newInstance("keving", "11.111.11.228");
 		invalidUser = User.newInstance("nobody", "11.111.11.228");
@@ -140,15 +132,22 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 		masterC342HealthCode.setCode("C342");
 		masterC342HealthCode.setDescription("middle lobe, bronchus or lung");
 		masterC342HealthCode.setNameSpace("icd10");
+
+		try {
+			initialiseService();
+		}
+		catch(RIFServiceException rifServiceException) {
+			this.printErrors("TestHealthCodeProvider", rifServiceException);
+		}			
 		
 	}
 
 	@Before
 	public void setUp() {
 		try {
-			service.login("keving", new String("a").toCharArray());			
+			rifServiceBundle.login("keving", new String("a").toCharArray());			
 			ArrayList<HealthCodeTaxonomy> healthCodeTaxonomies
-				= service.getHealthCodeTaxonomies(testUser);
+				= rifStudySubmissionService.getHealthCodeTaxonomies(testUser);
 			icd10HealthCodeTaxonomy
 				= healthCodeTaxonomies.get(1);	
 		}
@@ -160,8 +159,8 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 	@After
 	public void tearDown() {
 		try {
-			service.clearHealthCodeProviders(testUser);
-			service.deregisterAllUsers();		
+			rifStudySubmissionService.clearHealthCodeProviders(testUser);
+			rifServiceBundle.deregisterAllUsers();		
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
@@ -181,7 +180,7 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 	public void getTopLevelCodesN1() {
 		try {			
 			ArrayList<HealthCode> topLevelICD10Codes
-				= service.getTopLevelCodes(testUser, icd10HealthCodeTaxonomy);
+				= rifStudySubmissionService.getTopLevelCodes(testUser, icd10HealthCodeTaxonomy);
 			assertEquals(2, topLevelICD10Codes.size());
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -197,7 +196,7 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 	@Test
 	public void getTopLevelCodeE1() {
 		try {			
-			service.getTopLevelCodes(invalidUser, icd10HealthCodeTaxonomy);
+			rifStudySubmissionService.getTopLevelCodes(invalidUser, icd10HealthCodeTaxonomy);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -221,7 +220,7 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 				= HealthCode.createCopy(masterChapter02HealthCode);
 
 			ArrayList<HealthCode> firstGenerationCodes
-				= service.getImmediateSubterms(
+				= rifStudySubmissionService.getImmediateSubterms(
 					testUser, 
 					chapter02);			
 			assertEquals(2, firstGenerationCodes.size());
@@ -235,7 +234,7 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 			assertEquals("C34", currentResult.getCode());
 			
 			ArrayList<HealthCode> secondGenerationCodes
-				= service.getImmediateSubterms(
+				= rifStudySubmissionService.getImmediateSubterms(
 					testUser, 
 					currentResult);			
 			assertEquals(3, secondGenerationCodes.size());
@@ -254,7 +253,7 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 
 			//C342 should have no children
 			ArrayList<HealthCode> thirdGenerationCodes
-				= service.getImmediateSubterms(
+				= rifStudySubmissionService.getImmediateSubterms(
 					testUser, 
 					currentResult);			
 			assertEquals(0, thirdGenerationCodes.size());
@@ -282,7 +281,7 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 		healthCode.setCode(null);
 		
 		try {
-			service.getImmediateSubterms(
+			rifStudySubmissionService.getImmediateSubterms(
 				testUser, 
 				healthCode);			
 		}
@@ -311,7 +310,7 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 		healthCode.setCode("XYZ");
 	
 		try {
-				service.getImmediateSubterms(
+				rifStudySubmissionService.getImmediateSubterms(
 					testUser, 
 					healthCode);			
 		}
@@ -336,7 +335,7 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 		try {
 			HealthCode healthCode
 				= HealthCode.createCopy(masterC34HealthCode);
-			service.getImmediateSubterms(
+			rifStudySubmissionService.getImmediateSubterms(
 				invalidUser, 
 				healthCode);		
 		}
@@ -362,7 +361,7 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 				= HealthCode.createCopy(masterC342HealthCode);
 
 			HealthCode parentCode
-				= service.getParentHealthCode(
+				= rifStudySubmissionService.getParentHealthCode(
 					testUser, 
 					healthCode);
 			assertNotNull(parentCode);
@@ -373,7 +372,7 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 				parentCode.getDescription());
 
 			HealthCode grandParentHealthCode
-				= service.getParentHealthCode(
+				= rifStudySubmissionService.getParentHealthCode(
 					testUser, 
 					parentCode);
 			assertEquals(masterChapter02HealthCode.getCode(), grandParentHealthCode.getCode());
@@ -401,7 +400,7 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 			healthCode.setCode("");
 			healthCode.setDescription(null);
 						
-			service.getParentHealthCode(
+			rifStudySubmissionService.getParentHealthCode(
 				testUser, 
 				healthCode);		
 		}
@@ -430,7 +429,7 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 				= HealthCode.createCopy(masterC342HealthCode);
 			healthCode.setCode("XYZ");
 
-			service.getParentHealthCode(
+			rifStudySubmissionService.getParentHealthCode(
 				testUser, 
 				healthCode);			
 		}
@@ -457,7 +456,7 @@ public class TestHealthCodeProvider extends AbstractRIFTestCase {
 			HealthCode healthCode
 				= HealthCode.createCopy(masterC342HealthCode);
 			
-			service.getParentHealthCode(
+			rifStudySubmissionService.getParentHealthCode(
 				invalidUser, 
 				healthCode);			
 		}
