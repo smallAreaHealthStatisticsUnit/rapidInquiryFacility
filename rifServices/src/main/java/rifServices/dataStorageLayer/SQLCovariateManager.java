@@ -364,6 +364,10 @@ class SQLCovariateManager
 						= new RIFServiceException(
 							RIFServiceError.NON_EXISTENT_COVARIATE, 
 							errorMessage);
+					
+					SQLQueryUtility.close(statement);
+					SQLQueryUtility.close(resultSet);
+					
 					throw rifServiceException;				
 				}
 			}
