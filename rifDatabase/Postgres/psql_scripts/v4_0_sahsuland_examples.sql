@@ -219,10 +219,10 @@ BEGIN
 	END IF;
 END;
 $$;
-SELECT * FROM rif40_comparison_areas WHERE study_id = currval('rif40_study_id_seq'::regclass);
-SELECT * FROM rif40_study_areas WHERE study_id = currval('rif40_study_id_seq'::regclass);
-SELECT * FROM rif40_inv_covariates WHERE study_id = currval('rif40_study_id_seq'::regclass);
-SELECT * FROM rif40_study_sql_log WHERE study_id = currval('rif40_study_id_seq'::regclass);
+SELECT * FROM rif40_comparison_areas WHERE study_id = currval('rif40_study_id_seq'::regclass) LIMIT 20;
+SELECT * FROM rif40_study_areas WHERE study_id = currval('rif40_study_id_seq'::regclass) LIMIT 20;
+SELECT * FROM rif40_inv_covariates WHERE study_id = currval('rif40_study_id_seq'::regclass) LIMIT 20;
+SELECT * FROM rif40_study_sql_log WHERE study_id = currval('rif40_study_id_seq'::regclass) LIMIT 20;
 
 WITH a AS (
 	SELECT rif40_log_pkg.rif40_get_debug(CURRENT_SETTING('rif40.debug')) AS debug /* Current debug */

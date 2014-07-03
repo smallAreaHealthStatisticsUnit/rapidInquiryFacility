@@ -109,12 +109,88 @@ END;
 --
 \i ../psql_scripts/v4_0_sahsuland_examples.sql   
 
+\set VERBOSITY terse
+
+--
+-- Test rif40_GetMapAreaAttributeValue, rif40_getAllAttributesForGeoLevelAttributeTheme on study extracts
+--
+-- Start transaction
+--
+BEGIN;
+
+DO LANGUAGE plpgsql $$
+DECLARE
+--
+-- Functions to enable debug for
+--
+	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 
+		'rif40_getAllAttributesForGeoLevelAttributeTheme', 'rif40_GetGeometryColumnNames', 'rif40_GetMapAreaAttributeValue',
+		'rif40_closeGetMapAreaAttributeCursor'];
+--
+	c1alter2 CURSOR FOR
+		SELECT *
+		  FROM rif40_geographies;
+	c2alter2 CURSOR(l_geography VARCHAR) FOR
+		SELECT *
+		  FROM rif40_geolevels
+		 WHERE geography = l_geography;
+	c3alter2 CURSOR(l_table VARCHAR) FOR
+		SELECT relhassubclass 
+		  FROM pg_class t, pg_namespace n
+		 WHERE t.relname = l_table AND t.relkind = 'r' /* Table */ AND n.nspname = 'rif40'  AND t.relnamespace = n.oid ;
+	c4alter2 CURSOR(l_table VARCHAR, l_column VARCHAR) FOR
+		SELECT column_name 
+		  FROM information_schema.columns 
+		  WHERE table_name = l_table AND column_name = l_column;	
+--
+	c1_rec RECORD;
+	c2_rec RECORD;
+	c3_rec RECORD;
+	c4_rec RECORD;
+--
+	l_function 			VARCHAR;
+	ddl_stmt			VARCHAR[];
+	l_partition			VARCHAr;
+BEGIN
+--
+-- Turn on some debug
+--
+        PERFORM rif40_log_pkg.rif40_log_setup();
+        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+--
+-- Enabled debug on select rif40_sm_pkg functions
+--
+	FOREACH l_function IN ARRAY rif40_sql_pkg_functions LOOP
+		RAISE INFO 'Enable debug for function: %', l_function;
+		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
+	END LOOP;
+END;
+$$;
+
+SELECT * 
+  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'extract');
+
+WITH a AS (
+	SELECT MIN(attribute_source) AS min_attribute_source
+	  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'extract')
+)
+SELECT b.* 
+  FROM a, rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
+		'c4getallatt4theme_4', 
+		'SAHSU', 'LEVEL4', 'extract', a.min_attribute_source) b;
+FETCH FORWARD 5 IN c4getallatt4theme_4;
+
 DO LANGUAGE plpgsql $$
 BEGIN
 --
 	RAISE INFO 'alter_2.sql tested OK';
 END;
 $$;
+
+--
+-- End transaction
+--
+END;
 
 \c sahsuland_dev rif40
 --

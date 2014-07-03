@@ -109,8 +109,8 @@ $$;
 --    Add: gid_rowindex (i.e 1_1). Where gid corresponds to gid in geometry table
 --         row_index is an incremental serial aggregated by gid ( starts from one for each gid)
 -- 
--- This may be run before or after alter_2.sql (range partitioning of all health tables)
---\set VERBOSITY terse
+-- This script must be run first
+\set VERBOSITY terse
 DO LANGUAGE plpgsql $$
 DECLARE
 --
@@ -312,28 +312,7 @@ END;
 $$;
 
 -- Put trigger back
-CREATE TRIGGER t_rif40_investigations_checks
-	BEFORE INSERT OR UPDATE OF username, inv_name, inv_description, year_start, year_stop,
-		max_age_group, min_age_group, genders, numer_tab, investigation_state,
-	        study_id, inv_id, classifier, classifier_bands, mh_test_type ON t_rif40_investigations
-	FOR EACH ROW	
-	WHEN ((NEW.username IS NOT NULL AND NEW.username::text <> '') OR 
-		(NEW.inv_name IS NOT NULL AND NEW.inv_name::text <> '') OR 
-		(NEW.inv_description IS NOT NULL AND NEW.inv_description::text <> '') OR
-		(NEW.year_start IS NOT NULL AND NEW.year_start::text <> '') OR 
-		(NEW.year_stop IS NOT NULL AND NEW.year_stop::text <> '') OR 
-		(NEW.max_age_group IS NOT NULL AND NEW.max_age_group::text <> '') OR 
-		(NEW.min_age_group IS NOT NULL AND NEW.min_age_group::text <> '') OR
-		(NEW.genders IS NOT NULL AND NEW.genders::text <> '') OR
-		(NEW.investigation_state IS NOT NULL AND NEW.investigation_state::text <> '') OR 
-		(NEW.numer_tab IS NOT NULL AND NEW.numer_tab::text <> '') OR
-	       	(NEW.study_id IS NOT NULL AND NEW.study_id::text <> '') OR 
-		(NEW.inv_id IS NOT NULL AND NEW.inv_id::text <> '') OR
-		(NEW.classifier IS NOT NULL AND NEW.classifier::text <> '') OR 
-		(NEW.classifier_bands IS NOT NULL AND NEW.classifier_bands::text <> '') OR 
-		(NEW.mh_test_type IS NOT NULL AND NEW.mh_test_type::text <> ''))
-	EXECUTE PROCEDURE rif40_trg_pkg.trigger_fct_t_rif40_investigations_checks();
-COMMENT ON TRIGGER t_rif40_investigations_checks ON t_rif40_investigations IS 'DELETE trigger: calls rif40_trg_pkg.trigger_fct_t_rif40_investigations_checks()';
+\i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_investigations_checks.sql
 
 -- Rebuild updateable view
 DROP VIEW rif40_investigations;
@@ -499,7 +478,13 @@ SElECT area_id, name, gid, gid_rowindex
 -- Bounding box functions
 --
 SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelFullExtent('SAHSU' /* Geography */, 'LEVEL2' /* Geolevel view */);
-SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelFullExtentForStudy('SAHSU' /* Geography */, 'LEVEL4' /* Geolevel view */, 1 /* Study ID */);
+WITH a AS (
+	SELECT MIN(study_id) AS min_study_id
+	  FROM t_rif40_studies
+)
+SELECT b.* 
+  FROM a, rif40_xml_pkg.rif40_getGeoLevelFullExtentForStudy(
+	'SAHSU' /* Geography */, 'LEVEL4' /* Geolevel view */, a.min_study_id /* Study ID */) b;
 SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU' /* Geography */, 'LEVEL2' /* Geolevel view */, '01.004' /* Map area ID */);
 /*
   y_max  |  x_max   |  y_min  |  x_min
@@ -744,7 +729,7 @@ END;
 --
 -- Vacuum geometry tables, partitions and t_rif40_investigations
 --
-VACUUM ANALYS t_rif40_sahsu_geometry;
+VACUUM ANALYSE t_rif40_sahsu_geometry;
 VACUUM ANALYSE t_rif40_geolevels_geometry_sahsu_level1;
 VACUUM ANALYSE t_rif40_geolevels_geometry_sahsu_level2;
 VACUUM ANALYSE t_rif40_geolevels_geometry_sahsu_level3;
