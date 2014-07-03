@@ -529,7 +529,7 @@ BEGIN
 --
 -- gid and gid_rowindex will be added in later patch
 --
-	ELSIF l_theme IN ('extract', 'results') THEN
+	ELSIF l_theme = 'extract' THEN
 		IF l_attribute_name_array IS NULL THEN
 			select_list:='a.area_id, '||E'\n'||
 				  '       g.gid, '||E'\n'||
@@ -544,6 +544,26 @@ BEGIN
 						'LPAD(ROW_NUMBER() OVER(PARTITION BY a.area_id'||
 						' ORDER BY '||select_list||')::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
 			          select_list;
+		END IF;
+--
+-- gid and gid_rowindex; area_id for disease maps will be added in later patch
+-- Not available for risk analysis
+--
+	ELSIF l_theme = 'results' THEN
+		IF l_attribute_name_array IS NULL THEN
+/*			select_list:='a.area_id,'||E'\n'||
+				  '       g.gid, '||E'\n'||
+			          '       LPAD(g.gid::Text, 10, ''0''::Text)||''_''||'||
+						'LPAD(ROW_NUMBER() OVER(PARTITION BY a.band_id'||
+						' /- Use default table order -/)::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
+			          select_list; */
+		ELSE /* Sort order specified */
+/*			select_list:='a.area_id,'||E'\n'||
+				  '       g.gid, '||E'\n'||
+			          '       LPAD(g.gid::Text, 10, ''0''::Text)||''_''||'||
+						'LPAD(ROW_NUMBER() OVER(PARTITION BY a.band_id'||
+						' ORDER BY '||select_list||')::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
+			          select_list; */
 		END IF;
 --
 -- Geometry tables must have gid and gid_rowindex
@@ -572,7 +592,7 @@ BEGIN
 			  E'\t'||' WHERE g.geography     = $1'||E'\n'||
 			  E'\t'||'   AND g.geolevel_name = $2 /* Partition elimination */'||E'\n'||
 			  E'\t'||'   AND g.area_id       = a.'||quote_ident(LOWER(l_geolevel_select))||' /* Link gid */'||E'\n';
-	ELSIF l_theme IN ('extract', 'results') THEN
+	ELSIF l_theme= 'extract' THEN
 		sql_stmt:='WITH a AS ('||E'\n'||
 			  E'\t'||'SELECT '||select_list||E'\n'||
 			  E'\t'||'  FROM rif_studies.'||quote_ident(lower(l_attribute_source))||' /* Needs path adding */'||' a,'||E'\n'||
@@ -580,6 +600,11 @@ BEGIN
 			  E'\t'||' WHERE g.geography     = $1'||E'\n'||
 			  E'\t'||'   AND g.geolevel_name = $2 /* Partition elimination */'||E'\n'||
 			  E'\t'||'   AND g.area_id       = a.area_id /* Link gid */'||E'\n';
+	ELSIF l_theme = 'results' THEN
+		sql_stmt:='WITH a AS ('||E'\n'||
+			  E'\t'||'SELECT '||select_list||E'\n'||
+			  E'\t'||'  FROM rif_studies.'||quote_ident(lower(l_attribute_source))||' /* Needs path adding */'||
+				' a /* No gid link yet, only possible for disease maps */'||E'\n';
 	ELSIF l_theme = 'geometry' THEN
 		sql_stmt:='WITH a AS ('||E'\n'||
 			  E'\t'||'SELECT '||select_list||E'\n'||

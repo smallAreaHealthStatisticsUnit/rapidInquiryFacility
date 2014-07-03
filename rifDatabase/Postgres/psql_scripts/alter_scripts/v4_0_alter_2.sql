@@ -59,7 +59,7 @@
 \set ON_ERROR_STOP ON
 \timing
 
-\echo Running SAHSULAND schema alter script #2 (Add covariates to comparision area extract; GID, GID_ROWINDEX support in extracts/maps; Make INV_1 INV_<inv_id> in results and results maps)...
+\echo Running SAHSULAND schema alter script #2 (Add covariates to comparision area extract; GID, GID_ROWINDEX support in maps (extracts subject to performance tests); Make INV_1 INV_<inv_id> in results maps)...
 
 BEGIN;
 
@@ -81,11 +81,12 @@ $$;
 --
 
 --
--- Run common code for state machine
+-- Run common code for state machine, meddileware and
 -- PG psql code (SQL and Oracle compatibility processing)
 --
 \i ../PLpgsql/v4_0_rif40_sql_pkg.sql
 \i ../PLpgsql/v4_0_rif40_sm_pkg.sql
+\i ../PLpgsql/v4_0_rif40_xml_pkg.sql
 
 DO LANGUAGE plpgsql $$
 BEGIN
@@ -167,6 +168,9 @@ BEGIN
 END;
 $$;
 
+--
+-- Test middleware interface fucntions
+--
 SELECT * 
   FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'extract');
 
@@ -179,6 +183,19 @@ SELECT b.*
 		'c4getallatt4theme_4', 
 		'SAHSU', 'LEVEL4', 'extract', a.min_attribute_source) b;
 FETCH FORWARD 5 IN c4getallatt4theme_4;
+
+SELECT * 
+  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'results');
+
+WITH a AS (
+	SELECT MIN(attribute_source) AS min_attribute_source
+	  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'results')
+)
+SELECT b.* 
+  FROM a, rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
+		'c4getallatt4theme_5', 
+		'SAHSU', 'LEVEL4', 'results', a.min_attribute_source) b;
+FETCH FORWARD 5 IN c4getallatt4theme_5;
 
 DO LANGUAGE plpgsql $$
 BEGIN
