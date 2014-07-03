@@ -90,7 +90,7 @@ import java.util.ArrayList;
  */
 
 
-public class InvestigationContentHandler 
+class InvestigationContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 

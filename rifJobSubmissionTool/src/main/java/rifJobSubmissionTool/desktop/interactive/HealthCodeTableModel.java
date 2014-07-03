@@ -74,7 +74,7 @@ import javax.swing.table.AbstractTableModel;
  */
 
 
-public class HealthCodeTableModel 
+class HealthCodeTableModel 
 	extends AbstractTableModel {
 
 // ==========================================

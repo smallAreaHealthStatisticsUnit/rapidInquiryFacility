@@ -81,7 +81,7 @@ import java.util.ArrayList;
  */
 
 
-abstract public class AbstractRIFConceptContentHandler 
+abstract class AbstractRIFConceptContentHandler 
 	extends DefaultHandler {
 
 

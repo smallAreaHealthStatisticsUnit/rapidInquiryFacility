@@ -60,7 +60,7 @@ package rifServices.dataStorageLayer;
  *
  */
 
-public final class ProductionRIFStudySubmissionService 
+final class ProductionRIFStudySubmissionService 
 	extends AbstractRIFStudySubmissionService {
 
 	// ==========================================

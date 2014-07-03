@@ -1,7 +1,6 @@
 package rifServices.dataStorageLayer;
 
 import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.*;
 import rifServices.system.*;
 import rifServices.taxonomyServices.HealthCodeProvider;
 import rifServices.util.FieldValidationUtility;

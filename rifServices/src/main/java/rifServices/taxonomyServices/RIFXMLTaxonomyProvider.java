@@ -2,10 +2,8 @@ package rifServices.taxonomyServices;
 
 
 import rifServices.businessConceptLayer.HealthCode;
-
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.Parameter;
-import rifServices.io.XMLHealthCodeTaxonomyContentHandler;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;

@@ -97,7 +97,7 @@ import java.awt.geom.Rectangle2D;
  *
  */
 
-public class SQLResultsQueryManager extends AbstractSQLManager {
+class SQLResultsQueryManager extends AbstractSQLManager {
 
 	// ==========================================
 	// Section Constants

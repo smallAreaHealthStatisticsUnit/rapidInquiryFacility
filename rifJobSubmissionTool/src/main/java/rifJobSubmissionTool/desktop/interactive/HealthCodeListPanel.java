@@ -94,7 +94,7 @@ import javax.swing.table.TableColumn;
  */
 
 
-public class HealthCodeListPanel 
+class HealthCodeListPanel 
 	implements ActionListener {
 
 // ==========================================

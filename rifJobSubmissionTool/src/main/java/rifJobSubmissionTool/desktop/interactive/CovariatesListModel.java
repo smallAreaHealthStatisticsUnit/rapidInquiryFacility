@@ -72,7 +72,7 @@ import javax.swing.AbstractListModel;
  */
 
 
-public class CovariatesListModel 
+class CovariatesListModel 
 	extends AbstractListModel {
 
 // ==========================================

@@ -89,7 +89,7 @@ import javax.swing.JTextArea;
 /**
  * The Class CalculationMethodEditorDialog.
  */
-public class CalculationMethodEditorDialog 
+class CalculationMethodEditorDialog 
 	implements ActionListener {
 
 // ==========================================

@@ -75,7 +75,7 @@ import java.util.ArrayList;
  *
  */
 
-public class MapAreaSelectionTable 
+class MapAreaSelectionTable 
 	extends JTable {
 	
 	// ==========================================

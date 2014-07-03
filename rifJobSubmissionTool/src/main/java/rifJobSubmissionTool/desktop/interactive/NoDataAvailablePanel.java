@@ -70,7 +70,7 @@ import javax.swing.JTextArea;
  *
  */
 
-public class NoDataAvailablePanel {
+class NoDataAvailablePanel {
 	// ==========================================
 	// Section Constants
 	// ==========================================

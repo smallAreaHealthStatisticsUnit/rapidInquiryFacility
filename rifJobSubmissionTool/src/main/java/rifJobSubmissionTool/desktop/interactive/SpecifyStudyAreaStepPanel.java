@@ -82,7 +82,7 @@ import javax.swing.JPanel;
  *
  */
 
-public class SpecifyStudyAreaStepPanel 
+class SpecifyStudyAreaStepPanel 
 	extends AbstractStepPanel 
 	implements Observer {
 	// ==========================================

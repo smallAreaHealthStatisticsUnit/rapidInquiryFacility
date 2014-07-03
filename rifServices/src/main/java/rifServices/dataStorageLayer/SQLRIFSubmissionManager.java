@@ -76,7 +76,7 @@ import java.util.ArrayList;
  *
  */
 
-public class SQLRIFSubmissionManager {
+class SQLRIFSubmissionManager {
 		
 	// ==========================================
 	// Section Constants

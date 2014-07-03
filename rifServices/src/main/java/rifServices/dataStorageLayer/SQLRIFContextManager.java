@@ -83,7 +83,7 @@ import java.sql.SQLException;
  *
  */
 
-public class SQLRIFContextManager 
+class SQLRIFContextManager 
 	extends AbstractSQLManager {
 
 	// ==========================================

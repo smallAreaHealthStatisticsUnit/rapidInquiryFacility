@@ -73,7 +73,7 @@ import javax.swing.table.AbstractTableModel;
  */
 
 
-public class ParameterTableModel extends AbstractTableModel {
+class ParameterTableModel extends AbstractTableModel {
 
 // ==========================================
 // Section Constants

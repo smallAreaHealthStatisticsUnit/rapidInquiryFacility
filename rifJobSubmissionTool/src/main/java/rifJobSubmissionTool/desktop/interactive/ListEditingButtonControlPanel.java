@@ -77,7 +77,7 @@ import javax.swing.JPanel;
  */
 
 
-public class ListEditingButtonControlPanel {
+class ListEditingButtonControlPanel {
 
 // ==========================================
 // Section Constants

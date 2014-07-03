@@ -71,7 +71,7 @@ import javax.swing.table.AbstractTableModel;
  *
  */
 
-public class MapAreaSelectionTableModel  
+class MapAreaSelectionTableModel  
 	extends AbstractTableModel {
 	// ==========================================
 	// Section Constants

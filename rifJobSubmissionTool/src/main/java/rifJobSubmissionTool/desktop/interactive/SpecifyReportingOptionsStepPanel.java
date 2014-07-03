@@ -92,7 +92,7 @@ import javax.swing.ListSelectionModel;
  *
  */
 
-public class SpecifyReportingOptionsStepPanel 
+class SpecifyReportingOptionsStepPanel 
 	extends AbstractStepPanel
 	implements ActionListener, 
 	MouseListener {

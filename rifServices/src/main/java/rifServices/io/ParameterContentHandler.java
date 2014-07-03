@@ -79,7 +79,7 @@ import java.util.ArrayList;
  */
 
 
-public class ParameterContentHandler 
+class ParameterContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 // ==========================================

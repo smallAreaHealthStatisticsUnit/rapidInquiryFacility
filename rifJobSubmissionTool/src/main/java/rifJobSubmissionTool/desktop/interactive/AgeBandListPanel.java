@@ -80,7 +80,7 @@ import javax.swing.JPanel;
  *
  */
 
-public class AgeBandListPanel 
+class AgeBandListPanel 
 	implements ActionListener {
 	
 	// ==========================================

@@ -65,7 +65,7 @@ import java.sql.SQLException;
  *
  */
 
-public abstract class AbstractSQLManager {
+abstract class AbstractSQLManager {
 
 	// ==========================================
 	// Section Constants

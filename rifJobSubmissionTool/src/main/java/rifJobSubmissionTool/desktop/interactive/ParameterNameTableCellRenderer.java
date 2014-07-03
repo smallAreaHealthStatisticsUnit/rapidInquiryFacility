@@ -72,7 +72,7 @@ import javax.swing.JTable;
  */
 
 
-public class ParameterNameTableCellRenderer 
+class ParameterNameTableCellRenderer 
 	extends DefaultTableCellRenderer {
 
 // ==========================================

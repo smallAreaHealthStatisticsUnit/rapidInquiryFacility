@@ -74,7 +74,7 @@ import javax.swing.border.LineBorder;
  */
 
 
-public class WorkFlowProgressPanel {
+class WorkFlowProgressPanel {
 
 // ==========================================
 // Section Constants

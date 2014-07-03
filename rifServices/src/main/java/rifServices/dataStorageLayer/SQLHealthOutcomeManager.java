@@ -86,7 +86,7 @@ import java.text.Collator;
  *
  */
 
-public class SQLHealthOutcomeManager 
+class SQLHealthOutcomeManager 
 	extends AbstractSQLManager {
 
 	// ==========================================

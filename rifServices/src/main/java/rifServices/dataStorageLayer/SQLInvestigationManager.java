@@ -72,7 +72,7 @@ import java.sql.*;
  *
  */
 
-public class SQLInvestigationManager 
+class SQLInvestigationManager 
 	extends AbstractSQLManager {
 
 	// ==========================================

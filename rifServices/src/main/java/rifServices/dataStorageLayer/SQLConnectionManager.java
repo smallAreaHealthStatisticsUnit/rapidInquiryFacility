@@ -95,7 +95,7 @@ import java.util.ArrayList;
  *
  */
 
-public class SQLConnectionManager {
+class SQLConnectionManager {
 
 	// ==========================================
 	// Section Constants

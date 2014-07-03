@@ -100,7 +100,7 @@ import javax.swing.event.ListSelectionListener;
  *
  */
 
-public class CovariatesSelectionDialog 
+class CovariatesSelectionDialog 
 	implements ActionListener, 
 	ListSelectionListener {
 		

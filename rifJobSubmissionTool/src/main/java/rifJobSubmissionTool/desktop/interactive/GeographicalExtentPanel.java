@@ -102,7 +102,7 @@ import javax.swing.border.LineBorder;
  *
  */
 
-public class GeographicalExtentPanel 
+class GeographicalExtentPanel 
 	extends Observable 
 	implements ActionListener {
 	

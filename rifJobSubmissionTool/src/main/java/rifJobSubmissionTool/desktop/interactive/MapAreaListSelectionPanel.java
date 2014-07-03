@@ -105,7 +105,7 @@ import javax.swing.JTextArea;
  *
  */
 
-public class MapAreaListSelectionPanel 
+class MapAreaListSelectionPanel 
 	implements ActionListener, 
 	Observer {
 	

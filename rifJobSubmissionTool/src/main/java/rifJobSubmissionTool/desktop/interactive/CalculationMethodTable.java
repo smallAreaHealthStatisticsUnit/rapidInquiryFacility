@@ -74,7 +74,7 @@ import javax.swing.ListSelectionModel;
  *
  */
 
-public class CalculationMethodTable 
+class CalculationMethodTable 
 	extends JTable {
 
 // ==========================================

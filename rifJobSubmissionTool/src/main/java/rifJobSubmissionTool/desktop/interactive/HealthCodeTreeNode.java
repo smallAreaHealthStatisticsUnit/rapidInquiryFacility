@@ -68,7 +68,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
  *
  */
 
-public class HealthCodeTreeNode 
+class HealthCodeTreeNode 
 	extends DefaultMutableTreeNode {
 
 	// ==========================================

@@ -76,7 +76,7 @@ import java.awt.geom.RoundRectangle2D;
  *
  */
 
-public class WorkFlowStep extends JPanel {
+class WorkFlowStep extends JPanel {
 	
 	// ==========================================
 	// Section Constants

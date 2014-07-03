@@ -85,7 +85,7 @@ import javax.swing.JPanel;
  *
  */
 
-public class SpecifyInvestigationsStepPanel 
+class SpecifyInvestigationsStepPanel 
 	extends AbstractStepPanel 
 	implements ActionListener {
 	

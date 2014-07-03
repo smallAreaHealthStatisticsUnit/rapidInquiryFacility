@@ -74,7 +74,7 @@ import javax.swing.JPanel;
  *
  */
 
-public abstract class AbstractStepPanel {
+abstract class AbstractStepPanel {
 	
 	// ==========================================
 	// Section Constants

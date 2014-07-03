@@ -80,7 +80,7 @@ import javax.swing.JOptionPane;
  *
  */
 
-public class ShutdownManager extends WindowAdapter {
+class ShutdownManager extends WindowAdapter {
 	// ==========================================
 	// Section Constants
 	// ==========================================

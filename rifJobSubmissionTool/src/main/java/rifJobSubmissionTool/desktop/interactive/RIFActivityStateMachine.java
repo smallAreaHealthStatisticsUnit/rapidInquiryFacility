@@ -68,7 +68,7 @@ import java.util.Observable;
  *
  */
 
-public class RIFActivityStateMachine 
+class RIFActivityStateMachine 
 	extends Observable {
 	// ==========================================
 	// Section Constants

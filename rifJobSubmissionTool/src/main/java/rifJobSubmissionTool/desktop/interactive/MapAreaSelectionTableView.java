@@ -90,7 +90,7 @@ import java.util.Observable;
  *
  */
 
-public class MapAreaSelectionTableView 
+class MapAreaSelectionTableView 
 	extends Observable 
 	implements ActionListener {
 

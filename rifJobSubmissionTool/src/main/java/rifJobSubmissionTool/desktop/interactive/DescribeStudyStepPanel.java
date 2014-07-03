@@ -91,7 +91,7 @@ import java.util.ArrayList;
  *
  */
 
-public class DescribeStudyStepPanel 
+class DescribeStudyStepPanel 
 	extends AbstractStepPanel {
 	// ==========================================
 	// Section Constants

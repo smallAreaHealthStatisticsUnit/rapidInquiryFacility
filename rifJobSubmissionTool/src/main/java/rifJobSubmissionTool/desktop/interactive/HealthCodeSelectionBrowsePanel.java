@@ -77,7 +77,7 @@ import javax.swing.JScrollPane;
  *
  */
 
-public class HealthCodeSelectionBrowsePanel {
+class HealthCodeSelectionBrowsePanel {
 	
 	// ==========================================
 	// Section Constants

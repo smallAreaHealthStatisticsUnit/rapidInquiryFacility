@@ -85,7 +85,7 @@ import java.sql.SQLException;
  *
  */
 
-public class SQLCovariateManager 
+class SQLCovariateManager 
 	extends AbstractSQLManager {
 
 	// ==========================================
