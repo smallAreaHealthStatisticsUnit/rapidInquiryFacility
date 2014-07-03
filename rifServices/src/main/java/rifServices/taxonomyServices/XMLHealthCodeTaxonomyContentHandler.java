@@ -1,11 +1,10 @@
 
-package rifServices.io;
+package rifServices.taxonomyServices;
 
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
-import rifServices.taxonomyServices.TaxonomyTerm;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -17,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -86,7 +86,7 @@ import javax.xml.parsers.SAXParserFactory;
  */
 
 
-public class XMLHealthCodeTaxonomyContentHandler 
+class XMLHealthCodeTaxonomyContentHandler 
 	extends DefaultHandler {
 
 // ==========================================

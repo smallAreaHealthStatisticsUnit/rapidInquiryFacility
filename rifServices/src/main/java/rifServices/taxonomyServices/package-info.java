@@ -6,7 +6,7 @@
  * default implementations of ICD 9 and ICD 10 health code sources.  It also includes a generic
  * provider that obtains terms from an XML file.  The 
  * {@link rifServices.taxonomyServices.RIFXMLTaxonomyProvider} relies on the reader class
- * {@link rifServices.io.XMLHealthCodeTaxonomyContentHandler}.
+ * {@link rifServices.taxonomyServices.XMLHealthCodeTaxonomyContentHandler}.
  * 
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
