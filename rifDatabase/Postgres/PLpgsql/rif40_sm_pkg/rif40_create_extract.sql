@@ -270,6 +270,9 @@ BEGIN
 --
 -- 	<rif40_investigations>.<inv_name>          VARCHAR);
 --
+-- [Make INV_1 INV_<inv_id> extracts] - this appears to be approximately the case; as it is INV_NAME, but the defailt needs to
+-- be looked at
+--
 	FOR c3_rec IN c3_creex(study_id) LOOP
 		sql_stmt:=sql_stmt||E'\t'||LOWER(c3_rec.inv_name)||'               BIGINT,'||E'\n';
 		table_columns:=array_append(table_columns, LOWER(c3_rec.inv_name)::VARCHAR);

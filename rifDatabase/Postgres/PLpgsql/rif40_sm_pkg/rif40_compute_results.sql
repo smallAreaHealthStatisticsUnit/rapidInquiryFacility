@@ -358,9 +358,6 @@ SELECT COUNT(*)
 	IF rif40_sm_pkg.rif40_execute_insert_statement(study_id, sql_stmt, 'Map table observed INSERT'::VARCHAR) = FALSE THEN 
 		RETURN FALSE;
 	END IF;
---
--- Make INV_1 INV_<inv_id> in results extracts
---
 
 --
 -- Index, analyze
