@@ -220,7 +220,7 @@ public class TestGUIScenario extends AbstractRIFServiceTestCase {
 			System.out.println();
 			System.out.println("Get sex values");
 			ArrayList<Sex> sexs
-				= rifStudySubmissionService.getGenders(testUser);
+				= rifStudySubmissionService.getSexes(testUser);
 			for (Sex sex : sexs) {
 				System.out.println("GENDER:=="+sex.getName()+"==");
 			}
