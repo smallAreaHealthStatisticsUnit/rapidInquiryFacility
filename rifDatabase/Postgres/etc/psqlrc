@@ -1,0 +1,40 @@
+--
+--	psql configuration file
+--
+--  This file is read before the .psqlrc file in the user's home directory.
+--
+--  Copy this to your sysconf directory (typically /usr/local/pgsql/etc) and
+--  rename it psqlrc.
+--
+\conninfo
+--
+-- Run RIF startup script
+--
+\set VERBOSITY terse
+DO LANGUAGE plpgsql $$
+DECLARE
+ 	c1 CURSOR FOR
+		SELECT p.proname
+		  FROM pg_proc p, pg_namespace n
+		 WHERE p.proname  = 'rif40_startup'
+		   AND n.nspname  = 'rif40_sql_pkg'
+		   AND p.proowner = (SELECT oid FROM pg_roles WHERE rolname = 'rif40')
+		   AND n.oid      = p.pronamespace;
+--
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.proname = 'rif40_startup' THEN
+		PERFORM rif40_sql_pkg.rif40_startup();
+	ELSE
+		RAISE INFO 'RIF startup: not a RIF database';
+	END IF;
+END;
+$$;
+\set VERBOSITY default
+ 
+--
+-- Eof
