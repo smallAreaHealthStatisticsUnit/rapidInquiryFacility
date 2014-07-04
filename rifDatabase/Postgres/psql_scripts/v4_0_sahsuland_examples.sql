@@ -197,19 +197,37 @@ BEGIN
 		covariate_array			/* covariate array */);
 --
 -- Dump extract/map tables to CSV via a temporary table
+-- Ordering is for githubs benefit
 --
 	sql_stmt[1]:='DROP TABLE IF EXISTS sahsuland_example_extract';
 	sql_stmt[array_length(sql_stmt, 1)+1]:='DROP TABLE IF EXISTS sahsuland_example_map';
 	sql_stmt[array_length(sql_stmt, 1)+1]:='DROP TABLE IF EXISTS sahsuland_example_bands';
+--
 	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TEMPORARY TABLE sahsuland_example_extract'||E'\n'||
 'AS'||E'\n'||
-'SELECT * FROM rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_extract';
+'SELECT *'||E'\n'||
+'  FROM rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_extract'||
+' ORDER BY study_id, study_or_comparison, year, band_id, area_id, sex, age_group, '||array_to_string(covariate_array, ',');
 	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TEMPORARY TABLE sahsuland_example_map'||E'\n'||
 'AS'||E'\n'||
-'SELECT * FROM rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_map';
+'SELECT *'||E'\n'||
+'  FROM rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_map'||
+' ORDER BY gid_rowindex';
 	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TEMPORARY TABLE sahsuland_example_bands'||E'\n'||
 'AS'||E'\n'||
-'SELECT * FROM rif40_study_areas WHERE study_id = '||currval('rif40_study_id_seq'::regclass)::VARCHAR||' ORDER BY band_id';
+'SELECT *'||E'\n'||
+'  FROM rif40_study_areas'||E'\n'||
+' WHERE study_id = '||currval('rif40_study_id_seq'::regclass)::VARCHAR||E'\n'||
+' ORDER BY band_id';
+--
+-- Set study_id, inv_id to 1 for GITHUBs benefit
+--
+-- sahsuland_example_extract: when inv_1 is changed to inv_<inv_id> the column will need to be renamed
+--
+	sql_stmt[array_length(sql_stmt, 1)+1]:='UPDATE sahsuland_example_extract SET study_id = 1';
+--
+	sql_stmt[array_length(sql_stmt, 1)+1]:='UPDATE sahsuland_example_map SET study_id = 1, inv_id = 1';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='UPDATE sahsuland_example_bands SET study_id = 1';
 --
 	IF rif40_sm_pkg.rif40_run_study(currval('rif40_study_id_seq'::regclass)::INTEGER) THEN
 		RAISE INFO 'Study: % run OK', currval('rif40_study_id_seq'::regclass)::VARCHAR;
