@@ -389,7 +389,7 @@ public class TestAgeGenderYearsServiceFeatures
 	public void getGendersAcceptValidInputs() {
 		try {
 			ArrayList<Sex> sexs
-				= rifStudySubmissionService.getGenders(testUser);
+				= rifStudySubmissionService.getSexes(testUser);
 			assertEquals(3, sexs.size());
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -408,7 +408,7 @@ public class TestAgeGenderYearsServiceFeatures
 	 */
 	public void getGendersRejectNullParameters() {
 		try {
-			rifStudySubmissionService.getGenders(null);
+			rifStudySubmissionService.getSexes(null);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -430,7 +430,7 @@ public class TestAgeGenderYearsServiceFeatures
 	 */
 	public void getGendersRejectInvalidParameters() {
 		try {
-			rifStudySubmissionService.getGenders(invalidUser);
+			rifStudySubmissionService.getSexes(invalidUser);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -452,7 +452,7 @@ public class TestAgeGenderYearsServiceFeatures
 	 */
 	public void getGendersRejectNonExistentParameters() {
 		try {
-			rifStudySubmissionService.getGenders(nonExistentUser);
+			rifStudySubmissionService.getSexes(nonExistentUser);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

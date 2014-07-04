@@ -384,7 +384,7 @@ class AgeSexYearBandPanel
 						
 			sexComboBox.removeAllItems();
 			ArrayList<String> sexNameList
-				= Sex.getSexNameList(service.getGenders(currentUser));
+				= Sex.getSexNameList(service.getSexes(currentUser));
 			for (String sexName : sexNameList) {
 				sexComboBox.addItem(sexName);
 			}			
@@ -587,7 +587,7 @@ class AgeSexYearBandPanel
 		User currentUser = rifSession.getUser();
 		try {
 			ArrayList<String> sexNameList
-				= Sex.getSexNameList(service.getGenders(currentUser));
+				= Sex.getSexNameList(service.getSexes(currentUser));
 			for (String sexName : sexNameList) {
 				sexComboBox.addItem(sexName);
 			}

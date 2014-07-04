@@ -259,7 +259,7 @@ public interface RIFStudySubmissionAPI {
 		final String numeratorTableName) 
 		throws RIFServiceException;
 	
-	//Features for Age, Gender and Study Years
+	//Features for Age, Sex and Study Years
 	/**
 	 * Gets the age groups.
 	 *
@@ -278,13 +278,13 @@ public interface RIFStudySubmissionAPI {
 		throws RIFServiceException;
 	
 	/**
-	 * Gets the genders.
+	 * Gets the sexes.
 	 *
 	 * @param user the user
-	 * @return the genders
+	 * @return the sexes
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<Sex> getGenders(
+	public ArrayList<Sex> getSexes(
 		final User user)
 		throws RIFServiceException;
 		

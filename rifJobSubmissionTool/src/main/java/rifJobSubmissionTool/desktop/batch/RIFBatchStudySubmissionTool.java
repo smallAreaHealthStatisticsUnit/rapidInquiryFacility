@@ -76,10 +76,10 @@ public class RIFBatchStudySubmissionTool {
 		try {
 			ProductionRIFStudyServiceBundle rifStudyServiceBundle
 				= new ProductionRIFStudyServiceBundle();
-			rifStudyServiceBundle.login("keving", new String("a").toCharArray());				
+			rifStudyServiceBundle.login("kgarwood", new String("a").toCharArray());				
 			String ipAddress = InetAddress.getLocalHost().getHostAddress();
 			
-			User testUser = User.newInstance("keving", ipAddress);
+			User testUser = User.newInstance("kgarwood", ipAddress);
 			RIFSession rifSession 
 				= new RIFSession(rifStudyServiceBundle, testUser);
 						

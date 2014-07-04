@@ -429,7 +429,7 @@ abstract class AbstractRIFStudySubmissionService
 	/* (non-Javadoc)
 	 * @see rifServices.businessConceptLayer.RIFJobSubmissionAPI#getGenders(rifServices.businessConceptLayer.User)
 	 */
-	public ArrayList<Sex> getGenders(
+	public ArrayList<Sex> getSexes(
 		final User _user)
 		throws RIFServiceException {
 		
