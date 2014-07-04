@@ -134,7 +134,7 @@ public class TestUser extends AbstractRIFTestCase {
 			this.checkErrorType(rifServiceException, RIFServiceError.INVALID_USER, 1);
 		}
 
-		user = User.newInstance("keving", "");		
+		user = User.newInstance("kgarwood", "");		
 		try {
 			user.checkErrors();
 		}
@@ -142,7 +142,7 @@ public class TestUser extends AbstractRIFTestCase {
 			this.checkErrorType(rifServiceException, RIFServiceError.INVALID_USER, 1);
 		}
 
-		user = User.newInstance("keving", null);		
+		user = User.newInstance("kgarwood", null);		
 		try {
 			user.checkErrors();
 		}
@@ -168,7 +168,7 @@ public class TestUser extends AbstractRIFTestCase {
 		}
 
 		user 
-			= User.newInstance("keving", getTestMaliciousValue());
+			= User.newInstance("kgarwood", getTestMaliciousValue());
 		try {
 			user.checkSecurityViolations();
 			fail();

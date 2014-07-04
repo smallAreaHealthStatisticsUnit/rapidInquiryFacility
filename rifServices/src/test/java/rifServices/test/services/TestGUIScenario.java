@@ -106,10 +106,10 @@ public class TestGUIScenario extends AbstractRIFServiceTestCase {
 	public void runScenario() {
 		try {
 			initialiseService();
-			rifServiceBundle.login("keving", new String("a").toCharArray());			
+			rifServiceBundle.login("kgarwood", new String("a").toCharArray());			
 			
-			System.out.println("Logging on as keving...");
-			User testUser = User.newInstance("keving", "11.111.11.228");
+			System.out.println("Logging on as kgarwood...");
+			User testUser = User.newInstance("kgarwood", "11.111.11.228");
 			
 			System.out.println();
 			System.out.println("Getting available geographies...");

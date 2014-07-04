@@ -148,7 +148,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 	 * Instantiates a new test map area features.
 	 */
 	public TestMapAreaFeatures() {
-		validUser = User.newInstance("keving", "11.111.11.228");
+		validUser = User.newInstance("kgarwood", "11.111.11.228");
 		invalidUser = User.newInstance(null, "11.111.11.228");
 		nonExistentUser = User.newInstance("xyzz", "11.111.11.228");
 		
@@ -196,7 +196,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 	@Before
 	public void setUp() {
 		try {
-			rifServiceBundle.login("keving", new String("a").toCharArray());			
+			rifServiceBundle.login("kgarwood", new String("a").toCharArray());			
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);

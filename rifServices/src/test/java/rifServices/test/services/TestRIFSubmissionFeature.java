@@ -95,7 +95,7 @@ public class TestRIFSubmissionFeature extends AbstractRIFServiceTestCase {
 
 	public TestRIFSubmissionFeature() {		
 		testUser 
-			= User.newInstance("keving", "11.111.11.228");
+			= User.newInstance("kgarwood", "11.111.11.228");
 		SampleTestObjectGenerator generator
 			= new SampleTestObjectGenerator();
 		masterRIFJobSubmission
@@ -112,7 +112,7 @@ public class TestRIFSubmissionFeature extends AbstractRIFServiceTestCase {
 	@Before
 	public void setUp() {
 		try {
-			rifServiceBundle.login("keving", new String("a").toCharArray());		
+			rifServiceBundle.login("kgarwood", new String("a").toCharArray());		
 			rifStudySubmissionService.clearStudiesForUser(testUser);
 		}
 		catch(RIFServiceException exception) {

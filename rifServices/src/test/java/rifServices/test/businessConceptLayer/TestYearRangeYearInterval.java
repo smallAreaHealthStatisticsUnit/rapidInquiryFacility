@@ -191,7 +191,7 @@ public class TestYearRangeYearInterval extends AbstractRIFTestCase {
 			service
 				= rifStudyServiceBundle.getRIFStudySubmissionService();
 			rifStudyServiceBundle.login(
-				"keving", 
+				"kgarwood", 
 				new String("a").toCharArray());			
 		}
 		catch(RIFServiceException exception) {

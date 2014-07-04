@@ -147,7 +147,7 @@ public class TestCovariateFeatures extends AbstractRIFServiceTestCase {
 		nonExistentGeography
 			= Geography.newInstance("Nonexistent geography", "blah");
 		
-		testUser = User.newInstance("keving", "11.111.11.228");
+		testUser = User.newInstance("kgarwood", "11.111.11.228");
 		invalidUser = User.newInstance(null, "11.111.11.228");
 		nonExistentUser = User.newInstance("zzzz", "11.111.11.228");
 		
@@ -191,7 +191,7 @@ public class TestCovariateFeatures extends AbstractRIFServiceTestCase {
 	@Before
 	public void setUp() {
 		try {
-			rifServiceBundle.login("keving", new String("a").toCharArray());			
+			rifServiceBundle.login("kgarwood", new String("a").toCharArray());			
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);

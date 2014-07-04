@@ -168,7 +168,7 @@ public class TestRIFContextFeatures extends AbstractRIFServiceTestCase {
 		invalidGeoLevelSelectValue
 			= GeoLevelSelect.newInstance(null);
 				
-		testUser = User.newInstance("keving", "11.111.11.228");
+		testUser = User.newInstance("kgarwood", "11.111.11.228");
 		nonExistentUser = User.newInstance("nobody", "11.111.11.228");
 		invalidUser = User.newInstance(null, "11.111.11.228");
 		maliciousUser = User.newInstance(maliciousFieldValue, "11.111.11.228");
@@ -188,7 +188,7 @@ public class TestRIFContextFeatures extends AbstractRIFServiceTestCase {
 	@Before
 	public void setUp() {
 		try {
-			rifServiceBundle.login("keving", new String("a").toCharArray());			
+			rifServiceBundle.login("kgarwood", new String("a").toCharArray());			
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);

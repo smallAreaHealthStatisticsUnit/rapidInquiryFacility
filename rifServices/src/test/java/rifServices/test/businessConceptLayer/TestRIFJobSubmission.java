@@ -108,7 +108,7 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 		masterRIFJobSubmission.addCalculationMethod(generator.createSampleBYMMethod());	
 		masterRIFJobSubmission.setJobSubmissionTime(new Date());
 		
-		User testUser = User.newInstance("keving", "11.111.11.228");
+		User testUser = User.newInstance("kgarwood", "11.111.11.228");
 		masterRIFJobSubmission.setUser(testUser);
 		
 		DiseaseMappingStudy diseaseMappingStudy

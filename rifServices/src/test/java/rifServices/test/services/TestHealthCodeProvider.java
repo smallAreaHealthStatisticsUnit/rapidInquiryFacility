@@ -114,7 +114,7 @@ public class TestHealthCodeProvider extends AbstractRIFServiceTestCase {
 	 */
 	public TestHealthCodeProvider() {
 		
-		testUser = User.newInstance("keving", "11.111.11.228");
+		testUser = User.newInstance("kgarwood", "11.111.11.228");
 		invalidUser = User.newInstance("nobody", "11.111.11.228");
 	
 		masterChapter02HealthCode = HealthCode.newInstance();
@@ -145,7 +145,7 @@ public class TestHealthCodeProvider extends AbstractRIFServiceTestCase {
 	@Before
 	public void setUp() {
 		try {
-			rifServiceBundle.login("keving", new String("a").toCharArray());			
+			rifServiceBundle.login("kgarwood", new String("a").toCharArray());			
 			ArrayList<HealthCodeTaxonomy> healthCodeTaxonomies
 				= rifStudySubmissionService.getHealthCodeTaxonomies(testUser);
 			icd10HealthCodeTaxonomy
