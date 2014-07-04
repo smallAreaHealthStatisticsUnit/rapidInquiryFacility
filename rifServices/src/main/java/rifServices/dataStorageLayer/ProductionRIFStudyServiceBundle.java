@@ -66,7 +66,8 @@ public final class ProductionRIFStudyServiceBundle
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	private static final ProductionRIFStudyServiceBundle rifStudyServiceBundle 
+		= new ProductionRIFStudyServiceBundle();
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -82,7 +83,10 @@ public final class ProductionRIFStudyServiceBundle
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	public static ProductionRIFStudyServiceBundle getRIFServiceBundle() {
+		return rifStudyServiceBundle;
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
