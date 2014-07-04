@@ -10,6 +10,8 @@ rif40_getAllAttributesForGeoLevelAttributeTheme: 	50800 to 50999
 rif40_GetGeometryColumnNames: 				51000 to 51199
 rif40_GetMapAreaAttributeValue: 			51200 to 51399
 rif40_closeGetMapAreaAttributeCursor: 			51400 to 51599
+rif40_CreateMapAreaAttributeSource: 			51600 to 51799
+rif40_DeleteMapAreaAttributeSource: 			51800 to 51999
 
 rif40_sm_pkg:
 
