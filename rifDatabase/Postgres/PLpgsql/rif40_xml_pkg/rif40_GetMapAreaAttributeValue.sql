@@ -553,20 +553,22 @@ BEGIN
 --
 -- This is now done at map (results) creation
 --
-		IF l_attribute_name_array IS NULL THEN
-/*			select_list:='a.area_id,'||E'\n'||
-				  '       g.gid, '||E'\n'||
-			          '       LPAD(g.gid::Text, 10, ''0''::Text)||''_''||'||
+		IF c6a_rec.column_name = 'gid' AND c6b_rec.column_name = 'gid_rowindex' THEN
+			select_list:='a.area_id,'||E'\n'||
+			          select_list;
+--
+-- Other is risk analysis; use band_id as a substitute for gid
+--
+		ELSIF l_attribute_name_array IS NULL THEN
+			select_list:='       LPAD(g.band_id::Text, 10, ''0''::Text)||''_''||'||
 						'LPAD(ROW_NUMBER() OVER(PARTITION BY a.band_id'||
 						' /- Use default table order -/)::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
-			          select_list; */
+			          select_list;
 		ELSE /* Sort order specified */
-/*			select_list:='a.area_id,'||E'\n'||
-				  '       g.gid, '||E'\n'||
-			          '       LPAD(g.gid::Text, 10, ''0''::Text)||''_''||'||
+			select_list:='       LPAD(g.band_id::Text, 10, ''0''::Text)||''_''||'||
 						'LPAD(ROW_NUMBER() OVER(PARTITION BY a.band_id'||
 						' ORDER BY '||select_list||')::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
-			          select_list; */
+			          select_list;
 		END IF;
 --
 -- Geometry tables must have gid and gid_rowindex
