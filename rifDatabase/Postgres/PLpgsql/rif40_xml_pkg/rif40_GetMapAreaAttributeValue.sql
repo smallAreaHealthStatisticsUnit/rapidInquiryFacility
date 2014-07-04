@@ -550,6 +550,9 @@ BEGIN
 -- Not available for risk analysis
 --
 	ELSIF l_theme = 'results' THEN
+--
+-- This is now done at map (results) creation
+--
 		IF l_attribute_name_array IS NULL THEN
 /*			select_list:='a.area_id,'||E'\n'||
 				  '       g.gid, '||E'\n'||
