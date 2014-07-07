@@ -126,7 +126,7 @@ DECLARE
 --
 	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 
 		'rif40_getAllAttributesForGeoLevelAttributeTheme', 'rif40_GetGeometryColumnNames', 'rif40_GetMapAreaAttributeValue',
-		'rif40_closeGetMapAreaAttributeCursor'];
+		'rif40_closeGetMapAreaAttributeCursor','rif40_CreateMapAreaAttributeSource'];
 --
 	c1alter2 CURSOR FOR
 		SELECT *
@@ -179,9 +179,11 @@ WITH a AS (
 	  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'extract')
 )
 SELECT b.* 
-  FROM a, rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
+  FROM a, rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 		'c4getallatt4theme_4', 
 		'SAHSU', 'LEVEL4', 'extract', a.min_attribute_source) b;
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue('c4getallatt4theme_4' /* Temporary table */);
 FETCH FORWARD 5 IN c4getallatt4theme_4;
 
 SELECT * 
@@ -192,9 +194,11 @@ WITH a AS (
 	  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'results')
 )
 SELECT b.* 
-  FROM a, rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
+  FROM a, rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 		'c4getallatt4theme_5', 
 		'SAHSU', 'LEVEL4', 'results', a.min_attribute_source) b;
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue('c4getallatt4theme_5' /* Temporary table */);
 FETCH FORWARD 5 IN c4getallatt4theme_5;
 
 DO LANGUAGE plpgsql $$

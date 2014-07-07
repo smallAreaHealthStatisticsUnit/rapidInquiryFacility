@@ -83,7 +83,7 @@ Function: 	rif40_CreateMapAreaAttributeSource()
 Parameters:	Temporary table name (same as REFCURSOR), Geography, <geolevel select>, theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme), attribute source, 
  		attribute name array [Default NULL - All attributes]
 Returns:	Temporary table name
-Description:	Get all values for attributes source, attribute names, geography and geolevel select
+Description:	Create temporary table with all values for attributes source, attribute names, geography and geolevel select
 
 Warnings: 
 
@@ -601,23 +601,9 @@ BEGIN
 --
 	sql_stmt:=sql_stmt||') /* Force CTE to be executed entirely */'||E'\n'||
 			  'SELECT *'||E'\n'||
-			  '  FROM a'||E'\n';
---
--- Row limit and offset control
---
-	IF l_offset IS NOT NULL THEN
-		IF l_row_limit IS NOT NULL THEN
-			sql_stmt:=sql_stmt||' ORDER BY 3 /* gid_rowindex */ OFFSET $3 LIMIT $4';
-		ELSE
-			sql_stmt:=sql_stmt||' ORDER BY 3 /* gid_rowindex */ OFFSET $3';
-		END IF;				
-	ELSE
-		IF l_row_limit IS NOT NULL THEN
-			sql_stmt:=sql_stmt||' ORDER BY 3 /* gid_rowindex */ LIMIT $4';
-		ELSE
-			sql_stmt:=sql_stmt||' ORDER BY 3 /* gid_rowindex */';
-		END IF;				
-	END IF;				
+			  '  FROM a'||E'\n'||
+			  ' ORDER BY 3 /* gid_rowindex */';
+				
 --
 -- As function returns a REFCURSOR it only parses and does NOT execute
 --
@@ -640,7 +626,7 @@ BEGIN
 -- Create results temporary table, extract explain plan  using _rif40_CreateMapAreaAttributeSource_explain_ddl() helper function.
 -- This ensures the EXPLAIN PLAN output is a field called explain_line 
 --
-			sql_stmt:='SELECT explain_line FROM rif40_xml_pkg._rif40_CreateMapAreaAttributeSource_explain_ddl('||quote_literal(sql_stmt)||', $1, $2, $3, $4)';
+			sql_stmt:='SELECT explain_line FROM rif40_xml_pkg._rif40_CreateMapAreaAttributeSource_explain_ddl('||quote_literal(sql_stmt)||', $1, $2)';
 			FOR c4_rec IN EXECUTE sql_stmt USING l_geography, l_geolevel_select LOOP
 				IF explain_text IS NULL THEN
 					explain_text:=c4_rec.explain_line;
@@ -670,6 +656,7 @@ BEGIN
 --
 -- Create temporary table
 --
+			sql_stmt:='CREATE TEMPORARY TABLE '||LOWER(quote_ident(c4getallatt4theme::Text))||E'\n'||'AS'||E'\n'||sql_stmt;
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource', 
 				'[51219] c4getallatt4theme SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
 			EXECUTE sql_stmt USING l_geography, l_geolevel_select;
@@ -693,15 +680,13 @@ BEGIN
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource', 
-		'[51221] Cursor: %, geography: %, geolevel select: %, theme: %, attribute names: [%], source: %; offset: %, row limit: %, SQL parse took: %.', 			
+		'[51221] Cursor: %, geography: %, geolevel select: %, theme: %, attribute names: [%], source: %, SQL parse took: %.', 			
 		LOWER(quote_ident(c4getallatt4theme::Text))::VARCHAR	/* Cursor name */, 
 		l_geography::VARCHAR					/* Geography */, 
 		l_geolevel_select::VARCHAR				/* Geolevel select */, 
 		l_theme::VARCHAR					/* Theme */, 
 		array_to_string(l_attribute_name_array, ',')::VARCHAR	/* attribute names */, 
 		l_attribute_source::VARCHAR				/* attribute source table */, 
-		l_offset::VARCHAR					/* Offset */,
-		l_row_limit::VARCHAR					/* Row limit */,
 		took::VARCHAR						/* Time taken */);
 --
 	RETURN c4getallatt4theme;
@@ -713,7 +698,7 @@ COMMENT ON FUNCTION rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(VARCHAR, VA
 Parameters:	Temporary table name (same as REFCURSOR), Geography, <geolevel select>, theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme), attribute source, 
  		attribute name array [Default NULL - All attributes]
 Returns:	Temporary table name
-Description:	Get all values for attributes source, attribute names, geography and geolevel select
+Description:	Create temporary table with all values for attributes source, attribute names, geography and geolevel select
 
 Warnings: 
 
