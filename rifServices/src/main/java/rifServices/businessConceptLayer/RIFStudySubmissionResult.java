@@ -74,7 +74,7 @@ import java.util.ArrayList;
  */
 
 
-public final class RIFJobSubmissionResult {
+public final class RIFStudySubmissionResult {
 
 
 // ==========================================
@@ -146,7 +146,7 @@ private RIFServiceInformation rifServiceInformation;
     /**
      * Instantiates a new RIF job submission result.
      */
-	public RIFJobSubmissionResult() {
+	public RIFStudySubmissionResult() {
 		errorMessages = new ArrayList<String>();
 		warningMessages = new ArrayList<String>();
 		administratorMessages = new ArrayList<String>();

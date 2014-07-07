@@ -64,7 +64,7 @@ package rifServices.businessConceptLayer;
  *
  */
 
-public final class RIFJobSubmissionSummary {
+public final class RIFStudySubmissionSummary {
 
 	// ==========================================
 	// Section Constants
@@ -93,7 +93,7 @@ public final class RIFJobSubmissionSummary {
 	 * @param studyName the study name
 	 * @param studySummary the study summary
 	 */
-	private RIFJobSubmissionSummary(
+	private RIFStudySubmissionSummary(
 		final String studyIdentifier,
 		final String studyName,
 		final String studySummary) {
@@ -111,13 +111,13 @@ public final class RIFJobSubmissionSummary {
 	 * @param studySummary the study summary
 	 * @return the RIF job submission summary
 	 */
-	static public RIFJobSubmissionSummary newInstance(
+	static public RIFStudySubmissionSummary newInstance(
 		final String studyIdentifier,
 		final String studyName,
 		final String studySummary) {
 		
-		RIFJobSubmissionSummary summary
-			= new RIFJobSubmissionSummary(
+		RIFStudySubmissionSummary summary
+			= new RIFStudySubmissionSummary(
 				studyIdentifier, 
 				studyName, 
 				studySummary);
