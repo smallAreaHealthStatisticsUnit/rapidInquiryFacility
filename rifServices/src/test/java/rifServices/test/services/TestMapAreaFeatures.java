@@ -225,7 +225,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 		
 		try {
 			ArrayList<MapArea> mapAreas
-				= rifStudySubmissionService.getMapAreas(
+				= rifStudySubmissionService.getGeoLevelToMapAreas(
 					validUser, 
 					sahsuGeography,
 					validGeoLevelSelect,
@@ -301,7 +301,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 	public void getMapAreasE1() {
 		
 		try {
-			rifStudySubmissionService.getMapAreas(
+			rifStudySubmissionService.getGeoLevelToMapAreas(
 				null, 
 				sahsuGeography,
 				validGeoLevelSelect,
@@ -317,7 +317,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 		}
 		
 		try {
-			rifStudySubmissionService.getMapAreas(
+			rifStudySubmissionService.getGeoLevelToMapAreas(
 				validUser, 
 				null, 
 				validGeoLevelSelect,
@@ -333,7 +333,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 		}
 
 		try {
-			rifStudySubmissionService.getMapAreas(
+			rifStudySubmissionService.getGeoLevelToMapAreas(
 				validUser, 
 				sahsuGeography,
 				null,
@@ -349,7 +349,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 		}
 
 		try {
-			rifStudySubmissionService.getMapAreas(
+			rifStudySubmissionService.getGeoLevelToMapAreas(
 				validUser, 
 				sahsuGeography,
 				validGeoLevelSelect,
@@ -365,7 +365,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 		}
 				
 		try {
-			rifStudySubmissionService.getMapAreas(
+			rifStudySubmissionService.getGeoLevelToMapAreas(
 				validUser, 
 				sahsuGeography, 
 				validGeoLevelSelect,
@@ -393,7 +393,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 	public void getMapAreasE2() {
 		
 		try {
-			rifStudySubmissionService.getMapAreas(
+			rifStudySubmissionService.getGeoLevelToMapAreas(
 				invalidUser, 
 				sahsuGeography,
 				validGeoLevelSelect,
@@ -409,7 +409,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 		}
 		
 		try {
-			rifStudySubmissionService.getMapAreas(
+			rifStudySubmissionService.getGeoLevelToMapAreas(
 				validUser, 
 				invalidGeography, 
 				validGeoLevelSelect,
@@ -425,7 +425,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 		}
 
 		try {
-			rifStudySubmissionService.getMapAreas(
+			rifStudySubmissionService.getGeoLevelToMapAreas(
 				validUser, 
 				sahsuGeography,
 				invalidGeoLevelSelect,
@@ -441,7 +441,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 		}
 
 		try {
-			rifStudySubmissionService.getMapAreas(
+			rifStudySubmissionService.getGeoLevelToMapAreas(
 				validUser, 
 				sahsuGeography,
 				validGeoLevelSelect,
@@ -457,7 +457,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 		}
 		
 		try {
-			rifStudySubmissionService.getMapAreas(
+			rifStudySubmissionService.getGeoLevelToMapAreas(
 				validUser, 
 				sahsuGeography,
 				validGeoLevelSelect,
@@ -486,7 +486,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 	public void getMapAreasE3() {
 		
 		try {
-			rifStudySubmissionService.getMapAreas(
+			rifStudySubmissionService.getGeoLevelToMapAreas(
 				nonExistentUser, 
 				sahsuGeography, 
 				validGeoLevelSelect,
@@ -502,7 +502,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 		}
 		
 		try {
-			rifStudySubmissionService.getMapAreas(
+			rifStudySubmissionService.getGeoLevelToMapAreas(
 				validUser, 
 				nonExistentGeography,
 				validGeoLevelSelect,
@@ -518,7 +518,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 		}
 
 		try {
-			rifStudySubmissionService.getMapAreas(
+			rifStudySubmissionService.getGeoLevelToMapAreas(
 				validUser, 
 				sahsuGeography, 
 				nonExistentGeoLevelSelect,
@@ -534,7 +534,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 		}
 
 		try {
-			rifStudySubmissionService.getMapAreas(
+			rifStudySubmissionService.getGeoLevelToMapAreas(
 				validUser, 
 				sahsuGeography, 
 				validGeoLevelSelect,
@@ -550,7 +550,7 @@ public class TestMapAreaFeatures extends AbstractRIFServiceTestCase {
 		}
 				
 		try {
-			rifStudySubmissionService.getMapAreas(
+			rifStudySubmissionService.getGeoLevelToMapAreas(
 				validUser, 
 				sahsuGeography, 
 				validGeoLevelSelect,

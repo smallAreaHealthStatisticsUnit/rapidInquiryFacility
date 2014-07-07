@@ -258,7 +258,7 @@ class HealthCodeSelectionTree
 			
 			try {
 				ArrayList<HealthCode> subTerms
-					= service.getImmediateSubterms(
+					= service.getImmediateChildHealthCodes(
 						session.getUser(), 
 						selectedHealthCode);
 				for (HealthCode subTerm : subTerms) {

@@ -320,7 +320,7 @@ class HealthCodeSelectionSearchPanel
 		RIFStudySubmissionAPI service = session.getRIFStudySubmissionService();
 		try {
 			ArrayList<HealthCode> searchResults
-				= service.getHealthCodes(
+				= service.getHealthCodesMatchingSearchText(
 					session.getUser(),
 					currentHealthCodeTaxonomy,
 					searchText);

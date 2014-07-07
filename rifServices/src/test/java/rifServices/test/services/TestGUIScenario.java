@@ -261,7 +261,7 @@ public class TestGUIScenario extends AbstractRIFServiceTestCase {
 					"Chapter 02; Neoplasms",
 					true);
 			ArrayList<HealthCode> level3Codes
-				= rifStudySubmissionService.getImmediateSubterms(testUser, chapter2ICD10HealthCode);
+				= rifStudySubmissionService.getImmediateChildHealthCodes(testUser, chapter2ICD10HealthCode);
 			for (HealthCode level3Code : level3Codes) {
 				System.out.println("3 CHAR ICD10 CATEGORY:=="+level3Code.getDisplayName()+"==");			
 			}
@@ -274,7 +274,7 @@ public class TestGUIScenario extends AbstractRIFServiceTestCase {
 					"other and unspecified types of non-hodgkin's lymphoma",
 					false);
 			ArrayList<HealthCode> level4Codes
-				= rifStudySubmissionService.getImmediateSubterms(
+				= rifStudySubmissionService.getImmediateChildHealthCodes(
 					testUser, 
 					otherNonHodgkinsICD10HealthCode);
 			for (HealthCode level4Code : level4Codes) {
