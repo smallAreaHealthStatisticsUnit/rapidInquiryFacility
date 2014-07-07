@@ -87,11 +87,11 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public String getGeometry(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final GeoLevelToMap geoLevelToMap,
-		final ArrayList<MapArea> mapAreas) 
+		User user,		
+		Geography geography,
+		GeoLevelSelect geoLevelSelect,
+		GeoLevelToMap geoLevelToMap,
+		ArrayList<MapArea> mapAreas) 
 		throws RIFServiceException;
 		
 	/**
@@ -104,10 +104,10 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public Rectangle2D.Double getGeoLevelBoundsForArea(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final MapArea mapArea)
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect,
+		MapArea mapArea)
 		throws RIFServiceException;
 	
 	/**
@@ -122,17 +122,17 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public Rectangle2D.Double getGeoLevelFullExtentForStudy(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final DiseaseMappingStudy study) 
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect,
+		DiseaseMappingStudy study) 
 		throws RIFServiceException;	
 	
 		
 	public Rectangle2D.Double getGeoLevelFullExtent(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect) 
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect) 
 		throws RIFServiceException;
 
 
@@ -143,11 +143,11 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * 
 	 */
 	public String getTiles(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final Integer zoomFactor,
-		final String tileIdentifier) 
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect,
+		Integer zoomFactor,
+		String tileIdentifier) 
 		throws RIFServiceException;
 
 	/**
@@ -162,10 +162,10 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public ArrayList<MapAreaAttributeValue> getMapAreaAttributeValues(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final String geoLevelAttribute) 
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect,
+		String geoLevelAttribute) 
 		throws RIFServiceException;
 	
 	/**
@@ -177,10 +177,8 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @return
 	 */
 	public ArrayList<GeoLevelAttributeSource> getGeoLevelAttributeSources(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final DiseaseMappingStudy diseaseMappingStudy)
+		User user,
+		StudyResultRetrievalContext studyResultRetrievalContext)
 		throws RIFServiceException; 
 	
 	/**
@@ -192,9 +190,9 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public ArrayList<GeoLevelAttributeTheme> getGeoLevelAttributeThemes(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect)
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect)
 		throws RIFServiceException;
 
 	
@@ -216,12 +214,10 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public String[] getAllAttributesForGeoLevelAttributeTheme(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final DiseaseMappingStudy diseaseMappingStudy,
-		final GeoLevelAttributeSource geoLevelAttributeSource,
-		final GeoLevelAttributeTheme geoLevelAttributeTheme)
+		User user,
+		StudyResultRetrievalContext studyResultRetrievalContext,
+		GeoLevelAttributeSource geoLevelAttributeSource,
+		GeoLevelAttributeTheme geoLevelAttributeTheme)
 		throws RIFServiceException;
 		
 	/**
@@ -234,12 +230,10 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public String[] getNumericAttributesForGeoLevelAttributeTheme(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final DiseaseMappingStudy diseaseMappingStudy,
-		final GeoLevelAttributeSource geoLevelAttributeSource,
-		final GeoLevelAttributeTheme geoLevelAttributeTheme) 
+		User user,
+		StudyResultRetrievalContext studyResultRetrievalContext,
+		GeoLevelAttributeSource geoLevelAttributeSource,
+		GeoLevelAttributeTheme geoLevelAttributeTheme) 
 		throws RIFServiceException;
 
 	
@@ -255,7 +249,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 */
 	public RIFResultTable getCalculatedResultsByBlock(
 		User user,
-		DiseaseMappingStudy diseaseMappingStudy,
+		StudyResultRetrievalContext studyResultRetrievalContext,
 		String[] calculatedResultColumnFieldNames,
 		Integer startRowIndex,
 		Integer endRowIndex)
@@ -275,7 +269,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 */
 	public RIFResultTable getExtractByBlock(
 		User user,
-		DiseaseMappingStudy diseaseMappingStudy,
+		StudyResultRetrievalContext studyResultRetrievalContext,
 		String[] calculatedResultColumnFieldNames,			
 		Integer startRowIndex,
 		Integer endRowIndex)
@@ -299,9 +293,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 */
 	public RIFResultTable getResultsStratifiedByGenderAndAgeGroup(
 		User user,
-		Geography geography,
-		GeoLevelSelect geoLevelSelect,
-		DiseaseMappingStudy diseaseMappingStudy,
+		StudyResultRetrievalContext studyResultRetrievalContext,
 		GeoLevelAttributeTheme geoLevelAttributeTheme,
 		String geoLevelAttribute,
 		ArrayList<MapArea> mapAreas,
@@ -312,9 +304,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	
 	public ArrayList<AgeGroup> getResultAgeGroups(
 		User user,
-		Geography geography,
-		GeoLevelSelect geoLevelSelect,
-		DiseaseMappingStudy diseaseMappingStudy,
+		StudyResultRetrievalContext studyResultRetrievalContext,
 		GeoLevelAttributeTheme geoLevelAttributeTheme,
 		GeoLevelAttributeSource geoLevelSource,
 		String geoLevalAttribute)
@@ -332,16 +322,14 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 */
 	public RIFResultTable getPyramidData(
 		User user,
-		Geography geography,
-		GeoLevelSelect geoLevelSelect,
+		StudyResultRetrievalContext studyResultRetrievalContext,
 		GeoLevelAttributeSource geoLevelSource,
 		String geoLevelAttribute) 
 		throws RIFServiceException;	
 	
 	public RIFResultTable getPyramidDataByYear(
 		User user,
-		Geography geography,
-		GeoLevelSelect geoLevelSelect,
+		StudyResultRetrievalContext studyResultRetrievalContext,
 		GeoLevelAttributeSource geoLevelSource,
 		String geoLevelAttribute,
 		Integer year) 
@@ -371,9 +359,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	
 	public String[] getResultFieldsStratifiedByAgeGroup(
 		User user,
-		Geography geography,
-		GeoLevelSelect geoLevelSelect,
-		DiseaseMappingStudy diseaseMappingStudy,
+		StudyResultRetrievalContext studyResultRetrievalContext,
 		GeoLevelAttributeTheme geoLevelAttributeTheme,
 		GeoLevelAttributeSource geoLevelAttributeSource)
 		throws RIFServiceException;
@@ -442,7 +428,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 		DiseaseMappingStudy diseaseMappingStudy)
 		throws RIFServiceException;
 		
-	public void initialise(final Object startupParameter)
+	public void initialise(Object startupParameter)
 		throws RIFServiceException;
 	
 	public boolean isInitialised();
