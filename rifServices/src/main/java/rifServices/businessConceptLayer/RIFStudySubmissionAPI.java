@@ -2,15 +2,10 @@ package rifServices.businessConceptLayer;
 
 import rifServices.system.RIFServiceException;
 
-
-import rifServices.system.RIFServiceStartupOptions;
-
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.io.File;
-import java.awt.Point;
-import java.awt.geom.Rectangle2D;
-import java.awt.geom.Rectangle2D.Double;
+
 
 
 /**
@@ -76,27 +71,8 @@ import java.awt.geom.Rectangle2D.Double;
  *
  */
 
-public interface RIFStudySubmissionAPI {
+public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	
-	
-	/**
-	 * The Enum AgeGroupSortingOption.
-	 */
-	public enum AgeGroupSortingOption {
-		
-		/** The ascending lower limit. */
-		ASCENDING_LOWER_LIMIT,
-		
-		/** The descending lower limit. */
-		DESCENDING_LOWER_LIMIT,
-		
-		/** The ascending upper limit. */
-		ASCENDING_UPPER_LIMIT,
-		
-		/** The descending upper limit. */
-		DESCENDING_UPPER_LIMIT
-	};
-
 	/**
 	 * Gets the RIF service information.
 	 *
@@ -129,85 +105,6 @@ public interface RIFStudySubmissionAPI {
 	public ArrayList<CalculationMethod> getAvailableCalculationMethods(
 		final User user) 
 		throws RIFServiceException;
-	
-	/**
-	 * Gets the disease mapping studies.
-	 *
-	 * @param user the user
-	 * @return the disease mapping studies
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public ArrayList<DiseaseMappingStudy> getDiseaseMappingStudies(
-		final User user) 
-		throws RIFServiceException;
-		
-	//Features for RIF Context
-	/**
-	 * Gets the geographies.
-	 *
-	 * @param user the user
-	 * @return the geographies
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public ArrayList<Geography> getGeographies(
-		final User user)
-		throws RIFServiceException;	
-	
-	/**
-	 * Gets the geographical level select values.
-	 *
-	 * @param user the user
-	 * @param geography the geography
-	 * @return the geographical level select values
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public ArrayList<GeoLevelSelect> getGeographicalLevelSelectValues(
-		final User user,
-		final Geography geography)
-		throws RIFServiceException;
-	
-	/**
-	 * Gets the default geo level select value.
-	 *
-	 * @param user the user
-	 * @param geography the geography
-	 * @return the default geo level select value
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public GeoLevelSelect getDefaultGeoLevelSelectValue(
-		final User user,
-		final Geography geography) 
-		throws RIFServiceException;
-
-	/**
-	 * Gets the geo level area values.
-	 *
-	 * @param user the user
-	 * @param geography the geography
-	 * @param geoLevelSelect the geo level select
-	 * @return the geo level area values
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public ArrayList<GeoLevelArea> getGeoLevelAreaValues(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect) 
-		throws RIFServiceException;
-	
-	/**
-	 * Gets the geo level view values.
-	 *
-	 * @param _user the _user
-	 * @param _geography the _geography
-	 * @param _geoLevelSelect the _geo level select
-	 * @return the geo level view values
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public ArrayList<GeoLevelView> getGeoLevelViewValues(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect) 
-		throws RIFServiceException;	
 	
 	/**
 	 * Gets the geo level to map values.
@@ -503,19 +400,6 @@ public interface RIFStudySubmissionAPI {
 		throws RIFServiceException;
 	
 	/**
-	 * Gets the studies.
-	 *
-	 * @param user the user
-	 * @param project the project
-	 * @return the studies
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public ArrayList<AbstractStudy> getStudies(
-		final User user,
-		final Project project) 
-		throws RIFServiceException;
-	
-	/**
 	 * Gets the image.
 	 *
 	 * @param user the user
@@ -548,8 +432,5 @@ public interface RIFStudySubmissionAPI {
 		final File outputFile) 
 		throws RIFServiceException;	
 	
-	public void initialise(final Object startupParameter)
-		throws RIFServiceException;
-	
-	public boolean isInitialised();
+
 }

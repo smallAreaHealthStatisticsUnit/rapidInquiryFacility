@@ -73,27 +73,7 @@ import java.awt.geom.Rectangle2D;
  *
  */
 
-public interface RIFStudyResultRetrievalAPI {
-	
-	
-	/**
-	 * The Enum AgeGroupSortingOption.
-	 */
-	public enum AgeGroupSortingOption {
-		
-		/** The ascending lower limit. */
-		ASCENDING_LOWER_LIMIT,
-		
-		/** The descending lower limit. */
-		DESCENDING_LOWER_LIMIT,
-		
-		/** The ascending upper limit. */
-		ASCENDING_UPPER_LIMIT,
-		
-		/** The descending upper limit. */
-		DESCENDING_UPPER_LIMIT
-	};
-
+public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 		
 	/**
 	 * Gets the geometry.
