@@ -693,11 +693,8 @@ abstract class AbstractRIFStudySubmissionService
 		
 	}
 		
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.RIFJobSubmissionAPI#getImmediateSubterms(rifServices.businessConceptLayer.User, rifServices.businessConceptLayer.HealthCode)
-	 */
-	public ArrayList<HealthCode> getImmediateSubterms(
-		final User _user,			
+	public ArrayList<HealthCode> getImmediateChildHealthCodes(
+		final User _user,		
 		final HealthCode _parentHealthCode) 
 		throws RIFServiceException {
 		
@@ -718,7 +715,7 @@ abstract class AbstractRIFStudySubmissionService
 			fieldValidationUtility.checkNullMethodParameter(
 				"getImmediateSubterms",
 				"user",
-				user);
+				user);	
 			fieldValidationUtility.checkNullMethodParameter(
 				"getImmediateSubterms",
 				"parentHealthCode",
@@ -751,9 +748,6 @@ abstract class AbstractRIFStudySubmissionService
 		return results;		
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.RIFJobSubmissionAPI#getParentHealthCode(rifServices.businessConceptLayer.User, rifServices.businessConceptLayer.HealthCode)
-	 */
 	public HealthCode getParentHealthCode(
 		final User _user,
 		final HealthCode _childHealthCode) 
@@ -779,9 +773,9 @@ abstract class AbstractRIFStudySubmissionService
 				"user",
 				user);		
 			fieldValidationUtility.checkNullMethodParameter(
-					"getParentHealthCode",
-					"childHealthCode",
-					childHealthCode);		
+				"getParentHealthCode",
+				"childHealthCode",
+				childHealthCode);		
 						
 			//Part III: Check for security violations
 			validateUser(user);		
@@ -815,7 +809,7 @@ abstract class AbstractRIFStudySubmissionService
 	/* (non-Javadoc)
 	 * @see rifServices.businessConceptLayer.RIFJobSubmissionAPI#getHealthCodes(rifServices.businessConceptLayer.User, rifServices.businessConceptLayer.HealthCodeTaxonomy, java.lang.String)
 	 */
-	public ArrayList<HealthCode> getHealthCodes(
+	public ArrayList<HealthCode> getHealthCodesMatchingSearchText(
 		final User _user,
 		final HealthCodeTaxonomy _healthCodeTaxonomy,
 		final String searchText) throws RIFServiceException {
@@ -1114,7 +1108,7 @@ abstract class AbstractRIFStudySubmissionService
 	/* (non-Javadoc)
 	 * @see rifServices.businessConceptLayer.RIFJobSubmissionAPI#getMapAreas(rifServices.businessConceptLayer.User, rifServices.businessConceptLayer.Geography, rifServices.businessConceptLayer.GeoLevelSelect, rifServices.businessConceptLayer.GeoLevelArea, rifServices.businessConceptLayer.GeoLevelToMap)
 	 */
-	public ArrayList<MapArea> getMapAreas(
+	public ArrayList<MapArea> getGeoLevelToMapAreas(
 		final User _user,
 		final Geography _geography,
 		final GeoLevelSelect _geoLevelSelect,

@@ -334,7 +334,7 @@ public interface RIFStudySubmissionAPI {
 	 * @return the immediate subterms
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<HealthCode> getImmediateSubterms(
+	public ArrayList<HealthCode> getImmediateChildHealthCodes(
 		final User user,
 		final HealthCode parentHealthCode) 
 		throws RIFServiceException;	
@@ -361,7 +361,7 @@ public interface RIFStudySubmissionAPI {
 	 * @return the health codes
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<HealthCode> getHealthCodes(
+	public ArrayList<HealthCode> getHealthCodesMatchingSearchText(
 		final User user,
 		final HealthCodeTaxonomy healthCodeTaxonomy,
 		final String searchText) 
@@ -419,7 +419,7 @@ public interface RIFStudySubmissionAPI {
 	 * @return the map areas
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<MapArea> getMapAreas(
+	public ArrayList<MapArea> getGeoLevelToMapAreas(
 		final User user,
 		final Geography geography,
 		final GeoLevelSelect geoLevelSelect,
