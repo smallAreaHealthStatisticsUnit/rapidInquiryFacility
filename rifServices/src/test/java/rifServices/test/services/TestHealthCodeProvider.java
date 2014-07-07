@@ -220,7 +220,7 @@ public class TestHealthCodeProvider extends AbstractRIFServiceTestCase {
 				= HealthCode.createCopy(masterChapter02HealthCode);
 
 			ArrayList<HealthCode> firstGenerationCodes
-				= rifStudySubmissionService.getImmediateSubterms(
+				= rifStudySubmissionService.getImmediateChildHealthCodes(
 					testUser, 
 					chapter02);			
 			assertEquals(2, firstGenerationCodes.size());
@@ -234,7 +234,7 @@ public class TestHealthCodeProvider extends AbstractRIFServiceTestCase {
 			assertEquals("C34", currentResult.getCode());
 			
 			ArrayList<HealthCode> secondGenerationCodes
-				= rifStudySubmissionService.getImmediateSubterms(
+				= rifStudySubmissionService.getImmediateChildHealthCodes(
 					testUser, 
 					currentResult);			
 			assertEquals(3, secondGenerationCodes.size());
@@ -253,7 +253,7 @@ public class TestHealthCodeProvider extends AbstractRIFServiceTestCase {
 
 			//C342 should have no children
 			ArrayList<HealthCode> thirdGenerationCodes
-				= rifStudySubmissionService.getImmediateSubterms(
+				= rifStudySubmissionService.getImmediateChildHealthCodes(
 					testUser, 
 					currentResult);			
 			assertEquals(0, thirdGenerationCodes.size());
@@ -281,7 +281,7 @@ public class TestHealthCodeProvider extends AbstractRIFServiceTestCase {
 		healthCode.setCode(null);
 		
 		try {
-			rifStudySubmissionService.getImmediateSubterms(
+			rifStudySubmissionService.getImmediateChildHealthCodes(
 				testUser, 
 				healthCode);			
 		}
@@ -310,7 +310,7 @@ public class TestHealthCodeProvider extends AbstractRIFServiceTestCase {
 		healthCode.setCode("XYZ");
 	
 		try {
-				rifStudySubmissionService.getImmediateSubterms(
+				rifStudySubmissionService.getImmediateChildHealthCodes(
 					testUser, 
 					healthCode);			
 		}
@@ -335,7 +335,7 @@ public class TestHealthCodeProvider extends AbstractRIFServiceTestCase {
 		try {
 			HealthCode healthCode
 				= HealthCode.createCopy(masterC34HealthCode);
-			rifStudySubmissionService.getImmediateSubterms(
+			rifStudySubmissionService.getImmediateChildHealthCodes(
 				invalidUser, 
 				healthCode);		
 		}
