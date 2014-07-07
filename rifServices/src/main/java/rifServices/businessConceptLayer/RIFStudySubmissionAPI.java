@@ -81,7 +81,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public RIFServiceInformation getRIFServiceInformation(
-		final User user) 
+		User user) 
 		throws RIFServiceException;
 	
 	/**
@@ -92,7 +92,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<RIFOutputOption> getAvailableRIFOutputOptions(
-		final User user)
+		User user)
 		throws RIFServiceException;
 	
 	/**
@@ -103,7 +103,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<CalculationMethod> getAvailableCalculationMethods(
-		final User user) 
+		User user) 
 		throws RIFServiceException;
 	
 	/**
@@ -116,9 +116,9 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<GeoLevelToMap> getGeoLevelToMapValues(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect) 
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect) 
 		throws RIFServiceException;
 	
 	/**
@@ -130,8 +130,8 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<HealthTheme> getHealthThemes(
-		final User user,
-		final Geography geography)
+		User user,
+		Geography geography)
 		throws RIFServiceException;	
 	
 	/**
@@ -144,16 +144,16 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<NumeratorDenominatorPair> getNumeratorDenominatorPairs(
-		final User user,
-		final Geography geography,
-		final HealthTheme healthTheme) 
+		User user,
+		Geography geography,
+		HealthTheme healthTheme) 
 		throws RIFServiceException;
 	
 	
 	public NumeratorDenominatorPair getNumeratorDenominatorPairFromNumeratorTable(
-		final User _user,
-		final Geography _geography,
-		final String numeratorTableName) 
+		User _user,
+		Geography _geography,
+		String numeratorTableName) 
 		throws RIFServiceException;
 	
 	//Features for Age, Sex and Study Years
@@ -168,10 +168,10 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<AgeGroup> getAgeGroups(
-		final User user,
-		final Geography geography,
-		final NumeratorDenominatorPair ndPair,
-		final AgeGroupSortingOption sortingOrder) 
+		User user,
+		Geography geography,
+		NumeratorDenominatorPair ndPair,
+		AgeGroupSortingOption sortingOrder) 
 		throws RIFServiceException;
 	
 	/**
@@ -182,7 +182,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<Sex> getSexes(
-		final User user)
+		User user)
 		throws RIFServiceException;
 		
 	//Features for Health Codes
@@ -195,7 +195,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<HealthCodeTaxonomy> getHealthCodeTaxonomies(
-		final User user)
+		User user)
 		throws RIFServiceException;
 
 	
@@ -207,8 +207,8 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public HealthCodeTaxonomy getHealthCodeTaxonomyFromNameSpace(
-		final User user, 
-		final String healthCodeTaxonomyNameSpace) throws RIFServiceException;	
+		User user, 
+		String healthCodeTaxonomyNameSpace) throws RIFServiceException;	
 	
 	/**
 	 * Gets the top level codes.
@@ -219,8 +219,8 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<HealthCode> getTopLevelCodes(
-		final User user,
-		final HealthCodeTaxonomy healthCodeTaxonomy) 
+		User user,
+		HealthCodeTaxonomy healthCodeTaxonomy) 
 		throws RIFServiceException;	
 	
 	/**
@@ -232,8 +232,8 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<HealthCode> getImmediateChildHealthCodes(
-		final User user,
-		final HealthCode parentHealthCode) 
+		User user,
+		HealthCode parentHealthCode) 
 		throws RIFServiceException;	
 	
 	/**
@@ -245,8 +245,8 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public HealthCode getParentHealthCode(
-		final User user,
-		final HealthCode childHealthCode) 
+		User user,
+		HealthCode childHealthCode) 
 		throws RIFServiceException;	
 	
 	/**
@@ -259,16 +259,16 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<HealthCode> getHealthCodesMatchingSearchText(
-		final User user,
-		final HealthCodeTaxonomy healthCodeTaxonomy,
-		final String searchText) 
+		User user,
+		HealthCodeTaxonomy healthCodeTaxonomy,
+		String searchText) 
 		throws RIFServiceException;
 	
 
 	public HealthCode getHealthCode(
-		final User user,
-		final String healthCodeName,
-		final String healthCodeNameSpace) 
+		User user,
+		String healthCodeName,
+		String healthCodeNameSpace) 
 		throws RIFServiceException;	
 		
 		
@@ -284,10 +284,10 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<AbstractCovariate> getCovariates(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final GeoLevelToMap geoLevelToMap)
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect,
+		GeoLevelToMap geoLevelToMap)
 		throws RIFServiceException;
 	
 	/**
@@ -300,9 +300,9 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public YearRange getYearRange(
-		final User user,
-		final Geography geography,
-		final NumeratorDenominatorPair ndPair) 
+		User user,
+		Geography geography,
+		NumeratorDenominatorPair ndPair) 
 		throws RIFServiceException;
 	
 	/**
@@ -317,11 +317,11 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<MapArea> getGeoLevelToMapAreas(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final GeoLevelArea geoLevelArea,
-		final GeoLevelToMap geoLevelToMap) 
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect,
+		GeoLevelArea geoLevelArea,
+		GeoLevelToMap geoLevelToMap) 
 		throws RIFServiceException;	
 	
 	/**
@@ -338,13 +338,13 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<MapArea> getMapAreas(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final GeoLevelArea geoLevelArea,
-		final GeoLevelToMap geoLevelToMap,
-		final Integer startIndex,
-		final Integer endIndex) 
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect,
+		GeoLevelArea geoLevelArea,
+		GeoLevelToMap geoLevelToMap,
+		Integer startIndex,
+		Integer endIndex) 
 		throws RIFServiceException;
 
 	/**
@@ -360,12 +360,12 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public MapAreaSummaryData getMapAreaSummaryInformation(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final GeoLevelArea geoLevelArea,
-		final GeoLevelToMap geoLevelToMap,
-		final ArrayList<MapArea> mapAreas) 
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect,
+		GeoLevelArea geoLevelArea,
+		GeoLevelToMap geoLevelToMap,
+		ArrayList<MapArea> mapAreas) 
 		throws RIFServiceException;
 
 	
@@ -381,11 +381,11 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public MapAreaSummaryData getSummaryDataForCurrentExtent(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final GeoLevelArea geoLevelArea,
-		final GeoLevelToMap geoLevelToMap) 
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect,
+		GeoLevelArea geoLevelArea,
+		GeoLevelToMap geoLevelToMap) 
 		throws RIFServiceException;
 		
 	/**
@@ -396,7 +396,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<Project> getProjects(
-		final User user) 
+		User user) 
 		throws RIFServiceException;
 	
 	/**
@@ -411,11 +411,11 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public BufferedImage getImage(
-		final User user,
-		final GeoLevelSelect geoLevelSelect,
-		final GeoLevelArea geoLevelArea,
-		final GeoLevelView geoLevelView,
-		final ArrayList<MapArea> mapAreas)
+		User user,
+		GeoLevelSelect geoLevelSelect,
+		GeoLevelArea geoLevelArea,
+		GeoLevelView geoLevelView,
+		ArrayList<MapArea> mapAreas)
 		throws RIFServiceException;
 	
 	/**
@@ -427,9 +427,9 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public void submitStudy(
-		final User user,
-		final RIFJobSubmission rifJobSubmission,
-		final File outputFile) 
+		User user,
+		RIFJobSubmission rifJobSubmission,
+		File outputFile) 
 		throws RIFServiceException;	
 	
 

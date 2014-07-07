@@ -76,7 +76,7 @@ public interface RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<DiseaseMappingStudy> getDiseaseMappingStudies(
-		final User user) 
+		User user) 
 		throws RIFServiceException;
 		
 	//Features for RIF Context
@@ -88,7 +88,7 @@ public interface RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<Geography> getGeographies(
-		final User user)
+		User user)
 		throws RIFServiceException;	
 	
 	/**
@@ -100,8 +100,8 @@ public interface RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<GeoLevelSelect> getGeographicalLevelSelectValues(
-		final User user,
-		final Geography geography)
+		User user,
+		Geography geography)
 		throws RIFServiceException;
 	
 	/**
@@ -113,8 +113,8 @@ public interface RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public GeoLevelSelect getDefaultGeoLevelSelectValue(
-		final User user,
-		final Geography geography) 
+		User user,
+		Geography geography) 
 		throws RIFServiceException;
 
 	/**
@@ -127,9 +127,9 @@ public interface RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<GeoLevelArea> getGeoLevelAreaValues(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect) 
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect) 
 		throws RIFServiceException;
 	
 	/**
@@ -142,9 +142,9 @@ public interface RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<GeoLevelView> getGeoLevelViewValues(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect) 
+		User user,
+		Geography geography,
+		GeoLevelSelect geoLevelSelect) 
 		throws RIFServiceException;	
 
 	
@@ -158,11 +158,11 @@ public interface RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<AbstractStudy> getStudies(
-		final User user,
-		final Project project) 
+		User user,
+		Project project) 
 		throws RIFServiceException;
 
-	public void initialise(final Object startupParameter)
+	public void initialise(Object startupParameter)
 			throws RIFServiceException;
 		
 	public boolean isInitialised();	
