@@ -198,7 +198,7 @@ public class TestGUIScenario extends AbstractRIFServiceTestCase {
 					testUser, 
 					sahsuGeography, 
 					cancerNDPair,
-					RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+					AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			for (AgeGroup ageGroup : ageGroups) {
 				System.out.println("AGEGROUP:=="+ageGroup.getDisplayName()+"==");
 			}

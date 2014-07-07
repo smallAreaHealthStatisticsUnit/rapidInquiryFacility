@@ -1,9 +1,10 @@
 package rifServices.dataStorageLayer;
 
 import rifServices.businessConceptLayer.AgeGroup;
+
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.Geography;
-import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+import rifServices.businessConceptLayer.AgeGroupSortingOption;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearRange;
@@ -128,7 +129,7 @@ class SQLAgeGenderYearManager
 		final Connection connection,
 		final Geography geography,
 		final NumeratorDenominatorPair ndPair,
-		final RIFStudySubmissionAPI.AgeGroupSortingOption sortingOrder)
+		final AgeGroupSortingOption sortingOrder)
 		throws RIFServiceException {
 				
 		//Validate parameters
@@ -215,17 +216,17 @@ class SQLAgeGenderYearManager
 		getAgesForAgeGroupID.addWhereParameter("age_group_id");
 		
 		if ((sortingOrder == null) ||
-			(sortingOrder == RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT)) {
+			(sortingOrder == AgeGroupSortingOption.ASCENDING_LOWER_LIMIT)) {
 			getAgesForAgeGroupID.addOrderByCondition(
 				"low_age", 
 				SQLSelectQueryFormatter.SortOrder.ASCENDING);			
 		}
-		else if (sortingOrder == RIFStudySubmissionAPI.AgeGroupSortingOption.DESCENDING_LOWER_LIMIT) {
+		else if (sortingOrder == AgeGroupSortingOption.DESCENDING_LOWER_LIMIT) {
 			getAgesForAgeGroupID.addOrderByCondition(
 				"low_age",
 				SQLSelectQueryFormatter.SortOrder.DESCENDING);
 		}
-		else if (sortingOrder == RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_UPPER_LIMIT) {
+		else if (sortingOrder == AgeGroupSortingOption.ASCENDING_UPPER_LIMIT) {
 			getAgesForAgeGroupID.addOrderByCondition(
 				"high_age",
 				SQLSelectQueryFormatter.SortOrder.ASCENDING);		
@@ -235,7 +236,7 @@ class SQLAgeGenderYearManager
 			getAgesForAgeGroupID.addOrderByCondition(
 				"high_age",
 				SQLSelectQueryFormatter.SortOrder.DESCENDING);		
-			assert sortingOrder == RIFStudySubmissionAPI.AgeGroupSortingOption.DESCENDING_UPPER_LIMIT;			
+			assert sortingOrder == AgeGroupSortingOption.DESCENDING_UPPER_LIMIT;			
 		}
 		
 		//Execute query and generate results

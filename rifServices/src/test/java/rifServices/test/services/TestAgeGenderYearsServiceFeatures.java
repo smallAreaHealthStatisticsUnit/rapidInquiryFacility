@@ -206,7 +206,7 @@ public class TestAgeGenderYearsServiceFeatures
 					testUser, 
 					sahsuGeography, 
 					sahsuCancerNDPair, 
-					RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+					AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			if (ageGroups.size() == 0) {
 				fail();
 			}
@@ -227,7 +227,7 @@ public class TestAgeGenderYearsServiceFeatures
 				null, 
 				sahsuGeography, 
 				sahsuCancerNDPair,
-				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -242,7 +242,7 @@ public class TestAgeGenderYearsServiceFeatures
 				testUser, 
 				null, 
 				sahsuCancerNDPair,
-				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -257,7 +257,7 @@ public class TestAgeGenderYearsServiceFeatures
 				testUser, 
 				sahsuGeography, 
 				null,
-				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -283,7 +283,7 @@ public class TestAgeGenderYearsServiceFeatures
 				invalidUser, 
 				sahsuGeography, 
 				sahsuCancerNDPair,
-				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -298,7 +298,7 @@ public class TestAgeGenderYearsServiceFeatures
 				testUser, 
 				invalidGeography, 
 				sahsuCancerNDPair,
-				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -313,7 +313,7 @@ public class TestAgeGenderYearsServiceFeatures
 				testUser, 
 				sahsuGeography, 
 				invalidNDPair,
-				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -339,7 +339,7 @@ public class TestAgeGenderYearsServiceFeatures
 				nonExistentUser, 
 				sahsuGeography, 
 				sahsuCancerNDPair,
-				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -354,7 +354,7 @@ public class TestAgeGenderYearsServiceFeatures
 				testUser, 
 				nonExistentGeography, 
 				sahsuCancerNDPair,
-				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -369,7 +369,7 @@ public class TestAgeGenderYearsServiceFeatures
 				testUser, 
 				sahsuGeography, 
 				nonExistentNDPair,
-				RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

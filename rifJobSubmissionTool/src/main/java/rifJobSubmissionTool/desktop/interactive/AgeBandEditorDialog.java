@@ -2,6 +2,7 @@ package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.RIFSession;
 
+
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.util.UserInterfaceFactory;
 
@@ -10,7 +11,9 @@ import rifServices.businessConceptLayer.AgeGroup;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.businessConceptLayer.AgeGroupSortingOption;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceException;
@@ -335,7 +338,7 @@ class AgeBandEditorDialog
 					currentUser, 
 					currentGeography, 
 					currentNDPair,
-					RIFStudySubmissionAPI.AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+					AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 
 			for (AgeGroup ageGroupByLowerLimit : ageGroupsByLowerLimit) {
 				ageGroupByLowerLimit.showOnlyLowerLimitInDisplayName();
@@ -347,7 +350,7 @@ class AgeBandEditorDialog
 					currentUser, 
 					currentGeography, 
 					currentNDPair,
-					RIFStudySubmissionAPI.AgeGroupSortingOption.DESCENDING_UPPER_LIMIT);
+					AgeGroupSortingOption.DESCENDING_UPPER_LIMIT);
 
 			for (AgeGroup ageGroupByUpperLimit : ageGroupsByUpperLimit) {
 				ageGroupByUpperLimit.showOnlyUpperLimitInDisplayName();
