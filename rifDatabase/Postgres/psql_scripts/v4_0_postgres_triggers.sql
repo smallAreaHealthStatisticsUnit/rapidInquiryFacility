@@ -13,6 +13,10 @@
 --
 -- Trigger code will be split up on a per table basis
 --
+-- This is currently run only when the database is built from scripts
+-- Ideally it should be refactored into many bits so it can be run easily in
+-- alter scripts
+--
 -- Copyright:
 --
 -- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 

@@ -119,7 +119,7 @@ DECLARE
 	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 
 		'rif40_get_geojson_as_js', '_rif40_get_geojson_as_js', '_rif40_getGeoLevelExtentCommon', 'rif40_get_geojson_tiles', 
 		'rif40_getAllAttributesForGeoLevelAttributeTheme', 'rif40_GetGeometryColumnNames', 'rif40_GetMapAreaAttributeValue',
-		'rif40_closeGetMapAreaAttributeCursor'];
+		'rif40_closeGetMapAreaAttributeCursor', 'rif40_CreateMapAreaAttributeSource'];
 --
 	c1alter2 CURSOR FOR
 		SELECT *
@@ -577,18 +577,24 @@ SELECT *
 -- Demo 1. Sahsuland cancer. All defaults (i.e. all columns, fetch 1000 rows at offset 0)
 --
 SELECT * 
-  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
-		'c4getallatt4theme_2' /* Must be unique with a TX */, 
+  FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
+		'c4getallatt4theme_2' /* Temporary table */, 
 		'SAHSU', 'LEVEL2', 'health', 'sahsuland_cancer');
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
+		'c4getallatt4theme_2' /* Temporary table */);
 FETCH FORWARD 5 IN c4getallatt4theme_2;
 
 --
 -- Demo 2. covariate theme; specified columns (forcing re-sort); otherwise defaults
 --
 SELECT * 
-  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
-		'c4getallatt4theme_1' /* Must be unique with a TX */, 
+  FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
+		'c4getallatt4theme_1' /* Temporary table */, 
 		'SAHSU', 'LEVEL4', 'covariate', 'sahsuland_covariates_level4', ARRAY['SES', 'year']);
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
+		'c4getallatt4theme_1' /* Temporary table */);
 FETCH FORWARD 5 IN c4getallatt4theme_1;
 
 /*
@@ -622,9 +628,13 @@ Time: 6559.317 ms
 -- Performance is fine on SAHSULAND_POP
 --
 SELECT * 
-  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
-		'c4getallatt4theme_3' /* Must be unique with a TX */, 
-		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop', NULL /* All attributes */, 0 /* No offset */, NULL /* No row limit */);
+  FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
+		'c4getallatt4theme_3' /* Temporary table */, 
+		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop');
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue('c4getallatt4theme_3' /* Temporary table */,
+		NULL /* Cursor name - NULL = same as temporarty table - must be unique with a TX */, 
+		0 /* No offset */, NULL /* No row limit */);
 \timing
 FETCH FORWARD 5 IN c4getallatt4theme_3 /* 1.3 seconds with no row limit, no sort list, no gid/gid_rowindex columns built in */;
 MOVE ABSOLUTE 1000 IN c4getallatt4theme_3 /* move to row 1000 */;
@@ -657,16 +667,19 @@ SELECT rif40_xml_pkg.rif40_closeGetMapAreaAttributeCursor('c4getallatt4theme_3')
 -- Demo 4: Use of offset and row limit, cursor control using FETCH
 --
 SELECT * 
-  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
-		'c4getallatt4theme_3a' /* Must be unique with a TX */, 
-		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop', NULL /* All attributes */, 0 /* Offset */, 1000 /* Row limit */);
+  FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
+		'c4getallatt4theme_3a' /* Temporary table */, 
+		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop');
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue('c4getallatt4theme_3a' /* Temporary table */);
 FETCH FORWARD 5 IN c4getallatt4theme_3a /* 12 seconds parse refcursor seconds with 1000 row limit, cursor fetch is fast, no gid/gid_rowindex columns built in */;
 MOVE ABSOLUTE 995 IN c4getallatt4theme_3a /* move to row 995 */;
 FETCH FORWARD 5 IN c4getallatt4theme_3a /* Fetch last 5 rows */;
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
-		'c4getallatt4theme_3b' /* Must be unique with a TX */, 
-		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop', NULL /* All attributes */, 1000 /* Offset */, 1000 /* Row limit */);
+		'c4getallatt4theme_3a' /* Temporary table */, 
+		'c4getallatt4theme_3b' /* Cursor name - must be unique with a TX */, 
+		1000 /* Offset */, 1000 /* Row limit */);
 FETCH FORWARD 5 IN c4getallatt4theme_3b;
 
 /*
@@ -692,17 +705,25 @@ FETCH FORWARD 5 IN c4getallatt4theme_4;
 --
 -- Demo 5: Check offset works OK
 --
+SELECT rif40_log_pkg.rif40_remove_from_debug('rif40_CreateMapAreaAttributeSource');
+SELECT rif40_log_pkg.rif40_add_to_debug('rif40_add_to_debug:DEBUG1');
+SELECT rif40_log_pkg.rif40_add_to_debug('rif40_CreateMapAreaAttributeSource:DEBUG2' /* Enable EXPLAIN PLAN */);
 SELECT * 
-  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
+  FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 		'c4getallatt4theme_5' /* Must be unique with a TX */, 
-		'SAHSU', 'LEVEL2', 'geometry', 't_rif40_sahsu_geometry', NULL /* All attributes */, 0 /* Offset */, 10 /* Row limit */);
-FETCH FORWARD 15 IN c4getallatt4theme_5 /* Only fetches 10... */;
-
+		'SAHSU', 'LEVEL2', 'geometry', 't_rif40_sahsu_geometry');
 SELECT * 
-  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
-		'c4getallatt4theme_5a' /* Must be unique with a TX */, 
-		'SAHSU', 'LEVEL2', 'geometry', 't_rif40_sahsu_geometry', NULL /* All attributes */, 5 /* Offset */, 10 /* Row limit */);
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue('c4getallatt4theme_5' /* Temporary table */, 
+		'c4getallatt4theme_5' /* Cursor name - must be unique with a TX */, 
+		0 /* Offset */, 10 /* Row limit */);
+FETCH FORWARD 15 IN c4getallatt4theme_5 /* Only fetches 10... */;
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue('c4getallatt4theme_5' /* Temporary table */, 
+		'c4getallatt4theme_5a' /* Cursor name - must be unique with a TX */, 
+		0 /* Offset */, 10 /* Row limit */);
 FETCH FORWARD 15 IN c4getallatt4theme_5a /* Only fetches 10... */;
+
+SELECT * FROM pg_cursors;
 
 --
 -- Done
