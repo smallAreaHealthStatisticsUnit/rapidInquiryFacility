@@ -69,6 +69,11 @@ $$;
 
 \echo Creating PG psql code (SQL and Oracle compatibility processing)...
 
+--
+-- Remove old versiom
+--
+DROP FUNCTION IF EXISTS rif40_range_partition(VARCHAR, VARCHAR, VARCHAR);
+
 CREATE OR REPLACE VIEW rif40_sql_pkg.user_role_privs
 AS
 SELECT UPPER(role_name) AS granted_role 
