@@ -1014,20 +1014,21 @@ class SQLRIFContextManager
 
 		if (geography != null) {
 			geography.checkErrors();			
-			checkGeographyExists(connection, geography);
+			checkGeographyExists(connection, geography.getName());
 		}
 		
 		if (healthTheme != null) {
 			healthTheme.checkErrors();			
-			checkHealthThemeExists(connection, healthTheme);
+			checkHealthThemeExists(connection, 
+			healthTheme.getDescription());
 		}
 		
 		if (geoLevelSelect != null) {
 			geoLevelSelect.checkErrors();
 			checkGeoLevelSelectExists(
 				connection, 
-				geography, 
-				geoLevelSelect);			
+				geography.getName(), 
+				geoLevelSelect.getName());			
 		}
 	}
 	
@@ -1040,7 +1041,7 @@ class SQLRIFContextManager
 	 */
 	public void checkGeographyExists(
 		final Connection connection,
-		final Geography geography) 
+		final String geographyName)
 		throws RIFServiceException {
 	
 		//Create SQL query
@@ -1052,11 +1053,11 @@ class SQLRIFContextManager
 		PreparedStatement checkGeographyExistsStatement = null;
 		ResultSet checkGeographyExistsResultSet = null;
 		
-		//Parameterise and execute query		
+		//Parameterise and execute query
 		try {
 			checkGeographyExistsStatement
 				= connection.prepareStatement(query.generateQuery());
-			checkGeographyExistsStatement.setString(1, geography.getName());
+			checkGeographyExistsStatement.setString(1, geographyName);
 			checkGeographyExistsResultSet 
 				= checkGeographyExistsStatement.executeQuery();
 			
@@ -1064,12 +1065,12 @@ class SQLRIFContextManager
 				
 				//ERROR: no such geography exists
 				String recordType
-					= geography.getRecordType();
+					= RIFServiceMessages.getMessage("geography.label");
 				String errorMessage
 					= RIFServiceMessages.getMessage(
 						"general.validation.nonExistentRecord",
 						recordType,
-						geography.getDisplayName());
+						geographyName);
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_GEOGRAPHY, 
@@ -1079,11 +1080,13 @@ class SQLRIFContextManager
 		}
 		catch(SQLException sqlException) {	
 			sqlException.printStackTrace(System.out);
+			String recordType
+				= RIFServiceMessages.getMessage("geography.label");
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
-					geography.getRecordType(),
-					geography.getDisplayName());
+					recordType,
+					geographyName);
 			
 			RIFLogger rifLogger = new RIFLogger();
 			rifLogger.error(
@@ -1114,8 +1117,8 @@ class SQLRIFContextManager
 	 */
 	public void checkGeoLevelSelectExists(
 		final Connection connection,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect)
+		final String geographyName,
+		final String geoLevelSelectName)
 		throws RIFServiceException {
 
 		//Create SQL query
@@ -1133,8 +1136,8 @@ class SQLRIFContextManager
 		try {
 			checkGeoLevelViewExistsStatement
 				= connection.prepareStatement(query.generateQuery());
-			checkGeoLevelViewExistsStatement.setString(1, geoLevelSelect.getName());
-			checkGeoLevelViewExistsStatement.setString(2, geography.getName());
+			checkGeoLevelViewExistsStatement.setString(1, geoLevelSelectName);
+			checkGeoLevelViewExistsStatement.setString(2, geographyName);
 			checkGeoLevelViewExistsStatement.setInt(3, 1);
 			checkGeoLevelViewExistsResultSet 
 				= checkGeoLevelViewExistsStatement.executeQuery();
@@ -1142,12 +1145,12 @@ class SQLRIFContextManager
 			if (checkGeoLevelViewExistsResultSet.next() == false) {
 				//ERROR: no such geography exists
 				String recordType
-					= geoLevelSelect.getRecordType();
+					= RIFServiceMessages.getMessage("geoLevelSelect.label");
 				String errorMessage
 					= RIFServiceMessages.getMessage(
 						"general.validation.nonExistentRecord",
 						recordType,
-						geoLevelSelect.getDisplayName());
+						geoLevelSelectName);
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_GEOLEVEL_SELECT_VALUE, 
@@ -1156,11 +1159,13 @@ class SQLRIFContextManager
 			}
 		}
 		catch(SQLException sqlException) {
+			String recordType
+				= RIFServiceMessages.getMessage("geoLevelSelect.label");			
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
-					geography.getRecordType(),
-					geography.getDisplayName());
+					recordType,
+					geographyName);
 
 			RIFLogger rifLogger = new RIFLogger();
 			rifLogger.error(
@@ -1192,9 +1197,9 @@ class SQLRIFContextManager
 	 */
 	public void checkGeoLevelAreaExists(
 		final Connection connection,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final GeoLevelArea geoLevelArea) 
+		final String geographyName,
+		final String geoLevelSelectName,
+		final String geoLevelAreaName) 
 		throws RIFServiceException {
 		
 		//Find the correct lookup table where all the areas will be listed
@@ -1217,8 +1222,8 @@ class SQLRIFContextManager
 		try {
 			getLookupTableStatement 
 				= connection.prepareStatement(lookupTableQuery.generateQuery());
-			getLookupTableStatement.setString(1, geography.getName());
-			getLookupTableStatement.setString(2, geoLevelSelect.getName());
+			getLookupTableStatement.setString(1, geographyName);
+			getLookupTableStatement.setString(2, geoLevelSelectName);
 			getLookupTableResultSet
 				= getLookupTableStatement.executeQuery();
 			getLookupTableResultSet.next();
@@ -1259,16 +1264,18 @@ class SQLRIFContextManager
 		try {
 			geoLevelAreaExistsStatement
 				= connection.prepareStatement(recordExistsFormatter.generateQuery());
-			geoLevelAreaExistsStatement.setString(1, geoLevelArea.getName());
+			geoLevelAreaExistsStatement.setString(1, geoLevelAreaName);
 			geoLevelAreaExistsResultSet
 				= geoLevelAreaExistsStatement.executeQuery();
 			if (geoLevelAreaExistsResultSet.next() == false) {
+				String recordType
+					= RIFServiceMessages.getMessage("geoLevelArea.label");			
 				//No such geolevel area exists
 				String errorMessage
 					= RIFServiceMessages.getMessage(
 						"general.validation.nonExistentRecord",
-						geoLevelArea.getRecordType(),
-						geoLevelArea.getDisplayName());					
+						recordType,
+						geoLevelAreaName);					
 				
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
@@ -1305,9 +1312,9 @@ class SQLRIFContextManager
 	 */
 	public void checkGeoLevelToMapValueExists(
 		final Connection connection,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final GeoLevelToMap geoLevelToMap) 
+		final String geographyName,
+		final String geoLevelSelectName,
+		final String geoLevelToMapName) 
 		throws RIFServiceException {
 				
 		//Obtain the minimimum geolevel ID that the geoLevelMap needs to have
@@ -1331,8 +1338,8 @@ class SQLRIFContextManager
 		try {
 			geoLevelIDStatement
 				= connection.prepareStatement(geoLevelIDQuery.generateQuery());
-			geoLevelIDStatement.setString(1, geography.getName());
-			geoLevelIDStatement.setString(2, geoLevelSelect.getName());
+			geoLevelIDStatement.setString(1, geographyName);
+			geoLevelIDStatement.setString(2, geoLevelSelectName);
 			geoLevelIDResultSet = geoLevelIDStatement.executeQuery();	
 			if (geoLevelIDResultSet.next() == false) {
 				//ERROR: no views available
@@ -1369,19 +1376,21 @@ class SQLRIFContextManager
 		try {
 			geoLevelToMapExistsStatement
 				= connection.prepareStatement(geoLevelMapExistsQuery.generateQuery());
-			geoLevelToMapExistsStatement.setString(1, geography.getName());
+			geoLevelToMapExistsStatement.setString(1, geographyName);
 			geoLevelToMapExistsStatement.setInt(2, geoLevelID);
-			geoLevelToMapExistsStatement.setString(3, geoLevelToMap.getName());
+			geoLevelToMapExistsStatement.setString(3, geoLevelToMapName);
 
 			geoLevelToMapExistsResultSet 
 				= geoLevelToMapExistsStatement.executeQuery();
 			if (geoLevelToMapExistsResultSet.next() == false) {
 				//No such geolevel map exists
+				String recordType
+					= RIFServiceMessages.getMessage("geoLevelToMap.label");
 				String errorMessage
 					= RIFServiceMessages.getMessage(
 						"general.validation.nonExistentRecord",
-						geoLevelToMap.getRecordType(),
-						geoLevelToMap.getDisplayName());					
+						recordType,
+						geoLevelToMapName);					
 					
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
@@ -1416,7 +1425,7 @@ class SQLRIFContextManager
 	 */
 	public void checkHealthThemeExists(
 		final Connection connection,
-		final HealthTheme healthTheme)
+		final String healthThemeName)
 		throws RIFServiceException {
 
 		SQLRecordExistsQueryFormatter query
@@ -1429,19 +1438,19 @@ class SQLRIFContextManager
 		try {
 			checkHealthThemeExistsStatement
 				= connection.prepareStatement(query.generateQuery());
-			checkHealthThemeExistsStatement.setString(1, healthTheme.getDescription());
+			checkHealthThemeExistsStatement.setString(1, healthThemeName);
 			checkHealthThemeExistsResultSet 
 				= checkHealthThemeExistsStatement.executeQuery();
 			if (checkHealthThemeExistsResultSet.next() == false) {
 				//ERROR: no such health theme exists
-				String recordType = healthTheme.getRecordType();
+				String recordType = 
+					RIFServiceMessages.getMessage("healthTheme.label");
 				String errorMessage
 					= RIFServiceMessages.getMessage(
 						"general.validation.nonExistentRecord",
 						recordType,
-						healthTheme.getDisplayName());
+						healthThemeName);
 				
-				System.out.println("SQLRIFContextManager == XXXXXXXXXXXXXX errorMessage=="+errorMessage+"==");
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_HEALTH_THEME,
@@ -1450,11 +1459,13 @@ class SQLRIFContextManager
 			}
 		}
 		catch(SQLException sqlException) {
+			String recordType
+				= RIFServiceMessages.getMessage("healthTheme.label");
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
-					healthTheme.getRecordType(),
-					healthTheme.getDisplayName());
+					recordType,
+					healthThemeName);
 			
 			RIFLogger rifLogger = new RIFLogger();
 			rifLogger.error(
