@@ -80,7 +80,8 @@ SECURITY INVOKER
 AS $func$
 /*
 Function: 	rif40_CreateMapAreaAttributeSource()
-Parameters:	Temporary table name (same as REFCURSOR), Geography, <geolevel select>, theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme), attribute source, 
+Parameters:	Temporary table name (same as REFCURSOR), Geography, <geolevel select>, 
+		theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme), attribute source, 
  		attribute name array [Default NULL - All attributes]
 Returns:	Temporary table name
 Description:	Create temporary table with all values for attributes source, attribute names, geography and geolevel select
@@ -89,11 +90,11 @@ Warnings:
 
 a) This function can be slow as if uses rif40_num_denom, takes 398mS on my laptop to fetch rows to RI40_NUM_DEMON based
    (health and population) themes
-b) This function is VOLATILE. Calling it twice with the same parameters will not necessarily return the same set of rows in the same order.
+b) This function is VOLATILE. Calling it twice with the same parameters will not necessarily create a temporary table 
+   with the same set of rows in the same order.
    This is because databases to not guarantee data block access order, even without parallelisation.
    To minimise the volatility:
-	i)  Set the row limit to NULL (all rows). This has a slight performance cost.
-	ii) Define a sort order. This has a severe performance cost for large tables.
+	i) Define a sort order. This has a severe performance cost for large tables.
 
 Checks:
 
@@ -105,25 +106,31 @@ Checks:
 - If attribute name array is used, then all must be found
 - Check if GID, gid_rowindex exist [they do not have to, but the query runs quicker if they do]
 - Geometry tables must have gid and gid_rowindex
+- Check temporary table does NOT exist
 
 Examples:
 
 Example 1) Full SELECT of sahsuland_pop
 	   This performs well on a server, takes about 3 seconds on a laptop
 
+--
+-- Create temporary table
+--
 SELECT *
   FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
-                'c4getallatt4theme_3' /- Must be unique with a TX -/,
-                'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop', NULL /- All attributes -/);
-psql:alter_scripts/v4_0_alter_1.sql:542: INFO:  [DEBUG1] rif40_getAllAttributesForGeoLevelAttributeTheme(): [50807] Geography: SAHSU, geolevel select: LEVEL2, theme: population; SQ
-L fetch returned 6 attribute names, took: 00:00:00.219.
-psql:alter_scripts/v4_0_alter_1.sql:542: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [50212] Neither gid or gid_rowindex columns are present in attrribute source table: sahsu
-land_pop
-psql:alter_scripts/v4_0_alter_1.sql:542: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51219] c4getallatt4theme SQL>
+                'c4getallatt4theme_3' /- Temporary table -/,
+                'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop');
+psql:alter_scripts/v4_0_alter_1.sql:638: INFO:  [DEBUG1] rif40_getAllAttributesForGeoLevelAttributeTheme(): [50807] Geography: SAHSU, geolevel select: LEVEL2, theme: population; SQL fetch returned 6 attribute names, took: 00:00:00.213.
+psql:alter_scripts/v4_0_alter_1.sql:638: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51612] Neither gid or gid_rowindex columns are present in attrribute source table: sahsuland_pop
+psql:alter_scripts/v4_0_alter_1.sql:638: INFO:  [DEBUG1] rif40_DeleteMapAreaAttributeSource(): [51616] Temporary table: c4getallatt4theme_3 does not exist.
+psql:alter_scripts/v4_0_alter_1.sql:638: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51620] c4getallatt4theme SQL>
+CREATE TEMPORARY TABLE c4getallatt4theme_3
+AS
 WITH a AS (
         SELECT a.level2 /- Map <geolevel select> to area_id -/ AS area_id,
        g.gid,
-       LPAD(g.gid::Text, 10, '0'::Text)||'_'||LPAD(ROW_NUMBER() OVER(PARTITION BY level2 /- Use default table order -/)::Text, 10, '0'::Text) AS gid_rowindex,
+       LPAD(g.gid::Text, 10, '0'::Text)||'_'||LPAD(ROW_NUMBER() OVER(PARTITION BY a.level2 /- Use default table order -/)::Text, 10,
+ '0'::Text) AS gid_rowindex,
        a.year /- ordinal_position: 1 -/,
        a.age_sex_group /- ordinal_position: 2 -/,
        a.level1 /- ordinal_position: 3 -/,
@@ -138,16 +145,32 @@ WITH a AS (
 ) /- Force CTE to be executed entirely -/
 SELECT *
   FROM a
- ORDER BY 3 /- gid_rowindex -/ OFFSET $3;
-psql:alter_scripts/v4_0_alter_1.sql:542: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51221] Cursor: c4getallatt4theme_3, geography: SAHSU, geolevel select: LEVEL2, theme: po
-pulation, attribute names: [], source: sahsuland_pop; offset: 0, row limit: , SQL parse took: 00:00:00.25.
+ ORDER BY 3 /- gid_rowindex -/;
+psql:alter_scripts/v4_0_alter_1.sql:638: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51622] Cursor: c4getallatt4theme_3, geography: SAHSU, geolevel select: LEVEL2, theme: population, attribute names: [], source: sahsuland_pop, SQL parse took: 00:00:04.7
+59.
+ rif40_createmapareaattributesource
+------------------------------------
+ c4getallatt4theme_3
+(1 row)
+
+--
+-- Create REFCURSOR
+--
+SELECT *
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue('c4getallatt4theme_3' /- Temporary table -/,
+                NULL /- Cursor name - NULL = same as temporarty table - must be unique with a TX -/,
+                0 /- No offset -/, NULL /- No row limit -/);
+psql:alter_scripts/v4_0_alter_1.sql:645: INFO:  [DEBUG1] rif40_GetMapAreaAttributeValue(): [51205] c4getallatt4theme SQL>
+SELECT * FROM c4getallatt4theme_3 ORDER BY gid_rowindex OFFSET $1;
+psql:alter_scripts/v4_0_alter_1.sql:645: INFO:  [DEBUG1] rif40_GetMapAreaAttributeValue(): [51207] Cursor: c4getallatt4theme_3, temporary table: c4getallatt4theme_3; offset: 0, row limit: , SQL parse took: 00:00:00.016.
  rif40_getmapareaattributevalue
 --------------------------------
  c4getallatt4theme_3
 (1 row)
 
-\timing
-Timing is on.
+--
+-- Fetch tests
+--
 FETCH FORWARD 5 IN c4getallatt4theme_3 /- 1.3 seconds with no row limit, no sort list, no gid/gid_rowindex columns built in -/;
  area_id | gid |     gid_rowindex      | year | age_sex_group | level1 |    level3     |     level4      | total
 ---------+-----+-----------------------+------+---------------+--------+---------------+-----------------+-------
@@ -158,10 +181,8 @@ FETCH FORWARD 5 IN c4getallatt4theme_3 /- 1.3 seconds with no row limit, no sort
  01.001  |   1 | 0000000001_0000000005 | 1989 |           104 | 01     | 01.001.000100 | 01.001.000100.1 |    34
 (5 rows)
 
-Time: 1308.264 ms
 MOVE ABSOLUTE 1000 IN c4getallatt4theme_3 /- move to row 1000 -/;
 MOVE 1
-Time: 1.314 ms
 FETCH FORWARD 5 IN c4getallatt4theme_3;
  area_id | gid |     gid_rowindex      | year | age_sex_group | level1 |    level3     |     level4      | total
 ---------+-----+-----------------------+------+---------------+--------+---------------+-----------------+-------
@@ -172,10 +193,8 @@ FETCH FORWARD 5 IN c4getallatt4theme_3;
  01.001  |   1 | 0000000001_0000001005 | 1994 |           214 | 01     | 01.001.000200 | 01.001.000200.1 |   286
 (5 rows)
 
-Time: 1.330 ms
 MOVE ABSOLUTE 10000 IN c4getallatt4theme_3 /- move to row 10000 -/;
 MOVE 1
-Time: 1.518 ms
 FETCH FORWARD 5 IN c4getallatt4theme_3;
  area_id | gid |     gid_rowindex      | year | age_sex_group | level1 |    level3     |     level4      | total
 ---------+-----+-----------------------+------+---------------+--------+---------------+-----------------+-------
@@ -186,10 +205,8 @@ FETCH FORWARD 5 IN c4getallatt4theme_3;
  01.002  |   2 | 0000000002_0000008597 | 1990 |           116 | 01     | 01.002.000700 | 01.002.000700.2 |   528
 (5 rows)
 
-Time: 1.314 ms
 MOVE ABSOLUTE 432958 IN c4getallatt4theme_3 /- move to row 432958 - two from the end -/;
 MOVE 1
-Time: 14.297 ms
 FETCH FORWARD 5 IN c4getallatt4theme_3;
  area_id | gid |     gid_rowindex      | year | age_sex_group | level1 |    level3     |     level4      | total
 ---------+-----+-----------------------+------+---------------+--------+---------------+-----------------+-------
@@ -197,62 +214,58 @@ FETCH FORWARD 5 IN c4getallatt4theme_3;
  01.018  |  17 | 0000000017_0000005984 | 1996 |           221 | 01     | 01.018.019500 | 01.018.019500.3 |   402
 (2 rows)
 
-SELECT *
-  FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
-                'c4getallatt4theme_1' /- Must be unique with a TX -/,
-                'SAHSU', 'LEVEL4', 'covariate', 'sahsuland_covariates_level4', ARRAY['SES', 'year']);
-psql:alter_scripts/v4_0_alter_1.sql:506: INFO:  [DEBUG1] rif40_getAllAttributesForGeoLevelAttributeTheme(): [50807] Geography: SAHSU, geolevel select: LEVEL4, theme: covariate; SQL
- fetch returned 2 attribute names, took: 00:00:00.016.
-psql:alter_scripts/v4_0_alter_1.sql:506: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [50212] Neither gid or gid_rowindex columns are present in attrribute source table: sahsu
-land_covariates_level4
-psql:alter_scripts/v4_0_alter_1.sql:506: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51219] c4getallatt4theme SQL>
-WITH a AS (
-        SELECT a.level4 /- Map <geolevel select> to area_id -/ AS area_id,
-       g.gid,
-       LPAD(g.gid::Text, 10, '0'::Text)||'_'||LPAD(ROW_NUMBER() OVER(PARTITION BY level4 ORDER BY        a.ses /- ordinal_position: 3 -/,
-       a.year /- ordinal_position: 1 -/)::Text, 10, '0'::Text) AS gid_rowindex,
-       a.ses /- ordinal_position: 3 -/,
-       a.year /- ordinal_position: 1 -/
-          FROM sahsuland_covariates_level4 a,
-               t_rif40_sahsu_geometry g
-         WHERE g.geography     = $1
-           AND g.geolevel_name = $2 /- Partition elimination -/
-           AND g.area_id       = a.level4 /- Link gid -/
-) /- Force CTE to be executed entirely -/
-SELECT *
-  FROM a
- ORDER BY 3 /- gid_rowindex -/ OFFSET $3 LIMIT $4;
-psql:alter_scripts/v4_0_alter_1.sql:506: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51221] Cursor: c4getallatt4theme_1, geography: SAHSU, geolevel select: LEVEL4, theme: co
-variate, attribute names: [SES,year], source: sahsuland_covariates_level4; offset: 0, row limit: 1000, SQL parse took: 00:00:00.047.
- rif40_getmapareaattributevalue
---------------------------------
- c4getallatt4theme_1
+--
+-- Test cursor close. Does release resources!!!!
+--
+SELECT rif40_xml_pkg.rif40_closeGetMapAreaAttributeCursor('c4getallatt4theme_3');
+psql:alter_scripts/v4_0_alter_1.sql:659: INFO:  [DEBUG1] rif40_closeGetMapAreaAttributeCursor(): [51401] Cursor: c4getallatt4theme_3 in use, created: 2014-07-09 09:21:59.422+01, SQL>
+SELECT * FROM c4getallatt4theme_3 ORDER BY gid_rowindex OFFSET $1;
+psql:alter_scripts/v4_0_alter_1.sql:659: INFO:  [DEBUG1] rif40_closeGetMapAreaAttributeCursor(): [51404] Cursor: c1closecursor1 closed
+ rif40_closegetmapareaattributecursor
+--------------------------------------
+
 (1 row)
 
-FETCH FORWARD 5 IN c4getallatt4theme_1;
-     area_id     | gid |     gid_rowindex      | ses | year
------------------+-----+-----------------------+-----+------
- 01.001.000100.1 |   1 | 0000000001_0000000001 |   4 | 1989
- 01.001.000100.1 |   1 | 0000000001_0000000002 |   4 | 1990
- 01.001.000100.1 |   1 | 0000000001_0000000003 |   4 | 1991
- 01.001.000100.1 |   1 | 0000000001_0000000004 |   4 | 1992
- 01.001.000100.1 |   1 | 0000000001_0000000005 |   4 | 1993
+SELECT *
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue('c4getallatt4theme_3' /- Temporary table -/,
+                NULL /- Cursor name - NULL = same as temporarty table - must be unique with a TX -/,
+                10000 /- Offset -/, NULL /- No row limit -/);
+psql:alter_scripts/v4_0_alter_1.sql:665: INFO:  [DEBUG1] rif40_GetMapAreaAttributeValue(): [51205] c4getallatt4theme SQL>
+SELECT * FROM c4getallatt4theme_3 ORDER BY gid_rowindex OFFSET $1;
+psql:alter_scripts/v4_0_alter_1.sql:665: INFO:  [DEBUG1] rif40_GetMapAreaAttributeValue(): [51207] Cursor: c4getallatt4theme_3, temporary table: c4getallatt4theme_3; offset: 10000, row limit: , SQL parse took: 00:00:00.01.
+ rif40_getmapareaattributevalue
+--------------------------------
+ c4getallatt4theme_3
+(1 row)
+
+FETCH FORWARD 5 IN c4getallatt4theme_3;
+ area_id | gid |     gid_rowindex      | year | age_sex_group | level1 |    level3     |     level4      | total
+---------+-----+-----------------------+------+---------------+--------+---------------+-----------------+-------
+ 01.002  |   2 | 0000000002_0000008593 | 1990 |           112 | 01     | 01.002.000700 | 01.002.000700.2 |   728
+ 01.002  |   2 | 0000000002_0000008594 | 1990 |           113 | 01     | 01.002.000700 | 01.002.000700.2 |   542
+ 01.002  |   2 | 0000000002_0000008595 | 1990 |           114 | 01     | 01.002.000700 | 01.002.000700.2 |   514
+ 01.002  |   2 | 0000000002_0000008596 | 1990 |           115 | 01     | 01.002.000700 | 01.002.000700.2 |   494
+ 01.002  |   2 | 0000000002_0000008597 | 1990 |           116 | 01     | 01.002.000700 | 01.002.000700.2 |   528
 (5 rows)
+
+SELECT rif40_xml_pkg.rif40_DeleteMapAreaAttributeSource('c4getallatt4theme_3');
+psql:alter_scripts/v4_0_alter_1.sql:669: INFO:  [DEBUG1] rif40_DeleteMapAreaAttributeSource(): [51801] Cursor: c4getallatt4theme_3 in use, created: 2014-07-09 09:22:03.179+01, SQL>
+SELECT * FROM c4getallatt4theme_3 ORDER BY gid_rowindex OFFSET $1;
+psql:alter_scripts/v4_0_alter_1.sql:669: INFO:  [DEBUG1] rif40_closeGetMapAreaAttributeCursor(): [51401] Cursor: c4getallatt4theme_3 in use, created: 2014-07-09 09:22:03.179+01, SQL>
+SELECT * FROM c4getallatt4theme_3 ORDER BY gid_rowindex OFFSET $1;
+psql:alter_scripts/v4_0_alter_1.sql:669: INFO:  [DEBUG1] rif40_closeGetMapAreaAttributeCursor(): [51404] Cursor: c1closecursor1 closed
+psql:alter_scripts/v4_0_alter_1.sql:669: INFO:  [DEBUG1] rif40_DeleteMapAreaAttributeSource(): [51804] Found temporary table: c4getallatt4theme_3.
+psql:alter_scripts/v4_0_alter_1.sql:669: INFO:  [DEBUG1] rif40_ddl(): SQL> DROP TABLE c4getallatt4theme_3;
+ rif40_deletemapareaattributesource
+------------------------------------
+
+(1 row)
 
 Debug:
 
 DEBUG1 prints SQL and diagnostics
 DEBUG2 does an EXPLAIN PLAN
 
-Timings: sahsuland_population (with EXPLAIN PLAN)
-
-REF_CURSOR: NO limit, force sort of all attributes - 12 seconds, FETCH 5 rows - 4 seconds
-REF_CURSOR: 1000 rows limit, force sort of all attributes - 12 seconds, FETCH 5 rows - 0.2 seconds
-REF_CURSOR: 1000 rows limit, all attributes default (no sort in GID_ROWINDEX create) - 4 seconds, FETCH 5 rows - 0.2 seconds
-REF_CURSOR: NO limit, all attributes default (no sort in GID_ROWINDEX create) - 4????? seconds, FETCH 5 rows - 0.2 seconds
-
-For timings without EXPLAIN PLAN, rif40_CreateMapAreaAttributeSource() executes very quickly, first fetch is delayed. This is 
-because EXPLAIN PLAN creates a temporary table.
  */
 DECLARE
 	c1getallatt4theme CURSOR(l_geography VARCHAR) FOR
@@ -270,7 +283,8 @@ DECLARE
 			l_theme 		rif40_xml_pkg.rif40_geolevelAttributeTheme, 
 			l_attribute_name_array 	VARCHAR[]) FOR
 		SELECT * 
-		  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(l_geography, l_geolevel_select, l_theme, l_attribute_name_array);
+		  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(
+				l_geography, l_geolevel_select, l_theme, l_attribute_name_array);
 	c5getallatt4theme CURSOR(l_c4getallatt4theme VARCHAR) FOR
 		SELECT *
 		  FROM pg_cursors
@@ -281,6 +295,11 @@ DECLARE
 		 WHERE table_schema = l_schema
 		   AND table_name   = l_table 
 	           AND column_name  = l_column;
+	c7_getallatt4theme CURSOR(l_table VARCHAR) FOR
+		SELECT table_name 
+		  FROM information_schema.tables 
+		 WHERE table_name  = l_table 
+	           AND table_type  = 'LOCAL TEMPORARY';
 --
 	c1_rec RECORD;
 	c2_rec RECORD;
@@ -289,6 +308,7 @@ DECLARE
 	c5_rec RECORD;
 	c6a_rec RECORD;
 	c6b_rec RECORD;
+	c7_rec RECORD;
 --
 	explain_text 			VARCHAR;
 	sql_stmt			VARCHAR;
@@ -310,7 +330,7 @@ BEGIN
 -- User must be rif40 or have rif_user or rif_manager role
 --
 	IF NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-51200, 'rif40_CreateMapAreaAttributeSource', 
+		PERFORM rif40_log_pkg.rif40_error(-51600, 'rif40_CreateMapAreaAttributeSource', 
 			'User % must be rif40 or have rif_user or rif_manager role', 
 			USER::VARCHAR	/* Username */);
 	END IF;
@@ -322,7 +342,7 @@ BEGIN
 	FETCH c5getallatt4theme INTO c5_rec;
 	CLOSE c5getallatt4theme;
 	IF c5_rec.name IS NOT NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-51201, 'rif40_CreateMapAreaAttributeSource', 'Cursor: % is use, created: %, SQL>'||E'\n'||'%;',
+		PERFORM rif40_log_pkg.rif40_error(-51601, 'rif40_CreateMapAreaAttributeSource', 'Cursor: % in use, created: %, SQL>'||E'\n'||'%;',
 			c5_rec.name::VARCHAR		/* Cursor name */,
 			c5_rec.creation_time::VARCHAR	/* Created */,
 			c5_rec.statement::VARCHAR	/* SQL */);
@@ -332,7 +352,7 @@ BEGIN
 -- Test geography
 --
 	IF l_geography IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-51202, 'rif40_CreateMapAreaAttributeSource', 'NULL geography parameter');
+		PERFORM rif40_log_pkg.rif40_error(-51602, 'rif40_CreateMapAreaAttributeSource', 'NULL geography parameter');
 	END IF;	
 --
 	OPEN c1getallatt4theme(l_geography);
@@ -340,7 +360,7 @@ BEGIN
 	CLOSE c1getallatt4theme;
 --
 	IF c1_rec.geography IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-51203, 'rif40_CreateMapAreaAttributeSource', 'geography: % not found', 
+		PERFORM rif40_log_pkg.rif40_error(-51603, 'rif40_CreateMapAreaAttributeSource', 'geography: % not found', 
 			l_geography::VARCHAR		/* Geography */);
 	END IF;	
 --
@@ -351,7 +371,7 @@ BEGIN
 	CLOSE c2getallatt4theme;
 --
 	IF c2_rec.geolevel_name IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-51204, 'rif40_CreateMapAreaAttributeSource', 
+		PERFORM rif40_log_pkg.rif40_error(-51604, 'rif40_CreateMapAreaAttributeSource', 
 			'geography: %, <geolevel select> %: not found', 
 			l_geography::VARCHAR		/* Geography */, 
 			l_geolevel_select::VARCHAR	/* geolevel select */);
@@ -393,13 +413,13 @@ BEGIN
 -- Check all attributes present
 --
 	IF sorted_attribute_name_list IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-51205, 'rif40_CreateMapAreaAttributeSource', 
+		PERFORM rif40_log_pkg.rif40_error(-51605, 'rif40_CreateMapAreaAttributeSource', 
 			'geography: %, <geolevel select> %, <attribute source>: %s; sorted attribute list is null', 
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_select::VARCHAR		/* Geolevel select */,
 			l_attribute_source::VARCHAR		/* Attribute source */);
 	ELSIF array_length(attribute_name_list, 1) != array_length(sorted_attribute_name_list, 1) THEN
-		PERFORM rif40_log_pkg.rif40_error(-51206, 'rif40_CreateMapAreaAttributeSource', 
+		PERFORM rif40_log_pkg.rif40_error(-51606, 'rif40_CreateMapAreaAttributeSource', 
 			'geography: %, <geolevel select> %, <attribute source>: %s; sorted attribute list is not the same length as the original', 
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_select::VARCHAR		/* Geolevel select */,
@@ -427,7 +447,7 @@ BEGIN
 -- [the function rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme()]
 --
 	IF select_list IS NULL AND invalid_attribute_source > 0 THEN
-		PERFORM rif40_log_pkg.rif40_error(-51207, 'rif40_CreateMapAreaAttributeSource', 
+		PERFORM rif40_log_pkg.rif40_error(-51607, 'rif40_CreateMapAreaAttributeSource', 
 			'geography: %, <geolevel select> %, <attribute source>: %s; no attributes found, % of % <attribute source> were invalid', 
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_select::VARCHAR		/* Geolevel select */,
@@ -435,7 +455,7 @@ BEGIN
 			invalid_attribute_source::VARCHAR	/* Invalid attribute sources */,
 			array_length(l_attribute_name_array, 1)::VARCHAR	/* Total attributes */);
 	ELSIF select_list IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-51208, 'rif40_CreateMapAreaAttributeSource', 
+		PERFORM rif40_log_pkg.rif40_error(-51608, 'rif40_CreateMapAreaAttributeSource', 
 			'geography: %, <geolevel select> %, <attribute source>: %s; no attributes found', 
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_select::VARCHAR		/* Geolevel select */,
@@ -461,26 +481,26 @@ BEGIN
 	CLOSE c6_6getallatt4theme;
 	IF c6a_rec.column_name = 'gid' AND c6b_rec.column_name = 'gid_rowindex' THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource',
-			'[50209] Both gid and gid_rowindex columns are present in attrribute source table: %',
+			'[51609] Both gid and gid_rowindex columns are present in attrribute source table: %',
 			l_attribute_source::VARCHAR);
 	ELSIF c6a_rec.column_name = 'gid' AND c6b_rec.column_name IS NULL THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource',
-			'[50210] Only the gid column is present in attrribute source table: %',
+			'[51610] Only the gid column is present in attrribute source table: %',
 			l_attribute_source::VARCHAR);
 	ELSIF c6a_rec.column_name IS NULL AND c6b_rec.column_name = 'gid_rowindex' THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource',
-			'[50211] Only the gid_rowindex column is present in attrribute source table: %',
+			'[51611] Only the gid_rowindex column is present in attrribute source table: %',
 			l_attribute_source::VARCHAR);
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource',
-			'[50212] Neither gid or gid_rowindex columns are present in attrribute source table: %',
+			'[51612] Neither gid or gid_rowindex columns are present in attrribute source table: %',
 			l_attribute_source::VARCHAR);
 	END IF;
 --
 -- Geometry tables must have gid and gid_rowindex
 --
 	IF l_theme = 'geometry' AND (c6a_rec.column_name IS NULL OR c6b_rec.column_name IS NULL) THEN
-		PERFORM rif40_log_pkg.rif40_error(-51213, 'rif40_CreateMapAreaAttributeSource', 
+		PERFORM rif40_log_pkg.rif40_error(-51613, 'rif40_CreateMapAreaAttributeSource', 
 			'Theme: % does not have gid or gid_rowindex column',
 			l_theme::VARCHAR);
 	END IF;
@@ -563,7 +583,7 @@ BEGIN
 --	
 -- This may mean the theme is not supported yet...
 --
-		PERFORM rif40_log_pkg.rif40_error(-51214, 'rif40_CreateMapAreaAttributeSource', 
+		PERFORM rif40_log_pkg.rif40_error(-51614, 'rif40_CreateMapAreaAttributeSource', 
 			'Invalid theme: %',
 			l_theme::VARCHAR);
 	END IF;
@@ -603,7 +623,20 @@ BEGIN
 			  'SELECT *'||E'\n'||
 			  '  FROM a'||E'\n'||
 			  ' ORDER BY 3 /* gid_rowindex */';
-				
+--
+-- Check temporary table does NOT exist
+--
+	OPEN c7_getallatt4theme(LOWER(c4getallatt4theme));
+	FETCH c7_getallatt4theme INTO c7_rec;
+	CLOSE c7_getallatt4theme;
+	IF c7_rec.table_name IS NOT NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(51615, 'rif40_DeleteMapAreaAttributeSource', 'Temporary table: % already exists.',
+			c7_rec.table_name::VARCHAR		/*  Temporary table name */);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_DeleteMapAreaAttributeSource', '[51616] Temporary table: % does not exist.',
+			LOWER(c4getallatt4theme)::VARCHAR		/* Temporary table name */);
+	END IF;	
+
 --
 -- As function returns a REFCURSOR it only parses and does NOT execute
 --
@@ -620,7 +653,7 @@ BEGIN
 --
 -- Create temporary table
 --
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource', '[51215] c4getallatt4theme EXPLAIN SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource', '[51617] c4getallatt4theme EXPLAIN SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
 			sql_stmt:='EXPLAIN ANALYZE VERBOSE CREATE TEMPORARY TABLE '||LOWER(quote_ident(c4getallatt4theme::Text))||E'\n'||'AS'||E'\n'||sql_stmt;
 --
 -- Create results temporary table, extract explain plan  using _rif40_CreateMapAreaAttributeSource_explain_ddl() helper function.
@@ -642,12 +675,12 @@ BEGIN
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 				error_message:='rif40_CreateMapAreaAttributeSource() caught: '||E'\n'||
 					SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
-				RAISE INFO '51216: %', error_message;
+				RAISE INFO '51618: %', error_message;
 --
 				RAISE;
 		END;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_CreateMapAreaAttributeSource', 
-			'[51217] c4getallatt4theme EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);	
+			'[51619] c4getallatt4theme EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);	
 	ELSE
 --
 -- Non EXPLAIN PLAN version
@@ -658,7 +691,7 @@ BEGIN
 --
 			sql_stmt:='CREATE TEMPORARY TABLE '||LOWER(quote_ident(c4getallatt4theme::Text))||E'\n'||'AS'||E'\n'||sql_stmt;
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource', 
-				'[51219] c4getallatt4theme SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
+				'[51620] c4getallatt4theme SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
 			EXECUTE sql_stmt USING l_geography, l_geolevel_select;
 		EXCEPTION
 			WHEN others THEN
@@ -668,7 +701,7 @@ BEGIN
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 				error_message:='rif40_CreateMapAreaAttributeSource() caught: '||E'\n'||
 					SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
-				RAISE INFO '51220: %', error_message;
+				RAISE INFO '51621: %', error_message;
 --
 				RAISE;
 		END;
@@ -680,7 +713,7 @@ BEGIN
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource', 
-		'[51221] Cursor: %, geography: %, geolevel select: %, theme: %, attribute names: [%], source: %, SQL parse took: %.', 			
+		'[51622] Cursor: %, geography: %, geolevel select: %, theme: %, attribute names: [%], source: %, SQL parse took: %.', 			
 		LOWER(quote_ident(c4getallatt4theme::Text))::VARCHAR	/* Cursor name */, 
 		l_geography::VARCHAR					/* Geography */, 
 		l_geolevel_select::VARCHAR				/* Geolevel select */, 
@@ -695,7 +728,8 @@ $func$
 LANGUAGE PLPGSQL;
 
 COMMENT ON FUNCTION rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(VARCHAR, VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR, VARCHAR[]) IS 'Function: 	rif40_CreateMapAreaAttributeSource()
-Parameters:	Temporary table name (same as REFCURSOR), Geography, <geolevel select>, theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme), attribute source, 
+Parameters:	Temporary table name (same as REFCURSOR), Geography, <geolevel select>, 
+		theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme), attribute source, 
  		attribute name array [Default NULL - All attributes]
 Returns:	Temporary table name
 Description:	Create temporary table with all values for attributes source, attribute names, geography and geolevel select
@@ -704,30 +738,47 @@ Warnings:
 
 a) This function can be slow as if uses rif40_num_denom, takes 398mS on my laptop to fetch rows to RI40_NUM_DEMON based
    (health and population) themes
-b) This function is VOLATILE. Calling it twice with the same parameters will not necessarily return the same set of rows in the same order.
+b) This function is VOLATILE. Calling it twice with the same parameters will not necessarily create a temporary table 
+   with the same set of rows in the same order.
    This is because databases to not guarantee data block access order, even without parallelisation.
    To minimise the volatility:
-	i)  Set the row limit to NULL (all rows). This has a slight performance cost.
-	ii) Define a sort order. This has a severe performance cost for large tables.
+	i) Define a sort order. This has a severe performance cost for large tables.
+
+Checks:
+
+- User must be rif40 or have rif_user or rif_manager role
+- Test geography
+- Test <geolevel select> exists
+- Check attribute exists, build SQL injection proof select list
+- Process themes
+- If attribute name array is used, then all must be found
+- Check if GID, gid_rowindex exist [they do not have to, but the query runs quicker if they do]
+- Geometry tables must have gid and gid_rowindex
+- Check temporary table does NOT exist
 
 Examples:
 
 Example 1) Full SELECT of sahsuland_pop
 	   This performs well on a server, takes about 3 seconds on a laptop
 
+--
+-- Create temporary table
+--
 SELECT *
   FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
-                ''c4getallatt4theme_3'' /* Must be unique with a TX */,
-                ''SAHSU'', ''LEVEL2'', ''population'', ''sahsuland_pop'', NULL /* All attributes */, 0 /* No offset */, NULL /* No row limit */);
-psql:alter_scripts/v4_0_alter_1.sql:542: INFO:  [DEBUG1] rif40_getAllAttributesForGeoLevelAttributeTheme(): [50807] Geography: SAHSU, geolevel select: LEVEL2, theme: population; S
-L fetch returned 6 attribute names, took: 00:00:00.219.
-psql:alter_scripts/v4_0_alter_1.sql:542: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [50212] Neither gid or gid_rowindex columns are present in attrribute source table: sahs
-land_pop
-psql:alter_scripts/v4_0_alter_1.sql:542: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51219] c4getallatt4theme SQL>
+                ''c4getallatt4theme_3'' /* Temporary table */,
+                ''SAHSU'', ''LEVEL2'', ''population'', ''sahsuland_pop'');
+psql:alter_scripts/v4_0_alter_1.sql:638: INFO:  [DEBUG1] rif40_getAllAttributesForGeoLevelAttributeTheme(): [50807] Geography: SAHSU, geolevel select: LEVEL2, theme: population; SQL fetch returned 6 attribute names, took: 00:00:00.213.
+psql:alter_scripts/v4_0_alter_1.sql:638: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51612] Neither gid or gid_rowindex columns are present in attrribute source table: sahsuland_pop
+psql:alter_scripts/v4_0_alter_1.sql:638: INFO:  [DEBUG1] rif40_DeleteMapAreaAttributeSource(): [51616] Temporary table: c4getallatt4theme_3 does not exist.
+psql:alter_scripts/v4_0_alter_1.sql:638: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51620] c4getallatt4theme SQL>
+CREATE TEMPORARY TABLE c4getallatt4theme_3
+AS
 WITH a AS (
         SELECT a.level2 /* Map <geolevel select> to area_id */ AS area_id,
        g.gid,
-       LPAD(g.gid::Text, 10, ''0''::Text)||''_''||LPAD(ROW_NUMBER() OVER(PARTITION BY level2 /* Use default table order */)::Text, 10, ''0''::Text) AS gid_rowindex,
+       LPAD(g.gid::Text, 10, ''0''::Text)||''_''||LPAD(ROW_NUMBER() OVER(PARTITION BY a.level2 /* Use default table order */)::Text, 10,
+ ''0''::Text) AS gid_rowindex,
        a.year /* ordinal_position: 1 */,
        a.age_sex_group /* ordinal_position: 2 */,
        a.level1 /* ordinal_position: 3 */,
@@ -742,16 +793,32 @@ WITH a AS (
 ) /* Force CTE to be executed entirely */
 SELECT *
   FROM a
- ORDER BY 3 /* gid_rowindex */ OFFSET $3;
-psql:alter_scripts/v4_0_alter_1.sql:542: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51221] Cursor: c4getallatt4theme_3, geography: SAHSU, geolevel select: LEVEL2, theme: p
-pulation, attribute names: [], source: sahsuland_pop; offset: 0, row limit: , SQL parse took: 00:00:00.25.
+ ORDER BY 3 /* gid_rowindex */;
+psql:alter_scripts/v4_0_alter_1.sql:638: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51622] Cursor: c4getallatt4theme_3, geography: SAHSU, geolevel select: LEVEL2, theme: population, attribute names: [], source: sahsuland_pop, SQL parse took: 00:00:04.7
+59.
+ rif40_createmapareaattributesource
+------------------------------------
+ c4getallatt4theme_3
+(1 row)
+
+--
+-- Create REFCURSOR
+--
+SELECT *
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(''c4getallatt4theme_3'' /* Temporary table */,
+                NULL /* Cursor name - NULL = same as temporarty table - must be unique with a TX */,
+                0 /* No offset */, NULL /* No row limit */);
+psql:alter_scripts/v4_0_alter_1.sql:645: INFO:  [DEBUG1] rif40_GetMapAreaAttributeValue(): [51205] c4getallatt4theme SQL>
+SELECT * FROM c4getallatt4theme_3 ORDER BY gid_rowindex OFFSET $1;
+psql:alter_scripts/v4_0_alter_1.sql:645: INFO:  [DEBUG1] rif40_GetMapAreaAttributeValue(): [51207] Cursor: c4getallatt4theme_3, temporary table: c4getallatt4theme_3; offset: 0, row limit: , SQL parse took: 00:00:00.016.
  rif40_getmapareaattributevalue
 --------------------------------
  c4getallatt4theme_3
 (1 row)
 
-\timing
-Timing is on.
+--
+-- Fetch tests
+--
 FETCH FORWARD 5 IN c4getallatt4theme_3 /* 1.3 seconds with no row limit, no sort list, no gid/gid_rowindex columns built in */;
  area_id | gid |     gid_rowindex      | year | age_sex_group | level1 |    level3     |     level4      | total
 ---------+-----+-----------------------+------+---------------+--------+---------------+-----------------+-------
@@ -762,10 +829,8 @@ FETCH FORWARD 5 IN c4getallatt4theme_3 /* 1.3 seconds with no row limit, no sort
  01.001  |   1 | 0000000001_0000000005 | 1989 |           104 | 01     | 01.001.000100 | 01.001.000100.1 |    34
 (5 rows)
 
-Time: 1308.264 ms
 MOVE ABSOLUTE 1000 IN c4getallatt4theme_3 /* move to row 1000 */;
 MOVE 1
-Time: 1.314 ms
 FETCH FORWARD 5 IN c4getallatt4theme_3;
  area_id | gid |     gid_rowindex      | year | age_sex_group | level1 |    level3     |     level4      | total
 ---------+-----+-----------------------+------+---------------+--------+---------------+-----------------+-------
@@ -776,10 +841,8 @@ FETCH FORWARD 5 IN c4getallatt4theme_3;
  01.001  |   1 | 0000000001_0000001005 | 1994 |           214 | 01     | 01.001.000200 | 01.001.000200.1 |   286
 (5 rows)
 
-Time: 1.330 ms
 MOVE ABSOLUTE 10000 IN c4getallatt4theme_3 /* move to row 10000 */;
 MOVE 1
-Time: 1.518 ms
 FETCH FORWARD 5 IN c4getallatt4theme_3;
  area_id | gid |     gid_rowindex      | year | age_sex_group | level1 |    level3     |     level4      | total
 ---------+-----+-----------------------+------+---------------+--------+---------------+-----------------+-------
@@ -790,10 +853,8 @@ FETCH FORWARD 5 IN c4getallatt4theme_3;
  01.002  |   2 | 0000000002_0000008597 | 1990 |           116 | 01     | 01.002.000700 | 01.002.000700.2 |   528
 (5 rows)
 
-Time: 1.314 ms
 MOVE ABSOLUTE 432958 IN c4getallatt4theme_3 /* move to row 432958 - two from the end */;
 MOVE 1
-Time: 14.297 ms
 FETCH FORWARD 5 IN c4getallatt4theme_3;
  area_id | gid |     gid_rowindex      | year | age_sex_group | level1 |    level3     |     level4      | total
 ---------+-----+-----------------------+------+---------------+--------+---------------+-----------------+-------
@@ -801,34 +862,59 @@ FETCH FORWARD 5 IN c4getallatt4theme_3;
  01.018  |  17 | 0000000017_0000005984 | 1996 |           221 | 01     | 01.018.019500 | 01.018.019500.3 |   402
 (2 rows)
 
-Time: 1.301 ms
+--
+-- Test cursor close. Does release resources!!!!
+--
+SELECT rif40_xml_pkg.rif40_closeGetMapAreaAttributeCursor(''c4getallatt4theme_3'');
+psql:alter_scripts/v4_0_alter_1.sql:659: INFO:  [DEBUG1] rif40_closeGetMapAreaAttributeCursor(): [51401] Cursor: c4getallatt4theme_3 in use, created: 2014-07-09 09:21:59.422+01, SQL>
+SELECT * FROM c4getallatt4theme_3 ORDER BY gid_rowindex OFFSET $1;
+psql:alter_scripts/v4_0_alter_1.sql:659: INFO:  [DEBUG1] rif40_closeGetMapAreaAttributeCursor(): [51404] Cursor: c1closecursor1 closed
+ rif40_closegetmapareaattributecursor
+--------------------------------------
 
-Example 2) Covariate theme; specified columns (forcing re-sort); otherwise defaults
+(1 row)
 
-FETCH FORWARD 5 IN c4getallatt4theme_1;
-     area_id     | gid |     gid_rowindex      | ses | year
------------------+-----+-----------------------+-----+------
- 01.001.000100.1 |   1 | 0000000001_0000000001 |   4 | 1989
- 01.001.000100.1 |   1 | 0000000001_0000000002 |   4 | 1990
- 01.001.000100.1 |   1 | 0000000001_0000000003 |   4 | 1991
- 01.001.000100.1 |   1 | 0000000001_0000000004 |   4 | 1992
- 01.001.000100.1 |   1 | 0000000001_0000000005 |   4 | 1993
+SELECT *
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(''c4getallatt4theme_3'' /* Temporary table */,
+                NULL /* Cursor name - NULL = same as temporarty table - must be unique with a TX */,
+                10000 /* Offset */, NULL /* No row limit */);
+psql:alter_scripts/v4_0_alter_1.sql:665: INFO:  [DEBUG1] rif40_GetMapAreaAttributeValue(): [51205] c4getallatt4theme SQL>
+SELECT * FROM c4getallatt4theme_3 ORDER BY gid_rowindex OFFSET $1;
+psql:alter_scripts/v4_0_alter_1.sql:665: INFO:  [DEBUG1] rif40_GetMapAreaAttributeValue(): [51207] Cursor: c4getallatt4theme_3, temporary table: c4getallatt4theme_3; offset: 10000, row limit: , SQL parse took: 00:00:00.01.
+ rif40_getmapareaattributevalue
+--------------------------------
+ c4getallatt4theme_3
+(1 row)
+
+FETCH FORWARD 5 IN c4getallatt4theme_3;
+ area_id | gid |     gid_rowindex      | year | age_sex_group | level1 |    level3     |     level4      | total
+---------+-----+-----------------------+------+---------------+--------+---------------+-----------------+-------
+ 01.002  |   2 | 0000000002_0000008593 | 1990 |           112 | 01     | 01.002.000700 | 01.002.000700.2 |   728
+ 01.002  |   2 | 0000000002_0000008594 | 1990 |           113 | 01     | 01.002.000700 | 01.002.000700.2 |   542
+ 01.002  |   2 | 0000000002_0000008595 | 1990 |           114 | 01     | 01.002.000700 | 01.002.000700.2 |   514
+ 01.002  |   2 | 0000000002_0000008596 | 1990 |           115 | 01     | 01.002.000700 | 01.002.000700.2 |   494
+ 01.002  |   2 | 0000000002_0000008597 | 1990 |           116 | 01     | 01.002.000700 | 01.002.000700.2 |   528
 (5 rows)
+
+SELECT rif40_xml_pkg.rif40_DeleteMapAreaAttributeSource(''c4getallatt4theme_3'');
+psql:alter_scripts/v4_0_alter_1.sql:669: INFO:  [DEBUG1] rif40_DeleteMapAreaAttributeSource(): [51801] Cursor: c4getallatt4theme_3 in use, created: 2014-07-09 09:22:03.179+01, SQL>
+SELECT * FROM c4getallatt4theme_3 ORDER BY gid_rowindex OFFSET $1;
+psql:alter_scripts/v4_0_alter_1.sql:669: INFO:  [DEBUG1] rif40_closeGetMapAreaAttributeCursor(): [51401] Cursor: c4getallatt4theme_3 in use, created: 2014-07-09 09:22:03.179+01, SQL>
+SELECT * FROM c4getallatt4theme_3 ORDER BY gid_rowindex OFFSET $1;
+psql:alter_scripts/v4_0_alter_1.sql:669: INFO:  [DEBUG1] rif40_closeGetMapAreaAttributeCursor(): [51404] Cursor: c1closecursor1 closed
+psql:alter_scripts/v4_0_alter_1.sql:669: INFO:  [DEBUG1] rif40_DeleteMapAreaAttributeSource(): [51804] Found temporary table: c4getallatt4theme_3.
+psql:alter_scripts/v4_0_alter_1.sql:669: INFO:  [DEBUG1] rif40_ddl(): SQL> DROP TABLE c4getallatt4theme_3;
+ rif40_deletemapareaattributesource
+------------------------------------
+
+(1 row)
 
 Debug:
 
 DEBUG1 prints SQL and diagnostics
 DEBUG2 does an EXPLAIN PLAN
 
-Timings: sahsuland_population (with EXPLAIN PLAN)
-
-REF_CURSOR: NO limit, force sort of all attributes - 12 seconds, FETCH 5 rows - 4 seconds
-REF_CURSOR: 1000 rows limit, force sort of all attributes - 12 seconds, FETCH 5 rows - 0.2 seconds
-REF_CURSOR: 1000 rows limit, all attributes default (no sort in GID_ROWINDEX create) - 4 seconds, FETCH 5 rows - 0.2 seconds
-REF_CURSOR: NO limit, all attributes default (no sort in GID_ROWINDEX create) - 4????? seconds, FETCH 5 rows - 0.2 seconds
-
-For timings without EXPLAIN PLAN, rif40_CreateMapAreaAttributeSource() executes very quickly, first fetch is delayed. This is 
-because EXPLAIN PLAN creates a temporary table.';
+';
 
 GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 	VARCHAR, VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR, VARCHAR[]) TO rif_manager;
@@ -852,7 +938,7 @@ BEGIN
 -- Must be rifupg34, rif40 or have rif_user or rif_manager role
 --
 	IF USER != 'rifupg34' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-51299, 'rif40_CreateMapAreaAttributeSource_explain_ddl', 'User % must be rif40 or have rif_user or rif_manager role', 
+		PERFORM rif40_log_pkg.rif40_error(-51699, 'rif40_CreateMapAreaAttributeSource_explain_ddl', 'User % must be rif40 or have rif_user or rif_manager role', 
 			USER::VARCHAR);
 	END IF;
 --

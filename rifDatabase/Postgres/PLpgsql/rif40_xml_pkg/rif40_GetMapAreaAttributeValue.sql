@@ -226,7 +226,14 @@ END;
 $func$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_xml_pkg.rif40_GetMapAreaAttributeValue(VARCHAR, REFCURSOR, INTEGER, INTEGER) IS 'Function: 	rif40_GetMapAreaAttributeValue()';
+COMMENT ON FUNCTION rif40_xml_pkg.rif40_GetMapAreaAttributeValue(VARCHAR, REFCURSOR, INTEGER, INTEGER) IS 'Function: 	rif40_GetMapAreaAttributeValue()
+Parameters:	Temporary table (created by rif40_CreateMapAreaAttributeSource()), 
+		REFCURSOR [Default NULL - same as temporary table name,
+		offset [Default 0], row limit [Default NULL - All rows]
+Returns:	Scrollable REFCURSOR
+Description:    Return REFCURSOR as SELECT FROM temporary table
+		This function returns a REFCURSOR, so only parses the SQL and does not execute it.
+		Offset and row limit are used for cursor control';
 
 GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_GetMapAreaAttributeValue(VARCHAR, REFCURSOR, INTEGER, INTEGER) TO rif_manager;
 GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_GetMapAreaAttributeValue(VARCHAR, REFCURSOR, INTEGER, INTEGER) TO rif_user;

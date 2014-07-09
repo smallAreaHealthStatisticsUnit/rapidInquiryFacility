@@ -119,7 +119,7 @@ DECLARE
 	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 
 		'rif40_get_geojson_as_js', '_rif40_get_geojson_as_js', '_rif40_getGeoLevelExtentCommon', 'rif40_get_geojson_tiles', 
 		'rif40_getAllAttributesForGeoLevelAttributeTheme', 'rif40_GetGeometryColumnNames', 'rif40_GetMapAreaAttributeValue',
-		'rif40_closeGetMapAreaAttributeCursor', 'rif40_CreateMapAreaAttributeSource'];
+		'rif40_closeGetMapAreaAttributeCursor', 'rif40_CreateMapAreaAttributeSource', 'rif40_DeleteMapAreaAttributeSource'];
 --
 	c1alter2 CURSOR FOR
 		SELECT *
@@ -627,15 +627,25 @@ Time: 6559.317 ms
 --
 -- Performance is fine on SAHSULAND_POP
 --
+
+\timing
+--
+-- Create temporary table
+--
 SELECT * 
   FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 		'c4getallatt4theme_3' /* Temporary table */, 
 		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop');
+--
+-- Create REFCURSOR
+--
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue('c4getallatt4theme_3' /* Temporary table */,
 		NULL /* Cursor name - NULL = same as temporarty table - must be unique with a TX */, 
 		0 /* No offset */, NULL /* No row limit */);
-\timing
+--
+-- Fetch tests
+--
 FETCH FORWARD 5 IN c4getallatt4theme_3 /* 1.3 seconds with no row limit, no sort list, no gid/gid_rowindex columns built in */;
 MOVE ABSOLUTE 1000 IN c4getallatt4theme_3 /* move to row 1000 */;
 FETCH FORWARD 5 IN c4getallatt4theme_3;
@@ -643,64 +653,54 @@ MOVE ABSOLUTE 10000 IN c4getallatt4theme_3 /* move to row 10000 */;
 FETCH FORWARD 5 IN c4getallatt4theme_3;
 MOVE ABSOLUTE 432958 IN c4getallatt4theme_3 /* move to row 432958 - two from the end */;
 FETCH FORWARD 5 IN c4getallatt4theme_3;
-
 --
--- Test cursor close. Does not release resources!!!!
+-- Test cursor close. Does release resources!!!!
 --
-/*
-Close the cursor!!!! Interestingly,the SQL statement is that of the FETCH and not the PARSE phase.
-
-psql:alter_scripts/v4_0_alter_2.sql:510: ERROR:  rif40_xml_pkg.rif40_getmapareaattributevalue(): Cursor: c4getallatt4theme_3 is use,
- created: 2014-07-01 08:44:49.073+01, SQL>
-SELECT * FROM c4getallatt4theme_3 ORDER BY 1, 3;
-
-The cursor name is not released until commit;
-
-psql:alter_scripts/v4_0_alter_2.sql:540: INFO:  51209: rif40_GetMapAreaAttributeValue() caught:
-relation "c4getallatt4theme_3" already exists, detail:
-psql:alter_scripts/v4_0_alter_2.sql:540: ERROR:  relation "c4getallatt4theme_3" already exists
-
- */
 SELECT rif40_xml_pkg.rif40_closeGetMapAreaAttributeCursor('c4getallatt4theme_3');
 
+--
+-- Demo 1+2: resources not released until end of transaction
+--
+SELECT * FROM pg_cursors;
+SELECT * 
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue('c4getallatt4theme_3' /* Temporary table */,
+		NULL /* Cursor name - NULL = same as temporarty table - must be unique with a TX */, 
+		10000 /* Offset */, NULL /* No row limit */);
+FETCH FORWARD 5 IN c4getallatt4theme_3;
+
+SELECT rif40_xml_pkg.rif40_DeleteMapAreaAttributeSource('c4getallatt4theme_3');
 --
 -- Demo 4: Use of offset and row limit, cursor control using FETCH
 --
 SELECT * 
   FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
-		'c4getallatt4theme_3a' /* Temporary table */, 
+		'c4getallatt4theme_3' /* Temporary table */, 
 		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop');
 SELECT * 
-  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue('c4getallatt4theme_3a' /* Temporary table */);
-FETCH FORWARD 5 IN c4getallatt4theme_3a /* 12 seconds parse refcursor seconds with 1000 row limit, cursor fetch is fast, no gid/gid_rowindex columns built in */;
-MOVE ABSOLUTE 995 IN c4getallatt4theme_3a /* move to row 995 */;
-FETCH FORWARD 5 IN c4getallatt4theme_3a /* Fetch last 5 rows */;
+  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue('c4getallatt4theme_3' /* Temporary table */);
+FETCH FORWARD 5 IN c4getallatt4theme_3 /* 12 seconds parse refcursor seconds with 1000 row limit, cursor fetch is fast, no gid/gid_rowindex columns built in */;
+MOVE ABSOLUTE 995 IN c4getallatt4theme_3 /* move to row 995 */;
+FETCH FORWARD 5 IN c4getallatt4theme_3 /* Fetch last 5 rows */;
+--
+-- Open second REFCURSOR
+--
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
-		'c4getallatt4theme_3a' /* Temporary table */, 
+		'c4getallatt4theme_3' /* Temporary table */, 
 		'c4getallatt4theme_3b' /* Cursor name - must be unique with a TX */, 
 		1000 /* Offset */, 1000 /* Row limit */);
 FETCH FORWARD 5 IN c4getallatt4theme_3b;
+--
+-- Release resources. Note order; cursors must be released before temporary tables or you will get:
+-- cannot DROP TABLE "c4getallatt4theme_3" because it is being used by active queries in this session
+--
+SELECT rif40_xml_pkg.rif40_closeGetMapAreaAttributeCursor('c4getallatt4theme_3b');
+SELECT rif40_xml_pkg.rif40_DeleteMapAreaAttributeSource('c4getallatt4theme_3');
 
-/*
+--
+-- Extract/map tables tested in alter_2.sql as user rif40 cannot see studies
+--
 
-This does not work as RIF40, needs to be study owner, rif_manager or shared to:
-
-psql:alter_scripts/v4_0_alter_2.sql:506: INFO:  [DEBUG1] rif40_getAllAttributesForGeoLevelAttributeTheme(): [50807] Geography: SAHSU, geolevel select: LEVEL4, theme: extract; SQL f
-etch returned 0 attribute names, took: 00:00:00.
-psql:alter_scripts/v4_0_alter_2.sql:506: WARNING:  rif40_get_error_code_action() function name rif40_GetMapAreaAttributeValue() NO ERROR MESSAGE FOUND IN DB FOR: -51204.
-psql:alter_scripts/v4_0_alter_2.sql:506: ERROR:  rif40_xml_pkg.rif40_getmapareaattributevalue(): geography: SAHSU, <geolevel select> LEVEL4, attribute_source: s1_extracts; no attri
-butes found
-Time: 129.860 ms
-
-SELECT * 
-  FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
-		'c4getallatt4theme_4', 
-		'SAHSU', 'LEVEL4', 'extract', 's1_extract');
-FETCH FORWARD 5 IN c4getallatt4theme_4;
-
-[it did work when I changed rif40_studies to t_rif40_studies in ]
- */
 
 --
 -- Demo 5: Check offset works OK

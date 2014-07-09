@@ -68,5 +68,114 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_DeleteMapAreaAttributeSource(
+	closeCursor1 	VARCHAR)
+RETURNS VOID
+SECURITY INVOKER
+AS $func$
+/*
+Function: 	rif40_DeleteMapAreaAttributeSource()
+Parameters:	Map attribute source (temporary table name)
+Returns: 	Nothing
+Description:	Drop map attribute source (temporary table)
+
+Checks:
+
+- Check if cursor exists, if yes close REF_CURSOR (created by rif40_GetMapAreaAttributeValue)
+- Check temporary table exists
+
+ */
+DECLARE
+	c1deletesource CURSOR(l_c4getallatt4theme VARCHAR) FOR
+		SELECT *
+		  FROM pg_cursors
+		 WHERE name     = l_c4getallatt4theme;
+	c2deletesource CURSOR(l_table VARCHAR) FOR
+		SELECT table_name 
+		  FROM information_schema.tables 
+		 WHERE table_name  = l_table 
+	           AND table_type  = 'LOCAL TEMPORARY';
+--
+	c1_rec RECORD;
+	c2_rec RECORD;
+--
+	sql_stmt		VARCHAR;
+--
+	error_message 		VARCHAR;
+	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
+BEGIN
+--
+-- User must be rif40 or have rif_user or rif_manager role
+--
+	IF NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
+		PERFORM rif40_log_pkg.rif40_error(-51800, 'rif40_DeleteMapAreaAttributeSource', 
+			'User % must be rif40 or have rif_user or rif_manager role', 
+			USER::VARCHAR	/* Username */);
+	END IF;
+
+--
+-- Check if cursor exists, if yes close it
+--
+	OPEN c1deletesource(quote_ident(LOWER(closeCursor1::Text)));
+	FETCH c1deletesource INTO c1_rec;
+	CLOSE c1deletesource;
+	IF c1_rec.name IS NOT NULL THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_DeleteMapAreaAttributeSource', '[51801] Cursor: % in use, created: %, SQL>'||E'\n'||'%;',
+			c1_rec.name::VARCHAR		/* Cursor name */,
+			c1_rec.creation_time::VARCHAR	/* Created */,
+			c1_rec.statement::VARCHAR	/* SQL */);
+		PERFORM rif40_xml_pkg.rif40_closeGetMapAreaAttributeCursor(closeCursor1);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_DeleteMapAreaAttributeSource', '[51802] Cursor: % is not in use.',
+			quote_ident(LOWER(closeCursor1::Text))::VARCHAR		/* Cursor name */);
+	END IF;
+
+--
+-- Check temporary table exists
+--
+	OPEN c2deletesource(quote_ident(LOWER(closeCursor1::Text)));
+	FETCH c2deletesource INTO c2_rec;
+	CLOSE c2deletesource;
+	IF c2_rec.table_name IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(51803, 'rif40_DeleteMapAreaAttributeSource', 'Temporary table: % not found.',
+			quote_ident(LOWER(closeCursor1::Text))::VARCHAR		/* Cursor name */);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_DeleteMapAreaAttributeSource', '[51804] Found temporary table: %.',
+			c2_rec.table_name::VARCHAR		/*  Temporary table name */);
+	END IF;
+--
+-- Drop temporary table
+--
+	BEGIN
+		sql_stmt:='DROP TABLE '||c2_rec.table_name;
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+	EXCEPTION
+		WHEN others THEN
+--
+-- Print exception to INFO, re-raise
+--
+			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+			error_message:='rif40_DeleteMapAreaAttributeSource() caught: '||E'\n'||
+				SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
+			RAISE INFO '51805: %', error_message;
+--
+			RAISE;
+	END;
+END;
+$func$
+LANGUAGE PLPGSQL;
+
+COMMENT ON FUNCTION rif40_xml_pkg.rif40_DeleteMapAreaAttributeSource(VARCHAR) IS 'Function: 	rif40_DeleteMapAreaAttributeSource()
+Parameters:	Map attribute source (temporary table name)
+Returns: 	Nothing
+Description:	Drop map attribute source (temporary table)
+
+Checks:
+
+- Check if cursor exists, if yes close REF_CURSOR (created by rif40_GetMapAreaAttributeValue)
+- Check temporary table exists';
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_DeleteMapAreaAttributeSource(VARCHAR) TO rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_DeleteMapAreaAttributeSource(VARCHAR) TO rif_user;
+
 --
 -- Eof

@@ -78,12 +78,10 @@ Function: 	rif40_closeGetMapAreaAttributeCursor()
 Parameters:	Cursor name
 Returns: 	Nothing
 Description:	Close REF_CURSOR (created by rif40_GetMapAreaAttributeValue)
+		
+Checks:
 
-Beware: even if you close the cursor the cursor name is not released until commit;
-
-psql:alter_scripts/v4_0_alter_2.sql:540: INFO:  51209: rif40_GetMapAreaAttributeValue() caught:
-relation "c4getallatt4theme_3" already exists, detail:
-psql:alter_scripts/v4_0_alter_2.sql:540: ERROR:  relation "c4getallatt4theme_3" already exists
+- Check if cursor exists
  */
 DECLARE
 	c1closeCursor1 CURSOR(l_c4getallatt4theme VARCHAR) FOR
@@ -112,12 +110,14 @@ BEGIN
 	FETCH c1closeCursor1 INTO c1_rec;
 	CLOSE c1closeCursor1;
 	IF c1_rec.name IS NOT NULL THEN
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_closeGetMapAreaAttributeCursor', 'Cursor: % is use, created: %, SQL>'||E'\n'||'%;',
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_closeGetMapAreaAttributeCursor', 
+			'[51401] Cursor: % in use, created: %, SQL>'||E'\n'||'%;',
 			c1_rec.name::VARCHAR		/* Cursor name */,
 			c1_rec.creation_time::VARCHAR	/* Created */,
 			c1_rec.statement::VARCHAR	/* SQL */);
 	ELSE
-		PERFORM rif40_log_pkg.rif40_error(-51401, 'rif40_closeGetMapAreaAttributeCursor', 'Cursor: % not found',
+		PERFORM rif40_log_pkg.rif40_error(-51402, 'rif40_closeGetMapAreaAttributeCursor', 
+			'Cursor: % not found',
 			quote_ident(LOWER(c1closeCursor1::Text))::VARCHAR		/* Cursor name */);
 	END IF;
 
@@ -131,10 +131,16 @@ BEGIN
 			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 			error_message:='rif40_closeGetMapAreaAttributeCursor() caught: '||E'\n'||
 				SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
-			RAISE INFO '51402: %', error_message;
+			RAISE INFO '51403: %', error_message;
 --
 			RAISE;
 	END;
+--
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_closeGetMapAreaAttributeCursor', 
+		'[51404] Cursor: % closed',
+		quote_ident(LOWER(c1closeCursor1::Text))::VARCHAR		/* Cursor name */);
+--
+	RETURN;
 END;
 $func$
 LANGUAGE PLPGSQL;
@@ -144,14 +150,13 @@ Parameters:	Cursor name
 Returns: 	Nothing
 Description:	Close REF_CURSOR (created by rif40_GetMapAreaAttributeValue)
 
-Beware: even if you close the cursor the cursor name is not released until commit;
+Checks:
 
-psql:alter_scripts/v4_0_alter_2.sql:540: INFO:  51209: rif40_GetMapAreaAttributeValue() caught:
-relation "c4getallatt4theme_3" already exists, detail:
-psql:alter_scripts/v4_0_alter_2.sql:540: ERROR:  relation "c4getallatt4theme_3" already exists';
+- Check if cursor exists';
 GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_closeGetMapAreaAttributeCursor(VARCHAR) TO rif_manager;
 GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_closeGetMapAreaAttributeCursor(VARCHAR) TO rif_user;
 
 --
 -- Eof
+
 

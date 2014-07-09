@@ -103,13 +103,58 @@ END;
 -- Will need to quit here when in production
 --
 --\q
-\c sahsuland_dev pch
 --
+-- Test user account
+-- 
+\set ntestuser '''XXXX':testuser''''
+SET rif40.testuser TO :ntestuser;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR 
+		SELECT CURRENT_SETTING('rif40.testuser') AS testuser;
+	c2 CURSOR(l_usename VARCHAR) FOR 
+		SELECT * FROM pg_user WHERE usename = l_usename;
+	c1_rec RECORD;
+	c2_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+-- Test parameter
+--
+	IF c1_rec.testuser IN ('XXXX', 'XXXX:testuser') THEN
+		RAISE EXCEPTION 'db_create.sql() C209xx: No -v testuser=<test user account> parameter';	
+	ELSE
+		RAISE INFO 'db_create.sql() test user account parameter="%"', c1_rec.testuser;
+	END IF;
+--
+-- Test account exists
+--
+	OPEN c2(LOWER(SUBSTR(c1_rec.testuser, 5)));
+	FETCH c2 INTO c2_rec;
+	CLOSE c2;
+	IF c2_rec.usename IS NULL THEN
+		RAISE EXCEPTION 'db_create.sql() C209xx: User account does not exist: %', LOWER(SUBSTR(c1_rec.testuser, 5));	
+	ELSIF pg_has_role(c2_rec.usename, 'rif_user', 'MEMBER') THEN
+		RAISE INFO 'db_create.sql() user account="%" is a rif_user', c2_rec.usename;
+	ELSIF pg_has_role(c2_rec.usename, 'rif_manager', 'MEMBER') THEN
+		RAISE INFO 'db_create.sql() user account="%" is a rif manager', c2_rec.usename;
+	ELSE
+		RAISE EXCEPTION 'db_create.sql() C209xx: User account: % is not a rif_user or rif_manager', c2_rec.usename;	
+	END IF;
+--
+END;
+$$;
+
+--
+-- Cnnect as testuser
+--
+\c sahsuland_dev :testuser
 --
 -- Test in a single transaction
 --
-\i ../psql_scripts/v4_0_sahsuland_examples.sql   
-
+--\i ../psql_scripts/v4_0_sahsuland_examples.sql   
 \set VERBOSITY terse
 
 --
@@ -126,7 +171,7 @@ DECLARE
 --
 	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 
 		'rif40_getAllAttributesForGeoLevelAttributeTheme', 'rif40_GetGeometryColumnNames', 'rif40_GetMapAreaAttributeValue',
-		'rif40_closeGetMapAreaAttributeCursor','rif40_CreateMapAreaAttributeSource'];
+		'rif40_closeGetMapAreaAttributeCursor','rif40_CreateMapAreaAttributeSource', 'rif40_DeleteMapAreaAttributeSource'];
 --
 	c1alter2 CURSOR FOR
 		SELECT *
