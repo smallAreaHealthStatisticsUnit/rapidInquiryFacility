@@ -5,6 +5,7 @@ import rifServices.system.RIFServiceException;
 
 
 
+
 import java.util.ArrayList;
 import java.awt.geom.Rectangle2D;
 
@@ -123,9 +124,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 */
 	public Rectangle2D.Double getGeoLevelFullExtentForStudy(
 		User user,
-		Geography geography,
-		GeoLevelSelect geoLevelSelect,
-		DiseaseMappingStudy study) 
+		StudyResultRetrievalContext studyResultRetrievalContext) 
 		throws RIFServiceException;	
 	
 		
@@ -163,8 +162,8 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 */
 	public ArrayList<MapAreaAttributeValue> getMapAreaAttributeValues(
 		User user,
-		Geography geography,
-		GeoLevelSelect geoLevelSelect,
+		StudyResultRetrievalContext studyResultRetrievalContext,
+		GeoLevelAttributeSource geoLevelAttributeSource,
 		String geoLevelAttribute) 
 		throws RIFServiceException;
 	
@@ -191,8 +190,8 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 */
 	public ArrayList<GeoLevelAttributeTheme> getGeoLevelAttributeThemes(
 		User user,
-		Geography geography,
-		GeoLevelSelect geoLevelSelect)
+		StudyResultRetrievalContext studyResultRetrievalContext,
+		GeoLevelAttributeSource geoLevelAttributeSource)
 		throws RIFServiceException;
 
 	
@@ -229,6 +228,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @return
 	 * @throws RIFServiceException
 	 */
+
 	public String[] getNumericAttributesForGeoLevelAttributeTheme(
 		User user,
 		StudyResultRetrievalContext studyResultRetrievalContext,
@@ -246,7 +246,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @param endRowIndex
 	 * @return
 	 * @throws RIFServiceException
-	 */
+	 */	
 	public RIFResultTable getCalculatedResultsByBlock(
 		User user,
 		StudyResultRetrievalContext studyResultRetrievalContext,
@@ -267,7 +267,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @return
 	 * @throws RIFServiceException
 	 */
-	public RIFResultTable getExtractByBlock(
+	public RIFResultTable getExtractResultsByBlock(
 		User user,
 		StudyResultRetrievalContext studyResultRetrievalContext,
 		String[] calculatedResultColumnFieldNames,			
@@ -294,18 +294,16 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	public RIFResultTable getResultsStratifiedByGenderAndAgeGroup(
 		User user,
 		StudyResultRetrievalContext studyResultRetrievalContext,
-		GeoLevelAttributeTheme geoLevelAttributeTheme,
+		GeoLevelAttributeSource geoLevelAttributeSource,
 		String geoLevelAttribute,
 		ArrayList<MapArea> mapAreas,
 		Integer year)
 		throws RIFServiceException;
 
 	
-	
 	public ArrayList<AgeGroup> getResultAgeGroups(
 		User user,
 		StudyResultRetrievalContext studyResultRetrievalContext,
-		GeoLevelAttributeTheme geoLevelAttributeTheme,
 		GeoLevelAttributeSource geoLevelSource,
 		String geoLevalAttribute)
 		throws RIFServiceException;
@@ -326,7 +324,6 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 		GeoLevelAttributeSource geoLevelSource,
 		String geoLevelAttribute) 
 		throws RIFServiceException;	
-	
 	public RIFResultTable getPyramidDataByYear(
 		User user,
 		StudyResultRetrievalContext studyResultRetrievalContext,
@@ -350,17 +347,15 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 */
 	public RIFResultTable getPyramidDataByMapAreas(
 		User user,
-		Geography geography,
-		GeoLevelSelect geoLevelSelect,
+		StudyResultRetrievalContext studyResultRetrievalContext,
 		GeoLevelAttributeSource geoLevelSource,
 		String geoLevelAttribute,
 		ArrayList<MapArea> mapAreas) 
 		throws RIFServiceException;
-	
+
 	public String[] getResultFieldsStratifiedByAgeGroup(
 		User user,
 		StudyResultRetrievalContext studyResultRetrievalContext,
-		GeoLevelAttributeTheme geoLevelAttributeTheme,
 		GeoLevelAttributeSource geoLevelAttributeSource)
 		throws RIFServiceException;
 	
@@ -423,11 +418,11 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @return
 	 * @throws RIFServiceException
 	 */
-	public RIFResultTable getResultStudyGeneralInfo(
+	public RIFResultTable getStudyResultGeneralInfo(
 		User user,
 		DiseaseMappingStudy diseaseMappingStudy)
 		throws RIFServiceException;
-		
+
 	public void initialise(Object startupParameter)
 		throws RIFServiceException;
 	

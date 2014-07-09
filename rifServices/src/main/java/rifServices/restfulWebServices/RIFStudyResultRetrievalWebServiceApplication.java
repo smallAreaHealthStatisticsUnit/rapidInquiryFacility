@@ -66,8 +66,8 @@ import java.util.HashSet;
  *
  */
 
-@ApplicationPath("/resourcesA")
-public class RIFRestfulWebServiceApplication extends Application {
+@ApplicationPath("/studyResultRetrieval")
+public class RIFStudyResultRetrievalWebServiceApplication extends Application {
 
 	// ==========================================
 	// Section Constants
@@ -81,7 +81,7 @@ public class RIFRestfulWebServiceApplication extends Application {
 	// Section Construction
 	// ==========================================
 
-	public RIFRestfulWebServiceApplication() {
+	public RIFStudyResultRetrievalWebServiceApplication() {
 
 	}
 
@@ -104,7 +104,7 @@ public class RIFRestfulWebServiceApplication extends Application {
 	@Override
 	public Set<Class<?>> getClasses() {
 		Set<Class<?>> set = new HashSet<Class<?>>();
-		set.add(RIFRestfulWebServiceResource.class);
+		set.add(RIFStudyResultRetrievalWebServiceResource.class);
 		return set;
 	}
 	
