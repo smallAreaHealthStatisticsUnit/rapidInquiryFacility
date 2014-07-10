@@ -68,6 +68,9 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
+	VARCHAR, VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR, VARCHAR[]);
+
 CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 	c4getallatt4theme 	VARCHAR,
 	l_geography 		VARCHAR,
@@ -75,7 +78,7 @@ CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 	l_theme			rif40_xml_pkg.rif40_geolevelAttributeTheme,
 	l_attribute_source	VARCHAR,
 	l_attribute_name_array	VARCHAR[]	DEFAULT NULL)
-RETURNS VARCHAR
+RETURNS INTEGER
 SECURITY INVOKER
 AS $func$
 /*
@@ -83,8 +86,10 @@ Function: 	rif40_CreateMapAreaAttributeSource()
 Parameters:	Temporary table name (same as REFCURSOR), Geography, <geolevel select>, 
 		theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme), attribute source, 
  		attribute name array [Default NULL - All attributes]
-Returns:	Temporary table name
+Returns:	Number of rows in temporary table name
 Description:	Create temporary table with all values for attributes source, attribute names, geography and geolevel select
+		Create artificial primary key gid_rowindex
+		Index temporary table on gid_rowindex
 
 Warnings: 
 
@@ -146,11 +151,11 @@ WITH a AS (
 SELECT *
   FROM a
  ORDER BY 3 /- gid_rowindex -/;
-psql:alter_scripts/v4_0_alter_1.sql:638: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51622] Cursor: c4getallatt4theme_3, geography: SAHSU, geolevel select: LEVEL2, theme: population, attribute names: [], source: sahsuland_pop, SQL parse took: 00:00:04.7
+psql:alter_scripts/v4_0_alter_1.sql:638: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51622] Cursor: c4getallatt4theme_3, geography: SAHSU, geolevel select: LEVEL2, theme: population, attribute names: [], source: sahsuland_pop, rows: 432960; SQL parse took: 00:00:04.7
 59.
  rif40_createmapareaattributesource
 ------------------------------------
- c4getallatt4theme_3
+ 432960
 (1 row)
 
 --
@@ -318,6 +323,7 @@ DECLARE
 	ordinal_position_list		INTEGER[];
 	sorted_attribute_name_list	VARCHAR[];
 	sorted_ordinal_position_list	INTEGER[];
+	num_rows			INTEGER;
 --
 	stp 				TIMESTAMP WITH TIME ZONE:=clock_timestamp();
 	etp 				TIMESTAMP WITH TIME ZONE;
@@ -622,7 +628,7 @@ BEGIN
 	sql_stmt:=sql_stmt||') /* Force CTE to be executed entirely */'||E'\n'||
 			  'SELECT *'||E'\n'||
 			  '  FROM a'||E'\n'||
-			  ' ORDER BY 3 /* gid_rowindex */';
+			  ' ORDER BY gid_rowindex';
 --
 -- Check temporary table does NOT exist
 --
@@ -654,7 +660,7 @@ BEGIN
 -- Create temporary table
 --
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource', '[51617] c4getallatt4theme EXPLAIN SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
-			sql_stmt:='EXPLAIN ANALYZE VERBOSE CREATE TEMPORARY TABLE '||LOWER(quote_ident(c4getallatt4theme::Text))||E'\n'||'AS'||E'\n'||sql_stmt;
+			sql_stmt:='EXPLAIN ANALYZE VERBOSE CREATE TEMPORARY TABLE '||quote_ident(LOWER(c4getallatt4theme::Text))||E'\n'||'AS'||E'\n'||sql_stmt;
 --
 -- Create results temporary table, extract explain plan  using _rif40_CreateMapAreaAttributeSource_explain_ddl() helper function.
 -- This ensures the EXPLAIN PLAN output is a field called explain_line 
@@ -689,10 +695,11 @@ BEGIN
 --
 -- Create temporary table
 --
-			sql_stmt:='CREATE TEMPORARY TABLE '||LOWER(quote_ident(c4getallatt4theme::Text))||E'\n'||'AS'||E'\n'||sql_stmt;
+			sql_stmt:='CREATE TEMPORARY TABLE '||quote_ident(LOWER(c4getallatt4theme::Text))||E'\n'||'AS'||E'\n'||sql_stmt;
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource', 
 				'[51620] c4getallatt4theme SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
 			EXECUTE sql_stmt USING l_geography, l_geolevel_select;
+			GET DIAGNOSTICS num_rows = ROW_COUNT;
 		EXCEPTION
 			WHEN others THEN
 --
@@ -706,6 +713,20 @@ BEGIN
 				RAISE;
 		END;
 	END IF;
+--
+-- Create unique index on gid_rowindex, ANALYZE
+--
+	sql_stmt:='CREATE UNIQUE INDEX '||quote_ident(LOWER(c4getallatt4theme))||'_uk ON '||quote_ident(LOWER(c4getallatt4theme))||'(gid_rowindex)';
+	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+	sql_stmt:='ANALYZE VERBOSE '||quote_ident(LOWER(c4getallatt4theme));
+	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+--
+-- EXPLAIN PLAN masks the row count, so COUNT UK
+--
+	IF rif40_log_pkg.rif40_is_debug_enabled('rif40_CreateMapAreaAttributeSource', 'DEBUG2') THEN
+		sql_stmt:='SELECT COUNT(gid_rowindex) AS num_rows FROM '||quote_ident(LOWER(c4getallatt4theme));
+		EXECUTE sql_stmt INTO num_rows;
+	END IF;
 
 --
 -- Instrument
@@ -713,16 +734,17 @@ BEGIN
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource', 
-		'[51622] Cursor: %, geography: %, geolevel select: %, theme: %, attribute names: [%], source: %, SQL parse took: %.', 			
+		'[51622] Cursor: %, geography: %, geolevel select: %, theme: %, attribute names: [%], source: %, rows: %; SQL parse took: %.', 			
 		LOWER(quote_ident(c4getallatt4theme::Text))::VARCHAR	/* Cursor name */, 
 		l_geography::VARCHAR					/* Geography */, 
 		l_geolevel_select::VARCHAR				/* Geolevel select */, 
 		l_theme::VARCHAR					/* Theme */, 
 		array_to_string(l_attribute_name_array, ',')::VARCHAR	/* attribute names */, 
 		l_attribute_source::VARCHAR				/* attribute source table */, 
+		num_rows::VARCHAR					/* Number of rows processed */,
 		took::VARCHAR						/* Time taken */);
 --
-	RETURN c4getallatt4theme;
+	RETURN num_rows;	/* Number of rows in temporary table name */
 END;
 $func$
 LANGUAGE PLPGSQL;
@@ -731,8 +753,10 @@ COMMENT ON FUNCTION rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(VARCHAR, VA
 Parameters:	Temporary table name (same as REFCURSOR), Geography, <geolevel select>, 
 		theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme), attribute source, 
  		attribute name array [Default NULL - All attributes]
-Returns:	Temporary table name
+Returns:	Number of rows in temporary table name
 Description:	Create temporary table with all values for attributes source, attribute names, geography and geolevel select
+		Create artificial primary key gid_rowindex
+		Index temporary table on gid_rowindex
 
 Warnings: 
 
@@ -794,11 +818,11 @@ WITH a AS (
 SELECT *
   FROM a
  ORDER BY 3 /* gid_rowindex */;
-psql:alter_scripts/v4_0_alter_1.sql:638: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51622] Cursor: c4getallatt4theme_3, geography: SAHSU, geolevel select: LEVEL2, theme: population, attribute names: [], source: sahsuland_pop, SQL parse took: 00:00:04.7
+psql:alter_scripts/v4_0_alter_1.sql:638: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51622] Cursor: c4getallatt4theme_3, geography: SAHSU, geolevel select: LEVEL2, theme: population, attribute names: [], source: sahsuland_pop, rows: 432960; SQL parse took: 00:00:04.7
 59.
  rif40_createmapareaattributesource
 ------------------------------------
- c4getallatt4theme_3
+ 432960
 (1 row)
 
 --
