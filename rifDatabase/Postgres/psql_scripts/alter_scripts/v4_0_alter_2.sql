@@ -171,7 +171,7 @@ END;
 --
 -- Cnnect as testuser
 --
-\c sahsuland_dev :testuser
+\c - :testuser
 --
 -- Test in a single transaction
 --
@@ -279,6 +279,6 @@ $$;
 --
 END;
 
-\c sahsuland_dev rif40
+\c - rif40
 --
 -- Eof
