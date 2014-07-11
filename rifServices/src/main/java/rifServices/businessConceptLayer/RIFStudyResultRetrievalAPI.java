@@ -98,16 +98,14 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	/**
 	 * gets the bounds for one single area identifier
 	 * @param user
-	 * @param geography
-	 * @param geoLevelSelect
+	 * @param studyResultRetrievalContext
 	 * @param mapArea
 	 * @return
 	 * @throws RIFServiceException
 	 */
-	public Rectangle2D.Double getGeoLevelBoundsForArea(
+	public BoundaryRectangle getGeoLevelBoundsForArea(
 		User user,
-		Geography geography,
-		GeoLevelSelect geoLevelSelect,
+		StudyResultRetrievalContext studyResultRetrievalContext,
 		MapArea mapArea)
 		throws RIFServiceException;
 	
@@ -116,19 +114,17 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * whole geolevel
 	 * 
 	 * @param user
-	 * @param geography
-	 * @param geoLevelSelect
-	 * @param study
+	 * @param studyResultRetrievalContext
 	 * @return
 	 * @throws RIFServiceException
 	 */
-	public Rectangle2D.Double getGeoLevelFullExtentForStudy(
+	public BoundaryRectangle getGeoLevelFullExtentForStudy(
 		User user,
 		StudyResultRetrievalContext studyResultRetrievalContext) 
 		throws RIFServiceException;	
 	
 		
-	public Rectangle2D.Double getGeoLevelFullExtent(
+	public BoundaryRectangle getGeoLevelFullExtent(
 		User user,
 		Geography geography,
 		GeoLevelSelect geoLevelSelect) 
