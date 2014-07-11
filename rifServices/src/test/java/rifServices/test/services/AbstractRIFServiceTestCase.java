@@ -99,7 +99,7 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 		rifStudyRetrievalService
 			= (TestRIFStudyRetrievalService) rifServiceBundle.getRIFStudyRetrievalService();
 	}
-	
+		
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
