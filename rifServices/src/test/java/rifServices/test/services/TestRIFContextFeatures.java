@@ -467,7 +467,6 @@ public class TestRIFContextFeatures extends AbstractRIFServiceTestCase {
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
-			System.out.println("TestRIFContextFeatures 3");
 			checkErrorType(
 				rifServiceException,
 				RIFServiceError.SECURITY_VIOLATION,
