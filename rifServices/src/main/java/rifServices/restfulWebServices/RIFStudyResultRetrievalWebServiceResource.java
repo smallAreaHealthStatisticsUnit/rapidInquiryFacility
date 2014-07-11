@@ -204,10 +204,11 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelBoundsForArea")
-	public String getGeometry(
+	public String getGeoLevelBoundsForArea(
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,	
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,			
+		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,		
 		@QueryParam("mapArea") String mapAreaValue) {
 					
 		String result = "";
@@ -215,19 +216,33 @@ public class RIFStudyResultRetrievalWebServiceResource
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
 				= getRIFStudyResultRetrievalService();
 			User user = User.newInstance(userID, "xxxx");
-			Geography geography = Geography.newInstance(geographyName, "");
-			GeoLevelSelect geoLevelSelect
-				= GeoLevelSelect.newInstance(geoLevelSelectName);
+			
+			StudyResultRetrievalContext studyResultRetrievalContext
+				= StudyResultRetrievalContext.newInstance(
+					geographyName, 
+					geoLevelSelectName, 
+					diseaseMappingStudyID);
+			
 			MapArea mapArea
 				= MapArea.newInstance(mapAreaValue, mapAreaValue);		
-			Rectangle2D.Double boundsRectangle
+			BoundaryRectangle boundaryRectangle
 				= studyResultRetrievalService.getGeoLevelBoundsForArea(
 					user, 
-					geography, 
-					geoLevelSelect,
+					studyResultRetrievalContext,
 					mapArea);
 			
-			//@TODO: convert rectangle into a result
+			//convert into JSON using proxy object
+			BoundaryRectangleProxy boundaryRectangleProxy
+				= new BoundaryRectangleProxy();
+			boundaryRectangleProxy.setXMin(
+					String.valueOf(boundaryRectangle.getXMin()));
+			boundaryRectangleProxy.setYMin(
+				String.valueOf(boundaryRectangle.getYMin()));
+			boundaryRectangleProxy.setXMax(
+				String.valueOf(boundaryRectangle.getXMax()));			
+			boundaryRectangleProxy.setYMax(
+				String.valueOf(boundaryRectangle.getYMax()));			
+			serialiseResult(boundaryRectangleProxy);
 			
 		}
 		catch(Exception exception) {
@@ -270,12 +285,23 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geographyName,
 					geoLevelSelectName,
 					diseaseMappingStudyID);
-			Rectangle2D.Double boundsRectangle
+			BoundaryRectangle boundaryRectangle
 				= studyResultRetrievalService.getGeoLevelFullExtentForStudy(
 					user, 
 					studyResultRetrievalContext);
-			
-			//@TODO: convert rectangle into a result
+
+			//convert into JSON using proxy object
+			BoundaryRectangleProxy boundaryRectangleProxy
+				= new BoundaryRectangleProxy();
+			boundaryRectangleProxy.setXMin(
+					String.valueOf(boundaryRectangle.getXMin()));
+			boundaryRectangleProxy.setYMin(
+				String.valueOf(boundaryRectangle.getYMin()));
+			boundaryRectangleProxy.setXMax(
+				String.valueOf(boundaryRectangle.getXMax()));			
+			boundaryRectangleProxy.setYMax(
+				String.valueOf(boundaryRectangle.getYMax()));			
+			serialiseResult(boundaryRectangleProxy);
 			
 		}
 		catch(Exception exception) {
@@ -310,13 +336,23 @@ public class RIFStudyResultRetrievalWebServiceResource
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(geoLevelSelectName);
-			Rectangle2D.Double boundsRectangle
+			BoundaryRectangle boundaryRectangle
 				= studyResultRetrievalService.getGeoLevelFullExtent(
 					user, 
 					geography, 
 					geoLevelSelect);
 			
-			//@TODO: convert rectangle into a result
+			BoundaryRectangleProxy boundaryRectangleProxy
+				= new BoundaryRectangleProxy();
+			boundaryRectangleProxy.setXMin(
+				String.valueOf(boundaryRectangle.getXMin()));
+			boundaryRectangleProxy.setYMin(
+					String.valueOf(boundaryRectangle.getYMin()));
+			boundaryRectangleProxy.setXMax(
+					String.valueOf(boundaryRectangle.getXMax()));			
+			boundaryRectangleProxy.setYMax(
+					String.valueOf(boundaryRectangle.getYMax()));			
+			serialiseResult(boundaryRectangleProxy);
 			
 		}
 		catch(Exception exception) {
