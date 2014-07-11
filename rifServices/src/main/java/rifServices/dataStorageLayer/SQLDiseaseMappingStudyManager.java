@@ -236,7 +236,7 @@ class SQLDiseaseMappingStudyManager {
 		try {
 			statement 
 				= connection.prepareStatement(diseaseMappingStudyExistsQuery.generateQuery());
-			statement.setString(1, studyID);
+			statement.setInt(1, Integer.valueOf(studyID));
 			resultSet = statement.executeQuery();
 			
 			if (resultSet.next() == false) {

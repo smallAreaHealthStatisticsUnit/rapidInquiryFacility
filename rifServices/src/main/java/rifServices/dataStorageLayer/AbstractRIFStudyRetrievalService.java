@@ -220,7 +220,17 @@ abstract class AbstractRIFStudyRetrievalService
 			}
 
 			//Part IV: Perform operation		
+			Connection connection
+				= sqlConnectionManager.getReadConnection(user);			
+
 			//@TODO
+
+			
+			
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);
+			
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -288,7 +298,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 		
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			results
@@ -298,6 +308,10 @@ abstract class AbstractRIFStudyRetrievalService
 					studyResultRetrievalContext,
 					geoLevelAttributeSource,
 					geoLevelAttribute);
+
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);		
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -357,13 +371,18 @@ abstract class AbstractRIFStudyRetrievalService
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 
 			results
 				= sqlResultsQueryManager.getGeoLevelAttributeSources(
 					connection,
 					user,
 					studyResultRetrievalContext); 
+			
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);		
+			
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -429,7 +448,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 		
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();			
 			results
@@ -438,6 +457,12 @@ abstract class AbstractRIFStudyRetrievalService
 					user,
 					studyResultRetrievalContext,
 					geoLevelAttributeSource);
+			
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);		
+			
+			
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -503,7 +528,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();			
 			results
@@ -513,6 +538,11 @@ abstract class AbstractRIFStudyRetrievalService
 					studyResultRetrievalContext,
 					geoLevelAttributeSource,
 					geoLevelAttributeTheme);
+
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);		
+
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -580,7 +610,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();				
 			results
@@ -590,6 +620,10 @@ abstract class AbstractRIFStudyRetrievalService
 					studyResultRetrievalContext,
 					geoLevelAttributeSource,
 					geoLevelAttributeTheme);
+			
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -677,7 +711,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 	
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			results
@@ -688,6 +722,9 @@ abstract class AbstractRIFStudyRetrievalService
 					calculatedResultColumnFieldNames,
 					startRowIndex,
 					endRowIndex);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);				
 			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -760,7 +797,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 		
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			results
@@ -771,6 +808,9 @@ abstract class AbstractRIFStudyRetrievalService
 					calculatedResultColumnFieldNames,
 					startRowIndex,
 					endRowIndex);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {	
 			logException(
@@ -856,7 +896,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 		
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			results
@@ -868,6 +908,9 @@ abstract class AbstractRIFStudyRetrievalService
 					geoLevelAttribute,
 					mapAreas,
 					year);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -881,11 +924,9 @@ abstract class AbstractRIFStudyRetrievalService
 	}
 
 	
-	
-	public Rectangle2D.Double getGeoLevelBoundsForArea(
+	public BoundaryRectangle getGeoLevelBoundsForArea(
 		final User _user,
-		final Geography _geography,
-		final GeoLevelSelect _geoLevelSelect,
+		final StudyResultRetrievalContext _studyResultRetrievalContext,
 		final MapArea _mapArea)
 		throws RIFServiceException {
 		
@@ -896,11 +937,12 @@ abstract class AbstractRIFStudyRetrievalService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		Geography geography = Geography.createCopy(_geography);
-		GeoLevelSelect geoLevelSelect = GeoLevelSelect.createCopy(_geoLevelSelect);
+		StudyResultRetrievalContext studyResultRetrievalContext
+			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
 		MapArea mapArea = MapArea.createCopy(_mapArea);
 				
-		Rectangle2D.Double result = new Rectangle2D.Double(0,0,0,0);
+		BoundaryRectangle result
+			= BoundaryRectangle.newInstance();
 		try {			
 			//Part II: Check for empty parameter values
 			FieldValidationUtility fieldValidationUtility
@@ -911,22 +953,16 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getGeoLevelBoundsForArea",
-				"geography",
-				geography);
-			fieldValidationUtility.checkNullMethodParameter(
-				"getGeoLevelBoundsForArea",
-				"geoLevelSelect",
-				geoLevelSelect);
+				"studyResultRetrievalContext",
+				studyResultRetrievalContext);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getGeoLevelBoundsForArea",
 				"mapArea",
-				mapArea);
-			
+				mapArea);		
 		
 			//Part III: Check for security violations
 			validateUser(user);
-			geography.checkSecurityViolations();
-			geoLevelSelect.checkSecurityViolations();
+			studyResultRetrievalContext.checkSecurityViolations();
 			mapArea.checkSecurityViolations();
 			
 			RIFLogger rifLogger = new RIFLogger();				
@@ -934,22 +970,25 @@ abstract class AbstractRIFStudyRetrievalService
 				= RIFServiceMessages.getMessage("logging.getGeoLevelBoundsForArea",
 					user.getUserID(),
 					user.getIPAddress(),
+					studyResultRetrievalContext.getStudyID(),
 					mapArea.getDisplayName());
 			rifLogger.info(
 				AbstractRIFStudyRetrievalService.class,
 				auditTrailMessage);
 		
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();		
 			result
 				= sqlResultsQueryManager.getGeoLevelBoundsForArea(
 					connection,
 					user,
-					geography,
-					geoLevelSelect,
+					studyResultRetrievalContext,
 					mapArea);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -961,7 +1000,7 @@ abstract class AbstractRIFStudyRetrievalService
 		return result;
 	}
 		
-	public Rectangle2D.Double getGeoLevelFullExtentForStudy(
+	public BoundaryRectangle getGeoLevelFullExtentForStudy(
 		final User _user,		
 		final StudyResultRetrievalContext _studyResultRetrievalContext)
 		throws RIFServiceException {
@@ -976,7 +1015,7 @@ abstract class AbstractRIFStudyRetrievalService
 		StudyResultRetrievalContext studyResultRetrievalContext
 			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
 				
-		Rectangle2D.Double result = new Rectangle2D.Double(0,0,0,0);
+		BoundaryRectangle result = BoundaryRectangle.newInstance();
 		try {
 			//Part II: Check for empty parameter values
 			FieldValidationUtility fieldValidationUtility
@@ -1005,7 +1044,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();		
 			result
@@ -1013,6 +1052,9 @@ abstract class AbstractRIFStudyRetrievalService
 					connection,
 					user,
 					studyResultRetrievalContext);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1023,7 +1065,7 @@ abstract class AbstractRIFStudyRetrievalService
 		return result;
 	}
 	
-	public Rectangle2D.Double getGeoLevelFullExtent(
+	public BoundaryRectangle getGeoLevelFullExtent(
 		final User _user,
 		final Geography _geography,
 		final GeoLevelSelect _geoLevelSelect)
@@ -1039,7 +1081,7 @@ abstract class AbstractRIFStudyRetrievalService
 		Geography geography = Geography.createCopy(_geography);
 		GeoLevelSelect geoLevelSelect = GeoLevelSelect.createCopy(_geoLevelSelect);
 			
-		Rectangle2D.Double result = new Rectangle2D.Double(0,0,0,0);
+		BoundaryRectangle result = BoundaryRectangle.newInstance();
 		try {
 			//Part II: Check for empty parameter values
 			FieldValidationUtility fieldValidationUtility
@@ -1068,13 +1110,14 @@ abstract class AbstractRIFStudyRetrievalService
 				= RIFServiceMessages.getMessage("logging.getGeoLevelFullExtent",
 					user.getUserID(),
 					user.getIPAddress(),
+					geography.getDisplayName(),
 					geoLevelSelect.getDisplayName());
 			rifLogger.info(
 				AbstractRIFStudyRetrievalService.class,
 				auditTrailMessage);
 			
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();			
 			result
@@ -1083,6 +1126,9 @@ abstract class AbstractRIFStudyRetrievalService
 					user,
 					geography,
 					geoLevelSelect);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1158,7 +1204,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			result
@@ -1169,6 +1215,10 @@ abstract class AbstractRIFStudyRetrievalService
 					geoLevelSelect,
 					zoomFactor,
 					tileIdentifier);
+
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1249,10 +1299,9 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();			
-			
 			results
 				= sqlResultsQueryManager.getPyramidData(
 					connection,
@@ -1260,6 +1309,9 @@ abstract class AbstractRIFStudyRetrievalService
 					studyResultRetrievalContext,
 					geoLevelSource,
 					geoLevelAttribute);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);				
 				
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -1340,10 +1392,9 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();			
-			
 			results
 				= sqlResultsQueryManager.getPyramidDataByYear(
 					connection,
@@ -1352,6 +1403,9 @@ abstract class AbstractRIFStudyRetrievalService
 					geoLevelSource,
 					geoLevelAttribute,
 					year);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1437,10 +1491,9 @@ abstract class AbstractRIFStudyRetrievalService
 			}
 
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
-				= rifServiceResources.getSqlResultsQueryManager();			
-
+				= rifServiceResources.getSqlResultsQueryManager();
 			results
 				= sqlResultsQueryManager.getPyramidDataByMapAreas(
 					connection,
@@ -1449,6 +1502,9 @@ abstract class AbstractRIFStudyRetrievalService
 					geoLevelAttributeSource,
 					geoLevelAttribute,
 					mapAreas);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);				
 			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -1505,16 +1561,18 @@ abstract class AbstractRIFStudyRetrievalService
 			geoLevelAttributeSource.checkSecurityViolations();
 			
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
-				= rifServiceResources.getSqlResultsQueryManager();			
-
+				= rifServiceResources.getSqlResultsQueryManager();
 			results
 				= sqlResultsQueryManager.getResultFieldsStratifiedByAgeGroup(
 					connection,
 					user,
 					studyResultRetrievalContext,
 					geoLevelAttributeSource);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1568,15 +1626,18 @@ abstract class AbstractRIFStudyRetrievalService
 			diseaseMappingStudy.checkSecurityViolations();
 			
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
-				= rifServiceResources.getSqlResultsQueryManager();			
-
+				= rifServiceResources.getSqlResultsQueryManager();
 			results
 				= sqlResultsQueryManager.getSMRValues(
 					connection,
 					user,
 					diseaseMappingStudy);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);				
+
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1631,16 +1692,17 @@ abstract class AbstractRIFStudyRetrievalService
 			diseaseMappingStudy.checkSecurityViolations();
 			
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
-				= rifServiceResources.getSqlResultsQueryManager();			
-
+				= rifServiceResources.getSqlResultsQueryManager();
 			results
 				= sqlResultsQueryManager.getRRValues(
 					connection,
 					user,
 					diseaseMappingStudy);
-
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1694,15 +1756,17 @@ abstract class AbstractRIFStudyRetrievalService
 			diseaseMappingStudy.checkSecurityViolations();
 			
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
-				= rifServiceResources.getSqlResultsQueryManager();			
-
+				= rifServiceResources.getSqlResultsQueryManager();
 			results
 				= sqlResultsQueryManager.getRRUnadjustedValues(
 					connection,
 					user,
 					diseaseMappingStudy);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);
 
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -1768,15 +1832,17 @@ abstract class AbstractRIFStudyRetrievalService
 			diseaseMappingStudy.checkSecurityViolations();
 	
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
-				= rifServiceResources.getSqlResultsQueryManager();			
-
+				= rifServiceResources.getSqlResultsQueryManager();
 			results
 				= sqlResultsQueryManager.getResultStudyGeneralInfo(
 					connection,
 					user,
 					diseaseMappingStudy);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);
 
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -1839,7 +1905,7 @@ abstract class AbstractRIFStudyRetrievalService
 				geoLevalAttribute);
 			
 			Connection connection
-				= sqlConnectionManager.getWriteConnection(user);
+				= sqlConnectionManager.getReadConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();			
 			results
@@ -1849,6 +1915,9 @@ abstract class AbstractRIFStudyRetrievalService
 					studyResultRetrievalContext,
 					geoLevelAttributeSource,
 					geoLevalAttribute);
+			sqlConnectionManager.releaseReadConnection(
+				user, 
+				connection);
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(

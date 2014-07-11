@@ -1,5 +1,6 @@
 package rifServices.dataStorageLayer;
 
+
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -127,12 +128,10 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	
-	public Rectangle2D.Double getGeoLevelBoundsForArea(
+	public BoundaryRectangle getGeoLevelBoundsForArea(
 		final Connection connection,
 		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
+		final StudyResultRetrievalContext studyResultRetrievalContext,
 		final MapArea mapArea)
 		throws RIFServiceException {
 	
@@ -140,20 +139,22 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		validateCommonParameters(
 			connection,
 			user,
-			geography,
-			geoLevelSelect);		
+			studyResultRetrievalContext);
 		mapArea.checkErrors();
 		checkMapAreaExists(
 			connection, 
-			geography, 
-			geoLevelSelect, 
-			mapArea);		
+			studyResultRetrievalContext,
+			mapArea);
+		checkMapAreaExistsInStudy(
+			connection, 
+			studyResultRetrievalContext,
+			mapArea);
 		
 		//Create query
 		SQLFunctionCallerQueryFormatter query
 			= new SQLFunctionCallerQueryFormatter();
 		query.setSchema("rif40_xml_pkg");
-		query.setFunctionName("rif40_getGeoLevelBoundsForArea");
+		query.setFunctionName("rif40_getgeolevelboundsforarea");
 		query.setNumberOfFunctionParameters(3);
 		
 		//Execute query and generate results
@@ -162,8 +163,8 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		try {
 			statement
 				= connection.prepareStatement(query.generateQuery());
-			statement.setString(1, geography.getName());
-			statement.setString(2, geoLevelSelect.getName());
+			statement.setString(1, studyResultRetrievalContext.getGeographyName());
+			statement.setString(2, studyResultRetrievalContext.getGeoLevelSelectName());
 			statement.setString(3, mapArea.getIdentifier());
 			resultSet = statement.executeQuery();
 
@@ -178,24 +179,29 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			//Assumes at least one result, because function will
 			//
 			resultSet.next();
-
+			
 			double yMax = resultSet.getDouble(1);
 			double xMax = resultSet.getDouble(2);
 			double yMin = resultSet.getDouble(3);			
 			double xMin = resultSet.getDouble(4);
 			
-			Rectangle2D.Double result = 
-				new Rectangle2D.Double(xMin, yMin, xMax, yMax);
+			BoundaryRectangle result
+				= BoundaryRectangle.newInstance(
+					xMin,
+					yMin,
+					xMax,
+					yMax);
 			return result;
 		}
 		catch(SQLException sqlException) {
+			sqlException.printStackTrace();
 			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlResultsQueryManager.unableToGetBoundsForArea",
 					mapArea.getDisplayName(),
-					geography.getDisplayName(),
-					geoLevelSelect.getDisplayName());
+					studyResultRetrievalContext.getGeographyName(),
+					studyResultRetrievalContext.getGeoLevelSelectName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED, 
@@ -209,7 +215,7 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		}		
 	}	
 
-	public Rectangle2D.Double getGeoLevelFullExtentForStudy(
+	public BoundaryRectangle getGeoLevelFullExtentForStudy(
 		final Connection connection,
 		final User user,
 		final StudyResultRetrievalContext studyResultRetrievalContext)
@@ -226,7 +232,7 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		SQLFunctionCallerQueryFormatter query
 			= new SQLFunctionCallerQueryFormatter();
 		query.setSchema("rif40_xml_pkg");
-		query.setFunctionName("rif40_getGeoLevelFullExtentForStudy");
+		query.setFunctionName("rif40_getgeolevelfullextentforstudy");
 		query.setNumberOfFunctionParameters(3);
 
 		PreparedStatement statement = null;
@@ -236,7 +242,7 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 				= connection.prepareStatement(query.generateQuery());			
 			statement.setString(1, studyResultRetrievalContext.getGeographyName());
 			statement.setString(2, studyResultRetrievalContext.getGeoLevelSelectName());
-			statement.setString(3, studyResultRetrievalContext.getStudyID());
+			statement.setInt(3, Integer.valueOf(studyResultRetrievalContext.getStudyID()));
 			
 			resultSet = statement.executeQuery();
 			
@@ -250,11 +256,16 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			double yMin = resultSet.getDouble(3);			
 			double xMin = resultSet.getDouble(4);
 			
-			Rectangle2D.Double result = 
-				new Rectangle2D.Double(xMin, yMin, xMax, yMax);
+			BoundaryRectangle result
+				= BoundaryRectangle.newInstance(
+					xMin,
+					yMin,
+					xMax,
+					yMax);
 			return result;
 		}
 		catch(SQLException sqlException) {
+			sqlException.printStackTrace();
 			logSQLException(sqlException);
 			String studyName 
 				= getStudyName(
@@ -280,7 +291,7 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		}		
 	}
 	
-	public Rectangle2D.Double getGeoLevelFullExtent(
+	public BoundaryRectangle getGeoLevelFullExtent(
 		final Connection connection,
 		final User user,
 		final Geography geography,
@@ -298,7 +309,7 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		SQLFunctionCallerQueryFormatter query
 			= new SQLFunctionCallerQueryFormatter();
 		query.setSchema("rif40_xml_pkg");
-		query.setFunctionName("rif40_getGeoLevelFullExtent");
+		query.setFunctionName("rif40_getgeolevelfullextent");
 		query.setNumberOfFunctionParameters(2);		
 			
 		//Execute query and generate results
@@ -313,13 +324,18 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			
 			//Assume there is at least one row result
 			resultSet.next();
-			double xMin = resultSet.getDouble(1);
-			double yMin = resultSet.getDouble(2);
-			double xMax = resultSet.getDouble(3);
-			double yMax = resultSet.getDouble(4);
-				
-			Rectangle2D.Double result = 
-				new Rectangle2D.Double(xMin, yMin, xMax, yMax);
+			
+			double yMax = resultSet.getDouble(1);
+			double xMax = resultSet.getDouble(2);
+			double yMin = resultSet.getDouble(3);			
+			double xMin = resultSet.getDouble(4);
+			
+			BoundaryRectangle result
+				= BoundaryRectangle.newInstance(
+					xMin,
+					yMin,
+					xMax,
+					yMax);
 			return result;
 		}
 		catch(SQLException sqlException) {
@@ -1444,10 +1460,15 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		sqlRIFContextManager.checkGeographyExists(
 			connection, 
 			studyResultRetrievalContext.getGeographyName());
+		
 		sqlRIFContextManager.checkGeoLevelSelectExists(
 			connection, 
 			studyResultRetrievalContext.getGeographyName(),
 			studyResultRetrievalContext.getGeoLevelSelectName());		
+
+		sqlDiseaseMappingStudyManager.checkDiseaseMappingStudyExists(
+			connection, 
+			studyResultRetrievalContext.getStudyID());
 	}
 
 	
@@ -1677,21 +1698,26 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	//Check what query we need
 	private void checkMapAreaExists(
 		Connection connection, 
-		Geography geography, 
-		GeoLevelSelect geoLevelSelect, 
+		StudyResultRetrievalContext studyResultRetrievalContext,
 		MapArea mapArea) 
 		throws RIFServiceException {
 		
 				
 		//Use geo level select to determine the correct
 		//resolution lookup table.
+	
+		//KLG: @TODO - need to implement this method
+		//should this check be one that checks if a map area exists in
+		//the geography or that it is part of the study?
 		
+		/**
 		String geographyTable = "sahsuland_geography";
 		
 		
 		SQLRecordExistsQueryFormatter query
 			= new SQLRecordExistsQueryFormatter();
 		query.setFromTable(geographyTable);
+		query.
 		query.addWhereParameter(geoLevelSelect.getName());
 		
 		PreparedStatement statement = null;
@@ -1735,7 +1761,28 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			//Cleanup database resources
 			SQLQueryUtility.close(statement);
 			SQLQueryUtility.close(resultSet);			
-		}		
+		}	
+		
+		*/
+	}
+
+	/**
+	 * @TODO - This check determines whether the map area appears
+	 * within the map table of the study
+	 * @param connection
+	 * @param studyResultRetrievalContext
+	 * @param mapArea
+	 * @throws RIFServiceException
+	 */
+	private void checkMapAreaExistsInStudy(
+		Connection connection, 
+		StudyResultRetrievalContext studyResultRetrievalContext,
+		MapArea mapArea) 
+		throws RIFServiceException {
+
+		
+		//@TODO
+		
 	}
 	
 	//CHECKED -- find out the name of the function
@@ -2202,7 +2249,6 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		String studyID)
 		throws RIFServiceException {
 		
-		//@TODO
 		SQLSelectQueryFormatter query
 			= new SQLSelectQueryFormatter();
 		query.addSelectField("study_name");
@@ -2214,16 +2260,18 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		try {
 			statement 
 				= connection.prepareStatement(query.generateQuery());
-			statement.setString(
+			statement.setInt(
 				1, 
-				studyID);
+				Integer.valueOf(studyID));
 			resultSet = statement.executeQuery();
 			resultSet.next();
 			return resultSet.getString(1);
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
-				= RIFServiceMessages.getMessage("");
+				= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.unableToGetStudyName",
+					studyID);
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED,
