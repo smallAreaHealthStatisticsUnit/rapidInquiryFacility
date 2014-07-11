@@ -164,6 +164,12 @@ public class RIFServiceException
 		return errorMessages.size();
 	}
 	
+	
+	public void printErrors() {
+		for (String errorMessage : errorMessages) {
+			System.out.println(errorMessage);
+		}
+	}
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
