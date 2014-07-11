@@ -117,9 +117,13 @@ public class StudyResultRetrievalContext {
 		final String geoLevelSelectName,
 		final String studyID) {
 		
-		StudyResultRetrievalContext studyRetrievalContext
+		StudyResultRetrievalContext studyResultRetrievalContext
 			= new StudyResultRetrievalContext();
-		return studyRetrievalContext;
+		studyResultRetrievalContext.setGeographyName(geographyName);
+		studyResultRetrievalContext.setGeoLevelSelectName(geoLevelSelectName);
+		studyResultRetrievalContext.setStudyID(studyID);
+		
+		return studyResultRetrievalContext;
 	}	
 	
 	public static StudyResultRetrievalContext createCopy(
@@ -129,7 +133,7 @@ public class StudyResultRetrievalContext {
 			= new StudyResultRetrievalContext();
 		cloneStudyRetrievalContext.setGeographyName(
 			originalStudyRetrievalContext.getGeographyName());
-		cloneStudyRetrievalContext.setGeoLevelSelectName(originalStudyRetrievalContext.getGeographyName());
+		cloneStudyRetrievalContext.setGeoLevelSelectName(originalStudyRetrievalContext.getGeoLevelSelectName());
 		cloneStudyRetrievalContext.setStudyID(originalStudyRetrievalContext.getStudyID());
 		return cloneStudyRetrievalContext;
 	}
@@ -285,6 +289,7 @@ public class StudyResultRetrievalContext {
 				= new RIFServiceException(
 					RIFServiceError.INVALID_STUDY_RESULT_RETRIEVAL_CONTEXT,
 					errorMessages);
+			rifServiceException.printErrors();
 			throw rifServiceException;
 		}
 		
