@@ -869,15 +869,15 @@ class SQLMapDataManager
 			geography.checkErrors();
 			sqlRIFContextManager.checkGeographyExists(
 				connection, 
-				geography);			
+				geography.getName());			
 		}
 
 		if (geoLevelSelect != null) {
 			geoLevelSelect.checkErrors();
 			sqlRIFContextManager.checkGeoLevelSelectExists(
 				connection, 
-				geography, 
-				geoLevelSelect);
+				geography.getName(), 
+				geoLevelSelect.getName());
 			
 		}
 
@@ -885,18 +885,18 @@ class SQLMapDataManager
 			geoLevelArea.checkErrors();	
 			sqlRIFContextManager.checkGeoLevelAreaExists(
 				connection,
-				geography,
-				geoLevelSelect,
-				geoLevelArea);
+				geography.getName(),
+				geoLevelSelect.getName(),
+				geoLevelArea.getName());
 		}
 		
 		if (geoLevelToMap != null) {
 			geoLevelToMap.checkErrors();			
 			sqlRIFContextManager.checkGeoLevelToMapValueExists(
 				connection, 
-				geography, 
-				geoLevelSelect, 
-				geoLevelToMap);
+				geography.getName(), 
+				geoLevelSelect.getName(), 
+				geoLevelToMap.getName());
 		}
 	}
 	

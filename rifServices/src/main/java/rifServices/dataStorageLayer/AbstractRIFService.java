@@ -521,6 +521,7 @@ class AbstractRIFService {
 		
 		return results;
 	}
+	
 	public YearRange getYearRange(
 		final User _user,
 		final Geography _geography,

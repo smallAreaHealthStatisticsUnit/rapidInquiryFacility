@@ -56,9 +56,9 @@
 -- Sync github to current
 -- cd to: <Github repository>\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts
 -- e.g. P:\Github\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts
--- Run script alter_scripts\v4_0_alter_2.sql using psql on sahusland_dev as rif40 (schema owner)
+-- Run script alter_scripts\v4_0_alter_1.sql using psql on sahusland_dev as rif40 (schema owner)
 -- The relative path is important!
--- P:\Github\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>psql -U rif40 -d sahsuland_dev -w -e -f alter_scripts\v4_0_alter_2.sql
+-- P:\Github\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>psql -U rif40 -d sahsuland_dev -w -e -f alter_scripts\v4_0_alter_1.sql
 -- Beware: script discards all changes whilst under development!:
 /* At end of script>>>
 --
@@ -760,7 +760,7 @@ VACUUM ANALYSE t_rif40_investigations;
 DO LANGUAGE plpgsql $$
 BEGIN
 --
-	RAISE INFO 'alter_2.sql completed OK, VACUUM ANALYZE OK';
+	RAISE INFO 'alter_1.sql completed OK, VACUUM ANALYZE OK';
 END;
 $$;
 

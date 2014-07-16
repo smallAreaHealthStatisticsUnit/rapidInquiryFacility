@@ -223,7 +223,7 @@ class SQLDiseaseMappingStudyManager {
 	// ==========================================
 	public void checkDiseaseMappingStudyExists(
 		final Connection connection,
-		final DiseaseMappingStudy diseaseMappingStudy)
+		final String studyID)
 		throws RIFServiceException {
 		
 		SQLRecordExistsQueryFormatter diseaseMappingStudyExistsQuery
@@ -236,17 +236,17 @@ class SQLDiseaseMappingStudyManager {
 		try {
 			statement 
 				= connection.prepareStatement(diseaseMappingStudyExistsQuery.generateQuery());
-			statement.setString(1, diseaseMappingStudy.getIdentifier());
+			statement.setString(1, studyID);
 			resultSet = statement.executeQuery();
 			
 			if (resultSet.next() == false) {
 				String recordType
-					= diseaseMappingStudy.getRecordType();
+					= RIFServiceMessages.getMessage("diseaseMappingStudy.label");
 				String errorMessage
 					= RIFServiceMessages.getMessage(
 						"general.validation.nonExistentRecord",
 						recordType,
-						diseaseMappingStudy.getDisplayName());
+						studyID);
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_DISEASE_MAPPING_STUDY, 
@@ -255,11 +255,13 @@ class SQLDiseaseMappingStudyManager {
 			}
 		}
 		catch(SQLException sqlException) {
+			String recordType
+				= RIFServiceMessages.getMessage("diseaseMappingStudy.label");			
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
-					diseaseMappingStudy.getRecordType(),
-					diseaseMappingStudy.getDisplayName());			
+					recordType,
+					studyID);			
 						
 			RIFServiceException rifServiceException
 				= new RIFServiceException(

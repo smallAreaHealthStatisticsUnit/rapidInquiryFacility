@@ -232,6 +232,8 @@ Parameters:	Temporary table name (same as REFCURSOR), Geography, <geolevel selec
  		attribute name array [Default NULL - All attributes]
 Returns:	Temporary table name
 Description:	Create temporary table with all values for attributes source, attribute names, geography and geolevel select
+		Create artificial primary key gid_rowindex
+		Index temporary table on gid_rowindex
 
 Warnings: 
 
@@ -293,7 +295,7 @@ WITH a AS (
 SELECT *
   FROM a
  ORDER BY 3 /* gid_rowindex */;
-psql:alter_scripts/v4_0_alter_1.sql:638: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51622] Cursor: c4getallatt4theme_3, geography: SAHSU, geolevel select: LEVEL2, theme: population, attribute names: [], source: sahsuland_pop, SQL parse took: 00:00:04.7
+psql:alter_scripts/v4_0_alter_1.sql:638: INFO:  [DEBUG1] rif40_CreateMapAreaAttributeSource(): [51622] Cursor: c4getallatt4theme_3, geography: SAHSU, geolevel select: LEVEL2, theme: population, attribute names: [], source: sahsuland_pop, rows: 432960; SQL parse took: 00:00:04.7
 59.
  rif40_createmapareaattributesource
 ------------------------------------
@@ -312,7 +314,7 @@ SELECT * FROM c4getallatt4theme_3 ORDER BY gid_rowindex OFFSET $1;
 psql:alter_scripts/v4_0_alter_1.sql:645: INFO:  [DEBUG1] rif40_GetMapAreaAttributeValue(): [51207] Cursor: c4getallatt4theme_3, temporary table: c4getallatt4theme_3; offset: 0, row limit: , SQL parse took: 00:00:00.016.
  rif40_getmapareaattributevalue
 --------------------------------
- c4getallatt4theme_3
+ 432960
 (1 row)
 
 --

@@ -55,6 +55,26 @@
 --
 -- Peter Hambly, SAHSU
 --
+-- To run:
+--
+-- Sync github to current
+-- cd to: <Github repository>\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts
+-- e.g. P:\Github\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts
+-- Run script alter_scripts\v4_0_alter_2.sql using psql on sahusland_dev as rif40 (schema owner)
+-- The relative path is important!
+-- P:\Github\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>psql -U rif40 -d sahsuland_dev -w -e -v testuser=<test user account> -f alter_scripts\v4_0_alter_2.sql
+-- Beware: script discards all changes whilst under development!:
+/* At end of script>>>
+--
+-- Disable script by discarding all changes
+--
+DO LANGUAGE plpgsql $$
+BEGIN
+	RAISE INFO 'Aborting (script being tested)';
+	RAISE EXCEPTION 'C20999: Abort';
+END;
+$$;
+ */
 \set ECHO all
 \set ON_ERROR_STOP ON
 \timing
@@ -76,33 +96,6 @@ BEGIN
 END;
 $$;
 
---
--- Drop statements if already run
---
-
---
--- Run common code for state machine, meddileware and
--- PG psql code (SQL and Oracle compatibility processing)
---
-\i ../PLpgsql/v4_0_rif40_sql_pkg.sql
-\i ../PLpgsql/v4_0_rif40_sm_pkg.sql
-\i ../PLpgsql/v4_0_rif40_xml_pkg.sql
-
-DO LANGUAGE plpgsql $$
-BEGIN
-	RAISE INFO 'alter_2.sql completed OK';
---
---	RAISE INFO 'Aborting (script being tested)';
---	RAISE EXCEPTION 'C20999: Abort';
-END;
-$$;
-
-END;
-
---
--- Will need to quit here when in production
---
---\q
 --
 -- Test user account
 -- 
@@ -148,13 +141,41 @@ END;
 $$;
 
 --
+-- Drop statements if already run
+--
+
+--
+-- Run common code for state machine, meddileware and
+-- PG psql code (SQL and Oracle compatibility processing)
+--
+\i ../PLpgsql/v4_0_rif40_sql_pkg.sql
+\i ../PLpgsql/v4_0_rif40_sm_pkg.sql
+\i ../PLpgsql/v4_0_rif40_xml_pkg.sql
+
+DO LANGUAGE plpgsql $$
+BEGIN
+	RAISE INFO 'alter_2.sql completed OK';
+--
+--	RAISE INFO 'Aborting (script being tested)';
+--	RAISE EXCEPTION 'C20999: Abort';
+END;
+$$;
+
+END;
+
+--
+-- Will need to quit here when in production
+--
+--\q
+
+--
 -- Cnnect as testuser
 --
-\c sahsuland_dev :testuser
+\c - :testuser
 --
 -- Test in a single transaction
 --
---\i ../psql_scripts/v4_0_sahsuland_examples.sql   
+\i ../psql_scripts/v4_0_sahsuland_examples.sql   
 \set VERBOSITY terse
 
 --
@@ -258,6 +279,6 @@ $$;
 --
 END;
 
-\c sahsuland_dev rif40
+\c - rif40
 --
 -- Eof

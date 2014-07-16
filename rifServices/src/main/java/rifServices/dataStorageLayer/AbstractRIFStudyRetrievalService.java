@@ -231,16 +231,14 @@ abstract class AbstractRIFStudyRetrievalService
 		
 		return result;
 	}
-	
-	
-	//Calls to obtain geographical extents of areas
+		
 	public ArrayList<MapAreaAttributeValue> getMapAreaAttributeValues(
 		final User _user,
-		final Geography _geography,
-		final GeoLevelSelect _geoLevelSelect,
-		final String geoLevelAttribute)
+		final StudyResultRetrievalContext _studyResultRetrievalContext,
+		final GeoLevelAttributeSource _geoLevelAttributeSource,
+		final String geoLevelAttribute) 
 		throws RIFServiceException {
-			
+		
 		//Part I: Defensively copy parameters
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
@@ -248,10 +246,10 @@ abstract class AbstractRIFStudyRetrievalService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		Geography geography = Geography.createCopy(_geography);
-		GeoLevelSelect geoLevelSelect
-			= GeoLevelSelect.createCopy(_geoLevelSelect);
-		
+		StudyResultRetrievalContext studyResultRetrievalContext
+			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
+		GeoLevelAttributeSource geoLevelAttributeSource
+			= GeoLevelAttributeSource.createCopy(_geoLevelAttributeSource);
 		ArrayList<MapAreaAttributeValue> results
 			= new ArrayList<MapAreaAttributeValue>();
 		try {
@@ -264,12 +262,8 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getMapAreaAttributeValues",
-				"geography",
-				geography);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getMapAreaAttributeValues",
-				"getLevelSelect",
-				geoLevelSelect);	
+				"studyResultRetrievalContext",
+				studyResultRetrievalContext);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getMapAreaAttributeValues",
 				"geoLevelAttribute",
@@ -277,8 +271,7 @@ abstract class AbstractRIFStudyRetrievalService
 		
 			//Part III: Check for security violations
 			validateUser(user);
-			geography.checkSecurityViolations();
-			geoLevelSelect.checkSecurityViolations();
+			studyResultRetrievalContext.checkSecurityViolations();
 			fieldValidationUtility.checkMaliciousMethodParameter(			
 				"getMapAreaAttributeValues",
 				"geoLevelAttribute",
@@ -302,8 +295,8 @@ abstract class AbstractRIFStudyRetrievalService
 				= sqlResultsQueryManager.getMapAreaAttributeValues(
 					connection,
 					user,
-					geography,
-					geoLevelSelect,
+					studyResultRetrievalContext,
+					geoLevelAttributeSource,
 					geoLevelAttribute);
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -318,9 +311,7 @@ abstract class AbstractRIFStudyRetrievalService
 	
 	public ArrayList<GeoLevelAttributeSource> getGeoLevelAttributeSources(
 		final User _user,
-		final Geography _geography,
-		final GeoLevelSelect _geoLevelSelect,
-		final DiseaseMappingStudy _diseaseMappingStudy) 
+		final StudyResultRetrievalContext _studyResultRetrievalContext) 
 		throws RIFServiceException {
 		
 		//Part I: Defensively copy parameters
@@ -330,11 +321,9 @@ abstract class AbstractRIFStudyRetrievalService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		Geography geography = Geography.createCopy(_geography);
-		GeoLevelSelect geoLevelSelect
-			= GeoLevelSelect.createCopy(_geoLevelSelect);
-		DiseaseMappingStudy diseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
+		
+		StudyResultRetrievalContext studyResultRetrievalContext
+			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
 		
 		ArrayList<GeoLevelAttributeSource> results 
 			= new ArrayList<GeoLevelAttributeSource>();
@@ -348,29 +337,19 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getGeoLevelAttributeSources",
-				"geography",
-				geography);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getGeoLevelAttributeSources",
-				"geoLevelSelect",
-				geoLevelSelect);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getGeoLevelAttributeSources",
-				"diseaseMappingStudy",
-				diseaseMappingStudy);	
+				"studyResultRetrievalContext",
+				studyResultRetrievalContext);	
 			
 			//Part III: Check for security violations
 			validateUser(user);
-			geography.checkSecurityViolations();
-			geoLevelSelect.checkSecurityViolations();
-			diseaseMappingStudy.checkSecurityViolations();
+			studyResultRetrievalContext.checkSecurityViolations();
 						
 			RIFLogger rifLogger = new RIFLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getMapAreaAttributeValues",
 					user.getUserID(),
 					user.getIPAddress(),
-					diseaseMappingStudy.getDisplayName());
+					studyResultRetrievalContext.getDisplayName());
 			rifLogger.info(
 				AbstractRIFStudyRetrievalService.class,
 				auditTrailMessage);
@@ -384,9 +363,7 @@ abstract class AbstractRIFStudyRetrievalService
 				= sqlResultsQueryManager.getGeoLevelAttributeSources(
 					connection,
 					user,
-					geography,
-					geoLevelSelect,
-					diseaseMappingStudy); 
+					studyResultRetrievalContext); 
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -400,8 +377,8 @@ abstract class AbstractRIFStudyRetrievalService
 	
 	public ArrayList<GeoLevelAttributeTheme> getGeoLevelAttributeThemes(
 		final User _user,
-		final Geography _geography,
-		final GeoLevelSelect _geoLevelSelect)
+		final StudyResultRetrievalContext _studyResultRetrievalContext,
+		final GeoLevelAttributeSource _geoLevelAttributeSource)
 		throws RIFServiceException {
 		
 		//Part I: Defensively copy parameters
@@ -411,9 +388,10 @@ abstract class AbstractRIFStudyRetrievalService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		Geography geography = Geography.createCopy(_geography);
-		GeoLevelSelect geoLevelSelect
-			= GeoLevelSelect.createCopy(_geoLevelSelect);
+		StudyResultRetrievalContext studyResultRetrievalContext 
+			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
+		GeoLevelAttributeSource geoLevelAttributeSource
+			= GeoLevelAttributeSource.createCopy(_geoLevelAttributeSource);
 		
 		ArrayList<GeoLevelAttributeTheme> results 
 			= new ArrayList<GeoLevelAttributeTheme>();
@@ -428,26 +406,24 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getMapAreaAttributeValues",
-				"geography",
-				geography);	
+				"studyResultRetrievalContext",
+				studyResultRetrievalContext);	
 			fieldValidationUtility.checkNullMethodParameter(
 				"getMapAreaAttributeValues",
-				"getLevelSelect",
-				geoLevelSelect);	
-
+				"geoLevelAttributeSource",
+				geoLevelAttributeSource);	
 			
 			//Part III: Check for security violations
 			validateUser(user);
-			geography.checkSecurityViolations();
-			geoLevelSelect.checkSecurityViolations();
+			studyResultRetrievalContext.checkSecurityViolations();
 						
 			RIFLogger rifLogger = new RIFLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelAttributeThemes",
 					user.getUserID(),
 					user.getIPAddress(),
-					geography.getDisplayName(),
-					geoLevelSelect.getDisplayName());
+					studyResultRetrievalContext.getGeographyName(),
+					studyResultRetrievalContext.getGeoLevelSelectName());
 			rifLogger.info(
 				AbstractRIFStudyRetrievalService.class,
 				auditTrailMessage);
@@ -460,8 +436,8 @@ abstract class AbstractRIFStudyRetrievalService
 				= sqlResultsQueryManager.getGeoLevelAttributeThemes(
 					connection,
 					user,
-					geography,
-					geoLevelSelect);
+					studyResultRetrievalContext,
+					geoLevelAttributeSource);
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -475,9 +451,7 @@ abstract class AbstractRIFStudyRetrievalService
 
 	public String[] getAllAttributesForGeoLevelAttributeTheme(
 		final User _user,
-		final Geography _geography,
-		final GeoLevelSelect _geoLevelSelect,
-		final DiseaseMappingStudy _diseaseMappingStudy,
+		final StudyResultRetrievalContext _studyResultRetrievalContext,
 		final GeoLevelAttributeSource _geoLevelAttributeSource,
 		final GeoLevelAttributeTheme _geoLevelAttributeTheme)
 		throws RIFServiceException {
@@ -489,11 +463,8 @@ abstract class AbstractRIFStudyRetrievalService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		Geography geography = Geography.createCopy(_geography);
-		GeoLevelSelect geoLevelSelect
-			= GeoLevelSelect.createCopy(_geoLevelSelect);
-		DiseaseMappingStudy diseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
+		StudyResultRetrievalContext studyResultRetrievalContext
+			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
 		GeoLevelAttributeSource geoLevelAttributeSource
 			= GeoLevelAttributeSource.createCopy(_geoLevelAttributeSource);
 		GeoLevelAttributeTheme geoLevelAttributeTheme
@@ -509,16 +480,8 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getAllAttributesForGeoLevelAttributeTheme",
-				"geography",
-				geography);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getAllAttributesForGeoLevelAttributeTheme",
-				"geoLevelSelect",
-				geoLevelSelect);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getAllAttributesForGeoLevelAttributeTheme",
-				"diseaseMappingStudy",
-				diseaseMappingStudy);	
+				"studyResultRetrievalContext",
+				studyResultRetrievalContext);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getAllAttributesForGeoLevelAttributeTheme",
 				"geoLevelAttributeSource",
@@ -533,8 +496,8 @@ abstract class AbstractRIFStudyRetrievalService
 				= RIFServiceMessages.getMessage("logging.getAllAttributesForGeoLevelAttributeTheme",
 					user.getUserID(),
 					user.getIPAddress(),
-					geography.getDisplayName(),
-					geoLevelSelect.getDisplayName());
+					studyResultRetrievalContext.getGeographyName(),
+					studyResultRetrievalContext.getGeoLevelSelectName());
 			rifLogger.info(
 				AbstractRIFStudyRetrievalService.class,
 				auditTrailMessage);
@@ -547,9 +510,7 @@ abstract class AbstractRIFStudyRetrievalService
 				= sqlResultsQueryManager.getAllAttributesForGeoLevelAttributeTheme(
 					connection,
 					user,
-					geography,
-					geoLevelSelect,
-					diseaseMappingStudy,
+					studyResultRetrievalContext,
 					geoLevelAttributeSource,
 					geoLevelAttributeTheme);
 		}
@@ -566,9 +527,7 @@ abstract class AbstractRIFStudyRetrievalService
 	
 	public String[] getNumericAttributesForGeoLevelAttributeTheme(
 		final User _user,
-		final Geography _geography,
-		final GeoLevelSelect _geoLevelSelect,
-		final DiseaseMappingStudy diseaseMappingStudy,
+		final StudyResultRetrievalContext _studyResultRetrievalContext,
 		final GeoLevelAttributeSource _geoLevelAttributeSource,
 		final GeoLevelAttributeTheme _geoLevelAttributeTheme)
 		throws RIFServiceException {
@@ -580,9 +539,8 @@ abstract class AbstractRIFStudyRetrievalService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		Geography geography = Geography.createCopy(_geography);
-		GeoLevelSelect geoLevelSelect
-			= GeoLevelSelect.createCopy(_geoLevelSelect);
+		StudyResultRetrievalContext studyResultRetrievalContext
+			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
 		GeoLevelAttributeSource geoLevelAttributeSource
 			= GeoLevelAttributeSource.createCopy(_geoLevelAttributeSource);
 		GeoLevelAttributeTheme geoLevelAttributeTheme
@@ -598,16 +556,8 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getNumericAttributesForGeoLevelAttributeTheme",
-				"geography",
-				geography);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getNumericAttributesForGeoLevelAttributeTheme",
-				"geoLevelSelect",
-				geoLevelSelect);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getNumericAttributesForGeoLevelAttributeTheme",
-				"diseaseMappingStudy",
-				diseaseMappingStudy);
+				"studyResultRetrievalContext",
+				studyResultRetrievalContext);	
 			fieldValidationUtility.checkNullMethodParameter(
 				"getNumericAttributesForGeoLevelAttributeTheme",
 				"geoLevelAttributeSource",
@@ -622,7 +572,7 @@ abstract class AbstractRIFStudyRetrievalService
 				= RIFServiceMessages.getMessage("logging.getNumericAttributesForGeoLevelAttributeTheme",
 					user.getUserID(),
 					user.getIPAddress(),
-					diseaseMappingStudy.getDisplayName(),
+					studyResultRetrievalContext.getStudyID(),
 					geoLevelAttributeSource.getDisplayName(),
 					geoLevelAttributeTheme.getDisplayName());
 			rifLogger.info(
@@ -634,12 +584,10 @@ abstract class AbstractRIFStudyRetrievalService
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();				
 			results
-				= sqlResultsQueryManager.getAllAttributesForGeoLevelAttributeTheme(
+				= sqlResultsQueryManager.getNumericAttributesForGeoLevelAttributeTheme(
 					connection,
 					user,
-					geography,
-					geoLevelSelect,
-					diseaseMappingStudy,
+					studyResultRetrievalContext,
 					geoLevelAttributeSource,
 					geoLevelAttributeTheme);
 		}
@@ -654,11 +602,11 @@ abstract class AbstractRIFStudyRetrievalService
 	}
 	
 	public RIFResultTable getCalculatedResultsByBlock(
-		User _user,
-		DiseaseMappingStudy _diseaseMappingStudy,
-		String[] calculatedResultColumnFieldNames,
-		Integer startRowIndex,
-		Integer endRowIndex)
+		final User _user,
+		final StudyResultRetrievalContext _studyResultRetrievalContext,
+		final String[] calculatedResultColumnFieldNames,
+		final Integer startRowIndex,
+		final Integer endRowIndex)
 		throws RIFServiceException {
 
 		
@@ -671,9 +619,10 @@ abstract class AbstractRIFStudyRetrievalService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return results;
 		}
-		DiseaseMappingStudy diseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
-					
+		StudyResultRetrievalContext studyResultRetrievalContext
+			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
+
+		
 		try {
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();			
@@ -684,8 +633,8 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getCalculatedResultsByBlock",
-				"diseaseMappingStudy",
-				diseaseMappingStudy);	
+				"studyResultRetrievalContext",
+				studyResultRetrievalContext);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getCalculatedResultsByBlock",
 				"calculatedResultColumnFieldNames",
@@ -712,7 +661,7 @@ abstract class AbstractRIFStudyRetrievalService
 			
 			//Part III: Check for security violations
 			validateUser(user);
-			diseaseMappingStudy.checkSecurityViolations();
+			studyResultRetrievalContext.checkSecurityViolations();
 				
 			RIFLogger rifLogger = new RIFLogger();			
 			String auditTrailMessage
@@ -720,7 +669,7 @@ abstract class AbstractRIFStudyRetrievalService
 					"logging.getCalculatedResultsByBlock",
 					user.getUserID(),
 					user.getIPAddress(),
-					diseaseMappingStudy.getDisplayName(),
+					studyResultRetrievalContext.getDisplayName(),
 					String.valueOf(startRowIndex),
 					String.valueOf(endRowIndex));
 			rifLogger.info(
@@ -735,7 +684,7 @@ abstract class AbstractRIFStudyRetrievalService
 				= sqlResultsQueryManager.getCalculatedResultsByBlock(
 					connection,
 					user,
-					diseaseMappingStudy,
+					studyResultRetrievalContext,
 					calculatedResultColumnFieldNames,
 					startRowIndex,
 					endRowIndex);
@@ -751,12 +700,12 @@ abstract class AbstractRIFStudyRetrievalService
 		return results;
 	}
 	
-	public RIFResultTable getExtractByBlock(
-		User _user,
-		DiseaseMappingStudy _diseaseMappingStudy,
-		String[] calculatedResultColumnFieldNames,
-		Integer startRowIndex,
-		Integer endRowIndex)
+	public RIFResultTable getExtractResultsByBlock(
+		final User _user,
+		final StudyResultRetrievalContext _studyResultRetrievalContext,
+		final String[] calculatedResultColumnFieldNames,
+		final Integer startRowIndex,
+		final Integer endRowIndex)
 		throws RIFServiceException {
 
 			
@@ -769,9 +718,9 @@ abstract class AbstractRIFStudyRetrievalService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return results;
 		}
-		DiseaseMappingStudy diseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
-					
+		StudyResultRetrievalContext studyResultRetrievalContext
+			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
+
 		try {
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();			
@@ -782,8 +731,8 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getExtractByBlock",
-				"diseaseMappingStudy",
-				diseaseMappingStudy);	
+				"studyResultRetrievalContext",
+				studyResultRetrievalContext);	
 			fieldValidationUtility.checkNullMethodParameter(
 				"getExtractByBlock",
 				"startRowIndex",
@@ -795,7 +744,7 @@ abstract class AbstractRIFStudyRetrievalService
 
 			//Part III: Check for security violations
 			validateUser(user);
-			diseaseMappingStudy.checkSecurityViolations();
+			studyResultRetrievalContext.checkSecurityViolations();
 					
 			RIFLogger rifLogger = new RIFLogger();			
 			String auditTrailMessage
@@ -803,7 +752,7 @@ abstract class AbstractRIFStudyRetrievalService
 					"logging.getExtractByBlock",
 					user.getUserID(),
 					user.getIPAddress(),
-					diseaseMappingStudy.getDisplayName(),
+					studyResultRetrievalContext.getDisplayName(),
 					String.valueOf(startRowIndex),
 					String.valueOf(endRowIndex));
 			rifLogger.info(
@@ -818,7 +767,7 @@ abstract class AbstractRIFStudyRetrievalService
 				= sqlResultsQueryManager.getExtractByBlock(
 					connection,
 					user,
-					diseaseMappingStudy,
+					studyResultRetrievalContext,
 					calculatedResultColumnFieldNames,
 					startRowIndex,
 					endRowIndex);
@@ -834,14 +783,12 @@ abstract class AbstractRIFStudyRetrievalService
 	}
 			
 	public RIFResultTable getResultsStratifiedByGenderAndAgeGroup(
-		User _user,
-		Geography _geography,
-		GeoLevelSelect _geoLevelSelect,
-		DiseaseMappingStudy _diseaseMappingStudy,
-		GeoLevelAttributeTheme _geoLevelAttributeTheme,
-		String geoLevelAttribute,
-		ArrayList<MapArea> _mapAreas,
-		Integer year)
+		final User _user,
+		final StudyResultRetrievalContext _studyResultRetrievalContext,
+		final GeoLevelAttributeSource _geoLevelAttributeSource,
+		final String geoLevelAttribute,
+		final ArrayList<MapArea> _mapAreas,
+		final Integer year)
 		throws RIFServiceException {
 		
 		
@@ -854,12 +801,10 @@ abstract class AbstractRIFStudyRetrievalService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return results;
 		}
-		Geography geography = Geography.createCopy(_geography);
-		GeoLevelSelect geoLevelSelect = GeoLevelSelect.createCopy(_geoLevelSelect);
-		DiseaseMappingStudy diseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
-		GeoLevelAttributeTheme geoLevelAttributeTheme
-			= GeoLevelAttributeTheme.createCopy(_geoLevelAttributeTheme);
+		StudyResultRetrievalContext studyResultRetrievalContext
+			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
+		GeoLevelAttributeSource geoLevelAttributeSource
+			= GeoLevelAttributeSource.createCopy(_geoLevelAttributeSource);
 		ArrayList<MapArea> mapAreas = MapArea.createCopy(_mapAreas);
 		
 		try {
@@ -872,20 +817,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getResultsStratifiedByGenderAndAgeGroup",
-				"geography",
-				geography);	
+				"studyResultRetrievalContext",
+				studyResultRetrievalContext);	
 			fieldValidationUtility.checkNullMethodParameter(
 				"getResultsStratifiedByGenderAndAgeGroup",
-				"geoLevelSelect",
-				geoLevelSelect);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getResultsStratifiedByGenderAndAgeGroup",
-				"diseaseMappingStudy",
-				diseaseMappingStudy);
-			fieldValidationUtility.checkNullMethodParameter(
-				"getResultsStratifiedByGenderAndAgeGroup",
-				"geoLevelAttributeTheme",
-				geoLevelAttributeTheme);		
+				"geoLevelAttributeSource",
+				geoLevelAttributeSource);		
 			fieldValidationUtility.checkNullMethodParameter(
 				"getResultsStratifiedByGenderAndAgeGroup",
 				"geoLevelAttribute",
@@ -894,9 +831,7 @@ abstract class AbstractRIFStudyRetrievalService
 			
 			//Part III: Check for security violations
 			validateUser(user);
-			geography.checkSecurityViolations();
-			geoLevelSelect.checkSecurityViolations();		
-			diseaseMappingStudy.checkSecurityViolations();
+			studyResultRetrievalContext.checkSecurityViolations();
 			fieldValidationUtility.checkMaliciousMethodParameter(
 				"getResultsStratifiedByGenderAndAgeGroup", 
 				"geoLevelAttribute", 
@@ -913,9 +848,9 @@ abstract class AbstractRIFStudyRetrievalService
 					"logging.getResultsStratifiedByGenderAndAgeGroup",
 					user.getUserID(),
 					user.getIPAddress(),
-					geography.getDisplayName(),
-					geoLevelSelect.getDisplayName(),
-					diseaseMappingStudy.getDisplayName());
+					studyResultRetrievalContext.getGeographyName(),
+					studyResultRetrievalContext.getGeoLevelSelectName(),
+					studyResultRetrievalContext.getStudyID());
 			rifLogger.info(
 				AbstractRIFStudyRetrievalService.class,
 				auditTrailMessage);
@@ -928,10 +863,8 @@ abstract class AbstractRIFStudyRetrievalService
 				= sqlResultsQueryManager.getResultsStratifiedByGenderAndAgeGroup(
 					connection,
 					user,
-					geography,
-					geoLevelSelect,
-					diseaseMappingStudy,
-					geoLevelAttributeTheme,
+					studyResultRetrievalContext,
+					geoLevelAttributeSource,
 					geoLevelAttribute,
 					mapAreas,
 					year);
@@ -1029,10 +962,8 @@ abstract class AbstractRIFStudyRetrievalService
 	}
 		
 	public Rectangle2D.Double getGeoLevelFullExtentForStudy(
-		final User _user,
-		final Geography _geography,
-		final GeoLevelSelect _geoLevelSelect,
-		final DiseaseMappingStudy _diseaseMappingStudy)
+		final User _user,		
+		final StudyResultRetrievalContext _studyResultRetrievalContext)
 		throws RIFServiceException {
 
 		//Part I: Defensively copy parameters
@@ -1042,12 +973,9 @@ abstract class AbstractRIFStudyRetrievalService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		Geography geography = Geography.createCopy(_geography);
-		GeoLevelSelect geoLevelSelect = GeoLevelSelect.createCopy(_geoLevelSelect);
-		DiseaseMappingStudy diseaseMappingStudy
-			=  DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
-		
-		
+		StudyResultRetrievalContext studyResultRetrievalContext
+			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
+				
 		Rectangle2D.Double result = new Rectangle2D.Double(0,0,0,0);
 		try {
 			//Part II: Check for empty parameter values
@@ -1059,30 +987,19 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getGeoLevelFullExtentForStudy",
-				"geography",
-				geography);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getGeoLevelFullExtentForStudy",
-				"geoLevelSelect",
-				geoLevelSelect);				
-			fieldValidationUtility.checkNullMethodParameter(
-				"getGeoLevelFullExtentForStudy",
-				"diseaseMappingStudy",
-				diseaseMappingStudy);				
+				"studyResultRetrievalContext",
+				studyResultRetrievalContext);
 
-			
 			//Part III: Check for security violations
 			validateUser(user);
-			geography.checkSecurityViolations();
-			geoLevelSelect.checkSecurityViolations();
-			diseaseMappingStudy.checkSecurityViolations();
+			studyResultRetrievalContext.checkSecurityViolations();
 			
 			RIFLogger rifLogger = new RIFLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelFullExtentForStudy",
 					user.getUserID(),
 					user.getIPAddress(),
-					diseaseMappingStudy.getDisplayName());
+					studyResultRetrievalContext.getStudyID());
 			rifLogger.info(
 				AbstractRIFStudyRetrievalService.class,
 				auditTrailMessage);
@@ -1095,9 +1012,7 @@ abstract class AbstractRIFStudyRetrievalService
 				= sqlResultsQueryManager.getGeoLevelFullExtentForStudy(
 					connection,
 					user,
-					geography,
-					geoLevelSelect,
-					diseaseMappingStudy);
+					studyResultRetrievalContext);
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1277,8 +1192,7 @@ abstract class AbstractRIFStudyRetrievalService
 	 */
 	public RIFResultTable getPyramidData(
 		final User _user,
-		final Geography _geography,
-		final GeoLevelSelect _geoLevelSelect,
+		final StudyResultRetrievalContext _studyResultRetrievalContext,
 		final GeoLevelAttributeSource _geoLevelSource,
 		final String geoLevelAttribute) 
 		throws RIFServiceException {
@@ -1290,10 +1204,8 @@ abstract class AbstractRIFStudyRetrievalService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		Geography geography
-			= Geography.createCopy(_geography);
-		GeoLevelSelect geoLevelSelect 
-			= GeoLevelSelect.createCopy(_geoLevelSelect);
+		StudyResultRetrievalContext studyResultRetrievalContext
+			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
 		GeoLevelAttributeSource geoLevelSource
 			= GeoLevelAttributeSource.createCopy(_geoLevelSource);
 
@@ -1308,12 +1220,8 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getPyramidData",
-				"geography",
-				geography);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getPyramidData",
-				"geoLevelSelect",
-				geoLevelSelect);	
+				"studyResultRetrievalContext",
+				studyResultRetrievalContext);	
 			fieldValidationUtility.checkNullMethodParameter(
 				"getPyramidData",
 				"geoLevelSource",
@@ -1321,8 +1229,7 @@ abstract class AbstractRIFStudyRetrievalService
 
 			//Part III: Check for security violations
 			validateUser(user);
-			geography.checkSecurityViolations();
-			geoLevelSelect.checkSecurityViolations();
+			studyResultRetrievalContext.checkSecurityViolations();
 			geoLevelSource.checkSecurityViolations();
 			fieldValidationUtility.checkMaliciousMethodParameter(
 				"getPyramidData", 
@@ -1334,8 +1241,8 @@ abstract class AbstractRIFStudyRetrievalService
 				= RIFServiceMessages.getMessage("logging.getPyramidData",
 					user.getUserID(),
 					user.getIPAddress(),
-					geography.getDisplayName(),
-					geoLevelSelect.getDisplayName(),
+					studyResultRetrievalContext.getGeographyName(),
+					studyResultRetrievalContext.getGeoLevelSelectName(),
 					geoLevelSource.getDisplayName());
 			rifLogger.info(
 				AbstractRIFStudyRetrievalService.class,
@@ -1350,8 +1257,7 @@ abstract class AbstractRIFStudyRetrievalService
 				= sqlResultsQueryManager.getPyramidData(
 					connection,
 					user,
-					geography,
-					geoLevelSelect,
+					studyResultRetrievalContext,
 					geoLevelSource,
 					geoLevelAttribute);
 				
@@ -1367,13 +1273,24 @@ abstract class AbstractRIFStudyRetrievalService
 	}
 	
 	public RIFResultTable getPyramidDataByYear(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final GeoLevelAttributeSource geoLevelSource,
+		final User _user,
+		final StudyResultRetrievalContext _studyResultRetrievalContext,
+		final GeoLevelAttributeSource _geoLevelSource,
 		final String geoLevelAttribute,
 		final Integer year) 
 		throws RIFServiceException {
+		
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		StudyResultRetrievalContext studyResultRetrievalContext 
+			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
+		GeoLevelAttributeSource geoLevelSource
+			= GeoLevelAttributeSource.createCopy(_geoLevelSource);
 		
 		RIFResultTable results = new RIFResultTable();
 		try {
@@ -1386,12 +1303,8 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getPyramidDataByYear",
-				"geography",
-				geography);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getPyramidDataByYear",
-				"geoLevelSelect",
-				geoLevelSelect);	
+				"studyResultRetrievalContext",
+				studyResultRetrievalContext);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getPyramidDataByYear",
 				"geoLevelSource",
@@ -1407,8 +1320,7 @@ abstract class AbstractRIFStudyRetrievalService
 
 			//Part III: Check for security violations
 			validateUser(user);
-			geography.checkSecurityViolations();
-			geoLevelSelect.checkSecurityViolations();
+			studyResultRetrievalContext.checkSecurityViolations();
 			geoLevelSource.checkSecurityViolations();
 			fieldValidationUtility.checkMaliciousMethodParameter(
 				"getPyramidDataByYear", 
@@ -1420,15 +1332,13 @@ abstract class AbstractRIFStudyRetrievalService
 				= RIFServiceMessages.getMessage("logging.getPyramidDataByYear",
 					user.getUserID(),
 					user.getIPAddress(),
-					geography.getDisplayName(),
-					geoLevelSelect.getDisplayName(),
+					studyResultRetrievalContext.getGeographyName(),
+					studyResultRetrievalContext.getGeoLevelSelectName(),
 					geoLevelSource.getDisplayName());
 			rifLogger.info(
 				AbstractRIFStudyRetrievalService.class,
 				auditTrailMessage);
 			
-			SQLConnectionManager sqlConnectionManager
-				= rifServiceResources.getSqlConnectionManager();
 			Connection connection
 				= sqlConnectionManager.getWriteConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
@@ -1438,8 +1348,7 @@ abstract class AbstractRIFStudyRetrievalService
 				= sqlResultsQueryManager.getPyramidDataByYear(
 					connection,
 					user,
-					geography,
-					geoLevelSelect,
+					studyResultRetrievalContext,
 					geoLevelSource,
 					geoLevelAttribute,
 					year);
@@ -1468,14 +1377,26 @@ abstract class AbstractRIFStudyRetrievalService
 	 * @throws RIFServiceException
 	 */
 	public RIFResultTable getPyramidDataByMapAreas(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final GeoLevelAttributeSource geoLevelSource,
+		final User _user,
+		final StudyResultRetrievalContext _studyResultRetrievalContext,
+		final GeoLevelAttributeSource _geoLevelAttributeSource,
 		final String geoLevelAttribute,
-		final ArrayList<MapArea> mapAreas) 
+		final ArrayList<MapArea> _mapAreas) 
 		throws RIFServiceException {
 		
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		StudyResultRetrievalContext studyResultRetrievalContext 
+			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
+		GeoLevelAttributeSource geoLevelAttributeSource
+			= GeoLevelAttributeSource.createCopy(_geoLevelAttributeSource);
+		ArrayList<MapArea> mapAreas
+			= MapArea.createCopy(_mapAreas);
 				
 		RIFResultTable results = new RIFResultTable();
 		try {
@@ -1488,16 +1409,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getPyramidDataByMapAreas",
-				"geography",
-				geography);	
+				"studyResultRetrievalContext",
+				studyResultRetrievalContext);	
 			fieldValidationUtility.checkNullMethodParameter(
 				"getPyramidDataByMapAreas",
-				"geoLevelSelect",
-				geoLevelSelect);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getPyramidDataByMapAreas",
-				"geoLevelSource",
-				geoLevelSource);
+				"geoLevelAttributeSource",
+				geoLevelAttributeSource);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getPyramidDataByMapAreas",
 				"geoLevelAttribute",
@@ -1509,9 +1426,8 @@ abstract class AbstractRIFStudyRetrievalService
 
 			//Part III: Check for security violations
 			validateUser(user);
-			geography.checkSecurityViolations();
-			geoLevelSelect.checkSecurityViolations();
-			geoLevelSource.checkSecurityViolations();
+			studyResultRetrievalContext.checkSecurityViolations();
+			geoLevelAttributeSource.checkSecurityViolations();
 			fieldValidationUtility.checkMaliciousMethodParameter(
 				"getPyramidDataByMapAreas", 
 				"geoLevelAttribute", 
@@ -1520,8 +1436,6 @@ abstract class AbstractRIFStudyRetrievalService
 				mapArea.checkSecurityViolations();
 			}
 
-			SQLConnectionManager sqlConnectionManager
-				= rifServiceResources.getSqlConnectionManager();
 			Connection connection
 				= sqlConnectionManager.getWriteConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
@@ -1531,9 +1445,8 @@ abstract class AbstractRIFStudyRetrievalService
 				= sqlResultsQueryManager.getPyramidDataByMapAreas(
 					connection,
 					user,
-					geography,
-					geoLevelSelect,
-					geoLevelSource,
+					studyResultRetrievalContext,					
+					geoLevelAttributeSource,
 					geoLevelAttribute,
 					mapAreas);
 			
@@ -1549,14 +1462,24 @@ abstract class AbstractRIFStudyRetrievalService
 	}
 	
 	public String[] getResultFieldsStratifiedByAgeGroup(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final DiseaseMappingStudy diseaseMappingStudy,
-		final GeoLevelAttributeTheme geoLevelAttributeTheme,
-		final GeoLevelAttributeSource geoLevelAttributeSource)
+		final User _user,
+		final StudyResultRetrievalContext _studyResultRetrievalContext,
+		final GeoLevelAttributeSource _geoLevelAttributeSource)
 		throws RIFServiceException {
-				
+
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		StudyResultRetrievalContext studyResultRetrievalContext 
+			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);		
+		GeoLevelAttributeSource geoLevelAttributeSource
+			= GeoLevelAttributeSource.createCopy(_geoLevelAttributeSource);
+
+		
 		String[] results = new String[0];
 		try {
 			//Part II: Check for empty parameter values
@@ -1568,20 +1491,8 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getResultFieldsStratifiedByAgeGroup",
-				"geography",
-				geography);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getResultFieldsStratifiedByAgeGroup",
-				"geoLevelSelect",
-				geoLevelSelect);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getResultFieldsStratifiedByAgeGroup",
-				"diseaseMappingStudy",
-				diseaseMappingStudy);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getResultFieldsStratifiedByAgeGroup",
-				"geoLevelAttributeTheme",
-				geoLevelAttributeTheme);	
+				"studyResultRetrievalContext",
+				studyResultRetrievalContext);	
 			fieldValidationUtility.checkNullMethodParameter(
 				"getResultFieldsStratifiedByAgeGroup",
 				"geoLevelAttributeSource",
@@ -1589,15 +1500,10 @@ abstract class AbstractRIFStudyRetrievalService
 			
 			//Part III: Check for security violations
 			validateUser(user);
-			geography.checkSecurityViolations();
-			geoLevelSelect.checkSecurityViolations();
-			diseaseMappingStudy.checkSecurityViolations();
+			studyResultRetrievalContext.checkSecurityViolations();
 			geoLevelAttributeSource.checkSecurityViolations();
-			geoLevelAttributeTheme.checkSecurityViolations();
 			geoLevelAttributeSource.checkSecurityViolations();
 			
-			SQLConnectionManager sqlConnectionManager
-				= rifServiceResources.getSqlConnectionManager();
 			Connection connection
 				= sqlConnectionManager.getWriteConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
@@ -1607,10 +1513,7 @@ abstract class AbstractRIFStudyRetrievalService
 				= sqlResultsQueryManager.getResultFieldsStratifiedByAgeGroup(
 					connection,
 					user,
-					geography,
-					geoLevelSelect,
-					diseaseMappingStudy,
-					geoLevelAttributeTheme,
+					studyResultRetrievalContext,
 					geoLevelAttributeSource);
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -1632,11 +1535,20 @@ abstract class AbstractRIFStudyRetrievalService
 	 * @return
 	 */
 	public RIFResultTable getSMRValues(
-		final User user,
-		final DiseaseMappingStudy diseaseMappingStudy)
+		final User _user,
+		final DiseaseMappingStudy _diseaseMappingStudy)
 		throws RIFServiceException {
 
-		
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		DiseaseMappingStudy diseaseMappingStudy
+			= DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
+
 		RIFResultTable results = new RIFResultTable();
 		try {
 			//Part II: Check for empty parameter values
@@ -1649,14 +1561,12 @@ abstract class AbstractRIFStudyRetrievalService
 			fieldValidationUtility.checkNullMethodParameter(
 				"getSMRValues",
 				"diseaseMappingStudy",
-				diseaseMappingStudy);	
+				diseaseMappingStudy.getDisplayName());	
 			
 			//Part III: Check for security violations
 			validateUser(user);
 			diseaseMappingStudy.checkSecurityViolations();
 			
-			SQLConnectionManager sqlConnectionManager
-				= rifServiceResources.getSqlConnectionManager();
 			Connection connection
 				= sqlConnectionManager.getWriteConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
@@ -1667,7 +1577,6 @@ abstract class AbstractRIFStudyRetrievalService
 					connection,
 					user,
 					diseaseMappingStudy);
-
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -1689,10 +1598,19 @@ abstract class AbstractRIFStudyRetrievalService
 	 * @throws RIFServiceException
 	 */
 	public RIFResultTable getRRValues(
-		final User user,
-		final DiseaseMappingStudy diseaseMappingStudy)
+		final User _user,
+		final DiseaseMappingStudy _diseaseMappingStudy)
 		throws RIFServiceException {
 
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		DiseaseMappingStudy diseaseMappingStudy
+			= DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
 		
 		RIFResultTable results = new RIFResultTable();
 		try {
@@ -1712,8 +1630,6 @@ abstract class AbstractRIFStudyRetrievalService
 			validateUser(user);
 			diseaseMappingStudy.checkSecurityViolations();
 			
-			SQLConnectionManager sqlConnectionManager
-				= rifServiceResources.getSqlConnectionManager();
 			Connection connection
 				= sqlConnectionManager.getWriteConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
@@ -1745,10 +1661,20 @@ abstract class AbstractRIFStudyRetrievalService
 	 * @throws RIFServiceException
 	 */
 	public RIFResultTable getRRUnadjustedValues(
-		final User user,
-		final DiseaseMappingStudy diseaseMappingStudy)
+		final User _user,
+		final DiseaseMappingStudy _diseaseMappingStudy)
 		throws RIFServiceException {
-				
+		
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		DiseaseMappingStudy diseaseMappingStudy
+			= DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
+		
 		RIFResultTable results = new RIFResultTable();
 		try {
 			//Part II: Check for empty parameter values
@@ -1767,8 +1693,6 @@ abstract class AbstractRIFStudyRetrievalService
 			validateUser(user);
 			diseaseMappingStudy.checkSecurityViolations();
 			
-			SQLConnectionManager sqlConnectionManager
-				= rifServiceResources.getSqlConnectionManager();
 			Connection connection
 				= sqlConnectionManager.getWriteConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
@@ -1810,10 +1734,20 @@ abstract class AbstractRIFStudyRetrievalService
 	 * @return
 	 * @throws RIFServiceException
 	 */
-	public RIFResultTable getResultStudyGeneralInfo(
-		final User user,
-		final DiseaseMappingStudy diseaseMappingStudy)
+	public RIFResultTable getStudyResultGeneralInfo(
+		final User _user,
+		final DiseaseMappingStudy _diseaseMappingStudy)
 		throws RIFServiceException {
+
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		DiseaseMappingStudy diseaseMappingStudy
+			= DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
 		
 		RIFResultTable results = new RIFResultTable();
 		try {
@@ -1833,8 +1767,6 @@ abstract class AbstractRIFStudyRetrievalService
 			validateUser(user);
 			diseaseMappingStudy.checkSecurityViolations();
 	
-			SQLConnectionManager sqlConnectionManager
-				= rifServiceResources.getSqlConnectionManager();
 			Connection connection
 				= sqlConnectionManager.getWriteConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
@@ -1859,14 +1791,24 @@ abstract class AbstractRIFStudyRetrievalService
 	}
 	
 	public ArrayList<AgeGroup> getResultAgeGroups(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final DiseaseMappingStudy diseaseMappingStudy,
-		final GeoLevelAttributeTheme geoLevelAttributeTheme,
-		final GeoLevelAttributeSource geoLevelAttributeSource,
+		final User _user,
+		final StudyResultRetrievalContext _studyResultRetrievalContext,
+		final GeoLevelAttributeSource _geoLevelAttributeSource,
 		final String geoLevalAttribute)
 		throws RIFServiceException {
+		
+
+		//Part I: Defensively copy parameters
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		StudyResultRetrievalContext studyResultRetrievalContext
+			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
+		GeoLevelAttributeSource geoLevelAttributeSource
+			= GeoLevelAttributeSource.createCopy(_geoLevelAttributeSource);
 		
 		ArrayList<AgeGroup> results = new ArrayList<AgeGroup>();
 		try {
@@ -1880,20 +1822,8 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getResultAgeGroups",
-				"geography",
-				geography);
-			fieldValidationUtility.checkNullMethodParameter(
-				"getResultAgeGroups",
-				"geoLevelSelect",
-				geoLevelSelect);
-			fieldValidationUtility.checkNullMethodParameter(
-				"getResultAgeGroups",
-				"diseaseMappingStudy",
-				diseaseMappingStudy);
-			fieldValidationUtility.checkNullMethodParameter(
-				"getResultAgeGroups",
-				"geoLevelAttributeTheme",
-				geoLevelAttributeTheme);
+				"studyResultRetrievalContext",
+				studyResultRetrievalContext);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getResultAgeGroups",
 				"geoLevelAttributeSource",
@@ -1901,18 +1831,13 @@ abstract class AbstractRIFStudyRetrievalService
 				
 			//Part III: Check for security violations
 			validateUser(user);
-			geography.checkSecurityViolations();
-			geoLevelSelect.checkSecurityViolations();
-			diseaseMappingStudy.checkSecurityViolations();
-			geoLevelAttributeTheme.checkSecurityViolations();
+			studyResultRetrievalContext.checkSecurityViolations();
 			geoLevelAttributeSource.checkSecurityViolations();
 			fieldValidationUtility.checkMaliciousMethodParameter(
 				"getResultAgeGroups", 
 				"geoLevalAttribute", 
 				geoLevalAttribute);
 			
-			SQLConnectionManager sqlConnectionManager
-				= rifServiceResources.getSqlConnectionManager();
 			Connection connection
 				= sqlConnectionManager.getWriteConnection(user);
 			SQLResultsQueryManager sqlResultsQueryManager
@@ -1921,10 +1846,7 @@ abstract class AbstractRIFStudyRetrievalService
 				= sqlResultsQueryManager.getResultAgeGroups(
 					connection,
 					user,
-					geography,
-					geoLevelSelect,
-					diseaseMappingStudy,
-					geoLevelAttributeTheme,
+					studyResultRetrievalContext,
 					geoLevelAttributeSource,
 					geoLevalAttribute);
 		}

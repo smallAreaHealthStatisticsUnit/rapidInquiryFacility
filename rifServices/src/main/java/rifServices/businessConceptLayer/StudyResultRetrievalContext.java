@@ -330,6 +330,17 @@ public class StudyResultRetrievalContext {
 	// Section Interfaces
 	// ==========================================
 
+	public String getDisplayName() {
+		StringBuilder buffer = new StringBuilder();
+		buffer.append(geographyName);
+		buffer.append("-");
+		buffer.append(geoLevelSelectName);
+		buffer.append("-");
+		buffer.append(studyID);
+		
+		return buffer.toString();
+	}
+	
 	// ==========================================
 	// Section Override
 	// ==========================================

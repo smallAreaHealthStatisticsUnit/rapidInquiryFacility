@@ -67,19 +67,6 @@ BEGIN
 END;
 $$;
 
---
--- Check database is sahsuland_dev
---
-DO LANGUAGE plpgsql $$
-BEGIN
-	IF current_database() = 'sahsuland_dev' THEN
-		RAISE INFO 'Database check: %', current_database();	
-	ELSE
-		RAISE EXCEPTION 'C20901: Database check failed: % is not sahsuland_dev', current_database();	
-	END IF;
-END;
-$$;
-
 \set ON_ERROR_STOP ON
 \echo Creating SAHSULAND example studies...
 \set ECHO all
@@ -119,7 +106,8 @@ DECLARE
 	c3sm CURSOR FOR 
 		SELECT study_id
 		  FROM rif40_studies
-		 WHERE study_name = 'SAHSULAND test example';
+		 WHERE study_name = 'SAHSULAND test example'
+		   AND username = USER;
 	c1sm_rec RECORD;
 	c2sm_rec RECORD;
 	c3sm_rec RECORD;

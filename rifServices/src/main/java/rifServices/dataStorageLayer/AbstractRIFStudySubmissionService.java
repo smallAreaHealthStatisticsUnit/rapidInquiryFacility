@@ -1,6 +1,7 @@
 package rifServices.dataStorageLayer;
 
 import rifServices.businessConceptLayer.*;
+
 import rifServices.system.*;
 import rifServices.taxonomyServices.HealthCodeProvider;
 import rifServices.util.FieldValidationUtility;
@@ -333,7 +334,7 @@ abstract class AbstractRIFStudySubmissionService
 		
 			//Part III: Check for security violations
 			validateUser(user);
-				
+		
 			SampleTestObjectGenerator generator
 				= new SampleTestObjectGenerator();
 			results = generator.getSampleCalculationMethods();

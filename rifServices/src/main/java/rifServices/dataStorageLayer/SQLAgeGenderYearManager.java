@@ -403,7 +403,7 @@ class SQLAgeGenderYearManager
 		
 			sqlRIFContextManager.checkGeographyExists(
 				connection, 
-				geography);	
+				geography.getName());	
 		}
 		if (ndPair != null) {
 			ndPair.checkErrors();
