@@ -25,6 +25,9 @@ RIF.chart.pyramid = (function( geolevel ) {
     }, 
 	
 	_doPyramid = function(){
+	
+		_clear();
+		
 		var params = [ settings.geolevel, settings.field ];
 		
 		if( settings.gidsToupdate.length > 0){
@@ -42,6 +45,9 @@ RIF.chart.pyramid = (function( geolevel ) {
 		var r = RIF.chart.pyramid.d3renderer( settings, d3.csv.parse(this));		
 	},
 	
+	_clear = function(){
+		$('#pyramid').empty(); 
+	},
 	
 	_p = {	
 	    

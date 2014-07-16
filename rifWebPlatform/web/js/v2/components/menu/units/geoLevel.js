@@ -40,18 +40,6 @@ RIF.menu.geoLevel = (function(){
 				parent.facade.addTabularData( _p.currentdataset );
 			},
 			
-			getZoomIdentifiers: function ( args ){
-			    RIF.getZoomIdentifiers( this.zoomToClbk , [args] );
-			},
-			
-			zoomToClbk: function(){
-				parent.dropDown( this, _p.zoomTo );
-			},
-			
-			avlbFieldsClbk: function(arg){
-				parent.dropDown( this, z.el );
-			},
-			
 			setGeolevel: function(geolvl){
 				_p.currentGeolvl = geolvl;
 			},

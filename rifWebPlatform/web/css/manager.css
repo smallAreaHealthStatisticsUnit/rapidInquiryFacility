@@ -224,7 +224,6 @@ a:hover{
 		min-width: 500px;
 		width:35%;
 		float: left;
-		z-index:99999;
 	}
 	
 	select {
@@ -297,7 +296,7 @@ a:hover{
 		right: 3%;
 		text-transform: uppercase;
 		position: absolute;
-		z-index: 9999999;
+		z-index: 1;
 		text-decoration:none;
 	}	
 	

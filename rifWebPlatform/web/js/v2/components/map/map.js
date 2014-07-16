@@ -145,13 +145,9 @@ RIF.map = (function (type) {
 				_p.layer.clearSelection();
 			},
 			
-			/* Firers */
-			addZoomIdentifiers: function(args){/* [geolevel, selectionField] */
-				this.fire('addZoomIdentifiers', args);
-			},
-			
-			addAvlbFields: function(){/* [geolevel] */
-			    this.fire('addAvlbFields');
+			/* Firers */			
+			populateMenus: function( args ){/* [geolevel] */
+			    this.fire('populateMenus', args);
 			},
 			
 			addTabularData: function( dataSets ){

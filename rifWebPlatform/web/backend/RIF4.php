@@ -187,7 +187,7 @@ $r = RIF4::Instance();
 		try{
 		    $geom = $this->getGeometryCol( $table );
 		    $sql = "select column_name from information_schema.columns where table_name='". $table ."'
-         			and  NOT (column_name = ANY ( ARRAY['".$geom."' , 'gid'])) and 
+         			and  NOT (column_name = ANY ( ARRAY['".$geom."' , 'gid' , 'row_index'])) and 
 					(data_type = ANY ( ARRAY ['smallint' ,  'integer' , 'bigint', 'decimal', 'numeric', 'real', 'double precision',
 					 'smallserial', 'serial', 'bigserial' ]))" ;
 				
@@ -568,8 +568,20 @@ $r = RIF4::Instance();
 		 * HARDCODED FOR NOW
 		 *
 		 */
-		return "popcount";
+		return array("popcount");
 			
+	}
+	
+	
+	public function getSingleFieldValues($table, $field){
+		
+		$sql = "select $field from $table";
+		$hndl = self::$dbh -> prepare($sql);
+	    $hndl ->execute(array());	
+		
+		$res = $hndl -> fetchAll(PDO::FETCH_ASSOC);
+		return $res;
+	
 	}
 	
 }

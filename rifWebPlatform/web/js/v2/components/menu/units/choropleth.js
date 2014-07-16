@@ -92,15 +92,6 @@ RIF.menu.choropleth = (function(){
 				 $("#breaks").empty().show().append(html);
 			},
 			
-			avlbFieldsClbkChoro: function(){
-		        parent.dropDown( this, _p.fieldToMap );
-				if( this.length === 0 ){
-					parent.greyOut( _p.menu );
-				}else {
-					parent.removeGreyOut( _p.menu );
-				}
-			},
-			
 			getInputBreaks: function(){
 				var domain = [];
 				if(_p.breaksEdited){

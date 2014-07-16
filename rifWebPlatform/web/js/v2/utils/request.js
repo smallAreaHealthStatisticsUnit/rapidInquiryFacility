@@ -198,12 +198,33 @@
 					}
 				};
 
-				//in case of a selection	
+				//in case of a year selection	
 				if( typeof params[3] !== 'undefined'){
 					args += '&year='+ params[3];
 				};		
 				
 				xhr( 'getPyramidData.php' + args,  myCallback, msg, "text/csv" );
+			},
+			
+			getHistogramData: function (  myCallback, params ){
+				var msg = "Retrieving histogram data",
+			        args = '?geolevel='+ params[0] +
+				    '&field='+ params[1] ;
+				
+				//in case of a selection	
+				if( typeof params[2] !== 'undefined'){
+					var l = params[2].length;
+					while(l--){
+						args += '&gids[]=' +params[2][l];
+					}
+				};
+
+				//in case of a year selection	
+				if( typeof params[3] !== 'undefined'){
+					args += '&year='+ params[3];
+				};		
+				
+				xhr( 'getHistogramData.php' + args,  myCallback, msg, "text/csv" );
 			},
 			
 			dropDatatable: function(){	

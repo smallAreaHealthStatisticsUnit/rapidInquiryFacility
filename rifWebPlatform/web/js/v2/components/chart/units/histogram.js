@@ -10,7 +10,7 @@ RIF.chart.histogram = (function( geolevel ) {
 			year: null,
 			
 			margin: {
-				top: 0, 
+				top: 10, 
 				right: 10, 
 				bottom: 20, 
 				left: 10
@@ -25,19 +25,24 @@ RIF.chart.histogram = (function( geolevel ) {
 	_doHisto = function(){
 		var params = [ settings.field ];
 		
-		if( settings.gidsToupdate.length > 0){
-		    params.push( settings.ageGroups );
-		};
-		
 		if( settings.year !== null){
 		    params.push( settings.year );
 		};
 		
-		RIF.getPyramidData( _render , params );
+		RIF.getHistogramData( _render , params );
 	},
 	
-	_render = function(){
-		var r = RIF.chart.histogram.d3renderer(  settings, data);		
+	_render = function( data ){
+		_clear();
+		var r = RIF.chart.histogram.d3renderer(  settings, data );		
+	},
+	
+	_clear = function(){
+		$('#distHisto').empty(); 
+	},
+	
+	_setHistoFieldName = function( field ){
+		$('#distHistoField').text( field );
 	},
 	
 	_p = {	
@@ -48,16 +53,17 @@ RIF.chart.histogram = (function( geolevel ) {
 		
 		updateHisto: function( sett ){
 			var callback = function(){
+				_setHistoFieldName(sett.field);
 				_p.setHistoSettings(sett);
-				_doHisto();
+				_render( this );
 			};
 			
-			//RIF.getAgeGroups( callback, sett.geolevel);
+			RIF.getHistogramData( callback, [sett.dataSet, sett.field ] );
 		},
 		
 		drawHisto: function( sett ){
-			//_doHisto();
-			_render();
+			_doHisto();
+			//_render();
 		}
 	};
 	

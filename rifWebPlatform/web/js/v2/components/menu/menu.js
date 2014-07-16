@@ -1,5 +1,7 @@
 RIF.menu = (function(menus){
 	
+	menus.push('utils');
+	
 	var m = menus.length,
 	//Shared methods across menus
         _p = {
@@ -23,99 +25,50 @@ RIF.menu = (function(menus){
 				
 			}(),
 			
-		    dropDown: function( data, el ){
-			    el.empty();
-				if( data.length > 0){
-					_p.dropDownFromArray(data, el);
-				}else if ( ! jQuery.isEmptyObject( data ) ){
-				    _p.dropDownFromObj( data, el);
-				}else{
-					_p.dropDownFromObj( { "N/A": "None available"}, el);
-				}
-			},
-			
-			dropDownFromArray: function(arr, el){
-				var l = arr.length;
-				while(l--){
-					var val = arr[l];	
-					_p.addSelectOption( el, val, val );
-				}
-			},
-			
-			fieldCheckboxes: function( obj , el , name ){
-				el.empty();
-				var counter = 0, checked = true;
-				for (var key in obj) {
-					var id = "filterCols" + counter++,
-					    p  = _p.getCheckBoxLabel( name, obj[key], obj[key], id , checked );
-					 
-					 el.prepend( '<div>' + p + '</div>'); 	 
-				}
-			},
-			
-			greyOut: function (el){
-				el.find("select, button").prop('disabled', 'disabled').css({opacity:'0.5'});
-			},
-			
-			removeGreyOut: function (el){
-				el.find("select, button").prop('disabled', false).css({opacity:'1'});
-			},
-			
-			dropDownFromObj: function(obj, el){
-				for (var key in obj) {
-					_p.addSelectOption( el, key, obj[key] );
-				}
-			},
-			
-			getSpecialDropdownValue: function (id) {
-				return $("#" + id).find("dt a span.value").html();
-			},
-			
-			addSelectOption: function(slct, val , option_text ){
-			      slct.prepend( "<option value="+ val +">"+ option_text + "</option>" )
-			},
-			
-			getCheckBoxLabel: function( name, val_txt , id, checked ){
-				  var c = (checked) ? "checked" : "",
-			          p = '<input type="checkbox" name="'+name+'" value="'+val_txt+'" id="'+id+'" class="colsChoice" '+c+' />' + 
-						   '<label for="'+id+'" class="colsChoiceLbl">'+ val_txt +'</label>';
-				  
-				   return p;
-			},
-			
-			getCheckedValues: function( name ){
-				var checkedValues = $('input[name="'+name+'"]:checked').map(function() {
-					return this.value;
-				}).get().reverse();
+		    
+			callbacks: {
+				avlbFieldsSettings: function(){
+					_p.dropDown( this, _p.hoverSlct );
+					_p.fieldCheckboxes( this, _p.colsFilter, _p.colsFilterName );
+				},
 				
-				return checkedValues;
+				avlbFieldsChoro: function(){
+					_p.dropDown( this, _p.fieldToMap );
+					if( this.length === 0 ){
+						_p.greyOut( _p.menu );
+					}else {
+						_p.removeGreyOut( _p.menu );
+					}
+				},
+				
+				avlbFieldsHistogram: function(){
+					_p.dropDown( this, _p.histoSlct );
+					_p.facade.updateHistogram();
+
+				},
+				
+				avlbFieldsPyramid: function(){
+					_p.dropDown( this, _p.pyramidSlct );
+					_p.facade.updatePyramid();
+				},
+				
+				zoomTo: function(){
+					_p.dropDown( this, _p.zoomTo );
+				},
+				
 			},
 			
-			getAvlbFields: function(){
-			    RIF.getFields( _p.avlbFieldsSettings , [_p.getDataset()] );
-			},
-			
-			getNumericFields: function( arg ){
-			    RIF.getNumericFields(  [_p.avlbFieldsClbkChoro, _p.avlbFieldsHistogram], [_p.getDataset()] );
-			},
-			
-			getFieldsStratifiedByAgeGroup: function( arg ){
-			    RIF.getFieldsStratifiedByAgeGroup(  _p.avlbFieldsPyramid , [_p.getGeolevel(),_p.getDataset()] );
-			},
-			
-			updateSettings: function( dataset ){
-				console.log(dataset);
+			populate: function( args ) {
+				RIF.getFields( _p.callbacks.avlbFieldsSettings , [_p.getDataset()] );
+				RIF.getNumericFields(  [_p.callbacks.avlbFieldsChoro, _p.callbacks.avlbFieldsHistogram], [_p.getDataset()] );
+				RIF.getFieldsStratifiedByAgeGroup(  _p.callbacks.avlbFieldsPyramid , [  _p.getGeolevel(), _p.getDataset()] );
+				RIF.getZoomIdentifiers( _p.callbacks.zoomTo , [ args.geoLvl ] );
 			},
 			
 			facade: {
-				/* Subscribers */
-				uZoomOpts: function(args){
-					_p.getZoomIdentifiers(args);
-				},
-				
-				uAvlbFlds: function(){
-					_p.getAvlbFields();
-					_p.getNumericFields();
+				/* Subscribers */	
+				uDropdownFlds: function( args ){
+					_p.populate( args );
 				},
 				
 				getScaleRange: function(args){
@@ -129,7 +82,7 @@ RIF.menu = (function(menus){
 				/* firers */
 				addGeolevel: function( geolvl, dataSet ){
 					RIF.dropDatatable();
-					this.fire('addGeolevel', { "geoLevel" : geolvl, "dataset": dataSet });
+					this.fire('addGeolevel', { "geoLevel" : geolvl, "dataset": dataSet});
 				},
 				
 				addTabularData: function( dataSets ){
@@ -154,6 +107,22 @@ RIF.menu = (function(menus){
 				
 				changeNumRows: function( nRows ){
 					//this.fire('changeNumRows', nRows);
+				},
+				
+				updateHistogram: function(){
+					_p.facade.fire( 'updateHistogram' , {
+						geoLevel: _p.getGeolevel(), 
+						field:  _p.getHistogramSelection(),
+						dataSet: _p.getDataset()
+					});
+				},
+				
+				updatePyramid: function(){
+					_p.facade.fire( 'updatePyramid' , {
+						geoLevel: _p.getGeolevel(), 
+						field:  _p.getHistogramSelection(),
+						dataSet: _p.getDataset()
+					});
 				}
 			}	
 		};
