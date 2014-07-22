@@ -5,9 +5,10 @@ RIF.chart.histogram = (function( geolevel ) {
 	    
 		settings = {
 			
-			field: "popcount",
-			gidsToupdate: [],
-			year: null,
+			dataSet: '',
+			field: '',
+			gids: '',
+			year: '',
 			
 			margin: {
 				top: 10, 
@@ -54,11 +55,12 @@ RIF.chart.histogram = (function( geolevel ) {
 		updateHisto: function( sett ){
 			var callback = function(){
 				_setHistoFieldName(sett.field);
-				_p.setHistoSettings(sett);
 				_render( this );
 			};
 			
-			RIF.getHistogramData( callback, [sett.dataSet, sett.field ] );
+			_p.setHistoSettings(sett);
+			
+			RIF.getHistogramData( callback, [settings.dataSet, settings.field, settings.gids, settings.year ] );
 		},
 		
 		drawHisto: function( sett ){

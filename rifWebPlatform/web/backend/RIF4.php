@@ -479,7 +479,7 @@ $r = RIF4::Instance();
 		}
 	}
 	
-	public function getPyramidData($geolevel, $field, $gids){
+	public function getPyramidData($geolevel, $field, $year, $gids){
 	
 		try{
 
@@ -487,8 +487,7 @@ $r = RIF4::Instance();
 			
 			$gidClause = "";
 			if(isset($gids)){
-				$gidClause = " and ";
-				$gidClause .= getGidClause( $gids, '=' , 'or');
+				$gidClause .= $this->getGidClause( $gids, '=' , 'or');
 			}
 			
 			$groupby = "";
@@ -498,7 +497,7 @@ $r = RIF4::Instance();
 					      $gidClause
 					      group by age_group,sex
 						   order by age_group asc";
-				
+			
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());	
 			
@@ -532,8 +531,8 @@ $r = RIF4::Instance();
 			
 			$gidClause = "";
 			if(isset($gids)){
-				$gidClause = " and ";
-				$gidClause .= getGidClause( $gids, '=' , 'or');
+				//$gidClause = " and ";
+				$gidClause .= $this->getGidClause( $gids, '=' , 'or');
 			}
 			
 			
@@ -542,7 +541,7 @@ $r = RIF4::Instance();
 					      $gidClause $yearClause
 					       group by age_group,sex
 						    order by age_group";
-				
+			
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());	
 			
@@ -573,9 +572,16 @@ $r = RIF4::Instance();
 	}
 	
 	
-	public function getSingleFieldValues($table, $field){
+	public function getSingleFieldValues($table, $field, $gids){
 		
-		$sql = "select $field from $table";
+		
+		$gidClause = "";
+		if(isset($gids)){
+			$gidClause .= $this->getGidClause( $gids, '=' , 'or');
+		}
+		
+		$sql = "select $field from $table $gidClause";
+
 		$hndl = self::$dbh -> prepare($sql);
 	    $hndl ->execute(array());	
 		

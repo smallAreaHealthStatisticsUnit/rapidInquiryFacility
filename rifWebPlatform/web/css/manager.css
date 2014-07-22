@@ -99,7 +99,7 @@ a:hover{
 		width:35%;
 	}
 	#buttons .export a{
-		margin:4px 4px 4px 0;
+		margin:4px 15px;
 		display: block;
 		float: left;
 		padding: 3px 1px;
@@ -140,9 +140,8 @@ a:hover{
 	}
 	
 	#submenu div {
-		height: 100%;
-	
-}
+		height: 100%;	
+	}
 	
 	#submenu div a img.active{
 		-moz-opacity: 1;
@@ -154,9 +153,10 @@ a:hover{
 		float:right
 	} 
 	
-	#submenu a.	 {
+	#submenu a {
 		width:32px;
 		height:32px;
+		float:left
 	} 
 	
    .chartOpts {
@@ -166,7 +166,14 @@ a:hover{
 	}
 	
 	.chartOpts a{ 
-		padding-left:8px;
+		margin:4px 20px;
+	}
+	.chartOpts #updateCharts{ 
+		background: transparent url("../images/update.png") no-repeat;
+		opacity:0.2;
+	}
+	.chartOpts #updateCharts:hover{ 
+		opacity:0.6;
 	}
 	
 	.mapOpts {

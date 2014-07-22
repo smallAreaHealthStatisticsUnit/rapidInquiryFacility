@@ -23,11 +23,17 @@ RIF.chart.pyramid.d3renderer = (function( opt, data ){
 	var x = d3.scale.linear()
 		.range([0, width]);
  
+		
+	var myFormatter = function(d){
+			return (d / 1e6 >= 1 ) ?  (d / 1e6 + "M") :
+			(d / 1e3 >= 1 ) ?  (d / 1e3 + "K") :  d; 
+		}
+ 
 	var xAxis = d3.svg.axis()
 		.scale(x)
 		.orient("bottom")
 		.tickSize(-height)
-		.tickFormat(function(d) {  return d / 1e6 + "M"; });
+		.tickFormat(function(d) {  return myFormatter(+d); });
  
 	// An SVG element with a bottom right origin.
 	var svg = d3.select('#' + id ).append("svg")
@@ -35,14 +41,7 @@ RIF.chart.pyramid.d3renderer = (function( opt, data ){
 		.attr("height", height + margin.top + 20)
 	  .append("g")
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-	
-	
-		// A label for the current year.
-	/*var title = svg.append("text")
-		.attr("class", "title")
-		.attr("dy", ".71em")
-			.attr("x", width )
-			.text("POPULATION");*/
+
 	
 	// A sliding container to hold the bars by birthyear.
 	var birthyears = svg.append("g")

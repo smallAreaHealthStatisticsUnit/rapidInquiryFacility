@@ -1,8 +1,10 @@
 <?php
 
 require('../RIF4.php');
+$geolevel = $_GET['geolevel'];
 $field = $_GET['field'];
-$res = $r->getSingleFieldValues($_GET['geolevel'], $field);
+$gids =  $_GET['gids'];
+$res = $r->getSingleFieldValues( $geolevel, $field, $gids);
 $values = array();
 foreach($res as $value){
 	array_push($values, $value[ $field ]); 	

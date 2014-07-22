@@ -48,7 +48,18 @@ RIF.manager = (function () {
                 firer: ["menu"],
                 method: "clearMapTable"
 			},
-			
+			// Chart update 
+			chartUpdateClick: {
+                subscribers: ["sync"],
+                firer: ["menu"],
+                method: "chartUpdateClick"
+            },
+			// sync - charts
+			updateCharts: {
+                subscribers: ["chart"],
+                firer: ["sync"],
+                method: "updateCharts"
+            },
 			// sync - map/table
             clearSelection: {
                 subscribers: ["map", "table"],

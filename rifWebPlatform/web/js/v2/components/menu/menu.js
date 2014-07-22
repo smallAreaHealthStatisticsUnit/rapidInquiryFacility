@@ -23,6 +23,10 @@ RIF.menu = (function(menus){
 					_p.facade.zoomToExtent();
 				});
 				
+				$("#updateCharts").click(function() {
+					_p.facade.chartUpdate();
+				});
+				
 			}(),
 			
 		    
@@ -120,9 +124,13 @@ RIF.menu = (function(menus){
 				updatePyramid: function(){
 					_p.facade.fire( 'updatePyramid' , {
 						geoLevel: _p.getGeolevel(), 
-						field:  _p.getHistogramSelection(),
+						field:  _p.getPyramidSelection(),
 						dataSet: _p.getDataset()
 					});
+				},
+				
+				chartUpdate: function(){
+					_p.facade.fire( 'chartUpdateClick' , []);
 				}
 			}	
 		};

@@ -11,15 +11,15 @@ RIF.chart.histogram.d3renderer = (function( opt, values ){
 		width = opt.dimensions.width - margin.left - margin.right,
 		height = opt.dimensions.height - margin.top - margin.bottom,
 		field = opt.field,
-		bins = Math.round(width / 25);
-	// Generate a Bates distribution of 10 random variables.
-	//var values = d3.range(1000).map(d3.random.bates(10));
+		bins = 10;
 	
-	values = values.map(function(d) { return  +d; });
+	values = values.map(function(d) { if(+d >= 0){ return  +d;} });
 	
-	var max = d3.max(values), 
+	var max = d3.max(values) , 
 		min = d3.min(values);
-		
+	
+	max = (max > 0 ) ? max : 10;
+    bins = (max > bins ) ? bins : 10;	
 	// A formatter for counts.
 	var formatCount = d3.format(".0f"),
 	    myFormatter = function(d){
@@ -28,7 +28,7 @@ RIF.chart.histogram.d3renderer = (function( opt, values ){
 		}
 
 	var x = d3.scale.linear()
-		.domain([ min , max])
+		.domain([ 0 , max])
 		.range([0, width]);
 
 	// Generate a histogram using twenty uniformly-spaced bins.
@@ -36,7 +36,9 @@ RIF.chart.histogram.d3renderer = (function( opt, values ){
 	var data = d3.layout.histogram()
 		.bins(x.ticks(bins))
 		(values);
-
+	
+	
+	
 	var y = d3.scale.linear()
 		.domain([0, d3.max(data, function(d) { return d.y; })])
 		.range([height, 0]);
@@ -64,7 +66,7 @@ RIF.chart.histogram.d3renderer = (function( opt, values ){
 
 	bar.append("rect")
 		.attr("x", 1)
-		.attr("width", x(data[0].dx) /*- 1*/)
+		.attr("width", x(data[0].dx) - 1 )
 		.attr("height", function(d) { return height - y(d.y); });
 
 	bar.append("text")

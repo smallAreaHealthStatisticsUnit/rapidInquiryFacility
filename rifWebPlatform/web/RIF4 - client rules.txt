@@ -4,14 +4,17 @@
    Database:
    - Each Geolevel is composed:
 		1. Geometry table which must have a GID and a code field
-		2. Data table which must have a GID field ( which identifies the area hence foreign key to geometry table) and a code field (as per geometry).
+		2. Data table which must have:
+			- GID field ( which identifies the area hence foreign key to geometry table) 
+			- a code field (as per geometry) 
+			- a row_index.
 		
    - Client:
 		1.Map
 		   - Each area has an ID assigned equivalent to : 'g' + gid (i.e g1,g2 etc)
 		2. Table 
 		   - rows IDs have the following  format:
-			  gid_rowindex (i.e 1_1)
+			  gid"_"row_index (i.e 1_1)
 			  gid corresponds to gid in geometry table
 			  row_index is an incremental serial aggregated by gid ( starts from one for each gid)
 			  
