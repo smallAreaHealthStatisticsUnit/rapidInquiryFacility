@@ -11,15 +11,16 @@ RIF.chart.histogram.d3renderer = (function( opt, values ){
 		width = opt.dimensions.width - margin.left - margin.right,
 		height = opt.dimensions.height - margin.top - margin.bottom,
 		field = opt.field,
-		bins = 10;
+		bins = Math.floor(width/30);
 	
-	values = values.map(function(d) { if(+d >= 0){ return  +d;} });
+	values = values.map(function(d) { if(+d >= 0){ return  Math.log(+d);} });
 	
 	var max = d3.max(values) , 
 		min = d3.min(values);
 	
-	max = (max > 0 ) ? max : 10;
-    bins = (max > bins ) ? bins : 10;	
+	max = (max > 0 ) ? max : bins;
+	min = (min > 0 ) ? min : 0;
+    bins = (max > bins ) ? bins : 15;	
 	// A formatter for counts.
 	var formatCount = d3.format(".0f"),
 	    myFormatter = function(d){
