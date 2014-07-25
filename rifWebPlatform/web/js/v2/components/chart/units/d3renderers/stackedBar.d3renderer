@@ -1,4 +1,4 @@
-RIF.chart.linechart.d3renderer = (function( opt, values ){ 
+RIF.chart.stackedBar.d3renderer = (function( opt, values ){ 
     
 	var _p = {
             
