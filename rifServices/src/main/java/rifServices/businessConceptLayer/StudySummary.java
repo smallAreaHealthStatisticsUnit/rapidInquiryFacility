@@ -1,5 +1,12 @@
 package rifServices.businessConceptLayer;
 
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceException;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceSecurityException;
+import rifServices.util.FieldValidationUtility;
+
+import java.util.ArrayList;
 
 /**
  *
@@ -64,7 +71,7 @@ package rifServices.businessConceptLayer;
  *
  */
 
-public final class RIFStudySubmissionSummary {
+public final class StudySummary {
 
 	// ==========================================
 	// Section Constants
@@ -74,7 +81,7 @@ public final class RIFStudySubmissionSummary {
 	// Section Properties
 	// ==========================================
 	/** The study identifier. */
-	private String studyIdentifier;
+	private String studyID;
 	
 	/** The study name. */
 	private String studyName;
@@ -93,12 +100,12 @@ public final class RIFStudySubmissionSummary {
 	 * @param studyName the study name
 	 * @param studySummary the study summary
 	 */
-	private RIFStudySubmissionSummary(
-		final String studyIdentifier,
+	private StudySummary(
+		final String studyID,
 		final String studyName,
 		final String studySummary) {
 
-		this.studyIdentifier = studyIdentifier;
+		this.studyID = studyID;
 		this.studyName = studyName;
 		this.studySummary = studySummary;
 	}
@@ -111,18 +118,34 @@ public final class RIFStudySubmissionSummary {
 	 * @param studySummary the study summary
 	 * @return the RIF job submission summary
 	 */
-	static public RIFStudySubmissionSummary newInstance(
-		final String studyIdentifier,
+	static public StudySummary newInstance(
+		final String studyID,
 		final String studyName,
 		final String studySummary) {
 		
-		RIFStudySubmissionSummary summary
-			= new RIFStudySubmissionSummary(
-				studyIdentifier, 
+		StudySummary summary
+			= new StudySummary(
+				studyID, 
 				studyName, 
 				studySummary);
 		
 		return summary;
+	}
+	
+	static public StudySummary createCopy(
+		final StudySummary originalStudySummary) {
+		
+		if (originalStudySummary == null) {
+			return null;
+		}
+		
+		StudySummary cloneStudySummary
+			= StudySummary.newInstance(
+				originalStudySummary.getStudyID(), 
+				originalStudySummary.getStudyName(), 
+				originalStudySummary.getStudySummary());
+		
+		return cloneStudySummary;
 	}
 	
 	// ==========================================
@@ -134,11 +157,15 @@ public final class RIFStudySubmissionSummary {
 	 *
 	 * @return the study identifier
 	 */
-	public String getStudyIdentifier() {
+	public String getStudyID() {
 		
-		return studyIdentifier;
+		return studyID;
 	}
 
+	public void setStudyID(String studyID) {
+		this.studyID = studyID;
+	}
+	
 	/**
 	 * Gets the study name.
 	 *
@@ -163,6 +190,64 @@ public final class RIFStudySubmissionSummary {
 	// Section Errors and Validation
 	// ==========================================
 
+	public void checkErrors() throws RIFServiceException {
+
+		FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+		String recordType
+			= RIFServiceMessages.getMessage("studySummary.label");
+		ArrayList<String> errorMessages = new ArrayList<String>();
+		
+		if (fieldValidationUtility.isEmpty(studyID)) {
+			String studyIDFieldName
+				= RIFServiceMessages.getMessage("studySummary.identifier.label");
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordType,
+					studyIDFieldName);
+			errorMessages.add(errorMessage);			
+		}
+
+		if (errorMessages.size() > 0) {
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.INVALID_STUDY_SUMMARY,
+					errorMessages);
+			throw rifServiceException;
+		}
+		
+	}
+	
+	public void checkSecurityViolations() 
+		throws RIFServiceSecurityException {
+		
+		FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+		String recordType
+			= RIFServiceMessages.getMessage("studySummary.label");
+
+		if (studyID != null) {
+			String identifierFieldName
+				= RIFServiceMessages.getMessage("studySummary.identifier.label");		
+			fieldValidationUtility.checkMaliciousCode(
+				recordType,
+				identifierFieldName,
+				studyID);
+		}
+
+		if (studyName != null) {
+			String nameFieldName
+				= RIFServiceMessages.getMessage("studySummary.name.label");		
+			fieldValidationUtility.checkMaliciousCode(
+				recordType,
+				nameFieldName,
+				studyName);
+		}		
+		
+	}
+	
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
