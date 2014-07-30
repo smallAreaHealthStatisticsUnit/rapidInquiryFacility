@@ -1,19 +1,20 @@
 package rifServices.test.services;
 
-
-
-import rifServices.businessConceptLayer.*;
-import rifServices.system.*;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
 
-import org.junit.*;
-
+import rifServices.businessConceptLayer.AgeGroup;
+import rifServices.businessConceptLayer.AgeGroupSortingOption;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.businessConceptLayer.User;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceException;
 
 /**
- *
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -22,13 +23,11 @@ import org.junit.*;
  * rates and relative risks for any given health outcome, for specified age 
  * and year ranges, for any given geographical area.
  *
- * <p>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
  * is funded by the Public Health England as part of the MRC-PHE Centre for 
  * Environment and Health. Funding for this project has also been received 
  * from the United States Centers for Disease Control and Prevention.  
- * </p>
  *
  * <pre> 
  * This file is part of the Rapid Inquiry Facility (RIF) project.
@@ -51,8 +50,8 @@ import org.junit.*;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
+
 /*
  * Code Road Map:
  * --------------
@@ -75,8 +74,7 @@ import org.junit.*;
  *
  */
 
-public class TestAgeGenderYearsServiceFeatures 
-	extends AbstractRIFServiceTestCase {
+public class GetAgeGroups extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -85,127 +83,31 @@ public class TestAgeGenderYearsServiceFeatures
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	
-	/** The sahsu geography. */
-	private Geography sahsuGeography;
-	
-	/** The invalid geography. */
-	private Geography invalidGeography;
-	
-	/** The non existent geography. */
-	private Geography nonExistentGeography;
-	
-	/** The test user. */
-	private User testUser;
-	
-	/** The invalid user. */
-	private User invalidUser;
-	
-	/** The non existent user. */
-	private User nonExistentUser;
-	
-	/** The sahsu cancer nd pair. */
-	private NumeratorDenominatorPair sahsuCancerNDPair;
-	
-	/** The invalid nd pair. */
-	private NumeratorDenominatorPair invalidNDPair;
-	
-	/** The non existent nd pair. */
-	private NumeratorDenominatorPair nonExistentNDPair;
-	
-	
-	/** The master health code. */
-	private HealthCode masterHealthCode;
-		
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	/**
-	 * Instantiates a new test age gender years service features.
-	 */
-	public TestAgeGenderYearsServiceFeatures() {
-				
-		masterHealthCode = HealthCode.newInstance();
-		masterHealthCode.setCode("0880");
-		masterHealthCode.setDescription("obstetric air embolism");
-		masterHealthCode.setNameSpace("icd10");
-
-
-		testUser = User.newInstance("kgarwood", "11.111.11.228");
-		invalidUser = User.newInstance(null, "11.111.11.228");
-		nonExistentUser = User.newInstance("nobody", "11.111.11.228");
-		
-		sahsuGeography
-			= Geography.newInstance("SAHSU", "stuff about sahsuland");
-		invalidGeography
-			= Geography.newInstance(null, "");
-		nonExistentGeography
-			= Geography.newInstance("nonexistent area", "non-existent area stuff");
-
-		sahsuCancerNDPair
-			= NumeratorDenominatorPair.newInstance(
-				"SAHSULAND_CANCER", 
-				"Cancer cases in SAHSU land", 
-				"SAHSULAND_POP",
-				"SAHSU land population");
-		invalidNDPair
-			= NumeratorDenominatorPair.newInstance(
-				"", 
-				"Cancer cases in SAHSU land", 
-				null,
-				"SAHSU land population");
-		nonExistentNDPair
-			= NumeratorDenominatorPair.newInstance(
-				"NON_EXISTENT_NUM_TABLE", 
-				"description of num table", 
-				"NON_EXISTENT_DENOM_TABLE",
-				"description of denom table");		
-		
-		try {
-			initialiseService();
-		}
-		catch(RIFServiceException rifServiceException) {
-			this.printErrors("TestAgeGenderYearsServiceFeatures", rifServiceException);
-		}		
+	public GetAgeGroups() {
 	}
 
-	@Before
-	public void setUp() {
-		try {
-			rifServiceBundle.login("kgarwood", new String("a").toCharArray());			
-		}
-		catch(RIFServiceException exception) {
-			exception.printStackTrace(System.out);
-		}		
-	}
-	
-	@After
-	public void tearDown() {
-		try {
-			rifServiceBundle.deregisterAllUsers();		
-		}
-		catch(RIFServiceException exception) {
-			exception.printStackTrace(System.out);
-		}				
-	}
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	/**
-	 * Gets the age groups accept valid inputs.
-	 *
-	 * @return the age groups accept valid inputs
-	 */
-	public void getAgeGroupsAcceptValidInputs() {
+	
+	@Test
+	public void getAgeGroups_COMMON1() {
 		try {
+			User validUser = cloneValidUser();
+			Geography validGeography = cloneValidGeography();
+			NumeratorDenominatorPair validNDPair = cloneValidNDPair();
+			
 			ArrayList<AgeGroup> ageGroups
 				= rifStudySubmissionService.getAgeGroups(
-					testUser, 
-					sahsuGeography, 
-					sahsuCancerNDPair, 
+					validUser, 
+					validGeography, 
+					validNDPair, 
 					AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			if (ageGroups.size() == 0) {
 				fail();
@@ -216,46 +118,57 @@ public class TestAgeGenderYearsServiceFeatures
 		}
 	}
 	
-	/**
-	 * Test null parameters.
-	 *
-	 * @return the age groups reject null parameters
-	 */
-	public void getAgeGroupsRejectNullParameters() {
+	@Test
+	public void getAgeGroups_NULL1() {
 		try {
+			Geography validGeography = cloneValidGeography();
+			NumeratorDenominatorPair validNDPair = cloneValidNDPair();
+			
 			rifStudySubmissionService.getAgeGroups(
 				null, 
-				sahsuGeography, 
-				sahsuCancerNDPair,
+				validGeography, 
+				validNDPair,
 				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
-		
+	}
+	
+	@Test
+	public void getAgeGroups_NULL2() {
 		try {
+			User validUser = cloneValidUser();
+			NumeratorDenominatorPair validNDPair = cloneValidNDPair();
+
 			rifStudySubmissionService.getAgeGroups(
-				testUser, 
+				validUser, 
 				null, 
-				sahsuCancerNDPair,
+				validNDPair,
 				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
-		
+	}
+	
+	@Test
+	public void getAgeGroups_NULL3() {	
 		try {
+			User validUser = cloneValidUser();
+			Geography validGeography = cloneValidGeography();
+						
 			rifStudySubmissionService.getAgeGroups(
-				testUser, 
-				sahsuGeography, 
+				validUser, 
+				validGeography, 
 				null,
 				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
@@ -263,26 +176,25 @@ public class TestAgeGenderYearsServiceFeatures
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.NULL_API_METHOD_PARAMETER,
+				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}
+
+
 	
-	/**
-	 * Gets the age groups reject invalid parameters.
-	 *
-	 * @return the age groups reject invalid parameters
-	 */
 	@Test
-	/**
-	 * check invalid parameters
-	 */
-	public void getAgeGroupsRejectInvalidParameters() {
+	public void getAgeGroups_EMPTY1() {
+		
 		try {
+			User emptyUser = cloneEmptyUser();
+			Geography validGeography = cloneValidGeography();
+			NumeratorDenominatorPair validNDPair = cloneValidNDPair();
+
 			rifStudySubmissionService.getAgeGroups(
-				invalidUser, 
-				sahsuGeography, 
-				sahsuCancerNDPair,
+				emptyUser, 
+				validGeography, 
+				validNDPair,
 				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
@@ -292,12 +204,20 @@ public class TestAgeGenderYearsServiceFeatures
 				RIFServiceError.INVALID_USER,
 				1);
 		}
-		
+	}
+	
+	@Test
+	public void getAgeGroups_EMPTY2() {
+	
 		try {
+			User validUser = cloneValidUser();
+			Geography emptyGeography = cloneEmptyGeography();
+			NumeratorDenominatorPair validNDPair = cloneValidNDPair();
+			
 			rifStudySubmissionService.getAgeGroups(
-				testUser, 
-				invalidGeography, 
-				sahsuCancerNDPair,
+				validUser, 
+				emptyGeography, 
+				validNDPair,
 				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
@@ -307,38 +227,42 @@ public class TestAgeGenderYearsServiceFeatures
 				RIFServiceError.INVALID_GEOGRAPHY,
 				1);
 		}
-		
+	}
+	
+	@Test
+	public void getAgeGroups_EMPTY3() {	
 		try {
+			User validUser = cloneValidUser();
+			Geography validGeography = cloneValidGeography();
+			NumeratorDenominatorPair emptyNDPair = cloneEmptyNDPair();
+			
 			rifStudySubmissionService.getAgeGroups(
-				testUser, 
-				sahsuGeography, 
-				invalidNDPair,
+				validUser, 
+				validGeography, 
+				emptyNDPair,
 				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
+			
 			checkErrorType(
 				rifServiceException,
 				RIFServiceError.INVALID_NUMERATOR_DENOMINATOR_PAIR,
-				2);
+				1);
 		}
 	}
 	
-	/**
-	 * Gets the age groups reject non existent parameters.
-	 *
-	 * @return the age groups reject non existent parameters
-	 */
 	@Test
-	/**
-	 * Check non-existent parameters
-	 */
-	public void getAgeGroupsRejectNonExistentParameters() {
+	public void getAgeGroups_NONEXISTENT1() {
 		try {
+			User nonExistentUser = cloneNonExistentUser();
+			Geography validGeography = cloneValidGeography();
+			NumeratorDenominatorPair validNDPair = cloneValidNDPair();
+						
 			rifStudySubmissionService.getAgeGroups(
 				nonExistentUser, 
-				sahsuGeography, 
-				sahsuCancerNDPair,
+				validGeography, 
+				validNDPair,
 				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
@@ -348,12 +272,20 @@ public class TestAgeGenderYearsServiceFeatures
 				RIFServiceError.SECURITY_VIOLATION,
 				1);
 		}
-		
+	}
+	
+	@Test
+	public void getAgeGroups_NONEXISTENT2() {
+	
 		try {
+			User validUser = cloneValidUser();
+			Geography nonExistentGeography = cloneNonExistentGeography();
+			NumeratorDenominatorPair validNDPair = cloneValidNDPair();
+			
 			rifStudySubmissionService.getAgeGroups(
-				testUser, 
+				validUser, 
 				nonExistentGeography, 
-				sahsuCancerNDPair,
+				validNDPair,
 				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
@@ -363,11 +295,19 @@ public class TestAgeGenderYearsServiceFeatures
 				RIFServiceError.NON_EXISTENT_GEOGRAPHY,
 				1);
 		}
-		
+	}
+
+	@Test
+	public void getAgeGroups_NONEXISTENT3() {
+	
 		try {
+			User validUser = cloneValidUser();
+			Geography validGeography = cloneValidGeography();
+			NumeratorDenominatorPair nonExistentNDPair = cloneNonExistentNDPair();
+
 			rifStudySubmissionService.getAgeGroups(
-				testUser, 
-				sahsuGeography, 
+				validUser, 
+				validGeography, 
 				nonExistentNDPair,
 				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
@@ -380,79 +320,19 @@ public class TestAgeGenderYearsServiceFeatures
 		}
 	}
 		
-	/**
-	 * Gets the genders accept valid inputs.
-	 *
-	 * @return the genders accept valid inputs
-	 */
 	@Test
-	public void getGendersAcceptValidInputs() {
+	public void getAgeGroups_MALICIOUS1() {
+	
 		try {
-			ArrayList<Sex> sexs
-				= rifStudySubmissionService.getSexes(testUser);
-			assertEquals(3, sexs.size());
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}
-	}
+			User maliciousUser = cloneMaliciousUser();
+			Geography validGeography = cloneValidGeography();
+			NumeratorDenominatorPair validNDPair = cloneValidNDPair();
 
-	/**
-	 * Gets the genders reject null parameters.
-	 *
-	 * @return the genders reject null parameters
-	 */
-	@Test
-	/**
-	 * check null parameters
-	 */
-	public void getGendersRejectNullParameters() {
-		try {
-			rifStudySubmissionService.getSexes(null);
-			fail();
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException,
-				RIFServiceError.NULL_API_METHOD_PARAMETER,
-				1);
-		}
-	}
-	
-	/**
-	 * Gets the genders reject invalid parameters.
-	 *
-	 * @return the genders reject invalid parameters
-	 */
-	@Test
-	/**
-	 * check invalid parameters
-	 */
-	public void getGendersRejectInvalidParameters() {
-		try {
-			rifStudySubmissionService.getSexes(invalidUser);
-			fail();
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException,
-				RIFServiceError.INVALID_USER,
-				1);
-		}
-	}
-	
-	/**
-	 * Gets the genders reject non existent parameters.
-	 *
-	 * @return the genders reject non existent parameters
-	 */
-	@Test
-	/**
-	 * check non-existent parameters
-	 */
-	public void getGendersRejectNonExistentParameters() {
-		try {
-			rifStudySubmissionService.getSexes(nonExistentUser);
+			rifStudySubmissionService.getAgeGroups(
+				maliciousUser, 
+				validGeography, 
+				validNDPair,
+				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -463,7 +343,54 @@ public class TestAgeGenderYearsServiceFeatures
 		}
 	}
 
+
 	
+	@Test
+	public void getAgeGroups_MALICIOUS2() {
+	
+		try {
+			User validUser = cloneValidUser();
+			Geography maliciousGeography = cloneMaliciousGeography();
+			NumeratorDenominatorPair validNDPair = cloneValidNDPair();
+
+			rifStudySubmissionService.getAgeGroups(
+				validUser, 
+				maliciousGeography, 
+				validNDPair,
+				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}
+	}
+	
+	@Test
+	public void getAgeGroups_MALICIOUS3() {
+	
+		try {
+			User validUser = cloneValidUser();
+			Geography validGeography = cloneValidGeography();
+			NumeratorDenominatorPair maliciousNDPair = cloneMaliciousNDPair();
+
+			rifStudySubmissionService.getAgeGroups(
+				validUser, 
+				validGeography, 
+				maliciousNDPair,
+				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}
+	}	
+		
 	
 	// ==========================================
 	// Section Errors and Validation

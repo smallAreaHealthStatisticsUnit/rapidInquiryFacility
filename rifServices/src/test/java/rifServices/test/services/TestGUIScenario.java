@@ -149,7 +149,7 @@ public class TestGUIScenario extends AbstractRIFServiceTestCase {
 			System.out.println("Now let's focus on the levels of geographic resolution");
 			System.out.println("GeoLevel select values:");
 			ArrayList<GeoLevelSelect> geoLevelSelectValues
-				= rifStudySubmissionService.getGeographicalLevelSelectValues(testUser, sahsuGeography);
+				= rifStudySubmissionService.getGeoLevelSelectValues(testUser, sahsuGeography);
 			for (GeoLevelSelect geoLevelSelectValue : geoLevelSelectValues) {
 				System.out.println("GEOLEVELSELECT:=="+geoLevelSelectValue.getDisplayName()+"==");
 			}
@@ -248,7 +248,7 @@ public class TestGUIScenario extends AbstractRIFServiceTestCase {
 				= healthCodeTaxonomies.get(1);
 			
 			ArrayList<HealthCode> topLevelHealthCodes
-				= rifStudySubmissionService.getTopLevelCodes(testUser, icdHealthCodeTaxonomy);
+				= rifStudySubmissionService.getTopLevelHealthCodes(testUser, icdHealthCodeTaxonomy);
 			for (HealthCode topLevelHealthCode : topLevelHealthCodes) {
 				System.out.println("TOP LEVEL ICD10 CATEGORY:=="+topLevelHealthCode.getDisplayName()+"==");			
 			}

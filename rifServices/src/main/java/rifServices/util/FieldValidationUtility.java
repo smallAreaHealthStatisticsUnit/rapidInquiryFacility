@@ -163,9 +163,31 @@ public final class FieldValidationUtility {
 					parameterName);
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.NULL_API_METHOD_PARAMETER,
+					RIFServiceError.EMPTY_API_METHOD_PARAMETER,
 					errorMessage);
 			throw rifServiceException;		
+		}
+		else {
+			if (parameterValue instanceof String) {
+				String parameterValuePhrase
+					= (String) parameterValue;
+				if (isEmpty(parameterValuePhrase) == true) {
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"general.validation.nullMethodParameter",
+							methodName,
+							parameterName);
+					RIFServiceException rifServiceException
+						= new RIFServiceException(
+							RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+							errorMessage);
+					throw rifServiceException;		
+				}
+			}
+			
+			
+			
+			
 		}
 	}
 	

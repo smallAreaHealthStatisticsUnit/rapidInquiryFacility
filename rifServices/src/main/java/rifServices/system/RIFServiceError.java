@@ -162,8 +162,8 @@ public enum RIFServiceError {
 	/** The get numerator denominator pair. */
 	GET_NUMERATOR_DENOMINATOR_PAIR,
 	
-	/** The null api method parameter. */
-	NULL_API_METHOD_PARAMETER,
+	/** The empty api method parameter. */
+	EMPTY_API_METHOD_PARAMETER,
 	
 	/** The get geographies. */
 	GET_GEOGRAPHIES,
@@ -210,8 +210,13 @@ public enum RIFServiceError {
 	/** The non existent nd pair. */
 	NON_EXISTENT_ND_PAIR,
 	
+	NON_EXISTENT_NUMERATOR_TABLE,
+	
 	/** The year range interval too high. */
 	YEAR_RANGE_INTERVAL_TOO_HIGH,
+
+	/** The non existent geolevel to map value. */
+	NON_EXISTENT_GEOLEVEL_VIEW_VALUE,
 	
 	/** The non existent geolevel to map value. */
 	NON_EXISTENT_GEOLEVEL_TO_MAP_VALUE,
@@ -297,6 +302,8 @@ public enum RIFServiceError {
 	/** The non existent health code provider. */
 	NON_EXISTENT_HEALTH_CODE_PROVIDER,
 	
+	NON_EXISTENT_HEALTH_CODE,
+	
 	/** The get health codes. */
 	GET_HEALTH_CODES,
 	
@@ -322,6 +329,7 @@ public enum RIFServiceError {
 	NON_EXISTENT_RESULT_TABLE,
 	NON_EXISTENT_RESULT_TABLE_FIELD_NAME,
 	NON_EXISTENT_MAP_AREA,
+	INVALID_GEO_LEVEL_ATTRIBUTE_SOURCE,
 	INVALID_GEO_LEVEL_ATTRIBUTE_THEME,
 	NON_EXISTENT_DISEASE_MAPPING_STUDY,
 	UNABLE_TO_GET_EXTRACT_TABLE_NAME,
@@ -332,6 +340,12 @@ public enum RIFServiceError {
 	NON_EXISTENT_GEO_LEVEL_ATTRIBUTE_THEME,
 	NON_EXISTENT_GEO_LEVEL_ATTRIBUTE,
 	DATABASE_QUERY_FAILED,
-	INVALID_STUDY_RESULT_RETRIEVAL_CONTEXT
+	INVALID_STUDY_RESULT_RETRIEVAL_CONTEXT,
+	NON_EXISTENT_PROJECT,
+	INVALID_BOUNDARY_RECTANGLE,
+	INVALID_STUDY_SUMMARY,
+	INVALID_TABLE_FIELD_NAMES,
+	NON_EXISTENT_TABLE_FIELD_NAME,
+	NON_EXISTENT_GEO_LEVEL_ATTRIBUTE_SOURCE
 	
 }

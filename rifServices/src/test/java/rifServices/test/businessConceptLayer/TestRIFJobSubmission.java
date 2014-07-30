@@ -91,7 +91,7 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 	private SampleTestObjectGenerator generator;
 	
 	/** The master rif job submission. */
-	private RIFJobSubmission masterRIFJobSubmission;
+	private RIFStudySubmission masterRIFJobSubmission;
 	
 	// ==========================================
 	// Section Construction
@@ -103,7 +103,7 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 	public TestRIFJobSubmission() {
 		generator = new SampleTestObjectGenerator();
 		masterRIFJobSubmission
-			= RIFJobSubmission.newInstance();
+			= RIFStudySubmission.newInstance();
 		masterRIFJobSubmission.addCalculationMethod(generator.createSampleHETMethod());
 		masterRIFJobSubmission.addCalculationMethod(generator.createSampleBYMMethod());	
 		masterRIFJobSubmission.setJobSubmissionTime(new Date());
@@ -131,8 +131,8 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 	 */
 	public void acceptValidRIFJobSubmission() {
 		try {
-			RIFJobSubmission rifJobSubmission
-				= RIFJobSubmission.createCopy(masterRIFJobSubmission);
+			RIFStudySubmission rifJobSubmission
+				= RIFStudySubmission.createCopy(masterRIFJobSubmission);
 			rifJobSubmission.checkErrors();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -149,8 +149,8 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 	 */
 	public void rejectBlankStudy() {
 		try {
-			RIFJobSubmission rifJobSubmission
-				= RIFJobSubmission.createCopy(masterRIFJobSubmission);
+			RIFStudySubmission rifJobSubmission
+				= RIFStudySubmission.createCopy(masterRIFJobSubmission);
 			rifJobSubmission.setStudy(null);
 			rifJobSubmission.checkErrors();
 			fail();	
@@ -172,8 +172,8 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 	 */
 	public void rejectInvalidStudy() {
 		try {
-			RIFJobSubmission rifJobSubmission
-				= RIFJobSubmission.createCopy(masterRIFJobSubmission);
+			RIFStudySubmission rifJobSubmission
+				= RIFStudySubmission.createCopy(masterRIFJobSubmission);
 			
 			SampleTestObjectGenerator generator 
 				= new SampleTestObjectGenerator();
@@ -201,8 +201,8 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 	 */
 	public void rejectInvalidCalculationMethod() {
 		try {
-			RIFJobSubmission rifJobSubmission
-				= RIFJobSubmission.createCopy(masterRIFJobSubmission);	
+			RIFStudySubmission rifJobSubmission
+				= RIFStudySubmission.createCopy(masterRIFJobSubmission);	
 			SampleTestObjectGenerator generator
 				= new SampleTestObjectGenerator();
 			CalculationMethod invalidCalculationMethod
@@ -229,8 +229,8 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 	 */
 	public void rejectEmptyRIFOutputOptions() {
 		try {
-			RIFJobSubmission rifJobSubmission
-				= RIFJobSubmission.createCopy(masterRIFJobSubmission);
+			RIFStudySubmission rifJobSubmission
+				= RIFStudySubmission.createCopy(masterRIFJobSubmission);
 			rifJobSubmission.setRIFOutputOptions(null);			
 			rifJobSubmission.checkErrors();
 			fail();	
@@ -243,8 +243,8 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 		}
 
 		try {
-			RIFJobSubmission rifJobSubmission
-				= RIFJobSubmission.createCopy(masterRIFJobSubmission);
+			RIFStudySubmission rifJobSubmission
+				= RIFStudySubmission.createCopy(masterRIFJobSubmission);
 			rifJobSubmission.clearRIFOutputOptions();			
 			rifJobSubmission.checkErrors();
 			fail();	
@@ -262,8 +262,8 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 	 */
 	@Test
 	public void testSecurityViolations() {
-		RIFJobSubmission maliciousRIFJobSubmission
-			= RIFJobSubmission.createCopy(masterRIFJobSubmission);
+		RIFStudySubmission maliciousRIFJobSubmission
+			= RIFStudySubmission.createCopy(masterRIFJobSubmission);
 		maliciousRIFJobSubmission.setIdentifier(getTestMaliciousValue());
 		try {
 			maliciousRIFJobSubmission.checkSecurityViolations();
@@ -277,7 +277,7 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 		 * Check that checking for security violation is recursive
 		 */
 		maliciousRIFJobSubmission
-			= RIFJobSubmission.createCopy(masterRIFJobSubmission);
+			= RIFStudySubmission.createCopy(masterRIFJobSubmission);
 		DiseaseMappingStudy maliciousDiseaseMappingStudy
 			= generator.createSampleDiseaseMappingStudy();
 		maliciousDiseaseMappingStudy.setDescription(getTestMaliciousValue());
@@ -291,7 +291,7 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 		}
 		
 		maliciousRIFJobSubmission
-			= RIFJobSubmission.createCopy(masterRIFJobSubmission);
+			= RIFStudySubmission.createCopy(masterRIFJobSubmission);
 		CalculationMethod maliciousCalculationMethod
 			= generator.createSampleBYMMethod();
 		maliciousCalculationMethod.setDescription(getTestMaliciousValue());
@@ -305,7 +305,7 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 		}
 
 		maliciousRIFJobSubmission
-			= RIFJobSubmission.createCopy(masterRIFJobSubmission);
+			= RIFStudySubmission.createCopy(masterRIFJobSubmission);
 		Project maliciousProject
 			= Project.newInstance();
 		maliciousProject.setName(getTestMaliciousValue());
@@ -319,7 +319,7 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 		}
 		
 		maliciousRIFJobSubmission
-			= RIFJobSubmission.createCopy(masterRIFJobSubmission);
+			= RIFStudySubmission.createCopy(masterRIFJobSubmission);
 		User maliciousUser 
 			= User.newInstance(getTestMaliciousValue(),
 					"11.111.11.228");
