@@ -166,7 +166,14 @@ BEGIN
 		FETCH c4alter2 INTO c4_rec;
 		CLOSE c4alter2;
 -- Geometry table exists and column has not been added yet
-		IF c3_rec.relhassubclass AND c4_rec.column_name IS NULL THEN
+		IF c3_rec.relhassubclass THEN 
+			IF c4_rec.column_name IS NOT NULL THEN
+				IF ddl_stmt IS NULL THEN
+					ddl_stmt[1]:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||' DROP COLUMN gid_rowindex';
+				ELSE
+					ddl_stmt[array_length(ddl_stmt, 1)+1]:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||' DROP COLUMN gid_rowindex';
+				END IF;
+			END IF;
 -- Add column to master table
 			IF ddl_stmt IS NULL THEN
 				ddl_stmt[1]:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||' ADD COLUMN gid_rowindex VARCHAR(50)';
@@ -219,8 +226,9 @@ E'\t'||'  FROM '||l_partition||E'\n'||
 '  FROM a'||E'\n'||
 ' WHERE b.area_id = a.area_id';
 -- Create unqiue indexes
-				ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE UNIQUE INDEX '||l_partition||'_gidr  ON '||l_partition||'(gid_rowindex)';
-				ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE UNIQUE INDEX '||l_partition||'_gid  ON '||l_partition||'(gid)';
+				ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE UNIQUE INDEX '||l_partition||'_gidr ON '||l_partition||'(gid_rowindex)';
+				ddl_stmt[array_length(ddl_stmt, 1)+1]:='DROP INDEX IF EXISTS '||l_partition||'_gid';
+				ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE UNIQUE INDEX '||l_partition||'_gid ON '||l_partition||'(gid)';
 -- Make not null
 				ddl_stmt[array_length(ddl_stmt, 1)+1]:='ALTER TABLE '||l_partition||' ALTER COLUMN gid_rowindex SET NOT NULL';
 -- Analyse
