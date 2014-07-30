@@ -2,8 +2,10 @@ package rifServices.dataStorageLayer;
 
 import rifServices.businessConceptLayer.*;
 
+
 import java.util.ArrayList;
 import java.util.Date;
+import java.io.File;
 
 /**
  *
@@ -100,8 +102,8 @@ public class SampleTestObjectGenerator {
 	 *
 	 * @return the sample rif job submission
 	 */
-	public RIFJobSubmission createSampleRIFJobSubmission() {
-		RIFJobSubmission rifJobSubmission = RIFJobSubmission.newInstance();
+	public RIFStudySubmission createSampleRIFJobSubmission() {
+		RIFStudySubmission rifJobSubmission = RIFStudySubmission.newInstance();
 		rifJobSubmission.setNewRecord(false);
 
 		User user = User.newInstance("kgarwood", "11.111.11.228");
@@ -345,25 +347,25 @@ public class SampleTestObjectGenerator {
 		
 		HealthCode healthCode1 
 			= HealthCode.newInstance(
-				"J11", 
+				"C34", 
 				"icd10",
-				"Influenza, virus not identified", 
+				"malignant neoplasm of bronchus and lung", 
 				false);
 		healthCode1.setNewRecord(false);
 		investigation.addHealthCode(healthCode1);
 
 		HealthCode healthCode2
 			= HealthCode.newInstance(
-				"I21", 
+				"C81", 
 				"icd10",
-				"Acute myocardial", 
+				"Hodgkin's disease", 
 				false);
 						
 		healthCode2.setNewRecord(false);
 		investigation.addHealthCode(healthCode2);
 		
-		AgeGroup lowerLimitAgeGroup = AgeGroup.newInstance("23", "9", "12", "[9-12]");
-		AgeGroup upperLimitAgeGroup = AgeGroup.newInstance("24", "17", "20", "[17-20]");
+		AgeGroup lowerLimitAgeGroup = AgeGroup.newInstance("1", "5", "9", "[5-9]");
+		AgeGroup upperLimitAgeGroup = AgeGroup.newInstance("1", "15", "19", "[15-19]");
 
 		AgeBand ageBand1 = AgeBand.newInstance(lowerLimitAgeGroup, upperLimitAgeGroup);
 		ageBand1.setNewRecord(false);
@@ -401,6 +403,14 @@ public class SampleTestObjectGenerator {
 		return investigation;
 	}
 	
+	public File generateSampleOutputFile() {
+		StringBuilder fileName = new StringBuilder();
+		fileName.append(".");
+		fileName.append(File.separator);
+		fileName.append("SampleOutputFile.txt");
+		File sampleOutputFile = new File(fileName.toString());
+		return sampleOutputFile;
+	}
 	
 	// ==========================================
 	// Section Errors and Validation
