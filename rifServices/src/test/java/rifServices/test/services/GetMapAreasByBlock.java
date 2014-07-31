@@ -1,11 +1,5 @@
 package rifServices.test.services;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-
-import org.junit.Test;
 
 import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.GeoLevelSelect;
@@ -15,6 +9,12 @@ import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import org.junit.Test;
+import java.util.ArrayList;
+
 
 /**
  *
