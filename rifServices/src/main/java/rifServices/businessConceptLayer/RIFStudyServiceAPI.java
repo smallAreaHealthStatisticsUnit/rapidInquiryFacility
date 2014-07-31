@@ -99,7 +99,7 @@ public interface RIFStudyServiceAPI {
 	 * @return the geographical level select values
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<GeoLevelSelect> getGeographicalLevelSelectValues(
+	public ArrayList<GeoLevelSelect> getGeoLevelSelectValues(
 		User user,
 		Geography geography)
 		throws RIFServiceException;
