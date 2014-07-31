@@ -76,7 +76,7 @@ import java.util.ArrayList;
  *
  */
 
-class SQLRIFSubmissionManager {
+class SQLRIFSubmissionManager extends AbstractSQLManager {
 		
 	// ==========================================
 	// Section Constants
@@ -85,6 +85,7 @@ class SQLRIFSubmissionManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private SQLDiseaseMappingStudyManager diseaseMappingStudyManager;
 	private SQLRIFContextManager rifContextManager;
 	private SQLAgeGenderYearManager ageGenderYearManager;
 	private SQLCovariateManager covariateManager;
@@ -99,11 +100,13 @@ class SQLRIFSubmissionManager {
 	public SQLRIFSubmissionManager(
 		SQLRIFContextManager rifContextManager,
 		SQLAgeGenderYearManager ageGenderYearManager,
-		SQLCovariateManager covariateManager) {
+		SQLCovariateManager covariateManager,
+		SQLDiseaseMappingStudyManager diseaseMappingStudyManager) {
 
 		this.rifContextManager = rifContextManager;
 		this.ageGenderYearManager = ageGenderYearManager;
 		this.covariateManager = covariateManager;		
+		this.diseaseMappingStudyManager = diseaseMappingStudyManager;
 	}
 
 	// ==========================================
@@ -121,6 +124,7 @@ class SQLRIFSubmissionManager {
 		User user)
 		throws RIFServiceException {
 	
+		/*
 		String userID = user.getUserID();
 		PreparedStatement deleteComparisonAreasStatement = null;
 		PreparedStatement deleteStudyAreasStatement = null;
@@ -167,6 +171,8 @@ class SQLRIFSubmissionManager {
 
 		}
 		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version			
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToClearSubmissionsForUser",
@@ -182,7 +188,7 @@ class SQLRIFSubmissionManager {
 			SQLQueryUtility.close(deleteStudyAreasStatement);
 			SQLQueryUtility.close(deleteInvestigationsStatement);
 		}
-
+*/
 	}
 	
 	
@@ -194,22 +200,36 @@ class SQLRIFSubmissionManager {
 	 * @param rifJobSubmission the rif job submission
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void addRIFJobSubmission(
+	public void addRIFStudySubmission(
 		final Connection connection,
 		final User user,
-		final RIFJobSubmission rifJobSubmission) 
+		final RIFStudySubmission rifStudySubmission) 
 		throws RIFServiceException {
 		
 		
 		user.checkErrors();
-		rifJobSubmission.checkErrors();
+		rifStudySubmission.checkErrors();
+		
+		//perform various checks for non-existent objects
+		//such as geography,  geo level selects, covariates
+		checkNonExistentItems(
+			connection, 
+			rifStudySubmission);
+		
 		//verify that year range checks against the database
+
+		
+		
+		
+		
+		
+		
 		
 		//verify that all the age groups of all the age bands are
 		//in the database
 
+		/*			
 		try {
-			
 			//Step 1: Add general information about the study to the
 			//underlying study table.  This modifies the rif40_studies table
 			Project project = rifJobSubmission.getProject();
@@ -242,7 +262,8 @@ class SQLRIFSubmissionManager {
 			}			
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
+			//Record original exception, throw sanitised, human-readable version			
+			logSQLException(sqlException);
 			String errorMessage 
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToAddSubmission",
@@ -260,6 +281,9 @@ class SQLRIFSubmissionManager {
 					errorMessage);
 			throw rifServiceException;			
 		}
+		
+	*/
+		
 	}
 	
 	private void addStudyInformation(
@@ -868,7 +892,117 @@ class SQLRIFSubmissionManager {
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
+	
+	private void checkNonExistentItems(
+		Connection connection,
+		RIFStudySubmission rifStudySubmission)
+		throws RIFServiceException {
 
+		Project project 
+			= rifStudySubmission.getProject();
+		checkProjectExists(
+			connection,
+			project);
+		
+		DiseaseMappingStudy diseaseMappingStudy
+			= (DiseaseMappingStudy) rifStudySubmission.getStudy();
+		diseaseMappingStudyManager.checkNonExistentItems(
+			connection, 
+			diseaseMappingStudy);
+		
+		ArrayList<CalculationMethod> calculationMethods
+			= rifStudySubmission.getCalculationMethods();
+		for (CalculationMethod calculationMethod : calculationMethods) {
+			checkCalculationMethodExists(
+				connection, 
+				calculationMethod);
+		}
+		
+		//we can assume that all rif output options that are supplied
+		//do in fact exist because they are taken from an enumerated type
+				
+	}
+	
+	private void checkProjectExists(
+		Connection connection,
+		Project project) 
+		throws RIFServiceException {
+		
+		//Create SQL query
+		SQLRecordExistsQueryFormatter query
+			= new SQLRecordExistsQueryFormatter();
+		query.setLookupKeyFieldName("project");
+		query.setFromTable("t_rif40_projects");
+		
+		//KLG: TODO - change table name
+		
+		PreparedStatement checkProjectExistsStatement = null;
+		ResultSet checkProjectExistsResultSet = null;
+		
+		//Parameterise and execute query		
+		try {
+			System.out.println("checkProjectExists query=="+query.generateQuery()+"==");
+			checkProjectExistsStatement
+				= connection.prepareStatement(query.generateQuery());
+			checkProjectExistsStatement.setString(1, project.getName());
+			checkProjectExistsResultSet 
+				= checkProjectExistsStatement.executeQuery();
+			
+			if (checkProjectExistsResultSet.next() == false) {
+				//ERROR: no such project exists
+				String recordType
+					= RIFServiceMessages.getMessage("project.label");
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"general.validation.nonExistentRecord",
+						recordType,
+						project.getName());
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.NON_EXISTENT_PROJECT, 
+						errorMessage);
+				throw rifServiceException;
+			}
+		}
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version			
+			logSQLException(sqlException);
+			String recordType
+				= RIFServiceMessages.getMessage("project.label");			
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.unableCheckNonExistentRecord",
+					recordType,
+					project.getName());
+
+			RIFLogger rifLogger = new RIFLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				errorMessage, 
+				sqlException);										
+					
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			//Cleanup database resources
+			SQLQueryUtility.close(checkProjectExistsStatement);
+			SQLQueryUtility.close(checkProjectExistsResultSet);			
+		}		
+	}
+	
+	private void checkCalculationMethodExists(
+		Connection connection,
+		CalculationMethod calculationMethod) 
+		throws RIFServiceException {
+		
+		
+	}
+	
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
