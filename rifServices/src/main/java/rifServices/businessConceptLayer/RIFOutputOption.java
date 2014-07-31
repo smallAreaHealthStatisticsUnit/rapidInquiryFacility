@@ -249,5 +249,4 @@ public enum RIFOutputOption {
 		
 		return rifOutputOptionNames;
 	}
-	
 }
