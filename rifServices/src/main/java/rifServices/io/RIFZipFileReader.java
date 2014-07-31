@@ -2,7 +2,7 @@
 package rifServices.io;
 
 
-import rifServices.businessConceptLayer.RIFJobSubmission;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -172,7 +172,6 @@ public class RIFZipFileReader {
 			throw exception;			
 		}
 		catch(IOException ioException) {
-			ioException.printStackTrace(System.out);
 			String errorMessage
 				= RIFServiceMessages.getMessage("io.error.problemReadingFile",
 					zipFileName);
@@ -211,7 +210,7 @@ public class RIFZipFileReader {
 	 *
 	 * @return the job submission
 	 */
-	public RIFJobSubmission getJobSubmission() {
+	public RIFStudySubmission getJobSubmission() {
 		
 		return jobSubmissionContentHandler.getRIFJobSubmission();
 	}

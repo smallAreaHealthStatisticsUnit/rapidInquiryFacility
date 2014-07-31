@@ -2,7 +2,7 @@
 
 package rifServices.io;
 
-import rifServices.businessConceptLayer.RIFJobSubmission;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFOutputOption;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
@@ -157,7 +157,7 @@ public class RIFZipFileWriter {
 	 */
 	public void writeZipFile(
 		final File zipFile, 
-		final RIFJobSubmission rifJobSubmission) 
+		final RIFStudySubmission rifJobSubmission) 
 		throws RIFServiceException {
 
 		try {
