@@ -2,6 +2,7 @@ package rifServices.test.services;
 
 
 import rifServices.test.AbstractRIFTestCase;
+
 import rifServices.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.BoundaryRectangle;
 import rifServices.businessConceptLayer.GeoLevelArea;
@@ -15,6 +16,7 @@ import rifServices.businessConceptLayer.StudyResultRetrievalContext;
 import rifServices.businessConceptLayer.StudySummary;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.GeoLevelAttributeSource;
+import rifServices.businessConceptLayer.GeoLevelAttributeTheme;
 import rifServices.dataStorageLayer.TestRIFStudyRetrievalService;
 import rifServices.dataStorageLayer.TestRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.TestRIFStudySubmissionService;
@@ -182,6 +184,11 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 	private GeoLevelAttributeSource emptyGeoLevelAttributeSource;
 	private GeoLevelAttributeSource nonExistentGeoLevelAttributeSource;
 	private GeoLevelAttributeSource maliciousGeoLevelAttributeSource;
+	
+	private GeoLevelAttributeTheme validGeoLevelAttributeTheme;
+	private GeoLevelAttributeTheme emptyGeoLevelAttributeTheme;
+	private GeoLevelAttributeTheme nonExistentGeoLevelAttributeTheme;
+	private GeoLevelAttributeTheme maliciousGeoLevelAttributeTheme;
 	
 	private String validGeoLevelSourceAttribute;
 	private String emptyGeoLevelSourceAttribute;
@@ -364,13 +371,15 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 			= GeoLevelAttributeSource.newInstance("blah_de_blah");
 		maliciousGeoLevelAttributeSource
 			= GeoLevelAttributeSource.newInstance(getTestMaliciousValue());
-
+		
 		validGeoLevelSourceAttribute = "observed";
 		emptyGeoLevelSourceAttribute = "";
 		nonExistentGeoLevelSourceAttribute = "obyyyserved";
 		maliciousGeoLevelSourceAttribute
 			= getTestMaliciousValue();
 
+
+		
 		
 		masterValidStudySummary
 			= StudySummary.newInstance(
