@@ -5,6 +5,7 @@ import rifServices.system.*;
 import rifServices.businessConceptLayer.AbstractRIFConcept;
 
 import java.util.ArrayList;
+
 import rifServices.util.FieldValidationUtility;
 
 
@@ -84,6 +85,8 @@ public final class RIFServiceInformation
 	/** The service name. */
 	private String serviceName;
 	
+	private String serviceDescription;
+	
 	/** The version number. */
 	private double versionNumber;
 
@@ -108,6 +111,7 @@ public final class RIFServiceInformation
 	public RIFServiceInformation() {
 
 		serviceName = "";
+		serviceDescription = "";
 		versionNumber = 1.0;
 
 		organisation = "";
@@ -140,6 +144,7 @@ public final class RIFServiceInformation
     	RIFServiceInformation cloneServiceInformation
     		= new RIFServiceInformation();
     	cloneServiceInformation.setServiceName(originalRIFServiceInformation.getServiceName());
+    	cloneServiceInformation.setServiceDescription(originalRIFServiceInformation.getServiceDescription());
     	cloneServiceInformation.setVersionNumber(originalRIFServiceInformation.getVersionNumber());
     	cloneServiceInformation.setOrganisation(originalRIFServiceInformation.getOrganisation());
     	cloneServiceInformation.setContactName(originalRIFServiceInformation.getContactName());
@@ -178,6 +183,14 @@ public final class RIFServiceInformation
 		this.serviceName = serviceName;
 	}
 	
+    public String getServiceDescription() {
+    	return serviceDescription;
+    }
+    
+    public void setServiceDescription(String serviceDescription) {
+    	this.serviceDescription = serviceDescription;
+    }
+
 	/**
 	 * Gets the version number.
 	 *
@@ -305,14 +318,30 @@ public final class RIFServiceInformation
  */
 public void checkErrors() throws RIFServiceException {
 		
+		String recordType 
+			= RIFServiceMessages.getMessage("rifServiceInformation.label");
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
 		if (fieldValidationUtility.isEmpty(serviceName) == true) {
 			String serviceNameLabel
-				= RIFServiceMessages.getMessage("");
+				= RIFServiceMessages.getMessage("rifServiceInformation.name");
 			String errorMessage
-				= RIFServiceMessages.getMessage("", serviceNameLabel);
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordType,
+					serviceNameLabel);
+			errorMessages.add(errorMessage);
+		}
+
+		if (fieldValidationUtility.isEmpty(serviceDescription) == true) {
+			String serviceDescriptionLabel
+				= RIFServiceMessages.getMessage("rifServiceInformation.description");
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordType,
+					serviceDescriptionLabel);
 			errorMessages.add(errorMessage);
 		}
 		
