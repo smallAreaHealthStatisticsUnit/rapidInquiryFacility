@@ -9,7 +9,7 @@ import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.DisplayableListItem;
 import rifServices.businessConceptLayer.Investigation;
-import rifServices.businessConceptLayer.RIFJobSubmission;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
@@ -406,7 +406,7 @@ class SpecifyInvestigationsStepPanel
 
 		RIFSession rifSession = getRIFSession();
 		
-		RIFJobSubmission originalJobSubmission
+		RIFStudySubmission originalJobSubmission
 			= rifSession.getRIFJobSubmission();
 		DiseaseMappingStudy originalStudy
 			= (DiseaseMappingStudy) originalJobSubmission.getStudy();
@@ -444,7 +444,7 @@ class SpecifyInvestigationsStepPanel
 		}
 
 		RIFSession rifSession = getRIFSession();
-		RIFJobSubmission originalJobSubmission
+		RIFStudySubmission originalJobSubmission
 			= rifSession.getRIFJobSubmission();
 		DiseaseMappingStudy originalStudy
 			= (DiseaseMappingStudy) originalJobSubmission.getStudy();

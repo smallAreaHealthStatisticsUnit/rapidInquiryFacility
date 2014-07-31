@@ -12,7 +12,7 @@ import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.RIFOutputOption;
-import rifServices.businessConceptLayer.RIFJobSubmission;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
@@ -107,7 +107,7 @@ public class RIFSession {
 	private User user;
 	
 	/** The current rif job submission. */
-	private RIFJobSubmission currentRIFJobSubmission;
+	private RIFStudySubmission currentRIFJobSubmission;
 	
 	/** The currently edited investigation. */
 	private Investigation currentlyEditedInvestigation;
@@ -148,7 +148,7 @@ public class RIFSession {
 	 * @param currentRIFJobSubmission the new current rif submission
 	 */
 	public void setCurrentRIFSubmission(
-		RIFJobSubmission currentRIFJobSubmission) {
+		RIFStudySubmission currentRIFJobSubmission) {
 
 		this.currentRIFJobSubmission = currentRIFJobSubmission;
 	}
@@ -158,7 +158,7 @@ public class RIFSession {
 	 *
 	 * @return the RIF job submission
 	 */
-	public RIFJobSubmission getRIFJobSubmission() {
+	public RIFStudySubmission getRIFJobSubmission() {
 		
 		return currentRIFJobSubmission ;
 	}

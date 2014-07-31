@@ -7,7 +7,7 @@ import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
 import rifJobSubmissionTool.util.UserInterfaceFactory;
 
-import rifServices.businessConceptLayer.RIFJobSubmission;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.io.RIFZFileFilter;
@@ -305,7 +305,7 @@ class RIFStepButtonNavigationPanel
 
 			User currentUser
 				= rifSession.getUser();
-			RIFJobSubmission currentRIFJobSubmission
+			RIFStudySubmission currentRIFJobSubmission
 				= rifSession.getRIFJobSubmission();
 			RIFStudySubmissionAPI service = rifSession.getRIFStudySubmissionService();
 						
@@ -314,7 +314,7 @@ class RIFStepButtonNavigationPanel
 			
 			service.submitStudy(currentUser, currentRIFJobSubmission, selectedFile);
 			currentRIFJobSubmission
-				= RIFJobSubmission.newInstance();
+				= RIFStudySubmission.newInstance();
 			rifSession.setCurrentRIFSubmission(currentRIFJobSubmission);
 			rifActivityStateMachine.firstActivityStep();
 		}

@@ -10,7 +10,7 @@ import rifJobSubmissionTool.util.UserInterfaceFactory;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.Project;
-import rifServices.businessConceptLayer.RIFJobSubmission;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
@@ -271,7 +271,7 @@ class DescribeStudyStepPanel
 
 		RIFSession rifSession = getRIFSession();
 				
-		RIFJobSubmission currentRIFJobSubmission
+		RIFStudySubmission currentRIFJobSubmission
 			= rifSession.getRIFJobSubmission();
 		DiseaseMappingStudy currentDiseaseMappingStudy
 			= (DiseaseMappingStudy) currentRIFJobSubmission.getStudy();
@@ -368,7 +368,7 @@ class DescribeStudyStepPanel
 		RIFSession rifSession = getRIFSession();
 
 		//set the project associated with the current job submission
-		RIFJobSubmission rifJobSubmission
+		RIFStudySubmission rifJobSubmission
 			= rifSession.getRIFJobSubmission();
 		Project selectedProject
 			= (Project) projectSelectionPanel.getSelectedProject();

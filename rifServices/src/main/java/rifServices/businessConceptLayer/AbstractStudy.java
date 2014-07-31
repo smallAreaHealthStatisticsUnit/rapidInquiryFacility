@@ -18,7 +18,7 @@ import java.util.Hashtable;
 /**
  * 
  * Embodies a request that the RIF uses to do a disease mapping or risk analysis
- * activity.  Note that the class {@link rifServices.businessConceptLayer.RIFJobSubmission}
+ * activity.  Note that the class {@link rifServices.businessConceptLayer.RIFStudySubmission}
  * encompasses both the request (study) and various information about how the results
  * should be configured.
  * 

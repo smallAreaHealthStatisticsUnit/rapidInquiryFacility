@@ -1,15 +1,17 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
+
 import rifJobSubmissionTool.system.RIFActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
 import rifJobSubmissionTool.util.UserInterfaceFactory;
 
+import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudyArea;
-import rifServices.businessConceptLayer.RIFJobSubmission;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 
 import java.awt.GridBagConstraints;
 import java.util.Observer;
@@ -94,6 +96,7 @@ class SpecifyStudyAreaStepPanel
 	// ==========================================	
 	
 	//Data
+	private Geography currentGeography;
 	/** The current disease mapping study area. */
 	private DiseaseMappingStudyArea currentDiseaseMappingStudyArea;
 	/** The current map area selection basket. */
@@ -215,7 +218,8 @@ class SpecifyStudyAreaStepPanel
 
 		if (argument == GeographicalExtentPanel.ObservableEvent.APPLY_NEW_SETTINGS) {
 			mapAreaListSelectionPanel.initialiseApplySettings(
-					currentDiseaseMappingStudyArea, 
+				currentGeography,
+				currentDiseaseMappingStudyArea, 
 				currentMapAreaSelectionBasket);
 		}
 		else if (argument == GeographicalExtentPanel.ObservableEvent.RESET) {
@@ -244,11 +248,12 @@ class SpecifyStudyAreaStepPanel
 			//Derive the working copy based on the study area that 
 			//has already been committed in the master job submission
 			
-			RIFJobSubmission originalJobSubmission = rifSession.getRIFJobSubmission();
+			RIFStudySubmission originalJobSubmission = rifSession.getRIFJobSubmission();
 			DiseaseMappingStudy originalStudy
 				= (DiseaseMappingStudy) originalJobSubmission.getStudy();
 			DiseaseMappingStudyArea originalDiseaseMappingStudyArea
 				= originalStudy.getDiseaseMappingStudyArea();	
+			currentGeography = originalStudy.getGeography();
 			currentDiseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(originalDiseaseMappingStudyArea);
 			//It is not a new record because we've already done it and are
@@ -263,6 +268,7 @@ class SpecifyStudyAreaStepPanel
 				currentDiseaseMappingStudyArea,
 				currentMapAreaSelectionBasket);
 			mapAreaListSelectionPanel.initialiseApplySettings(
+				currentGeography,
 				currentDiseaseMappingStudyArea,
 				currentMapAreaSelectionBasket);			
 		}
@@ -303,7 +309,7 @@ class SpecifyStudyAreaStepPanel
 		currentDiseaseMappingStudyArea.setNewRecord(false);
 				
 		RIFSession rifSession = getRIFSession();
-		RIFJobSubmission originalJobSubmission
+		RIFStudySubmission originalJobSubmission
 			= rifSession.getRIFJobSubmission();
 		DiseaseMappingStudy originalStudy
 			= (DiseaseMappingStudy) originalJobSubmission.getStudy();

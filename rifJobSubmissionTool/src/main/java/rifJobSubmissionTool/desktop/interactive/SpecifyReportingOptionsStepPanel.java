@@ -7,7 +7,7 @@ import rifJobSubmissionTool.system.RIFSession;
 import rifJobSubmissionTool.util.UserInterfaceFactory;
 
 import rifServices.businessConceptLayer.CalculationMethod;
-import rifServices.businessConceptLayer.RIFJobSubmission;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFOutputOption;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -579,7 +579,7 @@ class SpecifyReportingOptionsStepPanel
 
 		RIFSession rifSession = getRIFSession();
 		
-		RIFJobSubmission rifJobSubmission
+		RIFStudySubmission rifJobSubmission
 			= rifSession.getRIFJobSubmission();
 		ArrayList<CalculationMethod> currentCalculationMethods
 			= rifJobSubmission.getCalculationMethods();
@@ -652,7 +652,7 @@ class SpecifyReportingOptionsStepPanel
 		ArrayList<CalculationMethod> calculationMethods
 			= calculationMethodTable.getCalculationMethods();
 		
-		RIFJobSubmission originalJobSubmission
+		RIFStudySubmission originalJobSubmission
 			= rifSession.getRIFJobSubmission();
 		originalJobSubmission.setCalculationMethods(calculationMethods);
 		

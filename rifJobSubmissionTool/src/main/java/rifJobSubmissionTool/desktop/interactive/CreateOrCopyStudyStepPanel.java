@@ -11,7 +11,7 @@ import rifServices.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Project;
-import rifServices.businessConceptLayer.RIFJobSubmission;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 
@@ -359,7 +359,7 @@ class CreateOrCopyStudyStepPanel
 		validateForm();
 
 		RIFSession rifSession = getRIFSession();
-		RIFJobSubmission currentRIFJobSubmission
+		RIFStudySubmission currentRIFJobSubmission
 			= rifSession.getRIFJobSubmission();
 		
 		if (copyExistingStudyRadioButton.isSelected()) {

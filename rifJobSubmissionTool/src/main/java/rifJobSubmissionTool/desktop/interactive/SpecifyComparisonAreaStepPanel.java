@@ -1,15 +1,17 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
+
 import rifJobSubmissionTool.system.RIFActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
 import rifJobSubmissionTool.util.UserInterfaceFactory;
 
+import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.ComparisonArea;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
-import rifServices.businessConceptLayer.RIFJobSubmission;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 
 import java.awt.GridBagConstraints;
 import java.util.Observer;
@@ -94,6 +96,8 @@ class SpecifyComparisonAreaStepPanel
 	// ==========================================	
 	
 	//Data
+	private Geography currentGeography;
+	
 	/** The current comparison area. */
 	private ComparisonArea currentComparisonArea;	
 	/** The current map area selection basket. */
@@ -212,6 +216,7 @@ class SpecifyComparisonAreaStepPanel
 
 		if (argument == GeographicalExtentPanel.ObservableEvent.APPLY_NEW_SETTINGS) {
 			mapAreaListSelectionPanel.initialiseApplySettings(
+				currentGeography,
 				currentComparisonArea,
 				currentMapAreaSelectionBasket);
 		}
@@ -241,11 +246,12 @@ class SpecifyComparisonAreaStepPanel
 			//Derive the working copy based on the study area that 
 			//has already been committed in the master job submission
 
-			RIFJobSubmission originalJobSubmission = rifSession.getRIFJobSubmission();
+			RIFStudySubmission originalJobSubmission = rifSession.getRIFJobSubmission();
 			DiseaseMappingStudy originalStudy
 				= (DiseaseMappingStudy) originalJobSubmission.getStudy();
 			ComparisonArea originalComparisonArea
 				= originalStudy.getComparisonArea();
+			currentGeography = originalStudy.getGeography();
 			currentComparisonArea
 				= ComparisonArea.createCopy(originalComparisonArea);			
 			//populate the basket with the map areas that are already in the
@@ -257,6 +263,7 @@ class SpecifyComparisonAreaStepPanel
 				currentComparisonArea,
 				currentMapAreaSelectionBasket);
 			mapAreaListSelectionPanel.initialiseApplySettings(
+				originalStudy.getGeography(),
 				currentComparisonArea,
 				currentMapAreaSelectionBasket);		
 		}
@@ -294,7 +301,7 @@ class SpecifyComparisonAreaStepPanel
 			= (ComparisonArea) rifSession.getCurrentGeographicalArea();
 		workingCopyComparisonArea.setNewRecord(false);
 				
-		RIFJobSubmission originalJobSubmission
+		RIFStudySubmission originalJobSubmission
 			= rifSession.getRIFJobSubmission();
 		DiseaseMappingStudy originalStudy
 			= (DiseaseMappingStudy) originalJobSubmission.getStudy();

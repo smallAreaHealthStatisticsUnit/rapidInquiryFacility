@@ -8,7 +8,7 @@ import rifJobSubmissionTool.util.UserInterfaceFactory;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.ComparisonArea;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
-import rifServices.businessConceptLayer.RIFJobSubmission;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.io.RIFJobSubmissionHTMLWriter;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -242,7 +242,7 @@ class PreviewStepPanel extends AbstractStepPanel {
 		
 		RIFSession rifSession = getRIFSession();
 
-		RIFJobSubmission originalJobSubmission = rifSession.getRIFJobSubmission();	
+		RIFStudySubmission originalJobSubmission = rifSession.getRIFJobSubmission();	
 		try {
 			RIFJobSubmissionHTMLWriter rifJobSubmissionWriter
 				= new RIFJobSubmissionHTMLWriter();
@@ -274,7 +274,7 @@ class PreviewStepPanel extends AbstractStepPanel {
 			= (ComparisonArea) rifSession.getCurrentGeographicalArea();
 		workingCopyComparisonArea.setNewRecord(false);
 				
-		RIFJobSubmission originalJobSubmission
+		RIFStudySubmission originalJobSubmission
 			= rifSession.getRIFJobSubmission();
 		DiseaseMappingStudy originalStudy
 			= (DiseaseMappingStudy) originalJobSubmission.getStudy();
