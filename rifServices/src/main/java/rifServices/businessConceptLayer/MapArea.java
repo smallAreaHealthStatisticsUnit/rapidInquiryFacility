@@ -150,6 +150,10 @@ public final class MapArea
 	public static MapArea createCopy(
 		final MapArea originalMapArea) {
 
+		if (originalMapArea == null) {
+			return null;
+		}
+		
 		MapArea cloneMapArea
 			= new MapArea(
 				originalMapArea.getIdentifier(),
@@ -165,6 +169,10 @@ public final class MapArea
 	 */
 	public static ArrayList<MapArea> createCopy(
 		final ArrayList<MapArea> originalMapAreas) {
+		
+		if (originalMapAreas == null) {
+			return null;
+		}
 		
 		ArrayList<MapArea> cloneMapAreas = new ArrayList<MapArea>();
 		
