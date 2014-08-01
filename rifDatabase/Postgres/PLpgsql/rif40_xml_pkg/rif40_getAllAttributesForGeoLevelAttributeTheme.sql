@@ -69,10 +69,11 @@ END;
 $$;
 
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR);
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, VARCHAR, VARCHAR);
 CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(
 	l_geography 		VARCHAR,
 	l_geolevel_select	VARCHAR,
-	l_theme			rif40_xml_pkg.rif40_geolevelAttributeTheme,
+	l_theme			VARCHAR,
 	l_attribute_name_array	VARCHAR[]		DEFAULT NULL)
 RETURNS TABLE(
 		attribute_source	VARCHAR, 
@@ -148,9 +149,16 @@ DECLARE
 		  FROM rif40_geolevels
 		 WHERE geography     = l_geography
 		   AND geolevel_name = l_geolevel_select;
+	c3getallatt4theme CURSOR(l_enumlabel VARCHAR) FOR
+		SELECT enumlabel 
+		  FROM pg_enum 
+ 		 WHERE enumtypid = 'rif40_xml_pkg.rif40_geolevelAttributeTheme'::regtype 
+		   AND enumlabel = l_enumlabel
+  		 ORDER BY enumsortorder;
 --
 	c1_rec RECORD;
 	c2_rec RECORD;
+	c3_rec 	RECORD;
 --
 	i		INTEGER;
 	stp 		TIMESTAMP WITH TIME ZONE:=clock_timestamp();
@@ -196,6 +204,20 @@ BEGIN
 			l_geography::VARCHAR		/* Geography */, 
 			l_geolevel_select::VARCHAR	/* geolevel select */);
 	END IF;	
+--
+-- Check enum value (theme)
+--
+	OPEN c3getallatt4theme(l_theme);
+	FETCH c3getallatt4theme INTO c3_rec;
+	CLOSE c3getallatt4theme;
+	IF c3_rec.enumlabel IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-50808, 'rif40_getAllAttributesForGeoLevelAttributeTheme', 
+			'Geography: %, geolevel select: %, invalid theme: %', 			
+			l_geography::VARCHAR			/* Geography */, 
+			l_geolevel_select::VARCHAR		/* Geolevel select */, 
+			l_theme::VARCHAR			/* Theme */);
+	END IF;
+
 --
 -- Process themes
 --
@@ -321,7 +343,7 @@ by 3;
 			 	)
 				SELECT LOWER(b.extract_table)::VARCHAR AS attribute_source,
 				       b.column_name::VARCHAR AS attribute_name,
-				       l_theme::VARCHAR AS theme,
+				       'extract'::VARCHAR AS theme,
 				       b.source_description::VARCHAR AS source_description,
 				       b.name_description::VARCHAR AS name_description,
 				       b.ordinal_position::INTEGER AS ordinal_position,
@@ -471,7 +493,7 @@ END;
 $func$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR[]) IS 'Function: 	rif40_getAllAttributesForGeoLevelAttributeTheme()
+COMMENT ON FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR,VARCHAR, VARCHAR[]) IS 'Function: 	rif40_getAllAttributesForGeoLevelAttributeTheme()
 Parameters:	Geography, <geolevel select>, theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme)), attribute name array [Default: NULL - do not filter, return all attributes]
 Returns:	Table: attribute_source, attribute_name, theme, source_description, name_description, is_numeric
 Description:	Get all atrributes for geography geolevel theme
@@ -522,71 +544,6 @@ psql:alter_scripts/v4_0_alter_2.sql:458: INFO:  [DEBUG1] rif40_getAllAttributesF
 (1 row)
 
 Note there is currently no support for health themes.';
-
-GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR[]) TO rif_manager;
-GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR[]) TO rif_user;
-
-CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(
-	l_geography 		VARCHAR,
-	l_geolevel_select	VARCHAR,
-	l_theme			VARCHAR,
-	l_attribute_name_array	VARCHAR[]		DEFAULT NULL)
-RETURNS TABLE(
-		attribute_source	VARCHAR, 
-		attribute_name		VARCHAR, 
-		theme			VARCHAR,
-		source_description	VARCHAR,
-		name_description	VARCHAR,
-		ordinal_position	INTEGER,
-		is_numeric		BOOLEAN)
-SECURITY INVOKER
-AS $func$
-/*
-Function: 	rif40_getAllAttributesForGeoLevelAttributeTheme()
-Parameters:	Geography, <geolevel select>, theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme), attribute name array [Default: NULL - do not filter, return all attributes]
-Returns:	Table: attribute_source, attribute_name, theme, source_description, name_description, ordinal_position, is_numeric
-Description:	Get all atrributes for geography geolevel theme. The attribute order is the original table order (i.e. by
-		ordinal_position)
- */
-DECLARE
-	c3getallatt4theme CURSOR(l_enumlabel VARCHAR) FOR
-		SELECT enumlabel 
-		  FROM pg_enum 
- 		 WHERE enumtypid = 'rif40_xml_pkg.rif40_geolevelAttributeTheme'::regtype 
-		   AND enumlabel = l_enumlabel
-  		 ORDER BY enumsortorder;
-	c3_rec 	RECORD;
-BEGIN
---
--- Check enum value
---
-	OPEN c3getallatt4theme(l_theme);
-	FETCH c3getallatt4theme INTO c3_rec;
-	CLOSE c3getallatt4theme;
-	IF c3_rec.enumlabel IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-50808, 'rif40_getAllAttributesForGeoLevelAttributeTheme', 
-			'Geography: %, geolevel select: %, invalid theme: %', 			
-			l_geography::VARCHAR			/* Geography */, 
-			l_geolevel_select::VARCHAR		/* Geolevel select */, 
-			l_theme::VARCHAR			/* Theme */);
-	END IF;
-
---
--- Call rif40_xml_pkg.rif40_geolevelAttributeTheme enum overload 
---
-	RETURN QUERY SELECT rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(
-		l_geography,
-		l_geolevel_select,
-		l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme,
-		l_attribute_name_array);
-END;
-$func$
-LANGUAGE PLPGSQL;
-
-COMMENT ON FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, VARCHAR, VARCHAR[]) IS 'Function: 	rif40_getAllAttributesForGeoLevelAttributeTheme()
-Parameters:	Geography, <geolevel select>, theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme) as VARCHAR, attribute name array [Default: NULL - do not filter, return all attributes]
-Returns:	Table: attribute_source, attribute_name, theme, source_description, name_description, is_numeric
-Description:	Get all atrributes for geography geolevel theme; VARCHAR overload for rif40_xml_pkg.rif40_geolevelAttributeTheme enum';
 
 GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, VARCHAR, VARCHAR[]) TO rif_manager;
 GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, VARCHAR, VARCHAR[]) TO rif_user;

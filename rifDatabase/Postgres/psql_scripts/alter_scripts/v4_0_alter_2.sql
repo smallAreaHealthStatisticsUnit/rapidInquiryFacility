@@ -237,6 +237,7 @@ $$;
 --
 -- Test middleware interface fucntions
 --
+\set VERBOSITY verbose
 SELECT * 
   FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'extract');
 
