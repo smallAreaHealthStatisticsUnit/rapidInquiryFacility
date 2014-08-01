@@ -68,6 +68,7 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR);
 CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(
 	l_geography 		VARCHAR,
 	l_geolevel_select	VARCHAR,
@@ -76,7 +77,7 @@ CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttrib
 RETURNS TABLE(
 		attribute_source	VARCHAR, 
 		attribute_name		VARCHAR, 
-		theme			rif40_xml_pkg.rif40_geolevelAttributeTheme,
+		theme			VARCHAR,
 		source_description	VARCHAR,
 		name_description	VARCHAR,
 		ordinal_position	INTEGER,
@@ -260,7 +261,7 @@ by 3;
 				)
 				SELECT LOWER(b.covariate_table)::VARCHAR AS attirbute_source,
 				       LOWER(b.column_name)::VARCHAR AS attribute_name,  
-				       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
+				       l_theme::VARCHAR AS theme,
 				       b.source_description::VARCHAR AS source_description,
 				       b.name_description::VARCHAR AS name_description,
 				       b.ordinal_position::INTEGER AS ordinal_position,
@@ -288,7 +289,7 @@ by 3;
 				)
 				SELECT LOWER(b.numerator_table)::VARCHAR AS attribute_source,
 				       b.column_name::VARCHAR AS attribute_name,
-				       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
+				       l_theme::VARCHAR AS theme,
 				       b.source_description::VARCHAR AS source_description,
 				       b.name_description::VARCHAR AS name_description,
 				       b.ordinal_position::INTEGER AS ordinal_position,
@@ -320,7 +321,7 @@ by 3;
 			 	)
 				SELECT LOWER(b.extract_table)::VARCHAR AS attribute_source,
 				       b.column_name::VARCHAR AS attribute_name,
-				       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
+				       l_theme::VARCHAR AS theme,
 				       b.source_description::VARCHAR AS source_description,
 				       b.name_description::VARCHAR AS name_description,
 				       b.ordinal_position::INTEGER AS ordinal_position,
@@ -352,7 +353,7 @@ by 3;
 		 		)
 				SELECT LOWER(b.map_table)::VARCHAR AS attribute_source,
 				       b.column_name::VARCHAR AS attribute_name,
-				       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
+				       l_theme::VARCHAR AS theme,
 				       b.source_description::VARCHAR AS source_description,
 				       b.name_description::VARCHAR AS name_description,
 				       b.ordinal_position::INTEGER AS ordinal_position,
@@ -380,7 +381,7 @@ by 3;
 				)
 				SELECT LOWER(b.denominator_table)::VARCHAR AS attribute_source,
 				       b.column_name::VARCHAR AS attribute_name,
-				       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
+				       l_theme::VARCHAR AS theme,
 				       b.source_description::VARCHAR AS source_description,
 				       b.name_description::VARCHAR AS name_description,
 				       b.ordinal_position::INTEGER AS ordinal_position,
@@ -410,7 +411,7 @@ by 3;
 		 		)
 				SELECT LOWER(b.geometry_table)::VARCHAR AS attribute_source,
 				       b.column_name::VARCHAR AS attribute_name,
-				       l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme AS theme,
+				       l_theme::VARCHAR AS theme,
 				       b.source_description::VARCHAR AS source_description,
 				       b.name_description::VARCHAR AS name_description,
 				       b.ordinal_position::INTEGER AS ordinal_position,
@@ -480,7 +481,7 @@ E.g.
       attribute_source       | attribute_name |   theme   |       source_description       |                         name_description                          | is_numeric
 -----------------------------+----------------+-----------+--------------------------------+-------------------------------------------------------------------+------------
  sahsuland_covariates_level4 | areatri1km     | covariate | SAHSU land covariates - level4 | Toxic Release Inventory within 1km of area (0=no/1=yes)           | t
- sahsuland_covariates_level4 | near_dist      | covariate | SAHSU land covariates - level4 | Distance (m) from area centroid to nearest TRI site               | t
+ sahsuland_covarrif40_geolevelAttributeThemeiates_level4 | near_dist      | covariate | SAHSU land covariates - level4 | Distance (m) from area centroid to nearest TRI site               | t
  sahsuland_covariates_level4 | ses            | covariate | SAHSU land covariates - level4 | Social Economic Status (quintiles)                                | t
  sahsuland_covariates_level4 | tri_1km        | covariate | SAHSU land covariates - level4 | Toxic Release Inventory within 1km of areai centroid (0=no/1=yes) | t
 (4 rows)
@@ -524,6 +525,71 @@ Note there is currently no support for health themes.';
 
 GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR[]) TO rif_manager;
 GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR[]) TO rif_user;
+
+CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(
+	l_geography 		VARCHAR,
+	l_geolevel_select	VARCHAR,
+	l_theme			VARCHAR,
+	l_attribute_name_array	VARCHAR[]		DEFAULT NULL)
+RETURNS TABLE(
+		attribute_source	VARCHAR, 
+		attribute_name		VARCHAR, 
+		theme			VARCHAR,
+		source_description	VARCHAR,
+		name_description	VARCHAR,
+		ordinal_position	INTEGER,
+		is_numeric		BOOLEAN)
+SECURITY INVOKER
+AS $func$
+/*
+Function: 	rif40_getAllAttributesForGeoLevelAttributeTheme()
+Parameters:	Geography, <geolevel select>, theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme), attribute name array [Default: NULL - do not filter, return all attributes]
+Returns:	Table: attribute_source, attribute_name, theme, source_description, name_description, ordinal_position, is_numeric
+Description:	Get all atrributes for geography geolevel theme. The attribute order is the original table order (i.e. by
+		ordinal_position)
+ */
+DECLARE
+	c3getallatt4theme CURSOR(l_enumlabel VARCHAR) FOR
+		SELECT enumlabel 
+		  FROM pg_enum 
+ 		 WHERE enumtypid = 'rif40_xml_pkg.rif40_geolevelAttributeTheme'::regtype 
+		   AND enumlabel = l_enumlabel
+  		 ORDER BY enumsortorder;
+	c3_rec 	RECORD;
+BEGIN
+--
+-- Check enum value
+--
+	OPEN c3getallatt4theme(l_theme);
+	FETCH c3getallatt4theme INTO c3_rec;
+	CLOSE c3getallatt4theme;
+	IF c3_rec.enumlabel IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-50808, 'rif40_getAllAttributesForGeoLevelAttributeTheme', 
+			'Geography: %, geolevel select: %, invalid theme: %', 			
+			l_geography::VARCHAR			/* Geography */, 
+			l_geolevel_select::VARCHAR		/* Geolevel select */, 
+			l_theme::VARCHAR			/* Theme */);
+	END IF;
+
+--
+-- Call rif40_xml_pkg.rif40_geolevelAttributeTheme enum overload 
+--
+	RETURN QUERY SELECT rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(
+		l_geography,
+		l_geolevel_select,
+		l_theme::rif40_xml_pkg.rif40_geolevelAttributeTheme,
+		l_attribute_name_array);
+END;
+$func$
+LANGUAGE PLPGSQL;
+
+COMMENT ON FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, VARCHAR, VARCHAR[]) IS 'Function: 	rif40_getAllAttributesForGeoLevelAttributeTheme()
+Parameters:	Geography, <geolevel select>, theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme) as VARCHAR, attribute name array [Default: NULL - do not filter, return all attributes]
+Returns:	Table: attribute_source, attribute_name, theme, source_description, name_description, is_numeric
+Description:	Get all atrributes for geography geolevel theme; VARCHAR overload for rif40_xml_pkg.rif40_geolevelAttributeTheme enum';
+
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, VARCHAR, VARCHAR[]) TO rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(VARCHAR, VARCHAR, VARCHAR, VARCHAR[]) TO rif_user;
 
 --
 -- Eof
