@@ -200,7 +200,8 @@ BEGIN
 'AS'||E'\n'||
 'SELECT *'||E'\n'||
 '  FROM rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_map'||
-' ORDER BY study_id, band_id, inv_id, genders, adjusted, direct_standardisation, gid_rowindex';
+' ORDER BY gid_rowindex';
+--' ORDER BY study_id, band_id, inv_id, genders, adjusted, direct_standardisation, gid_rowindex';
 	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TEMPORARY TABLE sahsuland_example_bands'||E'\n'||
 'AS'||E'\n'||
 'SELECT *'||E'\n'||
@@ -277,9 +278,9 @@ SELECT band_id, COUNT(area_id) AS total
 
 -- Check study really has run by dumping out data
 --
-\copy ( SELECT * FROM sahsuland_example_extract) to ../example_data/sahsuland_example_extract.csv WITH CSV HEADER
-\copy ( SELECT * FROM sahsuland_example_map) to ../example_data/sahsuland_example_map.csv WITH CSV HEADER
-\copy ( SELECT * FROM sahsuland_example_bands) to ../example_data/sahsuland_example_bands.csv WITH CSV HEADER
+\copy ( SELECT * FROM sahsuland_example_extract ORDER BY year, study_or_comparison, study_id, area_id, band_id, sex, age_group) to ../example_data/sahsuland_example_extract.csv WITH CSV HEADER
+\copy ( SELECT * FROM sahsuland_example_map ORDER BY gid_rowindex) to ../example_data/sahsuland_example_map.csv WITH CSV HEADER
+\copy ( SELECT * FROM sahsuland_example_bands ORDER BY study_id, area_id, band_id) to ../example_data/sahsuland_example_bands.csv WITH CSV HEADER
 
 --
 SELECT COUNT(area_id) AS total FROM sahsuland_example_extract;
