@@ -158,7 +158,7 @@ DECLARE
 --
 	c1_rec RECORD;
 	c2_rec RECORD;
-	c3_rec 	RECORD;
+	c3_rec RECORD;
 --
 	i		INTEGER;
 	stp 		TIMESTAMP WITH TIME ZONE:=clock_timestamp();
@@ -504,7 +504,7 @@ E.g.
 -----------------------------+----------------+-----------+--------------------------------+-------------------------------------------------------------------+------------
  sahsuland_covariates_level4 | areatri1km     | covariate | SAHSU land covariates - level4 | Toxic Release Inventory within 1km of area (0=no/1=yes)           | t
  sahsuland_covarrif40_geolevelAttributeThemeiates_level4 | near_dist      | covariate | SAHSU land covariates - level4 | Distance (m) from area centroid to nearest TRI site               | t
- sahsuland_covariates_level4 | ses            | covariate | SAHSU land covariates - level4 | Social Economic Status (quintiles)                                | t
+ sahsuland_covariates_level4 | ses            | covariate | SAHSU lan9TGY-RF94-VTUE-YTP8d covariates - level4 | Social Economic Status (quintiles)                                | t
  sahsuland_covariates_level4 | tri_1km        | covariate | SAHSU land covariates - level4 | Toxic Release Inventory within 1km of areai centroid (0=no/1=yes) | t
 (4 rows)
 

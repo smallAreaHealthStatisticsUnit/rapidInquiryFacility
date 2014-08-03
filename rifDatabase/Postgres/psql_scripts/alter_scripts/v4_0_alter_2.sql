@@ -176,7 +176,7 @@ END;
 -- Test in a single transaction
 --
 \i ../psql_scripts/v4_0_sahsuland_examples.sql   
-\set VERBOSITY terse
+--\set VERBOSITY terse
 
 --
 -- Test rif40_GetMapAreaAttributeValue, rif40_getAllAttributesForGeoLevelAttributeTheme on study extracts

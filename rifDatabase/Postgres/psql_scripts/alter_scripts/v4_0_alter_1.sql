@@ -568,7 +568,7 @@ WITH a AS (
 )	
 SELECT b.theme, b.attribute_source, b.attribute_name, b.name_description, b.ordinal_position, b.is_numeric
   FROM a, rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(
-	'SAHSU'::VARCHAR, 'LEVEL4'::VARCHAR, a.enumlabel::rif40_xml_pkg.rif40_geolevelAttributeTheme) b;
+	'SAHSU'::VARCHAR, 'LEVEL4'::VARCHAR, a.enumlabel::VARCHAR) b;
 
 --
 -- rif40_GetGeoLevelAttributeTheme() not implemented, purpose unclear
@@ -767,7 +767,7 @@ VACUUM ANALYSE t_rif40_investigations;
 
 DO LANGUAGE plpgsql $$
 BEGIN
---
+--VARCHAR
 	RAISE INFO 'alter_1.sql completed OK, VACUUM ANALYZE OK';
 END;
 $$;
