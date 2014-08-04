@@ -151,7 +151,6 @@ class XMLHealthCodeTaxonomyContentHandler
 			saxParser.parse(healthCodeListFile, this);
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"io.error.problemReadingHealthCodes",

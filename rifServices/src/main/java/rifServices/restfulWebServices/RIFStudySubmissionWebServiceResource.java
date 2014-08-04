@@ -112,6 +112,8 @@ public class RIFStudySubmissionWebServiceResource
 	// ==========================================
 
 	public RIFStudySubmissionWebServiceResource() {
+		super();
+		System.out.println("RIFStudySubmissionWebServiceResource constructor 1");
 
 	}
 
@@ -135,19 +137,21 @@ public class RIFStudySubmissionWebServiceResource
 		
 		
 		try {
-
-			
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxx");
+			
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();	
 			ArrayList<RIFOutputOption> rifOutputOptions
 				= studySubmissionService.getAvailableRIFOutputOptions(user);
 			
-			//@TODO convert to JSON
-		
+			//Convert results to support JSON
+			//@TODO
+			
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -171,13 +175,16 @@ public class RIFStudySubmissionWebServiceResource
 		
 		
 		try {
-			
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxx");
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();	
 			ArrayList<CalculationMethod> calculationMethods
 				= studySubmissionService.getAvailableCalculationMethods(user);
 			
+			//Convert results to support JSON
 			ArrayList<CalculationMethodProxy> calculationMethodProxies
 				= new ArrayList<CalculationMethodProxy>();
 			for (CalculationMethod calculationMethod : calculationMethods) {
@@ -186,7 +193,6 @@ public class RIFStudySubmissionWebServiceResource
 				calculationMethodProxy.setCodeRoutineName(calculationMethod.getCodeRoutineName());
 				calculationMethodProxy.setDescription(calculationMethod.getDescription());
 				calculationMethodProxy.setPrior(calculationMethod.getPrior().getName());
-
 				ArrayList<Parameter> parameters = calculationMethod.getParameters();
 				ArrayList<ParameterProxy> parameterProxies 
 					= new ArrayList<ParameterProxy>();
@@ -197,13 +203,13 @@ public class RIFStudySubmissionWebServiceResource
 					parameterProxy.setValue(parameter.getValue());
 					parameterProxies.add(parameterProxy);
 				}
-				calculationMethodProxy.setParameterProxies(parameterProxies);
-				
+				calculationMethodProxy.setParameterProxies(parameterProxies);				
 				calculationMethodProxies.add(calculationMethodProxy);
 			}
 			result = serialiseResult(calculationMethodProxies);			
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			exception.printStackTrace(System.out);
 			result = serialiseException(exception);			
 		}
@@ -222,17 +228,19 @@ public class RIFStudySubmissionWebServiceResource
 		
 		
 		try {
-			
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();	
 			ArrayList<DiseaseMappingStudy> diseaseMappingStudies
 				= studySubmissionService.getDiseaseMappingStudies(user);
 			
-			//@TODO convert to JSON
+			//Convert results to support JSON
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -241,10 +249,6 @@ public class RIFStudySubmissionWebServiceResource
 	}
 
 	
-	
-	
-	
-
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getProjects")
@@ -253,27 +257,30 @@ public class RIFStudySubmissionWebServiceResource
 				
 		String result = "";
 		
-		ArrayList<ProjectProxy> projectProxies 
-			= new ArrayList<ProjectProxy>();
 		
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();	
 			ArrayList<Project> projects
-				= studySubmissionService.getProjects(user);
-			
+				= studySubmissionService.getProjects(user);			
+
+			//Convert results to support JSON
+			ArrayList<ProjectProxy> projectProxies 
+				= new ArrayList<ProjectProxy>();
 			for (Project project : projects) {
 				ProjectProxy projectProxy
 					= new ProjectProxy();
 				projectProxy.setName(project.getName());
 				projectProxies.add(projectProxy);
-			}
-			
+			}		
 			result = serialiseResult(projectProxies);
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -291,11 +298,17 @@ public class RIFStudySubmissionWebServiceResource
 		String result = "";
 
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
+
+			
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();
 			ArrayList<Project> projects
 				= studySubmissionService.getProjects(user);			
+
+			//Convert results to support JSON
 			Collator collator = RIFServiceMessages.getCollator();
 			Project selectedProject = null;
 			for (Project project : projects) {
@@ -316,7 +329,7 @@ public class RIFStudySubmissionWebServiceResource
 			
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -333,14 +346,15 @@ public class RIFStudySubmissionWebServiceResource
 				
 		String result = "";
 		
-		GeoLevelToMapsProxy geoLevelToMapsProxy 
-			= new GeoLevelToMapsProxy();
 		
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxxx");
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(geoLevelSelectName);
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();		
 			ArrayList<GeoLevelToMap> geoLevelToMaps
@@ -348,16 +362,20 @@ public class RIFStudySubmissionWebServiceResource
 					user, 
 					geography, 
 					geoLevelSelect);
+
+			//Convert results to support JSON			
+			GeoLevelToMapsProxy geoLevelToMapsProxy 
+				= new GeoLevelToMapsProxy();
 			ArrayList<String> geoLevelToMapsNames = new ArrayList<String>();
 			
 			for (GeoLevelToMap geoLevelToMap : geoLevelToMaps) {
 				geoLevelToMapsNames.add(geoLevelToMap.getName());
 			}
-			geoLevelToMapsProxy.setNames(geoLevelToMapsNames.toArray(new String[0]));
-			
+			geoLevelToMapsProxy.setNames(geoLevelToMapsNames.toArray(new String[0]));			
 			result = serialiseResult(geoLevelToMapsProxy);
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -378,10 +396,9 @@ public class RIFStudySubmissionWebServiceResource
 				
 		String result = "";
 		
-		ArrayList<MapAreaProxy> mapAreaProxies 
-			= new ArrayList<MapAreaProxy>();
 		
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
@@ -389,30 +406,34 @@ public class RIFStudySubmissionWebServiceResource
 			GeoLevelArea geoLevelArea
 				= GeoLevelArea.newInstance(geoLevelAreaName);
 			GeoLevelToMap geoLevelToMap
-				= GeoLevelToMap.newInstance(geoLevelToMapName);
-			
+				= GeoLevelToMap.newInstance(geoLevelToMapName);			
 			geoLevelToMap.checkErrors();
+			
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();	
 			ArrayList<MapArea> mapAreas
-				= studySubmissionService.getGeoLevelToMapAreas(
+				= studySubmissionService.getMapAreas(
 					user, 
 					geography, 
 					geoLevelSelect,
 					geoLevelArea,
 					geoLevelToMap);
 					
+			//Convert results to support JSON			
+			ArrayList<MapAreaProxy> mapAreaProxies 
+				= new ArrayList<MapAreaProxy>();
 			for (MapArea mapArea : mapAreas) {
 				MapAreaProxy mapAreaProxy
 					= new MapAreaProxy();
 				mapAreaProxy.setIdentifier(mapArea.getIdentifier());
 				mapAreaProxy.setLabel(mapArea.getLabel());
 				mapAreaProxies.add(mapAreaProxy);
-			}
-			
+			}			
 			result = serialiseResult(mapAreaProxies);
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -429,28 +450,34 @@ public class RIFStudySubmissionWebServiceResource
 				
 		String result = "";
 		
-		ArrayList<HealthThemeProxy> healthThemeProxies 
-			= new ArrayList<HealthThemeProxy>();
 		
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
 			Geography geography = Geography.newInstance(geographyName, "");
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();				
+
 			ArrayList<HealthTheme> healthThemes
 				= studySubmissionService.getHealthThemes(
 					user, 
 					geography);
+			
+			//Convert results to support JSON						
+			ArrayList<HealthThemeProxy> healthThemeProxies 
+				= new ArrayList<HealthThemeProxy>();
 			for (HealthTheme healthTheme : healthThemes) {
 				HealthThemeProxy healthThemeProxy
 					= new HealthThemeProxy();
 				healthThemeProxy.setName(healthTheme.getName());
 				healthThemeProxies.add(healthThemeProxy);
-			}
-			
+			}			
 			result = serialiseResult(healthThemeProxies);
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -467,7 +494,10 @@ public class RIFStudySubmissionWebServiceResource
 		String result = "";
 				
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();			
 			ArrayList<Sex> sexes
@@ -484,10 +514,13 @@ public class RIFStudySubmissionWebServiceResource
 			for (Sex sex : sexes) {
 				sexNames.add(sex.getName());
 			}
+
+			//Convert results to support JSON						
 			sexesProxy.setNames(sexNames.toArray(new String[0]));
 			result = serialiseResult(sexesProxy);
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -508,6 +541,7 @@ public class RIFStudySubmissionWebServiceResource
 		String result = "";
 				
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
 			Geography geography
 				= Geography.newInstance(geographyName, "");
@@ -515,6 +549,8 @@ public class RIFStudySubmissionWebServiceResource
 				= GeoLevelSelect.newInstance(geoLevelSelectName);
 			GeoLevelToMap geoLevelToMap
 				= GeoLevelToMap.newInstance(geoLevelToMapName);
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();
 			ArrayList<AbstractCovariate> covariates
@@ -523,6 +559,8 @@ public class RIFStudySubmissionWebServiceResource
 					geography, 
 					geoLevelSelect, 
 					geoLevelToMap);
+
+			//Convert results to support JSON						
 			ArrayList<CovariateProxy> covariateProxies
 				= new ArrayList<CovariateProxy>();
 			for (AbstractCovariate covariate : covariates) {
@@ -543,16 +581,13 @@ public class RIFStudySubmissionWebServiceResource
 			result = serialiseResult(covariateProxies);
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
 		return result;
 		
 	}
-	
-	
-	
-	
 	
 	//getCovariates
 	//
@@ -583,8 +618,11 @@ public class RIFStudySubmissionWebServiceResource
 		String result = "";
 		
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
 			Geography geography = Geography.newInstance(geographyName, "xxx");
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();			
 			NumeratorDenominatorPair ndPair
@@ -599,6 +637,7 @@ public class RIFStudySubmissionWebServiceResource
 					ndPair, 
 					AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			
+			//Convert results to support JSON						
 			ArrayList<AgeGroupProxy> ageGroupProxies = new ArrayList<AgeGroupProxy>();
 			for (AgeGroup ageGroup : ageGroups) {
 				AgeGroupProxy ageGroupProxy = new AgeGroupProxy();
@@ -610,6 +649,7 @@ public class RIFStudySubmissionWebServiceResource
 			result = serialiseResult(ageGroupProxies);
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 
@@ -625,11 +665,16 @@ public class RIFStudySubmissionWebServiceResource
 		String result = "";
 
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();			
 			ArrayList<HealthCodeTaxonomy> healthCodeTaxonomies
 				= studySubmissionService.getHealthCodeTaxonomies(user);
+
+			//Convert results to support JSON						
 			ArrayList<HealthCodeTaxonomyProxy> healthCodeTaxonomyProxies
 				 = new ArrayList<HealthCodeTaxonomyProxy>();
 			for (HealthCodeTaxonomy healthCodeTaxonomy : healthCodeTaxonomies) {
@@ -644,6 +689,7 @@ public class RIFStudySubmissionWebServiceResource
 			result = serialiseResult(healthCodeTaxonomyProxies);					
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -660,7 +706,10 @@ public class RIFStudySubmissionWebServiceResource
 		String result = "";
 		
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();			
 			HealthCodeTaxonomy healthCodeTaxonomy
@@ -668,7 +717,9 @@ public class RIFStudySubmissionWebServiceResource
 					user, 
 					healthCodeTaxonomyNameSpace);
 			ArrayList<HealthCode> healthCodes
-				= studySubmissionService.getTopLevelCodes(user, healthCodeTaxonomy);
+				= studySubmissionService.getTopLevelHealthCodes(user, healthCodeTaxonomy);
+
+			//Convert results to support JSON						
 			ArrayList<HealthCodeProxy> healthCodeProxies
 				= new ArrayList<HealthCodeProxy>();
 			for (HealthCode healthCode : healthCodes) {
@@ -683,6 +734,7 @@ public class RIFStudySubmissionWebServiceResource
 			result = serialiseResult(healthCodeProxies);					
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -700,7 +752,10 @@ public class RIFStudySubmissionWebServiceResource
 	
 		String result = "";
 		try {			
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();			
 			HealthCodeTaxonomy healthCodeTaxonomy
@@ -712,6 +767,8 @@ public class RIFStudySubmissionWebServiceResource
 					user, 
 					healthCodeTaxonomy, 
 					searchText);
+
+			//Convert results to support JSON						
 			ArrayList<HealthCodeProxy> healthCodeProxies
 				= new ArrayList<HealthCodeProxy>();
 			for (HealthCode healthCode : healthCodes) {
@@ -727,6 +784,7 @@ public class RIFStudySubmissionWebServiceResource
 			result = serialiseResult(healthCodeProxies);					
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -743,7 +801,10 @@ public class RIFStudySubmissionWebServiceResource
 	
 		String result = "";
 		try {			
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();			
 			HealthCode childHealthCode
@@ -754,6 +815,7 @@ public class RIFStudySubmissionWebServiceResource
 			HealthCode parentHealthCode
 				= studySubmissionService.getParentHealthCode(user, childHealthCode);			
 
+			//Convert results to support JSON						
 			HealthCodeProxy healthCodeProxy
 				= new HealthCodeProxy();
 			healthCodeProxy.setCode(parentHealthCode.getCode());
@@ -761,10 +823,10 @@ public class RIFStudySubmissionWebServiceResource
 			healthCodeProxy.setNameSpace(parentHealthCode.getNameSpace());
 			healthCodeProxy.setIsTopLevelTerm(String.valueOf(parentHealthCode.isTopLevelTerm()));
 			healthCodeProxy.setNumberOfSubTerms(String.valueOf(parentHealthCode.getNumberOfSubTerms()));
-
 			result = serialiseResult(healthCodeProxy);					
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -782,7 +844,10 @@ public class RIFStudySubmissionWebServiceResource
 	
 		String result = "";
 		try {			
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();			
 			HealthCode parentHealthCode
@@ -793,6 +858,7 @@ public class RIFStudySubmissionWebServiceResource
 			ArrayList<HealthCode> healthCodes
 				= studySubmissionService.getImmediateChildHealthCodes(user, parentHealthCode);
 			
+			//Convert results to support JSON						
 			ArrayList<HealthCodeProxy> healthCodeProxies
 				= new ArrayList<HealthCodeProxy>();
 			for (HealthCode currentHealthCode : healthCodes) {
@@ -808,6 +874,7 @@ public class RIFStudySubmissionWebServiceResource
 			result = serialiseResult(healthCodeProxies);					
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -824,7 +891,10 @@ public class RIFStudySubmissionWebServiceResource
 	
 		String result = "";
 		try {			
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();
 			HealthCodeTaxonomy healthCodeTaxonomy
@@ -836,6 +906,8 @@ public class RIFStudySubmissionWebServiceResource
 					user, 
 					healthCodeTaxonomy, 
 					searchText);
+
+			//Convert results to support JSON						
 			ArrayList<HealthCodeProxy> healthCodeProxies
 				= new ArrayList<HealthCodeProxy>();
 			for (HealthCode matchingHealthCode : matchingHealthCodes) {
@@ -851,17 +923,13 @@ public class RIFStudySubmissionWebServiceResource
 			result = serialiseResult(healthCodeProxies);					
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
 		return result;
 	}
-	
 
-	
-	
-	
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

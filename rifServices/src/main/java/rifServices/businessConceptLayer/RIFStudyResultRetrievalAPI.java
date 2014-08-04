@@ -3,11 +3,7 @@ package rifServices.businessConceptLayer;
 import rifServices.system.RIFServiceException;
 
 
-
-
-
 import java.util.ArrayList;
-import java.awt.geom.Rectangle2D;
 
 
 
@@ -88,7 +84,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public String getGeometry(
-		User user,		
+		User user,	
 		Geography geography,
 		GeoLevelSelect geoLevelSelect,
 		GeoLevelToMap geoLevelToMap,
@@ -141,10 +137,9 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 		User user,
 		Geography geography,
 		GeoLevelSelect geoLevelSelect,
-		Integer zoomFactor,
-		String tileIdentifier) 
+		BoundaryRectangle boundaryRectangle) 
 		throws RIFServiceException;
-
+		
 	/**
 	 * Given a given geo level and an attribute theme, returns 
 	 * a collection of map areas that are associated with a specific
@@ -245,7 +240,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 */	
 	public RIFResultTable getCalculatedResultsByBlock(
 		User user,
-		StudyResultRetrievalContext studyResultRetrievalContext,
+		StudySummary studySummary,
 		String[] calculatedResultColumnFieldNames,
 		Integer startRowIndex,
 		Integer endRowIndex)
@@ -265,7 +260,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 */
 	public RIFResultTable getExtractResultsByBlock(
 		User user,
-		StudyResultRetrievalContext studyResultRetrievalContext,
+		StudySummary studySummary,
 		String[] calculatedResultColumnFieldNames,			
 		Integer startRowIndex,
 		Integer endRowIndex)
@@ -290,6 +285,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	public RIFResultTable getResultsStratifiedByGenderAndAgeGroup(
 		User user,
 		StudyResultRetrievalContext studyResultRetrievalContext,
+		GeoLevelToMap geoLevelToMap,
 		GeoLevelAttributeSource geoLevelAttributeSource,
 		String geoLevelAttribute,
 		ArrayList<MapArea> mapAreas,
@@ -333,8 +329,8 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * eg:
 	 * agegroup     | sex    popcount
 	 * @param user
-	 * @param geography
-	 * @param geoLevelSelect
+	 * @param studyResultRetrievalContext
+	 * @param geoLevelToMap
 	 * @param geoLevelSource
 	 * @param geoLevelAttribute
 	 * @param mapAreas
@@ -344,11 +340,13 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	public RIFResultTable getPyramidDataByMapAreas(
 		User user,
 		StudyResultRetrievalContext studyResultRetrievalContext,
+		GeoLevelToMap geoLevelToMap,
 		GeoLevelAttributeSource geoLevelSource,
 		String geoLevelAttribute,
 		ArrayList<MapArea> mapAreas) 
 		throws RIFServiceException;
 
+	
 	public String[] getResultFieldsStratifiedByAgeGroup(
 		User user,
 		StudyResultRetrievalContext studyResultRetrievalContext,
@@ -364,7 +362,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 */
 	public RIFResultTable getSMRValues(
 		User user,
-		DiseaseMappingStudy diseaseMappingStudy)
+		StudySummary studySummary)
 		throws RIFServiceException;
 
 
@@ -378,7 +376,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 */
 	public RIFResultTable getRRValues(
 		User user,
-		DiseaseMappingStudy diseaseMappingStudy)
+		StudySummary studySummary)
 		throws RIFServiceException;
 	
 
@@ -392,7 +390,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 */
 	public RIFResultTable getRRUnadjustedValues(
 		User user,
-		DiseaseMappingStudy diseaseMappingStudy)
+		StudySummary studySummary)
 		throws RIFServiceException;	
 	
 	
@@ -416,7 +414,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 */
 	public RIFResultTable getStudyResultGeneralInfo(
 		User user,
-		DiseaseMappingStudy diseaseMappingStudy)
+		StudySummary studySummary)
 		throws RIFServiceException;
 
 	public void initialise(Object startupParameter)

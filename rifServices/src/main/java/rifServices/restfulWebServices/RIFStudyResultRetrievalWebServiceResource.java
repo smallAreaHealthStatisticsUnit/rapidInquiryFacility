@@ -1,25 +1,11 @@
 package rifServices.restfulWebServices;
 
-
-import rifServices.system.RIFServiceException;
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceStartupOptions;
 import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-
-
-
-
-
-
-
-
-
 
 import java.text.Collator;
 import java.text.SimpleDateFormat;
@@ -129,14 +115,14 @@ public class RIFStudyResultRetrievalWebServiceResource
 	// ==========================================
 
 	public RIFStudyResultRetrievalWebServiceResource() {
-		
+		System.out.println("RIFStudyResultRetrievalWebServiceResource constructor 1");		
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	//KLG: N
+	//KLG: 
 
 	
 	/**
@@ -160,9 +146,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					
 		String result = "";
 		try {
-			
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
@@ -177,6 +161,9 @@ public class RIFStudyResultRetrievalWebServiceResource
 				mapAreas.add(mapArea);
 			}
 
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
 			result
 				= studyResultRetrievalService.getGeometry(
 					user, 
@@ -184,8 +171,13 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geoLevelSelect,
 					geoLevelToMap, 
 					mapAreas);
+			
+			//Convert results to support JSON
+			serialiseResult(result);
+			
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -213,18 +205,21 @@ public class RIFStudyResultRetrievalWebServiceResource
 					
 		String result = "";
 		try {
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
 			
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
 					geographyName, 
 					geoLevelSelectName, 
-					diseaseMappingStudyID);
-			
+					diseaseMappingStudyID);			
 			MapArea mapArea
 				= MapArea.newInstance(mapAreaValue, mapAreaValue);		
+
+			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
 			BoundaryRectangle boundaryRectangle
 				= studyResultRetrievalService.getGeoLevelBoundsForArea(
 					user, 
@@ -246,6 +241,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 			
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -275,9 +271,8 @@ public class RIFStudyResultRetrievalWebServiceResource
 					
 		String result = "";
 				
-		try {			
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+		try {
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
 
 			StudyResultRetrievalContext studyResultRetrievalContext
@@ -285,6 +280,10 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geographyName,
 					geoLevelSelectName,
 					diseaseMappingStudyID);
+
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
 			BoundaryRectangle boundaryRectangle
 				= studyResultRetrievalService.getGeoLevelFullExtentForStudy(
 					user, 
@@ -305,6 +304,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 			
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -330,18 +330,22 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 
 		try {			
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(geoLevelSelectName);
+
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
 			BoundaryRectangle boundaryRectangle
 				= studyResultRetrievalService.getGeoLevelFullExtent(
 					user, 
 					geography, 
 					geoLevelSelect);
 			
+			//Convert results to support JSON
 			BoundaryRectangleProxy boundaryRectangleProxy
 				= new BoundaryRectangleProxy();
 			boundaryRectangleProxy.setXMin(
@@ -356,6 +360,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 			
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -370,27 +375,39 @@ public class RIFStudyResultRetrievalWebServiceResource
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("zoomFactor") String zoomFactorValue,
-		@QueryParam("tileIdentifier") String tileIdentifier) {
+		@QueryParam("yMax") String yMax,
+		@QueryParam("xMax") String xMax,
+		@QueryParam("yMin") String yMin,
+		@QueryParam("xMin") String xMin) {
 					
 		String result = "";
 		
 		try {
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(geoLevelSelectName);
-			Integer zoomValue = Integer.valueOf(zoomFactorValue);
-
+			BoundaryRectangle boundaryRectangle
+				= BoundaryRectangle.newInstance();
+			boundaryRectangle.setYMax(Double.valueOf(yMax));
+			boundaryRectangle.setXMax(Double.valueOf(xMax));
+			boundaryRectangle.setYMin(Double.valueOf(yMin));
+			boundaryRectangle.setXMin(Double.valueOf(xMin));
+						
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
 			result
 				= studyResultRetrievalService.getTiles(
 					user, 
 					geography, 
 					geoLevelSelect,
-					zoomValue,
-					tileIdentifier);
+					boundaryRectangle);
+
+			//Convert results to support JSON
+			serialiseResult(result);
+			
 		}
 		catch(Exception exception) {
 			result = serialiseException(exception);			
@@ -423,13 +440,11 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(geoLevelSelectName);
-			
 			GeoLevelAttributeSource geoLevelAttributeSource
 				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
 			DiseaseMappingStudy diseaseMappingStudy = null;
@@ -438,17 +453,23 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geographyName, 
 					geoLevelSelectName, 
 					diseaseMappingStudyID);
-			
+
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();			
 			ArrayList<MapAreaAttributeValue> mapAreaAttributeValues
 				= studyResultRetrievalService.getMapAreaAttributeValues(
 					user,
 					studyResultRetrievalContext,
 					geoLevelAttributeSource,
-					geoLevelAttributeName);
-			
+					geoLevelAttributeName);			
+
+			//Convert results to support JSON
+			serialiseResult(mapAreaAttributeValues);			
 			
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -477,8 +498,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
@@ -488,13 +508,20 @@ public class RIFStudyResultRetrievalWebServiceResource
 			GeoLevelAttributeSource geoLevelAttributeSource
 				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
 			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
 			ArrayList<GeoLevelAttributeTheme> geoLevelAttributeThemes
 				= studyResultRetrievalService.getGeoLevelAttributeThemes(
 					user, 
 					studyResultRetrievalContext,
 					geoLevelAttributeSource);
+
+			//Convert results to support JSON
+			serialiseResult(geoLevelAttributeThemes);			
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -527,10 +554,8 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
-
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
 					geographyName, 
@@ -541,14 +566,21 @@ public class RIFStudyResultRetrievalWebServiceResource
 			GeoLevelAttributeTheme geoLevelAttributeTheme
 				= GeoLevelAttributeTheme.newInstance(geoLevelAttributeThemeName);
 						
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
 			String[] attributes
 				= studyResultRetrievalService.getAllAttributesForGeoLevelAttributeTheme(
 					user, 
 					studyResultRetrievalContext,
 					geoLevelAttributeSource, 
 					geoLevelAttributeTheme);			
+
+			//Convert results to support JSON
+			serialiseResult(attributes);	
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -581,8 +613,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
 			DiseaseMappingStudy diseaseMappingStudy = null;
 			StudyResultRetrievalContext studyResultRetrievalContext
@@ -595,14 +626,22 @@ public class RIFStudyResultRetrievalWebServiceResource
 			GeoLevelAttributeTheme geoLevelAttributeTheme
 				= GeoLevelAttributeTheme.newInstance(geoLevelAttributeThemeName);
 			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
 			String[] attributes
 				= studyResultRetrievalService.getNumericAttributesForGeoLevelAttributeTheme(
 					user, 
 					studyResultRetrievalContext,
 					geoLevelAttributeSource, 
-					geoLevelAttributeTheme);			
+					geoLevelAttributeTheme);
+
+			//Convert results to support JSON
+			serialiseResult(attributes);						
+
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -637,31 +676,34 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
-
-			StudyResultRetrievalContext studyResultRetrievalContext
-				= StudyResultRetrievalContext.newInstance(
-					geographyName, 
-					geoLevelSelectName, 
-					diseaseMappingStudyID);
-			
+			StudySummary studySummary
+				= StudySummary.newInstance(
+					diseaseMappingStudyID, 
+					"", 
+					"");
 			String[] resultTableFieldNames
 				= calculatedResultColumnFieldNames.toArray(new String[0]);
 			Integer startRowIndex = Integer.valueOf(startRowIndexValue);
 			Integer endRowIndex = Integer.valueOf(endRowIndexValue);
 			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
 			RIFResultTable rifResultTable
 				= studyResultRetrievalService.getCalculatedResultsByBlock(
 					user, 
-					studyResultRetrievalContext,
+					studySummary,
 					resultTableFieldNames,
 					startRowIndex,
 					endRowIndex);
-			
+
+			//Convert results to support JSON
+			serialiseResult(rifResultTable);			
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -699,30 +741,35 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
-			StudyResultRetrievalContext studyResultRetrievalContext
-				= StudyResultRetrievalContext.newInstance(
-					geographyName,
-					geoLevelSelectName,
-					diseaseMappingStudyID);
-
+			StudySummary studySummary
+				= StudySummary.newInstance(
+					diseaseMappingStudyID, 
+					"", 
+					"");
 			String[] resultTableFieldNames
 				= calculatedResultColumnFieldNames.toArray(new String[0]);
 			Integer startRowIndex = Integer.valueOf(startRowIndexValue);
 			Integer endRowIndex = Integer.valueOf(endRowIndexValue);
 			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
 			RIFResultTable rifResultTable
 				= studyResultRetrievalService.getExtractResultsByBlock(
 					user, 
-					studyResultRetrievalContext,
+					studySummary,
 					resultTableFieldNames,
 					startRowIndex,
 					endRowIndex);
+
+			//Convert results to support JSON
+			serialiseResult(rifResultTable);						
 			
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -749,6 +796,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
 		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
+		@QueryParam("geoLevelToMapName") String geoLevelToMapName,
 		@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
 		@QueryParam("geoLevelAttribute") String geoLevelAttribute,
 		@QueryParam("mapAreaValues") List<String> mapAreaValues,
@@ -757,17 +805,17 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
 					geographyName,
 					geoLevelSelectName,
 					diseaseMappingStudyID);
+			GeoLevelToMap geoLevelToMap
+				= GeoLevelToMap.newInstance(geoLevelToMapName);
 			GeoLevelAttributeSource geoLevelAttributeSource
 				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
-			
 			ArrayList<MapArea> mapAreas = new ArrayList<MapArea>();
 			for (String mapAreaValue : mapAreaValues) {
 				//TODO: Not sure where the map area label might come in
@@ -775,20 +823,27 @@ public class RIFStudyResultRetrievalWebServiceResource
 					= MapArea.newInstance(mapAreaValue, mapAreaValue);
 				mapAreas.add(mapArea);
 			}
-
 			Integer year = Integer.valueOf(yearValue);
 			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
 			RIFResultTable rifResultTable
 				= studyResultRetrievalService.getResultsStratifiedByGenderAndAgeGroup(
 					user, 
 					studyResultRetrievalContext,
+					geoLevelToMap,
 					geoLevelAttributeSource,
 					geoLevelAttribute,
 					mapAreas,
 					year);
-			
+
+			//Convert results to support JSON
+			serialiseResult(rifResultTable);						
+
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -819,8 +874,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
@@ -830,6 +884,9 @@ public class RIFStudyResultRetrievalWebServiceResource
 			GeoLevelAttributeSource geoLevelAttributeSource
 				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
 			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
 			ArrayList<AgeGroup> ageGroups
 				= studyResultRetrievalService.getResultAgeGroups(
 					user, 
@@ -837,6 +894,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geoLevelAttributeSource,
 					geoLevelAttribute);
 			
+			//Convert results to support JSON
 			ArrayList<AgeGroupProxy> ageGroupProxies = new ArrayList<AgeGroupProxy>();
 			for (AgeGroup ageGroup : ageGroups) {
 				AgeGroupProxy ageGroupProxy = new AgeGroupProxy();
@@ -848,6 +906,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 			result = serialiseResult(ageGroupProxies);
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -879,8 +938,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
@@ -891,14 +949,21 @@ public class RIFStudyResultRetrievalWebServiceResource
 			GeoLevelAttributeSource geoLevelAttributeSource
 				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
 			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
 			RIFResultTable rifResultTable
 				= studyResultRetrievalService.getPyramidData(
 					user, 
 					studyResultRetrievalContext,
 					geoLevelAttributeSource,
 					geoLevelAttribute);
+
+			//Convert results to support JSON
+			serialiseResult(rifResultTable);						
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -916,9 +981,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	 * @param geoLevelAttribute
 	 * @param yearValue
 	 * @return
-	 */
-	
-	
+	 */	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getPyramidDataByYear")
@@ -934,8 +997,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
@@ -946,6 +1008,9 @@ public class RIFStudyResultRetrievalWebServiceResource
 				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
 			Integer year = Integer.valueOf(yearValue);
 			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
 			RIFResultTable rifResultTable
 				= studyResultRetrievalService.getPyramidDataByYear(
 					user, 
@@ -953,8 +1018,12 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geoLevelAttributeSource,
 					geoLevelAttribute,
 					year);
+
+			//Convert results to support JSON
+			serialiseResult(rifResultTable);						
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -970,6 +1039,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+		@QueryParam("geoLevelToMapName") String geoLevelToMapName,		
 		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
 		@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
 		@QueryParam("geoLevelAttribute") String geoLevelAttribute,
@@ -978,17 +1048,17 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
 					geographyName,
 					geoLevelSelectName,
 					diseaseMappingStudyID);
+			GeoLevelToMap geoLevelToMap
+				= GeoLevelToMap.newInstance(geoLevelToMapName);
 			GeoLevelAttributeSource geoLevelAttributeSource
 				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
-
 			ArrayList<MapArea> mapAreas = new ArrayList<MapArea>();
 			for (String mapAreaValue : mapAreaValues) {
 				//TODO: Not sure where the map area label might come in
@@ -997,16 +1067,24 @@ public class RIFStudyResultRetrievalWebServiceResource
 				mapAreas.add(mapArea);
 			}
 						
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
 			RIFResultTable rifResultTable
 				= studyResultRetrievalService.getPyramidDataByMapAreas(
 					user, 
 					studyResultRetrievalContext,
+					geoLevelToMap,
 					geoLevelAttributeSource,
 					geoLevelAttribute,
 					mapAreas);
+
+			//Convert results to support JSON
+			serialiseResult(rifResultTable);						
 			
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -1027,8 +1105,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			//Convert URL parameters to RIF service API parameters			
 			User user = User.newInstance(userID, "xxxx");
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
@@ -1038,18 +1115,20 @@ public class RIFStudyResultRetrievalWebServiceResource
 			GeoLevelAttributeSource geoLevelAttributeSource
 				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
 
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
 			String[] resultFields
 				= studyResultRetrievalService.getResultFieldsStratifiedByAgeGroup(
 					user, 
 					studyResultRetrievalContext,
 					geoLevelAttributeSource);
-			
-			
 
-			
-			
+			//Convert results to support JSON
+			serialiseResult(resultFields);		
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -1068,18 +1147,28 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
+			//Convert URL parameters to RIF service API parameters			
+			User user = User.newInstance(userID, "xxxx");
+			StudySummary studySummary
+				= StudySummary.newInstance(
+					diseaseMappingStudyID, 
+					"", 
+					"");
+			
+			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
 				= getRIFStudyResultRetrievalService();
-			User user = User.newInstance(userID, "xxxx");
-			DiseaseMappingStudy diseaseMappingStudy = null;
-
 			RIFResultTable rifResultTable
 				= studyResultRetrievalService.getSMRValues(
 					user, 
-					diseaseMappingStudy);
+					studySummary);
+
+			//Convert results to support JSON
+			serialiseResult(rifResultTable);						
 						
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -1098,17 +1187,27 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
+			//Convert URL parameters to RIF service API parameters			
+			User user = User.newInstance(userID, "xxxx");
+			StudySummary studySummary
+				= StudySummary.newInstance(
+					diseaseMappingStudyID, 
+					"", 
+					"");
+		
+			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
 				= getRIFStudyResultRetrievalService();
-			User user = User.newInstance(userID, "xxxx");
-			DiseaseMappingStudy diseaseMappingStudy = null;
-
 			RIFResultTable rifResultTable
 				= studyResultRetrievalService.getRRValues(
 					user, 
-					diseaseMappingStudy);
+					studySummary);
+
+			//Convert results to support JSON
+			serialiseResult(rifResultTable);						
 						
 		}
+		//Convert exceptions to support JSON
 		catch(Exception exception) {
 			result = serialiseException(exception);			
 		}
@@ -1128,18 +1227,27 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
+			//Convert URL parameters to RIF service API parameters			
+			User user = User.newInstance(userID, "xxxx");
+			StudySummary studySummary
+				= StudySummary.newInstance(
+					diseaseMappingStudyID, 
+					"", 
+					"");
+
+			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
 				= getRIFStudyResultRetrievalService();
-			User user = User.newInstance(userID, "xxxx");
-			DiseaseMappingStudy diseaseMappingStudy = null;
-
 			RIFResultTable rifResultTable
 				= studyResultRetrievalService.getRRUnadjustedValues(
 					user, 
-					diseaseMappingStudy);
-						
+					studySummary);
+
+			//Convert results to support JSON
+			serialiseResult(rifResultTable);						
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -1157,27 +1265,34 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
+			//Convert URL parameters to RIF service API parameters			
+			User user = User.newInstance(userID, "xxxx");
+			StudySummary studySummary
+				= StudySummary.newInstance(
+					diseaseMappingStudyID, 
+					"", 
+					"");
+
+			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
 				= getRIFStudyResultRetrievalService();
-			User user = User.newInstance(userID, "xxxx");
-			DiseaseMappingStudy diseaseMappingStudy = null;
-
 			RIFResultTable rifResultTable
 				= studyResultRetrievalService.getStudyResultGeneralInfo(
 					user, 
-					diseaseMappingStudy);
+					studySummary);
+
+			//Convert results to support JSON
+			serialiseResult(rifResultTable);
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
 		return result;
 		
 	}	
-	
-
-	
-	
+		
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

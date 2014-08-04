@@ -47,7 +47,7 @@
  * 
  * <h1>Overview of Main Business Concepts</h1>
  * <p>
- * A {@link rifServices.businessConceptLayer.RIFJobSubmission} describes a research
+ * A {@link rifServices.businessConceptLayer.RIFStudySubmission} describes a research
  * activity that will be executed by the RIF to produce extraction results.  A submission
  * comprises information about the question being put to the database and the kinds of 
  * answers which are expected back.  
@@ -58,7 +58,7 @@
  * a study to the RIF database via the middleware that this code base provides.  The result will be a
  * data extraction that may be configured to suit different ways of post-processing results or configured
  * to generate different types of reports.  The basic data structure for specifying the question and 
- * post-processing the answer is the {@link rifServices.businessConceptLayer.RIFJobSubmission}.  An object
+ * post-processing the answer is the {@link rifServices.businessConceptLayer.RIFStudySubmission}.  An object
  * of this class has the following major features:
  * <ul>
  * <li>an {@link rifServices.businessConceptLayer.AbstractStudy}, which describes the scientific question</li>

@@ -345,6 +345,114 @@ public class RIFServiceMessages {
         	parameters);
 
     }
+
+
+    /**
+     * Gets the message.
+     *
+     * @param key the key
+     * @param parameter0 the parameter0
+     * @param parameter1 the parameter1
+     * @param parameter2 the parameter2
+     * @param parameter3 the parameter3
+     * @param parameter3 the parameter4
+     * @param parameter3 the parameter5
+     * @return the message
+     */
+    static public String getMessage(
+		final String key,
+        final String parameter0,
+        final String parameter1,
+        final String parameter2,
+        final String parameter3,
+        final String parameter4,
+        final String parameter5) {
+
+        String[] parameters = new String[6];
+        parameters[0] = parameter0;
+        parameters[1] = parameter1;
+        parameters[2] = parameter2;
+        parameters[3] = parameter3;
+        parameters[4] = parameter4;
+        parameters[5] = parameter5;
+        return fillInTheBlanks(key,
+        	parameters);
+    }
+    
+    /**
+     * Gets the message.
+     *
+     * @param key the key
+     * @param parameter0 the parameter0
+     * @param parameter1 the parameter1
+     * @param parameter2 the parameter2
+     * @param parameter3 the parameter3
+     * @param parameter3 the parameter4
+     * @param parameter3 the parameter5
+     * @param parameter3 the parameter6
+     * @return the message
+     */
+    static public String getMessage(
+		final String key,
+        final String parameter0,
+        final String parameter1,
+        final String parameter2,
+        final String parameter3,
+        final String parameter4,
+        final String parameter5,
+        final String parameter6) {
+
+        String[] parameters = new String[7];
+        parameters[0] = parameter0;
+        parameters[1] = parameter1;
+        parameters[2] = parameter2;
+        parameters[3] = parameter3;
+        parameters[4] = parameter4;
+        parameters[5] = parameter5;
+        parameters[6] = parameter6;
+        return fillInTheBlanks(key,
+        	parameters);
+    }
+    
+    /**
+     * Gets the message.
+     *
+     * @param key the key
+     * @param parameter0 the parameter0
+     * @param parameter1 the parameter1
+     * @param parameter2 the parameter2
+     * @param parameter3 the parameter3
+     * @param parameter3 the parameter4
+     * @param parameter3 the parameter5
+     * @param parameter3 the parameter6
+     * @param parameter3 the parameter7
+     * @return the message
+     */
+    static public String getMessage(
+		final String key,
+        final String parameter0,
+        final String parameter1,
+        final String parameter2,
+        final String parameter3,
+        final String parameter4,
+        final String parameter5,
+        final String parameter6,        
+        final String parameter7) {
+
+        String[] parameters = new String[8];
+        parameters[0] = parameter0;
+        parameters[1] = parameter1;
+        parameters[2] = parameter2;
+        parameters[3] = parameter3;
+        parameters[4] = parameter4;
+        parameters[5] = parameter5;
+        parameters[6] = parameter6;
+        parameters[7] = parameter7;
+        
+        return fillInTheBlanks(key,
+        	parameters);
+    }
+    
     
     /**
      * Fill in the blanks.
@@ -412,9 +520,7 @@ public class RIFServiceMessages {
 		pathToFind.append("classes");
     	
 		String targetClassesEntry = null;
-		System.out.println("RIFServiceMessages - there are=="+classPathEntries.length+"== entries");
     	for (String classPathEntry : classPathEntries) {
-    		System.out.println("classPathEntry =="+classPathEntry+"==");
     		if (classPathEntry.endsWith(pathToFind.toString())) {
     			targetClassesEntry = classPathEntry;
     			break;
