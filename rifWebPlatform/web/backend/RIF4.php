@@ -561,6 +561,42 @@ $r = RIF4::Instance();
 		}
 	}
 	
+	/*
+	 * Retrieve disease mapping results:
+	 * Area level value and confidence intervals
+     * Type can be: Relative risk , smoothed relative risk, Relative risk adj , smoothed relative risk adj
+	 *
+	 */
+	public function getResultSet( $type, $studyId, $invId, $year  ){
+		
+		try{
+		 
+		 // Hardoced, will be replaced by Kev's.
+		 
+		 $sql = "select gid,srr, llsrr, ulsrr
+					  from atlas_sample_data 
+					      order by srr asc";
+			
+			$hndl = self::$dbh -> prepare($sql);
+			$hndl ->execute(array());	
+			
+			$csv = "gid,srr,llsrr,ulsrr" . "\n";
+			
+			while ($row = $hndl -> fetch(PDO::FETCH_ASSOC)){
+				$csv .=  implode($row, ',') . "\n" ;
+			}
+			
+			self :: $dbh->commit();
+			
+			return $csv;
+			
+		}catch(PDOException $pe){
+			self :: $dbh->rollback();
+		 	die( $pe->getMessage());
+		}
+			
+	}
+	
 	public function getFieldsStratifiedByAgeGroup($theme){
 		/*
 		 * Retrieve all fields for the given theme stratifified by age group and gender

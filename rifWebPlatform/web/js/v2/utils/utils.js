@@ -112,8 +112,18 @@
 			return [d[0],d[1]];
 		},
 		
+		isArray: function(obj) {
+			return Object.prototype.toString.call(obj) === "[object Array]";
+		},
+		
 		arraysEqual: function(arr1, arr2) {
 			return $(arr1).not(arr2).length == 0 && $(arr2).not(arr1).length == 0 ;
+		},
+		
+		getFacade: function( component, studyType, componentContext ){
+			console.log("get facade");
+			var facadeName = [  component , 'facade', studyType].join('-');
+			return RIF[ component ][ facadeName ]( componentContext );
 		},
 		
 		xhr: function () {
@@ -125,7 +135,7 @@
 			var args = Array.prototype.slice.call(arguments, 0),
 				mime = args[2] || "text/plain",
 				url = "backend/gets/" + args[0];
-				
+			
 			d3.xhr(url, mime, args[1]);
 			
 		}

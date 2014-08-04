@@ -25,6 +25,7 @@
 				}
 				return;
 			}
+
 			myFuncts.call(data);
 		},
          		
@@ -230,7 +231,39 @@
 			dropDatatable: function(){	
 				var empty = function(){};
 			    xhr( 'dropDatatable.php',  empty );
-			}
+			},
+			
+			/*
+			 *
+			 * Disease Mapping specific
+			 * 
+			 */
+			 
+			 getStudies: function(  myCallback, params ){
+				var msg = "Retrieving studies";
+				
+				xhr( 'getStudies.php' ,  myCallback, msg );
+			 },
+			 
+			 getInvestigations: function(  myCallback, params ){
+				var msg = "Retrieving investigations",
+				    args = '?studyID='+ params[0];
+					
+				xhr( 'getInvestigations.php' + args ,  myCallback, msg );
+			 },
+			 
+			 getResultsSet: function (  myCallback, params ){
+				var msg = "Retrieving results data for line chart",
+			        args = '?type='+ params[0] +
+				    '&studyID='+ params[1] + '&investigationID='+ params[2] ;
+
+				//in case of a year selection	
+				if( typeof params[3] !== 'undefined'){
+					args += '&year='+ params[3];
+				};		
+				
+				xhr( 'getResultsSet.php' + args,  myCallback, msg, "text/csv" );
+			},
 			
 	    };
 	

@@ -1,5 +1,5 @@
 RIF.menu.events = (function(){
-	
+		
 		$(".modal_close").click(function(){
 			$(".overlay").hide();
 		});
