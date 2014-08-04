@@ -344,6 +344,7 @@ SELECT COUNT(*)
 					quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||' d'||E'\n'||
 			' WHERE a.study_id      = '||study_id::VARCHAR||' /* Current study ID */'||E'\n'||
 			'   AND a.study_id      = b.study_id'||E'\n'||
+			'   AND a.study_id      = c.study_id'||E'\n'||
 			'   AND a.band_id       = c.band_id'||E'\n'||
 			'   AND c.area_id       = d.area_id'||E'\n'||
 			'   AND d.geolevel_name = b.study_geolevel_name /* Partition elimination */'||E'\n'||

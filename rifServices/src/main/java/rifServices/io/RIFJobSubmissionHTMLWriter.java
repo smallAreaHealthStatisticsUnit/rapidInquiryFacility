@@ -1,7 +1,7 @@
 
 package rifServices.io;
 
-import rifServices.businessConceptLayer.RIFJobSubmission;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -114,7 +114,7 @@ public class RIFJobSubmissionHTMLWriter {
      * @throws RIFServiceException the RIF service exception
      */
     public String writeJobSubmission(
-    	final RIFJobSubmission rifJobSubmission) 
+    	final RIFStudySubmission rifJobSubmission) 
     	throws RIFServiceException {    
     	
     	try {
@@ -148,7 +148,7 @@ public class RIFJobSubmissionHTMLWriter {
      * @throws RIFServiceException the RIF service exception
      */
     public void writeFile(
-    	final RIFJobSubmission rifJobSubmission, 
+    	final RIFStudySubmission rifJobSubmission, 
     	final File outputFile) 
     	throws RIFServiceException {
 

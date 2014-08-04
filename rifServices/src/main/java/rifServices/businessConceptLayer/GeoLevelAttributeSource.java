@@ -193,8 +193,8 @@ public final class GeoLevelAttributeSource
 		throws RIFServiceException {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
-		super.checkErrors(RIFServiceError.INVALID_GEO_LEVEL_ATTRIBUTE_THEME, errorMessages);
-		countErrors(RIFServiceError.INVALID_GEO_LEVEL_ATTRIBUTE_THEME, errorMessages);
+		super.checkErrors(RIFServiceError.INVALID_GEO_LEVEL_ATTRIBUTE_SOURCE, errorMessages);
+		countErrors(RIFServiceError.INVALID_GEO_LEVEL_ATTRIBUTE_SOURCE, errorMessages);
 	}
 	
 	// ==========================================
@@ -210,7 +210,7 @@ public final class GeoLevelAttributeSource
 	public String getRecordType() {
 		
 		String recordType
-			= RIFServiceMessages.getMessage("geoLevelAttributeTheme.label");
+			= RIFServiceMessages.getMessage("geoLevelAttributeSource.label");
 		return recordType;
 	}
 	
@@ -218,7 +218,7 @@ public final class GeoLevelAttributeSource
 	@Override
 	public String getDisplayName() {	
 		
-		return getDescription();
+		return getName();
 	}	
 	
 	@Override

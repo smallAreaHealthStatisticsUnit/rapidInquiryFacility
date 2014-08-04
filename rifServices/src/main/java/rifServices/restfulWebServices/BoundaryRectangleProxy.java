@@ -1,18 +1,10 @@
-package rifServices.test.services;
+package rifServices.restfulWebServices;
 
-
-
-import rifServices.businessConceptLayer.User;
-import rifServices.businessConceptLayer.RIFJobSubmission;
-import rifServices.dataStorageLayer.SampleTestObjectGenerator;
-import rifServices.system.RIFServiceException;
-import rifServices.test.AbstractRIFTestCase;
-import static org.junit.Assert.*;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 /**
  *
@@ -74,7 +66,14 @@ import org.junit.Test;
  *
  */
 
-public class TestRIFSubmissionFeature extends AbstractRIFServiceTestCase {
+@XmlRootElement(name="boundaryRectangle")
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(propOrder= {
+	"xMin",
+	"yMin",
+	"xMax",
+	"yMax"})
+public class BoundaryRectangleProxy {
 
 	// ==========================================
 	// Section Constants
@@ -83,74 +82,64 @@ public class TestRIFSubmissionFeature extends AbstractRIFServiceTestCase {
 	// ==========================================
 	// Section Properties
 	// ==========================================
+
+ 	@XmlElement(required = true)			
+	private String xMin;
+ 	@XmlElement(required = true)		
+	private String yMin;
+ 	@XmlElement(required = true)		
+	private String xMax;
+ 	@XmlElement(required = true)		
+	private String yMax;
 	
-	/** The test user. */
-	private User testUser;
-
-	private RIFJobSubmission masterRIFJobSubmission;
-
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public TestRIFSubmissionFeature() {		
-		testUser 
-			= User.newInstance("kgarwood", "11.111.11.228");
-		SampleTestObjectGenerator generator
-			= new SampleTestObjectGenerator();
-		masterRIFJobSubmission
-			= generator.createSampleRIFJobSubmission();
+	public BoundaryRectangleProxy() {
 
-		try {
-			initialiseService();
-		}
-		catch(RIFServiceException rifServiceException) {
-			this.printErrors("TestRIFSubmissionFeature", rifServiceException);
-		}
 	}
 
-	@Before
-	public void setUp() {
-		try {
-			rifServiceBundle.login("kgarwood", new String("a").toCharArray());		
-			rifStudySubmissionService.clearStudiesForUser(testUser);
-		}
-		catch(RIFServiceException exception) {
-			exception.printStackTrace(System.out);
-		}		
-	}
 	
-	@After
-	public void tearDown() {
-		try {
-			rifServiceBundle.deregisterAllUsers();		
-		}
-		catch(RIFServiceException exception) {
-			exception.printStackTrace(System.out);
-		}				
-	}
-	
-	@Test
-	public void acceptRIFJobSubmission1() {
-		RIFJobSubmission rifJobSubmission
-			= RIFJobSubmission.createCopy(masterRIFJobSubmission);
-		try {
-			rifStudySubmissionService.submitStudy(
-				testUser, 
-				rifJobSubmission, 
-				null);
-			
-		}
-		catch(RIFServiceException rifServiceException) {
-			this.printErrors("acceptRIFJobSubmission1", rifServiceException);
-			fail();
-		}
-	}
-
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	public String getXMin() {
+		return xMin;
+	}
 
+	public void setXMin(String xMin) {
+		this.xMin = xMin;
+	}
+
+	public String getYMin() {
+		return yMin;
+	}
+
+	public void setYMin(String yMin) {
+		this.yMin = yMin;
+	}
+
+	public String getXMax() {
+		return xMax;
+	}
+
+	public void setXMax(String xMax) {
+		this.xMax = xMax;
+	}
+
+	public String getYMax() {
+		return yMax;
+	}
+
+	public void setYMax(String yMax) {
+		this.yMax = yMax;
+	}
+
+
+	
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

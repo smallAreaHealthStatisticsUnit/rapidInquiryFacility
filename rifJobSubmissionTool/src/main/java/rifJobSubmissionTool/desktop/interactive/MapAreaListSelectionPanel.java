@@ -120,6 +120,8 @@ class MapAreaListSelectionPanel
 	//Data
 	/** The rif session. */
 	private RIFSession rifSession;
+	
+	private Geography currentGeography;
 	/** The current geographical area. */
 	private AbstractGeographicalArea currentGeographicalArea;	
 	/** The current map area selection basket. */
@@ -633,9 +635,11 @@ class MapAreaListSelectionPanel
 	 * @param currentMapAreaSelectionBasket the current map area selection basket
 	 */
 	public void initialiseApplySettings(
+		Geography geography,
 		AbstractGeographicalArea currentGeographicalArea,
 		MapAreaSelectionBasket currentMapAreaSelectionBasket) {
 		
+		this.currentGeography = geography;
 		this.currentGeographicalArea = currentGeographicalArea;
 		this.currentMapAreaSelectionBasket = currentMapAreaSelectionBasket;
 		mapAreaSelectionTableView.initialiseForm(
@@ -665,6 +669,7 @@ class MapAreaListSelectionPanel
 			BufferedImage bufferedImage
 				= service.getImage(
 					currentUser, 
+					geography,
 					geoLevelSelect, 
 					geoLevelArea, 
 					geoLevelView, 
@@ -804,6 +809,7 @@ class MapAreaListSelectionPanel
 			BufferedImage updatedImage
 				= service.getImage(
 					currentUser, 
+					currentGeography,
 					geoLevelSelect, 
 					geoLevelArea, 
 					geoLevelView, 

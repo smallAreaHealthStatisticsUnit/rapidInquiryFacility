@@ -615,7 +615,7 @@ class GeographicalExtentPanel
 			RIFStudySubmissionAPI service
 				= rifSession.getRIFStudySubmissionService();
 			ArrayList<GeoLevelSelect> geoLevelSelects
-				= service.getGeographicalLevelSelectValues(currentUser, currentGeography);
+				= service.getGeoLevelSelectValues(currentUser, currentGeography);
 			for (GeoLevelSelect geoLevelSelect : geoLevelSelects) {
 				geoLevelSelectComboBox.addListItem(geoLevelSelect);
 			}

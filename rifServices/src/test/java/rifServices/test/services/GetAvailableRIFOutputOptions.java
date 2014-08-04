@@ -1,8 +1,18 @@
-package rifServices.businessConceptLayer;
+package rifServices.test.services;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+
+import org.junit.Test;
+
+import rifServices.businessConceptLayer.RIFOutputOption;
+import rifServices.businessConceptLayer.User;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceException;
 
 /**
- *
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -11,13 +21,11 @@ package rifServices.businessConceptLayer;
  * rates and relative risks for any given health outcome, for specified age 
  * and year ranges, for any given geographical area.
  *
- * <p>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
  * is funded by the Public Health England as part of the MRC-PHE Centre for 
  * Environment and Health. Funding for this project has also been received 
  * from the United States Centers for Disease Control and Prevention.  
- * </p>
  *
  * <pre> 
  * This file is part of the Rapid Inquiry Facility (RIF) project.
@@ -40,8 +48,8 @@ package rifServices.businessConceptLayer;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
+
 /*
  * Code Road Map:
  * --------------
@@ -64,7 +72,7 @@ package rifServices.businessConceptLayer;
  *
  */
 
-public final class RIFStudySubmissionSummary {
+public class GetAvailableRIFOutputOptions extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -73,90 +81,90 @@ public final class RIFStudySubmissionSummary {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The study identifier. */
-	private String studyIdentifier;
-	
-	/** The study name. */
-	private String studyName;
-	
-	/** The study summary. */
-	private String studySummary;
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	/**
-	 * Instantiates a new RIF job submission summary.
-	 *
-	 * @param studyIdentifier the study identifier
-	 * @param studyName the study name
-	 * @param studySummary the study summary
-	 */
-	private RIFStudySubmissionSummary(
-		final String studyIdentifier,
-		final String studyName,
-		final String studySummary) {
+	public GetAvailableRIFOutputOptions() {
 
-		this.studyIdentifier = studyIdentifier;
-		this.studyName = studyName;
-		this.studySummary = studySummary;
 	}
 
-	/**
-	 * New instance.
-	 *
-	 * @param studyIdentifier the study identifier
-	 * @param studyName the study name
-	 * @param studySummary the study summary
-	 * @return the RIF job submission summary
-	 */
-	static public RIFStudySubmissionSummary newInstance(
-		final String studyIdentifier,
-		final String studyName,
-		final String studySummary) {
-		
-		RIFStudySubmissionSummary summary
-			= new RIFStudySubmissionSummary(
-				studyIdentifier, 
-				studyName, 
-				studySummary);
-		
-		return summary;
-	}
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
 	
-	/**
-	 * Gets the study identifier.
-	 *
-	 * @return the study identifier
-	 */
-	public String getStudyIdentifier() {
-		
-		return studyIdentifier;
+	@Test
+	public void getAvailableRIFOutputOptions_COMMON1() {
+		try {
+			User validUser = cloneValidUser();
+			ArrayList<RIFOutputOption> rifOutputOptions
+				= rifStudySubmissionService.getAvailableRIFOutputOptions(validUser);
+			assertEquals(4, rifOutputOptions.size());
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}
+	}
+	
+	@Test
+	public void getAvailableRIFOutputOptions_EMPTY1() {
+		try {
+			User emptyUser = cloneEmptyUser();
+			rifStudySubmissionService.getAvailableRIFOutputOptions(emptyUser);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_USER,
+				1);
+		}
+	}
+	
+	@Test
+	public void getAvailableRIFOutputOptions_NULL1() {
+		try {
+			rifStudySubmissionService.getAvailableRIFOutputOptions(null);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				1);
+		}
+	}
+	
+	@Test
+	public void getAvailableRIFOutputOptions_NONEXISTENT1() {
+		try {
+			User nonExistentUser = cloneNonExistentUser();
+			rifStudySubmissionService.getAvailableRIFOutputOptions(nonExistentUser);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}
 	}
 
-	/**
-	 * Gets the study name.
-	 *
-	 * @return the study name
-	 */
-	public String getStudyName() {
-		
-		return studyName;
-	}
-
-	/**
-	 * Gets the study summary.
-	 *
-	 * @return the study summary
-	 */
-	public String getStudySummary() {
-		
-		return studySummary;
+	@Test
+	public void getAvailableRIFOutputOptions_MALICIOUS1() {
+		try {
+			User maliciousUser = cloneMaliciousUser();
+			rifStudySubmissionService.getAvailableRIFOutputOptions(maliciousUser);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}	
 	}
 	
 	// ==========================================

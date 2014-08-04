@@ -110,6 +110,7 @@ class AbstractStudyServiceBundle {
 		RIFServiceStartupOptions rifServiceStartupOptions) 
 		throws RIFServiceException {
 		
+		System.out.println("AbstractStudyServiceBundle - initialise 2");
 		rifServiceResources
 			= RIFServiceResources.newInstance(rifServiceStartupOptions);
 		setRIFServiceResources(rifServiceResources);
@@ -163,10 +164,10 @@ class AbstractStudyServiceBundle {
 		final char[] password) 
 		throws RIFServiceException {
 
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		//No need -- userID and password are final objects
 		
-		//Part II: Check for empty parameters
+		//Check for empty parameters
 		try {
 			
 			FieldValidationUtility fieldValidationUtility
@@ -180,7 +181,7 @@ class AbstractStudyServiceBundle {
 				"password",
 				password);		
 		
-			//Part III: Check for security violations
+			//Check for security violations
 
 			fieldValidationUtility.checkMaliciousMethodParameter(
 				"login",
@@ -191,7 +192,7 @@ class AbstractStudyServiceBundle {
 				"password",
 				password);
 
-			//Part IV: Perform operation
+			//Delegate operation to a specialised manager class
 			SQLConnectionManager sqlConnectionManager
 				= rifServiceResources.getSqlConnectionManager();
 			sqlConnectionManager.registerUser(userID, password);		
@@ -215,11 +216,11 @@ class AbstractStudyServiceBundle {
 		final User _user) 
 		throws RIFServiceException {
 
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 
 		try {
-			//Part II: Check for empty parameters
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -227,7 +228,7 @@ class AbstractStudyServiceBundle {
 				"user",
 				user);
 		
-			//Part III: Check for security violations
+			//Check for security violations
 			user.checkSecurityViolations();
 			SQLConnectionManager sqlConnectionManager
 				= rifServiceResources.getSqlConnectionManager();

@@ -537,9 +537,11 @@ public final class AgeBand
 			= RIFServiceMessages.getMessage("ageBand.label");
 		
 		//Test whether lower limit and upper limit are numbers
+		boolean bothLimitsAreValid = true;
 		String lowerLimitFieldName
 			= RIFServiceMessages.getMessage("ageBand.lowerLimit.label");
 		if (lowerLimitAgeGroup == null) {
+			bothLimitsAreValid = false;
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
@@ -552,6 +554,7 @@ public final class AgeBand
 				lowerLimitAgeGroup.checkErrors();
 			}
 			catch(RIFServiceException rifServiceException) {
+				bothLimitsAreValid = false;
 				errorMessages.addAll(rifServiceException.getErrorMessages());
 			}
 		}
@@ -559,6 +562,7 @@ public final class AgeBand
 		String upperLimitFieldName
 			= RIFServiceMessages.getMessage("ageBand.lowerLimit.label");
 		if (upperLimitAgeGroup == null) {
+			bothLimitsAreValid = false;
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
@@ -571,6 +575,7 @@ public final class AgeBand
 				upperLimitAgeGroup.checkErrors();
 			}
 			catch(RIFServiceException rifServiceException) {
+				bothLimitsAreValid = false;
 				errorMessages.addAll(rifServiceException.getErrorMessages());
 			}
 		}
@@ -581,31 +586,32 @@ public final class AgeBand
 		
 		String lowerLimitNumberFieldValue = lowerLimitAgeGroup.getLowerLimit();		
 		String upperLimitNumberFieldValue = upperLimitAgeGroup.getUpperLimit();
-		
-		try {
-			Integer lowerLimitNumber = Integer.valueOf(lowerLimitNumberFieldValue);
-			Integer upperLimitNumber = Integer.valueOf(upperLimitNumberFieldValue);
 
-			if ((lowerLimitNumber != null) && (upperLimitNumber) != null) {
-				if (lowerLimitNumber.intValue() > upperLimitNumber.intValue()) {
-					String errorMessage
-						= RIFServiceMessages.getMessage(
-							"ageBand.error.lowerGreaterthanUpperLimit",
-							lowerLimitNumberFieldValue,
-							upperLimitNumberFieldValue);
-					errorMessages.add(errorMessage);
+		if (bothLimitsAreValid == true) {
+			try {
+				Integer lowerLimitNumber = Integer.valueOf(lowerLimitNumberFieldValue);
+				Integer upperLimitNumber = Integer.valueOf(upperLimitNumberFieldValue);
+
+				if ((lowerLimitNumber != null) && (upperLimitNumber) != null) {
+					if (lowerLimitNumber.intValue() > upperLimitNumber.intValue()) {
+						String errorMessage
+							= RIFServiceMessages.getMessage(
+								"ageBand.error.lowerGreaterthanUpperLimit",
+								lowerLimitNumberFieldValue,
+								upperLimitNumberFieldValue);
+						errorMessages.add(errorMessage);
+					}			
 				}			
-			}			
+			}
+			catch(Exception exception) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"ageBand.error.invalidAgeGroupValues",
+						lowerLimitNumberFieldValue,
+						upperLimitNumberFieldValue);
+				errorMessages.add(errorMessage);
+			}
 		}
-		catch(Exception exception) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"ageBand.error.invalidAgeGroupValues",
-					lowerLimitNumberFieldValue,
-					upperLimitNumberFieldValue);
-			errorMessages.add(errorMessage);
-		}
-
 		countErrors(RIFServiceError.INVALID_AGE_GROUP, errorMessages);
 	}
 	

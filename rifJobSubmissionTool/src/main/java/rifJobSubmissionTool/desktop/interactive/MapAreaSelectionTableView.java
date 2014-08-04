@@ -563,7 +563,7 @@ class MapAreaSelectionTableView
 			= currentGeographicalArea.getGeoLevelArea();
 
 		ArrayList<MapArea> currentResultBatch
-			= service.getMapAreas(
+			= service.getMapAreasByBlock(
 				currentUser, 
 				currentGeography, 
 				currentGeoLevelSelect, 

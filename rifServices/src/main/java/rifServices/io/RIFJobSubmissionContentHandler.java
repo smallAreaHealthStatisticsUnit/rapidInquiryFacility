@@ -4,7 +4,7 @@ package rifServices.io;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Project;
-import rifServices.businessConceptLayer.RIFJobSubmission;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFOutputOption;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceMessages;
@@ -100,7 +100,7 @@ class RIFJobSubmissionContentHandler
 // ==========================================
 
 	/** The current rif job submission. */
-	private RIFJobSubmission currentRIFJobSubmission;
+	private RIFStudySubmission currentRIFJobSubmission;
 	
 	/** The project content handler. */
 	private ProjectContentHandler projectContentHandler;
@@ -140,7 +140,7 @@ class RIFJobSubmissionContentHandler
 	 *
 	 * @return the RIF job submission
 	 */
-	public RIFJobSubmission getRIFJobSubmission() {
+	public RIFStudySubmission getRIFJobSubmission() {
 		
 		return currentRIFJobSubmission;
 	}
@@ -153,7 +153,7 @@ class RIFJobSubmissionContentHandler
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public void writeHTML(
-		final RIFJobSubmission rifJobSubmission) 
+		final RIFStudySubmission rifJobSubmission) 
 		throws IOException {
 
 		HTMLUtility htmlUtility = getHTMLUtility();
@@ -193,7 +193,7 @@ class RIFJobSubmissionContentHandler
      * @throws IOException Signals that an I/O exception has occurred.
      */
     public void writeXML(
-    	final RIFJobSubmission rifJobSubmission) 
+    	final RIFStudySubmission rifJobSubmission) 
     	throws IOException {
 
     	XMLUtility xmlUtility = getXMLUtility();
@@ -298,7 +298,7 @@ class RIFJobSubmissionContentHandler
 		throws SAXException {
 
 		if (isSingularRecordName(qualifiedName)) {
-			currentRIFJobSubmission = RIFJobSubmission.newInstance();
+			currentRIFJobSubmission = RIFStudySubmission.newInstance();
 			activate();
 		}
 		else if (isDelegatedHandlerAssigned() == true) {

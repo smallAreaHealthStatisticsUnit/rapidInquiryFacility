@@ -538,10 +538,6 @@ class SQLHealthOutcomeManager
 		return relevantHealthCodeProvider;
 	}
 
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-			
 	/**
 	 * Gets the health codes.
 	 *
@@ -562,6 +558,70 @@ class SQLHealthOutcomeManager
 		return healthCodeProvider.getHealthCodes(searchText);
 		
 	}
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
+	/**
+	 * for each health code this routine tries to determine whether the health
+	 * code exists in the health code provider described by the name space.  For
+	 * example, suppose a HealthCode describes an ICD10 term.  It will search for
+	 * the code in whatever health code provider is associated with the namespace
+	 * "icd10".
+	 * 
+	 * @param healthCodes
+	 * @throws RIFServiceException
+	 */
+	public void checkNonExistentHealthCodes(
+		ArrayList<HealthCode> healthCodes) 
+		throws RIFServiceException {
+		
+		ArrayList<String> errorMessages = new ArrayList<String>();
+		
+		for (HealthCode healthCode : healthCodes) {
+			HealthCodeTaxonomy healthCodeTaxonomy
+				= getHealthCodeTaxonomyFromNameSpace(healthCode.getNameSpace());
+			if (healthCodeTaxonomy == null) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"healthOutcomeManager.error.noHealthCodeTaxonomyForNameSpace",
+						healthCode.getNameSpace());
+				errorMessages.add(errorMessage);
+			}
+			else {
+				HealthCodeProvider healthCodeProvider
+					= getRelevantHealthCodeProvider(healthCodeTaxonomy);
+				if (healthCodeProvider == null) {
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"healthOutcomeManager.error.noProviderForHealthCodeTaxonomy",
+							healthCode.getCode(),
+							healthCodeTaxonomy.getDisplayName());
+					errorMessages.add(errorMessage);
+				}
+				else if (healthCodeProvider.healthCodeExists(healthCode) == false) {
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"healthOutcomeManager.error.nonExistentHealthCode",
+							healthCode.getCode(),
+							healthCodeTaxonomy.getDisplayName());
+					errorMessages.add(errorMessage);
+				}
+			}
+		}
+
+		if (errorMessages.size() > 0) {
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.NON_EXISTENT_HEALTH_CODE, 
+					errorMessages);
+			
+			throw rifServiceException;
+		}
+	}
+			
+	
 	
 	// ==========================================
 	// Section Interfaces

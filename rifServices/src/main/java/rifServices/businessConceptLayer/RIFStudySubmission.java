@@ -79,7 +79,7 @@ import java.util.HashSet;
  */
 
 
-public final class RIFJobSubmission 
+public final class RIFStudySubmission 
 	extends AbstractRIFConcept {
 	
 // ==========================================
@@ -114,7 +114,7 @@ public final class RIFJobSubmission
     /**
      * Instantiates a new RIF job submission.
  	*/
-	private RIFJobSubmission() {
+	private RIFStudySubmission() {
     	jobSubmissionTime = new Date();
     	user = User.newInstance("", "");
     	project = Project.newInstance();
@@ -128,8 +128,8 @@ public final class RIFJobSubmission
      *
      * @return the RIF job submission
      */
-    public static RIFJobSubmission newInstance() {
-    	RIFJobSubmission rifJobSubmission = new RIFJobSubmission();	
+    public static RIFStudySubmission newInstance() {
+    	RIFStudySubmission rifJobSubmission = new RIFStudySubmission();	
     	return rifJobSubmission;
     }
     
@@ -139,46 +139,50 @@ public final class RIFJobSubmission
      * @param originalRIFJobSubmission the original rif job submission
      * @return the RIF job submission
      */
-    public static RIFJobSubmission createCopy(
-    	final RIFJobSubmission originalRIFJobSubmission) {
+    public static RIFStudySubmission createCopy(
+    	final RIFStudySubmission originalRIFStudySubmission) {
    
-    	RIFJobSubmission cloneRIFJobSubmission = new RIFJobSubmission();
+    	if (originalRIFStudySubmission == null) {
+    		return null;
+    	}
+    	
+    	RIFStudySubmission cloneRIFStudySubmission = new RIFStudySubmission();
 
-    	User originalUser = originalRIFJobSubmission.getUser();
+    	User originalUser = originalRIFStudySubmission.getUser();
     	User cloneUser = User.createCopy(originalUser);
-    	cloneRIFJobSubmission.setUser(cloneUser);
+    	cloneRIFStudySubmission.setUser(cloneUser);
     	
     	Date originalJobSubmissionTime
-    		= originalRIFJobSubmission.getJobSubmissionTime();
+    		= originalRIFStudySubmission.getJobSubmissionTime();
     	if (originalJobSubmissionTime != null) {
     		Date cloneJobSubmissionTime
     			= new Date(originalJobSubmissionTime.getTime());
-    		cloneRIFJobSubmission.setJobSubmissionTime(cloneJobSubmissionTime);
+    		cloneRIFStudySubmission.setJobSubmissionTime(cloneJobSubmissionTime);
     	}
     	
-    	Project originalProject = originalRIFJobSubmission.getProject();
-    	cloneRIFJobSubmission.setProject(Project.createCopy(originalProject)); 	
+    	Project originalProject = originalRIFStudySubmission.getProject();
+    	cloneRIFStudySubmission.setProject(Project.createCopy(originalProject)); 	
     	
     	DiseaseMappingStudy originalDiseaseMappingStudy
-    		= (DiseaseMappingStudy) originalRIFJobSubmission.getStudy();
+    		= (DiseaseMappingStudy) originalRIFStudySubmission.getStudy();
     	DiseaseMappingStudy cloneDiseaseMappingStudy
     		= DiseaseMappingStudy.createCopy(originalDiseaseMappingStudy);
-    	cloneRIFJobSubmission.setStudy(cloneDiseaseMappingStudy);
+    	cloneRIFStudySubmission.setStudy(cloneDiseaseMappingStudy);
     	
     	ArrayList<CalculationMethod> originalCalculationMethods
-    		= originalRIFJobSubmission.getCalculationMethods(); 	
+    		= originalRIFStudySubmission.getCalculationMethods(); 	
     	ArrayList<CalculationMethod> clonedCalculationMethods
     		= CalculationMethod.createCopy(originalCalculationMethods);
     	
-    	cloneRIFJobSubmission.setCalculationMethods(clonedCalculationMethods);
+    	cloneRIFStudySubmission.setCalculationMethods(clonedCalculationMethods);
    
     	ArrayList<RIFOutputOption> originalRIFOutputOptions
-    		= originalRIFJobSubmission.getRIFOutputOptions();
+    		= originalRIFStudySubmission.getRIFOutputOptions();
     	for (RIFOutputOption originalRIFOutputOption : originalRIFOutputOptions) {
-    		cloneRIFJobSubmission.addRIFOutputOption(originalRIFOutputOption);
+    		cloneRIFStudySubmission.addRIFOutputOption(originalRIFOutputOption);
     	}
     	
-    	return cloneRIFJobSubmission;
+    	return cloneRIFStudySubmission;
 
     }
     
@@ -356,7 +360,7 @@ public final class RIFJobSubmission
 	 * @return true, if successful
 	 */
 	public boolean hasIdenticalContents(
-		final RIFJobSubmission otherRIFJobSubmission) {
+		final RIFStudySubmission otherRIFJobSubmission) {
 
 		if (otherRIFJobSubmission == null) {
 			return false;

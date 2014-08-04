@@ -441,9 +441,6 @@ public final class AgeGroup
 		countErrors(RIFServiceError.INVALID_AGE_GROUP, errorMessages);
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkSecurityViolations()
-	 */
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
 

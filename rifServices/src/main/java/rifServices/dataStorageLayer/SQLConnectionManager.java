@@ -337,7 +337,7 @@ class SQLConnectionManager {
 	 * @return the connection
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public Connection getReadConnection(
+	public Connection assignPooledReadConnection(
 		final User user) 
 		throws RIFServiceException {
 		
@@ -370,7 +370,7 @@ class SQLConnectionManager {
 		}
 	}
 	
-	public void releaseReadConnection(
+	public void reclaimPooledReadConnection(
 		User user, 
 		Connection connection) 
 		throws RIFServiceException {
@@ -384,7 +384,7 @@ class SQLConnectionManager {
 		availableReadConnections.add(connection);		
 	}
 	
-	public void releaseWriteConnection(
+	public void reclaimPooledWriteConnection(
 		User user, 
 		Connection connection) 
 		throws RIFServiceException {
@@ -415,7 +415,7 @@ class SQLConnectionManager {
 	 * @return the connection
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public Connection getWriteConnection(
+	public Connection assignPooledWriteConnection(
 		final User user) 
 		throws RIFServiceException {
 			
@@ -540,20 +540,25 @@ class SQLConnectionManager {
 		//adding all the used read connections back to the available
 		//connections pool
 		ArrayList<Connection> availableReadConnections
-			= availableReadConnectionsFromUser.get(userID);
-		ArrayList<Connection> usedReadConnections
-			= usedReadConnectionsFromUser.get(userID);
-		availableReadConnections.addAll(usedReadConnections);
-		usedReadConnections.clear();
+			= availableReadConnectionsFromUser.get(userID);	
+		if (availableReadConnections != null) {
+			ArrayList<Connection> usedReadConnections
+				= usedReadConnectionsFromUser.get(userID);
+			availableReadConnections.addAll(usedReadConnections);
+			usedReadConnections.clear();
+		}
 		
 		//adding all the used write connections back to the available
 		//connections pool
 		ArrayList<Connection> availableWriteConnections
 			= availableWriteConnectionsFromUser.get(userID);
-		ArrayList<Connection> usedWriteConnections
-			= usedWriteConnectionsFromUser.get(userID);
-		availableWriteConnections.addAll(usedWriteConnections);
-		usedWriteConnections.clear();		
+		if (availableWriteConnections != null) {
+			ArrayList<Connection> usedWriteConnections
+				= usedWriteConnectionsFromUser.get(userID);
+			availableWriteConnections.addAll(usedWriteConnections);
+			usedWriteConnections.clear();		
+		}
+
 	}
 	
 	public void deregisterAllUsers() throws RIFServiceException {

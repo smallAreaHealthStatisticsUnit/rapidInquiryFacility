@@ -117,19 +117,27 @@ public class StudyResultRetrievalContext {
 		final String geoLevelSelectName,
 		final String studyID) {
 		
-		StudyResultRetrievalContext studyRetrievalContext
+		StudyResultRetrievalContext studyResultRetrievalContext
 			= new StudyResultRetrievalContext();
-		return studyRetrievalContext;
+		studyResultRetrievalContext.setGeographyName(geographyName);
+		studyResultRetrievalContext.setGeoLevelSelectName(geoLevelSelectName);
+		studyResultRetrievalContext.setStudyID(studyID);
+		
+		return studyResultRetrievalContext;
 	}	
 	
 	public static StudyResultRetrievalContext createCopy(
 		final StudyResultRetrievalContext originalStudyRetrievalContext) {
 		
+		if (originalStudyRetrievalContext == null) {
+			return null;
+		}
+		
 		StudyResultRetrievalContext cloneStudyRetrievalContext
 			= new StudyResultRetrievalContext();
 		cloneStudyRetrievalContext.setGeographyName(
 			originalStudyRetrievalContext.getGeographyName());
-		cloneStudyRetrievalContext.setGeoLevelSelectName(originalStudyRetrievalContext.getGeographyName());
+		cloneStudyRetrievalContext.setGeoLevelSelectName(originalStudyRetrievalContext.getGeoLevelSelectName());
 		cloneStudyRetrievalContext.setStudyID(originalStudyRetrievalContext.getStudyID());
 		return cloneStudyRetrievalContext;
 	}
@@ -267,9 +275,8 @@ public class StudyResultRetrievalContext {
 					fieldName);
 			errorMessages.add(errorMessage);
 		}
-		
-		
-		if (fieldValidationUtility.isEmpty(geoLevelSelectName)) {
+				
+		if (fieldValidationUtility.isEmpty(studyID)) {
 			String fieldName
 				= RIFServiceMessages.getMessage("studyResultRetrievalContext.studyID");
 			String errorMessage
@@ -285,6 +292,7 @@ public class StudyResultRetrievalContext {
 				= new RIFServiceException(
 					RIFServiceError.INVALID_STUDY_RESULT_RETRIEVAL_CONTEXT,
 					errorMessages);
+			
 			throw rifServiceException;
 		}
 		

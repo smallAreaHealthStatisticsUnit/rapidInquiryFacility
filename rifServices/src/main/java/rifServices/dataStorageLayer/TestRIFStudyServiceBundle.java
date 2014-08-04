@@ -84,7 +84,6 @@ public final class TestRIFStudyServiceBundle
 	@Override
 	public void initialise() 
 		throws RIFServiceException {
-		System.out.println("TestRIFStudyServiceBundle initialise 1");
 			
 		RIFServiceResources rifServiceResources
 			= RIFServiceResources.newInstance();

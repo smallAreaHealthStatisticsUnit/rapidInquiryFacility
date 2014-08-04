@@ -2,6 +2,8 @@ package rifServices.dataStorageLayer;
 
 import java.util.ArrayList;
 
+import rifServices.dataStorageLayer.SQLSelectQueryFormatter.SortOrder;
+
 
 /**
  * Convenience class used to help format typical SELECT FROM WHERE clauses.
@@ -80,9 +82,20 @@ public class SQLFunctionCallerQueryFormatter
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	
+	/** The use distinct. */
+	private boolean useDistinct;
+	
 	private String schema;
 	private String functionName;
 	private int numberOfFunctionParameters;
+
+	/** The select fields. */
+	private ArrayList<String> selectFields;
+	private ArrayList<String> whereConditions;
+
+	/** The order by conditions. */
+	private ArrayList<String> orderByConditions;
 	
 	// ==========================================
 	// Section Construction
@@ -92,7 +105,10 @@ public class SQLFunctionCallerQueryFormatter
 	 * Instantiates a new SQL select query formatter.
 	 */
 	public SQLFunctionCallerQueryFormatter() {
-		
+		useDistinct = false;
+		selectFields = new ArrayList<String>();
+		whereConditions = new ArrayList<String>();
+		orderByConditions = new ArrayList<String>();
 	}
 
 	// ==========================================
@@ -122,7 +138,84 @@ public class SQLFunctionCallerQueryFormatter
 	public void setNumberOfFunctionParameters(int numberOfFunctionParameters) {
 		this.numberOfFunctionParameters = numberOfFunctionParameters;
 	}
+
+	/**
+	 * Adds the select field.
+	 *
+	 * @param selectField the select field
+	 */
+	public void addSelectField(
+		final String selectField) {
+
+		selectFields.add(selectField);		
+	}	
 	
+	/**
+	 * Adds the where parameter.
+	 *
+	 * @param fieldName the field name
+	 */
+	public void addWhereParameter(
+		final String fieldName) {
+		
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(fieldName);
+		whereCondition.append("=?");
+
+		whereConditions.add(whereCondition.toString());
+	}
+	
+	/**
+	 * Adds the order by condition.
+	 *
+	 * @param fieldName the field name
+	 */
+	public void addOrderByCondition(
+		final String fieldName) {
+			
+		addOrderByCondition(null, fieldName, SortOrder.ASCENDING);
+	}	
+
+	/**
+	 * Adds the order by condition.
+	 *
+	 * @param tableName the table name
+	 * @param fieldName the field name
+	 * @param sortOrder the sort order
+	 */
+	public void addOrderByCondition(
+		final String tableName,
+		final String fieldName,
+		final SortOrder sortOrder) {
+			
+		StringBuilder orderByCondition = new StringBuilder();
+			
+		if (tableName != null) {
+			orderByCondition.append(tableName);
+			orderByCondition.append(".");
+		}
+		orderByCondition.append(fieldName);
+		orderByCondition.append(" ");
+		if (sortOrder == SortOrder.ASCENDING) {
+			orderByCondition.append("ASC");
+		}
+		else {
+			orderByCondition.append("DESC");			
+		}
+		
+		orderByConditions.add(orderByCondition.toString());
+	}
+	
+	/**
+	 * Sets the use distinct.
+	 *
+	 * @param useDistinct the new use distinct
+	 */
+	public void setUseDistinct(
+		final boolean useDistinct) {
+		
+		this.useDistinct = useDistinct;
+	}
 	
 	/*
 	 * @see rifServices.dataStorageLayer.SQLQueryFormatter#generateQuery()
@@ -131,7 +224,24 @@ public class SQLFunctionCallerQueryFormatter
 		
 		query = new StringBuilder();
 		query.append("SELECT ");
-		query.append("* ");
+		if (useDistinct == true) {
+			query.append("DISTINCT ");
+		}
+		
+		int numberOfSelectFields = selectFields.size();
+		if (numberOfSelectFields == 0) {
+			query.append("*");			
+		}
+		else {
+			for (int i = 0; i < numberOfSelectFields; i++) {
+				if(i > 0) {
+					query.append(",");
+				}
+				query.append(convertCase(selectFields.get(i)));
+			}
+		}
+		query.append(" ");			
+		
 		query.append("FROM ");
 		query.append(schema);
 		query.append(".");
@@ -145,6 +255,30 @@ public class SQLFunctionCallerQueryFormatter
 			query.append("?");
 		}
 		query.append(")");
+		
+		int numberOfWhereConditions = whereConditions.size();
+		if (numberOfWhereConditions > 0) {			
+			query.append(" WHERE ");
+			for (int i = 0; i < numberOfWhereConditions; i++) {
+				if (i > 0) {
+					query.append(" AND ");
+				}
+				query.append(convertCase(whereConditions.get(i)));
+			}
+		}
+
+		int numberOfOrderByConditions = orderByConditions.size();
+		if (numberOfOrderByConditions > 0) {
+			query.append(" ORDER BY ");
+			for (int i = 0; i < numberOfOrderByConditions; i++) {
+				if (i > 0) {
+					query.append(",");
+				}
+				query.append(convertCase(orderByConditions.get(i)));
+			}
+		}
+
+		
 		query.append(";");
 				
 		return query.toString();

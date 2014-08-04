@@ -336,6 +336,21 @@ public class RIFXMLTaxonomyProvider
 		
 	}
 	
+	public boolean healthCodeExists(
+		final HealthCode healthCode) 
+		throws RIFServiceException {
+		
+		TaxonomyTerm term
+			= taxonomyReader.getTerm(
+				healthCode.getCode(), 
+				healthCode.getNameSpace());
+		if (term == null) {
+			return false;
+		}
+		
+		return true;		
+	}
+	
 	private void checkHealthCodeExists(
 		String code, 
 		String nameSpace) throws RIFServiceException {

@@ -5,7 +5,7 @@ import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
 import rifJobSubmissionTool.util.UserInterfaceFactory;
-import rifServices.businessConceptLayer.RIFJobSubmission;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
 import rifServices.system.RIFServiceException;
@@ -137,7 +137,7 @@ public class RIFInteractiveStudySubmissionTool
 	/** The rif session. */
 	private RIFSession rifSession;	
 	/** The current rif job submission. */
-	private RIFJobSubmission currentRIFJobSubmission;
+	private RIFStudySubmission currentRIFJobSubmission;
 	/** The rif activity state machine. */
 	private RIFActivityStateMachine rifActivityStateMachine;
 	
@@ -189,7 +189,7 @@ public class RIFInteractiveStudySubmissionTool
 		rifActivityStateMachine = new RIFActivityStateMachine();
 		rifActivityStateMachine.addObserver(this);
 
-		currentRIFJobSubmission = RIFJobSubmission.newInstance();
+		currentRIFJobSubmission = RIFStudySubmission.newInstance();
 		currentRIFJobSubmission.setUser(rifSession.getUser());
 		rifSession.setCurrentRIFSubmission(currentRIFJobSubmission);
 		

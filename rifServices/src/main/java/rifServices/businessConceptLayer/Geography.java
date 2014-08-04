@@ -164,9 +164,6 @@ public final class Geography
 	// Section Errors and Validation
 	// ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFContextOption#checkSecurityViolations()
-	 */
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {	
 		

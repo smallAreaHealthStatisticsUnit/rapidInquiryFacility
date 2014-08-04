@@ -201,6 +201,7 @@ BEGIN
 'SELECT *'||E'\n'||
 '  FROM rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_map'||
 ' ORDER BY gid_rowindex';
+--' ORDER BY study_id, band_id, inv_id, genders, adjusted, direct_standardisation, gid_rowindex';
 	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TEMPORARY TABLE sahsuland_example_bands'||E'\n'||
 'AS'||E'\n'||
 'SELECT *'||E'\n'||
@@ -222,6 +223,8 @@ BEGIN
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 	ELSE
 		RAISE WARNING 'Study: % run failed; see trace', currval('rif40_study_id_seq'::regclass)::VARCHAR;
+--		sql_stmt[array_length(sql_stmt, 1)+1]:='DROP TABLE IF EXISTS sahsuland_example_bands' /* Force failure */;
+--		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 	END IF;
 END;
 $$;
@@ -240,16 +243,58 @@ SELECT (a.debug).function_name AS function_name,
 
 \dS+ sahsuland_example_extract
 \dS+ sahsuland_example_map
+
+--
+-- psql:../psql_scripts/v4_0_sahsuland_examples.sql:229: WARNING:  rif40_ddl(): SQL in error (23505)> ALTER TABLE rif_studies.s6_map ADD CONSTRAINT s6_map_pk PRIMARY KEY (study_id, band_id, inv_id, genders, adjusted, direct_standardisation);
+-- psql:../psql_scripts/v4_0_sahsuland_examples.sql:229: WARNING:  rif40_study_ddl_definer(): [90628] Study 6: statement 80 error: 23505 "could not create unique index "s6_map_pk"" raised by
+-- Now OK
+SELECT COUNT(gid_rowindex) AS total
+  FROM sahsuland_example_map;
+SELECT study_id, band_id, inv_id, genders, adjusted, direct_standardisation, COUNT(gid_rowindex) AS total
+  FROM sahsuland_example_map
+ GROUP BY study_id, band_id, inv_id, genders, adjusted, direct_standardisation
+ HAVING COUNT(gid_rowindex) > 1
+ ORDER BY study_id, band_id, inv_id, genders, adjusted, direct_standardisation LIMIT 20;
+SELECT study_id, band_id, inv_id, genders, adjusted, direct_standardisation, gid_rowindex
+  FROM sahsuland_example_map
+ ORDER BY study_id, band_id, inv_id, genders, adjusted, direct_standardisation, gid_rowindex LIMIT 20;
+SELECT study_id, band_id, inv_id, genders, adjusted, direct_standardisation
+  FROM rif40_results
+ WHERE study_id = currval('rif40_study_id_seq'::regclass) 
+ ORDER BY study_id, band_id, inv_id, genders, adjusted, direct_standardisation LIMIT 20;
+
+-- OK
+SELECT area_id, COUNT(band_id) AS total
+  FROM sahsuland_example_bands
+ GROUP BY area_id
+ HAVING COUNT(band_id) > 1
+ ORDER BY 1 LIMIT 20;
+SELECT band_id, COUNT(area_id) AS total
+  FROM sahsuland_example_bands
+ GROUP BY band_id
+ HAVING COUNT(area_id) > 1
+ ORDER BY 1 LIMIT 20;
+--
+
+-- Check study really has run by dumping out data
+--
+\copy ( SELECT * FROM sahsuland_example_extract ORDER BY year, study_or_comparison, study_id, area_id, band_id, sex, age_group) to ../example_data/sahsuland_example_extract.csv WITH CSV HEADER
+\copy ( SELECT * FROM sahsuland_example_map ORDER BY gid_rowindex) to ../example_data/sahsuland_example_map.csv WITH CSV HEADER
+\copy ( SELECT * FROM sahsuland_example_bands ORDER BY study_id, area_id, band_id) to ../example_data/sahsuland_example_bands.csv WITH CSV HEADER
+
 --
 SELECT COUNT(area_id) AS total FROM sahsuland_example_extract;
 SELECT COUNT(band_id) AS total FROM sahsuland_example_map;
 SELECT COUNT(band_id) AS total FROM sahsuland_example_bands;
 
--- Check study really has run by dumping out data
 --
-\copy ( SELECT * FROM sahsuland_example_extract) to ../example_data/sahsuland_example_extract.csv WITH CSV HEADER
-\copy ( SELECT * FROM sahsuland_example_map) to ../example_data/sahsuland_example_map.csv WITH CSV HEADER
-\copy ( SELECT * FROM sahsuland_example_bands) to ../example_data/sahsuland_example_bands.csv WITH CSV HEADER
+-- Testing stop
+--
+--DO LANGUAGE plpgsql $$
+--BEGIN
+--	RAISE EXCEPTION 'Stop processing';
+--END;
+--$$;
 
 --
 -- Clone delete test

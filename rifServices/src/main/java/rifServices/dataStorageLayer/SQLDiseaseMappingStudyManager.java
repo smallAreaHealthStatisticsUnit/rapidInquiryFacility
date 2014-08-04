@@ -1,12 +1,10 @@
 package rifServices.dataStorageLayer;
 
 import java.util.ArrayList;
+
 import java.sql.*;
 
-import rifServices.businessConceptLayer.User;
-import rifServices.businessConceptLayer.AbstractStudy;
-import rifServices.businessConceptLayer.DiseaseMappingStudy;
-import rifServices.businessConceptLayer.Project;
+import rifServices.businessConceptLayer.*;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -76,7 +74,7 @@ import rifServices.util.RIFLogger;
  *
  */
 
-class SQLDiseaseMappingStudyManager {
+class SQLDiseaseMappingStudyManager extends AbstractSQLManager {
 
 	// ==========================================
 	// Section Constants
@@ -85,7 +83,9 @@ class SQLDiseaseMappingStudyManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private SQLRIFContextManager rifContextManager;
+	private SQLInvestigationManager investigationManager;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -93,8 +93,12 @@ class SQLDiseaseMappingStudyManager {
 	/**
 	 * Instantiates a new SQL disease mapping study manager.
 	 */
-	public SQLDiseaseMappingStudyManager() {
+	public SQLDiseaseMappingStudyManager(
+		SQLRIFContextManager rifContextManager,
+		SQLInvestigationManager investigationManager) {
 
+		this.rifContextManager = rifContextManager;
+		this.investigationManager = investigationManager;
 	}
 
 	// ==========================================
@@ -148,6 +152,8 @@ class SQLDiseaseMappingStudyManager {
 			}
 		}
 		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version						
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"diseaseMappingStudyManager.error.unableToGetProjects",
@@ -221,6 +227,85 @@ class SQLDiseaseMappingStudyManager {
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
+	
+	public void checkNonExistentItems(
+		final Connection connection,
+		final DiseaseMappingStudy diseaseMappingStudy)
+		throws RIFServiceException {
+		
+		//check non-existent items in the Comparison and Study areas
+		Geography geography = diseaseMappingStudy.getGeography();
+		rifContextManager.checkGeographyExists(
+			connection, 
+			geography.getName());
+		DiseaseMappingStudyArea diseaseMappingStudyArea
+			= diseaseMappingStudy.getDiseaseMappingStudyArea();
+		checkAreaNonExistentItems(
+			connection,
+			geography.getName(),
+			diseaseMappingStudyArea);
+		ComparisonArea comparisonArea
+			= diseaseMappingStudy.getComparisonArea();
+		checkAreaNonExistentItems(
+			connection,
+			geography.getName(),
+			comparisonArea);
+
+		//Check non-existent items in the investigations
+		ArrayList<Investigation> investigations
+			= diseaseMappingStudy.getInvestigations();
+		for (Investigation investigation : investigations) {
+			investigationManager.checkNonExistentItems(
+				connection, 
+				geography,
+				investigation);
+		}
+		
+	}
+	
+	private void checkAreaNonExistentItems(
+		Connection connection,
+		String geographyName,
+		AbstractGeographicalArea area) 
+		throws RIFServiceException {
+	
+		GeoLevelSelect geoLevelSelect
+			= area.getGeoLevelSelect();
+		rifContextManager.checkGeoLevelSelectExists(
+			connection, 
+			geographyName, 
+			geoLevelSelect.getName());
+
+		GeoLevelArea geoLevelArea
+			= area.getGeoLevelArea();
+		rifContextManager.checkGeoLevelAreaExists(
+			connection, 
+			geographyName, 
+			geoLevelSelect.getName(), 
+			geoLevelArea.getName());
+
+		GeoLevelView geoLevelView
+			= area.getGeoLevelView();
+		rifContextManager.checkGeoLevelToMapOrViewValueExists(
+			connection, 
+			geographyName, 
+			geoLevelSelect.getName(), 
+			geoLevelView.getName(),
+			false);
+		
+		GeoLevelToMap geoLevelToMap
+			= area.getGeoLevelToMap();
+		rifContextManager.checkGeoLevelToMapOrViewValueExists(
+			connection, 
+			geographyName, 
+			geoLevelSelect.getName(), 
+			geoLevelToMap.getName(),
+			true);
+	
+		
+	}
+	
+	
 	public void checkDiseaseMappingStudyExists(
 		final Connection connection,
 		final String studyID)
@@ -236,7 +321,7 @@ class SQLDiseaseMappingStudyManager {
 		try {
 			statement 
 				= connection.prepareStatement(diseaseMappingStudyExistsQuery.generateQuery());
-			statement.setString(1, studyID);
+			statement.setInt(1, Integer.valueOf(studyID));
 			resultSet = statement.executeQuery();
 			
 			if (resultSet.next() == false) {
@@ -254,7 +339,9 @@ class SQLDiseaseMappingStudyManager {
 				throw rifServiceException;
 			}
 		}
-		catch(SQLException sqlException) {
+		catch(SQLException sqlException) {			
+			//Record original exception, throw sanitised, human-readable version			
+			logSQLException(sqlException);
 			String recordType
 				= RIFServiceMessages.getMessage("diseaseMappingStudy.label");			
 			String errorMessage

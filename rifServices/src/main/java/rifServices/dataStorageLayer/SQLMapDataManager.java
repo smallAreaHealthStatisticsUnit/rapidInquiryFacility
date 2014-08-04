@@ -7,6 +7,7 @@ import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.MapAreaSummaryData;
+import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -267,6 +268,8 @@ class SQLMapDataManager
 			numberOfAreas = resultSet.getInt(1);
 		}
 		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version			
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToGetAreaCount",
@@ -410,6 +413,8 @@ class SQLMapDataManager
 			}			
 		}
 		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version			
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToGetMapAreas",
@@ -593,6 +598,8 @@ class SQLMapDataManager
 			}			
 		}
 		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version			
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToGetMapAreas",
@@ -661,7 +668,8 @@ class SQLMapDataManager
 				= useAppropariateTableNameCase(resultSet.getString(1));
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
+			//Record original exception, throw sanitised, human-readable version			
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToGetGeoLevelLookupTable",
@@ -726,6 +734,8 @@ class SQLMapDataManager
 				= useAppropariateTableNameCase(resultSet.getString(1));
 		}
 		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version			
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToGetHierarchyTable",
@@ -832,10 +842,192 @@ class SQLMapDataManager
 			20);
 	}
 	
+	public String getGeometry(
+		final Connection connection,
+		final User user,
+		final Geography geography,	
+		final GeoLevelSelect geoLevelSelect,
+		final GeoLevelToMap geoLevelToMap,
+		final ArrayList<MapArea> mapAreas) throws RIFServiceException {
+
+		user.checkErrors();
+		geography.checkErrors();
+		geoLevelSelect.checkErrors();
+		geoLevelToMap.checkErrors();
+		
+		for (MapArea mapArea : mapAreas) {
+			mapArea.checkErrors();
+		}
+		
+		String geographyName = geography.getName();
+		String geoLevelSelectName = geoLevelSelect.getName();
+		
+		sqlRIFContextManager.checkGeographyExists(
+			connection, 
+			geographyName);
+		sqlRIFContextManager.checkGeoLevelSelectExists(
+			connection,
+			geographyName,
+			geoLevelSelectName);
+		sqlRIFContextManager.checkGeoLevelToMapOrViewValueExists(
+			connection, 
+			geographyName, 
+			geoLevelSelectName, 
+			geoLevelToMap.getName(), 
+			true);
+		
+		checkNonExistentAreas(
+			connection,
+			geography.getName(),
+			geoLevelToMap.getName(),
+			mapAreas);
+				
+		String result = "";
+		/*
+		StringBuilder query = new StringBuilder();
+
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = connection.prepareStatement(query.toString());
+			resultSet = statement.executeQuery();
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage("");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			//Cleanup database resources
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);			
+		}
+		
+		*/
+		
+		return result;
+	}
+	
 	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
+
+	
+	public void checkNonExistentAreas(
+		Connection connection,
+		String geographyName,
+		String geoLevelToMapName,
+		ArrayList<MapArea> mapAreas) 
+		throws RIFServiceException {
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		
+		try {
+			
+			//find the correct table corresponding to the geography
+			//eg: SAHSULAND_GEOGRAPHY
+			String geographyTableName
+				= getGeographyTableName(
+					connection, 
+					geographyName);
+
+			SQLRecordExistsQueryFormatter query
+				= new SQLRecordExistsQueryFormatter();
+			query.setFromTable(geographyTableName);
+			query.setLookupKeyFieldName(geoLevelToMapName);
+			
+			System.out.println("SQLMapDataManager checkNonExistentAreas query=="+query.generateQuery()+"==");
+			statement = connection.prepareStatement(query.generateQuery());
+
+			ArrayList<String> errorMessages = new ArrayList<String>();
+			for (MapArea mapArea : mapAreas) {
+				statement.setString(1, mapArea.getIdentifier());
+				resultSet = statement.executeQuery();
+				
+				if (resultSet.next() == false) {
+					//no result, which means identifier was not found
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"sqlMapDataManager.error.nonExistentMapArea",
+							mapArea.getIdentifier(),
+							geographyName,
+							geoLevelToMapName);
+					errorMessages.add(errorMessage);
+				}
+			}	
+			
+			if (errorMessages.size() > 0) {
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.NON_EXISTENT_MAP_AREA,
+						errorMessages);
+				throw rifServiceException;
+			}
+		}
+		catch(SQLException sqlException) {
+			sqlException.printStackTrace(System.out);
+			//Record original exception, throw sanitised, human-readable version			
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlMapDataManager.error.unableToCheckMapAreasExists",
+					geographyName,
+					geoLevelToMapName);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}		
+	}
+
+	/**
+	 * Assumes that geography exists
+	 * @param connection
+	 * @param geography
+	 * @return
+	 * @throws SQLException
+	 */
+	private String getGeographyTableName(
+		Connection connection,
+		String geographyName) 
+		throws SQLException,
+		RIFServiceException {
+
+		SQLSelectQueryFormatter query
+			= new SQLSelectQueryFormatter();
+		query.addSelectField("hierarchytable");
+		query.addFromTable("rif40_geographies");
+		query.addWhereParameter("geography");
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = connection.prepareStatement(query.generateQuery());
+			statement.setString(1, geographyName);
+			
+			resultSet = statement.executeQuery();
+			resultSet.next();
+						
+			return resultSet.getString(1);			
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		
+		
+	}
 	
 	/**
 	 * This is a convenience method that tries to centralise
@@ -892,11 +1084,12 @@ class SQLMapDataManager
 		
 		if (geoLevelToMap != null) {
 			geoLevelToMap.checkErrors();			
-			sqlRIFContextManager.checkGeoLevelToMapValueExists(
+			sqlRIFContextManager.checkGeoLevelToMapOrViewValueExists(
 				connection, 
 				geography.getName(), 
 				geoLevelSelect.getName(), 
-				geoLevelToMap.getName());
+				geoLevelToMap.getName(),
+				true);
 		}
 	}
 	

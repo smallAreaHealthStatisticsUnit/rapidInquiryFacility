@@ -70,12 +70,14 @@ $$;
 
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 	VARCHAR, VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR, VARCHAR[]);
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
+	VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[]);
 
 CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 	c4getallatt4theme 	VARCHAR,
 	l_geography 		VARCHAR,
 	l_geolevel_select	VARCHAR,
-	l_theme			rif40_xml_pkg.rif40_geolevelAttributeTheme,
+	l_theme			VARCHAR,
 	l_attribute_source	VARCHAR,
 	l_attribute_name_array	VARCHAR[]	DEFAULT NULL)
 RETURNS INTEGER
@@ -282,10 +284,10 @@ DECLARE
 		  FROM rif40_geolevels
 		 WHERE geography     = l_geography
 		   AND geolevel_name = l_geolevel_select;
-	c3getallatt4theme CURSOR(
+	c3_getallatt4theme CURSOR(
 			l_geography 		VARCHAR, 
 			l_geolevel_select 	VARCHAR, 
-			l_theme 		rif40_xml_pkg.rif40_geolevelAttributeTheme, 
+			l_theme 		VARCHAR, 
 			l_attribute_name_array 	VARCHAR[]) FOR
 		SELECT * 
 		  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme(
@@ -305,6 +307,12 @@ DECLARE
 		  FROM information_schema.tables 
 		 WHERE table_name  = l_table 
 	           AND table_type  = 'LOCAL TEMPORARY';
+	c8getallatt4theme CURSOR(l_enumlabel VARCHAR) FOR
+		SELECT enumlabel 
+		  FROM pg_enum 
+ 		 WHERE enumtypid = 'rif40_xml_pkg.rif40_geolevelAttributeTheme'::regtype 
+		   AND enumlabel = l_enumlabel
+  		 ORDER BY enumsortorder;
 --
 	c1_rec RECORD;
 	c2_rec RECORD;
@@ -314,6 +322,7 @@ DECLARE
 	c6a_rec RECORD;
 	c6b_rec RECORD;
 	c7_rec RECORD;
+	c8_rec RECORD;
 --
 	explain_text 			VARCHAR;
 	sql_stmt			VARCHAR;
@@ -383,9 +392,23 @@ BEGIN
 			l_geolevel_select::VARCHAR	/* geolevel select */);
 	END IF;	
 --
+-- Check enum value (theme)
+--
+	OPEN c8getallatt4theme(l_theme);
+	FETCH c8getallatt4theme INTO c8_rec;
+	CLOSE c8getallatt4theme;
+	IF c8_rec.enumlabel IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-50805, 'rif40_CreateMapAreaAttributeSource', 
+			'Geography: %, geolevel select: %, invalid theme: %', 			
+			l_geography::VARCHAR			/* Geography */, 
+			l_geolevel_select::VARCHAR		/* Geolevel select */, 
+			l_theme::VARCHAR			/* Theme */);
+	END IF;
+
+--
 -- Check attribute exists
 --
-	FOR c3_rec IN c3getallatt4theme(l_geography, l_geolevel_select, l_theme, l_attribute_name_array) LOOP
+	FOR c3_rec IN c3_getallatt4theme(l_geography, l_geolevel_select, l_theme, l_attribute_name_array) LOOP
 		IF c3_rec.attribute_source = LOWER(l_attribute_source) THEN
 			IF attribute_name_list IS NULL THEN
 				attribute_name_list[1]:=c3_rec.attribute_name;
@@ -419,13 +442,13 @@ BEGIN
 -- Check all attributes present
 --
 	IF sorted_attribute_name_list IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-51605, 'rif40_CreateMapAreaAttributeSource', 
+		PERFORM rif40_log_pkg.rif40_error(-51606, 'rif40_CreateMapAreaAttributeSource', 
 			'geography: %, <geolevel select> %, <attribute source>: %s; sorted attribute list is null', 
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_select::VARCHAR		/* Geolevel select */,
 			l_attribute_source::VARCHAR		/* Attribute source */);
 	ELSIF array_length(attribute_name_list, 1) != array_length(sorted_attribute_name_list, 1) THEN
-		PERFORM rif40_log_pkg.rif40_error(-51606, 'rif40_CreateMapAreaAttributeSource', 
+		PERFORM rif40_log_pkg.rif40_error(-51607, 'rif40_CreateMapAreaAttributeSource', 
 			'geography: %, <geolevel select> %, <attribute source>: %s; sorted attribute list is not the same length as the original', 
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_select::VARCHAR		/* Geolevel select */,
@@ -453,7 +476,7 @@ BEGIN
 -- [the function rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme()]
 --
 	IF select_list IS NULL AND invalid_attribute_source > 0 THEN
-		PERFORM rif40_log_pkg.rif40_error(-51607, 'rif40_CreateMapAreaAttributeSource', 
+		PERFORM rif40_log_pkg.rif40_error(-51608, 'rif40_CreateMapAreaAttributeSource', 
 			'geography: %, <geolevel select> %, <attribute source>: %s; no attributes found, % of % <attribute source> were invalid', 
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_select::VARCHAR		/* Geolevel select */,
@@ -461,7 +484,7 @@ BEGIN
 			invalid_attribute_source::VARCHAR	/* Invalid attribute sources */,
 			array_length(l_attribute_name_array, 1)::VARCHAR	/* Total attributes */);
 	ELSIF select_list IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-51608, 'rif40_CreateMapAreaAttributeSource', 
+		PERFORM rif40_log_pkg.rif40_error(-51609, 'rif40_CreateMapAreaAttributeSource', 
 			'geography: %, <geolevel select> %, <attribute source>: %s; no attributes found', 
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_select::VARCHAR		/* Geolevel select */,
@@ -487,26 +510,26 @@ BEGIN
 	CLOSE c6_6getallatt4theme;
 	IF c6a_rec.column_name = 'gid' AND c6b_rec.column_name = 'gid_rowindex' THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource',
-			'[51609] Both gid and gid_rowindex columns are present in attrribute source table: %',
+			'[51610] Both gid and gid_rowindex columns are present in attrribute source table: %',
 			l_attribute_source::VARCHAR);
 	ELSIF c6a_rec.column_name = 'gid' AND c6b_rec.column_name IS NULL THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource',
-			'[51610] Only the gid column is present in attrribute source table: %',
+			'[51612] Only the gid column is present in attrribute source table: %',
 			l_attribute_source::VARCHAR);
 	ELSIF c6a_rec.column_name IS NULL AND c6b_rec.column_name = 'gid_rowindex' THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource',
-			'[51611] Only the gid_rowindex column is present in attrribute source table: %',
+			'[51612] Only the gid_rowindex column is present in attrribute source table: %',
 			l_attribute_source::VARCHAR);
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource',
-			'[51612] Neither gid or gid_rowindex columns are present in attrribute source table: %',
+			'[51613] Neither gid or gid_rowindex columns are present in attrribute source table: %',
 			l_attribute_source::VARCHAR);
 	END IF;
 --
 -- Geometry tables must have gid and gid_rowindex
 --
 	IF l_theme = 'geometry' AND (c6a_rec.column_name IS NULL OR c6b_rec.column_name IS NULL) THEN
-		PERFORM rif40_log_pkg.rif40_error(-51613, 'rif40_CreateMapAreaAttributeSource', 
+		PERFORM rif40_log_pkg.rif40_error(-51614, 'rif40_CreateMapAreaAttributeSource', 
 			'Theme: % does not have gid or gid_rowindex column',
 			l_theme::VARCHAR);
 	END IF;
@@ -589,7 +612,7 @@ BEGIN
 --	
 -- This may mean the theme is not supported yet...
 --
-		PERFORM rif40_log_pkg.rif40_error(-51614, 'rif40_CreateMapAreaAttributeSource', 
+		PERFORM rif40_log_pkg.rif40_error(-51615, 'rif40_CreateMapAreaAttributeSource', 
 			'Invalid theme: %',
 			l_theme::VARCHAR);
 	END IF;
@@ -636,10 +659,10 @@ BEGIN
 	FETCH c7_getallatt4theme INTO c7_rec;
 	CLOSE c7_getallatt4theme;
 	IF c7_rec.table_name IS NOT NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(51615, 'rif40_DeleteMapAreaAttributeSource', 'Temporary table: % already exists.',
+		PERFORM rif40_log_pkg.rif40_error(51616, 'rif40_DeleteMapAreaAttributeSource', 'Temporary table: % already exists.',
 			c7_rec.table_name::VARCHAR		/*  Temporary table name */);
 	ELSE
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_DeleteMapAreaAttributeSource', '[51616] Temporary table: % does not exist.',
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_DeleteMapAreaAttributeSource', '[51617] Temporary table: % does not exist.',
 			LOWER(c4getallatt4theme)::VARCHAR		/* Temporary table name */);
 	END IF;	
 
@@ -659,7 +682,7 @@ BEGIN
 --
 -- Create temporary table
 --
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource', '[51617] c4getallatt4theme EXPLAIN SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource', '[51618] c4getallatt4theme EXPLAIN SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
 			sql_stmt:='EXPLAIN ANALYZE VERBOSE CREATE TEMPORARY TABLE '||quote_ident(LOWER(c4getallatt4theme::Text))||E'\n'||'AS'||E'\n'||sql_stmt;
 --
 -- Create results temporary table, extract explain plan  using _rif40_CreateMapAreaAttributeSource_explain_ddl() helper function.
@@ -681,12 +704,12 @@ BEGIN
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 				error_message:='rif40_CreateMapAreaAttributeSource() caught: '||E'\n'||
 					SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
-				RAISE INFO '51618: %', error_message;
+				RAISE INFO '51619: %', error_message;
 --
 				RAISE;
 		END;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_CreateMapAreaAttributeSource', 
-			'[51619] c4getallatt4theme EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);	
+			'[51620] c4getallatt4theme EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);	
 	ELSE
 --
 -- Non EXPLAIN PLAN version
@@ -697,7 +720,7 @@ BEGIN
 --
 			sql_stmt:='CREATE TEMPORARY TABLE '||quote_ident(LOWER(c4getallatt4theme::Text))||E'\n'||'AS'||E'\n'||sql_stmt;
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource', 
-				'[51620] c4getallatt4theme SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
+				'[51621] c4getallatt4theme SQL> '||E'\n'||'%;', sql_stmt::VARCHAR); 
 			EXECUTE sql_stmt USING l_geography, l_geolevel_select;
 			GET DIAGNOSTICS num_rows = ROW_COUNT;
 		EXCEPTION
@@ -708,7 +731,7 @@ BEGIN
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 				error_message:='rif40_CreateMapAreaAttributeSource() caught: '||E'\n'||
 					SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
-				RAISE INFO '51621: %', error_message;
+				RAISE INFO '51622: %', error_message;
 --
 				RAISE;
 		END;
@@ -734,7 +757,7 @@ BEGIN
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_CreateMapAreaAttributeSource', 
-		'[51622] Cursor: %, geography: %, geolevel select: %, theme: %, attribute names: [%], source: %, rows: %; SQL parse took: %.', 			
+		'[51623] Cursor: %, geography: %, geolevel select: %, theme: %, attribute names: [%], source: %, rows: %; SQL parse took: %.', 			
 		LOWER(quote_ident(c4getallatt4theme::Text))::VARCHAR	/* Cursor name */, 
 		l_geography::VARCHAR					/* Geography */, 
 		l_geolevel_select::VARCHAR				/* Geolevel select */, 
@@ -749,7 +772,7 @@ END;
 $func$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(VARCHAR, VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR, VARCHAR[]) IS 'Function: 	rif40_CreateMapAreaAttributeSource()
+COMMENT ON FUNCTION rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[]) IS 'Function: 	rif40_CreateMapAreaAttributeSource()
 Parameters:	Temporary table name (same as REFCURSOR), Geography, <geolevel select>, 
 		theme (enum: rif40_xml_pkg.rif40_geolevelAttributeTheme), attribute source, 
  		attribute name array [Default NULL - All attributes]
@@ -941,9 +964,9 @@ DEBUG2 does an EXPLAIN PLAN
 ';
 
 GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
-	VARCHAR, VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR, VARCHAR[]) TO rif_manager;
+	VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[]) TO rif_manager;
 GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
-	VARCHAR, VARCHAR, VARCHAR, rif40_xml_pkg.rif40_geolevelAttributeTheme, VARCHAR, VARCHAR[]) TO rif_user;
+	VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[]) TO rif_user;
 
 CREATE OR REPLACE FUNCTION rif40_xml_pkg._rif40_CreateMapAreaAttributeSource_explain_ddl(
 	sql_stmt VARCHAR, l_geography VARCHAR, l_geolevel_select VARCHAR)
