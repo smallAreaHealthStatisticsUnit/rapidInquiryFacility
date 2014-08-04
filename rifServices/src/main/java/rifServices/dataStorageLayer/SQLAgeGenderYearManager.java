@@ -172,6 +172,8 @@ class SQLAgeGenderYearManager
 			}
 		}
 		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlAgeGenderYearManager.error.unableToGetAgeGroupID",
@@ -258,6 +260,8 @@ class SQLAgeGenderYearManager
 			}
 		}
 		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage("ageGroup.error.unableToGetAgeGroups");
 
@@ -355,7 +359,9 @@ class SQLAgeGenderYearManager
 						String.valueOf(yearEndValue));
 			return result;
 		}
-		catch(SQLException sqlException) {			
+		catch(SQLException sqlException) {	
+			//Record original exception, throw sanitised, human-readable version			
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlAgeGenderYearManager.error.unableToGetStartEndYear",
@@ -443,7 +449,8 @@ class SQLAgeGenderYearManager
 			= new SQLRecordExistsQueryFormatter();
 		query.setFromTable("rif40_age_groups");
 		query.setLookupKeyFieldName("age_group_id");
-
+		query.addWhereParameter("low_age");
+		query.addWhereParameter("high_age");
 		
 		//Execute query and generate results
 		PreparedStatement statement = null;
@@ -452,6 +459,8 @@ class SQLAgeGenderYearManager
 			statement 
 				= connection.prepareStatement(query.generateQuery());
 			statement.setInt(1, id);
+			statement.setInt(2, Integer.valueOf(ageGroup.getLowerLimit()));
+			statement.setInt(3, Integer.valueOf(ageGroup.getUpperLimit()));
 				
 			resultSet = statement.executeQuery();		
 			if (resultSet.next() == false) {
@@ -472,6 +481,8 @@ class SQLAgeGenderYearManager
 			}		
 		}
 		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version			
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
