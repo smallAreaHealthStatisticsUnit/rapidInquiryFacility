@@ -1,5 +1,12 @@
 package rifServices.businessConceptLayer;
 
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceException;
+import rifServices.system.RIFServiceError;
+
+
+import java.util.ArrayList;
+
 /**
  *
  * <hr>
@@ -87,10 +94,10 @@ public class BoundaryRectangle {
 	}
 	
 	public static BoundaryRectangle newInstance(
-		double xMin,
-		double yMin,
-		double xMax,
-		double yMax) {
+		final double xMin,
+		final double yMin,
+		final double xMax,
+		final double yMax) {
 		
 		BoundaryRectangle boundaryRectangle 
 			= new BoundaryRectangle();
@@ -102,6 +109,23 @@ public class BoundaryRectangle {
 		return boundaryRectangle;
 	}
 		
+	public static BoundaryRectangle createCopy(
+		final BoundaryRectangle originalBoundaryRectangle) {
+		
+		if (originalBoundaryRectangle == null) {
+			return null;
+		}
+		
+		BoundaryRectangle cloneBoundaryRectangle
+			= new BoundaryRectangle();
+		
+		cloneBoundaryRectangle.setXMin(originalBoundaryRectangle.getXMin());
+		cloneBoundaryRectangle.setYMin(originalBoundaryRectangle.getYMin());
+		cloneBoundaryRectangle.setXMax(originalBoundaryRectangle.getXMax());
+		cloneBoundaryRectangle.setYMax(originalBoundaryRectangle.getYMax());
+		
+		return cloneBoundaryRectangle;
+	}
 
 	
 	// ==========================================
@@ -146,10 +170,55 @@ public class BoundaryRectangle {
 	// Section Errors and Validation
 	// ==========================================
 
+	public void checkErrors() 
+		throws RIFServiceException {
+
+		//ensure that xMax >= xMin
+		ArrayList<String> errorMessages = new ArrayList<String>(); 
+		if (xMax < xMin) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"boundaryRectangle.error.xMaxLessThanMin",
+					String.valueOf(xMax),
+					String.valueOf(xMin));
+			errorMessages.add(errorMessage);
+		}
+		
+		if (yMax < yMin) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"boundaryRectangle.error.yMaxLessThanMin",
+					String.valueOf(yMax),
+					String.valueOf(yMin));
+			errorMessages.add(errorMessage);			
+		}
+		
+		//ensure that yMax >= yMin
+		if (errorMessages.size() > 0) {
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.INVALID_BOUNDARY_RECTANGLE,
+					errorMessages);
+			throw rifServiceException;
+		}
+		
+	}
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
-
+	
+	public String getDisplayName() {
+		String displayName
+			= RIFServiceMessages.getMessage(
+				"boundaryRectangle.displayName",
+				String.valueOf(xMin),
+				String.valueOf(yMin),
+				String.valueOf(xMax),
+				String.valueOf(yMax));
+		return displayName;
+	}
+	
 	// ==========================================
 	// Section Override
 	// ==========================================
