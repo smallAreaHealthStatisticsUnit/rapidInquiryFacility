@@ -5,12 +5,13 @@ RIF.chart.histogram = (function( geolevel ) {
 	    
 		settings = {
 			
-			field: "popcount",
-			gidsToupdate: [],
-			year: null,
+			dataSet: '',
+			field: '',
+			gids: '',
+			year: '',
 			
 			margin: {
-				top: 0, 
+				top: 10, 
 				right: 10, 
 				bottom: 20, 
 				left: 10
@@ -25,19 +26,24 @@ RIF.chart.histogram = (function( geolevel ) {
 	_doHisto = function(){
 		var params = [ settings.field ];
 		
-		if( settings.gidsToupdate.length > 0){
-		    params.push( settings.ageGroups );
-		};
-		
 		if( settings.year !== null){
 		    params.push( settings.year );
 		};
 		
-		RIF.getPyramidData( _render , params );
+		RIF.getHistogramData( _render , params );
 	},
 	
-	_render = function(){
-		var r = RIF.chart.histogram.d3renderer(  settings, data);		
+	_render = function( data ){
+		_clear();
+		var r = RIF.chart.histogram.d3renderer(  settings, data );		
+	},
+	
+	_clear = function(){
+		$('#distHisto').empty(); 
+	},
+	
+	_setHistoFieldName = function( field ){
+		$('#distHistoField').text( field );
 	},
 	
 	_p = {	
@@ -48,16 +54,18 @@ RIF.chart.histogram = (function( geolevel ) {
 		
 		updateHisto: function( sett ){
 			var callback = function(){
-				_p.setHistoSettings(sett);
-				_doHisto();
+				_setHistoFieldName(sett.field);
+				_render( this );
 			};
 			
-			//RIF.getAgeGroups( callback, sett.geolevel);
+			_p.setHistoSettings(sett);
+			
+			RIF.getHistogramData( callback, [settings.dataSet, settings.field, settings.gids, settings.year ] );
 		},
 		
 		drawHisto: function( sett ){
-			//_doHisto();
-			_render();
+			_doHisto();
+			//_render();
 		}
 	};
 	

@@ -48,7 +48,18 @@ RIF.manager = (function () {
                 firer: ["menu"],
                 method: "clearMapTable"
 			},
-			
+			// Chart update 
+			chartUpdateClick: {
+                subscribers: ["sync"],
+                firer: ["menu"],
+                method: "chartUpdateClick"
+            },
+			// sync - charts
+			updateCharts: {
+                subscribers: ["chart"],
+                firer: ["sync"],
+                method: "updateCharts"
+            },
 			// sync - map/table
             clearSelection: {
                 subscribers: ["map", "table"],
@@ -84,7 +95,7 @@ RIF.manager = (function () {
             },
 			
 			addGeolevel: {
-                subscribers: ["map", "chart"],
+                subscribers: ["map"],
                 firer: ["menu"],
                 method: "uGeolevel"
             },
@@ -121,17 +132,10 @@ RIF.manager = (function () {
                 method: "getTabularData"
 			},
 			
-			//Map - Menu
-			addZoomIdentifiers: {
+			populateMenus: {
                 subscribers: ["menu"],
                 firer: ["map"],
-                method: "uZoomOpts"
-            },
-			
-			addAvlbFields: {
-                subscribers: ["menu"],
-                firer: ["map"],
-                method: "uAvlbFlds"
+                method: "uDropdownFlds"
             },
 			
 			scaleRangeReady:{
@@ -160,10 +164,10 @@ RIF.manager = (function () {
 			},
 			
             //Chart - Pyramid 	
-            updatePyramidWithSelection: {
+            updatePyramid: {
                 subscribers: ["chart"],
                 firer: ["menu"],
-                method: "uPyramid"
+                method: "updatePyramid"
             },
 
             changePyramidField: {
@@ -179,10 +183,10 @@ RIF.manager = (function () {
             },
 
             //Chart - Distribution hist.
-            updateHistWithSelection: {
+            updateHistogram: {
                 subscribers: ["chart"],
                 firer: ["menu"],
-                method: "uDistHist"
+                method: "updateHistogram"
             },
 
             changeHistField: {

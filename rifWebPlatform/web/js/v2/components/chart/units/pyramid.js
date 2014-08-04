@@ -8,7 +8,7 @@ RIF.chart.pyramid = (function( geolevel ) {
 			field: "popcount",
 			element:"pyramid",
 			ageGroups: [],
-			gidsToupdate: [],
+			gids: [],
 			year: null,
 			
 			margin: {
@@ -25,10 +25,13 @@ RIF.chart.pyramid = (function( geolevel ) {
     }, 
 	
 	_doPyramid = function(){
-		var params = [ settings.geolevel, settings.field ];
+	
+		_clear();
 		
-		if( settings.gidsToupdate.length > 0){
-		    params.push( settings.ageGroups );
+		var params = [ settings.geoLevel, settings.field ];
+		
+		if( settings.gids.length > 0){
+		    params.push( settings.gids );
 		};
 		
 		if( settings.year !== null){
@@ -42,6 +45,9 @@ RIF.chart.pyramid = (function( geolevel ) {
 		var r = RIF.chart.pyramid.d3renderer( settings, d3.csv.parse(this));		
 	},
 	
+	_clear = function(){
+		$('#pyramid').empty(); 
+	},
 	
 	_p = {	
 	    
@@ -51,12 +57,12 @@ RIF.chart.pyramid = (function( geolevel ) {
 		
 		updatePyramid: function( sett ){
 			var callback = function(){
-				_p.setPyramidSettings(sett);
 				settings.ageGroups = this;
 				_doPyramid();
 			};
 			
-			RIF.getAgeGroups( callback, sett.geolevel);
+			_p.setPyramidSettings(sett);
+			RIF.getAgeGroups( callback, [settings.geoLevel]);
 		},
 		
 		drawPyramid: function( sett ){

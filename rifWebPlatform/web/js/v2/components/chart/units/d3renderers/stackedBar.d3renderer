@@ -1,0 +1,13 @@
+RIF.chart.stackedBar.d3renderer = (function( opt, values ){ 
+    
+	var _p = {
+            
+		init: function(){
+                
+        }
+		
+	};
+	
+	return _p;
+	
+});

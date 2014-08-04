@@ -35,8 +35,7 @@ RIF.map.layer = (function (type, sett) {
 					
 					clbk: { /* called after layer is rendered */
 						tile: function(){ 
-							map.facade.addAvlbFields();
-							map.facade.addZoomIdentifiers( layer.geoLevel );	
+							map.facade.populateMenus( { geoLvl : layer.geoLevel } );	
 						},
 						topojson: function(){}
 					},

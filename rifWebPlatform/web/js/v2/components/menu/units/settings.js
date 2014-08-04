@@ -18,18 +18,14 @@ RIF.menu.settings = (function(){
 			colsFilter: $('#colsFilter'),
 			numRows:    $('#numOfRows'),
 	        colsFilterName : "filterCols",
+		
 			
-			avlbFieldsSettings: function(){
-				parent.dropDown( this, _p.hoverSlct );
-				parent.fieldCheckboxes( this, _p.colsFilter, _p.colsFilterName );
+			getHistogramSelection: function(){
+				return _p.histoSlct.val();
 			},
 			
-			avlbFieldsHistogram: function(){
-				parent.dropDown( this, _p.histoSlct );
-			},
-			
-			avlbFieldsPyramid: function(){
-				parent.dropDown( this, _p.pyramidSlct );
+			getPyramidSelection: function(){
+				return _p.pyramidSlct.val();
 			},
 			
 			/* events */
@@ -44,6 +40,8 @@ RIF.menu.settings = (function(){
 					parent.facade.filterTablebyCols( fields );
 					parent.facade.changeNumRows( _p.numRows.val() );
 					parent.facade.hoverFieldChange(_p.hoverSlct.val());
+					parent.facade.updatePyramid();
+					parent.facade.updateHistogram();
 					$("#settings").hide();
 				});
 			}	

@@ -175,8 +175,8 @@ END;
 --
 -- Test in a single transaction
 --
---\i ../psql_scripts/v4_0_sahsuland_examples.sql   
-\set VERBOSITY terse
+\i ../psql_scripts/v4_0_sahsuland_examples.sql   
+--\set VERBOSITY terse
 
 --
 -- Test rif40_GetMapAreaAttributeValue, rif40_getAllAttributesForGeoLevelAttributeTheme on study extracts
@@ -237,6 +237,7 @@ $$;
 --
 -- Test middleware interface fucntions
 --
+\set VERBOSITY verbose
 SELECT * 
   FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'extract');
 

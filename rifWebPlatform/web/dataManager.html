@@ -12,7 +12,6 @@
     <link href="css/manager.css" rel="stylesheet" media="screen" />
     <link href="css/pyramid.css" rel="stylesheet" media="screen" />
 	<link href="css/histogram.css" rel="stylesheet" media="screen" />
-    <link href="css/dataTable.css" rel="stylesheet" media="screen" />
 	<link href="css/slickgrid/slick.grid.css" rel="stylesheet" media="screen" />
 	<link href="css/slickgrid/slick-default-theme.css" rel="stylesheet" media="screen" />
 
@@ -61,6 +60,7 @@
 	<script type="text/javascript" src="js/v2/components/map/units/layerTypes/plugins/tileCanvas_topojson.js"></script>
     <!-- menu -->
     <script type="text/javascript" src="js/v2/components/menu/menu.js"></script>
+	 <script type="text/javascript" src="js/v2/components/menu/menu.utils.js"></script>
 	<script type="text/javascript" src="js/v2/components/menu/units/geoLevel.js"></script>
 	<script type="text/javascript" src="js/v2/components/menu/units/choropleth.js"></script>
 	<script type="text/javascript" src="js/v2/components/menu/units/settings.js"></script>
@@ -127,12 +127,7 @@
         <div id="submenu">
             <div>
                 <div class='chartOpts'>
-                    <a href='#' class='pyramid'>
-                        <img src="images/pyramid.png" class="active">
-                    </a>
-                    <a href='#' class='histo'>
-                        <img src="images/histo.png">
-                    </a>
+                    <a href='#' id='updateCharts'></a>
                 </div>
                 <div class='mapOpts'>
                     <a href='#' class='mapOpt' id="choroplethBtn" title="Make a choropleth map"></a>

@@ -3,7 +3,15 @@ RIF.sync = (function(type){
 	var _shared = {
             
 			currentGeoLvl: "",
-
+			
+			setSelection: function( slct ){
+					_study[type].selection = slct;
+			},
+				
+		    getSelection: function(){
+					return _study[type].selection;
+			},
+			
             mapSync: function( params ){
 			   	/*
 				 * Area ids are in the following format: g + id , example: "g101"
@@ -15,7 +23,7 @@ RIF.sync = (function(type){
 					return;
 				 }; 
 					
-                 _study[type].selection = RIF.unique(newlySlctd);
+                 _shared.setSelection( RIF.unique(newlySlctd) );
 					
 				 if( params[1] === 'table' ){
 					_study[type].fire('updateSelectionMap', _study[type].selection);
@@ -28,6 +36,7 @@ RIF.sync = (function(type){
 			},
 			
 			clear: function(){
+				_shared.setSelection( [] );
 				_study[type].fire('clearSelection', []);
 			}
 			
@@ -41,10 +50,15 @@ RIF.sync = (function(type){
 					_shared.mapSync( params );
                 },
 				
+				chartUpdateClick: function(){
+					this.fire('updateCharts', { gids: this.getSelection()});
+				},
+				
 				clearMapTable: function(){
+					this.fire('updateCharts', { gids: []});
 					_shared.clear();
-				}
-
+				},
+		
 			},
 			
 			diseaseMapping: {},

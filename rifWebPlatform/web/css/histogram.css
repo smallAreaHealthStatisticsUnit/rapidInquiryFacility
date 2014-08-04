@@ -4,8 +4,9 @@
 }
 
 #distHisto .bar text {
-  fill: #fff;
-  font-size:10px
+  fill: #B0C4DE;
+  font-size:11px;
+  font-family: "proxima-nova", sans-serif;;
 }
 
 #distHisto .axis path, .axis line {
@@ -16,10 +17,7 @@
 
 #distHisto .tick text {
 	fill: #8F8F8F;
+	font-size:9px;
 }
-#distHisto .title {
-  font: 20px Helvetica Neue;
-  fill: #8F8F8F;
-  text-anchor: end;
-}
+
  

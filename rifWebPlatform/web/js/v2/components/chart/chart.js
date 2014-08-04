@@ -10,14 +10,18 @@ RIF.chart = (function (charts) {
 
 			facade: {
 			    /* subscribers */
-				uGeolevel: function( args ){
-					_p.updatePyramid( { 
-						geolevel: args.geoLevel		
-					});
-					_p.drawHisto( { 
-						geolevel: args.geoLevel		
-					});
-				} 	
+				updatePyramid: function( args ){
+					_p.updatePyramid( args );
+				},	
+				
+				updateHistogram: function( args ){
+					_p.updateHisto( args );
+				},
+
+				updateCharts: function ( args ){
+					this.updateHistogram( args );
+					this.updatePyramid( args );
+				}	
             }
 		};
 	

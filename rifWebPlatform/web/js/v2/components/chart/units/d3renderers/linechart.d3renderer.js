@@ -1,4 +1,4 @@
-RIF.chart.linechart = (function() {
+RIF.chart.linechart.d3renderer = (function( opt, values ){ 
     
 	var _p = {
             

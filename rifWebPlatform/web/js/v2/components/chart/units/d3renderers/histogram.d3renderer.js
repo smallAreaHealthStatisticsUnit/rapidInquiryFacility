@@ -10,31 +10,47 @@ RIF.chart.histogram.d3renderer = (function( opt, values ){
 		margin = opt.margin,
 		width = opt.dimensions.width - margin.left - margin.right,
 		height = opt.dimensions.height - margin.top - margin.bottom,
-		field = opt.field;
+		field = opt.field,
+		bins = Math.floor(width/30);
 	
-	// Generate a Bates distribution of 10 random variables.
-	var values = d3.range(1000).map(d3.random.bates(10));
-	console.log(values);
+	values = values.map(function(d) { if(+d >= 0){ return  Math.log(+d);} });
+	
+	var max = d3.max(values) , 
+		min = d3.min(values);
+	
+	max = (max > 0 ) ? max : bins;
+	min = (min > 0 ) ? min : 0;
+    bins = (max > bins ) ? bins : 15;	
 	// A formatter for counts.
-	var formatCount = d3.format(",.0f");
+	var formatCount = d3.format(".0f"),
+	    myFormatter = function(d){
+			return (d / 1e6 >= 1 ) ?  (d / 1e6 + "M") :
+			(d / 1e3 >= 1 ) ?  (d / 1e3 + "K") :  d; 
+		}
 
 	var x = d3.scale.linear()
-		.domain([0, 1])
+		.domain([ 0 , max])
 		.range([0, width]);
 
 	// Generate a histogram using twenty uniformly-spaced bins.
 	//Could allows users to change this
 	var data = d3.layout.histogram()
-		.bins(x.ticks(20))
+		.bins(x.ticks(bins))
 		(values);
-
+	
+	
+	
 	var y = d3.scale.linear()
 		.domain([0, d3.max(data, function(d) { return d.y; })])
 		.range([height, 0]);
 
 	var xAxis = d3.svg.axis()
 		.scale(x)
-		.orient("bottom");
+		.orient("bottom")
+		.ticks(data.length)
+		.tickFormat(function(d) {  
+				return myFormatter(d); 
+			});
 
 	var svg = d3.select("#distHisto").append("svg")
 		.attr("width", width + margin.left + margin.right)
@@ -42,13 +58,6 @@ RIF.chart.histogram.d3renderer = (function( opt, values ){
 	  .append("g")
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 			
-	
-	// A label for the current year.
-	/*var title = svg.append("text")
-		.attr("class", "title")
-		.attr("dy", ".55em")		
-			.attr("dx", opt.dimensions.width)
-			.text("leukemia");*/
 	
 	var bar = svg.selectAll(".bar")
 		.data(data)
@@ -58,12 +67,12 @@ RIF.chart.histogram.d3renderer = (function( opt, values ){
 
 	bar.append("rect")
 		.attr("x", 1)
-		.attr("width", x(data[0].dx) - 1)
+		.attr("width", x(data[0].dx) - 1 )
 		.attr("height", function(d) { return height - y(d.y); });
 
 	bar.append("text")
-		.attr("dy", ".75em")
-		.attr("y", 6)
+		.attr("dy", ".70em")
+		.attr("y", -10)
 		.attr("x", x(data[0].dx) / 2)
 		.attr("text-anchor", "middle")
 		.text(function(d) { return formatCount(d.y); });
