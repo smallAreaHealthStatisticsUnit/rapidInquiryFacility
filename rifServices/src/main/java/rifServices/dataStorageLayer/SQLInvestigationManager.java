@@ -1,13 +1,22 @@
 package rifServices.dataStorageLayer;
 
 import rifServices.businessConceptLayer.AbstractStudy;
+
+import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.Investigation;
+import rifServices.businessConceptLayer.AbstractCovariate;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.HealthCode;
+import rifServices.businessConceptLayer.HealthTheme;
+import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.RIFLogger;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 /**
  *
@@ -82,7 +91,11 @@ class SQLInvestigationManager
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private SQLRIFContextManager rifContextManager;
+	private SQLAgeGenderYearManager ageGenderYearManager;
+	private SQLHealthOutcomeManager healthOutcomeManager;
+	private SQLCovariateManager covariateManager;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -90,8 +103,16 @@ class SQLInvestigationManager
 	/**
 	 * Instantiates a new SQL investigation manager.
 	 */
-	public SQLInvestigationManager() {
+	public SQLInvestigationManager(
+		SQLRIFContextManager rifContextManager,
+		SQLAgeGenderYearManager ageGenderYearManager,
+		SQLCovariateManager covariateManager,
+		SQLHealthOutcomeManager healthOutcomeManager) {
 
+		this.rifContextManager = rifContextManager;
+		this.ageGenderYearManager = ageGenderYearManager;
+		this.covariateManager = covariateManager;
+		this.healthOutcomeManager = healthOutcomeManager;
 	}
 
 	// ==========================================
@@ -131,6 +152,44 @@ class SQLInvestigationManager
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
+	
+	public void checkNonExistentItems(
+		final Connection connection, 
+		final Geography geography,
+		final Investigation investigation)
+		throws RIFServiceException {
+		
+		ArrayList<AgeBand> ageBands
+			= investigation.getAgeBands();
+		ageGenderYearManager.checkNonExistentAgeGroups(
+			connection, 
+			ageBands);
+
+		ArrayList<AbstractCovariate> covariates
+			= investigation.getCovariates();
+		covariateManager.checkNonExistentCovariates(
+			connection, 
+			covariates);
+
+		//we will not check whether the health codes exist
+		//for now, we'll assume they do
+		ArrayList<HealthCode> healthCodes
+			= investigation.getHealthCodes();
+		healthOutcomeManager.checkNonExistentHealthCodes(healthCodes);
+		
+		HealthTheme healthTheme
+			= investigation.getHealthTheme();
+		rifContextManager.checkHealthThemeExists(
+			connection, 
+			healthTheme.getName());
+
+		NumeratorDenominatorPair ndPair = investigation.getNdPair();
+		rifContextManager.checkNDPairExists(
+			connection, 
+			geography, 
+			ndPair);
+	}
+	
 	public void checkInvestigationExists(
 		final Connection connection,
 		final AbstractStudy study,
@@ -168,7 +227,9 @@ class SQLInvestigationManager
 				throw rifServiceException;
 			}
 		}
-		catch(SQLException sqlException) {
+		catch(SQLException sqlException) {			
+			//Record original exception, throw sanitised, human-readable version			
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
