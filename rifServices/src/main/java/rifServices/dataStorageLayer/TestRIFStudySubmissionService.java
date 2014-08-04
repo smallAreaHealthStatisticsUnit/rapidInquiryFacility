@@ -1,12 +1,16 @@
 package rifServices.dataStorageLayer;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 
 import rifServices.businessConceptLayer.AbstractCovariate;
+import rifServices.businessConceptLayer.AdjustableCovariate;
 import rifServices.businessConceptLayer.AgeBand;
+import rifServices.businessConceptLayer.ExposureCovariate;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 import rifServices.taxonomyServices.HealthCodeProvider;
+import rifServices.util.FieldValidationUtility;
 
 /**
  *
@@ -105,52 +109,322 @@ public final class TestRIFStudySubmissionService
 	// Section Override
 	// ==========================================
 	
+	/**
+	 * Test method used to ensure that service can identify age groups that
+	 * don't exist in the age groups providers
+	 * @param user
+	 * @param connection
+	 * @param healthCodes
+	 * @throws RIFServiceException
+	 */
 	public void checkNonExistentAgeGroups(
-		User user,
-		ArrayList<AgeBand> ageBands) 
-		throws RIFServiceException {	
-	
-		super.checkNonExistentAgeGroups(
-			user,
-			ageBands);
-	}
-	
-	public void checkNonExistentCovariates(
-		User user,
-		ArrayList<AbstractCovariate> covariates) 
-		throws RIFServiceException {	
-	
-		super.checkNonExistentCovariates(
-			user,
-			covariates);		
-	}
-	
-	public void addHealthCodeProvider(
-		User user,
-		HealthCodeProvider healthCodeProvider) throws RIFServiceException {	
-		
-		super.addHealthCodeProvider(
-			user,
-			healthCodeProvider);
-	}
-	
-	public void clearHealthCodeProviders(User user) 
-		throws RIFServiceException {
-		
-		super.clearHealthCodeProviders(user);
-	}
-	
-	public void clearRIFJobSubmissionsForUser(
-		User user) 
+		User _user,
+		ArrayList<AgeBand> _ageBands) 
 		throws RIFServiceException {
 
-		super.clearRIFJobSubmissionsForUser(user);
-	}
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);		
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();				
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return;
+		}
+		ArrayList<AgeBand> ageBands
+			= AgeBand.createCopy(_ageBands);
+			
+		//no need to defensively copy sortingOrder because
+		//it is an enumerated type
+			
+		try {			
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"checkNonExistentAgeGroups",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"checkNonExistentAgeGroups",
+				"ageBands",
+				ageBands);
+
+			//sortingOrder can be null, it just means that the
+			//order will be ascending lower limit
+			
+			//Check for security violations
+			validateUser(user);
+			for (AgeBand ageBand : ageBands) {
+				ageBand.checkSecurityViolations();					
+			}
+
+			//Delegate operation to a specialised manager class
+			Connection connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+			SQLAgeGenderYearManager sqlAgeGenderYearManager
+				= rifServiceResources.getSqlAgeGenderYearManager();
+			sqlAgeGenderYearManager.checkNonExistentAgeGroups(
+				connection,
+				ageBands); 
+			
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);		
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"checkNonExistentAgeGroups",
+				rifServiceException);
+		}			
+	}	
+		
+	/**
+	 * Test method used to ensure that service can identify age groups that
+	 * don't exist in the age groups providers
+	 * @param user
+	 * @param connection
+	 * @param healthCodes
+	 * @throws RIFServiceException
+	 */
+	public void checkNonExistentCovariates(
+		User _user,
+		ArrayList<AbstractCovariate> _covariates) 
+		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();						
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return;
+		}
+		ArrayList<AbstractCovariate> covariates = new ArrayList<AbstractCovariate>();	
+		for (AbstractCovariate _covariate : _covariates) {
+			if (_covariate instanceof AdjustableCovariate) {
+				//adjustable covariate
+				AdjustableCovariate adjustableCovariate
+					= (AdjustableCovariate) _covariate;
+				covariates.add(AdjustableCovariate.createCopy(adjustableCovariate));
+			}
+			else {
+				//exposure covariate
+				ExposureCovariate exposureCovariate
+					= (ExposureCovariate) _covariate;
+				covariates.add(ExposureCovariate.createCopy(exposureCovariate));				
+			}			
+		}
+		
+		//no need to defensively copy sortingOrder because
+		//it is an enumerated type
+			
+		try {			
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"checkNonExistentCovariates",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"checkNonExistentCovariates",
+				"covariates",
+				covariates);
+
+			//sortingOrder can be null, it just means that the
+			//order will be ascending lower limit
+			
+			//Check for security violations
+			validateUser(user);
+			for (AbstractCovariate covariate : covariates) {
+				covariate.checkSecurityViolations();					
+			}
+
+			//Delegate operation to a specialised manager class
+			Connection connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			SQLCovariateManager sqlCovariateManager
+				= rifServiceResources.getSqlCovariateManager();
+			sqlCovariateManager.checkNonExistentCovariates(
+				connection,
+				covariates); 		
+
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);
+
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"checkNonExistentCovariates",
+				rifServiceException);
+		}			
+	}	
 	
-	public void clearStudiesForUser(
-		User user) 
+	/**
+	 * Adds the health code provider.
+	 *
+	 * @param _adminUser the _admin user
+	 * @param healthCodeProvider the health code provider
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	public void addHealthCodeProvider(
+		User _adminUser,
+		HealthCodeProvider healthCodeProvider) throws RIFServiceException {
+		
+		//Defensively copy parameters and guard against blocked users
+		User adminUser = User.createCopy(_adminUser);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();	
+		if (sqlConnectionManager.isUserBlocked(adminUser) == true) {
+			return;
+		}
+		
+		//Part II: Check for security violations
+		try {
+			validateUser(adminUser);
+			SQLHealthOutcomeManager healthOutcomeManager
+				= rifServiceResources.getHealthOutcomeManager();
+			healthOutcomeManager.addHealthCodeProvider(healthCodeProvider);
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				adminUser,
+				"addHealthCodeProvider",
+				rifServiceException);
+		}
+	}
+
+	/**
+	 * Clear health code providers.
+	 *
+	 * @param _adminUser the _admin user
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	public void clearHealthCodeProviders(User _adminUser) 
 		throws RIFServiceException {
 		
-		super.clearStudiesForUser(user);
+		//Defensively copy parameters and guard against blocked users
+		User adminUser = User.createCopy(_adminUser);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(adminUser) == true) {
+			return;
+		}
+		
+		try {
+			//Part II: Check for security violations
+			validateUser(adminUser);
+			SQLHealthOutcomeManager healthOutcomeManager
+				= rifServiceResources.getHealthOutcomeManager();			
+			healthOutcomeManager.clearHealthCodeProviders();		
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				adminUser,
+				"clearHealthCodeProviders",
+				rifServiceException);
+		}
 	}
+			
+	public void clearRIFJobSubmissionsForUser(
+		User _user) 
+		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();	
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return;
+		}
+		
+		try {
+			
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"clearRIFJobSubmissions",
+				"adminUser",
+				user);	
+
+			//Check for security violations
+			validateUser(user);
+
+			//Delegate operation to a specialised manager class
+			Connection connection 
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			SQLRIFSubmissionManager sqlRIFSubmissionManager
+				= rifServiceResources.getRIFSubmissionManager();
+			sqlRIFSubmissionManager.clearRIFJobSubmissionsForUser(connection, user);
+
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);		
+		
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"clearRIFJobSubmissions",
+				rifServiceException);	
+		}
+		
+	}
+
+	
+	public void clearStudiesForUser(
+		final User _user)
+		throws RIFServiceException {
+		
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();	
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return;
+		}
+		
+		try {
+			
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"clearStudiesForUser",
+				"user",
+				user);	
+
+			//Check for security violations
+			validateUser(user);
+
+			//Delegate operation to a specialised manager class
+			Connection connection 
+				= sqlConnectionManager.assignPooledReadConnection(user);
+			SQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager
+				= rifServiceResources.getSqlDiseaseMappingStudyManager();
+			sqlDiseaseMappingStudyManager.clearStudiesForUser(
+				connection, 
+				user);
+			
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"clearRIFJobSubmissions",
+				rifServiceException);	
+		}		
+	}
+	
+
+	
+	
+	
+	
 }
