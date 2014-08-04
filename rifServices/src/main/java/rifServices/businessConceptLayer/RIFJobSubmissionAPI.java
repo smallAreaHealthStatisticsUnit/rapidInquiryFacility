@@ -576,7 +576,7 @@ public interface RIFJobSubmissionAPI {
 	 */
 	public void submitStudy(
 		final User user,
-		final RIFJobSubmission rifJobSubmission,
+		final RIFStudySubmission rifJobSubmission,
 		final File outputFile) 
 		throws RIFServiceException;
 	
