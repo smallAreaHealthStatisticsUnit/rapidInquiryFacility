@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -111,6 +112,8 @@ abstract class AbstractRIFWebServiceResource {
 	// ==========================================
 
 	public AbstractRIFWebServiceResource() {
+		System.out.println("AbstractRIFWebServiceResource constructor 1 for class=="+getClass().getName()+"==");
+
 		startTime = new Date();
 		sd = new SimpleDateFormat("HH:mm:ss:SSS");
 
@@ -135,14 +138,19 @@ abstract class AbstractRIFWebServiceResource {
 		webApplicationFolderPath.append("classes");
 		rifServiceStartupOptions.setWebApplicationFilePath(webApplicationFolderPath.toString());
 
+		System.out.println("AbstractRIFWebServiceResource constructor 2 for class=="+getClass().getName()+"==");
+		
 		rifStudyServiceBundle
 			= ProductionRIFStudyServiceBundle.getRIFServiceBundle();
 
 		try {
+			System.out.println("AbstractRIFWebServiceResource constructor 3 for class=="+getClass().getName()+"==");
 			rifStudyServiceBundle.initialise(rifServiceStartupOptions);
 			rifStudyServiceBundle.login("kgarwood", new String("a").toCharArray());
+			System.out.println("AbstractRIFWebServiceResource constructor 4 for class=="+getClass().getName()+"==");			
 		}
 		catch(RIFServiceException exception) {
+			System.out.println("AbstractRIFWebServiceResource constructor 5 for class=="+getClass().getName()+"==");
 			exception.printStackTrace(System.out);
 		}
 	}
@@ -167,15 +175,25 @@ abstract class AbstractRIFWebServiceResource {
 			
 		String result = "";
 		
-		ArrayList<GeographyProxy> geographyProxies 
-			= new ArrayList<GeographyProxy>();
+		System.out.println("getGeographies 1");
 	
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
+
+			System.out.println("getGeographies 2");
+			
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= rifStudyServiceBundle.getRIFStudySubmissionService();
 			ArrayList<Geography> geographies
 				= studySubmissionService.getGeographies(user);
+
+			System.out.println("getGeographies 3");
+
+			//Convert results to support JSON
+			ArrayList<GeographyProxy> geographyProxies 
+				= new ArrayList<GeographyProxy>();			
 			for (Geography geography : geographies) {
 				GeographyProxy geographyProxy
 					= new GeographyProxy();
@@ -183,10 +201,14 @@ abstract class AbstractRIFWebServiceResource {
 				geographyProxies.add(geographyProxy);
 			}
 		
+			System.out.println("getGeographies 4");
+			
 			result = serialiseResult(geographyProxies);
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
+			System.out.println("getGeographies 5");
+			
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 	
@@ -204,27 +226,32 @@ abstract class AbstractRIFWebServiceResource {
 		String result = "";
 	
 	
-		GeoLevelSelectsProxy geoLevelSelectProxy
-			= new GeoLevelSelectsProxy();
 	
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxxxxxxx");
 			Geography geography = Geography.newInstance(geographyName, "xxx");
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= rifStudyServiceBundle.getRIFStudySubmissionService();			
 			ArrayList<GeoLevelSelect> geoLevelSelects
-				= studySubmissionService.getGeographicalLevelSelectValues(
+				= studySubmissionService.getGeoLevelSelectValues(
 					user, 
 					geography);
+
+			//Convert results to support JSON			
 			ArrayList<String> geoLevelSelectNames = new ArrayList<String>();			
 			for (GeoLevelSelect geoLevelSelect : geoLevelSelects) {
 				geoLevelSelectNames.add(geoLevelSelect.getName());
 			}
-		
+			GeoLevelSelectsProxy geoLevelSelectProxy
+				= new GeoLevelSelectsProxy();		
 			geoLevelSelectProxy.setNames(geoLevelSelectNames.toArray(new String[0]));
 			result = serialiseResult(geoLevelSelectProxy);
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 	
@@ -247,21 +274,26 @@ abstract class AbstractRIFWebServiceResource {
 			= new GeoLevelSelectsProxy();
 	
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxxxxxxx");
 			Geography geography = Geography.newInstance(geographyName, "xxx");
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= rifStudyServiceBundle.getRIFStudySubmissionService();
-
 			GeoLevelSelect defaultGeoLevelSelect
 				= studySubmissionService.getDefaultGeoLevelSelectValue(
 					user, 
 					geography);
+
+			//Convert results to support JSON			
 			String[] geoLevelSelectValues = new String[1];
 			geoLevelSelectValues[0] = defaultGeoLevelSelect.getName();
 			geoLevelSelectProxy.setNames(geoLevelSelectValues);
 			result = serialiseResult(geoLevelSelectProxy);
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 	
@@ -283,10 +315,13 @@ abstract class AbstractRIFWebServiceResource {
 		GeoLevelAreasProxy geoLevelAreasProxy = new GeoLevelAreasProxy();
 		
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
 			Geography geography = Geography.newInstance(geographyName, "xxx");
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(geoLevelSelectName);
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= rifStudyServiceBundle.getRIFStudySubmissionService();			
 			ArrayList<GeoLevelArea> areas
@@ -295,6 +330,7 @@ abstract class AbstractRIFWebServiceResource {
 					geography, 
 					geoLevelSelect);
 			
+			//Convert results to support JSON
 			ArrayList<String> geoLevelAreaNames = new ArrayList<String>();
 			for (GeoLevelArea area : areas) {
 				geoLevelAreaNames.add(area.getName());
@@ -303,14 +339,13 @@ abstract class AbstractRIFWebServiceResource {
 			result = serialiseResult(geoLevelAreasProxy);
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
 		return result;
 		
 	}
-	
-	
 	
 	@GET
 	@Produces({"application/json"})	
@@ -322,13 +357,14 @@ abstract class AbstractRIFWebServiceResource {
 				
 		String result = "";
 				
-		GeoLevelViewsProxy geoLevelViewsProxy = new GeoLevelViewsProxy();
-		
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxxx");
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(geoLevelSelectName);
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= rifStudyServiceBundle.getRIFStudySubmissionService();	
 			ArrayList<GeoLevelView> geoLevelViews
@@ -337,6 +373,8 @@ abstract class AbstractRIFWebServiceResource {
 					geography, 
 					geoLevelSelect);
 			
+			//Convert results to support JSON
+			GeoLevelViewsProxy geoLevelViewsProxy = new GeoLevelViewsProxy();			
 			ArrayList<String> geoLevelViewNames = new ArrayList<String>();
 			for (GeoLevelView geoLevelView : geoLevelViews) {
 				geoLevelViewNames.add(geoLevelView.getName());
@@ -346,6 +384,7 @@ abstract class AbstractRIFWebServiceResource {
 			result = serialiseResult(geoLevelViewsProxy);
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -370,17 +409,17 @@ abstract class AbstractRIFWebServiceResource {
 				
 		String result = "";
 		
-		
-		ArrayList<NumeratorDenominatorPairProxy> ndPairProxies 
-			= new ArrayList<NumeratorDenominatorPairProxy>();
 				
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user 
 				= User.newInstance(userID, "xxx");
 			Geography geography 
 				= Geography.newInstance(geographyName, "");
 			HealthTheme healthTheme 
 				= HealthTheme.newInstance("xxx", healthThemeDescription);
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= rifStudyServiceBundle.getRIFStudySubmissionService();				
 			ArrayList<NumeratorDenominatorPair> ndPairs
@@ -388,6 +427,10 @@ abstract class AbstractRIFWebServiceResource {
 					user, 
 					geography, 
 					healthTheme);
+
+			//Convert results to support JSON
+			ArrayList<NumeratorDenominatorPairProxy> ndPairProxies 
+				= new ArrayList<NumeratorDenominatorPairProxy>();
 			for (NumeratorDenominatorPair ndPair : ndPairs) {
 				NumeratorDenominatorPairProxy ndPairProxy
 					= new NumeratorDenominatorPairProxy();
@@ -395,18 +438,16 @@ abstract class AbstractRIFWebServiceResource {
 				ndPairProxy.setNumeratorTableDescription(ndPair.getNumeratorTableDescription());
 				ndPairProxy.setDenominatorTableName(ndPair.getDenominatorTableName());
 				ndPairProxy.setDenominatorTableDescription(ndPair.getDenominatorTableDescription());
-				
 				ndPairProxies.add(ndPairProxy);
-			}
-			
+			}			
 			result = serialiseResult(ndPairProxies);
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
-		return result;
-		
+		return result;		
 	}
 
 	@GET
@@ -420,12 +461,15 @@ abstract class AbstractRIFWebServiceResource {
 		String result = "";
 				
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user 	
 				= User.newInstance(userID, "xxx");
 			Geography geography 
 				= Geography.newInstance(geographyName, "");
 			HealthTheme healthTheme 
 				= HealthTheme.newInstance("xxx", healthThemeDescription);
+
+			//Call service API			
 			RIFStudySubmissionAPI studySubmissionService
 				= rifStudyServiceBundle.getRIFStudySubmissionService();				
 			ArrayList<NumeratorDenominatorPair> ndPairs
@@ -434,6 +478,8 @@ abstract class AbstractRIFWebServiceResource {
 					geography, 
 					healthTheme);
 			
+			//Convert results to support JSON
+
 			//We should be guaranteed that at least one pair will be returned.
 			//All the numerators returned should have the same denominator
 			//Therefore, we should be able to pick the first ndPair and extract
@@ -445,11 +491,11 @@ abstract class AbstractRIFWebServiceResource {
 			ndPairProxy.setNumeratorTableName(firstResult.getNumeratorTableName());
 			ndPairProxy.setNumeratorTableDescription(firstResult.getNumeratorTableDescription());
 			ndPairProxy.setDenominatorTableName(firstResult.getDenominatorTableName());
-			ndPairProxy.setDenominatorTableDescription(firstResult.getDenominatorTableDescription());
-							
+			ndPairProxy.setDenominatorTableDescription(firstResult.getDenominatorTableDescription());							
 			result = serialiseResult(firstResult);
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
 		
@@ -469,24 +515,29 @@ abstract class AbstractRIFWebServiceResource {
 		String result = "";
 		
 		try {
+			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
 			Geography geography = Geography.newInstance(geographyName, "xxx");
+
+			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= rifStudyServiceBundle.getRIFStudySubmissionService();			
 			NumeratorDenominatorPair ndPair
 				= studySubmissionService.getNumeratorDenominatorPairFromNumeratorTable(
 					user, 
 					geography, 
-					numeratorTableName);
-			
+					numeratorTableName);			
 			YearRange yearRange
 				= studySubmissionService.getYearRange(user, geography, ndPair);
+			
+			//Convert results to support JSON
 			YearRangeProxy yearRangeProxy = new YearRangeProxy();
 			yearRangeProxy.setLowerBound(yearRange.getLowerBound());
 			yearRangeProxy.setUpperBound(yearRange.getUpperBound());
 			result = serialiseResult(yearRangeProxy);
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON			
 			result = serialiseException(exception);			
 		}
 		
@@ -550,11 +601,13 @@ abstract class AbstractRIFWebServiceResource {
 			result = serialiseResult(rifServiceExceptionProxy);
 		}
 		catch(Exception exception) {
+			//Convert exceptions to support JSON
+			serialiseException(exception);
 			String timeStamp = sd.format(new Date());
 			result 
 				= RIFServiceMessages.getMessage(
 					"webServices.error.unableToProvideError",
-					timeStamp);			
+					timeStamp);
 		}
 		
 		return result;
