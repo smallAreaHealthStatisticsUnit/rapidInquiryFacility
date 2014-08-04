@@ -164,4 +164,7 @@ public interface HealthCodeProvider {
 		final String nameSpace) 
 		throws RIFServiceException;
 	
+	public boolean healthCodeExists(
+		final HealthCode healthCode)
+		throws RIFServiceException;
 }
