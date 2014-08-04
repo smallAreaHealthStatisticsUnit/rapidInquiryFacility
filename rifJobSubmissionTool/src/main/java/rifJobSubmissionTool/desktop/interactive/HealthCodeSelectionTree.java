@@ -164,7 +164,7 @@ class HealthCodeSelectionTree
 			= new ArrayList<HealthCode>();
 		try {
 			topLevelHealthCodes
-				= service.getTopLevelCodes(user, healthCodeTaxonomy);
+				= service.getTopLevelHealthCodes(user, healthCodeTaxonomy);
 			for (HealthCode topLevelHealthCode : topLevelHealthCodes) {
 				HealthCodeTreeNode healthCodeTreeNode
 					= new HealthCodeTreeNode(topLevelHealthCode);
