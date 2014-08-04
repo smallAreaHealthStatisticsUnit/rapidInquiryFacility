@@ -265,6 +265,8 @@ class SQLCovariateManager
 			}		
 		}
 		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version						
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage("covariateManager.db.unableToGetCovariates");
 
@@ -322,11 +324,12 @@ class SQLCovariateManager
 		
 		if (geoLevelToMap != null) {
 			geoLevelToMap.checkErrors();
-			sqlRIFContextManager.checkGeoLevelToMapValueExists(
+			sqlRIFContextManager.checkGeoLevelToMapOrViewValueExists(
 				connection,
 				geography.getName(),
 				geoLevelSelect.getName(),
-				geoLevelToMap.getName());
+				geoLevelToMap.getName(),
+				true);
 			
 		}	
 	}
@@ -373,6 +376,8 @@ class SQLCovariateManager
 			}
 		}
 		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version						
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
