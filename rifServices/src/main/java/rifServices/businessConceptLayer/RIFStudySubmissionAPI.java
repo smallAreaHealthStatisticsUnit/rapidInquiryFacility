@@ -218,7 +218,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @return the top level codes
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<HealthCode> getTopLevelCodes(
+	public ArrayList<HealthCode> getTopLevelHealthCodes(
 		User user,
 		HealthCodeTaxonomy healthCodeTaxonomy) 
 		throws RIFServiceException;	
@@ -316,7 +316,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @return the map areas
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<MapArea> getGeoLevelToMapAreas(
+	public ArrayList<MapArea> getMapAreas(
 		User user,
 		Geography geography,
 		GeoLevelSelect geoLevelSelect,
@@ -337,7 +337,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @return the map areas
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<MapArea> getMapAreas(
+	public ArrayList<MapArea> getMapAreasByBlock(
 		User user,
 		Geography geography,
 		GeoLevelSelect geoLevelSelect,
@@ -403,6 +403,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * Gets the image.
 	 *
 	 * @param user the user
+	 * @param geography the geography
 	 * @param geoLevelSelect the geo level select
 	 * @param geoLevelArea the geo level area
 	 * @param geoLevelView the geo level view
@@ -412,6 +413,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 */
 	public BufferedImage getImage(
 		User user,
+		Geography geography,
 		GeoLevelSelect geoLevelSelect,
 		GeoLevelArea geoLevelArea,
 		GeoLevelView geoLevelView,
@@ -428,7 +430,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 */
 	public void submitStudy(
 		User user,
-		RIFJobSubmission rifJobSubmission,
+		RIFStudySubmission rifJobSubmission,
 		File outputFile) 
 		throws RIFServiceException;	
 	
