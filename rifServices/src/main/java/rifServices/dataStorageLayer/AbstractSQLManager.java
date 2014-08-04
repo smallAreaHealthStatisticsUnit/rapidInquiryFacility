@@ -123,7 +123,7 @@ abstract class AbstractSQLManager {
 	// ==========================================
 
 	protected void logSQLException(SQLException sqlException) {
-		
+		sqlException.printStackTrace();
 	}
 	
 	// ==========================================

@@ -116,19 +116,32 @@ public class RIFServiceResources {
 				rifServiceStartupOptions, 
 				sqlRIFContextManager);
 		sqlCovariateManager = new SQLCovariateManager(sqlRIFContextManager);
-		sqlDiseaseMappingStudyManager = new SQLDiseaseMappingStudyManager();
-			
-		sqlInvestigationManager = new SQLInvestigationManager();
+
+		sqlInvestigationManager 
+			= new SQLInvestigationManager(
+				sqlRIFContextManager,
+				sqlAgeGenderYearManager,
+				sqlCovariateManager,
+				healthOutcomeManager);
+		
+		
+		sqlDiseaseMappingStudyManager 
+			= new SQLDiseaseMappingStudyManager(
+				sqlRIFContextManager,
+				sqlInvestigationManager);
+				
 				
 		sqlRIFSubmissionManager 
 			= new SQLRIFSubmissionManager(
 				sqlRIFContextManager,
 				sqlAgeGenderYearManager,
-				sqlCovariateManager);
-				
+				sqlCovariateManager,
+				sqlDiseaseMappingStudyManager);
+
 		sqlResultsQueryManager
 			= new SQLResultsQueryManager(
 				sqlRIFContextManager,
+				sqlMapDataManager,
 				sqlDiseaseMappingStudyManager);
 
 		healthOutcomeManager.initialiseTaxomies();	

@@ -3,11 +3,8 @@ package rifServices.dataStorageLayer;
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 import rifServices.util.FieldValidationUtility;
-
-
 import rifServices.util.RIFLogger;
 
-import java.awt.geom.Rectangle2D;
 import java.sql.Connection;
 import java.util.ArrayList;
 
@@ -149,7 +146,20 @@ abstract class AbstractRIFStudyRetrievalService
 	 * Instantiates a new production rif job submission service.
 	 */
 	public AbstractRIFStudyRetrievalService() {
-		
+
+		String serviceName
+			= RIFServiceMessages.getMessage("rifStudyRetrievalService.name");
+		setServiceName(serviceName);
+		String serviceVersion
+			= RIFServiceMessages.getMessage("rifStudyRetrievalService.version");
+		setServiceVersion(Double.valueOf(serviceVersion));
+	
+		String serviceDescription
+			= RIFServiceMessages.getMessage("rifStudyRetrievalService.description");
+		setServiceDescription(serviceDescription);
+		String serviceContactEmail
+			= RIFServiceMessages.getMessage("rifStudyRetrievalService.contactEmail");
+		setServiceContactEmail(serviceContactEmail);		
 	}
 
 	
@@ -166,7 +176,7 @@ abstract class AbstractRIFStudyRetrievalService
 		final GeoLevelToMap _geoLevelToMap,
 		final ArrayList<MapArea> _mapAreas) throws RIFServiceException {
 
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 
 		SQLConnectionManager sqlConnectionManager
@@ -185,7 +195,7 @@ abstract class AbstractRIFStudyRetrievalService
 		String result = "";
 		try {
 			
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -208,8 +218,15 @@ abstract class AbstractRIFStudyRetrievalService
 				"getGeometry",
 				"mapAreas",
 				mapAreas);
-				
-			//Part III: Check for security violations
+
+			for (MapArea mapArea : mapAreas) {
+				fieldValidationUtility.checkNullMethodParameter(
+					"getGeometry",
+					"mapAreas",
+					mapArea);
+			}
+			
+			//Check for security violations
 			validateUser(user);
 			geography.checkSecurityViolations();
 			geoLevelSelect.checkSecurityViolations();
@@ -218,21 +235,46 @@ abstract class AbstractRIFStudyRetrievalService
 			for (MapArea mapArea : mapAreas) {
 				mapArea.checkSecurityViolations();
 			}
-
-			//Part IV: Perform operation		
+			
+			//Audit attempt to do operation
+			RIFLogger rifLogger = new RIFLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getGeometry",
+					user.getUserID(),
+					user.getIPAddress(),
+					geography.getDisplayName(),
+					geoLevelSelect.getDisplayName(),
+					geoLevelToMap.getDisplayName());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+			
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);			
+				= sqlConnectionManager.assignPooledReadConnection(user);			
 
+			//Delegate operation to a specialised manager class
 			//@TODO
-
 			
-			
-			sqlConnectionManager.releaseReadConnection(
+			SQLMapDataManager sqlMapDataManager
+				= rifServiceResources.getSQLMapDataManager();
+			result 
+				= sqlMapDataManager.getGeometry(
+					connection, 
+					user, 
+					geography, 
+					geoLevelSelect, 
+					geoLevelToMap, 
+					mapAreas);
+				
+			//Reclaim pooled connection		
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);
 			
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getGeometry",
@@ -249,7 +291,7 @@ abstract class AbstractRIFStudyRetrievalService
 		final String geoLevelAttribute) 
 		throws RIFServiceException {
 		
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();		
@@ -263,7 +305,7 @@ abstract class AbstractRIFStudyRetrievalService
 		ArrayList<MapAreaAttributeValue> results
 			= new ArrayList<MapAreaAttributeValue>();
 		try {
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -276,29 +318,40 @@ abstract class AbstractRIFStudyRetrievalService
 				studyResultRetrievalContext);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getMapAreaAttributeValues",
+				"geoLevelAttributeSource",
+				geoLevelAttributeSource);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getMapAreaAttributeValues",
 				"geoLevelAttribute",
 				geoLevelAttribute);	
 		
-			//Part III: Check for security violations
+			//Check for security violations
 			validateUser(user);
 			studyResultRetrievalContext.checkSecurityViolations();
+			geoLevelAttributeSource.checkSecurityViolations();
 			fieldValidationUtility.checkMaliciousMethodParameter(			
 				"getMapAreaAttributeValues",
 				"geoLevelAttribute",
 				geoLevelAttribute);	
 
+			//Audit attempt to do operation
 			RIFLogger rifLogger = new RIFLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getMapAreaAttributeValues",
 					user.getUserID(),
 					user.getIPAddress(),
+					studyResultRetrievalContext.getStudyID(),
+					geoLevelAttributeSource.getDisplayName(),
 					geoLevelAttribute);
 			rifLogger.info(
-				AbstractRIFStudyRetrievalService.class,
+				getClass(),
 				auditTrailMessage);
-		
+
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+			
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			results
@@ -309,11 +362,13 @@ abstract class AbstractRIFStudyRetrievalService
 					geoLevelAttributeSource,
 					geoLevelAttribute);
 
-			sqlConnectionManager.releaseReadConnection(
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);		
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getMapAreaAttributeValues",
@@ -328,21 +383,20 @@ abstract class AbstractRIFStudyRetrievalService
 		final StudyResultRetrievalContext _studyResultRetrievalContext) 
 		throws RIFServiceException {
 		
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
-		}
-		
+		}		
 		StudyResultRetrievalContext studyResultRetrievalContext
 			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
 		
 		ArrayList<GeoLevelAttributeSource> results 
 			= new ArrayList<GeoLevelAttributeSource>();
 		try {
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -354,37 +408,47 @@ abstract class AbstractRIFStudyRetrievalService
 				"studyResultRetrievalContext",
 				studyResultRetrievalContext);	
 			
-			//Part III: Check for security violations
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelAttributeSources",
+				"studyID",
+				studyResultRetrievalContext.getStudyID());	
+			
+			//Check for security violations
 			validateUser(user);
 			studyResultRetrievalContext.checkSecurityViolations();
-						
+
+			//Audit attempt to do operation
 			RIFLogger rifLogger = new RIFLogger();				
 			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getMapAreaAttributeValues",
+				= RIFServiceMessages.getMessage("logging.getGeoLevelAttributeSources",
 					user.getUserID(),
 					user.getIPAddress(),
-					studyResultRetrievalContext.getDisplayName());
+					studyResultRetrievalContext.getStudyID());
 			rifLogger.info(
-				AbstractRIFStudyRetrievalService.class,
+				getClass(),
 				auditTrailMessage);
-		
+
+			//Assign pooled connection
+			Connection connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+					
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
-			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
-
 			results
 				= sqlResultsQueryManager.getGeoLevelAttributeSources(
 					connection,
 					user,
 					studyResultRetrievalContext); 
 			
-			sqlConnectionManager.releaseReadConnection(
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);		
 			
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getGeoLevelAttributeSources",
@@ -400,7 +464,7 @@ abstract class AbstractRIFStudyRetrievalService
 		final GeoLevelAttributeSource _geoLevelAttributeSource)
 		throws RIFServiceException {
 		
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
@@ -416,15 +480,15 @@ abstract class AbstractRIFStudyRetrievalService
 			= new ArrayList<GeoLevelAttributeTheme>();
 		
 		try {
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
-				"getMapAreaAttributeValues",
+				"getGeoLevelAttributeThemes",
 				"user",
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
-				"getMapAreaAttributeValues",
+				"getGeoLevelAttributeThemes",
 				"studyResultRetrievalContext",
 				studyResultRetrievalContext);	
 			fieldValidationUtility.checkNullMethodParameter(
@@ -432,23 +496,27 @@ abstract class AbstractRIFStudyRetrievalService
 				"geoLevelAttributeSource",
 				geoLevelAttributeSource);	
 			
-			//Part III: Check for security violations
+			//Check for security violations
 			validateUser(user);
 			studyResultRetrievalContext.checkSecurityViolations();
-						
+
+			//Audit attempt to do operation
 			RIFLogger rifLogger = new RIFLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelAttributeThemes",
 					user.getUserID(),
 					user.getIPAddress(),
-					studyResultRetrievalContext.getGeographyName(),
-					studyResultRetrievalContext.getGeoLevelSelectName());
+					studyResultRetrievalContext.getStudyID(),
+					geoLevelAttributeSource.getDisplayName());
 			rifLogger.info(
-				AbstractRIFStudyRetrievalService.class,
+				getClass(),
 				auditTrailMessage);
-		
+
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);			
+
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();			
 			results
@@ -458,13 +526,13 @@ abstract class AbstractRIFStudyRetrievalService
 					studyResultRetrievalContext,
 					geoLevelAttributeSource);
 			
-			sqlConnectionManager.releaseReadConnection(
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
-				connection);		
-			
-			
+				connection);			
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getGeoLevelAttributeThemes",
@@ -481,7 +549,7 @@ abstract class AbstractRIFStudyRetrievalService
 		final GeoLevelAttributeTheme _geoLevelAttributeTheme)
 		throws RIFServiceException {
 			
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
@@ -496,7 +564,7 @@ abstract class AbstractRIFStudyRetrievalService
 			= GeoLevelAttributeTheme.createCopy(_geoLevelAttributeTheme);
 			String[] results = new String[0];
 		try {
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -515,20 +583,30 @@ abstract class AbstractRIFStudyRetrievalService
 				"getAllAttributesForGeoLevelAttributeTheme",
 				"geoLevelAttributeTheme",
 				geoLevelAttributeTheme);	
-				
+			
+			validateUser(user);
+			studyResultRetrievalContext.checkSecurityViolations();
+			geoLevelAttributeSource.checkSecurityViolations();
+			geoLevelAttributeTheme.checkSecurityViolations();
+						
+			//Audit attempt to do operation
 			RIFLogger rifLogger = new RIFLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getAllAttributesForGeoLevelAttributeTheme",
 					user.getUserID(),
 					user.getIPAddress(),
-					studyResultRetrievalContext.getGeographyName(),
-					studyResultRetrievalContext.getGeoLevelSelectName());
+					studyResultRetrievalContext.getStudyID(),
+					geoLevelAttributeSource.getDisplayName(),
+					geoLevelAttributeTheme.getDisplayName());
 			rifLogger.info(
-				AbstractRIFStudyRetrievalService.class,
+				getClass(),
 				auditTrailMessage);
-			
+
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();			
 			results
@@ -539,12 +617,14 @@ abstract class AbstractRIFStudyRetrievalService
 					geoLevelAttributeSource,
 					geoLevelAttributeTheme);
 
-			sqlConnectionManager.releaseReadConnection(
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);		
 
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getGeoLevelAttributeThemes",
@@ -562,7 +642,7 @@ abstract class AbstractRIFStudyRetrievalService
 		final GeoLevelAttributeTheme _geoLevelAttributeTheme)
 		throws RIFServiceException {
 				
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
@@ -577,7 +657,7 @@ abstract class AbstractRIFStudyRetrievalService
 			= GeoLevelAttributeTheme.createCopy(_geoLevelAttributeTheme);
 		String[] results = new String[0];
 		try {
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -596,7 +676,14 @@ abstract class AbstractRIFStudyRetrievalService
 				"getNumericAttributesForGeoLevelAttributeTheme",
 				"geoLevelAttributeTheme",
 				geoLevelAttributeTheme);	
-					
+			
+			//check security violations
+			validateUser(user);
+			studyResultRetrievalContext.checkSecurityViolations();
+			geoLevelAttributeSource.checkSecurityViolations();
+			geoLevelAttributeTheme.checkSecurityViolations();
+			
+			//Audit attempt to do operation			
 			RIFLogger rifLogger = new RIFLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getNumericAttributesForGeoLevelAttributeTheme",
@@ -606,11 +693,14 @@ abstract class AbstractRIFStudyRetrievalService
 					geoLevelAttributeSource.getDisplayName(),
 					geoLevelAttributeTheme.getDisplayName());
 			rifLogger.info(
-				AbstractRIFStudyRetrievalService.class,
+				getClass(),
 				auditTrailMessage);
 			
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();				
 			results
@@ -621,11 +711,13 @@ abstract class AbstractRIFStudyRetrievalService
 					geoLevelAttributeSource,
 					geoLevelAttributeTheme);
 			
-			sqlConnectionManager.releaseReadConnection(
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getNumericAttributesForGeoLevelAttributeTheme",
@@ -637,7 +729,7 @@ abstract class AbstractRIFStudyRetrievalService
 	
 	public RIFResultTable getCalculatedResultsByBlock(
 		final User _user,
-		final StudyResultRetrievalContext _studyResultRetrievalContext,
+		final StudySummary _studySummary,
 		final String[] calculatedResultColumnFieldNames,
 		final Integer startRowIndex,
 		final Integer endRowIndex)
@@ -646,29 +738,29 @@ abstract class AbstractRIFStudyRetrievalService
 		
 		RIFResultTable results = new RIFResultTable();
 	
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return results;
 		}
-		StudyResultRetrievalContext studyResultRetrievalContext
-			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
 
+		StudySummary studySummary
+			= StudySummary.createCopy(_studySummary);
 		
 		try {
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();			
-			//Part II: Check for empty parameter values
+				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
 				"getCalculatedResultsByBlock",
 				"user",
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getCalculatedResultsByBlock",
-				"studyResultRetrievalContext",
-				studyResultRetrievalContext);
+				"studySummary",
+				studySummary);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getCalculatedResultsByBlock",
 				"calculatedResultColumnFieldNames",
@@ -693,41 +785,47 @@ abstract class AbstractRIFStudyRetrievalService
 					calculatedResultColumnFieldName);
 			}
 			
-			//Part III: Check for security violations
+			//Check for security violations
 			validateUser(user);
-			studyResultRetrievalContext.checkSecurityViolations();
+			studySummary.checkSecurityViolations();
 				
+			//Audit attempt to do operation
 			RIFLogger rifLogger = new RIFLogger();			
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getCalculatedResultsByBlock",
 					user.getUserID(),
 					user.getIPAddress(),
-					studyResultRetrievalContext.getDisplayName(),
+					studySummary.getStudyID(),
 					String.valueOf(startRowIndex),
 					String.valueOf(endRowIndex));
 			rifLogger.info(
-				AbstractRIFStudyRetrievalService.class,
+				getClass(),
 				auditTrailMessage);
 	
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			results
 				= sqlResultsQueryManager.getCalculatedResultsByBlock(
 					connection,
 					user,
-					studyResultRetrievalContext,
+					studySummary,
 					calculatedResultColumnFieldNames,
 					startRowIndex,
 					endRowIndex);
-			sqlConnectionManager.releaseReadConnection(
+			
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);				
 			
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getCalculatedResultsByBlock",
@@ -739,8 +837,8 @@ abstract class AbstractRIFStudyRetrievalService
 	
 	public RIFResultTable getExtractResultsByBlock(
 		final User _user,
-		final StudyResultRetrievalContext _studyResultRetrievalContext,
-		final String[] calculatedResultColumnFieldNames,
+		final StudySummary _studySummary,
+		final String[] extractResultColumnFieldNames,
 		final Integer startRowIndex,
 		final Integer endRowIndex)
 		throws RIFServiceException {
@@ -748,28 +846,32 @@ abstract class AbstractRIFStudyRetrievalService
 			
 		RIFResultTable results = new RIFResultTable();
 		
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return results;
 		}
-		StudyResultRetrievalContext studyResultRetrievalContext
-			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
+		
+		StudySummary studySummary = StudySummary.createCopy(_studySummary);
 
 		try {
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();			
-			//Part II: Check for empty parameter values
 			fieldValidationUtility.checkNullMethodParameter(
 				"getExtractByBlock",
 				"user",
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getExtractByBlock",
-				"studyResultRetrievalContext",
-				studyResultRetrievalContext);	
+				"studySummary",
+				studySummary);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getExtractByBlock",
+				"extractResultColumnFieldNames",
+				extractResultColumnFieldNames);	
 			fieldValidationUtility.checkNullMethodParameter(
 				"getExtractByBlock",
 				"startRowIndex",
@@ -779,40 +881,53 @@ abstract class AbstractRIFStudyRetrievalService
 				"endRowIndex",
 				endRowIndex);	
 
-			//Part III: Check for security violations
+			//Check for security violations
 			validateUser(user);
-			studyResultRetrievalContext.checkSecurityViolations();
+			studySummary.checkSecurityViolations();
 					
+			for (String extractResultColumnFieldName : extractResultColumnFieldNames) {
+				fieldValidationUtility.checkMaliciousMethodParameter(
+					"getExtractByBlock", 
+					"extractResultColumnFieldNames", 
+					extractResultColumnFieldName);
+			}
+						
+			//Audit attempt to do operation
 			RIFLogger rifLogger = new RIFLogger();			
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getExtractByBlock",
 					user.getUserID(),
 					user.getIPAddress(),
-					studyResultRetrievalContext.getDisplayName(),
+					studySummary.getStudyID(),
 					String.valueOf(startRowIndex),
 					String.valueOf(endRowIndex));
 			rifLogger.info(
-				AbstractRIFStudyRetrievalService.class,
+				getClass(),
 				auditTrailMessage);
 		
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			results
-				= sqlResultsQueryManager.getExtractByBlock(
+				= sqlResultsQueryManager.getExtractResultsByBlock(
 					connection,
 					user,
-					studyResultRetrievalContext,
-					calculatedResultColumnFieldNames,
+					studySummary,
+					extractResultColumnFieldNames,
 					startRowIndex,
 					endRowIndex);
-			sqlConnectionManager.releaseReadConnection(
+			
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {	
+			//Audit failure of operation
 			logException(
 				user,
 				"getExtractByBlock",
@@ -825,8 +940,9 @@ abstract class AbstractRIFStudyRetrievalService
 	public RIFResultTable getResultsStratifiedByGenderAndAgeGroup(
 		final User _user,
 		final StudyResultRetrievalContext _studyResultRetrievalContext,
+		final GeoLevelToMap _geoLevelToMap,
 		final GeoLevelAttributeSource _geoLevelAttributeSource,
-		final String geoLevelAttribute,
+		final String geoLevelSourceAttribute,
 		final ArrayList<MapArea> _mapAreas,
 		final Integer year)
 		throws RIFServiceException {
@@ -834,7 +950,7 @@ abstract class AbstractRIFStudyRetrievalService
 		
 		RIFResultTable results = new RIFResultTable();
 		
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
@@ -843,14 +959,16 @@ abstract class AbstractRIFStudyRetrievalService
 		}
 		StudyResultRetrievalContext studyResultRetrievalContext
 			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
+		GeoLevelToMap geoLevelToMap
+			= GeoLevelToMap.createCopy(_geoLevelToMap);
 		GeoLevelAttributeSource geoLevelAttributeSource
 			= GeoLevelAttributeSource.createCopy(_geoLevelAttributeSource);
 		ArrayList<MapArea> mapAreas = MapArea.createCopy(_mapAreas);
 		
 		try {
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();			
-			//Part II: Check for empty parameter values
 			fieldValidationUtility.checkNullMethodParameter(
 				"getResultsStratifiedByGenderAndAgeGroup",
 				"user",
@@ -861,42 +979,68 @@ abstract class AbstractRIFStudyRetrievalService
 				studyResultRetrievalContext);	
 			fieldValidationUtility.checkNullMethodParameter(
 				"getResultsStratifiedByGenderAndAgeGroup",
-				"geoLevelAttributeSource",
-				geoLevelAttributeSource);		
+				"geoLevelToMap",
+				geoLevelToMap);	
 			fieldValidationUtility.checkNullMethodParameter(
 				"getResultsStratifiedByGenderAndAgeGroup",
-				"geoLevelAttribute",
-				geoLevelAttribute);	
+				"geoLevelAttributeSource",
+				geoLevelAttributeSource);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getResultsStratifiedByGenderAndAgeGroup",
+				"geoLevelSourceAttribute",
+				geoLevelSourceAttribute);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getResultsStratifiedByGenderAndAgeGroup",
+				"mapAreas",
+				mapAreas);	
+
+			for (MapArea mapArea : mapAreas) {
+				fieldValidationUtility.checkNullMethodParameter(
+					"getResultsStratifiedByGenderAndAgeGroup",
+					"mapAreas",
+					mapArea);
+			}
 			
-			
-			//Part III: Check for security violations
+			fieldValidationUtility.checkNullMethodParameter(
+				"getResultsStratifiedByGenderAndAgeGroup",
+				"year",
+				year);	
+						
+			//Check for security violations
 			validateUser(user);
 			studyResultRetrievalContext.checkSecurityViolations();
+			geoLevelToMap.checkSecurityViolations();
+			geoLevelAttributeSource.checkSecurityViolations();
 			fieldValidationUtility.checkMaliciousMethodParameter(
 				"getResultsStratifiedByGenderAndAgeGroup", 
 				"geoLevelAttribute", 
-				geoLevelAttribute);		
+				geoLevelSourceAttribute);
+			
 			if (mapAreas != null) {
 				for (MapArea mapArea : mapAreas) {
 					mapArea.checkSecurityViolations();
 				}
 			}
 			
+			//Audit attempt to do operation
 			RIFLogger rifLogger = new RIFLogger();			
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getResultsStratifiedByGenderAndAgeGroup",
 					user.getUserID(),
 					user.getIPAddress(),
-					studyResultRetrievalContext.getGeographyName(),
-					studyResultRetrievalContext.getGeoLevelSelectName(),
-					studyResultRetrievalContext.getStudyID());
+					studyResultRetrievalContext.getStudyID(),
+					geoLevelAttributeSource.getDisplayName(),
+					geoLevelSourceAttribute);
 			rifLogger.info(
-				AbstractRIFStudyRetrievalService.class,
+				getClass(),
 				auditTrailMessage);
-		
+			
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			results
@@ -904,15 +1048,19 @@ abstract class AbstractRIFStudyRetrievalService
 					connection,
 					user,
 					studyResultRetrievalContext,
+					geoLevelToMap,
 					geoLevelAttributeSource,
-					geoLevelAttribute,
+					geoLevelSourceAttribute,
 					mapAreas,
 					year);
-			sqlConnectionManager.releaseReadConnection(
+			
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getResultsStratifiedByGenderAndAgeGroup",
@@ -923,14 +1071,13 @@ abstract class AbstractRIFStudyRetrievalService
 		return results;
 	}
 
-	
 	public BoundaryRectangle getGeoLevelBoundsForArea(
 		final User _user,
 		final StudyResultRetrievalContext _studyResultRetrievalContext,
 		final MapArea _mapArea)
 		throws RIFServiceException {
 		
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
@@ -944,7 +1091,7 @@ abstract class AbstractRIFStudyRetrievalService
 		BoundaryRectangle result
 			= BoundaryRectangle.newInstance();
 		try {			
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -960,11 +1107,12 @@ abstract class AbstractRIFStudyRetrievalService
 				"mapArea",
 				mapArea);		
 		
-			//Part III: Check for security violations
+			//Check for security violations
 			validateUser(user);
 			studyResultRetrievalContext.checkSecurityViolations();
 			mapArea.checkSecurityViolations();
 			
+			//Audit attempt to do operation
 			RIFLogger rifLogger = new RIFLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelBoundsForArea",
@@ -973,11 +1121,14 @@ abstract class AbstractRIFStudyRetrievalService
 					studyResultRetrievalContext.getStudyID(),
 					mapArea.getDisplayName());
 			rifLogger.info(
-				AbstractRIFStudyRetrievalService.class,
+				getClass(),
 				auditTrailMessage);
-		
+
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();		
 			result
@@ -986,11 +1137,14 @@ abstract class AbstractRIFStudyRetrievalService
 					user,
 					studyResultRetrievalContext,
 					mapArea);
-			sqlConnectionManager.releaseReadConnection(
+						
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
-				connection);				
+				connection);
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getGeoLevelBoundsForArea",
@@ -1005,7 +1159,7 @@ abstract class AbstractRIFStudyRetrievalService
 		final StudyResultRetrievalContext _studyResultRetrievalContext)
 		throws RIFServiceException {
 
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
@@ -1017,7 +1171,7 @@ abstract class AbstractRIFStudyRetrievalService
 				
 		BoundaryRectangle result = BoundaryRectangle.newInstance();
 		try {
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -1029,10 +1183,11 @@ abstract class AbstractRIFStudyRetrievalService
 				"studyResultRetrievalContext",
 				studyResultRetrievalContext);
 
-			//Part III: Check for security violations
+			//Check for security violations
 			validateUser(user);
 			studyResultRetrievalContext.checkSecurityViolations();
 			
+			//Audit attempt to do operation
 			RIFLogger rifLogger = new RIFLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelFullExtentForStudy",
@@ -1040,11 +1195,14 @@ abstract class AbstractRIFStudyRetrievalService
 					user.getIPAddress(),
 					studyResultRetrievalContext.getStudyID());
 			rifLogger.info(
-				AbstractRIFStudyRetrievalService.class,
+				getClass(),
 				auditTrailMessage);
 			
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+			
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();		
 			result
@@ -1052,11 +1210,14 @@ abstract class AbstractRIFStudyRetrievalService
 					connection,
 					user,
 					studyResultRetrievalContext);
-			sqlConnectionManager.releaseReadConnection(
+			
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getGeoLevelFullExtentForStudy",
@@ -1071,7 +1232,7 @@ abstract class AbstractRIFStudyRetrievalService
 		final GeoLevelSelect _geoLevelSelect)
 		throws RIFServiceException {
 
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
@@ -1083,28 +1244,28 @@ abstract class AbstractRIFStudyRetrievalService
 			
 		BoundaryRectangle result = BoundaryRectangle.newInstance();
 		try {
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
-				"getGeoLevelFullExtentForStudy",
+				"getGeoLevelFullExtent",
 				"user",
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
-				"getGeoLevelFullExtentForStudy",
+				"getGeoLevelFullExtent",
 				"geography",
 				geography);	
 			fieldValidationUtility.checkNullMethodParameter(
-				"getGeoLevelFullExtentForStudy",
+				"getGeoLevelFullExtent",
 				"geoLevelSelect",
 				geoLevelSelect);
-
 				
-			//Part III: Check for security violations
+			//Check for security violations
 			validateUser(user);
 			geography.checkSecurityViolations();
 			geoLevelSelect.checkSecurityViolations();
 				
+			//Audit attempt to do operation
 			RIFLogger rifLogger = new RIFLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelFullExtent",
@@ -1113,11 +1274,14 @@ abstract class AbstractRIFStudyRetrievalService
 					geography.getDisplayName(),
 					geoLevelSelect.getDisplayName());
 			rifLogger.info(
-				AbstractRIFStudyRetrievalService.class,
+				getClass(),
 				auditTrailMessage);
 			
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();			
 			result
@@ -1126,11 +1290,14 @@ abstract class AbstractRIFStudyRetrievalService
 					user,
 					geography,
 					geoLevelSelect);
-			sqlConnectionManager.releaseReadConnection(
+			
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getGeoLevelFullExtent",
@@ -1143,11 +1310,10 @@ abstract class AbstractRIFStudyRetrievalService
 		final User _user,
 		final Geography _geography,
 		final GeoLevelSelect _geoLevelSelect,
-		final Integer zoomFactor,
-		final String tileIdentifier)
+		final BoundaryRectangle _boundaryRectangle)
 		throws RIFServiceException {
 
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
@@ -1158,10 +1324,12 @@ abstract class AbstractRIFStudyRetrievalService
 			= Geography.createCopy(_geography);
 		GeoLevelSelect geoLevelSelect 
 			= GeoLevelSelect.createCopy(_geoLevelSelect);
-				
+		BoundaryRectangle boundaryRectangle
+			= BoundaryRectangle.createCopy(_boundaryRectangle);
+		
 		String result = "";
 		try {
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -1178,33 +1346,33 @@ abstract class AbstractRIFStudyRetrievalService
 				geoLevelSelect);	
 			fieldValidationUtility.checkNullMethodParameter(
 				"getTiles",
-				"zoomFactor",
-				zoomFactor);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getTiles",
-				"tileIdentifier",
-				tileIdentifier);	
-			
-			//Part III: Check for security violations
-			validateUser(user);
-			geoLevelSelect.checkSecurityViolations();
-			fieldValidationUtility.checkMaliciousMethodParameter(			
-				"getTiles",
-				"tileIdentifier",
-				tileIdentifier);	
+				"boundaryRectangle",
+				boundaryRectangle);	
 
+			
+			//Check for security violations
+			validateUser(user);
+			geography.checkSecurityViolations();
+			geoLevelSelect.checkSecurityViolations();
+			
+			//Audit attempt to do operation
 			RIFLogger rifLogger = new RIFLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getTiles",
 					user.getUserID(),
 					user.getIPAddress(),
-					tileIdentifier);
+					boundaryRectangle.getDisplayName(),
+					geography.getDisplayName(),
+					geoLevelSelect.getDisplayName());
 			rifLogger.info(
-				AbstractRIFStudyRetrievalService.class,
+				getClass(),
 				auditTrailMessage);
 			
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			result
@@ -1213,14 +1381,15 @@ abstract class AbstractRIFStudyRetrievalService
 					user,
 					geography,
 					geoLevelSelect,
-					zoomFactor,
-					tileIdentifier);
+					boundaryRectangle);
 
-			sqlConnectionManager.releaseReadConnection(
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getTiles",
@@ -1243,11 +1412,11 @@ abstract class AbstractRIFStudyRetrievalService
 	public RIFResultTable getPyramidData(
 		final User _user,
 		final StudyResultRetrievalContext _studyResultRetrievalContext,
-		final GeoLevelAttributeSource _geoLevelSource,
+		final GeoLevelAttributeSource _geoLevelAttributeSource,
 		final String geoLevelAttribute) 
 		throws RIFServiceException {
 		
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
@@ -1256,12 +1425,12 @@ abstract class AbstractRIFStudyRetrievalService
 		}
 		StudyResultRetrievalContext studyResultRetrievalContext
 			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
-		GeoLevelAttributeSource geoLevelSource
-			= GeoLevelAttributeSource.createCopy(_geoLevelSource);
+		GeoLevelAttributeSource geoLevelAttributeSource
+			= GeoLevelAttributeSource.createCopy(_geoLevelAttributeSource);
 
 		RIFResultTable results = new RIFResultTable();
 		try {
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -1274,32 +1443,42 @@ abstract class AbstractRIFStudyRetrievalService
 				studyResultRetrievalContext);	
 			fieldValidationUtility.checkNullMethodParameter(
 				"getPyramidData",
-				"geoLevelSource",
-				geoLevelSource);	
+				"geoLevelAttributeSource",
+				geoLevelAttributeSource);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getPyramidData",
+				"geoLevelAttribute",
+				geoLevelAttribute);	
 
-			//Part III: Check for security violations
+			//Check for security violations
 			validateUser(user);
 			studyResultRetrievalContext.checkSecurityViolations();
-			geoLevelSource.checkSecurityViolations();
+			geoLevelAttributeSource.checkSecurityViolations();
 			fieldValidationUtility.checkMaliciousMethodParameter(
 				"getPyramidData", 
 				"geoLevelAttribute", 
 				geoLevelAttribute);
 
+			
+			
+			//Audit attempt to do operation
 			RIFLogger rifLogger = new RIFLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getPyramidData",
 					user.getUserID(),
 					user.getIPAddress(),
-					studyResultRetrievalContext.getGeographyName(),
-					studyResultRetrievalContext.getGeoLevelSelectName(),
-					geoLevelSource.getDisplayName());
+					studyResultRetrievalContext.getStudyID(),
+					geoLevelAttributeSource.getDisplayName(),
+					geoLevelAttribute);
 			rifLogger.info(
-				AbstractRIFStudyRetrievalService.class,
+				getClass(),
 				auditTrailMessage);
 			
+			//Assign pooled connection
+			System.out.println("About to get pooled connection for user=="+user.getUserID()+"==");
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();			
 			results
@@ -1307,14 +1486,17 @@ abstract class AbstractRIFStudyRetrievalService
 					connection,
 					user,
 					studyResultRetrievalContext,
-					geoLevelSource,
+					geoLevelAttributeSource,
 					geoLevelAttribute);
-			sqlConnectionManager.releaseReadConnection(
+			
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);				
 				
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getPyramidData",
@@ -1332,7 +1514,7 @@ abstract class AbstractRIFStudyRetrievalService
 		final Integer year) 
 		throws RIFServiceException {
 		
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
@@ -1346,7 +1528,7 @@ abstract class AbstractRIFStudyRetrievalService
 		
 		RIFResultTable results = new RIFResultTable();
 		try {
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -1370,7 +1552,7 @@ abstract class AbstractRIFStudyRetrievalService
 				"year",
 				year);
 
-			//Part III: Check for security violations
+			//Check for security violations
 			validateUser(user);
 			studyResultRetrievalContext.checkSecurityViolations();
 			geoLevelSource.checkSecurityViolations();
@@ -1379,20 +1561,25 @@ abstract class AbstractRIFStudyRetrievalService
 				"geoLevelAttribute", 
 				geoLevelAttribute);			
 			
+			//Audit attempt to do operation
 			RIFLogger rifLogger = new RIFLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getPyramidDataByYear",
 					user.getUserID(),
 					user.getIPAddress(),
-					studyResultRetrievalContext.getGeographyName(),
-					studyResultRetrievalContext.getGeoLevelSelectName(),
-					geoLevelSource.getDisplayName());
+					studyResultRetrievalContext.getStudyID(),
+					geoLevelSource.getDisplayName(),
+					geoLevelAttribute,
+					String.valueOf(year));
 			rifLogger.info(
-				AbstractRIFStudyRetrievalService.class,
+				getClass(),
 				auditTrailMessage);
 			
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();			
 			results
@@ -1403,11 +1590,14 @@ abstract class AbstractRIFStudyRetrievalService
 					geoLevelSource,
 					geoLevelAttribute,
 					year);
-			sqlConnectionManager.releaseReadConnection(
+			
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getPyramidDataByYear",
@@ -1433,12 +1623,13 @@ abstract class AbstractRIFStudyRetrievalService
 	public RIFResultTable getPyramidDataByMapAreas(
 		final User _user,
 		final StudyResultRetrievalContext _studyResultRetrievalContext,
+		final GeoLevelToMap _geoLevelToMap,
 		final GeoLevelAttributeSource _geoLevelAttributeSource,
 		final String geoLevelAttribute,
 		final ArrayList<MapArea> _mapAreas) 
 		throws RIFServiceException {
 		
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
@@ -1447,6 +1638,8 @@ abstract class AbstractRIFStudyRetrievalService
 		}
 		StudyResultRetrievalContext studyResultRetrievalContext 
 			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
+		GeoLevelToMap geoLevelToMap
+			= GeoLevelToMap.createCopy(_geoLevelToMap);
 		GeoLevelAttributeSource geoLevelAttributeSource
 			= GeoLevelAttributeSource.createCopy(_geoLevelAttributeSource);
 		ArrayList<MapArea> mapAreas
@@ -1454,7 +1647,7 @@ abstract class AbstractRIFStudyRetrievalService
 				
 		RIFResultTable results = new RIFResultTable();
 		try {
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -1465,6 +1658,10 @@ abstract class AbstractRIFStudyRetrievalService
 				"getPyramidDataByMapAreas",
 				"studyResultRetrievalContext",
 				studyResultRetrievalContext);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getPyramidDataByMapAreas",
+				"geoLevelToMap",
+				geoLevelToMap);				
 			fieldValidationUtility.checkNullMethodParameter(
 				"getPyramidDataByMapAreas",
 				"geoLevelAttributeSource",
@@ -1478,36 +1675,65 @@ abstract class AbstractRIFStudyRetrievalService
 				"mapAreas",
 				mapAreas);
 
-			//Part III: Check for security violations
+			//check for any null map areas
+			for (MapArea mapArea : mapAreas) {
+				fieldValidationUtility.checkNullMethodParameter(
+					"getPyramidDataByMapAreas",
+					"mapAreas",
+					mapArea);
+			}
+
+			//Check for security violations
 			validateUser(user);
 			studyResultRetrievalContext.checkSecurityViolations();
+			geoLevelToMap.checkSecurityViolations();
 			geoLevelAttributeSource.checkSecurityViolations();
 			fieldValidationUtility.checkMaliciousMethodParameter(
 				"getPyramidDataByMapAreas", 
 				"geoLevelAttribute", 
 				geoLevelAttribute);			
+
 			for (MapArea mapArea : mapAreas) {
 				mapArea.checkSecurityViolations();
 			}
 
+			//Audit attempt to do operation
+			RIFLogger rifLogger = new RIFLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getPyramidDataByMapAreas",
+					user.getUserID(),
+					user.getIPAddress(),
+					studyResultRetrievalContext.getStudyID(),
+					studyResultRetrievalContext.getGeoLevelSelectName(),
+					geoLevelAttributeSource.getDisplayName());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+			
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			results
 				= sqlResultsQueryManager.getPyramidDataByMapAreas(
 					connection,
 					user,
-					studyResultRetrievalContext,					
+					studyResultRetrievalContext,	
+					geoLevelToMap,
 					geoLevelAttributeSource,
 					geoLevelAttribute,
 					mapAreas);
-			sqlConnectionManager.releaseReadConnection(
+			
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);				
 			
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getPyramidDataByMapAreas",
@@ -1523,7 +1749,7 @@ abstract class AbstractRIFStudyRetrievalService
 		final GeoLevelAttributeSource _geoLevelAttributeSource)
 		throws RIFServiceException {
 
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
@@ -1538,7 +1764,7 @@ abstract class AbstractRIFStudyRetrievalService
 		
 		String[] results = new String[0];
 		try {
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -1554,14 +1780,29 @@ abstract class AbstractRIFStudyRetrievalService
 				"geoLevelAttributeSource",
 				geoLevelAttributeSource);			
 			
-			//Part III: Check for security violations
+			//Check for security violations
 			validateUser(user);
 			studyResultRetrievalContext.checkSecurityViolations();
 			geoLevelAttributeSource.checkSecurityViolations();
 			geoLevelAttributeSource.checkSecurityViolations();
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = new RIFLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getResultFieldsStratifiedByAgeGroup",
+					user.getUserID(),
+					user.getIPAddress(),
+					studyResultRetrievalContext.getStudyID(),
+					geoLevelAttributeSource.getDisplayName());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
 			
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			results
@@ -1570,11 +1811,14 @@ abstract class AbstractRIFStudyRetrievalService
 					user,
 					studyResultRetrievalContext,
 					geoLevelAttributeSource);
-			sqlConnectionManager.releaseReadConnection(
+			
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getResultFieldsStratifiedByAgeGroup",
@@ -1594,22 +1838,22 @@ abstract class AbstractRIFStudyRetrievalService
 	 */
 	public RIFResultTable getSMRValues(
 		final User _user,
-		final DiseaseMappingStudy _diseaseMappingStudy)
+		final StudySummary _studySummary)
 		throws RIFServiceException {
 
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		DiseaseMappingStudy diseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
+		StudySummary studySummary
+			= StudySummary.createCopy(_studySummary);
 
 		RIFResultTable results = new RIFResultTable();
 		try {
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -1618,28 +1862,45 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getSMRValues",
-				"diseaseMappingStudy",
-				diseaseMappingStudy.getDisplayName());	
+				"studySummary",
+				studySummary);	
 			
-			//Part III: Check for security violations
+			//Check for security violations
 			validateUser(user);
-			diseaseMappingStudy.checkSecurityViolations();
+			studySummary.checkSecurityViolations();
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = new RIFLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getSMRValues",
+					user.getUserID(),
+					user.getIPAddress(),
+					studySummary.getStudyID());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
 			
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			results
 				= sqlResultsQueryManager.getSMRValues(
 					connection,
 					user,
-					diseaseMappingStudy);
-			sqlConnectionManager.releaseReadConnection(
+					studySummary);
+			
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);				
 
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getSMRValues",
@@ -1660,22 +1921,22 @@ abstract class AbstractRIFStudyRetrievalService
 	 */
 	public RIFResultTable getRRValues(
 		final User _user,
-		final DiseaseMappingStudy _diseaseMappingStudy)
+		final StudySummary _studySummary)
 		throws RIFServiceException {
 
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		DiseaseMappingStudy diseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
+		StudySummary studySummary
+			= StudySummary.createCopy(_studySummary);
 		
 		RIFResultTable results = new RIFResultTable();
 		try {
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -1684,27 +1945,44 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getRRValues",
-				"diseaseMappingStudy",
-				diseaseMappingStudy);	
+				"studySummary",
+				studySummary);	
 			
-			//Part III: Check for security violations
+			//Check for security violations
 			validateUser(user);
-			diseaseMappingStudy.checkSecurityViolations();
+			studySummary.checkSecurityViolations();
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = new RIFLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getRRValues",
+					user.getUserID(),
+					user.getIPAddress(),
+					studySummary.getStudyID());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
 			
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			results
 				= sqlResultsQueryManager.getRRValues(
 					connection,
 					user,
-					diseaseMappingStudy);
-			sqlConnectionManager.releaseReadConnection(
+					studySummary);
+			
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getRRValues",
@@ -1724,22 +2002,23 @@ abstract class AbstractRIFStudyRetrievalService
 	 */
 	public RIFResultTable getRRUnadjustedValues(
 		final User _user,
-		final DiseaseMappingStudy _diseaseMappingStudy)
+		final StudySummary _studySummary)
 		throws RIFServiceException {
 		
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		DiseaseMappingStudy diseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
+		
+		StudySummary studySummary
+			= StudySummary.createCopy(_studySummary);
 		
 		RIFResultTable results = new RIFResultTable();
 		try {
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -1748,28 +2027,45 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getRRUnadjustedValues",
-				"diseaseMappingStudy",
-				diseaseMappingStudy);	
+				"studySummary",
+				studySummary);	
 			
-			//Part III: Check for security violations
+			//Check for security violations
 			validateUser(user);
-			diseaseMappingStudy.checkSecurityViolations();
+			studySummary.checkSecurityViolations();
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = new RIFLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getRRUnadjustedValues",
+					user.getUserID(),
+					user.getIPAddress(),
+					studySummary.getStudyID());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
 			
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			results
 				= sqlResultsQueryManager.getRRUnadjustedValues(
 					connection,
 					user,
-					diseaseMappingStudy);
-			sqlConnectionManager.releaseReadConnection(
+					studySummary);
+			
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);
 
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getRRUnadjustedValues",
@@ -1800,22 +2096,22 @@ abstract class AbstractRIFStudyRetrievalService
 	 */
 	public RIFResultTable getStudyResultGeneralInfo(
 		final User _user,
-		final DiseaseMappingStudy _diseaseMappingStudy)
+		final StudySummary _studySummary)
 		throws RIFServiceException {
 
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		DiseaseMappingStudy diseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(_diseaseMappingStudy);
+		StudySummary studySummary 
+			= StudySummary.createCopy(_studySummary);
 		
 		RIFResultTable results = new RIFResultTable();
 		try {
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -1824,28 +2120,45 @@ abstract class AbstractRIFStudyRetrievalService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getResultStudyGeneralInfo",
-				"diseaseMappingStudy",
-				diseaseMappingStudy);	
+				"studySummary",
+				studySummary);	
 	
-			//Part III: Check for security violations
+			//Check for security violations
 			validateUser(user);
-			diseaseMappingStudy.checkSecurityViolations();
-	
+			studySummary.checkSecurityViolations();
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = new RIFLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getResultStudyGeneralInfo",
+					user.getUserID(),
+					user.getIPAddress(),
+					studySummary.getStudyID());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+						
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			results
 				= sqlResultsQueryManager.getResultStudyGeneralInfo(
 					connection,
 					user,
-					diseaseMappingStudy);
-			sqlConnectionManager.releaseReadConnection(
+					studySummary);
+			
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);
 
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getResultStudyGeneralInfo",
@@ -1860,11 +2173,11 @@ abstract class AbstractRIFStudyRetrievalService
 		final User _user,
 		final StudyResultRetrievalContext _studyResultRetrievalContext,
 		final GeoLevelAttributeSource _geoLevelAttributeSource,
-		final String geoLevalAttribute)
+		final String geoLevelSourceAttribute)
 		throws RIFServiceException {
 		
 
-		//Part I: Defensively copy parameters
+		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
@@ -1878,8 +2191,7 @@ abstract class AbstractRIFStudyRetrievalService
 		
 		ArrayList<AgeGroup> results = new ArrayList<AgeGroup>();
 		try {
-			
-			//Part II: Check for empty parameter values
+			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -1894,18 +2206,40 @@ abstract class AbstractRIFStudyRetrievalService
 				"getResultAgeGroups",
 				"geoLevelAttributeSource",
 				geoLevelAttributeSource);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getResultAgeGroups",
+				"geoLevelSourceAttribute",
+				geoLevelSourceAttribute);
 				
-			//Part III: Check for security violations
+			//Check for security violations
 			validateUser(user);
 			studyResultRetrievalContext.checkSecurityViolations();
 			geoLevelAttributeSource.checkSecurityViolations();
 			fieldValidationUtility.checkMaliciousMethodParameter(
 				"getResultAgeGroups", 
 				"geoLevalAttribute", 
-				geoLevalAttribute);
+				geoLevelSourceAttribute);
+
 			
+			
+			//Audit attempt to do operation
+			RIFLogger rifLogger = new RIFLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getResultAgeGroups",
+					user.getUserID(),
+					user.getIPAddress(),
+					studyResultRetrievalContext.getStudyID(),
+					geoLevelAttributeSource.getDisplayName(),
+					geoLevelSourceAttribute);
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+			//Assign pooled connection
 			Connection connection
-				= sqlConnectionManager.getReadConnection(user);
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();			
 			results
@@ -1914,12 +2248,15 @@ abstract class AbstractRIFStudyRetrievalService
 					user,
 					studyResultRetrievalContext,
 					geoLevelAttributeSource,
-					geoLevalAttribute);
-			sqlConnectionManager.releaseReadConnection(
+					geoLevelSourceAttribute);
+			
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
 				connection);
 		}
 		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
 			logException(
 				user,
 				"getResultAgeGroups",
@@ -1928,12 +2265,10 @@ abstract class AbstractRIFStudyRetrievalService
 		
 		return results;
 	}
-	
-	
+		
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-
 	
 	// ==========================================
 	// Section Interfaces
