@@ -11,31 +11,11 @@ RIF.map = (function ( settings ) {
 
     var _p = {
 		extentSet: 0,
-        init: function () {
-            
+        
+		init: function () {
 			this.map = new L.Map("map", {attributionControl: false});
-			this.events().addLegend();
-			
-            new L.geoJson({
-                "type": "LineString",
-                "coordinates": [
-                    [0, 0],
-                    [0, 0]
-                ]
-            }).addTo( this.map );
-			
 			return this;
         },
-		
-        /* events */
-		events: function(){
-		    this.map.on("dragend",function(e){
-				var dist = e.target.dragging._draggable._newPos.x ,
-				    x = $("#tooltip").position();
-				$("#tooltip").css({left: x + dist + "px"})	
-			});
-			return this;
-		},
 		
 		addLegend: function(){
 		    var legend = L.Control.extend({
@@ -108,12 +88,27 @@ RIF.map = (function ( settings ) {
 			return this.currentDataset;
 		},
 		
+		/* events */
+		setEvents: function(){
+			var ev = RIF.getEvent( 'map', settings.studyType );
+			ev.call(this);
+		},
+		
+		//conforms
+		extendMap: function(){
+			return _p;
+		},
+		
 		getFacade: function(){
 			_p.facade = RIF.getFacade('map', settings.studyType, _p);
+			return _p;
 		}	
 	};	
    
-	_p.init().getFacade();
+	_p.init()	
+	  .getFacade()
+	  .extendMap()
+	  .setEvents();
 	
 	return _p.facade;
 });

@@ -1,36 +1,46 @@
-RIF.menu = (function(menus){
+RIF.menu = (function( settings ){
 	
-	menus.push('utils');
+	var menus = settings.menus;
 	
-	var m = menus.length,
-	//Shared methods across menus
-        _p = {
-		
-			events: function(){
-				$(".modal_close").click(function(){
-					$(".overlay").hide();
-				});
-				
-				$(".dropdown dt > div").click(function() {
-					$(".dropdown .palette").toggle();
-				});
-				
-				$("#clearSelection").click(function() {
-					_p.facade.clearMapTable();
-				});
-				
-				$("#zoomExtent").click(function() {
-					_p.facade.zoomToExtent();
-				});
-				
-				$("#updateCharts").click(function() {
-					_p.facade.chartUpdate();
-				});
-				
-			}(),
+	var _p = {
 			
-		    
+			init: function(){
+				_p = RIF.mix( RIF.menu.utils(), _p);
+				return _p;
+			},
+			
+			currentGeolevel: function(){
+				return _p.getGeolevel();
+			},
+			
+			getHistogramSettings: function(){
+				return { 
+					geoLevel: _p.getGeolevel(), 
+					field:   _p.getHistogramSelection(),
+					dataSet: _p.getDataset()
+				};
+			},
+			
+			getPyramidSettings: function(){
+				return { 
+					geoLevel: _p.getGeolevel(), 
+					field:   _p.getPyramidSelection(),
+					dataSet: _p.getDataset()
+				};
+			},
+			
+			/* Get all data necessary to populate all menus for Data Manager */
+		    populateManager: function( args ) {
+				var clbks = _p.callbacks;
+				
+				RIF.getFields( clbks.avlbFieldsSettings , [_p.getDataset()] );
+				RIF.getNumericFields(  [ clbks.avlbFieldsChoro, clbks.avlbFieldsHistogram], [_p.getDataset()] );
+				RIF.getFieldsStratifiedByAgeGroup(  clbks.avlbFieldsPyramid , [  _p.getGeolevel(), _p.getDataset()] );
+				RIF.getZoomIdentifiers( clbks.zoomTo , [ args.geoLvl ] );
+			},
+			
 			callbacks: {
+			
 				avlbFieldsSettings: function(){
 					_p.dropDown( this, _p.hoverSlct );
 					_p.fieldCheckboxes( this, _p.colsFilter, _p.colsFilterName );
@@ -58,91 +68,31 @@ RIF.menu = (function(menus){
 				
 				zoomTo: function(){
 					_p.dropDown( this, _p.zoomTo );
-				},
-				
-			},
-			
-			populate: function( args ) {
-				RIF.getFields( _p.callbacks.avlbFieldsSettings , [_p.getDataset()] );
-				RIF.getNumericFields(  [_p.callbacks.avlbFieldsChoro, _p.callbacks.avlbFieldsHistogram], [_p.getDataset()] );
-				RIF.getFieldsStratifiedByAgeGroup(  _p.callbacks.avlbFieldsPyramid , [  _p.getGeolevel(), _p.getDataset()] );
-				RIF.getZoomIdentifiers( _p.callbacks.zoomTo , [ args.geoLvl ] );
-			},
-			
-			facade: {
-				/* Subscribers */	
-				uDropdownFlds: function( args ){
-					_p.populate( args );
-				},
-				
-				getScaleRange: function(args){
-					_p.showScaleRange( args );
-				},
-				
-				zoomToExtent: function(){
-					this.fire('zoomToExtent', []);
-				},
-				
-				/* firers */
-				addGeolevel: function( geolvl, dataSet ){
-					RIF.dropDatatable();
-					this.fire('addGeolevel', { "geoLevel" : geolvl, "dataset": dataSet});
-				},
-				
-				addTabularData: function( dataSets ){
-					this.fire('addTabularData', dataSets);
-				},
-				
-				zoomTo: function( id ){
-					this.fire('zoomToArea', id);
-				},
-				
-				hoverFieldChange: function( field ){
-					this.fire('hoverFieldChange', field);
-				},
-				
-				filterTablebyCols: function( fields ){
-					this.fire('filterCols', [fields, _p.getGeolevel() ]);
-				},
-				
-				clearMapTable: function(){
-					this.fire('clearMapTable', []);
-				},
-				
-				changeNumRows: function( nRows ){
-					//this.fire('changeNumRows', nRows);
-				},
-				
-				updateHistogram: function(){
-					_p.facade.fire( 'updateHistogram' , {
-						geoLevel: _p.getGeolevel(), 
-						field:  _p.getHistogramSelection(),
-						dataSet: _p.getDataset()
-					});
-				},
-				
-				updatePyramid: function(){
-					_p.facade.fire( 'updatePyramid' , {
-						geoLevel: _p.getGeolevel(), 
-						field:  _p.getPyramidSelection(),
-						dataSet: _p.getDataset()
-					});
-				},
-				
-				chartUpdate: function(){
-					_p.facade.fire( 'chartUpdateClick' , []);
 				}
+			},
+			
+			setEvents: function(){
+				var ev = RIF.getEvent( 'menu', settings.studyType );
+				ev.call(this);
+			},
+			
+			extendMenu: function(){
+				_p =  RIF.extendComponent( 'menu', _p, menus);
+				return _p;
+			},
+			
+			getFacade: function(){
+				this.facade =  RIF.getFacade('menu', settings.studyType, this);
+				return this;
 			}	
 		};
 	
-	/* Extend _p with all menus */ 
-	(function(){
-		while(m--){ 
-			var r = RIF.menu[menus[m]].call(_p);
-			_p = RIF.mix(r , _p);		
-		}
-	}());
+	
+	_p.init()
+	   .getFacade()
+	   .extendMenu()
+	   .setEvents();
+	
 	
 	return _p.facade;
-	
 });

@@ -5,7 +5,7 @@ RIF.menu.choropleth = (function(){
 		/* choropleth obj */
 	    _p = {
         
-			init: function(){
+			initChoropleth: function(){
 				this.events();
 				this.makeColourScales();
 			},
@@ -158,7 +158,7 @@ RIF.menu.choropleth = (function(){
 			}	
 	    };
 	
-	_p.init();
+	_p.initChoropleth();
 	
 	return _p;
 });

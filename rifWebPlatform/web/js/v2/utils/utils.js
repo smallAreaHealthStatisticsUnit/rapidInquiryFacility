@@ -120,10 +120,24 @@
 			return $(arr1).not(arr2).length == 0 && $(arr2).not(arr1).length == 0 ;
 		},
 		
-		getFacade: function( component, studyType, componentContext ){
-			console.log("get facade");
-			var facadeName = [  component , 'facade', studyType].join('-');
-			return RIF[ component ][ facadeName ]( componentContext );
+		getFacade: function( componentName, studyType, componentContext ){
+			var facadeName = [  componentName , 'facade', studyType].join('-');
+			return RIF[ componentName ][ facadeName ]( componentContext );
+		},
+		
+		getEvent: function( componentName, studyType ){
+			var eventName = [  componentName , 'event', studyType].join('-');
+			return RIF[ componentName ][ eventName ];
+		},
+		
+		extendComponent: function( componentName, component, units ){
+			var  l = units.length;
+			while(l--){ 
+				var r = RIF[componentName][units[l]].call( component );
+				component = RIF.mix(r , component);		
+			};	
+			
+			return component;
 		},
 		
 		xhr: function () {

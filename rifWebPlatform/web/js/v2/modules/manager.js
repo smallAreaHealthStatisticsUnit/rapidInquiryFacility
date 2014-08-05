@@ -23,9 +23,9 @@ RIF.manager = (function () {
         components: {
             sync: 'manager',
             map: { studyType: 'manager' , layerType: 'tilesvg'},
-            table: 'click2row',
-            chart: ['pyramid','histogram'],
-            menu: [/*'export',*/ 'geoLevel', 'choropleth' , 'settings'],
+            table: {studyType: 'manager', tableType : 'click2row'},
+            chart: { studyType: 'manager' , charts: ['pyramid','histogram']},
+            menu:  { studyType: 'manager',  menus:[/*'export',*/ 'geoLevel', 'choropleth' , 'settings']},
 			resizable: ''
         },
 

@@ -1,7 +1,8 @@
 RIF.map['map-facade-manager'] = (function ( _p ) {
 	
 	 var facade = {
-            /* Subscribed Events */
+            
+			/* Subscribed Events */
             updateSelection: function (a) {
 				_p.layer.selection = {};
 				_p.layer.style.repaint();		
@@ -58,6 +59,7 @@ RIF.map['map-facade-manager'] = (function ( _p ) {
 				this.fire('selectionchange', [ selection, 'map'] );
 			}
         };
+		
 		
 	return facade;	
 	

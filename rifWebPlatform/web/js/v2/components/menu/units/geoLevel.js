@@ -5,7 +5,7 @@ RIF.menu.geoLevel = (function(){
 		/* geolevel obj */
 	    _p = {
 			
-			init: function(){
+			initGeolevel: function(){
 				this.events();
 				RIF.getGeolevels( _p.geolevelsClbk );
 			},
@@ -74,7 +74,7 @@ RIF.menu.geoLevel = (function(){
 			}
 	    };
 	
-	_p.init();
+	_p.initGeolevel();
 	
 	return _p;
 });

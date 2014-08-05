@@ -1,4 +1,4 @@
-RIF.table = (function(){
+RIF.table = (function( settings ){
 	/*
 	 * Element
 	 * Columns
@@ -9,6 +9,7 @@ RIF.table = (function(){
 		
 		init: function( dataset, fields , rows ){
 			RIF.dropDatatable();
+			
 			_p.renderer = RIF.table.renderer.call(this);
 			_p.renderer.setNRows( rows );
 			_p.renderer.setDataSet(dataset);
@@ -20,6 +21,8 @@ RIF.table = (function(){
 			}
 
 			_p.renderer.setUpGrid();
+			
+			return this;
 		},
 
 		resize: function( dimensions ){
@@ -29,52 +32,29 @@ RIF.table = (function(){
 			_p.renderer.resize();
 		},	
 		
-		facade: {
-			
-			/* Subscribed Events */
-			getTabularData: function( dataset ){
-				_p.init( dataset );
-			},	
+		setEvents: function(){
+			//Empty for now due to how table handles events
+		},
 		
-			resizeTable: function(){
-				_p.resize();
-			},
+		//conforms	
+		extendTable: function(){
+			//Empty for now and maybe forever
+			return _p;
+		},
 			
-			updateSelection: function( ids ){
-				_p.renderer.mapToRows(ids);
-			},
-			
-			changeNumRows: function( nRows ){
-				if( nRows !== _p.renderer.nRows ){
-					_p.init( _p.renderer.dataset, _p.renderer.fields, nRows);
-				}
-			},
-			
-			filterCols: function( args ){
-				/*
-				 * args[0] = fields
-				 * args[1] = geolevel
-				 */
-				var eq = RIF.arraysEqual( args[0], _p.renderer.fields);
-				if ( !eq ){
-					_p.init( _p.renderer.dataset, args[0].reverse());
-					 this.fire('selectionchange', [[], 'table'] );
-				}
-			},
-			
-			clearSelection: function(){
-				_p.renderer.setSelected([]);
-			},
+		getFacade: function(){
+			this.facade =  RIF.getFacade('table', settings.studyType, _p);
+			return this;
+		}
 			
 			
-			/* FIRERS */	
-            rowClicked: function(a){
-			    this.fire('selectionchange', [a, 'table'] );
-            }
-	    }	
 	};
 	
+	_p.getFacade()
+	   .extendTable()
+	   .setEvents();
 
+	   
 	return _p.facade;
-	
+
 });

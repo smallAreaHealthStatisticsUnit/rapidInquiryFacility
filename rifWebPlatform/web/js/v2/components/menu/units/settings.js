@@ -5,7 +5,7 @@ RIF.menu.settings = (function(){
 		/* geolevel obj */
 	    _p = {
         
-			init: function(){
+			initSettings: function(){
 				this.events();
 			},
 			
@@ -47,7 +47,7 @@ RIF.menu.settings = (function(){
 			}	
 	    };
 	
-	_p.init();
+	_p.initSettings();
 	
 	return _p;
 });
