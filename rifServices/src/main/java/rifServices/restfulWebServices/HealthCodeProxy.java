@@ -110,7 +110,7 @@ public class HealthCodeProxy {
 		return isTopLevelTerm;
 	}
 
-	public void setIsTopLevelTerm(String isTopLevelTerm) {
+	public void setIsTopLevelTerm(final String isTopLevelTerm) {
 		this.isTopLevelTerm = isTopLevelTerm;
 	}
 
@@ -118,7 +118,7 @@ public class HealthCodeProxy {
 		return code;
 	}
 
-	public void setCode(String code) {
+	public void setCode(final String code) {
 		this.code = code;
 	}
 
@@ -126,7 +126,7 @@ public class HealthCodeProxy {
 		return nameSpace;
 	}
 
-	public void setNameSpace(String nameSpace) {
+	public void setNameSpace(final String nameSpace) {
 		this.nameSpace = nameSpace;
 	}
 
@@ -134,7 +134,7 @@ public class HealthCodeProxy {
 		return description;
 	}
 
-	public void setDescription(String description) {
+	public void setDescription(final String description) {
 		this.description = description;
 	}
 
@@ -142,7 +142,7 @@ public class HealthCodeProxy {
 		return numberOfSubTerms;
 	}
 
-	public void setNumberOfSubTerms(String numberOfSubTerms) {
+	public void setNumberOfSubTerms(final String numberOfSubTerms) {
 		this.numberOfSubTerms = numberOfSubTerms;
 	}
 

@@ -554,8 +554,8 @@ abstract class AbstractRIFWebServiceResource {
 	 * @throws Exception
 	 */
 	protected String serialiseResult(
-		Object objectToWrite) 
-			throws Exception {
+		final Object objectToWrite) 
+		throws Exception {
 
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		final ObjectMapper mapper = new ObjectMapper();
@@ -569,7 +569,7 @@ abstract class AbstractRIFWebServiceResource {
 	// ==========================================
 
 	protected String serialiseException(
-		Exception exceptionThrownByRIFService) {
+		final Exception exceptionThrownByRIFService) {
 		
 		String result = "";
 		try {			
@@ -618,7 +618,7 @@ abstract class AbstractRIFWebServiceResource {
 	 * complete.
 	 * @param header
 	 */
-	protected void printTime(String header) {
+	protected void printTime(final String header) {
 		Date date = new Date();
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(header);

@@ -100,7 +100,7 @@ public class NumeratorDenominatorPairProxyConverter
 	// Section Override
 	// ==========================================
 	
-	public NumeratorDenominatorPairProxy marshal(NumeratorDenominatorPair ndPair) {
+	public NumeratorDenominatorPairProxy marshal(final NumeratorDenominatorPair ndPair) {
 		NumeratorDenominatorPairProxy ndPairProxy 
 			= new NumeratorDenominatorPairProxy();
 		ndPairProxy.setNumeratorTableName(ndPair.getNumeratorTableName());
@@ -111,7 +111,7 @@ public class NumeratorDenominatorPairProxyConverter
 		return ndPairProxy;
 	}
 
-	public NumeratorDenominatorPair unmarshal(NumeratorDenominatorPairProxy ndPairProxy) {
+	public NumeratorDenominatorPair unmarshal(final NumeratorDenominatorPairProxy ndPairProxy) {
 		NumeratorDenominatorPair ndPair 
 			= NumeratorDenominatorPair.newInstance();
 		ndPair.setNumeratorTableName(ndPairProxy.getNumeratorTableName());

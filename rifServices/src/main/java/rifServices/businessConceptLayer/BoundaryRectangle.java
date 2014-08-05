@@ -136,7 +136,7 @@ public class BoundaryRectangle {
 		return xMin;
 	}
 
-	public void setXMin(double xMin) {
+	public void setXMin(final double xMin) {
 		this.xMin = xMin;
 	}
 	
@@ -145,7 +145,7 @@ public class BoundaryRectangle {
 		return yMin;
 	}
 
-	public void setYMin(double yMin) {
+	public void setYMin(final double yMin) {
 		this.yMin = yMin;
 	}
 
@@ -154,7 +154,7 @@ public class BoundaryRectangle {
 		return xMax;
 	}
 
-	public void setXMax(double xMax) {
+	public void setXMax(final double xMax) {
 		this.xMax = xMax;
 	}
 
@@ -162,7 +162,7 @@ public class BoundaryRectangle {
 		return yMax;
 	}
 
-	public void setYMax(double yMax) {
+	public void setYMax(final double yMax) {
 		this.yMax = yMax;
 	}
 	

@@ -718,11 +718,11 @@ public interface RIFJobSubmissionAPI {
 	 * @throws RIFServiceException
 	 */
 	public RIFResultTable getCalculatedResultsByBlock(
-		User user,
-		DiseaseMappingStudy diseaseMappingStudy,
-		String[] calculatedResultColumnFieldNames,
-		Integer startRowIndex,
-		Integer endRowIndex)
+		final User user,
+		final DiseaseMappingStudy diseaseMappingStudy,
+		final String[] calculatedResultColumnFieldNames,
+		final Integer startRowIndex,
+		final Integer endRowIndex)
 		throws RIFServiceException;
 	
 	
@@ -738,11 +738,11 @@ public interface RIFJobSubmissionAPI {
 	 * @throws RIFServiceException
 	 */
 	public RIFResultTable getExtractByBlock(
-		User user,
-		DiseaseMappingStudy diseaseMappingStudy,
-		String[] calculatedResultColumnFieldNames,			
-		Integer startRowIndex,
-		Integer endRowIndex)
+		final User user,
+		final DiseaseMappingStudy diseaseMappingStudy,
+		final String[] calculatedResultColumnFieldNames,			
+		final Integer startRowIndex,
+		final Integer endRowIndex)
 		throws RIFServiceException;	
 	
 	/**

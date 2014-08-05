@@ -93,7 +93,8 @@ class AbstractStudyServiceBundle {
 
 	}
 		
-	public void initialise() throws RIFServiceException {
+	public void initialise() 
+		throws RIFServiceException {
 		
 		rifServiceResources
 			= RIFServiceResources.newInstance();
@@ -107,7 +108,7 @@ class AbstractStudyServiceBundle {
 	}
 
 	public void initialise(
-		RIFServiceStartupOptions rifServiceStartupOptions) 
+		final RIFServiceStartupOptions rifServiceStartupOptions) 
 		throws RIFServiceException {
 		
 		System.out.println("AbstractStudyServiceBundle - initialise 2");
@@ -131,7 +132,9 @@ class AbstractStudyServiceBundle {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	protected void setRIFServiceResources(RIFServiceResources rifServiceResources) {
+	protected void setRIFServiceResources(
+		final RIFServiceResources rifServiceResources) {
+
 		this.rifServiceResources = rifServiceResources;
 	}
 	
@@ -141,15 +144,20 @@ class AbstractStudyServiceBundle {
 		return rifStudyRetrievalService;
 	}
 
-	protected void setRIFStudyRetrievalService(RIFStudyResultRetrievalAPI rifStudyRetrievalService) {
+	protected void setRIFStudyRetrievalService(
+		final RIFStudyResultRetrievalAPI rifStudyRetrievalService) {
+
 		this.rifStudyRetrievalService = rifStudyRetrievalService;
 	}
 	
 	public RIFStudySubmissionAPI getRIFStudySubmissionService() {
+
 		return rifStudySubmissionService;
 	}
 	
-	protected void setRIFStudySubmissionService(RIFStudySubmissionAPI rifStudySubmissionService) {
+	protected void setRIFStudySubmissionService(
+		final RIFStudySubmissionAPI rifStudySubmissionService) {
+
 		this.rifStudySubmissionService = rifStudySubmissionService;
 	}
 	
@@ -243,7 +251,9 @@ class AbstractStudyServiceBundle {
 	
 	}
 	
-	protected void deregisterAllUsers() throws RIFServiceException {		
+	protected void deregisterAllUsers() 
+		throws RIFServiceException {		
+
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		sqlConnectionManager.deregisterAllUsers();

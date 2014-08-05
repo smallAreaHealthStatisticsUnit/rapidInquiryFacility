@@ -78,8 +78,8 @@ public enum RIFOutputOption {
 	 * @param propertyForDirectoryName the property for directory name
 	 */
 	RIFOutputOption(
-		String messageProperty, 
-		String propertyForDirectoryName) {
+		final String messageProperty, 
+		final String propertyForDirectoryName) {
 		this.messageProperty = messageProperty;
 		this.propertyForDirectoryName = propertyForDirectoryName;
 	}

@@ -108,9 +108,6 @@ public abstract class AbstractRIFConcept
 	// Section Accessors and Mutators
 	// ==========================================
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.DisplayableListItem#getIdentifier()
-	 */
 	public String getIdentifier() {
 
 		return identifier;

@@ -123,7 +123,7 @@ public class InvestigationProxy {
 		return title;
 	}
 
-	public void setTitle(String title) {
+	public void setTitle(final String title) {
 		this.title = title;
 	}
 
@@ -131,7 +131,7 @@ public class InvestigationProxy {
 		return healthTheme;
 	}
 
-	public void setHealthTheme(String healthTheme) {
+	public void setHealthTheme(final String healthTheme) {
 		this.healthTheme = healthTheme;
 	}
 
@@ -139,7 +139,7 @@ public class InvestigationProxy {
 		return ndPair;
 	}
 
-	public void setNdPair(NumeratorDenominatorPairProxy ndPair) {
+	public void setNdPair(final NumeratorDenominatorPairProxy ndPair) {
 		this.ndPair = ndPair;
 	}
 
@@ -147,7 +147,7 @@ public class InvestigationProxy {
 		return ageBands;
 	}
 
-	public void setAgeBands(ArrayList<AgeBandProxy> ageBands) {
+	public void setAgeBands(final ArrayList<AgeBandProxy> ageBands) {
 		this.ageBands = ageBands;
 	}
 
@@ -155,7 +155,7 @@ public class InvestigationProxy {
 		return healthCodes;
 	}
 
-	public void setHealthCodes(ArrayList<HealthCodeProxy> healthCodes) {
+	public void setHealthCodes(final ArrayList<HealthCodeProxy> healthCodes) {
 		this.healthCodes = healthCodes;
 	}
 
@@ -163,7 +163,7 @@ public class InvestigationProxy {
 		return yearRangeStart;
 	}
 
-	public void setYearRangeStart(String yearRangeStart) {
+	public void setYearRangeStart(final String yearRangeStart) {
 		this.yearRangeStart = yearRangeStart;
 	}
 
@@ -171,7 +171,7 @@ public class InvestigationProxy {
 		return yearRangeEnd;
 	}
 
-	public void setYearRangeEnd(String yearRangeEnd) {
+	public void setYearRangeEnd(final String yearRangeEnd) {
 		this.yearRangeEnd = yearRangeEnd;
 	}
 
@@ -179,7 +179,7 @@ public class InvestigationProxy {
 		return interval;
 	}
 
-	public void setInterval(String interval) {
+	public void setInterval(final String interval) {
 		this.interval = interval;
 	}
 
@@ -187,7 +187,7 @@ public class InvestigationProxy {
 		return sex;
 	}
 
-	public void setSex(String sex) {
+	public void setSex(final String sex) {
 		this.sex = sex;
 	}
 
@@ -195,7 +195,7 @@ public class InvestigationProxy {
 		return covariates;
 	}
 
-	public void setCovariates(ArrayList<CovariateProxy> covariates) {
+	public void setCovariates(final ArrayList<CovariateProxy> covariates) {
 		this.covariates = covariates;
 	}
 

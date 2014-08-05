@@ -89,7 +89,7 @@ public class RIFServiceExceptionProxy {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void setErrorMessages(String[] errorMessages) {
+	public void setErrorMessages(final String[] errorMessages) {
 		this.errorMessages = errorMessages;
 	}
 	

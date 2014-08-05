@@ -122,7 +122,7 @@ abstract class AbstractSQLManager {
 	// Section Errors and Validation
 	// ==========================================
 
-	protected void logSQLException(SQLException sqlException) {
+	protected void logSQLException(final SQLException sqlException) {
 		sqlException.printStackTrace();
 	}
 	

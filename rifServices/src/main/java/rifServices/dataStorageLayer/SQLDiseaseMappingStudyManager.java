@@ -94,8 +94,8 @@ class SQLDiseaseMappingStudyManager extends AbstractSQLManager {
 	 * Instantiates a new SQL disease mapping study manager.
 	 */
 	public SQLDiseaseMappingStudyManager(
-		SQLRIFContextManager rifContextManager,
-		SQLInvestigationManager investigationManager) {
+		final SQLRIFContextManager rifContextManager,
+		final SQLInvestigationManager investigationManager) {
 
 		this.rifContextManager = rifContextManager;
 		this.investigationManager = investigationManager;
@@ -264,9 +264,9 @@ class SQLDiseaseMappingStudyManager extends AbstractSQLManager {
 	}
 	
 	private void checkAreaNonExistentItems(
-		Connection connection,
-		String geographyName,
-		AbstractGeographicalArea area) 
+		final Connection connection,
+		final String geographyName,
+		final AbstractGeographicalArea area) 
 		throws RIFServiceException {
 	
 		GeoLevelSelect geoLevelSelect

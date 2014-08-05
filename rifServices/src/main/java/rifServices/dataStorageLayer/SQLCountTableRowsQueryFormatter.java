@@ -82,7 +82,7 @@ public class SQLCountTableRowsQueryFormatter extends SQLQueryFormatter {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void setTableName(String tableName) {
+	public void setTableName(final String tableName) {
 		this.tableName = tableName;
 	}
 	

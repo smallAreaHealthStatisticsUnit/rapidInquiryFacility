@@ -138,7 +138,7 @@ class AbstractRIFService {
 		return serviceVersion;
 	}
 
-	protected void setServiceVersion(double serviceVersion) {
+	protected void setServiceVersion(final double serviceVersion) {
 		this.serviceVersion = serviceVersion;
 	}
 
@@ -146,7 +146,7 @@ class AbstractRIFService {
 		return serviceName;
 	}
 
-	protected void setServiceName(String serviceName) {
+	protected void setServiceName(final String serviceName) {
 		this.serviceName = serviceName;
 	}
 
@@ -154,7 +154,7 @@ class AbstractRIFService {
 		return serviceDescription;
 	}
 
-	protected void setServiceDescription(String serviceDescription) {
+	protected void setServiceDescription(final String serviceDescription) {
 		this.serviceDescription = serviceDescription;
 	}
 
@@ -162,7 +162,7 @@ class AbstractRIFService {
 		return serviceContactEmail;
 	}
 
-	protected void setServiceContactEmail(String serviceContactEmail) {
+	protected void setServiceContactEmail(final String serviceContactEmail) {
 		this.serviceContactEmail = serviceContactEmail;
 	}
 
@@ -173,7 +173,8 @@ class AbstractRIFService {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public void validateUser(
-		final User user) throws RIFServiceException {
+		final User user) 
+		throws RIFServiceException {
 				
 		user.checkErrors();
 		user.checkSecurityViolations();
@@ -1046,8 +1047,8 @@ class AbstractRIFService {
 	}
 
 	protected String getStudyName(
-		Connection connection,
-		String studyID)
+		final Connection connection,
+		final String studyID)
 		throws RIFServiceException {
 					
 		SQLSelectQueryFormatter query

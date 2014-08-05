@@ -211,7 +211,7 @@ public class SampleTestObjectGenerator {
 	 * @param methodName the method name
 	 * @return the calculation method
 	 */
-	public CalculationMethod createSampleCalculationMethod(String methodName) {
+	public CalculationMethod createSampleCalculationMethod(final String methodName) {
 		CalculationMethod calculationMethod
 			= CalculationMethod.newInstance();
 		calculationMethod.setNewRecord(false);
@@ -325,7 +325,7 @@ public class SampleTestObjectGenerator {
 	 * @param investigationTitle the investigation title
 	 * @return the investigation
 	 */
-	public Investigation createSampleInvestigation(String investigationTitle) {
+	public Investigation createSampleInvestigation(final String investigationTitle) {
 		Investigation investigation = Investigation.newInstance();
 		investigation.setNewRecord(false);
 		investigation.setTitle(investigationTitle);

@@ -86,7 +86,7 @@ public final class RIFStudySubmissionResult {
 // ==========================================
 	
 	/** The rif service information. */
-private RIFServiceInformation rifServiceInformation;
+	private RIFServiceInformation rifServiceInformation;
 	
 	/** The user. */
 	private User user;

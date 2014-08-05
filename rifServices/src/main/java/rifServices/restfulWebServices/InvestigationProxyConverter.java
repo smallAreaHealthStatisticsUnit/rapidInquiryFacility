@@ -101,7 +101,7 @@ public class InvestigationProxyConverter
 	// Section Override
 	// ==========================================
 	
-	public InvestigationProxy marshal(Investigation investigation) {
+	public InvestigationProxy marshal(final Investigation investigation) {
 		InvestigationProxy investigationProxy
 			= new InvestigationProxy();
 		
@@ -154,7 +154,7 @@ public class InvestigationProxyConverter
 		return investigationProxy;	
 	}
 	
-	public Investigation unmarshal(InvestigationProxy investigationProxy) {
+	public Investigation unmarshal(final InvestigationProxy investigationProxy) {
 		Investigation investigation = Investigation.newInstance();
 		
 		investigation.setTitle(investigationProxy.getTitle());

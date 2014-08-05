@@ -117,7 +117,7 @@ public class AgeBandProxy {
 	}
 
 
-	public void setLowerLimitAgeGroupStart(String lowerLimitAgeGroupStart) {
+	public void setLowerLimitAgeGroupStart(final String lowerLimitAgeGroupStart) {
 		this.lowerLimitAgeGroupStart = lowerLimitAgeGroupStart;
 	}
 
@@ -127,7 +127,7 @@ public class AgeBandProxy {
 	}
 
 
-	public void setLowerLimitAgeGroupEnd(String lowerLimitAgeGroupEnd) {
+	public void setLowerLimitAgeGroupEnd(final String lowerLimitAgeGroupEnd) {
 		this.lowerLimitAgeGroupEnd = lowerLimitAgeGroupEnd;
 	}
 
@@ -137,7 +137,7 @@ public class AgeBandProxy {
 	}
 
 
-	public void setLowerLimitAgeGroupName(String lowerLimitAgeGroupName) {
+	public void setLowerLimitAgeGroupName(final String lowerLimitAgeGroupName) {
 		this.lowerLimitAgeGroupName = lowerLimitAgeGroupName;
 	}
 
@@ -147,7 +147,7 @@ public class AgeBandProxy {
 	}
 
 
-	public void setUpperLimitAgeGroupStart(String upperLimitAgeGroupStart) {
+	public void setUpperLimitAgeGroupStart(final String upperLimitAgeGroupStart) {
 		this.upperLimitAgeGroupStart = upperLimitAgeGroupStart;
 	}
 
@@ -157,7 +157,7 @@ public class AgeBandProxy {
 	}
 
 
-	public void setUpperLimitAgeGroupEnd(String upperLimitAgeGroupEnd) {
+	public void setUpperLimitAgeGroupEnd(final String upperLimitAgeGroupEnd) {
 		this.upperLimitAgeGroupEnd = upperLimitAgeGroupEnd;
 	}
 
@@ -167,7 +167,7 @@ public class AgeBandProxy {
 	}
 
 
-	public void setUpperLimitAgeGroupName(String upperLimitAgeGroupName) {
+	public void setUpperLimitAgeGroupName(final String upperLimitAgeGroupName) {
 		this.upperLimitAgeGroupName = upperLimitAgeGroupName;
 	}
 	

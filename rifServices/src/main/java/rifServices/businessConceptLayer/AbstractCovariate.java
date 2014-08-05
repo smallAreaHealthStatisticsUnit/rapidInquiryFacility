@@ -282,9 +282,6 @@ abstract public class AbstractCovariate
 // Section Errors and Validation
 // ==========================================
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkSecurityViolations()
-	 */
 	@Override
 	public void checkSecurityViolations()
 		throws RIFServiceSecurityException {
@@ -425,12 +422,8 @@ abstract public class AbstractCovariate
 // ==========================================
 
 	//Displayable List Item	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */
 	@Override
 	public String getDisplayName() {
-
 		StringBuilder result = new StringBuilder();
 		result.append(getRecordType());
 		result.append("-");
@@ -438,9 +431,6 @@ abstract public class AbstractCovariate
 		return result.toString();
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getIdentifier()
-	 */
 	@Override
 	public String getIdentifier() {
 		return name;

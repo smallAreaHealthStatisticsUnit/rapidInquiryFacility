@@ -82,7 +82,7 @@ public class RIFStudyResultRetrievalWebServiceApplication extends Application {
 	// ==========================================
 
 	public RIFStudyResultRetrievalWebServiceApplication() {
-		System.out.println("RIFStudyResultRetrievalWebServiceApplication 1");
+
 	}
 
 	// ==========================================

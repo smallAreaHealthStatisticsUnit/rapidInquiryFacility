@@ -99,7 +99,7 @@ public class HealthCodeProxyConverter
 	// Section Override
 	// ==========================================
 
-	public HealthCodeProxy marshal(HealthCode healthCode) {
+	public HealthCodeProxy marshal(final HealthCode healthCode) {
 		HealthCodeProxy healthCodeProxy = new HealthCodeProxy();
 		
 		healthCodeProxy.setCode(healthCode.getCode());
@@ -111,7 +111,7 @@ public class HealthCodeProxyConverter
 		return healthCodeProxy;
 	}
 
-	public HealthCode unmarshal(HealthCodeProxy healthCodeProxy) {
+	public HealthCode unmarshal(final HealthCodeProxy healthCodeProxy) {
 		HealthCode healthCode = HealthCode.newInstance();
 		healthCode.setCode(healthCodeProxy.getCode());
 		healthCode.setDescription(healthCodeProxy.getDescription());

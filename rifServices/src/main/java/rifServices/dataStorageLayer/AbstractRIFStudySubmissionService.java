@@ -498,9 +498,9 @@ abstract class AbstractRIFStudySubmissionService
 	 * @throws RIFServiceException
 	 */
 	public HealthCode getHealthCode(
-		User _user,
-		String healthCodeName,
-		String healthCodeNameSpace) throws RIFServiceException {
+		final User _user,
+		final String healthCodeName,
+		final String healthCodeNameSpace) throws RIFServiceException {
 	
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);		
@@ -988,11 +988,11 @@ abstract class AbstractRIFStudySubmissionService
 	 * @see rifServices.businessConceptLayer.RIFJobSubmissionAPI#getSummaryDataForCurrentExtent(rifServices.businessConceptLayer.User, rifServices.businessConceptLayer.Geography, rifServices.businessConceptLayer.GeoLevelSelect, rifServices.businessConceptLayer.GeoLevelArea, rifServices.businessConceptLayer.GeoLevelToMap)
 	 */
 	public MapAreaSummaryData getSummaryDataForCurrentExtent(
-		User _user,
-		Geography _geography,
-		GeoLevelSelect _geoLevelSelect,
-		GeoLevelArea _geoLevelArea,
-		GeoLevelToMap _geoLevelToMap) throws RIFServiceException {
+		final User _user,
+		final Geography _geography,
+		final GeoLevelSelect _geoLevelSelect,
+		final GeoLevelArea _geoLevelArea,
+		final GeoLevelToMap _geoLevelToMap) throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
@@ -1689,9 +1689,9 @@ abstract class AbstractRIFStudySubmissionService
 	}
 	
 	public void submitStudy(
-		User _user,
-		RIFStudySubmission _rifJobSubmission,
-		File _outputFile) throws RIFServiceException {
+		final User _user,
+		final RIFStudySubmission _rifJobSubmission,
+		final File _outputFile) throws RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);

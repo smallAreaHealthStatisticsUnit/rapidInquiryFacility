@@ -369,7 +369,7 @@ public final class FieldValidationUtility {
 	 * @param candidateTableName
 	 * @return
 	 */
-	public String convertToDatabaseTableName(String candidateTableName) {
+	public String convertToDatabaseTableName(final String candidateTableName) {
 		return candidateTableName.replace(" ", "_").toUpperCase();
 	}
 	

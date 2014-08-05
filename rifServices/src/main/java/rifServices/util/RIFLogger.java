@@ -92,9 +92,9 @@ public class RIFLogger {
 	// Section Accessors and Mutators
 	// ==========================================
 	public void error(
-		Class callingClass,
-		String errorHeading,
-		Throwable throwableItem) {
+		final Class callingClass,
+		final String errorHeading,
+		final Throwable throwableItem) {
 		
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(callingClass.getName());
@@ -107,8 +107,8 @@ public class RIFLogger {
 	}
 	
 	public void info(
-		Class callingClass,			
-		String message) {
+		final Class callingClass,			
+		final String message) {
 		
 
 	}

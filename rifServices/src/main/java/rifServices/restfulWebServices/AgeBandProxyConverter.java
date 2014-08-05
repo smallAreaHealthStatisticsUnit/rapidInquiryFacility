@@ -102,7 +102,7 @@ public final class AgeBandProxyConverter
 	// Section Override
 	// ==========================================
 	
-	public AgeBandProxy marshal(AgeBand ageBand) {
+	public AgeBandProxy marshal(final AgeBand ageBand) {
 		AgeBandProxy ageBandProxy = new AgeBandProxy();
 
 		AgeGroup lowerLimitAgeGroup = ageBand.getLowerLimitAgeGroup();

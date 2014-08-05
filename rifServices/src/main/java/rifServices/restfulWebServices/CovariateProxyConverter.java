@@ -66,7 +66,8 @@ import rifServices.businessConceptLayer.AdjustableCovariate;
  */
 
 public final class CovariateProxyConverter 
-	extends XmlAdapter<CovariateProxy, AdjustableCovariate>{
+	extends XmlAdapter<CovariateProxy, 
+	AdjustableCovariate>{
 	
 	
 	// ==========================================
@@ -101,7 +102,7 @@ public final class CovariateProxyConverter
 	// Section Override
 	// ==========================================
 
-	public CovariateProxy marshal(AdjustableCovariate covariate) {
+	public CovariateProxy marshal(final AdjustableCovariate covariate) {
 		CovariateProxy covariateProxy = new CovariateProxy();
 
 		covariateProxy.setName(covariate.getName());
@@ -112,7 +113,7 @@ public final class CovariateProxyConverter
 		return covariateProxy;
 	}
 
-	public AdjustableCovariate unmarshal(CovariateProxy covariateProxy) {
+	public AdjustableCovariate unmarshal(final CovariateProxy covariateProxy) {
 		AdjustableCovariate covariate = AdjustableCovariate.newInstance();
 		
 		CovariateType covariateType

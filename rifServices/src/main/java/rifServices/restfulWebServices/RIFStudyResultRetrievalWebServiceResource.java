@@ -115,7 +115,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	// ==========================================
 
 	public RIFStudyResultRetrievalWebServiceResource() {
-		System.out.println("RIFStudyResultRetrievalWebServiceResource constructor 1");		
+
 	}
 
 	// ==========================================
