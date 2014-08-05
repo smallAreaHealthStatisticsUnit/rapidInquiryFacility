@@ -104,9 +104,9 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	// ==========================================
 
 	public SQLResultsQueryManager(
-		SQLRIFContextManager sqlRIFContextManager,
-		SQLMapDataManager sqlMapDataManager,
-		SQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager) {
+		final SQLRIFContextManager sqlRIFContextManager,
+		final SQLMapDataManager sqlMapDataManager,
+		final SQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager) {
 		
 		this.sqlRIFContextManager = sqlRIFContextManager;
 		this.sqlMapDataManager = sqlMapDataManager;
@@ -431,12 +431,12 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	 * @throws RIFServiceException
 	 */
 	public RIFResultTable getCalculatedResultsByBlock(
-		Connection connection,
-		User user,
-		StudySummary studySummary,
-		String[] calculatedResultTableFieldNames,
-		Integer startRowIndex,
-		Integer endRowIndex)
+		final Connection connection,
+		final User user,
+		final StudySummary studySummary,
+		final String[] calculatedResultTableFieldNames,
+		final Integer startRowIndex,
+		final Integer endRowIndex)
 		throws RIFServiceException {
 			
 		//Validate parameters
@@ -572,8 +572,8 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	 * @throws RIFServiceException
 	 */
 	private String getCalculatedResultTableName(
-		Connection connection,
-		String studyID)
+		final Connection connection,
+		final String studyID)
 		throws RIFServiceException {
 		
 		//Create query
@@ -991,11 +991,11 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	 * @throws RIFServiceException
 	 */
 	public String[] getNumericAttributesForGeoLevelAttributeTheme(
-		Connection connection,
-		User user,
-		StudyResultRetrievalContext studyResultRetrievalContext,
-		GeoLevelAttributeSource geoLevelAttributeSource,
-		GeoLevelAttributeTheme geoLevelAttributeTheme) 
+		final Connection connection,
+		final User user,
+		final StudyResultRetrievalContext studyResultRetrievalContext,
+		final GeoLevelAttributeSource geoLevelAttributeSource,
+		final GeoLevelAttributeTheme geoLevelAttributeTheme) 
 		throws RIFServiceException {
 			
 		//Validate parameters
@@ -1085,12 +1085,12 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	 * @throws RIFServiceException
 	 */
 	public RIFResultTable getExtractResultsByBlock(
-		Connection connection,
-		User user,
-		StudySummary studySummary,
-		String[] extractTableFieldNames,
-		Integer extractStartRowIndex,
-		Integer extractEndRowIndex)
+		final Connection connection,
+		final User user,
+		final StudySummary studySummary,
+		final String[] extractTableFieldNames,
+		final Integer extractStartRowIndex,
+		final Integer extractEndRowIndex)
 		throws RIFServiceException {
 				
 		//Validate parameters
@@ -1240,7 +1240,7 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	 * @throws SQLException
 	 */
 	private RIFResultTable generateResultTable(
-		ResultSet resultSet)
+		final ResultSet resultSet)
 		throws SQLException {
 		
 		RIFResultTable rifResultTable = new RIFResultTable();
@@ -1286,8 +1286,8 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	
 	
 	private String getExtractTableName(
-		Connection connection,
-		String studyID) 
+		final Connection connection,
+		final String studyID) 
 		throws RIFServiceException {
 					
 		//Create query		
@@ -1365,9 +1365,9 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	 * @throws RIFServiceException
 	 */
 	public String[] getGeometryColumnNames(
-		Connection connection,
-		User user,
-		DiseaseMappingStudy diseaseMappingStudy)
+		final Connection connection,
+		final User user,
+		final DiseaseMappingStudy diseaseMappingStudy)
 		throws RIFServiceException {
 		
 		//Validate parameters
@@ -1438,14 +1438,14 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	 * @throws RIFServiceException
 	 */
 	public RIFResultTable getResultsStratifiedByGenderAndAgeGroup(
-		Connection connection,
-		User user,
-		StudyResultRetrievalContext studyResultRetrievalContext,
-		GeoLevelToMap geoLevelToMap,
-		GeoLevelAttributeSource geoLevelAttributeSource,
-		String geoLevelSourceAttribute,
-		ArrayList<MapArea> mapAreas,
-		Integer year) 
+		final Connection connection,
+		final User user,
+		final StudyResultRetrievalContext studyResultRetrievalContext,
+		final GeoLevelToMap geoLevelToMap,
+		final GeoLevelAttributeSource geoLevelAttributeSource,
+		final String geoLevelSourceAttribute,
+		final ArrayList<MapArea> mapAreas,
+		final Integer year) 
 		throws RIFServiceException {
 		
 		user.checkErrors();
@@ -1525,8 +1525,8 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	 * @throws RIFServiceException
 	 */
 	private int getRowCountForResultTable(
-		Connection connection,
-		String resultTableName)
+		final Connection connection,
+		final String resultTableName)
 		throws RIFServiceException {
 		
 		//TODO: Peter
@@ -1607,12 +1607,12 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	}	
 	
 	public RIFResultTable getPyramidDataByYear(
-		Connection connection,
-		User user,
-		StudyResultRetrievalContext studyResultRetrievalContext,
-		GeoLevelAttributeSource geoLevelAttributeSource,
-		String geoLevelAttribute,
-		Integer year) 
+		final Connection connection,
+		final User user,
+		final StudyResultRetrievalContext studyResultRetrievalContext,
+		final GeoLevelAttributeSource geoLevelAttributeSource,
+		final String geoLevelAttribute,
+		final Integer year) 
 		throws RIFServiceException {
 				
 		//Validate parameters
@@ -1644,13 +1644,13 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	}
 	
 	public RIFResultTable getPyramidDataByMapAreas(
-		Connection connection,
-		User user,
-		StudyResultRetrievalContext studyResultRetrievalContext,
-		GeoLevelToMap geoLevelToMap,
-		GeoLevelAttributeSource geoLevelAttributeSource,
-		String geoLevelAttribute,
-		ArrayList<MapArea> mapAreas) 
+		final Connection connection,
+		final User user,
+		final StudyResultRetrievalContext studyResultRetrievalContext,
+		final GeoLevelToMap geoLevelToMap,
+		final GeoLevelAttributeSource geoLevelAttributeSource,
+		final String geoLevelAttribute,
+		final ArrayList<MapArea> mapAreas) 
 		throws RIFServiceException {
 
 		//Validate parameters
@@ -1716,10 +1716,10 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	}
 	
 	public String[] getResultFieldsStratifiedByAgeGroup(
-		Connection connection,
-		User user,
-		StudyResultRetrievalContext studyResultRetrievalContext,
-		GeoLevelAttributeSource geoLevelAttributeSource)
+		final Connection connection,
+		final User user,
+		final StudyResultRetrievalContext studyResultRetrievalContext,
+		final GeoLevelAttributeSource geoLevelAttributeSource)
 		throws RIFServiceException {
 	
 		String[] results = new String[0];
@@ -1729,9 +1729,9 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	}
 	
 	public RIFResultTable getSMRValues(
-		Connection connection,
-		User user,
-		StudySummary studySummary)
+		final Connection connection,
+		final User user,
+		final StudySummary studySummary)
 		throws RIFServiceException {
 	
 		studySummary.checkErrors();
@@ -1796,9 +1796,9 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	
 	
 	public RIFResultTable getRRValues(
-		Connection connection,
-		User user,
-		StudySummary studySummary)
+		final Connection connection,
+		final User user,
+		final StudySummary studySummary)
 		throws RIFServiceException {
 				
 		studySummary.checkErrors();
@@ -1862,9 +1862,9 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	}
 
 	public RIFResultTable getRRUnadjustedValues(
-		Connection connection,
-		User user,
-		StudySummary studySummary)
+		final Connection connection,
+		final User user,
+		final StudySummary studySummary)
 		throws RIFServiceException {
 				
 		studySummary.checkErrors();
@@ -1928,9 +1928,9 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	}
 	
 	public RIFResultTable getResultStudyGeneralInfo(
-		Connection connection,
-		User user,
-		StudySummary studySummary)
+		final Connection connection,
+		final User user,
+		final StudySummary studySummary)
 		throws RIFServiceException {
 	
 		studySummary.checkErrors();
@@ -2023,8 +2023,8 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	}
 		
 	public String getStudyName(
-		Connection connection,
-		String studyID)
+		final Connection connection,
+		final String studyID)
 		throws RIFServiceException {
 				
 		SQLSelectQueryFormatter query
@@ -2082,9 +2082,9 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	// Section Errors and Validation
 	// ==========================================
 	private void validateCommonParameters(
-		Connection connection,
-		User user,
-		StudyResultRetrievalContext studyResultRetrievalContext)
+		final Connection connection,
+		final User user,
+		final StudyResultRetrievalContext studyResultRetrievalContext)
 		throws RIFServiceException {
 
 		user.checkErrors();
@@ -2105,10 +2105,10 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 
 	
 	private void validateCommonParameters(
-		Connection connection,
-		User user,
-		Geography geography,
-		GeoLevelSelect geoLevelSelect)
+		final Connection connection,
+		final User user,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect)
 		throws RIFServiceException {
 		
 		user.checkErrors();
@@ -2142,8 +2142,8 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	 * @param diseaseMappingStudy
 	 */
 	private void checkPermissionsAllowResultsTable(
-		Connection connection,
-		String studyID)
+		final Connection connection,
+		final String studyID)
 		throws RIFServiceException {
 	
 		SQLSelectQueryFormatter query
@@ -2213,9 +2213,9 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 
 	
 	private void validateTableFieldNames(
-		Connection connection, 
-		String tableName,
-		String[] tableFieldNames) 
+		final Connection connection, 
+		final String tableName,
+		final String[] tableFieldNames) 
 		throws RIFServiceException {
 
 		SQLFunctionCallerQueryFormatter query 
@@ -2302,9 +2302,9 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	}
 	
 	private void checkResultsTableExists(
-		Connection connection,
-		String studyID,
-		String resultsTableName)
+		final Connection connection,
+		final String studyID,
+		final String resultsTableName)
 		throws RIFServiceException {
 		
 		//Create query/
@@ -2360,10 +2360,10 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	}
 	
 	private void checkResultsTableFieldExists(
-		Connection connection,
-		String studyID,
-		String resultsTableName,
-		String resultsTableFieldName)
+		final Connection connection,
+		final String studyID,
+		final String resultsTableName,
+		final String resultsTableFieldName)
 		throws RIFServiceException {
 
 		
@@ -2422,9 +2422,9 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	
 	//Check what query we need
 	private void checkMapAreaExists(
-		Connection connection, 
-		StudyResultRetrievalContext studyResultRetrievalContext,
-		MapArea mapArea) 
+		final Connection connection, 
+		final StudyResultRetrievalContext studyResultRetrievalContext,
+		final MapArea mapArea) 
 		throws RIFServiceException {
 		
 				
@@ -2500,9 +2500,9 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	 * @throws RIFServiceException
 	 */
 	private void checkMapAreaExistsInStudy(
-		Connection connection, 
-		StudyResultRetrievalContext studyResultRetrievalContext,
-		MapArea mapArea) 
+		final Connection connection, 
+		final StudyResultRetrievalContext studyResultRetrievalContext,
+		final MapArea mapArea) 
 		throws RIFServiceException {
 
 		
@@ -2512,10 +2512,10 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	
 	//CHECKED -- find out the name of the function
 	private void checkGeoLevelAttributeExists(
-		Connection connection,
-		StudyResultRetrievalContext studyResultRetrievalContext,
-		GeoLevelAttributeSource geoLevelAttributeSource,
-		String geoLevelAttribute) 
+		final Connection connection,
+		final StudyResultRetrievalContext studyResultRetrievalContext,
+		final GeoLevelAttributeSource geoLevelAttributeSource,
+		final String geoLevelAttribute) 
 		throws RIFServiceException {
 		
 		/*
@@ -2580,18 +2580,18 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	}
 
 	private void checkGeoLevelAttributeSourceExists(
-		Connection connection,
-		String studyID,
-		GeoLevelAttributeSource geoLevelAttributeSource)
+		final Connection connection,
+		final String studyID,
+		final GeoLevelAttributeSource geoLevelAttributeSource)
 		throws RIFServiceException {
 		
 	}
 	
 	private void checkGeoLevelAttributeThemeExists(
-		Connection connection, 
-		StudyResultRetrievalContext studyResultRetrievalContext,
-		GeoLevelAttributeSource geoLevelAttributeSource,
-		GeoLevelAttributeTheme geoLevelAttributeTheme)
+		final Connection connection, 
+		final StudyResultRetrievalContext studyResultRetrievalContext,
+		final GeoLevelAttributeSource geoLevelAttributeSource,
+		final GeoLevelAttributeTheme geoLevelAttributeTheme)
 		throws RIFServiceException {
 
 		
@@ -2668,13 +2668,6 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		}
 		
 	}
-	
-	
-	
-	
-	
-	
-	
 	
 	// ==========================================
 	// Section Interfaces

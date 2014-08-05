@@ -274,8 +274,8 @@ class XMLHealthCodeTaxonomyContentHandler
 	 * @param indentationLevel the indentation level
 	 */
 	private void printTerm(
-		TaxonomyTerm taxonomyTerm, 
-		int indentationLevel) {
+		final TaxonomyTerm taxonomyTerm, 
+		final int indentationLevel) {
 
 		StringBuilder textLine = new StringBuilder();
 		for (int i = 0; i < indentationLevel; i++) {

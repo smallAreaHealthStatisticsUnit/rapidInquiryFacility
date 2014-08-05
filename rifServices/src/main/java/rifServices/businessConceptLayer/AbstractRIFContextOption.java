@@ -213,9 +213,6 @@ public abstract class AbstractRIFContextOption
 		return false;
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkSecurityViolations()
-	 */
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {	
 		
@@ -275,9 +272,6 @@ public abstract class AbstractRIFContextOption
 	// Section Override
 	// ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */
 	@Override
 	public String getDisplayName() {
 		

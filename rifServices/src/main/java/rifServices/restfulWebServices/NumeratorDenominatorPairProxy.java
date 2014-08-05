@@ -106,7 +106,7 @@ public class NumeratorDenominatorPairProxy {
 		return numeratorTableName;
 	}
 
-	public void setNumeratorTableName(String numeratorTableName) {
+	public void setNumeratorTableName(final String numeratorTableName) {
 		this.numeratorTableName = numeratorTableName;
 	}
 
@@ -114,7 +114,7 @@ public class NumeratorDenominatorPairProxy {
 		return numeratorTableDescription;
 	}
 
-	public void setNumeratorTableDescription(String numeratorTableDescription) {
+	public void setNumeratorTableDescription(final String numeratorTableDescription) {
 		this.numeratorTableDescription = numeratorTableDescription;
 	}
 
@@ -122,7 +122,7 @@ public class NumeratorDenominatorPairProxy {
 		return denominatorTableName;
 	}
 
-	public void setDenominatorTableName(String denominatorTableName) {
+	public void setDenominatorTableName(final String denominatorTableName) {
 		this.denominatorTableName = denominatorTableName;
 	}
 
@@ -130,7 +130,7 @@ public class NumeratorDenominatorPairProxy {
 		return denominatorTableDescription;
 	}
 
-	public void setDenominatorTableDescription(String denominatorTableDescription) {
+	public void setDenominatorTableDescription(final String denominatorTableDescription) {
 		this.denominatorTableDescription = denominatorTableDescription;
 	}
 

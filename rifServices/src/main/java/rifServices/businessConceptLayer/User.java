@@ -116,6 +116,7 @@ final public class User {
 	public static User newInstance(
 		final String userID,
 		final String ipAddress) {
+		
 		User user = new User(userID, ipAddress);
 		return user;
 	}

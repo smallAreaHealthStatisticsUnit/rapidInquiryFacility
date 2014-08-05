@@ -336,8 +336,8 @@ class SQLCovariateManager
 	
 	
 	public void checkNonExistentCovariates(
-		Connection connection,
-		ArrayList<AbstractCovariate> covariates)
+		final Connection connection,
+		final ArrayList<AbstractCovariate> covariates)
 		throws RIFServiceException {
 				
 		SQLRecordExistsQueryFormatter covariateExistsQueryFormatter

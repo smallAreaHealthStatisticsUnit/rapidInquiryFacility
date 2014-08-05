@@ -104,10 +104,10 @@ class SQLInvestigationManager
 	 * Instantiates a new SQL investigation manager.
 	 */
 	public SQLInvestigationManager(
-		SQLRIFContextManager rifContextManager,
-		SQLAgeGenderYearManager ageGenderYearManager,
-		SQLCovariateManager covariateManager,
-		SQLHealthOutcomeManager healthOutcomeManager) {
+		final SQLRIFContextManager rifContextManager,
+		final SQLAgeGenderYearManager ageGenderYearManager,
+		final SQLCovariateManager covariateManager,
+		final SQLHealthOutcomeManager healthOutcomeManager) {
 
 		this.rifContextManager = rifContextManager;
 		this.ageGenderYearManager = ageGenderYearManager;
@@ -120,9 +120,9 @@ class SQLInvestigationManager
 	// ==========================================
 /*
 	public ArrayList<Investigation> getInvestigationsForStudy(
-		Connection connection,
-		User user,
-		DiseaseMappingStudy diseaseMappingStudy) {
+		final Connection connection,
+		final User user,
+		final DiseaseMappingStudy diseaseMappingStudy) {
 		
 		
 		SQLSelectQueryFormatter formatter
@@ -252,8 +252,6 @@ class SQLInvestigationManager
 			SQLQueryUtility.close(statement);
 			SQLQueryUtility.close(resultSet);
 		}
-		
-		
 		
 	}
 		

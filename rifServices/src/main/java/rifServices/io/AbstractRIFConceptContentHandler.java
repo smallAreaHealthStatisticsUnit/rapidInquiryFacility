@@ -520,7 +520,7 @@ abstract class AbstractRIFConceptContentHandler
 	 * @return true, if is ignored end tag
 	 */
 	protected boolean isIgnoredEndTag(
-		String xmlEndTag) {
+		final String xmlEndTag) {
 
 		return ignoredXMLEndTags.contains(xmlEndTag);
 	}

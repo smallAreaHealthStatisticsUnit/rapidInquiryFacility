@@ -365,7 +365,8 @@ protected AbstractGeographicalArea() {
 	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkSecurityViolations()
 	 */
 	@Override
-	protected void checkSecurityViolations() throws RIFServiceSecurityException {
+	protected void checkSecurityViolations() 
+		throws RIFServiceSecurityException {
 
 		super.checkSecurityViolations();
 
@@ -558,11 +559,7 @@ protected AbstractGeographicalArea() {
 // ==========================================
 
 	//Interface: DisplayableListItem
-	/* (non-Javadoc)
-	 * 	@see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */	
 	@Override
-
 	public String getDisplayName() {
 	
 		return getIdentifier();

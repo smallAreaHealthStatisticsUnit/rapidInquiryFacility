@@ -107,7 +107,7 @@ class SQLHealthOutcomeManager
 	/**
 	 * Instantiates a new SQL health outcome manager.
 	 */
-	public SQLHealthOutcomeManager(RIFServiceStartupOptions rifServiceStartupOptions) {
+	public SQLHealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
 		healthCodeProviders = new ArrayList<HealthCodeProvider>();
 		
 		String targetPathValue
@@ -253,7 +253,7 @@ class SQLHealthOutcomeManager
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public HealthCodeTaxonomy getHealthCodeTaxonomyFromNameSpace(
-		String healthCodeTaxonomyNameSpace)
+		final String healthCodeTaxonomyNameSpace)
 		throws RIFServiceException {
 
 
@@ -574,7 +574,7 @@ class SQLHealthOutcomeManager
 	 * @throws RIFServiceException
 	 */
 	public void checkNonExistentHealthCodes(
-		ArrayList<HealthCode> healthCodes) 
+		final ArrayList<HealthCode> healthCodes) 
 		throws RIFServiceException {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();

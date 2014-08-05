@@ -99,7 +99,7 @@ public class MapAreaProxy {
 		return identifier;
 	}
 	
-	public void setIdentifier(String identifier) {
+	public void setIdentifier(final String identifier) {
 		this.identifier = identifier;
 	}
 
@@ -107,7 +107,7 @@ public class MapAreaProxy {
 		return label;
 	}
 
-	public void setLabel(String label) {
+	public void setLabel(final String label) {
 		this.label = label;
 	}
 	

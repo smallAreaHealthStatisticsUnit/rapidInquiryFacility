@@ -103,7 +103,8 @@ public class RIFServiceResources {
 	// Section Construction
 	// ==========================================
 
-	private RIFServiceResources(RIFServiceStartupOptions rifServiceStartupOptions) 
+	private RIFServiceResources(
+		final RIFServiceStartupOptions rifServiceStartupOptions) 
 		throws RIFServiceException {
 
 		sqlConnectionManager = new SQLConnectionManager(rifServiceStartupOptions);

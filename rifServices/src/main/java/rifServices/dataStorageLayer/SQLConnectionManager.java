@@ -371,8 +371,8 @@ class SQLConnectionManager {
 	}
 	
 	public void reclaimPooledReadConnection(
-		User user, 
-		Connection connection) 
+		final User user, 
+		final Connection connection) 
 		throws RIFServiceException {
 		
 		ArrayList<Connection> usedReadConnections
@@ -385,8 +385,8 @@ class SQLConnectionManager {
 	}
 	
 	public void reclaimPooledWriteConnection(
-		User user, 
-		Connection connection) 
+		final User user, 
+		final Connection connection) 
 		throws RIFServiceException {
 		
 		ArrayList<Connection> usedWriteConnections
@@ -528,7 +528,7 @@ class SQLConnectionManager {
 		//the close action of the connection
 	}
 
-	public void resetConnectionPoolsForUser(User user) {
+	public void resetConnectionPoolsForUser(final User user) {
 		if (user == null) {
 			return;
 		}

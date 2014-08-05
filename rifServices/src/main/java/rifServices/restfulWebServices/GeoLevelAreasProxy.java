@@ -94,7 +94,7 @@ public class GeoLevelAreasProxy {
 		return names;
 	}
 	
-	public void setNames(String[] names) {
+	public void setNames(final String[] names) {
 		this.names = names;
 	}
 	

@@ -109,7 +109,7 @@ public class RIFDateFormat {
 	 * @return the file time stamp
 	 */
 	public String getFileTimeStamp(
-	final Date _date) {
+		final Date _date) {
 
 		if (_date == null) {
 			return null;

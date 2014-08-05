@@ -109,7 +109,7 @@ public class BoundaryRectangleProxy {
 		return xMin;
 	}
 
-	public void setXMin(String xMin) {
+	public void setXMin(final String xMin) {
 		this.xMin = xMin;
 	}
 
@@ -117,7 +117,7 @@ public class BoundaryRectangleProxy {
 		return yMin;
 	}
 
-	public void setYMin(String yMin) {
+	public void setYMin(final String yMin) {
 		this.yMin = yMin;
 	}
 
@@ -125,7 +125,7 @@ public class BoundaryRectangleProxy {
 		return xMax;
 	}
 
-	public void setXMax(String xMax) {
+	public void setXMax(final String xMax) {
 		this.xMax = xMax;
 	}
 
@@ -133,7 +133,7 @@ public class BoundaryRectangleProxy {
 		return yMax;
 	}
 
-	public void setYMax(String yMax) {
+	public void setYMax(final String yMax) {
 		this.yMax = yMax;
 	}
 

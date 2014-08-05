@@ -187,7 +187,7 @@ public final class RIFServiceInformation
     	return serviceDescription;
     }
     
-    public void setServiceDescription(String serviceDescription) {
+    public void setServiceDescription(final String serviceDescription) {
     	this.serviceDescription = serviceDescription;
     }
 
@@ -313,10 +313,7 @@ public final class RIFServiceInformation
 // Section Errors and Validation
 // ==========================================
 
-	/* (non-Javadoc)
- * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
- */
-public void checkErrors() throws RIFServiceException {
+	public void checkErrors() throws RIFServiceException {
 		
 		String recordType 
 			= RIFServiceMessages.getMessage("rifServiceInformation.label");

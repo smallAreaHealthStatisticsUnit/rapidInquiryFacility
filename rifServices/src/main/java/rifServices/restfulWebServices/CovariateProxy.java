@@ -104,7 +104,7 @@ public class CovariateProxy {
 		return covariateType;
 	}
 
-	public void setCovariateType(String covariateType) {
+	public void setCovariateType(final String covariateType) {
 		this.covariateType = covariateType;
 	}
 
@@ -112,7 +112,7 @@ public class CovariateProxy {
 		return maximumValue;
 	}
 
-	public void setMaximumValue(String maximumValue) {
+	public void setMaximumValue(final String maximumValue) {
 		this.maximumValue = maximumValue;
 	}
 
@@ -120,7 +120,7 @@ public class CovariateProxy {
 		return minimumValue;
 	}
 
-	public void setMinimumValue(String minimumValue) {
+	public void setMinimumValue(final String minimumValue) {
 		this.minimumValue = minimumValue;
 	}
 
@@ -128,13 +128,10 @@ public class CovariateProxy {
 		return name;
 	}
 
-	public void setName(String name) {
+	public void setName(final String name) {
 		this.name = name;
 	}
 
-
-	
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

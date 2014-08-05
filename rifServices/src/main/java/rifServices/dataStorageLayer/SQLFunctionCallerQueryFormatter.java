@@ -119,7 +119,7 @@ public class SQLFunctionCallerQueryFormatter
 		return schema;
 	}
 	
-	public void setSchema(String schema) {
+	public void setSchema(final String schema) {
 		this.schema = schema;
 	}
 	
@@ -127,7 +127,7 @@ public class SQLFunctionCallerQueryFormatter
 		return functionName;
 	}
 	
-	public void setFunctionName(String functionName) {
+	public void setFunctionName(final String functionName) {
 		this.functionName = functionName;
 	}
 	
@@ -135,7 +135,7 @@ public class SQLFunctionCallerQueryFormatter
 		return numberOfFunctionParameters;
 	}
 	
-	public void setNumberOfFunctionParameters(int numberOfFunctionParameters) {
+	public void setNumberOfFunctionParameters(final int numberOfFunctionParameters) {
 		this.numberOfFunctionParameters = numberOfFunctionParameters;
 	}
 

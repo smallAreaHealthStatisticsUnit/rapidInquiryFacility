@@ -189,7 +189,7 @@ public class RIFZipFileReader {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	private ZipEntry findZipEntryForQueryFile(
-		ZipInputStream zipInputStream) 
+		final ZipInputStream zipInputStream) 
 		throws IOException {
 		
 		ZipEntry currentZipEntry = zipInputStream.getNextEntry();

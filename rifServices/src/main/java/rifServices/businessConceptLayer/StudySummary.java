@@ -162,7 +162,7 @@ public final class StudySummary {
 		return studyID;
 	}
 
-	public void setStudyID(String studyID) {
+	public void setStudyID(final String studyID) {
 		this.studyID = studyID;
 	}
 	
@@ -190,7 +190,8 @@ public final class StudySummary {
 	// Section Errors and Validation
 	// ==========================================
 
-	public void checkErrors() throws RIFServiceException {
+	public void checkErrors() 
+		throws RIFServiceException {
 
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();

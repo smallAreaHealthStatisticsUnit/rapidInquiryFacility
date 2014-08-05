@@ -71,8 +71,8 @@ public enum CalculationMethodPrior {
 	 * @param messageProperty the message property
 	 */
 	CalculationMethodPrior(
-		String identifier, 
-		String messageProperty) {
+		final String identifier, 
+		final String messageProperty) {
 		
 		this.identifier = identifier;
 		this.messageProperty = messageProperty;

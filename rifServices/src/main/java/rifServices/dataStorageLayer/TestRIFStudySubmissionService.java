@@ -118,8 +118,8 @@ public final class TestRIFStudySubmissionService
 	 * @throws RIFServiceException
 	 */
 	public void checkNonExistentAgeGroups(
-		User _user,
-		ArrayList<AgeBand> _ageBands) 
+		final User _user,
+		final ArrayList<AgeBand> _ageBands) 
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -187,8 +187,8 @@ public final class TestRIFStudySubmissionService
 	 * @throws RIFServiceException
 	 */
 	public void checkNonExistentCovariates(
-		User _user,
-		ArrayList<AbstractCovariate> _covariates) 
+		final User _user,
+		final ArrayList<AbstractCovariate> _covariates) 
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -270,8 +270,9 @@ public final class TestRIFStudySubmissionService
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public void addHealthCodeProvider(
-		User _adminUser,
-		HealthCodeProvider healthCodeProvider) throws RIFServiceException {
+		final User _adminUser,
+		final HealthCodeProvider healthCodeProvider) 
+		throws RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
 		User adminUser = User.createCopy(_adminUser);
@@ -302,7 +303,8 @@ public final class TestRIFStudySubmissionService
 	 * @param _adminUser the _admin user
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void clearHealthCodeProviders(User _adminUser) 
+	public void clearHealthCodeProviders(
+		final User _adminUser) 
 		throws RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
@@ -329,7 +331,7 @@ public final class TestRIFStudySubmissionService
 	}
 			
 	public void clearRIFJobSubmissionsForUser(
-		User _user) 
+		final User _user) 
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -421,10 +423,4 @@ public final class TestRIFStudySubmissionService
 				rifServiceException);	
 		}		
 	}
-	
-
-	
-	
-	
-	
 }

@@ -150,7 +150,7 @@ public class StudyResultRetrievalContext {
 		return geographyName;
 	}
 
-	public void setGeographyName(String geographyName) {
+	public void setGeographyName(final String geographyName) {
 		this.geographyName = geographyName;
 	}
 
@@ -158,7 +158,7 @@ public class StudyResultRetrievalContext {
 		return geoLevelSelectName;
 	}
 
-	public void setGeoLevelSelectName(String geoLevelSelectName) {
+	public void setGeoLevelSelectName(final String geoLevelSelectName) {
 		this.geoLevelSelectName = geoLevelSelectName;
 	}
 
@@ -166,7 +166,7 @@ public class StudyResultRetrievalContext {
 		return studyID;
 	}
 
-	public void setStudyID(String studyID) {
+	public void setStudyID(final String studyID) {
 		this.studyID = studyID;
 	}
 
@@ -247,7 +247,8 @@ public class StudyResultRetrievalContext {
 	// Section Errors and Validation
 	// ==========================================
 
-	public void checkErrors() throws RIFServiceException {
+	public void checkErrors() 
+		throws RIFServiceException {
 
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		
@@ -298,7 +299,8 @@ public class StudyResultRetrievalContext {
 		
 	}
 	
-	public void checkSecurityViolations() throws RIFServiceSecurityException {
+	public void checkSecurityViolations() 
+		throws RIFServiceSecurityException {
 		
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();

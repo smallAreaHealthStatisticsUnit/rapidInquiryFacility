@@ -102,7 +102,7 @@ public class ParameterProxy {
 		return name;
 	}
 	
-	public void setName(String name) {
+	public void setName(final String name) {
 		this.name = name;
 	}
 
@@ -110,7 +110,7 @@ public class ParameterProxy {
 		return value;
 	}
 	
-	public void setValue(String value) {
+	public void setValue(final String value) {
 		this.value = value;
 	}
 	

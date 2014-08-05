@@ -98,10 +98,10 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	 * Instantiates a new SQLRIF submission manager.
 	 */
 	public SQLRIFSubmissionManager(
-		SQLRIFContextManager rifContextManager,
-		SQLAgeGenderYearManager ageGenderYearManager,
-		SQLCovariateManager covariateManager,
-		SQLDiseaseMappingStudyManager diseaseMappingStudyManager) {
+		final SQLRIFContextManager rifContextManager,
+		final SQLAgeGenderYearManager ageGenderYearManager,
+		final SQLCovariateManager covariateManager,
+		final SQLDiseaseMappingStudyManager diseaseMappingStudyManager) {
 
 		this.rifContextManager = rifContextManager;
 		this.ageGenderYearManager = ageGenderYearManager;
@@ -120,8 +120,8 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	 * @throws RIFServiceException
 	 */
 	public void clearRIFJobSubmissionsForUser(
-		Connection connection,
-		User user)
+		final Connection connection,
+		final User user)
 		throws RIFServiceException {
 	
 		/*
@@ -287,9 +287,9 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	}
 	
 	private void addStudyInformation(
-		Connection connection,
-		Project project,
-		DiseaseMappingStudy diseaseMappingStudy) 
+		final Connection connection,
+		final Project project,
+		final DiseaseMappingStudy diseaseMappingStudy) 
 		throws SQLException,
 		RIFServiceException {
 		
@@ -358,9 +358,9 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	}
 	
 	private String getCovariateTableName(
-		Connection connection,
-		Geography geography,
-		GeoLevelToMap studyAreaGeoLevelToMap) 
+		final Connection connection,
+		final Geography geography,
+		final GeoLevelToMap studyAreaGeoLevelToMap) 
 		throws SQLException,
 		RIFServiceException {
 				
@@ -401,8 +401,8 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	}
 
 	private void addStudyArea(
-		Connection connection,
-		DiseaseMappingStudyArea studyArea)
+		final Connection connection,
+		final DiseaseMappingStudyArea studyArea)
 		throws SQLException,
 		RIFServiceException {
 		
@@ -434,8 +434,8 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 
 	/*
 	private ComparisonArea getComparisonArea(
-		Connection connection,
-		String studyID)
+		final Connection connection,
+		final String studyID)
 		throws SQLException,
 		RIFServiceException {
 		
@@ -467,8 +467,8 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	*/
 	
 	private void addComparisonArea(
-		Connection connection,
-		ComparisonArea comparisonArea)
+		final Connection connection,
+		final ComparisonArea comparisonArea)
 		throws SQLException,
 		RIFServiceException {
 				
@@ -498,9 +498,9 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	
 	
 	private void addInvestigation(
-		Connection connection,
-		Geography geography,
-		Investigation investigation) 
+		final Connection connection,
+		final Geography geography,
+		final Investigation investigation) 
 		throws SQLException,
 		RIFServiceException {
 		
@@ -564,9 +564,9 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	
 	
 	private ArrayList<Investigation> getInvestigationsForStudy(
-		Connection connection,
-		String userID,
-		String studyID) 
+		final Connection connection,
+		final String userID,
+		final String studyID) 
 		throws SQLException,
 		RIFServiceException {
 		
@@ -680,8 +680,8 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	}
 
 	private AgeGroup getAgeGroupFromCode(
-		Connection connection, 
-		int ageGroupCode) 
+		final Connection connection, 
+		final int ageGroupCode) 
 		throws SQLException,
 		RIFServiceException {
 		
@@ -718,8 +718,8 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	}
 
 	private NumeratorDenominatorPair getNDPairForNumeratorTableName(
-		Connection connection,
-		String numeratorTableName) 
+		final Connection connection,
+		final String numeratorTableName) 
 		throws SQLException,
 		RIFServiceException {
 		
@@ -756,9 +756,9 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	}
 	
 	private void addCovariates(
-		Connection connection,
-		Geography geography,
-		Investigation investigation) {
+		final Connection connection,
+		final Geography geography,
+		final Investigation investigation) {
 		
 		//add in covariates
 		SQLInsertQueryFormatter insertCovariatesQueryFormatter
@@ -787,10 +787,10 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	}
 	
 	private ArrayList<AdjustableCovariate> getCovariatesForInvestigation(
-		Connection connection,
-		String userID,
-		String studyID,
-		String investigationID) 
+		final Connection connection,
+		final String userID,
+		final String studyID,
+		final String investigationID) 
 		throws SQLException,
 		RIFServiceException {
 		
@@ -841,9 +841,9 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	/*
 	
 	private ArrayList<Investigation> getInvestigationsForStudy(
-		Connection connection,
-		User user,
-		DiseaseMappingStudy diseaseMappingStudy) {
+		final Connection connection,
+		final User user,
+		final DiseaseMappingStudy diseaseMappingStudy) {
 				
 				
 		SQLSelectQueryFormatter formatter
@@ -870,8 +870,8 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	
 	/*
 	public ArrayList<RIFJobSubmission> getRIFJobSubmissionsForUser(
-		Connection connection,
-		User user) {
+		final Connection connection,
+		final User user) {
 		
 		//Step 1: Obtain study records
 		
@@ -894,8 +894,8 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	// ==========================================
 	
 	private void checkNonExistentItems(
-		Connection connection,
-		RIFStudySubmission rifStudySubmission)
+		final Connection connection,
+		final RIFStudySubmission rifStudySubmission)
 		throws RIFServiceException {
 
 		Project project 
@@ -924,8 +924,8 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	}
 	
 	private void checkProjectExists(
-		Connection connection,
-		Project project) 
+		final Connection connection,
+		final Project project) 
 		throws RIFServiceException {
 		
 		//Create SQL query
@@ -995,8 +995,8 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	}
 	
 	private void checkCalculationMethodExists(
-		Connection connection,
-		CalculationMethod calculationMethod) 
+		final Connection connection,
+		final CalculationMethod calculationMethod) 
 		throws RIFServiceException {
 		
 		

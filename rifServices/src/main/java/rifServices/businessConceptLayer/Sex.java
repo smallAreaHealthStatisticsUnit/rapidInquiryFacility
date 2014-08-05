@@ -69,8 +69,7 @@ public enum Sex {
 	 *
 	 * @param propertyName the property name
 	 */
-	Sex(
-		final String propertyName) {
+	Sex(final String propertyName) {
 
 		this.propertyName = propertyName;
 	}

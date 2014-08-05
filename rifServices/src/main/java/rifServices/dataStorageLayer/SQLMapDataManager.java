@@ -919,10 +919,10 @@ class SQLMapDataManager
 
 	
 	public void checkNonExistentAreas(
-		Connection connection,
-		String geographyName,
-		String geoLevelToMapName,
-		ArrayList<MapArea> mapAreas) 
+		final Connection connection,
+		final String geographyName,
+		final String geoLevelToMapName,
+		final ArrayList<MapArea> mapAreas) 
 		throws RIFServiceException {
 		
 		PreparedStatement statement = null;
@@ -999,8 +999,8 @@ class SQLMapDataManager
 	 * @throws SQLException
 	 */
 	private String getGeographyTableName(
-		Connection connection,
-		String geographyName) 
+		final Connection connection,
+		final String geographyName) 
 		throws SQLException,
 		RIFServiceException {
 

@@ -126,7 +126,7 @@ public class RIFResultTable {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void setFieldNames(String[] fieldNames) {
+	public void setFieldNames(final String[] fieldNames) {
 		this.fieldNames = fieldNames;
 	}
 	
@@ -134,7 +134,7 @@ public class RIFResultTable {
 		return fieldNames;
 	}
 	
-	public void setData(String[][] data) {
+	public void setData(final String[][] data) {
 		this.data = data;
 	}
 	

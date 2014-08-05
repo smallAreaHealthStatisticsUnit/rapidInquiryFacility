@@ -117,7 +117,7 @@ public class CalculationMethodProxy {
 	}
 
 
-	public void setCodeRoutineName(String codeRoutineName) {
+	public void setCodeRoutineName(final String codeRoutineName) {
 		this.codeRoutineName = codeRoutineName;
 	}
 
@@ -127,7 +127,7 @@ public class CalculationMethodProxy {
 	}
 
 
-	public void setPrior(String prior) {
+	public void setPrior(final String prior) {
 		this.prior = prior;
 	}
 
@@ -137,7 +137,7 @@ public class CalculationMethodProxy {
 	}
 
 
-	public void setDescription(String description) {
+	public void setDescription(final String description) {
 		this.description = description;
 	}
 
@@ -147,7 +147,7 @@ public class CalculationMethodProxy {
 	}
 
 
-	public void setParameterProxies(ArrayList<ParameterProxy> parameterProxies) {
+	public void setParameterProxies(final ArrayList<ParameterProxy> parameterProxies) {
 		this.parameterProxies = parameterProxies;
 	}
 

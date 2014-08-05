@@ -352,8 +352,9 @@ public class RIFXMLTaxonomyProvider
 	}
 	
 	private void checkHealthCodeExists(
-		String code, 
-		String nameSpace) throws RIFServiceException {
+		final String code, 
+		final String nameSpace) 
+		throws RIFServiceException {
 		
 		TaxonomyTerm term
 			= taxonomyReader.getTerm(

@@ -421,8 +421,8 @@ class SQLAgeGenderYearManager
 	}
 
 	public void checkNonExistentAgeGroups(
-		Connection connection,
-		ArrayList<AgeBand> ageBands) 
+		final Connection connection,
+		final ArrayList<AgeBand> ageBands) 
 		throws RIFServiceException {
 			
 		for (AgeBand ageBand : ageBands) {
@@ -438,8 +438,8 @@ class SQLAgeGenderYearManager
 	}
 		
 	private void checkNonExistentAgeGroup(
-		Connection connection,
-		AgeGroup ageGroup) 
+		final Connection connection,
+		final AgeGroup ageGroup) 
 		throws RIFServiceException {
 			
 		Integer id = Integer.valueOf(ageGroup.getIdentifier());
