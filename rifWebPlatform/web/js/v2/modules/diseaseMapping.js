@@ -16,16 +16,15 @@
  *      ->method
  *          method which must be implemented in subscriber object
  */
-RIF.manager = (function () {
+RIF.diseaseMapping = (function () {
 
     var _p = {
 
         components: {
-            sync: 'manager',
-            map: { studyType: 'manager' , layerType: 'tilesvg'},
-            table: 'click2row',
-            chart: ['pyramid','histogram'],
-            menu: [/*'export',*/ 'geoLevel', 'choropleth' , 'settings'],
+            sync: 'diseaseMapping',
+            map: { studyType: 'diseaseMapping' , layerType: 'tilesvg'},
+            //chart: ['bivariate'],
+            menu: [/*'export',*/ 'diseaseStudyLevel', 'choropleth' /*, 'settings' */],
 			resizable: ''
         },
 
@@ -33,7 +32,7 @@ RIF.manager = (function () {
             // sync
             selectionchange: {
                 subscribers: ["sync"],
-                firer: ["map", "table", "menu"],
+                firer: ["map",  "menu"],
                 method: "uAreaSelection"
             },
 
@@ -42,27 +41,10 @@ RIF.manager = (function () {
                 firer: ["menu"],
                 method: "cGeoLvl"
             },
-						
-			clearMapTable:{
-			    subscribers: ["sync"],
-                firer: ["menu"],
-                method: "clearMapTable"
-			},
-			// Chart update 
-			chartUpdateClick: {
-                subscribers: ["sync"],
-                firer: ["menu"],
-                method: "chartUpdateClick"
-            },
-			// sync - charts
-			updateCharts: {
-                subscribers: ["chart"],
-                firer: ["sync"],
-                method: "updateCharts"
-            },
+					
 			// sync - map/table
             clearSelection: {
-                subscribers: ["map", "table"],
+                subscribers: ["map"],
                 firer: ["sync"],
                 method: "clearSelection"
             },
@@ -78,13 +60,6 @@ RIF.manager = (function () {
                 subscribers: ["map"],
                 firer: ["menu"],
                 method: "zoomToExtent"
-            },
-			
-			// sync - table
-            updateSelectionTable: {
-                subscribers: ["table"],
-                firer: ["sync"],
-                method: "updateSelection"
             },
 
             // Map	
@@ -124,13 +99,6 @@ RIF.manager = (function () {
                 firer: ["resizable"],
                 method: "resizeMap"
             },
-
-			//Map - Table
-			addTabularData:{
-				subscribers: ["table"],
-                firer: ["menu"],
-                method: "getTabularData"
-			},
 			
 			populateMenus: {
                 subscribers: ["menu"],
@@ -143,47 +111,9 @@ RIF.manager = (function () {
                 firer: ["map"],
                 method: "getScaleRange"
 			},
-			
-			//Resizable - Table
-			resizeTable: {
-				subscribers: ["table"],
-                firer: ["resizable"],
-                method: "resizeTable"
-			},
-			//Menu - Table 
-			filterCols: {
-				subscribers: ["table"],
-                firer: ["menu"],
-                method: "filterCols"
-			},
-			
-			changeNumRows: {
-				subscribers: ["table"],
-                firer: ["menu"],
-                method: "changeNumRows"
-			},
-			
-            //Chart - Pyramid 	
-            updatePyramid: {
-                subscribers: ["chart"],
-                firer: ["menu"],
-                method: "updatePyramid"
-            },
-
-            changePyramidField: {
-                subscribers: ["chart"],
-                firer: ["menu"],
-                method: "uPyramidField"
-            },
-
-            changePyramidYear: {
-                subscribers: ["chart"],
-                firer: ["menu"],
-                method: "uPyramidYear"
-            },
 
             //Chart - Distribution hist.
-            updateHistogram: {
+            /*updateHistogram: {
                 subscribers: ["chart"],
                 firer: ["menu"],
                 method: "updateHistogram"
@@ -199,7 +129,7 @@ RIF.manager = (function () {
                 subscribers: ["chart"],
                 firer: ["menu"],
                 method: "uDistHistYear"
-            }
+            }*/
 
         },
 

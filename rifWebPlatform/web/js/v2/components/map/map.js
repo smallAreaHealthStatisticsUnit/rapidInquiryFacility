@@ -7,12 +7,13 @@
  *  @param: { type: [geoJSON, tileGeoJSON, tileTopoJSON] }
  *
  */
-RIF.map = (function (type) {
+RIF.map = (function ( settings ) {
 
     var _p = {
 		extentSet: 0,
         init: function () {
-            this.map = new L.Map("map", {attributionControl: false});
+            
+			this.map = new L.Map("map", {attributionControl: false});
 			this.events().addLegend();
 			
             new L.geoJson({
@@ -22,7 +23,10 @@ RIF.map = (function (type) {
                     [0, 0]
                 ]
             }).addTo( this.map );
+			
+			return this;
         },
+		
         /* events */
 		events: function(){
 		    this.map.on("dragend",function(e){
@@ -50,7 +54,7 @@ RIF.map = (function (type) {
 		},
 		
 		addLayer: function( mysett ){
-			this.layer = RIF.map.layer.call( this, type, mysett );
+			this.layer = RIF.map.layer.call( this, settings.layerType , mysett );
 		},
 		
 		removeLayer: function(){
@@ -104,67 +108,12 @@ RIF.map = (function (type) {
 			return this.currentDataset;
 		},
 		
-        facade: {
-            /* Subscribed Events */
-            updateSelection: function (a) {
-				_p.layer.selection = {};
-				_p.layer.style.repaint();		
-                _p.layer.selectAreas(a);
-            },
-			
-            zoomTo: function (a) {
-				_p.getBounds(a);
-            },
-			
-			uGeolevel: function( args ){
-				_p.removeLayer();
-				_p.addLayer({ "geoLevel" : args.geoLevel } );
-				_p.setDataset(args.dataset);
-			},
-			
-			resizeMap: function(){
-				_p.map.invalidateSize(true);
-			},
-			
-			uHoverField: function(a){
-				_p.layer.joinField(a);
-			},
-			
-			uMapStyle: function(a){
-				_p.layer.uStyle(a);
-			},
-			
-			editBreaks: function(a){
-			    _p.layer.getBreaks(a);
-			},
-			zoomToExtent: function(){
-				_p.setFullExtent(_p.layer.geoLevel);
-			},
-			
-			clearSelection: function(){
-				_p.layer.clearSelection();
-			},
-			
-			/* Firers */			
-			populateMenus: function( args ){/* [geolevel] */
-			    this.fire('populateMenus', args);
-			},
-			
-			addTabularData: function( dataSets ){
-				this.fire('addTabularData', dataSets);
-			},
-			
-			scaleRange: function(args){/* scale */
-			    this.fire('scaleRangeReady', args);
-			},
-			
-			selectionChanged: function( selection ){
-				this.fire('selectionchange', [ selection, 'map'] );
-			}
-        }
-    };
-    
-    _p.init();
-    
+		getFacade: function(){
+			_p.facade = RIF.getFacade('map', settings.studyType, _p);
+		}	
+	};	
+   
+	_p.init().getFacade();
+	
 	return _p.facade;
 });

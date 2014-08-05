@@ -4,7 +4,7 @@ RIF.menu.utils = (function(){
 			
 		    dropDown: function( data, el ){
 			    el.empty();
-				if( data.length > 0){
+				if( RIF.isArray( data )){
 					_p.dropDownFromArray(data, el);
 				}else if ( ! jQuery.isEmptyObject( data ) ){
 				    _p.dropDownFromObj( data, el);
@@ -14,6 +14,11 @@ RIF.menu.utils = (function(){
 			},
 			
 			dropDownFromArray: function(arr, el){
+				
+				if ( arr.length === 0 ){
+					arr.push("None available");
+				};
+				
 				var l = arr.length;
 				while(l--){
 					var val = arr[l];	

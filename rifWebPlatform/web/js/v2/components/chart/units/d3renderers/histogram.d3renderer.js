@@ -13,10 +13,11 @@ RIF.chart.histogram.d3renderer = (function( opt, values ){
 		field = opt.field,
 		bins = Math.floor(width/30);
 	
-	values = values.map(function(d) { if(+d >= 0){ return  Math.log(+d);} });
+	values = values.map(function(d) { if(+d >= 0){ return  +d; } });
 	
 	var max = d3.max(values) , 
 		min = d3.min(values);
+	
 	
 	max = (max > 0 ) ? max : bins;
 	min = (min > 0 ) ? min : 0;
@@ -27,17 +28,16 @@ RIF.chart.histogram.d3renderer = (function( opt, values ){
 			return (d / 1e6 >= 1 ) ?  (d / 1e6 + "M") :
 			(d / 1e3 >= 1 ) ?  (d / 1e3 + "K") :  d; 
 		}
-
+	
 	var x = d3.scale.linear()
 		.domain([ 0 , max])
-		.range([0, width]);
+		.range([ 0 , width]);
 
 	// Generate a histogram using twenty uniformly-spaced bins.
 	//Could allows users to change this
 	var data = d3.layout.histogram()
 		.bins(x.ticks(bins))
 		(values);
-	
 	
 	
 	var y = d3.scale.linear()
@@ -67,7 +67,7 @@ RIF.chart.histogram.d3renderer = (function( opt, values ){
 
 	bar.append("rect")
 		.attr("x", 1)
-		.attr("width", x(data[0].dx) - 1 )
+		.attr("width", x(data[0].dx) -1 )
 		.attr("height", function(d) { return height - y(d.y); });
 
 	bar.append("text")
