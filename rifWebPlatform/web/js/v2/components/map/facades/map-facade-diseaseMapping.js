@@ -1,4 +1,4 @@
-RIF.map['map-facade-diseaseMapping'] = (function ( studyType ) {
+RIF.map['map-facade-diseaseMapping'] = (function ( _p ) {
 	
 	
 	// TO BE MODIFIED, below is the copy of data manager facade
@@ -45,11 +45,7 @@ RIF.map['map-facade-diseaseMapping'] = (function ( studyType ) {
 			
 			/* Firers */			
 			populateMenus: function( args ){/* [geolevel] */
-			    this.fire('populateMenus', args);
-			},
-			
-			addTabularData: function( dataSets ){
-				this.fire('addTabularData', dataSets);
+			   this.fire('populateMenus', args);
 			},
 			
 			scaleRange: function(args){/* scale */

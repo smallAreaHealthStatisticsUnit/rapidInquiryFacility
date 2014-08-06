@@ -15,7 +15,7 @@ RIF.table['table-facade-manager'] = (function ( _p ) {
 		},
 			
 		changeNumRows: function( nRows ){
-			if( nRows !== _p.renderer.nRows ){
+			if( nRows !== _p.renderer.nRows ){  
 				_p.init( _p.renderer.dataset, _p.renderer.fields, nRows);
 			}
 		},

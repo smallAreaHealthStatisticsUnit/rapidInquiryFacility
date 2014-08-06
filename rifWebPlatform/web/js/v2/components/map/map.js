@@ -105,10 +105,12 @@ RIF.map = (function ( settings ) {
 		}	
 	};	
    
+	
 	_p.init()	
 	  .getFacade()
 	  .extendMap()
 	  .setEvents();
+	
 	
 	return _p.facade;
 });

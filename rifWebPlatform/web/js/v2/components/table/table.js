@@ -7,6 +7,9 @@ RIF.table = (function( settings ){
 	 */
 	var _p =  {
 		
+		selectedRows: [],
+		stopRowChange: false,
+		
 		init: function( dataset, fields , rows ){
 			RIF.dropDatatable();
 			
@@ -32,8 +35,15 @@ RIF.table = (function( settings ){
 			_p.renderer.resize();
 		},	
 		
+		rowClicked: function( rows ){
+			_p.selectedRows = rows;
+			_p.facade.rowClicked( rows );
+		},
+		
 		setEvents: function(){
 			//Empty for now due to how table handles events
+			var ev = RIF.getEvent( 'table', settings.studyType );
+			ev.call(this);
 		},
 		
 		//conforms	
@@ -51,8 +61,8 @@ RIF.table = (function( settings ){
 	};
 	
 	_p.getFacade()
-	   .extendTable()
-	   .setEvents();
+	  .extendTable();
+	   //-.setEvents() : called after initGrid event is fired from within renderer init()
 
 	   
 	return _p.facade;

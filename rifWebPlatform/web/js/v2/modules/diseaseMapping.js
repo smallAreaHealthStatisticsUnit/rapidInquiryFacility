@@ -23,8 +23,8 @@ RIF.diseaseMapping = (function () {
         components: {
             sync: 'diseaseMapping',
             map: { studyType: 'diseaseMapping' , layerType: 'tilesvg'},
-            //chart: ['bivariate'],
-            menu: [/*'export',*/ 'diseaseStudyLevel', 'choropleth' /*, 'settings' */],
+            //chart: { studyType: 'diseaseMapping', charts: ['bivariate', /*'candlestick'*/ ] },
+            menu: { studyType: 'diseaseMapping' , menus:[/*'export',*/ 'diseaseStudyLevel', 'choropleth' /*, 'settings' */] },
 			resizable: ''
         },
 
@@ -112,24 +112,7 @@ RIF.diseaseMapping = (function () {
                 method: "getScaleRange"
 			},
 
-            //Chart - Distribution hist.
-            /*updateHistogram: {
-                subscribers: ["chart"],
-                firer: ["menu"],
-                method: "updateHistogram"
-            },
 
-            changeHistField: {
-                subscribers: ["chart"],
-                firer: ["menu"],
-                method: "uDistHistField"
-            },
-
-            changeHistYear: {
-                subscribers: ["chart"],
-                firer: ["menu"],
-                method: "uDistHistYear"
-            }*/
 
         },
 

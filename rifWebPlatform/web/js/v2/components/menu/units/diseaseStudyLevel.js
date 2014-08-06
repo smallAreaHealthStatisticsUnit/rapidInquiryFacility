@@ -5,7 +5,7 @@ RIF.menu.diseaseStudyLevel = (function(){
 		/* geolevel obj */
 	    _p = {
 			
-			init: function(){
+			initdiseaseStudyLevel: function(){
 				this.events();
 				this.getStudies();
 			},
@@ -34,8 +34,7 @@ RIF.menu.diseaseStudyLevel = (function(){
 			},
 			
 			updateOtherComponents: function(){
-				parent.facade.addGeolevel( _p.currentGeolvl, _p.currentdataset );
-				parent.facade.addTabularData( _p.currentdataset );
+				//parent.facade.addGeolevel( _p.currentGeolvl, _p.currentdataset );
 			},
 			
 			
@@ -83,7 +82,7 @@ RIF.menu.diseaseStudyLevel = (function(){
 			}
 	    };
 	
-	_p.init();
+	_p.initdiseaseStudyLevel();
 	
 	return _p;
 });

@@ -1,10 +1,9 @@
-RIF.map['map-event-manager'] = (function(){
+RIF.map['map-event-diseaseMapping'] = (function(){
 	
 	var map = this.map;
 	
 	//Map events
 	map.on("dragend",function(e){
-		console.log(map.getZoom());
 		var dist = e.target.dragging._draggable._newPos.x ,
 			x = $("#tooltip").position();
 			$("#tooltip").css({left: x + dist + "px"})	

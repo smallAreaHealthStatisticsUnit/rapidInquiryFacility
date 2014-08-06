@@ -1,8 +1,8 @@
 RIF.menu = (function( settings ){
 	
-	var menus = settings.menus;
+	var menus = settings.menus,
 	
-	var _p = {
+	    _p = {
 			
 			init: function(){
 				_p = RIF.mix( RIF.menu.utils(), _p);
