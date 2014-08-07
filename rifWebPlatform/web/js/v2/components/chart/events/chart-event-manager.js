@@ -1,5 +1,5 @@
-RIF.chart['chart-event-manager'] = (function(){
-		
-		
-	
-});
+RIF.chart[ 'chart-event-manager' ] = ( function() {
+
+
+
+} );

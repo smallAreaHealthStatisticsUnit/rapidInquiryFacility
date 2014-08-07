@@ -16,117 +16,123 @@
  *      ->method
  *          method which must be implemented in subscriber object
  */
-RIF.diseaseMapping = (function () {
+RIF.diseaseMapping = ( function() {
 
-    var _p = {
+  var _p = {
 
-        components: {
-            sync: 'diseaseMapping',
-            map: { studyType: 'diseaseMapping' , layerType: 'tilesvg'},
-            //chart: { studyType: 'diseaseMapping', charts: ['bivariate', /*'candlestick'*/ ] },
-            menu: { studyType: 'diseaseMapping' , menus:[/*'export',*/ 'diseaseStudyLevel', 'choropleth' /*, 'settings' */] },
-			resizable: ''
-        },
+    components: {
+      sync: 'diseaseMapping',
+      map: {
+        studyType: 'diseaseMapping',
+        layerType: 'tilesvg'
+      },
+      //chart: { studyType: 'diseaseMapping', charts: ['bivariate', /*'candlestick'*/ ] },
+      menu: {
+        studyType: 'diseaseMapping',
+        menus: [ /*'export',*/ 'diseaseStudyLevel', 'choropleth' /*, 'settings' */ ]
+      },
+      resizable: ''
+    },
 
-        events: {
-            // sync
-            selectionchange: {
-                subscribers: ["sync"],
-                firer: ["map",  "menu"],
-                method: "uAreaSelection"
-            },
+    events: {
+      // sync
+      selectionchange: {
+        subscribers: [ "sync" ],
+        firer: [ "map", "menu" ],
+        method: "uAreaSelection"
+      },
 
-            geolvlchange: {
-                subscribers: ["sync"],
-                firer: ["menu"],
-                method: "cGeoLvl"
-            },
-					
-			// sync - map/table
-            clearSelection: {
-                subscribers: ["map"],
-                firer: ["sync"],
-                method: "clearSelection"
-            },
-			
-            // sync - map
-            updateSelectionMap: {
-                subscribers: ["map"],
-                firer: ["sync"],
-                method: "updateSelection"
-            },
-			
-			zoomToExtent: {
-                subscribers: ["map"],
-                firer: ["menu"],
-                method: "zoomToExtent"
-            },
+      geolvlchange: {
+        subscribers: [ "sync" ],
+        firer: [ "menu" ],
+        method: "cGeoLvl"
+      },
 
-            // Map	
-            zoomToArea: {
-                subscribers: ["map"],
-                firer: ["menu"],
-                method: "zoomTo"
-            },
-			
-			addGeolevel: {
-                subscribers: ["map"],
-                firer: ["menu"],
-                method: "uGeolevel"
-            },
-			
-			hoverFieldChange: {
-                subscribers: ["map"],
-                firer: ["menu"],
-                method: "uHoverField"
-            },
-			
-			mapStyleChange: {
-                subscribers: ["map"],
-                firer: ["menu"],
-                method: "uMapStyle"
-            },
-			
-			editChoroplethBreaks: {
-                subscribers: ["map"],
-                firer: ["menu"],
-                method: "editBreaks"
-            },
-			
-			//Map - Resizable
-			resizeMap: {
-                subscribers: ["map"],
-                firer: ["resizable"],
-                method: "resizeMap"
-            },
-			
-			populateMenus: {
-                subscribers: ["menu"],
-                firer: ["map"],
-                method: "uDropdownFlds"
-            },
-			
-			scaleRangeReady:{
-			    subscribers: ["menu"],
-                firer: ["map"],
-                method: "getScaleRange"
-			},
+      // sync - map/table
+      clearSelection: {
+        subscribers: [ "map" ],
+        firer: [ "sync" ],
+        method: "clearSelection"
+      },
+
+      // sync - map
+      updateSelectionMap: {
+        subscribers: [ "map" ],
+        firer: [ "sync" ],
+        method: "updateSelection"
+      },
+
+      zoomToExtent: {
+        subscribers: [ "map" ],
+        firer: [ "menu" ],
+        method: "zoomToExtent"
+      },
+
+      // Map	
+      zoomToArea: {
+        subscribers: [ "map" ],
+        firer: [ "menu" ],
+        method: "zoomTo"
+      },
+
+      addGeolevel: {
+        subscribers: [ "map" ],
+        firer: [ "menu" ],
+        method: "uGeolevel"
+      },
+
+      hoverFieldChange: {
+        subscribers: [ "map" ],
+        firer: [ "menu" ],
+        method: "uHoverField"
+      },
+
+      mapStyleChange: {
+        subscribers: [ "map" ],
+        firer: [ "menu" ],
+        method: "uMapStyle"
+      },
+
+      editChoroplethBreaks: {
+        subscribers: [ "map" ],
+        firer: [ "menu" ],
+        method: "editBreaks"
+      },
+
+      //Map - Resizable
+      resizeMap: {
+        subscribers: [ "map" ],
+        firer: [ "resizable" ],
+        method: "resizeMap"
+      },
+
+      populateMenus: {
+        subscribers: [ "menu" ],
+        firer: [ "map" ],
+        method: "uDropdownFlds"
+      },
+
+      scaleRangeReady: {
+        subscribers: [ "menu" ],
+        firer: [ "map" ],
+        method: "getScaleRange"
+      },
 
 
 
-        },
+    },
 
-        init: function () {
-            RIF.initComponents.call(this);
-            RIF.addEvents.call(this);
-        }
+    init: function() {
+      RIF.initComponents.call( this );
+      RIF.addEvents.call( this );
+    }
 
-    };
+  };
 
-    return {
-        setUp: (function (args) {
-            _p.init();
-        }())
-    };
+  return {
+    setUp: ( function( args ) {
+      _p.init();
+    }() )
+  };
 
-});
+} );
