@@ -395,18 +395,20 @@ protected AbstractGeographicalArea() {
 		String mapAreaLabelFieldName
 			= RIFServiceMessages.getMessage("mapArea.label.label");
 		for (MapArea mapArea : mapAreas) {
-			fieldValidationUtility.checkMaliciousCode(
-				recordType, 
-				mapAreaIdentiferFieldName,
-				mapArea.getIdentifier());
+			if (mapArea != null) {
+				fieldValidationUtility.checkMaliciousCode(
+					recordType, 
+					mapAreaIdentiferFieldName,
+					mapArea.getIdentifier());
 			
-			fieldValidationUtility.checkMaliciousCode(
-				recordType,
-				mapAreaLabelFieldName,
-				mapArea.getLabel());
-		}		
+				fieldValidationUtility.checkMaliciousCode(
+					recordType,
+					mapAreaLabelFieldName,
+					mapArea.getLabel());
+			}		
+		}
 	}
-	
+
 	/**
 	 * Check errors.
 	 *
@@ -516,12 +518,25 @@ protected AbstractGeographicalArea() {
 			else {			
 				boolean areMapAreasValid = true;
 				for (MapArea mapArea : mapAreas) {
-					try {
-						mapArea.checkErrors();
-					}
-					catch(RIFServiceException rifServiceException) {
+					if (mapArea == null) {
+						String mapAreaRecordType
+							= RIFServiceMessages.getMessage("mapArea.label");
+						String errorMessage
+							= RIFServiceMessages.getMessage(
+								"general.validation.nullListItem",
+								getRecordType(),
+								mapAreaRecordType);
+						errorMessages.add(errorMessage);
 						areMapAreasValid = false;
-						errorMessages.addAll(rifServiceException.getErrorMessages());
+					}
+					else {
+						try {
+							mapArea.checkErrors();
+						}
+						catch(RIFServiceException rifServiceException) {
+							areMapAreasValid = false;
+							errorMessages.addAll(rifServiceException.getErrorMessages());
+						}
 					}
 				}
 				
@@ -558,6 +573,8 @@ protected AbstractGeographicalArea() {
 // Section Override
 // ==========================================
 
+	abstract public String getRecordType();
+	
 	//Interface: DisplayableListItem
 	@Override
 	public String getDisplayName() {
