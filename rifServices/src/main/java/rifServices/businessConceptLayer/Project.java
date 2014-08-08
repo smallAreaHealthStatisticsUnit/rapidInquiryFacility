@@ -123,6 +123,17 @@ public class Project
 		return project;
 	}
 	
+	public static Project newInstance(
+		String name, 
+		String description) {
+
+		Project project = new Project();
+		project.setName(name);
+		project.setDescription(description);
+		return project;
+	}
+	
+	
 	/**
 	 * Creates the copy.
 	 *
