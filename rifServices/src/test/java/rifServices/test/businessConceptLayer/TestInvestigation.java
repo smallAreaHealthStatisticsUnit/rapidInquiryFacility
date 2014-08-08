@@ -407,7 +407,24 @@ public class TestInvestigation extends AbstractRIFTestCase {
 				rifServiceException, 
 				RIFServiceError.INVALID_INVESTIGATION, 
 				1);
-		}		
+		}
+		
+		try {
+			Investigation investigation
+				= Investigation.createCopy(masterInvestigation);
+			ArrayList<HealthCode> healthCodes
+				= investigation.getHealthCodes();
+			healthCodes.add(null);
+			investigation.checkErrors();
+			fail();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_INVESTIGATION, 
+				1);
+		}
+		
 	}
 	
 	/**
@@ -473,10 +490,11 @@ public class TestInvestigation extends AbstractRIFTestCase {
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
 			checkErrorType(
 				rifServiceException, 
 				RIFServiceError.INVALID_INVESTIGATION, 
-				7);
+				6);
 		}	
 	}
 	
@@ -805,6 +823,23 @@ public class TestInvestigation extends AbstractRIFTestCase {
 				RIFServiceError.INVALID_INVESTIGATION, 
 				1);
 		}
+		
+		try {
+			Investigation investigation
+				= Investigation.createCopy(masterInvestigation);
+			ArrayList<AbstractCovariate> covariates
+				= investigation.getCovariates();
+			covariates.add(null);
+			investigation.checkErrors();
+			fail();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_INVESTIGATION, 
+				1);
+		}
+		
 	}
 
 	/**
