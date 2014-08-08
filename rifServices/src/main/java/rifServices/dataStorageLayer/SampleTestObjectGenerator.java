@@ -106,8 +106,6 @@ public class SampleTestObjectGenerator {
 		RIFStudySubmission rifJobSubmission = RIFStudySubmission.newInstance();
 		rifJobSubmission.setNewRecord(false);
 
-		User user = User.newInstance("kgarwood", "11.111.11.228");
-		rifJobSubmission.setUser(user);
 		rifJobSubmission.setJobSubmissionTime(new Date());
 		
 		Project project = Project.newInstance();

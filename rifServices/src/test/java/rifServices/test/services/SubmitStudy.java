@@ -277,7 +277,6 @@ public class SubmitStudy extends AbstractRIFServiceTestCase {
 				= new SampleTestObjectGenerator();
 			RIFStudySubmission validStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
-			validStudySubmission.setUser(validUser);
 			rifStudySubmissionService.submitStudy(
 				validUser, 
 				validStudySubmission,

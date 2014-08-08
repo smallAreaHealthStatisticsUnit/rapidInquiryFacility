@@ -109,7 +109,6 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 		masterRIFJobSubmission.setJobSubmissionTime(new Date());
 		
 		User testUser = User.newInstance("kgarwood", "11.111.11.228");
-		masterRIFJobSubmission.setUser(testUser);
 		
 		DiseaseMappingStudy diseaseMappingStudy
 			= generator.createSampleDiseaseMappingStudy();
@@ -320,10 +319,9 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 		
 		maliciousRIFJobSubmission
 			= RIFStudySubmission.createCopy(masterRIFJobSubmission);
-		User maliciousUser 
-			= User.newInstance(getTestMaliciousValue(),
-					"11.111.11.228");
-		maliciousRIFJobSubmission.setUser(maliciousUser);
+		AbstractStudy study
+			= maliciousRIFJobSubmission.getStudy();
+		study.setName(getTestMaliciousValue());
 		try {
 			maliciousRIFJobSubmission.checkSecurityViolations();
 			fail();

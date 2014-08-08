@@ -216,19 +216,10 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 			connection, 
 			rifStudySubmission);
 		
-		//verify that year range checks against the database
-
-		
-		
-		
-		
-		
-		
-		
 		//verify that all the age groups of all the age bands are
 		//in the database
 
-		/*			
+/*
 		try {
 			//Step 1: Add general information about the study to the
 			//underlying study table.  This modifies the rif40_studies table
@@ -921,6 +912,10 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 		//we can assume that all rif output options that are supplied
 		//do in fact exist because they are taken from an enumerated type
 				
+		
+		
+		
+		
 	}
 	
 	private void checkProjectExists(

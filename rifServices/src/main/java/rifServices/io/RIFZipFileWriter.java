@@ -156,6 +156,7 @@ public class RIFZipFileWriter {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public void writeZipFile(
+		final User user,
 		final File zipFile, 
 		final RIFStudySubmission rifJobSubmission) 
 		throws RIFServiceException {
@@ -164,7 +165,6 @@ public class RIFZipFileWriter {
 		
 			ZipOutputStream zipOutputStream = null;
 		
-			User user = rifJobSubmission.getUser();
 			File zipFileNameWithTimeStamp 
 				= getSubmissionFileName(
 					zipFile, 
@@ -193,7 +193,9 @@ public class RIFZipFileWriter {
 			
 			ZipEntry rifQueryFileNameZipEntry = new ZipEntry(queryFileName.toString());
 			zipOutputStream.putNextEntry(rifQueryFileNameZipEntry);
-			rifJobSubmissionContentHandler.writeXML(rifJobSubmission);
+			rifJobSubmissionContentHandler.writeXML(
+				user, 
+				rifJobSubmission);
 			zipOutputStream.closeEntry();
 
 			//Add subdirectories for each output option
