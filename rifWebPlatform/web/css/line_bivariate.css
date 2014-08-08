@@ -1,0 +1,15 @@
+#rr_chart .axis path,
+#rr_chart  .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+#rr_chart  .x.axis path {
+  display: none;
+}
+
+#rr_chart  .area {
+  fill: #8DB6CD;
+}
+ 
