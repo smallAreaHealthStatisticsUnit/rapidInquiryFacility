@@ -193,14 +193,14 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	
 	
 	/**
-	 * Adds the rif job submission.
+	 * submit rif study submission.
 	 *
 	 * @param connection the connection
 	 * @param user the user
 	 * @param rifJobSubmission the rif job submission
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void addRIFStudySubmission(
+	public void submitStudy(
 		final Connection connection,
 		final User user,
 		final RIFStudySubmission rifStudySubmission) 
@@ -936,7 +936,6 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 		
 		//Parameterise and execute query		
 		try {
-			System.out.println("checkProjectExists query=="+query.generateQuery()+"==");
 			checkProjectExistsStatement
 				= connection.prepareStatement(query.generateQuery());
 			checkProjectExistsStatement.setString(1, project.getName());
@@ -994,7 +993,7 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 		final CalculationMethod calculationMethod) 
 		throws RIFServiceException {
 		
-		
+		//@TODO: Implement when RIF is able to register R routines
 	}
 	
 	

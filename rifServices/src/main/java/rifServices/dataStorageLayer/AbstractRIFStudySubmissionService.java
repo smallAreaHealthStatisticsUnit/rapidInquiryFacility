@@ -1728,8 +1728,7 @@ abstract class AbstractRIFStudySubmissionService
 					
 			//Check for security violations
 			validateUser(user);
-			rifJobSubmission.checkSecurityViolations();
-		
+			rifJobSubmission.checkSecurityViolations();		
 			rifJobSubmission.checkErrors();		
 
 			
@@ -1759,7 +1758,7 @@ abstract class AbstractRIFStudySubmissionService
 
 			SQLRIFSubmissionManager rifSubmissionManager
 				= rifServiceResources.getRIFSubmissionManager();
-			rifSubmissionManager.addRIFStudySubmission(
+			rifSubmissionManager.submitStudy(
 				connection, 
 				user, 
 				rifJobSubmission);
