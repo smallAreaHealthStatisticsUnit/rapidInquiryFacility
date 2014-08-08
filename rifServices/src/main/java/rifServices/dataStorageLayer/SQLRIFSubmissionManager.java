@@ -911,11 +911,6 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 		
 		//we can assume that all rif output options that are supplied
 		//do in fact exist because they are taken from an enumerated type
-				
-		
-		
-		
-		
 	}
 	
 	private void checkProjectExists(
