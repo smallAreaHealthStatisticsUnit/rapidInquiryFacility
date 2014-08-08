@@ -1,39 +1,44 @@
-RIF.chart = (function (charts) {
-    
-	var c = charts.length,
-	   
- 	   _p = {
-            
-			init: function(){
-                
-            },
+RIF.chart = ( function( settings ) {
 
-			facade: {
-			    /* subscribers */
-				updatePyramid: function( args ){
-					_p.updatePyramid( args );
-				},	
-				
-				updateHistogram: function( args ){
-					_p.updateHisto( args );
-				},
+  var charts = settings.charts,
 
-				updateCharts: function ( args ){
-					this.updateHistogram( args );
-					this.updatePyramid( args );
-				}	
-            }
-		};
-	
-	
-	/* Extend _p with all charts */ 
-	(function(){
-		while(c--){ 
-		    var r = RIF.chart[charts[c]].call(_p );
-		    _p = RIF.mix(r , _p);		
-		}
-	}());
-	
-	
-	return _p.facade;
-});
+    c = charts.length,
+
+    _p = {
+
+      init: function() {
+        return this;
+      },
+
+      updateChart: function( type, args ) {
+        ( type === 'pyramid' ) ? _p.updatePyramid( args ) :
+          ( type === 'histogram' ) ? _p.updateHisto( args ) : 0;
+      },
+
+      //conforms
+      setEvents: function() {
+        //Empty for now
+        return this;
+      },
+
+      extendChart: function() {
+        _p = RIF.extendComponent( 'chart', _p, charts );
+        return _p;
+      },
+
+      getFacade: function() {
+        _p.facade = RIF.getFacade( 'chart', settings.studyType, _p );
+        return _p;
+      }
+
+    };
+
+
+  _p.init()
+    .getFacade()
+    .extendChart()
+    .setEvents();
+
+
+  return _p.facade;
+} );
