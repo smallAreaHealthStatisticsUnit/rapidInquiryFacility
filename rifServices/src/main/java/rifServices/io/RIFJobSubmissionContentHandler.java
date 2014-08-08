@@ -99,6 +99,8 @@ class RIFJobSubmissionContentHandler
 // Section Properties
 // ==========================================
 
+	private User currentUser;
+	
 	/** The current rif job submission. */
 	private RIFStudySubmission currentRIFJobSubmission;
 	
@@ -193,6 +195,7 @@ class RIFJobSubmissionContentHandler
      * @throws IOException Signals that an I/O exception has occurred.
      */
     public void writeXML(
+    	final User user,
     	final RIFStudySubmission rifJobSubmission) 
     	throws IOException {
 
@@ -210,7 +213,6 @@ class RIFJobSubmissionContentHandler
 		String recordName = getSingularRecordName();		
 		xmlUtility.writeRecordStartTag(recordName);
 		
-		User user = rifJobSubmission.getUser();
 		xmlUtility.writeField(
 			recordName, 
 			"submitted_by", 
@@ -336,10 +338,6 @@ class RIFJobSubmissionContentHandler
 					qualifiedName, 
 					attributes);
 			}
-			else if (equalsFieldName(qualifiedName, "submitted_by")) {
-				User user = User.newInstance(getCurrentFieldValue(), "");
-				currentRIFJobSubmission.setUser(user);
-			}
 			else if (equalsFieldName(qualifiedName, "job_submission_date")) {
 				String jobSubmissionTimePhrase
 					= getCurrentFieldValue();
@@ -406,9 +404,8 @@ class RIFJobSubmissionContentHandler
 				unassignDelegatedHandler();
 			}
 		}
-		else if (equalsFieldName(qualifiedName, "submitted_by")) {			
-			User user = User.newInstance(getCurrentFieldValue(), "");
-			currentRIFJobSubmission.setUser(user);
+		else if (equalsFieldName(qualifiedName, "submitted_by")) {	
+			currentUser = User.newInstance(getCurrentFieldValue(), "");
 		}
 		else if (equalsFieldName(qualifiedName, "job_submission_date")) {
 			Date jobSubmissionTime

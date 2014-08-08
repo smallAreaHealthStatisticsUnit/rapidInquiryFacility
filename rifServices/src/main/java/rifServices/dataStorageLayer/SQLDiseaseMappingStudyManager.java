@@ -85,7 +85,7 @@ class SQLDiseaseMappingStudyManager extends AbstractSQLManager {
 	// ==========================================
 	private SQLRIFContextManager rifContextManager;
 	private SQLInvestigationManager investigationManager;
-	
+	private SQLMapDataManager mapDataManager;
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -95,10 +95,12 @@ class SQLDiseaseMappingStudyManager extends AbstractSQLManager {
 	 */
 	public SQLDiseaseMappingStudyManager(
 		final SQLRIFContextManager rifContextManager,
-		final SQLInvestigationManager investigationManager) {
+		final SQLInvestigationManager investigationManager,
+		final SQLMapDataManager mapDataManager) {
 
 		this.rifContextManager = rifContextManager;
 		this.investigationManager = investigationManager;
+		this.mapDataManager = mapDataManager;
 	}
 
 	// ==========================================
@@ -261,6 +263,7 @@ class SQLDiseaseMappingStudyManager extends AbstractSQLManager {
 				investigation);
 		}
 		
+		
 	}
 	
 	private void checkAreaNonExistentItems(
@@ -302,10 +305,14 @@ class SQLDiseaseMappingStudyManager extends AbstractSQLManager {
 			geoLevelToMap.getName(),
 			true);
 	
-		
+		ArrayList<MapArea> mapAreas = area.getMapAreas();
+		mapDataManager.checkNonExistentAreas(
+			connection, 
+			geographyName, 
+			geoLevelToMap.getName(), 
+			mapAreas);		
 	}
-	
-	
+		
 	public void checkDiseaseMappingStudyExists(
 		final Connection connection,
 		final String studyID)

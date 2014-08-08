@@ -193,9 +193,6 @@ public final class ComparisonArea
 // Section Override
 // ==========================================
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
 	@Override
 	public String getRecordType() {
 		

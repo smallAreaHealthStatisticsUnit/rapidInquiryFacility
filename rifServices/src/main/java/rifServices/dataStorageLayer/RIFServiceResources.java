@@ -129,7 +129,8 @@ public class RIFServiceResources {
 		sqlDiseaseMappingStudyManager 
 			= new SQLDiseaseMappingStudyManager(
 				sqlRIFContextManager,
-				sqlInvestigationManager);
+				sqlInvestigationManager,
+				sqlMapDataManager);
 				
 				
 		sqlRIFSubmissionManager 

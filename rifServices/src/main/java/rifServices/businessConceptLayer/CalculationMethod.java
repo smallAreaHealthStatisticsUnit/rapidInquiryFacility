@@ -95,7 +95,7 @@ private String name;
 	private String codeRoutineName;
 	
 	/** The prior. */
-	private CalculationMethodPrior prior;
+	private CalculationMethodPrior calculationMethodPrior;
 	
 	/** The description. */
 	private String description;
@@ -106,6 +106,22 @@ private String name;
 // ==========================================
 // Section Construction
 // ==========================================
+	
+	private CalculationMethod(
+		final String name,
+		final String codeRoutineName,
+		final String description,
+		final CalculationMethodPrior prior,
+		final ArrayList<Parameter> parameters) {
+		
+		this.name = name;
+		this.codeRoutineName = codeRoutineName;
+		this.description = description;
+		this.calculationMethodPrior = prior;
+		this.parameters = parameters;
+	}
+	
+	
     /**
      * Instantiates a new calculation method.
      */
@@ -113,7 +129,7 @@ private String name;
     	
 		name = "";
 		codeRoutineName = "";
-		prior = CalculationMethodPrior.STANDARD_DEVIATION;
+		calculationMethodPrior = CalculationMethodPrior.STANDARD_DEVIATION;
 		description = "";
 		parameters = new ArrayList<Parameter>();
     }
@@ -128,6 +144,30 @@ private String name;
 		CalculationMethod calculationMethod = new CalculationMethod();
 		return calculationMethod;
 	}
+
+	/**
+	 * New instance.
+	 *
+	 * @return the calculation method
+	 */
+	static public CalculationMethod newInstance(
+		final String name,
+		final String codeRoutineName,
+		final String description,
+		final CalculationMethodPrior prior,
+		final ArrayList<Parameter> parameters) {
+		
+		CalculationMethod calculationMethod
+			= new CalculationMethod(
+				name,
+				codeRoutineName,
+				description,
+				prior,
+				parameters);
+		
+		return calculationMethod;
+	}
+	
 	
 	/**
 	 * Creates the copy.
@@ -209,7 +249,7 @@ private String name;
 	 */
 	public CalculationMethodPrior getPrior() {
 		
-		return prior;
+		return calculationMethodPrior;
 	}
 	
 	/**
@@ -220,7 +260,7 @@ private String name;
 	public void setPrior(
 		final CalculationMethodPrior prior) {
 		
-		this.prior = prior;
+		this.calculationMethodPrior = prior;
 	}
 	
 	/**
@@ -517,7 +557,7 @@ private String name;
 			errorMessages.add(errorMessage);		
 		}
 
-		if (prior == null) {
+		if (calculationMethodPrior == null) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 

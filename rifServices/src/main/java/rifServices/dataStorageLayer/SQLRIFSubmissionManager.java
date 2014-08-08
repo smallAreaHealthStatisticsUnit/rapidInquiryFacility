@@ -193,14 +193,14 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 	
 	
 	/**
-	 * Adds the rif job submission.
+	 * submit rif study submission.
 	 *
 	 * @param connection the connection
 	 * @param user the user
 	 * @param rifJobSubmission the rif job submission
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void addRIFStudySubmission(
+	public void submitStudy(
 		final Connection connection,
 		final User user,
 		final RIFStudySubmission rifStudySubmission) 
@@ -216,19 +216,10 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 			connection, 
 			rifStudySubmission);
 		
-		//verify that year range checks against the database
-
-		
-		
-		
-		
-		
-		
-		
 		//verify that all the age groups of all the age bands are
 		//in the database
 
-		/*			
+/*
 		try {
 			//Step 1: Add general information about the study to the
 			//underlying study table.  This modifies the rif40_studies table
@@ -920,7 +911,6 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 		
 		//we can assume that all rif output options that are supplied
 		//do in fact exist because they are taken from an enumerated type
-				
 	}
 	
 	private void checkProjectExists(
@@ -941,7 +931,6 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 		
 		//Parameterise and execute query		
 		try {
-			System.out.println("checkProjectExists query=="+query.generateQuery()+"==");
 			checkProjectExistsStatement
 				= connection.prepareStatement(query.generateQuery());
 			checkProjectExistsStatement.setString(1, project.getName());
@@ -999,7 +988,7 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 		final CalculationMethod calculationMethod) 
 		throws RIFServiceException {
 		
-		
+		//@TODO: Implement when RIF is able to register R routines
 	}
 	
 	

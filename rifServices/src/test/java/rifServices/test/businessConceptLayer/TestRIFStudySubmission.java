@@ -12,6 +12,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 
@@ -78,7 +79,7 @@ import java.util.Date;
  *
  */
 
-public class TestRIFJobSubmission extends AbstractRIFTestCase {
+public class TestRIFStudySubmission extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -91,7 +92,7 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 	private SampleTestObjectGenerator generator;
 	
 	/** The master rif job submission. */
-	private RIFStudySubmission masterRIFJobSubmission;
+	private RIFStudySubmission masterRIFStudySubmission;
 	
 	// ==========================================
 	// Section Construction
@@ -100,22 +101,21 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 	/**
 	 * Instantiates a new test rif job submission.
 	 */
-	public TestRIFJobSubmission() {
+	public TestRIFStudySubmission() {
 		generator = new SampleTestObjectGenerator();
-		masterRIFJobSubmission
+		masterRIFStudySubmission
 			= RIFStudySubmission.newInstance();
-		masterRIFJobSubmission.addCalculationMethod(generator.createSampleHETMethod());
-		masterRIFJobSubmission.addCalculationMethod(generator.createSampleBYMMethod());	
-		masterRIFJobSubmission.setJobSubmissionTime(new Date());
+		masterRIFStudySubmission.addCalculationMethod(generator.createSampleHETMethod());
+		masterRIFStudySubmission.addCalculationMethod(generator.createSampleBYMMethod());	
+		masterRIFStudySubmission.setJobSubmissionTime(new Date());
 		
 		User testUser = User.newInstance("kgarwood", "11.111.11.228");
-		masterRIFJobSubmission.setUser(testUser);
 		
 		DiseaseMappingStudy diseaseMappingStudy
 			= generator.createSampleDiseaseMappingStudy();
-		masterRIFJobSubmission.setStudy(diseaseMappingStudy);
+		masterRIFStudySubmission.setStudy(diseaseMappingStudy);
 		
-		masterRIFJobSubmission.addRIFOutputOption(RIFOutputOption.RATIOS_AND_RATES);
+		masterRIFStudySubmission.addRIFOutputOption(RIFOutputOption.RATIOS_AND_RATES);
 	}
 		
 	// ==========================================
@@ -129,11 +129,11 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 	/**
 	 * Accept a valid rif job submission with typical values.
 	 */
-	public void acceptValidRIFJobSubmission() {
+	public void acceptValidRIFStudySubmission() {
 		try {
-			RIFStudySubmission rifJobSubmission
-				= RIFStudySubmission.createCopy(masterRIFJobSubmission);
-			rifJobSubmission.checkErrors();
+			RIFStudySubmission rifStudySubmission
+				= RIFStudySubmission.createCopy(masterRIFStudySubmission);
+			rifStudySubmission.checkErrors();
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();	
@@ -149,10 +149,10 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 	 */
 	public void rejectBlankStudy() {
 		try {
-			RIFStudySubmission rifJobSubmission
-				= RIFStudySubmission.createCopy(masterRIFJobSubmission);
-			rifJobSubmission.setStudy(null);
-			rifJobSubmission.checkErrors();
+			RIFStudySubmission rifStudySubmission
+				= RIFStudySubmission.createCopy(masterRIFStudySubmission);
+			rifStudySubmission.setStudy(null);
+			rifStudySubmission.checkErrors();
 			fail();	
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -172,16 +172,16 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 	 */
 	public void rejectInvalidStudy() {
 		try {
-			RIFStudySubmission rifJobSubmission
-				= RIFStudySubmission.createCopy(masterRIFJobSubmission);
+			RIFStudySubmission rifStudySubmission
+				= RIFStudySubmission.createCopy(masterRIFStudySubmission);
 			
 			SampleTestObjectGenerator generator 
 				= new SampleTestObjectGenerator();
 			DiseaseMappingStudy invalidDiseaseMappingStudy
 				= generator.createSampleDiseaseMappingStudy();
 			invalidDiseaseMappingStudy.setName(null);
-			rifJobSubmission.setStudy(invalidDiseaseMappingStudy);
-			rifJobSubmission.checkErrors();
+			rifStudySubmission.setStudy(invalidDiseaseMappingStudy);
+			rifStudySubmission.checkErrors();
 			fail();	
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -201,15 +201,15 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 	 */
 	public void rejectInvalidCalculationMethod() {
 		try {
-			RIFStudySubmission rifJobSubmission
-				= RIFStudySubmission.createCopy(masterRIFJobSubmission);	
+			RIFStudySubmission rifStudySubmission
+				= RIFStudySubmission.createCopy(masterRIFStudySubmission);	
 			SampleTestObjectGenerator generator
 				= new SampleTestObjectGenerator();
 			CalculationMethod invalidCalculationMethod
 				= generator.createSampleCalculationMethod("Blah");
 			invalidCalculationMethod.setPrior(null);			
-			rifJobSubmission.addCalculationMethod(invalidCalculationMethod);
-			rifJobSubmission.checkErrors();
+			rifStudySubmission.addCalculationMethod(invalidCalculationMethod);
+			rifStudySubmission.checkErrors();
 			fail();	
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -219,6 +219,51 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 				1);
 		}
 	}
+	
+	@Test
+	/**
+	 * rif job submission is invalid if it has an invalid calculation method
+	 */
+	public void rejectEmptyCalculationMethod() {
+		try {
+			RIFStudySubmission rifStudySubmission
+				= RIFStudySubmission.createCopy(masterRIFStudySubmission);	
+			SampleTestObjectGenerator generator
+				= new SampleTestObjectGenerator();
+			CalculationMethod invalidCalculationMethod
+				= generator.createSampleCalculationMethod("Blah");
+			invalidCalculationMethod.setPrior(null);			
+			rifStudySubmission.addCalculationMethod(invalidCalculationMethod);
+			rifStudySubmission.checkErrors();
+			fail();	
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_RIF_JOB_SUBMISSION, 
+				1);
+		}
+		
+		try {
+			RIFStudySubmission rifStudySubmission
+				= RIFStudySubmission.createCopy(masterRIFStudySubmission);	
+			SampleTestObjectGenerator generator
+				= new SampleTestObjectGenerator();
+			rifStudySubmission.addCalculationMethod(null);
+			rifStudySubmission.checkErrors();
+			fail();	
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_RIF_JOB_SUBMISSION, 
+				1);
+		}
+		
+	}
+	
+	
+	
 	
 	/**
 	 * Reject empty rif output options.
@@ -229,10 +274,10 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 	 */
 	public void rejectEmptyRIFOutputOptions() {
 		try {
-			RIFStudySubmission rifJobSubmission
-				= RIFStudySubmission.createCopy(masterRIFJobSubmission);
-			rifJobSubmission.setRIFOutputOptions(null);			
-			rifJobSubmission.checkErrors();
+			RIFStudySubmission rifStudySubmission
+				= RIFStudySubmission.createCopy(masterRIFStudySubmission);
+			rifStudySubmission.setRIFOutputOptions(null);			
+			rifStudySubmission.checkErrors();
 			fail();	
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -243,10 +288,10 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 		}
 
 		try {
-			RIFStudySubmission rifJobSubmission
-				= RIFStudySubmission.createCopy(masterRIFJobSubmission);
-			rifJobSubmission.clearRIFOutputOptions();			
-			rifJobSubmission.checkErrors();
+			RIFStudySubmission rifStudySubmission
+				= RIFStudySubmission.createCopy(masterRIFStudySubmission);
+			rifStudySubmission.clearRIFOutputOptions();			
+			rifStudySubmission.checkErrors();
 			fail();	
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -255,6 +300,22 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 				RIFServiceError.INVALID_RIF_JOB_SUBMISSION, 
 				1);
 		}
+
+		try {
+			RIFStudySubmission rifStudySubmission
+				= RIFStudySubmission.createCopy(masterRIFStudySubmission);
+			ArrayList<RIFOutputOption> rifOutputOptions
+				= rifStudySubmission.getRIFOutputOptions();
+			rifOutputOptions.add(null);
+			rifStudySubmission.checkErrors();
+			fail();	
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_RIF_JOB_SUBMISSION, 
+				1);
+		}	
 	}
 	
 	/**
@@ -262,11 +323,11 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 	 */
 	@Test
 	public void testSecurityViolations() {
-		RIFStudySubmission maliciousRIFJobSubmission
-			= RIFStudySubmission.createCopy(masterRIFJobSubmission);
-		maliciousRIFJobSubmission.setIdentifier(getTestMaliciousValue());
+		RIFStudySubmission maliciousRIFStudySubmission
+			= RIFStudySubmission.createCopy(masterRIFStudySubmission);
+		maliciousRIFStudySubmission.setIdentifier(getTestMaliciousValue());
 		try {
-			maliciousRIFJobSubmission.checkSecurityViolations();
+			maliciousRIFStudySubmission.checkSecurityViolations();
 			fail();
 		}
 		catch(RIFServiceSecurityException rifServiceSecurityException) {
@@ -276,56 +337,55 @@ public class TestRIFJobSubmission extends AbstractRIFTestCase {
 		/*
 		 * Check that checking for security violation is recursive
 		 */
-		maliciousRIFJobSubmission
-			= RIFStudySubmission.createCopy(masterRIFJobSubmission);
+		maliciousRIFStudySubmission
+			= RIFStudySubmission.createCopy(masterRIFStudySubmission);
 		DiseaseMappingStudy maliciousDiseaseMappingStudy
 			= generator.createSampleDiseaseMappingStudy();
 		maliciousDiseaseMappingStudy.setDescription(getTestMaliciousValue());
-		maliciousRIFJobSubmission.setStudy(maliciousDiseaseMappingStudy);
+		maliciousRIFStudySubmission.setStudy(maliciousDiseaseMappingStudy);
 		try {
-			maliciousRIFJobSubmission.checkSecurityViolations();
+			maliciousRIFStudySubmission.checkSecurityViolations();
 			fail();
 		}
 		catch(RIFServiceSecurityException rifServiceSecurityException) {
 			//pass
 		}
 		
-		maliciousRIFJobSubmission
-			= RIFStudySubmission.createCopy(masterRIFJobSubmission);
+		maliciousRIFStudySubmission
+			= RIFStudySubmission.createCopy(masterRIFStudySubmission);
 		CalculationMethod maliciousCalculationMethod
 			= generator.createSampleBYMMethod();
 		maliciousCalculationMethod.setDescription(getTestMaliciousValue());
-		maliciousRIFJobSubmission.addCalculationMethod(maliciousCalculationMethod);
+		maliciousRIFStudySubmission.addCalculationMethod(maliciousCalculationMethod);
 		try {
-			maliciousRIFJobSubmission.checkSecurityViolations();
+			maliciousRIFStudySubmission.checkSecurityViolations();
 			fail();
 		}
 		catch(RIFServiceSecurityException rifServiceSecurityException) {
 			//pass
 		}
 
-		maliciousRIFJobSubmission
-			= RIFStudySubmission.createCopy(masterRIFJobSubmission);
+		maliciousRIFStudySubmission
+			= RIFStudySubmission.createCopy(masterRIFStudySubmission);
 		Project maliciousProject
 			= Project.newInstance();
 		maliciousProject.setName(getTestMaliciousValue());
-		maliciousRIFJobSubmission.setProject(maliciousProject);
+		maliciousRIFStudySubmission.setProject(maliciousProject);
 		try {
-			maliciousRIFJobSubmission.checkSecurityViolations();
+			maliciousRIFStudySubmission.checkSecurityViolations();
 			fail();
 		}
 		catch(RIFServiceSecurityException rifServiceSecurityException) {
 			//pass
 		}
 		
-		maliciousRIFJobSubmission
-			= RIFStudySubmission.createCopy(masterRIFJobSubmission);
-		User maliciousUser 
-			= User.newInstance(getTestMaliciousValue(),
-					"11.111.11.228");
-		maliciousRIFJobSubmission.setUser(maliciousUser);
+		maliciousRIFStudySubmission
+			= RIFStudySubmission.createCopy(masterRIFStudySubmission);
+		AbstractStudy study
+			= maliciousRIFStudySubmission.getStudy();
+		study.setName(getTestMaliciousValue());
 		try {
-			maliciousRIFJobSubmission.checkSecurityViolations();
+			maliciousRIFStudySubmission.checkSecurityViolations();
 			fail();
 		}
 		catch(RIFServiceSecurityException rifServiceSecurityException) {

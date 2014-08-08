@@ -2,22 +2,18 @@ package rifServices.test.services;
 
 import static org.junit.Assert.fail;
 
+
+
+import rifServices.businessConceptLayer.*;
+import rifServices.dataStorageLayer.SampleTestObjectGenerator;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceException;
+import rifServices.util.FieldValidationUtility;
+
 import java.io.File;
 import java.util.ArrayList;
 
 import org.junit.Test;
-
-import rifServices.businessConceptLayer.AgeBand;
-import rifServices.businessConceptLayer.AgeGroup;
-import rifServices.businessConceptLayer.ComparisonArea;
-import rifServices.businessConceptLayer.DiseaseMappingStudy;
-import rifServices.businessConceptLayer.GeoLevelSelect;
-import rifServices.businessConceptLayer.Investigation;
-import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.businessConceptLayer.User;
-import rifServices.dataStorageLayer.SampleTestObjectGenerator;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 
 /**
  *
@@ -79,7 +75,7 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public class SubmitStudy extends AbstractRIFServiceTestCase {
+public class SubmitStudy extends AbstractHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -88,19 +84,60 @@ public class SubmitStudy extends AbstractRIFServiceTestCase {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private CalculationMethod masterValidCalculationMethod;
+	private CalculationMethod masterEmptyCalculationMethod;
+	private CalculationMethod masterNonExistentCalculationMethod;
+	private CalculationMethod masterMaliciousCalculationMethod;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public SubmitStudy() {
+		
+		
+		SampleTestObjectGenerator generator
+			= new SampleTestObjectGenerator();
+		masterValidCalculationMethod
+			= generator.createSampleBYMMethod();
 
+		masterEmptyCalculationMethod
+			= CalculationMethod.createCopy(masterValidCalculationMethod);
+		masterEmptyCalculationMethod.setCodeRoutineName("");
+
+		masterNonExistentCalculationMethod
+			= CalculationMethod.createCopy(masterValidCalculationMethod);
+		masterNonExistentCalculationMethod.setName("Blah");
+		
+		FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+		masterMaliciousCalculationMethod
+			= CalculationMethod.createCopy(masterValidCalculationMethod);
+		masterMaliciousCalculationMethod.setName(
+			fieldValidationUtility.getTestMaliciousFieldValue());
 	}
-
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
+	private CalculationMethod cloneValidCalculationMethod() {
+		return CalculationMethod.createCopy(masterValidCalculationMethod);
+	}
+
+	private CalculationMethod cloneEmptyCalculationMethod() {
+		return CalculationMethod.createCopy(masterEmptyCalculationMethod);
+	}
+	
+	private CalculationMethod cloneNonExistentCalculationMethod() {
+		return CalculationMethod.createCopy(masterNonExistentCalculationMethod);
+	}
+
+	private CalculationMethod cloneMaliciousCalculationMethod() {
+		return CalculationMethod.createCopy(masterMaliciousCalculationMethod);
+	}
+	
+	
 	
 	
 	@Test
@@ -197,6 +234,9 @@ public class SubmitStudy extends AbstractRIFServiceTestCase {
 	}
 
 	@Test
+	/**
+	 * Ensure empty checks are being done in Investigations
+	 */
 	public void submitStudy_EMPTY2() {
 
 		File validOutputFile = null;
@@ -237,6 +277,85 @@ public class SubmitStudy extends AbstractRIFServiceTestCase {
 			validOutputFile.delete();
 		}
 	}
+
+	@Test
+	/**
+	 * Ensure empty checks are being done in Project
+	 */
+	public void submitStudy_EMPTY3() {
+
+		File validOutputFile = null;
+		
+		try {
+			User validUser = cloneValidUser();
+			//use an example rif submission from the sample data
+			//generator we have
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
+			RIFStudySubmission emptyStudySubmission
+				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
+			emptyStudySubmission.setProject(cloneEmptyProject());
+			
+			validOutputFile
+				= sampleTestObjectGenerator.generateSampleOutputFile();
+			rifStudySubmissionService.submitStudy(
+				validUser, 
+				emptyStudySubmission, 
+				validOutputFile);
+			fail();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_PROJECT,
+				1);
+		}
+		finally {
+			validOutputFile.delete();
+		}
+	}
+	
+	@Test
+	/**
+	 * Ensure empty checks are being done in Comparison Area
+	 */
+	public void submitStudy_EMPTY4() {
+
+		File validOutputFile = null;
+		
+		try {
+			User validUser = cloneValidUser();
+			//use an example rif submission from the sample data
+			//generator we have
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
+			RIFStudySubmission emptyStudySubmission
+				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
+			DiseaseMappingStudy diseaseMappingStudy
+				= (DiseaseMappingStudy) emptyStudySubmission.getStudy();
+			ComparisonArea comparisonArea
+				= diseaseMappingStudy.getComparisonArea();
+			comparisonArea.setGeoLevelView(cloneEmptyGeoLevelView());			
+			validOutputFile
+				= sampleTestObjectGenerator.generateSampleOutputFile();
+			rifStudySubmissionService.submitStudy(
+				validUser, 
+				emptyStudySubmission, 
+				validOutputFile);
+			fail();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_RIF_JOB_SUBMISSION,
+				1);
+		}
+		finally {
+			validOutputFile.delete();
+		}
+	}
+	
+	
 	
 	@Test
 	public void submitStudy_NULL2() {
@@ -277,7 +396,6 @@ public class SubmitStudy extends AbstractRIFServiceTestCase {
 				= new SampleTestObjectGenerator();
 			RIFStudySubmission validStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
-			validStudySubmission.setUser(validUser);
 			rifStudySubmissionService.submitStudy(
 				validUser, 
 				validStudySubmission,
@@ -292,6 +410,44 @@ public class SubmitStudy extends AbstractRIFServiceTestCase {
 		}
 	}
 
+	@Test
+	/**
+	 * make sure a null value somewhere deep within the RIF Study Submission
+	 * object tree is detected
+	 */
+	public void submitStudy_NULL4() {
+		try {
+			User validUser = cloneValidUser();
+
+			//use an example rif submission from the sample data
+			//generator we have
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
+			RIFStudySubmission emptyStudySubmission
+				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
+			DiseaseMappingStudy diseaseMappingStudy
+				= (DiseaseMappingStudy) emptyStudySubmission.getStudy();
+			ComparisonArea comparisonArea
+				= diseaseMappingStudy.getComparisonArea();
+			comparisonArea.addMapArea(null);
+
+			File validOutputFile
+				= sampleTestObjectGenerator.generateSampleOutputFile();
+			rifStudySubmissionService.submitStudy(
+				validUser, 
+				emptyStudySubmission,
+				validOutputFile);
+			fail();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_RIF_JOB_SUBMISSION,
+				1);
+		}
+	}	
+	
+	
 	@Test
 	public void submitStudy_NONEXISTENT1() {
 
@@ -325,6 +481,9 @@ public class SubmitStudy extends AbstractRIFServiceTestCase {
 		}
 	}
 	
+	/**
+	 * check non-existent geography
+	 */
 	@Test
 	public void submitStudy_NONEXISTENT2() {
 		File validOutputFile = null;
@@ -340,12 +499,9 @@ public class SubmitStudy extends AbstractRIFServiceTestCase {
 			//randomly insert an empty value into the field of some
 			//object that is part of the study submission
 			
-			DiseaseMappingStudy study = (DiseaseMappingStudy) emptyStudySubmission.getStudy();
-			ComparisonArea comparisonArea
-				= study.getComparisonArea();
-			GeoLevelSelect nonExistentGeoLevelSelect
-				= cloneNonExistentGeoLevelSelect();
-			comparisonArea.setGeoLevelSelect(nonExistentGeoLevelSelect);
+			DiseaseMappingStudy study 
+				= (DiseaseMappingStudy) emptyStudySubmission.getStudy();
+			study.setGeography(cloneNonExistentGeography());
 			
 			validOutputFile
 				= sampleTestObjectGenerator.generateSampleOutputFile();
@@ -358,7 +514,7 @@ public class SubmitStudy extends AbstractRIFServiceTestCase {
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.NON_EXISTENT_GEOLEVEL_SELECT_VALUE,
+				RIFServiceError.NON_EXISTENT_GEOGRAPHY,
 				1);
 		}
 		finally {
@@ -366,6 +522,225 @@ public class SubmitStudy extends AbstractRIFServiceTestCase {
 		}		
 	}
 
+	@Test
+	/**
+	 * check whether non-existent items are being checked in study area
+	 */
+	public void submitStudy_NONEXISTENT3() {
+		File validOutputFile = null;
+		
+		try {
+			User validUser = cloneValidUser();
+			//use an example rif submission from the sample data
+			//generator we have
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
+			RIFStudySubmission emptyStudySubmission
+				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
+			//randomly insert an empty value into the field of some
+			//object that is part of the study submission
+			
+			DiseaseMappingStudy study 
+				= (DiseaseMappingStudy) emptyStudySubmission.getStudy();
+			DiseaseMappingStudyArea diseaseMappingStudyArea
+				= study.getDiseaseMappingStudyArea();
+			diseaseMappingStudyArea.setGeoLevelToMap(cloneNonExistentGeoLevelToMap());
+			
+			validOutputFile
+				= sampleTestObjectGenerator.generateSampleOutputFile();
+			rifStudySubmissionService.submitStudy(
+				validUser, 
+				emptyStudySubmission, 
+				validOutputFile);
+			fail();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_GEOLEVEL_TO_MAP_VALUE,
+				1);
+		}
+		finally {
+			validOutputFile.delete();
+		}		
+	}
+
+	
+	@Test
+	/**
+	 * check whether non-existent map areas are being checked
+	 */
+	public void submitStudy_NONEXISTENT4() {
+		File validOutputFile = null;
+		
+		try {
+			User validUser = cloneValidUser();
+			//use an example rif submission from the sample data
+			//generator we have
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
+			RIFStudySubmission emptyStudySubmission
+				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
+			//randomly insert an empty value into the field of some
+			//object that is part of the study submission
+			
+			DiseaseMappingStudy study 
+				= (DiseaseMappingStudy) emptyStudySubmission.getStudy();			
+			ComparisonArea comparisonArea
+				= study.getComparisonArea();
+			comparisonArea.addMapArea(cloneNonExistentMapArea());
+			
+			validOutputFile
+				= sampleTestObjectGenerator.generateSampleOutputFile();
+			rifStudySubmissionService.submitStudy(
+				validUser, 
+				emptyStudySubmission, 
+				validOutputFile);
+			fail();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_MAP_AREA,
+				1);
+		}
+		finally {
+			validOutputFile.delete();
+		}		
+	}
+
+	@Test
+	/**
+	 * check whether non-existent items are being checked in investigations
+	 */
+	public void submitStudy_NONEXISTENT5() {
+		File validOutputFile = null;
+		
+		try {
+			User validUser = cloneValidUser();
+			//use an example rif submission from the sample data
+			//generator we have
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
+			RIFStudySubmission emptyStudySubmission
+				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
+			//randomly insert an empty value into the field of some
+			//object that is part of the study submission
+			
+			DiseaseMappingStudy study 
+				= (DiseaseMappingStudy) emptyStudySubmission.getStudy();
+			ArrayList<Investigation> investigations
+				= study.getInvestigations();
+			Investigation firstInvestigation
+				= investigations.get(0);
+			firstInvestigation.setHealthTheme(cloneNonExistentHealthTheme());
+
+			validOutputFile
+				= sampleTestObjectGenerator.generateSampleOutputFile();
+			rifStudySubmissionService.submitStudy(
+				validUser, 
+				emptyStudySubmission, 
+				validOutputFile);
+			fail();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_HEALTH_THEME,
+				1);
+		}
+		finally {
+			validOutputFile.delete();
+		}		
+	}
+
+	@Test
+	/**
+	 * check whether non-existent project is done
+	 */
+	public void submitStudy_NONEXISTENT6() {
+		File validOutputFile = null;
+		
+		try {
+			User validUser = cloneValidUser();
+			//use an example rif submission from the sample data
+			//generator we have
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
+			RIFStudySubmission nonExistentStudySubmission
+				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
+			//randomly insert an empty value into the field of some
+			//object that is part of the study submission
+			
+			nonExistentStudySubmission.setProject(cloneNonExistentProject());
+
+			validOutputFile
+				= sampleTestObjectGenerator.generateSampleOutputFile();
+			if (validOutputFile == null) {
+				System.out.println("Valid output file is NULL");
+			}
+			rifStudySubmissionService.submitStudy(
+				validUser, 
+				nonExistentStudySubmission, 
+				validOutputFile);
+			fail();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_PROJECT,
+				1);
+		}
+		finally {
+			validOutputFile.delete();
+		}		
+	}
+
+
+	@Test
+	/**
+	 * check whether non-existent calculation method is done
+	 */
+	public void submitStudy_NONEXISTENT7() {
+		File validOutputFile = null;
+		
+		try {
+			User validUser = cloneValidUser();
+			//use an example rif submission from the sample data
+			//generator we have
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
+			RIFStudySubmission nonExistentStudySubmission
+				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
+			//randomly insert an empty value into the field of some
+			//object that is part of the study submission
+			nonExistentStudySubmission.addCalculationMethod(cloneNonExistentCalculationMethod());
+
+			validOutputFile
+				= sampleTestObjectGenerator.generateSampleOutputFile();
+			rifStudySubmissionService.submitStudy(
+				validUser, 
+				nonExistentStudySubmission, 
+				validOutputFile);
+			fail();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.NON_EXISTENT_CALCULATION_METHOD,
+				1);
+		}
+		finally {
+			validOutputFile.delete();
+		}		
+	}
+	
+	
+	
+	
+	/**
+	 * ensure malicious user checked
+	 */
 	@Test
 	public void submitStudy_MALICIOUS1() {
 
@@ -378,14 +753,14 @@ public class SubmitStudy extends AbstractRIFServiceTestCase {
 			//generator we have
 			SampleTestObjectGenerator sampleTestObjectGenerator
 				= new SampleTestObjectGenerator();
-			RIFStudySubmission studySubmission
+			RIFStudySubmission validStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			validOutputFile
 				= sampleTestObjectGenerator.generateSampleOutputFile();
 
 			rifStudySubmissionService.submitStudy(
 				maliciousUser, 
-				studySubmission, 
+				validStudySubmission, 
 				validOutputFile);
 			fail();
 		}
@@ -399,8 +774,11 @@ public class SubmitStudy extends AbstractRIFServiceTestCase {
 			validOutputFile.delete();
 		}
 	}
-	
+
 	@Test
+	/**
+	 * ensure malicious code checks are happening in the Project object
+	 */
 	public void submitStudy_MALICIOUS2() {
 
 		File validOutputFile = null;
@@ -413,14 +791,170 @@ public class SubmitStudy extends AbstractRIFServiceTestCase {
 				= new SampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
-			//randomly insert an empty value into the field of some
-			//object that is part of the study submission
+			maliciousStudySubmission.setProject(cloneMaliciousProject());
 			
-			DiseaseMappingStudy study 
-				= (DiseaseMappingStudy) maliciousStudySubmission.getStudy();
-			ComparisonArea comparisonArea = study.getComparisonArea();
-			comparisonArea.setGeoLevelSelect(cloneMaliciousGeoLevelSelect());
+			validOutputFile
+				= sampleTestObjectGenerator.generateSampleOutputFile();
+			rifStudySubmissionService.submitStudy(
+				validUser, 
+				maliciousStudySubmission, 
+				validOutputFile);
+			fail();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}
+		finally {
+			validOutputFile.delete();
+		}
+	}
+	
+	@Test
+	/**
+	 * ensure malicious code checks are happening in the Comparison Area
+	 */
+	public void submitStudy_MALICIOUS3() {
 
+		File validOutputFile = null;
+		
+		try {
+			User validUser = cloneValidUser();
+			//use an example rif submission from the sample data
+			//generator we have
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
+			RIFStudySubmission maliciousStudySubmission
+				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
+			DiseaseMappingStudy diseaseMappingStudy 
+				= (DiseaseMappingStudy) maliciousStudySubmission.getStudy();
+			ComparisonArea comparisonArea
+				= diseaseMappingStudy.getComparisonArea();
+			comparisonArea.addMapArea(cloneMaliciousMapArea());
+					
+			validOutputFile
+				= sampleTestObjectGenerator.generateSampleOutputFile();
+			rifStudySubmissionService.submitStudy(
+				validUser, 
+				maliciousStudySubmission, 
+				validOutputFile);
+			fail();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}
+		finally {
+			validOutputFile.delete();
+		}
+	}
+
+	@Test
+	/**
+	 * ensure malicious code checks are happening in the Study Area
+	 */
+	public void submitStudy_MALICIOUS4() {
+
+		File validOutputFile = null;
+		
+		try {
+			User validUser = cloneValidUser();
+			//use an example rif submission from the sample data
+			//generator we have
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
+			RIFStudySubmission maliciousStudySubmission
+				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
+			DiseaseMappingStudy diseaseMappingStudy 
+				= (DiseaseMappingStudy) maliciousStudySubmission.getStudy();
+			DiseaseMappingStudyArea diseaseMappingStudyArea
+				= diseaseMappingStudy.getDiseaseMappingStudyArea();
+			diseaseMappingStudyArea.setGeoLevelSelect(cloneMaliciousGeoLevelSelect());
+					
+			validOutputFile
+				= sampleTestObjectGenerator.generateSampleOutputFile();
+			rifStudySubmissionService.submitStudy(
+				validUser, 
+				maliciousStudySubmission, 
+				validOutputFile);
+			fail();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}
+		finally {
+			validOutputFile.delete();
+		}
+	}
+	
+	@Test
+	/**
+	 * ensure malicious code checks are happening in the Investigation
+	 */
+	public void submitStudy_MALICIOUS5() {
+
+		File validOutputFile = null;
+		
+		try {
+			User validUser = cloneValidUser();
+			//use an example rif submission from the sample data
+			//generator we have
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
+			RIFStudySubmission maliciousStudySubmission
+				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
+			DiseaseMappingStudy diseaseMappingStudy 
+				= (DiseaseMappingStudy) maliciousStudySubmission.getStudy();
+			ArrayList<Investigation> investigations
+				= diseaseMappingStudy.getInvestigations();
+			Investigation firstInvestigation
+				= investigations.get(0);
+			firstInvestigation.addHealthCode(cloneMaliciousHealthCode());
+			
+			validOutputFile
+				= sampleTestObjectGenerator.generateSampleOutputFile();
+			rifStudySubmissionService.submitStudy(
+				validUser, 
+				maliciousStudySubmission, 
+				validOutputFile);
+			fail();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}
+		finally {
+			validOutputFile.delete();
+		}
+	}
+	
+	@Test
+	/**
+	 * ensure malicious code checks are happening in the Calculation Methods
+	 */
+	public void submitStudy_MALICIOUS6() {
+
+		File validOutputFile = null;
+		
+		try {
+			User validUser = cloneValidUser();
+			//use an example rif submission from the sample data
+			//generator we have
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
+			RIFStudySubmission maliciousStudySubmission
+				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
+			maliciousStudySubmission.addCalculationMethod(cloneMaliciousCalculationMethod());
+			
 			validOutputFile
 				= sampleTestObjectGenerator.generateSampleOutputFile();
 			rifStudySubmissionService.submitStudy(

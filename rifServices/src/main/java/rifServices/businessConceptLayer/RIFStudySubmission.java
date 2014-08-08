@@ -2,7 +2,6 @@
 package rifServices.businessConceptLayer;
 
 import rifServices.businessConceptLayer.AbstractStudy;
-
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.RIFOutputOption;
@@ -93,9 +92,6 @@ public final class RIFStudySubmission
 	/** The job submission time. */
 	private Date jobSubmissionTime;
 	
-	/** The user. */
-	private User user;
-	
 	/** The project. */
 	private Project project;
 	
@@ -116,7 +112,6 @@ public final class RIFStudySubmission
  	*/
 	private RIFStudySubmission() {
     	jobSubmissionTime = new Date();
-    	user = User.newInstance("", "");
     	project = Project.newInstance();
     	study = DiseaseMappingStudy.newInstance();
 		calculationMethods = new ArrayList<CalculationMethod>();
@@ -148,9 +143,6 @@ public final class RIFStudySubmission
     	
     	RIFStudySubmission cloneRIFStudySubmission = new RIFStudySubmission();
 
-    	User originalUser = originalRIFStudySubmission.getUser();
-    	User cloneUser = User.createCopy(originalUser);
-    	cloneRIFStudySubmission.setUser(cloneUser);
     	
     	Date originalJobSubmissionTime
     		= originalRIFStudySubmission.getJobSubmissionTime();
@@ -311,26 +303,8 @@ public final class RIFStudySubmission
 		this.rifOutputOptions = rifOutputOptions;
 	}
 	
-	/**
-	 * Gets the user.
-	 *
-	 * @return the user
-	 */
-	public User getUser() {
-		
-		return user;
-	}
-	
-	/**
-	 * Sets the user.
-	 *
-	 * @param user the new user
-	 */
-	public void setUser(
-		final User user) {
 
-		this.user = user;
-	}
+
 	
 	/**
 	 * Gets the job submission time.
@@ -426,7 +400,6 @@ public final class RIFStudySubmission
 
 		super.checkSecurityViolations();
 		
-		user.checkSecurityViolations();	
 		project.checkSecurityViolations();
 		
 		//For now we only have disease mapping studies
@@ -440,9 +413,6 @@ public final class RIFStudySubmission
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
 	public void checkErrors() 
 		throws RIFServiceException {	
 		
@@ -450,24 +420,6 @@ public final class RIFStudySubmission
 		
 		String recordType = getRecordType();
 		
-		if (user == null) {
-			String userFieldName
-				= RIFServiceMessages.getMessage("user.label");
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"general.validation.emptyRequiredRecordField", 
-					recordType,
-					userFieldName);
-			errorMessages.add(errorMessage);			
-		}
-		else {		
-			try {
-				user.checkErrors();
-			}
-			catch(RIFServiceException rifServiceException) {
-				errorMessages.addAll(rifServiceException.getErrorMessages());			
-			}
-		}
 		if (study == null) {
 			String studyFieldName
 				= RIFServiceMessages.getMessage("diseaseMappingStudy.label");
@@ -489,27 +441,63 @@ public final class RIFStudySubmission
 			}
 		}
 
-		HashSet<String> uniqueCalculationMethodNames = new HashSet<String>();
-		
-		for (CalculationMethod calculationMethod : calculationMethods) {
-			try {
-				String displayName = calculationMethod.getDisplayName();
-				if (uniqueCalculationMethodNames.contains(displayName) == true) {
-					String errorMessage
-						= RIFServiceMessages.getMessage("rifJobSubmission.error.duplicateCalculationMethod", 
-							displayName);
-					errorMessages.add(errorMessage);
-				}
-				else {
-					uniqueCalculationMethodNames.add(displayName);
-				}
-				calculationMethod.checkErrors();				
-			}
-			catch(RIFServiceException rifServiceException) {
-				errorMessages.addAll(rifServiceException.getErrorMessages());				
-			}
+		if (calculationMethods == null) {
+			String ageBandsFieldName
+				= RIFServiceMessages.getMessage("calculationMethod.label.plural");
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField",
+					recordType,
+					ageBandsFieldName);
+			errorMessages.add(errorMessage);
 		}
 
+		boolean calculationMethodsAllNonNull = true;
+		for (CalculationMethod calculationMethod : calculationMethods) {
+			if (calculationMethod == null) {
+				String calculationMethodRecordType
+					= RIFServiceMessages.getMessage("calculationMethod.label");
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"general.validation.nullListItem",
+						getRecordType(),
+						calculationMethodRecordType);
+				errorMessages.add(errorMessage);	
+				calculationMethodsAllNonNull = false;
+			}
+			else {
+				try {
+					calculationMethod.checkErrors();
+				}
+				catch(RIFServiceException rifServiceException) {
+					errorMessages.addAll(errorMessages);
+				}
+			}
+		}
+		
+		if (calculationMethodsAllNonNull == true) {
+			HashSet<String> uniqueCalculationMethodNames = new HashSet<String>();
+			for (CalculationMethod calculationMethod : calculationMethods) {
+				try {
+					String displayName = calculationMethod.getDisplayName();
+					if (uniqueCalculationMethodNames.contains(displayName) == true) {
+						String errorMessage
+							= RIFServiceMessages.getMessage(
+								"rifJobSubmission.error.duplicateCalculationMethod", 
+								displayName);
+						errorMessages.add(errorMessage);
+					}
+					else {
+						uniqueCalculationMethodNames.add(displayName);
+					}
+					calculationMethod.checkErrors();				
+				}
+				catch(RIFServiceException rifServiceException) {
+					errorMessages.addAll(rifServiceException.getErrorMessages());				
+				}
+			}
+		}
+		
 		if (rifOutputOptions == null) {
 			String rifOutputOptionsFieldName
 				= RIFServiceMessages.getMessage("rifOutputOption.plural.label");
@@ -531,16 +519,29 @@ public final class RIFStudySubmission
 				= new ArrayList<RIFOutputOption>();
 		
 			for (RIFOutputOption rifOutputOption : rifOutputOptions) {
-				if (uniqueRIFOutputOptions.contains(rifOutputOption) == true) {
+				if (rifOutputOption == null) {
+					String covariateRecordType
+						= RIFServiceMessages.getMessage("rifOutputOption.label");
 					String errorMessage
 						= RIFServiceMessages.getMessage(
-							"rifJobSubmission.error.duplicateOutputOption", 
-							rifOutputOption.getName());
+							"general.validation.nullListItem",
+							getRecordType(),
+							covariateRecordType);
 					errorMessages.add(errorMessage);
 				}
 				else {
-					uniqueRIFOutputOptions.add(rifOutputOption);
+					if (uniqueRIFOutputOptions.contains(rifOutputOption) == true) {
+						String errorMessage
+							= RIFServiceMessages.getMessage(
+								"rifJobSubmission.error.duplicateOutputOption", 
+								rifOutputOption.getName());
+						errorMessages.add(errorMessage);
+					}
+					else {
+						uniqueRIFOutputOptions.add(rifOutputOption);
+					}
 				}
+
 			}	
 		}
 		

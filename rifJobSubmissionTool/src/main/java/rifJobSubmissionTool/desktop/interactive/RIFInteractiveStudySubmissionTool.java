@@ -190,7 +190,6 @@ public class RIFInteractiveStudySubmissionTool
 		rifActivityStateMachine.addObserver(this);
 
 		currentRIFJobSubmission = RIFStudySubmission.newInstance();
-		currentRIFJobSubmission.setUser(rifSession.getUser());
 		rifSession.setCurrentRIFSubmission(currentRIFJobSubmission);
 		
 		String titleText

@@ -2,7 +2,6 @@ package rifServices.businessConceptLayer;
 
 
 import rifServices.system.RIFServiceError;
-
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceSecurityException;
@@ -919,10 +918,7 @@ public class Investigation
 		
 	}
 	
-	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors() 
 		throws RIFServiceException {
 		
@@ -1014,12 +1010,25 @@ public class Investigation
 		}
 		else {
 			for (HealthCode healthCode : healthCodes) {
-				try {
-					healthCode.checkErrors();
+				if (healthCode == null) {
+					String healthCodeRecordType
+						= RIFServiceMessages.getMessage("healthCode.label");
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"general.validation.nullListItem",
+							getRecordType(),
+							healthCodeRecordType);
+					errorMessages.add(errorMessage);
 				}
-				catch(RIFServiceException rifServiceException) {
-					errorMessages.addAll(rifServiceException.getErrorMessages());					
+				else {
+					try {
+						healthCode.checkErrors();
+					}
+					catch(RIFServiceException rifServiceException) {
+						errorMessages.addAll(rifServiceException.getErrorMessages());					
+					}
 				}
+
 			}
 		}
 		
@@ -1042,13 +1051,26 @@ public class Investigation
 			
 			boolean invalidAgeBandsDetected = false;
 			for (AgeBand ageBand : ageBands) {
-				try {
-					ageBand.checkErrors();
-				}
-				catch(RIFServiceException rifServiceException) {
-					errorMessages.addAll(rifServiceException.getErrorMessages());
+				if (ageBand == null) {
+					String ageBandRecordType
+						= RIFServiceMessages.getMessage("ageBand.label");
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"general.validation.nullListItem",
+							getRecordType(),
+							ageBandRecordType);
+					errorMessages.add(errorMessage);				
 					invalidAgeBandsDetected = true;
 				}
+				else {
+					try {
+						ageBand.checkErrors();
+					}
+					catch(RIFServiceException rifServiceException) {
+						errorMessages.addAll(rifServiceException.getErrorMessages());
+						invalidAgeBandsDetected = true;
+					}
+				}				
 			}
 			
 			//now check there are no overlapping age bands
@@ -1106,12 +1128,25 @@ public class Investigation
 		else {
 			boolean allYearIntervalsAreValid = true;
 			for (YearInterval yearInterval : yearIntervals) {
-				try {
-					yearInterval.checkErrors();					
-				}
-				catch(RIFServiceException rifServiceException) {
-					errorMessages.addAll(rifServiceException.getErrorMessages());
+				if (yearInterval == null) {
+					String yearIntervalRecordType
+						= RIFServiceMessages.getMessage("yearInterval.label");
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"general.validation.nullListItem",
+							getRecordType(),
+							yearIntervalRecordType);
+					errorMessages.add(errorMessage);
 					allYearIntervalsAreValid = false;
+				}
+				else {
+					try {
+						yearInterval.checkErrors();					
+					}
+					catch(RIFServiceException rifServiceException) {
+						errorMessages.addAll(rifServiceException.getErrorMessages());
+						allYearIntervalsAreValid = false;
+					}
 				}
 			}
 			
@@ -1164,12 +1199,25 @@ public class Investigation
 		}
 		else {
 			for (AbstractCovariate covariate : covariates) {
-				try {
-					covariate.checkErrors();
+				if (covariate == null) {
+					String covariateRecordType
+						= RIFServiceMessages.getMessage("covariate.label");
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"general.validation.nullListItem",
+							getRecordType(),
+							covariateRecordType);
+					errorMessages.add(errorMessage);
 				}
-				catch(RIFServiceException rifServiceException) {
-					errorMessages.addAll(rifServiceException.getErrorMessages());					
+				else {
+					try {
+						covariate.checkErrors();
+					}
+					catch(RIFServiceException rifServiceException) {
+						errorMessages.addAll(rifServiceException.getErrorMessages());					
+					}
 				}
+
 			}			
 		}
 

@@ -4,19 +4,7 @@ package rifServices.test.services;
 import rifServices.test.AbstractRIFTestCase;
 
 import rifServices.util.FieldValidationUtility;
-import rifServices.businessConceptLayer.BoundaryRectangle;
-import rifServices.businessConceptLayer.GeoLevelArea;
-import rifServices.businessConceptLayer.GeoLevelSelect;
-import rifServices.businessConceptLayer.GeoLevelToMap;
-import rifServices.businessConceptLayer.Geography;
-import rifServices.businessConceptLayer.HealthTheme;
-import rifServices.businessConceptLayer.MapArea;
-import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.businessConceptLayer.StudyResultRetrievalContext;
-import rifServices.businessConceptLayer.StudySummary;
-import rifServices.businessConceptLayer.User;
-import rifServices.businessConceptLayer.GeoLevelAttributeSource;
-import rifServices.businessConceptLayer.GeoLevelAttributeTheme;
+import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.TestRIFStudyRetrievalService;
 import rifServices.dataStorageLayer.TestRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.TestRIFStudySubmissionService;
@@ -24,6 +12,7 @@ import rifServices.system.RIFServiceException;
 
 import org.junit.After;
 import org.junit.Before;
+
 import java.util.ArrayList;
 /**
  *
@@ -127,8 +116,7 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 
 	
 	/** The valid sahsu geo level select value. */
-	private GeoLevelSelect validGeoLevelSelectValue;
-	
+	private GeoLevelSelect validGeoLevelSelectValue;	
 	/** The invalid geo level select value. */
 	private GeoLevelSelect emptyGeoLevelSelectValue;
 
@@ -145,6 +133,11 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 	private GeoLevelToMap emptyGeoLevelToMapValue;
 	private GeoLevelToMap nonExistentGeoLevelToMapValue;
 	private GeoLevelToMap maliciousGeoLevelToMapValue;
+		
+	private GeoLevelView validGeoLevelViewValue;
+	private GeoLevelView emptyGeoLevelViewValue;
+	private GeoLevelView nonExistentGeoLevelViewValue;
+	private GeoLevelView maliciousGeoLevelViewValue;
 		
 	private NumeratorDenominatorPair validNDPair;
 	private NumeratorDenominatorPair emptyNDPair;
@@ -199,6 +192,12 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 	private StudySummary masterEmptyStudySummary;
 	private StudySummary masterNonExistentStudySummary;
 	private StudySummary masterMaliciousStudySummary;
+
+	
+	private Project masterValidProject;
+	private Project masterEmptyProject;
+	private Project masterNonExistentProject;
+	private Project masterMaliciousProject;
 	
 	// ==========================================
 	// Section Construction
@@ -259,6 +258,15 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 		maliciousGeoLevelToMapValue
 			= GeoLevelToMap.newInstance(maliciousFieldValue);
 	
+		validGeoLevelViewValue 
+			= GeoLevelView.newInstance("LEVEL4");
+		emptyGeoLevelViewValue
+			= GeoLevelView.newInstance("");
+		nonExistentGeoLevelViewValue
+			= GeoLevelView.newInstance("non existent geolevel");
+		maliciousGeoLevelViewValue
+			= GeoLevelView.newInstance(maliciousFieldValue);
+		
 		validNDPair
 		= NumeratorDenominatorPair.newInstance(
 			"SAHSULAND_CANCER", 
@@ -401,6 +409,26 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 				fieldValidationUtility.getTestMaliciousFieldValue(), 
 				"", 
 				"");
+
+		masterValidProject 
+			= Project.newInstance(
+				"SAHSU",
+				"SAHSU Project used for all old projects on import. Disabled after import");
+		
+		masterEmptyProject 
+			= Project.newInstance(
+				"",
+				"SAHSU Project used for all old projects on import. Disabled after import");
+
+		masterNonExistentProject 
+			= Project.newInstance(
+				"blah de blah",
+				"SAHSU Project used for all old projects on import. Disabled after import");
+
+		masterMaliciousProject 
+			= Project.newInstance(
+				maliciousFieldValue,
+				"SAHSU Project used for all old projects on import. Disabled after import");
 		
 		try {
 			initialiseService();
@@ -508,6 +536,25 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 		return GeoLevelToMap.createCopy(maliciousGeoLevelToMapValue);		
 	}
 
+	protected GeoLevelView cloneValidGeoLevelView() {
+		return GeoLevelView.createCopy(validGeoLevelViewValue);
+	}
+	
+	protected GeoLevelView cloneEmptyGeoLevelView() {
+		return GeoLevelView.createCopy(emptyGeoLevelViewValue);
+	}
+	
+	protected GeoLevelView cloneNonExistentGeoLevelView() {
+		return GeoLevelView.createCopy(nonExistentGeoLevelViewValue);		
+	}
+	
+	protected GeoLevelView cloneMaliciousGeoLevelView() {
+		return GeoLevelView.createCopy(maliciousGeoLevelViewValue);		
+	}
+
+	
+	
+	
 	protected GeoLevelArea cloneValidGeoLevelArea() {
 		return GeoLevelArea.createCopy(validGeoLevelAreaValue);
 	}
@@ -672,6 +719,21 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 		return StudySummary.createCopy(masterMaliciousStudySummary);
 	}
 
+	protected Project cloneValidProject() {
+		return Project.createCopy(masterValidProject);
+	}
+	
+	protected Project cloneEmptyProject() {
+		return Project.createCopy(masterEmptyProject);
+	}
+	
+	protected Project cloneNonExistentProject() {
+		return Project.createCopy(masterNonExistentProject);
+	}
+	
+	protected Project cloneMaliciousProject() {
+		return Project.createCopy(masterMaliciousProject);
+	}
 	
 	
 	// ==========================================

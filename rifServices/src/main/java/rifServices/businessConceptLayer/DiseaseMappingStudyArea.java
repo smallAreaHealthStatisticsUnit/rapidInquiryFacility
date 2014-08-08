@@ -201,9 +201,6 @@ private DiseaseMappingStudyArea() {
 // ==========================================
 // Section Override
 // ==========================================	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
 
 	@Override
 	public String getRecordType() {

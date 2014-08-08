@@ -81,7 +81,7 @@ public final class AgeGroup
 	// ==========================================
 	// Section Constants
 	// ==========================================
-		
+
 	/**
 	 * The Enum DisplayNameOption.
 	 */

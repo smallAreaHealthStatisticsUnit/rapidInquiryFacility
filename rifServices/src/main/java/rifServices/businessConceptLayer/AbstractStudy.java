@@ -500,11 +500,23 @@ abstract public class AbstractStudy
 		}
 		else {
 			for (Investigation investigation : investigations) {
-				try {
-					investigation.checkErrors();
+				if (investigation == null) {
+					String covariateRecordType
+						= RIFServiceMessages.getMessage("investigation.label");
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"general.validation.nullListItem",
+							getRecordType(),
+							covariateRecordType);
+					errorMessages.add(errorMessage);
 				}
-				catch(RIFServiceException exception) {
-					errorMessages.addAll(exception.getErrorMessages());			
+				else {
+					try {
+						investigation.checkErrors();
+					}
+					catch(RIFServiceException exception) {
+						errorMessages.addAll(exception.getErrorMessages());			
+					}
 				}
 			}
 			
