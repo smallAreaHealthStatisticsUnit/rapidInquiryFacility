@@ -48,8 +48,9 @@
 #
 # Parameters:
 # 1. Log file name
-# 2. Command
-# 3+. Args
+# 2. Working directory 
+# 3. Command
+# 4+. Args
 #
 # Stdout and stderr are tee to the log
 #
@@ -58,15 +59,18 @@
 
 Param(
 [string]$log,
+[string]$curdir,
 [string]$cmd
 )
 
 Write-Host "Log: $log"
-Write-Host "Command: $args"
+Write-Host "Working directory: $curdir"
+Write-Host "Command: $cmd"
+Write-Host "Arguments: $args"
 #
-# CD up one directory
+# CD to working directory
 #
-Set-Location ..
+Set-Location $curdir
 
 #
 # Clean up log files

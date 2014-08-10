@@ -44,7 +44,7 @@
 #
 # Peter Hambly, SAHSU
 #
-# Conditional environment variables
+# Conditional environment variables - can be changed to point to sahsuland by higher maskefiles
 #
 PGDATABASE?=sahsuland_dev
 DBNAME?=$(PGDATABASE)
@@ -56,7 +56,7 @@ TESTUSER?=$(USERNAME)
 WINDOWS_RUN_SCRIPT=../run.ps1
 LINUX_RUN_SCRIPT=../run.sh
 PSQL=psql
-PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -e -v testuser=$(TESTUSER)
+PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -e -P pager=off -v testuser=$(TESTUSER)
 
 #
 # List of source code
@@ -75,36 +75,55 @@ DEV_TARGETS2=$(DEV_SOURCES:.sql=)
 #
 # Phony (i.e. not a file) targets
 #
-.PHONY: all dev clean devclean $(DEV_TARGETS2)
+.PHONY: all dev clean devclean recurse $(DEV_TARGETS2)
 
 #
 # Run bash on Linux, Powershell on Windows_NT
 #
 OS?=Unknown
 ifeq ($(OS),Windows_NT)
+#
+# Windows support
+#
 RUN_SCRIPT=$(WINDOWS_RUN_SCRIPT)
+RUN=powershell -ExecutionPolicy ByPass -file $(RUN_SCRIPT)
+DELETE=powershell -ExecutionPolicy ByPass -file ../delete.ps1
+#
+# ADD Linux support
+#
 else
+#
+# Unsupported OS
+#
 $(error Unsupported OS: $(OS))
 endif
-RUN=powershell -ExecutionPolicy ByPass -file $(RUN_SCRIPT)
+
 
 #
 # Target extension depends on source, build rule
 #
 .SUFFIXES: .sql .rpt
 .sql.rpt:
-	$(RUN) $(CURDIR)/$@ $(PSQL) $(PSQL_FLAGS) -f alter_scripts\$< 
+	$(RUN) $(CURDIR)/$@ $(CURDIR)/.. $(PSQL) $(PSQL_FLAGS) -f alter_scripts\$< 
 	
 #
 # Targets
 #
+#- all: Run all completed alter scripts [DEFAULT]
 all: $(TARGETS)
+#- dev: Run all alter scripts in development
 dev: $(TARGETS) $(DEV_TARGETS)
+#- clean: Remove logs so completed scripts can be r-run
 clean: 
-	del /q $(TARGETS)
+	$(DELETE) $(TARGETS)
+#- devclean: Remove logs so alter scripts in development can be r-run 
+#-           Not normally needed as they abort.
 devclean: 
-	del /q $(TARGETS) $(DEV_TARGETS)
+	$(DELETE) $(TARGETS) $(DEV_TARGETS)
 
+# Do nothing
+recurse:
+	
 #
 # So you can type make v4_0_alter_5
 #

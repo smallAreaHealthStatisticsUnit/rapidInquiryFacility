@@ -45,30 +45,88 @@
 # Peter Hambly, SAHSU
 #
 SUBDIRS = alter_scripts
+#
+# Environment variables - set to sahsuland_dev
+#
+PGDATABASE=sahsuland_dev
+TESTUSER?=$(USERNAME)
+
+#
+# Programs and parameters
+#
+WINDOWS_RUN_SCRIPT=run.ps1
+LINUX_RUN_SCRIPT=run.sh
+PSQL=psql
+PSQL_FLAGS=-U rif40 -d $(PGDATABASE) -w -e -P pager=off -v testuser=$(TESTUSER)
 
 #
 # Phony (i.e. not a file) targets
 #
-.PHONY: subdirs $(SUBDIRS) all
+.PHONY: recurse $(SUBDIRS) all dev devclean clean sahsuland_dev patch
  
+#
+# Run bash on Linux, Powershell on Windows_NT
+#
+OS?=Unknown
+ifeq ($(OS),Windows_NT)
+#
+# Windows support
+#
+RUN_SCRIPT=$(WINDOWS_RUN_SCRIPT)
+RUN=powershell -ExecutionPolicy ByPass -file $(RUN_SCRIPT)
+DELETE=powershell -ExecutionPolicy ByPass -file delete.ps1
+#
+# ADD Linux support
+#
+else
+#
+# Unsupported OS
+#
+$(error Unsupported OS: $(OS))
+endif
+
+#
+# Target extension depends on source, build rule
+#
+.SUFFIXES: .sql .rpt
+.sql.rpt:
+	$(RUN) $@ $(CURDIR) $(PSQL) $(PSQL_FLAGS) -f $< 
+	
 #
 # Targets
 # 
+#- all: Run all completed alter scripts [DEFAULT]
 all:
 	$(MAKE) -C alter_scripts all
+
+#- patch: Run all completed alter scripts on both sahsuland_dev and sahusland	
+patch:
+	$(MAKE) -C alter_scripts clean
+	$(MAKE) -C alter_scripts all
+	$(MAKE) -C alter_scripts clean
+	$(MAKE) -C alter_scripts all PGDATABASE=sahsuland
+	
+#- sahsuland_dev: Rebuild sahsuland_dev
+sahsuland_dev: v4_0_create_sahsuland.rpt
+
+#- dev: Run all alter scripts in development
 dev:
 	$(MAKE) -C alter_scripts dev
+#- clean: Remove logs so completed scripts can be re-run
 clean:
 	$(MAKE) -C alter_scripts clean
+	$(DELETE) v4_0_create_sahsuland.rpt
+#- devclean: Remove logs so alter scripts in development can be r-run 
+#-           Not normally needed as they abort.
 devclean:
 	$(MAKE) -C alter_scripts devclean
 
 #
-# Recursive make target (runs all); not very useful
+# Recursive make target: make recurse <recursive tsrget>
 #
-subdirs: $(SUBDIRS)	
+recurse: $(SUBDIRS)	
 $(SUBDIRS):
-	echo $(MAKE) -C $@ 
+	$(MAKE) -C $@ $(MAKECMDGOALS)
 
 #
 # Eof

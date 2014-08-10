@@ -173,7 +173,7 @@ $$;
 -- PG psql code (geo processing)
 --
 \i ../PLpgsql/v4_0_rif40_geo_pkg.sql
-\i ../PLpgsql/v4_0_rif40_geo_pkg_simplification.sql
+\i ../PLpgsql/rif40_geo_pkg/v4_0_rif40_geo_pkg_simplification.sql
 
 --
 -- PG psql code (state machine and extract SQL generation)
