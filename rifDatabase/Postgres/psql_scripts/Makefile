@@ -8,7 +8,7 @@
 #
 # Description:
 #
-# Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts\alter_scripts
+# Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts
 #
 # Copyright:
 #
@@ -44,71 +44,31 @@
 #
 # Peter Hambly, SAHSU
 #
-# Conditional environment variables
-#
-PGDATABASE?=sahsuland_dev
-DBNAME?=$(PGDATABASE)
-TESTUSER?=$(USERNAME)
+SUBDIRS = alter_scripts
 
-#
-# Programs and parameters
-#
-WINDOWS_RUN_SCRIPT=../run.ps1
-LINUX_RUN_SCRIPT=../run.sh
-PSQL=psql
-PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -e -v testuser=$(TESTUSER)
-
-#
-# List of source code
-#
-SOURCES=v4_0_alter_1.sql v4_0_alter_2.sql
-# DEV_SOURCES=v4_0_alter_3.sql v4_0_alter_4.sql v4_0_alter_5.sql
-DEV_SOURCES=v4_0_alter_5.sql
-
-#
-# Derive targets from sources
-#
-TARGETS=$(SOURCES:.sql=.rpt)
-DEV_TARGETS=$(DEV_SOURCES:.sql=.rpt)
-DEV_TARGETS2=$(DEV_SOURCES:.sql=)
-	
 #
 # Phony (i.e. not a file) targets
 #
-.PHONY: all dev clean devclean $(DEV_TARGETS2)
-
-#
-# Run bash on Linux, Powershell on Windows_NT
-#
-OS?=Unknown
-ifeq ($(OS),Windows_NT)
-RUN_SCRIPT=$(WINDOWS_RUN_SCRIPT)
-else
-$(error Unsupported OS: $(OS))
-endif
-RUN=powershell -ExecutionPolicy ByPass -file $(RUN_SCRIPT)
-
-#
-# Target extension depends on source, build rule
-#
-.SUFFIXES: .sql .rpt
-.sql.rpt:
-	$(RUN) $(CURDIR)/$@ $(PSQL) $(PSQL_FLAGS) -f alter_scripts\$< 
-	
+.PHONY: subdirs $(SUBDIRS) all
+ 
 #
 # Targets
-#
-all: $(TARGETS)
-dev: $(TARGETS) $(DEV_TARGETS)
-clean: 
-	del /q $(TARGETS)
-devclean: 
-	del /q $(TARGETS) $(DEV_TARGETS)
+# 
+all:
+	$(MAKE) -C alter_scripts all
+dev:
+	$(MAKE) -C alter_scripts dev
+clean:
+	$(MAKE) -C alter_scripts clean
+devclean:
+	$(MAKE) -C alter_scripts devclean
 
 #
-# So you can type make v4_0_alter_5
+# Recursive make target (runs all); not very useful
 #
-$(DEV_TARGETS2): $(DEV_TARGETS)
+subdirs: $(SUBDIRS)	
+$(SUBDIRS):
+	echo $(MAKE) -C $@ 
 
 #
 # Eof

@@ -8,7 +8,7 @@
 #
 # Description:
 #
-# Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts\alter_scripts
+# Rapid Enquiry Facility (RIF) - Helper script to run a windows command using Powershell. 
 #
 # Copyright:
 #
@@ -44,71 +44,63 @@
 #
 # Peter Hambly, SAHSU
 #
-# Conditional environment variables
+# Helper script to run a windows command using Powershell. 
 #
-PGDATABASE?=sahsuland_dev
-DBNAME?=$(PGDATABASE)
-TESTUSER?=$(USERNAME)
+# Parameters:
+# 1. Log file name
+# 2. Command
+# 3+. Args
+#
+# Stdout and stderr are tee to the log
+#
+# Returns the exit status of the command
+#
+
+Param(
+[string]$log,
+[string]$cmd
+)
+
+Write-Host "Log: $log"
+Write-Host "Command: $args"
+#
+# CD up one directory
+#
+Set-Location ..
 
 #
-# Programs and parameters
+# Clean up log files
 #
-WINDOWS_RUN_SCRIPT=../run.ps1
-LINUX_RUN_SCRIPT=../run.sh
-PSQL=psql
-PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -e -v testuser=$(TESTUSER)
+If (Test-Path $log".err"){
+	Remove-Item $log".err" -verbose
+}
+If (Test-Path $log){
+	Remove-Item $log -verbose
+}
 
-#
-# List of source code
-#
-SOURCES=v4_0_alter_1.sql v4_0_alter_2.sql
-# DEV_SOURCES=v4_0_alter_3.sql v4_0_alter_4.sql v4_0_alter_5.sql
-DEV_SOURCES=v4_0_alter_5.sql
+Try {
+#	Invoke-expression -command "$cmd $args 2>&1 | tee $log" | Out-Null
+	$process=(Start-Process $cmd -ArgumentList $args -NoNewWindow -verbose -PassThru -Wait) 2>&1 | tee $log
+}
+Catch {
+	Write-Host "Error in Invoke-expression"
+	$error[0]
+	If (Test-Path $log){
+		rename-item -path $log -Newname $log".err" -force -verbose
+	}
+	exit 2
+}
 
-#
-# Derive targets from sources
-#
-TARGETS=$(SOURCES:.sql=.rpt)
-DEV_TARGETS=$(DEV_SOURCES:.sql=.rpt)
-DEV_TARGETS2=$(DEV_SOURCES:.sql=)
-	
-#
-# Phony (i.e. not a file) targets
-#
-.PHONY: all dev clean devclean $(DEV_TARGETS2)
-
-#
-# Run bash on Linux, Powershell on Windows_NT
-#
-OS?=Unknown
-ifeq ($(OS),Windows_NT)
-RUN_SCRIPT=$(WINDOWS_RUN_SCRIPT)
-else
-$(error Unsupported OS: $(OS))
-endif
-RUN=powershell -ExecutionPolicy ByPass -file $(RUN_SCRIPT)
-
-#
-# Target extension depends on source, build rule
-#
-.SUFFIXES: .sql .rpt
-.sql.rpt:
-	$(RUN) $(CURDIR)/$@ $(PSQL) $(PSQL_FLAGS) -f alter_scripts\$< 
-	
-#
-# Targets
-#
-all: $(TARGETS)
-dev: $(TARGETS) $(DEV_TARGETS)
-clean: 
-	del /q $(TARGETS)
-devclean: 
-	del /q $(TARGETS) $(DEV_TARGETS)
-
-#
-# So you can type make v4_0_alter_5
-#
-$(DEV_TARGETS2): $(DEV_TARGETS)
-
+if ($process.ExitCode -ne 0) {
+	Write-Host "Error in command execution"
+	$error[0]
+	sleep 1
+	rename-item -path $log -Newname $log".err" -force -verbose
+	exit 1
+}
+else {
+	Write-Host "Command $cmd ran OK."
+	exit 0
+}
 #
 # Eof

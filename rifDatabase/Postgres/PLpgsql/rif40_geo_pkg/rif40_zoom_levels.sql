@@ -155,6 +155,36 @@ Parameters:	 Latitude (default 0 - equator)
 Returns:	 Table of zoomlevel results
 Description: Displays zoom level table, calculating m/pixel and scale accurately
 
+OSM/Leaflet - Zoom Levels
+http://wiki.openstreetmap.org/wiki/Zoom_levels 
+
+SELECT * FROM rif40_geo_pkg.rif40_zoom_levels();
+ zoomlevel | latitude |    tiles     | degrees_per_tile | m_x_per_pixel_est | m_x_per_pixel | m_y_per_pixel |      scale
+-----------+----------+--------------+------------------+-------------------+---------------+---------------+------------------
+         0 |        0 |            1 |              360 |            156412 |        155497 |               | i in 591,225,112
+         1 |        0 |            4 |              180 |             78206 |         77748 |               | i in 295,612,556
+         2 |        0 |           16 |               90 |             39103 |         39136 |         39070 | i in 148,800,745
+         3 |        0 |           64 |               45 |             19552 |         19568 |         19472 | i in 74,400,373
+         4 |        0 |          256 |             22.5 |              9776 |          9784 |          9723 | i in 37,200,186
+         5 |        0 |         1024 |            11.25 |              4888 |          4892 |          4860 | i in 18,600,093
+         6 |        0 |         4096 |            5.625 |              2444 |          2446 |          2430 | i in 9,300,047
+         7 |        0 |        16384 |            2.813 |              1222 |          1223 |          1215 | i in 4,650,023
+         8 |        0 |        65536 |            1.406 |               611 |           611 |           607 | i in 2,325,012
+         9 |        0 |       262144 |            0.703 |               305 |           306 |           304 | i in 1,162,506
+        10 |        0 |      1048576 |            0.352 |               153 |           153 |           152 | i in 581,253
+        11 |        0 |      4194304 |            0.176 |                76 |            76 |            76 | i in 290,626
+        12 |        0 |     16777216 |            0.088 |                38 |            38 |            38 | i in 145,313
+        13 |        0 |     67108864 |            0.044 |                19 |            19 |            19 | i in 72,657
+        14 |        0 |    268435456 |            0.022 |               9.5 |           9.6 |           9.5 | i in 36,328
+        15 |        0 |   1073741824 |            0.011 |               4.8 |           4.8 |           4.7 | i in 18,164
+        16 |        0 |   4294967296 |            0.005 |               2.4 |           2.4 |           2.4 | i in 9,082
+        17 |        0 |  17179869184 |            0.003 |              1.19 |          1.19 |          1.19 | i in 4,541
+        18 |        0 |  68719476736 |           0.0014 |              0.60 |          0.60 |          0.59 | i in 2,271
+        19 |        0 | 274877906944 |          0.00069 |              0.30 |          0.30 |          0.30 | i in 1,135
+(20 rows)
+
+
+Time: 2.648 ms
  */
 DECLARE
 --
@@ -256,7 +286,41 @@ END;
 $func$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_geo_pkg.rif40_zoom_levels(NUMERIC) IS '';
+COMMENT ON FUNCTION rif40_geo_pkg.rif40_zoom_levels(NUMERIC) IS 'Function: 	 rif40_zoom_levels()
+Parameters:	 Latitude (default 0 - equator)
+Returns:	 Table of zoomlevel results
+Description: Displays zoom level table, calculating m/pixel and scale accurately
+
+OSM/Leaflet - Zoom Levels
+http://wiki.openstreetmap.org/wiki/Zoom_levels 
+
+SELECT * FROM rif40_geo_pkg.rif40_zoom_levels();
+ zoomlevel | latitude |    tiles     | degrees_per_tile | m_x_per_pixel_est | m_x_per_pixel | m_y_per_pixel |      scale
+-----------+----------+--------------+------------------+-------------------+---------------+---------------+------------------
+         0 |        0 |            1 |              360 |            156412 |        155497 |               | i in 591,225,112
+         1 |        0 |            4 |              180 |             78206 |         77748 |               | i in 295,612,556
+         2 |        0 |           16 |               90 |             39103 |         39136 |         39070 | i in 148,800,745
+         3 |        0 |           64 |               45 |             19552 |         19568 |         19472 | i in 74,400,373
+         4 |        0 |          256 |             22.5 |              9776 |          9784 |          9723 | i in 37,200,186
+         5 |        0 |         1024 |            11.25 |              4888 |          4892 |          4860 | i in 18,600,093
+         6 |        0 |         4096 |            5.625 |              2444 |          2446 |          2430 | i in 9,300,047
+         7 |        0 |        16384 |            2.813 |              1222 |          1223 |          1215 | i in 4,650,023
+         8 |        0 |        65536 |            1.406 |               611 |           611 |           607 | i in 2,325,012
+         9 |        0 |       262144 |            0.703 |               305 |           306 |           304 | i in 1,162,506
+        10 |        0 |      1048576 |            0.352 |               153 |           153 |           152 | i in 581,253
+        11 |        0 |      4194304 |            0.176 |                76 |            76 |            76 | i in 290,626
+        12 |        0 |     16777216 |            0.088 |                38 |            38 |            38 | i in 145,313
+        13 |        0 |     67108864 |            0.044 |                19 |            19 |            19 | i in 72,657
+        14 |        0 |    268435456 |            0.022 |               9.5 |           9.6 |           9.5 | i in 36,328
+        15 |        0 |   1073741824 |            0.011 |               4.8 |           4.8 |           4.7 | i in 18,164
+        16 |        0 |   4294967296 |            0.005 |               2.4 |           2.4 |           2.4 | i in 9,082
+        17 |        0 |  17179869184 |            0.003 |              1.19 |          1.19 |          1.19 | i in 4,541
+        18 |        0 |  68719476736 |           0.0014 |              0.60 |          0.60 |          0.59 | i in 2,271
+        19 |        0 | 274877906944 |          0.00069 |              0.30 |          0.30 |          0.30 | i in 1,135
+(20 rows)
+
+
+Time: 2.648 ms';
 GRANT EXECUTE ON FUNCTION rif40_geo_pkg.rif40_zoom_levels(NUMERIC) TO rif40;
 GRANT EXECUTE ON FUNCTION rif40_geo_pkg.rif40_zoom_levels(NUMERIC) TO rif_user;
 GRANT EXECUTE ON FUNCTION rif40_geo_pkg.rif40_zoom_levels(NUMERIC) TO rif_manager;
