@@ -1,4 +1,4 @@
-RIF.resizable = function() {
+RIF.resizable = function( studyType ) {
 
   var rightCol = function() {
     /*if($('#leftcol').width() > 500) {
@@ -14,7 +14,7 @@ RIF.resizable = function() {
     rtime: new Date( 1, 1, 2000, 12, 00, 00 ),
     timeout: false,
     delta: 200,
-
+	
     data: function() {
       $( "#data" ).resizable( {
         handles: "n",

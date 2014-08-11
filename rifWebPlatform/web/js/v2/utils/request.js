@@ -252,8 +252,21 @@
         xhr( 'getInvestigations.php' + args, myCallback, msg );
       },
 
-      getResultsSet: function( myCallback, params ) {
-        var msg = "Retrieving results data for line chart",
+      getResultsSetAvailable: function( myCallback, params ) {
+        var msg = "Retrieving results set available",
+          args = '?type=' + params[ 0 ] +
+          '&studyID=' + params[ 1 ] + '&investigationID=' + params[ 2 ];
+
+        //in case of a year selection	
+        if ( typeof params[ 3 ] !== 'undefined' ) {
+          args += '&year=' + params[ 3 ];
+        };
+
+        xhr( 'getResultsSetAvailable.php' + args, myCallback, msg, "text/csv" );
+      },
+	  
+	  getResultSet: function( myCallback, params ) {
+        var msg = "Retrieving results data for line-bivariate area chart",
           args = '?type=' + params[ 0 ] +
           '&studyID=' + params[ 1 ] + '&investigationID=' + params[ 2 ];
 
@@ -263,7 +276,7 @@
         };
 
         xhr( 'getResultsSet.php' + args, myCallback, msg, "text/csv" );
-      },
+      }
 
     };
 

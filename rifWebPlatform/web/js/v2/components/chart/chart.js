@@ -11,8 +11,9 @@ RIF.chart = ( function( settings ) {
       },
 
       updateChart: function( type, args ) {
+	    ( type === 'line_bivariate' ) ? _p.updateLine_bivariate( args ) :
         ( type === 'pyramid' ) ? _p.updatePyramid( args ) :
-          ( type === 'histogram' ) ? _p.updateHisto( args ) : 0;
+        ( type === 'histogram' ) ? _p.updateHisto( args ) : 0;
       },
 
       //conforms

@@ -3,6 +3,7 @@ RIF.chart.line_bivariate = ( function() {
   var settings = {
         element: "rr_chart",
 		id_field: "gid",
+		x_field: "x_order",
         line_field: "srr",
         line_field_color: "#8DB6CD",
         cl_field: "llsrr",
