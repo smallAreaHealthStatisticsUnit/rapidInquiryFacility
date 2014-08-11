@@ -2244,7 +2244,12 @@ Description:	Simplify geography geolevel';
 --
 -- Simplification sub-programs (now run separately)
 --
---\i  ../PLpgsql/v4_0_rif40_geo_pkg_simplification.sql
+--\i  ../PLpgsql/rif40_geo_pkg/v4_0_rif40_geo_pkg_simplification.sql
+
+-- 
+-- Zoomlevel 
+--
+\i  ../PLpgsql/rif40_geo_pkg/rif40_zoom_levels.sql
 
 CREATE OR REPLACE FUNCTION rif40_geo_pkg.add_population_to_rif40_geolevels_geometry()
 RETURNS void 
