@@ -1,6 +1,10 @@
 RIF.chart.line_bivariate = ( function() {
-
-  var settings = {
+  
+  var chart = this,
+		
+	  dat = null,	
+  
+      settings = {
         element: "rr_chart",
 		id_field: "gid",
 		x_field: "x_order",
@@ -9,32 +13,39 @@ RIF.chart.line_bivariate = ( function() {
         cl_field: "llsrr",
         cu_field: "ulsrr",
 		margin: {
-	      top: 10,
-		  right: 10,
-		  bottom: 20,
-		  left: 10
+	      top:10,
+		  right: 0,
+		  bottom: 0,
+		  left: 30
 		},
+		
 		dimensions: {
-	      width: $( '#rr_chart' ).width(),
-		  height: $( '#rr_chart' ).height()
+	      width: function(){ return $( '#rr_chart' ).width()},
+		  height: function(){ return $( '#rr_chart' ).height()}
         }
       },
-       	
-      _render = function( data ) {
-         _clear();
-         RIF.chart.line_bivariate.d3renderer( settings, d3.csv.parse(data) );
-      },
-	 
+	  
+	  _render = function( update ){
+	    _clear();
+	    RIF.chart.line_bivariate.d3renderer( settings, d3.csv.parse(data), update );
+		chart.facade.addResizableChart();
+	  },	
+	
 	  _clear = function() {
         $( '#rr_chart' ).empty();
       },
    
       _p = {
-
+	    
+        renderLineBivariate: function() {
+		   _render( true );
+       },
+	   
 	   updateLine_bivariate: function( sett ) {
           var callback = function() {
             //_setLineBivariateField( sett.field );
-            _render( this );
+			data = this;
+            _render( false );
           };
          //_p.setHistoSettings( sett );
           RIF.getResultSet( callback, [ /*type, studyId, invId /*year*/]);

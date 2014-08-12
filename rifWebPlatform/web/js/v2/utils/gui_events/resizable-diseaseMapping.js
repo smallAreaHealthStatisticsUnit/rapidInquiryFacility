@@ -16,14 +16,22 @@ RIF.resizable = function( studyType ) {
     delta: 200,
 	
     rr_chart: function() {
+	  if ( $( "#rr_chart" ).hasClass( "ui-resizable" ) ){
+			$( "#rr_chart").resizable( "destroy" );	
+	  };		
       $( "#rr_chart" ).resizable( {
         handles: "n",
         resize: function( event, ui ) {
           ui.size.width = ui.originalSize.width;
-          resizable.fire( 'resizeTable' );
+          //resizable.fire( 'resizeTable' );
+		  resizable.rtime = new Date();
+          if ( resizable.timeout === false ) {
+            resizable.timeout = true;
+            setTimeout( resizable.resizeend, resizable.delta );
+          }
         }
       } );
-    }(),
+    },
 
     leftCol: function() {
       $( "#leftcol" ).resizable( {
@@ -45,7 +53,7 @@ RIF.resizable = function( studyType ) {
         setTimeout( resizable.resizeend, resizable.delta );
       } else {
         resizable.timeout = false;
-        resizable.fire( 'resizeMap' );
+        resizable.fire( 'resizeChart', [] );
       }
     }
 

@@ -15,7 +15,11 @@ RIF.chart = ( function( settings ) {
         ( type === 'pyramid' ) ? _p.updatePyramid( args ) :
         ( type === 'histogram' ) ? _p.updateHisto( args ) : 0;
       },
-
+	  
+	  _refreshLineBivariate: function(){
+		_p.renderLineBivariate();
+	  },
+	  
       //conforms
       setEvents: function() {
         //Empty for now
