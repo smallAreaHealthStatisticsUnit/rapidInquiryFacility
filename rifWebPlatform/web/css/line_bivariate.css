@@ -1,8 +1,11 @@
 #rr_chart .axis path,
 #rr_chart  .axis line {
   fill: none;
-  stroke: #000;
+  stroke: #C1C1C1;
   shape-rendering: crispEdges;
+}
+#rr_chart  .axis .tick{
+	 fill: #919191;
 }
 
 #rr_chart  .x.axis path {
@@ -13,3 +16,15 @@
   fill: #8DB6CD;
 }
  
+ 
+ .line {
+  fill: none;
+  stroke: white;
+  stroke-width: 1.5px;
+}
+
+.brush .extent {
+stroke: #fff;
+fill-opacity: .125;
+shape-rendering: crispEdges;
+}

@@ -51,12 +51,17 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
     changeNumRows: function( nRows ) {
       //this.fire('changeNumRows', nRows);
     },
-	
-	drawLineBivariateChart: function( resultSet ){
-		this.fire('drawLineBivariateChart',  resultSet );
-	}
-	
-	
+
+    drawLineBivariateChart: function( resultSet ) {
+      this.fire( 'drawLineBivariateChart', resultSet );
+    },
+
+    drawMultipleAreaChart: function( resultSet ) {
+      this.fire( 'drawMultipleAreaCharts', resultSet );
+    }
+
+
+
 
   };
 

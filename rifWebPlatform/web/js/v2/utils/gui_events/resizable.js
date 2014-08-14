@@ -14,7 +14,7 @@ RIF.resizable = function( studyType ) {
     rtime: new Date( 1, 1, 2000, 12, 00, 00 ),
     timeout: false,
     delta: 200,
-	
+
     data: function() {
       $( "#data" ).resizable( {
         handles: "n",

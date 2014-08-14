@@ -296,41 +296,82 @@ a:hover{
 		float:right;
 	}
 	
-    /* CHARTS */
-    a#pyramidField , a#distHistoField {
-		padding: 3%;
-		font-size: 130%;
-		right: 3%;
+	
+	
+    /* Left Col */
+   div#studyLabel{
+		padding: 2%;
 		text-transform: uppercase;
-		position: absolute;
-		z-index: 1;
-		text-decoration:none;
-	}	
+		background-color: #CAE1FF;
+		margin: 0 auto; 
+	}
+	div#studyLabel h1, div#studyLabel h2{
+		text-align:right
+	}
 	
+	div#studyLabel h1{
+		font-size: 150%;
+	}
 	
-	div#pyramidField a:hover, div#distHistoField a:hover{
+	div#studyLabel h2{
+		font-size: 100%;
+	}
+	
+	div#pyramidField a:hover{
 		cursor:pointer;
 		background-color: #85e0a5;
 		font-weight:bold;
 	}
 		
-	#content #leftcol  div#pyramid{
-		height:56%;
+	#content #leftcol  div#mAreaCharts{
+		border-top : 2px solid #E3E3E3;
+		background-color: white;
 	}
 	
-	#content #leftcol  div#distHisto{
-		height:32%;
-		border-bottom: 3px solid #E3E3E3;
-		padding-bottom: 2%;
+	#content #leftcol  div#studyInfo{
+		padding-bottom: 8%;
+		margin-top:3%;
 	}
 	
-	#pyramid, #distHisto {
+	div#studyInfo ul.resultFigures{
+		width: 100%;
+		overflow:hidden
+	}
+
+	li.riskFigures ,li.studyFigures  {
+		width: 46%;
+	}
+	
+	div#studyInfo ul.resultFigures li.riskFigures{
+		float:left;
+	}
+	
+	div#studyInfo  ul.resultFigures  li.studyFigures{
+		float:right;
+		color: #B5B5B5;
+	}
+	
+	div#studyInfo ul.resultFigures li ul li{
+		border-bottom:1px solid #E3E3E3;
+		line-height:22px;
+	}
+	
+	div#studyInfo ul.resultFigures span{
+		float: right;
+		font-weight: bold;
+	}
+	
+	div#studyInfo ul  li.listHeader{
+		text-transform: uppercase;
+		border: none;
+		margin-bottom: 3px;
+	}
+
+	#mAreaCharts, #studyInfo {
 		margin-left:auto;
 		margin-right:auto;
 		width: 90%;
-	
-		margin-top: 5%;
-}
+	}
 	
 	#content #rightcol{
 		position: relative;
@@ -364,22 +405,13 @@ a:hover{
 	* Data Table
 	*
 	*/
-	#data{
-		overflow:hidden;
+	#rr_chart{
 		border: 1px solid #C1C1C1;
 		height: 20%;
 		margin-top: 1px;
+		background-color: #FFFFFF;
 }
-	
-	#data div.dataLbl{
-		background-color: #F5F5F5;
-		border-top: 1px solid #E3E3E3;
-		border-bottom: 1px solid #E3E3E3;
-		text-transform: uppercase;
-		height: 100%;
-		border-bottom: 1px solid #E3E3E3;
-		color: #B6B6B6;
-	}
+
 	/*
 	 *  Map Container
 	 */

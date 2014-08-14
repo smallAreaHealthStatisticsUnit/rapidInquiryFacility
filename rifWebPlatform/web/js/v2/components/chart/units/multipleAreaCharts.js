@@ -1,8 +1,6 @@
-RIF.chart.line_bivariate = ( function() {
+RIF.chart.multipleAreaCharts = ( function() {
 
   var chart = this,
-
-    data = null,
 
     settings = {
       element: "rr_chart",
@@ -21,38 +19,35 @@ RIF.chart.line_bivariate = ( function() {
 
       dimensions: {
         width: function() {
-          return $( '#rr_chart' ).width()
+          return $( '#mAreaCharts' ).width()
         },
         height: function() {
-          return $( '#rr_chart' ).height()
+          return $( '#mAreaCharts' ).height()
         }
       }
     },
 
     _render = function( update ) {
       _clear();
-      RIF.chart.line_bivariate.d3renderer( settings, d3.csv.parse( data ), update );
-      chart.facade.addResizableChart();
+      RIF.chart.multipleAreaCharts.d3renderer( settings, d3.csv.parse( data ), update );
+      chart.facade.multipleAreaCharts();
     },
 
     _clear = function() {
-      $( '#rr_chart' ).empty();
+      $( '#mAreaCharts' ).empty();
     },
 
     _p = {
 
-      renderLineBivariate: function() {
-        _render( true );
-      },
+      updateMultipleAreaCharts: function( sett ) {
 
-      updateLine_bivariate: function( sett ) {
+        console.log( "updateMultipleAreaCharts" )
+        return; // JUST FOR NOW 14/08/14
+
         var callback = function() {
-          //_setLineBivariateField( sett.field );
-          data = this;
           _render( false );
         };
-        //_p.setHistoSettings( sett );
-        RIF.getResultSet( callback, [ /*type, studyId, invId /*year*/] );
+        RIF.getRiskResults( callback, [ /*type, studyId, invId /*year*/] );
       }
 
     };

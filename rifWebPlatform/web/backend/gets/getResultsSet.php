@@ -1,5 +1,5 @@
 <?php
-//Retrieves fields names only of result sets available
+//Retrieves  risk and confidence interavals for the specfifc result set. (ie: RR or SMR or SMR_Adj etc)
 require('../RIF4.php');
 
 $type = $_GET['type'];

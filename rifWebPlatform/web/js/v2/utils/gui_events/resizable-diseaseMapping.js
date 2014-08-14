@@ -14,17 +14,17 @@ RIF.resizable = function( studyType ) {
     rtime: new Date( 1, 1, 2000, 12, 00, 00 ),
     timeout: false,
     delta: 200,
-	
+
     rr_chart: function() {
-	  if ( $( "#rr_chart" ).hasClass( "ui-resizable" ) ){
-			$( "#rr_chart").resizable( "destroy" );	
-	  };		
+      if ( $( "#rr_chart" ).hasClass( "ui-resizable" ) ) {
+        $( "#rr_chart" ).resizable( "destroy" );
+      };
       $( "#rr_chart" ).resizable( {
         handles: "n",
         resize: function( event, ui ) {
           ui.size.width = ui.originalSize.width;
           //resizable.fire( 'resizeTable' );
-		  resizable.rtime = new Date();
+          resizable.rtime = new Date();
           if ( resizable.timeout === false ) {
             resizable.timeout = true;
             setTimeout( resizable.resizeend, resizable.delta );
@@ -47,6 +47,20 @@ RIF.resizable = function( studyType ) {
         }
       } );
     }(),
+
+    multipleAreaCharts: function() {
+      var studyInfoHeight = $( "#studyInfo" ).outerHeight( true ),
+        studyLabelHeight = $( "#studyLabel" ).outerHeight( true ),
+        leftOverHeight = parseInt( $( "#leftcol" ).height() - ( studyInfoHeight + studyLabelHeight ) );
+      $( "#mAreaCharts" ).height( leftOverHeight - 8 );
+      $( "#mAreaCharts" ).resizable( {
+        handles: "n",
+        maxHeight: ( leftOverHeight - 8 ) + studyInfoHeight,
+        resize: function( event, ui ) {
+          ui.size.width = ui.originalSize.width;
+        }
+      } );
+    },
 
     resizeend: function() {
       if ( new Date() - resizable.rtime < resizable.delta ) {

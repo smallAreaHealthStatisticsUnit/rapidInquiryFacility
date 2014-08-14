@@ -24,25 +24,25 @@ RIF.sync = ( function( type ) {
       manager: {
         selection: [],
         uAreaSelection: function( params ) {
-            /*
-			 * Area ids are in the following format: g + id , example: "g101"
-			 * params[0]: ids
-			 * params[1]: firer
-			 */
-			var newlySlctd = params[ 0 ];
-			if ( RIF.arraysEqual( newlySlctd, _study[ type ].selection ) ) {
-			  return;
-			};
+          /*
+           * Area ids are in the following format: g + id , example: "g101"
+           * params[0]: ids
+           * params[1]: firer
+           */
+          var newlySlctd = params[ 0 ];
+          if ( RIF.arraysEqual( newlySlctd, _study[ type ].selection ) ) {
+            return;
+          };
 
-			_shared.setSelection( RIF.unique( newlySlctd ) );
+          _shared.setSelection( RIF.unique( newlySlctd ) );
 
-			if ( params[ 1 ] === 'table' ) {
-			  _study[ type ].fire( 'updateSelectionMap', _study[ type ].selection );
-			};
+          if ( params[ 1 ] === 'table' ) {
+            _study[ type ].fire( 'updateSelectionMap', _study[ type ].selection );
+          };
 
-			if ( params[ 1 ] === 'map' ) {
-			  _study[ type ].fire( 'updateSelectionTable', _study[ type ].selection );
-			};
+          if ( params[ 1 ] === 'map' ) {
+            _study[ type ].fire( 'updateSelectionTable', _study[ type ].selection );
+          };
         },
 
         chartUpdateClick: function() {
@@ -57,16 +57,16 @@ RIF.sync = ( function( type ) {
           } );
           _shared.clear();
         }
-    },
+      },
 
-    diseaseMapping: {
-	  uAreaSelection: function( params ) {
-		console.log( params );
-	  }
-	},
+      diseaseMapping: {
+        uAreaSelection: function( params ) {
+          console.log( params );
+        }
+      },
 
-    riskAnalysis: {}
-  };
+      riskAnalysis: {}
+    };
 
   return RIF.extend( _shared, _study[ type ] );
 } );

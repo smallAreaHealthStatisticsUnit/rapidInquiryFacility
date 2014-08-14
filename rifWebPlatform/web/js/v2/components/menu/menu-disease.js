@@ -29,7 +29,8 @@ RIF.menu = ( function( settings ) {
         avlbResultSet: function() {
           _p.dropDown( this, _p.resultSet );
           _p.facade.drawLineBivariateChart( this );
-		  
+          _p.facade.drawMultipleAreaChart( this );
+
         },
 
         avlbFieldsChoro: function() {

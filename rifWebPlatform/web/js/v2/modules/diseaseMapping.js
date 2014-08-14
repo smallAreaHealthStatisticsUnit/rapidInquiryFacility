@@ -26,7 +26,10 @@ RIF.diseaseMapping = ( function() {
         studyType: 'diseaseMapping',
         layerType: 'tilesvg'
       },
-      chart: { studyType: 'diseaseMapping', charts: ['line_bivariate', /*'candlestick'*/ ] },
+      chart: {
+        studyType: 'diseaseMapping',
+        charts: [ 'line_bivariate', 'multipleAreaCharts' ]
+      },
       menu: {
         studyType: 'diseaseMapping',
         menus: [ /*'export',*/ 'diseaseStudyLevel', 'choropleth' /*, 'settings' */ ]
@@ -105,19 +108,19 @@ RIF.diseaseMapping = ( function() {
         firer: [ "resizable" ],
         method: "resizeMap"
       },
-	  
-	  addResizableChart: {
+
+      addResizableChart: {
         subscribers: [ "resizable" ],
         firer: [ "chart" ],
         method: "rr_chart"
       },
 
-	 resizeChart: {
+      resizeChart: {
         subscribers: [ "chart" ],
         firer: [ "resizable" ],
         method: "refreshLineBivariate"
-      },	  
-		
+      },
+
       populateMenus: {
         subscribers: [ "menu" ],
         firer: [ "map" ],
@@ -129,11 +132,17 @@ RIF.diseaseMapping = ( function() {
         firer: [ "map" ],
         method: "getScaleRange"
       },
-	  
-	  drawLineBivariateChart: {
+
+      drawLineBivariateChart: {
         subscribers: [ "chart" ],
         firer: [ "menu" ],
         method: "updateLineBivariate"
+      },
+
+      drawMultipleAreaCharts: {
+        subscribers: [ "chart" ],
+        firer: [ "menu" ],
+        method: "updateMultipleAreaCharts"
       }
 
 

@@ -11,15 +11,16 @@ RIF.chart = ( function( settings ) {
       },
 
       updateChart: function( type, args ) {
-	    ( type === 'line_bivariate' ) ? _p.updateLine_bivariate( args ) :
-        ( type === 'pyramid' ) ? _p.updatePyramid( args ) :
-        ( type === 'histogram' ) ? _p.updateHisto( args ) : 0;
+        ( type === 'line_bivariate' ) ? _p.updateLine_bivariate( args ) :
+          ( type === 'pyramid' ) ? _p.updatePyramid( args ) :
+          ( type === 'histogram' ) ? _p.updateHisto( args ) :
+          ( type === 'multipleAreaCharts' ) ? _p.updateMultipleAreaCharts( args ) : 0;
       },
-	  
-	  _refreshLineBivariate: function(){
-		_p.renderLineBivariate();
-	  },
-	  
+
+      _refreshLineBivariate: function() {
+        _p.renderLineBivariate();
+      },
+
       //conforms
       setEvents: function() {
         //Empty for now
