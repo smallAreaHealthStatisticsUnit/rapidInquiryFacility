@@ -87,6 +87,11 @@ $$;
 \pset pager off
 
 --
+-- Start transaction
+--
+BEGIN;
+
+--
 -- Drop all objects
 --
 \i ../psql_scripts/v4_0_drop_rif40.sql
@@ -129,6 +134,49 @@ END;
 $$;
 
 --
+-- Test user account
+-- 
+\set ntestuser '''XXXX':testuser''''
+SET rif40.testuser TO :ntestuser;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR 
+		SELECT CURRENT_SETTING('rif40.testuser') AS testuser;
+	c2 CURSOR(l_usename VARCHAR) FOR 
+		SELECT * FROM pg_user WHERE usename = l_usename;
+	c1_rec RECORD;
+	c2_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+-- Test parameter
+--
+	IF c1_rec.testuser IN ('XXXX', 'XXXX:testuser') THEN
+		RAISE EXCEPTION 'db_create.sql() C209xx: No -v testuser=<test user account> parameter';	
+	ELSE
+		RAISE INFO 'db_create.sql() test user account parameter="%"', c1_rec.testuser;
+	END IF;
+--
+-- Test account exists
+--
+	OPEN c2(LOWER(SUBSTR(c1_rec.testuser, 5)));
+	FETCH c2 INTO c2_rec;
+	CLOSE c2;
+	IF c2_rec.usename IS NULL THEN
+		RAISE EXCEPTION 'db_create.sql() C209xx: User account does not exist: %', LOWER(SUBSTR(c1_rec.testuser, 5));	
+	ELSIF pg_has_role(c2_rec.usename, 'rif_user', 'MEMBER') THEN
+		RAISE INFO 'db_create.sql() user account="%" is a rif_user', c2_rec.usename;
+	ELSIF pg_has_role(c2_rec.usename, 'rif_manager', 'MEMBER') THEN
+		RAISE INFO 'db_create.sql() user account="%" is a rif manager', c2_rec.usename;
+	ELSE
+		RAISE EXCEPTION 'db_create.sql() C209xx: User account: % is not a rif_user or rif_manager', c2_rec.usename;	
+	END IF;
+--
+END;
+$$;
+--
 -- PG psql code (logging, auditing and debug)
 --
 \i ../PLpgsql/v4_0_rif40_log_pkg.sql
@@ -148,16 +196,6 @@ $$;
 -- Add DDL control views (RIF40_TABLES_AND_VIEWS, RIF40_COLUMNS , RIF40_TRIGGERS) [actually tables on postgres]
 --
 \i ../psql_scripts/create_v4_0_postgres_ddl_control_views.sql
-
---
--- Hash partition all tables with study_id as a column
---
-\i ../psql_scripts/v4_0_study_id_partitions.sql
-
---
--- Range partition all tables with year as a column
---
-\i ../psql_scripts/v4_0_year_partitions.sql
 
 --
 -- Create views
@@ -199,8 +237,9 @@ $$;
 --
 --ALTER TABLE rif40_geographies DROP CONSTRAINT rif40_geog_defcomparea_fk;
 
-\set VERBOSITY terse
-BEGIN;
+\set VERBOSITY default
+--\set
+
 --
 -- RIF40_PARAMETERS
 --
@@ -258,43 +297,14 @@ VALUES(
 'Parallelisation', 		 '4', 							'Level of Parallelisation. Only supported on Oracle; under development in PoatGres/PostGIS.');
 
 --
--- SAHSUland geolevel setup. Fully processed
---
-\i ../psql_scripts/v4_0_geolevel_setup_sahsuland.sql
-
---
--- EW01 geography test data for Kevin. It is NOT processed (i.e. not simplification, intersection etc)
---
-\i ../psql_scripts/v4_0_geolevel_setup_ew01.sql
---
--- UK91 geography test data for Kevin. It is NOT processed (i.e. not simplification, intersection etc)
---
-\i ../psql_scripts/v4_0_geolevel_setup_uk91.sql
-
---
 -- RIF40_HEALTH_STUDY_THEMES
 --
 DELETE FROM rif40_health_study_themes  WHERE theme = 'SAHSULAND';
 INSERT INTO rif40_health_study_themes(theme, description) VALUES('SAHSULAND', 'SAHSU land cancer incidence example data');
 
-COMMIT;
-
---
--- Load SAHSULAND data 
--- 
-\i ../sahsuland/v4_0_postgres_sahsuland_imports.sql
-
---
--- RIF40_PROJECTS
---
-INSERT INTO t_rif40_user_projects(project, username) VALUES ('TEST', 'peterh');
-INSERT INTO t_rif40_user_projects(project, username) VALUES ('TEST', 'keving');
-INSERT INTO t_rif40_user_projects(project, username) VALUES ('TEST', 'federicof');
-
 --
 -- RIF40_COVARIATES, RIF40_TABLES, RIF40_TABLE_OUTCOMES
 --
-BEGIN;
 DELETE FROM rif40_covariates  WHERE geography = 'SAHSU';
 INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
 SELECT 'SAHSU', 'LEVEL3', 'SES', MIN(ses), MAX(ses), 1 FROM sahsuland_covariates_level3;
@@ -322,7 +332,37 @@ DELETE FROM rif40_table_outcomes  WHERE numer_tab = 'SAHSULAND_CANCER';
 INSERT INTO rif40_table_outcomes(outcome_group_name, numer_tab, current_version_start_year)
 VALUES ('SINGLE_ICD', 'SAHSULAND_CANCER', 1993);
 
-COMMIT;
+END;
+
+\q
+
+--
+-- SAHSUland geolevel setup. Fully processed
+--
+\i ../psql_scripts/v4_0_geolevel_setup_sahsuland.sql
+
+--
+-- EW01 geography test data for Kevin. It is NOT processed (i.e. not simplification, intersection etc)
+--
+\i ../psql_scripts/v4_0_geolevel_setup_ew01.sql
+--
+-- UK91 geography test data for Kevin. It is NOT processed (i.e. not simplification, intersection etc)
+--
+\i ../psql_scripts/v4_0_geolevel_setup_uk91.sql
+
+--
+-- Load SAHSULAND data 
+-- 
+\i ../sahsuland/v4_0_postgres_sahsuland_imports.sql
+
+\q
+--
+-- RIF40_PROJECTS (fix to real users list)
+--
+INSERT INTO t_rif40_user_projects(project, username) VALUES ('TEST', 'peterh');
+INSERT INTO t_rif40_user_projects(project, username) VALUES ('TEST', 'keving');
+INSERT INTO t_rif40_user_projects(project, username) VALUES ('TEST', 'federicof');
+
 \set VERBOSITY default
 
 --
@@ -480,14 +520,19 @@ SELECT 'TABLE' AS table_or_view, table_name AS table_or_view_name
 SELECT rif40_sm_pkg.cleanup_orphaned_extract_and_map_tables(TRUE /* Truncate */);
 
 --
+-- Connect as testuser
+--
+\c sahsuland_dev :testuser
+--
+-- Test in a single transaction  
+--
 -- Initialise user
 --
-\c sahsuland_dev pch
 \i ../psql_scripts/v4_0_user.sql      
 --
 -- Test user access
 --
-\c sahsuland_dev pch
+\c sahsuland_dev :testuser
 \i ../psql_scripts/v4_0_sahsuland_examples.sql      
 
 --

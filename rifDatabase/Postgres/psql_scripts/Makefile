@@ -106,9 +106,11 @@ patch:
 	$(MAKE) -C alter_scripts clean
 	$(MAKE) -C alter_scripts all PGDATABASE=sahsuland
 	
-#- sahsuland_dev: Rebuild sahsuland_dev
-sahsuland_dev: v4_0_create_sahsuland.rpt
-
+#- sahsuland_dev: Rebuild sahsuland_dev, then patch dev only
+sahsuland_dev: clean v4_0_create_sahsuland.rpt
+	$(MAKE) -C alter_scripts clean
+#	$(MAKE) -C alter_scripts all
+	
 #- dev: Run all alter scripts in development
 dev:
 	$(MAKE) -C alter_scripts dev

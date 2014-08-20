@@ -68,14 +68,14 @@ END;
 $$;
 --
 \set ON_ERROR_STOP Off
-DROP TRIGGER trg_rif40_parameters ON rif40_parameters;
-DROP FUNCTION rif40_trg_pkg.trgf_rif40_parameters();
+DROP TRIGGER IF EXISTS trg_rif40_parameters ON rif40_parameters;
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_parameters();
 
 \set ON_ERROR_STOP ON
 \echo Creating PG psql code (INSTEAD OF triggers for views with USERNAME as a column)...
 
-\i ../PLpgsql/rif40_trg_pkg/create_instead_of_triffers.sql
-\i ../PLpgsql/rif40_trg_pkg/drop_instead_of_triffers.sql
+\i ../PLpgsql/rif40_trg_pkg/create_instead_of_triggers.sql
+\i ../PLpgsql/rif40_trg_pkg/drop_instead_of_triggers.sql
 
 CREATE OR REPLACE FUNCTION rif40_trg_pkg.rif40_db_name_check(column_name VARCHAR, value VARCHAR) 
 RETURNS void

@@ -1,83 +1,16 @@
 DO
 DO
+BEGIN
 DO
 DO
- drop_rif40_geolevels_geometry_tables 
---------------------------------------
- 
-(1 row)
-
- drop_rif40_geolevels_lookup_tables 
-------------------------------------
- 
-(1 row)
-
- drop_instead_of_triggers 
---------------------------
- 
-(1 row)
-
- rif40_drop_table_triggers 
----------------------------
- 
-(1 row)
-
-DROP TYPE
-DROP TYPE
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP FUNCTION
-DROP TRIGGER
-DROP FUNCTION
-DROP VIEW
-DROP VIEW
-DROP VIEW
-DROP VIEW
-DROP VIEW
-DROP VIEW
-DROP VIEW
-DROP VIEW
-DROP VIEW
-DROP VIEW
-DROP VIEW
-DROP VIEW
-DROP VIEW
-DROP VIEW
-ALTER TABLE
-ALTER TABLE
-ALTER TABLE
-DROP TABLE
-DROP TABLE
-DROP TABLE
-DROP TABLE
-DROP TABLE
-DROP TABLE
-DROP TABLE
-DROP TABLE
-DROP TABLE
+DROP SEQUENCE
+DROP SEQUENCE
+DO
+DO
+DO
+DO
+DO
+DO
 DROP TABLE
 DROP TABLE
 DROP TABLE
@@ -117,6 +50,9 @@ DROP TABLE
 DROP TABLE
 DROP SEQUENCE
 DROP SEQUENCE
+DO
+DO
+DO
 DROP TYPE
 DROP TYPE
 DROP FUNCTION
@@ -146,6 +82,29 @@ DROP FUNCTION
 DROP FUNCTION
 DROP FUNCTION
 DROP FUNCTION
+DO
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP TYPE
+DROP TYPE
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DO
+DO
 DROP FUNCTION
 DROP FUNCTION
 DROP FUNCTION
@@ -172,15 +131,107 @@ DROP FUNCTION
 DROP FUNCTION
 DROP FUNCTION
 DROP FUNCTION
-DROP VIEW
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
 DROP TABLE
 DROP TABLE
 DROP VIEW
+DROP VIEW
+DROP VIEW
+DROP VIEW
+DROP VIEW
+DROP VIEW
+DROP VIEW
+DROP VIEW
+DROP VIEW
+DROP VIEW
+DROP VIEW
+DROP VIEW
+DROP VIEW
+DROP VIEW
+DROP VIEW
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP VIEW
+DROP VIEW
+DROP VIEW
 DO
 DO
 DO
 DO
+SET
 DO
+DO
+DROP TYPE
+DROP TYPE
 CREATE TYPE
 CREATE TYPE
 COMMENT
@@ -376,6 +427,7 @@ GRANT
 
 DO
 DO
+DROP FUNCTION
 CREATE VIEW
 COMMENT
 COMMENT
@@ -403,14 +455,6 @@ COMMENT
     Schema     |            Name            | Result data type | Argument data types |  Type  
 ---------------+----------------------------+------------------+---------------------+--------
  rif40_sql_pkg | is_rif40_manager_or_schema | boolean          |                     | normal
-(1 row)
-
-CREATE FUNCTION
-COMMENT
-                                List of functions
-    Schema     |     Name      | Result data type | Argument data types |  Type  
----------------+---------------+------------------+---------------------+--------
- rif40_sql_pkg | rif40_startup | void             |                     | normal
 (1 row)
 
 CREATE FUNCTION
@@ -495,25 +539,6 @@ COMMENT
 
 CREATE FUNCTION
 COMMENT
-                                          List of functions
-    Schema     |        Name        |     Result data type     |    Argument data types     |  Type  
----------------+--------------------+--------------------------+----------------------------+--------
- rif40_sql_pkg | _rif40_explain_ddl | TABLE(explain_line text) | sql_stmt character varying | normal
-(1 row)
-
-CREATE FUNCTION
-COMMENT
-CREATE FUNCTION
-COMMENT
-                                  List of functions
-    Schema     |   Name    | Result data type |     Argument data types      |  Type  
----------------+-----------+------------------+------------------------------+--------
- rif40_sql_pkg | rif40_ddl | integer          | sql_stmt character varying   | normal
- rif40_sql_pkg | rif40_ddl | integer          | sql_stmt character varying[] | normal
-(2 rows)
-
-CREATE FUNCTION
-COMMENT
                                                   List of functions
     Schema     |    Name     | Result data type  |                   Argument data types                    |  Type  
 ---------------+-------------+-------------------+----------------------------------------------------------+--------
@@ -530,9 +555,9 @@ COMMENT
  rif40
 (1 row)
 
-        sys_context        
----------------------------
- 2056.2456750.60778.026000
+        sys_context         
+----------------------------
+ 20432.2456890.45244.041000
 (1 row)
 
 CREATE FUNCTION
@@ -557,12 +582,71 @@ COMMENT
  f
 (1 row)
 
+DO
+CREATE FUNCTION
+COMMENT
+DO
+CREATE FUNCTION
+COMMENT
+                                          List of functions
+    Schema     |        Name        |     Result data type     |    Argument data types     |  Type  
+---------------+--------------------+--------------------------+----------------------------+--------
+ rif40_sql_pkg | _rif40_explain_ddl | TABLE(explain_line text) | sql_stmt character varying | normal
+(1 row)
+
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+                                  List of functions
+    Schema     |   Name    | Result data type |     Argument data types      |  Type  
+---------------+-----------+------------------+------------------------------+--------
+ rif40_sql_pkg | rif40_ddl | integer          | sql_stmt character varying   | normal
+ rif40_sql_pkg | rif40_ddl | integer          | sql_stmt character varying[] | normal
+(2 rows)
+
+DO
 CREATE FUNCTION
 COMMENT
 CREATE FUNCTION
 COMMENT
 CREATE FUNCTION
 COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+DO
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+DO
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+DO
+CREATE FUNCTION
+COMMENT
+                                List of functions
+    Schema     |     Name      | Result data type | Argument data types |  Type  
+---------------+---------------+------------------+---------------------+--------
+ rif40_sql_pkg | rif40_startup | void             |                     | normal
+(1 row)
+
 GRANT
 GRANT
 GRANT
@@ -840,10 +924,6 @@ CREATE TABLE
 GRANT
 DO
 DO
-DO
-DO
-DO
-DO
 CREATE VIEW
 CREATE VIEW
 CREATE VIEW
@@ -1271,35 +1351,37 @@ CREATE FUNCTION
 COMMENT
 CREATE FUNCTION
 COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE FUNCTION
-COMMENT
+DO
 CREATE FUNCTION
 COMMENT
 GRANT
 GRANT
 GRANT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+DROP FUNCTION
+CREATE FUNCTION
+COMMENT
 GRANT
 GRANT
 GRANT
@@ -1397,23 +1479,29 @@ COMMENT
 CREATE FUNCTION
 COMMENT
 DO
+DO
+CREATE FUNCTION
+COMMENT
+GRANT
+DO
+CREATE FUNCTION
+GRANT
+GRANT
+GRANT
+COMMENT
+DO
 CREATE FUNCTION
 GRANT
 COMMENT
-CREATE FUNCTION
-GRANT
-GRANT
-GRANT
-COMMENT
+DO
 CREATE FUNCTION
 GRANT
 COMMENT
+DO
 CREATE FUNCTION
 GRANT
 COMMENT
-CREATE FUNCTION
-GRANT
-COMMENT
+DO
 CREATE FUNCTION
 GRANT
 COMMENT
@@ -1452,650 +1540,13 @@ CREATE FUNCTION
 COMMENT
 GRANT
 GRANT
-DO
-CREATE FUNCTION
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE FUNCTION
-COMMENT
-                                                                                                             List of functions
-    Schema     |           Name            | Result data type |                                                                        Argument data types                                                                         |  Type  
----------------+---------------------------+------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------
- rif40_trg_pkg | rif40_sql_injection_check | void             | table_name character varying, study_id character varying, inv_id character varying, line_number character varying, name character varying, value character varying | normal
-(1 row)
-
-GRANT
-GRANT
-CREATE FUNCTION
-COMMENT
-                                      List of functions
-    Schema     |           Name            | Result data type | Argument data types |  Type  
----------------+---------------------------+------------------+---------------------+--------
- rif40_trg_pkg | rif40_drop_table_triggers | void             |                     | normal
-(1 row)
-
-GRANT
-                                                    List of functions
-    Schema     |        Name         | Result data type |                  Argument data types                   |  Type  
----------------+---------------------+------------------+--------------------------------------------------------+--------
- rif40_trg_pkg | rif40_db_name_check | void             | column_name character varying, value character varying | normal
-(1 row)
-
-GRANT
-GRANT
-                                      List of functions
-    Schema     |            Name            | Result data type | Argument data types |  Type  
----------------+----------------------------+------------------+---------------------+--------
- rif40_trg_pkg | create_instead_of_triggers | void             |                     | normal
-(1 row)
-
-GRANT
-                                     List of functions
-    Schema     |           Name           | Result data type | Argument data types |  Type  
----------------+--------------------------+------------------+---------------------+--------
- rif40_trg_pkg | drop_instead_of_triggers | void             |                     | normal
-(1 row)
-
-GRANT
-CREATE FUNCTION
-COMMENT
-                       List of functions
- Schema | Name | Result data type | Argument data types | Type 
---------+------+------------------+---------------------+------
-(0 rows)
-
-GRANT
-GRANT
-DO
-                                                                                 View "rif40.rif40_comparison_areas"
-  Column  |          Type          | Modifiers | Storage  |                                                                Description                                                                
-----------+------------------------+-----------+----------+-------------------------------------------------------------------------------------------------------------------------------------------
- username | character varying(90)  |           | extended | Username
- study_id | integer                |           | plain    | Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq
- area_id  | character varying(300) |           | extended | An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE
-View definition:
- SELECT c.username,
-    c.study_id,
-    c.area_id
-   FROM t_rif40_comparison_areas c
-   LEFT JOIN rif40_study_shares s ON c.study_id = s.study_id AND s.grantee_username::name = "current_user"()
-  WHERE c.username::name = "current_user"() OR 'RIF_MANAGER'::text = (( SELECT user_role_privs.granted_role
-      FROM user_role_privs
-     WHERE user_role_privs.granted_role = 'RIF_MANAGER'::text)) OR s.grantee_username IS NOT NULL AND s.grantee_username::text <> ''::text
-  ORDER BY c.username;
-Triggers:
-    trg_rif40_comparison_areas INSTEAD OF INSERT OR DELETE OR UPDATE ON rif40_comparison_areas FOR EACH ROW EXECUTE PROCEDURE rif40_trg_pkg.trgf_rif40_comparison_areas()
-
-                       List of functions
- Schema | Name | Result data type | Argument data types | Type 
---------+------+------------------+---------------------+------
-(0 rows)
-
-                                       List of functions
-    Schema     |            Name             | Result data type | Argument data types |  Type   
----------------+-----------------------------+------------------+---------------------+---------
- rif40_trg_pkg | trgf_rif40_comparison_areas | trigger          |                     | trigger
-(1 row)
-
-                                                                                        Object descriptions
- Schema |            Name            | Object  |                                                                    Description                                                                    
---------+----------------------------+---------+---------------------------------------------------------------------------------------------------------------------------------------------------
- rif40  | trg_rif40_comparison_areas | trigger | INSTEAD OF trigger for view T_RIF40_COMPARISON_AREAS to allow INSERT/UPDATE/DELETE. INSERT/UPDATE/DELETE of another users data is NOT permitted. +
-        |                            |         |  [NO TABLE/VIEW comments available]
-(1 row)
-
-         Object descriptions
- Schema | Name | Object | Description 
---------+------+--------+-------------
-(0 rows)
-
-         Object descriptions
- Schema | Name | Object | Description 
---------+------+--------+-------------
-(0 rows)
-
-        tablename         |        viewname        |        trigger_name        
---------------------------+------------------------+----------------------------
- t_rif40_comparison_areas | rif40_comparison_areas | trg_rif40_comparison_areas
- t_rif40_contextual_stats | rif40_contextual_stats | trg_rif40_contextual_stats
- t_rif40_fdw_tables       | rif40_fdw_tables       | trg_rif40_fdw_tables
- t_rif40_inv_conditions   | rif40_inv_conditions   | trg_rif40_inv_conditions
- t_rif40_inv_covariates   | rif40_inv_covariates   | trg_rif40_inv_covariates
- t_rif40_investigations   | rif40_investigations   | trg_rif40_investigations
- t_rif40_parameters       | rif40_parameters       | 
- t_rif40_results          | rif40_results          | trg_rif40_results
- t_rif40_studies          | rif40_studies          | trg_rif40_studies
- t_rif40_study_areas      | rif40_study_areas      | trg_rif40_study_areas
- t_rif40_study_sql        | rif40_study_sql        | trg_rif40_study_sql
- t_rif40_study_sql_log    | rif40_study_sql_log    | trg_rif40_study_sql_log
- t_rif40_user_projects    | rif40_user_projects    | trg_rif40_user_projects
-(13 rows)
-
-CREATE FUNCTION
-CREATE TRIGGER
-COMMENT
-COMMENT
-GRANT
-GRANT
-DO
-DO
-DO
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE TRIGGER
-COMMENT
-DROP TRIGGER
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-DROP TRIGGER
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE TRIGGER
-COMMENT
-DROP TRIGGER
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-DROP TRIGGER
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE TRIGGER
-COMMENT
-DROP TRIGGER
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-DROP TRIGGER
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE TRIGGER
-COMMENT
-DROP TRIGGER
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-DROP TRIGGER
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-DROP TRIGGER
-CREATE FUNCTION
-COMMENT
-CREATE TRIGGER
-COMMENT
-CREATE TRIGGER
-COMMENT
-DROP TRIGGER
-CREATE FUNCTION
-CREATE TRIGGER
-CREATE TRIGGER
-GRANT
-GRANT
-COMMENT
-COMMENT
-COMMENT
-DROP TRIGGER
-CREATE FUNCTION
-CREATE TRIGGER
-CREATE TRIGGER
-COMMENT
-COMMENT
-COMMENT
-DROP TRIGGER
-CREATE FUNCTION
-CREATE TRIGGER
-CREATE TRIGGER
-COMMENT
-COMMENT
-COMMENT
-DROP TRIGGER
-CREATE FUNCTION
-CREATE TRIGGER
-CREATE TRIGGER
-COMMENT
-COMMENT
-COMMENT
-DROP TRIGGER
-CREATE FUNCTION
-CREATE TRIGGER
-CREATE TRIGGER
-COMMENT
-COMMENT
-COMMENT
-DROP TRIGGER
-CREATE FUNCTION
-CREATE TRIGGER
-CREATE TRIGGER
-COMMENT
-COMMENT
-COMMENT
-BEGIN
-DELETE 0
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-DO
-DO
-UPDATE 0
-DELETE 0
-DELETE 0
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-UPDATE 1
-DO
-DO
-UPDATE 0
-DELETE 0
-DELETE 0
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-UPDATE 1
-DO
-DO
-UPDATE 0
-DELETE 0
-DELETE 0
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-UPDATE 1
-DELETE 0
-INSERT 0 1
-COMMIT
-DO
-DO
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-BEGIN
-DELETE 0
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-DELETE 0
-INSERT 0 1
-INSERT 0 1
-DELETE 0
-INSERT 0 1
-COMMIT
-DO
-CLUSTER
-DO
-CREATE SEQUENCE
-CREATE SEQUENCE
-COMMENT
-COMMENT
-ALTER TABLE
-ALTER TABLE
-ALTER TABLE
-DO
-DO
-DO
-DO
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-GRANT
-DO
-DO
-GRANT
-GRANT
-GRANT
-GRANT
-DO
-DO
- drop_rif40_geolevels_geometry_tables 
---------------------------------------
- 
-(1 row)
-
- drop_rif40_geolevels_lookup_tables 
-------------------------------------
- 
-(1 row)
-
-DO
-CREATE INDEX
-DO
-ALTER TABLE
-ALTER TABLE
-ALTER TABLE
-ALTER TABLE
- area_id |          name          |   area   | total_males | total_females | population_year 
----------+------------------------+----------+-------------+---------------+-----------------
- 01      | SAHSU example database | 32857.20 |  5161120.00 |    5389390.00 |         1996.00
-(1 row)
-
- area_id |    name    |  area   | total_males | total_females | population_year 
----------+------------+---------+-------------+---------------+-----------------
- 01.002  | Cobley     |  553.00 |   891448.00 |     910128.00 |         1996.00
- 01.001  | Abellan    | 1798.80 |    20536.00 |      22008.00 |         1996.00
- 01.003  | Beale      | 1166.90 |    49550.00 |      53520.00 |         1996.00
- 01.004  | Hambly     |  428.10 |   194816.00 |     207348.00 |         1996.00
- 01.005  | Briggs     | 1580.60 |     4032.00 |       4106.00 |         1996.00
- 01.006  | Andersson  | 2690.60 |    26700.00 |      27904.00 |         1996.00
- 01.007  | Hodgson    | 2617.50 |    73782.00 |      78318.00 |         1996.00
- 01.008  | Jarup      | 1612.00 |  2265698.00 |    2403274.00 |         1996.00
- 01.011  | Clarke     |  534.00 |   628744.00 |     653074.00 |         1996.00
- 01.009  | Elliot     | 1406.90 |    81762.00 |      84506.00 |         1996.00
- 01.012  | Tirado     | 1766.60 |    12628.00 |      13248.00 |         1996.00
- 01.013  | Kozniewska | 2215.80 |   152704.00 |     153790.00 |         1996.00
- 01.014  | Stordy     | 1707.90 |   425248.00 |     438834.00 |         1996.00
- 01.015  | Maitland   | 3050.70 |    68372.00 |      69174.00 |         1996.00
- 01.016  | De Hoogh   | 4212.40 |    35226.00 |      34074.00 |         1996.00
- 01.017  | Savigny    | 2734.30 |    33886.00 |      34140.00 |         1996.00
- 01.018  | Cockings   | 2781.20 |   195988.00 |     201944.00 |         1996.00
-(17 rows)
-
-    area_id    |              name               |  area   | total_males | total_females | population_year 
----------------+---------------------------------+---------+-------------+---------------+-----------------
- 01.001.000100 | Abellan LEVEL3(01.001.000100)   |  264.00 |    10086.00 |      11016.00 |         1996.00
- 01.001.000200 | Abellan LEVEL3(01.001.000200)   |  648.20 |     5264.00 |       5338.00 |         1996.00
- 01.001.000300 | Abellan LEVEL3(01.001.000300)   |  886.60 |     5186.00 |       5654.00 |         1996.00
- 01.006.002500 | Andersson LEVEL3(01.006.002500) |  312.60 |    15078.00 |      15550.00 |         1996.00
- 01.006.002600 | Andersson LEVEL3(01.006.002600) |  690.60 |     8862.00 |       9358.00 |         1996.00
- 01.006.002700 | Andersson LEVEL3(01.006.002700) | 1687.30 |     2760.00 |       2996.00 |         1996.00
- 01.003.003300 | Beale LEVEL3(01.003.003300)     |  707.00 |    17238.00 |      17854.00 |         1996.00
- 01.003.003400 | Beale LEVEL3(01.003.003400)     |  459.90 |    32312.00 |      35666.00 |         1996.00
- 01.005.002400 | Briggs LEVEL3(01.005.002400)    | 1580.60 |     4032.00 |       4106.00 |         1996.00
- 01.011.012600 | Clarke LEVEL3(01.011.012600)    |   47.70 |     8116.00 |       7918.00 |         1996.00
- 01.011.012700 | Clarke LEVEL3(01.011.012700)    |   60.90 |    11398.00 |      11054.00 |         1996.00
- 01.011.012800 | Clarke LEVEL3(01.011.012800)    |   54.30 |    18826.00 |      17960.00 |         1996.00
- 01.011.012900 | Clarke LEVEL3(01.011.012900)    |   21.50 |    21260.00 |      21128.00 |         1996.00
- 01.011.013000 | Clarke LEVEL3(01.011.013000)    |   20.70 |    20254.00 |      20548.00 |         1996.00
- 01.011.013100 | Clarke LEVEL3(01.011.013100)    |    8.90 |    31942.00 |      33998.00 |         1996.00
- 01.011.013200 | Clarke LEVEL3(01.011.013200)    |   34.10 |    13394.00 |      13396.00 |         1996.00
- 01.011.013300 | Clarke LEVEL3(01.011.013300)    |   12.50 |    29756.00 |      31390.00 |         1996.00
- 01.011.013400 | Clarke LEVEL3(01.011.013400)    |    6.80 |    27870.00 |      30478.00 |         1996.00
- 01.011.013500 | Clarke LEVEL3(01.011.013500)    |   13.50 |    27524.00 |      28342.00 |         1996.00
- 01.011.013600 | Clarke LEVEL3(01.011.013600)    |    6.30 |    27804.00 |      27896.00 |         1996.00
-(20 rows)
-
-     area_id     |               name                |  area   | total_males | total_females | population_year 
------------------+-----------------------------------+---------+-------------+---------------+-----------------
- 01.001.000100.1 | Abellan LEVEL4(01.001.000100.1)   |  238.40 |     4924.00 |       5670.00 |         1996.00
- 01.001.000100.2 | Abellan LEVEL4(01.001.000100.2)   |   25.60 |     5162.00 |       5346.00 |         1996.00
- 01.001.000200.1 | Abellan LEVEL4(01.001.000200.1)   |  648.20 |     5264.00 |       5338.00 |         1996.00
- 01.001.000300.1 | Abellan LEVEL4(01.001.000300.1)   |  886.60 |     5186.00 |       5654.00 |         1996.00
- 01.006.002500.1 | Andersson LEVEL4(01.006.002500.1) |  220.70 |     4480.00 |       4628.00 |         1996.00
- 01.006.002500.2 | Andersson LEVEL4(01.006.002500.2) |   18.40 |     4030.00 |       4086.00 |         1996.00
- 01.006.002500.3 | Andersson LEVEL4(01.006.002500.3) |   73.50 |     6568.00 |       6836.00 |         1996.00
- 01.006.002600.1 | Andersson LEVEL4(01.006.002600.1) |  578.90 |     6532.00 |       6792.00 |         1996.00
- 01.006.002600.2 | Andersson LEVEL4(01.006.002600.2) |  111.80 |     2330.00 |       2566.00 |         1996.00
- 01.006.002700.1 | Andersson LEVEL4(01.006.002700.1) | 1687.30 |     2760.00 |       2996.00 |         1996.00
- 01.003.003300.1 | Beale LEVEL4(01.003.003300.1)     |  707.00 |    17238.00 |      17854.00 |         1996.00
- 01.003.003400.1 | Beale LEVEL4(01.003.003400.1)     |  222.80 |     7816.00 |       8548.00 |         1996.00
- 01.003.003400.2 | Beale LEVEL4(01.003.003400.2)     |   82.50 |     7352.00 |       8386.00 |         1996.00
- 01.003.003400.3 | Beale LEVEL4(01.003.003400.3)     |   12.30 |     7298.00 |       8630.00 |         1996.00
- 01.003.003400.4 | Beale LEVEL4(01.003.003400.4)     |   12.80 |     3068.00 |       2870.00 |         1996.00
- 01.003.003400.5 | Beale LEVEL4(01.003.003400.5)     |   21.20 |     4536.00 |       4914.00 |         1996.00
- 01.003.003400.6 | Beale LEVEL4(01.003.003400.6)     |  108.30 |     2242.00 |       2318.00 |         1996.00
- 01.005.002400.1 | Briggs LEVEL4(01.005.002400.1)    |  931.00 |     2208.00 |       2224.00 |         1996.00
- 01.005.002400.2 | Briggs LEVEL4(01.005.002400.2)    |  649.60 |     1824.00 |       1882.00 |         1996.00
- 01.011.012600.1 | Clarke LEVEL4(01.011.012600.1)    |   15.90 |     3310.00 |       3066.00 |         1996.00
-(20 rows)
-
-ALTER TABLE
-VACUUM
-VACUUM
-VACUUM
-VACUUM
-VACUUM
-VACUUM
-SELECT 1230
-TRUNCATE TABLE
-CREATE INDEX
- level4 | level3 | level2 | level1 
---------+--------+--------+--------
-(0 rows)
-
-DROP TABLE
- geography | geolevel_name | geolevel_id |  shapefile_table  | shapefile_area_id_column | shapefile_desc_column | st_simplify_tolerance 
------------+---------------+-------------+-------------------+--------------------------+-----------------------+-----------------------
- EW01      | SCNTRY2001    |           1 | X_EW01_SCNTRY2001 | SCNTRY2001               | NAME                  |                   100
- EW01      | CNTRY2001     |           2 | X_EW01_CNTRY2001  | CNTRY2001                | NAME                  |                   100
- EW01      | GOR2001       |           3 | X_EW01_GOR2001    | GOR2001                  | GORNAME               |                   100
- EW01      | LADUA2001     |           4 | X_EW01_LADUA2001  | LADUA2001                | LADUANAME             |                    50
- EW01      | WARD2001      |           5 | X_EW01_WARD2001   | WARD2001                 | WARDNAME              |                    30
- EW01      | SOA2001       |           6 | X_EW01_SOA2001    | SOA2001                  |                       |                    20
- EW01      | OA2001        |           7 | X_EW01_COA2001    | COA2001                  |                       |                    10
- SAHSU     | LEVEL1        |           1 | X_SAHSU_LEVEL1    | LEVEL1                   |                       |                   500
- SAHSU     | LEVEL2        |           2 | X_SAHSU_LEVEL2    | LEVEL2                   | NAME                  |                   100
- SAHSU     | LEVEL3        |           3 | X_SAHSU_LEVEL3    | LEVEL3                   |                       |                    50
- SAHSU     | LEVEL4        |           4 | X_SAHSU_LEVEL4    | LEVEL4                   |                       |                    10
- UK91      | SCOUNTRY91    |           1 | X_UK91_SCOUNTRY91 | SCOUNTRY91               | NAME                  |                   100
- UK91      | COUNTRY91     |           2 | X_UK91_COUNTRY91  | COUNTRY91                | COUNTRY_NA            |                   100
- UK91      | REGION91      |           3 | X_UK91_REGION91   | REGION91                 | REGION_NAM            |                   100
- UK91      | COUNTY91      |           4 | X_UK91_COUNTY91   | COUNTY91                 | NAME                  |                   100
- UK91      | DISTRICT91    |           5 | X_UK91_DISTRICT91 | DISTRICT91               | NAME                  |                    50
- UK91      | WARD91        |           6 | X_UK91_WARD91     | WARD91                   | WARD91_NAM            |                    30
- UK91      | ED91          |           7 | X_UK91_ED91       | ED91                     |                       |                    10
-(18 rows)
-
- geography | geolevel_name | avg_npoints_geom | avg_npoints_opt | file_geojson_len | leg_geom | leg_opt 
------------+---------------+------------------+-----------------+------------------+----------+---------
- EW01      | SCNTRY2001    |                  |                 |                  |          |        
- EW01      | CNTRY2001     |                  |                 |                  |          |        
- EW01      | GOR2001       |                  |                 |                  |          |        
- EW01      | LADUA2001     |                  |                 |                  |          |        
- EW01      | WARD2001      |                  |                 |                  |          |        
- EW01      | SOA2001       |                  |                 |                  |          |        
- EW01      | OA2001        |                  |                 |                  |          |        
- SAHSU     | LEVEL1        |            12344 |             480 |            12414 |    135.9 |       0
- SAHSU     | LEVEL2        |             2445 |             283 |           124669 |    117.4 |       0
- SAHSU     | LEVEL3        |              426 |              77 |           403542 |    122.6 |       0
- SAHSU     | LEVEL4        |              110 |              47 |          1525445 |    117.2 |       0
- UK91      | SCOUNTRY91    |                  |                 |                  |          |        
- UK91      | COUNTRY91     |                  |                 |                  |          |        
- UK91      | REGION91      |                  |                 |                  |          |        
- UK91      | COUNTY91      |                  |                 |                  |          |        
- UK91      | DISTRICT91    |                  |                 |                  |          |        
- UK91      | WARD91        |                  |                 |                  |          |        
- UK91      | ED91          |                  |                 |                  |          |        
-(18 rows)
-
-                                                                                                                                                                                                                                                                                                                                                                                                        Table "rif40.t_rif40_sahsu_geometry"
-       Column       |             Type             | Modifiers | Storage  | Stats target |                                                                                                                                                                                                                                                                                                                                                                       Description                                                                                                                                                                                                                                                                                                                                                                        
---------------------+------------------------------+-----------+----------+--------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- geography          | character varying(50)        | not null  | extended |              | Geography (e.g EW2001)
- geolevel_name      | character varying(30)        | not null  | extended |              | Name of geolevel. This will be a column name in the numerator/denominator tables
- area_id            | character varying(300)       | not null  | extended |              | An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE
- name               | character varying(300)       | not null  | extended |              | The name of an area id
- optimised_geojson  | character varying            | not null  | extended |              | Shapefile multipolygon in optimised GeoJSON format. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works onj an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). This can be fixed using the PostGIS Topology extension and processing as edges. See also TOPO_OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_ChangeEdgeGeometry() and ST_Simplify(). The SRID is always 4326.
- area               | numeric(12,2)                | not null  | main     |              | The area in square km of an area id
- total_males        | numeric(12,2)                |           | main     |              | Total males
- total_females      | numeric(12,2)                |           | main     |              | Total females
- population_year    | numeric(12,2)                |           | main     |              | Year of population data
- gid                | integer                      | not null  | plain    |              | Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)
- shapefile_geometry | geometry(MultiPolygon,27700) | not null  | main     |              | Spatial data for geolevel (PostGress/PostGIS only). Can also use SHAPEFILE instead,
- optimised_geometry | geometry(MultiPolygon,4326)  | not null  | main     |              | Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only). Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works onj an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner. This is fixed using the PostGIS Topology extension and processing as edges.
-Indexes:
-    "t_rif40_sahsu_geometry_pk" PRIMARY KEY, btree (geography, geolevel_name, area_id)
-    "t_rif40_sahsu_geometry_uk" UNIQUE, btree (geography, gid, area_id)
-    "t_rif40_sahsu_geometry_uk2" UNIQUE, btree (name)
-    "t_rif40_sahsu_geo_gin1" gist (shapefile_geometry)
-    "t_rif40_sahsu_geo_gin2" gist (optimised_geometry)
-Triggers:
-    t_rif40_sahsu_geometry_insert BEFORE INSERT ON t_rif40_sahsu_geometry FOR EACH ROW EXECUTE PROCEDURE t_rif40_sahsu_geometry_insert()
-Child tables: t_rif40_geolevels_geometry_sahsu_level1,
-              t_rif40_geolevels_geometry_sahsu_level2,
-              t_rif40_geolevels_geometry_sahsu_level3,
-              t_rif40_geolevels_geometry_sahsu_level4
-Has OIDs: no
-
-                                  Table "rif40.sahsuland_geography"
- Column |          Type          | Modifiers | Storage  | Stats target |         Description         
---------+------------------------+-----------+----------+--------------+-----------------------------
- level1 | character varying(100) |           | extended |              | Lowest level of resolution
- level2 | character varying(100) |           | extended |              | 2nd level of resolution
- level3 | character varying(100) |           | extended |              | 3rd level of resolution
- level4 | character varying(100) |           | extended |              | Highest level of resolution
-Indexes:
-    "level4_idx4" UNIQUE, btree (level4)
-    "sahsuland_geography_pk" UNIQUE, btree (level4)
-    "level1_idx1" btree (level1)
-    "level2_idx2" btree (level2)
-    "level3_idx3" btree (level3)
-Has OIDs: no
-
 DO
 DROP TRIGGER
 DROP FUNCTION
+DO
 CREATE FUNCTION
 COMMENT
+DO
 CREATE FUNCTION
 COMMENT
 CREATE FUNCTION
@@ -2224,1552 +1675,176 @@ GRANT
 DO
 DO
 DO
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE TRIGGER
+COMMENT
+DROP TRIGGER
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+DROP TRIGGER
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE TRIGGER
+COMMENT
+DROP TRIGGER
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+DROP TRIGGER
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE TRIGGER
+COMMENT
+DROP TRIGGER
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
 DO
+DROP TRIGGER
+DROP TRIGGER
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE TRIGGER
+COMMENT
+DROP TRIGGER
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+DROP TRIGGER
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+DROP TRIGGER
+CREATE FUNCTION
+COMMENT
+CREATE TRIGGER
+COMMENT
+CREATE TRIGGER
+COMMENT
+DROP TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+GRANT
+GRANT
 COMMENT
 COMMENT
 COMMENT
+DROP TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
 COMMENT
 COMMENT
 COMMENT
+DROP TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
 COMMENT
 COMMENT
 COMMENT
+DROP TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
 COMMENT
 COMMENT
 COMMENT
+DROP TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
 COMMENT
 COMMENT
 COMMENT
+DROP TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
 COMMENT
 COMMENT
 COMMENT
-COMMENT
-COMMENT
-DO
-   object_type   | object_schema | total_objects | missing_comments 
------------------+---------------+---------------+------------------
- COMPOSITE TYPE  | rif40_log_pkg |             1 |                1
- FUNCTION        | rif40         |             1 |                0
- FUNCTION        | rif40_dmp_pkg |             1 |                0
- FUNCTION        | rif40_geo_pkg |            28 |                0
- FUNCTION        | rif40_log_pkg |             9 |                0
- FUNCTION        | rif40_sm_pkg  |            13 |                0
- FUNCTION        | rif40_sql_pkg |            26 |                0
- FUNCTION        | rif40_trg_pkg |            43 |                0
- INDEX           | gis           |            42 |                 
- INDEX           | pg_toast      |            43 |                 
- INDEX           | rif40         |            96 |                 
- INDEX           | rif_studies   |             7 |                 
- SEQUENCE        | gis           |            21 |               21
- SEQUENCE        | rif40         |             2 |                0
- TABLE           | gis           |            21 |               21
- TABLE           | rif40         |           452 |                0
- TABLE           | rif_studies   |            33 |                0
- TEMPORARY TABLE | pg_temp_3     |             7 |                0
- TOAST TABLE     | pg_toast      |            43 |                 
- TRIGGER         | rif40         |           602 |                0
- VIEW            | rif40         |           197 |                0
- VIEW            | rif40_sql_pkg |             2 |                0
-(22 rows)
-
- geography | numerator_table  |            theme_description             | denominator_table | automatic 
------------+------------------+------------------------------------------+-------------------+-----------
- SAHSU     | SAHSULAND_CANCER | SAHSU land cancer incidence example data | SAHSULAND_POP     |         1
-(1 row)
-
- geog  | n_owner | numerator_table  | n_resolv | n_nd_valid | d_owner | denominator_table | d_resolv | d_nd_valid | auto | n_fdw_date_created | ok 
--------+---------+------------------+----------+------------+---------+-------------------+----------+------------+------+--------------------+----
- SAHSU | rif40   | SAHSULAND_CANCER |        1 |          1 | rif40   | SAHSULAND_POP     |        1 |          1 |    1 |                    |  1
- EW01  | rif40   | SAHSULAND_CANCER |        1 |          0 | rif40   | SAHSULAND_POP     |        1 |          0 |    1 |                    |  0
- UK91  | rif40   | SAHSULAND_CANCER |        1 |          0 | rif40   | SAHSULAND_POP     |        1 |          0 |    1 |                    |  0
-(3 rows)
-
- username | count 
-----------+-------
-(0 rows)
-
-RESET
- send_debug_to_info |                                                                                                                                                                                                          debug                                                                                                                                                                                                           
---------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- on                 | add_population_to_rif40_geolevels_geometry:DEBUG1, create_instead_of_triggers:DEBUG1, create_rif40_geolevels_geometry_tables:DEBUG1, fix_null_geolevel_names:DEBUG1, lf_check_rif40_hierarchy_lookup_tables:DEBUG1, populate_hierarchy_table:DEBUG1, populate_rif40_geometry_tables:DEBUG1, rif40_db_name_check:DEBUG1, rif40_ddl:DEBUG1, rif40_drop_table_triggers:DEBUG1, rif40_error:DEBUG4, simplify_geometry:DEBUG1
-(1 row)
-
- table_or_view | table_or_view_name 
----------------+--------------------
-(0 rows)
-
-DO
-DO
-                   search_path                    
---------------------------------------------------
- rif40, public, topology, gis, pop, rif40_sql_pkg
-(1 row)
-
-DO
- cleanup_orphaned_extract_and_map_tables 
------------------------------------------
- 
-(1 row)
-
-DO
-   object_type   | object_schema | total_objects | missing_comments 
------------------+---------------+---------------+------------------
- COMPOSITE TYPE  | rif40_log_pkg |             1 |                1
- FUNCTION        | rif40         |             1 |                0
- FUNCTION        | rif40_dmp_pkg |             1 |                0
- FUNCTION        | rif40_geo_pkg |            28 |                0
- FUNCTION        | rif40_log_pkg |             9 |                0
- FUNCTION        | rif40_sm_pkg  |            13 |                0
- FUNCTION        | rif40_sql_pkg |            26 |                0
- FUNCTION        | rif40_trg_pkg |            43 |                0
- INDEX           | gis           |            42 |                 
- INDEX           | pch           |             1 |                 
- INDEX           | pg_toast      |            42 |                 
- INDEX           | rif40         |            96 |                 
- SEQUENCE        | gis           |            21 |               21
- SEQUENCE        | rif40         |             2 |                0
- TABLE           | gis           |            21 |               21
- TABLE           | pch           |             4 |                0
- TABLE           | rif40         |           452 |                0
- TEMPORARY TABLE | pg_temp_4     |             7 |                0
- TOAST TABLE     | pg_toast      |            42 |                 
- TRIGGER         | pch           |             8 |                0
- TRIGGER         | rif40         |           602 |                0
- VIEW            | pch           |            29 |                0
- VIEW            | rif40         |           197 |                0
- VIEW            | rif40_sql_pkg |             2 |                0
-(24 rows)
-
- geography | numerator_table  |            theme_description             | denominator_table | automatic 
------------+------------------+------------------------------------------+-------------------+-----------
- SAHSU     | SAHSULAND_CANCER | SAHSU land cancer incidence example data | SAHSULAND_POP     |         1
-(1 row)
-
- geog  | n_owner | numerator_table  | n_resolv | n_nd_valid | d_owner | denominator_table | d_resolv | d_nd_valid | auto | n_fdw_date_created | ok 
--------+---------+------------------+----------+------------+---------+-------------------+----------+------------+------+--------------------+----
- SAHSU | rif40   | SAHSULAND_CANCER |        1 |          1 | rif40   | SAHSULAND_POP     |        1 |          1 |    1 |                    |  1
- EW01  | rif40   | SAHSULAND_CANCER |        1 |          0 | rif40   | SAHSULAND_POP     |        1 |          0 |    1 |                    |  0
- UK91  | rif40   | SAHSULAND_CANCER |        1 |          0 | rif40   | SAHSULAND_POP     |        1 |          0 |    1 |                    |  0
-(3 rows)
-
- username | count 
-----------+-------
-(0 rows)
-
-RESET
- send_debug_to_info |          debug          
---------------------+-------------------------
- on                 | rif40_ddl_checks:DEBUG3
-(1 row)
-
-DO
-DO
-BEGIN
-DO
- username | study_id | area_id 
-----------+----------+---------
- pch      |        1 | 01.001
- pch      |        1 | 01.002
- pch      |        1 | 01.003
- pch      |        1 | 01.004
- pch      |        1 | 01.005
- pch      |        1 | 01.006
- pch      |        1 | 01.007
- pch      |        1 | 01.008
- pch      |        1 | 01.009
- pch      |        1 | 01.011
- pch      |        1 | 01.012
- pch      |        1 | 01.013
- pch      |        1 | 01.014
- pch      |        1 | 01.015
- pch      |        1 | 01.016
- pch      |        1 | 01.017
- pch      |        1 | 01.018
-(17 rows)
-
- username | study_id |     area_id     | band_id 
-----------+----------+-----------------+---------
- pch      |        1 | 01.008.007000.1 |     522
- pch      |        1 | 01.008.010200.4 |     753
- pch      |        1 | 01.011.013300.2 |     883
- pch      |        1 | 01.002.000900.2 |      52
- pch      |        1 | 01.008.007700.4 |     576
- pch      |        1 | 01.008.010200.5 |     754
- pch      |        1 | 01.008.002900.6 |     275
- pch      |        1 | 01.008.009500.6 |     708
- pch      |        1 | 01.008.009600.2 |     713
- pch      |        1 | 01.008.007600.1 |     565
- pch      |        1 | 01.014.017300.7 |    1117
- pch      |        1 | 01.008.004400.4 |     342
- pch      |        1 | 01.014.018600.3 |    1182
- pch      |        1 | 01.008.004800.3 |     373
- pch      |        1 | 01.011.014800.7 |     996
- pch      |        1 | 01.002.000500.5 |      23
- pch      |        1 | 01.008.009800.6 |     734
- pch      |        1 | 01.002.001700.3 |     117
- pch      |        1 | 01.011.013200.2 |     877
- pch      |        1 | 01.011.015400.2 |    1030
- pch      |        1 | 01.011.013300.8 |     889
- pch      |        1 | 01.002.002100.7 |     151
- pch      |        1 | 01.008.009400.9 |     702
- pch      |        1 | 01.011.013800.3 |     926
- pch      |        1 | 01.002.001600.1 |     107
- pch      |        1 | 01.008.004300.2 |     332
- pch      |        1 | 01.008.007400.3 |     551
- pch      |        1 | 01.016.017000.1 |    1196
- pch      |        1 | 01.008.010200.1 |     750
- pch      |        1 | 01.014.018400.7 |    1169
- pch      |        1 | 01.008.009600.5 |     716
- pch      |        1 | 01.008.009800.1 |     729
- pch      |        1 | 01.014.018500.1 |    1172
- pch      |        1 | 01.016.017000.2 |    1197
- pch      |        1 | 01.004.011100.5 |     178
- pch      |        1 | 01.008.010800.1 |     800
- pch      |        1 | 01.011.013700.3 |     918
- pch      |        1 | 01.002.001000.1 |      60
- pch      |        1 | 01.014.018300.4 |    1159
- pch      |        1 | 01.008.004500.2 |     348
- pch      |        1 | 01.014.017600.3 |    1121
- pch      |        1 | 01.011.013200.3 |     878
- pch      |        1 | 01.002.000800.5 |      48
- pch      |        1 | 01.002.001700.8 |     122
- pch      |        1 | 01.008.005500.2 |     421
- pch      |        1 | 01.008.009400.1 |     694
- pch      |        1 | 01.008.005400.2 |     416
- pch      |        1 | 01.015.016200.3 |    1191
- pch      |        1 | 01.008.009500.3 |     705
- pch      |        1 | 01.008.003800.3 |     296
- pch      |        1 | 01.014.017300.4 |    1114
- pch      |        1 | 01.014.017900.1 |    1137
- pch      |        1 | 01.008.008900.7 |     662
- pch      |        1 | 01.013.016300.2 |    1071
- pch      |        1 | 01.008.003600.3 |     283
- pch      |        1 | 01.008.008000.5 |     596
- pch      |        1 | 01.001.000100.1 |       1
- pch      |        1 | 01.008.005100.3 |     396
- pch      |        1 | 01.008.003900.2 |     303
- pch      |        1 | 01.011.015600.7 |    1046
- pch      |        1 | 01.018.019100.5 |    1206
- pch      |        1 | 01.007.012200.3 |     250
- pch      |        1 | 01.002.002100.6 |     150
- pch      |        1 | 01.011.015700.1 |    1047
- pch      |        1 | 01.002.000400.8 |      17
- pch      |        1 | 01.008.004200.1 |     325
- pch      |        1 | 01.008.004300.4 |     334
- pch      |        1 | 01.008.009000.6 |     668
- pch      |        1 | 01.011.015300.4 |    1026
- pch      |        1 | 01.008.007000.3 |     524
- pch      |        1 | 01.007.012200.5 |     252
- pch      |        1 | 01.002.001000.5 |      64
- pch      |        1 | 01.002.001500.1 |      99
- pch      |        1 | 01.008.010400.7 |     773
- pch      |        1 | 01.011.014200.7 |     958
- pch      |        1 | 01.004.011300.2 |     186
- pch      |        1 | 01.008.008300.4 |     616
- pch      |        1 | 01.015.016200.2 |    1190
- pch      |        1 | 01.008.006600.5 |     500
- pch      |        1 | 01.002.000300.3 |       7
- pch      |        1 | 01.002.000500.8 |      26
- pch      |        1 | 01.002.000500.3 |      21
- pch      |        1 | 01.011.012700.3 |     843
- pch      |        1 | 01.002.000500.6 |      24
- pch      |        1 | 01.018.019300.3 |    1212
- pch      |        1 | 01.008.008300.7 |     619
- pch      |        1 | 01.014.018200.5 |    1153
- pch      |        1 | 01.011.014000.2 |     943
- pch      |        1 | 01.008.005400.4 |     418
- pch      |        1 | 01.008.008800.2 |     651
- pch      |        1 | 01.011.012900.3 |     853
- pch      |        1 | 01.002.000300.5 |       9
- pch      |        1 | 01.008.004700.7 |     368
- pch      |        1 | 01.013.016700.7 |    1101
- pch      |        1 | 01.008.008100.1 |     599
- pch      |        1 | 01.008.009100.6 |     676
- pch      |        1 | 01.008.007600.3 |     567
- pch      |        1 | 01.014.017500.1 |    1118
- pch      |        1 | 01.008.010700.3 |     793
- pch      |        1 | 01.014.017800.3 |    1134
- pch      |        1 | 01.008.006500.2 |     490
- pch      |        1 | 01.011.013800.4 |     927
- pch      |        1 | 01.014.018300.5 |    1160
- pch      |        1 | 01.008.008100.4 |     602
- pch      |        1 | 01.011.013100.7 |     873
- pch      |        1 | 01.008.006500.1 |     489
- pch      |        1 | 01.008.006700.6 |     509
- pch      |        1 | 01.008.008500.5 |     632
- pch      |        1 | 01.008.007600.4 |     568
- pch      |        1 | 01.011.015100.1 |    1013
- pch      |        1 | 01.008.001000.9 |     269
- pch      |        1 | 01.014.018300.7 |    1162
- pch      |        1 | 01.008.006400.7 |     488
- pch      |        1 | 01.002.001900.2 |     133
- pch      |        1 | 01.008.009200.2 |     679
- pch      |        1 | 01.011.012800.6 |     849
- pch      |        1 | 01.014.017700.3 |    1126
- pch      |        1 | 01.008.005500.5 |     424
- pch      |        1 | 01.017.019000.2 |    1201
- pch      |        1 | 01.007.012200.6 |     253
- pch      |        1 | 01.008.005000.3 |     388
- pch      |        1 | 01.008.006100.1 |     461
- pch      |        1 | 01.002.001100.6 |      72
- pch      |        1 | 01.002.000300.4 |       8
- pch      |        1 | 01.008.003800.4 |     297
- pch      |        1 | 01.002.001800.7 |     130
- pch      |        1 | 01.011.013700.7 |     922
- pch      |        1 | 01.004.011500.6 |     204
- pch      |        1 | 01.013.016600.1 |    1088
- pch      |        1 | 01.002.001600.4 |     110
- pch      |        1 | 01.004.011100.3 |     176
- pch      |        1 | 01.008.003700.6 |     290
- pch      |        1 | 01.002.001000.2 |      61
- pch      |        1 | 01.008.007800.1 |     580
- pch      |        1 | 01.002.000600.5 |      32
- pch      |        1 | 01.004.011700.9 |     225
- pch      |        1 | 01.011.015400.1 |    1029
- pch      |        1 | 01.007.012400.3 |     259
- pch      |        1 | 01.008.002900.2 |     271
- pch      |        1 | 01.008.004300.3 |     333
- pch      |        1 | 01.008.008200.7 |     612
- pch      |        1 | 01.008.008600.2 |     637
- pch      |        1 | 01.013.016600.2 |    1089
- pch      |        1 | 01.013.016100.2 |    1061
- pch      |        1 | 01.002.001200.7 |      80
- pch      |        1 | 01.011.014500.1 |     969
- pch      |        1 | 01.011.013900.7 |     939
- pch      |        1 | 01.008.008200.1 |     606
- pch      |        1 | 01.008.009300.8 |     693
- pch      |        1 | 01.002.001800.6 |     129
- pch      |        1 | 01.011.012900.5 |     855
- pch      |        1 | 01.011.014400.2 |     967
- pch      |        1 | 01.011.015700.4 |    1050
- pch      |        1 | 01.008.009900.8 |     743
- pch      |        1 | 01.011.015600.6 |    1045
- pch      |        1 | 01.004.011400.1 |     190
- pch      |        1 | 01.008.004000.6 |     315
- pch      |        1 | 01.008.009100.3 |     673
- pch      |        1 | 01.014.017800.4 |    1135
- pch      |        1 | 01.008.009400.7 |     700
- pch      |        1 | 01.008.008700.2 |     643
- pch      |        1 | 01.008.005200.6 |     405
- pch      |        1 | 01.008.007800.2 |     581
- pch      |        1 | 01.011.015500.2 |    1034
- pch      |        1 | 01.002.001500.3 |     101
- pch      |        1 | 01.008.010700.2 |     792
- pch      |        1 | 01.008.006200.5 |     473
- pch      |        1 | 01.011.013500.7 |     905
- pch      |        1 | 01.008.010200.8 |     757
- pch      |        1 | 01.002.000700.2 |      38
- pch      |        1 | 01.009.003200.4 |     834
- pch      |        1 | 01.014.018200.7 |    1155
- pch      |        1 | 01.004.011700.2 |     218
- pch      |        1 | 01.008.004300.7 |     337
- pch      |        1 | 01.008.008500.4 |     631
- pch      |        1 | 01.011.014600.3 |     979
- pch      |        1 | 01.008.007500.2 |     558
- pch      |        1 | 01.008.011000.1 |     810
- pch      |        1 | 01.011.013300.4 |     885
- pch      |        1 | 01.002.000900.3 |      53
- pch      |        1 | 01.011.012900.1 |     851
- pch      |        1 | 01.008.005700.6 |     438
- pch      |        1 | 01.002.001400.1 |      90
- pch      |        1 | 01.014.018400.2 |    1164
- pch      |        1 | 01.011.013600.9 |     915
- pch      |        1 | 01.011.013700.1 |     916
- pch      |        1 | 01.008.006100.2 |     462
- pch      |        1 | 01.011.014500.6 |     974
- pch      |        1 | 01.004.011600.1 |     208
- pch      |        1 | 01.008.007200.4 |     539
- pch      |        1 | 01.002.001300.2 |      82
- pch      |        1 | 01.008.004900.1 |     380
- pch      |        1 | 01.008.006800.1 |     510
- pch      |        1 | 01.011.013900.2 |     934
- pch      |        1 | 01.008.009700.3 |     723
- pch      |        1 | 01.008.004700.9 |     370
- pch      |        1 | 01.002.000800.2 |      45
- pch      |        1 | 01.002.001300.9 |      89
- pch      |        1 | 01.008.006600.4 |     499
- pch      |        1 | 01.008.009600.9 |     720
- pch      |        1 | 01.018.019500.3 |    1218
- pch      |        1 | 01.002.001100.2 |      68
- pch      |        1 | 01.008.008300.3 |     615
- pch      |        1 | 01.008.005100.6 |     399
- pch      |        1 | 01.008.003900.3 |     304
- pch      |        1 | 01.011.012900.4 |     854
- pch      |        1 | 01.011.014200.3 |     954
- pch      |        1 | 01.008.010600.3 |     786
- pch      |        1 | 01.008.008600.1 |     636
- pch      |        1 | 01.011.014700.1 |     985
- pch      |        1 | 01.002.002200.1 |     153
- pch      |        1 | 01.002.001800.3 |     126
- pch      |        1 | 01.008.006900.3 |     518
- pch      |        1 | 01.008.008500.1 |     628
- pch      |        1 | 01.008.010500.2 |     776
- pch      |        1 | 01.002.001200.6 |      79
- pch      |        1 | 01.008.003800.6 |     299
- pch      |        1 | 01.008.008800.3 |     652
- pch      |        1 | 01.008.008600.5 |     640
- pch      |        1 | 01.013.016300.7 |    1076
- pch      |        1 | 01.011.015500.3 |    1035
- pch      |        1 | 01.008.008700.4 |     645
- pch      |        1 | 01.008.010400.6 |     772
- pch      |        1 | 01.008.009600.3 |     714
- pch      |        1 | 01.008.004400.7 |     345
- pch      |        1 | 01.008.006500.7 |     495
- pch      |        1 | 01.009.003200.3 |     833
- pch      |        1 | 01.002.000600.8 |      35
- pch      |        1 | 01.002.001500.8 |     106
- pch      |        1 | 01.008.004600.2 |     355
- pch      |        1 | 01.008.008000.7 |     598
- pch      |        1 | 01.013.016600.7 |    1094
- pch      |        1 | 01.004.011500.5 |     203
- pch      |        1 | 01.002.000700.7 |      43
- pch      |        1 | 01.011.014200.8 |     959
- pch      |        1 | 01.002.002000.3 |     142
- pch      |        1 | 01.002.001700.9 |     123
- pch      |        1 | 01.002.002000.4 |     143
- pch      |        1 | 01.004.011200.6 |     184
- pch      |        1 | 01.008.004000.5 |     314
- pch      |        1 | 01.004.011400.4 |     193
- pch      |        1 | 01.009.002900.2 |     825
- pch      |        1 | 01.008.009500.4 |     706
- pch      |        1 | 01.013.016700.6 |    1100
- pch      |        1 | 01.008.004300.1 |     331
- pch      |        1 | 01.004.011100.1 |     174
- pch      |        1 | 01.014.017300.6 |    1116
- pch      |        1 | 01.003.003400.1 |     168
- pch      |        1 | 01.014.018100.2 |    1144
- pch      |        1 | 01.014.018500.2 |    1173
- pch      |        1 | 01.002.002300.2 |     160
- pch      |        1 | 01.008.005800.6 |     445
- pch      |        1 | 01.008.010700.6 |     796
- pch      |        1 | 01.014.017600.5 |    1123
- pch      |        1 | 01.018.019400.2 |    1214
- pch      |        1 | 01.011.013100.4 |     870
- pch      |        1 | 01.014.018600.6 |    1185
- pch      |        1 | 01.008.005700.5 |     437
- pch      |        1 | 01.008.008200.6 |     611
- pch      |        1 | 01.002.001800.5 |     128
- pch      |        1 | 01.007.012400.2 |     258
- pch      |        1 | 01.008.008400.6 |     626
- pch      |        1 | 01.011.015800.2 |    1052
- pch      |        1 | 01.007.012200.1 |     248
- pch      |        1 | 01.008.006000.7 |     460
- pch      |        1 | 01.008.004100.2 |     318
- pch      |        1 | 01.008.006500.6 |     494
- pch      |        1 | 01.008.006300.4 |     478
- pch      |        1 | 01.008.003900.1 |     302
- pch      |        1 | 01.008.005700.7 |     439
- pch      |        1 | 01.011.015000.3 |    1009
- pch      |        1 | 01.008.008500.8 |     635
- pch      |        1 | 01.008.003800.7 |     300
- pch      |        1 | 01.008.004000.7 |     316
- pch      |        1 | 01.011.015600.3 |    1042
- pch      |        1 | 01.004.011600.3 |     210
- pch      |        1 | 01.011.015500.4 |    1036
- pch      |        1 | 01.002.002100.8 |     152
- pch      |        1 | 01.002.001500.2 |     100
- pch      |        1 | 01.008.009800.5 |     733
- pch      |        1 | 01.013.016700.1 |    1095
- pch      |        1 | 01.008.006300.3 |     477
- pch      |        1 | 01.012.003000.2 |    1053
- pch      |        1 | 01.008.009900.1 |     736
- pch      |        1 | 01.004.011500.8 |     206
- pch      |        1 | 01.008.007200.3 |     538
- pch      |        1 | 01.008.007400.2 |     550
- pch      |        1 | 01.008.010300.3 |     760
- pch      |        1 | 01.011.014900.7 |    1005
- pch      |        1 | 01.008.010100.3 |     746
- pch      |        1 | 01.004.011500.4 |     202
- pch      |        1 | 01.013.016700.2 |    1096
- pch      |        1 | 01.008.004200.3 |     327
- pch      |        1 | 01.011.012900.8 |     858
- pch      |        1 | 01.011.013900.3 |     935
- pch      |        1 | 01.008.004700.1 |     362
- pch      |        1 | 01.008.005300.2 |     408
- pch      |        1 | 01.014.017800.5 |    1136
- pch      |        1 | 01.008.008500.7 |     634
- pch      |        1 | 01.008.008800.1 |     650
- pch      |        1 | 01.008.009900.3 |     738
- pch      |        1 | 01.008.008200.3 |     608
- pch      |        1 | 01.008.007100.1 |     529
- pch      |        1 | 01.008.011000.4 |     813
- pch      |        1 | 01.014.018500.6 |    1177
- pch      |        1 | 01.008.008900.4 |     659
- pch      |        1 | 01.008.010900.2 |     804
- pch      |        1 | 01.008.007400.1 |     549
- pch      |        1 | 01.009.002700.5 |     818
- pch      |        1 | 01.002.002100.4 |     148
- pch      |        1 | 01.008.010300.1 |     758
- pch      |        1 | 01.008.005200.5 |     404
- pch      |        1 | 01.008.006300.2 |     476
- pch      |        1 | 01.014.017700.1 |    1124
- pch      |        1 | 01.008.009500.8 |     710
- pch      |        1 | 01.008.004800.4 |     374
- pch      |        1 | 01.011.013000.5 |     863
- pch      |        1 | 01.008.006200.2 |     470
- pch      |        1 | 01.011.013200.5 |     880
- pch      |        1 | 01.011.014100.1 |     945
- pch      |        1 | 01.013.016500.1 |    1086
- pch      |        1 | 01.008.006000.5 |     458
- pch      |        1 | 01.008.010400.4 |     770
- pch      |        1 | 01.008.007200.6 |     541
- pch      |        1 | 01.008.010300.8 |     765
- pch      |        1 | 01.014.018200.6 |    1154
- pch      |        1 | 01.002.001400.7 |      96
- pch      |        1 | 01.007.012100.1 |     242
- pch      |        1 | 01.008.005900.5 |     450
- pch      |        1 | 01.014.018400.3 |    1165
- pch      |        1 | 01.004.011700.1 |     217
- pch      |        1 | 01.008.005800.3 |     442
- pch      |        1 | 01.008.003800.2 |     295
- pch      |        1 | 01.008.006900.6 |     521
- pch      |        1 | 01.014.018100.6 |    1148
- pch      |        1 | 01.004.011400.8 |     197
- pch      |        1 | 01.011.013800.9 |     932
- pch      |        1 | 01.013.016300.8 |    1077
- pch      |        1 | 01.008.005000.4 |     389
- pch      |        1 | 01.008.005800.5 |     444
- pch      |        1 | 01.008.008200.2 |     607
- pch      |        1 | 01.002.000600.9 |      36
- pch      |        1 | 01.008.004800.8 |     378
- pch      |        1 | 01.008.010800.3 |     802
- pch      |        1 | 01.002.001600.2 |     108
- pch      |        1 | 01.004.011600.6 |     213
- pch      |        1 | 01.011.014600.2 |     978
- pch      |        1 | 01.008.006600.6 |     501
- pch      |        1 | 01.011.013700.6 |     921
- pch      |        1 | 01.015.016900.3 |    1195
- pch      |        1 | 01.002.001500.7 |     105
- pch      |        1 | 01.008.010900.7 |     809
- pch      |        1 | 01.011.015000.5 |    1011
- pch      |        1 | 01.008.005000.7 |     392
- pch      |        1 | 01.011.014100.4 |     948
- pch      |        1 | 01.011.014800.3 |     992
- pch      |        1 | 01.008.008400.3 |     623
- pch      |        1 | 01.011.014500.2 |     970
- pch      |        1 | 01.011.015500.5 |    1037
- pch      |        1 | 01.008.004600.7 |     360
- pch      |        1 | 01.014.018400.9 |    1171
- pch      |        1 | 01.002.001400.9 |      98
- pch      |        1 | 01.008.005600.5 |     431
- pch      |        1 | 01.008.009900.7 |     742
- pch      |        1 | 01.014.018600.4 |    1183
- pch      |        1 | 01.002.001600.7 |     113
- pch      |        1 | 01.008.004600.5 |     358
- pch      |        1 | 01.002.000900.7 |      57
- pch      |        1 | 01.011.013400.1 |     891
- pch      |        1 | 01.008.009700.5 |     725
- pch      |        1 | 01.004.011200.5 |     183
- pch      |        1 | 01.009.003200.2 |     832
- pch      |        1 | 01.011.014600.4 |     980
- pch      |        1 | 01.014.018300.1 |    1156
- pch      |        1 | 01.018.019500.1 |    1216
- pch      |        1 | 01.008.005800.1 |     440
- pch      |        1 | 01.012.015900.3 |    1056
- pch      |        1 | 01.002.001800.2 |     125
- pch      |        1 | 01.007.012100.4 |     245
- pch      |        1 | 01.008.005300.6 |     412
- pch      |        1 | 01.011.012800.5 |     848
- pch      |        1 | 01.007.012500.1 |     260
- pch      |        1 | 01.008.003700.1 |     285
- pch      |        1 | 01.014.018300.3 |    1158
- pch      |        1 | 01.008.004800.5 |     375
- pch      |        1 | 01.008.005100.4 |     397
- pch      |        1 | 01.008.008700.5 |     646
- pch      |        1 | 01.008.005500.3 |     422
- pch      |        1 | 01.008.005500.4 |     423
- pch      |        1 | 01.008.001000.6 |     266
- pch      |        1 | 01.011.013200.4 |     879
- pch      |        1 | 01.008.009100.5 |     675
- pch      |        1 | 01.011.013800.8 |     931
- pch      |        1 | 01.011.014100.2 |     946
- pch      |        1 | 01.002.002100.3 |     147
- pch      |        1 | 01.002.000700.4 |      40
- pch      |        1 | 01.018.019100.2 |    1203
- pch      |        1 | 01.002.000400.1 |      10
- pch      |        1 | 01.013.016200.3 |    1065
- pch      |        1 | 01.014.018300.6 |    1161
- pch      |        1 | 01.008.007000.6 |     527
- pch      |        1 | 01.004.011300.1 |     185
- pch      |        1 | 01.008.004700.3 |     364
- pch      |        1 | 01.008.006400.6 |     487
- pch      |        1 | 01.014.018200.3 |    1151
- pch      |        1 | 01.002.001900.3 |     134
- pch      |        1 | 01.008.009000.4 |     666
- pch      |        1 | 01.009.003100.1 |     828
- pch      |        1 | 01.013.016400.5 |    1082
- pch      |        1 | 01.008.007300.2 |     543
- pch      |        1 | 01.008.010100.6 |     749
- pch      |        1 | 01.008.009200.7 |     684
- pch      |        1 | 01.011.013000.6 |     864
- pch      |        1 | 01.008.007200.1 |     536
- pch      |        1 | 01.008.006000.3 |     456
- pch      |        1 | 01.008.007600.8 |     572
- pch      |        1 | 01.004.011700.8 |     224
- pch      |        1 | 01.011.013500.2 |     900
- pch      |        1 | 01.002.001700.1 |     115
- pch      |        1 | 01.011.013300.1 |     882
- pch      |        1 | 01.004.011400.5 |     194
- pch      |        1 | 01.011.013300.3 |     884
- pch      |        1 | 01.013.016200.1 |    1063
- pch      |        1 | 01.009.003200.1 |     831
- pch      |        1 | 01.002.000300.2 |       6
- pch      |        1 | 01.011.014200.1 |     952
- pch      |        1 | 01.011.015600.4 |    1043
- pch      |        1 | 01.002.001600.5 |     111
- pch      |        1 | 01.002.000900.9 |      59
- pch      |        1 | 01.008.005000.6 |     391
- pch      |        1 | 01.008.008000.4 |     595
- pch      |        1 | 01.014.018200.1 |    1149
- pch      |        1 | 01.004.011600.2 |     209
- pch      |        1 | 01.002.001200.3 |      76
- pch      |        1 | 01.008.004700.8 |     369
- pch      |        1 | 01.008.007700.1 |     573
- pch      |        1 | 01.011.014400.3 |     968
- pch      |        1 | 01.011.014900.8 |    1006
- pch      |        1 | 01.013.016300.1 |    1070
- pch      |        1 | 01.008.009400.5 |     698
- pch      |        1 | 01.014.017600.2 |    1120
- pch      |        1 | 01.011.014500.4 |     972
- pch      |        1 | 01.002.001400.4 |      93
- pch      |        1 | 01.002.002300.6 |     164
- pch      |        1 | 01.008.004400.8 |     346
- pch      |        1 | 01.008.006600.3 |     498
- pch      |        1 | 01.007.012200.2 |     249
- pch      |        1 | 01.008.007400.4 |     552
- pch      |        1 | 01.008.007300.4 |     545
- pch      |        1 | 01.008.007700.2 |     574
- pch      |        1 | 01.008.007800.6 |     585
- pch      |        1 | 01.008.008700.8 |     649
- pch      |        1 | 01.004.011900.2 |     229
- pch      |        1 | 01.008.007100.2 |     530
- pch      |        1 | 01.013.016400.3 |    1080
- pch      |        1 | 01.015.016200.4 |    1192
- pch      |        1 | 01.011.014300.1 |     960
- pch      |        1 | 01.015.016900.2 |    1194
- pch      |        1 | 01.008.005400.3 |     417
- pch      |        1 | 01.008.005500.6 |     425
- pch      |        1 | 01.008.009200.8 |     685
- pch      |        1 | 01.014.018000.4 |    1142
- pch      |        1 | 01.014.018100.5 |    1147
- pch      |        1 | 01.008.005000.1 |     386
- pch      |        1 | 01.011.014600.5 |     981
- pch      |        1 | 01.008.004800.1 |     371
- pch      |        1 | 01.002.001500.6 |     104
- pch      |        1 | 01.008.005600.2 |     428
- pch      |        1 | 01.014.017300.1 |    1111
- pch      |        1 | 01.008.010100.4 |     747
- pch      |        1 | 01.011.013400.3 |     893
- pch      |        1 | 01.002.001100.4 |      70
- pch      |        1 | 01.006.002500.1 |     233
- pch      |        1 | 01.008.004700.2 |     363
- pch      |        1 | 01.008.010200.3 |     752
- pch      |        1 | 01.008.010500.3 |     777
- pch      |        1 | 01.003.003400.4 |     171
- pch      |        1 | 01.014.018000.2 |    1140
- pch      |        1 | 01.014.018300.2 |    1157
- pch      |        1 | 01.002.000900.6 |      56
- pch      |        1 | 01.008.006300.6 |     480
- pch      |        1 | 01.008.010700.9 |     799
- pch      |        1 | 01.008.003500.2 |     278
- pch      |        1 | 01.008.003900.4 |     305
- pch      |        1 | 01.013.016200.5 |    1067
- pch      |        1 | 01.001.000300.1 |       4
- pch      |        1 | 01.008.007000.4 |     525
- pch      |        1 | 01.011.013700.2 |     917
- pch      |        1 | 01.014.018100.1 |    1143
- pch      |        1 | 01.002.001400.5 |      94
- pch      |        1 | 01.004.011300.3 |     187
- pch      |        1 | 01.008.002900.5 |     274
- pch      |        1 | 01.008.003800.1 |     294
- pch      |        1 | 01.013.016600.3 |    1090
- pch      |        1 | 01.002.000400.3 |      12
- pch      |        1 | 01.008.004700.5 |     366
- pch      |        1 | 01.013.016400.6 |    1083
- pch      |        1 | 01.008.005000.2 |     387
- pch      |        1 | 01.008.005900.4 |     449
- pch      |        1 | 01.014.017200.4 |    1108
- pch      |        1 | 01.011.012800.4 |     847
- pch      |        1 | 01.002.000700.1 |      37
- pch      |        1 | 01.002.002000.1 |     140
- pch      |        1 | 01.008.009700.4 |     724
- pch      |        1 | 01.008.010700.8 |     798
- pch      |        1 | 01.004.011700.7 |     223
- pch      |        1 | 01.008.006800.4 |     513
- pch      |        1 | 01.011.015100.6 |    1018
- pch      |        1 | 01.008.008900.5 |     660
- pch      |        1 | 01.008.001000.1 |     261
- pch      |        1 | 01.008.009900.6 |     741
- pch      |        1 | 01.011.014000.3 |     944
- pch      |        1 | 01.008.008900.3 |     658
- pch      |        1 | 01.014.018400.6 |    1168
- pch      |        1 | 01.008.003700.7 |     291
- pch      |        1 | 01.008.003800.8 |     301
- pch      |        1 | 01.008.009300.2 |     687
- pch      |        1 | 01.011.013100.1 |     867
- pch      |        1 | 01.011.014900.2 |    1000
- pch      |        1 | 01.006.002600.2 |     237
- pch      |        1 | 01.007.012400.1 |     257
- pch      |        1 | 01.008.003800.5 |     298
- pch      |        1 | 01.014.017200.5 |    1109
- pch      |        1 | 01.011.012900.6 |     856
- pch      |        1 | 01.008.007700.7 |     579
- pch      |        1 | 01.011.014800.9 |     998
- pch      |        1 | 01.008.004100.7 |     323
- pch      |        1 | 01.011.014100.3 |     947
- pch      |        1 | 01.007.012100.3 |     244
- pch      |        1 | 01.013.016000.2 |    1058
- pch      |        1 | 01.011.014800.4 |     993
- pch      |        1 | 01.011.014800.8 |     997
- pch      |        1 | 01.004.011600.8 |     215
- pch      |        1 | 01.011.013800.5 |     928
- pch      |        1 | 01.008.003700.5 |     289
- pch      |        1 | 01.011.013100.6 |     872
- pch      |        1 | 01.014.018400.5 |    1167
- pch      |        1 | 01.008.004000.4 |     313
- pch      |        1 | 01.008.005900.2 |     447
- pch      |        1 | 01.008.006200.1 |     469
- pch      |        1 | 01.011.015700.2 |    1048
- pch      |        1 | 01.008.009700.6 |     726
- pch      |        1 | 01.018.019300.2 |    1211
- pch      |        1 | 01.008.006400.3 |     484
- pch      |        1 | 01.008.006900.5 |     520
- pch      |        1 | 01.011.013500.4 |     902
- pch      |        1 | 01.008.006100.6 |     466
- pch      |        1 | 01.008.006700.2 |     505
- pch      |        1 | 01.011.015100.4 |    1016
- pch      |        1 | 01.011.013900.9 |     941
- pch      |        1 | 01.004.011500.9 |     207
- pch      |        1 | 01.008.004500.5 |     351
- pch      |        1 | 01.008.006200.4 |     472
- pch      |        1 | 01.014.018500.4 |    1175
- pch      |        1 | 01.002.001700.4 |     118
- pch      |        1 | 01.008.009100.2 |     672
- pch      |        1 | 01.008.002900.4 |     273
- pch      |        1 | 01.008.004100.8 |     324
- pch      |        1 | 01.002.001000.3 |      62
- pch      |        1 | 01.011.015000.1 |    1007
- pch      |        1 | 01.008.003500.1 |     277
- pch      |        1 | 01.009.002800.3 |     821
- pch      |        1 | 01.002.002300.7 |     165
- pch      |        1 | 01.002.000500.2 |      20
- pch      |        1 | 01.014.017900.2 |    1138
- pch      |        1 | 01.009.002700.2 |     815
- pch      |        1 | 01.009.002800.5 |     823
- pch      |        1 | 01.007.012100.2 |     243
- pch      |        1 | 01.008.005700.1 |     433
- pch      |        1 | 01.006.002600.1 |     236
- pch      |        1 | 01.014.018100.4 |    1146
- pch      |        1 | 01.008.010900.5 |     807
- pch      |        1 | 01.011.015200.1 |    1020
- pch      |        1 | 01.008.004400.1 |     339
- pch      |        1 | 01.008.006700.5 |     508
- pch      |        1 | 01.013.016400.8 |    1085
- pch      |        1 | 01.008.006400.2 |     483
- pch      |        1 | 01.011.014600.8 |     984
- pch      |        1 | 01.009.003200.5 |     835
- pch      |        1 | 01.002.001100.3 |      69
- pch      |        1 | 01.004.011400.3 |     192
- pch      |        1 | 01.008.006800.5 |     514
- pch      |        1 | 01.008.007400.6 |     554
- pch      |        1 | 01.008.009300.5 |     690
- pch      |        1 | 01.009.002800.4 |     822
- pch      |        1 | 01.002.000600.1 |      28
- pch      |        1 | 01.008.009200.1 |     678
- pch      |        1 | 01.008.004800.7 |     377
- pch      |        1 | 01.008.005900.8 |     453
- pch      |        1 | 01.011.012600.1 |     837
- pch      |        1 | 01.008.010300.7 |     764
- pch      |        1 | 01.008.004500.4 |     350
- pch      |        1 | 01.008.008700.3 |     644
- pch      |        1 | 01.008.007300.5 |     546
- pch      |        1 | 01.014.017700.8 |    1131
- pch      |        1 | 01.002.000400.6 |      15
- pch      |        1 | 01.008.005100.1 |     394
- pch      |        1 | 01.008.006500.3 |     491
- pch      |        1 | 01.008.010500.9 |     783
- pch      |        1 | 01.008.009000.8 |     670
- pch      |        1 | 01.011.012800.7 |     850
- pch      |        1 | 01.013.016700.5 |    1099
- pch      |        1 | 01.008.007100.4 |     532
- pch      |        1 | 01.011.014700.4 |     988
- pch      |        1 | 01.004.011500.3 |     201
- pch      |        1 | 01.008.009100.4 |     674
- pch      |        1 | 01.005.002400.2 |     232
- pch      |        1 | 01.008.010500.4 |     778
- pch      |        1 | 01.002.002200.6 |     158
- pch      |        1 | 01.008.008700.6 |     647
- pch      |        1 | 01.004.011700.5 |     221
- pch      |        1 | 01.008.008100.2 |     600
- pch      |        1 | 01.008.004100.1 |     317
- pch      |        1 | 01.008.010300.6 |     763
- pch      |        1 | 01.004.011600.5 |     212
- pch      |        1 | 01.008.007500.8 |     564
- pch      |        1 | 01.008.003900.8 |     309
- pch      |        1 | 01.011.014300.3 |     962
- pch      |        1 | 01.004.011600.7 |     214
- pch      |        1 | 01.008.007700.3 |     575
- pch      |        1 | 01.014.018400.1 |    1163
- pch      |        1 | 01.004.011900.3 |     230
- pch      |        1 | 01.008.010400.1 |     767
- pch      |        1 | 01.007.012300.2 |     256
- pch      |        1 | 01.008.004400.2 |     340
- pch      |        1 | 01.008.007300.6 |     547
- pch      |        1 | 01.008.006500.4 |     492
- pch      |        1 | 01.008.007800.3 |     582
- pch      |        1 | 01.012.015900.2 |    1055
- pch      |        1 | 01.002.000500.9 |      27
- pch      |        1 | 01.008.008600.4 |     639
- pch      |        1 | 01.013.016800.2 |    1103
- pch      |        1 | 01.002.002100.2 |     146
- pch      |        1 | 01.008.001000.2 |     262
- pch      |        1 | 01.008.004300.8 |     338
- pch      |        1 | 01.011.013100.3 |     869
- pch      |        1 | 01.008.006600.8 |     503
- pch      |        1 | 01.008.009100.7 |     677
- pch      |        1 | 01.014.018700.1 |    1186
- pch      |        1 | 01.008.009400.4 |     697
- pch      |        1 | 01.011.013000.8 |     866
- pch      |        1 | 01.008.004000.3 |     312
- pch      |        1 | 01.008.009400.2 |     695
- pch      |        1 | 01.011.013600.7 |     913
- pch      |        1 | 01.004.011300.4 |     188
- pch      |        1 | 01.008.009900.5 |     740
- pch      |        1 | 01.018.019400.1 |    1213
- pch      |        1 | 01.011.015300.1 |    1023
- pch      |        1 | 01.002.001400.2 |      91
- pch      |        1 | 01.011.013900.6 |     938
- pch      |        1 | 01.008.006600.1 |     496
- pch      |        1 | 01.011.015300.2 |    1024
- pch      |        1 | 01.008.010600.2 |     785
- pch      |        1 | 01.004.011200.2 |     180
- pch      |        1 | 01.014.018000.1 |    1139
- pch      |        1 | 01.008.006300.5 |     479
- pch      |        1 | 01.008.009000.1 |     663
- pch      |        1 | 01.008.010600.4 |     787
- pch      |        1 | 01.011.013400.5 |     895
- pch      |        1 | 01.008.008400.1 |     621
- pch      |        1 | 01.008.009300.1 |     686
- pch      |        1 | 01.008.009400.8 |     701
- pch      |        1 | 01.011.013500.6 |     904
- pch      |        1 | 01.011.015300.3 |    1025
- pch      |        1 | 01.013.016100.3 |    1062
- pch      |        1 | 01.002.002300.5 |     163
- pch      |        1 | 01.008.007600.5 |     569
- pch      |        1 | 01.002.002200.3 |     155
- pch      |        1 | 01.008.006200.3 |     471
- pch      |        1 | 01.008.008900.2 |     657
- pch      |        1 | 01.008.006300.1 |     475
- pch      |        1 | 01.008.008900.1 |     656
- pch      |        1 | 01.011.013400.2 |     892
- pch      |        1 | 01.002.001000.4 |      63
- pch      |        1 | 01.011.013800.2 |     925
- pch      |        1 | 01.011.015100.5 |    1017
- pch      |        1 | 01.014.018400.8 |    1170
- pch      |        1 | 01.002.001000.6 |      65
- pch      |        1 | 01.008.004100.5 |     321
- pch      |        1 | 01.008.006600.2 |     497
- pch      |        1 | 01.002.000500.1 |      19
- pch      |        1 | 01.008.004900.4 |     383
- pch      |        1 | 01.011.014200.2 |     953
- pch      |        1 | 01.002.000900.1 |      51
- pch      |        1 | 01.002.001200.2 |      75
- pch      |        1 | 01.005.002400.1 |     231
- pch      |        1 | 01.008.010700.5 |     795
- pch      |        1 | 01.003.003300.1 |     167
- pch      |        1 | 01.013.016800.1 |    1102
- pch      |        1 | 01.008.005700.2 |     434
- pch      |        1 | 01.008.006700.4 |     507
- pch      |        1 | 01.008.008900.6 |     661
- pch      |        1 | 01.008.005900.3 |     448
- pch      |        1 | 01.008.006500.5 |     493
- pch      |        1 | 01.008.008600.3 |     638
- pch      |        1 | 01.008.002900.7 |     276
- pch      |        1 | 01.008.008000.6 |     597
- pch      |        1 | 01.008.010200.2 |     751
- pch      |        1 | 01.011.013000.3 |     861
- pch      |        1 | 01.014.017300.5 |    1115
- pch      |        1 | 01.008.008600.6 |     641
- pch      |        1 | 01.008.005100.2 |     395
- pch      |        1 | 01.007.012100.6 |     247
- pch      |        1 | 01.013.016000.3 |    1059
- pch      |        1 | 01.008.010400.8 |     774
- pch      |        1 | 01.008.005300.1 |     407
- pch      |        1 | 01.008.004400.5 |     343
- pch      |        1 | 01.011.014200.5 |     956
- pch      |        1 | 01.008.007800.5 |     584
- pch      |        1 | 01.011.013300.7 |     888
- pch      |        1 | 01.011.013800.1 |     924
- pch      |        1 | 01.018.019500.2 |    1217
- pch      |        1 | 01.011.013300.5 |     886
- pch      |        1 | 01.011.014500.3 |     971
- pch      |        1 | 01.011.013600.8 |     914
- pch      |        1 | 01.011.015400.4 |    1032
- pch      |        1 | 01.013.016800.3 |    1104
- pch      |        1 | 01.007.012200.7 |     254
- pch      |        1 | 01.014.017700.2 |    1125
- pch      |        1 | 01.008.007500.1 |     557
- pch      |        1 | 01.008.009700.7 |     727
- pch      |        1 | 01.008.009700.2 |     722
- pch      |        1 | 01.008.006300.7 |     481
- pch      |        1 | 01.002.002300.8 |     166
- pch      |        1 | 01.011.014500.8 |     976
- pch      |        1 | 01.011.013900.1 |     933
- pch      |        1 | 01.011.014600.1 |     977
- pch      |        1 | 01.008.004200.6 |     330
- pch      |        1 | 01.008.007500.7 |     563
- pch      |        1 | 01.008.011000.2 |     811
- pch      |        1 | 01.002.000300.1 |       5
- pch      |        1 | 01.004.011200.3 |     181
- pch      |        1 | 01.002.000900.5 |      55
- pch      |        1 | 01.002.000900.8 |      58
- pch      |        1 | 01.014.017700.5 |    1128
- pch      |        1 | 01.016.017100.1 |    1198
- pch      |        1 | 01.008.008300.5 |     617
- pch      |        1 | 01.011.014300.4 |     963
- pch      |        1 | 01.011.015500.1 |    1033
- pch      |        1 | 01.002.000600.2 |      29
- pch      |        1 | 01.002.002000.5 |     144
- pch      |        1 | 01.011.015100.7 |    1019
- pch      |        1 | 01.008.006100.7 |     467
- pch      |        1 | 01.002.002200.2 |     154
- pch      |        1 | 01.008.010900.1 |     803
- pch      |        1 | 01.011.013400.6 |     896
- pch      |        1 | 01.002.000700.3 |      39
- pch      |        1 | 01.004.011600.4 |     211
- pch      |        1 | 01.014.017200.3 |    1107
- pch      |        1 | 01.008.010200.7 |     756
- pch      |        1 | 01.002.002200.4 |     156
- pch      |        1 | 01.008.007900.3 |     590
- pch      |        1 | 01.002.000700.5 |      41
- pch      |        1 | 01.008.008400.2 |     622
- pch      |        1 | 01.008.007400.8 |     556
- pch      |        1 | 01.008.008100.7 |     605
- pch      |        1 | 01.008.008700.7 |     648
- pch      |        1 | 01.008.009400.3 |     696
- pch      |        1 | 01.008.009500.7 |     709
- pch      |        1 | 01.008.010600.6 |     789
- pch      |        1 | 01.008.010500.5 |     779
- pch      |        1 | 01.008.010500.1 |     775
- pch      |        1 | 01.008.009600.8 |     719
- pch      |        1 | 01.002.001700.2 |     116
- pch      |        1 | 01.008.008400.7 |     627
- pch      |        1 | 01.011.015700.3 |    1049
- pch      |        1 | 01.008.004900.5 |     384
- pch      |        1 | 01.008.009500.9 |     711
- pch      |        1 | 01.008.006400.1 |     482
- pch      |        1 | 01.008.006800.2 |     511
- pch      |        1 | 01.011.013900.5 |     937
- pch      |        1 | 01.002.000400.2 |      11
- pch      |        1 | 01.011.014700.2 |     986
- pch      |        1 | 01.008.007400.7 |     555
- pch      |        1 | 01.014.017200.2 |    1106
- pch      |        1 | 01.008.006000.6 |     459
- pch      |        1 | 01.002.002300.4 |     162
- pch      |        1 | 01.014.018500.8 |    1179
- pch      |        1 | 01.008.009200.6 |     683
- pch      |        1 | 01.008.009400.6 |     699
- pch      |        1 | 01.014.018500.7 |    1178
- pch      |        1 | 01.014.017800.2 |    1133
- pch      |        1 | 01.008.003700.8 |     292
- pch      |        1 | 01.018.019200.2 |    1208
- pch      |        1 | 01.011.013500.5 |     903
- pch      |        1 | 01.002.000800.1 |      44
- pch      |        1 | 01.008.003700.4 |     288
- pch      |        1 | 01.008.007400.5 |     553
- pch      |        1 | 01.011.012900.7 |     857
- pch      |        1 | 01.001.000200.1 |       3
- pch      |        1 | 01.008.008300.1 |     613
- pch      |        1 | 01.011.013600.2 |     908
- pch      |        1 | 01.006.002700.1 |     238
- pch      |        1 | 01.011.013000.4 |     862
- pch      |        1 | 01.011.014600.6 |     982
- pch      |        1 | 01.008.001000.7 |     267
- pch      |        1 | 01.002.001300.7 |      87
- pch      |        1 | 01.008.009500.1 |     703
- pch      |        1 | 01.008.007600.2 |     566
- pch      |        1 | 01.008.009000.5 |     667
- pch      |        1 | 01.013.016700.4 |    1098
- pch      |        1 | 01.008.007100.6 |     534
- pch      |        1 | 01.008.010400.2 |     768
- pch      |        1 | 01.011.013200.6 |     881
- pch      |        1 | 01.008.005600.4 |     430
- pch      |        1 | 01.008.005200.4 |     403
- pch      |        1 | 01.008.005300.3 |     409
- pch      |        1 | 01.002.000600.7 |      34
- pch      |        1 | 01.002.001600.8 |     114
- pch      |        1 | 01.002.001600.3 |     109
- pch      |        1 | 01.008.003700.9 |     293
- pch      |        1 | 01.011.012900.2 |     852
- pch      |        1 | 01.011.014900.4 |    1002
- pch      |        1 | 01.017.018900.1 |    1199
- pch      |        1 | 01.002.001300.4 |      84
- pch      |        1 | 01.011.013900.8 |     940
- pch      |        1 | 01.006.002500.3 |     235
- pch      |        1 | 01.014.018700.2 |    1187
- pch      |        1 | 01.002.000700.6 |      42
- pch      |        1 | 01.004.011700.3 |     219
- pch      |        1 | 01.013.016300.6 |    1075
- pch      |        1 | 01.011.013500.8 |     906
- pch      |        1 | 01.011.015600.2 |    1041
- pch      |        1 | 01.004.011200.1 |     179
- pch      |        1 | 01.008.009200.4 |     681
- pch      |        1 | 01.008.004600.3 |     356
- pch      |        1 | 01.008.010300.2 |     759
- pch      |        1 | 01.011.013400.7 |     897
- pch      |        1 | 01.008.005000.8 |     393
- pch      |        1 | 01.008.007000.2 |     523
- pch      |        1 | 01.002.001300.1 |      81
- pch      |        1 | 01.008.006800.3 |     512
- pch      |        1 | 01.008.008300.6 |     618
- pch      |        1 | 01.011.015100.2 |    1014
- pch      |        1 | 01.009.002900.1 |     824
- pch      |        1 | 01.008.004800.2 |     372
- pch      |        1 | 01.011.012800.1 |     844
- pch      |        1 | 01.011.015300.6 |    1028
- pch      |        1 | 01.008.010900.3 |     805
- pch      |        1 | 01.011.015800.1 |    1051
- pch      |        1 | 01.004.011400.7 |     196
- pch      |        1 | 01.007.012100.5 |     246
- pch      |        1 | 01.008.008500.3 |     630
- pch      |        1 | 01.002.000800.4 |      47
- pch      |        1 | 01.011.014800.6 |     995
- pch      |        1 | 01.004.011200.4 |     182
- pch      |        1 | 01.004.011300.5 |     189
- pch      |        1 | 01.008.005400.5 |     419
- pch      |        1 | 01.008.010300.5 |     762
- pch      |        1 | 01.011.015000.6 |    1012
- pch      |        1 | 01.008.010200.6 |     755
- pch      |        1 | 01.013.016200.6 |    1068
- pch      |        1 | 01.008.006400.4 |     485
- pch      |        1 | 01.013.016300.5 |    1074
- pch      |        1 | 01.002.001000.7 |      66
- pch      |        1 | 01.008.010800.2 |     801
- pch      |        1 | 01.008.006700.1 |     504
- pch      |        1 | 01.011.013600.6 |     912
- pch      |        1 | 01.001.000100.2 |       2
- pch      |        1 | 01.008.005200.7 |     406
- pch      |        1 | 01.011.015400.3 |    1031
- pch      |        1 | 01.008.009100.1 |     671
- pch      |        1 | 01.011.013300.6 |     887
- pch      |        1 | 01.002.001300.3 |      83
- pch      |        1 | 01.008.005600.3 |     429
- pch      |        1 | 01.013.016300.3 |    1072
- pch      |        1 | 01.008.005000.5 |     390
- pch      |        1 | 01.008.007200.2 |     537
- pch      |        1 | 01.008.004900.3 |     382
- pch      |        1 | 01.008.007300.7 |     548
- pch      |        1 | 01.009.002900.3 |     826
- pch      |        1 | 01.002.000800.7 |      50
- pch      |        1 | 01.003.003400.3 |     170
- pch      |        1 | 01.008.005800.4 |     443
- pch      |        1 | 01.008.009600.1 |     712
- pch      |        1 | 01.011.014700.5 |     989
- pch      |        1 | 01.002.001900.6 |     137
- pch      |        1 | 01.008.003600.4 |     284
- pch      |        1 | 01.011.013800.6 |     929
- pch      |        1 | 01.007.012000.3 |     241
- pch      |        1 | 01.014.018200.2 |    1150
- pch      |        1 | 01.002.001700.7 |     121
- pch      |        1 | 01.013.016200.4 |    1066
- pch      |        1 | 01.002.001900.1 |     132
- pch      |        1 | 01.004.011500.7 |     205
- pch      |        1 | 01.011.014900.3 |    1001
- pch      |        1 | 01.008.009300.4 |     689
- pch      |        1 | 01.009.002800.2 |     820
- pch      |        1 | 01.002.000400.9 |      18
- pch      |        1 | 01.008.008200.4 |     609
- pch      |        1 | 01.009.002700.1 |     814
- pch      |        1 | 01.008.005300.5 |     411
- pch      |        1 | 01.008.008100.6 |     604
- pch      |        1 | 01.008.010300.9 |     766
- pch      |        1 | 01.002.001800.4 |     127
- pch      |        1 | 01.014.017700.4 |    1127
- pch      |        1 | 01.002.001200.1 |      74
- pch      |        1 | 01.008.004300.5 |     335
- pch      |        1 | 01.011.014400.1 |     966
- pch      |        1 | 01.008.004300.6 |     336
- pch      |        1 | 01.008.005200.2 |     401
- pch      |        1 | 01.011.013700.8 |     923
- pch      |        1 | 01.004.011800.2 |     227
- pch      |        1 | 01.008.006000.1 |     454
- pch      |        1 | 01.004.011500.2 |     200
- pch      |        1 | 01.008.008300.8 |     620
- pch      |        1 | 01.018.019200.3 |    1209
- pch      |        1 | 01.008.003900.6 |     307
- pch      |        1 | 01.002.001400.8 |      97
- pch      |        1 | 01.008.010100.1 |     744
- pch      |        1 | 01.014.018400.4 |    1166
- pch      |        1 | 01.008.007600.6 |     570
- pch      |        1 | 01.011.013000.1 |     859
- pch      |        1 | 01.008.004100.6 |     322
- pch      |        1 | 01.014.017300.3 |    1113
- pch      |        1 | 01.008.005300.8 |     414
- pch      |        1 | 01.002.001300.6 |      86
- pch      |        1 | 01.008.009800.7 |     735
- pch      |        1 | 01.002.001100.7 |      73
- pch      |        1 | 01.008.008000.2 |     593
- pch      |        1 | 01.002.000400.7 |      16
- pch      |        1 | 01.004.011800.1 |     226
- pch      |        1 | 01.008.008100.5 |     603
- pch      |        1 | 01.008.007700.6 |     578
- pch      |        1 | 01.018.019100.1 |    1202
- pch      |        1 | 01.008.004800.9 |     379
- pch      |        1 | 01.008.011000.3 |     812
- pch      |        1 | 01.013.016600.4 |    1091
- pch      |        1 | 01.017.019000.1 |    1200
- pch      |        1 | 01.011.015600.1 |    1040
- pch      |        1 | 01.004.011900.1 |     228
- pch      |        1 | 01.007.012000.2 |     240
- pch      |        1 | 01.008.010400.5 |     771
- pch      |        1 | 01.011.012700.2 |     842
- pch      |        1 | 01.008.003900.5 |     306
- pch      |        1 | 01.009.002700.3 |     816
- pch      |        1 | 01.014.018600.2 |    1181
- pch      |        1 | 01.008.005200.1 |     400
- pch      |        1 | 01.011.012800.2 |     845
- pch      |        1 | 01.002.002000.2 |     141
- pch      |        1 | 01.004.011700.6 |     222
- pch      |        1 | 01.008.004400.3 |     341
- pch      |        1 | 01.002.001900.8 |     139
- pch      |        1 | 01.008.008800.6 |     655
- pch      |        1 | 01.011.015500.6 |    1038
- pch      |        1 | 01.014.017200.7 |    1110
- pch      |        1 | 01.011.015200.3 |    1022
- pch      |        1 | 01.014.017700.6 |    1129
- pch      |        1 | 01.008.004900.2 |     381
- pch      |        1 | 01.008.001000.5 |     265
- pch      |        1 | 01.008.005200.3 |     402
- pch      |        1 | 01.008.009600.4 |     715
- pch      |        1 | 01.011.014600.7 |     983
- pch      |        1 | 01.011.014300.5 |     964
- pch      |        1 | 01.008.006900.2 |     517
- pch      |        1 | 01.008.004700.4 |     365
- pch      |        1 | 01.008.009300.6 |     691
- pch      |        1 | 01.011.013600.1 |     907
- pch      |        1 | 01.011.014700.3 |     987
- pch      |        1 | 01.008.009800.2 |     730
- pch      |        1 | 01.018.019100.4 |    1205
- pch      |        1 | 01.011.013100.2 |     868
- pch      |        1 | 01.008.008400.4 |     624
- pch      |        1 | 01.008.009700.8 |     728
- pch      |        1 | 01.011.013400.4 |     894
- pch      |        1 | 01.011.013600.4 |     910
- pch      |        1 | 01.008.007500.6 |     562
- pch      |        1 | 01.008.009600.7 |     718
- pch      |        1 | 01.008.003600.2 |     282
- pch      |        1 | 01.011.013100.8 |     874
- pch      |        1 | 01.013.016400.1 |    1078
- pch      |        1 | 01.014.018200.4 |    1152
- pch      |        1 | 01.008.009200.3 |     680
- pch      |        1 | 01.008.004500.6 |     352
- pch      |        1 | 01.008.005500.1 |     420
- pch      |        1 | 01.008.009800.3 |     731
- pch      |        1 | 01.008.010500.8 |     782
- pch      |        1 | 01.008.006900.4 |     519
- pch      |        1 | 01.008.007200.5 |     540
- pch      |        1 | 01.011.013000.2 |     860
- pch      |        1 | 01.002.000600.3 |      30
- pch      |        1 | 01.011.014100.7 |     951
- pch      |        1 | 01.008.007300.1 |     542
- pch      |        1 | 01.009.003200.6 |     836
- pch      |        1 | 01.002.000400.5 |      14
- pch      |        1 | 01.003.003400.6 |     173
- pch      |        1 | 01.008.007100.7 |     535
- pch      |        1 | 01.004.011100.2 |     175
- pch      |        1 | 01.008.009300.3 |     688
- pch      |        1 | 01.011.015100.3 |    1015
- pch      |        1 | 01.008.004600.1 |     354
- pch      |        1 | 01.008.010700.1 |     791
- pch      |        1 | 01.013.016500.2 |    1087
- pch      |        1 | 01.008.003900.7 |     308
- pch      |        1 | 01.008.004000.2 |     311
- pch      |        1 | 01.008.010500.6 |     780
- pch      |        1 | 01.008.004200.2 |     326
- pch      |        1 | 01.011.013400.8 |     898
- pch      |        1 | 01.011.013600.5 |     911
- pch      |        1 | 01.008.007100.5 |     533
- pch      |        1 | 01.009.003100.2 |     829
- pch      |        1 | 01.013.016100.1 |    1060
- pch      |        1 | 01.002.000600.4 |      31
- pch      |        1 | 01.002.001200.5 |      78
- pch      |        1 | 01.011.013900.4 |     936
- pch      |        1 | 01.011.012600.3 |     839
- pch      |        1 | 01.002.002100.5 |     149
- pch      |        1 | 01.008.005100.5 |     398
- pch      |        1 | 01.008.004700.6 |     367
- pch      |        1 | 01.002.000800.6 |      49
- pch      |        1 | 01.002.000900.4 |      54
- pch      |        1 | 01.002.001800.8 |     131
- pch      |        1 | 01.008.003500.3 |     279
- pch      |        1 | 01.008.008400.5 |     625
- pch      |        1 | 01.002.001500.4 |     102
- pch      |        1 | 01.011.012600.4 |     840
- pch      |        1 | 01.008.008700.1 |     642
- pch      |        1 | 01.002.000600.6 |      33
- pch      |        1 | 01.002.002300.3 |     161
- pch      |        1 | 01.008.006100.4 |     464
- pch      |        1 | 01.008.001000.3 |     263
- pch      |        1 | 01.008.009500.2 |     704
- pch      |        1 | 01.008.007700.5 |     577
- pch      |        1 | 01.011.013100.5 |     871
- pch      |        1 | 01.008.007000.5 |     526
- pch      |        1 | 01.008.010700.4 |     794
- pch      |        1 | 01.002.000500.4 |      22
- pch      |        1 | 01.003.003400.5 |     172
- pch      |        1 | 01.008.006100.8 |     468
- pch      |        1 | 01.008.010600.5 |     788
- pch      |        1 | 01.008.005700.3 |     435
- pch      |        1 | 01.008.007500.3 |     559
- pch      |        1 | 01.011.013000.7 |     865
- pch      |        1 | 01.002.001700.6 |     120
- pch      |        1 | 01.014.017200.1 |    1105
- pch      |        1 | 01.011.014300.2 |     961
- pch      |        1 | 01.014.018800.1 |    1188
- pch      |        1 | 01.013.016600.6 |    1093
- pch      |        1 | 01.011.013700.4 |     919
- pch      |        1 | 01.011.015600.5 |    1044
- pch      |        1 | 01.008.007600.7 |     571
- pch      |        1 | 01.014.018500.5 |    1176
- pch      |        1 | 01.008.007500.4 |     560
- pch      |        1 | 01.013.016300.4 |    1073
- pch      |        1 | 01.002.001900.5 |     136
- pch      |        1 | 01.011.014000.1 |     942
- pch      |        1 | 01.002.002200.5 |     157
- pch      |        1 | 01.007.012300.1 |     255
- pch      |        1 | 01.011.014800.2 |     991
- pch      |        1 | 01.013.016400.2 |    1079
- pch      |        1 | 01.008.006900.1 |     516
- pch      |        1 | 01.014.018100.3 |    1145
- pch      |        1 | 01.008.005800.2 |     441
- pch      |        1 | 01.008.006100.5 |     465
- pch      |        1 | 01.008.006600.7 |     502
- pch      |        1 | 01.014.018600.5 |    1184
- pch      |        1 | 01.008.009700.1 |     721
- pch      |        1 | 01.008.008800.5 |     654
- pch      |        1 | 01.008.005400.1 |     415
- pch      |        1 | 01.008.009800.4 |     732
- pch      |        1 | 01.008.010100.5 |     748
- pch      |        1 | 01.014.018600.1 |    1180
- pch      |        1 | 01.008.005500.7 |     426
- pch      |        1 | 01.012.016000.1 |    1057
- pch      |        1 | 01.008.004600.6 |     359
- pch      |        1 | 01.011.014100.5 |     949
- pch      |        1 | 01.011.015500.7 |    1039
- pch      |        1 | 01.008.010100.2 |     745
- pch      |        1 | 01.011.013200.1 |     876
- pch      |        1 | 01.008.006400.5 |     486
- pch      |        1 | 01.008.005900.1 |     446
- pch      |        1 | 01.009.003000.1 |     827
- pch      |        1 | 01.008.004100.3 |     319
- pch      |        1 | 01.002.001300.5 |      85
- pch      |        1 | 01.011.015300.5 |    1027
- pch      |        1 | 01.008.007900.2 |     589
- pch      |        1 | 01.018.019400.3 |    1215
- pch      |        1 | 01.004.011100.4 |     177
- pch      |        1 | 01.011.013700.5 |     920
- pch      |        1 | 01.011.015000.4 |    1010
- pch      |        1 | 01.008.009000.7 |     669
- pch      |        1 | 01.008.007800.7 |     586
- pch      |        1 | 01.013.016200.7 |    1069
- pch      |        1 | 01.008.004000.1 |     310
- pch      |        1 | 01.008.004500.1 |     347
- pch      |        1 | 01.008.001000.8 |     268
- pch      |        1 | 01.008.010900.6 |     808
- pch      |        1 | 01.011.013500.3 |     901
- pch      |        1 | 01.011.014500.5 |     973
- pch      |        1 | 01.014.018500.3 |    1174
- pch      |        1 | 01.008.003500.4 |     280
- pch      |        1 | 01.008.010600.7 |     790
- pch      |        1 | 01.009.002800.1 |     819
- pch      |        1 | 01.008.007500.5 |     561
- pch      |        1 | 01.011.014200.4 |     955
- pch      |        1 | 01.008.007900.4 |     591
- pch      |        1 | 01.011.013600.3 |     909
- pch      |        1 | 01.011.014100.6 |     950
- pch      |        1 | 01.011.013100.9 |     875
- pch      |        1 | 01.011.013500.1 |     899
- pch      |        1 | 01.011.012600.2 |     838
- pch      |        1 | 01.009.003100.3 |     830
- pch      |        1 | 01.011.014500.7 |     975
- pch      |        1 | 01.002.000500.7 |      25
- pch      |        1 | 01.008.004200.4 |     328
- pch      |        1 | 01.008.010600.1 |     784
- pch      |        1 | 01.008.009500.5 |     707
- pch      |        1 | 01.002.001900.7 |     138
- pch      |        1 | 01.008.006800.6 |     515
- pch      |        1 | 01.002.000400.4 |      13
- pch      |        1 | 01.008.002900.1 |     270
- pch      |        1 | 01.011.014800.1 |     990
- pch      |        1 | 01.002.001200.4 |      77
- pch      |        1 | 01.008.010900.4 |     806
- pch      |        1 | 01.002.000800.3 |      46
- pch      |        1 | 01.008.005900.7 |     452
- pch      |        1 | 01.013.016700.3 |    1097
- pch      |        1 | 01.008.004400.6 |     344
- pch      |        1 | 01.002.002300.1 |     159
- pch      |        1 | 01.002.001800.1 |     124
- pch      |        1 | 01.008.007300.3 |     544
- pch      |        1 | 01.008.005700.4 |     436
- pch      |        1 | 01.008.008800.4 |     653
- pch      |        1 | 01.011.014900.5 |    1003
- pch      |        1 | 01.014.018000.3 |    1141
- pch      |        1 | 01.002.001100.1 |      67
- pch      |        1 | 01.008.004100.4 |     320
- pch      |        1 | 01.002.001500.5 |     103
- pch      |        1 | 01.006.002500.2 |     234
- pch      |        1 | 01.011.014900.6 |    1004
- pch      |        1 | 01.011.013300.9 |     890
- pch      |        1 | 01.008.008500.6 |     633
- pch      |        1 | 01.008.009200.5 |     682
- pch      |        1 | 01.008.009300.7 |     692
- pch      |        1 | 01.002.001400.6 |      95
- pch      |        1 | 01.008.010400.3 |     769
- pch      |        1 | 01.004.011600.9 |     216
- pch      |        1 | 01.013.016400.4 |    1081
- pch      |        1 | 01.004.011500.1 |     199
- pch      |        1 | 01.011.014200.6 |     957
- pch      |        1 | 01.018.019200.1 |    1207
- pch      |        1 | 01.002.001900.4 |     135
- pch      |        1 | 01.011.014900.1 |     999
- pch      |        1 | 01.014.017700.7 |    1130
- pch      |        1 | 01.015.016900.1 |    1193
- pch      |        1 | 01.008.004600.4 |     357
- pch      |        1 | 01.014.017800.1 |    1132
- pch      |        1 | 01.008.007800.8 |     587
- pch      |        1 | 01.007.012200.4 |     251
- pch      |        1 | 01.008.010300.4 |     761
- pch      |        1 | 01.008.006100.3 |     463
- pch      |        1 | 01.008.005600.6 |     432
- pch      |        1 | 01.008.004500.7 |     353
- pch      |        1 | 01.008.004500.3 |     349
- pch      |        1 | 01.011.013800.7 |     930
- pch      |        1 | 01.008.006700.3 |     506
- pch      |        1 | 01.004.011400.2 |     191
- pch      |        1 | 01.008.009000.2 |     664
- pch      |        1 | 01.002.001400.3 |      92
- pch      |        1 | 01.011.014800.5 |     994
- pch      |        1 | 01.009.002700.4 |     817
- pch      |        1 | 01.002.001700.5 |     119
- pch      |        1 | 01.008.005900.6 |     451
- pch      |        1 | 01.014.018800.2 |    1189
- pch      |        1 | 01.018.019100.3 |    1204
- pch      |        1 | 01.011.014300.6 |     965
- pch      |        1 | 01.008.006000.2 |     455
- pch      |        1 | 01.008.008200.5 |     610
- pch      |        1 | 01.008.009000.3 |     665
- pch      |        1 | 01.008.007800.4 |     583
- pch      |        1 | 01.008.009900.2 |     737
- pch      |        1 | 01.011.015000.2 |    1008
- pch      |        1 | 01.008.006200.6 |     474
- pch      |        1 | 01.014.017600.1 |    1119
- pch      |        1 | 01.004.011400.6 |     195
- pch      |        1 | 01.008.008000.1 |     592
- pch      |        1 | 01.008.008300.2 |     614
- pch      |        1 | 01.004.011700.4 |     220
- pch      |        1 | 01.008.009600.6 |     717
- pch      |        1 | 01.008.003600.1 |     281
- pch      |        1 | 01.002.002100.1 |     145
- pch      |        1 | 01.002.001300.8 |      88
- pch      |        1 | 01.003.003400.2 |     169
- pch      |        1 | 01.014.017600.4 |    1122
- pch      |        1 | 01.008.008500.2 |     629
- pch      |        1 | 01.011.012700.1 |     841
- pch      |        1 | 01.008.008000.3 |     594
- pch      |        1 | 01.002.001600.6 |     112
- pch      |        1 | 01.007.012000.1 |     239
- pch      |        1 | 01.011.015200.2 |    1021
- pch      |        1 | 01.014.017300.2 |    1112
- pch      |        1 | 01.008.004900.6 |     385
- pch      |        1 | 01.008.007000.7 |     528
- pch      |        1 | 01.013.016400.7 |    1084
- pch      |        1 | 01.008.004200.5 |     329
- pch      |        1 | 01.008.007100.3 |     531
- pch      |        1 | 01.008.005300.7 |     413
- pch      |        1 | 01.002.001100.5 |      71
- pch      |        1 | 01.008.007900.1 |     588
- pch      |        1 | 01.008.008100.3 |     601
- pch      |        1 | 01.008.006000.4 |     457
- pch      |        1 | 01.013.016600.5 |    1092
- pch      |        1 | 01.008.004600.8 |     361
- pch      |        1 | 01.018.019300.1 |    1210
- pch      |        1 | 01.008.003700.2 |     286
- pch      |        1 | 01.008.009900.4 |     739
- pch      |        1 | 01.013.016200.2 |    1064
- pch      |        1 | 01.011.012800.3 |     846
- pch      |        1 | 01.008.002900.3 |     272
- pch      |        1 | 01.008.005300.4 |     410
- pch      |        1 | 01.008.010500.7 |     781
- pch      |        1 | 01.008.004800.6 |     376
- pch      |        1 | 01.008.001000.4 |     264
- pch      |        1 | 01.012.015900.1 |    1054
- pch      |        1 | 01.004.011400.9 |     198
- pch      |        1 | 01.008.005600.1 |     427
- pch      |        1 | 01.008.010700.7 |     797
- pch      |        1 | 01.008.003700.3 |     287
-(1218 rows)
-
- username | study_id | inv_id | covariate_name | min | max | geography | study_geolevel_name 
-----------+----------+--------+----------------+-----+-----+-----------+---------------------
- pch      |        1 |      1 | SES            |   1 |   5 | SAHSU     | LEVEL4
-(1 row)
-
- username | study_id | statement_type | statement_number |                               log_message                                |          audsid           | log_sqlcode | rowcount |       start_time        | elapsed_time 
-----------+----------+----------------+------------------+--------------------------------------------------------------------------+---------------------------+-------------+----------+-------------------------+--------------
- pch      |        1 | CREATE         |                1 | OK, took: 00:00:00.094                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:06.109 |        0.094
- pch      |        1 | CREATE         |                3 | OK, took: 00:00:00.156                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:06.109 |        0.156
- pch      |        1 | CREATE         |                4 | OK, took: 00:00:00.203                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:06.109 |        0.203
- pch      |        1 | CREATE         |                5 | OK, took: 00:00:00.25                                                    | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:06.109 |         0.25
- pch      |        1 | CREATE         |                6 | OK, took: 00:00:00.296                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:06.109 |        0.296
- pch      |        1 | CREATE         |                7 | OK, took: 00:00:00.343                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:06.109 |        0.343
- pch      |        1 | CREATE         |                8 | OK, took: 00:00:00.406                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:06.109 |        0.406
- pch      |        1 | CREATE         |                9 | OK, took: 00:00:00.452                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:06.109 |        0.452
- pch      |        1 | CREATE         |               10 | OK, took: 00:00:00.499                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:06.109 |        0.499
- pch      |        1 | CREATE         |               11 | OK, took: 00:00:00.546                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:06.109 |        0.546
- pch      |        1 | CREATE         |               12 | OK, took: 00:00:00.593                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:06.109 |        0.593
- pch      |        1 | CREATE         |               13 | OK, took: 00:00:00.64                                                    | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:06.109 |         0.64
- pch      |        1 | CREATE         |               14 | OK, took: 00:00:00.686                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:06.109 |        0.686
- pch      |        1 | INSERT         |               15 | Study area insert OK, inserted 1218 rows, took: 00:00:00                 | 5368.2456750.61135.111000 | 00000       |     1218 | 2014-04-02 16:59:06.795 |            0
- pch      |        1 | INSERT         |               16 | Study extract insert 1989 (EXPLAIN) OK, took: 00:00:00                   | 5368.2456750.61135.111000 | 00000       |        1 | 2014-04-02 16:59:06.889 |            0
- pch      |        1 | INSERT         |               17 | Study extract 1989 insert (EXPLAIN ANALYZE) OK, took: 00:00:01.029       | 5368.2456750.61135.111000 | 00000       |        1 | 2014-04-02 16:59:06.936 |        1.029
- pch      |        1 | INSERT         |               18 | Study extract insert 1990 OK, inserted 53592 rows, took: 00:00:01.03     | 5368.2456750.61135.111000 | 00000       |    53592 | 2014-04-02 16:59:08.043 |         1.03
- pch      |        1 | INSERT         |               19 | Study extract insert 1991 OK, inserted 53592 rows, took: 00:00:00.889    | 5368.2456750.61135.111000 | 00000       |    53592 | 2014-04-02 16:59:09.12  |        0.889
- pch      |        1 | INSERT         |               20 | Study extract insert 1992 OK, inserted 53592 rows, took: 00:00:00.936    | 5368.2456750.61135.111000 | 00000       |    53592 | 2014-04-02 16:59:10.04  |        0.936
- pch      |        1 | INSERT         |               21 | Study extract insert 1993 OK, inserted 53592 rows, took: 00:00:00.905    | 5368.2456750.61135.111000 | 00000       |    53592 | 2014-04-02 16:59:11.023 |        0.905
- pch      |        1 | INSERT         |               22 | Study extract insert 1994 OK, inserted 53592 rows, took: 00:00:00.936    | 5368.2456750.61135.111000 | 00000       |    53592 | 2014-04-02 16:59:11.975 |        0.936
- pch      |        1 | INSERT         |               23 | Study extract insert 1995 OK, inserted 53592 rows, took: 00:00:00.967    | 5368.2456750.61135.111000 | 00000       |    53592 | 2014-04-02 16:59:12.942 |        0.967
- pch      |        1 | INSERT         |               24 | Study extract insert 1996 OK, inserted 53592 rows, took: 00:00:00.921    | 5368.2456750.61135.111000 | 00000       |    53592 | 2014-04-02 16:59:13.94  |        0.921
- pch      |        1 | INSERT         |               25 | Comparison area insert OK, inserted 17 rows, took: 00:00:00              | 5368.2456750.61135.111000 | 00000       |       17 | 2014-04-02 16:59:14.861 |            0
- pch      |        1 | INSERT         |               26 | Comparison extract insert 1989 (EXPLAIN) OK, took: 00:00:00.016          | 5368.2456750.61135.111000 | 00000       |        1 | 2014-04-02 16:59:14.923 |        0.016
- pch      |        1 | INSERT         |               27 | Comparison extract 1989 insert (EXPLAIN ANALYZE) OK, took: 00:00:00.125  | 5368.2456750.61135.111000 | 00000       |        1 | 2014-04-02 16:59:14.97  |        0.125
- pch      |        1 | INSERT         |               28 | Comparison extract insert 1990 OK, inserted 748 rows, took: 00:00:00.125 | 5368.2456750.61135.111000 | 00000       |      748 | 2014-04-02 16:59:15.188 |        0.125
- pch      |        1 | INSERT         |               29 | Comparison extract insert 1991 OK, inserted 748 rows, took: 00:00:00.109 | 5368.2456750.61135.111000 | 00000       |      748 | 2014-04-02 16:59:15.36  |        0.109
- pch      |        1 | INSERT         |               30 | Comparison extract insert 1992 OK, inserted 748 rows, took: 00:00:00.062 | 5368.2456750.61135.111000 | 00000       |      748 | 2014-04-02 16:59:15.516 |        0.062
- pch      |        1 | INSERT         |               31 | Comparison extract insert 1993 OK, inserted 748 rows, took: 00:00:00.062 | 5368.2456750.61135.111000 | 00000       |      748 | 2014-04-02 16:59:15.625 |        0.062
- pch      |        1 | INSERT         |               32 | Comparison extract insert 1994 OK, inserted 748 rows, took: 00:00:00.078 | 5368.2456750.61135.111000 | 00000       |      748 | 2014-04-02 16:59:15.719 |        0.078
- pch      |        1 | INSERT         |               33 | Comparison extract insert 1995 OK, inserted 748 rows, took: 00:00:00.062 | 5368.2456750.61135.111000 | 00000       |      748 | 2014-04-02 16:59:15.828 |        0.062
- pch      |        1 | INSERT         |               34 | Comparison extract insert 1996 OK, inserted 748 rows, took: 00:00:00.063 | 5368.2456750.61135.111000 | 00000       |      748 | 2014-04-02 16:59:15.937 |        0.063
- pch      |        1 | POST_INSERT    |               35 | OK, took: 00:00:03.837                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:16.031 |        3.837
- pch      |        1 | POST_INSERT    |               36 | OK, took: 00:00:04.43                                                    | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:16.031 |         4.43
- pch      |        1 | POST_INSERT    |               37 | OK, took: 00:00:05.117                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:16.031 |        5.117
- pch      |        1 | POST_INSERT    |               38 | OK, took: 00:00:05.865                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:16.031 |        5.865
- pch      |        1 | POST_INSERT    |               39 | OK, took: 00:00:06.474                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:16.031 |        6.474
- pch      |        1 | POST_INSERT    |               40 | OK, took: 00:00:09.875                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:16.031 |        9.875
- pch      |        1 | POST_INSERT    |               41 | OK, took: 00:00:10.421                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:16.031 |       10.421
- pch      |        1 | INSERT         |               42 | rif40_results observed INSERT OK, inserted 3654 rows, took: 00:00:00.92  | 5368.2456750.61135.111000 | 00000       |     3654 | 2014-04-02 16:59:27.934 |         0.92
- pch      |        1 | POST_INSERT    |               43 | OK, took: 00:00:00.078                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        0.078
- pch      |        1 | POST_INSERT    |               44 | OK, took: 00:00:00.14                                                    | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |         0.14
- pch      |        1 | POST_INSERT    |               45 | OK, took: 00:00:00.187                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        0.187
- pch      |        1 | POST_INSERT    |               46 | OK, took: 00:00:00.234                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        0.234
- pch      |        1 | POST_INSERT    |               47 | OK, took: 00:00:00.28                                                    | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |         0.28
- pch      |        1 | POST_INSERT    |               48 | OK, took: 00:00:00.327                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        0.327
- pch      |        1 | POST_INSERT    |               49 | OK, took: 00:00:00.374                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        0.374
- pch      |        1 | POST_INSERT    |               50 | OK, took: 00:00:00.421                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        0.421
- pch      |        1 | POST_INSERT    |               51 | OK, took: 00:00:00.483                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        0.483
- pch      |        1 | POST_INSERT    |               52 | OK, took: 00:00:00.53                                                    | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |         0.53
- pch      |        1 | POST_INSERT    |               53 | OK, took: 00:00:00.577                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        0.577
- pch      |        1 | POST_INSERT    |               54 | OK, took: 00:00:00.624                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        0.624
- pch      |        1 | POST_INSERT    |               55 | OK, took: 00:00:00.686                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        0.686
- pch      |        1 | POST_INSERT    |               56 | OK, took: 00:00:00.733                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        0.733
- pch      |        1 | POST_INSERT    |               57 | OK, took: 00:00:00.795                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        0.795
- pch      |        1 | POST_INSERT    |               58 | OK, took: 00:00:00.842                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        0.842
- pch      |        1 | POST_INSERT    |               59 | OK, took: 00:00:00.889                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        0.889
- pch      |        1 | POST_INSERT    |               60 | OK, took: 00:00:00.936                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        0.936
- pch      |        1 | POST_INSERT    |               61 | OK, took: 00:00:00.998                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        0.998
- pch      |        1 | POST_INSERT    |               62 | OK, took: 00:00:01.045                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        1.045
- pch      |        1 | POST_INSERT    |               63 | OK, took: 00:00:01.092                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        1.092
- pch      |        1 | POST_INSERT    |               64 | OK, took: 00:00:01.154                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        1.154
- pch      |        1 | POST_INSERT    |               65 | OK, took: 00:00:01.201                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        1.201
- pch      |        1 | POST_INSERT    |               66 | OK, took: 00:00:01.248                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        1.248
- pch      |        1 | POST_INSERT    |               67 | OK, took: 00:00:01.294                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        1.294
- pch      |        1 | POST_INSERT    |               68 | OK, took: 00:00:01.341                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        1.341
- pch      |        1 | POST_INSERT    |               69 | OK, took: 00:00:01.404                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:29.416 |        1.404
- pch      |        1 | INSERT         |               70 | Map table observed INSERT OK, inserted 3654 rows, took: 00:00:00.015     | 5368.2456750.61135.111000 | 00000       |     3654 | 2014-04-02 16:59:30.82  |        0.015
- pch      |        1 | POST_INSERT    |               71 | OK, took: 00:00:00.078                                                   | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:30.882 |        0.078
- pch      |        1 | POST_INSERT    |               72 | OK, took: 00:00:00.14                                                    | 5368.2456750.61135.111000 | 00000       |        0 | 2014-04-02 16:59:30.882 |         0.14
-(71 rows)
-
-               function_name                | debug  | debug_level 
---------------------------------------------+--------+-------------
- rif40_compute_results                      | DEBUG1 |           1
- rif40_create_insert_statement              | DEBUG1 |           1
- rif40_ddl                                  | DEBUG1 |           1
- rif40_execute_insert_statement             | DEBUG1 |           1
- rif40_run_study                            | DEBUG1 |           1
- rif40_startup                              | DEBUG1 |           1
- rif40_study_ddl_definer                    | DEBUG1 |           1
- rif40_verify_state_change                  | DEBUG1 |           1
- trigger_fct_rif40_study_shares_checks      | DEBUG1 |           1
- trigger_fct_t_rif40_comp_areas_checks      | DEBUG1 |           1
- trigger_fct_t_rif40_comp_areas_checks2     | DEBUG1 |           1
- trigger_fct_t_rif40_contextualstats_checks | DEBUG1 |           1
- trigger_fct_t_rif40_inv_conditions_checks  | DEBUG1 |           1
- trigger_fct_t_rif40_inv_covariates_checks  | DEBUG1 |           1
- trigger_fct_t_rif40_investigations_checks  | DEBUG1 |           1
- trigger_fct_t_rif40_results_checks         | DEBUG1 |           1
- trigger_fct_t_rif40_studies_checks         | DEBUG1 |           1
- trigger_fct_t_rif40_study_areas_checks     | DEBUG1 |           1
- trigger_fct_t_rif40_study_areas_checks2    | DEBUG1 |           1
- trigger_fct_t_rif40_study_sql_checks       | DEBUG1 |           1
- trigger_fct_t_rif40_study_sql_log_checks   | DEBUG1 |           1
-(21 rows)
-
-                          Table "pg_temp_3.sahsuland_example_extract"
-       Column        |         Type         | Modifiers | Storage  | Stats target | Description 
----------------------+----------------------+-----------+----------+--------------+-------------
- year                | smallint             |           | plain    |              | 
- study_or_comparison | character varying(1) |           | extended |              | 
- study_id            | integer              |           | plain    |              | 
- area_id             | character varying    |           | extended |              | 
- band_id             | integer              |           | plain    |              | 
- sex                 | smallint             |           | plain    |              | 
- age_group           | smallint             |           | plain    |              | 
- ses                 | character varying    |           | extended |              | 
- inv_1               | bigint               |           | plain    |              | 
- total_pop           | double precision     |           | plain    |              | 
-Has OIDs: no
-
-                                  Table "pg_temp_3.sahsuland_example_map"
-            Column             |         Type          | Modifiers | Storage  | Stats target | Description 
--------------------------------+-----------------------+-----------+----------+--------------+-------------
- username                      | character varying(90) |           | extended |              | 
- study_id                      | integer               |           | plain    |              | 
- inv_id                        | integer               |           | plain    |              | 
- band_id                       | integer               |           | plain    |              | 
- genders                       | smallint              |           | plain    |              | 
- direct_standardisation        | smallint              |           | plain    |              | 
- adjusted                      | smallint              |           | plain    |              | 
- observed                      | double precision      |           | plain    |              | 
- expected                      | double precision      |           | plain    |              | 
- lower95                       | double precision      |           | plain    |              | 
- upper95                       | double precision      |           | plain    |              | 
- relative_risk                 | double precision      |           | plain    |              | 
- smoothed_relative_risk        | double precision      |           | plain    |              | 
- posterior_probability         | double precision      |           | plain    |              | 
- posterior_probability_upper95 | double precision      |           | plain    |              | 
- posterior_probability_lower95 | double precision      |           | plain    |              | 
- residual_relative_risk        | double precision      |           | plain    |              | 
- residual_rr_lower95           | double precision      |           | plain    |              | 
- residual_rr_upper95           | double precision      |           | plain    |              | 
- smoothed_smr                  | double precision      |           | plain    |              | 
- smoothed_smr_lower95          | double precision      |           | plain    |              | 
- smoothed_smr_upper95          | double precision      |           | plain    |              | 
-Has OIDs: no
-
- total  
---------
- 434720
-(1 row)
-
- total 
--------
-  3654
-(1 row)
-
- total 
--------
-  1218
-(1 row)
-
-DO
-COMMIT
+DELETE 0
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+DELETE 0
+INSERT 0 1

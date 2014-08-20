@@ -70,8 +70,8 @@ END;
 $$;
 
 \set ON_ERROR_STOP OFF
-DROP TYPE rif40_log_pkg.rif40_log_debug_level CASCADE;
-DROP TYPE rif40_log_pkg.rif40_debug_record CASCADE;
+DROP TYPE IF EXISTS rif40_log_pkg.rif40_log_debug_level CASCADE;
+DROP TYPE IF EXISTS rif40_log_pkg.rif40_debug_record CASCADE;
 
 \set ON_ERROR_STOP ON
 CREATE TYPE rif40_log_pkg.rif40_log_debug_level AS ENUM ('WARNING', 'INFO', 'DEBUG1', 'DEBUG2', 'DEBUG3', 'DEBUG4');
