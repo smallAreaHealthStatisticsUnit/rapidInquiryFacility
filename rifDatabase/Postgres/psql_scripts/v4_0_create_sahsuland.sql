@@ -54,8 +54,6 @@
 \set ON_ERROR_STOP ON
 \timing
 
-\o ../logs/v4_0_create_sahsuland.rpt
-
 \echo Creating SAHSULAND rif40 example schema...
 
 --
@@ -238,7 +236,6 @@ $$;
 --ALTER TABLE rif40_geographies DROP CONSTRAINT rif40_geog_defcomparea_fk;
 
 \set VERBOSITY default
---\set
 
 --
 -- RIF40_PARAMETERS
@@ -297,6 +294,16 @@ VALUES(
 'Parallelisation', 		 '4', 							'Level of Parallelisation. Only supported on Oracle; under development in PoatGres/PostGIS.');
 
 --
+-- Load SAHSULAND data 
+-- 
+\i ../sahsuland/v4_0_postgres_sahsuland_imports.sql
+
+--
+-- SAHSUland geolevel setup. Fully processed
+--
+\i ../psql_scripts/v4_0_geolevel_setup_sahsuland.sql
+
+--
 -- RIF40_HEALTH_STUDY_THEMES
 --
 DELETE FROM rif40_health_study_themes  WHERE theme = 'SAHSULAND';
@@ -332,38 +339,36 @@ DELETE FROM rif40_table_outcomes  WHERE numer_tab = 'SAHSULAND_CANCER';
 INSERT INTO rif40_table_outcomes(outcome_group_name, numer_tab, current_version_start_year)
 VALUES ('SINGLE_ICD', 'SAHSULAND_CANCER', 1993);
 
-END;
-
-\q
-
---
--- SAHSUland geolevel setup. Fully processed
---
-\i ../psql_scripts/v4_0_geolevel_setup_sahsuland.sql
-
---
--- EW01 geography test data for Kevin. It is NOT processed (i.e. not simplification, intersection etc)
---
-\i ../psql_scripts/v4_0_geolevel_setup_ew01.sql
---
--- UK91 geography test data for Kevin. It is NOT processed (i.e. not simplification, intersection etc)
---
-\i ../psql_scripts/v4_0_geolevel_setup_uk91.sql
-
---
--- Load SAHSULAND data 
--- 
-\i ../sahsuland/v4_0_postgres_sahsuland_imports.sql
-
-\q
+\set VERBOSITY terse
 --
 -- RIF40_PROJECTS (fix to real users list)
 --
-INSERT INTO t_rif40_user_projects(project, username) VALUES ('TEST', 'peterh');
-INSERT INTO t_rif40_user_projects(project, username) VALUES ('TEST', 'keving');
-INSERT INTO t_rif40_user_projects(project, username) VALUES ('TEST', 'federicof');
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR 
+		SELECT * FROM pg_user
+ 		 WHERE usename != 'postgres' 
+		   AND (pg_has_role(usename, 'rif_user', 'MEMBER') OR pg_has_role(usename, 'rif_manager', 'MEMBER'));
+--
+	c1_rec RECORD;
+	sql_stmt VARCHAR;
+BEGIN
+	FOR c1_rec IN c1 LOOP
+		sql_stmt:='INSERT INTO t_rif40_user_projects(project, username) VALUES (''TEST'', '''||c1_rec.usename||''')';
+		RAISE INFO 'SQL> %;', sql_stmt;
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+	END LOOP;
+END;
+$$;
 
-\set VERBOSITY default
+--
+-- EW01 geography test data for Kevin. It is NOT processed (i.e. no simplification, intersection etc)
+-- 
+\i ../psql_scripts/v4_0_geolevel_setup_ew01.sql
+--
+-- UK91 geography test data for Kevin. It is NOT processed (i.e. no simplification, intersection etc)
+--
+\i ../psql_scripts/v4_0_geolevel_setup_uk91.sql
 
 --
 -- Re-enable rif40_geog_defcomparea_fk
@@ -419,6 +424,8 @@ BEGIN
 END;
 $$;
 
+\set VERBOSITY default
+
 --
 -- Create sequences. 
 --
@@ -433,6 +440,8 @@ COMMENT ON SEQUENCE rif40_study_id_seq IS 'Used as sequence for unique study ind
 ALTER TABLE t_rif40_studies ALTER COLUMN study_id SET DEFAULT NEXTVAL('rif40_study_id_seq')::INTEGER;
 ALTER TABLE t_rif40_investigations ALTER COLUMN inv_id SET DEFAULT NEXTVAL('rif40_inv_id_seq')::INTEGER;
 ALTER TABLE t_rif40_investigations ALTER COLUMN study_id SET DEFAULT CURRVAL('rif40_study_id_seq')::INTEGER;
+
+\set VERBOSITY terse
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR /* All tables with study_id, inv_id foreign key columns apart from t_rif40_investigations */
@@ -461,10 +470,15 @@ BEGIN
 END;
 $$;
 
+\set VERBOSITY default
 --
 -- Grants
 --
 \i ../psql_scripts/v4_0_postgres_grants.sql 
+
+END;
+
+\q
 
 -- 
 -- Load shapefiles - now moved to GIS schema; and run as gis

@@ -80,9 +80,6 @@ $$;
 -- Drop all objects
 --
 
-DROP SEQUENCE IF EXISTS rif40_inv_id_seq;
-DROP SEQUENCE IF EXISTS rif40_study_id_seq;
-
 --
 -- Drop geography related tables
 --
