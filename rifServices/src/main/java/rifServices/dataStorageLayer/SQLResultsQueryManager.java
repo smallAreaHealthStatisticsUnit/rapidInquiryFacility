@@ -1,8 +1,7 @@
 package rifServices.dataStorageLayer;
 
-
-
 import rifServices.businessConceptLayer.*;
+
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
@@ -666,8 +665,8 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		ArrayList<MapAreaAttributeValue> results
 			= new ArrayList<MapAreaAttributeValue>();
 
-/*		
-		@TODO: fill in the database function name
+		
+		//@TODO: fill in the database function name
 		
 		//Create query		
 		SQLFunctionCallerQueryFormatter query
@@ -676,6 +675,11 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		query.setFunctionName("");
 		query.setNumberOfFunctionParameters(2);		
 		
+
+		
+		
+		
+		/*		
 		//Execute query and generate results
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
@@ -901,8 +905,9 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		final Connection connection,
 		final User user,
 		final StudyResultRetrievalContext studyResultRetrievalContext,
+		final GeoLevelAttributeTheme geoLevelAttributeTheme,
 		final GeoLevelAttributeSource geoLevelAttributeSource,
-		final GeoLevelAttributeTheme geoLevelAttributeTheme)
+		final String attributeArrayName)
 		throws RIFServiceException {
 			
 		//Validate parameters
@@ -926,8 +931,8 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		SQLFunctionCallerQueryFormatter query
 			= new SQLFunctionCallerQueryFormatter();
 		query.setSchema("rif40_xml_pkg");
-		query.setFunctionName("");
-		query.setNumberOfFunctionParameters(3);
+		query.setFunctionName("rif40_getallattributesforgeolevelattributetheme");
+		query.setNumberOfFunctionParameters(4);
 			
 		//Execute query and generate results
 		String[] results = new String[0];			
@@ -939,14 +944,15 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			statement.setString(
 				1, 
 				studyResultRetrievalContext.getGeographyName());
+			
 			statement.setString(
 				2, 
 				studyResultRetrievalContext.getGeoLevelSelectName());
+			
 			statement.setString(
 				3, 
-				studyResultRetrievalContext.getStudyID());
-			statement.setString(4, geoLevelAttributeSource.getName());
-			statement.setString(5, geoLevelAttributeTheme.getName());
+				geoLevelAttributeTheme.getName());
+			statement.setString(4, attributeArrayName);
 			resultSet = statement.executeQuery();
 			ArrayList<String> attributes = new ArrayList<String>();
 			while (resultSet.next()) {
@@ -1467,7 +1473,7 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			studyResultRetrievalContext.getStudyID(), 
 			geoLevelAttributeSource);
 		
-		sqlMapDataManager.checkNonExistentAreas(
+		sqlMapDataManager.checkAreasExist(
 			connection, 
 			studyResultRetrievalContext.getGeographyName(), 
 			geoLevelToMap.getName(), 
@@ -1681,7 +1687,7 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			true);
 		
 		//check non-existent map areas
-		sqlMapDataManager.checkNonExistentAreas(
+		sqlMapDataManager.checkAreasExist(
 			connection, 
 			studyResultRetrievalContext.getGeographyName(), 
 			geoLevelToMap.getName(), 
@@ -2077,6 +2083,178 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		
 	}
 
+	private String[][] getGeometryColumnNames(
+		final Connection connection,
+		final Geography geography) 
+		throws RIFServiceException {
+		
+		geography.checkErrors();
+		
+		SQLFunctionCallerQueryFormatter query = new SQLFunctionCallerQueryFormatter();
+		query.setSchema("rif40_xml_pkg");
+		query.setFunctionName("rif40_getgeometrycolumnnames");
+		query.setNumberOfFunctionParameters(1);
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		String[][] results = null;
+		try {
+			statement 
+				= connection.prepareStatement(query.generateQuery());
+			statement.setString(1, geography.getName());
+			resultSet = statement.executeQuery();
+			resultSet.last();			
+			int numberOfResults = resultSet.getRow();
+
+			resultSet.beforeFirst();
+			results = new String[numberOfResults][2];
+			for (int i = 0; i < results.length; i++) {
+				resultSet.next();
+				results[i][0] = resultSet.getString(1);
+				results[i][1] = resultSet.getString(2);
+			}
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.error.getGeometryColumnNames",
+					geography.getName());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);			
+		}
+		
+		return results;
+	}
+		
+	private int createMapAreaAttributeSource(
+		final Connection connection,
+		final String temporaryTableName,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect,
+		final GeoLevelAttributeTheme geoLevelAttributeTheme,
+		final GeoLevelAttributeSource geoLevelAttributeSource,
+		final String attributeNameArray) throws RIFServiceException {
+		
+		geography.checkErrors();
+		geoLevelSelect.checkErrors();
+		geoLevelAttributeTheme.checkErrors();
+		geoLevelAttributeSource.checkErrors();
+		
+		SQLFunctionCallerQueryFormatter query = new SQLFunctionCallerQueryFormatter();
+		query.setSchema("rif40_xml_pkg");
+		query.setFunctionName("rif40_createmapareaattributesource");		
+		query.setNumberOfFunctionParameters(6);
+			
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		Integer result = null;
+		try {
+			statement = connection.prepareStatement(query.generateQuery());
+			statement.setString(1, temporaryTableName);
+			statement.setString(2, geography.getName());
+			statement.setString(3, geoLevelSelect.getName());
+			statement.setString(4, geoLevelAttributeTheme.getName());
+			statement.setString(5, geoLevelAttributeSource.getName());
+					
+			result = statement.executeUpdate();
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.error.createMapAreaAttributeSource",
+					temporaryTableName,
+					geoLevelAttributeSource.getName());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		
+		return result;
+	}
+
+	private void closeMapAreaAttributeCursor(
+		final Connection connection,
+		final String cursorName)
+		throws RIFServiceException {
+		
+		SQLFunctionCallerQueryFormatter query 
+			= new SQLFunctionCallerQueryFormatter();
+		query.setSchema("rif40_xml_pkg");
+		query.setFunctionName("rif40_closegetmapareaattributecursor");		
+		query.setNumberOfFunctionParameters(1);
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = connection.prepareStatement(query.generateQuery());
+			statement.setString(1, cursorName);
+			statement.executeQuery();
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.error.closeMapAreaAttributeSource",
+					cursorName);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+	}
+	
+	
+	private void deleteMapAreaAttributeSource(
+		final Connection connection,
+		final String temporaryTableName) 
+		throws RIFServiceException {
+	
+		SQLFunctionCallerQueryFormatter query 
+			= new SQLFunctionCallerQueryFormatter();
+		query.setSchema("rif40_xml_pkg");
+		query.setFunctionName("rif40_deletemapareaattributesource");		
+		query.setNumberOfFunctionParameters(1);
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = connection.prepareStatement(query.generateQuery());
+			statement.setString(1, temporaryTableName);
+			statement.executeUpdate();
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.error.deleteMapAreaAttributeSource",
+					temporaryTableName);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);			
+		}
+	}
 	
 	// ==========================================
 	// Section Errors and Validation
