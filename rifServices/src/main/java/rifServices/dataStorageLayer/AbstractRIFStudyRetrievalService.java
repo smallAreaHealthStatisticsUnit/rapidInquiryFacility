@@ -173,7 +173,7 @@ abstract class AbstractRIFStudyRetrievalService
 		final User _user,
 		final Geography _geography,
 		final GeoLevelSelect _geoLevelSelect,
-		final GeoLevelToMap _geoLevelToMap,
+		final GeoLevelView _geoLevelView,
 		final ArrayList<MapArea> _mapAreas) throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -187,8 +187,8 @@ abstract class AbstractRIFStudyRetrievalService
 		Geography geography = Geography.createCopy(_geography);
 		GeoLevelSelect geoLevelSelect 
 			= GeoLevelSelect.createCopy(_geoLevelSelect);
-		GeoLevelToMap geoLevelToMap
-			= GeoLevelToMap.createCopy(_geoLevelToMap);
+		GeoLevelView geoLevelView
+			= GeoLevelView.createCopy(_geoLevelView);
 		ArrayList<MapArea> mapAreas
 			= MapArea.createCopy(_mapAreas);
 		
@@ -209,11 +209,11 @@ abstract class AbstractRIFStudyRetrievalService
 			fieldValidationUtility.checkNullMethodParameter(
 				"getGeometry",
 				"geoLevelSelect",
-				geoLevelSelect);		
+				geoLevelSelect);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getGeometry",
-				"geoLevelToMap",
-				geoLevelToMap);						
+				"geoLevelView",
+				geoLevelView);						
 			fieldValidationUtility.checkNullMethodParameter(
 				"getGeometry",
 				"mapAreas",
@@ -230,7 +230,7 @@ abstract class AbstractRIFStudyRetrievalService
 			validateUser(user);
 			geography.checkSecurityViolations();
 			geoLevelSelect.checkSecurityViolations();
-			geoLevelToMap.checkSecurityViolations();
+			geoLevelView.checkSecurityViolations();
 			
 			for (MapArea mapArea : mapAreas) {
 				mapArea.checkSecurityViolations();
@@ -244,7 +244,7 @@ abstract class AbstractRIFStudyRetrievalService
 					user.getIPAddress(),
 					geography.getDisplayName(),
 					geoLevelSelect.getDisplayName(),
-					geoLevelToMap.getDisplayName());
+					geoLevelView.getDisplayName());
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
@@ -254,8 +254,6 @@ abstract class AbstractRIFStudyRetrievalService
 				= sqlConnectionManager.assignPooledReadConnection(user);			
 
 			//Delegate operation to a specialised manager class
-			//@TODO
-			
 			SQLMapDataManager sqlMapDataManager
 				= rifServiceResources.getSQLMapDataManager();
 			result 
@@ -263,8 +261,8 @@ abstract class AbstractRIFStudyRetrievalService
 					connection, 
 					user, 
 					geography, 
-					geoLevelSelect, 
-					geoLevelToMap, 
+					geoLevelSelect,
+					geoLevelView, 
 					mapAreas);
 				
 			//Reclaim pooled connection		
@@ -606,6 +604,9 @@ abstract class AbstractRIFStudyRetrievalService
 			Connection connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
+			//KLG @TODO - where do we get this? Is it passed or does the middleware manage it?
+			String attributeArrayName = "attributeNameTheme";
+			
 			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();			
@@ -614,9 +615,10 @@ abstract class AbstractRIFStudyRetrievalService
 					connection,
 					user,
 					studyResultRetrievalContext,
+					geoLevelAttributeTheme,
 					geoLevelAttributeSource,
-					geoLevelAttributeTheme);
-
+					attributeArrayName);
+			
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledReadConnection(
 				user, 
