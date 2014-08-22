@@ -337,6 +337,7 @@ public final class MapArea
 	// Section Accessors and Mutators
 	// ==========================================
 
+	
 	/**
 	 * Gets the label.
 	 *
@@ -382,7 +383,21 @@ public final class MapArea
 		
 		return super.hasIdenticalContents(otherMapArea);
 	}
+
+	
+	static public String[] getMapAreaIdentifierList(
+		final ArrayList<MapArea> mapAreas) {
 		
+		int numberOfMapAreas = mapAreas.size();
+		String[] results = new String[mapAreas.size()];
+		
+		for (int i = 0; i < numberOfMapAreas; i++) {
+			results[i] = mapAreas.get(i).getIdentifier();
+		}
+
+		return results;
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
