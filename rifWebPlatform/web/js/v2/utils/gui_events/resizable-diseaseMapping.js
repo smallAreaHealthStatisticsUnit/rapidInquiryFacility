@@ -1,0 +1,78 @@
+RIF.resizable = function( studyType ) {
+
+  var rightCol = function() {
+    /*if($('#leftcol').width() > 500) {
+			$('#rightcol').css('margin-left','35%');
+		};*/
+  }();
+
+  var resizable = {
+
+    clientH: screen.height,
+    clientW: screen.width,
+    svgLeafletTranslateX: 29,
+    rtime: new Date( 1, 1, 2000, 12, 00, 00 ),
+    timeout: false,
+    delta: 200,
+
+    rr_chart: function() {
+      if ( $( "#rr_chart" ).hasClass( "ui-resizable" ) ) {
+        $( "#rr_chart" ).resizable( "destroy" );
+      };
+      $( "#rr_chart" ).resizable( {
+        handles: "n",
+        resize: function( event, ui ) {
+          ui.size.width = ui.originalSize.width;
+          //resizable.fire( 'resizeTable' );
+          resizable.rtime = new Date();
+          if ( resizable.timeout === false ) {
+            resizable.timeout = true;
+            setTimeout( resizable.resizeend, resizable.delta );
+          }
+        }
+      } );
+    },
+
+    leftCol: function() {
+      $( "#leftcol" ).resizable( {
+        handles: "e",
+        resize: function( event, ui ) {
+          ui.size.height = ui.originalSize.height;
+          document.getElementById( 'rightcol' ).setAttribute( "style", "margin-left:" + ui.size.width + "px" );
+          resizable.rtime = new Date();
+          if ( resizable.timeout === false ) {
+            resizable.timeout = true;
+            setTimeout( resizable.resizeend, resizable.delta );
+          }
+        }
+      } );
+    }(),
+
+    multipleAreaCharts: function() {
+      var studyInfoHeight = $( "#studyInfo" ).outerHeight( true ),
+        studyLabelHeight = $( "#studyLabel" ).outerHeight( true ),
+        leftOverHeight = parseInt( $( "#leftcol" ).height() - ( studyInfoHeight + studyLabelHeight ) );
+      $( "#mAreaCharts" ).height( leftOverHeight - 8 );
+      $( "#mAreaCharts" ).resizable( {
+        handles: "n",
+        maxHeight: ( leftOverHeight - 8 ) + studyInfoHeight,
+        resize: function( event, ui ) {
+          ui.size.width = ui.originalSize.width;
+        }
+      } );
+    },
+
+    resizeend: function() {
+      if ( new Date() - resizable.rtime < resizable.delta ) {
+        setTimeout( resizable.resizeend, resizable.delta );
+      } else {
+        resizable.timeout = false;
+        resizable.fire( 'resizeChart', [] );
+      }
+    }
+
+  };
+
+
+  return resizable;
+};

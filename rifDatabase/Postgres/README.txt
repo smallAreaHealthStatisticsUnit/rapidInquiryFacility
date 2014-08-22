@@ -52,6 +52,8 @@ The directory structure is rifDatabase\Postgres\:
 * shapefiles		- Postgres psql SQL scripts derived from shapefiles, creation scripts
 * shapefiles\data	- Shapefiles
 
+c:\MinGW\msys\1.0\bin\make sahsuland_dev
+
 The principal build script is v4_0_create_sahsuland.sql, It must be run as the schema owner (rif40) on sahsuland_dev only. sahusland is always created afresh from an empty database using pg_restore. E.g
 
 cd rifDatabase\Postgres\psql

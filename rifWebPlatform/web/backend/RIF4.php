@@ -561,6 +561,37 @@ $r = RIF4::Instance();
 		}
 	}
 	
+	
+	//Retrieves  risk vaules ( no confidence intervals) for each area id in study given a result set  .
+	public function getRiskResults(){
+		
+		try{
+		 
+		 // Column x_order will be used for the x axis in the area chart
+		 // This is required by the plug in drawing the area chart
+		 $sql = "select gid, round(srr,2) as srr , row_number() over (ORDER BY srr) as x_order from atlas_leu_f ";
+			
+			$hndl = self::$dbh -> prepare($sql);
+			$hndl ->execute(array());	
+			
+			$csv = "gid,srr,x_order" . "\n";
+			
+			while ($row = $hndl -> fetch(PDO::FETCH_ASSOC)){
+				$csv .=  implode($row, ',') . "\n" ;
+			}
+			
+			self :: $dbh->commit();
+			
+			return $csv;
+			
+		}catch(PDOException $pe){
+			self :: $dbh->rollback();
+		 	die( $pe->getMessage());
+		}
+	
+	}
+	
+	
 	/*
 	 * Retrieve disease mapping results:
 	 * Area level value and confidence intervals
@@ -571,16 +602,15 @@ $r = RIF4::Instance();
 		
 		try{
 		 
-		 // Hardoced, will be replaced by Kev's.
-		 
-		 $sql = "select gid,srr, llsrr, ulsrr
-					  from atlas_sample_data 
-					      order by srr asc";
+		 // Column x_order will be used for the x axis in the area chart
+		 // This is required by the plug in drawing the area chart
+		 $sql = "select gid, srr, round(llsrr,2) as llsrr,round(ulsrr,2) as ulsrr, row_number() over (ORDER BY srr) as x_order
+				  from atlas_leu_f ";
 			
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());	
 			
-			$csv = "gid,srr,llsrr,ulsrr" . "\n";
+			$csv = "gid,srr,llsrr,ulsrr,x_order" . "\n";
 			
 			while ($row = $hndl -> fetch(PDO::FETCH_ASSOC)){
 				$csv .=  implode($row, ',') . "\n" ;

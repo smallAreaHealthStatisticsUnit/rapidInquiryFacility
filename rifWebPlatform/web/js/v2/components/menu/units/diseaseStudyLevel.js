@@ -25,8 +25,8 @@ RIF.menu.diseaseStudyLevel = ( function() {
         RIF.getInvestigations( parent.callbacks.avlbInvestigations, [ studyId ] );
       },
 
-      getResultsSet: function( studyId ) {
-        RIF.getResultsSet( parent.callbacks.avlbResultSet, [ studyId ] );
+      getResultsSetAvailable: function( studyId ) {
+        RIF.getResultsSetAvailable( parent.callbacks.avlbResultSet, [ studyId ] );
       },
 
       getZoomIds: function( studyId ) {

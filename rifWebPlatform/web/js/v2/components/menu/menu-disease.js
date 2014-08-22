@@ -23,12 +23,14 @@ RIF.menu = ( function( settings ) {
 
         avlbInvestigations: function() {
           _p.dropDown( this, _p.investigation );
-          _p.getResultsSet( this[ 0 ] );
+          _p.getResultsSetAvailable( this[ 0 ] );
         },
 
         avlbResultSet: function() {
           _p.dropDown( this, _p.resultSet );
-          //Fire add geolevel
+          _p.facade.drawLineBivariateChart( this );
+          _p.facade.drawMultipleAreaChart( this );
+
         },
 
         avlbFieldsChoro: function() {

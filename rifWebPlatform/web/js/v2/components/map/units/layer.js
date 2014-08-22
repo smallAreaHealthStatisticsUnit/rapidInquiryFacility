@@ -78,8 +78,8 @@ RIF.map.layer = ( function( type, sett ) {
 
         resetSlctd: function() {
           /*if (!layer.isTiled()) {
-							return;
-						}*/
+			return;
+		  }*/
           for ( var key in layer.selection ) {
             var e = $( "#" + key );
             e[ 0 ].style.fill = style.colors[ key ];

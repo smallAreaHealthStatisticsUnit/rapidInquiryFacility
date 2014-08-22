@@ -85,12 +85,10 @@ $$;
 
 \set ECHO all
 \timing
-\set ON_ERROR_STOP OFF
 \pset pager on
 SELECT rif40_geo_pkg.drop_rif40_geolevels_geometry_tables('SAHSU');
 SELECT rif40_geo_pkg.drop_rif40_geolevels_lookup_tables('SAHSU');
-DROP TABLE sahsuland_geography_orig;
-\set ON_ERROR_STOP ON
+DROP TABLE IF EXISTS sahsuland_geography_orig;
 
 --
 -- Comment out this for more debug and do not exit on error
@@ -169,7 +167,7 @@ BEGIN
 --  FROM t_rif40_geolevels_geometry_sahsu_level3 a3, t_rif40_geolevels_geometry_sahsu_level2 a2  
 -- WHERE ST_Intersects(a2.optimised_geometry, a3.optimised_geometry);
 --
---	PERFORM rif40_geo_pkg.populate_hierarchy_table('SAHSU'); 
+	PERFORM rif40_geo_pkg.populate_hierarchy_table('SAHSU'); 
 --
 -- Add denominator population table to geography geolevel geomtry data
 --
@@ -189,7 +187,7 @@ $$;
 --
 -- Temporary workaround for: http://trac.osgeo.org/postgis/ticket/2543
 --
-\COPY sahsuland_geography(level1, level2, level3, level4) FROM  '../sahsuland/data/sahsuland_geography.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+--\COPY sahsuland_geography(level1, level2, level3, level4) FROM  '../sahsuland/data/sahsuland_geography.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 CREATE UNIQUE INDEX sahsuland_geography_pk ON sahsuland_geography(level4);
 -- For vi's benefit
 
@@ -200,11 +198,6 @@ BEGIN
 --
 END;
 $$;
-
-ALTER TABLE "sahsuland_level1" ALTER COLUMN name  SET NOT NULL;
-ALTER TABLE "sahsuland_level2" ALTER COLUMN name  SET NOT NULL;
-ALTER TABLE "sahsuland_level3" ALTER COLUMN name  SET NOT NULL;
-ALTER TABLE "sahsuland_level4" ALTER COLUMN name  SET NOT NULL; 
 
 SELECT area_id, name, area, total_males, total_females, population_year
   FROM t_rif40_sahsu_geometry
@@ -224,22 +217,6 @@ SELECT area_id, name, area, total_males, total_females, population_year
  WHERE geolevel_name = 'LEVEL4'
  ORDER BY 2 LIMIT 20;
 
---
--- Make columns NOT NULL - Cannot be done with PL/pgsql - causes:
--- cannot ALTER TABLE "sahsuland_level1" because it is being used by active queries in this session
---
-
-ALTER TABLE "t_rif40_sahsu_geometry" ALTER COLUMN name  SET NOT NULL;
-
---
--- Vaccum ANALYZE tables
---
-VACUUM ANALYZE VERBOSE sahsuland_geography;
-VACUUM ANALYZE VERBOSE t_rif40_sahsu_geometry;
-VACUUM ANALYZE VERBOSE sahsuland_level1;
-VACUUM ANALYZE VERBOSE sahsuland_level2;
-VACUUM ANALYZE VERBOSE sahsuland_level3;
-VACUUM ANALYZE VERBOSE sahsuland_level4;
 
 --\q
 
@@ -250,7 +227,6 @@ TRUNCATE TABLE sahsuland_geography_orig;
 --
 \COPY sahsuland_geography_orig(level1, level2, level3, level4) FROM  '../sahsuland/data/sahsuland_geography.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 CREATE UNIQUE INDEX sahsuland_geography_orig_pk ON sahsuland_geography_orig(level4);
-
 
 --
 -- For vi's benefit

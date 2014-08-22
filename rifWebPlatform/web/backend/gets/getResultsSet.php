@@ -1,5 +1,5 @@
 <?php
-
+//Retrieves  risk and confidence interavals for the specfifc result set. (ie: RR or SMR or SMR_Adj etc)
 require('../RIF4.php');
 
 $type = $_GET['type'];
@@ -7,13 +7,10 @@ $studyId = $_GET['studyId'];
 $invId =  $_GET['investigationId'];
 $year  = (isset($_GET['year']) ? $_GET['year'] : null );
 
-/*$res = $r->getResultSet( $type, $studyId, $invId, $year );
-$values = array();
-foreach($res as $value){
-	array_push($values, $value[ $field ]); 	
-}*/
+//Comma delimited
+$res = $r->getResultSet( $type, $studyId, $invId, $year );
 
-$res =  array('Rates', 'RR','RR_adj','Smr_BYM','Smr_CAR', 'Smr_HET' );
-echo json_encode($res);;
+echo $res;
+
 
 ?>

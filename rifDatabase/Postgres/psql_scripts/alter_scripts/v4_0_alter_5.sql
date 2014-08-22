@@ -55,8 +55,35 @@
 \set ON_ERROR_STOP ON
 \timing
 
-\echo Running SAHSULAND schema alter script #5 zoomlevel support...
+\echo Running SAHSULAND schema alter script #5 zoomlevel support.
 
+/*
+
+Alter script #5
+
+Rebuilds all geolevel tables with full partitioning (alter #3 support):
+
+1. Convert to 4326 (WGS84 GPS projection) before simplification. Optimised geometry is 
+   always in 4326.
+2. Zoomlevel support. Optimised geometry is level 6, OPTIMISED_GEOMETRY_1 is level 8,
+   OPTIMISED_GEOMETRY_2 is level 11; likewise OPTIMISED_GEOJSON.
+3. Simplification to warn if bounds of map at zoomlevel 6 exceed 4x3 tiles.
+4. Simplification to fail if bounds of map < 5% of zoomlevel 11 (bound area: 78x58km); 
+   i.e. the map is not projected correctly (as sahsuland is not at pressent). Fix
+   sahsuland projection (i.e. not 27700).
+5. Calculate the latitude of the middle of the total map bound; use this as the latitude
+   in if40_geo_pkg.rif40_zoom_levels() for the correct m/pixel.
+6. Remove ST_SIMPLIFY_TOLERANCE; replace with m/pixel for zoomlevel (hence the reason 
+   for converting to 4326 before simplification).
+8. Add support for regionINLA.txt on a per study basis.
+7. Convert simplification and intersection code to Java; call via PL/Java. Object creation
+   functions will remain port specific (because of Postgres partitioning).
+
+<total area_id>
+<area_id> <total (N)> <adjacent area 1> .. <adjacent area N>
+
+*/
+   
 BEGIN;
 
 --
@@ -72,185 +99,101 @@ BEGIN
 END;
 $$;
 
-/*
- --------------------------------------------
-Web mercator (SRID:4326) degree to km table 
+--
+-- Add zoomlevel support etc
+--
+\i ../PLpgsql/v4_0_rif40_geo_pkg.sql
 
-| places | degrees    | distance |
-| ------ | ---------- | -------- |
-| 0      | 1.0        | 111 km   |
-| 1      | 0.1        | 11.1 km  |
-| 2      | 0.01       | 1.11 km  |
-| 3      | 0.001      | 111 m    |
-| 4      | 0.0001     | 11.1 m   |
-| 5      | 0.00001    | 1.11 m   |
-| 6      | 0.000001   | 0.111 m  |
-| 7      | 0.0000001  | 1.11 cm  |
-| 8      | 0.00000001 | 1.11 mm  |
-
-
---------------------------------------------
-OSM/Leaflet - Zoom Levels
-http://wiki.openstreetmap.org/wiki/Zoom_levels 
-
-| Level	 |	  Degree	 |	Area	  |  m / pixel |	~Scale
- -------     ---------     --------     --------       -----------
-|0		 |	   360	     | whole world|	 156,412	|	1:500 Mio
-|1		 |	   180	   	 |			  |   78,206	|	1:250 Mio
-|2		 |		90		 |			  |   39,103	|	1:150 Mio
-|3		 |		45		 |			  |   19,551	|	1:70 Mio
-|4		 |		22.5	 |			  |    9,776	|	1:35 Mio
-|5		 |		11.25	 |			  |    4,888	|   1:15 Mio
-|6		 |		5.625	 |			  |    2,444	|	1:10 Mio
-|7		 |		2.813	 |			  |    1,222	|   1:4 Mio
-|8		 |		1.406	 |			  |  610.984	|	1:2 Mio
-|9		 |		0.703	 | wide area  |	 305.492	|	1:1 Mio
-|10		 |		0.352	 |			  |  152.746	|	1:500,000
-|11		 |		0.176	 | area		  |   76.373	|   1:250,000
-|12		 |		0.088	 |			  |   38.187	|   1:150,000
-|13		 |		0.044	 | town		  |   19.093	|   1:70,000
-|14		 |		0.022	 | village	  |    9.547	|   1:35,000
-|15		 |		0.011	 |			  |    4.773	|   1:15,000
-|16		 |		0.005	 | small road |	   2.387	|    1:8,000
-|17		 |		0.003	 |			  |    1.193	|    1:4,000
-|18		 |		0.001	 |			  |    0.596	|    1:2,000
-|19		 |		0.0005	 |	          |    0.298	|    1:1,000
-
-The 'degree' column gives the map width in degrees, for map at that zoom level which is 256 pixels wide. 
-The values for "m / pixel" are calculated with an earth radius of 6372.7982 km. "Scale" (map scale) is 
-only an approximate size comparison and refers to distances on the equator. In addition, the map scale 
-will be dependent on the monitor. These values are for a monitor with a 0.3 mm / pixel (about 85.2 American DPI)
-
-Metres per pixel math:
-
-The distance represented by one pixel (S) is given by
-S=C*cos(y)/2^(z+8)
-where...
-C is the (equatorial) circumference of the Earth
-z is the zoom level
-y is the latitude of where you're interested in the scale.
-Make sure your calculator is in degrees mode, unless you want to express latitude in radians for some reason. C should be expressed in whatever scale unit you're interested in (miles, meters, feet, smoots, whatever). Since the earth is actually ellipsoidal, there will be a slight error in this calculation. But it's very slight. (0.3% maximum error)
-See also
-
-Assume 256 pixels = 67.33 mm
-*/
-
-
-CREATE OR REPLACE FUNCTION rif40_geo_pkg.rif40_zoom_levels(
-		l_latitude 			NUMERIC	DEFAULT 0 /* Equator - degrees in projection 4326 */)
-RETURNS TABLE(
-		zoomlevel			INTEGER, 
-		latitude			NUMERIC,
-		degrees_per_tile	NUMERIC,
-		m_x_per_pixel_est	NUMERIC,
-		m_x_per_pixel		NUMERIC,
-		m_y_per_pixel		NUMERIC,
-		scale				TEXT
-		)
-SECURITY INVOKER
-AS $func$
-/*
- */
+\set VERBOSITY terse
+DO LANGUAGE plpgsql $$
 DECLARE
 --
-	error_message 		VARCHAR;
-	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
+-- Functions to enable debug for
+--
+	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 
+		'rif40_zoom_levels'];
+--v
+	l_function 					VARCHAR;
 BEGIN
 --
--- User must be rif40 or have rif_user or rif_manager role
+-- Turn on some debug
 --
-	IF NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-51000, 'rif40_zoom_levels', 
-			'User % must be rif40 or have rif_user or rif_manager role', 
-			USER::VARCHAR	/* Username */);
-	END IF;
+        PERFORM rif40_log_pkg.rif40_log_setup();
+        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+--
+-- Enabled debug on select rif40_sm_pkg functions
+--
+	FOREACH l_function IN ARRAY rif40_sql_pkg_functions LOOP
+		RAISE INFO 'Enable debug for function: %', l_function;
+		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
+	END LOOP;
 	
-	BEGIN
-		RETURN QUERY	
-			WITH a AS (
-				SELECT generate_series(0, 19, 1)::INTEGER l_zoomlevel
-			), b AS (
-				SELECT a.l_zoomlevel, 
-				       (360/pow(2, a.l_zoomlevel))::NUMERIC AS degrees_per_tile,
-				       ((6372798.2 /* earth radius - m */ * cos(l_latitude)*2*pi())/pow(2, a.l_zoomlevel+8))::NUMERIC AS m_x_per_pixel_est,
-					   (CASE 
-							WHEN a.l_zoomlevel = 0 THEN 
-								ST_Distance_Spheroid(
-									ST_setsrid(ST_Makepoint(0, l_latitude), 4326),
-									ST_setsrid(ST_Makepoint(180, l_latitude), 4326),
-									'SPHEROID["WGS 84",6378137,298.257223563]')*2/256
-							ELSE
-								ST_Distance_Spheroid(
-									ST_setsrid(ST_Makepoint(0, l_latitude), 4326),
-									ST_setsrid(ST_Makepoint(360/pow(2, a.l_zoomlevel), l_latitude), 4326),
-									'SPHEROID["WGS 84",6378137,298.257223563]')/256 END)::NUMERIC AS m_x_per_pixel,
-					   (CASE 
-							WHEN l_latitude+360/pow(2, a.l_zoomlevel) > 90 THEN NULL
-							ELSE ST_Distance_Spheroid(
-									ST_setsrid(ST_Makepoint(0, l_latitude), 4326),
-									ST_setsrid(ST_Makepoint(0, l_latitude+360/pow(2, a.l_zoomlevel)), 4326),
-									'SPHEROID["WGS 84",6378137,298.257223563]')/256 END)::NUMERIC AS m_y_per_pixel
-				  FROM a
-			)
-			SELECT b.l_zoomlevel, 
-			       l_latitude AS latitude,
-				   ROUND(b.degrees_per_tile, 
-						(CASE
-							WHEN b.l_zoomlevel < 4					THEN 0
-							WHEN b.l_zoomlevel = 4					THEN 1
-							WHEN b.l_zoomlevel = 5					THEN 2
-							WHEN b.l_zoomlevel BETWEEN 5 AND 17		THEN 3
-							WHEN b.l_zoomlevel = 18					THEN 4
-							ELSE 5 END)::INT) AS degrees_per_tile,
-				   ROUND(b.m_x_per_pixel_est::NUMERIC,  
-						(CASE
-							WHEN b.l_zoomlevel < 14					THEN 0
-							WHEN b.l_zoomlevel BETWEEN 14 AND 16	THEN 1			
-						ELSE 2 END)::INT) AS m_x_per_pixel_est,
-				   ROUND(
-						b.m_x_per_pixel, 
-						(CASE
-							WHEN b.l_zoomlevel < 14					THEN 0
-							WHEN b.l_zoomlevel BETWEEN 14 AND 16	THEN 1			
-						ELSE 2 END)::INT) AS m_x_per_pixel,	
-				   ROUND(
-						b.m_y_per_pixel, 
-						(CASE
-							WHEN b.l_zoomlevel < 14					THEN 0
-							WHEN b.l_zoomlevel BETWEEN 14 AND 16	THEN 1			
-						ELSE 2 END)::INT) AS m_y_per_pixel,	
-				   'i in '||LTRIM(TO_CHAR(ROUND((256*b.m_x_per_pixel/0.06733)::NUMERIC, 0::INT), '999G999G999')) AS scale
-			  FROM b;
-	EXCEPTION
-		WHEN others THEN
---
--- Print exception to INFO, re-raise
---
-			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
-			error_message:='rif40_zoom_levels() caught: '||E'\n'||
-				SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
-			RAISE INFO '51003: %', error_message;
---
-			RAISE;
-	END;
---
-	RETURN;
 END;
-$func$
-LANGUAGE PLPGSQL;
-
+$$;
+	
 SELECT * FROM rif40_geo_pkg.rif40_zoom_levels(30);
 
 SELECT * FROM rif40_geo_pkg.rif40_zoom_levels();
+/*
+SELECT * FROM rif40_geo_pkg.rif40_zoom_levels();
+ zoomlevel | latitude |    tiles     | degrees_per_tile | m_x_per_pixel_est | m_x_per_pixel | m_y_per_pixel |      scale
+-----------+----------+--------------+------------------+-------------------+---------------+---------------+------------------
+         0 |        0 |            1 |              360 |            156412 |        155497 |               | i in 591,225,112
+         1 |        0 |            4 |              180 |             78206 |         77748 |               | i in 295,612,556
+         2 |        0 |           16 |               90 |             39103 |         39136 |         39070 | i in 148,800,745
+         3 |        0 |           64 |               45 |             19552 |         19568 |         19472 | i in 74,400,373
+         4 |        0 |          256 |             22.5 |              9776 |          9784 |          9723 | i in 37,200,186
+         5 |        0 |         1024 |            11.25 |              4888 |          4892 |          4860 | i in 18,600,093
+         6 |        0 |         4096 |            5.625 |              2444 |          2446 |          2430 | i in 9,300,047
+         7 |        0 |        16384 |            2.813 |              1222 |          1223 |          1215 | i in 4,650,023
+         8 |        0 |        65536 |            1.406 |               611 |           611 |           607 | i in 2,325,012
+         9 |        0 |       262144 |            0.703 |               305 |           306 |           304 | i in 1,162,506
+        10 |        0 |      1048576 |            0.352 |               153 |           153 |           152 | i in 581,253
+        11 |        0 |      4194304 |            0.176 |                76 |            76 |            76 | i in 290,626
+        12 |        0 |     16777216 |            0.088 |                38 |            38 |            38 | i in 145,313
+        13 |        0 |     67108864 |            0.044 |                19 |            19 |            19 | i in 72,657
+        14 |        0 |    268435456 |            0.022 |               9.5 |           9.6 |           9.5 | i in 36,328
+        15 |        0 |   1073741824 |            0.011 |               4.8 |           4.8 |           4.7 | i in 18,164
+        16 |        0 |   4294967296 |            0.005 |               2.4 |           2.4 |           2.4 | i in 9,082
+        17 |        0 |  17179869184 |            0.003 |              1.19 |          1.19 |          1.19 | i in 4,541
+        18 |        0 |  68719476736 |           0.0014 |              0.60 |          0.60 |          0.59 | i in 2,271
+        19 |        0 | 274877906944 |          0.00069 |              0.30 |          0.30 |          0.30 | i in 1,135
+(20 rows)
+
+
+Time: 2.648 ms
+ */
 
 -- Projection is wrong
-SELECT geolevel_name, COUNT(area_id) AS t_areas, 
-       SUM(ST_NPoints(optimised_geometry)) AS t_points, 
-	   SUM(ST_Area(optimised_geometry)) AS t_area, SUM(ST_perimeter(optimised_geometry)) AS t_perimeter
-  FROM t_rif40_sahsu_geometry
- GROUP BY geolevel_name
- ORDER BY 1;
+SELECT a.geolevel_name, 
+       b.st_simplify_tolerance,
+	   ST_Distance_Spheroid(
+			ST_GeomFromEWKT('SRID=27700;POINT(0 0)'), ST_GeomFromEWKT('SRID=27700;POINT('||b.st_simplify_tolerance||' 0)'),
+			'SPHEROID["Airy 1830",6377563.396,299.3249646]') st_simplify_tolerance_in_m,
+       COUNT(a.area_id) AS t_areas, 
+       SUM(ST_NPoints(a.optimised_geometry)) AS t_points, 
+	   SUM(ST_Area(a.optimised_geometry)) AS t_area, 
+	   SUM(ST_perimeter(a.optimised_geometry)) AS t_perimeter
+  FROM t_rif40_sahsu_geometry a, rif40_geolevels b
+ WHERE a.geolevel_name = b.geolevel_name
+ GROUP BY b.geolevel_id, a.geolevel_name, b.st_simplify_tolerance
+ ORDER BY b.geolevel_id;
   
+ 
+WITH a AS (
+	SELECT srid, substring(srtext, position('SPHEROID[' in srtext)) AS spheroid
+	FROM spatial_ref_sys	
+	WHERE srid IN (27700, 4326)
+)
+SELECT srid, substring(spheroid, 1, position(',AUTHORITY[' in spheroid)-1)||']' AS spheroid
+  FROM a;
+ 
+SELECT substring(a1.spheroid, 1, position(',AUTHORITY[' in a1.spheroid)-1)||']' AS spheroid
+  FROM (
+	SELECT substring(srtext, position('SPHEROID[' in srtext)) AS spheroid
+		FROM spatial_ref_sys	
+		WHERE srid = 4326) a1;
+	
 DO LANGUAGE plpgsql $$
 BEGIN
 	RAISE INFO 'Aborting (script being tested)';

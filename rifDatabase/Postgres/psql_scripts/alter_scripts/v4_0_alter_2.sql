@@ -169,7 +169,7 @@ END;
 --\q
 
 --
--- Cnnect as testuser
+-- Connect as testuser
 --
 \c - :testuser
 --
