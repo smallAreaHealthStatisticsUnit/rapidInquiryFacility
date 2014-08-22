@@ -1762,7 +1762,7 @@ abstract class AbstractRIFStudySubmissionService
 				connection, 
 				user, 
 				rifJobSubmission);
-			
+
 			//RIFZipFileWriter rifZipFileWriter = new RIFZipFileWriter();
 			//rifZipFileWriter.writeZipFile(outputFile, rifJobSubmission);		
 		}
