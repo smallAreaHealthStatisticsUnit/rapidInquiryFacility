@@ -242,16 +242,16 @@ class SpecifyComparisonAreaStepPanel
 
 		currentMapAreaSelectionBasket
 			= MapAreaSelectionBasket.newInstance();	
+		RIFStudySubmission originalJobSubmission = rifSession.getRIFJobSubmission();
+		DiseaseMappingStudy originalStudy
+			= (DiseaseMappingStudy) originalJobSubmission.getStudy();
+		currentGeography = originalStudy.getGeography();
 		if (rifSession.isActivityStepCommitted(RIFActivityStep.CHOOSE_COMPARISON_AREA)) {
 			//Derive the working copy based on the study area that 
 			//has already been committed in the master job submission
 
-			RIFStudySubmission originalJobSubmission = rifSession.getRIFJobSubmission();
-			DiseaseMappingStudy originalStudy
-				= (DiseaseMappingStudy) originalJobSubmission.getStudy();
 			ComparisonArea originalComparisonArea
 				= originalStudy.getComparisonArea();
-			currentGeography = originalStudy.getGeography();
 			currentComparisonArea
 				= ComparisonArea.createCopy(originalComparisonArea);			
 			//populate the basket with the map areas that are already in the

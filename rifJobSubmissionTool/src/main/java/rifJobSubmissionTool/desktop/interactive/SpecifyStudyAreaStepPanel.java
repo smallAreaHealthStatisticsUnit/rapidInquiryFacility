@@ -244,16 +244,18 @@ class SpecifyStudyAreaStepPanel
 		
 		currentMapAreaSelectionBasket
 			= MapAreaSelectionBasket.newInstance();				
+
+		RIFStudySubmission originalJobSubmission = rifSession.getRIFJobSubmission();
+		DiseaseMappingStudy originalStudy
+			= (DiseaseMappingStudy) originalJobSubmission.getStudy();
+		currentGeography = originalStudy.getGeography();
+
 		if (rifSession.isActivityStepCommitted(RIFActivityStep.CHOOSE_STUDY_AREA)) {
 			//Derive the working copy based on the study area that 
 			//has already been committed in the master job submission
 			
-			RIFStudySubmission originalJobSubmission = rifSession.getRIFJobSubmission();
-			DiseaseMappingStudy originalStudy
-				= (DiseaseMappingStudy) originalJobSubmission.getStudy();
 			DiseaseMappingStudyArea originalDiseaseMappingStudyArea
 				= originalStudy.getDiseaseMappingStudyArea();	
-			currentGeography = originalStudy.getGeography();
 			currentDiseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(originalDiseaseMappingStudyArea);
 			//It is not a new record because we've already done it and are
