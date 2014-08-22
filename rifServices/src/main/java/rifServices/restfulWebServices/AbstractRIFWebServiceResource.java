@@ -137,20 +137,15 @@ abstract class AbstractRIFWebServiceResource {
 		webApplicationFolderPath.append(File.separator);
 		webApplicationFolderPath.append("classes");
 		rifServiceStartupOptions.setWebApplicationFilePath(webApplicationFolderPath.toString());
-
-		System.out.println("AbstractRIFWebServiceResource constructor 2 for class=="+getClass().getName()+"==");
 		
 		rifStudyServiceBundle
 			= ProductionRIFStudyServiceBundle.getRIFServiceBundle();
 
 		try {
-			System.out.println("AbstractRIFWebServiceResource constructor 3 for class=="+getClass().getName()+"==");
 			rifStudyServiceBundle.initialise(rifServiceStartupOptions);
 			rifStudyServiceBundle.login("kgarwood", new String("a").toCharArray());
-			System.out.println("AbstractRIFWebServiceResource constructor 4 for class=="+getClass().getName()+"==");			
 		}
 		catch(RIFServiceException exception) {
-			System.out.println("AbstractRIFWebServiceResource constructor 5 for class=="+getClass().getName()+"==");
 			exception.printStackTrace(System.out);
 		}
 	}
@@ -175,21 +170,16 @@ abstract class AbstractRIFWebServiceResource {
 			
 		String result = "";
 		
-		System.out.println("getGeographies 1");
 	
 		try {
 			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
-
-			System.out.println("getGeographies 2");
 			
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= rifStudyServiceBundle.getRIFStudySubmissionService();
 			ArrayList<Geography> geographies
 				= studySubmissionService.getGeographies(user);
-
-			System.out.println("getGeographies 3");
 
 			//Convert results to support JSON
 			ArrayList<GeographyProxy> geographyProxies 
@@ -200,14 +190,10 @@ abstract class AbstractRIFWebServiceResource {
 				geographyProxy.setName(geography.getName());
 				geographyProxies.add(geographyProxy);
 			}
-		
-			System.out.println("getGeographies 4");
-			
+					
 			result = serialiseResult(geographyProxies);
 		}
 		catch(Exception exception) {
-			System.out.println("getGeographies 5");
-			
 			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
