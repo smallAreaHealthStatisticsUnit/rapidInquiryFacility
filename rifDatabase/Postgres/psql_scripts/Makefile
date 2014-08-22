@@ -110,6 +110,7 @@ patch:
 sahsuland_dev: clean v4_0_create_sahsuland.rpt
 	$(MAKE) -C alter_scripts clean
 #	$(MAKE) -C alter_scripts all
+# Add UK gis
 	
 #- dev: Run all alter scripts in development
 dev:

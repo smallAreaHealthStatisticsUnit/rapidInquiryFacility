@@ -476,9 +476,6 @@ $$;
 --
 \i ../psql_scripts/v4_0_postgres_grants.sql 
 
-END;
-
-\q
 
 -- 
 -- Load shapefiles - now moved to GIS schema; and run as gis
@@ -523,6 +520,11 @@ SELECT 'TABLE' AS table_or_view, table_name AS table_or_view_name
   FROM information_schema.views
  ORDER BY 1, 2;
 
+ 
+END;
+
+\q
+
 --
 -- Check all tables, triggers, columns and comments are present, objects granted to rif_user/rif_manmger, sequences granted
 -- 
@@ -532,6 +534,33 @@ SELECT 'TABLE' AS table_or_view, table_name AS table_or_view_name
 -- Cleanup map and extract tables not referenced by a study (runs as rif40) 
 --
 SELECT rif40_sm_pkg.cleanup_orphaned_extract_and_map_tables(TRUE /* Truncate */);
+
+--
+-- End of transaction
+--
+END;
+
+ALTER TABLE "sahsuland_level1" ALTER COLUMN name  SET NOT NULL;
+ALTER TABLE "sahsuland_level2" ALTER COLUMN name  SET NOT NULL;
+ALTER TABLE "sahsuland_level3" ALTER COLUMN name  SET NOT NULL;
+ALTER TABLE "sahsuland_level4" ALTER COLUMN name  SET NOT NULL; 
+
+--
+-- Make columns NOT NULL - Cannot be done with PL/pgsql - causes:
+-- cannot ALTER TABLE "sahsuland_level1" because it is being used by active queries in this session
+--
+
+ALTER TABLE "t_rif40_sahsu_geometry" ALTER COLUMN name  SET NOT NULL;
+
+--
+-- Vaccum ANALYZE all RIF40 tables
+--
+VACUUM ANALYZE VERBOSE sahsuland_geography;
+VACUUM ANALYZE VERBOSE t_rif40_sahsu_geometry;
+VACUUM ANALYZE VERBOSE sahsuland_level1;
+VACUUM ANALYZE VERBOSE sahsuland_level2;
+VACUUM ANALYZE VERBOSE sahsuland_level3;
+VACUUM ANALYZE VERBOSE sahsuland_level4;
 
 --
 -- Connect as testuser
