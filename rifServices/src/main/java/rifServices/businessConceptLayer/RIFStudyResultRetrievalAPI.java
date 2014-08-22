@@ -87,7 +87,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 		final User user,	
 		final Geography geography,
 		final GeoLevelSelect geoLevelSelect,
-		final GeoLevelToMap geoLevelToMap,
+		final GeoLevelView geoLevelView,
 		final ArrayList<MapArea> mapAreas) 
 		throws RIFServiceException;
 		
