@@ -306,7 +306,7 @@ class SQLDiseaseMappingStudyManager extends AbstractSQLManager {
 			true);
 	
 		ArrayList<MapArea> mapAreas = area.getMapAreas();
-		mapDataManager.checkNonExistentAreas(
+		mapDataManager.checkAreasExist(
 			connection, 
 			geographyName, 
 			geoLevelToMap.getName(), 
