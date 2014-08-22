@@ -847,13 +847,24 @@ class SQLMapDataManager
 		final User user,
 		final Geography geography,	
 		final GeoLevelSelect geoLevelSelect,
-		final GeoLevelToMap geoLevelToMap,
+		final GeoLevelView geoLevelView,
 		final ArrayList<MapArea> mapAreas) throws RIFServiceException {
 
 		user.checkErrors();
 		geography.checkErrors();
 		geoLevelSelect.checkErrors();
-		geoLevelToMap.checkErrors();
+		geoLevelView.checkErrors();
+
+		if (mapAreas.size() == 0) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlMapDataManager.error.noMapAreasSpecified");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.NO_MAP_AREAS_SPECIFIED, 
+					errorMessage);
+			throw rifServiceException;
+		}
 		
 		for (MapArea mapArea : mapAreas) {
 			mapArea.checkErrors();
@@ -873,28 +884,50 @@ class SQLMapDataManager
 			connection, 
 			geographyName, 
 			geoLevelSelectName, 
-			geoLevelToMap.getName(), 
-			true);
+			geoLevelView.getName(), 
+			false);
 		
-		checkNonExistentAreas(
+		checkAreasExist(
 			connection,
 			geography.getName(),
-			geoLevelToMap.getName(),
+			geoLevelSelect.getName(),
 			mapAreas);
 				
 		String result = "";
-		/*
-		StringBuilder query = new StringBuilder();
+		
+		SQLFunctionCallerQueryFormatter query
+			= new SQLFunctionCallerQueryFormatter();
+		query.setSchema("rif40_xml_pkg");
+		query.setFunctionName("rif40_get_geojson_as_js");
+		query.setNumberOfFunctionParameters(5);
 
+		
+		//@TODO: the DB query needs to be altered to support an array of 
+		//map areas
+		String[] mapAreaIdentifiers = MapArea.getMapAreaIdentifierList(mapAreas);
+		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			statement = connection.prepareStatement(query.toString());
+			statement 
+				= connection.prepareStatement(query.generateQuery());
+			statement.setString(1, geography.getName());
+			statement.setString(2, geoLevelView.getName());
+			statement.setString(3, geoLevelSelect.getName());
+			statement.setString(4, mapAreaIdentifiers[0]);
+			statement.setBoolean(5, false);		
 			resultSet = statement.executeQuery();
+			resultSet.next();
+			result = resultSet.getString(1);
 		}
 		catch(SQLException sqlException) {
+			sqlException.printStackTrace();
 			String errorMessage
-				= RIFServiceMessages.getMessage("");
+				= RIFServiceMessages.getMessage(
+					"sqlMapDataManager.error.unableToGetGeometry",
+					geography.getName(),
+					geoLevelSelect.getName(),
+					geoLevelView.getName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED, 
@@ -907,8 +940,6 @@ class SQLMapDataManager
 			SQLQueryUtility.close(resultSet);			
 		}
 		
-		*/
-		
 		return result;
 	}
 	
@@ -918,10 +949,10 @@ class SQLMapDataManager
 	// ==========================================
 
 	
-	public void checkNonExistentAreas(
+	public void checkAreasExist(
 		final Connection connection,
 		final String geographyName,
-		final String geoLevelToMapName,
+		final String geoLevelName,
 		final ArrayList<MapArea> mapAreas) 
 		throws RIFServiceException {
 		
@@ -940,13 +971,13 @@ class SQLMapDataManager
 			SQLRecordExistsQueryFormatter query
 				= new SQLRecordExistsQueryFormatter();
 			query.setFromTable(geographyTableName);
-			query.setLookupKeyFieldName(geoLevelToMapName);
+			query.setLookupKeyFieldName(geoLevelName);
 			
-			System.out.println("SQLMapDataManager checkNonExistentAreas query=="+query.generateQuery()+"==");
 			statement = connection.prepareStatement(query.generateQuery());
 
 			ArrayList<String> errorMessages = new ArrayList<String>();
 			for (MapArea mapArea : mapAreas) {
+				System.out.println("SQLMapDataManager checkNonExistentAreas query=="+query.generateQuery()+"==mapArea=="+mapArea.getIdentifier()+"==");
 				statement.setString(1, mapArea.getIdentifier());
 				resultSet = statement.executeQuery();
 				
@@ -957,7 +988,7 @@ class SQLMapDataManager
 							"sqlMapDataManager.error.nonExistentMapArea",
 							mapArea.getIdentifier(),
 							geographyName,
-							geoLevelToMapName);
+							geoLevelName);
 					errorMessages.add(errorMessage);
 				}
 			}	
@@ -978,7 +1009,7 @@ class SQLMapDataManager
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToCheckMapAreasExists",
 					geographyName,
-					geoLevelToMapName);
+					geoLevelName);
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED, 
