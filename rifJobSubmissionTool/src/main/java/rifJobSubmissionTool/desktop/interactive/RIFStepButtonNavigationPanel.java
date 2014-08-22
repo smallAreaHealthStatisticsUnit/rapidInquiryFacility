@@ -1,12 +1,11 @@
 package rifJobSubmissionTool.desktop.interactive;
 
+import rifGenericUILibrary.ErrorDialog;
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFActivityStep;
-
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
-
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
@@ -20,6 +19,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Observable;
 import java.io.File;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -108,6 +108,8 @@ class RIFStepButtonNavigationPanel
 	private RIFSession rifSession;
 	/** The rif activity state machine. */
 	private RIFActivityStateMachine rifActivityStateMachine;
+
+	
 	/** The include start again button. */
 	private boolean includeStartAgainButton;
 	/** The include back button. */
@@ -282,7 +284,7 @@ class RIFStepButtonNavigationPanel
 			rifActivityStateMachine.nextActivityStep();
 		}
 		catch(RIFJobSubmissionToolException rifJobSubmissionToolException) {
-			ErrorDialog.showError(parentDialog, rifJobSubmissionToolException);
+			RIFSubmissionToolErrorDialog.showError(parentDialog, rifJobSubmissionToolException);
 		}		
 	}
 	
@@ -322,7 +324,7 @@ class RIFStepButtonNavigationPanel
 			ErrorDialog.showError(parentDialog, rifServiceException);			
 		}
 		catch(RIFJobSubmissionToolException rifJobSubmissionToolException) {
-			ErrorDialog.showError(parentDialog, rifJobSubmissionToolException);			
+			RIFSubmissionToolErrorDialog.showError(parentDialog, rifJobSubmissionToolException);			
 		}
 	}
 	

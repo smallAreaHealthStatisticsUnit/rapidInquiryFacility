@@ -1,13 +1,11 @@
 package rifJobSubmissionTool.desktop.interactive;
 
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
-
 import rifJobSubmissionTool.system.RIFActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
-
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudyArea;
@@ -16,6 +14,7 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
 import java.awt.GridBagConstraints;
 import java.util.Observer;
 import java.util.Observable;
+
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 

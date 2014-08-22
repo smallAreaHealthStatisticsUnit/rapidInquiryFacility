@@ -1,10 +1,11 @@
 package rifJobSubmissionTool.desktop.interactive;
 
+import rifGenericUILibrary.ErrorDialog;
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
@@ -274,15 +275,9 @@ public class RIFInteractiveStudySubmissionTool
 		
 		//create menu
 		JMenuBar menuBar = userInterfaceFactory.createMenuBar();
-		
-		String fileMenuText
-			= RIFJobSubmissionToolMessages.getMessage("fileMenu.label");
-		JMenu fileMenu = userInterfaceFactory.createMenu(fileMenuText);
-		
-		String exitButtonText
-			= RIFJobSubmissionToolMessages.getMessage("fileMenu.exitButton.label");
+		JMenu fileMenu = userInterfaceFactory.createFileMenu();	
 		exitButton
-			= userInterfaceFactory.createJMenuItem(exitButtonText);
+			= userInterfaceFactory.createExitMenuItem();
 		exitButton.addActionListener(this);
 		fileMenu.add(exitButton);
 		menuBar.add(fileMenu);
@@ -313,7 +308,7 @@ public class RIFInteractiveStudySubmissionTool
 			currentActivityPanel.initialiseForm();			
 		}
 		catch(RIFJobSubmissionToolException rifJobSubmissionToolException) {
-			ErrorDialog.showError(dialog, rifJobSubmissionToolException);
+			RIFSubmissionToolErrorDialog.showError(dialog, rifJobSubmissionToolException);
 		}
 		mainViewPanel.add(currentActivityPanel.getPanel(), BorderLayout.CENTER);
 		mainViewPanel.updateUI();

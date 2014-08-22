@@ -2,11 +2,11 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 
-import rifJobSubmissionTool.util.UserInterfaceFactory;
-
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifServices.businessConceptLayer.Parameter;
 
 import java.util.ArrayList;
+
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;

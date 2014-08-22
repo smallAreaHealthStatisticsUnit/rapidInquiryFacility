@@ -1,7 +1,6 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifJobSubmissionTool.util.UserInterfaceFactory;
-
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.system.RIFServiceMessages;
 
@@ -9,6 +8,7 @@ import javax.swing.JTable;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+
 import java.util.ArrayList;
 
 

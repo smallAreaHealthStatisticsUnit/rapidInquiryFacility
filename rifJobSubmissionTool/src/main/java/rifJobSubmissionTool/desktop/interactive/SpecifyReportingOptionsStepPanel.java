@@ -1,10 +1,13 @@
 package rifJobSubmissionTool.desktop.interactive;
 
+
 import rifJobSubmissionTool.system.RIFActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
+
+import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericUILibrary.ListEditingButtonPanel;
 
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.RIFStudySubmission;
@@ -19,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+
 import javax.swing.border.LineBorder;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -111,7 +115,7 @@ class SpecifyReportingOptionsStepPanel
 	/** The calculation method table. */
 	private CalculationMethodTable calculationMethodTable;	
 	/** The add edit delete panel. */
-	private ListEditingButtonControlPanel addEditDeletePanel;
+	private ListEditingButtonPanel addEditDeletePanel;
 	/** The check box from output option name. */
 	private HashMap<String, JCheckBox> checkBoxFromOutputOptionName;
 		
@@ -146,8 +150,10 @@ class SpecifyReportingOptionsStepPanel
 		calculationMethodTable
 			= new CalculationMethodTable(userInterfaceFactory);
 		addEditDeletePanel
-			= new ListEditingButtonControlPanel(userInterfaceFactory);
-		addEditDeletePanel.setIncludeCopyButton(false);
+			= new ListEditingButtonPanel(userInterfaceFactory);
+		addEditDeletePanel.includeAddButton(null);
+		addEditDeletePanel.includeEditButton(null);
+		addEditDeletePanel.includeDeleteButton(null);		
 		addEditDeletePanel.addActionListener(this);
 	}
     
@@ -280,7 +286,6 @@ class SpecifyReportingOptionsStepPanel
 		panelGC.weightx = 0;
 		panelGC.weighty = 0;
 		panelGC.anchor = GridBagConstraints.SOUTHEAST;
-		addEditDeletePanel.buildUI();
 		panel.add(addEditDeletePanel.getPanel(), panelGC);
 		
 		panel.setBorder(LineBorder.createGrayLineBorder());
@@ -403,10 +408,10 @@ class SpecifyReportingOptionsStepPanel
 		
 		int currentNumberOfPlugins = calculationMethodTable.getRowCount();
 		if (currentNumberOfPlugins == 0) {
-			addEditDeletePanel.setEmptyState();
+			addEditDeletePanel.indicateEmptyState();
 		}
 		else {
-			addEditDeletePanel.setNonEmptyState();
+			addEditDeletePanel.indicatePopulatedState();
 		}		
 	}
 	

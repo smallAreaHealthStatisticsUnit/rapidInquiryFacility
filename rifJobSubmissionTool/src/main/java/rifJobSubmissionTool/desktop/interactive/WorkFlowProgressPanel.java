@@ -1,11 +1,12 @@
 
 package rifJobSubmissionTool.desktop.interactive;
 
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFActivityStep;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 

@@ -1,6 +1,6 @@
 package rifJobSubmissionTool.system;
 
-import rifJobSubmissionTool.util.UserInterfaceFactory;
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.ComparisonArea;

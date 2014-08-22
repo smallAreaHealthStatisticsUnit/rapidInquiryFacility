@@ -1,7 +1,7 @@
 package rifJobSubmissionTool.desktop.interactive;
 
+import rifGenericUILibrary.ErrorDialog;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
-
 import rifServices.system.RIFServiceException;
 
 import java.awt.Component;
@@ -74,7 +74,7 @@ import javax.swing.JOptionPane;
 /**
  * The Class ErrorDialog.
  */
-public class ErrorDialog {
+public class RIFSubmissionToolErrorDialog extends ErrorDialog {
 
 // ==========================================
 // Section Constants
@@ -88,12 +88,7 @@ public class ErrorDialog {
 // ==========================================
 // Section Construction
 // ==========================================
-    /**
-     * Instantiates a new error dialog.
-     */
-	private ErrorDialog() {
 
-    }
 
 // ==========================================
 // Section Accessors and Mutators

@@ -1,10 +1,10 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifJobSubmissionTool.util.UserInterfaceFactory;
-
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifServices.businessConceptLayer.CalculationMethod;
 
 import java.util.ArrayList;
+
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 

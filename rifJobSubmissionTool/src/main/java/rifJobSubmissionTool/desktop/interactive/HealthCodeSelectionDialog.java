@@ -1,11 +1,12 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 
+import rifGenericUILibrary.ErrorDialog;
+import rifGenericUILibrary.OKClosePanel;
+import rifGenericUILibrary.OrderedListComboBox;
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-
 import rifJobSubmissionTool.system.RIFSession;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
-
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
@@ -16,6 +17,7 @@ import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;

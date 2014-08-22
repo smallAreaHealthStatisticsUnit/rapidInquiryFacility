@@ -4,7 +4,11 @@ import rifJobSubmissionTool.system.RIFActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
+
+import rifGenericUILibrary.OrderedListPanel;
+import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericUILibrary.ListEditingButtonPanel;
+
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.DisplayableListItem;
@@ -17,7 +21,6 @@ import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
@@ -103,7 +106,7 @@ class SpecifyInvestigationsStepPanel
 	/** The investigations list panel. */
 	private OrderedListPanel investigationsListPanel;	
 	/** The button panel. */
-	private ListEditingButtonControlPanel buttonPanel;
+	private ListEditingButtonPanel buttonPanel;
 
 	// ==========================================
 	// Section Construction
@@ -134,12 +137,12 @@ class SpecifyInvestigationsStepPanel
 				userInterfaceFactory,
 				false);
 		buttonPanel
-			= new ListEditingButtonControlPanel(userInterfaceFactory);
+			= new ListEditingButtonPanel(userInterfaceFactory);
 		
-		buttonPanel.setIncludeAddButton(true);
-		buttonPanel.setIncludeEditButton(true);
-		buttonPanel.setIncludeCopyButton(false);
-		buttonPanel.setIncludeDeleteButton(true);
+		buttonPanel.includeAddButton(null);
+		buttonPanel.includeEditButton(null);
+		buttonPanel.includeCopyButton(null);
+		buttonPanel.includeDeleteButton(null);
 		buttonPanel.addActionListener(this);
 	}
 
@@ -183,14 +186,13 @@ class SpecifyInvestigationsStepPanel
 		panelGC.fill = GridBagConstraints.NONE;
 		panelGC.weightx = 0;
 		panelGC.weighty = 0;
-		buttonPanel.buildUI();
 		panel.add(buttonPanel.getPanel(), panelGC);
 		
 		if (investigationsListPanel.isEmpty()) {
-			buttonPanel.setEmptyState();
+			buttonPanel.indicateEmptyState();
 		}
 		else {
-			buttonPanel.setNonEmptyState();
+			buttonPanel.indicatePopulatedState();
 		}
 		
 	}
@@ -309,10 +311,10 @@ class SpecifyInvestigationsStepPanel
 	private void updateButtonStates() {
 		
 		if (investigationsListPanel.getNumberOfItems() == 0) {
-			buttonPanel.setEmptyState();
+			buttonPanel.indicateEmptyState();
 		}
 		else {
-			buttonPanel.setNonEmptyState();			
+			buttonPanel.indicatePopulatedState();			
 		}
 	}
 	
