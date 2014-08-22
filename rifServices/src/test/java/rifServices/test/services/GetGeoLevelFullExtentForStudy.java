@@ -101,7 +101,8 @@ public class GetGeoLevelFullExtentForStudy extends AbstractRIFServiceTestCase {
 			User validUser = cloneValidUser();
 			StudyResultRetrievalContext validStudyResultRetrievalContext
 				= cloneValidResultContext();
-			
+			validStudyResultRetrievalContext.setGeoLevelSelectName("LEVEL4");
+			System.out.println("Geography=="+validStudyResultRetrievalContext.getGeographyName()+"==GeoLevelSelect=="+validStudyResultRetrievalContext.getGeoLevelSelectName()+"==");
 			BoundaryRectangle boundaryRectangle
 				= rifStudyRetrievalService.getGeoLevelFullExtentForStudy(
 					validUser, 
@@ -112,7 +113,6 @@ public class GetGeoLevelFullExtentForStudy extends AbstractRIFServiceTestCase {
 			assertEquals(-7.58829,boundaryRectangle.getXMin(), TOLERANCE);
 		}
 		catch(RIFServiceException rifServiceException) {
-			
 			fail();
 		}		
 	}

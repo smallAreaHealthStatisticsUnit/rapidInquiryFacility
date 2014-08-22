@@ -1,6 +1,7 @@
 package rifServices.test.services;
 
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
@@ -100,13 +101,29 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
+			validGeoLevelSelect.setName("LEVEL3");
 			BoundaryRectangle validBoundaryRectangle = cloneValidBoundaryRectangle();
+			validBoundaryRectangle.setYMax(55.5268);
+			validBoundaryRectangle.setXMax(-4.88654);
+			validBoundaryRectangle.setYMin(52.6875);
+			validBoundaryRectangle.setXMin(-7.58829);
+			//y_max  |  x_max   |  y_min  |  x_min
+			 //---------+----------+---------+----------
+			 // 55.5268 | -4.88654 | 52.6875 | -7.58829
+			 //(1 row)			
+			
 			String result
 				= rifStudyRetrievalService.getTiles(
 					validUser, 
 					validGeography, 
 					validGeoLevelSelect,
-					validBoundaryRectangle);			
+					validBoundaryRectangle);
+			System.out.println("result=="+result+"==");
+			assertNotNull(result);
+			
+			//try running this, doesn't seem to work
+			fail();
+			
 		}
 		catch(RIFServiceException rifServiceException) {
 			
