@@ -171,11 +171,11 @@ BEGIN
 --
 -- Add denominator population table to geography geolevel geomtry data
 --
---	PERFORM rif40_geo_pkg.add_population_to_rif40_geolevels_geometry('SAHSU', 'SAHSULAND_POP'); 
+	PERFORM rif40_geo_pkg.add_population_to_rif40_geolevels_geometry('SAHSU', 'SAHSULAND_POP'); 
 --
 -- Fix NULL geolevel names in geography geolevel geometry and lookup table data 
 --
---	PERFORM rif40_geo_pkg.fix_null_geolevel_names('SAHSU'); 
+	PERFORM rif40_geo_pkg.fix_null_geolevel_names('SAHSU'); 
 --
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
@@ -187,138 +187,29 @@ $$;
 --
 -- Temporary workaround for: http://trac.osgeo.org/postgis/ticket/2543
 --
+
 --\COPY sahsuland_geography(level1, level2, level3, level4) FROM  '../sahsuland/data/sahsuland_geography.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
-CREATE UNIQUE INDEX sahsuland_geography_pk ON sahsuland_geography(level4);
+-- CREATE UNIQUE INDEX sahsuland_geography_pk ON sahsuland_geography(level4);
 -- For vi's benefit
-
-DO LANGUAGE plpgsql $$
-BEGIN
-	PERFORM rif40_geo_pkg.add_population_to_rif40_geolevels_geometry('SAHSU', 'SAHSULAND_POP'); 
-	PERFORM rif40_geo_pkg.fix_null_geolevel_names('SAHSU'); 
+--DO LANGUAGE plpgsql $$
+--BEGIN
+--	PERFORM rif40_geo_pkg.add_population_to_rif40_geolevels_geometry('SAHSU', 'SAHSULAND_POP'); 
+--	PERFORM rif40_geo_pkg.fix_null_geolevel_names('SAHSU'); 
 --
-END;
-$$;
+--END;
+--$$;
 
-SELECT area_id, name, area, total_males, total_females, population_year
-  FROM t_rif40_sahsu_geometry
- WHERE geolevel_name = 'LEVEL1';
-
-SELECT area_id, name, area, total_males, total_females, population_year
-  FROM t_rif40_sahsu_geometry
- WHERE geolevel_name = 'LEVEL2';
-
-SELECT area_id, name, area, total_males, total_females, population_year
-  FROM t_rif40_sahsu_geometry
- WHERE geolevel_name = 'LEVEL3'
- ORDER BY 2 LIMIT 20;
-
-SELECT area_id, name, area, total_males, total_females, population_year
-  FROM t_rif40_sahsu_geometry
- WHERE geolevel_name = 'LEVEL4'
- ORDER BY 2 LIMIT 20;
-
-
---\q
-
-CREATE TABLE sahsuland_geography_orig AS SELECT * FROM sahsuland_geography;
-TRUNCATE TABLE sahsuland_geography_orig;
---
--- Import geospatial intersction files
---
-\COPY sahsuland_geography_orig(level1, level2, level3, level4) FROM  '../sahsuland/data/sahsuland_geography.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
-CREATE UNIQUE INDEX sahsuland_geography_orig_pk ON sahsuland_geography_orig(level4);
-
---
--- For vi's benefit
-
---
--- This algorithm implments the prototype in: ../postgres/gis_intersection_prototype.sql. The SAHSU alogoritm differs in that
--- Where intersections overlap (e.g. level4 appears in more than 1 level3) the level3 with the greatest intersected area is chosen 
--- This is differed to ARCGis - see the prototype file for a more detailed investigation
---
--- \i ../postgres/gis_intersection_prototype.sql
--- \COPY sahsuland_geography(level1, level2, level3, level4) FROM  '../sahsuv3_v4/data/sahsuland_geography.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
-WITH a_missing AS (
-	SELECT level1, level2, level3, level4
-	  FROM sahsuland_geography
-	EXCEPT
-	SELECT level1, level2, level3, level4
-	  FROM sahsuland_geography_orig
-),
-a_extra AS (
-	SELECT level1, level2, level3, level4
-	  FROM sahsuland_geography_orig
-	EXCEPT
-	SELECT level1, level2, level3, level4
-	  FROM sahsuland_geography
-), b AS (
-	SELECT a_missing.level4, 
-               a_missing.level3 AS missing_level3, 
-               a_extra.level3 AS extra_level3, 
-               a_missing.level2 AS missing_level2, 
-               a_extra.level2 AS extra_level2, 
-               a_missing.level1 AS missing_level1, 
-               a_extra.level1 AS extra_level1 
-	  FROM a_missing
-		LEFT OUTER JOIN a_extra ON (a_extra.level4 = a_missing.level4)
-)
-SELECT level4,
-       CASE WHEN missing_level3 = extra_level3 THEN 'Same: '||extra_level3 ELSE 'Move: '||extra_level3||'=>'||missing_level3 END AS level3,
-       CASE WHEN missing_level2 = extra_level2 THEN 'Same: '||extra_level2 ELSE 'Move: '||extra_level2||'=>'||missing_level2 END AS level2,
-       CASE WHEN missing_level1 = extra_level1 THEN 'Same: '||extra_level1 ELSE 'Move: '||extra_level1||'=>'||missing_level1 END AS level1
-  FROM b
-ORDER BY 1, 2, 3, 4;
-
-DROP TABLE IF EXISTS sahsuland_geography_orig;
-
-/*
-
-SELECT level4, COUNT(DISTINCT(level3)) AS total
-  FROM sahsuland_geography
- GROUP BY level4
-HAVING COUNT(DISTINCT(level3)) > 1;
-
-
-SELECT level3 FROM sahsuland_geography EXCEPT SELECT level3 FROM sahsuland_level3;
-SELECT level3 FROM x_sahsu_level3 WHERE level3 IN (SELECT level3 FROM sahsuland_geography EXCEPT SELECT level3 FROM sahsuland_level3);
-SELECT level4 FROM sahsuland_level4 EXCEPT SELECT level4 FROM sahsuland_geography;
- */
-
-SELECT geography, geolevel_name, geolevel_id, shapefile_table, shapefile_area_id_column, shapefile_desc_column, st_simplify_tolerance
-  FROM t_rif40_geolevels
- ORDER BY geography, geolevel_id;
-
-/*
- geography | geolevel_name | geolevel_id |  shapefile_table  | shapefile_area_id_column | shapefile_desc_column | st_simplify_tolerance 
------------+---------------+-------------+-------------------+--------------------------+-----------------------+-----------------------
- SAHSU     | LEVEL1        |           1 | x_sahsu_level1    | level1                   |                       |                   500
- SAHSU     | LEVEL2        |           2 | x_sahsu_level2    | level2                   |                       |                   100
- SAHSU     | LEVEL3        |           3 | x_sahsu_level3    | level3                   |                       |                    50
- SAHSU     | LEVEL4        |           4 | x_sahsu_level4    | level4                   |                       |                    10
-(4 rows)
- */
-
-
-SELECT geography, geolevel_name, avg_npoints_geom, avg_npoints_opt, file_geojson_len, leg_geom, leg_opt
-  FROM t_rif40_geolevels
- ORDER BY geography, geolevel_id;
-
-\pset pager off
-\dS+ t_rif40_sahsu_geometry
-\dS+ sahsuland_geography
-
--- \dS+ rif40_geolevels_geometry
+\i ../psql_scripts/test_scripts/test_1_sahsuland_geography.sql
 
 \echo Created and populated rif40_geolevels_geometry, intersection and lookup tables (Geographic processing)- SAHSULAND version.
-\q
 
 --
 -- Create some GeoJSON tester Java files
 --
-\copy (SELECT * FROM rif40_geo_pkg.get_geojson_as_js('SAHSU', 'LEVEL4', 'LEVEL2', '01.004' /* Hambly */)) to ../postgres/GeoJSON_tester/geojson_data/sahsu_level2.js 
+--\copy (SELECT * FROM rif40_geo_pkg.get_geojson_as_js('SAHSU', 'LEVEL4', 'LEVEL2', '01.004' /* Hambly */)) to ../postgres/GeoJSON_tester/geojson_data/sahsu_level2.js 
 
-\copy (SELECT encode(ST_asPNG(ST_asRaster(shapefile_geometry, 1000, 1000)), 'hex') AS png FROM t_rif40_sahsu_geometry WHERE geolevel_name = 'LEVEL4' AND area_id IN (SELECT DISTINCT level4 FROM sahsuland_geography WHERE level2 = '01.004')) to ../postgres/GeoJSON_tester/geojson_data/sahsu_level2.hex
-\! xxd -p -r ../postgres/GeoJSON_tester/geojson_data/sahsu_level2.hex ../postgres/GeoJSON_tester/geojson_data/sahsu_level2.png
+--\copy (SELECT encode(ST_asPNG(ST_asRaster(shapefile_geometry, 1000, 1000)), 'hex') AS png FROM t_rif40_sahsu_geometry WHERE geolevel_name = 'LEVEL4' AND area_id IN (SELECT DISTINCT level4 FROM sahsuland_geography WHERE level2 = '01.004')) to ../postgres/GeoJSON_tester/geojson_data/sahsu_level2.hex
+--\! xxd -p -r ../postgres/GeoJSON_tester/geojson_data/sahsu_level2.hex ../postgres/GeoJSON_tester/geojson_data/sahsu_level2.png
 -- \! display -verbose ../postgres/GeoJSON_tester/geojson_data/sahsu_level2.png &
 
 -- 

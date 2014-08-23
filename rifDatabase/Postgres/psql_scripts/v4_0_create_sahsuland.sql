@@ -503,6 +503,57 @@ $$;
 \i  ../psql_scripts/v4_0_user.sql
 
 --
+-- Cleanup map and extract tables not referenced by a study (runs as rif40) 
+--
+SELECT rif40_sm_pkg.cleanup_orphaned_extract_and_map_tables(TRUE /* Truncate */);
+
+--
+-- There should be no studies and no orphaned study tables at this point
+--
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR 
+		SELECT COUNT(study_id) AS num_studies 
+		  FROM t_rif40_studies;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.num_studies > 0 THEN
+			RAISE EXCEPTION 'C20900: % studies found in database', c1_rec.num_studies::Text;	
+	ELSE
+			RAISE INFO 'No studies found in database';
+	END IF;
+END;
+$$;
+
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR 
+		SELECT COUNT(tablename) AS num_tables 
+		  FROM pg_tables
+	     WHERE schemaname = 'rif_studies';
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.num_tables > 0 THEN
+			RAISE EXCEPTION 'C20900: % orphaned study tables found in database', c1_rec.num_tables::Text;	
+	ELSE
+			RAISE INFO 'No orphaned study tables found in database';
+	END IF;
+END;
+$$;
+
+END;
+
+\q
+
+--
 -- Check all tables and views are built
 --
 SELECT table_or_view, LOWER(table_or_view_name_hide) AS table_or_view_name
@@ -519,27 +570,19 @@ EXCEPT
 SELECT 'TABLE' AS table_or_view, table_name AS table_or_view_name
   FROM information_schema.views
  ORDER BY 1, 2;
-
- 
-END;
-
-\q
-
 --
 -- Check all tables, triggers, columns and comments are present, objects granted to rif_user/rif_manmger, sequences granted
 -- 
 \i ../psql_scripts/v4_0_postgres_ddl_checks.sql
 
 --
--- Cleanup map and extract tables not referenced by a study (runs as rif40) 
---
-SELECT rif40_sm_pkg.cleanup_orphaned_extract_and_map_tables(TRUE /* Truncate */);
-
---
 -- End of transaction
 --
 END;
 
+--
+-- Post transaction SQL
+--
 ALTER TABLE "sahsuland_level1" ALTER COLUMN name  SET NOT NULL;
 ALTER TABLE "sahsuland_level2" ALTER COLUMN name  SET NOT NULL;
 ALTER TABLE "sahsuland_level3" ALTER COLUMN name  SET NOT NULL;
@@ -555,12 +598,29 @@ ALTER TABLE "t_rif40_sahsu_geometry" ALTER COLUMN name  SET NOT NULL;
 --
 -- Vaccum ANALYZE all RIF40 tables
 --
-VACUUM ANALYZE VERBOSE sahsuland_geography;
-VACUUM ANALYZE VERBOSE t_rif40_sahsu_geometry;
-VACUUM ANALYZE VERBOSE sahsuland_level1;
-VACUUM ANALYZE VERBOSE sahsuland_level2;
-VACUUM ANALYZE VERBOSE sahsuland_level3;
-VACUUM ANALYZE VERBOSE sahsuland_level4;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR
+		SELECT tablename FROM pg_tables
+		 WHERE tableowner = USER
+--		   AND schemaname = USER
+		 ORDER BY 1;
+--
+	c1_rec 		RECORD;
+	sql_stmt 	VARCHAR;
+BEGIN
+	FOR c1_rec IN c1 LOOP
+		sql_stmt:='VACUUM ANALYZE VERBOSE '||c1_rec.tablename;
+		RAISE INFO 'SQL> %;', sql_stmt;
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+	END LOOP;
+END;
+$$;
+
+\echo Created SAHSULAND rif40 example schema.
+--
+-- Eof
+\q
 
 --
 -- Connect as testuser

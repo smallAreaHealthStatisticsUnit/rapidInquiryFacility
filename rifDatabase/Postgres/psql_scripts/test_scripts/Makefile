@@ -8,7 +8,7 @@
 #
 # Description:
 #
-# Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts
+# Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts\test_scripts
 #
 # Copyright:
 #
@@ -44,26 +44,36 @@
 #
 # Peter Hambly, SAHSU
 #
-SUBDIRS = alter_scripts test_scripts
+# Conditional environment variables - can be changed to point to sahsuland by higher maskefiles
 #
-# Environment variables - set to sahsuland_dev
-#
-PGDATABASE=sahsuland_dev
+PGDATABASE?=sahsuland_dev
+DBNAME?=$(PGDATABASE)
 TESTUSER?=$(USERNAME)
 
 #
 # Programs and parameters
 #
-WINDOWS_RUN_SCRIPT=run.ps1
-LINUX_RUN_SCRIPT=run.sh
+WINDOWS_RUN_SCRIPT=../run.ps1
+LINUX_RUN_SCRIPT=../run.sh
 PSQL=psql
-PSQL_FLAGS=-U rif40 -d $(PGDATABASE) -w -e -P pager=off -v testuser=$(TESTUSER)
+PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -e -P pager=off -v testuser=$(TESTUSER)
 
+#
+# List of source code
+#
+SOURCES=test_1_sahsuland_geography.sql
+
+
+#
+# Derive targets from sources
+#
+TARGETS=$(SOURCES:.sql=.rpt)
+	
 #
 # Phony (i.e. not a file) targets
 #
-.PHONY: recurse $(SUBDIRS) all dev devclean clean sahsuland_dev patch test
- 
+.PHONY: all clean recurse
+
 #
 # Run bash on Linux, Powershell on Windows_NT
 #
@@ -74,7 +84,7 @@ ifeq ($(OS),Windows_NT)
 #
 RUN_SCRIPT=$(WINDOWS_RUN_SCRIPT)
 RUN=powershell -ExecutionPolicy ByPass -file $(RUN_SCRIPT)
-DELETE=powershell -ExecutionPolicy ByPass -file delete.ps1
+DELETE=powershell -ExecutionPolicy ByPass -file ../delete.ps1
 #
 # ADD Linux support
 #
@@ -85,56 +95,26 @@ else
 $(error Unsupported OS: $(OS))
 endif
 
+
 #
 # Target extension depends on source, build rule
 #
 .SUFFIXES: .sql .rpt
 .sql.rpt:
-	$(RUN) $@ $(CURDIR) $(PSQL) $(PSQL_FLAGS) -f $< 
+	$(RUN) $(CURDIR)/$@ $(CURDIR)/.. $(PSQL) $(PSQL_FLAGS) -f test_scripts\$< 
 	
 #
 # Targets
-# 
-#- all: Run all completed alter scripts [DEFAULT]
-all:
-	$(MAKE) -C alter_scripts all
-
-#- patch: Run all completed alter scripts on both sahsuland_dev and sahusland	
-patch:
-	$(MAKE) -C alter_scripts clean
-	$(MAKE) -C alter_scripts all
-	$(MAKE) -C alter_scripts clean
-	$(MAKE) -C alter_scripts all PGDATABASE=sahsuland
-	
-#- sahsuland_dev: Rebuild sahsuland_dev, then patch dev only
-sahsuland_dev: clean v4_0_create_sahsuland.rpt test
-	$(MAKE) -C alter_scripts clean
-#	$(MAKE) -C alter_scripts all
-# Add UK gis
-	
-#- test: Run all alter scripts in development
-test:
-	$(MAKE) -C test_scripts
-	
-#- dev: Run all alter scripts in development
-dev:
-	$(MAKE) -C alter_scripts dev
-#- clean: Remove logs so completed scripts can be re-run
-clean:
-	$(MAKE) -C alter_scripts clean
-	$(MAKE) -C test_scripts clean
-	$(DELETE) v4_0_create_sahsuland.rpt
-#- devclean: Remove logs so alter scripts in development can be r-run 
-#-           Not normally needed as they abort.
-devclean:
-	$(MAKE) -C alter_scripts devclean
-
 #
-# Recursive make target: make recurse <recursive tsrget>
-#
-recurse: $(SUBDIRS)	
-$(SUBDIRS):
-	$(MAKE) -C $@ $(MAKECMDGOALS)
+#- all: Run all test scripts [DEFAULT]
+all: $(TARGETS)
+#- clean: Remove run logs
+clean: 
+	$(DELETE) $(TARGETS)
+
+
+# Do nothing
+recurse:
 
 #
 # Eof
