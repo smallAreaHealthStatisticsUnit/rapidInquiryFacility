@@ -274,6 +274,8 @@ SELECT geography, geolevel_name, avg_npoints_geom, avg_npoints_opt, file_geojson
 \dS+ t_rif40_sahsu_geometry
 \dS+ sahsuland_geography
 
+\echo Test 1 - SAHSULAND geometry iontersection validation completed OK.
+
 -- \dS+ rif40_geolevels_geometry
 
 --

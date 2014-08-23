@@ -61,7 +61,7 @@ PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -e -P pager=off -v testuser=$(TESTUSER)
 #
 # List of source code
 #
-SOURCES=test_1_sahsuland_geography.sql
+SOURCES=test_1_sahsuland_geography.sql test_2_ddl_checks.sql
 
 
 #

@@ -549,32 +549,6 @@ BEGIN
 END;
 $$;
 
-END;
-
-\q
-
---
--- Check all tables and views are built
---
-SELECT table_or_view, LOWER(table_or_view_name_hide) AS table_or_view_name
-  FROM rif40_tables_and_views
- WHERE table_or_view = 'TABLE'
-EXCEPT
-SELECT 'TABLE' AS table_or_view, table_name AS table_or_view_name
-  FROM information_schema.tables
-UNION
-SELECT table_or_view, LOWER(table_or_view_name_hide) AS table_or_view_name
-  FROM rif40_tables_and_views
- WHERE table_or_view = 'VIEW'
-EXCEPT
-SELECT 'TABLE' AS table_or_view, table_name AS table_or_view_name
-  FROM information_schema.views
- ORDER BY 1, 2;
---
--- Check all tables, triggers, columns and comments are present, objects granted to rif_user/rif_manmger, sequences granted
--- 
-\i ../psql_scripts/v4_0_postgres_ddl_checks.sql
-
 --
 -- End of transaction
 --
@@ -596,26 +570,9 @@ ALTER TABLE "sahsuland_level4" ALTER COLUMN name  SET NOT NULL;
 ALTER TABLE "t_rif40_sahsu_geometry" ALTER COLUMN name  SET NOT NULL;
 
 --
--- Vaccum ANALYZE all RIF40 tables
+-- Vacuum ANALYZE all RIF40 tables
 --
-DO LANGUAGE plpgsql $$
-DECLARE
-	c1 CURSOR FOR
-		SELECT tablename FROM pg_tables
-		 WHERE tableowner = USER
---		   AND schemaname = USER
-		 ORDER BY 1;
---
-	c1_rec 		RECORD;
-	sql_stmt 	VARCHAR;
-BEGIN
-	FOR c1_rec IN c1 LOOP
-		sql_stmt:='VACUUM ANALYZE VERBOSE '||c1_rec.tablename;
-		RAISE INFO 'SQL> %;', sql_stmt;
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-	END LOOP;
-END;
-$$;
+\i  ../psql_scripts/v4_0_vacuum_analyse.sql
 
 \echo Created SAHSULAND rif40 example schema.
 --
