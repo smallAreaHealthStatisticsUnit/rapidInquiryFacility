@@ -112,7 +112,7 @@ sahsuland_dev: clean v4_0_create_sahsuland.rpt test
 #	$(MAKE) -C alter_scripts all
 # Add UK gis
 	
-#- test: Run all alter scripts in development
+#- test: Run test scripts
 test:
 	$(MAKE) -C test_scripts
 	

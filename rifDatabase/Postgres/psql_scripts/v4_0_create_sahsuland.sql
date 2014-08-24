@@ -580,22 +580,6 @@ ALTER TABLE "t_rif40_sahsu_geometry" ALTER COLUMN name  SET NOT NULL;
 \q
 
 --
--- Connect as testuser
---
-\c sahsuland_dev :testuser
---
--- Test in a single transaction  
---
--- Initialise user
---
-\i ../psql_scripts/v4_0_user.sql      
---
--- Test user access
---
-\c sahsuland_dev :testuser
-\i ../psql_scripts/v4_0_sahsuland_examples.sql      
-
---
 -- Dump sahsuland database (usually run separately/from create_v4_0.sql Oracle script)
 --
 -- Exclude UK91, EW01 shapefiles from non dev dumps
@@ -608,7 +592,6 @@ ALTER TABLE "t_rif40_sahsu_geometry" ALTER COLUMN name  SET NOT NULL;
 -- Test access to all tables in SAHSU_TABLES_AND_VIEWS
 --
 -- ADD
-\echo Created SAHSULAND rif40 example schema.
 
 --
 -- Eof
