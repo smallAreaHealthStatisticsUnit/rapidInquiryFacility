@@ -44,9 +44,8 @@
 --
 -- Peter Hambly, SAHSU
 --
-\set ECHO all
+\set ECHO :echo
 \set ON_ERROR_STOP ON
-\timing
 
 --
 -- Check user is rif40
@@ -82,6 +81,7 @@ SELECT 'TABLE' AS table_or_view, table_name AS table_or_view_name
  --
  -- List objects and comments
  --
+ \pset title 'Objects and comments'
  WITH a AS (
 			SELECT c.relname AS object_name, 
 			       n.nspname AS object_schema, 
@@ -135,6 +135,7 @@ SELECT 'TABLE' AS table_or_view, table_name AS table_or_view_name
 		  FROM a
 		 GROUP BY object_type, object_schema
 		 ORDER BY 1, 2;
+\pset title
 		 
 --
 -- Check all tables, triggers, columns and comments are present, objects granted to rif_user/rif_manmger, sequences granted

@@ -48,34 +48,54 @@
 --
 -- Peter Hambly, SAHSU
 --
-\set ECHO all
+\set ECHO :echop
 \set ON_ERROR_STOP ON
-\timing
+
 --
 -- Run RIF startup script
 --
-\set VERBOSITY terse
+\set VERBOSITY :verbosity
+
+\set ndebug_level '''XXXX':debug_level''''
+SET rif40.debug_level TO :ndebug_level;
+
 DO LANGUAGE plpgsql $$
 DECLARE
-	sql_stmt VARCHAR;
+	c4us CURSOR FOR 
+		SELECT CURRENT_SETTING('rif40.debug_level') AS debug_level;
+	c4us_rec 		RECORD;
+--
+	sql_stmt 		VARCHAR;
+	debug_level		INTEGER;
 BEGIN
+	OPEN c4us;
+	FETCH c4us INTO c4us_rec;
+	CLOSE c4us;
+--
+-- Test parameter
+--
+	IF c4us_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
+		RAISE EXCEPTION 'v4_0_user.sql() C209xx: No -v testuser=<debug level> parameter';	
+	ELSE
+		debug_level:=LOWER(SUBSTR(c4us_rec.debug_level, 5))::INTEGER;
+		RAISE INFO 'v4_0_user.sql() debug level parameter="%"', debug_level::Text;
+	END IF;
+--
+	PERFORM rif40_log_pkg.rif40_add_to_debug('rif40_ddl_checks:DEBUG'||debug_level::Text);
+	PERFORM rif40_log_pkg.rif40_log_setup();
+	PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
 --
 -- Force rebuild of user objects
 --
 	sql_stmt:='DROP VIEW IF EXISTS '||USER||'.rif40_user_version';
 	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
---
-	PERFORM rif40_log_pkg.rif40_add_to_debug('rif40_ddl_checks:DEBUG3');
-	PERFORM rif40_log_pkg.rif40_log_setup();
-	PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
-        PERFORM rif40_sql_pkg.rif40_startup();
+    PERFORM rif40_sql_pkg.rif40_startup();
 	IF USER != 'rif40' THEN
 	        PERFORM rif40_sql_pkg.rif40_ddl_checks();
 	END IF;
 	PERFORM rif40_log_pkg.rif40_remove_from_debug('rif40_ddl_checks');
 END;
 $$;
-\set VERBOSITY default
 
 SELECT geography, numerator_table, theme_description, denominator_table, automatic 
   FROM rif40_num_denom;
@@ -208,14 +228,9 @@ SELECT geography AS geog,
 (99 rows)
 
  */
-SELECT username, COUNT(*) 
-  FROM rif40_studies
- GROUP BY username
- ORDER BY 1;
 
-RESET search_path;
-
-SELECT CURRENT_SETTING('rif40.send_debug_to_info') AS send_debug_to_info, CURRENT_SETTING('rif40.debug') AS debug;
+-- RESET search_path;
+-- SELECT CURRENT_SETTING('rif40.send_debug_to_info') AS send_debug_to_info, CURRENT_SETTING('rif40.debug') AS debug;
 
 --
 -- Eof

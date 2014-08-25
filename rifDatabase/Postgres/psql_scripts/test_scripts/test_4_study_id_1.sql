@@ -44,94 +44,19 @@
 --
 -- Peter Hambly, SAHSU
 --
-\set ECHO all
-\set ON_ERROR_STOP ON
-\timing
 
 --
--- Check user is rif40
+-- Call commomn setup to run as testuser (passed parameter)
 --
-DO LANGUAGE plpgsql $$
-BEGIN
-	IF user = 'rif40' THEN
-		RAISE INFO 'User check: %', user;	
-	ELSE
-		RAISE EXCEPTION 'C20900: User check failed: % is not rif40', user;	
-	END IF;
-END;
-$$;
+\i ../psql_scripts/test_scripts/common_setup.sql
 
---
--- Test user account
--- 
-\set ntestuser '''XXXX':testuser''''
-SET rif40.testuser TO :ntestuser;
-DO LANGUAGE plpgsql $$
-DECLARE
-	c1 CURSOR FOR 
-		SELECT CURRENT_SETTING('rif40.testuser') AS testuser;
-	c2 CURSOR(l_usename VARCHAR) FOR 
-		SELECT * FROM pg_user WHERE usename = l_usename;
-	c1_rec RECORD;
-	c2_rec RECORD;
-BEGIN
-	OPEN c1;
-	FETCH c1 INTO c1_rec;
-	CLOSE c1;
---
--- Test parameter
---
-	IF c1_rec.testuser IN ('XXXX', 'XXXX:testuser') THEN
-		RAISE EXCEPTION 'db_create.sql() C209xx: No -v testuser=<test user account> parameter';	
-	ELSE
-		RAISE INFO 'db_create.sql() test user account parameter="%"', c1_rec.testuser;
-	END IF;
---
--- Test account exists
---
-	OPEN c2(LOWER(SUBSTR(c1_rec.testuser, 5)));
-	FETCH c2 INTO c2_rec;
-	CLOSE c2;
-	IF c2_rec.usename IS NULL THEN
-		RAISE EXCEPTION 'db_create.sql() C209xx: User account does not exist: %', LOWER(SUBSTR(c1_rec.testuser, 5));	
-	ELSIF pg_has_role(c2_rec.usename, 'rif_user', 'MEMBER') THEN
-		RAISE INFO 'db_create.sql() user account="%" is a rif_user', c2_rec.usename;
-	ELSIF pg_has_role(c2_rec.usename, 'rif_manager', 'MEMBER') THEN
-		RAISE INFO 'db_create.sql() user account="%" is a rif manager', c2_rec.usename;
-	ELSE
-		RAISE EXCEPTION 'db_create.sql() C209xx: User account: % is not a rif_user or rif_manager', c2_rec.usename;	
-	END IF;
---
-END;
-$$;
-
---
--- Connect as testuser
---
-\c sahsuland_dev :testuser
-
---
--- Check user is NOT rif40
---
-DO LANGUAGE plpgsql $$
-BEGIN
-	IF user != 'rif40' THEN
-		RAISE INFO 'User check: %', user;	
-	ELSE
-		RAISE EXCEPTION 'C20902: User check failed: % is rif40', user;	
-	END IF;
-END;
-$$;
-
-\set ON_ERROR_STOP ON
 \echo Creating SAHSULAND example study 1...
-\set ECHO all
-\timing
 
+\set ndebug_level '''XXXX':debug_level''''
+SET rif40.debug_level TO :ndebug_level;
 --
--- Comment out this for more debug
+-- Start transaction
 --
---\set VERBOSITY terse
 BEGIN;
 DO LANGUAGE plpgsql $$
 DECLARE
@@ -164,54 +89,79 @@ DECLARE
 		  FROM rif40_studies
 		 WHERE study_name = 'SAHSULAND test example'
 		   AND username = USER;
+	c4sm CURSOR FOR 
+		SELECT CURRENT_SETTING('rif40.debug_level') AS debug_level;
 	c1sm_rec RECORD;
 	c2sm_rec RECORD;
 	c3sm_rec RECORD;
+	c4sm_rec RECORD;
 --
 	investigation_icd_array		VARCHAR[]:=array['"icd" LIKE ''C34%'' OR "icd" LIKE ''162%'''];	
 	investigation_desc_array	VARCHAR[]:=array['Lung cancer'];
-	covariate_array			VARCHAR[]:=array['SES'];	
+	covariate_array				VARCHAR[]:=array['SES'];	
 --
 	rif40_sm_pkg_functions 		VARCHAR[] := ARRAY['rif40_verify_state_change', 
 						'rif40_run_study', 'rif40_ddl', 'rif40_study_ddl_definer', 
 						'rif40_create_insert_statement', 'rif40_execute_insert_statement', 
 						'rif40_compute_results', 'rif40_startup'];
-	l_function 			VARCHAR;
+--
+	l_function 		VARCHAR;
 	i				INTEGER:=0;
 --
-	sql_stmt			VARCHAR[];
+	sql_stmt		VARCHAR[];
+	debug_level		INTEGER;
 BEGIN
+	OPEN c4sm;
+	FETCH c4sm INTO c4sm_rec;
+	CLOSE c4sm;
+--
+-- Test parameter
+--
+	IF c4sm_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
+		RAISE EXCEPTION 'test_4_study_id_1.sql() C209xx: No -v testuser=<debug level> parameter';	
+	ELSE
+		debug_level:=LOWER(SUBSTR(c4sm_rec.debug_level, 5))::INTEGER;
+		RAISE INFO 'test_4_study_id_1.sql() debug level parameter="%"', debug_level::Text;
+	END IF;
 --
 -- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
 --
-        PERFORM rif40_log_pkg.rif40_log_setup();
+    PERFORM rif40_log_pkg.rif40_log_setup();
+	IF debug_level IS NULL THEN
+		debug_level:=0;
+	ELSIF debug_level > 4 THEN
+		RAISE EXCEPTION 'test_4_study_id_1.sql() C209xx: Invslid debug level [0-4]: %', debug_level;
+	ELSIF debug_level BETWEEN 1 AND 4 THEN
         PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
-	FOR c1sm_rec IN c1sm LOOP
-		IF c1sm_rec.function IS NOT NULL THEN
-			RAISE INFO 'Enable debug for % trigger function: % on table: %',
-				c1sm_rec.action_timing, c1sm_rec.function, c1sm_rec.table_name;
-		        PERFORM rif40_log_pkg.rif40_add_to_debug(c1sm_rec.function||':DEBUG1');
-		ELSE
-			RAISE WARNING 'No trigger function found for table: %', c1sm_rec.table_name;
-		END IF;
-	END LOOP;
---
--- Call init function is case called from main build scripts
---
-	PERFORM rif40_sql_pkg.rif40_startup();
---
--- Get "SELECTED" study geolevels
---
-	OPEN c2sm;
-	FETCH c2sm INTO c2sm_rec;
-	CLOSE c2sm;
+
+		FOR c1sm_rec IN c1sm LOOP
+			IF c1sm_rec.function IS NOT NULL THEN
+				RAISE INFO 'Enable debug for % trigger function: % on table: %',
+					c1sm_rec.action_timing, c1sm_rec.function, c1sm_rec.table_name;
+					PERFORM rif40_log_pkg.rif40_add_to_debug(c1sm_rec.function||':DEBUG'||debug_level::Text);
+			ELSE
+				RAISE WARNING 'No trigger function found for table: %', c1sm_rec.table_name;
+			END IF;
+		END LOOP;
 --
 -- Enabled debug on select rif40_sm_pkg functions
 --
-	FOREACH l_function IN ARRAY rif40_sm_pkg_functions LOOP
-		RAISE INFO 'Enable debug for function: %', l_function;
-		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
-	END LOOP;
+		FOREACH l_function IN ARRAY rif40_sm_pkg_functions LOOP
+			RAISE INFO 'Enable debug for function: %', l_function;
+			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG'||debug_level::Text);
+		END LOOP;
+	END IF;
+--
+-- Call init function is case called from main build scripts
+--
+		PERFORM rif40_sql_pkg.rif40_startup();
+--
+-- Get "SELECTED" study geolevels
+--
+		OPEN c2sm;
+		FETCH c2sm INTO c2sm_rec;
+		CLOSE c2sm;
+--
 --
 -- Delete old test studies
 --
@@ -278,25 +228,26 @@ BEGIN
 		RAISE INFO 'Study: % run OK', currval('rif40_study_id_seq'::regclass)::VARCHAR;
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 	ELSE
-		RAISE WARNING 'Study: % run failed; see trace', currval('rif40_study_id_seq'::regclass)::VARCHAR;
---		sql_stmt[array_length(sql_stmt, 1)+1]:='DROP TABLE IF EXISTS sahsuland_example_bands' /* Force failure */;
---		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		RAISE EXCEPTION 'test_4_study_id_1.sql() C209xx: Study: % run failed; see trace', currval('rif40_study_id_seq'::regclass)::VARCHAR;
 	END IF;
 END;
 $$;
+
+/*
 SELECT * FROM rif40_comparison_areas WHERE study_id = currval('rif40_study_id_seq'::regclass) LIMIT 20;
 SELECT * FROM rif40_study_areas WHERE study_id = currval('rif40_study_id_seq'::regclass) LIMIT 20;
 SELECT * FROM rif40_inv_covariates WHERE study_id = currval('rif40_study_id_seq'::regclass) LIMIT 20;
 SELECT * FROM rif40_study_sql_log WHERE study_id = currval('rif40_study_id_seq'::regclass) LIMIT 20;
 
 WITH a AS (
-	SELECT rif40_log_pkg.rif40_get_debug(CURRENT_SETTING('rif40.debug')) AS debug /* Current debug */
+	SELECT rif40_log_pkg.rif40_get_debug(CURRENT_SETTING('rif40.debug')) AS debug /-	Current debug -/
 )
 SELECT (a.debug).function_name AS function_name,
        (a.debug).debug AS debug,
        SUBSTR((a.debug).debug::TEXT, 6)::INTEGER AS debug_level
   FROM a;
-
+ */
+\dS rif40_num_denom
 \dS+ sahsuland_example_extract
 \dS+ sahsuland_example_map
 
@@ -304,6 +255,7 @@ SELECT (a.debug).function_name AS function_name,
 -- psql:../psql_scripts/v4_0_sahsuland_examples.sql:229: WARNING:  rif40_ddl(): SQL in error (23505)> ALTER TABLE rif_studies.s6_map ADD CONSTRAINT s6_map_pk PRIMARY KEY (study_id, band_id, inv_id, genders, adjusted, direct_standardisation);
 -- psql:../psql_scripts/v4_0_sahsuland_examples.sql:229: WARNING:  rif40_study_ddl_definer(): [90628] Study 6: statement 80 error: 23505 "could not create unique index "s6_map_pk"" raised by
 -- Now OK
+/*
 SELECT COUNT(gid_rowindex) AS total
   FROM sahsuland_example_map;
 SELECT study_id, band_id, inv_id, genders, adjusted, direct_standardisation, COUNT(gid_rowindex) AS total
@@ -318,8 +270,9 @@ SELECT study_id, band_id, inv_id, genders, adjusted, direct_standardisation
   FROM rif40_results
  WHERE study_id = currval('rif40_study_id_seq'::regclass) 
  ORDER BY study_id, band_id, inv_id, genders, adjusted, direct_standardisation LIMIT 20;
-
+ */
 -- OK
+/*
 SELECT area_id, COUNT(band_id) AS total
   FROM sahsuland_example_bands
  GROUP BY area_id
@@ -330,19 +283,20 @@ SELECT band_id, COUNT(area_id) AS total
  GROUP BY band_id
  HAVING COUNT(area_id) > 1
  ORDER BY 1 LIMIT 20;
+ */
 --
-
--- Check study really has run by dumping out data
+-- Load correct test data, compare, then dump new data if OK
 --
 \copy ( SELECT * FROM sahsuland_example_extract ORDER BY year, study_or_comparison, study_id, area_id, band_id, sex, age_group) to ../example_data/sahsuland_example_extract.csv WITH CSV HEADER
 \copy ( SELECT * FROM sahsuland_example_map ORDER BY gid_rowindex) to ../example_data/sahsuland_example_map.csv WITH CSV HEADER
 \copy ( SELECT * FROM sahsuland_example_bands ORDER BY study_id, area_id, band_id) to ../example_data/sahsuland_example_bands.csv WITH CSV HEADER
 
 --
+/*
 SELECT COUNT(area_id) AS total FROM sahsuland_example_extract;
 SELECT COUNT(band_id) AS total FROM sahsuland_example_map;
 SELECT COUNT(band_id) AS total FROM sahsuland_example_bands;
-
+ */
 --
 -- Testing stop
 --
@@ -352,8 +306,15 @@ SELECT COUNT(band_id) AS total FROM sahsuland_example_bands;
 --END;
 --$$;
 
+
+\echo Created SAHSULAND example study 1.  
+
 --
--- Clone delete test
+-- Rename study N to study 1
+--
+
+--
+-- Clone delete test 5 - MOVE
 --
 DO LANGUAGE plpgsql $$
 DECLARE

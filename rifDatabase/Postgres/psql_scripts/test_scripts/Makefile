@@ -47,16 +47,40 @@
 # Conditional environment variables - can be changed to point to sahsuland by higher maskefiles
 #
 PGDATABASE?=sahsuland_dev
+DEFAULT_VERBOSITY=terse
+DEFAULT_DEBUG_LEVEL=0
+DEFAULT_ECHO=none
+#
+# PL/pgsql debug levels (DEBUG_LEVEL);
+#
+# 0 - Suppressed, INFO only
+# 1 - Major function calls
+# 2 - Major function calls, data
+# 3 - Reserved for future used
+# 4 - Reserved for future used
+#
+# PSQL verbosity (VERBOSITY):
+#
+# verbose	- Messages/errors with full context
+# terse 	- Just the error or message
+#
+# PSQL echo (ECHO)
+#
+# all: 		- All SQL
+# none:		- No SQL
+#
 DBNAME?=$(PGDATABASE)
 TESTUSER?=$(USERNAME)
-
+VERBOSITY?=$(DEFAULT_VERBOSITY)
+DEBUG_LEVEL?=$(DEFAULT_DEBUG_LEVEL)
+ECHO?=$(DEFAULT_ECHO)
 #
 # Programs and parameters
 #
 WINDOWS_RUN_SCRIPT=../run.ps1
 LINUX_RUN_SCRIPT=../run.sh
 PSQL=psql
-PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -e -P pager=off -v testuser=$(TESTUSER)
+PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -P pager=off -v testuser=$(TESTUSER) -v verbosity=$(VERBOSITY) -v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO)
 
 #
 # List of source code

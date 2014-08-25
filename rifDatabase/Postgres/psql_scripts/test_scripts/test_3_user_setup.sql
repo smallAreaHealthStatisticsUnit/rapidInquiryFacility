@@ -44,9 +44,8 @@
 --
 -- Peter Hambly, SAHSU
 --
-\set ECHO all
+\set ECHO :echo
 \set ON_ERROR_STOP ON
-\timing
 
 --
 -- Check user is rif40
@@ -66,6 +65,7 @@ $$;
 -- 
 \set ntestuser '''XXXX':testuser''''
 SET rif40.testuser TO :ntestuser;
+
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR 
@@ -115,54 +115,16 @@ $$;
 -- Initialise user
 --
 \i ../psql_scripts/v4_0_user.sql  
+--
+-- Re-connect as rif40
+--
+\c sahsuland_dev rif40
+--
+-- Call common setup to run as testuser (passed parameter)
+--
+\i ../psql_scripts/test_scripts/common_setup.sql
 
---
--- Re-connect as testuser
---
-\c sahsuland_dev :testuser
-\conninfo
---
--- Run RIF startup script
---
-\set VERBOSITY terse
-DO LANGUAGE plpgsql $$
-DECLARE
- 	c1 CURSOR FOR
-		SELECT p.proname
-		  FROM pg_proc p, pg_namespace n
-		 WHERE p.proname  = 'rif40_startup'
-		   AND n.nspname  = 'rif40_sql_pkg'
-		   AND p.proowner = (SELECT oid FROM pg_roles WHERE rolname = 'rif40')
-		   AND n.oid      = p.pronamespace;
---
-	c1_rec RECORD;
-BEGIN
-	OPEN c1;
-	FETCH c1 INTO c1_rec;
-	CLOSE c1;
---
-	IF c1_rec.proname = 'rif40_startup' THEN
-		PERFORM rif40_sql_pkg.rif40_startup();
-	ELSE
-		RAISE INFO 'RIF startup: not a RIF database';
-	END IF;
-END;
-$$;
-\set VERBOSITY default
-
---
--- Check user is NOT rif40
---
-DO LANGUAGE plpgsql $$
-BEGIN
-	IF user != 'rif40' THEN
-		RAISE INFO 'User check: %', user;	
-	ELSE
-		RAISE EXCEPTION 'C20902: User check failed: % is rif40', user;	
-	END IF;
-END;
-$$;
-
+\pset title 'Search path'
 WITH a AS (
 	SELECT unnest(current_schemas(true)) AS schema
 ), b AS (
@@ -182,20 +144,20 @@ SELECT recnum, schema, CASE
 			WHEN recnum IN (9,10) AND schema = 'rif_studies' THEN true
 			ELSE false
 	   END schema_ok, CASE	
-			WHEN recnum = 1 AND schema LIKE 'pg_temp%' THEN 'pg_temp%'
-			WHEN recnum = 2 AND schema = 'pg_catalog' THEN 'pg_catalog'
-			WHEN recnum = 3 AND schema = USER THEN USER
-			WHEN recnum = 4 AND schema = 'rif40' THEN 'rif40'
-			WHEN recnum = 5 AND schema = 'public' THEN 'public'
-			WHEN recnum = 6 AND schema = 'topology' THEN 'topology'
-			WHEN recnum IN (6,7) AND schema = 'gis' THEN 'gis'
-			WHEN recnum IN (7,8) AND schema = 'pop' THEN 'pop'
-			WHEN recnum IN (8,9) AND schema = 'rif40_sql_pkg' THEN 'rif40_sql_pkg'
-			WHEN recnum IN (9,10) AND schema = 'rif_studies' THEN 'rif_studies'
+			WHEN recnum = 1 THEN 'pg_temp%'
+			WHEN recnum = 2 THEN 'pg_catalog'
+			WHEN recnum = 3 THEN USER
+			WHEN recnum = 4 THEN 'rif40'
+			WHEN recnum = 5 THEN 'public'
+			WHEN recnum = 6 THEN 'topology'
+			WHEN recnum = 7 THEN 'gis'
+			WHEN recnum = 8 THEN 'pop'
+			WHEN recnum = 9 THEN 'rif40_sql_pkg'
+			WHEN recnum = 10 THEN 'rif_studies'
 			ELSE 'UNKNOWN'
 	   END expected_schema
   FROM b;
-	   
+\pset title	   
 /*
  recnum |    schema     | schema_ok | expected_schema
 --------+---------------+-----------+-----------------
@@ -241,16 +203,16 @@ DECLARE
 					WHEN recnum IN (9,10) AND schema = 'rif_studies' THEN true
 					ELSE false
 			   END schema_ok, CASE	
-					WHEN recnum = 1 AND schema LIKE 'pg_temp%' THEN 'pg_temp%'
-					WHEN recnum = 2 AND schema = 'pg_catalog' THEN 'pg_catalog'
-					WHEN recnum = 3 AND schema = USER THEN USER
-					WHEN recnum = 4 AND schema = 'rif40' THEN 'rif40'
-					WHEN recnum = 5 AND schema = 'public' THEN 'public'
-					WHEN recnum = 6 AND schema = 'topology' THEN 'topology'
-					WHEN recnum IN (6,7) AND schema = 'gis' THEN 'gis'
-					WHEN recnum IN (7,8) AND schema = 'pop' THEN 'pop'
-					WHEN recnum IN (8,9) AND schema = 'rif40_sql_pkg' THEN 'rif40_sql_pkg'
-					WHEN recnum IN (9,10) AND schema = 'rif_studies' THEN 'rif_studies'
+					WHEN recnum = 1 THEN 'pg_temp%'
+					WHEN recnum = 2 THEN 'pg_catalog'
+					WHEN recnum = 3 THEN USER
+					WHEN recnum = 4 THEN 'rif40'
+					WHEN recnum = 5 THEN 'public'
+					WHEN recnum = 6 THEN 'topology'
+					WHEN recnum = 7 THEN 'gis'
+					WHEN recnum = 8 THEN 'pop'
+					WHEN recnum = 9 THEN 'rif40_sql_pkg'
+					WHEN recnum = 10 THEN 'rif_studies'
 					ELSE 'UNKNOWN'
 			   END expected_schema
 		  FROM b; 

@@ -51,9 +51,9 @@
 --
 -- Peter Hambly, SAHSU
 --
-\set ECHO all
+\set ECHO :echo
 \set ON_ERROR_STOP ON
-\timing
+\set VERBOSITY :verbosity
 
 --
 -- Check user is rif40
@@ -82,17 +82,12 @@ END;
 $$;
 
 \echo Checking all tables, triggers, columns and comments are present, objects granted to rif_user/rif_manmger, sequences granted...
-\set ECHO all
-\set ON_ERROR_STOP ON
 
-\set VERBOSITY terse
-SHOW search_path;
 DO LANGUAGE plpgsql $$
 BEGIN
         PERFORM rif40_sql_pkg.rif40_ddl_checks();
 END;
 $$;
-\set VERBOSITY default
 
 \echo Checked all tables, triggers, columns and comments are present, objects granted to rif_user/rif_manmger, sequences granted.
 --

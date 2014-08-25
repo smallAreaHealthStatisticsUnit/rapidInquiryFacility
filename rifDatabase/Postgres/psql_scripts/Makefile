@@ -92,6 +92,24 @@ endif
 .sql.rpt:
 	$(RUN) $@ $(CURDIR) $(PSQL) $(PSQL_FLAGS) -f $< 
 	
+#	
+# PL/pgsql debug levels (DEBUG_LEVEL);
+#
+# 0 - Suppressed, INFO only
+# 1 - Major function calls
+# 2 - Major function calls, data
+# 3 - Reserved for future used
+# 4 - Reserved for future used
+#
+# PSQL verbosity (VERBOSITY):
+#
+# verbose	- Messages/errors with full context
+# terse 	- Just the error or message
+#
+# PSQL echo (ECHO)
+#
+# all: 		- All SQL
+# none:		- No SQL
 #
 # Targets
 # 
@@ -107,18 +125,25 @@ patch:
 	$(MAKE) -C alter_scripts all PGDATABASE=sahsuland
 	
 #- sahsuland_dev: Rebuild sahsuland_dev, then patch dev only
-sahsuland_dev: clean v4_0_create_sahsuland.rpt test
-	$(MAKE) -C alter_scripts clean
-#	$(MAKE) -C alter_scripts all
+sahsuland_dev: clean v4_0_create_sahsuland.rpt 
+	$(MAKE) -C alter_scripts all
+	$(MAKE) -C test_scripts all
 # Add UK gis
+# add sahsuland dump
 	
-#- test: Run test scripts
+#- test: Run test scripts [Non verbose, no debug]
 test:
-	$(MAKE) -C test_scripts
+	$(MAKE) -C test_scripts clean all
+#- test: Run test scripts [debug_level=1]
+debug_level_1_test:
+	$(MAKE) -C test_scripts clean all DEBUG_LEVEL=1 ECHO=all
+#- test: Run test scripts [Verbose, debug_level=2, echo=all]
+verbose_test:
+	$(MAKE) -C test_scripts clean all VERBOSITY=verbose DEBUG_LEVEL=2 ECHO=all
 	
 #- dev: Run all alter scripts in development
 dev:
-	$(MAKE) -C alter_scripts dev
+	$(MAKE) -C alter_scripts dev DEBUG_LEVEL=1
 #- clean: Remove logs so completed scripts can be re-run
 clean:
 	$(MAKE) -C alter_scripts clean

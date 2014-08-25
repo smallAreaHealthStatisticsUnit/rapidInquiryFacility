@@ -21,6 +21,7 @@ rif40_create_extract: 					55400 to 55599
 rif40_compute_results: 					55600 to 55799
 rif40_insert_extract: 					55800 to 55999
 rif40_create_insert_statement: 			56000 to 56199
+rif40_create_disease_mapping_example:	56200 to 56399
 
 rif40_geo_pkg:
 

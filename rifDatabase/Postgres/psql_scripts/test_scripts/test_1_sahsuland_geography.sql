@@ -44,9 +44,8 @@
 --
 -- Peter Hambly, SAHSU
 --
-\set ECHO all
+\set ECHO :echo
 \set ON_ERROR_STOP ON
-\timing
 
 --
 -- Check user is rif40
@@ -60,7 +59,8 @@ BEGIN
 	END IF;
 END;
 $$;
-	
+
+/*	
 SELECT area_id, name, area, total_males, total_females, population_year
   FROM t_rif40_sahsu_geometry
  WHERE geolevel_name = 'LEVEL1';
@@ -78,7 +78,8 @@ SELECT area_id, name, area, total_males, total_females, population_year
   FROM t_rif40_sahsu_geometry
  WHERE geolevel_name = 'LEVEL4'
  ORDER BY 2 LIMIT 20;
-
+ */
+ 
 --
 -- There is a fault in the original intersection where islands were not handled correctly, so sahsuland_geography was updated
 -- Note that the numbers now appear to be wrong!
@@ -118,9 +119,11 @@ SELECT area_id, name, area, total_males, total_females, population_year
  01     | 01.013 | 01.013.016200 | 01.013.016100.2
 (22 rows)
  */
+\pset title 'SAHSULAND geography where level4 level3 substring != level3 (intersction fault in old RIF)'
 SELECT * FROM sahsuland_geography
  WHERE substr(level4, 1, 13) != level3;
- 
+\pset title 
+  
 DROP TABLE IF EXISTS sahsuland_geography_orig;
 CREATE TABLE sahsuland_geography_orig AS SELECT * FROM sahsuland_geography;
 TRUNCATE TABLE sahsuland_geography_orig;
@@ -132,6 +135,7 @@ TRUNCATE TABLE sahsuland_geography_orig;
 -- For vi's benefit
 CREATE UNIQUE INDEX sahsuland_geography_orig_pk ON sahsuland_geography_orig(level4);
 
+\pset title 'Movement diff sahsuland_geography_orig vs. sahsuland_geography'
 WITH a_missing AS (
 	SELECT level1, level2, level3, level4
 	  FROM sahsuland_geography
@@ -162,6 +166,7 @@ SELECT level4,
        CASE WHEN missing_level1 = extra_level1 THEN 'Same: '||extra_level1 ELSE 'Move: '||extra_level1||'=>'||missing_level1 END AS level1
   FROM b
 ORDER BY 1, 2, 3, 4;
+\pset title
 
 DO LANGUAGE plpgsql $$
 DECLARE
@@ -249,6 +254,7 @@ SELECT level3 FROM x_sahsu_level3 WHERE level3 IN (SELECT level3 FROM sahsuland_
 SELECT level4 FROM sahsuland_level4 EXCEPT SELECT level4 FROM sahsuland_geography;
  */
 
+\pset title 'T_RIF40_GEOLEVELS a)'
 SELECT geography, geolevel_name, geolevel_id, shapefile_table, shapefile_area_id_column, shapefile_desc_column, st_simplify_tolerance
   FROM t_rif40_geolevels
  WHERE geography = 'SAHSU'
@@ -264,16 +270,18 @@ SELECT geography, geolevel_name, geolevel_id, shapefile_table, shapefile_area_id
 (4 rows)
  */
 
-
+\pset title 'T_RIF40_GEOLEVELS b)'
 SELECT geography, geolevel_name, avg_npoints_geom, avg_npoints_opt, file_geojson_len, leg_geom, leg_opt
   FROM t_rif40_geolevels
  WHERE geography = 'SAHSU'
  ORDER BY geography, geolevel_id;
+\pset title
 
+ /*
 \pset pager off
 \dS+ t_rif40_sahsu_geometry
 \dS+ sahsuland_geography
-
+ */
 \echo Test 1 - SAHSULAND geometry iontersection validation completed OK.
 
 -- \dS+ rif40_geolevels_geometry
