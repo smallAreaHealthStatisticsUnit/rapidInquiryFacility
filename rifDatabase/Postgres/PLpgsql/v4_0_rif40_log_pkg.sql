@@ -220,12 +220,12 @@ BEGIN
 	FETCH c2ide INTO c2ide_rec;
 	CLOSE c2ide;
 	IF c2ide_rec.object_name IS NULL THEN
-		RAISE WARNING 'rif40_is_debug_enabled() function name %() NOT FOUND.', function_name;
+		RAISE WARNING 'rif40_is_debug_enabled() [99901]: function name %() NOT FOUND/NOT EXECUTABLE by user.', function_name;
 --
 -- Check debug level
 --
 	ELSIF debug NOT IN ('DEBUG1', 'DEBUG2', 'DEBUG3', 'DEBUG4') THEN
-		RAISE WARNING 'rif40_is_debug_enabled() function %() invalid <debug level> % to RIF40_LOG_PKG.RIF40_DEBUG_RECORD', 
+		RAISE WARNING 'rif40_is_debug_enabled() [99902]: function %() invalid <debug level> % to RIF40_LOG_PKG.RIF40_DEBUG_RECORD', 
 		c2ide_rec.object_name, debug;
 	ELSE
 		debug_level:=SUBSTR(debug::TEXT, 6)::INTEGER;
@@ -319,7 +319,7 @@ BEGIN
 	FETCH c3r4d INTO c3r4d_rec;
 	CLOSE c3r4d;
 	IF c3r4d_rec.object_name IS NULL THEN
-		RAISE WARNING 'rif40_remove_from_debug() function name %() NOT FOUND.', function_name;
+		RAISE WARNING 'rif40_remove_from_debug() [99903]: function name %() NOT FOUND/NOT EXECUTABLE by user.', function_name;
 		RETURN;
 	END IF;
 --
@@ -560,14 +560,14 @@ BEGIN
 			CLOSE c2rg;
 --
 			IF array_lower(v, 1) != array_upper(v, 1)-1 THEN
-				RAISE WARNING 'rif40_debug_record() expecting two elements converting v(%) to RIF40_LOG_PKG.RIF40_DEBUG_RECORD', c1rg_rec.debug;
+				RAISE WARNING 'rif40_debug_record() [99904]: expecting two elements converting v(%) to RIF40_LOG_PKG.RIF40_DEBUG_RECORD', c1rg_rec.debug;
 			ELSIF c2rg_rec.object_name IS NULL THEN
-				RAISE WARNING 'rif40_debug_record() function name %() NOT FOUND.', l_function_name;
+				RAISE WARNING 'rif40_debug_record() [99905]: function name %() NOT FOUND/NOT EXECUTABLE by user.', l_function_name;
 			ELSE
 				rec.function_name:=l_function_name;
 				l_debug:=v[array_lower(v, 1)+1];
 				IF l_debug NOT IN ('DEBUG1', 'DEBUG2', 'DEBUG3', 'DEBUG4') THEN
-					RAISE WARNING 'rif40_debug_record() function %() invalid <debug level> % converting v(%) to RIF40_LOG_PKG.RIF40_DEBUG_RECORD', 
+					RAISE WARNING 'rif40_debug_record() [99911]: function %() invalid <debug level> % converting v(%) to RIF40_LOG_PKG.RIF40_DEBUG_RECORD', 
 						c2rg_rec.object_name, l_debug, c1rg_rec.debug;
 				ELSE
 					rec.debug:=l_debug;
@@ -612,7 +612,7 @@ BEGIN
 	FETCH c1err INTO c1err_rec;
 	CLOSE c1err;
 	IF c1err_rec.action IS NULL THEN
-		RAISE WARNING 'rif40_get_error_code_action() function name %() NO ERROR MESSAGE FOUND IN DB FOR: %.', 
+		RAISE WARNING 'rif40_get_error_code_action() [99909]: function name %() NO ERROR MESSAGE FOUND IN DB FOR: %.', 
 			COALESCE(function_name, '<ONKNOWN>'), l_error_code;
 		RETURN NULL;
 	END IF;
@@ -620,7 +620,7 @@ BEGIN
 	RETURN c1err_rec.action;
 EXCEPTION
 	WHEN others THEN
-		RAISE WARNING 'rif40_get_error_code_action() function name %() GETTING ERROR MESSAGE FOUND IN DB FOR: % RAISED %. [IGNORED]', 
+		RAISE WARNING 'rif40_get_error_code_action() [99910]: function name %() GETTING ERROR MESSAGE FOUND IN DB FOR: % RAISED %. [IGNORED]', 
 			COALESCE(function_name, '<ONKNOWN>'), l_error_code, SQLERRM;
 		RETURN NULL;
 END;
@@ -723,7 +723,7 @@ BEGIN
 --
 		END LOOP;
 		IF arg_count != max_args THEN
-			RAISE WARNING 'rif40_error() Message in %(): too many/too few args (got: %; expecting %) for format: %', function_name, max_args, arg_count, format;
+			RAISE WARNING 'rif40_error() [99907]: Message in %(): too many/too few args (got: %; expecting %) for format: %', function_name, max_args, arg_count, format;
 		END IF;
 	END IF;
 --
@@ -733,7 +733,7 @@ BEGIN
 	FETCH c2err INTO c2err_rec;
 	CLOSE c2err;
 	IF c2err_rec.object_name IS NULL THEN
-		RAISE WARNING 'rif40_error() function name %() NOT FOUND.', function_name;
+		RAISE WARNING 'rif40_error() [99906]: function name %() NOT FOUND/NOT EXECUTABLE by user.', function_name;
 		l_function_name:='<UNKNOWN>';
 	ELSE
 		l_function_name:=c2err_rec.object_name;
@@ -853,7 +853,7 @@ BEGIN
 --
 	END LOOP;
 	IF arg_count != max_args THEN
-		RAISE WARNING 'rif40_log() Message in %(): too many/too few args (got: %; expecting %) for format: %', function_name, max_args, arg_count, format;
+		RAISE WARNING 'rif40_log() [99912]: Message in %(): too many/too few args (got: %; expecting %) for format: %', function_name, max_args, arg_count, format;
 	END IF;
 --
 -- Check function name exists
@@ -862,7 +862,7 @@ BEGIN
 	FETCH c2log INTO c2log_rec;
 	CLOSE c2log;
 	IF c2log_rec.object_name IS NULL THEN
-		RAISE WARNING 'rif40_log() function name %() NOT FOUND.', function_name;
+		RAISE WARNING 'rif40_log() [99913]: function name %() NOT FOUND/NOT EXECUTABLE by user.', function_name;
  	END IF;
 --
 -- Get logging parameters

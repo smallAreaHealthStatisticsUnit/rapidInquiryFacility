@@ -48,7 +48,7 @@
 --
 -- Peter Hambly, SAHSU
 --
-\set ECHO :echop
+\set ECHO :echo
 \set ON_ERROR_STOP ON
 
 --
