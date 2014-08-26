@@ -50,7 +50,7 @@
 --
 \i ../psql_scripts/test_scripts/common_setup.sql
 
-\echo Creating SAHSULAND example study 1...
+\echo test 1: Creating SAHSULAND example study 1...
 
 \set ndebug_level '''XXXX':debug_level''''
 SET rif40.debug_level TO :ndebug_level;
@@ -179,7 +179,7 @@ BEGIN
 		'01'::VARCHAR			/* Geolevel area */,
 		'LEVEL4'::VARCHAR		/* Geolevel map */,
 		'LEVEL3'::VARCHAR		/* Geolevel select */,
-		c2sm_rec.level3_array 		/* Geolevel selection array */,
+		c2sm_rec.level3_array 	/* Geolevel selection array */,
 		'TEST'::VARCHAR 		/* project */, 
 		'SAHSULAND test example'::VARCHAR /* study name */, 
 		'SAHSULAND_POP'::VARCHAR 	/* denominator table */, 
@@ -193,22 +193,22 @@ BEGIN
 -- Dump extract/map tables to CSV via a temporary table
 -- Ordering is for githubs benefit
 --
-	sql_stmt[1]:='DROP TABLE IF EXISTS sahsuland_example_extract';
-	sql_stmt[array_length(sql_stmt, 1)+1]:='DROP TABLE IF EXISTS sahsuland_example_map';
-	sql_stmt[array_length(sql_stmt, 1)+1]:='DROP TABLE IF EXISTS sahsuland_example_bands';
+	sql_stmt[1]:='DROP TABLE IF EXISTS test_4_study_id_1_extract';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='DROP TABLE IF EXISTS test_4_study_id_1_map';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='DROP TABLE IF EXISTS test_4_study_id_1_bands';
 --
-	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TEMPORARY TABLE sahsuland_example_extract'||E'\n'||
+	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TEMPORARY TABLE test_4_study_id_1_extract'||E'\n'||
 'AS'||E'\n'||
 'SELECT *'||E'\n'||
 '  FROM rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_extract'||
 ' ORDER BY study_id, study_or_comparison, year, band_id, area_id, sex, age_group, '||array_to_string(covariate_array, ',');
-	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TEMPORARY TABLE sahsuland_example_map'||E'\n'||
+	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TEMPORARY TABLE test_4_study_id_1_map'||E'\n'||
 'AS'||E'\n'||
 'SELECT *'||E'\n'||
 '  FROM rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_map'||
 ' ORDER BY gid_rowindex';
 --' ORDER BY study_id, band_id, inv_id, genders, adjusted, direct_standardisation, gid_rowindex';
-	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TEMPORARY TABLE sahsuland_example_bands'||E'\n'||
+	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TEMPORARY TABLE test_4_study_id_1_bands'||E'\n'||
 'AS'||E'\n'||
 'SELECT *'||E'\n'||
 '  FROM rif40_study_areas'||E'\n'||
@@ -217,18 +217,18 @@ BEGIN
 --
 -- Set study_id, inv_id to 1 for GITHUBs benefit
 --
--- sahsuland_example_extract: when inv_1 is changed to inv_<inv_id> the column will need to be renamed
+-- test_4_study_id_1_extract: when inv_1 is changed to inv_<inv_id> the column will need to be renamed
 --
-	sql_stmt[array_length(sql_stmt, 1)+1]:='UPDATE sahsuland_example_extract SET study_id = 1';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='UPDATE test_4_study_id_1_extract SET study_id = 1';
 --
-	sql_stmt[array_length(sql_stmt, 1)+1]:='UPDATE sahsuland_example_map SET study_id = 1, inv_id = 1';
-	sql_stmt[array_length(sql_stmt, 1)+1]:='UPDATE sahsuland_example_bands SET study_id = 1';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='UPDATE test_4_study_id_1_map SET study_id = 1, inv_id = 1';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='UPDATE test_4_study_id_1_bands SET study_id = 1';
 --
 	IF rif40_sm_pkg.rif40_run_study(currval('rif40_study_id_seq'::regclass)::INTEGER) THEN
-		RAISE INFO 'Study: % run OK', currval('rif40_study_id_seq'::regclass)::VARCHAR;
+		RAISE INFO 'Test 4; Study: % run OK', currval('rif40_study_id_seq'::regclass)::VARCHAR;
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 	ELSE
-		RAISE EXCEPTION 'test_4_study_id_1.sql() C209xx: Study: % run failed; see trace', currval('rif40_study_id_seq'::regclass)::VARCHAR;
+		RAISE EXCEPTION 'test_4_study_id_1.sql() C209xx: Test 4; Study: % run failed; see trace', currval('rif40_study_id_seq'::regclass)::VARCHAR;
 	END IF;
 END;
 $$;
@@ -248,23 +248,23 @@ SELECT (a.debug).function_name AS function_name,
   FROM a;
  */
 \dS rif40_num_denom
-\dS+ sahsuland_example_extract
-\dS+ sahsuland_example_map
-
+\dS+ test_4_study_id_1_extract
+\dS+ test_4_study_id_1_map
+\dS+ test_4_study_id_1_bands
 --
--- psql:../psql_scripts/v4_0_sahsuland_examples.sql:229: WARNING:  rif40_ddl(): SQL in error (23505)> ALTER TABLE rif_studies.s6_map ADD CONSTRAINT s6_map_pk PRIMARY KEY (study_id, band_id, inv_id, genders, adjusted, direct_standardisation);
--- psql:../psql_scripts/v4_0_sahsuland_examples.sql:229: WARNING:  rif40_study_ddl_definer(): [90628] Study 6: statement 80 error: 23505 "could not create unique index "s6_map_pk"" raised by
+-- psql:../psql_scripts/v4_0_test_4_study_id_1s.sql:229: WARNING:  rif40_ddl(): SQL in error (23505)> ALTER TABLE rif_studies.s6_map ADD CONSTRAINT s6_map_pk PRIMARY KEY (study_id, band_id, inv_id, genders, adjusted, direct_standardisation);
+-- psql:../psql_scripts/v4_0_test_4_study_id_1s.sql:229: WARNING:  rif40_study_ddl_definer(): [90628] Study 6: statement 80 error: 23505 "could not create unique index "s6_map_pk"" raised by
 -- Now OK
 /*
 SELECT COUNT(gid_rowindex) AS total
-  FROM sahsuland_example_map;
+  FROM test_4_study_id_1_map;
 SELECT study_id, band_id, inv_id, genders, adjusted, direct_standardisation, COUNT(gid_rowindex) AS total
-  FROM sahsuland_example_map
+  FROM test_4_study_id_1_map
  GROUP BY study_id, band_id, inv_id, genders, adjusted, direct_standardisation
  HAVING COUNT(gid_rowindex) > 1
  ORDER BY study_id, band_id, inv_id, genders, adjusted, direct_standardisation LIMIT 20;
 SELECT study_id, band_id, inv_id, genders, adjusted, direct_standardisation, gid_rowindex
-  FROM sahsuland_example_map
+  FROM test_4_study_id_1_map
  ORDER BY study_id, band_id, inv_id, genders, adjusted, direct_standardisation, gid_rowindex LIMIT 20;
 SELECT study_id, band_id, inv_id, genders, adjusted, direct_standardisation
   FROM rif40_results
@@ -274,28 +274,257 @@ SELECT study_id, band_id, inv_id, genders, adjusted, direct_standardisation
 -- OK
 /*
 SELECT area_id, COUNT(band_id) AS total
-  FROM sahsuland_example_bands
+  FROM test_4_study_id_1_bands
  GROUP BY area_id
  HAVING COUNT(band_id) > 1
  ORDER BY 1 LIMIT 20;
 SELECT band_id, COUNT(area_id) AS total
-  FROM sahsuland_example_bands
+  FROM test_4_study_id_1_bands
  GROUP BY band_id
  HAVING COUNT(area_id) > 1
  ORDER BY 1 LIMIT 20;
  */
+ 
 --
--- Load correct test data, compare, then dump new data if OK
+-- Bug: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/8
 --
-\copy ( SELECT * FROM sahsuland_example_extract ORDER BY year, study_or_comparison, study_id, area_id, band_id, sex, age_group) to ../example_data/sahsuland_example_extract.csv WITH CSV HEADER
-\copy ( SELECT * FROM sahsuland_example_map ORDER BY gid_rowindex) to ../example_data/sahsuland_example_map.csv WITH CSV HEADER
-\copy ( SELECT * FROM sahsuland_example_bands ORDER BY study_id, area_id, band_id) to ../example_data/sahsuland_example_bands.csv WITH CSV HEADER
+-- Should cover the whole of level4
+--
+-- Here are the missing areas in sahsuland_example_map.csv:
+--
+-- missing
+-- [1] "01.008.003901.1" "01.008.003901.2" "01.008.003901.3" "01.008.003901.4" "01.008.003901.5"
+-- [6] "01.008.003901.6" "01.008.003901.7" "01.008.003901.9" "01.008.009401.1" "01.008.009401.2"
+-- [11] "01.008.009401.3" "01.008.009401.4"
+--
+-- This is NOT the fault of the extract
+--
+\pset title 'Missing area_ids'
+SELECT level4 FROM sahsuland_level4
+EXCEPT
+SELECT area_id
+  FROM test_4_study_id_1_extract
+ WHERE study_or_comparison = 'S'
+ORDER BY 1;
+\pset title 'Extra area_ids'
+SELECT area_id AS level4
+  FROM test_4_study_id_1_extract
+ WHERE study_or_comparison = 'S'
+EXCEPT
+SELECT level4 FROM sahsuland_level4
+ORDER BY 1;
+\pset title
+--
+-- Check all level4 area_ids presents in: 
+--
+-- v_test_4_study_id_1_extract, v_test_4_study_id_1_map, v_test_4_study_id_1_bands
+-- rif40_results WHERE study_id = currval('rif40_study_id_seq'::regclass)
+--
+--\set VERBOSITY verbose
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR /* test_4_study_id_1_extract diffs */
+		WITH a AS ( /* Missing */
+			SELECT level4 FROM sahsuland_level4
+			EXCEPT
+			SELECT area_id
+  			  FROM test_4_study_id_1_extract
+			 WHERE study_or_comparison = 'S'
+		), b AS ( /* Extra */
+			SELECT area_id AS level4
+  			  FROM test_4_study_id_1_extract
+			 WHERE study_or_comparison = 'S'
+			EXCEPT
+			SELECT level4 FROM sahsuland_level4
+		), a1 AS (
+			SELECT COUNT(level4) AS missing_level4
+			  FROM a
+		), b1 AS (
+			SELECT COUNT(level4) AS extra_level4
+			  FROM b
+		)
+		SELECT missing_level4, extra_level4
+		  FROM a1, b1;
+	c2 CURSOR FOR /* test_4_study_id_1_map diffs */
+		WITH a AS ( /* Missing */
+			SELECT level4 FROM sahsuland_level4
+			EXCEPT
+			SELECT area_id FROM test_4_study_id_1_map
+		), b AS ( /* Extra */
+			SELECT area_id AS level4 FROM test_4_study_id_1_map
+			EXCEPT
+			SELECT level4 FROM sahsuland_level4
+		), a1 AS (
+			SELECT COUNT(level4) AS missing_level4
+			  FROM a
+		), b1 AS (
+			SELECT COUNT(level4) AS extra_level4
+			  FROM b
+		)
+		SELECT missing_level4, extra_level4
+		  FROM a1, b1;
+	c3 CURSOR FOR /* test_4_study_id_1_bands diffs */
+		WITH a AS ( /* Missing */
+			SELECT level4 FROM sahsuland_level4
+			EXCEPT
+			SELECT area_id FROM test_4_study_id_1_bands
+		), b AS ( /* Extra */
+			SELECT area_id AS level4 FROM test_4_study_id_1_bands
+			EXCEPT
+			SELECT level4 FROM sahsuland_level4
+		), a1 AS (
+			SELECT COUNT(level4) AS missing_level4
+			  FROM a
+		), b1 AS (
+			SELECT COUNT(level4) AS extra_level4
+			  FROM b
+		)
+		SELECT missing_level4, extra_level4
+		  FROM a1, b1;
+	c4 CURSOR FOR /* rif40_results WHERE study_id = currval('rif40_study_id_seq'::regclass) diffs */
+		WITH a AS ( /* Missing */
+			SELECT level4 FROM sahsuland_level4
+			EXCEPT
+			SELECT b.area_id
+  			  FROM rif40_results a, rif40_study_areas b
+			 WHERE a.study_id = currval('rif40_study_id_seq'::regclass)
+			   AND a.study_id = b.study_id
+			   AND a.band_id  = b.band_id
+		), b AS ( /* Extra */
+			SELECT b.area_id AS level4
+  			  FROM rif40_results a, rif40_study_areas b
+			 WHERE a.study_id = currval('rif40_study_id_seq'::regclass)
+			   AND a.study_id = b.study_id
+			   AND a.band_id  = b.band_id
+			EXCEPT
+			SELECT level4 FROM sahsuland_level4
+		), a1 AS (
+			SELECT COUNT(level4) AS missing_level4
+			  FROM a
+		), b1 AS (
+			SELECT COUNT(level4) AS extra_level4
+			  FROM b
+		)
+		SELECT missing_level4, extra_level4
+		  FROM a1, b1;
+--
+	c1_rec RECORD;
+	c2_rec RECORD;
+	c3_rec RECORD;
+	c4_rec RECORD;
+--
+	errors INTEGER:=0;
+BEGIN
+--
+-- test_4_study_id_1_extract diffs
+--
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+	IF c1_rec.missing_level4 = 0 AND c1_rec.extra_level4 = 0 THEN
+		RAISE INFO 'Test 4; Study: % study area all present in test_4_study_id_1_extract', currval('rif40_study_id_seq'::regclass)::VARCHAR;
+	ELSE
+		RAISE WARNING 'test_4_study_id_1.sql() C209xx:  Test 4; Study: % study area not all present in test_4_study_id_1_extract; % missing, % extra', 
+			currval('rif40_study_id_seq'::regclass)::VARCHAR,
+			c1_rec.missing_level4::VARCHAR,
+			c1_rec.extra_level4::VARCHAR;
+		errors:=errors+c1_rec.missing_level4+c1_rec.extra_level4;
+	END IF;
+--
+-- test_4_study_id_1_map diffs
+--
+	OPEN c2;
+	FETCH c2 INTO c2_rec;
+	CLOSE c2;
+	IF c2_rec.missing_level4 = 0 AND c2_rec.extra_level4 = 0 THEN
+		RAISE INFO 'Test 4; Study: % study area all present in test_4_study_id_1_map', currval('rif40_study_id_seq'::regclass)::VARCHAR;
+	ELSE
+		RAISE WARNING 'test_4_study_id_1.sql() C209xx:  Test 4; Study: % study area not all present in test_4_study_id_1_map; % missing, % extra', 
+			currval('rif40_study_id_seq'::regclass)::VARCHAR,
+			c2_rec.missing_level4::VARCHAR,
+			c2_rec.extra_level4::VARCHAR;
+		errors:=errors+c2_rec.missing_level4+c2_rec.extra_level4;
+	END IF;
+--
+-- test_4_study_id_1_bands diffs
+--
+	OPEN c3;
+	FETCH c3 INTO c3_rec;
+	CLOSE c3;
+	IF c3_rec.missing_level4 = 0 AND c3_rec.extra_level4 = 0 THEN
+		RAISE INFO 'Test 4; Study: % study area all present in test_4_study_id_1_bands', currval('rif40_study_id_seq'::regclass)::VARCHAR;
+	ELSE
+		RAISE WARNING 'test_4_study_id_1.sql() C209xx:  Test 4; Study: % study area not all present in test_4_study_id_1_bands; % missing, % extra', 
+			currval('rif40_study_id_seq'::regclass)::VARCHAR,
+			c3_rec.missing_level4::VARCHAR,
+			c3_rec.extra_level4::VARCHAR;
+		errors:=errors+c3_rec.missing_level4+c3_rec.extra_level4;
+	END IF;
+--
+-- rif40_results WHERE study_id = currval('rif40_study_id_seq'::regclass) diffs
+--
+	OPEN c4;
+	FETCH c4 INTO c4_rec;
+	CLOSE c4;
+	IF c4_rec.missing_level4 = 0 AND c4_rec.extra_level4 = 0 THEN
+		RAISE INFO 'Test 4; Study: % study area all present in rif40_results', currval('rif40_study_id_seq'::regclass)::VARCHAR;
+	ELSE
+		RAISE WARNING 'test_4_study_id_1.sql() C209xx:  Test 4; Study: % study area not all present in rif40_results; % missing, % extra', 
+			currval('rif40_study_id_seq'::regclass)::VARCHAR,
+			c4_rec.missing_level4::VARCHAR,
+			c4_rec.extra_level4::VARCHAR;
+		errors:=errors+c4_rec.missing_level4+c4_rec.extra_level4;
+	END IF;
+-- 
+	IF errors > 0 THEN
+		RAISE EXCEPTION	'test_4_study_id_1.sql() C209xx:  Test 4; Study: % % missing/extra level4 errors', 
+			currval('rif40_study_id_seq'::regclass)::VARCHAR,
+			errors::VARCHAR;
+	END IF;
+END;
+$$;
 
 --
+-- Reference test data (usually comment out unless it needs to be updated)
+-- 
+--\copy ( SELECT * FROM test_4_study_id_1_extract ORDER BY year, study_or_comparison, study_id, area_id, band_id, sex, age_group) to ../example_data/test_4_study_id_1_extract.csv WITH CSV HEADER
+--\copy ( SELECT * FROM test_4_study_id_1_map ORDER BY gid_rowindex) to ../example_data/test_4_study_id_1_map.csv WITH CSV HEADER
+--\copy ( SELECT * FROM test_4_study_id_1_bands ORDER BY study_id, area_id, band_id) to ../example_data/test_4_study_id_1_bands.csv WITH CSV HEADER
+
+--
+-- Load correct test data, dump new data,  compare test with new
+--
+DROP TABLE IF EXISTS v_test_4_study_id_1_extract;
+DROP TABLE IF EXISTS v_test_4_study_id_1_map;
+DROP TABLE IF EXISTS v_test_4_study_id_1_bands;
+CREATE TEMPORARY TABLE v_test_4_study_id_1_extract AS SELECT * FROM test_4_study_id_1_extract LIMIT 1;
+CREATE TEMPORARY TABLE v_test_4_study_id_1_map AS SELECT * FROM test_4_study_id_1_map LIMIT 1;
+CREATE TEMPORARY TABLE v_test_4_study_id_1_bands AS SELECT * FROM test_4_study_id_1_bands LIMIT 1;
+TRUNCATE TABLE v_test_4_study_id_1_extract;
+TRUNCATE TABLE v_test_4_study_id_1_map;
+TRUNCATE TABLE v_test_4_study_id_1_bands;
+\copy v_test_4_study_id_1_extract from ../example_data/test_4_study_id_1_extract.csv WITH (HEADER true, FORMAT csv, QUOTE '"', ESCAPE '\');
+\copy v_test_4_study_id_1_map from ../example_data/test_4_study_id_1_map.csv WITH (HEADER true, FORMAT csv, QUOTE '"', ESCAPE '\');
+\copy v_test_4_study_id_1_bands from ../example_data/test_4_study_id_1_bands.csv WITH (HEADER true, FORMAT csv, QUOTE '"', ESCAPE '\');
+--
+-- For vi's benefit
+
+--
+-- Dump
+--
+\copy ( SELECT * FROM test_4_study_id_1_extract ORDER BY year, study_or_comparison, study_id, area_id, band_id, sex, age_group) to ../psql_scripts/test_scripts/data/test_4_study_id_1_extract.csv WITH CSV HEADER
+\copy ( SELECT * FROM test_4_study_id_1_map ORDER BY gid_rowindex) to ../psql_scripts/test_scripts/data/test_4_study_id_1_map.csv WITH CSV HEADER
+\copy ( SELECT * FROM test_4_study_id_1_bands ORDER BY study_id, area_id, band_id) to ../psql_scripts/test_scripts/data/stest_4_study_id_1_bands.csv WITH CSV HEADER
+
+--
+-- Compare
+--
+
+
 /*
-SELECT COUNT(area_id) AS total FROM sahsuland_example_extract;
-SELECT COUNT(band_id) AS total FROM sahsuland_example_map;
-SELECT COUNT(band_id) AS total FROM sahsuland_example_bands;
+SELECT COUNT(area_id) AS total FROM test_4_study_id_1_extract;
+SELECT COUNT(band_id) AS total FROM test_4_study_id_1_map;
+SELECT COUNT(band_id) AS total FROM test_4_study_id_1_bands;
  */
 --
 -- Testing stop
@@ -313,54 +542,13 @@ SELECT COUNT(band_id) AS total FROM sahsuland_example_bands;
 -- Rename study N to study 1
 --
 
---
--- Clone delete test 5 - MOVE
---
-DO LANGUAGE plpgsql $$
-DECLARE
-	old_study_id	INTEGER:=currval('rif40_study_id_seq'::regclass);
-	new_study_id	INTEGER;
---
-	rif40_sm_pkg_functions 		VARCHAR[] := ARRAY['rif40_verify_state_change', 
-						'rif40_run_study'];
-	l_function 			VARCHAR;
-BEGIN
---
--- Enabled debug on select rif40_sm_pkg functions
---
-        PERFORM rif40_log_pkg.rif40_log_setup();
-    	PERFORM rif40_log_pkg.rif40_send_debug_to_info(FALSE);
-	FOREACH l_function IN ARRAY rif40_sm_pkg_functions LOOP
---		RAISE INFO 'Enable debug for function: %', l_function;
---		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
-		PERFORM rif40_log_pkg.rif40_remove_from_debug(l_function);
-	END LOOP;
---
-	new_study_id:=rif40_sm_pkg.rif40_clone_study(old_study_id);
-	IF NOT rif40_sm_pkg.rif40_run_study(new_study_id) THEN
-		RAISE WARNING 'Study: % run failed; see trace', new_study_id::VARCHAR;
-		PERFORM rif40_sm_pkg.rif40_reset_study(new_study_id);
-		IF NOT rif40_sm_pkg.rif40_run_study(new_study_id) THEN
-			RAISE WARNING 'Study: % run failed again; see trace', new_study_id::VARCHAR;
-		END IF;	
-	ELSE
-		RAISE INFO 'Study: % run OK', new_study_id::VARCHAR;
-	
-		PERFORM rif40_sm_pkg.rif40_delete_study(new_study_id);
-		RAISE INFO 'Cloned study: % as new study %, then deleted',
-			old_study_id::VARCHAR,
-			new_study_id::VARCHAR;
-	END IF;
-END;
-$$;
+
 --
 -- End single transaction
 --
 END;
 
-\set VERBOSITY default
-
-\echo Created SAHSULAND example study 1.    
+\echo Test 1: Created SAHSULAND example study 1.    
 
 --
 -- Eof

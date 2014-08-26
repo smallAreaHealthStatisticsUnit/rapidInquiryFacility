@@ -9,7 +9,7 @@
 -- Description:
 --
 -- Rapid Enquiry Facility (RIF) - RIF state machine
---     				  rif40_verify_state_change
+--     							  rif40_comnpute_results
 --
 -- Copyright:
 --
@@ -131,12 +131,14 @@ This may be added to extract creation later.
 		   AND a.relname = 't_rif40_results'
 		   AND a.relname = c.table_name
 		 ORDER BY 1;
+	c5comp REFCURSOR;
 --
 	c1_rec RECORD;
 	c1a_rec RECORD;
 	c2_rec RECORD;
 	c3_rec RECORD;
 	c4_rec RECORD;
+	c5_rec RECORD;
 --
 	sql_stmt	VARCHAR;
 	ddl_stmts	VARCHAR[];
@@ -209,6 +211,17 @@ BEGIN
 	IF rif40_sm_pkg.rif40_execute_insert_statement(study_id, sql_stmt, 'rif40_results observed INSERT'::VARCHAR) = FALSE THEN 
 		RETURN FALSE;
 	END IF;
+--	
+-- Check if t_rif40_sahsu_geometry.gid_rowindex column exists (does not pre alter 2) 
+--	
+	OPEN c5comp FOR EXECUTE 
+		'SELECT column_name'||E'\n'||
+		'  FROM information_schema.columns'||E'\n'||
+		' WHERE table_name   = '''||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||''''||E'\n'||
+		'   AND column_name  = ''gid_rowindex'''||E'\n'||
+		'   AND table_schema = ''rif40''';
+	FETCH c5comp INTO c5_rec;
+	CLOSE c5comp;
 --
 -- Create map table [DOES NOT CREATE ANY ROWS]
 --
@@ -216,30 +229,47 @@ BEGIN
 --
 	IF c1_rec.study_type = 1 /* Disease mapping */ THEN
 --
+-- Check if t_rif40_sahsu_geometry.gid_rowindex column still exists (pre alter 2)
+--
+		IF 	c5_rec.column_name IS NULL THEN
+			ddl_stmts[t_ddl]:='CREATE TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||E'\n'||
+				'AS'||E'\n'||
+				'SELECT d.area_id, d.gid, ''GID_ROWINDEX''::Text AS gid_rowindex, a.*'||E'\n'||
+				'  FROM rif40_results a, rif40_studies b, rif40_study_areas c, '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||' d'||E'\n'||
+				' WHERE a.study_id      = '||study_id::VARCHAR||' /* Current study ID */'||E'\n'||
+				'   AND a.study_id      = b.study_id'||E'\n'||
+				'   AND a.band_id       = c.band_id'||E'\n'||
+				'   AND c.area_id       = d.area_id'||E'\n'||
+				'   AND d.geolevel_name = b.study_geolevel_name /* Partition elimination */'||E'\n'||
+				' LIMIT 1'::VARCHAR; 
+		ELSE
+--
 -- GID, GID_ROWINDEX support in maps (extracts subject to performance tests)
 -- AREA_ID in disease mapping
 --
 /*
-SELECT a.study_id, c.band_id, d.area_id, d.gid_rowindex
-SELECT COUNT(*)
+CREATE TABLE rif_studies.s2_map
+AS
+SELECT d.area_id, d.gid, d.gid_rowindex, a.*
   FROM rif40_results a, rif40_studies b, rif40_study_areas c, t_rif40_sahsu_geometry d
- WHERE a.study_id      = b.study_id
-   AND a.study_id      = c.study_id
-   AND a.study_id      = 6
+ WHERE a.study_id      = 2 /- Current study ID -/
+   AND a.study_id      = b.study_id
    AND a.band_id       = c.band_id
    AND c.area_id       = d.area_id
-   AND d.geolevel_name = b.study_geolevel_name;
+   AND d.geolevel_name = b.study_geolevel_name /- Partition elimination -/
+ LIMIT 1;
  */
-		ddl_stmts[t_ddl]:='CREATE TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||E'\n'||
-			'AS'||E'\n'||
-			'SELECT d.area_id, d.gid, d.gid_rowindex, a.*'||E'\n'||
-			'  FROM rif40_results a, rif40_studies b, rif40_study_areas c, t_rif40_sahsu_geometry d'||E'\n'||
-			' WHERE a.study_id      = '||study_id::VARCHAR||' /* Current study ID */'||E'\n'||
-			'   AND a.study_id      = b.study_id'||E'\n'||
-			'   AND a.band_id       = c.band_id'||E'\n'||
-			'   AND c.area_id       = d.area_id'||E'\n'||
-			'   AND d.geolevel_name = b.study_geolevel_name /* Partition elimination */'||E'\n'||
-			' LIMIT 1'::VARCHAR; 
+			ddl_stmts[t_ddl]:='CREATE TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||E'\n'||
+				'AS'||E'\n'||
+				'SELECT d.area_id, d.gid, d.gid_rowindex, a.*'||E'\n'||
+				'  FROM rif40_results a, rif40_studies b, rif40_study_areas c, '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||' d'||E'\n'||
+				' WHERE a.study_id      = '||study_id::VARCHAR||' /* Current study ID */'||E'\n'||
+				'   AND a.study_id      = b.study_id'||E'\n'||
+				'   AND a.band_id       = c.band_id'||E'\n'||
+				'   AND c.area_id       = d.area_id'||E'\n'||
+				'   AND d.geolevel_name = b.study_geolevel_name /* Partition elimination */'||E'\n'||
+				' LIMIT 1'::VARCHAR; 
+		END IF;
 	ELSE
 		ddl_stmts[t_ddl]:='CREATE TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||E'\n'||
 			'AS'||E'\n'||
@@ -372,7 +402,7 @@ SELECT COUNT(*)
 		'[55607] SQL> %;',
 		sql_stmt::VARCHAR);
 	t_ddl:=t_ddl+1;	
-	IF c1_rec.study_type = 1 /* Disease mapping */ THEN
+	IF c1_rec.study_type = 1 /* Disease mapping */ AND c5_rec.column_name /* gid_rowindex post alter 2 */ IS NOT NULL THEN
 --
 -- Add gid_rowindex unique key for disease maps
 --

@@ -434,6 +434,16 @@ DROP VIEW IF EXISTS user_role_privs;
 DROP VIEW IF EXISTS user_role_privs;
 
 --
+-- Test data
+--
+DROP TABLE IF EXISTS rif_studies.sahsuland_example_extract;
+DROP TABLE IF EXISTS rif_studies.sahsuland_example_map;
+DROP TABLE IF EXISTS rif_studies.sahsuland_example_bands;
+DROP TABLE IF EXISTS rif_studies.test_4_study_id_1_extract;
+DROP TABLE IF EXISTS rif_studies.test_4_study_id_1_map;
+DROP TABLE IF EXISTS rif_studies.test_4_study_id_1_bands;
+
+--
 -- Old, no longer needed
 --
 --DROP FUNCTION lf_rif40_check_all_geography2();
