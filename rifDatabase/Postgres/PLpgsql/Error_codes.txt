@@ -22,6 +22,13 @@ rif40_compute_results: 								55600 to 55799
 rif40_insert_extract: 								55800 to 55999
 rif40_create_insert_statement: 						56000 to 56199
 rif40_create_disease_mapping_example:				56200 to 56399
+rif40_study_ddl_definer:							56400 to 56599
+rif40_execute_insert_statement:						56600 to 56799
+cleanup_orphaned_extract_and_map_tables:			56800 to 56999
+rif40_delete_study: 								57000 to 57199
+rif40_reset_study: 									57200 to 57399
+rif40_clone_study: 									57400 to 57599
+rif40_rename_map_and_extract_tables:				57600 to 57799
 
 rif40_geo_pkg:
 

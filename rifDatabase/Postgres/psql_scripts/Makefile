@@ -7,9 +7,9 @@
 # Version hash: $Format:%H$
 #
 # Description:
-#
-# Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts
-#
+#-
+#- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts
+#-
 # Copyright:
 #
 # The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -103,6 +103,7 @@ ifeq ($(OS),Windows_NT)
 RUN_SCRIPT=$(WINDOWS_RUN_SCRIPT)
 RUN=powershell -ExecutionPolicy ByPass -file $(RUN_SCRIPT)
 DELETE=powershell -ExecutionPolicy ByPass -file delete.ps1
+HELP=findstr "\#-" Makefile
 #
 # ADD Linux support
 #
@@ -120,27 +121,27 @@ endif
 .sql.rpt:
 	$(RUN) $@ $(CURDIR) $(PSQL) $(PSQL_FLAGS) -f $< 
 	
-#	
-# PL/pgsql debug levels (DEBUG_LEVEL);
-#
-# 0 - Suppressed, INFO only
-# 1 - Major function calls
-# 2 - Major function calls, data
-# 3 - Reserved for future used
-# 4 - Reserved for future used
-#
-# PSQL verbosity (VERBOSITY):
-#
-# verbose	- Messages/errors with full context
-# terse 	- Just the error or message
-#
-# PSQL echo (ECHO)
-#
-# all: 		- All SQL
-# none:		- No SQL
-#
-# Targets
-# 
+#-	
+#- PL/pgsql debug levels (DEBUG_LEVEL);
+#-
+#- 0 - Suppressed, INFO only
+#- 1 - Major function calls
+#- 2 - Major function calls, data
+#- 3 - Reserved for future used
+#- 4 - Reserved for future used
+#-
+#- PSQL verbosity (VERBOSITY):
+#-
+#- verbose	- Messages/errors with full context
+#- terse 	- Just the error or message
+#-
+#- PSQL echo (ECHO)
+#-
+#- all: 		- All SQL
+#- none:		- No SQL
+#-
+#- Targets
+#- 
 #- all: Run all completed alter scripts [DEFAULT]
 all:
 	$(MAKE) -C alter_scripts all
@@ -154,8 +155,8 @@ patch:
 	
 #- sahsuland_dev: Rebuild sahsuland_dev, then patch dev only
 sahsuland_dev: clean v4_0_create_sahsuland.rpt 
-#	$(MAKE) -C alter_scripts all
-	$(MAKE) -C test_scripts all
+#	$(MAKE) -C alter_scripts all DEBUG_LEVEL=1 ECHO=all
+	$(MAKE) -C test_scripts all DEBUG_LEVEL=1 ECHO=all
 # Add UK gis
 # add sahsuland dump
 	
@@ -182,12 +183,16 @@ clean:
 devclean:
 	$(MAKE) -C alter_scripts devclean
 
+#- help: Display this help
+help:
+	$(HELP)
+
 #
-# Recursive make target: make recurse <recursive tsrget>
-#
+#- recurse: Recursive make target: make recurse <recursive tsrget>
 recurse: $(SUBDIRS)	
 $(SUBDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
+#-
 #
 # Eof

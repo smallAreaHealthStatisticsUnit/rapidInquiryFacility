@@ -63,36 +63,54 @@ BEGIN;
 --
 DO LANGUAGE plpgsql $$
 DECLARE
-	old_study_id	INTEGER:=currval('rif40_study_id_seq'::regclass);
+	c1 CURSOR FOR	
+		SELECT MAX(study_id) AS study_id
+		  FROM rif40_studies
+		 WHERE username = USER
+		   AND study_name = 'SAHSULAND test 4 study_id 1 example';
+	c1_rec RECORD;
+--
+	old_study_id	INTEGER;
 	new_study_id	INTEGER;
 --
-	rif40_sm_pkg_functions 		VARCHAR[] := ARRAY['rif40_verify_state_change', 
-						'rif40_run_study'];
+	rif40_sm_pkg_functions 		VARCHAR[] := ARRAY['rif40_ddl', 'rif40_study_ddl_definer', 
+						'rif40_create_insert_statement', 'rif40_execute_insert_statement', 
+						'rif40_compute_results', 'rif40_startup'];
 	l_function 			VARCHAR;
 BEGIN
 --
+-- Fetch last test 4 study 1 study ID
+--
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	IF NOT FOUND THEN
+		CLOSE c1;
+		RAISE EXCEPTION 'test_5_clone_delete_test.sql: Unable to find last test 4 study 1 study ID';
+	END IF;
+	CLOSE c1;
+	old_study_id:=c1_rec.study_id;
+--
 -- Enabled debug on select rif40_sm_pkg functions
 --
-        PERFORM rif40_log_pkg.rif40_log_setup();
-    	PERFORM rif40_log_pkg.rif40_send_debug_to_info(FALSE);
+    PERFORM rif40_log_pkg.rif40_log_setup();
+    PERFORM rif40_log_pkg.rif40_send_debug_to_info(FALSE);
 	FOREACH l_function IN ARRAY rif40_sm_pkg_functions LOOP
---		RAISE INFO 'Enable debug for function: %', l_function;
---		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
-		PERFORM rif40_log_pkg.rif40_remove_from_debug(l_function);
+		RAISE INFO 'test_5_clone_delete_test.sql: Enable debug for function: %', l_function;
+		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
 	END LOOP;
 --
 	new_study_id:=rif40_sm_pkg.rif40_clone_study(old_study_id);
 	IF NOT rif40_sm_pkg.rif40_run_study(new_study_id) THEN
-		RAISE WARNING 'Study: % run failed; see trace', new_study_id::VARCHAR;
+		RAISE WARNING 'test_5_clone_delete_test.sql: Study: % run failed; see trace', new_study_id::VARCHAR;
 		PERFORM rif40_sm_pkg.rif40_reset_study(new_study_id);
 		IF NOT rif40_sm_pkg.rif40_run_study(new_study_id) THEN
-			RAISE WARNING 'Study: % run failed again; see trace', new_study_id::VARCHAR;
+			RAISE EXCEPTION 'test_5_clone_delete_test.sql: Study: % run failed again; see trace', new_study_id::VARCHAR;
 		END IF;	
 	ELSE
-		RAISE INFO 'Study: % run OK', new_study_id::VARCHAR;
+		RAISE INFO 'test_5_clone_delete_test.sql: Study: % run OK', new_study_id::VARCHAR;
 	
 		PERFORM rif40_sm_pkg.rif40_delete_study(new_study_id);
-		RAISE INFO 'Cloned study: % as new study %, then deleted',
+		RAISE INFO 'test_5_clone_delete_test.sql: Cloned study: % as new study %, then deleted',
 			old_study_id::VARCHAR,
 			new_study_id::VARCHAR;
 	END IF;

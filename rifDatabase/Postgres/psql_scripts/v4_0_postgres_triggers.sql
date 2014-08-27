@@ -3126,8 +3126,8 @@ BEGIN
 		PERFORM rif40_log_pkg.rif40_error(-20502, 'trigger_fct_t_rif40_inv_covariates_checks',
 			'T_RIF40_INV_CONDITIONS study: % investigation: % line: % UPDATE not allowed on T_RIF40_INV_CONDITIONS',
 			NEW.study_id::VARCHAR		/* Study */,
-			NEW.inv_id::VARCHAR		/* Investigation */,
-			NNEW.line_number::VARCHAR 	/* Line */);    
+			NEW.inv_id::VARCHAR			/* Investigation */,
+			NEW.line_number::VARCHAR 	/* Line */);    
 	ELSIF TG_OP = 'DELETE' AND OLD.username != USER THEN
 		PERFORM rif40_log_pkg.rif40_error(-20503, 'trigger_fct_t_rif40_inv_conditions_checks',
 			'T_RIF40_INV_CONDITIONS study: % investigation: % line: % DELETE only allowed on own records in T_RIF40_INV_CONDITIONS, record owned by: %',

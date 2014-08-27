@@ -80,12 +80,14 @@ ECHO?=$(DEFAULT_ECHO)
 WINDOWS_RUN_SCRIPT=../run.ps1
 LINUX_RUN_SCRIPT=../run.sh
 PSQL=psql
-PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -P pager=off -v testuser=$(TESTUSER) -v verbosity=$(VERBOSITY) -v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO)
+PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -P pager=off \
+	-v testuser=$(TESTUSER) -v verbosity=$(VERBOSITY) -v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO)
 
 #
 # List of source code
 #
-SOURCES=test_1_sahsuland_geography.sql test_2_ddl_checks.sql test_3_user_setup.sql test_4_study_id_1.sql
+SOURCES=test_1_sahsuland_geography.sql test_2_ddl_checks.sql test_3_user_setup.sql test_4_study_id_1.sql \
+	test_5_clone_delete_test.sql
 
 
 #
