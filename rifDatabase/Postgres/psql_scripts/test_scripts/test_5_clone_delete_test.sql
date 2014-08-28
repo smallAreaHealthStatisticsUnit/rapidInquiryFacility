@@ -52,6 +52,11 @@
 
 \echo Test 5: Clone delete test...
 
+SELECT study_id
+  FROM rif40_studies
+ WHERE username = USER
+   AND study_name = 'SAHSULAND test 4 study_id 1 example';
+		   
 \set ndebug_level '''XXXX':debug_level''''
 SET rif40.debug_level TO :ndebug_level;
 --
@@ -68,55 +73,88 @@ DECLARE
 		  FROM rif40_studies
 		 WHERE username = USER
 		   AND study_name = 'SAHSULAND test 4 study_id 1 example';
+	c4sm CURSOR FOR 
+		SELECT CURRENT_SETTING('rif40.debug_level') AS debug_level;
+	c4sm_rec RECORD;
 	c1_rec RECORD;
 --
 	old_study_id	INTEGER;
 	new_study_id	INTEGER;
 --
-	rif40_sm_pkg_functions 		VARCHAR[] := ARRAY['rif40_ddl', 'rif40_study_ddl_definer', 
-						'rif40_create_insert_statement', 'rif40_execute_insert_statement', 
-						'rif40_compute_results', 'rif40_startup'];
+	rif40_sm_pkg_functions 		VARCHAR[] := ARRAY[
+				'rif40_compute_results', 'rif40_startup', 'rif40_clone_study', 'rif40_reset_study', 'rif40_delete_study'];
 	l_function 			VARCHAR;
+	debug_level		INTEGER;
 BEGIN
+	OPEN c4sm;
+	FETCH c4sm INTO c4sm_rec;
+	CLOSE c4sm;
+--
+-- Test parameter
+--
+	IF c4sm_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
+		RAISE EXCEPTION 'test_4_study_id_1.sql: T5--01: No -v testuser=<debug level> parameter';	
+	ELSE
+		debug_level:=LOWER(SUBSTR(c4sm_rec.debug_level, 5))::INTEGER;
+		RAISE INFO 'T5--02: test_4_study_id_1.sql: debug level parameter="%"', debug_level::Text;
+	END IF;
+--
+-- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
+--
+    PERFORM rif40_log_pkg.rif40_log_setup();
+	IF debug_level IS NULL THEN
+		debug_level:=0;
+	ELSIF debug_level > 4 THEN
+		RAISE EXCEPTION 'test_5_clone_delete_test.sql: T5--03: Invslid debug level [0-4]: %', debug_level;
+	ELSIF debug_level BETWEEN 1 AND 4 THEN
+        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+--
+-- Enabled debug on select rif40_sm_pkg functions
+--
+		FOREACH l_function IN ARRAY rif40_sm_pkg_functions LOOP
+			RAISE INFO 'T5--04: test_5_clone_delete_test.sql: Enable debug for function: %', l_function;
+			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
+		END LOOP;
+	END IF;
 --
 -- Fetch last test 4 study 1 study ID
 --
 	OPEN c1;
 	FETCH c1 INTO c1_rec;
-	IF NOT FOUND THEN
+	IF NOT FOUND OR c1_rec.study_id IS NULL THEN
 		CLOSE c1;
-		RAISE EXCEPTION 'test_5_clone_delete_test.sql: Unable to find last test 4 study 1 study ID';
+		RAISE EXCEPTION 'test_5_clone_delete_test.sql: T5--05: Unable to find last test 4 study 1 study ID';
 	END IF;
 	CLOSE c1;
 	old_study_id:=c1_rec.study_id;
 --
--- Enabled debug on select rif40_sm_pkg functions
---
-    PERFORM rif40_log_pkg.rif40_log_setup();
-    PERFORM rif40_log_pkg.rif40_send_debug_to_info(FALSE);
-	FOREACH l_function IN ARRAY rif40_sm_pkg_functions LOOP
-		RAISE INFO 'test_5_clone_delete_test.sql: Enable debug for function: %', l_function;
-		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
-	END LOOP;
---
 	new_study_id:=rif40_sm_pkg.rif40_clone_study(old_study_id);
+	IF new_study_id IS NULL THEN
+		RAISE EXCEPTION 'test_5_clone_delete_test.sql: T5--06: Study: % clone failed; see trace', new_study_id::VARCHAR;
+	END IF;
+	RAISE INFO 'test_5_clone_delete_test.sql: T5--07: old study: %, new: %', old_study_id::VARCHAR, new_study_id::VARCHAR;
+--
 	IF NOT rif40_sm_pkg.rif40_run_study(new_study_id) THEN
-		RAISE WARNING 'test_5_clone_delete_test.sql: Study: % run failed; see trace', new_study_id::VARCHAR;
+		RAISE WARNING 'test_5_clone_delete_test.sql: T5--08: Study: % run failed; see trace', new_study_id::VARCHAR;
 		PERFORM rif40_sm_pkg.rif40_reset_study(new_study_id);
 		IF NOT rif40_sm_pkg.rif40_run_study(new_study_id) THEN
-			RAISE EXCEPTION 'test_5_clone_delete_test.sql: Study: % run failed again; see trace', new_study_id::VARCHAR;
+			RAISE EXCEPTION 'test_5_clone_delete_test.sql: T5--09: Study: % run failed again; see trace', new_study_id::VARCHAR;
 		END IF;	
 	ELSE
-		RAISE INFO 'test_5_clone_delete_test.sql: Study: % run OK', new_study_id::VARCHAR;
+		RAISE INFO 'test_5_clone_delete_test.sql: T5--10: Study: % run OK', new_study_id::VARCHAR;
 	
 		PERFORM rif40_sm_pkg.rif40_delete_study(new_study_id);
-		RAISE INFO 'test_5_clone_delete_test.sql: Cloned study: % as new study %, then deleted',
+		RAISE INFO 'test_5_clone_delete_test.sql: T5--11: Cloned study: % as new study %, then deleted',
 			old_study_id::VARCHAR,
 			new_study_id::VARCHAR;
 	END IF;
 END;
 $$;
 
+SELECT study_id
+  FROM rif40_studies
+ WHERE username = USER
+   AND study_name = 'SAHSULAND test 4 study_id 1 example';
 --
 -- End single transaction
 --

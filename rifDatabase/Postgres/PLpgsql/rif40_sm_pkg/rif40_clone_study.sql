@@ -86,16 +86,39 @@ RIF40_RESULTS
 RIF40_CONTEXTUAL_STATS
 
  */
+	c5clo CURSOR FOR /* Check if rif40_investigations.geography column still exists (pre alter 2) */
+		SELECT column_name
+		  FROM information_schema.columns
+		 WHERE table_name   = 'rif40_investigations'
+		   AND column_name  = 'geography'
+		   AND table_schema = 'rif40';
+	c5clo_rec RECORD;
+--
 	sql_stmt	VARCHAR[];
 	rows		INTEGER;
 BEGIN
+--	
+	OPEN c5clo;
+	FETCH c5clo INTO c5clo_rec;
+	CLOSE c5clo;
+--
 	sql_stmt[7]:='INSERT INTO rif40_inv_conditions(condition) SELECT condition FROM rif40_inv_conditions WHERE study_id = '||study_id::VARCHAR;
 	sql_stmt[6]:='INSERT INTO rif40_inv_covariates(geography, covariate_name, study_geolevel_name, min, max)
 		 SELECT geography, covariate_name, study_geolevel_name, min, max FROM rif40_inv_covariates WHERE study_id = '||study_id::VARCHAR;
-	sql_stmt[5]:='INSERT INTO rif40_investigations(/* geography, */ inv_name, inv_description, genders, numer_tab, 
-			year_start, year_stop, max_age_group, min_age_group) 
-			SELECT /* geography, */ inv_name, inv_description, genders, numer_tab, 
-			year_start, year_stop, max_age_group, min_age_group FROM rif40_investigations WHERE study_id = '||study_id::VARCHAR;
+--
+-- Check if rif40_investigations.geography column still exists (pre alter 2)
+--
+	IF 	c5clo_rec.column_name = 'geography' THEN	
+		sql_stmt[5]:='INSERT INTO rif40_investigations(geography, inv_name, inv_description, genders, numer_tab, 
+				year_start, year_stop, max_age_group, min_age_group) 
+				SELECT geography, inv_name, inv_description, genders, numer_tab, 
+				year_start, year_stop, max_age_group, min_age_group FROM rif40_investigations WHERE study_id = '||study_id::VARCHAR;
+	ELSE
+		sql_stmt[5]:='INSERT INTO rif40_investigations(/* geography, */ inv_name, inv_description, genders, numer_tab, 
+				year_start, year_stop, max_age_group, min_age_group) 
+				SELECT /* geography, */ inv_name, inv_description, genders, numer_tab, 
+				year_start, year_stop, max_age_group, min_age_group FROM rif40_investigations WHERE study_id = '||study_id::VARCHAR;
+	END IF;
 	sql_stmt[4]:='INSERT INTO rif40_study_areas(area_id, band_id) SELECT area_id, band_id FROM rif40_study_areas WHERE study_id = '||study_id::VARCHAR;
 	sql_stmt[3]:='INSERT INTO rif40_comparison_areas(area_id) SELECT area_id FROM rif40_comparison_areas WHERE study_id = '||study_id::VARCHAR;
 	sql_stmt[2]:='INSERT INTO rif40_study_shares(grantee_username) SELECT grantee_username FROM rif40_study_shares WHERE study_id = '||study_id::VARCHAR;

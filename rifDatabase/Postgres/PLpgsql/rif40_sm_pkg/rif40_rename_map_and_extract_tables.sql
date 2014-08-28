@@ -132,8 +132,8 @@ Description:	Check if <new study id> exists; delete extract and map tables for <
 --
 -- Delete extract and map tables for <new study id>; 
 --
-		sql_stmt[1]:='DELETE TABLE IF EXISTS '||LOWER(c1b_rec.extract_table)||' * New extract table */;';
-		sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE TABLE IF EXISTS '||LOWER(c1b_rec.map_table)||' * New map table */;';
+		sql_stmt[1]:='DROP TABLE IF EXISTS '||LOWER(c1b_rec.extract_table)||' /* New extract table */;';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='DROP TABLE IF EXISTS '||LOWER(c1b_rec.map_table)||' /* New map table */;';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_rename_map_and_extract_tables', 
 			'[57604] Delete extract and map tables for new study: %; extract: %, map: %',

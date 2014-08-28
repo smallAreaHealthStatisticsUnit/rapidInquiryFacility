@@ -10,6 +10,8 @@
 #-
 #- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts
 #-
+#- DO NOT RUN THE SUBDIRECTORY MAKEFILES DIRECTLY; THEY REQUIRE ENVIRONMENT SETUP TO WORK CORRECTLY
+#-
 # Copyright:
 #
 # The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -153,12 +155,16 @@ patch:
 	$(MAKE) -C alter_scripts clean
 	$(MAKE) -C alter_scripts all PGDATABASE=sahsuland
 	
-#- sahsuland_dev: Rebuild sahsuland_dev, then patch dev only
+#- sahsuland_dev: Rebuild sahsuland_dev, test, then patch dev only, finally retest
 sahsuland_dev: clean v4_0_create_sahsuland.rpt 
-#	$(MAKE) -C alter_scripts all DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) -C test_scripts all DEBUG_LEVEL=1 ECHO=all
+	$(MAKE) -C alter_scripts all DEBUG_LEVEL=1 ECHO=all
+	$(MAKE) -C test_scripts all DEBUG_LEVEL=1 ECHO=all
+	
 # Add UK gis
-# add sahsuland dump
+#- sahsuland dump: Dump database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
+sahsuland_dump:
+	pg_dump -U postgres -w -F plain sahsuland -T '*x_uk*' -T '*.x_ew01*' -v > ../install/sahsuland.sql	
 	
 #- test: Run test scripts [Non verbose, no debug]
 test:
