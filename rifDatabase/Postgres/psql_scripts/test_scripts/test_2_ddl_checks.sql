@@ -48,14 +48,19 @@
 \set ON_ERROR_STOP ON
 
 --
+-- Start transaction
+--
+BEGIN;
+
+--
 -- Check user is rif40
 --
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF user = 'rif40' THEN
-		RAISE INFO 'User check: %', user;	
+		RAISE INFO 'test_2_ddl_checks.sql: T2__01: User check: %', user;	
 	ELSE
-		RAISE EXCEPTION 'C20900: User check failed: % is not rif40', user;	
+		RAISE EXCEPTION 'test_2_ddl_checks.sql: T2__02: User check failed: % is not rif40', user;	
 	END IF;
 END;
 $$;
@@ -143,6 +148,10 @@ SELECT 'TABLE' AS table_or_view, table_name AS table_or_view_name
 \i ../psql_scripts/v4_0_postgres_ddl_checks.sql
 
 \echo Test 2 - DDL checks completed OK.
+--
+-- End transaction
+--
+END;
 
 --
 -- Eof

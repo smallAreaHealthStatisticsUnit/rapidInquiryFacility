@@ -1,6 +1,6 @@
 -- ************************************************************************
 -- *
--- * DO NOT EDIT THIS SCRIPT OR MODIFY THE RIF SCHEMA - USE ALTER SCRIPTS
+-- * THIS SCRIPT MAY BE EDITED - NO NEED TO USE ALTER SCRIPTS
 -- *
 -- ************************************************************************
 --
@@ -14,8 +14,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - Check all tables, triggers, columns and comments are present, 
---				  objects granted to rif_user/rif_manmger, sequences granted.
+-- Rapid Enquiry Facility (RIF) - RIF SQL package rif40_ddl_checks() function - check g) Missing sequences
 --
 -- Copyright:
 --
@@ -51,9 +50,9 @@
 --
 -- Peter Hambly, SAHSU
 --
-\set ECHO :echo
+\set ECHO all
 \set ON_ERROR_STOP ON
-\set VERBOSITY :verbosity
+\timing
 
 --
 -- Check user is rif40
@@ -61,35 +60,60 @@
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF user = 'rif40' THEN
-		RAISE INFO 'v4_0_postgres_ddl_checks.sql: DDL01: User check: %', user;	
+		RAISE INFO 'User check: %', user;	
 	ELSE
-		RAISE EXCEPTION 'v4_0_postgres_ddl_checks.sql: DDL02: User check failed: % is not rif40', user;	
+		RAISE EXCEPTION 'C20900: User check failed: % is not rif40', user;	
 	END IF;
 END;
 $$;
+--rif40_ddl_check_g:									70350 to 70399
+CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_ddl_check_g()
+RETURNS INTEGER
+SECURITY INVOKER
+AS $func$
+/*
+Function: 		rif40_ddl_check_g()
+Parameters: 	None
+Returns: 		Error count
+Description:	Validate RIF DDL
 
+Check g) Missing sequences
+ */
+DECLARE
+	c7 CURSOR(l_schema VARCHAR) FOR /* Missing sequences */
+		SELECT 'rif40_study_id_seq' AS sequences
+		 UNION
+		SELECT 'rif40_inv_id_seq' AS sequences
+		EXCEPT
+		SELECT c.relname AS sequences
+		  FROM pg_class c
+		 WHERE relkind = 'S'
+		   AND c.relowner   = (SELECT oid FROM pg_roles WHERE rolname = l_schema)
+		 ORDER BY 1;
 --
--- Check database is sahsuland_dev
+	c7_rec RECORD;
 --
-DO LANGUAGE plpgsql $$
-BEGIN
-	IF current_database() = 'sahsuland_dev' THEN
-		RAISE INFO 'v4_0_postgres_ddl_checks.sql: DDL03: Database check: %', current_database();	
-	ELSE
-		RAISE EXCEPTION 'v4_0_postgres_ddl_checks.sql: DDL04: Database check failed: % is not sahsuland_dev', current_database();	
-	END IF;
+	schema_owner VARCHAR:='rif40';
+	i INTEGER:=0;
+BEGIN	
+	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_g', '[70350]: Checking for missing sequences');
+	FOR c7_rec IN c7(schema_owner) LOOP
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_g', '[70351]: Missing sequences: %', 
+			c7_rec.sequences::VARCHAR);
+		i:=i+1;
+	END LOOP;
+--
+	RETURN i;
 END;
-$$;
+$func$
+LANGUAGE PLPGSQL;
 
-\echo Checking all tables, triggers, columns and comments are present, objects granted to rif_user/rif_manmger, sequences granted...
+COMMENT ON FUNCTION rif40_sql_pkg.rif40_ddl_check_g() IS 'Function: 		rif40_ddl_check_g()
+Parameters: 	None
+Returns: 		Error count
+Description:	Validate RIF DDL
 
-DO LANGUAGE plpgsql $$
-BEGIN
-        PERFORM rif40_sql_pkg.rif40_ddl_checks();
-END;
-$$;
-
-\echo Checked all tables, triggers, columns and comments are present, objects granted to rif_user/rif_manmger, sequences granted.
+Check g) Missing sequences';
 
 --
 -- Eof

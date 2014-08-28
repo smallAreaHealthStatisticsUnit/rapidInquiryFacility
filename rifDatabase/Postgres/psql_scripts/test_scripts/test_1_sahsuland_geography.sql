@@ -48,14 +48,19 @@
 \set ON_ERROR_STOP ON
 
 --
+-- Start transaction
+--
+BEGIN;
+
+--
 -- Check user is rif40
 --
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF user = 'rif40' THEN
-		RAISE INFO 'User check: %', user;	
+		RAISE INFO 'test_1_sahsuland_geography.sql: T1__01: User check: %', user;	
 	ELSE
-		RAISE EXCEPTION 'C20900: User check failed: % is not rif40', user;	
+		RAISE EXCEPTION 'test_1_sahsuland_geography.sql: T1__02: User check failed: % is not rif40', user;	
 	END IF;
 END;
 $$;
@@ -217,10 +222,10 @@ BEGIN
 	FETCH c0 INTO c0_rec;
 	CLOSE c0;
 	IF c0_rec.total_sahsuland_geography = c0_rec.total_sahsuland_geography_orig THEN
-			RAISE INFO 'sahsuland_geography: % (under test) and sahsuland_geography_orig: % (reference version) have the same row counts',
+			RAISE INFO 'test_1_sahsuland_geography.sql: T1__03: sahsuland_geography: % (under test) and sahsuland_geography_orig: % (reference version) have the same row counts',
 				c0_rec.total_sahsuland_geography, c0_rec.total_sahsuland_geography_orig;
 	ELSE
-			RAISE EXCEPTION 'C20900: sahsuland_geography: % (under test) and sahsuland_geography_orig: % (reference version) have differing row counts',
+			RAISE EXCEPTION 'test_1_sahsuland_geography.sql: T1__04: sahsuland_geography: % (under test) and sahsuland_geography_orig: % (reference version) have differing row counts',
 				c0_rec.total_sahsuland_geography, c0_rec.total_sahsuland_geography_orig;
 	END IF;
 --
@@ -229,12 +234,12 @@ BEGIN
 	CLOSE c1;
 --
 	IF c1_rec.total_level3_moved > 0 OR c1_rec.total_level2_moved > 0 OR c1_rec.total_level1_moved > 0 THEN
-			RAISE EXCEPTION 'C20900: sahsuland_geography (under test) and sahsuland_geography_orig (reference version) are NOT the same; movement detected; level3: % ,level2: %, level1: %', 
+			RAISE EXCEPTION 'test_1_sahsuland_geography.sql: T1__05: sahsuland_geography (under test) and sahsuland_geography_orig (reference version) are NOT the same; movement detected; level3: % ,level2: %, level1: %', 
 				c1_rec.total_level3_moved::Text, 
 				c1_rec.total_level2_moved::Text, 
 				c1_rec.total_level1_moved::Text;	
 	ELSE
-			RAISE INFO 'Geospatial tables: sahsuland_geography (under test) and sahsuland_geography_orig (reference version) are the same';
+			RAISE INFO 'test_1_sahsuland_geography.sql: T1__06: Geospatial tables: sahsuland_geography (under test) and sahsuland_geography_orig (reference version) are the same';
 	END IF;
 END;
 $$;
@@ -281,10 +286,14 @@ SELECT geography, geolevel_name, avg_npoints_geom, avg_npoints_opt, file_geojson
 \pset pager off
 \dS+ t_rif40_sahsu_geometry
 \dS+ sahsuland_geography
+\dS+ rif40_geolevels_geometry
  */
+ --
+ -- End of transaction
+ --
+ END;
+ 
 \echo Test 1 - SAHSULAND geometry iontersection validation completed OK.
-
--- \dS+ rif40_geolevels_geometry
 
 --
 -- Eof

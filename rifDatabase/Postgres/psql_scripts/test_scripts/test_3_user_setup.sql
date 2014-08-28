@@ -53,9 +53,9 @@
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF user = 'rif40' THEN
-		RAISE INFO 'User check: %', user;	
+		RAISE INFO 'test_3_user_setup.sql: T3__01: User check: %', user;	
 	ELSE
-		RAISE EXCEPTION 'C20900: User check failed: % is not rif40', user;	
+		RAISE EXCEPTION 'test_3_user_setup.sql: T3__02: User check failed: % is not rif40', user;	
 	END IF;
 END;
 $$;
@@ -82,9 +82,9 @@ BEGIN
 -- Test parameter
 --
 	IF c1_rec.testuser IN ('XXXX', 'XXXX:testuser') THEN
-		RAISE EXCEPTION 'db_create.sql() C209xx: No -v testuser=<test user account> parameter';	
+		RAISE EXCEPTION 'test_3_user_setup.sql: T3__03: No -v testuser=<test user account> parameter';	
 	ELSE
-		RAISE INFO 'db_create.sql() test user account parameter="%"', c1_rec.testuser;
+		RAISE INFO 'test_3_user_setup.sql: T3__04: test user account parameter="%"', c1_rec.testuser;
 	END IF;
 --
 -- Test account exists
@@ -93,13 +93,13 @@ BEGIN
 	FETCH c2 INTO c2_rec;
 	CLOSE c2;
 	IF c2_rec.usename IS NULL THEN
-		RAISE EXCEPTION 'db_create.sql() C209xx: User account does not exist: %', LOWER(SUBSTR(c1_rec.testuser, 5));	
+		RAISE EXCEPTION 'test_3_user_setup.sql: T3__05: User account does not exist: %', LOWER(SUBSTR(c1_rec.testuser, 5));	
 	ELSIF pg_has_role(c2_rec.usename, 'rif_user', 'MEMBER') THEN
-		RAISE INFO 'db_create.sql() user account="%" is a rif_user', c2_rec.usename;
+		RAISE INFO 'test_3_user_setup.sql: T3__06: user account="%" is a rif_user', c2_rec.usename;
 	ELSIF pg_has_role(c2_rec.usename, 'rif_manager', 'MEMBER') THEN
-		RAISE INFO 'db_create.sql() user account="%" is a rif manager', c2_rec.usename;
+		RAISE INFO 'test_3_user_setup.sql: T3__07: user account="%" is a rif manager', c2_rec.usename;
 	ELSE
-		RAISE EXCEPTION 'db_create.sql() C209xx: User account: % is not a rif_user or rif_manager', c2_rec.usename;	
+		RAISE EXCEPTION 'test_3_user_setup.sql: T3__08: User account: % is not a rif_user or rif_manager', c2_rec.usename;	
 	END IF;
 --
 END;
@@ -123,6 +123,11 @@ $$;
 -- Call common setup to run as testuser (passed parameter)
 --
 \i ../psql_scripts/test_scripts/common_setup.sql
+
+--
+-- Begin transaction
+--
+BEGIN;
 
 \pset title 'Search path'
 WITH a AS (
@@ -266,6 +271,10 @@ BEGIN
 	END LOOP;
 END;
 $$;
+--
+-- End transaction
+--
+END;
 
 --
 -- Eof

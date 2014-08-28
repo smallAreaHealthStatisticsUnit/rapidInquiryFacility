@@ -209,7 +209,7 @@ verbose_test:
 clean:
 	$(MAKE) -C alter_scripts clean
 	$(MAKE) -C test_scripts clean
-	$(DELETE) v4_0_create_sahsuland.rpt
+	$(DELETE) v4_0_create_sahsuland.rpt v4_0_vacuum_analyse.rpt
 #- devclean: Remove logs so alter scripts in development can be r-run 
 #-           Not normally needed as they abort.
 devclean:
