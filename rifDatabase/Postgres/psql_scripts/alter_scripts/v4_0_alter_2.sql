@@ -15,7 +15,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - RIF alter script 3:
+-- Rapid Enquiry Facility (RIF) - RIF alter script 2:
 --
 -- Add covariates to comparision area extract;
 -- GID, GID_ROWINDEX support in extracts/maps; 
@@ -166,7 +166,8 @@ END;
 --
 -- Will need to quit here when in production
 --
---\q
+\q
+-- Move to test 7
 
 --
 -- Connect as testuser

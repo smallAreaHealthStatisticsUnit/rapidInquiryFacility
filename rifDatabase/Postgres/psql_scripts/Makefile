@@ -144,6 +144,8 @@ endif
 #-
 #- Targets
 #- 
+#- 1. patching
+#-
 #- all: Run all completed alter scripts [DEFAULT]
 all:
 	$(MAKE) -C alter_scripts all
@@ -154,18 +156,42 @@ patch:
 	$(MAKE) -C alter_scripts all
 	$(MAKE) -C alter_scripts clean
 	$(MAKE) -C alter_scripts all PGDATABASE=sahsuland
+
+#- dev: Run all alter scripts in development
+dev:
+	$(MAKE) -C alter_scripts dev DEBUG_LEVEL=1
 	
-#- sahsuland_dev: Rebuild sahsuland_dev, test, then patch dev only, finally retest
+#-
+#- 2. build
+#-	
+#- sahsuland_dev_no_alter: Rebuild sahsuland_dev, test [State of SAHSULAND at port to SQL server], finally VACUUM ANALYZE
+sahsuland_dev_no_alter: clean v4_0_create_sahsuland.rpt 
+	$(MAKE) -C test_scripts all DEBUG_LEVEL=1 ECHO=all
+	$(MAKE) v4_0_vacuum_analyse_dev
+	
+#- sahsuland_dev: Rebuild sahsuland_dev, test, then patch dev only, retest, finally VACUUM ANALYZE
 sahsuland_dev: clean v4_0_create_sahsuland.rpt 
 	$(MAKE) -C test_scripts all DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) -C alter_scripts all DEBUG_LEVEL=1 ECHO=all
-	$(MAKE) -C test_scripts all DEBUG_LEVEL=1 ECHO=all
+#	$(MAKE) -C test_scripts all DEBUG_LEVEL=1 ECHO=all
+	$(MAKE) v4_0_vacuum_analyse_dev
 	
 # Add UK gis
-#- sahsuland dump: Dump database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
+
+#-
+#- 3. installers
+#-	
+#- sahsuland_dump: Dump sahsuland database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
 sahsuland_dump:
-	pg_dump -U postgres -w -F plain sahsuland -T '*x_uk*' -T '*.x_ew01*' -v > ../install/sahsuland.sql	
+	pg_dump -U postgres -w -F plain -T '*x_uk*' -T '*.x_ew01*' -v -C sahsuland > ../install/sahsuland.sql	
+#- sahsuland_dev_dump: Dump sahsuland_dev database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
+#-                     Used to create sahsuland
+sahsuland_dev_dump:
+	pg_dump -U postgres -w -F plain -T '*x_uk*' -T '*.x_ew01*' -v sahsuland_dev > ../install/sahsuland_dev.sql	
 	
+#-
+#- 4. test
+#-	
 #- test: Run test scripts [Non verbose, no debug]
 test:
 	$(MAKE) -C test_scripts clean all
@@ -176,9 +202,9 @@ debug_level_1_test:
 verbose_test:
 	$(MAKE) -C test_scripts clean all VERBOSITY=verbose DEBUG_LEVEL=2 ECHO=all
 	
-#- dev: Run all alter scripts in development
-dev:
-	$(MAKE) -C alter_scripts dev DEBUG_LEVEL=1
+#-
+#- 5. cleanup
+#-	
 #- clean: Remove logs so completed scripts can be re-run
 clean:
 	$(MAKE) -C alter_scripts clean
@@ -189,12 +215,20 @@ clean:
 devclean:
 	$(MAKE) -C alter_scripts devclean
 
+
+#-
+#- 6. miscellaneous
+#-	
+
+#- v4_0_vacuum_analyse_dev: VACUUM ANALYZE sahsuland dev database
+v4_0_vacuum_analyse_dev: v4_0_vacuum_analyse.rpt
+
 #- help: Display this help
 help:
 	$(HELP)
 
-#
-#- recurse: Recursive make target: make recurse <recursive tsrget>
+#- recurse: Recursive make target: make recurse <recursive target>
+#-          e.g. make recurse alter_1.rpt
 recurse: $(SUBDIRS)	
 $(SUBDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
