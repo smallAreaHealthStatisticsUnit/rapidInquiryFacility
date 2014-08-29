@@ -86,14 +86,15 @@ PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -P pager=off \
 #
 # List of source code
 #
-SOURCES=test_1_sahsuland_geography.sql test_2_ddl_checks.sql test_3_user_setup.sql test_4_study_id_1.sql \
+NO_ALTER_SOURCES=test_1_sahsuland_geography.sql test_2_ddl_checks.sql test_3_user_setup.sql test_4_study_id_1.sql \
 		test_5_clone_delete_test.sql
-
+SOURCES=$(NO_ALTER_SOURCES) test_6_middleware_1.sql
 
 #
 # Derive targets from sources
 #
 TARGETS=$(SOURCES:.sql=.rpt)
+NO_ALTER_TARGETS=$(NO_ALTER_SOURCES:.sql=.rpt)
 	
 #
 # Phony (i.e. not a file) targets
@@ -134,6 +135,8 @@ endif
 #
 #- all: Run all test scripts [DEFAULT]
 all: $(TARGETS)
+#- no_alter:
+no_alter: $(NO_ALTER_TARGETS)
 #- clean: Remove run logs
 clean: 
 	$(DELETE) $(TARGETS)

@@ -171,7 +171,7 @@ sahsuland_dev_no_alter: clean v4_0_create_sahsuland.rpt
 	
 #- sahsuland_dev: Rebuild sahsuland_dev, test, then patch dev only, retest, finally VACUUM ANALYZE
 sahsuland_dev: clean v4_0_create_sahsuland.rpt 
-	$(MAKE) -C test_scripts all DEBUG_LEVEL=1 ECHO=all
+	$(MAKE) -C test_scripts no_alter DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) -C alter_scripts all DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) -C test_scripts clean all DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) v4_0_vacuum_analyse_dev
@@ -192,13 +192,16 @@ sahsuland_dev_dump:
 #-
 #- 4. test
 #-	
-#- test: Run test scripts [Non verbose, no debug]
+#- test: Run all test scripts [Non verbose, no debug]
 test:
 	$(MAKE) -C test_scripts clean all
-#- test: Run test scripts [debug_level=1]
+#- test_no_alter: Run test scripts able to be run before the alter scripts [Non verbose, no debug]
+test_no_alter:
+	$(MAKE) -C test_scripts clean no_alter
+#- test: Run all test scripts [debug_level=1]
 debug_level_1_test:
 	$(MAKE) -C test_scripts clean all DEBUG_LEVEL=1 ECHO=all
-#- test: Run test scripts [Verbose, debug_level=2, echo=all]
+#- test: Run all test scripts [Verbose, debug_level=2, echo=all]
 verbose_test:
 	$(MAKE) -C test_scripts clean all VERBOSITY=verbose DEBUG_LEVEL=2 ECHO=all
 	
