@@ -66,7 +66,7 @@ DECLARE
 --
 -- Functions to enable debug for
 --
-	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 
+	rif40_xml_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 
 		'rif40_getAllAttributesForGeoLevelAttributeTheme', 'rif40_GetMapAreaAttributeValue',
 		'rif40_GetMapAreaAttributeValue','rif40_CreateMapAreaAttributeSource'];
 	l_function				VARCHAR;
@@ -80,10 +80,10 @@ BEGIN
 -- Test parameter
 --
 	IF c4sm_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
-		RAISE EXCEPTION 'test_4_study_id_1.sql: T4--01: No -v testuser=<debug level> parameter';	
+		RAISE EXCEPTION 'test_7_middleware_2.sql: T7--01: No -v testuser=<debug level> parameter';	
 	ELSE
 		debug_level:=LOWER(SUBSTR(c4sm_rec.debug_level, 5))::INTEGER;
-		RAISE INFO 'test_4_study_id_1.sql: T4--02: debug level parameter="%"', debug_level::Text;
+		RAISE INFO 'test_7_middleware_2.sql: T7--02: debug level parameter="%"', debug_level::Text;
 	END IF;
 --
 -- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
@@ -92,14 +92,14 @@ BEGIN
 	IF debug_level IS NULL THEN
 		debug_level:=0;
 	ELSIF debug_level > 4 THEN
-		RAISE EXCEPTION 'test_4_study_id_1.sql: T4--03: Invslid debug level [0-4]: %', debug_level;
+		RAISE EXCEPTION 'test_7_middleware_2.sql: T7--03: Invslid debug level [0-4]: %', debug_level;
 	ELSIF debug_level BETWEEN 1 AND 4 THEN
         PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
 --
 -- Enabled debug on select rif40_sm_pkg functions
 --
-		FOREACH l_function IN ARRAY rif40_sm_pkg_functions LOOP
-			RAISE INFO 'test_4_study_id_1.sql: T4--06: Enable debug for function: %', l_function;
+		FOREACH l_function IN ARRAY rif40_xml_pkg_functions LOOP
+			RAISE INFO 'test_7_middleware_2.sql: T7--06: Enable debug for function: %', l_function;
 			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG'||debug_level::Text);
 		END LOOP;
 	END IF;
