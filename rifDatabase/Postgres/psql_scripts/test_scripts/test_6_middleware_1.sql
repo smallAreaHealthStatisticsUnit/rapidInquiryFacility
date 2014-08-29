@@ -8,7 +8,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - Test 4: Study ID 1
+-- Rapid Enquiry Facility (RIF) - Test 6: Middleware tests 1 for alter 1
 --
 -- Copyright:
 --
@@ -50,7 +50,7 @@
 --
 \i ../psql_scripts/test_scripts/common_setup.sql
 
-\echo Test 6: Middleware tests 1...
+\echo Test 6: Middleware tests 1 for alter 1...
 
 \set ndebug_level '''XXXX':debug_level''''
 SET rif40.debug_level TO :ndebug_level;
@@ -521,7 +521,7 @@ SELECT * FROM pg_cursors;
 --
 END;
 
-\echo Test 6: Middleware tests 1 OK    
+\echo Test 6: Middleware tests 1 for alter 1 OK    
 
 --
 -- Eof
