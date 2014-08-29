@@ -255,17 +255,17 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VAR
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_range_partition(VARCHAR, VARCHAR, VARCHAR);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR);
 
-DROP FUNCTION rif40_sql_pkg.rif40_ddl_check_a();
-DROP FUNCTION rif40_sql_pkg.rif40_ddl_check_b();
-DROP FUNCTION rif40_sql_pkg.rif40_ddl_check_c();
-DROP FUNCTION rif40_sql_pkg.rif40_ddl_check_d();
-DROP FUNCTION rif40_sql_pkg.rif40_ddl_check_e();
-DROP FUNCTION rif40_sql_pkg.rif40_ddl_check_f();
-DROP FUNCTION rif40_sql_pkg.rif40_ddl_check_g();
-DROP FUNCTION rif40_sql_pkg.rif40_ddl_check_h();
-DROP FUNCTION rif40_sql_pkg.rif40_ddl_check_i();
-DROP FUNCTION rif40_sql_pkg.rif40_ddl_check_j();
-DROP FUNCTION rif40_sql_pkg.rif40_ddl_check_k();
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl_check_a();
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl_check_b();
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl_check_c();
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl_check_d();
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl_check_e();
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl_check_f();
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl_check_g();
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl_check_h();
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl_check_i();
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl_check_j();
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl_check_k();
 
 DO LANGUAGE plpgsql $$
 BEGIN
