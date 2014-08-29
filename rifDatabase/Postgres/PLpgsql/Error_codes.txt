@@ -12,6 +12,7 @@ rif40_GetMapAreaAttributeValue: 					51200 to 51399
 rif40_closeGetMapAreaAttributeCursor: 				51400 to 51599
 rif40_CreateMapAreaAttributeSource: 				51600 to 51799
 rif40_DeleteMapAreaAttributeSource: 				51800 to 51999
+rif40_GetAdjacencyMatrix:							52000 to 52050
 
 rif40_sm_pkg:
 

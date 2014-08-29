@@ -76,52 +76,9 @@ $$;
 -- rif40_closeGetMapAreaAttributeCursor: 		51400 to 51599
 -- rif40_CreateMapAreaAttributeSource: 			51600 to 51799
 -- rif40_DeleteMapAreaAttributeSource: 			51800 to 51999
+-- rif40_GetAdjacencyMatrix:				52000 to 52050
 --
-/*
-WITH a AS (
-	SELECT MAX(study_id) AS max_study_id
-	  FROM rif40_studies
-), b AS (
-	SELECT area_id, band_id
-	  FROM rif40_study_areas b1, a
-	 WHERE a.max_study_id = b1.study_id
-), c AS (
-	SELECT b.area_id, b.band_id, c1.optimised_geometry
-	  FROM t_rif40_sahsu_geometry c1, b
-     WHERE c1.geolevel_name = 'LEVEL4'
-       AND c1.area_id       = b.area_id	  
-), d AS (
-	SELECT d1.band_id, 
-		   d1.area_id, 
-		   d2.area_id AS adjacent_area_id, 
-		   COUNT(d2.area_id) OVER(PARTITION BY d1.area_id ORDER BY d2.area_id) AS num_adjacencies
-	  FROM c d1, c d2 
-	 WHERE d1.area_id       != d2.area_id
-	   AND ST_Touches(d1.optimised_geometry, d2.optimised_geometry)
-), e AS (
-	SELECT d.area_id, COUNT(d.area_id) As num_adjacencies, string_agg(d.area_id, ',') AS adjacency_list
-	  FROM d
-	 GROUP BY d.area_id
-)
-SELECT e.*
-  FROM e
-  ORDER BY 1, 2 LIMIT 10;
-  
-     area_id     | num_adjacencies |                                                 adjacency_list
------------------+-----------------+-----------------------------------------------------------------------------------------------------------------
- 01.001.000100.1 |               7 | 01.001.000100.1,01.001.000100.1,01.001.000100.1,01.001.000100.1,01.001.000100.1,01.001.000100.1,01.001.000100.1
- 01.001.000100.2 |               1 | 01.001.000100.2
- 01.002.000300.1 |               3 | 01.002.000300.1,01.002.000300.1,01.002.000300.1
- 01.002.000300.2 |               4 | 01.002.000300.2,01.002.000300.2,01.002.000300.2,01.002.000300.2
- 01.002.000300.3 |               2 | 01.002.000300.3,01.002.000300.3
- 01.002.000300.4 |               5 | 01.002.000300.4,01.002.000300.4,01.002.000300.4,01.002.000300.4,01.002.000300.4
- 01.002.000300.5 |               1 | 01.002.000300.5
- 01.002.000400.1 |               5 | 01.002.000400.1,01.002.000400.1,01.002.000400.1,01.002.000400.1,01.002.000400.1
- 01.002.000400.2 |               3 | 01.002.000400.2,01.002.000400.2,01.002.000400.2
- 01.002.000400.4 |               1 | 01.002.000400.4
-(10 rows)
-  
- */
+
 --
 -- Add enumerated type for geolevelAttributeTheme
 --
@@ -149,6 +106,7 @@ CREATE TYPE rif40_xml_pkg.rif40_geolevelAttributeTheme AS ENUM (
 \i ../PLpgsql/rif40_xml_pkg/rif40_closeGetMapAreaAttributeCursor.sql
 \i ../PLpgsql/rif40_xml_pkg/rif40_CreateMapAreaAttributeSource.sql
 \i ../PLpgsql/rif40_xml_pkg/rif40_DeleteMapAreaAttributeSource.sql
+\i ../PLpgsql/rif40_xml_pkg/rif40_GetAdjacencyMatrix.sql
 
 COMMENT ON SCHEMA rif40_xml_pkg
   IS 'RIF XML support.
