@@ -173,7 +173,7 @@ sahsuland_dev_no_alter: clean v4_0_create_sahsuland.rpt
 sahsuland_dev: clean v4_0_create_sahsuland.rpt 
 	$(MAKE) -C test_scripts all DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) -C alter_scripts all DEBUG_LEVEL=1 ECHO=all
-#	$(MAKE) -C test_scripts all DEBUG_LEVEL=1 ECHO=all
+	$(MAKE) -C test_scripts clean all DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) v4_0_vacuum_analyse_dev
 	
 # Add UK gis

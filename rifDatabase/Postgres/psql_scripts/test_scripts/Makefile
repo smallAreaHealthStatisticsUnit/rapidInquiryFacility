@@ -87,7 +87,7 @@ PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -P pager=off \
 # List of source code
 #
 SOURCES=test_1_sahsuland_geography.sql test_2_ddl_checks.sql test_3_user_setup.sql test_4_study_id_1.sql \
-	test_5_clone_delete_test.sql
+		test_5_clone_delete_test.sql
 
 
 #

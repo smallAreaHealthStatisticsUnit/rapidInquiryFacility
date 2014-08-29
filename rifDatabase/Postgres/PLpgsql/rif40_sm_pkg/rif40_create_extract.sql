@@ -221,7 +221,7 @@ BEGIN
 	END IF;
 
 --
--- Check extract is bweing run by study owner
+-- Check extract is being run by study owner
 --
 	IF c1_rec.username != USER THEN
 		PERFORM rif40_log_pkg.rif40_error(-55406, 'rif40_create_extract', 
@@ -270,7 +270,7 @@ BEGIN
 --
 -- 	<rif40_investigations>.<inv_name>          VARCHAR);
 --
--- [Make INV_1 INV_<inv_id> extracts] - this appears to be approximately the case; as it is INV_NAME, but the defailt needs to
+-- [Make INV_1 INV_<inv_id> extracts] - this appears to be approximately the case; as it is INV_NAME, but the default needs to
 -- be looked at
 --
 	FOR c3_rec IN c3_creex(study_id) LOOP
@@ -290,7 +290,11 @@ BEGIN
 --
 -- Comment extract table and columns
 --
-	sql_stmt:='COMMENT ON TABLE rif_studies.'||LOWER(c1_rec.extract_table)||' IS '''||c1_rec.description||'''';
+	IF c1_rec.description IS NOT NULL THEN
+		sql_stmt:='COMMENT ON TABLE rif_studies.'||LOWER(c1_rec.extract_table)||' IS ''Study '||study_id::Text||' extract: '||c1_rec.description::Text||'''';
+	ELSE
+		sql_stmt:='COMMENT ON TABLE rif_studies.'||LOWER(c1_rec.extract_table)||' IS ''Study '||study_id::Text||' extract: NO DESCRIPTION''';
+	END IF;
 	t_ddl:=t_ddl+1;	
 	ddl_stmts[t_ddl]:=sql_stmt;
 	FOREACH table_column IN ARRAY table_columns LOOP
@@ -338,7 +342,7 @@ BEGIN
 	ddl_stmts:=NULL;
 	t_ddl:=0;
 --
--- Index: year, study_or_comparison if no partitoning
+-- Index: year, study_or_comparison if no partitioning
 --	  area_id, band_id, sex, age_group
 --
 -- NEEDS TO BE MOVED TO AFTER INSERT, ADD PK

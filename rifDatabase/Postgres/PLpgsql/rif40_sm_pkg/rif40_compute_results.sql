@@ -304,7 +304,7 @@ SELECT d.area_id, d.gid, d.gid_rowindex, a.*
 --
 -- Comment
 --
-	sql_stmt:='COMMENT ON TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' IS ''Study :'||study_id::VARCHAR||' extract table''';
+	sql_stmt:='COMMENT ON TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' IS ''Study :'||study_id::VARCHAR||' map table''';
 	t_ddl:=t_ddl+1;	
 	ddl_stmts[t_ddl]:=sql_stmt;
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	

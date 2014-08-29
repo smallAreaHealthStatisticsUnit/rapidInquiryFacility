@@ -477,6 +477,17 @@ COMMENT ON TRIGGER trg_rif40_investigations ON rif40_investigations IS 'INSTEAD 
 ALTER TABLE t_rif40_investigations DROP COLUMN IF EXISTS geography;
 --\dS+ t_rif40_investigations
 
+--
+-- Remove t_rif40_investigations.geography, rif40_investigations.geography from rif40_error_messages
+--
+SELECT table_or_view_name_hide, column_name_hide
+  FROM rif40_columns
+ WHERE column_name_hide = 'GEOGRAPHY'
+   AND table_or_view_name_hide IN ('RIF40_INVESTIGATIONS','T_RIF40_INVESTIGATIONS');
+DELETE FROM rif40_columns
+ WHERE column_name_hide = 'GEOGRAPHY'
+   AND table_or_view_name_hide IN ('RIF40_INVESTIGATIONS','T_RIF40_INVESTIGATIONS');
+   
 SElECT area_id, name, gid, gid_rowindex
   FROM t_rif40_sahsu_geometry
  WHERE geolevel_name = 'LEVEL2'

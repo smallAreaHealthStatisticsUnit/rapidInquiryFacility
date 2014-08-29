@@ -155,13 +155,13 @@ BEGIN
 --
 -- Call init function is case called from main build scripts
 --
-		PERFORM rif40_sql_pkg.rif40_startup();
+	PERFORM rif40_sql_pkg.rif40_startup();
 --
 -- Get "SELECTED" study geolevels
 --
-		OPEN c2sm;
-		FETCH c2sm INTO c2sm_rec;
-		CLOSE c2sm;
+	OPEN c2sm;
+	FETCH c2sm INTO c2sm_rec;
+	CLOSE c2sm;
 --
 --
 -- Delete old test studies
@@ -558,18 +558,38 @@ DECLARE
 		  FROM a1, b1;
 	c2 CURSOR FOR /* v_test_4_study_id_1_map diffs */
 		WITH a AS ( /* Missing */
-			SELECT * FROM test_4_study_id_1_map
+			SELECT username, study_id, inv_id, band_id, genders, direct_standardisation, adjusted, observed, expected,
+                   lower95, upper95, relative_risk, smoothed_relative_risk, posterior_probability, 
+				   posterior_probability_upper95, posterior_probability_lower95,
+                   residual_relative_risk, residual_rr_lower95, residual_rr_upper95, 
+				   smoothed_smr, smoothed_smr_lower95, smoothed_smr_upper95
+              FROM test_4_study_id_1_map
 			EXCEPT
-			SELECT * FROM v_test_4_study_id_1_map
+			SELECT username, study_id, inv_id, band_id, genders, direct_standardisation, adjusted, observed, expected,
+                   lower95, upper95, relative_risk, smoothed_relative_risk, posterior_probability, 
+				   posterior_probability_upper95, posterior_probability_lower95,
+                   residual_relative_risk, residual_rr_lower95, residual_rr_upper95, 
+				   smoothed_smr, smoothed_smr_lower95, smoothed_smr_upper95
+              FROM v_test_4_study_id_1_map
 		), b AS ( /* Extra */
-			SELECT * FROM v_test_4_study_id_1_map
+			SELECT username, study_id, inv_id, band_id, genders, direct_standardisation, adjusted, observed, expected,
+                   lower95, upper95, relative_risk, smoothed_relative_risk, posterior_probability, 
+				   posterior_probability_upper95, posterior_probability_lower95,
+                   residual_relative_risk, residual_rr_lower95, residual_rr_upper95, 
+				   smoothed_smr, smoothed_smr_lower95, smoothed_smr_upper95
+              FROM v_test_4_study_id_1_map
 			EXCEPT
-			SELECT * FROM test_4_study_id_1_map
+			SELECT username, study_id, inv_id, band_id, genders, direct_standardisation, adjusted, observed, expected,
+                   lower95, upper95, relative_risk, smoothed_relative_risk, posterior_probability, 
+				   posterior_probability_upper95, posterior_probability_lower95,
+                   residual_relative_risk, residual_rr_lower95, residual_rr_upper95, 
+				   smoothed_smr, smoothed_smr_lower95, smoothed_smr_upper95
+              FROM test_4_study_id_1_map
 		), a1 AS (
-			SELECT COUNT(area_id) AS missing_diffs
+			SELECT COUNT(band_id) AS missing_diffs
 			  FROM a
 		), b1 AS (
-			SELECT COUNT(area_id) AS extra_diffs
+			SELECT COUNT(band_id) AS extra_diffs
 			  FROM b
 		)
 		SELECT missing_diffs, extra_diffs
@@ -592,7 +612,6 @@ DECLARE
 		)
 		SELECT missing_diffs, extra_diffs
 		  FROM a1, b1;
---
 --
 	c1_rec RECORD;
 	c2_rec RECORD;
@@ -851,7 +870,8 @@ $$;
 -- End single transaction
 --
 END;
-
+--\dS+ s1_extract
+--\dS+ s1_map
 \echo Test 4: Created SAHSULAND example study 1.    
 
 SELECT study_id
