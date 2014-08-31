@@ -223,12 +223,20 @@ BEGIN
 '), b AS ('||CHR(10)||
 '	SELECT COUNT(b.*) AS b_2_minus_1_total'||CHR(10)||
 '     FROM b_2_minus_1 b'||CHR(10)||
+'), c AS ('||CHR(10)||
+'	SELECT COUNT(*) AS table_1_total'||CHR(10)||
+'	  FROM '||quote_ident(LOWER(table_1))||CHR(10)||
+'), d AS ('||CHR(10)||
+'	SELECT COUNT(*) AS table_2_total'||CHR(10)||
+'	  FROM '||quote_ident(LOWER(table_2))||CHR(10)||
 ')'||CHR(10)||
-'SELECT a.a_1_minus_2_total, b.b_2_minus_1_total'||CHR(10)||
-'  FROM a, b';
+'SELECT a.a_1_minus_2_total, b.b_2_minus_1_total, c.table_1_total, d.table_2_total'||CHR(10)||
+'  FROM a, b, c, d';
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_table_diff', '[71011]: [%] SQL> %;', 
 		test_tag::VARCHAR,
 		sql_stmt::VARCHAR);
+--
+-- Execute SQL statement
 --
 	BEGIN
 		OPEN c3tdiff FOR EXECUTE sql_stmt;
@@ -246,8 +254,22 @@ BEGIN
 --
 			RAISE;
 	END;
+--
+-- Process diff counts
+--
+	IF c3_rec.table_1_total != c3_rec.table_2_total THEN
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_table_diff', '[71012]: [%] Table 1 %.% has % rows, tsble 2 %.% has %', 
+			test_tag::VARCHAR,
+			c1a_rec.tableowner::VARCHAR,
+			c1a_rec.tablename::VARCHAR,
+			c3_rec.table_1_total::VARCHAR,
+			c1b_rec.tableowner::VARCHAR,
+			c1b_rec.tablename::VARCHAR,
+			c3_rec.table_2_total::VARCHAR);
+		errors:=errors+1;
+	END IF;
 	IF c3_rec.a_1_minus_2_total > 0 THEN
-		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_table_diff', '[71010]: [%] Table 1 %.% has % extra records not in 2 %.%', 
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_table_diff', '[71013] [%] Table 1 %.% has % extra records not in 2 %.%', 
 			test_tag::VARCHAR,
 			c1a_rec.tableowner::VARCHAR,
 			c1a_rec.tablename::VARCHAR,
@@ -255,8 +277,9 @@ BEGIN
 			c1b_rec.tableowner::VARCHAR,
 			c1b_rec.tablename::VARCHAR);
 		errors:=errors+1;
-	ELSIF c3_rec.b_2_minus_1_total > 0 THEN
-		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_table_diff', '[71010]: [%] Table 1 %.% has % missing records that are in 2 %.%', 
+	END IF;
+	IF c3_rec.b_2_minus_1_total > 0 THEN
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_table_diff', '[71014]: [%] Table 1 %.% has % missing records that are in 2 %.%', 
 			test_tag::VARCHAR,
 			c1a_rec.tableowner::VARCHAR,
 			c1a_rec.tablename::VARCHAR,
@@ -264,8 +287,20 @@ BEGIN
 			c1b_rec.tableowner::VARCHAR,
 			c1b_rec.tablename::VARCHAR);
 		errors:=errors+1;
+	END IF;
+--
+-- Process errors
+--
+	IF errors > 0 THEN
+		PERFORM rif40_log_pkg.rif40_error(71014, 'rif40_table_diff', '[%] Tables 1 %.% AND 2 %.% are different; % tests failed',
+			test_tag::VARCHAR,
+			c1a_rec.tableowner::VARCHAR,
+			c1a_rec.tablename::VARCHAR,
+			c1b_rec.tableowner::VARCHAR,
+			c1b_rec.tablename::VARCHAR,
+			errors::VARCHAR);
 	ELSE
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_table_diff', '[71012]: [%] Tables 1 %.% AND 2 %.% are the same', 
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_table_diff', '[71015]: [%] Tables 1 %.% AND 2 %.% are the same', 
 			test_tag::VARCHAR,
 			c1a_rec.tableowner::VARCHAR,
 			c1a_rec.tablename::VARCHAR,

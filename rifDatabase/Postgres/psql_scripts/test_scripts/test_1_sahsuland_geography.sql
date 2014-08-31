@@ -46,6 +46,7 @@
 --
 \set ECHO :echo
 \set ON_ERROR_STOP ON
+\set VERBOSITY :verbosity
 
 --
 -- Start transaction
@@ -183,15 +184,51 @@ BEGIN
 -- Enabled debug on select rif40_sm_pkg functions
 --
 		FOREACH l_function IN ARRAY rif40_pkg_functions LOOP
-			RAISE INFO 'T5--04: test_1_sahsuland_geography.sql: Enable debug for function: %', l_function;
+			RAISE INFO 'T1--04: test_1_sahsuland_geography.sql: Enable debug for function: %', l_function;
 			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
 		END LOOP;
 	END IF;
 --
 -- Validate 2 sahsuland_geography tables are the same
 --
-	PERFORM rif40_sql_pkg.rif40_table_diff('T5__04' /* Test tag */, 'sahsuland_geography', 'sahsuland_geography_orig');
-	
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__04(sahsuland_geography)' /* Test tag */, 'sahsuland_geography', 'sahsuland_geography_orig');
+--
+	CREATE TEMPORARY TABLE test_1_temp_1 AS
+	SELECT level4 FROM sahsuland_level4;
+	CREATE TEMPORARY TABLE test_1_temp_2 AS
+	SELECT DISTINCT level4 FROM sahsuland_geography;
+	CREATE TEMPORARY TABLE test_1_temp_3 AS
+	SELECT DISTINCT level4 FROM x_sahsu_level4;
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__05(level4)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_2');
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__06(x_sahsu_level4)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_3');
+	DROP TABLE test_1_temp_1;
+	DROP TABLE test_1_temp_2;
+	DROP TABLE test_1_temp_3;
+--
+	CREATE TEMPORARY TABLE test_1_temp_1 AS
+	SELECT level3 FROM sahsuland_level3;
+	CREATE TEMPORARY TABLE test_1_temp_2 AS
+	SELECT DISTINCT level3 FROM sahsuland_geography;
+	CREATE TEMPORARY TABLE test_1_temp_3 AS
+	SELECT DISTINCT level3 FROM x_sahsu_level3;
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__06(level3)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_2');
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__07(x_sahsu_level3)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_3');
+	DROP TABLE test_1_temp_1;
+	DROP TABLE test_1_temp_2;
+	DROP TABLE test_1_temp_3;
+--
+	CREATE TEMPORARY TABLE test_1_temp_1 AS
+	SELECT level2 FROM sahsuland_level2;
+	CREATE TEMPORARY TABLE test_1_temp_2 AS
+	SELECT DISTINCT level2 FROM sahsuland_geography;
+	CREATE TEMPORARY TABLE test_1_temp_3 AS
+	SELECT DISTINCT level2 FROM x_sahsu_level2;
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__08(level2)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_2');
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__09(x_sahsu_level2)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_3');
+	DROP TABLE test_1_temp_1;
+	DROP TABLE test_1_temp_2;
+	DROP TABLE test_1_temp_3;
+--
 --	RAISE EXCEPTION 'TEST Abort';
 END;
 $$;
