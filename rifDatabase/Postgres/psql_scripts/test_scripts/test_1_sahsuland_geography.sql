@@ -196,7 +196,7 @@ BEGIN
 	CREATE TEMPORARY TABLE test_1_temp_1 AS
 	SELECT level4 FROM sahsuland_level4;
 	CREATE TEMPORARY TABLE test_1_temp_2 AS
-	SELECT DISTINCT level4 FROM sahsuland_geography;
+	SELECT level4 FROM sahsuland_geography;
 	CREATE TEMPORARY TABLE test_1_temp_3 AS
 	SELECT DISTINCT level4 FROM x_sahsu_level4;
 	PERFORM rif40_sql_pkg.rif40_table_diff('T1__05(level4)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_2');
