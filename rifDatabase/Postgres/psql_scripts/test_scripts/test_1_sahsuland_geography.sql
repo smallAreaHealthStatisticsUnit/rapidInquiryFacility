@@ -65,6 +65,9 @@ BEGIN
 END;
 $$;
 
+\set ndebug_level '''XXXX':debug_level''''
+SET rif40.debug_level TO :ndebug_level;
+	
 /*	
 SELECT area_id, name, area, total_males, total_females, population_year
   FROM t_rif40_sahsu_geometry
@@ -139,6 +142,59 @@ TRUNCATE TABLE sahsuland_geography_orig;
 --
 -- For vi's benefit
 CREATE UNIQUE INDEX sahsuland_geography_orig_pk ON sahsuland_geography_orig(level4);
+
+DO LANGUAGE plpgsql $$
+DECLARE
+	c4sm CURSOR FOR 
+		SELECT CURRENT_SETTING('rif40.debug_level') AS debug_level;
+	c4sm_rec RECORD;
+--
+	old_study_id	INTEGER;
+	new_study_id	INTEGER;
+--
+	rif40_pkg_functions 		VARCHAR[] := ARRAY[
+				'rif40_table_diff'];
+	l_function 			VARCHAR;
+	debug_level		INTEGER;
+BEGIN
+	OPEN c4sm;
+	FETCH c4sm INTO c4sm_rec;
+	CLOSE c4sm;
+--
+-- Test parameter
+--
+	IF c4sm_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
+		RAISE EXCEPTION 'test_1_sahsuland_geography.sql: T1-01: No -v testuser=<debug level> parameter';	
+	ELSE
+		debug_level:=LOWER(SUBSTR(c4sm_rec.debug_level, 5))::INTEGER;
+		RAISE INFO 'T1--02: test_1_sahsuland_geography.sql: debug level parameter="%"', debug_level::Text;
+	END IF;
+--
+-- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
+--
+    PERFORM rif40_log_pkg.rif40_log_setup();
+	IF debug_level IS NULL THEN
+		debug_level:=0;
+	ELSIF debug_level > 4 THEN
+		RAISE EXCEPTION 'test_1_sahsuland_geography.sql: T1--03: Invslid debug level [0-4]: %', debug_level;
+	ELSIF debug_level BETWEEN 1 AND 4 THEN
+        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+--
+-- Enabled debug on select rif40_sm_pkg functions
+--
+		FOREACH l_function IN ARRAY rif40_pkg_functions LOOP
+			RAISE INFO 'T5--04: test_1_sahsuland_geography.sql: Enable debug for function: %', l_function;
+			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
+		END LOOP;
+	END IF;
+--
+-- Validate 2 sahsuland_geography tables are the same
+--
+	PERFORM rif40_sql_pkg.rif40_table_diff('T5__04' /* Test tag */, 'sahsuland_geography', 'sahsuland_geography_orig');
+	
+--	RAISE EXCEPTION 'TEST Abort';
+END;
+$$;
 
 \pset title 'Movement diff sahsuland_geography_orig vs. sahsuland_geography'
 WITH a_missing AS (
@@ -256,7 +312,10 @@ HAVING COUNT(DISTINCT(level3)) > 1;
 
 SELECT level3 FROM sahsuland_geography EXCEPT SELECT level3 FROM sahsuland_level3;
 SELECT level3 FROM x_sahsu_level3 WHERE level3 IN (SELECT level3 FROM sahsuland_geography EXCEPT SELECT level3 FROM sahsuland_level3);
+SELECT level3 FROM x_sahsu_level3 EXCEPT SELECT level3 FROM sahsuland_level3;
 SELECT level4 FROM sahsuland_level4 EXCEPT SELECT level4 FROM sahsuland_geography;
+SELECT level4 FROM x_sahsu_level4 WHERE level4 IN (SELECT level4 FROM sahsuland_geography EXCEPT SELECT level4 FROM sahsuland_level4);
+SELECT level4 FROM x_sahsu_level4 EXCEPT SELECT level4 FROM sahsuland_geography;
  */
 
 \pset title 'T_RIF40_GEOLEVELS a)'
@@ -281,6 +340,34 @@ SELECT geography, geolevel_name, avg_npoints_geom, avg_npoints_opt, file_geojson
  WHERE geography = 'SAHSU'
  ORDER BY geography, geolevel_id;
 \pset title
+
+\pset title 'Geolevels: sahsuland_geography'
+SELECT COUNT(DISTINCT(level1)) AS level1,
+       COUNT(DISTINCT(level2)) AS level2,
+       COUNT(DISTINCT(level3)) AS level3,
+       COUNT(DISTINCT(level4)) AS level4
+  FROM sahsuland_geography;
+
+\pset title 'Geolevels: sahsuland_geography: lookup tables'
+WITH a AS (
+	SELECT COUNT(level1) AS level1
+	   FROM sahsuland_level1
+), b AS (
+	SELECT COUNT(level2) AS level2
+	   FROM sahsuland_level2
+), c AS (
+	SELECT COUNT(level3) AS level3
+	   FROM sahsuland_level3
+), d AS (
+	SELECT COUNT(level4) AS level4
+	   FROM sahsuland_level4
+)
+SELECT level1,level2, level3, level4
+  FROM a, b, c, d;
+
+--
+-- Check GID is unique at geolevel
+--
 
  /*
 \pset pager off

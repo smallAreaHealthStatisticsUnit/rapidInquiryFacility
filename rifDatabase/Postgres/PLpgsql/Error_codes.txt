@@ -49,3 +49,4 @@ rif40_ddl_check_h:									70400 to 70449
 rif40_ddl_check_i:									70450 to 70499
 rif40_ddl_check_j:									70500 to 70549
 rif40_ddl_check_k:									70550 to 70599
+rif40_table_diff:									71000 to 71050

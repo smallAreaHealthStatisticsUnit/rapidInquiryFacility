@@ -8,8 +8,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - Web services integration functions for middleware
---     				  Get bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
+-- Rapid Enquiry Facility (RIF) - Get study area adjacency matrix required by INLA
 --
 -- Copyright:
 --
@@ -76,10 +75,10 @@ RETURNS TABLE(
 SECURITY INVOKER
 AS $func$
 /*
-Function: 	rif40_GetAdjacencyMatrix()
-Parameters:	study id
-Returns:	area_id, num_adjacencies, adjacency_list as a table. 
-Description: Get study area adjacency matrix required by INLA	
+Function: 		rif40_GetAdjacencyMatrix()
+Parameters:		study id
+Returns:		area_id, num_adjacencies, adjacency_list as a table. 
+Description: 	Get study area adjacency matrix required by INLA	
 
 Generates and executes SQL>
 

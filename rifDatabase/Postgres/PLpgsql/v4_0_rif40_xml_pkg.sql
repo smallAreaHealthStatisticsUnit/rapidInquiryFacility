@@ -113,6 +113,11 @@ COMMENT ON SCHEMA rif40_xml_pkg
 
 Functions:
 
+Function: 		rif40_GetAdjacencyMatrix()
+Parameters:		study id
+Returns:		area_id, num_adjacencies, adjacency_list as a table. 
+Description: 	Get study area adjacency matrix required by INLA	
+
 Function: 	rif40_get_geojson_tiles()
 Parameters:	Geography, geolevel_view, Y max, X max, Y min, X min as a record, return one row (TRUE/FALSE)
 Returns:	Text table [1 or more rows dependent on return_one_row]

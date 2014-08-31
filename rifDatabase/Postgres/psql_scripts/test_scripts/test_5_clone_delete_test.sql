@@ -93,10 +93,10 @@ BEGIN
 -- Test parameter
 --
 	IF c4sm_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
-		RAISE EXCEPTION 'test_4_study_id_1.sql: T5--01: No -v testuser=<debug level> parameter';	
+		RAISE EXCEPTION 'test_5_clone_delete_test.sql: T5--01: No -v testuser=<debug level> parameter';	
 	ELSE
 		debug_level:=LOWER(SUBSTR(c4sm_rec.debug_level, 5))::INTEGER;
-		RAISE INFO 'T5--02: test_4_study_id_1.sql: debug level parameter="%"', debug_level::Text;
+		RAISE INFO 'T5--02: test_5_clone_delete_test.sql: debug level parameter="%"', debug_level::Text;
 	END IF;
 --
 -- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 

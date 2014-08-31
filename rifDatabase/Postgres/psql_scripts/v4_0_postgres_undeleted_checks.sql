@@ -82,6 +82,61 @@ $$;
 
 \set ON_ERROR_STOP ON
 
+\pset title 'Objects and comments'
+ WITH a AS (
+			SELECT c.relname AS object_name, 
+			       n.nspname AS object_schema, 
+			       CASE 
+					WHEN c.relkind        = 'r' AND		/* Relational table */
+					     c.relpersistence = 'p' 		/* Persistence: unlogged */	THEN 'TABLE'
+					WHEN c.relkind        = 'r' AND		/* Relational table */
+					     c.relpersistence = 'u' 		/* Persistence: unlogged */ THEN 'UNLOGGED TABLE'
+					WHEN c.relkind        = 'r' AND		/* Relational table */
+					     c.relpersistence = 't' 		/* Persistence: temporary */THEN 'TEMPORARY TABLE'
+					WHEN c.relkind        = 'i'			/* Index */					THEN 'INDEX'
+					WHEN c.relkind        = 'v'			/* View */					THEN 'VIEW'
+					WHEN c.relkind        = 'S'			/* Sequence */				THEN 'SEQUENCE'
+					WHEN c.relkind        = 't'			/* TOAST Table */			THEN 'TOAST TABLE'
+					WHEN c.relkind        = 'f'			/* Foreign Table */			THEN 'FOREIGN TABLE'
+					WHEN c.relkind        = 'c'			/* Composite type */		THEN 'COMPOSITE TYPE'
+					ELSE 										     'Unknown relkind: '||c.relkind
+			       END AS object_type,
+			       d.description
+			  FROM pg_class c
+				LEFT OUTER JOIN pg_namespace n ON (n.oid = c.relnamespace)			
+				LEFT OUTER JOIN pg_description d ON (d.objoid = c.oid)
+			 WHERE c.relowner IN (SELECT oid FROM pg_roles WHERE rolname IN ('rif40', USER))
+			UNION
+			SELECT p.proname AS object_name, 
+			       n.nspname AS object_schema,
+			       'FUNCTION'  AS object_type,
+			       d.description
+			  FROM pg_proc p
+				LEFT OUTER JOIN pg_namespace n ON (n.oid = p.pronamespace)			
+				LEFT OUTER JOIN pg_description d ON (d.objoid = p.oid)
+			 WHERE p.proowner IN (SELECT oid FROM pg_roles WHERE rolname IN ('rif40', USER))
+			UNION
+			SELECT t.tgname AS object_name, 
+			       n.nspname AS object_schema,
+			       'TRIGGER'  AS object_type,
+			       d.description
+			  FROM pg_trigger t, pg_class c
+				LEFT OUTER JOIN pg_namespace n ON (n.oid = c.relnamespace)			
+				LEFT OUTER JOIN pg_description d ON (d.objoid = c.oid)
+			 WHERE c.relowner IN (SELECT oid FROM pg_roles WHERE rolname IN ('rif40', USER))
+			   AND c.oid = t.tgrelid
+			   AND t.tgisinternal = FALSE /* trigger function */
+		)
+		SELECT object_type, object_schema, COUNT(object_name) AS total_objects, 
+		       CASE
+				WHEN object_schema = 'pg_toast' OR
+				     object_type IN ('INDEX') 		THEN NULL
+				ELSE 					     COUNT(object_name)-COUNT(description) 
+		       END AS missing_comments
+		  FROM a
+		 GROUP BY object_type, object_schema
+		 ORDER BY 1, 2;
+		 
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR
