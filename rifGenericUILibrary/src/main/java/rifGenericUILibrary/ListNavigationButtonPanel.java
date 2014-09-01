@@ -1,16 +1,16 @@
 package rifGenericUILibrary;
 
-import javax.swing.JButton;
 import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import javax.swing.JPanel;
-import java.util.ArrayList;
 
 /**
- *
+ * A generic control panel to help support navigation in a list.  Here, the button panel
+ * uses a policy of desensitising any button that can't be used.  For example, if you're at
+ * the first item in the list, the first and previous button will become desensitised.  Whereas
+ * the {@link rifGenericLibrary.WorkflowNavigationButtonPanel} enforces the idea that you 
+ * can't skip steps, here, you can go to "Last" without having to go through "Next".
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -59,7 +59,7 @@ import java.util.ArrayList;
  *
  */
 
-public class NavigationButtonPanel {
+public class ListNavigationButtonPanel extends AbstractNavigationPanel {
 
 	// ==========================================
 	// Section Constants
@@ -69,126 +69,72 @@ public class NavigationButtonPanel {
 	// Section Properties
 	// ==========================================
 
-	private ArrayList<ActionListener> actionListeners;
-
-	private UserInterfaceFactory userInterfaceFactory;
-
 	private JPanel panel;
 	
-	private JButton startAgainButton;
 	
-	private JButton firstButton;
-	private JButton previousButton;
-	private JButton nextButton;
-	private JButton lastButton;
-		
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public NavigationButtonPanel(
+	public ListNavigationButtonPanel(
 		final UserInterfaceFactory userInterfaceFactory) {
 		
-		this.userInterfaceFactory = userInterfaceFactory;
+		super(userInterfaceFactory);
 
-		
-		String firstButtonText
-			= RIFGenericUIMessages.getMessage("buttons.first.label");
-		firstButton
-			= userInterfaceFactory.createButton(firstButtonText);
-
-		String previousButtonText
-			= RIFGenericUIMessages.getMessage("buttons.previous.label");
-		previousButton
-			= userInterfaceFactory.createButton(previousButtonText);
-
-		String nextButtonText
-			= RIFGenericUIMessages.getMessage("buttons.next.label");
-		nextButton
-			= userInterfaceFactory.createButton(nextButtonText);
-		
-		String lastButtonText
-			= RIFGenericUIMessages.getMessage("buttons.last.label");
-		lastButton
-			= userInterfaceFactory.createButton(lastButtonText);		
+		panel = createPanel();
 	}
 
-	public void startAgainButton(JButton resetButton) {
-		this.startAgainButton = startAgainButton;
+	private JPanel createPanel() {
+		JPanel panel = userInterfaceFactory.createPanel();
+		GridBagConstraints panelGC = userInterfaceFactory.createGridBagConstraints();
+		panelGC.anchor = GridBagConstraints.SOUTHEAST;		
+		
+		panel.add(firstButton, panelGC);
+		panelGC.gridx++;
+		panel.add(previousButton, panelGC);
+		panelGC.gridx++;
+		panel.add(nextButton, panelGC);
+		panelGC.gridx++;
+		panel.add(lastButton, panelGC);
+		
+		return panel;
 	}
 	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	
-	public boolean isFirstButton(
-		final Object item) {
-		
-		if (item == null) {
-			return false;
-		}
-		return firstButton.equals(item);
-	}
-	
-	public JButton getFirstButton() {
-		return firstButton;
-	}
-	
-	public boolean isPreviousButton(
-			final Object item) {
-			
-		if (item == null) {
-			return false;
-		}
-		return previousButton.equals(item);
-	}
-		
-	public JButton getPreviousButton() {
-		return previousButton;
-	}
-	
-	public boolean isNextButton(
-			final Object item) {
-			
-		if (item == null) {
-			return false;
-		}
-		return nextButton.equals(item);
-	}
-		
-	public JButton getNextButton() {
-		return nextButton;
-	}
-	
-	public boolean isLastButton(
-			final Object item) {
-			
-		if (item == null) {
-			return false;
-		}
-		return lastButton.equals(item);
-	}
-		
-	public JButton getLastButton() {
-		return lastButton;
-	}
-		
-	public void indicateBeginningState() {
+	public void showFirstItemState() {
+		panel.removeAll();
 
 		firstButton.setEnabled(false);
 		previousButton.setEnabled(false);
 		nextButton.setEnabled(true);
+		lastButton.setEnabled(true);
+	}
+
+	public void showOnlyItemState() {
+
+		firstButton.setEnabled(false);
+		previousButton.setEnabled(false);
+		nextButton.setEnabled(false);
+		lastButton.setEnabled(false);		
+	}	
+	
+	public void showMiddleItemState() {
+
+		firstButton.setEnabled(true);
+		previousButton.setEnabled(true);
+		nextButton.setEnabled(true);
 		lastButton.setEnabled(true);		
 	}
 	
-	
-	public void indicateEndingState() {
+	public void showLastItemState() {
 
 		firstButton.setEnabled(true);
 		previousButton.setEnabled(true);
 		nextButton.setEnabled(false);
-		lastButton.setEnabled(false);
+		lastButton.setEnabled(false);		
 	}
 	
 	public void disableAllButtons() {
@@ -206,40 +152,15 @@ public class NavigationButtonPanel {
 		nextButton.setEnabled(true);
 		lastButton.setEnabled(true);		
 	}	
-	
-	public void buildUI() {
 		
-	}
-	
 	public JPanel getPanel() {
-		JPanel panel = userInterfaceFactory.createPanel();
-		GridBagConstraints panelGC 
-			= userInterfaceFactory.createGridBagConstraints();
-
-		panelGC.gridx = 0;
-		if (startAgainButton != null) {
-			panelGC.anchor = GridBagConstraints.SOUTHWEST;
-			panel.add(startAgainButton, panelGC);			
-		}
-
-		panelGC.anchor = GridBagConstraints.SOUTHEAST;
-
-		panelGC.gridx++;
-		panel.add(firstButton, panelGC);
-		panelGC.gridx++;
-		panel.add(previousButton, panelGC);
-		panelGC.gridx++;
-		panel.add(nextButton, panelGC);
-		panelGC.gridx++;
-		panel.add(lastButton, panelGC);
-		
-		return panel;		
+		return panel;
 	}
 	
 	public void addActionListener(
 		final ActionListener actionListener) {
 	
-		actionListeners.add(actionListener);
+		super.addActionListener(actionListener);
 	}
 	
 	// ==========================================
