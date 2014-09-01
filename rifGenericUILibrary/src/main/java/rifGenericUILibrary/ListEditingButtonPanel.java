@@ -127,7 +127,7 @@ public class ListEditingButtonPanel {
 
 		String copyButtonText
 			= RIFGenericUIMessages.getMessage("buttons.copy.label");
-		editButton = userInterfaceFactory.createButton(copyButtonText);
+		copyButton = userInterfaceFactory.createButton(copyButtonText);
 		
 		String deleteButtonText
 			= RIFGenericUIMessages.getMessage("buttons.delete.label");
@@ -140,6 +140,10 @@ public class ListEditingButtonPanel {
 		String importButtonText
 			= RIFGenericUIMessages.getMessage("buttons.import.label");
 		importButton = userInterfaceFactory.createButton(importButtonText);
+		
+		String exportButtonText
+			= RIFGenericUIMessages.getMessage("buttons.export.label");
+		exportButton = userInterfaceFactory.createButton(exportButtonText);
 		
 		isLeftJustified = false;
 	}
