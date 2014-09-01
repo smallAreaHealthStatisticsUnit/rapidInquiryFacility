@@ -3,9 +3,11 @@ package rifGenericUILibrary;
 
 import rifServices.util.HTMLUtility;
 
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.table.JTableHeader;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -868,6 +870,11 @@ public final class UserInterfaceFactory {
 		return table;
 	}
 	
+	
+	public JTableHeader createTableHeader() {
+		JTableHeader tableHeader = new JTableHeader();
+		return tableHeader;
+	}
 	/**
 	 * Creates a new UserInterface object.
 	 *
