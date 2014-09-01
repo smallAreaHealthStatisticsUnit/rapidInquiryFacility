@@ -2,7 +2,7 @@ package rifJobSubmissionTool.desktop.interactive;
 
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.UserInterfaceFactory;
-import rifJobSubmissionTool.system.RIFActivityStep;
+import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
@@ -140,7 +140,7 @@ public class RIFInteractiveStudySubmissionTool
 	/** The current rif job submission. */
 	private RIFStudySubmission currentRIFJobSubmission;
 	/** The rif activity state machine. */
-	private RIFActivityStateMachine rifActivityStateMachine;
+	private RIFStudySubmissionActivityStateMachine rifActivityStateMachine;
 	
 	//GUI Components
 	/** The user interface factory. */
@@ -187,7 +187,7 @@ public class RIFInteractiveStudySubmissionTool
 		this.rifSession = rifSession;
 		userInterfaceFactory = rifSession.getUIFactory();
 
-		rifActivityStateMachine = new RIFActivityStateMachine();
+		rifActivityStateMachine = new RIFStudySubmissionActivityStateMachine();
 		rifActivityStateMachine.addObserver(this);
 
 		currentRIFJobSubmission = RIFStudySubmission.newInstance();
@@ -218,7 +218,7 @@ public class RIFInteractiveStudySubmissionTool
 		
 		buildUI();
 		stepButtonNavigationPanel.setCurrentActivityStep(
-			RIFActivityStep.CREATE_OR_COPY_STUDY_STEP, 
+			RIFStudySubmissionActivityStep.CREATE_OR_COPY_STUDY_STEP, 
 			createOrCopyStudyStepPanel);
 		rifActivityStateMachine.firstActivityStep();
 	}
@@ -346,31 +346,31 @@ public class RIFInteractiveStudySubmissionTool
 		Observable observable, 
 		Object argument) {
 		
-		RIFActivityStep currentRIFActivityStep
-			= (RIFActivityStep) argument;
+		RIFStudySubmissionActivityStep currentRIFActivityStep
+			= (RIFStudySubmissionActivityStep) argument;
 
-		if (currentRIFActivityStep == RIFActivityStep.CREATE_OR_COPY_STUDY_STEP) {
+		if (currentRIFActivityStep == RIFStudySubmissionActivityStep.CREATE_OR_COPY_STUDY_STEP) {
 			currentActivityPanel = createOrCopyStudyStepPanel;
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.DESCRIBE_STUDY) {
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.DESCRIBE_STUDY) {
 			currentActivityPanel = describeStudyStepPanel;
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.CHOOSE_STUDY_AREA) {
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.CHOOSE_STUDY_AREA) {
 			currentActivityPanel = specifyStudyAreaStepPanel;
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.CHOOSE_COMPARISON_AREA) {
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.CHOOSE_COMPARISON_AREA) {
 			currentActivityPanel = specifyComparisonAreaStepPanel;
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.SPECIFY_INVESTIGATIONS) {
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.SPECIFY_INVESTIGATIONS) {
 			currentActivityPanel = specifyInvestigationsStepPanel;
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.SPECIFY_REPORTS) {
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.SPECIFY_REPORTS) {
 			currentActivityPanel = specifyReportingOptionsStepPanel;
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.PREVIEW) {
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.PREVIEW) {
 			currentActivityPanel = previewStepPanel;
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.SUBMIT_STUDY) {
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.SUBMIT_STUDY) {
 			currentActivityPanel = createOrCopyStudyStepPanel;
 		}
 
