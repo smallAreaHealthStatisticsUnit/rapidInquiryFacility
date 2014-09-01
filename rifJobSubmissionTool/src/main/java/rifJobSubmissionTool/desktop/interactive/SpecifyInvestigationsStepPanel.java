@@ -1,6 +1,6 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifJobSubmissionTool.system.RIFActivityStep;
+import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
@@ -163,7 +163,7 @@ class SpecifyInvestigationsStepPanel
 		String panelTitleLabelText
 			= RIFJobSubmissionToolMessages.getMessage("specifyInvestigationsStepPanel.title");
 		int stepNumber
-			= RIFActivityStep.SPECIFY_INVESTIGATIONS.getStepNumber() + 1;
+			= RIFStudySubmissionActivityStep.SPECIFY_INVESTIGATIONS.getStepNumber() + 1;
 		setPanelTitleInformation(stepNumber, panelTitleLabelText);
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
@@ -452,7 +452,7 @@ class SpecifyInvestigationsStepPanel
 			= (DiseaseMappingStudy) originalJobSubmission.getStudy();
 		originalStudy.setInvestigations(workingCopyInvestigations);
 
-		rifSession.addCommittedActivityStep(RIFActivityStep.SPECIFY_INVESTIGATIONS);
+		rifSession.addCommittedActivityStep(RIFStudySubmissionActivityStep.SPECIFY_INVESTIGATIONS);
 	}
 
 }

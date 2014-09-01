@@ -3,7 +3,7 @@ package rifJobSubmissionTool.desktop.interactive;
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.OrderedListPanel;
 import rifGenericUILibrary.UserInterfaceFactory;
-import rifJobSubmissionTool.system.RIFActivityStep;
+import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFSession;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
@@ -177,7 +177,7 @@ class CreateOrCopyStudyStepPanel
 		String panelTitleLabelText
 			= RIFJobSubmissionToolMessages.getMessage("createOrCopyStudyStepPanel.title");
 		int stepNumber
-			= RIFActivityStep.CREATE_OR_COPY_STUDY_STEP.getStepNumber() + 1;
+			= RIFStudySubmissionActivityStep.CREATE_OR_COPY_STUDY_STEP.getStepNumber() + 1;
 		setPanelTitleInformation(stepNumber, panelTitleLabelText);
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
@@ -376,7 +376,7 @@ class CreateOrCopyStudyStepPanel
 			rifSession.setCurrentDiseaseMappingStudy(blankDiseaseMappingStudy);
 		}
 		currentRIFJobSubmission.setNewRecord(false);
-		rifSession.addCommittedActivityStep(RIFActivityStep.CREATE_OR_COPY_STUDY_STEP);		
+		rifSession.addCommittedActivityStep(RIFStudySubmissionActivityStep.CREATE_OR_COPY_STUDY_STEP);		
 	}
 }
 

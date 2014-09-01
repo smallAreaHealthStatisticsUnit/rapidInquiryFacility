@@ -1,7 +1,7 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 
-import rifJobSubmissionTool.system.RIFActivityStep;
+import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
@@ -597,7 +597,7 @@ class SpecifyReportingOptionsStepPanel
 		//rif output options to indicate selection
 
 		clearTickedReportingOptions();
-		if (rifSession.isActivityStepCommitted(RIFActivityStep.SPECIFY_REPORTS)) {
+		if (rifSession.isActivityStepCommitted(RIFStudySubmissionActivityStep.SPECIFY_REPORTS)) {
 			ArrayList<RIFOutputOption> currentRIFOutputOptions
 				= rifJobSubmission.getRIFOutputOptions();
 			tickReportingOptions(currentRIFOutputOptions);
@@ -665,6 +665,6 @@ class SpecifyReportingOptionsStepPanel
 			= getCurrentlySelectedRIFOutputOptions();		
 		originalJobSubmission.setRIFOutputOptions(currentRIFOutputOptions);
 
-		rifSession.addCommittedActivityStep(RIFActivityStep.SPECIFY_REPORTS);
+		rifSession.addCommittedActivityStep(RIFStudySubmissionActivityStep.SPECIFY_REPORTS);
 	}
 }

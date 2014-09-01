@@ -2,7 +2,7 @@ package rifJobSubmissionTool.desktop.interactive;
 
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
-import rifJobSubmissionTool.system.RIFActivityStep;
+import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
@@ -147,7 +147,7 @@ class SpecifyStudyAreaStepPanel
 		String panelTitleLabelText
 			= RIFJobSubmissionToolMessages.getMessage("specifyStudyAreaStepPanel.title");
 		int stepNumber
-			= RIFActivityStep.CHOOSE_STUDY_AREA.getStepNumber() + 1;
+			= RIFStudySubmissionActivityStep.CHOOSE_STUDY_AREA.getStepNumber() + 1;
 		setPanelTitleInformation(stepNumber, panelTitleLabelText);
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
@@ -249,7 +249,7 @@ class SpecifyStudyAreaStepPanel
 			= (DiseaseMappingStudy) originalJobSubmission.getStudy();
 		currentGeography = originalStudy.getGeography();
 
-		if (rifSession.isActivityStepCommitted(RIFActivityStep.CHOOSE_STUDY_AREA)) {
+		if (rifSession.isActivityStepCommitted(RIFStudySubmissionActivityStep.CHOOSE_STUDY_AREA)) {
 			//Derive the working copy based on the study area that 
 			//has already been committed in the master job submission
 			
@@ -316,7 +316,7 @@ class SpecifyStudyAreaStepPanel
 			= (DiseaseMappingStudy) originalJobSubmission.getStudy();
 		originalStudy.setDiseaseMappingStudyArea(currentDiseaseMappingStudyArea);
 		
-		rifSession.addCommittedActivityStep(RIFActivityStep.CHOOSE_STUDY_AREA);
+		rifSession.addCommittedActivityStep(RIFStudySubmissionActivityStep.CHOOSE_STUDY_AREA);
 	}
 	
 }

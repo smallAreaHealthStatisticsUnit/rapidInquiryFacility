@@ -2,10 +2,15 @@ package rifJobSubmissionTool.desktop.interactive;
 
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.UserInterfaceFactory;
-import rifJobSubmissionTool.system.RIFActivityStep;
+import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
+
+
+import rifGenericUILibrary.WorkflowNavigationButtonPanel;
+
+
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
@@ -107,19 +112,9 @@ class RIFStepButtonNavigationPanel
 	/** The rif session. */
 	private RIFSession rifSession;
 	/** The rif activity state machine. */
-	private RIFActivityStateMachine rifActivityStateMachine;
+	private RIFStudySubmissionActivityStateMachine rifActivityStateMachine;
 
-	
-	/** The include start again button. */
-	private boolean includeStartAgainButton;
-	/** The include back button. */
-	private boolean includeBackButton;	
-	/** The include next button. */
-	private boolean includeNextButton;
-	/** The include submit button. */
-	private boolean includeSubmitButton;
-	/** The include quit button. */
-	private boolean includeQuitButton;
+	private WorkflowNavigationButtonPanel navigationButtonPanel;
 	
 	//GUI Components
 	/** The parent dialog. */
@@ -130,16 +125,8 @@ class RIFStepButtonNavigationPanel
 	private UserInterfaceFactory userInterfaceFactory;	
 	/** The panel. */
 	private JPanel panel;
-	/** The start again button. */
+	
 	private JButton startAgainButton;
-	/** The back button. */
-	private JButton backButton;
-	/** The next button. */
-	private JButton nextButton;
-	/** The submit button. */
-	private JButton submitButton;
-	/** The quit button. */
-	private JButton quitButton;
 	
 	// ==========================================
 	// Section Construction
@@ -155,7 +142,7 @@ class RIFStepButtonNavigationPanel
 	public RIFStepButtonNavigationPanel(
 		RIFSession rifSession,
 		JDialog parentDialog,
-		RIFActivityStateMachine rifActivityStateMachine) {
+		RIFStudySubmissionActivityStateMachine rifActivityStateMachine) {
 		
 		this.rifSession = rifSession;
 		this.userInterfaceFactory = rifSession.getUIFactory();
@@ -163,87 +150,19 @@ class RIFStepButtonNavigationPanel
 		this.rifActivityStateMachine = rifActivityStateMachine;
 		
 		panel = userInterfaceFactory.createBorderLayoutPanel();
+		navigationButtonPanel 
+			= new WorkflowNavigationButtonPanel(
+				userInterfaceFactory);
 		String startAgainButtonText
-			= RIFJobSubmissionToolMessages.getMessage("general.button.startAgain.label");
+			= RIFJobSubmissionToolMessages.getMessage("buttons.startAgain.label");
 		startAgainButton
 			= userInterfaceFactory.createButton(startAgainButtonText);
-		startAgainButton.addActionListener(this);
-
-		String backButtonText
-			= RIFJobSubmissionToolMessages.getMessage("general.button.back.label");
-		backButton
-			= userInterfaceFactory.createButton(backButtonText);
-		backButton.addActionListener(this);
+		navigationButtonPanel.startAgainButton(startAgainButton);
 		
-		String nextButtonText
-			= RIFJobSubmissionToolMessages.getMessage("general.buttons.next.label");
-		nextButton
-			= userInterfaceFactory.createButton(nextButtonText);
-		nextButton.addActionListener(this);
-		
-		String submitButtonText
-			= RIFJobSubmissionToolMessages.getMessage("general.button.submit.label");
-		submitButton
-			= userInterfaceFactory.createButton(submitButtonText);
-		submitButton.setBackground(Color.RED);
-		submitButton.addActionListener(this);
-		
-		String quitButtonText
-			= RIFJobSubmissionToolMessages.getMessage("general.button.quit.label");
-		quitButton
-			= userInterfaceFactory.createButton(quitButtonText);
-		quitButton.addActionListener(this);
-		
-		includeStartAgainButton = false;
-		includeBackButton = false;
-		includeNextButton = true;
-		includeSubmitButton = false;
-		includeQuitButton = true;
-		rebuildUI();		
+		navigationButtonPanel.addActionListener(this);
+		navigationButtonPanel.showStartState();
 	}
 
-	/**
-	 * Rebuild ui.
-	 */
-	public void rebuildUI() {
-		
-		panel.removeAll();
-		
-		JPanel leftPanel = userInterfaceFactory.createPanel();	
-		GridBagConstraints leftPanelGC 
-			= userInterfaceFactory.createGridBagConstraints();
-		leftPanelGC.anchor = GridBagConstraints.SOUTHEAST;
-		if (includeStartAgainButton == true) {
-			leftPanelGC.anchor = GridBagConstraints.SOUTHWEST;
-			leftPanel.add(startAgainButton, leftPanelGC);
-		}		
-		panel.add(leftPanel, BorderLayout.WEST);
-		
-		//show the other buttons flushed right on the screen
-		JPanel rightPanel = userInterfaceFactory.createPanel();	
-		GridBagConstraints rightPanelGC 
-			= userInterfaceFactory.createGridBagConstraints();
-		rightPanelGC.anchor = GridBagConstraints.SOUTHEAST;		
-		if (includeBackButton == true) {
-			rightPanel.add(backButton, rightPanelGC);
-			rightPanelGC.gridx++;
-		}		
-		if (includeNextButton == true) {
-			rightPanel.add(nextButton, rightPanelGC);
-			rightPanelGC.gridx++;
-		}		
-		
-		if (includeSubmitButton == true) {
-			rightPanel.add(submitButton, rightPanelGC);
-		}
-		
-		if (includeQuitButton == true) {
-			rightPanel.add(quitButton, rightPanelGC);			
-		}
-		panel.add(rightPanel, BorderLayout.EAST);
-		
-		panel.updateUI();
-	}
 	
 	// ==========================================
 	// Section Accessors and Mutators
@@ -256,13 +175,13 @@ class RIFStepButtonNavigationPanel
 	 */
 	public JPanel getPanel() {
 		
-		return panel;
+		return navigationButtonPanel.getPanel();
 	}
 
 	/**
 	 * Start again.
 	 */
-	public void startAgain() {
+	private void startAgain() {
 		
 		rifActivityStateMachine.firstActivityStep();
 	}
@@ -270,14 +189,14 @@ class RIFStepButtonNavigationPanel
 	/**
 	 * Back.
 	 */
-	public void back() {
+	private void back() {
 		rifActivityStateMachine.previousActivityStep();
 	}
 	
 	/**
 	 * Next.
 	 */
-	public void next() {
+	private void next() {
 		
 		try {
 			currentStepPanel.commitChanges();
@@ -291,7 +210,7 @@ class RIFStepButtonNavigationPanel
 	/**
 	 * Submit.
 	 */
-	public void submit() {
+	private void submit() {
 		
 		try {
 			currentStepPanel.commitChanges();		
@@ -331,7 +250,7 @@ class RIFStepButtonNavigationPanel
 	/**
 	 * Quit.
 	 */
-	public void quit() {
+	private void quit() {
 		
 		ShutdownManager shutDownManager
 			= new ShutdownManager(parentDialog, rifSession);
@@ -356,60 +275,31 @@ class RIFStepButtonNavigationPanel
 	 * @param currentStepPanel the current step panel
 	 */
 	public void setCurrentActivityStep(
-		RIFActivityStep currentRIFActivityStep,
+		RIFStudySubmissionActivityStep currentRIFActivityStep,
 		AbstractStepPanel currentStepPanel) {
 		
 		this.currentStepPanel = currentStepPanel;
 		
-		if (currentRIFActivityStep == RIFActivityStep.CREATE_OR_COPY_STUDY_STEP) {
-			includeStartAgainButton = false;
-			includeBackButton = false;
-			includeNextButton = true;
-			includeQuitButton = true;
-			rebuildUI();
+		if (currentRIFActivityStep == RIFStudySubmissionActivityStep.CREATE_OR_COPY_STUDY_STEP) {
+			navigationButtonPanel.showStartState();
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.DESCRIBE_STUDY) {
-			includeStartAgainButton = true;
-			includeBackButton = false;
-			includeNextButton = true;
-			includeQuitButton = true;
-			rebuildUI();			
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.DESCRIBE_STUDY) {
+			navigationButtonPanel.showMiddleState();
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.CHOOSE_STUDY_AREA) {
-			includeStartAgainButton = true;
-			includeBackButton = true;
-			includeNextButton = true;
-			includeQuitButton = true;
-			rebuildUI();	
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.CHOOSE_STUDY_AREA) {
+			navigationButtonPanel.showMiddleState();
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.CHOOSE_COMPARISON_AREA) {
-			includeStartAgainButton = true;
-			includeBackButton = true;
-			includeNextButton = true;
-			includeQuitButton = true;
-			rebuildUI();
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.CHOOSE_COMPARISON_AREA) {
+			navigationButtonPanel.showMiddleState();
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.SPECIFY_INVESTIGATIONS) {
-			includeStartAgainButton = true;
-			includeBackButton = true;
-			includeNextButton = true;
-			includeQuitButton = true;
-			rebuildUI();		
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.SPECIFY_INVESTIGATIONS) {
+			navigationButtonPanel.showMiddleState();
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.SPECIFY_REPORTS) {
-			includeStartAgainButton = true;
-			includeBackButton = true;
-			includeNextButton = true;
-			includeQuitButton = true;
-			rebuildUI();			
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.SPECIFY_REPORTS) {
+			navigationButtonPanel.showMiddleState();
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.PREVIEW) {
-			includeStartAgainButton = true;
-			includeBackButton = true;
-			includeNextButton = false;
-			includeSubmitButton = true;
-			includeQuitButton = true;
-			rebuildUI();
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.PREVIEW) {
+			navigationButtonPanel.showEndState();
 		}	
 		else {
 			assert false;
@@ -426,19 +316,21 @@ class RIFStepButtonNavigationPanel
 
 		Object button = event.getSource();
 		
-		if (button == startAgainButton) {
+		System.out.println("RIFStepButtonNavigationPanel actionPerformed 1");
+		if (navigationButtonPanel.isStartAgainButton(button)) {
 			startAgain();
 		}
-		else if (button == backButton) {
+		else if (navigationButtonPanel.isPreviousButton(button)) {
 			back();
 		}
-		else if (button == nextButton) {
+		else if (navigationButtonPanel.isNextButton(button)) {
+			System.out.println("RIFStepButtonNavigationPanel actionPerformed 2");
 			next();
 		}
-		else if (button == quitButton) {
+		else if (navigationButtonPanel.isQuitButton(button)) {
 			quit();
 		}	
-		else if (button == submitButton) {
+		else if (navigationButtonPanel.isSubmitButton(button)) {
 			submit();
 		}
 	}

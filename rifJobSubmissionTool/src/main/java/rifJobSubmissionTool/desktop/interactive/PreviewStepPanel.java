@@ -2,7 +2,7 @@ package rifJobSubmissionTool.desktop.interactive;
 
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.UserInterfaceFactory;
-import rifJobSubmissionTool.system.RIFActivityStep;
+import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
@@ -155,7 +155,7 @@ class PreviewStepPanel extends AbstractStepPanel {
 		String panelTitleLabelText
 			= RIFJobSubmissionToolMessages.getMessage("previewStepPanel.title");
 		int stepNumber
-			= RIFActivityStep.CHOOSE_STUDY_AREA.getStepNumber() + 1;
+			= RIFStudySubmissionActivityStep.CHOOSE_STUDY_AREA.getStepNumber() + 1;
 		setPanelTitleInformation(stepNumber, panelTitleLabelText);
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
@@ -281,7 +281,7 @@ class PreviewStepPanel extends AbstractStepPanel {
 			= (DiseaseMappingStudy) originalJobSubmission.getStudy();
 		originalStudy.setComparisonArea(workingCopyComparisonArea);
 		
-		rifSession.addCommittedActivityStep(RIFActivityStep.CHOOSE_COMPARISON_AREA);
+		rifSession.addCommittedActivityStep(RIFStudySubmissionActivityStep.CHOOSE_COMPARISON_AREA);
 		
 		
 		AbstractStudy study

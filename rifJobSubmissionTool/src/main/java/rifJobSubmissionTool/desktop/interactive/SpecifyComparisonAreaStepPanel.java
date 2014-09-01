@@ -2,7 +2,7 @@ package rifJobSubmissionTool.desktop.interactive;
 
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
-import rifJobSubmissionTool.system.RIFActivityStep;
+import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
@@ -148,7 +148,7 @@ class SpecifyComparisonAreaStepPanel
 		String panelTitleLabelText
 			= RIFJobSubmissionToolMessages.getMessage("specifyComparisonAreaStepPanel.title");
 		int stepNumber
-			= RIFActivityStep.CHOOSE_STUDY_AREA.getStepNumber() + 1;
+			= RIFStudySubmissionActivityStep.CHOOSE_STUDY_AREA.getStepNumber() + 1;
 		setPanelTitleInformation(stepNumber, panelTitleLabelText);
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
@@ -245,7 +245,7 @@ class SpecifyComparisonAreaStepPanel
 		DiseaseMappingStudy originalStudy
 			= (DiseaseMappingStudy) originalJobSubmission.getStudy();
 		currentGeography = originalStudy.getGeography();
-		if (rifSession.isActivityStepCommitted(RIFActivityStep.CHOOSE_COMPARISON_AREA)) {
+		if (rifSession.isActivityStepCommitted(RIFStudySubmissionActivityStep.CHOOSE_COMPARISON_AREA)) {
 			//Derive the working copy based on the study area that 
 			//has already been committed in the master job submission
 
@@ -306,7 +306,7 @@ class SpecifyComparisonAreaStepPanel
 			= (DiseaseMappingStudy) originalJobSubmission.getStudy();
 		
 		originalStudy.setComparisonArea(workingCopyComparisonArea);		
-		rifSession.addCommittedActivityStep(RIFActivityStep.CHOOSE_COMPARISON_AREA);
+		rifSession.addCommittedActivityStep(RIFStudySubmissionActivityStep.CHOOSE_COMPARISON_AREA);
 	}
 	
 }
