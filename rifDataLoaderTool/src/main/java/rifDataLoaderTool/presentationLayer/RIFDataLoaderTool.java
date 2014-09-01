@@ -1,5 +1,13 @@
 package rifDataLoaderTool.presentationLayer;
 
+import rifDataLoaderTool.system.RIFDataLoaderMessages;
+
+import rifGenericUILibrary.UserInterfaceFactory;
+import javax.swing.JDialog;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Dimension;
+import javax.swing.JPanel;
 
 
 /**
@@ -61,13 +69,30 @@ public class RIFDataLoaderTool {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private UserInterfaceFactory userInterfaceFactory;
+	private JDialog dialog;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public RIFDataLoaderTool() {
+	public RIFDataLoaderTool(
+		final UserInterfaceFactory userInterfaceFactory) {
+		String dialogTitle
+			= RIFDataLoaderMessages.getMessage("rifDataLoaderTool.title");
+		dialog
+			= userInterfaceFactory.createDialog(dialogTitle);
+		JPanel mainPanel
+			= userInterfaceFactory.createPanel();
 
+		
+		
+		
+		
+		dialog.getContentPane().add(mainPanel);
+		
+		dialog.setModal(true);
+		dialog.setSize(new Dimension(500, 500));
 	}
 
 	// ==========================================
