@@ -195,6 +195,8 @@ class MapAreaListSelectionPanel
 		
 		mapImagePanel = new MapImagePanel();
 		panel = userInterfaceFactory.createPanel();
+		
+		basketControlButtonPanel = new ListEditingButtonPanel(userInterfaceFactory);
 	}
 
 	/**
