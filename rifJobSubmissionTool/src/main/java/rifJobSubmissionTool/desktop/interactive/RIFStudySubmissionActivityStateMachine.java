@@ -1,6 +1,6 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifJobSubmissionTool.system.RIFActivityStep;
+import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 
 import java.util.Observable;
 
@@ -68,14 +68,14 @@ import java.util.Observable;
  *
  */
 
-class RIFActivityStateMachine 
+class RIFStudySubmissionActivityStateMachine 
 	extends Observable {
 	// ==========================================
 	// Section Constants
 	// ==========================================
 
 	/** The current rif activity step. */
-	public RIFActivityStep currentRIFActivityStep;
+	public RIFStudySubmissionActivityStep currentRIFActivityStep;
 	
 	// ==========================================
 	// Section Properties
@@ -88,7 +88,7 @@ class RIFActivityStateMachine
 	/**
 	 * Instantiates a new RIF activity state machine.
 	 */
-	public RIFActivityStateMachine() {
+	public RIFStudySubmissionActivityStateMachine() {
 
 	}
 
@@ -101,7 +101,7 @@ class RIFActivityStateMachine
 	public void firstActivityStep() {
 		
 		currentRIFActivityStep
-			= RIFActivityStep.getFirstActivityStep();
+			= RIFStudySubmissionActivityStep.getFirstActivityStep();
 		setChanged();
 		notifyObservers(currentRIFActivityStep);
 	}
@@ -133,7 +133,7 @@ class RIFActivityStateMachine
 	 */
 	public void submit() {
 		
-		notifyObservers(RIFActivityStep.SUBMIT_STUDY);
+		notifyObservers(RIFStudySubmissionActivityStep.SUBMIT_STUDY);
 	}
 	
 	/**
@@ -143,7 +143,7 @@ class RIFActivityStateMachine
 	 */
 	public int getActivityStepCount() {
 		
-		return RIFActivityStep.getTotalSteps();
+		return RIFStudySubmissionActivityStep.getTotalSteps();
 	}
 	
 	// ==========================================
