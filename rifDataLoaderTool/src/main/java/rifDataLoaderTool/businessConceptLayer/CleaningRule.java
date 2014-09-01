@@ -64,6 +64,8 @@ public interface CleaningRule {
 	
 	public String getName();
 	public String getDescription();
+	
+	public String cleanValue(String originalValue);
 }
 
 

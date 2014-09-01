@@ -140,6 +140,13 @@ public class SimpleSubstitutionCleaningRule
 		return description;
 	}
 	
+	public String cleanValue(
+		final String originalValue) {
+		
+		//TODO: fill this in properly
+		return originalValue;
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
