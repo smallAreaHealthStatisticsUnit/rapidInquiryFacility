@@ -106,6 +106,7 @@ $$;
 				LEFT OUTER JOIN pg_namespace n ON (n.oid = c.relnamespace)			
 				LEFT OUTER JOIN pg_description d ON (d.objoid = c.oid)
 			 WHERE c.relowner IN (SELECT oid FROM pg_roles WHERE rolname IN ('rif40', USER))
+			   AND c.relkind        NOT IN ('t'			/* TOAST Table */, 'i'			/* Index */)
 			UNION
 			SELECT p.proname AS object_name, 
 			       n.nspname AS object_schema,
@@ -126,46 +127,40 @@ $$;
 			 WHERE c.relowner IN (SELECT oid FROM pg_roles WHERE rolname IN ('rif40', USER))
 			   AND c.oid = t.tgrelid
 			   AND t.tgisinternal = FALSE /* trigger function */
-		)
-		SELECT object_type, object_schema, COUNT(object_name) AS total_objects, 
-		       CASE
-				WHEN object_schema = 'pg_toast' OR
-				     object_type IN ('INDEX') 		THEN NULL
-				ELSE 					     COUNT(object_name)-COUNT(description) 
-		       END AS missing_comments
-		  FROM a
-		 GROUP BY object_type, object_schema
-		 ORDER BY 1, 2;
+)
+SELECT object_type, object_schema, object_name
+  FROM a
+ ORDER BY 1, 2, 3;
 		 
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR
-		SELECT 'temporary table' object_type, a.oid, r.rolname||'.'||a.relname object_name 				/* Temporary tables */
+		SELECT 'temporary table' object_type, a.oid, r.rolname||'.'||a.relname object_name 		/* Temporary tables */
  		 FROM pg_roles r, pg_class a
 			LEFT OUTER JOIN pg_namespace n ON (n.oid = a.relnamespace)			
 		 WHERE a.relowner       = (SELECT oid FROM pg_roles WHERE rolname = USER)
-		   AND a.relkind        = 'r' 										/* Relational table */
-		   AND a.relpersistence = 't' 										/* Persistence: temporary */
+		   AND a.relkind        = 'r' 															/* Relational table */
+		   AND a.relpersistence = 't'															/* Persistence: temporary */
 		   AND a.relowner       = r.oid
 		   AND n.nspname        LIKE 'pg_temp%'
 		   AND r.rolname	= USER
 		UNION
-		SELECT 'FDW table' object_type, a.oid, n.nspname||'.'||a.relname object_name		/* FDW tables */
+		SELECT 'FDW table' object_type, a.oid, n.nspname||'.'||a.relname object_name			/* FDW tables */
 		  FROM pg_foreign_table b, pg_roles r, pg_class a
 			LEFT OUTER JOIN pg_namespace n ON (n.oid = a.relnamespace)			
 		 WHERE b.ftrelid = a.oid
 		   AND a.relowner = (SELECT oid FROM pg_roles WHERE rolname = USER)
 		   AND a.relowner = r.oid
-		   AND COALESCE(n.nspname, r.rolname) = USER
+/*		   AND COALESCE(n.nspname, r.rolname) = USER */
 		UNION
-		SELECT 'local table' object_type, c.oid, tablename object_name							/* Local tables */
+		SELECT 'table' object_type, c.oid, tablename object_name								/* Local tables */
 		  FROM pg_tables t, pg_class c
 		 WHERE t.tableowner = USER
-		   AND t.schemaname = USER
+/*		   AND t.schemaname = USER */
 		   AND c.relowner   = (SELECT oid FROM pg_roles WHERE rolname = USER)
 		   AND c.relname    = t.tablename
-		   AND c.relkind    = 'r' 										/* Relational table */
-		   AND c.relpersistence IN ('p', 'u') 									/* Persistence: permanent/unlogged */
+		   AND c.relkind    = 'r' 																/* Relational table */
+		   AND c.relpersistence IN ('p', 'u') 													/* Persistence: permanent/unlogged */
 		UNION
 		SELECT 'view' object_type, NULL oid, viewname object_name								/* Local views */
 		  FROM pg_views v
@@ -184,7 +179,7 @@ DECLARE
 		 WHERE a.relkind = 'S' 
 		   AND a.relowner = (SELECT oid FROM pg_roles WHERE rolname = USER)
 		   AND a.relowner = r.oid
-		   AND COALESCE(n.nspname, r.rolname) = USER
+/*		   AND COALESCE(n.nspname, r.rolname) = USER */
 		UNION
 		SELECT l.lanname||' function' object_type, 
 		       p.oid,
@@ -199,13 +194,17 @@ DECLARE
 --
 	c1_rec 		RECORD;
 --
-	i 			INTEGER:=0;
+	errors 		INTEGER:=0;
 	sql_stmt	VARCHAR;
 BEGIN
 --
 	FOR c1_rec IN c1 LOOP
 		IF c1_rec.object_type = 'temporary table' THEN
 			RAISE NOTICE 'Found undeleted %: %', c1_rec.object_type, c1_rec.object_name;
+		ELSIF c1_rec.object_name LIKE 'x_uk91%' OR c1_rec.object_name LIKE 'x_ew01%' THEN
+			RAISE INFO 'Ignored undeleted UK91/EW01 geographical table %: %', c1_rec.object_type, c1_rec.object_name;
+		ELSIF c1_rec.object_type = 'sequence' AND (c1_rec.object_name LIKE 'gis.x_uk91%' OR c1_rec.object_name LIKE 'gis.x_ew01%') THEN
+			RAISE INFO 'Ignored undeleted UK91/EW01 geographical sequence %: %', c1_rec.object_type, c1_rec.object_name;
 		ELSE
 			RAISE WARNING 'Found undeleted %: %', c1_rec.object_type, c1_rec.object_name;
 			IF c1_rec.object_type IN ('plpgsql function', 'sql function') THEN
@@ -214,8 +213,14 @@ BEGIN
 				ELSE
 					sql_stmt:=sql_stmt||'DROP FUNCTION IF EXISTS '||c1_rec.object_name||'('||pg_get_function_arguments(c1_rec.oid)||');'||E'\n';
 				END IF;
+			ELSIF c1_rec.object_type IN ('sequence', 'table', 'view') THEN
+				IF sql_stmt IS NULL THEN
+					sql_stmt:=E'\n'||'DROP '||UPPER(c1_rec.object_type)||' IF EXISTS '||c1_rec.object_name||';'||E'\n';
+				ELSE
+					sql_stmt:=sql_stmt||'DROP '||UPPER(c1_rec.object_type)||' IF EXISTS '||c1_rec.object_name||';'||E'\n';
+				END IF;
 			END IF;
-			i:=i+1;
+			errors:=errors+1;
 		END IF;
 	END LOOP;
 --
@@ -225,8 +230,8 @@ BEGIN
 			RAISE INFO 'Drop SQL>%', sql_stmt;
 	END IF;
 --
-	IF i > 0 THEN
-		RAISE EXCEPTION 'C209xx: % undeleted tables/views/FDW tables/temporary tables/sequences/function/triggers found', i
+	IF errors > 0 THEN
+		RAISE EXCEPTION 'C209xx: % undeleted tables/views/FDW tables/temporary tables/sequences/function/triggers found', errors
 			USING HINT='See previous warnings for details';
 	ELSE
 		RAISE INFO 'C209xx: All tables/views/FDW tables/temporary tables/sequences/function/triggers deleted';

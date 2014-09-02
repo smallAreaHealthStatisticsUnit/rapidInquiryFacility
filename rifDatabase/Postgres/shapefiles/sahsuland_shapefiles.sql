@@ -87,15 +87,14 @@ $$;
 
 \echo Load SAHSULAND shapefiles - now moved to GIS schema in ../shapefiles; created using ../shapefiles/build_shapefile.sh and shp2pgsql...
 
-\set ON_ERROR_STOP OFF
-
-DROP TABLE gis.x_sahsu_cen_level4;
-DROP TABLE gis.x_sahsu_level1;
-DROP TABLE gis.x_sahsu_level2;
-DROP TABLE gis.x_sahsu_level3;
-DROP TABLE gis.x_sahsu_level4;
-
 \set ON_ERROR_STOP ON
+
+DROP TABLE IF EXISTS gis.x_sahsu_cen_level4;
+DROP TABLE IF EXISTS gis.x_sahsu_level1;
+DROP TABLE IF EXISTS gis.x_sahsu_level2;
+DROP TABLE IF EXISTS gis.x_sahsu_level3;
+DROP TABLE IF EXISTS gis.x_sahsu_level4;
+
 \set ECHO OFF
 
 --

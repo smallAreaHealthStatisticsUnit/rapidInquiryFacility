@@ -395,7 +395,10 @@ DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_createmapareaattributesource(c4getal
 );
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash(l_value character varying, l_bucket integer);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash_bucket_check(l_value integer, l_bucket integer, l_bucket_requested integer);
-
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getadjacencymatrix(l_study_id integer);
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_table_diff(test_tag character varying, table_1 character varying, table_2 character varying, 
+	table_1_columns character varying[], table_2_columns character varying[]);
+ 
 DROP TABLE IF EXISTS g_rif40_comparison_areas;
 DROP TABLE IF EXISTS g_rif40_study_areas;
 
@@ -403,6 +406,15 @@ DROP TABLE IF EXISTS simplification_points;
 DROP TABLE IF EXISTS simplification_lines;
 DROP TABLE IF EXISTS simplification_polygons;
 DROP TABLE IF EXISTS simplification_lines_join_duplicates;
+
+DROP TABLE IF EXISTS gis.x_sahsu_cen_level4;
+DROP TABLE IF EXISTS gis.x_sahsu_level1;
+DROP TABLE IF EXISTS gis.x_sahsu_level2;
+DROP TABLE IF EXISTS gis.x_sahsu_level3;
+DROP TABLE IF EXISTS gis.x_sahsu_level4;
+
+DROP TABLE IF EXISTS rif_studies.s1_extract;
+DROP TABLE IF EXISTS rif_studies.s1_map;
 
 --
 -- Views
