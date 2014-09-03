@@ -94,6 +94,34 @@ DROP TABLE IF EXISTS gis.x_sahsu_level1;
 DROP TABLE IF EXISTS gis.x_sahsu_level2;
 DROP TABLE IF EXISTS gis.x_sahsu_level3;
 DROP TABLE IF EXISTS gis.x_sahsu_level4;
+DROP TABLE IF EXISTS gis.sahsu_cen_level4;
+DROP TABLE IF EXISTS gis.sahsu_grd_level1;
+DROP TABLE IF EXISTS gis.sahsu_grd_level2;
+DROP TABLE IF EXISTS gis.sahsu_grd_level3;
+DROP TABLE IF EXISTS gis.sahsu_grd_level4;
+
+CREATE TABLE gis.sahsu_grd_level1 (
+	wkt 	VARCHAR,
+	id		int4,
+	level1 	varchar(5),
+	area 	numeric);
+CREATE TABLE gis.x_sahsu_level1 (
+	gid serial,
+	id 		int4,
+	level1 	varchar(5),
+	area 	numeric);
+ALTER TABLE gis.x_sahsu_level1 ADD PRIMARY KEY (gid);
+SELECT AddGeometryColumn('gis','x_sahsu_level1','geom','27700'/* UK */,'MULTIPOLYGON',2);
+
+\COPY gis.sahsu_grd_level1(wkt, id, level1, area) FROM  '../../GeospatialData/SAHSULAND/sahsu_grd_level1.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
+--
+-- For editor's benefit
+--
+INSERT INTO x_sahsu_level1(id, level1, area, geom) SELECT id, level1, area, ST_GeomFromText(wkt, 27700) AS geom FROM sahsu_grd_level1;
+CREATE INDEX x_sahsu_level1_geom_gist ON gis.x_sahsu_level1 USING GIST (geom);
+
+SELECT level1, area, ST_area(geom) AS n_area, ST_area(geom)/(1000*1000) AS n_area_km2, area-ST_area(geom) AS area_diff, ST_IsValid(geom) AS valid 
+  FROM gis.x_sahsu_level1;
 
 \set ECHO OFF
 
@@ -101,14 +129,19 @@ DROP TABLE IF EXISTS gis.x_sahsu_level4;
 -- Created using: ../shapefiles/build_shapefile.sh
 --
 
-\i ../shapefiles/x_sahsu_level1.sql  
-\i ../shapefiles/x_sahsu_level2.sql  
-\i ../shapefiles/x_sahsu_level3.sql  
-\i ../shapefiles/x_sahsu_level4.sql
+--\i ../shapefiles/x_sahsu_level1.sql  
+--\i ../shapefiles/x_sahsu_level2.sql  
+--\i ../shapefiles/x_sahsu_level3.sql  
+--\i ../shapefiles/x_sahsu_level4.sql
 
-\i ../shapefiles/x_sahsu_cen_level4.sql 
+--\i ../shapefiles/x_sahsu_cen_level4.sql 
  
 \set ECHO all
+DO LANGUAGE plpgsql $$
+BEGIN
+	RAISE EXCEPTION 'Test STOP';
+END;
+$$;
 
 \echo Loaded SAHSULAND shapefiles - now moved to GIS schema in ../shapefiles; created using ../shapefiles/build_shapefile.sh and shp2pgsql.
 --

@@ -413,6 +413,12 @@ DROP TABLE IF EXISTS gis.x_sahsu_level2;
 DROP TABLE IF EXISTS gis.x_sahsu_level3;
 DROP TABLE IF EXISTS gis.x_sahsu_level4;
 
+DROP TABLE IF EXISTS gis.sahsu_cen_level4;
+DROP TABLE IF EXISTS gis.sahsu_grd_level1;
+DROP TABLE IF EXISTS gis.sahsu_grd_level2;
+DROP TABLE IF EXISTS gis.sahsu_grd_level3;
+DROP TABLE IF EXISTS gis.sahsu_grd_level4;
+
 DROP TABLE IF EXISTS rif_studies.s1_extract;
 DROP TABLE IF EXISTS rif_studies.s1_map;
 

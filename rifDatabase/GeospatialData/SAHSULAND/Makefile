@@ -67,8 +67,8 @@ ifeq ($(OS),Windows_NT)
 #
 DELETE=powershell -ExecutionPolicy ByPass -file delete.ps1
 HELP=findstr "\#-" Makefile
-OGR2OGR="C:\Program Files\gdal\ogr2ogr"
-OGRINFO="C:\Program Files\gdal\ogrinfo"
+OGR2OGR="C:\Program Files (x86)\GDAL\ogr2ogr"
+OGRINFO="C:\Program Files (x86)\GDAL\ogrinfo"
 CMDSEP=&
 #
 # ADD Linux support
@@ -84,7 +84,7 @@ endif
 #
 .SUFFIXES: .shp .csv 
 .shp.csv:
-	$(OGR2OGR) -f CSV $@ $< -lco GEOMETRY=AS_WKT
+	$(OGR2OGR) -f CSV $@ $< -lco GEOMETRY=AS_WKT -lco LINEFORMAT=LF
 #
 #- Targets
 #-
