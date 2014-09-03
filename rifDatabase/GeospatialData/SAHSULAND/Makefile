@@ -53,6 +53,7 @@ SOURCES=SAHSU_GRD_Level1.shp SAHSU_GRD_Level2.shp SAHSU_GRD_Level3.shp SAHSU_GRD
 # Derive targets from sources
 #
 TARGETS=$(SOURCES:.shp=.csv)
+PROJECTIONS=$(SOURCES:.shp=.prj)
 
 #
 # Phony (i.e. not a file) targets
@@ -92,7 +93,7 @@ all: $(TARGETS)
 
 #-	
 #- test: Provide info on shapefiles. Checks all files are present and have projections
-test:
+test: $(PROJECTIONS)
 	$(foreach source,$(SOURCES),$(OGRINFO) -al -geom=NO -fields=NO -fid 0 $(source) $(CMDSEP))
 	
 #- clean: Remove WKT CSV files so completed scripts can be re-run
