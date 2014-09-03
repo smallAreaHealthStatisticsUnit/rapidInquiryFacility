@@ -1,0 +1,110 @@
+# ************************************************************************
+#
+# GIT Header
+#
+# $Format:Git ID: (%h) %ci$
+# $Id: e96a6b0aa1ba85325e1b7b0e57163d2b7707440b $
+# Version hash: $Format:%H$
+#
+# Description:
+#-
+#- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\GeospatialData
+#-
+#- DO NOT RUN THE SUBDIRECTORY MAKEFILES DIRECTLY; THEY REQUIRE ENVIRONMENT SETUP TO WORK CORRECTLY
+#-
+# Copyright:
+#
+# The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+# that rapidly addresses epidemiological and public health questions using 
+# routinely collected health and population data and generates standardised 
+# rates and relative risks for any given health outcome, for specified age 
+# and year ranges, for any given geographical area.
+#
+# Copyright 2014 Imperial College London, developed by the Small Area
+# Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+# is funded by the Public Health England as part of the MRC-PHE Centre for 
+# Environment and Health. Funding for this project has also been received 
+# from the Centers for Disease Control and Prevention.  
+#
+# This file is part of the Rapid Inquiry Facility (RIF) project.
+# RIF is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# RIF is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+# to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+# Boston, MA 02110-1301 USA
+#
+# Author:
+#
+# Peter Hambly, SAHSU
+#
+
+SOURCES=SAHSU_GRD_Level1.shp SAHSU_GRD_Level2.shp SAHSU_GRD_Level3.shp SAHSU_GRD_Level4.shp SAHSU_CEN_Level4.shp 
+
+#
+# Derive targets from sources
+#
+TARGETS=$(SOURCES:.shp=.csv)
+
+#
+# Phony (i.e. not a file) targets
+#
+.PHONY: all clean test help
+
+OS?=Unknown
+ifeq ($(OS),Windows_NT)
+#
+# Windows support
+#
+DELETE=powershell -ExecutionPolicy ByPass -file delete.ps1
+HELP=findstr "\#-" Makefile
+OGR2OGR="C:\Program Files\gdal\ogr2ogr"
+OGRINFO="C:\Program Files\gdal\ogrinfo"
+CMDSEP=&
+#
+# ADD Linux support
+#
+else
+#
+# Unsupported OS
+#
+$(error Unsupported OS: $(OS))
+endif
+#
+# Target extension depends on source, build rule
+#
+.SUFFIXES: .shp .csv 
+.shp.csv:
+	$(OGR2OGR) -f CSV $@ $< -lco GEOMETRY=AS_WKT
+#
+#- Targets
+#-
+#- all: Run all completed alter scripts [DEFAULT]
+all: $(TARGETS)
+
+#-	
+#- test: Provide info on shapefiles. Checks all files are present
+test:
+	$(foreach source,$(SOURCES),$(OGRINFO) -al -geom=NO -fields=NO -fid 0 $(source) $(CMDSEP))
+	
+#- clean: Remove logs so completed scripts can be re-run
+clean:
+	$(DELETE) $(TARGETS)
+
+#- help: Display this help
+help:
+	$(HELP)
+
+$(TARGETS): $(SOURCES)
+
+#-
+#
+# Eof
