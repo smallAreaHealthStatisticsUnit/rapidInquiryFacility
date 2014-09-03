@@ -87,15 +87,15 @@ endif
 #
 #- Targets
 #-
-#- all: Run all completed alter scripts [DEFAULT]
+#- all: Convert al shapefiles to WKT CSV [DEFAULT]
 all: $(TARGETS)
 
 #-	
-#- test: Provide info on shapefiles. Checks all files are present
+#- test: Provide info on shapefiles. Checks all files are present and have projections
 test:
 	$(foreach source,$(SOURCES),$(OGRINFO) -al -geom=NO -fields=NO -fid 0 $(source) $(CMDSEP))
 	
-#- clean: Remove logs so completed scripts can be re-run
+#- clean: Remove WKT CSV files so completed scripts can be re-run
 clean:
 	$(DELETE) $(TARGETS)
 
