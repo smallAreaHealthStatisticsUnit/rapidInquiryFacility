@@ -159,12 +159,20 @@ Description:	Check if <new study id> exists; delete extract and map tables for <
 		' RENAME TO /* New extract table */ '||new_extract_table||';';
 	sql_stmt[array_length(sql_stmt, 1)+1]:='ALTER TABLE '||LOWER(c1a_rec.map_table)||' /* Old map table */'||E'\n'||
 		' RENAME TO /* New map table */ '||new_map_table||';';
+--
+-- Updste RIF40_STUDIES extract and map tables
+--
+	sql_stmt[array_length(sql_stmt, 1)+1]:='UPDATE rif_studies.s'||new_study_id||'_extract'||E'\n'||
+'	 SET study_id = '||new_study_id;
+ 	sql_stmt[array_length(sql_stmt, 1)+1]:='UPDATE rif_studies.s'||new_study_id||'_map'||E'\n'||
+'	 SET study_id = '||new_study_id;
+--
 	IF c1a_rec.description IS NOT NULL THEN
-		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON TABLE rif_studies.'||new_extract_table||' IS ''Study 1 extract: '||c1a_rec.description||'''';
-		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON TABLE rif_studies.'||new_map_table||' IS ''Study 1 extract: '||c1a_rec.description||'''';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON TABLE rif_studies.'||new_extract_table||' IS ''Study '||new_study_id||' extract: '||c1a_rec.description||'''';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON TABLE rif_studies.'||new_map_table||' IS ''Study '||new_study_id||' extract: '||c1a_rec.description||'''';
 	ELSE
-		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON TABLE rif_studies.'||new_extract_table||' IS ''Study 1 extract: No description''';
-		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON TABLE rif_studies.'||new_map_table||' IS ''Study 1 extract: No description''';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON TABLE rif_studies.'||new_extract_table||' IS ''Study '||new_study_id||' extract: No description''';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON TABLE rif_studies.'||new_map_table||' IS ''Study '||new_study_id||' extract: No description''';
 	END IF;
 	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_rename_map_and_extract_tables', 

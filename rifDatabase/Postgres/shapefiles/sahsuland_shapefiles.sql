@@ -183,7 +183,7 @@ SELECT level1,
 	   ROUND((ST_area(geom))::NUMERIC,0) AS n_area, 
        ROUND((ST_area(geom)/(1000*1000))::NUMERIC,0) AS n_area_km2, 
 	   ROUND((area-ST_area(geom))::NUMERIC, 3) AS area_diff, 
-	   ROUND((((area-ST_area(geom))/area)*100)::NUMERIC, 7) AS area_pct, 
+	   ROUND((((area-ST_area(geom))/area)*100)::NUMERIC, 11) AS area_pct, 
 	   ST_IsValid(geom) AS valid 
   FROM gis.x_sahsu_level1;
 SELECT level2, 
@@ -191,7 +191,7 @@ SELECT level2,
 	   ROUND(ST_area(geom)::NUMERIC,0) AS n_area, 
        ROUND((ST_area(geom)/(1000*1000))::NUMERIC,0) AS n_area_km2, 
 	   ROUND((area-ST_area(geom))::NUMERIC, 3) AS area_diff, 
-	   ROUND((((area-ST_area(geom))/area)*100)::NUMERIC, 7) AS area_pct, 
+	   ROUND((((area-ST_area(geom))/area)*100)::NUMERIC, 11) AS area_pct, 
 	   ST_IsValid(geom) AS valid 
   FROM gis.x_sahsu_level2;
 SELECT ST_IsValid(geom) AS valid, COUNT(level3) AS total
