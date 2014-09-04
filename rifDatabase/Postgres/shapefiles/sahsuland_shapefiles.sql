@@ -110,19 +110,129 @@ CREATE TABLE gis.x_sahsu_level1 (
 	id 		int4,
 	level1 	varchar(5),
 	area 	numeric);
+CREATE TABLE gis.sahsu_grd_level2 (
+	wkt 	VARCHAR,
+	level2 	varchar(6),
+	area 	numeric,
+	level1 	varchar(5),
+	name 	varchar(20));
+CREATE TABLE gis.x_sahsu_level2 (
+	gid 	serial,
+	level2 	varchar(6),
+	area 	numeric,
+	level1 	varchar(5),
+	name 	varchar(20));
+CREATE TABLE gis.sahsu_grd_level3 (
+	wkt 	VARCHAR,
+	level2 	varchar(8),
+	level1 	varchar(5),
+	level3 	varchar(15));
+CREATE TABLE gis.x_sahsu_level3 (
+	gid 	serial,
+	level2 	varchar(8),
+	level1 	varchar(5),
+	level3 	varchar(15));
+CREATE TABLE gis.sahsu_grd_level4 (
+	wkt 	VARCHAR,
+	perimeter 	numeric,
+	level4 	varchar(15),
+	level2 	varchar(6),
+	level1 	varchar(5),
+	level3 	varchar(15));
+CREATE TABLE gis.x_sahsu_level4 (
+	gid 	serial,
+	perimeter 	numeric,
+	level4 	varchar(15),
+	level2 	varchar(6),
+	level1 	varchar(5),
+	level3 	varchar(15));
+	
 ALTER TABLE gis.x_sahsu_level1 ADD PRIMARY KEY (gid);
+ALTER TABLE gis.x_sahsu_level2 ADD PRIMARY KEY (gid);
+ALTER TABLE gis.x_sahsu_level3 ADD PRIMARY KEY (gid);
+ALTER TABLE gis.x_sahsu_level4 ADD PRIMARY KEY (gid);
+
 SELECT AddGeometryColumn('gis','x_sahsu_level1','geom','27700'/* UK */,'MULTIPOLYGON',2);
+SELECT AddGeometryColumn('gis','x_sahsu_level2','geom','27700'/* UK */,'MULTIPOLYGON',2);
+SELECT AddGeometryColumn('gis','x_sahsu_level3','geom','27700'/* UK */,'MULTIPOLYGON',2);
+SELECT AddGeometryColumn('gis','x_sahsu_level4','geom','27700'/* UK */,'MULTIPOLYGON',2);
 
 \COPY gis.sahsu_grd_level1(wkt, id, level1, area) FROM  '../../GeospatialData/SAHSULAND/sahsu_grd_level1.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
+\COPY gis.sahsu_grd_level2(wkt, level2, area, level1, name) FROM  '../../GeospatialData/SAHSULAND/sahsu_grd_level2.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
+\COPY gis.sahsu_grd_level3(wkt, level2, level1, level3) FROM  '../../GeospatialData/SAHSULAND/sahsu_grd_level3.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
+\COPY gis.sahsu_grd_level4(wkt, perimeter, level4, level2, level1, level3) FROM  '../../GeospatialData/SAHSULAND/sahsu_grd_level4.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
 --
 -- For editor's benefit
 --
-INSERT INTO x_sahsu_level1(id, level1, area, geom) SELECT id, level1, area, ST_GeomFromText(wkt, 27700) AS geom FROM sahsu_grd_level1;
+INSERT INTO x_sahsu_level1(id, level1, area, geom) 
+SELECT id, level1, area, ST_GeomFromText(wkt, 27700) AS geom FROM sahsu_grd_level1;
+INSERT INTO x_sahsu_level2(level2, area, level1, name, geom) 
+SELECT level2, area, level1, name, ST_Multi(ST_GeomFromText(wkt, 27700)) AS geom FROM sahsu_grd_level2;
+INSERT INTO x_sahsu_level3(level2, level1, level3, geom) 
+SELECT level2, level1, level3, ST_Multi(ST_GeomFromText(wkt, 27700)) AS geom FROM sahsu_grd_level3;
+INSERT INTO x_sahsu_level4(perimeter, level4, level2, level1, level3, geom) 
+SELECT perimeter, level4, level2, level1, level3, ST_Multi(ST_GeomFromText(wkt, 27700)) AS geom FROM sahsu_grd_level4;
+
 CREATE INDEX x_sahsu_level1_geom_gist ON gis.x_sahsu_level1 USING GIST (geom);
+CREATE INDEX x_sahsu_level2_geom_gist ON gis.x_sahsu_level2 USING GIST (geom);
+CREATE INDEX x_sahsu_level3_geom_gist ON gis.x_sahsu_level3 USING GIST (geom);
+CREATE INDEX x_sahsu_level4_geom_gist ON gis.x_sahsu_level4 USING GIST (geom);
 
-SELECT level1, area, ST_area(geom) AS n_area, ST_area(geom)/(1000*1000) AS n_area_km2, area-ST_area(geom) AS area_diff, ST_IsValid(geom) AS valid 
+SELECT level1, 
+	   ROUND(area::NUMERIC, 0) AS area, 
+	   ROUND((ST_area(geom))::NUMERIC,0) AS n_area, 
+       ROUND((ST_area(geom)/(1000*1000))::NUMERIC,0) AS n_area_km2, 
+	   ROUND((area-ST_area(geom))::NUMERIC, 3) AS area_diff, 
+	   ROUND((((area-ST_area(geom))/area)*100)::NUMERIC, 7) AS area_pct, 
+	   ST_IsValid(geom) AS valid 
   FROM gis.x_sahsu_level1;
+SELECT level2, 
+	   ROUND(area::NUMERIC, 0) AS area, 
+	   ROUND(ST_area(geom)::NUMERIC,0) AS n_area, 
+       ROUND((ST_area(geom)/(1000*1000))::NUMERIC,0) AS n_area_km2, 
+	   ROUND((area-ST_area(geom))::NUMERIC, 3) AS area_diff, 
+	   ROUND((((area-ST_area(geom))/area)*100)::NUMERIC, 7) AS area_pct, 
+	   ST_IsValid(geom) AS valid 
+  FROM gis.x_sahsu_level2;
+SELECT ST_IsValid(geom) AS valid, COUNT(level3) AS total
+  FROM gis.x_sahsu_level3
+ GROUP BY ST_IsValid(geom);
+SELECT ST_IsValid(geom) AS valid, COUNT(level4) AS total
+  FROM gis.x_sahsu_level4
+ GROUP BY ST_IsValid(geom);
 
+CREATE TABLE gis.sahsu_cen_level4 (
+	gid 		serial,
+	wkt 		VARCHAR,
+	perimeter	numeric,
+	level4		varchar(15),
+	level2		varchar(6),
+	level1		varchar(5),
+	level3		varchar(15),
+	xcentroid	numeric,
+	ycentroid 	numeric);
+CREATE TABLE gis.x_sahsu_cen_level4 (
+	gid 		serial,
+	perimeter	numeric,
+	level4		varchar(15),
+	level2		varchar(6),
+	level1		varchar(5),
+	level3		varchar(15),
+	xcentroid	numeric,
+	ycentroid 	numeric);
+ALTER TABLE gis.x_sahsu_cen_level4 ADD PRIMARY KEY (gid);
+SELECT AddGeometryColumn('gis','x_sahsu_cen_level4','geom','27700','POINT',2);
+\COPY gis.sahsu_cen_level4(wkt, perimeter, level4, level2, level1, level3, xcentroid, ycentroid) FROM  '../../GeospatialData/SAHSULAND/sahsu_cen_level4.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
+--
+-- For editor's benefit
+--
+INSERT INTO x_sahsu_cen_level4(perimeter, level4, level2, level1, level3, xcentroid, ycentroid, geom) 
+SELECT perimeter, level4, level2, level1, level3, xcentroid, ycentroid, ST_GeomFromText(wkt, 27700) AS geom FROM sahsu_cen_level4;
+ 
+SELECT ST_IsValid(geom) AS valid, COUNT(level4) AS total
+  FROM gis.x_sahsu_cen_level4
+ GROUP BY ST_IsValid(geom);
+ 
 \set ECHO OFF
 
 --
@@ -139,7 +249,7 @@ SELECT level1, area, ST_area(geom) AS n_area, ST_area(geom)/(1000*1000) AS n_are
 \set ECHO all
 DO LANGUAGE plpgsql $$
 BEGIN
-	RAISE EXCEPTION 'Test STOP';
+--	RAISE EXCEPTION 'Test STOP';
 END;
 $$;
 
