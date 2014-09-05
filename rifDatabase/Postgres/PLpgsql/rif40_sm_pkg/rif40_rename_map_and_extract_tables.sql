@@ -77,8 +77,13 @@ Description:	Check if <new study id> exists; delete extract and map tables for <
 		SELECT *
 		  FROM t_rif40_studies a
 		 WHERE l_study_id = a.study_id;
+ 	c2_renst			CURSOR(l_study_id INTEGER) FOR
+		SELECT MAX(inv_id) AS max_inv_id, MIN(inv_id) AS min_inv_id, COUNT(inv_id) AS total
+		  FROM t_rif40_investigations a
+		 WHERE l_study_id = a.study_id;
 	c1a_rec				RECORD;
 	c1b_rec				RECORD;
+	c2a_rec				RECORD;
 --
 	sql_stmt 			VARCHAR[];
 --
@@ -108,7 +113,7 @@ Description:	Check if <new study id> exists; delete extract and map tables for <
 			c1a_rec.username			/* Old study owner */,
 			c1a_rec.study_id::VARCHAR	/* Old study ID */);
 	END IF;
-
+	
 --
 -- Check if <new study id> exists
 --
@@ -129,6 +134,31 @@ Description:	Check if <new study id> exists; delete extract and map tables for <
 			c1b_rec.username			/* New study owner */,
 			c1b_rec.study_id::VARCHAR	/* New study ID */);
 	ELSE
+	
+--
+-- Get MAX, MIN inv_id for new study
+--
+		OPEN c2_renst(new_study_id);
+		FETCH c2_renst INTO c2a_rec;
+		IF NOT FOUND THEN
+			PERFORM rif40_log_pkg.rif40_error(-57604, 'rif40_rename_map_and_extract_tables', 
+				'No investigations found for new study ID %',
+				new_study_id::VARCHAR		/* New study ID */);
+		END IF;
+		CLOSE c2_renst;
+		IF c2a_rec.max_inv_id IS NULL THEN
+			PERFORM rif40_log_pkg.rif40_error(-57605, 'rif40_rename_map_and_extract_tables', 
+				'Null investigation ID found for new study ID %',
+				new_study_id::VARCHAR		/* New study ID */);
+		ELSIF c2a_rec.max_inv_id != c2a_rec.min_inv_id THEN
+			PERFORM rif40_log_pkg.rif40_error(-57606, 'rif40_rename_map_and_extract_tables', 
+				'More than 1 investigation (%) found for new study ID %; min: %, max: %',
+				c2a_rec.total::VARCHAR		/* Total */,
+				new_study_id::VARCHAR		/* New study ID */, 
+				c2a_rec.min_inv_id::VARCHAR /* Min */, 
+				c2a_rec.max_inv_id::VARCHAR /* Max */);
+		END IF;
+	
 --
 -- Delete extract and map tables for <new study id>; 
 --
@@ -136,7 +166,7 @@ Description:	Check if <new study id> exists; delete extract and map tables for <
 		sql_stmt[array_length(sql_stmt, 1)+1]:='DROP TABLE IF EXISTS '||LOWER(c1b_rec.map_table)||' /* New map table */;';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_rename_map_and_extract_tables', 
-			'[57604] Delete extract and map tables for new study: %; extract: %, map: %, description; %',
+			'[57607] Delete extract and map tables for new study: %; extract: %, map: %, description; %',
 			c1b_rec.study_id::VARCHAR		/* New study ID */,
 			c1b_rec.extract_table::VARCHAR 	/* New extract table */,
 			c1b_rec.map_table::VARCHAR 		/* New map table */,
@@ -166,6 +196,8 @@ Description:	Check if <new study id> exists; delete extract and map tables for <
 '	 SET study_id = '||new_study_id;
  	sql_stmt[array_length(sql_stmt, 1)+1]:='UPDATE rif_studies.s'||new_study_id||'_map'||E'\n'||
 '	 SET study_id = '||new_study_id;
+ 	sql_stmt[array_length(sql_stmt, 1)+1]:='UPDATE rif_studies.s'||new_study_id||'_map'||E'\n'||
+'	 SET inv_id = '||c2a_rec.max_inv_id;
 --
 	IF c1a_rec.description IS NOT NULL THEN
 		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON TABLE rif_studies.'||new_extract_table||' IS ''Study '||new_study_id||' extract: '||c1a_rec.description||'''';
@@ -176,13 +208,14 @@ Description:	Check if <new study id> exists; delete extract and map tables for <
 	END IF;
 	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_rename_map_and_extract_tables', 
-		'[57605] Rename extract and map tables from old: % to new study: %; extract: %=>%, map: %=>%',
+		'[57608] Rename extract and map tables from old: % to new study: %; extract: %=>%, map: %=>%; new inv_id: %',
 		 c1a_rec.study_id::VARCHAR			/* Old study ID */,
 		 new_study_id::VARCHAR				/* New study ID */,
 		 c1a_rec.extract_table::VARCHAR 	/* Old extract table */,
 		 new_extract_table::VARCHAR			/* New extract table */,
 		 c1a_rec.map_table::VARCHAR 		/* Old map table */,
-		 new_map_table::VARCHAR				/* New map table */);
+		 new_map_table::VARCHAR				/* New map table */,
+		 c2a_rec.max_inv_id::VARCHAR		/* New inv id */);
  END;
 $func$
 LANGUAGE 'plpgsql';

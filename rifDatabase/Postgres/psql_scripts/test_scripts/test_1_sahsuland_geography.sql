@@ -177,7 +177,7 @@ BEGIN
 	IF debug_level IS NULL THEN
 		debug_level:=0;
 	ELSIF debug_level > 4 THEN
-		RAISE EXCEPTION 'test_1_sahsuland_geography.sql: T1--03: Invslid debug level [0-4]: %', debug_level;
+		RAISE EXCEPTION 'test_1_sahsuland_geography.sql: T1--03: Invalid debug level [0-4]: %', debug_level;
 	ELSIF debug_level BETWEEN 1 AND 4 THEN
         PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
 --
