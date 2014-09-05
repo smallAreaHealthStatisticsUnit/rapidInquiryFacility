@@ -8,7 +8,7 @@
 #
 # Description:
 #-
-#- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\GeospatialData\SAHSULAND
+#- Rapid Enquiry Facility (RIF) - Common Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\GeospatialData
 #-
 #- DO NOT RUN THE SUBDIRECTORY MAKEFILES DIRECTLY; THEY REQUIRE ENVIRONMENT SETUP TO WORK CORRECTLY
 #-
@@ -46,10 +46,51 @@
 #
 # Peter Hambly, SAHSU
 #
+SUBDIRS = SAHSULAND
 
-SOURCES=SAHSU_GRD_Level1.shp SAHSU_GRD_Level2.shp SAHSU_GRD_Level3.shp SAHSU_GRD_Level4.shp SAHSU_CEN_Level4.shp 
+#
+# Phony (i.e. not a file) targets
+#
+.PHONY: all clean test help
 
-include ../Makefile.common
+OS?=Unknown
+ifeq ($(OS),Windows_NT)
+#
+# Windows support
+#
+DELETE=powershell -ExecutionPolicy ByPass -file delete.ps1
+HELP=findstr "\#-" Makefile
+OGR2OGR="C:\Program Files (x86)\GDAL\ogr2ogr"
+OGRINFO="C:\Program Files (x86)\GDAL\ogrinfo"
+CMDSEP=&
+#
+# ADD Linux support
+#
+else
+#
+# Unsupported OS
+#
+$(error Unsupported OS: $(OS))
+endif
 
+#- Targets
+#-
+#- all: Convert al shapefiles to WKT CSV [DEFAULT]
+all: 
+	$(foreach subdir,$(SUBDIRS),$(MAKE) -C $(subdir) all $(CMDSEP))
+#-	
+#- test: Provide info on shapefiles. Checks all files are present and have projections
+test: 
+	$(foreach subdir,$(SUBDIRS),$(MAKE) -C $(subdir) test $(CMDSEP))
+	
+#- clean: Remove WKT CSV files so completed scripts can be re-run
+clean:
+	$(foreach subdir,$(SUBDIRS),$(MAKE) -C $(subdir) clean $(CMDSEP))	
+
+#- help: Display this help
+help:
+	$(HELP)
+	
+#-
 #
 # Eof
