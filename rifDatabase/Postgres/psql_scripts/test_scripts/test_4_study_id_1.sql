@@ -999,8 +999,14 @@ SELECT COUNT(DISTINCT(band_id)) FROM rif_studies.s1_extract
 --
 DO LANGUAGE plpgsql $$
 DECLARE
-	c4sm CURSOR FOR 
+	c1sm CURSOR FOR 
+		SELECT array_agg(column_name::Text) AS s1_map_columns
+		  FROM information_schema.columns
+		 WHERE table_name = 's1_map'
+		   AND column_name NOT IN ('gid', 'gid_rowindex');
+	c4sm CURSOR FOR 		
 		SELECT CURRENT_SETTING('rif40.debug_level') AS debug_level;
+	c1sm_rec RECORD;
 	c4sm_rec RECORD;
 --
 	old_study_id	INTEGER;
@@ -1014,6 +1020,9 @@ BEGIN
 	OPEN c4sm;
 	FETCH c4sm INTO c4sm_rec;
 	CLOSE c4sm;
+	OPEN c1sm;
+	FETCH c1sm INTO c1sm_rec;
+	CLOSE c1sm;
 --
 -- Test parameter
 --
@@ -1045,7 +1054,7 @@ BEGIN
 -- Validate 2 sahsuland_geography tables are the same
 --
 	PERFORM rif40_sql_pkg.rif40_table_diff('T4__37(s1_extract)' /* Test tag */, 's1_extract', 'v_test_4_study_id_1_extract');
-	PERFORM rif40_sql_pkg.rif40_table_diff('T4__38(s1_map)' /* Test tag */, 's1_map', 'v_test_4_study_id_1_map');
+	PERFORM rif40_sql_pkg.rif40_table_diff('T4__38(s1_map)' /* Test tag */, 's1_map', 'v_test_4_study_id_1_map', c1sm_rec. s1_map_columns, c1sm_rec. s1_map_columns);
 --
 --	RAISE EXCEPTION 'TEST Abort';
 END;

@@ -79,6 +79,38 @@ Function: 		rif40_table_diff()
 Parameters: 	test tag, table 1, table 2, table 1 column list; default: NULL means ALL, table 2 column list; default: NULL means ALL
 Returns: 		Nothing
 Description:	Validate 2 tables are the same	
+
+Example SQL>
+
+WITH a_1_minus_2 AS (
+        SELECT *
+          FROM s1_extract
+        EXCEPT
+        SELECT *
+          FROM v_test_4_study_id_1_extract
+),
+b_2_minus_1 AS (
+        SELECT *
+          FROM v_test_4_study_id_1_extract
+        EXCEPT
+        SELECT *
+          FROM s1_extract
+), a AS (
+        SELECT COUNT(a.*) AS a_1_minus_2_total
+     FROM a_1_minus_2 a
+), b AS (
+        SELECT COUNT(b.*) AS b_2_minus_1_total
+     FROM b_2_minus_1 b
+), c AS (
+        SELECT COUNT(*) AS table_1_total
+          FROM s1_extract
+), d AS (
+        SELECT COUNT(*) AS table_2_total
+          FROM v_test_4_study_id_1_extract
+)
+SELECT a.a_1_minus_2_total, b.b_2_minus_1_total, c.table_1_total, d.table_2_total
+  FROM a, b, c, d;
+  
  */
 DECLARE
 	c1tdiff CURSOR(l_table_name VARCHAR) FOR
@@ -87,9 +119,9 @@ DECLARE
 		 WHERE tablename  = LOWER(l_table_name);
 	c2tdiff CURSOR(l_table_name VARCHAR, l_table_column VARCHAR) FOR
 		SELECT c.*, has_column_privilege(LOWER(l_table_name), LOWER(l_table_column), 'SELECT') AS can_select
-		  FROM information_schema.columns
-		 WHERE tablename  = LOWER(l_table_name)
-		   AND columnname = LOWER(l_table_column);
+		  FROM information_schema.columns c
+		 WHERE table_name  = LOWER(l_table_name)
+		   AND column_name = LOWER(l_table_column);
 	c3tdiff 		REFCURSOR;
 --
 	c1a_rec 		RECORD;
@@ -149,20 +181,20 @@ BEGIN
 			OPEN c2tdiff(table_1, l_column);
 			FETCH c2tdiff INTO c2_rec;
 			CLOSE c2tdiff;
-			IF c2_rec.tablename IS NULL THEN
+			IF c2_rec.table_name IS NULL THEN
 				PERFORM rif40_log_pkg.rif40_error(71005, 'rif40_table_diff', '[%] Cannot find table/view 1 column: %.%', 
 					test_tag::VARCHAR,
-					c1a_rec.tablename::VARCHAR,
+					c1a_rec.table_name::VARCHAR,
 					l_column::VARCHAR);
 			ELSIF c2_rec.can_select = FALSE THEN
 				PERFORM rif40_log_pkg.rif40_error(71006, 'rif40_table_diff', '[%] Cannot access table/view 1 column: %.%', 
 					test_tag::VARCHAR,
-					c2_rec.tablename::VARCHAR,
-					c2_rec.columnname::VARCHAR);
+					c2_rec.table_name::VARCHAR,
+					c2_rec.column_name::VARCHAR);
 			ELSIF column_list_1 IS NULL THEN
-				column_list_1:=quote_ident(c2_rec.columnname);
+				column_list_1:=quote_ident(c2_rec.column_name);
 			ELSE
-				column_list_1:=column_list_1||', '||quote_ident(c2_rec.columnname);
+				column_list_1:=column_list_1||', '||quote_ident(c2_rec.column_name);
 			END IF;
 		END LOOP;
 	END IF;
@@ -173,20 +205,20 @@ BEGIN
 			OPEN c2tdiff(table_2, l_column);
 			FETCH c2tdiff INTO c2_rec;
 			CLOSE c2tdiff;
-			IF c2_rec.tablename IS NULL THEN
+			IF c2_rec.table_name IS NULL THEN
 				PERFORM rif40_log_pkg.rif40_error(71007, 'rif40_table_diff', '[%] Cannot find table/view 2 column: %.%', 
 					test_tag::VARCHAR,
-					c1b_rec.tablename::VARCHAR,
+					c1b_rec.table_name::VARCHAR,
 					l_column::VARCHAR);
 			ELSIF c2_rec.can_select = FALSE THEN
 				PERFORM rif40_log_pkg.rif40_error(71008, 'rif40_table_diff', '[%] Cannot access table/view 2 column: %.%', 
 					test_tag::VARCHAR,
-					c2_rec.tablename::VARCHAR,
-					c2_rec.columnname::VARCHAR);
+					c2_rec.table_name::VARCHAR,
+					c2_rec.column_name::VARCHAR);
 			ELSIF column_list_2 IS NULL THEN
-				column_list_2:=quote_ident(c2_rec.columnname);
+				column_list_2:=quote_ident(c2_rec.column_name);
 			ELSE
-				column_list_2:=column_list_1||', '||quote_ident(c2_rec.columnname);
+				column_list_2:=column_list_2||', '||quote_ident(c2_rec.column_name);
 			END IF;
 		END LOOP;
 	END IF;
@@ -314,7 +346,38 @@ LANGUAGE PLPGSQL;
 COMMENT ON FUNCTION rif40_sql_pkg.rif40_table_diff(VARCHAR, VARCHAR, VARCHAR, VARCHAR[], VARCHAR[]) IS 'Function: 		rif40_table_diff()
 Parameters: 	test tag, table 1, table 2, table 1 column list; default: NULL means ALL, table 2 column list; default: NULL means ALL
 Returns: 		Nothing
-Description:	Validate 2 tables are the same';
+Description:	Validate 2 tables are the same
+
+Example SQL>
+
+WITH a_1_minus_2 AS (
+        SELECT *
+          FROM s1_extract
+        EXCEPT
+        SELECT *
+          FROM v_test_4_study_id_1_extract
+),
+b_2_minus_1 AS (
+        SELECT *
+          FROM v_test_4_study_id_1_extract
+        EXCEPT
+        SELECT *
+          FROM s1_extract
+), a AS (
+        SELECT COUNT(a.*) AS a_1_minus_2_total
+     FROM a_1_minus_2 a
+), b AS (
+        SELECT COUNT(b.*) AS b_2_minus_1_total
+     FROM b_2_minus_1 b
+), c AS (
+        SELECT COUNT(*) AS table_1_total
+          FROM s1_extract
+), d AS (
+        SELECT COUNT(*) AS table_2_total
+          FROM v_test_4_study_id_1_extract
+)
+SELECT a.a_1_minus_2_total, b.b_2_minus_1_total, c.table_1_total, d.table_2_total
+  FROM a, b, c, d;';
 
 GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_table_diff(VARCHAR, VARCHAR, VARCHAR, VARCHAR[], VARCHAR[]) TO rif40;
 GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_table_diff(VARCHAR, VARCHAR, VARCHAR, VARCHAR[], VARCHAR[]) TO rif_manager;
