@@ -334,6 +334,14 @@ class SQLAgeGenderYearManager
 		ResultSet resultSet = null;
 		try {
 			statement = connection.prepareStatement(query.generateQuery());
+			
+			
+			//TOUR_SECURITY
+			/*
+			 * Using PreparedStatements means that even if the numerator table name
+			 * somehow contained malicious SQL commands, the value would be properly escaped
+			 * so that in a query it would be regarded as just another text value.
+			 */
 			statement.setString(1, ndPair.getNumeratorTableName());
 			resultSet = statement.executeQuery();
 			
@@ -360,6 +368,13 @@ class SQLAgeGenderYearManager
 			return result;
 		}
 		catch(SQLException sqlException) {	
+			
+			//TOUR_SECURITY  
+			/*When we encounter an SQL exception,
+			 * log it, but then throw an application-specific exception that
+			 * will not contain any sensitive information.
+			 */
+
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
 			String errorMessage

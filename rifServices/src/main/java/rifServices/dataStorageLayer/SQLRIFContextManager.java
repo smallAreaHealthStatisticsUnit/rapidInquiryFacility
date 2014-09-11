@@ -466,6 +466,12 @@ class SQLRIFContextManager
 		final Geography geography) 
 		throws RIFServiceException {
 		
+		
+		//TOUR_VALIDATION
+		/* Here, we assume that all the parameters are non-null
+		 * and that they contain no security risks.  
+		 * 
+		 */
 		//Validate parameters
 		validateCommonMethodParameters(
 			connection,

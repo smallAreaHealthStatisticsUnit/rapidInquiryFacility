@@ -1,5 +1,6 @@
 package rifServices.dataStorageLayer;
 
+import rifServices.system.RIFServiceException;
 /**
  *
  * <hr>
@@ -66,9 +67,59 @@ public final class ProductionRIFStudyServiceBundle
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final ProductionRIFStudyServiceBundle rifStudyServiceBundle 
+	
+	//TOUR_CONCURRENCY
+	/*
+	 * <p>
+	 * The Singleton pattern is about managing a single instance of a class.  We don't use
+	 * it often in the RIF code base, but this is an example of it. All the RIF services will
+	 * rely on the same collection of SQL manager classes that execute database queries. We've
+	 * bundled the manager objects together into the "StudyServiceBundle", but we only want to
+	 * produce one instance of it.
+	 * <p> 
+	 * 
+	 * <p>
+	 * Typically, Singleton code patterns are implemented to support "eager instantiation" or 
+	 * "lazy instantiation".  Lazy instantiation instantiates the single instance only when it
+	 * is first needed.  If the instance requires a lot of computational resources but is never
+	 * used, the lazy instantiation will save the middleware from creating the object.
+	 * </p>
+	 * 
+	 * <p>
+	 * With lazy instantiation, the code typically declares the single instance as a static 
+	 * variable and then does an "if obj != null" check before trying to initialise it once.
+	 * </p>
+	 * 
+	 * <p>
+	 * Versions of the lazy instantiation singleton pattern are often prone to concurrency
+	 * problems when two threads race to initialise the same instance.  One thread sees that the object
+	 * is null and attempts to set it.  The second thread may also see a null object and also try to
+	 * instantiate it.  
+	 * </p> 
+	 * 
+	 * <p>
+	 * There are a number of ways to make lazy instantiation thread-safe.  However, here we have 
+	 * avoided it by using "eager instantiation".  In this example, we declare a static variable that
+	 * is set only once, when the Java class loader loads the definition of the class.
+	 * </p>
+	 * 
+	 * <p>
+	 * It is simple, but has its own shortcomings which we may remedy later.  Its main weakness is that
+	 * 
+	 * To avoid this problem,
+	 * we have used the "eager instantiation" approach, where we declare and initialise
+	 * a static variable when the class is first loaded.
+	 * <p>
+	 * I believe this solution is thread-safe, but it has its own main weakness of not handling
+	 * Exceptions.  In future, we may switch to thread-safe implementations that use
+	 * lazy instantiation.  See:
+	 * http://www.oracle.com/technetwork/articles/javase/bloch-effective-08-qa-140880.html
+	 * 
+	 */
+	private static final ProductionRIFStudyServiceBundle rifStudyServiceBundle
 		= new ProductionRIFStudyServiceBundle();
-	// ==========================================
+
+		// ==========================================
 	// Section Properties
 	// ==========================================
 

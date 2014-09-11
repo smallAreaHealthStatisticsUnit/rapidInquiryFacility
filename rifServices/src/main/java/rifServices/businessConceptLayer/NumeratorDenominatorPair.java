@@ -370,15 +370,23 @@ public final class NumeratorDenominatorPair
 	// Section Override
 	// ==========================================
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkSecurityViolations()
-	 */
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
 
+		//TOUR_SECURITY
+		/*
+		 * This code shows an example of how RIF business classes check for malicious patterns
+		 * in each of its text fields.  It makes significant use of the class 
+		 * {@link rifServices.util.FieldValidationUtility} to scan field values.  Notice how
+		 * it will call its superclass method that does the same kind of task.  As well,
+		 * if a business class has another business class member, it recursively calls this
+		 * method on that member until every text field is scanned.
+		 */
+		
 		super.checkSecurityViolations();
 		String recordType = getRecordType();
 
+		
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
 		String numeratorTableFieldName
