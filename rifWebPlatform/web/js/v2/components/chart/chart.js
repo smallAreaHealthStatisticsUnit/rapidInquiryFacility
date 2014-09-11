@@ -21,6 +21,10 @@ RIF.chart = ( function( settings ) {
         _p.renderLineBivariate();
       },
 
+      _refreshMultipleArea: function() {
+        _p.renderMultipleArea();
+      },
+
       //conforms
       setEvents: function() {
         //Empty for now

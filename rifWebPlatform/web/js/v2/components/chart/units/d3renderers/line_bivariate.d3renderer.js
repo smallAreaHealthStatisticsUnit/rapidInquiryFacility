@@ -1,6 +1,5 @@
 RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
 
-
   /*
 	    Need to change X axis , probably into ordinal and set the domain as the gid array (maybe!)
 		Currently only works when the data passed is ordered by gid.

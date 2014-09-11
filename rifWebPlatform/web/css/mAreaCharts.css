@@ -1,0 +1,63 @@
+svg.areaCharts {
+	font-size: 10px;
+	font-weight: 700;
+	margin-top:20px
+}
+
+ text.country-title {
+	font-size: 14px;
+	fill: rgb(145, 145, 145)
+}
+
+text.instructions {
+	font-size: 16px;
+}
+
+g.context g.brush rect.background {
+	fill: rgba(0,0,0,.1);
+}
+
+g.context g.axis path {
+	stroke-opacity: 0;
+}
+
+g.context g.axis line {
+	stroke-opacity: .1;
+}
+
+g.france path.chart {
+	fill: rgba(127,201,127,0.6);
+}
+
+g.germany path.chart {
+	fill: rgba(127,201,174,0.6);
+}
+
+g.japan path.chart {
+	fill: rgba(127,183,201,0.6);
+}
+
+g.uk path.chart {
+	fill: rgba(127,130,201,0.6);
+}
+
+g.usa path.chart {
+	fill: rgba(171,127,201,0.6);
+}
+
+svg.areaCharts .axis path, .axis line {
+	fill: none;
+	stroke: #aaa;
+	shape-rendering: crispEdges;
+}
+
+svg.areaCharts .brush .extent {
+	stroke: #f09f8c;
+	fill-opacity: .125;
+	shape-rendering: crispEdges;
+}
+
+svg.areaCharts g.context rect.background{
+	fill: rgb(200,200,255);
+	visibility: visible !important;
+}​

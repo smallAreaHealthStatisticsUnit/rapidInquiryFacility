@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="css/jquery/jquery-ui-1.10.3.custom.min.css" />
     <link rel="stylesheet" href="css/leaflet/leaflet.css" />
     <link href="css/diseaseMapping.css" rel="stylesheet" media="screen" />
+	<link href="css/mAreaCharts.css" rel="stylesheet" media="screen" />
 	<link href="css/line_bivariate.css" rel="stylesheet" media="screen" />
 	<link href="css/slickgrid/slick.grid.css" rel="stylesheet" media="screen" />
 	<link href="css/slickgrid/slick-default-theme.css" rel="stylesheet" media="screen" />
@@ -69,8 +70,7 @@
 	<script type="text/javascript" src="js/v2/components/chart/units/d3renderers/line_bivariate.d3renderer.js"></script>
 	<script type="text/javascript" src="js/v2/components/chart/units/multipleAreaCharts.js"></script>
 	<script type="text/javascript" src="js/v2/components/chart/units/d3renderers/multipleAreaCharts.d3renderer.js"></script>
-	<!--<script type="text/javascript" src="js/v2/components/chart/units/histogram.js"></script>
-	<script type="text/javascript" src="js/v2/components/chart/units/d3renderers/histogram.d3renderer.js"></script>-->
+
     <!-- abstraction -->
     <script type="text/javascript" src="js/v2/abstractions/data.js"></script>
     <script type="text/javascript" src="js/v2/abstractions/export_data.js"></script>
@@ -172,13 +172,14 @@
 						</ul>
 					</div>
 					<div id='mAreaCharts'>
-						<div id="AreaCharts"></div>
+						<div id="areaCharts"></div>
 					</div>
             </div>
             <div id="rightcol">
                 <div id="map"></div>
+				<div id="rr_chart"></div>
 			</div>
-			<div id="rr_chart"></div>
+			<!--<div id="rr_chart"></div>-->
         </div>
     </div>
 	

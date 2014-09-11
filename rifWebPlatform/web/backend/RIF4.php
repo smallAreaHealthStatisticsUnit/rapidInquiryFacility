@@ -567,14 +567,16 @@ $r = RIF4::Instance();
 		
 		try{
 		 
-		 // Column x_order will be used for the x axis in the area chart
-		 // This is required by the plug in drawing the area chart
-		 $sql = "select gid, round(srr,2) as srr , row_number() over (ORDER BY srr) as x_order from atlas_leu_f ";
+			// Column x_order will be used for the x axis in the area chart
+			// This is required by the plug in drawing the area chart
+			
+			$sql = "select gid, round(srr,2) as srr, round(smr,2) as smr,round(sresrr,2) as sresrr, row_number() over (ORDER BY srr, smr, sresrr) as x_order
+			from atlas_leu_f";
 			
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());	
 			
-			$csv = "gid,srr,x_order" . "\n";
+			$csv = "gid,srr,smr,sresrr,x_order" . "\n";
 			
 			while ($row = $hndl -> fetch(PDO::FETCH_ASSOC)){
 				$csv .=  implode($row, ',') . "\n" ;

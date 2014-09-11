@@ -288,7 +288,7 @@
           args += '&year=' + params[ 3 ];
         };
 
-        xhr( 'getResultsSet.php' + args, myCallback, msg, "text/csv" );
+        xhr( 'getRiskResults.php' + args, myCallback, msg, "text/csv" );
       }
 
     };
