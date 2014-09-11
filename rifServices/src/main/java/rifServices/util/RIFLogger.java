@@ -79,15 +79,41 @@ public class RIFLogger {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	
+	//TOUR_CONCURRENCY
+	/*
+	 * We use eager instantiation to create a single instance of the class
+	 * in a thread-safe way.  Here, rifLogger is created and assigned a value once
+	 * when the class is loaded by the class loader.  It ensures that multiple threads
+	 * will not each try to initialise the object.
+	 * 
+	 * It is more common in discussion of the Singleton pattern to use a construction that
+	 * supports lazy instantiation, or instantiating rifLogger when it is needed.  There are 
+	 * two reasons I don't do this.
+	 * 
+	 * First, we are guaranteed to need rifLogger when the RIF middleware is running.  It does not
+	 * make much sense to use lazy instantiation for when you are guaranteed to need it soon after
+	 * the middleware starts operating.  Second, this solution for ensuring thread safety
+	 * is much simpler than the variety of solutions which are used to make lazy instantiation 
+	 * thread-safe.
+	 * 
+	 * This solution is not perfect, and may be altered later.  Its biggest weakness is that
+	 * it won't report exceptions should rifLogger fail to instantiate.
+	 */
+	private static final RIFLogger rifLogger = new RIFLogger();
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public RIFLogger() {
+	private RIFLogger() {
 
 	}
-
+	
+	public static RIFLogger getLogger() {
+		return rifLogger;
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
@@ -102,6 +128,10 @@ public class RIFLogger {
 		buffer.append(errorHeading);
 		
 		throwableItem.printStackTrace(System.out);
+		
+		//to be implemented, hopefully by using the SL4J tools
+		//in the worst case scenario we can build our own but it's not the best idea
+		
 		//Logger logger = LoggerFactory.getLogger(ProductionRIFJobSubmissionService.class);
 		//logger.error(methodName, rifServiceException);
 	}

@@ -919,6 +919,13 @@ class AbstractRIFService {
 			validateUser(user);
 			geography.checkSecurityViolations();
 		
+			
+			//TOUR_CONCURRENCY
+			/*
+			 * The logging facility here is an example of a shared resource that
+			 * will be a source of contention.  The logger is managed as a single
+			 * instance that will be used by all threads.  
+			 */
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
