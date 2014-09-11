@@ -109,7 +109,6 @@ class AbstractStudyServiceBundle {
 		final RIFServiceStartupOptions rifServiceStartupOptions) 
 		throws RIFServiceException {
 		
-		System.out.println("AbstractStudyServiceBundle - initialise 2");
 		rifServiceResources
 			= RIFServiceResources.newInstance(rifServiceStartupOptions);
 		setRIFServiceResources(rifServiceResources);
