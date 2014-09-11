@@ -27,7 +27,7 @@
 -- This file is part of the Rapid Inquiry Facility (RIF) project.
 -- RIF is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU Lesser General Public License as published by
--- the Free Software Foundation, either verquote_ident(l_schema)||'.'||quote_ident(l_tablesion 3 of the License, or
+-- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
 --
 -- RIF is distributed in the hope that it will be useful,
@@ -677,6 +677,110 @@ END;
 $$;
 
 /*
+Should cover the whole of level4
+
+Here are the missing areas in sahsuland_example_map.csv:
+
+missing
+[1] "01.008.003901.1" "01.008.003901.2" "01.008.003901.3" "01.008.003901.4" "01.008.003901.5"
+[6] "01.008.003901.6" "01.008.003901.7" "01.008.003901.9" "01.008.009401.1" "01.008.009401.2"
+[11] "01.008.009401.3" "01.008.009401.4"
+
+Test above and study extraction SQL is failing...
+ */
+
+ /*
+SELECT level4 FROM sahsuland_level4
+EXCEPT
+SELECT area_id
+  FROM test_4_study_id_1_extract
+ WHERE study_or_comparison = 'S' LIMIT 20;
+-- 0
+SELECT level4 FROM sahsuland_level4
+EXCEPT
+SELECT area_id
+  FROM test_4_study_id_1_extract
+ WHERE study_or_comparison = 'S' LIMIT 20;
+-- 0 
+DO LANGUAGE plpgsql $$ 
+DECLARE 
+BEGIN 
+	PERFORM rif40_sql_pkg.rif40_method4(
+'SELECT level4 FROM sahsuland_level4'||E'\n'||
+'EXCEPT'||E'\n'||
+'SELECT area_id'||E'\n'||
+'  FROM rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_extract'||E'\n'||
+' WHERE study_or_comparison = ''S'''||E'\n'||
+'   AND study_id = '||currval('rif40_study_id_seq'::regclass)||' LIMIT 20', 'rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_extract area_id diff');
+END; 
+$$;
+-- 0
+SELECT area_id, band_id FROM rif40_study_areas
+ WHERE area_id IN ('01.008.003901.1', '01.008.003901.2', '01.008.003901.3', '01.008.003901.4', '01.008.003901.5', '01.008.003901.6',
+				   '01.008.003901.7', '01.008.003901.9', '01.008.009401.1', '01.008.009401.2', '01.008.009401.3', '01.008.009401.4')
+   AND study_id = currval('rif40_study_id_seq'::regclass);
+*/
+   /*
+        area_id     | band_id
+-----------------+---------
+ 01.008.009401.4 |     714
+ 01.008.003901.7 |     316
+ 01.008.009401.1 |     711
+ 01.008.003901.3 |     312
+ 01.008.003901.2 |     311
+ 01.008.009401.2 |     712
+ 01.008.003901.6 |     315
+ 01.008.003901.4 |     313
+ 01.008.009401.3 |     713
+ 01.008.003901.1 |     310
+ 01.008.003901.9 |     317
+ 01.008.003901.5 |     314
+(12 rows)
+ */
+ /*
+SELECT COUNT(area_id) FROM rif40_study_areas
+ WHERE area_id IN ('01.008.003901.1', '01.008.003901.2', '01.008.003901.3', '01.008.003901.4', '01.008.003901.5', '01.008.003901.6',
+				   '01.008.003901.7', '01.008.003901.9', '01.008.009401.1', '01.008.009401.2', '01.008.009401.3', '01.008.009401.4')
+   AND study_id = currval('rif40_study_id_seq'::regclass);
+-- 12
+DO LANGUAGE plpgsql $$ 
+DECLARE 
+BEGIN 
+	PERFORM rif40_sql_pkg.rif40_method4(
+'SELECT COUNT(DISTINCT(area_id)) FROM rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_extract'||E'\n'||
+' WHERE area_id IN (''01.008.003901.1'', ''01.008.003901.2'', ''01.008.003901.3'', ''01.008.003901.4'', ''01.008.003901.5'', ''01.008.003901.6'','||E'\n'||
+'				    ''01.008.003901.7'', ''01.008.003901.9'', ''01.008.009401.1'', ''01.008.009401.2'', ''01.008.009401.3'', ''01.008.009401.4'')'||E'\n'||
+'   AND study_id = currval(''rif40_study_id_seq''::regclass)', 'rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_extract area_id diff');
+END; 
+$$;
+-- 12
+DO LANGUAGE plpgsql $$ 
+DECLARE 
+BEGIN 
+	PERFORM rif40_sql_pkg.rif40_method4(
+'SELECT COUNT(DISTINCT(area_id)) FROM rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_map'||E'\n'||
+' WHERE area_id IN (''01.008.003901.1'', ''01.008.003901.2'', ''01.008.003901.3'', ''01.008.003901.4'', ''01.008.003901.5'', ''01.008.003901.6'','||E'\n'||
+'				    ''01.008.003901.7'', ''01.008.003901.9'', ''01.008.009401.1'', ''01.008.009401.2'', ''01.008.009401.3'', ''01.008.009401.4'')'||E'\n'||
+'   AND study_id = currval(''rif40_study_id_seq''::regclass)', 'rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_extract area_id diff');
+END; 
+$$;
+-- 12
+SELECT COUNT(DISTINCT(level4)) FROM sahsuland_pop
+ WHERE level4 IN ('01.008.003901.1', '01.008.003901.2', '01.008.003901.3', '01.008.003901.4', '01.008.003901.5', '01.008.003901.6',
+				   '01.008.003901.7', '01.008.003901.9', '01.008.009401.1', '01.008.009401.2', '01.008.009401.3', '01.008.009401.4');
+-- 12
+SELECT COUNT(DISTINCT(level4)) FROM sahsuland_cancer
+ WHERE level4 IN ('01.008.003901.1', '01.008.003901.2', '01.008.003901.3', '01.008.003901.4', '01.008.003901.5', '01.008.003901.6',
+				   '01.008.003901.7', '01.008.003901.9', '01.008.009401.1', '01.008.009401.2', '01.008.009401.3', '01.008.009401.4');
+-- 10
+SELECT COUNT(DISTINCT(level4)) FROM sahsuland_covariates_level4
+ WHERE level4 IN ('01.008.003901.1', '01.008.003901.2', '01.008.003901.3', '01.008.003901.4', '01.008.003901.5', '01.008.003901.6',
+				   '01.008.003901.7', '01.008.003901.9', '01.008.009401.1', '01.008.009401.2', '01.008.009401.3', '01.008.009401.4');
+-- 12
+ 
+*/
+
+/*
 SELECT COUNT(area_id) AS total FROM test_4_study_id_1_extract;
 SELECT COUNT(band_id) AS total FROM test_4_study_id_1_map;
 SELECT COUNT(band_id) AS total FROM test_4_study_id_1_bands;
@@ -689,7 +793,6 @@ SELECT COUNT(band_id) AS total FROM test_4_study_id_1_bands;
 --	RAISE EXCEPTION 'Stop processing';
 --END;
 --$$;
-
 
 \echo Created SAHSULAND example study 1.  
 
@@ -812,19 +915,12 @@ BEGIN
 	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_results'||E'\n'||
 '	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
 --
-	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_investigations'||E'\n'||
-'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
---
 	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_contextual_stats'||E'\n'||
 '	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
 --
 	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_study_shares'||E'\n'||
 '	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
---
--- Updste RIF40_STUDIES
---
 
- 
 --
 -- Run
 --
@@ -838,7 +934,10 @@ BEGIN
 -- Now delete study N
 --
 	sql_stmt:=NULL;
-	sql_stmt[1]:='DELETE FROM rif40_studies'||E'\n'||
+--
+	sql_stmt[1]:='DELETE FROM rif40_investigations'||E'\n'||
+'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_studies'||E'\n'||
 '	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
 --
 -- Run
@@ -878,6 +977,97 @@ SELECT study_id
   FROM rif40_studies
  WHERE username = USER
    AND study_name = 'SAHSULAND test 4 study_id 1 example';
-   
+
+   /*
+SELECT COUNT(DISTINCT(band_id)) FROM rif_studies.s1_map
+ WHERE band_id IN (SELECT band_id FROM rif40_study_areas WHERE study_id = 1)
+   AND study_id = 1
+   AND area_id IN ('01.008.003901.1', '01.008.003901.2', '01.008.003901.3', '01.008.003901.4', '01.008.003901.5', '01.008.003901.6',
+				   '01.008.003901.7', '01.008.003901.9', '01.008.009401.1', '01.008.009401.2', '01.008.009401.3', '01.008.009401.4');
+-- 12
+SELECT COUNT(DISTINCT(band_id)) FROM rif_studies.s1_extract
+ WHERE band_id IN (SELECT band_id FROM rif40_study_areas WHERE study_id = 1)
+   AND study_id = 1
+   AND area_id IN ('01.008.003901.1', '01.008.003901.2', '01.008.003901.3', '01.008.003901.4', '01.008.003901.5', '01.008.003901.6',
+				   '01.008.003901.7', '01.008.003901.9', '01.008.009401.1', '01.008.009401.2', '01.008.009401.3', '01.008.009401.4');
+-- 12
+-- should be 12   
+ */
+ 
+-- 
+-- Diff s1_extract/map and v_test_4_study_id_1_extract/map
+--
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1sm CURSOR FOR 
+		SELECT array_agg(column_name::Text) AS s1_map_columns
+		  FROM information_schema.columns
+		 WHERE table_name = 's1_map'
+		   AND column_name NOT IN ('gid', 'gid_rowindex');
+	c4sm CURSOR FOR 		
+		SELECT CURRENT_SETTING('rif40.debug_level') AS debug_level;
+	c1sm_rec RECORD;
+	c4sm_rec RECORD;
+--
+	old_study_id	INTEGER;
+	new_study_id	INTEGER;
+--
+	rif40_pkg_functions 		VARCHAR[] := ARRAY[
+				'rif40_table_diff'];
+	l_function 			VARCHAR;
+	debug_level		INTEGER;
+BEGIN
+	OPEN c4sm;
+	FETCH c4sm INTO c4sm_rec;
+	CLOSE c4sm;
+	OPEN c1sm;
+	FETCH c1sm INTO c1sm_rec;
+	CLOSE c1sm;
+--
+-- Test parameter
+--
+	IF c4sm_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
+		RAISE EXCEPTION 'test_4_study_id_1.sql: T4-33: No -v testuser=<debug level> parameter';	
+	ELSE
+		debug_level:=LOWER(SUBSTR(c4sm_rec.debug_level, 5))::INTEGER;
+		RAISE INFO 'T4--34: test_4_study_id_1.sql: debug level parameter="%"', debug_level::Text;
+	END IF;
+--
+-- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
+--
+    PERFORM rif40_log_pkg.rif40_log_setup();
+	IF debug_level IS NULL THEN
+		debug_level:=0;
+	ELSIF debug_level > 4 THEN
+		RAISE EXCEPTION 'test_4_study_id_1.sql: T4--35: Invalid debug level [0-4]: %', debug_level;
+	ELSIF debug_level BETWEEN 1 AND 4 THEN
+        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+--
+-- Enabled debug on select rif40_sm_pkg functions
+--
+		FOREACH l_function IN ARRAY rif40_pkg_functions LOOP
+			RAISE INFO 'T4--36: test_4_study_id_1.sql: Enable debug for function: %', l_function;
+			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
+		END LOOP;
+	END IF;
+--
+-- Validate 2 sahsuland_geography tables are the same
+--
+	PERFORM rif40_sql_pkg.rif40_table_diff('T4__37(s1_extract)' /* Test tag */, 's1_extract', 'v_test_4_study_id_1_extract');
+	PERFORM rif40_sql_pkg.rif40_table_diff('T4__38(s1_map)' /* Test tag */, 's1_map', 'v_test_4_study_id_1_map', c1sm_rec. s1_map_columns, c1sm_rec. s1_map_columns);
+--
+--	RAISE EXCEPTION 'TEST Abort';
+END;
+$$;	
+	
+--
+-- Testing stop
+--
+--DO LANGUAGE plpgsql $$
+--BEGIN
+--	RAISE EXCEPTION 'Stop processing';
+--END;
+--$$;
+
 --
 -- Eof

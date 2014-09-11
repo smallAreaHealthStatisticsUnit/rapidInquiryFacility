@@ -27,7 +27,7 @@
 -- This file is part of the Rapid Inquiry Facility (RIF) project.
 -- RIF is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU Lesser General Public License as published by
--- the Free Software Foundation, either verquote_ident(l_schema)||'.'||quote_ident(l_tablesion 3 of the License, or
+-- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
 --
 -- RIF is distributed in the hope that it will be useful,
@@ -177,7 +177,7 @@ BEGIN
 	IF debug_level IS NULL THEN
 		debug_level:=0;
 	ELSIF debug_level > 4 THEN
-		RAISE EXCEPTION 'test_1_sahsuland_geography.sql: T1--03: Invslid debug level [0-4]: %', debug_level;
+		RAISE EXCEPTION 'test_1_sahsuland_geography.sql: T1--03: Invalid debug level [0-4]: %', debug_level;
 	ELSIF debug_level BETWEEN 1 AND 4 THEN
         PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
 --
@@ -401,7 +401,26 @@ WITH a AS (
 )
 SELECT level1,level2, level3, level4
   FROM a, b, c, d;
+/*
 
+SELECT oid, lowrite(lo_open(oid, 131072), png) As num_bytes
+ FROM 
+ ( VALUES (lo_create(0), 
+   ST_AsPNG( (SELECT rast FROM aerials.boston WHERE rid=1) ) 
+  ) ) As v(oid,png);
+-- you'll get an output something like --
+   oid   | num_bytes
+---------+-----------
+ 2630819 |     74860
+ 
+-- next note the oid and do this replacing the c:/test.png to file path location
+-- on your local computer
+ \lo_export 2630819 'C:/temp/aerial_samp.png'
+ 
+-- this deletes the file from large object storage on db
+SELECT lo_unlink(2630819);
+
+ */
 --
 -- Check GID is unique at geolevel
 --

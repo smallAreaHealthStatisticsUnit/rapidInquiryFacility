@@ -299,6 +299,11 @@ VALUES(
 \i ../sahsuland/v4_0_postgres_sahsuland_imports.sql
 
 --
+-- Load SAHSU geospatial data
+--
+\i ../shapefiles/sahsuland_shapefiles.sql
+
+--
 -- SAHSUland geolevel setup. Fully processed
 --
 \i ../psql_scripts/v4_0_geolevel_setup_sahsuland.sql
