@@ -3,7 +3,7 @@ package rifServices.dataStorageLayer;
 
 /**
  * The purpose of this service is to provide a secure implementation of 
- * {@link rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI} which
+ * {@link rifServices.dataStorageLayer.RIFStudyResultRetrievalAPI} which
  * is final - meaning that it cannot be overridden by the client.  
  * 
  * <p>

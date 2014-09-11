@@ -1,8 +1,6 @@
 package rifServices.dataStorageLayer;
 
 
-import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
-import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;

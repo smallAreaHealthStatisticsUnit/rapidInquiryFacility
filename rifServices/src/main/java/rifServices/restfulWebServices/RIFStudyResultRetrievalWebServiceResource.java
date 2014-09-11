@@ -1,6 +1,7 @@
 package rifServices.restfulWebServices;
 
 import rifServices.businessConceptLayer.*;
+import rifServices.dataStorageLayer.RIFStudyResultRetrievalAPI;
 import rifServices.system.RIFServiceException;
 
 import javax.ws.rs.GET;

@@ -8,6 +8,7 @@ import java.util.Date;
 
 
 
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -16,6 +17,8 @@ import javax.ws.rs.QueryParam;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
+import rifServices.dataStorageLayer.RIFStudyResultRetrievalAPI;
+import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
@@ -25,16 +28,14 @@ import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.YearRange;
 
 /**
  * This is a web service class that is analoguous to  
  * to {@link rifServices.dataStorageLayer.AbstractRIFService}. Its purpose is
- * to wrap API methods that are common to both {@link rifServices.businessConceptLayer.RIFStudySubmissionAPI}
- * and {@link rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI}.
+ * to wrap API methods that are common to both {@link rifServices.dataStorageLayer.RIFStudySubmissionAPI}
+ * and {@link rifServices.dataStorageLayer.RIFStudyResultRetrievalAPI}.
  * 
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 

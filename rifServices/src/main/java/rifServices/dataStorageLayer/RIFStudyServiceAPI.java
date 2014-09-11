@@ -1,7 +1,15 @@
-package rifServices.businessConceptLayer;
+package rifServices.dataStorageLayer;
 
 import java.util.ArrayList;
 
+import rifServices.businessConceptLayer.AbstractStudy;
+import rifServices.businessConceptLayer.DiseaseMappingStudy;
+import rifServices.businessConceptLayer.GeoLevelArea;
+import rifServices.businessConceptLayer.GeoLevelSelect;
+import rifServices.businessConceptLayer.GeoLevelView;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.Project;
+import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 
 /**
