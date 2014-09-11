@@ -179,7 +179,7 @@ class SQLAgeGenderYearManager
 					"sqlAgeGenderYearManager.error.unableToGetAgeGroupID",
 					ndPair.getNumeratorTableDescription());
 
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLAgeGenderYearManager.class, 
 				errorMessage, 
@@ -265,7 +265,7 @@ class SQLAgeGenderYearManager
 			String errorMessage
 				= RIFServiceMessages.getMessage("ageGroup.error.unableToGetAgeGroups");
 
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLAgeGenderYearManager.class, 
 				errorMessage, 
@@ -382,7 +382,7 @@ class SQLAgeGenderYearManager
 					"sqlAgeGenderYearManager.error.unableToGetStartEndYear",
 					ndPair.getDisplayName());
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLAgeGenderYearManager.class, 
 				errorMessage, 
@@ -504,7 +504,7 @@ class SQLAgeGenderYearManager
 					ageGroup.getRecordType(),
 					ageGroup.getDisplayName());
 
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLAgeGenderYearManager.class, 
 				errorMessage, 

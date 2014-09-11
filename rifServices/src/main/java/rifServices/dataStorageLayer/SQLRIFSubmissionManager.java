@@ -257,7 +257,7 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 					"sqlRIFSubmissionManager.error.unableToAddSubmission",
 					rifStudySubmission.getDisplayName());
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFSubmissionManager.class, 
 				errorMessage, 
@@ -956,7 +956,7 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 					recordType,
 					project.getName());
 
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 

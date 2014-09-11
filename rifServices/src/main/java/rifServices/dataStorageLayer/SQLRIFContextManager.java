@@ -152,7 +152,7 @@ class SQLRIFContextManager
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeographies");
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -225,7 +225,7 @@ class SQLRIFContextManager
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetHealthThemes");
 
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -333,7 +333,7 @@ class SQLRIFContextManager
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetNumeratorDenominatorPair");
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -431,7 +431,7 @@ class SQLRIFContextManager
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetNumeratorDenominatorPair");
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -513,7 +513,7 @@ class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -560,7 +560,7 @@ class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -632,7 +632,7 @@ class SQLRIFContextManager
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelSelect");
 
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -715,7 +715,7 @@ class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -771,7 +771,7 @@ class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -848,7 +848,7 @@ class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -890,7 +890,7 @@ class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -972,7 +972,7 @@ class SQLRIFContextManager
 					RIFServiceError.GET_GEOLEVEL_TO_MAP_VALUES,
 					errorMessage);	
 
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -1027,7 +1027,7 @@ class SQLRIFContextManager
 					RIFServiceError.GET_GEOLEVEL_TO_MAP_VALUES,
 					errorMessage);
 
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -1141,7 +1141,7 @@ class SQLRIFContextManager
 					recordType,
 					geographyName);
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -1222,7 +1222,7 @@ class SQLRIFContextManager
 					recordType,
 					geographyName);
 
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -1287,7 +1287,7 @@ class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				unableToCheckGeoLevelArea, 
@@ -1343,7 +1343,7 @@ class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				unableToCheckGeoLevelArea, 
@@ -1422,7 +1422,7 @@ class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				unableToGetGeoLevelToMap, 
@@ -1491,7 +1491,7 @@ class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				unableToGetGeoLevelToMap, 
@@ -1559,7 +1559,7 @@ class SQLRIFContextManager
 					recordType,
 					healthThemeName);
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -1634,7 +1634,7 @@ class SQLRIFContextManager
 					ndPair.getRecordType(),
 					ndPair.getDisplayName());
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 
@@ -1710,7 +1710,7 @@ class SQLRIFContextManager
 					recordType,
 					numeratorTableName);
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 

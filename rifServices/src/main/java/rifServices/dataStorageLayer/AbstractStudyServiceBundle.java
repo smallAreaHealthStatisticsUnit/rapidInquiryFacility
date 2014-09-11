@@ -203,7 +203,7 @@ class AbstractStudyServiceBundle {
 			sqlConnectionManager.registerUser(userID, password);		
 		}
 		catch(RIFServiceException rifServiceException) {
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				AbstractStudyServiceBundle.class, 
 				"login", 
@@ -284,7 +284,7 @@ class AbstractStudyServiceBundle {
 			sqlConnectionManager.resetConnectionPoolsForUser(user);					
 		}
 					
-		RIFLogger rifLogger = new RIFLogger();
+		RIFLogger rifLogger = RIFLogger.getLogger();
 		rifLogger.error(
 			AbstractStudyServiceBundle.class, 
 			methodName, 

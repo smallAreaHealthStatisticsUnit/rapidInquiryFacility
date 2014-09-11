@@ -132,7 +132,7 @@ class SQLHealthOutcomeManager
 			healthCodeProviders.add(icd9TaxonomyProvider);
 		}
 		catch(RIFServiceException rifServiceException) {
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLHealthOutcomeManager.class, 
 				"constructor", 
@@ -155,7 +155,7 @@ class SQLHealthOutcomeManager
 			healthCodeProviders.add(icd10TaxonomyProvider);
 		}
 		catch(RIFServiceException rifServiceException) {
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLHealthOutcomeManager.class, 
 				"constructor", 
@@ -179,7 +179,7 @@ class SQLHealthOutcomeManager
 			healthCodeProviders.add(opcsCodeProvider);	
 		}
 		catch(RIFServiceException rifServiceException) {
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLHealthOutcomeManager.class, 
 				"constructor", 
@@ -353,7 +353,7 @@ class SQLHealthOutcomeManager
 					diseaseMappingStudy.getDisplayName(),
 					investigation.getDisplayName());
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLHealthOutcomeManager.class, 
 				errorMessage, 

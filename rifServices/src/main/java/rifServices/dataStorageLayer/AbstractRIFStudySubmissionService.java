@@ -254,7 +254,7 @@ abstract class AbstractRIFStudySubmissionService
 			validateUser(user);
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getAvailableRIFOutputOptions",
 					user.getUserID(),
@@ -311,7 +311,7 @@ abstract class AbstractRIFStudySubmissionService
 			validateUser(user);
 		
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getAvailableCalculationMethods",
 					user.getUserID(),
@@ -386,7 +386,7 @@ abstract class AbstractRIFStudySubmissionService
 
 			
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getAgeGroups",
 					user.getUserID(),
@@ -459,7 +459,7 @@ abstract class AbstractRIFStudySubmissionService
 			validateUser(user);		
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getSexes",
 					user.getUserID(),
@@ -541,7 +541,7 @@ abstract class AbstractRIFStudySubmissionService
 				healthCodeNameSpace);
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getHealthCode",
 					user.getUserID(),
@@ -606,7 +606,7 @@ abstract class AbstractRIFStudySubmissionService
 			parentHealthCode.checkSecurityViolations();			
 							
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getImmediateSubterms",
 					user.getUserID(),
@@ -678,7 +678,7 @@ abstract class AbstractRIFStudySubmissionService
 			childHealthCode.checkSecurityViolations();			
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getParentHealthCode",
 					user.getUserID(),
@@ -764,7 +764,7 @@ abstract class AbstractRIFStudySubmissionService
 				searchText);
 		
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getHealthCodes",
 					user.getUserID(),
@@ -846,7 +846,7 @@ abstract class AbstractRIFStudySubmissionService
 			healthTheme.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getNumeratorDenominatorPairs",
 					user.getUserID(),
@@ -943,7 +943,7 @@ abstract class AbstractRIFStudySubmissionService
 				numeratorTableName);
 			
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getNumeratorDenominatorPairFromNumeratorTable",
@@ -1045,7 +1045,7 @@ abstract class AbstractRIFStudySubmissionService
 			geoLevelToMap.checkSecurityViolations();
 	
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getSummaryDataForCurrentExtent",
@@ -1148,7 +1148,7 @@ abstract class AbstractRIFStudySubmissionService
 			geoLevelToMap.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getSummaryDataForCurrentExtent",
@@ -1257,7 +1257,7 @@ abstract class AbstractRIFStudySubmissionService
 			geoLevelToMap.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getSummaryDataForCurrentExtent",
@@ -1350,7 +1350,7 @@ abstract class AbstractRIFStudySubmissionService
 			geoLevelSelect.checkSecurityViolations();
 		
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getGeoLevelToMapValues",
@@ -1458,7 +1458,7 @@ abstract class AbstractRIFStudySubmissionService
 			}
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getMapAreaSummaryInformation",
@@ -1531,7 +1531,7 @@ abstract class AbstractRIFStudySubmissionService
 			validateUser(user);
 		
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getProjects",
@@ -1641,7 +1641,7 @@ abstract class AbstractRIFStudySubmissionService
 			}
 		
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getImage",
@@ -1733,7 +1733,7 @@ abstract class AbstractRIFStudySubmissionService
 
 			
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();	
+			RIFLogger rifLogger = RIFLogger.getLogger();	
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.submittingStudy",
 					user.getUserID(),
@@ -1817,7 +1817,7 @@ abstract class AbstractRIFStudySubmissionService
 				healthCodeTaxonomyNameSpace);
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();	
+			RIFLogger rifLogger = RIFLogger.getLogger();	
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getHealthCodeTaxonomyFromNameSpace",
@@ -1872,7 +1872,7 @@ abstract class AbstractRIFStudySubmissionService
 			validateUser(user);
 			
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();	
+			RIFLogger rifLogger = RIFLogger.getLogger();	
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getHealthCodeTaxonomies",
@@ -1936,7 +1936,7 @@ abstract class AbstractRIFStudySubmissionService
 			healthCodeTaxonomy.checkSecurityViolations();
 		
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();	
+			RIFLogger rifLogger = RIFLogger.getLogger();	
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getTopLevelCodes",

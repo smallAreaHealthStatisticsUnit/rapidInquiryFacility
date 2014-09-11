@@ -313,7 +313,7 @@ class SQLConnectionManager {
 					"sqlConnectionManager.error.unableToRegisterUser",
 					userID);
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 					SQLConnectionManager.class, 
 				errorMessage, 
@@ -511,7 +511,7 @@ class SQLConnectionManager {
 					"sqlConnectionManager.error.unableToDeregisterUser",
 					userID);
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 					SQLConnectionManager.class, 
 				errorMessage, 

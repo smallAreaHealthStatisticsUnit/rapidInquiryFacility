@@ -237,7 +237,7 @@ abstract class AbstractRIFStudyRetrievalService
 			}
 			
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeometry",
 					user.getUserID(),
@@ -333,7 +333,7 @@ abstract class AbstractRIFStudyRetrievalService
 				geoLevelAttribute);	
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getMapAreaAttributeValues",
 					user.getUserID(),
@@ -416,7 +416,7 @@ abstract class AbstractRIFStudyRetrievalService
 			studyResultRetrievalContext.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelAttributeSources",
 					user.getUserID(),
@@ -499,7 +499,7 @@ abstract class AbstractRIFStudyRetrievalService
 			studyResultRetrievalContext.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelAttributeThemes",
 					user.getUserID(),
@@ -588,7 +588,7 @@ abstract class AbstractRIFStudyRetrievalService
 			geoLevelAttributeTheme.checkSecurityViolations();
 						
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getAllAttributesForGeoLevelAttributeTheme",
 					user.getUserID(),
@@ -686,7 +686,7 @@ abstract class AbstractRIFStudyRetrievalService
 			geoLevelAttributeTheme.checkSecurityViolations();
 			
 			//Audit attempt to do operation			
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getNumericAttributesForGeoLevelAttributeTheme",
 					user.getUserID(),
@@ -792,7 +792,7 @@ abstract class AbstractRIFStudyRetrievalService
 			studySummary.checkSecurityViolations();
 				
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();			
+			RIFLogger rifLogger = RIFLogger.getLogger();			
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getCalculatedResultsByBlock",
@@ -895,7 +895,7 @@ abstract class AbstractRIFStudyRetrievalService
 			}
 						
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();			
+			RIFLogger rifLogger = RIFLogger.getLogger();			
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getExtractByBlock",
@@ -1025,7 +1025,7 @@ abstract class AbstractRIFStudyRetrievalService
 			}
 			
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();			
+			RIFLogger rifLogger = RIFLogger.getLogger();			
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getResultsStratifiedByGenderAndAgeGroup",
@@ -1115,7 +1115,7 @@ abstract class AbstractRIFStudyRetrievalService
 			mapArea.checkSecurityViolations();
 			
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelBoundsForArea",
 					user.getUserID(),
@@ -1190,7 +1190,7 @@ abstract class AbstractRIFStudyRetrievalService
 			studyResultRetrievalContext.checkSecurityViolations();
 			
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelFullExtentForStudy",
 					user.getUserID(),
@@ -1268,7 +1268,7 @@ abstract class AbstractRIFStudyRetrievalService
 			geoLevelSelect.checkSecurityViolations();
 				
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelFullExtent",
 					user.getUserID(),
@@ -1358,7 +1358,7 @@ abstract class AbstractRIFStudyRetrievalService
 			geoLevelSelect.checkSecurityViolations();
 			
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getTiles",
 					user.getUserID(),
@@ -1464,7 +1464,7 @@ abstract class AbstractRIFStudyRetrievalService
 			
 			
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getPyramidData",
 					user.getUserID(),
@@ -1564,7 +1564,7 @@ abstract class AbstractRIFStudyRetrievalService
 				geoLevelAttribute);			
 			
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getPyramidDataByYear",
 					user.getUserID(),
@@ -1700,7 +1700,7 @@ abstract class AbstractRIFStudyRetrievalService
 			}
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getPyramidDataByMapAreas",
 					user.getUserID(),
@@ -1789,7 +1789,7 @@ abstract class AbstractRIFStudyRetrievalService
 			geoLevelAttributeSource.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getResultFieldsStratifiedByAgeGroup",
 					user.getUserID(),
@@ -1872,7 +1872,7 @@ abstract class AbstractRIFStudyRetrievalService
 			studySummary.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getSMRValues",
 					user.getUserID(),
@@ -1955,7 +1955,7 @@ abstract class AbstractRIFStudyRetrievalService
 			studySummary.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getRRValues",
 					user.getUserID(),
@@ -2037,7 +2037,7 @@ abstract class AbstractRIFStudyRetrievalService
 			studySummary.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getRRUnadjustedValues",
 					user.getUserID(),
@@ -2130,7 +2130,7 @@ abstract class AbstractRIFStudyRetrievalService
 			studySummary.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getResultStudyGeneralInfo",
 					user.getUserID(),
@@ -2225,7 +2225,7 @@ abstract class AbstractRIFStudyRetrievalService
 			
 			
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getResultAgeGroups",
 					user.getUserID(),

@@ -236,7 +236,7 @@ class SQLInvestigationManager
 					investigation.getRecordType(),
 					investigation.getDisplayName());
 
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLInvestigationManager.class, 
 				errorMessage, 

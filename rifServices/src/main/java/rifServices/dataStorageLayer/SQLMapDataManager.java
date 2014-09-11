@@ -276,7 +276,7 @@ class SQLMapDataManager
 					geography.getName(),
 					geoLevelToMap.getName());
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLMapDataManager.class, 
 				errorMessage, 
@@ -421,7 +421,7 @@ class SQLMapDataManager
 					geography.getName(),
 					geoLevelToMap.getName());
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLMapDataManager.class, 
 				errorMessage, 
@@ -606,7 +606,7 @@ class SQLMapDataManager
 					geography.getName(),
 					geoLevelToMap.getName());
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLMapDataManager.class, 
 				errorMessage, 
@@ -676,7 +676,7 @@ class SQLMapDataManager
 					geography.getName(),
 					resolutionLevel);
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLMapDataManager.class, 
 				errorMessage, 
@@ -741,7 +741,7 @@ class SQLMapDataManager
 					"sqlMapDataManager.error.unableToGetHierarchyTable",
 					geography.getName());
 
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLMapDataManager.class, 
 				errorMessage, 

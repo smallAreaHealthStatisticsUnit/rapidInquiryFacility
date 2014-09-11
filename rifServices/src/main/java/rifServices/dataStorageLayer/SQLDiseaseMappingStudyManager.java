@@ -161,7 +161,7 @@ class SQLDiseaseMappingStudyManager extends AbstractSQLManager {
 					"diseaseMappingStudyManager.error.unableToGetProjects",
 					user.getUserID());
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 					SQLDiseaseMappingStudyManager.class, 
 				errorMessage, 
