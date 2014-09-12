@@ -14,10 +14,15 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max ) {
 
   
   var rSetCount = rSet.length, 
-      chartHeight = (height / rSetCount ) - (margin.top + margin.bottom) ,
+      chartHeight = (height / rSetCount ) - (margin.top + margin.bottom) - ( Math.log((height*height)) ),
 	  maxDataPoint = max;
   
-  
+  var mapMouseOver = function(d){
+			//console.log(this);
+      },
+	  mapMouseOut = function(d){
+			//console.log("exit")
+	  };
 		/*d3.csv('data.csv', createChart);
 		
 		function createChart(data){
@@ -125,14 +130,12 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max ) {
 		
 	return function Chart(options){
 			this.chartData = options.data;
-			this.width = width;
+			this.width = width - 15;
 			this.height = chartHeight;
 			this.maxDataPoint = maxDataPoint;
-			//this.svg = options.svg;
 			this.id = options.id;
 			this.name = options.name;
 			this.margin = margin;
-			//this.showBottomAxis = options.showBottomAxis;
 			
 			var localName = this.name;
 			
@@ -155,7 +158,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max ) {
 				'basis' smooths it the most, however, when working with a lot of data, this will slow it down 
 			*/
 			this.area = d3.svg.area()
-      				 .interpolate("monotone")
+      				 .interpolate("basis")
 						.x(function(d) { return xS(+d.gid.toString()); })
 						.y0(function(d) { 
 							if(d[localName] < 1){
@@ -172,6 +175,27 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max ) {
 								return yS(d[localName])
 							} 
 						});
+			
+			this.area2 = d3.svg.area()
+      				 .interpolate("monotone")
+						.x(function(d) { return xS(+d.gid.toString()); })
+						.y0(function(d) {
+							var f = d[localName] - 0.1;
+							if(f < 1){
+								return yS(f);
+							} else{
+								return yS(1)
+							}
+								
+						})
+						.y1(function(d) { 
+							var f = d[localName] - 0.1;
+							if(f < 1){
+								return yS(1);
+							} else{
+								return yS(f)
+							} 
+						});			
 			/*
 				This isn't required - it simply creates a mask. If this wasn't here,
 				when we zoom/panned, we'd see the chart go off to the left under the y-axis 
@@ -192,9 +216,19 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max ) {
 			/* We've created everything, let's actually add it to the page */
 			this.chartContainer.append("path")
 					.data([this.chartData])
-					.attr("class", "chart")
+					.attr("class", "chart unadj "+this.name.toLowerCase() )
 					.attr("clip-path", "url(#clip-" + this.id + ")")
-					.attr("d", this.area);
+					.attr("d", this.area)
+					 .on("mouseover", mapMouseOver)
+					 .on("mouseout", mapMouseOut);
+					
+			this.chartContainer.append("path")
+					.data([this.chartData])
+					.attr("class", "chart adj "+this.name.toLowerCase())
+					.attr("clip-path", "url(#clip-" + this.id + ")")
+					.attr("d", this.area2)
+					.on("mouseover", mapMouseOver)
+					 .on("mouseout", mapMouseOut);	
 											
 			this.xAxisTop = d3.svg.axis().scale(this.xScale).orient("bottom");
 			this.xAxisBottom = d3.svg.axis().scale(this.xScale).orient("top");
@@ -227,8 +261,10 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max ) {
 					.attr("transform", "translate(10,20)")
 					.text(this.name);
 			
-		}
-			
+		};
+		 
+		
+		
 		Chart.prototype.showOnly = function(b){
 				this.xScale.domain(b);
 				this.chartContainer.select("path").data([this.chartData]).attr("d", this.area);

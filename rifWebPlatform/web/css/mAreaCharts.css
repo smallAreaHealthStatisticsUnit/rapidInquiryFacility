@@ -3,9 +3,12 @@ svg.areaCharts {
 	margin-top:20px;
 	text-transform:uppercase
 }
+svg.areaCharts path {
+	opacity:0.5
+}
 
  text.country-title {
-	font-size: 12px;
+	font-size: 10px;
 	fill: rgb(145, 145, 145);
 	font-weight:600;
 }
@@ -29,10 +32,22 @@ g.context g.axis line {
 	stroke-opacity: .1;
 }
 
-g.rr_unadj path.chart {
-	fill: rgba(127,201,127,0.6);
+g path.unadj {
+	fill: rgba(101, 153, 255,.5);
 }
 
+g path.adj {
+	fill: rgba(9, 112, 84,.5);
+}
+
+g path.unadj:hover {
+	fill: rgba(101, 153, 255,1);
+}
+
+g path.adj:hover {
+	fill: rgba(9, 112, 84,1);
+}
+/*
 g.rr_adj path.chart {
 	fill: rgba(127,201,174,0.6);
 }
@@ -92,7 +107,7 @@ g.het_rr_adj path.chart {
 g.car_rr_adj path.chart {
 	fill: rgba(171,127,201,0.6);
 }
-
+*/
 svg.areaCharts .axis path, .axis line {
 	fill: none;
 	stroke: #aaa;

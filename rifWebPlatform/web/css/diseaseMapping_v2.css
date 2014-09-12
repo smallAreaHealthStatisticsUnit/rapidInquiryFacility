@@ -59,7 +59,7 @@ a:hover{
    }	
    #rifwrap{
 		width:100%;
-		height:100%;
+		height:99%;
 		position:absolute;
    }
 	#navigation{
@@ -95,13 +95,16 @@ a:hover{
 	}
 	#buttons .export{
 		margin: 14px 2px 0 8px	;
-		min-width: 390px;
+		min-width: 320px;
 		width: 25%;
 	}
 	#buttons .export a{
-		margin: 5px 8px;
+		margin:4px 15px;
 		display: block;
+		float: left;
+		padding: 3px 1px;
 		font-size: 22px;
+		text-align: center;
 		text-transform: uppercase;
 		text-decoration: none;
 		color:#E3E3E3
@@ -158,7 +161,8 @@ a:hover{
 	
    .chartOpts {
        width: 25%;  
-       min-width: 390px;  
+	   
+       min-width: 320px;  
 	   float: left;
 	}
 	
@@ -222,9 +226,8 @@ a:hover{
 	
 	#content #leftcol{
 		border-right:1px solid #C1C1C1;
-		position: relative;
-		height: 100%;
-		min-width: 390px;
+		height: 80%;
+		min-width: 300px;
 		width: 25%;
 		float: left;
 	}
@@ -296,20 +299,21 @@ a:hover{
 	
     /* Left Col */
    div#studyLabel{
-		text-transform: uppercase; 
-	
-		width: 100%;
-}
+		padding: 2%;
+		text-transform: uppercase;
+		background-color: #CAE1FF;
+		margin: 0 auto; 
+	}
 	div#studyLabel h1, div#studyLabel h2{
-		padding: 0 4%;
-}
+		text-align:right
+	}
 	
 	div#studyLabel h1{
-		font-size: 120%;
+		font-size: 150%;
 	}
 	
 	div#studyLabel h2{
-		/* font-size: 100%; */
+		font-size: 100%;
 	}
 	
 	div#pyramidField a:hover{
@@ -321,14 +325,6 @@ a:hover{
 	#content #leftcol  div#mAreaCharts{
 		border-top : 2px solid #E3E3E3;
 		background-color: white;
-		/* Firefox */
-		height: -moz-calc(85% - 70px);
-		/* WebKit */
-		height: -webkit-calc(85% - 70px);
-		/* Opera */
-		height: -o-calc(85% - 70px);
-		/* Standard */
-		height: calc(85% - 70px);
 	}
 	
 	#content #leftcol  div#studyInfo{
@@ -373,16 +369,15 @@ a:hover{
 	#mAreaCharts, #studyInfo {
 		margin-left:auto;
 		margin-right:auto;
-		width: 92%;
+		width: 90%;
 	}
 	
 	#content #rightcol{
-		position: relative;
-		height: 100%;
 		overflow:hidden;
+		height: 80%;
 }
 	#content #rightcol #map{
-		height: 70%;
+		height: 100%;
 		display:block;
 		background-color:transparent;
 	}
@@ -410,11 +405,10 @@ a:hover{
 	*
 	*/
 	#rr_chart{
-		border-top: 1px solid #C1C1C1;
-		height: 30%;
+		border: 1px solid #C1C1C1;
+		height: 20%;
 		margin-top: 1px;
 		background-color: #FFFFFF;
-		overflow: hidden;
 }
 
 	/*

@@ -27,10 +27,10 @@ RIF.chart.multipleAreaCharts = ( function() {
 
       dimensions: {
         width: function() {
-          return $( '#mAreaCharts' ).width()
+          return $( '#' + settings.element).width()
         },
         height: function() {
-          return $( '#mAreaCharts' ).height()
+          return $( '#' + settings.element ).height()
         }
       }
     },
@@ -95,7 +95,7 @@ RIF.chart.multipleAreaCharts = ( function() {
 	},
 	
     _clear = function() {
-      $( '#mAreaCharts' ).empty();
+      $( '#' + settings.element ).empty();
     }
 
     _p = {

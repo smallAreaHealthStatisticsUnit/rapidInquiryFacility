@@ -46,7 +46,6 @@ RIF.chart.line_bivariate = ( function() {
       },
 
       updateLine_bivariate: function( sett ) {
-		console.log(sett);
         var callback = function() {
           //_setLineBivariateField( sett.field );
           data = this;
