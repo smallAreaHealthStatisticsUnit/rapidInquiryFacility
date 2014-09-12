@@ -108,7 +108,7 @@ Check - min < max, max/min precison is appropriate to type
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 	c1tcov CURSOR (l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR) IS
 		SELECT column_name
@@ -257,7 +257,7 @@ Check - table_name exists.
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 	schema	VARCHAR;
 BEGIN
@@ -322,7 +322,7 @@ Check postal_population_table if set and expected columns
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 	c1geog CURSOR (l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR) FOR
 		SELECT column_name
@@ -522,7 +522,7 @@ Check previous_value_Nchar AND previous_description_Nchar if NOT NULL AND (previ
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 	schema VARCHAR(30);
 BEGIN
@@ -636,7 +636,7 @@ Check condition for SQL injection
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 BEGIN
 	IF TG_OP = 'DELETE' THEN
@@ -703,7 +703,7 @@ Check - grantee username has RIF_USER or RIF_MANAGER role.
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 -- $Log: v4_0_postgres_triggers.sql,v $
 -- Revision 1.6  2014/02/24 10:50:28  peterh
@@ -964,7 +964,7 @@ Check table_name, total_field, sex_field_name, age_group_field_name, age_sex_gro
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 	c1rt CURSOR (l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR) FOR
 		WITH all_tab_columns AS (
@@ -1125,7 +1125,7 @@ Check numer_tab is a numerator
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
         c1rto CURSOR(l_table VARCHAR) FOR
 		SELECT *
@@ -1221,7 +1221,7 @@ Check - single column, populate schema_amended. Prevent DELETE or INSERT
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 	c1vc CURSOR FOR
 		SELECT COUNT(*) AS total
@@ -1310,7 +1310,7 @@ IF USER = NEW.username (i.e. not initial RIF40 INSERT) THEN
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 -- $Log: v4_0_postgres_triggers.sql,v $
 -- Revision 1.6  2014/02/24 10:50:28  peterh
@@ -2348,7 +2348,7 @@ Check - DELETE only allowed on own records.
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 	c4_cksa CURSOR IS
 		SELECT COUNT(study_id) AS total
@@ -2461,7 +2461,7 @@ Check - area_id
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 -- $Log: v4_0_postgres_triggers.sql,v $
 -- Revision 1.6  2014/02/24 10:50:28  peterh
@@ -2680,7 +2680,7 @@ Check - DELETE only allowed on own records.
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 -- $Log: v4_0_postgres_triggers.sql,v $
 -- Revision 1.6  2014/02/24 10:50:28  peterh
@@ -2888,7 +2888,7 @@ Check - area_id; once per statement (for performance reasons)
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 	c1_cack2 CURSOR (l_study_id  integer) FOR
 		SELECT a.study_id, a.study_geolevel_name, a.comparison_geolevel_name, b.hierarchytable
@@ -3028,7 +3028,7 @@ Check - CONDITION for SQL injection
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 -- $Log: v4_0_postgres_triggers.sql,v $
 -- Revision 1.6  2014/02/24 10:50:28  peterh
@@ -3201,7 +3201,7 @@ Check - Covariates a) MIN and MAX.  b) Limits c) Check access to covariate table
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 	c1_ckicov CURSOR (l_geography  varchar, l_geolevel_name  varchar, l_covariate_name  varchar) FOR
 		SELECT *
@@ -3685,7 +3685,7 @@ Check
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 	c1_geock CURSOR (l_schema  varchar, l_table  varchar, l_column  varchar) IS
 		SELECT column_name
@@ -3983,7 +3983,7 @@ Check numerator_table really is a numerator and likewise for the denominator
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 	c1_rnd CURSOR (l_table varchar) FOR
 		SELECT *
@@ -4077,7 +4077,7 @@ Check project has not ended
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 	c2_rup CURSOR(l_project  varchar) IS
 		SELECT *
@@ -4212,7 +4212,7 @@ Check - relative_risk, smoothed_relative_risk, posterior_probability, posterior_
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 	c4_resck CURSOR FOR
 		SELECT COUNT(study_id) AS total
@@ -4387,7 +4387,7 @@ Check - DELETE only allowed on own records.
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 
 	c4_cstck CURSOR FOR

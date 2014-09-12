@@ -99,7 +99,7 @@ Check - AGE_GROUP_ID, AGE_SEX_GROUP/AGE_GROUP/SEX_FIELD_NAMES are the same betwe
 -- $Revision: 1.6 $
 -- $State: Exp $
 -- $Locker:  $
--- $Id: v4_0_postgres_triggers.sql,v 1.6 2014/02/24 10:50:28 peterh Exp $
+-- $Id$
 --
 	c1_ick CURSOR(l_table_name  varchar) FOR
 		SELECT a.year_start, a.year_stop, a.isindirectdenominator, a.isdirectdenominator, a.isnumerator,
