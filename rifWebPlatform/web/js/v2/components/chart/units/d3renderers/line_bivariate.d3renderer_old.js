@@ -1,6 +1,6 @@
 RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
 
-  /*
+   /*
 	    Need to change X axis , probably into ordinal and set the domain as the gid array (maybe!)
 		Currently only works when the data passed is ordered by gid.
 	*/
@@ -8,11 +8,11 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
     margin = opt.margin,
     width = opt.dimensions.width(),
     height = opt.dimensions.height() - margin.top - margin.bottom,
-    idField = $.trim(opt.id_field),
-    orderField = $.trim(opt.x_field),
-    lineField = $.trim(opt.line_field),
-    lowField = $.trim(opt.cl_field),
-    highField = $.trim(opt.cu_field);
+    idField = opt.id_field,
+    orderField = opt.x_field,
+    lineField = opt.line_field,
+    lowField = opt.cl_field,
+    highField = opt.cu_field;
 
 
   var line = d3.svg.line()
@@ -132,7 +132,7 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
     .attr( "dy", ".4em" )
     .style( "text-anchor", "end" )
     .style( "fill", "#919191" )
-	.attr( "transform", "translate(40,5)" )
+	.attr( "transform", "translate(5,5)" )
     .text( lineField );
 
 
@@ -173,7 +173,6 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
   function brushed() {
     var domain = brush.empty() ? x2.domain() : brush.extent(),
       domain = [ parseInt( domain[ 0 ] ), parseInt( domain[ 1 ] ) ];
-
     x.domain( domain );
     y.domain( y2.domain() );
     focus.select( ".area" ).attr( "d", area );

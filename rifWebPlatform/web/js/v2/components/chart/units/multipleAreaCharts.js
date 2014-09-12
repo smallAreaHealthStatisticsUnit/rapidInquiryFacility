@@ -1,11 +1,15 @@
 RIF.chart.multipleAreaCharts = ( function() {
 
   var chart = this,
-
-    data = null,
-
-    rSet = null,
-
+	
+	minMax = null,
+	
+	data = [], 
+	
+	rSet = null,
+	
+	newChart = null,
+	
     settings = {
       element: "mAreaCharts",
       id_field: "gid",
@@ -15,10 +19,10 @@ RIF.chart.multipleAreaCharts = ( function() {
       cl_field: "llsrr",
       cu_field: "ulsrr",
       margin: {
-        top: 0,
+        top: 5,
         right: 10,
         bottom: 0,
-        left: 20
+        left: 25
       },
 
       dimensions: {
@@ -30,47 +34,81 @@ RIF.chart.multipleAreaCharts = ( function() {
         }
       }
     },
-
-    _initSVG = function() {
-
+	
+	_findMinMaxResultSet = function( clbk ){
+		RIF.getMinMaxResultSet( clbk, [/* studyID, invId, [year] */] );
+	},
+	
+	_getNewChart = function(){
+		 _clear();
+		var callback = function(){
+			minMax = this;
+			_initSVG();
+			_getRiskResultOneByOne(newChart);
+		};
+		
+		_findMinMaxResultSet( callback );
+	},
+	
+	_initSVG = function(){
+		newChart = RIF.chart.multipleAreaCharts.d3renderer( settings, rSet, minMax.max );
+	},
+	
+	_getRiskResultOneByOne = function( newChart ){
+		var requestCount = 0,
+		    callback = function() {	
+			  data.push(d3.csv.parse( this ));
+			  drawChart(requestCount);
+			  if( ++requestCount ===  rSet.length){
+				 _addResizable();
+			  }else{
+				_getRiskData( callback, requestCount );
+			  }
+			}		
+		_getRiskData( callback, requestCount );
+	},
+	
+	_getRiskData = function( clbk, idx ){
+		RIF.getRiskResults( clbk, [ rSet[idx] /* studyId, invId /*year*/] );
+	}
+	
+	drawChart = function( idx ){
+		newChart({
+			data: data[idx].slice(),
+			id: idx,
+			name: rSet[idx]
+		});
+	}
+	
+    _rerender = function() {
+	  _clear();
+	  _initSVG();	  
+	  var l = data.length;	
+	  for( var i=0 ; i<l; i++){
+		drawChart(i);
+	  };	
+	  _addResizable();
     },
-
-    _render = function( update ) {
-      _clear();
-      RIF.chart.multipleAreaCharts.d3renderer( settings, rSet, d3.csv.parse( data ), update );
-      chart.facade.addResizableAreaCharts();
-    },
-
+	
+	_addResizable = function(){
+		chart.facade.addResizableAreaCharts();
+	},
+	
     _clear = function() {
       $( '#mAreaCharts' ).empty();
-    },
-
-    getRiskResultOneByOne = function( resultSets ) {
-      var l = resultSets.length;
-      while ( l-- ) {
-        RIF.getRiskResults( callback, [ resultSets[ l ] /* studyId, invId /*year*/ ] );
-      };
-    },
+    }
 
     _p = {
 
       updateMultipleAreaCharts: function( resultSets ) {
-        rSet = resultSets;
-
-        var callback = function() {
-          data = this;
-          _render( false );
-        };
-
-        RIF.getRiskResults( callback, [ /* studyId, invId /*year*/] );
-        //getRiskResultOneByOne( resultSets );
-
-      },
-
-      renderMultipleArea: function() {
-        _render( true );
+		 rSet = resultSets;
+		_getNewChart();
+	  },
+	  
+	  renderMultipleArea: function() {
+        _rerender( );
       }
-
+	  
 
     };
 

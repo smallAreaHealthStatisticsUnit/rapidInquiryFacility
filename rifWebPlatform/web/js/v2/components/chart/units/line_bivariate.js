@@ -8,7 +8,7 @@ RIF.chart.line_bivariate = ( function() {
       element: "rr_chart",
       id_field: "gid",
       x_field: "x_order",
-      line_field: "srr",
+      line_field: "rr_unadj",
       line_field_color: "#8DB6CD",
       cl_field: "llsrr",
       cu_field: "ulsrr",
@@ -46,13 +46,14 @@ RIF.chart.line_bivariate = ( function() {
       },
 
       updateLine_bivariate: function( sett ) {
+		console.log(sett);
         var callback = function() {
           //_setLineBivariateField( sett.field );
           data = this;
           _render( false );
         };
         //_p.setHistoSettings( sett );
-        RIF.getResultSet( callback, [ /*type, studyId, invId /*year*/] );
+        RIF.getResultSet( callback, [ settings.line_field /*type, studyId, invId /*year*/] );
       }
 
     };

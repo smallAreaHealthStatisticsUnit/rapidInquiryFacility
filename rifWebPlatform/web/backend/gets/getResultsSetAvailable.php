@@ -6,7 +6,8 @@ $studyId = $_GET['studyId'];
 $invId =  $_GET['investigationId'];
 $year  = (isset($_GET['year']) ? $_GET['year'] : null );
 
-$res =  array( 'srr' , 'smr' , 'sresrr');
+//$res =  array( 'srr' , 'smr' , 'sresrr');
+$res =  array( 'rr_unadj' , 'smrr_adj' , 'bym_ssrr_unadj');
 echo json_encode($res);;
 
 ?>

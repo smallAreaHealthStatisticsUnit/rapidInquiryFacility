@@ -1,26 +1,26 @@
-RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, resultSets, data, update ) {
+RIF.chart.multipleAreaCharts.d3renderer = ( function( settings,resultSets, data , update ) {	
   //Will sort it later
   var margin = settings.margin,
     width = settings.dimensions.width(),
     height = settings.dimensions.height(),
     contextHeight = 50,
     contextWidth = width * .5,
-    el = settings.element;
+	el = settings.element;
 
   var svg = d3.select( "#" + el ).append( "svg" )
     .attr( "width", width - margin.left - margin.right )
     .attr( "height", ( height - margin.top - margin.bottom ) );
 
 
-  //var resultsSet = []; // To be replaced as results set
-  var charts = [];
-
-  /* Loop through first row and get each country 
+   //var resultsSet = []; // To be replaced as results set
+   var charts = [];
+  
+    /* Loop through first row and get each country 
 		and push it into an array to use later */
 
-  // !!! Probably won't need this, I can get number of results set from DB
-
-  /*for ( var prop in data[ 0 ] ) {
+    // !!! Probably won't need this, I can get number of results set from DB
+    
+	/*for ( var prop in data[ 0 ] ) {
       if ( data[ 0 ].hasOwnProperty( prop ) ) {
         if ( prop != 'Year' ) {
           countries.push( prop );
@@ -28,32 +28,32 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, resultSets, data
       }
     };*/
 
-  var resultsCount = count = resultSets.length,
-    maxDataPoint = 0,
-    minDataPoint = 0;
-
-  while ( count-- ) {
-    var currentMax = d3.max( data, function( d ) {
-      return d[ resultSets[ count ] ];
-    } );
-    var currentMin = d3.min( data, function( d ) {
-      return d[ resultSets[ count ] ];
-    } );
-    maxDataPoint = ( maxDataPoint > currentMax ) ? maxDataPoint : currentMax;
-    minDataPoint = ( minDataPoint > currentMin ) ? minDataPoint : currentMin;
-  };
-
-  /*var startYear = data[ 0 ].Year;
+    var resultsCount = count =  resultSets.length, 
+		maxDataPoint = 0,
+		minDataPoint = 0;
+		
+	while( count-- ) {
+		var currentMax = d3.max( data, function( d ) {
+			return d[ resultSets[count] ];
+		});
+		var currentMin = d3.min( data, function( d ) {
+			return d[ resultSets[count] ];
+		});
+		maxDataPoint = (maxDataPoint >  currentMax) ? maxDataPoint : currentMax;
+		minDataPoint = (minDataPoint >  currentMin) ? minDataPoint : currentMin;
+	};
+	
+    /*var startYear = data[ 0 ].Year;
     var endYear = data[ data.length - 1 ].Year;*/
-  var chartHeight = height * ( 1 / resultsCount );
+    var chartHeight = height * ( 1 / resultsCount );
 
-  /* Let's make sure these are all numbers, 
+    /* Let's make sure these are all numbers, 
 		we don't want javaScript thinking it's text 
 							
 		Let's also figure out the maximum data point
 		We'll use this later to set the Y-Axis scale
 	  */
-  /*data.forEach( function( d ) {
+    /*data.forEach( function( d ) {
       for ( var prop in d ) {
         if ( d.hasOwnProperty( prop ) ) {
           d[ prop ] = parseFloat( d[ prop ] );
@@ -68,26 +68,26 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, resultSets, data
      // d.Year = new Date( d.Year, 0, 1 );
     } );*/
 
-  for ( var i = 0; i < resultsCount; i++ ) {
-    charts.push( new Chart( {
-      data: data.slice(),
-      id: i,
-      name: resultSets[ i ],
-      width: width,
-      height: height * ( 1 / resultsCount ),
-      maxDataPoint: maxDataPoint,
-      minDataPoint: minDataPoint,
-      svg: svg,
-      margin: margin,
-      showBottomAxis: ( i == resultsCount - 1 )
-    } ) );
+    for ( var i = 0; i < resultsCount; i++ ) {
+      charts.push( new Chart( {
+        data: data.slice(),
+        id: i,
+        name: resultSets[ i ],
+        width: width,
+        height: height * ( 1 / resultsCount ),
+		maxDataPoint: maxDataPoint,
+		minDataPoint: minDataPoint,
+        svg: svg,
+        margin: margin,
+        showBottomAxis: ( i == resultsCount - 1 )
+      } ) );
 
-  }
+    }
 
-  /* Let's create the context brush that will 
+    /* Let's create the context brush that will 
 		let us zoom and pan the chart */
-
-  /*var contextXScale = d3.time.scale()
+    
+	/*var contextXScale = d3.time.scale()
       .range( [ 0, contextWidth ] )
       .domain( charts[ 0 ].xScale.domain() );
 
@@ -143,7 +143,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, resultSets, data
     this.width = options.width;
     this.height = options.height;
     this.maxDataPoint = options.maxDataPoint;
-    this.minDataPoint = options.minDataPoint;
+	this.minDataPoint = options.minDataPoint;
     this.svg = options.svg;
     this.id = options.id;
     this.name = options.name;
@@ -155,16 +155,16 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, resultSets, data
     /* XScale is time based */
     this.xScale = d3.scale.linear()
       .range( [ 0, this.width ] )
-      .domain( d3.extent( this.chartData.map( function( d ) {
-        return d[ "x_order" ];
+      .domain(  d3.extent( this.chartData.map( function( d ) {
+        return d["x_order"] ;
       } ) ) );
 
     /* YScale is linear based on the maxData Point we found earlier */
     this.yScale = d3.scale.linear()
       .range( [ this.height, 0 ] )
       .domain( [ 0, this.maxDataPoint ] );
-
-    var xS = this.xScale;
+    
+	var xS = this.xScale;
     var yS = this.yScale;
 
     /* 
@@ -175,7 +175,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, resultSets, data
     this.area = d3.svg.area()
       .interpolate( "basis" )
       .x( function( d ) {
-        return xS( d[ "x_order" ] );
+        return xS( d["x_order"] );
       } )
       .y0( this.height )
       .y1( function( d ) {
@@ -192,8 +192,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, resultSets, data
       .append( "rect" )
       .attr( "width", this.width )
       .attr( "height", this.height );
-    */
-    /*
+    *//*
 		Assign it a class so we can assign a fill color
 		And position it on the page
 	  */
@@ -209,7 +208,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, resultSets, data
       .attr( "clip-path", "url(#clip-" + this.id + ")" )
       .attr( "d", this.area );
 
-    /* this.xAxisTop = d3.svg.axis().scale( this.xScale ).orient( "bottom" );
+   /* this.xAxisTop = d3.svg.axis().scale( this.xScale ).orient( "bottom" );
     this.xAxisBottom = d3.svg.axis().scale( this.xScale ).orient( "top" );
     // We only want a top axis if it's the first country 
     if ( this.id == 0 ) {

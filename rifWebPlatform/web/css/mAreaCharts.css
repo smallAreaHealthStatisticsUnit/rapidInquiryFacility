@@ -1,16 +1,20 @@
 svg.areaCharts {
 	font-size: 10px;
-	font-weight: 700;
-	margin-top:20px
+	margin-top:20px;
+	text-transform:uppercase
 }
 
  text.country-title {
-	font-size: 14px;
-	fill: rgb(145, 145, 145)
+	font-size: 12px;
+	fill: rgb(145, 145, 145);
+	font-weight:600;
 }
 
 text.instructions {
 	font-size: 16px;
+}
+svg.areaCharts .axis .tick {
+	fill: #919191;
 }
 
 g.context g.brush rect.background {
@@ -25,23 +29,67 @@ g.context g.axis line {
 	stroke-opacity: .1;
 }
 
-g.france path.chart {
+g.rr_unadj path.chart {
 	fill: rgba(127,201,127,0.6);
 }
 
-g.germany path.chart {
+g.rr_adj path.chart {
 	fill: rgba(127,201,174,0.6);
 }
 
-g.japan path.chart {
+g.smrr_unadj path.chart {
 	fill: rgba(127,183,201,0.6);
 }
 
-g.uk path.chart {
+g.smrr_adj path.chart {
 	fill: rgba(127,130,201,0.6);
 }
 
-g.usa path.chart {
+g.bym_ssrr_unadj path.chart {
+	fill: rgba(171,127,201,0.6);
+}
+
+g.het_ssrr_unadj path.chart {
+	fill: rgba(171,127,201,0.6);
+}
+
+g.car_ssrr_unadj path.chart {
+	fill: rgba(171,127,201,0.6);
+}
+
+g.bym_ssrr_adj path.chart {
+	fill: rgba(171,127,201,0.6);
+}
+
+g.het_ssrr_adj path.chart {
+	fill: rgba(171,127,201,0.6);
+}
+
+g.car_ssrr_adj path.chart {
+	fill: rgba(171,127,201,0.6);
+}
+
+g.bym_rr_unadj path.chart {
+	fill: rgba(171,127,201,0.6);
+}
+
+g.het_rr_unadj path.chart {
+	fill: rgba(171,127,201,0.6);
+}
+
+g.car_rr_unadj path.chart {
+	fill: rgba(171,127,201,0.6);
+}
+
+g.bym_rr_adj path.chart {
+	fill: rgba(171,127,201,0.6);
+}
+
+g.het_rr_adj path.chart {
+	fill: rgba(171,127,201,0.6);
+}
+
+g.car_rr_adj path.chart {
 	fill: rgba(171,127,201,0.6);
 }
 
