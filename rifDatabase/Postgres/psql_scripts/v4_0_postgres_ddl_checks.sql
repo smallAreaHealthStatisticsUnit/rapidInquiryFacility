@@ -51,9 +51,9 @@
 --
 -- Peter Hambly, SAHSU
 --
-\set ECHO all
+\set ECHO :echo
 \set ON_ERROR_STOP ON
-\timing
+\set VERBOSITY :verbosity
 
 --
 -- Check user is rif40
@@ -61,9 +61,9 @@
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF user = 'rif40' THEN
-		RAISE INFO 'User check: %', user;	
+		RAISE INFO 'v4_0_postgres_ddl_checks.sql: DDL01: User check: %', user;	
 	ELSE
-		RAISE EXCEPTION 'C20900: User check failed: % is not rif40', user;	
+		RAISE EXCEPTION 'v4_0_postgres_ddl_checks.sql: DDL02: User check failed: % is not rif40', user;	
 	END IF;
 END;
 $$;
@@ -74,26 +74,22 @@ $$;
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF current_database() = 'sahsuland_dev' THEN
-		RAISE INFO 'Database check: %', current_database();	
+		RAISE INFO 'v4_0_postgres_ddl_checks.sql: DDL03: Database check: %', current_database();	
 	ELSE
-		RAISE EXCEPTION 'C20901: Database check failed: % is not sahsuland_dev', current_database();	
+		RAISE EXCEPTION 'v4_0_postgres_ddl_checks.sql: DDL04: Database check failed: % is not sahsuland_dev', current_database();	
 	END IF;
 END;
 $$;
 
 \echo Checking all tables, triggers, columns and comments are present, objects granted to rif_user/rif_manmger, sequences granted...
-\set ECHO all
-\set ON_ERROR_STOP ON
 
-\set VERBOSITY terse
-SHOW search_path;
 DO LANGUAGE plpgsql $$
 BEGIN
         PERFORM rif40_sql_pkg.rif40_ddl_checks();
 END;
 $$;
-\set VERBOSITY default
 
 \echo Checked all tables, triggers, columns and comments are present, objects granted to rif_user/rif_manmger, sequences granted.
+
 --
 -- Eof

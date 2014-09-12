@@ -185,8 +185,8 @@ BEGIN
 --
 	FOREACH l_table IN ARRAY transition_tables LOOP
 		sql_stmt:='SELECT COUNT(study_id) AS total FROM '||LOWER(l_table)||' WHERE study_id = $1';
-		PERFORM rif40_log_pkg.rif40_log('DEBUG2', '[55003] rif40_verify_state_change', 	
-			'SQL> %;',
+		PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_verify_state_change', 	
+			'[55003] SQL> %;',
 			sql_stmt::VARCHAR);
 		OPEN c1_verst FOR EXECUTE sql_stmt USING study_id;
 		FETCH c1_verst INTO c1_rec;
@@ -408,6 +408,7 @@ U: upgraded record from V3.1 RIF (has an indeterminate state; probably R).
 ';
    
 GRANT EXECUTE ON FUNCTION rif40_sm_pkg.rif40_verify_state_change(INTEGER, VARCHAR, VARCHAR) TO rif40;
+GRANT EXECUTE ON FUNCTION rif40_sm_pkg.rif40_verify_state_change(INTEGER, VARCHAR, VARCHAR) TO rif_user,rif_manager;
 
 --
 -- Eof

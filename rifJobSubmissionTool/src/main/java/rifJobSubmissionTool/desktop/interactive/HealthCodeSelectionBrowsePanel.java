@@ -1,14 +1,14 @@
 package rifJobSubmissionTool.desktop.interactive;
 
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
-
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 
 import java.awt.GridBagConstraints;
 import java.util.ArrayList;
+
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;

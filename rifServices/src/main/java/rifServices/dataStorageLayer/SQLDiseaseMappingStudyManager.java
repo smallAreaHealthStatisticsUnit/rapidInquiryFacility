@@ -161,7 +161,7 @@ class SQLDiseaseMappingStudyManager extends AbstractSQLManager {
 					"diseaseMappingStudyManager.error.unableToGetProjects",
 					user.getUserID());
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 					SQLDiseaseMappingStudyManager.class, 
 				errorMessage, 
@@ -306,7 +306,7 @@ class SQLDiseaseMappingStudyManager extends AbstractSQLManager {
 			true);
 	
 		ArrayList<MapArea> mapAreas = area.getMapAreas();
-		mapDataManager.checkNonExistentAreas(
+		mapDataManager.checkAreasExist(
 			connection, 
 			geographyName, 
 			geoLevelToMap.getName(), 

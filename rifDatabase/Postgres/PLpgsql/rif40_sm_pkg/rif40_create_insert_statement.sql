@@ -9,7 +9,7 @@
 -- Description:
 --
 -- Rapid Enquiry Facility (RIF) - RIF state machine
---     				  rif40_insert_extract
+--     				  			  rif40_create_insert_statement
 --
 -- Copyright:
 --

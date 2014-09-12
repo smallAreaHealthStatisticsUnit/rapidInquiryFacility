@@ -2,7 +2,10 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.RIFSession;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
+
+import rifGenericUILibrary.OrderedListPanel;
+import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericUILibrary.ListEditingButtonPanel;
 
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.DisplayableListItem;
@@ -12,6 +15,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.*;
 import java.util.ArrayList;
+
 import javax.swing.event.ListSelectionListener;
 import javax.swing.JPanel;
 
@@ -103,7 +107,7 @@ class CovariatesListPanel implements ActionListener {
 	/** The list panel. */
 	private OrderedListPanel listPanel;	
 	/** The list editing button control panel. */
-	private ListEditingButtonControlPanel listEditingButtonControlPanel;
+	private ListEditingButtonPanel listEditingButtonPanel;
 		
 // ==========================================
 // Section Construction
@@ -131,12 +135,11 @@ class CovariatesListPanel implements ActionListener {
 	    		userInterfaceFactory,
 	    		true);
 		
-		listEditingButtonControlPanel
-			= new ListEditingButtonControlPanel(userInterfaceFactory);
-		listEditingButtonControlPanel.setIncludeEditButton(false);
-		listEditingButtonControlPanel.setIncludeCopyButton(false);
-		listEditingButtonControlPanel.setIncludeDeleteButton(true);
-		listEditingButtonControlPanel.addActionListener(this);
+		listEditingButtonPanel
+			= new ListEditingButtonPanel(userInterfaceFactory);
+		listEditingButtonPanel.includeAddButton(null);
+		listEditingButtonPanel.includeDeleteButton(null);
+		listEditingButtonPanel.addActionListener(this);
 		
 		buildUI();
     }
@@ -162,8 +165,7 @@ class CovariatesListPanel implements ActionListener {
 		panelGC.weightx = 0;
 		panelGC.weighty = 0;
 		panelGC.anchor = GridBagConstraints.SOUTHEAST;
-		listEditingButtonControlPanel.buildUI();
-		panel.add(listEditingButtonControlPanel.getPanel(), panelGC);
+		panel.add(listEditingButtonPanel.getPanel(), panelGC);
     }
     
 // ==========================================
@@ -283,11 +285,11 @@ class CovariatesListPanel implements ActionListener {
 	private void updateListGUIFeatures() {	
 		
 		if (listPanel.isEmpty() == true) {
-			listEditingButtonControlPanel.setEmptyState();
+			listEditingButtonPanel.indicateEmptyState();
 		}
 		else {
 			listPanel.setSelectedItem(0);
-			listEditingButtonControlPanel.setNonEmptyState();			
+			listEditingButtonPanel.indicatePopulatedState();			
 		}
 	}
 	
@@ -309,10 +311,10 @@ class CovariatesListPanel implements ActionListener {
 		
 		Object button = event.getSource();
 		
-		if (listEditingButtonControlPanel.isAddButton(button)) {
+		if (listEditingButtonPanel.isAddButton(button)) {
 			addCovariate();
 		}
-		else if (listEditingButtonControlPanel.isDeleteButton(button)) {
+		else if (listEditingButtonPanel.isDeleteButton(button)) {
 			deleteSelectedCovariates();
 		}		
 	}

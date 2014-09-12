@@ -1,6 +1,6 @@
 /**
  * Contains generic classes that have minimal dependencies on RIF-specific concepts.
- * The most significant class is {@link rifJobSubmissionTool.util.UserInterfaceFactory},
+ * The most significant class is {@link rifGenericUILibrary.UserInterfaceFactory},
  * which centralises the task of creating Java GUI components.  The class is meant to 
  * help reduce the amount of code used to create user interface features.  The factory
  * also allows the prospect of applying properties across multiple classes of GUI

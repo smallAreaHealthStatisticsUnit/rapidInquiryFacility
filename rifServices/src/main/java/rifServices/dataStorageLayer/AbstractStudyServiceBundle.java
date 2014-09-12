@@ -1,8 +1,6 @@
 package rifServices.dataStorageLayer;
 
 
-import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
-import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
@@ -111,7 +109,6 @@ class AbstractStudyServiceBundle {
 		final RIFServiceStartupOptions rifServiceStartupOptions) 
 		throws RIFServiceException {
 		
-		System.out.println("AbstractStudyServiceBundle - initialise 2");
 		rifServiceResources
 			= RIFServiceResources.newInstance(rifServiceStartupOptions);
 		setRIFServiceResources(rifServiceResources);
@@ -206,7 +203,7 @@ class AbstractStudyServiceBundle {
 			sqlConnectionManager.registerUser(userID, password);		
 		}
 		catch(RIFServiceException rifServiceException) {
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				AbstractStudyServiceBundle.class, 
 				"login", 
@@ -287,7 +284,7 @@ class AbstractStudyServiceBundle {
 			sqlConnectionManager.resetConnectionPoolsForUser(user);					
 		}
 					
-		RIFLogger rifLogger = new RIFLogger();
+		RIFLogger rifLogger = RIFLogger.getLogger();
 		rifLogger.error(
 			AbstractStudyServiceBundle.class, 
 			methodName, 

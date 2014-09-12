@@ -1,13 +1,14 @@
 package rifJobSubmissionTool.desktop.interactive;
 
+import rifGenericUILibrary.ErrorDialog;
+import rifGenericUILibrary.ListEditingButtonPanel;
+import rifGenericUILibrary.NoDataAvailablePanel;
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
-
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
 import rifJobSubmissionTool.system.MapAreaSelectionEvent;
 import rifJobSubmissionTool.system.RIFSession;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
-
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelArea;
@@ -16,8 +17,8 @@ import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.MapAreaSummaryData;
-import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
+import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 import rifServices.io.MapAreaListReader;
 import rifServices.io.MapAreaListWriter;
 import rifServices.io.XMLFileFilter;
@@ -33,6 +34,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -145,18 +147,17 @@ class MapAreaListSelectionPanel
 	/** The map image panel. */
 	private MapImagePanel mapImagePanel;	
 	/** The add to basket button. */
-	private JButton addToBasketButton;
-	/** The delete from basket button. */
-	private JButton deleteFromBasketButton;	
-	/** The edit basket button. */
-	private JButton editBasketButton;
-	/** The clear basket button. */
-	private JButton clearBasketButton;
-	/** The import map areas button. */
-	private JButton importMapAreasButton;
-	/** The export map areas button. */
-	private JButton exportMapAreasButton;
 	
+	private ListEditingButtonPanel basketControlButtonPanel;
+	
+/*	
+	private JButton addToBasketButton;
+	private JButton deleteFromBasketButton;	
+	private JButton editBasketButton;
+	private JButton clearBasketButton;
+	private JButton importMapAreasButton;
+	private JButton exportMapAreasButton;
+*/	
 		
 	// ==========================================
 	// Section Construction
@@ -193,28 +194,9 @@ class MapAreaListSelectionPanel
 			= userInterfaceFactory.createNonEditableTextArea(4, 30);
 		
 		mapImagePanel = new MapImagePanel();
-		String addToBasketButtonText
-			= RIFJobSubmissionToolMessages.getMessage("general.buttons.add.label");
-		addToBasketButton 
-			= userInterfaceFactory.createButton(addToBasketButtonText);
-		addToBasketButton.addActionListener(this);
-		String deleteFromBasketButtonText
-			= RIFJobSubmissionToolMessages.getMessage("general.buttons.delete.label");
-		deleteFromBasketButton 
-			= userInterfaceFactory.createButton(deleteFromBasketButtonText);
-		deleteFromBasketButton.addActionListener(this);
-		String editBasketButtonText
-			= RIFJobSubmissionToolMessages.getMessage("general.buttons.edit.label");
-		editBasketButton
-			= userInterfaceFactory.createButton(editBasketButtonText);
-		editBasketButton.addActionListener(this);
-		String clearBasketButtonText
-			= RIFJobSubmissionToolMessages.getMessage("general.buttons.clear.label");
-		clearBasketButton
-			= userInterfaceFactory.createButton(clearBasketButtonText);
-		clearBasketButton.addActionListener(this);
-
 		panel = userInterfaceFactory.createPanel();
+		
+		basketControlButtonPanel = new ListEditingButtonPanel(userInterfaceFactory);
 	}
 
 	/**
@@ -346,55 +328,27 @@ class MapAreaListSelectionPanel
 	 */
 	private JPanel createBasketControlButtonsPanel() {
 		
-		JPanel panel = userInterfaceFactory.createPanel();
-		GridBagConstraints panelGC 
-			= userInterfaceFactory.createGridBagConstraints();
-		panelGC.anchor = GridBagConstraints.SOUTHWEST;
-		panelGC.fill = GridBagConstraints.NONE;
-		panelGC.weightx = 0;
-		panelGC.ipadx = 5;
-	
-		panelGC.fill = GridBagConstraints.NONE;
-		panelGC.weightx = 0;
-		panel.add(addToBasketButton, panelGC);
+		basketControlButtonPanel
+			= new ListEditingButtonPanel(userInterfaceFactory);
+		basketControlButtonPanel.includeAddButton(null);
+		basketControlButtonPanel.includeEditButton(null);
+		basketControlButtonPanel.includeDeleteButton(null);
+		basketControlButtonPanel.includeClearButton(null);
 		
-		panelGC.gridx++;
-		panel.add(deleteFromBasketButton, panelGC);
-
-		panelGC.gridx++;
-		panel.add(editBasketButton, panelGC);
-		
-		panelGC.gridx++;
-		panel.add(clearBasketButton, panelGC);
-
-		panelGC.gridx++;
-		String importButtonText
-			= RIFJobSubmissionToolMessages.getMessage("general.buttons.import.label");
-		importMapAreasButton
-			= userInterfaceFactory.createButton(importButtonText);
 		String importMapDataButtonToolTipText
 			= RIFJobSubmissionToolMessages.getMessage(
 				"mapAreaListSelectionPanel.buttons.importMapData.toolTip");
-		importMapAreasButton.setToolTipText(importMapDataButtonToolTipText);
-		importMapAreasButton.addActionListener(this);
-		panel.add(importMapAreasButton, panelGC);
+		basketControlButtonPanel.includeImportButton(importMapDataButtonToolTipText);
 
-		panelGC.gridx++;
-	
-		String exportButtonText
-			= RIFJobSubmissionToolMessages.getMessage(
-				"general.buttons.export.label");
-		exportMapAreasButton
-			= userInterfaceFactory.createButton(exportButtonText);
 		String exportMapDataButtonToolTipText
 			= RIFJobSubmissionToolMessages.getMessage(
 				"mapAreaListSelectionPanel.button.exportMapData.toolTip");
-		exportMapAreasButton.setToolTipText(exportMapDataButtonToolTipText);
-	
-		exportMapAreasButton.addActionListener(this);
-		panel.add(exportMapAreasButton, panelGC);
+		basketControlButtonPanel.includeExportButton(exportMapDataButtonToolTipText);
+
+		basketControlButtonPanel.rightJustifyButtons();
+		basketControlButtonPanel.addActionListener(this);
 		
-		return panel;		
+		return basketControlButtonPanel.getPanel();
 	}
 		
 	// ==========================================
@@ -479,10 +433,8 @@ class MapAreaListSelectionPanel
 					= RIFJobSubmissionToolMessages.getMessage("mapAreaListSelectionPanel.basketIsEmpty");
 				selectedItemsStatusTextArea.setText(basketIsEmptyMessage);
 
-				//basket is empty, desensitise
-				deleteFromBasketButton.setEnabled(false);
-				editBasketButton.setEnabled(false);
-				clearBasketButton.setEnabled(false);				
+				//basket is empty
+				basketControlButtonPanel.indicateEmptyState();
 			}
 			else {
 				//current geo level select should only be null
@@ -513,10 +465,8 @@ class MapAreaListSelectionPanel
 						String.valueOf(mapAreaSummaryData.getTotalArea()));
 				selectedStatusMessage.append(totalAreaTotalPopulationMessage);
 				selectedItemsStatusTextArea.setText(selectedStatusMessage.toString());				
-						
-				deleteFromBasketButton.setEnabled(true);
-				editBasketButton.setEnabled(true);
-				clearBasketButton.setEnabled(true);
+
+				basketControlButtonPanel.indicatePopulatedState();
 			}
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -748,25 +698,24 @@ class MapAreaListSelectionPanel
 		ActionEvent event) {
 
 		Object button = event.getSource();
-		
-		if (button == importMapAreasButton) {
-			importMapAreas();
-		}
-		else if (button == exportMapAreasButton) {
-			exportMapAreas();
-		}
-		else if (button == addToBasketButton) {
+
+		if (basketControlButtonPanel.isAddButton(button)) {
 			addToBasket();
 		}
-		else if (button == deleteFromBasketButton) {
+		else if (basketControlButtonPanel.isEditButton(button)) {
+		}
+		else if (basketControlButtonPanel.isDeleteButton(button)) {
 			deleteFromBasket();
 		}
-		else if (button == editBasketButton) {
-			editBasket();
-		}
-		else if (button == clearBasketButton) {
+		else if (basketControlButtonPanel.isClearButton(button)) {
 			clearBasket();
-		}		
+		}
+		else if (basketControlButtonPanel.isImportButton(button)) {
+			importMapAreas();
+		}
+		else if (basketControlButtonPanel.isExportButton(button)) {
+			exportMapAreas();
+		}
 	}
 
 	//Interface: Observer

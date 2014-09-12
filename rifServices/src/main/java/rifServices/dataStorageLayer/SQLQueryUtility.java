@@ -125,7 +125,7 @@ public class SQLQueryUtility {
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlConnectionManager.error.unableToCloseResource");
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLQueryUtility.class, 
 				errorMessage, 
@@ -162,7 +162,7 @@ public class SQLQueryUtility {
 				= RIFServiceMessages.getMessage(
 					"sqlConnectionManager.error.unableToCloseResource");
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLQueryUtility.class, 
 				errorMessage, 
@@ -198,7 +198,7 @@ public class SQLQueryUtility {
 				= RIFServiceMessages.getMessage(
 					"sqlConnectionManager.error.unableToCloseResource");
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLQueryUtility.class, 
 				errorMessage, 

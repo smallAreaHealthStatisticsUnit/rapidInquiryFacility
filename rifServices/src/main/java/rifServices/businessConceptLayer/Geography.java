@@ -166,16 +166,19 @@ public final class Geography
 
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {	
-		
+	
 		super.checkSecurityViolations();
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors()
 		throws RIFServiceException {
-		
+
+		//TOUR_VALIDATION
+		//goes through all its fields and checks if there are any errors
+		//Note that in this case, it will call the checkErrors() method of its
+		//superclass, which will in turn call the checkErrors() method of its
+		//superclass, etc. etc.
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		super.checkErrors(RIFServiceError.INVALID_GEOGRAPHY, errorMessages);
 		countErrors(RIFServiceError.INVALID_GEOGRAPHY, errorMessages);

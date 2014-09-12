@@ -208,6 +208,11 @@ class AbstractRIFService {
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (rifServiceException instanceof RIFServiceSecurityException) {
+			//TOUR_SECURITY
+			/*
+			 * If the code encounters a security exception, then the user
+			 * associated with the exception will be blacklisted.
+			 */
 			//gives opportunity to log security issue and deregister user
 			sqlConnectionManager.addUserIDToBlock(user);
 			sqlConnectionManager.deregisterUser(user);
@@ -222,7 +227,7 @@ class AbstractRIFService {
 			sqlConnectionManager.resetConnectionPoolsForUser(user);					
 		}
 				
-		RIFLogger rifLogger = new RIFLogger();
+		RIFLogger rifLogger = RIFLogger.getLogger();
 		rifLogger.error(
 			AbstractRIFService.class, 
 			methodName, 
@@ -258,7 +263,7 @@ class AbstractRIFService {
 			validateUser(user);
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getRIFSubmissionServiceInformation",
 					user.getUserID(),
@@ -311,7 +316,7 @@ class AbstractRIFService {
 			validateUser(user);
 			
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getDiseaseMappingStudies",
 					user.getUserID(),
@@ -364,7 +369,7 @@ class AbstractRIFService {
 			validateUser(user);
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeographies",
 					user.getUserID(),
@@ -418,6 +423,10 @@ class AbstractRIFService {
 		ArrayList<GeoLevelSelect> results = new ArrayList<GeoLevelSelect>();
 		
 		try {
+			//TOUR_VALIDATION
+			/*
+			 * Make sure that none of the required parameter values are null.
+			 */
 			
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -431,12 +440,16 @@ class AbstractRIFService {
 				"geography",
 				geography);
 
+			//TOUR_VALIDATION
+			/*
+			 * Checks that the user is valid
+			 */
 			//Check for security violations
 			validateUser(user);
 			geography.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeographicalLevelSelectValues",
 					user.getUserID(),
@@ -511,7 +524,7 @@ class AbstractRIFService {
 			geography.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getDefaultGeoLevelSelectValue",
 					user.getUserID(),
@@ -549,13 +562,27 @@ class AbstractRIFService {
 		return result;
 
 	}
-	
+
+	//TOUR_CONCURRENCY
+	/*
+	 * We mark all method parameters as "final" to ensure that the code within the method
+	 * cannot reassign the parameter within the code block.  It is used to prevent accidentally
+	 * doing it as the code block is altered for maintenance.
+	 */
 	public ArrayList<GeoLevelArea> getGeoLevelAreaValues(
 		final User _user,
 		final Geography _geography,
 		final GeoLevelSelect _geoLevelSelect) 
 		throws RIFServiceException {
 
+		//TOUR_CONCURRENCY
+		/*
+		 * The main task of this code block is to create complete local copies
+		 * of method parameter values.  Doing this means that the 
+		 * code block is not vulnerable to multiple threads which may attempt to change
+		 * the parameter objects provided by the client, as the code block is executing.
+		 * 
+		 */
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
@@ -593,7 +620,7 @@ class AbstractRIFService {
 			geoLevelSelect.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelAreaValues",
 					user.getUserID(),
@@ -604,6 +631,28 @@ class AbstractRIFService {
 				getClass(),
 				auditTrailMessage);
 
+			//TOUR_CONCURRENCY
+			/*
+			 * The pool of connections for each user will be a resource that could
+			 * be a source of contention between threads.  However, mechanism for 
+			 * synchronising access does not have to be exposed in this class.  Instead,
+			 * it can be developed and improved within the implementation of 
+			 * the SQLConnectionManager class's methods that include:
+			 * <ul>
+			 * <li>assignPooledReadConnection</li>
+			 * <li>reclaimPooledReadConnection</li>
+			 * <li>assignPooledWriteConnection</li>
+			 * <li>reclaimPooledWriteConnection</li>
+			 * </ul>
+			 * 
+			 * 
+			 * <p>
+			 * Also note that because we are only reading geo level area values,
+			 * we can use the more constraining read-only connection.  Using 
+			 * the read-only connection may help improve performance. It also 
+			 * acts as a safety check if developers later alter the database query code 
+			 * in a way that suddenly causes the code to write values.
+			 */
 			//Assign pooled connection
 			Connection connection 
 				= sqlConnectionManager.assignPooledReadConnection(user);
@@ -677,7 +726,7 @@ class AbstractRIFService {
 			geoLevelSelect.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelViewValues",
 					user.getUserID(),
@@ -724,11 +773,29 @@ class AbstractRIFService {
 		final NumeratorDenominatorPair _ndPair) 
 		throws RIFServiceException {
 
+		//TOUR_SECURITY
+		/*
+		 * The client code may be able to change the value of a parameter object within the 
+		 * period between when this method starts and when it finishes.  Theoretically, a
+		 * malicious client could attempt to change harmless parameter values into malicious values
+		 * some time after security checks have been done but before a database operation is actually
+		 * being executed.  Safe copying takes a snapshot of the parameter values and uses that for
+		 * the rest of the method's code block. 
+		 * 
+		 */
+		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);		
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			//TOUR SECURITY
+			/*
+			 * The first most important security task is to check whether the user has 
+			 * already been blacklisted because of some prior security exception.  This
+			 * check is designed to ensure that malicious attacks use the least amount of 
+			 * computational resources as possible.
+			 */
 			return null;
 		}
 		Geography geography 
@@ -754,14 +821,22 @@ class AbstractRIFService {
 				"getYearRange",
 				"numeratorDenominatorPair",
 				ndPair);	
-		
+
+			
+			//TOUR_SECURITY
+			/*
+			 * Here we go through each of the method parameter objects that are instantiated from
+			 * businessConceptLayer classes.  "checkSecurityViolations()" is meeant to recursively
+			 * check through all the String field values and check whether they have patterns
+			 * which could match known types of malicious code attacks.
+			 */			
 			//Check for security violations
 			validateUser(user);
 			geography.checkSecurityViolations();
 			ndPair.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getYearRange",
 					user.getUserID(),
@@ -792,6 +867,13 @@ class AbstractRIFService {
 
 		}
 		catch(RIFServiceException rifServiceException) {
+			
+			//TOUR_SECURITY
+			/*
+			 * logException(...) will determine whether the error is a security exception
+			 * or not.  If it is, the middleware will blacklist the user
+			 */
+			
 			//Audit failure of operation
 			logException(
 				user,
@@ -837,8 +919,15 @@ class AbstractRIFService {
 			validateUser(user);
 			geography.checkSecurityViolations();
 		
+			
+			//TOUR_CONCURRENCY
+			/*
+			 * The logging facility here is an example of a shared resource that
+			 * will be a source of contention.  The logger is managed as a single
+			 * instance that will be used by all threads.  
+			 */
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getHealthThemes",
 					user.getUserID(),
@@ -927,7 +1016,7 @@ class AbstractRIFService {
 			geoLevelToMap.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getCovariates",
 					user.getUserID(),
@@ -1004,7 +1093,7 @@ class AbstractRIFService {
 			project.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = new RIFLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getStudies",
 					user.getUserID(),

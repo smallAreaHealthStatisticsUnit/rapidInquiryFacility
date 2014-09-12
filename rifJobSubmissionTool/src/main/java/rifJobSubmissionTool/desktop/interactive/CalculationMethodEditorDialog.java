@@ -1,9 +1,9 @@
 package rifJobSubmissionTool.desktop.interactive;
 
+import rifGenericUILibrary.OKClosePanel;
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
-
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.CalculationMethodPrior;
 import rifServices.businessConceptLayer.Parameter;
@@ -13,6 +13,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+
 import javax.swing.JButton;
 import javax.swing.CellEditor;
 import javax.swing.JComboBox;

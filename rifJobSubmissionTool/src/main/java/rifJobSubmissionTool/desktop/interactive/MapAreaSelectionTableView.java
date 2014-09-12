@@ -1,12 +1,13 @@
 package rifJobSubmissionTool.desktop.interactive;
 
+import rifGenericUILibrary.ErrorDialog;
+import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericUILibrary.ListNavigationButtonPanel;
 import rifJobSubmissionTool.system.RIFSession;
 
 
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
-
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelArea;
@@ -14,15 +15,17 @@ import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.MapAreaSummaryData;
-import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
+import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 import rifServices.system.RIFServiceException;
 
 import java.util.ArrayList;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+
 import javax.swing.*;
+
 import java.util.Observable;
 
 
@@ -139,15 +142,8 @@ class MapAreaSelectionTableView
 	private JPanel panel;
 	/** The status label. */
 	private JLabel statusLabel;
-	/** The first button. */
-	private JButton firstButton;
-	/** The previous button. */
-	private JButton previousButton;
-	/** The next button. */
-	private JButton nextButton;
-	/** The last button. */
-	private JButton lastButton;
 		
+	private ListNavigationButtonPanel listNavigationButtonPanel;
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -170,6 +166,9 @@ class MapAreaSelectionTableView
 		this.userInterfaceFactory = rifSession.getUIFactory();
 		this.isDataSourceService = isDataSourceService;
 		mapAreaSelectionTable = new MapAreaSelectionTable(userInterfaceFactory);
+		
+		listNavigationButtonPanel 
+			= new ListNavigationButtonPanel(userInterfaceFactory);
 	}
 
 	/**
@@ -212,40 +211,9 @@ class MapAreaSelectionTableView
 		panelGC.weightx = 1.0;		
 		statusLabel = userInterfaceFactory.createLabel("");
 		panel.add(statusLabel, panelGC);
-		
+				
 		panelGC.gridx++;
-		panelGC.fill = GridBagConstraints.NONE;
-		panelGC.weightx = 0;
-		String firstButtonText
-			= RIFJobSubmissionToolMessages.getMessage("general.buttons.first.label");
-		firstButton
-			= userInterfaceFactory.createButton(firstButtonText);
-		firstButton.addActionListener(this);
-		panel.add(firstButton, panelGC);
-		
-		panelGC.gridx++;
-		String previousButtonText
-			= RIFJobSubmissionToolMessages.getMessage("general.buttons.previous.label");
-		previousButton
-			= userInterfaceFactory.createButton(previousButtonText);
-		previousButton.addActionListener(this);
-		panel.add(previousButton, panelGC);
-		
-		panelGC.gridx++;
-		String nextButtonText
-			= RIFJobSubmissionToolMessages.getMessage("general.buttons.next.label");
-		nextButton
-			= userInterfaceFactory.createButton(nextButtonText);
-		nextButton.addActionListener(this);
-		panel.add(nextButton, panelGC);
-		
-		panelGC.gridx++;
-		String lastButtonText
-			= RIFJobSubmissionToolMessages.getMessage("general.buttons.last.label");
-		lastButton
-			= userInterfaceFactory.createButton(lastButtonText);
-		lastButton.addActionListener(this);
-		panel.add(lastButton, panelGC);
+		panel.add(listNavigationButtonPanel.getPanel(), panelGC);
 			
 		return panel;
 	}
@@ -355,28 +323,16 @@ class MapAreaSelectionTableView
 
 		//Update states of buttons
 		if (maximumPage == 1) {
-			firstButton.setEnabled(false);
-			previousButton.setEnabled(false);
-			nextButton.setEnabled(false);
-			lastButton.setEnabled(false);			
+			listNavigationButtonPanel.showOnlyItemState();
 		}
 		else if (currentPage == 1) {
-			firstButton.setEnabled(false);
-			previousButton.setEnabled(false);
-			nextButton.setEnabled(true);
-			lastButton.setEnabled(true);			
+			listNavigationButtonPanel.showFirstItemState();
 		}
 		else if (currentPage == maximumPage) {
-			firstButton.setEnabled(true);
-			previousButton.setEnabled(true);
-			nextButton.setEnabled(false);
-			lastButton.setEnabled(false);			
+			listNavigationButtonPanel.showLastItemState();
 		}
 		else {
-			firstButton.setEnabled(true);
-			previousButton.setEnabled(true);
-			nextButton.setEnabled(true);
-			lastButton.setEnabled(true);			
+			listNavigationButtonPanel.showMiddleItemState();
 		}
 	}
 	
@@ -623,16 +579,16 @@ class MapAreaSelectionTableView
 		
 		Object button = event.getSource();
 		
-		if (button == firstButton) {
+		if (listNavigationButtonPanel.isFirstButton(button)) {
 			first();
 		}
-		else if (button == previousButton) {
+		else if (listNavigationButtonPanel.isPreviousButton(button)) {
 			previous();
 		}
-		else if (button == nextButton) {
+		else if (listNavigationButtonPanel.isNextButton(button)) {
 			next();
 		}
-		else if (button == lastButton) {
+		else if (listNavigationButtonPanel.isLastButton(button)) {
 			last();
 		}
 	}

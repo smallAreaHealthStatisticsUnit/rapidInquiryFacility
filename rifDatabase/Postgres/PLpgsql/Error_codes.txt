@@ -12,16 +12,41 @@ rif40_GetMapAreaAttributeValue: 					51200 to 51399
 rif40_closeGetMapAreaAttributeCursor: 				51400 to 51599
 rif40_CreateMapAreaAttributeSource: 				51600 to 51799
 rif40_DeleteMapAreaAttributeSource: 				51800 to 51999
+rif40_GetAdjacencyMatrix:							52000 to 52050
 
 rif40_sm_pkg:
 
-rif40_verify_state_change: 				55000 to 55199
-rif40_run_study: 						55200 to 55399
-rif40_create_extract: 					55400 to 55599
-rif40_compute_results: 					55600 to 55799
-rif40_insert_extract: 					55800 to 55999
-rif40_create_insert_statement: 			56000 to 56199
+rif40_verify_state_change: 							55000 to 55199
+rif40_run_study: 									55200 to 55399
+rif40_create_extract: 								55400 to 55599
+rif40_compute_results: 								55600 to 55799
+rif40_insert_extract: 								55800 to 55999
+rif40_create_insert_statement: 						56000 to 56199
+rif40_create_disease_mapping_example:				56200 to 56399
+rif40_study_ddl_definer:							56400 to 56599
+rif40_execute_insert_statement:						56600 to 56799
+cleanup_orphaned_extract_and_map_tables:			56800 to 56999
+rif40_delete_study: 								57000 to 57199
+rif40_reset_study: 									57200 to 57399
+rif40_clone_study: 									57400 to 57599
+rif40_rename_map_and_extract_tables:				57600 to 57799
 
 rif40_geo_pkg:
 
-rif40_zoom_levels:							60000 to 60099
+rif40_zoom_levels:									60000 to 60099
+
+rif40_sqk_pkg:
+
+rif40_ddl_checks:									70000 to 70049
+rif40_ddl_check_a:									70050 to 70099
+rif40_ddl_check_b:									70100 to 70149
+rif40_ddl_check_c:									70150 to 70199
+rif40_ddl_check_d:									70200 to 70249
+rif40_ddl_check_e:									70250 to 70299
+rif40_ddl_check_f:									70300 to 70349
+rif40_ddl_check_g:									70350 to 70399
+rif40_ddl_check_h:									70400 to 70449
+rif40_ddl_check_i:									70450 to 70499
+rif40_ddl_check_j:									70500 to 70549
+rif40_ddl_check_k:									70550 to 70599
+rif40_table_diff:									71000 to 71050

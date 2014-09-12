@@ -54,8 +54,6 @@
 \set ON_ERROR_STOP ON
 \timing
 
-\o ../logs/v4_0_create_sahsuland.rpt
-
 \echo Creating SAHSULAND rif40 example schema...
 
 --
@@ -85,6 +83,11 @@ END;
 $$;
 
 \pset pager off
+
+--
+-- Start transaction
+--
+BEGIN;
 
 --
 -- Drop all objects
@@ -129,6 +132,49 @@ END;
 $$;
 
 --
+-- Test user account
+-- 
+\set ntestuser '''XXXX':testuser''''
+SET rif40.testuser TO :ntestuser;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR 
+		SELECT CURRENT_SETTING('rif40.testuser') AS testuser;
+	c2 CURSOR(l_usename VARCHAR) FOR 
+		SELECT * FROM pg_user WHERE usename = l_usename;
+	c1_rec RECORD;
+	c2_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+-- Test parameter
+--
+	IF c1_rec.testuser IN ('XXXX', 'XXXX:testuser') THEN
+		RAISE EXCEPTION 'db_create.sql() C209xx: No -v testuser=<test user account> parameter';	
+	ELSE
+		RAISE INFO 'db_create.sql() test user account parameter="%"', c1_rec.testuser;
+	END IF;
+--
+-- Test account exists
+--
+	OPEN c2(LOWER(SUBSTR(c1_rec.testuser, 5)));
+	FETCH c2 INTO c2_rec;
+	CLOSE c2;
+	IF c2_rec.usename IS NULL THEN
+		RAISE EXCEPTION 'db_create.sql() C209xx: User account does not exist: %', LOWER(SUBSTR(c1_rec.testuser, 5));	
+	ELSIF pg_has_role(c2_rec.usename, 'rif_user', 'MEMBER') THEN
+		RAISE INFO 'db_create.sql() user account="%" is a rif_user', c2_rec.usename;
+	ELSIF pg_has_role(c2_rec.usename, 'rif_manager', 'MEMBER') THEN
+		RAISE INFO 'db_create.sql() user account="%" is a rif manager', c2_rec.usename;
+	ELSE
+		RAISE EXCEPTION 'db_create.sql() C209xx: User account: % is not a rif_user or rif_manager', c2_rec.usename;	
+	END IF;
+--
+END;
+$$;
+--
 -- PG psql code (logging, auditing and debug)
 --
 \i ../PLpgsql/v4_0_rif40_log_pkg.sql
@@ -148,16 +194,6 @@ $$;
 -- Add DDL control views (RIF40_TABLES_AND_VIEWS, RIF40_COLUMNS , RIF40_TRIGGERS) [actually tables on postgres]
 --
 \i ../psql_scripts/create_v4_0_postgres_ddl_control_views.sql
-
---
--- Hash partition all tables with study_id as a column
---
-\i ../psql_scripts/v4_0_study_id_partitions.sql
-
---
--- Range partition all tables with year as a column
---
-\i ../psql_scripts/v4_0_year_partitions.sql
 
 --
 -- Create views
@@ -199,8 +235,8 @@ $$;
 --
 --ALTER TABLE rif40_geographies DROP CONSTRAINT rif40_geog_defcomparea_fk;
 
-\set VERBOSITY terse
-BEGIN;
+\set VERBOSITY default
+
 --
 -- RIF40_PARAMETERS
 --
@@ -258,18 +294,19 @@ VALUES(
 'Parallelisation', 		 '4', 							'Level of Parallelisation. Only supported on Oracle; under development in PoatGres/PostGIS.');
 
 --
+-- Load SAHSULAND data 
+-- 
+\i ../sahsuland/v4_0_postgres_sahsuland_imports.sql
+
+--
+-- Load SAHSU geospatial data
+--
+\i ../shapefiles/sahsuland_shapefiles.sql
+
+--
 -- SAHSUland geolevel setup. Fully processed
 --
 \i ../psql_scripts/v4_0_geolevel_setup_sahsuland.sql
-
---
--- EW01 geography test data for Kevin. It is NOT processed (i.e. not simplification, intersection etc)
---
-\i ../psql_scripts/v4_0_geolevel_setup_ew01.sql
---
--- UK91 geography test data for Kevin. It is NOT processed (i.e. not simplification, intersection etc)
---
-\i ../psql_scripts/v4_0_geolevel_setup_uk91.sql
 
 --
 -- RIF40_HEALTH_STUDY_THEMES
@@ -277,24 +314,9 @@ VALUES(
 DELETE FROM rif40_health_study_themes  WHERE theme = 'SAHSULAND';
 INSERT INTO rif40_health_study_themes(theme, description) VALUES('SAHSULAND', 'SAHSU land cancer incidence example data');
 
-COMMIT;
-
---
--- Load SAHSULAND data 
--- 
-\i ../sahsuland/v4_0_postgres_sahsuland_imports.sql
-
---
--- RIF40_PROJECTS
---
-INSERT INTO t_rif40_user_projects(project, username) VALUES ('TEST', 'peterh');
-INSERT INTO t_rif40_user_projects(project, username) VALUES ('TEST', 'keving');
-INSERT INTO t_rif40_user_projects(project, username) VALUES ('TEST', 'federicof');
-
 --
 -- RIF40_COVARIATES, RIF40_TABLES, RIF40_TABLE_OUTCOMES
 --
-BEGIN;
 DELETE FROM rif40_covariates  WHERE geography = 'SAHSU';
 INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
 SELECT 'SAHSU', 'LEVEL3', 'SES', MIN(ses), MAX(ses), 1 FROM sahsuland_covariates_level3;
@@ -322,8 +344,36 @@ DELETE FROM rif40_table_outcomes  WHERE numer_tab = 'SAHSULAND_CANCER';
 INSERT INTO rif40_table_outcomes(outcome_group_name, numer_tab, current_version_start_year)
 VALUES ('SINGLE_ICD', 'SAHSULAND_CANCER', 1993);
 
-COMMIT;
-\set VERBOSITY default
+\set VERBOSITY terse
+--
+-- RIF40_PROJECTS (fix to real users list)
+--
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR 
+		SELECT * FROM pg_user
+ 		 WHERE usename != 'postgres' 
+		   AND (pg_has_role(usename, 'rif_user', 'MEMBER') OR pg_has_role(usename, 'rif_manager', 'MEMBER'));
+--
+	c1_rec RECORD;
+	sql_stmt VARCHAR;
+BEGIN
+	FOR c1_rec IN c1 LOOP
+		sql_stmt:='INSERT INTO t_rif40_user_projects(project, username) VALUES (''TEST'', '''||c1_rec.usename||''')';
+		RAISE INFO 'SQL> %;', sql_stmt;
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+	END LOOP;
+END;
+$$;
+
+--
+-- EW01 geography test data for Kevin. It is NOT processed (i.e. no simplification, intersection etc)
+-- 
+\i ../psql_scripts/v4_0_geolevel_setup_ew01.sql
+--
+-- UK91 geography test data for Kevin. It is NOT processed (i.e. no simplification, intersection etc)
+--
+\i ../psql_scripts/v4_0_geolevel_setup_uk91.sql
 
 --
 -- Re-enable rif40_geog_defcomparea_fk
@@ -379,6 +429,8 @@ BEGIN
 END;
 $$;
 
+\set VERBOSITY default
+
 --
 -- Create sequences. 
 --
@@ -393,6 +445,8 @@ COMMENT ON SEQUENCE rif40_study_id_seq IS 'Used as sequence for unique study ind
 ALTER TABLE t_rif40_studies ALTER COLUMN study_id SET DEFAULT NEXTVAL('rif40_study_id_seq')::INTEGER;
 ALTER TABLE t_rif40_investigations ALTER COLUMN inv_id SET DEFAULT NEXTVAL('rif40_inv_id_seq')::INTEGER;
 ALTER TABLE t_rif40_investigations ALTER COLUMN study_id SET DEFAULT CURRVAL('rif40_study_id_seq')::INTEGER;
+
+\set VERBOSITY terse
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR /* All tables with study_id, inv_id foreign key columns apart from t_rif40_investigations */
@@ -421,10 +475,12 @@ BEGIN
 END;
 $$;
 
+\set VERBOSITY default
 --
 -- Grants
 --
 \i ../psql_scripts/v4_0_postgres_grants.sql 
+
 
 -- 
 -- Load shapefiles - now moved to GIS schema; and run as gis
@@ -452,43 +508,81 @@ $$;
 \i  ../psql_scripts/v4_0_user.sql
 
 --
--- Check all tables and views are built
---
-SELECT table_or_view, LOWER(table_or_view_name_hide) AS table_or_view_name
-  FROM rif40_tables_and_views
- WHERE table_or_view = 'TABLE'
-EXCEPT
-SELECT 'TABLE' AS table_or_view, table_name AS table_or_view_name
-  FROM information_schema.tables
-UNION
-SELECT table_or_view, LOWER(table_or_view_name_hide) AS table_or_view_name
-  FROM rif40_tables_and_views
- WHERE table_or_view = 'VIEW'
-EXCEPT
-SELECT 'TABLE' AS table_or_view, table_name AS table_or_view_name
-  FROM information_schema.views
- ORDER BY 1, 2;
-
---
--- Check all tables, triggers, columns and comments are present, objects granted to rif_user/rif_manmger, sequences granted
--- 
-\i ../psql_scripts/v4_0_postgres_ddl_checks.sql
-
---
 -- Cleanup map and extract tables not referenced by a study (runs as rif40) 
 --
 SELECT rif40_sm_pkg.cleanup_orphaned_extract_and_map_tables(TRUE /* Truncate */);
 
 --
--- Initialise user
+-- There should be no studies and no orphaned study tables at this point
 --
-\c sahsuland_dev pch
-\i ../psql_scripts/v4_0_user.sql      
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR 
+		SELECT COUNT(study_id) AS num_studies 
+		  FROM t_rif40_studies;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
 --
--- Test user access
+	IF c1_rec.num_studies > 0 THEN
+			RAISE EXCEPTION 'C20900: % studies found in database', c1_rec.num_studies::Text;	
+	ELSE
+			RAISE INFO 'No studies found in database';
+	END IF;
+END;
+$$;
+
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR 
+		SELECT COUNT(tablename) AS num_tables 
+		  FROM pg_tables
+	     WHERE schemaname = 'rif_studies';
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
 --
-\c sahsuland_dev pch
-\i ../psql_scripts/v4_0_sahsuland_examples.sql      
+	IF c1_rec.num_tables > 0 THEN
+			RAISE EXCEPTION 'C20900: % orphaned study tables found in database', c1_rec.num_tables::Text;	
+	ELSE
+			RAISE INFO 'No orphaned study tables found in database';
+	END IF;
+END;
+$$;
+
+--
+-- End of transaction
+--
+END;
+
+--
+-- Post transaction SQL
+--
+ALTER TABLE "sahsuland_level1" ALTER COLUMN name  SET NOT NULL;
+ALTER TABLE "sahsuland_level2" ALTER COLUMN name  SET NOT NULL;
+ALTER TABLE "sahsuland_level3" ALTER COLUMN name  SET NOT NULL;
+ALTER TABLE "sahsuland_level4" ALTER COLUMN name  SET NOT NULL; 
+
+--
+-- Make columns NOT NULL - Cannot be done with PL/pgsql - causes:
+-- cannot ALTER TABLE "sahsuland_level1" because it is being used by active queries in this session
+--
+
+ALTER TABLE "t_rif40_sahsu_geometry" ALTER COLUMN name  SET NOT NULL;
+
+--
+-- Vacuum ANALYZE all RIF40 tables
+--
+\i  ../psql_scripts/v4_0_vacuum_analyse.sql
+
+\echo Created SAHSULAND rif40 example schema.
+--
+-- Eof
+\q
 
 --
 -- Dump sahsuland database (usually run separately/from create_v4_0.sql Oracle script)
@@ -503,7 +597,6 @@ SELECT rif40_sm_pkg.cleanup_orphaned_extract_and_map_tables(TRUE /* Truncate */)
 -- Test access to all tables in SAHSU_TABLES_AND_VIEWS
 --
 -- ADD
-\echo Created SAHSULAND rif40 example schema.
 
 --
 -- Eof

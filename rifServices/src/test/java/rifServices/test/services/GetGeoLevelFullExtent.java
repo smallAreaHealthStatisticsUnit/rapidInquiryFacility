@@ -99,17 +99,28 @@ public class GetGeoLevelFullExtent extends AbstractRIFServiceTestCase {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
+			validGeoLevelSelect.setName("LEVEL2");
+
 			
+			//Geography = 'SAHSU'
+			//GeoLevelSelect = 'LEVEL2'
+			//
+			//Should result in:
+			//y_max  |  x_max   |  y_min  |  x_min
+			 //---------+----------+---------+----------
+			 // 55.5268 | -4.88654 | 52.6875 | -7.58829
+			 //(1 row)
+						
 			BoundaryRectangle result
 				= rifStudyRetrievalService.getGeoLevelFullExtent(
 					validUser, 
 					validGeography, 
 					validGeoLevelSelect);
 			
-			
-			//KLG: fail for now until we can explore what the results should 
-			//look like
-			fail();
+			assertEquals(55.5268, result.getYMax(), TOLERANCE);
+			assertEquals(-4.88654, result.getXMax(), TOLERANCE);
+			assertEquals(52.6875, result.getYMin(), TOLERANCE);
+			assertEquals(-7.58829, result.getXMin(), TOLERANCE);
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();

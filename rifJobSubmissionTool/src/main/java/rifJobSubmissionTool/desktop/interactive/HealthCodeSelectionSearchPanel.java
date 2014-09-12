@@ -1,13 +1,14 @@
 package rifJobSubmissionTool.desktop.interactive;
 
+import rifGenericUILibrary.ErrorDialog;
+import rifGenericUILibrary.NoDataAvailablePanel;
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.desktop.interactive.HealthCodeTableModel;
-
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
-import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 import rifServices.system.RIFServiceException;
 
 import java.awt.GridBagConstraints;

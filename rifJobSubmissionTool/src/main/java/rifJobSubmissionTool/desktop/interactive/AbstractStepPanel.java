@@ -1,9 +1,9 @@
 package rifJobSubmissionTool.desktop.interactive;
 
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFSession;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;

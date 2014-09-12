@@ -1,18 +1,18 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifJobSubmissionTool.system.RIFActivityStep;
-
+import rifGenericUILibrary.ErrorDialog;
+import rifGenericUILibrary.OrderedListComboBox;
+import rifGenericUILibrary.UserInterfaceFactory;
+import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
-
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
+import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
@@ -145,7 +145,7 @@ class DescribeStudyStepPanel
 		String describeStudyTitle
 			= RIFJobSubmissionToolMessages.getMessage("describeStudyStepPanel.title");
 		int stepNumber
-			= RIFActivityStep.DESCRIBE_STUDY.getStepNumber() + 1;
+			= RIFStudySubmissionActivityStep.DESCRIBE_STUDY.getStepNumber() + 1;
 		setPanelTitleInformation(stepNumber, describeStudyTitle);
 		panel.add(getTitleLabel(), panelGC);
 
@@ -388,7 +388,7 @@ class DescribeStudyStepPanel
 		//commit the study object to the master job submission object
 		rifJobSubmission.setStudy(currentDiseaseMappingStudy);
 		
-		rifSession.addCommittedActivityStep(RIFActivityStep.DESCRIBE_STUDY);
+		rifSession.addCommittedActivityStep(RIFStudySubmissionActivityStep.DESCRIBE_STUDY);
 		
 	}
 	

@@ -1,10 +1,12 @@
 package rifServices.restfulWebServices;
 
 import java.io.ByteArrayOutputStream;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+
 
 
 
@@ -16,6 +18,8 @@ import javax.ws.rs.QueryParam;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
+import rifServices.dataStorageLayer.RIFStudyResultRetrievalAPI;
+import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
@@ -25,16 +29,14 @@ import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.YearRange;
 
 /**
  * This is a web service class that is analoguous to  
  * to {@link rifServices.dataStorageLayer.AbstractRIFService}. Its purpose is
- * to wrap API methods that are common to both {@link rifServices.businessConceptLayer.RIFStudySubmissionAPI}
- * and {@link rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI}.
+ * to wrap API methods that are common to both {@link rifServices.dataStorageLayer.RIFStudySubmissionAPI}
+ * and {@link rifServices.dataStorageLayer.RIFStudyResultRetrievalAPI}.
  * 
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -137,20 +139,15 @@ abstract class AbstractRIFWebServiceResource {
 		webApplicationFolderPath.append(File.separator);
 		webApplicationFolderPath.append("classes");
 		rifServiceStartupOptions.setWebApplicationFilePath(webApplicationFolderPath.toString());
-
-		System.out.println("AbstractRIFWebServiceResource constructor 2 for class=="+getClass().getName()+"==");
 		
 		rifStudyServiceBundle
 			= ProductionRIFStudyServiceBundle.getRIFServiceBundle();
 
 		try {
-			System.out.println("AbstractRIFWebServiceResource constructor 3 for class=="+getClass().getName()+"==");
 			rifStudyServiceBundle.initialise(rifServiceStartupOptions);
 			rifStudyServiceBundle.login("kgarwood", new String("a").toCharArray());
-			System.out.println("AbstractRIFWebServiceResource constructor 4 for class=="+getClass().getName()+"==");			
 		}
 		catch(RIFServiceException exception) {
-			System.out.println("AbstractRIFWebServiceResource constructor 5 for class=="+getClass().getName()+"==");
 			exception.printStackTrace(System.out);
 		}
 	}
@@ -175,21 +172,16 @@ abstract class AbstractRIFWebServiceResource {
 			
 		String result = "";
 		
-		System.out.println("getGeographies 1");
 	
 		try {
 			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
-
-			System.out.println("getGeographies 2");
 			
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= rifStudyServiceBundle.getRIFStudySubmissionService();
 			ArrayList<Geography> geographies
 				= studySubmissionService.getGeographies(user);
-
-			System.out.println("getGeographies 3");
 
 			//Convert results to support JSON
 			ArrayList<GeographyProxy> geographyProxies 
@@ -200,14 +192,10 @@ abstract class AbstractRIFWebServiceResource {
 				geographyProxy.setName(geography.getName());
 				geographyProxies.add(geographyProxy);
 			}
-		
-			System.out.println("getGeographies 4");
-			
+					
 			result = serialiseResult(geographyProxies);
 		}
 		catch(Exception exception) {
-			System.out.println("getGeographies 5");
-			
 			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}

@@ -1,13 +1,18 @@
 package rifServices.test.services;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 
+//import junit.framework.*;
+
 import org.junit.Test;
 
 import rifServices.businessConceptLayer.GeoLevelSelect;
-import rifServices.businessConceptLayer.GeoLevelToMap;
+import rifServices.businessConceptLayer.GeoLevelView;
+import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.User;
@@ -83,12 +88,16 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private ArrayList<MapArea> validMapAreas;
 
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public GetGeometry() {
+		validMapAreas = new ArrayList<MapArea>();
+		validMapAreas.add(MapArea.newInstance("01.002", "01.002"));
 
 	}
 
@@ -96,25 +105,36 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 	// Section Accessors and Mutators
 	// ==========================================
 
+	@Override
+	public ArrayList<MapArea> cloneValidMapAreas() {
+		return MapArea.createCopy(validMapAreas);
+	}
 	
 	@Test
 	public void getGeometry_COMMON1() {
 		try {
 			User validUser = cloneValidUser();
+			//Geography: 'SAHSU'
 			Geography validGeography = cloneValidGeography();
+			//GeoLevelSelect='LEVEL3'
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
+			//GeoLevelView='LEVEL4'
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
+			//MapArea: has at least 01.004
+			ArrayList<MapArea> validMapAreas = cloneValidMapAreas();
 			
 			String result
 				= rifStudyRetrievalService.getGeometry(
 					validUser, 
 					validGeography,
 					validGeoLevelSelect,
-					validGeoLevelToMap,
+					validGeoLevelView,
 					validMapAreas);
+
+			assertNotNull(result);
 		}
 		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
 			fail();
 		}
 	}
@@ -125,14 +145,14 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 			User emptyUser = cloneEmptyUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
 			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
 			
 			rifStudyRetrievalService.getGeometry(
 				emptyUser, 
 				validGeography,
 				validGeoLevelSelect,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				validMapAreas);
 			fail();
 		}
@@ -149,14 +169,14 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 		try {
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
 			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
 			
 			rifStudyRetrievalService.getGeometry(
 				null, 
 				validGeography,
 				validGeoLevelSelect,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				validMapAreas);
 			fail();
 		}
@@ -174,14 +194,15 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 			User validUser = cloneValidUser();
 			Geography emptyGeography = cloneEmptyGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
 			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
 			
 			rifStudyRetrievalService.getGeometry(
 				validUser, 
 				emptyGeography,
 				validGeoLevelSelect,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				validMapAreas);
 			
 			fail();
@@ -199,14 +220,14 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 		try {
 			User validUser = cloneValidUser();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
 			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
 			
 			rifStudyRetrievalService.getGeometry(
 				validUser, 
 				null,
 				validGeoLevelSelect,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				validMapAreas);
 			fail();
 		}
@@ -225,14 +246,14 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect emptyGeoLevelSelect = cloneEmptyGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
 			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
 			
 			rifStudyRetrievalService.getGeometry(
 				validUser, 
 				validGeography,
 				emptyGeoLevelSelect,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				validMapAreas);
 			fail();
 		}
@@ -249,14 +270,14 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 		try {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
 			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
 			
 			rifStudyRetrievalService.getGeometry(
 				validUser, 
 				validGeography,
 				null,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				validMapAreas);
 			fail();
 		}
@@ -267,28 +288,28 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 				1);
 		}
 	}
-
+	
 	@Test
 	public void getGeometry_EMPTY4() {
 		try {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap emptyGeoLevelToMap = cloneEmptyGeoLevelToMap();
+			GeoLevelView emptyGeoLevelView = cloneEmptyGeoLevelView();
 			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
 			
 			rifStudyRetrievalService.getGeometry(
 				validUser, 
 				validGeography,
 				validGeoLevelSelect,
-				emptyGeoLevelToMap,
+				emptyGeoLevelView,
 				validMapAreas);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.INVALID_GEOLEVEL_TO_MAP, 
+				RIFServiceError.INVALID_GEOLEVEL_VIEW, 
 				1);
 		}
 	}
@@ -324,18 +345,22 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
 			ArrayList<MapArea> emptyMapAreas = new ArrayList<MapArea>();
 			
 			rifStudyRetrievalService.getGeometry(
 				validUser, 
 				validGeography,
 				validGeoLevelSelect,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				emptyMapAreas);
+			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
-			fail();
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.NO_MAP_AREAS_SPECIFIED, 
+				1);
 		}
 	}
 
@@ -345,7 +370,7 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
 			ArrayList<MapArea> emptyMapAreas = new ArrayList<MapArea>();
 			MapArea emptyMapArea = cloneEmptyMapArea();
 			emptyMapAreas.add(emptyMapArea);
@@ -354,7 +379,7 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 				validUser, 
 				validGeography,
 				validGeoLevelSelect,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				emptyMapAreas);
 			fail();
 		}
@@ -367,18 +392,18 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 	}
 	
 	@Test
-	public void getGeometry_NULL5() {
+	public void getGeometry_NULL6() {
 		try {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
 			
 			rifStudyRetrievalService.getGeometry(
 				validUser, 
 				validGeography,
 				validGeoLevelSelect,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				null);
 			
 			fail();
@@ -397,14 +422,14 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 			User nonExistentUser = cloneNonExistentUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
 			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
 			
 			rifStudyRetrievalService.getGeometry(
 				nonExistentUser, 
 				validGeography,
 				validGeoLevelSelect,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				validMapAreas);
 			fail();
 		}
@@ -422,14 +447,13 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 			User validUser = cloneValidUser();
 			Geography nonExistentGeography = cloneNonExistentGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
-			
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
+			ArrayList<MapArea> validMapAreas = cloneValidMapAreas();
 			rifStudyRetrievalService.getGeometry(
 				validUser, 
 				nonExistentGeography,
 				validGeoLevelSelect,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				validMapAreas);
 			fail();
 		}
@@ -447,14 +471,14 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect nonExistentGeoLevelSelect = cloneNonExistentGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
+			ArrayList<MapArea> validMapAreas = cloneValidMapAreas();
 			
 			rifStudyRetrievalService.getGeometry(
 				validUser, 
 				validGeography,
 				nonExistentGeoLevelSelect,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				validMapAreas);
 			fail();
 		}
@@ -466,27 +490,28 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 		}
 	}
 	
+		
 	@Test
 	public void getGeometry_NONEXISTENT4() {
 		try {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap nonExistentGeoLevelToMap = cloneNonExistentGeoLevelToMap();
-			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
+			GeoLevelView nonExistentGeoLevelView = cloneNonExistentGeoLevelView();
+			ArrayList<MapArea> validMapAreas = cloneValidMapAreas();
 			
 			rifStudyRetrievalService.getGeometry(
 				validUser, 
 				validGeography,
 				validGeoLevelSelect,
-				nonExistentGeoLevelToMap,
+				nonExistentGeoLevelView,
 				validMapAreas);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.NON_EXISTENT_GEOLEVEL_TO_MAP_VALUE, 
+				RIFServiceError.NON_EXISTENT_GEOLEVEL_VIEW_VALUE, 
 				1);
 		}
 	}
@@ -497,7 +522,7 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
 			ArrayList<MapArea> nonExistentMapAreas = new ArrayList<MapArea>();
 			nonExistentMapAreas.add(cloneNonExistentMapArea());
 			
@@ -505,7 +530,7 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 				validUser, 
 				validGeography,
 				validGeoLevelSelect,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				nonExistentMapAreas);
 			fail();
 		}
@@ -523,14 +548,14 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 			User maliciousUser = cloneMaliciousUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
 			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
 			
 			rifStudyRetrievalService.getGeometry(
 				maliciousUser, 
 				validGeography,
 				validGeoLevelSelect,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				validMapAreas);
 			fail();
 		}
@@ -548,14 +573,14 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 			User validUser = cloneValidUser();
 			Geography maliciousGeography = cloneMaliciousGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
 			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
 			
 			rifStudyRetrievalService.getGeometry(
 				validUser, 
 				maliciousGeography,
 				validGeoLevelSelect,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				validMapAreas);
 			fail();
 		}
@@ -573,14 +598,14 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect maliciousGeoLevelSelect = cloneMaliciousGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
 			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
 			
 			rifStudyRetrievalService.getGeometry(
 				validUser, 
 				validGeography,
 				maliciousGeoLevelSelect,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				validMapAreas);
 			fail();
 		}
@@ -592,20 +617,21 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 		}
 	}
 	
+	
 	@Test
 	public void getGeometry_MALICIOUS4() {
 		try {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap maliciousGeoLevelToMap = cloneMaliciousGeoLevelToMap();
+			GeoLevelView maliciousGeoLevelView = cloneMaliciousGeoLevelView();
 			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
 			
 			rifStudyRetrievalService.getGeometry(
 				validUser, 
 				validGeography,
 				validGeoLevelSelect,
-				maliciousGeoLevelToMap,
+				maliciousGeoLevelView,
 				validMapAreas);
 			fail();
 		}
@@ -623,7 +649,8 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
+			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
 			ArrayList<MapArea> maliciousMapAreas = new ArrayList<MapArea>();
 			maliciousMapAreas.add(cloneMaliciousMapArea());
 			
@@ -631,7 +658,7 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 				validUser, 
 				validGeography,
 				validGeoLevelSelect,
-				validGeoLevelToMap,
+				validGeoLevelView,
 				maliciousMapAreas);
 			fail();
 		}
@@ -642,8 +669,6 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 				1);
 		}
 	}
-	
-	
 	
 	// ==========================================
 	// Section Errors and Validation

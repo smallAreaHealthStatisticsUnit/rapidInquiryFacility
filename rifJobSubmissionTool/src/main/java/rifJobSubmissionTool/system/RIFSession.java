@@ -1,6 +1,6 @@
 package rifJobSubmissionTool.system;
 
-import rifJobSubmissionTool.util.UserInterfaceFactory;
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.ComparisonArea;
@@ -13,9 +13,9 @@ import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.RIFOutputOption;
 import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
+import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 
 import java.util.ArrayList;
 import java.io.File;
@@ -116,7 +116,7 @@ public class RIFSession {
 	private AbstractGeographicalArea currentGeographicalArea;
 	
 	/** The committed activity steps. */
-	private ArrayList<RIFActivityStep> committedActivitySteps;
+	private ArrayList<RIFStudySubmissionActivityStep> committedActivitySteps;
 	
 	// ==========================================
 	// Section Construction
@@ -135,7 +135,7 @@ public class RIFSession {
 		this.rifStudyServiceBundle = rifStudyServiceBundle;
 		this.user = user;		
 		uiFactory = new UserInterfaceFactory();
-		committedActivitySteps = new ArrayList<RIFActivityStep>();
+		committedActivitySteps = new ArrayList<RIFStudySubmissionActivityStep>();
 	}
 
 	
@@ -480,7 +480,7 @@ public class RIFSession {
 	 * @param rifActivityStep the rif activity step
 	 */
 	public void addCommittedActivityStep(
-		RIFActivityStep rifActivityStep) {
+		RIFStudySubmissionActivityStep rifActivityStep) {
 		
 		committedActivitySteps.add(rifActivityStep);
 	}
@@ -492,7 +492,7 @@ public class RIFSession {
 	 * @return true, if is activity step committed
 	 */
 	public boolean isActivityStepCommitted(
-		RIFActivityStep rifActivityStep) {
+		RIFStudySubmissionActivityStep rifActivityStep) {
 
 		return committedActivitySteps.contains(rifActivityStep);
 	}
@@ -503,7 +503,7 @@ public class RIFSession {
 	 * @param rifActivityStep the rif activity step
 	 */
 	public void removeCommittedActivityStep(
-		RIFActivityStep rifActivityStep) {
+		RIFStudySubmissionActivityStep rifActivityStep) {
 
 		committedActivitySteps.remove(rifActivityStep);
 	}
@@ -514,7 +514,7 @@ public class RIFSession {
 	 * @param rifActivityStep the rif activity step
 	 */
 	public void removeActivityStepsThatFollow(
-		RIFActivityStep rifActivityStep) {
+		RIFStudySubmissionActivityStep rifActivityStep) {
 
 		int index = committedActivitySteps.indexOf(rifActivityStep);
 		if (index == -1) {
@@ -523,7 +523,7 @@ public class RIFSession {
 		
 		//define the start index of steps that follow this rif activity step
 		index += 1;		
-		ArrayList<RIFActivityStep> stepsToDelete = new ArrayList<RIFActivityStep>();
+		ArrayList<RIFStudySubmissionActivityStep> stepsToDelete = new ArrayList<RIFStudySubmissionActivityStep>();
 		for (int i = index; i < committedActivitySteps.size(); i++) {
 			stepsToDelete.add(committedActivitySteps.get(i));
 		}

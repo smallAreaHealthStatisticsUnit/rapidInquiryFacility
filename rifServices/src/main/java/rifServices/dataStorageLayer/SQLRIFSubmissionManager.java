@@ -124,7 +124,6 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 		final User user)
 		throws RIFServiceException {
 	
-		/*
 		String userID = user.getUserID();
 		PreparedStatement deleteComparisonAreasStatement = null;
 		PreparedStatement deleteStudyAreasStatement = null;
@@ -165,7 +164,7 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 			deleteStudiesQuery.setFromTable("t_rif40_studies");
 			deleteStudiesQuery.addWhereParameter("username");
 			deleteStudiesStatement
-				= connection.prepareStatement(deleteInvestigationsQuery.generateQuery());
+				= connection.prepareStatement(deleteStudiesQuery.generateQuery());
 			deleteStudiesStatement.setString(1, userID);
 			deleteStudiesStatement.executeUpdate();
 
@@ -188,7 +187,6 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 			SQLQueryUtility.close(deleteStudyAreasStatement);
 			SQLQueryUtility.close(deleteInvestigationsStatement);
 		}
-*/
 	}
 	
 	
@@ -219,13 +217,12 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 		//verify that all the age groups of all the age bands are
 		//in the database
 
-/*
 		try {
 			//Step 1: Add general information about the study to the
 			//underlying study table.  This modifies the rif40_studies table
-			Project project = rifJobSubmission.getProject();
+			Project project = rifStudySubmission.getProject();
 			DiseaseMappingStudy diseaseMappingStudy
-				= (DiseaseMappingStudy) rifJobSubmission.getStudy();
+				= (DiseaseMappingStudy) rifStudySubmission.getStudy();
 			addStudyInformation(
 				connection,
 				project,
@@ -258,9 +255,9 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 			String errorMessage 
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToAddSubmission",
-					rifJobSubmission.getDisplayName());
+					rifStudySubmission.getDisplayName());
 			
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFSubmissionManager.class, 
 				errorMessage, 
@@ -271,10 +268,7 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 					RIFServiceError.UNABLE_TO_ADD_STUDY, 
 					errorMessage);
 			throw rifServiceException;			
-		}
-		
-	*/
-		
+		}		
 	}
 	
 	private void addStudyInformation(
@@ -508,7 +502,6 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 		insertInvestigationQueryFormatter.addInsertField("min_age_group");
 		insertInvestigationQueryFormatter.addInsertField("genders");
 		insertInvestigationQueryFormatter.addInsertField("numer_tab");
-		insertInvestigationQueryFormatter.addInsertField("geography");
 		
 		PreparedStatement statement = null;
 		try {
@@ -544,7 +537,6 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 			NumeratorDenominatorPair ndPair = investigation.getNdPair();
 			statement.setString(8, ndPair.getNumeratorTableName());
 			
-			statement.setString(9, geography.getName());
 			statement.executeUpdate();			
 		}
 		finally {
@@ -964,7 +956,7 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 					recordType,
 					project.getName());
 
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
 				errorMessage, 

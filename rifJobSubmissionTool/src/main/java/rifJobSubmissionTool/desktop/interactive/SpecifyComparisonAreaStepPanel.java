@@ -1,13 +1,11 @@
 package rifJobSubmissionTool.desktop.interactive;
 
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
-
-import rifJobSubmissionTool.system.RIFActivityStep;
+import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
-
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.ComparisonArea;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
@@ -16,6 +14,7 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
 import java.awt.GridBagConstraints;
 import java.util.Observer;
 import java.util.Observable;
+
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
@@ -149,7 +148,7 @@ class SpecifyComparisonAreaStepPanel
 		String panelTitleLabelText
 			= RIFJobSubmissionToolMessages.getMessage("specifyComparisonAreaStepPanel.title");
 		int stepNumber
-			= RIFActivityStep.CHOOSE_STUDY_AREA.getStepNumber() + 1;
+			= RIFStudySubmissionActivityStep.CHOOSE_STUDY_AREA.getStepNumber() + 1;
 		setPanelTitleInformation(stepNumber, panelTitleLabelText);
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
@@ -242,16 +241,16 @@ class SpecifyComparisonAreaStepPanel
 
 		currentMapAreaSelectionBasket
 			= MapAreaSelectionBasket.newInstance();	
-		if (rifSession.isActivityStepCommitted(RIFActivityStep.CHOOSE_COMPARISON_AREA)) {
+		RIFStudySubmission originalJobSubmission = rifSession.getRIFJobSubmission();
+		DiseaseMappingStudy originalStudy
+			= (DiseaseMappingStudy) originalJobSubmission.getStudy();
+		currentGeography = originalStudy.getGeography();
+		if (rifSession.isActivityStepCommitted(RIFStudySubmissionActivityStep.CHOOSE_COMPARISON_AREA)) {
 			//Derive the working copy based on the study area that 
 			//has already been committed in the master job submission
 
-			RIFStudySubmission originalJobSubmission = rifSession.getRIFJobSubmission();
-			DiseaseMappingStudy originalStudy
-				= (DiseaseMappingStudy) originalJobSubmission.getStudy();
 			ComparisonArea originalComparisonArea
 				= originalStudy.getComparisonArea();
-			currentGeography = originalStudy.getGeography();
 			currentComparisonArea
 				= ComparisonArea.createCopy(originalComparisonArea);			
 			//populate the basket with the map areas that are already in the
@@ -307,7 +306,7 @@ class SpecifyComparisonAreaStepPanel
 			= (DiseaseMappingStudy) originalJobSubmission.getStudy();
 		
 		originalStudy.setComparisonArea(workingCopyComparisonArea);		
-		rifSession.addCommittedActivityStep(RIFActivityStep.CHOOSE_COMPARISON_AREA);
+		rifSession.addCommittedActivityStep(RIFStudySubmissionActivityStep.CHOOSE_COMPARISON_AREA);
 	}
 	
 }

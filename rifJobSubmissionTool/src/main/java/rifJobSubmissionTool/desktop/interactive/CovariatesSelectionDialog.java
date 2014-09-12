@@ -1,21 +1,23 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 
-import rifJobSubmissionTool.util.UserInterfaceFactory;
+import rifGenericUILibrary.ErrorDialog;
+import rifGenericUILibrary.OKClosePanel;
+import rifGenericUILibrary.OrderedListPanel;
+import rifGenericUILibrary.UserInterfaceFactory;
 
 
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
-
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
-import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.DisplayableListItem;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.User;
+import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 import rifServices.io.CovariateContentHandler;
 
 import javax.swing.JDialog;
@@ -31,6 +33,7 @@ import java.awt.event.ActionEvent;
 import java.io.UnsupportedEncodingException;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 

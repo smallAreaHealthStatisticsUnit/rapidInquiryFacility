@@ -1,9 +1,9 @@
 package rifJobSubmissionTool.desktop.batch;
 
-import rifJobSubmissionTool.desktop.interactive.ErrorDialog;
+import rifGenericUILibrary.ErrorDialog;
+import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFSession;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
 import rifServices.system.RIFServiceException;

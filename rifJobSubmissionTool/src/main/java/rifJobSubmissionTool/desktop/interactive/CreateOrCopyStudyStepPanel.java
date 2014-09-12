@@ -1,25 +1,26 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifJobSubmissionTool.system.RIFActivityStep;
-
+import rifGenericUILibrary.ErrorDialog;
+import rifGenericUILibrary.OrderedListPanel;
+import rifGenericUILibrary.UserInterfaceFactory;
+import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFSession;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
-
 import rifServices.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
+import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+
 import javax.swing.ButtonGroup;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -176,7 +177,7 @@ class CreateOrCopyStudyStepPanel
 		String panelTitleLabelText
 			= RIFJobSubmissionToolMessages.getMessage("createOrCopyStudyStepPanel.title");
 		int stepNumber
-			= RIFActivityStep.CREATE_OR_COPY_STUDY_STEP.getStepNumber() + 1;
+			= RIFStudySubmissionActivityStep.CREATE_OR_COPY_STUDY_STEP.getStepNumber() + 1;
 		setPanelTitleInformation(stepNumber, panelTitleLabelText);
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
@@ -375,7 +376,7 @@ class CreateOrCopyStudyStepPanel
 			rifSession.setCurrentDiseaseMappingStudy(blankDiseaseMappingStudy);
 		}
 		currentRIFJobSubmission.setNewRecord(false);
-		rifSession.addCommittedActivityStep(RIFActivityStep.CREATE_OR_COPY_STUDY_STEP);		
+		rifSession.addCommittedActivityStep(RIFStudySubmissionActivityStep.CREATE_OR_COPY_STUDY_STEP);		
 	}
 }
 

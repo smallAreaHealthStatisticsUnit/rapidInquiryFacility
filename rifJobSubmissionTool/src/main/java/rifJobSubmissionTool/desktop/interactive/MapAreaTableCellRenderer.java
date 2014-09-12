@@ -1,10 +1,11 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifJobSubmissionTool.util.UserInterfaceFactory;
+import rifGenericUILibrary.UserInterfaceFactory;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.util.ArrayList;
+
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 

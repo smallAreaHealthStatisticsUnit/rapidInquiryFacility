@@ -191,6 +191,8 @@ public final class FieldValidationUtility {
 		}
 	}
 	
+	
+	
 	/**
 	 * Check malicious method parameter.
 	 *
@@ -205,6 +207,13 @@ public final class FieldValidationUtility {
 		final String parameterValue) 
 		throws RIFServiceSecurityException {
 
+		//TOUR_SECURITY
+		/*
+		 * Some service API methods have parameters which are just String objects.  In this case,
+		 * we want the utility to scan that value and indicate an appropriate error message.
+		 * Notice how it iterates through a list of regular expression patterns and attempts
+		 * to find a match in the target field value.
+		 */
 		if (parameterValue == null) {
 			return;
 		}
@@ -373,6 +382,8 @@ public final class FieldValidationUtility {
 		return candidateTableName.replace(" ", "_").toUpperCase();
 	}
 	
+	
+	
 	/**
 	 * Check malicious code.
 	 *
@@ -386,7 +397,15 @@ public final class FieldValidationUtility {
 		final String fieldName,
 		final String fieldValue) 
 		throws RIFServiceSecurityException {
-				
+
+		//TOUR_SECURITY
+		/*
+		 * This is the main method that is used by RIF business classes to test whether 
+		 * one of their String field values contains malicious codes.  This method works by
+		 * iterating through a collection of patterns that would suggest malicious code, then
+		 * checking whether the field value has a match for any of them.
+		 */
+		
 		if (fieldValue == null) {
 			return;
 		}

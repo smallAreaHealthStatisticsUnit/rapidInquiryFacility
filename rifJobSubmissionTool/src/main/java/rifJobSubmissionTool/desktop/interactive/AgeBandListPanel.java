@@ -1,7 +1,11 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.RIFSession;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
+
+
+import rifGenericUILibrary.OrderedListPanel;
+import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericUILibrary.ListEditingButtonPanel;
 
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.DisplayableListItem;
@@ -12,6 +16,7 @@ import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
@@ -105,7 +110,7 @@ class AgeBandListPanel
 	/** The list panel. */
 	private OrderedListPanel listPanel;	
 	/** The editing button panel. */
-	private ListEditingButtonControlPanel editingButtonPanel;
+	private ListEditingButtonPanel editingButtonPanel;
 	
 	// ==========================================
 	// Section Construction
@@ -138,8 +143,10 @@ class AgeBandListPanel
 	    		userInterfaceFactory,
 	    		true);
 		editingButtonPanel
-			= new ListEditingButtonControlPanel(userInterfaceFactory);
-		editingButtonPanel.setIncludeCopyButton(false);
+			= new ListEditingButtonPanel(userInterfaceFactory);
+		editingButtonPanel.includeAddButton(null);
+		editingButtonPanel.includeEditButton(null);
+		editingButtonPanel.includeDeleteButton(null);
 		editingButtonPanel.addActionListener(this);		
 	}
 
@@ -161,7 +168,6 @@ class AgeBandListPanel
 		panelGC.fill = GridBagConstraints.NONE;
 		panelGC.weightx = 0;
 		panelGC.weighty = 0;	
-		editingButtonPanel.buildUI();	
 		panel.add(editingButtonPanel.getPanel(), panelGC);		
 	}
 	
@@ -271,11 +277,11 @@ class AgeBandListPanel
 	private void updateListGUIFeatures() {
 		
 		if (listPanel.isEmpty()) {
-			editingButtonPanel.setEmptyState();
+			editingButtonPanel.indicateEmptyState();
 		}
 		else {
 			listPanel.setSelectedItem(0);
-			editingButtonPanel.setNonEmptyState();
+			editingButtonPanel.indicatePopulatedState();
 		}
 	}
 	

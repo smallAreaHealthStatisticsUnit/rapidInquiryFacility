@@ -98,6 +98,15 @@ public class GeoLevelSelect
 	 * Instantiates a new geo level select.
 	 */
 	private GeoLevelSelect() {
+		//TOUR_CONCURRENCY
+		/*
+		 * We are trying to promote safe construction of business class objects.
+		 * In support of this goal, we try to eliminate the public constructors
+		 * for classes in the rifServices.businessConceptLayer package.
+		 * 
+		 * Instead, we use a static factory method which ensures that an object has
+		 * been fully created before it is used by multiple threads.
+		*/
 		
 		super();
 	}
@@ -108,9 +117,12 @@ public class GeoLevelSelect
 	 * @return the geo level select
 	 */
 	public static GeoLevelSelect newInstance() {
+		//TOUR_CONCURRENCY
+		//static factory method.  No thread gets to use this
+		//GeoLevelSelect until it is fully constructed.
 		
-		GeoLevelSelect geoLevelArea = new GeoLevelSelect();
-		return geoLevelArea;
+		GeoLevelSelect geoLevelSelect = new GeoLevelSelect();
+		return geoLevelSelect;
 	}
 	
 	/**
@@ -155,7 +167,15 @@ public class GeoLevelSelect
 	 */
 	public static GeoLevelSelect createCopy(
 		final GeoLevelSelect originalGeoLevel) {
-		
+
+		//TOUR_CONCURRENCY
+		/* 
+		 * static factory method for copying contents of another GeoLevelSelect
+		 * object.  This kind of method is used to do safe copying of API method 
+		 * parameters so that local, thread-confined variables can be used in the methods instead.
+		 * As in the case of the newInstance() methods, this method ensures that the
+		 * new copy cannot be used until it has been completely constructed
+		*/
 		if (originalGeoLevel == null) {
 			return null;
 		}
@@ -206,6 +226,13 @@ public class GeoLevelSelect
 		throws RIFServiceException {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
+		
+		//TOUR_VALIDATION
+		/*
+		 * Notice that we call the same method in the superclass to ensure that fields in
+		 * super classes are checked.
+		 */
+		
 		super.checkErrors(RIFServiceError.INVALID_GEOLEVEL_SELECT, errorMessages);
 		countErrors(RIFServiceError.INVALID_GEOLEVEL_SELECT, errorMessages);
 	}

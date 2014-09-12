@@ -9,7 +9,7 @@
 -- Description:
 --
 -- Rapid Enquiry Facility (RIF) - RIF state machine
---     				  rif40_GetMapAreaAttributeValue
+--     							  rif40_run_study
 --
 -- Copyright:
 --

@@ -1,11 +1,12 @@
 
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifJobSubmissionTool.system.RIFActivityStep;
-import rifJobSubmissionTool.util.UserInterfaceFactory;
+import rifGenericUILibrary.UserInterfaceFactory;
+import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
@@ -126,33 +127,33 @@ class WorkFlowProgressPanel {
 		panelGC.ipady = 5;
 		
 		String selectStudyLabelText
-			= RIFActivityStep.CREATE_OR_COPY_STUDY_STEP.getName();
+			= RIFStudySubmissionActivityStep.CREATE_OR_COPY_STUDY_STEP.getName();
 		selectStudy = new WorkFlowStep(selectStudyLabelText);
 
 		String describeStudyLabelText
-			= RIFActivityStep.DESCRIBE_STUDY.getName();
+			= RIFStudySubmissionActivityStep.DESCRIBE_STUDY.getName();
 		describeStudy = new WorkFlowStep(describeStudyLabelText);
 				
 		String selectStudyAreaLabelText
-			= RIFActivityStep.CHOOSE_STUDY_AREA.getName();
+			= RIFStudySubmissionActivityStep.CHOOSE_STUDY_AREA.getName();
 		selectStudyArea = new WorkFlowStep(selectStudyAreaLabelText);
 		
 		String selectComparisonAreaLabelText
-			= RIFActivityStep.CHOOSE_COMPARISON_AREA.getName();
+			= RIFStudySubmissionActivityStep.CHOOSE_COMPARISON_AREA.getName();
 		selectComparisonArea = new WorkFlowStep(selectComparisonAreaLabelText);
 		
 		
 		String selectInvestigationsLabelText
-			= RIFActivityStep.SPECIFY_INVESTIGATIONS.getName();
+			= RIFStudySubmissionActivityStep.SPECIFY_INVESTIGATIONS.getName();
 		selectInvestigations = new WorkFlowStep(selectInvestigationsLabelText);
 		
 		String specifyReportingOptionsLabelText
-			= RIFActivityStep.SPECIFY_REPORTS.getName();
+			= RIFStudySubmissionActivityStep.SPECIFY_REPORTS.getName();
 		specifyReportingOptions 
 			= new WorkFlowStep(specifyReportingOptionsLabelText);
 		
 		String previewLabelText
-			= RIFActivityStep.PREVIEW.getName();
+			= RIFStudySubmissionActivityStep.PREVIEW.getName();
 		showPreview
 			= new WorkFlowStep(previewLabelText);
 		
@@ -179,27 +180,27 @@ class WorkFlowProgressPanel {
 	 * @param currentRIFActivityStep the new current activity step
 	 */
 	public void setCurrentActivityStep(
-		RIFActivityStep currentRIFActivityStep) {
+		RIFStudySubmissionActivityStep currentRIFActivityStep) {
 		
-		if (currentRIFActivityStep == RIFActivityStep.CREATE_OR_COPY_STUDY_STEP) {
+		if (currentRIFActivityStep == RIFStudySubmissionActivityStep.CREATE_OR_COPY_STUDY_STEP) {
 			selectStudy();
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.DESCRIBE_STUDY) {
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.DESCRIBE_STUDY) {
 			describeStudy();			
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.CHOOSE_STUDY_AREA) {
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.CHOOSE_STUDY_AREA) {
 			selectStudyArea();			
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.CHOOSE_COMPARISON_AREA) {
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.CHOOSE_COMPARISON_AREA) {
 			selectComparisonArea();			
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.SPECIFY_INVESTIGATIONS) {
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.SPECIFY_INVESTIGATIONS) {
 			selectInvestigation();			
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.SPECIFY_REPORTS) {
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.SPECIFY_REPORTS) {
 			selectSpecifyReportingOptions();			
 		}
-		else if (currentRIFActivityStep == RIFActivityStep.PREVIEW) {
+		else if (currentRIFActivityStep == RIFStudySubmissionActivityStep.PREVIEW) {
 			showPreview();
 		}
 		panel.updateUI();

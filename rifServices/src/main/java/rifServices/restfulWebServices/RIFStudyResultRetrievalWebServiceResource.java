@@ -1,6 +1,8 @@
 package rifServices.restfulWebServices;
 
 import rifServices.businessConceptLayer.*;
+import rifServices.dataStorageLayer.RIFStudyResultRetrievalAPI;
+import rifServices.system.RIFServiceException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -140,8 +142,9 @@ public class RIFStudyResultRetrievalWebServiceResource
 	public String getGeometry(
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,	
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,			
-		@QueryParam("geoLevelToMapName") String geoLevelToMapName,
+		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+		@QueryParam("geoLevelAreaName") String geoLevelAreaName,		
+		@QueryParam("geoLevelToMapName") String geoLevelViewName,
 		@QueryParam("mapAreaValues") final List<String> mapAreaValues) {
 					
 		String result = "";
@@ -151,8 +154,9 @@ public class RIFStudyResultRetrievalWebServiceResource
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(geoLevelSelectName);
-			GeoLevelToMap geoLevelToMap
-				= GeoLevelToMap.newInstance(geoLevelToMapName);
+			GeoLevelArea geoLevelArea = GeoLevelArea.newInstance(geoLevelAreaName);
+			GeoLevelView geoLevelView
+				= GeoLevelView.newInstance(geoLevelViewName);
 			ArrayList<MapArea> mapAreas = new ArrayList<MapArea>();
 			for (String mapAreaValue : mapAreaValues) {
 				//TODO: Not sure where the map area label might come in
@@ -169,7 +173,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					user, 
 					geography, 
 					geoLevelSelect,
-					geoLevelToMap, 
+					geoLevelView, 
 					mapAreas);
 			
 			//Convert results to support JSON
@@ -203,6 +207,8 @@ public class RIFStudyResultRetrievalWebServiceResource
 		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,		
 		@QueryParam("mapArea") String mapAreaValue) {
 					
+		System.out.println("getGeoLevelBoundsForArea 1");
+		
 		String result = "";
 		try {
 			//Convert URL parameters to RIF service API parameters			
@@ -225,7 +231,16 @@ public class RIFStudyResultRetrievalWebServiceResource
 					user, 
 					studyResultRetrievalContext,
 					mapArea);
-			
+
+			System.out.println(
+				"getGeoLevelBoundsForArea 2 xMin=="+
+				boundaryRectangle.getXMin()+
+				"==yMin=="+
+				boundaryRectangle.getYMin()+
+				"==xMax=="+boundaryRectangle.getXMax()+
+				"=="+boundaryRectangle.getYMax()+
+				"==");
+
 			//convert into JSON using proxy object
 			BoundaryRectangleProxy boundaryRectangleProxy
 				= new BoundaryRectangleProxy();
@@ -237,10 +252,17 @@ public class RIFStudyResultRetrievalWebServiceResource
 				String.valueOf(boundaryRectangle.getXMax()));			
 			boundaryRectangleProxy.setYMax(
 				String.valueOf(boundaryRectangle.getYMax()));			
-			serialiseResult(boundaryRectangleProxy);
+			result = serialiseResult(boundaryRectangleProxy);
 			
+			System.out.println("getGeoLevelBoundsForArea 3");
+
 		}
 		catch(Exception exception) {
+			if (exception instanceof RIFServiceException) {
+				RIFServiceException rifServiceException	
+					= (RIFServiceException) exception;
+				rifServiceException.printErrors();
+			}
 			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
@@ -300,7 +322,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 				String.valueOf(boundaryRectangle.getXMax()));			
 			boundaryRectangleProxy.setYMax(
 				String.valueOf(boundaryRectangle.getYMax()));			
-			serialiseResult(boundaryRectangleProxy);
+			result = serialiseResult(boundaryRectangleProxy);
 			
 		}
 		catch(Exception exception) {
@@ -356,7 +378,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					String.valueOf(boundaryRectangle.getXMax()));			
 			boundaryRectangleProxy.setYMax(
 					String.valueOf(boundaryRectangle.getYMax()));			
-			serialiseResult(boundaryRectangleProxy);
+			result = serialiseResult(boundaryRectangleProxy);
 			
 		}
 		catch(Exception exception) {
@@ -404,9 +426,6 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geography, 
 					geoLevelSelect,
 					boundaryRectangle);
-
-			//Convert results to support JSON
-			serialiseResult(result);
 			
 		}
 		catch(Exception exception) {
@@ -465,7 +484,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geoLevelAttributeName);			
 
 			//Convert results to support JSON
-			serialiseResult(mapAreaAttributeValues);			
+			result = serialiseResult(mapAreaAttributeValues);			
 			
 		}
 		catch(Exception exception) {
@@ -518,7 +537,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geoLevelAttributeSource);
 
 			//Convert results to support JSON
-			serialiseResult(geoLevelAttributeThemes);			
+			result = serialiseResult(geoLevelAttributeThemes);			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -577,7 +596,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geoLevelAttributeTheme);			
 
 			//Convert results to support JSON
-			serialiseResult(attributes);	
+			result = serialiseResult(attributes);	
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -637,7 +656,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geoLevelAttributeTheme);
 
 			//Convert results to support JSON
-			serialiseResult(attributes);						
+			result = serialiseResult(attributes);						
 
 		}
 		catch(Exception exception) {
@@ -700,7 +719,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					endRowIndex);
 
 			//Convert results to support JSON
-			serialiseResult(rifResultTable);			
+			result = serialiseResult(rifResultTable);			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -765,7 +784,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					endRowIndex);
 
 			//Convert results to support JSON
-			serialiseResult(rifResultTable);						
+			result = serialiseResult(rifResultTable);						
 			
 		}
 		catch(Exception exception) {
@@ -839,7 +858,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					year);
 
 			//Convert results to support JSON
-			serialiseResult(rifResultTable);						
+			result = serialiseResult(rifResultTable);						
 
 		}
 		catch(Exception exception) {
@@ -960,7 +979,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geoLevelAttribute);
 
 			//Convert results to support JSON
-			serialiseResult(rifResultTable);						
+			result = serialiseResult(rifResultTable);						
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -1020,7 +1039,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					year);
 
 			//Convert results to support JSON
-			serialiseResult(rifResultTable);						
+			result = serialiseResult(rifResultTable);						
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -1080,7 +1099,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					mapAreas);
 
 			//Convert results to support JSON
-			serialiseResult(rifResultTable);						
+			result = serialiseResult(rifResultTable);						
 			
 		}
 		catch(Exception exception) {
@@ -1125,7 +1144,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geoLevelAttributeSource);
 
 			//Convert results to support JSON
-			serialiseResult(resultFields);		
+			result = serialiseResult(resultFields);		
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -1164,7 +1183,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					studySummary);
 
 			//Convert results to support JSON
-			serialiseResult(rifResultTable);						
+			result = serialiseResult(rifResultTable);						
 						
 		}
 		catch(Exception exception) {
@@ -1204,7 +1223,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					studySummary);
 
 			//Convert results to support JSON
-			serialiseResult(rifResultTable);						
+			result = serialiseResult(rifResultTable);						
 						
 		}
 		//Convert exceptions to support JSON
@@ -1244,7 +1263,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					studySummary);
 
 			//Convert results to support JSON
-			serialiseResult(rifResultTable);						
+			result = serialiseResult(rifResultTable);						
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -1282,7 +1301,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					studySummary);
 
 			//Convert results to support JSON
-			serialiseResult(rifResultTable);
+			result = serialiseResult(rifResultTable);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON

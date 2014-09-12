@@ -76,6 +76,7 @@ $$;
 -- rif40_closeGetMapAreaAttributeCursor: 		51400 to 51599
 -- rif40_CreateMapAreaAttributeSource: 			51600 to 51799
 -- rif40_DeleteMapAreaAttributeSource: 			51800 to 51999
+-- rif40_GetAdjacencyMatrix:				52000 to 52050
 --
 
 --
@@ -105,11 +106,17 @@ CREATE TYPE rif40_xml_pkg.rif40_geolevelAttributeTheme AS ENUM (
 \i ../PLpgsql/rif40_xml_pkg/rif40_closeGetMapAreaAttributeCursor.sql
 \i ../PLpgsql/rif40_xml_pkg/rif40_CreateMapAreaAttributeSource.sql
 \i ../PLpgsql/rif40_xml_pkg/rif40_DeleteMapAreaAttributeSource.sql
+\i ../PLpgsql/rif40_xml_pkg/rif40_GetAdjacencyMatrix.sql
 
 COMMENT ON SCHEMA rif40_xml_pkg
   IS 'RIF XML support.
 
 Functions:
+
+Function: 		rif40_GetAdjacencyMatrix()
+Parameters:		study id
+Returns:		area_id, num_adjacencies, adjacency_list as a table. 
+Description: 	Get study area adjacency matrix required by INLA	
 
 Function: 	rif40_get_geojson_tiles()
 Parameters:	Geography, geolevel_view, Y max, X max, Y min, X min as a record, return one row (TRUE/FALSE)

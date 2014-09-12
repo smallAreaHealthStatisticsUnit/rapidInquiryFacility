@@ -926,6 +926,9 @@ public class Investigation
 		
 		String recordType = getRecordType();
 		
+		
+		//TOUR_VALIDATION
+		//In many cases, we're just checking whether a field has been left null or blank
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
 		if (fieldValidationUtility.isEmpty(title)) {
@@ -937,8 +940,9 @@ public class Investigation
 			errorMessages.add(errorMessage);
 		}
 		else {
-			
-			//Ensuring that the 
+			//TOUR_VALIDATION
+			//Ensuring that the title can be converted into something that serves as the 
+			//table name for the investigation
 			String adjustedTableName
 				= fieldValidationUtility.convertToDatabaseTableName(title);
 			if (fieldValidationUtility.isValidDatabaseTableName(adjustedTableName) == false) {
@@ -974,6 +978,8 @@ public class Investigation
 			}			
 		}
 
+		//TOUR_VALIDATION
+		//Here, we check whether an object the investigation owns is null or not.
 		if (ndPair == null) {
 			String ndPairLabel
 				= RIFServiceMessages.getMessage("numeratorDenominatorPair.label");
@@ -986,6 +992,11 @@ public class Investigation
 		}
 		else {
 			try {
+				//TOUR_VALIDATION
+				//As Investigation calls the checkErrors() methods of the objects
+				//it manages, it gathers the error messages. At the end, all of these
+				//errors will be associated with an error type of INVALID_INVESTIGATION,
+				//rather than what it might otherwise be here - INVALID_NUMERATOR_DENOMINATOR_PAIR
 				ndPair.checkErrors();
 			}
 			catch(RIFServiceException rifServiceException) {
@@ -1004,6 +1015,8 @@ public class Investigation
 			errorMessages.add(errorMessage);
 		}
 		else if (healthCodes.size() == 0) {
+			//TOUR_VALIDATION
+			//Example of checking when a collection is empty
 			String errorMessage
 				= RIFServiceMessages.getMessage("investigation.error.noHealthCodesSpecified");
 			errorMessages.add(errorMessage);			

@@ -270,7 +270,7 @@ class SQLCovariateManager
 			String errorMessage
 				= RIFServiceMessages.getMessage("covariateManager.db.unableToGetCovariates");
 
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLCovariateManager.class, 
 				errorMessage, 
@@ -384,7 +384,7 @@ class SQLCovariateManager
 					currentCovariate.getRecordType(),
 					currentCovariate.getDisplayName());
 
-			RIFLogger rifLogger = new RIFLogger();
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLCovariateManager.class, 
 				errorMessage, 
