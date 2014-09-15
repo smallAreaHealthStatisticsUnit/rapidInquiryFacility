@@ -382,7 +382,7 @@ a:hover{
 		overflow:hidden;
 }
 	#content #rightcol #map{
-		height: 70%;
+		height: 80%;
 		display:block;
 		background-color:transparent;
 	}
@@ -411,7 +411,7 @@ a:hover{
 	*/
 	#rr_chart{
 		border-top: 1px solid #C1C1C1;
-		height: 30%;
+		height: 20%;
 		margin-top: 1px;
 		background-color: #FFFFFF;
 		overflow: hidden;

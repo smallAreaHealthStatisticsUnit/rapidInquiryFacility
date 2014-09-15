@@ -114,8 +114,8 @@ RIF.diseaseMapping = ( function() {
         firer: [ "chart" ],
         method: "rr_chart"
       },
-	  
-	  addResizableAreaCharts: {
+
+      addResizableAreaCharts: {
         subscribers: [ "resizable" ],
         firer: [ "chart" ],
         method: "multipleAreaCharts"
@@ -126,8 +126,8 @@ RIF.diseaseMapping = ( function() {
         firer: [ "resizable" ],
         method: "refreshLineBivariate"
       },
-	  
-	 resizeAreaCharts: {
+
+      resizeAreaCharts: {
         subscribers: [ "chart" ],
         firer: [ "resizable" ],
         method: "refreshMultipleArea"

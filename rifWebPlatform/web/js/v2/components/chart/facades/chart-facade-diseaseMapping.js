@@ -15,16 +15,16 @@ RIF.chart[ 'chart-facade-diseaseMapping' ] = ( function( _p ) {
     refreshLineBivariate: function() {
       _p._refreshLineBivariate();
     },
-	
-	refreshMultipleArea: function() {
+
+    refreshMultipleArea: function() {
       _p._refreshMultipleArea();
     },
 
     addResizableChart: function() {
       this.fire( 'addResizableChart', [] )
     },
-	
-	addResizableAreaCharts: function() {
+
+    addResizableAreaCharts: function() {
       this.fire( 'addResizableAreaCharts', [] )
     }
 

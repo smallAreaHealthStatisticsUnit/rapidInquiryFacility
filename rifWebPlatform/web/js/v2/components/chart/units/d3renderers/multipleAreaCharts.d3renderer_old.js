@@ -7,11 +7,6 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max ) {
     contextWidth = width * .5,
     el = settings.element;
 
-  var xScales = {},
-    yScales = {};
-
-  var dataSets = {};
-
   var svg = d3.select( "#" + el ).append( "svg" )
     .attr( "width", width )
     .attr( "height", ( height + margin.top + margin.bottom ) )
@@ -23,8 +18,22 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max ) {
     maxDataPoint = max;
 
 
-  return function Chart( options ) {
+  var mousemove = function( d ) {
+    var x0 = d3.mouse( this )[ 0 ];
+    console.log( x0 );
+  };
 
+  svg.append( "rect" )
+    .attr( "class", "overlayHover" )
+    .attr( "width", width )
+    .attr( "height", height )
+    .on( "mousemove", mousemove );
+
+
+
+
+  return function Chart( options ) {
+    this.chartData = options.data;
     this.width = width - 15;
     this.height = chartHeight;
     this.maxDataPoint = maxDataPoint;
@@ -34,24 +43,18 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max ) {
 
     var localName = this.name;
 
-    dataSets[ localName ] = options.data;
-
-    var xS = d3.scale.ordinal()
-      .domain( options.data.map( function( d ) {
+    this.xScale = d3.scale.ordinal()
+      .domain( this.chartData.map( function( d ) {
         return d.gid;
       } ) )
       .rangeBands( [ 0, this.width ] );
 
-    var yS = d3.scale.linear()
+    this.yScale = d3.scale.linear()
       .range( [ this.height, 0 ] )
       .domain( [ 0, this.maxDataPoint ] );
 
-
-    var linename = this.name + "_line";
-
-    xScales[ linename ] = xS;
-    yScales[ linename ] = yS;
-
+    var xS = this.xScale;
+    var yS = this.yScale;
 
     this.area = d3.svg.area()
       .interpolate( "basis" )
@@ -74,7 +77,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max ) {
         }
       } );
 
-    /*this.area2 = d3.svg.area()
+    this.area2 = d3.svg.area()
       .interpolate( "monotone" )
       .x( function( d ) {
         return xS( +d.gid.toString() );
@@ -95,108 +98,40 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max ) {
         } else {
           return yS( f )
         }
-      } );*/
-
+      } );
     /*
-     
-	 This isn't required - it simply creates a mask. If this wasn't here,
-	 when we zoom/panned, we'd see the chart go off to the left under the y-axis 
-	
+				This isn't required - it simply creates a mask. If this wasn't here,
+				when we zoom/panned, we'd see the chart go off to the left under the y-axis 
+			*/
     svg.append( "defs" ).append( "clipPath" )
       .attr( "id", "clip-" + this.id )
       .append( "rect" )
       .attr( "width", this.width )
       .attr( "height", this.height );
-	  
-	*/
-
     /*
-		Assign it a class so we can assign a fill color
-		And position it on the page
-	*/
-
+				Assign it a class so we can assign a fill color
+				And position it on the page
+			*/
     this.chartContainer = svg.append( "g" )
       .attr( 'class', this.name.toLowerCase() )
       .attr( "transform", "translate(" + this.margin.left + "," + ( this.margin.top + ( this.height * this.id ) + ( 10 * this.id ) ) + ")" );
 
     /* We've created everything, let's actually add it to the page */
     this.chartContainer.append( "path" )
-      .data( [ options.data ] )
+      .data( [ this.chartData ] )
       .attr( "class", "chart unadj " + this.name.toLowerCase() )
       .attr( "clip-path", "url(#clip-" + this.id + ")" )
       .attr( "d", this.area );
 
-    /* this.chartContainer.append( "path" )
+    this.chartContainer.append( "path" )
       .data( [ this.chartData ] )
       .attr( "class", "chart adj " + this.name.toLowerCase() )
       .attr( "clip-path", "url(#clip-" + this.id + ")" )
-      .attr( "d", this.area2 );*/
+      .attr( "d", this.area2 );
 
-
-    var mouseclick = function( d ) {
-
-      var xy = d3.mouse( this ),
-        xPos = xy[ 0 ],
-        yPos = xy[ 1 ],
-        leftEdges = xS.range(),
-        width = xS.rangeBand(),
-        j;
-
-
-      for ( j = 0; xPos > ( leftEdges[ j ] + width ); j++ ) {}
-      //do nothing, just increment j until case fails
-
-      var xOrdinal = xS.domain()[ j ],
-        yValues = {},
-        dataLength = options.data.length - 1;
-
-
-      while ( dataLength-- ) {
-        for ( var set in dataSets ) {
-          if ( dataSets[ set ][ dataLength ].gid === xOrdinal ) {
-            yValue = options.data[ dataLength ][ localName ];
-            yValues[ set ] = yValue;
-            break;
-          };
-        };
-      };
-
-      svg.selectAll( ".lineHover" )
-        .attr( "transform", function() {
-          var x = xScales[ this.id ]( xOrdinal );
-          //console.log(dataSets[options.name][])
-          return "translate(" + x + "," + 0 + ")";
-        } )
-
-      svg.selectAll( "text.areaValue" )
-        .text( function() {
-          return xOrdinal + ":" + yValues[ this.id ]
-        } );
-
-    };
-
-    this.chartContainer.append( "rect" )
-      .attr( "class", "overlayHover" )
-      .attr( "width", width )
-      .attr( "height", chartHeight )
-      .on( "mousemove", mouseclick );
-
-    /* Highlighter */
-    var highlight = this.chartContainer.append( "line" )
-      .attr( "class", "lineHover" )
-      .attr( "x1", 0 )
-      .attr( "y1", 0 )
-      .attr( "x2", 0 )
-      .attr( "y2", chartHeight )
-      .attr( "height", 2 )
-      .attr( "height", chartHeight )
-      .attr( "id", linename );
-
-    //this.chartContainer.append( lineHover );
-
-    //this.xAxisTop = d3.svg.axis().scale( xS ).orient( "bottom" );
-    //this.xAxisBottom = d3.svg.axis().scale( xS ).orient( "top" );
-    this.yAxis = d3.svg.axis().scale( yS ).orient( "left" ).tickValues( [ 0, 1, this.maxDataPoint ] );
+    this.xAxisTop = d3.svg.axis().scale( this.xScale ).orient( "bottom" );
+    this.xAxisBottom = d3.svg.axis().scale( this.xScale ).orient( "top" );
+    this.yAxis = d3.svg.axis().scale( this.yScale ).orient( "left" ).tickValues( [ 0, 1, this.maxDataPoint ] );
 
     this.chartContainer.append( "g" )
       .attr( "class", "y axis" )
@@ -208,22 +143,14 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max ) {
       .attr( "transform", "translate(10,20)" )
       .text( this.name );
 
-    this.chartContainer.append( "text" )
-      .attr( "class", "areaValue" )
-      .attr( "id", localName )
-      .attr( "transform", "translate(10,32)" )
-      .text( "0.00" );
-
-
-
   };
 
 
 
-  /*Chart.prototype.showOnly = function( b ) {
+  Chart.prototype.showOnly = function( b ) {
     this.xScale.domain( b );
     this.chartContainer.select( "path" ).data( [ this.chartData ] ).attr( "d", this.area );
     this.chartContainer.select( ".x.axis.top" ).call( this.xAxisTop );
     this.chartContainer.select( ".x.axis.bottom" ).call( this.xAxisBottom );
-  }*/
+  }
 } );
