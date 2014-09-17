@@ -52,7 +52,7 @@ RIF.chart.line_bivariate = ( function() {
           _render( false );
         };
         //_p.setHistoSettings( sett );
-        RIF.getResultSet( callback, [ settings.line_field /*type, studyId, invId /*year*/ ] );
+        RIF.getResultSet( callback, [ settings.line_field /*type, studyId, invId /*year*/] );
       }
 
     };

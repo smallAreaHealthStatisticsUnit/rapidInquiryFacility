@@ -297,11 +297,12 @@ a:hover{
     /* Left Col */
    div#studyLabel{
 		text-transform: uppercase; 
-	
+		background-color: #CAE1FF;
 		width: 100%;
 }
 	div#studyLabel h1, div#studyLabel h2{
 		padding: 0 4%;
+		text-align:right;
 }
 	
 	div#studyLabel h1{
@@ -564,12 +565,12 @@ a:hover{
 		height:100px;
 	}
 	
-	.msettings #tableSettings{
+	.msettings #resultsSetOfInterest{
 	   overflow:auto;
 	   max-height: 80px;
 	}
 	
-	.msettings #tableSettings div#colsFilter { 
+	.msettings #resultsSetOfInterest div#resultsFilter { 
 		height: auto;
 		width: 180px;
 		margin: 5px 0 0 100px;
@@ -577,19 +578,19 @@ a:hover{
 		min-height: 20px;
 	}
 	
-	.msettings #tableSettings div#colsFilter div { 
+	.msettings #resultsSetOfInterest div#resultsFilter div { 
 		height: 20px;
 		min-width:85px;
 		display:block;
 		float:left
 	}
 	
-	.msettings #tableSettings  div#colsFilter input.colsChoice { 
+	.msettings #resultsSetOfInterest  div#resultsFilter input.colsChoice { 
 		float: left;
 		margin: 6px 3px;
 	}
 	
-	.msettings #tableSettings div#colsFilter label.colsChoiceLbl { 
+	.msettings #resultsSetOfInterest div#resultsFilter label.colsChoiceLbl { 
 		width: auto;
 		padding: 2px 8px 0 0px;
 	}
@@ -618,6 +619,18 @@ a:hover{
 		font-size: 1.1em;
 		text-align: left;
 	}
+	
+	/*.msettings label.checkbox {
+	 border:1px solid #ccc;
+	 padding:10px;
+	 margin:0 0 10px;
+	 display:block; 
+	}
+	.msettings label.checkbox:hover {
+	 background:#eee;
+	 cursor:pointer;
+	}*/	
+	
 	.msettings .txt-fld select ,.msettings .txt-fld input[type="text"] {
 		width: 180px;
 		padding: 4px 2px;

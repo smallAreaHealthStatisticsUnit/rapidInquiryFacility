@@ -39,6 +39,18 @@ RIF.menu.utils = ( function() {
         el.prepend( '<div>' + p + '</div>' );
       }
     },
+	
+	fieldCheckboxesResultsSet: function( obj, el, name ) {
+      el.empty();
+      var counter = 0;
+      for ( var key in obj ) {
+		var checked = counter < 4 ? true : false,
+            id = "filterCols" + counter++,
+          p = _p.getCheckBoxLabel( name, obj[ key ], obj[ key ], id, checked );
+
+        el.prepend( '<div>' + p + '</div>' );
+      }
+    },
 
     greyOut: function( el ) {
       el.find( "select, button" ).prop( 'disabled', 'disabled' ).css( {

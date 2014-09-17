@@ -8,11 +8,11 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
     margin = opt.margin,
     width = opt.dimensions.width(),
     height = opt.dimensions.height() - margin.top - margin.bottom,
-    idField = $.trim( opt.id_field ),
-    orderField = $.trim( opt.x_field ),
-    lineField = $.trim( opt.line_field ),
-    lowField = $.trim( opt.cl_field ),
-    highField = $.trim( opt.cu_field );
+    idField = $.trim(opt.id_field),
+    orderField = $.trim(opt.x_field),
+    lineField = $.trim(opt.line_field),
+    lowField = $.trim(opt.cl_field),
+    highField = $.trim(opt.cu_field);
 
 
   var line = d3.svg.line()
@@ -132,7 +132,7 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
     .attr( "dy", ".4em" )
     .style( "text-anchor", "end" )
     .style( "fill", "#919191" )
-    .attr( "transform", "translate(40,5)" )
+	.attr( "transform", "translate(40,5)" )
     .text( lineField );
 
 

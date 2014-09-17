@@ -21,7 +21,7 @@ svg.areaCharts .lineHover{
 
  text.areaValue {
 	font-size: 11px;
-	fill: #5D478B;
+	fill: rgb(145, 145, 145);
 	font-weight:900;
 }
 
@@ -44,21 +44,23 @@ g.context g.axis line {
 	stroke-opacity: .1;
 }
 
-g path.unadj {
-	fill: #5D478B;
+g path.areaChart1 {
+	fill: rgba(127,130,201,1);
 }
 
-g path.adj {
-	fill: rgba(101, 153, 255,.5);
+g path.areaChart2 {
+	fill: rgba(127,183,201,1)
 }
 
-g path.unadj:hover {
-	fill: rgba(101, 153, 255,1);
+g path.areaChart3 {
+	fill: rgba(127,201,174,1);
 }
 
-g path.adj:hover {
-	fill: rgba(9, 112, 84,1);
+g path.areaChart4 {
+	fill: rgba(171,127,201,1);
 }
+
+
 /*
 g.rr_adj path.chart {
 	fill: rgba(127,201,174,0.6);

@@ -28,8 +28,11 @@ RIF.menu = ( function( settings ) {
 
         avlbResultSet: function() {
           _p.dropDown( this, _p.resultSet );
+		  _p.dropDown( this, _p.fieldToMap );
           _p.facade.drawLineBivariateChart( this );
           _p.facade.drawMultipleAreaChart( this );
+		  _p.fieldCheckboxesResultsSet( this, _p.resultsChoice, "resultsSets" );
+		  
         },
 
         avlbFieldsChoro: function() {

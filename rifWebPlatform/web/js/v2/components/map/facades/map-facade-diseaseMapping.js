@@ -17,9 +17,9 @@ RIF.map[ 'map-facade-diseaseMapping' ] = ( function( _p ) {
     uGeolevel: function( args ) {
       _p.removeLayer();
       _p.addLayer( {
-        "geoLevel": args.geoLevel
+        "geoLevel": args.studyId
       } );
-      _p.setDataset( args.dataset );
+      _p.setDataset( args.studyId );
     },
 
     resizeMap: function() {

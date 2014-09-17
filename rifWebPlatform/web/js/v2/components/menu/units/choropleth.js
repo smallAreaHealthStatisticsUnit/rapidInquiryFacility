@@ -77,7 +77,7 @@ RIF.menu.choropleth = ( function() {
 
         if ( $( "#selectedScale" ).children().length === 1 ) {
           n = 1;
-        }
+        };
 
         var intervals = [],
           maxIntervals = ( n > 1 ) ? 3 : 1;

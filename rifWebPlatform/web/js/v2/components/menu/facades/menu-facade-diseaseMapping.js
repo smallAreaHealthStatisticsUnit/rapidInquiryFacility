@@ -22,9 +22,9 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
 
 
     /* firers */
-    addGeolevel: function( geolvl ) {
+    addGeolevel: function( studyId ) {
       this.fire( 'addGeolevel', {
-        "geoLevel": geolvl
+        "studyId": studyId
       } );
     },
 

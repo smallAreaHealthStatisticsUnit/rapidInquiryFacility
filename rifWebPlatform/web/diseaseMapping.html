@@ -61,7 +61,7 @@
 	 <script type="text/javascript" src="js/v2/components/menu/menu.utils.js"></script>
 	<script type="text/javascript" src="js/v2/components/menu/units/diseaseStudyLevel.js"></script>
 	<script type="text/javascript" src="js/v2/components/menu/units/choropleth.js"></script>
-	<!--<script type="text/javascript" src="js/v2/components/menu/units/settings.js"></script>-->
+	<script type="text/javascript" src="js/v2/components/menu/units/settings-disease.js"></script>
 	
     <!-- chart -->
     <script type="text/javascript" src="js/v2/components/chart/chart.js"></script>
@@ -125,10 +125,10 @@
         <div id="submenu">
             <div>
                 <div class='chartOpts'>
-                   <!--<div id="studyLabel">
+                   <div id="studyLabel">
 						<h1 > Study Id  </h1>
 						<h2 id="invLabel" > Inv id  </h2>
-				   </div>-->
+				   </div>
                 </div>
 				
                 <div class='mapOpts'>
@@ -188,27 +188,13 @@
 		<div class="msettings">
 			<div class="msettings-ct">
 				<div class="msettings-header">
-					<h2>Settings</h2>
+					<h2>Disease Map settings</h2>
 					<a class="modal_close" href="#"></a>
 				</div>
-				<form  >
-					<div class="txt-fld">
-						<label for="fldSlct">Map hover field:</label>
-						<select id='fldSlct'>
-						<option value=''> </option>
-						</select>
-					</div>
-					<div class="txt-fld fldHistogramContainer">
-						<label for="fldHistogram">Line chart field:</label>
-						<select id='fldHistogram'>
-							<option value=''> </option>
-						</select>
-					</div>
-					<div class="txt-fld">
-						<label for="fldPyramid">Result set:</label>
-						<select id='fldPyramid'>
-						<option value=''> </option>
-						</select>
+				<form>
+					<div class="txt-fld" id="resultsSetOfInterest">
+						<label for="fldSlct" style="width:70px">Result sets (max 4):</label>
+						<div id ="resultsFilter"></div>	
 					</div>
 					<div class="save-fld-settings">
 						<input type="button" value="save">

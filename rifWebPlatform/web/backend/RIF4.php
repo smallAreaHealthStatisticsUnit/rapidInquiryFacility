@@ -573,16 +573,16 @@ $r = RIF4::Instance();
 			// Column x_order will be used for the x axis in the area chart
 			// This is required by the plug in drawing the area chart
 			
-			$sql = "select gid, round($resSet,4) as $resSet 
-			from atlas_leu_f order by $resSet" ;
+			$sql = "select gid, round($resSet,3) as $resSet , row_number() over (ORDER BY $resSet) as x_order 
+			from atlas_leu_f where $resSet <=2 order by $resSet  " ;
 
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());	
 			
-			$csv = "gid,$resSet" . "\n";
+			$csv = "gid,$resSet,x_order" . "\r\n";
 			
 			while ($row = $hndl -> fetch(PDO::FETCH_ASSOC)){
-				$csv .=  implode($row, ',') . "\n" ;
+				$csv .=  implode($row, ',') . "\r\n" ;
 			}
 			
 			self :: $dbh->commit();
@@ -596,6 +596,30 @@ $r = RIF4::Instance();
 	
 	}
 	
+	/*public function getMinMaxResultSet($resSet, $studyId, $invId){
+		try{
+		 	
+			$sql = "select gid, round($resSet,3) as $resSet , row_number() over (ORDER BY $resSet) as x_order 
+			from atlas_leu_f where $resSet <=2 order by $resSet  " ;
+
+			$hndl = self::$dbh -> prepare($sql);
+			$hndl ->execute(array());	
+			
+			$csv = "gid,$resSet,x_order" . "\n";
+			
+			while ($row = $hndl -> fetch(PDO::FETCH_ASSOC)){
+				$csv .=  implode($row, ',') . "\n" ;
+			}
+			
+			self :: $dbh->commit();
+			
+			return $csv;
+			
+		}catch(PDOException $pe){
+			self :: $dbh->rollback();
+		 	die( $pe->getMessage());
+		}
+	}*/
 	
 	/*
 	 * Retrieve disease mapping results:
