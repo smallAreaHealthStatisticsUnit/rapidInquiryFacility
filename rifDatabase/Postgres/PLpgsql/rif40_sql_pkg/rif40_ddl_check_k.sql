@@ -77,7 +77,8 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check k) Missing comments
+Check k) Missing comments for all objects owned by rif40
+         Schemas: rif40, rif_studies, and rif*pkg are errors; others are for INFO
  */
 DECLARE
 	c11 CURSOR FOR /* All rif40_objects and comments */
@@ -283,7 +284,8 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check k) Missing comments';
+Check k) Missing comments
+         Schemas: rif40, rif_studies, and rif*pkg are errors; others are for INFO';
 
 --
 -- Eof

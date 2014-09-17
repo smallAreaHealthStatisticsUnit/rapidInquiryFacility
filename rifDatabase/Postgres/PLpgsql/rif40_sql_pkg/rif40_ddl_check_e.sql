@@ -77,7 +77,9 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check e) Missing triggers
+Check e) Missing triggers:
+		 Tables listed in rif40_triggers.trigger_name, table_name
+		 Removing (EXCEPT/MINUS depending on database) triggers for user RIF40
  */
 DECLARE
 	c5 CURSOR(l_schema VARCHAR) FOR  /* Missing triggers */
@@ -125,7 +127,9 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check e) Missing triggers';
+Check e) Missing triggers:
+		 Tables listed in rif40_triggers.trigger_name, table_name
+		 Removing (EXCEPT/MINUS depending on database) triggers for user RIF40';
 
 --
 -- Eof

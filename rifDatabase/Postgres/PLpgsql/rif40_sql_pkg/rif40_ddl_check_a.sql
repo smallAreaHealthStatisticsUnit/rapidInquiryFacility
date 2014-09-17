@@ -77,7 +77,14 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check a) Missing tables and views
+Check a) Missing tables and views:
+		 Tables listed in rif30_tables_and_views.table_name
+		 Removing (EXCEPT/MINUS depending on database):
+		 * User temporary tables
+		 * User foreign data wrapper (i.e. Oracle) tables
+		 * User and rif40 local tables
+		 * User views	 
+		 
  */
 DECLARE
 	c1 CURSOR(l_schema VARCHAR) FOR /* Missing tables and views */
@@ -147,7 +154,13 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check a) Missing tables and views';
+Check a) Missing tables and views:
+		 Tables listed in rif30_tables_and_views.table_name
+		 Removing (EXCEPT/MINUS depending on database):
+		 * User temporary tables
+		 * User foreign data wrapper (i.e. Oracle) tables
+		 * User and rif40 local tables
+		 * User views';
 
 --
 -- Eof

@@ -77,13 +77,17 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check c) Missing table/view columns
+Check c) Missing table/view columns:
+		 Table and column combinations listed in rif30_columns.table_name, column_name
+		 * Exclude missing tables/views (i.e. check a)
+		 * Removing (EXCEPT/MINUS depending on database) columns with comments
+
  */
 DECLARE
 	c3 CURSOR(l_schema VARCHAR) FOR /* Missing table/view columns */
 		SELECT LOWER(table_or_view_name_hide) table_or_view, LOWER(column_name_hide) column_name
 		  FROM rif40_columns
-                 WHERE LOWER(table_or_view_name_hide) NOT IN ( /* Exclude missing tables/views (i.e. cursor c1) */
+                 WHERE LOWER(table_or_view_name_hide) NOT IN ( /* Exclude missing tables/views (i.e. check a) */
 			SELECT LOWER(table_or_view_name_hide) table_or_view	/* RIF40 list of tables and views */
 			  FROM rif40_tables_and_views
 			EXCEPT 
@@ -155,7 +159,10 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check c) Missing table/view columns';
+Check c) Missing table/view columns:
+		 Table and column combinations listed in rif30_columns.table_name, column_name
+		 * Exclude missing tables/views (i.e. check a)
+		 * Removing (EXCEPT/MINUS depending on database) columns with comments';
 
 --
 -- Eof

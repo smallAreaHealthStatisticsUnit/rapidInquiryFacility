@@ -77,7 +77,20 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check f) Extra tables and views
+Check f) Extra tables and views:
+		 * User temporary tables
+		 * User foreign data wrapper (i.e. remote Oracle) tables
+		 * User and rif40 local tables
+		 * User and rif40 views
+		Removing (EXCEPT/MINUS depending on database):
+		* Tables listed in rif30_tables_and_views.table_name
+		* Geolevel lookup tables (t_rif40_geolevels.lookup_table)
+		* Hierarchy tables (t_rif40_geolevels.hierarchytable)
+		* All partitions of tables (if they appear as tables)
+		* Numerator, denominator tables (rif40_tables.table_name)
+		* Covariate tables (t_rif40_geolevels.covariate_table)
+		* Loaded shapefile tables (t_rif40_geolevels.shapefile_table)
+		* Loaded centroids tables (t_rif40_geolevels.centroids_table)
  */
 DECLARE
 	c6 CURSOR(l_schema VARCHAR) FOR /* Extra tables and views */
@@ -120,32 +133,32 @@ DECLARE
 			SELECT tablename table_or_view		 		/* Geospatial tables created by rif40_geo_pkg functions */
 			  FROM pg_tables
 			 WHERE tablename IN (
-				SELECT DISTINCT LOWER(lookup_table) tablename	/* Geolevel lookup tables */
+				SELECT DISTINCT LOWER(lookup_table) tablename			/* Geolevel lookup tables */
 			        FROM t_rif40_geolevels WHERE lookup_table IS NOT NULL
 			       UNION 
-			      SELECT DISTINCT LOWER(hierarchytable) tablename	/* Hierarchy table */
+			      SELECT DISTINCT LOWER(hierarchytable) tablename		/* Hierarchy table */
 			        FROM rif40_geographies
 			       UNION 
 			      SELECT DISTINCT 't_rif40_'||LOWER(geography)||'_geometry' tablename
-										/* Geometry tables */
+																		/* Geometry tables */
 			        FROM rif40_geographies
 			       UNION 
-			      SELECT DISTINCT 't_rif40_geolevels_geometry_'||	/* Geometry table partitions */
+			      SELECT DISTINCT 't_rif40_geolevels_geometry_'||		/* Geometry table partitions */
 					LOWER(geography)||'_'||LOWER(geolevel_name) tablename
 			        FROM t_rif40_geolevels
 			       UNION 
-			      SELECT DISTINCT LOWER(table_name) tablename	/* Numerator and denominators */
+			      SELECT DISTINCT LOWER(table_name) tablename			/* Numerator and denominators */
 			        FROM rif40_tables WHERE table_name IS NOT NULL
 			       UNION 
-			      SELECT DISTINCT LOWER(covariate_table) tablename	/* Covariate tables */
+			      SELECT DISTINCT LOWER(covariate_table) tablename		/* Covariate tables */
 			        FROM t_rif40_geolevels WHERE covariate_table IS NOT NULL
 			       UNION 
-			      SELECT DISTINCT LOWER(shapefile_table) tablename	/* Loaded shapefile tables */
+			      SELECT DISTINCT LOWER(shapefile_table) tablename		/* Loaded shapefile tables */
 			        FROM t_rif40_geolevels WHERE shapefile_table IS NOT NULL
 			       UNION 
-			      SELECT DISTINCT LOWER(centroids_table) tablename	/* Centroids tables */
+			      SELECT DISTINCT LOWER(centroids_table) tablename		/* Centroids tables */
 			        FROM t_rif40_geolevels WHERE centroids_table IS NOT NULL
-				/* rif40_outcomes lookup tables not inluded in this list as supplied as part of the initial setup 
+				/* rif40_outcomes lookup tables not included in this list as supplied as part of the initial setup 
 			      UNION
 			     SELECT tablename 
 			       FROM (
@@ -250,7 +263,20 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check f) Extra tables and views';
+Check f) Extra tables and views:
+		 * User temporary tables
+		 * User foreign data wrapper (i.e. remote Oracle) tables
+		 * User and rif40 local tables
+		 * User and rif40 views
+		Removing (EXCEPT/MINUS depending on database):
+		* Tables listed in rif30_tables_and_views.table_name
+		* Geolevel lookup tables (t_rif40_geolevels.lookup_table)
+		* Hierarchy tables (t_rif40_geolevels.hierarchytable)
+		* All partitions of tables (if they appear as tables)
+		* Numerator, denominator tables (rif40_tables.table_name)
+		* Covariate tables (t_rif40_geolevels.covariate_table)
+		* Loaded shapefile tables (t_rif40_geolevels.shapefile_table)
+		* Loaded centroids tables (t_rif40_geolevels.centroids_table)';
 
 --
 -- Eof

@@ -77,7 +77,22 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check j) Extra table/view columns
+Check j) Extra table/view columns in INFORMATION_SCHEMA.COLUMS:
+        Excluding using NOT IN:
+		 * map/extract tables 
+		 * Geolevel lookup tables (t_rif40_geolevels.lookup_table)
+		 * Hierarchy tables (t_rif40_geolevels.hierarchytable)
+		 * All partitions of tables (if they appear as tables)
+		 * Numerator, denominator tables (rif40_tables.table_name)
+		 * Covariate tables (t_rif40_geolevels.covariate_table)
+		 * Loaded shapefile tables (t_rif40_geolevels.shapefile_table)
+		 * Loaded centroids tables (t_rif40_geolevels.centroids_table)
+		 * Foreign data wrapper (Oracle) tables listed in rif40_fdw_tables created on startup by: rif40_sql_pkg.rif40_startup()
+		Removing (EXCEPT/MINUS depending on database):
+         * Columns in rif40.columns
+		   Ignoring using NOT IN/WHERE:
+		   * Missing tables/views (i.e. check a)
+		   * G_ temporary tables created created on startup by: rif40_sql_pkg.rif40_startup()
  */
 DECLARE
 	c10 CURSOR(l_schema VARCHAR) FOR /* Extra table/view columns */
@@ -228,7 +243,22 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check j) Extra table/view columns';
+Check j) Extra table/view columns in INFORMATION_SCHEMA.COLUMS:
+         Excluding using NOT IN:
+		  * map/extract tables 
+		  * Geolevel lookup tables (t_rif40_geolevels.lookup_table)
+		  * Hierarchy tables (t_rif40_geolevels.hierarchytable)
+		  * All partitions of tables (if they appear as tables)
+		  * Numerator, denominator tables (rif40_tables.table_name)
+		  * Covariate tables (t_rif40_geolevels.covariate_table)
+		  * Loaded shapefile tables (t_rif40_geolevels.shapefile_table)
+		  * Loaded centroids tables (t_rif40_geolevels.centroids_table)
+		  * Foreign data wrapper (Oracle) tables listed in rif40_fdw_tables created on startup by: rif40_sql_pkg.rif40_startup()
+		 Removing (EXCEPT/MINUS depending on database):
+          * Columns in rif40.columns
+		    Ignoring using NOT IN/WHERE:
+		    * Missing tables/views (i.e. check a)
+		    * G_ temporary tables created created on startup by: rif40_sql_pkg.rif40_startup()';
 
 --
 -- Eof

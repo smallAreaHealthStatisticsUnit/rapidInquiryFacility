@@ -80,6 +80,17 @@ $$;
 \i ../PLpgsql/rif40_sql_pkg/rif40_ddl_check_i.sql
 \i ../PLpgsql/rif40_sql_pkg/rif40_ddl_check_j.sql
 \i ../PLpgsql/rif40_sql_pkg/rif40_ddl_check_k.sql
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_ddl_check_a() TO rif_user, rif40, rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_ddl_check_b() TO rif_user, rif40, rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_ddl_check_c() TO rif_user, rif40, rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_ddl_check_d() TO rif_user, rif40, rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_ddl_check_e() TO rif_user, rif40, rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_ddl_check_f() TO rif_user, rif40, rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_ddl_check_g() TO rif_user, rif40, rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_ddl_check_h() TO rif_user, rif40, rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_ddl_check_i() TO rif_user, rif40, rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_ddl_check_j() TO rif_user, rif40, rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_ddl_check_k() TO rif_user, rif40, rif_manager;
 
 -- rif40_ddl_checks:									70000 to 70049
 CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_ddl_checks()
@@ -95,18 +106,59 @@ Description:	Validate RIF DDL
 
 Check for:
 
-a) Missing tables and views
-b) Missing table/view comments
-c) Missing table/view columns
-d) Missing table/view column comments
-e) Missing triggers
-f) Extra tables and views
+a) Missing tables and views:
+		 Tables listed in rif30_tables_and_views.table_name
+		 Removing (EXCEPT/MINUS depending on database):
+		 * User temporary tables
+		 * User foreign data wrapper (i.e. Oracle) tables
+		 * User and rif40 local tables
+		 * User views
+b) Missing table/view comments for all tables in RIF40_TABLES_AND_VIEWS
+c) Missing table/view columns:
+		 Table and column combinations listed in rif30_columns.table_name, column_name
+		 * Exclude missing tables/views (i.e. check a)
+		 * Removing (EXCEPT/MINUS depending on database) columns with comments
+d) Missing table/view column comments for user and if applicable user RIF40
+e) Missing triggers:
+		 Tables listed in rif40_triggers.trigger_name, table_name
+		 Removing (EXCEPT/MINUS depending on database) triggers for user RIF40
+f) Extra tables and views:
+		 * User temporary tables
+		 * User foreign data wrapper (i.e. remote Oracle) tables
+		 * User and rif40 local tables
+		 * User and rif40 views
+		Removing (EXCEPT/MINUS depending on database):
+		* Tables listed in rif30_tables_and_views.table_name
+		* Geolevel lookup tables (t_rif40_geolevels.lookup_table)
+		* Hierarchy tables (t_rif40_geolevels.hierarchytable)
+		* All partitions of tables (if they appear as tables)
+		* Numerator, denominator tables (rif40_tables.table_name)
+		* Covariate tables (t_rif40_geolevels.covariate_table)
+		* Loaded shapefile tables (t_rif40_geolevels.shapefile_table)
+		* Loaded centroids tables (t_rif40_geolevels.centroids_table)
 g) Missing sequences
+		* Check rif40_study_id_seq and rif40_inv_id_seq are present
 h) All tables, views and sequences GRANT SELECT to rif_user and rif_manager
+        * Exclude missing tables/views (i.e. check a) 
 i) All functions in rif40_sql_pkg, rif40_geo_pkg GRANT EXECUTE to rif40, rif_user and rif_manager
-j) Extra table/view columns
+j) Extra table/view columns in INFORMATION_SCHEMA.COLUMS:
+        Excluding using NOT IN:
+		 * map/extract tables 
+		 * Geolevel lookup tables (t_rif40_geolevels.lookup_table)
+		 * Hierarchy tables (t_rif40_geolevels.hierarchytable)
+		 * All partitions of tables (if they appear as tables)
+		 * Numerator, denominator tables (rif40_tables.table_name)
+		 * Covariate tables (t_rif40_geolevels.covariate_table)
+		 * Loaded shapefile tables (t_rif40_geolevels.shapefile_table)
+		 * Loaded centroids tables (t_rif40_geolevels.centroids_table)
+		 * Foreign data wrapper (Oracle) tables listed in rif40_fdw_tables created on startup by: rif40_sql_pkg.rif40_startup()
+		Removing (EXCEPT/MINUS depending on database):
+         * Columns in rif40.columns
+		   Ignoring using NOT IN/WHERE:
+		   * Missing tables/views (i.e. check a)
+		   * G_ temporary tables created created on startup by: rif40_sql_pkg.rif40_startup()
 k) Missing comments
-
+         * Schemas: rif40, rif_studies, and rif*pkg are errors; others are for INFO
 Will work as any RIF user, not just RIF40
 
  */

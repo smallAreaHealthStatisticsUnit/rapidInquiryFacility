@@ -77,7 +77,7 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check d) Missing table/view column comments
+Check d) Missing table/view column comments for user and if applicable user RIF40
  */
 DECLARE
 	c4 CURSOR(l_schema VARCHAR) FOR /* Missing table/view column comments */ 		
@@ -124,7 +124,7 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check d) Missing table/view column comments';
+Check d) Missing table/view column comments for user and if applicable user RIF40';
 
 --
 -- Eof

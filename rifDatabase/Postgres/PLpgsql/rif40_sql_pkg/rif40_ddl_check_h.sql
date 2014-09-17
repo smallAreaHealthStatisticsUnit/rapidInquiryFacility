@@ -79,6 +79,7 @@ Returns: 		Error count
 Description:	Validate RIF DDL
 
 Check h) All tables, views and sequences GRANT SELECT to rif_user and rif_manager
+         Exclude missing tables/views (i.e. check a) 
  */
 DECLARE
 	c8 CURSOR(l_schema VARCHAR) FOR /* All tables, views and sequences GRANT SELECT to rif_user and rif_manager */
@@ -216,7 +217,8 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check h) All tables, views and sequences GRANT SELECT to rif_user and rif_manager';
+Check h) All tables, views and sequences GRANT SELECT to rif_user and rif_manager
+         Exclude missing tables/views (i.e. check a) ';
 
 --
 -- Eof

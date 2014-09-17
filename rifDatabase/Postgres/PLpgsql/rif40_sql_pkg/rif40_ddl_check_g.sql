@@ -78,6 +78,7 @@ Returns: 		Error count
 Description:	Validate RIF DDL
 
 Check g) Missing sequences
+	     Check rif40_study_id_seq and rif40_inv_id_seq are present
  */
 DECLARE
 	c7 CURSOR(l_schema VARCHAR) FOR /* Missing sequences */
@@ -113,7 +114,8 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check g) Missing sequences';
+Check g) Missing sequences
+	     Check rif40_study_id_seq and rif40_inv_id_seq are present';
 
 --
 -- Eof

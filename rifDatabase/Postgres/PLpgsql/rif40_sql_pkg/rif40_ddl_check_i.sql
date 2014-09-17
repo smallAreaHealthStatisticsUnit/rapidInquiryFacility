@@ -78,11 +78,36 @@ Parameters: 	None
 Returns: 		Error count
 Description:	Validate RIF DDL
 
-Check i) All functions in rif40_sql_pkg, rif40_geo_pkg GRANT EXECUTE to rif40, rif_user and rif_manager
+Check i) All functions owner by rif40 role (multiple schemas, e.g. rif40_sql_pkg, rif40_sm_pkg) 
+         GRANT EXECUTE to rif40, rif_user and rif_manager
+
+SELECT has_function_privilege(USER, 'rif40_sql_pkg._rif40_range_partition_create_insert(character varying, character varying, character varying, integer)', 'execute');
+
+PERFORM rif40_sql_pkg._rif40_range_partition_create_insert('a', 'b', 'c', 1); will work as peterh and should not; it should not; caused by default execute privileges
+
+As Postgres:
+
+GRANT USAGE ON SCHEMA rif40_sql_pkg TO rif_user;
+GRANT USAGE ON SCHEMA rif40_sql_pkg TO rif_manager;
+ALTER DEFAULT PRIVILEGES FOR ROLE rif40 REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES IN SCHEMA rif40_sm_pkg REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES IN SCHEMA rif40_sql_pkg REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES IN SCHEMA rif40_sim_pkg REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES IN SCHEMA rif40_log_pkg REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES IN SCHEMA rif40_dmp_pkg REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES IN SCHEMA rif40_geo_pkg REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+
+sahsuland_dev=# \ddp
+           Default access privileges
+ Owner | Schema |   Type   | Access privileges
+-------+--------+----------+-------------------
+ rif40 |        | function | rif40=X/rif40
+(1 row)
+
  */
 DECLARE
 	c9 CURSOR(l_schema VARCHAR) FOR /* All functions in rif40_sql_pkg, rif40_geo_pkg GRANT EXECUTE to rif40, rif_user and rif_manager */
-		SELECT object_type, 
+		SELECT object_type, schemaname, 
                        schemaname||'.'||function_name AS function_name,
   		       has_function_privilege(USER, schemaname||'.'||function_name, 'execute') AS  has_user_select,
   		       has_function_privilege('rif40', schemaname||'.'||function_name, 'execute') AS has_rif40_select,
@@ -109,13 +134,21 @@ DECLARE
 BEGIN	
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_i', '[70450]: Checking all functions in rif40_sql_pkg, rif40_geo_pkg for GRANT EXECUTE to rif40, rif_user and rif_manager');
 		FOR c9_rec IN c9(schema_owner) LOOP
-			IF c9_rec.has_rif40_select = FALSE OR c9_rec.has_rif_user_select = FALSE OR c9_rec.has_rif_manager_select = FALSE THEN
-				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_i', '[70451]: Missing grant EXECUTE on % % to rif40(%), rif_user(%) and rif_manager(%)', 
+			IF c9_rec.function_name = 'rif40.t_rif40_sahsu_geometry_insert()' AND c9_rec.has_rif40_select = TRUE THEN
+			/* Ignore */
+			ELSIF c9_rec.schemaname IN ('rif40_geo_pkg', 'rif40_trg_pkg', 'rif40_sql_pkg', 'rif40_sm_pkg') AND c9_rec.has_rif40_select = FALSE THEN
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_i', '[70451]: Missing grant EXECUTE on % % to rif40(%); rif_user(%) and rif_manager(%) privileges ignored', 
+					c9_rec.object_type::VARCHAR, c9_rec.function_name::VARCHAR, c9_rec.has_rif40_select::VARCHAR, 
+					c9_rec.has_rif_user_select::VARCHAR, c9_rec.has_rif_manager_select::VARCHAR);
+				i:=i+1;
+			ELSIF c9_rec.schemaname NOT IN ('rif40_geo_pkg', 'rif40_trg_pkg', 'rif40_sql_pkg', 'rif40_sm_pkg') AND (
+			      c9_rec.has_rif40_select = FALSE OR c9_rec.has_rif_user_select = FALSE OR c9_rec.has_rif_manager_select = FALSE) THEN
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_i', '[70452]: Missing grant EXECUTE on % % to rif40(%), rif_user(%) and rif_manager(%)', 
 					c9_rec.object_type::VARCHAR, c9_rec.function_name::VARCHAR, c9_rec.has_rif40_select::VARCHAR, 
 					c9_rec.has_rif_user_select::VARCHAR, c9_rec.has_rif_manager_select::VARCHAR);
 				i:=i+1;
 			ELSE
-				PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_ddl_check_i', '[70452]: EXECUTE grant OK on % % to rif40(%), rif_user(%) and rif_manager(%)', 
+				PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_ddl_check_i', '[70453]: EXECUTE grant OK on % % to rif40(%), rif_user(%) and rif_manager(%)', 
 					c9_rec.object_type::VARCHAR, c9_rec.function_name::VARCHAR, c9_rec.has_rif40_select::VARCHAR, 
 					c9_rec.has_rif_user_select::VARCHAR, c9_rec.has_rif_manager_select::VARCHAR);
 			END IF;
