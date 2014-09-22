@@ -13,7 +13,7 @@ RIF.menu[ 'menu-facade-manager' ] = ( function( _p ) {
     },
 
     getScaleRange: function( args ) {
-      _p.showScaleRange( args );
+      _p.showScaleRangeInterface( args );
     },
 
     zoomToExtent: function() {

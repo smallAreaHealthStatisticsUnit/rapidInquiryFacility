@@ -21,6 +21,7 @@ RIF.diseaseMapping = ( function() {
   var _p = {
 
     components: {
+	  study: 'diseaseMapping',
       sync: 'diseaseMapping',
       map: {
         studyType: 'diseaseMapping',
@@ -38,7 +39,46 @@ RIF.diseaseMapping = ( function() {
     },
 
     events: {
-      // sync
+	  /**********/
+	  /**Study**/
+	  menusReady: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "menusReady"
+      },
+	  
+      addGeolevel: {
+        subscribers: [ "map" ],
+        firer: [ "study" ],
+        method: "uGeolevel"
+      },
+	  
+	  drawLineBivariateChart: {
+        subscribers: [ "chart" ],
+        firer: [ "study" ],
+        method: "updateLineBivariate"
+      },
+
+      drawMultipleAreaCharts: {
+        subscribers: [ "chart" ],
+        firer: [ "study" ],
+        method: "updateMultipleAreaCharts"
+      },	
+	  
+	  hoverFieldChange: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "uHoverField"
+      },
+	  
+	  hoverFieldChangeApply: {
+        subscribers: [ "map" ],
+        firer: [ "study" ],
+        method: "uHoverField"
+      },
+	  
+	  /**********/
+      /** Sync **/
       selectionchange: {
         subscribers: [ "sync" ],
         firer: [ "map", "menu" ],
@@ -51,43 +91,32 @@ RIF.diseaseMapping = ( function() {
         method: "cGeoLvl"
       },
 
-      // sync - map/table
+	  
+	   /**********/
+       /** Map **/
       clearSelection: {
         subscribers: [ "map" ],
         firer: [ "sync" ],
         method: "clearSelection"
       },
 
-      // sync - map
       updateSelectionMap: {
         subscribers: [ "map" ],
         firer: [ "sync" ],
         method: "updateSelection"
       },
-
+	  
       zoomToExtent: {
         subscribers: [ "map" ],
         firer: [ "menu" ],
         method: "zoomToExtent"
       },
 
-      // Map	
+
       zoomToArea: {
         subscribers: [ "map" ],
         firer: [ "menu" ],
         method: "zoomTo"
-      },
-
-      addGeolevel: {
-        subscribers: [ "map" ],
-        firer: [ "menu" ],
-        method: "uGeolevel"
-      },
-
-      hoverFieldChange: {
-        subscribers: [ "map" ],
-        firer: [ "menu" ],
-        method: "uHoverField"
       },
 
       mapStyleChange: {
@@ -143,18 +172,6 @@ RIF.diseaseMapping = ( function() {
         subscribers: [ "menu" ],
         firer: [ "map" ],
         method: "getScaleRange"
-      },
-
-      drawLineBivariateChart: {
-        subscribers: [ "chart" ],
-        firer: [ "menu" ],
-        method: "updateLineBivariate"
-      },
-
-      drawMultipleAreaCharts: {
-        subscribers: [ "chart" ],
-        firer: [ "menu" ],
-        method: "updateMultipleAreaCharts"
       }
 
 

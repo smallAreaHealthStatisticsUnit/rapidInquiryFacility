@@ -10,7 +10,7 @@
 RIF.style = ( function( type ) {
 
   var style = RIF.mix( RIF.style[ type ](), {
-
+	
     colors: {},
 
     mappedField: {},
@@ -18,9 +18,17 @@ RIF.style = ( function( type ) {
     default: {
       fill: "#9BCD9B",
       stroke: "#F8F8FF",
-      "stroke-width": 0.5
+      "stroke-width": 0.5,
     },
-
+	
+	defaultChoro:{
+		classification: "quantile",
+		colorScale: "PuOr",
+		domain:  [ ],
+		field: "",
+		intervals: 9
+	},
+	
     hover: {
       fill: "#1E90FF"
     },

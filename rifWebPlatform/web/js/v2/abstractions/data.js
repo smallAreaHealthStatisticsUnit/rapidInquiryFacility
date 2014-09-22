@@ -1,12 +1,21 @@
-var data = ( function() {
+RIF.data = ( function( type ) {
   //private variables
-  var _private = {
+  /*var data = {
 
-  };
+        manager: {},
 
-  return {
-    facade: function( args ) {
-      //return _private.methods 
-    }
-  }
+        diseaseMapping: {
+			map: {
+				ids: [],
+				geolevel: [],
+				style: []
+			},
+			areaCharts:
+		},
+
+        riskAnalysis: {},
+
+       };
+
+  return data[ type ];*/
 } );

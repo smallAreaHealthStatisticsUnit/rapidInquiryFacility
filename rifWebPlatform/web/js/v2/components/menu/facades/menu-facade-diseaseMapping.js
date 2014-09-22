@@ -13,20 +13,16 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
     },
 
     getScaleRange: function( args ) {
-      _p.showScaleRange( args );
+      _p.showScaleRangeInterface( args );
     },
 
     zoomToExtent: function() {
       this.fire( 'zoomToExtent', [] );
     },
-
-
-    /* firers */
-    addGeolevel: function( studyId ) {
-      this.fire( 'addGeolevel', {
-        "studyId": studyId
-      } );
-    },
+	
+	menusReady: function( currentSet ){
+	  this.fire( 'menusReady', currentSet );
+	},
 
     addTabularData: function( dataSets ) {
       this.fire( 'addTabularData', dataSets );
@@ -50,17 +46,7 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
 
     changeNumRows: function( nRows ) {
       //this.fire('changeNumRows', nRows);
-    },
-
-    drawLineBivariateChart: function( resultSet ) {
-      this.fire( 'drawLineBivariateChart', resultSet );
-    },
-
-    drawMultipleAreaChart: function( resultSet ) {
-      this.fire( 'drawMultipleAreaCharts', resultSet );
     }
-
-
 
 
   };

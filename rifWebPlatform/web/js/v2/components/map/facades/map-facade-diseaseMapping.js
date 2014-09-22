@@ -14,12 +14,15 @@ RIF.map[ 'map-facade-diseaseMapping' ] = ( function( _p ) {
       _p.getBounds( a );
     },
 
-    uGeolevel: function( args ) {
+    uGeolevel: function( mapData ) {
       _p.removeLayer();
+	  _p.setDataset( "atlas_leu_f"  /*mapData.dataSet*/ );
       _p.addLayer( {
-        "geoLevel": args.studyId
+        "geoLevel": mapData.geoLevel,
+		"study": "diseaseMapping",
+		field: mapData.field
       } );
-      _p.setDataset( args.studyId );
+      
     },
 
     resizeMap: function() {

@@ -21,9 +21,17 @@ RIF.map.layer = ( function( type, sett ) {
         hoverLbls: {}, // selection field
 
         init: function( layerType ) {
-          RIF.map.layer[ layerType ].call( layer );
+		  if(sett.study === "diseaseMapping"){
+			  layer.applyDefaultChoro(layerType );
+		  }else{
+			layer.initLayerType( layerType); 
+		  }	
         },
-
+		
+		initLayerType: function( layerType ){
+			RIF.map.layer[ layerType ].call( layer );
+		},
+		
         add: {
           tile: function( myLyr ) {
             layer.mylyr = myLyr;
@@ -49,7 +57,19 @@ RIF.map.layer = ( function( type, sett ) {
           layer.selectionField = field || layer.selectionField;
           RIF.getSingleFieldData( join, [ map.getDataset(), layer.selectionField ] );
         },
+		
+		applyDefaultChoro: function( layerType ){
+			var params = RIF.extend(  {field: sett.field} ,  layer.style.defaultChoro );
+			var doChoro = function() {
+              layer.style.setChoropleth( this, params, true );
+              layer.style.updateColors( this );
+			  layer.initLayerType( layerType );
+			  layer.joinField( params.field );
+            };
 
+          RIF.getSingleFieldChoro( doChoro, [ map.getDataset(), params.field ] )
+		},
+		
         uStyle: function( params ) { /* {classification: , colorScale: , field: , intervals:  }  */
 
           if ( params.intervals === 1 ) {
@@ -64,7 +84,7 @@ RIF.map.layer = ( function( type, sett ) {
             layer.repaintSlctd();
           };
 
-          RIF.getSingleFieldChoro( doChoro, [ map.getDataset(), params.field ] )
+          RIF.getSingleFieldChoro( doChoro, [ map.getDataset(), params.field ] );
         },
 
         getBreaks: function( params ) {

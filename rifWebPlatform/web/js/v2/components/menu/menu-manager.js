@@ -70,7 +70,11 @@ RIF.menu = ( function( settings ) {
           _p.dropDown( this, _p.zoomTo );
         }
       },
-
+		
+      showScaleRangeInterface: function( args ){
+		  _p.showScaleRange( args );
+	  },	  
+	  
       setEvents: function() {
         var ev = RIF.getEvent( 'menu', settings.studyType );
         ev.call( this );
