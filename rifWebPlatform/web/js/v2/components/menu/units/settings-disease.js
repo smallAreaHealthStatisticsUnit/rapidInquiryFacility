@@ -10,10 +10,10 @@ RIF.menu.settings = ( function() {
       },
 
       /* DOM elements */
-	  settings: $( ".settings" ),
-	  resultsChoice: $("#resultsFilter"),
+      settings: $( ".settings" ),
+      resultsChoice: $( "#resultsFilter" ),
       save: $( ".save-fld-settings" ),
-	  	
+
 
       /* events */
       events: function() {
@@ -23,7 +23,7 @@ RIF.menu.settings = ( function() {
         } );
 
         this.save.click( function() {
-          
+
           $( "#settings" ).hide();
         } );
       }

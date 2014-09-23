@@ -267,7 +267,7 @@
       getResultSet: function( myCallback, params ) {
         var msg = "Retrieving results data for line-bivariate area chart",
           args = '?resultSet=' + params[ 0 ] +
-          '&studyID=' + params[ 1 ] + '&investigationID=' + params[ 2 ] ;
+          '&studyID=' + params[ 1 ] + '&investigationID=' + params[ 2 ];
 
         //in case of a year selection	
         if ( typeof params[ 3 ] !== 'undefined' ) {
@@ -276,11 +276,11 @@
 
         xhr( 'getResultsSet.php' + args, myCallback, msg, "text/csv" );
       },
-	  
-	  getMinMaxResultSet: function( myCallback, params ) {
+
+      getMinMaxResultSet: function( myCallback, params ) {
         var msg = "Retrieving Results set Min and Max",
           args = '?resultSet=' + params[ 0 ] +
-          '&studyID=' + params[ 1 ] + '&investigationID=' + params[ 2 ] ;
+          '&studyID=' + params[ 1 ] + '&investigationID=' + params[ 2 ];
 
         //in case of a year selection	
         if ( typeof params[ 3 ] !== 'undefined' ) {
@@ -289,7 +289,7 @@
 
         xhr( 'getMinMaxResultSet.php' + args, myCallback, msg );
       },
-	  
+
       getRiskResults: function( myCallback, params ) {
         var msg = "Retrieving results ",
           /*result set name*/

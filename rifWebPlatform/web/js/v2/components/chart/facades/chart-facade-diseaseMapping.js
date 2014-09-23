@@ -15,26 +15,26 @@ RIF.chart[ 'chart-facade-diseaseMapping' ] = ( function( _p ) {
     refreshLineBivariate: function() {
       _p._refreshLineBivariate();
     },
-	
-	refreshMultipleArea: function() {
+
+    refreshMultipleArea: function() {
       _p._refreshMultipleArea();
     },
 
     addResizableChart: function() {
       this.fire( 'addResizableChart', [] )
     },
-	
-	addResizableAreaCharts: function() {
+
+    addResizableAreaCharts: function() {
       this.fire( 'addResizableAreaCharts', [] )
     },
-	
-	mapAreaFromAreaChartChange: function( gid ){
-		var mapGid = "g" + gid;
-		// method called using .call no context passed keep facade.fire not this.fire
-		facade.fire( 'mapAreaFromAreaChartChange', mapGid );
-		facade.fire( "zoomToArea" , gid );
-	}
-	
+
+    mapAreaFromAreaChartChange: function( gid ) {
+      var mapGid = "g" + gid;
+      // method called using .call no context passed keep facade.fire not this.fire
+      facade.fire( 'mapAreaFromAreaChartChange', mapGid );
+      facade.fire( "zoomToArea", gid );
+    }
+
 
   };
 

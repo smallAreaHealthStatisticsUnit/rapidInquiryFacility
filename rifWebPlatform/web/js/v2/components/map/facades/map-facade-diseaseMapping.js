@@ -4,11 +4,11 @@ RIF.map[ 'map-facade-diseaseMapping' ] = ( function( _p ) {
   // TO BE MODIFIED, below is the copy of data manager facade
   var facade = {
     /* Subscribed Events */
-	
-	slctMapAreaFromAreaChart: function( gid ){
-	  	_p.layer.slct( gid );
-	},
-	
+
+    slctMapAreaFromAreaChart: function( gid ) {
+      _p.layer.slct( gid );
+    },
+
     updateSelection: function( a ) {
       _p.layer.selection = {};
       _p.layer.style.repaint();
@@ -21,13 +21,13 @@ RIF.map[ 'map-facade-diseaseMapping' ] = ( function( _p ) {
 
     uGeolevel: function( mapData ) {
       _p.removeLayer();
-	  _p.setDataset( "atlas_leu_f"  /*mapData.dataSet*/ );
+      _p.setDataset( "atlas_leu_f" /*mapData.dataSet*/ );
       _p.addLayer( {
         "geoLevel": mapData.geoLevel,
-		"study": "diseaseMapping",
-		field: mapData.field
+        "study": "diseaseMapping",
+        field: mapData.field
       } );
-      
+
     },
 
     resizeMap: function() {
@@ -65,7 +65,7 @@ RIF.map[ 'map-facade-diseaseMapping' ] = ( function( _p ) {
     selectionChanged: function( selection ) {
       this.fire( 'selectionchange', [ selection, 'map' ] );
     }
-	
+
   };
 
   return facade;
