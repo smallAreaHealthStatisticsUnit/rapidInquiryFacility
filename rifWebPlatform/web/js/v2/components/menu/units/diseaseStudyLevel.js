@@ -37,7 +37,6 @@ RIF.menu.diseaseStudyLevel = ( function() {
         //parent.facade.addGeolevel( _p.currentGeolvl, _p.currentdataset );
       },
 
-
       /* Set - Gets */
       setStudy: function( studyId ) {
         _p.study = studyId;
@@ -68,11 +67,11 @@ RIF.menu.diseaseStudyLevel = ( function() {
 
       /* events */
       events: function() {
-        /*this.zoomTo.on('change', function() {
-					parent.facade.zoomTo( RIF.replaceAll('_',' ', this.value) );
-				});
+        this.zoomTo.on('change', function() {
+			parent.facade.zoomTo( RIF.replaceAll('_',' ', this.value) );
+		});
 				
-				this.dataSet.on('change', function() {
+		/*		this.dataSet.on('change', function() {
 					parent.updateSettings(  this.value );
 				});
 				

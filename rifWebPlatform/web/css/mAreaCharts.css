@@ -12,6 +12,7 @@ svg.areaCharts rect.overlayHover {
 }
 svg.areaCharts .lineHover{
 	stroke:#7D9EC0;
+	pointer-events: none;
 }
  text.country-title {
 	font-size: 10px;

@@ -1,4 +1,4 @@
-RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max ) {
+RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, clickEvntPropagation ) {
   //Will sort it later
   var margin = settings.margin,
     width = settings.dimensions.width(),
@@ -129,11 +129,24 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max ) {
 		};	
     };
 	
+	var mouseclick = function( d ){
+		var xValue = Math.round(xS.invert(d3.mouse(this)[0])) ,
+			gid = null;
+			
+		if( typeof dataSets[localName][xValue] !== 'undefined'){
+			gid =  dataSets[localName][xValue]["gid"];// Sync with other area charts
+			clickEvntPropagation.call(null, [gid]);
+		};
+		
+		
+	};
+	
 	this.chartContainer.append( "rect" )
 		.attr( "class", "overlayHover" )
 		.attr( "width", width)
 		.attr( "height", chartHeight )
-		.on( "mousemove", mousemove );
+		.on( "mousemove", mousemove )
+		.on( "click", mouseclick );
 	
 	/* Highlighter */
 	lines[localName] = this.chartContainer.append("line")

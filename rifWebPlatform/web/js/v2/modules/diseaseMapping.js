@@ -90,7 +90,19 @@ RIF.diseaseMapping = ( function() {
         firer: [ "menu" ],
         method: "cGeoLvl"
       },
-
+		
+		
+	  mapAreaFromAreaChartChange: {
+        subscribers: [ "sync" ],
+        firer: [ "chart" ],
+        method: "mapAreaFromAreaChartChange"
+      },	
+	  
+	  slctMapAreaFromAreaChart: {
+        subscribers: [ "map" ],
+        firer: [ "sync" ],
+        method: "slctMapAreaFromAreaChart"
+      },
 	  
 	   /**********/
        /** Map **/
@@ -115,7 +127,7 @@ RIF.diseaseMapping = ( function() {
 
       zoomToArea: {
         subscribers: [ "map" ],
-        firer: [ "menu" ],
+        firer: [ "menu", "chart" ],
         method: "zoomTo"
       },
 
