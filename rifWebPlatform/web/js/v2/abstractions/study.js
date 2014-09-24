@@ -65,6 +65,12 @@ RIF.study = ( function( type ) {
         this.fire( 'drawMultipleAreaCharts', this.getResultSetsAvailable() );
       },
 
+      //SuBSCRIBERS
+      areaChartBrushed: function( domain ) {
+        this.fire( 'updateLineChartWithBrush', domain );
+      },
+
+
       //SETTERS
       setCurrentStudy: function( study ) {
         this.studyId = study

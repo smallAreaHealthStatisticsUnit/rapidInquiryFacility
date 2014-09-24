@@ -28,6 +28,14 @@ RIF.chart[ 'chart-facade-diseaseMapping' ] = ( function( _p ) {
       this.fire( 'addResizableAreaCharts', [] )
     },
 
+    areaChartBrushed: function( domain ) {
+      facade.fire( 'areaChartBrushed', domain );
+    },
+
+    updateLineChartWithBrush: function( domain ) {
+      _p.updateDomainLineChartInterface( domain );
+    },
+
     mapAreaFromAreaChartChange: function( gid ) {
       var mapGid = "g" + gid;
       // method called using .call no context passed keep facade.fire not this.fire

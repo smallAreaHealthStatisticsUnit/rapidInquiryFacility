@@ -51,7 +51,7 @@ RIF.chart.multipleAreaCharts = ( function() {
     },
 
     _initSVG = function() {
-      newChart = RIF.chart.multipleAreaCharts.d3renderer( settings, rSet, minMax.max, chart.facade.mapAreaFromAreaChartChange );
+      newChart = RIF.chart.multipleAreaCharts.d3renderer( settings, rSet, minMax.max, chart.facade );
     },
 
     _getRiskResultOneByOne = function( newChart ) {
@@ -111,6 +111,7 @@ RIF.chart.multipleAreaCharts = ( function() {
 
 
   };
+
 
 
   return _p;

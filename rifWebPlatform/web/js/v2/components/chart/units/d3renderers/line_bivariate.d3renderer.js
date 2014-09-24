@@ -52,9 +52,6 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
     .scale( y2 )
     .orient( "left" );
 
-  var brush = d3.svg.brush()
-    .x( x2 )
-    .on( "brush", brushed );
 
   var area = d3.svg.area()
     .x( function( d ) {
@@ -72,13 +69,19 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
     .attr( "width", width )
     .attr( "height", height );
 
+  svg.append( "defs" ).append( "clipPath" )
+    .attr( "id", "clipchart" )
+    .append( "rect" )
+    .attr( "width", width )
+    .attr( "height", height );
+
   var focus = svg.append( "g" )
     .attr( "class", "focus" )
     .attr( "transform", "translate(" + margin.left + "," + margin.top + ")" );
 
-  var context = svg.append( "g" )
+  /*var context = svg.append( "g" )
     .attr( "class", "context" )
-    .attr( "transform", "translate(" + margin.left + "," + margin.top + ")" );
+    .attr( "transform", "translate(" + margin.left + "," + margin.top + ")" );	*/
 
   //Used to have a reference to the actual GIDS
   var lookUpIdsOrderId = {};
@@ -115,7 +118,8 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
   focus.append( "path" )
     .datum( data )
     .attr( "class", "area" )
-    .attr( "d", area );
+    .attr( "d", area )
+    .attr( "clip-path", "url(#clipchart)" );
 
   focus.append( "g" )
     .attr( "class", "x axis" )
@@ -139,40 +143,11 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
   focus.append( "path" )
     .datum( data )
     .attr( "class", "line" )
+    .attr( "clip-path", "url(#clipchart)" )
     .attr( "d", line );
 
 
-  context.append( "g" )
-    .attr( "class", "x axis" )
-    .attr( "transform", "translate(0," + height + ")" )
-    .call( xAxis2 );
-
-  context.append( "g" )
-    .attr( "class", "x brush" )
-    .call( brush )
-    .selectAll( "rect" )
-    .attr( "y", -6 )
-    .attr( "height", height + 7 );
-
-
-  /*svg.append('g')
-		.attr("clip-path", "url(#clip)") 
-		.data(data)
-		.enter()
-		.append("path")
-		.attr("class", "line")
-		.attr("d", line);
-		//.attr("clip-path", "url(#clip)")
-		/*.attr('stroke', function(d,i){ 			
-			return "white";
-		})
-		/*.attr("id", function(d, i){
-			return  + "g_" + d[idField]
-		})*/
-
-  function brushed() {
-    var domain = brush.empty() ? x2.domain() : brush.extent(),
-      domain = [ parseInt( domain[ 0 ] ), parseInt( domain[ 1 ] ) ];
+  return function brushed( domain ) {
 
     x.domain( domain );
     y.domain( y2.domain() );

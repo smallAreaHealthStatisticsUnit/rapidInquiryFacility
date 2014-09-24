@@ -4,6 +4,8 @@ RIF.chart.line_bivariate = ( function() {
 
     data = null,
 
+    _updateDomainLineChart = null,
+
     settings = {
       element: "rr_chart",
       id_field: "gid",
@@ -31,7 +33,7 @@ RIF.chart.line_bivariate = ( function() {
 
     _render = function( update ) {
       _clear();
-      RIF.chart.line_bivariate.d3renderer( settings, d3.csv.parse( data ), update );
+      _updateDomainLineChart = RIF.chart.line_bivariate.d3renderer( settings, d3.csv.parse( data ), update );
       chart.facade.addResizableChart();
     },
 
@@ -43,6 +45,10 @@ RIF.chart.line_bivariate = ( function() {
 
       renderLineBivariate: function() {
         _render( true );
+      },
+
+      updateDomainLineChart: function( domain ) {
+        _updateDomainLineChart.call( null, domain );
       },
 
       updateLine_bivariate: function( sett ) {

@@ -65,6 +65,18 @@ RIF.diseaseMapping = ( function() {
         method: "updateMultipleAreaCharts"
       },
 
+      areaChartBrushed: {
+        subscribers: [ "study" ],
+        firer: [ "chart" ],
+        method: "areaChartBrushed"
+      },
+
+      updateLineChartWithBrush: {
+        subscribers: [ "chart" ],
+        firer: [ "study" ],
+        method: "updateLineChartWithBrush"
+      },
+
       hoverFieldChange: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
@@ -90,7 +102,6 @@ RIF.diseaseMapping = ( function() {
         firer: [ "menu" ],
         method: "cGeoLvl"
       },
-
 
       mapAreaFromAreaChartChange: {
         subscribers: [ "sync" ],
@@ -123,7 +134,6 @@ RIF.diseaseMapping = ( function() {
         firer: [ "menu" ],
         method: "zoomToExtent"
       },
-
 
       zoomToArea: {
         subscribers: [ "map" ],
@@ -185,7 +195,6 @@ RIF.diseaseMapping = ( function() {
         firer: [ "map" ],
         method: "getScaleRange"
       }
-
 
     },
 

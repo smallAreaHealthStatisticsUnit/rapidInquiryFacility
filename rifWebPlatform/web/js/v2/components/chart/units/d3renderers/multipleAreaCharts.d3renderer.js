@@ -1,4 +1,4 @@
-RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, clickEvntPropagation ) {
+RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facade ) {
   //Will sort it later
   var margin = settings.margin,
     width = settings.dimensions.width(),
@@ -9,22 +9,42 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, click
     xOrder = settings.x_field;
 
 
-  var areaChartsCount = 0;
+  var areaChartsCount = 0,
+    brushIsOn = false;
 
   var dataSets = {},
     lines = {},
     texts = {};
+
+  d3.select( "#" + el ).append( "a" )
+    .attr( "class", "brushButton" )
+    .text( "zoom" )
+    .on( "click", function() {
+      brushIsOn = !brushIsOn;
+      ( brushIsOn ) ? showBrush( true, false ) : showBrush( false, true );
+    } );
+
+  var showBrush = function( isBrush, isOverlay ) {
+
+    var brush = ( isBrush ) ? "block" : "none";
+    var overlay = ( isOverlay ) ? "block" : "none";
+
+    svg.selectAll( "g.context" )
+      .attr( "style", "display:" + brush );
+
+    svg.selectAll( ".overlayHover" )
+      .attr( "style", "display:" + overlay );
+  };
+
 
   var svg = d3.select( "#" + el ).append( "svg" )
     .attr( "width", width )
     .attr( "height", ( height + margin.top + margin.bottom ) )
     .attr( "class", "areaCharts" );
 
-
   var rSetCount = rSet.length,
     chartHeight = ( height / rSetCount ) - ( margin.top + margin.bottom ) - ( Math.log( ( height * height ) ) ),
     maxDataPoint = max;
-
 
 
 
@@ -49,6 +69,16 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, click
       .range( [ this.height, 0 ] )
       .domain( [ 0, this.maxDataPoint ] );
 
+    var brushed = function() {
+      var domain = brush.empty() ? xS.domain() : brush.extent(),
+        domain = [ parseInt( domain[ 0 ] ), parseInt( domain[ 1 ] ) ];
+
+      facade.areaChartBrushed.call( null, domain );
+    }
+
+    var brush = d3.svg.brush()
+      .x( xS )
+      .on( "brushend", brushed );
 
     var linename = this.name + "_line";
 
@@ -93,7 +123,25 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, click
 
 
 
+    var context = this.chartContainer.append( "g" )
+      .attr( "class", "context context" + localName )
+      .attr( "transform", "translate(" + 0 + "," + 0 + ")" );
+
+
+    context.append( "g" )
+      .attr( "class", "x axis" )
+      .attr( "transform", "translate(0," + chartHeight + ")" )
+      .call( xS );
+
+    context.append( "g" )
+      .attr( "class", "x brush" )
+      .call( brush )
+      .selectAll( "rect" )
+      .attr( "height", chartHeight );
+
+
     var chartClass = "areaChart" + ++areaChartsCount;
+
     this.chartContainer.append( "path" )
       .data( [ options.data ] )
       .attr( "class", chartClass )
@@ -135,10 +183,8 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, click
 
       if ( typeof dataSets[ localName ][ xValue ] !== 'undefined' ) {
         gid = dataSets[ localName ][ xValue ][ "gid" ]; // Sync with other area charts
-        clickEvntPropagation.call( null, [ gid ] );
+        facade.mapAreaFromAreaChartChange.call( null, [ gid ] );
       };
-
-
     };
 
     this.chartContainer.append( "rect" )
@@ -147,6 +193,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, click
       .attr( "height", chartHeight )
       .on( "mousemove", mousemove )
       .on( "click", mouseclick );
+
 
     /* Highlighter */
     lines[ localName ] = this.chartContainer.append( "line" )
@@ -166,6 +213,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, click
       .attr( "class", "y axis" )
       .attr( "transform", "translate(0,0)" )
       .call( this.yAxis );
+
 
     this.chartContainer.append( "text" )
       .attr( "class", "country-title" )

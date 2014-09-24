@@ -25,6 +25,10 @@ RIF.chart = ( function( settings ) {
         _p.renderMultipleArea();
       },
 
+      updateDomainLineChartInterface: function( domain ) {
+        _p.updateDomainLineChart( domain );
+      },
+
       //conforms
       setEvents: function() {
         //Empty for now
