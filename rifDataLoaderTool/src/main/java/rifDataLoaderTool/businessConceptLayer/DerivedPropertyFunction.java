@@ -50,79 +50,29 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public class DBFMetaDataRecord {
+public class DerivedPropertyFunction {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	public enum DataType {TEXT, DOUBLE, BOOLEAN};
+
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String originalFieldName;
-	private String cleanedFieldName;
-	private DataType dataType;
+
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private DBFMetaDataRecord() {
+	public DerivedPropertyFunction() {
 
 	}
 
-	public static DBFMetaDataRecord newInstance() {
-
-		DBFMetaDataRecord dbfMetaDataRecord = new DBFMetaDataRecord();
-		return dbfMetaDataRecord;
-	}
-	
-	public static DBFMetaDataRecord createCopy(
-		final DBFMetaDataRecord originalDBFMetaDataRecord) {
-		
-		DBFMetaDataRecord cloneDBFMetaDataRecord
-			= new DBFMetaDataRecord();
-		
-		return cloneDBFMetaDataRecord;
-	}
-
-	public String getOriginalFieldName() {
-		
-		return originalFieldName;
-	}
-
-	public void setOriginalFieldName(
-		final String originalFieldName) {
-
-		this.originalFieldName = originalFieldName;
-	}
-
-	public String getCleanedFieldName() {
-
-		return cleanedFieldName;
-	}
-
-	public void setCleanedFieldName(
-		final String cleanedFieldName) {
-
-		this.cleanedFieldName = cleanedFieldName;
-	}
-
-	public DataType getDataType() {
-
-		return dataType;
-	}
-
-	public void setDataType(
-		final DataType dataType) {
-
-		this.dataType = dataType;
-	}
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	
+
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

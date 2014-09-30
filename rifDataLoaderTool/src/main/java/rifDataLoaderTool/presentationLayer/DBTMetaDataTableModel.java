@@ -1,7 +1,7 @@
 package rifDataLoaderTool.presentationLayer;
 
 
-import rifDataLoaderTool.businessConceptLayer.DBTMetaDataRecord;
+import rifDataLoaderTool.businessConceptLayer.DBTConfigurationRecord;
 
 
 import rifDataLoaderTool.system.RIFDataLoaderActivityStep;
@@ -74,7 +74,7 @@ public class DBTMetaDataTableModel extends AbstractTableModel {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private ArrayList<DBTMetaDataRecord> tableMetaDataRows;
+	private ArrayList<DBTConfigurationRecord> tableMetaDataRows;
 	
 	// ==========================================
 	// Section Construction
@@ -82,7 +82,7 @@ public class DBTMetaDataTableModel extends AbstractTableModel {
 
 	public DBTMetaDataTableModel() {
 
-		tableMetaDataRows = new ArrayList<DBTMetaDataRecord>();
+		tableMetaDataRows = new ArrayList<DBTConfigurationRecord>();
 	}
 
 	// ==========================================
@@ -90,7 +90,7 @@ public class DBTMetaDataTableModel extends AbstractTableModel {
 	// ==========================================
 
 	public void setDBTMetaDataRecords(
-		final ArrayList<DBTMetaDataRecord> dbtMetaDataTableRecords) {
+		final ArrayList<DBTConfigurationRecord> dbtMetaDataTableRecords) {
 		
 		tableMetaDataRows = dbtMetaDataTableRecords;
 	}
@@ -107,7 +107,7 @@ public class DBTMetaDataTableModel extends AbstractTableModel {
 		final int row,
 		final int column) {
 		
-		DBTMetaDataRecord tableMetaDataRecord
+		DBTConfigurationRecord tableMetaDataRecord
 			= tableMetaDataRows.get(row);
 		
 		if (column == TABLE_NAME_COLUMN) {

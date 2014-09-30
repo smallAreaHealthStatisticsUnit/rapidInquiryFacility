@@ -53,30 +53,38 @@ package rifDataLoaderTool.system;
 
 public enum RIFDataLoaderActivityStep {
 
-	LOAD_RAW_DATA_TABLE(
-			1, 
-			"rifDataLoaderActivityStep.loadRawDataTable.label",
-			"rifDataLoaderActivityStep.loadRawDataTable.statusMessage"),
-		CLEAN_DATA_TABLE(
-			2, 
-			"rifDataLoaderActivityStep.cleanDataTable.label",
-			"rifDataLoaderActivityStep.cleanDataTable.statusMessage"),
-		APPLY_RIF_SPECIFIC_TRANSFORMATION(
-			3, 
-			"rifDataLoaderActivityStep.applyRIFSpecificTransformation.label",
-			"rifDataLoaderActivityStep.applyRIFSpecificTransformation.statusMessage"),
-		COMBINE_TABLES(
-			4, 
-			"rifDataLoaderActivityStep.combineTables.label",
-			"rifDataLoaderActivityStep.combineTables.statusMessage"),
-		OPTIMISE_TABLE(
-			5, 
-			"rifDataLoaderActivityStep.optimiseTable.label",
-			"rifDataLoaderActivityStep.optimiseTable.statusMessage"),
-		PUBLISH_TABLE(
-			6, 
-			"rifDataLoaderActivityStep.publishTable.label",
-			"rifDataLoaderActivityStep.publishTable.statusMessage");
+	LOAD(
+		1, 
+		"rifDataLoaderActivityStep.load.label",
+		"rifDataLoaderActivityStep.load.statusMessage"),
+	CLEAN(
+		2, 
+		"rifDataLoaderActivityStep.clean.label",
+		"rifDataLoaderActivityStep.clean.statusMessage"),
+	CONVERT(
+		3, 
+		"rifDataLoaderActivityStep.convert.label",
+		"rifDataLoaderActivityStep.convert.statusMessage"),
+	COMBINE(
+		4, 
+		"rifDataLoaderActivityStep.combine.label",
+		"rifDataLoaderActivityStep.combine.statusMessage"),
+	OPTIMISE(
+		5, 
+		"rifDataLoaderActivityStep.optimise.label",
+		"rifDataLoaderActivityStep.optimise.statusMessage"),
+	CHECK(
+		6, 
+		"rifDataLoaderActivityStep.optimise.label",
+		"rifDataLoaderActivityStep.optimise.statusMessage"),		
+	PUBLISH(
+		7, 
+		"rifDataLoaderActivityStep.publish.label",
+		"rifDataLoaderActivityStep.publish.statusMessage"),
+	DELETE(
+		7, 
+		"rifDataLoaderActivityStep.delete.label",
+		"rifDataLoaderActivityStep.delete.statusMessage");
 		
 	private int stepNumber;
 	private String stepPropertyName;
@@ -116,7 +124,7 @@ public enum RIFDataLoaderActivityStep {
 	 */
 	public static RIFDataLoaderActivityStep getFirstActivityStep() {
 		
-		return LOAD_RAW_DATA_TABLE;
+		return LOAD;
 	}
 	
 	/**
@@ -126,20 +134,24 @@ public enum RIFDataLoaderActivityStep {
 	 */
 	public RIFDataLoaderActivityStep getPreviousActivityStep() {
 
-		if (this == RIFDataLoaderActivityStep.PUBLISH_TABLE) {
-			return OPTIMISE_TABLE;
+		if (this == RIFDataLoaderActivityStep.PUBLISH) {
+			return CHECK;
 		}
-		else if (this == RIFDataLoaderActivityStep.OPTIMISE_TABLE) {
-			return COMBINE_TABLES;
+		else if (this == RIFDataLoaderActivityStep.CHECK) {
+			return OPTIMISE;
 		}
-		else if (this == RIFDataLoaderActivityStep.COMBINE_TABLES) {
-			return APPLY_RIF_SPECIFIC_TRANSFORMATION;
+		else if (this == RIFDataLoaderActivityStep.OPTIMISE) {
+			return COMBINE;
 		}
-		else if (this == RIFDataLoaderActivityStep.APPLY_RIF_SPECIFIC_TRANSFORMATION) {
-			return CLEAN_DATA_TABLE;
-		}
+		else if (this == RIFDataLoaderActivityStep.COMBINE) {
+			return CONVERT;
+		}		
+		else if (this == RIFDataLoaderActivityStep.CONVERT) {
+			return CLEAN;
+		}		
 		else {
-			return LOAD_RAW_DATA_TABLE;
+			//CLEAN, DELETE
+			return LOAD;
 		}
 	}
 	
@@ -150,20 +162,24 @@ public enum RIFDataLoaderActivityStep {
 	 */
 	public RIFDataLoaderActivityStep getNextActivityStep() {
 		
-		if (this == RIFDataLoaderActivityStep.LOAD_RAW_DATA_TABLE) {
-			return CLEAN_DATA_TABLE;
+		if (this == RIFDataLoaderActivityStep.LOAD) {
+			return CLEAN;
 		}
-		else if (this == RIFDataLoaderActivityStep.CLEAN_DATA_TABLE) {
-			return APPLY_RIF_SPECIFIC_TRANSFORMATION;
+		else if (this == RIFDataLoaderActivityStep.CLEAN) {
+			return CONVERT;
 		}
-		else if (this == RIFDataLoaderActivityStep.APPLY_RIF_SPECIFIC_TRANSFORMATION) {
-			return COMBINE_TABLES;
+		else if (this == RIFDataLoaderActivityStep.CONVERT) {
+			return COMBINE;
 		}
-		else if (this == RIFDataLoaderActivityStep.COMBINE_TABLES) {
-			return OPTIMISE_TABLE;
+		else if (this == RIFDataLoaderActivityStep.COMBINE) {
+			return CHECK;
+		}
+		else if (this == RIFDataLoaderActivityStep.CHECK) {
+			return PUBLISH;
 		}
 		else {
-			return PUBLISH_TABLE;
+			//DELETE, PUBLISH
+			return LOAD;
 		}
 	}
 	

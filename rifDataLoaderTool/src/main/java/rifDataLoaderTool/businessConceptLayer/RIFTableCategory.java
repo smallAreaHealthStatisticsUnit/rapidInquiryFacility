@@ -1,13 +1,4 @@
-package rifDataLoaderTool.presentationLayer;
-
-import rifDataLoaderTool.businessConceptLayer.DBTConfigurationRecord;
-
-import rifGenericUILibrary.UserInterfaceFactory;
-
-
-import java.util.ArrayList;
-import javax.swing.JTable;
-import javax.swing.table.JTableHeader;
+package rifDataLoaderTool.businessConceptLayer;
 
 /**
  *
@@ -59,52 +50,28 @@ import javax.swing.table.JTableHeader;
  *
  */
 
-public class DBTMetaDataTable {
+public class RIFTableCategory {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
 
-	
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private UserInterfaceFactory userInterfaceFactory;
-	
-	private JTable table;
-	private JTableHeader tableHeader;
-	private DBTMetaDataTableModel tableModel;
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public DBTMetaDataTable(
-		final UserInterfaceFactory userInterfaceFactory) {
-		
-		this.userInterfaceFactory = userInterfaceFactory;
-		
-		tableModel = new DBTMetaDataTableModel();
-		
-		
-		tableHeader = userInterfaceFactory.createTableHeader();
-		
+	public RIFTableCategory() {
+
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void setDBTMetaDataRecords(
-		final ArrayList<DBTConfigurationRecord> dbtMetaDataRecords) {
-		
-		tableModel.setDBTMetaDataRecords(dbtMetaDataRecords);
-	}
-	
-	
-	public JTable getTable() {
-		return table;
-	}
-	
+
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

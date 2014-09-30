@@ -1,13 +1,4 @@
-package rifDataLoaderTool.presentationLayer;
-
-import rifDataLoaderTool.businessConceptLayer.DBTConfigurationRecord;
-
-import rifGenericUILibrary.UserInterfaceFactory;
-
-
-import java.util.ArrayList;
-import javax.swing.JTable;
-import javax.swing.table.JTableHeader;
+package rifDataLoaderTool.businessConceptLayer;
 
 /**
  *
@@ -59,51 +50,91 @@ import javax.swing.table.JTableHeader;
  *
  */
 
-public class DBTMetaDataTable {
+public class DBFConfigurationRecord {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
 
-	
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private UserInterfaceFactory userInterfaceFactory;
-	
-	private JTable table;
-	private JTableHeader tableHeader;
-	private DBTMetaDataTableModel tableModel;
+	private String originalFieldName;
+	private String cleanedFieldName;
+	private RIFDataType rifDataType;
+	private boolean countEmptyValues;
+	private boolean checkForUnknownValues;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public DBTMetaDataTable(
-		final UserInterfaceFactory userInterfaceFactory) {
-		
-		this.userInterfaceFactory = userInterfaceFactory;
-		
-		tableModel = new DBTMetaDataTableModel();
-		
-		
-		tableHeader = userInterfaceFactory.createTableHeader();
-		
+	private DBFConfigurationRecord() {
+		countEmptyValues = false;
+		checkForUnknownValues = false;
 	}
 
+	public static DBFConfigurationRecord newInstance() {
+
+		DBFConfigurationRecord dbfMetaDataRecord = new DBFConfigurationRecord();
+		return dbfMetaDataRecord;
+	}
+	
+	public static DBFConfigurationRecord createCopy(
+		final DBFConfigurationRecord originalDBFMetaDataRecord) {
+		
+		DBFConfigurationRecord cloneDBFMetaDataRecord
+			= new DBFConfigurationRecord();
+		
+		return cloneDBFMetaDataRecord;
+	}
+
+	public String getOriginalFieldName() {
+		
+		return originalFieldName;
+	}
+
+	public void setOriginalFieldName(
+		final String originalFieldName) {
+
+		this.originalFieldName = originalFieldName;
+	}
+
+	public String getCleanedFieldName() {
+
+		return cleanedFieldName;
+	}
+
+	public void setCleanedFieldName(
+		final String cleanedFieldName) {
+
+		this.cleanedFieldName = cleanedFieldName;
+	}
+
+	public RIFDataType getDataType() {
+
+		return rifDataType;
+	}
+
+	public void setDataType(
+		final RIFDataType rifDataType) {
+
+		this.rifDataType = rifDataType;
+	}
+	
+	public boolean countEmptyValues() {
+
+		return countEmptyValues;
+	}
+	
+	public boolean checkForUnknownValues() {
+		
+		return checkForUnknownValues;
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void setDBTMetaDataRecords(
-		final ArrayList<DBTConfigurationRecord> dbtMetaDataRecords) {
-		
-		tableModel.setDBTMetaDataRecords(dbtMetaDataRecords);
-	}
-	
-	
-	public JTable getTable() {
-		return table;
-	}
 	
 	// ==========================================
 	// Section Errors and Validation

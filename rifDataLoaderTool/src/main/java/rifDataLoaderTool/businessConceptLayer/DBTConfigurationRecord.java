@@ -2,6 +2,7 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderActivityStep;
 
+
 import rifServices.system.RIFServiceMessages;
 
 import java.util.Date;
@@ -58,7 +59,7 @@ import java.util.ArrayList;
  *
  */
 
-public class DBTMetaDataRecord {
+public class DBTConfigurationRecord {
 
 	// ==========================================
 	// Section Constants
@@ -67,24 +68,27 @@ public class DBTMetaDataRecord {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String tableName;
-	private String tableDescription;
+	private String tableConfigurationName;
+	private String tableConfigurationDescription;
 	private Date lastModifiedDate;
 	private RIFDataLoaderActivityStep rifDataLoaderActivityStep;
 	
-	private ArrayList<DBFMetaDataRecord> fieldMetaDataRecords;
+	private ArrayList<DBFConfigurationRecord> fieldMetaDataRecords;
+	
+	private boolean countCleanedRows;
+	private boolean countDuplicateRows;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private DBTMetaDataRecord() {
-		fieldMetaDataRecords = new ArrayList<DBFMetaDataRecord>();
+	private DBTConfigurationRecord() {
+		fieldMetaDataRecords = new ArrayList<DBFConfigurationRecord>();
 	}
 
-	public static DBTMetaDataRecord newInstance() {
+	public static DBTConfigurationRecord newInstance() {
 
-		DBTMetaDataRecord dbtMetaDataRecord = new DBTMetaDataRecord();
+		DBTConfigurationRecord dbtMetaDataRecord = new DBTConfigurationRecord();
 		return dbtMetaDataRecord;
 	}
 	
@@ -94,26 +98,35 @@ public class DBTMetaDataRecord {
 		
 	public String getTableName() {
 
-		return tableName;
+		return tableConfigurationName;
 	}
 
-	public void setTableName(
-		final String tableName) {
+	public void setTableConfigurationName(
+		final String tableConfigurationName) {
 
-		this.tableName = tableName;
+		this.tableConfigurationName = tableConfigurationName;
 	}
 
 	public String getTableDescription() {
 
-		return tableDescription;
+		return tableConfigurationDescription;
 	}
 
-	public void setTableDescription(
-		final String tableDescription) {
+	public void setTableConfigurationDescription(
+		final String tableConfigurationDescription) {
 		
-		this.tableDescription = tableDescription;
+		this.tableConfigurationDescription = tableConfigurationDescription;
 	}
 
+	
+	public String getDatePhrase() {
+		return RIFServiceMessages.getDatePhrase(lastModifiedDate);
+	}
+	
+	public String getTimePhrase() {
+		return RIFServiceMessages.getTimePhrase(lastModifiedDate);
+	}
+	
 	public Date getLastModifiedDate() {
 
 		return lastModifiedDate;
@@ -141,41 +154,41 @@ public class DBTMetaDataRecord {
 		this.rifDataLoaderActivityStep = rifDataLoaderActivityStep;
 	}
 
-	public ArrayList<DBFMetaDataRecord> getFieldMetaDataRecords() {
+	public ArrayList<DBFConfigurationRecord> getFieldMetaDataRecords() {
 
 		return fieldMetaDataRecords;
 	}
 
 	public void setFieldMetaDataRecords(
-		final ArrayList<DBFMetaDataRecord> fieldMetaDataRecords) {
+		final ArrayList<DBFConfigurationRecord> fieldMetaDataRecords) {
 
 		this.fieldMetaDataRecords = fieldMetaDataRecords;
 	}
 
 	public void addFieldMetaDataRecord(
-		final DBFMetaDataRecord fieldMetaDataRecord) {
+		final DBFConfigurationRecord fieldMetaDataRecord) {
 		
 		fieldMetaDataRecords.add(fieldMetaDataRecord);
 	}
 	
-	public DBTMetaDataRecord createCopy(
-		final DBTMetaDataRecord originalDBTMetaDataRecord) {
+	public DBTConfigurationRecord createCopy(
+		final DBTConfigurationRecord originalDBTMetaDataRecord) {
 		
 		//cloning the table-level meta data
-		DBTMetaDataRecord cloneDBTMetaDataRecord 
-			= new DBTMetaDataRecord();
-		cloneDBTMetaDataRecord.setTableName(originalDBTMetaDataRecord.getTableName());
-		cloneDBTMetaDataRecord.setTableDescription(originalDBTMetaDataRecord.getTableDescription());
+		DBTConfigurationRecord cloneDBTMetaDataRecord 
+			= new DBTConfigurationRecord();
+		cloneDBTMetaDataRecord.setTableConfigurationName(originalDBTMetaDataRecord.getTableName());
+		cloneDBTMetaDataRecord.setTableConfigurationDescription(originalDBTMetaDataRecord.getTableDescription());
 		cloneDBTMetaDataRecord.setLastModifiedDate(originalDBTMetaDataRecord.getLastModifiedDate());
 
 		//cloning the field-level meta data
-		ArrayList<DBFMetaDataRecord> originalDBFMetaDataRecords
+		ArrayList<DBFConfigurationRecord> originalDBFMetaDataRecords
 			= cloneDBTMetaDataRecord.getFieldMetaDataRecords();
-		ArrayList<DBFMetaDataRecord> cloneDBFMetaDataRecords
-			= new ArrayList<DBFMetaDataRecord>();
-		for (DBFMetaDataRecord originalDBFMetaDataRecord : originalDBFMetaDataRecords) {
-			DBFMetaDataRecord cloneDBFMetaDataRecord
-				= DBFMetaDataRecord.createCopy(originalDBFMetaDataRecord);
+		ArrayList<DBFConfigurationRecord> cloneDBFMetaDataRecords
+			= new ArrayList<DBFConfigurationRecord>();
+		for (DBFConfigurationRecord originalDBFMetaDataRecord : originalDBFMetaDataRecords) {
+			DBFConfigurationRecord cloneDBFMetaDataRecord
+				= DBFConfigurationRecord.createCopy(originalDBFMetaDataRecord);
 			cloneDBFMetaDataRecords.add(cloneDBFMetaDataRecord);
 		}
 	
@@ -183,6 +196,29 @@ public class DBTMetaDataRecord {
 		
 		return cloneDBTMetaDataRecord;
 	}
+
+	public boolean countCleanedRows() {
+		
+		return countCleanedRows;
+	}
+	
+	public void setCountCleanedRows(
+		final boolean countCleanedRows) {
+		
+		this.countCleanedRows = countCleanedRows;
+	}
+
+	public boolean countDuplicates() {
+		
+		return countDuplicateRows;
+	}
+	
+	public void setCountDuplicateRows(
+		final boolean countDuplicateRows) {
+		
+		this.countDuplicateRows = countDuplicateRows;
+	}
+	
 	
 	// ==========================================
 	// Section Errors and Validation
