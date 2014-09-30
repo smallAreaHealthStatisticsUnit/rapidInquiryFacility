@@ -346,7 +346,6 @@ class SpecifyReportingOptionsStepPanel
 	 * Adds the plugin.
 	 */
 	private void addPlugin() {
-		
 		ArrayList<CalculationMethod> usedCalculationMethods
 			= calculationMethodTable.getCalculationMethods();
 		
@@ -359,13 +358,11 @@ class SpecifyReportingOptionsStepPanel
 		if (selectionDialog.isCancelled() == true) {
 			return;
 		}
-			
-		CalculationMethod calculationMethod
-			= selectionDialog.getSelectedCalculationMethod();
-		if (calculationMethod != null) {
-			calculationMethodTable.addCalculationMethod(calculationMethod);			
-		}
 
+		ArrayList<CalculationMethod> selectedCalculationMethods
+			= selectionDialog.getSelectedCalculationMethods();
+		calculationMethodTable.addCalculationMethods(selectedCalculationMethods);			
+		
 		ensureDefaultListItemSelected();
 		updatePluginListButtonStates();
 	}	
