@@ -10,10 +10,18 @@ RIF.menu.settings = ( function() {
       },
 
       /* DOM elements */
-      settings: $( ".settings" ),
-      resultsChoice: $( "#resultsFilter" ),
+	  settings: $( ".settings" ),
+	  resultsChoice: $("#resultsFilter"),
+	  hoverSlct: $( '#fldSlct' ),
       save: $( ".save-fld-settings" ),
-
+	  
+	  avlbFieldsSettings: function(){
+		parent.dropDown( this, _p.hoverSlct );
+	  },
+	  
+	  getAllFieldsAvailable: function( investigation ){
+		 RIF.getFields( _p.avlbFieldsSettings, [ /*investigation*/ "atlas_leu_f" ] );
+	  },
 
       /* events */
       events: function() {
@@ -23,7 +31,7 @@ RIF.menu.settings = ( function() {
         } );
 
         this.save.click( function() {
-
+          parent.facade.hoverFieldChange( _p.hoverSlct.val() );
           $( "#settings" ).hide();
         } );
       }

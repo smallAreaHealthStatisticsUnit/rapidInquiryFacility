@@ -20,15 +20,15 @@ RIF.chart = ( function( settings ) {
       _refreshLineBivariate: function() {
         _p.renderLineBivariate();
       },
-
-      _refreshMultipleArea: function() {
+	  
+	  _refreshMultipleArea: function() {
         _p.renderMultipleArea();
       },
-
-      updateDomainLineChartInterface: function( domain ) {
-        _p.updateDomainLineChart( domain );
-      },
-
+	
+	  updateDomainLineChartInterface: function( domain ){
+	    _p.updateDomainLineChart( domain );
+	  },
+	
       //conforms
       setEvents: function() {
         //Empty for now

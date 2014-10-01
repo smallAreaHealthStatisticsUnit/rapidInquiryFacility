@@ -574,7 +574,7 @@ $r = RIF4::Instance();
 			// This is required by the plug in drawing the area chart
 			
 			$sql = "select gid, round($resSet,3) as $resSet , row_number() over (ORDER BY $resSet) as x_order 
-			from atlas_leu_f where $resSet <=2 order by $resSet  " ;
+			from atlas_leu_f order by x_order  " ;
 
 			$hndl = self::$dbh -> prepare($sql);
 			$hndl ->execute(array());	

@@ -67,11 +67,11 @@ RIF.menu.diseaseStudyLevel = ( function() {
 
       /* events */
       events: function() {
-        this.zoomTo.on( 'change', function() {
-          parent.facade.zoomTo( RIF.replaceAll( '_', ' ', this.value ) );
-        } );
-
-        /*		this.dataSet.on('change', function() {
+        this.zoomTo.on('change', function() {
+			parent.facade.zoomTo( RIF.replaceAll('_',' ', this.value) );
+		});
+				
+		/*		this.dataSet.on('change', function() {
 					parent.updateSettings(  this.value );
 				});
 				

@@ -8,11 +8,11 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
     margin = opt.margin,
     width = opt.dimensions.width(),
     height = opt.dimensions.height() - margin.top - margin.bottom,
-    idField = $.trim( opt.id_field ),
-    orderField = $.trim( opt.x_field ),
-    lineField = $.trim( opt.line_field ),
-    lowField = $.trim( opt.cl_field ),
-    highField = $.trim( opt.cu_field );
+    idField = $.trim(opt.id_field),
+    orderField = $.trim(opt.x_field),
+    lineField = $.trim(opt.line_field),
+    lowField = $.trim(opt.cl_field),
+    highField = $.trim(opt.cu_field);
 
 
   var line = d3.svg.line()
@@ -68,20 +68,20 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
   var svg = d3.select( "#" + id ).insert( "svg", "div" )
     .attr( "width", width )
     .attr( "height", height );
-
+  
   svg.append( "defs" ).append( "clipPath" )
-    .attr( "id", "clipchart" )
+    .attr ( "id", "clipchart" )
     .append( "rect" )
     .attr( "width", width )
     .attr( "height", height );
-
+  
   var focus = svg.append( "g" )
     .attr( "class", "focus" )
     .attr( "transform", "translate(" + margin.left + "," + margin.top + ")" );
 
   /*var context = svg.append( "g" )
     .attr( "class", "context" )
-    .attr( "transform", "translate(" + margin.left + "," + margin.top + ")" );	*/
+    .attr( "transform", "translate(" + margin.left + "," + margin.top + ")" );	*/	
 
   //Used to have a reference to the actual GIDS
   var lookUpIdsOrderId = {};
@@ -119,7 +119,7 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
     .datum( data )
     .attr( "class", "area" )
     .attr( "d", area )
-    .attr( "clip-path", "url(#clipchart)" );
+	.attr("clip-path", "url(#clipchart)");
 
   focus.append( "g" )
     .attr( "class", "x axis" )
@@ -136,16 +136,16 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
     .attr( "dy", ".4em" )
     .style( "text-anchor", "end" )
     .style( "fill", "#919191" )
-    .attr( "transform", "translate(40,5)" )
+	.attr( "transform", "translate(40,5)" )
     .text( lineField );
 
 
   focus.append( "path" )
     .datum( data )
     .attr( "class", "line" )
-    .attr( "clip-path", "url(#clipchart)" )
+	.attr("clip-path", "url(#clipchart)")
     .attr( "d", line );
-
+	
 
   return function brushed( domain ) {
 

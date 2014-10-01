@@ -19,10 +19,10 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
     zoomToExtent: function() {
       this.fire( 'zoomToExtent', [] );
     },
-
-    menusReady: function( currentSet ) {
-      this.fire( 'menusReady', currentSet );
-    },
+	
+	menusReady: function( currentSet ){
+	  this.fire( 'menusReady', currentSet );
+	},
 
     addTabularData: function( dataSets ) {
       this.fire( 'addTabularData', dataSets );

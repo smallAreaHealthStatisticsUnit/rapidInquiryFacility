@@ -60,8 +60,8 @@ RIF.sync = ( function( type ) {
       },
 
       diseaseMapping: {
-        mapAreaFromAreaChartChange: function( gid ) {
-          _study[ type ].fire( 'slctMapAreaFromAreaChart', gid );
+        mapAreaFromAreaChartChange: function( args ) {
+           _study[ type ].fire( 'slctMapAreaFromAreaChart', args );
         }
       },
 
