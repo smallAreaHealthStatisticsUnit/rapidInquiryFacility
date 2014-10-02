@@ -146,4 +146,40 @@ EXEC sp_addmessage 50071, 16,
 GO
 	
 
+----------------------------
+-- [T_RIF40_INV_COVARIATES]
+-----------------------------
+EXEC sp_addmessage 50091, 16, 
+   N'Table_name: [dbo].[T_RIF40_INV_COVARIATES] , Update not allowed';
+GO
+
+EXEC sp_addmessage 50092, 16, 
+   N'Table_name: [dbo].[T_RIF40_INV_COVARIATES], MIn value is less than expected:(%s)';
+GO
+EXEC sp_addmessage 50093, 16, 
+   N'Table_name: [dbo].[T_RIF40_INV_COVARIATES], MAX value is greater than expected:(%s)';
+GO
+
+EXEC sp_addmessage 50094, 16, 
+   N'Table_name: [dbo].[T_RIF40_INV_COVARIATES], type = 2 (continuous variable) is not currently supported for geolevel_name given:(%s)';
+GO
+
+EXEC sp_addmessage 50095, 16, 
+   N'Table_name: [dbo].[T_RIF40_INV_COVARIATES], type = 1 (integer score) and max is not an integer (%s)';
+GO
+EXEC sp_addmessage 50096, 16, 
+   N'Table_name: [dbo].[T_RIF40_INV_COVARIATES], type = 1 (integer score) and min is not an integer:(%s)';
+GO
+EXEC sp_addmessage 50097, 16, 
+   N'Table_name: [dbo].[T_RIF40_INV_COVARIATES], type = 1 (integer score) and min <0:(%s)';
+GO
+EXEC sp_addmessage 50098, 16, 
+   N'Table_name: [dbo].[T_RIF40_INV_COVARIATES], Study geolevel name not found in rif40_geolevels:(%s)';
+GO
+
+
+
+
+
+
 
