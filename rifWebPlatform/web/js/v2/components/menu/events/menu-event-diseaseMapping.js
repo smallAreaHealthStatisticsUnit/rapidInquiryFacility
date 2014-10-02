@@ -11,7 +11,7 @@ RIF.menu[ 'menu-event-diseaseMapping' ] = ( function() {
   } );
 
   $( "#clearSelection" ).click( function() {
-    _p.facade.clearMapTable();
+    _p.facade.clearSelectionClicked();
   } );
 
   $( "#zoomExtent" ).click( function() {

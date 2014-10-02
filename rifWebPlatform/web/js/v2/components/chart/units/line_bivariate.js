@@ -3,8 +3,8 @@ RIF.chart.line_bivariate = ( function() {
   var chart = this,
 
     data = null,
-	
-	_updateDomainLineChart = null,
+
+    _updateDomainLineChart = null,
 
     settings = {
       element: "rr_chart",
@@ -46,11 +46,15 @@ RIF.chart.line_bivariate = ( function() {
       renderLineBivariate: function() {
         _render( true );
       },
-	   
-      updateDomainLineChart: function( domain ){
-		_updateDomainLineChart.call(null, domain);
-	  },	   
-	   	
+
+      updateDomainLineChart: function( domain ) {
+        _updateDomainLineChart.call( null, domain );
+      },
+      
+	  clearLineBivariate: function(){
+		console.log("line bivariate cleared");
+	  },
+	  
       updateLine_bivariate: function( sett ) {
         var callback = function() {
           //_setLineBivariateField( sett.field );
@@ -58,7 +62,7 @@ RIF.chart.line_bivariate = ( function() {
           _render( false );
         };
         //_p.setHistoSettings( sett );
-        RIF.getResultSet( callback, [ settings.line_field /*type, studyId, invId /*year*/] );
+        RIF.getResultSet( callback, [ settings.line_field /*type, studyId, invId /*year*/ ] );
       }
 
     };

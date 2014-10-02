@@ -10,18 +10,18 @@ RIF.menu.settings = ( function() {
       },
 
       /* DOM elements */
-	  settings: $( ".settings" ),
-	  resultsChoice: $("#resultsFilter"),
-	  hoverSlct: $( '#fldSlct' ),
+      settings: $( ".settings" ),
+      resultsChoice: $( "#resultsFilter" ),
+      hoverSlct: $( '#fldSlct' ),
       save: $( ".save-fld-settings" ),
-	  
-	  avlbFieldsSettings: function(){
-		parent.dropDown( this, _p.hoverSlct );
-	  },
-	  
-	  getAllFieldsAvailable: function( investigation ){
-		 RIF.getFields( _p.avlbFieldsSettings, [ /*investigation*/ "atlas_leu_f" ] );
-	  },
+
+      avlbFieldsSettings: function() {
+        parent.dropDown( this, _p.hoverSlct );
+      },
+
+      getAllFieldsAvailable: function( investigation ) {
+        RIF.getFields( _p.avlbFieldsSettings, [ /*investigation*/ "atlas_leu_f" ] );
+      },
 
       /* events */
       events: function() {
@@ -29,9 +29,11 @@ RIF.menu.settings = ( function() {
         this.settings.click( function() {
           $( "#settings" ).show();
         } );
-
+		
         this.save.click( function() {
           parent.facade.hoverFieldChange( _p.hoverSlct.val() );
+		  var resultSetChoice = parent.getCheckedValues( "resultsSets" );  
+		  parent.facade.resultSetSelectionChanged( resultSetChoice );
           $( "#settings" ).hide();
         } );
       }

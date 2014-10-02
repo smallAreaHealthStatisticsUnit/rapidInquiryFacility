@@ -8,6 +8,11 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
   var facade = {
 
     /* Subscribers */
+	
+	resultSetSelectionChanged: function( args ){
+		this.fire( 'resultSetSelectionChanged', args );
+	},
+	
     uDropdownFlds: function( args ) {
       _p.populate( args );
     },
@@ -19,10 +24,10 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
     zoomToExtent: function() {
       this.fire( 'zoomToExtent', [] );
     },
-	
-	menusReady: function( currentSet ){
-	  this.fire( 'menusReady', currentSet );
-	},
+
+    menusReady: function( currentSet ) {
+      this.fire( 'menusReady', currentSet );
+    },
 
     addTabularData: function( dataSets ) {
       this.fire( 'addTabularData', dataSets );
@@ -40,8 +45,8 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
       this.fire( 'filterCols', [ fields, _p.getGeolevel() ] );
     },
 
-    clearMapTable: function() {
-      this.fire( 'clearMapTable', [] );
+    clearSelectionClicked: function() {
+      this.fire( 'clearSelectionClicked', [] );
     },
 
     changeNumRows: function( nRows ) {

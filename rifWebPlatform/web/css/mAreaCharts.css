@@ -13,9 +13,15 @@ svg.areaCharts .lineHover{
 	stroke:#7D9EC0;
 	pointer-events: none;
 }
+
 svg.areaCharts g.context {
 	display:none
 }
+
+svg.areaCharts .yClickWrapper{
+	fill:transparent;
+}
+
 div#mAreaCharts a.brushButton{
     float: right;
 	font-size: 12px;

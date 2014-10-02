@@ -4,7 +4,7 @@ RIF.map.layer.settings = ( function( mysett, type ) {
     geoLevel: "",
     selectionField: "code",
     style: RIF.style( type, mysett.study ),
-	study: null
+    study: null
   };
 
   return RIF.extend( mysett, settings );

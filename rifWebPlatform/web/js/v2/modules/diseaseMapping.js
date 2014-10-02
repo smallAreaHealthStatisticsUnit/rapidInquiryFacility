@@ -21,7 +21,7 @@ RIF.diseaseMapping = ( function() {
   var _p = {
 
     components: {
-	  study: 'diseaseMapping',
+      study: 'diseaseMapping',
       sync: 'diseaseMapping',
       map: {
         studyType: 'diseaseMapping',
@@ -33,27 +33,52 @@ RIF.diseaseMapping = ( function() {
       },
       menu: {
         studyType: 'diseaseMapping',
-        menus: [ /*'export',*/ 'diseaseStudyLevel', 'choropleth' , 'settings'  ]
+        menus: [ /*'export',*/ 'diseaseStudyLevel', 'choropleth', 'settings' ]
       },
       resizable: 'diseaseMapping'
     },
 
     events: {
-	  /**********/
-	  /**Study**/
-	  menusReady: {
+      /**********/
+      /**Study**/
+	  
+	  resultSetSelectionChanged: {
+	    subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "resultSetSelectionChanged"
+	  },
+	  
+	  changeResultSetSelection: {
+	    subscribers: [ "chart" ],
+        firer: [ "study" ],
+        method: "changeResultSetSelection"
+	  },
+	  
+	  clearSelectionClicked: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "clearSelectionClicked"
+      },
+	  
+	  clearSelection: {
+        subscribers: [ "map" /*, "chart" */ ],
+        firer: [ "study" ],
+        method: "clearSelection"
+      },
+	  
+      menusReady: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
         method: "menusReady"
       },
-	  
+
       addGeolevel: {
         subscribers: [ "map" ],
         firer: [ "study" ],
         method: "uGeolevel"
       },
-	  
-	  drawLineBivariateChart: {
+
+      drawLineBivariateChart: {
         subscribers: [ "chart" ],
         firer: [ "study" ],
         method: "updateLineBivariate"
@@ -63,33 +88,33 @@ RIF.diseaseMapping = ( function() {
         subscribers: [ "chart" ],
         firer: [ "study" ],
         method: "updateMultipleAreaCharts"
-      },	
-	  
-	  areaChartBrushed:{
-	    subscribers: [ "study" ],
+      },
+
+      areaChartBrushed: {
+        subscribers: [ "study" ],
         firer: [ "chart" ],
         method: "areaChartBrushed"
-	  },
-	  
-	  updateLineChartWithBrush:{
-	    subscribers: [ "chart" ],
+      },
+
+      updateLineChartWithBrush: {
+        subscribers: [ "chart" ],
         firer: [ "study" ],
         method: "updateLineChartWithBrush"
-	  },
-	  
-	  hoverFieldChange: {
+      },
+
+      hoverFieldChange: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
         method: "uHoverField"
       },
-	  
-	  hoverFieldChangeApply: {
+
+      hoverFieldChangeApply: {
         subscribers: [ "map" ],
         firer: [ "study" ],
         method: "uHoverField"
       },
-	  
-	  /**********/
+
+      /**********/
       /** Sync **/
       selectionchange: {
         subscribers: [ "sync" ],
@@ -102,33 +127,36 @@ RIF.diseaseMapping = ( function() {
         firer: [ "menu" ],
         method: "cGeoLvl"
       },
-		
-	  mapAreaFromAreaChartChange: {
+
+      mapAreaFromAreaChartChange: {
         subscribers: [ "sync" ],
         firer: [ "chart" ],
         method: "mapAreaFromAreaChartChange"
-      },	
-	  
-	  slctMapAreaFromAreaChart: {
+      },
+
+      slctMapAreaFromAreaChart: {
         subscribers: [ "map" ],
         firer: [ "sync" ],
         method: "slctMapAreaFromAreaChart"
       },
+
+      /**********/
+      /** Map **/
 	  
-	   /**********/
-       /** Map **/
-      clearSelection: {
+     // SYNC is not needed for disease mapping
+	 
+	 /* clearSelection: {
         subscribers: [ "map" ],
         firer: [ "sync" ],
         method: "clearSelection"
-      },
+      },*/
 
       updateSelectionMap: {
         subscribers: [ "map" ],
         firer: [ "sync" ],
         method: "updateSelection"
       },
-	  
+
       zoomToExtent: {
         subscribers: [ "map" ],
         firer: [ "menu" ],
@@ -140,13 +168,13 @@ RIF.diseaseMapping = ( function() {
         firer: [ "menu", "chart" ],
         method: "zoomTo"
       },
-	  
+
       mapStyleChange: {
         subscribers: [ "map" ],
         firer: [ "menu" ],
         method: "uMapStyle"
       },
-	  
+
       editChoroplethBreaks: {
         subscribers: [ "map" ],
         firer: [ "menu" ],
@@ -165,8 +193,8 @@ RIF.diseaseMapping = ( function() {
         firer: [ "chart" ],
         method: "rr_chart"
       },
-	  
-	  addResizableAreaCharts: {
+
+      addResizableAreaCharts: {
         subscribers: [ "resizable" ],
         firer: [ "chart" ],
         method: "multipleAreaCharts"
@@ -177,8 +205,8 @@ RIF.diseaseMapping = ( function() {
         firer: [ "resizable" ],
         method: "refreshLineBivariate"
       },
-	  
-	 resizeAreaCharts: {
+
+      resizeAreaCharts: {
         subscribers: [ "chart" ],
         firer: [ "resizable" ],
         method: "refreshMultipleArea"
