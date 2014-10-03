@@ -29,11 +29,11 @@ RIF.menu.settings = ( function() {
         this.settings.click( function() {
           $( "#settings" ).show();
         } );
-		
+
         this.save.click( function() {
           parent.facade.hoverFieldChange( _p.hoverSlct.val() );
-		  var resultSetChoice = parent.getCheckedValues( "resultsSets" );  
-		  parent.facade.resultSetSelectionChanged( resultSetChoice );
+          var resultSetChoice = parent.getCheckedValues( "resultsSets" );
+          parent.facade.resultSetSelectionChanged( resultSetChoice );
           $( "#settings" ).hide();
         } );
       }

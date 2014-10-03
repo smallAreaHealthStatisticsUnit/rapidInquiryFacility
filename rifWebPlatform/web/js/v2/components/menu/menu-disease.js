@@ -40,7 +40,7 @@ RIF.menu = ( function( settings ) {
             study: _studies[ 0 ], //By default we display the first study retrieved
             investigation: _investigations[ 0 ], //And first Ivestigation
             resultSet: _resultSets,
-			resultSetSelected: _p.getCheckedValues( "resultsSets" ),
+            resultSetSelected: _p.getCheckedValues( "resultsSets" ),
             /* TEMPORARY NULL VALUES */
             gender: null, // for now need to add gender selection LATER!
             year: null // 	 for now need to add YEAR selection LATER!

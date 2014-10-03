@@ -7,68 +7,68 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
     contextWidth = width * .5,
     el = settings.element,
     xOrder = settings.x_field,
-	lineColor = settings.lineColor,
-	lineSelectionColor = settings.lineSelectionColor;
+    lineColor = settings.lineColor,
+    lineSelectionColor = settings.lineSelectionColor;
 
 
   var areaChartsCount = 0,
     brushIsOn = false,
-	clickSelection = false,
-	gid = null;
+    clickSelection = false,
+    gid = null;
 
   var xScales = {},
     dataSets = {},
     lines = {},
     texts = {},
-	xOrders = {};
-	
-	
+    xOrders = {};
+
+
   var keyDown = function() {
-	var tagName = d3.select(d3.event.target).node().tagName,
-		code = d3.event.keyCode;
-    if (tagName == 'INPUT' || tagName == 'SELECT' || tagName == 'TEXTAREA') {
-        return;
+    var tagName = d3.select( d3.event.target ).node().tagName,
+      code = d3.event.keyCode;
+    if ( tagName == 'INPUT' || tagName == 'SELECT' || tagName == 'TEXTAREA' ) {
+      return;
     };
-    if (code == 37) { // left arrow
-	    d3.event.preventDefault();
-		moveLineByOne( decrement );
-	}else if (code == 39) {//right arrow
-		d3.event.preventDefault();
-		moveLineByOne( increment );
-	};
-  };  	
-  
-  var increment = function(val){
-	return ++val;
+    if ( code == 37 ) { // left arrow
+      d3.event.preventDefault();
+      moveLineByOne( decrement );
+    } else if ( code == 39 ) { //right arrow
+      d3.event.preventDefault();
+      moveLineByOne( increment );
+    };
   };
-  
-  var decrement = function(val){
-	return --val;
+
+  var increment = function( val ) {
+    return ++val;
   };
-  
-  var moveLineByOne = function( augment ){
+
+  var decrement = function( val ) {
+    return --val;
+  };
+
+  var moveLineByOne = function( augment ) {
     for ( var set in dataSets ) {
-	    var xVal = augment.call(null, xOrders[set]);
-		if ( xVal < dataSets[set].length -1 && xVal > 0 ) {
-            var yVal = dataSets[ set ][ xVal ][ set ];
-            update( xVal, yVal, set );
-			//console.log(xVal + " " + set );
-            continue;
-        };
-	};
+      var xVal = augment.call( null, xOrders[ set ] );
+      if ( xVal < dataSets[ set ].length - 1 && xVal > 0 ) {
+        var yVal = dataSets[ set ][ xVal ][ set ];
+        update( xVal, yVal, set );
+        //console.log(xVal + " " + set );
+        continue;
+      };
+    };
   };
-  
+
   var update = function( xVal, txt, set ) {
-	  xOrders[set] = xVal;
-      lines[ set ]
-        .attr( "transform", "translate(" + xScales[set]( xVal ) + "," + 0 + ")" );
-      texts[ set ]
-        .text( txt );
+    xOrders[ set ] = xVal;
+    lines[ set ]
+      .attr( "transform", "translate(" + xScales[ set ]( xVal ) + "," + 0 + ")" );
+    texts[ set ]
+      .text( txt );
   };
-  
-  d3.select("body")
-    .on("keydown", keyDown)
-  
+
+  d3.select( "body" )
+    .on( "keydown", keyDown )
+
   d3.select( "#" + el ).append( "a" )
     .attr( "class", "brushButton" )
     .text( "zoom" )
@@ -79,8 +79,8 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
 
   var showBrush = function( isBrush, isOverlay ) {
 
-    var brush = ( isBrush ) ? "block" : "none" ,
-        overlay = ( isOverlay ) ? "block" : "none";
+    var brush = ( isBrush ) ? "block" : "none",
+      overlay = ( isOverlay ) ? "block" : "none";
 
     svg.selectAll( "g.context" )
       .attr( "style", "display:" + brush );
@@ -89,12 +89,12 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
       .attr( "style", "display:" + overlay );
   };
 
-  
-  var lineColorUpdate = function( col ){
-	svg.selectAll( ".lineHover" )
-		.attr( "style", "stroke:" + col );
+
+  var lineColorUpdate = function( col ) {
+    svg.selectAll( ".lineHover" )
+      .attr( "style", "stroke:" + col );
   };
-  
+
   var svg = d3.select( "#" + el ).append( "svg" )
     .attr( "width", width )
     .attr( "height", ( height + margin.top + margin.bottom ) )
@@ -122,9 +122,9 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
     var xS = d3.scale.linear()
       .range( [ 0, this.width - 40 ] ) //24px is the size of Y axis 
       .domain( [ 1, length ] );
-	
-	xScales[ localName ] = xS;
-	
+
+    xScales[ localName ] = xS;
+
     var yS = d3.scale.linear()
       .range( [ this.height, 0 ] )
       .domain( [ 0, this.maxDataPoint ] );
@@ -193,7 +193,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
       .attr( "class", chartClass )
       .attr( "clip-path", "url(#clip-" + this.id + ")" )
       .attr( "d", this.area );
-	
+
     var invertX = function( mouseX ) {
       var val = Math.round( xS.invert( mouseX ) );
       return ( val < 0 ) ? 0 :
@@ -202,14 +202,14 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
     };
 
     var updateAllCharts = function( xValue ) {
-	  var tempClickSelection = clickSelection;
-	  clickSelection = !clickSelection;
-	  if( tempClickSelection ){
-	    lineColorUpdate( lineColor);	
-		return;
-	  };
+      var tempClickSelection = clickSelection;
+      clickSelection = !clickSelection;
+      if ( tempClickSelection ) {
+        lineColorUpdate( lineColor );
+        return;
+      };
       if ( typeof dataSets[ localName ][ xValue ] !== 'undefined' ) {
-	    lineColorUpdate( lineSelectionColor );
+        lineColorUpdate( lineSelectionColor );
         gid = dataSets[ localName ][ xValue ][ "gid" ]; // Sync with other area charts
         facade.mapAreaFromAreaChartChange.call( null, [ gid, localName ] ); // NEED to pass dataSets[localName]
         iterateToGid( gid );
@@ -231,9 +231,9 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
     };
 
     var mousemove = function( d ) {
-	  if( clickSelection ){
-		return;
-	  };
+      if ( clickSelection ) {
+        return;
+      };
       var xValue = invertX( ( d3.mouse( this )[ 0 ] ) );
       if ( typeof dataSets[ localName ][ xValue ] !== 'undefined' ) {
         gid = dataSets[ localName ][ xValue ][ "gid" ]; // Sync with other area charts
@@ -246,7 +246,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
       updateAllCharts( xValue );
     };
 
-    var mouseclickOnYAxis = function( d ) {	
+    var mouseclickOnYAxis = function( d ) {
       updateAllCharts( 0 );
     };
 
@@ -257,7 +257,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
       .attr( "transform", "translate(0,0)" )
       .on( "mousemove", mousemove )
       .on( "click", mouseclick )
-	  .on("keydown", keyDown);
+      .on( "keydown", keyDown );
 
 
     /* Highlighter */

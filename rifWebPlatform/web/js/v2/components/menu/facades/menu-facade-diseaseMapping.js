@@ -8,11 +8,11 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
   var facade = {
 
     /* Subscribers */
-	
-	resultSetSelectionChanged: function( args ){
-		this.fire( 'resultSetSelectionChanged', args );
-	},
-	
+
+    resultSetSelectionChanged: function( args ) {
+      this.fire( 'resultSetSelectionChanged', args );
+    },
+
     uDropdownFlds: function( args ) {
       _p.populate( args );
     },

@@ -18,8 +18,8 @@ RIF.chart.multipleAreaCharts = ( function() {
       line_field_color: "#8DB6CD",
       cl_field: "llsrr",
       cu_field: "ulsrr",
-	  lineColor: "7D9EC0",
-	  lineSelectionColor: "#EEA9B8",
+      lineColor: "7D9EC0",
+      lineSelectionColor: "#EEA9B8",
       margin: {
         top: 5,
         right: 10,
@@ -42,13 +42,13 @@ RIF.chart.multipleAreaCharts = ( function() {
     },
 
     _getNewChart = function( resultSets ) {
-      
-	  _clear();
-	  
-	  if ( typeof resultSets !== 'undefined'  ){
-	      rSet = resultSets;
-	  };
-	  
+
+      _clear();
+
+      if ( typeof resultSets !== 'undefined' ) {
+        rSet = resultSets;
+      };
+
       var callback = function() {
         minMax = this;
         _initSVG();
@@ -104,9 +104,9 @@ RIF.chart.multipleAreaCharts = ( function() {
 
   _clear = function() {
     data = [];
-	minMax = null;
+    minMax = null;
     newChart = null;
-	rSet = null;
+    rSet = null;
     $( '#' + settings.element ).empty();
   }
 
@@ -115,11 +115,11 @@ RIF.chart.multipleAreaCharts = ( function() {
     updateMultipleAreaCharts: function( resultSets ) {
       _getNewChart( resultSets );
     },
-    
-	clearMultipleAreaCharts: function(){
-	  console.log(" clearMultipleAreaCharts cleared");
-	},
-	
+
+    clearMultipleAreaCharts: function() {
+      console.log( " clearMultipleAreaCharts cleared" );
+    },
+
     renderMultipleArea: function() {
       _rerender();
     }
