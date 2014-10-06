@@ -3,15 +3,15 @@ RIF.chart[ 'chart-facade-diseaseMapping' ] = ( function( _p ) {
 
   var facade = {
     /* subscribers */
-    changeResultSetSelection: function( resSetsChosen ){
-		_p.updateChart( 'multipleAreaCharts', resSetsChosen );
-	},
-	
-	clearSelection: function(){
-	  _p.clearChart( 'multipleAreaCharts', []);	
-	  _p.clearChart( 'line_bivariate', []);	
-	},
-	
+    changeResultSetSelection: function( resSetsChosen ) {
+      _p.updateChart( 'multipleAreaCharts', resSetsChosen );
+    },
+
+    clearSelection: function() {
+      _p.clearChart( 'multipleAreaCharts', [] );
+      _p.clearChart( 'line_bivariate', [] );
+    },
+
     updateMultipleAreaCharts: function( args ) {
       _p.updateChart( 'multipleAreaCharts', args );
     },
@@ -43,7 +43,7 @@ RIF.chart[ 'chart-facade-diseaseMapping' ] = ( function( _p ) {
     updateLineChartWithBrush: function( domain ) {
       _p.updateDomainLineChartInterface( domain );
     },
-	
+
     mapAreaFromAreaChartChange: function( args ) { // gid , dataset
       var gid = args[ 0 ],
         resultSet = args[ 1 ],

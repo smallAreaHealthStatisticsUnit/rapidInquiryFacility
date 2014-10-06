@@ -1,33 +1,33 @@
 RIF.menu.geoLevel = ( function() {
 
   var parent = this,
-    
-	_domObjects = {
-	  /* DOM elements */
+
+    _domObjects = {
+      /* DOM elements */
       geolevels: $( '#geolevel select' ),
       zoomTo: $( '#zoomTo select' ),
       dataSet: $( '#dataSet select' ),
       avlbFlds: $( '' ),
-	},
-	
-	/* events */
-    _events = function() {
-        _domObjects.zoomTo.on( 'change', function() {
-          parent.facade.zoomTo( RIF.replaceAll( '_', ' ', this.value ) );
-        } );
-
-        _domObjects.dataSet.on( 'change', function() {
-          parent.facade.addTabularData( this.value );
-          parent.updateSettings( this.value );
-        } );
-
-        _domObjects.geolevels.on( 'change', function() {
-          _p.setGeolevel( this.value );
-          _p.getDataSets();
-        } );
     },
-	
-	
+
+    /* events */
+    _events = function() {
+      _domObjects.zoomTo.on( 'change', function() {
+        parent.facade.zoomTo( RIF.replaceAll( '_', ' ', this.value ) );
+      } );
+
+      _domObjects.dataSet.on( 'change', function() {
+        parent.facade.addTabularData( this.value );
+        parent.updateSettings( this.value );
+      } );
+
+      _domObjects.geolevels.on( 'change', function() {
+        _p.setGeolevel( this.value );
+        _p.getDataSets();
+      } );
+    },
+
+
     /* geolevel obj */
     _p = {
 
@@ -45,12 +45,12 @@ RIF.menu.geoLevel = ( function() {
         }
       },
 
-	  dataSetsClbk: function() {
+      dataSetsClbk: function() {
         _p.setDataset( this[ 0 ] );
         parent.dropDown( this, _domObjects.dataSet );
         _p.updateOtherComponents();
       },
-	  
+
       getDataSets: function() {
         RIF.getDataSetsAvailable( _p.dataSetsClbk, [ _p.currentGeolvl ] );
       },
@@ -75,11 +75,11 @@ RIF.menu.geoLevel = ( function() {
       getDataset: function( geolvl ) {
         return _p.currentdataset;
       },
-	  
-	  getGeoLevelDom: function (obj){
-	    return _domObjects[ obj ];
-	  },
-	  
+
+      getGeoLevelDom: function( obj ) {
+        return _domObjects[ obj ];
+      },
+
     };
 
   _p.initGeolevel();

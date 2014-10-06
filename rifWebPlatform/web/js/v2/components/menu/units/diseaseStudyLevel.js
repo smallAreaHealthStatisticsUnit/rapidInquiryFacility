@@ -1,23 +1,23 @@
 RIF.menu.diseaseStudyLevel = ( function() {
 
   var parent = this,
-     
-	 _domObjects = {
-	  /* DOM elements */ 
-	  study : $( '#studyId select' ),  
+
+    _domObjects = {
+      /* DOM elements */
+      study: $( '#studyId select' ),
       investigation: $( '#invId select' ),
       resultSet: $( '#Resultset select' ),
       zoomTo: $( '#zoomTo select' ),
-	 },
-	 
-	 /* events */
-     _events = function() {
-        _domObjects.zoomTo.on( 'change', function() {
-          parent.facade.zoomTo( RIF.replaceAll( '_', ' ', this.value ) );
-        } );
-     },
-	 
-     /* geolevel obj */
+    },
+
+    /* events */
+    _events = function() {
+      _domObjects.zoomTo.on( 'change', function() {
+        parent.facade.zoomTo( RIF.replaceAll( '_', ' ', this.value ) );
+      } );
+    },
+
+    /* geolevel obj */
     _p = {
 
       initdiseaseStudyLevel: function() {
@@ -71,10 +71,10 @@ RIF.menu.diseaseStudyLevel = ( function() {
       getResultSet: function() {
         return _p.resultSet;
       },
-	  
-	  getDiseaseStudyLevelMenuDom: function( obj ){
-		return _domObjects[ obj ];
-	  },
+
+      getDiseaseStudyLevelMenuDom: function( obj ) {
+        return _domObjects[ obj ];
+      },
 
     };
 

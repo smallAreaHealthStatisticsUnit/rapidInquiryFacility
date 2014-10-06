@@ -1,70 +1,70 @@
 RIF.menu.choropleth = ( function() {
 
   var parent = this,
-       
-	   /* DOM elements */
-	  _domObjects = {
-        menu: $( "#choropleth" ),
-        choroplethBtn: $( "#choroplethBtn" ),
-        save: $( ".save-fld" ),
-        fieldToMap: $( "#fieldToMap" ),
-        classification: $( "#classification" ),
-        scale: "lightGreen",
-        intervals: $( "#intervals" ),
-        edit: $( ".editBreaks a" ),
-	 },
-	 
-	 /* events */
-      _events = function() {
-        $( "#intervals,#classification" ).change( function() {
-          _p.breaksEdited = false;
-          $( "#breaks" ).hide();
-        } );
 
-        $( "#classification" ).change( function() {
-          _p.updateIntervals( $( "#selectedScale" ).children().length );
-        } );
+    /* DOM elements */
+    _domObjects = {
+      menu: $( "#choropleth" ),
+      choroplethBtn: $( "#choroplethBtn" ),
+      save: $( ".save-fld" ),
+      fieldToMap: $( "#fieldToMap" ),
+      classification: $( "#classification" ),
+      scale: "lightGreen",
+      intervals: $( "#intervals" ),
+      edit: $( ".editBreaks a" ),
+    },
 
-        _domObjects.choroplethBtn.click( function() {
-          $( "#choropleth" ).show();
-        } );
+    /* events */
+    _events = function() {
+      $( "#intervals,#classification" ).change( function() {
+        _p.breaksEdited = false;
+        $( "#breaks" ).hide();
+      } );
 
-        $( "dl.dropdown" ).click( function() {
-          _p.updateIntervals( $( "#selectedScale" ).children().length );
-        } );
+      $( "#classification" ).change( function() {
+        _p.updateIntervals( $( "#selectedScale" ).children().length );
+      } );
+
+      _domObjects.choroplethBtn.click( function() {
+        $( "#choropleth" ).show();
+      } );
+
+      $( "dl.dropdown" ).click( function() {
+        _p.updateIntervals( $( "#selectedScale" ).children().length );
+      } );
 
 
-        _domObjects.edit.click( function() {
-          _p.breaksEdited = false;
-          var slctd = _p.selected();
-          if ( slctd.field !== "N/A" ) {
-            parent.facade.fire( "editChoroplethBreaks", slctd );
-          };
-        } );
+      _domObjects.edit.click( function() {
+        _p.breaksEdited = false;
+        var slctd = _p.selected();
+        if ( slctd.field !== "N/A" ) {
+          parent.facade.fire( "editChoroplethBreaks", slctd );
+        };
+      } );
 
-        _domObjects.save.click( function() {
+      _domObjects.save.click( function() {
 
-          if ( $( "#classification" ).val() === 'standardDeviation' ) {
-            _p.updateIntervals( 5 );
-          };
+        if ( $( "#classification" ).val() === 'standardDeviation' ) {
+          _p.updateIntervals( 5 );
+        };
 
-          $( "#choropleth" ).hide();
+        $( "#choropleth" ).hide();
 
-          var slctd = _p.selected();
+        var slctd = _p.selected();
 
-          if ( slctd.field !== "N/A" ) {
-            parent.facade.fire( "mapStyleChange", slctd );
-            parent.facade.hoverFieldChange( slctd.field );
-          };
+        if ( slctd.field !== "N/A" ) {
+          parent.facade.fire( "mapStyleChange", slctd );
+          parent.facade.hoverFieldChange( slctd.field );
+        };
 
-        } );
-     },
-	  
+      } );
+    },
+
     /* choropleth obj */
     _p = {
-      
-	  breaksEdited: false,
-	  
+
+      breaksEdited: false,
+
       initChoropleth: function() {
         _events();
         this.makeColourScales();
@@ -164,11 +164,11 @@ RIF.menu.choropleth = ( function() {
           return _domObjects.classification.find( ":selected" ).val();
         }
       },
-	  
-      getChoroplethMenuDom: function( obj ){
-		return _domObjects[ obj ];
-	  }
-	  
+
+      getChoroplethMenuDom: function( obj ) {
+        return _domObjects[ obj ];
+      }
+
     };
 
   _p.initChoropleth();

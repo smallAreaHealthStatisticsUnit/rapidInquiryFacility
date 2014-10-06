@@ -52,10 +52,10 @@ RIF.map[ 'map-facade-diseaseMapping' ] = ( function( _p ) {
     clearSelection: function() {
       _p.layer.clearSelection();
     },
-	
-	changeBasemap: function( url ){
-	   _p.setBaseMap( url );
-	},
+
+    changeBasemap: function( url ) {
+      _p.setBaseMap( url );
+    },
 
     /* Firers */
     populateMenus: function( args ) { /* [geolevel] */

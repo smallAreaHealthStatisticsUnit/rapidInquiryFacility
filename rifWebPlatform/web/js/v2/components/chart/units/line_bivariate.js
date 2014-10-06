@@ -50,11 +50,11 @@ RIF.chart.line_bivariate = ( function() {
       updateDomainLineChart: function( domain ) {
         _updateDomainLineChart.call( null, domain );
       },
-      
-	  clearLineBivariate: function(){
-		console.log("line bivariate cleared");
-	  },
-	  
+
+      clearLineBivariate: function() {
+        console.log( "line bivariate cleared" );
+      },
+
       updateLine_bivariate: function( sett ) {
         var callback = function() {
           //_setLineBivariateField( sett.field );
