@@ -33,7 +33,7 @@ RIF.diseaseMapping = ( function() {
       },
       menu: {
         studyType: 'diseaseMapping',
-        menus: [ /*'export',*/ 'diseaseStudyLevel', 'choropleth', 'settings' ]
+        menus: [ /*'export',*/ 'diseaseStudyLevel', 'choropleth', 'settings', 'baseMap' ]
       },
       resizable: 'diseaseMapping'
     },
@@ -41,31 +41,31 @@ RIF.diseaseMapping = ( function() {
     events: {
       /**********/
       /**Study**/
-
-      resultSetSelectionChanged: {
-        subscribers: [ "study" ],
+	  
+	  resultSetSelectionChanged: {
+	    subscribers: [ "study" ],
         firer: [ "menu" ],
         method: "resultSetSelectionChanged"
-      },
-
-      changeResultSetSelection: {
-        subscribers: [ "chart" ],
+	  },
+	  
+	  changeResultSetSelection: {
+	    subscribers: [ "chart" ],
         firer: [ "study" ],
         method: "changeResultSetSelection"
-      },
-
-      clearSelectionClicked: {
+	  },
+	  
+	  clearSelectionClicked: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
         method: "clearSelectionClicked"
       },
-
-      clearSelection: {
+	  
+	  clearSelection: {
         subscribers: [ "map" /*, "chart" */ ],
         firer: [ "study" ],
         method: "clearSelection"
       },
-
+	  
       menusReady: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
@@ -142,14 +142,26 @@ RIF.diseaseMapping = ( function() {
 
       /**********/
       /** Map **/
-
-      // SYNC is not needed for disease mapping
-
-      /* clearSelection: {
+	  
+     // SYNC is not needed for disease mapping
+	 
+	 /* clearSelection: {
         subscribers: [ "map" ],
         firer: [ "sync" ],
         method: "clearSelection"
       },*/
+	  
+	  baseMapChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "baseMapChanged"
+      },
+	  
+	  changeBasemap: {
+        subscribers: [ "map" ],
+        firer: [ "study" ],
+        method: "changeBasemap"
+      },
 
       updateSelectionMap: {
         subscribers: [ "map" ],

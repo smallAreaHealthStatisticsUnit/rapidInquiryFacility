@@ -4,7 +4,8 @@ RIF.menu = ( function( settings ) {
     _studies,
     _investigations,
     _resultSets,
-    _p = {
+    
+	_p = {
       init: function() {
         _p = RIF.mix( RIF.menu.utils(), _p );
         return _p;
@@ -16,7 +17,7 @@ RIF.menu = ( function( settings ) {
 
           if ( this.length > 0 ) {
             _studies = this;
-            _p.dropDown( _studies, _p.study );
+            _p.dropDown( _studies, _p.getDiseaseStudyLevelMenuDom("study") );
             _p.getInvestigations( _studies[ 0 ] );
             _p.getZoomIds( _studies[ 0 ] );
           }
@@ -25,16 +26,16 @@ RIF.menu = ( function( settings ) {
 
         avlbInvestigations: function() {
           _investigations = this;
-          _p.dropDown( _investigations, _p.investigation );
+          _p.dropDown( _investigations, _p.getDiseaseStudyLevelMenuDom("investigation") );
           _p.getResultsSetAvailable( _investigations[ 0 ] );
           _p.getAllFieldsAvailable( _investigations[ 0 ] );
         },
 
         avlbResultSet: function() {
           _resultSets = this;
-          _p.dropDown( _resultSets, _p.resultSet );
-          _p.dropDown( _resultSets, _p.fieldToMap ); //Choropleth dialog
-          _p.fieldCheckboxesResultsSet( _resultSets, _p.resultsChoice, "resultsSets" );
+          _p.dropDown( _resultSets, _p.getDiseaseStudyLevelMenuDom("resultSet") );
+          _p.dropDown( _resultSets, _p.getChoroplethMenuDom("fieldToMap") ); //Choropleth dialog
+          _p.fieldCheckboxesResultsSet( _resultSets, _p.getSettingsMenuDom("resultsChoice"), "resultsSets" );
 
           _p.facade.menusReady( {
             study: _studies[ 0 ], //By default we display the first study retrieved
@@ -49,16 +50,16 @@ RIF.menu = ( function( settings ) {
         },
 
         avlbFieldsChoro: function() {
-          _p.dropDown( this, _p.fieldToMap );
+          _p.dropDown( this, _p.getChoroplethMenuDom("fieldToMap") );
           if ( this.length === 0 ) {
-            _p.greyOut( _p.menu );
+            _p.greyOut( _p.getChoroplethMenuDom("menu") );
           } else {
-            _p.removeGreyOut( _p.menu );
+            _p.removeGreyOut( _p.getChoroplethMenuDom("menu") );
           }
         },
 
-        zoomTo: function() {
-          _p.dropDown( this, _p.zoomTo );
+        zoomToOptions: function() {
+          _p.dropDown( this, _p.getDiseaseStudyLevelMenuDom("zoomTo") );
         },
       },
 
@@ -69,7 +70,7 @@ RIF.menu = ( function( settings ) {
       populate: function( args ) {
         //_p.initdiseaseStudyLevel();
         //RIF.getNumericFields(  [_p.callbacks.avlbFieldsChoro, _p.callbacks.avlbFieldsHistogram], [_p.getDataset()] );
-        RIF.getZoomIdentifiers( _p.callbacks.zoomTo, [ args.geoLvl ] );
+        RIF.getZoomIdentifiers( _p.callbacks.zoomToOptions, [ args.geoLvl ] );
       },
 
       setEvents: function() {

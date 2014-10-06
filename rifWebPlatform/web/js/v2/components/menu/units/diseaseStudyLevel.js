@@ -1,21 +1,29 @@
 RIF.menu.diseaseStudyLevel = ( function() {
 
   var parent = this,
-
-    /* geolevel obj */
-    _p = {
-
-      initdiseaseStudyLevel: function() {
-        this.events();
-        this.getStudies();
-      },
-
-      /* DOM elements */
-      study: $( '#studyId select' ),
+     
+	 _domObjects = {
+	  /* DOM elements */ 
+	  study : $( '#studyId select' ),  
       investigation: $( '#invId select' ),
       resultSet: $( '#Resultset select' ),
       zoomTo: $( '#zoomTo select' ),
+	 },
+	 
+	 /* events */
+     _events = function() {
+        _domObjects.zoomTo.on( 'change', function() {
+          parent.facade.zoomTo( RIF.replaceAll( '_', ' ', this.value ) );
+        } );
+     },
+	 
+     /* geolevel obj */
+    _p = {
 
+      initdiseaseStudyLevel: function() {
+        _events();
+        this.getStudies();
+      },
 
       getStudies: function() {
         RIF.getStudies( parent.callbacks.studyCallback, [] );
@@ -39,7 +47,7 @@ RIF.menu.diseaseStudyLevel = ( function() {
 
       /* Set - Gets */
       setStudy: function( studyId ) {
-        _p.study = studyId;
+        _study = studyId;
         //May want to fire a set study event to register in high level module  
       },
 
@@ -53,7 +61,7 @@ RIF.menu.diseaseStudyLevel = ( function() {
       },
 
       getStudy: function() {
-        return _p.study;
+        return _study;
       },
 
       getInvestigation: function() {
@@ -63,22 +71,11 @@ RIF.menu.diseaseStudyLevel = ( function() {
       getResultSet: function() {
         return _p.resultSet;
       },
+	  
+	  getDiseaseStudyLevelMenuDom: function( obj ){
+		return _domObjects[ obj ];
+	  },
 
-
-      /* events */
-      events: function() {
-        this.zoomTo.on( 'change', function() {
-          parent.facade.zoomTo( RIF.replaceAll( '_', ' ', this.value ) );
-        } );
-
-        /*		this.dataSet.on('change', function() {
-					parent.updateSettings(  this.value );
-				});
-				
-				this.geolevels.on('change', function() {
-					_p.setGeolevel( this.value );
-				});*/
-      }
     };
 
   _p.initdiseaseStudyLevel();

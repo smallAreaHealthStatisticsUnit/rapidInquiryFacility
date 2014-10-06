@@ -16,14 +16,14 @@ RIF.chart = ( function( settings ) {
           ( type === 'histogram' ) ? _p.updateHisto( args ) :
           ( type === 'multipleAreaCharts' ) ? _p.updateMultipleAreaCharts( args ) : 0;
       },
-
+	
       clearChart: function( type, args ) {
-        ( type === 'line_bivariate' ) ? _p.clearLineBivariate( args ) :
+        ( type === 'line_bivariate' ) ?  _p.clearLineBivariate( args ) :
           ( type === 'pyramid' ) ? 0 :
           ( type === 'histogram' ) ? 0 :
           ( type === 'multipleAreaCharts' ) ? _p.clearMultipleAreaCharts( args ) : 0;
       },
-
+	
       _refreshLineBivariate: function() {
         _p.renderLineBivariate();
       },

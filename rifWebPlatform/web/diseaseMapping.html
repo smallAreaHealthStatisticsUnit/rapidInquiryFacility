@@ -12,8 +12,6 @@
     <link href="css/diseaseMapping.css" rel="stylesheet" media="screen" />
 	<link href="css/mAreaCharts.css" rel="stylesheet" media="screen" />
 	<link href="css/line_bivariate.css" rel="stylesheet" media="screen" />
-	<link href="css/slickgrid/slick.grid.css" rel="stylesheet" media="screen" />
-	<link href="css/slickgrid/slick-default-theme.css" rel="stylesheet" media="screen" />
 
     <!-- libraries -->
     <script type="text/javascript" src="js/libs/jquery-2.0.3.js"></script>
@@ -63,6 +61,7 @@
 	<script type="text/javascript" src="js/v2/components/menu/units/diseaseStudyLevel.js"></script>
 	<script type="text/javascript" src="js/v2/components/menu/units/choropleth.js"></script>
 	<script type="text/javascript" src="js/v2/components/menu/units/settings-disease.js"></script>
+	<script type="text/javascript" src="js/v2/components/menu/units/baseMap.js"></script>
 	
     <!-- chart -->
     <script type="text/javascript" src="js/v2/components/chart/chart.js"></script>
@@ -135,6 +134,7 @@
                     <a href='#' class='mapOpt' id="choroplethBtn" title="Make a choropleth map"></a>
 					<a href='#' class='mapOpt' id="clearSelection" title="Clear selection"></a>
 					<a href='#' class='mapOpt' id="zoomExtent" title="Zoom to extent"></a>	
+					<a href='#' class='mapOpt' id="baseMapBtn" title="Base map options"></a>	
                 </div>
                 <a href='#' rel='leanModal' class='settings' title="Settings">
                     <img src="images/settings.png" alt="settings">
@@ -201,6 +201,33 @@
 						<div id ="resultsFilter"></div>	
 					</div>
 					<div class="save-fld-settings">
+						<input type="button" value="save">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	
+	<div class="overlay" id="baseMap">
+		<div class="msettings">
+			<div class="msettings-ct">
+				<div class="msettings-header">
+					<h2>Base Map settings</h2>
+					<a class="modal_close" href="#"></a>
+				</div>
+				<form>
+				    <div class="save-basemap">
+						<input type="checkbox" name="basemap" value="nobasemap" id="nobasemap" checked> 
+						<label for = "nobasemap"> No basemap </label>
+					</div>
+				    <div class="txt-fld" id="basemapselector">
+						<label for="fldSlct">Base map type:</label>
+						<select id='baseMapSlct'>
+						<option value=''> </option>
+						</select>
+					</div>
+					
+					<div class="save-basemap" id="savebasemap">
 						<input type="button" value="save">
 					</div>
 				</form>

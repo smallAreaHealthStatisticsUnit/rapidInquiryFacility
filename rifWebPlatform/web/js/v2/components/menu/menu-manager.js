@@ -42,32 +42,31 @@ RIF.menu = ( function( settings ) {
       callbacks: {
 
         avlbFieldsSettings: function() {
-          _p.dropDown( this, _p.hoverSlct );
-          _p.fieldCheckboxes( this, _p.colsFilter, _p.colsFilterName );
+          _p.dropDown( this, _p.getSettingsMenuDom("hoverSlct") );
+          _p.fieldCheckboxes( this, _p.getSettingsMenuDom("colsFilter"), _p.getSettingsMenuDom("colsFilterName") );
         },
 
         avlbFieldsChoro: function() {
-          _p.dropDown( this, _p.fieldToMap );
+          _p.dropDown( this, _p.getChoroplethMenuDom("fieldToMap") );
           if ( this.length === 0 ) {
-            _p.greyOut( _p.menu );
+            _p.greyOut( _p.getChoroplethMenuDom("menu") );
           } else {
-            _p.removeGreyOut( _p.menu );
+            _p.removeGreyOut( _p.getChoroplethMenuDom("menu") );
           }
         },
 
         avlbFieldsHistogram: function() {
-          _p.dropDown( this, _p.histoSlct );
+          _p.dropDown( this, _p.getSettingsMenuDom("histoSlct") );
           _p.facade.updateHistogram();
-
         },
 
         avlbFieldsPyramid: function() {
-          _p.dropDown( this, _p.pyramidSlct );
+          _p.dropDown( this, _p.getSettingsMenuDom("pyramidSlct") );
           _p.facade.updatePyramid();
         },
 
         zoomTo: function() {
-          _p.dropDown( this, _p.zoomTo );
+          _p.dropDown( this, _p.getGeoLevelDom("zoomTo") );
         }
       },
 

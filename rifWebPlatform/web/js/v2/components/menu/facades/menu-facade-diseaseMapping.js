@@ -48,7 +48,11 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
     clearSelectionClicked: function() {
       this.fire( 'clearSelectionClicked', [] );
     },
-
+	
+    baseMapChanged: function( basemap ){
+		this.fire( 'baseMapChanged', [ basemap ] );
+	},
+	
     changeNumRows: function( nRows ) {
       //this.fire('changeNumRows', nRows);
     }

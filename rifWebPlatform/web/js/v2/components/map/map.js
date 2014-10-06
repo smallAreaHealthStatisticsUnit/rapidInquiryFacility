@@ -11,11 +11,15 @@ RIF.map = ( function( settings ) {
 
   var _p = {
     extentSet: 0,
-
+    
+	basemap: L.tileLayer('', {}),
+	
     init: function() {
       this.map = new L.Map( "map", {
-        attributionControl: false
+        attributionControl: false,
+		layers: _p.basemap
       } );
+	  
       return this;
     },
 
@@ -52,10 +56,13 @@ RIF.map = ( function( settings ) {
       if ( !this.extentSet ) {
         this.setFullExtent( geoTable );
       };
-
       _p.map.addLayer( lyr );
     },
-
+    
+	setBaseMap: function( url ){
+		this.basemap.setUrl( url );
+	},
+	
     getZoom: function() {
       return _p.map.getZoom();
     },
