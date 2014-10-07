@@ -62,6 +62,7 @@
 	<script type="text/javascript" src="js/v2/components/menu/units/choropleth.js"></script>
 	<script type="text/javascript" src="js/v2/components/menu/units/settings-disease.js"></script>
 	<script type="text/javascript" src="js/v2/components/menu/units/baseMap.js"></script>
+	<script type="text/javascript" src="js/v2/components/menu/units/transparency.js"></script>
 	
     <!-- chart -->
     <script type="text/javascript" src="js/v2/components/chart/chart.js"></script>
@@ -132,9 +133,12 @@
 				
                 <div class='mapOpts'>
                     <a href='#' class='mapOpt' id="choroplethBtn" title="Make a choropleth map"></a>
+					<a href='#' class='mapOpt' id="baseMapBtn" title="Base map options"></a>	
 					<a href='#' class='mapOpt' id="clearSelection" title="Clear selection"></a>
 					<a href='#' class='mapOpt' id="zoomExtent" title="Zoom to extent"></a>	
-					<a href='#' class='mapOpt' id="baseMapBtn" title="Base map options"></a>	
+					<div href='#' class='mapOpt transparency' id="transparencyContainer" >
+					   <input type="range" class="vVertical"  min="0" max="1" step="0.1"  value ="1"/>
+					</div>	
                 </div>
                 <a href='#' rel='leanModal' class='settings' title="Settings">
                     <img src="images/settings.png" alt="settings">

@@ -57,6 +57,10 @@ RIF.map[ 'map-facade-diseaseMapping' ] = ( function( _p ) {
       _p.setBaseMap( url );
     },
 
+    changeTransparency: function( val ) {
+      _p.layer.setTransparency( val );
+    },
+
     /* Firers */
     populateMenus: function( args ) { /* [geolevel] */
       this.fire( 'populateMenus', args );
@@ -67,7 +71,7 @@ RIF.map[ 'map-facade-diseaseMapping' ] = ( function( _p ) {
     },
 
     selectionChanged: function( selection ) {
-      this.fire( 'selectionchange', [ selection, 'map' ] );
+      this.fire( 'selectionchange', [ selection ] );
     }
 
   };

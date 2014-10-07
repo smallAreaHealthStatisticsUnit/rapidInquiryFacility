@@ -18,6 +18,8 @@ RIF.study = ( function( type ) {
       year: null,
       gender: null,
       selection: [],
+      baseMap: null,
+      transparency: 1,
 
       map: {
         ids: [],
@@ -78,10 +80,24 @@ RIF.study = ( function( type ) {
       },
 
       changeBasemap: function( url ) {
+        this.setBaseMap( url );
         this.fire( 'changeBasemap', url );
       },
 
+      changeTransparency: function( v ) {
+        this.setTransparency( v );
+        this.fire( 'changeTransparency', v );
+      },
+
       //SuBSCRIBERS
+
+      uAreaSelection: function( params ) {
+        this.setSelection( params[ 0 ] );
+      },
+
+      mapAreaFromAreaChartChange: function( args ) {
+        this.fire( 'slctMapAreaFromAreaChart', args );
+      },
 
       resultSetSelectionChanged: function( resSetsChoice ) {
         if ( RIF.arraysEqual( resSetsChoice, this.getResultSetsSelected() ) ) {
@@ -102,7 +118,15 @@ RIF.study = ( function( type ) {
 
       baseMapChanged: function( args ) {
         var url = args[ 0 ];
-        this.changeBasemap( url );
+        if ( this.baseMap != url ) {
+          this.changeBasemap( url );
+        }
+      },
+
+      transparencyChanged: function( value ) {
+        if ( this.transparency != value ) {
+          this.changeTransparency( value );
+        }
       },
 
       //SETTERS
@@ -146,7 +170,15 @@ RIF.study = ( function( type ) {
       },
 
       setSelection: function( slctn ) {
-        this.selection = slctn;
+        this.selection = RIF.unique( slctn );
+      },
+
+      setBaseMap: function( url ) {
+        this.baseMap = url;
+      },
+
+      setTransparency: function( val ) {
+        this.transparency = val;
       },
 
       //GETTERS
@@ -188,6 +220,14 @@ RIF.study = ( function( type ) {
 
       getSelection: function() {
         return this.selection;
+      },
+
+      getBaseMap: function( url ) {
+        return this.baseMap;
+      },
+
+      getTransparency: function( url ) {
+        return this.transparency;
       },
 
       getMapData: function() {

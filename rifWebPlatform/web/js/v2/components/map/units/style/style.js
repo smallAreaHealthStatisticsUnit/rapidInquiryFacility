@@ -13,6 +13,8 @@ RIF.style = ( function( type ) {
 
     colors: {},
 
+    transparency: 1,
+
     mappedField: {},
 
     default: {
@@ -34,7 +36,7 @@ RIF.style = ( function( type ) {
     },
 
     slctd: {
-      fill: '#FFE1FF',
+      fill: 'rgb(242, 14, 41)',
       stroke: '#9BCD9B',
       "stroke-width": 0.1
     },
@@ -46,8 +48,9 @@ RIF.style = ( function( type ) {
 
       if ( typeof c !== 'undefined' ) {
         var s = ( renderType === 'tilesvg' ) ?
-          "fill:" + c + ";stroke:" + style.default.stroke : {
+          "fill:" + c + ";stroke:" + style.default.stroke + ";opacity:" + style.transparency : {
             color: c,
+            opacity: style.transparency,
             outline: {
               color: "transparent",
               size: 0
@@ -57,6 +60,11 @@ RIF.style = ( function( type ) {
       };
 
       return this.style( id );
+    },
+
+    setTransparency: function( val ) {
+      this.transparency = val;
+      this.applyTransparency( val, this.slctd.fill );
     },
 
     setAreaColor: function( id, c, override ) {

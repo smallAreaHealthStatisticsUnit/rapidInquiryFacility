@@ -178,8 +178,8 @@ a:hover{
 		float: left;
 	}
 	
-	#choroplethBtn{
-		background: transparent url("../images/map.png") no-repeat;
+	#baseMapBtn{
+		background: transparent url("../images/basemap.png") no-repeat;
 	}
 	
 	#clearSelection{
@@ -188,6 +188,10 @@ a:hover{
 	
 	#zoomExtent{
 	    background: transparent url("../images/globe-icon.png") no-repeat;
+	}
+	
+	#choroplethBtn{
+		background: transparent url("../images/chorpleth_v1.png") no-repeat;
 	}
 	
 	.mapOpts .mapOpt{
@@ -207,6 +211,43 @@ a:hover{
 		opacity: 1;
 	}
 	
+	div.transparency{
+		width:50px !important
+	}
+	
+	.mapOpts input[type=range].vVertical {
+		-webkit-appearance: none;
+		background-color: #8DB6CD;
+		width: 70px;
+		height: 5px;
+		margin-top: 15px;
+		-moz-transform: rotate(90deg);
+		-o-transform: rotate(90deg);
+		-ms-transform: rotate(90deg);
+    }
+	
+	.mapOpts input[type=range].vHorizon {
+		-webkit-appearance: none;
+		background-color: pink;
+		height: 1px;
+		width:200px;
+
+	}
+	
+	.mapOpts input[type=range]:focus{
+		outline: none;
+	}
+	
+	.mapOpts input[type=range]:hover{
+		cursor: pointer;
+	}
+	
+	.mapOpts input[type="range"]::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		background-color: #9370DB;
+		width: 12px;
+		height: 12px;
+}
 	
 	
 	#content{
@@ -611,7 +652,7 @@ a:hover{
 		background:#F7F7F7
 	}
 	
-	.msettings .txt-fld, #msettings .save-fld, #msettings .save-fld-settings{
+	.msettings .txt-fld, #msettings .save-fld, #msettings .save-fld-settings, #msettings  save-basemap{
 	    position: relative;
 	    text-align: right;
 	}
@@ -650,10 +691,10 @@ a:hover{
 	.msettings .txt-fld input[name="numOfRows"]{
 			float:left
 	}
-	.msettings .save-fld, .save-fld-settings {
+	.msettings .save-fld, .save-fld-settings, .save-basemap{
 		padding: 8px 20px;
 	}
-	.save-fld input, .save-fld-settings input {
+	.save-fld input, .save-fld-settings input , .save-basemap input{
 		padding: 2px 11px;
 		color: #7D7D7D;
     }

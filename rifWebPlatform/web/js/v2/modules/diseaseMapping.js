@@ -33,7 +33,7 @@ RIF.diseaseMapping = ( function() {
       },
       menu: {
         studyType: 'diseaseMapping',
-        menus: [ /*'export',*/ 'diseaseStudyLevel', 'choropleth', 'settings', 'baseMap' ]
+        menus: [ /*'export',*/ 'diseaseStudyLevel', 'choropleth', 'settings', 'baseMap', 'transparency' ]
       },
       resizable: 'diseaseMapping'
     },
@@ -117,8 +117,8 @@ RIF.diseaseMapping = ( function() {
       /**********/
       /** Sync **/
       selectionchange: {
-        subscribers: [ "sync" ],
-        firer: [ "map", "menu" ],
+        subscribers: [ "study" ],
+        firer: [ "map" ],
         method: "uAreaSelection"
       },
 
@@ -129,14 +129,14 @@ RIF.diseaseMapping = ( function() {
       },
 
       mapAreaFromAreaChartChange: {
-        subscribers: [ "sync" ],
+        subscribers: [ "study" ],
         firer: [ "chart" ],
         method: "mapAreaFromAreaChartChange"
       },
 
       slctMapAreaFromAreaChart: {
         subscribers: [ "map" ],
-        firer: [ "sync" ],
+        firer: [ "study" ],
         method: "slctMapAreaFromAreaChart"
       },
 
@@ -145,11 +145,23 @@ RIF.diseaseMapping = ( function() {
 
       // SYNC is not needed for disease mapping
 
-      /* clearSelection: {
+      clearSelection: {
         subscribers: [ "map" ],
-        firer: [ "sync" ],
+        firer: [ "study" ],
         method: "clearSelection"
-      },*/
+      },
+
+      transparencyChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "transparencyChanged"
+      },
+
+      changeTransparency: {
+        subscribers: [ "map" ],
+        firer: [ "study" ],
+        method: "changeTransparency"
+      },
 
       baseMapChanged: {
         subscribers: [ "study" ],

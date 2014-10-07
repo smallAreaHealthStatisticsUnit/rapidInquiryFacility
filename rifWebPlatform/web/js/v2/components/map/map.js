@@ -63,6 +63,10 @@ RIF.map = ( function( settings ) {
       this.basemap.setUrl( url );
     },
 
+    setTransparency: function( val ) {
+      this.layer.setTransparency( val );
+    },
+
     getZoom: function() {
       return _p.map.getZoom();
     },

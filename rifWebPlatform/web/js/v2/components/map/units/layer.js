@@ -58,6 +58,10 @@ RIF.map.layer = ( function( type, sett ) {
           RIF.getSingleFieldData( join, [ map.getDataset(), layer.selectionField ] );
         },
 
+        setTransparency: function( val ) {
+          this.style.setTransparency( val );
+        },
+
         applyDefaultChoro: function( layerType ) {
           var params = RIF.extend( {
             field: sett.field
@@ -127,7 +131,7 @@ RIF.map.layer = ( function( type, sett ) {
           } else {
             delete this.selection[ id ];
           }
-
+          this.selectionChanged()
           this.highlight( id );
         },
 

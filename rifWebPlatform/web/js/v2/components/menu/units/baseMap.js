@@ -51,13 +51,14 @@ RIF.menu.baseMap = ( function() {
       _domObjects.basemapselector.css( 'background', color );
     },
 
-    _baseMapsName = [ 'osm', 'osm_hot', 'hydda_base', 'stamen_toner', 'stamen_toner_background', 'stamen_water_color',
+    _baseMapsName = [ 'osm', 'osm_hot', 'thunder_transport', 'hydda_base', 'stamen_toner', 'stamen_toner_background', 'stamen_water_color',
                        'esri_world_topo_map', 'esri_world_terrain', 'esri_world_gray_canvas', 'Esri_WorldImagery' ],
 
     _baseMaps = {
       osm: "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
       osm_hot: "http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
       hydda_base: 'http://{s}.tile.openstreetmap.se/hydda/base/{z}/{x}/{y}.png',
+      thunder_transport: 'http://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png',
       stamen_toner: 'http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png',
       stamen_toner_background: 'http://{s}.tile.stamen.com/toner-background/{z}/{x}/{y}.png',
       stamen_water_color: 'http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png',

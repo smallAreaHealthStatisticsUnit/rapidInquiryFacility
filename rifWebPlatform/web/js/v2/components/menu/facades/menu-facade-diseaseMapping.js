@@ -53,8 +53,8 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
       this.fire( 'baseMapChanged', [ basemap ] );
     },
 
-    changeNumRows: function( nRows ) {
-      //this.fire('changeNumRows', nRows);
+    transparencyChanged: function( val ) {
+      this.fire( 'transparencyChanged', val );
     }
 
 

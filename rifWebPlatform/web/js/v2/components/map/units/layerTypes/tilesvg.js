@@ -76,19 +76,20 @@ RIF.map.layer.tilesvg = ( function() {
        */
       highlight: function( id, slctd ) {
         var s = layer.getLayerStyle( id, slctd );
-
-        d3.select( " #" + id )
+        d3.select( "#" + id )
           .style( "fill", s.fill )
           .style( "stroke", s.stroke )
-          .style( "stroke-width", s.stroke_width );
+          .style( "stroke-width", s.stroke_width )
       },
 
       getStyle: function( d ) {
         var id = tiled.getPathId( d ),
           isSlctd = layer.isSlctd( id );
+
         if ( isSlctd ) {
           return "fill:" + layer.style.slctd.fill;
         }
+
         return layer.style.getStyle( id, "tilesvg" );
       },
 
@@ -129,7 +130,6 @@ RIF.map.layer.tilesvg = ( function() {
         switch ( c ) {
           case "click":
             layer.slct( this.id, isSlctd );
-            layer.selectionChanged();
             break;
           case "mouseout":
             if ( !isSlctd ) {
