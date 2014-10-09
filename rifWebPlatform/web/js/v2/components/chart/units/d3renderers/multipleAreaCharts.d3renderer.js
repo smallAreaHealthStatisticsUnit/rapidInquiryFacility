@@ -10,7 +10,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
     lineColor = settings.lineColor,
     lineSelectionColor = settings.lineSelectionColor;
 
-
+ console.log(height)
   var areaChartsCount = 0,
     brushIsOn = false,
     clickSelection = false,
@@ -101,7 +101,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
     .attr( "class", "areaCharts" );
 
   var rSetCount = rSet.length,
-    chartHeight = ( height / rSetCount ) - ( margin.top + margin.bottom ) - ( Math.log( ( height * height ) ) ),
+    chartHeight = ( height / rSetCount ) - 20, //20 is the height of zoom a label
     maxDataPoint = max;
 
 

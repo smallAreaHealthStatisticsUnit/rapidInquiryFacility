@@ -44,7 +44,6 @@ RIF.chart.multipleAreaCharts = ( function() {
     _getNewChart = function( resultSets ) {
 
       _clear();
-
       if ( typeof resultSets !== 'undefined' ) {
         rSet = resultSets;
       };
@@ -89,7 +88,7 @@ RIF.chart.multipleAreaCharts = ( function() {
   }
 
   _rerender = function() {
-    _clear();
+    emptyObject();
     _initSVG();
     var l = data.length;
     for ( var i = 0; i < l; i++ ) {
@@ -107,8 +106,12 @@ RIF.chart.multipleAreaCharts = ( function() {
     minMax = null;
     newChart = null;
     rSet = null;
-    $( '#' + settings.element ).empty();
-  }
+    emptyObject();  
+  },
+  
+  emptyObject = function(){
+     $( '#' + settings.element ).empty();     
+  },
 
   _p = {
 

@@ -9,7 +9,10 @@ RIF.map.layer.tilesvg = ( function() {
       firstLoad: true,
 
       init: function() {
-        var sett = {
+        
+          RIF.statusBar( "Rendering Map", true );       
+        
+          var sett = {
             class: "polygon",
             evntHndl: this.evntHndl,
             id: tiled.getPathId,
@@ -103,6 +106,7 @@ RIF.map.layer.tilesvg = ( function() {
           layer.clbk.tile();
         }
         tiled.firstLoad = false;
+        RIF.statusBar( "", false );  
       },
 
       resetIds: function() {

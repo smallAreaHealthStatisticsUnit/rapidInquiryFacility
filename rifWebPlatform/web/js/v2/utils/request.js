@@ -1,9 +1,9 @@
 ( function() {
 
-  var c = function( myFunc, errorMessage ) {
+  var c = function( myFunc, msg ) {
       return function( error, json ) {
         if ( error !== null ) {
-          statusBar( "error", true );
+          RIF.statusBar( error, true );
           return;
         }
         try {
@@ -13,7 +13,7 @@
           callback( myFunc, json.responseText );
         }
 
-        statusBar( "", false );
+        RIF.statusBar( msg, false );
       };
     },
 
@@ -30,21 +30,15 @@
     },
 
     xhr = function( url, clbk, msg, mime ) {
-      statusBar( msg, true );
-      RIF.xhr( url, c( clbk, "" ), mime );
+      RIF.statusBar( msg, true );
+      RIF.xhr( url, c( clbk, msg ), mime );
     },
 
-    statusBar = function( msg, showOrHide ) {
-      $( "#statusbar" ).toggle( showOrHide );
-      if ( !showOrHide ) {
-        return;
-      };
-      $( "#statusbar .info" ).text( msg );
-    },
+
 
 
     requests = {
-
+      
       getGeneralRequest: function( url, myCallback ) {
         xhr( url, myCallback );
         return {};

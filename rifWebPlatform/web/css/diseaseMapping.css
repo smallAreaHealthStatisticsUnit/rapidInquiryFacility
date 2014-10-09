@@ -432,13 +432,13 @@ input[type="range"]::-ms-thumb {
 		border-top : 2px solid #E3E3E3;
 		background-color: white;
 		/* Firefox */
-		height: -moz-calc(85% - 70px);
+		height: -moz-calc(97% - 149px);
 		/* WebKit */
-		height: -webkit-calc(85% - 70px);
+		height: -webkit-calc(97% - 149px);
 		/* Opera */
-		height: -o-calc(85% - 70px);
+		height: -o-calc(97% - 149px);
 		/* Standard */
-		height: calc(85% - 70px);
+		height: calc(97% - 149px);
 	}
 	
 	#content #leftcol  div#studyInfo{

@@ -53,7 +53,16 @@
       }
       return child;
     },
-
+    
+    statusBar: function( msg, showOrHide ) {
+        
+      $( "#statusbar" ).toggle( showOrHide );
+      if ( !showOrHide ) {
+        return;
+      };
+      $( "#statusbar .info" ).text( msg );
+   },  
+      
     removeG: function( id ) {
       return id.replace( "g", '' );
     },
