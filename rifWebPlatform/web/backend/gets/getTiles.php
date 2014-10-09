@@ -11,7 +11,7 @@
  *	field => selection field selected by user
 */
 
-$zoom = $_GET['zoom'];
+$zoom = intval ($_GET['zoom']);
 $tileId = $_GET['tileId'];
 $geolevel = $_GET['geolevel']; 
 
@@ -60,14 +60,23 @@ $geoJson.=']} ';
 if( $length > 0 ){   
    file_put_contents($geo, $geoJson);
    //see https://github.com/mbostock/topojson/wiki/Command-Line-Reference#quantization
-   $quantization = ($zoom < 7) ? 1000 :
-   ($zoom < 8) ? 5000 :
-   ($zoom < 9 ) ? 10000 :
-   ($zoom < 10 ) ? 100000 : 1000000;
+   if ($zoom <= 6){
+     $quantization = 400;
+  }else if ( $zoom == 7 ){	 	
+     $quantization = 1000;
+   }else if ( $zoom == 8 ){	 	
+     $quantization = 5000;
+   }else if ( $zoom == 9 ){	 	
+     $quantization = 20000;
+   }else{
+	 $quantization = 100000;
+   }
    
-   /*$simplification = ($zoom < 7) ? 0.01 :
-   ($zoom < 8) ? 0.005 :
-   ($zoom < 9 ) ? 0.01 :
+   //echo $quantization;
+   //SIMPLIFICATION HAS TO BE DONE ON THE WHOLE SHAPEFILE CANNOT APPLY SIMPLIFY ON TILES
+   /*$simplification = ($zoom < 7) ? 0.5 :
+   ($zoom < 8) ? 0.2 :
+   ($zoom < 9 ) ? 0.1 :
    ($zoom < 10 ) ? 100000 : 0.005;*/
    
    /* 

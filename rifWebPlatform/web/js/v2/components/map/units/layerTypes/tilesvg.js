@@ -77,9 +77,12 @@ RIF.map.layer.tilesvg = ( function() {
       highlight: function( id, slctd ) {
         var s = layer.getLayerStyle( id, slctd );
         d3.select( "#" + id )
-          .style( "fill", s.fill )
-          .style( "stroke", s.stroke )
-          .style( "stroke-width", s.stroke_width )
+          .style( {
+            "fill": s.fill,
+            "stroke": s.stroke,
+            "stroke-width": s.stroke_width,
+            "opacity": 1
+          } )
       },
 
       getStyle: function( d ) {

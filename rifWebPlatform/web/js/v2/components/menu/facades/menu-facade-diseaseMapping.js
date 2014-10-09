@@ -13,7 +13,7 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
       this.fire( 'resultSetSelectionChanged', args );
     },
 
-    uDropdownFlds: function( args ) {
+    populateZoomIds: function( args ) {
       _p.populate( args );
     },
 

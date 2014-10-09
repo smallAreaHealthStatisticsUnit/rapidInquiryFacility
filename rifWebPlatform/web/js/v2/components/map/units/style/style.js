@@ -20,7 +20,7 @@ RIF.style = ( function( type ) {
     default: {
       fill: "#9BCD9B",
       stroke: "#F8F8FF",
-      "stroke-width": 0.5,
+      "stroke-width": 2,
     },
 
     defaultChoro: {

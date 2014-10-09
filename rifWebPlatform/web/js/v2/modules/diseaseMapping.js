@@ -22,7 +22,7 @@ RIF.diseaseMapping = ( function() {
 
     components: {
       study: 'diseaseMapping',
-      sync: 'diseaseMapping',
+      //sync: 'diseaseMapping',
       map: {
         studyType: 'diseaseMapping',
         layerType: 'tilesvg'
@@ -39,32 +39,31 @@ RIF.diseaseMapping = ( function() {
     },
 
     events: {
-      /**********/
-      /**Study**/
 
+      /**--STUDY OBJECT RELATED---**/
       resultSetSelectionChanged: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
         method: "resultSetSelectionChanged"
       },
-
       changeResultSetSelection: {
         subscribers: [ "chart" ],
         firer: [ "study" ],
         method: "changeResultSetSelection"
       },
 
+
       clearSelectionClicked: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
         method: "clearSelectionClicked"
       },
-
       clearSelection: {
         subscribers: [ "map" /*, "chart" */ ],
         firer: [ "study" ],
         method: "clearSelection"
       },
+
 
       menusReady: {
         subscribers: [ "study" ],
@@ -72,11 +71,13 @@ RIF.diseaseMapping = ( function() {
         method: "menusReady"
       },
 
+
       addGeolevel: {
         subscribers: [ "map" ],
         firer: [ "study" ],
         method: "uGeolevel"
       },
+
 
       drawLineBivariateChart: {
         subscribers: [ "chart" ],
@@ -84,101 +85,92 @@ RIF.diseaseMapping = ( function() {
         method: "updateLineBivariate"
       },
 
+
       drawMultipleAreaCharts: {
         subscribers: [ "chart" ],
         firer: [ "study" ],
         method: "updateMultipleAreaCharts"
       },
 
+
       areaChartBrushed: {
         subscribers: [ "study" ],
         firer: [ "chart" ],
         method: "areaChartBrushed"
       },
-
       updateLineChartWithBrush: {
         subscribers: [ "chart" ],
         firer: [ "study" ],
         method: "updateLineChartWithBrush"
       },
 
+
       hoverFieldChange: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
         method: "uHoverField"
       },
-
       hoverFieldChangeApply: {
         subscribers: [ "map" ],
         firer: [ "study" ],
         method: "uHoverField"
       },
 
-      /**********/
-      /** Sync **/
+
       selectionchange: {
         subscribers: [ "study" ],
         firer: [ "map" ],
         method: "uAreaSelection"
       },
 
-      geolvlchange: {
-        subscribers: [ "sync" ],
-        firer: [ "menu" ],
-        method: "cGeoLvl"
-      },
 
       mapAreaFromAreaChartChange: {
         subscribers: [ "study" ],
         firer: [ "chart" ],
         method: "mapAreaFromAreaChartChange"
       },
-
       slctMapAreaFromAreaChart: {
         subscribers: [ "map" ],
         firer: [ "study" ],
         method: "slctMapAreaFromAreaChart"
       },
 
-      /**********/
-      /** Map **/
-
-      // SYNC is not needed for disease mapping
-
-      clearSelection: {
-        subscribers: [ "map" ],
-        firer: [ "study" ],
-        method: "clearSelection"
-      },
 
       transparencyChanged: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
         method: "transparencyChanged"
       },
-
       changeTransparency: {
         subscribers: [ "map" ],
         firer: [ "study" ],
         method: "changeTransparency"
       },
 
+
       baseMapChanged: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
         method: "baseMapChanged"
       },
-
       changeBasemap: {
         subscribers: [ "map" ],
         firer: [ "study" ],
         method: "changeBasemap"
       },
 
-      updateSelectionMap: {
-        subscribers: [ "map" ],
-        firer: [ "sync" ],
-        method: "updateSelection"
+      /**-- END STUDY RELATED --**/
+
+      scaleRangeReady: { // Not Sure what this is for, can probably delete it later.
+        subscribers: [ "menu" ],
+        firer: [ "map" ],
+        method: "getScaleRange"
+      },
+
+      populateZoomIds: {
+        subscribers: [ "menu" ],
+        firer: [ "map" ],
+        method: "populateZoomIds"
       },
 
       zoomToExtent: {
@@ -205,7 +197,8 @@ RIF.diseaseMapping = ( function() {
         method: "editBreaks"
       },
 
-      //Map - Resizable
+
+      /*-- RESIZABLES --*/
       resizeMap: {
         subscribers: [ "map" ],
         firer: [ "resizable" ],
@@ -234,19 +227,19 @@ RIF.diseaseMapping = ( function() {
         subscribers: [ "chart" ],
         firer: [ "resizable" ],
         method: "refreshMultipleArea"
-      },
-
-      populateMenus: {
-        subscribers: [ "menu" ],
-        firer: [ "map" ],
-        method: "uDropdownFlds"
-      },
-
-      scaleRangeReady: {
-        subscribers: [ "menu" ],
-        firer: [ "map" ],
-        method: "getScaleRange"
       }
+
+      // SYNC DEPRECATED
+      /*updateSelectionMap: {
+        subscribers: [ "map" ],
+        firer: [ "sync" ],
+        method: "updateSelection"
+      },*/
+      /*geolvlchange: {
+        subscribers: [ "sync" ],
+        firer: [ "menu" ],
+        method: "cGeoLvl"
+      },*/
 
     },
 

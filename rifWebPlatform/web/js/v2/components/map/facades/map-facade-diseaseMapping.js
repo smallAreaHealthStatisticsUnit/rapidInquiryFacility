@@ -62,8 +62,8 @@ RIF.map[ 'map-facade-diseaseMapping' ] = ( function( _p ) {
     },
 
     /* Firers */
-    populateMenus: function( args ) { /* [geolevel] */
-      this.fire( 'populateMenus', args );
+    populateMenus: function( args ) {
+      this.fire( 'populateZoomIds', args );
     },
 
     scaleRange: function( args ) { /* scale */
