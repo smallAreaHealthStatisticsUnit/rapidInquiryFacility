@@ -240,7 +240,7 @@
       },
 
       getInvestigations: function( myCallback, params ) {
-        var msg = "Retrieving investigations",
+        var msg = "Retrieving investigations for study:" + params[0],
           args = '?studyID=' + params[ 0 ];
 
         xhr( 'getInvestigations.php' + args, myCallback, msg );
@@ -259,7 +259,7 @@
       },
 
       getResultSet: function( myCallback, params ) {
-        var msg = "Retrieving results data for line-bivariate area chart",
+        var msg = "Retrieving data for line bivariate chart",
           args = '?resultSet=' + params[ 0 ] +
           '&studyID=' + params[ 1 ] + '&investigationID=' + params[ 2 ];
 
@@ -272,7 +272,7 @@
       },
 
       getMinMaxResultSet: function( myCallback, params ) {
-        var msg = "Retrieving Results set Min and Max",
+        var msg = "Retrieving Min and Max: " + params[0],
           args = '?resultSet=' + params[ 0 ] +
           '&studyID=' + params[ 1 ] + '&investigationID=' + params[ 2 ];
 
@@ -285,7 +285,7 @@
       },
 
       getRiskResults: function( myCallback, params ) {
-        var msg = "Retrieving results ",
+        var msg = "Retrieving risk results: " + params[0],
           /*result set name*/
           args = '?resultSet=' + params[ 0 ] +
           '&studyID=' + params[ 1 ] + '&investigationID=' + params[ 2 ];

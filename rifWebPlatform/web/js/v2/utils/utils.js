@@ -1,6 +1,8 @@
 ( function() {
-
-  var utils = {
+  
+    
+  var statusBarMsgs = {},    
+      utils = {
 
     initComponents: function() { /* context passed by calling object */
       for ( var c in this.components ) {
@@ -55,12 +57,42 @@
     },
     
     statusBar: function( msg, showOrHide ) {
+      //console.log("msg--" + msg + "--" + showOrHide);
+      var classNoSpace = msg.replace(/ /g,''),
+          indexOfMsg = -1,
+          nRequests = 0,
+          requestsInProgress = 0,
+          requestsCompleted = 0;
         
-      $( "#statusbar" ).toggle( showOrHide );
-      if ( !showOrHide ) {
-        return;
+      statusBarMsgs[msg] = showOrHide;
+        
+      for (var cmsg in statusBarMsgs){ 
+        if( msg === cmsg ) {
+          indexOfMsg = nRequests;
+        };       
+        if( ! statusBarMsgs[cmsg] ){   
+          requestsCompleted++;
+        }else if( statusBarMsgs[cmsg] ){
+          requestsInProgress++;
+        } 
+        nRequests++; 
       };
-      $( "#statusbar .info" ).text( msg );
+      
+      if ( showOrHide ) {
+        $( "#statusbar" ).append( "<div class='info msg"+indexOfMsg+"' >" + msg + "</div>" );
+      }else{
+        $( ".msg" + indexOfMsg ).remove();
+      };  
+          
+      if(nRequests == requestsCompleted){
+        $( "#statusbar" ).hide();
+          return;
+      };
+      
+      if(requestsInProgress == 1){
+        $( "#statusbar" ).show();
+      };     
+      
    },  
       
     removeG: function( id ) {

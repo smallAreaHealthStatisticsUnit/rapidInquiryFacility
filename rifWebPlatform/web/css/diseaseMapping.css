@@ -600,22 +600,16 @@ input[type="range"]::-ms-thumb {
 		z-index: 999999;
 	}
 	#statusbar div{
-		width: 200px;
-		padding: 10px 0;
+		width: auto;
+		padding: 2px 0;
 		margin: 0 auto;
-		-webkit-border-bottom-right-radius: 5px;
-		-webkit-border-bottom-left-radius: 5px;
-		-moz-border-radius-bottomright: 5px;
-		-moz-border-radius-bottomleft: 5px;
-		border-bottom-right-radius: 5px;
-		border-bottom-left-radius: 5px;
 		color: white;
-		font-weight: bold;
+        text-transform: uppercase;
 		text-align: center;
 	}
 	
 	#statusbar div.info{
-		background-color:#A2CD5A;
+		background-color:rgba(141,182,205,0.7);
 	}
 	
 	#statusbar div.error{
