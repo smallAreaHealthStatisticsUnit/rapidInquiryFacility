@@ -3,7 +3,8 @@ svg.areaCharts {
 	text-transform:uppercase
 }
 svg.areaCharts path {
-	opacity:0.5
+	opacity:0.8;
+	/*stroke: #696969;*/
 }
 svg.areaCharts rect.overlayHover {
   fill: none;

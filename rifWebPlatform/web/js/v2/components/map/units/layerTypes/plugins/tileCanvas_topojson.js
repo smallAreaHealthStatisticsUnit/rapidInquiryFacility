@@ -288,7 +288,7 @@ L.TileLayer.canvasTopojson = L.TileLayer.Canvas.extend( {
   _tileLoaded: function() {
     this._tilesToLoad--;
 
-    if ( this._tilesToLoad === 1 ) {
+    if ( this._tilesToLoad === 0 ) {
       this.options.loaded();
     }
 

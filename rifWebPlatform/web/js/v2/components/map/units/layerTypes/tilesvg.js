@@ -9,7 +9,9 @@ RIF.map.layer.tilesvg = ( function() {
       firstLoad: true,
 
       init: function() {
-        RIF.statusBar( "Rendering Map", true );  
+        
+		RIF.statusBar( "Rendering Map", true ); 
+		
         var sett = {
             class: "polygon",
             evntHndl: this.evntHndl,
@@ -117,6 +119,7 @@ RIF.map.layer.tilesvg = ( function() {
 
       resetIds: function() {
         tiled.ids = {};
+		//RIF.statusBar( "Rendering Map", true );
       },
 
       checkId: function( d ) {

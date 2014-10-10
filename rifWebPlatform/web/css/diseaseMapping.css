@@ -538,21 +538,27 @@ input[type="range"]::-ms-thumb {
 	 * Map control container - Legend
 	 *
 	 */
+	.map-legend{
+		padding:20px;
+		box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+		background: none repeat scroll 0 0 rgba(255, 255, 255, 0.8);
+		border-radius: 5px 5px 5px 5px;
+	}
 	
 	li.key {
-		border-left-width: 10px;
+		border-left-width: 12px;
 		border-left-style: solid;
+		border-color:gray;
 		font-size: 1em;
 		padding-left: 5px;
-		list-style-type:none;
+		list-style-type: none;
 	}
 	
 	li.key  a{
-		vertical-align:bottom;
 		color:#7F7F7F;
-		height: 30px;
+		height: 25px;
 		display:table-cell;
-		line-height:0;
+		line-height:30px;;
 	}
 	
 	.leaflet-right .leaflet-control {
@@ -609,7 +615,7 @@ input[type="range"]::-ms-thumb {
 	}
 	
 	#statusbar div.info{
-		background-color:rgba(141,182,205,0.7);
+		background-color:rgba(113,198,113,0.7);
 	}
 	
 	#statusbar div.error{

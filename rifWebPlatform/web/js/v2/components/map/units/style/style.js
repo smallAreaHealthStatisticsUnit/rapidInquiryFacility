@@ -101,28 +101,34 @@ RIF.style = ( function( type ) {
     },
 
     updateLegend: function() {
-      var legend = d3.select( '.map-legend' );
-      $( legend[ 0 ] ).empty();
-      legend.append( 'ul' )
+      var max = style.breaks[0], //Style breaks start from highest to lowest
+		  intervals = style.breaks, 
+		  labels = [],
+          legend = d3.select( '.map-legend' );
+      
+	  for( var i = 0; i < intervals.length - 1 ; i++ ){
+	     labels.push( intervals[i+1] + " - <" + intervals[i] );
+	  };
+
+	  $( legend[ 0 ] ).empty();
+      
+	  legend.append( 'ul' )
         .attr( 'class', 'list-inline' );
 
-      var length = style.breaks.length,
+      var length = style.colorbrewer.length,
         keys = legend.selectAll( 'li.key' )
-        .data( style.breaks ); //reverve to order legend from min to max
-
+        .data( labels ); //reverve to order legend from min to max
+    
       keys.enter().append( 'li' )
         .attr( 'class', function( d, i ) {
-          if ( i === 0 ) {
-            return 'key maxkey';
-          }
           return 'key'
         } )
         .style( 'border-left-color', function( d, i ) {
-          return style.colorbrewer[ length - ( i + 1 ) ];
+          return style.colorbrewer[ length - ( i + 1)  ];
         } )
         .append( 'a' )
         .text( function( d, i ) {
-          return d;
+		  return d;
         } );
     },
 
