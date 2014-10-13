@@ -63,13 +63,15 @@ if( $length > 0 ){
    if ($zoom <= 6){
      $quantization = 400;
   }else if ( $zoom == 7 ){	 	
-     $quantization = 1000;
+     $quantization = 700;
    }else if ( $zoom == 8 ){	 	
-     $quantization = 5000;
+     $quantization = 1500;
    }else if ( $zoom == 9 ){	 	
-     $quantization = 20000;
-   }else{
-	 $quantization = 100000;
+     $quantization = 3000;
+   }else if ( $zoom == 10 ){	 	
+     $quantization = 5000;
+	}else{
+	 $quantization = 10000;
    }
    
    //echo $quantization;
