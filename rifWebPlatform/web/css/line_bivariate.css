@@ -21,13 +21,15 @@
 }
 
 #rr_chart  .area {
-  fill: rgba(127,130,201,0.9);
+  stroke: rgba(127,130,201,0.9);
+  fill: #D9D9D9;
+  stroke-width: 0.4;
 }
  
  
  .line {
   fill: none;
-  stroke: white;
+  stroke: rgba(127,130,201,0.9);;
   stroke-width: 1.5px;
 }
 
