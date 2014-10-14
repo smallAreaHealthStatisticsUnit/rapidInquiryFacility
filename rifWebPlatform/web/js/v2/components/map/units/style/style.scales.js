@@ -80,7 +80,7 @@ RIF.style.scales = ( function( params ) {
           below_mean = below_mean - sd;
         }
 
-        for ( i = 0; above_mean < max_value && breaks.length < 6; i++ ) {
+        for ( i = 0; above_mean < max_value &&  i < 2; i++ ) {
           breaks.push( above_mean );
           above_mean = above_mean + sd;
         }

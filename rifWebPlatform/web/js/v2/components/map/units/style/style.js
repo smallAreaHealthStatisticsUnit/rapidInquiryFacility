@@ -93,14 +93,15 @@ RIF.style = ( function( type ) {
       };
 
       for ( var key in values ) {
-        var col = singleColor ||
-          style.colorbrewer[ style.scale( values[ key ] ) ];
+        var jk =   style.scale( values[ key ] ) ;
+        var col = singleColor || style.colorbrewer[ jk ];
+        if ( typeof col === 'undefined')  { console.log(jk) }
         this.colors[ key ] = col;
       };
       style.repaint();
     },
 
-    updateLegend: function() {
+    updateLegend: function( field ) {
       var max = style.breaks[0], //Style breaks start from highest to lowest
 		  intervals = style.breaks, 
 		  labels = [],
@@ -112,6 +113,10 @@ RIF.style = ( function( type ) {
 
 	  $( legend[ 0 ] ).empty();
       
+      legend.append('div')
+         .attr('class', 'legendTitle')
+         .text( field );   
+        
 	  legend.append( 'ul' )
         .attr( 'class', 'list-inline' );
 
@@ -144,7 +149,7 @@ RIF.style = ( function( type ) {
       this.setScale( params );
 
       if ( updateLegend ) {
-        this.updateLegend();
+        this.updateLegend( params.field);
       };
     }
 

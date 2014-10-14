@@ -147,7 +147,8 @@ a:hover{
 	}
 	
 	#submenu div a.settings {
-		float:right
+		float:right;
+        margin-right: 10px;
 	} 
 	
 	#submenu a {
@@ -191,7 +192,7 @@ a:hover{
 	}
 	
 	#choroplethBtn{
-		background: transparent url("../images/chorpleth_v1.png") no-repeat;
+		background: transparent url("../images/choro_icon1.png") no-repeat;
 	}
 	
 	.mapOpts .mapOpt{
@@ -214,40 +215,6 @@ a:hover{
 	div.transparency{
 		width:50px !important
 	}
-	
-	/*.mapOpts input[type=range].vVertical {
-		-webkit-appearance: none;
-		background-color: #8DB6CD;
-		width: 70px;
-		height: 5px;
-		margin-top: 15px;
-		-moz-transform: rotate(90deg);
-		-o-transform: rotate(90deg);
-		-ms-transform: rotate(90deg);
-    }
-	
-	.mapOpts input[type=range].vHorizon {
-		-webkit-appearance: none;
-		background-color: pink;
-		height: 1px;
-		width:200px;
-
-	}
-	
-	.mapOpts input[type=range]:focus{
-		outline: none;
-	}
-	
-	.mapOpts input[type=range]:hover{
-		cursor: pointer;
-	}
-	
-	.mapOpts input[type="range"]::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		background-color: #9370DB;
-		width: 12px;
-		height: 12px;
-}*/
   
   
 input[type="range"] {
@@ -539,11 +506,17 @@ input[type="range"]::-ms-thumb {
 	 *
 	 */
 	.map-legend{
-		padding:20px;
+		padding:10px 20px;
 		box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 		background: none repeat scroll 0 0 rgba(255, 255, 255, 0.8);
 		border-radius: 5px 5px 5px 5px;
 	}
+   
+    .map-legend .legendTitle{
+        text-transform: uppercase;
+        text-decoration:underline;
+        margin:5px 0;
+    }
 	
 	li.key {
 		border-left-width: 12px;
@@ -559,10 +532,6 @@ input[type="range"]::-ms-thumb {
 		height: 25px;
 		display:table-cell;
 		line-height:30px;;
-	}
-	
-	.leaflet-right .leaflet-control {
-		margin-right:20px;
 	}
 	
 	li.maxkey{
@@ -734,17 +703,6 @@ input[type="range"]::-ms-thumb {
 		text-align: left;
 	}
 	
-	/*.msettings label.checkbox {
-	 border:1px solid #ccc;
-	 padding:10px;
-	 margin:0 0 10px;
-	 display:block; 
-	}
-	.msettings label.checkbox:hover {
-	 background:#eee;
-	 cursor:pointer;
-	}*/	
-	
 	.msettings .txt-fld select ,.msettings .txt-fld input[type="text"] {
 		width: 180px;
 		padding: 4px 2px;
@@ -766,15 +724,22 @@ input[type="range"]::-ms-thumb {
 		padding: 2px 11px;
 		color: #7D7D7D;
     }
-	
-	.msettings .fldHistogramContainer{
-		height:50px
-	}
-	
-	.msettings #fldHistogram{
-		margin-top:15px;
-	}
-	
+
+	.msettings  .invertWrapper {
+        height:20px;
+    }
+
+    .msettings #invertColorsLabel{
+		font-size:10px;
+		float:right;
+        width:auto
+    }
+     
+    .msettings #invertColors{
+		float: right;
+        height: 25px;
+        width: 25px;
+    }
 
 	
    /* General dropdown styles */      
@@ -795,7 +760,7 @@ input[type="range"]::-ms-thumb {
 		font-size: 1em;
 		background: #F7F7F7;
 		border: 1px solid #cccccc; 
-		width: 174px;
+		width: 178px;
 		height:20px;
 		padding: 3px 2px;
 		cursor:pointer; 
@@ -872,13 +837,7 @@ input[type="range"]::-ms-thumb {
 	#tooltip #geoname{
 		position:relative;
 	}
-
-  /*
-   * Slick Grid Edits 
-   */
-   .slick-row:hover ,.slick-row	.selected,.slick-row.odd:hover	{ 
-		background-color: #D1EEEE; 
-	}
+s
 	
 
 	

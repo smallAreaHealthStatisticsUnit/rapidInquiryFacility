@@ -12,6 +12,7 @@ RIF.menu.choropleth = ( function() {
       scale: "lightGreen",
       intervals: $( "#intervals" ),
       edit: $( ".editBreaks a" ),
+      invert: $( "#invertColors" ),
     },
 
     /* events */
@@ -21,7 +22,10 @@ RIF.menu.choropleth = ( function() {
         $( "#breaks" ).hide();
       } );
 
-      $( "#classification" ).change( function() {
+      _domObjects.classification.change( function() {
+         if ( $( "#classification" ).val() === 'standardDeviation' ) {
+          _p.updateStandardDeviation();
+        };  
         _p.updateIntervals( $( "#selectedScale" ).children().length );
       } );
 
@@ -42,10 +46,16 @@ RIF.menu.choropleth = ( function() {
         };
       } );
 
+      _domObjects.invert.change( function() {
+        $('.palette').empty();
+        _p.makeColourScales("invert");
+        var selectionInv = $("." + _domObjects.scale).html()
+        $( ".dropdown dt div #selectedScale" ).html( selectionInv );  
+      } );
+        
       _domObjects.save.click( function() {
-
         if ( $( "#classification" ).val() === 'standardDeviation' ) {
-          _p.updateIntervals( 5 );
+          _p.updateStandardDeviation();
         };
 
         $( "#choropleth" ).hide();
@@ -57,12 +67,12 @@ RIF.menu.choropleth = ( function() {
           parent.facade.hoverFieldChange( slctd.field );
         };
 
-      } );
+      } ) ;
     },
 
     /* choropleth obj */
     _p = {
-
+      
       breaksEdited: false,
 
       initChoropleth: function() {
@@ -79,8 +89,12 @@ RIF.menu.choropleth = ( function() {
           domain: _p.getInputBreaks()
         };
       },
-
-      makeColourScales: function() {
+  
+      makeColourScales: function( invert ) {  
+        if( invert ){
+           _p.revertRamps();
+        };
+          
         d3.select( ".palette" )
           .selectAll( "div" )
           .data( d3.entries( RIF.colorbrewer ) )
@@ -90,7 +104,8 @@ RIF.menu.choropleth = ( function() {
           } )
           .selectAll( ".swatch" )
           .data( function( d ) {
-            return d.value[ d3.keys( d.value ).map( Number ).sort( d3.descending )[ 0 ] ]
+            var ramp = d.value[ d3.keys( d.value ).map( Number ).sort( d3.descending )[ 0 ] ];
+            return ramp;
           } )
           .enter().append( "span" )
           .attr( "class", "swatch" )
@@ -121,9 +136,16 @@ RIF.menu.choropleth = ( function() {
           $( ".dropdown .palette" ).hide();
         } );
       },
-
+      
+      revertRamps: function(){
+        for( var col in RIF.colorbrewer){
+          for( var ramp in RIF.colorbrewer[col] ){
+            RIF.colorbrewer[col][ramp] = RIF.colorbrewer[col][ramp].reverse();
+          }
+        }
+      },
+        
       updateIntervals: function( n ) {
-
         if ( $( "#selectedScale" ).children().length === 1 ) {
           n = 1;
         };
@@ -135,7 +157,12 @@ RIF.menu.choropleth = ( function() {
         };
         parent.dropDown( intervals, _domObjects.intervals );
       },
-
+        
+      updateStandardDeviation: function(){
+         _domObjects.intervals.empty();
+          parent.dropDownFromArray( [5], _domObjects.intervals );
+      },
+        
       showScaleRange: function( scale ) {
         var l = scale.length,
           html = "";
