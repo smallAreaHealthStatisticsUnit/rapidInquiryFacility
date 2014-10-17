@@ -597,6 +597,8 @@ BEGIN
 			FETCH c2rg INTO c2rg_rec;
 			CLOSE c2rg;
 --
+-- Fixme
+--
 			IF array_lower(v, 1) != array_upper(v, 1)-1 THEN
 				RAISE WARNING 
 				'rif40_debug_record() [99904]: expecting two elements converting v(%) to RIF40_LOG_PKG.RIF40_DEBUG_RECORD, l_debug=%', 

@@ -449,8 +449,10 @@ $$;
  
 \set echo ALL
 DROP DATABASE IF EXISTS sahsuland;
--- XXX REMOVE 
-DROP DATABASE IF EXISTS sahsuland_dev;
+-- 
+-- Normally sahuslanbd_dev is NOT deleted
+--
+-- DROP DATABASE IF EXISTS sahsuland_dev;
 CREATE DATABASE sahsuland WITH OWNER rif40 /* TABLESPACE sahsuland */;
 COMMENT ON DATABASE sahsuland IS 'RIF V4.0 PostGres SAHSULAND Example Database';
 \set ON_ERROR_STOP OFF
@@ -511,7 +513,7 @@ $$;
 --
 END;
  
- \c sahsuland_dev postgres localhost 
+\c sahsuland_dev postgres localhost 
 --
 -- Start transaction 3: sahsuland_dev build
 --
