@@ -80,6 +80,13 @@ BEGIN
 END;
 $$;
 
+--
+-- Errors in search paths case user_role_privs to disappear from the path
+--
+SHOW search_path;
+\dv rif40_sql_pkg.user_role_privs
+\dS+ user_role_privs
+
 CREATE OR REPLACE VIEW "rif40_comparison_areas" ("username", "study_id", "area_id") 
 AS 
 SELECT  username, c.study_id, area_id
@@ -244,3 +251,5 @@ CREATE OR REPLACE VIEW "rif40_user_projects" ("project", "username", "grant_date
  ORDER BY 1;
 CREATE OR REPLACE VIEW "rif40_user_version" ("user_schema_revision") AS SELECT CAST('1.0' AS numeric(6,3)) AS user_schema_revision ;
 
+--
+-- Eof

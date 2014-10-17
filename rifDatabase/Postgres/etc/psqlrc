@@ -11,6 +11,7 @@
 -- Run RIF startup script
 --
 \set VERBOSITY terse
+\set echo all
 DO LANGUAGE plpgsql $$
 DECLARE
  	c1 CURSOR FOR
@@ -22,6 +23,7 @@ DECLARE
 		   AND n.oid      = p.pronamespace;
 --
 	c1_rec RECORD;
+	sql_stmt VARCHAR;
 BEGIN
 	OPEN c1;
 	FETCH c1 INTO c1_rec;
@@ -32,6 +34,16 @@ BEGIN
 	ELSE
 		RAISE INFO 'RIF startup: not a RIF database';
 	END IF;
+--
+-- Set a default path, schema to user
+--
+	IF current_user = 'rif40' THEN
+		sql_stmt:='SET search_path TO rif40, public, topology, gis, pop, rif40_sql_pkg, rif_studies';
+	ELSE
+		sql_stmt:='SET search_path TO '||USER||',rif40, public, topology, gis, pop, rif40_sql_pkg, rif_studies';
+	END IF;
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	EXECUTE sql_stmt;
 END;
 $$;
 \set VERBOSITY default

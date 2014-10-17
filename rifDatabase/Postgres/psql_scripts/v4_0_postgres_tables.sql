@@ -250,7 +250,7 @@ CREATE TABLE "t_rif40_studies" (
 	"authorised_by" varchar(90),
 	"authorised_on" timestamp,
 	"authorised_notes" varchar(200),
-	"audsid" varchar(90) DEFAULT SYS_CONTEXT('USERENV', 'SESSIONID')
+	"audsid" varchar(90) DEFAULT rif40_sql_pkg.SYS_CONTEXT('USERENV', 'SESSIONID')
 );
 ALTER TABLE "t_rif40_studies" ADD CONSTRAINT "t_rif40_studies_pk" PRIMARY KEY ("study_id");
 ALTER TABLE "t_rif40_studies" ADD CONSTRAINT "t_rif40_studies_study_type_ck" CHECK (study_type IN (1, 11, 12, 13, 14, 15));
@@ -495,9 +495,9 @@ CREATE TABLE "t_rif40_study_sql_log" (
 	"log_message" varchar(4000) NOT NULL,
 	"log_sqlcode" varchar(5) NOT NULL,
 	"rowcount" bigint NOT NULL,
-	"start_time" timestamp DEFAULT SYSTIMESTAMP(9),
+	"start_time" timestamp DEFAULT rif40_sql_pkg.SYSTIMESTAMP(9),
 	"elapsed_time" double precision NOT NULL,
-	"audsid" varchar(90) DEFAULT SYS_CONTEXT('USERENV', 'SESSIONID')
+	"audsid" varchar(90) DEFAULT rif40_sql_pkg.SYS_CONTEXT('USERENV', 'SESSIONID')
 );
 ALTER TABLE "t_rif40_study_sql_log" ADD CONSTRAINT "t_rif40_study_sql_log_pk" PRIMARY KEY ("study_id","statement_number");
 ALTER TABLE "t_rif40_study_sql_log" ADD CONSTRAINT "statement_type_ck1" CHECK (statement_type IN ('CREATE', 'INSERT', 'POST_INSERT', 'NUMERATOR_CHECK', 'DENOMINATOR_CHECK'));

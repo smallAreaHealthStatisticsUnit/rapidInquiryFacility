@@ -275,7 +275,7 @@ DECLARE
 		ORDER BY 1;
 	c3 CURSOR FOR					/* Current revision of user schema */
 		SELECT user_schema_revision::VARCHAR
-		  FROM rif40_user_version;
+		  FROM rif40.rif40_user_version;
 	c4 CURSOR FOR					/* Schema search path */
 		SELECT name, REPLACE(setting, USER||', ', '') AS setting, reset_val
 	 	  FROM pg_settings
@@ -284,7 +284,7 @@ DECLARE
 		SELECT a.param_value AS fdwservername,
 		       b.param_value AS fdwservertype,
 		       c.param_value AS fdwdbserver
-		  FROM rif40_parameters a, rif40_parameters b, rif40_parameters c
+		  FROM rif40.rif40_parameters a, rif40.rif40_parameters b, rif40.rif40_parameters c
 		 WHERE a.param_name = 'FDWServerName'
 		   AND b.param_name = 'FDWServerType'
 		   AND c.param_name = 'FDWDBServer';
@@ -296,7 +296,7 @@ DECLARE
 	c7 CURSOR FOR					/* Potential FDW tables i.e. those numerators in RIF40_NUM_DENOM_ERRORS with no local table of the same name */
 		WITH a AS (
 			SELECT numerator_table, numerator_owner, is_numerator_resolvable, COUNT(DISTINCT(geography))::INTEGER AS total_geographies
-			  FROM rif40_num_denom_errors
+			  FROM rif40.rif40_num_denom_errors
 			 GROUP BY numerator_table, numerator_owner, is_numerator_resolvable
 		), b AS (
 			SELECT a.relname AS foreign_table				/* FDW tables */
@@ -320,14 +320,14 @@ DECLARE
 		       a.total_geographies,
                        f.create_status, f.error_message, f.date_created, f.rowtest_passed
 		  FROM c
-			LEFT OUTER JOIN rif40_fdw_tables f ON (c.table_or_view = LOWER(f.table_name))
+			LEFT OUTER JOIN rif40.rif40_fdw_tables f ON (c.table_or_view = LOWER(f.table_name))
 			LEFT OUTER JOIN b ON (b.foreign_table = c.table_or_view)
 			LEFT OUTER JOIN a ON (c.table_or_view = LOWER(a.numerator_table))
 		 ORDER BY 1;
 	c8 CURSOR FOR					/* Obsolete FDW tables i.e. those no longer in RIF40_NUM_DENOM_ERRORS */
 		WITH a AS (
 			SELECT numerator_table, denominator_table
-			  FROM rif40_num_denom_errors
+			  FROM rif40.rif40_num_denom_errors
 		), b AS (
 			SELECT a.relname AS foreign_table				/* FDW tables */
 			  FROM pg_foreign_table b, pg_roles r, pg_class a, pg_namespace n, rif40_fdw_tables t
@@ -351,7 +351,7 @@ DECLARE
 				  FROM a) AS b1
 		)
 		SELECT c.foreign_table, b.create_status, b.error_message, b.date_created, b.rowtest_passed
-		  FROM c, rif40_fdw_tables b
+		  FROM c, rif40.rif40_fdw_tables b
 		 WHERE c.foreign_table = LOWER(b.table_name)
 		 ORDER BY 1;
 --
@@ -938,6 +938,12 @@ BEGIN
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN '||USER||'.rif40_user_version.user_schema_revision 	IS ''Revision (derived from CVS).''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		IF USER = 'rif40' THEN
+			sql_stmt:='GRANT SELECT ON rif40_user_version TO rif_user';
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+			sql_stmt:='GRANT SELECT ON rif40_user_version TO rif_manager';
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		END IF;
 		i:=i+1;
 	END IF;
 --

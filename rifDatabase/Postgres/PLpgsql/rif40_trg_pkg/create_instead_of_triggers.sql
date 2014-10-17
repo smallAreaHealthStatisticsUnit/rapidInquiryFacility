@@ -175,6 +175,9 @@ DECLARE
 --
 	i INTEGER:=0;
 	j INTEGER:=1;
+	k INTEGER:=0;
+	l INTEGER:=0;
+	m INTEGER:=0;
 --
 	role_list VARCHAR[]:=ARRAY['rif_user', 'rif_manager'];
 	priv_list VARCHAR[]:=ARRAY['INSERT', 'UPDATE', 'DELETE'];
@@ -326,21 +329,41 @@ BEGIN
 --
 -- Grants
 --
+		m:=0;
 		FOR k IN array_lower(role_list, 1) .. array_upper(role_list, 1) LOOP
 			FOR l IN array_lower(priv_list, 1) .. array_upper(priv_list, 1) LOOP
 				IF has_table_privilege(role_list[k], c1ciot_rec.tablename, priv_list[l]) THEN
 					j:=j+1;
 					sql_stmt[j]:='GRANT '||priv_list[l]||' ON '||c1ciot_rec.viewname||' TO '||role_list[k];
+					m:=m+1;
+				ELSE
+					PERFORM rif40_log_pkg.rif40_log('WARNING', 'create_instead_of_triggers', 
+                		'No % privilege for role % on table: %', 
+						priv_list[l]::VARCHAR		/* Privilege */,
+						role_list[k]::VARCHAR		/* Role */,
+						c1ciot_rec.tablename::VARCHAR);	
 				END IF;
 			END LOOP;
-		END LOOP;
---
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'create_instead_of_triggers', 'Creating INSTEAD OF function and trigger for: %', 
-			c1ciot_rec.viewname::VARCHAR);
+		END LOOP;	
+		
 --
 -- Execute SQL to create INSTEAD trigger for VIEW
 --
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		
+--
+-- Check there were grants
+--
+		IF m != 0 THEN
+			PERFORM rif40_log_pkg.rif40_log('INFO', 'create_instead_of_triggers', 
+				'Creating INSTEAD OF function and trigger for: %; % grants', 
+				c1ciot_rec.viewname::VARCHAR	/* table name */,
+				m::VARCHAR						/* Number of grants */);
+		ELSE
+			PERFORM rif40_log_pkg.rif40_error(-20999, 'create_instead_of_triggers',
+            	'Cannot create INSTEAD OF triggers; no grants for table: %',
+				c1ciot_rec.tablename::VARCHAR);
+		END IF;		
 	END LOOP;
 END;
 $func$ LANGUAGE plpgsql;

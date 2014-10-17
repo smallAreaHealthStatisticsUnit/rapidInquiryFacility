@@ -289,7 +289,11 @@ GRANT SELECT,UPDATE ON SEQUENCE rif40_study_id_seq TO rif_manager;
 GRANT SELECT,UPDATE ON SEQUENCE rif40_study_id_seq TO rif_user; 
 GRANT SELECT,UPDATE ON SEQUENCE rif40_inv_id_seq TO rif_manager; 
 
+GRANT SELECT ON rif40_user_version TO rif_user;
+GRANT SELECT ON rif40_user_version TO rif_manager;
+
 \echo Table/view/sequence grants done.
+\q
 
 --
 -- Eof

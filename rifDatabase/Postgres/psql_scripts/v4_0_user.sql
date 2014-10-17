@@ -55,7 +55,6 @@
 -- Run RIF startup script
 --
 \set VERBOSITY :verbosity
-
 \set ndebug_level '''XXXX':debug_level''''
 SET rif40.debug_level TO :ndebug_level;
 
@@ -68,9 +67,22 @@ DECLARE
 	sql_stmt 		VARCHAR;
 	debug_level		INTEGER;
 BEGIN
-	OPEN c4us;
-	FETCH c4us INTO c4us_rec;
-	CLOSE c4us;
+	BEGIN
+		OPEN c4us;
+		FETCH c4us INTO c4us_rec;
+		CLOSE c4us;
+	EXCEPTION
+		WHEN others THEN /* Try defaulting settings */
+			SET rif40.debug = 'DEBUG1';
+			SET rif40.send_debug_to_info = 'off';
+--
+			OPEN c4us;
+			FETCH c4us INTO c4us_rec;
+			CLOSE c4us;
+--
+		RAISE INFO 'v4_0_user() DEFAULTED send DEBUG to INFO: %; debug function list: [%]', 
+			c1lgs_rec.send_debug_to_info, c1lgs_rec.debug;
+	END;
 --
 -- Test parameter
 --

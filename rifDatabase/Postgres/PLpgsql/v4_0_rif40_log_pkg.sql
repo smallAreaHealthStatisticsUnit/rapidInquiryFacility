@@ -103,6 +103,18 @@ BEGIN
 	CLOSE c1lgs;
 --
 	RAISE INFO 'rif40_log_setup() send DEBUG to INFO: %; debug function list: [%]', c1lgs_rec.send_debug_to_info, c1lgs_rec.debug;
+EXCEPTION
+	WHEN others THEN /* Try defaulting settings */
+		SET rif40.debug = 'DEBUG1';
+		SET rif40.send_debug_to_info = 'off';
+--
+		OPEN c1lgs;
+		FETCH c1lgs INTO c1lgs_rec;
+		CLOSE c1lgs;
+--
+	RAISE INFO 'rif40_log_setup() DEFAULTED send DEBUG to INFO: %; debug function list: [%]', 
+		c1lgs_rec.send_debug_to_info, c1lgs_rec.debug;
+
 END;
 $func$
 LANGUAGE PLPGSQL;
@@ -134,9 +146,22 @@ DECLARE
 --
 	sql_stmt VARCHAR;
 BEGIN
-	OPEN c1d2i;
-	FETCH c1d2i INTO c1d2i_rec;
-	CLOSE c1d2i;
+	BEGIN
+		OPEN c1d2i;
+		FETCH c1d2i INTO c1d2i_rec;
+		CLOSE c1d2i;
+	EXCEPTION
+		WHEN others THEN /* Try defaulting settings */
+			SET rif40.debug = 'DEBUG1';
+			SET rif40.send_debug_to_info = 'off';
+--
+			OPEN c1d2i;
+			FETCH c1d2i INTO c1d2i_rec;
+			CLOSE c1d2i;
+--
+		RAISE INFO 'rif40_send_debug_to_info() DEFAULTED send DEBUG to INFO: %; debug function list: [%]', 
+			c1d2i_rec.send_debug_to_info, c1d2i_rec.debug;
+	END;
 --
 	IF enable THEN
 		sql_stmt:='SET rif40.send_debug_to_info = ''on''';
@@ -446,9 +471,22 @@ BEGIN
 		RETURN;
 	END IF;
 --
-	OPEN c1a2d;	/* Before */
-	FETCH c1a2d INTO c1a2da_rec;
-	CLOSE c1a2d;
+	BEGIN
+		OPEN c1a2d;	/* Before */
+		FETCH c1a2d INTO c1a2da_rec;
+		CLOSE c1a2d;
+	EXCEPTION
+		WHEN others THEN /* Try defaulting settings */
+			SET rif40.debug = 'DEBUG1';
+			SET rif40.send_debug_to_info = 'off';
+--
+			OPEN c1a2d;
+			FETCH c1a2d INTO c1a2da_rec;
+			CLOSE c1a2d;
+--
+		RAISE INFO 'rif40_add_to_debug() DEFAULTED send DEBUG to INFO: %; debug function list: [%]', 
+			c1a2da_rec.send_debug_to_info, c1a2da_rec.debug;
+	END;
 --
 -- Re-process debug string
 --
@@ -560,7 +598,9 @@ BEGIN
 			CLOSE c2rg;
 --
 			IF array_lower(v, 1) != array_upper(v, 1)-1 THEN
-				RAISE WARNING 'rif40_debug_record() [99904]: expecting two elements converting v(%) to RIF40_LOG_PKG.RIF40_DEBUG_RECORD', c1rg_rec.debug;
+				RAISE WARNING 
+				'rif40_debug_record() [99904]: expecting two elements converting v(%) to RIF40_LOG_PKG.RIF40_DEBUG_RECORD, l_debug=%', 
+				c1rg_rec.debug::Text, l_debug::Text;
 			ELSIF c2rg_rec.object_name IS NULL THEN
 				RAISE WARNING 'rif40_debug_record() [99905]: function name %() NOT FOUND/NOT EXECUTABLE by user.', l_function_name;
 			ELSE

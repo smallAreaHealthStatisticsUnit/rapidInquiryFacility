@@ -56,6 +56,10 @@ PGDATABASE=sahsuland_dev
 DEFAULT_VERBOSITY=terse
 DEFAULT_DEBUG_LEVEL=0
 DEFAULT_ECHO=none
+DEFAULT_PSQL_USER=rif40
+DEFAULT_ENCRYPTED_POSTGRES_PASSWORD=md57d50cade66c8b224d1fbd91805cbf442
+DEFAULT_USE_PLR=N
+
 #
 # PL/pgsql debug levels (DEBUG_LEVEL);
 #
@@ -80,14 +84,19 @@ TESTUSER?=$(USERNAME)
 VERBOSITY?=$(DEFAULT_VERBOSITY)
 DEBUG_LEVEL?=$(DEFAULT_DEBUG_LEVEL)
 ECHO?=$(DEFAULT_ECHO)
-
+PSQL_USER?=$(DEFAULT_PSQL_USER)
+ENCRYPTED_POSTGRES_PASSWORD?=$(DEFAULT_ENCRYPTED_POSTGRES_PASSWORD)
+USE_PLR?=$(DEFAULT_USE_PLR)
 #
 # Programs and parameters
 #
 WINDOWS_RUN_SCRIPT=run.ps1
 LINUX_RUN_SCRIPT=run.sh
 PSQL=psql
-PSQL_FLAGS=-U rif40 -d $(PGDATABASE) -w -e -P pager=off -v testuser=$(TESTUSER) -v verbosity=$(VERBOSITY) -v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO)
+PSQL_FLAGS=-U $(PSQL_USER) -d $(PGDATABASE) -w -e -P pager=off \
+	-v testuser=$(TESTUSER) -v verbosity=$(VERBOSITY) -v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO) \
+	-v encrypted_postgres_password=$(ENCRYPTED_POSTGRES_PASSWORD) -v use_plr=$(USE_PLR) \
+	-v sahsuland_tablespace_dir=$(SAHSULAND_TABLESPACE_DIR)
 
 #
 # Phony (i.e. not a file) targets
@@ -106,6 +115,10 @@ RUN_SCRIPT=$(WINDOWS_RUN_SCRIPT)
 RUN=powershell -ExecutionPolicy ByPass -file $(RUN_SCRIPT)
 DELETE=powershell -ExecutionPolicy ByPass -file delete.ps1
 HELP=findstr "\#-" Makefile
+SAHSULAND_TABLESPACE_DIR="C:\PostgresDB\sahsuland"
+COPY=powershell -ExecutionPolicy ByPass -file copy.ps1 
+POSTGRES_ETC_DIR="C:\Program Files\PostgreSQL\9.3\etc"
+PGPASS=powershell -ExecutionPolicy ByPass -file pgpass.ps1
 #
 # ADD Linux support
 #
@@ -212,15 +225,39 @@ verbose_test:
 clean:
 	$(MAKE) -C alter_scripts clean
 	$(MAKE) -C test_scripts clean
-	$(DELETE) v4_0_create_sahsuland.rpt v4_0_vacuum_analyse.rpt
+	$(DELETE) db_create.rpt v4_0_create_sahsuland.rpt v4_0_vacuum_analyse.rpt
 #- devclean: Remove logs so alter scripts in development can be r-run 
 #-           Not normally needed as they abort.
 devclean:
 	$(MAKE) -C alter_scripts devclean
 
-
 #-
-#- 6. miscellaneous
+#- 7. Database setup. Needs to be able to connect to postgresDB as postgres
+#-
+# Stored password file is in ~/.pgpass on Linux or: %APPDATA%\postgresql\pgpass.conf on Windows
+# Format is: hostname:port:database:username:password
+#
+#- db_setup: Creste sahusland, sahsuland_dev
+db_setup: pgpass.conf psqlrc
+		$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
+		$(MAKE) sahsuland_dev 
+		$(MAKE) sahsuland_dev_dump
+#		$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v sahsuland.dump
+		
+db_create: db_create.rpt
+
+#
+# Files to create/install
+#
+# pgpass: password file
+pgpass.conf:
+#		$(PGPASS)
+# psqlrc: psql logon script
+psqlrc:	../etc/psqlrc
+		$(COPY) ../etc/psqlrc $(POSTGRES_ETC_DIR)
+		
+#-
+#- 7. miscellaneous
 #-	
 
 #- v4_0_vacuum_analyse_dev: VACUUM ANALYZE sahsuland dev database

@@ -1388,20 +1388,12 @@ DECLARE
 		   AND usename     = session_user
 		   AND client_addr = inet_client_addr()
 		   AND client_port = inet_client_port();		
-	c2c CURSOR(l_granted_role VARCHAR) FOR
-		SELECT * 
-		  FROM user_role_privs
-		 WHERE l_granted_role = granted_role;
-	c2c_rec user_role_privs%ROWTYPE;
 BEGIN
 --
 -- Emulate Oracle security contexts by returning YES if the user has the role of the same name
 --
 	IF namespace = 'SAHSU_CONTEXT' THEN 
-		OPEN c2c(LOWER(parameter));
-		FETCH c2c INTO c2c_rec;
-		CLOSE c2c;
-		IF c2c_rec.granted_role IS NULL THEN
+		IF pg_has_role(LOWER(parameter), 'USAGE') THEN
 			RETURN 'NO';
 		ELSE
 			RETURN 'YES';
@@ -1432,9 +1424,9 @@ COMMENT ON FUNCTION rif40_sql_pkg.sys_context(VARCHAR, VARCHAR) IS 'Replacement 
 
 \df rif40_sql_pkg.sys_context
 
-SELECT rif40_sql_pkg.sys_context(NULL, 'DB_NAME');
-SELECT rif40_sql_pkg.sys_context(NULL, 'CURRENT_SCHEMA');
-SELECT rif40_sql_pkg.sys_context(NULL, 'AUDSID');
+SELECT rif40_sql_pkg.sys_context(NULL::VARCHAR, 'DB_NAME');
+SELECT rif40_sql_pkg.sys_context(NULL::VARCHAR, 'CURRENT_SCHEMA');
+SELECT rif40_sql_pkg.sys_context(NULL::VARCHAR, 'AUDSID');
 
 CREATE OR REPLACE FUNCTION rif40_sql_pkg.systimestamp(tprecision BIGINT) RETURNS TIMESTAMP
 AS
@@ -1456,7 +1448,7 @@ COMMENT ON FUNCTION rif40_sql_pkg.systimestamp(tprecision BIGINT) IS 'Replacemen
 
 \df rif40_sql_pkg.systimestamp
 
-SELECT SYS_CONTEXT('SAHSU_CONTEXT', 'RIF_STUDENT');
+SELECT rif40_sql_pkg.SYS_CONTEXT('SAHSU_CONTEXT', 'RIF_STUDENT');
 
 CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_drop_user_table_or_view(table_or_view VARCHAR)
 RETURNS void

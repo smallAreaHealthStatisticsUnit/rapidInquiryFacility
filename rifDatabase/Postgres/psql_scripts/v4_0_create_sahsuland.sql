@@ -225,6 +225,7 @@ $$;
 -- Create INSTEAD OF triggers to allow INSERT/UPDATE/DELETE on views with USERNAME as a column where USER = username
 --
 \i ../PLpgsql/v4_0_rif40_trg_pkg.sql
+
 --
 -- Add triggers
 --
@@ -476,11 +477,6 @@ END;
 $$;
 
 \set VERBOSITY default
---
--- Grants
---
-\i ../psql_scripts/v4_0_postgres_grants.sql 
-
 
 -- 
 -- Load shapefiles - now moved to GIS schema; and run as gis
@@ -493,14 +489,110 @@ $$;
 \i ../psql_scripts/rif40_geolevels_sahsuland_geometry.sql
 
 --
--- Rebuild INSTEAD OF triggers with correct permissions
+-- Grants
 --
-\i ../PLpgsql/v4_0_rif40_trg_pkg.sql
+\i ../psql_scripts/v4_0_postgres_grants.sql
 
+
+--
+-- Create any tables with views without INSTEAD OF triggers (e.g. rif40_parameters)
+--
+\set VERBOSITY terse
+DO LANGUAGE plpgsql $$
+BEGIN
+	PERFORM rif40_log_pkg.rif40_add_to_debug('rif40_ddl:DEBUG1'); /* SQL statements - timing DEBUG4 */
+	PERFORM rif40_log_pkg.rif40_add_to_debug('rif40_db_name_check:DEBUG1'); /* SQL statements - timing DEBUG4 */
+	PERFORM rif40_log_pkg.rif40_add_to_debug('create_instead_of_triggers:DEBUG1'); /* SQL statements - timing DEBUG4 */
+        PERFORM rif40_log_pkg.rif40_log_setup();
+        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+	PERFORM rif40_trg_pkg.drop_instead_of_triggers();
+	PERFORM rif40_trg_pkg.create_instead_of_triggers();
+	PERFORM rif40_trg_pkg.rif40_db_name_check('TEST', 'AA123');
+END;
+$$;
+
+\dS+ rif40_comparison_areas
+\dft trg_rif40_comparison_areas
+\df rif40_trg_pkg.trgf_rif40_comparison_areas
+\dd trg_rif40_comparison_areas
+\dd rif40_trg_pkg.trgf_rif40_comparison_areas
+\dd+ rif40_comparison_areas
+
+--
+-- Check all have been built
+--
+WITH t AS (	/* Existing triggers */
+	SELECT tgname AS trigger_name, 
+	       c.relname,
+	       n2.nspname||'.'||p.proname||rif40_sql_pkg.rif40_get_function_arg_types(p.proargtypes) AS function_name
+ 	  FROM pg_views v, pg_class c, pg_trigger b, pg_proc p, pg_namespace n2
+	 WHERE b.tgrelid        = c.oid				
+           AND NOT b.tgisinternal				/* Ignore constraints */
+	   AND b.tgfoid         = p.oid				/* Trigger function */
+	   AND n2.oid           = p.pronamespace		/* Function schema */
+	   AND c.relowner      IN (SELECT oid FROM pg_roles WHERE rolname = USER)	/* RIF40 tables */
+	   AND c.relname        = v.viewname			/* Views only */
+	   AND c.relkind        = 'v' 				/* Relational table */
+), v AS	(	/* table/view pairs */
+	SELECT t.tablename, v.viewname
+	  FROM pg_tables t, pg_views v
+	 WHERE t.tableowner     = USER	/* RIF40 tables */
+	   AND v.viewowner      = USER
+	   AND 't_'||v.viewname = t.tablename
+)
+SELECT v.tablename, v.viewname, t.trigger_name
+  FROM v
+	LEFT OUTER JOIN t ON (t.relname = v.viewname)
+ WHERE viewname NOT IN ('rif40_num_denom', 'rif40_projects', 'rif40_geolevels') /* These views cannot be inserted into */
+ ORDER BY 1, 2;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR
+		WITH t AS (	/* Existing triggers */
+			SELECT tgname AS trigger_name, 
+			       c.relname,
+			       n2.nspname||'.'||p.proname||rif40_sql_pkg.rif40_get_function_arg_types(p.proargtypes) AS function_name
+		 	  FROM pg_views v, pg_class c, pg_trigger b, pg_proc p, pg_namespace n2
+			 WHERE b.tgrelid        = c.oid				
+		           AND NOT b.tgisinternal				/* Ignore constraints */
+			   AND b.tgfoid         = p.oid				/* Trigger function */
+			   AND n2.oid           = p.pronamespace		/* Function schema */
+			   AND c.relowner      IN (SELECT oid FROM pg_roles WHERE rolname = USER)	/* RIF40 tables */
+			   AND c.relname        = v.viewname			/* Views only */
+			   AND c.relkind        = 'v' 				/* Relational table */
+		), v AS	(	/* table/view pairs */
+			SELECT t.tablename, v.viewname
+			  FROM pg_tables t, pg_views v
+			 WHERE t.tableowner     = USER	/* RIF40 tables */
+			   AND v.viewowner      = USER
+			   AND 't_'||v.viewname = t.tablename
+		)
+		SELECT v.tablename, v.viewname
+		  FROM v
+			LEFT OUTER JOIN t ON (t.relname = v.viewname)
+ 		WHERE viewname NOT IN ('rif40_num_denom', 'rif40_projects', 'rif40_geolevels') /* These views cannot be inserted into */
+ 		  AND  t.trigger_name IS NULL
+ 		ORDER BY 1, 2;
+	c1_rec RECORD;
+--
+	i INTEGER:=0;
+BEGIN
+	FOR c1_rec IN c1 LOOP
+		RAISE WARNING 'Found view: % without INSTEAD OF trigger', c1_rec.viewname;
+		i:=i+1;
+	END LOOP;
+--
+	IF i > 0 THEN
+		RAISE EXCEPTION 'Found % view(s) without INSTEAD OF triggers', i;
+	ELSE
+		RAISE INFO 'All views requiring INSTEAD OF triggers have them';
+	END IF;
+END;
+$$;
 --
 -- Additional view comments
 --
-\i ../psql_scripts/v4_0_rif40_additional_view_comments.sql
+\i ../psql_scripts/v4_0_rif40_additional_view_comments.sql 
 
 --
 -- Non SAHSU specific user schema
