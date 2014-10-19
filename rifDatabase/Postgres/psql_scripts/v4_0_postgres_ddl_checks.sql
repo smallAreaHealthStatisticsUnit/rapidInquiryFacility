@@ -73,10 +73,10 @@ $$;
 --
 DO LANGUAGE plpgsql $$
 BEGIN
-	IF current_database() = 'sahsuland_dev' THEN
+	IF current_database() IN ('sahsuland', 'sahsuland_dev') THEN
 		RAISE INFO 'v4_0_postgres_ddl_checks.sql: DDL03: Database check: %', current_database();	
 	ELSE
-		RAISE EXCEPTION 'v4_0_postgres_ddl_checks.sql: DDL04: Database check failed: % is not sahsuland_dev', current_database();	
+		RAISE EXCEPTION 'v4_0_postgres_ddl_checks.sql: DDL04: Database check failed: % is not sahsuland/sahsuland_dev', current_database();	
 	END IF;
 END;
 $$;

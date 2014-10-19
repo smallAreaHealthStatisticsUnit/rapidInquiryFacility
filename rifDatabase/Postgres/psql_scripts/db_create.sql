@@ -450,9 +450,9 @@ $$;
 \set echo ALL
 DROP DATABASE IF EXISTS sahsuland;
 -- 
--- Normally sahuslanbd_dev is NOT deleted
+-- Normally sahusland_dev is NOT deleted
 --
--- DROP DATABASE IF EXISTS sahsuland_dev;
+DROP DATABASE IF EXISTS sahsuland_dev;
 CREATE DATABASE sahsuland WITH OWNER rif40 /* TABLESPACE sahsuland */;
 COMMENT ON DATABASE sahsuland IS 'RIF V4.0 PostGres SAHSULAND Example Database';
 \set ON_ERROR_STOP OFF

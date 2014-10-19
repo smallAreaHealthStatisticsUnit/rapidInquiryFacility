@@ -183,11 +183,13 @@ sahsuland_dev_no_alter: clean v4_0_create_sahsuland.rpt
 	$(MAKE) v4_0_vacuum_analyse_dev
 	
 #- sahsuland_dev: Rebuild sahsuland_dev, test, then patch dev only, retest, finally VACUUM ANALYZE
+#- Does not run all alter scripts in development
 sahsuland_dev: clean v4_0_create_sahsuland.rpt 
 	$(MAKE) -C test_scripts no_alter DEBUG_LEVEL=1 ECHO=all
-	$(MAKE) -C alter_scripts all DEBUG_LEVEL=1 ECHO=all
+	$(MAKE) -C alter_scripts clean all DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) -C test_scripts clean all DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) v4_0_vacuum_analyse_dev
+# create a completed target
 	
 # Add UK gis
 
@@ -195,12 +197,15 @@ sahsuland_dev: clean v4_0_create_sahsuland.rpt
 #- 3. installers
 #-	
 #- sahsuland_dump: Dump sahsuland database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
-sahsuland_dump:
+sahsuland_dump: ../install/sahsuland.sql
 	pg_dump -U postgres -w -F plain -T '*x_uk*' -T '*.x_ew01*' -v -C sahsuland > ../install/sahsuland.sql	
+# make dependent on completed target
+../install/sahsuland.sql: 
 #- sahsuland_dev_dump: Dump sahsuland_dev database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
 #-                     Used to create sahsuland
-sahsuland_dev_dump:
-	pg_dump -U postgres -w -F plain -T '*x_uk*' -T '*.x_ew01*' -v sahsuland_dev > ../install/sahsuland_dev.sql	
+sahsuland_dev_dump: ../install/sahsuland_dev.dump 
+../install/sahsuland_dev.dump:
+	pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland_dev > ../install/sahsuland_dev.dump	
 	
 #-
 #- 4. test
@@ -237,13 +242,16 @@ devclean:
 # Stored password file is in ~/.pgpass on Linux or: %APPDATA%\postgresql\pgpass.conf on Windows
 # Format is: hostname:port:database:username:password
 #
-#- db_setup: Creste sahusland, sahsuland_dev
+#- db_setup: Create sahusland, sahsuland_dev
 db_setup: pgpass.conf psqlrc
-		$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
-		$(MAKE) sahsuland_dev 
-		$(MAKE) sahsuland_dev_dump
-#		$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v sahsuland.dump
-		
+	$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
+	$(MAKE) sahsuland_dev 
+	$(MAKE) sahsuland_dev_dump
+	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
+	$(MAKE) -C alter_scripts clean all PGDATABASE=sahsuland		
+	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
+	$(MAKE) clean v4_0_vacuum_analyse_dev PGDATABASE=sahsuland
+	
 db_create: db_create.rpt
 
 #
