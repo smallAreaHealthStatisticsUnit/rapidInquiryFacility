@@ -1,0 +1,12 @@
+--------------------------- 
+-- area calculation
+---------------------------
+
+
+
+
+
+
+SELECT * , Calculated_area_in_SQL= 
+(geoMETRY::STGeomFromText(WKT, 4326)).STArea()
+from TableName
