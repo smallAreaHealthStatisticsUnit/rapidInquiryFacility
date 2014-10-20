@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--<meta charset="utf-8">-->
+    <meta name="description" content="RIF, a software for Environmental Epidemiology">
+    <meta name="keywords" content="Disease mapping,Point source analysis, Risk, Health data">
+
+    <!--CSS Stylesheets-->
+    <link rel="stylesheet" href="css/jquery/jquery-ui-1.10.3.custom.min.css" />
+    <link rel="stylesheet" href="css/leaflet/leaflet.css" />
+    <link href="css/diseaseMapping.css" rel="stylesheet" media="screen" />
+	<link href="css/mAreaCharts.css" rel="stylesheet" media="screen" />
+	<link href="css/line_bivariate.css" rel="stylesheet" media="screen" />
+	<link href="css/slickgrid/slick.grid.css" rel="stylesheet" media="screen" />
+	<link href="css/slickgrid/slick-default-theme.css" rel="stylesheet" media="screen" />
+
+   
+
+
+    <title>The Rapid Inquiry Facility, RIF 4.0</title>
+
+</head>
+
+<body>
+    <div id="rifwrap">
+        
+        <div id="content">
+            <div id="leftcol">
+					
+            </div>
+            <div id="rightcol">
+                
+			</div>
+			<!--<div id="rr_chart"></div>-->
+        </div>
+    </div>
+	
+	<!--ToolTip-->
+	<div id='tooltip'> 
+		<div id="geoname"></div>
+	</div>
+
+    <!--Modal Dialogs-->
+	<div class="overlay" id="settings">
+		<div class="msettings">
+			<div class="msettings-ct">
+				<div class="msettings-header">
+					<h2>Settings</h2>
+					<a class="modal_close" href="#"></a>
+				</div>
+				<form  >
+					<div class="txt-fld">
+						<label for="fldSlct">Map hover field:</label>
+						<select id='fldSlct'>
+						<option value=''> </option>
+						</select>
+					</div>
+					<div class="txt-fld fldHistogramContainer">
+						<label for="fldHistogram">Line chart field:</label>
+						<select id='fldHistogram'>
+							<option value=''> </option>
+						</select>
+					</div>
+					<div class="txt-fld">
+						<label for="fldPyramid">Result set:</label>
+						<select id='fldPyramid'>
+						<option value=''> </option>
+						</select>
+					</div>
+					<div class="save-fld-settings">
+						<input type="button" value="save">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="overlay" id="statusbar">
+		<div class="info"></div>
+	</div>
+	
+	<div class="overlay" id="choropleth">
+		<div class="msettings">
+			<div class="msettings-ct">
+				<div class="msettings-header">
+					<h2> Style </h2>
+					<a class="modal_close" href="#"></a>
+				</div>
+				<form>
+					<div class="txt-fld">
+						<label for="fieldToMap"> Field to Map:</label>
+						<select id='fieldToMap'>
+						<option value=''> </option>
+						</select>
+					</div>
+					<div class="txt-fld">
+					    <label > Colour scale:</label>
+						<div>
+							<dl class="dropdown">
+								<dt>
+								    <div>
+									    <div id="selectedScale">
+										     <span class="swatch" style="background-color: rgb(217, 240, 163); width: 162px"></span>
+										</div>
+										<div class="dropDownArrow"></div>
+									</div>
+								</dt>
+								<dd>
+									<div class="palette">
+									</div>
+								</dd>
+							</dl>
+						</div>	
+					</div>
+					<div class="txt-fld">
+						<label for="intervals">Intervals:</label>
+						<select id='intervals'>
+						    <option value='1'> 1 </option>
+						</select>
+					</div>
+					<div class="txt-fld">
+						<label for="classification">Classification:</label>
+						<select id='classification'>
+						    <option value='quantile'>Quantile</option>
+							<option value='jenks'>Jenks</option>
+							<option value='standardDeviation'> Standard Deviation</option>
+							<!--<option value='logarithmic'>Logarithmic</option>-->
+						</select>
+						<div class="editBreaks"><a href='#'> edit </a> </div>
+						<div id="breaks"></div>
+					</div>
+					
+					<div class="save-fld">
+						<input type="button" value="save">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>	
+	
+
+</body>
+</html>

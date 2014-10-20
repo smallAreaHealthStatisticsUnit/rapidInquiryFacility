@@ -20,7 +20,7 @@ RIF.menu.settings = ( function() {
       _domObjects.save.click( function() {
         parent.facade.hoverFieldChange( _domObjects.hoverSlct.val() );
         var resultSetChoice = parent.getCheckedValues( "resultsSets" );
-        parent.facade.resultSetSelectionChanged( resultSetChoice );
+        parent.facade.areaChartSelectionChanged( resultSetChoice );
         $( "#settings" ).hide();
       } )
     },

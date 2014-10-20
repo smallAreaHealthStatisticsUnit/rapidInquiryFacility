@@ -7,7 +7,6 @@ RIF.menu.choropleth = ( function() {
       menu: $( "#choropleth" ),
       choroplethBtn: $( "#choroplethBtn" ),
       save: $( ".save-fld" ),
-      fieldToMap: $( "#fieldToMap" ),
       classification: $( "#classification" ),
       scale: "lightGreen",
       intervals: $( "#intervals" ),
@@ -82,7 +81,6 @@ RIF.menu.choropleth = ( function() {
 
       selected: function() {
         return {
-          field: _domObjects.fieldToMap.find( ":selected" ).val(),
           colorScale: _domObjects.scale,
           intervals: parseInt( _domObjects.intervals.find( ":selected" ).text() ),
           classification: _p.getClassification(),

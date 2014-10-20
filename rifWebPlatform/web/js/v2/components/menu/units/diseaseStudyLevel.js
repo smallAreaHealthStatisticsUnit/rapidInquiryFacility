@@ -7,14 +7,16 @@ RIF.menu.diseaseStudyLevel = ( function() {
       study: $( '#studyId select' ),
       investigation: $( '#invId select' ),
       resultSet: $( '#Resultset select' ),
+	  year: $( '#yearsAvailable select' ),
+      gender: $( '#gendersAvailable select' ),
       zoomTo: $( '#zoomTo select' ),
     },
 
     /* events */
     _events = function() {
-      _domObjects.zoomTo.on( 'change', function() {
+      /*_domObjects.zoomTo.on( 'change', function() {
         parent.facade.zoomTo( RIF.replaceAll( '_', ' ', this.value ) );
-      } );
+      } );*/
     },
 
     /* geolevel obj */
@@ -33,17 +35,22 @@ RIF.menu.diseaseStudyLevel = ( function() {
         RIF.getInvestigations( parent.callbacks.avlbInvestigations, [ studyId ] );
       },
 
-      getResultsSetAvailable: function( studyId ) {
-        RIF.getResultsSetAvailable( parent.callbacks.avlbResultSet, [ studyId ] );
+      getResultsSetAvailable: function(  ) {
+        RIF.getResultsSetAvailable( parent.callbacks.avlbResultSet, [ ] );
+      },
+	  
+	  getGenderAvailable: function(  ) {
+        RIF.getGenderAvailableForStudy( parent.callbacks.avlbGender, [] );
+      },
+	  
+	  getYearsAvailable: function( ) {
+        RIF.getYearsAvailableForStudy( parent.callbacks.avlbYears, [] );
       },
 
       getZoomIds: function( studyId ) {
         //RIF.getZoomIdentifiers( _p.callbacks.zoomTo , [ studyId ] );
       },
 
-      updateOtherComponents: function() {
-        //parent.facade.addGeolevel( _p.currentGeolvl, _p.currentdataset );
-      },
 
       /* Set - Gets */
       setStudy: function( studyId ) {

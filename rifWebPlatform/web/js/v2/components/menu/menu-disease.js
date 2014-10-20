@@ -4,6 +4,8 @@ RIF.menu = ( function( settings ) {
     _studies,
     _investigations,
     _resultSets,
+	_genders,
+	_years,
 
     _p = {
       init: function() {
@@ -17,6 +19,7 @@ RIF.menu = ( function( settings ) {
 
           if ( this.length > 0 ) {
             _studies = this;
+			_p.facade.setStudy( _studies[ 0 ] );
             _p.dropDown( _studies, _p.getDiseaseStudyLevelMenuDom( "study" ) );
             _p.getInvestigations( _studies[ 0 ] );
             _p.getZoomIds( _studies[ 0 ] );
@@ -26,28 +29,35 @@ RIF.menu = ( function( settings ) {
 
         avlbInvestigations: function() {
           _investigations = this;
+		  _p.facade.setInvestigation( _investigations[ 0 ] );
           _p.dropDown( _investigations, _p.getDiseaseStudyLevelMenuDom( "investigation" ) );
-          _p.getResultsSetAvailable( _investigations[ 0 ] );
+          _p.getResultsSetAvailable();
           _p.getAllFieldsAvailable( _investigations[ 0 ] );
         },
 
         avlbResultSet: function() {
           _resultSets = this;
-          _p.dropDown( _resultSets, _p.getDiseaseStudyLevelMenuDom( "resultSet" ) );
-          _p.dropDown( _resultSets, _p.getChoroplethMenuDom( "fieldToMap" ) ); //Choropleth dialog
+          _p.facade.setResultSet ( _resultSets[ 0 ] );
+		  _p.dropDown( _resultSets, _p.getDiseaseStudyLevelMenuDom( "resultSet" ) );
           _p.fieldCheckboxesResultsSet( _resultSets, _p.getSettingsMenuDom( "resultsChoice" ), "resultsSets" );
-
-          _p.facade.menusReady( {
-            study: _studies[ 0 ], //By default we display the first study retrieved
-            investigation: _investigations[ 0 ], //And first Ivestigation
-            resultSet: _resultSets,
-            resultSetSelected: _p.getCheckedValues( "resultsSets" ),
-            /* TEMPORARY NULL VALUES */
-            gender: null, // for now need to add gender selection LATER!
-            year: null // 	 for now need to add YEAR selection LATER!
-          } );
+		  _p.facade.areaChartSelectionChanged (_p.getCheckedValues( "resultsSets" ));
+		  _p.getGenderAvailable();
 
         },
+		
+		avlbGender: function(){
+		  _genders = this;
+          _p.facade.setGender ( _genders[ 0 ] );
+		  _p.dropDown( _genders, _p.getDiseaseStudyLevelMenuDom( "gender" ) );
+		  _p.getYearsAvailable();
+		},
+		
+		avlbYears: function(){
+		  _years = this;
+          _p.facade.setYear ( _years[ 0 ] );
+		  _p.dropDown( _years, _p.getDiseaseStudyLevelMenuDom( "year" ) );
+		  _p.facade.menusReady();
+		},
 
         avlbFieldsChoro: function() {
           _p.dropDown( this, _p.getChoroplethMenuDom( "fieldToMap" ) );
@@ -68,8 +78,6 @@ RIF.menu = ( function( settings ) {
       },
 
       populate: function( args ) {
-        //_p.initdiseaseStudyLevel();
-        //RIF.getNumericFields(  [_p.callbacks.avlbFieldsChoro, _p.callbacks.avlbFieldsHistogram], [_p.getDataset()] );
         RIF.getZoomIdentifiers( _p.callbacks.zoomToOptions, [ args.geoLvl ] );
       },
 

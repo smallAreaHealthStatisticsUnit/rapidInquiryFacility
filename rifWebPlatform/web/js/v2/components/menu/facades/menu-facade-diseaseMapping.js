@@ -9,10 +9,6 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
 
     /* Subscribers */
 
-    resultSetSelectionChanged: function( args ) {
-      this.fire( 'resultSetSelectionChanged', args );
-    },
-
     populateZoomIds: function( args ) {
       _p.populate( args );
     },
@@ -20,17 +16,15 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
     getScaleRange: function( args ) {
       _p.showScaleRangeInterface( args );
     },
-
+    
+	/* Firers  */
+	
     zoomToExtent: function() {
       this.fire( 'zoomToExtent', [] );
     },
 
-    menusReady: function( currentSet ) {
-      this.fire( 'menusReady', currentSet );
-    },
-
-    addTabularData: function( dataSets ) {
-      this.fire( 'addTabularData', dataSets );
+    menusReady: function( ) {
+      this.fire( 'menusReady', []);
     },
 
     zoomTo: function( id ) {
@@ -55,8 +49,32 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
 
     transparencyChanged: function( val ) {
       this.fire( 'transparencyChanged', val );
-    }
-
+    },
+	
+	/* Study Related */
+	setStudy: function( study ){
+	   this.fire( 'studyChanged', study );
+	},
+	
+	setInvestigation: function( inv){
+	   this.fire( 'investigationChanged', inv );
+	},
+	
+	setResultSet: function( resSet ){
+	  this.fire( 'resultSetChanged', resSet );
+	},
+	
+    areaChartSelectionChanged: function( args ) {
+      this.fire( 'areaChartSelectionChanged', args );
+    },
+	
+	setGender: function( gender ){
+	  this.fire( 'genderChanged', gender );
+	},
+	
+	setYear: function( year ){
+	  this.fire( 'yearChanged', year );
+	}
 
   };
 

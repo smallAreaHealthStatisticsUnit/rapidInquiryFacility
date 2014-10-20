@@ -296,11 +296,27 @@
         };
 
         xhr( 'getRiskResults.php' + args, myCallback, msg, "text/csv" );
-      }
+      },
+	  
+	  getYearsAvailableForStudy: function( myCallback, params ){
+	    var msg = "Retrieving years available for study: " + params[0],
+          args = '?studyID=' + params[ 0 ] + '&investigationID=' + params[ 1 ];
+
+        xhr( 'getYearsAvailableForStudy.php' + args, myCallback, msg );
+	  
+	  },
+	  
+	  getGenderAvailableForStudy: function( myCallback, params ){
+	    var msg = "Retrieving gender available for study: " + params[0],
+          args = '?studyID=' + params[ 0 ] + '&investigationID=' + params[ 1 ];
+
+        xhr( 'getGenderAvailableForStudy.php' + args, myCallback, msg );
+	  
+	  }
 
     };
 
-
+	
   RIF.extend( requests, RIF );
 
 }() );
