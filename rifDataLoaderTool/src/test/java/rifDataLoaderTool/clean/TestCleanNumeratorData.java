@@ -1,8 +1,14 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.clean;
 
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+
+import rifServices.system.RIFServiceException;
+
+import org.junit.After;
+import org.junit.Before;
+import junit.framework.TestCase;
+
 /**
- * a data type for Integers.
+ *
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -51,7 +57,7 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class IntegerRIFDataType extends AbstractRIFDataType {
+public class TestCleanNumeratorData extends TestCase {
 
 	// ==========================================
 	// Section Constants
@@ -60,45 +66,68 @@ public final class IntegerRIFDataType extends AbstractRIFDataType {
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private String createNumeratorTableQuery;
+	private String deleteNumeratorTableQuery;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private IntegerRIFDataType(
-		final String identifier,
-		final String name,
-		final String description) {
-
-		super(
-			identifier,
-			name, 
-			description);
+	public TestCleanNumeratorData() {
+		//createNumeratorTable
 		
-		String validationRegularExpression = "^(\\d+)";
-		addValidationExpression(validationRegularExpression);
-		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
-		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);		
-	}
-
-	public static IntegerRIFDataType newInstance() {
-
-		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.label");
-		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.description");
-		IntegerRIFDataType integerRIFDataType
-			= new IntegerRIFDataType(
-				"rif_integer",
-				name, 
-				description);
 		
-		return integerRIFDataType;
 	}
 	
+
+
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
+	private void populate() {
+		StringBuilder query = new StringBuilder();
+		query.append("CREATE TABLE uncleaned_numerator_table (");
+		query.append("row_number INTEGER,");
+		query.append("data_source VARCHAR(30),");
+		query.append("nhs_number VARCHAR(30),");
+		query.append("birth_date VARCHAR(30),");
+		query.append("postal_code VARCHAR(30),");
+		query.append("age VARCHAR(30),");
+		query.append("sex VARCHAR(30),");
+		query.append("level1 VARCHAR(30),");
+		query.append("level2 VARCHAR(30),");
+		query.append("level3 VARCHAR(30),");
+		query.append("level4 VARCHAR(30),");
+		query.append("icd_1 VARCHAR(30),");
+		query.append("icd_2 VARCHAR(30),");
+		query.append("opcs_code_1 VARCHAR(30),");
+		query.append("total VARCHAR(30));");
+
+		//return query.toString();
+	}
+		
+	private String getDestroyTableQuery() {
+		StringBuilder query = new StringBuilder();
+		query.append("DROP TABLE ");
+		query.append("uncleaned_numerator_table");
+		query.append(";");
+		
+		return query.toString();
+	}
+	
+	public void test1() {
+		
+		
+		
+		
+		RawTableGenerator rawTableGenerator = new RawTableGenerator();
+		rawTableGenerator.addFieldName("age");
+		
+		
+		
+	}
+	
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -112,12 +141,6 @@ public final class IntegerRIFDataType extends AbstractRIFDataType {
 	// Section Override
 	// ==========================================
 
-	public IntegerRIFDataType createCopy() {
-		IntegerRIFDataType cloneIntegerRIFDataType = newInstance();
-		copyAttributes(cloneIntegerRIFDataType);
-		return cloneIntegerRIFDataType;
-	}	
-	
 }
 
 

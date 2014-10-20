@@ -2,7 +2,7 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
 /**
- *
+ * a data type for double precision numeric data.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -51,7 +51,7 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class DoubleRIFDataType extends BuiltInRIFDataType {
+public final class DoubleRIFDataType extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants
@@ -66,14 +66,19 @@ public final class DoubleRIFDataType extends BuiltInRIFDataType {
 	// ==========================================
 
 	private DoubleRIFDataType(
+		final String identifier,
 		final String name,
-		final String description,
-		final String validationRegularExpression) {
+		final String description) {
 
 		super(
+			identifier,
 			name, 
-			description, 
-			validationRegularExpression);
+			description);
+		
+		String validationRegularExpression
+			= "^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$";
+		addValidationExpression(validationRegularExpression);
+		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);		
 	}
 
 	public static DoubleRIFDataType newInstance() {
@@ -82,15 +87,13 @@ public final class DoubleRIFDataType extends BuiltInRIFDataType {
 			= RIFDataLoaderMessages.getMessage("rifDataType.age.label");
 		String description
 			= RIFDataLoaderMessages.getMessage("rifDataType.age.description");
-		String validationRegularExpression
-			= "^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$";
-		DoubleRIFDataType ageRIFDataType
+		DoubleRIFDataType doubleRIFDataType
 			= new DoubleRIFDataType(
+				"rif_double",
 				name, 
-				description, 
-				validationRegularExpression);
-
-		return ageRIFDataType;
+				description);
+		
+		return doubleRIFDataType;
 	}
 	
 	// ==========================================
@@ -109,6 +112,12 @@ public final class DoubleRIFDataType extends BuiltInRIFDataType {
 	// Section Override
 	// ==========================================
 
+	public DoubleRIFDataType createCopy() {
+		DoubleRIFDataType cloneDoubleRIFDataType = newInstance();
+		copyAttributes(cloneDoubleRIFDataType);
+		return cloneDoubleRIFDataType;
+	}
+	
 }
 
 

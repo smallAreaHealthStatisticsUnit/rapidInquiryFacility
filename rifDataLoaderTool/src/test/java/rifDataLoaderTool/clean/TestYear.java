@@ -1,8 +1,11 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.clean;
 
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
 /**
- * a data type for Integers.
+ *
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -51,7 +54,7 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class IntegerRIFDataType extends AbstractRIFDataType {
+public class TestYear {
 
 	// ==========================================
 	// Section Constants
@@ -60,46 +63,28 @@ public final class IntegerRIFDataType extends AbstractRIFDataType {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private IntegerRIFDataType(
-		final String identifier,
-		final String name,
-		final String description) {
+	public TestYear() {
 
-		super(
-			identifier,
-			name, 
-			description);
-		
-		String validationRegularExpression = "^(\\d+)";
-		addValidationExpression(validationRegularExpression);
-		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
-		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);		
 	}
 
-	public static IntegerRIFDataType newInstance() {
-
-		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.label");
-		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.description");
-		IntegerRIFDataType integerRIFDataType
-			= new IntegerRIFDataType(
-				"rif_integer",
-				name, 
-				description);
+	@Test
+	public void test() {
 		
-		return integerRIFDataType;
+		
+		
+		
+		fail("Not yet implemented");
 	}
-	
+
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	
+
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -112,12 +97,6 @@ public final class IntegerRIFDataType extends AbstractRIFDataType {
 	// Section Override
 	// ==========================================
 
-	public IntegerRIFDataType createCopy() {
-		IntegerRIFDataType cloneIntegerRIFDataType = newInstance();
-		copyAttributes(cloneIntegerRIFDataType);
-		return cloneIntegerRIFDataType;
-	}	
-	
 }
 
 

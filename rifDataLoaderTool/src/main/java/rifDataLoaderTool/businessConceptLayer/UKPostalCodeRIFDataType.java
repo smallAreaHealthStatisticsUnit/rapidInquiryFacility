@@ -1,7 +1,8 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import rifDataLoaderTool.system.RIFDataLoaderMessages;
 /**
- *
+ * A data type to represent UK postal codes.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -50,7 +51,7 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public class DBFConfigurationRecord {
+public final class UKPostalCodeRIFDataType extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants
@@ -59,77 +60,41 @@ public class DBFConfigurationRecord {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String originalFieldName;
-	private String cleanedFieldName;
-	private RIFDataType rifDataType;
-	private boolean countEmptyValues;
-	private boolean checkForUnknownValues;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private DBFConfigurationRecord() {
-		countEmptyValues = false;
-		checkForUnknownValues = false;
-	}
+	private UKPostalCodeRIFDataType(
+		final String name,
+		final String description,
+		final String validationRegularExpression) {
 
-	public static DBFConfigurationRecord newInstance() {
-
-		DBFConfigurationRecord dbfMetaDataRecord = new DBFConfigurationRecord();
-		return dbfMetaDataRecord;
-	}
-	
-	public static DBFConfigurationRecord createCopy(
-		final DBFConfigurationRecord originalDBFMetaDataRecord) {
+		super(
+			name, 
+			description, 
+			validationRegularExpression);
 		
-		DBFConfigurationRecord cloneDBFMetaDataRecord
-			= new DBFConfigurationRecord();
+		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_FUNCTION);
+		setCleaningFunctionName("is_valid_uk_postal_code");
+		setFieldCleaningPolicy(RIFFieldCleaningPolicy.CLEANING_FUNCTION);
+		setCleaningFunctionName("clean_uk_postal_code");
 		
-		return cloneDBFMetaDataRecord;
 	}
 
-	public String getOriginalFieldName() {
-		
-		return originalFieldName;
-	}
+	public static UKPostalCodeRIFDataType newInstance() {
 
-	public void setOriginalFieldName(
-		final String originalFieldName) {
+		String name
+			= RIFDataLoaderMessages.getMessage("rifDataType.ukPostalCode.label");
+		String description
+			= RIFDataLoaderMessages.getMessage("rifDataType.ukPostalCode.description");
+		UKPostalCodeRIFDataType ukPostalCodeRIFDataType
+			= new UKPostalCodeRIFDataType(
+				"rif_uk_postcode",
+				name, 
+				description);
 
-		this.originalFieldName = originalFieldName;
-	}
-
-	public String getCleanedFieldName() {
-
-		return cleanedFieldName;
-	}
-
-	public void setCleanedFieldName(
-		final String cleanedFieldName) {
-
-		this.cleanedFieldName = cleanedFieldName;
-	}
-
-	public RIFDataType getDataType() {
-
-		return rifDataType;
-	}
-
-	public void setDataType(
-		final RIFDataType rifDataType) {
-
-		this.rifDataType = rifDataType;
-	}
-	
-	public boolean countEmptyValues() {
-
-		return countEmptyValues;
-	}
-	
-	public boolean checkForUnknownValues() {
-		
-		return checkForUnknownValues;
+		return ukPostalCodeRIFDataType;
 	}
 	
 	// ==========================================
@@ -147,7 +112,13 @@ public class DBFConfigurationRecord {
 	// ==========================================
 	// Section Override
 	// ==========================================
-
+	
+	public RIFDataType createCopy() {
+		UKPostalCodeRIFDataType cloneUKPostalCodeRIFDataType = newInstance();
+		copyAttributes(cloneUKPostalCodeRIFDataType);
+		return cloneUKPostalCodeRIFDataType;
+	}
+	
 }
 
 

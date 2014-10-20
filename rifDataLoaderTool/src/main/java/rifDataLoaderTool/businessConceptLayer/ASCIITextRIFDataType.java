@@ -2,8 +2,10 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
 /**
- * a data type for Integers.
  *
+ * A data type that describes ASCII text field values.  The type is used to 
+ * ensure that the characters in the field values are limited to ACII characters, as opposed
+ * to other formats such as UTF8.
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
@@ -51,7 +53,7 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class IntegerRIFDataType extends AbstractRIFDataType {
+public final class ASCIITextRIFDataType extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants
@@ -65,35 +67,34 @@ public final class IntegerRIFDataType extends AbstractRIFDataType {
 	// Section Construction
 	// ==========================================
 
-	private IntegerRIFDataType(
-		final String identifier,
+	private ASCIITextRIFDataType(
 		final String name,
-		final String description) {
+		final String description,
+		final String validationRegularExpression) {
 
 		super(
-			identifier,
 			name, 
-			description);
+			description, 
+			validationRegularExpression);
 		
-		String validationRegularExpression = "^(\\d+)";
-		addValidationExpression(validationRegularExpression);
+		addValidationExpression("^(\\w+)");
 		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
-		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);		
+		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);			
 	}
 
-	public static IntegerRIFDataType newInstance() {
+	public static ASCIITextRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.label");
+			= RIFDataLoaderMessages.getMessage("rifDataType.asciiText.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.description");
-		IntegerRIFDataType integerRIFDataType
-			= new IntegerRIFDataType(
-				"rif_integer",
+			= RIFDataLoaderMessages.getMessage("rifDataType.asciiText.description");
+		ASCIITextRIFDataType asciiTextRIFDataType
+			= new ASCIITextRIFDataType(
+				"rif_ascii_text",
 				name, 
 				description);
-		
-		return integerRIFDataType;
+
+		return asciiTextRIFDataType;
 	}
 	
 	// ==========================================
@@ -112,10 +113,10 @@ public final class IntegerRIFDataType extends AbstractRIFDataType {
 	// Section Override
 	// ==========================================
 
-	public IntegerRIFDataType createCopy() {
-		IntegerRIFDataType cloneIntegerRIFDataType = newInstance();
-		copyAttributes(cloneIntegerRIFDataType);
-		return cloneIntegerRIFDataType;
+	public ASCIITextRIFDataType createCopy() {
+		ASCIITextRIFDataType cloneASCIITextRIFDataType = newInstance();
+		copyAttributes(cloneASCIITextRIFDataType);
+		return cloneASCIITextRIFDataType;
 	}	
 	
 }

@@ -2,7 +2,7 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
 /**
- *
+ * A data type to represent text values.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -51,7 +51,7 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class TextRIFDataType extends BuiltInRIFDataType {
+public final class TextRIFDataType extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants
@@ -74,6 +74,10 @@ public final class TextRIFDataType extends BuiltInRIFDataType {
 			name, 
 			description, 
 			validationRegularExpression);
+		
+		addValidationExpression("^(\\w+)");
+		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);			
 	}
 
 	public static TextRIFDataType newInstance() {
@@ -82,14 +86,13 @@ public final class TextRIFDataType extends BuiltInRIFDataType {
 			= RIFDataLoaderMessages.getMessage("rifDataType.text.label");
 		String description
 			= RIFDataLoaderMessages.getMessage("rifDataType.text.description");
-		String validationRegularExpression = "^(\\w+)";
-		TextRIFDataType ageRIFDataType
+		TextRIFDataType textRIFDataType
 			= new TextRIFDataType(
+				"rif_text",
 				name, 
-				description, 
-				validationRegularExpression);
+				description);
 
-		return ageRIFDataType;
+		return textRIFDataType;
 	}
 	
 	// ==========================================
@@ -108,6 +111,12 @@ public final class TextRIFDataType extends BuiltInRIFDataType {
 	// Section Override
 	// ==========================================
 
+	public TextRIFDataType createCopy() {
+		TextRIFDataType cloneTextRIFDataType = newInstance();
+		copyAttributes(cloneTextRIFDataType);
+		return cloneTextRIFDataType;
+	}	
+	
 }
 
 

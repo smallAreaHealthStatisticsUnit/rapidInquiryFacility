@@ -1,7 +1,6 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.clean;
 
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
+import java.util.ArrayList;
 
 /**
  *
@@ -53,7 +52,7 @@ import java.util.regex.Matcher;
  *
  */
 
-abstract public class BuiltInRIFDataType implements RIFDataType{
+public class RawTableGenerator {
 
 	// ==========================================
 	// Section Constants
@@ -62,49 +61,78 @@ abstract public class BuiltInRIFDataType implements RIFDataType{
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String name;
-	private String description;
-	private String validationRegularExpression; 
-	private Pattern pattern;
+	private String tableName;
+	
+	private ArrayList<String> fieldNames;
+	private Integer textFieldSize;
+	
+	private String typeDeclaration;
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	protected BuiltInRIFDataType(
-		final String name,
-		final String description,
-		final String validationRegularExpression) {
-
-		this.name = name;
-		this.description = description;
-		this.validationRegularExpression = validationRegularExpression;
-		pattern = Pattern.compile(validationRegularExpression);		
+	public RawTableGenerator() {
+		fieldNames = new ArrayList<String>();
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	public void setTextFieldSize(
+		final Integer textFieldSize) {
 
-	public String getName() {
-		return name;
-	}
-	
-	public String getDescription() {
-		return description;
-	}
-	
-	public String getValidationRegularExpression() {
-		return validationRegularExpression;
-	}
-	
-	public boolean isValid(
-		final String value) {
+		StringBuilder buffer = new StringBuilder();
+		buffer.append("VARCHAR(");
+		buffer.append(String.valueOf(textFieldSize));
+		buffer.append(")");
 		
-		Matcher matcher = pattern.matcher(value);
-		return matcher.matches();
+		typeDeclaration = buffer.toString();
 		
 	}
 	
+	public void setTableName(
+		final String tableName) {
+		
+		this.tableName = tableName;
+	}
+	
+	public void addFieldName(
+		final String fieldName) {
+		
+		fieldNames.add(fieldName);
+	}
+	
+	public String generateCreateTableQuery() {
+		
+		StringBuilder query = new StringBuilder();
+		query.append("CREATE TABLE ");
+		query.append(tableName);
+		query.append(" (");
+		query.append("row_number INTEGER,");
+		query.append("data_source VARCHAR(30)");
+		for (String fieldName : fieldNames) {
+			query.append(",");
+			query.append(fieldName);
+			query.append(" ");
+			query.append(typeDeclaration);
+			query.append(")");
+		}
+		query.append(");");
+	
+		return query.toString();
+	}
+	
+	public String generateDropTableQuery() {
+
+		StringBuilder query = new StringBuilder();
+		
+		query.append("DROP TABLE ");
+		query.append(tableName);
+		query.append(";");
+		
+		return query.toString();
+	}
 	
 	// ==========================================
 	// Section Errors and Validation

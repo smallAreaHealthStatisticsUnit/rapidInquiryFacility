@@ -1,8 +1,16 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import java.util.ArrayList;
 
 /**
- *
+ * An interface for RIF data types. The purpose of this interface is to encourage
+ * the rest of calling code to ignore implementation details of each specific
+ * sub-class of {@link rifDataLoaderTool.businessConceptLayer.AbstractRIFDataType}.  
+ * However, there are cases when the SQL code generators need to know which kind of 
+ * data type is being processed.  For example, it has to know if a field has
+ * a {@link rifDataLoaderTool.businessConceptLayer.DateRIFDataType} so it knows
+ * to call a database function instead of making a comparison using regular expressions.
+ *  
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -30,13 +38,18 @@ package rifDataLoaderTool.businessConceptLayer;
  */
 
 
-public interface RIFDataType {
-	
+public interface RIFDataType {	
 	public String getName();
 	public String getDescription();
-	public String getValidationRegularExpression();
-	public boolean isValid(final String value);
-
+	
+	public RIFFieldValidationPolicy getFieldValidationPolicy();
+	public String getMainValidationExpression();
+	public ArrayList<String> getValidationExpressions();
+	public String getValidationFunctionName();
+	public String getValidationFunctionParameterValues();	
+	public RIFFieldCleaningPolicy getFieldCleaningPolicy();
+	public ArrayList<CleaningRule> getCleaningRules();
+	public String getCleaningFunctionParameterValues();
+	public RIFDataType createCopy();
+	public String getCleaningFunctionName();
 }
-
-

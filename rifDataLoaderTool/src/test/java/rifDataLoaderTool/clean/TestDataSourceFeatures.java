@@ -1,10 +1,16 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.clean;
 
-import rifDataLoaderTool.businessConceptLayer.CleaningRule;
-import rifDataLoaderTool.businessConceptLayer.SimpleSubstitutionCleaningRule;
+import static org.junit.Assert.*;
+import rifDataLoaderTool.businessConceptLayer.DataSource;
+import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
+import rifDataLoaderTool.system.RIFDataLoaderToolException;
+import rifServices.system.RIFServiceException;
+import rifServices.businessConceptLayer.User;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.util.ArrayList;
 
 /**
  *
@@ -56,7 +62,7 @@ import java.util.ArrayList;
  *
  */
 
-public class TableFieldCleaningManager {
+public class TestDataSourceFeatures extends AbstractRIFDataLoaderTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -65,67 +71,69 @@ public class TableFieldCleaningManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private ArrayList<CleaningRule> fieldCleaningRules;
-	private String originalTableName;
-	private String originalTableFieldName;
-	private String cleanedTableFieldName;
 	
+	private User testUser;
 	// ==========================================
 	// Section Construction
 	// ==========================================
-	
-	public TableFieldCleaningManager() {
-		fieldCleaningRules = new ArrayList<CleaningRule>();
+
+	public TestDataSourceFeatures() {
+
+		DummyDataLoaderGenerator dummyDataGenerator
+			= new DummyDataLoaderGenerator();
+
+		testUser = dummyDataGenerator.createTestUser();
+
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	
-	public void initialise(
-		final String originalTableName,
-		final String originalFieldName,
-		final String cleanedTableFieldName) {
+
+	@Test
+	public void test1() {
 		
-		this.originalTableName = originalTableName;
-		this.cleanedTableFieldName = cleanedTableFieldName;
-	}
-	
-	public void addSimpleSubstitutionRule(
-		String originalValue,
-		String cleanedValue) {
-		
-		SimpleSubstitutionCleaningRule simpleSubstitutionCleaningRule
-			= new SimpleSubstitutionCleaningRule();
-		simpleSubstitutionCleaningRule.initialiseRule(
-			originalTableName, 
-			cleanedTableFieldName, 
-			originalValue, 
-			cleanedValue);
-		fieldCleaningRules.add(simpleSubstitutionCleaningRule);
-		
-	}
-	
-	
-	public void addCleaningRule(
-		final CleaningRule cleaningRule) {
-		
-		fieldCleaningRules.add(cleaningRule);
-	}
-	
-	public String generateCaseStatement() {
-		
-		StringBuilder buffer = new StringBuilder();
-		buffer.append("CASE ");
-		for (CleaningRule fieldCleaningRule : fieldCleaningRules) {
-			buffer.append(fieldCleaningRule.getWhenStatement());
+		try {
+			DataLoaderService dataLoaderService
+				= getDataLoaderService();
+			dataLoaderService.clearAllDataSources(testUser);
+			
+			DataSource originalDataSource
+				= DataSource.newInstance(
+					"hes_2001",
+					false,
+					"HES file hes2001.csv", 
+					"kev");
+			dataLoaderService.registerDataSource(
+				testUser, 
+				originalDataSource);
+			
+			DataSource retrievedDataSource
+				= dataLoaderService.getDataSourceFromCoreTableName(
+					testUser, 
+					"hes_2001");
+			
+			assertEquals(
+				originalDataSource.getCoreTableName(), 
+				retrievedDataSource.getCoreTableName());
+			
+			assertEquals(
+				originalDataSource.getSourceName(),
+				retrievedDataSource.getSourceName());
+			
+			assertEquals(
+				originalDataSource.isDerivedFromExistingTable(),
+				retrievedDataSource.isDerivedFromExistingTable());
 		}
-		
-		buffer.append("END AS");
-		buffer.append(cleanedTableFieldName);
-		
-		return buffer.toString();		
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printStackTrace();
+		}
+		catch(RIFDataLoaderToolException rifDataLoaderToolException) {
+			rifDataLoaderToolException.printStackTrace();
+		}
 	}
+	
+	
 	
 	// ==========================================
 	// Section Errors and Validation

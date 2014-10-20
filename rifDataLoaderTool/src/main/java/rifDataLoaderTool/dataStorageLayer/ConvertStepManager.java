@@ -1,9 +1,20 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.dataStorageLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifDataLoaderTool.businessConceptLayer.*;
+
+import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolException;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+
+
+import java.sql.*;
+
 /**
- * a data type for Integers.
  *
+ * Manages all database operations used to convert a cleaned table into tabular data
+ * expected by some part of the RIF (eg: numerator data, health codes, geospatial data etc)
+ * 
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
@@ -51,7 +62,7 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class IntegerRIFDataType extends AbstractRIFDataType {
+public class ConvertStepManager extends AbstractDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
@@ -60,45 +71,56 @@ public final class IntegerRIFDataType extends AbstractRIFDataType {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	
+	private RIFDataLoaderStartupOptions startupOptions;
+	private ConvertStepQueryGeneratorAPI queryGenerator;	
+	private TableIntegrityChecker tableIntegrityChecker;
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private IntegerRIFDataType(
-		final String identifier,
-		final String name,
-		final String description) {
+	public ConvertStepManager(
+		final RIFDataLoaderStartupOptions startupOptions,
+		final ConvertStepQueryGeneratorAPI queryGenerator) {
 
-		super(
-			identifier,
-			name, 
-			description);
-		
-		String validationRegularExpression = "^(\\d+)";
-		addValidationExpression(validationRegularExpression);
-		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
-		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);		
+		this.startupOptions = startupOptions;
+		this.queryGenerator = queryGenerator;
+			
+		tableIntegrityChecker = new TableIntegrityChecker();
 	}
 
-	public static IntegerRIFDataType newInstance() {
-
-		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.label");
-		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.description");
-		IntegerRIFDataType integerRIFDataType
-			= new IntegerRIFDataType(
-				"rif_integer",
-				name, 
-				description);
-		
-		return integerRIFDataType;
-	}
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
+	public void convertConfiguration(
+		final Connection connection,
+		final TableConversionConfiguration tableConversionConfiguration)
+		throws RIFDataLoaderToolException {
+	
+		//validate parameters
+		tableConversionConfiguration.checkErrors();
+			
+		String convertTableQuery
+			= queryGenerator.generateConvertTableQuery(tableConversionConfiguration);
+		
+		PreparedStatement statement = null;
+		try {
+			statement = connection.prepareStatement(convertTableQuery);
+			//statement.executeUpdate();
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage("");
+			RIFDataLoaderToolException rifDataLoaderToolException
+				= new RIFDataLoaderToolException(
+					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}		
+	}
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -112,12 +134,6 @@ public final class IntegerRIFDataType extends AbstractRIFDataType {
 	// Section Override
 	// ==========================================
 
-	public IntegerRIFDataType createCopy() {
-		IntegerRIFDataType cloneIntegerRIFDataType = newInstance();
-		copyAttributes(cloneIntegerRIFDataType);
-		return cloneIntegerRIFDataType;
-	}	
-	
 }
 
 

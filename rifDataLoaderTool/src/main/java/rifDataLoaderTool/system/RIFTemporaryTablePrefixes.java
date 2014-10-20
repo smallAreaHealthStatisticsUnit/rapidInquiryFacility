@@ -1,12 +1,9 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.system;
 
 /**
- * Is meant to represent part of a hierarchy of RIF schema themes, which describe what part of 
- * the schema that processed data will be used for.  Examples include "numerator data", 
- * "denominator data", "health codes", "geospatial data" etc.  We expect that there will be different
- * categories for these themes and this class is meant to represent these concepts.  They would
- * be the underlying data objects that are visualised in a tree of themes that would allow the
- * RIF manager to map a cleaned table to some RIF-specific purpose.
+ * Defines the prefixes of all the temporary and permanent tables that will be produced
+ * as a data source is processed by the RIF.  The prefixes will be combined with the 
+ * <code>coreTableName</code> field of the {@link rifDataLoaderTool.businessConceptLayer.DataSource}.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -55,40 +52,42 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public class RIFTableCategory {
+public enum RIFTemporaryTablePrefixes {
 
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
-
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
-	public RIFTableCategory() {
-
+	LOAD("load_"),
+	CLEAN_SEARCH_REPLACE("cln_srch_"), //search and replace poor values
+	CLEAN_VALIDATION("cln_val_"),
+	CLEAN_CASTING("cln_cast_"), //cast cleaned fields to correct data types
+	CLEAN_AUDIT_WITH("tp1_"),
+	CLEAN_AUDIT("audit_clean_"),
+	CONVERT("convert_"),
+	COMBINE("combine_"),
+	OPTIMISE("optimise_"),
+	CHECK("check_"),
+	PUBLISH("publish_");
+	
+	private String tablePrefix;
+	
+	private RIFTemporaryTablePrefixes(
+		final String tablePrefix) {
+		
+		this.tablePrefix = tablePrefix;
 	}
+	
+	public String getTablePrefix() {
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
-
+		return tablePrefix;
+	}
+	
+	public String getTableName(
+		final String coreTableName) {
+		
+		StringBuilder buffer = new StringBuilder();
+		buffer.append(tablePrefix);
+		buffer.append(coreTableName);
+		return buffer.toString();
+		
+	}
 }
 
 

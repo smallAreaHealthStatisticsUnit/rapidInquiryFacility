@@ -1,8 +1,8 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.system;
 
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
 /**
- * a data type for Integers.
+ * Contain a set of parameter values that will be made available to the RIF Data Loader tool
+ * when it starts up.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -51,54 +51,48 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class IntegerRIFDataType extends AbstractRIFDataType {
+public class RIFDataLoaderStartupOptions {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	public static enum DatabaseType {POSTGRESQL, SQL_SERVER};
 
+	public static final int MAXIMUM_TABLE_NAME_WIDTH = 30;
+	public static final int MAXIMUM_DESCRIPTION_FIELD_WIDTH=200;
+	public static final int MAXIMUM_USER_ID_WIDTH = 20;
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private DatabaseType databaseType;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
-
-	private IntegerRIFDataType(
-		final String identifier,
-		final String name,
-		final String description) {
-
-		super(
-			identifier,
-			name, 
-			description);
-		
-		String validationRegularExpression = "^(\\d+)";
-		addValidationExpression(validationRegularExpression);
-		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
-		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);		
-	}
-
-	public static IntegerRIFDataType newInstance() {
-
-		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.label");
-		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.description");
-		IntegerRIFDataType integerRIFDataType
-			= new IntegerRIFDataType(
-				"rif_integer",
-				name, 
-				description);
-		
-		return integerRIFDataType;
-	}
 	
+	
+	public RIFDataLoaderStartupOptions() {
+		databaseType = DatabaseType.POSTGRESQL;
+	}
+
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	public void setDatabaseType(
+		final DatabaseType databaseType) {
+		
+		this.databaseType = databaseType;
+	}
+	
+	public DatabaseType getDatabaseType() {
+		
+		return databaseType;
+	}
+	
+	public int getDataLoaderTextColumnSize() {
+		return 30;
+	}
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -112,12 +106,6 @@ public final class IntegerRIFDataType extends AbstractRIFDataType {
 	// Section Override
 	// ==========================================
 
-	public IntegerRIFDataType createCopy() {
-		IntegerRIFDataType cloneIntegerRIFDataType = newInstance();
-		copyAttributes(cloneIntegerRIFDataType);
-		return cloneIntegerRIFDataType;
-	}	
-	
 }
 
 

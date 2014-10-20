@@ -1,9 +1,30 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+
 /**
- * a data type for Integers.
- *
+ * A data type to represent a year value.  This data type contains two parameter values which
+ * define a range of two digit years that may be considered part of the 20th century.  For example,
+ * suppose 72 appears in a year field.  If the limits are [25,99], then 72 would be cleaned and
+ * converted to 1972.  However, if the year were 13, then it would be converted to 2013.  The years
+ * may be adjusted to suit the needs of a use case.
+ * 
+ * <p>
+ * In future, this type will probably be modified to to rely on a database function.  If this happens,
+ * then the 
+ * This clas <code>getCleaningFunctionParameterValues</code> method
+ * would be used to construct a database call.  Most database function calls resemble the format: 
+ * <code>
+ * [function_name] ([load table field name], areBlanksAllowed)
+ * </code>
+ * 
+ * <p>
+ * but in this case, we would use the <code>getCleaningFunctionParameterValues</code> method to make:
+ * <code>
+ * clean_year(year, true, 20, 99)
+ * </code>
+ * <p>
+ * where the method provided the phrase "20, 99" part of the construction.
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
@@ -51,7 +72,7 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class IntegerRIFDataType extends AbstractRIFDataType {
+public class YearRIFDataType extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants
@@ -60,12 +81,13 @@ public final class IntegerRIFDataType extends AbstractRIFDataType {
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private String minimum20thCenturyYear;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private IntegerRIFDataType(
+	private YearRIFDataType(
 		final String identifier,
 		final String name,
 		final String description) {
@@ -75,30 +97,53 @@ public final class IntegerRIFDataType extends AbstractRIFDataType {
 			name, 
 			description);
 		
-		String validationRegularExpression = "^(\\d+)";
-		addValidationExpression(validationRegularExpression);
+		addValidationExpression("^(19|20)\\d{2}$");
 		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
-		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);		
+		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);
 	}
 
-	public static IntegerRIFDataType newInstance() {
-
+	public static YearRIFDataType newInstance() {
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.label");
+			= RIFDataLoaderToolMessages.getMessage("");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.description");
-		IntegerRIFDataType integerRIFDataType
-			= new IntegerRIFDataType(
-				"rif_integer",
+			= RIFDataLoaderToolMessages.getMessage("");
+
+		YearRIFDataType yearRIFDataType
+			= new YearRIFDataType(
+				"rif_year",
 				name, 
 				description);
 		
-		return integerRIFDataType;
+		//cannot think of any implicit cleaning rules to add...
+		
+		return yearRIFDataType;
 	}
 	
+	public YearRIFDataType createCopy() {
+		YearRIFDataType cloneYearRIFDataType = newInstance();
+		copyAttributes(cloneYearRIFDataType);
+		return cloneYearRIFDataType;
+	}
+
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+		
+	public String getMinimum20thCenturyYear() {
+		return minimum20thCenturyYear;
+	}
+
+	public void setMinimum20thCenturyYear(String minimum20thCenturyYear) {
+		this.minimum20thCenturyYear = minimum20thCenturyYear;
+	}	
+	
+	@Override
+	public String getCleaningFunctionParameterValues() {
+		StringBuilder buffer = new StringBuilder();
+		buffer.append(",");
+		buffer.append(minimum20thCenturyYear);
+		return buffer.toString();
+	}
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -112,12 +157,6 @@ public final class IntegerRIFDataType extends AbstractRIFDataType {
 	// Section Override
 	// ==========================================
 
-	public IntegerRIFDataType createCopy() {
-		IntegerRIFDataType cloneIntegerRIFDataType = newInstance();
-		copyAttributes(cloneIntegerRIFDataType);
-		return cloneIntegerRIFDataType;
-	}	
-	
 }
 
 

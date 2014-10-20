@@ -1,12 +1,7 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.system;
 
 /**
- * Is meant to represent part of a hierarchy of RIF schema themes, which describe what part of 
- * the schema that processed data will be used for.  Examples include "numerator data", 
- * "denominator data", "health codes", "geospatial data" etc.  We expect that there will be different
- * categories for these themes and this class is meant to represent these concepts.  They would
- * be the underlying data objects that are visualised in a tree of themes that would allow the
- * RIF manager to map a cleaned table to some RIF-specific purpose.
+ * Describes a source of error in the system.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -55,40 +50,23 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public class RIFTableCategory {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
-
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
-	public RIFTableCategory() {
-
-	}
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
-
+public enum RIFDataLoaderToolError {
+	INVALID_DATA_SOURCE,
+	DUPLICATE_DATA_SOURCE,
+	CLEAR_ALL_DATA_SOURCES,
+	REGISTER_DATA_SOURCE,
+	DEREGISTER_DATA_SOURCE,
+	DATA_SOURCE_EXISTS,
+	LOAD_TABLE,
+	CLEAN_TABLE,
+	DROP_TABLE,
+	CLOSE_RESOURCE,
+	DELETE_DATA_SOURCE_REGISTRY,
+	LOAD_DB_DRIVER,
+	GET_CONNECTION,
+	DATABASE_QUERY_FAILED,
+	COMPARE_TABLE_SIZES
+	
 }
 
 

@@ -1,8 +1,27 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import java.util.ArrayList;
+
+
+
+import rifDataLoaderTool.system.RIFDataLoaderToolException;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+
+import rifServices.system.RIFServiceSecurityException;
+import rifServices.businessConceptLayer.DisplayableListItem;
+
 /**
- * a data type for Integers.
+ * A convenience class that is meant to hold code common to all of the business class
+ * objects.  It follows a similar theme to {rifServices.businessConceptLayer.AbstractRIFConcept} 
+ * in that it manages routines related to checking errors and an "identifier" field which is
+ * reserved to hold a key that would uniquely identify it in a database table.
+ * 
+ * <p>
+ * The class was developed because it wasn't clear how much overlap the business concept classes
+ * in the Data Loader Tool would have with the business concept classes that are used to support
+ * study submission and study result retrieval.  In future, this class may disappear and
+ * be merged with the <code>AbstractRIFService</code> class.
+ * 
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -51,7 +70,8 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class IntegerRIFDataType extends AbstractRIFDataType {
+public abstract class AbstractRIFDataLoaderToolConcept
+	implements DisplayableListItem {
 
 	// ==========================================
 	// Section Constants
@@ -60,50 +80,49 @@ public final class IntegerRIFDataType extends AbstractRIFDataType {
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private String identifier;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private IntegerRIFDataType(
-		final String identifier,
-		final String name,
-		final String description) {
+	public AbstractRIFDataLoaderToolConcept() {
 
-		super(
-			identifier,
-			name, 
-			description);
-		
-		String validationRegularExpression = "^(\\d+)";
-		addValidationExpression(validationRegularExpression);
-		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
-		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);		
 	}
 
-	public static IntegerRIFDataType newInstance() {
-
-		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.label");
-		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.description");
-		IntegerRIFDataType integerRIFDataType
-			= new IntegerRIFDataType(
-				"rif_integer",
-				name, 
-				description);
-		
-		return integerRIFDataType;
-	}
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
+	abstract public String getDisplayName();
+	abstract public void checkSecurityViolations() throws RIFServiceSecurityException;
+	abstract public void checkErrors() throws RIFDataLoaderToolException;
 	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
 
+	public String getIdentifier() {
+		return identifier;
+	}
+
+	public void setIdentifier(String identifier) {
+		this.identifier = identifier;
+	}
+
+	protected void countErrors(
+		final RIFDataLoaderToolError rifDataLoaderToolError,
+		final ArrayList<String> errorMessages) 
+		throws RIFDataLoaderToolException {
+
+		if (errorMessages.size() > 0) {
+			RIFDataLoaderToolException rifDataLoaderToolException
+				= new RIFDataLoaderToolException(
+					rifDataLoaderToolError, 
+					errorMessages);
+			throw rifDataLoaderToolException;
+		}		
+	}	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
@@ -111,13 +130,6 @@ public final class IntegerRIFDataType extends AbstractRIFDataType {
 	// ==========================================
 	// Section Override
 	// ==========================================
-
-	public IntegerRIFDataType createCopy() {
-		IntegerRIFDataType cloneIntegerRIFDataType = newInstance();
-		copyAttributes(cloneIntegerRIFDataType);
-		return cloneIntegerRIFDataType;
-	}	
-	
 }
 
 

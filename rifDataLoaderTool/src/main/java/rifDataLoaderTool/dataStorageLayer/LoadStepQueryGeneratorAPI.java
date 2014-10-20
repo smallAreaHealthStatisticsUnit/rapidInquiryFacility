@@ -1,12 +1,10 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.dataStorageLayer;
+
+import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
 
 /**
- * Is meant to represent part of a hierarchy of RIF schema themes, which describe what part of 
- * the schema that processed data will be used for.  Examples include "numerator data", 
- * "denominator data", "health codes", "geospatial data" etc.  We expect that there will be different
- * categories for these themes and this class is meant to represent these concepts.  They would
- * be the underlying data objects that are visualised in a tree of themes that would allow the
- * RIF manager to map a cleaned table to some RIF-specific purpose.
+ * Describes the methods that are expected to be supported in vendor-specific code generators
+ * involved with loading new data sources.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -55,40 +53,17 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public class RIFTableCategory {
+public interface LoadStepQueryGeneratorAPI {
 
-	// ==========================================
-	// Section Constants
-	// ==========================================
+	public String generateLoadTableQuery(
+		final int dataSourceID,
+		final TableCleaningConfiguration tableCleaningConfiguration,
+		final int textColumnWidth);
 
-	// ==========================================
-	// Section Properties
-	// ==========================================
-
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
-	public RIFTableCategory() {
-
-	}
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
-
+	public String generateDropLoadTableQuery(
+		final TableCleaningConfiguration tableCleaningConfiguration);
+	
+	
 }
 
 

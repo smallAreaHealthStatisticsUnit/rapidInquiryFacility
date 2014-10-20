@@ -2,7 +2,10 @@ package rifDataLoaderTool.businessConceptLayer;
 
 /**
  *
- *
+ * A class for describing a function used to convert columns of a cleaned table into 
+ * columns that would be expected in the RIF schema.  We're not clear at this point how
+ * this class will be developed.
+ * 
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 

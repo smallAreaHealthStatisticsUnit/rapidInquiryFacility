@@ -1,13 +1,11 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.dataStorageLayer;
+
+import rifDataLoaderTool.businessConceptLayer.TableConversionConfiguration;
 
 /**
- * Is meant to represent part of a hierarchy of RIF schema themes, which describe what part of 
- * the schema that processed data will be used for.  Examples include "numerator data", 
- * "denominator data", "health codes", "geospatial data" etc.  We expect that there will be different
- * categories for these themes and this class is meant to represent these concepts.  They would
- * be the underlying data objects that are visualised in a tree of themes that would allow the
- * RIF manager to map a cleaned table to some RIF-specific purpose.
- *
+ * API that define the important aspects of behaviour of code generators used
+ * to convert cleaned tables into table data expected by the RIF schema.
+ * 
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
@@ -55,40 +53,10 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public class RIFTableCategory {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
-
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
-	public RIFTableCategory() {
-
-	}
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
-
+public interface ConvertStepQueryGeneratorAPI {
+	public String generateConvertTableQuery(
+		final TableConversionConfiguration tableConversionConfiguration);
+	
 }
 
 

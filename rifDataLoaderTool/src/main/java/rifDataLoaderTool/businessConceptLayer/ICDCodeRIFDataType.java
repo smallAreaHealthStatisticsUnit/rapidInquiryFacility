@@ -1,18 +1,11 @@
-package rifDataLoaderTool.presentationLayer;
+package rifDataLoaderTool.businessConceptLayer;
 
-
-import rifDataLoaderTool.businessConceptLayer.DBTConfigurationRecord;
-
-
-import rifDataLoaderTool.system.RIFDataLoaderActivityStep;
-
-import java.util.ArrayList;
-import java.util.Date;
-
-import javax.swing.table.AbstractTableModel;
+import rifDataLoaderTool.system.RIFDataLoaderMessages;
 
 /**
- *
+ * A data type for ICD codes from the ICD-9 or ICD-10 standard.  Support for the two different
+ * standards is combined into one data type because we have observed that ICD 9 and ICD 10 
+ * codes end up labelling the same table field.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -61,83 +54,61 @@ import javax.swing.table.AbstractTableModel;
  *
  */
 
-public class DBTMetaDataTableModel extends AbstractTableModel {
+public class ICDCodeRIFDataType extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final int TABLE_NAME_COLUMN = 0;
-	private static final int TABLE_DESCRIPTION_COLUMN = 1;
-	private static final int LAST_MODIFIED_DATE_COLUMN = 2;
-	private static final int ACTIVITY_STEP_COLUMN = 3;
-	
+
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private ArrayList<DBTConfigurationRecord> tableMetaDataRows;
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public DBTMetaDataTableModel() {
+	public ICDCodeRIFDataType(
+		final String identifier,
+		final String name,
+		final String description) {
 
-		tableMetaDataRows = new ArrayList<DBTConfigurationRecord>();
+		super(
+			identifier,
+			name,
+			description);
+		
+		//expression for ICD 9
+		addValidationExpression("^([EV])?\\d{3,3}(\\.\\d{1,2})?$");
+
+		//expression for ICD 10
+		addValidationExpression("^[A-Z]\\d{2}(\\.\\d){0,1}$");
 	}
 
+	public static ICDCodeRIFDataType newInstance() {
+
+		String name
+			= RIFDataLoaderMessages.getMessage("rifDataType.icdCode.label");
+		String description
+			= RIFDataLoaderMessages.getMessage("rifDataType.icdCode.description");
+		ICDCodeRIFDataType icdCodeRIFDataType
+			= new ICDCodeRIFDataType(
+				"rif_icd_code",
+				name, 
+				description);
+		
+		return icdCodeRIFDataType;
+	}
+		
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void setDBTMetaDataRecords(
-		final ArrayList<DBTConfigurationRecord> dbtMetaDataTableRecords) {
-		
-		tableMetaDataRows = dbtMetaDataTableRecords;
-	}
-	
-	public int getRowCount() {
-		return tableMetaDataRows.size();
-	}
-	
-	public int getColumnCount() {
-		return 4;
-	}
-	
-	public Object getValueAt(
-		final int row,
-		final int column) {
-		
-		DBTConfigurationRecord tableMetaDataRecord
-			= tableMetaDataRows.get(row);
-		
-		if (column == TABLE_NAME_COLUMN) {
-			return tableMetaDataRecord.getTableName();
-		}
-		else if (column == TABLE_DESCRIPTION_COLUMN) {
-			return tableMetaDataRecord.getTableDescription();
-		}
-		else if (column == LAST_MODIFIED_DATE_COLUMN) {
-			return tableMetaDataRecord.getLastModifiedDatePhrase();
-		}
-		else if (column == ACTIVITY_STEP_COLUMN) {
-			
-			RIFDataLoaderActivityStep rifDataLoaderActivityStep
-				= tableMetaDataRecord.getRIFDataLoaderActivityStep();
-			return rifDataLoaderActivityStep.getCompletedStatusMessage();
-		}
-		else {
-			//must be Activity Step
-			assert false;
-			return null;
-		}
-
-	}
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
 
-	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
@@ -146,15 +117,13 @@ public class DBTMetaDataTableModel extends AbstractTableModel {
 	// Section Override
 	// ==========================================
 
-	@Override
-	/**
-	 * make table non-editable
-	 */
-	public boolean isCellEditable(
-		final int row,
-		final int column) {
+	public RIFDataType createCopy() {
+		ICDCodeRIFDataType cloneICDCodeRIFDataType = newInstance();
+		copyAttributes(cloneICDCodeRIFDataType);
+		return cloneICDCodeRIFDataType;
+	}	
 		
-		return false;
-	}
 	
 }
+
+

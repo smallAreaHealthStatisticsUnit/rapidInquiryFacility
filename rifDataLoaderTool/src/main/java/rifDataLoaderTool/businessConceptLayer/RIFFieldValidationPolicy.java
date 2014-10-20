@@ -1,11 +1,29 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 /**
+ * Describes the way a field found in an initial load table will be validated.  There are three
+ * options:
+ * <ul>
+ * <li>
+ * no validation
+ * </li>
+ * <li>
+ * validation rules
+ * </li>
+ * <li>
+ * validation function
+ * </li>
+ * </ul>
  *
- * A generic custom data type where RIF managers can define their own data types.
- * 
+ * In the RIF Data Loader Tool, once any cleaning rules have been applied, the field values are migrated to
+ * a validated values table.  If no validation is used, then the cleaned value is carried forward as a valid 
+ * value.  If one or more validation rules is used, then the SQL code generators create a <code>CASE</code>
+ * statement which returns true when the first regular expression shows a match or false if no regular expressions
+ * result in a match.  If the validation policy involves a function, then the field value is passed to some
+ * function which returns true or false.
+ *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
@@ -53,71 +71,22 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public final class CustomRIFDataType 
-	extends AbstractRIFDataType {
+public enum RIFFieldValidationPolicy {
 
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
-
+	VALIDATION_FUNCTION("rifFieldValidationPolicy.cleaningFunction.label"),
+	VALIDATION_RULES("rifFieldValidationPolicy.cleaningRules.label"),
+	NO_VALIDATION("rifFieldValidationPolicy.noCleaning.label");
 	
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
-	private CustomRIFDataType(
-		final String identifier,
-		final String name,
-		final String description) {
+	private String propertyName;
+	
+	RIFFieldValidationPolicy(
+		final String propertyName) {
 		
-		super(
-			identifier,
-			name,
-			description);
+		this.propertyName = propertyName;
 	}
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	public static CustomRIFDataType newInstance(
-		final String identifier,
-		final String name,
-		final String description) {
-		
-		CustomRIFDataType customRIFDataType
-			= new CustomRIFDataType(
-				identifier, 
-				name, 
-				description);
-		
-		return customRIFDataType;
-	}
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
-
-	public RIFDataType createCopy() {
-		CustomRIFDataType clonedCustomRIFDataType
-			= new CustomRIFDataType(
-				getIdentifier(),
-				getName(),
-				getDescription());
-		copyAttributes(clonedCustomRIFDataType);
-		
-		return clonedCustomRIFDataType;
+	
+	public String getName() {
+		return RIFDataLoaderToolMessages.getMessage(propertyName);
 	}
 	
 }

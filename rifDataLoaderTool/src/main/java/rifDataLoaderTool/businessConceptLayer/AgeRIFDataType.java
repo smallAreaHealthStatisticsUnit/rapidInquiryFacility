@@ -1,8 +1,13 @@
 package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
+
 /**
- *
+ * A data type for age.  In future, the type may need to be modfied so that it can 
+ * accept a different upper age limit.  Some researchers may want the RIF to check
+ * unrealistic age values but others may not.  In particular, some unreasonable ages
+ * may in fact be special codes to indicate "not specified", "not given" or other
+ * codes that may explain why a valid value does not exist.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -51,7 +56,7 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class AgeRIFDataType extends BuiltInRIFDataType {
+public final class AgeRIFDataType extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants
@@ -66,37 +71,48 @@ public final class AgeRIFDataType extends BuiltInRIFDataType {
 	// ==========================================
 
 	private AgeRIFDataType(
+		final String identifier,
 		final String name,
-		final String description,
-		final String validationRegularExpression) {
+		final String description) {
 
-		super(
+		super(identifier, 
 			name, 
-			description, 
-			validationRegularExpression);
+			description);
+
+		/**
+		 * currently accepts the following ranges:
+		 * <ul>
+		 * <li>0 to 9 </li>
+		 * <li>10 to 99</li>
+		 * <li>100 to 119</li>
+		 * </ul>
+		 */
+		addValidationExpression("^[0-9]{1,2}$|1[0-1][0-9]$");
+		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);
 	}
 
 	public static AgeRIFDataType newInstance() {
 
+		String identifier = "rif_age";
 		String name
 			= RIFDataLoaderMessages.getMessage("rifDataType.age.label");
 		String description
 			= RIFDataLoaderMessages.getMessage("rifDataType.age.description");
-		String validationRegularExpression
-			= "^(0*[0-9]|[1-9][0-9]|[1-9][0-1][0-9])";
+
 		AgeRIFDataType ageRIFDataType
 			= new AgeRIFDataType(
+				identifier,	
 				name, 
-				description, 
-				validationRegularExpression);
-
+				description);
+		
 		return ageRIFDataType;
 	}
-	
+		
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	
+
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -108,7 +124,13 @@ public final class AgeRIFDataType extends BuiltInRIFDataType {
 	// ==========================================
 	// Section Override
 	// ==========================================
-
+	
+	public RIFDataType createCopy() {
+		AgeRIFDataType cloneAgeRIFDataType = AgeRIFDataType.newInstance();
+		copyAttributes(cloneAgeRIFDataType);
+		return cloneAgeRIFDataType;
+	}
+	
 }
 
 

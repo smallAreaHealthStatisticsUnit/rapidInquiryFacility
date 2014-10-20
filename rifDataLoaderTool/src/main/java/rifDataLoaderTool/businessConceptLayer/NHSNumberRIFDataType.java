@@ -3,7 +3,7 @@ package rifDataLoaderTool.businessConceptLayer;
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
 
 /**
- *
+ * A data type for NHS numbers.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -52,7 +52,7 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class NHSNumberRIFDataType extends BuiltInRIFDataType {
+public final class NHSNumberRIFDataType extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants
@@ -67,14 +67,20 @@ public final class NHSNumberRIFDataType extends BuiltInRIFDataType {
 	// ==========================================
 
 	private NHSNumberRIFDataType(
+			final String identifier,
 			final String name,
-			final String description,
-			final String validationRegularExpression) {
+			final String description) {
 
 		super(
+			identifier,
 			name, 
-			description, 
-			validationRegularExpression);
+			description);
+		
+		//@TODO: Find acceptable pattern
+		String validationRegularExpression
+			= "^([0-9]*)";
+		addValidationExpression(validationRegularExpression);
+		
 	}
 
 	public static NHSNumberRIFDataType newInstance() {
@@ -83,14 +89,11 @@ public final class NHSNumberRIFDataType extends BuiltInRIFDataType {
 			= RIFDataLoaderMessages.getMessage("rifDataType.nhsNumber.label");
 		String description
 			= RIFDataLoaderMessages.getMessage("rifDataType.nhsNumber.description");
-		//@TODO: Find acceptable pattern
-		String validationRegularExpression
-			= "^([0-9]*)";
 		NHSNumberRIFDataType nhsNumberRIFDataType
 			= new NHSNumberRIFDataType(
+				"rif_nhs_number",
 				name, 
-				description, 
-				validationRegularExpression);
+				description);
 
 		return nhsNumberRIFDataType;
 	}
@@ -110,7 +113,13 @@ public final class NHSNumberRIFDataType extends BuiltInRIFDataType {
 	// ==========================================
 	// Section Override
 	// ==========================================
-
+	
+	public NHSNumberRIFDataType createCopy() {
+		NHSNumberRIFDataType cloneNHSNumberRIFDataType = newInstance();
+		copyAttributes(cloneNHSNumberRIFDataType);
+		return cloneNHSNumberRIFDataType;
+	}	
+		
 }
 
 

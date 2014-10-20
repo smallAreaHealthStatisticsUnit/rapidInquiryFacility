@@ -1,22 +1,15 @@
 package rifDataLoaderTool.system;
 
-import java.io.File;
 import java.text.Collator;
 import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 
-
 /**
- * A class that retrieves messages that may appear in reports or exceptions that
- * are created by the rif service middleware.  The class is also used to retrieve
- * labels that clients of the rif services library could use to label user
- * interface components such as record and field names.
- * 
+ * A class used to retrieve parameterised text messages from a properties file.  This class
+ * is based heavily on {@link rifServices.system.RIFServiceMessages} and in future, these two 
+ * classes may be combined using different property file bundles.
+ *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
  * that rapidly addresses epidemiological and public health questions using 
@@ -80,135 +73,50 @@ import java.util.ResourceBundle;
  *
 */
 
-public class RIFDataLoaderMessages {
+public class RIFDataLoaderToolMessages {
 
     // ==========================================
     // Section Constants
     // ==========================================
-	
 	/** The Constant resourceBundle. */
     public static final ResourceBundle resourceBundle;
 
     /** The collator. */
-    private static Collator collator 
-    	= Collator.getInstance(Locale.getDefault());
+    private static Collator collator = null;
 
     // ==========================================
     // Section Properties
     // ==========================================
+    /**
+     * the context help cursor
+     */
 
     // ==========================================
     // Section Construction
     // ==========================================
 
     static {
-        resourceBundle = ResourceBundle.getBundle("RIFDataLoaderToolMessages");
+        resourceBundle 
+        	= ResourceBundle.getBundle("RIFDataLoaderToolMessages");
     }
 
     // ==========================================
     // Section Accessors
     // ==========================================
 
- 
-    /**
-     * Gets the time phrase.
-     *
-     * @param _date the _date
-     * @return the time phrase
-     */
-    public static String getTimePhrase(
-    	final Date _date) {
-    	
-    	//Safe copy
-    	Date date = new Date(_date.getTime());
-    	
-    	SimpleDateFormat simpleTimeFormat 
- 	   		= new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss:SSS");
- 	   	String result = simpleTimeFormat.format(date);
- 	   	return result;
-    }   
-    
-    /**
-     * Gets the date.
-     *
-     * @param datePhrase the date phrase
-     * @return the date
-     */
-    public static Date getDate(
-    	final String datePhrase) {
-    	
-    	Date result = null;
-    	try {    		
-    		SimpleDateFormat simpleDateFormat 
-   				= new SimpleDateFormat("dd-MMM-yyyy");
-    		result = simpleDateFormat.parse(datePhrase);
-    	}
-    	catch(ParseException parseException) {
-    		//@TODO decide whether to handle this particular
-    		//exception or ignore it   		
-    	}
-		return result;    	
-    }
-    
-    /**
-     * Gets the time.
-     *
-     * @param timePhrase the time phrase
-     * @return the time
-     */
-    public static Date getTime(
-    	final String timePhrase) {    	
-
-    	Date result = null;
-    	try {
-    		SimpleDateFormat simpleTimeFormat 
-    	  		= new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss:SSS");
-    		result = simpleTimeFormat.parse(timePhrase);
-    	}
-    	catch(ParseException parseException) {
-    		//@TODO decide whether to handle this particular
-    		//exception or ignore it
-    	}
-    	
-    	return result;
-    }
-    
    /**
-    * Gets the date phrase.
-    *
-    * @param _date the _date
-    * @return the date phrase
-    */
-    public static String getDatePhrase(
-    	final Date _date) {
-
-	   //Safe copy
-	   Date date = new Date(_date.getTime());
-	   
-	   SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy");
-	   String result = simpleDateFormat.format(date);
-	   return result;
-   }
-    
-   /**
-    * Gets the collator.
-    *
-    * @return the collator
-    */
-   public static Collator getCollator() {
-
-	   Collator result = (Collator) collator.clone();
-	   return result;
-   }
-   
-   /**
-    * Gets the locale.
-    *
-    * @return the locale
-    */
-   public static Locale getLocale() {
-
-	   return Locale.getDefault();
+     * Gets the collator.
+     *
+     * @return the collator
+     */
+    public static Collator getCollator() {
+    	
+	  if ( collator == null) {
+		 collator = Collator.getInstance();
+	  } //end if ()
+	  
+	  Collator result = (Collator) collator.clone();
+	  return result;
    }
 
     /**
@@ -315,7 +223,7 @@ public class RIFDataLoaderMessages {
         	parameters);
 
     }
-
+    
     /**
      * Gets the message.
      *
@@ -324,7 +232,7 @@ public class RIFDataLoaderMessages {
      * @param parameter1 the parameter1
      * @param parameter2 the parameter2
      * @param parameter3 the parameter3
-     * @param parameter3 the parameter4
+     * @param parameter4 the parameter4
      * @return the message
      */
     static public String getMessage(
@@ -345,115 +253,8 @@ public class RIFDataLoaderMessages {
         	parameters);
 
     }
-
-
-    /**
-     * Gets the message.
-     *
-     * @param key the key
-     * @param parameter0 the parameter0
-     * @param parameter1 the parameter1
-     * @param parameter2 the parameter2
-     * @param parameter3 the parameter3
-     * @param parameter3 the parameter4
-     * @param parameter3 the parameter5
-     * @return the message
-     */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
-        final String parameter1,
-        final String parameter2,
-        final String parameter3,
-        final String parameter4,
-        final String parameter5) {
-
-        String[] parameters = new String[6];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-        parameters[2] = parameter2;
-        parameters[3] = parameter3;
-        parameters[4] = parameter4;
-        parameters[5] = parameter5;
-        return fillInTheBlanks(key,
-        	parameters);
-    }
     
-    /**
-     * Gets the message.
-     *
-     * @param key the key
-     * @param parameter0 the parameter0
-     * @param parameter1 the parameter1
-     * @param parameter2 the parameter2
-     * @param parameter3 the parameter3
-     * @param parameter3 the parameter4
-     * @param parameter3 the parameter5
-     * @param parameter3 the parameter6
-     * @return the message
-     */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
-        final String parameter1,
-        final String parameter2,
-        final String parameter3,
-        final String parameter4,
-        final String parameter5,
-        final String parameter6) {
 
-        String[] parameters = new String[7];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-        parameters[2] = parameter2;
-        parameters[3] = parameter3;
-        parameters[4] = parameter4;
-        parameters[5] = parameter5;
-        parameters[6] = parameter6;
-        return fillInTheBlanks(key,
-        	parameters);
-    }
-    
-    /**
-     * Gets the message.
-     *
-     * @param key the key
-     * @param parameter0 the parameter0
-     * @param parameter1 the parameter1
-     * @param parameter2 the parameter2
-     * @param parameter3 the parameter3
-     * @param parameter3 the parameter4
-     * @param parameter3 the parameter5
-     * @param parameter3 the parameter6
-     * @param parameter3 the parameter7
-     * @return the message
-     */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
-        final String parameter1,
-        final String parameter2,
-        final String parameter3,
-        final String parameter4,
-        final String parameter5,
-        final String parameter6,        
-        final String parameter7) {
-
-        String[] parameters = new String[8];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-        parameters[2] = parameter2;
-        parameters[3] = parameter3;
-        parameters[4] = parameter4;
-        parameters[5] = parameter5;
-        parameters[6] = parameter6;
-        parameters[7] = parameter7;
-        
-        return fillInTheBlanks(key,
-        	parameters);
-    }
-    
-    
     /**
      * Fill in the blanks.
      *
@@ -481,8 +282,8 @@ public class RIFDataLoaderMessages {
      * @return the resource bundle
      */
     public static ResourceBundle getResourceBundle() {
-
-    	return resourceBundle;
+    	
+        return resourceBundle;
     }
 
     // ==========================================
@@ -498,39 +299,9 @@ public class RIFDataLoaderMessages {
     public static void setCollator(
     	final Collator _collator) {
 
-		collator = _collator;
+    	collator = _collator;
 	}
 	
-    public static String getRIFServicesClassRootLocation() {
-    	String classPath = System.getProperty("java.class.path");
-    	
-    	//we will get every directory used in the classpath.  Now we want to 
-    	//find the directory that is the start of where the class files for the
-    	//rifServices project are located.  This location can be used to find
-    	//other resource files (eg: text and XML files).
-		String[] classPathEntries
-			= classPath.split(File.pathSeparator);
-		StringBuilder pathToFind = new StringBuilder();
-		pathToFind.append("rapidInquiryFacility");
-		pathToFind.append(File.separator);
-		pathToFind.append("rifServices");
-		pathToFind.append(File.separator);
-		pathToFind.append("target");
-		pathToFind.append(File.separator);
-		pathToFind.append("classes");
-    	
-		String targetClassesEntry = null;
-    	for (String classPathEntry : classPathEntries) {
-    		if (classPathEntry.endsWith(pathToFind.toString())) {
-    			targetClassesEntry = classPathEntry;
-    			break;
-    		}
-    	}
-    	
-    	return targetClassesEntry;
-    	
-    }
-    
     // ==========================================
     // Section Validation
     // ==========================================

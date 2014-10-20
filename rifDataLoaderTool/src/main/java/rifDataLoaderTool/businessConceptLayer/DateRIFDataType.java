@@ -1,16 +1,12 @@
-package rifDataLoaderTool.presentationLayer;
-
-import rifDataLoaderTool.businessConceptLayer.DBTConfigurationRecord;
-
-import rifGenericUILibrary.UserInterfaceFactory;
-
+package rifDataLoaderTool.businessConceptLayer;
 
 import java.util.ArrayList;
-import javax.swing.JTable;
-import javax.swing.table.JTableHeader;
 
+import rifDataLoaderTool.system.RIFDataLoaderMessages;
 /**
- *
+ * a data type for Date.  Note that unlike other data type classes, the validation expressions
+ * are not written for the POSIX regular expression languages. Here the validation patterns 
+ * show date patterns such as "dd-mmm-yyyy" etc.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -59,51 +55,71 @@ import javax.swing.table.JTableHeader;
  *
  */
 
-public class DBTMetaDataTable {
+public final class DateRIFDataType extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
 	
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private UserInterfaceFactory userInterfaceFactory;
-	
-	private JTable table;
-	private JTableHeader tableHeader;
-	private DBTMetaDataTableModel tableModel;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public DBTMetaDataTable(
-		final UserInterfaceFactory userInterfaceFactory) {
+	private DateRIFDataType(
+		final String name,
+		final String description,
+		final String validationRegularExpression) {
+
+		super(
+			name, 
+			description, 
+			validationRegularExpression);
 		
-		this.userInterfaceFactory = userInterfaceFactory;
-		
-		tableModel = new DBTMetaDataTableModel();
-		
-		
-		tableHeader = userInterfaceFactory.createTableHeader();
+		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);
 		
 	}
 
+	public static DateRIFDataType newInstance() {
+
+		String name
+			= RIFDataLoaderMessages.getMessage("rifDataType.date.label");
+
+		//this is the order of date formats which are used to validate RIF dates
+		String dateFormat1 = "DD Mon YYYY";
+		ArrayList<String> validationExpressions = new ArrayList<String>();
+		validationExpressions.add("DD Mon YYYY");
+		
+		StringBuilder dateFormatPatternList = new StringBuilder();
+		for (int i = 0; i < validationExpressions.size(); i++) {
+			if (i != 0) {
+				dateFormatPatternList.append(",");
+			}
+			dateFormatPatternList.append(validationExpressions.get(i));
+		}
+		
+		String description
+			= RIFDataLoaderMessages.getMessage(
+				"rifDataType.date.description",
+				dateFormatPatternList.toString());
+		DateRIFDataType dateRIFDataType
+			= new DateRIFDataType(
+				"rif_date",
+				name, 
+				description);
+
+		dateRIFDataType.setValidationExpressions(validationExpressions);
+		
+		return dateRIFDataType;
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void setDBTMetaDataRecords(
-		final ArrayList<DBTConfigurationRecord> dbtMetaDataRecords) {
-		
-		tableModel.setDBTMetaDataRecords(dbtMetaDataRecords);
-	}
-	
-	
-	public JTable getTable() {
-		return table;
-	}
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -116,7 +132,14 @@ public class DBTMetaDataTable {
 	// ==========================================
 	// Section Override
 	// ==========================================
-
+	
+	public RIFDataType createCopy() {
+		DateRIFDataType cloneDateRIFDataType 
+			= newInstance();
+		copyAttributes(cloneDateRIFDataType);
+		return cloneDateRIFDataType;
+	}
+		
 }
 
 

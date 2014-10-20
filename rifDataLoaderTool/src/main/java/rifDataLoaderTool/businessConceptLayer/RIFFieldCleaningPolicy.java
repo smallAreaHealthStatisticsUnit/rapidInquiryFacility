@@ -1,11 +1,30 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 /**
- *
- * A generic custom data type where RIF managers can define their own data types.
+ * A processing flag that tells SQL code generation classes which kind of cleaning 
+ * is associated with the field:
+ * <ul>
+ * <li>
+ * no cleaning
+ * </li>
+ * <li>
+ * cleaning rules
+ * </li>
+ * <li>
+ * a cleaning function
+ * </li>
+ * </ul>
  * 
+ * <p>
+ * Each of these options corresponds to a different SQL construction for the field.  In the case of
+ * no cleaning, the field value from the load table is returned for the cleaned field unchanged.
+ * When cleaning rules are applied, the SQL code generators create a <code>CASE</code> statement where each
+ * cleaning rule forms a <code>WHEN</code> statement that includes search and replace criteria.  When
+ * the cleaning policy is a cleaning function, then the field value and additional parameter values
+ * may be passed to the function.
+ *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
@@ -53,73 +72,22 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public final class CustomRIFDataType 
-	extends AbstractRIFDataType {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
-
+public enum RIFFieldCleaningPolicy {
+	CLEANING_FUNCTION("rifFieldCleaningPolicy.cleaningFunction.label"),
+	CLEANING_RULES("rifFieldCleaningPolicy.cleaningRules.label"),
+	NO_CLEANING("rifFieldCleaningPolicy.noCleaning.label");
 	
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
-	private CustomRIFDataType(
-		final String identifier,
-		final String name,
-		final String description) {
+	private String propertyName;
+	
+	RIFFieldCleaningPolicy(
+		final String propertyName) {
 		
-		super(
-			identifier,
-			name,
-			description);
-	}
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	public static CustomRIFDataType newInstance(
-		final String identifier,
-		final String name,
-		final String description) {
-		
-		CustomRIFDataType customRIFDataType
-			= new CustomRIFDataType(
-				identifier, 
-				name, 
-				description);
-		
-		return customRIFDataType;
-	}
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
-
-	public RIFDataType createCopy() {
-		CustomRIFDataType clonedCustomRIFDataType
-			= new CustomRIFDataType(
-				getIdentifier(),
-				getName(),
-				getDescription());
-		copyAttributes(clonedCustomRIFDataType);
-		
-		return clonedCustomRIFDataType;
+		this.propertyName = propertyName;
 	}
 	
+	public String getName() {
+		return RIFDataLoaderToolMessages.getMessage(propertyName);
+	}
 }
 
 
