@@ -132,7 +132,7 @@ import java.util.ArrayList;
  */
 
 abstract class AbstractRIFStudySubmissionService 
-	extends AbstractRIFService
+	extends AbstractRIFUserService
 	implements RIFStudySubmissionAPI {
 
 	// ==========================================
