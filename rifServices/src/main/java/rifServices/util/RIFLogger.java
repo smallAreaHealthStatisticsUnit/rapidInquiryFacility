@@ -142,6 +142,42 @@ public class RIFLogger {
 		
 
 	}
+
+	public void debug(
+		final Class callingClass,			
+		final String message) {
+			
+		System.out.println(message);
+	}
+
+	public void debugQuery(
+			final Object caller,
+			final String debugLabel,
+			final String message) {
+
+		/*
+		StringBuilder buffer = new StringBuilder();
+		buffer.append("DEBUG: Class:");
+		buffer.append(caller.getClass());
+		
+		if (debugLabel != null) {
+			buffer.append(" DebugLabel: ");
+			buffer.append(debugLabel);
+		}
+		
+		System.out.println(buffer.toString());
+		*/
+		System.out.println();
+		System.out.println(message);
+	}
+	
+	
+	public void debug(
+		final String debugLabel,
+		final String message) {
+				
+		System.out.println("DEBUG " + debugLabel + ": " + message);
+	}
 	
 	// ==========================================
 	// Section Errors and Validation
