@@ -71,7 +71,7 @@ import java.util.ArrayList;
  */
 
 public class SQLRecordExistsQueryFormatter 
-	extends SQLQueryFormatter {
+	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -160,44 +160,47 @@ public class SQLRecordExistsQueryFormatter
 		whereConditions.add(whereCondition.toString());
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.dataStorageLayer.SQLQueryFormatter#generateQuery()
-	 */
+	@Override
 	public String generateQuery() {
+		resetAccumulatedQueryExpression();
+		addQueryPhrase(0, "SELECT 1");
+		padAndFinishLine();
+		addQueryPhrase(0, "FROM");
+		padAndFinishLine();
 		
-		query = new StringBuilder();
-		query.append("SELECT 1 ");
-		query.append("FROM ");
-		query.append(convertCase(fromTableName));
-		query.append(" WHERE ");
+		addQueryPhrase(1, convertCase(fromTableName));
+		padAndFinishLine();
+		addQueryPhrase(0, "WHERE");
 		
 		if (lookupKeyFieldName == null) {
 			int numberOfWhereConditions = whereConditions.size();
 			if (numberOfWhereConditions > 0) {			
 				for (int i = 0; i < numberOfWhereConditions; i++) {
 					if (i != 0) {
-						query.append(" AND ");
+						addQueryPhrase(" AND ");
 					}
-					query.append(convertCase(whereConditions.get(i)));
+					addQueryPhrase(1, convertCase(whereConditions.get(i)));
 				}
 			}
 		}
 		else {
-			query.append(convertCase(lookupKeyFieldName));
-			query.append("=?");			
+			addQueryPhrase(1, convertCase(lookupKeyFieldName));
+			addQueryPhrase("=?");			
 
 			int numberOfWhereConditions = whereConditions.size();
 			if (numberOfWhereConditions > 0) {			
 				for (int i = 0; i < numberOfWhereConditions; i++) {
-					query.append(" AND ");
-					query.append(convertCase(whereConditions.get(i)));
+					addQueryPhrase(" AND");
+					padAndFinishLine();
+					addQueryPhrase(1, convertCase(whereConditions.get(i)));
 				}
 			}		
 		}
 
-		query.append(";");
+		addQueryPhrase(";");
+		finishLine();
 				
-		return query.toString();
+		return super.generateQuery();
 	}
 	
 	// ==========================================

@@ -44,7 +44,6 @@ import java.util.ArrayList;
  * @author kgarwood
  * @version
  */
-
 /*
  * Code Road Map:
  * --------------
@@ -67,80 +66,92 @@ import java.util.ArrayList;
  *
  */
 
-public class SQLMinMaxQueryFormatter 
+public class SQLDeleteRowsQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	/**
-	 * The Enum OperationType.
-	 */
-	public enum OperationType {
-		/** The min. */
-		MIN, 
-		/** The max. */
-		MAX, 
-		/** The avg. */
-		AVG};
-	
+
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The from table name. */
-	private String fromTableName;
-	
-	/** The countable field name. */
-	private String countableFieldName;
+	/** The from table. */
+	private String fromTable;
 	
 	/** The where conditions. */
 	private ArrayList<String> whereConditions;
-	
-	/** The operation type. */
-	private OperationType operationType;
 
-	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	/**
-	 * Instantiates a new SQL min max query formatter.
-	 *
-	 * @param operationType the operation type
+	 * Instantiates a new SQL delete query formatter.
 	 */
-	public SQLMinMaxQueryFormatter(
-		final OperationType operationType) {
-		
-		this.operationType = operationType;
+	public SQLDeleteRowsQueryFormatter() {
 		whereConditions = new ArrayList<String>();
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
 	/**
 	 * Sets the from table.
 	 *
-	 * @param fromTableName the new from table
+	 * @param fromTable the new from table
 	 */
 	public void setFromTable(
-		final String fromTableName) {
-
-		this.fromTableName = fromTableName;
+		final String fromTable) {
+		
+		this.fromTable = fromTable;
 	}
 	
 	/**
-	 * Sets the countable field name.
+	 * Adds the where join condition.
 	 *
-	 * @param countableFieldName the new countable field name
+	 * @param tableA the table a
+	 * @param fieldNameA the field name a
+	 * @param tableB the table b
+	 * @param fieldNameB the field name b
 	 */
-	public void setCountableFieldName(
-		final String countableFieldName) {
+	public void addWhereJoinCondition(
+		final String tableA,
+		final String fieldNameA,
+		final String tableB,
+		final String fieldNameB) {
+
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(tableA);
+		whereCondition.append(".");
+		whereCondition.append(fieldNameA);
+		whereCondition.append("=");
+		whereCondition.append(tableB);
+		whereCondition.append(".");
+		whereCondition.append(fieldNameB);
 		
-		this.countableFieldName = countableFieldName;		
+		whereConditions.add(whereCondition.toString());
 	}
+	
+	/**
+	 * Adds the where join condition.
+	 *
+	 * @param tableFieldA the table field a
+	 * @param tableFieldB the table field b
+	 */
+	public void addWhereJoinCondition(
+		final String tableFieldA,
+		final String tableFieldB) {
+
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(tableFieldA);
+		whereCondition.append("=");
+		whereCondition.append(tableFieldB);
 		
+		whereConditions.add(whereCondition.toString());		
+	}
+	
 	/**
 	 * Adds the where parameter.
 	 *
@@ -148,7 +159,7 @@ public class SQLMinMaxQueryFormatter
 	 */
 	public void addWhereParameter(
 		final String fieldName) {
-
+		
 		StringBuilder whereCondition = new StringBuilder();
 		whereCondition.append(fieldName);
 		whereCondition.append("=?");
@@ -170,50 +181,55 @@ public class SQLMinMaxQueryFormatter
 		whereCondition.append(fieldName);
 		whereCondition.append(operator);
 		whereCondition.append("?");
-			
+		
 		whereConditions.add(whereCondition.toString());
 	}
 
+	/**
+	 * Adds the where parameter.
+	 *
+	 * @param tableName the table name
+	 * @param fieldName the field name
+	 */
+	public void addWhereParameter(
+		final String tableName, 
+		final String fieldName) {
+		
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(tableName);
+		whereCondition.append(".");		
+		whereCondition.append(fieldName);
+		whereCondition.append("=?");
+
+		whereConditions.add(whereCondition.toString());
+	}
+	
 	@Override
 	public String generateQuery() {
-
+	
 		resetAccumulatedQueryExpression();
-		addQueryPhrase(0, "SELECT");
-		padAndFinishLine();
-		if (operationType == OperationType.MAX) {
-			addQueryPhrase(1, "MAX(");
-		}
-		else if (operationType == OperationType.MIN) {
-			addQueryPhrase(1, "MIN(");			
-		}
-		else {
-			addQueryPhrase(1,"AVG(");			
-		}
-		addQueryPhrase(countableFieldName);
-		addQueryPhrase(")");
-		padAndFinishLine();
-		
-		addQueryPhrase(0, "FROM");
-		padAndFinishLine();
+		addQueryPhrase(0, "DELETE FROM ");
+		addQueryPhrase(fromTable);
 
-		addQueryPhrase(1, convertCase(fromTableName));
 		
 		int numberOfWhereConditions = whereConditions.size();
 		if (numberOfWhereConditions > 0) {			
-			addQueryPhrase(0, "WHERE");
 			padAndFinishLine();
+			addQueryPhrase("WHERE");
+			padAndFinishLine();			
 			for (int i = 0; i < numberOfWhereConditions; i++) {
-				if (i != 0) {
+				if (i > 0) {
 					addQueryPhrase(" AND");
 					padAndFinishLine();
 				}
 				addQueryPhrase(1, convertCase(whereConditions.get(i)));
 			}
 		}
+		
 		addQueryPhrase(";");
 		finishLine();
-				
-		return super.generateQuery();
+		
+		return super.generateQuery();		
 	}
 	
 	// ==========================================

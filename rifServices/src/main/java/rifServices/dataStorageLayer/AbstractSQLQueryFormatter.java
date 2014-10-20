@@ -1,6 +1,5 @@
 package rifServices.dataStorageLayer;
 
-import java.util.ArrayList;
 
 
 /**
@@ -67,153 +66,161 @@ import java.util.ArrayList;
  *
  */
 
-public class SQLMinMaxQueryFormatter 
-	extends AbstractSQLQueryFormatter {
+public abstract class AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	/**
-	 * The Enum OperationType.
-	 */
-	public enum OperationType {
-		/** The min. */
-		MIN, 
-		/** The max. */
-		MAX, 
-		/** The avg. */
-		AVG};
-	
+
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The from table name. */
-	private String fromTableName;
+	/** The query. */
+	private StringBuilder query;
 	
-	/** The countable field name. */
-	private String countableFieldName;
+	/**
+	 * The Enum AlphabeticalCase.
+	 */
+	public enum AlphabeticalCase {
+		/** The lower case. */
+		LOWER_CASE, 
+		/** The upper case. */
+		UPPER_CASE, 
+		/** The mixed case. */
+		MIXED_CASE};
 	
-	/** The where conditions. */
-	private ArrayList<String> whereConditions;
-	
-	/** The operation type. */
-	private OperationType operationType;
+	/** The alphabetical case. */
+	protected AlphabeticalCase alphabeticalCase;
 
-	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	/**
-	 * Instantiates a new SQL min max query formatter.
-	 *
-	 * @param operationType the operation type
+	 * Instantiates a new SQL query formatter.
 	 */
-	public SQLMinMaxQueryFormatter(
-		final OperationType operationType) {
-		
-		this.operationType = operationType;
-		whereConditions = new ArrayList<String>();
+	public AbstractSQLQueryFormatter() {
+
+		alphabeticalCase = AlphabeticalCase.MIXED_CASE;
+		query = new StringBuilder();
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 	/**
-	 * Sets the from table.
+	 * Convert case.
 	 *
-	 * @param fromTableName the new from table
+	 * @param sqlPhrase the sql phrase
+	 * @return the string
 	 */
-	public void setFromTable(
-		final String fromTableName) {
+	protected String convertCase(
+		final String sqlPhrase) {
 
-		this.fromTableName = fromTableName;
-	}
-	
-	/**
-	 * Sets the countable field name.
-	 *
-	 * @param countableFieldName the new countable field name
-	 */
-	public void setCountableFieldName(
-		final String countableFieldName) {
-		
-		this.countableFieldName = countableFieldName;		
-	}
-		
-	/**
-	 * Adds the where parameter.
-	 *
-	 * @param fieldName the field name
-	 */
-	public void addWhereParameter(
-		final String fieldName) {
-
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(fieldName);
-		whereCondition.append("=?");
-
-		whereConditions.add(whereCondition.toString());
-	}
-	
-	/**
-	 * Adds the where parameter with operator.
-	 *
-	 * @param fieldName the field name
-	 * @param operator the operator
-	 */
-	public void addWhereParameterWithOperator(
-		final String fieldName,
-		final String operator) {
-
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(fieldName);
-		whereCondition.append(operator);
-		whereCondition.append("?");
-			
-		whereConditions.add(whereCondition.toString());
-	}
-
-	@Override
-	public String generateQuery() {
-
-		resetAccumulatedQueryExpression();
-		addQueryPhrase(0, "SELECT");
-		padAndFinishLine();
-		if (operationType == OperationType.MAX) {
-			addQueryPhrase(1, "MAX(");
+		if (alphabeticalCase == AlphabeticalCase.LOWER_CASE) {
+			return sqlPhrase.toLowerCase();				
 		}
-		else if (operationType == OperationType.MIN) {
-			addQueryPhrase(1, "MIN(");			
+		else if (alphabeticalCase == AlphabeticalCase.UPPER_CASE) {
+			return sqlPhrase.toUpperCase();				
 		}
 		else {
-			addQueryPhrase(1,"AVG(");			
-		}
-		addQueryPhrase(countableFieldName);
-		addQueryPhrase(")");
-		padAndFinishLine();
+			return sqlPhrase;								
+		}		
+	}
+	
+	/**
+	 * Sets the alphabetical case type.
+	 *
+	 * @param alphabeticalCase the new alphabetical case type
+	 */
+	public void setAlphabeticalCaseType(
+		final AlphabeticalCase alphabeticalCase) {
 		
-		addQueryPhrase(0, "FROM");
-		padAndFinishLine();
+		this.alphabeticalCase = alphabeticalCase;
+	}
+	
 
-		addQueryPhrase(1, convertCase(fromTableName));
+	public void addQueryPhrase(
+		final int indentationLevel,
+		final String queryPhrase) {
 		
-		int numberOfWhereConditions = whereConditions.size();
-		if (numberOfWhereConditions > 0) {			
-			addQueryPhrase(0, "WHERE");
-			padAndFinishLine();
-			for (int i = 0; i < numberOfWhereConditions; i++) {
-				if (i != 0) {
-					addQueryPhrase(" AND");
-					padAndFinishLine();
-				}
-				addQueryPhrase(1, convertCase(whereConditions.get(i)));
-			}
+		addIndentation(indentationLevel);	
+		query.append(queryPhrase);		
+	}
+	
+	public void addQueryPhrase(
+		final String queryPhrase) {
+		
+		query.append(queryPhrase);
+	}
+	
+	public void addQueryLine(
+		final int indentationLevel,
+		final String queryPhrase) {
+		
+		addIndentation(indentationLevel);		
+		query.append(queryPhrase);
+		query.append("\n");
+	
+	}
+
+	public void addUnderline() {
+		
+		query.append(" -- ");
+		for (int i = 0; i < 60; i++) {
+			query.append("=");
 		}
-		addQueryPhrase(";");
-		finishLine();
-				
-		return super.generateQuery();
+		query.append("\n");
+	}
+	
+	public void addComment(
+		final String lineComment) {
+		
+		query.append(" -- ");
+		query.append(lineComment);
+	}
+	
+	public void addCommentLine(
+		final String lineComment) {
+			
+		query.append(" -- ");
+		query.append(lineComment);
+		query.append("\n");
+	}	
+	
+	private void addIndentation(
+		final int indentationLevel) {
+		
+		for (int i = 0; i < indentationLevel; i++) {
+			query.append("   ");
+		}
+		
+		//query.append("\t");
+	}
+	
+	public void finishLine(
+		final String queryPhrase) {
+		
+		query.append(queryPhrase);
+		query.append("\n");
+	}
+	
+	public void finishLine() {
+		query.append("\n");
+	}
+	
+	public void padAndFinishLine() {
+		query.append(" ");
+		query.append("\n");
+	}
+	
+	protected void resetAccumulatedQueryExpression() {
+		query = new StringBuilder();
+	}
+	
+	
+	public String generateQuery() {
+		return query.toString();
 	}
 	
 	// ==========================================

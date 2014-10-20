@@ -70,7 +70,7 @@ import java.util.ArrayList;
  */
 
 public class SQLSelectQueryFormatter 
-	extends SQLQueryFormatter {
+	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -378,31 +378,37 @@ public class SQLSelectQueryFormatter
 		orderByConditions.add(orderByCondition.toString());
 	}
 	
+	@Override
 	public String generateQuery() {
-		
-		query = new StringBuilder();
-		query.append("SELECT ");
+
+		resetAccumulatedQueryExpression();
+		addQueryPhrase(0, "SELECT");
 		if (useDistinct == true) {
-			query.append("DISTINCT ");
+			addQueryPhrase(" DISTINCT");
 		}
+		padAndFinishLine();
+
+		
 		int numberOfSelectFields = selectFields.size();
 		for (int i = 0; i < numberOfSelectFields; i++) {
 			if(i > 0) {
-				query.append(",");
+				addQueryPhrase(",");
+				finishLine();
 			}
-			query.append(convertCase(selectFields.get(i)));
+			addQueryPhrase(1, convertCase(selectFields.get(i)));
 		}
-		query.append(" ");
-		
-		query.append("FROM ");
+		padAndFinishLine();
+	
+		addQueryPhrase(0, "FROM");
+		padAndFinishLine();
 		int numberOfFromTables = fromTables.size();
 		for (int i = 0; i < numberOfFromTables; i++) {
 			if (i > 0) {
-				query.append(",");
+				addQueryPhrase(",");
+				finishLine();
 			}
-			query.append(convertCase(fromTables.get(i)));
+			addQueryPhrase(1, convertCase(fromTables.get(i)));
 		}
-		query.append(" ");
 		
 		
 		ArrayList<String> allWhereConditions = new ArrayList<String>();
@@ -419,41 +425,47 @@ public class SQLSelectQueryFormatter
 		
 		int numberOfWhereConditions = allWhereConditions.size();
 		if (numberOfWhereConditions > 0) {			
-			query.append("WHERE ");
+			padAndFinishLine();
+			addQueryPhrase(0, "WHERE");
 			
 			if (orAllWhereConditions == true) {
 				for (int i = 0; i < numberOfWhereConditions; i++) {
 					if (i > 0) {
-						query.append(" OR ");
+						addQueryPhrase(" OR");
+						padAndFinishLine();
 					}
-					query.append(convertCase(allWhereConditions.get(i)));
+					addQueryPhrase(1, convertCase(allWhereConditions.get(i)));
 				}			
 			}
 			else {
 				for (int i = 0; i < numberOfWhereConditions; i++) {
 					if (i > 0) {
-						query.append(" AND ");
+						addQueryPhrase(" AND");
+						padAndFinishLine();
 					}
-					query.append(convertCase(allWhereConditions.get(i)));
+					addQueryPhrase(1, convertCase(allWhereConditions.get(i)));
 				}				
 			}
-
+			
 		}
 		
 		int numberOfOrderByConditions = orderByConditions.size();
 		if (numberOfOrderByConditions > 0) {
-			query.append(" ORDER BY ");
+			padAndFinishLine();
+			addQueryPhrase(0, "ORDER BY");
+			padAndFinishLine();
 			for (int i = 0; i < numberOfOrderByConditions; i++) {
 				if (i > 0) {
-					query.append(",");
+					addQueryPhrase(",");
 				}
-				query.append(convertCase(orderByConditions.get(i)));
+				addQueryPhrase(1, convertCase(orderByConditions.get(i)));
 			}
 		}
 		
-		query.append(";");
+		addQueryPhrase(";");
+		finishLine();
 				
-		return query.toString();
+		return super.generateQuery();
 	}
 	
 	// ==========================================

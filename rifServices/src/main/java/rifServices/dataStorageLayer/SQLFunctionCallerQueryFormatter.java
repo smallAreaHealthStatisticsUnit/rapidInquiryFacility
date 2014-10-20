@@ -72,7 +72,7 @@ import rifServices.dataStorageLayer.SQLSelectQueryFormatter.SortOrder;
  */
 
 public class SQLFunctionCallerQueryFormatter 
-	extends SQLQueryFormatter {
+	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -221,67 +221,75 @@ public class SQLFunctionCallerQueryFormatter
 	 * @see rifServices.dataStorageLayer.SQLQueryFormatter#generateQuery()
 	 */
 	public String generateQuery() {
-		
-		query = new StringBuilder();
-		query.append("SELECT ");
+		resetAccumulatedQueryExpression();
+		addQueryPhrase(0, "SELECT ");
 		if (useDistinct == true) {
-			query.append("DISTINCT ");
+			addQueryPhrase("DISTINCT");
 		}
+		padAndFinishLine();
 		
 		int numberOfSelectFields = selectFields.size();
 		if (numberOfSelectFields == 0) {
-			query.append("*");			
+			addQueryPhrase(1, "*");
+			padAndFinishLine();
 		}
 		else {
 			for (int i = 0; i < numberOfSelectFields; i++) {
 				if(i > 0) {
-					query.append(",");
+					addQueryPhrase(",");
+					finishLine();
 				}
-				query.append(convertCase(selectFields.get(i)));
+				addQueryPhrase(1, convertCase(selectFields.get(i)));
 			}
 		}
-		query.append(" ");			
+		padAndFinishLine();
 		
-		query.append("FROM ");
-		query.append(schema);
-		query.append(".");
-		query.append(functionName);
-		query.append("(");
+		addQueryPhrase(0, "FROM");
+		padAndFinishLine();
+		addQueryPhrase(1, schema);
+		addQueryPhrase(".");
+		addQueryPhrase(functionName);
+		addQueryPhrase("(");
 		
 		for (int i = 0; i < numberOfFunctionParameters; i++) {
 			if (i != 0) {
-				query.append(",");
+				addQueryPhrase(",");
 			}
-			query.append("?");
+			addQueryPhrase("?");
 		}
-		query.append(")");
+		addQueryPhrase(")");
 		
 		int numberOfWhereConditions = whereConditions.size();
 		if (numberOfWhereConditions > 0) {			
-			query.append(" WHERE ");
+			padAndFinishLine();
+			addQueryPhrase(0, "WHERE");
+			padAndFinishLine();
 			for (int i = 0; i < numberOfWhereConditions; i++) {
 				if (i > 0) {
-					query.append(" AND ");
+					addQueryPhrase(" AND");
+					padAndFinishLine();					
 				}
-				query.append(convertCase(whereConditions.get(i)));
+				addQueryPhrase(1, convertCase(whereConditions.get(i)));
 			}
 		}
 
 		int numberOfOrderByConditions = orderByConditions.size();
 		if (numberOfOrderByConditions > 0) {
-			query.append(" ORDER BY ");
+			padAndFinishLine();
+			addQueryPhrase(0, " ORDER BY");
+			padAndFinishLine();
 			for (int i = 0; i < numberOfOrderByConditions; i++) {
 				if (i > 0) {
-					query.append(",");
+					addQueryPhrase(",");
 				}
-				query.append(convertCase(orderByConditions.get(i)));
+				addQueryPhrase(convertCase(orderByConditions.get(i)));
 			}
 		}
-
 		
-		query.append(";");
+		addQueryPhrase(";");
+		finishLine();
 				
-		return query.toString();
+		return super.generateQuery();
 	}
 	
 	// ==========================================

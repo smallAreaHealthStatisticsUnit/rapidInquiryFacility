@@ -1,5 +1,6 @@
 package rifServices.dataStorageLayer;
 
+import java.util.ArrayList;
 
 
 /**
@@ -66,85 +67,155 @@ package rifServices.dataStorageLayer;
  *
  */
 
-public abstract class SQLQueryFormatter {
+public class SQLSumQueryFormatter 
+	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	/**
+	 * The Enum OperationType.
+	 */
+	public enum OperationType {
+		/** The min. */
+		MIN, 
+		/** The max. */
+		MAX, 
+		/** The avg. */
+		AVG};
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The query. */
-	protected StringBuilder query;
+	/** The from table name. */
+	private String fromTableName;
 	
-	/**
-	 * The Enum AlphabeticalCase.
-	 */
-	public enum AlphabeticalCase {
-		/** The lower case. */
-		LOWER_CASE, 
-		/** The upper case. */
-		UPPER_CASE, 
-		/** The mixed case. */
-		MIXED_CASE};
+	/** The countable field name. */
+	private String countableFieldName;
 	
-	/** The alphabetical case. */
-	protected AlphabeticalCase alphabeticalCase;
+	/** The where conditions. */
+	private ArrayList<String> whereConditions;
+	
+	/** The operation type. */
+	private OperationType operationType;
 
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	/**
-	 * Instantiates a new SQL query formatter.
+	 * Instantiates a new SQL min max query formatter.
+	 *
+	 * @param operationType the operation type
 	 */
-	public SQLQueryFormatter() {
-
-		alphabeticalCase = AlphabeticalCase.MIXED_CASE;
+	public SQLSumQueryFormatter(
+		final OperationType operationType) {
+		
+		this.operationType = operationType;
+		whereConditions = new ArrayList<String>();
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 	/**
-	 * Convert case.
+	 * Sets the from table.
 	 *
-	 * @param sqlPhrase the sql phrase
-	 * @return the string
+	 * @param fromTableName the new from table
 	 */
-	protected String convertCase(
-		final String sqlPhrase) {
+	public void setFromTable(
+		final String fromTableName) {
 
-		if (alphabeticalCase == AlphabeticalCase.LOWER_CASE) {
-			return sqlPhrase.toLowerCase();				
+		this.fromTableName = fromTableName;
+	}
+	
+	/**
+	 * Sets the countable field name.
+	 *
+	 * @param countableFieldName the new countable field name
+	 */
+	public void setCountableFieldName(
+		final String countableFieldName) {
+		
+		this.countableFieldName = countableFieldName;		
+	}
+		
+	/**
+	 * Adds the where parameter.
+	 *
+	 * @param fieldName the field name
+	 */
+	public void addWhereParameter(
+		final String fieldName) {
+
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(fieldName);
+		whereCondition.append("=?");
+
+		whereConditions.add(whereCondition.toString());
+	}
+	
+	/**
+	 * Adds the where parameter with operator.
+	 *
+	 * @param fieldName the field name
+	 * @param operator the operator
+	 */
+	public void addWhereParameterWithOperator(
+		final String fieldName,
+		final String operator) {
+
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(fieldName);
+		whereCondition.append(operator);
+		whereCondition.append("?");
+			
+		whereConditions.add(whereCondition.toString());
+	}
+
+	/* (non-Javadoc)
+	 * @see rifServices.dataStorageLayer.SQLQueryFormatter#generateQuery()
+	 */
+	public String generateQuery() {
+
+		resetAccumulatedQueryExpression();
+		addQueryPhrase(0, "SELECT");
+		padAndFinishLine();
+		if (operationType == OperationType.MAX) {
+			addQueryPhrase(1, "MAX(");
 		}
-		else if (alphabeticalCase == AlphabeticalCase.UPPER_CASE) {
-			return sqlPhrase.toUpperCase();				
+		else if (operationType == OperationType.MIN) {
+			addQueryPhrase(1, "MIN(");			
 		}
 		else {
-			return sqlPhrase;								
-		}		
-	}
-	
-	/**
-	 * Sets the alphabetical case type.
-	 *
-	 * @param alphabeticalCase the new alphabetical case type
-	 */
-	public void setAlphabeticalCaseType(
-		final AlphabeticalCase alphabeticalCase) {
+			addQueryPhrase("AVG(");			
+		}
+		addQueryPhrase(countableFieldName);
+		addQueryPhrase(")");
+		padAndFinishLine();
 		
-		this.alphabeticalCase = alphabeticalCase;
+		addQueryPhrase(0, "FROM");
+		padAndFinishLine();
+		
+		addQueryPhrase(1, convertCase(fromTableName));
+		
+		int numberOfWhereConditions = whereConditions.size();
+		if (numberOfWhereConditions > 0) {			
+			addQueryPhrase(" WHERE");
+			for (int i = 0; i < numberOfWhereConditions; i++) {
+				if (i != 0) {
+					addQueryPhrase(" AND");
+					padAndFinishLine();
+				}
+				addQueryPhrase(1, convertCase(whereConditions.get(i)));
+			}
+		}
+		addQueryPhrase(";");
+				
+		return super.generateQuery();
 	}
 	
-	/**
-	 * Generate query.
-	 *
-	 * @return the string
-	 */
-	public abstract String generateQuery();
-
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

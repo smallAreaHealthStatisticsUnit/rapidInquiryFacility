@@ -1,6 +1,6 @@
 package rifServices.dataStorageLayer;
 
-import java.util.ArrayList;
+
 
 
 /**
@@ -44,7 +44,6 @@ import java.util.ArrayList;
  * @author kgarwood
  * @version
  */
-
 /*
  * Code Road Map:
  * --------------
@@ -67,153 +66,54 @@ import java.util.ArrayList;
  *
  */
 
-public class SQLMinMaxQueryFormatter 
+public class SQLDeleteTableQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	/**
-	 * The Enum OperationType.
-	 */
-	public enum OperationType {
-		/** The min. */
-		MIN, 
-		/** The max. */
-		MAX, 
-		/** The avg. */
-		AVG};
-	
+
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The from table name. */
-	private String fromTableName;
-	
-	/** The countable field name. */
-	private String countableFieldName;
-	
-	/** The where conditions. */
-	private ArrayList<String> whereConditions;
-	
-	/** The operation type. */
-	private OperationType operationType;
-
+	/** The table that will be deleted */
+	private String tableToDelete;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	/**
-	 * Instantiates a new SQL min max query formatter.
-	 *
-	 * @param operationType the operation type
+	 * Instantiates a new SQL delete table query formatter.
 	 */
-	public SQLMinMaxQueryFormatter(
-		final OperationType operationType) {
-		
-		this.operationType = operationType;
-		whereConditions = new ArrayList<String>();
+	public SQLDeleteTableQueryFormatter() {
+
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	/**
-	 * Sets the from table.
-	 *
-	 * @param fromTableName the new from table
-	 */
-	public void setFromTable(
-		final String fromTableName) {
 
-		this.fromTableName = fromTableName;
+	/**
+	 * Sets the target table to delete
+	 *
+	 * @param fromTable the new from table
+	 */
+	public void setTableToDelete(
+		final String tableToDelete) {
+		
+		this.tableToDelete = tableToDelete;
 	}
 	
-	/**
-	 * Sets the countable field name.
-	 *
-	 * @param countableFieldName the new countable field name
-	 */
-	public void setCountableFieldName(
-		final String countableFieldName) {
-		
-		this.countableFieldName = countableFieldName;		
-	}
-		
-	/**
-	 * Adds the where parameter.
-	 *
-	 * @param fieldName the field name
-	 */
-	public void addWhereParameter(
-		final String fieldName) {
-
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(fieldName);
-		whereCondition.append("=?");
-
-		whereConditions.add(whereCondition.toString());
-	}
-	
-	/**
-	 * Adds the where parameter with operator.
-	 *
-	 * @param fieldName the field name
-	 * @param operator the operator
-	 */
-	public void addWhereParameterWithOperator(
-		final String fieldName,
-		final String operator) {
-
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(fieldName);
-		whereCondition.append(operator);
-		whereCondition.append("?");
-			
-		whereConditions.add(whereCondition.toString());
-	}
-
 	@Override
 	public String generateQuery() {
 
 		resetAccumulatedQueryExpression();
-		addQueryPhrase(0, "SELECT");
-		padAndFinishLine();
-		if (operationType == OperationType.MAX) {
-			addQueryPhrase(1, "MAX(");
-		}
-		else if (operationType == OperationType.MIN) {
-			addQueryPhrase(1, "MIN(");			
-		}
-		else {
-			addQueryPhrase(1,"AVG(");			
-		}
-		addQueryPhrase(countableFieldName);
-		addQueryPhrase(")");
-		padAndFinishLine();
-		
-		addQueryPhrase(0, "FROM");
-		padAndFinishLine();
-
-		addQueryPhrase(1, convertCase(fromTableName));
-		
-		int numberOfWhereConditions = whereConditions.size();
-		if (numberOfWhereConditions > 0) {			
-			addQueryPhrase(0, "WHERE");
-			padAndFinishLine();
-			for (int i = 0; i < numberOfWhereConditions; i++) {
-				if (i != 0) {
-					addQueryPhrase(" AND");
-					padAndFinishLine();
-				}
-				addQueryPhrase(1, convertCase(whereConditions.get(i)));
-			}
-		}
+		addQueryPhrase(0, "DROP TABLE IF EXISTS ");
+		addQueryPhrase(tableToDelete);
 		addQueryPhrase(";");
-		finishLine();
-				
-		return super.generateQuery();
+
+		return super.generateQuery();		
 	}
 	
 	// ==========================================

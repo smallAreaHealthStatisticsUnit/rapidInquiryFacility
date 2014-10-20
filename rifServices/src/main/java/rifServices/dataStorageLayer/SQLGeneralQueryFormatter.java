@@ -1,19 +1,13 @@
 package rifServices.dataStorageLayer;
 
 /**
+ * This is a query formatter that can be used when no other query formatting classes
+ * (eg: SQLSelectQueryFormatter, SQLCountQueryFormatter do not seem to fit.)
  *
  * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
+
  * Copyright 2014 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
+ * Health Statistics Unit. 
  *
  * <pre> 
  * This file is part of the Rapid Inquiry Facility (RIF) project.
@@ -21,16 +15,14 @@ package rifServices.dataStorageLayer;
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+
  * RIF is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
+ * along with RIF.  If not, see <http://www.gnu.org/licenses/>.
  * </pre>
  *
  * <hr>
@@ -60,7 +52,7 @@ package rifServices.dataStorageLayer;
  *
  */
 
-public class SQLCountTableRowsQueryFormatter extends AbstractSQLQueryFormatter {
+public class SQLGeneralQueryFormatter extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -69,22 +61,20 @@ public class SQLCountTableRowsQueryFormatter extends AbstractSQLQueryFormatter {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String tableName;
+	private StringBuilder query;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public SQLCountTableRowsQueryFormatter() {
-
+	public SQLGeneralQueryFormatter() {
+		query = new StringBuilder();
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void setTableName(final String tableName) {
-		this.tableName = tableName;
-	}
+
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -97,14 +87,7 @@ public class SQLCountTableRowsQueryFormatter extends AbstractSQLQueryFormatter {
 	// ==========================================
 	// Section Override
 	// ==========================================
-	public String generateQuery() {
-		StringBuilder query = new StringBuilder();
-		
-		query.append("SELECT");
-		query.append("COUNT(*)");
-		query.append("FROM");
-		query.append(convertCase(tableName));
-		
-		return query.toString();		
-	}
+
 }
+
+
