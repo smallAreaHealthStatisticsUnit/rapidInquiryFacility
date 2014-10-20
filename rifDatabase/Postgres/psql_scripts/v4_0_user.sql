@@ -73,7 +73,7 @@ BEGIN
 		CLOSE c4us;
 	EXCEPTION
 		WHEN others THEN /* Try defaulting settings */
-			SET rif40.debug = 'DEBUG1';
+			SET rif40.debug = '';
 			SET rif40.send_debug_to_info = 'off';
 --
 			OPEN c4us;
