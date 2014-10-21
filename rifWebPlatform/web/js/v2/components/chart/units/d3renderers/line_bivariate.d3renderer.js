@@ -6,7 +6,7 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
 	*/
   var id = opt.element,
     margin = opt.margin,
-    width = opt.dimensions.width(),
+    width = opt.dimensions.width() - 5,
     height = opt.dimensions.height() - margin.top - margin.bottom,
     idField = $.trim( opt.id_field ),
     orderField = $.trim( opt.x_field ),
@@ -147,13 +147,14 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
     .attr( "d", line );
 
 
-  return function brushed( domain ) {
-
-    x.domain( domain );
-    y.domain( y2.domain() );
+  return function brushed( brushInfo ) {
+    // domain = { xDomain: domain, yDomain: YdomainBrushed, chart: localName }
+    x.domain( brushInfo.xDomain );
+    y.domain( brushInfo.yDomain );
     focus.select( ".area" ).attr( "d", area );
     focus.select( ".line" ).attr( "d", line );
     focus.select( ".x.axis" ).call( xAxis );
+      focus.select( ".y.axis" ).call( yAxis );
     /*d3.select("rect.extent")
 			.attr('x', 0)
 			.width('width', 0)*/

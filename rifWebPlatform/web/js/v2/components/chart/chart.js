@@ -32,8 +32,8 @@ RIF.chart = ( function( settings ) {
         _p.renderMultipleArea();
       },
 
-      updateDomainLineChartInterface: function( domain ) {
-        _p.updateDomainLineChart( domain );
+      updateLineChartWithBrushInterface: function( brushInfo ) {
+        _p.updateLineChartWithBrush( brushInfo );
       },
 
       //conforms

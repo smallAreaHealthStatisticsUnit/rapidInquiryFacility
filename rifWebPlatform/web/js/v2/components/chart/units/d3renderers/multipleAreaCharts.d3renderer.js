@@ -10,7 +10,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
     lineColor = settings.lineColor,
     lineSelectionColor = settings.lineSelectionColor;
 
- console.log(height)
+
   var areaChartsCount = 0,
     brushIsOn = false,
     clickSelection = false,
@@ -52,7 +52,6 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
       if ( xVal < dataSets[ set ].length - 1 && xVal > 0 ) {
         var yVal = dataSets[ set ][ xVal ][ set ];
         update( xVal, yVal, set );
-        //console.log(xVal + " " + set );
         continue;
       };
     };
@@ -129,11 +128,20 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
       .range( [ this.height, 0 ] )
       .domain( [ 0, this.maxDataPoint ] );
 
+    
     var brushed = function() {
       var domain = brush.empty() ? xS.domain() : brush.extent(),
         domain = [ parseInt( domain[ 0 ] ), parseInt( domain[ 1 ] ) ];
-
-      facade.areaChartBrushed.call( null, domain );
+      
+      if ( domain[ 1 ] == dataSets[ localName ].length ){
+        domain[ 1 ] = domain[ 1 ] -1;
+      };
+        
+      var minYBrush =  parseFloat( dataSets[ localName ][domain[0]][ localName ]) - 0.5,
+          maxYBrush =  parseFloat( dataSets[ localName ][domain[1]][ localName ]) + 0.5,
+          YdomainBrushed = [ minYBrush, maxYBrush ];
+      
+      facade.areaChartBrushed.call( null, { xDomain: domain, yDomain: YdomainBrushed, chart: localName } );
     }
 
     var brush = d3.svg.brush()
@@ -143,7 +151,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
     var linename = this.name + "_line";
 
     this.area = d3.svg.area()
-      .interpolate( "monotone" )
+      .interpolate( "basis" )
       .x( function( d ) {
         return xS( +d[ xOrder ] );
       } )

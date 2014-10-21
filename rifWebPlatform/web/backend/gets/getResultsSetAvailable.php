@@ -7,7 +7,7 @@ $invId =  $_GET['investigationId'];
 $year  = (isset($_GET['year']) ? $_GET['year'] : null );
 
 //$res =  array( 'srr' , 'smr' , 'sresrr');
-$res =  array( 'rr_unadj' , 'car_ssrr_unadj' , 'bym_ssrr_unadj', 'smrr_adj' );
+$res =  array( 'rr_unadj' , 'car_rr_unadj' , 'bym_ssrr_unadj', 'smrr_adj' );
 echo json_encode($res);;
 
 ?>

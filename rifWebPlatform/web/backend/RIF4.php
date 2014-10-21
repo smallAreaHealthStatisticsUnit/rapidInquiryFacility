@@ -630,10 +630,15 @@ $r = RIF4::Instance();
 	public function getResultSet( $resultSet /*, $studyId, $invId, $year*/  ){
 		
 		try{
-		 
-		 // Column x_order will be used for the x axis in the area chart
-		 // This is required by the plug in drawing the area chart
-		 $sql = "select gid,round($resultSet,4) as $resultSet, round(llsrr,2) as llsrr,round(ulsrr,2) as ulsrr, row_number() over (ORDER BY  $resultSet) as x_order
+            
+         /*
+          *  Column x_order will be used for the x axis in the area chart
+		  *  This is required by the plug in drawing the area chart
+          *  
+          *   $resultSet is  ! HARDCODED !
+          *
+          */
+		 $sql = "select gid,round(rr_unadj,4) as $resultSet, round(rrl95_unadj,2) as llsrr,round(rru95_unadj,2) as ulsrr, row_number() over (ORDER BY  rr_unadj) as x_order
 				  from atlas_leu_f ";
 			
 			$hndl = self::$dbh -> prepare($sql);

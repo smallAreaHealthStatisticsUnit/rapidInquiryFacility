@@ -44,12 +44,12 @@ RIF.chart[ 'chart-facade-diseaseMapping' ] = ( function( _p ) {
       this.fire( 'addResizableAreaCharts', [] )
     },
 
-    areaChartBrushed: function( domain ) {
-      facade.fire( 'areaChartBrushed', domain );
+    areaChartBrushed: function( brushInfo ) {
+      facade.fire( 'areaChartBrushed', brushInfo );
     },
 
-    updateLineChartWithBrush: function( domain ) {
-      _p.updateDomainLineChartInterface( domain );
+    updateLineChartWithBrush: function( brushInfo ) {
+      _p.updateLineChartWithBrushInterface( brushInfo );
     },
 
     mapAreaFromAreaChartChange: function( args ) { // gid , dataset
