@@ -307,12 +307,14 @@ input[type="range"]::-ms-thumb {
 	
 	select {
 		width: 120px;
-		background-color: #ffffff;
-		border: 1px solid #cccccc;
-		color:#999999;
-		font-size:11px;
+		background-color: #F2F2F2;
+		border: none;
+		color: #999999;
+		font-size: 12px;
 		display: block;
-		padding: 0;
+		padding: 3px;
+		text-transform: uppercase;
+       
 	}
 
 	#content #leftcol div.summary dl{
@@ -698,7 +700,7 @@ input[type="range"]::-ms-thumb {
 		display: block;
 		float: left;
 		width: 100px;
-		padding-top: 6px;
+		padding-top: 4px;
 		font-size: 1.1em;
 		text-align: left;
 	}
@@ -737,8 +739,8 @@ input[type="range"]::-ms-thumb {
      
     .msettings #invertColors{
 		float: right;
-        height: 25px;
         width: 25px;
+		margin-top: 8px;
     }
 
 	

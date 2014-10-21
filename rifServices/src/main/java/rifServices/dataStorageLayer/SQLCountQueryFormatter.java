@@ -70,7 +70,7 @@ import java.util.ArrayList;
  */
 
 public class SQLCountQueryFormatter 
-	extends SQLQueryFormatter {
+	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -323,58 +323,61 @@ public class SQLCountQueryFormatter
 		orderByConditions.add(orderByCondition.toString());
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.dataStorageLayer.SQLQueryFormatter#generateQuery()
-	 */
+	@Override
 	public String generateQuery() {
-		query = new StringBuilder();
-		query.append("SELECT ");
 		
+		resetAccumulatedQueryExpression();
+		addQueryPhrase(0, "SELECT");
+		padAndFinishLine();
 		if (useDistinct == true) {
-			query.append("COUNT( DISTINCT ");
+			addQueryPhrase(1, "COUNT( DISTINCT ");
 		}
 		else {
-			query.append("COUNT( ");
+			addQueryPhrase(1, "COUNT( ");
 		}
 
-		query.append(countField);
-		query.append(") ");
-		
-		query.append("FROM ");
+		addQueryPhrase(countField);
+		addQueryPhrase(")");
+		padAndFinishLine();
+		addQueryPhrase(0, "FROM ");
 		int numberOfFromTables = fromTables.size();
 		for (int i = 0; i < numberOfFromTables; i++) {
 			if (i > 0) {
-				query.append(",");
+				addQueryPhrase(",");
 			}
-			query.append(convertCase(fromTables.get(i)));
+			addQueryPhrase(1, convertCase(fromTables.get(i)));
 		}
-		query.append(" ");
 		
 		int numberOfWhereConditions = whereConditions.size();
 		if (numberOfWhereConditions > 0) {			
-			query.append("WHERE ");
+			padAndFinishLine();
+			addQueryPhrase(0, "WHERE");
+			
 			for (int i = 0; i < numberOfWhereConditions; i++) {
 				if (i > 0) {
-					query.append(" AND ");
+					addQueryPhrase(" AND");
+					padAndFinishLine();
 				}
-				query.append(convertCase(whereConditions.get(i)));
+				addQueryPhrase(1, convertCase(whereConditions.get(i)));
 			}
 		}
 		
 		int numberOfOrderByConditions = orderByConditions.size();
 		if (numberOfOrderByConditions > 0) {
-			query.append(" ORDER BY ");
+			padAndFinishLine();
+			addQueryPhrase("ORDER BY ");
 			for (int i = 0; i < numberOfOrderByConditions; i++) {
 				if (i > 0) {
-					query.append(",");
+					addQueryPhrase(",");
+					padAndFinishLine();
 				}
-				query.append(convertCase(orderByConditions.get(i)));
+				addQueryPhrase(convertCase(orderByConditions.get(i)));
 			}
 		}
 		
-		query.append(";");
+		addQueryPhrase(";");
 				
-		return query.toString();
+		return super.generateQuery();
 	}
 		
 	// ==========================================

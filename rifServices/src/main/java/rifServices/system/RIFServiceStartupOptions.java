@@ -246,6 +246,36 @@ public final class RIFServiceStartupOptions {
 		this.webApplicationFilePath = webApplicationFilePath;
 	}
 	
+	public String getReadOnlyDatabaseConnectionString() {
+		
+		StringBuilder urlText = new StringBuilder();
+		urlText.append(databaseDriver);
+		urlText.append(":");
+		urlText.append("//");
+		urlText.append(host);
+		urlText.append(":");
+		urlText.append(port);
+		urlText.append("/");
+		urlText.append(databaseName);
+		
+		return urlText.toString();
+	}	
+	
+	public String getWriteOnlyDatabaseConnectionString() {
+		
+		StringBuilder urlText = new StringBuilder();
+		urlText.append(databaseDriver);
+		urlText.append(":");
+		urlText.append("//");
+		urlText.append(host);
+		urlText.append(":");
+		urlText.append(port);
+		urlText.append("/");
+		urlText.append(databaseName);
+		
+		return urlText.toString();
+	}	
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

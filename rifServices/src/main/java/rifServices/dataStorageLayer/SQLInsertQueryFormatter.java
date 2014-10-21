@@ -68,7 +68,7 @@ import java.util.ArrayList;
  */
 
 public class SQLInsertQueryFormatter 
-	extends SQLQueryFormatter {
+	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -120,35 +120,35 @@ public class SQLInsertQueryFormatter
 		insertFields.add(insertField);
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.dataStorageLayer.SQLQueryFormatter#generateQuery()
-	 */
+	@Override
 	public String generateQuery() {
-		
-		query = new StringBuilder();
-		query.append("INSERT INTO ");
-		query.append(intoTable);
-		query.append("(");
+		resetAccumulatedQueryExpression();
+		addQueryPhrase(0, "INSERT INTO ");
+		addQueryPhrase(intoTable);
+		addQueryPhrase("(");
 
 		int numberOfInsertFields = insertFields.size();
 		for (int i = 0; i < numberOfInsertFields; i++) {
 			if (i != 0) {
-				query.append(",");
+				addQueryPhrase(",");
+				finishLine();
 			}
-			query.append(insertFields.get(i));			
+			addQueryPhrase(1, insertFields.get(i));			
 		}
-				
-		query.append(") VALUES (");
+		addQueryPhrase(")");
+		padAndFinishLine();
+		addQueryPhrase(0, "VALUES (");
 		for (int i = 0; i < numberOfInsertFields; i++) {
 			if (i != 0) {
-				query.append(",");
+				addQueryPhrase(",");
 			}
-			query.append("?");			
+			addQueryPhrase("?");			
 		}
 
-		query.append(");");
+		addQueryPhrase(");");
+		finishLine();
 		
-		return query.toString();		
+		return super.generateQuery();		
 	}
 	
 	// ==========================================

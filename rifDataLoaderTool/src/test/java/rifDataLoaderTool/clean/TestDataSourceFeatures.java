@@ -1,9 +1,15 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.clean;
 
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import static org.junit.Assert.*;
+import rifDataLoaderTool.businessConceptLayer.DataSource;
+import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
+import rifDataLoaderTool.system.RIFDataLoaderToolException;
+import rifServices.system.RIFServiceException;
+import rifServices.businessConceptLayer.User;
 
-import java.text.Collator;
-
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 
 /**
@@ -56,8 +62,7 @@ import java.text.Collator;
  *
  */
 
-public class SimpleSubstitutionCleaningRule 
-	implements CleaningRule {
+public class TestDataSourceFeatures extends AbstractRIFDataLoaderTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -66,18 +71,18 @@ public class SimpleSubstitutionCleaningRule
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String whenStatement;
 	
-	private String originalTableName;
-	private String originalFieldName;
-	private String originalValue;
-	private String cleanedValue;
-	
+	private User testUser;
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public SimpleSubstitutionCleaningRule() {
+	public TestDataSourceFeatures() {
+
+		DummyDataLoaderGenerator dummyDataGenerator
+			= new DummyDataLoaderGenerator();
+
+		testUser = dummyDataGenerator.createTestUser();
 
 	}
 
@@ -85,67 +90,50 @@ public class SimpleSubstitutionCleaningRule
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void initialiseRule(
-		final String originalTableName,
-		final String originalFieldName,
-		final String originalValue, 
-		final String cleanedValue) {
+	@Test
+	public void test1() {
 		
-		this.originalTableName = originalTableName;
-		this.originalFieldName = originalFieldName;
-
-		
-		this.originalValue = originalValue;
-		this.cleanedValue = cleanedValue;
-		
-		StringBuilder buffer = new StringBuilder();
-		buffer.append("WHEN");
-		buffer.append(" ");
-		buffer.append(originalTableName);
-		buffer.append(".");
-		buffer.append(originalFieldName);
-		buffer.append("=");
-		buffer.append(originalValue);
-		buffer.append(" ");
-		buffer.append("THEN RETURN ");
-		buffer.append(cleanedValue);
-		
-		whenStatement = buffer.toString();
-	}
-	
-	public String getWhenStatement() {
-		return whenStatement;
-	}
-	
-	public boolean isApplicable(String candidateValue) {
-		Collator collator = RIFDataLoaderMessages.getCollator();
-		if (collator.equals(originalValue, candidateValue)) {
-			return true;
+		try {
+			DataLoaderService dataLoaderService
+				= getDataLoaderService();
+			dataLoaderService.clearAllDataSources(testUser);
+			
+			DataSource originalDataSource
+				= DataSource.newInstance(
+					"hes_2001",
+					false,
+					"HES file hes2001.csv", 
+					"kev");
+			dataLoaderService.registerDataSource(
+				testUser, 
+				originalDataSource);
+			
+			DataSource retrievedDataSource
+				= dataLoaderService.getDataSourceFromCoreTableName(
+					testUser, 
+					"hes_2001");
+			
+			assertEquals(
+				originalDataSource.getCoreTableName(), 
+				retrievedDataSource.getCoreTableName());
+			
+			assertEquals(
+				originalDataSource.getSourceName(),
+				retrievedDataSource.getSourceName());
+			
+			assertEquals(
+				originalDataSource.isDerivedFromExistingTable(),
+				retrievedDataSource.isDerivedFromExistingTable());
 		}
-		
-		return false;
-		
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printStackTrace();
+		}
+		catch(RIFDataLoaderToolException rifDataLoaderToolException) {
+			rifDataLoaderToolException.printStackTrace();
+		}
 	}
 	
-	public String getName() {
-		String name
-			= RIFDataLoaderMessages.getMessage("simpleSubstitutionCleaningRule.name");
-		return name;
-		
-	}
 	
-	public String getDescription() {
-		String description
-			= RIFDataLoaderMessages.getMessage("simpleSubstitutionCleaningRule.description");
-		return description;
-	}
-	
-	public String cleanValue(
-		final String originalValue) {
-		
-		//TODO: fill this in properly
-		return originalValue;
-	}
 	
 	// ==========================================
 	// Section Errors and Validation

@@ -27,7 +27,15 @@ RIF.chart[ 'chart-facade-diseaseMapping' ] = ( function( _p ) {
     refreshMultipleArea: function() {
       _p._refreshMultipleArea();
     },
-
+    
+	changeYear: function(){
+	
+	},
+	
+	changeGender: function(){
+	
+	},
+	
     addResizableChart: function() {
       this.fire( 'addResizableChart', [] )
     },

@@ -1,6 +1,6 @@
 package rifServices.dataStorageLayer;
 
-import java.util.ArrayList;
+
 
 
 /**
@@ -66,8 +66,8 @@ import java.util.ArrayList;
  *
  */
 
-public class SQLDeleteQueryFormatter 
-	extends SQLQueryFormatter {
+public class SQLDeleteTableQueryFormatter 
+	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -76,21 +76,18 @@ public class SQLDeleteQueryFormatter
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The from table. */
-	private String fromTable;
+	/** The table that will be deleted */
+	private String tableToDelete;
 	
-	/** The where conditions. */
-	private ArrayList<String> whereConditions;
-
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	/**
-	 * Instantiates a new SQL delete query formatter.
+	 * Instantiates a new SQL delete table query formatter.
 	 */
-	public SQLDeleteQueryFormatter() {
-		whereConditions = new ArrayList<String>();
+	public SQLDeleteTableQueryFormatter() {
+
 	}
 
 	// ==========================================
@@ -98,136 +95,25 @@ public class SQLDeleteQueryFormatter
 	// ==========================================
 
 	/**
-	 * Sets the from table.
+	 * Sets the target table to delete
 	 *
 	 * @param fromTable the new from table
 	 */
-	public void setFromTable(
-		final String fromTable) {
+	public void setTableToDelete(
+		final String tableToDelete) {
 		
-		this.fromTable = fromTable;
+		this.tableToDelete = tableToDelete;
 	}
 	
-	/**
-	 * Adds the where join condition.
-	 *
-	 * @param tableA the table a
-	 * @param fieldNameA the field name a
-	 * @param tableB the table b
-	 * @param fieldNameB the field name b
-	 */
-	public void addWhereJoinCondition(
-		final String tableA,
-		final String fieldNameA,
-		final String tableB,
-		final String fieldNameB) {
-
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableA);
-		whereCondition.append(".");
-		whereCondition.append(fieldNameA);
-		whereCondition.append("=");
-		whereCondition.append(tableB);
-		whereCondition.append(".");
-		whereCondition.append(fieldNameB);
-		
-		whereConditions.add(whereCondition.toString());
-	}
-	
-	/**
-	 * Adds the where join condition.
-	 *
-	 * @param tableFieldA the table field a
-	 * @param tableFieldB the table field b
-	 */
-	public void addWhereJoinCondition(
-		final String tableFieldA,
-		final String tableFieldB) {
-
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableFieldA);
-		whereCondition.append("=");
-		whereCondition.append(tableFieldB);
-		
-		whereConditions.add(whereCondition.toString());		
-	}
-	
-	/**
-	 * Adds the where parameter.
-	 *
-	 * @param fieldName the field name
-	 */
-	public void addWhereParameter(
-		final String fieldName) {
-		
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(fieldName);
-		whereCondition.append("=?");
-
-		whereConditions.add(whereCondition.toString());
-	}
-	
-	/**
-	 * Adds the where parameter with operator.
-	 *
-	 * @param fieldName the field name
-	 * @param operator the operator
-	 */
-	public void addWhereParameterWithOperator(
-		final String fieldName,
-		final String operator) {
-
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(fieldName);
-		whereCondition.append(operator);
-		whereCondition.append("?");
-		
-		whereConditions.add(whereCondition.toString());
-	}
-
-	/**
-	 * Adds the where parameter.
-	 *
-	 * @param tableName the table name
-	 * @param fieldName the field name
-	 */
-	public void addWhereParameter(
-		final String tableName, 
-		final String fieldName) {
-		
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableName);
-		whereCondition.append(".");		
-		whereCondition.append(fieldName);
-		whereCondition.append("=?");
-
-		whereConditions.add(whereCondition.toString());
-	}
-	
-	/* (non-Javadoc)
-	 * @see rifServices.dataStorageLayer.SQLQueryFormatter#generateQuery()
-	 */
+	@Override
 	public String generateQuery() {
-		
-		query = new StringBuilder();
-		query.append("DELETE FROM ");
-		query.append(fromTable);
-		query.append(" ");
 
-		int numberOfWhereConditions = whereConditions.size();
-		if (numberOfWhereConditions > 0) {			
-			query.append("WHERE ");
-			for (int i = 0; i < numberOfWhereConditions; i++) {
-				if (i > 0) {
-					query.append(" AND ");
-				}
-				query.append(convertCase(whereConditions.get(i)));
-			}
-		}
-		
-		query.append(";");
-		
-		return query.toString();		
+		resetAccumulatedQueryExpression();
+		addQueryPhrase(0, "DROP TABLE IF EXISTS ");
+		addQueryPhrase(tableToDelete);
+		addQueryPhrase(";");
+
+		return super.generateQuery();		
 	}
 	
 	// ==========================================

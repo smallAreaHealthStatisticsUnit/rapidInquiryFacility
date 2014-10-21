@@ -102,7 +102,7 @@ public class RIFDataLoaderMessages {
     // ==========================================
 
     static {
-        resourceBundle = ResourceBundle.getBundle("RIFServiceMessages");
+        resourceBundle = ResourceBundle.getBundle("RIFDataLoaderToolMessages");
     }
 
     // ==========================================

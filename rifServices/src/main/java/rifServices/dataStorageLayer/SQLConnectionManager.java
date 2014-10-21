@@ -259,6 +259,7 @@ class SQLConnectionManager {
 			ArrayList<Connection> readOnlyConnections 
 				= new ArrayList<Connection>();
 			for (int i = 0; i < POOLED_CONNECTIONS_PER_PERSON; i++) {
+				System.out.println("SQLConnectionManager registerUser =="+databaseURL+"==");
 				currentConnection 
 					= DriverManager.getConnection(
 						databaseURL,

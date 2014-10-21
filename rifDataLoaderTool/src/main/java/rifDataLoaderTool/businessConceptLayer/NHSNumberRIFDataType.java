@@ -1,16 +1,9 @@
-package rifDataLoaderTool.presentationLayer;
+package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.businessConceptLayer.DBTMetaDataRecord;
-
-import rifGenericUILibrary.UserInterfaceFactory;
-
-
-import java.util.ArrayList;
-import javax.swing.JTable;
-import javax.swing.table.JTableHeader;
+import rifDataLoaderTool.system.RIFDataLoaderMessages;
 
 /**
- *
+ * A data type for NHS numbers.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -59,52 +52,56 @@ import javax.swing.table.JTableHeader;
  *
  */
 
-public class DBTMetaDataTable {
+public final class NHSNumberRIFDataType extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
 
-	
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private UserInterfaceFactory userInterfaceFactory;
-	
-	private JTable table;
-	private JTableHeader tableHeader;
-	private DBTMetaDataTableModel tableModel;
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public DBTMetaDataTable(
-		final UserInterfaceFactory userInterfaceFactory) {
+	private NHSNumberRIFDataType(
+			final String identifier,
+			final String name,
+			final String description) {
+
+		super(
+			identifier,
+			name, 
+			description);
 		
-		this.userInterfaceFactory = userInterfaceFactory;
-		
-		tableModel = new DBTMetaDataTableModel();
-		
-		
-		tableHeader = userInterfaceFactory.createTableHeader();
+		//@TODO: Find acceptable pattern
+		String validationRegularExpression
+			= "^([0-9]*)";
+		addValidationExpression(validationRegularExpression);
 		
 	}
 
+	public static NHSNumberRIFDataType newInstance() {
+
+		String name
+			= RIFDataLoaderMessages.getMessage("rifDataType.nhsNumber.label");
+		String description
+			= RIFDataLoaderMessages.getMessage("rifDataType.nhsNumber.description");
+		NHSNumberRIFDataType nhsNumberRIFDataType
+			= new NHSNumberRIFDataType(
+				"rif_nhs_number",
+				name, 
+				description);
+
+		return nhsNumberRIFDataType;
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void setDBTMetaDataRecords(
-		final ArrayList<DBTMetaDataRecord> dbtMetaDataRecords) {
-		
-		tableModel.setDBTMetaDataRecords(dbtMetaDataRecords);
-	}
-	
-	
-	public JTable getTable() {
-		return table;
-	}
-	
+
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -116,7 +113,13 @@ public class DBTMetaDataTable {
 	// ==========================================
 	// Section Override
 	// ==========================================
-
+	
+	public NHSNumberRIFDataType createCopy() {
+		NHSNumberRIFDataType cloneNHSNumberRIFDataType = newInstance();
+		copyAttributes(cloneNHSNumberRIFDataType);
+		return cloneNHSNumberRIFDataType;
+	}	
+		
 }
 
 

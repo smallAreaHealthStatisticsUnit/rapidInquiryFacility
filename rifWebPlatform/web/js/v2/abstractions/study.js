@@ -9,14 +9,15 @@ RIF.study = ( function( type ) {
       // Current data being looked at
       studyId: null,
       invId: null,
+	  resultSet: null,
+	  year: null,
+      gender: null,
       resultSets: [],
       resultSetsSelected: [], // Max 4
       mapField: null,
       mapData: null, // single map
       areaCharts: [],
       lineBivariate: null,
-      year: null,
-      gender: null,
       selection: [],
       baseMap: null,
       transparency: 1,
@@ -28,19 +29,12 @@ RIF.study = ( function( type ) {
       },
 
       menusReady: function( currentSet ) {
-
-        /*   study, investigation, resultSet, gender, year*/
-        this.setCurrentStudy( currentSet.study );
-        this.setCurrentInvestigation( currentSet.investigation );
-        this.setCurrentResultSetAvailable( currentSet.resultSet );
-        this.setCurrentResultSetSelected( currentSet.resultSetSelected );
-        this.setCurrentMapField( currentSet.resultSet[ 0 ] );
-        this.setCurrentlineBivariate( currentSet.resultSet[ 0 ] ); //First field in Current result set used to draw line bivariate
-        this.setCurrentAreaChartSet( currentSet.resultSet );
+        
+		this.setCurrentMapField( this.getCurrentResultSet() );
+        this.setCurrentlineBivariate( this.getCurrentResultSet() ); //First field in Current result set used to draw line bivariate
 
         this.addGeolevel();
         this.drawLineBivariateChart();
-        this.drawMultipleAreaCharts();
 
       },
 
@@ -61,11 +55,11 @@ RIF.study = ( function( type ) {
         } ); // retrieve geolevel, possibly a temp table or view with a name, i.e study_id_geom_userxx
 
       },
-
-      changeResultSetSelection: function() {
-        this.fire( 'changeResultSetSelection', this.getResultSetsSelected() );
+ 	  
+	  changeAreaChartsSelection: function() {
+        this.fire( 'changeAreaSelection', this.getResultSetsSelected() );
       },
-
+	  
       clearSelection: function() {
         this.setSelection( [] );
         this.fire( 'clearSelection', [] );
@@ -76,7 +70,7 @@ RIF.study = ( function( type ) {
       },
 
       drawMultipleAreaCharts: function() {
-        this.fire( 'drawMultipleAreaCharts', this.getResultSetsAvailable() );
+        this.fire( 'drawMultipleAreaCharts', this.getResultSetsSelected() );
       },
 
       changeBasemap: function( url ) {
@@ -88,9 +82,34 @@ RIF.study = ( function( type ) {
         this.setTransparency( v );
         this.fire( 'changeTransparency', v );
       },
+	  
+	  changeMapStyle: function( s ){
+	     this.fire( 'changeMapStyle' , s );
+	  },
 
       //SuBSCRIBERS
+      
+	  studyChanged: function( study ){
+		this.setCurrentStudy( study );
+	  },
+	  
+	  investigationChanged: function( investigation ){
+		this.setCurrentInvestigation( investigation );
+	  },
+	  
+	  resultSetChanged: function( resSet ){
+		this.setCurrentResultsSet( resSet );
+	  },
+	  
+	  yearChanged: function( yr ){
+		this.setYear( yr );
+	  },
+	  
+	  genderChanged: function( gender ){
+		this.setGender( gender );
+	  },
 
+	  
       uAreaSelection: function( params ) {
         this.setSelection( params[ 0 ] );
       },
@@ -99,13 +118,13 @@ RIF.study = ( function( type ) {
         this.fire( 'slctMapAreaFromAreaChart', args );
       },
 
-      resultSetSelectionChanged: function( resSetsChoice ) {
+      areaChartSelectionChanged: function( resSetsChoice ) {
         if ( RIF.arraysEqual( resSetsChoice, this.getResultSetsSelected() ) ) {
           return;
         };
 
         this.setCurrentResultSetSelected( resSetsChoice );
-        this.changeResultSetSelection();
+        this.changeAreaChartsSelection();
       },
 
       areaChartBrushed: function( domain ) {
@@ -128,7 +147,22 @@ RIF.study = ( function( type ) {
           this.changeTransparency( value );
         }
       },
-
+	  
+	  yearChanged: function( yr ){
+	     this.setYear( yr );
+	  },
+	  
+	  genderChanged: function( gender ){
+		 this.setGender( gender );
+	  },
+      
+	  mapStyleChange: function( params ){
+		 var fieldToMap = this.getCurrentResultSet(),
+		    mapStyle =  RIF.extend ( { field: fieldToMap } , params );
+		 this.changeMapStyle( mapStyle );
+	  
+	  },
+	  
       //SETTERS
       setCurrentStudy: function( study ) {
         this.studyId = study
@@ -137,10 +171,15 @@ RIF.study = ( function( type ) {
       setCurrentInvestigation: function( inv ) {
         this.invId = inv;
       },
-
+      
+	  setCurrentResultsSet: function( set ) {
+        this.resultSet = set;
+      },
+	  
       setCurrentMapField: function( resSet ) {
         this.mapField = resSet;
       },
+	  
       setCurrentResultSetAvailable: function( resSets ) {
         this.resultSets = resSets;
       },
@@ -189,7 +228,11 @@ RIF.study = ( function( type ) {
       getCurrentInvestigation: function() {
         return this.invId;
       },
-
+      
+	  getCurrentResultSet: function() {
+        return this.resultSet;
+      },
+	  
       getResultSetsAvailable: function() {
         return this.resultSets;
       },

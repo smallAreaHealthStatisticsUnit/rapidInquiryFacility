@@ -1,7 +1,37 @@
 package rifDataLoaderTool.businessConceptLayer;
 
 /**
+ * A rule that is used to generate SQL code that can search and replace values. Apart from
+ * name and description fields, the three main important fields are:
+ * <ul>
+ * <li><b>searchValue</b>: which can just be a phrase or some complex regular expression </li>
+ * <li><b>replaceValue</b>: the value to be used to replace an existing flawed value</li>
+ * <li><b>isRegularExpressionSearch</b>: determines whether the search value should be
+ * treated as part of a simple search and replace statement or if it should be phrased as
+ * a search that involves regular expressions.  
+ * </li> 
+ * </ul>
  *
+ *<p>
+ * This flag helps inform the SQL code generation classes about how to write the rule.  For example,
+ * a statement could be: 
+ * </p>
+ * <p>
+ * <pre>
+ * CASE
+ *    WHEN sex='M' THEN 0
+ *    ...
+ * END
+ * </pre>
+ * 
+ * <p>
+ * or
+ *<p>
+ *<pre>
+ * CASE
+ *    WHEN sex ~ '^[mM] THEN 0
+ *    ...
+ * END
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -50,22 +80,146 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public interface CleaningRule {
+public class CleaningRule {
 
-	public void initialiseRule(
-		final String originalTableName,
-		final String originalFieldName,
-		final String originalValue, 
-		final String cleanedValue);
+	// ==========================================
+	// Section Constants
+	// ==========================================
+
+	// ==========================================
+	// Section Properties
+	// ==========================================
+	//private String whenStatement;
 	
-	public boolean isApplicable(String candidateValue);
+	//private String originalTableName;
+	//private String originalFieldName;
+		
+	private String name;
+	private String description;
+	private String searchValue;
+	private String replaceValue;
 	
-	public String getWhenStatement();
+	private boolean isRegularExpressionSearch;
 	
-	public String getName();
-	public String getDescription();
+	// ==========================================
+	// Section Construction
+	// ==========================================
+
+	private CleaningRule() {
+		
+	}
 	
-	public String cleanValue(String originalValue);
+	private CleaningRule(
+		final String name,
+		final String description,
+		final String searchValue,
+		final String replaceValue,
+		final boolean isRegularExpressionSearch) {
+
+		this.name = name;
+		this.description = description;
+		this.searchValue = searchValue;
+		this.replaceValue = replaceValue;
+		this.isRegularExpressionSearch = isRegularExpressionSearch;
+	}
+
+	public static CleaningRule newInstance(
+		final String name,
+		final String description,
+		final String searchValue,
+		final String replaceValue,
+		final boolean isRegularExpressionSearch) {
+		
+		CleaningRule cleaningRule
+			= new CleaningRule(
+				name,
+				description,
+				searchValue,
+				replaceValue,
+				isRegularExpressionSearch);
+		return cleaningRule;
+	}
+
+	public static CleaningRule createCopy(
+		final CleaningRule originalCleaningRule) {
+		
+		CleaningRule cloneCleaningRule
+			= new CleaningRule();
+		cloneCleaningRule.setName(originalCleaningRule.getName());
+		cloneCleaningRule.setDescription(originalCleaningRule.getDescription());
+		cloneCleaningRule.setRegularExpressionSearch(originalCleaningRule.isRegularExpressionSearch());
+		cloneCleaningRule.setSearchValue(originalCleaningRule.getSearchValue());
+		cloneCleaningRule.setReplaceValue(originalCleaningRule.getReplaceValue());
+			
+		return cloneCleaningRule;
+	}
+
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+		
+	public String getName() {
+		return name;
+	}
+
+	public void setName(
+		final String name) {
+
+		this.name = name;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(
+		final String description) {
+
+		this.description = description;
+	}
+
+	public String getSearchValue() {
+		return searchValue;
+	}
+
+	public void setSearchValue(
+		final String searchValue) {
+
+		this.searchValue = searchValue;
+	}
+
+	public String getReplaceValue() {
+		return replaceValue;
+	}
+
+	public void setReplaceValue(
+		final String replaceValue) {
+
+		this.replaceValue = replaceValue;
+	}
+
+	public boolean isRegularExpressionSearch() {
+		return isRegularExpressionSearch;
+	}
+
+	public void setRegularExpressionSearch(
+		final boolean isRegularExpressionSearch) {
+
+		this.isRegularExpressionSearch = isRegularExpressionSearch;
+	}
+		
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
+	// ==========================================
+	// Section Interfaces
+	// ==========================================
+
+	// ==========================================
+	// Section Override
+	// ==========================================
+
 }
 
 

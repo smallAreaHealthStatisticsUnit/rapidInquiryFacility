@@ -316,7 +316,6 @@ class RIFStepButtonNavigationPanel
 
 		Object button = event.getSource();
 		
-		System.out.println("RIFStepButtonNavigationPanel actionPerformed 1");
 		if (navigationButtonPanel.isStartAgainButton(button)) {
 			startAgain();
 		}
@@ -324,7 +323,6 @@ class RIFStepButtonNavigationPanel
 			back();
 		}
 		else if (navigationButtonPanel.isNextButton(button)) {
-			System.out.println("RIFStepButtonNavigationPanel actionPerformed 2");
 			next();
 		}
 		else if (navigationButtonPanel.isQuitButton(button)) {

@@ -1,18 +1,8 @@
-package rifDataLoaderTool.presentationLayer;
+package rifDataLoaderTool.businessConceptLayer;
 
-
-import rifDataLoaderTool.businessConceptLayer.DBTMetaDataRecord;
-
-
-import rifDataLoaderTool.system.RIFDataLoaderActivityStep;
-
-import java.util.ArrayList;
-import java.util.Date;
-
-import javax.swing.table.AbstractTableModel;
-
+import rifDataLoaderTool.system.RIFDataLoaderMessages;
 /**
- *
+ * a data type for double precision numeric data.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -61,83 +51,59 @@ import javax.swing.table.AbstractTableModel;
  *
  */
 
-public class DBTMetaDataTableModel extends AbstractTableModel {
+public final class DoubleRIFDataType extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final int TABLE_NAME_COLUMN = 0;
-	private static final int TABLE_DESCRIPTION_COLUMN = 1;
-	private static final int LAST_MODIFIED_DATE_COLUMN = 2;
-	private static final int ACTIVITY_STEP_COLUMN = 3;
-	
+
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private ArrayList<DBTMetaDataRecord> tableMetaDataRows;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public DBTMetaDataTableModel() {
+	private DoubleRIFDataType(
+		final String identifier,
+		final String name,
+		final String description) {
 
-		tableMetaDataRows = new ArrayList<DBTMetaDataRecord>();
+		super(
+			identifier,
+			name, 
+			description);
+		
+		String validationRegularExpression
+			= "^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$";
+		addValidationExpression(validationRegularExpression);
+		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);		
 	}
 
+	public static DoubleRIFDataType newInstance() {
+
+		String name
+			= RIFDataLoaderMessages.getMessage("rifDataType.age.label");
+		String description
+			= RIFDataLoaderMessages.getMessage("rifDataType.age.description");
+		DoubleRIFDataType doubleRIFDataType
+			= new DoubleRIFDataType(
+				"rif_double",
+				name, 
+				description);
+		
+		return doubleRIFDataType;
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
-	public void setDBTMetaDataRecords(
-		final ArrayList<DBTMetaDataRecord> dbtMetaDataTableRecords) {
-		
-		tableMetaDataRows = dbtMetaDataTableRecords;
-	}
-	
-	public int getRowCount() {
-		return tableMetaDataRows.size();
-	}
-	
-	public int getColumnCount() {
-		return 4;
-	}
-	
-	public Object getValueAt(
-		final int row,
-		final int column) {
-		
-		DBTMetaDataRecord tableMetaDataRecord
-			= tableMetaDataRows.get(row);
-		
-		if (column == TABLE_NAME_COLUMN) {
-			return tableMetaDataRecord.getTableName();
-		}
-		else if (column == TABLE_DESCRIPTION_COLUMN) {
-			return tableMetaDataRecord.getTableDescription();
-		}
-		else if (column == LAST_MODIFIED_DATE_COLUMN) {
-			return tableMetaDataRecord.getLastModifiedDatePhrase();
-		}
-		else if (column == ACTIVITY_STEP_COLUMN) {
-			
-			RIFDataLoaderActivityStep rifDataLoaderActivityStep
-				= tableMetaDataRecord.getRIFDataLoaderActivityStep();
-			return rifDataLoaderActivityStep.getCompletedStatusMessage();
-		}
-		else {
-			//must be Activity Step
-			assert false;
-			return null;
-		}
-
-	}
 	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
 
-	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
@@ -146,15 +112,12 @@ public class DBTMetaDataTableModel extends AbstractTableModel {
 	// Section Override
 	// ==========================================
 
-	@Override
-	/**
-	 * make table non-editable
-	 */
-	public boolean isCellEditable(
-		final int row,
-		final int column) {
-		
-		return false;
+	public DoubleRIFDataType createCopy() {
+		DoubleRIFDataType cloneDoubleRIFDataType = newInstance();
+		copyAttributes(cloneDoubleRIFDataType);
+		return cloneDoubleRIFDataType;
 	}
 	
 }
+
+

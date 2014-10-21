@@ -2,7 +2,9 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifGenericUILibrary.ErrorDialog;
+
 import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericUILibrary.ListEditingButtonPanel;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFSession;
 import rifServices.businessConceptLayer.HealthCode;
@@ -108,6 +110,8 @@ class HealthCodeListPanel
 	private static final int CODE_COLUMN_WIDTH=10;	
 	/** The Constant DESCRIPTION_COLUMN_WIDTH. */
 	private static final int DESCRIPTION_COLUMN_WIDTH=30;
+	
+	private ListEditingButtonPanel listEditingButtonPanel;
 
 	// ==========================================
 // Section Properties
@@ -129,13 +133,12 @@ class HealthCodeListPanel
 	/** The selected health code table model. */
 	private HealthCodeTableModel selectedHealthCodeTableModel;
 	/** The export to saved list button. */
+	/*
 	private JButton exportToSavedListButton;
-	/** The import from saved list button. */
 	private JButton importFromSavedListButton;
-	/** The add health code button. */
 	private JButton addHealthCodeButton;
-	/** The delete health code button. */
 	private JButton deleteHealthCodeButton;
+	*/
 	
 // ==========================================
 // Section Construction
@@ -252,43 +255,15 @@ class HealthCodeListPanel
 	 */
 	private JPanel createButtonPanel() {
 		
-		JPanel panel = userInterfaceFactory.createPanel();
-		GridBagConstraints panelGC 
-			= userInterfaceFactory.createGridBagConstraints();
-		
-		String exportToSavedListButtonText
-			= RIFJobSubmissionToolMessages.getMessage(
-				"healthCodeListPanel.exportToSavedList.label");
-		exportToSavedListButton
-			= userInterfaceFactory.createButton(exportToSavedListButtonText);
-		exportToSavedListButton.addActionListener(this);
-		panel.add(exportToSavedListButton, panelGC);
-		
-		panelGC.gridx++;
-		String importFromSavedListButtonText
-			= RIFJobSubmissionToolMessages.getMessage(
-				"healthCodeListPanel.importFromSavedList.label");
-		importFromSavedListButton
-			= userInterfaceFactory.createButton(importFromSavedListButtonText);
-		importFromSavedListButton.addActionListener(this);
-		panel.add(importFromSavedListButton, panelGC);		
-		
-		panelGC.gridx++;
-		String addHealthCodeButtonText
-			= RIFJobSubmissionToolMessages.getMessage("general.buttons.add.label");
-		addHealthCodeButton
-			= userInterfaceFactory.createButton(addHealthCodeButtonText);
-		addHealthCodeButton.addActionListener(this);
-		panel.add(addHealthCodeButton, panelGC);
-		
-		panelGC.gridx++;
-		String deleteHealthCodeButtonText
-			= RIFJobSubmissionToolMessages.getMessage("general.buttons.delete.label");
-		deleteHealthCodeButton
-			= userInterfaceFactory.createButton(deleteHealthCodeButtonText);
-		deleteHealthCodeButton.addActionListener(this);
-		panel.add(deleteHealthCodeButton, panelGC);		
-		return panel;
+		listEditingButtonPanel
+			= new ListEditingButtonPanel(userInterfaceFactory);
+		listEditingButtonPanel.includeExportButton("");
+		listEditingButtonPanel.includeImportButton("");
+		listEditingButtonPanel.includeAddButton("");
+		listEditingButtonPanel.includeDeleteButton("");
+		listEditingButtonPanel.addActionListener(this);
+
+		return listEditingButtonPanel.getPanel();
 		
 	}
 	
@@ -452,16 +427,13 @@ class HealthCodeListPanel
 		
 		if (totalNumberOfRows == 0) {
 			//update buttons in a way that is appropriate for an empty list
-			exportToSavedListButton.setEnabled(false);
-			deleteHealthCodeButton.setEnabled(false);			
+			listEditingButtonPanel.indicateEmptyState();
 		}
 		else {
 			ListSelectionModel listSelectionModel
 				= selectedHealthCodeTable.getSelectionModel();
-			listSelectionModel.setSelectionInterval(0, 0);
-			
-			exportToSavedListButton.setEnabled(true);
-			deleteHealthCodeButton.setEnabled(true);			
+			listSelectionModel.setSelectionInterval(0, 0);			
+			listEditingButtonPanel.indicatePopulatedState();
 		}
 	}
 	
@@ -482,17 +454,16 @@ class HealthCodeListPanel
 		ActionEvent event) {
 		
 		Object button = event.getSource();
-		
-		if (button == exportToSavedListButton) {
+		if (listEditingButtonPanel.isExportButton(button)) {
 			exportToSavedList();
 		}
-		else if (button == importFromSavedListButton) {
+		else if (listEditingButtonPanel.isImportButton(button)) {
 			importFromSavedList();
 		}
-		else if (button == addHealthCodeButton) {
+		else if (listEditingButtonPanel.isAddButton(button)) {		
 			addHealthCode();
 		}
-		else if (button == deleteHealthCodeButton) {
+		else if (listEditingButtonPanel.isDeleteButton(button)) {		
 			deleteSelectedHealthCodes();
 		}	
 	}

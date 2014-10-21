@@ -68,7 +68,7 @@ import java.util.ArrayList;
  */
 
 public class SQLMinMaxQueryFormatter 
-	extends SQLQueryFormatter {
+	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -174,40 +174,46 @@ public class SQLMinMaxQueryFormatter
 		whereConditions.add(whereCondition.toString());
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.dataStorageLayer.SQLQueryFormatter#generateQuery()
-	 */
+	@Override
 	public String generateQuery() {
-		
-		query = new StringBuilder();
-		query.append("SELECT ");
+
+		resetAccumulatedQueryExpression();
+		addQueryPhrase(0, "SELECT");
+		padAndFinishLine();
 		if (operationType == OperationType.MAX) {
-			query.append("MAX(");
+			addQueryPhrase(1, "MAX(");
 		}
 		else if (operationType == OperationType.MIN) {
-			query.append("MIN(");			
+			addQueryPhrase(1, "MIN(");			
 		}
 		else {
-			query.append("AVG(");			
+			addQueryPhrase(1,"AVG(");			
 		}
-		query.append(countableFieldName);
-		query.append(") ");
-		query.append("FROM ");
-		query.append(convertCase(fromTableName));
+		addQueryPhrase(countableFieldName);
+		addQueryPhrase(")");
+		padAndFinishLine();
+		
+		addQueryPhrase(0, "FROM");
+		padAndFinishLine();
+
+		addQueryPhrase(1, convertCase(fromTableName));
 		
 		int numberOfWhereConditions = whereConditions.size();
 		if (numberOfWhereConditions > 0) {			
-			query.append(" WHERE ");
+			addQueryPhrase(0, "WHERE");
+			padAndFinishLine();
 			for (int i = 0; i < numberOfWhereConditions; i++) {
 				if (i != 0) {
-					query.append(" AND ");
+					addQueryPhrase(" AND");
+					padAndFinishLine();
 				}
-				query.append(convertCase(whereConditions.get(i)));
+				addQueryPhrase(1, convertCase(whereConditions.get(i)));
 			}
 		}
-		query.append(";");
+		addQueryPhrase(";");
+		finishLine();
 				
-		return query.toString();
+		return super.generateQuery();
 	}
 	
 	// ==========================================

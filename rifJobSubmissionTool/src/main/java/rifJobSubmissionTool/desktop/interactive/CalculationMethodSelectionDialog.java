@@ -234,7 +234,14 @@ class CalculationMethodSelectionDialog
     	
 		return calculationMethodTable.getSelectedCalculationMethod();
 	}
+
+    public ArrayList<CalculationMethod> getSelectedCalculationMethods() {
+    	
+		return calculationMethodTable.getSelectedCalculationMethods();
+	}
 	
+    
+    
 	/**
 	 * Checks if is cancelled.
 	 *

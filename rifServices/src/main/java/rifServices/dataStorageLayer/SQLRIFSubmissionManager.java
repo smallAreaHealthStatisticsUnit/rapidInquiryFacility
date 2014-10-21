@@ -131,8 +131,8 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 		PreparedStatement deleteStudiesStatement = null;
 
 		try {
-			SQLDeleteQueryFormatter deleteComparisonAreasQuery
-				= new SQLDeleteQueryFormatter();
+			SQLDeleteRowsQueryFormatter deleteComparisonAreasQuery
+				= new SQLDeleteRowsQueryFormatter();
 			deleteComparisonAreasQuery.setFromTable("t_rif40_comparison_areas");
 			deleteComparisonAreasQuery.addWhereParameter("username");
 			
@@ -141,8 +141,8 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 			deleteComparisonAreasStatement.setString(1, userID);
 			deleteComparisonAreasStatement.executeUpdate();
 			
-			SQLDeleteQueryFormatter deleteStudyAreasQuery
-				= new SQLDeleteQueryFormatter();
+			SQLDeleteRowsQueryFormatter deleteStudyAreasQuery
+				= new SQLDeleteRowsQueryFormatter();
 			deleteStudyAreasQuery.setFromTable("t_rif40_study_areas");
 			deleteStudyAreasQuery.addWhereParameter("username");
 			deleteStudyAreasStatement 
@@ -150,8 +150,8 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 			deleteStudyAreasStatement.setString(1, userID);
 			deleteStudyAreasStatement.executeUpdate();
 			
-			SQLDeleteQueryFormatter deleteInvestigationsQuery
-				= new SQLDeleteQueryFormatter();
+			SQLDeleteRowsQueryFormatter deleteInvestigationsQuery
+				= new SQLDeleteRowsQueryFormatter();
 			deleteInvestigationsQuery.setFromTable("t_rif40_investigations");
 			deleteInvestigationsQuery.addWhereParameter("username");
 			deleteInvestigationsStatement
@@ -159,8 +159,8 @@ class SQLRIFSubmissionManager extends AbstractSQLManager {
 			deleteInvestigationsStatement.setString(1, userID);
 			deleteInvestigationsStatement.executeUpdate();
 			
-			SQLDeleteQueryFormatter deleteStudiesQuery
-				= new SQLDeleteQueryFormatter();
+			SQLDeleteRowsQueryFormatter deleteStudiesQuery
+				= new SQLDeleteRowsQueryFormatter();
 			deleteStudiesQuery.setFromTable("t_rif40_studies");
 			deleteStudiesQuery.addWhereParameter("username");
 			deleteStudiesStatement

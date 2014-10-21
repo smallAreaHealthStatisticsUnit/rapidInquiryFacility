@@ -1,11 +1,8 @@
 package rifServices.businessConceptLayer;
 
 
-import java.sql.*;
 import java.util.Arrays;
 
-import rifServices.dataStorageLayer.SQLQueryUtility;
-import rifServices.system.RIFServiceException;
 
 /**
  *
@@ -142,6 +139,7 @@ public class RIFResultTable {
 		return data;
 	}
 	
+
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

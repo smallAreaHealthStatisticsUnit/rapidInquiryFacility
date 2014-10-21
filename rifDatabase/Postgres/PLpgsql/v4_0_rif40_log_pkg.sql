@@ -102,10 +102,11 @@ BEGIN
 	FETCH c1lgs INTO c1lgs_rec;
 	CLOSE c1lgs;
 --
-	RAISE INFO 'rif40_log_setup() send DEBUG to INFO: %; debug function list: [%]', c1lgs_rec.send_debug_to_info, c1lgs_rec.debug;
+	RAISE INFO 'rif40_log_setup() send DEBUG to INFO: %; debug function list: [%]', 
+		c1lgs_rec.send_debug_to_info, c1lgs_rec.debug;
 EXCEPTION
 	WHEN others THEN /* Try defaulting settings */
-		SET rif40.debug = 'DEBUG1';
+		SET rif40.debug = '';
 		SET rif40.send_debug_to_info = 'off';
 --
 		OPEN c1lgs;
@@ -152,7 +153,7 @@ BEGIN
 		CLOSE c1d2i;
 	EXCEPTION
 		WHEN others THEN /* Try defaulting settings */
-			SET rif40.debug = 'DEBUG1';
+			SET rif40.debug = '';
 			SET rif40.send_debug_to_info = 'off';
 --
 			OPEN c1d2i;
@@ -160,8 +161,11 @@ BEGIN
 			CLOSE c1d2i;
 --
 		RAISE INFO 'rif40_send_debug_to_info() DEFAULTED send DEBUG to INFO: %; debug function list: [%]', 
-			c1d2i_rec.send_debug_to_info, c1d2i_rec.debug;
+			c1d2i_rec.send_debug_to_info::VARCHAR, c1d2i_rec.debug::VARCHAR;
 	END;
+--
+	RAISE INFO 'rif40_send_debug_to_info(%) SET send DEBUG to INFO: %; debug function list: [%]', 
+		enable::VARCHAR, c1d2i_rec.send_debug_to_info::VARCHAR, c1d2i_rec.debug::VARCHAR;
 --
 	IF enable THEN
 		sql_stmt:='SET rif40.send_debug_to_info = ''on''';
@@ -178,8 +182,6 @@ BEGIN
 	OPEN c1d2i;
 	FETCH c1d2i INTO c1d2i_rec;
 	CLOSE c1d2i;
---
-	RAISE INFO 'rif40_send_debug_to_info(%) SET send DEBUG to INFO: %', enable, c1d2i_rec.send_debug_to_info;
 END;
 $func$
 LANGUAGE PLPGSQL;
@@ -477,7 +479,7 @@ BEGIN
 		CLOSE c1a2d;
 	EXCEPTION
 		WHEN others THEN /* Try defaulting settings */
-			SET rif40.debug = 'DEBUG1';
+			SET rif40.debug = '';
 			SET rif40.send_debug_to_info = 'off';
 --
 			OPEN c1a2d;
@@ -597,12 +599,12 @@ BEGIN
 			FETCH c2rg INTO c2rg_rec;
 			CLOSE c2rg;
 --
--- Fixme
+-- Fixed. This is now an error!
 --
 			IF array_lower(v, 1) != array_upper(v, 1)-1 THEN
-				RAISE WARNING 
-				'rif40_debug_record() [99904]: expecting two elements converting v(%) to RIF40_LOG_PKG.RIF40_DEBUG_RECORD, l_debug=%', 
-				c1rg_rec.debug::Text, l_debug::Text;
+				RAISE EXCEPTION 
+					'rif40_debug_record() [99904]: expecting two elements converting v(%) to RIF40_LOG_PKG.RIF40_DEBUG_RECORD, l_debug=%', 
+					c1rg_rec.debug::Text, l_debug::Text;
 			ELSIF c2rg_rec.object_name IS NULL THEN
 				RAISE WARNING 'rif40_debug_record() [99905]: function name %() NOT FOUND/NOT EXECUTABLE by user.', l_function_name;
 			ELSE
@@ -963,12 +965,21 @@ GRANT EXECUTE ON FUNCTION rif40_log_pkg.rif40_get_debug(VARCHAR) TO rif40;
 GRANT EXECUTE ON FUNCTION rif40_log_pkg.rif40_is_debug_enabled(function_name VARCHAR, debug RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL) TO rif_user, rif_manager;
 GRANT EXECUTE ON FUNCTION rif40_log_pkg.rif40_is_debug_enabled(function_name VARCHAR, debug RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL) TO rif40;
 
+\set
+--SELECT CURRENT_SETTING('rif40.debug');
+\set VERBOSITY verbose
+\echo Test A: Log setup
 SELECT rif40_log_pkg.rif40_log_setup();
+\set
+--SELECT CURRENT_SETTING('rif40.debug');
+\echo Test B: send debug output to info
 SELECT rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+\echo Test C: Log function
 SELECT rif40_log_pkg.rif40_log('INFO', 'rif40_log', 'Built rif40_log_pkg (logging, auditing and debug) package.');
 SELECT rif40_log_pkg.rif40_log('INFO', 'rif40_log', 'Built rif40_log_pkg (logging, auditing and debug) package on % %.', 'bbb');
 SELECT rif40_log_pkg.rif40_log('INFO', 'rif40_log', 'Built rif40_log_pkg (logging, auditing and debug) package on % %.', 'bbb', 'ccc');
 SELECT rif40_log_pkg.rif40_log('INFO', 'rif40_lo', 'Built rif40_log_pkg (logging, auditing and debug) package on % %.', 'bbb', 'ccc', 'dddd');
+\echo Test D: Add debug
 SELECT rif40_log_pkg.rif40_add_to_debug('rif40_add_to_debug:DEBUG4,rif40_log:DEBUG4, rif40_error:DEBUG4');
 SELECT rif40_log_pkg.rif40_log_setup();
 SELECT rif40_log_pkg.rif40_is_debug_enabled('rif40_add_to_debug', 'DEBUG4');
@@ -995,9 +1006,11 @@ DO LANGUAGE plpgsql $$
 BEGIN
 	PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_log', 'Test RAISE EXEPTION rif40_log_pkg (logging, auditing and debug) package on % %.', 'bbb', 'ccc', 'dddd');
 EXCEPTION
-	WHEN others THEN NULL;
+	WHEN others THEN 
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_log', 'Caught test exception.');
 END;
 $$;
+\set VERBOSITY default
 
 --
 -- Eof

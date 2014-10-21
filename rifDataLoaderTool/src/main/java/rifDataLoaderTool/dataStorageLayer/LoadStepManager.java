@@ -1,0 +1,332 @@
+package rifDataLoaderTool.dataStorageLayer;
+
+
+
+import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.RIFDataLoaderToolException;
+import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
+import rifDataLoaderTool.businessConceptLayer.DataSource;
+import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
+import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
+import rifDataLoaderTool.dataStorageLayer.SQLQueryUtility;
+import rifServices.businessConceptLayer.RIFResultTable;
+import rifServices.dataStorageLayer.SQLInsertQueryFormatter;
+import rifServices.util.RIFLogger;
+
+import java.sql.*;
+import java.util.ArrayList;
+
+/**
+ *
+ * Manages database operations associated with loading a new data source into the RIF.
+ * 
+ * <hr>
+ * Copyright 2014 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. 
+ *
+ * <pre> 
+ * This file is part of the Rapid Inquiry Facility (RIF) project.
+ * RIF is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * RIF is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RIF.  If not, see <http://www.gnu.org/licenses/>.
+ * </pre>
+ *
+ * <hr>
+ * Kevin Garwood
+ * @author kgarwood
+ */
+
+/*
+ * Code Road Map:
+ * --------------
+ * Code is organised into the following sections.  Wherever possible, 
+ * methods are classified based on an order of precedence described in 
+ * parentheses (..).  For example, if you're trying to find a method 
+ * 'getName(...)' that is both an interface method and an accessor 
+ * method, the order tells you it should appear under interface.
+ * 
+ * Order of 
+ * Precedence     Section
+ * ==========     ======
+ * (1)            Section Constants
+ * (2)            Section Properties
+ * (3)            Section Construction
+ * (7)            Section Accessors and Mutators
+ * (6)            Section Errors and Validation
+ * (5)            Section Interfaces
+ * (4)            Section Override
+ *
+ */
+
+public class LoadStepManager extends AbstractDataLoaderStepManager {
+
+	// ==========================================
+	// Section Constants
+	// ==========================================
+
+	// ==========================================
+	// Section Properties
+	// ==========================================
+	private RIFDataLoaderStartupOptions startupOptions;
+	private LoadStepQueryGeneratorAPI queryGenerator;
+	
+	// ==========================================
+	// Section Construction
+	// ==========================================
+
+	public LoadStepManager(
+		final RIFDataLoaderStartupOptions startupOptions,
+		final LoadStepQueryGeneratorAPI queryGenerator) {
+
+		this.startupOptions = startupOptions;
+		this.queryGenerator = queryGenerator;
+	}
+
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+	
+	public RIFResultTable getLoadTableData(
+		final Connection connection,
+		final TableCleaningConfiguration tableCleaningConfiguration) 
+		throws RIFDataLoaderToolException {
+		
+		RIFResultTable resultTable = new RIFResultTable();
+		String coreTableName = tableCleaningConfiguration.getCoreTableName();
+		String loadTableName
+			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreTableName);
+		String[] fieldNames = tableCleaningConfiguration.getLoadTableFieldNames();
+		
+		try {
+			resultTable 
+				= getTableData(connection, loadTableName, fieldNames);
+			return resultTable;
+		}
+		catch(SQLException sqlException) {
+			sqlException.printStackTrace(System.out);
+		}
+		finally {
+			SQLQueryUtility.close(connection);
+		}
+		return resultTable;
+	}
+	
+	public void createLoadTable(
+		final Connection connection,
+		final TableCleaningConfiguration tableCleaningConfiguration,
+		final int textFieldWidth) 
+		throws RIFDataLoaderToolException {
+
+		
+
+		RIFLogger logger = RIFLogger.getLogger();		
+
+		
+		String coreTableName = tableCleaningConfiguration.getCoreTableName();
+		int textColumnWidth
+			= startupOptions.getDataLoaderTextColumnSize();
+		PreparedStatement dropTableStatement = null;		
+		try {
+			
+			//drop the table if it already exists so we can recreate it
+			//without raising a 'table already exists' exception
+			
+			String dropLoadTableQuery
+				= queryGenerator.generateDropLoadTableQuery(tableCleaningConfiguration);
+			logger.debugQuery(
+				this, 
+				"createLoadTable",
+				dropLoadTableQuery);
+
+			dropTableStatement = connection.prepareStatement(dropLoadTableQuery);
+			dropTableStatement.executeUpdate();	
+		}
+		catch(SQLException sqlException) {
+			String createTableName
+				= generateLoadTableName(coreTableName);
+			
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"loadStepManager.error.dropLoadTable",
+					createTableName);
+			RIFDataLoaderToolException rifDataLoaderToolException
+				= new RIFDataLoaderToolException(
+					RIFDataLoaderToolError.LOAD_TABLE,
+					errorMessage);
+			throw rifDataLoaderToolException;
+		}
+		finally {			
+			SQLQueryUtility.close(dropTableStatement);
+		}
+		
+		PreparedStatement createLoadTableStatement = null;
+		try {
+			
+			//drop the table if it already exists so we can recreate it
+			//without raising a 'table already exists' exception
+			
+			String createLoadTableQuery
+				= queryGenerator.generateLoadTableQuery(
+					1,
+					tableCleaningConfiguration, 
+					textColumnWidth);
+			logger.debugQuery(
+				this, 
+				"createLoadTable",
+				createLoadTableQuery);
+			createLoadTableStatement
+				= connection.prepareStatement(createLoadTableQuery);
+			createLoadTableStatement.executeUpdate();
+		}
+		catch(SQLException sqlException) {
+			sqlException.printStackTrace(System.out);
+			String createTableName
+				= RIFTemporaryTablePrefixes.LOAD.getTableName(
+					tableCleaningConfiguration.getCoreTableName());
+			
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"loadStepManager.error.createLoadTable",
+					createTableName);
+			RIFDataLoaderToolException rifDataLoaderToolException
+				= new RIFDataLoaderToolException(
+					RIFDataLoaderToolError.LOAD_TABLE,
+					errorMessage);
+			throw rifDataLoaderToolException;
+		}
+		finally {			
+			SQLQueryUtility.close(createLoadTableStatement);
+		}	
+	}
+	
+	public void addLoadTableData(
+		final Connection connection,
+		final TableCleaningConfiguration tableCleaningConfiguration,
+		final String[][] tableData) 
+		throws RIFDataLoaderToolException {
+		
+
+		String coreTableName 
+			= tableCleaningConfiguration.getCoreTableName();
+		String loadTableName
+			= generateLoadTableName(coreTableName);
+		SQLInsertQueryFormatter queryFormatter 
+			= new SQLInsertQueryFormatter();
+		queryFormatter.setIntoTable(loadTableName);
+		queryFormatter.addInsertField("data_source_id");
+		ArrayList<TableFieldCleaningConfiguration> fieldConfigurations
+			= tableCleaningConfiguration.getIncludedFieldCleaningConfigurations();
+		for (TableFieldCleaningConfiguration fieldConfiguration : fieldConfigurations) {
+			queryFormatter.addInsertField(fieldConfiguration.getLoadTableFieldName());
+		}
+
+		RIFLogger logger = RIFLogger.getLogger();		
+
+		PreparedStatement statement = null;
+		try {
+			logger.debugQuery(
+				this, 
+				"addLoadTableData",
+				queryFormatter.generateQuery());
+			statement 
+				= connection.prepareStatement(queryFormatter.generateQuery());
+
+			DataSource dataSource = tableCleaningConfiguration.getDataSource();
+			Integer dataSourceIdentifier
+				= Integer.valueOf(dataSource.getIdentifier());
+
+			for (int ithRow = 0; ithRow < tableData.length; ithRow++) {				
+				
+				statement.setInt(1, dataSourceIdentifier);
+				for (int ithParameter = 0; ithParameter < tableData[ithRow].length; ithParameter++) {
+					statement.setString(ithParameter + 2, tableData[ithRow][ithParameter]);					
+				}
+				statement.executeUpdate();
+			}			
+		}
+		catch(SQLException sqlException) {
+			sqlException.printStackTrace(System.out);
+			
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+		
+	}
+	
+	
+	
+	public void dropLoadTable(
+		final Connection connection,
+		final TableCleaningConfiguration tableCleaningConfiguration) 
+		throws RIFDataLoaderToolException {
+
+		RIFLogger logger = RIFLogger.getLogger();		
+		
+		PreparedStatement statement = null;
+
+		try {
+			String dropLoadTableQuery
+				= queryGenerator.generateDropLoadTableQuery(tableCleaningConfiguration);
+			logger.debugQuery(
+				this, 
+				"dropLoadTable",
+				dropLoadTableQuery);
+
+			statement = connection.prepareStatement(dropLoadTableQuery);
+			statement.executeUpdate();	
+		}
+		catch(SQLException sqlException) {
+			String loadTableName
+				= RIFTemporaryTablePrefixes.LOAD.getTableName(
+					tableCleaningConfiguration.getCoreTableName());
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"loadStepManager.error.dropLoadTable",
+					loadTableName);
+			RIFDataLoaderToolException rifDataLoaderToolException
+				= new RIFDataLoaderToolException(
+					RIFDataLoaderToolError.DROP_TABLE,
+					errorMessage);
+			throw rifDataLoaderToolException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);			
+		}	
+	}
+	
+	private String generateLoadTableName(
+		final String coreTableName) {
+		
+		String loadTableName
+			= RIFTemporaryTablePrefixes.LOAD.getTableName(
+				coreTableName);
+		return loadTableName;
+	}
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
+	// ==========================================
+	// Section Interfaces
+	// ==========================================
+
+	// ==========================================
+	// Section Override
+	// ==========================================
+
+}
+
+

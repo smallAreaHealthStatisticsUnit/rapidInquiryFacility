@@ -1,7 +1,12 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import java.util.ArrayList;
+
+import rifDataLoaderTool.system.RIFDataLoaderMessages;
 /**
- *
+ * a data type for Date.  Note that unlike other data type classes, the validation expressions
+ * are not written for the POSIX regular expression languages. Here the validation patterns 
+ * show date patterns such as "dd-mmm-yyyy" etc.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -50,73 +55,66 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public class DBFMetaDataRecord {
+public final class DateRIFDataType extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	public enum DataType {TEXT, DOUBLE, BOOLEAN};
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String originalFieldName;
-	private String cleanedFieldName;
-	private DataType dataType;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private DBFMetaDataRecord() {
+	private DateRIFDataType(
+		final String name,
+		final String description,
+		final String validationRegularExpression) {
 
-	}
-
-	public static DBFMetaDataRecord newInstance() {
-
-		DBFMetaDataRecord dbfMetaDataRecord = new DBFMetaDataRecord();
-		return dbfMetaDataRecord;
-	}
-	
-	public static DBFMetaDataRecord createCopy(
-		final DBFMetaDataRecord originalDBFMetaDataRecord) {
+		super(
+			name, 
+			description, 
+			validationRegularExpression);
 		
-		DBFMetaDataRecord cloneDBFMetaDataRecord
-			= new DBFMetaDataRecord();
+		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);
 		
-		return cloneDBFMetaDataRecord;
 	}
 
-	public String getOriginalFieldName() {
+	public static DateRIFDataType newInstance() {
+
+		String name
+			= RIFDataLoaderMessages.getMessage("rifDataType.date.label");
+
+		//this is the order of date formats which are used to validate RIF dates
+		String dateFormat1 = "DD Mon YYYY";
+		ArrayList<String> validationExpressions = new ArrayList<String>();
+		validationExpressions.add("DD Mon YYYY");
 		
-		return originalFieldName;
-	}
+		StringBuilder dateFormatPatternList = new StringBuilder();
+		for (int i = 0; i < validationExpressions.size(); i++) {
+			if (i != 0) {
+				dateFormatPatternList.append(",");
+			}
+			dateFormatPatternList.append(validationExpressions.get(i));
+		}
+		
+		String description
+			= RIFDataLoaderMessages.getMessage(
+				"rifDataType.date.description",
+				dateFormatPatternList.toString());
+		DateRIFDataType dateRIFDataType
+			= new DateRIFDataType(
+				"rif_date",
+				name, 
+				description);
 
-	public void setOriginalFieldName(
-		final String originalFieldName) {
-
-		this.originalFieldName = originalFieldName;
-	}
-
-	public String getCleanedFieldName() {
-
-		return cleanedFieldName;
-	}
-
-	public void setCleanedFieldName(
-		final String cleanedFieldName) {
-
-		this.cleanedFieldName = cleanedFieldName;
-	}
-
-	public DataType getDataType() {
-
-		return dataType;
-	}
-
-	public void setDataType(
-		final DataType dataType) {
-
-		this.dataType = dataType;
+		dateRIFDataType.setValidationExpressions(validationExpressions);
+		
+		return dateRIFDataType;
 	}
 	
 	// ==========================================
@@ -134,7 +132,14 @@ public class DBFMetaDataRecord {
 	// ==========================================
 	// Section Override
 	// ==========================================
-
+	
+	public RIFDataType createCopy() {
+		DateRIFDataType cloneDateRIFDataType 
+			= newInstance();
+		copyAttributes(cloneDateRIFDataType);
+		return cloneDateRIFDataType;
+	}
+		
 }
 
 

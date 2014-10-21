@@ -202,7 +202,7 @@ public class DBTButtonControlPanel {
 	public void setCurrentActivityStep(
 		final RIFDataLoaderActivityStep activityStep) {
 		
-		if (activityStep == RIFDataLoaderActivityStep.LOAD_RAW_DATA_TABLE) {
+		if (activityStep == RIFDataLoaderActivityStep.LOAD) {
 			indicateProcessedStep(loadTableButton);
 			indicateUnprocessedStep(cleanTableButton);
 			indicateUnprocessedStep(applyRIFChangesButton);
@@ -210,7 +210,7 @@ public class DBTButtonControlPanel {
 			indicateUnprocessedStep(optimiseTableButton);
 			indicateUnprocessedStep(publishTableButton);			
 		}
-		else if (activityStep == RIFDataLoaderActivityStep.CLEAN_DATA_TABLE) {
+		else if (activityStep == RIFDataLoaderActivityStep.CLEAN) {
 			indicateProcessedStep(loadTableButton);
 			indicateProcessedStep(cleanTableButton);
 			indicateUnprocessedStep(applyRIFChangesButton);
@@ -218,7 +218,7 @@ public class DBTButtonControlPanel {
 			indicateUnprocessedStep(optimiseTableButton);
 			indicateUnprocessedStep(publishTableButton);			
 		}
-		else if (activityStep == RIFDataLoaderActivityStep.APPLY_RIF_SPECIFIC_TRANSFORMATION) {
+		else if (activityStep == RIFDataLoaderActivityStep.CONVERT) {
 			indicateProcessedStep(loadTableButton);
 			indicateProcessedStep(cleanTableButton);
 			indicateProcessedStep(applyRIFChangesButton);
@@ -226,7 +226,7 @@ public class DBTButtonControlPanel {
 			indicateUnprocessedStep(optimiseTableButton);
 			indicateUnprocessedStep(publishTableButton);
 		}
-		else if (activityStep == RIFDataLoaderActivityStep.COMBINE_TABLES) {
+		else if (activityStep == RIFDataLoaderActivityStep.COMBINE) {
 			indicateProcessedStep(loadTableButton);
 			indicateProcessedStep(cleanTableButton);
 			indicateProcessedStep(applyRIFChangesButton);
@@ -234,7 +234,7 @@ public class DBTButtonControlPanel {
 			indicateUnprocessedStep(optimiseTableButton);
 			indicateUnprocessedStep(publishTableButton);
 		}
-		else if (activityStep == RIFDataLoaderActivityStep.OPTIMISE_TABLE) {
+		else if (activityStep == RIFDataLoaderActivityStep.OPTIMISE) {
 			indicateProcessedStep(loadTableButton);
 			indicateProcessedStep(cleanTableButton);
 			indicateProcessedStep(applyRIFChangesButton);
@@ -242,7 +242,7 @@ public class DBTButtonControlPanel {
 			indicateProcessedStep(optimiseTableButton);
 			indicateUnprocessedStep(publishTableButton);
 		}
-		else if (activityStep == RIFDataLoaderActivityStep.PUBLISH_TABLE) {
+		else if (activityStep == RIFDataLoaderActivityStep.PUBLISH) {
 			indicateProcessedStep(loadTableButton);
 			indicateProcessedStep(cleanTableButton);
 			indicateProcessedStep(applyRIFChangesButton);

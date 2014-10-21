@@ -41,18 +41,7 @@ RIF.diseaseMapping = ( function() {
     events: {
 
       /**--STUDY OBJECT RELATED---**/
-      resultSetSelectionChanged: {
-        subscribers: [ "study" ],
-        firer: [ "menu" ],
-        method: "resultSetSelectionChanged"
-      },
-      changeResultSetSelection: {
-        subscribers: [ "chart" ],
-        firer: [ "study" ],
-        method: "changeResultSetSelection"
-      },
-
-
+	  
       clearSelectionClicked: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
@@ -158,6 +147,107 @@ RIF.diseaseMapping = ( function() {
         firer: [ "study" ],
         method: "changeBasemap"
       },
+	  
+	  
+	  yearChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "yearChanged"
+      },
+	  
+      changeYear: {
+        subscribers: [ "map", "chart" ],
+        firer: [ "study" ],
+        method: "changeYear"
+      },
+	  
+	  genderChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "genderChanged"
+      },
+	  
+      changeGender: {
+        subscribers: [ "map", "chart" ],
+        firer: [ "study" ],
+        method: "changeGender"
+      },
+	  
+	  /**-- GET / SETTER --**/
+	  
+	  studyChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "studyChanged"
+      },
+	  
+	  investigationChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "investigationChanged"
+      },
+	  
+	  areaChartSelectionChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "areaChartSelectionChanged"
+      },
+	  
+      changeAreaSelection: {
+        subscribers: [ "chart" ],
+        firer: [ "study" ],
+        method: "changeResultSetSelection"
+      },
+	  
+	  resultSetChanged: {
+        subscribers: [ "study" ],
+        firer: [  "menu" ],
+        method: "resultSetChanged"
+      },
+	  
+      yearChanged: {
+        subscribers: [ "study" ],
+        firer: [  "menu" ],
+        method: "yearChanged"
+      },
+	  
+	  genderChanged: {
+        subscribers: [ "study" ],
+        firer: [  "menu" ],
+        method: "genderChanged"
+      },
+	  
+	  getStudy: {
+        subscribers: [ "map" , "chart" ],
+        firer: [ "study" ],
+        method: "getCurrentStudy"
+      },
+	  
+	  
+	  //GETS
+	  getInvestigation: {
+        subscribers: [ "map" ,  "chart" ],
+        firer: [ "study" ],
+        method: "getCurrentInvestigation"
+      },
+	  
+	  getResultSet: {
+        subscribers: [ "map" ,  "chart" ],
+        firer: [ "study" ],
+        method: "getCurrentResultSet"
+      },
+	  
+	  getCurrentYear: {
+        subscribers: [ "map" , "chart" ],
+        firer: [ "study" ],
+        method: "getCurrentYear"
+      },
+	  
+	  getCurrentGender: {
+        subscribers: [ "map" , "chart" ],
+        firer: [ "study" ],
+        method: "getCurrentGender"
+      },
 
       /**-- END STUDY RELATED --**/
 
@@ -167,11 +257,11 @@ RIF.diseaseMapping = ( function() {
         method: "getScaleRange"
       },
 
-      populateZoomIds: {
+      /* populateZoomIds: {
         subscribers: [ "menu" ],
         firer: [ "map" ],
         method: "populateZoomIds"
-      },
+      },*/
 
       zoomToExtent: {
         subscribers: [ "map" ],
@@ -184,10 +274,16 @@ RIF.diseaseMapping = ( function() {
         firer: [ "menu", "chart" ],
         method: "zoomTo"
       },
-
-      mapStyleChange: {
-        subscribers: [ "map" ],
+      
+	  mapStyleChange: {
+        subscribers: [ "study" ],
         firer: [ "menu" ],
+        method: "mapStyleChange"
+      },
+	  
+      changeMapStyle: {
+        subscribers: [ "map" ],
+        firer: [ "study" ],
         method: "uMapStyle"
       },
 

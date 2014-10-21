@@ -127,7 +127,7 @@ import java.util.ArrayList;
  */
 
 abstract class AbstractRIFStudyRetrievalService 
-	extends AbstractRIFService 
+	extends AbstractRIFUserService 
 	implements RIFStudyResultRetrievalAPI {
 
 	// ==========================================
