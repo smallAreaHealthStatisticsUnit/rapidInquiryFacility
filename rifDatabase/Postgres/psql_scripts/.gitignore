@@ -3,3 +3,4 @@
 v4_0_vacuum_analyse_tmp.sql
 Makefile.local
 recreate_sahsu_dev_tmp.sql
+*.status

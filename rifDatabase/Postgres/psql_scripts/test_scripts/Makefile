@@ -70,18 +70,9 @@ DEFAULT_ECHO=none
 # none:		- No SQL
 #
 DBNAME?=$(PGDATABASE)
-TESTUSER?=$(USERNAME)
 VERBOSITY?=$(DEFAULT_VERBOSITY)
 DEBUG_LEVEL?=$(DEFAULT_DEBUG_LEVEL)
 ECHO?=$(DEFAULT_ECHO)
-#
-# Programs and parameters
-#
-WINDOWS_RUN_SCRIPT=../run.ps1
-LINUX_RUN_SCRIPT=../run.sh
-PSQL=psql
-PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -P pager=off \
-	-v testuser=$(TESTUSER) -v verbosity=$(VERBOSITY) -v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO)
 
 #
 # List of source code
@@ -109,19 +100,35 @@ ifeq ($(OS),Windows_NT)
 #
 # Windows support
 #
-RUN_SCRIPT=$(WINDOWS_RUN_SCRIPT)
-RUN=powershell -ExecutionPolicy ByPass -file $(RUN_SCRIPT)
-DELETE=powershell -ExecutionPolicy ByPass -file ../delete.ps1
-#
-# ADD Linux support
-#
+	RUN=powershell -ExecutionPolicy ByPass -file ../run.ps1
+	DELETE=powershell -ExecutionPolicy ByPass -file ../delete.ps1
+	TESTUSER=$(USERNAME)
 else
+#
+# Linux macos support
+#
+	UNAME_S := $(shell uname -s)
+	RUN=../run.sh
+	DELETE=rm -f
+	TESTUSER=$(shell id -un | tr ‘[:upper:]’ ‘[:lower:]’)
+        ifeq ($(UNAME_S),Linux)
+	else
+		ifeq ($(UNAME_S),Darwin)
+		else
 #
 # Unsupported OS
 #
-$(error Unsupported OS: $(OS))
+			$(error Unsupported OS: $(OS); uname -s: $(UNAME_S))
+		endif
+	endif
 endif
 
+#
+# Programs and parameters
+#
+PSQL=psql
+PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -P pager=off \
+	-v testuser=$(TESTUSER) -v verbosity=$(VERBOSITY) -v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO)
 
 #
 # Target extension depends on source, build rule

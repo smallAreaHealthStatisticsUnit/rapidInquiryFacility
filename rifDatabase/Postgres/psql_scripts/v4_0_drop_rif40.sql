@@ -27,7 +27,7 @@
 -- This file is part of the Rapid Inquiry Facility (RIF) project.
 -- RIF is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU Lesser General Public License as published by
--- the Free Software Foundation, either verquote_ident(l_schema)||'.'||quote_ident(l_tablesion 3 of the License, or
+-- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
 --
 -- RIF is distributed in the hope that it will be useful,
@@ -495,6 +495,43 @@ DROP TABLE IF EXISTS rif_studies.test_4_study_id_1_bands;
 --DROP VIEW geotest_london_ward2001;
 --DROP VIEW geotest_london_soa2001;
 --DROP VIEW geotest_london_oa2001;
+
+--
+-- Added for Macos
+--
+DROP TABLE IF EXISTS t_rif40_sahsu_geometry CASCADE;
+DROP TABLE IF EXISTS t_rif40_geolevels_geometry_sahsu_level1;
+DROP TABLE IF EXISTS t_rif40_geolevels_geometry_sahsu_level2;
+DROP TABLE IF EXISTS t_rif40_geolevels_geometry_sahsu_level3;
+DROP TABLE IF EXISTS t_rif40_geolevels_geometry_sahsu_level4;
+
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_rif40_covariates_checks();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_rif40_study_shares_checks();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_studies_checks();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_study_areas_checks();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_study_areas_checks2();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_comp_areas_checks();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_comp_areas_checks2();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_investigations_checks();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_inv_conditions_checks();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_inv_covariates_checks();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_geolevels_checks();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_user_projects_checks();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_results_checks();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_contextualstats_checks();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_study_sql_log_checks();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_study_sql_checks();
+DROP FUNCTION IF EXISTS rif40.t_rif40_sahsu_geometry_insert();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_comparison_areas();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_contextual_stats();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_inv_conditions();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_inv_covariates();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_investigations();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_results();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_study_areas();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_study_sql();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_study_sql_log();
+DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_user_projects();
 
 \echo Dropped all objects.
 

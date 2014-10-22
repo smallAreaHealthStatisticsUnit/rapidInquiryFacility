@@ -91,13 +91,13 @@ cd $WD
 #
 if [ -f $LOG ]; then
 	cmd rm -f $LOG 
-}
+fi
 if [ -f $LOG.err ]; then
 	cmd rm -f $LOG.err 
-}
+fi
 if [ -f $LOG.status ]; then
 	cmd rm -f $LOG.status 
-}
+fi
 touch $LOG
 if [ ! -w $LOG ]; then	
 	echo "$MODULE: log file $LOG not writeable"
@@ -117,6 +117,7 @@ if [ ! -f $LOG.status ]; then
 fi
 if [ ! -s $LOG.status ]; then	
 	echo "$MODULE: run status file $LOG.status zero sized" >> $LOG
+	rm -f $LOG.status
 	exit 5
 fi
 
@@ -125,10 +126,11 @@ fi
 #
 EXIT_STATUS=`cat $LOG.status`
 EXIT_STATUS=${EXIT_STATUS:=9999}
-if [ $EXIT_STATUS = "9999" ] then
+if [ $EXIT_STATUS = "9999" ]; then
 	echo "$MODULE: run status file $LOG.status not found/zero sized" >> $LOG
-elif [ $EXIT_STATUS != "0" ] then
+elif [ $EXIT_STATUS != "0" ]; then
 	mv -f $LOG $LOG.err
+	rm -f $LOG.status
 	exit 6
 fi
 rm -f $LOG.status

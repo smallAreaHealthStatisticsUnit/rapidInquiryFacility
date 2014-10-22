@@ -99,16 +99,35 @@ $$;
 --
 DO LANGUAGE plpgsql $$
 DECLARE
+-- PostgreSQL 9.3.5 on x86_64-apple-darwin, compiled by i686-apple-darwin11-llvm-gcc-4.2 (GCC) 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2336.9.00), 64-bito
+--
 	c1 CURSOR FOR
 	 	SELECT version() AS version, 
 		SUBSTR(version(), 12, 3)::NUMERIC as major_version, 
 		SUBSTR(version(), 16, position(', ' IN version())-16)::NUMERIC as minor_version;
+	c1a CURSOR FOR
+	 	SELECT version() AS version, 
+		SUBSTR(version(), 12, 3)::NUMERIC as major_version, 
+		SUBSTR(version(), 16, position('on' IN version())-16)::NUMERIC as minor_version;
 	c1_rec RECORD;
 --
 BEGIN
-	OPEN c1;
-	FETCH c1 INTO c1_rec;
-	CLOSE c1;
+	BEGIN
+		OPEN c1;
+		FETCH c1 INTO c1_rec;
+		CLOSE c1;
+	EXCEPTION
+		WHEN others THEN 
+			BEGIN
+				OPEN c1a;
+				FETCH c1a INTO c1_rec;
+				CLOSE c1a;
+			EXCEPTION
+				WHEN others THEN 
+				RAISE WARNING 'db_create.sql(): unsupported version() function: %', version();
+				RAISE;
+			END;
+	END;
 	--
 	IF c1_rec.major_version < 9.3 THEN
 		RAISE EXCEPTION 'db_create.sql() C902xx: RIF requires Postgres version 9.3 or higher; current version: %',
@@ -153,7 +172,7 @@ BEGIN
 --
 	sql_stmt:='SET rif40.use_plr TO '||SUBSTR(c1_rec.use_plr, 5);
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
-	PERFORM sql_stmt;
+	EXECUTE sql_stmt;
 END;
 $$;
 
@@ -182,7 +201,7 @@ BEGIN
 --
 	sql_stmt:='SET rif40.create_sahsuland_only TO '||SUBSTR(c1_rec.create_sahsuland_only, 5);
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
-	PERFORM sql_stmt;
+	EXECUTE sql_stmt;
 END;
 $$;
 
@@ -301,7 +320,8 @@ BEGIN
 	CLOSE c2;
 	sql_stmt:='ALTER USER postgres ENCRYPTED PASSWORD  '''||c2_rec.password||'''';
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
-	PERFORM sql_stmt;
+-- BROKEN
+--	EXECUTE sql_stmt;
 --
 	FOREACH x IN ARRAY userlist LOOP
 		OPEN c1(x);
@@ -311,7 +331,8 @@ BEGIN
 			RAISE INFO 'db_create.sql() RIF schema user % exists', c1_rec.usename::VARCHAR;
 				sql_stmt:='ALTER USER '||c1_rec.usename||' ENCRYPTED PASSWORD  '''||c2_rec.password||'''';
 			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
-			PERFORM sql_stmt;
+-- BROKEN
+--			EXECUTE sql_stmt;
 		ELSE
 	    	sql_stmt:='CREATE ROLE '||x||
 				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION ENCRYPTED PASSWORD '''||c2_rec.password||'''';
@@ -400,6 +421,10 @@ BEGIN
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;
 	sql_stmt:='GRANT rif_user TO '||u_name;
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	EXECUTE sql_stmt;
+--
+	sql_stmt:='GRANT CONNECT ON DATABASE postgres to rif40';
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;
 END;

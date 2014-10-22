@@ -88,7 +88,6 @@ DEFAULT_CREATE_SAHSULAND_ONLY=N
 # none:		- No SQL
 #
 DBNAME?=$(PGDATABASE)
-TESTUSER?=$(USERNAME)
 VERBOSITY?=$(DEFAULT_VERBOSITY)
 DEBUG_LEVEL?=$(DEFAULT_DEBUG_LEVEL)
 ECHO?=$(DEFAULT_ECHO)
@@ -127,6 +126,7 @@ ifeq ($(OS),Windows_NT)
 	COPY=powershell -ExecutionPolicy ByPass -file copy.ps1 
 	POSTGRES_ETC_DIR="C:\Program Files\PostgreSQL\9.3\etc"
 	PGPASS=powershell -ExecutionPolicy ByPass -file pgpass.ps1
+	TESTUSER?=$(USERNAME)
 else
 #
 # Linux macos support
@@ -136,14 +136,15 @@ else
 	DELETE=rm -f
 	HELP=grep "\#-" Makefile
 	COPY=cp
+	TESTUSER=$(shell id -un | tr ‘[:upper:]’ ‘[:lower:]’)
     ifeq ($(UNAME_S),Linux)
 		SAHSULAND_TABLESPACE_DIR="C:\PostgresDB\sahsuland"
-		POSTGRES_ETC_DIR="C:\Program Files\PostgreSQL\9.3\etc"
+		POSTGRES_ETC_DIR=/var/opt/PostgreSQL/9.3/etc
 		PGPASS=./pgpass.sh
 	else
 		ifeq ($(UNAME_S),Darwin)
 			SAHSULAND_TABLESPACE_DIR="C:\PostgresDB\sahsuland"
-			POSTGRES_ETC_DIR="C:\Program Files\PostgreSQL\9.3\etc"
+			POSTGRES_ETC_DIR=/Library/PostgreSQL/9.3/etc
 			PGPASS=./pgpass.sh
 		else
 #
@@ -202,7 +203,7 @@ dev:
 #-
 #- 2. build
 #-	
-#- sahsuland_dev_no_alter: Rebuild sahsuland_dev, test [State of SAHSULAND at port to SQL server], finally VACUUM ANALYZE
+#- sahsuland_dev_no_alter: Rebuild sahsuland_dev, test [State of SAHSULAND at port to SQL server], finally VACUUM ANALYSE
 sahsuland_dev_no_alter: clean v4_0_create_sahsuland.rpt 
 	$(MAKE) -C test_scripts all DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) v4_0_vacuum_analyse_dev
@@ -255,7 +256,7 @@ verbose_test:
 clean:
 	$(MAKE) -C alter_scripts clean
 	$(MAKE) -C test_scripts clean
-	$(DELETE) db_create.rpt v4_0_create_sahsuland.rpt v4_0_vacuum_analyse.rpt
+	$(DELETE) db_setup.rpt db_create.rpt v4_0_create_sahsuland.rpt v4_0_vacuum_analyse.rpt
 #- devclean: Remove logs so alter scripts in development can be r-run 
 #-           Not normally needed as they abort.
 devclean:
