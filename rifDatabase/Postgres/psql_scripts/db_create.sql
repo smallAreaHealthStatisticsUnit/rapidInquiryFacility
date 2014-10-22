@@ -138,6 +138,8 @@ DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR SELECT CURRENT_SETTING('rif40.use_plr') AS use_plr;
 	c1_rec RECORD;
+--
+	sql_stmt VARCHAR;
 BEGIN
 	OPEN c1;
 	FETCH c1 INTO c1_rec;
@@ -148,9 +150,41 @@ BEGIN
 	ELSE
 		RAISE INFO 'db_create.sql() postgres use_plr="%"', SUBSTR(c1_rec.use_plr, 5);
 	END IF;
+--
+	sql_stmt:='SET rif40.use_plr TO '||SUBSTR(c1_rec.use_plr, 5);
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	PERFORM sql_stmt;
 END;
 $$;
-SET rif40.use_plr TO :use_plr;
+
+
+--
+-- Create SAHSULAND only (no SAHSULAND_DEV) (default N)
+--
+\set ncreate_sahsuland_only '''XXXX':create_sahsuland_only''''
+SET rif40.create_sahsuland_only TO :ncreate_sahsuland_only;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR SELECT CURRENT_SETTING('rif40.create_sahsuland_only') AS create_sahsuland_only;
+	c1_rec RECORD;
+--
+	sql_stmt VARCHAR;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF UPPER(c1_rec.create_sahsuland_only) = 'XXXX' THEN
+		RAISE EXCEPTION 'db_create.sql() C209xx: No -v create_sahsuland_only=<create_sahsuland_only> parameter';	
+	ELSE
+		RAISE INFO 'db_create.sql() postgres create_sahsuland_only="%"', SUBSTR(c1_rec.create_sahsuland_only, 5);
+	END IF;
+--
+	sql_stmt:='SET rif40.create_sahsuland_only TO '||SUBSTR(c1_rec.create_sahsuland_only, 5);
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	PERFORM sql_stmt;
+END;
+$$;
 
 --
 -- Check availability of extensions
@@ -325,6 +359,7 @@ DECLARE
 	c2_rec RECORD;
 --
 	sql_stmt VARCHAR;
+	u_name	VARCHAR;
 BEGIN
 	OPEN c1;
 	FETCH c1 INTO c1_rec;
@@ -337,22 +372,17 @@ BEGIN
 	ELSE
 		RAISE INFO 'db_create.sql() test user account parameter="%"', c1_rec.testuser;
 	END IF;
+	u_name:=LOWER(SUBSTR(CURRENT_SETTING('rif40.testuser'), 5));
 --
 -- Test account exists
 --
-	OPEN c2(LOWER(SUBSTR(c1_rec.testuser, 5)));
+	OPEN c2(u_name);
 	FETCH c2 INTO c2_rec;
 	CLOSE c2;
 	IF c2_rec.usename IS NULL THEN
-		RAISE NOTICE 'db_create.sql() C209xx: User account does not exist: %; creating', LOWER(SUBSTR(c1_rec.testuser, 5));	
+		RAISE NOTICE 'db_create.sql() C209xx: User account does not exist: %; creating', u_name;	
 		sql_stmt:='CREATE ROLE '||LOWER(SUBSTR(c1_rec.testuser, 5))||
-			' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD '''||LOWER(SUBSTR(c1_rec.testuser, 5))||'''';
-		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
-		EXECUTE sql_stmt;
-		sql_stmt:='GRANT rif_manager TO '||LOWER(SUBSTR(c1_rec.testuser, 5));
-		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
-		EXECUTE sql_stmt;
-		sql_stmt:='GRANT rif_user TO '||LOWER(SUBSTR(c1_rec.testuser, 5));
+			' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD '''||u_name||'''';
 		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 		EXECUTE sql_stmt;
 	ELSIF pg_has_role(c2_rec.usename, 'rif_user', 'MEMBER') THEN
@@ -362,6 +392,16 @@ BEGIN
 	ELSE
 		RAISE EXCEPTION 'db_create.sql() C209xx: User account: % is not a rif_user or rif_manager', c2_rec.usename;	
 	END IF;
+--
+	sql_stmt:='GRANT CONNECT ON DATABASE postgres to '||u_name;
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	EXECUTE sql_stmt;
+	sql_stmt:='GRANT rif_manager TO '||u_name;
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	EXECUTE sql_stmt;
+	sql_stmt:='GRANT rif_user TO '||u_name;
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	EXECUTE sql_stmt;
 END;
 $$;
 
@@ -371,14 +411,17 @@ $$;
 END;
 
 --
-\echo "Try to connect as test user. This will fail if pgpass is not setup correctly"
-\echo "Stored password file is in ~/.pgpass on Linux or: %APPDATA%\postgresql\pgpass.conf on Windows"
-\echo "Format is: hostname:port:database:username:password"
-\c postgres :testuser
+\echo *****************************************************************************************************
+\echo * Try to connect as test user. This will fail if pgpass is not setup correctly
+\echo '* Stored password file is in ~/.pgpass on Linux/Macos or: %APPDATA%/postgresql/pgpass.conf on Windows'
+\echo * Format is: hostname:port:database:username:password
+\echo *****************************************************************************************************
+--
+\c postgres :testuser :pghost
 \echo "Try to connect as rif40. This will fail if if the password file is not setup correctly"
-\c postgres rif40
+\c postgres rif40 :pghost
 -- Re-connect as postgres
-\c postgres postgres
+\c postgres postgres :pghost
 
 \echo ************************************************************************************
 \echo *                                                                                  
@@ -406,7 +449,7 @@ BEGIN
 	CLOSE c1;
 --
 	IF UPPER(c1_rec.sahsuland_tablespace_dir) = 'XXXX' THEN
-		RAISE EXCEPTION 'db_create.sql() C209xx: No -v use_plr=<sahsuland_tablespace_dir> parameter';	
+		RAISE EXCEPTION 'db_create.sql() C209xx: No -v sahsuland_tablespace_dir=<sahsuland_tablespace_dir> parameter';	
 	ELSE
 		RAISE INFO 'db_create.sql() postgres sahsuland_tablespace_dir="%"', SUBSTR(c1_rec.sahsuland_tablespace_dir, 5);
 		sql_stmt:='SET rif40.sahsuland_tablespace_dir TO '''||SUBSTR(c1_rec.sahsuland_tablespace_dir, 5)||'''';
@@ -447,20 +490,31 @@ END;
 $$;
  */
  
-\set echo ALL
+\set ECHO ALL
 DROP DATABASE IF EXISTS sahsuland;
--- 
--- Normally sahusland_dev is NOT deleted
---
-DROP DATABASE IF EXISTS sahsuland_dev;
 CREATE DATABASE sahsuland WITH OWNER rif40 /* TABLESPACE sahsuland */;
 COMMENT ON DATABASE sahsuland IS 'RIF V4.0 PostGres SAHSULAND Example Database';
-\set ON_ERROR_STOP OFF
-CREATE DATABASE sahsuland_dev WITH OWNER rif40 /* TABLESPACE sahsuland */;
-\set ON_ERROR_STOP ON
-COMMENT ON DATABASE sahsuland IS 'RIF V4.0 PostGres SAHSULAND development Database';
 
-\c sahsuland postgres localhost 
+SET rif40.create_sahsuland_only TO :create_sahsuland_only;
+--
+-- Conditionally create a script to recreate sahsuland_dev
+-- Database creation is not transactional!
+--
+\copy (WITH a  AS (SELECT 'DROP DATABASE IF EXISTS sahsuland_dev;' AS sql_stmt, 1 AS ord UNION SELECT 'CREATE DATABASE sahsuland_dev WITH OWNER rif40 /* TABLESPACE sahsuland */;' AS sql_stmt, 2 AS ord UNION SELECT 'COMMENT ON DATABASE sahsuland IS ''RIF V4.0 PostGres SAHSULAND development Database'';' AS sql_stmt, 3 AS ord) SELECT sql_stmt FROM a WHERE CURRENT_SETTING('rif40.create_sahsuland_only') IN ('n', 'N') ORDER BY ord) TO recreate_sahsu_dev_tmp.sql WITH (FORMAT text);
+DO $$
+BEGIN
+--
+	IF CURRENT_SETTING('rif40.create_sahsuland_only') NOT IN ('n', 'N') THEN
+		RAISE INFO 'Database: sahusland_dev not re-created, create_sahsuland_only=%', CURRENT_SETTING('rif40.create_sahsuland_only');
+	END IF;
+END
+$$;
+--
+-- Execute
+--
+\i recreate_sahsu_dev_tmp.sql
+
+\c sahsuland postgres :pghost 
 
 --
 -- Start transaction 2: sahsuland build
@@ -475,7 +529,9 @@ SET rif40.testuser TO :ntestuser;
 DO LANGUAGE plpgsql $$
 DECLARE	
 	sql_stmt VARCHAR;
+	u_name	VARCHAR;
 BEGIN
+	u_name:=LOWER(SUBSTR(CURRENT_SETTING('rif40.testuser'), 5));
 	IF user = 'postgres' AND current_database() = 'sahsuland' THEN
 		RAISE INFO 'db_create.sql() User check: %', user;	
 	ELSE
@@ -486,7 +542,10 @@ BEGIN
 	sql_stmt:='CREATE EXTENSION IF NOT EXISTS postgis';
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;
-	IF UPPER(CURRENT_SETTING('rif40.use_plr')) = 'Y' THEN
+	sql_stmt:='CREATE EXTENSION IF NOT EXISTS adminpack';
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	EXECUTE sql_stmt;
+	IF UPPER(CURRENT_SETTING('rif40.use_plr')) IN ('y', 'Y') THEN
 --
 -- Test PLR can be installed
 --
@@ -495,14 +554,20 @@ BEGIN
 --
 -- RIF40 grants
 --	
-	sql_stmt:='GRANT ALL ON DATABASE sahsuland_dev to rif40';
+	sql_stmt:='GRANT ALL ON DATABASE sahsuland to rif40';
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;
 	sql_stmt:='REVOKE CREATE ON SCHEMA public FROM rif40';
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;
 --
-	sql_stmt:='GRANT CONNECT ON DATABASE sahsuland_dev to '||LOWER(SUBSTR(CURRENT_SETTING('rif40.testuser'), 5));
+	sql_stmt:='GRANT CONNECT ON DATABASE sahsuland to '||u_name;
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	EXECUTE sql_stmt;
+--
+-- Set default search pathname
+--
+	sql_stmt:='ALTER DATABASE sahsuland SET search_path TO rif40, public, topology, gis, pop, rif40_sql_pkg, rif_studies';
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;
 END;
@@ -513,7 +578,7 @@ $$;
 --
 END;
  
-\c sahsuland_dev postgres localhost 
+\c sahsuland_dev postgres :pghost 
 --
 -- Start transaction 3: sahsuland_dev build
 --
@@ -548,7 +613,10 @@ BEGIN
 	sql_stmt:='CREATE EXTENSION IF NOT EXISTS postgis';
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;
-	IF UPPER(CURRENT_SETTING('rif40.use_plr')) = 'Y' THEN
+	sql_stmt:='CREATE EXTENSION IF NOT EXISTS adminpack';
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	EXECUTE sql_stmt;
+	IF UPPER(CURRENT_SETTING('rif40.use_plr')) IN ('y', 'Y') THEN
 --
 -- Test PLR can be installed
 --
@@ -592,16 +660,16 @@ BEGIN
 			sql_stmt:='CREATE SCHEMA '||x||' AUTHORIZATION rif40';
 			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 			EXECUTE sql_stmt;
-			sql_stmt:='GRANT ALL ON SCHEMA '||x||' TO rif40';
-			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
-			EXECUTE sql_stmt;
-			sql_stmt:='GRANT USAGE ON SCHEMA '||x||' TO rif_user';
-			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
-			EXECUTE sql_stmt;
-			sql_stmt:='GRANT USAGE ON SCHEMA '||x||' TO rif_manager';
-			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
-			EXECUTE sql_stmt;
 		END IF;
+		sql_stmt:='GRANT ALL ON SCHEMA '||x||' TO rif40';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='GRANT USAGE ON SCHEMA '||x||' TO rif_user';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='GRANT USAGE ON SCHEMA '||x||' TO rif_manager';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
 	END LOOP;
 
 --
@@ -618,65 +686,5 @@ $$;
 --
 END;
  
-\q
- 
-\echo Restoring database...
---
--- Shell pg_restore
--- 
---\! pg_restore -d sahsuland -U postgres -v  sahsuland.dump > pg_restore.txt 2>&1
---
--- Powershell version
---
-\! powershell -command "pg_restore -d sahsuland -U postgres -v  sahsuland.dump 2>&1 | tee ('pg_restore{0}.log' -f (Get-Date -format 'yyyy.MM.dd-HH.mm'))"
---
--- Display errors
---
-\echo Database restore errors...
-\! findstr "ERROR:" pg_restore.txt
-/*
-
-Errors like this can be ignored - others may not!
-
-pg_restore: [archiver (db)] could not execute query: ERROR:  could not load library "C:/Program Files/PostgreSQL/9.3/lib/plperl.dll"
-: The specified module could not be found.
-pg_restore: [archiver (db)] could not execute query: ERROR:  extension "plperl" does not exist
-pg_restore: [archiver (db)] could not execute query: ERROR:  could not open extension control file "C:/Program Files/PostgreSQL/9.3/
-share/extension/oracle_fdw.control": No such file or directory
-pg_restore: [archiver (db)] could not execute query: ERROR:  extension "oracle_fdw" does not exist
-pg_restore: [archiver (db)] could not execute query: ERROR:  rule "geometry_columns_delete" for relation "geometry_columns" already
-exists
-pg_restore: [archiver (db)] could not execute query: ERROR:  rule "geometry_columns_insert" for relation "geometry_columns" already
-exists
-pg_restore: [archiver (db)] could not execute query: ERROR:  rule "geometry_columns_update" for relation "geometry_columns" already
-exists
- */
-ALTER DATABASE sahsuland SET search_path TO rif40,public,topology,gis,pop,rif40_sql_pkg;
-
-\q
-\c sahsuland
-\set VERBOSITY terse
-DO LANGUAGE plpgsql $$
-DECLARE
-	sql_stmt VARCHAR;
-BEGIN
---
--- Force rebuild of user objects
---
-	sql_stmt:='DROP VIEW IF EXISTS '||USER||'.rif40_user_version';
-	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
---
-	PERFORM rif40_log_pkg.rif40_add_to_debug('rif40_ddl_checks:DEBUG3');
-	PERFORM rif40_log_pkg.rif40_log_setup();
-	PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
-        PERFORM rif40_sql_pkg.rif40_startup();
-	IF USER != 'rif40' THEN
-	        PERFORM rif40_sql_pkg.rif40_ddl_checks();
-	END IF;
-	PERFORM rif40_log_pkg.rif40_remove_from_debug('rif40_ddl_checks');
-END;
-$$;
-
-\echo SAHSUland installed.
 --
 -- Eof

@@ -53,12 +53,20 @@ SUBDIRS = alter_scripts test_scripts
 # PG_DATABASE - set to sahsuland_dev
 #
 PGDATABASE=sahsuland_dev
+PGHOST=localhost
 DEFAULT_VERBOSITY=terse
 DEFAULT_DEBUG_LEVEL=0
 DEFAULT_ECHO=none
 DEFAULT_PSQL_USER=rif40
 DEFAULT_ENCRYPTED_POSTGRES_PASSWORD=md57d50cade66c8b224d1fbd91805cbf442
 DEFAULT_USE_PLR=N
+DEFAULT_CREATE_SAHSULAND_ONLY=N
+#
+# Local overrides; copy Makefile.local.example to Makefile.local and edit Makefile.local
+#
+# DEFAULT_ENCRYPTED_POSTGRES_PASSWORD hash comes from PGAdmin III or psql
+#
+-include Makefile.local
 
 #
 # PL/pgsql debug levels (DEBUG_LEVEL);
@@ -87,16 +95,17 @@ ECHO?=$(DEFAULT_ECHO)
 PSQL_USER?=$(DEFAULT_PSQL_USER)
 ENCRYPTED_POSTGRES_PASSWORD?=$(DEFAULT_ENCRYPTED_POSTGRES_PASSWORD)
 USE_PLR?=$(DEFAULT_USE_PLR)
+CREATE_SAHSULAND_ONLY?=$(DEFAULT_CREATE_SAHSULAND_ONLY)
 #
 # Programs and parameters
 #
-WINDOWS_RUN_SCRIPT=run.ps1
-LINUX_RUN_SCRIPT=run.sh
 PSQL=psql
-PSQL_FLAGS=-U $(PSQL_USER) -d $(PGDATABASE) -w -e -P pager=off \
+PSQL_FLAGS=-U $(PSQL_USER) -d $(PGDATABASE) -h $(PGHOST) -w -e -P pager=off \
 	-v testuser=$(TESTUSER) -v verbosity=$(VERBOSITY) -v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO) \
 	-v encrypted_postgres_password=$(ENCRYPTED_POSTGRES_PASSWORD) -v use_plr=$(USE_PLR) \
-	-v sahsuland_tablespace_dir=$(SAHSULAND_TABLESPACE_DIR)
+	-v sahsuland_tablespace_dir=$(SAHSULAND_TABLESPACE_DIR) \
+	-v create_sahsuland_only=$(CREATE_SAHSULAND_ONLY) \
+	-v pghost=$(PGHOST)
 
 #
 # Phony (i.e. not a file) targets
@@ -111,22 +120,38 @@ ifeq ($(OS),Windows_NT)
 #
 # Windows support
 #
-RUN_SCRIPT=$(WINDOWS_RUN_SCRIPT)
-RUN=powershell -ExecutionPolicy ByPass -file $(RUN_SCRIPT)
-DELETE=powershell -ExecutionPolicy ByPass -file delete.ps1
-HELP=findstr "\#-" Makefile
-SAHSULAND_TABLESPACE_DIR="C:\PostgresDB\sahsuland"
-COPY=powershell -ExecutionPolicy ByPass -file copy.ps1 
-POSTGRES_ETC_DIR="C:\Program Files\PostgreSQL\9.3\etc"
-PGPASS=powershell -ExecutionPolicy ByPass -file pgpass.ps1
-#
-# ADD Linux support
-#
+	RUN=powershell -ExecutionPolicy ByPass -file run.ps1
+	DELETE=powershell -ExecutionPolicy ByPass -file delete.ps1
+	HELP=findstr "\#-" Makefile
+	SAHSULAND_TABLESPACE_DIR="C:\PostgresDB\sahsuland"
+	COPY=powershell -ExecutionPolicy ByPass -file copy.ps1 
+	POSTGRES_ETC_DIR="C:\Program Files\PostgreSQL\9.3\etc"
+	PGPASS=powershell -ExecutionPolicy ByPass -file pgpass.ps1
 else
+#
+# Linux macos support
+#
+	UNAME_S := $(shell uname -s)
+	RUN=./run.sh
+	DELETE=rm -f
+	HELP=grep "\#-" Makefile
+	COPY=cp
+    ifeq ($(UNAME_S),Linux)
+		SAHSULAND_TABLESPACE_DIR="C:\PostgresDB\sahsuland"
+		POSTGRES_ETC_DIR="C:\Program Files\PostgreSQL\9.3\etc"
+		PGPASS=./pgpass.sh
+	else
+		ifeq ($(UNAME_S),Darwin)
+			SAHSULAND_TABLESPACE_DIR="C:\PostgresDB\sahsuland"
+			POSTGRES_ETC_DIR="C:\Program Files\PostgreSQL\9.3\etc"
+			PGPASS=./pgpass.sh
+		else
 #
 # Unsupported OS
 #
-$(error Unsupported OS: $(OS))
+			$(error Unsupported OS: $(OS); uname -s: $(UNAME_S))
+		endif
+	endif
 endif
 
 #
