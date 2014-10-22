@@ -113,15 +113,22 @@ RIF.diseaseMapping = ( function() {
       },
 
 
-      mapAreaFromAreaChartChange: {
+      selectionFromAreaChartChange: {
         subscribers: [ "study" ],
         firer: [ "chart" ],
-        method: "mapAreaFromAreaChartChange"
+        method: "selectionFromAreaChartChange"
       },
+        
       slctMapAreaFromAreaChart: {
         subscribers: [ "map" ],
         firer: [ "study" ],
         method: "slctMapAreaFromAreaChart"
+      },
+        
+     slctLineBivariateFromAreaChart: {
+        subscribers: [ "chart" ],
+        firer: [ "study" ],
+        method: "slctLineBivariateFromAreaChart"
       },
 
 

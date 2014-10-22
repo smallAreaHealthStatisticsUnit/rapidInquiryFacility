@@ -114,8 +114,11 @@ RIF.study = ( function( type ) {
         this.setSelection( params[ 0 ] );
       },
 
-      mapAreaFromAreaChartChange: function( args ) {
-        this.fire( 'slctMapAreaFromAreaChart', args );
+      selectionFromAreaChartChange: function( args ) {
+        /*args = { gid , resSet }*/   
+        var mapGid = "g" + args.gid;   
+        this.fire( 'slctMapAreaFromAreaChart', mapGid );
+        this.fire( 'slctLineBivariateFromAreaChart',  args );
       },
 
       areaChartSelectionChanged: function( resSetsChoice ) {

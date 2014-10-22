@@ -36,6 +36,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
       d3.event.preventDefault();
       moveLineByOne( increment );
     };
+
   };
 
   var increment = function( val ) {
@@ -141,7 +142,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
           maxYBrush =  parseFloat( dataSets[ localName ][domain[1]][ localName ]) + 0.5,
           YdomainBrushed = [ minYBrush, maxYBrush ];
       
-      facade.areaChartBrushed.call( null, { xDomain: domain, yDomain: YdomainBrushed, chart: localName } );
+      facade.areaChartBrushed.call( null, { xDomain: domain, yDomain: YdomainBrushed, resSet: localName } );
     }
 
     var brush = d3.svg.brush()
@@ -219,7 +220,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
       if ( typeof dataSets[ localName ][ xValue ] !== 'undefined' ) {
         lineColorUpdate( lineSelectionColor );
         gid = dataSets[ localName ][ xValue ][ "gid" ]; // Sync with other area charts
-        facade.mapAreaFromAreaChartChange.call( null, [ gid, localName ] ); // NEED to pass dataSets[localName]
+        facade.selectionFromAreaChartChange.call( null, [ gid, localName ] ); // NEED to pass dataSets[localName]
         iterateToGid( gid );
       };
     };

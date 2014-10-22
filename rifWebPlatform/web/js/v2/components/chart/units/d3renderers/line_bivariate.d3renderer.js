@@ -1,4 +1,4 @@
-RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
+RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
 
   /*
 	    Need to change X axis , probably into ordinal and set the domain as the gid array (maybe!)
@@ -10,7 +10,7 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
     height = opt.dimensions.height() - margin.top - margin.bottom,
     idField = $.trim( opt.id_field ),
     orderField = $.trim( opt.x_field ),
-    lineField = $.trim( opt.line_field ),
+    lineField = $.trim( opt.risk_field ),
     lowField = $.trim( opt.cl_field ),
     highField = $.trim( opt.cu_field );
 
@@ -67,7 +67,8 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
 
   var svg = d3.select( "#" + id ).insert( "svg", "div" )
     .attr( "width", width )
-    .attr( "height", height );
+    .attr( "height", height )
+    .attr( "id" , "lineBivariatesvg" );
 
   svg.append( "defs" ).append( "clipPath" )
     .attr( "id", "clipchart" )
@@ -79,12 +80,9 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
     .attr( "class", "focus" )
     .attr( "transform", "translate(" + margin.left + "," + margin.top + ")" );
 
-  /*var context = svg.append( "g" )
-    .attr( "class", "context" )
-    .attr( "transform", "translate(" + margin.left + "," + margin.top + ")" );	*/
 
   //Used to have a reference to the actual GIDS
-  var lookUpIdsOrderId = {};
+  var lookUp = {};
 
   data.forEach( function( d ) {
     d[ idField ] = +d[ idField ];
@@ -92,7 +90,7 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
     d[ lineField ] = +d[ lineField ];
     d[ lowField ] = +d[ lowField ];
     d[ highField ] = +d[ highField ];
-    lookUpIdsOrderId[ d[ orderField ] ] = d[ idField ];
+    lookUp[ d[idField  ] ] = [d[ orderField ], d[ lineField ], d[ lowField ], d[ highField ]];
   } );
 
   var xDomain = d3.extent( data, function( d ) {
@@ -103,15 +101,15 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
   x2.domain( xDomain );
 
   y.domain( [ d3.min( data, function( d ) {
-    return d[ lowField ];
+    return d[ lowField ] - 0.2;
   } ), d3.max( data, function( d ) {
-    return d[ highField ];
+    return d[ highField ] + 0.2;
   } ) ] );
 
   y2.domain( [ d3.min( data, function( d ) {
-    return d[ lowField ];
+    return d[ lowField ]  - 0.2;
   } ), d3.max( data, function( d ) {
-    return d[ highField ];
+    return d[ highField ] + 0.2;
   } ) ] );
 
 
@@ -129,34 +127,70 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, svgElement ) {
   focus.append( "g" )
     .attr( "class", "y axis" )
     .call( yAxis )
-    .append( "text" )
-    .attr( "x", 30 )
-    .attr( "y", 2 )
-    .attr( "style", "text-transform:uppercase" )
-    .attr( "dy", ".4em" )
-    .style( "text-anchor", "end" )
-    .style( "fill", "#919191" )
-    .attr( "transform", "translate(40,5)" )
+    
+  svg.append( "text" )
+    .attr( "transform", "translate(36,20)" )
+    .attr("id", "labelLineBivariate")
     .text( lineField );
-
-
+  
+  var currentFigures = svg.append( "text" )
+    .attr( "transform", "translate(36,36)" )
+    .attr("id", "currentFiguresLineBivariate")
+    .text( "" );    
+  
   focus.append( "path" )
     .datum( data )
     .attr( "class", "line" )
+    .attr ( "id" , "lineRisk" )
     .attr( "clip-path", "url(#clipchart)" )
     .attr( "d", line );
+    
+    
+  /* Highlighter */
+  var highlighter = focus.append( "line" )
+      .attr( "x1", 0 )
+      .attr( "y1", 0 )
+      .attr( "x2", 0 )
+      .attr( "y2", height )
+      .attr( "height", height )
+      .attr( "id", "bivariateHiglighter" );    
 
-
-  return function brushed( brushInfo ) {
-    // domain = { xDomain: domain, yDomain: YdomainBrushed, chart: localName }
-    x.domain( brushInfo.xDomain );
-    y.domain( brushInfo.yDomain );
+  
+  this.gid = gidSelected || null;    
+  
+  var setGid = function( gid ){
+     this.gid = gid;  
+  };
+    
+  var updateLine = function() {
+    var gid = this.gid;
+    if( gid !== null){  
+        highlighter.attr( "transform", "translate(" + x( lookUp[gid][0] ) + "," + 0 + ")" );
+    };
+   currentFigures
+      .text( (lookUp[gid][1]).toFixed(3) + " ( " + lookUp[gid][2] + "-" + lookUp[gid][3] +  " )" );
+  };  
+    
+  return function brushed( updateInfo ) {
+    /* updateInfo can be either { xDomain, yDomain } on BRUSH 
+     * OR 
+     * { gid, resSet } on CLICK
+     *  When click need to lookup gid to xOrder
+     */
+      
+    if(  typeof updateInfo.gid !== 'undefined' ){
+      setGid( updateInfo.gid );  
+      updateLine() ; 
+      return;
+    };
+    
+    //On Brush pass the xOrder   
+    x.domain( updateInfo.xDomain );
+    y.domain( updateInfo.yDomain );
     focus.select( ".area" ).attr( "d", area );
-    focus.select( ".line" ).attr( "d", line );
+    focus.select( "#lineRisk" ).attr( "d", line );  
     focus.select( ".x.axis" ).call( xAxis );
-      focus.select( ".y.axis" ).call( yAxis );
-    /*d3.select("rect.extent")
-			.attr('x', 0)
-			.width('width', 0)*/
+    focus.select( ".y.axis" ).call( yAxis );  
+    updateLine() ; 
   }
 } );

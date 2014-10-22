@@ -9,7 +9,6 @@
 	text-transform:uppercase;
 	font-size: 12px;
 	fill: rgb(145, 145, 145);
-	font-weight:600;
 }
 
 #rr_chart  .axis .tick{
@@ -37,4 +36,19 @@
 stroke: #fff;
 fill-opacity: .125;
 shape-rendering: crispEdges;
+}
+
+#bivariateHiglighter {
+  stroke: rgb(242, 14, 41);
+  stroke-width: 1;
+}
+#lineBivariatesvg text {
+  fill: #919191;
+}
+#currentFiguresLineBivariate {
+  font-weight: 900    
+}
+
+#labelLineBivariate {
+  text-transform:uppercase
 }

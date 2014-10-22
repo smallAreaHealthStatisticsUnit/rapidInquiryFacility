@@ -23,11 +23,19 @@ RIF.chart[ 'chart-facade-diseaseMapping' ] = ( function( _p ) {
     refreshLineBivariate: function() {
       _p._refreshLineBivariate();
     },
-
+    
+    updateLineChartWithBrush: function( brushInfo ) {
+      _p.updateLineChartWithBrushInterface( brushInfo );
+    },
+      
+    slctLineBivariateFromAreaChart: function( gidAndRes ){
+      _p.updateLineChartWithClickInterface( gidAndRes );    
+    },  
+      
     refreshMultipleArea: function() {
       _p._refreshMultipleArea();
     },
-    
+      
 	changeYear: function(){
 	
 	},
@@ -48,17 +56,10 @@ RIF.chart[ 'chart-facade-diseaseMapping' ] = ( function( _p ) {
       facade.fire( 'areaChartBrushed', brushInfo );
     },
 
-    updateLineChartWithBrush: function( brushInfo ) {
-      _p.updateLineChartWithBrushInterface( brushInfo );
-    },
-
-    mapAreaFromAreaChartChange: function( args ) { // gid , dataset
-      var gid = args[ 0 ],
-        resultSet = args[ 1 ],
-        mapGid = "g" + gid;
-      // method called using .call no context passed keep facade.fire not this.fire
-      facade.fire( 'mapAreaFromAreaChartChange', mapGid /*[ mapGid , resultSet ]*/ );
-      facade.fire( "zoomToArea", gid );
+    selectionFromAreaChartChange: function( args ) { // gid , dataset
+      /*var gid = args[ 0 ], resultSet = args[ 1 ];*/
+      facade.fire( 'selectionFromAreaChartChange', { gid: args [ 0 ], resSet: args[ 1 ] }  );
+      facade.fire( "zoomToArea", args[ 0 ] );
     }
 
   };
