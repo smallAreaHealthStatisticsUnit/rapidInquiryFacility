@@ -102,7 +102,10 @@ RIF.chart.line_bivariate = ( function() {
           this.updateLine_bivariate( updateInfo.resSet, updateInfo );
       },
       
-      //    
+      lineBivariateHighlighterStep: function( incrementDecrement){
+         _updateDomainLineChart.call( null, incrementDecrement );
+      },    
+        
       updateLine_bivariate: function( field, updateInfo, clbk ) {
          
         var callback = clbk || function() {

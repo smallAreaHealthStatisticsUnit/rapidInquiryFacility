@@ -129,7 +129,11 @@ RIF.study = ( function( type ) {
         this.setCurrentResultSetSelected( resSetsChoice );
         this.changeAreaChartsSelection();
       },
-
+      
+      areaChartKeyDown: function( incrementDecrement ){
+          this.fire( 'lineBivariateHighlighterStep', incrementDecrement );
+      },
+        
       areaChartBrushed: function( domain ) {
         this.fire( 'updateLineChartWithBrush', domain );
       },

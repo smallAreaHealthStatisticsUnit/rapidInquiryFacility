@@ -38,17 +38,21 @@ fill-opacity: .125;
 shape-rendering: crispEdges;
 }
 
-#bivariateHiglighter {
-  stroke: rgb(242, 14, 41);
+.bivariateHiglighter {
+  stroke: #EEA9B8;
+  fill:#EEA9B8;    
   stroke-width: 1;
 }
 #lineBivariatesvg text {
   fill: #919191;
 }
 #currentFiguresLineBivariate {
-  font-weight: 900    
+  font-weight: 600 ;
+  fill:#EEA9B8 !important;
+  font-size:16px    
 }
 
 #labelLineBivariate {
-  text-transform:uppercase
+  text-transform:uppercase;
+  font-size: 11px;      
 }

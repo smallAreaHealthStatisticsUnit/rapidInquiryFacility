@@ -32,9 +32,11 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
     if ( code == 37 ) { // left arrow
       d3.event.preventDefault();
       moveLineByOne( decrement );
+      facade.areaChartKeyDown( decrement );     
     } else if ( code == 39 ) { //right arrow
       d3.event.preventDefault();
       moveLineByOne( increment );
+      facade.areaChartKeyDown( increment );     
     };
 
   };
@@ -279,7 +281,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
       .attr( "height", 2 )
       .attr( "height", chartHeight )
       .attr( "id", linename );
-
+    
 
     this.yAxis = d3.svg.axis().scale( yS ).orient( "left" ).tickValues( [ 0, 1, this.maxDataPoint ] );
 
