@@ -110,7 +110,7 @@ endif
 #
 .SUFFIXES: .sql .rpt
 .sql.rpt:
-	$(RUN) $(CURDIR)/$@ $(CURDIR)/.. $(PSQL) $(PSQL_FLAGS) -f alter_scripts\$< 
+	$(RUN) $(CURDIR)/$@ $(CURDIR)/.. $(PSQL) $(PSQL_FLAGS) -f alter_scripts/$< 
 	
 #
 # Targets
