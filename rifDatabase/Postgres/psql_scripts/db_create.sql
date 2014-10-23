@@ -61,10 +61,10 @@ BEGIN;
 -- Encrypted postgres user password
 --
 \set npassword '''XXXX':encrypted_postgres_password''''
-SET rif40.password TO :npassword;
+SET rif40.encrypted_postgres_password TO :npassword;
 DO LANGUAGE plpgsql $$
 DECLARE
-	c1 CURSOR FOR SELECT CURRENT_SETTING('rif40.password') AS password;
+	c1 CURSOR FOR SELECT CURRENT_SETTING('rif40.encrypted_postgres_password') AS password;
 	c1_rec RECORD;
 BEGIN
 	OPEN c1;
@@ -78,7 +78,27 @@ BEGIN
 	END IF;
 END;
 $$;
-SET rif40.password TO :encrypted_postgres_password;
+SET rif40.encrypted_postgres_password TO :encrypted_postgres_password;
+
+\set npassword '''XXXX':encrypted_rif40_password''''
+SET rif40.encrypted_rif40_password TO :npassword;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR SELECT CURRENT_SETTING('rif40.encrypted_rif40_password') AS password;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF UPPER(c1_rec.password) = 'XXXX' THEN
+		RAISE EXCEPTION 'db_create.sql() C209xx: No -v encrypted_rif40_password=<encrypted_rif40_password password> parameter';	
+	ELSE
+		RAISE INFO 'db_create.sql() rif40 encrypted password="%"', SUBSTR(c1_rec.password, 5);
+	END IF;
+END;
+$$;
+SET rif40.encrypted_rif40_password TO :encrypted_rif40_password;
 
 --
 -- Check user is postgres on postgres
@@ -302,7 +322,8 @@ DECLARE
 	c1 CURSOR(l_name VARCHAR) FOR
 		SELECT * FROM pg_user WHERE usename = l_name;
 	c2 CURSOR FOR 
-		SELECT CURRENT_SETTING('rif40.password') AS password;
+		SELECT CURRENT_SETTING('rif40.encrypted_postgres_password') AS encrypted_postgres_password,
+		       CURRENT_SETTING('rif40.encrypted_rif40_password') AS encrypted_rif40_password;
 	c3 CURSOR(l_name VARCHAR) FOR
 		SELECT * FROM pg_roles WHERE rolname = l_name;
 
@@ -318,7 +339,7 @@ BEGIN
 	OPEN c2;
 	FETCH c2 INTO c2_rec;
 	CLOSE c2;
-	sql_stmt:='ALTER USER postgres ENCRYPTED PASSWORD  '''||c2_rec.password||'''';
+	sql_stmt:='ALTER USER postgres ENCRYPTED PASSWORD  '''||c2_rec.encrypted_postgres_password||'''';
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 -- BROKEN
 --	EXECUTE sql_stmt;
@@ -329,13 +350,15 @@ BEGIN
 		CLOSE c1;
 		IF c1_rec.usename IS NOT NULL THEN
 			RAISE INFO 'db_create.sql() RIF schema user % exists', c1_rec.usename::VARCHAR;
-				sql_stmt:='ALTER USER '||c1_rec.usename||' ENCRYPTED PASSWORD  '''||c2_rec.password||'''';
+				sql_stmt:='ALTER USER '||c1_rec.usename||' ENCRYPTED PASSWORD  '''||
+					c2_rec.encrypted_rif40_password||'''';
 			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 -- BROKEN
 --			EXECUTE sql_stmt;
 		ELSE
 	    	sql_stmt:='CREATE ROLE '||x||
-				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION ENCRYPTED PASSWORD '''||c2_rec.password||'''';
+				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION ENCRYPTED PASSWORD '''||
+					c2_rec.encrypted_rif40_password||'''';
 			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 			EXECUTE sql_stmt;
 		END IF;
@@ -348,7 +371,6 @@ BEGIN
 		IF c3_rec.rolname IS NOT NULL THEN
 			RAISE INFO 'db_create.sql() RIF schema role % exists', c3_rec.rolname::VARCHAR;
 		ELSE
-
 	    		sql_stmt:='CREATE ROLE '||x||
 				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOLOGIN NOREPLICATION';
 			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;

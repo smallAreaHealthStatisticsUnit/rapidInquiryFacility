@@ -1,14 +1,132 @@
+# ************************************************************************
+#
+# GIT Header
+#
+# $Format:Git ID: (%h) %ci$
+# $Id: e96a6b0aa1ba85325e1b7b0e57163d2b7707440b $
+# Version hash: $Format:%H$
+#
+# Description:
+#
+# Rapid Enquiry Facility (RIF) - Makefile.local environment overrides (example)
+#
+# Copyright:
+#
+# The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+# that rapidly addresses epidemiological and public health questions using 
+# routinely collected health and population data and generates standardised 
+# rates and relative risks for any given health outcome, for specified age 
+# and year ranges, for any given geographical area.
+#
+# Copyright 2014 Imperial College London, developed by the Small Area
+# Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+# is funded by the Public Health England as part of the MRC-PHE Centre for 
+# Environment and Health. Funding for this project has also been received 
+# from the Centers for Disease Control and Prevention.  
+#
+# This file is part of the Rapid Inquiry Facility (RIF) project.
+# RIF is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# RIF is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+# to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+# Boston, MA 02110-1301 USA
+#
+# Author:
+#
+# Peter Hambly, SAHSU
+#
+# Local overrides; copy Makefile.local.example to Makefile.local and edit Makefile.local
 #
 # Local Makefile overrides - example
 #
+# Postgres ENV variables
+#
 PGDATABASE=sahsuland_dev
 PGHOST=localhost
+#
+# DEFAULT_ENCRYPTED_POSTGRES_PASSWORD hash comes from PGAdmin III or psql
+#
+# Postgres MD5 password format is: 
+#
+# 'md5'||md5(username||password); e.g. to set the rif40 password to: Imperial1234, use psql:
+#
+# SELECT md5||md5('rif40'||'Imperial1234') AS password;
+#
+DEFAULT_ENCRYPTED_POSTGRES_PASSWORD=md57d50cade66c8b224d1fbd91805cbf442
+DEFAULT_ENCRYPTED_RIF40_PASSWORD=md5dba9980b96510989e720a66fc77d92c8
+#
+# Only set SAHSULAND_TABLESPACE_DIR if you have access to the directory!
+#
+DEFAULT_SAHSULAND_TABLESPACE_DIR=
+#
+# Local overrides; copy Makefile.local.example to Makefile.local and edit Makefile.local
+#
+-include Makefile.local
+
+#
+# PL/pgsql debug levels (DEBUG_LEVEL);
+#
+# 0 - Suppressed, INFO only
+# 1 - Major function calls
+# 2 - Major function calls, data
+# 3 - Reserved for future used
+# 4 - Reserved for future used
+#
+# PSQL verbosity (VERBOSITY):
+#
+# verbose	- Messages/errors with full context
+# terse 	- Just the error or message
+#
+# PSQL echo (ECHO)
+#
+# all: 		- All SQL
+# none:		- No SQL
+#
+# PSQL script user (PSQL_USER)
+#
+# - Usually rif40 (schema owner)
+#
+# Use PL/R (USE_PLR)
+#
+# - Database has PL/R extension loaded (not needed by default)
+#
+# Create SAHSULAND database only (CREATE_SAHSULAND_ONLY)
+#
+# - Do not create SAHSULAND_DEV
+#
 DEFAULT_VERBOSITY=terse
 DEFAULT_DEBUG_LEVEL=0
 DEFAULT_ECHO=none
 DEFAULT_PSQL_USER=rif40
-DEFAULT_ENCRYPTED_POSTGRES_PASSWORD=md57d50cade66c8b224d1fbd91805cbf442
 DEFAULT_USE_PLR=N
 DEFAULT_CREATE_SAHSULAND_ONLY=N
+#
+# DEFAULT_ENCRYPTED_POSTGRES_PASSWORD hash comes from PGAdmin III or psql
+#
+# Postgres MD5 password format is: 
+#
+# 'md5'||md5(username||password); e.g. to set the rif40 password to: Imperial1234, use psql:
+#
+# SELECT 'md5'||md5('rif40'||'Imperial1234') AS encrypted_password;
+#          encrypted_password
+# -------------------------------------
+# md5aee237f1cfd00b0553d180fbe6c9c126
+#
+DEFAULT_ENCRYPTED_POSTGRES_PASSWORD=md57d50cade66c8b224d1fbd91805cbf442
+DEFAULT_ENCRYPTED_RIF40_PASSWORD=md5dba9980b96510989e720a66fc77d92c8
+#
+# Only set SAHSULAND_TABLESPACE_DIR if you have access to the directory!
+#
+DEFAULT_SAHSULAND_TABLESPACE_DIR=
+
 #
 # Eof
