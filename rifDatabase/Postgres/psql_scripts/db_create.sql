@@ -8,7 +8,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - Create PG psql code (SQL and Oracle compatibility processing)
+-- Rapid Enquiry Facility (RIF) - Database creation script
 --
 -- Copyright:
 --
@@ -47,6 +47,10 @@
 \set ECHO OFF
 \set ON_ERROR_STOP ON
 \echo Creating SAHSULAND database if required
+--
+-- This script is tightly coupled to the Makefile and requires the following variables to run:
+--
+--
 
 --
 -- Start transaction 1: extensions and user accounts, roles
@@ -326,10 +330,13 @@ DECLARE
 		       CURRENT_SETTING('rif40.encrypted_rif40_password') AS encrypted_rif40_password;
 	c3 CURSOR(l_name VARCHAR) FOR
 		SELECT * FROM pg_roles WHERE rolname = l_name;
-
+	c4 CURSOR(l_name VARCHAR) FOR
+		SELECT * FROM pg_user WHERE usename = l_name;
+--
 	c1_rec RECORD;
 	c2_rec RECORD;
 	c3_rec RECORD;
+	c4_rec RECORD;
 --
 	userlist VARCHAR[]:=ARRAY['rif40', 'gis', 'pop'];
 	rolelist VARCHAR[]:=ARRAY['rif_user', 'rif_manager', 'rif_no_suppression', 'rifupg34', 'rif_student'];
@@ -339,22 +346,37 @@ BEGIN
 	OPEN c2;
 	FETCH c2 INTO c2_rec;
 	CLOSE c2;
-	sql_stmt:='ALTER USER postgres ENCRYPTED PASSWORD  '''||c2_rec.encrypted_postgres_password||'''';
-	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	OPEN c4('postgres');
+	FETCH c4 INTO c4_rec;
+	CLOSE c4;
+	IF c4_rec.passwd IS NULL THEN
+		RAISE INFO 'db_create.sql() postgres user has no password';
+	ELSE
+		RAISE NOTICE 'db_create.sql() changing postgres user password';
+		sql_stmt:='ALTER USER postgres ENCRYPTED PASSWORD  '''||c2_rec.encrypted_postgres_password||'''';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 -- BROKEN
---	EXECUTE sql_stmt;
+--		EXECUTE sql_stmt;
+	END IF;
 --
 	FOREACH x IN ARRAY userlist LOOP
 		OPEN c1(x);
 		FETCH c1 INTO c1_rec;
 		CLOSE c1;
 		IF c1_rec.usename IS NOT NULL THEN
-			RAISE INFO 'db_create.sql() RIF schema user % exists', c1_rec.usename::VARCHAR;
+			OPEN c4(x);
+			FETCH c4 INTO c4_rec;
+			CLOSE c4;
+			IF c4_rec.passwd IS NULL THEN
+				RAISE INFO 'db_create.sql() RIF schema user % exists, no password', c1_rec.usename::VARCHAR;
+			ELSE
+				RAISE INFO 'db_create.sql() RIF schema user % exists; changing password', c1_rec.usename::VARCHAR;
 				sql_stmt:='ALTER USER '||c1_rec.usename||' ENCRYPTED PASSWORD  '''||
 					c2_rec.encrypted_rif40_password||'''';
-			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+				RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 -- BROKEN
---			EXECUTE sql_stmt;
+--				EXECUTE sql_stmt;
+			END IF;
 		ELSE
 	    	sql_stmt:='CREATE ROLE '||x||
 				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION ENCRYPTED PASSWORD '''||
@@ -484,6 +506,8 @@ END;
 --
 \set nsahsuland_tablespace_dir '''XXXX':sahsuland_tablespace_dir''''
 SET rif40.sahsuland_tablespace_dir TO :nsahsuland_tablespace_dir;
+SET rif40.os TO :os;
+
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR SELECT CURRENT_SETTING('rif40.sahsuland_tablespace_dir') AS sahsuland_tablespace_dir;
@@ -496,58 +520,133 @@ BEGIN
 	CLOSE c1;
 --
 	IF UPPER(c1_rec.sahsuland_tablespace_dir) = 'XXXX' THEN
-		RAISE EXCEPTION 'db_create.sql() C209xx: No -v sahsuland_tablespace_dir=<sahsuland_tablespace_dir> parameter';	
-	ELSE
-		RAISE INFO 'db_create.sql() postgres sahsuland_tablespace_dir="%"', SUBSTR(c1_rec.sahsuland_tablespace_dir, 5);
-		sql_stmt:='SET rif40.sahsuland_tablespace_dir TO '''||SUBSTR(c1_rec.sahsuland_tablespace_dir, 5)||'''';
+		RAISE NOTICE 'db_create.sql() No -v sahsuland_tablespace_dir=<sahsuland_tablespace_dir> parameter';	
+		sql_stmt:='SET rif40.sahsuland_tablespace_dir TO ''''';
+-- 
 		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 		EXECUTE sql_stmt;
+--
+-- Escape sahsuland_tablespace_dir appropriately for os
+--
+	ELSIF CURRENT_SETTING('rif40.os') = 'windows_nt' THEN
+		RAISE INFO 'db_create.sql() Windows sahsuland_tablespace_dir="%"', 
+				SUBSTR(c1_rec.sahsuland_tablespace_dir, 5);
+		sql_stmt:='SET rif40.sahsuland_tablespace_dir TO ''"'||
+			REPLACE(SUBSTR(c1_rec.sahsuland_tablespace_dir, 5), '\', '/')||
+			'"''';
+-- '
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+	ELSIF CURRENT_SETTING('rif40.os') IN ('linux', 'darwin') THEN
+		RAISE INFO 'db_create.sql() Windows postgres sahsuland_tablespace_dir="%"', 
+				SUBSTR(c1_rec.sahsuland_tablespace_dir, 5);
+		sql_stmt:='SET rif40.sahsuland_tablespace_dir TO '''||
+			REPLACE(SUBSTR(c1_rec.sahsuland_tablespace_dir, 5), ' ', '\ ')||
+			'''';
+-- '
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+	ELSE	
+		RAISE EXCEPTION 'db_create.sql() Unsupported OS: %', CURRENT_SETTING('rif40.os');
 	END IF;
 END;
 $$;
-
-/*
- * Needs to be a separate program
- *
-psql:db_create.sql:433: ERROR:  CREATE TABLESPACE cannot be executed from a function or multi-command string
-CONTEXT:  SQL statement "CREATE TABLESPACE sahsuland LOCATION 'C:\PostgresDB\sahsuland'"
-\echo Creating SAHSULAND tablespace...
---
--- Create SAHSULAND database
---
-DO LANGUAGE plpgsql $$
-DECLARE
-	c1 CURSOR(l_name VARCHAR) FOR
-		SELECT * FROM pg_tablespace WHERE spcname = l_name;
-	c1_rec RECORD;
---
-	sql_stmt	VARCHAR;
-BEGIN
-	OPEN c1('sahsuland');
-	FETCH c1 INTO c1_rec;
-	CLOSE c1;
---
-	IF c1_rec.spcname IS NULL THEN
-		sql_stmt:='CREATE TABLESPACE sahsuland LOCATION '''||CURRENT_SETTING('rif40.sahsuland_tablespace_dir')||'''';
-		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
-		EXECUTE sql_stmt;
-	END IF;
---
-END;
-$$;
- */
  
+--
+-- Re-create SAHSULAND
+--
 \set ECHO ALL
-DROP DATABASE IF EXISTS sahsuland;
-CREATE DATABASE sahsuland WITH OWNER rif40 /* TABLESPACE sahsuland */;
-COMMENT ON DATABASE sahsuland IS 'RIF V4.0 PostGres SAHSULAND Example Database';
-
 SET rif40.create_sahsuland_only TO :create_sahsuland_only;
+-- SET rif40.sahsuland_tablespace_dir TO :sahsuland_tablespace_dir;
+
+WITH a AS (
+	SELECT unnest(ARRAY['rif40.sahsuland_tablespace_dir', 
+			'rif40.create_sahsuland_only', 'rif40.os']) AS param
+	)
+SELECT param,
+       CURRENT_SETTING(a.param) AS value
+	     FROM a;
+\set sahsuland_tablespace_dir TO rif40.sahsuland_tablespace_dir;
+
 --
 -- Conditionally create a script to recreate sahsuland_dev
 -- Database creation is not transactional!
 --
-\copy (WITH a  AS (SELECT 'DROP DATABASE IF EXISTS sahsuland_dev;' AS sql_stmt, 1 AS ord UNION SELECT 'CREATE DATABASE sahsuland_dev WITH OWNER rif40 /* TABLESPACE sahsuland */;' AS sql_stmt, 2 AS ord UNION SELECT 'COMMENT ON DATABASE sahsuland IS ''RIF V4.0 PostGres SAHSULAND development Database'';' AS sql_stmt, 3 AS ord) SELECT sql_stmt FROM a WHERE CURRENT_SETTING('rif40.create_sahsuland_only') IN ('n', 'N') ORDER BY ord) TO recreate_sahsu_dev_tmp.sql WITH (FORMAT text);
+-- Create SQL
+--
+CREATE OR REPLACE VIEW recreate_sahsu_dev_tmp
+AS
+WITH ts AS (
+	SELECT CASE
+	           WHEN CURRENT_SETTING('rif40.sahsuland_tablespace_dir')::Text != '' 
+						THEN  'TABLESPACE sahsuland'
+		       ELSE '/* No sahsuland tablespace */' 
+		   END AS sahsuland_tablespace
+), a AS (
+	SELECT 'CREATE TABLESPACE sahsuland LOCATION '''||
+		CURRENT_SETTING('rif40.sahsuland_tablespace_dir')||''';' AS sql_stmt, 
+       10 AS ord 
+	 WHERE CURRENT_SETTING('rif40.sahsuland_tablespace_dir')::Text != ''
+	   AND 'sahsuland' NOT IN (SELECT spcname FROM pg_tablespace WHERE spcname = 'sahsuland')
+),b AS (
+SELECT 'DROP DATABASE IF EXISTS sahsuland_dev;' AS sql_stmt, 
+       20 AS ord 
+UNION 
+SELECT 'CREATE DATABASE sahsuland_dev WITH OWNER rif40 '||ts.sahsuland_tablespace||';' AS sql_stmt, 
+       30 AS ord 
+  FROM ts
+UNION 
+SELECT 'COMMENT ON DATABASE sahsuland IS ''RIF V4.0 PostGres SAHSULAND development Database'';' AS sql_stmt,
+       40 AS ord
+), c AS (
+SELECT 'DROP DATABASE IF EXISTS sahsuland;' AS sql_stmt,
+       50 AS ord
+UNION 
+SELECT 'CREATE DATABASE sahsuland WITH OWNER rif40 '||ts.sahsuland_tablespace||';' AS sql_stmt,
+       60 AS ord
+  FROM ts
+UNION 
+SELECT 'COMMENT ON DATABASE sahsuland IS ''RIF V4.0 PostGres SAHSULAND Example Database'';' AS sql_stmt,
+       70 AS ord
+), d AS (
+SELECT '--' AS sql_stmt, 0 AS ord
+UNION
+SELECT '-- ************************************************************************' AS sql_stmt, 1 AS ord
+UNION
+SELECT '--' AS sql_stmt, 2 AS ord
+UNION
+SELECT '-- Description:' AS sql_stmt, 3 AS ord
+UNION
+SELECT '--' AS sql_stmt, 4 AS ord
+UNION
+SELECT '-- Rapid Enquiry Facility (RIF) - Database creation autogenerated temp script to create tablespace and databases' AS sql_stmt,
+       5 AS ord
+UNION
+SELECT '--' AS sql_stmt, 6 AS ord
+UNION
+SELECT '--' AS sql_stmt, 998 AS ord
+UNION
+SELECT '-- Eof' AS sql_stmt, 999 AS ord
+)
+SELECT * FROM a 
+UNION
+SELECT * FROM b
+ WHERE CURRENT_SETTING('rif40.create_sahsuland_only') IN ('n', 'N') 
+UNION
+SELECT * FROM c
+UNION
+SELECT * FROM d;
+
+SELECT sql_stmt FROM recreate_sahsu_dev_tmp
+ ORDER BY ord;
+ 
+--
+-- Extract SQL to run
+--
+\copy (SELECT sql_stmt FROM recreate_sahsu_dev_tmp ORDER BY ord) TO recreate_sahsu_dev_tmp.sql WITH (FORMAT text)
+
+DROP VIEW IF EXISTS recreate_sahsu_dev_tmp;
+
 DO $$
 BEGIN
 --
@@ -556,6 +655,7 @@ BEGIN
 	END IF;
 END
 $$;
+
 --
 -- Execute
 --

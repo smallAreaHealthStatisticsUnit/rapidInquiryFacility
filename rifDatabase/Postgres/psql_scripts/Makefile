@@ -137,7 +137,8 @@ PSQL_FLAGS=-U $(PSQL_USER) -d $(PGDATABASE) -h $(PGHOST) -w -e -P pager=off \
 	-v use_plr=$(USE_PLR) \
 	-v sahsuland_tablespace_dir=$(SAHSULAND_TABLESPACE_DIR) \
 	-v create_sahsuland_only=$(CREATE_SAHSULAND_ONLY) \
-	-v pghost=$(PGHOST)
+	-v pghost=$(PGHOST) \
+	-v os=$(OS)
 
 #
 # Phony (i.e. not a file) targets
@@ -155,7 +156,6 @@ ifeq ($(OS),Windows_NT)
 	RUN=powershell -ExecutionPolicy ByPass -file run.ps1
 	DELETE=powershell -ExecutionPolicy ByPass -file delete.ps1
 	HELP=findstr "\#-" Makefile
-	SAHSULAND_TABLESPACE_DIR="C:\PostgresDB\sahsuland"
 	COPY=powershell -ExecutionPolicy ByPass -file copy.ps1 
 	POSTGRES_ETC_DIR="C:\Program Files\PostgreSQL\9.3\etc"
 	PGPASS=powershell -ExecutionPolicy ByPass -file pgpass.ps1
@@ -171,10 +171,12 @@ else
 	COPY=cp
 	TESTUSER=$(shell id -un | tr ‘[:upper:]’ ‘[:lower:]’)
     ifeq ($(UNAME_S),Linux)
+		OS=$(UNAME_S)
 		POSTGRES_ETC_DIR=/var/opt/PostgreSQL/9.3/etc
 		PGPASS=./pgpass.sh
 	else
-		ifeq ($(UNAME_S),Darwin)
+		ifeq ($(UNAME_S),Darwin)	
+			OS=$(UNAME_S)
 			POSTGRES_ETC_DIR=/Library/PostgreSQL/9.3/etc
 			PGPASS=./pgpass.sh
 		else

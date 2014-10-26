@@ -50,10 +50,9 @@
 #
 # Postgres ENV variables
 #
-PGDATABASE=sahsuland_dev
-PGHOST=localhost
+#PGHOST=localhost
 #
-# DEFAULT_ENCRYPTED_POSTGRES_PASSWORD hash comes from PGAdmin III or psql
+# ENCRYPTED_POSTGRES/RIF40_PASSWORD hash comes from PGAdmin III or psql
 #
 # Postgres MD5 password format is: 
 #
@@ -61,16 +60,18 @@ PGHOST=localhost
 #
 # SELECT md5||md5('rif40'||'Imperial1234') AS password;
 #
-DEFAULT_ENCRYPTED_POSTGRES_PASSWORD=md57d50cade66c8b224d1fbd91805cbf442
-DEFAULT_ENCRYPTED_RIF40_PASSWORD=md5dba9980b96510989e720a66fc77d92c8
+#ENCRYPTED_POSTGRES_PASSWORD=md57d50cade66c8b224d1fbd91805cbf442
+#ENCRYPTED_RIF40_PASSWORD=md5dba9980b96510989e720a66fc77d92c8
 #
-# Only set SAHSULAND_TABLESPACE_DIR if you have access to the directory!
+# Only set SAHSULAND_TABLESPACE_DIR if postgres has access to the directory!
 #
-DEFAULT_SAHSULAND_TABLESPACE_DIR=
+# Make you escape spaces in the correct manner for the OS:
 #
-# Local overrides; copy Makefile.local.example to Makefile.local and edit Makefile.local
+# e.g.
 #
--include Makefile.local
+# Windows: SAHSULAND_TABLESPACE_DIR=\"C:rif40 database\"
+#
+#SAHSULAND_TABLESPACE_DIR=\"C:/rif40 database\"
 
 #
 # PL/pgsql debug levels (DEBUG_LEVEL);
@@ -103,30 +104,12 @@ DEFAULT_SAHSULAND_TABLESPACE_DIR=
 #
 # - Do not create SAHSULAND_DEV
 #
-DEFAULT_VERBOSITY=terse
-DEFAULT_DEBUG_LEVEL=0
-DEFAULT_ECHO=none
-DEFAULT_PSQL_USER=rif40
-DEFAULT_USE_PLR=N
-DEFAULT_CREATE_SAHSULAND_ONLY=N
-#
-# DEFAULT_ENCRYPTED_POSTGRES_PASSWORD hash comes from PGAdmin III or psql
-#
-# Postgres MD5 password format is: 
-#
-# 'md5'||md5(username||password); e.g. to set the rif40 password to: Imperial1234, use psql:
-#
-# SELECT 'md5'||md5('rif40'||'Imperial1234') AS encrypted_password;
-#          encrypted_password
-# -------------------------------------
-# md5aee237f1cfd00b0553d180fbe6c9c126
-#
-DEFAULT_ENCRYPTED_POSTGRES_PASSWORD=md57d50cade66c8b224d1fbd91805cbf442
-DEFAULT_ENCRYPTED_RIF40_PASSWORD=md5dba9980b96510989e720a66fc77d92c8
-#
-# Only set SAHSULAND_TABLESPACE_DIR if you have access to the directory!
-#
-DEFAULT_SAHSULAND_TABLESPACE_DIR=
+#VERBOSITY=terse
+#DEBUG_LEVEL=0
+#ECHO=none
+#PSQL_USER=rif40
+#USE_PLR=N
+#CREATE_SAHSULAND_ONLY=N
 
 #
 # Eof
