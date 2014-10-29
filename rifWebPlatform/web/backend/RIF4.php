@@ -660,6 +660,27 @@ $r = RIF4::Instance();
 		}
 			
 	}
+	public function getResultFigures( $gid ){
+	    try{
+            
+		 $sql = "select code, pop_m as pop, 
+		          round( (pop_m / 10) * random()) as observed,
+		            round( (pop_m / 10) * random()) as expected 
+					  from atlas_leu_f a inner join atlas_data b on a.gid = b.gid  
+					     where a.gid = $gid ";
+			
+			$hndl = self::$dbh -> prepare($sql);
+			$hndl ->execute(array());
+			$res = $hndl -> fetchAll(PDO::FETCH_ASSOC);
+			return $res[0];
+			
+		}catch(PDOException $pe){
+			self :: $dbh->rollback();
+		 	die( $pe->getMessage());
+		}
+	
+	}
+	
 	
 	public function getFieldsStratifiedByAgeGroup($theme){
 		/*

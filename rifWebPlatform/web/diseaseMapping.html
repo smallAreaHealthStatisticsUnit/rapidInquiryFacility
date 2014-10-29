@@ -27,7 +27,8 @@
 	<!-- The order on which the RIf files are downloaded must be maintained -->
 	<script type="text/javascript" src="js/v2/RIF.js"></script>
 	<!--<script type="text/javascript" src="js/v2/abstractions/sync.js"></script>-->
-	<script type="text/javascript" src="js/v2/abstractions/study.js"></script>
+	<script type="text/javascript" src="js/v2/abstractions/study/study-diseaseMapping.js"></script>
+    <script type="text/javascript" src="js/v2/abstractions/study/study-facade-diseaseMapping.js"></script>
      <!-- utils -->
     <script type="text/javascript" src="js/v2/utils/utils.js"></script>
 	<script type="text/javascript" src="js/v2/utils/gui_events/resizable-diseaseMapping.js"></script>
@@ -164,14 +165,14 @@
 							<li class="riskFigures"> 
 								<ul >
 								    <li class="listHeader"> Result figures </li>
-									<li id='areaLevel' >Area level:<span class="figure">0.67</span></li>	
-									<li class='totDenom'  >Population:<span class="figure">0.67</span></li>		
-									<li class='observed' >Observed:<span class="figure">0.67</span></li> 
-									<li class='expected' >Expected:<span class="figure">0.67</span></li> 
+									<li id='areaLevel' >Area level:<span class="figure">n/a</span></li>	
+									<li id='totDenom'  >Population:<span class="figure">n/a</span></li>		
+									<li id='observed' >Observed:<span class="figure">n/a</span></li> 
+									<li id='expected' >Expected:<span class="figure">n/a</span></li> 
 
 								</ul>	
 							</li> 
-							<li class="studyFigures">
+							<li class="investigationFigures">
 							     <ul>
 									<li class="listHeader"> Investigation info </li>
 								    <li id='nAreas' >Number of areas:<span class="figure">0.67</span></li>

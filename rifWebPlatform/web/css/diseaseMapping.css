@@ -420,7 +420,7 @@ input[type="range"]::-ms-thumb {
 		overflow:hidden
 	}
 
-	li.riskFigures ,li.studyFigures  {
+	li.riskFigures ,li.investigationFigures  {
 		width: 46%;
 	}
 	
@@ -428,7 +428,7 @@ input[type="range"]::-ms-thumb {
 		float:left;
 	}
 	
-	div#studyInfo  ul.resultFigures  li.studyFigures{
+	div#studyInfo  ul.resultFigures  li.investigationFigures{
 		float:right;
 		color: #B5B5B5;
 	}
