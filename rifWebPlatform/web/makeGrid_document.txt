@@ -1,0 +1,33 @@
+-Make Grid: to be used as overlay for showing uncertainty, posterior prability, cases etc 
+
+ 
+ --The function
+ 
+ CREATE OR REPLACE FUNCTION makegrid(geometry, integer)
+        RETURNS geometry AS
+        'SELECT ST_Collect(st_setsrid(ST_POINT(x/1000000::float,y/1000000::float),st_srid($1))) FROM 
+          generate_series(floor(st_xmin($1)*1000000)::int, ceiling(st_xmax($1)*1000000)::int,$2) as x ,
+          generate_series(floor(st_ymin($1)*1000000)::int, ceiling(st_ymax($1)*1000000)::int,$2) as y 
+        WHERE st_intersects($1,ST_SetSRID(ST_POINT(x/1000000::float,y/1000000::float),ST_SRID($1)))'
+   LANGUAGE sql
+
+
+
+-- Dot density parameters 
+       
+       level          sparse       lessdense       dense
+       <=7       |    200000    |    150000    |   100000
+         8       |    100000    |    80000     |   60000          
+         9       |    80000     |    60000     |   40000
+        10       |    60000     |    40000     |   20000
+        >=11     |    20000     |    10000     |    5000
+                 |              |              |
+       
+      
+      
+  On the fly, example:
+    - select makegrid((geom),5000) from atlas where posterior <= 1 and posterior > 0.8
+      
+
+
+
