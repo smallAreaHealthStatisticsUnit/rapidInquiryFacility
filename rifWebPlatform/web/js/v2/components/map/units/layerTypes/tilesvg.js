@@ -9,9 +9,9 @@ RIF.map.layer.tilesvg = ( function() {
       firstLoad: true,
 
       init: function() {
-        
-		RIF.statusBar( "Rendering Map", true ); 
-		
+
+        RIF.statusBar( "Rendering Map", true );
+
         var sett = {
             class: "polygon",
             evntHndl: this.evntHndl,
@@ -111,15 +111,15 @@ RIF.map.layer.tilesvg = ( function() {
       tilesLoaded: function() {
         if ( tiled.firstLoad ) {
           layer.clbk.tile();
-          tiled.firstLoad = false; 
+          tiled.firstLoad = false;
         };
 
-        RIF.statusBar( "Rendering Map", false ); 
+        RIF.statusBar( "Rendering Map", false );
       },
 
       resetIds: function() {
         tiled.ids = {};
-		//RIF.statusBar( "Rendering Map", true );
+        //RIF.statusBar( "Rendering Map", true );
       },
 
       checkId: function( d ) {

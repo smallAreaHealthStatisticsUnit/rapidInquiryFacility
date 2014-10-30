@@ -106,11 +106,11 @@ RIF.chart.multipleAreaCharts = ( function() {
     minMax = null;
     newChart = null;
     rSet = null;
-    emptyObject();  
+    emptyObject();
   },
-  
-  emptyObject = function(){
-     $( '#' + settings.element ).empty();     
+
+  emptyObject = function() {
+    $( '#' + settings.element ).empty();
   },
 
   _p = {

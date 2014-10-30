@@ -9,8 +9,8 @@ RIF.study = ( function( type ) {
       // Current data being looked at
       studyId: null,
       invId: null,
-	  resultSet: null,
-	  year: null,
+      resultSet: null,
+      year: null,
       gender: null,
       resultSets: [],
       resultSetsSelected: [], // Max 4
@@ -29,8 +29,8 @@ RIF.study = ( function( type ) {
       },
 
       menusReady: function( currentSet ) {
-        
-		this.setCurrentMapField( this.getCurrentResultSet() );
+
+        this.setCurrentMapField( this.getCurrentResultSet() );
         this.setCurrentlineBivariate( this.getCurrentResultSet() ); //First field in Current result set used to draw line bivariate
 
         this.addGeolevel();
@@ -55,11 +55,11 @@ RIF.study = ( function( type ) {
         } ); // retrieve geolevel, possibly a temp table or view with a name, i.e study_id_geom_userxx
 
       },
- 	  
-	  changeAreaChartsSelection: function() {
+
+      changeAreaChartsSelection: function() {
         this.fire( 'changeAreaSelection', this.getResultSetsSelected() );
       },
-	  
+
       clearSelection: function() {
         this.setSelection( [] );
         this.fire( 'clearSelection', [] );
@@ -82,43 +82,43 @@ RIF.study = ( function( type ) {
         this.setTransparency( v );
         this.fire( 'changeTransparency', v );
       },
-	  
-	  changeMapStyle: function( s ){
-	     this.fire( 'changeMapStyle' , s );
-	  },
+
+      changeMapStyle: function( s ) {
+        this.fire( 'changeMapStyle', s );
+      },
 
       //SuBSCRIBERS
-      
-	  studyChanged: function( study ){
-		this.setCurrentStudy( study );
-	  },
-	  
-	  investigationChanged: function( investigation ){
-		this.setCurrentInvestigation( investigation );
-	  },
-	  
-	  resultSetChanged: function( resSet ){
-		this.setCurrentResultsSet( resSet );
-	  },
-	  
-	  yearChanged: function( yr ){
-		this.setYear( yr );
-	  },
-	  
-	  genderChanged: function( gender ){
-		this.setGender( gender );
-	  },
 
-	  
+      studyChanged: function( study ) {
+        this.setCurrentStudy( study );
+      },
+
+      investigationChanged: function( investigation ) {
+        this.setCurrentInvestigation( investigation );
+      },
+
+      resultSetChanged: function( resSet ) {
+        this.setCurrentResultsSet( resSet );
+      },
+
+      yearChanged: function( yr ) {
+        this.setYear( yr );
+      },
+
+      genderChanged: function( gender ) {
+        this.setGender( gender );
+      },
+
+
       uAreaSelection: function( params ) {
         this.setSelection( params[ 0 ] );
       },
 
       selectionFromAreaChartChange: function( args ) {
-        /*args = { gid , resSet }*/   
-        var mapGid = "g" + args.gid;   
+        /*args = { gid , resSet }*/
+        var mapGid = "g" + args.gid;
         this.fire( 'slctMapAreaFromAreaChart', mapGid );
-        this.fire( 'slctLineBivariateFromAreaChart',  args );
+        this.fire( 'slctLineBivariateFromAreaChart', args );
       },
 
       areaChartSelectionChanged: function( resSetsChoice ) {
@@ -129,11 +129,11 @@ RIF.study = ( function( type ) {
         this.setCurrentResultSetSelected( resSetsChoice );
         this.changeAreaChartsSelection();
       },
-      
-      areaChartKeyDown: function( incrementDecrement ){
-          this.fire( 'lineBivariateHighlighterStep', incrementDecrement );
+
+      areaChartKeyDown: function( incrementDecrement ) {
+        this.fire( 'lineBivariateHighlighterStep', incrementDecrement );
       },
-        
+
       areaChartBrushed: function( domain ) {
         this.fire( 'updateLineChartWithBrush', domain );
       },
@@ -154,22 +154,24 @@ RIF.study = ( function( type ) {
           this.changeTransparency( value );
         }
       },
-	  
-	  yearChanged: function( yr ){
-	     this.setYear( yr );
-	  },
-	  
-	  genderChanged: function( gender ){
-		 this.setGender( gender );
-	  },
-      
-	  mapStyleChange: function( params ){
-		 var fieldToMap = this.getCurrentResultSet(),
-		    mapStyle =  RIF.extend ( { field: fieldToMap } , params );
-		 this.changeMapStyle( mapStyle );
-	  
-	  },
-	  
+
+      yearChanged: function( yr ) {
+        this.setYear( yr );
+      },
+
+      genderChanged: function( gender ) {
+        this.setGender( gender );
+      },
+
+      mapStyleChange: function( params ) {
+        var fieldToMap = this.getCurrentResultSet(),
+          mapStyle = RIF.extend( {
+            field: fieldToMap
+          }, params );
+        this.changeMapStyle( mapStyle );
+
+      },
+
       //SETTERS
       setCurrentStudy: function( study ) {
         this.studyId = study
@@ -178,15 +180,15 @@ RIF.study = ( function( type ) {
       setCurrentInvestigation: function( inv ) {
         this.invId = inv;
       },
-      
-	  setCurrentResultsSet: function( set ) {
+
+      setCurrentResultsSet: function( set ) {
         this.resultSet = set;
       },
-	  
+
       setCurrentMapField: function( resSet ) {
         this.mapField = resSet;
       },
-	  
+
       setCurrentResultSetAvailable: function( resSets ) {
         this.resultSets = resSets;
       },
@@ -235,11 +237,11 @@ RIF.study = ( function( type ) {
       getCurrentInvestigation: function() {
         return this.invId;
       },
-      
-	  getCurrentResultSet: function() {
+
+      getCurrentResultSet: function() {
         return this.resultSet;
       },
-	  
+
       getResultSetsAvailable: function() {
         return this.resultSets;
       },

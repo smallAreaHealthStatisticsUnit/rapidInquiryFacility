@@ -60,14 +60,14 @@ RIF.map[ 'map-facade-diseaseMapping' ] = ( function( _p ) {
     changeTransparency: function( val ) {
       _p.layer.setTransparency( val );
     },
-	
-	changeYear: function(){
-	
-	},
-	
-	changeGender: function(){
-	
-	},
+
+    changeYear: function() {
+
+    },
+
+    changeGender: function() {
+
+    },
 
     /* Firers */
     populateMenus: function( args ) {

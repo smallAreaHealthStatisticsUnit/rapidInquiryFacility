@@ -23,31 +23,31 @@ RIF.chart[ 'chart-facade-diseaseMapping' ] = ( function( _p ) {
     refreshLineBivariate: function() {
       _p._refreshLineBivariate();
     },
-    
+
     updateLineChartWithBrush: function( brushInfo ) {
       _p.updateLineChartWithBrushInterface( brushInfo );
     },
-      
-    slctLineBivariateFromAreaChart: function( gidAndRes ){
-      _p.updateLineChartWithClickInterface( gidAndRes );    
-    },  
-    
-    lineBivariateHighlighterStep: function( incrementDecrement ){
-       _p.lineBivariateHighlighterStepInterface(incrementDecrement);
+
+    slctLineBivariateFromAreaChart: function( gidAndRes ) {
+      _p.updateLineChartWithClickInterface( gidAndRes );
     },
-      
+
+    lineBivariateHighlighterStep: function( incrementDecrement ) {
+      _p.lineBivariateHighlighterStepInterface( incrementDecrement );
+    },
+
     refreshMultipleArea: function() {
       _p._refreshMultipleArea();
     },
-       
-	changeYear: function(){
-	
-	},
-	
-	changeGender: function(){
-	
-	},
-	
+
+    changeYear: function() {
+
+    },
+
+    changeGender: function() {
+
+    },
+
     addResizableChart: function() {
       this.fire( 'addResizableChart', [] )
     },
@@ -62,13 +62,16 @@ RIF.chart[ 'chart-facade-diseaseMapping' ] = ( function( _p ) {
 
     selectionFromAreaChartChange: function( args ) { // gid , dataset
       /*var gid = args[ 0 ], resultSet = args[ 1 ];*/
-      facade.fire( 'selectionFromAreaChartChange', { gid: args [ 0 ], resSet: args[ 1 ] }  );
+      facade.fire( 'selectionFromAreaChartChange', {
+        gid: args[ 0 ],
+        resSet: args[ 1 ]
+      } );
       facade.fire( "zoomToArea", args[ 0 ] );
     },
-      
-    areaChartKeyDown: function( args ){
-       facade.fire('areaChartKeyDown', args );
-    }   
+
+    areaChartKeyDown: function( args ) {
+      facade.fire( 'areaChartKeyDown', args );
+    }
 
   };
 

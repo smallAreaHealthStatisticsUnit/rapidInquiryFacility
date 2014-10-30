@@ -93,47 +93,49 @@ RIF.style = ( function( type ) {
       };
 
       for ( var key in values ) {
-        var jk =   style.scale( values[ key ] ) ;
+        var jk = style.scale( values[ key ] );
         var col = singleColor || style.colorbrewer[ jk ];
-        if ( typeof col === 'undefined')  { console.log(jk) }
+        if ( typeof col === 'undefined' ) {
+          console.log( jk )
+        }
         this.colors[ key ] = col;
       };
       style.repaint();
     },
 
     updateLegend: function( field ) {
-      var max = style.breaks[0], //Style breaks start from highest to lowest
-		  intervals = style.breaks, 
-		  labels = [],
-          legend = d3.select( '.map-legend' );
-      
-	  for( var i = 0; i < intervals.length - 1 ; i++ ){
-	     labels.push( intervals[i+1] + " - <" + intervals[i] );
-	  };
+      var max = style.breaks[ 0 ], //Style breaks start from highest to lowest
+        intervals = style.breaks,
+        labels = [],
+        legend = d3.select( '.map-legend' );
 
-	  $( legend[ 0 ] ).empty();
-      
-      legend.append('div')
-         .attr('class', 'legendTitle')
-         .text( field );   
-        
-	  legend.append( 'ul' )
+      for ( var i = 0; i < intervals.length - 1; i++ ) {
+        labels.push( intervals[ i + 1 ] + " - <" + intervals[ i ] );
+      };
+
+      $( legend[ 0 ] ).empty();
+
+      legend.append( 'div' )
+        .attr( 'class', 'legendTitle' )
+        .text( field );
+
+      legend.append( 'ul' )
         .attr( 'class', 'list-inline' );
 
       var length = style.colorbrewer.length,
         keys = legend.selectAll( 'li.key' )
         .data( labels ); //reverve to order legend from min to max
-    
+
       keys.enter().append( 'li' )
         .attr( 'class', function( d, i ) {
           return 'key'
         } )
         .style( 'border-left-color', function( d, i ) {
-          return style.colorbrewer[ length - ( i + 1)  ];
+          return style.colorbrewer[ length - ( i + 1 ) ];
         } )
         .append( 'a' )
         .text( function( d, i ) {
-		  return d;
+          return d;
         } );
     },
 
@@ -149,7 +151,7 @@ RIF.style = ( function( type ) {
       this.setScale( params );
 
       if ( updateLegend ) {
-        this.updateLegend( params.field);
+        this.updateLegend( params.field );
       };
     }
 
