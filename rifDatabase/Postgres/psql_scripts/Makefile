@@ -117,6 +117,7 @@ DEFAULT_SAHSULAND_TABLESPACE_DIR=
 #
 DBNAME?=$(PGDATABASE)
 VERBOSITY?=$(DEFAULT_VERBOSITY)
+DEBUG_LEVEL?=$(DEBUG_LEVEL)
 DEBUG_LEVEL?=$(DEFAULT_DEBUG_LEVEL)
 ECHO?=$(DEFAULT_ECHO)
 PSQL_USER?=$(DEFAULT_PSQL_USER)
@@ -160,6 +161,7 @@ ifeq ($(OS),Windows_NT)
 	POSTGRES_ETC_DIR="C:\Program Files\PostgreSQL\9.3\etc"
 	PGPASS=powershell -ExecutionPolicy ByPass -file pgpass.ps1
 	TESTUSER?=$(USERNAME)
+	TOPOJSON="C:\node_modules\.bin\topojson.cmd"
 else
 #
 # Linux macos support

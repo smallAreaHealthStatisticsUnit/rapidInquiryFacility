@@ -71,6 +71,7 @@ DEFAULT_ECHO=none
 #
 DBNAME?=$(PGDATABASE)
 VERBOSITY?=$(DEFAULT_VERBOSITY)
+DEBUG_LEVEL?=$(DEBUG_LEVEL)
 DEBUG_LEVEL?=$(DEFAULT_DEBUG_LEVEL)
 ECHO?=$(DEFAULT_ECHO)
 
@@ -103,6 +104,7 @@ ifeq ($(OS),Windows_NT)
 	RUN=powershell -ExecutionPolicy ByPass -file ../run.ps1
 	DELETE=powershell -ExecutionPolicy ByPass -file ../delete.ps1
 	TESTUSER=$(USERNAME)
+	TOPOJSON="C:\node_modules\.bin\topojson.cmd"
 else
 #
 # Linux macos support

@@ -95,6 +95,7 @@ DROP TABLE IF EXISTS sahsuland_geography_orig;
 --
 
 --\set ON_ERROR_STOP OFF
+\set debug_level 1
 \set VERBOSITY terse
 DO LANGUAGE plpgsql $$
 DECLARE
@@ -176,6 +177,15 @@ BEGIN
 -- Fix NULL geolevel names in geography geolevel geometry and lookup table data 
 --
 	PERFORM rif40_geo_pkg.fix_null_geolevel_names('SAHSU'); 
+--
+-- Make level1 names consistent
+--
+	UPDATE sahsuland_level1 a 
+	   SET name = (
+		SELECT name 
+		  FROM t_rif40_sahsu_geometry b
+		 WHERE b.geolevel_name = 'LEVEL1'
+		   AND b.area_id = a.level1);
 --
 	etp:=clock_timestamp();
 	took:=age(etp, stp);

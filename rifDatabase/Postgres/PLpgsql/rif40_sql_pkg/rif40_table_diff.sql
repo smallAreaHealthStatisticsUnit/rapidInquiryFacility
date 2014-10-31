@@ -134,6 +134,7 @@ DECLARE
 	column_list_2	VARCHAR;	
 --
 	sql_stmt		VARCHAR;
+	sql_stmt2		VARCHAR;
 	errors			INTEGER:=0;
 --
 	error_message 	VARCHAR;
@@ -236,34 +237,46 @@ BEGIN
 --
 -- Create SQL statement
 --
-	sql_stmt:='WITH a_1_minus_2 AS ('||CHR(10)||
-'	SELECT '||column_list_1||CHR(10)||
-'	  FROM '||quote_ident(LOWER(table_1))||CHR(10)||
-'	EXCEPT'||CHR(10)||
-'	SELECT '||column_list_2||CHR(10)||
-'	  FROM '||quote_ident(LOWER(table_2))||CHR(10)||
-'),'||CHR(10)||
-'b_2_minus_1 AS ('||CHR(10)||
-'	SELECT '||column_list_2||CHR(10)||
-'	  FROM '||quote_ident(LOWER(table_2))||CHR(10)||
-'	EXCEPT'||CHR(10)||
-'	SELECT '||column_list_1||CHR(10)||
-'	  FROM '||quote_ident(LOWER(table_1))||CHR(10)||
-'), a AS ('||CHR(10)||
-'	SELECT COUNT(a.*) AS a_1_minus_2_total'||CHR(10)||
-'     FROM a_1_minus_2 a'||CHR(10)||
-'), b AS ('||CHR(10)||
-'	SELECT COUNT(b.*) AS b_2_minus_1_total'||CHR(10)||
-'     FROM b_2_minus_1 b'||CHR(10)||
-'), c AS ('||CHR(10)||
-'	SELECT COUNT(*) AS table_1_total'||CHR(10)||
-'	  FROM '||quote_ident(LOWER(table_1))||CHR(10)||
-'), d AS ('||CHR(10)||
-'	SELECT COUNT(*) AS table_2_total'||CHR(10)||
-'	  FROM '||quote_ident(LOWER(table_2))||CHR(10)||
-')'||CHR(10)||
-'SELECT a.a_1_minus_2_total, b.b_2_minus_1_total, c.table_1_total, d.table_2_total'||CHR(10)||
+	sql_stmt2:='WITH a_1_minus_2 AS ('||E'\n'||
+'	SELECT '||column_list_1||E'\n'||
+'	  FROM '||quote_ident(LOWER(table_1))||E'\n'||
+'	EXCEPT'||E'\n'||
+'	SELECT '||column_list_2||E'\n'||
+'	  FROM '||quote_ident(LOWER(table_2))||E'\n'||
+'),'||E'\n'||
+'b_2_minus_1 AS ('||E'\n'||
+'	SELECT '||column_list_2||E'\n'||
+'	  FROM '||quote_ident(LOWER(table_2))||E'\n'||
+'	EXCEPT'||E'\n'||
+'	SELECT '||column_list_1||E'\n'||
+'	  FROM '||quote_ident(LOWER(table_1))||E'\n'||
+')';
+--
+	sql_stmt:=sql_stmt2||', a AS ('||E'\n'||
+'	SELECT COUNT(a.*) AS a_1_minus_2_total'||E'\n'||
+'     FROM a_1_minus_2 a'||E'\n'||
+'), b AS ('||E'\n'||
+'	SELECT COUNT(b.*) AS b_2_minus_1_total'||E'\n'||
+'     FROM b_2_minus_1 b'||E'\n'||
+'), c AS ('||E'\n'||
+'	SELECT COUNT(*) AS table_1_total'||E'\n'||
+'	  FROM '||quote_ident(LOWER(table_1))||E'\n'||
+'), d AS ('||E'\n'||
+'	SELECT COUNT(*) AS table_2_total'||E'\n'||
+'	  FROM '||quote_ident(LOWER(table_2))||E'\n'||
+')'||E'\n'||
+'SELECT a.a_1_minus_2_total, b.b_2_minus_1_total, c.table_1_total, d.table_2_total'||E'\n'||
 '  FROM a, b, c, d';
+--
+-- First 20 wrong records
+-- 
+	sql_stmt2:=sql_stmt2||E'\n'||
+'SELECT ''a_1_minus_2: ('||table_1||')'' AS type, a_1_minus_2.*'||E'\n'||
+'  FROM a_1_minus_2'||E'\n'||
+'UNION'||E'\n'||
+'SELECT ''b_2_minus_1: ('||table_2||')'' AS type, b_2_minus_1.*'||E'\n'||
+'  FROM b_2_minus_1 LIMIT 20';
+--
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_table_diff', '[71011]: [%] SQL> %;', 
 		test_tag::VARCHAR,
 		sql_stmt::VARCHAR);
@@ -324,6 +337,8 @@ BEGIN
 -- Process errors
 --
 	IF errors > 0 THEN
+		PERFORM rif40_sql_pkg.rif40_method4(sql_stmt2, test_tag::VARCHAR);	
+--
 		PERFORM rif40_log_pkg.rif40_error(71014, 'rif40_table_diff', '[%] Tables 1 %.% AND 2 %.% are different; % tests failed',
 			test_tag::VARCHAR,
 			c1a_rec.tableowner::VARCHAR,

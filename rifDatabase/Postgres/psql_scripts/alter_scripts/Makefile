@@ -48,12 +48,17 @@
 #
 PGDATABASE?=sahsuland_dev
 DBNAME?=$(PGDATABASE)
+VERBOSITY?=$(DEFAULT_VERBOSITY)
+DEBUG_LEVEL?=$(DEBUG_LEVEL)
+DEBUG_LEVEL?=$(DEFAULT_DEBUG_LEVEL)
+ECHO?=$(DEFAULT_ECHO)
 
 #
 # Programs and parameters
 #
 PSQL=psql
-PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -e -P pager=off -v testuser=$(TESTUSER)
+PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -e -P pager=off -v testuser=$(TESTUSER)  -v verbosity=$(VERBOSITY) \
+	-v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO)
 
 #
 # List of source code

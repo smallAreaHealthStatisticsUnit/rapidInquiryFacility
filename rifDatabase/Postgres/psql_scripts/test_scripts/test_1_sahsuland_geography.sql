@@ -49,11 +49,6 @@
 \set VERBOSITY :verbosity
 
 --
--- Start transaction
---
-BEGIN;
-
---
 -- Check user is rif40
 --
 DO LANGUAGE plpgsql $$
@@ -70,23 +65,25 @@ $$;
 SET rif40.debug_level TO :ndebug_level;
 	
 /*	
-SELECT area_id, name, area, total_males, total_females, population_year
+SELECT area_id, name, area, gid, total_males, total_females, population_year
   FROM t_rif40_sahsu_geometry
  WHERE geolevel_name = 'LEVEL1';
 
-SELECT area_id, name, area, total_males, total_females, population_year
+SELECT area_id, name, area, gid, total_males, total_females, population_year
   FROM t_rif40_sahsu_geometry
  WHERE geolevel_name = 'LEVEL2';
 
-SELECT area_id, name, area, total_males, total_females, population_year
+SELECT area_id, name, area, gid, total_males, total_females, population_year
   FROM t_rif40_sahsu_geometry
  WHERE geolevel_name = 'LEVEL3'
  ORDER BY 2 LIMIT 20;
 
-SELECT area_id, name, area, total_males, total_females, population_year
-  FROM t_rif40_sahsu_geometry
+SELECT area_id, a.name, area, a.gid, b.gid, total_males, total_females, population_year
+  FROM t_rif40_sahsu_geometry a
+			LEFT OUTER JOIN sahsuland_level4 b ON (a.area_id = b.level4)
  WHERE geolevel_name = 'LEVEL4'
  ORDER BY 2 LIMIT 20;
+ 
  */
  
 --
@@ -175,23 +172,27 @@ BEGIN
 --
     PERFORM rif40_log_pkg.rif40_log_setup();
 	IF debug_level IS NULL THEN
+		RAISE INFO 'T1--04: NULL debug_level';
 		debug_level:=0;
 	ELSIF debug_level > 4 THEN
 		RAISE EXCEPTION 'test_1_sahsuland_geography.sql: T1--03: Invalid debug level [0-4]: %', debug_level;
 	ELSIF debug_level BETWEEN 1 AND 4 THEN
+		RAISE INFO 'T1--04: debug_level %', debug_level;
         PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
 --
 -- Enabled debug on select rif40_sm_pkg functions
 --
 		FOREACH l_function IN ARRAY rif40_pkg_functions LOOP
-			RAISE INFO 'T1--04: test_1_sahsuland_geography.sql: Enable debug for function: %', l_function;
+			RAISE INFO 'T1--05: test_1_sahsuland_geography.sql: Enable debug for function: %', l_function;
 			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
 		END LOOP;
+	ELSE
+		RAISE INFO 'T1--04: debug_level %', debug_level;
 	END IF;
 --
 -- Validate 2 sahsuland_geography tables are the same
 --
-	PERFORM rif40_sql_pkg.rif40_table_diff('T1__04(sahsuland_geography)' /* Test tag */, 'sahsuland_geography', 'sahsuland_geography_orig');
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__06(sahsuland_geography)' /* Test tag */, 'sahsuland_geography', 'sahsuland_geography_orig');
 --
 	CREATE TEMPORARY TABLE test_1_temp_1 AS
 	SELECT level4 FROM sahsuland_level4;
@@ -199,8 +200,8 @@ BEGIN
 	SELECT level4 FROM sahsuland_geography;
 	CREATE TEMPORARY TABLE test_1_temp_3 AS
 	SELECT DISTINCT level4 FROM x_sahsu_level4;
-	PERFORM rif40_sql_pkg.rif40_table_diff('T1__05(level4)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_2');
-	PERFORM rif40_sql_pkg.rif40_table_diff('T1__06(x_sahsu_level4)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_3');
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__07(level4)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_2');
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__08(x_sahsu_level4)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_3');
 	DROP TABLE test_1_temp_1;
 	DROP TABLE test_1_temp_2;
 	DROP TABLE test_1_temp_3;
@@ -211,8 +212,8 @@ BEGIN
 	SELECT DISTINCT level3 FROM sahsuland_geography;
 	CREATE TEMPORARY TABLE test_1_temp_3 AS
 	SELECT DISTINCT level3 FROM x_sahsu_level3;
-	PERFORM rif40_sql_pkg.rif40_table_diff('T1__06(level3)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_2');
-	PERFORM rif40_sql_pkg.rif40_table_diff('T1__07(x_sahsu_level3)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_3');
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__09(level3)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_2');
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__10(x_sahsu_level3)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_3');
 	DROP TABLE test_1_temp_1;
 	DROP TABLE test_1_temp_2;
 	DROP TABLE test_1_temp_3;
@@ -223,11 +224,58 @@ BEGIN
 	SELECT DISTINCT level2 FROM sahsuland_geography;
 	CREATE TEMPORARY TABLE test_1_temp_3 AS
 	SELECT DISTINCT level2 FROM x_sahsu_level2;
-	PERFORM rif40_sql_pkg.rif40_table_diff('T1__08(level2)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_2');
-	PERFORM rif40_sql_pkg.rif40_table_diff('T1__09(x_sahsu_level2)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_3');
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__11(level2)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_2');
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__12(x_sahsu_level2)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_3');
 	DROP TABLE test_1_temp_1;
 	DROP TABLE test_1_temp_2;
 	DROP TABLE test_1_temp_3;
+--
+-- Tests 13-16 gid match
+--
+	CREATE TEMPORARY TABLE test_1_temp_1 AS
+	SELECT level1 AS area_id, name, gid FROM sahsuland_level1;
+	CREATE TEMPORARY TABLE test_1_temp_2 AS
+	SELECT area_id, name, gid
+	  FROM t_rif40_sahsu_geometry 
+	 WHERE geolevel_name = 'LEVEL1';
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__13(level1 gid match: sahsuland_level1, t_rif40_sahsu_geometry[LEVEL1])' /* Test tag */, 
+		'test_1_temp_1', 'test_1_temp_2');
+	DROP TABLE test_1_temp_1;
+	DROP TABLE test_1_temp_2;
+	
+	CREATE TEMPORARY TABLE test_1_temp_1 AS
+	SELECT level2 AS area_id, name, gid FROM sahsuland_level2;
+	CREATE TEMPORARY TABLE test_1_temp_2 AS
+	SELECT area_id, name, gid
+	  FROM t_rif40_sahsu_geometry 
+	 WHERE geolevel_name = 'LEVEL2';
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__14(level2 gid match: sahsuland_level2, t_rif40_sahsu_geometry[LEVEL2])' /* Test tag */, 
+		'test_1_temp_1', 'test_1_temp_2');
+	DROP TABLE test_1_temp_1;
+	DROP TABLE test_1_temp_2;
+	
+	CREATE TEMPORARY TABLE test_1_temp_1 AS
+	SELECT level3 AS area_id, name, gid FROM sahsuland_level3;
+	CREATE TEMPORARY TABLE test_1_temp_2 AS
+	SELECT area_id, name, gid
+	  FROM t_rif40_sahsu_geometry 
+	 WHERE geolevel_name = 'LEVEL3';
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__15(level3 gid match: sahsuland_level3, t_rif40_sahsu_geometry[LEVEL3])' /* Test tag */, 
+		'test_1_temp_1', 'test_1_temp_2');
+	DROP TABLE test_1_temp_1;
+	DROP TABLE test_1_temp_2;
+	
+	CREATE TEMPORARY TABLE test_1_temp_1 AS
+	SELECT level4 AS area_id, name, gid FROM sahsuland_level4;
+	CREATE TEMPORARY TABLE test_1_temp_2 AS
+	SELECT area_id, name, gid
+	  FROM t_rif40_sahsu_geometry 
+	 WHERE geolevel_name = 'LEVEL4';
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__16(level4 gid match: sahsuland_level4, t_rif40_sahsu_geometry[LEVEL4])' /* Test tag */, 
+		'test_1_temp_1', 'test_1_temp_2');
+	DROP TABLE test_1_temp_1;
+	DROP TABLE test_1_temp_2;
+
 --
 --	RAISE EXCEPTION 'TEST Abort';
 END;
@@ -431,12 +479,8 @@ SELECT lo_unlink(2630819);
 \dS+ sahsuland_geography
 \dS+ rif40_geolevels_geometry
  */
- --
- -- End of transaction
- --
- END;
  
-\echo Test 1 - SAHSULAND geometry iontersection validation completed OK.
+\echo Test 1 - SAHSULAND geometry intersection validation completed OK.
 
 --
 -- Eof
