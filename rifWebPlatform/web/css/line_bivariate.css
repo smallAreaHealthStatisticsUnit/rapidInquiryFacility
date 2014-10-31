@@ -38,8 +38,9 @@ fill-opacity: .125;
 shape-rendering: crispEdges;
 }
 
-#bivariateHiglighter {
-  stroke: rgb(242, 14, 41);
+.bivariateHiglighter {
+  stroke: #EEA9B8;
+  fill:red;
   stroke-width: 1;
 }
 #lineBivariatesvg text {
@@ -51,4 +52,8 @@ shape-rendering: crispEdges;
 
 #labelLineBivariate {
   text-transform:uppercase
+}
+.grid .tick {
+    stroke: lightgrey;
+    opacity: 0.7;
 }

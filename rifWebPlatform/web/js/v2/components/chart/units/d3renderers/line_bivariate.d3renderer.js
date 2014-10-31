@@ -52,7 +52,7 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
     .scale( y2 )
     .orient( "left" );
 
-
+    
   var area = d3.svg.area()
     .x( function( d ) {
       return x( d[ orderField ] );
@@ -101,15 +101,15 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
   x2.domain( xDomain );
 
   y.domain( [ d3.min( data, function( d ) {
-    return d[ lowField ] - 0.2;
+    return d[ lowField ] ;
   } ), d3.max( data, function( d ) {
-    return d[ highField ] + 0.2;
+    return d[ highField ] ;
   } ) ] );
 
   y2.domain( [ d3.min( data, function( d ) {
-    return d[ lowField ]  - 0.2;
+    return d[ lowField ]  ;
   } ), d3.max( data, function( d ) {
-    return d[ highField ] + 0.2;
+    return d[ highField ] ;
   } ) ] );
 
 
@@ -118,11 +118,6 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
     .attr( "class", "area" )
     .attr( "d", area )
     .attr( "clip-path", "url(#clipchart)" );
-
-  focus.append( "g" )
-    .attr( "class", "x axis" )
-    .attr( "transform", "translate(0," + height + ")" )
-    .call( xAxis );
 
   focus.append( "g" )
     .attr( "class", "y axis" )
@@ -153,8 +148,11 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
       .attr( "x2", 0 )
       .attr( "y2", height )
       .attr( "height", height )
-      .attr( "id", "bivariateHiglighter" );    
-
+      .attr( "class", "bivariateHiglighter" );    
+ 
+  var pointHighlight = focus.append("circle")
+      .attr( "class", "bivariateHiglighter" )
+      .attr("r", 2);
   
   this.gid = gidSelected || null;    
   
@@ -166,6 +164,7 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
     var gid = this.gid;
     if( gid !== null){  
         highlighter.attr( "transform", "translate(" + x( lookUp[gid][0] ) + "," + 0 + ")" );
+        pointHighlight.attr( "transform", "translate(" + x( lookUp[gid][0] ) + "," + y( lookUp[gid][1] ) + ")" );
     };
    currentFigures
       .text( (lookUp[gid][1]).toFixed(3) + " ( " + lookUp[gid][2] + "-" + lookUp[gid][3] +  " )" );
