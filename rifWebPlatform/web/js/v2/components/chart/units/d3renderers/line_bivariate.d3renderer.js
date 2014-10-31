@@ -12,7 +12,8 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
     orderField = $.trim( opt.x_field ),
     lineField = $.trim( opt.risk_field ),
     lowField = $.trim( opt.cl_field ),
-    highField = $.trim( opt.cu_field );
+    highField = $.trim( opt.cu_field ),
+    dataLength = data.length;  
 
 
   var line = d3.svg.line()
@@ -52,7 +53,7 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
     .scale( y2 )
     .orient( "left" );
 
-    
+
   var area = d3.svg.area()
     .x( function( d ) {
       return x( d[ orderField ] );
@@ -82,7 +83,8 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
 
 
   //Used to have a reference to the actual GIDS
-  var lookUp = {};
+  var lookUp = {},
+      lookUpOrder = {};
 
   data.forEach( function( d ) {
     d[ idField ] = +d[ idField ];
@@ -91,6 +93,7 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
     d[ lowField ] = +d[ lowField ];
     d[ highField ] = +d[ highField ];
     lookUp[ d[idField  ] ] = [d[ orderField ], d[ lineField ], d[ lowField ], d[ highField ]];
+    lookUpOrder[ d[orderField  ] ] = d[ idField ];
   } );
 
   var xDomain = d3.extent( data, function( d ) {
@@ -101,15 +104,15 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
   x2.domain( xDomain );
 
   y.domain( [ d3.min( data, function( d ) {
-    return d[ lowField ] ;
+    return d[ lowField ] - 0.2;
   } ), d3.max( data, function( d ) {
-    return d[ highField ] ;
+    return d[ highField ] + 0.2;
   } ) ] );
 
   y2.domain( [ d3.min( data, function( d ) {
-    return d[ lowField ]  ;
+    return d[ lowField ]  - 0.2;
   } ), d3.max( data, function( d ) {
-    return d[ highField ] ;
+    return d[ highField ] + 0.2;
   } ) ] );
 
 
@@ -118,6 +121,11 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
     .attr( "class", "area" )
     .attr( "d", area )
     .attr( "clip-path", "url(#clipchart)" );
+
+  focus.append( "g" )
+    .attr( "class", "x axis" )
+    .attr( "transform", "translate(0," + height + ")" )
+    .call( xAxis );
 
   focus.append( "g" )
     .attr( "class", "y axis" )
@@ -129,7 +137,7 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
     .text( lineField );
   
   var currentFigures = svg.append( "text" )
-    .attr( "transform", "translate(36,36)" )
+    .attr( "transform", "translate(36,40)" )
     .attr("id", "currentFiguresLineBivariate")
     .text( "" );    
   
@@ -149,11 +157,11 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
       .attr( "y2", height )
       .attr( "height", height )
       .attr( "class", "bivariateHiglighter" );    
- 
-  var pointHighlight = focus.append("circle")
-      .attr( "class", "bivariateHiglighter" )
-      .attr("r", 2);
-  
+
+  var pointerLighter = focus.append( "circle" )
+      .attr("r", 3)
+      .attr( "class", "bivariateHiglighter" );  
+    
   this.gid = gidSelected || null;    
   
   var setGid = function( gid ){
@@ -164,11 +172,14 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
     var gid = this.gid;
     if( gid !== null){  
         highlighter.attr( "transform", "translate(" + x( lookUp[gid][0] ) + "," + 0 + ")" );
-        pointHighlight.attr( "transform", "translate(" + x( lookUp[gid][0] ) + "," + y( lookUp[gid][1] ) + ")" );
+        pointerLighter.attr( "transform", "translate(" + x( lookUp[gid][0] ) + "," + y( lookUp[gid][1] ) + ")" );
     };
    currentFigures
-      .text( (lookUp[gid][1]).toFixed(3) + " ( " + lookUp[gid][2] + "-" + lookUp[gid][3] +  " )" );
-  };  
+      .text( (lookUp[gid][1]).toFixed(3) + " ( " + lookUp[gid][2] + " - " + lookUp[gid][3] +  " )" );
+      
+  };
+    
+ 
     
   return function brushed( updateInfo ) {
     /* updateInfo can be either { xDomain, yDomain } on BRUSH 
@@ -177,13 +188,25 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
      *  When click need to lookup gid to xOrder
      */
       
-    if(  typeof updateInfo.gid !== 'undefined' ){
+    //Arrow keys from area chart event
+    if( typeof updateInfo === 'function'){// updateInfo = incrementDecrement function()
+      var order = lookUp[gid][0] || 0,    
+          newOrder = updateInfo.call(null, lookUp[gid][0]);    
+      if (newOrder>=0 && newOrder < dataLength ){    
+          setGid( lookUpOrder[ newOrder ] );     
+          updateLine() ;
+      };
+      return;
+    };
+      
+    // Click on area charts event 
+    if(  typeof updateInfo.gid !== 'undefined' ){ 
       setGid( updateInfo.gid );  
       updateLine() ; 
       return;
     };
     
-    //On Brush pass the xOrder   
+    //Zoom, on Brush event
     x.domain( updateInfo.xDomain );
     y.domain( updateInfo.yDomain );
     focus.select( ".area" ).attr( "d", area );

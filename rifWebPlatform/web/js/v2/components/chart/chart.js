@@ -40,6 +40,10 @@ RIF.chart = ( function( settings ) {
       updateLineChartWithClickInterface: function( gidAndRes ) {
          _p.updateLine_bivariateWithClick( gidAndRes );
       },
+        
+      lineBivariateHighlighterStepInterface: function( incrementDecrement ){
+         _p.lineBivariateHighlighterStep( incrementDecrement );
+      },    
 
       //conforms
       setEvents: function() {

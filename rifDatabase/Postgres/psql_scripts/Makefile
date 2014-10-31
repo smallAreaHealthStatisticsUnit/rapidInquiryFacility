@@ -50,21 +50,37 @@ SUBDIRS = alter_scripts test_scripts
 #
 # Conditional environment variables - can be changed to point to sahsuland by higher makefiles
 #
-# PG_DATABASE - set to sahsuland_dev
+# Postgres ENV variables
 #
 PGDATABASE=sahsuland_dev
 PGHOST=localhost
+#
 DEFAULT_VERBOSITY=terse
 DEFAULT_DEBUG_LEVEL=0
 DEFAULT_ECHO=none
 DEFAULT_PSQL_USER=rif40
-DEFAULT_ENCRYPTED_POSTGRES_PASSWORD=md57d50cade66c8b224d1fbd91805cbf442
 DEFAULT_USE_PLR=N
 DEFAULT_CREATE_SAHSULAND_ONLY=N
 #
-# Local overrides; copy Makefile.local.example to Makefile.local and edit Makefile.local
-#
 # DEFAULT_ENCRYPTED_POSTGRES_PASSWORD hash comes from PGAdmin III or psql
+#
+# Postgres MD5 password format is: 
+#
+# 'md5'||md5(username||password); e.g. to set the rif40 password to: Imperial1234, use psql:
+#
+# SELECT 'md5'||md5('rif40'||'Imperial1234') AS encrypted_password;
+#          encrypted_password
+# -------------------------------------
+# md5aee237f1cfd00b0553d180fbe6c9c126
+#
+DEFAULT_ENCRYPTED_POSTGRES_PASSWORD=md57d50cade66c8b224d1fbd91805cbf442
+DEFAULT_ENCRYPTED_RIF40_PASSWORD=md5dba9980b96510989e720a66fc77d92c8
+#
+# Only set SAHSULAND_TABLESPACE_DIR if you have access to the directory!
+#
+DEFAULT_SAHSULAND_TABLESPACE_DIR=
+#
+# Local overrides; copy Makefile.local.example to Makefile.local and edit Makefile.local
 #
 -include Makefile.local
 
@@ -87,24 +103,42 @@ DEFAULT_CREATE_SAHSULAND_ONLY=N
 # all: 		- All SQL
 # none:		- No SQL
 #
+# PSQL script user (PSQL_USER)
+#
+# - Usually rif40 (schema owner)
+#
+# Use PL/R (USE_PLR)
+#
+# - Database has PL/R extension loaded (not needed by default)
+#
+# Create SAHSULAND database only (CREATE_SAHSULAND_ONLY)
+#
+# - Do not create SAHSULAND_DEV
+#
 DBNAME?=$(PGDATABASE)
 VERBOSITY?=$(DEFAULT_VERBOSITY)
 DEBUG_LEVEL?=$(DEFAULT_DEBUG_LEVEL)
 ECHO?=$(DEFAULT_ECHO)
 PSQL_USER?=$(DEFAULT_PSQL_USER)
-ENCRYPTED_POSTGRES_PASSWORD?=$(DEFAULT_ENCRYPTED_POSTGRES_PASSWORD)
 USE_PLR?=$(DEFAULT_USE_PLR)
 CREATE_SAHSULAND_ONLY?=$(DEFAULT_CREATE_SAHSULAND_ONLY)
+ENCRYPTED_POSTGRES_PASSWORD?=$(DEFAULT_ENCRYPTED_POSTGRES_PASSWORD)
+ENCRYPTED_RIF40_PASSWORD?=$(DEFAULT_ENCRYPTED_RIF40_PASSWORD)
+SAHSULAND_TABLESPACE_DIR?=$(DEFAULT_SAHSULAND_TABLESPACE_DIR)
+
 #
 # Programs and parameters
 #
 PSQL=psql
 PSQL_FLAGS=-U $(PSQL_USER) -d $(PGDATABASE) -h $(PGHOST) -w -e -P pager=off \
 	-v testuser=$(TESTUSER) -v verbosity=$(VERBOSITY) -v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO) \
-	-v encrypted_postgres_password=$(ENCRYPTED_POSTGRES_PASSWORD) -v use_plr=$(USE_PLR) \
+	-v encrypted_postgres_password=$(ENCRYPTED_POSTGRES_PASSWORD) \
+	-v encrypted_rif40_password=$(ENCRYPTED_RIF40_PASSWORD) \
+	-v use_plr=$(USE_PLR) \
 	-v sahsuland_tablespace_dir=$(SAHSULAND_TABLESPACE_DIR) \
 	-v create_sahsuland_only=$(CREATE_SAHSULAND_ONLY) \
-	-v pghost=$(PGHOST)
+	-v pghost=$(PGHOST) \
+	-v os=$(OS)
 
 #
 # Phony (i.e. not a file) targets
@@ -122,7 +156,6 @@ ifeq ($(OS),Windows_NT)
 	RUN=powershell -ExecutionPolicy ByPass -file run.ps1
 	DELETE=powershell -ExecutionPolicy ByPass -file delete.ps1
 	HELP=findstr "\#-" Makefile
-	SAHSULAND_TABLESPACE_DIR="C:\PostgresDB\sahsuland"
 	COPY=powershell -ExecutionPolicy ByPass -file copy.ps1 
 	POSTGRES_ETC_DIR="C:\Program Files\PostgreSQL\9.3\etc"
 	PGPASS=powershell -ExecutionPolicy ByPass -file pgpass.ps1
@@ -138,12 +171,12 @@ else
 	COPY=cp
 	TESTUSER=$(shell id -un | tr ‘[:upper:]’ ‘[:lower:]’)
     ifeq ($(UNAME_S),Linux)
-		SAHSULAND_TABLESPACE_DIR="C:\PostgresDB\sahsuland"
+		OS=$(UNAME_S)
 		POSTGRES_ETC_DIR=/var/opt/PostgreSQL/9.3/etc
 		PGPASS=./pgpass.sh
 	else
-		ifeq ($(UNAME_S),Darwin)
-			SAHSULAND_TABLESPACE_DIR="C:\PostgresDB\sahsuland"
+		ifeq ($(UNAME_S),Darwin)	
+			OS=$(UNAME_S)
 			POSTGRES_ETC_DIR=/Library/PostgreSQL/9.3/etc
 			PGPASS=./pgpass.sh
 		else

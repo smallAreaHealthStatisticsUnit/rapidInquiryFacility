@@ -312,7 +312,24 @@
 
         xhr( 'getGenderAvailableForStudy.php' + args, myCallback, msg );
 	  
-	  }
+	  },
+        
+      getInvestigationInfo: function ( myCallback, params ){
+	    var msg = "Retrieving Investigation info for study: " + params[0] + " investigation:" + params[1],
+          args = '?studyID=' + params[ 0 ] + '&investigationID=' + params[ 1 ];
+
+        xhr( 'getInvestigationInfo.php' + args, myCallback, msg );
+	  
+	  },
+        
+      getResultFigures: function ( myCallback, params ){
+	    var msg = "Retrieving info  for area: " + params[2] ,
+          args = '?studyID=' + params[ 0 ] + '&investigationID=' + params[ 1 ]
+                  + '&gid=' + params[ 2 ]+ '&gender=' + params[ 3 ] + '&year=' + params[ 4 ];
+
+        xhr( 'getResultFigures.php' + args, myCallback, msg );
+	  
+	  }    
 
     };
 

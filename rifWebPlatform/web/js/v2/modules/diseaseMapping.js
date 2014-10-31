@@ -93,7 +93,18 @@ RIF.diseaseMapping = ( function() {
         method: "updateLineChartWithBrush"
       },
 
-
+      areaChartKeyDown: {
+        subscribers: [ "study" ],
+        firer: [ "chart" ],
+        method: "areaChartKeyDown"
+      },
+        
+      lineBivariateHighlighterStep: {
+        subscribers: [ "chart" ],
+        firer: [ "study" ],
+        method: "lineBivariateHighlighterStep"
+      },    
+        
       hoverFieldChange: {
         subscribers: [ "study" ],
         firer: [ "menu" ],

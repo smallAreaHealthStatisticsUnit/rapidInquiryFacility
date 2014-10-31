@@ -31,11 +31,15 @@ RIF.chart[ 'chart-facade-diseaseMapping' ] = ( function( _p ) {
     slctLineBivariateFromAreaChart: function( gidAndRes ){
       _p.updateLineChartWithClickInterface( gidAndRes );    
     },  
+    
+    lineBivariateHighlighterStep: function( incrementDecrement ){
+       _p.lineBivariateHighlighterStepInterface(incrementDecrement);
+    },
       
     refreshMultipleArea: function() {
       _p._refreshMultipleArea();
     },
-      
+       
 	changeYear: function(){
 	
 	},
@@ -60,7 +64,11 @@ RIF.chart[ 'chart-facade-diseaseMapping' ] = ( function( _p ) {
       /*var gid = args[ 0 ], resultSet = args[ 1 ];*/
       facade.fire( 'selectionFromAreaChartChange', { gid: args [ 0 ], resSet: args[ 1 ] }  );
       facade.fire( "zoomToArea", args[ 0 ] );
-    }
+    },
+      
+    areaChartKeyDown: function( args ){
+       facade.fire('areaChartKeyDown', args );
+    }   
 
   };
 
