@@ -55,6 +55,44 @@
 \set ON_ERROR_STOP ON
 \timing
 
+CREATE OR REPLACE FUNCTION rif40_geo_pkg.create_rif40_geolevels_lookup_tables()
+RETURNS void 
+SECURITY INVOKER
+AS $body$
+/*
+
+Function: 	create_rif40_geolevels_lookup_tables()
+Parameters:	Nothing
+Returns:	Nothing
+Description:	Create and popualte rif40_geolevels lookup and create hierarchy tables
+ */
+DECLARE
+	c2geolook2 CURSOR FOR
+		SELECT *
+		  FROM rif40_geographies;
+--
+	c2_rec rif40_geographies%ROWTYPE;
+BEGIN
+--
+-- Must be rif40 or have rif_manager role
+--
+	IF NOT rif40_sql_pkg.is_rif40_manager_or_schema() THEN
+		PERFORM rif40_log_pkg.rif40_error(-10001, 'create_rif40_geolevels_lookup_tables', 'User % must be rif40 or have rif_manager role', 
+			USER::VARCHAR 	/* User name */);
+	END IF;
+--
+	FOR c2_rec IN c2geolook2 LOOP
+		PERFORM rif40_geo_pkg.create_rif40_geolevels_lookup_tables(c2_rec.geography);
+	END LOOP;
+END;
+$body$
+LANGUAGE PLPGSQL;
+
+COMMENT ON FUNCTION rif40_geo_pkg.create_rif40_geolevels_lookup_tables() IS 'Function: 	create_rif40_geolevels_lookup_tables()
+Parameters:	Nothing
+Returns:	Nothing
+Description:	Create and popualte rif40_geolevels lookup and create hierarchy tables';
+
 CREATE OR REPLACE FUNCTION rif40_geo_pkg.create_rif40_geolevels_lookup_tables(l_geography VARCHAR)
 RETURNS void 
 SECURITY INVOKER
