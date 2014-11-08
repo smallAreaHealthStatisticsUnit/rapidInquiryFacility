@@ -9,7 +9,7 @@
 -- Description:
 --
 -- Rapid Enquiry Facility (RIF) - Web services integration functions for middleware
---     				  Encapulate geoJSON in Javascript (internal common function)
+--     				  Encapsulate geoJSON in Javascript (internal common function)
 --
 -- Copyright:
 --
@@ -67,16 +67,22 @@ $$;
 --
 -- rif40_xml_pkgt._rif40_get_geojson_as_js: 		50600 to 50799
 --
+DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR[], INTEGER);
 
 CREATE OR REPLACE FUNCTION rif40_xml_pkg._rif40_get_geojson_as_js(
-	l_geography VARCHAR, geolevel_view VARCHAR, geolevel_area_id_list VARCHAR[], l_expected_rows INTEGER)
+	l_geography VARCHAR, 
+	geolevel_view VARCHAR, 
+	geolevel_area_id_list VARCHAR[], 
+	l_expected_rows INTEGER,
+	produce_json_only BOOLEAN DEFAULT FALSE)
 RETURNS TABLE(js VARCHAR)
 SECURITY INVOKER
 AS $body$
 /*
 
 Function: 	_rif40_get_geojson_as_js()
-Parameters:	Geography, geolevel_view, geolevel area ID list, l_expected_rows
+Parameters:	Geography, geolevel_view, geolevel area ID list, expected_rows, 
+			produce JSON only (i.e. not encapsulated in Javascript) - default FALSE
 Returns:	Text table
 Description:	Get GeoJSON data as a Javascript variable. 
 
@@ -218,7 +224,11 @@ BEGIN
 --
 -- Create SQL statement
 -- 
-	sql_stmt:=sql_stmt||E'\t'||'SELECT 0 ord, ''var spatialData={ "type": "FeatureCollection","features": [ /* Start */'' js'||E'\n';
+	IF produce_json_only THEN
+		sql_stmt:=sql_stmt||E'\t'||'SELECT 0 ord, ''{"type": "FeatureCollection","features":['' js'||E'\n';
+	ELSE
+		sql_stmt:=sql_stmt||E'\t'||'SELECT 0 ord, ''var spatialData={ "type": "FeatureCollection","features": [ /* Start */'' js'||E'\n';
+	END IF;
 	sql_stmt:=sql_stmt||E'\t'||'UNION'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'SELECT ROW_NUMBER() OVER(ORDER BY area_id) ord,'||E'\n'; 
 	sql_stmt:=sql_stmt||E'\t'||'       ''{"type": "Feature","properties":''||'||E'\n'; 
@@ -229,12 +239,20 @@ BEGIN
 	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"total_females":"''||COALESCE(total_females::Text, '''')||''",''||'||E'\n'; 
 	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"population_year":"''||COALESCE(LTRIM(TO_CHAR(population_year, ''9990'')), '''')||''",''||'||E'\n'; 
 	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"gid":"''||gid||''"},''||'||E'\n'; 
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"geometry": ''||optimised_geojson||''} /* ''||'||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'       row_number() over()||'' : ''||area_id||'' : ''||'' : ''||COALESCE(name, '''')||'' */ '' AS js'||E'\n'; 
+	IF produce_json_only THEN /* No comments */
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"geometry": ''||optimised_geojson||''}'' AS js'||E'\n'; 
+	ELSE
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"geometry": ''||optimised_geojson||''} /* ''||'||E'\n';
+		sql_stmt:=sql_stmt||E'\t'||'       row_number() over()||'' : ''||area_id||'' : ''||'' : ''||COALESCE(name, '''')||'' */ '' AS js'||E'\n'; 
+	END IF;
 	sql_stmt:=sql_stmt||E'\t'||'  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||' WHERE geolevel_name = $1 /* <geolevel view> */ AND area_id IN (SELECT UNNEST($2) /* <geolevel area id list> */)'||E'\n'; 
 	sql_stmt:=sql_stmt||E'\t'||'UNION'||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'SELECT 999999 ord, '']} /* End: total expected rows: '||l_expected_rows||' */'' js'||E'\n';
+	IF produce_json_only THEN /* No comments */
+		sql_stmt:=sql_stmt||E'\t'||'SELECT 999999 ord, '']}'' js'||E'\n';
+	ELSE
+		sql_stmt:=sql_stmt||E'\t'||'SELECT 999999 ord, '']} /* End: total expected rows: '||l_expected_rows||' */'' js'||E'\n';
+	END IF;
 	sql_stmt:=sql_stmt||')'||E'\n';
 --
 -- EXPLAIN plan version has the ord field so they TEMP table can be ordered correctly
@@ -347,8 +365,10 @@ END;
 $body$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_xml_pkg._rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR[], INTEGER) IS 'Function: 	_rif40_get_geojson_as_js()
-Parameters:	Geography, geolevel_view, geolevel area ID list, l_expected_rows
+COMMENT ON FUNCTION rif40_xml_pkg._rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR[], INTEGER,
+		BOOLEAN) IS 'Function: 	_rif40_get_geojson_as_js()
+Parameters:	Geography, geolevel_view, geolevel area ID list, l_expected_rows, 
+			produce JSON only (i.e. not encapsulated in Javascript) - default FALSE
 Returns:	Text table
 Description:	Get GeoJSON data as a Javascript variable. 
 

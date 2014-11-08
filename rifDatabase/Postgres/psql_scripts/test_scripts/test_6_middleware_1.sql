@@ -184,6 +184,7 @@ SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU' /* Geography 
 -- "View the <geolevel view> (e.g. LEVEL4) of <geolevel area> (e.g. 01.004) and select at <geolevel select> (e.g. LEVEL2) level".
 --
 \copy (SELECT * FROM rif40_xml_pkg.rif40_get_geojson_as_js('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, 'LEVEL2' /* geolevel area */, '01.004' /* geolevel area id */, FALSE /* return_one_row flag: output multiple rows so it is readable! */)) to ../psql_scripts/test_scripts/data/test_6_geojson_test_01.js 
+\copy (SELECT * FROM rif40_xml_pkg.rif40_get_geojson_as_js('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, 'LEVEL2' /* geolevel area */, '01.004' /* geolevel area id */, FALSE /* return_one_row flag: output multiple rows so it is readable! */, TRUE /* Produce JSON not JS */)) to ../psql_scripts/test_scripts/data/test_6_geojson_test_01.json 
 
 --
 -- GetGeoJsonTiles interface
@@ -198,12 +199,13 @@ SELECT SUBSTRING(
 			'SAHSU' 	/* Geography */, 
 			'LEVEL4' 	/* geolevel view */, 
 			a.y_max, a.x_max, a.y_min, a.x_min, /* Bounding box - from cte */
-			FALSE /* return_one_row flag: output multiple rows so it is readable! */) FROM 1 FOR 160) AS js 
+			FALSE /* return_one_row flag: output multiple rows so it is readable! */) 
+			FROM 1 FOR 160 /* Truncate to 160 chars */) AS json 
   FROM a LIMIT 4;
 /*
-                                                                                js
+                                                                               json
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
- var spatialData={ "type": "FeatureCollection","features": [ /- Start -/
+ { "type": "FeatureCollection","features": [
  {"type": "Feature","properties":{"area_id":"01.001.000100.1","name":"Abellan LEVEL4(01.001.000100.1)","area":"238.40","total_males":"4924.00","total_females":"5
  ,{"type": "Feature","properties":{"area_id":"01.002.001100.1","name":"Cobley LEVEL4(01.002.001100.1)","area":"10.00","total_males":"5246.00","total_females":"54
  ,{"type": "Feature","properties":{"area_id":"01.002.001300.5","name":"Cobley LEVEL4(01.002.001300.5)","area":"2.80","total_males":"2344.00","total_females":"218
@@ -212,7 +214,7 @@ SELECT SUBSTRING(
 --
 -- Use copy to create a Javascript file that can be tested
 --
-\copy (WITH a AS (SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')) SELECT rif40_xml_pkg.rif40_get_geojson_tiles('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, a.y_max, a.x_max, a.y_min, a.x_min, FALSE /* return_one_row flag: output multiple rows so it is readable! */) FROM a) to ../psql_scripts/test_scripts/data/test_6_geojson_test_02.js
+\copy (WITH a AS (SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')) SELECT rif40_xml_pkg.rif40_get_geojson_tiles('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, a.y_max, a.x_max, a.y_min, a.x_min, FALSE /* return_one_row flag: output multiple rows so it is readable! */) FROM a) to ../psql_scripts/test_scripts/data/test_6_geojson_test_02.json
 
 --
 -- Attribute fetch functions

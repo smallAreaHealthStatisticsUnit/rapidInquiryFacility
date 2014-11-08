@@ -71,8 +71,12 @@ DEFAULT_ECHO=none
 #
 DBNAME?=$(PGDATABASE)
 VERBOSITY?=$(DEFAULT_VERBOSITY)
-DEBUG_LEVEL?=$(DEBUG_LEVEL)
+ifndef DEBUG_LEVEL
 DEBUG_LEVEL?=$(DEFAULT_DEBUG_LEVEL)
+$(info Debug level set to default: $(DEFAULT_DEBUG_LEVEL))
+else
+$(info Debug level set to: $(DEBUG_LEVEL))
+endif
 ECHO?=$(DEFAULT_ECHO)
 
 #

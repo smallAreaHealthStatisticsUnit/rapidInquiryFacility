@@ -49,8 +49,15 @@
 PGDATABASE?=sahsuland_dev
 DBNAME?=$(PGDATABASE)
 VERBOSITY?=$(DEFAULT_VERBOSITY)
-DEBUG_LEVEL?=$(DEBUG_LEVEL)
+#
+DEFAULT_DEBUG_LEVEL=0
+ifndef DEBUG_LEVEL
 DEBUG_LEVEL?=$(DEFAULT_DEBUG_LEVEL)
+$(info Debug level set to default: $(DEFAULT_DEBUG_LEVEL))
+else
+$(info Debug level set to: $(DEBUG_LEVEL))
+endif
+DEFAULT_ECHO=none
 ECHO?=$(DEFAULT_ECHO)
 
 #

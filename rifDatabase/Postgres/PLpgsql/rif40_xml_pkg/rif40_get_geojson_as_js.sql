@@ -62,6 +62,7 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR, VARCHAR, BOOLEAN);
 --
 -- Error codes assignment (see PLpgsql\Error_codes.txt):
 --
@@ -72,14 +73,16 @@ CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_get_geojson_as_js(
 	geolevel_view 		VARCHAR, 
 	geolevel_area 		VARCHAR, 
 	geolevel_area_id	VARCHAR, 
-	return_one_row 		BOOLEAN DEFAULT TRUE)
+	return_one_row 		BOOLEAN DEFAULT TRUE,
+	produce_json_only 	BOOLEAN DEFAULT FALSE)
 RETURNS SETOF text 
 SECURITY INVOKER
 AS $body$
 /*
 
 Function: 	rif40_get_geojson_as_js()
-Parameters:	Geography, geolevel_view, geolevel_area, geolevel_area_id, return one row (TRUE/FALSE)
+Parameters:	Geography, geolevel_view, geolevel_area, geolevel_area_id, return one row (TRUE/FALSE), 
+			produce JSON only (i.e. not encapsulated in Javascript) - default FALSE
 Returns:	Text table [1 or more rows dependent on return_one_row]
 Description:	Get GeoJSON data as a Javascript variable. 
 		For the disease mapping selection dialog phrase:
@@ -199,7 +202,7 @@ DECLARE
 	c5geojson1 CURSOR(l_geography VARCHAR, l_geolevel_view VARCHAR, l_geolevel_area_id_list VARCHAR[], l_expected_rows INTEGER) FOR
 		WITH a AS (
 			SELECT js FROM rif40_xml_pkg._rif40_get_geojson_as_js(
-						l_geography, l_geolevel_view, l_geolevel_area_id_list, l_expected_rows)
+						l_geography, l_geolevel_view, l_geolevel_area_id_list, l_expected_rows, produce_json_only)
 		)
 		SELECT ARRAY_AGG(js) AS js
 		  FROM a;
@@ -369,8 +372,9 @@ END;
 $body$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_xml_pkg.rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR, VARCHAR, BOOLEAN) IS 'Function: 	rif40_get_geojson_as_js()
-Parameters:	Geography, geolevel_view, geolevel_area, geolevel_area_id, return one row (TRUE/FALSE)
+COMMENT ON FUNCTION rif40_xml_pkg.rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR, VARCHAR, BOOLEAN, BOOLEAN) IS 'Function: 	rif40_get_geojson_as_js()
+Parameters:	Geography, geolevel_view, geolevel_area, geolevel_area_id, return one row (TRUE/FALSE), 
+			produce JSON only (i.e. not encapsulated in Javascript) - default FALSE
 Returns:	Text table [1 or more rows dependent on return_one_row]
 Description:	Get GeoJSON data as a Javascript variable. 
 		For the disease mapping selection dialog phrase:
@@ -470,9 +474,9 @@ var spatialData = {
 
 Validated with JSlint: http://www.javascriptlint.com/online_lint.php';
 
-GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR, VARCHAR, BOOLEAN) TO rif_manager;
-GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR, VARCHAR, BOOLEAN) TO rif_user;
-GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR, VARCHAR, BOOLEAN) TO rif40;
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR, VARCHAR, BOOLEAN, BOOLEAN) TO rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR, VARCHAR, BOOLEAN, BOOLEAN) TO rif_user;
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR, VARCHAR, BOOLEAN, BOOLEAN) TO rif40;
 
 --
 -- Eof

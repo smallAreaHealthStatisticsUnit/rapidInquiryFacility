@@ -363,12 +363,12 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_create_fdw_views(BOOLEAN, VARCHAR, V
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_create_fdw_view(BOOLEAN, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[]) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_fdw_table_select_test(VARCHAR, VARCHAR, VARCHAR, VARCHAR) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_update_fdw_tables(VARCHAR, VARCHAR, VARCHAR, INTEGER) CASCADE;
-
 DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_getgeolevelextentcommon(l_geography character varying, l_geolevel_view character varying, l_map_area character varying, l_study_id integer, OUT y_max real, OUT x_max real, OUT y_min real, OUT x_min real);
 DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_get_geojson_as_js(l_geography character varying, geolevel_view character varying, geolevel_area_id_list character varying[], l_expected_rows integer);
+DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_get_geojson_as_js(l_geography character varying, geolevel_view character varying, geolevel_area_id_list character varying[], l_expected_rows integer, produce_json_only boolean);
 DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_geojson_explain_ddl(sql_stmt character varying, geolevel_view character varying, geolevel_area_id_list character varying[]);
 DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_geojson_explain_ddl2(sql_stmt character varying, x_min real, y_min real, x_max real, y_max real, l_geolevel_view character varying);
-DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_as_js(l_geography character varying, geolevel_view character varying, geolevel_area character varying, geolevel_area_id character varying, return_one_row boolean);
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_as_js(l_geography character varying, geolevel_view character varying, geolevel_area character varying, geolevel_area_id character varying, return_one_row boolean, produce_json_only boolean);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(l_geography character varying, l_geolevel_view character varying, y_max real, x_max real, y_min real, x_min real, return_one_row boolean);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getgeolevelfullextent(l_geography character varying, l_geolevel_view character varying, OUT y_max real, OUT x_max real, OUT y_min real, OUT x_min real);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getgeolevelfullextentforstudy(l_geography character varying, l_geolevel_view character varying, l_study_id integer, OUT y_max real, OUT x_max real, OUT y_min real, OUT x_min real);
@@ -384,7 +384,7 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_partition_count(l_schema character 
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_drop_master_trigger(l_schema character varying, l_table character varying);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_triggers(l_schema character varying, l_table character varying, l_column character varying, enable_or_disable character varying, OUT ddl_stmt character varying[]);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create(l_schema character varying, master_table character varying, partition_table character varying, l_column character varying, l_value character varying);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_setup(l_schema character varying, l_table character varying, l_column character varying, hash_partition_count integer, OUT ddl_stmt character varying[], OUT fk_stmt character varying[], OUT num_partitionsinteger, OUT min_value character varying, OUT total_rows integer, OUT warnings integer);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_setup(l_schema character varying, l_table character varying, l_column character varying, hash_partition_count integer, OUT ddl_stmt character varying[], OUT fk_stmt character varying[], OUT num_partitions integer, OUT min_value character varying, OUT total_rows integer, OUT warnings integer);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_complete(l_schema character varying, l_table character varying, l_column character varying, index_name character varying);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getmapareaattributevalue(getmap_temp_table character varying, getmap_ref_cursor refcursor, l_offset integer, l_row_limit integer);
 DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_createmapareaattributesource_explain_ddl(sql_stmt character varying, l_geography character varying, l_geolevel_select character varying);

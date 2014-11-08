@@ -117,8 +117,12 @@ DEFAULT_SAHSULAND_TABLESPACE_DIR=
 #
 DBNAME?=$(PGDATABASE)
 VERBOSITY?=$(DEFAULT_VERBOSITY)
-DEBUG_LEVEL?=$(DEBUG_LEVEL)
+ifndef DEBUG_LEVEL
 DEBUG_LEVEL?=$(DEFAULT_DEBUG_LEVEL)
+$(info Debug level set to default: $(DEFAULT_DEBUG_LEVEL))
+else
+$(info Debug level set to: $(DEBUG_LEVEL))
+endif
 ECHO?=$(DEFAULT_ECHO)
 PSQL_USER?=$(DEFAULT_PSQL_USER)
 USE_PLR?=$(DEFAULT_USE_PLR)
@@ -220,9 +224,10 @@ endif
 #- 
 #- 1. patching
 #-
-#- all: Run all completed alter scripts [DEFAULT]
+#- all: Run all completed alter scripts and test [DEFAULT]
 all:
-	$(MAKE) -C alter_scripts all
+	$(MAKE) -C alter_scripts clean all
+	$(MAKE) -C test_scripts clean all
 
 #- patch: Run all completed alter scripts on both sahsuland_dev and sahusland	
 patch:

@@ -94,7 +94,7 @@ Description:	Get GeoJSON data as a Javascript variable.
 Calls: _rif40_get_geojson_as_js to extract the data using the following SQL:
 
 WITH a AS (
-        SELECT 0 ord, 'var spatialData={ "type": "FeatureCollection","features": [ /- Start -/' js
+        SELECT 0 ord, '{ "type": "FeatureCollection","features": [ /- Start -/' js
         UNION
         SELECT ROW_NUMBER() OVER(ORDER BY area_id) ord,
                '{"type": "Feature","properties":'||
@@ -116,11 +116,11 @@ SELECT CASE WHEN ord BETWEEN 2 AND 999998 THEN ','||js ELSE js END::VARCHAR AS j
   FROM a
  ORDER BY ord;
 
-Generates a Javascript variable encapulation geoJSON that looks (when prettified using http://jsbeautifier.org/) like:
+Generates geoJSON that looks (when prettified using http://jsbeautifier.org/) like:
 
-var spatialData = {
+{
     "type": "FeatureCollection",
-    "features": [ /- Start -/ {
+    "features": [ {
         "type": "Feature",
         "properties": {
             "area_id": "01.004.011100.1",
@@ -149,7 +149,7 @@ var spatialData = {
                 ]
             ]
         }
-    } /- 1 : 01.004.011100.1 :  : Hambly LEVEL4(01.004.011100.1) -/ , {
+    }, {
         "type": "Feature",
         "properties": {
             "area_id": "01.004.011100.2",
@@ -178,8 +178,8 @@ var spatialData = {
                 ]
             ]
         }
-    } /- 57 : 01.004.011900.3 :  : Hambly LEVEL4(01.004.011900.3) -/ ]
-} /- End: total expected rows: 59 -/ ;
+    }]
+} ;
 
 Validated with JSlint: http://www.javascriptlint.com/online_lint.php
 
@@ -198,7 +198,7 @@ DECLARE
 	c5geojson2 CURSOR(l_geography VARCHAR, l_geolevel_view VARCHAR, l_geolevel_area_id_list VARCHAR[], l_expected_rows INTEGER) FOR
 		WITH a AS (
 			SELECT js FROM rif40_xml_pkg._rif40_get_geojson_as_js(
-						l_geography, l_geolevel_view, l_geolevel_area_id_list, l_expected_rows)
+						l_geography, l_geolevel_view, l_geolevel_area_id_list, l_expected_rows, TRUE /* Produce JSON not JS */)
 		)
 		SELECT ARRAY_AGG(js) AS js
 		  FROM a;
@@ -277,7 +277,7 @@ BEGIN
 			geolevel_view::VARCHAR	/* Geolevel view */);
 	END IF;	
 --
--- Test  <eolevel area id list> is valid
+-- Test  <geolevel area id list> is valid
 --
 /* 
 WITH a AS (
@@ -324,11 +324,18 @@ GroupAggregate  (cost=1255.78..1277.98 rows=80 width=548) (actual time=16.627..1
 Total runtime: 19.472 ms
 
 */
+-- 		  '	  optimised_geometry && ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */)'||E'\n'||
+
 	sql_stmt:='WITH a AS ('||E'\n'||
 		  '	SELECT area_id,'||E'\n'||
 		  '            ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */) AS geom	/* Bound */'||E'\n'||
 		  '	  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||E'\n'||
-		  '	 WHERE optimised_geometry && ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */)'||E'\n'||
+		  '	 WHERE ST_Intersects(optimised_geometry,'||E'\n'||
+		  '        		ST_MakeEnvelope($1 /* Xmin */,'||E'\n'||
+		  '        					 $2 	/* Ymin */,'||E'\n'||
+		  '       			 		 $3 	/* Xmax */,'||E'\n'||
+		  '        					 $4 	/* YMax */,'||E'\n'||
+		  '        					 4326 	/* WGS 84 */))'||E'\n'||
 		  '	   AND geolevel_name = $5		/* Partition eliminate */'||E'\n'||
 		  '	   /* Intersect bound with geolevel geometry */'||E'\n'||
 		  ')'||E'\n'||
@@ -521,7 +528,7 @@ Description:	Get GeoJSON data as a Javascript variable.
 Calls: _rif40_get_geojson_as_js to extract the data using the following SQL:
 
 WITH a AS (
-        SELECT 0 ord, ''var spatialData={ "type": "FeatureCollection","features": [ /* Start */'' js
+        SELECT 0 ord, ''{ "type": "FeatureCollection","features": [ /* Start */'' js
         UNION
         SELECT ROW_NUMBER() OVER(ORDER BY area_id) ord,
                ''{"type": "Feature","properties":''||
@@ -543,11 +550,11 @@ SELECT CASE WHEN ord BETWEEN 2 AND 999998 THEN '',''||js ELSE js END::VARCHAR AS
   FROM a
  ORDER BY ord;
 
-Generates a Javascript variable encapulation geoJSON that looks (when prettified using http://jsbeautifier.org/) like:
+Generates geoJSON that looks (when prettified using http://jsbeautifier.org/) like:
 
-var spatialData = {
+{
     "type": "FeatureCollection",
-    "features": [ /* Start */ {
+    "features": [ {
         "type": "Feature",
         "properties": {
             "area_id": "01.004.011100.1",
@@ -576,7 +583,7 @@ var spatialData = {
                 ]
             ]
         }
-    } /* 1 : 01.004.011100.1 :  : Hambly LEVEL4(01.004.011100.1) */ , {
+    }, {
         "type": "Feature",
         "properties": {
             "area_id": "01.004.011100.2",
@@ -605,8 +612,8 @@ var spatialData = {
                 ]
             ]
         }
-    } /* 57 : 01.004.011900.3 :  : Hambly LEVEL4(01.004.011900.3) */ ]
-} /* End: total expected rows: 59 */ ;
+    } ]
+};
 
 Validated with JSlint: http://www.javascriptlint.com/online_lint.php';
 
