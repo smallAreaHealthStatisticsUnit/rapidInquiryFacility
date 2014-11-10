@@ -95,6 +95,8 @@ RIF.study[ 'study-facade-diseaseMapping' ] = ( function(  ) {
           
         this.setSelection( areasSelected );
         this.updateResultFigures( areaJustClicked );  
+        this.fire( 'slctLineBivariateFromMap', areaJustClicked );
+        this.fire( 'updateMultipleAreaChartsFromMap', areaJustClicked );  
       },
 
       selectionFromAreaChartChange: function( args ) {
@@ -102,7 +104,6 @@ RIF.study[ 'study-facade-diseaseMapping' ] = ( function(  ) {
         var mapGid = "g" + args.gid;   
         this.fire( 'slctMapAreaFromAreaChart', mapGid );
         this.fire( 'slctLineBivariateFromAreaChart',  args );
-        console.log('selectionFromAreaChartChange')
       },
 
       areaChartSelectionChanged: function( resSetsChoice ) {

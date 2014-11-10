@@ -15,7 +15,8 @@ RIF.chart = ( function( settings ) {
         ( type === 'line_bivariateWithHighlight' ) ? _p.updateLine_bivariateWithClick( args ) :
           ( type === 'pyramid' ) ? _p.updatePyramid( args ) :
           ( type === 'histogram' ) ? _p.updateHisto( args ) :
-          ( type === 'multipleAreaCharts' ) ? _p.updateMultipleAreaCharts( args ) : 0;
+          ( type === 'multipleAreaCharts' ) ? _p.updateMultipleAreaCharts( args ) : 
+          ( type === 'multipleAreaChartsFromMap') ?  _p.updateAllCharts( args ) :  0;
       },
 
       clearChart: function( type, args ) {
@@ -40,6 +41,10 @@ RIF.chart = ( function( settings ) {
       updateLineChartWithClickInterface: function( gidAndRes ) {
          _p.updateLine_bivariateWithClick( gidAndRes );
       },
+      
+      slctLineBivariateFromMapInterface:function( gid ) {
+         _p.updateLine_bivariateFromMapClick( gid );
+      },    
         
       lineBivariateHighlighterStepInterface: function( incrementDecrement ){
          _p.lineBivariateHighlighterStep( incrementDecrement );

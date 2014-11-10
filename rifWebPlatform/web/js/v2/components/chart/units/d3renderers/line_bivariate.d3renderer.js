@@ -6,7 +6,8 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
 	*/
   var id = opt.element,
     margin = opt.margin,
-    width = opt.dimensions.width() - 5,
+    width = opt.dimensions.width(),
+    xWidth = width - margin.left - margin.right - 4,  
     height = opt.dimensions.height() - margin.top - margin.bottom,
     idField = $.trim( opt.id_field ),
     orderField = $.trim( opt.x_field ),
@@ -26,10 +27,10 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
     } );
 
   var x = d3.scale.linear()
-    .range( [ 0, width ] );
+    .range( [ 0, xWidth ] );
 
   var x2 = d3.scale.linear()
-    .range( [ 0, width ] );
+    .range( [ 0, xWidth ] );
 
   var y = d3.scale.linear()
     .range( [ height, 0 ] );
@@ -199,7 +200,7 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
       return;
     };
       
-    // Click on area charts event 
+    // Click on area charts event and Map clicks
     if(  typeof updateInfo.gid !== 'undefined' ){ 
       setGid( updateInfo.gid );  
       updateLine() ; 

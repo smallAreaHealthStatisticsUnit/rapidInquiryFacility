@@ -125,7 +125,13 @@ RIF.chart.multipleAreaCharts = ( function() {
 
     renderMultipleArea: function() {
       _rerender();
-    }
+    },
+      
+    updateAllCharts: function( gid ){
+      if(newChart !== null){
+        newChart({iterateToGid: gid});
+      };
+    }  
 
   };
 

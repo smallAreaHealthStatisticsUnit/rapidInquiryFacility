@@ -15,6 +15,10 @@ RIF.chart[ 'chart-facade-diseaseMapping' ] = ( function( _p ) {
     updateMultipleAreaCharts: function( args ) {
       _p.updateChart( 'multipleAreaCharts', args );
     },
+      
+    updateMultipleAreaChartsFromMap: function( args ) {
+      _p.updateChart( 'multipleAreaChartsFromMap', args );
+    },  
 
     updateLineBivariate: function( args ) {
       _p.updateChart( 'line_bivariate', args );
@@ -31,6 +35,10 @@ RIF.chart[ 'chart-facade-diseaseMapping' ] = ( function( _p ) {
     slctLineBivariateFromAreaChart: function( gidAndRes ){
       _p.updateLineChartWithClickInterface( gidAndRes );    
     },  
+      
+    slctLineBivariateFromMap: function( gid ){
+      _p.slctLineBivariateFromMapInterface( gid );    
+    },    
     
     lineBivariateHighlighterStep: function( incrementDecrement ){
        _p.lineBivariateHighlighterStepInterface(incrementDecrement);

@@ -102,9 +102,15 @@ RIF.chart.line_bivariate = ( function() {
           this.updateLine_bivariate( updateInfo.resSet, updateInfo );
       },
       
+      updateLine_bivariateFromMapClick: function( gid ){
+           _updateDomainLineChart.call( null, { "gid" : gid} );
+      },
+          
       lineBivariateHighlighterStep: function( incrementDecrement){
          _updateDomainLineChart.call( null, incrementDecrement );
-      },    
+      }, 
+        
+          
         
       updateLine_bivariate: function( field, updateInfo, clbk ) {
          

@@ -60,13 +60,6 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
     };
   };
 
-  var update = function( xVal, txt, set ) {
-    xOrders[ set ] = xVal;
-    lines[ set ]
-      .attr( "transform", "translate(" + xScales[ set ]( xVal ) + "," + 0 + ")" );
-    texts[ set ]
-      .text( txt );
-  };
 
   d3.select( "body" )
     .on( "keydown", keyDown )
@@ -106,9 +99,39 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
     chartHeight = ( height / rSetCount ) - 20, //20 is the height of zoom a label
     maxDataPoint = max;
 
-
+  
+   var iterateToGid = function( _gid ) {
+      for ( var set in dataSets ) {
+        var dataLength = dataSets[ set ].length;
+        while ( dataLength-- ) {
+          if ( dataSets[ set ][ dataLength ][ "gid" ] === _gid ) {
+            var xVal = +dataSets[ set ][ dataLength ][ xOrder ],
+              yVal = dataSets[ set ][ dataLength ][ set ];
+            update( xVal, yVal, set );
+            break;
+          };
+        };
+      };
+    };    
+  
+   
+   var update = function( xVal, txt, set ) {
+      xOrders[ set ] = xVal;
+      lines[ set ]
+        .attr( "transform", "translate(" + xScales[ set ]( xVal ) + "," + 0 + ")" );
+      texts[ set ]
+        .text( txt );
+   };
+    
+    
   return function Chart( options ) {
-
+    
+    if( typeof options.iterateToGid !== 'undefined'){
+       iterateToGid(options.iterateToGid);
+       console.log('iterate');    
+       return;    
+    };  
+      
     this.width = width;
     this.height = chartHeight;
     this.maxDataPoint = maxDataPoint;
@@ -145,7 +168,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
           YdomainBrushed = [ minYBrush, maxYBrush ];
       
       facade.areaChartBrushed.call( null, { xDomain: domain, yDomain: YdomainBrushed, resSet: localName } );
-    }
+    };
 
     var brush = d3.svg.brush()
       .x( xS )
@@ -223,21 +246,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
         lineColorUpdate( lineSelectionColor );
         gid = dataSets[ localName ][ xValue ][ "gid" ]; // Sync with other area charts
         facade.selectionFromAreaChartChange.call( null, [ gid, localName ] ); // NEED to pass dataSets[localName]
-        iterateToGid( gid );
-      };
-    };
-
-    var iterateToGid = function( _gid ) {
-      for ( var set in dataSets ) {
-        var dataLength = dataSets[ set ].length;
-        while ( dataLength-- ) {
-          if ( dataSets[ set ][ dataLength ][ "gid" ] === _gid ) {
-            var xVal = +dataSets[ set ][ dataLength ][ xOrder ],
-              yVal = dataSets[ set ][ dataLength ][ set ];
-            update( xVal, yVal, set );
-            break;
-          };
-        };
+        //iterateToGid( gid );
       };
     };
 

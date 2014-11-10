@@ -123,7 +123,7 @@ RIF.diseaseMapping = ( function() {
         method: "uAreaSelection"
       },
 
-
+       
       selectionFromAreaChartChange: {
         subscribers: [ "study" ],
         firer: [ "chart" ],
@@ -136,13 +136,24 @@ RIF.diseaseMapping = ( function() {
         method: "slctMapAreaFromAreaChart"
       },
         
+      updateMultipleAreaChartsFromMap: {
+        subscribers: [ "chart" ],
+        firer: [ "study" ],
+        method: "updateMultipleAreaChartsFromMap"
+      },
+        
      slctLineBivariateFromAreaChart: {
         subscribers: [ "chart" ],
         firer: [ "study" ],
         method: "slctLineBivariateFromAreaChart"
       },
-
-
+      
+      slctLineBivariateFromMap: {
+        subscribers: [ "chart" ],
+        firer: [ "study" ],
+        method: "slctLineBivariateFromMap"
+      },  
+      
       transparencyChanged: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
@@ -204,7 +215,8 @@ RIF.diseaseMapping = ( function() {
         firer: [ "menu" ],
         method: "investigationChanged"
       },
-	  
+
+          
 	  areaChartSelectionChanged: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
