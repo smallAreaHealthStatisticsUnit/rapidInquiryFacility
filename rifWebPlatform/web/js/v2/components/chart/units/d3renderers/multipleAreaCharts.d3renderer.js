@@ -32,11 +32,11 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
     if ( code == 37 ) { // left arrow
       d3.event.preventDefault();
       moveLineByOne( decrement );
-      facade.areaChartKeyDown( decrement );     
+      facade.areaChartKeyDown( decrement );
     } else if ( code == 39 ) { //right arrow
       d3.event.preventDefault();
       moveLineByOne( increment );
-      facade.areaChartKeyDown( increment );     
+      facade.areaChartKeyDown( increment );
     };
 
   };
@@ -99,39 +99,39 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
     chartHeight = ( height / rSetCount ) - 20, //20 is the height of zoom a label
     maxDataPoint = max;
 
-  
-   var iterateToGid = function( _gid ) {
-      for ( var set in dataSets ) {
-        var dataLength = dataSets[ set ].length;
-        while ( dataLength-- ) {
-          if ( dataSets[ set ][ dataLength ][ "gid" ] === _gid ) {
-            var xVal = +dataSets[ set ][ dataLength ][ xOrder ],
-              yVal = dataSets[ set ][ dataLength ][ set ];
-            update( xVal, yVal, set );
-            break;
-          };
+
+  var iterateToGid = function( _gid ) {
+    for ( var set in dataSets ) {
+      var dataLength = dataSets[ set ].length;
+      while ( dataLength-- ) {
+        if ( dataSets[ set ][ dataLength ][ "gid" ] === _gid ) {
+          var xVal = +dataSets[ set ][ dataLength ][ xOrder ],
+            yVal = dataSets[ set ][ dataLength ][ set ];
+          update( xVal, yVal, set );
+          break;
         };
       };
-    };    
-  
-   
-   var update = function( xVal, txt, set ) {
-      xOrders[ set ] = xVal;
-      lines[ set ]
-        .attr( "transform", "translate(" + xScales[ set ]( xVal ) + "," + 0 + ")" );
-      texts[ set ]
-        .text( txt );
-   };
-    
-    
+    };
+  };
+
+
+  var update = function( xVal, txt, set ) {
+    xOrders[ set ] = xVal;
+    lines[ set ]
+      .attr( "transform", "translate(" + xScales[ set ]( xVal ) + "," + 0 + ")" );
+    texts[ set ]
+      .text( txt );
+  };
+
+
   return function Chart( options ) {
-    
-    if( typeof options.iterateToGid !== 'undefined'){
-       iterateToGid(options.iterateToGid);
-       console.log('iterate');    
-       return;    
-    };  
-      
+
+    if ( typeof options.iterateToGid !== 'undefined' ) {
+      iterateToGid( options.iterateToGid );
+      console.log( 'iterate' );
+      return;
+    };
+
     this.width = width;
     this.height = chartHeight;
     this.maxDataPoint = maxDataPoint;
@@ -154,20 +154,24 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
       .range( [ this.height, 0 ] )
       .domain( [ 0, this.maxDataPoint ] );
 
-    
+
     var brushed = function() {
       var domain = brush.empty() ? xS.domain() : brush.extent(),
         domain = [ parseInt( domain[ 0 ] ), parseInt( domain[ 1 ] ) ];
-      
-      if ( domain[ 1 ] == dataSets[ localName ].length ){
-        domain[ 1 ] = domain[ 1 ] -1;
+
+      if ( domain[ 1 ] == dataSets[ localName ].length ) {
+        domain[ 1 ] = domain[ 1 ] - 1;
       };
-        
-      var minYBrush =  parseFloat( dataSets[ localName ][domain[0]][ localName ]) - 0.5,
-          maxYBrush =  parseFloat( dataSets[ localName ][domain[1]][ localName ]) + 0.5,
-          YdomainBrushed = [ minYBrush, maxYBrush ];
-      
-      facade.areaChartBrushed.call( null, { xDomain: domain, yDomain: YdomainBrushed, resSet: localName } );
+
+      var minYBrush = parseFloat( dataSets[ localName ][ domain[ 0 ] ][ localName ] ) - 0.5,
+        maxYBrush = parseFloat( dataSets[ localName ][ domain[ 1 ] ][ localName ] ) + 0.5,
+        YdomainBrushed = [ minYBrush, maxYBrush ];
+
+      facade.areaChartBrushed.call( null, {
+        xDomain: domain,
+        yDomain: YdomainBrushed,
+        resSet: localName
+      } );
     };
 
     var brush = d3.svg.brush()
@@ -290,7 +294,7 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
       .attr( "height", 2 )
       .attr( "height", chartHeight )
       .attr( "id", linename );
-    
+
 
     this.yAxis = d3.svg.axis().scale( yS ).orient( "left" ).tickValues( [ 0, 1, this.maxDataPoint ] );
 

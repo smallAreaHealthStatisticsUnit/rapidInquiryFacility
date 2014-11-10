@@ -7,7 +7,7 @@ RIF.menu.infoFigures = ( function() {
       study: $( '#studyId select' ),
       investigation: $( '#invId select' ),
       resultSet: $( '#Resultset select' ),
-	  year: $( '#yearsAvailable select' ),
+      year: $( '#yearsAvailable select' ),
       gender: $( '#gendersAvailable select' ),
       zoomTo: $( '#zoomTo select' ),
     },
@@ -26,7 +26,7 @@ RIF.menu.infoFigures = ( function() {
         _events();
         this.getStudies();
       },
-      
+
       getStudies: function() {
         RIF.getStudies( parent.callbacks.studyCallback, [] );
       },
@@ -35,15 +35,15 @@ RIF.menu.infoFigures = ( function() {
         RIF.getInvestigations( parent.callbacks.avlbInvestigations, [ studyId ] );
       },
 
-      getResultsSetAvailable: function(  ) {
-        RIF.getResultsSetAvailable( parent.callbacks.avlbResultSet, [ ] );
+      getResultsSetAvailable: function() {
+        RIF.getResultsSetAvailable( parent.callbacks.avlbResultSet, [] );
       },
-	  
-	  getGenderAvailable: function(  ) {
+
+      getGenderAvailable: function() {
         RIF.getGenderAvailableForStudy( parent.callbacks.avlbGender, [] );
       },
-	  
-	  getYearsAvailable: function( ) {
+
+      getYearsAvailable: function() {
         RIF.getYearsAvailableForStudy( parent.callbacks.avlbYears, [] );
       },
 

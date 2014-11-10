@@ -9,8 +9,8 @@ RIF.study = ( function( type ) {
       // Current data being looked at
       studyId: null,
       invId: null,
-	  resultSet: null,
-	  year: null,
+      resultSet: null,
+      year: null,
       gender: null,
       resultSets: [],
       resultSetsSelected: [], // Max 4
@@ -28,7 +28,7 @@ RIF.study = ( function( type ) {
         style: []
       },
 
-	  
+
       //SETTERS
       setCurrentStudy: function( study ) {
         this.studyId = study
@@ -37,15 +37,15 @@ RIF.study = ( function( type ) {
       setCurrentInvestigation: function( inv ) {
         this.invId = inv;
       },
-      
-	  setCurrentResultsSet: function( set ) {
+
+      setCurrentResultsSet: function( set ) {
         this.resultSet = set;
       },
-	  
+
       setCurrentMapField: function( resSet ) {
         this.mapField = resSet;
       },
-	  
+
       setCurrentResultSetAvailable: function( resSets ) {
         this.resultSets = resSets;
       },
@@ -94,11 +94,11 @@ RIF.study = ( function( type ) {
       getCurrentInvestigation: function() {
         return this.invId;
       },
-      
-	  getCurrentResultSet: function() {
+
+      getCurrentResultSet: function() {
         return this.resultSet;
       },
-	  
+
       getResultSetsAvailable: function() {
         return this.resultSets;
       },
@@ -155,5 +155,5 @@ RIF.study = ( function( type ) {
 
   };
 
-  return RIF.mix( _study[ type ], RIF.study[ 'study-facade-diseaseMapping' ]() ); 
+  return RIF.mix( _study[ type ], RIF.study[ 'study-facade-diseaseMapping' ]() );
 } );

@@ -16,15 +16,15 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
     getScaleRange: function( args ) {
       _p.showScaleRangeInterface( args );
     },
-    
-	/* Firers  */
-	
+
+    /* Firers  */
+
     zoomToExtent: function() {
       this.fire( 'zoomToExtent', [] );
     },
 
-    menusReady: function( ) {
-      this.fire( 'menusReady', []);
+    menusReady: function() {
+      this.fire( 'menusReady', [] );
     },
 
     zoomTo: function( id ) {
@@ -50,31 +50,31 @@ RIF.menu[ 'menu-facade-diseaseMapping' ] = ( function( _p ) {
     transparencyChanged: function( val ) {
       this.fire( 'transparencyChanged', val );
     },
-	
-	/* Study Related */
-	setStudy: function( study ){
-	   this.fire( 'studyChanged', study );
-	},
-	
-	setInvestigation: function( inv){
-	   this.fire( 'investigationChanged', inv );
-	},
-	
-	setResultSet: function( resSet ){
-	  this.fire( 'resultSetChanged', resSet );
-	},
-	
+
+    /* Study Related */
+    setStudy: function( study ) {
+      this.fire( 'studyChanged', study );
+    },
+
+    setInvestigation: function( inv ) {
+      this.fire( 'investigationChanged', inv );
+    },
+
+    setResultSet: function( resSet ) {
+      this.fire( 'resultSetChanged', resSet );
+    },
+
     areaChartSelectionChanged: function( args ) {
       this.fire( 'areaChartSelectionChanged', args );
     },
-	
-	setGender: function( gender ){
-	  this.fire( 'genderChanged', gender );
-	},
-	
-	setYear: function( year ){
-	  this.fire( 'yearChanged', year );
-	}
+
+    setGender: function( gender ) {
+      this.fire( 'genderChanged', gender );
+    },
+
+    setYear: function( year ) {
+      this.fire( 'yearChanged', year );
+    }
 
   };
 

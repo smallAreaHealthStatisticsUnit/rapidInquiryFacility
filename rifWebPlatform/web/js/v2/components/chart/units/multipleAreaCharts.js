@@ -106,11 +106,11 @@ RIF.chart.multipleAreaCharts = ( function() {
     minMax = null;
     newChart = null;
     rSet = null;
-    emptyObject();  
+    emptyObject();
   },
-  
-  emptyObject = function(){
-     $( '#' + settings.element ).empty();     
+
+  emptyObject = function() {
+    $( '#' + settings.element ).empty();
   },
 
   _p = {
@@ -126,12 +126,14 @@ RIF.chart.multipleAreaCharts = ( function() {
     renderMultipleArea: function() {
       _rerender();
     },
-      
-    updateAllCharts: function( gid ){
-      if(newChart !== null){
-        newChart({iterateToGid: gid});
+
+    updateAllCharts: function( gid ) {
+      if ( newChart !== null ) {
+        newChart( {
+          iterateToGid: gid
+        } );
       };
-    }  
+    }
 
   };
 

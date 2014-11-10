@@ -41,7 +41,7 @@ RIF.diseaseMapping = ( function() {
     events: {
 
       /**--STUDY OBJECT RELATED---**/
-	  
+
       clearSelectionClicked: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
@@ -98,13 +98,13 @@ RIF.diseaseMapping = ( function() {
         firer: [ "chart" ],
         method: "areaChartKeyDown"
       },
-        
+
       lineBivariateHighlighterStep: {
         subscribers: [ "chart" ],
         firer: [ "study" ],
         method: "lineBivariateHighlighterStep"
-      },    
-        
+      },
+
       hoverFieldChange: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
@@ -123,37 +123,37 @@ RIF.diseaseMapping = ( function() {
         method: "uAreaSelection"
       },
 
-       
+
       selectionFromAreaChartChange: {
         subscribers: [ "study" ],
         firer: [ "chart" ],
         method: "selectionFromAreaChartChange"
       },
-        
+
       slctMapAreaFromAreaChart: {
         subscribers: [ "map" ],
         firer: [ "study" ],
         method: "slctMapAreaFromAreaChart"
       },
-        
+
       updateMultipleAreaChartsFromMap: {
         subscribers: [ "chart" ],
         firer: [ "study" ],
         method: "updateMultipleAreaChartsFromMap"
       },
-        
-     slctLineBivariateFromAreaChart: {
+
+      slctLineBivariateFromAreaChart: {
         subscribers: [ "chart" ],
         firer: [ "study" ],
         method: "slctLineBivariateFromAreaChart"
       },
-      
+
       slctLineBivariateFromMap: {
         subscribers: [ "chart" ],
         firer: [ "study" ],
         method: "slctLineBivariateFromMap"
-      },  
-      
+      },
+
       transparencyChanged: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
@@ -176,105 +176,105 @@ RIF.diseaseMapping = ( function() {
         firer: [ "study" ],
         method: "changeBasemap"
       },
-	  
-	  
-	  yearChanged: {
+
+
+      yearChanged: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
         method: "yearChanged"
       },
-	  
+
       changeYear: {
         subscribers: [ "map", "chart" ],
         firer: [ "study" ],
         method: "changeYear"
       },
-	  
-	  genderChanged: {
+
+      genderChanged: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
         method: "genderChanged"
       },
-	  
+
       changeGender: {
         subscribers: [ "map", "chart" ],
         firer: [ "study" ],
         method: "changeGender"
       },
-	  
-	  /**-- GET / SETTER --**/
-	  
-	  studyChanged: {
+
+      /**-- GET / SETTER --**/
+
+      studyChanged: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
         method: "studyChanged"
       },
-	  
-	  investigationChanged: {
+
+      investigationChanged: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
         method: "investigationChanged"
       },
 
-          
-	  areaChartSelectionChanged: {
+
+      areaChartSelectionChanged: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
         method: "areaChartSelectionChanged"
       },
-	  
+
       changeAreaSelection: {
         subscribers: [ "chart" ],
         firer: [ "study" ],
         method: "changeResultSetSelection"
       },
-	  
-	  resultSetChanged: {
+
+      resultSetChanged: {
         subscribers: [ "study" ],
-        firer: [  "menu" ],
+        firer: [ "menu" ],
         method: "resultSetChanged"
       },
-	  
+
       yearChanged: {
         subscribers: [ "study" ],
-        firer: [  "menu" ],
+        firer: [ "menu" ],
         method: "yearChanged"
       },
-	  
-	  genderChanged: {
+
+      genderChanged: {
         subscribers: [ "study" ],
-        firer: [  "menu" ],
+        firer: [ "menu" ],
         method: "genderChanged"
       },
-	  
-	  getStudy: {
-        subscribers: [ "map" , "chart" ],
+
+      getStudy: {
+        subscribers: [ "map", "chart" ],
         firer: [ "study" ],
         method: "getCurrentStudy"
       },
-	  
-	  
-	  //GETS
-	  getInvestigation: {
-        subscribers: [ "map" ,  "chart" ],
+
+
+      //GETS
+      getInvestigation: {
+        subscribers: [ "map", "chart" ],
         firer: [ "study" ],
         method: "getCurrentInvestigation"
       },
-	  
-	  getResultSet: {
-        subscribers: [ "map" ,  "chart" ],
+
+      getResultSet: {
+        subscribers: [ "map", "chart" ],
         firer: [ "study" ],
         method: "getCurrentResultSet"
       },
-	  
-	  getCurrentYear: {
-        subscribers: [ "map" , "chart" ],
+
+      getCurrentYear: {
+        subscribers: [ "map", "chart" ],
         firer: [ "study" ],
         method: "getCurrentYear"
       },
-	  
-	  getCurrentGender: {
-        subscribers: [ "map" , "chart" ],
+
+      getCurrentGender: {
+        subscribers: [ "map", "chart" ],
         firer: [ "study" ],
         method: "getCurrentGender"
       },
@@ -304,13 +304,13 @@ RIF.diseaseMapping = ( function() {
         firer: [ "menu", "chart" ],
         method: "zoomTo"
       },
-      
-	  mapStyleChange: {
+
+      mapStyleChange: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
         method: "mapStyleChange"
       },
-	  
+
       changeMapStyle: {
         subscribers: [ "map" ],
         firer: [ "study" ],

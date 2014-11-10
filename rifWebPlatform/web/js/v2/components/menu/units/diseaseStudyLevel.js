@@ -7,7 +7,7 @@ RIF.menu.diseaseStudyLevel = ( function() {
       study: $( '#studyId select' ),
       investigation: $( '#invId select' ),
       resultSet: $( '#Resultset select' ),
-	  year: $( '#yearsAvailable select' ),
+      year: $( '#yearsAvailable select' ),
       gender: $( '#gendersAvailable select' ),
       zoomTo: $( '#zoomTo select' ),
     },
@@ -35,15 +35,15 @@ RIF.menu.diseaseStudyLevel = ( function() {
         RIF.getInvestigations( parent.callbacks.avlbInvestigations, [ studyId ] );
       },
 
-      getResultsSetAvailable: function(  ) {
-        RIF.getResultsSetAvailable( parent.callbacks.avlbResultSet, [ ] );
+      getResultsSetAvailable: function() {
+        RIF.getResultsSetAvailable( parent.callbacks.avlbResultSet, [] );
       },
-	  
-	  getGenderAvailable: function(  ) {
+
+      getGenderAvailable: function() {
         RIF.getGenderAvailableForStudy( parent.callbacks.avlbGender, [] );
       },
-	  
-	  getYearsAvailable: function( ) {
+
+      getYearsAvailable: function() {
         RIF.getYearsAvailableForStudy( parent.callbacks.avlbYears, [] );
       },
 

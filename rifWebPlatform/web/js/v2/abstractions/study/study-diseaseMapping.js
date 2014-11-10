@@ -7,8 +7,8 @@ RIF.study = ( function( type ) {
       // Current data being looked at
       studyId: null,
       invId: null,
-	  resultSet: null,
-	  year: null,
+      resultSet: null,
+      year: null,
       gender: null,
       resultSets: [],
       resultSetsSelected: [], // Max 4
@@ -25,44 +25,44 @@ RIF.study = ( function( type ) {
         geolevel: [],
         style: []
       },
-      
+
       //DOM Related    
-      updateStudyLabel: function(){
-          $('#studyLabel h1').text( this.getCurrentStudy() );
+      updateStudyLabel: function() {
+        $( '#studyLabel h1' ).text( this.getCurrentStudy() );
       },
-      
-      updateInvestigationLabel: function(){
-          $('#studyLabel h2').text( this.getCurrentInvestigation() );
+
+      updateInvestigationLabel: function() {
+        $( '#studyLabel h2' ).text( this.getCurrentInvestigation() );
       },
-      
-	  updateInvestigationInfo: function(){
-          var params = [ this.getCurrentStudy() , this.getCurrentInvestigation() ],
-              callback = function(){  
-                 $('#nAreas span').text(this[0]);
-                 $('#covariate span').text(this[1]);
-                 $('#ageGroup span').text(this[2]);
-                 $('#year span').text(this[3]);
+
+      updateInvestigationInfo: function() {
+        var params = [ this.getCurrentStudy(), this.getCurrentInvestigation() ],
+          callback = function() {
+            $( '#nAreas span' ).text( this[ 0 ] );
+            $( '#covariate span' ).text( this[ 1 ] );
+            $( '#ageGroup span' ).text( this[ 2 ] );
+            $( '#year span' ).text( this[ 3 ] );
           };
-          
-          RIF.getInvestigationInfo( callback, params );
+
+        RIF.getInvestigationInfo( callback, params );
       },
-      
-      updateResultFigures: function( gid ){
-          var params = [ this.getCurrentStudy(), 
-                   this.getCurrentInvestigation(), 
+
+      updateResultFigures: function( gid ) {
+        var params = [ this.getCurrentStudy(),
+                   this.getCurrentInvestigation(),
                    gid, this.getCurrentGender(),
-                   this.getCurrentYear],
-              callback = function(){  
-                  console.log(this);
-                 $('#areaLevel span').text(this['code']);
-                 $('#totDenom span').text(this['pop']);
-                 $('#observed span').text(this['observed']);
-                 $('#expected span').text(this['expected']);
+                   this.getCurrentYear ],
+          callback = function() {
+            console.log( this );
+            $( '#areaLevel span' ).text( this[ 'code' ] );
+            $( '#totDenom span' ).text( this[ 'pop' ] );
+            $( '#observed span' ).text( this[ 'observed' ] );
+            $( '#expected span' ).text( this[ 'expected' ] );
           };
-          
-          RIF.getResultFigures( callback, params );
-      },    
-         
+
+        RIF.getResultFigures( callback, params );
+      },
+
       //SETTERS
       setCurrentStudy: function( study ) {
         this.studyId = study
@@ -71,15 +71,15 @@ RIF.study = ( function( type ) {
       setCurrentInvestigation: function( inv ) {
         this.invId = inv;
       },
-      
-	  setCurrentResultsSet: function( set ) {
+
+      setCurrentResultsSet: function( set ) {
         this.resultSet = set;
       },
-	  
+
       setCurrentMapField: function( resSet ) {
         this.mapField = resSet;
       },
-	  
+
       setCurrentResultSetAvailable: function( resSets ) {
         this.resultSets = resSets;
       },
@@ -128,11 +128,11 @@ RIF.study = ( function( type ) {
       getCurrentInvestigation: function() {
         return this.invId;
       },
-      
-	  getCurrentResultSet: function() {
+
+      getCurrentResultSet: function() {
         return this.resultSet;
       },
-	  
+
       getResultSetsAvailable: function() {
         return this.resultSets;
       },
@@ -187,5 +187,5 @@ RIF.study = ( function( type ) {
 
   };
 
-  return RIF.mix( _study[ type ], RIF.study[ 'study-facade-diseaseMapping' ]() ); 
+  return RIF.mix( _study[ type ], RIF.study[ 'study-facade-diseaseMapping' ]() );
 } );

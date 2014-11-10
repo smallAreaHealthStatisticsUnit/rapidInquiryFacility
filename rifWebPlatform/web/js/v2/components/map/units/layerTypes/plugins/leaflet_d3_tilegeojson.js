@@ -42,15 +42,15 @@ L.TileLayer.d3_geoJSON = L.TileLayer.extend( {
 
   _tileLoaded: function() {
     this._tilesToLoad--;
-	if ( !this._tilesToLoad ) {
+    if ( !this._tilesToLoad ) {
       this.options.loaded();
     }
-      //this.end = new Date().getTime() / 1000;
-      //console.log(this.end - this.start);
-      if ( this._animated ) {
-        clearTimeout( this._clearBgBufferTimer );
-        this._clearBgBufferTimer = setTimeout( L.bind( this._clearBgBuffer, this ), 500 );
-      }
+    //this.end = new Date().getTime() / 1000;
+    //console.log(this.end - this.start);
+    if ( this._animated ) {
+      clearTimeout( this._clearBgBufferTimer );
+      this._clearBgBufferTimer = setTimeout( L.bind( this._clearBgBuffer, this ), 500 );
+    }
   },
 
   _d3Callback: function( tile, tilePoint ) {

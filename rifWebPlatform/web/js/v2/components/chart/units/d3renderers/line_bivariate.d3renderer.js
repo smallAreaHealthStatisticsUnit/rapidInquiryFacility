@@ -7,14 +7,14 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
   var id = opt.element,
     margin = opt.margin,
     width = opt.dimensions.width(),
-    xWidth = width - margin.left - margin.right - 4,  
+    xWidth = width - margin.left - margin.right - 4,
     height = opt.dimensions.height() - margin.top - margin.bottom,
     idField = $.trim( opt.id_field ),
     orderField = $.trim( opt.x_field ),
     lineField = $.trim( opt.risk_field ),
     lowField = $.trim( opt.cl_field ),
     highField = $.trim( opt.cu_field ),
-    dataLength = data.length;  
+    dataLength = data.length;
 
 
   var line = d3.svg.line()
@@ -70,7 +70,7 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
   var svg = d3.select( "#" + id ).insert( "svg", "div" )
     .attr( "width", width )
     .attr( "height", height )
-    .attr( "id" , "lineBivariatesvg" );
+    .attr( "id", "lineBivariatesvg" );
 
   svg.append( "defs" ).append( "clipPath" )
     .attr( "id", "clipchart" )
@@ -85,7 +85,7 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
 
   //Used to have a reference to the actual GIDS
   var lookUp = {},
-      lookUpOrder = {};
+    lookUpOrder = {};
 
   data.forEach( function( d ) {
     d[ idField ] = +d[ idField ];
@@ -93,8 +93,8 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
     d[ lineField ] = +d[ lineField ];
     d[ lowField ] = +d[ lowField ];
     d[ highField ] = +d[ highField ];
-    lookUp[ d[idField  ] ] = [d[ orderField ], d[ lineField ], d[ lowField ], d[ highField ]];
-    lookUpOrder[ d[orderField  ] ] = d[ idField ];
+    lookUp[ d[ idField ] ] = [ d[ orderField ], d[ lineField ], d[ lowField ], d[ highField ] ];
+    lookUpOrder[ d[ orderField ] ] = d[ idField ];
   } );
 
   var xDomain = d3.extent( data, function( d ) {
@@ -111,7 +111,7 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
   } ) ] );
 
   y2.domain( [ d3.min( data, function( d ) {
-    return d[ lowField ]  - 0.2;
+    return d[ lowField ] - 0.2;
   } ), d3.max( data, function( d ) {
     return d[ highField ] + 0.2;
   } ) ] );
@@ -131,89 +131,89 @@ RIF.chart.line_bivariate.d3renderer = ( function( opt, data, gidSelected ) {
   focus.append( "g" )
     .attr( "class", "y axis" )
     .call( yAxis )
-    
+
   svg.append( "text" )
     .attr( "transform", "translate(36,20)" )
-    .attr("id", "labelLineBivariate")
+    .attr( "id", "labelLineBivariate" )
     .text( lineField );
-  
+
   var currentFigures = svg.append( "text" )
     .attr( "transform", "translate(36,40)" )
-    .attr("id", "currentFiguresLineBivariate")
-    .text( "" );    
-  
+    .attr( "id", "currentFiguresLineBivariate" )
+    .text( "" );
+
   focus.append( "path" )
     .datum( data )
     .attr( "class", "line" )
-    .attr ( "id" , "lineRisk" )
+    .attr( "id", "lineRisk" )
     .attr( "clip-path", "url(#clipchart)" )
     .attr( "d", line );
-    
-    
+
+
   /* Highlighter */
   var highlighter = focus.append( "line" )
-      .attr( "x1", 0 )
-      .attr( "y1", 0 )
-      .attr( "x2", 0 )
-      .attr( "y2", height )
-      .attr( "height", height )
-      .attr( "class", "bivariateHiglighter" );    
+    .attr( "x1", 0 )
+    .attr( "y1", 0 )
+    .attr( "x2", 0 )
+    .attr( "y2", height )
+    .attr( "height", height )
+    .attr( "class", "bivariateHiglighter" );
 
   var pointerLighter = focus.append( "circle" )
-      .attr("r", 3)
-      .attr( "class", "bivariateHiglighter" );  
-    
-  this.gid = gidSelected || null;    
-  
-  var setGid = function( gid ){
-     this.gid = gid;  
+    .attr( "r", 3 )
+    .attr( "class", "bivariateHiglighter" );
+
+  this.gid = gidSelected || null;
+
+  var setGid = function( gid ) {
+    this.gid = gid;
   };
-    
+
   var updateLine = function() {
     var gid = this.gid;
-    if( gid !== null){  
-        highlighter.attr( "transform", "translate(" + x( lookUp[gid][0] ) + "," + 0 + ")" );
-        pointerLighter.attr( "transform", "translate(" + x( lookUp[gid][0] ) + "," + y( lookUp[gid][1] ) + ")" );
+    if ( gid !== null ) {
+      highlighter.attr( "transform", "translate(" + x( lookUp[ gid ][ 0 ] ) + "," + 0 + ")" );
+      pointerLighter.attr( "transform", "translate(" + x( lookUp[ gid ][ 0 ] ) + "," + y( lookUp[ gid ][ 1 ] ) + ")" );
     };
-   currentFigures
-      .text( (lookUp[gid][1]).toFixed(3) + " ( " + lookUp[gid][2] + " - " + lookUp[gid][3] +  " )" );
-      
+    currentFigures
+      .text( ( lookUp[ gid ][ 1 ] ).toFixed( 3 ) + " ( " + lookUp[ gid ][ 2 ] + " - " + lookUp[ gid ][ 3 ] + " )" );
+
   };
-    
- 
-    
+
+
+
   return function brushed( updateInfo ) {
     /* updateInfo can be either { xDomain, yDomain } on BRUSH 
-     * OR 
+     * OR
      * { gid, resSet } on CLICK
      *  When click need to lookup gid to xOrder
      */
-      
+
     //Arrow keys from area chart event
-    if( typeof updateInfo === 'function'){// updateInfo = incrementDecrement function()
-      var order = lookUp[gid][0] || 0,    
-          newOrder = updateInfo.call(null, lookUp[gid][0]);    
-      if (newOrder>=0 && newOrder < dataLength ){    
-          setGid( lookUpOrder[ newOrder ] );     
-          updateLine() ;
+    if ( typeof updateInfo === 'function' ) { // updateInfo = incrementDecrement function()
+      var order = lookUp[ gid ][ 0 ] || 0,
+        newOrder = updateInfo.call( null, lookUp[ gid ][ 0 ] );
+      if ( newOrder >= 0 && newOrder < dataLength ) {
+        setGid( lookUpOrder[ newOrder ] );
+        updateLine();
       };
       return;
     };
-      
+
     // Click on area charts event and Map clicks
-    if(  typeof updateInfo.gid !== 'undefined' ){ 
-      setGid( updateInfo.gid );  
-      updateLine() ; 
+    if ( typeof updateInfo.gid !== 'undefined' ) {
+      setGid( updateInfo.gid );
+      updateLine();
       return;
     };
-    
+
     //Zoom, on Brush event
     x.domain( updateInfo.xDomain );
     y.domain( updateInfo.yDomain );
     focus.select( ".area" ).attr( "d", area );
-    focus.select( "#lineRisk" ).attr( "d", line );  
+    focus.select( "#lineRisk" ).attr( "d", line );
     focus.select( ".x.axis" ).call( xAxis );
-    focus.select( ".y.axis" ).call( yAxis );  
-    updateLine() ; 
+    focus.select( ".y.axis" ).call( yAxis );
+    updateLine();
   }
 } );

@@ -38,7 +38,7 @@
 
 
     requests = {
-      
+
       getGeneralRequest: function( url, myCallback ) {
         xhr( url, myCallback );
         return {};
@@ -240,7 +240,7 @@
       },
 
       getInvestigations: function( myCallback, params ) {
-        var msg = "Retrieving investigations for study:" + params[0],
+        var msg = "Retrieving investigations for study:" + params[ 0 ],
           args = '?studyID=' + params[ 0 ];
 
         xhr( 'getInvestigations.php' + args, myCallback, msg );
@@ -272,7 +272,7 @@
       },
 
       getMinMaxResultSet: function( myCallback, params ) {
-        var msg = "Retrieving Min and Max: " + params[0],
+        var msg = "Retrieving Min and Max: " + params[ 0 ],
           args = '?resultSet=' + params[ 0 ] +
           '&studyID=' + params[ 1 ] + '&investigationID=' + params[ 2 ];
 
@@ -285,7 +285,7 @@
       },
 
       getRiskResults: function( myCallback, params ) {
-        var msg = "Retrieving risk results: " + params[0],
+        var msg = "Retrieving risk results: " + params[ 0 ],
           /*result set name*/
           args = '?resultSet=' + params[ 0 ] +
           '&studyID=' + params[ 1 ] + '&investigationID=' + params[ 2 ];
@@ -297,43 +297,42 @@
 
         xhr( 'getRiskResults.php' + args, myCallback, msg, "text/csv" );
       },
-	  
-	  getYearsAvailableForStudy: function( myCallback, params ){
-	    var msg = "Retrieving years available for study: " + params[0],
+
+      getYearsAvailableForStudy: function( myCallback, params ) {
+        var msg = "Retrieving years available for study: " + params[ 0 ],
           args = '?studyID=' + params[ 0 ] + '&investigationID=' + params[ 1 ];
 
         xhr( 'getYearsAvailableForStudy.php' + args, myCallback, msg );
-	  
-	  },
-	  
-	  getGenderAvailableForStudy: function( myCallback, params ){
-	    var msg = "Retrieving gender available for study: " + params[0],
+
+      },
+
+      getGenderAvailableForStudy: function( myCallback, params ) {
+        var msg = "Retrieving gender available for study: " + params[ 0 ],
           args = '?studyID=' + params[ 0 ] + '&investigationID=' + params[ 1 ];
 
         xhr( 'getGenderAvailableForStudy.php' + args, myCallback, msg );
-	  
-	  },
-        
-      getInvestigationInfo: function ( myCallback, params ){
-	    var msg = "Retrieving Investigation info for study: " + params[0] + " investigation:" + params[1],
+
+      },
+
+      getInvestigationInfo: function( myCallback, params ) {
+        var msg = "Retrieving Investigation info for study: " + params[ 0 ] + " investigation:" + params[ 1 ],
           args = '?studyID=' + params[ 0 ] + '&investigationID=' + params[ 1 ];
 
         xhr( 'getInvestigationInfo.php' + args, myCallback, msg );
-	  
-	  },
-        
-      getResultFigures: function ( myCallback, params ){
-	    var msg = "Retrieving info  for area: " + params[2] ,
-          args = '?studyID=' + params[ 0 ] + '&investigationID=' + params[ 1 ]
-                  + '&gid=' + params[ 2 ]+ '&gender=' + params[ 3 ] + '&year=' + params[ 4 ];
+
+      },
+
+      getResultFigures: function( myCallback, params ) {
+        var msg = "Retrieving info  for area: " + params[ 2 ],
+          args = '?studyID=' + params[ 0 ] + '&investigationID=' + params[ 1 ] + '&gid=' + params[ 2 ] + '&gender=' + params[ 3 ] + '&year=' + params[ 4 ];
 
         xhr( 'getResultFigures.php' + args, myCallback, msg );
-	  
-	  }    
+
+      }
 
     };
 
-	
+
   RIF.extend( requests, RIF );
 
 }() );
