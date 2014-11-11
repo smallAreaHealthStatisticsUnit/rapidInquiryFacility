@@ -37,6 +37,14 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
       d3.event.preventDefault();
       moveLineByOne( increment );
       facade.areaChartKeyDown( increment );
+    } else if ( code == 13 ) { //enter
+      d3.event.preventDefault();
+      var gid = getCurrentGID();
+      if ( !clickSelection ) {
+        iterateToGid( gid );
+      };
+
+      facade.enterKeyDown.call( null, [ gid ] ); // NEED to pass dataSets[localName]
     };
 
   };
@@ -47,6 +55,13 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
 
   var decrement = function( val ) {
     return --val;
+  };
+
+  var getCurrentGID = function() {
+    for ( var set in dataSets ) {
+      return dataSets[ set ][ xOrders[ set ] ][ 'gid' ];
+    }
+    return 0;
   };
 
   var moveLineByOne = function( augment ) {
@@ -128,7 +143,6 @@ RIF.chart.multipleAreaCharts.d3renderer = ( function( settings, rSet, max, facad
 
     if ( typeof options.iterateToGid !== 'undefined' ) {
       iterateToGid( options.iterateToGid );
-      console.log( 'iterate' );
       return;
     };
 

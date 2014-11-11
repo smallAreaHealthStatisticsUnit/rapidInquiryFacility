@@ -61,6 +61,11 @@ RIF.map[ 'map-facade-diseaseMapping' ] = ( function( _p ) {
       _p.layer.setTransparency( val );
     },
 
+    selectFromEnterKeyDown: function( gid ) {
+      _p.layer.slctNoPropagation( gid );
+    },
+
+
     changeYear: function() {
 
     },

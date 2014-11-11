@@ -53,7 +53,7 @@ RIF.study = ( function( type ) {
                    gid, this.getCurrentGender(),
                    this.getCurrentYear ],
           callback = function() {
-            console.log( this );
+
             $( '#areaLevel span' ).text( this[ 'code' ] );
             $( '#totDenom span' ).text( this[ 'pop' ] );
             $( '#observed span' ).text( this[ 'observed' ] );

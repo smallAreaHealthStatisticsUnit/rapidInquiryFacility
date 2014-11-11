@@ -106,6 +106,16 @@ RIF.study[ 'study-facade-diseaseMapping' ] = ( function() {
       this.fire( 'slctLineBivariateFromAreaChart', args );
     },
 
+    enterClicked: function( args ) {
+      var gidClicked = args.gid,
+        selection = this.getSelection();
+
+      selection.push( gidClicked );
+      this.setSelection( selection );
+      console.log( this.getSelection() );
+      this.fire( 'selectFromEnterKeyDown', "g" + gidClicked );
+    },
+
     areaChartSelectionChanged: function( resSetsChoice ) {
       if ( RIF.arraysEqual( resSetsChoice, this.getResultSetsSelected() ) ) {
         return;
