@@ -152,7 +152,7 @@ BEGIN
 	IF c1a_rec.tablename IS NULL THEN
 		PERFORM rif40_log_pkg.rif40_error(71001, 'rif40_table_diff', '[%] Cannot find table/view 1: %', 
 			test_tag::VARCHAR,
-			c1_rec.tablename::VARCHAR);
+			c1a_rec.tablename::VARCHAR);
 	ELSIF c1a_rec.can_select = FALSE THEN
 		PERFORM rif40_log_pkg.rif40_error(71002, 'rif40_table_diff', '[%] Cannot access table/view 1: %.%', 
 			test_tag::VARCHAR,
@@ -185,7 +185,7 @@ BEGIN
 			IF c2_rec.table_name IS NULL THEN
 				PERFORM rif40_log_pkg.rif40_error(71005, 'rif40_table_diff', '[%] Cannot find table/view 1 column: %.%', 
 					test_tag::VARCHAR,
-					c1a_rec.table_name::VARCHAR,
+					table_1::VARCHAR,
 					l_column::VARCHAR);
 			ELSIF c2_rec.can_select = FALSE THEN
 				PERFORM rif40_log_pkg.rif40_error(71006, 'rif40_table_diff', '[%] Cannot access table/view 1 column: %.%', 
@@ -209,7 +209,7 @@ BEGIN
 			IF c2_rec.table_name IS NULL THEN
 				PERFORM rif40_log_pkg.rif40_error(71007, 'rif40_table_diff', '[%] Cannot find table/view 2 column: %.%', 
 					test_tag::VARCHAR,
-					c1b_rec.table_name::VARCHAR,
+					table_2::VARCHAR,
 					l_column::VARCHAR);
 			ELSIF c2_rec.can_select = FALSE THEN
 				PERFORM rif40_log_pkg.rif40_error(71008, 'rif40_table_diff', '[%] Cannot access table/view 2 column: %.%', 

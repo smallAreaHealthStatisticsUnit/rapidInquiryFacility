@@ -56,12 +56,15 @@
 #
 # Postgres MD5 password format is: 
 #
-# 'md5'||md5(username||password); e.g. to set the rif40 password to: Imperial1234, use psql:
+# 'md5'||md5('password'||'username'); e.g. to set the rif40 password to: Imperial1234, use psql:
 #
-# SELECT md5||md5('rif40'||'Imperial1234') AS password;
+# SELECT 'md5'||md5('Imperial1234'||'rif40') AS password;
+# SELECT 'md5'||md5('Imperial1234'||'postgres') AS password;
 #
-#ENCRYPTED_POSTGRES_PASSWORD=md57d50cade66c8b224d1fbd91805cbf442
-#ENCRYPTED_RIF40_PASSWORD=md5dba9980b96510989e720a66fc77d92c8
+# The rif user password is always set to the username
+#
+#ENCRYPTED_POSTGRES_PASSWORD=md5913e79312c717f83cfc1626754233824
+#ENCRYPTED_RIF40_PASSWORD=md5a210d9711fa5ffb4f170c60676c8a63e
 #
 # Only set SAHSULAND_TABLESPACE_DIR if postgres has access to the directory!
 #

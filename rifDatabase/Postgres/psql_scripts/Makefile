@@ -66,12 +66,12 @@ DEFAULT_CREATE_SAHSULAND_ONLY=N
 #
 # Postgres MD5 password format is: 
 #
-# 'md5'||md5(username||password); e.g. to set the rif40 password to: Imperial1234, use psql:
+# 'md5'||md5('password'||'username'); e.g. to set the rif40 password to: Imperial1234, use psql:
 #
-# SELECT 'md5'||md5('rif40'||'Imperial1234') AS encrypted_password;
-#          encrypted_password
-# -------------------------------------
-# md5aee237f1cfd00b0553d180fbe6c9c126
+# SELECT 'md5'||md5('Imperial1234'||'rif40') AS password;
+# SELECT 'md5'||md5('Imperial1234'||'postgres') AS password;
+#
+# The rif user password is always set to the username
 #
 DEFAULT_ENCRYPTED_POSTGRES_PASSWORD=md57d50cade66c8b224d1fbd91805cbf442
 DEFAULT_ENCRYPTED_RIF40_PASSWORD=md5dba9980b96510989e720a66fc77d92c8
@@ -176,14 +176,15 @@ else
 	HELP=grep "\#-" Makefile
 	COPY=cp
 	TESTUSER=$(shell id -un | tr ‘[:upper:]’ ‘[:lower:]’)
+    POSTGRES_ETC_DIR=$(shell pg_config --sysconfdir)
     ifeq ($(UNAME_S),Linux)
 		OS=$(UNAME_S)
-		POSTGRES_ETC_DIR=/var/opt/PostgreSQL/9.3/etc
+#		POSTGRES_ETC_DIR=/var/opt/PostgreSQL/9.3/etc
 		PGPASS=./pgpass.sh
 	else
 		ifeq ($(UNAME_S),Darwin)	
 			OS=$(UNAME_S)
-			POSTGRES_ETC_DIR=/Library/PostgreSQL/9.3/etc
+#			POSTGRES_ETC_DIR=/Library/PostgreSQL/9.3/etc/posgresql
 			PGPASS=./pgpass.sh
 		else
 #

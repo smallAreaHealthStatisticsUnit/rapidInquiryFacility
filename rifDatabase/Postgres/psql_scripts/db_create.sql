@@ -355,8 +355,8 @@ BEGIN
 		RAISE NOTICE 'db_create.sql() changing postgres user password';
 		sql_stmt:='ALTER USER postgres ENCRYPTED PASSWORD  '''||c2_rec.encrypted_postgres_password||'''';
 		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
--- BROKEN
---		EXECUTE sql_stmt;
+-- Now fixed
+		EXECUTE sql_stmt;
 	END IF;
 --
 	FOREACH x IN ARRAY userlist LOOP
@@ -374,8 +374,8 @@ BEGIN
 				sql_stmt:='ALTER USER '||c1_rec.usename||' ENCRYPTED PASSWORD  '''||
 					c2_rec.encrypted_rif40_password||'''';
 				RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
--- BROKEN
---				EXECUTE sql_stmt;
+-- Now fixed
+				EXECUTE sql_stmt;
 			END IF;
 		ELSE
 	    	sql_stmt:='CREATE ROLE '||x||

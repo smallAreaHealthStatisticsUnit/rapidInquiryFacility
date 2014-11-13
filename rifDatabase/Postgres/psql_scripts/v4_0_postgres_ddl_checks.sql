@@ -85,6 +85,7 @@ $$;
 
 DO LANGUAGE plpgsql $$
 BEGIN
+        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
         PERFORM rif40_sql_pkg.rif40_ddl_checks();
 END;
 $$;
