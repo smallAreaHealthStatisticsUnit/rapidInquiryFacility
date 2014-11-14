@@ -141,6 +141,7 @@ TRUNCATE TABLE sahsuland_geography_orig;
 -- For vi's benefit
 CREATE UNIQUE INDEX sahsuland_geography_orig_pk ON sahsuland_geography_orig(level4);
 
+--\set VERBOSITY verbose
 DO LANGUAGE plpgsql $$
 DECLARE
 	c4sm CURSOR FOR 

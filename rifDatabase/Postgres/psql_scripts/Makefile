@@ -297,7 +297,7 @@ verbose_test:
 clean:
 	$(MAKE) -C alter_scripts clean
 	$(MAKE) -C test_scripts clean
-	$(DELETE) db_setup.rpt db_create.rpt v4_0_create_sahsuland.rpt v4_0_vacuum_analyse.rpt
+	$(DELETE) db_setup.rpt db_create.rpt v4_0_create_sahsuland.rpt v4_0_vacuum_analyse.rpt ../install/sahsuland_dev.dump ../install/sahsuland.sql
 #- devclean: Remove logs so alter scripts in development can be r-run 
 #-           Not normally needed as they abort.
 devclean:
@@ -311,6 +311,7 @@ devclean:
 #
 #- db_setup: Create sahusland, sahsuland_dev
 db_setup: pgpass.conf psqlrc
+	$(MAKE) clean
 	$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) sahsuland_dev 
 	$(MAKE) sahsuland_dev_dump
