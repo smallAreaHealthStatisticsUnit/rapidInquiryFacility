@@ -368,6 +368,9 @@ DECLARE
 		SELECT extname, extversion /* Required: postgis plpgsql; optional: adminpack, plperl, oracle_fdw, postgis_topology, dblink */
 		  FROM pg_extension
 		 WHERE extname = l_extension;
+	c11 CURSOR FOR 
+		SELECT *
+		  FROM pg_user WHERE usename = CURRENT_USER;
 --
 	c1_rec RECORD;
 	c2_rec RECORD;
@@ -379,6 +382,7 @@ DECLARE
 	c8_rec RECORD;
 	c9_rec RECORD;
 	c10_rec RECORD;
+	c11_rec RECORD;
 --
 	rif40_num_denom BOOLEAN:=FALSE;	
 	rif40_num_denom_errors BOOLEAN:=FALSE;	
@@ -406,6 +410,25 @@ BEGIN
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'disabled - user % is not or has rif_user or rif_manager role', USER::VARCHAR);
 		RETURN;
 	END IF;
+--
+-- User is a rif user; and MUST be non privileged; streaming replication for backup is allowed
+--
+	OPEN c11;
+	FETCH c11 INTO c11_rec;
+	CLOSE c11;
+	IF c11_rec.usesuper IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_startup', 'Cannot detect if user is superuser');
+	ELSIF c11_rec.usesuper THEN
+		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_startup', 'User % is superuser', 
+			c11_rec.usename::VARCHAR);
+	ELSIF c11_rec.usecreatedb THEN
+		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_startup', 'User % has database creation privilege', 
+			c11_rec.usename::VARCHAR);
+	ELSIF c11_rec.usecatupd THEN
+		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_startup', 'User % has update system catalog privilege', 
+			c11_rec.usename::VARCHAR);
+	END IF;
+	
 --
 -- Setup logging
 --
