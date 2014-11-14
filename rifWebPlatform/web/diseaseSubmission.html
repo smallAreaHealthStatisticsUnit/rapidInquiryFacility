@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--<meta charset="utf-8">-->
+    <meta name="description" content="RIF, a software for Environmental Epidemiology">
+    <meta name="keywords" content="Disease mapping,Point source analysis, Risk, Health data">
+
+    <!--CSS Stylesheets-->
+    <link rel="stylesheet" href="css/jquery/jquery-ui-1.10.3.custom.min.css" />
+    <link rel="stylesheet" href="css/leaflet/leaflet.css" />
+    <link href="css/diseaseSubmission.css" rel="stylesheet" media="screen" />
+
+
+    <!-- libraries -->
+    <script type="text/javascript" src="js/libs/jquery-2.0.3.js"></script>
+    <script type="text/javascript" src="js/libs/jquery-ui-1.10.4.custom.min.js"></script>
+	<script type="text/javascript" src="js/libs/slickgrid/lib/jquery.event.drag-2.2.js"></script>
+    <script type="text/javascript" src="js/libs/leaflet-0.7.3.js"></script>
+    <script src="js/libs/d3.v3.min.js" charset="utf-8"></script>
+	<!--<script src="js/libs/sstatistics.js" charset="utf-8"></script>-->
+	<script src="js/libs/topojson.v1.min.js" charset="utf-8"></script>
+	
+    
+    <!-- RIF4 -->
+	<!-- The order on which the RIf files are downloaded must be maintained -->
+	<script type="text/javascript" src="js/v2/RIF.js"></script>
+	<script type="text/javascript" src="js/v2/abstractions/study/study-diseaseMapping.js"></script>
+    <script type="text/javascript" src="js/v2/abstractions/study/study-facade-diseaseMapping.js"></script>
+     <!-- utils -->
+    <script type="text/javascript" src="js/v2/utils/utils.js"></script>
+	<script type="text/javascript" src="js/v2/utils/gui_events/resizable-diseaseMapping.js"></script>
+    <script type="text/javascript" src="js/v2/utils/publisher.js"></script>
+    <script type="text/javascript" src="js/v2/utils/request.js"></script>
+	<script type="text/javascript" src="js/v2/utils/colorBrewer.js"></script>
+    <script type="text/javascript" src="js/v2/utils/resultNames.js"></script>
+    <!-- modules -->
+    <script type="text/javascript" src="js/v2/modules/diseaseMapping.js"></script>
+    
+	<!-- components -->
+    <!-- map -->
+    <script type="text/javascript" src="js/v2/components/map/map.js"></script>
+	<script type="text/javascript" src="js/v2/components/map/facades/map-facade-diseaseMapping.js"></script>
+	<script type="text/javascript" src="js/v2/components/map/events/map-event-diseaseMapping.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/units/layer.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/units/layer.settings.js"></script>
+	<script type="text/javascript" src="js/v2/components/map/units/layer.hover.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/units/style/style.js"></script>
+	<script type="text/javascript" src="js/v2/components/map/units/style/style.tilesvg.js"></script> 
+	<script type="text/javascript" src="js/v2/components/map/units/style/style.tilecanvas.js"></script> 
+	<script type="text/javascript" src="js/v2/components/map/units/style/style.scales.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/units/layerTypes/tilesvg.js"></script>
+	<script type="text/javascript" src="js/v2/components/map/units/layerTypes/tilecanvas.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/units/layerTypes/plugins/leaflet_d3_tilegeojson.js"></script>
+	<script type="text/javascript" src="js/v2/components/map/units/layerTypes/plugins/tileCanvas_topojson.js"></script>
+    <!-- menu -->
+    <script type="text/javascript" src="js/v2/components/menu/menu-disease.js"></script>
+	<script type="text/javascript" src="js/v2/components/menu/facades/menu-facade-diseaseMapping.js"></script>
+	<script type="text/javascript" src="js/v2/components/menu/events/menu-event-diseaseMapping.js"></script>
+	 <script type="text/javascript" src="js/v2/components/menu/menu.utils.js"></script>
+	<script type="text/javascript" src="js/v2/components/menu/units/diseaseStudyLevel.js"></script>
+	<script type="text/javascript" src="js/v2/components/menu/units/choropleth.js"></script>
+	<script type="text/javascript" src="js/v2/components/menu/units/settings-disease.js"></script>
+	<script type="text/javascript" src="js/v2/components/menu/units/baseMap.js"></script>
+	<script type="text/javascript" src="js/v2/components/menu/units/transparency.js"></script>
+	
+    <!-- chart -->
+    <script type="text/javascript" src="js/v2/components/chart/chart.js"></script>
+	<script type="text/javascript" src="js/v2/components/chart/facades/chart-facade-diseaseMapping.js"></script>
+	<script type="text/javascript" src="js/v2/components/chart/units/line_bivariate.js"></script>
+	<script type="text/javascript" src="js/v2/components/chart/units/d3renderers/line_bivariate.d3renderer.js"></script>
+	<script type="text/javascript" src="js/v2/components/chart/units/multipleAreaCharts.js"></script>
+	<script type="text/javascript" src="js/v2/components/chart/units/d3renderers/multipleAreaCharts.d3renderer.js"></script>
+
+    <!-- abstraction -->
+    <script type="text/javascript" src="js/v2/abstractions/export_data.js"></script>
+
+
+    <title>The Rapid Inquiry Facility, RIF 4.0</title>
+
+</head>
+
+<body>
+    <div id="rifwrap">
+        <div id="navigation">
+            <div class='nav'>
+                <a href='#' >Manager</a>
+                <a href='#' class='active'>Disease Mapping Setup</a>
+                <a href='#' >Disease Mapping Viewer</a>
+                <a href='#'>Risk Analysis Setup</a>
+            </div>
+        </div>
+        
+        <div id="buttons">
+            <div class='geoDrops'>
+				<div>
+                    <div id='studyName' class='styleUnderline'>
+                         <input type="text"  placeholder="Study name">
+                    </div>
+                </div>
+                <div>
+                    <div id='healthTheme' class='styleUnderline'>
+                         <input type="text"  placeholder="Health theme">
+                    </div>
+                </div>
+                <div>
+                    <div id='numerator' class='styleUnderline'>
+                         <input type="text"  placeholder="Numerator">
+                    </div>
+                </div>
+                <div>
+                    <div id='denominator' class='styleUnderline'>
+                         <input type="text"  placeholder="Denominator">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div id="content">
+            <!-- Study area block -->
+            <div id='studyArea' class='blocks'>
+                <div class='headerBlock'>
+                    <h1>Study area</h1>
+                </div>
+                <div class='summary bodyBlock'>
+                    <h2 class='areaSummaryLabel' > OA 2001  </h2>
+                    <div>
+                        <ul>
+                            <li> 00FAG </li>
+                            <li> 00FXV </li>
+                        </ul>
+                    </div>    
+                </div>    
+            </div>
+            
+             <!-- Compaison area block -->
+            <div id='comparisonArea' class='blocks'>
+                <div class='headerBlock'>
+                    <h1>Comparison area</h1>
+                </div>
+                <div class='summary bodyBlock'>
+                    <h2 class='areaSummaryLabel' > OA 2001  </h2>
+                    <div>
+                        <ul>
+                            <li> 00FAG </li>
+                            <li> 00FXV </li>
+                        </ul>
+                    </div>    
+                </div>  
+                
+            </div>
+            
+             <!-- Health condition block -->
+            <div id='healthConditions' class='blocks'>
+                <div class='headerBlock'>
+                    <h1>Health conditions</h1>
+                </div>
+                <div class='summary bodyBlock'>
+                    <h2 class='areaSummaryLabel' >   </h2>
+                    <div>
+                        <ul>
+                            <li> 00FAG </li>
+                            <li> 00FXV </li>
+                        </ul>
+                    </div>    
+                </div> 
+            </div>
+            
+             <!-- Investigation parameter block -->
+            <div id='invParameters' class='blocks'>
+                <div class='headerBlock'>
+                    <h1>Investigation parameters </h1>
+                </div>
+                <div class='summary bodyBlock'>
+                    <h2 class='areaSummaryLabel' > OA 2001  </h2>
+                    <div>
+                        <ul>
+                            <li> 00FAG </li>
+                            <li> 00FXV </li>
+                        </ul>
+                    </div>    
+                </div> 
+            </div>
+             
+            <div id='run'>
+                <div id='runButton'>
+                    <h3>Run</h3>
+                </div>
+            </div>    
+            
+        </div>
+    </div>
+	
+	<!--ToolTip-->
+	<div id='tooltip'> 
+		<div id="geoname"></div>
+	</div>
+    
+    <!------------------->
+    <!---Modal Dialogs--->
+    <!------------------->
+    
+    <!---Study area--->
+	<div class="overlay" id="settings">
+		<div class="msettings">
+			<div class="msettings-ct">
+				<div class="msettings-header">
+					<h2>Study area</h2>
+					<a class="modal_close" href="#"></a>
+				</div>
+                <div></div>
+			</div>
+		</div>
+	</div>
+    
+    <!---Comparison area--->
+    <div class="overlay" id="settings">
+		<div class="msettings">
+			<div class="msettings-ct">
+				<div class="msettings-header">
+					<h2>Comparison area</h2>
+					<a class="modal_close" href="#"></a>
+				</div>
+                <div></div>
+			</div>
+		</div>
+	</div>
+	
+    <!---Health conditions--->
+    <div class="overlay" id="settings">
+		<div class="msettings">
+			<div class="msettings-ct">
+				<div class="msettings-header">
+					<h2>Health conditions</h2>
+					<a class="modal_close" href="#"></a>
+				</div>
+                <div></div>
+			</div>
+		</div>
+	</div>
+    
+    
+    <!---Investigation parameters--->
+    <div class="overlay" id="settings">
+		<div class="msettings">
+			<div class="msettings-ct">
+				<div class="msettings-header">
+					<h2>Investigation parameters</h2>
+					<a class="modal_close" href="#"></a>
+				</div>
+                <div></div>
+			</div>
+		</div>
+	</div>
+	
+
+    <script>
+    (function() {
+        //RIF.diseaseSubmission();
+    })();
+    </script>
+</body>
+</html>
