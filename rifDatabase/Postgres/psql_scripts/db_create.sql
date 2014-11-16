@@ -332,13 +332,17 @@ DECLARE
 		SELECT * FROM pg_roles WHERE rolname = l_name;
 	c4 CURSOR(l_name VARCHAR) FOR
 		SELECT * FROM pg_user WHERE usename = l_name;
+	c11 CURSOR(l_name VARCHAR) FOR 
+		SELECT *
+		  FROM pg_user WHERE usename = l_name;
 --
 	c1_rec RECORD;
 	c2_rec RECORD;
 	c3_rec RECORD;
 	c4_rec RECORD;
+	c11_rec RECORD;
 --
-	userlist VARCHAR[]:=ARRAY['rif40', 'gis', 'pop'];
+	userlist VARCHAR[]:=ARRAY['rif40', 'gis', 'pop', 'notarifuser'];
 	rolelist VARCHAR[]:=ARRAY['rif_user', 'rif_manager', 'rif_no_suppression', 'rifupg34', 'rif_student'];
 	x VARCHAR;
 	sql_stmt VARCHAR;
@@ -364,23 +368,48 @@ BEGIN
 		FETCH c1 INTO c1_rec;
 		CLOSE c1;
 		IF c1_rec.usename IS NOT NULL THEN
+--
+-- User is a rif user; and MUST be non privileged; streaming replication for backup is allowed
+--
+			OPEN c11(c1_rec.usename);
+			FETCH c11 INTO c11_rec;
+			CLOSE c11;
+			IF c11_rec.usesuper IS NULL THEN
+				RAISE EXCEPTION 'db_create.sql() C209xx: Cannot detect if user % is superuser', 
+					c1_rec.usename::VARCHAR;
+			ELSIF c11_rec.usesuper THEN
+				RAISE EXCEPTION 'db_create.sql() C209xx: User % is superuser', 
+					c11_rec.usename::VARCHAR;
+			ELSIF c11_rec.usecreatedb THEN
+				RAISE EXCEPTION 'db_create.sql() C209xx: User % has database creation privilege', 
+					c11_rec.usename::VARCHAR;
+			ELSIF c11_rec.usecatupd THEN
+				RAISE EXCEPTION 'db_create.sql() C209xx: User % has update system catalog privilege', 
+					c11_rec.usename::VARCHAR;
+			END IF;
+--
 			OPEN c4(x);
 			FETCH c4 INTO c4_rec;
 			CLOSE c4;
 			IF c4_rec.passwd IS NULL THEN
 				RAISE INFO 'db_create.sql() RIF schema user % exists, no password', c1_rec.usename::VARCHAR;
-			ELSE
+			ELSIF c1_rec.usename = 'rif40' THEN
 				RAISE INFO 'db_create.sql() RIF schema user % exists; changing password', c1_rec.usename::VARCHAR;
 				sql_stmt:='ALTER USER '||c1_rec.usename||' ENCRYPTED PASSWORD  '''||
 					c2_rec.encrypted_rif40_password||'''';
 				RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 -- Now fixed
 				EXECUTE sql_stmt;
+			ELSE
+				RAISE INFO 'db_create.sql() RIF schema user % exists; changing password', c1_rec.usename::VARCHAR;
+				sql_stmt:='ALTER USER '||c1_rec.usename||' PASSWORD  '''||c1_rec.usename||'''';
+				RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+				EXECUTE sql_stmt;
 			END IF;
-		ELSE
+		ELSIF x = 'rif40' THEN
 	    	sql_stmt:='CREATE ROLE '||x||
-				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION ENCRYPTED PASSWORD '''||
-					c2_rec.encrypted_rif40_password||'''';
+				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION ENCRYPTED PASSWORD  '''||
+				c1_rec.usename||'''';
 			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 			EXECUTE sql_stmt;
 		END IF;
@@ -392,6 +421,26 @@ BEGIN
 		CLOSE c3;
 		IF c3_rec.rolname IS NOT NULL THEN
 			RAISE INFO 'db_create.sql() RIF schema role % exists', c3_rec.rolname::VARCHAR;
+--
+-- User is a rif user; and MUST be non privileged; streaming replication for backup is allowed
+--
+			OPEN c11(c3_rec.rolname);
+			FETCH c11 INTO c11_rec;
+			CLOSE c11;
+			IF c11_rec.usesuper IS NULL THEN
+				RAISE INFO 'db_create.sql() Role % is not a superuser',
+					c3_rec.rolname::VARCHAR;
+			ELSIF c11_rec.usesuper THEN
+				RAISE EXCEPTION 'db_create.sql() C209xy: User % is superuser', 
+					c11_rec.usename::VARCHAR;
+			ELSIF c11_rec.usecreatedb THEN
+				RAISE EXCEPTION 'db_create.sql() C209xx: User % has database creation privilege', 
+					c11_rec.usename::VARCHAR;
+			ELSIF c11_rec.usecatupd THEN
+				RAISE EXCEPTION 'db_create.sql() C209xx: User % has update system catalog privilege', 
+					c11_rec.usename::VARCHAR;
+			END IF;
+--
 		ELSE
 	    		sql_stmt:='CREATE ROLE '||x||
 				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOLOGIN NOREPLICATION';
@@ -489,6 +538,9 @@ END;
 \c postgres :testuser :pghost
 \echo "Try to connect as rif40. This will fail if if the password file is not setup correctly"
 \c postgres rif40 :pghost
+\echo "Try to connect as notarifuser. This will fail if if the password file is not setup correctly"
+\c postgres notarifuser :pghost
+\echo "Try to re-connect as postgres. This will fail if if the password file is not setup correctly"
 -- Re-connect as postgres
 \c postgres postgres :pghost
 
