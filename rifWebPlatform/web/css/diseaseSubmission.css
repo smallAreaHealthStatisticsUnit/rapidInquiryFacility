@@ -23,6 +23,8 @@ article, aside, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section {
 	display: block;
 }
+
+
 body {
 	line-height: 1;
 	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -63,7 +65,7 @@ a:hover{
 		position:absolute;
    }
 	#navigation{
-		height:40px;
+		height: 50px;
 		background-color: #87CEFA;
 
 	}
@@ -73,14 +75,15 @@ a:hover{
         margin-right: 5%;
 	}
 	#navigation .nav a{
-		display:block;
-		float:right;
-		padding:5px 10px;
-		color:white;	
-		margin:10px 4px 0 ;
-		border-radius: 4px 4px 0px 0px;   
-		font-size:13px
+		display: block;
+        float: right;
+        padding: 10px 15px;
+        color: white;
+        margin: 10px 4px 0;
+        border-radius: 4px 4px 0px 0px;
+        font-size: 14px;
 	}
+
 	#navigation .nav a.active{
 		background-color:white;
 		color: #8DB6CD;
@@ -724,7 +727,7 @@ input[type="range"]::-ms-thumb {
   *
   */
 #buttons{
-    height:20%;
+    height: 16%;
  }
 
  #buttons>div {
@@ -734,7 +737,8 @@ input[type="range"]::-ms-thumb {
  }
 
 #buttons .geoDrops{	
-     margin-top:2%;
+     margin-top:1%;
+     position: absolute;
 }
 
 #buttons .geoDrops>div{
@@ -757,8 +761,7 @@ input[type="range"]::-ms-thumb {
   display: block;
   margin: 0;
   width: 100%;
-  font-family: "Open Sans", sans-serif;
-  font-size: 18px;
+  font-size: 28px;
   text-transform: uppercase;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -785,14 +788,44 @@ input[type="range"]::-ms-thumb {
   -moz-transition: border 0.3s;
   -o-transition: border 0.3s;
   transition: border 0.3s;
-  background-color: #F0F8FF;
+  color: #848484;
 }
+
 .styleUnderline input[type="text"]:focus, .style-4 input[type="text"].focus {
   border-bottom: solid 2px #63B8FF;
 }
+
+.styleUnderline .availables {
+    width: 100%;
+    max-height: 250px;
+    height:auto;
+    border: 1px solid #CAE1FF;
+    background: white; 
+    overflow:auto;
+    padding:4px 9px;
+    display: none;
+}
+
+.styleUnderline div.availables > div:hover {
+    background-color:#F2F2F2
+    
+}
+
+.styleUnderline .availables div {
+    border-bottom: 1px solid #F2F2F2;    
+}
+
+.styleUnderline .availables div a{
+   display:block;
+   padding: 5px 10px;
+   text-transform:uppercase;
+   text-decoration: none    
+}
+
 .geoDrops input[type="text"]:focus {
   outline: none;
 }
+
 
 .geoDrops input:-ms-input-placeholder {
    color:#ccc;
@@ -811,41 +844,50 @@ input[type="range"]::-ms-thumb {
    color:#ccc;
 }
 
+
+
 #studyArea{
-  margin-left:1%;    
+  margin-left: 0.5%;    
 }
 
 #content>div.blocks {
   float:left;
-  width: 23%;
-  margin-right:1%;       
+  width: 22%;
+  margin-right: 2.5%;       
   height:60%;  
-  background: none repeat scroll 0 0 rgba(180, 238, 180, 0.4);     
+  background: none repeat scroll 0 0 rgba(135 ,206, 250, 0.3);    
   -webkit-border-radius: 35px 35px 20px 20px;
   -moz-border-radius: 35px 35px 20px 20px;
-  border-radius: 35px 35px 20px 20px;
-  border:1px solid #F2F2F2 ;
+  border-radius: 35px 35px 20px 20px; 
+  border: 1px solid #CDCDC1;
   text-align: center;  
+  text-transform: uppercase;
 }
 
 #content>div.blocks:hover {
-    cursor:pointer;       
-    -webkit-box-shadow: #F2F2F2 3px 3px 3px;
-    -moz-box-shadow: #F2F2F2 3px 3px 3px;
-    box-shadow: #F2F2F2 3px 3px 3px;  
+    cursor:pointer;
+    -webkit-transition: background-color 0.6s;
+    -moz-transition: background-color 0.6s;
+    -o-transition: background-color 0.6s;
+    transition: background-color 0.6s;
+    -webkit-box-shadow: #F2F2F2  5px 5px 5px;  ;
+    -moz-box-shadow: #F2F2F2  5px 5px 5px;  
+    box-shadow: #F2F2F2 5px 5px 5px;  
     border:1px solid #CDCDC1;
-    background: none repeat scroll 0 0 rgba(180, 238, 180, 1); 
+    background: none repeat scroll 0 0 rgba(99,	184,255, 0.8); 
+    color:#F2F2F2
 }
 
+
 .headerBlock {
-   height:20%;
-   border-bottom:1px solid #F2F2F2; 
-   color:#C1CDC1;    
+   height: 15%;
+   border-bottom: 1px solid #C1CDC1;    
 }
 
 .headerBlock h1 {
-    font-size: 16px;
-    padding-top: 8%;
+    font-size: 18px;
+    padding-top: 7%;
+        font-family: 'Oxygen', sans-serif;
 }
 
 .summary {
@@ -853,15 +895,22 @@ input[type="range"]::-ms-thumb {
     height:77%;
     text-align: center;
     background-color: white;
+    color:#999999;
 }
 
 .summary h2 {
     font-size:14px;
-    padding: 10px 0;
+    padding: 3% 0;
 }
 
 .summary div {
-    height:90%;
+    height: 88%;
+}
+
+.summary div ul{
+    width:75%;
+    margin:2% auto;
+    
 }
 
 .summary div ul li{
@@ -871,25 +920,63 @@ input[type="range"]::-ms-thumb {
     
 }
 
+#importExport {
+    height:150px;
+    float:left;
+    margin-left:1%;
+}
+
 #run{
    float:right;
-   margin-right:4%;
-   margin-top:3%;    
+   margin-right: 3%;    
 }
 
-#runButton{
-   background: none repeat scroll 0 0 rgba(155,205,155, 0.4); 
-   -webkit-border-radius: 50px 50px 50px 50px;
-   -moz-border-radius:50px 50px 50px 50px;
-   border-radius: 50px 50px 50px 50px;
-   width:100px;
-   padding:40% 0;
-   text-align: center;
-   color:white;    
+#runContainer  {
+     border-bottom: 5px solid #CAE1FF;
 }
 
-#runButton:hover{
-   cursor:pointer;
-   background: none repeat scroll 0 0 rgba(155,205,155, 1); 
+#importExportContainer  {
+     border-bottom: 5px solid #FFDAB9;
+     width: 200px !important;
 }
-	
+
+#runContainer > div, #importExportContainer div{
+   position:absolute;
+   bottom: 8px;
+   text-align: center; 
+   width: 100%;  
+   text-transform: uppercase;
+   font-size: 22px;
+   cursor:pointer     
+}
+
+
+.buttonContainer{
+  width: 160px;
+   color:#848484;    
+   height: 150px;
+  position: relative;    
+}
+
+#runContainer:hover {
+  -webkit-transition: border 0.3s;
+  -moz-transition: border 0.3s;
+  -o-transition: border 0.3s;
+  transition: border 0.3s;
+  border-bottom:  solid 5px #63B8FF;    
+}
+
+#importExportContainer:hover {
+  -webkit-transition: border 0.3s;
+  -moz-transition: border 0.3s;
+  -o-transition: border 0.3s;
+  transition: border 0.3s;
+  border-bottom:  solid 5px #F4A460;    
+}
+
+
+
+
+
+
+
