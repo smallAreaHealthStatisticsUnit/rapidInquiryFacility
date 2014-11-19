@@ -141,7 +141,7 @@ PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -P pager=off \
 #
 .SUFFIXES: .sql .rpt
 .sql.rpt:
-	$(RUN) $(CURDIR)/$@ $(CURDIR)/.. $(PSQL) $(PSQL_FLAGS) -f test_scripts/$< 
+	$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f test_scripts/$< 
 	
 #
 # Targets

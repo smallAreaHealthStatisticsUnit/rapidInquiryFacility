@@ -200,7 +200,7 @@ endif
 #
 .SUFFIXES: .sql .rpt
 .sql.rpt:
-	$(RUN) $@ $(CURDIR) $(PSQL) $(PSQL_FLAGS) -f $< 
+	$(RUN) $@ "$(CURDIR)" $(PSQL) $(PSQL_FLAGS) -f $< 
 	
 #-	
 #- PL/pgsql debug levels (DEBUG_LEVEL);
