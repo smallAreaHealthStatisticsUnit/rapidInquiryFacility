@@ -386,6 +386,8 @@ BEGIN
 			ELSIF c11_rec.usecatupd THEN
 				RAISE EXCEPTION 'db_create.sql() C209xx: User % has update system catalog privilege', 
 					c11_rec.usename::VARCHAR;
+            ELSE
+                RAISE INFO 'db_create.sql() privilege check OK for: %', x;
 			END IF;
 --
 			OPEN c4(x);
@@ -394,14 +396,14 @@ BEGIN
 			IF c4_rec.passwd IS NULL THEN
 				RAISE INFO 'db_create.sql() RIF schema user % exists, no password', c1_rec.usename::VARCHAR;
 			ELSIF c1_rec.usename = 'rif40' THEN
-				RAISE INFO 'db_create.sql() RIF schema user % exists; changing password', c1_rec.usename::VARCHAR;
+				RAISE INFO 'db_create.sql() RIF schema user % exists; changing password to encrypted', c1_rec.usename::VARCHAR;
 				sql_stmt:='ALTER USER '||c1_rec.usename||' ENCRYPTED PASSWORD  '''||
 					c2_rec.encrypted_rif40_password||'''';
 				RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 -- Now fixed
 				EXECUTE sql_stmt;
 			ELSE
-				RAISE INFO 'db_create.sql() RIF schema user % exists; changing password', c1_rec.usename::VARCHAR;
+				RAISE INFO 'db_create.sql() RIF schema user % exists; changing password to username', c1_rec.usename::VARCHAR;
 				sql_stmt:='ALTER USER '||c1_rec.usename||' PASSWORD  '''||c1_rec.usename||'''';
 				RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 				EXECUTE sql_stmt;
@@ -409,9 +411,17 @@ BEGIN
 		ELSIF x = 'rif40' THEN
 	    	sql_stmt:='CREATE ROLE '||x||
 				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION ENCRYPTED PASSWORD  '''||
-				c1_rec.usename||'''';
+				c2_rec.encrypted_rif40_password||'''';
 			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 			EXECUTE sql_stmt;
+		ELSIF x IN ('notarifuser', 'gis', 'pop') THEN
+	    	sql_stmt:='CREATE ROLE '||x||
+				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD  '''||
+				x||'''';
+			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+			EXECUTE sql_stmt;
+        ELSE
+            RAISE WARNING 'db_create.sql() Do nothing for user: %', x;
 		END IF;
 	END LOOP;
 --
