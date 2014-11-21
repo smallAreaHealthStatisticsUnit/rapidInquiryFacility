@@ -18,15 +18,14 @@
 	<script type="text/javascript" src="js/libs/slickgrid/lib/jquery.event.drag-2.2.js"></script>
     <script type="text/javascript" src="js/libs/leaflet-0.7.3.js"></script>
     <script src="js/libs/d3.v3.min.js" charset="utf-8"></script>
-	<!--<script src="js/libs/sstatistics.js" charset="utf-8"></script>-->
 	<script src="js/libs/topojson.v1.min.js" charset="utf-8"></script>
 	
     
     <!-- RIF4 -->
-	<!-- The order on which the RIf files are downloaded must be maintained -->
+	<!-- The order on which the Rif files are downloaded must be maintained -->
 	<script type="text/javascript" src="js/v2/RIF.js"></script>
-	<script type="text/javascript" src="js/v2/abstractions/study/study-diseaseMapping.js"></script>
-    <script type="text/javascript" src="js/v2/abstractions/study/study-facade-diseaseMapping.js"></script>
+	<script type="text/javascript" src="js/v2/abstractions/study/study-diseaseSubmission.js"></script>
+    <script type="text/javascript" src="js/v2/abstractions/study/study-facade-diseaseSubmission.js"></script>
      <!-- utils -->
     <script type="text/javascript" src="js/v2/utils/utils.js"></script>
 	<script type="text/javascript" src="js/v2/utils/gui_events/resizable-diseaseMapping.js"></script>
@@ -35,11 +34,11 @@
 	<script type="text/javascript" src="js/v2/utils/colorBrewer.js"></script>
     <script type="text/javascript" src="js/v2/utils/resultNames.js"></script>
     <!-- modules -->
-    <script type="text/javascript" src="js/v2/modules/diseaseMapping.js"></script>
+    <script type="text/javascript" src="js/v2/modules/diseaseSubmission.js"></script>
     
 	<!-- components -->
     <!-- map -->
-    <script type="text/javascript" src="js/v2/components/map/map.js"></script>
+    <!--<script type="text/javascript" src="js/v2/components/map/map.js"></script>
 	<script type="text/javascript" src="js/v2/components/map/facades/map-facade-diseaseMapping.js"></script>
 	<script type="text/javascript" src="js/v2/components/map/events/map-event-diseaseMapping.js"></script>
     <script type="text/javascript" src="js/v2/components/map/units/layer.js"></script>
@@ -52,11 +51,12 @@
     <script type="text/javascript" src="js/v2/components/map/units/layerTypes/tilesvg.js"></script>
 	<script type="text/javascript" src="js/v2/components/map/units/layerTypes/tilecanvas.js"></script>
     <script type="text/javascript" src="js/v2/components/map/units/layerTypes/plugins/leaflet_d3_tilegeojson.js"></script>
-	<script type="text/javascript" src="js/v2/components/map/units/layerTypes/plugins/tileCanvas_topojson.js"></script>
+	<script type="text/javascript" src="js/v2/components/map/units/layerTypes/plugins/tileCanvas_topojson.js"></script>-->
     <!-- menu -->
-    <script type="text/javascript" src="js/v2/components/menu/menu-disease.js"></script>
-	<script type="text/javascript" src="js/v2/components/menu/facades/menu-facade-diseaseMapping.js"></script>
-	<script type="text/javascript" src="js/v2/components/menu/events/menu-event-diseaseMapping.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/menu-diseaseSubmission.js"></script>
+	<script type="text/javascript" src="js/v2/components/menu/facades/menu-facade-diseaseSubmission.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/events/menu-event-diseaseSubmission.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/units/diseaseSubmissionFront.js"></script>
 	 <script type="text/javascript" src="js/v2/components/menu/menu.utils.js"></script>
 	<script type="text/javascript" src="js/v2/components/menu/units/diseaseStudyLevel.js"></script>
 	<script type="text/javascript" src="js/v2/components/menu/units/choropleth.js"></script>
@@ -65,12 +65,12 @@
 	<script type="text/javascript" src="js/v2/components/menu/units/transparency.js"></script>
 	
     <!-- chart -->
-    <script type="text/javascript" src="js/v2/components/chart/chart.js"></script>
+    <!--<script type="text/javascript" src="js/v2/components/chart/chart.js"></script>
 	<script type="text/javascript" src="js/v2/components/chart/facades/chart-facade-diseaseMapping.js"></script>
 	<script type="text/javascript" src="js/v2/components/chart/units/line_bivariate.js"></script>
 	<script type="text/javascript" src="js/v2/components/chart/units/d3renderers/line_bivariate.d3renderer.js"></script>
 	<script type="text/javascript" src="js/v2/components/chart/units/multipleAreaCharts.js"></script>
-	<script type="text/javascript" src="js/v2/components/chart/units/d3renderers/multipleAreaCharts.d3renderer.js"></script>
+	<script type="text/javascript" src="js/v2/components/chart/units/d3renderers/multipleAreaCharts.d3renderer.js"></script>-->
 
     <!-- abstraction -->
     <script type="text/javascript" src="js/v2/abstractions/export_data.js"></script>
@@ -94,39 +94,40 @@
         <div id="buttons">
             <div class='geoDrops'>
 				<div>
-                    <div id='studyName' class='styleUnderline'>
-                         <input type="text"  placeholder="Study name">
+                    <div  class='styleUnderline'>
+                         <input type="text"  placeholder="Study name" id='studyName'>
                     </div>
                 </div>
                 <div>
-                    <div id='healthTheme' class='styleUnderline'>
-                         <input type="text"  placeholder="Health theme">
+                    <div class='styleUnderline dropdowns'>
+                         <input type="text"  placeholder="Health theme" id='healthTheme'>
                         <div id='healthThemeAvailables' class='availables' >
                             <div><a href='#'> Pulmonary </a></div>
                             <div><a href='#'> Chronic   </a></div>
                             <div><a href='#'> Pulmonary </a></div>
                             <div><a href='#'> Chronic   </a></div>
                             <div><a href='#'> Pulmonary </a></div>
+        
 
                         </div>
                     </div>
                 </div>
                 <div>
-                    <div id='numerator' class='styleUnderline'>
-                         <input type="text"  placeholder="Numerator">
+                    <div  class='styleUnderline dropdowns'>
+                         <input type="text"  placeholder="Numerator" id='numerator'>
                          <div id='numeratorAvailables' class='availables' >
                             <div><a href='#'> Pulmonary </a></div>
                             <div><a href='#'> Chronic   </a></div>
                             <div><a href='#'> Pulmonary </a></div>
                             <div><a href='#'> Chronic   </a></div>
                             <div><a href='#'> Pulmonary </a></div>
-
                         </div>
+                        
                     </div>
                 </div>
                 <div>
-                    <div id='denominator' class='styleUnderline'>
-                         <input type="text"  placeholder="Denominator">
+                    <div  class='styleUnderline dropdowns'>
+                         <input type="text"  placeholder="Denominator" id='denominator'>
                          <div id='denominatorAvailables' class='availables' >
                             <div><a href='#'> Pulmonary </a></div>
                             <div><a href='#'> Chronic   </a></div>
@@ -233,7 +234,7 @@
     <!------------------->
     
     <!---Study area--->
-	<div class="overlay" id="settings">
+	<div class="overlay" id="studyAreaModal">
 		<div class="msettings">
 			<div class="msettings-ct">
 				<div class="msettings-header">
@@ -246,7 +247,7 @@
 	</div>
     
     <!---Comparison area--->
-    <div class="overlay" id="settings">
+    <div class="overlay" id="comparisonAreaModal">
 		<div class="msettings">
 			<div class="msettings-ct">
 				<div class="msettings-header">
@@ -259,7 +260,7 @@
 	</div>
 	
     <!---Health conditions--->
-    <div class="overlay" id="settings">
+    <div class="overlay" id="healththemeModal">
 		<div class="msettings">
 			<div class="msettings-ct">
 				<div class="msettings-header">
@@ -273,7 +274,7 @@
     
     
     <!---Investigation parameters--->
-    <div class="overlay" id="settings">
+    <div class="overlay" id="parametersModal">
 		<div class="msettings">
 			<div class="msettings-ct">
 				<div class="msettings-header">
@@ -288,7 +289,7 @@
 
     <script>
     (function() {
-        //RIF.diseaseSubmission();
+        RIF.diseaseSubmission();
     })();
     </script>
 </body>

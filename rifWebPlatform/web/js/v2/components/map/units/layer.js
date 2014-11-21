@@ -130,20 +130,20 @@ RIF.map.layer = ( function( type, sett ) {
           this.selectionChanged()
           this.highlight( id );
         },
-
+          
         slctNoPropagation: function( id ) {
           this.addRemoveId( id );
           this.highlight( id );
-        },
-
-        addRemoveId: function( id ) {
-          if ( typeof this.selection[ id ] === 'undefined' ) {
+        },  
+        
+        addRemoveId: function(id){
+           if ( typeof this.selection[ id ] === 'undefined' ) {
             this.selection[ id ] = 1;
           } else {
             delete this.selection[ id ];
           }
         },
-
+          
         selectAreas: function( ids ) {
           var l = ids.length;
           while ( l-- ) {
@@ -170,11 +170,11 @@ RIF.map.layer = ( function( type, sett ) {
           this.resetSlctd();
           this.style.repaint();
         },
-
-        setSelection: function( selectionFromStudy ) {
-          this.selection = selectionFromStudy;
-        },
-
+        
+        setSelection: function( selectionFromStudy ){
+           this.selection = selectionFromStudy;
+        },  
+          
         selectionChanged: function() {
           var selection = [];
           for ( var key in layer.selection ) {
