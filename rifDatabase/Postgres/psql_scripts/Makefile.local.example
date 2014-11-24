@@ -77,6 +77,11 @@
 #SAHSULAND_TABLESPACE_DIR=\"C:/rif40 database\"
 
 #
+# Default Windows Administrator
+#
+DEFAULT_WINDOWS_ADMIN_USER=Administrator
+
+#
 # PL/pgsql debug levels (DEBUG_LEVEL);
 #
 # 0 - Suppressed, INFO only

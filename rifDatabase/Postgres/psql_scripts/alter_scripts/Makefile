@@ -96,7 +96,8 @@ ifeq ($(OS),Windows_NT)
 #
 	RUN=powershell -ExecutionPolicy ByPass -file ../run.ps1
 	DELETE=powershell -ExecutionPolicy ByPass -file ../delete.ps1
-	TESTUSER?=$(USERNAME)
+	# Assumes tr came with make. Force to lowercase
+	TESTUSER=$(shell echo $(USERNAME) | tr ‘[:upper:]’ ‘[:lower:]’)
 else
 #
 # Linux macos support

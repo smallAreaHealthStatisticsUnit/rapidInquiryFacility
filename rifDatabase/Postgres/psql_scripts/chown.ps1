@@ -8,7 +8,7 @@
 #
 # Description:
 #
-# Rapid Enquiry Facility (RIF) - Helper script to copy a file in windows 
+# Rapid Enquiry Facility (RIF) - Helper script to change directory permissions in windows 
 #
 # Copyright:
 #
@@ -44,17 +44,29 @@
 #
 # Peter Hambly, SAHSU
 #
+# This script must run as Adminstrator! (writes Postgres config file)
+#
 Try {
-	If (Test-Path $($args[1]) ){ # Destination
-		Copy-Item $($args[0]) -Destination "$($args[1])" -verbose -ErrorAction Stop
+	If (Test-Path $args[1] ){ # Destination
+		Write-Host "Directory already exists: $($args[1])"	
+#		$command="icacls `"" + "$($args[1])" + "`" /grant " + $($args[0]) + ":(f)"
+		$command="icacls"
+		$dir="`"" + $($args[1]) + "`""
+		$args=@($dir, "/grant", $($args[0])+":(f)")
+		Write-Host "WINDOWS> $command $args"
+		& $command $args
+		$args2=@($dir, "/grant", "users:(rx)")
+		Write-Host "WINDOWS> $command $args2"
+		& $command $args2
+		exit 0
 	}
 	else {	
-		Write-Host "Please Create: $($args[1])"
+		Write-Host "Directory does not exist: $($args[1])"
 		exit 3
 	}
 }
 Catch {
-	Write-Host "Error in Copy-Item"
+	Write-Host "Error in icacls (chown)"
 	$error[0]
 	exit 2
 }

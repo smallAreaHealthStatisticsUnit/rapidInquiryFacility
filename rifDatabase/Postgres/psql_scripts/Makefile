@@ -80,6 +80,10 @@ DEFAULT_ENCRYPTED_RIF40_PASSWORD=md5dba9980b96510989e720a66fc77d92c8
 #
 DEFAULT_SAHSULAND_TABLESPACE_DIR=
 #
+# Default Windows Administrator
+#
+DEFAULT_WINDOWS_ADMIN_USER=Administrator
+#
 # Local overrides; copy Makefile.local.example to Makefile.local and edit Makefile.local
 #
 -include Makefile.local
@@ -130,6 +134,7 @@ CREATE_SAHSULAND_ONLY?=$(DEFAULT_CREATE_SAHSULAND_ONLY)
 ENCRYPTED_POSTGRES_PASSWORD?=$(DEFAULT_ENCRYPTED_POSTGRES_PASSWORD)
 ENCRYPTED_RIF40_PASSWORD?=$(DEFAULT_ENCRYPTED_RIF40_PASSWORD)
 SAHSULAND_TABLESPACE_DIR?=$(DEFAULT_SAHSULAND_TABLESPACE_DIR)
+WINDOWS_ADMIN_USER?=$(DEFAULT_WINDOWS_ADMIN_USER)
 
 #
 # Programs and parameters
@@ -161,11 +166,16 @@ ifeq ($(OS),Windows_NT)
 	RUN=powershell -ExecutionPolicy ByPass -file run.ps1
 	DELETE=powershell -ExecutionPolicy ByPass -file delete.ps1
 	HELP=findstr "\#-" Makefile
+#	SUDO_MKDIR=runas /user:$(WINDOWS_ADMIN_USER) "powershell -ExecutionPolicy ByPass -file mkdir.ps1 $@" 
+	SUDO_MKDIR=powershell -ExecutionPolicy ByPass -file mkdir.ps1 "$@"
+	SUDO_CHOWN_TESUSER=powershell -ExecutionPolicy ByPass -file chown.ps1 $(TESTUSER) "$@"
+	SUDO_CHOWN_POSTGRES=powershell -ExecutionPolicy ByPass -file chown.ps1 postgres "$@"
 	COPY=powershell -ExecutionPolicy ByPass -file copy.ps1 
-	POSTGRES_ETC_DIR="C:\Program Files\PostgreSQL\9.3\etc"
 	PGPASS=powershell -ExecutionPolicy ByPass -file pgpass.ps1
-	TESTUSER?=$(USERNAME)
+	# Assumes tr came with make. Force to lowercase
+	TESTUSER?=$(shell echo $(USERNAME) | tr ‘[:upper:]’ ‘[:lower:]’)
 	TOPOJSON="C:\node_modules\.bin\topojson.cmd"
+	PGPASSFILE=$(APPDATA)\postgresql\pgpass.conf
 else
 #
 # Linux macos support
@@ -174,9 +184,11 @@ else
 	RUN=./run.sh
 	DELETE=rm -f
 	HELP=grep "\#-" Makefile
+	SUDO_MKDIR=sudo mkdir -p "$@"
+	SUDO_CHOWN_TESUSER=chown -R $(TESTUSER) "$@"
+	SUDO_CHOWN_POSTGRES=chown -R postgres "$@"
 	COPY=cp
 	TESTUSER=$(shell id -un | tr ‘[:upper:]’ ‘[:lower:]’)
-    POSTGRES_ETC_DIR=$(shell pg_config --sysconfdir)
     ifeq ($(UNAME_S),Linux)
 		OS=$(UNAME_S)
 #		POSTGRES_ETC_DIR=/var/opt/PostgreSQL/9.3/etc
@@ -193,8 +205,15 @@ else
 			$(error Unsupported OS: $(OS); uname -s: $(UNAME_S))
 		endif
 	endif
+	PGPASSFILE=~/.pgpass
 endif
-
+#
+# Escape directory names. This assumes that Postgres is installed on the C drive
+# Make assumes the usual Windows names, not the Postgres funny onews, so the slashes need to be the windows way around and C: in capitals
+#
+POSTGRES_ETC_DIR=$(shell pg_config --sysconfdir)
+empty=
+ESC_POSTGRES_ETC_DIR:=$(subst $(empty)/$(empty),$(empty)\$(empty),$(subst c:,C:,$(subst $(empty) $(empty),$(empty)\ $(empty),$(POSTGRES_ETC_DIR))))
 #
 # Target extension depends on source, build rule
 #
@@ -310,7 +329,7 @@ devclean:
 # Format is: hostname:port:database:username:password
 #
 #- db_setup: Create sahusland, sahsuland_dev
-db_setup: pgpass.conf psqlrc
+db_setup: psqlrc $(PGPASSFILE)
 	$(MAKE) clean
 	$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) sahsuland_dev 
@@ -325,12 +344,20 @@ db_create: db_create.rpt
 #
 # Files to create/install
 #
-# pgpass: password file
-pgpass.conf:
-#		$(PGPASS)
+# pgpass: password file [not supported yet]
+$(PGPASSFILE):
+		$(error Please create $(PGPASSFILE))
+		
 # psqlrc: psql logon script
-psqlrc:	../etc/psqlrc
-		$(COPY) ../etc/psqlrc $(POSTGRES_ETC_DIR)
+psqlrc:	../etc/psqlrc C:\Program\ Files\PostgreSQL\9.3\etc
+		$(COPY) ../etc/psqlrc "$(POSTGRES_ETC_DIR)"
+
+#
+# $(ESC_POSTGRES_ETC_DIR): Create directory for psqlrc (requires privilege)
+#		
+$(ESC_POSTGRES_ETC_DIR):
+		-$(SUDO_MKDIR)
+		-$(SUDO_CHOWN_TESUSER)
 		
 #-
 #- 7. miscellaneous

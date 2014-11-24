@@ -8,7 +8,7 @@
 #
 # Description:
 #
-# Rapid Enquiry Facility (RIF) - Helper script to copy a file in windows 
+# Rapid Enquiry Facility (RIF) - Helper script to create a directory in windows 
 #
 # Copyright:
 #
@@ -44,17 +44,21 @@
 #
 # Peter Hambly, SAHSU
 #
+# This script must run as Adminstrator! (writes Postgres config file)
+#
 Try {
-	If (Test-Path $($args[1]) ){ # Destination
-		Copy-Item $($args[0]) -Destination "$($args[1])" -verbose -ErrorAction Stop
+	If (Test-Path $args[0] ){ # Destination
+		Write-Host "Directory already exists: $($args[0])"	
+		exit 1
 	}
 	else {	
-		Write-Host "Please Create: $($args[1])"
-		exit 3
+		Write-Host "Creating: $($args[0])"
+		New-item -ItemType directory -Path "$($args[0])" -verbose -ErrorAction Stop
+		exit 0
 	}
 }
 Catch {
-	Write-Host "Error in Copy-Item"
+	Write-Host "Error in New-Item -ItemType directory (mkdir)"
 	$error[0]
 	exit 2
 }
