@@ -8,11 +8,19 @@ RIF.menu[ 'menu-facade-diseaseSubmission' ] = ( function( _p ) {
   var facade = {
 
     /* Subscribers */
-   
+    updateHealthThemeAvailables: function() {},
+    updateNumeratorAvailables: function() {},
+    updateDenominatorAvailables: function() {},
+
+
     /* Firers  */
+    healthThemeChanged: function() {},
+    numeratorChanged: function() {},
+    denominatorChanged: function() {},
+
 
     /* Study Related */
-   
+
 
   };
 

@@ -129,13 +129,13 @@ RIF.diseaseMapping = ( function() {
         firer: [ "chart" ],
         method: "selectionFromAreaChartChange"
       },
-      
+
       enterClicked: {
         subscribers: [ "study" ],
         firer: [ "chart" ],
         method: "enterClicked"
       },
-        
+
       slctMapAreaFromAreaChart: {
         subscribers: [ "map" ],
         firer: [ "study" ],
@@ -298,12 +298,12 @@ RIF.diseaseMapping = ( function() {
         firer: [ "map" ],
         method: "populateZoomIds"
       },*/
-              
-     selectFromEnterKeyDown:{
+
+      selectFromEnterKeyDown: {
         subscribers: [ "map" ],
         firer: [ "study" ],
         method: "selectFromEnterKeyDown"
-      },       
+      },
 
       zoomToExtent: {
         subscribers: [ "map" ],

@@ -60,12 +60,12 @@ RIF.map[ 'map-facade-diseaseMapping' ] = ( function( _p ) {
     changeTransparency: function( val ) {
       _p.layer.setTransparency( val );
     },
-    
-    selectFromEnterKeyDown: function( gid ){
+
+    selectFromEnterKeyDown: function( gid ) {
       _p.layer.slctNoPropagation( gid );
     },
-      
-      
+
+
     changeYear: function() {
 
     },

@@ -453,9 +453,11 @@ input[type="range"]::-ms-thumb {
 	  z-index: 1000;
 	  background-color: rgba(0,0,0,0.4); /*dim the background*/
     }	
+
     #statusbar{
 		z-index: 999999;
 	}
+
 	#statusbar div{
 		width: auto;
 		padding: 2px 0;
@@ -475,20 +477,24 @@ input[type="range"]::-ms-thumb {
 	}
 	
 	.msettings {
-		width: 350px;
+		width: 60%;
 		padding-bottom: 2px;
 		display:block;
 		background: #FFF;
-		border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;
-		box-shadow: 0px 0px 4px rgba(0,0,0,0.7); -webkit-box-shadow: 0 0 4px rgba(0,0,0,0.7); 
-		-moz-box-shadow: 0 0px 4px rgba(0,0,0,0.7);
-		margin: 10% auto;
+		border-radius: 5px; -moz-border-radius: 5px; 
+		-webkit-border-radius: 5px;
+		margin: 5% auto;
+		height: 85%;
     }
 	
+    .msettings-ct{
+        width:100%;
+        height:100%;
+    }
+    
+   
 	.msettings-header {
-		background: #F0FFF0;
-		padding: 10px;
-		border-bottom: 1px solid #E0EEE0;
+		padding: 30px 20px;
 		border-top-left-radius: 5px;
 		-moz-border-radius-topleft: 5px;
 		-webkit-border-top-left-radius: 5px;
@@ -497,17 +503,36 @@ input[type="range"]::-ms-thumb {
 		-webkit-border-top-right-radius: 5px;
 		color: #B0B0B0;
 		text-transform: uppercase;
-		height:16px;
+		height: 16px;
+        border-bottom: 2px solid #DBDBDB;
+		background: none repeat scroll 0 0 rgba(135 ,206, 250, 0.3);
     }
-	.msettings-header  h2{
-	    float:left;
-	}
-	.msettings-header a.modal_close{
+    
+    .msettings-header  h2{
+	    float: left;
+	    font-size: 20px;
+	    font-weight: normal;
+    }
+
+
+    .msettings-ct .modalContainer{
+        width:100%;
+        height: -moz-calc(100% - 80px);
+		/* WebKit */
+		height: -webkit-calc(100% - 80px);
+		/* Opera */
+		height: -o-calc(100% - 80px);
+		/* Standard */
+		height: calc(100% - 80px);
+    }
+
+   	.msettings-header a.modal_close{
 		background: url('../images/close.png');
 		width: 20px;
 		height: 20px;
 		opacity: 0.2;
 	}
+
 	.msettings-header a.modal_close:hover{
 		opacity: 0.4;
 	}
@@ -518,30 +543,52 @@ input[type="range"]::-ms-thumb {
     .msettings{
 	    color: #7D7D7D;
 	}
+
+   .msettings-ct .modalContainer > div {
+       width: 94%;
+   }
+   
+   .modalAreaSelectionMenu #resolutionSelection{
+        float:left  
+   }
+
+  .modalAreaSelectionMenu #selectAtSelection{
+         float:right
+   }
+
+   .modalAreaSelectionContent {
+       height:95%;
+       margin: 1% 2%;
+   }
+   
+   .modalAreaSelectionContent div {
+       height:100%;
+       float:left;
+   }
+
+   .modalAreaSelectionContent #areaSelectionTable {
+       width:30%;
+   }
+
+   .modalAreaSelectionContent #areaSelectionMap {
+       width: 70%;
+   }
+
+   .msettings-ct .modalContainer .modalAreaSelectionMenu > div {
+      width: 40%;
+      height:100%;
+      margin: 1% 2%;      
+   }
+  
+
 	.msettings .txt-fld {
 		padding: 14px 30px;
 		border-bottom: 1px solid #EEE;
     }
-	.msettings .txt-fld .editBreaks {
-	    width:270px;
-	}
-	.msettings .txt-fld #breaks {
-	    display:none;
-		height:100px;
-	}
 	
-	.msettings #resultsSetOfInterest{
-	   overflow:auto;
-	   max-height: 80px;
-	}
-	
-	.msettings #resultsSetOfInterest div#resultsFilter { 
-		height: auto;
-		width: 180px;
-		margin: 5px 0 0 100px;
-		position: relative;
-		min-height: 20px;
-	}
+    .msettings .modalContainer{
+        width:100%;
+    }
 	
 	.msettings #resultsSetOfInterest div#resultsFilter div { 
 		height: 20px;
@@ -622,7 +669,7 @@ input[type="range"]::-ms-thumb {
         width: 25px;
 		margin-top: 8px;
     }
-
+    
 	
    /* General dropdown styles */      
     .dropdown { 
@@ -632,7 +679,7 @@ input[type="range"]::-ms-thumb {
 	    margin:0px;
 	    padding: 0px; 
 	    display: inline;
-}
+    }
 	
 	/* DT styles for sliding doors */
 	.dropdown dt > div{
@@ -757,9 +804,8 @@ input[type="range"]::-ms-thumb {
      text-transform:uppercase
 }
 
-.geoDrops input[type="text"] {
-  display: block;
-  margin: 0;
+input[type="text"].dropdownInput {
+  padding: 10px;    
   width: 100%;
   font-size: 28px;
   text-transform: uppercase;
@@ -769,19 +815,6 @@ input[type="range"]::-ms-thumb {
   -webkit-box-shadow: none;
   -moz-box-shadow: none;
   box-shadow: none;
-  -webkit-border-radius: none;
-  -moz-border-radius: none;
-  -ms-border-radius: none;
-  -o-border-radius: none;
-  border-radius: none;
-}
-
-#studyName{
-  margin-left:3%;
-}
-
-.styleUnderline input[type="text"] {
-  padding: 10px;
   border: none;
   border-bottom: solid 2px #CAE1FF;
   -webkit-transition: border 0.3s;
@@ -791,11 +824,19 @@ input[type="range"]::-ms-thumb {
   color: #848484;
 }
 
-.styleUnderline input[type="text"]:focus, .style-4 input[type="text"].focus {
+#studyName{
+  margin-left:3%;
+}
+
+input[type="text"].dropdownInput:focus, .style-4 input[type="text"].focus {
   border-bottom: solid 2px #63B8FF;
 }
 
-.styleUnderline .availables {
+.inpputBorderSelection{
+   border-bottom: solid 2px #7CCD7C !important; 
+}
+
+ .availables {
     width: 100%;
     max-height: 250px;
     height:auto;
@@ -806,44 +847,43 @@ input[type="range"]::-ms-thumb {
     display: none;
 }
 
-.styleUnderline div.availables > div:hover {
+ div.availables > div:hover {
     background-color:#F2F2F2
     
 }
 
-.styleUnderline .availables div {
+.availables div {
     border-bottom: 1px solid #F2F2F2;    
 }
 
-.styleUnderline .availables div a{
+ .availables div a{
    display:block;
    padding: 5px 10px;
    text-transform:uppercase;
    text-decoration: none    
 }
 
-.geoDrops input[type="text"]:focus {
+
+input[type="text"].dropdownInput:focus {
   outline: none;
 }
 
-
-.geoDrops input:-ms-input-placeholder {
+input.dropdownInput:-ms-input-placeholder {
    color:#ccc;
 }
 
-.geoDrops  input::-webkit-input-placeholder {
+input.dropdownInput:-webkit-input-placeholder {
    color:#ccc;
 }
 
-.geoDrops  input:-moz-placeholder {
+input.dropdownInput:-moz-placeholder {
    color:#ccc;
 }
 
 /* firefox 19+ */
-.geoDrops input::-moz-placeholder {
+ input.dropdownInput::-moz-placeholder {
    color:#ccc;
 }
-
 
 
 #studyArea{
@@ -971,12 +1011,5 @@ input[type="range"]::-ms-thumb {
   -moz-transition: border 0.3s;
   -o-transition: border 0.3s;
   transition: border 0.3s;
-  border-bottom:  solid 5px #F4A460;    
+  border-bottom:  solid 5px #F4A460;   
 }
-
-
-
-
-
-
-

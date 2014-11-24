@@ -26,10 +26,10 @@ RIF.diseaseSubmission = ( function() {
         studyType: 'diseaseSubmission',
         layerType: 'tilesvg'
       },
-      */  
+      */
       menu: {
         studyType: 'diseaseSubmission',
-        menus: [ 'diseaseSubmissionFront'  /*'settings', 'baseMap', 'transparency'*/  ]
+        menus: [ 'diseaseSubmissionFront' /*'settings', 'baseMap', 'transparency'*/ ]
       },
       //resizable: 'diseaseSubmission'
     },

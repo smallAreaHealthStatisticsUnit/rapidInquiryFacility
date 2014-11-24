@@ -80,13 +80,13 @@ RIF.chart[ 'chart-facade-diseaseMapping' ] = ( function( _p ) {
     areaChartKeyDown: function( args ) {
       facade.fire( 'areaChartKeyDown', args );
     },
-      
+
     enterKeyDown: function( args ) {
       facade.fire( 'enterClicked', {
-        gid: args[ 0 ] 
-      });
-      facade.fire( "zoomToArea", args[ 0 ] );    
-    }  
+        gid: args[ 0 ]
+      } );
+      facade.fire( "zoomToArea", args[ 0 ] );
+    }
 
   };
 

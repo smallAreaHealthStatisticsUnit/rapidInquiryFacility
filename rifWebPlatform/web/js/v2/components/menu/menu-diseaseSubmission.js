@@ -9,14 +9,13 @@ RIF.menu = ( function( settings ) {
       },
 
       callbacks: {
-    
-          
-      },
-        
-      populate: function( args ) {
-          _p.dropDownInputText( ['sdfsdf','vvvvvvvvvv'], _p.getHealthThemesListElement() )
+
+
       },
 
+      /*populate: function( args ) {
+          //_p.dropDownInputText( ['sdfsdf','vvvvvvvvvv'], _p.getHealthThemesListElement() )
+      },*/
 
       extendMenu: function() {
         _p = RIF.extendComponent( 'menu', _p, menus );
@@ -27,7 +26,7 @@ RIF.menu = ( function( settings ) {
         this.facade = RIF.getFacade( 'menu', settings.studyType, this );
         return this;
       },
-        
+
       setEvents: function() {
         var ev = RIF.getEvent( 'menu', settings.studyType );
         ev.call( this );
@@ -40,8 +39,8 @@ RIF.menu = ( function( settings ) {
     .extendMenu()
     .setEvents();
 
-  
-  _p.populate();    
+
+
   return _p.facade;
-        
+
 } );

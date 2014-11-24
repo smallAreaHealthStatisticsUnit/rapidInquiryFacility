@@ -27,7 +27,7 @@ RIF.menu.utils = ( function() {
         _p.addSelectOption( el, val, val );
       }
     },
-      
+
     dropDownInputText: function( arr, el ) {
 
       if ( arr.length === 0 ) {
@@ -39,7 +39,7 @@ RIF.menu.utils = ( function() {
         var val = arr[ l ];
         el.prepend( "<div><a href='#'>" + val + "</a></div>" )
       }
-    },  
+    },
 
     fieldCheckboxes: function( obj, el, name ) {
       el.empty();
