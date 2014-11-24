@@ -249,7 +249,8 @@ BEGIN
 		FETCH c1 INTO c1_rec;
 		IF c1_rec.name IS NULL THEN
 			IF UPPER(CURRENT_SETTING('rif40.use_plr')) = 'Y' THEN
-				RAISE WARNING 'db_create.sql() RIF required extension: % is not installable', x;
+				RAISE WARNING 'db_create.sql() RIF required extension: % is not installable;%See http://www.joeconway.com/plr/doc/plr-install.html for details%', 
+				x, E'\n'::Text, E'\n'::Text;
 				i:=i+1;
 			ELSE
 				RAISE INFO 'db_create.sql() Optional extension: % is not installable', x;
@@ -314,6 +315,14 @@ BEGIN
 		CREATE EXTENSION IF NOT EXISTS plr;
 		DROP EXTENSION plr;
 	END IF;
+EXCEPTION
+	WHEN undefined_file THEN
+--
+-- Catch:
+-- psql:db_create.sql:319: ERROR:  could not load library "C:/Program Files/PostgreSQL/9.3/lib/plr.dll": The specified module could not be found.
+--
+		RAISE WARNING 'Caught: %; add R library location to path; and R_HOME; restart Postgres', sqlstate;
+		RAISE;
 END;
 $$;
 
@@ -756,9 +765,15 @@ BEGIN
 	EXECUTE sql_stmt;
 	IF UPPER(CURRENT_SETTING('rif40.use_plr')) IN ('y', 'Y') THEN
 --
--- Test PLR can be installed
+-- Install PLR. PL/R is untrusted because R gives access to system commands and the
+-- file system; so use of the language must be by the super user
 --
 		sql_stmt:='CREATE EXTENSION IF NOT EXISTS plr';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='GRANT EXECUTE ON FUNCTION public.install_rcmd(text) to rif40';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
 	END IF;
 --
 -- RIF40 grants
@@ -806,7 +821,7 @@ DECLARE
 	c1_rec RECORD;
 --
 	schemalist VARCHAR[]:=ARRAY['rif40_dmp_pkg', 'rif40_sql_pkg', 'rif40_sm_pkg', 'rif40_log_pkg', 'rif40_trg_pkg',
-			'rif40_geo_pkg', 'rif40_xml_pkg', 'rif40', 'gis', 'pop', 'rif_studies'];
+			'rif40_geo_pkg', 'rif40_xml_pkg', 'rif40_R_pkg', 'rif40', 'gis', 'pop', 'rif_studies'];
 	x VARCHAR;
 	sql_stmt VARCHAR;
 	u_name	VARCHAR;
