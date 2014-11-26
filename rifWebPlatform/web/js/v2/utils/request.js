@@ -328,7 +328,28 @@
 
         xhr( 'getResultFigures.php' + args, myCallback, msg );
 
-      }
+      },
+
+      /*
+       *
+       * Disease submission specific
+       *
+       */
+
+      getHealthThemes: function( myCallback, params ) {
+        var msg = "Retrieving Health Themes ",
+          args = 'userID=ffabbri&geographyName=SAHSU';
+
+        xhr( 'studySubmission/getHealthThemes?' + args, myCallback, msg );
+      },
+
+      getNumeratorDenominator: function( myCallback, params ) {
+        var msg = "Retrieving Numerator denominator pairs ",
+          args = 'userID=ffabbri&geographyName=SAHSU&healthThemeDescription=SAHSU';
+
+        xhr( 'getNumerator/?' + args, myCallback, msg );
+      },
+
 
     };
 

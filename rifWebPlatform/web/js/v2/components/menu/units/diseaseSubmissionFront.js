@@ -1,11 +1,11 @@
 RIF.menu.diseaseSubmissionFront = ( function() {
 
+
   var parent = this,
 
     /* DOM ELEMENTS */
     _domObjects = {
       healthTheme: document.getElementById( 'healthTheme' ),
-
 
       healthThemeAvailablesEl: document.getElementById( 'healthThemeAvailables' ),
       numeratorAvailablesEl: document.getElementById( 'numeratorAvailables' ),
@@ -51,11 +51,45 @@ RIF.menu.diseaseSubmissionFront = ( function() {
         //Fire event Denominator changed
       } );
 
+    },
+
+
+
+    _requests = {
+
+      getHealthThemes: function() {
+
+        var callback = function() {
+          var themes = [ this[ 0 ].name ],
+            el = _domObjects[ 'healthThemeAvailablesEl' ];
+          parent.dropDownInputText( themes, el );
+        };
+
+        RIF.getHealthThemes( callback, null );
+      },
+
+      getNumDenom: function() {
+
+        var callback = function() {
+          var themes = [ this[ 0 ].name ],
+            el = _domObjects[ 'healthThemeAvailablesEl' ];
+          parent.dropDownInputText( themes, el );
+        };
+
+        RIF.getHealthThemes( callback, null );
+      },
+
+
 
     },
 
     /* geolevel obj */
     _p = {
+
+      initDiseaseSubmissionFront: function() {
+        _requests.getHealthThemes();
+        _events();
+      },
 
       getStudyName: function() {},
       getHealthThemes: function() {},
@@ -63,19 +97,13 @@ RIF.menu.diseaseSubmissionFront = ( function() {
       getDenominator: function() {},
       getRetrievableStudies: function() {},
 
-      getHealthThemesListDom: function() {
-        return $( _domObjects.healthThemeAvailablesEl );
-      },
-
-      diseaseSubmissionFront: function() {
-        _events();
+      getDiseaseSubmissionFrontDom: function( obj ) {
+        return $( _domObjects[ obj ] );
       }
-
-
 
     };
 
-  _p.diseaseSubmissionFront();
+  _p.initDiseaseSubmissionFront();
 
   return _p;
 } );

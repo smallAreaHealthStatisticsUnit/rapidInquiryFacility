@@ -95,26 +95,19 @@
             <div class='geoDrops'>
 				<div>
                     <div  class='styleUnderline'>
-                         <input type="text"  placeholder="Study name" id='studyName'>
+                         <input type="text"  placeholder="Study name" id='studyName' class='dropdownInput'>
                     </div>
                 </div>
                 <div>
                     <div class='styleUnderline dropdowns'>
-                         <input type="text"  placeholder="Health theme" id='healthTheme'>
+                         <input type="text"  placeholder="Health theme" id='healthTheme' class='dropdownInput'>
                         <div id='healthThemeAvailables' class='availables' >
-                            <div><a href='#'> Pulmonary </a></div>
-                            <div><a href='#'> Chronic   </a></div>
-                            <div><a href='#'> Pulmonary </a></div>
-                            <div><a href='#'> Chronic   </a></div>
-                            <div><a href='#'> Pulmonary </a></div>
-        
-
                         </div>
                     </div>
                 </div>
                 <div>
                     <div  class='styleUnderline dropdowns'>
-                         <input type="text"  placeholder="Numerator" id='numerator'>
+                         <input type="text"  placeholder="Numerator" id='numerator' class='dropdownInput'>
                          <div id='numeratorAvailables' class='availables' >
                             <div><a href='#'> Pulmonary </a></div>
                             <div><a href='#'> Chronic   </a></div>
@@ -127,7 +120,7 @@
                 </div>
                 <div>
                     <div  class='styleUnderline dropdowns'>
-                         <input type="text"  placeholder="Denominator" id='denominator'>
+                         <input type="text"  placeholder="Denominator" id='denominator' class='dropdownInput'>
                          <div id='denominatorAvailables' class='availables' >
                             <div><a href='#'> Pulmonary </a></div>
                             <div><a href='#'> Chronic   </a></div>
@@ -241,12 +234,33 @@
 					<h2>Study area</h2>
 					<a class="modal_close" href="#"></a>
 				</div>
-                <div></div>
+                <div class='modalContainer'>
+                    <div class='modalAreaSelectionMenu'>
+                        <div id='resolutionSelection' class="dropdowns">
+                           <input type="text"  placeholder="Resolution" id='resolution' class='dropdownInput' >
+                           <div id='resolutionAvailable' class='availables' >
+                                <div><a href='#'> Distric </a></div>
+                                <div><a href='#'> Wards   </a></div>
+                            </div>
+                        </div>
+                        <div id='selectAtSelection' class='dropdowns'>
+                           <input type="text"  placeholder="Select at" id='selectAt' class='dropdownInput'>
+                           <div id='selectAtAvailable' class='availables' >
+                                <div><a href='#'> Distric </a></div>
+                                <div><a href='#'> Wards   </a></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='modalAreaSelectionContent'>
+                        <div id='areaSelectionTable'> </div>
+                        <div id='areaSelectionMap'>  </div>
+                    </div>
+                </div>
 			</div>
 		</div>
 	</div>
     
-    <!---Comparison area--->
+    <!---Comparison area
     <div class="overlay" id="comparisonAreaModal">
 		<div class="msettings">
 			<div class="msettings-ct">
@@ -257,9 +271,9 @@
                 <div></div>
 			</div>
 		</div>
-	</div>
+	</div>--->
 	
-    <!---Health conditions--->
+    <!---Health conditions
     <div class="overlay" id="healththemeModal">
 		<div class="msettings">
 			<div class="msettings-ct">
@@ -270,10 +284,10 @@
                 <div></div>
 			</div>
 		</div>
-	</div>
+	</div>--->
     
     
-    <!---Investigation parameters--->
+    <!---Investigation parameters
     <div class="overlay" id="parametersModal">
 		<div class="msettings">
 			<div class="msettings-ct">
@@ -284,7 +298,7 @@
                 <div></div>
 			</div>
 		</div>
-	</div>
+	</div>--->
 	
 
     <script>

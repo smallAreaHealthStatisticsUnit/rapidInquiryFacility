@@ -8,29 +8,27 @@ RIF.menu = ( function( settings ) {
         return _p;
       },
 
-      callbacks: {
-
-
-      },
-
-      /*populate: function( args ) {
-          //_p.dropDownInputText( ['sdfsdf','vvvvvvvvvv'], _p.getHealthThemesListElement() )
-      },*/
-
-      extendMenu: function() {
-        _p = RIF.extendComponent( 'menu', _p, menus );
-        return _p;
-      },
+      callbacks: {},
 
       getFacade: function() {
         this.facade = RIF.getFacade( 'menu', settings.studyType, this );
         return this;
       },
 
+      extendMenu: function() {
+        _p = RIF.extendComponent( 'menu', _p, menus );
+        return _p;
+      },
+
       setEvents: function() {
         var ev = RIF.getEvent( 'menu', settings.studyType );
         ev.call( this );
+      },
+
+      populate: function() {
+
       }
+
 
     };
 
@@ -38,7 +36,6 @@ RIF.menu = ( function( settings ) {
     .getFacade()
     .extendMenu()
     .setEvents();
-
 
 
   return _p.facade;

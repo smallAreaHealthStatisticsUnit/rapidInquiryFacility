@@ -38,7 +38,7 @@ $r = RIF4::Instance();
 	
 	protected function  connect () {
      	try{
-				self :: $dbh = new PDO("pgsql:dbname=rif4_canvas;host=localhost;user=postgres;password=Imperial1234", array( PDO::ATTR_PERSISTENT => true )); 
+            self :: $dbh = new PDO("pgsql:host=localhost;dbname=rif4_canvas;user=postgres;password=Imperial1234", array( PDO::ATTR_PERSISTENT => true )); 
 		    //self :: $dbh = new PDO("pgsql:dbname=rif4;host=localhost;user=postgres;password=fava" , array( PDO::ATTR_PERSISTENT => true )); 
 			self :: $dbh-> setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 		}catch(PDOException $pe){

@@ -8,7 +8,11 @@ RIF.study[ 'study-facade-diseaseSubmission' ] = ( function() {
 
 
     //SuBSCRIBERS
-
+    healthThemeChanged: function( args ) {},
+    numeratorChanged: function( args ) {},
+    denominatorChanged: function( args ) {},
+    resolutionChanged: function( args ) {},
+    selectAtChanged: function( args ) {},
 
   };
 

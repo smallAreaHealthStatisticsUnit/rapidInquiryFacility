@@ -2,7 +2,7 @@ RIF.menu[ 'menu-facade-diseaseSubmission' ] = ( function( _p ) {
 
   /*
    * Facades can only communicate to main component.
-   * Cannot call of directly component sub units
+   * Cannot call directly component sub units
    */
 
   var facade = {
@@ -14,10 +14,11 @@ RIF.menu[ 'menu-facade-diseaseSubmission' ] = ( function( _p ) {
 
 
     /* Firers  */
-    healthThemeChanged: function() {},
-    numeratorChanged: function() {},
-    denominatorChanged: function() {},
-
+    healthThemeChanged: function( args ) {},
+    numeratorChanged: function( args ) {},
+    denominatorChanged: function( args ) {},
+    resolutionChanged: function( args ) {},
+    selectAtChanged: function( args ) {},
 
     /* Study Related */
 

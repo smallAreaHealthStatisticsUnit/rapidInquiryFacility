@@ -32,13 +32,60 @@ RIF.menu.utils = ( function() {
 
       if ( arr.length === 0 ) {
         arr.push( "None available" );
+      }
+
+      if ( !( el instanceof jQuery ) ) {
+        el = $( el );
       };
+
+      el.empty();
 
       var l = arr.length;
       while ( l-- ) {
         var val = arr[ l ];
         el.prepend( "<div><a href='#'>" + val + "</a></div>" )
       }
+
+      _p.dropDownInputTextEvents( el.prev(), el );
+    },
+
+    dropDownInputTextEvents: function( dropdown, available ) {
+
+      var isDropDwonHovered = false;
+
+      dropdown.off( 'focus' );
+      dropdown.off( 'blur' );
+      available.off( 'mouseover' )
+      available.children().off( 'click' );
+
+      dropdown.on( 'focus', function() {
+        $( this ).next().show();
+      } );
+
+      dropdown.on( 'blur', function() {
+        if ( !isDropDwonHovered ) {
+          $( this ).next().hide();
+        }
+      } );
+
+      available.on( 'mouseover', function() {
+        isDropDwonHovered = true;
+      } );
+
+      available.on( 'mouseleave', function() {
+        $( this ).hide();
+        $( this ).prev().blur();
+        isDropDwonHovered = false;
+      } );
+
+      available.children().on( 'click', function() {
+        var input = $( this ).parent().prev();
+        $( input )
+          .attr( "value", $( this ).text() )
+          .addClass( "inpputBorderSelection" );
+
+        $( this ).parent().hide();
+      } );
     },
 
     fieldCheckboxes: function( obj, el, name ) {

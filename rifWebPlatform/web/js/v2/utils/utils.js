@@ -184,12 +184,13 @@
 
       xhr: function() {
         /* 
-				   mime Types : https://github.com/mbostock/d3/wiki/Requests#wiki-d3_json
-				   args : url ,  callback , [mime]
-				   Implement MORE OPTIONS!
-				*/
+         * mime Types : https://github.com/mbostock/d3/wiki/Requests#wiki-d3_json
+         * args : url ,  callback , [mime]
+         * Implement MORE OPTIONS!
+         */
         var args = Array.prototype.slice.call( arguments, 0 ),
           mime = args[ 2 ] || "text/plain",
+          //url = 'http://localhost:8080/rifServices/' + args[0];
           url = "backend/gets/" + args[ 0 ];
 
         d3.xhr( url, mime, args[ 1 ] );

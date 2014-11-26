@@ -36,6 +36,37 @@ RIF.diseaseSubmission = ( function() {
 
     events: {
       /**--STUDY OBJECT RELATED---**/
+
+      healthThemeChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "healthThemeChanged"
+      },
+
+      numeratorChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "numeratorChanged"
+      },
+
+      denominatorChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "denominatorChanged"
+      },
+
+      resolutionChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "resolutionChanged"
+      },
+
+      selectAtChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "selectAtChanged"
+      }
+
     },
 
     init: function() {
