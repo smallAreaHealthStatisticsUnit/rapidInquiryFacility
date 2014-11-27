@@ -115,6 +115,13 @@ public abstract class AbstractHealthCodeProviderTestCase extends
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
 
+		icd10HealthCodeTaxonomy
+			= HealthCodeTaxonomy.newInstance(
+				"ICD 10", 
+				"ICD 10 terms",
+				"icd10",
+				"1.0");
+		
 		masterChapter02HealthCode = HealthCode.newInstance();
 		masterChapter02HealthCode.setCode("Chapter 02");
 		masterChapter02HealthCode.setDescription("Chapter 02; Neoplasms");
