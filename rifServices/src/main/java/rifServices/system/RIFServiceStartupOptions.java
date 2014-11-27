@@ -81,8 +81,13 @@ public final class RIFServiceStartupOptions {
 	// ==========================================
 	// Section Properties
 	// ==========================================
+
+	private boolean isWebDeployment;
+	
+	private String databaseDriverClassName;
+	
 	/** The database driver. */
-	private String databaseDriver;
+	private String databaseDriverPrefix;
 	
 	/** The host. */
 	private String host;
@@ -96,38 +101,69 @@ public final class RIFServiceStartupOptions {
 	/** The server side cache directory. */
 	private File serverSideCacheDirectory;
 		
-	private String webApplicationFilePath;
+	private String webApplicationDirectory;
+
+	private String rScriptDirectory;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
+	
 	/**
 	 * Instantiates a new RIF service startup options.
 	 */
-	public RIFServiceStartupOptions() {
+	public RIFServiceStartupOptions(boolean isWebDeployment) {
 		
-		databaseDriver = "jdbc:postgresql";
+		this.isWebDeployment = isWebDeployment;
+		
+		//We should be able to read startup properties from
+		//a startup properties file
+		
+		databaseDriverClassName 
+			= RIFServiceStartupProperties.getDatabaseDriverClassName();
+		databaseDriverPrefix
+			= RIFServiceStartupProperties.getDatabaseDriverPrefix();
+		host
+			= RIFServiceStartupProperties.getHost();
+		port
+			= RIFServiceStartupProperties.getPort();
+		databaseName
+			= RIFServiceStartupProperties.getDatabaseName();
+		webApplicationDirectory
+			= RIFServiceStartupProperties.getWebApplicationDirectory();
+		rScriptDirectory
+			= RIFServiceStartupProperties.getRScriptDirectory();
+		
+		File currentDirectory = new File(".");
+		System.out.println("RIFServiceStartupOptions current directory=="+this.getClassFileDirectoryPath()+"==");
+		
+/*
+		databaseDriverPrefix = "jdbc:postgresql";
 		host = "localhost";
 		port = "5432";
 		databaseName = "sahsuland";
 		serverSideCacheDirectory
 			= new File("C:\\rif_stuff\\working_directory");
-		
+*/
+		System.out.println("Startup Options db connect=="+getReadOnlyDatabaseConnectionString()+"==");
+
 	}
 
+	
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
 	/**
-	 * Gets the database driver.
+	 * Gets the database driver class name
 	 *
 	 * @return the database driver
 	 */
-	public String getDatabaseDriver() {
+	public String getDatabaseDriverClassName() {
 		
-		return databaseDriver;
+		return databaseDriverClassName;
 	}
 
 	/**
@@ -135,12 +171,33 @@ public final class RIFServiceStartupOptions {
 	 *
 	 * @param databaseDriver the new database driver
 	 */
-	public void setDatabaseDriver(
-		final String databaseDriver) {
+	public void setDatabaseDriverClassName(
+		final String databaseDriverClassName) {
 
-		this.databaseDriver = databaseDriver;
+		this.databaseDriverClassName = databaseDriverClassName;
 	}
 
+	/**
+	 * Gets the database driver class name
+	 *
+	 * @return the database driver
+	 */
+	public String getDatabaseDriverPrefix() {
+		
+		return databaseDriverPrefix;
+	}
+
+	/**
+	 * Sets the database driver.
+	 *
+	 * @param databaseDriver the new database driver
+	 */
+	public void setDatabaseDriverPrefix(
+		final String databaseDriverPrefix) {
+
+		this.databaseDriverPrefix = databaseDriverPrefix;
+	}
+	
 	/**
 	 * Gets the host.
 	 *
@@ -238,18 +295,59 @@ public final class RIFServiceStartupOptions {
 	}
 	
 	
-	public String getWebApplicationFilePath() {
-		return webApplicationFilePath;
+	public String getWebApplicationDirectory() {
+		return webApplicationDirectory;
+	}
+
+	public String getClassFileDirectoryPath() {
+		
+		String currentDirectoryPath = (new File(".")).getAbsolutePath();
+		int lastIndex = currentDirectoryPath.lastIndexOf(File.separator);
+		
+		
+		StringBuilder path = new StringBuilder();
+		
+		if (isWebDeployment == false) {
+			path.append(currentDirectoryPath.substring(0, lastIndex));
+			path.append(File.separator);
+			path.append("target");
+			path.append(File.separator);
+			path.append("classes");
+		}
+		else {
+			path.append(currentDirectoryPath.substring(0, lastIndex));
+			path.append(File.separator);
+			path.append("webapps");
+			path.append(File.separator);
+			path.append("rifServices");
+			path.append(File.separator);
+			path.append("WEB-INF");
+			path.append(File.separator);
+			path.append("classes");
+		}
+		
+		return path.toString();
 	}
 	
-	public void setWebApplicationFilePath(String webApplicationFilePath) {
-		this.webApplicationFilePath = webApplicationFilePath;
+	public void setWebApplicationDirectory(
+		final String webApplicationDirectory) {
+		this.webApplicationDirectory = webApplicationDirectory;
 	}
 	
+	public String getRScriptDirectory() {
+		return rScriptDirectory;
+	}
+	
+	public void setRScriptDirectory(
+		final String rScriptDirectory) {
+		
+		this.rScriptDirectory = rScriptDirectory;
+	}
+			
 	public String getReadOnlyDatabaseConnectionString() {
 		
 		StringBuilder urlText = new StringBuilder();
-		urlText.append(databaseDriver);
+		urlText.append(databaseDriverPrefix);
 		urlText.append(":");
 		urlText.append("//");
 		urlText.append(host);
@@ -264,7 +362,7 @@ public final class RIFServiceStartupOptions {
 	public String getWriteOnlyDatabaseConnectionString() {
 		
 		StringBuilder urlText = new StringBuilder();
-		urlText.append(databaseDriver);
+		urlText.append(databaseDriverPrefix);
 		urlText.append(":");
 		urlText.append("//");
 		urlText.append(host);
@@ -293,15 +391,26 @@ public final class RIFServiceStartupOptions {
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
 
-		if (databaseDriver != null) {
+		if (databaseDriverClassName != null) {
 			String databaseDriverLabel
 				= RIFServiceMessages.getMessage("rifServiceStartupOptions.databaseDriver.label");		
 			fieldValidationUtility.checkMaliciousCode(
 				recordType,
 				databaseDriverLabel,
-				databaseDriver);
+				databaseDriverClassName);
 		}
 
+		if (databaseDriverPrefix != null) {
+			String databaseDriverLabel
+				= RIFServiceMessages.getMessage("rifServiceStartupOptions.databaseDriverPrefix.label");		
+			fieldValidationUtility.checkMaliciousCode(
+				recordType,
+				databaseDriverLabel,
+				databaseDriverPrefix);
+		}
+
+		
+		
 		if (host != null) {
 			String hostLabel
 				= RIFServiceMessages.getMessage("rifServiceStartupOptions.host.label");		
@@ -344,9 +453,20 @@ public final class RIFServiceStartupOptions {
 		String recordType = getRecordType();
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		
-		if (fieldValidationUtility.isEmpty(databaseDriver)) {
+		if (fieldValidationUtility.isEmpty(databaseDriverClassName)) {
 			String databaseDriverLabel
-				= RIFServiceMessages.getMessage("rifServiceStartupOptions.databaseDriver.label");
+				= RIFServiceMessages.getMessage("rifServiceStartupOptions.databaseDriverClassName.label");
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordType,
+					databaseDriverLabel);
+			errorMessages.add(errorMessage);			
+		}
+
+		if (fieldValidationUtility.isEmpty(databaseDriverPrefix)) {
+			String databaseDriverLabel
+				= RIFServiceMessages.getMessage("rifServiceStartupOptions.databaseDriverPrefix.label");
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
