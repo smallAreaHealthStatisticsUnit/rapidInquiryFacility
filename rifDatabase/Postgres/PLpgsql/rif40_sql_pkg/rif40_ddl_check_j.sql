@@ -106,10 +106,13 @@ DECLARE
 				  FROM pg_foreign_table t, pg_roles r, pg_class c
 					LEFT OUTER JOIN pg_namespace n ON (n.oid = c.relnamespace)			
 				 WHERE t.ftrelid  = c.oid 
-  				   AND n.nspname IN (USER, l_schema)
-				   AND c.relowner = (SELECT oid FROM pg_roles WHERE rolname = USER)
+  				   AND n.nspname IN (USER, l_schema, 'rif_data', 'pop', 'gis', 'data_load')
+				   AND c.relowner IN (SELECT oid FROM pg_roles 
+									  WHERE rolname IN (USER, 'pop', 'gis', 'data_load'))
 				) b3 ON (b3.fdw_table = a.table_name)
-		 WHERE (tableowner IN (USER, l_schema) OR viewowner IN (USER, l_schema) OR fdw_tableowner = USER)
+		 WHERE (tableowner IN (USER, l_schema, 'pop', 'gis', 'data_load') 
+		    OR viewowner IN (USER, l_schema, 'pop', 'gis', 'data_load') 
+			OR fdw_tableowner = USER)
                    AND a.table_schema  != 'rif_studies'			/* Exclude map/extract tables */
 		   AND NOT (a.table_name IN ('g_rif40_comparison_areas', 'g_rif40_study_areas', 'user_role_privs', 'sahsuland_geography_test')
     		       OR   a.table_name IN (
@@ -193,21 +196,22 @@ DECLARE
 			EXCEPT
 			SELECT t.tablename table_or_view			/* Local tables */
 			  FROM pg_tables t, pg_class c
-			 WHERE t.tableowner IN (USER, l_schema)
-			   AND t.schemaname IN (USER, l_schema)
-			   AND c.relowner   IN (SELECT oid FROM pg_roles WHERE rolname IN (USER, l_schema))
+			 WHERE t.tableowner IN (USER, l_schema, 'pop', 'gis', 'data_load')
+			   AND t.schemaname IN (USER, l_schema, 'rif_data', 'pop', 'gis', 'data_load')
+			   AND c.relowner   IN (SELECT oid FROM pg_roles 
+									 WHERE rolname IN (USER, l_schema, 'pop', 'gis', 'data_load'))
 			   AND c.relname    = t.tablename
 			   AND c.relkind    = 'r' 				/* Relational table */
 			   AND c.relpersistence IN ('p', 'u') 			/* Persistence: permanent/unlogged */
 			EXCEPT
 			SELECT viewname table_or_view				/* Local views */
 			  FROM pg_views
-			 WHERE viewowner  IN (USER, l_schema)
-			   AND schemaname IN (USER, l_schema)
+			 WHERE viewowner  IN (USER, l_schema, 'pop', 'gis', 'data_load')
+			   AND schemaname IN (USER, l_schema, 'rif_data', 'pop', 'gis', 'data_load')
 		)
 		   AND table_or_view_name_hide NOT LIKE 'G%'
 		)
-		SELECT table_schema, a.table_or_view, a.column_name
+		SELECT b.table_schema, a.table_or_view, a.column_name
 		  FROM a, information_schema.columns b
 		 WHERE a.table_or_view = b.table_name
 		   AND a.column_name   = b.column_name

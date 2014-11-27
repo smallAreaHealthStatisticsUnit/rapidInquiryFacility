@@ -38,9 +38,9 @@ BEGIN
 -- Set a default path, schema to user
 --
 	IF current_user = 'rif40' THEN
-		sql_stmt:='SET search_path TO rif40, public, topology, gis, pop, rif40_sql_pkg, rif_studies';
+		sql_stmt:='SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies';
 	ELSE
-		sql_stmt:='SET search_path TO '||USER||',rif40, public, topology, gis, pop, rif40_sql_pkg, rif_studies';
+		sql_stmt:='SET search_path TO '||USER||',rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies';
 	END IF;
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;

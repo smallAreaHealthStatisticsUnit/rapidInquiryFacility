@@ -145,8 +145,10 @@ SELECT recnum, schema, CASE
 			WHEN recnum = 6 AND schema = 'topology' THEN true
 			WHEN recnum IN (6,7) AND schema = 'gis' THEN true
 			WHEN recnum IN (7,8) AND schema = 'pop' THEN true
-			WHEN recnum IN (8,9) AND schema = 'rif40_sql_pkg' THEN true
-			WHEN recnum IN (9,10) AND schema = 'rif_studies' THEN true
+			WHEN recnum IN (8,9) AND schema = 'rif_data' THEN true
+			WHEN recnum IN (9,10) AND schema = 'data_load' THEN true
+			WHEN recnum IN (10,11) AND schema = 'rif40_sql_pkg' THEN true
+			WHEN recnum IN (11,12) AND schema = 'rif_studies' THEN true
 			ELSE false
 	   END schema_ok, CASE	
 			WHEN recnum = 1 THEN 'pg_temp%'
@@ -157,8 +159,10 @@ SELECT recnum, schema, CASE
 			WHEN recnum = 6 THEN 'topology'
 			WHEN recnum = 7 THEN 'gis'
 			WHEN recnum = 8 THEN 'pop'
-			WHEN recnum = 9 THEN 'rif40_sql_pkg'
-			WHEN recnum = 10 THEN 'rif_studies'
+			WHEN recnum = 9 THEN 'rif_data'
+			WHEN recnum = 10 THEN 'data_load'
+			WHEN recnum = 11 THEN 'rif40_sql_pkg'
+			WHEN recnum = 12 THEN 'rif_studies'
 			ELSE 'UNKNOWN'
 	   END expected_schema
   FROM b;
@@ -204,8 +208,10 @@ DECLARE
 					WHEN recnum = 6 AND schema = 'topology' THEN true
 					WHEN recnum IN (6,7) AND schema = 'gis' THEN true
 					WHEN recnum IN (7,8) AND schema = 'pop' THEN true
-					WHEN recnum IN (8,9) AND schema = 'rif40_sql_pkg' THEN true
-					WHEN recnum IN (9,10) AND schema = 'rif_studies' THEN true
+					WHEN recnum IN (8,9) AND schema = 'rif_data' THEN true
+					WHEN recnum IN (9,10) AND schema = 'data_load' THEN true
+					WHEN recnum IN (10,11) AND schema = 'rif40_sql_pkg' THEN true
+					WHEN recnum IN (11,12) AND schema = 'rif_studies' THEN true
 					ELSE false
 			   END schema_ok, CASE	
 					WHEN recnum = 1 THEN 'pg_temp%'
@@ -216,8 +222,10 @@ DECLARE
 					WHEN recnum = 6 THEN 'topology'
 					WHEN recnum = 7 THEN 'gis'
 					WHEN recnum = 8 THEN 'pop'
-					WHEN recnum = 9 THEN 'rif40_sql_pkg'
-					WHEN recnum = 10 THEN 'rif_studies'
+					WHEN recnum = 9 THEN 'rif_data'
+					WHEN recnum = 10 THEN 'data_load'
+					WHEN recnum = 11 THEN 'rif40_sql_pkg'
+					WHEN recnum = 12 THEN 'rif_studies'
 					ELSE 'UNKNOWN'
 			   END expected_schema
 		  FROM b; 

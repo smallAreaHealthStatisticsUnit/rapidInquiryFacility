@@ -104,7 +104,8 @@ DECLARE
 			  FROM pg_class c
 				LEFT OUTER JOIN pg_namespace n ON (n.oid = c.relnamespace)			
 				LEFT OUTER JOIN pg_description d ON (d.objoid = c.oid AND (d.objsubid IS NULL OR d.objsubid = 0))
-			 WHERE c.relowner IN (SELECT oid FROM pg_roles WHERE rolname IN ('rif40', USER))
+			 WHERE c.relowner IN (SELECT oid FROM pg_roles
+								   WHERE rolname IN ('rif40', USER, 'pop', 'gis', 'data_load'))
 			UNION
 			SELECT p.proname AS object_name, 
 			       n.nspname AS object_schema,
@@ -113,7 +114,8 @@ DECLARE
 			  FROM pg_proc p
 				LEFT OUTER JOIN pg_namespace n ON (n.oid = p.pronamespace)			
 				LEFT OUTER JOIN pg_description d ON (d.objoid = p.oid AND d.objsubid = 0)
-			 WHERE p.proowner IN (SELECT oid FROM pg_roles WHERE rolname IN ('rif40', USER))
+			 WHERE p.proowner IN (SELECT oid FROM pg_roles 
+								   WHERE rolname IN ('rif40', USER, 'pop', 'gis', 'data_load'))
 			UNION
 			SELECT t.tgname AS object_name, 
 			       n.nspname AS object_schema,
@@ -122,7 +124,8 @@ DECLARE
 			  FROM pg_trigger t, pg_class c
 				LEFT OUTER JOIN pg_namespace n ON (n.oid = c.relnamespace)			
 				LEFT OUTER JOIN pg_description d ON (d.objoid = c.oid AND d.objsubid = 0)
-			 WHERE c.relowner IN (SELECT oid FROM pg_roles WHERE rolname IN ('rif40', USER))
+			 WHERE c.relowner IN (SELECT oid FROM pg_roles
+								   WHERE rolname IN ('rif40', USER, 'pop', 'gis', 'data_load'))
 			   AND c.oid = t.tgrelid
 			   AND t.tgisinternal = FALSE /* trigger function */
 			UNION
@@ -137,11 +140,13 @@ DECLARE
 						(b1.schemaname = a.table_schema AND a.table_name = b1.tablename) 
 					LEFT OUTER JOIN pg_views b2  ON 
 						(b2.schemaname = a.table_schema AND a.table_name = b2.viewname) 
-				 WHERE tableowner IN (USER, 'rif40') OR viewowner IN (USER, 'rif40')) c, 
+				 WHERE tableowner IN (USER, 'rif40', 'pop', 'gis', 'data_load')
+				    OR viewowner IN (USER, 'rif40')) c, 
 				pg_class a
 				LEFT OUTER JOIN pg_description b ON (b.objoid = a.oid)
 				LEFT OUTER JOIN pg_namespace n ON (n.oid = a.relnamespace)			
-			 WHERE a.relowner IN (SELECT oid FROM pg_roles WHERE rolname IN (USER, 'rif40')) 
+			 WHERE a.relowner IN (SELECT oid FROM pg_roles
+								   WHERE rolname IN (USER, 'rif40', 'pop', 'gis', 'data_load')) 
 			   AND b.objsubid = c.ordinal_position
 			   AND a.relname  = c.table_or_view
 		), b AS (
@@ -180,7 +185,8 @@ DECLARE
 			  FROM pg_class c
 				LEFT OUTER JOIN pg_namespace n ON (n.oid = c.relnamespace)			
 				LEFT OUTER JOIN pg_description d ON (d.objoid = c.oid AND (d.objsubid IS NULL OR d.objsubid = 0))
-			 WHERE c.relowner IN (SELECT oid FROM pg_roles WHERE rolname IN ('rif40', USER))
+			 WHERE c.relowner IN (SELECT oid FROM pg_roles
+								   WHERE rolname IN ('rif40', USER, 'pop', 'gis', 'data_load'))
 			UNION
 			SELECT p.proname AS object_name, 
 			       n.nspname AS object_schema,
@@ -189,7 +195,8 @@ DECLARE
 			  FROM pg_proc p
 				LEFT OUTER JOIN pg_namespace n ON (n.oid = p.pronamespace)			
 				LEFT OUTER JOIN pg_description d ON (d.objoid = p.oid AND d.objsubid = 0)
-			 WHERE p.proowner IN (SELECT oid FROM pg_roles WHERE rolname IN ('rif40', USER))
+			 WHERE p.proowner IN (SELECT oid FROM pg_roles
+								   WHERE rolname IN ('rif40', USER, 'pop', 'gis', 'data_load'))
 			UNION
 			SELECT t.tgname AS object_name, 
 			       n.nspname AS object_schema,
@@ -198,7 +205,8 @@ DECLARE
 			  FROM pg_trigger t, pg_class c
 				LEFT OUTER JOIN pg_namespace n ON (n.oid = c.relnamespace)			
 				LEFT OUTER JOIN pg_description d ON (d.objoid = c.oid AND d.objsubid = 0)
-			 WHERE c.relowner IN (SELECT oid FROM pg_roles WHERE rolname IN ('rif40', USER))
+			 WHERE c.relowner IN (SELECT oid FROM pg_roles 
+								   WHERE rolname IN ('rif40', USER, 'pop', 'gis', 'data_load'))
 			   AND c.oid = t.tgrelid
 			   AND t.tgisinternal = FALSE /* trigger function */
 			UNION
@@ -213,13 +221,15 @@ DECLARE
 						(b1.schemaname = a.table_schema AND a.table_name = b1.tablename) 
 					LEFT OUTER JOIN pg_views b2  ON 
 						(b2.schemaname = a.table_schema AND a.table_name = b2.viewname) 
-				 WHERE tableowner IN (USER, 'rif40') OR viewowner IN (USER, 'rif40')
+				 WHERE tableowner IN (USER, 'rif40') 
+				    OR viewowner IN (USER, 'rif40', 'pop', 'gis', 'data_load')
                    		   AND a.table_schema  != 'rif_studies'			/* Exclude map/extract tables */
 				) c, 
 				pg_class a
 				LEFT OUTER JOIN pg_description b ON (b.objoid = a.oid)
 				LEFT OUTER JOIN pg_namespace n ON (n.oid = a.relnamespace)			
-			 WHERE a.relowner IN (SELECT oid FROM pg_roles WHERE rolname IN (USER, 'rif40')) 
+			 WHERE a.relowner IN (SELECT oid FROM pg_roles
+								   WHERE rolname IN (USER, 'rif40', 'pop', 'gis', 'data_load')) 
 			   AND b.objsubid = c.ordinal_position
 			   AND a.relname  = c.table_or_view
 		)

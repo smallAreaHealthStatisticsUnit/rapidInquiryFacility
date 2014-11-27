@@ -111,16 +111,17 @@ DECLARE
 		SELECT t.tablename table_or_view			/* Local tables */
 		  FROM pg_tables t, pg_class c
 		 WHERE t.tableowner IN (USER, l_schema)
-		   AND t.schemaname IN (USER, l_schema)
-		   AND c.relowner   IN (SELECT oid FROM pg_roles WHERE rolname IN (USER, l_schema))
+		   AND t.schemaname IN (USER, l_schema, 'rif_data', 'pop', 'gis', 'data_load')
+		   AND c.relowner   IN (SELECT oid FROM pg_roles 
+							     WHERE rolname IN (USER, l_schema, 'rif_data', 'pop', 'gis'))
 		   AND c.relname    = t.tablename
 		   AND c.relkind    = 'r' 					/* Relational table */
 		   AND c.relpersistence IN ('p', 'u') 		/* Persistence: permanent/unlogged */
 		EXCEPT
 		SELECT viewname	table_or_view 				/* Local views */
 		  FROM pg_views
-		 WHERE viewowner  IN (USER, l_schema)
-		   AND schemaname IN (USER, l_schema)
+		 WHERE viewowner  IN (USER, l_schema, 'pop', 'gis', 'data_load')
+		   AND schemaname IN (USER, l_schema, 'rif_data', 'pop', 'gis', 'data_load')
 		 ORDER BY 1;
 --
 	c1_rec RECORD;

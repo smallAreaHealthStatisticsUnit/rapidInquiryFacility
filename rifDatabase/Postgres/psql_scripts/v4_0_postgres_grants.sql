@@ -160,8 +160,8 @@ GRANT SELECT ON rif40_triggers TO rif_manager;
 GRANT SELECT ON rif40_columns TO rif_manager; 
 GRANT SELECT ON rif40_dual TO PUBLIC;
 
-GRANT SELECT ON rif40.sahsuland_cancer TO rif_user, rif_manager; 
-GRANT SELECT ON rif40.sahsuland_pop TO rif_user, rif_manager; 
+GRANT SELECT ON rif_data.sahsuland_cancer TO rif_user, rif_manager; 
+GRANT SELECT ON pop.sahsuland_pop TO rif_user, rif_manager; 
 
 --
 -- Grant SELECT to all views

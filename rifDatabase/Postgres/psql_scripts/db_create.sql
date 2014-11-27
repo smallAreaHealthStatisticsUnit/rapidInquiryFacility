@@ -351,7 +351,8 @@ DECLARE
 	c4_rec RECORD;
 	c11_rec RECORD;
 --
-	userlist VARCHAR[]:=ARRAY['rif40', 'gis', 'pop', 'notarifuser'];
+	userlist VARCHAR[]:=ARRAY['rif40', 'gis', 'pop', 'notarifuser', 
+			'test_rif_no_suppression', 'test_rif_user', 'test_rif_manager', 'test_rif_student'];
 	rolelist VARCHAR[]:=ARRAY['rif_user', 'rif_manager', 'rif_no_suppression', 'rifupg34', 'rif_student'];
 	x VARCHAR;
 	sql_stmt VARCHAR;
@@ -417,22 +418,51 @@ BEGIN
 				RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 				EXECUTE sql_stmt;
 			END IF;
+--
+-- Code owner: rif40
+--
 		ELSIF x = 'rif40' THEN
 	    	sql_stmt:='CREATE ROLE '||x||
-				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION ENCRYPTED PASSWORD  '''||
+				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION ENCRYPTED PASSWORD '''||
 				c2_rec.encrypted_rif40_password||'''';
 			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 			EXECUTE sql_stmt;
-		ELSIF x IN ('notarifuser', 'gis', 'pop') THEN
+--
+-- Test user: not_a_rif_user - should have no access at all
+--
+		ELSIF x = 'notarifuser' THEN
 	    	sql_stmt:='CREATE ROLE '||x||
-				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD  '''||
+				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD '''||
 				x||'''';
+			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+			EXECUTE sql_stmt;
+--
+-- Data owners, non health data (so wider access can be granted if required)
+--
+		ELSIF x IN ('gis', 'pop') THEN
+	    	sql_stmt:='CREATE ROLE '||x||
+				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD '''||
+				x||'''';
+			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+			EXECUTE sql_stmt;
+--
+-- Test users for roles
+--
+		ELSIF x IN ('test_rif_no_suppression', 'test_rif_user', 'test_rif_manager', 'test_rif_student') THEN
+	    	sql_stmt:='CREATE ROLE '||x||
+				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD '''||
+				x||'''';
+			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+			EXECUTE sql_stmt;
+			sql_stmt:='GRANT '||right(x, -5)||' TO '||x;
 			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 			EXECUTE sql_stmt;
         ELSE
             RAISE WARNING 'db_create.sql() Do nothing for user: %', x;
 		END IF;
 	END LOOP;
+--
+-- Non login roles
 --
 	FOREACH x IN ARRAY rolelist LOOP
 		OPEN c3(x);
@@ -791,7 +821,7 @@ BEGIN
 --
 -- Set default search pathname
 --
-	sql_stmt:='ALTER DATABASE sahsuland SET search_path TO rif40, public, topology, gis, pop, rif40_sql_pkg, rif_studies';
+	sql_stmt:='ALTER DATABASE sahsuland SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies';
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;
 END;
@@ -821,7 +851,8 @@ DECLARE
 	c1_rec RECORD;
 --
 	schemalist VARCHAR[]:=ARRAY['rif40_dmp_pkg', 'rif40_sql_pkg', 'rif40_sm_pkg', 'rif40_log_pkg', 'rif40_trg_pkg',
-			'rif40_geo_pkg', 'rif40_xml_pkg', 'rif40_R_pkg', 'rif40', 'gis', 'pop', 'rif_studies'];
+			'rif40_geo_pkg', 'rif40_xml_pkg', 'rif40_R_pkg', 
+			'rif40', 'gis', 'pop', 'rif_studies', 'rif_data', 'data_load'];
 	x VARCHAR;
 	sql_stmt VARCHAR;
 	u_name	VARCHAR;
@@ -885,30 +916,56 @@ BEGIN
 			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 			EXECUTE sql_stmt;
 		END IF;
-		sql_stmt:='GRANT ALL ON SCHEMA '||x||' TO rif40';
+		sql_stmt:='GRANT ALL ON SCHEMA '||x||' TO rif40 WITH GRANT OPTION';
 		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 		EXECUTE sql_stmt;
 		sql_stmt:='GRANT USAGE ON SCHEMA '||x||' TO rif_user';
 		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 		EXECUTE sql_stmt;
-		sql_stmt:='GRANT USAGE ON SCHEMA '||x||' TO rif_manager';
+		sql_stmt:='GRANT USAGE ON SCHEMA '||x||' TO rif_manager WITH GRANT OPTION';
 		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 		EXECUTE sql_stmt;
+--
+-- Grant CREATE privilege to data load schema; allow onwards grants
+--
+		IF x IN ('rif_data', 'data_load') THEN
+				sql_stmt:='GRANT CREATE ON SCHEMA '||x||' TO rif_manager WITH GRANT OPTION';
+				RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+				EXECUTE sql_stmt;
+		END IF;
 	END LOOP;
 
 --
 -- Set default search pathname
 --
-	sql_stmt:='ALTER DATABASE sahsuland_dev SET search_path TO rif40, public, topology, gis, pop, rif40_sql_pkg, rif_studies';
+	sql_stmt:='ALTER DATABASE sahsuland_dev SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies';
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;
 END;
 $$;
 \set echo ALL
+
+--
+-- Set search path for rif40
+--
+ALTER USER rif40 SET search_path 
+	TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies;
+SET search_path 
+	TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies;
+	
 --
 -- End transaction 3: sahsuland_dev build
 --
+
 END;
- 
+SHOW search_path;
+
+/*
+DO LANGUAGE plpgsql $$
+BEGIN
+	RAISE EXCEPTION 'Stop.';
+END;
+$$;
+ */
 --
 -- Eof
