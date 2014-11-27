@@ -73,6 +73,7 @@ public class RIFServiceSecurityException
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	public enum SecurityThreatType {MALICIOUS_CODE, SUSPICIOUS_BEHAVIOUR};
 
 	// ==========================================
 	// Section Properties
@@ -83,7 +84,9 @@ public class RIFServiceSecurityException
 	// ==========================================
 
 	private static final long serialVersionUID = -4628711116567004556L;
-
+	
+	private SecurityThreatType securityThreatType;
+	
 	/**
 	 * Instantiates a new RIF service security exception.
 	 *
@@ -93,12 +96,23 @@ public class RIFServiceSecurityException
 		final String errorMessage) {
 		
 		super(RIFServiceError.SECURITY_VIOLATION, errorMessage);
+		
+		//by default, assume they are malicious code fragments
+		securityThreatType = SecurityThreatType.MALICIOUS_CODE;
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	
+	public SecurityThreatType getSecurityThreatType() {
+		return securityThreatType;
+	}
+	
+	public void setSecurityThreatType(final SecurityThreatType securityThreatType) {
+		this.securityThreatType = securityThreatType;
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
