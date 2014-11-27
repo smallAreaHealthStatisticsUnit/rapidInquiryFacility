@@ -197,6 +197,7 @@ public class SQLMinMaxQueryFormatter
 		padAndFinishLine();
 
 		addQueryPhrase(1, convertCase(fromTableName));
+		padAndFinishLine();
 		
 		int numberOfWhereConditions = whereConditions.size();
 		if (numberOfWhereConditions > 0) {			
