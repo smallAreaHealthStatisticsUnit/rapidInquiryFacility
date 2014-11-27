@@ -3,12 +3,15 @@ package rifServices.test.services;
 
 import rifServices.test.AbstractRIFTestCase;
 
+
 import rifServices.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.TestRIFStudyRetrievalService;
 import rifServices.dataStorageLayer.TestRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.TestRIFStudySubmissionService;
 import rifServices.system.RIFServiceException;
+
+import rifServices.system.RIFServiceStartupOptions;
 
 import org.junit.After;
 import org.junit.Before;
@@ -211,7 +214,7 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 			= new FieldValidationUtility();
 		String maliciousFieldValue 
 			= fieldValidationUtility.getTestMaliciousFieldValue();		
-				
+	
 		validUser = User.newInstance("kgarwood", "11.111.11.228");
 		nonExistentUser = User.newInstance("nobody", "11.111.11.228");
 		emptyUser = User.newInstance(null, "11.111.11.228");
@@ -442,7 +445,8 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 	@Before
 	public void setUp() {
 		try {
-			rifServiceBundle.login("kgarwood", new String("a").toCharArray());			
+			rifServiceBundle.login("kgarwood", "kgarwood");						
+			rifServiceBundle.login("ffabbri", "ffabbri");			
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
@@ -464,7 +468,10 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 	// ==========================================
 	protected void initialiseService() throws RIFServiceException {
 		rifServiceBundle = new TestRIFStudyServiceBundle();
-		rifServiceBundle.initialise();
+		
+		RIFServiceStartupOptions startupOptions
+			= new RIFServiceStartupOptions(false);
+		rifServiceBundle.initialise(startupOptions);
 		rifStudySubmissionService 
 			= (TestRIFStudySubmissionService) rifServiceBundle.getRIFStudySubmissionService();
 		rifStudyRetrievalService
