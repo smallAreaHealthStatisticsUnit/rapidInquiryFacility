@@ -427,6 +427,7 @@ public class SQLSelectQueryFormatter
 		if (numberOfWhereConditions > 0) {			
 			padAndFinishLine();
 			addQueryPhrase(0, "WHERE");
+			padAndFinishLine();
 			
 			if (orAllWhereConditions == true) {
 				for (int i = 0; i < numberOfWhereConditions; i++) {
