@@ -102,7 +102,7 @@ public class TestRIFServiceStartupOptions extends AbstractRIFTestCase {
 	@Test
 	public void acceptValidStartupOptions() {
 		RIFServiceStartupOptions rifServiceStartupOptions
-			= new RIFServiceStartupOptions();
+			= new RIFServiceStartupOptions(false);
 
 		try {
 			rifServiceStartupOptions.checkErrors();			
@@ -119,8 +119,8 @@ public class TestRIFServiceStartupOptions extends AbstractRIFTestCase {
 	public void rejectNullFieldValues() {
 		
 		RIFServiceStartupOptions rifServiceStartupOptions
-			= new RIFServiceStartupOptions();
-		rifServiceStartupOptions.setDatabaseDriver(null);
+			= new RIFServiceStartupOptions(false);
+		rifServiceStartupOptions.setDatabaseDriverClassName(null);
 		try {
 			rifServiceStartupOptions.checkErrors();
 			fail();
@@ -132,7 +132,23 @@ public class TestRIFServiceStartupOptions extends AbstractRIFTestCase {
 				1);
 		}		
 
-		rifServiceStartupOptions = new RIFServiceStartupOptions();		
+		rifServiceStartupOptions
+			= new RIFServiceStartupOptions(false);
+		rifServiceStartupOptions.setDatabaseDriverPrefix(null);
+		try {
+			rifServiceStartupOptions.checkErrors();
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_STARTUP_OPTIONS, 
+				1);
+		}		
+		
+		
+		
+		rifServiceStartupOptions = new RIFServiceStartupOptions(false);		
 		rifServiceStartupOptions.setDatabaseName(null);
 		try {
 			rifServiceStartupOptions.checkErrors();
@@ -146,7 +162,7 @@ public class TestRIFServiceStartupOptions extends AbstractRIFTestCase {
 		}		
 		
 		rifServiceStartupOptions
-			= new RIFServiceStartupOptions();
+			= new RIFServiceStartupOptions(false);
 		rifServiceStartupOptions.setHost(null);
 		try {
 			rifServiceStartupOptions.checkErrors();
@@ -160,7 +176,7 @@ public class TestRIFServiceStartupOptions extends AbstractRIFTestCase {
 		}		
 		
 		rifServiceStartupOptions
-			= new RIFServiceStartupOptions();
+			= new RIFServiceStartupOptions(false);
 		rifServiceStartupOptions.setPort(null);
 		try {
 			rifServiceStartupOptions.checkErrors();
@@ -175,7 +191,7 @@ public class TestRIFServiceStartupOptions extends AbstractRIFTestCase {
 		
 		//check multiple null field values
 		rifServiceStartupOptions
-			= new RIFServiceStartupOptions();
+			= new RIFServiceStartupOptions(false);
 		rifServiceStartupOptions.setPort(null);
 		rifServiceStartupOptions.setHost(null);
 		rifServiceStartupOptions.setDatabaseName(null);
@@ -198,9 +214,9 @@ public class TestRIFServiceStartupOptions extends AbstractRIFTestCase {
 	@Test 
 	public void testSecurityViolations() {
 		RIFServiceStartupOptions rifServiceStartupOptions
-			= new RIFServiceStartupOptions();
+			= new RIFServiceStartupOptions(false);
 		
-		rifServiceStartupOptions.setDatabaseDriver(getTestMaliciousValue());
+		rifServiceStartupOptions.setDatabaseDriverClassName(getTestMaliciousValue());
 		try {
 			rifServiceStartupOptions.checkSecurityViolations();
 			fail();
@@ -209,7 +225,19 @@ public class TestRIFServiceStartupOptions extends AbstractRIFTestCase {
 			//pass
 		}
 		
-		rifServiceStartupOptions = new RIFServiceStartupOptions();	
+		rifServiceStartupOptions = new RIFServiceStartupOptions(false);	
+		rifServiceStartupOptions.setDatabaseDriverPrefix(getTestMaliciousValue());
+		try {
+			rifServiceStartupOptions.checkSecurityViolations();
+			fail();
+		}
+		catch(RIFServiceSecurityException rifServiceSecurityException) {
+			//pass
+		}
+		
+		
+		
+		rifServiceStartupOptions = new RIFServiceStartupOptions(false);	
 		rifServiceStartupOptions.setDatabaseName(getTestMaliciousValue());
 		try {
 			rifServiceStartupOptions.checkSecurityViolations();
@@ -219,7 +247,7 @@ public class TestRIFServiceStartupOptions extends AbstractRIFTestCase {
 			//pass
 		}
 		
-		rifServiceStartupOptions = new RIFServiceStartupOptions();	
+		rifServiceStartupOptions = new RIFServiceStartupOptions(false);	
 		rifServiceStartupOptions.setHost(getTestMaliciousValue());
 		try {
 			rifServiceStartupOptions.checkSecurityViolations();
@@ -229,7 +257,7 @@ public class TestRIFServiceStartupOptions extends AbstractRIFTestCase {
 			//pass
 		}
 		
-		rifServiceStartupOptions = new RIFServiceStartupOptions();	
+		rifServiceStartupOptions = new RIFServiceStartupOptions(false);	
 		rifServiceStartupOptions.setPort(getTestMaliciousValue());
 		try {
 			rifServiceStartupOptions.checkSecurityViolations();
