@@ -6,6 +6,7 @@ import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceSecurityException;
+import rifServices.system.RIFServiceSecurityException.SecurityThreatType;
 import rifServices.util.FieldValidationUtility;
 import rifServices.util.RIFLogger;
 
@@ -115,6 +116,7 @@ public class AbstractRIFService {
 		isInitialised = true;
 	}
 	
+	
 	protected double getServiceVersion() {
 		return serviceVersion;
 	}
@@ -159,7 +161,7 @@ public class AbstractRIFService {
 				
 		user.checkErrors();
 		user.checkSecurityViolations();
-		
+
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.userExists(user.getUserID())) {
@@ -176,6 +178,8 @@ public class AbstractRIFService {
 				user.getUserID());
 		RIFServiceSecurityException rifServiceSecurityException
 			 = new RIFServiceSecurityException(errorMessage);
+		rifServiceSecurityException.setSecurityThreatType(SecurityThreatType.SUSPICIOUS_BEHAVIOUR);
+		
 		throw rifServiceSecurityException;
 	}
 
@@ -194,10 +198,26 @@ public class AbstractRIFService {
 			 * If the code encounters a security exception, then the user
 			 * associated with the exception will be blacklisted.
 			 */
-			//gives opportunity to log security issue and deregister user
-			sqlConnectionManager.addUserIDToBlock(user);
-			sqlConnectionManager.deregisterUser(user);
-			userDeregistered = true;
+			RIFServiceSecurityException rifServiceSecurityException
+				= (RIFServiceSecurityException) rifServiceException;
+			if (rifServiceSecurityException.getSecurityThreatType() == RIFServiceSecurityException.SecurityThreatType.MALICIOUS_CODE) {
+				//gives opportunity to log security issue and deregister user
+				sqlConnectionManager.addUserIDToBlock(user);
+				sqlConnectionManager.logout(user);
+				userDeregistered = true;			
+			}
+			else {
+				//suspiciuous behaviour.  
+				//log suspicious event and see whether this particular user is associated with
+				//a number of suspicious events that exceeds a threshold.
+				sqlConnectionManager.logSuspiciousUserEvent(user);
+				if (sqlConnectionManager.userExceededMaximumSuspiciousEvents(user)) {
+					sqlConnectionManager.addUserIDToBlock(user);
+					sqlConnectionManager.logout(user);
+					userDeregistered = true;			
+				}
+			}
+
 		}
 
 		if (userDeregistered == false) {
