@@ -2,18 +2,10 @@ package rifServices.restfulWebServices;
 
 import java.io.ByteArrayOutputStream;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-
-
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -105,7 +97,8 @@ abstract class AbstractRIFWebServiceResource {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private ProductionRIFStudyServiceBundle rifStudyServiceBundle;
+	private static final ProductionRIFStudyServiceBundle rifStudyServiceBundle 
+		= ProductionRIFStudyServiceBundle.getRIFServiceBundle();
 	private SimpleDateFormat sd;
 	private Date startTime;
 	
@@ -120,38 +113,55 @@ abstract class AbstractRIFWebServiceResource {
 		sd = new SimpleDateFormat("HH:mm:ss:SSS");
 
 		RIFServiceStartupOptions rifServiceStartupOptions
-			= new RIFServiceStartupOptions();
-		StringBuilder webApplicationFolderPath
-			= new StringBuilder();
-		webApplicationFolderPath.append("C:");
-		webApplicationFolderPath.append(File.separator);
-		webApplicationFolderPath.append("Program Files");
-		webApplicationFolderPath.append(File.separator);
-		webApplicationFolderPath.append("Apache Software Foundation");
-		webApplicationFolderPath.append(File.separator);
-		webApplicationFolderPath.append("Tomcat 8.0");
-		webApplicationFolderPath.append(File.separator);
-		webApplicationFolderPath.append("webapps");
-		webApplicationFolderPath.append(File.separator);
-		webApplicationFolderPath.append("rifServices");
-		webApplicationFolderPath.append(File.separator);
-		webApplicationFolderPath.append("WEB-INF");
-		webApplicationFolderPath.append(File.separator);
-		webApplicationFolderPath.append("classes");
-		rifServiceStartupOptions.setWebApplicationFilePath(webApplicationFolderPath.toString());
+			= new RIFServiceStartupOptions(true);
 		
-		rifStudyServiceBundle
-			= ProductionRIFStudyServiceBundle.getRIFServiceBundle();
-
 		try {
 			rifStudyServiceBundle.initialise(rifServiceStartupOptions);
-			rifStudyServiceBundle.login("kgarwood", new String("a").toCharArray());
+			//rifStudyServiceBundle.login("ffabbri", new String("ffabbri").toCharArray());
+			//rifStudyServiceBundle.login("kgarwood", new String("kgarwood").toCharArray());
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
 		}
 	}
 
+	protected String login(
+		final String userID,
+		final String password) {
+
+		String result = "";
+		try {			
+			rifStudyServiceBundle.login(userID, password);
+			result
+				= RIFServiceMessages.getMessage("general.login.success", userID);
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+			//Convert exceptions to support JSON
+			result = serialiseException(exception);			
+		}
+	
+		return result;
+	}
+	
+	protected String logout(
+		final String userID) {
+		
+		String result = "";
+		try {
+			//Convert URL parameters to RIF service API parameters
+			User user = User.newInstance(userID, "xxx");
+			rifStudyServiceBundle.logout(user);
+			result = RIFServiceMessages.getMessage("general.logout.success", userID);
+		}
+		catch(Exception exception) {
+			//Convert exceptions to support JSON
+			result = serialiseException(exception);			
+		}
+	
+		return result;
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
@@ -164,15 +174,11 @@ abstract class AbstractRIFWebServiceResource {
 	}
 	
 	
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getGeographies")
-	public String getGeographies(
-		@QueryParam("userID") String userID) {
+	protected String getGeographies(
+		final String userID) {
 			
 		String result = "";
 		
-	
 		try {
 			//Convert URL parameters to RIF service API parameters
 			User user = User.newInstance(userID, "xxx");
@@ -180,22 +186,25 @@ abstract class AbstractRIFWebServiceResource {
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= rifStudyServiceBundle.getRIFStudySubmissionService();
+			
 			ArrayList<Geography> geographies
 				= studySubmissionService.getGeographies(user);
 
-			//Convert results to support JSON
-			ArrayList<GeographyProxy> geographyProxies 
-				= new ArrayList<GeographyProxy>();			
-			for (Geography geography : geographies) {
-				GeographyProxy geographyProxy
-					= new GeographyProxy();
-				geographyProxy.setName(geography.getName());
-				geographyProxies.add(geographyProxy);
+			if (geographies == null) {
+				return "";
 			}
-					
-			result = serialiseResult(geographyProxies);
+			else {
+				ArrayList<String> geographyNames = new ArrayList<String>();			
+				for (Geography geography : geographies) {
+					geographyNames.add(geography.getName());
+				}
+				GeographiesProxy geographiesProxy = new GeographiesProxy();		
+				geographiesProxy.setNames(geographyNames.toArray(new String[0]));
+				result = serialiseResult(geographiesProxy);
+			}			
 		}
 		catch(Exception exception) {
+			exception.printStackTrace(System.out);
 			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
@@ -204,16 +213,11 @@ abstract class AbstractRIFWebServiceResource {
 	
 	}
 
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getGeoLevelSelectValues")
-	public String getGeographicalLevelSelectValues(
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName) {
+	protected String getGeographicalLevelSelectValues(
+		final String userID,
+		final String geographyName) {
 			
 		String result = "";
-	
-	
 	
 		try {
 			//Convert URL parameters to RIF service API parameters
@@ -247,17 +251,12 @@ abstract class AbstractRIFWebServiceResource {
 	
 	}
 		
-
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getDefaultGeoLevelSelectValue")
-	public String getDefaultGeoLevelSelectValue(
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName) {
+	protected String getDefaultGeoLevelSelectValue(
+		final String userID,
+		final String geographyName) {
 			
 		String result = "";
-	
-	
+		
 		GeoLevelSelectsProxy geoLevelSelectProxy
 			= new GeoLevelSelectsProxy();
 	
@@ -289,15 +288,11 @@ abstract class AbstractRIFWebServiceResource {
 	
 	}
 
-	
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getGeoLevelAreaValues")
-	public String getGeoLevelAreaValues(
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
-				
+	protected String getGeoLevelAreaValues(
+		final String userID,
+		final String geographyName,
+		final String geoLevelSelectName) {
+						
 		String result = "";
 		
 		GeoLevelAreasProxy geoLevelAreasProxy = new GeoLevelAreasProxy();
@@ -335,13 +330,10 @@ abstract class AbstractRIFWebServiceResource {
 		
 	}
 	
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getGeoLevelViews")
-	public String getGeoLevelViewValues(
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
+	protected String getGeoLevelViewValues(
+		final String userID,
+		final String geographyName,
+		final String geoLevelSelectName) {
 				
 		String result = "";
 				
@@ -387,17 +379,14 @@ abstract class AbstractRIFWebServiceResource {
 	 * @param healthThemeDescription
 	 * @return
 	 */
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getNumerator")
-	public String getNumerator(
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,		
-		@QueryParam("healthThemeDescription") String healthThemeDescription) {
-				
-		String result = "";
+	
+	protected String getNumerator(
+		final String userID,
+		final String geographyName,
+		final String healthThemeDescription) {
 		
-				
+		String result = "";
+						
 		try {
 			//Convert URL parameters to RIF service API parameters
 			User user 
@@ -405,7 +394,9 @@ abstract class AbstractRIFWebServiceResource {
 			Geography geography 
 				= Geography.newInstance(geographyName, "");
 			HealthTheme healthTheme 
-				= HealthTheme.newInstance("xxx", healthThemeDescription);
+				= HealthTheme.newInstance("xxx", healthThemeDescription.trim());
+			System.out.println("getNumerator healthTheme1 name=="+healthTheme.getName()+"==description=="+healthTheme.getDescription()+"==");
+			System.out.println("getNumerator healthTheme2 name=="+healthTheme.getName()+"==description=="+healthTheme.getDescription().trim()+"==");
 
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
@@ -438,14 +429,11 @@ abstract class AbstractRIFWebServiceResource {
 		return result;		
 	}
 
-	@GET
-	@Produces({"application/json"})	
-	@Path("/denominator")
-	public String getDenominator(
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,		
-		@QueryParam("healthThemeDescription") String healthThemeDescription) {
-				
+	protected String getDenominator(
+		final String userID,
+		final String geographyName,
+		final String healthThemeDescription) {
+		
 		String result = "";
 				
 		try {
@@ -492,13 +480,10 @@ abstract class AbstractRIFWebServiceResource {
 	}
 	
 	
-	@GET
-	@Produces({"application/json"})	
-	@Path("/yearRange")
-	public String getYearRange(
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,	
-		@QueryParam("numeratorTableName") String numeratorTableName) {
+	protected String getYearRange(
+		final String userID,
+		final String geographyName,
+		final String numeratorTableName) {
 			
 		String result = "";
 		
