@@ -123,6 +123,132 @@ public class RIFStudySubmissionWebServiceResource
 	// ==========================================
 
 	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/login")
+	public String login(
+		@QueryParam("userID") String userID,
+		@QueryParam("password") String password) {
+
+		return super.login(userID, password);
+	}
+
+	@GET
+	@Produces({"application/json"})	
+	@Path("/logout")
+	public String logout(
+		@QueryParam("userID") String userID) {
+
+		return super.logout(userID);
+	}
+	
+	
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getGeographies")
+	public String getGeographies(
+		@QueryParam("userID") String userID) {
+
+		return super.getGeographies(userID);
+	}
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getGeoLevelSelectValues")
+	public String getGeographicalLevelSelectValues(
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName) {
+	
+		return super.getGeographicalLevelSelectValues(
+			userID, 
+			geographyName);
+	}	
+	
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getDefaultGeoLevelSelectValue")
+	public String getDefaultGeoLevelSelectValue(
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName) {
+
+		return super.getDefaultGeoLevelSelectValue(
+			userID,
+			geographyName);
+	}	
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getGeoLevelAreaValues")
+	public String getGeoLevelAreaValues(
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,
+		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
+	
+		return super.getGeoLevelAreaValues(
+			userID, 
+			geographyName, 
+			geoLevelSelectName);
+	}	
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getGeoLevelViews")
+	public String getGeoLevelViewValues(
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,
+		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
+	
+		return super.getGeoLevelViewValues(
+			userID, 
+			geographyName, 
+			geoLevelSelectName);
+	}
+		
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getNumerator")
+	public String getNumerator(
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,		
+		@QueryParam("healthThemeDescription") String healthThemeDescription) {
+	
+	
+		return super.getNumerator(
+			userID,
+			geographyName,
+			healthThemeDescription);
+	}	
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getDenominator")
+	public String getDenominator(
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,		
+		@QueryParam("healthThemeDescription") String healthThemeDescription) {
+
+		return super.getDenominator(
+			userID,
+			geographyName,
+			healthThemeDescription);
+	}
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getYearRange")
+	public String getYearRange(
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,	
+		@QueryParam("numeratorTableName") String numeratorTableName) {
+
+		return super.getYearRange(
+			userID, 
+			geographyName, 
+			numeratorTableName);		
+	}
+	
 	/**
 	 * STUB
 	 * @param userID
@@ -264,10 +390,13 @@ public class RIFStudySubmissionWebServiceResource
 			User user = User.newInstance(userID, "xxx");
 
 			//Call service API
+			System.out.println("RIFStudySubmissionWebServiceResource 1 == processing user=="+user.getUserID()+"==");
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();	
 			ArrayList<Project> projects
 				= studySubmissionService.getProjects(user);			
+
+			System.out.println("RIFStudySubmissionWebServiceResource 2 there are =="+projects.size()+"==for user=="+user.getUserID()+"==");
 
 			//Convert results to support JSON
 			ArrayList<ProjectProxy> projectProxies 
@@ -281,6 +410,7 @@ public class RIFStudySubmissionWebServiceResource
 			result = serialiseResult(projectProxies);
 		}
 		catch(Exception exception) {
+			exception.printStackTrace(System.out);
 			//Convert exceptions to support JSON
 			result = serialiseException(exception);			
 		}
@@ -339,7 +469,7 @@ public class RIFStudySubmissionWebServiceResource
 	}
 	@GET
 	@Produces({"application/json"})	
-	@Path("/getGeoLevelToMaps")
+	@Path("/getGeoLevelToMapValues")
 	public String getGeoLevelToMapValues(
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
@@ -387,7 +517,7 @@ public class RIFStudySubmissionWebServiceResource
 	
 	@GET
 	@Produces({"application/json"})	
-	@Path("/getGeoLevelToMapAreas")
+	@Path("/getMapAreas")
 	public String getGeoLevelToMapAreas(
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
@@ -473,6 +603,7 @@ public class RIFStudySubmissionWebServiceResource
 				HealthThemeProxy healthThemeProxy
 					= new HealthThemeProxy();
 				healthThemeProxy.setName(healthTheme.getName());
+				healthThemeProxy.setDescription(healthTheme.getDescription());
 				healthThemeProxies.add(healthThemeProxy);
 			}			
 			result = serialiseResult(healthThemeProxies);
@@ -488,7 +619,7 @@ public class RIFStudySubmissionWebServiceResource
 	
 	@GET
 	@Produces({"application/json"})	
-	@Path("/sexes")
+	@Path("/getSexes")
 	public String getSexes(
 		@QueryParam("userID") String userID) {
 				
@@ -819,12 +950,17 @@ public class RIFStudySubmissionWebServiceResource
 			//Convert results to support JSON						
 			HealthCodeProxy healthCodeProxy
 				= new HealthCodeProxy();
-			healthCodeProxy.setCode(parentHealthCode.getCode());
-			healthCodeProxy.setDescription(parentHealthCode.getDescription());
-			healthCodeProxy.setNameSpace(parentHealthCode.getNameSpace());
-			healthCodeProxy.setIsTopLevelTerm(String.valueOf(parentHealthCode.isTopLevelTerm()));
-			healthCodeProxy.setNumberOfSubTerms(String.valueOf(parentHealthCode.getNumberOfSubTerms()));
-			result = serialiseResult(healthCodeProxy);					
+			if (parentHealthCode == null) {
+				return "";
+			}
+			else {
+				healthCodeProxy.setCode(parentHealthCode.getCode());
+				healthCodeProxy.setDescription(parentHealthCode.getDescription());
+				healthCodeProxy.setNameSpace(parentHealthCode.getNameSpace());
+				healthCodeProxy.setIsTopLevelTerm(String.valueOf(parentHealthCode.isTopLevelTerm()));
+				healthCodeProxy.setNumberOfSubTerms(String.valueOf(parentHealthCode.getNumberOfSubTerms()));
+				result = serialiseResult(healthCodeProxy);
+			}
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON

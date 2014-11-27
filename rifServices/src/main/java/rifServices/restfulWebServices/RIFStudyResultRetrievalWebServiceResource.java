@@ -126,6 +126,134 @@ public class RIFStudyResultRetrievalWebServiceResource
 
 	//KLG: 
 
+
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getGeographies")
+	public String getGeographies(
+		@QueryParam("userID") String userID) {
+
+		return super.getGeographies(userID);
+	}
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getGeoLevelSelectValues")
+	public String getGeographicalLevelSelectValues(
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName) {
+	
+		return super.getGeographicalLevelSelectValues(
+			userID, 
+			geographyName);
+	}	
+	
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getDefaultGeoLevelSelectValue")
+	public String getDefaultGeoLevelSelectValue(
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName) {
+
+		return super.getDefaultGeoLevelSelectValue(
+			userID,
+			geographyName);
+	}	
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getGeoLevelAreaValues")
+	public String getGeoLevelAreaValues(
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,
+		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
+	
+		return super.getGeoLevelAreaValues(
+			userID, 
+			geographyName, 
+			geoLevelSelectName);
+	}	
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getGeoLevelViews")
+	public String getGeoLevelViewValues(
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,
+		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
+	
+		return super.getGeoLevelViewValues(
+			userID, 
+			geographyName, 
+			geoLevelSelectName);
+	}
+		
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getNumerator")
+	public String getNumerator(
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,		
+		@QueryParam("healthThemeDescription") String healthThemeDescription) {
+	
+	
+		return super.getNumerator(
+			userID,
+			geographyName,
+			healthThemeDescription);
+	}	
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getDenominator")
+	public String getDenominator(
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,		
+		@QueryParam("healthThemeDescription") String healthThemeDescription) {
+
+		return super.getDenominator(
+			userID,
+			geographyName,
+			healthThemeDescription);
+	}
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getYearRange")
+	public String getYearRange(
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,	
+		@QueryParam("numeratorTableName") String numeratorTableName) {
+
+		return super.getYearRange(
+			userID, 
+			geographyName, 
+			numeratorTableName);		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	/**
 	 * STUB
