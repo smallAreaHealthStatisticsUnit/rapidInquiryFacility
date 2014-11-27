@@ -159,11 +159,11 @@ public class RIFServiceResources {
 		return rifServiceResources;
 	}
 
-	public static RIFServiceResources newInstance()
+	public static RIFServiceResources newInstance(boolean isWebDeployment)
 		throws RIFServiceException {
 			
 		RIFServiceStartupOptions rifServiceStartupOptions
-			= new RIFServiceStartupOptions();
+			= new RIFServiceStartupOptions(isWebDeployment);
 		RIFServiceResources rifServiceResources
 			= new RIFServiceResources(rifServiceStartupOptions);
 		
