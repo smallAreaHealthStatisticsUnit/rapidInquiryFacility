@@ -175,43 +175,6 @@ abstract class AbstractRIFStudySubmissionService
 			= RIFServiceMessages.getMessage("rifStudySubmissionService.contactEmail");
 		setServiceContactEmail(serviceContactEmail);
 	}
-
-	/*
-	public void initialiseService() {
-		initialiseService(new RIFServiceStartupOptions());
-	}
-	*/
-	
-	/*
-	public void initialiseService(RIFServiceStartupOptions rifServiceStartupOptions) {
-		sqlConnectionManager = new SQLConnectionManager(rifServiceStartupOptions);
-		healthOutcomeManager = new SQLHealthOutcomeManager(rifServiceStartupOptions);
-		sqlRIFContextManager = new SQLRIFContextManager();
-		sqlAgeGenderYearManager 
-			= new SQLAgeGenderYearManager(sqlRIFContextManager);
-		sqlMapDataManager 
-			= new SQLMapDataManager(
-				rifServiceStartupOptions, 
-				sqlRIFContextManager);
-		covariateManager = new SQLCovariateManager(sqlRIFContextManager);
-		diseaseMappingStudyManager = new SQLDiseaseMappingStudyManager();
-		
-		investigationManager = new SQLInvestigationManager();
-		
-		rifSubmissionManager 
-			= new SQLRIFSubmissionManager(
-				sqlRIFContextManager,
-				sqlAgeGenderYearManager,
-				covariateManager);
-		
-		try {
-			healthOutcomeManager.initialiseTaxomies();			
-		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printStackTrace(System.out);
-		}
-	}
-	*/
 	
 	// ==========================================
 	// Section Accessors and Mutators
@@ -225,7 +188,7 @@ abstract class AbstractRIFStudySubmissionService
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
-
+	
 	public ArrayList<RIFOutputOption> getAvailableRIFOutputOptions(
 		final User _user)
 		throws RIFServiceException {
@@ -280,9 +243,6 @@ abstract class AbstractRIFStudySubmissionService
 		return results;
 	}
 		
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.RIFJobSubmissionAPI#getAvailableCalculationMethods(rifServices.businessConceptLayer.User)
-	 */
 	public ArrayList<CalculationMethod> getAvailableCalculationMethods(
 		final User _user) 
 		throws RIFServiceException {
