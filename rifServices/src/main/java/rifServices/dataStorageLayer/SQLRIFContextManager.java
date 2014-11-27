@@ -416,7 +416,7 @@ class SQLRIFContextManager
 				String errorMessage
 					= RIFServiceMessages.getMessage(
 						"sqlRIFContextManager.error.noNDPairForHealthTheme",
-						healthTheme.getDescription());
+						healthTheme.getName());
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
 						RIFServiceError.NO_ND_PAIR_FOR_HEALTH_THEME,
@@ -557,7 +557,7 @@ class SQLRIFContextManager
 				results.add(geoLevelSelect);				
 			}			
 		}
-		catch(SQLException sqlException) {
+		catch(SQLException sqlException) {		
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
 			RIFLogger rifLogger = RIFLogger.getLogger();
@@ -1072,7 +1072,7 @@ class SQLRIFContextManager
 		if (healthTheme != null) {
 			healthTheme.checkErrors();			
 			checkHealthThemeExists(connection, 
-			healthTheme.getName());
+			healthTheme.getDescription());
 		}
 		
 		if (geoLevelSelect != null) {
@@ -1515,12 +1515,12 @@ class SQLRIFContextManager
 	 */
 	public void checkHealthThemeExists(
 		final Connection connection,
-		final String healthThemeName)
+		final String healthThemeDescription)
 		throws RIFServiceException {
 
 		SQLRecordExistsQueryFormatter query
 			= new SQLRecordExistsQueryFormatter();
-		query.setLookupKeyFieldName("theme");
+		query.setLookupKeyFieldName("description");
 		query.setFromTable("rif40_health_study_themes");
 
 		PreparedStatement checkHealthThemeExistsStatement = null;
@@ -1528,7 +1528,7 @@ class SQLRIFContextManager
 		try {
 			checkHealthThemeExistsStatement
 				= connection.prepareStatement(query.generateQuery());
-			checkHealthThemeExistsStatement.setString(1, healthThemeName);
+			checkHealthThemeExistsStatement.setString(1, healthThemeDescription);
 			checkHealthThemeExistsResultSet 
 				= checkHealthThemeExistsStatement.executeQuery();
 			if (checkHealthThemeExistsResultSet.next() == false) {
@@ -1539,7 +1539,7 @@ class SQLRIFContextManager
 					= RIFServiceMessages.getMessage(
 						"general.validation.nonExistentRecord",
 						recordType,
-						healthThemeName);
+						healthThemeDescription);
 				
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
@@ -1557,7 +1557,7 @@ class SQLRIFContextManager
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
 					recordType,
-					healthThemeName);
+					healthThemeDescription);
 			
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
