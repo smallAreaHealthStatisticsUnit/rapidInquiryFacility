@@ -129,6 +129,14 @@ public final class ProductionRIFStudyServiceBundle
 
 	public ProductionRIFStudyServiceBundle() {
 
+		ProductionRIFStudySubmissionService rifStudySubmissionService
+			= new ProductionRIFStudySubmissionService();
+		setRIFStudySubmissionService(rifStudySubmissionService);
+
+		ProductionRIFStudyRetrievalService rifStudyRetrievalService
+			= new ProductionRIFStudyRetrievalService();
+		setRIFStudyRetrievalService(rifStudyRetrievalService);
+		
 	}
 
 	// ==========================================
