@@ -242,12 +242,6 @@ public class RIFJobSubmissionToolMessages {
         return messageWithoutBlanks;
     }
 
-    /**
-     * returns the model directory.  It will be something like
-     * project35/dist/models/tutorial, or project35/dist/models/mymodel etc. ...
-     *
-     * @return the resource bundle
-     */
     public static ResourceBundle getResourceBundle() {
     	
         return resourceBundle;
