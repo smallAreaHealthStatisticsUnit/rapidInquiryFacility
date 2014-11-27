@@ -69,7 +69,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name="geoLevelSelects")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(propOrder= {
-	"name"
+	"names"
 	}
 )
 public class GeoLevelSelectsProxy {
