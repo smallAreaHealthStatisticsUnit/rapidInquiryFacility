@@ -1,6 +1,7 @@
 package rifServices.system;
 
 
+import java.io.File;
 import java.text.Collator;
 import java.text.MessageFormat;
 import java.util.Locale;
@@ -115,137 +116,53 @@ public class RIFServiceStartupProperties {
 	  return result;
    }
 
+    public static String getDatabaseDriverClassName() {
+    	return getProperty("driverClassName");
+    }
+   
+    public static String getDatabaseDriverPrefix() {
+    	return getProperty("jdbcDriverPrefix");
+    }
+    
+    public static String getHost() {
+    	return getProperty("host");
+    }
+    
+    public static String getPort() {
+    	return getProperty("port");    	
+    }
+
+    public static String getDatabaseName() {
+    	return getProperty("databaseName");    	
+    }
+	
+    public static String getServerSideCacheDirectory() {
+    	return getProperty("cache");    	
+    }
+
+    public static String getWebApplicationDirectory() {
+    	return getProperty("webApplicationDirectory");    	
+    }
+    
+    public static String getRScriptDirectory() {
+    	return getProperty("rScriptDirectory");    	
+    }
+    
     /**
      * Gets the message.
      *
      * @param key the key
      * @return the message
      */
-    public static String getMessage(
+    public static String getProperty(
     	final String key) {
 
     	if (resourceBundle != null) {
             return (resourceBundle.getString(key));
         }
-        return key;
+        return null;
     }
 
-    /**
-     * Gets the message.
-     *
-     * @param key the key
-     * @param parameter0 the parameter0
-     * @return the message
-     */
-    static public String getMessage(
-		final String key,
-        final String parameter0) {
-
-        String[] parameters = new String[1];
-        parameters[0] = parameter0;
-
-        return fillInTheBlanks(key,
-        	parameters);
-    }
-
-    /**
-     * Gets the message.
-     *
-     * @param key the key
-     * @param parameter0 the parameter0
-     * @param parameter1 the parameter1
-     * @return the message
-     */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
-        final String parameter1) {
-
-        String[] parameters = new String[2];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-
-        return fillInTheBlanks(key,
-        	parameters);
-    }
-
-    /**
-     * Gets the message.
-     *
-     * @param key the key
-     * @param parameter0 the parameter0
-     * @param parameter1 the parameter1
-     * @param parameter2 the parameter2
-     * @return the message
-     */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
-        final String parameter1,
-        final String parameter2) {
-
-        String[] parameters = new String[3];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-        parameters[2] = parameter2;
-
-        return fillInTheBlanks(key,
-        	parameters);
-    }
-
-    /**
-     * Gets the message.
-     *
-     * @param key the key
-     * @param parameter0 the parameter0
-     * @param parameter1 the parameter1
-     * @param parameter2 the parameter2
-     * @param parameter3 the parameter3
-     * @return the message
-     */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
-        final String parameter1,
-        final String parameter2,
-        final String parameter3) {
-
-        String[] parameters = new String[4];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-        parameters[2] = parameter2;
-        parameters[3] = parameter3;
-        return fillInTheBlanks(key,
-        	parameters);
-
-    }
-
-    /**
-     * Fill in the blanks.
-     *
-     * @param key the key
-     * @param parameters the parameters
-     * @return the string
-     */
-    static private String fillInTheBlanks(
-		final String key,
-        final String[] parameters) {
-
-        String messageWithBlanks = resourceBundle.getString(key);
-
-        MessageFormat messageFormat
-                = new MessageFormat(messageWithBlanks);
-        String messageWithoutBlanks
-                = messageFormat.format(parameters);
-        return messageWithoutBlanks;
-    }
-
-    /**
-     * returns the model directory.  It will be something like
-     * project35/dist/models/tutorial, or project35/dist/models/mymodel etc. ...
-     *
-     * @return the resource bundle
-     */
     public static ResourceBundle getResourceBundle() {
     	
         return resourceBundle;
