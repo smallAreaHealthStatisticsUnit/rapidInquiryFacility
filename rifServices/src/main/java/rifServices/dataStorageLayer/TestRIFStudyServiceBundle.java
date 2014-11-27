@@ -72,33 +72,27 @@ public final class TestRIFStudyServiceBundle
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private static final TestRIFStudyServiceBundle rifStudyServiceBundle
+		= new TestRIFStudyServiceBundle();
 
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public TestRIFStudyServiceBundle() {
-
-	}
-
-	@Override
-	public void initialise() 
-		throws RIFServiceException {
-			
-		RIFServiceResources rifServiceResources
-			= RIFServiceResources.newInstance();
-		setRIFServiceResources(rifServiceResources);
-
 		TestRIFStudySubmissionService rifStudySubmissionService
 			= new TestRIFStudySubmissionService();
-		rifStudySubmissionService.initialise(rifServiceResources);
 		setRIFStudySubmissionService(rifStudySubmissionService);
-			
+
 		TestRIFStudyRetrievalService rifStudyRetrievalService
 			= new TestRIFStudyRetrievalService();
-		rifStudyRetrievalService.initialise(rifServiceResources);
-		setRIFStudyRetrievalService(rifStudyRetrievalService);
-	}		
+		setRIFStudyRetrievalService(rifStudyRetrievalService);		
+	}
+
+	public static TestRIFStudyServiceBundle getRIFServiceBundle() {
+		return rifStudyServiceBundle;
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
