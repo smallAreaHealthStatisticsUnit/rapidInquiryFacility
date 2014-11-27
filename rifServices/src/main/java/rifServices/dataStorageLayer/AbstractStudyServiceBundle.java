@@ -78,6 +78,7 @@ class AbstractStudyServiceBundle {
 	// Section Properties
 	// ==========================================
 	
+	private boolean isInitialised;
 	private RIFServiceResources rifServiceResources;
 	private RIFStudySubmissionAPI rifStudySubmissionService;
 	private RIFStudyResultRetrievalAPI rifStudyRetrievalService;
@@ -88,40 +89,24 @@ class AbstractStudyServiceBundle {
 	// ==========================================
 
 	public AbstractStudyServiceBundle() {
-
+		isInitialised = false;
 	}
 		
-	public void initialise() 
-		throws RIFServiceException {
-		
-		rifServiceResources
-			= RIFServiceResources.newInstance();
-	
-		rifStudySubmissionService
-			= new ProductionRIFStudySubmissionService();
-		rifStudySubmissionService.initialise(rifServiceResources);
-		rifStudyRetrievalService
-			= new ProductionRIFStudyRetrievalService();
-		rifStudyRetrievalService.initialise(rifServiceResources);
-	}
-
-	public void initialise(
+	public synchronized void initialise(
 		final RIFServiceStartupOptions rifServiceStartupOptions) 
 		throws RIFServiceException {
 		
-		rifServiceResources
-			= RIFServiceResources.newInstance(rifServiceStartupOptions);
-		setRIFServiceResources(rifServiceResources);
+		if (isInitialised == false) {
+			
+			rifServiceResources
+				= RIFServiceResources.newInstance(rifServiceStartupOptions);
+			setRIFServiceResources(rifServiceResources);
 
-		ProductionRIFStudySubmissionService rifStudySubmissionService
-			= new ProductionRIFStudySubmissionService();
-		rifStudySubmissionService.initialise(rifServiceResources);
-		setRIFStudySubmissionService(rifStudySubmissionService);
+			rifStudySubmissionService.initialise(rifServiceResources);		
+			rifStudyRetrievalService.initialise(rifServiceResources);
 		
-		ProductionRIFStudyRetrievalService rifStudyRetrievalService
-			= new ProductionRIFStudyRetrievalService();
-		rifStudyRetrievalService.initialise(rifServiceResources);
-		setRIFStudyRetrievalService(rifStudyRetrievalService);
+			isInitialised = true;
+		}
 	}	
 	
 	
@@ -166,7 +151,7 @@ class AbstractStudyServiceBundle {
 	 */
 	public void login(
 		final String userID,
-		final char[] password) 
+		final String password) 
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -174,7 +159,6 @@ class AbstractStudyServiceBundle {
 		
 		//Check for empty parameters
 		try {
-			
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -192,22 +176,23 @@ class AbstractStudyServiceBundle {
 				"login",
 				"userID",
 				userID);
-			fieldValidationUtility.checkMaliciousPasswordValue(
+			
+			fieldValidationUtility.checkMaliciousMethodParameter(
 				"login",
 				"password",
 				password);
-
+			
 			//Delegate operation to a specialised manager class
 			SQLConnectionManager sqlConnectionManager
 				= rifServiceResources.getSqlConnectionManager();
-			sqlConnectionManager.registerUser(userID, password);		
+			sqlConnectionManager.login(userID, password);
 		}
 		catch(RIFServiceException rifServiceException) {
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				AbstractStudyServiceBundle.class, 
-				"login", 
-				rifServiceException);			
+			User user = User.newInstance(userID, password);
+			logException(
+				user,
+				"login",
+				rifServiceException);
 		}
 		
 	}
@@ -237,7 +222,7 @@ class AbstractStudyServiceBundle {
 			user.checkSecurityViolations();
 			SQLConnectionManager sqlConnectionManager
 				= rifServiceResources.getSqlConnectionManager();
-			sqlConnectionManager.deregisterUser(user);		
+			sqlConnectionManager.logout(user);		
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(
@@ -271,9 +256,32 @@ class AbstractStudyServiceBundle {
 			= rifServiceResources.getSqlConnectionManager();
 		if (rifServiceException instanceof RIFServiceSecurityException) {
 			//gives opportunity to log security issue and deregister user
-			sqlConnectionManager.addUserIDToBlock(user);
-			sqlConnectionManager.deregisterUser(user);
-			userDeregistered = true;
+			
+			RIFServiceSecurityException rifServiceSecurityException
+				= (RIFServiceSecurityException) rifServiceException;
+			
+			if (rifServiceSecurityException.getSecurityThreatType() == RIFServiceSecurityException.SecurityThreatType.MALICIOUS_CODE) {
+				//gives opportunity to log security issue and deregister user
+				
+				System.out.println("AbstractRIFService logException encountered a MALICIOUS CODE threat");
+				sqlConnectionManager.addUserIDToBlock(user);
+				sqlConnectionManager.logout(user);
+				userDeregistered = true;			
+			}
+			else {
+				System.out.println("AbstractRIFService logException encountered a SUSPICIOUS BEHAVIOUR threat");
+				//suspiciuous behaviour.  
+				//log suspicious event and see whether this particular user is associated with
+				//a number of suspicious events that exceeds a threshold.
+				sqlConnectionManager.logSuspiciousUserEvent(user);
+				if (sqlConnectionManager.userExceededMaximumSuspiciousEvents(user)) {
+					System.out.println("AbstractRIFService logException encountered a SUSPICIOUS BEHAVIOUR threat -- max times exceeded");
+					
+					sqlConnectionManager.addUserIDToBlock(user);
+					sqlConnectionManager.logout(user);
+					userDeregistered = true;			
+				}
+			}
 		}
 
 		if (userDeregistered == false) {
