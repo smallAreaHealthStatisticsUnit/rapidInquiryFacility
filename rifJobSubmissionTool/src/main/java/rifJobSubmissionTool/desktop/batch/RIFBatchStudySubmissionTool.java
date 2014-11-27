@@ -76,7 +76,7 @@ public class RIFBatchStudySubmissionTool {
 		try {
 			ProductionRIFStudyServiceBundle rifStudyServiceBundle
 				= new ProductionRIFStudyServiceBundle();
-			rifStudyServiceBundle.login("kgarwood", new String("a").toCharArray());				
+			rifStudyServiceBundle.login("kgarwood", "kgarwood");				
 			String ipAddress = InetAddress.getLocalHost().getHostAddress();
 			
 			User testUser = User.newInstance("kgarwood", ipAddress);

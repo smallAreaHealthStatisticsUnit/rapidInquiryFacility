@@ -1,6 +1,7 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifGenericUILibrary.ErrorDialog;
+
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
@@ -10,6 +11,7 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
 import rifServices.system.RIFServiceException;
+import rifServices.system.RIFServiceStartupOptions;
 
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
@@ -101,10 +103,14 @@ public class RIFInteractiveStudySubmissionTool
 	 */
 	public static void main(String[] args) {
 		try {	
+			
+			RIFServiceStartupOptions startupOptions 
+				= new RIFServiceStartupOptions(false);
+
 			ProductionRIFStudyServiceBundle rifStudyServiceBundle
 				= new ProductionRIFStudyServiceBundle();
-			rifStudyServiceBundle.initialise();
-			rifStudyServiceBundle.login("kgarwood", new String("a").toCharArray());				
+			rifStudyServiceBundle.initialise(startupOptions);
+			rifStudyServiceBundle.login("kgarwood", "kgarwood");				
 
 			String ipAddress = InetAddress.getLocalHost().getHostAddress();
 			
