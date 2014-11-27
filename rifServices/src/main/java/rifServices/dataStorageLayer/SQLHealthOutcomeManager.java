@@ -111,10 +111,12 @@ class SQLHealthOutcomeManager
 		healthCodeProviders = new ArrayList<HealthCodeProvider>();
 		
 		String targetPathValue
-			= rifServiceStartupOptions.getWebApplicationFilePath();
+			= rifServiceStartupOptions.getClassFileDirectoryPath();
 		if (targetPathValue == null) {
 			targetPathValue = RIFServiceMessages.getRIFServicesClassRootLocation();
 		}
+		System.out.println("SQLHealthOutcomeManager targetClassPathDirectory=="+targetPathValue+"==");
+		
 		//initialise each health code provider
 		try {			
 			StringBuilder icd9CodesFileLocation = new StringBuilder();
