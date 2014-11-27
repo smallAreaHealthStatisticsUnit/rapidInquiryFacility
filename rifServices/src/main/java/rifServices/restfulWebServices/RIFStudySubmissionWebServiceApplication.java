@@ -1,7 +1,11 @@
 package rifServices.restfulWebServices;
 
+import rifServices.system.RIFServiceStartupOptions;
+
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
+
+
 
 import java.util.Set;
 import java.util.HashSet;
@@ -82,7 +86,7 @@ public class RIFStudySubmissionWebServiceApplication extends Application {
 	// ==========================================
 
 	public RIFStudySubmissionWebServiceApplication() {
-		System.out.println("RIFStudySubmissionWebServiceApplication 1");
+		
 	}
 
 	// ==========================================
