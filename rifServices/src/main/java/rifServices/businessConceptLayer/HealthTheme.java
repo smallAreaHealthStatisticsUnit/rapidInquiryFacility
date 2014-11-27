@@ -101,8 +101,8 @@ public final class HealthTheme
 	 */
 	public static HealthTheme newInstance() {
 		
-		HealthTheme geoLevelArea = new HealthTheme();
-		return geoLevelArea;
+		HealthTheme healthTheme = new HealthTheme();
+		return healthTheme;
 	}
 	
 	/**
@@ -114,11 +114,11 @@ public final class HealthTheme
 	public static HealthTheme newInstance(
 		final String name) {
 			
-		HealthTheme geoLevelArea = new HealthTheme();
-		geoLevelArea.setName(name);
-		geoLevelArea.setDescription("");
+		HealthTheme healthTheme = new HealthTheme();
+		healthTheme.setName(name);
+		healthTheme.setDescription("");
 			
-		return geoLevelArea;
+		return healthTheme;
 	}	
 
 	
@@ -133,11 +133,11 @@ public final class HealthTheme
 		final String name,
 		final String description) {
 		
-		HealthTheme geoLevelArea = new HealthTheme();
-		geoLevelArea.setName(name);
-		geoLevelArea.setDescription(description);
+		HealthTheme healthTheme = new HealthTheme();
+		healthTheme.setName(name);
+		healthTheme.setDescription(description);
 		
-		return geoLevelArea;
+		return healthTheme;
 	}	
 	
 	/**
@@ -208,9 +208,11 @@ public final class HealthTheme
 	// Section Override
 	// ==========================================
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
+	@Override
+	public String getDescription() {
+		return super.getDescription();
+	}
+	
 	@Override
 	public String getRecordType() {
 		
@@ -219,18 +221,13 @@ public final class HealthTheme
 		return recordType;
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFContextOption#getDisplayName()
-	 */
+
 	@Override
 	public String getDisplayName() {	
 		
 		return getDescription();
 	}	
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getIdentifier()
-	 */
 	@Override
 	public String getIdentifier() {
 		
