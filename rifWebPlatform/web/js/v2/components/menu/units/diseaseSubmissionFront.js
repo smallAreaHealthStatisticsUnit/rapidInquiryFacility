@@ -1,58 +1,41 @@
 RIF.menu.diseaseSubmissionFront = ( function() {
 
-
   var parent = this,
 
-    /* DOM ELEMENTS */
-    _domObjects = {
-      healthTheme: document.getElementById( 'healthTheme' ),
-
-      healthThemeAvailablesEl: document.getElementById( 'healthThemeAvailables' ),
-      numeratorAvailablesEl: document.getElementById( 'numeratorAvailables' ),
-      denominatorAvailablesEl: document.getElementById( 'denominatorAvailables' ),
-
-      importExportEl: document.getElementById( 'importExport' ),
-      runEl: document.getElementById( 'run' ),
-      studyArea: document.getElementById( 'studyArea' ),
-      compArea: document.getElementById( 'comparisonArea' ),
-      healthConds: document.getElementById( 'healthConditions' ),
-      invParameters: document.getElementById( 'invParameters' )
-    },
-
+    _dom = RIF.dom.diseaseSubmissionFront,
 
     /* EVENTS */
     _events = function() {
 
-      $( _domObjects.studyArea ).click( function() {
+      $( _dom.studyArea ).click( function() {
         $( '#studyAreaModal' ).show();
       } );
 
-      $( _domObjects.compArea ).click( function() {
+      $( _dom.compArea ).click( function() {
         $( '#comparisonAreaModal' ).show();
       } );
 
-      $( _domObjects.healthConds ).click( function() {
+      $( _dom.healthConds ).click( function() {
         $( '#healththemeModal' ).show();
       } );
 
-      $( _domObjects.invParameters ).click( function() {
+      $( _dom.invParameters ).click( function() {
         $( '#parametersModal' ).show();
       } );
 
-      $( _domObjects.healthThemeAvailablesEl ).children().click( function() {
+      $( _dom.healthThemeAvailablesEl ).children().click( function() {
         //Fire event Health theme changed
       } );
 
-      $( _domObjects.numeratorAvailablesEl ).children().click( function() {
+      $( _dom.numeratorAvailablesEl ).children().click( function() {
         //Fire event Numerator changed
       } );
 
-      $( _domObjects.denominatorAvailablesEl ).children().click( function() {
+      $( _dom.denominatorAvailablesEl ).children().click( function() {
         //Fire event Denominator changed
       } );
 
     },
-
 
 
     _requests = {
@@ -61,24 +44,14 @@ RIF.menu.diseaseSubmissionFront = ( function() {
 
         var callback = function() {
           var themes = [ this[ 0 ].name ],
-            el = _domObjects[ 'healthThemeAvailablesEl' ];
+            el = _dom[ 'healthThemeAvailablesEl' ];
           parent.dropDownInputText( themes, el );
         };
 
         RIF.getHealthThemes( callback, null );
       },
 
-      getNumDenom: function() {
-
-        var callback = function() {
-          var themes = [ this[ 0 ].name ],
-            el = _domObjects[ 'healthThemeAvailablesEl' ];
-          parent.dropDownInputText( themes, el );
-        };
-
-        RIF.getHealthThemes( callback, null );
-      },
-
+      getNumDenom: function() {},
 
 
     },

@@ -107,5 +107,5 @@ RIF.study = ( function( type ) {
 
   };
 
-  return RIF.mix( _study[ type ], RIF.study[ 'study-facade-diseaseSubmission' ]() );
+  return RIF.mix( _study[ type ], RIF.study[ 'facade-diseaseSubmission' ]() );
 } );

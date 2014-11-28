@@ -29,7 +29,7 @@ RIF.diseaseSubmission = ( function() {
       */
       menu: {
         studyType: 'diseaseSubmission',
-        menus: [ 'diseaseSubmissionFront' /*'settings', 'baseMap', 'transparency'*/ ]
+        menus: [ 'frontSubmission' /*'settings', 'baseMap', 'transparency'*/ ]
       },
       //resizable: 'diseaseSubmission'
     },
@@ -70,11 +70,13 @@ RIF.diseaseSubmission = ( function() {
     },
 
     init: function() {
+      RIF.dom();
       RIF.initComponents.call( this );
       RIF.addEvents.call( this );
     }
 
   };
+
 
   return {
     setUp: ( function( args ) {

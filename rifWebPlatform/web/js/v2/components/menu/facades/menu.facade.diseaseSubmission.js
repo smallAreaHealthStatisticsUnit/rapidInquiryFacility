@@ -1,4 +1,4 @@
-RIF.menu[ 'menu-facade-diseaseSubmission' ] = ( function( _p ) {
+RIF.menu[ 'facade-diseaseSubmission' ] = ( function( _p ) {
 
   /*
    * Facades can only communicate to main component.

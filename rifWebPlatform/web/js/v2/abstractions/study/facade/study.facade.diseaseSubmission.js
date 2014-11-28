@@ -1,4 +1,4 @@
-RIF.study[ 'study-facade-diseaseSubmission' ] = ( function() {
+RIF.study[ 'facade-diseaseSubmission' ] = ( function() {
 
   var facade = {
 

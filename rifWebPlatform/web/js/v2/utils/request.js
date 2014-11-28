@@ -10,7 +10,7 @@
           var data = jQuery.parseJSON( json.responseText );
           callback( myFunc, data );
         } catch ( e ) {
-          callback( myFunc, json.responseText );
+          callback( myFunc, json.responseText ); // This should change
         }
 
         RIF.statusBar( msg, false );
@@ -24,9 +24,9 @@
           myFuncts[ l ].call( data );
         }
         return;
-      }
-
-      myFuncts.call( data );
+      } else if ( typeof myFuncts === 'function' ) {
+        myFuncts.call( data )
+      };
     },
 
     xhr = function( url, clbk, msg, mime ) {
@@ -336,6 +336,13 @@
        *
        */
 
+      logIn: ( function() {
+        var msg = "Loggin in.. ",
+          args = 'userID=ffabbri&password=ffabbri';
+
+        xhr( 'studySubmission/login?' + args, null, msg );
+      }() ),
+
       getHealthThemes: function( myCallback, params ) {
         var msg = "Retrieving Health Themes ",
           args = 'userID=ffabbri&geographyName=SAHSU';
@@ -345,10 +352,10 @@
 
       getNumeratorDenominator: function( myCallback, params ) {
         var msg = "Retrieving Numerator denominator pairs ",
-          args = 'userID=ffabbri&geographyName=SAHSU&healthThemeDescription=SAHSU';
+          args = 'userID=ffabbri&geographyName=SAHSU&healthThemeDescription=' + params[ 0 ];
 
-        xhr( 'getNumerator/?' + args, myCallback, msg );
-      },
+        xhr( 'studySubmission/getNumerator?' + args, myCallback, msg );
+      }
 
 
     };

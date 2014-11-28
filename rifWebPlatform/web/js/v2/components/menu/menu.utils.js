@@ -88,6 +88,25 @@ RIF.menu.utils = ( function() {
       } );
     },
 
+    extendMenuComponent: function( component, units ) {
+      var l = units.length;
+      while ( l-- ) {
+        var r = RIF[ 'menu' ][ units[ l ] ].call( component, RIF.dom[ 'menu' ][ units[ l ] ] );
+        component = RIF.mix( r, component );
+      };
+
+      return component;
+    },
+
+    setMenuEvent: function( component, units ) {
+      var l = units.length;
+      while ( l-- ) {
+        var eventName = [ 'event', units[ l ] ].join( '-' );
+        RIF[ 'menu' ][ eventName ].call( component, RIF.dom[ 'menu' ][ units[ l ] ] );
+      };
+    },
+
+
     fieldCheckboxes: function( obj, el, name ) {
       el.empty();
       var counter = 0,

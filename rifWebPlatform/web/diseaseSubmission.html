@@ -24,15 +24,16 @@
     <!-- RIF4 -->
 	<!-- The order on which the Rif files are downloaded must be maintained -->
 	<script type="text/javascript" src="js/v2/RIF.js"></script>
-	<script type="text/javascript" src="js/v2/abstractions/study/study-diseaseSubmission.js"></script>
-    <script type="text/javascript" src="js/v2/abstractions/study/study-facade-diseaseSubmission.js"></script>
-     <!-- utils -->
+	<script type="text/javascript" src="js/v2/abstractions/study/study.diseaseSubmission.js"></script>
+    <script type="text/javascript" src="js/v2/abstractions/study/facade/study.facade.diseaseSubmission.js"></script>
+     
+    <!-- utils -->
     <script type="text/javascript" src="js/v2/utils/utils.js"></script>
-	<script type="text/javascript" src="js/v2/utils/gui_events/resizable-diseaseMapping.js"></script>
     <script type="text/javascript" src="js/v2/utils/publisher.js"></script>
     <script type="text/javascript" src="js/v2/utils/request.js"></script>
-	<script type="text/javascript" src="js/v2/utils/colorBrewer.js"></script>
     <script type="text/javascript" src="js/v2/utils/resultNames.js"></script>
+    <script type="text/javascript" src="js/v2/dom/dom.submission.js"></script>
+    
     <!-- modules -->
     <script type="text/javascript" src="js/v2/modules/diseaseSubmission.js"></script>
     
@@ -53,16 +54,11 @@
     <script type="text/javascript" src="js/v2/components/map/units/layerTypes/plugins/leaflet_d3_tilegeojson.js"></script>
 	<script type="text/javascript" src="js/v2/components/map/units/layerTypes/plugins/tileCanvas_topojson.js"></script>-->
     <!-- menu -->
-    <script type="text/javascript" src="js/v2/components/menu/menu-diseaseSubmission.js"></script>
-	<script type="text/javascript" src="js/v2/components/menu/facades/menu-facade-diseaseSubmission.js"></script>
-    <script type="text/javascript" src="js/v2/components/menu/events/menu-event-diseaseSubmission.js"></script>
-    <script type="text/javascript" src="js/v2/components/menu/units/diseaseSubmissionFront.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/menu.diseaseSubmission.js"></script>
+	<script type="text/javascript" src="js/v2/components/menu/facades/menu.facade.diseaseSubmission.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/events/event.frontSubmission.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.frontSubmission.js"></script>
 	 <script type="text/javascript" src="js/v2/components/menu/menu.utils.js"></script>
-	<script type="text/javascript" src="js/v2/components/menu/units/diseaseStudyLevel.js"></script>
-	<script type="text/javascript" src="js/v2/components/menu/units/choropleth.js"></script>
-	<script type="text/javascript" src="js/v2/components/menu/units/settings-disease.js"></script>
-	<script type="text/javascript" src="js/v2/components/menu/units/baseMap.js"></script>
-	<script type="text/javascript" src="js/v2/components/menu/units/transparency.js"></script>
 	
     <!-- chart -->
     <!--<script type="text/javascript" src="js/v2/components/chart/chart.js"></script>
@@ -72,8 +68,6 @@
 	<script type="text/javascript" src="js/v2/components/chart/units/multipleAreaCharts.js"></script>
 	<script type="text/javascript" src="js/v2/components/chart/units/d3renderers/multipleAreaCharts.d3renderer.js"></script>-->
 
-    <!-- abstraction -->
-    <script type="text/javascript" src="js/v2/abstractions/export_data.js"></script>
 
 
     <title>The Rapid Inquiry Facility, RIF 4.0</title>
@@ -227,12 +221,12 @@
     <!------------------->
     
     <!---Study area--->
-	<div class="overlay" id="studyAreaModal">
+	<div class="overlay" id="areaSelectionModal">
 		<div class="msettings">
 			<div class="msettings-ct">
 				<div class="msettings-header">
 					<h2>Study area</h2>
-					<a class="modal_close" href="#"></a>
+					<a class="modal_close" href="#areaSelectionModal"></a>
 				</div>
                 <div class='modalContainer'>
                     <div class='modalAreaSelectionMenu'>
@@ -287,24 +281,22 @@
 	</div>--->
     
     
-    <!---Investigation parameters
+    Investigation parameters
     <div class="overlay" id="parametersModal">
 		<div class="msettings">
 			<div class="msettings-ct">
 				<div class="msettings-header">
 					<h2>Investigation parameters</h2>
-					<a class="modal_close" href="#"></a>
+					<a class="modal_close" href="#parametersModal"></a>
 				</div>
                 <div></div>
 			</div>
 		</div>
-	</div>--->
+	</div>
 	
 
     <script>
-    (function() {
-        RIF.diseaseSubmission();
-    })();
+      window.onload = RIF.diseaseSubmission;
     </script>
 </body>
 </html>
