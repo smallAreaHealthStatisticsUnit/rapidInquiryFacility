@@ -29,7 +29,8 @@ update.packages(checkBuilt=TRUE, ask=FALSE)
 #
 # Install GDAL
 #
-#install("rgdal")
+
+install.packages(c("rgdal"),lib="C:/Program Files/PostgreSQL/9.3/data/R_library")
 #
 # List libraries
 #

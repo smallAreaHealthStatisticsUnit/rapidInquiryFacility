@@ -53,17 +53,17 @@
 \set ECHO all
 \set ON_ERROR_STOP ON
 \timing
---\set VERBOSITY terse
+\set VERBOSITY terse
 
 --
--- Check user is rif40
+-- Check user is postgres
 --
 DO LANGUAGE plpgsql $$
 BEGIN
-	IF user = 'rif40' THEN
+	IF user = 'postgres' THEN
 		RAISE INFO 'User check: %', user;	
 	ELSE
-		RAISE EXCEPTION 'C20900: User check failed: % is not rif40', user;	
+		RAISE EXCEPTION 'C20900: User check failed: % is not postgres', user;	
 	END IF;
 END;
 $$;
@@ -72,48 +72,190 @@ $$;
 
 DO LANGUAGE plpgsql $$
 DECLARE	
-	c1_r CURSOR FOR 
+	c1_r1 CURSOR FOR 
 		SELECT *
 	      FROM pg_extension
 		 WHERE extname = 'plr';
 	c1_rec RECORD;
 BEGIN
-	OPEN c1_r;
-	FETCH c1_r INTO c1_rec;
-	CLOSE c1_r;
+--
+	PERFORM rif40_log_pkg.rif40_log_setup();
+    PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+--
+	OPEN c1_r1;
+	FETCH c1_r1 INTO c1_rec;
+	CLOSE c1_r1;
 	IF c1_rec.extname IS NOT NULL THEN
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'v4_0_rif40_R_pkg', 'PL/R extension version % loaded', 
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'v4_0_rif40_r_pkg', 'PL/R extension version % loaded', 
 			c1_rec.extversion::VARCHAR);
 			
 CREATE OR REPLACE FUNCTION rif40_r_pkg.install_all_packages(use_internet BOOLEAN DEFAULT TRUE)
 RETURNS void
 AS $func$
+DECLARE	
+	 c1_r2 CURSOR FOR
+		SELECT *
+		  FROM pg_settings 
+		 WHERE name = 'data_directory' /* 'C:/Program Files/PostgreSQL/9.3/data' */;
+	c1_rec RECORD;
+--
+	error_message VARCHAR;
+	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
 BEGIN
+	OPEN c1_r2;
+	FETCH c1_r2 INTO c1_rec;
+	CLOSE c1_r2;
+--
 	IF use_internet THEN
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'install_all_packages', 'Load packages from internet');
-		PERFORM public.install_rcmd('source("C:/Users/Peter/Documents/GitHub/rapidInquiryFacility/rifDatabase/Postgres/PLpgsql/rif40_R_pkg/_install_all_packages_from_internet.R")');
+		BEGIN
+			PERFORM rif40_r_pkg._install_all_packages_from_internet(c1_rec.setting); -- data_directory PG_DATA 
+		EXCEPTION
+			WHEN others THEN
+-- 
+-- Not supported until 9.2
+--
+				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+				error_message:='install_all_packages() caught: '||E'\n'||SQLERRM::VARCHAR||' in R (see previous trapped error)'||E'\n'||'Detail: '||v_detail::VARCHAR;
+				RAISE INFO '1: %', error_message;
+				RAISE;
+		END;
 	ELSE
 		PERFORM rif40_log_pkg.rif40_error(-30999, 'install_all_packages', 'Load packages from files - NOT YET IMPLEMENTED');
 	END IF;
 END;
 $func$ LANGUAGE plpgsql;
 
-DROP FUNCTION IF EXISTS rif40_r_pkg._install_all_packages_from_internet();
+DROP FUNCTION IF EXISTS rif40_r_pkg._install_all_packages_from_internet(VARCHAR);
+CREATE OR REPLACE FUNCTION rif40_r_pkg._install_all_packages_from_internet(pg_data VARCHAR)
+RETURNS void
+AS $func$
+#
+# Error handler
+#
+#options(error = traceback())
 
+#
+# R runs in: C:\Program Files\PostgreSQL\9.3\data
+# (not R_HOME)
+#
+Rmessages <- file("R_io/Rmessages.txt", open = "wt")
+Routput <- file("R_io/Routput.txt", open = "wt")
+sink(Rmessages)
+sink(Routput)
+sink(Rmessages, type = "message")
+sink(Routput, type = "output")
+options(verbose=TRUE)
+
+#
+# Set R repository
+#
+r <- getOption("repos")
+r["CRAN"] <- "http://cran.ma.imperial.ac.uk/"
+options(repos = r)
+
+#
+# Postgres R library location
+#
+#pg_data="C:/Program Files/PostgreSQL/9.3/data"
+my_lib=paste(pg_data, "/R_Library", sep='')
+print(my_lib)
+
+#
+# Update
+#
+update.packages(checkBuilt=TRUE,lib=my_lib,ask=FALSE,quiet=TRUE)
+#
+# Install INLA
+#
+#source("http://www.math.ntnu.no/inla/givemeINLA.R") 
+#inla.version()
+#
+rif40_log <- function(s) {
+	sql_stmt=sprintf("SELECT rif40_log_pkg.rif40_log('INFO', '_install_all_packages_from_internet', '%s')", s)
+	plan<-pg.spi.exec(sql_stmt)
+}
+rif40_error <- function(e, s) {
+#	sql_stmt=sprintf("SELECT rif40_log_pkg.rif40_error(%d, '_install_all_packages_from_internet', '%s')", e, s)
+#	plan<-pg.spi.exec(sql_stmt)
+	pg.throwerror(sprintf("%d in _install_all_packages_from_internet(): %s", e, s))
+}
+#
+# Installer function
+#
+sahsuInstall <- function(plist) {
+	for(p in plist ) {
+		if (!is.element(p, installed.packages()[,1])) {
+			rif40_log(sprintf("Installing %s", p))
+			install.packages(p,lib=my_lib,quiet=TRUE)
+		}
+		else {
+			rif40_log(sprintf("%s is already installed", p))
+		}
+		if (require(p,lib=my_lib,character.only=TRUE)) {
+			rif40_log(sprintf("Loaded %s", p))
+		}
+		else {
+			rif40_error(-90125, sprintf("Could not load %s", p))
+		}
+	}
+} 
+#
+# Install packages
+#
+sahsu_packages=c("sp", "rgdal", "plyr", "abind")
+sahsuInstall(sahsu_packages)
+#
+# Cleanup
+#
+remove.packages(sahsu_packages,lib=my_lib)
+rm(list=ls())
+$func$ LANGUAGE plr;
+
+DROP FUNCTION IF EXISTS rif40_r_pkg.installed_packages();
+
+CREATE OR REPLACE FUNCTION rif40_r_pkg.installed_packages()
+RETURNS /* Available columns:
+ [1] "Package"               "LibPath"               "Version"              
+ [4] "Priority"              "Depends"               "Imports"              
+ [7] "LinkingTo"             "Suggests"              "Enhances"             
+[10] "License"               "License_is_FOSS"       "License_restricts_use"
+[13] "OS_type"               "MD5sum"                "NeedsCompilation"     
+[16] "Built"                
+ */
+ TABLE(package VARCHAR, libpath VARCHAR, version VARCHAR, 
+	license VARCHAR, os_type VARCHAR, built VARCHAR)
+AS $func$
+#
+# List libraries
+#
+pkgs<-installed.packages()
+colnames(pkgs)
+rpkgs<-pkgs[,c(1,2,3,10,13,16)]
+print(rpkgs)
+#
+return(rpkgs)
+
+$func$ LANGUAGE plr;
 --
 -- Grants
 --
 GRANT EXECUTE ON FUNCTION rif40_r_pkg.install_all_packages(boolean) TO rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_r_pkg.installed_packages() TO rif_manager, rif_user;
 
 --
 -- Install all required packages
 -- 
 		PERFORM rif40_r_pkg.install_all_packages();
+		
+--		PERFORM rif40_sql_pkg.rif40_method4('SELECT rif40_r_pkg.installed_packages()', 'Installed R packages');
 	ELSE
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'v4_0_rif40_R_pkg', 'Optional PL/R extension not loaded');
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'v4_0_rif40_r_pkg', 'Optional PL/R extension not loaded');
 	END IF;
 END;
 $$;
+
+SELECT * FROM rif40_r_pkg.installed_packages();
 
 \echo Created PG psql code (Optional R support).
 

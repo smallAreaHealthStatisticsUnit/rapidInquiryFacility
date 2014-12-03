@@ -76,7 +76,7 @@ BEGIN
 --
 -- Must be rifupg34, rif40 or have rif_user or rif_manager role
 --
-	IF USER != 'rifupg34' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
+	IF USER NOT IN ('postgres', 'rifupg34') AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
 		PERFORM rif40_log_pkg.rif40_error(-20999, '_rif40_explain_ddl', 'User % must be rif40 or have rif_user or rif_manager role', 
 			USER::VARCHAR);
 	END IF;
@@ -122,7 +122,7 @@ BEGIN
 --
 -- Must be rifupg34, rif40 or have rif_user or rif_manager role
 --
-	IF USER != 'rifupg34' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
+	IF USER NOT IN ('postgres', 'rifupg34') AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
 		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_ddl', 'User % must be rif40 or have rif_user or rif_manager role', 
 			USER::VARCHAR);
 	END IF;

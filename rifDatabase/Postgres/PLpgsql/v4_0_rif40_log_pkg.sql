@@ -844,7 +844,7 @@ DECLARE
 			LEFT OUTER JOIN pg_namespace n ON (n.oid = p.pronamespace)			
 		 WHERE p.prolang    = l.oid
 		   AND p.prorettype = t.oid
-		   AND p.proowner   = (SELECT oid FROM pg_roles WHERE rolname = 'rif40')
+		   AND p.proowner   IN (SELECT oid FROM pg_roles WHERE rolname IN ('rif40', 'postgres'))
 		   AND p.proowner   = r.oid
 		   AND p.proname    = LOWER(l_function_name);	
 --
