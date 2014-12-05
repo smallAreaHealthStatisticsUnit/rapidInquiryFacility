@@ -1,0 +1,102 @@
+svg.areaCharts {
+	font-size: 10px;
+	text-transform:uppercase
+}
+svg.areaCharts path {
+	opacity:0.8;
+	/*stroke: #696969;*/
+}
+svg.areaCharts rect.overlayHover {
+  fill: none;
+  pointer-events: all;
+}
+svg.areaCharts .lineHover{
+	stroke:#7D9EC0;
+	pointer-events: none;
+}
+
+svg.areaCharts g.context {
+	display:none
+}
+
+svg.areaCharts .yClickWrapper{
+	fill:transparent;
+}
+
+div#mAreaCharts a.brushButton{
+    float: right;
+	font-size: 12px;
+	margin: 10px 0 0 0;
+	text-transform:uppercase
+}
+
+div#mAreaCharts a.brushButton:hover{
+    cursor:pointer
+}
+
+ text.country-title {
+	font-size: 10px;
+	fill: rgb(145, 145, 145);
+	font-weight:600;
+}
+
+text.areaValue {
+	font-size: 11px;
+	fill: rgb(145, 145, 145);
+	font-weight:900;
+}
+
+text.brushbutton{
+	fill: rgb(145, 145, 145);
+}
+
+text.instructions {
+	font-size: 16px;
+}
+svg.areaCharts .axis .tick {
+	fill: #919191;
+}
+
+g.context g.brush rect.background {
+	fill: rgba(0,0,0,.1);
+}
+
+g.context g.axis path {
+	stroke-opacity: 0;
+}
+
+g.context g.axis line {
+	stroke-opacity: .1;
+}
+
+g path.areaChart1 {
+	fill: rgba(127,130,201,1);
+}
+
+g path.areaChart2 {
+	fill: rgba(127,183,201,1)
+}
+
+g path.areaChart3 {
+	fill: rgba(127,201,174,1);
+}
+
+g path.areaChart4 {
+	fill: rgba(171,127,201,1);
+}
+
+svg.areaCharts .axis path, .axis line {
+	fill: none;
+	stroke: #aaa;
+	shape-rendering: crispEdges;
+}
+
+svg.areaCharts .brush .extent {
+	stroke: #f09f8c;
+	fill-opacity: .125;
+	shape-rendering: crispEdges;
+}
+
+svg.areaCharts g.context rect.background{
+	visibility: visible !important;
+}

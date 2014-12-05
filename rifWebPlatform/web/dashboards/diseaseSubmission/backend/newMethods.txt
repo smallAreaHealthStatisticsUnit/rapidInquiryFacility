@@ -1,0 +1,92 @@
+---------------------------------------------------------------------------------------------------------
+INFO
+	Get Age groups definition/structure.
+		@geolevel geapgrpahical level of interest (County, wards, etc) 
+		@theme    Set of tables comprising a theme
+
+SIGNATURE
+	public function getAgeGroups(geolevel, theme){}
+
+CURRENT SQL:
+	select distinct age_group as agegroup, minage, maxage from age_groups order by age_group asc
+
+
+NOTE: Please keep the order by age_group asc
+
+
+RETURN:
+	A JSON comprising a collection of  objects having the following properties should be returned:
+		-agegroup
+		-minage
+		-maxage
+EXAMPLE:	
+[{"agegroup":"1","minage":"0","maxage":"4"},{"agegroup":"2","minage":"5","maxage":"9"},{"agegroup":"3","minage":"10","maxage":"14"},{"agegroup":"4","minage":"15","maxage":"19"},{"agegroup":"5","minage":"20","maxage":"24"},{"agegroup":"6","minage":"25","maxage":"29"},{"agegroup":"7","minage":"30","maxage":"34"},{"agegroup":"8","minage":"35","maxage":"39"},{"agegroup":"9","minage":"40","maxage":"44"},{"agegroup":"10","minage":"45","maxage":"49"},{"agegroup":"11","minage":"50","maxage":"54"},{"agegroup":"12","minage":"55","maxage":"59"},{"agegroup":"13","minage":"60","maxage":"64"},{"agegroup":"14","minage":"65","maxage":"69"},{"agegroup":"15","minage":"70","maxage":"74"},{"agegroup":"16","minage":"75","maxage":"79"},{"agegroup":"17","minage":"80","maxage":"84"},{"agegroup":"18","minage":"85","maxage":"95"}]
+
+---------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------
+INFO
+	Gets data stratified by gender and age group.
+		@geolevel geapgrpahical level of interest (County, wards, etc) 
+		@theme    Set of tables comprising a theme 
+		@field column to retrieve the data from
+		@gids [optional] set of area gids to base the selection on
+		@year [optional] year of interest, if none specified aggregate all years available
+
+SIGNATURE
+	public function getPyramidData(geolevel, theme, field, gids, year){}
+
+
+CURRENT SQL:(does not include year cluase):
+	select age_group, sex, random() * sum($field) 
+		 from $agegrouptable 
+		  $gidClause
+			group by age_group,sex
+			 order by age_group asc
+		 
+
+RETURN: 
+	A string formatted as CSV with the following fields:
+		- agegroup
+		- sex
+		- popcount
+
+EXAMPLE:
+	agegroup,sex,popcount
+	1,2,581403.184210022
+	1,1,3200298.1891781157
+	2,2,1196254.1746418541
+	2,1,4530799.247772582
+	3,1,892651.2472139038
+	3,2,901014.3554682327
+	4,1,449901.5957233943
+	4,2,4692688.346060209
+	5,2,894144.4546854752
+	5,1,3516025.3503245176
+	6,2,4546241.078602854
+	6,1,3454175.096052183
+	7,2,4299161.437636239
+	7,1,1280585.3599973535
+	8,1,237908.81833567377
+	8,2,3439859.0105580306
+	9,1,1308252.5370425535
+	9,2,4680937.673563758
+	10,2,4257226.679626677
+	10,1,936965.3302630642
+	11,2,2921085.2645418886
+	11,1,4818194.247033879
+	12,1,3642599.934901048
+	12,2,1159448.209155004
+	13,1,2853130.995081095
+	13,2,292.58329220395535
+	14,2,156940.96797075542
+	14,1,2290078.5088355187
+	15,2,3447602.8651964813
+	15,1,1086804.2223117426
+	16,2,1046667.384479987
+	16,1,477779.3989263559
+	17,2,2598399.510054345
+	17,1,215215.91478473693
+	18,2,4548138.661669136
+	18,1,1250181.254477989		 

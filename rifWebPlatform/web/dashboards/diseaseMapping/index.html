@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--<meta charset="utf-8">-->
+    <meta name="description" content="RIF, a software for Environmental Epidemiology">
+    <meta name="keywords" content="Disease mapping,Point source analysis, Risk, Health data">
+
+    <!--CSS Stylesheets-->
+    <link rel="stylesheet" href="css/jquery/jquery-ui-1.10.3.custom.min.css" />
+    <link rel="stylesheet" href="css/leaflet/leaflet.css" />
+    <link href="css/diseaseMapping.css" rel="stylesheet" media="screen" />
+	<link href="css/mAreaCharts.css" rel="stylesheet" media="screen" />
+	<link href="css/line_bivariate.css" rel="stylesheet" media="screen" />
+    
+
+    <!-- libraries -->
+    <script type="text/javascript" src="../../libs/jquery-2.0.3.js"></script>
+    <script type="text/javascript" src="../../libs/jquery-ui-1.10.4.custom.min.js"></script>
+	<script type="text/javascript" src="../../libs/jquery.event.drag-2.2.js"></script>
+    <script type="text/javascript" src="../../libs/leaflet-0.7.3.js"></script>
+    <script src="../../libs/d3.v3.min.js" charset="utf-8"></script>
+	<script src="../../libs/sstatistics.js" charset="utf-8"></script>
+	<script src="../../libs/topojson.v1.min.js" charset="utf-8"></script>
+	    
+     <!--[if IE 9 ]>    
+        <script type="text/javascript" src="../libs/jquery.placeholder.js"></script>
+    <![endif]-->
+    
+    <!--Detect browser-->
+    <script type="text/javascript" src="../../libs/detect.js"></script>
+    
+    <!-- RIF4 -->
+	<!-- The order on which the RIf files are downloaded must be maintained -->
+	<script type="text/javascript" src="js/v2/RIF.js"></script>
+	<script type="text/javascript" src="js/v2/abstractions/study.diseaseMapping.js"></script>
+    <script type="text/javascript" src="js/v2/abstractions/facade/study.facade.diseaseMapping.js"></script>
+    
+    <!-- utils -->
+    <script type="text/javascript" src="js/v2/utils/utils.js"></script>
+	<script type="text/javascript" src="js/v2/utils/resizable.diseaseMapping.js"></script>
+    <script type="text/javascript" src="js/v2/utils/publisher.js"></script>
+	<script type="text/javascript" src="js/v2/utils/colorBrewer.js"></script>
+    <script type="text/javascript" src="js/v2/utils/resultNames.js"></script>
+    <script type="text/javascript" src="js/v2/dom/dom.mapping.js"></script>
+    
+    <!-- request -->
+    <script type="text/javascript" src="../../request/request.js"></script>
+    
+    <!-- modules -->
+    <script type="text/javascript" src="js/v2/modules/diseaseMapping.js"></script>
+    
+    <!-- map -->
+    <script type="text/javascript" src="js/v2/components/map/map.js"></script>
+	<script type="text/javascript" src="js/v2/components/map/facades/map.facade.diseaseMapping.js"></script>
+	<script type="text/javascript" src="js/v2/components/map/events/map.event.diseaseMapping.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/units/layer.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/units/layer.settings.js"></script>
+	<script type="text/javascript" src="js/v2/components/map/units/layer.hover.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/units/style/style.js"></script>
+	<script type="text/javascript" src="js/v2/components/map/units/style/style.tilesvg.js"></script> 
+	<script type="text/javascript" src="js/v2/components/map/units/style/style.tilecanvas.js"></script> 
+	<script type="text/javascript" src="js/v2/components/map/units/style/style.scales.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/units/layerTypes/tilesvg.js"></script>
+	<script type="text/javascript" src="js/v2/components/map/units/layerTypes/tilecanvas.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/units/layerTypes/plugins/leaflet_d3_tilegeojson.js"></script>
+	<script type="text/javascript" src="js/v2/components/map/units/layerTypes/plugins/tileCanvas_topojson.js"></script>
+    
+    <!-- Menu -->
+    <script type="text/javascript" src="js/v2/components/menu/menu.diseaseMapping.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/events/event.diseaseMapping.js"></script>
+      <!-- Utils -->
+      <script type="text/javascript" src="js/v2/components/menu/menu.utils.js"></script>
+      <!-- Facade -->
+	  <script type="text/javascript" src="js/v2/components/menu/facades/menu.facade.diseaseMapping.js"></script>
+      <!-- Units -->
+        <!-- Settings -->
+        <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.settings.js"></script>
+        <script type="text/javascript" src="js/v2/components/menu/events/event.settings.js"></script>
+        <!-- FrontMapping -->
+        <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.frontMapping.js"></script>
+        <script type="text/javascript" src="js/v2/components/menu/events/event.frontMapping.js"></script>
+        <!-- Choropleth -->
+        <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.choropleth.js"></script>
+        <script type="text/javascript" src="js/v2/components/menu/events/event.choropleth.js"></script>
+        <!-- BaseMap -->
+        <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.baseMap.js"></script>
+        <script type="text/javascript" src="js/v2/components/menu/events/event.baseMap.js"></script>
+        <!-- Transparency -->
+        <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.transparency.js"></script>
+        <script type="text/javascript" src="js/v2/components/menu/events/event.transparency.js"></script>
+
+    <!-- chart -->
+    <script type="text/javascript" src="js/v2/components/chart/chart.js"></script>
+	<script type="text/javascript" src="js/v2/components/chart/facades/chart.facade.diseaseMapping.js"></script>
+	<script type="text/javascript" src="js/v2/components/chart/units/lineBivariate.js"></script>
+	<script type="text/javascript" src="js/v2/components/chart/units/d3renderers/lineBivariate.d3renderer.js"></script>
+	<script type="text/javascript" src="js/v2/components/chart/units/multipleAreaCharts.js"></script>
+	<script type="text/javascript" src="js/v2/components/chart/units/d3renderers/multipleAreaCharts.d3renderer.js"></script>
+
+    
+    <title>The Rapid Inquiry Facility, RIF 4.0</title>
+
+</head>
+
+<body>
+    <div id="rifwrap">
+        <div id="navigation">
+            <div class='nav'>
+                 <a href='#' >Manager</a>
+                <a href='#' >Disease Mapping Setup</a>
+                <a href='#' class='active'>Disease Mapping Viewer</a>
+                <a href='#'>Risk Analysis Setup</a>
+            </div>
+        </div>
+        <div id="buttons">
+            <div class='export'>
+                <a href='#'>Export</a>
+            </div>
+            <div class='geoDrops'>
+				<div>
+                    <div id='studyId'>
+                        <div>Study:</div>
+                        <select>
+                            <option>.</option>
+                        </select>
+                    </div>
+                </div>
+				<div id='invId'>
+                    <div>Investigation:</div>
+                    <select>
+                        <option>.</option>
+                    </select>
+                </div>
+				<div id='Resultset'>
+                    <div>Result set:</div>
+                    <select>
+                        <option>.</option>
+                    </select>
+                </div>
+				<div id='gendersAvailable'>
+                    <div>Gender:</div>
+                    <select>
+                        <option>.</option>
+                    </select>
+                </div>
+				<div id='yearsAvailable'>
+                    <div>Years:</div>
+                    <select>
+                        <option>.</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div id="submenu">
+            <div>
+                <div class='chartOpts'>
+                   <div id="studyLabel">
+						<h1 > Study Id  </h1>
+						<h2 id="invLabel" > Inv id  </h2>
+				   </div>
+                </div>
+				
+                <div class='mapOpts'>
+                    <a href='#' class='mapOpt' id="choroplethBtn" title="Make a choropleth map"></a>
+					<a href='#' class='mapOpt' id="baseMapBtn" title="Base map options"></a>	
+					<a href='#' class='mapOpt' id="clearSelection" title="Clear selection"></a>
+					<a href='#' class='mapOpt' id="zoomExtent" title="Zoom to extent"></a>	
+					<div href='#' class='mapOpt transparency' id="transparencyContainer" >
+					   <input type="range" class="vVertical"  min="0" max="1" step="0.1"  value ="1"/>
+					</div>
+                  	<!-- <div id='zoomTo'>
+						<select>
+							<option>.</option>
+						</select>
+                    </div> -->				
+                </div>
+                <a href='#' rel='leanModal' class='settings' title="Settings" id='settingsButton'>
+                    <img src="images/settings.png" alt="settings">
+                </a>
+            </div>
+        </div>
+        <div id="content">
+            <div id="leftcol">
+					<div id='studyInfo'>
+						<ul class="resultFigures">
+							<li class="riskFigures"> 
+								<ul >
+								    <li class="listHeader"> Result figures </li>
+									<li id='areaLevel' >Area level:<span class="figure">n/a</span></li>	
+									<li id='totDenom'  >Population:<span class="figure">n/a</span></li>		
+									<li id='observed' >Observed:<span class="figure">n/a</span></li> 
+									<li id='expected' >Expected:<span class="figure">n/a</span></li> 
+
+								</ul>	
+							</li> 
+							<li class="investigationFigures">
+							     <ul>
+									<li class="listHeader"> Investigation info </li>
+								    <li id='nAreas' >Number of areas:<span class="figure">0.67</span></li>
+								    <li id='covariate' >Covariate adj:<span class="figure">0.67</span></li>
+								    <li id='ageGroup' >Age groups:<span class="figure">0.67</span></li>
+								    <li id='year' >Year(s):<span class="figure">0.67</span></li>
+								 </ul>	
+							</li>	
+						</ul>
+					</div>
+					<div id='mAreaCharts' ></div>
+            </div>
+            <div id="rightcol">
+                <div id="map"></div>
+				<div id="rr_chart"></div>
+			</div>
+			<!--<div id="rr_chart"></div>-->
+        </div>
+    </div>
+	
+	<!--ToolTip-->
+	<div id='tooltip'> 
+		<div id="geoname"></div>
+	</div>
+
+    <!--Modal Dialogs-->
+	<div class="overlay" id="settings">
+		<div class="msettings">
+			<div class="msettings-ct">
+				<div class="msettings-header">
+					<h2>Disease Map settings</h2>
+					<a class="modal_close" href="#settings"></a>
+				</div>
+				<form>
+				    <div class="txt-fld">
+						<label for="fldSlct">Map hover field:</label>
+						<select id='fldSlct'>
+						<option value=''> </option>
+						</select>
+					</div>
+					<div class="txt-fld" id="resultsSetOfInterest">
+						<label for="fldSlct" style="width:70px">Result sets (max 4):</label>
+						<div id ="resultsFilter"></div>	
+					</div>
+                    
+					<div class="save-fld-settings">
+						<input type="button" value="save">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	
+	<div class="overlay" id="baseMap">
+		<div class="msettings">
+			<div class="msettings-ct">
+				<div class="msettings-header">
+					<h2>Base Map settings</h2>
+					<a class="modal_close" href="#baseMap"></a>
+				</div>
+				<form>
+				    <div class="save-basemap">
+						<input type="checkbox" name="basemap" value="nobasemap" id="nobasemap" checked> 
+						<label for = "nobasemap"> No basemap </label>
+					</div>
+				    <div class="txt-fld" id="basemapselector">
+						<label for="fldSlct">Base map type:</label>
+						<select id='baseMapSlct' disabled=true>
+						<option value=''> </option>
+						</select>
+					</div>
+					
+					<div class="save-basemap" id="savebasemap">
+						<input type="button" value="save">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="overlay" id="statusbar">
+		<!--<div class="info"></div>-->
+	</div>
+	
+	<div class="overlay" id="choropleth">
+		<div class="msettings">
+			<div class="msettings-ct">
+				<div class="msettings-header">
+					<h2> Style </h2>
+					<a class="modal_close" href="#choropleth"></a>
+				</div>
+				<form>
+					<!--<div class="txt-fld">
+						<label for="fieldToMap"> Field to Map:</label>
+						<select id='fieldToMap'>
+						<option value=''> </option>
+						</select>
+					</div>-->
+					<div class="txt-fld">
+					    <label > Colour scale:</label>
+						<div>
+							<dl class="dropdown" id='dropDownColourScale'>
+								<dt>
+								    <div>
+									    <div id="selectedScale">
+										     <span class="swatch" style="background-color: rgb(217, 240, 163); width: 162px"></span>
+										</div>
+										<div class="dropDownArrow"></div>
+									</div>
+								</dt>
+								<dd>
+									<div class="palette"></div>
+								</dd>
+							</dl>
+						</div >	
+                        <div class='invertWrapper'>
+                           <input type="checkbox" name="inverter" id="invertColors" unchecked> 
+                           <label for = "invertColors" id="invertColorsLabel"> Invert color ramps </label>
+					   </div>
+					</div>
+					<div class="txt-fld">
+						<label for="intervals">Intervals:</label>
+						<select id='intervals'>
+						    <option value='1'> 1 </option>
+						</select>
+					</div>
+					<div class="txt-fld">
+						<label for="classification">Classification:</label>
+						<select id='classification'>
+						    <option value='quantile'>Quantile</option>
+							<option value='jenks'>Jenks</option>
+							<option value='standardDeviation'> Standard Deviation</option>
+							<!--<option value='logarithmic'>Logarithmic</option>-->
+						</select>
+						<div class="editBreaks"><a href='#'> edit </a> </div>
+						<div id="breaks"></div>
+					</div>
+					
+					<div class="save-fld">
+						<input type="button" value="save">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>	
+
+    <script>
+    (function() {
+        RIF.diseaseMapping();
+    })();
+    </script>
+</body>
+</html>

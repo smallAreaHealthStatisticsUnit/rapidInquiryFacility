@@ -1,0 +1,48 @@
+#pyramid svg {
+  font: 12px Arial, Helvetica, sans-serif;
+}
+ 
+#pyramid .y.axis path {
+  display: none;
+}
+ 
+#pyramid .y.axis line {
+  stroke: #fff;
+  stroke-opacity: .2;
+  shape-rendering: crispEdges;
+}
+ 
+#pyramid .y.axis .zero line {
+  stroke: #E3E3E3;
+  stroke-opacity: 1;
+  stroke-width:3;
+}
+
+#pyramid .y.axis  text {
+  fill: #8F8F8F;
+} 
+
+#pyramid .title {
+  font: 20px Helvetica Neue;
+  fill: #8F8F8F;
+  text-anchor: end;
+}
+ 
+#pyramid .birthyear,
+#pyramid .age {
+  text-anchor: middle;
+}
+ 
+#pyramid .birthyear {
+  fill: #fff;
+}
+ 
+#pyramid rect {
+  fill-opacity: .6;
+  fill: #e377c2;
+}
+ 
+#pyramid rect:first-child {
+  fill: #1f77b4;
+}
+ 

@@ -1,0 +1,752 @@
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 12px;
+	line-height: 20px;
+	color: #777777;
+	background-color: #ffffff;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+a,a:focus,a:active{
+     outline:none;
+	 color:#999999
+}
+a:hover{
+	text-decoration:none;
+	color:#8DB6CD
+}
+
+/*
+ * RIF 4.0 CSS
+ */   
+   body{
+		overflow:hidden
+   }	
+   #rifwrap{
+		width:100%;
+		height:99%;
+		position:absolute;
+   }
+	#navigation{
+		height:40px;
+		background-color: #8DB6CD;
+
+	}
+	#navigation .nav{
+		margin-left: 502px;
+		width:50%;
+	}
+	#navigation .nav a{
+		display:block;
+		float:left;
+		padding:5px 10px;
+		color:white;	
+		margin:10px 4px 0 ;
+		border-radius: 4px 4px 0px 0px;
+		font-weight:bold;
+		font-size:13px
+	}
+	#navigation .nav a.active{
+		background-color:white;
+		color: #8DB6CD;
+
+	}
+	#buttons{
+		height:55px;
+	}
+
+	#buttons>div {
+		float:left;
+	}
+	#buttons .export{
+		margin: 14px 2px 0 8px	;
+		min-width: 320px;
+		width: 25%;
+	}
+	#buttons .export a{
+		margin:4px 15px;
+		display: block;
+		float: left;
+		padding: 3px 1px;
+		font-size: 22px;
+		text-align: center;
+		text-transform: uppercase;
+		text-decoration: none;
+		color:#E3E3E3
+	}
+	#buttons .export a:hover{
+		color: white;
+		background-color: #8DB6CD;
+	}
+	#buttons .geoDrops{	
+		width: auto;
+}
+	#buttons .geoDrops>div{
+		float: left;
+		padding: 6px 8px 0 0;
+		font-size:11px
+	}
+	#buttons .geoDrops>div select{
+		margin:0;
+	}
+	#buttons .geoDrops>div span {
+		text-transform:uppercase
+	}
+	
+	#submenu{
+		height:40px;
+		background-color: #F5F5F5;
+		border-top:1px solid #E3E3E3;
+		border-bottom:1px solid #E3E3E3
+	}
+
+	#submenu div a img{
+		margin:5px 0px;
+	}
+	
+	#submenu div {
+		height: 100%;	
+	}
+	
+	#submenu div a img.active{
+		-moz-opacity: 1;
+		-khtml-opacity: 1;
+		opacity: 1;
+	}
+	
+	#submenu div a.settings {
+		float:right
+	} 
+	
+	#submenu a {
+		width:32px;
+		height:32px;
+		float:left
+	} 
+	
+   .chartOpts {
+       width: 25%;  
+	   
+       min-width: 320px;  
+	   float: left;
+	}
+	
+	.chartOpts a{ 
+		margin:4px 20px;
+	}
+	.chartOpts #updateCharts{ 
+		background: transparent url("../images/update.png") no-repeat;
+		opacity:0.2;
+	}
+	.chartOpts #updateCharts:hover{ 
+		opacity:0.6;
+	}
+	
+	.mapOpts {
+		width: 30%;  
+		float: left;
+	}
+	
+	#choroplethBtn{
+		background: transparent url("../images/map.png") no-repeat;
+	}
+	
+	#clearSelection{
+		background: transparent url("../images/empty-icon.png") no-repeat;
+	}
+	
+	#zoomExtent{
+	    background: transparent url("../images/globe-icon.png") no-repeat;
+	}
+	
+	.mapOpts .mapOpt{
+		width:32px;
+		height:32px;
+		display:block;
+		float:left;
+		-moz-opacity: 0.7;
+		-khtml-opacity: 0.7;
+		opacity: 0.7;
+		margin: 5px 0px 0px 5px;
+	}
+	
+	.mapOpts a.mapOpt:hover{
+		-moz-opacity: 1;
+		-khtml-opacity: 1;
+		opacity: 1;
+	}
+	
+	
+	
+	#content{
+		/* Firefox */
+		height: -moz-calc(100% - 135px);
+		/* WebKit */
+		height: -webkit-calc(100% - 135px);
+		/* Opera */
+		height: -o-calc(100% - 135px);
+		/* Standard */
+		height: calc(100% - 135px);
+	}
+	
+	#content #leftcol{
+		border-right:1px solid #C1C1C1;
+		position: relative;
+		height: 100%;
+		min-width: 300px;
+		width: 25%;
+		float: left;
+	}
+	
+	select {
+		width: 120px;
+		background-color: #ffffff;
+		border: 1px solid #cccccc;
+		color:#999999;
+		font-size:11px;
+		display: block;
+		padding: 0;
+	}
+
+	#content #leftcol div.summary dl{
+		height:auto;
+		display:block;
+		line-height:15px;
+		text-transform:uppercase;
+		font-size:11px;
+	}
+	
+	#content #leftcol div.summary dl dt{
+		float: left;
+		width: 100px;
+	}
+	
+	#content #leftcol div.summary {
+		margin: 10px 50px 0 50px;
+		height: 10px;
+	}
+	
+	.clearslctd	{
+		display: block;
+		text-align: center;
+		text-decoration: none;
+	}
+	.clearslctd a.clear{
+		background-image: url('../images/spritesheet.png');
+		background-position: -182px -2px;
+		background-repeat: no-repeat;
+	}
+	#content #leftcol> #fieldsAvailable{
+		min-width:150px;
+		height:25px;
+		margin:0;
+	}
+	
+	#content #leftcol div.options{
+		float:right;
+		width:auto;
+	}
+	
+	#content #leftcol #redraw {
+		width:100px
+	}
+	#content #leftcol #redraw  a{
+		float:right;
+		text-transform:uppercase;;
+	}
+	#content #leftcol> input{
+		float:right;
+	}
+	#content #leftcol > div.btn-toolbar{
+		float:right;
+	}
+	
+	
+	
+    /* Left Col */
+   div#studyLabel{
+		padding: 2%;
+		text-transform: uppercase;
+		background-color: #CAE1FF;
+		margin: 0 auto; 
+	}
+	div#studyLabel h1, div#studyLabel h2{
+		text-align:right
+	}
+	
+	div#studyLabel h1{
+		font-size: 150%;
+	}
+	
+	div#studyLabel h2{
+		font-size: 100%;
+	}
+	
+	div#pyramidField a:hover{
+		cursor:pointer;
+		background-color: #85e0a5;
+		font-weight:bold;
+	}
+		
+	#content #leftcol  div#mAreaCharts{
+		border-top : 2px solid #E3E3E3;
+		background-color: white;
+	}
+	
+	#content #leftcol  div#studyInfo{
+		padding-bottom: 8%;
+		margin-top:3%;
+	}
+	
+	div#studyInfo ul.resultFigures{
+		width: 100%;
+		overflow:hidden
+	}
+
+	li.riskFigures ,li.studyFigures  {
+		width: 46%;
+	}
+	
+	div#studyInfo ul.resultFigures li.riskFigures{
+		float:left;
+	}
+	
+	div#studyInfo  ul.resultFigures  li.studyFigures{
+		float:right;
+		color: #B5B5B5;
+	}
+	
+	div#studyInfo ul.resultFigures li ul li{
+		border-bottom:1px solid #E3E3E3;
+		line-height:22px;
+	}
+	
+	div#studyInfo ul.resultFigures span{
+		float: right;
+		font-weight: bold;
+	}
+	
+	div#studyInfo ul  li.listHeader{
+		text-transform: uppercase;
+		border: none;
+		margin-bottom: 3px;
+	}
+
+	#mAreaCharts, #studyInfo {
+		margin-left:auto;
+		margin-right:auto;
+		width: 90%;
+	}
+	
+	#content #rightcol{
+		position: relative;
+		height: 80%;
+}
+	#content #rightcol #map{
+		height: 100%;
+		display:block;
+		background-color:transparent;
+	}
+	#content #rightcol #map .slctd{	
+		float:right;
+		overflow:auto;
+		margin:10px;
+		border-top:2px solid #A9DB80;
+		height:auto;
+		min-width:auto;
+		max-width:100px;
+	}
+	#content #rightcol #map .slctd div{
+		padding:2px 10px;
+		background-color:#fff;
+		text-transform:uppercase;
+		text-align: center;
+	}
+	
+	#content #rightcol #map .slctd div.slctdHeader{
+		background-color:#F5F5F5;
+	}
+   /*
+	* Data Table
+	*
+	*/
+	#rr_chart{
+		border: 1px solid #C1C1C1;
+		height: 20%;
+		margin-top: 1px;
+		background-color: #FFFFFF;
+}
+
+	/*
+	 *  Map Container
+	 */
+	.leaflet-container{
+		background-color:white
+	}
+	/*
+	 * Map control container - Legend
+	 *
+	 */
+	
+	li.key {
+		border-left-width: 10px;
+		border-left-style: solid;
+		font-size: .80em;
+		padding-left: 5px;
+		list-style-type:none;
+	}
+	
+	li.key  a{
+		vertical-align:bottom;
+		color:#cccccc;
+		height: 25px;
+		display:table-cell;
+		line-height:0;
+	}
+	
+	li.maxkey{
+		border:none;
+	}
+	
+	li.maxkey a{
+		padding-left:10px
+	}
+	
+   /*
+	* Polygon rendering style using D3
+    */
+  
+	path.polygon {
+	  fill-opacity: 1;
+	  stroke: #1B1;
+	  stroke-width: 0.2px;
+	}
+
+	path.polygon:hover {
+	  fill-opacity: 0.5;
+	  cursor:auto
+	}
+
+	/*
+		Modal
+	*/
+	
+	.overlay {
+	  display:none;
+	  position: absolute;
+	  margin:0;
+	  padding:0;
+	  width: 100%;
+	  height: 100%;
+	  z-index: 1000;
+	  background-color: rgba(0,0,0,0.4); /*dim the background*/
+    }	
+    #statusbar{
+		z-index: 999999;
+	}
+	#statusbar div{
+		width: 200px;
+		padding: 10px 0;
+		margin: 0 auto;
+		-webkit-border-bottom-right-radius: 5px;
+		-webkit-border-bottom-left-radius: 5px;
+		-moz-border-radius-bottomright: 5px;
+		-moz-border-radius-bottomleft: 5px;
+		border-bottom-right-radius: 5px;
+		border-bottom-left-radius: 5px;
+		color: white;
+		font-weight: bold;
+		text-align: center;
+	}
+	
+	#statusbar div.info{
+		background-color:#A2CD5A;
+	}
+	
+	#statusbar div.error{
+		background-color:#EE4000;
+		width: 300px;
+	}
+	
+	.msettings {
+		width: 350px;
+		padding-bottom: 2px;
+		display:block;
+		background: #FFF;
+		border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;
+		box-shadow: 0px 0px 4px rgba(0,0,0,0.7); -webkit-box-shadow: 0 0 4px rgba(0,0,0,0.7); 
+		-moz-box-shadow: 0 0px 4px rgba(0,0,0,0.7);
+		margin: 10% auto;
+    }
+	
+	.msettings-header {
+		background: #F0FFF0;
+		padding: 10px;
+		border-bottom: 1px solid #E0EEE0;
+		border-top-left-radius: 5px;
+		-moz-border-radius-topleft: 5px;
+		-webkit-border-top-left-radius: 5px;
+		border-top-right-radius: 5px;
+		-moz-border-radius-topright: 5px;
+		-webkit-border-top-right-radius: 5px;
+		color: #B0B0B0;
+		text-transform: uppercase;
+		height:16px;
+    }
+	.msettings-header  h2{
+	    float:left;
+	}
+	.msettings-header a.modal_close{
+		background: url('../images/close.png');
+		width: 20px;
+		height: 20px;
+		opacity: 0.2;
+	}
+	.msettings-header a.modal_close:hover{
+		opacity: 0.4;
+	}
+	.msettings-header .modal_close{
+		float:right;
+	}
+	
+    .msettings{
+	    color: #7D7D7D;
+	}
+	.msettings .txt-fld {
+		padding: 14px 30px;
+		border-bottom: 1px solid #EEE;
+    }
+	.msettings .txt-fld .editBreaks {
+	    width:270px;
+	}
+	.msettings .txt-fld #breaks {
+	    display:none;
+		height:100px;
+	}
+	
+	.msettings #tableSettings{
+	   overflow:auto;
+	   max-height: 80px;
+	}
+	
+	.msettings #tableSettings div#colsFilter { 
+		height: auto;
+		width: 180px;
+		margin: 5px 0 0 100px;
+		position: relative;
+		min-height: 20px;
+	}
+	
+	.msettings #tableSettings div#colsFilter div { 
+		height: 20px;
+		min-width:85px;
+		display:block;
+		float:left
+	}
+	
+	.msettings #tableSettings  div#colsFilter input.colsChoice { 
+		float: left;
+		margin: 6px 3px;
+	}
+	
+	.msettings #tableSettings div#colsFilter label.colsChoiceLbl { 
+		width: auto;
+		padding: 2px 8px 0 0px;
+	}
+	
+	
+	.msettings .txt-fld #breaks input {
+	    float:left;
+		width:58px;
+		margin:5px 10px 5px 0px;
+		font-size: 1.1em;
+		color:#CCC;
+		border:0;
+		background:#F7F7F7
+	}
+	
+	.msettings .txt-fld, #msettings .save-fld, #msettings .save-fld-settings{
+	    position: relative;
+	    text-align: right;
+	}
+	
+	.msettings .txt-fld label {
+		display: block;
+		float: left;
+		width: 100px;
+		padding-top: 6px;
+		font-size: 1.1em;
+		text-align: left;
+	}
+	.msettings .txt-fld select ,.msettings .txt-fld input[type="text"] {
+		width: 180px;
+		padding: 4px 2px;
+		border-radius: 4px;
+		-moz-border-radius: 4px;
+		font-size: 1em;
+		background: #F7F7F7;
+		border:1px solid #cccccc;
+		color:#999999;
+    }
+	
+	.msettings .txt-fld input[name="numOfRows"]{
+			float:left
+	}
+	.msettings .save-fld, .save-fld-settings {
+		padding: 8px 20px;
+	}
+	.save-fld input, .save-fld-settings input {
+		padding: 2px 11px;
+		color: #7D7D7D;
+    }
+	
+	.msettings .fldHistogramContainer{
+		height:50px
+	}
+	
+	.msettings #fldHistogram{
+		margin-top:15px;
+	}
+	
+
+	
+   /* General dropdown styles */      
+    .dropdown { 
+	     margin-left: 100px;
+    }   
+	.dropdown dd, .dropdown dt, .dropdown ul { 
+	    margin:0px;
+	    padding: 0px; 
+	    display: inline;
+}
+	
+	/* DT styles for sliding doors */
+	.dropdown dt > div{
+		display: block; 
+		border-radius: 4px;
+		-moz-border-radius: 4px;
+		font-size: 1em;
+		background: #F7F7F7;
+		border: 1px solid #cccccc; 
+		width: 174px;
+		height:20px;
+		padding: 3px 2px;
+		cursor:pointer; 
+		 display:block;
+	}
+
+	/* UL styles */
+	.dropdown .palette { 
+       	 display:none;
+		 list-style:none; 
+		 position:absolute; 
+		 width: auto;;
+	}
+	.dropdown dd ul li { 
+	    margin:4px 0
+	}
+	.dropdown span.value { 
+	    display:none;
+	}
+	.dropdown dd ul li a { 
+	    display: block;
+    }
+  
+    .palette {
+	  cursor: pointer;
+	  display: inline-block;
+	  vertical-align: bottom;
+	  padding: 2px 0;
+	  background: #fff;
+	  border: solid 1px #aaa;
+	  height: 140px;
+	  overflow-y: scroll;
+	  z-index:9999;
+	}
+	
+	.palette div {
+	    height:20px;
+		z-index:9999;
+		display:block
+	}
+
+	.swatch {
+		display: block;
+		width: 18px;
+		height: 20px;
+		float: left;
+		margin: 1px 0;
+	}  
+    
+	#defaultColor {
+		width:162px;
+		background-color:rgb(217, 240, 163)
+	}
+	 
+    .dropDownArrow{
+		background: url(../images/arrow.jpg) no-repeat;
+		width: 9px;
+		height: 10px;
+		float: right;
+		margin-top: 5px;
+	}
+  
+  /*
+   * Tiled geojson dialog hover
+   */ 
+ 
+    #tooltip{
+		background: none repeat scroll 0 0 rgba(255, 255, 255, 0.8);
+		position:absolute;
+		padding:5px 10px;
+		display:block;
+    }
+	
+	#tooltip #geoname{
+		position:relative;
+	}
+
+  /*
+   * Slick Grid Edits 
+   */
+   .slick-row:hover ,.slick-row	.selected,.slick-row.odd:hover	{ 
+		background-color: #D1EEEE; 
+	}
+	
+
+	

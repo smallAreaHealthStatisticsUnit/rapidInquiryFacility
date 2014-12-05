@@ -1,0 +1,23 @@
+#distHisto .bar rect {
+  fill: #B0C4DE;
+  shape-rendering: crispEdges;
+}
+
+#distHisto .bar text {
+  fill: #B0C4DE;
+  font-size:11px;
+  font-family: "proxima-nova", sans-serif;;
+}
+
+#distHisto .axis path, .axis line {
+  fill: none;
+  stroke: #E3E3E3;
+  shape-rendering: crispEdges;
+}
+
+#distHisto .tick text {
+	fill: #8F8F8F;
+	font-size:9px;
+}
+
+ 
