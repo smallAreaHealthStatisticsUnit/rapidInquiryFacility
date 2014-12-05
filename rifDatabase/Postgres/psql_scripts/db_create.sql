@@ -306,13 +306,28 @@ R_HOME=<rdir
 --
 -- b) Postgres is NOT restarted
 --
-
+DECLARE	
+	c1_r CURSOR FOR 
+		SELECT *
+	      FROM pg_extension
+		 WHERE extname = 'plr';
+	c1_rec RECORD;
 BEGIN
 	IF UPPER(CURRENT_SETTING('rif40.use_plr')) = 'Y' THEN
 --
 -- Test PLR can be installed
 --
 		CREATE EXTENSION IF NOT EXISTS plr;
+--
+-- Test is installed correctly
+--
+		OPEN c1_r;
+		FETCH c1_r INTO c1_rec;
+		CLOSE c1_r;
+		IF c1_rec.extname IS NOT NULL THEN
+			RAISE INFO 'PL/R extension version % loaded', 
+				c1_rec.extversion::Text;
+		END IF;
 		DROP EXTENSION plr;
 	END IF;
 EXCEPTION

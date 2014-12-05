@@ -215,6 +215,17 @@ POSTGRES_ETC_DIR=$(shell pg_config --sysconfdir)
 empty=
 ESC_POSTGRES_ETC_DIR:=$(subst $(empty)/$(empty),$(empty)\$(empty),$(subst c:,C:,$(subst $(empty) $(empty),$(empty)\ $(empty),$(POSTGRES_ETC_DIR))))
 #
+# R output directories (under PG_DATA)
+#
+R_IO=$(ESC_POSTGRES_ETC_DIR)\..\data\R_io 
+R_MESSAGES=$(ESC_POSTGRES_ETC_DIR)\..\data\R_messages
+R_LIBRARY=$(ESC_POSTGRES_ETC_DIR)\..\data\R_library
+ifeq ($(USE_PLR),Y)
+	PLR_DIRS=$(R_IO) $(R_MESSAGES) $(R_LIBRARY)
+else
+	PLR_DIRS=
+endif
+#
 # Target extension depends on source, build rule
 #
 .SUFFIXES: .sql .rpt
@@ -245,7 +256,7 @@ ESC_POSTGRES_ETC_DIR:=$(subst $(empty)/$(empty),$(empty)\$(empty),$(subst c:,C:,
 #- 1. patching
 #-
 #- all: Run all completed alter scripts and test [DEFAULT]
-all:
+all: $(PLR_DIRS)
 	$(MAKE) -C alter_scripts clean all
 	$(MAKE) -C test_scripts clean all
 
@@ -259,7 +270,10 @@ patch:
 #- dev: Run all alter scripts in development
 dev:
 	$(MAKE) -C alter_scripts dev DEBUG_LEVEL=1
-	
+
+# Dummy for test	
+noop: $(PLR_DIRS)
+
 #-
 #- 2. build
 #-	
@@ -270,7 +284,7 @@ sahsuland_dev_no_alter: clean v4_0_create_sahsuland.rpt
 	
 #- sahsuland_dev: Rebuild sahsuland_dev, test, then patch dev only, retest, finally VACUUM ANALYZE
 #- Does not run all alter scripts in development
-sahsuland_dev: clean v4_0_create_sahsuland.rpt 
+sahsuland_dev: clean $(PLR_DIRS) v4_0_create_sahsuland.rpt 
 	$(MAKE) -C test_scripts no_alter DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) -C alter_scripts clean all DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) -C test_scripts clean all DEBUG_LEVEL=1 ECHO=all
@@ -329,7 +343,7 @@ devclean:
 # Format is: hostname:port:database:username:password
 #
 #- db_setup: Create sahusland, sahsuland_dev
-db_setup: psqlrc $(PGPASSFILE)
+db_setup: psqlrc $(PGPASSFILE) $(PLR_DIRS)
 	$(MAKE) clean
 	$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) sahsuland_dev 
@@ -351,9 +365,15 @@ $(PGPASSFILE):
 # psqlrc: psql logon script
 psqlrc:	../etc/psqlrc C:\Program\ Files\PostgreSQL\9.3\etc
 		$(COPY) ../etc/psqlrc "$(POSTGRES_ETC_DIR)"
-
 #
-# $(ESC_POSTGRES_ETC_DIR): Create directory for psqlrc (requires privilege)
+# R message directories - need to be created aka POSTGRES_ETC_DIR
+#
+$(R_IO):
+		$(error Please create $(R_IO)) 
+$(R_MESSAGES):
+		$(error Please create $(R_MESSAGES))
+#
+# $(ESC_POSTGRES_ETC_DIR): Create directory for psqlrc (requires privilege) - NEEDS TO BE FIXED
 #		
 $(ESC_POSTGRES_ETC_DIR):
 		-$(SUDO_MKDIR)
