@@ -11,9 +11,9 @@ The RIF 4.0 integrates advanced methods in statistics, exposure assessment and d
 
 
 Javascript GUI:
-![Alt text](rifWebPlatform/web/docs/screenshots/images/dm5.png?raw=true "RIF 4.0")
-![Alt text](docs/screenshots/images/logIn.png?raw=true "RIF 4.0")
-![Alt text](rifWebPlatform/web/docs/screenshots/images/dm1.png?raw=true "RIF 4.0")
-![Alt text](rifWebPlatform/web/docs/screenshots/images/dm2.png?raw=true "RIF 4.0")
-![Alt text](rifWebPlatform/web/docs/screenshots/images/dm3.png?raw=true "RIF 4.0")
-![Alt text](rifWebPlatform/web/docs/screenshots/images/manager1.png?raw=true "RIF 4.0")
+![Alt text](rifWebPlatform/web/docs/screenshots/dm5.png?raw=true "RIF 4.0")
+![Alt text](rifWebPlatform/web/docs/screenshots/logIn.png?raw=true "RIF 4.0")
+![Alt text](rifWebPlatform/web/docs/screenshots/dm1.png?raw=true "RIF 4.0")
+![Alt text](rifWebPlatform/web/docs/screenshots/dm2.png?raw=true "RIF 4.0")
+![Alt text](rifWebPlatform/web/docs/screenshots/dm3.png?raw=true "RIF 4.0")
+![Alt text](rifWebPlatform/web/docs/screenshots/manager1.png?raw=true "RIF 4.0")
