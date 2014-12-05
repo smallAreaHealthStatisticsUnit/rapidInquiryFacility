@@ -112,7 +112,7 @@ DECLARE
 --
 	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 
 		'rif40_zoom_levels'];
---v
+--
 	l_function 					VARCHAR;
 BEGIN
 --
@@ -194,12 +194,12 @@ SELECT substring(a1.spheroid, 1, position(',AUTHORITY[' in a1.spheroid)-1)||']' 
 		FROM spatial_ref_sys	
 		WHERE srid = 4326) a1;
 	
-DO LANGUAGE plpgsql $$
-BEGIN
-	RAISE INFO 'Aborting (script being tested)';
-	RAISE EXCEPTION 'C20999: Abort';
-END;
-$$;
+--DO LANGUAGE plpgsql $$
+--BEGIN
+--	RAISE INFO 'Aborting (script being tested)';
+--	RAISE EXCEPTION 'C20999: Abort';
+--END;
+--$$;
 
 END;
 

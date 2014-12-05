@@ -44,9 +44,15 @@
 #
 # Peter Hambly, SAHSU
 #
+#
+# Local overrides; copy Makefile.local.example to Makefile.local and edit Makefile.local
+#
+-include ../Makefile.local
+#
 # Conditional environment variables - can be changed to point to sahsuland by higher maskefiles
 #
 PGDATABASE?=sahsuland_dev
+PGHOST=localhost
 DBNAME?=$(PGDATABASE)
 VERBOSITY?=$(DEFAULT_VERBOSITY)
 #
@@ -64,15 +70,29 @@ ECHO?=$(DEFAULT_ECHO)
 # Programs and parameters
 #
 PSQL=psql
-PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -e -P pager=off -v testuser=$(TESTUSER)  -v verbosity=$(VERBOSITY) \
-	-v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO)
+PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -e -P pager=off \
+	-v testuser=$(TESTUSER) \
+	-v verbosity=$(VERBOSITY) \
+	-v debug_level=$(DEBUG_LEVEL) \
+	-v pghost=$(PGHOST) \
+	-v echo=$(ECHO)
 
+#
+# PL/R dev/prod sources, if enabled
+#
+ifeq ($(USE_PLR),Y)
+	PLR_DEV_SOURCES=v4_0_alter_6.sql
+	PLR_SOURCES=
+else
+	PLR_DEV_SOURCES=
+	PLR_SOURCES=
+endif
 #
 # List of source code
 #
-SOURCES=v4_0_alter_1.sql v4_0_alter_2.sql
+SOURCES=v4_0_alter_1.sql v4_0_alter_2.sql $(PLR_SOURCES)
 # DEV_SOURCES=v4_0_alter_3.sql v4_0_alter_4.sql v4_0_alter_5.sql
-DEV_SOURCES=v4_0_alter_5.sql
+DEV_SOURCES=v4_0_alter_5.sql $(PLR_DEV_SOURCES)
 
 #
 # Derive targets from sources
@@ -131,14 +151,14 @@ endif
 #- all: Run all completed alter scripts [DEFAULT]
 all: $(TARGETS)
 #- dev: Run all alter scripts in development
-dev: $(TARGETS) $(DEV_TARGETS)
+dev: $(DEV_TARGETS)
 #- clean: Remove logs so completed scripts can be r-run
 clean: 
 	$(DELETE) $(TARGETS)
-#- devclean: Remove logs so alter scripts in development can be r-run 
+#- devclean: Remove logs so alter scripts in development can be re-run 
 #-           Not normally needed as they abort.
 devclean: 
-	$(DELETE) $(TARGETS) $(DEV_TARGETS)
+	$(DELETE) $(DEV_TARGETS)
 
 # Do nothing
 recurse:

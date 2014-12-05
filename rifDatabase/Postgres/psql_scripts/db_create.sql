@@ -326,7 +326,7 @@ BEGIN
 		CLOSE c1_r;
 		IF c1_rec.extname IS NOT NULL THEN
 			RAISE INFO 'PL/R extension version % loaded', 
-				c1_rec.extversion::Text);
+				c1_rec.extversion::Text;
 		END IF;
 		DROP EXTENSION plr;
 	END IF;
