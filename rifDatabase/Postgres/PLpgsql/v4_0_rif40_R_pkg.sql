@@ -273,7 +273,11 @@ BEGIN
 '#'||E'\n'||
 '# Install/update decision'||E'\n'||
 '#'||E'\n'||
-'    if (b.date == as.character(bb.date)) {'||E'\n'||
+'	 if (bb.date == "INLA.is.not.installed") {'||E'\n'||
+'		rif40_log("INFO", "install_package_from_internet",'||E'\n'||
+'			sprintf("Installing INLA..."))'||E'\n'||
+'	 }'||E'\n'||
+'    else if (b.date == as.character(bb.date)) {'||E'\n'||
 '        if (!force) {'||E'\n'||
 '			rif40_log("DEBUG1", "install_package_from_internet", '||E'\n'||
 '				sprintf("You have the newest version of INLA: %s (%s)", '||E'\n'||
@@ -287,9 +291,9 @@ BEGIN
 '		}'||E'\n'||
 '   }'||E'\n'||
 '	else {'||E'\n'||
-'			rif40_log("INFO", "install_package_from_internet",'||E'\n'||
-'				sprintf("Updating INLA: %s: (local: %s != www: %s)", '||E'\n'||
-'					toString(inla.version("version")), as.character(bb.date), as.character(b.date)))'||E'\n'||
+'		rif40_log("INFO", "install_package_from_internet",'||E'\n'||
+'			sprintf("Updating INLA: %s: (local: %s != www: %s)", '||E'\n'||
+'				toString(inla.version("version")), as.character(bb.date), as.character(b.date)))'||E'\n'||
 '	}'||E'\n'||
 '#'||E'\n'||
 '# download and install INLA'||E'\n'||
