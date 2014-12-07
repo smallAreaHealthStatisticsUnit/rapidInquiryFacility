@@ -217,11 +217,9 @@ ESC_POSTGRES_ETC_DIR:=$(subst $(empty)/$(empty),$(empty)\$(empty),$(subst c:,C:,
 #
 # R output directories (under PG_DATA)
 #
-R_IO=$(ESC_POSTGRES_ETC_DIR)\..\data\R_io 
-R_MESSAGES=$(ESC_POSTGRES_ETC_DIR)\..\data\R_messages
 R_LIBRARY=$(ESC_POSTGRES_ETC_DIR)\..\data\R_library
 ifeq ($(USE_PLR),Y)
-	PLR_DIRS=$(R_IO) $(R_MESSAGES) $(R_LIBRARY)
+	PLR_DIRS=$(R_LIBRARY)
 else
 	PLR_DIRS=
 endif
@@ -366,12 +364,10 @@ $(PGPASSFILE):
 psqlrc:	../etc/psqlrc C:\Program\ Files\PostgreSQL\9.3\etc
 		$(COPY) ../etc/psqlrc "$(POSTGRES_ETC_DIR)"
 #
-# R message directories - need to be created aka POSTGRES_ETC_DIR
+# R library directory - need to be created aka POSTGRES_ETC_DIR
 #
-$(R_IO):
-		$(error Please create $(R_IO)) 
-$(R_MESSAGES):
-		$(error Please create $(R_MESSAGES))
+$(R_LIBRARY):
+		$(error Please create $(R_LIBRARY))
 #
 # $(ESC_POSTGRES_ETC_DIR): Create directory for psqlrc (requires privilege) - NEEDS TO BE FIXED
 #		

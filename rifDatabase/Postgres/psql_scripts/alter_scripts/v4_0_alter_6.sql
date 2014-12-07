@@ -97,7 +97,7 @@ DECLARE
 -- Functions to enable debug for
 --
 	rif40_r_pkg_functions 	VARCHAR[] := ARRAY[
-		'installed_packages'];
+		'installed_packages', 'r_cleanup'];
 	l_function 					VARCHAR;
 BEGIN
 --
@@ -112,8 +112,9 @@ BEGIN
 	END LOOP;
 --
 	PERFORM rif40_r_pkg.r_init();
-	
 	PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM rif40_r_pkg.installed_packages()', 'Installed R packages');
+	PERFORM rif40_r_pkg.r_cleanup();
+	
 --
 	RAISE INFO 'Aborting (script being tested)';
 	RAISE EXCEPTION 'C20999: Abort';

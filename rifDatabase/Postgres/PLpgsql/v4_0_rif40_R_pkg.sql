@@ -84,6 +84,7 @@ DECLARE
 	rif40_r_pkg_functions 	VARCHAR[] := ARRAY[
 		'r_init',
 		'_r_init',	
+		'r_cleanup',
 		'installed_packages',
 		'install_package_from_internet',
 		'_install_all_packages_from_internet'];
@@ -105,6 +106,8 @@ BEGIN
 			c1_rec.extversion::VARCHAR);
 
 DROP FUNCTION IF EXISTS rif40_r_pkg.r_init(RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL, VARCHAR);
+DROP FUNCTION IF EXISTS rif40_r_pkg.r_cleanup();
+DROP FUNCTION IF EXISTS rif40_r_pkg._r_cleanup();
 DROP FUNCTION IF EXISTS rif40_r_pkg.installed_packages();
 DROP FUNCTION IF EXISTS rif40_r_pkg.install_package_from_internet(VARCHAR);
 DROP FUNCTION IF EXISTS rif40_r_pkg._install_all_packages_from_internet();
@@ -374,6 +377,10 @@ BEGIN
 		PERFORM install_rcmd('#'||E'\n'||
 '# Set local R_library (in $PGDATA/R_Library) for Postgres'||E'\n'||
 '#'||E'\n'||
+'global.Rmessages_file<<-NULL'||E'\n'||
+'global.Routput_file<<-NULL'||E'\n'||
+'global.Rmessages<<-NULL'||E'\n'||
+'global.Routput<<-NULL'||E'\n'||
 'my_lib=paste("'||c1_rec.setting /* pg_data */||'", "/R_Library", sep='''')');
 --
 		PERFORM rif40_r_pkg._r_init(debug_level); -- data_directory PG_DATA 
@@ -395,6 +402,12 @@ CREATE OR REPLACE FUNCTION rif40_r_pkg._r_init(
 RETURNS void
 AS $func$
 #
+# Check r_init() has NOT been run
+#
+if (exists("Rmessages_file")) {
+	pg.throwerror("r_init() already run [in rif40_r_pkg._r_init()]")
+}
+#
 # Error handler
 #
 #options(error = traceback())
@@ -405,21 +418,19 @@ AS $func$
 # R runs in: C:\Program Files\PostgreSQL\9.3\data
 # (not R_HOME)
 #
-if (file.exists("R_io")) {
-	rif40_log("INFO", "_r_init", "R_io message directory exists")
+if (file.exists(tempdir())) {
+	rif40_log("DEBUG1", "_r_init", sprintf("Temp dir: %s directory exists", tempdir()))
 }
 else {
-	rif40_error(-90124, "_r_init", "R_io message directory needs to be created")
+	rif40_error(-90124, "_r_init", sprintf("Temp dir: %s directory needs to be created",  tempdir()))
 }
 timestr=format(Sys.time(), "%H%M_%d%m%Y")
-Rmessages_file=sprintf("R_io/Rmessages_%d_%s.txt", Sys.getpid(), timestr)
-Routput_file=sprintf("R_io/Routput_%d_%s.txt", Sys.getpid(), timestr)
-Rmessages <- file(Rmessages_file, open = "w")
-Routput <- file(Routput_file, open = "w")
-sink(Rmessages)
-sink(Routput)
-sink(Rmessages, type = "message")
-sink(Routput, type = "output")
+global.Rmessages_file<<-sprintf("%s/Rmessages_%d_%s.txt", tempdir(), Sys.getpid(), timestr)
+global.Routput_file<<-sprintf("%s/Routput_%d_%s.txt", tempdir(), Sys.getpid(), timestr)
+global.Rmessages <<- file(global.Rmessages_file, open = "w")
+global.Routput <<- file(global.Routput_file, open = "w")
+sink(global.Rmessages, type = "message")
+sink(global.Routput, type = "output")
 rm(timestr)
 #
 # Enable verbosity
@@ -480,7 +491,7 @@ AS $func$
 # Check r_init() has been run
 #
 if (!exists("my_lib")) {
-	pg.throwerror("r_init() not run in rif40_r_pkg.installed_packages()")
+	pg.throwerror("r_init() not run [in rif40_r_pkg._install_all_packages_from_internet()]")
 }
 
 rif40_debug("DEBUG1", "_install_all_packages_from_internet", "ls() >>>\n%s\n<<<", toString(ls()))
@@ -499,6 +510,7 @@ rif40_debug("INFO", "_install_all_packages_from_internet",
 #
 sahsu_packages=c("sp", "rgdal", "plyr", "abind", "Matrix")
 install_all_packages_from_internet(sahsu_packages)
+rm(sahsu_packages)
 
 #
 # Install INLA
@@ -527,7 +539,6 @@ else {
 #
 #remove.packages(sahsu_packages,lib=my_lib)
 rif40_debug("DEBUG1", "_install_all_packages_from_internet", "ls() >>>\n%s", toString(ls()))
-#rm(list)
 $func$ LANGUAGE plr;
 
 CREATE OR REPLACE FUNCTION rif40_r_pkg.install_package_from_internet(package_name VARCHAR)
@@ -556,7 +567,7 @@ AS $func$
 # Check r_init() has been run
 #
 if (!exists("my_lib")) {
-	pg.throwerror("r_init() not run in rif40_r_pkg.installed_packages()")
+	pg.throwerror("r_init() not run [in rif40_r_pkg.installed_packages()]")
 }
 #
 # List libraries
@@ -571,7 +582,7 @@ rif40_debug("INFO", "_install_all_packages_from_internet",
 # Print column names
 #
 rif40_debug("INFO", "installed_packages", 
-	"colnames() >>>\n%s\n<<<", 
+	"Available colnames() >>>\n%s\n<<<", 
 		toString(
 			colnames(global.pkgs)))
 #
@@ -588,17 +599,108 @@ return(rpkgs)
 
 $func$ LANGUAGE plr;
 
+CREATE OR REPLACE FUNCTION rif40_r_pkg.r_cleanup()
+RETURNS void
+AS $func$
+DECLARE
+--
+	error_message VARCHAR;
+	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
+BEGIN
+	PERFORM rif40_r_pkg._r_cleanup();
+EXCEPTION
+	WHEN others THEN
+-- 
+-- Not supported until 9.2
+--
+		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+		error_message:='r_cleanup() caught: '||E'\n'||SQLERRM::VARCHAR||' in R (see previous trapped error)'||E'\n'||'Detail: '||v_detail::VARCHAR;
+		RAISE INFO '1: %', error_message;
+		RAISE;
+END;
+$func$ LANGUAGE plpgsql;
+	
+CREATE OR REPLACE FUNCTION rif40_r_pkg._r_cleanup()
+RETURNS void
+AS $func$
+#
+# Function:	r_cleanup()
+# Parameters:	 None
+# Returns:	 Nothing
+# Description: R Cleanup function
+#
+# Check r_init() has been run
+#
+if (!exists("my_lib")) {
+	pg.throwerror("r_init() not run [in rif40_r_pkg.r_cleanup()]")
+}
+#
+# Close messages and output logs: R_io/Rmessages_<pid>_<date time string>.txt,  R_io/Routput_<pid>_<date time string>.txt
+#
+
+flush(global.Routput)
+sink(file=NULL, type = "output")
+close(global.Routput)
+Routput_size=file.info(global.Routput_file)$size
+#
+if (Routput_size > 0) {
+	con=file(global.Rmessages_file, "r")
+	text=readLines(con)
+	rtext=NULL;
+	for (i in 1:length(text)){
+		rtext=paste(rtext, text[i], sep="\n")
+	}
+	rif40_log("WARNING", "r_cleanup", 
+		sprintf("Output file: %s is not zero sized (%d bytes i.e. NOT all output trapped)\n%d lines >>>\n%s\n<<<", 
+			global.Routput_file, Routput_size, length(text), rtext))
+	close(con)
+}
+else {
+	rif40_debug("DEBUG1", "r_cleanup", "Output file: %s is zero sized (i.e. all output trapped); removing", 
+		global.Routput_file)
+	file.remove(global.Routput_file)
+	if (file.exists(global.Routput_file)) {
+		stop(sprintf("Unable to delete output file %s", 
+			global.Routput_file))
+	}
+}
+#
+flush(global.Rmessages)
+sink(file=NULL, type = "message")
+close(global.Rmessages)
+Rmessages_size=file.info(global.Rmessages_file)$size
+if (Rmessages_size > 0) {
+	con=file(global.Rmessages_file, "r")
+	text=readLines(con)
+	rtext=NULL;
+	for (i in 1:length(text)){
+		rtext=paste(rtext, text[i], sep="\n")
+	}
+	rif40_log("WARNING", "r_cleanup", 
+		sprintf("Messages file: %s is not zero sized (%d bytes i.e. NOT all messages trapped)\n%d lines >>>\n%s\n<<<", 
+			global.Rmessages_file, Rmessages_size, length(text), rtext))
+	close(con)
+}
+else {
+	rif40_debug("DEBUG1", "r_cleanup", "Messages file: %s is zero sized (i.e. all messages trapped); removing", 
+		global.Rmessages_file)
+	sink(file=NULL, type = "message")
+	file.remove(global.Rmessages_file)
+	if (file.exists(global.Rmessages_file)) {
+		stop(sprintf("Unable to delete messages file %s: %s", global.Rmessages_file))
+	}
+}
+#
+rif40_debug("DEBUG1", "r_cleanup", "ls() >>>\n%s", toString(ls()))
+rm(list=ls())
+$func$ LANGUAGE plr;
 --
 -- Comments
 --
 COMMENT ON FUNCTION rif40_r_pkg.install_all_packages(boolean) IS 'Function:	install_all_packages()
 Parameters:	 Use internet [Default TRUE]
 Returns:	 Nothing
-Description: Install R packages from internet or files';
-COMMENT ON FUNCTION rif40_r_pkg.installed_packages() IS 'Function:	installed_packages()
-Parameters:	 None
-Returns:	 Nothing
-Description: All all required packages:
+Description: Install R packages from internet or files into local library:
 
 	sp: 	Classes and methods for spatial data
 	rgdal: 	Bindings for the Geospatial Data Abstraction Library 
@@ -608,6 +710,10 @@ Description: All all required packages:
 			Classes and methods for dense and sparse matrices and operations on them using LAPACK and SuiteSparse.
 	splines: Regression spline functions and classes [part of the standard install]
 	inla:	Approximate Bayesian inference for latent Gaussian models by using integrated nested Laplace approximations';
+COMMENT ON FUNCTION rif40_r_pkg.installed_packages() IS 'Function:	installed_packages()
+Parameters:	 None
+Returns:	 Nothing
+Description: List all required packages';
 COMMENT ON FUNCTION rif40_r_pkg.install_package_from_internet(VARCHAR) IS 'Function:	install_package_from_internet()
 Parameters:	 Package name
 Returns:	 Nothing
@@ -615,7 +721,25 @@ Description: Install additional package';
 COMMENT ON FUNCTION rif40_r_pkg.r_init(RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL, VARCHAR) IS 'Function:	r_init()
 Parameters:	 Default debug level [DEBUG1], CRAN repository [Default:  http://cran.ma.imperial.ac.uk/]
 Returns:	 Nothing
-Description: R initialisation function. Call once per session';
+Description: R initialisation function. Call once per session:
+
+Set up messages and output logs: R_io/Rmessages_<pid>_<date time string>.txt,  R_io/Routput_<pid>_<date time string>.txt
+Set CRAN repository
+Set local library: $PG_DATA/R_Library';
+COMMENT ON FUNCTION rif40_r_pkg.r_cleanup() IS 'Function:	r_cleanup()
+Parameters:	 None
+Returns:	 Nothing
+Description: R Cleanup function
+
+Close messages and output logs: tempdir()/Rmessages_<pid>_<date time string>.txt,  R_io/Routput_<pid>_<date time string>.txt
+';
+COMMENT ON FUNCTION rif40_r_pkg._r_cleanup() IS 'Function:	r_cleanup()
+Parameters:	 None
+Returns:	 Nothing
+Description: R Cleanup function
+
+Close messages and output logs: R_io/Rmessages_<pid>_<date time string>.txt,  R_io/Routput_<pid>_<date time string>.txt
+';
 
 --
 -- Grants
@@ -625,6 +749,7 @@ GRANT EXECUTE ON FUNCTION rif40_r_pkg.installed_packages() TO rif_manager, rif_u
 GRANT EXECUTE ON FUNCTION rif40_r_pkg.install_package_from_internet(VARCHAR) TO rif_manager, rif_user, rif40;
 GRANT EXECUTE ON FUNCTION rif40_r_pkg._install_all_packages_from_internet(VARCHAR) TO rif40;
 GRANT EXECUTE ON FUNCTION rif40_r_pkg.r_init(RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL, VARCHAR) TO rif_manager, rif_user, rif40;
+GRANT EXECUTE ON FUNCTION rif40_r_pkg.r_cleanup() TO rif_manager, rif_user, rif40;
 
 --
 -- Enabled debug on select rif40_r_pkg_functions functions
@@ -649,6 +774,7 @@ GRANT EXECUTE ON FUNCTION rif40_r_pkg.r_init(RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL
 				RAISE INFO '1: %', error_message;
 				RAISE;
 		END;
+		PERFORM rif40_r_pkg.r_cleanup();
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'v4_0_rif40_r_pkg', 'Optional PL/R extension not loaded');
 	END IF;

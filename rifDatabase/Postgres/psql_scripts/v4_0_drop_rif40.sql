@@ -224,6 +224,8 @@ DROP TYPE IF EXISTS rif40_dmp_pkg.DELIMITER_TYPE CASCADE;
 DROP TYPE IF EXISTS rif40_dmp_pkg.LINE_TERMINATOR CASCADE;
 
 DROP FUNCTION IF EXISTS rif40_r_pkg.r_init(RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL, VARCHAR);
+DROP FUNCTION IF EXISTS rif40_r_pkg.r_cleanup();
+DROP FUNCTION IF EXISTS rif40_r_pkg._r_cleanup();
 DROP FUNCTION IF EXISTS rif40_r_pkg.installed_packages();
 DROP FUNCTION IF EXISTS rif40_r_pkg.install_package_from_internet(VARCHAR);
 DROP FUNCTION IF EXISTS rif40_r_pkg._install_all_packages_from_internet();
