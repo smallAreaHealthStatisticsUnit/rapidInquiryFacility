@@ -130,263 +130,251 @@ BEGIN
 	FETCH c1_r2 INTO c1_rec;
 	CLOSE c1_r2;
 --
+-- Standard R functions, escaped to prevent parse problems caused by Linux/Windows CR/LF
+-- Kept short to ease parse problems (R''s parser is rubbish)...
+--
 	BEGIN
 --
 -- Log functions
 -- 
-		PERFORM install_rcmd('#
-# Common functions
-#
-# Function:		rif40_log()
-# Parameters:	Log level (INFO, DEBUG1, DEBUG2, WARNING), function name, string
-# Returns:		Nothing
-# Description:  Calls PL/pgsql function rif40_log_pkg.rif40_log
-#				Catches errors. These appear in the log file
-#
-rif40_log <- function(w, f, s) {
-	if (nchar(s) > 0) {
-		sql_stmt=sprintf("SELECT rif40_log_pkg.rif40_log(''%s'', ''%s'', %s)", w, f, pg.quoteliteral(s))
-		tryCatch(
-			{
-				plan<-pg.spi.exec(sql_stmt)
-			},
-			error=function(sql_error) {
-#
-# DO NOT throw an error - it will crash postgres!
-#				pg.throwerror(sprintf("%d in %s(): caught error %s in SQL statement\nSQL>%s", -60606, f, sql_error, sql_stmt))
-				stop(sprintf("rif40_log() caught error: %s in SQL statement\nSQL>%s", sql_error, sql_stmt))
-			},
-			warning=function(sql_warning) {
-				stop(sprintf("rif40_log() caught warning: %s in SQL statement", sql_warning, sql_stmt))
-			}
-		)    
-	}
-}
-
-#
-# Function:		rif40_debug()
-# Parameters:	Log level (DEBUG1, DEBUG2), function name, format string, debug output
-# Returns:		Nothing
-# Description:  Calls PL/pgsql function rif40_log_pkg.rif40_log
-#				Catches errors. These appear in the log file
-#
-rif40_debug <- function(w, f, s, o) {
-	if (nchar(o) > 0) {
-		rif40_log(w, f, sprintf(s, o))
-	}
-}
-
-#
-# Function:		rif40_error()
-# Parameters:	negative error code, function name, string
-# Returns:		Nothing; throws PL/pgsql exception
-# Description:  Calls PL/pgsql function rif40_log_pkg.rif40_error
-#				Must be caught with a standard exception handler in PL/pgsql or you will not get the message!
-#				DO NOT USE tryCatch()
-#
-	rif40_error <- function(e, f, s) {
-#
-#	sql_stmt=sprintf("SELECT rif40_log_pkg.rif40_error(%d, ''%s'', ''%s'')", e, f, pg.quoteliteral(s))
-#	plan<-pg.spi.exec(sql_stmt)
-#
-# Better message!
-#
-	pg.throwerror(sprintf("%d in %s(): %s", e, f, pg.quoteliteral(s)))
-}');
-		PERFORM install_rcmd('
-#
-# Installer functions
-#
-# Function:		install_package_from_internet()
-# Parameters:	Package
-# Returns:		Nothing; throws R parser exception
-# Description:  Install package from Internet
-#
-install_package_from_internet<-function(p) {
-		if (!is.element(p, installed.packages(lib=my_lib)[,1])) {
-			rif40_log("INFO", "install_package_from_internet", sprintf("Installing %s", p))
-			rif40_debug("DEBUG1", "install_package_from_internet", 
-				"update.packages() >>>\n%s\n<<<", 
-					toString(
-						capture.output(
-							install.packages(p,lib=my_lib))))
-		}
-		else {
-			rif40_log("INFO", "install_package_from_internet", sprintf("%s is already installed", p))
-		}
-		global.loaded=NULL
-		rif40_debug("DEBUG1", "install_package_from_internet", 
-				"require() >>>\n%s\n<<<", 
-					toString(
-						capture.output(
-							global.loaded<--require(p,lib.loc=my_lib,character.only=TRUE))))
-		if (global.loaded) {
-			rif40_log("INFO", "install_package_from_internet", sprintf("Loaded %s", p))
-			rm(global.loaded)
-		}
-		else {
-			rif40_error(-90125, "install_package_from_internet", sprintf("Could not load %s", p))
-		}
-}
-
-#
-# Function:		install_all_packages_from_internet()
-# Parameters:	Package string vector
-# Returns:		Nothing; throws R parser exception
-# Description:  Install all packages in list from Internet
-#
-install_all_packages_from_internet<-function(plist) {
-	for(p in plist) {
-		install_package_from_internet(p)
-	}
-}');
+		PERFORM install_rcmd('#'||E'\n'||
+'# Common functions'||E'\n'||
+'#'||E'\n'||
+'# Function:		rif40_log()'||E'\n'||
+'# Parameters:	Log level (INFO, DEBUG1, DEBUG2, WARNING), function name, string'||E'\n'||
+'# Returns:		Nothing'||E'\n'||
+'# Description:  Calls PL/pgsql function rif40_log_pkg.rif40_log'||E'\n'||
+'#				Catches errors. These appear in the log file'||E'\n'||
+'#'||E'\n'||
+'rif40_log <- function(w, f, s) {'||E'\n'||
+'	if (nchar(s) > 0) {'||E'\n'||
+'		sql_stmt=sprintf("SELECT rif40_log_pkg.rif40_log(''%s'', ''%s'', %s)", w, f, pg.quoteliteral(s))'||E'\n'||
+'		tryCatch('||E'\n'||
+'			{'||E'\n'||
+'				plan<-pg.spi.exec(sql_stmt)'||E'\n'||
+'			},'||E'\n'||
+'			error=function(sql_error) {'||E'\n'||
+'#'||E'\n'||
+'# DO NOT throw an error - it will crash postgres!'||E'\n'||
+'#				pg.throwerror(sprintf("%d in %s(): caught error %s in SQL statement\nSQL>%s", -60606, f, sql_error, sql_stmt))'||E'\n'||
+'				stop(sprintf("rif40_log() caught error: %s in SQL statement\nSQL>%s", sql_error, sql_stmt))'||E'\n'||
+'			},'||E'\n'||
+'			warning=function(sql_warning) {'||E'\n'||
+'				stop(sprintf("rif40_log() caught warning: %s in SQL statement", sql_warning, sql_stmt))'||E'\n'||
+'			}'||E'\n'||
+'		)'||E'\n'||    
+'	}'||E'\n'||
+'}');
+		PERFORM install_rcmd('#'||E'\n'||
+'#}'||E'\n'||
+'# Function:		rif40_debug()'||E'\n'||
+'# Parameters:	Log level (DEBUG1, DEBUG2), function name, format string, debug output'||E'\n'||
+'# Returns:		Nothing'||E'\n'||
+'# Description:  Calls PL/pgsql function rif40_log_pkg.rif40_log'||E'\n'||
+'#				Catches errors. These appear in the log file'||E'\n'||
+'#}'||E'\n'||
+'rif40_debug <- function(w, f, s, o) {'||E'\n'||
+'	if (nchar(o) > 0) {'||E'\n'||
+' 		rif40_log(w, f, sprintf(s, o))'||E'\n'||
+'	}'||E'\n'||
+'}');
+		PERFORM install_rcmd('#'||E'\n'||
+'# Function:		rif40_error()'||E'\n'||
+'# Parameters:	negative error code, function name, string'||E'\n'||
+'# Returns:		Nothing; throws PL/pgsql exception'||E'\n'||
+'# Description:  Calls PL/pgsql function rif40_log_pkg.rif40_error'||E'\n'||
+'#				Must be caught with a standard exception handler in PL/pgsql or you will not get the message!'||E'\n'||
+'#				DO NOT USE tryCatch()'||E'\n'||
+'#'||E'\n'||
+'rif40_error <- function(e, f, s) {'||E'\n'||
+'#'||E'\n'||
+'#	sql_stmt=sprintf("SELECT rif40_log_pkg.rif40_error(%d, ''%s'', ''%s'')", e, f, pg.quoteliteral(s))'||E'\n'||
+'#	plan<-pg.spi.exec(sql_stmt)'||E'\n'||
+'#'||E'\n'||
+'# Better message!'||E'\n'||
+'#'||E'\n'||
+'	pg.throwerror(sprintf("%d in %s(): %s", e, f, pg.quoteliteral(s)))'||E'\n'||
+'}');
+		PERFORM install_rcmd('#'||E'\n'||
+'# Installer functions'||E'\n'||
+'#'||E'\n'||
+'# Function:		install_package_from_internet()'||E'\n'||
+'# Parameters:	Package'||E'\n'||
+'# Returns:		Nothing; throws R parser exception'||E'\n'||
+'# Description:  Install package from Internet'||E'\n'||
+'#'||E'\n'||
+'install_package_from_internet<-function(p) {'||E'\n'||
+'		if (!is.element(p, installed.packages(lib=my_lib)[,1])) {'||E'\n'||
+'			rif40_log("INFO", "install_package_from_internet", sprintf("Installing %s", p))'||E'\n'||
+'			rif40_debug("DEBUG1", "install_package_from_internet", '||E'\n'||
+'				"update.packages() >>>\n%s\n<<<",'||E'\n'||
+'					toString('||E'\n'||
+'						capture.output('||E'\n'||
+'							install.packages(p,lib=my_lib))))'||E'\n'||
+'		}'||E'\n'||
+'		else {'||E'\n'||
+'			rif40_log("INFO", "install_package_from_internet", sprintf("%s is already installed", p))'||E'\n'||
+'		}'||E'\n'||
+'		global.loaded=NULL'||E'\n'||
+'		rif40_debug("DEBUG1", "install_package_from_internet",'||E'\n'||
+'				"require() >>>\n%s\n<<<",'||E'\n'||
+'					toString('||E'\n'||
+'						capture.output('||E'\n'||
+'							global.loaded<--require(p,lib.loc=my_lib,character.only=TRUE))))'||E'\n'||
+'		if (global.loaded) {'||E'\n'||
+'			rif40_log("INFO", "install_package_from_internet", sprintf("Loaded %s", p))'||E'\n'||
+'			rm(global.loaded)'||E'\n'||
+'		}'||E'\n'||
+'		else {'||E'\n'||
+'			rif40_error(-90125, "install_package_from_internet", sprintf("Could not load %s", p))'||E'\n'||
+'		}'||E'\n'||
+'}'||E'\n'||
+'#'||E'\n'||
+'# Function:		install_all_packages_from_internet()'||E'\n'||
+'# Parameters:	Package string vector'||E'\n'||
+'# Returns:		Nothing; throws R parser exception'||E'\n'||
+'# Description:  Install all packages in list from Internet'||E'\n'||
+'#'||E'\n'||
+'install_all_packages_from_internet<-function(plist) {'||E'\n'||
+'	for(p in plist) {'||E'\n'||
+'		install_package_from_internet(p)'||E'\n'||
+'	}'||E'\n'||
+'}');
 --
 -- Install inla (web) installer (http://www.math.ntnu.no/inla/givemeINLA.R with givemeINLA(testing=FALSE, lib = inla.lib) 
 -- and library selection removed
 --
-		PERFORM install_rcmd('
-`inla.update` = function(lib = NULL, testing = FALSE, force = FALSE)
-{
-    inla.installer(lib=lib, testing=testing, force=force)
-}
-
-`inla.installer` = function(lib = NULL, testing = FALSE, force = FALSE)
-{
-#
-# Set web download directory
-#
-    if (testing)
-        www = "http://www.math.ntnu.no/inla/binaries/testing"
-    else 
-        www = "http://www.math.ntnu.no/inla/binaries"
-
-#
-# Extract remote web build date; inla build version
-#
-    b.date = scan(paste(www,"/build.date", sep=""), quiet=TRUE, what = character(0))
-    if (exists("inla.version")) {
-        bb.date = inla.version("bdate")
-    } 
-	else {
-        bb.date = "INLA.is.not.installed"
-    }
-
-#
-# Install/update decision
-#
-    if (b.date == as.character(bb.date)) {
-        if (!force) {
-			rif40_log("DEBUG1", "install_package_from_internet", 
-				sprintf("You have the newest version of INLA: %s (%s)", 
-					toString(inla.version("version")), as.character(bb.date)))
-            return (invisible())
-		}
-        else {
-			rif40_log("DEBUG1", "install_package_from_internet", 
-				sprintf("You have the newest version of INLA: %s (Install forced: %s)", 
-					toString(inla.version("version")), as.character(bb.date)))
-		}
-    }
-	else {
-			rif40_log("INFO", "install_package_from_internet", 
-				sprintf("Updating INLA: %s: (local: %s != www: %s)", 
-					toString(inla.version("version")), as.character(bb.date), as.character(b.date)))
-	}
-    
-    ## download and install INLA
-    if (inla.installer.os("windows")) {
-        suff = ".zip"
-        tp = "win.binary"
-    } else {    
-        suff = ".tgz"
-        tp = "source"
-    }
-    dfile = paste(tempdir(), .Platform$file.sep, "INLA", suff, sep="")
-    sfile = paste(www, "/INLA", suff, sep="")
-	rif40_log("DEBUG1", "install_package_from_internet", sprintf("Download %s to: %s", sfile, dfile))
-    download.file(sfile, dfile)
-
-    ## remove old library before installing the new one
-    try(detach(package:INLA), silent = TRUE)
-    try(unloadNamespace("INLA"), silent = TRUE)
-
- 	rif40_log("DEBUG1", "install_package_from_internet", sprintf("Install package %s", dfile))
-    install.packages(dfile, lib = lib, repos=NULL, type = tp)
-    library(INLA, lib.loc = lib)
-
-#   cat("\nType\n\tinla.version()\nto display the new version of R-INLA. Thanks for upgrading.\n\n")
-    return (invisible())
-}
-
-
-`inla.installer.os` = function(type = c("linux", "mac", "windows", "else"))
-{
-    if (missing(type)) {
-        stop("Type of OS is required.")
-    }
-    type = match.arg(type)
-    
-    if (type == "windows") {
-        return (.Platform$OS.type == "windows")
-    } else if (type == "mac") {
-        result = (file.info("/Library")$isdir && file.info("/Applications")$isdir)
-        if (is.na(result)) {
-            result = FALSE
-        }
-        return (result)
-    } else if (type == "linux") {
-        return ((.Platform$OS.type == "unix") && !inla.installer.os("mac"))
-    } else if (type == "else") {
-        return (TRUE)
-    } else {
-        stop("This shouldn''t happen.")
-    }
-}
-`inla.installer.os.type` = function()
-{
-    for (os in c("windows", "mac", "linux", "else")) {
-        if (inla.installer.os(os)) {
-            return (os)
-        }
-    }
-    stop("This shouldn''t happen.")
-}
-
-`inla.installer.os.32or64bit` = function()
-{
-    return (ifelse(.Machine$sizeof.pointer == 4, "32", "64"))
-}
-`inla.installer.os.is.32bit` = function()
-{
-    return (inla.installer.os.32or64bit() == "32")
-}
-`inla.installer.os.is.64bit` = function()
-{
-    return (inla.installer.os.32or64bit() == "64")
-}
- 
-`givemeINLA` = function(...) inla.installer(...)
-if (!exists("inla.lib")) inla.lib = NULL
-');
+		PERFORM install_rcmd(''||E'\n'||
+'`inla.update` = function(lib = NULL, testing = FALSE, force = FALSE) {'||E'\n'||
+'    inla.installer(lib=lib, testing=testing, force=force)'||E'\n'||
+'}'||E'\n'||
+'#'||E'\n'||
+'`inla.installer` = function(lib = NULL, testing = FALSE, force = FALSE) {'||E'\n'||
+'#'||E'\n'||
+'# Set web download directory'||E'\n'||
+'#'||E'\n'||
+'    if (testing)'||E'\n'||
+'        www = "http://www.math.ntnu.no/inla/binaries/testing"'||E'\n'||
+'    else '||E'\n'||
+'        www = "http://www.math.ntnu.no/inla/binaries"'||E'\n'||
+'#'||E'\n'||
+'# Extract remote web build date; inla build version'||E'\n'||
+'#'||E'\n'||
+'    b.date = scan(paste(www,"/build.date", sep=""), quiet=TRUE, what = character(0))'||E'\n'||
+'    if (exists("inla.version")) {'||E'\n'||
+'        bb.date = inla.version("bdate")'||E'\n'||
+'    } '||E'\n'||
+'	else {'||E'\n'||
+'        bb.date = "INLA.is.not.installed"'||E'\n'||
+'    }'||E'\n'||
+'#'||E'\n'||
+'# Install/update decision'||E'\n'||
+'#'||E'\n'||
+'    if (b.date == as.character(bb.date)) {'||E'\n'||
+'        if (!force) {'||E'\n'||
+'			rif40_log("DEBUG1", "install_package_from_internet", '||E'\n'||
+'				sprintf("You have the newest version of INLA: %s (%s)", '||E'\n'||
+'					toString(inla.version("version")), as.character(bb.date)))'||E'\n'||
+'           return (invisible())'||E'\n'||
+'		}'||E'\n'||
+'        else {'||E'\n'||
+'			rif40_log("DEBUG1", "install_package_from_internet", '||E'\n'||
+'				sprintf("You have the newest version of INLA: %s (Install forced: %s)", '||E'\n'||
+'					toString(inla.version("version")), as.character(bb.date)))'||E'\n'||
+'		}'||E'\n'||
+'   }'||E'\n'||
+'	else {'||E'\n'||
+'			rif40_log("INFO", "install_package_from_internet",'||E'\n'||
+'				sprintf("Updating INLA: %s: (local: %s != www: %s)", '||E'\n'||
+'					toString(inla.version("version")), as.character(bb.date), as.character(b.date)))'||E'\n'||
+'	}'||E'\n'||
+'#'||E'\n'||
+'# download and install INLA'||E'\n'||
+'#'||E'\n'||
+'    if (inla.installer.os("windows")) {'||E'\n'||
+'        suff = ".zip"'||E'\n'||
+'        tp = "win.binary"'||E'\n'||
+'    } else {'||E'\n'||
+'        suff = ".tgz"'||E'\n'||
+'        tp = "source"'||E'\n'||
+'    }'||E'\n'||
+'    dfile = paste(tempdir(), .Platform$file.sep, "INLA", suff, sep="")'||E'\n'||
+'    sfile = paste(www, "/INLA", suff, sep="")'||E'\n'||
+'	rif40_log("DEBUG1", "install_package_from_internet", sprintf("Download %s to: %s", sfile, dfile))'||E'\n'||
+'    download.file(sfile, dfile)'||E'\n'||
+'#'||E'\n'||
+'# remove old library before installing the new one'||E'\n'||
+'#'||E'\n'||
+'    try(detach(package:INLA), silent = TRUE)'||E'\n'||
+'    try(unloadNamespace("INLA"), silent = TRUE)'||E'\n'||
+'#'||E'\n'||
+' 	rif40_log("DEBUG1", "install_package_from_internet", sprintf("Install package %s", dfile))'||E'\n'||
+'    install.packages(dfile, lib = lib, repos=NULL, type = tp)'||E'\n'||
+'    library(INLA, lib.loc = lib)'||E'\n'||
+'#'||E'\n'||
+'#   cat("\nType\n\tinla.version()\nto display the new version of R-INLA. Thanks for upgrading.\n\n")'||E'\n'||
+'    return (invisible())'||E'\n'||
+'}'||E'\n'||
+'#'||E'\n'||
+'`inla.installer.os` = function(type = c("linux", "mac", "windows", "else")) {'||E'\n'||
+'    if (missing(type)) {'||E'\n'||
+'        stop("Type of OS is required.")'||E'\n'||
+'    }'||E'\n'||
+'    type = match.arg(type)'||E'\n'||
+'# '||E'\n'||
+'    if (type == "windows") {'||E'\n'||
+'        return (.Platform$OS.type == "windows")'||E'\n'||
+'    } else if (type == "mac") {'||E'\n'||
+'        result = (file.info("/Library")$isdir && file.info("/Applications")$isdir)'||E'\n'||
+'        if (is.na(result)) {'||E'\n'||
+'            result = FALSE'||E'\n'||
+'        }'||E'\n'||
+'        return (result)'||E'\n'||
+'    } else if (type == "linux") {'||E'\n'||
+'        return ((.Platform$OS.type == "unix") && !inla.installer.os("mac"))'||E'\n'||
+'    } else if (type == "else") {'||E'\n'||
+'        return (TRUE)'||E'\n'||
+'    } else {'||E'\n'||
+'        stop("This shouldn''t happen.")'||E'\n'||
+'    }'||E'\n'||
+'}'||E'\n'||
+'`inla.installer.os.type` = function() {'||E'\n'||
+'    for (os in c("windows", "mac", "linux", "else")) {'||E'\n'||
+'        if (inla.installer.os(os)) {'||E'\n'||
+'            return (os)'||E'\n'||
+'        }'||E'\n'||
+'    }'||E'\n'||
+'    stop("This shouldn''t happen.")'||E'\n'||
+'}'||E'\n'||
+'#'||E'\n'||
+'`inla.installer.os.32or64bit` = function() {'||E'\n'||
+'    return (ifelse(.Machine$sizeof.pointer == 4, "32", "64"))'||E'\n'||
+'}'||E'\n'||
+'`inla.installer.os.is.32bit` = function() {'||E'\n'||
+'    return (inla.installer.os.32or64bit() == "32")'||E'\n'||
+'}'||E'\n'||
+'`inla.installer.os.is.64bit` = function() {'||E'\n'||
+'    return (inla.installer.os.32or64bit() == "64")'||E'\n'||
+'}'||E'\n'||
+'#'||E'\n'|| 
+'`givemeINLA` = function(...) inla.installer(...)'||E'\n'||
+'if (!exists("inla.lib")) inla.lib = NULL');
 --
 -- Set R repository
 --
-		PERFORM install_rcmd('
-#
-# Set CRAN repository
-#
-r <- getOption("repos")
-r["CRAN"] <- "'||cran_repository||'"
-options(repos = r)');
+		PERFORM install_rcmd('#'||E'\n'||
+'# Set CRAN repository'||E'\n'||
+'#'||E'\n'||
+'r <- getOption("repos")'||E'\n'||
+'r["CRAN"] <- "'||cran_repository||'"'||E'\n'||
+'options(repos = r)');
 --
 -- Set my_lib (Postgres R library location)
 --
-		PERFORM install_rcmd('
-#
-# Set local R_library (in $PGDATA/R_Library) for Postgres
-#
-my_lib=paste("'||c1_rec.setting /* pg_data */||'", "/R_Library", sep='''')
-');
+		PERFORM install_rcmd('#'||E'\n'||
+'# Set local R_library (in $PGDATA/R_Library) for Postgres'||E'\n'||
+'#'||E'\n'||
+'my_lib=paste("'||c1_rec.setting /* pg_data */||'", "/R_Library", sep='''')');
 --
 		PERFORM rif40_r_pkg._r_init(debug_level); -- data_directory PG_DATA 
 	EXCEPTION
