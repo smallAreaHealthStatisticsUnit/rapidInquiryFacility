@@ -862,7 +862,7 @@ DO LANGUAGE plpgsql $$
 DECLARE	
 	c1 CURSOR(l_schema VARCHAR) FOR
 		SELECT * FROM information_schema.schemata
-		 WHERE schema_name = l_schema;
+		 WHERE LOWER(schema_name) = LOWER(l_schema);
 	c1_rec RECORD;
 --
 	schemalist VARCHAR[]:=ARRAY['rif40_dmp_pkg', 'rif40_sql_pkg', 'rif40_sm_pkg', 'rif40_log_pkg', 'rif40_trg_pkg',
