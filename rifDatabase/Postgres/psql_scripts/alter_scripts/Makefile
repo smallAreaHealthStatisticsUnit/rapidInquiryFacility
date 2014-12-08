@@ -44,7 +44,6 @@
 #
 # Peter Hambly, SAHSU
 #
-#
 # Local overrides; copy Makefile.local.example to Makefile.local and edit Makefile.local
 #
 -include ../Makefile.local

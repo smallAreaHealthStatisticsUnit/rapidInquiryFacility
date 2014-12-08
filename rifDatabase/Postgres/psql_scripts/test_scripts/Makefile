@@ -44,6 +44,10 @@
 #
 # Peter Hambly, SAHSU
 #
+# Local overrides; copy Makefile.local.example to Makefile.local and edit Makefile.local
+#
+-include Makefile.local
+#
 # Conditional environment variables - can be changed to point to sahsuland by higher maskefiles
 #
 PGDATABASE?=sahsuland_dev
