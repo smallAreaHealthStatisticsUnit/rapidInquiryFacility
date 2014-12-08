@@ -173,7 +173,10 @@ ifeq ($(OS),Windows_NT)
 	COPY=powershell -ExecutionPolicy ByPass -file copy.ps1 
 	PGPASS=powershell -ExecutionPolicy ByPass -file pgpass.ps1
 	# Assumes tr came with make. Force to lowercase
-	TESTUSER?=$(shell echo $(USERNAME) | tr ‘[:upper:]’ ‘[:lower:]’)
+	TESTUSER=$(shell echo $(USERNAME) | tr ‘[:upper:]’ ‘[:lower:]’)
+	ifeq ($(TESTUSER),)
+		TESTUSER=$(USERNAME)
+	endif
 	TOPOJSON="C:\node_modules\.bin\topojson.cmd"
 	PGPASSFILE=$(APPDATA)\postgresql\pgpass.conf
 else

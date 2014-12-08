@@ -109,6 +109,9 @@ ifeq ($(OS),Windows_NT)
 	DELETE=powershell -ExecutionPolicy ByPass -file ../delete.ps1
 	# Assumes tr came with make. Force to lowercase
 	TESTUSER=$(shell echo $(USERNAME) | tr ‘[:upper:]’ ‘[:lower:]’)
+	ifeq ($(TESTUSER),)
+		TESTUSER=$(USERNAME)
+	endif
 	TOPOJSON="C:\node_modules\.bin\topojson.cmd"
 else
 #
