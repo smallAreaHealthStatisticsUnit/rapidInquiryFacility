@@ -1,6 +1,6 @@
 /*
  *
- * RIF 4.0 JS Client
+ * RIF 4.0
  * Created by Federico Fabbri
  * Imperial College London
  *
@@ -12,7 +12,7 @@ var RIF = ( function( R ) {
   R.components = {};
   R.modules = {};
   R.resizeWidth = function( /*obj,*/ px ) {};
-
+  R.user = 'ffabbri';
 
   if ( detectBrowser.browser === "Explorer" && parseInt( detectBrowser.version ) < 9 ) {
     window.top.location = ""; //LANDING PAGE
@@ -23,6 +23,8 @@ var RIF = ( function( R ) {
       $( 'input' ).placeholder();
     } );
   };
+
+
 
   return R;
 

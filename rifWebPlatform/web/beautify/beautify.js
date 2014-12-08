@@ -56,3 +56,5 @@ walk( "../dashboards/diseaseMapping/js", callback );
 walk( "../dashboards/diseaseSubmission/js", callback );
 walk( "../dashboards/dataViewer/js", callback );
 walk( "../logIn/js", callback );
+walk( "../request", callback );
+walk( "../statusBar", callback );

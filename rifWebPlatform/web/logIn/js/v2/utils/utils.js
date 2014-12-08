@@ -56,45 +56,6 @@
         return child;
       },
 
-      statusBar: function( msg, showOrHide ) {
-        //console.log("msg--" + msg + "--" + showOrHide);
-        var classNoSpace = msg.replace( / /g, '' ),
-          indexOfMsg = -1,
-          nRequests = 0,
-          requestsInProgress = 0,
-          requestsCompleted = 0;
-
-        statusBarMsgs[ msg ] = showOrHide;
-
-        for ( var cmsg in statusBarMsgs ) {
-          if ( msg === cmsg ) {
-            indexOfMsg = nRequests;
-          };
-          if ( !statusBarMsgs[ cmsg ] ) {
-            requestsCompleted++;
-          } else if ( statusBarMsgs[ cmsg ] ) {
-            requestsInProgress++;
-          }
-          nRequests++;
-        };
-
-        if ( showOrHide ) {
-          $( "#statusbar" ).append( "<div class='info msg" + indexOfMsg + "' >" + msg + "</div>" );
-        } else {
-          $( ".msg" + indexOfMsg ).remove();
-        };
-
-        if ( nRequests == requestsCompleted ) {
-          $( "#statusbar" ).hide();
-          return;
-        };
-
-        if ( requestsInProgress == 1 ) {
-          $( "#statusbar" ).show();
-        };
-
-      },
-
       removeG: function( id ) {
         return id.replace( "g", '' );
       },
@@ -191,8 +152,8 @@
          */
         var args = Array.prototype.slice.call( arguments, 0 ),
           mime = args[ 2 ] || "text/plain",
-          //url = 'http://localhost:8080/rifServices/' + args[ 0 ];
-          url = "backend/gets/" + args[ 0 ];
+          url = 'http://localhost:8080/rifServices/' + args[ 0 ];
+        //url = "backend/gets/" + args[ 0 ];
 
         d3.xhr( url, mime, args[ 1 ] );
 

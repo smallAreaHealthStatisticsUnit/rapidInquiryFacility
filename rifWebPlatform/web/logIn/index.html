@@ -9,9 +9,12 @@
     
     <!--CSS Stylesheets-->
     <link href="css/login.css" rel="stylesheet" media="screen" />
-
+  
+    <!-- libs -->
+    <script type="text/javascript" src="../libs/jquery-2.0.3.js"></script>
+    <script src="../libs/d3.v3.min.js" charset="utf-8"></script>
+    
     <!--[if IE 9 ]>    
-        <script type="text/javascript" src="../libs/jquery-2.0.3.js"></script>
         <script type="text/javascript" src="../libs/jquery.placeholder.js"></script>
     <![endif]-->
     
@@ -20,9 +23,30 @@
     
     <!-- RIF4 -->
 	<script type="text/javascript" src="js/v2/RIF.js"></script>
+     
+    <!-- Status Bar -->
+    <script type="text/javascript" src="../statusBar/statusBar.js"></script>
     
-    <!-- Request -->
-    <!-- -->
+    <!-- utils -->
+    <script type="text/javascript" src="js/v2/utils/utils.js"></script>
+    <script type="text/javascript" src="js/v2/utils/publisher.js"></script>
+    <script type="text/javascript" src="js/v2/utils/resultNames.js"></script>
+    <script type="text/javascript" src="js/v2/dom/dom.logIn.js"></script>
+    
+    <!-- request -->
+     <script type="text/javascript" src="../request/request.js"></script>
+     
+    <!-- modules -->
+    <script type="text/javascript" src="js/v2/modules/logIn.js"></script>
+    
+    <!-- Menu -->
+    <script type="text/javascript" src="js/v2/components/menu/menu.logIn.js"></script>
+      <!-- Utils -->
+      <script type="text/javascript" src="js/v2/components/menu/menu.utils.js"></script>
+     <!-- units -->
+      <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.logIn.js"></script>
+      <script type="text/javascript" src="js/v2/components/menu/facades/menu.facade.logIn.js"></script>
+      <script type="text/javascript" src="js/v2/components/menu/events/event.logIn.js"></script>
 
     <title>Log In - The Rapid Inquiry Facility, RIF 4.0</title>
 
@@ -43,6 +67,7 @@
         <div class='world'></div>
         
     </div>
+    
 
     <!--Modal Dialogs-->
 	<div class="overlay" id="settings">
@@ -58,18 +83,22 @@
                         <input type="text" placeholder="Password" id="pw"  class='dropdownInput password' />
 					</div>
 					<div class="save-fld-settings">
-						<input type="button" value="log in" class='login'>
+						<input type="button" value="log in" class='login' id='logInBtn'>
 					</div>
+                    <div class="logInError"></div>
 				</form>
 			</div>
 		</div>
 	</div>	
 
-    
+    <div class="overlay" id="statusbar">
+		<a class="modal_close" href="#statusbar"></a>
+        <div></div>
+	</div>
     <script> 	  
         
     (function() {
-        //RIF.diseaseMapping();
+        RIF.logIn();
     })();
     </script>
 </body>

@@ -336,12 +336,23 @@
        *
        */
 
-      /*logIn: ( function() {
-        var msg = "Loggin in.. ",
-          args = 'userID=ffabbri&password=ffabbri';
+      getIsLoggedIn: ( function( myCallback, params ) {
+        var msg = " Checking if already logged in.. ",
+          userName = params[ 0 ],
+          pw = params[ 1 ],
+          args = 'userID=' + userName;
 
-        xhr( 'studySubmission/login?' + args, null, msg );
-      }() ),*/
+        xhr( 'studySubmission/isLoggedIn?' + args, myCallback, msg );
+      } ),
+
+      getLogIn: ( function( myCallback, params ) {
+        var msg = "Logging in.. ",
+          userName = params[ 0 ],
+          pw = params[ 1 ],
+          args = 'userID=' + userName + '&password=' + pw;
+
+        xhr( 'studySubmission/login?' + args, myCallback, msg );
+      } ),
 
       getHealthThemes: function( myCallback, params ) {
         var msg = "Retrieving Health Themes ",
