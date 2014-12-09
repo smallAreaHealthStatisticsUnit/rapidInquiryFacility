@@ -374,6 +374,36 @@ BEGIN
 'if (!exists("inla.lib")) inla.lib = NULL',
 			'Install inla');
 --
+-- Output capture overload
+--
+		PERFORM rif40_r_pkg.rif40_install_rcmd('#'||E'\n'||
+'#'||E'\n'||
+'# Function:		rif40_capture.output()'||E'\n'||
+'# Parameters:	expression to be executed'||E'\n'||
+'# Returns:		Output of function'||E'\n'||
+'# Description:  Run expression, capturing output'||E'\n'||
+'#'||E'\n'||
+'rif40_capture.output<-function(..., function_name="Unknown") {'||E'\n'||
+'	tryCatch('||E'\n'|| 
+'		{'||E'\n'|| 
+'			rval=""'||E'\n'||
+'			args=substitute(list(...))[-1L]'||E'\n'||
+'			rval=capture.output(eval(parse(text=toString(args))), file = NULL, append = FALSE)'||E'\n'||
+'		},'||E'\n'||
+'		error=function(capture_error) {'||E'\n'||
+'			rif40_error(-90156, function_name, '||E'\n'||
+'				sprintf("rif40_capture.output>>>\n%s\n<<<\nError: %s",'||E'\n'||
+'					toString(args), capture_error))'||E'\n'||
+'		},'||E'\n'||
+'		warning=function(capture_warning) {'||E'\n'||
+'			rif40_log("WARNING", function_name,'||E'\n'|| 
+'				sprintf("rif40_capture.output>>>\n%s\n<<<\nWarning: %s",'||E'\n'||
+'					toString(args), capture_warning))'||E'\n'||
+'		}'||E'\n'||
+'	)	# End of TryCatch()'||E'\n'||
+'	return(rval)'||E'\n'||
+'}', 'rif40_caputure.output');
+--
 -- Set R repository
 --
 		PERFORM rif40_r_pkg.rif40_install_rcmd('#'||E'\n'||
@@ -569,28 +599,14 @@ else {
 	library(INLA, lib.loc = my_lib)
 	rif40_log("INFO", "_install_all_packages_from_internet", 
 		sprintf("INLA v%s is already installed; checking for updates", toString(inla.version("version"))))
+
 #
 # Handle no internet connection
 #		
-	tryCatch( 
-		{ 
 			rif40_debug("DEBUG1", "_install_all_packages_from_internet", 
 				"inla.update() >>>\n%s\n<<<", 
-					toString(
-						capture.output(
-							inla.update(testing=FALSE, lib = my_lib))))
-		},
-		error=function(file_error) {
-			rif40_log("WARNING", "_install_all_packages_from_internet", 
-				sprintf("INLA v%s is already installed; unable to check for update, error: %s",
-					toString(inla.version("version")), file_error))
-		},
-		warning=function(file_warning) {
-			rif40_log("WARNING", "_install_all_packages_from_internet", 
-				sprintf("INLA v%s is already installed; unable to check for update, error: %s",
-					toString(inla.version("version")), file_warning))
-		}
-	) # End of TryCatch()
+				rif40_capture.output(
+					inla.update(testing=FALSE, lib = my_lib), function_name='_install_all_packages_from_internet'))
 	
 }
 
