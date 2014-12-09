@@ -51,6 +51,7 @@
 # Conditional environment variables - can be changed to point to sahsuland by higher maskefiles
 #
 PGDATABASE?=sahsuland_dev
+PGHOST?=localhost
 DEFAULT_VERBOSITY=terse
 DEFAULT_DEBUG_LEVEL=0
 DEFAULT_ECHO=none
@@ -142,8 +143,8 @@ endif
 #
 PSQL=psql
 PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -P pager=off \
-	-v testuser=$(TESTUSER) -v verbosity=$(VERBOSITY) -v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO)
-
+	-v testuser=$(TESTUSER) -v verbosity=$(VERBOSITY) -v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO) \
+	-v pghost=$(PGHOST)
 #
 # Target extension depends on source, build rule
 #

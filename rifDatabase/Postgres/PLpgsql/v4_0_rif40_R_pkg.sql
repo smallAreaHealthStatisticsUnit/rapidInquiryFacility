@@ -87,7 +87,8 @@ DECLARE
 		'r_cleanup',
 		'installed_packages',
 		'install_package_from_internet',
-		'_install_all_packages_from_internet'];
+		'_install_all_packages_from_internet',
+		'rif40_install_rcmd'];
 	l_function 					VARCHAR;
 --
 	error_message VARCHAR;
@@ -112,6 +113,7 @@ DROP FUNCTION IF EXISTS rif40_r_pkg.installed_packages();
 DROP FUNCTION IF EXISTS rif40_r_pkg.install_package_from_internet(VARCHAR);
 DROP FUNCTION IF EXISTS rif40_r_pkg._install_all_packages_from_internet();
 DROP FUNCTION IF EXISTS rif40_r_pkg._r_init(RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL);
+DROP FUNCTION IF EXISTS rif40_r_pkg.rif40_install_rcmd(VARCHAR, VARCHAR);
 
 CREATE OR REPLACE FUNCTION rif40_r_pkg.r_init(
 	debug_level RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL DEFAULT 'DEBUG1', 
@@ -140,7 +142,7 @@ BEGIN
 --
 -- Log functions
 -- 
-		PERFORM install_rcmd('#'||E'\n'||
+		PERFORM rif40_r_pkg.rif40_install_rcmd('#'||E'\n'||
 '# Common functions'||E'\n'||
 '#'||E'\n'||
 '# Function:		rif40_log()'||E'\n'||
@@ -167,8 +169,9 @@ BEGIN
 '			}'||E'\n'||
 '		)'||E'\n'||    
 '	}'||E'\n'||
-'}');
-		PERFORM install_rcmd('#'||E'\n'||
+'}',
+			'rif40_log');
+		PERFORM rif40_r_pkg.rif40_install_rcmd('#'||E'\n'||
 '#}'||E'\n'||
 '# Function:		rif40_debug()'||E'\n'||
 '# Parameters:	Log level (DEBUG1, DEBUG2), function name, format string, debug output'||E'\n'||
@@ -180,8 +183,9 @@ BEGIN
 '	if (nchar(o) > 0) {'||E'\n'||
 ' 		rif40_log(w, f, sprintf(s, o))'||E'\n'||
 '	}'||E'\n'||
-'}');
-		PERFORM install_rcmd('#'||E'\n'||
+'}',
+			'rif40_debug');
+		PERFORM rif40_r_pkg.rif40_install_rcmd('#'||E'\n'||
 '# Function:		rif40_error()'||E'\n'||
 '# Parameters:	negative error code, function name, string'||E'\n'||
 '# Returns:		Nothing; throws PL/pgsql exception'||E'\n'||
@@ -197,8 +201,9 @@ BEGIN
 '# Better message!'||E'\n'||
 '#'||E'\n'||
 '	pg.throwerror(sprintf("%d in %s(): %s", e, f, pg.quoteliteral(s)))'||E'\n'||
-'}');
-		PERFORM install_rcmd('#'||E'\n'||
+'}',
+			'rif40_error');
+		PERFORM rif40_r_pkg.rif40_install_rcmd('#'||E'\n'||
 '# Installer functions'||E'\n'||
 '#'||E'\n'||
 '# Function:		install_package_from_internet()'||E'\n'||
@@ -242,12 +247,13 @@ BEGIN
 '	for(p in plist) {'||E'\n'||
 '		install_package_from_internet(p)'||E'\n'||
 '	}'||E'\n'||
-'}');
+'}',
+			'install_package_from_internet');
 --
 -- Install inla (web) installer (http://www.math.ntnu.no/inla/givemeINLA.R with givemeINLA(testing=FALSE, lib = inla.lib) 
 -- and library selection removed
 --
-		PERFORM install_rcmd(''||E'\n'||
+		PERFORM rif40_r_pkg.rif40_install_rcmd(''||E'\n'||
 '`inla.update` = function(lib = NULL, testing = FALSE, force = FALSE) {'||E'\n'||
 '    inla.installer(lib=lib, testing=testing, force=force)'||E'\n'||
 '}'||E'\n'||
@@ -365,27 +371,30 @@ BEGIN
 '}'||E'\n'||
 '#'||E'\n'|| 
 '`givemeINLA` = function(...) inla.installer(...)'||E'\n'||
-'if (!exists("inla.lib")) inla.lib = NULL');
+'if (!exists("inla.lib")) inla.lib = NULL',
+			'Install inla');
 --
 -- Set R repository
 --
-		PERFORM install_rcmd('#'||E'\n'||
+		PERFORM rif40_r_pkg.rif40_install_rcmd('#'||E'\n'||
 '# Set CRAN repository'||E'\n'||
 '#'||E'\n'||
 'r <- getOption("repos")'||E'\n'||
 'r["CRAN"] <- "'||cran_repository||'"'||E'\n'||
-'options(repos = r)');
+'options(repos = r)',
+			'Set R repository');
 --
 -- Set my_lib (Postgres R library location)
 --
-		PERFORM install_rcmd('#'||E'\n'||
+		PERFORM rif40_r_pkg.rif40_install_rcmd('#'||E'\n'||
 '# Set local R_library (in $PGDATA/R_Library) for Postgres'||E'\n'||
 '#'||E'\n'||
 'global.Rmessages_file<<-NULL'||E'\n'||
 'global.Routput_file<<-NULL'||E'\n'||
 'global.Rmessages<<-NULL'||E'\n'||
 'global.Routput<<-NULL'||E'\n'||
-'my_lib=paste("'||c1_rec.setting /* pg_data */||'", "/R_Library", sep='''')');
+'my_lib=paste("'||c1_rec.setting /* pg_data */||'", "/R_Library", sep='''')',
+			'Set my_lib (Postgres R library location)');
 --
 		PERFORM rif40_r_pkg._r_init(debug_level); -- data_directory PG_DATA 
 	EXCEPTION
@@ -398,6 +407,33 @@ BEGIN
 			RAISE INFO '1: %', error_message;
 			RAISE;
 	END;
+END;
+$func$ LANGUAGE plpgsql;
+			
+CREATE OR REPLACE FUNCTION rif40_r_pkg.rif40_install_rcmd(r_stmt VARCHAR, function_name VARCHAR)
+RETURNS void
+AS $func$
+DECLARE
+--
+	error_message VARCHAR;
+	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
+BEGIN
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_install_rcmd', 'Create R function %() as >>>'||E'\n'||
+			'%'||E'\n'||'<<< end of %',
+			function_name::VARCHAR, 
+			r_stmt::VARCHAR,
+			function_name::VARCHAR);
+	PERFORM install_rcmd(r_stmt);
+EXCEPTION
+	WHEN others THEN
+-- 
+-- Not supported until 9.2
+--
+		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+		error_message:='rif40_install_rcmd() create R function '||function_name||'() caught: '||E'\n'
+			||SQLERRM::VARCHAR||' in R (see previous trapped error)'||E'\n'||'Detail: '||v_detail::VARCHAR;
+		RAISE INFO '2: %', error_message;
+		RAISE;
 END;
 $func$ LANGUAGE plpgsql;
 			
@@ -436,6 +472,8 @@ global.Routput <<- file(global.Routput_file, open = "w")
 sink(global.Rmessages, type = "message")
 sink(global.Routput, type = "output")
 rm(timestr)
+rif40_log("INFO", "_r_init", sprintf("Output log: %s", global.Routput_file))
+rif40_log("INFO", "_r_init", sprintf("Message sog: %s", global.Rmessages_file))
 #
 # Enable verbosity
 #
@@ -531,11 +569,29 @@ else {
 	library(INLA, lib.loc = my_lib)
 	rif40_log("INFO", "_install_all_packages_from_internet", 
 		sprintf("INLA v%s is already installed; checking for updates", toString(inla.version("version"))))
-	rif40_debug("DEBUG1", "_install_all_packages_from_internet", 
-		"inla.update() >>>\n%s\n<<<", 
-			toString(
-				capture.output(
-					inla.update(testing=FALSE, lib = my_lib))))
+#
+# Handle no internet connection
+#		
+	tryCatch( 
+		{ 
+			rif40_debug("DEBUG1", "_install_all_packages_from_internet", 
+				"inla.update() >>>\n%s\n<<<", 
+					toString(
+						capture.output(
+							inla.update(testing=FALSE, lib = my_lib))))
+		},
+		error=function(file_error) {
+			rif40_log("WARNING", "_install_all_packages_from_internet", 
+				sprintf("INLA v%s is already installed; unable to check for update, error: %s",
+					toString(inla.version("version")), file_error))
+		},
+		warning=function(file_warning) {
+			rif40_log("WARNING", "_install_all_packages_from_internet", 
+				sprintf("INLA v%s is already installed; unable to check for update, error: %s",
+					toString(inla.version("version")), file_warning))
+		}
+	) # End of TryCatch()
+	
 }
 
 #
@@ -619,7 +675,7 @@ EXCEPTION
 --
 		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 		error_message:='r_cleanup() caught: '||E'\n'||SQLERRM::VARCHAR||' in R (see previous trapped error)'||E'\n'||'Detail: '||v_detail::VARCHAR;
-		RAISE INFO '1: %', error_message;
+		RAISE INFO '2: %', error_message;
 		RAISE;
 END;
 $func$ LANGUAGE plpgsql;
@@ -641,59 +697,87 @@ if (!exists("my_lib")) {
 #
 # Close messages and output logs: R_io/Rmessages_<pid>_<date time string>.txt,  R_io/Routput_<pid>_<date time string>.txt
 #
+tryCatch( 
+	{ 
+		flush(global.Routput)
+		sink(file=NULL, type = "output")
+		close(global.Routput)
+		Routput_size=file.info(global.Routput_file)$size
+#
+		if (Routput_size > 0) {
+			con=file(global.Routput_file, "r")
+			text=readLines(con)
+			rtext=NULL;
+			for (i in 1:length(text)){
+			rtext=paste(rtext, text[i], sep="\n")
+			}
+			rif40_log("WARNING", "r_cleanup", 
+				sprintf("Output file: %s is not zero sized (%d bytes i.e. NOT all output trapped)\n%d lines >>>\n%s\n<<<", 
+					global.Routput_file, Routput_size, length(text), rtext))
+			close(con)
+		}
+		else {
+		rif40_debug("DEBUG1", "r_cleanup", "Output file: %s is zero sized (i.e. all output trapped); removing", 
+			global.Routput_file)
+			file.remove(global.Routput_file)
+			if (file.exists(global.Routput_file)) {
+				stop(sprintf("Unable to delete output file %s", 
+				global.Routput_file))
+			}
+		}
+	},
+	error=function(file_error) {
+#
+# DO NOT throw an error - it will crash postgres!
+#				pg.throwerror(sprintf("%d in %s(): caught error %s in output file handling\n", -60607, f, file_error))
+			stop(sprintf("r_cleanup() caught error: %s in output file handling\n", file_error))
+	},
+	warning=function(file_warning) {
+			stop(sprintf("r_cleanup() caught warning: %s in output file handling", file_warning))
+	}
+) # End of TryCatch()
 
-flush(global.Routput)
-sink(file=NULL, type = "output")
-close(global.Routput)
-Routput_size=file.info(global.Routput_file)$size
 #
-if (Routput_size > 0) {
-	con=file(global.Rmessages_file, "r")
-	text=readLines(con)
-	rtext=NULL;
-	for (i in 1:length(text)){
-		rtext=paste(rtext, text[i], sep="\n")
-	}
-	rif40_log("WARNING", "r_cleanup", 
-		sprintf("Output file: %s is not zero sized (%d bytes i.e. NOT all output trapped)\n%d lines >>>\n%s\n<<<", 
-			global.Routput_file, Routput_size, length(text), rtext))
-	close(con)
-}
-else {
-	rif40_debug("DEBUG1", "r_cleanup", "Output file: %s is zero sized (i.e. all output trapped); removing", 
-		global.Routput_file)
-	file.remove(global.Routput_file)
-	if (file.exists(global.Routput_file)) {
-		stop(sprintf("Unable to delete output file %s", 
-			global.Routput_file))
-	}
-}
+# Messages
 #
-flush(global.Rmessages)
-sink(file=NULL, type = "message")
-close(global.Rmessages)
-Rmessages_size=file.info(global.Rmessages_file)$size
-if (Rmessages_size > 0) {
-	con=file(global.Rmessages_file, "r")
-	text=readLines(con)
-	rtext=NULL;
-	for (i in 1:length(text)){
-		rtext=paste(rtext, text[i], sep="\n")
+tryCatch( 
+	{ 
+		flush(global.Rmessages)
+		sink(file=NULL, type = "message")
+		close(global.Rmessages)
+		Rmessages_size=file.info(global.Rmessages_file)$size
+		if (Rmessages_size > 0) {
+			con=file(global.Rmessages_file, "r")
+			text=readLines(con)
+			rtext=NULL;
+			for (i in 1:length(text)){
+				rtext=paste(rtext, text[i], sep="\n")
+			}
+			rif40_log("WARNING", "r_cleanup", 
+				sprintf("Messages file: %s is not zero sized (%d bytes i.e. NOT all messages trapped)\n%d lines >>>\n%s\n<<<", 
+					global.Rmessages_file, Rmessages_size, length(text), rtext))
+			close(con)
+		}
+		else {
+			rif40_debug("DEBUG1", "r_cleanup", "Messages file: %s is zero sized (i.e. all messages trapped); removing", 
+				global.Rmessages_file)
+			sink(file=NULL, type = "message")
+			file.remove(global.Rmessages_file)
+			if (file.exists(global.Rmessages_file)) {
+				stop(sprintf("Unable to delete messages file %s: %s", global.Rmessages_file))
+			}
+		}
+	},
+	error=function(file_error) {
+#
+# DO NOT throw an error - it will crash postgres!
+#				pg.throwerror(sprintf("%d in %s(): caught error %s in message file handling\n", -60608, f, file_error))
+			stop(sprintf("r_cleanup() caught error: %s in message file handling\n", file_error))
+	},
+	warning=function(file_warning) {
+			stop(sprintf("r_cleanup() caught warning: %s in message file handling", file_warning))
 	}
-	rif40_log("WARNING", "r_cleanup", 
-		sprintf("Messages file: %s is not zero sized (%d bytes i.e. NOT all messages trapped)\n%d lines >>>\n%s\n<<<", 
-			global.Rmessages_file, Rmessages_size, length(text), rtext))
-	close(con)
-}
-else {
-	rif40_debug("DEBUG1", "r_cleanup", "Messages file: %s is zero sized (i.e. all messages trapped); removing", 
-		global.Rmessages_file)
-	sink(file=NULL, type = "message")
-	file.remove(global.Rmessages_file)
-	if (file.exists(global.Rmessages_file)) {
-		stop(sprintf("Unable to delete messages file %s: %s", global.Rmessages_file))
-	}
-}
+) # End of TryCatch()
 #
 rif40_debug("DEBUG1", "r_cleanup", "ls() >>>\n%s", toString(ls()))
 rm(list=ls())
@@ -722,6 +806,10 @@ COMMENT ON FUNCTION rif40_r_pkg.install_package_from_internet(VARCHAR) IS 'Funct
 Parameters:	 Package name
 Returns:	 Nothing
 Description: Install additional package';
+COMMENT ON FUNCTION rif40_r_pkg.rif40_install_rcmd(VARCHAR, VARCHAR) IS 'Function:	rif40_install_rcmd()
+Parameters:	 R statements, function name
+Returns:	 Nothing
+Description: Overload for PL/R function install_rcmd with diagnostics';
 COMMENT ON FUNCTION rif40_r_pkg.r_init(RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL, VARCHAR) IS 'Function:	r_init()
 Parameters:	 Default debug level [DEBUG1], CRAN repository [Default:  http://cran.ma.imperial.ac.uk/]
 Returns:	 Nothing
@@ -754,6 +842,7 @@ GRANT EXECUTE ON FUNCTION rif40_r_pkg.install_package_from_internet(VARCHAR) TO 
 GRANT EXECUTE ON FUNCTION rif40_r_pkg._install_all_packages_from_internet(VARCHAR) TO rif40;
 GRANT EXECUTE ON FUNCTION rif40_r_pkg.r_init(RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL, VARCHAR) TO rif_manager, rif_user, rif40;
 GRANT EXECUTE ON FUNCTION rif40_r_pkg.r_cleanup() TO rif_manager, rif_user, rif40;
+GRANT EXECUTE ON FUNCTION rif40_r_pkg.rif40_install_rcmd(VARCHAR, VARCHAR) TO rif40;
 
 --
 -- Enabled debug on select rif40_r_pkg_functions functions

@@ -51,7 +51,7 @@
 # Conditional environment variables - can be changed to point to sahsuland by higher maskefiles
 #
 PGDATABASE?=sahsuland_dev
-PGHOST=localhost
+PGHOST?=localhost
 DBNAME?=$(PGDATABASE)
 VERBOSITY?=$(DEFAULT_VERBOSITY)
 #

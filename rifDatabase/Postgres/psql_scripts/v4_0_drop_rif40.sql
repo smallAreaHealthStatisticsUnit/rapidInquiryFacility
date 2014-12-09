@@ -230,7 +230,7 @@ DROP FUNCTION IF EXISTS rif40_r_pkg.installed_packages();
 DROP FUNCTION IF EXISTS rif40_r_pkg.install_package_from_internet(VARCHAR);
 DROP FUNCTION IF EXISTS rif40_r_pkg._install_all_packages_from_internet();
 DROP FUNCTION IF EXISTS rif40_r_pkg._r_init(RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL);
-
+DROP FUNCTION IF EXISTS rif40_r_pkg.rif40_install_rcmd(VARCHAR, VARCHAR);
 
 DROP FUNCTION IF EXISTS rif40_trg_pkg.create_instead_of_triggers() CASCADE;
 DROP FUNCTION IF EXISTS rif40_trg_pkg.drop_instead_of_triggers() CASCADE;
