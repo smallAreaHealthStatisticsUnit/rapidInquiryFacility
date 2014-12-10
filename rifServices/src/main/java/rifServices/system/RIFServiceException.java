@@ -90,7 +90,7 @@ public class RIFServiceException
 	// Section Properties
 	// ==========================================
 	/** The error. */
-	private RIFServiceError error;
+	private Object error;
 	
 	/** The error messages. */
 	private ArrayList<String> errorMessages;
@@ -106,7 +106,7 @@ public class RIFServiceException
 	 * @param errorMessage the error message
 	 */
 	public RIFServiceException(
-		final RIFServiceError error,
+		final Object error,
 		final String errorMessage) {
 		
 		super(errorMessage);
@@ -115,6 +115,16 @@ public class RIFServiceException
 		errorMessages = new ArrayList<String>();
 		errorMessages.add(errorMessage);
 	}
+	
+	public RIFServiceException(
+		final String errorMessage) {
+			
+		super(errorMessage);
+			
+		errorMessages = new ArrayList<String>();
+		errorMessages.add(errorMessage);
+	}
+	
 
 	/**
 	 * Instantiates a new RIF service exception.
@@ -123,13 +133,21 @@ public class RIFServiceException
 	 * @param errorMessages the error messages
 	 */
 	public RIFServiceException(
-		final RIFServiceError error,
+		final Object error,
 		final ArrayList<String> errorMessages) {
 		
 		this.error = error;
 		this.errorMessages = new ArrayList<String>();
 		this.errorMessages.addAll(errorMessages);
 	}
+
+	public RIFServiceException(
+		final ArrayList<String> errorMessages) {
+			
+		this.errorMessages = new ArrayList<String>();
+		this.errorMessages.addAll(errorMessages);
+	}	
+	
 	
 	// ==========================================
 	// Section Accessors and Mutators
@@ -139,7 +157,7 @@ public class RIFServiceException
 	 *
 	 * @return the error
 	 */
-	public RIFServiceError getError() {
+	public Object getError() {
 
 		return error;
 	}

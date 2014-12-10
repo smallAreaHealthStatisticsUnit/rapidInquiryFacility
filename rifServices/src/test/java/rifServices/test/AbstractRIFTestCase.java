@@ -110,10 +110,10 @@ public class AbstractRIFTestCase {
 	 */
 	protected void checkErrorType(
 		RIFServiceException rifServiceException,
-		RIFServiceError expectedRIFServiceErrorType,
+		Object expectedRIFServiceErrorType,
 		int expectedNumberOfErrors) {
 			
-		RIFServiceError actualRIFServiceErrorType
+		Object actualRIFServiceErrorType
 			= rifServiceException.getError();
 		assertEquals(expectedRIFServiceErrorType, actualRIFServiceErrorType);
 		int actualNumberOfErrorMessages 
