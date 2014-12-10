@@ -1,9 +1,8 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
-import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 
 import rifGenericUILibrary.OrderedListPanel;
 import rifGenericUILibrary.UserInterfaceFactory;
@@ -120,7 +119,7 @@ class SpecifyInvestigationsStepPanel
 	 */
 	public SpecifyInvestigationsStepPanel(
 		JDialog parentDialog, 
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
 		
 		super(parentDialog, rifSession);
 		
@@ -328,7 +327,7 @@ class SpecifyInvestigationsStepPanel
 	 * @throws RIFJobSubmissionToolException the RIF job submission tool exception
 	 */
 	private void validateForm() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		
@@ -362,8 +361,8 @@ class SpecifyInvestigationsStepPanel
 		}
 		
 		if (errorMessages.size() > 0) {
-			RIFJobSubmissionToolException rifJobSubmissionToolException
-				= new RIFJobSubmissionToolException(errorMessages);
+			RIFServiceException rifJobSubmissionToolException
+				= new RIFServiceException(errorMessages);
 			throw rifJobSubmissionToolException;
 		}
 	}
@@ -404,9 +403,9 @@ class SpecifyInvestigationsStepPanel
 	 */
 	@Override
 	public void initialiseForm() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 
-		RIFSession rifSession = getRIFSession();
+		RIFStudySubmissionToolSession rifSession = getRIFSession();
 		
 		RIFStudySubmission originalJobSubmission
 			= rifSession.getRIFJobSubmission();
@@ -431,7 +430,7 @@ class SpecifyInvestigationsStepPanel
 	 */
 	@Override
 	public void commitChanges() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 
 		validateForm();
 		
@@ -445,7 +444,7 @@ class SpecifyInvestigationsStepPanel
 			workingCopyInvestigations.add(workingCopyInvestigation);
 		}
 
-		RIFSession rifSession = getRIFSession();
+		RIFStudySubmissionToolSession rifSession = getRIFSession();
 		RIFStudySubmission originalJobSubmission
 			= rifSession.getRIFJobSubmission();
 		DiseaseMappingStudy originalStudy

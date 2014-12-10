@@ -2,8 +2,9 @@ package rifJobSubmissionTool.desktop.interactive;
 
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
+
+import rifServices.system.RIFServiceException;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -86,7 +87,7 @@ abstract class AbstractStepPanel {
 
 	//Data
 	/** The rif session. */
-	private RIFSession rifSession;
+	private RIFStudySubmissionToolSession rifSession;
 
 	//GUI Components
 	/** The parent dialog. */
@@ -110,7 +111,7 @@ abstract class AbstractStepPanel {
 	 */
 	public AbstractStepPanel(
 		JDialog parentDialog,
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
 		
 		this.parentDialog = parentDialog;
 		this.rifSession = rifSession;
@@ -132,7 +133,7 @@ abstract class AbstractStepPanel {
 	 *
 	 * @return the RIF session
 	 */
-	protected RIFSession getRIFSession() {
+	protected RIFStudySubmissionToolSession getRIFSession() {
 		
 		return rifSession;
 	}
@@ -218,7 +219,7 @@ abstract class AbstractStepPanel {
 	 * @throws RIFJobSubmissionToolException the RIF job submission tool exception
 	 */
 	public abstract void initialiseForm() 
-		throws RIFJobSubmissionToolException;
+		throws RIFServiceException;
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -229,7 +230,7 @@ abstract class AbstractStepPanel {
 	 * @throws RIFJobSubmissionToolException the RIF job submission tool exception
 	 */
 	public abstract void commitChanges() 
-		throws RIFJobSubmissionToolException;
+		throws RIFServiceException;
 
 	// ==========================================
 	// Section Interfaces

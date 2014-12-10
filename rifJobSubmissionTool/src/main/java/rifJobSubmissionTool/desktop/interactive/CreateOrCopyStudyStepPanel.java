@@ -4,9 +4,9 @@ import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.OrderedListPanel;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
-import rifJobSubmissionTool.system.RIFSession;
-import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
+
 import rifServices.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
@@ -126,7 +126,7 @@ class CreateOrCopyStudyStepPanel
 	 */
 	public CreateOrCopyStudyStepPanel(
 		JDialog parentDialog,
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
 		
 		super(parentDialog, rifSession);
 		
@@ -261,7 +261,7 @@ class CreateOrCopyStudyStepPanel
 		
 		//User has changed their selection of the current project
 		try {
-			RIFSession rifSession = getRIFSession();
+			RIFStudySubmissionToolSession rifSession = getRIFSession();
 			RIFStudySubmissionAPI service 
 				= rifSession.getRIFStudySubmissionService();
 			User currentUser = rifSession.getUser();
@@ -331,7 +331,7 @@ class CreateOrCopyStudyStepPanel
 	 * @throws RIFJobSubmissionToolException the RIF job submission tool exception
 	 */
 	private void validateForm() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 		
 		//if the user has chosen to copy a study then some study must
 		//appear selected.  We have tried to ensure the first study in the
@@ -344,8 +344,8 @@ class CreateOrCopyStudyStepPanel
 				= RIFJobSubmissionToolMessages.getMessage(
 					"createOrCopyStudyStepPanel.error.noExistingStudySelected");
 			
-			RIFJobSubmissionToolException rifJobSubmissionToolException
-				= new RIFJobSubmissionToolException(errorMessage);
+			RIFServiceException rifJobSubmissionToolException
+				= new RIFServiceException(errorMessage);
 			throw rifJobSubmissionToolException;
 		}
 	}
@@ -355,11 +355,11 @@ class CreateOrCopyStudyStepPanel
 	 */
 	@Override
 	public void commitChanges() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 		
 		validateForm();
 
-		RIFSession rifSession = getRIFSession();
+		RIFStudySubmissionToolSession rifSession = getRIFSession();
 		RIFStudySubmission currentRIFJobSubmission
 			= rifSession.getRIFJobSubmission();
 		

@@ -5,7 +5,7 @@ import rifGenericUILibrary.NoDataAvailablePanel;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.desktop.interactive.HealthCodeTableModel;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
@@ -102,7 +102,7 @@ class HealthCodeSelectionSearchPanel
 
 	//Data
 	/** The session. */
-	private RIFSession session;
+	private RIFStudySubmissionToolSession session;
 	/** The current health code taxonomy. */
 	private HealthCodeTaxonomy currentHealthCodeTaxonomy;
 
@@ -144,7 +144,7 @@ class HealthCodeSelectionSearchPanel
 	 */
 	public HealthCodeSelectionSearchPanel(
 		JDialog parentDialog,
-		RIFSession session) {
+		RIFStudySubmissionToolSession session) {
 		
 		this.parentDialog = parentDialog;
 		this.session = session;

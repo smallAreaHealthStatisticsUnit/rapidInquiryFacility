@@ -2,13 +2,13 @@ package rifJobSubmissionTool.desktop.interactive;
 
 
 import rifGenericUILibrary.ErrorDialog;
-import rifGenericUILibrary.OKClosePanel;
+import rifGenericUILibrary.OKCloseButtonPanel;
 import rifGenericUILibrary.OrderedListPanel;
 import rifGenericUILibrary.UserInterfaceFactory;
 
 
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.DisplayableListItem;
@@ -117,7 +117,7 @@ class CovariatesSelectionDialog
 
 	//Data
 	/** The rif session. */
-	private RIFSession rifSession;	
+	private RIFStudySubmissionToolSession rifSession;	
 	/** The service. */
 	private RIFStudySubmissionAPI service;
 	/** The is cancelled. */
@@ -133,7 +133,7 @@ class CovariatesSelectionDialog
 	/** The covariate report pane. */
 	private JEditorPane covariateReportPane;	
 	/** The ok close panel. */
-	private OKClosePanel okClosePanel;			
+	private OKCloseButtonPanel okCloseButtonPanel;			
 // ==========================================
 // Section Construction
 // ==========================================
@@ -143,7 +143,7 @@ class CovariatesSelectionDialog
      * @param rifSession the rif session
      */
 	public CovariatesSelectionDialog(
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
 
 		this.rifSession = rifSession;
     	service = rifSession.getRIFStudySubmissionService();
@@ -197,9 +197,9 @@ class CovariatesSelectionDialog
 		panelGC.fill = GridBagConstraints.NONE;
 		panelGC.weightx = 0;				
 		panelGC.weighty = 0;				
-		okClosePanel = new OKClosePanel(userInterfaceFactory);
-		okClosePanel.addActionListener(this);
-		panel.add(okClosePanel.getPanel(), panelGC);
+		okCloseButtonPanel = new OKCloseButtonPanel(userInterfaceFactory);
+		okCloseButtonPanel.addActionListener(this);
+		panel.add(okCloseButtonPanel.getPanel(), panelGC);
 		
 		dialog.getContentPane().add(panel);
 		dialog.setSize(500, 450);
@@ -370,10 +370,10 @@ class CovariatesSelectionDialog
 		
 		Object button = event.getSource();
 		
-		if (okClosePanel.isOKButton(button)) {
+		if (okCloseButtonPanel.isOKButton(button)) {
 			ok();
 		}
-		else if (okClosePanel.isCloseButton(button)) {
+		else if (okCloseButtonPanel.isCloseButton(button)) {
 			close();
 		}
 	}

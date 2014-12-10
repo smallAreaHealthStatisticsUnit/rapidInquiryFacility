@@ -2,7 +2,7 @@ package rifJobSubmissionTool.desktop.batch;
 
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.UserInterfaceFactory;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
@@ -80,8 +80,8 @@ public class RIFBatchStudySubmissionTool {
 			String ipAddress = InetAddress.getLocalHost().getHostAddress();
 			
 			User testUser = User.newInstance("kgarwood", ipAddress);
-			RIFSession rifSession 
-				= new RIFSession(rifStudyServiceBundle, testUser);
+			RIFStudySubmissionToolSession rifSession 
+				= new RIFStudySubmissionToolSession(rifStudyServiceBundle, testUser);
 						
 			RIFBatchStudySubmissionTool rifBatchStudySubmissionTool
 				= new RIFBatchStudySubmissionTool(rifSession);
@@ -109,7 +109,7 @@ public class RIFBatchStudySubmissionTool {
 	// ==========================================
 	
 	//Data
-	private RIFSession rifSession;
+	private RIFStudySubmissionToolSession rifSession;
 	
 	//UI
 	private UserInterfaceFactory userInterfaceFactory;
@@ -124,7 +124,7 @@ public class RIFBatchStudySubmissionTool {
 	// Section Construction
 	// ==========================================
 
-	public RIFBatchStudySubmissionTool(RIFSession rifSession) {
+	public RIFBatchStudySubmissionTool(RIFStudySubmissionToolSession rifSession) {
 		this.rifSession = rifSession;
 		userInterfaceFactory = rifSession.getUIFactory();		
 		

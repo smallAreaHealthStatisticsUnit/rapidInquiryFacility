@@ -2,10 +2,10 @@ package rifJobSubmissionTool.desktop.interactive;
 
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.NoDataAvailablePanel;
-import rifGenericUILibrary.OKClosePanel;
+import rifGenericUILibrary.OKCloseButtonPanel;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
@@ -100,7 +100,7 @@ class CalculationMethodSelectionDialog
 	
 	//Data
 	/** The rif session. */
-	private RIFSession rifSession;		
+	private RIFStudySubmissionToolSession rifSession;		
 	/** The service. */
 	private RIFStudySubmissionAPI service;
 	/** The is cancelled. */
@@ -117,7 +117,7 @@ class CalculationMethodSelectionDialog
 	/** The calculation method table. */
 	private CalculationMethodTable calculationMethodTable;				
 	/** The ok close panel. */
-	private OKClosePanel okClosePanel;
+	private OKCloseButtonPanel okCloseButtonPanel;
 		
 // ==========================================
 // Section Construction
@@ -129,7 +129,7 @@ class CalculationMethodSelectionDialog
      * @param currentlyUsedCalculationMethods the currently used calculation methods
      */
 	public CalculationMethodSelectionDialog(
-    	RIFSession rifSession,
+    	RIFStudySubmissionToolSession rifSession,
     	ArrayList<CalculationMethod> currentlyUsedCalculationMethods) {
     
     	this.rifSession = rifSession;   	
@@ -175,9 +175,9 @@ class CalculationMethodSelectionDialog
 		panelGC.fill = GridBagConstraints.NONE;
 		panelGC.weightx = 0;
 		panelGC.anchor = GridBagConstraints.SOUTHEAST;
-		okClosePanel = new OKClosePanel(userInterfaceFactory);
-		okClosePanel.addActionListener(this);
-		panel.add(okClosePanel.getPanel(), panelGC);
+		okCloseButtonPanel = new OKCloseButtonPanel(userInterfaceFactory);
+		okCloseButtonPanel.addActionListener(this);
+		panel.add(okCloseButtonPanel.getPanel(), panelGC);
 				
 		dialog.getContentPane().add(panel);
 		dialog.setModal(true);
@@ -292,10 +292,10 @@ class CalculationMethodSelectionDialog
 
 		Object button = event.getSource();
 		
-		if (okClosePanel.isOKButton(button)) {
+		if (okCloseButtonPanel.isOKButton(button)) {
 			ok();
 		}
-		else if (okClosePanel.isCloseButton(button)) {
+		else if (okCloseButtonPanel.isCloseButton(button)) {
 			close();
 		}
 	}

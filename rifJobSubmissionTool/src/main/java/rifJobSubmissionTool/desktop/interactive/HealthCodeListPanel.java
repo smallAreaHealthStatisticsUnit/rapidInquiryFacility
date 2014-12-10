@@ -6,7 +6,7 @@ import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifGenericUILibrary.ListEditingButtonPanel;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.io.HealthCodeListReader;
 import rifServices.io.HealthCodeListWriter;
@@ -119,7 +119,7 @@ class HealthCodeListPanel
 
 	//Data
 	/** The rif session. */
-	private RIFSession rifSession;
+	private RIFStudySubmissionToolSession rifSession;
 
 	//GUI Components
 	/** The parent dialog. */
@@ -151,7 +151,7 @@ class HealthCodeListPanel
      */
 	public HealthCodeListPanel(
     	JDialog parentDialog,
-    	RIFSession rifSession) {
+    	RIFStudySubmissionToolSession rifSession) {
     	
     	this.rifSession = rifSession;
 		this.userInterfaceFactory = rifSession.getUIFactory();

@@ -2,7 +2,7 @@ package rifJobSubmissionTool.desktop.interactive;
 
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.UserInterfaceFactory;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
@@ -98,7 +98,7 @@ class HealthCodeSelectionTree
 	/** The user. */
 	private User user;
 	/** The session. */
-	private RIFSession session;	
+	private RIFStudySubmissionToolSession session;	
 	/** The service. */
 	private RIFStudySubmissionAPI service;
 	
@@ -125,7 +125,7 @@ class HealthCodeSelectionTree
 	 */
 	public HealthCodeSelectionTree(
 		JDialog parentDialog,
-		RIFSession session) {
+		RIFStudySubmissionToolSession session) {
 
 		this.session = session;
 		this.user = session.getUser();

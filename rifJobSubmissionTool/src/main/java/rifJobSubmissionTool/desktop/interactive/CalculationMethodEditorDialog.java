@@ -1,9 +1,9 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifGenericUILibrary.OKClosePanel;
+import rifGenericUILibrary.OKCloseButtonPanel;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.CalculationMethodPrior;
 import rifServices.businessConceptLayer.Parameter;
@@ -127,7 +127,7 @@ class CalculationMethodEditorDialog
 	/** The restore default settings button. */
 	private JButton restoreDefaultSettingsButton;	
 	/** The ok close panel. */
-	private OKClosePanel okClosePanel;
+	private OKCloseButtonPanel okCloseButtonPanel;
 
 // ==========================================
 // Section Construction
@@ -138,7 +138,7 @@ class CalculationMethodEditorDialog
      * @param rifSession the rif session
  	*/
 	public CalculationMethodEditorDialog(
-	RIFSession rifSession) {
+	RIFStudySubmissionToolSession rifSession) {
 		
 		this.userInterfaceFactory = rifSession.getUIFactory();
 		String dialogTitle
@@ -323,10 +323,10 @@ class CalculationMethodEditorDialog
 		restoreDefaultSettingsButton.addActionListener(this);
 		
 		panelGC.gridx++;
-		okClosePanel
-			= new OKClosePanel(userInterfaceFactory);
-		okClosePanel.addActionListener(this);
-		panel.add(okClosePanel.getPanel());
+		okCloseButtonPanel
+			= new OKCloseButtonPanel(userInterfaceFactory);
+		okCloseButtonPanel.addActionListener(this);
+		panel.add(okCloseButtonPanel.getPanel());
 		
 		return panel;
 	}
@@ -445,10 +445,10 @@ class CalculationMethodEditorDialog
 		if (button == restoreDefaultSettingsButton) {
 			restoreDefaultSettings();
 		}
-		else if (okClosePanel.isOKButton(button)) {
+		else if (okCloseButtonPanel.isOKButton(button)) {
 			ok();
 		}
-		else if (okClosePanel.isCloseButton(button)) {
+		else if (okCloseButtonPanel.isCloseButton(button)) {
 			close();
 		}
 		

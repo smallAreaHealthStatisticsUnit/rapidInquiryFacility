@@ -4,9 +4,9 @@ import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.OrderedListComboBox;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
-import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
+
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.Project;
@@ -125,7 +125,7 @@ class DescribeStudyStepPanel
 	 */
 	public DescribeStudyStepPanel(
 		JDialog parentDialog,
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
 		
 		super(parentDialog, rifSession);
 	}
@@ -158,7 +158,7 @@ class DescribeStudyStepPanel
 		panel.add(createNameFieldPanel(), panelGC);
 		
 		panelGC.gridy++;
-		RIFSession rifSession = getRIFSession();
+		RIFStudySubmissionToolSession rifSession = getRIFSession();
 		projectSelectionPanel = new ProjectSelectionPanel(rifSession);		
 		panel.add(projectSelectionPanel.getPanel(), panelGC);
 
@@ -261,15 +261,12 @@ class DescribeStudyStepPanel
 	// Section Override
 	// ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifJobSubmissionTool.desktopApplication.AbstractStepPanel#initialiseForm()
-	 */
 	public void initialiseForm() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 
 		buildUI();
 
-		RIFSession rifSession = getRIFSession();
+		RIFStudySubmissionToolSession rifSession = getRIFSession();
 				
 		RIFStudySubmission currentRIFJobSubmission
 			= rifSession.getRIFJobSubmission();
@@ -321,7 +318,7 @@ class DescribeStudyStepPanel
 	 * @throws RIFJobSubmissionToolException the RIF job submission tool exception
 	 */
 	private void validateForm() 
-		throws RIFJobSubmissionToolException {	
+		throws RIFServiceException {	
 
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		
@@ -350,22 +347,19 @@ class DescribeStudyStepPanel
 		}
 		
 		if (errorMessages.size() > 0) {
-			RIFJobSubmissionToolException rifJobSubmissionToolException
-				= new RIFJobSubmissionToolException(
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
 					errorMessages);
-			throw rifJobSubmissionToolException;
+			throw rifServiceException;
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifJobSubmissionTool.desktopApplication.AbstractStepPanel#commitChanges()
-	 */
 	public void commitChanges() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 
 		validateForm();
 		
-		RIFSession rifSession = getRIFSession();
+		RIFStudySubmissionToolSession rifSession = getRIFSession();
 
 		//set the project associated with the current job submission
 		RIFStudySubmission rifJobSubmission

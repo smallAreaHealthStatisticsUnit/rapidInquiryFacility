@@ -3,7 +3,7 @@ package rifJobSubmissionTool.desktop.interactive;
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.OrderedListComboBox;
 import rifGenericUILibrary.UserInterfaceFactory;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
@@ -96,7 +96,7 @@ class ProjectSelectionPanel implements ActionListener {
 	
 	//Data
 	/** The rif session. */
-	private RIFSession rifSession;
+	private RIFStudySubmissionToolSession rifSession;
 	
 	//GUI Components
 	/** The user interface factory. */
@@ -118,7 +118,7 @@ class ProjectSelectionPanel implements ActionListener {
 	 * @param rifSession the rif session
 	 */
 	public ProjectSelectionPanel(
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
 
 		this.rifSession = rifSession;
 		this.userInterfaceFactory = rifSession.getUIFactory();

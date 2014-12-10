@@ -1,10 +1,10 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifGenericUILibrary.ErrorDialog;
-import rifGenericUILibrary.OKClosePanel;
+import rifGenericUILibrary.OKCloseButtonPanel;
 import rifGenericUILibrary.OrderedListComboBox;
 import rifGenericUILibrary.UserInterfaceFactory;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 
 
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
@@ -105,7 +105,7 @@ class AgeBandEditorDialog
 
 	//Data
 	/** The rif session. */
-	private RIFSession rifSession;	
+	private RIFStudySubmissionToolSession rifSession;	
 	/** The is cancelled. */
 	private boolean isCancelled;
 	/** The current investigation. */
@@ -123,7 +123,7 @@ class AgeBandEditorDialog
 	/** The dialog. */
 	private JDialog dialog;	
 	/** The ok close panel. */
-	private OKClosePanel okClosePanel;
+	private OKCloseButtonPanel okCloseButtonPanel;
 	
 	
 	// ==========================================
@@ -136,7 +136,7 @@ class AgeBandEditorDialog
 	 * @param rifSession the rif session
 	 */
 	public AgeBandEditorDialog(
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
 		
 		this.rifSession = rifSession;
 		UserInterfaceFactory userInterfaceFactory
@@ -155,8 +155,8 @@ class AgeBandEditorDialog
 			= new OrderedListComboBox(userInterfaceFactory);
 		upperLimitAgeGroupComboBox.setAlphabeticallySortItems(false);
 
-		okClosePanel = new OKClosePanel(userInterfaceFactory);
-		okClosePanel.addActionListener(this);
+		okCloseButtonPanel = new OKCloseButtonPanel(userInterfaceFactory);
+		okCloseButtonPanel.addActionListener(this);
 		
 		dialog.getContentPane().add(panel);
 		dialog.setModal(true);
@@ -180,7 +180,7 @@ class AgeBandEditorDialog
 		panelGC.fill = GridBagConstraints.NONE;
 		panelGC.weightx = 0;
 		panelGC.weighty = 0;
-		panel.add(okClosePanel.getPanel(), panelGC);		
+		panel.add(okCloseButtonPanel.getPanel(), panelGC);		
 	}
 	
 	/**
@@ -382,10 +382,10 @@ class AgeBandEditorDialog
 		
 		Object source = event.getSource();
 		
-		if (okClosePanel.isOKButton(source)) {
+		if (okCloseButtonPanel.isOKButton(source)) {
 			ok();
 		}
-		else if (okClosePanel.isCloseButton(source)) {
+		else if (okCloseButtonPanel.isCloseButton(source)) {
 			close();
 		}		
 	}

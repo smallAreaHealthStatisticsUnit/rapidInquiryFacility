@@ -2,13 +2,13 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifGenericUILibrary.ErrorDialog;
-import rifGenericUILibrary.OKClosePanel;
+import rifGenericUILibrary.OKCloseButtonPanel;
 import rifGenericUILibrary.OrderedListComboBox;
 import rifGenericUILibrary.UserInterfaceFactory;
 
 
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.Geography;
@@ -117,7 +117,7 @@ class InvestigationEditorDialog
 	/** The service. */
 	private RIFStudySubmissionAPI service;	
 	/** The rif session. */
-	private RIFSession rifSession;	
+	private RIFStudySubmissionToolSession rifSession;	
 	/** The current user. */
 	private User currentUser;	
 	/** The is cancelled. */
@@ -148,7 +148,7 @@ class InvestigationEditorDialog
 	/** The covariates list panel. */
 	private CovariatesListPanel covariatesListPanel;	
 	/** The ok close panel. */
-	private OKClosePanel okClosePanel;
+	private OKCloseButtonPanel okCloseButtonPanel;
 	
 // ==========================================
 // Section Construction
@@ -159,7 +159,7 @@ class InvestigationEditorDialog
      * @param rifSession the rif session
      */
 	public InvestigationEditorDialog(
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
    
 		this.rifSession = rifSession;
     	service = rifSession.getRIFStudySubmissionService();
@@ -183,8 +183,8 @@ class InvestigationEditorDialog
 			= userInterfaceFactory.createNonEditableTextArea(5,  30);
 		covariatesListPanel = new CovariatesListPanel(rifSession);
 				
-		okClosePanel = new OKClosePanel(userInterfaceFactory);
-		okClosePanel.addActionListener(this);
+		okCloseButtonPanel = new OKCloseButtonPanel(userInterfaceFactory);
+		okCloseButtonPanel.addActionListener(this);
 		
 		buildUI();
     }
@@ -229,7 +229,7 @@ class InvestigationEditorDialog
 		panelGC.weightx = 0;
 		panelGC.weighty = 0;
 		panelGC.anchor = GridBagConstraints.SOUTHEAST;		
-		panel.add(okClosePanel.getPanel(), panelGC);
+		panel.add(okCloseButtonPanel.getPanel(), panelGC);
 	
 		dialog.getContentPane().add(panel);
 		dialog.setModal(true);
@@ -696,10 +696,10 @@ class InvestigationEditorDialog
 		
 		Object source = event.getSource();
 		
-		if (okClosePanel.isOKButton(source)) {
+		if (okCloseButtonPanel.isOKButton(source)) {
 			ok();
 		}
-		else if (okClosePanel.isCloseButton(source)) {
+		else if (okCloseButtonPanel.isCloseButton(source)) {
 			close();
 		}
 		else if (source == healthThemeComboBox.getComboBox()) {

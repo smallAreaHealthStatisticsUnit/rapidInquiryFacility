@@ -4,7 +4,7 @@ package rifJobSubmissionTool.desktop.interactive;
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.AgeBand;
@@ -118,7 +118,7 @@ class AgeSexYearBandPanel
 
 	//Data
 	/** The rif session. */
-	private RIFSession rifSession;	
+	private RIFStudySubmissionToolSession rifSession;	
 	/** The service. */
 	private RIFStudySubmissionAPI service;
 	
@@ -152,7 +152,7 @@ class AgeSexYearBandPanel
      */
 	public AgeSexYearBandPanel(
     	JDialog parentDialog,
-    	RIFSession rifSession) {
+    	RIFStudySubmissionToolSession rifSession) {
 		
     	this.parentDialog = parentDialog;
     	this.rifSession = rifSession;

@@ -3,9 +3,9 @@ package rifJobSubmissionTool.desktop.interactive;
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
-import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
+
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.ComparisonArea;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
@@ -124,7 +124,7 @@ class PreviewStepPanel extends AbstractStepPanel {
 	 */
 	public PreviewStepPanel(
 		JDialog parentDialog, 
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
 		
 		super(parentDialog, rifSession);
 		
@@ -239,9 +239,9 @@ class PreviewStepPanel extends AbstractStepPanel {
 	 */
 	@Override
 	public void initialiseForm() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 		
-		RIFSession rifSession = getRIFSession();
+		RIFStudySubmissionToolSession rifSession = getRIFSession();
 
 		RIFStudySubmission originalJobSubmission = rifSession.getRIFJobSubmission();	
 		try {
@@ -266,11 +266,11 @@ class PreviewStepPanel extends AbstractStepPanel {
 	 */
 	@Override
 	public void commitChanges() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 		
 		//validate the form first
 			
-		RIFSession rifSession = getRIFSession();
+		RIFStudySubmissionToolSession rifSession = getRIFSession();
 		ComparisonArea workingCopyComparisonArea
 			= (ComparisonArea) rifSession.getCurrentGeographicalArea();
 		workingCopyComparisonArea.setNewRecord(false);

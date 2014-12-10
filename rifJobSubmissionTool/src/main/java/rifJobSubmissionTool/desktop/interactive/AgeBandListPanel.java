@@ -1,6 +1,6 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 
 
 import rifGenericUILibrary.OrderedListPanel;
@@ -98,7 +98,7 @@ class AgeBandListPanel
 	
 	//Data
 	/** The rif session. */
-	private RIFSession rifSession;
+	private RIFStudySubmissionToolSession rifSession;
 	/** The current investigation. */
 	private Investigation currentInvestigation;
 
@@ -124,7 +124,7 @@ class AgeBandListPanel
 	 */
 	public AgeBandListPanel(
 		JDialog parentDialog,
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
 
 		this.rifSession = rifSession;
 		

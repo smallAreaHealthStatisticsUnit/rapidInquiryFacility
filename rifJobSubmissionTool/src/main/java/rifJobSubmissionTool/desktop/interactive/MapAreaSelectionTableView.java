@@ -3,7 +3,7 @@ package rifJobSubmissionTool.desktop.interactive;
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifGenericUILibrary.ListNavigationButtonPanel;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 
 
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
@@ -125,7 +125,7 @@ class MapAreaSelectionTableView
 	/** The maximum page. */
 	private int maximumPage;	
 	/** The rif session. */
-	private RIFSession rifSession;
+	private RIFStudySubmissionToolSession rifSession;
 	/** The service. */
 	private RIFStudySubmissionAPI service;
 	/** The is data source service. */
@@ -157,7 +157,7 @@ class MapAreaSelectionTableView
 	 */
 	public MapAreaSelectionTableView(
 		JDialog parentDialog,
-		RIFSession rifSession,
+		RIFStudySubmissionToolSession rifSession,
 		boolean isDataSourceService) {
 		
 		this.parentDialog = parentDialog;

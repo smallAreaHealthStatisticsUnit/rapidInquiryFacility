@@ -3,7 +3,7 @@ package rifJobSubmissionTool.desktop.interactive;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 
 import java.awt.GridBagConstraints;
@@ -122,7 +122,7 @@ class MapSelectionBasketEditorDialog
 	 * @param rifSession the rif session
 	 */
 	public MapSelectionBasketEditorDialog(
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
 
 		this.userInterfaceFactory = rifSession.getUIFactory();
 		

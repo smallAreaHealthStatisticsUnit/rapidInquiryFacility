@@ -2,9 +2,8 @@ package rifJobSubmissionTool.desktop.interactive;
 
 
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
-import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifGenericUILibrary.ListEditingButtonPanel;
@@ -130,7 +129,7 @@ class SpecifyReportingOptionsStepPanel
      */
 	public SpecifyReportingOptionsStepPanel(
     	JDialog parentDialog, 
-    	RIFSession rifSession) {
+    	RIFStudySubmissionToolSession rifSession) {
     	super(parentDialog, rifSession);
 		
 		checkBoxFromOutputOptionName
@@ -349,7 +348,7 @@ class SpecifyReportingOptionsStepPanel
 		ArrayList<CalculationMethod> usedCalculationMethods
 			= calculationMethodTable.getCalculationMethods();
 		
-		RIFSession rifSession = getRIFSession();
+		RIFStudySubmissionToolSession rifSession = getRIFSession();
 		CalculationMethodSelectionDialog selectionDialog
 			= new CalculationMethodSelectionDialog(
 				rifSession, 
@@ -374,7 +373,7 @@ class SpecifyReportingOptionsStepPanel
 		
 		CalculationMethod calculationMethod
 			= calculationMethodTable.getSelectedCalculationMethod();
-		RIFSession rifSession = getRIFSession();
+		RIFStudySubmissionToolSession rifSession = getRIFSession();
 		CalculationMethodEditorDialog editorDialog
 			= new CalculationMethodEditorDialog(rifSession);
 		editorDialog.setCalculationMethod(calculationMethod);
@@ -466,7 +465,7 @@ class SpecifyReportingOptionsStepPanel
 	 * @throws RIFJobSubmissionToolException the RIF job submission tool exception
 	 */
 	public void validateForm() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		
@@ -496,8 +495,8 @@ class SpecifyReportingOptionsStepPanel
 			String errorMessage
 				= RIFJobSubmissionToolMessages.getMessage(
 					"specifyReportingOptionsStepPanel.error.noOptionsSpecified");
-			RIFJobSubmissionToolException rifJobSubmissionToolException
-				= new RIFJobSubmissionToolException(errorMessage);
+			RIFServiceException rifJobSubmissionToolException
+				= new RIFServiceException(errorMessage);
 			throw rifJobSubmissionToolException;
 		}		
 	}
@@ -577,9 +576,9 @@ class SpecifyReportingOptionsStepPanel
 	 */
 	@Override
 	public void initialiseForm() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 
-		RIFSession rifSession = getRIFSession();
+		RIFStudySubmissionToolSession rifSession = getRIFSession();
 		
 		RIFStudySubmission rifJobSubmission
 			= rifSession.getRIFJobSubmission();
@@ -645,11 +644,11 @@ class SpecifyReportingOptionsStepPanel
 	 */
 	@Override
 	public void commitChanges() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 
 		validateForm();
 		
-		RIFSession rifSession = getRIFSession();
+		RIFStudySubmissionToolSession rifSession = getRIFSession();
 
 		ArrayList<CalculationMethod> calculationMethods
 			= calculationMethodTable.getCalculationMethods();

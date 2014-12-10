@@ -2,7 +2,7 @@ package rifJobSubmissionTool.desktop.interactive;
 
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 
@@ -89,7 +89,7 @@ class HealthCodeSelectionBrowsePanel {
 
 	//Data
 	/** The session. */
-	private RIFSession session;
+	private RIFStudySubmissionToolSession session;
 
 	//GUI Components
 	/** The panel. */
@@ -113,7 +113,7 @@ class HealthCodeSelectionBrowsePanel {
 	 */
 	public HealthCodeSelectionBrowsePanel(
 		JDialog parentDialog, 
-		RIFSession session) {
+		RIFStudySubmissionToolSession session) {
 		
 		this.parentDialog = parentDialog;
 		this.session = session;

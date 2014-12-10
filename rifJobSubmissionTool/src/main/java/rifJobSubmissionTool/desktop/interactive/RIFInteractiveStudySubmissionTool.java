@@ -1,12 +1,10 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifGenericUILibrary.ErrorDialog;
-
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
-import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
@@ -106,7 +104,6 @@ public class RIFInteractiveStudySubmissionTool
 			
 			RIFServiceStartupOptions startupOptions 
 				= new RIFServiceStartupOptions(false);
-
 			ProductionRIFStudyServiceBundle rifStudyServiceBundle
 				= new ProductionRIFStudyServiceBundle();
 			rifStudyServiceBundle.initialise(startupOptions);
@@ -115,8 +112,8 @@ public class RIFInteractiveStudySubmissionTool
 			String ipAddress = InetAddress.getLocalHost().getHostAddress();
 			
 			User testUser = User.newInstance("kgarwood", ipAddress);
-			RIFSession rifSession 
-				= new RIFSession(rifStudyServiceBundle, testUser);
+			RIFStudySubmissionToolSession rifSession 
+				= new RIFStudySubmissionToolSession(rifStudyServiceBundle, testUser);
 						
 			RIFInteractiveStudySubmissionTool rifStudySubmissionTool
 				= new RIFInteractiveStudySubmissionTool(rifSession);
@@ -142,7 +139,7 @@ public class RIFInteractiveStudySubmissionTool
 	
 	//Data	
 	/** The rif session. */
-	private RIFSession rifSession;	
+	private RIFStudySubmissionToolSession rifSession;	
 	/** The current rif job submission. */
 	private RIFStudySubmission currentRIFJobSubmission;
 	/** The rif activity state machine. */
@@ -188,7 +185,7 @@ public class RIFInteractiveStudySubmissionTool
 	 * @param rifSession the rif session
 	 */
 	public RIFInteractiveStudySubmissionTool(
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
 
 		this.rifSession = rifSession;
 		userInterfaceFactory = rifSession.getUIFactory();
@@ -234,8 +231,8 @@ public class RIFInteractiveStudySubmissionTool
 	 */
 	private void buildUI() {
 	
-		ShutdownManager shutDownManager
-			= new ShutdownManager(dialog, rifSession);
+		RIFSubmissionToolShutdownManager shutDownManager
+			= new RIFSubmissionToolShutdownManager(dialog, rifSession);
 		dialog.addWindowListener(shutDownManager);
 
 		createMenuItems();
@@ -313,8 +310,8 @@ public class RIFInteractiveStudySubmissionTool
 		try {
 			currentActivityPanel.initialiseForm();			
 		}
-		catch(RIFJobSubmissionToolException rifJobSubmissionToolException) {
-			RIFSubmissionToolErrorDialog.showError(dialog, rifJobSubmissionToolException);
+		catch(RIFServiceException rifJobSubmissionToolException) {
+			ErrorDialog.showError(dialog, rifJobSubmissionToolException);
 		}
 		mainViewPanel.add(currentActivityPanel.getPanel(), BorderLayout.CENTER);
 		mainViewPanel.updateUI();
@@ -329,16 +326,13 @@ public class RIFInteractiveStudySubmissionTool
 	// ==========================================
 	
 	//Interface: ActionListener
-	/* (non-Javadoc)
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
 	public void actionPerformed(
 		ActionEvent event) {
 		
 		Object source = event.getSource();
 		if (source == exitButton) {
-			ShutdownManager shutDownManager
-				= new ShutdownManager(dialog, rifSession);
+			RIFSubmissionToolShutdownManager shutDownManager
+				= new RIFSubmissionToolShutdownManager(dialog, rifSession);
 			shutDownManager.shutDown();
 		}
 	}

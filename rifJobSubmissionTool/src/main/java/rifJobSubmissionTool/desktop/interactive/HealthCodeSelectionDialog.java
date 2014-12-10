@@ -2,11 +2,11 @@ package rifJobSubmissionTool.desktop.interactive;
 
 
 import rifGenericUILibrary.ErrorDialog;
-import rifGenericUILibrary.OKClosePanel;
+import rifGenericUILibrary.OKCloseButtonPanel;
 import rifGenericUILibrary.OrderedListComboBox;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
@@ -101,7 +101,7 @@ class HealthCodeSelectionDialog
 
 	//Data	
 	/** The session. */
-	private RIFSession session;	
+	private RIFStudySubmissionToolSession session;	
 	/** The service. */
 	private RIFStudySubmissionAPI service;
 	/** The selected health codes. */
@@ -125,7 +125,7 @@ class HealthCodeSelectionDialog
 	/** The health code selection search panel. */
 	private HealthCodeSelectionSearchPanel healthCodeSelectionSearchPanel;
 	/** The ok close panel. */
-	private OKClosePanel okClosePanel; 
+	private OKCloseButtonPanel okCloseButtonPanel; 
 	
 
 	// ==========================================
@@ -138,7 +138,7 @@ class HealthCodeSelectionDialog
 	 * @param session the session
 	 */
 	public HealthCodeSelectionDialog(
-		RIFSession session) {
+		RIFStudySubmissionToolSession session) {
 
 		this.session = session;		
 		uiFactory = session.getUIFactory();
@@ -152,8 +152,8 @@ class HealthCodeSelectionDialog
 		availableHealthCodeTaxonomies
 			= new OrderedListComboBox(uiFactory);
 
-		okClosePanel = new OKClosePanel(uiFactory);
-		okClosePanel.addActionListener(this);
+		okCloseButtonPanel = new OKCloseButtonPanel(uiFactory);
+		okCloseButtonPanel.addActionListener(this);
 
 		buildUI();
 	}
@@ -205,7 +205,7 @@ class HealthCodeSelectionDialog
 		panelGC.weightx = 0;
 		panelGC.weighty = 0;
 				
-		panel.add(okClosePanel.getPanel(), panelGC);
+		panel.add(okCloseButtonPanel.getPanel(), panelGC);
 
 		resetViews();
 		
@@ -387,10 +387,10 @@ class HealthCodeSelectionDialog
 		if (availableHealthCodeTaxonomies.isComboBox(source)) {
 			resetViews();
 		}
-		else if (okClosePanel.isOKButton(source)) {
+		else if (okCloseButtonPanel.isOKButton(source)) {
 			ok();
 		}
-		else if (okClosePanel.isCloseButton(source)) {
+		else if (okCloseButtonPanel.isCloseButton(source)) {
 			close();
 		}
 	}

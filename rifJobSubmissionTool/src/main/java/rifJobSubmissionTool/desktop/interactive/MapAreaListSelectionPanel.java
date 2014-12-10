@@ -4,11 +4,10 @@ import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.ListEditingButtonPanel;
 import rifGenericUILibrary.NoDataAvailablePanel;
 import rifGenericUILibrary.UserInterfaceFactory;
-import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
 import rifJobSubmissionTool.system.MapAreaSelectionEvent;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelArea;
@@ -121,7 +120,7 @@ class MapAreaListSelectionPanel
 
 	//Data
 	/** The rif session. */
-	private RIFSession rifSession;
+	private RIFStudySubmissionToolSession rifSession;
 	
 	private Geography currentGeography;
 	/** The current geographical area. */
@@ -171,7 +170,7 @@ class MapAreaListSelectionPanel
 	 */
 	public MapAreaListSelectionPanel(
 		JDialog parentDialog,
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
 		
 		this.parentDialog = parentDialog;
 		this.rifSession = rifSession;
@@ -645,7 +644,7 @@ class MapAreaListSelectionPanel
 	 * @throws RIFJobSubmissionToolException the RIF job submission tool exception
 	 */
 	public void commitChanges() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 
 		currentGeographicalArea.setMapAreas(currentMapAreaSelectionBasket.getMapAreas());
 	}
@@ -656,7 +655,7 @@ class MapAreaListSelectionPanel
 	 * @throws RIFJobSubmissionToolException the RIF job submission tool exception
 	 */
 	public void validateForm() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 
 		ArrayList<MapArea> selectedMapAreas
 			= currentMapAreaSelectionBasket.getMapAreas();
@@ -675,8 +674,8 @@ class MapAreaListSelectionPanel
 				= RIFServiceMessages.getMessage(
 					"mapArea.error.duplicateMapAreasFound",
 					duplicateList.toString());
-			RIFJobSubmissionToolException rifJobSubmissionToolException
-				= new RIFJobSubmissionToolException(errorMessage);
+			RIFServiceException rifJobSubmissionToolException
+				= new RIFServiceException(errorMessage);
 			throw rifJobSubmissionToolException;
 		}
 	}

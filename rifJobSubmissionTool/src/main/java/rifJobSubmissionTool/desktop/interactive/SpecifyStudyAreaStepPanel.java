@@ -3,9 +3,10 @@ package rifJobSubmissionTool.desktop.interactive;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
-import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
+
+import rifServices.system.RIFServiceException;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudyArea;
@@ -120,7 +121,7 @@ class SpecifyStudyAreaStepPanel
 	 */
 	public SpecifyStudyAreaStepPanel(
 		JDialog parentDialog, 
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
 		super(parentDialog, rifSession);
 		
 		geographicalExtentPanel 
@@ -179,7 +180,7 @@ class SpecifyStudyAreaStepPanel
 	 * @throws RIFJobSubmissionToolException the RIF job submission tool exception
 	 */
 	public void validateForm() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 
 		mapAreaListSelectionPanel.validateForm();
 		
@@ -189,8 +190,8 @@ class SpecifyStudyAreaStepPanel
 			String errorMessage
 				= RIFJobSubmissionToolMessages.getMessage(
 					"specifyGeographicalAreaStepPanel.error.noBasketItems");
-			RIFJobSubmissionToolException rifJobSubmissionToolException
-				= new RIFJobSubmissionToolException(errorMessage);
+			RIFServiceException rifJobSubmissionToolException
+				= new RIFServiceException(errorMessage);
 			throw rifJobSubmissionToolException;
 		}		
 	}
@@ -237,9 +238,9 @@ class SpecifyStudyAreaStepPanel
 	 */
 	@Override
 	public void initialiseForm() 
-		throws RIFJobSubmissionToolException {		
+		throws RIFServiceException {		
 
-		RIFSession rifSession = getRIFSession();
+		RIFStudySubmissionToolSession rifSession = getRIFSession();
 		
 		currentMapAreaSelectionBasket
 			= MapAreaSelectionBasket.newInstance();				
@@ -299,7 +300,7 @@ class SpecifyStudyAreaStepPanel
 	 */
 	@Override
 	public void commitChanges() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 
 		//validate the form first
 		validateForm();
@@ -309,7 +310,7 @@ class SpecifyStudyAreaStepPanel
 		
 		currentDiseaseMappingStudyArea.setNewRecord(false);
 				
-		RIFSession rifSession = getRIFSession();
+		RIFStudySubmissionToolSession rifSession = getRIFSession();
 		RIFStudySubmission originalJobSubmission
 			= rifSession.getRIFJobSubmission();
 		DiseaseMappingStudy originalStudy

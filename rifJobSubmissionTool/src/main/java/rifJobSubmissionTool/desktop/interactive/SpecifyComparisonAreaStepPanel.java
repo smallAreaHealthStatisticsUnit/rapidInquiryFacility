@@ -3,9 +3,10 @@ package rifJobSubmissionTool.desktop.interactive;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
-import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
+
+import rifServices.system.RIFServiceException;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.ComparisonArea;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
@@ -120,7 +121,7 @@ class SpecifyComparisonAreaStepPanel
 	 */
 	public SpecifyComparisonAreaStepPanel(
 		JDialog parentDialog, 
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
 		super(parentDialog, rifSession);
 		
 		geographicalExtentPanel 
@@ -185,7 +186,7 @@ class SpecifyComparisonAreaStepPanel
 	 * @throws RIFJobSubmissionToolException the RIF job submission tool exception
 	 */
 	public void validateForm() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 
 		mapAreaListSelectionPanel.validateForm();
 		
@@ -195,8 +196,8 @@ class SpecifyComparisonAreaStepPanel
 			String errorMessage
 				= RIFJobSubmissionToolMessages.getMessage(
 					"specifyGeographicalAreaStepPanel.error.noBasketItems");
-			RIFJobSubmissionToolException rifJobSubmissionToolException
-				= new RIFJobSubmissionToolException(errorMessage);
+			RIFServiceException rifJobSubmissionToolException
+				= new RIFServiceException(errorMessage);
 			throw rifJobSubmissionToolException;
 		}		
 	}	
@@ -235,9 +236,9 @@ class SpecifyComparisonAreaStepPanel
 	 */
 	@Override
 	public void initialiseForm() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 
-		RIFSession rifSession = getRIFSession();
+		RIFStudySubmissionToolSession rifSession = getRIFSession();
 
 		currentMapAreaSelectionBasket
 			= MapAreaSelectionBasket.newInstance();	
@@ -287,7 +288,7 @@ class SpecifyComparisonAreaStepPanel
 	 */
 	@Override
 	public void commitChanges() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 
 		//validate the form first
 		validateForm();
@@ -295,7 +296,7 @@ class SpecifyComparisonAreaStepPanel
 		geographicalExtentPanel.commitChanges();
 		mapAreaListSelectionPanel.commitChanges();
 		
-		RIFSession rifSession = getRIFSession();
+		RIFStudySubmissionToolSession rifSession = getRIFSession();
 		ComparisonArea workingCopyComparisonArea
 			= (ComparisonArea) rifSession.getCurrentGeographicalArea();
 		workingCopyComparisonArea.setNewRecord(false);

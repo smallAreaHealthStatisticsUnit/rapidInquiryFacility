@@ -5,12 +5,8 @@ import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.OrderedListComboBox;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
-import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
-
-
-
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.Geography;
@@ -126,7 +122,7 @@ class GeographicalExtentPanel
 
 	//Data
 	/** The rif session. */
-	private RIFSession rifSession;
+	private RIFStudySubmissionToolSession rifSession;
 	/** The map area selection basket. */
 	private MapAreaSelectionBasket mapAreaSelectionBasket;	
 	/** The current geographical area. */
@@ -167,7 +163,7 @@ class GeographicalExtentPanel
 	 */
 	public GeographicalExtentPanel(
 		JDialog parentDialog,
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
 
 		this.parentDialog = parentDialog;
 		this.rifSession = rifSession;
@@ -386,7 +382,7 @@ class GeographicalExtentPanel
 	 * @throws RIFJobSubmissionToolException the RIF job submission tool exception
 	 */
 	public void commitChanges() 
-		throws RIFJobSubmissionToolException {
+		throws RIFServiceException {
 		
 		GeoLevelSelect geoLevelSelect
 			= (GeoLevelSelect) geoLevelSelectComboBox.getSelectedItem();

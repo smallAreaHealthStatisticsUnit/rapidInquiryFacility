@@ -3,9 +3,8 @@ package rifJobSubmissionTool.desktop.interactive;
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
-import rifJobSubmissionTool.system.RIFJobSubmissionToolException;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 
 
 import rifGenericUILibrary.WorkflowNavigationButtonPanel;
@@ -110,7 +109,7 @@ class RIFStepButtonNavigationPanel
 	
 	//Data
 	/** The rif session. */
-	private RIFSession rifSession;
+	private RIFStudySubmissionToolSession rifSession;
 	/** The rif activity state machine. */
 	private RIFStudySubmissionActivityStateMachine rifActivityStateMachine;
 
@@ -140,7 +139,7 @@ class RIFStepButtonNavigationPanel
 	 * @param rifActivityStateMachine the rif activity state machine
 	 */
 	public RIFStepButtonNavigationPanel(
-		RIFSession rifSession,
+		RIFStudySubmissionToolSession rifSession,
 		JDialog parentDialog,
 		RIFStudySubmissionActivityStateMachine rifActivityStateMachine) {
 		
@@ -202,8 +201,8 @@ class RIFStepButtonNavigationPanel
 			currentStepPanel.commitChanges();
 			rifActivityStateMachine.nextActivityStep();
 		}
-		catch(RIFJobSubmissionToolException rifJobSubmissionToolException) {
-			RIFSubmissionToolErrorDialog.showError(parentDialog, rifJobSubmissionToolException);
+		catch(RIFServiceException rifJobSubmissionToolException) {
+			ErrorDialog.showError(parentDialog, rifJobSubmissionToolException);
 		}		
 	}
 	
@@ -242,9 +241,6 @@ class RIFStepButtonNavigationPanel
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(parentDialog, rifServiceException);			
 		}
-		catch(RIFJobSubmissionToolException rifJobSubmissionToolException) {
-			RIFSubmissionToolErrorDialog.showError(parentDialog, rifJobSubmissionToolException);			
-		}
 	}
 	
 	/**
@@ -252,8 +248,8 @@ class RIFStepButtonNavigationPanel
 	 */
 	private void quit() {
 		
-		ShutdownManager shutDownManager
-			= new ShutdownManager(parentDialog, rifSession);
+		RIFSubmissionToolShutdownManager shutDownManager
+			= new RIFSubmissionToolShutdownManager(parentDialog, rifSession);
 		shutDownManager.shutDown();
 	}
 	

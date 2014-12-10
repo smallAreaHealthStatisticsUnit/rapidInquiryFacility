@@ -1,7 +1,7 @@
 
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 
 import rifGenericUILibrary.OrderedListPanel;
 import rifGenericUILibrary.UserInterfaceFactory;
@@ -97,7 +97,7 @@ class CovariatesListPanel implements ActionListener {
 	
 	//Data
 	/** The rif session. */
-	private RIFSession rifSession;
+	private RIFStudySubmissionToolSession rifSession;
 	
 	//GUI Components
 	/** The user interface factory. */
@@ -118,7 +118,7 @@ class CovariatesListPanel implements ActionListener {
      * @param rifSession the rif session
      */
 	public CovariatesListPanel(
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
    
 		this.rifSession = rifSession;
 		this.userInterfaceFactory = rifSession.getUIFactory();
