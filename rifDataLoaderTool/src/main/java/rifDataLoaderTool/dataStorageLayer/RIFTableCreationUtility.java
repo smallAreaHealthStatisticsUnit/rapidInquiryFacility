@@ -2,10 +2,11 @@ package rifDataLoaderTool.dataStorageLayer;
 
 import java.sql.*;
 
-import rifServices.businessConceptLayer.User;
-import rifServices.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 
+import rifServices.businessConceptLayer.User;
+import rifServices.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifServices.dataStorageLayer.SQLQueryUtility;
 
 /**
  *
@@ -61,10 +62,6 @@ import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 
 public class RIFTableCreationUtility {
 
-	public static void main(String arguments[]) {
-		RIFTableCreationUtility utility = new RIFTableCreationUtility();
-		utility.createTables();
-	}
 	
 	// ==========================================
 	// Section Constants
