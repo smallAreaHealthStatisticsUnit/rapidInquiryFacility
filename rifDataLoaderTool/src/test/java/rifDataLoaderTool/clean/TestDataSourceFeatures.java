@@ -3,7 +3,7 @@ package rifDataLoaderTool.clean;
 import static org.junit.Assert.*;
 import rifDataLoaderTool.businessConceptLayer.DataSource;
 import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
-import rifDataLoaderTool.system.RIFDataLoaderToolException;
+import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
 
@@ -128,9 +128,7 @@ public class TestDataSourceFeatures extends AbstractRIFDataLoaderTestCase {
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printStackTrace();
 		}
-		catch(RIFDataLoaderToolException rifDataLoaderToolException) {
-			rifDataLoaderToolException.printStackTrace();
-		}
+
 	}
 	
 	

@@ -6,7 +6,7 @@ import rifDataLoaderTool.businessConceptLayer.*;
 
 
 import rifDataLoaderTool.dataStorageLayer.*;
-import rifDataLoaderTool.system.RIFDataLoaderToolException;
+import rifServices.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
@@ -146,9 +146,7 @@ public class TestLoad extends AbstractRIFDataLoaderTestCase {
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printStackTrace();
 		}
-		catch(RIFDataLoaderToolException rifDataLoaderToolException) {
-			rifDataLoaderToolException.printStackTrace();
-		}
+
 	}
 
 	@Test
@@ -212,9 +210,7 @@ public class TestLoad extends AbstractRIFDataLoaderTestCase {
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printStackTrace();
 		}
-		catch(RIFDataLoaderToolException rifDataLoaderToolException) {
-			rifDataLoaderToolException.printStackTrace();
-		}
+
 	}
 
 	@Test
