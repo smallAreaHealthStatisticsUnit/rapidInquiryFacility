@@ -2,6 +2,7 @@ package rifServices.dataStorageLayer;
 
 import rifServices.businessConceptLayer.User;
 
+
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -95,12 +96,14 @@ import java.util.ArrayList;
  *
  */
 
-class SQLConnectionManager {
+public class SQLConnectionManager {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final int POOLED_CONNECTIONS_PER_PERSON = 1;
+	private static final int POOLED_CONNECTIONS_PER_PERSON = 5;
+	
+	private static final int MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD = 5;
 	
 	// ==========================================
 	// Section Properties
@@ -127,8 +130,10 @@ class SQLConnectionManager {
 	/** The database url. */
 	private final String databaseURL;
 	
-	private HashSet<String> registeredUserIDs;
-	private HashSet<String> userIDsToBlock;
+	private final HashMap<String, Integer> suspiciousEventCounterFromUser;
+	
+	private final HashSet<String> registeredUserIDs;
+	private final HashSet<String> userIDsToBlock;
 	
 	
 	// ==========================================
@@ -143,6 +148,7 @@ class SQLConnectionManager {
 	public SQLConnectionManager(
 		final RIFServiceStartupOptions rifServiceStartupOptions) {
 
+		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		usedReadConnectionsFromUser = new HashMap<String, ArrayList<Connection>>();
 		availableReadConnectionsFromUser = new HashMap<String, ArrayList<Connection>>();
@@ -153,6 +159,8 @@ class SQLConnectionManager {
 		
 		userIDsToBlock = new HashSet<String>();
 		registeredUserIDs = new HashSet<String>();
+	
+		suspiciousEventCounterFromUser = new HashMap<String, Integer>();
 		
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT ");
@@ -162,6 +170,7 @@ class SQLConnectionManager {
 		databaseURL = generateURLText();
 	}
 
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
@@ -174,7 +183,7 @@ class SQLConnectionManager {
 	private String generateURLText() {
 		
 		StringBuilder urlText = new StringBuilder();
-		urlText.append(rifServiceStartupOptions.getDatabaseDriver());
+		urlText.append(rifServiceStartupOptions.getDatabaseDriverPrefix());
 		urlText.append(":");
 		urlText.append("//");
 		urlText.append(rifServiceStartupOptions.getHost());
@@ -194,7 +203,7 @@ class SQLConnectionManager {
 	 */
 	public boolean userExists(
 		final String userID) {
-		
+
 		return registeredUserIDs.contains(userID);
 	}
 	
@@ -213,6 +222,43 @@ class SQLConnectionManager {
 		return userIDsToBlock.contains(userID);
 	}
 	
+	public void logSuspiciousUserEvent(
+		final User user) {
+	
+		String userID = user.getUserID();
+		
+		Integer suspiciousEventCounter
+			= suspiciousEventCounterFromUser.get(userID);
+		if (suspiciousEventCounter == null) {
+
+			//no incidents recorded yet, this is the first
+			suspiciousEventCounterFromUser.put(userID, 1);
+		}
+		else {
+			suspiciousEventCounterFromUser.put(
+				userID, 
+				(suspiciousEventCounter + 1));
+		}		
+	}
+	
+	public boolean userExceededMaximumSuspiciousEvents(
+		final User user) {
+		
+		String userID = user.getUserID();
+		Integer suspiciousEventCounter
+			= suspiciousEventCounterFromUser.get(userID);
+		if (suspiciousEventCounter == null) {
+			return false;
+		}
+		
+		if (suspiciousEventCounter < MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD) {
+			return false;
+		}
+		
+		return true;
+		
+	}
+	
 	public void addUserIDToBlock(
 		final User user) 
 		throws RIFServiceException {
@@ -225,6 +271,7 @@ class SQLConnectionManager {
 		if (userID == null) {
 			return;
 		}
+		
 		
 		if (userIDsToBlock.contains(userID)) {
 			return;
@@ -241,37 +288,45 @@ class SQLConnectionManager {
 	 * @return the connection
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void registerUser(
+	public void login(
 		final String userID,
-		final char[] password) 
+		final String password) 
 		throws RIFServiceException {
 	
 		if (userIDsToBlock.contains(userID)) {
 			return;
 		}
 		
+		/*
+		 * First, check whether person is already logged in.  We can do this 
+		 * by checking whether 
+		 */
+		
+		if (isLoggedIn(userID)) {
+			return;
+		}
+
 		Connection currentConnection = null;
 		PreparedStatement statement = null;
 		try {
-			Class.forName("org.postgresql.Driver");
+			Class.forName(rifServiceStartupOptions.getDatabaseDriverClassName());
 
 			//Establish read-only connections
 			ArrayList<Connection> readOnlyConnections 
 				= new ArrayList<Connection>();
 			for (int i = 0; i < POOLED_CONNECTIONS_PER_PERSON; i++) {
-				System.out.println("SQLConnectionManager registerUser =="+databaseURL+"==");
 				currentConnection 
 					= DriverManager.getConnection(
 						databaseURL,
 						userID,
-						new String(password));
+						password);
 				statement
 					= currentConnection.prepareStatement(initialisationQuery);
 				statement.execute();
 				statement.close();
 				currentConnection.setReadOnly(false);
 				readOnlyConnections.add(currentConnection);
-			}			
+			}
 			availableReadConnectionsFromUser.put(userID, readOnlyConnections);
 			usedReadConnectionsFromUser.put(userID, new ArrayList<Connection>());
 			
@@ -283,7 +338,7 @@ class SQLConnectionManager {
 					= DriverManager.getConnection(
 						databaseURL,
 						userID,
-						new String(password));
+						password);
 				statement
 					= currentConnection.prepareStatement(initialisationQuery);
 				statement.execute();
@@ -294,6 +349,7 @@ class SQLConnectionManager {
 			usedWriteConnectionsFromUser.put(userID, new ArrayList<Connection>());
 			
 			registeredUserIDs.add(userID);
+			
 		}
 		catch(ClassNotFoundException classNotFoundException) {
 			classNotFoundException.printStackTrace(System.out);
@@ -329,8 +385,20 @@ class SQLConnectionManager {
 		finally {
 			SQLQueryUtility.close(statement);
 		}
+		
 	}
 	
+	public boolean isLoggedIn(
+		final String userID) {
+
+		if (registeredUserIDs.contains(userID)) {
+			return true;
+		}
+
+		return false;
+				
+	}
+		
 	/**
 	 * Assumes that user is valid.
 	 *
@@ -448,7 +516,7 @@ class SQLConnectionManager {
 		}
 	}
 
-	public void deregisterUser(
+	public void logout(
 		final User user) 
 		throws RIFServiceException {
 		
@@ -469,6 +537,10 @@ class SQLConnectionManager {
 		}
 		
 		closeConnectionsForUser(userID);
+		registeredUserIDs.remove(userID);
+
+		suspiciousEventCounterFromUser.remove(userID);
+
 	}
 	
 	/**
