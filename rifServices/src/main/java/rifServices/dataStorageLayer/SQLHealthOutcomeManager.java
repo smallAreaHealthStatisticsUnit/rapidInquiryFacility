@@ -111,7 +111,7 @@ class SQLHealthOutcomeManager
 		healthCodeProviders = new ArrayList<HealthCodeProvider>();
 		
 		String targetPathValue
-			= rifServiceStartupOptions.getClassFileDirectoryPath();
+			= rifServiceStartupOptions.getRIFServiceResourcePath();
 		if (targetPathValue == null) {
 			targetPathValue = RIFServiceMessages.getRIFServicesClassRootLocation();
 		}
