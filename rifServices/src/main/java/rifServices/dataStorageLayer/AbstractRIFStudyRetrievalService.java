@@ -193,6 +193,7 @@ abstract class AbstractRIFStudyRetrievalService
 			= MapArea.createCopy(_mapAreas);
 		
 		String result = "";
+		Connection connection = null;
 		try {
 			
 			//Check for empty parameters
@@ -250,7 +251,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);			
 
 			//Delegate operation to a specialised manager class
@@ -264,11 +265,6 @@ abstract class AbstractRIFStudyRetrievalService
 					geoLevelSelect,
 					geoLevelView, 
 					mapAreas);
-				
-			//Reclaim pooled connection		
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);
 			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -277,6 +273,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user,
 				"getGeometry",
 				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 		
 		return result;
@@ -302,6 +304,7 @@ abstract class AbstractRIFStudyRetrievalService
 			= GeoLevelAttributeSource.createCopy(_geoLevelAttributeSource);
 		ArrayList<MapAreaAttributeValue> results
 			= new ArrayList<MapAreaAttributeValue>();
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -346,7 +349,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 			
 			//Delegate operation to a specialised manager class
@@ -359,11 +362,7 @@ abstract class AbstractRIFStudyRetrievalService
 					studyResultRetrievalContext,
 					geoLevelAttributeSource,
 					geoLevelAttribute);
-
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);		
+			
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -371,6 +370,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user,
 				"getMapAreaAttributeValues",
 				rifServiceException);			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 		
 		return results;
@@ -393,6 +398,7 @@ abstract class AbstractRIFStudyRetrievalService
 		
 		ArrayList<GeoLevelAttributeSource> results 
 			= new ArrayList<GeoLevelAttributeSource>();
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -427,7 +433,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 					
 			//Delegate operation to a specialised manager class
@@ -438,12 +444,7 @@ abstract class AbstractRIFStudyRetrievalService
 					connection,
 					user,
 					studyResultRetrievalContext); 
-			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);		
-			
+
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -451,6 +452,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user,
 				"getGeoLevelAttributeSources",
 				rifServiceException);			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 		return results;
 	}
@@ -476,7 +483,7 @@ abstract class AbstractRIFStudyRetrievalService
 		
 		ArrayList<GeoLevelAttributeTheme> results 
 			= new ArrayList<GeoLevelAttributeTheme>();
-		
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -511,7 +518,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);			
 
 			//Delegate operation to a specialised manager class
@@ -523,11 +530,7 @@ abstract class AbstractRIFStudyRetrievalService
 					user,
 					studyResultRetrievalContext,
 					geoLevelAttributeSource);
-			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
+
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -535,6 +538,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user,
 				"getGeoLevelAttributeThemes",
 				rifServiceException);						
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 				
 		return results;
@@ -561,6 +570,7 @@ abstract class AbstractRIFStudyRetrievalService
 		GeoLevelAttributeTheme geoLevelAttributeTheme
 			= GeoLevelAttributeTheme.createCopy(_geoLevelAttributeTheme);
 			String[] results = new String[0];
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -601,7 +611,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//KLG @TODO - where do we get this? Is it passed or does the middleware manage it?
@@ -618,11 +628,6 @@ abstract class AbstractRIFStudyRetrievalService
 					geoLevelAttributeTheme,
 					geoLevelAttributeSource,
 					attributeArrayName);
-			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);		
 
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -631,6 +636,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user,
 				"getGeoLevelAttributeThemes",
 				rifServiceException);						
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 					
 		return results;
@@ -658,6 +669,7 @@ abstract class AbstractRIFStudyRetrievalService
 		GeoLevelAttributeTheme geoLevelAttributeTheme
 			= GeoLevelAttributeTheme.createCopy(_geoLevelAttributeTheme);
 		String[] results = new String[0];
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -699,7 +711,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
@@ -712,11 +724,7 @@ abstract class AbstractRIFStudyRetrievalService
 					studyResultRetrievalContext,
 					geoLevelAttributeSource,
 					geoLevelAttributeTheme);
-			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);				
+
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -724,6 +732,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user,
 				"getNumericAttributesForGeoLevelAttributeTheme",
 				rifServiceException);						
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 						
 		return results;
@@ -750,7 +764,7 @@ abstract class AbstractRIFStudyRetrievalService
 
 		StudySummary studySummary
 			= StudySummary.createCopy(_studySummary);
-		
+		Connection connection = null;		
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -806,7 +820,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 	
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
@@ -820,11 +834,6 @@ abstract class AbstractRIFStudyRetrievalService
 					startRowIndex,
 					endRowIndex);
 			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);				
-			
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -833,6 +842,12 @@ abstract class AbstractRIFStudyRetrievalService
 				"getCalculatedResultsByBlock",
 				rifServiceException);	
 		}	
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
 		
 		return results;
 	}
@@ -857,7 +872,7 @@ abstract class AbstractRIFStudyRetrievalService
 		}
 		
 		StudySummary studySummary = StudySummary.createCopy(_studySummary);
-
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -909,7 +924,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 		
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
@@ -922,11 +937,6 @@ abstract class AbstractRIFStudyRetrievalService
 					extractResultColumnFieldNames,
 					startRowIndex,
 					endRowIndex);
-			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {	
 			//Audit failure of operation
@@ -935,6 +945,12 @@ abstract class AbstractRIFStudyRetrievalService
 				"getExtractByBlock",
 				rifServiceException);	
 		}	
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
 			
 		return results;
 	}
@@ -966,7 +982,7 @@ abstract class AbstractRIFStudyRetrievalService
 		GeoLevelAttributeSource geoLevelAttributeSource
 			= GeoLevelAttributeSource.createCopy(_geoLevelAttributeSource);
 		ArrayList<MapArea> mapAreas = MapArea.createCopy(_mapAreas);
-		
+		Connection connection = null;		
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -1039,7 +1055,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
@@ -1055,11 +1071,7 @@ abstract class AbstractRIFStudyRetrievalService
 					geoLevelSourceAttribute,
 					mapAreas,
 					year);
-			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);				
+
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -1068,6 +1080,12 @@ abstract class AbstractRIFStudyRetrievalService
 				"getResultsStratifiedByGenderAndAgeGroup",
 				rifServiceException);	
 			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 		
 		return results;
@@ -1092,6 +1110,7 @@ abstract class AbstractRIFStudyRetrievalService
 				
 		BoundaryRectangle result
 			= BoundaryRectangle.newInstance();
+		Connection connection = null;
 		try {			
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -1127,7 +1146,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
@@ -1139,11 +1158,7 @@ abstract class AbstractRIFStudyRetrievalService
 					user,
 					studyResultRetrievalContext,
 					mapArea);
-						
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);
+
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -1152,6 +1167,12 @@ abstract class AbstractRIFStudyRetrievalService
 				"getGeoLevelBoundsForArea",
 				rifServiceException);	
 		}		
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
 		
 		return result;
 	}
@@ -1172,6 +1193,7 @@ abstract class AbstractRIFStudyRetrievalService
 			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
 				
 		BoundaryRectangle result = BoundaryRectangle.newInstance();
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -1201,7 +1223,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 			
 			//Delegate operation to a specialised manager class
@@ -1213,10 +1235,6 @@ abstract class AbstractRIFStudyRetrievalService
 					user,
 					studyResultRetrievalContext);
 			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -1225,6 +1243,13 @@ abstract class AbstractRIFStudyRetrievalService
 				"getGeoLevelFullExtentForStudy",
 				rifServiceException);			
 		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+
 		return result;
 	}
 	
@@ -1245,6 +1270,7 @@ abstract class AbstractRIFStudyRetrievalService
 		GeoLevelSelect geoLevelSelect = GeoLevelSelect.createCopy(_geoLevelSelect);
 			
 		BoundaryRectangle result = BoundaryRectangle.newInstance();
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -1280,7 +1306,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
@@ -1293,10 +1319,6 @@ abstract class AbstractRIFStudyRetrievalService
 					geography,
 					geoLevelSelect);
 			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -1305,6 +1327,13 @@ abstract class AbstractRIFStudyRetrievalService
 				"getGeoLevelFullExtent",
 				rifServiceException);			
 		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+
 		return result;
 	}
 	
@@ -1330,6 +1359,7 @@ abstract class AbstractRIFStudyRetrievalService
 			= BoundaryRectangle.createCopy(_boundaryRectangle);
 		
 		String result = "";
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -1371,7 +1401,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
@@ -1384,11 +1414,7 @@ abstract class AbstractRIFStudyRetrievalService
 					geography,
 					geoLevelSelect,
 					boundaryRectangle);
-
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);				
+			
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -1397,6 +1423,13 @@ abstract class AbstractRIFStudyRetrievalService
 				"getTiles",
 				rifServiceException);			
 		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+
 		return result;
 		
 	}	
@@ -1431,6 +1464,7 @@ abstract class AbstractRIFStudyRetrievalService
 			= GeoLevelAttributeSource.createCopy(_geoLevelAttributeSource);
 
 		RIFResultTable results = new RIFResultTable();
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -1477,8 +1511,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			//Assign pooled connection
-			System.out.println("About to get pooled connection for user=="+user.getUserID()+"==");
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
@@ -1490,12 +1523,7 @@ abstract class AbstractRIFStudyRetrievalService
 					studyResultRetrievalContext,
 					geoLevelAttributeSource,
 					geoLevelAttribute);
-			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);				
-				
+	
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -1503,6 +1531,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user,
 				"getPyramidData",
 				rifServiceException);			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 		
 		return results;
@@ -1529,6 +1563,7 @@ abstract class AbstractRIFStudyRetrievalService
 			= GeoLevelAttributeSource.createCopy(_geoLevelSource);
 		
 		RIFResultTable results = new RIFResultTable();
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -1578,7 +1613,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
@@ -1593,10 +1628,6 @@ abstract class AbstractRIFStudyRetrievalService
 					geoLevelAttribute,
 					year);
 			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);				
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -1604,6 +1635,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user,
 				"getPyramidDataByYear",
 				rifServiceException);
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 
 		return results;		
@@ -1648,6 +1685,7 @@ abstract class AbstractRIFStudyRetrievalService
 			= MapArea.createCopy(_mapAreas);
 				
 		RIFResultTable results = new RIFResultTable();
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -1713,7 +1751,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
@@ -1728,11 +1766,6 @@ abstract class AbstractRIFStudyRetrievalService
 					geoLevelAttribute,
 					mapAreas);
 			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);				
-			
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -1740,6 +1773,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user,
 				"getPyramidDataByMapAreas",
 				rifServiceException);
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 
 		return results;			
@@ -1765,6 +1804,7 @@ abstract class AbstractRIFStudyRetrievalService
 
 		
 		String[] results = new String[0];
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -1801,7 +1841,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
@@ -1813,11 +1853,7 @@ abstract class AbstractRIFStudyRetrievalService
 					user,
 					studyResultRetrievalContext,
 					geoLevelAttributeSource);
-			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);				
+
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -1825,6 +1861,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user,
 				"getResultFieldsStratifiedByAgeGroup",
 				rifServiceException);
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 
 		return results;		
@@ -1854,6 +1896,7 @@ abstract class AbstractRIFStudyRetrievalService
 			= StudySummary.createCopy(_studySummary);
 
 		RIFResultTable results = new RIFResultTable();
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -1883,7 +1926,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
@@ -1895,11 +1938,6 @@ abstract class AbstractRIFStudyRetrievalService
 					user,
 					studySummary);
 			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);				
-
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -1907,6 +1945,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user,
 				"getSMRValues",
 				rifServiceException);
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 
 		return results;		
@@ -1937,6 +1981,7 @@ abstract class AbstractRIFStudyRetrievalService
 			= StudySummary.createCopy(_studySummary);
 		
 		RIFResultTable results = new RIFResultTable();
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -1966,7 +2011,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
@@ -1978,10 +2023,6 @@ abstract class AbstractRIFStudyRetrievalService
 					user,
 					studySummary);
 			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -1989,6 +2030,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user,
 				"getRRValues",
 				rifServiceException);
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 
 		return results;		
@@ -2019,6 +2066,7 @@ abstract class AbstractRIFStudyRetrievalService
 			= StudySummary.createCopy(_studySummary);
 		
 		RIFResultTable results = new RIFResultTable();
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -2048,7 +2096,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 			
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
@@ -2060,11 +2108,6 @@ abstract class AbstractRIFStudyRetrievalService
 					user,
 					studySummary);
 			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);
-
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -2072,6 +2115,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user,
 				"getRRUnadjustedValues",
 				rifServiceException);
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 
 		return results;		
@@ -2112,6 +2161,7 @@ abstract class AbstractRIFStudyRetrievalService
 			= StudySummary.createCopy(_studySummary);
 		
 		RIFResultTable results = new RIFResultTable();
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -2141,7 +2191,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 						
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
@@ -2152,12 +2202,6 @@ abstract class AbstractRIFStudyRetrievalService
 					connection,
 					user,
 					studySummary);
-			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);
-
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -2165,6 +2209,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user,
 				"getResultStudyGeneralInfo",
 				rifServiceException);
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 
 		return results;		
@@ -2192,6 +2242,7 @@ abstract class AbstractRIFStudyRetrievalService
 			= GeoLevelAttributeSource.createCopy(_geoLevelAttributeSource);
 		
 		ArrayList<AgeGroup> results = new ArrayList<AgeGroup>();
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -2238,7 +2289,7 @@ abstract class AbstractRIFStudyRetrievalService
 				auditTrailMessage);
 
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
@@ -2252,10 +2303,6 @@ abstract class AbstractRIFStudyRetrievalService
 					geoLevelAttributeSource,
 					geoLevelSourceAttribute);
 			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -2263,6 +2310,12 @@ abstract class AbstractRIFStudyRetrievalService
 				user,
 				"getResultAgeGroups",
 				rifServiceException);			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 		
 		return results;
