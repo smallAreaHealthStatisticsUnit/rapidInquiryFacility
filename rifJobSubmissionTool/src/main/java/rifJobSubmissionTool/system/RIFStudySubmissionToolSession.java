@@ -85,7 +85,7 @@ import java.io.File;
  *
  */
 
-public class RIFSession {
+public class RIFStudySubmissionToolSession {
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -128,7 +128,7 @@ public class RIFSession {
 	 * @param service the service
 	 * @param user the user
 	 */
-	public RIFSession(
+	public RIFStudySubmissionToolSession(
 		ProductionRIFStudyServiceBundle rifStudyServiceBundle,
 		User user) {
 
