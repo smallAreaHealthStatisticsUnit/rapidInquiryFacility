@@ -1,0 +1,36 @@
+    /*
+     * Status Bar
+     */
+
+    #statusbar{
+		z-index: 999999;
+	}
+
+	#statusbar div div{
+		width: auto;
+		padding: 10px 10px;
+		margin: 0 auto;
+		color: white;
+		text-align: center;
+        font-size:18px;
+        text-transform:uppercase;
+	}
+
+	#statusbar div.info{
+		background-color:rgba(135 ,206, 250, 0.5);
+	}
+	   
+	#statusbar div.error{
+		background-color:rgba(255, 102, 102, 0.9);
+        padding: 30px 10px;
+	}
+    
+
+    #statusbar a.modal_close{
+		background: url('../images/close.png');
+		width: 20px;
+		height: 20px;
+        margin:10px 10px;
+		opacity: 1;
+        float:right;
+	}

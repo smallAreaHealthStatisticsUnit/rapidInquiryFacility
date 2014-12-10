@@ -72,7 +72,7 @@ a:hover{
 	#navigation .nav{
 		float: right;
         width: auto;
-        margin-right: 5%;
+        margin-right: 10%;
 	}
 	#navigation .nav a{
 		display: block;
@@ -89,10 +89,35 @@ a:hover{
 	#navigation .nav a.active{
 		background-color:white;
 		color: #8DB6CD;
-
 	}
+    
+    
+    #navigation .logOutUsername{
+        float: right;
+        padding: 5px;
+        cursor: pointer;
+    }
+    
+    #navigation .logOutUsername a{
+        display:block;
+    }
+
+    #logOut{
+        text-decoration: underline;  
+    }
 
 
+    #logOut:hover{
+        color: black;
+    }
+
+    .userName{
+        color: #8B7E66;
+    }
+    
+    .userName:hover{
+        color: #8B7E66;
+    }
 	
 	#submenu{
 		height:40px;
@@ -102,7 +127,8 @@ a:hover{
 	}
 
 	#submenu div a img{
-		margin:5px 0px;
+		margin:35px 10px 0 0;
+        text-transform: lowercase;
 	}
 	
 	#submenu div {
@@ -456,27 +482,6 @@ input[type="range"]::-ms-thumb {
 	  background-color: rgba(0,0,0,0.4); /*dim the background*/
     }	
 
-    #statusbar{
-		z-index: 999999;
-	}
-
-	#statusbar div{
-		width: auto;
-		padding: 2px 0;
-		margin: 0 auto;
-		color: white;
-        text-transform: uppercase;
-		text-align: center;
-	}
-	
-	#statusbar div.info{
-		background-color:rgba(113,198,113,0.7);
-	}
-	
-	#statusbar div.error{
-		background-color:#EE4000;
-		width: 300px;
-	}
 	
 	.msettings {
 		width: 60%;
@@ -551,12 +556,10 @@ input[type="range"]::-ms-thumb {
    }
    
    .modalAreaSelectionMenu #resolutionSelection{
-        float:left  
-   }
+        float: right;}
 
   .modalAreaSelectionMenu #selectAtSelection{
-         float:right
-   }
+         float: left;}
 
    .modalAreaSelectionContent {
        height:95%;
@@ -564,16 +567,68 @@ input[type="range"]::-ms-thumb {
    }
    
    .modalAreaSelectionContent div {
-       height:100%;
        float:left;
    }
 
    .modalAreaSelectionContent #areaSelectionTable {
-       width:30%;
+       width: 23%;
+       /* Firefox */
+		height: -moz-calc(100% - 330px);
+		/* WebKit */
+		height: -webkit-calc(100% - 330px);
+		/* Opera */
+		height: -o-calc(100% - 330px);
+		/* Standard */
+		
+       height: calc(100% - 330px);
+   
+       margin-top: 4%;
+       position: absolute;
+}
+   .modalAreaSelectionContent #areaSelectionTable ul.aSH{
+       width: 100%;
+       height:25px;
+   
+}
+  
+   .modalAreaSelectionContent #areaSelectionTable ul.aSH li{
+       width: 48%;
+       float:left;
+       text-align: center
+   ;
+       border-bottom: 1px solid;
+       padding: 1%;
+       text-transform: uppercase;
+}
+   
+   .modalAreaSelectionContent #areaSelectionTable .aSC {
+       width:100%;
+       height:90%;
+       overflow: auto;
+   
+       text-align: center;
+       border: 1px solid #ccc;
+}
+   .modalAreaSelectionContent #areaSelectionTable .aSR {
+       width:100%;
+       height:15px%;
+   }
+
+   .modalAreaSelectionContent #areaSelectionTable .aSR div{
+       width:49%;
+       float:left
    }
 
    .modalAreaSelectionContent #areaSelectionMap {
        width: 70%;
+       /* Firefox */
+		height: -moz-calc(100% - 55px);
+		/* WebKit */
+		height: -webkit-calc(100% - 55px);
+		/* Opera */
+		height: -o-calc(100% - 55px);
+		/* Standard */
+		height: calc(100% - 55px);
    }
 
    .msettings-ct .modalContainer .modalAreaSelectionMenu > div {
@@ -834,7 +889,7 @@ input[type="text"].dropdownInput:focus, .style-4 input[type="text"].focus {
   border-bottom: solid 2px #63B8FF;
 }
 
-.inpputBorderSelection{
+.inputBorderSelection{
    border-bottom: solid 2px #7CCD7C !important; 
 }
 

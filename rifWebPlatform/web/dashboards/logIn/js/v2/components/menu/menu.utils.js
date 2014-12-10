@@ -81,8 +81,8 @@ RIF.menu.utils = ( function() {
       available.children().on( 'click', function() {
         var input = $( this ).parent().prev();
         $( input )
-          .val( $( this ).text() ).change()
-          .addClass( "inputBorderSelection" );
+          .attr( "value", $( this ).text() )
+          .addClass( "inpputBorderSelection" );
 
         $( this ).parent().hide();
       } );

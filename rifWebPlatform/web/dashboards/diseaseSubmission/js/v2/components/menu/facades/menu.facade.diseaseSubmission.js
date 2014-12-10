@@ -14,11 +14,26 @@ RIF.menu[ 'facade-diseaseSubmission' ] = ( function( _p ) {
 
 
     /* Firers  */
-    healthThemeChanged: function( args ) {},
-    numeratorChanged: function( args ) {},
-    denominatorChanged: function( args ) {},
-    resolutionChanged: function( args ) {},
-    selectAtChanged: function( args ) {},
+
+    studyNameChanged: function( arg ) {
+      this.fire( 'studyNameChanged', arg );
+    },
+    healthThemeChanged: function( arg ) {
+      this.fire( 'healthThemeChanged', arg );
+    },
+    numeratorChanged: function( arg ) {
+      this.fire( 'numeratorChanged', arg );
+    },
+    denominatorChanged: function( arg ) {
+      this.fire( 'denominatorChanged', arg );
+    },
+    selectAtChanged: function( arg ) {
+      this.fire( 'selectAtChanged', arg );
+    },
+    resolutionChanged: function( arg ) {
+      this.fire( 'resolutionChanged', arg );
+    },
+
 
     /* Study Related */
 

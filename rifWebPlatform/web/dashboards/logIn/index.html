@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--<meta charset="utf-8">-->
+    <meta http-equiv="X-UA-Compatible" content="IE=9" /> 
+    <meta name="description" content="RIF, a software for Environmental Epidemiology">
+    <meta name="keywords" content="Disease mapping,Point source analysis, Risk, Health data">
+    
+    <!--CSS Stylesheets-->
+    <link href="css/login.css" rel="stylesheet" media="screen" />
+    <link href="css/statusBar.css" rel="stylesheet" media="screen" />
+    
+    <!-- libs -->
+    <script type="text/javascript" src="../../libs/jquery-2.0.3.js"></script>
+    <script src="../../libs/d3.v3.min.js" charset="utf-8"></script>
+    
+    <!--[if IE 9 ]>    
+        <script type="text/javascript" src="../../libs/jquery.placeholder.js"></script>
+    <![endif]-->
+    
+    <!--Detect browser-->
+    <script type="text/javascript" src="../../libs/detect.js"></script>
+    
+    <!-- RIF4 -->
+	<script type="text/javascript" src="js/v2/RIF.js"></script>
+     
+    <!-- Status Bar -->
+    <script type="text/javascript" src="../../statusBar/statusBar.js"></script>
+    
+    <!-- utils -->
+    <script type="text/javascript" src="js/v2/utils/utils.js"></script>
+    <script type="text/javascript" src="js/v2/utils/publisher.js"></script>
+    <script type="text/javascript" src="js/v2/utils/resultNames.js"></script>
+    <script type="text/javascript" src="js/v2/dom/dom.logIn.js"></script>
+    
+    <!-- request -->
+     <script type="text/javascript" src="../../request/request.js"></script>
+     
+    <!-- modules -->
+    <script type="text/javascript" src="js/v2/modules/logIn.js"></script>
+    
+    <!-- Menu -->
+    <script type="text/javascript" src="js/v2/components/menu/menu.logIn.js"></script>
+      <!-- Utils -->
+      <script type="text/javascript" src="js/v2/components/menu/menu.utils.js"></script>
+     <!-- units -->
+      <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.logIn.js"></script>
+      <script type="text/javascript" src="js/v2/components/menu/facades/menu.facade.logIn.js"></script>
+      <script type="text/javascript" src="js/v2/components/menu/events/event.logIn.js"></script>
+
+    <title>Log In - The Rapid Inquiry Facility, RIF 4.0</title>
+
+</head>
+
+<body>
+    
+    <div id="rifwrap">
+        <div id="navigation">
+            <div class='nav'>
+                 <a href='#' >Manager</a>
+                <a href='#' >Disease Mapping Setup</a>
+                <a href='#' >Disease Mapping Viewer</a>
+                <a href='#'>Risk Analysis Setup</a>
+            </div>
+        </div>
+        
+        <div class='world'></div>
+        
+    </div>
+    
+
+    <!--Modal Dialogs-->
+	<div class="overlay" id="settings">
+		<div class="msettings">
+			<div class="msettings-ct">
+				<div class="msettings-header">
+					<h2>RIF4.0 - Log in</h2>
+					<a class="modal_close" href="#settings"></a>
+				</div>
+				<form>
+				    <div class="txt-fld">
+						<input type="text" placeholder="User name" id="userName"  class='dropdownInput username'/>
+                        <input type="text" placeholder="Password" id="pw"  class='dropdownInput password' />
+					</div>
+					<div class="save-fld-settings">
+						<input type="button" value="log in" class='login' id='logInBtn'>
+					</div>
+                    <div class="logInError"></div>
+				</form>
+			</div>
+		</div>
+	</div>	
+
+    <div class="overlay" id="statusbar">
+		<a class="modal_close" href="#statusbar"></a>
+        <div></div>
+	</div>
+    <script> 	  
+        
+    (function() {
+        RIF.logIn();
+    })();
+    </script>
+</body>
+</html>

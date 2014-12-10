@@ -3,6 +3,7 @@
 
 <head>
     <!--<meta charset="utf-8">-->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" >
     <meta name="description" content="RIF, a software for Environmental Epidemiology">
     <meta name="keywords" content="Disease mapping,Point source analysis, Risk, Health data">
 
@@ -10,6 +11,8 @@
     <link rel="stylesheet" href="css/jquery/jquery-ui-1.10.3.custom.min.css" />
     <link rel="stylesheet" href="css/leaflet/leaflet.css" />
     <link href="css/diseaseSubmission.css" rel="stylesheet" media="screen" />
+    <link href="css/statusBar.css" rel="stylesheet" media="screen" />
+
 
 
     <!-- libraries -->
@@ -36,9 +39,14 @@
     <!-- utils -->
     <script type="text/javascript" src="js/v2/utils/utils.js"></script>
     <script type="text/javascript" src="js/v2/utils/publisher.js"></script>
-    <script type="text/javascript" src="js/v2/utils/request.js"></script>
     <script type="text/javascript" src="js/v2/utils/resultNames.js"></script>
     <script type="text/javascript" src="js/v2/dom/dom.submission.js"></script>
+    
+    <!-- request -->
+    <script type="text/javascript" src="../../request/request.js"></script>
+    
+     <!-- status bar -->
+    <script type="text/javascript" src="../../statusBar/statusBar.js"></script>
     
     <!-- modules -->
     <script type="text/javascript" src="js/v2/modules/diseaseSubmission.js"></script>
@@ -59,21 +67,18 @@
 	<script type="text/javascript" src="js/v2/components/map/units/layerTypes/tilecanvas.js"></script>
     <script type="text/javascript" src="js/v2/components/map/units/layerTypes/plugins/leaflet_d3_tilegeojson.js"></script>
 	<script type="text/javascript" src="js/v2/components/map/units/layerTypes/plugins/tileCanvas_topojson.js"></script>-->
+    
     <!-- menu -->
     <script type="text/javascript" src="js/v2/components/menu/menu.diseaseSubmission.js"></script>
 	<script type="text/javascript" src="js/v2/components/menu/facades/menu.facade.diseaseSubmission.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/events/event.frontSubmission.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.studyArea.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/events/event.studyArea.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.frontSubmission.js"></script>
-	 <script type="text/javascript" src="js/v2/components/menu/menu.utils.js"></script>
-	
-    <!-- chart -->
-    <!--<script type="text/javascript" src="js/v2/components/chart/chart.js"></script>
-	<script type="text/javascript" src="js/v2/components/chart/facades/chart-facade-diseaseMapping.js"></script>
-	<script type="text/javascript" src="js/v2/components/chart/units/line_bivariate.js"></script>
-	<script type="text/javascript" src="js/v2/components/chart/units/d3renderers/line_bivariate.d3renderer.js"></script>
-	<script type="text/javascript" src="js/v2/components/chart/units/multipleAreaCharts.js"></script>
-	<script type="text/javascript" src="js/v2/components/chart/units/d3renderers/multipleAreaCharts.d3renderer.js"></script>-->
-
+    <script type="text/javascript" src="js/v2/components/menu/menu.utils.js"></script>
+    
+    <!-- table -->
+    <script type="text/javascript" src="js/v2/components/table/table.js"></script>
 
 
     <title>The Rapid Inquiry Facility, RIF 4.0</title>
@@ -83,6 +88,9 @@
 <body>
     <div id="rifwrap">
         <div id="navigation">
+            <div class='logOutUsername'> 
+                <a class="userName" >ffabbri <span id="logOut">log out </span></a>
+            </div>
             <div class='nav'>
                 <a href='#' >Manager</a>
                 <a href='#' class='active'>Disease Mapping Setup</a>
@@ -95,7 +103,7 @@
             <div class='geoDrops'>
 				<div>
                     <div  class='styleUnderline'>
-                         <input type="text"  placeholder="Study name" id='studyName' class='dropdownInput'>
+                         <input type="text"  placeholder="Study name" id='studyName' class='dropdownInput editable'>
                     </div>
                 </div>
                 <div>
@@ -108,27 +116,13 @@
                 <div>
                     <div  class='styleUnderline dropdowns'>
                          <input type="text"  placeholder="Numerator" id='numerator' class='dropdownInput'>
-                         <div id='numeratorAvailables' class='availables' >
-                            <div><a href='#'> Pulmonary </a></div>
-                            <div><a href='#'> Chronic   </a></div>
-                            <div><a href='#'> Pulmonary </a></div>
-                            <div><a href='#'> Chronic   </a></div>
-                            <div><a href='#'> Pulmonary </a></div>
-                        </div>
-                        
+                         <div id='numeratorAvailables' class='availables' ></div>
                     </div>
                 </div>
                 <div>
                     <div  class='styleUnderline dropdowns'>
                          <input type="text"  placeholder="Denominator" id='denominator' class='dropdownInput'>
-                         <div id='denominatorAvailables' class='availables' >
-                            <div><a href='#'> Pulmonary </a></div>
-                            <div><a href='#'> Chronic   </a></div>
-                            <div><a href='#'> Pulmonary </a></div>
-                            <div><a href='#'> Chronic   </a></div>
-                            <div><a href='#'> Pulmonary </a></div>
-
-                        </div>
+                         <div id='denominatorAvailables' class='availables' > </div>
                     </div>
                 </div>
             </div>
@@ -237,22 +231,39 @@
                 <div class='modalContainer'>
                     <div class='modalAreaSelectionMenu'>
                         <div id='resolutionSelection' class="dropdowns">
-                           <input type="text"  placeholder="Resolution" id='resolution' class='dropdownInput' >
-                           <div id='resolutionAvailable' class='availables' >
-                                <div><a href='#'> Distric </a></div>
-                                <div><a href='#'> Wards   </a></div>
-                            </div>
+                           <input type="text"  placeholder="Study resolution" id='resolution' class='dropdownInput' >
+                           <div id='resolutionAvailable' class='availables' ></div>
                         </div>
                         <div id='selectAtSelection' class='dropdowns'>
                            <input type="text"  placeholder="Select at" id='selectAt' class='dropdownInput'>
-                           <div id='selectAtAvailable' class='availables' >
-                                <div><a href='#'> Distric </a></div>
-                                <div><a href='#'> Wards   </a></div>
-                            </div>
+                           <div id='selectAtAvailable' class='availables' ></div>
                         </div>
                     </div>
                     <div class='modalAreaSelectionContent'>
-                        <div id='areaSelectionTable'> </div>
+                        <div id='areaSelectionTable'>
+                        <ul class='aSH'> 
+                            <li> Header 1 </li>
+                            <li> Header 2 </li>
+                        </ul>
+                        <div class='aSC'> 
+                            <div class='aSR'>
+                                <div> cell 1 </div>
+                                <div> cell 2 </div>  
+                           </div>
+                           <div class='aSR'>
+                                <div> cell 1 </div>
+                                <div> cell 2 </div>  
+                           </div>   
+                            <div class='aSR'>
+                                <div> cell 1 </div>
+                                <div> cell 2 </div>  
+                           </div>
+                           <div class='aSR'>
+                                <div> cell 1 </div>
+                                <div> cell 2 </div>  
+                           </div>  
+                        </div>
+                        </div>    
                         <div id='areaSelectionMap'>  </div>
                     </div>
                 </div>
@@ -287,7 +298,7 @@
 	</div>--->
     
     
-    Investigation parameters
+    <!--Investigation parameters -->
     <div class="overlay" id="parametersModal">
 		<div class="msettings">
 			<div class="msettings-ct">
@@ -300,9 +311,13 @@
 		</div>
 	</div>
 	
-
+    <div class="overlay" id="statusbar">
+		<a class="modal_close" href="#statusbar"></a>
+        <div></div>
+	</div>   
+    
     <script>
-      //window.onload = RIF.diseaseSubmission;
+      window.onload = RIF.diseaseSubmission;
     </script>
 </body>
 </html>

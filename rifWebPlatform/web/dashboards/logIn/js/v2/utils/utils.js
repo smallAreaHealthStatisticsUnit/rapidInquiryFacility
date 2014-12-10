@@ -56,7 +56,6 @@
         return child;
       },
 
-
       removeG: function( id ) {
         return id.replace( "g", '' );
       },
@@ -154,6 +153,8 @@
         var args = Array.prototype.slice.call( arguments, 0 ),
           mime = args[ 2 ] || "text/plain",
           url = 'http://localhost:8080/rifServices/' + args[ 0 ];
+          //url = "backend/gets/" + args[ 0 ];
+
         d3.xhr( url, mime, args[ 1 ] );
 
       }

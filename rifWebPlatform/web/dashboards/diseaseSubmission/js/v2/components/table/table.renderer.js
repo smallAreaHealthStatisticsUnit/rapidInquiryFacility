@@ -20,7 +20,7 @@ RIF.table.renderer = ( function() {
         grid = new Slick.Grid( ".dataLbl", _p.dataView, _p.gridCols, _p.toptions );
         grid.setSelectionModel( new Slick.RowSelectionModel() );
 
-        _p.evts = RIF.table.events( grid, loader, _p.fireRowClick, _p.dataView );
+        // _p.evts = RIF.table.events( grid, loader, _p.fireRowClick, _p.dataView );
 
       },
 

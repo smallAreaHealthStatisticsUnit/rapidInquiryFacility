@@ -3,7 +3,7 @@
   var c = function( myFunc, msg ) {
       return function( error, json ) {
         if ( error !== null ) {
-          RIF.statusBar( error, true );
+          RIF.statusBar( error, true, 1 );
           return;
         }
         try {
@@ -345,6 +345,16 @@
         xhr( 'studySubmission/isLoggedIn?' + args, myCallback, msg );
       } ),
 
+      getLogOut: ( function( myCallback, params ) {
+        var msg = " Checking if already logged in.. ",
+          userName = params[ 0 ],
+          pw = params[ 1 ],
+          args = 'userID=' + userName;
+
+        xhr( 'studySubmission/logout?' + args, myCallback, msg );
+      } ),
+
+
       getLogIn: ( function( myCallback, params ) {
         var msg = "Logging in.. ",
           userName = params[ 0 ],
@@ -366,7 +376,23 @@
           args = 'userID=ffabbri&geographyName=SAHSU&healthThemeDescription=' + params[ 0 ];
 
         xhr( 'studySubmission/getNumerator?' + args, myCallback, msg );
-      }
+      },
+
+      getSelectAt: function( myCallback, params ) {
+        var msg = "Retrieving geolevel resolutions ",
+          userName = params[ 0 ],
+          args = 'userID=' + userName + '&geographyName=SAHSU';
+
+        xhr( 'studySubmission/getGeoLevelSelectValues?' + args, myCallback, msg, 'application/json' );
+      },
+
+      getResolutions: function( myCallback, params ) {
+        var msg = "Retrieving geolevel resolutions ",
+          userName = params[ 0 ],
+          args = 'userID=' + userName + '&geoLevelSelectName=' + params[ 1 ] + '&geographyName=SAHSU';
+
+        xhr( 'studySubmission/getGeoLevelViews?' + args, myCallback, msg, 'application/json' );
+      },
 
 
     };

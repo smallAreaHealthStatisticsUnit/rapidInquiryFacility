@@ -46,11 +46,16 @@ RIF.study = ( function( type ) {
       setDenominator: function( s ) {
         this.denominator = s;
       },
+      setSelectAt: function( s ) {
+        this.studyArea.selectAt = s;
+      },
 
-      setStudyArea: function( s ) {
-        this.studyArea.resolution = s.resolution;
-        this.studyArea.areas = s.areas;
-        this.studyArea.selectAt = s.selectAt;
+      setResolution: function( s ) {
+        this.studyArea.resolution = s;
+      },
+
+      setStudyAreaa: function( s ) {
+        this.studyArea.areas = s;
       },
 
       setComparisonArea: function( s ) {
@@ -75,31 +80,31 @@ RIF.study = ( function( type ) {
         return this.studyName;
       },
 
-      setHealthTheme: function( s ) {
+      getHealthTheme: function( s ) {
         return this.healthTheme;
       },
 
-      setNumerator: function( s ) {
+      getNumerator: function( s ) {
         return this.numerator;
       },
 
-      setDenominator: function( s ) {
+      getDenominator: function( s ) {
         return this.denominator;
       },
 
-      setStudyArea: function( s ) {
+      getStudyArea: function( s ) {
         return this.studyArea;
       },
 
-      setComparisonArea: function( s ) {
+      getComparisonArea: function( s ) {
         return this.comparisonArea;
       },
 
-      setHealthConditions: function( s ) {
+      getHealthConditions: function( s ) {
         return this.healthConditions;
       },
 
-      setParameters: function( s ) {
+      getParameters: function( s ) {
         return this.parameters;
       }
 

@@ -2,9 +2,19 @@ RIF.menu[ 'event-frontSubmission' ] = ( function( dom ) {
 
   var menuContext = this;
 
+
+  dom.dropdownInputs.keydown( function( e ) {
+    return false;
+  } );
+
   $( dom.dialogClose ).click( function() {
     var id = $( this ).attr( 'href' );
     $( id ).hide();
+
+    if ( id === '#statusbar' ) {
+      RIF.statusBar( null, null, -1 ); //remove error msgs   
+    };
+
   } );
 
   $( dom.studyArea ).click( function() { //Fire
@@ -19,17 +29,31 @@ RIF.menu[ 'event-frontSubmission' ] = ( function( dom ) {
     $( dom.investigationDialog ).show();
   } );
 
+  $( dom.logOut ).click( function() {
+    menuContext.frontSubmission.request( 'logOut' );
 
-  $( dom.healthThemeAvailablesEl ).children().click( function() {
-    //Fire event Health theme changed
+  } )
+
+  /*  Signal change to facade --> Study */
+
+  dom.studyName.change( function() {
+    var val = $( this ).val();
+    menuContext.facade.studyNameChanged( val );
   } );
 
-  $( dom.numeratorAvailablesEl ).children().click( function() {
-    //Fire event Numerator changed
+  dom.healthTheme.change( function() {
+    var val = $( this ).val();
+    menuContext.facade.healthThemeChanged( val );
   } );
 
-  $( dom.denominatorAvailablesEl ).children().click( function() {
-    //Fire event Denominator changed
+  dom.numerator.change( function() {
+    var val = $( this ).val();
+    menuContext.facade.numeratorChanged( val );
+  } );
+
+  dom.denominator.change( function() {
+    var val = $( this ).val();
+    menuContext.facade.denominatorChanged( val );
   } );
 
 

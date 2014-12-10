@@ -29,13 +29,23 @@ RIF.diseaseSubmission = ( function() {
       */
       menu: {
         studyType: 'diseaseSubmission',
-        menus: [ 'frontSubmission' /*'settings', 'baseMap', 'transparency'*/ ]
+        menus: [ 'frontSubmission', 'studyArea' ]
       },
-      //resizable: 'diseaseSubmission'
+      areaSelectionTable: {
+        studyType: 'diseaseSubmission',
+        tableType: 'click2row'
+      }
     },
 
     events: {
       /**--STUDY OBJECT RELATED---**/
+
+
+      studyNameChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "studyNameChanged"
+      },
 
       healthThemeChanged: {
         subscribers: [ "study" ],
