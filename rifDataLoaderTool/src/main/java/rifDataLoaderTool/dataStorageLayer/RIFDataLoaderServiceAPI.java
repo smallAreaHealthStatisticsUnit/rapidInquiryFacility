@@ -4,10 +4,15 @@ import rifDataLoaderTool.businessConceptLayer.DataSource;
 
 import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
 import rifDataLoaderTool.businessConceptLayer.TableConversionConfiguration;
-import rifDataLoaderTool.system.RIFDataLoaderToolException;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+
+import rifServices.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
+
 import rifServices.system.RIFServiceException;
+
+import java.util.ArrayList;
 
 /**
  * Describes the API that will be used by the desktop GUI application that will be 
@@ -60,100 +65,108 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public interface DataLoaderServiceAPI {
+public interface RIFDataLoaderServiceAPI {
 
-	public void initialiseService();
+	public void initialiseService() throws RIFServiceException;
 
 	public void registerDataSource(
 		final User user,
 		final DataSource dataSource)
-		throws RIFServiceException,
-		RIFDataLoaderToolException;
+		throws RIFServiceException;
 	
 	public DataSource getDataSourceFromCoreTableName(
 		final User user,
 		final String coreTableName)
-		throws RIFServiceException,
-		RIFDataLoaderToolException;
+		throws RIFServiceException;
+
+	public ArrayList<DataSetConfiguration> getDataSetConfigurations(
+		final User user)
+		throws RIFServiceException;
+	
+	public ArrayList<DataSetConfiguration> getDataSetConfigurations(
+			final User user,
+			final String searchPhrase)
+			throws RIFServiceException;
+	
+	public boolean dataSetConfigurationExists(
+		final User user,
+		final DataSetConfiguration dataSetConfiguration)
+	throws RIFServiceException;
+	
+	public void deleteDataSetConfigurations(
+		final User user,
+		final ArrayList<DataSetConfiguration> dataSetConfigurations) 
+		throws RIFServiceException;
 	
 	public void loadConfiguration(
 		final User user,
 		final TableCleaningConfiguration tableCleaningConfiguration) 
-		throws RIFServiceException,
-		RIFDataLoaderToolException;
+		throws RIFServiceException;
 	
 	public void addLoadTableData(
 		final User user,
 		final TableCleaningConfiguration tableCleaningConfiguration,
 		final String[][] tableData)
-		throws RIFServiceException,
-		RIFDataLoaderToolException;
+		throws RIFServiceException;
 	
 	public void cleanConfiguration(
 		final User user,
 		final TableCleaningConfiguration tableCleaningConfiguration) 
-		throws RIFServiceException,
-		RIFDataLoaderToolException;
+		throws RIFServiceException;
 	
 	public void convertConfiguration(
 		final User user,
 		final TableConversionConfiguration tableConversionConfiguration)
-		throws RIFServiceException,
-		RIFDataLoaderToolException;
+		throws RIFServiceException;
 	
 	public Integer getCleaningTotalBlankValues(
 		final User user,
 		final TableCleaningConfiguration tableCleaningConfiguration)
-		throws RIFServiceException,
-		RIFDataLoaderToolException;
+		throws RIFServiceException;
 		
 	public Integer getCleaningTotalChangedValues(
 		final User user,
 		final TableCleaningConfiguration tableCleaningConfiguration)
-		throws RIFServiceException,
-		RIFDataLoaderToolException;
+		throws RIFServiceException;
 		
 	public Integer getCleaningTotalErrorValues(
 		final User user,
 		final TableCleaningConfiguration tableCleaningConfiguration)
-		throws RIFServiceException,
-		RIFDataLoaderToolException;
+		throws RIFServiceException;
 	
 	public Boolean cleaningDetectedBlankValue(
 		final User user,
 		final TableCleaningConfiguration tableCleaningConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
-		throws RIFServiceException,
-		RIFDataLoaderToolException;
+		throws RIFServiceException;
 	
 	public Boolean cleaningDetectedChangedValue(
 		final User user,
 		final TableCleaningConfiguration tableCleaningConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
-		throws RIFServiceException,
-		RIFDataLoaderToolException;
+		throws RIFServiceException;
 	
 	public Boolean cleaningDetectedErrorValue(
 		final User user,
 		final TableCleaningConfiguration tableCleaningConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
-		throws RIFServiceException,
-		RIFDataLoaderToolException;
+		throws RIFServiceException;
 	
 	public RIFResultTable getLoadTableData(
 		final User user,
 		final TableCleaningConfiguration tableCleaningConfiguration) 
-		throws RIFServiceException,
-		RIFDataLoaderToolException;
+		throws RIFServiceException;
 	
 	public RIFResultTable getCleanedTableData(
 		final User user,			
 		final TableCleaningConfiguration tableCleaningConfiguration) 
-		throws RIFServiceException,
-		RIFDataLoaderToolException;	
+		throws RIFServiceException;
+	
+	public void shutdown() 
+		throws RIFServiceException;
 }
 
 
