@@ -4,7 +4,7 @@ import rifGenericUILibrary.ErrorDialog;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 
 
-import rifJobSubmissionTool.system.RIFSession;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
@@ -81,7 +81,7 @@ import javax.swing.JOptionPane;
  *
  */
 
-class ShutdownManager extends WindowAdapter {
+class RIFSubmissionToolShutdownManager extends WindowAdapter {
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -92,7 +92,7 @@ class ShutdownManager extends WindowAdapter {
 	
 	//Data
 	/** The rif session. */
-	private RIFSession rifSession;
+	private RIFStudySubmissionToolSession rifSession;
 		
 	//GUI Components	
 	/** The parent dialog. */
@@ -108,9 +108,9 @@ class ShutdownManager extends WindowAdapter {
 	 * @param parentDialog the parent dialog
 	 * @param rifSession the rif session
 	 */
-	public ShutdownManager(
+	public RIFSubmissionToolShutdownManager(
 		JDialog parentDialog,
-		RIFSession rifSession) {
+		RIFStudySubmissionToolSession rifSession) {
 		
 		this.parentDialog = parentDialog;
 		parentDialog.addWindowListener(this);
