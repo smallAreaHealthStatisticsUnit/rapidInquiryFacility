@@ -84,6 +84,10 @@ public class HealthThemeProxy {
  	@XmlElement(required = true)	
 	private String name;
 	
+	@XmlElement(required = true)
+	private String description;
+ 	
+ 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -95,12 +99,21 @@ public class HealthThemeProxy {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
 	public String getName() {
 		return name;
 	}
 	
 	public void setName(final String name) {
 		this.name = name;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+	
+	public void setDescription(final String description) {
+		this.description = description;
 	}
 	
 	// ==========================================
