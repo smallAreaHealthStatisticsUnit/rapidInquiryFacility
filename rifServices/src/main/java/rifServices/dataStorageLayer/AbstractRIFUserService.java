@@ -151,10 +151,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 
 			//Delegate operation to a specialised manager class
 
-			//Assign pooled connection
-			
-			//Reclaim pooled connection
-			
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -180,6 +176,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 		}
 			
 		ArrayList<Geography> results = new ArrayList<Geography>();
+		Connection connection = null;
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -203,19 +200,14 @@ class AbstractRIFUserService extends AbstractRIFService {
 				auditTrailMessage);
 			
 			//Assign pooled connection
-			Connection connection 
+			connection 
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
 			SQLRIFContextManager sqlRIFContextManager	
 				= rifServiceResources.getSQLRIFContextManager();		
 			results
-				= sqlRIFContextManager.getGeographies(connection);
-			
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
+				= sqlRIFContextManager.getGeographies(connection);			
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -223,6 +215,12 @@ class AbstractRIFUserService extends AbstractRIFService {
 				user,
 				"getGeographies",
 				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 			
 		return results;		
@@ -245,7 +243,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 			= Geography.createCopy(_geography);
 
 		ArrayList<GeoLevelSelect> results = new ArrayList<GeoLevelSelect>();
-		
+		Connection connection = null;
 		try {
 			//TOUR_VALIDATION
 			/*
@@ -284,7 +282,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 				auditTrailMessage);
 		
 			//Assign pooled connection
-			Connection connection 
+			connection 
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
@@ -294,11 +292,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 				= sqlRIFContextManager.getGeoLevelSelectValues(
 					connection, 
 					geography);
-
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
 		
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -307,6 +300,12 @@ class AbstractRIFUserService extends AbstractRIFService {
 				user,
 				"getGeographicalLevelSelectValues",
 				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 		
 		return results;
@@ -329,6 +328,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 			= Geography.createCopy(_geography);
 
 		GeoLevelSelect result = GeoLevelSelect.newInstance();
+		Connection connection = null;
 		try {
 			
 			//Check for empty parameters
@@ -359,7 +359,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 				auditTrailMessage);
 			
 			//Assign pooled connection
-			Connection connection 
+			connection 
 				= sqlConnectionManager.assignPooledReadConnection(user);
 						
 			//Delegate operation to a specialised manager class
@@ -370,10 +370,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 					connection, 
 					geography);
 
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -381,6 +377,12 @@ class AbstractRIFUserService extends AbstractRIFService {
 				user,
 				"getDefaultGeoLevelSelectValue",
 				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 		
 		return result;
@@ -420,6 +422,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 			= GeoLevelSelect.createCopy(_geoLevelSelect);
 	
 		ArrayList<GeoLevelArea> results = new ArrayList<GeoLevelArea>();
+		Connection connection = null;
 		try {
 			
 			//Check for empty parameters
@@ -478,7 +481,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 			 * in a way that suddenly causes the code to write values.
 			 */
 			//Assign pooled connection
-			Connection connection 
+			connection 
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class				
@@ -490,11 +493,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 					geography,
 					geoLevelSelect);
 
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
-
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -502,6 +500,12 @@ class AbstractRIFUserService extends AbstractRIFService {
 				user,
 				"getGeoLevelAreaValues",
 				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 
 		return results;
@@ -526,6 +530,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 			= GeoLevelSelect.createCopy(_geoLevelSelect);
 		
 		ArrayList<GeoLevelView> results = new ArrayList<GeoLevelView>();
+		Connection connection = null;
 		try {
 			
 			//Check for empty parameters
@@ -562,7 +567,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 				auditTrailMessage);
 
 			//Assign pooled connection
-			Connection connection 
+			connection 
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
@@ -574,11 +579,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 					geography,
 					geoLevelSelect);
 
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
-		
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -586,6 +586,12 @@ class AbstractRIFUserService extends AbstractRIFService {
 				user,
 				"getGeoLevelViewValues",
 				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 		
 		return results;
@@ -628,6 +634,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 			= NumeratorDenominatorPair.createCopy(_ndPair);
 		
 		YearRange result = YearRange.newInstance();
+		Connection connection = null;
 		try {			
 			
 			//Check for empty parameters
@@ -672,7 +679,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 				auditTrailMessage);
 
 			//Assign pooled connection
-			Connection connection 
+			connection 
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
@@ -683,12 +690,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 					connection, 
 					geography,
 					ndPair);
-
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
-
 		}
 		catch(RIFServiceException rifServiceException) {
 			
@@ -703,6 +704,12 @@ class AbstractRIFUserService extends AbstractRIFService {
 				user,
 				"getYearRange",
 				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 		
 		return result;		
@@ -725,6 +732,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 		Geography geography = Geography.createCopy(_geography);
 		
 		ArrayList<HealthTheme> results = new ArrayList<HealthTheme>();
+		Connection connection = null;
 		try {
 			
 			//Check for empty parameters
@@ -762,7 +770,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 				auditTrailMessage);
 			
 			//Assign pooled connection
-			Connection connection 
+			connection 
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class			
@@ -770,11 +778,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 				= rifServiceResources.getSQLRIFContextManager();
 			results
 				= sqlRIFContextManager.getHealthThemes(connection, geography);
-
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -782,6 +785,12 @@ class AbstractRIFUserService extends AbstractRIFService {
 				user,
 				"getHealthThemes",
 				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 			
 		return results;
@@ -810,6 +819,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 			= GeoLevelToMap.createCopy(_geoLevelToMap);
 	
 		ArrayList<AbstractCovariate> results = new ArrayList<AbstractCovariate>();
+		Connection connection = null;
 		try {
 			
 			//Check for empty parameters
@@ -853,7 +863,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 				auditTrailMessage);
 
 			//Assign pooled connection
-			Connection connection
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 			
 			//Delegate operation to a specialised manager class		
@@ -866,11 +876,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 					geoLevelSelect,
 					geoLevelToMap);
 
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);
-
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -878,6 +883,12 @@ class AbstractRIFUserService extends AbstractRIFService {
 				user,
 				"getCovariates",
 				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 				
 		return results;		
@@ -898,6 +909,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 		Project project = Project.createCopy(_project);
 		
 		ArrayList<AbstractStudy> results = new ArrayList<AbstractStudy>();
+		Connection connection = null;
 		try {
 			
 			//Check for empty parameters
@@ -929,7 +941,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 			
 			
 			//Assign pooled connection
-			Connection connection 
+			connection 
 				= sqlConnectionManager.assignPooledReadConnection(user);
 			
 			//Delegate operation to a specialised manager class
@@ -941,12 +953,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 					user,
 					project);
 
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);		
-		
-		
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -954,6 +960,12 @@ class AbstractRIFUserService extends AbstractRIFService {
 				user,
 				"getStudies",
 				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
 		}
 		
 		return results;				
