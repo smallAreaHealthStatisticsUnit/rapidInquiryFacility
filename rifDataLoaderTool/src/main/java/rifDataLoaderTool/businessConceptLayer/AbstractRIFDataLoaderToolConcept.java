@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 
 
-import rifDataLoaderTool.system.RIFDataLoaderToolException;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 
+import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.DisplayableListItem;
 
@@ -96,7 +96,7 @@ public abstract class AbstractRIFDataLoaderToolConcept
 
 	abstract public String getDisplayName();
 	abstract public void checkSecurityViolations() throws RIFServiceSecurityException;
-	abstract public void checkErrors() throws RIFDataLoaderToolException;
+	abstract public void checkErrors() throws RIFServiceException;
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -113,14 +113,14 @@ public abstract class AbstractRIFDataLoaderToolConcept
 	protected void countErrors(
 		final RIFDataLoaderToolError rifDataLoaderToolError,
 		final ArrayList<String> errorMessages) 
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 
 		if (errorMessages.size() > 0) {
-			RIFDataLoaderToolException rifDataLoaderToolException
-				= new RIFDataLoaderToolException(
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
 					rifDataLoaderToolError, 
 					errorMessages);
-			throw rifDataLoaderToolException;
+			throw RIFServiceException;
 		}		
 	}	
 	// ==========================================

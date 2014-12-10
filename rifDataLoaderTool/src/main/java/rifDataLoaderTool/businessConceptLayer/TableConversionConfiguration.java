@@ -3,8 +3,8 @@ package rifDataLoaderTool.businessConceptLayer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolException;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
 
 
@@ -319,7 +319,7 @@ public class TableConversionConfiguration {
 	}
 
 	public void checkErrors() 
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 		
 		//@TODO fill in later
 	}

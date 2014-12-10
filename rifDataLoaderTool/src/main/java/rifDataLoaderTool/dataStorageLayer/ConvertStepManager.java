@@ -4,9 +4,10 @@ import rifDataLoaderTool.businessConceptLayer.*;
 
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolException;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
+import rifServices.dataStorageLayer.SQLQueryUtility;
+import rifServices.system.RIFServiceException;
 
 import java.sql.*;
 
@@ -96,7 +97,7 @@ public class ConvertStepManager extends AbstractDataLoaderStepManager {
 	public void convertConfiguration(
 		final Connection connection,
 		final TableConversionConfiguration tableConversionConfiguration)
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 	
 		//validate parameters
 		tableConversionConfiguration.checkErrors();
@@ -112,8 +113,8 @@ public class ConvertStepManager extends AbstractDataLoaderStepManager {
 		catch(SQLException sqlException) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage("");
-			RIFDataLoaderToolException rifDataLoaderToolException
-				= new RIFDataLoaderToolException(
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 		}

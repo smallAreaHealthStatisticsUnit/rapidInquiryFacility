@@ -5,12 +5,12 @@ package rifDataLoaderTool.dataStorageLayer;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.system.RIFDataLoaderToolException;
+import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.businessConceptLayer.DataSource;
 import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
 import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
-import rifDataLoaderTool.dataStorageLayer.SQLQueryUtility;
+import rifServices.dataStorageLayer.SQLQueryUtility;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.dataStorageLayer.SQLInsertQueryFormatter;
 import rifServices.util.RIFLogger;
@@ -100,7 +100,7 @@ public class LoadStepManager extends AbstractDataLoaderStepManager {
 	public RIFResultTable getLoadTableData(
 		final Connection connection,
 		final TableCleaningConfiguration tableCleaningConfiguration) 
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 		
 		RIFResultTable resultTable = new RIFResultTable();
 		String coreTableName = tableCleaningConfiguration.getCoreTableName();
@@ -126,7 +126,7 @@ public class LoadStepManager extends AbstractDataLoaderStepManager {
 		final Connection connection,
 		final TableCleaningConfiguration tableCleaningConfiguration,
 		final int textFieldWidth) 
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 
 		
 
@@ -160,11 +160,11 @@ public class LoadStepManager extends AbstractDataLoaderStepManager {
 				= RIFDataLoaderToolMessages.getMessage(
 					"loadStepManager.error.dropLoadTable",
 					createTableName);
-			RIFDataLoaderToolException rifDataLoaderToolException
-				= new RIFDataLoaderToolException(
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
 					RIFDataLoaderToolError.LOAD_TABLE,
 					errorMessage);
-			throw rifDataLoaderToolException;
+			throw RIFServiceException;
 		}
 		finally {			
 			SQLQueryUtility.close(dropTableStatement);
@@ -199,11 +199,11 @@ public class LoadStepManager extends AbstractDataLoaderStepManager {
 				= RIFDataLoaderToolMessages.getMessage(
 					"loadStepManager.error.createLoadTable",
 					createTableName);
-			RIFDataLoaderToolException rifDataLoaderToolException
-				= new RIFDataLoaderToolException(
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
 					RIFDataLoaderToolError.LOAD_TABLE,
 					errorMessage);
-			throw rifDataLoaderToolException;
+			throw RIFServiceException;
 		}
 		finally {			
 			SQLQueryUtility.close(createLoadTableStatement);
@@ -214,7 +214,7 @@ public class LoadStepManager extends AbstractDataLoaderStepManager {
 		final Connection connection,
 		final TableCleaningConfiguration tableCleaningConfiguration,
 		final String[][] tableData) 
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 		
 
 		String coreTableName 
@@ -270,7 +270,7 @@ public class LoadStepManager extends AbstractDataLoaderStepManager {
 	public void dropLoadTable(
 		final Connection connection,
 		final TableCleaningConfiguration tableCleaningConfiguration) 
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 
 		RIFLogger logger = RIFLogger.getLogger();		
 		
@@ -295,11 +295,11 @@ public class LoadStepManager extends AbstractDataLoaderStepManager {
 				= RIFDataLoaderToolMessages.getMessage(
 					"loadStepManager.error.dropLoadTable",
 					loadTableName);
-			RIFDataLoaderToolException rifDataLoaderToolException
-				= new RIFDataLoaderToolException(
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
 					RIFDataLoaderToolError.DROP_TABLE,
 					errorMessage);
-			throw rifDataLoaderToolException;
+			throw RIFServiceException;
 		}
 		finally {
 			SQLQueryUtility.close(statement);			

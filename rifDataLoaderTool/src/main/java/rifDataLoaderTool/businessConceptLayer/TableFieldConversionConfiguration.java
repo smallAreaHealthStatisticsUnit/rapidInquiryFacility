@@ -6,7 +6,7 @@ package rifDataLoaderTool.businessConceptLayer;
 import java.util.ArrayList;
 
 
-import rifDataLoaderTool.system.RIFDataLoaderToolException;
+import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
 
 /**
@@ -173,7 +173,7 @@ public class TableFieldConversionConfiguration
 	}
 
 	public void checkErrors() 
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 		
 		//@TODO fill in later
 	}

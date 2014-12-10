@@ -5,8 +5,8 @@ import java.util.Date;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.system.RIFDataLoaderToolException;
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
 import rifServices.util.FieldValidationUtility;
 
@@ -245,7 +245,7 @@ public class DataSource extends AbstractRIFDataLoaderToolConcept {
 	
 	
 	public void checkErrors() 
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		

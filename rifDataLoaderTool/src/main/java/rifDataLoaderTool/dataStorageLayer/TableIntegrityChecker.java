@@ -1,9 +1,12 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.system.RIFDataLoaderToolException;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
+
+import rifServices.system.RIFServiceException;
+import rifServices.dataStorageLayer.SQLQueryUtility;
 import rifServices.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifServices.util.RIFLogger;
 
@@ -87,7 +90,7 @@ public class TableIntegrityChecker {
 		final String coreTableName,
 		final RIFTemporaryTablePrefixes firstTablePrefix,
 		final RIFTemporaryTablePrefixes secondTablePrefix) 
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 		
 		String firstTableName
 			= firstTablePrefix.getTableName(coreTableName);
@@ -162,8 +165,8 @@ public class TableIntegrityChecker {
 						"tableIntegrityChecker.error.tablesHaveDifferentSizes",
 						firstTableName,
 						secondTableName);
-				RIFDataLoaderToolException rifDataLoaderException
-					= new RIFDataLoaderToolException(
+				RIFServiceException rifDataLoaderException
+					= new RIFServiceException(
 						RIFDataLoaderToolError.COMPARE_TABLE_SIZES, 
 						errorMessage);
 				throw rifDataLoaderException;
@@ -173,11 +176,11 @@ public class TableIntegrityChecker {
 			sqlException.printStackTrace(System.out);
 			String errorMessage	
 				= RIFDataLoaderToolMessages.getMessage("tableIntegrityChecker.error.unableToCompareTables");
-			RIFDataLoaderToolException rifDataLoaderToolException
-				= new RIFDataLoaderToolException(
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
 						RIFDataLoaderToolError.DATABASE_QUERY_FAILED,
 						errorMessage);
-			throw rifDataLoaderToolException;
+			throw RIFServiceException;
 		}
 		finally {
 			SQLQueryUtility.close(resultSet);

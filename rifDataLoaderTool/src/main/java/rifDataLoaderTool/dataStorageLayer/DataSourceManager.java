@@ -1,7 +1,8 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.DataSource;
-import rifDataLoaderTool.system.RIFDataLoaderToolException;
+
+import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 
@@ -10,6 +11,7 @@ import rifServices.dataStorageLayer.SQLDeleteRowsQueryFormatter;
 import rifServices.dataStorageLayer.SQLInsertQueryFormatter;
 import rifServices.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifServices.dataStorageLayer.SQLSelectQueryFormatter;
+import rifServices.dataStorageLayer.SQLQueryUtility;
 
 import java.sql.*;
 
@@ -92,7 +94,7 @@ public class DataSourceManager {
 	 */
 	public void clearAllDataSources(
 		final Connection connection) 
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 
 		//Create SQL query
 		SQLDeleteRowsQueryFormatter queryFormatter = new SQLDeleteRowsQueryFormatter();
@@ -106,11 +108,11 @@ public class DataSourceManager {
 		catch(SQLException sqlException) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage("dataSourceManager.error.unableToClearDataSources");
-			RIFDataLoaderToolException rifDataLoaderToolException
-				= new RIFDataLoaderToolException(
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
 					RIFDataLoaderToolError.CLEAR_ALL_DATA_SOURCES, 
 					errorMessage);
-			throw rifDataLoaderToolException;
+			throw RIFServiceException;
 		}
 		finally {
 			SQLQueryUtility.close(statement);
@@ -120,7 +122,7 @@ public class DataSourceManager {
 	public void registerDataSource(
 		final Connection connection,
 		final DataSource dataSource) 
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 			
 		//Validate parameters
 		dataSource.checkErrors();
@@ -152,11 +154,11 @@ public class DataSourceManager {
 			sqlException.printStackTrace(System.out);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage("dataSourceManager.error.registerDataSource");
-			RIFDataLoaderToolException rifDataLoaderToolException
-				= new RIFDataLoaderToolException(
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
 					RIFDataLoaderToolError.REGISTER_DATA_SOURCE,
 					errorMessage);
-			throw rifDataLoaderToolException;
+			throw RIFServiceException;
 		}
 		finally {
 			SQLQueryUtility.close(connection);;
@@ -166,7 +168,7 @@ public class DataSourceManager {
 	public DataSource getDataSourceFromCoreTableName(
 		final Connection connection,
 		final String coreTableName) 
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 		
 		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
 		queryFormatter.addSelectField("identifier");
@@ -205,7 +207,7 @@ public class DataSourceManager {
 	private void checkDuplicateDataSource(
 		final Connection connection,
 		final DataSource dataSource) 
-			throws RIFDataLoaderToolException {
+			throws RIFServiceException {
 		
 		String coreTableName = dataSource.getCoreTableName();
 
@@ -227,22 +229,22 @@ public class DataSourceManager {
 					= RIFDataLoaderToolMessages.getMessage(
 						"dataSourceManager.error.dataSourceAlreadyExists",
 						coreTableName);
-				RIFDataLoaderToolException rifDataLoaderToolException
-					= new RIFDataLoaderToolException(
+				RIFServiceException RIFServiceException
+					= new RIFServiceException(
 						RIFDataLoaderToolError.DUPLICATE_DATA_SOURCE,
 						errorMessage);
-				throw rifDataLoaderToolException;
+				throw RIFServiceException;
 			}
 			
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage("sqlQuery.databaseFailed");
-			RIFDataLoaderToolException rifDataLoaderToolException
-				= new RIFDataLoaderToolException(
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED,
 					errorMessage);
-			throw rifDataLoaderToolException;
+			throw RIFServiceException;
 		}
 		finally {
 			SQLQueryUtility.close(resultSet);

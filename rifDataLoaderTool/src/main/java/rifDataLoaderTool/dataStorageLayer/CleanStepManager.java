@@ -4,11 +4,11 @@ package rifDataLoaderTool.dataStorageLayer;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolException;
+import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.DataSource;
 import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
-import rifDataLoaderTool.dataStorageLayer.SQLQueryUtility;
+import rifServices.dataStorageLayer.SQLQueryUtility;
 import rifServices.businessConceptLayer.RIFResultTable;
 
 
@@ -105,7 +105,7 @@ public class CleanStepManager extends AbstractDataLoaderStepManager {
 	public RIFResultTable getCleanedTableData(
 		final Connection connection,
 		final TableCleaningConfiguration tableCleaningConfiguration) 
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 			
 		
 		
@@ -138,7 +138,7 @@ public class CleanStepManager extends AbstractDataLoaderStepManager {
 	public void createCleanedTable(
 		final Connection connection,
 		final TableCleaningConfiguration tableCleaningConfiguration) 
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 		
 		RIFLogger logger = RIFLogger.getLogger();
 		
@@ -327,11 +327,11 @@ public class CleanStepManager extends AbstractDataLoaderStepManager {
 				= RIFDataLoaderToolMessages.getMessage(
 					"cleaningStepManager.error.createCleanedTable",
 					cleanedTableName);
-			RIFDataLoaderToolException rifDataLoaderToolException
-				= new RIFDataLoaderToolException(
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
 					RIFDataLoaderToolError.CLEAN_TABLE, 
 					errorMessage);
-			throw rifDataLoaderToolException;
+			throw RIFServiceException;
 		}
 		finally {
 			SQLQueryUtility.close(dropSearchReplaceTableStatement);
@@ -346,7 +346,7 @@ public class CleanStepManager extends AbstractDataLoaderStepManager {
 	public Integer getCleaningTotalBlankValues(
 		final Connection connection,
 		final TableCleaningConfiguration tableCleaningConfiguration)
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 		
 		SQLCountQueryFormatter queryFormatter = new SQLCountQueryFormatter();
 		queryFormatter.setCountField("data_source_id");
@@ -383,11 +383,11 @@ public class CleanStepManager extends AbstractDataLoaderStepManager {
 				= RIFDataLoaderToolMessages.getMessage(
 					"getCleaningTotalBlankValues.error.unableToGetTotal",
 					tableCleaningConfiguration.getDisplayName());
-			RIFDataLoaderToolException rifDataLoaderToolException
-				= new RIFDataLoaderToolException(
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
 					errorMessage);
-			throw rifDataLoaderToolException;
+			throw RIFServiceException;
 		}
 		finally {
 			SQLQueryUtility.close(resultSet);
@@ -401,7 +401,7 @@ public class CleanStepManager extends AbstractDataLoaderStepManager {
 	public Integer getCleaningTotalChangedValues(
 		final Connection connection,
 		final TableCleaningConfiguration tableCleaningConfiguration)
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 		
 		SQLCountQueryFormatter queryFormatter = new SQLCountQueryFormatter();
 		queryFormatter.setCountField("data_source_id");
@@ -435,11 +435,11 @@ public class CleanStepManager extends AbstractDataLoaderStepManager {
 				= RIFDataLoaderToolMessages.getMessage(
 					"getCleaningTotalChangedValues.error.unableToGetTotal",
 					tableCleaningConfiguration.getDisplayName());
-			RIFDataLoaderToolException rifDataLoaderToolException
-				= new RIFDataLoaderToolException(
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
 					errorMessage);
-			throw rifDataLoaderToolException;
+			throw RIFServiceException;
 		}
 		finally {
 			SQLQueryUtility.close(resultSet);
@@ -452,7 +452,7 @@ public class CleanStepManager extends AbstractDataLoaderStepManager {
 	public Integer getCleaningTotalErrorValues(
 		final Connection connection,
 		final TableCleaningConfiguration tableCleaningConfiguration)
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 	
 		SQLCountQueryFormatter queryFormatter = new SQLCountQueryFormatter();
 		queryFormatter.setCountField("data_source_id");
@@ -487,11 +487,11 @@ public class CleanStepManager extends AbstractDataLoaderStepManager {
 				= RIFDataLoaderToolMessages.getMessage(
 					"getCleaningTotalErrorValues.error.unableToGetTotal",
 					tableCleaningConfiguration.getDisplayName());
-			RIFDataLoaderToolException rifDataLoaderToolException
-				= new RIFDataLoaderToolException(
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
 					errorMessage);
-			throw rifDataLoaderToolException;
+			throw RIFServiceException;
 		}
 		finally {
 			SQLQueryUtility.close(resultSet);
@@ -506,7 +506,7 @@ public class CleanStepManager extends AbstractDataLoaderStepManager {
 		final TableCleaningConfiguration tableCleaningConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 		
 		DataSource dataSource = tableCleaningConfiguration.getDataSource();
 		
@@ -546,11 +546,11 @@ public class CleanStepManager extends AbstractDataLoaderStepManager {
 					String.valueOf(rowNumber),
 					targetBaseFieldName,					
 					tableCleaningConfiguration.getDisplayName());
-			RIFDataLoaderToolException rifDataLoaderToolException
-				= new RIFDataLoaderToolException(
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
 					errorMessage);
-			throw rifDataLoaderToolException;
+			throw RIFServiceException;
 		}
 		finally {
 			SQLQueryUtility.close(resultSet);
@@ -565,7 +565,7 @@ public class CleanStepManager extends AbstractDataLoaderStepManager {
 		final TableCleaningConfiguration tableCleaningConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 
 		
 		DataSource dataSource = tableCleaningConfiguration.getDataSource();
@@ -607,11 +607,11 @@ public class CleanStepManager extends AbstractDataLoaderStepManager {
 					String.valueOf(rowNumber),
 					targetBaseFieldName,					
 					tableCleaningConfiguration.getDisplayName());
-			RIFDataLoaderToolException rifDataLoaderToolException
-				= new RIFDataLoaderToolException(
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
 					errorMessage);
-			throw rifDataLoaderToolException;
+			throw RIFServiceException;
 		}
 		finally {
 			SQLQueryUtility.close(resultSet);
@@ -627,7 +627,7 @@ public class CleanStepManager extends AbstractDataLoaderStepManager {
 		final TableCleaningConfiguration tableCleaningConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 
 		DataSource dataSource = tableCleaningConfiguration.getDataSource();
 		
@@ -666,11 +666,11 @@ public class CleanStepManager extends AbstractDataLoaderStepManager {
 					String.valueOf(rowNumber),
 					targetBaseFieldName,					
 					tableCleaningConfiguration.getDisplayName());
-			RIFDataLoaderToolException rifDataLoaderToolException
-				= new RIFDataLoaderToolException(
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
 					errorMessage);
-			throw rifDataLoaderToolException;
+			throw RIFServiceException;
 		}
 		finally {
 			SQLQueryUtility.close(resultSet);

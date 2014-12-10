@@ -2,10 +2,11 @@ package rifDataLoaderTool.dataStorageLayer;
 
 import java.sql.*;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolException;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceException;
+import rifServices.dataStorageLayer.SQLQueryUtility;
 
 /**
  * provides functionality common to all manager classes associated with different steps
@@ -86,7 +87,7 @@ public class AbstractDataLoaderStepManager {
 		final String tableName,
 		final String[] fieldNames)
 		throws SQLException,
-		RIFDataLoaderToolException {
+		RIFServiceException {
 				
 		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
 			
