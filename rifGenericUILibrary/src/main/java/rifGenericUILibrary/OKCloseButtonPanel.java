@@ -73,7 +73,7 @@ import javax.swing.JPanel;
  */
 
 
-public class OKClosePanel {
+public class OKCloseButtonPanel {
 
 // ==========================================
 // Section Constants
@@ -101,7 +101,7 @@ public class OKClosePanel {
      *
      * @param userInterfaceFactory the user interface factory
      */
-	public OKClosePanel(
+	public OKCloseButtonPanel(
 		UserInterfaceFactory userInterfaceFactory) {		
 
 		panel = userInterfaceFactory.createPanel();
