@@ -125,6 +125,22 @@ abstract class AbstractRIFWebServiceResource {
 		}
 	}
 
+	protected String isLoggedIn(
+		final String userID) {
+		
+		String result = "";
+		try {			
+			result = String.valueOf(rifStudyServiceBundle.isLoggedIn(userID));
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+			//Convert exceptions to support JSON
+			result = serialiseException(exception);			
+		}
+	
+		return result;		
+	}
+	
 	protected String login(
 		final String userID,
 		final String password) {
@@ -240,7 +256,10 @@ abstract class AbstractRIFWebServiceResource {
 			GeoLevelSelectsProxy geoLevelSelectProxy
 				= new GeoLevelSelectsProxy();		
 			geoLevelSelectProxy.setNames(geoLevelSelectNames.toArray(new String[0]));
-			result = serialiseResult(geoLevelSelectProxy);
+			
+			ArrayList<GeoLevelSelectsProxy> blah = new ArrayList<GeoLevelSelectsProxy>();
+			blah.add(geoLevelSelectProxy);
+			result = serialiseResult(blah);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
