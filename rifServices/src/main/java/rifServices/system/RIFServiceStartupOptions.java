@@ -98,6 +98,8 @@ public final class RIFServiceStartupOptions {
 	/** The database name. */
 	private String databaseName;
 	
+	private String rifServiceClassDirectoryPath;
+	
 	/** The server side cache directory. */
 	private File serverSideCacheDirectory;
 		
@@ -135,19 +137,6 @@ public final class RIFServiceStartupOptions {
 		rScriptDirectory
 			= RIFServiceStartupProperties.getRScriptDirectory();
 		
-		File currentDirectory = new File(".");
-		System.out.println("RIFServiceStartupOptions current directory=="+this.getClassFileDirectoryPath()+"==");
-		
-/*
-		databaseDriverPrefix = "jdbc:postgresql";
-		host = "localhost";
-		port = "5432";
-		databaseName = "sahsuland";
-		serverSideCacheDirectory
-			= new File("C:\\rif_stuff\\working_directory");
-*/
-		System.out.println("Startup Options db connect=="+getReadOnlyDatabaseConnectionString()+"==");
-
 	}
 
 	
@@ -299,9 +288,22 @@ public final class RIFServiceStartupOptions {
 		return webApplicationDirectory;
 	}
 
-	public String getClassFileDirectoryPath() {
+	
+	public void setRIFServiceClassDirectory(
+		final String rifServiceClassDirectoryPath) {
 		
-		String currentDirectoryPath = (new File(".")).getAbsolutePath();
+		this.rifServiceClassDirectoryPath = rifServiceClassDirectoryPath;		
+	}
+	
+	public String getRIFServiceResourcePath() {
+		String currentDirectoryPath = null;
+		if (rifServiceClassDirectoryPath == null) {
+			currentDirectoryPath = (new File(".")).getAbsolutePath();			
+		}
+		else {
+			currentDirectoryPath = (new File(rifServiceClassDirectoryPath)).getAbsolutePath();			
+		}
+		
 		int lastIndex = currentDirectoryPath.lastIndexOf(File.separator);
 		
 		
