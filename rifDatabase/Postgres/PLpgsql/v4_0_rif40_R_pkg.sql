@@ -378,17 +378,22 @@ BEGIN
 --
 		PERFORM rif40_r_pkg.rif40_install_rcmd('#'||E'\n'||
 '#'||E'\n'||
-'# Function:		rif40_capture.output()'||E'\n'||
-'# Parameters:	expression to be executed'||E'\n'||
-'# Returns:		Output of function'||E'\n'||
+'# Function:	rif40_capture.output()'||E'\n'||
+'# Parameters:	expression to be executed, warnings are errors (TRUE/[FALSE])'||E'\n'||
+'# Returns:		Nothing'||E'\n'||
 '# Description:  Run expression, capturing output'||E'\n'||
 '#'||E'\n'||
-'rif40_capture.output<-function(..., function_name="Unknown") {'||E'\n'||
+'rif40_capture.output<-function(..., function_name="Unknown", warnings_are_errors=FALSE) {'||E'\n'||
 '	tryCatch('||E'\n'|| 
 '		{'||E'\n'|| 
 '			rval=""'||E'\n'||
-'			args=substitute(list(...))[-1L]'||E'\n'||
+'			args=substitute(list(...))[-1L]'||E'\n'|| 
 '			rval=capture.output(eval(parse(text=toString(args))), file = NULL, append = FALSE)'||E'\n'||
+'			if (nchar(rval > 0)) {'||E'\n'||
+'				rif40_log("DEBUG1", f, '||E'\n'||
+'					sprintf("rif40_capture.output>>>\n%s\n<<<\nOutput >>>\n%s\n<<<",'||E'\n'||
+'						toString(args), rval))'||E'\n'||
+'			}'||E'\n'||
 '		},'||E'\n'||
 '		error=function(capture_error) {'||E'\n'||
 '			rif40_error(-90156, function_name, '||E'\n'||
@@ -396,12 +401,18 @@ BEGIN
 '					toString(args), capture_error))'||E'\n'||
 '		},'||E'\n'||
 '		warning=function(capture_warning) {'||E'\n'||
-'			rif40_log("WARNING", function_name,'||E'\n'|| 
-'				sprintf("rif40_capture.output>>>\n%s\n<<<\nWarning: %s",'||E'\n'||
-'					toString(args), capture_warning))'||E'\n'||
+'			if (warnings_are_errors) {'||E'\n'||
+'				rif40_error(-90130, function_name,'||E'\n'|| 
+'					sprintf("rif40_capture.output>>>\n%s\n<<<\nWarning: %s",'||E'\n'||
+'						toString(args), capture_warning))'||E'\n'||
+'			}'||E'\n'||
+'			else {'||E'\n'||
+'				rif40_log("WARNING", function_name,'||E'\n'|| 
+'					sprintf("rif40_capture.output>>>\n%s\n<<<\nWarning: %s",'||E'\n'||
+'						toString(args), capture_warning))'||E'\n'||
+'			}'||E'\n'||
 '		}'||E'\n'||
 '	)	# End of TryCatch()'||E'\n'||
-'	return(rval)'||E'\n'||
 '}', 'rif40_caputure.output');
 --
 -- Set R repository
@@ -603,10 +614,11 @@ else {
 #
 # Handle no internet connection
 #		
-			rif40_debug("DEBUG1", "_install_all_packages_from_internet", 
-				"inla.update() >>>\n%s\n<<<", 
-				rif40_capture.output(
-					inla.update(testing=FALSE, lib = my_lib), function_name='_install_all_packages_from_internet'))
+		rif40_capture.output(
+			inla.update(testing=FALSE,lib=my_lib), 
+			function_name='_install_all_packages_from_internet',
+			warnings_are_errors=FALSE)
+					
 	
 }
 
