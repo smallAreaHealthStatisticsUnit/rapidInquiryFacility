@@ -88,9 +88,9 @@ public class ICDCodeRIFDataType extends AbstractRIFDataType {
 	public static ICDCodeRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.icdCode.label");
+			= RIFDataLoaderMessages.getMessage("rifDataType.icd.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.icdCode.description");
+			= RIFDataLoaderMessages.getMessage("rifDataType.icd.description");
 		ICDCodeRIFDataType icdCodeRIFDataType
 			= new ICDCodeRIFDataType(
 				"rif_icd_code",
