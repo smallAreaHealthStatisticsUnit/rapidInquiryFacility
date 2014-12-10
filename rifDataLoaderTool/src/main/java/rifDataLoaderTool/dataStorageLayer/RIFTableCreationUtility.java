@@ -85,7 +85,7 @@ public class RIFTableCreationUtility {
 
 	public void createTables() {
 		
-		
+		/*
 		SQLConnectionManager sqlConnectionManager
 			= new SQLConnectionManager();
 		
@@ -134,6 +134,8 @@ public class RIFTableCreationUtility {
 		finally {
 
 		}
+		
+		*/
 	}
 	
 	// ==========================================
