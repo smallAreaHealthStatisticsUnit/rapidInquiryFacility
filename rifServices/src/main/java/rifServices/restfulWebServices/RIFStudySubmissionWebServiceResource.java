@@ -132,7 +132,16 @@ public class RIFStudySubmissionWebServiceResource
 
 		return super.login(userID, password);
 	}
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/isLoggedIn")
+	public String login(
+		@QueryParam("userID") String userID) {
 
+		return super.isLoggedIn(userID);
+	}
+	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/logout")
