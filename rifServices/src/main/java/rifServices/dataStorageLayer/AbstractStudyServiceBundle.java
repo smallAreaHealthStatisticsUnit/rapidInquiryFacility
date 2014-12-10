@@ -196,6 +196,36 @@ class AbstractStudyServiceBundle {
 		}
 		
 	}
+
+	public boolean isLoggedIn(
+		final String userID) 
+		throws RIFServiceException {
+		
+		//Check for empty parameters
+		boolean result = false;
+		try {
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"isLoggedIn",
+				"userID",
+				userID);
+			
+			//Delegate operation to a specialised manager class
+			SQLConnectionManager sqlConnectionManager
+				= rifServiceResources.getSqlConnectionManager();
+			result = sqlConnectionManager.isLoggedIn(userID);			
+		}
+		catch(RIFServiceException rifServiceException) {
+			User user = User.newInstance(userID, null);
+			logException(
+				user,
+				"isLoggedIn",
+				rifServiceException);
+		}
+		
+		return result;
+	}
 	
 	/**
 	 * ends the current session of the user
