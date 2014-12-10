@@ -92,8 +92,8 @@ public enum RIFDataLoaderActivityStep {
 		"op_"),
 	CHECK(
 		6, 
-		"rifDataLoaderActivityStep.optimise.label",
-		"rifDataLoaderActivityStep.optimise.statusMessage",
+		"rifDataLoaderActivityStep.check.label",
+		"rifDataLoaderActivityStep.check.statusMessage",
 		"ch_"),		
 	PUBLISH(
 		7, 
