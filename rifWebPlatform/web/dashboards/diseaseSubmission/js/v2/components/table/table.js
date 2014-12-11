@@ -1,39 +1,39 @@
-RIF.areaSelectionTable = ( function() {
+RIF.table = ( function( settings ) {
 
-  var _p = {
+  var tables = settings.tables,
 
-
-
-    init: function() {
-
-    },
+    _p = {
 
 
-    setEvents: function() {
-      //Empty for now due to how table handles events
-      // var ev = RIF.getEvent( 'table', settings.studyType );
-      // ev.call( this );
-    },
 
-    //conforms	
-    extendTable: function() {
-      //Empty for now and maybe forever
-      //return _p;
-    },
-
-    getFacade: function() {
-      //this.facade = RIF.getFacade( 'table', settings.studyType, _p );
-      //return this;
-    }
+      init: function() {
+        _p = RIF.mix( RIF.table.utils(), _p );
+        return _p;
+      },
 
 
-  };
+      getFacade: function() {
+        this.facade = RIF.getFacade( 'table', settings.studyType, this );
+        return this;
+      },
 
-  //_p.getFacade()
-  //  .extendTable();
-  //-.setEvents() : called after initGrid event is fired from within renderer init()
+      extendTable: function() {
+        _p = this.extendTableComponent( _p, tables );
+        return _p;
+      },
 
-  _p.init();
-  return _p;
+      setEvents: function() {
+        var ev = this.setTableEvent( _p, tables );
+      }
+
+
+    };
+
+  _p.init()
+    .getFacade()
+    .extendTable()
+    .setEvents();
+
+  return _p.facade;
 
 } );

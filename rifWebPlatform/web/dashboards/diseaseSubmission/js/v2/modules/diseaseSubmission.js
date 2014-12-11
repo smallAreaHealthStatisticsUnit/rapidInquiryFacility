@@ -31,9 +31,9 @@ RIF.diseaseSubmission = ( function() {
         studyType: 'diseaseSubmission',
         menus: [ 'frontSubmission', 'studyArea' ]
       },
-      areaSelectionTable: {
+      table: {
         studyType: 'diseaseSubmission',
-        tableType: 'click2row'
+        tables: [ 'areaSelectionRenderer' ]
       }
     },
 

@@ -6,7 +6,7 @@
           RIF.statusBar( error, true, 1 );
           return;
         }
-        try {
+        try {   
           var data = jQuery.parseJSON( json.responseText );
           callback( myFunc, data );
         } catch ( e ) {
@@ -335,34 +335,34 @@
        * Disease submission specific
        *
        */
-
+      
       getIsLoggedIn: ( function( myCallback, params ) {
         var msg = " Checking if already logged in.. ",
-          userName = params[ 0 ],
-          pw = params[ 1 ],
-          args = 'userID=' + userName;
+            userName = params[0],
+            pw = params[1],
+          args = 'userID='+ userName;
 
         xhr( 'studySubmission/isLoggedIn?' + args, myCallback, msg );
-      } ),
-
+      }),  
+      
       getLogOut: ( function( myCallback, params ) {
         var msg = " Checking if already logged in.. ",
-          userName = params[ 0 ],
-          pw = params[ 1 ],
-          args = 'userID=' + userName;
+            userName = params[0],
+            pw = params[1],
+          args = 'userID='+ userName;
 
         xhr( 'studySubmission/logout?' + args, myCallback, msg );
-      } ),
-
-
+      }),     
+        
+        
       getLogIn: ( function( myCallback, params ) {
         var msg = "Logging in.. ",
-          userName = params[ 0 ],
-          pw = params[ 1 ],
-          args = 'userID=' + userName + '&password=' + pw;
+            userName = params[0],
+            pw = params[1],
+          args = 'userID='+ userName +'&password='+ pw;
 
         xhr( 'studySubmission/login?' + args, myCallback, msg );
-      } ),
+      }),
 
       getHealthThemes: function( myCallback, params ) {
         var msg = "Retrieving Health Themes ",
@@ -377,24 +377,32 @@
 
         xhr( 'studySubmission/getNumerator?' + args, myCallback, msg );
       },
-
+        
       getSelectAt: function( myCallback, params ) {
         var msg = "Retrieving geolevel resolutions ",
-          userName = params[ 0 ],
-          args = 'userID=' + userName + '&geographyName=SAHSU';
+            userName = params[0],
+            args = 'userID='+userName+'&geographyName=SAHSU';
 
         xhr( 'studySubmission/getGeoLevelSelectValues?' + args, myCallback, msg, 'application/json' );
       },
-
+        
       getResolutions: function( myCallback, params ) {
         var msg = "Retrieving geolevel resolutions ",
-          userName = params[ 0 ],
-          args = 'userID=' + userName + '&geoLevelSelectName=' + params[ 1 ] + '&geographyName=SAHSU';
+            userName = params[0],
+            args = 'userID='+userName+'&geoLevelSelectName='+params[1]+'&geographyName=SAHSU';
 
         xhr( 'studySubmission/getGeoLevelViews?' + args, myCallback, msg, 'application/json' );
-      },
+      },  
 
+        
+      getGeolevelSelect: function( myCallback, params ) {
+        var msg = "Retrieving geolevel resolutions ",
+            userName = params[0],
+            args = 'userID='+userName+'&geoLevelSelectName='+params[1]+'&geographyName=SAHSU';
 
+        xhr( 'studySubmission/getMapAreas?userID=ffabbri&geographyName=SAHSU&geoLevelSelectName=LEVEL2&geoLevelAreaName=Elliot&geoLevelToMapName=LEVEL4', myCallback, msg, 'application/json' );
+      }
+        
     };
 
 

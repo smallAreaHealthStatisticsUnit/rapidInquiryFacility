@@ -478,9 +478,10 @@ input[type="range"]::-ms-thumb {
 	  padding:0;
 	  width: 100%;
 	  height: 100%;
-	  z-index: 1000;
 	  background-color: rgba(0,0,0,0.4); /*dim the background*/
-    }	
+    
+	  z-index: 99999;
+}	
 
 	
 	.msettings {
@@ -571,52 +572,70 @@ input[type="range"]::-ms-thumb {
    }
 
    .modalAreaSelectionContent #areaSelectionTable {
-       width: 23%;
+        width: 400px;
        /* Firefox */
-		height: -moz-calc(100% - 330px);
+		max-height: -moz-calc(100% - 350px);
 		/* WebKit */
-		height: -webkit-calc(100% - 330px);
+		max-height: -webkit-calc(100% - 350px);
 		/* Opera */
-		height: -o-calc(100% - 330px);
+		max-height: -o-calc(100% - 350px);
 		/* Standard */
-		
-       height: calc(100% - 330px);
-   
-       margin-top: 4%;
+        max-height: calc(100% - 350px);
+       height:auto;
+       margin-top: 6%;
        position: absolute;
-}
-   .modalAreaSelectionContent #areaSelectionTable ul.aSH{
-       width: 100%;
-       height:25px;
-   
-}
-  
-   .modalAreaSelectionContent #areaSelectionTable ul.aSH li{
-       width: 48%;
-       float:left;
-       text-align: center
-   ;
-       border-bottom: 1px solid;
-       padding: 1%;
-       text-transform: uppercase;
-}
-   
-   .modalAreaSelectionContent #areaSelectionTable .aSC {
-       width:100%;
-       height:90%;
-       overflow: auto;
-   
-       text-align: center;
-       border: 1px solid #ccc;
-}
-   .modalAreaSelectionContent #areaSelectionTable .aSR {
-       width:100%;
-       height:15px%;
+       border: 1px solid #ddd;
    }
 
-   .modalAreaSelectionContent #areaSelectionTable .aSR div{
-       width:49%;
-       float:left
+   
+    .modalAreaSelectionContent #areaSelectionTable ul.aSH li:first-child{
+        border-right: 2px solid #ddd;
+        width: 200px;
+   }
+
+   .modalAreaSelectionContent #areaSelectionTable ul.aSH li{
+       float:left;
+       text-align: center;
+       padding: 12px 0px;
+       font-weight:bold;
+       background-color: #F2F2F2;
+       width: 198px;
+       text-decoration: underline;
+       font-size: 14px;
+   }
+   
+   .modalAreaSelectionContent #areaSelectionTable .aSC {
+       width: 100%;
+       height:auto;
+       overflow: auto;
+       text-align: center;
+   }
+   .modalAreaSelectionContent #areaSelectionTable .aSR {
+       border-top: 1px solid #ddd;
+   }
+   
+   .aSR div{
+    padding: 5px 0;
+   }
+   .aSR div:first-child{
+    border-right: 2px solid #ddd;
+   
+    width: 200px;
+}
+   .even{
+       background-color: rgba(198, 226, 255 , 0.1);
+       color: #757575;
+   }
+
+   .odd{
+       /*background-color: rgba(242, 242, 242  ,0.2);
+       color: #696969;*/
+   }
+
+   .aSR div{
+       width: 198px;
+       float:left;
+        padding: 5px 0px;
    }
 
    .modalAreaSelectionContent #areaSelectionMap {
@@ -901,7 +920,9 @@ input[type="text"].dropdownInput:focus, .style-4 input[type="text"].focus {
     background: white; 
     overflow:auto;
     padding:4px 9px;
-    display: none;
+    display: none; 
+    position: relative;
+    z-index: 9999;
 }
 
  div.availables > div:hover {

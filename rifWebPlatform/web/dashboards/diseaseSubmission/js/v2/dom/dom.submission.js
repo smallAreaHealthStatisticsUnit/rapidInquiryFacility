@@ -64,6 +64,13 @@ RIF.dom = ( function() {
 
       }
     },
+
+    table: {
+      areaSelectionRenderer: function() {
+        return {};
+      }
+
+    }
   };
 
 
