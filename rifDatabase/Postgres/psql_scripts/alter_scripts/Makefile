@@ -64,6 +64,8 @@ $(info Debug level set to: $(DEBUG_LEVEL))
 endif
 DEFAULT_ECHO=none
 ECHO?=$(DEFAULT_ECHO)
+PSQL_USER?=$(DEFAULT_PSQL_USER)
+USE_PLR?=$(DEFAULT_USE_PLR)
 
 #
 # Programs and parameters
@@ -73,6 +75,7 @@ PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -e -P pager=off \
 	-v testuser=$(TESTUSER) \
 	-v verbosity=$(VERBOSITY) \
 	-v debug_level=$(DEBUG_LEVEL) \
+	-v use_plr=$(USE_PLR) \
 	-v pghost=$(PGHOST) \
 	-v echo=$(ECHO)
 

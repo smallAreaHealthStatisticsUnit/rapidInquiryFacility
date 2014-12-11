@@ -389,7 +389,8 @@ BEGIN
 '			rval=""'||E'\n'||
 '			args=substitute(list(...))[-1L]'||E'\n'|| 
 '			rval=capture.output(eval(parse(text=toString(args))), file = NULL, append = FALSE)'||E'\n'||
-'			if (nchar(rval > 0)) {'||E'\n'||
+'			if (is.null(rval) != TRUE) rval=""'||E'\n'||
+'			if (nchar(rval) > 0) {'||E'\n'||
 '				rif40_log("DEBUG1", f, '||E'\n'||
 '					sprintf("rif40_capture.output>>>\n%s\n<<<\nOutput >>>\n%s\n<<<",'||E'\n'||
 '						toString(args), rval))'||E'\n'||
@@ -867,7 +868,7 @@ Close messages and output logs: R_io/Rmessages_<pid>_<date time string>.txt,  R_
 GRANT EXECUTE ON FUNCTION rif40_r_pkg.install_all_packages(boolean) TO rif_manager, rif40;
 GRANT EXECUTE ON FUNCTION rif40_r_pkg.installed_packages() TO rif_manager, rif_user, rif40;
 GRANT EXECUTE ON FUNCTION rif40_r_pkg.install_package_from_internet(VARCHAR) TO rif_manager, rif_user, rif40;
-GRANT EXECUTE ON FUNCTION rif40_r_pkg._install_all_packages_from_internet(VARCHAR) TO rif40;
+GRANT EXECUTE ON FUNCTION rif40_r_pkg._install_all_packages_from_internet() TO rif40;
 GRANT EXECUTE ON FUNCTION rif40_r_pkg.r_init(RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL, VARCHAR) TO rif_manager, rif_user, rif40;
 GRANT EXECUTE ON FUNCTION rif40_r_pkg.r_cleanup() TO rif_manager, rif_user, rif40;
 GRANT EXECUTE ON FUNCTION rif40_r_pkg.rif40_install_rcmd(VARCHAR, VARCHAR) TO rif40;

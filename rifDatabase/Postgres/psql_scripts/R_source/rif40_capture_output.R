@@ -9,7 +9,11 @@ rif40_capture.output<-function(..., function_name="Unknown", warnings_are_errors
                 {
                         rval=""
                         args=substitute(list(...))[-1L]
-                        rval=capture.output(eval(parse(text=toString(args))), file = NULL, append = FALSE)
+                        rval=capture.output(
+								eval(
+									parse(text=toString(args))), 
+										file = NULL, append = FALSE)
+						if (is.null(rval) != TRUE) rval=""
                         if (nchar(rval > 0)) {
                                 rif40_log("DEBUG1", f,
                                         sprintf("%s >>>\n%s\n<<<",

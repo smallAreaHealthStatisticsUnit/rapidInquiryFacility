@@ -83,6 +83,8 @@ else
 $(info Debug level set to: $(DEBUG_LEVEL))
 endif
 ECHO?=$(DEFAULT_ECHO)
+PSQL_USER?=$(DEFAULT_PSQL_USER)
+USE_PLR?=$(DEFAULT_USE_PLR)
 
 #
 # List of source code

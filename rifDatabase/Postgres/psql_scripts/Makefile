@@ -221,10 +221,13 @@ ESC_POSTGRES_ETC_DIR:=$(subst $(empty)/$(empty),$(empty)\$(empty),$(subst c:,C:,
 # R output directories (under PG_DATA)
 #
 R_LIBRARY=$(ESC_POSTGRES_ETC_DIR)\..\data\R_library
+R_SOURCE=$(ESC_POSTGRES_ETC_DIR)\..\data\R_source
 ifeq ($(USE_PLR),Y)
-	PLR_DIRS=$(R_LIBRARY)
+	PLR_DIRS=$(R_LIBRARY) $(R_SOURCE)
+	R_SOURCE_FILES=R_source/rif40_capture_output.R
 else
 	PLR_DIRS=
+	R_SOURCE_FILES=
 endif
 #
 # Target extension depends on source, build rule
@@ -269,7 +272,7 @@ patch:
 	$(MAKE) -C alter_scripts all PGDATABASE=sahsuland
 
 #- dev: Run all alter scripts in development
-dev:
+dev: $(PLR_DIRS)
 	$(MAKE) -C alter_scripts dev DEBUG_LEVEL=1
 
 # Dummy for test	
@@ -371,6 +374,8 @@ psqlrc:	../etc/psqlrc C:\Program\ Files\PostgreSQL\9.3\etc
 #
 $(R_LIBRARY):
 		$(error Please create $(R_LIBRARY))
+$(R_SOURCE):
+		$(error Please create $(R_SOURCE))
 #
 # $(ESC_POSTGRES_ETC_DIR): Create directory for psqlrc (requires privilege) - NEEDS TO BE FIXED
 #		
