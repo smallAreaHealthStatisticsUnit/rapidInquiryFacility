@@ -417,6 +417,7 @@ public class SQLConnectionManager {
 		
 		ArrayList<Connection> availableReadConnections
 			= availableReadConnectionsFromUser.get(user.getUserID());
+
 		if (availableReadConnections.isEmpty()) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -444,12 +445,22 @@ public class SQLConnectionManager {
 		final Connection connection) 
 		throws RIFServiceException {
 		
+		if (user == null) {
+			return;
+		}
+		if (connection == null) {
+			return;
+		}
+		String userID = user.getUserID();
+		
+		
 		ArrayList<Connection> usedReadConnections
-			= usedReadConnectionsFromUser.get(user.getUserID());
+			= usedReadConnectionsFromUser.get(userID);
+		
 		usedReadConnections.remove(connection);
 		
 		ArrayList<Connection> availableReadConnections
-			= availableReadConnectionsFromUser.get(user.getUserID());
+			= availableReadConnectionsFromUser.get(userID);
 		availableReadConnections.add(connection);		
 	}
 	
@@ -457,7 +468,14 @@ public class SQLConnectionManager {
 		final User user, 
 		final Connection connection) 
 		throws RIFServiceException {
-		
+
+		if (user == null) {
+			return;
+		}
+		if (connection == null) {
+			return;
+		}
+				
 		ArrayList<Connection> usedWriteConnections
 			= usedWriteConnectionsFromUser.get(user.getUserID());
 		usedWriteConnections.remove(connection);
@@ -556,6 +574,7 @@ public class SQLConnectionManager {
 		try {
 			ArrayList<Connection> availableReadConnections
 				= availableReadConnectionsFromUser.get(userID);
+			System.out.println("SQLConnectionManager closeConnectionsForUser avail read connections=="+availableReadConnections.size()+"==");
 			for (Connection connection : availableReadConnections) {
 				connection.close();				
 			}
