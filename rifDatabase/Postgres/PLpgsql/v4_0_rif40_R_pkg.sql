@@ -212,13 +212,13 @@ BEGIN
 '# Description:  Install package from Internet'||E'\n'||
 '#'||E'\n'||
 'install_package_from_internet<-function(p) {'||E'\n'||
-'		if (!is.element(p, installed.packages(lib=my_lib)[,1])) {'||E'\n'||
+'		if (!is.element(p, installed.packages(lib=global.my_lib)[,1])) {'||E'\n'||
 '			rif40_log("INFO", "install_package_from_internet", sprintf("Installing %s", p))'||E'\n'||
 '			rif40_debug("DEBUG1", "install_package_from_internet", '||E'\n'||
 '				"update.packages() >>>\n%s\n<<<",'||E'\n'||
 '					toString('||E'\n'||
 '						capture.output('||E'\n'||
-'							install.packages(p,lib=my_lib))))'||E'\n'||
+'							install.packages(p,lib=global.my_lib))))'||E'\n'||
 '		}'||E'\n'||
 '		else {'||E'\n'||
 '			rif40_log("INFO", "install_package_from_internet", sprintf("%s is already installed", p))'||E'\n'||
@@ -228,7 +228,7 @@ BEGIN
 '				"require() >>>\n%s\n<<<",'||E'\n'||
 '					toString('||E'\n'||
 '						capture.output('||E'\n'||
-'							global.loaded<--require(p,lib.loc=my_lib,character.only=TRUE))))'||E'\n'||
+'							global.loaded<--require(p,lib.loc=global.my_lib,character.only=TRUE))))'||E'\n'||
 '		if (global.loaded) {'||E'\n'||
 '			rif40_log("INFO", "install_package_from_internet", sprintf("Loaded %s", p))'||E'\n'||
 '			rm(global.loaded)'||E'\n'||
@@ -426,7 +426,7 @@ BEGIN
 'options(repos = r)',
 			'Set R repository');
 --
--- Set my_lib (Postgres R library location)
+-- Set global.my_lib (Postgres R library location)
 --
 		PERFORM rif40_r_pkg.rif40_install_rcmd('#'||E'\n'||
 '# Set local R_library (in $PGDATA/R_Library) for Postgres'||E'\n'||
@@ -435,8 +435,8 @@ BEGIN
 'global.Routput_file<<-NULL'||E'\n'||
 'global.Rmessages<<-NULL'||E'\n'||
 'global.Routput<<-NULL'||E'\n'||
-'my_lib=paste("'||c1_rec.setting /* pg_data */||'", "/R_Library", sep='''')',
-			'Set my_lib (Postgres R library location)');
+'global.my_lib=paste("'||c1_rec.setting /* pg_data */||'", "/R_Library", sep='''')',
+			'Set global.my_lib (Postgres R library location)');
 --
 		PERFORM rif40_r_pkg._r_init(debug_level); -- data_directory PG_DATA 
 	EXCEPTION
@@ -524,16 +524,16 @@ options(verbose=TRUE)
 rif40_log("INFO", "_r_init", sprintf("Set CRAN repository to: %s", r["CRAN"]))
 
 #
-# Check my_lib - Postgres R library location
+# Check global.my_lib - Postgres R library location
 #
 
-if (file.exists(my_lib)) {
-	rif40_log("INFO", "_r_init", sprintf("R library directory exists: %s", my_lib))
+if (file.exists(global.my_lib)) {
+	rif40_log("INFO", "_r_init", sprintf("R library directory exists: %s", global.my_lib))
 }
 else {
-	rif40_error(-90126, "_r_init", sprintf("R library directory needs to be created: %s", my_lib))
+	rif40_error(-90126, "_r_init", sprintf("R library directory needs to be created: %s", global.my_lib))
 }
-.libPaths(my_lib)
+.libPaths(global.my_lib)
 rif40_log("DEBUG1", "_r_init", sprintf("Set library path to: %s", toString(.libPaths())))
 rif40_debug("DEBUG1", "_r_init", "ls() >>>\n%s\n<<<", toString(ls()))
 
@@ -574,7 +574,7 @@ AS $func$
 #
 # Check r_init() has been run
 #
-if (!exists("my_lib")) {
+if (!exists("global.my_lib")) {
 	pg.throwerror("r_init() not run [in rif40_r_pkg._install_all_packages_from_internet()]")
 }
 
@@ -587,7 +587,7 @@ rif40_debug("INFO", "_install_all_packages_from_internet",
 	"update.packages() >>>\n%s\n<<<", 
 		toString(
 			capture.output(
-				update.packages(checkBuilt=TRUE,lib=my_lib,ask=FALSE,quiet=TRUE))))
+				update.packages(checkBuilt=TRUE,lib=global.my_lib,ask=FALSE,quiet=TRUE))))
 
 #
 # Install packages
@@ -599,16 +599,16 @@ rm(sahsu_packages)
 #
 # Install INLA
 #
-if (!is.element("INLA", installed.packages(lib=my_lib)[,1])) {
+if (!is.element("INLA", installed.packages(lib=global.my_lib)[,1])) {
 	rif40_log("INFO", "_install_all_packages_from_internet", "Installing inla")
 	rif40_debug("DEBUG1", "_install_all_packages_from_internet", 
 		"givemeINLA() >>>\n%s\n<<<", 
 			toString(
 				capture.output(
-					givemeINLA(testing=FALSE, lib = my_lib))))
+					givemeINLA(testing=FALSE, lib = global.my_lib))))
 }
 else {
-	library(INLA, lib.loc = my_lib)
+	library(INLA, lib.loc = global.my_lib)
 	rif40_log("INFO", "_install_all_packages_from_internet", 
 		sprintf("INLA v%s is already installed; checking for updates", toString(inla.version("version"))))
 
@@ -616,7 +616,7 @@ else {
 # Handle no internet connection
 #		
 		rif40_capture.output(
-			inla.update(testing=FALSE,lib=my_lib), 
+			inla.update(testing=FALSE,lib=global.my_lib), 
 			function_name='_install_all_packages_from_internet',
 			warnings_are_errors=FALSE)
 					
@@ -626,7 +626,7 @@ else {
 #
 # Cleanup
 #
-#remove.packages(sahsu_packages,lib=my_lib)
+#remove.packages(sahsu_packages,lib=global.my_lib)
 rif40_debug("DEBUG1", "_install_all_packages_from_internet", "ls() >>>\n%s", toString(ls()))
 $func$ LANGUAGE plr;
 
@@ -655,7 +655,7 @@ AS $func$
 #
 # Check r_init() has been run
 #
-if (!exists("my_lib")) {
+if (!exists("global.my_lib")) {
 	pg.throwerror("r_init() not run [in rif40_r_pkg.installed_packages()]")
 }
 #
@@ -720,11 +720,11 @@ AS $func$
 #
 # Check r_init() has been run
 #
-if (!exists("my_lib")) {
+if (!exists("global.my_lib")) {
 	pg.throwerror("r_init() not run [in rif40_r_pkg.r_cleanup()]")
 }
 #
-# Close messages and output logs: R_io/Rmessages_<pid>_<date time string>.txt,  R_io/Routput_<pid>_<date time string>.txt
+# Close messages and output logs: <tempdir()>/Rmessages_<pid>_<date time string>.txt,  <tempdir()>/Routput_<pid>_<date time string>.txt
 #
 tryCatch( 
 	{ 
@@ -810,6 +810,9 @@ tryCatch(
 #
 rif40_debug("DEBUG1", "r_cleanup", "ls() >>>\n%s", toString(ls()))
 rm(list=ls())
+rif40_debug("DEBUG1", "r_cleanup", "ls(env=.GlobalEnv) >>>\n%s", toString(ls(env=.GlobalEnv, pattern="global")))
+rm(list=ls(env=.GlobalEnv, pattern="global"))
+#
 $func$ LANGUAGE plr;
 --
 -- Comments
@@ -844,7 +847,7 @@ Parameters:	 Default debug level [DEBUG1], CRAN repository [Default:  http://cra
 Returns:	 Nothing
 Description: R initialisation function. Call once per session:
 
-Set up messages and output logs: R_io/Rmessages_<pid>_<date time string>.txt,  R_io/Routput_<pid>_<date time string>.txt
+Set up messages and output logs: <tempdir()>/Rmessages_<pid>_<date time string>.txt, <tempdir()>/Routput_<pid>_<date time string>.txt
 Set CRAN repository
 Set local library: $PG_DATA/R_Library';
 COMMENT ON FUNCTION rif40_r_pkg.r_cleanup() IS 'Function:	r_cleanup()
@@ -852,14 +855,14 @@ Parameters:	 None
 Returns:	 Nothing
 Description: R Cleanup function
 
-Close messages and output logs: tempdir()/Rmessages_<pid>_<date time string>.txt,  R_io/Routput_<pid>_<date time string>.txt
+Close messages and output logs: <tempdir()>/Rmessages_<pid>_<date time string>.txt, <tempdir()>/Routput_<pid>_<date time string>.txt
 ';
 COMMENT ON FUNCTION rif40_r_pkg._r_cleanup() IS 'Function:	r_cleanup()
 Parameters:	 None
 Returns:	 Nothing
 Description: R Cleanup function
 
-Close messages and output logs: R_io/Rmessages_<pid>_<date time string>.txt,  R_io/Routput_<pid>_<date time string>.txt
+Close messages and output logs: <tempdir()>/Rmessages_<pid>_<date time string>.txt, <tempdir()/Routput_<pid>_<date time string>.txt
 ';
 
 --
