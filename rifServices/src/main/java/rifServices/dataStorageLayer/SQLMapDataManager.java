@@ -1,12 +1,14 @@
 package rifServices.dataStorageLayer;
 
 import rifServices.businessConceptLayer.GeoLevelArea;
+
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.MapAreaSummaryData;
+import rifServices.businessConceptLayer.BoundaryRectangle;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
@@ -299,6 +301,86 @@ class SQLMapDataManager
 		return result;		
 	}
 	
+	public ArrayList<MapArea> getMapAreasForBoundaryRectangle(
+			final Connection connection,
+			final Geography geography,
+			final GeoLevelSelect geoLevelSelect,
+			final BoundaryRectangle boundaryRectangle) 
+			throws RIFServiceException {
+
+		//Validate parameters
+		validateCommonMethodParameters(
+			connection,
+			geography,
+			geoLevelSelect,
+			null,
+			null,
+			null);	
+		
+		boundaryRectangle.checkErrors();
+		
+		SQLFunctionCallerQueryFormatter queryFormatter = new SQLFunctionCallerQueryFormatter();
+		queryFormatter.setSchema("rif40_xml_pkg");
+		queryFormatter.setFunctionName("rif40_getMapAreasForBoundaryRectangle");
+		queryFormatter.setNumberOfFunctionParameters(3);
+				
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		ArrayList<MapArea> results = new ArrayList<MapArea>();
+		try {
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement.setString(1, geography.getName());
+			statement.setString(2, geoLevelSelect.getName());
+			statement.setFloat(3, (float) boundaryRectangle.getYMax());
+			statement.setFloat(4, (float) boundaryRectangle.getXMax());
+			statement.setFloat(5, (float) boundaryRectangle.getYMin());
+			statement.setFloat(6, (float) boundaryRectangle.getXMin());
+			
+			resultSet = statement.executeQuery();
+			
+			while (resultSet.next()) {
+				String geographicalIdentifier = resultSet.getString(1);
+				String identifier = resultSet.getString(2);
+				String label = resultSet.getString(3);
+				
+				MapArea mapArea 
+					= MapArea.newInstance(
+						geographicalIdentifier,
+						identifier,
+						label);
+				
+				results.add(mapArea);
+			}
+		}
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version			
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlMapDataManager.error.unableToGetMapAreasForBoundaryRectangle",
+					geography.getDisplayName(),
+					geoLevelSelect.getDisplayName(),
+					boundaryRectangle.getDisplayName());
+			
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			rifLogger.error(
+				SQLMapDataManager.class, 
+				errorMessage, 
+				sqlException);
+								
+			RIFServiceException rifServiceException
+				= new RIFServiceException(RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			//Cleanup database resources			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);			
+		}
+		
+		return results;		
+	}
 	
 	/**
 	 * Gets the map areas.
