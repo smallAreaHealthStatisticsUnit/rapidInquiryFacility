@@ -1,15 +1,16 @@
 package rifDataLoaderTool.clean;
 
-import java.text.Collator;
+
 
 import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceException;
 
 import org.junit.After;
 import org.junit.Before;
-
 import junit.framework.TestCase;
+import java.text.Collator;
 
 
 /**
@@ -84,7 +85,12 @@ public abstract class AbstractRIFDataLoaderTestCase {
 	@Before
 	public void setUp() {
 		dataLoaderService = new DataLoaderService();
-		dataLoaderService.initialiseService();
+		try {
+			dataLoaderService.initialiseService();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
+		}
 	}
 
 	@After
