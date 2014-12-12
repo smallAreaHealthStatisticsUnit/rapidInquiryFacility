@@ -574,7 +574,6 @@ public class SQLConnectionManager {
 		try {
 			ArrayList<Connection> availableReadConnections
 				= availableReadConnectionsFromUser.get(userID);
-			System.out.println("SQLConnectionManager closeConnectionsForUser avail read connections=="+availableReadConnections.size()+"==");
 			for (Connection connection : availableReadConnections) {
 				connection.close();				
 			}
