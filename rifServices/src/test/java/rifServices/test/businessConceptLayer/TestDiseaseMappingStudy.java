@@ -304,8 +304,8 @@ public class TestDiseaseMappingStudy extends AbstractRIFTestCase {
 		GeoLevelView geoLevelView = GeoLevelView.newInstance("LEVEL3");
 		GeoLevelToMap geoLevelToMap = GeoLevelToMap.newInstance("LEVEL3");
 		
-		MapArea mapArea1 = MapArea.newInstance("111", "Brent");
-		MapArea mapArea2 = MapArea.newInstance("222", "Barnet");
+		MapArea mapArea1 = MapArea.newInstance("111", "111", "Brent");
+		MapArea mapArea2 = MapArea.newInstance("222", "111", "Barnet");
 				
 		ComparisonArea invalidComparisonArea
 			= ComparisonArea.newInstance();
@@ -622,7 +622,7 @@ public class TestDiseaseMappingStudy extends AbstractRIFTestCase {
 			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 		DiseaseMappingStudyArea diseaseMappingStudyArea
 			= maliciousDiseaseMappingStudy.getDiseaseMappingStudyArea();
-		MapArea maliciousMapArea = MapArea.newInstance("454", getTestMaliciousValue());
+		MapArea maliciousMapArea = MapArea.newInstance("454", "454", getTestMaliciousValue());
 		diseaseMappingStudyArea.addMapArea(maliciousMapArea);
 		try {
 			maliciousDiseaseMappingStudy.checkSecurityViolations();

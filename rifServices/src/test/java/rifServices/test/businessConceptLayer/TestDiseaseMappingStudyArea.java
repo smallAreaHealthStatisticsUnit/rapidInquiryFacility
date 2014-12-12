@@ -107,8 +107,8 @@ public class TestDiseaseMappingStudyArea extends AbstractRIFTestCase {
 		GeoLevelView geoLevelView = GeoLevelView.newInstance("LEVEL3");
 		GeoLevelToMap geoLevelToMap = GeoLevelToMap.newInstance("LEVEL3");
 		
-		MapArea mapArea1 = MapArea.newInstance("111", "Brent");
-		MapArea mapArea2 = MapArea.newInstance("222", "Barnet");
+		MapArea mapArea1 = MapArea.newInstance("111", "111", "Brent");
+		MapArea mapArea2 = MapArea.newInstance("222", "222", "Barnet");
 
 		masterDiseaseMappingStudyArea
 			= DiseaseMappingStudyArea.newInstance();
@@ -258,8 +258,8 @@ public class TestDiseaseMappingStudyArea extends AbstractRIFTestCase {
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
 			
-			MapArea duplicateMapArea1 = MapArea.newInstance("111", "Brent");
-			MapArea duplicateMapArea2 = MapArea.newInstance("222", "Barnet");
+			MapArea duplicateMapArea1 = MapArea.newInstance("111", "111", "Brent");
+			MapArea duplicateMapArea2 = MapArea.newInstance("222", "222", "Barnet");
 			diseaseMappingStudyArea.addMapArea(duplicateMapArea1);
 			diseaseMappingStudyArea.addMapArea(duplicateMapArea2);
 			
@@ -455,7 +455,7 @@ public class TestDiseaseMappingStudyArea extends AbstractRIFTestCase {
 		maliciousDiseaseMappingArea
 			= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
 		MapArea maliciousMapArea
-			= MapArea.newInstance("666", getTestMaliciousValue());
+			= MapArea.newInstance("666", "666", getTestMaliciousValue());
 		maliciousDiseaseMappingArea.addMapArea(maliciousMapArea);
 		try {
 			maliciousDiseaseMappingArea.checkSecurityViolations();

@@ -152,6 +152,8 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 		final User user,
 		final Geography geography,
 		final GeoLevelSelect geoLevelSelect,
+		final String tileIdentifier,
+		final Integer zoomLevel,
 		final BoundaryRectangle boundaryRectangle) 
 		throws RIFServiceException;
 		

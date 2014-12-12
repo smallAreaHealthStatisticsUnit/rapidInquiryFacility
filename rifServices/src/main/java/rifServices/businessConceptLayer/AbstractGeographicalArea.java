@@ -236,10 +236,15 @@ protected AbstractGeographicalArea() {
 	 * @param label the label
 	 */
 	public void addMapArea(
+		final String geographicalIdentifier,
 		final String identifier, 
 		final String label) {
 		
-		MapArea mapArea = MapArea.newInstance(identifier, label);
+		MapArea mapArea 
+			= MapArea.newInstance(
+				geographicalIdentifier,
+				identifier, 
+				label);
 		mapAreas.add(mapArea);
 	}
 	

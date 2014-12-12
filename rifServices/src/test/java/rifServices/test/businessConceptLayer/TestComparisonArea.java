@@ -108,8 +108,8 @@ public class TestComparisonArea extends AbstractRIFTestCase {
 		GeoLevelView geoLevelView = GeoLevelView.newInstance("LEVEL3");
 		GeoLevelToMap geoLevelToMap = GeoLevelToMap.newInstance("LEVEL3");
 		
-		MapArea mapArea1 = MapArea.newInstance("111", "Brent");
-		MapArea mapArea2 = MapArea.newInstance("222", "Barnet");
+		MapArea mapArea1 = MapArea.newInstance("111", "111", "Brent");
+		MapArea mapArea2 = MapArea.newInstance("222", "222", "Barnet");
 
 		masterComparisonArea = ComparisonArea.newInstance();
 		masterComparisonArea.setGeoLevelSelect(geoLevelSelect);
@@ -283,8 +283,8 @@ public class TestComparisonArea extends AbstractRIFTestCase {
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
 			
-			MapArea duplicateMapArea1 = MapArea.newInstance("111", "Brent");
-			MapArea duplicateMapArea2 = MapArea.newInstance("222", "Barnet");
+			MapArea duplicateMapArea1 = MapArea.newInstance("111", "111", "Brent");
+			MapArea duplicateMapArea2 = MapArea.newInstance("222", "222", "Barnet");
 			comparisonArea.addMapArea(duplicateMapArea1);
 			comparisonArea.addMapArea(duplicateMapArea2);			
 			comparisonArea.checkErrors();
@@ -460,7 +460,7 @@ public class TestComparisonArea extends AbstractRIFTestCase {
 		maliciousComparisonArea
 			= ComparisonArea.createCopy(masterComparisonArea);
 		MapArea maliciousMapArea
-			= MapArea.newInstance("234", getTestMaliciousValue());
+			= MapArea.newInstance("234", "234", getTestMaliciousValue());
 		maliciousComparisonArea.addMapArea(maliciousMapArea);
 		try {
 			maliciousComparisonArea.checkSecurityViolations();

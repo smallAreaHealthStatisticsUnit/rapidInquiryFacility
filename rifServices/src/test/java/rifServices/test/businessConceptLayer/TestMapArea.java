@@ -107,7 +107,7 @@ public class TestMapArea extends AbstractRIFTestCase {
 	 * Accept a valid map area with typical values.
 	 */
 	public void acceptValidMapArea() {
-		MapArea mapArea = MapArea.newInstance("123", "Brent");
+		MapArea mapArea = MapArea.newInstance("123", "123", "Brent");
 		try {
 			mapArea.checkErrors();
 		}
@@ -122,7 +122,7 @@ public class TestMapArea extends AbstractRIFTestCase {
 	@Test	
 	public void rejectBlankIdentifier() {
 		try {
-			MapArea mapArea = MapArea.newInstance(null, "Brent");
+			MapArea mapArea = MapArea.newInstance(null, "123", "Brent");
 			mapArea.checkErrors();
 			fail();
 		}
@@ -131,7 +131,7 @@ public class TestMapArea extends AbstractRIFTestCase {
 		}
 
 		try {
-			MapArea mapArea = MapArea.newInstance("", "Brent");
+			MapArea mapArea = MapArea.newInstance("", "123", "Brent");
 			mapArea.checkErrors();
 			fail();
 		}
@@ -196,20 +196,20 @@ public class TestMapArea extends AbstractRIFTestCase {
 	public void identifyMapAreasInListAListB() {
 		//List Destination: {24, 25, 26, 27, 28, 40}
 		ArrayList<MapArea> destinationList = new ArrayList<MapArea>();
-		destinationList.add(MapArea.newInstance("24", "24"));
-		destinationList.add(MapArea.newInstance("25", "25"));
-		destinationList.add(MapArea.newInstance("26", "26"));
-		destinationList.add(MapArea.newInstance("27", "27"));
-		destinationList.add(MapArea.newInstance("28", "28"));
-		destinationList.add(MapArea.newInstance("40", "40"));
+		destinationList.add(MapArea.newInstance("24", "24", "24"));
+		destinationList.add(MapArea.newInstance("25", "25", "25"));
+		destinationList.add(MapArea.newInstance("26", "26", "26"));
+		destinationList.add(MapArea.newInstance("27", "27", "27"));
+		destinationList.add(MapArea.newInstance("28", "28", "28"));
+		destinationList.add(MapArea.newInstance("40", "40", "40"));
 
 		//List Source: {21, 25, 27, 40, 92}
 		ArrayList<MapArea> sourceList = new ArrayList<MapArea>();
-		sourceList.add(MapArea.newInstance("21", "21"));
-		sourceList.add(MapArea.newInstance("25", "25"));
-		sourceList.add(MapArea.newInstance("27", "27"));
-		sourceList.add(MapArea.newInstance("40", "40"));
-		sourceList.add(MapArea.newInstance("92", "92"));
+		sourceList.add(MapArea.newInstance("21", "21", "21"));
+		sourceList.add(MapArea.newInstance("25", "25", "25"));
+		sourceList.add(MapArea.newInstance("27", "27", "27"));
+		sourceList.add(MapArea.newInstance("40", "40", "40"));
+		sourceList.add(MapArea.newInstance("92", "92", "92"));
 		
 		//duplicates found in Source: {25, 27, 40}
 		ArrayList<MapArea> duplicates
@@ -237,20 +237,20 @@ public class TestMapArea extends AbstractRIFTestCase {
 
 		//List Destination: {24, 25, 26, 27, 28, 40}
 		ArrayList<MapArea> destinationList = new ArrayList<MapArea>();
-		destinationList.add(MapArea.newInstance("24", "24"));
-		destinationList.add(MapArea.newInstance("25", "25"));
-		destinationList.add(MapArea.newInstance("26", "26"));
-		destinationList.add(MapArea.newInstance("27", "27"));
-		destinationList.add(MapArea.newInstance("28", "28"));
-		destinationList.add(MapArea.newInstance("40", "40"));
+		destinationList.add(MapArea.newInstance("24", "24", "24"));
+		destinationList.add(MapArea.newInstance("25", "25", "25"));
+		destinationList.add(MapArea.newInstance("26", "26", "26"));
+		destinationList.add(MapArea.newInstance("27", "27", "27"));
+		destinationList.add(MapArea.newInstance("28", "28", "28"));
+		destinationList.add(MapArea.newInstance("40", "40", "40"));
 
 		//List Source: {21, 25, 27, 40, 92}
 		ArrayList<MapArea> sourceList = new ArrayList<MapArea>();
-		sourceList.add(MapArea.newInstance("21", "21"));
-		sourceList.add(MapArea.newInstance("25", "25"));
-		sourceList.add(MapArea.newInstance("27", "27"));
-		sourceList.add(MapArea.newInstance("40", "40"));
-		sourceList.add(MapArea.newInstance("92", "92"));
+		sourceList.add(MapArea.newInstance("21", "21", "21"));
+		sourceList.add(MapArea.newInstance("25", "25", "25"));
+		sourceList.add(MapArea.newInstance("27", "27", "27"));
+		sourceList.add(MapArea.newInstance("40", "40", "40"));
+		sourceList.add(MapArea.newInstance("92", "92", "92"));
 		
 		//non-duplicates in B: {21, 92}
 		ArrayList<MapArea> nonDuplicates
@@ -287,7 +287,7 @@ public class TestMapArea extends AbstractRIFTestCase {
 	@Test
 	public void testSecurityViolations() {
 		MapArea maliciousMapArea 
-			= MapArea.newInstance(getTestMaliciousValue(), "Brent");
+			= MapArea.newInstance(getTestMaliciousValue(), "123", "Brent");
 		try {
 			maliciousMapArea.checkSecurityViolations();
 			fail();
@@ -297,7 +297,7 @@ public class TestMapArea extends AbstractRIFTestCase {
 		}
 		
 		maliciousMapArea 
-			= MapArea.newInstance("123", getTestMaliciousValue());
+			= MapArea.newInstance("123", "123", getTestMaliciousValue());
 		try {
 			maliciousMapArea.checkSecurityViolations();
 			fail();

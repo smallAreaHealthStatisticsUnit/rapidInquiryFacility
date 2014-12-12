@@ -345,18 +345,22 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 		validMapArea 
 			= MapArea.newInstance(
 				"01.008.003500.1", 
+				"01.008.003500.1", 
 				"01.008.003500.1");		
 
 		emptyMapArea
 			= MapArea.newInstance(
 				"", 
+				"01.008.003500.1",				
 				"01.008.003500.1");		
 		nonExistentMapArea
 			= MapArea.newInstance(
 				"99.998.999599", 
+				"99.998.999599", 
 				"99.999.999999");		
 		maliciousMapArea
 			= MapArea.newInstance(
+				maliciousFieldValue, 
 				maliciousFieldValue, 
 				maliciousFieldValue);
 

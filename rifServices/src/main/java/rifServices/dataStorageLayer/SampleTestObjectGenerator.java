@@ -274,9 +274,15 @@ public class SampleTestObjectGenerator {
 		GeoLevelToMap geoLevelToMap = GeoLevelToMap.newInstance("LEVEL4");
 		geoLevelToMap.setNewRecord(false);
 	
-		MapArea mapArea1 = MapArea.newInstance("01.011.012600.1", "Clarke LEVEL4(01.011.012600.1)");
+		MapArea mapArea1 = MapArea.newInstance(
+			"01.011.012600.1", 
+			"01.011.012600.1", 
+			"Clarke LEVEL4(01.011.012600.1)");
 		mapArea1.setNewRecord(false);
-		MapArea mapArea2 = MapArea.newInstance("01.011.012600.2", "Clarke LEVEL4(01.011.012600.2)");
+		MapArea mapArea2 = MapArea.newInstance(
+			"01.011.012600.2", 
+			"01.011.012600.2",
+			"Clarke LEVEL4(01.011.012600.2)");
 		mapArea2.setNewRecord(false);
 			
 		ComparisonArea comparisonArea

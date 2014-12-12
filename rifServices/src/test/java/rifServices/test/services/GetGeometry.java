@@ -97,7 +97,7 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 
 	public GetGeometry() {
 		validMapAreas = new ArrayList<MapArea>();
-		validMapAreas.add(MapArea.newInstance("01.002", "01.002"));
+		validMapAreas.add(MapArea.newInstance("01.002", "01.002", "01.002"));
 
 	}
 

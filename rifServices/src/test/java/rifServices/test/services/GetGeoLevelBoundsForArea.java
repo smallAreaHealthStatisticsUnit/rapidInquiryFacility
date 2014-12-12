@@ -116,6 +116,7 @@ public class GetGeoLevelBoundsForArea extends AbstractRIFServiceTestCase {
 			validStudyResultRetrievalContext.setGeoLevelSelectName("LEVEL3");
 			MapArea validMapArea 
 				= MapArea.newInstance(
+					"01.008.005600",
 					"01.008.005600", 
 					"01.008.005600");
 			
@@ -158,6 +159,7 @@ public class GetGeoLevelBoundsForArea extends AbstractRIFServiceTestCase {
 			MapArea validMapArea 
 				= MapArea.newInstance(
 					"01.008.003500", 
+					"01.008.003500",					
 					"01.008.003500");
 			
 			BoundaryRectangle boundaryRectangle
@@ -186,6 +188,7 @@ public class GetGeoLevelBoundsForArea extends AbstractRIFServiceTestCase {
 			MapArea validMapArea 
 				= MapArea.newInstance(
 					"01.008.003500", 
+					"01.008.003500", 
 					"01.008.003500");
 			
 			rifStudyRetrievalService.getGeoLevelBoundsForArea(
@@ -210,6 +213,7 @@ public class GetGeoLevelBoundsForArea extends AbstractRIFServiceTestCase {
 			validStudyResultRetrievalContext.setGeoLevelSelectName("LEVEL3");
 			MapArea validMapArea 
 				= MapArea.newInstance(
+					"01.008.003500", 
 					"01.008.003500", 
 					"01.008.003500");
 			
@@ -237,6 +241,7 @@ public class GetGeoLevelBoundsForArea extends AbstractRIFServiceTestCase {
 			MapArea validMapArea 
 				= MapArea.newInstance(
 					"01.008.003500", 
+					"01.008.003500", 
 					"01.008.003500");
 			
 			rifStudyRetrievalService.getGeoLevelBoundsForArea(
@@ -260,6 +265,7 @@ public class GetGeoLevelBoundsForArea extends AbstractRIFServiceTestCase {
 			User validUser = cloneValidUser();
 			MapArea validMapArea 
 				= MapArea.newInstance(
+					"01.008.003500", 
 					"01.008.003500", 
 					"01.008.003500");
 			
@@ -287,6 +293,7 @@ public class GetGeoLevelBoundsForArea extends AbstractRIFServiceTestCase {
 			MapArea emptyMapArea 
 				= MapArea.newInstance(
 					"", 
+					"01.008.003500",					
 					"01.008.003500");
 			
 			rifStudyRetrievalService.getGeoLevelBoundsForArea(
@@ -334,6 +341,7 @@ public class GetGeoLevelBoundsForArea extends AbstractRIFServiceTestCase {
 			MapArea validMapArea 
 				= MapArea.newInstance(
 					"01.008.003500", 
+					"01.008.003500", 
 					"01.008.003500");
 			
 			rifStudyRetrievalService.getGeoLevelBoundsForArea(
@@ -358,6 +366,7 @@ public class GetGeoLevelBoundsForArea extends AbstractRIFServiceTestCase {
 				= cloneMaliciousResultContext();
 			MapArea validMapArea 
 				= MapArea.newInstance(
+					"01.008.003500", 
 					"01.008.003500", 
 					"01.008.003500");
 			
@@ -384,6 +393,7 @@ public class GetGeoLevelBoundsForArea extends AbstractRIFServiceTestCase {
 				= cloneMaliciousResultContext();
 			MapArea validMapArea 
 				= MapArea.newInstance(
+					"01.008.003500", 
 					"01.008.003500", 
 					"01.008.003500");
 		
