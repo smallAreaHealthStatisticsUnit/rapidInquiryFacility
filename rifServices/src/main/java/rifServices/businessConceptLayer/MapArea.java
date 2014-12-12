@@ -89,6 +89,8 @@ public final class MapArea
 	/** The label. */
 	private String label;
 	
+	private String geographicalIdentifier;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -100,9 +102,11 @@ public final class MapArea
 	 * @param label the label
 	 */
 	private MapArea(
+		final String geographicalIdentifier,
 		final String identifier,
 		final String label) {
 		
+		setGeographicalIdentifier(geographicalIdentifier);
 		setIdentifier(identifier);
 		setLabel(label);
 	}
@@ -111,6 +115,7 @@ public final class MapArea
 	 * Instantiates a new map area.
 	 */
 	private MapArea() {
+		setGeographicalIdentifier("");
 		setIdentifier("");
 		setLabel("");
 	}
@@ -134,10 +139,15 @@ public final class MapArea
 	 * @return the map area
 	 */
 	public static MapArea newInstance(
+		final String geographicalIdentifier,
 		final String identifier,
 		final String label) {
 		
-		MapArea mapArea = new MapArea(identifier, label);
+		MapArea mapArea 	
+			= new MapArea(
+				geographicalIdentifier,
+				identifier, 
+				label);
 		return mapArea;		
 	}
 		
@@ -156,6 +166,7 @@ public final class MapArea
 		
 		MapArea cloneMapArea
 			= new MapArea(
+				originalMapArea.getGeographicalIdentifier(),
 				originalMapArea.getIdentifier(),
 				originalMapArea.getLabel());
 		return cloneMapArea;
@@ -250,13 +261,13 @@ public final class MapArea
 		
 		HashSet<String> mapAreaFromIdentifier = new HashSet<String>();
 		for (MapArea mapArea : mapAreas) {
-			String identifier = mapArea.getIdentifier();
+			String geographicalIdentifier = mapArea.getGeographicalIdentifier();
 			
-			if (mapAreaFromIdentifier.contains(identifier)  == true) {
+			if (mapAreaFromIdentifier.contains(geographicalIdentifier)  == true) {
 				results.add(mapArea);
 			}
 			else {
-				mapAreaFromIdentifier.add(identifier);
+				mapAreaFromIdentifier.add(geographicalIdentifier);
 			}
 		}
 		
@@ -358,6 +369,15 @@ public final class MapArea
 		this.label = label;
 	}
 	
+	
+	public String getGeographicalIdentifier() {
+		return geographicalIdentifier;
+	}
+
+	public void setGeographicalIdentifier(String geographicalIdentifier) {
+		this.geographicalIdentifier = geographicalIdentifier;
+	}
+
 	/**
 	 * Checks for identical contents.
 	 *
@@ -380,11 +400,27 @@ public final class MapArea
 				return false;
 			}			
 		}
+
+		String otherGeographicalIdentifier 
+			= otherMapArea.getGeographicalIdentifier();
+		if (FieldValidationUtility.hasDifferentNullity(
+				geographicalIdentifier, 
+				otherGeographicalIdentifier)) {
+			//reject if one is null and the other is non-null
+			return false;
+		}
+		else if (geographicalIdentifier != null) {
+			//they must both be non-null
+			if (collator.equals(
+					geographicalIdentifier, 
+					otherGeographicalIdentifier) == false) {
+				return false;
+			}			
+		}
 		
 		return super.hasIdenticalContents(otherMapArea);
 	}
 
-	
 	static public String[] getMapAreaIdentifierList(
 		final ArrayList<MapArea> mapAreas) {
 		
@@ -392,7 +428,7 @@ public final class MapArea
 		String[] results = new String[mapAreas.size()];
 		
 		for (int i = 0; i < numberOfMapAreas; i++) {
-			results[i] = mapAreas.get(i).getIdentifier();
+			results[i] = mapAreas.get(i).getGeographicalIdentifier();
 		}
 
 		return results;
@@ -420,28 +456,37 @@ public final class MapArea
 				labelFieldName,
 				label);
 		}	
+		
+		if (geographicalIdentifier != null) {
+			String geographicalIdentifierFieldName
+				= RIFServiceMessages.getMessage("mapArea.geographicalIdentifier.label");		
+			fieldValidationUtility.checkMaliciousCode(
+				recordType,
+				geographicalIdentifierFieldName,
+				geographicalIdentifier);
+		}	
+		
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
 	public void checkErrors() 
 		throws RIFServiceException {
 
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();	
-		if (fieldValidationUtility.isEmpty(getIdentifier()) == true) {
+		if (fieldValidationUtility.isEmpty(getGeographicalIdentifier()) == true) {
 			String recordType = getRecordType();
-			String identifierFieldName
-				= RIFServiceMessages.getMessage("general.fieldNames.identifier.label");
+			String geographicalIdentifierFieldName
+				= RIFServiceMessages.getMessage("mapArea.geographicalIdentifier.label");
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
-					identifierFieldName);
+					geographicalIdentifierFieldName);
 			errorMessages.add(errorMessage);
 		}		
+
+		
 		
 	//@TODO uncomment this line when we get new release of RIF database
 	//05-0302014
@@ -476,7 +521,7 @@ public final class MapArea
 	public String getDisplayName() {
 
 		StringBuilder buffer = new StringBuilder();
-		buffer.append(getIdentifier());
+		buffer.append(getGeographicalIdentifier());
 		buffer.append("-");
 		buffer.append(label);
 		
