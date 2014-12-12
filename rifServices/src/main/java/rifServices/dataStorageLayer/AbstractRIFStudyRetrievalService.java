@@ -1341,6 +1341,8 @@ abstract class AbstractRIFStudyRetrievalService
 		final User _user,
 		final Geography _geography,
 		final GeoLevelSelect _geoLevelSelect,
+		final String tileIdentifier,
+		final Integer zoomFactor,
 		final BoundaryRectangle _boundaryRectangle)
 		throws RIFServiceException {
 
@@ -1378,6 +1380,14 @@ abstract class AbstractRIFStudyRetrievalService
 				geoLevelSelect);	
 			fieldValidationUtility.checkNullMethodParameter(
 				"getTiles",
+				"tileIdentifier",
+				tileIdentifier);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getTiles",
+				"zoomFactor",
+				zoomFactor);		
+			fieldValidationUtility.checkNullMethodParameter(
+				"getTiles",
 				"boundaryRectangle",
 				boundaryRectangle);	
 
@@ -1413,6 +1423,8 @@ abstract class AbstractRIFStudyRetrievalService
 					user,
 					geography,
 					geoLevelSelect,
+					tileIdentifier,
+					zoomFactor,
 					boundaryRectangle);
 			
 		}
