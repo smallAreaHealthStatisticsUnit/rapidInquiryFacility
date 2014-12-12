@@ -460,7 +460,7 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 	@After
 	public void tearDown() {
 		try {
-			rifServiceBundle.deregisterAllUsers();		
+			rifServiceBundle.deregisterAllUsers();
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);

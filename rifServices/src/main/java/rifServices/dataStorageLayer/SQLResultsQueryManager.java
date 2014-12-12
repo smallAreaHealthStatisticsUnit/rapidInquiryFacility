@@ -1,7 +1,6 @@
 package rifServices.dataStorageLayer;
 
 import rifServices.businessConceptLayer.*;
-
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
@@ -353,6 +352,8 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		final User user,
 		final Geography geography,
 		final GeoLevelSelect geoLevelSelect,
+		final String tileIdentifier,
+		final Integer zoomFactor,		
 		final BoundaryRectangle boundaryRectangle) 
 		throws RIFServiceException {
 
@@ -363,6 +364,13 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			geography,
 			geoLevelSelect);		
 		boundaryRectangle.checkErrors();
+
+
+		//check cache
+		//if tile with tileIdentifier+zoomFactor has already been used, return that
+		//instead of making another call to the database
+		
+		
 		
 		//Create query
 		SQLFunctionCallerQueryFormatter query

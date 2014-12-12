@@ -1391,11 +1391,28 @@ abstract class AbstractRIFStudyRetrievalService
 				"boundaryRectangle",
 				boundaryRectangle);	
 
+			//check that zoomFactor
+			if ((zoomFactor <1) || (zoomFactor > 20)) {
+				//zoom factor is out of range.
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"getTiles.zoomFactor.error",
+						String.valueOf(zoomFactor));
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.INVALID_ZOOM_FACTOR, 
+						errorMessage);
+				throw rifServiceException;
+			}
 			
 			//Check for security violations
 			validateUser(user);
 			geography.checkSecurityViolations();
-			geoLevelSelect.checkSecurityViolations();
+			geoLevelSelect.checkSecurityViolations();			
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getTiles", 
+				"boundaryRectangle", 
+				tileIdentifier);
 			
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				

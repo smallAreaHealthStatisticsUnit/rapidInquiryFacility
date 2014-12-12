@@ -510,7 +510,9 @@ public class RIFStudyResultRetrievalWebServiceResource
 	public String getTiles(
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,		
+		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+		@QueryParam("tileIdentifier") String tileIdentifier,
+		@QueryParam("zoomFactor") Integer zoomFactor,		
 		@QueryParam("yMax") String yMax,
 		@QueryParam("xMax") String xMax,
 		@QueryParam("yMin") String yMin,
@@ -539,6 +541,8 @@ public class RIFStudyResultRetrievalWebServiceResource
 					user, 
 					geography, 
 					geoLevelSelect,
+					tileIdentifier,
+					zoomFactor,
 					boundaryRectangle);
 			
 		}

@@ -81,13 +81,25 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private String validTileIdentifier;
+	private String emptyTileIdentifier;
+	private String maliciousTileIdentifier;
+	private String nonExistentTileIdentifier;
+	
+	private Integer validZoomFactor;
+	
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public GetTiles() {
-
+		validTileIdentifier = "123";
+		emptyTileIdentifier = "";
+		maliciousTileIdentifier = getTestMaliciousValue();
+		
+		validZoomFactor = 5;
+		
 	}
 
 	// ==========================================
@@ -97,6 +109,7 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 
 	@Test
 	public void getTiles_COMMON1() {
+		
 		try {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
@@ -117,8 +130,9 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 					validUser, 
 					validGeography, 
 					validGeoLevelSelect,
+					validTileIdentifier,
+					validZoomFactor,
 					validBoundaryRectangle);
-			System.out.println("result=="+result+"==");
 			assertNotNull(result);
 			
 			//try running this, doesn't seem to work
@@ -129,6 +143,69 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 			
 			fail();
 		}
+	}
+	
+	@Test
+	public void getTiles_INVALID1() {
+
+		User validUser = cloneValidUser();
+		Geography validGeography = cloneValidGeography();
+		GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
+		validGeoLevelSelect.setName("LEVEL3");
+		Integer invalidZoomFactor = 21;
+		BoundaryRectangle validBoundaryRectangle = cloneValidBoundaryRectangle();
+		validBoundaryRectangle.setYMax(55.5268);
+		validBoundaryRectangle.setXMax(-4.88654);
+		validBoundaryRectangle.setYMin(52.6875);
+		validBoundaryRectangle.setXMin(-7.58829);
+		//y_max  |  x_max   |  y_min  |  x_min
+		 //---------+----------+---------+----------
+		 // 55.5268 | -4.88654 | 52.6875 | -7.58829
+		 //(1 row)			
+		
+		try {
+			
+			String result
+				= rifStudyRetrievalService.getTiles(
+					validUser, 
+					validGeography, 
+					validGeoLevelSelect,
+					validTileIdentifier,
+					invalidZoomFactor,
+					validBoundaryRectangle);
+			fail();
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_ZOOM_FACTOR, 
+				1);
+		}
+		
+
+		invalidZoomFactor = 0;
+		
+		try {
+			String result
+				= rifStudyRetrievalService.getTiles(
+					validUser, 
+					validGeography, 
+					validGeoLevelSelect,
+					validTileIdentifier,
+					invalidZoomFactor,
+					validBoundaryRectangle);
+			
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_ZOOM_FACTOR, 
+				1);
+		}
+		
+		
 	}
 
 	@Test
@@ -142,6 +219,8 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 				emptyUser, 
 				validGeography, 
 				validGeoLevelSelect,
+				validTileIdentifier,
+				validZoomFactor,				
 				validBoundaryRectangle);			
 			fail();
 		}
@@ -163,6 +242,8 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 				null, 
 				validGeography, 
 				validGeoLevelSelect,
+				validTileIdentifier,
+				validZoomFactor,				
 				validBoundaryRectangle);			
 			fail();
 		}
@@ -185,6 +266,8 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 				validUser, 
 				emptyGeography, 
 				validGeoLevelSelect,
+				validTileIdentifier,
+				validZoomFactor,				
 				validBoundaryRectangle);			
 			fail();
 		}
@@ -206,6 +289,8 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 				validUser, 
 				null, 
 				validGeoLevelSelect,
+				validTileIdentifier,
+				validZoomFactor,				
 				validBoundaryRectangle);			
 			fail();
 		}
@@ -228,6 +313,8 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 				validUser, 
 				validGeography, 
 				emptyGeoLevelSelect,
+				validTileIdentifier,
+				validZoomFactor,				
 				validBoundaryRectangle);			
 			fail();
 		}
@@ -249,6 +336,8 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 				validUser, 
 				validGeography, 
 				null,
+				validTileIdentifier,
+				validZoomFactor,				
 				validBoundaryRectangle);			
 			fail();
 		}
@@ -260,8 +349,82 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 		}
 	}
 
+	
+	@Test
+	public void getTiles_EMPTY4() {
+	try {
+		User validUser = cloneValidUser();
+		Geography validGeography = cloneValidGeography();
+		GeoLevelSelect emptyGeoLevelSelect = cloneEmptyGeoLevelSelect();
+		BoundaryRectangle validBoundaryRectangle = cloneValidBoundaryRectangle();
+		rifStudyRetrievalService.getTiles(
+			validUser, 
+			validGeography, 
+			emptyGeoLevelSelect,
+			emptyTileIdentifier,
+			validZoomFactor,				
+			validBoundaryRectangle);			
+		fail();
+	}
+	catch(RIFServiceException rifServiceException) {
+		checkErrorType(
+			rifServiceException, 
+			RIFServiceError.INVALID_GEOLEVEL_SELECT,
+			1);
+	}
+}
+
 	@Test
 	public void getTiles_NULL4() {
+		try {
+			User validUser = cloneValidUser();
+			Geography validGeography = cloneValidGeography();
+			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle = cloneValidBoundaryRectangle();
+			rifStudyRetrievalService.getTiles(
+				validUser, 
+				validGeography, 
+				validGeoLevelSelect,	
+				null,
+				validZoomFactor,				
+				validBoundaryRectangle);			
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				1);
+		}
+	}
+	
+
+	@Test
+	public void getTiles_NULL5() {
+		try {
+			User validUser = cloneValidUser();
+			Geography validGeography = cloneValidGeography();
+			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle = cloneValidBoundaryRectangle();
+			rifStudyRetrievalService.getTiles(
+				validUser, 
+				validGeography, 
+				validGeoLevelSelect,	
+				validTileIdentifier,
+				null,
+				validBoundaryRectangle);			
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				1);
+		}
+	}
+	
+	@Test
+	public void getTiles_NULL6() {
 		try {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
@@ -270,6 +433,8 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 				validUser, 
 				validGeography, 
 				validGeoLevelSelect,
+				validTileIdentifier,
+				validZoomFactor,
 				null);			
 			fail();
 		}
@@ -293,6 +458,8 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 				validUser, 
 				validGeography, 
 				validGeoLevelSelect,
+				validTileIdentifier,
+				validZoomFactor,
 				invalidBoundaryRectangle);			
 			fail();
 		}
@@ -315,6 +482,8 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 				nonExistentUser, 
 				validGeography, 
 				validGeoLevelSelect,
+				validTileIdentifier,
+				validZoomFactor,
 				validBoundaryRectangle);			
 			fail();
 		}
@@ -337,6 +506,8 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 				validUser, 
 				nonExistentGeography, 
 				validGeoLevelSelect,
+				validTileIdentifier,
+				validZoomFactor,
 				validBoundaryRectangle);			
 			fail();
 		}
@@ -347,8 +518,6 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 				1);
 		}
 	}
-
-
 	
 	@Test
 	public void getTiles_NONEXISTENT3() {
@@ -361,6 +530,8 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 				validUser, 
 				validGeography, 
 				nonExistentGeoLevelSelect,
+				validTileIdentifier,
+				validZoomFactor,
 				validBoundaryRectangle);			
 			fail();
 		}
@@ -372,6 +543,33 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 		}
 	}
 
+	
+	@Test
+	public void getTiles_NONEXISTENT4() {
+		try {
+			User validUser = cloneValidUser();
+			Geography validGeography = cloneValidGeography();
+			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle = cloneValidBoundaryRectangle();
+			rifStudyRetrievalService.getTiles(
+				validUser, 
+				validGeography, 
+				validGeoLevelSelect,
+				nonExistentTileIdentifier,
+				validZoomFactor,
+				validBoundaryRectangle);			
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.NON_EXISTENT_GEOLEVEL_SELECT_VALUE,
+				1);
+		}
+	}
+	
+	
+	
 	@Test
 	public void getTiles_MALICIOUS1() {
 		try {
@@ -383,6 +581,8 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 				maliciousUser, 
 				validGeography, 
 				validGeoLevelSelect,
+				validTileIdentifier,
+				validZoomFactor,
 				validBoundaryRectangle);			
 			fail();
 		}
@@ -405,6 +605,8 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 				validUser, 
 				maliciousGeography, 
 				validGeoLevelSelect,
+				validTileIdentifier,
+				validZoomFactor,
 				validBoundaryRectangle);			
 			fail();
 		}
@@ -421,12 +623,14 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 		try {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect validMaliciousGeoLevelSelect = cloneMaliciousGeoLevelSelect();
+			GeoLevelSelect maliciousGeoLevelSelect = cloneMaliciousGeoLevelSelect();
 			BoundaryRectangle validBoundaryRectangle = cloneValidBoundaryRectangle();
 			rifStudyRetrievalService.getTiles(
 				validUser, 
 				validGeography, 
-				validMaliciousGeoLevelSelect,
+				maliciousGeoLevelSelect,
+				validTileIdentifier,
+				validZoomFactor,
 				validBoundaryRectangle);			
 			fail();
 		}
@@ -438,6 +642,32 @@ public class GetTiles extends AbstractRIFServiceTestCase {
 		}
 	}
 			
+
+	@Test
+	public void getTiles_MALICIOUS4() {
+		try {
+			User validUser = cloneValidUser();
+			Geography validGeography = cloneValidGeography();
+			GeoLevelSelect maliciousGeoLevelSelect = cloneMaliciousGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle = cloneValidBoundaryRectangle();
+			rifStudyRetrievalService.getTiles(
+				validUser, 
+				validGeography, 
+				maliciousGeoLevelSelect,
+				maliciousTileIdentifier,
+				validZoomFactor,
+				validBoundaryRectangle);			
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.SECURITY_VIOLATION, 
+				1);
+		}
+	}
+	
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
