@@ -342,7 +342,7 @@ public class RIFStudySubmissionWebServiceResource
 				calculationMethodProxy.setParameterProxies(parameterProxies);				
 				calculationMethodProxies.add(calculationMethodProxy);
 			}
-			result = serialiseResult(calculationMethodProxies);			
+			result = serialiseArrayResult(calculationMethodProxies);			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -416,7 +416,7 @@ public class RIFStudySubmissionWebServiceResource
 				projectProxy.setName(project.getName());
 				projectProxies.add(projectProxy);
 			}		
-			result = serialiseResult(projectProxies);
+			result = serialiseArrayResult(projectProxies);
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
@@ -464,7 +464,7 @@ public class RIFStudySubmissionWebServiceResource
 						projectName);
 			}
 			else {
-				result = serialiseResult(selectedProject.getDescription());
+				result = serialiseStringResult(selectedProject.getDescription());
 			}
 			
 		}
@@ -512,7 +512,7 @@ public class RIFStudySubmissionWebServiceResource
 				geoLevelToMapsNames.add(geoLevelToMap.getName());
 			}
 			geoLevelToMapsProxy.setNames(geoLevelToMapsNames.toArray(new String[0]));			
-			result = serialiseResult(geoLevelToMapsProxy);
+			result = serialiseSingleItemAsArrayResult(geoLevelToMapsProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -570,7 +570,7 @@ public class RIFStudySubmissionWebServiceResource
 				mapAreaProxy.setLabel(mapArea.getLabel());
 				mapAreaProxies.add(mapAreaProxy);
 			}			
-			result = serialiseResult(mapAreaProxies);
+			result = serialiseArrayResult(mapAreaProxies);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -615,7 +615,7 @@ public class RIFStudySubmissionWebServiceResource
 				healthThemeProxy.setDescription(healthTheme.getDescription());
 				healthThemeProxies.add(healthThemeProxy);
 			}			
-			result = serialiseResult(healthThemeProxies);
+			result = serialiseArrayResult(healthThemeProxies);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -658,7 +658,7 @@ public class RIFStudySubmissionWebServiceResource
 
 			//Convert results to support JSON						
 			sexesProxy.setNames(sexNames.toArray(new String[0]));
-			result = serialiseResult(sexesProxy);
+			result = serialiseSingleItemAsArrayResult(sexesProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -719,7 +719,7 @@ public class RIFStudySubmissionWebServiceResource
 				covariateProxies.add(covariateProxy);
 			}
 			
-			result = serialiseResult(covariateProxies);
+			result = serialiseArrayResult(covariateProxies);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -787,7 +787,7 @@ public class RIFStudySubmissionWebServiceResource
 				ageGroupProxy.setUpperLimit(ageGroup.getUpperLimit());
 				ageGroupProxies.add(ageGroupProxy);
 			}
-			result = serialiseResult(ageGroupProxies);
+			result = serialiseArrayResult(ageGroupProxies);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -827,7 +827,7 @@ public class RIFStudySubmissionWebServiceResource
 				healthCodeTaxonomyProxy.setVersion(healthCodeTaxonomy.getVersion());
 				healthCodeTaxonomyProxies.add(healthCodeTaxonomyProxy);
 			}
-			result = serialiseResult(healthCodeTaxonomyProxies);					
+			result = serialiseArrayResult(healthCodeTaxonomyProxies);					
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -872,7 +872,7 @@ public class RIFStudySubmissionWebServiceResource
 				healthCodeProxy.setNumberOfSubTerms(String.valueOf(healthCode.getNumberOfSubTerms()));
 				healthCodeProxies.add(healthCodeProxy);
 			}
-			result = serialiseResult(healthCodeProxies);					
+			result = serialiseArrayResult(healthCodeProxies);					
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -922,7 +922,7 @@ public class RIFStudySubmissionWebServiceResource
 				healthCodeProxy.setNumberOfSubTerms(String.valueOf(healthCode.getNumberOfSubTerms()));
 				healthCodeProxies.add(healthCodeProxy);
 			}
-			result = serialiseResult(healthCodeProxies);					
+			result = serialiseArrayResult(healthCodeProxies);					
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -968,7 +968,7 @@ public class RIFStudySubmissionWebServiceResource
 				healthCodeProxy.setNameSpace(parentHealthCode.getNameSpace());
 				healthCodeProxy.setIsTopLevelTerm(String.valueOf(parentHealthCode.isTopLevelTerm()));
 				healthCodeProxy.setNumberOfSubTerms(String.valueOf(parentHealthCode.getNumberOfSubTerms()));
-				result = serialiseResult(healthCodeProxy);
+				result = serialiseSingleItemAsArrayResult(healthCodeProxy);
 			}
 		}
 		catch(Exception exception) {
@@ -1017,7 +1017,7 @@ public class RIFStudySubmissionWebServiceResource
 				healthCodeProxy.setNumberOfSubTerms(String.valueOf(currentHealthCode.getNumberOfSubTerms()));
 				healthCodeProxies.add(healthCodeProxy);
 			}
-			result = serialiseResult(healthCodeProxies);					
+			result = serialiseArrayResult(healthCodeProxies);					
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -1066,7 +1066,7 @@ public class RIFStudySubmissionWebServiceResource
 				healthCodeProxy.setNumberOfSubTerms(String.valueOf(matchingHealthCode.getNumberOfSubTerms()));
 			}
 			
-			result = serialiseResult(healthCodeProxies);					
+			result = serialiseArrayResult(healthCodeProxies);					
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON

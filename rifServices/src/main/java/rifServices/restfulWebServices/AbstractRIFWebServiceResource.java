@@ -107,7 +107,6 @@ abstract class AbstractRIFWebServiceResource {
 	// ==========================================
 
 	public AbstractRIFWebServiceResource() {
-		System.out.println("AbstractRIFWebServiceResource constructor 1 for class=="+getClass().getName()+"==");
 
 		startTime = new Date();
 		sd = new SimpleDateFormat("HH:mm:ss:SSS");
@@ -216,7 +215,7 @@ abstract class AbstractRIFWebServiceResource {
 				}
 				GeographiesProxy geographiesProxy = new GeographiesProxy();		
 				geographiesProxy.setNames(geographyNames.toArray(new String[0]));
-				result = serialiseResult(geographiesProxy);
+				result = serialiseSingleItemAsArrayResult(geographiesProxy);
 			}			
 		}
 		catch(Exception exception) {
@@ -256,10 +255,7 @@ abstract class AbstractRIFWebServiceResource {
 			GeoLevelSelectsProxy geoLevelSelectProxy
 				= new GeoLevelSelectsProxy();		
 			geoLevelSelectProxy.setNames(geoLevelSelectNames.toArray(new String[0]));
-			
-			ArrayList<GeoLevelSelectsProxy> blah = new ArrayList<GeoLevelSelectsProxy>();
-			blah.add(geoLevelSelectProxy);
-			result = serialiseResult(blah);
+			result = serialiseSingleItemAsArrayResult(geoLevelSelectProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -296,7 +292,7 @@ abstract class AbstractRIFWebServiceResource {
 			String[] geoLevelSelectValues = new String[1];
 			geoLevelSelectValues[0] = defaultGeoLevelSelect.getName();
 			geoLevelSelectProxy.setNames(geoLevelSelectValues);
-			result = serialiseResult(geoLevelSelectProxy);
+			result = serialiseSingleItemAsArrayResult(geoLevelSelectProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -338,7 +334,7 @@ abstract class AbstractRIFWebServiceResource {
 				geoLevelAreaNames.add(area.getName());
 			}
 			geoLevelAreasProxy.setNames(geoLevelAreaNames.toArray(new String[0]));
-			result = serialiseResult(geoLevelAreasProxy);
+			result = serialiseSingleItemAsArrayResult(geoLevelAreasProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -380,7 +376,7 @@ abstract class AbstractRIFWebServiceResource {
 			}
 			geoLevelViewsProxy.setNames(geoLevelViewNames.toArray(new String[0]));
 			
-			result = serialiseResult(geoLevelViewsProxy);
+			result = serialiseSingleItemAsArrayResult(geoLevelViewsProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -414,8 +410,6 @@ abstract class AbstractRIFWebServiceResource {
 				= Geography.newInstance(geographyName, "");
 			HealthTheme healthTheme 
 				= HealthTheme.newInstance("xxx", healthThemeDescription.trim());
-			System.out.println("getNumerator healthTheme1 name=="+healthTheme.getName()+"==description=="+healthTheme.getDescription()+"==");
-			System.out.println("getNumerator healthTheme2 name=="+healthTheme.getName()+"==description=="+healthTheme.getDescription().trim()+"==");
 
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
@@ -438,7 +432,7 @@ abstract class AbstractRIFWebServiceResource {
 				ndPairProxy.setDenominatorTableDescription(ndPair.getDenominatorTableDescription());
 				ndPairProxies.add(ndPairProxy);
 			}			
-			result = serialiseResult(ndPairProxies);
+			result = serialiseArrayResult(ndPairProxies);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -487,7 +481,7 @@ abstract class AbstractRIFWebServiceResource {
 			ndPairProxy.setNumeratorTableDescription(firstResult.getNumeratorTableDescription());
 			ndPairProxy.setDenominatorTableName(firstResult.getDenominatorTableName());
 			ndPairProxy.setDenominatorTableDescription(firstResult.getDenominatorTableDescription());							
-			result = serialiseResult(firstResult);
+			result = serialiseSingleItemAsArrayResult(firstResult);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -526,7 +520,7 @@ abstract class AbstractRIFWebServiceResource {
 			YearRangeProxy yearRangeProxy = new YearRangeProxy();
 			yearRangeProxy.setLowerBound(yearRange.getLowerBound());
 			yearRangeProxy.setUpperBound(yearRange.getUpperBound());
-			result = serialiseResult(yearRangeProxy);
+			result = serialiseSingleItemAsArrayResult(yearRangeProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON			
@@ -545,7 +539,7 @@ abstract class AbstractRIFWebServiceResource {
 	 * @return
 	 * @throws Exception
 	 */
-	protected String serialiseResult(
+	protected String serialiseArrayResult(
 		final Object objectToWrite) 
 		throws Exception {
 
@@ -555,6 +549,31 @@ abstract class AbstractRIFWebServiceResource {
 		final byte[] data = out.toByteArray();
 		return(new String(data));
 	}
+	
+	protected String serialiseSingleItemAsArrayResult(
+		final Object objectToWrite) 
+		throws Exception {
+
+		final ArrayList<Object> objectArrayList = new ArrayList<Object>();
+		objectArrayList.add(objectToWrite);
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+		final ObjectMapper mapper = new ObjectMapper();
+		mapper.writeValue(out, objectArrayList);
+		final byte[] data = out.toByteArray();
+		return(new String(data));
+	}
+	
+	protected String serialiseStringResult(
+		final String result) 
+		throws Exception {
+
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+		final ObjectMapper mapper = new ObjectMapper();
+		mapper.writeValue(out, result);
+		final byte[] data = out.toByteArray();
+		return(new String(data));
+	}
+	
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -590,7 +609,7 @@ abstract class AbstractRIFWebServiceResource {
 			
 				rifServiceExceptionProxy.setErrorMessages(errorMessages);
 			}
-			result = serialiseResult(rifServiceExceptionProxy);
+			result = serialiseSingleItemAsArrayResult(rifServiceExceptionProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
