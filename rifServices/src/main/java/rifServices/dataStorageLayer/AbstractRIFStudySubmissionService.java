@@ -1024,12 +1024,104 @@ abstract class AbstractRIFStudySubmissionService
 		return result;	
 	}
 	
+	public ArrayList<MapArea> getMapAreasForBoundaryRectangle(
+		final User _user,
+		final Geography _geography,			
+		final GeoLevelSelect _geoLevelSelect,
+		final BoundaryRectangle _boundaryRectangle) 
+		throws RIFServiceException {
+		
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);		
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();	
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		
+		Geography geography 
+			= Geography.createCopy(_geography);
+		GeoLevelSelect geoLevelSelect
+			= GeoLevelSelect.createCopy(_geoLevelSelect);
+		BoundaryRectangle boundaryRectangle
+			= BoundaryRectangle.createCopy(_boundaryRectangle);
+		
+		//Check for empty parameters
+		ArrayList<MapArea> results = new ArrayList<MapArea>();
+		Connection connection = null;
+		try {
+			
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getMapAreasForBoundaryRectangle",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getMapAreasForBoundaryRectangle",
+				"geography",
+				geography);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getMapAreasForBoundaryRectangle",
+				"geoLevelSelect",
+				geoLevelSelect);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getMapAreasForBoundaryRectangle",
+				"boundaryRectangle",
+				boundaryRectangle);
+			
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage(
+					"logging.getMapAreasForBoundaryRectangle",
+					user.getUserID(),
+					user.getIPAddress(),
+					geography.getDisplayName(),
+					geoLevelSelect.getDisplayName(),
+					boundaryRectangle.getDisplayName());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+			
+			//Assign pooled connection
+			connection 
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
+			SQLMapDataManager sqlMapDataManager
+				= rifServiceResources.getSQLMapDataManager();			
+			results
+				= sqlMapDataManager.getMapAreasForBoundaryRectangle(
+					connection, 
+					geography,
+					geoLevelSelect,
+					boundaryRectangle);			
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getMapAreas",
+				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+	
+		return results;
+	}
+	
 	public ArrayList<MapArea> getMapAreas(
 		final User _user,
 		final Geography _geography,
 		final GeoLevelSelect _geoLevelSelect,
 		final GeoLevelArea _geoLevelArea,
-		final GeoLevelToMap _geoLevelToMap) throws RIFServiceException {
+		final GeoLevelToMap _geoLevelToMap) 
+		throws RIFServiceException {
 			
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);		
@@ -1038,6 +1130,7 @@ abstract class AbstractRIFStudySubmissionService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
+
 		Geography geography 
 			= Geography.createCopy(_geography);
 		GeoLevelSelect geoLevelSelect
@@ -1086,12 +1179,11 @@ abstract class AbstractRIFStudySubmissionService
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
-					"logging.getSummaryDataForCurrentExtent",
+					"logging.getMapAreas",
 					user.getUserID(),
 					user.getIPAddress(),
 					geography.getDisplayName(),
 					geoLevelSelect.getDisplayName(),
-					geoLevelArea.getDisplayName(),
 					geoLevelToMap.getDisplayName());
 			rifLogger.info(
 				getClass(),
