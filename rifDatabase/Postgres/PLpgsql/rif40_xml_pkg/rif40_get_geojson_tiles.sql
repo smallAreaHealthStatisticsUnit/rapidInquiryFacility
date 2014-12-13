@@ -9,7 +9,7 @@
 -- Description:
 --
 -- Rapid Enquiry Facility (RIF) - Web services integration functions for middleware
---     				  Encapulate geoJSON in Javascript
+--     				  Encapulate geoJSON in Javascript if required
 --
 -- Copyright:
 --
@@ -74,6 +74,8 @@ CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(
 	x_max 			REAL, 
 	y_min 			REAL, 
 	x_min 			REAL, 
+	zoom_level		INTEGER DEFAULT  9 /* 1 in 1,162,506 */,
+	tile_name		VARCHAR DEFAULT NULL,
 	return_one_row 		BOOLEAN DEFAULT TRUE)
 RETURNS SETOF text
 SECURITY INVOKER
@@ -81,7 +83,10 @@ AS $body$
 /*
 
 Function: 	rif40_get_geojson_tiles()
-Parameters:	Geography, geolevel_view, Y max, X max, Y min, X min as a record, return one row (TRUE/FALSE)
+Parameters:	Geography, geolevel_view, 
+			Y max, X max, Y min, X min as a record (bounding box), 
+			Zoom level [Default: 9; scaling 1 in 1,162,506], tile name [Default: NULL]
+			return one row (TRUE/FALSE)
 Returns:	Text table [1 or more rows dependent on return_one_row]
 Description:	Get GeoJSON data as a Javascript variable. 
 		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
@@ -195,10 +200,11 @@ DECLARE
 		 WHERE geography     = l_geography
 		   AND geolevel_name = l_geolevel;
 	c3geojson2 REFCURSOR;
-	c5geojson2 CURSOR(l_geography VARCHAR, l_geolevel_view VARCHAR, l_geolevel_area_id_list VARCHAR[], l_expected_rows INTEGER) FOR
+	c5geojson2 CURSOR(l_geography VARCHAR, l_geolevel_view VARCHAR, l_geolevel_area_id_list VARCHAR[], l_expected_rows INTEGER, l_zoom_level INTEGER) FOR
 		WITH a AS (
 			SELECT js FROM rif40_xml_pkg._rif40_get_geojson_as_js(
-						l_geography, l_geolevel_view, l_geolevel_area_id_list, l_expected_rows, TRUE /* Produce JSON not JS */)
+						l_geography, l_geolevel_view, l_geolevel_area_id_list, l_expected_rows, 
+						TRUE /* Produce JSON not JS */, l_zoom_level)
 		)
 		SELECT ARRAY_AGG(js) AS js
 		  FROM a;
@@ -467,7 +473,7 @@ Total runtime: 19.472 ms
 --
 -- Call  rif40_xml_pkg._rif40_get_geojson_as_js()
 --
-	OPEN c5geojson2(l_geography, l_geolevel_view, geolevel_area_id_list, (c3_rec.total+2)::INTEGER /* l_expected_rows */);
+	OPEN c5geojson2(l_geography, l_geolevel_view, geolevel_area_id_list, (c3_rec.total+2)::INTEGER /* l_expected_rows */, zoom_level);
 	FETCH c5geojson2 INTO c5_rec;
 	CLOSE c5geojson2;
 --
@@ -513,9 +519,13 @@ END;
 $body$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, BOOLEAN) IS 'Function: 	rif40_get_geojson_tiles()
+COMMENT ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, 
+	INTEGER, VARCHAR, BOOLEAN) IS 'Function: 	rif40_get_geojson_tiles()
 Function: 	rif40_get_geojson_tiles()
-Parameters:	Geography, geolevel_view, Y max, X max, Y min, X min as a record, return one row (TRUE/FALSE)
+Parameters:	Geography, geolevel_view, 
+			Y max, X max, Y min, X min as a record (bounding box), 
+			Zoom level [Default: 9; scaling 1 in 1,162,506], tile name [Default: NULL]
+			return one row (TRUE/FALSE)
 Returns:	Text table [1 or more rows dependent on return_one_row]
 Description:	Get GeoJSON data as a Javascript variable. 
 		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
@@ -617,8 +627,8 @@ Generates geoJSON that looks (when prettified using http://jsbeautifier.org/) li
 
 Validated with JSlint: http://www.javascriptlint.com/online_lint.php';
 
-GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, BOOLEAN) TO rif_manager;
-GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, BOOLEAN) TO rif_user;
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, VARCHAR, BOOLEAN) TO rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, VARCHAR, BOOLEAN) TO rif_user;
 
 --
 -- Eof

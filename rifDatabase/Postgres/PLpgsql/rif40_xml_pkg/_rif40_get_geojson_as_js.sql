@@ -68,13 +68,15 @@ $$;
 -- rif40_xml_pkgt._rif40_get_geojson_as_js: 		50600 to 50799
 --
 DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR[], INTEGER);
-
+DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR[], INTEGER, BOOLEAN);
+DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR[], INTEGER, BOOLEAN, INTEGER);
 CREATE OR REPLACE FUNCTION rif40_xml_pkg._rif40_get_geojson_as_js(
 	l_geography VARCHAR, 
 	geolevel_view VARCHAR, 
 	geolevel_area_id_list VARCHAR[], 
 	l_expected_rows INTEGER,
-	produce_json_only BOOLEAN DEFAULT FALSE)
+	produce_json_only BOOLEAN DEFAULT FALSE, 
+	zoom_level		INTEGER DEFAULT  9 /* 1 in 1,162,506 */)
 RETURNS TABLE(js VARCHAR)
 SECURITY INVOKER
 AS $body$
@@ -82,9 +84,12 @@ AS $body$
 
 Function: 	_rif40_get_geojson_as_js()
 Parameters:	Geography, geolevel_view, geolevel area ID list, expected_rows, 
-			produce JSON only (i.e. not encapsulated in Javascript) - default FALSE
+			produce JSON only (i.e. not encapsulated in Javascript) - default FALSE, 
+			Zoom level [Default: 9; scaling 1 in 1,162,506], tile name [Default: NULL]
 Returns:	Text table
 Description:	Get GeoJSON data as a Javascript variable. 
+			If the zoom level is 12 (1 in 145,313) or more then the properties are minimised to just the gid.
+			This is to minimise the file size.
 
 Execute a SQL statement as below and return a Javascript variable. Check rows are as expected.
 EXPLAIN ANALYZE VERBOSE the query if DEBUG2 set for function.
@@ -232,13 +237,22 @@ BEGIN
 	sql_stmt:=sql_stmt||E'\t'||'UNION'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'SELECT ROW_NUMBER() OVER(ORDER BY area_id) ord,'||E'\n'; 
 	sql_stmt:=sql_stmt||E'\t'||'       ''{"type": "Feature","properties":''||'||E'\n'; 
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'''{"area_id":"''||area_id||''",''||'||E'\n'; 
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"name":"''||COALESCE(name, '''')||''",''||'||E'\n'; 
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"area":"''||COALESCE(area::Text, '''')||''",''||'||E'\n'; 
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"total_males":"''||COALESCE(total_males::Text, '''')||''",''||'||E'\n'; 
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"total_females":"''||COALESCE(total_females::Text, '''')||''",''||'||E'\n'; 
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"population_year":"''||COALESCE(LTRIM(TO_CHAR(population_year, ''9990'')), '''')||''",''||'||E'\n'; 
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"gid":"''||gid||''"},''||'||E'\n'; 
+--
+-- If the zoom level is 12 (1 in 145,313) or more then the properties are minimised to just the gid.
+-- This is to minimise the file size.
+--
+	IF zoom_level >= 12 THEN
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'''{"gid":"''||gid||''"},''||'||E'\n';
+	ELSE
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'''{"area_id":"''||area_id||''",''||'||E'\n'; 
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"name":"''||COALESCE(name, '''')||''",''||'||E'\n'; 
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"area":"''||COALESCE(area::Text, '''')||''",''||'||E'\n'; 
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"total_males":"''||COALESCE(total_males::Text, '''')||''",''||'||E'\n'; 
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"total_females":"''||COALESCE(total_females::Text, '''')||''",''||'||E'\n'; 
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"population_year":"''||COALESCE(LTRIM(TO_CHAR(population_year, ''9990'')), '''')||''",''||'||E'\n'; 
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"gid":"''||gid||''"},''||'||E'\n'; 
+	END IF;
+--
 	IF produce_json_only THEN /* No comments */
 		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"geometry": ''||optimised_geojson||''}'' AS js'||E'\n'; 
 	ELSE
@@ -366,12 +380,15 @@ $body$
 LANGUAGE PLPGSQL;
 
 COMMENT ON FUNCTION rif40_xml_pkg._rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR[], INTEGER,
-		BOOLEAN) IS 'Function: 	_rif40_get_geojson_as_js()
+		BOOLEAN, INTEGER) IS 'Function: 	_rif40_get_geojson_as_js()
 Parameters:	Geography, geolevel_view, geolevel area ID list, l_expected_rows, 
-			produce JSON only (i.e. not encapsulated in Javascript) - default FALSE
-Returns:	Text table
+			produce JSON only (i.e. not encapsulated in Javascript) - default FALSE, 
+			Zoom level [Default: 9; scaling 1 in 1,162,506], tile name [Default: NULL]
+Returns:	Text table of geoJSON
 Description:	Get GeoJSON data as a Javascript variable. 
-
+			If the zoom level is 12 (1 in 145,313) or more then the properties are minimised to just the gid.
+			This is to minimise the file size.
+			
 Execute a SQL statement as below and return a Javascript variable. Check rows are as expected.
 EXPLAIN ANALYZE VERBOSE the query if DEBUG2 set for function.
 
