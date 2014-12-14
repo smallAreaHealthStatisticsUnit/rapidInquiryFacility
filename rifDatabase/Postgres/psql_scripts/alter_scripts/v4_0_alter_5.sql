@@ -165,30 +165,107 @@ Time: 40.133 ms
 Time: 2.648 ms
  */
 
--- Projection is wrong
+-- Projection was wrong, is now correct
 SELECT a.geolevel_name, 
        b.st_simplify_tolerance,
 	   ST_Distance_Spheroid(
-			ST_GeomFromEWKT('SRID=27700;POINT(0 0)'), ST_GeomFromEWKT('SRID=27700;POINT('||b.st_simplify_tolerance||' 0)'),
+			ST_GeomFromEWKT('SRID=27700;POINT(0 0)'), 
+			ST_GeomFromEWKT('SRID=27700;POINT('||b.st_simplify_tolerance||' 0)'),
 			'SPHEROID["Airy 1830",6377563.396,299.3249646]') st_simplify_tolerance_in_m,
        COUNT(a.area_id) AS t_areas, 
-       SUM(ST_NPoints(a.optimised_geometry)) AS t_points, 
-	   SUM(ST_Area(a.optimised_geometry)) AS t_area, 
-	   SUM(ST_perimeter(a.optimised_geometry)) AS t_perimeter
+       SUM(ST_NPoints(a.shapefile_geometry)) AS t_points, 
+	   SUM(ST_Area(a.shapefile_geometry)) AS t_area, 
+	   SUM(ST_perimeter(a.shapefile_geometry)) AS t_perimeter
   FROM t_rif40_sahsu_geometry a, rif40_geolevels b
  WHERE a.geolevel_name = b.geolevel_name
  GROUP BY b.geolevel_id, a.geolevel_name, b.st_simplify_tolerance
  ORDER BY b.geolevel_id;
-  
+ 
+ /*
+ "PROJCS["OSGB 1936 / British National Grid",
+	GEOGCS["OSGB 1936",
+		DATUM["OSGB_1936",
+			SPHEROID["Airy 1830",6377563.396,299.3249646,AUTHORITY["EPSG","7001"]],
+			TOWGS84[446.448,-125.157,542.06,0.15,0.247,0.842,-20.489],AUTHORITY["EPSG","6277"]
+			],
+		PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],
+		UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],
+		AUTHORITY["EPSG","4277"]
+		],
+	UNIT["metre",1,AUTHORITY["EPSG","9001"]],
+	PROJECTION["Transverse_Mercator"],
+		PARAMETER["latitude_of_origin",49],
+		PARAMETER["central_meridian",-2],
+		PARAMETER["scale_factor",0.9996012717],
+		PARAMETER["false_easting",400000],
+		PARAMETER["false_northing",-100000],
+		AUTHORITY["EPSG","27700"],
+		AXIS["Easting",EAST],
+		AXIS["Northing",NORTH]
+	]"
+ */
  
 WITH a AS (
-	SELECT srid, substring(srtext, position('SPHEROID[' in srtext)) AS spheroid
-	FROM spatial_ref_sys	
-	WHERE srid IN (27700, 4326)
-)
-SELECT srid, substring(spheroid, 1, position(',AUTHORITY[' in spheroid)-1)||']' AS spheroid
-  FROM a;
- 
+	SELECT srid, 
+	       substring(srtext, position('SPHEROID[' in srtext)) AS l_spheroid
+	FROM spatial_ref_sys
+   WHERE srid = 4326
+      OR srid IN (SELECT DISTINCT srid FROM rif40_geographies)   
+), d AS (
+	SELECT srid, 
+	       ST_Distance_Spheroid(
+				ST_GeomFromEWKT('SRID='||a.srid||';POINT(0 0)'), 
+				ST_GeomFromEWKT('SRID='||a.srid||';POINT(1 0)'),
+				a.l_spheroid::spheroid) one_unit_in_m,
+				a.l_spheroid
+	  FROM a
+), e AS (
+	SELECT srid, 
+	       ST_Distance_Spheroid(
+				ST_GeomFromEWKT('SRID='||d.srid||';POINT(0 0)'), 
+				ST_GeomFromEWKT('SRID='||d.srid||';POINT('||100/d.one_unit_in_m||' 0)'),
+				d.l_spheroid::spheroid) one_hundred_m
+	  FROM d
+)			
+SELECT b.geography, 
+       a.srid, 
+	   d.one_unit_in_m,
+	   e.one_hundred_m,
+       substring(a.l_spheroid, 1, position(',AUTHORITY[' in a.l_spheroid)-1)||']' AS spheroid
+  FROM d, e, a LEFT OUTER JOIN rif40_geographies b ON (a.srid = b.srid)
+ WHERE a.srid = d.srid
+   AND d.srid = e.srid;
+  
+WITH c AS (
+	SELECT srid, substring(srtext, position('SPHEROID[' in srtext)) AS l_spheroid
+	  FROM spatial_ref_sys	
+     WHERE srid = 4326 /* WGS 84 */
+) 
+SELECT a.geolevel_name, 
+       b.st_simplify_tolerance,
+	   ST_Distance_Spheroid(
+			ST_GeomFromEWKT('SRID='||c.srid||';POINT(0 0)'), 
+			ST_GeomFromEWKT('SRID='||c.srid||';POINT('||b.st_simplify_tolerance||' 0)'),
+			c.l_spheroid::spheroid) st_simplify_tolerance_in_m,
+       COUNT(a.area_id) AS t_areas, 
+       SUM(ST_NPoints(a.optimised_geometry)) AS t_points, 
+	   SUM(ST_Area(a.optimised_geometry)) AS t_area, 
+	   SUM(ST_perimeter(a.optimised_geometry)) AS t_perimeter
+  FROM t_rif40_sahsu_geometry a, rif40_geolevels b, c
+ WHERE a.geolevel_name = b.geolevel_name
+ GROUP BY b.geolevel_id, a.geolevel_name, b.st_simplify_tolerance, c.srid, c.l_spheroid
+ ORDER BY b.geolevel_id;
+/*
+ geolevel_name | st_simplify_tolerance | st_simplify_tolerance_in_m | t_areas | t_points |      t_area      |   t_perimeter
+---------------+-----------------------+----------------------------+---------+----------+------------------+-----------------
+ LEVEL1        |                   500 |           15584728.7090889 |       1 |      480 | 4.50059857695114 |  19.055572173303
+ LEVEL2        |                   100 |           11131949.0779206 |      17 |     4810 | 4.50017671666378 | 56.4710683945156
+ LEVEL3        |                    50 |           5565974.53896032 |     200 |    15368 | 4.50000989065218 | 115.925813614905
+ LEVEL4        |                    10 |           1113194.90779206 |    1230 |    57451 | 4.49985165272541 | 186.138191219224
+(4 rows)
+
+
+*/
 SELECT substring(a1.spheroid, 1, position(',AUTHORITY[' in a1.spheroid)-1)||']' AS spheroid
   FROM (
 	SELECT substring(srtext, position('SPHEROID[' in srtext)) AS spheroid
