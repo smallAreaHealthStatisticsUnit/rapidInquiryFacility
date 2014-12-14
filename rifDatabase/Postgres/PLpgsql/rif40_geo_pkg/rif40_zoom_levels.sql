@@ -14,7 +14,9 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - Create PG psql code zoomlevel display
+-- Rapid Enquiry Facility (RIF) - Create PG psql code zoomlevel display function
+--								  Tile conversion functions from:
+--								  http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Tools
 --
 -- Copyright:
 --
@@ -130,6 +132,8 @@ See also
 Assume 256 pixels = 67.33 mm
 */
 
+DROP FUNCTION IF EXISTS rif40_geo_pkg.rif40_zoom_levels(NUMERIC);
+		
 --
 -- Error codes assignment (see PLpgsql\Error_codes.txt):
 --
@@ -138,13 +142,15 @@ Assume 256 pixels = 67.33 mm
 CREATE OR REPLACE FUNCTION rif40_geo_pkg.rif40_zoom_levels(
 		l_latitude 			NUMERIC	DEFAULT 0 /* Equator - degrees in projection 4326 */)
 RETURNS TABLE(
-		zoomlevel			INTEGER, 
+		zoom_level			INTEGER, 
 		latitude			NUMERIC,
 		tiles				BIGINT,
 		degrees_per_tile	NUMERIC,
 		m_x_per_pixel_est	NUMERIC,
 		m_x_per_pixel		NUMERIC,
 		m_y_per_pixel		NUMERIC,
+		m_x					BIGINT,
+		m_y					BIGINT,
 		scale				TEXT
 		)
 SECURITY INVOKER
@@ -159,30 +165,31 @@ OSM/Leaflet - Zoom Levels
 http://wiki.openstreetmap.org/wiki/Zoom_levels 
 
 SELECT * FROM rif40_geo_pkg.rif40_zoom_levels();
- zoomlevel | latitude |    tiles     | degrees_per_tile | m_x_per_pixel_est | m_x_per_pixel | m_y_per_pixel |      scale
------------+----------+--------------+------------------+-------------------+---------------+---------------+------------------
-         0 |        0 |            1 |              360 |            156412 |        155497 |               | i in 591,225,112
-         1 |        0 |            4 |              180 |             78206 |         77748 |               | i in 295,612,556
-         2 |        0 |           16 |               90 |             39103 |         39136 |         39070 | i in 148,800,745
-         3 |        0 |           64 |               45 |             19552 |         19568 |         19472 | i in 74,400,373
-         4 |        0 |          256 |             22.5 |              9776 |          9784 |          9723 | i in 37,200,186
-         5 |        0 |         1024 |            11.25 |              4888 |          4892 |          4860 | i in 18,600,093
-         6 |        0 |         4096 |            5.625 |              2444 |          2446 |          2430 | i in 9,300,047
-         7 |        0 |        16384 |            2.813 |              1222 |          1223 |          1215 | i in 4,650,023
-         8 |        0 |        65536 |            1.406 |               611 |           611 |           607 | i in 2,325,012
-         9 |        0 |       262144 |            0.703 |               305 |           306 |           304 | i in 1,162,506
-        10 |        0 |      1048576 |            0.352 |               153 |           153 |           152 | i in 581,253
-        11 |        0 |      4194304 |            0.176 |                76 |            76 |            76 | i in 290,626
-        12 |        0 |     16777216 |            0.088 |                38 |            38 |            38 | i in 145,313
-        13 |        0 |     67108864 |            0.044 |                19 |            19 |            19 | i in 72,657
-        14 |        0 |    268435456 |            0.022 |               9.5 |           9.6 |           9.5 | i in 36,328
-        15 |        0 |   1073741824 |            0.011 |               4.8 |           4.8 |           4.7 | i in 18,164
-        16 |        0 |   4294967296 |            0.005 |               2.4 |           2.4 |           2.4 | i in 9,082
-        17 |        0 |  17179869184 |            0.003 |              1.19 |          1.19 |          1.19 | i in 4,541
-        18 |        0 |  68719476736 |           0.0014 |              0.60 |          0.60 |          0.59 | i in 2,271
-        19 |        0 | 274877906944 |          0.00069 |              0.30 |          0.30 |          0.30 | i in 1,135
+ zoomlevel | latitude |    tiles     | degrees_per_tile | m_x_per_pixel_est | m_x_per_pixel | m_y_per_pixel |   m_x    |   m_y    |      scale
+-----------+----------+--------------+------------------+-------------------+---------------+---------------+----------+----------+------------------
+         0 |        0 |            1 |              360 |            156412 |        155497 |               | 39807187 |          | 1 in 591,225,112
+         1 |        0 |            4 |              180 |             78206 |         77748 |               | 19903593 |          | 1 in 295,612,556
+         2 |        0 |           16 |               90 |             39103 |         39136 |         39070 | 10018754 | 10001966 | 1 in 148,800,745
+         3 |        0 |           64 |               45 |             19552 |         19568 |         19472 |  5009377 |  4984944 | 1 in 74,400,373
+         4 |        0 |          256 |             22.5 |              9776 |          9784 |          9723 |  2504689 |  2489167 | 1 in 37,200,186
+         5 |        0 |         1024 |            11.25 |              4888 |          4892 |          4860 |  1252344 |  1244120 | 1 in 18,600,093
+         6 |        0 |         4096 |            5.625 |              2444 |          2446 |          2430 |   626172 |   622000 | 1 in 9,300,047
+         7 |        0 |        16384 |            2.813 |              1222 |          1223 |          1215 |   313086 |   310993 | 1 in 4,650,023
+         8 |        0 |        65536 |            1.406 |               611 |           611 |           607 |   156543 |   155495 | 1 in 2,325,012
+         9 |        0 |       262144 |            0.703 |               305 |           306 |           304 |    78272 |    77748 | 1 in 1,162,506
+        10 |        0 |      1048576 |            0.352 |               153 |           153 |           152 |    39136 |    38874 | 1 in 581,253
+        11 |        0 |      4194304 |            0.176 |                76 |            76 |            76 |    19568 |    19437 | 1 in 290,626
+        12 |        0 |     16777216 |            0.088 |                38 |            38 |            38 |     9784 |     9718 | 1 in 145,313
+        13 |        0 |     67108864 |            0.044 |                19 |            19 |            19 |     4892 |     4859 | 1 in 72,657
+        14 |        0 |    268435456 |            0.022 |               9.5 |           9.6 |           9.5 |     2446 |     2430 | 1 in 36,328
+        15 |        0 |   1073741824 |            0.011 |               4.8 |           4.8 |           4.7 |     1223 |     1215 | 1 in 18,164
+        16 |        0 |   4294967296 |            0.005 |               2.4 |           2.4 |           2.4 |      611 |      607 | 1 in 9,082
+        17 |        0 |  17179869184 |            0.003 |              1.19 |          1.19 |          1.19 |      306 |      304 | 1 in 4,541
+        18 |        0 |  68719476736 |           0.0014 |              0.60 |          0.60 |          0.59 |      153 |      152 | 1 in 2,271
+        19 |        0 | 274877906944 |          0.00069 |              0.30 |          0.30 |          0.30 |       76 |       76 | 1 in 1,135
 (20 rows)
 
+Time: 40.133 ms
 
 Time: 2.648 ms
  */
@@ -266,7 +273,9 @@ BEGIN
 							WHEN b.l_zoomlevel < 14					THEN 0
 							WHEN b.l_zoomlevel BETWEEN 14 AND 16	THEN 1			
 						ELSE 2 END)::INT) AS m_y_per_pixel,	
-				   'i in '||LTRIM(TO_CHAR(ROUND((256*b.m_x_per_pixel/0.06733)::NUMERIC, 0::INT), '999G999G999')) AS scale
+					ROUND(b.m_x_per_pixel*256, 0)::BIGINT m_x,
+					ROUND(b.m_y_per_pixel*256, 0)::BIGINT m_y,
+				   '1 in '||LTRIM(TO_CHAR(ROUND((256*b.m_x_per_pixel/0.06733)::NUMERIC, 0::INT), '999G999G999')) AS scale
 			  FROM b;
 	EXCEPTION
 		WHEN others THEN
@@ -295,29 +304,31 @@ OSM/Leaflet - Zoom Levels
 http://wiki.openstreetmap.org/wiki/Zoom_levels 
 
 SELECT * FROM rif40_geo_pkg.rif40_zoom_levels();
- zoomlevel | latitude |    tiles     | degrees_per_tile | m_x_per_pixel_est | m_x_per_pixel | m_y_per_pixel |      scale
------------+----------+--------------+------------------+-------------------+---------------+---------------+------------------
-         0 |        0 |            1 |              360 |            156412 |        155497 |               | i in 591,225,112
-         1 |        0 |            4 |              180 |             78206 |         77748 |               | i in 295,612,556
-         2 |        0 |           16 |               90 |             39103 |         39136 |         39070 | i in 148,800,745
-         3 |        0 |           64 |               45 |             19552 |         19568 |         19472 | i in 74,400,373
-         4 |        0 |          256 |             22.5 |              9776 |          9784 |          9723 | i in 37,200,186
-         5 |        0 |         1024 |            11.25 |              4888 |          4892 |          4860 | i in 18,600,093
-         6 |        0 |         4096 |            5.625 |              2444 |          2446 |          2430 | i in 9,300,047
-         7 |        0 |        16384 |            2.813 |              1222 |          1223 |          1215 | i in 4,650,023
-         8 |        0 |        65536 |            1.406 |               611 |           611 |           607 | i in 2,325,012
-         9 |        0 |       262144 |            0.703 |               305 |           306 |           304 | i in 1,162,506
-        10 |        0 |      1048576 |            0.352 |               153 |           153 |           152 | i in 581,253
-        11 |        0 |      4194304 |            0.176 |                76 |            76 |            76 | i in 290,626
-        12 |        0 |     16777216 |            0.088 |                38 |            38 |            38 | i in 145,313
-        13 |        0 |     67108864 |            0.044 |                19 |            19 |            19 | i in 72,657
-        14 |        0 |    268435456 |            0.022 |               9.5 |           9.6 |           9.5 | i in 36,328
-        15 |        0 |   1073741824 |            0.011 |               4.8 |           4.8 |           4.7 | i in 18,164
-        16 |        0 |   4294967296 |            0.005 |               2.4 |           2.4 |           2.4 | i in 9,082
-        17 |        0 |  17179869184 |            0.003 |              1.19 |          1.19 |          1.19 | i in 4,541
-        18 |        0 |  68719476736 |           0.0014 |              0.60 |          0.60 |          0.59 | i in 2,271
-        19 |        0 | 274877906944 |          0.00069 |              0.30 |          0.30 |          0.30 | i in 1,135
+ zoomlevel | latitude |    tiles     | degrees_per_tile | m_x_per_pixel_est | m_x_per_pixel | m_y_per_pixel |   m_x    |   m_y    |      scale
+-----------+----------+--------------+------------------+-------------------+---------------+---------------+----------+----------+------------------
+         0 |        0 |            1 |              360 |            156412 |        155497 |               | 39807187 |          | 1 in 591,225,112
+         1 |        0 |            4 |              180 |             78206 |         77748 |               | 19903593 |          | 1 in 295,612,556
+         2 |        0 |           16 |               90 |             39103 |         39136 |         39070 | 10018754 | 10001966 | 1 in 148,800,745
+         3 |        0 |           64 |               45 |             19552 |         19568 |         19472 |  5009377 |  4984944 | 1 in 74,400,373
+         4 |        0 |          256 |             22.5 |              9776 |          9784 |          9723 |  2504689 |  2489167 | 1 in 37,200,186
+         5 |        0 |         1024 |            11.25 |              4888 |          4892 |          4860 |  1252344 |  1244120 | 1 in 18,600,093
+         6 |        0 |         4096 |            5.625 |              2444 |          2446 |          2430 |   626172 |   622000 | 1 in 9,300,047
+         7 |        0 |        16384 |            2.813 |              1222 |          1223 |          1215 |   313086 |   310993 | 1 in 4,650,023
+         8 |        0 |        65536 |            1.406 |               611 |           611 |           607 |   156543 |   155495 | 1 in 2,325,012
+         9 |        0 |       262144 |            0.703 |               305 |           306 |           304 |    78272 |    77748 | 1 in 1,162,506
+        10 |        0 |      1048576 |            0.352 |               153 |           153 |           152 |    39136 |    38874 | 1 in 581,253
+        11 |        0 |      4194304 |            0.176 |                76 |            76 |            76 |    19568 |    19437 | 1 in 290,626
+        12 |        0 |     16777216 |            0.088 |                38 |            38 |            38 |     9784 |     9718 | 1 in 145,313
+        13 |        0 |     67108864 |            0.044 |                19 |            19 |            19 |     4892 |     4859 | 1 in 72,657
+        14 |        0 |    268435456 |            0.022 |               9.5 |           9.6 |           9.5 |     2446 |     2430 | 1 in 36,328
+        15 |        0 |   1073741824 |            0.011 |               4.8 |           4.8 |           4.7 |     1223 |     1215 | 1 in 18,164
+        16 |        0 |   4294967296 |            0.005 |               2.4 |           2.4 |           2.4 |      611 |      607 | 1 in 9,082
+        17 |        0 |  17179869184 |            0.003 |              1.19 |          1.19 |          1.19 |      306 |      304 | 1 in 4,541
+        18 |        0 |  68719476736 |           0.0014 |              0.60 |          0.60 |          0.59 |      153 |      152 | 1 in 2,271
+        19 |        0 | 274877906944 |          0.00069 |              0.30 |          0.30 |          0.30 |       76 |       76 | 1 in 1,135
 (20 rows)
+
+Time: 40.133 ms
 
 
 Time: 2.648 ms';
@@ -325,5 +336,88 @@ GRANT EXECUTE ON FUNCTION rif40_geo_pkg.rif40_zoom_levels(NUMERIC) TO rif40;
 GRANT EXECUTE ON FUNCTION rif40_geo_pkg.rif40_zoom_levels(NUMERIC) TO rif_user;
 GRANT EXECUTE ON FUNCTION rif40_geo_pkg.rif40_zoom_levels(NUMERIC) TO rif_manager;
  
+ --
+ -- Tile conversion functions from http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Tools
+ --
+DROP FUNCTION IF EXISTS rif40_geo_pkg.longitude2tile(DOUBLE PRECISION, INTEGER);
+DROP FUNCTION IF EXISTS rif40_geo_pkg.latitude2tile(DOUBLE PRECISION, INTEGER);
+DROP FUNCTION IF EXISTS rif40_geo_pkg.tile2latitude(INTEGER, INTEGER);
+DROP FUNCTION IF EXISTS rif40_geo_pkg.tile2longitude(INTEGER, INTEGER);
+DROP FUNCTION IF EXISTS rif40_geo_pkg.y_osm_tile2_tms_tile(INTEGER, INTEGER);
+
+CREATE OR REPLACE FUNCTION rif40_geo_pkg.longitude2tile(longitude DOUBLE PRECISION, zoom_level INTEGER)
+RETURNS INTEGER AS
+$$
+    SELECT FLOOR( (longitude + 180) / 360 * (1 << zoom_level) )::INTEGER
+$$
+LANGUAGE sql IMMUTABLE;
+  
+COMMENT ON FUNCTION rif40_geo_pkg.longitude2tile(DOUBLE PRECISION, INTEGER) IS 'Function: 	 longitude2tile()
+Parameters:	 Latitude, zoom level
+Returns:	 OSM Tile x
+Description: Convert longitude to OSM tile x';
+ 
+CREATE OR REPLACE FUNCTION rif40_geo_pkg.latitude2tile(latitude DOUBLE PRECISION, zoom_level INTEGER)
+RETURNS INTEGER AS
+$$
+    SELECT FLOOR( (1.0 - LN(TAN(RADIANS(latitude)) + 1.0 / COS(RADIANS(latitude))) / PI()) / 2.0 * (1 << zoom_level) )::INTEGER
+$$
+LANGUAGE sql IMMUTABLE;
+ 
+COMMENT ON FUNCTION rif40_geo_pkg.latitude2tile(DOUBLE PRECISION, INTEGER) IS 'Function: 	 latitude2tile()
+Parameters:	 Latitude, zoom level
+Returns:	 OSM Tile y
+Description: Convert latitude to OSM tile y';
+ 
+CREATE OR REPLACE FUNCTION rif40_geo_pkg.tile2latitude(y INTEGER, zoom_level INTEGER)
+RETURNS DOUBLE PRECISION AS
+$BODY$
+DECLARE
+	n FLOAT;
+	sinh FLOAT;
+	E FLOAT = 2.7182818284;
+BEGIN
+    n = PI() - (2.0 * PI() * y) / POWER(2.0, zoom_level);
+    sinh = (1 - POWER(E, -2*n)) / (2 * POWER(E, -n));
+    RETURN DEGREES(ATAN(sinh));
+END;
+$BODY$
+LANGUAGE plpgsql IMMUTABLE;
+ 
+COMMENT ON FUNCTION rif40_geo_pkg.tile2latitude(INTEGER, INTEGER) IS 'Function: 	 tile2latitude()
+Parameters:	 OSM Tile y, zoom level
+Returns:	 Latitude
+Description: Convert OSM tile y to latitude';
+ 
+CREATE OR REPLACE FUNCTION rif40_geo_pkg.tile2longitude(x INTEGER, zoom_level INTEGER)
+RETURNS DOUBLE PRECISION AS
+$$
+	SELECT ( ( (x * 1.0) / (1 << zoom_level) * 360.0) - 180.0)::DOUBLE PRECISION
+$$
+LANGUAGE sql IMMUTABLE;
+ 
+COMMENT ON FUNCTION rif40_geo_pkg.tile2longitude(INTEGER, INTEGER) IS 'Function: 	 tile2latitude()
+Parameters:	 OSM Tile y, zoom level
+Returns:	 Latitude
+Description: Convert OSM tile y to latitude';
+
+CREATE OR REPLACE FUNCTION rif40_geo_pkg.y_osm_tile2_tms_tile(y INTEGER, zoom_level INTEGER)
+RETURNS INTEGER AS
+$$
+SELECT (POWER(2, zoom_level) -y -1)::INTEGER
+$$
+LANGUAGE sql IMMUTABLE;
+
+COMMENT ON FUNCTION rif40_geo_pkg.y_osm_tile2_tms_tile(INTEGER, INTEGER) IS 'Function: 	 tile2latitude()
+Parameters:	 OSM Tile y, zoom level
+Returns:	 TMS tile y
+Description: Convert OSM tile y to TMS tile y';
+
+GRANT EXECUTE ON FUNCTION rif40_geo_pkg.longitude2tile(DOUBLE PRECISION, INTEGER) TO rif40, rif_user, rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_geo_pkg.latitude2tile(DOUBLE PRECISION, INTEGER) TO rif40, rif_user, rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_geo_pkg.tile2latitude(INTEGER, INTEGER) TO rif40, rif_user, rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_geo_pkg.tile2longitude(INTEGER, INTEGER) TO rif40, rif_user, rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_geo_pkg.y_osm_tile2_tms_tile(INTEGER, INTEGER) TO rif40, rif_user, rif_manager;
+
  --
  -- Eof

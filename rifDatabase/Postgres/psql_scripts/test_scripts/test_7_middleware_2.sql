@@ -27,7 +27,7 @@
 -- This file is part of the Rapid Inquiry Facility (RIF) project.
 -- RIF is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU Lesser General Public License as published by
--- the Free Software Foundation, either verquote_ident(l_schema)||'.'||quote_ident(l_tablesion 3 of the License, or
+-- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
 --
 -- RIF is distributed in the hope that it will be useful,
@@ -111,7 +111,7 @@ END;
 $$;
 
 --
--- Test middle ware interface functions
+-- Test middleware interface functions
 --
 \pset title 'rif40_getAllAttributesForGeoLevelAttributeTheme SAHSU level 4 extract'
 SELECT * 

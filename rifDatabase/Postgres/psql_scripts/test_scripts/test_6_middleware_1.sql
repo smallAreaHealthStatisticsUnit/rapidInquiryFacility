@@ -199,7 +199,9 @@ SELECT SUBSTRING(
 			'SAHSU' 	/* Geography */, 
 			'LEVEL4' 	/* geolevel view */, 
 			a.y_max, a.x_max, a.y_min, a.x_min, /* Bounding box - from cte */
-			FALSE /* return_one_row flag: output multiple rows so it is readable! */) 
+			9 			/* Zoom level */,
+			NULL		/* Tile name */, 
+			FALSE 		/* return_one_row flag: output multiple rows so it is readable! */) 
 			FROM 1 FOR 160 /* Truncate to 160 chars */) AS json 
   FROM a LIMIT 4;
 /*
@@ -214,7 +216,7 @@ SELECT SUBSTRING(
 --
 -- Use copy to create a Javascript file that can be tested
 --
-\copy (WITH a AS (SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')) SELECT rif40_xml_pkg.rif40_get_geojson_tiles('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, a.y_max, a.x_max, a.y_min, a.x_min, FALSE /* return_one_row flag: output multiple rows so it is readable! */) FROM a) to ../psql_scripts/test_scripts/data/test_6_geojson_test_02.json
+\copy (WITH a AS (SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')) SELECT rif40_xml_pkg.rif40_get_geojson_tiles('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, a.y_max, a.x_max, a.y_min, a.x_min, 9 /* Zoom level */, NULL /* Tile name */, FALSE /* return_one_row flag: output multiple rows so it is readable! */) FROM a) to ../psql_scripts/test_scripts/data/test_6_geojson_test_02.json
 
 --
 -- Attribute fetch functions
