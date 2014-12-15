@@ -84,6 +84,8 @@ public class OKCloseButtonPanel {
 // ==========================================
 
 	//Data
+	private UserInterfaceFactory userInterfaceFactory;
+	private boolean includeOKButton;
 	
 	//GUI Components
 	/** The ok button. */
@@ -102,8 +104,23 @@ public class OKCloseButtonPanel {
      * @param userInterfaceFactory the user interface factory
      */
 	public OKCloseButtonPanel(
-		UserInterfaceFactory userInterfaceFactory) {		
+		final UserInterfaceFactory userInterfaceFactory) {		
 
+		this.userInterfaceFactory = userInterfaceFactory;
+		includeOKButton = true;
+		buildUI();
+    }
+
+	public OKCloseButtonPanel(
+		final UserInterfaceFactory userInterfaceFactory,
+		boolean includeOKButton) {
+
+		this.userInterfaceFactory = userInterfaceFactory;
+		this.includeOKButton = includeOKButton;
+		buildUI();
+	}
+	
+	private void buildUI() {
 		panel = userInterfaceFactory.createPanel();
 		GridBagConstraints panelGC 
 			= userInterfaceFactory.createGridBagConstraints();
@@ -112,16 +129,18 @@ public class OKCloseButtonPanel {
 		String okText
 			= RIFGenericUIMessages.getMessage("buttons.ok.label");
 		okButton = userInterfaceFactory.createButton(okText);
-		panel.add(okButton, panelGC);
+
+		if (includeOKButton) {
+			panel.add(okButton, panelGC);
+		}
 		
 		panelGC.gridx++;
 		String closeText
 			= RIFGenericUIMessages.getMessage("buttons.close.label");
 		closeButton = userInterfaceFactory.createButton(closeText);
-		panel.add(closeButton, panelGC);
-		
-    }
-
+		panel.add(closeButton, panelGC);		
+	}
+	
 // ==========================================
 // Section Accessors and Mutators
 // ==========================================
