@@ -75,7 +75,20 @@ RIF.diseaseSubmission = ( function() {
         subscribers: [ "study" ],
         firer: [ "menu" ],
         method: "selectAtChanged"
-      }
+      },
+
+      studyAreaSelectionEvent: {
+        subscribers: [ "study" ],
+        firer: [ "table" ],
+        method: "studyAreaSelectionEvent"
+      },
+
+      //Getters
+      /*getCurrentStudyAreaSelection: {
+        subscribers: [ "study" ],
+        firer: [ "table" ],
+        method: "getCurrentStudyAreaSelection"
+      }*/
 
     },
 

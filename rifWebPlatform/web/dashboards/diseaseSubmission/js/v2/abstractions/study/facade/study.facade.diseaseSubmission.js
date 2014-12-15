@@ -21,10 +21,36 @@ RIF.study[ 'facade-diseaseSubmission' ] = ( function() {
       this.setDenominator( arg );
     },
     selectAtChanged: function( arg ) {
-      this.setSelectAt( arg );
+      this.setStudyAreaSelectAt( arg );
     },
     resolutionChanged: function( arg ) {
-      this.setResolution( arg );
+      this.setStudyAreaResolution( arg );
+    },
+    studyAreaSelectionEvent: function( rows ) {
+      console.log( "ROWS" + rows );
+      var currenSelection = this.getStudyAreas(),
+        l = rows.length,
+        newSlct = [];
+
+      while ( l-- ) {
+        var current = rows[ l ],
+          isPresent = false,
+          k = currenSelection.length || 0;
+        while ( k-- ) {
+          if ( currenSelection[ k ] == current ) {
+            isPresent = true;
+            currenSelection.splice( k, 1 );
+            break;
+          }
+        }
+
+        if ( !isPresent ) {
+          newSlct.push( current );
+        }
+
+      };
+      this.setStudyAreas( newSlct.concat( currenSelection ) );
+      console.log( this.getStudyAreas().sort() )
     }
 
   };

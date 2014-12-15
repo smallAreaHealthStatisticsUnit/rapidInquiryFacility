@@ -567,9 +567,6 @@ input[type="range"]::-ms-thumb {
        margin: 1% 2%;
    }
    
-   .modalAreaSelectionContent div {
-       float:left;
-   }
 
    .modalAreaSelectionContent #areaSelectionTable {
         width: 400px;
@@ -582,29 +579,38 @@ input[type="range"]::-ms-thumb {
 		/* Standard */
         max-height: calc(100% - 350px);
        height:auto;
-       margin-top: 6%;
+       margin-top: 90px;
        position: absolute;
        border: 1px solid #ddd;
+       overflow-y: auto;
    }
 
-   
+   .modalAreaSelectionContent #areaSelectionTable ul.aSH{
+        width:100%;
+   }
     .modalAreaSelectionContent #areaSelectionTable ul.aSH li:first-child{
         border-right: 2px solid #ddd;
-        width: 200px;
+        width: 170px;
+        float:left;
    }
 
    .modalAreaSelectionContent #areaSelectionTable ul.aSH li{
-       float:left;
        text-align: center;
        padding: 12px 0px;
        font-weight:bold;
        background-color: #F2F2F2;
-       width: 198px;
        text-decoration: underline;
        font-size: 14px;
+       overflow: hidden;
    }
    
    .modalAreaSelectionContent #areaSelectionTable .aSC {
+         -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
        width: 100%;
        height:auto;
        overflow: auto;
@@ -612,15 +618,28 @@ input[type="range"]::-ms-thumb {
    }
    .modalAreaSelectionContent #areaSelectionTable .aSR {
        border-top: 1px solid #ddd;
+       width:100%;
+   }
+
+   div.aSR:hover,    .rowHovered{
+       background-color: rgba(171,130,255	,0.2);
+       cursor: pointer
    }
    
+
+   .modalAreaSelectionContent #areaSelectionTable .rowSelected{
+       background-color: rgba( 152,251,152	,0.2);
+   }
+
    .aSR div{
     padding: 5px 0;
+    cursor: pointer;   
    }
+
    .aSR div:first-child{
     border-right: 2px solid #ddd;
-   
-    width: 200px;
+    float:left;
+    width: 170px;
 }
    .even{
        background-color: rgba(198, 226, 255 , 0.1);
@@ -633,10 +652,10 @@ input[type="range"]::-ms-thumb {
    }
 
    .aSR div{
-       width: 198px;
-       float:left;
-        padding: 5px 0px;
-   }
+       padding: 2px 0px;
+       overflow: hidden;
+       word-break: break-all;
+    }
 
    .modalAreaSelectionContent #areaSelectionMap {
        width: 70%;

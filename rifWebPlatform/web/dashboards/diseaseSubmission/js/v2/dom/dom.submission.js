@@ -67,7 +67,11 @@ RIF.dom = ( function() {
 
     table: {
       areaSelectionRenderer: function() {
-        return {};
+        return {
+          headers: $( '.aSH li' ),
+          tableContent: get( 'allRows' ),
+          rows: $( '.aSR' )
+        };
       }
 
     }

@@ -15,7 +15,7 @@ RIF.resizable = function( studyType ) {
     timeout: false,
     delta: 200,
 
-    data: function() {
+    /* data: function() {
       $( "#data" ).resizable( {
         handles: "n",
         resize: function( event, ui ) {
@@ -23,14 +23,14 @@ RIF.resizable = function( studyType ) {
           resizable.fire( 'resizeTable' );
         }
       } );
-    }(),
+    }(),*/
 
     leftCol: function() {
-      $( "#leftcol" ).resizable( {
+      $( "#aSR div" ).resizable( {
         handles: "e",
         resize: function( event, ui ) {
           ui.size.height = ui.originalSize.height;
-          document.getElementById( 'rightcol' ).setAttribute( "style", "margin-left:" + ui.size.width + "px" );
+          //document.getElementById( 'areaSelectionMap' ).setAttribute( "style", "margin-left:" + ui.size.width + "px" );
           resizable.rtime = new Date();
           if ( resizable.timeout === false ) {
             resizable.timeout = true;
@@ -40,14 +40,14 @@ RIF.resizable = function( studyType ) {
       } );
     }(),
 
-    resizeend: function() {
+    /*resizeend: function() {
       if ( new Date() - resizable.rtime < resizable.delta ) {
         setTimeout( resizable.resizeend, resizable.delta );
       } else {
         resizable.timeout = false;
         resizable.fire( 'resizeMap' );
       }
-    }
+    }*/
 
   };
 

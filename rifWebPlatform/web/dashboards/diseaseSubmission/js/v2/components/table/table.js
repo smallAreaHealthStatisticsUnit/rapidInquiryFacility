@@ -22,7 +22,8 @@ RIF.table = ( function( settings ) {
         return _p;
       },
 
-      setEvents: function() {
+      setEvents: function( table ) {
+        var units = table || tables;
         var ev = this.setTableEvent( _p, tables );
       }
 
