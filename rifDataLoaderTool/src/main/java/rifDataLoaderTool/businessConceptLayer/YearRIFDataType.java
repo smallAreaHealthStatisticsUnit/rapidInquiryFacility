@@ -104,9 +104,9 @@ public class YearRIFDataType extends AbstractRIFDataType {
 
 	public static YearRIFDataType newInstance() {
 		String name
-			= RIFDataLoaderToolMessages.getMessage("");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.year.label");
 		String description
-			= RIFDataLoaderToolMessages.getMessage("");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.year.description");
 
 		YearRIFDataType yearRIFDataType
 			= new YearRIFDataType(

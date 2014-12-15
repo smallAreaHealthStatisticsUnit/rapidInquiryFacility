@@ -84,9 +84,9 @@ public final class DoubleRIFDataType extends AbstractRIFDataType {
 	public static DoubleRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.label");
+			= RIFDataLoaderMessages.getMessage("rifDataType.double.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.description");
+			= RIFDataLoaderMessages.getMessage("rifDataType.double.description");
 		DoubleRIFDataType doubleRIFDataType
 			= new DoubleRIFDataType(
 				"rif_double",

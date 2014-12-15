@@ -84,9 +84,9 @@ public final class IntegerRIFDataType extends AbstractRIFDataType {
 	public static IntegerRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.label");
+			= RIFDataLoaderMessages.getMessage("rifDataType.integer.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.description");
+			= RIFDataLoaderMessages.getMessage("rifDataType.integer.description");
 		IntegerRIFDataType integerRIFDataType
 			= new IntegerRIFDataType(
 				"rif_integer",
