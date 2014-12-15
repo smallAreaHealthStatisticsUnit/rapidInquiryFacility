@@ -1,5 +1,14 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceSecurityException;
+import rifServices.system.RIFServiceException;
+import rifServices.util.FieldValidationUtility;
+
+import java.util.ArrayList;
+
 /**
  * A rule that is used to generate SQL code that can search and replace values. Apart from
  * name and description fields, the three main important fields are:
@@ -80,7 +89,7 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public class CleaningRule {
+public class CleaningRule extends AbstractRIFDataLoaderToolConcept {
 
 	// ==========================================
 	// Section Constants
@@ -89,10 +98,6 @@ public class CleaningRule {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	//private String whenStatement;
-	
-	//private String originalTableName;
-	//private String originalFieldName;
 		
 	private String name;
 	private String description;
@@ -106,7 +111,10 @@ public class CleaningRule {
 	// ==========================================
 
 	private CleaningRule() {
-		
+		name = "";
+		description = "";
+		searchValue = "";
+		replaceValue = "";
 	}
 	
 	private CleaningRule(
@@ -123,6 +131,12 @@ public class CleaningRule {
 		this.isRegularExpressionSearch = isRegularExpressionSearch;
 	}
 
+	public static CleaningRule newInstance() {
+		CleaningRule cleaningRule
+			= new CleaningRule();		
+		return cleaningRule;
+	}
+	
 	public static CleaningRule newInstance(
 		final String name,
 		final String description,
@@ -212,10 +226,117 @@ public class CleaningRule {
 	// Section Errors and Validation
 	// ==========================================
 
+	public void checkSecurityViolations() 
+		throws RIFServiceSecurityException {
+
+		FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+		String recordType = getRecordType();
+
+		if (name != null) {
+			String nameField
+				= RIFDataLoaderToolMessages.getMessage("cleaningRule.name.label");		
+			fieldValidationUtility.checkMaliciousCode(
+				recordType,
+				nameField,
+				name);
+		}
+
+		if (description != null) {
+			String descriptionFieldName
+				= RIFDataLoaderToolMessages.getMessage("cleaningRule.description.label");		
+			fieldValidationUtility.checkMaliciousCode(
+				recordType,
+				descriptionFieldName,
+				description);
+		}
+		
+		if (searchValue != null) {
+			String searchValueFieldName
+				= RIFDataLoaderToolMessages.getMessage("cleaningRule.searchValue.label");		
+			fieldValidationUtility.checkMaliciousCode(
+				recordType,
+				searchValueFieldName,
+				searchValue);
+		}
+				
+		if (replaceValue != null) {
+			String replaceValueFieldName
+				= RIFDataLoaderToolMessages.getMessage("cleaningRule.replaceValue.label");		
+			fieldValidationUtility.checkMaliciousCode(
+				recordType,
+				replaceValueFieldName,
+				replaceValue);
+		}
+
+	}	
+	
+	public void checkErrors() throws RIFServiceException {
+		String recordType
+			= getRecordType();
+		
+		String nameField
+			= RIFDataLoaderToolMessages.getMessage("cleaningRule.name.label");
+		String descriptionFieldName
+			= RIFDataLoaderToolMessages.getMessage("cleaningRule.description.label");
+		String searchFieldName
+			= RIFDataLoaderToolMessages.getMessage("cleaningRule.searchValue.label");
+		String replaceFieldName
+			= RIFDataLoaderToolMessages.getMessage("cleaningRule.replaceValue.label");
+
+		ArrayList<String> errorMessages = new ArrayList<String>();
+		FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+		
+		if (fieldValidationUtility.isEmpty(name)) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordType,
+					name);
+			errorMessages.add(errorMessage);			
+		}
+
+		
+		if (fieldValidationUtility.isEmpty(searchValue)) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordType,
+					searchValue);
+			errorMessages.add(errorMessage);			
+		}
+				
+		if (fieldValidationUtility.isEmpty(replaceValue)) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordType,
+					replaceValue);
+			errorMessages.add(errorMessage);			
+		}
+		
+		countErrors(
+			RIFDataLoaderToolError.INVALID_CLEANING_RULE, 
+			errorMessages);		
+		
+	}
+	
+	public String getRecordType() {
+		String recordType
+			= RIFDataLoaderToolMessages.getMessage("cleaningRule.label");
+		return recordType;
+	}
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
 
+	//Interface: Display Name
+	public String getDisplayName() {
+		return name;
+	}
+	
 	// ==========================================
 	// Section Override
 	// ==========================================
