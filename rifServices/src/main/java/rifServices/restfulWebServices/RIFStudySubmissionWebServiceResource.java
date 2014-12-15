@@ -5,6 +5,7 @@ package rifServices.restfulWebServices;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
+import rifServices.io.MapAreaContentHandler;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -561,6 +562,7 @@ public class RIFStudySubmissionWebServiceResource
 					geoLevelToMap);
 					
 			//Convert results to support JSON			
+			/*
 			ArrayList<MapAreaProxy> mapAreaProxies 
 				= new ArrayList<MapAreaProxy>();
 			for (MapArea mapArea : mapAreas) {
@@ -569,8 +571,15 @@ public class RIFStudySubmissionWebServiceResource
 				mapAreaProxy.setIdentifier(mapArea.getIdentifier());
 				mapAreaProxy.setLabel(mapArea.getLabel());
 				mapAreaProxies.add(mapAreaProxy);
-			}			
-			result = serialiseArrayResult(mapAreaProxies);
+			}
+			*/
+			
+			//use a specialised serialiser to produce a useful way of 
+			//rendering map areas
+			MapAreaContentHandler mapAreaContentHandler
+				= new MapAreaContentHandler();
+			result
+				= mapAreaContentHandler.writeJSONMapAreas(mapAreas);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
