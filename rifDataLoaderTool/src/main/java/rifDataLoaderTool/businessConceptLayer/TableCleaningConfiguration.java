@@ -2,7 +2,7 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import java.util.ArrayList;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolException;
+import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
 
 
@@ -164,6 +164,16 @@ public class TableCleaningConfiguration
 		return fieldNames.toArray(new String[0]);		
 	}
 	
+	public int getFieldCount() {
+		return fieldCleaningConfigurations.size();
+	}
+	
+	public TableFieldCleaningConfiguration getFieldCleaningConfiguration(
+		final int index) {
+	
+		return fieldCleaningConfigurations.get(index);
+	}
+	
 	public ArrayList<TableFieldCleaningConfiguration> getAllFieldCleaningConfigurations() {
 		return fieldCleaningConfigurations;
 	}
@@ -225,7 +235,7 @@ public class TableCleaningConfiguration
 	
 	@Override
 	public void checkErrors() 
-		throws RIFDataLoaderToolException {
+		throws RIFServiceException {
 
 		//@TODO
 		
