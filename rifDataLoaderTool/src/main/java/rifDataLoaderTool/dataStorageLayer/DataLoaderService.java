@@ -7,11 +7,18 @@ import rifDataLoaderTool.dataStorageLayer.postgresql.*;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.AbstractRIFService;
-import rifServices.system.RIFServiceException;
 import rifServices.util.FieldValidationUtility;
 import rifServices.util.RIFLogger;
+import rifServices.system.RIFServiceException;
+import rifServices.system.RIFServiceStartupOptions;
+import rifServices.dataStorageLayer.RIFServiceResources;
+import rifServices.dataStorageLayer.SQLConnectionManager;
+
+
+
 
 import java.sql.*;
+import java.util.ArrayList;
 
 /**
  * Main implementation of the {@link rifDataLoaderTool.dataStorageLayer.DataLoaderService}.
@@ -100,7 +107,7 @@ import java.sql.*;
 
 public class DataLoaderService 
 	extends AbstractRIFService
-	implements DataLoaderServiceAPI {
+	implements RIFDataLoaderServiceAPI {
 	
 	// ==========================================
 	// Section Constants
@@ -113,62 +120,171 @@ public class DataLoaderService
 	private SQLConnectionManager sqlConnectionManager;
 	private RIFDataLoaderStartupOptions startupOptions;
 	
+	private RIFServiceResources rifServiceResources;
+	
 	private DataSourceManager dataSourceManager;
 	private LoadStepManager loadStepManager;
 	private CleanStepManager cleanStepManager;
 	private ConvertStepManager convertStepManager;
+	
+	
+	private ArrayList<DataSetConfiguration> dataSetConfigurations;
+	
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public DataLoaderService() {
-		startupOptions = new RIFDataLoaderStartupOptions();
-		sqlConnectionManager = new SQLConnectionManager();		
+		
+		
+		dataSetConfigurations 
+			= new ArrayList<DataSetConfiguration>();
+		
+		DataSetConfiguration exampleDataSetConfiguration1
+			= new DataSetConfiguration();
+		exampleDataSetConfiguration1.setName("klg_cancer_study_2013");
+		exampleDataSetConfiguration1.setDescription("An investigation about various cancers");
+		exampleDataSetConfiguration1.setCreationDatePhrase("10-JUN-2013");
+		exampleDataSetConfiguration1.setLastActivityStepPerformed(RIFDataLoaderActivityStep.LOAD);
+		dataSetConfigurations.add(exampleDataSetConfiguration1);
+		
+		DataSetConfiguration exampleDataSetConfiguration2
+			= new DataSetConfiguration();
+		exampleDataSetConfiguration2.setName("ff_breathing_disorders");
+		exampleDataSetConfiguration2.setDescription("An investigation about respiratory problems.");
+		exampleDataSetConfiguration2.setCreationDatePhrase("10-OCT-2014");
+		exampleDataSetConfiguration2.setLastActivityStepPerformed(RIFDataLoaderActivityStep.CLEAN);
+		dataSetConfigurations.add(exampleDataSetConfiguration2);
+		
+		DataSetConfiguration exampleDataSetConfiguration3
+			= new DataSetConfiguration();
+		exampleDataSetConfiguration3.setName("js_dioxins_05082014");
+		exampleDataSetConfiguration3.setDescription("An investigation about respiratory problems.");
+		exampleDataSetConfiguration3.setCreationDatePhrase("05-AUG-2014");		
+		exampleDataSetConfiguration3.setLastActivityStepPerformed(RIFDataLoaderActivityStep.CONVERT);
+		dataSetConfigurations.add(exampleDataSetConfiguration3);
+
+		DataSetConfiguration exampleDataSetConfiguration4
+			= new DataSetConfiguration();
+		exampleDataSetConfiguration4.setName("asthma_data1");
+		exampleDataSetConfiguration4.setDescription("An investigation about asthma.");
+		exampleDataSetConfiguration4.setCreationDatePhrase("06-SEP-2012");		
+		exampleDataSetConfiguration4.setLastActivityStepPerformed(RIFDataLoaderActivityStep.COMBINE);
+		dataSetConfigurations.add(exampleDataSetConfiguration4);
+		
+		DataSetConfiguration exampleDataSetConfiguration5
+			= new DataSetConfiguration();
+		exampleDataSetConfiguration5.setName("asthma_data2");
+		exampleDataSetConfiguration5.setDescription("Another data set about asthma data.");
+		exampleDataSetConfiguration5.setCreationDatePhrase("07-OCT-2012");		
+		exampleDataSetConfiguration5.setLastActivityStepPerformed(RIFDataLoaderActivityStep.COMBINE);
+		dataSetConfigurations.add(exampleDataSetConfiguration5);
+		
+		
+		DataSetConfiguration exampleDataSetConfiguration6
+			= new DataSetConfiguration();
+		exampleDataSetConfiguration6.setName("cardiac_arrest_incidents_04052013");
+		exampleDataSetConfiguration6.setDescription("Another data set about heart attack incidents.");
+		exampleDataSetConfiguration6.setCreationDatePhrase("08-NOV-2013");		
+		exampleDataSetConfiguration6.setLastActivityStepPerformed(RIFDataLoaderActivityStep.OPTIMISE);
+		dataSetConfigurations.add(exampleDataSetConfiguration6);
+				
+		DataSetConfiguration exampleDataSetConfiguration7
+			= new DataSetConfiguration();
+		exampleDataSetConfiguration7.setName("lung_cancer_arrest_incidents_10112013");
+		exampleDataSetConfiguration7.setDescription("Another data set about lung cancer.");
+		exampleDataSetConfiguration7.setCreationDatePhrase("15-NOV-2013");		
+		exampleDataSetConfiguration7.setLastActivityStepPerformed(RIFDataLoaderActivityStep.CHECK);
+		dataSetConfigurations.add(exampleDataSetConfiguration7);
+
+		
 	}
-	public void initialiseService() {
-		if (startupOptions.getDatabaseType() == RIFDataLoaderStartupOptions.DatabaseType.POSTGRESQL) {
+	public void initialiseService() 
+		throws RIFServiceException {
+
+		RIFServiceStartupOptions rifServiceStartupOptions
+			= new RIFServiceStartupOptions(false);
+		rifServiceResources
+			= RIFServiceResources.newInstance(rifServiceStartupOptions);
+		
+		startupOptions = new RIFDataLoaderStartupOptions();
+		sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
 			
-			dataSourceManager
-				= new DataSourceManager();
 			
-			PostgresLoadStepQueryGenerator loadStepQueryGenerator
-				= new PostgresLoadStepQueryGenerator();
-			loadStepManager
-				= new LoadStepManager(
-					startupOptions, 
-					loadStepQueryGenerator);
-			
-			PostgresCleaningStepQueryGenerator cleaningStepQueryGenerator
-				= new PostgresCleaningStepQueryGenerator();
-			cleanStepManager
-				= new CleanStepManager(
-					startupOptions,
-					cleaningStepQueryGenerator);
-			
-			PostgresConvertStepQueryGenerator convertStepQueryGenerator
+		dataSourceManager
+			= new DataSourceManager();
+		
+		PostgresLoadStepQueryGenerator loadStepQueryGenerator
+			= new PostgresLoadStepQueryGenerator();
+		loadStepManager
+			= new LoadStepManager(
+				startupOptions, 
+				loadStepQueryGenerator);
+		
+		PostgresCleaningStepQueryGenerator cleaningStepQueryGenerator
+			= new PostgresCleaningStepQueryGenerator();
+		cleanStepManager
+			= new CleanStepManager(
+				startupOptions,
+				cleaningStepQueryGenerator);
+					PostgresConvertStepQueryGenerator convertStepQueryGenerator
 				= new PostgresConvertStepQueryGenerator();
-			convertStepManager
-				= new ConvertStepManager(
-					startupOptions,
-					convertStepQueryGenerator); 
-		}
-		else {
-			
-		}		
+		convertStepManager
+			= new ConvertStepManager(
+				startupOptions,
+				convertStepQueryGenerator); 
 	}
 	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 	
-
 	
+	public void shutdown() throws RIFServiceException {
+		sqlConnectionManager.deregisterAllUsers();
+	}
+	
+	public ArrayList<DataSetConfiguration> getDataSetConfigurations(
+		final User user) 
+		throws RIFServiceException {
+		
+		return dataSetConfigurations;
+	}
+	
+	
+	public ArrayList<DataSetConfiguration> getDataSetConfigurations(
+		final User user,
+		final String searchPhrase) 
+		throws RIFServiceException {
+		
+		
+		return dataSetConfigurations;
+	}
+	
+	public boolean dataSetConfigurationExists(
+		final User user,
+		final DataSetConfiguration dataSetConfiguration) 
+		throws RIFServiceException {
+
+		return false;
+	}
+
+	public void deleteDataSetConfigurations(
+		final User user,
+		final ArrayList<DataSetConfiguration> dataSetConfigurationsToDelete) 
+		throws RIFServiceException {
+
+		for (DataSetConfiguration dataSetConfigurationToDelete : dataSetConfigurationsToDelete) {
+			System.out.println("DataLoaderService deleteDataSetConfigurations =="+dataSetConfigurationToDelete.getName()+"==");
+			dataSetConfigurations.remove(dataSetConfigurationToDelete);			
+		}		
+	}
 	
 	public void clearAllDataSources(
 		final User _user)  
 		throws RIFServiceException,
-		RIFDataLoaderToolException {
+		RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
@@ -223,7 +339,7 @@ public class DataLoaderService
 		final User _user,
 		final DataSource _dataSource)
 		throws RIFServiceException,
-		RIFDataLoaderToolException {
+		RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
@@ -291,7 +407,7 @@ public class DataLoaderService
 		final User _user,
 		final String coreTableName)
 		throws RIFServiceException,
-		RIFDataLoaderToolException {
+		RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
@@ -362,7 +478,7 @@ public class DataLoaderService
 		final User _user,
 		final TableCleaningConfiguration _tableCleaningConfiguration) 
 		throws RIFServiceException,
-		RIFDataLoaderToolException {
+		RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
@@ -430,7 +546,7 @@ public class DataLoaderService
 		final TableCleaningConfiguration _tableCleaningConfiguration,
 		final String[][] tableData)
 		throws RIFServiceException,
-		RIFDataLoaderToolException {
+		RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
@@ -506,7 +622,7 @@ public class DataLoaderService
 		final User _user,
 		final TableCleaningConfiguration _tableCleaningConfiguration) 
 		throws RIFServiceException,
-		RIFDataLoaderToolException {
+		RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
@@ -566,10 +682,8 @@ public class DataLoaderService
 				user,
 				"getLoadTableData",
 				rifServiceException);
-		}		
-		catch(RIFDataLoaderToolException dataLoaderToolException) {
-			dataLoaderToolException.printStackTrace(System.out);
 		}
+
 		return results;
 	}
 		
@@ -577,7 +691,7 @@ public class DataLoaderService
 		final User _user,
 		final TableCleaningConfiguration _tableCleaningConfiguration) 
 		throws RIFServiceException,
-		RIFDataLoaderToolException {
+		RIFServiceException {
 		
 		
 		//Defensively copy parameters and guard against blocked users
@@ -645,7 +759,7 @@ public class DataLoaderService
 		final User _user,			
 		final TableCleaningConfiguration _tableCleaningConfiguration) 
 		throws RIFServiceException,
-		RIFDataLoaderToolException {
+		RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
@@ -711,7 +825,7 @@ public class DataLoaderService
 		final User _user,
 		final TableConversionConfiguration _tableConversionConfiguration)
 		throws RIFServiceException,
-		RIFDataLoaderToolException {
+		RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
@@ -780,7 +894,7 @@ public class DataLoaderService
 		final User _user,
 		final TableCleaningConfiguration _tableCleaningConfiguration)
 		throws RIFServiceException,
-		RIFDataLoaderToolException {
+		RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
@@ -844,7 +958,7 @@ public class DataLoaderService
 		final User _user,
 		final TableCleaningConfiguration _tableCleaningConfiguration)
 		throws RIFServiceException,
-		RIFDataLoaderToolException {
+		RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
@@ -908,7 +1022,7 @@ public class DataLoaderService
 		final User _user,
 		final TableCleaningConfiguration _tableCleaningConfiguration)
 		throws RIFServiceException,
-		RIFDataLoaderToolException {
+		RIFServiceException {
 
 		
 		//Defensively copy parameters and guard against blocked users
@@ -975,7 +1089,7 @@ public class DataLoaderService
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException,
-		RIFDataLoaderToolException {
+		RIFServiceException {
 
 		
 		//Defensively copy parameters and guard against blocked users
@@ -1052,7 +1166,7 @@ public class DataLoaderService
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException,
-		RIFDataLoaderToolException {
+		RIFServiceException {
 
 		
 		//Defensively copy parameters and guard against blocked users
@@ -1129,7 +1243,7 @@ public class DataLoaderService
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException,
-		RIFDataLoaderToolException {
+		RIFServiceException {
 				
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
@@ -1204,7 +1318,6 @@ public class DataLoaderService
 
 	//Audit failure of operation
 
-	@Override
 	public void logException(
 		User user,
 		String methodName,
@@ -1213,14 +1326,6 @@ public class DataLoaderService
 				
 	}
 	
-
-	public void logException(
-		User user,
-		String methodName,
-		RIFDataLoaderToolException rifDataLoaderToolException) {
-	
-			
-	}
 
 	@Override
 	public void validateUser(
