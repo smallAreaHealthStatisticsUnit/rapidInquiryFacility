@@ -1,5 +1,7 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import rifServices.businessConceptLayer.DisplayableListItem;
+
 import java.util.ArrayList;
 
 /**
@@ -38,7 +40,7 @@ import java.util.ArrayList;
  */
 
 
-public interface RIFDataType {	
+public interface RIFDataType extends DisplayableListItem {
 	public String getName();
 	public String getDescription();
 	
@@ -49,7 +51,9 @@ public interface RIFDataType {
 	public String getValidationFunctionParameterValues();	
 	public RIFFieldCleaningPolicy getFieldCleaningPolicy();
 	public ArrayList<CleaningRule> getCleaningRules();
+	public void setCleaningRules(ArrayList<CleaningRule> cleaningRules);
 	public String getCleaningFunctionParameterValues();
 	public RIFDataType createCopy();
 	public String getCleaningFunctionName();
+	
 }

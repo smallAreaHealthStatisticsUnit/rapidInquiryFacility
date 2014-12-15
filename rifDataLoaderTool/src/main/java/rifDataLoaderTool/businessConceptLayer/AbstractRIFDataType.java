@@ -330,6 +330,11 @@ public abstract class AbstractRIFDataType implements RIFDataType {
 	// Section Interfaces
 	// ==========================================
 
+	//Interface: DisplayableListItem
+	public String getDisplayName() {
+		return name;
+	}
+	
 	// ==========================================
 	// Section Override
 	// ==========================================
