@@ -485,14 +485,14 @@ input[type="range"]::-ms-thumb {
 
 	
 	.msettings {
-		width: 60%;
+		width: 85%;
 		padding-bottom: 2px;
 		display:block;
 		background: #FFF;
 		border-radius: 5px; -moz-border-radius: 5px; 
 		-webkit-border-radius: 5px;
-		margin: 5% auto;
-		height: 85%;
+		margin: 3% auto;
+		height: 90%;
     }
 	
     .msettings-ct{
@@ -557,34 +557,68 @@ input[type="range"]::-ms-thumb {
    }
    
    .modalAreaSelectionMenu #resolutionSelection{
-        float: right;}
+        float: right;
+   }
 
   .modalAreaSelectionMenu #selectAtSelection{
-         float: left;}
+         float: left;
+  }
 
    .modalAreaSelectionContent {
-       height:95%;
+        /* Firefox */
+		height: -moz-calc(100% - 100px);
+		/* WebKit */
+		height: -webkit-calc(100% - 100px);
+		/* Opera */
+		height: -o-calc(100% - 100px);
+		/* Standard */
+		height: calc(100% - 100px);
        margin: 1% 2%;
+       position:relative;
    }
-   
+  
+   #areaSelectionMap, #areaSelectionTable {
+        position: absolute;
+   }
 
    .modalAreaSelectionContent #areaSelectionTable {
         width: 400px;
        /* Firefox */
-		max-height: -moz-calc(100% - 350px);
-		/* WebKit */
-		max-height: -webkit-calc(100% - 350px);
-		/* Opera */
-		max-height: -o-calc(100% - 350px);
-		/* Standard */
-        max-height: calc(100% - 350px);
+		max-height: 85%;
        height:auto;
-       margin-top: 90px;
-       position: absolute;
        border: 1px solid #ddd;
        overflow-y: auto;
    }
 
+    .modalAreaSelectionContent #areaSelectionMap {
+        margin-left: 470px;
+        /* Firefox */
+		width: -moz-calc(100% - 500px);
+		/* WebKit */
+		width: -webkit-calc(100% - 500px);
+		/* Opera */
+		width: -o-calc(100% - 500px);
+		/* Standard */
+		width: calc(100% - 500px);
+        border:1px solid;
+        /* Firefox */
+		height: 85%;
+   }
+    
+    .modalAreaSelectionContent #selectionCounter{
+        position:absolute;
+        bottom:0;
+        text-transform: uppercase;
+        font-size:14px;
+    }
+   #resolutionCountLabel{
+    font-weight: bold;
+   }
+   #resolutionCount{
+    font-weight:bold;
+    color:#FF7D40   
+   }
+   
    .modalAreaSelectionContent #areaSelectionTable ul.aSH{
         width:100%;
    }
@@ -596,7 +630,7 @@ input[type="range"]::-ms-thumb {
 
    .modalAreaSelectionContent #areaSelectionTable ul.aSH li{
        text-align: center;
-       padding: 12px 0px;
+       padding: 6px 0px;
        font-weight:bold;
        background-color: #F2F2F2;
        text-decoration: underline;
@@ -657,16 +691,9 @@ input[type="range"]::-ms-thumb {
        word-break: break-all;
     }
 
-   .modalAreaSelectionContent #areaSelectionMap {
-       width: 70%;
-       /* Firefox */
-		height: -moz-calc(100% - 55px);
-		/* WebKit */
-		height: -webkit-calc(100% - 55px);
-		/* Opera */
-		height: -o-calc(100% - 55px);
-		/* Standard */
-		height: calc(100% - 55px);
+
+   .modalAreaSelectionMenu{
+       height:80px;
    }
 
    .msettings-ct .modalContainer .modalAreaSelectionMenu > div {

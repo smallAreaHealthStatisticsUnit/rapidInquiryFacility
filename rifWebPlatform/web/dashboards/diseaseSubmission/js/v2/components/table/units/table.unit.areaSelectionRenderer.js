@@ -3,8 +3,8 @@ RIF.table.areaSelectionRenderer = ( function( _dom ) {
   var parent = this,
 
     _requests = {
-      getTabularData: function() {
-        RIF.getGeolevelSelect( _callbacks[ 'getTabularData' ], null );
+      getTabularData: function( geolvl ) {
+        RIF.getGeolevelSelect( _callbacks[ 'getTabularData' ], [ geolvl ] );
       }
 
     },
@@ -12,6 +12,11 @@ RIF.table.areaSelectionRenderer = ( function( _dom ) {
     _callbacks = {
       getTabularData: function() {
         //var start = new Date().getTime();
+        if ( typeof this[ 0 ][ 'errorMessages' ] != 'undefined' ) {
+          RIF.statusBar( this[ 0 ][ 'errorMessages' ], 1, 'notify' );
+          return;
+        };
+
         _renderTable( this );
         _dom.rows.change();
         parent.setEvents( [ 'areaSelectionRenderer' ] );
@@ -23,14 +28,16 @@ RIF.table.areaSelectionRenderer = ( function( _dom ) {
     _renderTable = function( data ) {
       _dom.tableContent.style.display = 'none';
       var fragment = document.createDocumentFragment();
-      var count = 0;
-      for ( var i in data ) {
-        var oddOreven = ( ++count % 2 == 0 ) ? 'even' : 'odd',
+      ids = data[ 1 ].id,
+      labels = data[ 2 ].label,
+      l = ids.length;
+      while ( l-- ) {
+        var oddOreven = ( l % 2 == 0 ) ? 'even' : 'odd',
           div = document.createElement( "div" );
 
         div.className = 'aSR ' + oddOreven;
-        div.id = count;
-        div.innerHTML = '<div>' + data[ i ].identifier + '</div><div>' + data[ i ].label + '</div>';
+        div.id = l;
+        div.innerHTML = '<div>' + ids[ l ] + '</div><div>' + labels[ l ] + '</div>';
         fragment.appendChild( div );
       }
 
@@ -41,7 +48,7 @@ RIF.table.areaSelectionRenderer = ( function( _dom ) {
     _p = {
 
       initAreaSelectionRenderer: function() {
-        _requests.getTabularData();
+        //_requests.getTabularData();
       },
 
 

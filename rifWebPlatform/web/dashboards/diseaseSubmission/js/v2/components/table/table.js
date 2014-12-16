@@ -11,6 +11,11 @@ RIF.table = ( function( settings ) {
         return _p;
       },
 
+      proxy: {
+        updateStudyGrid: function( geoLvl ) {
+          _p.areaSelectionRenderer.request( 'getTabularData', geoLvl );
+        }
+      },
 
       getFacade: function() {
         this.facade = RIF.getFacade( 'table', settings.studyType, this );

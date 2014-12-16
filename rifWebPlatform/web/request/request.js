@@ -396,11 +396,11 @@
 
         
       getGeolevelSelect: function( myCallback, params ) {
-        var msg = "Retrieving geolevel resolutions ";
-            /*userName = params[0],
-            args = 'userID='+userName+'&geoLevelSelectName='+params[1]+'&geographyName=SAHSU'*/
+        var msg = "Retrieving Area ids for geolevel:" + params[0];
+            args = 'userID=ffabbri&geographyName=SAHSU&geoLevelSelectName=LEVEL2&geoLevelAreaName=Elliot',
+            args += '&geoLevelToMapName=' + params[0];   
 
-        xhr( 'studySubmission/getMapAreas?userID=ffabbri&geographyName=SAHSU&geoLevelSelectName=LEVEL2&geoLevelAreaName=Elliot&geoLevelToMapName=LEVEL4', myCallback, msg, 'application/json' );
+        xhr( 'studySubmission/getMapAreas?' + args, myCallback, msg, 'application/json' );
       }
         
     };

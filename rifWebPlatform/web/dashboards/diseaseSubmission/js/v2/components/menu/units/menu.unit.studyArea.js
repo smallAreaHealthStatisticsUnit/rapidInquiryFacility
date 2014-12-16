@@ -16,11 +16,11 @@ RIF.menu.studyArea = ( function( _dom ) {
 
     _callbacks = {
       getSelectAt: function() {
-        var selectAts = this.names;
+        var selectAts = this[ 0 ].names;
         parent.dropDownInputText( selectAts, _dom.selectAtAvailable );
       },
       getResolutions: function() {
-        var resolutions = this.names;
+        var resolutions = this[ 0 ].names;
         //check if current resolution is allowed
         _dom.resolution
           .removeClass( 'inputBorderSelection' )

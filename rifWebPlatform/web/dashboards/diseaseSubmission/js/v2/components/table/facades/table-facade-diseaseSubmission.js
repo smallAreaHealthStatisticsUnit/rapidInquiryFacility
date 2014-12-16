@@ -1,4 +1,4 @@
-RIF.table[ 'facade-diseaseSubmission' ] = ( function( studyType ) {
+RIF.table[ 'facade-diseaseSubmission' ] = ( function( _p ) {
 
 
   // TO BE MODIFIED, below is the copy of data manager facade
@@ -7,6 +7,10 @@ RIF.table[ 'facade-diseaseSubmission' ] = ( function( studyType ) {
     //Subscriber
     studyAreaSelectionEvent: function( rowId ) {
       this.fire( 'studyAreaSelectionEvent', rowId )
+    },
+
+    selectAtChanged: function( geolvl ) {
+      _p.proxy.updateStudyGrid( geolvl );
     }
 
   };

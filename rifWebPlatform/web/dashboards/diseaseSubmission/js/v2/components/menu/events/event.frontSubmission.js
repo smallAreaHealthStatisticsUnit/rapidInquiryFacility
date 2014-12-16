@@ -17,6 +17,11 @@ RIF.menu[ 'event-frontSubmission' ] = ( function( dom ) {
 
   } );
 
+  $( '#statusbar' ).click( function() {
+    $( this ).hide();
+    RIF.statusBar( null, null, -1 ); //remove error msgs   
+  } );
+
   $( dom.studyArea ).click( function() { //Fire
     $( dom.studyAreaDialog ).show();
   } );
