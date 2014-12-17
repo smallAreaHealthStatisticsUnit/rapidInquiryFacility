@@ -130,56 +130,97 @@ BEGIN
 	
 END;
 $$;
-	
-SELECT * FROM rif40_geo_pkg.rif40_zoom_levels(30);
 
-SELECT * FROM rif40_geo_pkg.rif40_zoom_levels();
+SELECT * FROM rif40_geo_pkg.rif40_zoom_levels()/* 0 */;
+SELECT * FROM rif40_geo_pkg.rif40_zoom_levels(30);
+SELECT * FROM rif40_geo_pkg.rif40_zoom_levels(60);	
+SELECT * FROM rif40_geo_pkg.rif40_zoom_levels(80);
+SELECT * FROM rif40_geo_pkg.rif40_zoom_levels(88);
+SELECT * FROM rif40_geo_pkg.rif40_zoom_levels(89.99);
+DO LANGUAGE plpgsql $$
+BEGIN
+	SELECT * FROM rif40_geo_pkg.rif40_zoom_levels(90);
+EXCEPTION 
+	WHEN others THEN NULL;
+END;
+$$;	
+
+WITH b AS (
+	SELECT geography, srid, rif40_geo_pkg.rif40_zoom_levels(	
+			ST_Y( 														/* Get latitude */
+				ST_transform( 											/* Transform to 4326 */
+					ST_GeomFromEWKT('SRID='||a.srid||';POINT(0 0)') 	/* Grid Origin */, 
+						4326)
+				)::NUMERIC) AS zl
+	   FROM rif40_geographies a
+)
+SELECT geography, srid,
+       (zl).zoom_level,
+       (zl).latitude, 
+	   (zl).tiles, 
+	   (zl).degrees_per_tile, 
+	   (zl).m_x_per_pixel, 
+	   (zl).m_y_per_pixel, 
+	   (zl).simplify_tolerance,
+	   (zl).scale
+  FROM b
+ WHERE (zl).zoom_level IN (6, 8, 11) /* RIF zoomlevels */;
+ 
 /*
 SELECT * FROM rif40_geo_pkg.rif40_zoom_levels();
- zoomlevel | latitude |    tiles     | degrees_per_tile | m_x_per_pixel_est | m_x_per_pixel | m_y_per_pixel |   m_x    |   m_y    |      scale
------------+----------+--------------+------------------+-------------------+---------------+---------------+----------+----------+------------------
-         0 |        0 |            1 |              360 |            156412 |        155497 |               | 39807187 |          | 1 in 591,225,112
-         1 |        0 |            4 |              180 |             78206 |         77748 |               | 19903593 |          | 1 in 295,612,556
-         2 |        0 |           16 |               90 |             39103 |         39136 |         39070 | 10018754 | 10001966 | 1 in 148,800,745
-         3 |        0 |           64 |               45 |             19552 |         19568 |         19472 |  5009377 |  4984944 | 1 in 74,400,373
-         4 |        0 |          256 |             22.5 |              9776 |          9784 |          9723 |  2504689 |  2489167 | 1 in 37,200,186
-         5 |        0 |         1024 |            11.25 |              4888 |          4892 |          4860 |  1252344 |  1244120 | 1 in 18,600,093
-         6 |        0 |         4096 |            5.625 |              2444 |          2446 |          2430 |   626172 |   622000 | 1 in 9,300,047
-         7 |        0 |        16384 |            2.813 |              1222 |          1223 |          1215 |   313086 |   310993 | 1 in 4,650,023
-         8 |        0 |        65536 |            1.406 |               611 |           611 |           607 |   156543 |   155495 | 1 in 2,325,012
-         9 |        0 |       262144 |            0.703 |               305 |           306 |           304 |    78272 |    77748 | 1 in 1,162,506
-        10 |        0 |      1048576 |            0.352 |               153 |           153 |           152 |    39136 |    38874 | 1 in 581,253
-        11 |        0 |      4194304 |            0.176 |                76 |            76 |            76 |    19568 |    19437 | 1 in 290,626
-        12 |        0 |     16777216 |            0.088 |                38 |            38 |            38 |     9784 |     9718 | 1 in 145,313
-        13 |        0 |     67108864 |            0.044 |                19 |            19 |            19 |     4892 |     4859 | 1 in 72,657
-        14 |        0 |    268435456 |            0.022 |               9.5 |           9.6 |           9.5 |     2446 |     2430 | 1 in 36,328
-        15 |        0 |   1073741824 |            0.011 |               4.8 |           4.8 |           4.7 |     1223 |     1215 | 1 in 18,164
-        16 |        0 |   4294967296 |            0.005 |               2.4 |           2.4 |           2.4 |      611 |      607 | 1 in 9,082
-        17 |        0 |  17179869184 |            0.003 |              1.19 |          1.19 |          1.19 |      306 |      304 | 1 in 4,541
-        18 |        0 |  68719476736 |           0.0014 |              0.60 |          0.60 |          0.59 |      153 |      152 | 1 in 2,271
-        19 |        0 | 274877906944 |          0.00069 |              0.30 |          0.30 |          0.30 |       76 |       76 | 1 in 1,135
+psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [60001] latitude: 0
+ zoom_level | latitude |    tiles     | degrees_per_tile | m_x_per_pixel_est | m_x_per_pixel | m_y_per_pixel |   m_x    |   m_y    | simplify_tolerance |      scale
+------------+----------+--------------+------------------+-------------------+---------------+---------------+----------+----------+--------------------+------------------
+          0 |        0 |            1 |              360 |            156412 |        155497 |               | 39807187 |          |               1.40 | 1 in 591,225,112
+          1 |        0 |            4 |              180 |             78206 |         77748 |               | 19903593 |          |               0.70 | 1 in 295,612,556
+          2 |        0 |           16 |               90 |             39103 |         39136 |         39070 | 10018754 | 10001966 |               0.35 | 1 in 148,800,745
+          3 |        0 |           64 |               45 |             19552 |         19568 |         19472 |  5009377 |  4984944 |               0.18 | 1 in 74,400,373
+          4 |        0 |          256 |             22.5 |              9776 |          9784 |          9723 |  2504689 |  2489167 |               0.09 | 1 in 37,200,186
+          5 |        0 |         1024 |            11.25 |              4888 |          4892 |          4860 |  1252344 |  1244120 |               0.04 | 1 in 18,600,093
+          6 |        0 |         4096 |            5.625 |              2444 |          2446 |          2430 |   626172 |   622000 |              0.022 | 1 in 9,300,047
+          7 |        0 |        16384 |            2.813 |              1222 |          1223 |          1215 |   313086 |   310993 |              0.011 | 1 in 4,650,023
+          8 |        0 |        65536 |            1.406 |               611 |           611 |           607 |   156543 |   155495 |             0.0055 | 1 in 2,325,012
+          9 |        0 |       262144 |            0.703 |               305 |           306 |           304 |    78272 |    77748 |             0.0027 | 1 in 1,162,506
+         10 |        0 |      1048576 |            0.352 |               153 |           153 |           152 |    39136 |    38874 |             0.0014 | 1 in 581,253
+         11 |        0 |      4194304 |            0.176 |                76 |            76 |            76 |    19568 |    19437 |            0.00069 | 1 in 290,626
+         12 |        0 |     16777216 |            0.088 |                38 |            38 |            38 |     9784 |     9718 |            0.00034 | 1 in 145,313
+         13 |        0 |     67108864 |            0.044 |                19 |            19 |            19 |     4892 |     4859 |            0.00017 | 1 in 72,657
+         14 |        0 |    268435456 |            0.022 |               9.5 |           9.6 |           9.5 |     2446 |     2430 |          0.0000858 | 1 in 36,328
+         15 |        0 |   1073741824 |            0.011 |               4.8 |           4.8 |           4.7 |     1223 |     1215 |          0.0000429 | 1 in 18,164
+         16 |        0 |   4294967296 |            0.005 |               2.4 |           2.4 |           2.4 |      611 |      607 |          0.0000215 | 1 in 9,082
+         17 |        0 |  17179869184 |            0.003 |              1.19 |          1.19 |          1.19 |      306 |      304 |          0.0000107 | 1 in 4,541
+         18 |        0 |  68719476736 |           0.0014 |              0.60 |          0.60 |          0.59 |      153 |      152 |          0.0000054 | 1 in 2,271
+         19 |        0 | 274877906944 |          0.00069 |              0.30 |          0.30 |          0.30 |       76 |       76 |          0.0000027 | 1 in 1,135
 (20 rows)
-
-Time: 40.133 ms
-
-Time: 2.648 ms
  */
-
--- Projection was wrong, is now correct
+--
+-- Projection was wrong, is now correct; i.e. SAHSULAND is 3,286 square km is size...
+--
 SELECT a.geolevel_name, 
        b.st_simplify_tolerance,
-	   ST_Distance_Spheroid(
+/*	   ST_Distance_Spheroid(
 			ST_GeomFromEWKT('SRID=27700;POINT(0 0)'), 
 			ST_GeomFromEWKT('SRID=27700;POINT('||b.st_simplify_tolerance||' 0)'),
-			'SPHEROID["Airy 1830",6377563.396,299.3249646]') st_simplify_tolerance_in_m,
+			'SPHEROID["Airy 1830",6377563.396,299.3249646]') st_simplify_tolerance_in_m, WRONG - IN DEGREES */
        COUNT(a.area_id) AS t_areas, 
        SUM(ST_NPoints(a.shapefile_geometry)) AS t_points, 
-	   SUM(ST_Area(a.shapefile_geometry)) AS t_area, 
-	   SUM(ST_perimeter(a.shapefile_geometry)) AS t_perimeter
+	   ROUND((SUM(ST_Area(a.shapefile_geometry)))::NUMERIC, 1) AS t_area, 
+	   ROUND((SUM(ST_perimeter(a.shapefile_geometry)))::NUMERIC, 1) AS t_perimeter,
+	   ROUND((SUM(ST_Area(a.shapefile_geometry))/10000001)::NUMERIC, 1) AS t_area_km2, 
+	   ROUND((SUM(ST_perimeter(a.shapefile_geometry))/1000)::NUMERIC, 1) AS t_perimeter_km
   FROM t_rif40_sahsu_geometry a, rif40_geolevels b
  WHERE a.geolevel_name = b.geolevel_name
  GROUP BY b.geolevel_id, a.geolevel_name, b.st_simplify_tolerance
  ORDER BY b.geolevel_id;
+/*
+ geolevel_name | st_simplify_tolerance | st_simplify_tolerance_in_m | t_areas | t_points |    t_area     | t_perimeter | t_area_km2 | t_perimeter_km
+---------------+-----------------------+----------------------------+---------+----------+---------------+-------------+------------+----------------
+ LEVEL1        |                   500 |           15583327.1301406 |       1 |    12344 | 32857211853.1 |   1677331.4 |     3285.7 |         1677.3
+ LEVEL2        |                   100 |           11130947.9501005 |      17 |    41566 | 32857211853.0 |   4774429.0 |     3285.7 |         4774.4
+ LEVEL3        |                    50 |           5565473.97505023 |     200 |    85247 | 32857211852.8 |   9651243.6 |     3285.7 |         9651.2
+ LEVEL4        |                    10 |           1113094.79501005 |    1230 |   135813 | 32857211853.1 |  15287760.5 |     3285.7 |        15287.8
+(4 rows)
+ */
  
  /*
  "PROJCS["OSGB 1936 / British National Grid",
@@ -203,6 +244,15 @@ SELECT a.geolevel_name,
 		AXIS["Easting",EAST],
 		AXIS["Northing",NORTH]
 	]"
+	
+GEOGCS["WGS 84",
+	DATUM["WGS_1984",
+		SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],
+		AUTHORITY["EPSG","6326"]],
+	PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],
+	UNIT["degree",0.0174532925199433,
+	AUTHORITY["EPSG","9122"]],
+AUTHORITY["EPSG","4326"]]
  */
  
 WITH a AS (
@@ -214,7 +264,7 @@ WITH a AS (
 ), d AS (
 	SELECT srid, 
 	       ST_Distance_Spheroid(
-				ST_GeomFromEWKT('SRID='||a.srid||';POINT(0 0)'), 
+				ST_GeomFromEWKT('SRID='||a.srid||';POINT(0 0)'), /* POINT(lat long) */
 				ST_GeomFromEWKT('SRID='||a.srid||';POINT(1 0)'),
 				a.l_spheroid::spheroid) one_unit_in_m,
 				a.l_spheroid
@@ -235,37 +285,16 @@ SELECT b.geography,
   FROM d, e, a LEFT OUTER JOIN rif40_geographies b ON (a.srid = b.srid)
  WHERE a.srid = d.srid
    AND d.srid = e.srid;
-  
-WITH c AS (
-	SELECT srid, substring(srtext, position('SPHEROID[' in srtext)) AS l_spheroid
-	  FROM spatial_ref_sys	
-     WHERE srid = 4326 /* WGS 84 */
-) 
-SELECT a.geolevel_name, 
-       b.st_simplify_tolerance,
-	   ST_Distance_Spheroid(
-			ST_GeomFromEWKT('SRID='||c.srid||';POINT(0 0)'), 
-			ST_GeomFromEWKT('SRID='||c.srid||';POINT('||b.st_simplify_tolerance||' 0)'),
-			c.l_spheroid::spheroid) st_simplify_tolerance_in_m,
-       COUNT(a.area_id) AS t_areas, 
-       SUM(ST_NPoints(a.optimised_geometry)) AS t_points, 
-	   SUM(ST_Area(a.optimised_geometry)) AS t_area, 
-	   SUM(ST_perimeter(a.optimised_geometry)) AS t_perimeter
-  FROM t_rif40_sahsu_geometry a, rif40_geolevels b, c
- WHERE a.geolevel_name = b.geolevel_name
- GROUP BY b.geolevel_id, a.geolevel_name, b.st_simplify_tolerance, c.srid, c.l_spheroid
- ORDER BY b.geolevel_id;
 /*
- geolevel_name | st_simplify_tolerance | st_simplify_tolerance_in_m | t_areas | t_points |      t_area      |   t_perimeter
----------------+-----------------------+----------------------------+---------+----------+------------------+-----------------
- LEVEL1        |                   500 |           15584728.7090889 |       1 |      480 | 4.50059857695114 |  19.055572173303
- LEVEL2        |                   100 |           11131949.0779206 |      17 |     4810 | 4.50017671666378 | 56.4710683945156
- LEVEL3        |                    50 |           5565974.53896032 |     200 |    15368 | 4.50000989065218 | 115.925813614905
- LEVEL4        |                    10 |           1113194.90779206 |    1230 |    57451 | 4.49985165272541 | 186.138191219224
+ geography | srid  |  one_unit_in_m   | one_hundred_m |                   spheroid
+-----------+-------+------------------+---------------+-----------------------------------------------
+           |  4326 | 111319.490779206 |           100 | SPHEROID["WGS 84",6378137,298.257223563]
+ SAHSU     | 27700 | 111309.479501005 |           100 | SPHEROID["Airy 1830",6377563.396,299.3249646]
+ EW01      | 27700 | 111309.479501005 |           100 | SPHEROID["Airy 1830",6377563.396,299.3249646]
+ UK91      | 27700 | 111309.479501005 |           100 | SPHEROID["Airy 1830",6377563.396,299.3249646]
 (4 rows)
-
-
-*/
+ */
+  
 SELECT substring(a1.spheroid, 1, position(',AUTHORITY[' in a1.spheroid)-1)||']' AS spheroid
   FROM (
 	SELECT substring(srtext, position('SPHEROID[' in srtext)) AS spheroid
