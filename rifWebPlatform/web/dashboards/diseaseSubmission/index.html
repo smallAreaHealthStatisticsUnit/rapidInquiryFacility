@@ -76,6 +76,8 @@
     <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.studyArea.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/events/event.studyArea.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.frontSubmission.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.healthCodes.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/events/event.healthCodes.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/menu.utils.js"></script>
     
     <!-- table -->
@@ -169,13 +171,13 @@
                 </div>  
             </div>
             
-             <!-- Health condition block -->
-            <div id='healthConditions' class='blocks'>
+             <!-- Investigation parameter block -->
+            <div id='invParameters' class='blocks'>
                 <div class='headerBlock'>
-                    <h1>Health conditions</h1>
+                    <h1>Investigations </h1>
                 </div>
                 <div class='summary bodyBlock'>
-                    <h2 class='areaSummaryLabel' >   </h2>
+                    <h2 class='areaSummaryLabel' > OA 2001  </h2>
                     <div>
                         <ul>
                             <li> 00FAG </li>
@@ -185,17 +187,16 @@
                 </div> 
             </div>
             
-             <!-- Investigation parameter block -->
-            <div id='invParameters' class='blocks'>
+            <div id='statsParameters' class='blocks'>
                 <div class='headerBlock'>
-                    <h1>Investigation parameters </h1>
+                    <h1>Stats</h1>
                 </div>
                 <div class='summary bodyBlock'>
-                    <h2 class='areaSummaryLabel' > OA 2001  </h2>
+                    <h2 class='areaSummaryLabel' >   </h2>
                     <div>
                         <ul>
-                            <li> 00FAG </li>
-                            <li> 00FXV </li>
+                            <li>  </li>
+                            <li>  </li>
                         </ul>
                     </div>    
                 </div> 
@@ -295,7 +296,31 @@
 					<h2>Investigation parameters</h2>
 					<a class="modal_close" href="#parametersModal"></a>
 				</div>
-                <div></div>
+                <div class='modalContainer'>
+                    <div class='healthCodes'>
+                        <div>
+                            <input type="text"  placeholder="ICD Classification" id='icdClassification' class='dropdownInput'>
+                            <div id='icdClassificationAvailable' class='availables' ></div>
+                        </div>
+                        <div id='tree' >
+                            <div> 
+                                <div class='healthCodesHeader'><span> + </span> 201 - Hodgkin' s disease</div>
+                                <div class='subCodes'>
+                                    <div> dfgdfg fdg</div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class='healthCodesHeader'> <span> + </span> 493 - Asthma </div>
+                                <div>
+                                    <div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='parameters'>
+                        
+                    </div>    
+                </div>
 			</div>
 		</div>
 	</div>

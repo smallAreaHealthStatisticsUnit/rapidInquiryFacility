@@ -18,6 +18,7 @@ RIF.menu.studyArea = ( function( _dom ) {
       getSelectAt: function() {
         var selectAts = this[ 0 ].names;
         parent.dropDownInputText( selectAts, _dom.selectAtAvailable );
+        parent.proxy.studyAreaReady();
       },
       getResolutions: function() {
         var resolutions = this[ 0 ].names;

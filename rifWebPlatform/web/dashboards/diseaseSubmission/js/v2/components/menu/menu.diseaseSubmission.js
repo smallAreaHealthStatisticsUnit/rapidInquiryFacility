@@ -19,6 +19,14 @@ RIF.menu = ( function( settings ) {
           _p.studyArea.request( 'getResolutionsAvailable', [ RIF.user, selectAt ] );
           _p.facade.selectAtChanged( selectAt );
           _p.facade.resolutionChanged( null );
+        },
+
+        studyAreaReady: function() {
+          _p.healthCodes.request( 'getTaxonomy' );
+        },
+
+        updateTopLevelHealthCodes: function( icd ) {
+          _p.healthCodes.request( 'getTopLevelHealthCodes', icd );
         }
 
       },

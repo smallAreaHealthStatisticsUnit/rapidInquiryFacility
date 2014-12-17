@@ -27,6 +27,7 @@ RIF.table.areaSelectionRenderer = ( function( _dom ) {
 
     _renderTable = function( data ) {
       _dom.tableContent.style.display = 'none';
+      $( _dom.tableContent ).empty();
       var fragment = document.createDocumentFragment();
       ids = data[ 1 ].id,
       labels = data[ 2 ].label,
@@ -40,7 +41,6 @@ RIF.table.areaSelectionRenderer = ( function( _dom ) {
         div.innerHTML = '<div>' + ids[ l ] + '</div><div>' + labels[ l ] + '</div>';
         fragment.appendChild( div );
       }
-
       _dom.tableContent.appendChild( fragment );
       _dom.tableContent.style.display = 'block';
     },

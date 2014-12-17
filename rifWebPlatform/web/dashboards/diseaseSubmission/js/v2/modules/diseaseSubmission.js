@@ -29,7 +29,7 @@ RIF.diseaseSubmission = ( function() {
       */
       menu: {
         studyType: 'diseaseSubmission',
-        menus: [ 'frontSubmission', 'studyArea' ]
+        menus: [ 'frontSubmission', 'studyArea', 'healthCodes' ]
       },
       table: {
         studyType: 'diseaseSubmission',

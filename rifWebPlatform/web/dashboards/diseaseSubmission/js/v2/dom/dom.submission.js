@@ -61,8 +61,17 @@ RIF.dom = ( function() {
           /* Map available for selection of study/comparison area */
           areaSelectionMap: $( '#areaSelectionMap' )
         };
-
+      },
+      healthCodes: function() {
+        return {
+          /* Resolution field */
+          icdClassification: $( '#icdClassification' ),
+          icdHeader: $( '.healthCodesHeader' ),
+          icdClassificationAvailable: ( '#icdClassificationAvailable' ),
+          tree: get( 'tree' )
+        };
       }
+
     },
 
     table: {

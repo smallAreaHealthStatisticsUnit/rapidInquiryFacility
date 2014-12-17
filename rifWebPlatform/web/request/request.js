@@ -401,7 +401,21 @@
             args += '&geoLevelToMapName=' + params[0];   
 
         xhr( 'studySubmission/getMapAreas?' + args, myCallback, msg, 'application/json' );
-      }
+      },
+        
+      getHealthTaxonomy: function( myCallback, params ) {
+        var msg = "Retrieving taxonomy codes",
+            args = 'userID=ffabbri';  
+
+        xhr( 'studySubmission/getHealthCodeTaxonomies?' + args, myCallback, msg, 'application/json' );
+      },
+        
+      getTopLevelHealthCodes: function( myCallback, params ) {
+        var msg = "Retrieving top level health codes",
+            args = 'userID=ffabbri&healthCodeTaxonomyNameSpace='+ params[0];  
+
+        xhr( 'studySubmission/getTopLevelCodes?' + args, myCallback, msg, 'application/json' );
+      }     
         
     };
 

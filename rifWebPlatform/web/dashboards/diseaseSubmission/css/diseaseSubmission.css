@@ -479,9 +479,8 @@ input[type="range"]::-ms-thumb {
 	  width: 100%;
 	  height: 100%;
 	  background-color: rgba(0,0,0,0.4); /*dim the background*/
-    
 	  z-index: 99999;
-}	
+     1}	
 
 	
 	.msettings {
@@ -491,7 +490,7 @@ input[type="range"]::-ms-thumb {
 		background: #FFF;
 		border-radius: 5px; -moz-border-radius: 5px; 
 		-webkit-border-radius: 5px;
-		margin: 3% auto;
+		margin: 2% auto;
 		height: 90%;
     }
 	
@@ -552,7 +551,7 @@ input[type="range"]::-ms-thumb {
 	    color: #7D7D7D;
 	}
 
-   .msettings-ct .modalContainer > div {
+   .msettings-ct .modalContainer .modalAreaSelectionMenu {
        width: 94%;
    }
    
@@ -582,7 +581,7 @@ input[type="range"]::-ms-thumb {
    }
 
    .modalAreaSelectionContent #areaSelectionTable {
-        width: 400px;
+        width: 40%;
        /* Firefox */
 		max-height: 85%;
        height:auto;
@@ -591,26 +590,30 @@ input[type="range"]::-ms-thumb {
    }
 
     .modalAreaSelectionContent #areaSelectionMap {
-        margin-left: 470px;
+        margin-left: 42%;
         /* Firefox */
-		width: -moz-calc(100% - 500px);
+		
 		/* WebKit */
-		width: -webkit-calc(100% - 500px);
+		
 		/* Opera */
-		width: -o-calc(100% - 500px);
+		
 		/* Standard */
-		width: calc(100% - 500px);
-        border:1px solid;
+		
+        border-bottom:1px solid;
         /* Firefox */
 		height: 85%;
-   }
+   
+        width: 58%;
+}
     
     .modalAreaSelectionContent #selectionCounter{
         position:absolute;
-        bottom:0;
+        bottom: 20px;
         text-transform: uppercase;
-        font-size:14px;
-    }
+        font-size: 15px;
+    
+        left: 10px;
+}
    #resolutionCountLabel{
     font-weight: bold;
    }
@@ -1136,4 +1139,42 @@ input.dropdownInput:-moz-placeholder {
   -o-transition: border 0.3s;
   transition: border 0.3s;
   border-bottom:  solid 5px #F4A460;   
+}
+
+/* Ivestigation parameter modal dialog */
+.healthCodes {
+    float:left;
+    width: 35%;
+    height: 100%;
+    border-right: 2px solid #dbdbdb;
+    position: relative;
+}
+
+.healthCodes > div  {
+   margin: 4%;
+   width: 80%;    
+   position: absolute;
+}
+.healthCodes #tree{
+  margin-top:90px;
+}
+.healthCodes #tree > div{
+    width: 100%;
+    padding: 0 10px;
+}
+.healthCodes #tree  .subCodes {
+    margin-left: 40px;    
+}
+
+.healthCodes #tree  div.healthCodesHeader{
+    font-weight: bold
+}
+.healthCodes #tree  div.healthCodesHeader:hover{
+    cursor: pointer;
+    background-color: rgba(171,130,255	,0.2);
+}
+
+.healthCodes #tree > div > div > span{
+    padding: 0 5px;
+    font-size:15px;
 }
