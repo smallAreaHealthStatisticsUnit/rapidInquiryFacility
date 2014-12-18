@@ -415,7 +415,14 @@
             args = 'userID=ffabbri&healthCodeTaxonomyNameSpace='+ params[0];  
 
         xhr( 'studySubmission/getTopLevelCodes?' + args, myCallback, msg, 'application/json' );
-      }     
+      }, 
+        
+      getSubHealthCodes: function( myCallback, params ) {
+        var msg = "Retrieving sub level health codes",
+            args = 'userID=ffabbri&healthCode='+ params[1]+'&healthCodeNameSpace='+ params[0]; 
+
+        xhr( 'studySubmission/getImmediateChildHealthCodes?' + args, myCallback, msg, 'application/json' );
+      },    
         
     };
 

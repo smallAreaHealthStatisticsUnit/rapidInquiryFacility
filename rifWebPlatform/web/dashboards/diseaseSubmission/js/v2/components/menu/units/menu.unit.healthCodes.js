@@ -9,10 +9,18 @@ RIF.menu.healthCodes = ( function( _dom ) {
       getTopLevelHealthCodes: function( icd ) {
         RIF.getTopLevelHealthCodes( _callbacks[ 'getTopLevelHealthCodes' ], [ icd ] ); // param hardcoded for now
       },
+      getSubLevelHealthCodes: function( params ) { // {taxonomy,code,dom}
+        var specialClbk = function() {
+          _callbacks.getSubLevelHealthCodes.call( this, params.dom );
+        };
+        RIF.getSubHealthCodes( specialClbk, [ params.taxonomy, params.code ] ); // param hardcoded for now
+      },
+
 
     },
 
     _callbacks = {
+
       getTaxonomy: function() {
         var taxonomies = [],
           l = this.length;
@@ -24,26 +32,46 @@ RIF.menu.healthCodes = ( function( _dom ) {
       },
 
       getTopLevelHealthCodes: function() {
-        var fragment = document.createDocumentFragment();
-        l = this.length,
-        divClass = 'healthCodesHeader';
-
-        _dom.tree.style.display = 'none';
-        _dom.tree.innerHTML = '';
-        while ( l-- ) {
-          var oddOreven = ( l % 2 == 0 ) ? 'even' : 'odd',
-            div = document.createElement( "div" ),
-            span = '';
-
-          if ( this[ l ][ 'numberOfSubTerms' ] > 0 ) {
-            span = '<span> + </span>';
-          };
-          div.innerHTML = '<div class=' + divClass + '>' + span + ' ' + this[ l ][ 'description' ] + '</div';
-          fragment.appendChild( div );
-        }
-        _dom.tree.appendChild( fragment );
-        _dom.tree.style.display = 'block';
+        _insertChildrenElements( this, _dom.tree );
       },
+
+      getSubLevelHealthCodes: function( domParent ) {
+        _insertChildrenElements( this, domParent );
+      },
+
+    },
+
+    _insertChildrenElements = function( data, domParent ) {
+      var fragment = document.createDocumentFragment();
+      l = data.length
+
+      domParent.style.display = 'none';
+      domParent.innerHTML = '';
+
+      data.reverse();
+      while ( l-- ) {
+        var container = document.createElement( "div" ),
+          div = document.createElement( "div" ),
+          expand = '';
+
+        container.appendChild( div );
+
+        if ( data[ l ][ 'numberOfSubTerms' ] > 0 ) {
+          expand = ' + ';
+          div.className = 'healthCodesHeader';
+        } else {
+          container.className = 'noChildElements'
+        };
+
+        var description = ( data[ l ][ 'description' ] ).replace( ';', '' );
+        div.innerHTML = expand + '<span>' + data[ l ][ 'code' ] + '</span> - ' + description;
+        div.appendChild( document.createElement( "div" ) ); // for children elements
+
+        fragment.appendChild( container );
+      };
+
+      domParent.appendChild( fragment );
+      domParent.style.display = 'block';
     },
 
     /* geolevel obj */

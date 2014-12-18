@@ -68,7 +68,8 @@ RIF.dom = ( function() {
           icdClassification: $( '#icdClassification' ),
           icdHeader: $( '.healthCodesHeader' ),
           icdClassificationAvailable: ( '#icdClassificationAvailable' ),
-          tree: get( 'tree' )
+          tree: get( 'tree' ),
+          healthCodesHeader: $( 'div.healthCodesHeader' )
         };
       }
 

@@ -1160,7 +1160,7 @@ input.dropdownInput:-moz-placeholder {
 }
 .healthCodes #tree > div{
     width: 100%;
-    padding: 0 10px;
+    padding: 2px 10px;
 }
 .healthCodes #tree  .subCodes {
     margin-left: 40px;    
@@ -1169,9 +1169,28 @@ input.dropdownInput:-moz-placeholder {
 .healthCodes #tree  div.healthCodesHeader{
     font-weight: bold
 }
+
+
 .healthCodes #tree  div.healthCodesHeader:hover{
     cursor: pointer;
-    background-color: rgba(171,130,255	,0.2);
+    background-color: rgba(132,112,255,0.1);   
+}
+
+.healthCodes #tree  div.healthCodesHeader  div.noChildElements{
+    font-weight:normal;
+}
+.healthCodes #tree  div.healthCodesHeader  div.noChildElements:hover{
+    cursor: pointer;
+    background-color: rgba(255,240,245	,0.6);
+}
+
+
+.healthCodes #tree  div.healthCodesHeader  div{
+    line-height: 15px;
+}
+
+.healthCodes #tree  div.healthCodesHeader  div div{
+    padding: 1px 0 0 15px;
 }
 
 .healthCodes #tree > div > div > span{

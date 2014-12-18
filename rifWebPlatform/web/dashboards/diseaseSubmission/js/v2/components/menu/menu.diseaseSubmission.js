@@ -27,6 +27,14 @@ RIF.menu = ( function( settings ) {
 
         updateTopLevelHealthCodes: function( icd ) {
           _p.healthCodes.request( 'getTopLevelHealthCodes', icd );
+        },
+
+        updateSubLevelHealthCodes: function( code, domEl ) {
+          _p.healthCodes.request( 'getSubLevelHealthCodes', {
+            "taxonomy": "icd10",
+            "code": code,
+            "dom": domEl
+          } );
         }
 
       },

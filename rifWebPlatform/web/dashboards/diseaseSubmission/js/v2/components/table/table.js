@@ -4,8 +4,6 @@ RIF.table = ( function( settings ) {
 
     _p = {
 
-
-
       init: function() {
         _p = RIF.mix( RIF.table.utils(), _p );
         return _p;
