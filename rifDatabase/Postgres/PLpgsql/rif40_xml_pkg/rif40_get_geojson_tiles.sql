@@ -91,6 +91,7 @@ Returns:	Text table [1 or more rows dependent on return_one_row]
 Description:	Get GeoJSON data as a Javascript variable. 
 		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
 		SRID is 4326 (WGS84)
+		Check bounding box is 1x1 tile in size.
 		Note: that this is NOT box 2d. Box 2d is defined as a box composed of x min, ymin, xmax, ymax. 
 
 		1 row means 1 row, no CRLFs etc!
@@ -215,6 +216,11 @@ DECLARE
 	c4_rec RECORD;
 	c5_rec RECORD;
 --
+	x_min_tile	INTEGER;
+	x_max_tile	INTEGER;
+	y_min_tile	INTEGER;
+	y_max_tile	INTEGER;
+--
 	sql_stmt 		VARCHAR;
 	i 			INTEGER:=0;
 	geolevel_area_id_list	VARCHAR[];
@@ -282,6 +288,72 @@ BEGIN
 			l_geography::VARCHAR	/* Geography */, 
 			geolevel_view::VARCHAR	/* Geolevel view */);
 	END IF;	
+--
+-- Test tile bounds
+--
+	x_min_tile:=rif40_geo_pkg.latitude2tile(X_min, zoom_level);
+	x_max_tile:=rif40_geo_pkg.latitude2tile(X_max, zoom_level);
+	y_min_tile:=rif40_geo_pkg.longitude2tile(Y_min, zoom_level);
+	y_max_tile:=rif40_geo_pkg.longitude2tile(Y_max, zoom_level);
+	IF y_min_tile = y_max_tile AND x_min_tile = x_max_tile THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
+			'[50404] Geography: %, <geoevel view> % bound [%, %, %, %] tile XY verified [% %]; zoom level %', 			 
+			l_geography::VARCHAR			/* Geography */, 
+			l_geolevel_view::VARCHAR		/* Geoelvel view */,  
+			x_min::VARCHAR					/* Xmin */,
+			y_min::VARCHAR					/* Ymin */,
+			x_max::VARCHAR					/* Xmax */,
+			y_max::VARCHAR					/* Ymax */,
+			x_min_tile::VARCHAR				/* Xmin tile */,
+			y_min_tile::VARCHAR				/* Ymin tile */,
+			zoom_level::VARCHAR				/* Zoom level */);
+	ELSIF (y_min_tile != y_max_tile AND x_min_tile != x_max_tile) OR
+		  (y_min_tile = y_max_tile AND x_min_tile != x_max_tile) OR
+		  (y_min_tile != y_max_tile AND x_min_tile = x_max_tile) THEN
+		IF tile_name IS NULL THEN /* Test mode, no real tile to store */
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
+				'[50405] Geography: %, <geoevel view> % bound [%, %, %, %] tile XY [% %]; size %x%; zoom level %', 			 
+				l_geography::VARCHAR			/* Geography */, 
+				l_geolevel_view::VARCHAR		/* Geoelvel view */,  
+				x_min::VARCHAR					/* Xmin */,
+				y_min::VARCHAR					/* Ymin */,
+				x_max::VARCHAR					/* Xmax */,
+				y_max::VARCHAR					/* Ymax */,
+				x_min_tile::VARCHAR				/* Xmin tile */,
+				y_min_tile::VARCHAR				/* Ymin tile */,
+				(1+x_max_tile-x_min_tile)::VARCHAR			/* X tile size */,
+				(1+y_max_tile-y_min_tile)::VARCHAR			/* Y tile size */,
+				zoom_level::VARCHAR				/* Zoom level */);
+		ELSE
+			PERFORM rif40_log_pkg.rif40_error(-50406, 'rif40_get_geojson_tiles', 
+				'Geography: %, <geoevel view> % bound [%, %, %, %] tile XY [% %]; size %x%; zoom level %', 			 
+				l_geography::VARCHAR			/* Geography */, 
+				l_geolevel_view::VARCHAR		/* Geoelvel view */,  
+				x_min::VARCHAR					/* Xmin */,
+				y_min::VARCHAR					/* Ymin */,
+				x_max::VARCHAR					/* Xmax */,
+				y_max::VARCHAR					/* Ymax */,
+				x_min_tile::VARCHAR				/* Xmin tile */,
+				y_min_tile::VARCHAR				/* Ymin tile */,
+				(1+x_max_tile-x_min_tile)::VARCHAR			/* X tile size */,
+				(1+y_max_tile-y_min_tile)::VARCHAR			/* Y tile size */,
+				zoom_level::VARCHAR				/* Zoom level */);
+		END IF;
+	ELSE
+		PERFORM rif40_log_pkg.rif40_error(-50407, 'rif40_get_geojson_tiles', 
+			'Geography: %, <geoevel view> % bound [%, %, %, %] unexpected bound to tile XY error [%, %, %, %]; zoom level %', 			
+			l_geography::VARCHAR			/* Geography */, 
+			l_geolevel_view::VARCHAR		/* Geoelvel view */,  
+			x_min::VARCHAR					/* Xmin */,
+			y_min::VARCHAR					/* Ymin */,
+			x_max::VARCHAR					/* Xmax */,
+			y_max::VARCHAR					/* Ymax */,
+			x_min_tile::VARCHAR				/* Xmin tile */,
+			y_min_tile::VARCHAR				/* Ymin tile */,
+			x_max_tile::VARCHAR				/* Xmax tile */,
+			y_max_tile::VARCHAR				/* Ymax tile */,
+			zoom_level::VARCHAR				/* Zoom level */);
+	END IF;
 --
 -- Test  <geolevel area id list> is valid
 --
@@ -358,7 +430,7 @@ Total runtime: 19.472 ms
 	took:=age(etp, stp);
 	stp:=clock_timestamp();
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-		'[50404] <geolevel area id list> SQL> [using %, %, %, %, %], time taken so far: %'||E'\n'||'%;',
+		'[50408] <geolevel area id list> SQL> [using %, %, %, %, %], time taken so far: %'||E'\n'||'%;',
 		x_min::VARCHAR			/* Xmin */,
 		y_min::VARCHAR			/* Ymin */,
 		x_max::VARCHAR			/* Xmax */,
@@ -400,7 +472,7 @@ Total runtime: 19.472 ms
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 				error_message:='rif40_get_geojson_tiles() caught: '||E'\n'||
 					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
-				RAISE INFO '50405: %', error_message;
+				RAISE INFO '50409: %', error_message;
 --
 				RAISE;
 		END;
@@ -419,7 +491,7 @@ Total runtime: 19.472 ms
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 				error_message:='rif40_get_geojson_tiles() caught: '||E'\n'||
 					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
-				RAISE INFO '50406: %', error_message;
+				RAISE INFO '50410: %', error_message;
 --
 				RAISE;
 		END;
@@ -434,7 +506,7 @@ Total runtime: 19.472 ms
 -- Check error flags
 --
 	IF c3_rec.is_valid = FALSE THEN
-		PERFORM rif40_log_pkg.rif40_error(-50407, 'rif40_get_geojson_tiles', 
+		PERFORM rif40_log_pkg.rif40_error(-50411, 'rif40_get_geojson_tiles', 
 			'Geography: %, <geoevel view> % bound [%, %, %, %] is invalid, took: %.', 			
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_view::VARCHAR		/* Geoelvel view */,  
@@ -444,7 +516,7 @@ Total runtime: 19.472 ms
 			y_max::VARCHAR				/* Ymax */,
 			took::VARCHAR				/* Time taken */);
 	ELSIF c3_rec.total = 0 THEN
-		PERFORM rif40_log_pkg.rif40_error(-50408, 'rif40_get_geojson_tiles', 
+		PERFORM rif40_log_pkg.rif40_error(-50412, 'rif40_get_geojson_tiles', 
 			'Geography: %, <geoevel view> % bound [%, %, %, %] returns no area IDs, took: %.', 			
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_view::VARCHAR		/* Geoelvel view */,  
@@ -455,7 +527,7 @@ Total runtime: 19.472 ms
 			took::VARCHAR				/* Time taken */);
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-			'[50409] Geography: %, <geoevel view> % bound [%, %, %, %] will return: % area_id, area: %, took: %.', 		
+			'[50413] Geography: %, <geoevel view> % bound [%, %, %, %] will return: % area_id, area: %, took: %.', 		
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_view::VARCHAR		/* Geoelvel view */, 
 			x_min::VARCHAR				/* Xmin */,
@@ -505,7 +577,7 @@ Total runtime: 19.472 ms
 	took:=age(etp, stp);
 --
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-		'[50410] Geography: %, <geoevel view> % bound [%, %, %, %] complete, took: %.', 		
+		'[50414] Geography: %, <geoevel view> % bound [%, %, %, %] complete, took: %.', 		
 		l_geography::VARCHAR			/* Geography */, 
 		l_geolevel_view::VARCHAR		/* Geoelvel view */, 
 		x_min::VARCHAR				/* Xmin */,
@@ -530,6 +602,7 @@ Returns:	Text table [1 or more rows dependent on return_one_row]
 Description:	Get GeoJSON data as a Javascript variable. 
 		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
 		SRID is 4326 (WGS84)
+		Check bounding box is 1x1 tile in size.
 		Note: that this is NOT box 2d. Box 2d is defined as a box composed of x min, ymin, xmax, ymax. 
 
 		1 row means 1 row, no CRLFs etc!

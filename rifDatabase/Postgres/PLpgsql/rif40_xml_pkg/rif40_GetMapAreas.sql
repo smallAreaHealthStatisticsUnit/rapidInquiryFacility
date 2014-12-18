@@ -105,7 +105,7 @@ Description:	Get area IDs for <geolevel_view> for map area bounding box.
 	c1_rec rif40_geographies%ROWTYPE;
 	c2_rec rif40_geolevels%ROWTYPE;
 	c3_rec RECORD;
-	c4_rec RECORD;
+	c4_rec RECORD;	
 --
 	sql_stmt		VARCHAR;
 --
@@ -170,6 +170,9 @@ Description:	Get area IDs for <geolevel_view> for map area bounding box.
 			l_geography::VARCHAR	/* Geography */, 
 			geolevel_view::VARCHAR	/* Geolevel view */);
 	END IF;	
+--
+-- Generate SQL statement
+--
 	sql_stmt:='WITH a AS ('||E'\n'||
 		  '	SELECT area_id,'||E'\n'||
 		  '            ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */) AS geom	/* Bound */'||E'\n'||

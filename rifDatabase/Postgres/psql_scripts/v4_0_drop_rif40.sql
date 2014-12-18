@@ -392,6 +392,8 @@ DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getgeolevelfullextentforstudy(l_geog
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getgeolevelboundsforarea(l_geography character varying, l_geolevel_view character varying, l_map_area character varying, OUT y_max real, OUT x_max real, OUT y_min real, OUT x_min real);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getgeometrycolumnnames(l_geography character varying);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_closegetmapareaattributecursor(closecursor1 character varying);
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_GetMapAreas(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL);
+
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash_partition_functional_index(l_schema character varying, l_table character varying, l_column character varying, num_partitions integer, OUT ddl_stmt character varying[]);
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(l_schema character varying, l_table character varying, l_column character varying, l_num_partitions integer);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash_partition_create(l_schema character varying, master_table character varying, partition_table character varying, l_column character varying, l_value integer, num_partitions integer);

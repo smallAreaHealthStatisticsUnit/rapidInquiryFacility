@@ -323,6 +323,20 @@ SELECT rif40_geo_pkg.tile2latitude(42988, 17);
 SELECT rif40_geo_pkg.y_osm_tile2_tms_tile(rif40_geo_pkg.latitude2tile(52.51538515, 17), 17);
 -- 88083
 	
+WITH a AS (
+	SELECT *
+          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
+) 
+SELECT SUBSTRING(
+		rif40_xml_pkg.rif40_get_geojson_tiles(
+			'SAHSU' 	/* Geography */, 
+			'LEVEL4' 	/* geolevel view */, 
+			a.y_max, a.x_max, a.y_min, a.x_min, /* Bounding box - from cte */
+			9 			/* Zoom level */,
+			NULL		/* Tile name */, 
+			FALSE 		/* return_one_row flag: output multiple rows so it is readable! */) 
+			FROM 1 FOR 160 /* Truncate to 160 chars */) AS json 
+  FROM a LIMIT 4;	
 --
 -- rif40_GetMapAreas interface
 --
