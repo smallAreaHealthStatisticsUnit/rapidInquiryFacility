@@ -66,11 +66,11 @@ Rebuilds all geolevel tables with full partitioning (alter #3 support):
 1. Convert to 4326 (WGS84 GPS projection) before simplification. Optimised geometry is 
    always in 4326.
 2. Zoomlevel support. Optimised geometry is level 6, OPTIMISED_GEOMETRY_1 is level 8,
-   OPTIMISED_GEOMETRY_2 is level 11; likewise OPTIMISED_GEOJSON.
-3. Simplification to warn if bounds of map at zoomlevel 6 exceed 4x3 tiles.
+   OPTIMISED_GEOMETRY_2 is level 11; likewise OPTIMISED_GEOJSON (which will become a JOSN type). 
+3. Simplification to warn if bounds of map at zoomlevel 6 exceeds 4x3 tiles.
 4. Simplification to fail if bounds of map < 5% of zoomlevel 11 (bound area: 78x58km); 
-   i.e. the map is not projected correctly (as sahsuland is not at pressent). Fix
-   sahsuland projection (i.e. not 27700).
+   i.e. the map is not projected correctly (as sahsuland is not at present). Fix
+   sahsuland projection (i.e. it is 27700; do the export using GDAL correctly).
 5. Calculate the latitude of the middle of the total map bound; use this as the latitude
    in if40_geo_pkg.rif40_zoom_levels() for the correct m/pixel.
 6. Remove ST_SIMPLIFY_TOLERANCE; replace with m/pixel for zoomlevel (hence the reason 
@@ -103,6 +103,7 @@ $$;
 -- Add zoomlevel support etc
 --
 \i ../PLpgsql/v4_0_rif40_geo_pkg.sql
+\i ../PLpgsql/v4_0_rif40_xml_pkg.sql
 
 \set VERBOSITY terse
 DO LANGUAGE plpgsql $$
@@ -111,7 +112,7 @@ DECLARE
 -- Functions to enable debug for
 --
 	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 
-		'rif40_zoom_levels'];
+		'rif40_zoom_levels', 'rif40_GetMapAreas'];
 --
 	l_function 					VARCHAR;
 BEGIN
@@ -130,7 +131,7 @@ BEGIN
 	
 END;
 $$;
-
+  
 SELECT * FROM rif40_geo_pkg.rif40_zoom_levels()/* 0 */;
 SELECT * FROM rif40_geo_pkg.rif40_zoom_levels(30);
 SELECT * FROM rif40_geo_pkg.rif40_zoom_levels(60);	
@@ -322,6 +323,20 @@ SELECT rif40_geo_pkg.tile2latitude(42988, 17);
 SELECT rif40_geo_pkg.y_osm_tile2_tms_tile(rif40_geo_pkg.latitude2tile(52.51538515, 17), 17);
 -- 88083
 	
+--
+-- rif40_GetMapAreas interface
+--
+\pset title 'rif40_GetMapAreas interface'
+WITH a AS (
+	SELECT *
+          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
+) 
+SELECT rif40_xml_pkg.rif40_GetMapAreas(
+			'SAHSU' 	/* Geography */, 
+			'LEVEL4' 	/* geolevel view */, 
+			a.y_max, a.x_max, a.y_min, a.x_min /* Bounding box - from cte */) AS json 
+  FROM a LIMIT 4;
+  
 DO LANGUAGE plpgsql $$
 BEGIN
 	RAISE INFO 'Aborting (script being tested)';

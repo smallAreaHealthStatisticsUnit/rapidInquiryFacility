@@ -73,10 +73,11 @@ $$;
 -- getAllAttributesForGeoLevelAttributeTheme: 		50800 to 50999
 -- rif40_GetGeometryColumnNames: 			51000 to 51199
 -- rif40_GetMapAreaAttributeValue: 			51200 to 51399
--- rif40_closeGetMapAreaAttributeCursor: 		51400 to 51599
--- rif40_CreateMapAreaAttributeSource: 			51600 to 51799
--- rif40_DeleteMapAreaAttributeSource: 			51800 to 51999
+-- rif40_closeGetMapAreaAttributeCursor: 	51400 to 51599
+-- rif40_CreateMapAreaAttributeSource: 		51600 to 51799
+-- rif40_DeleteMapAreaAttributeSource: 		51800 to 51999
 -- rif40_GetAdjacencyMatrix:				52000 to 52050
+-- rif40_GetMapAreas: 						52051 to 52099
 --
 
 --
@@ -107,6 +108,7 @@ CREATE TYPE rif40_xml_pkg.rif40_geolevelAttributeTheme AS ENUM (
 \i ../PLpgsql/rif40_xml_pkg/rif40_CreateMapAreaAttributeSource.sql
 \i ../PLpgsql/rif40_xml_pkg/rif40_DeleteMapAreaAttributeSource.sql
 \i ../PLpgsql/rif40_xml_pkg/rif40_GetAdjacencyMatrix.sql
+\i ../PLpgsql/rif40_xml_pkg/rif40_GetMapAreas.sql
 
 COMMENT ON SCHEMA rif40_xml_pkg
   IS 'RIF XML support.
@@ -449,6 +451,58 @@ Checks:
 
 - Check if cursor exists, if yes close REF_CURSOR (created by rif40_GetMapAreaAttributeValue)
 - Check temporary table exists
+
+Function: 		rif40_GetMapAreas()
+Parameters:		Geography, geolevel_view, 
+				Y max, X max, Y min, X min as a record (bounding box)
+Returns:		JSON: gid, area_id, name
+Description:	Get area IDs for <geolevel_view> for map area bounding box.
+
+Generates code:
+
+WITH a AS (
+        SELECT area_id,
+            ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */) AS geom /* Bound */
+          FROM t_rif40_sahsu_geometry
+         WHERE ST_Intersects(optimised_geometry,
+                        ST_MakeEnvelope($1 /* Xmin */,
+                                        $2     /* Ymin */,
+										$3     /* Xmax */,
+                                        $4     /* YMax */,
+                                        4326   /* WGS 84 */))
+           AND geolevel_name = $5              /* Partition eliminate */
+           /* Intersect bound with geolevel geometry */
+)
+SELECT row_to_json(rec) AS map_area FROM (
+                SELECT b.gid, a.area_id, b.name
+                  FROM a, sahsuland_level4 b
+                 WHERE a.area_id = b.level4
+                 ORDER BY b.gid) rec;
+			
+Test example:
+
+WITH a AS (
+        SELECT *
+          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea(''SAHSU'', ''LEVEL2'', ''01.004'')
+)
+SELECT rif40_xml_pkg.rif40_GetMapAreas(
+                        ''SAHSU''         /* Geography */,
+                        ''LEVEL4''        /* geolevel view */,
+                        a.y_max, a.x_max, a.y_min, a.x_min /* Bounding box - from cte */) AS json
+  FROM a LIMIT 4;
+  
+Example JSON output:
+
+                                        rif40_GetMapAreas interface
+                                                   json
+-----------------------------------------------------------------------------------------------------------
+ {"gid":1,"area_id":"01.001.000100.1","name":"Abellan LEVEL4(01.001.000100.1)"}
+ {"gid":85,"area_id":"01.002.001300.5","name":"Cobley LEVEL4(01.002.001300.5)"}
+ {"gid":86,"area_id":"01.002.001300.6","name":"Cobley LEVEL4(01.002.001300.6)"}
+ {"gid":87,"area_id":"01.002.001300.7","name":"Cobley LEVEL4(01.002.001300.7)"}
+(4 rows)
+
+Time: 448.753 ms
 ';
 
 --
