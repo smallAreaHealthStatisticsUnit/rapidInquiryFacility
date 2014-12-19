@@ -193,17 +193,36 @@ SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU' /* Geography 
 WITH a AS (
 	SELECT *
           FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
+), b AS (
+	SELECT ST_Centroid(ST_MakeEnvelope(a.x_min, a.y_min, a.x_max, a.y_max)) AS centroid
+	  FROM a
+), c AS (
+	SELECT ST_X(b.centroid) AS X_centroid, ST_Y(b.centroid) AS Y_centroid, 11 AS zoom_level	  
+	  FROM b
+), d AS (
+	SELECT zoom_level, X_centroid, Y_centroid, 
+		   rif40_geo_pkg.latitude2tile(X_centroid, zoom_level) AS X_tile,
+		   rif40_geo_pkg.longitude2tile(Y_centroid, zoom_level) AS Y_tile
+	  FROM c
+), e AS (
+	SELECT zoom_level, X_centroid, Y_centroid,
+		   rif40_geo_pkg.tile2latitude(X_tile, zoom_level) AS X_min,
+		   rif40_geo_pkg.tile2longitude(Y_tile, zoom_level) AS Y_min,	
+		   rif40_geo_pkg.tile2latitude(X_tile+1, zoom_level) AS X_max,
+		   rif40_geo_pkg.tile2longitude(Y_tile+1, zoom_level) AS Y_max,
+		   X_tile, Y_tile
+	  FROM d
 ) 
 SELECT SUBSTRING(
 		rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU' 	/* Geography */, 
-			'LEVEL4' 	/* geolevel view */, 
-			a.y_max, a.x_max, a.y_min, a.x_min, /* Bounding box - from cte */
-			9 			/* Zoom level */,
+			'SAHSU'::VARCHAR 	/* Geography */, 
+			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			e.y_max::REAL, e.x_max::REAL, e.y_min::REAL, e.x_min::REAL, /* Bounding box - from cte */
+			e.zoom_level::INTEGER /* Zoom level */,
 			NULL		/* Tile name */, 
 			FALSE 		/* return_one_row flag: output multiple rows so it is readable! */) 
 			FROM 1 FOR 160 /* Truncate to 160 chars */) AS json 
-  FROM a LIMIT 4;
+  FROM e LIMIT 4;	
 /*
                                                                                json
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -216,8 +235,21 @@ SELECT SUBSTRING(
 --
 -- Use copy to create a Javascript file that can be tested
 --
-\copy (WITH a AS (SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')) SELECT rif40_xml_pkg.rif40_get_geojson_tiles('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, a.y_max, a.x_max, a.y_min, a.x_min, 9 /* Zoom level */, NULL /* Tile name */, FALSE /* return_one_row flag: output multiple rows so it is readable! */) FROM a) to ../psql_scripts/test_scripts/data/test_6_geojson_test_02.json
+--\copy (WITH a AS (SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')) SELECT rif40_xml_pkg.rif40_get_geojson_tiles('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, a.y_max, a.x_max, a.y_min, a.x_min, 9 /* Zoom level */, NULL /* Tile name */, FALSE /* return_one_row flag: output multiple rows so it is readable! */) FROM a) to ../psql_scripts/test_scripts/data/test_6_geojson_test_02.json
 
+--
+-- rif40_GetMapAreas interface
+--
+\pset title 'rif40_GetMapAreas interface'
+WITH a AS (
+	SELECT *
+          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
+) 
+SELECT rif40_xml_pkg.rif40_GetMapAreas(
+			'SAHSU' 	/* Geography */, 
+			'LEVEL4' 	/* geolevel view */, 
+			a.y_max, a.x_max, a.y_min, a.x_min /* Bounding box - from cte */) AS json 
+  FROM a LIMIT 4;
 --
 -- Attribute fetch functions
 --

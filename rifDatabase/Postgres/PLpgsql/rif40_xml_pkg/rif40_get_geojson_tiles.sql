@@ -485,6 +485,10 @@ SELECT * FROM e;
 		END IF;
 	END IF;
 --
+-- Cache code will go here...
+--	
+	
+--
 -- Test  <geolevel area id list> is valid
 --
 /* 
