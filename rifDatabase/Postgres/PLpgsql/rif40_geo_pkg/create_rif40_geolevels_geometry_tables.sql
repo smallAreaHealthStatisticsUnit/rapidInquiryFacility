@@ -209,8 +209,8 @@ BEGIN
 			'area_id           CHARACTER VARYING(300) NOT NULL,'||E'\n'||
 			'name              CHARACTER VARYING(300) NULL,'||E'\n'||
 			'optimised_geojson JSON			          NOT NULL,'||E'\n'||
-			'optimised_geojson_1 JSON			      NOT NULL,'||E'\n'||
-			'optimised_geojson_2 JSON		          NOT NULL,'||E'\n'||
+			'optimised_geojson_2 JSON			      NOT NULL,'||E'\n'||
+			'optimised_geojson_3 JSON		          NOT NULL,'||E'\n'||
 			'area              NUMERIC(12,2)          NOT NULL,'||E'\n'||
 			'total_males	   NUMERIC(12,2)          NULL,'||E'\n'||
 			'total_females	   NUMERIC(12,2)          NULL,'||E'\n'||
@@ -240,19 +240,36 @@ BEGIN
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||
 			'.optimised_geojson 	IS ''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel 6. '||
-			'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output '||
+			'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
 			'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
 			'(in metres for most projections) between simplified points. '||
 			'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
 			'(it works on an object by object basis; the edge between two areas will therefore be processed independently '||
 			'and not necessarily in the same manner). '||
-			'See also TOPO_OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_ChangeEdgeGeometry() and ST_Simplify(). The SRID is always 4326.''';
+			'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
+			'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||
-			'.optimised_geojson_2 	IS ''Shapefile multipolygon in optimised GeoJSON format. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works onj an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). This can be fixed using the PostGIS Topology extension and processing as edges. See also TOPO_OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_ChangeEdgeGeometry() and ST_Simplify(). The SRID is always 4326.''';
+			'.optimised_geojson_2 	IS ''Shapefile multipolygon in optimised GeoJSON format, optimised for zoomlevel 8. '||
+			'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
+			'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
+			'(in metres for most projections) between simplified points. '||
+			'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
+			'(it works on an object by object basis; the edge between two areas will therefore be processed independently '||
+			'and not necessarily in the same manner). '||
+			'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
+			'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||
-			'.optimised_geojson_3 	IS ''Shapefile multipolygon in optimised GeoJSON format. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works onj an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). This can be fixed using the PostGIS Topology extension and processing as edges. See also TOPO_OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_ChangeEdgeGeometry() and ST_Simplify(). The SRID is always 4326.''';
+			'.optimised_geojson_3 	IS ''Shapefile multipolygon in optimised GeoJSON format, optimised for zoomlevel 11. '||
+			'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
+			'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
+			'(in metres for most projections) between simplified points. '||
+			'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
+			'(it works on an object by object basis; the edge between two areas will therefore be processed independently '||
+			'and not necessarily in the same manner). '||
+			'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
+			'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.gid 	IS ''Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
@@ -262,6 +279,7 @@ BEGIN
 		sql_stmt:='SELECT AddGeometryColumn('||quote_literal('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||', ''shapefile_geometry'', '||
 			c2_rec.srid||', ''MULTIPOLYGON'', 2)';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+--
 		sql_stmt:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' ALTER COLUMN shapefile_geometry SET NOT NULL';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.shapefile_geometry	 IS ''Spatial data for geolevel (PostGress/PostGIS only). Can also use SHAPEFILE instead,''';
@@ -271,7 +289,48 @@ BEGIN
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' ALTER COLUMN optimised_geometry SET NOT NULL';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.optimised_geometry	 IS ''Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only). Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works onj an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner. This is fixed using the PostGIS Topology extension and processing as edges.''';
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.optimised_geometry	 IS '||
+				'''Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 6. '||
+				'Can also use SHAPEFILE instead. '||
+				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and '||
+				'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance '||
+				'(in metres for most projections) between simplified points. '||
+				'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
+				'(it works on an object by object basis; the edge between two areas will therefore be processed '||
+				'independently and not necessarily in the same manner. '||
+				'This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		
+		sql_stmt:='SELECT AddGeometryColumn('||quote_literal('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||', ''optimised_geometry_2'', 4326, ''MULTIPOLYGON'', 2)';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' ALTER COLUMN optimised_geometry_2 SET NOT NULL';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.optimised_geometry_2	 IS '||
+				'''Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 8. '||
+				'Can also use SHAPEFILE instead. '||
+				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and '||
+				'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance '||
+				'(in metres for most projections) between simplified points. '||
+				'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
+				'(it works on an object by object basis; the edge between two areas will therefore be processed '||
+				'independently and not necessarily in the same manner. '||
+				'This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		
+		sql_stmt:='SELECT AddGeometryColumn('||quote_literal('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||', ''optimised_geometry_3'', 4326, ''MULTIPOLYGON'', 2)';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' ALTER COLUMN optimised_geometry_3 SET NOT NULL';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.optimised_geometry_3	 IS '||
+				'''Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 11. '||
+				'Can also use SHAPEFILE instead. '||
+				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and '||
+				'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance '||
+				'(in metres for most projections) between simplified points. '||
+				'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
+				'(it works on an object by object basis; the edge between two areas will therefore be processed '||
+				'independently and not necessarily in the same manner. '||
+				'This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 -- Add PK/UK indexes
@@ -280,7 +339,8 @@ BEGIN
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_gid')||' ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'(geography, gid)';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' ADD CONSTRAINT '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_pk')||' PRIMARY KEY (geography, geolevel_name, area_id)';
+		sql_stmt:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||
+			' ADD CONSTRAINT '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_pk')||' PRIMARY KEY (geography, geolevel_name, area_id)';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 -- Base table INSERT fuuntion
@@ -321,6 +381,7 @@ BEGIN
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||' 		IS ''Geolevels geometry: geometry for hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels are restricted to LADUA/DISTRICT level resolution or lower. This table contains no data on Oracle. This replaces the shapefiles used in previous RIF releases. Populating this table checks the lookup and hierarchy tables and thus it must be populated last. Any insert into T_RIF40_GEOLEVELS_GEOMETRY must be a single statement insert. This is the partition for geogrpahy: '||
 				LOWER(c2_rec.geography)||', geo level: '||LOWER(c3_rec.geolevel_name)||'''';
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+			
 			sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.geography 	IS ''Geography (e.g EW2001)''';
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
@@ -331,7 +392,40 @@ BEGIN
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.area_id 	IS ''An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE''';
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 			sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_geolevels_geometry_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.optimised_geojson 	IS ''Shapefile multipolygon in optimised GeoJSON format. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). This can be` fixed using the PostGIS Topology extension and processing as edges. See also TOPO_OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_ChangeEdgeGeometry() and ST_Simplify().''';
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.optimised_geojson 	IS '||
+				'''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel 6. '||
+				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
+				'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
+				'(in metres for most projections) between simplified points. '||
+				'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
+				'(it works on an object by object basis; the edge between two areas will therefore be processed independently '||
+				'and not necessarily in the same manner). '||
+				'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
+				'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';			
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+			sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.optimised_geojson_2 	IS '||
+				'''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel 8. '||
+				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
+				'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
+				'(in metres for most projections) between simplified points. '||
+				'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
+				'(it works on an object by object basis; the edge between two areas will therefore be processed independently '||
+				'and not necessarily in the same manner). '||
+				'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
+				'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';			
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+			sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.optimised_geojson_3 	IS '||
+				'''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel 11. '||
+				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
+				'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
+				'(in metres for most projections) between simplified points. '||
+				'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
+				'(it works on an object by object basis; the edge between two areas will therefore be processed independently '||
+				'and not necessarily in the same manner). '||
+				'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
+				'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';			
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 			sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.area 	IS ''The area in square km of an area id''';
@@ -346,7 +440,40 @@ BEGIN
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.shapefile_geometry	 IS ''Spatial data for geolevel (PostGress/PostGIS only). Can also use SHAPEFILE instead,''';
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 			sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_geolevels_geometry_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.optimised_geometry	 IS ''Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only). Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works onj an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner. This is fixed using the PostGIS Topology extension and processing as edges.''';
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.optimised_geometry	 IS '||
+				'''Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 6. '||
+				'Can also use SHAPEFILE instead. '||
+				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and '||
+				'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance '||
+				'(in metres for most projections) between simplified points. '||
+				'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
+				'(it works on an object by object basis; the edge between two areas will therefore be processed '||
+				'independently and not necessarily in the same manner. '||
+				'This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.''';
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+			sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.optimised_geometry_2	 IS '||
+				'''Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 8. '||
+				'Can also use SHAPEFILE instead. '||
+				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and '||
+				'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance '||
+				'(in metres for most projections) between simplified points. '||
+				'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
+				'(it works on an object by object basis; the edge between two areas will therefore be processed '||
+				'independently and not necessarily in the same manner. '||
+				'This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.''';
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+			sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.optimised_geometry_3	 IS '||
+				'''Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 11. '||
+				'Can also use SHAPEFILE instead. '||
+				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and '||
+				'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance '||
+				'(in metres for most projections) between simplified points. '||
+				'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
+				'(it works on an object by object basis; the edge between two areas will therefore be processed '||
+				'independently and not necessarily in the same manner. '||
+				'This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.''';
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 			sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_geolevels_geometry_'||
@@ -357,6 +484,51 @@ BEGIN
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 			sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.population_year	 IS ''Population year.''';
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+--
+-- Add PK/UK indexes
+--
+			sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_uk')||
+				' ON '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'(geography, area_id)';
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+			
+			sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_gid')||
+				' ON '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'(geography, gid)';
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+			
+			sql_stmt:='ALTER TABLE '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||
+				' ADD CONSTRAINT '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||LOWER(c3_rec.geolevel_name)||'_geometry_pk')||
+				' PRIMARY KEY (geography, geolevel_name, area_id)';
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+--
+-- Add GIST/GIN indexes
+--
+			sql_stmt:='CREATE INDEX '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_sgin1')||
+				' ON '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||' USING GIST(shapefile_geometry)';
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+
+			sql_stmt:='CREATE INDEX '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_ogin1')||
+				' ON '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||' USING GIST(optimised_geometry)';
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+			sql_stmt:='CREATE INDEX '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_ogin2')||
+				' ON '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||' USING GIST(optimised_geometry_2)';
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+			sql_stmt:='CREATE INDEX '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_ogin3')||
+				' ON '||quote_ident('t_rif40_geolevels_geometry_'||
+				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||' USING GIST(optimised_geometry_3)';
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		END LOOP;
 --
@@ -407,7 +579,7 @@ LANGUAGE PLPGSQL;
 COMMENT ON FUNCTION rif40_geo_pkg.create_rif40_geolevels_geometry_tables(VARCHAR) IS 'Function: 	create_rif40_geolevels_geometry_tables()
 Parameters:	Geography
 Returns:	Nothing
-Description:	Crea rif40_geolevels_geometry tables';
+Description:	Create rif40_geolevels_geometry tables';
 
 CREATE OR REPLACE FUNCTION rif40_geo_pkg.create_rif40_geolevels_geometry_tables()
 RETURNS void 

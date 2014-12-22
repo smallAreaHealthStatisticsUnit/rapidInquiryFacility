@@ -65,8 +65,9 @@ Rebuilds all geolevel tables with full partitioning (alter #3 support):
 
 1. Convert to 4326 (WGS84 GPS projection) before simplification. Optimised geometry is 
    always in 4326.
-2. Zoomlevel support. Optimised geometry is level 6, OPTIMISED_GEOMETRY_1 is level 8,
-   OPTIMISED_GEOMETRY_2 is level 11; likewise OPTIMISED_GEOJSON (which will become a JOSN type). 
+2. Zoomlevel support. Optimised geometry is level 6, OPTIMISED_GEOMETRY_2 is level 8,
+   OPTIMISED_GEOMETRY_3 is level 11; likewise OPTIMISED_GEOJSON (which will become a JOSN type). 
+   TOPO_OPTIMISED_GEOJSON is removed.
 3. Simplification to warn if bounds of map at zoomlevel 6 exceeds 4x3 tiles.
 4. Simplification to fail if bounds of map < 5% of zoomlevel 11 (bound area: 78x58km); 
    i.e. the map is not projected correctly (as sahsuland is not at present). Fix
@@ -401,6 +402,111 @@ SELECT rif40_xml_pkg.rif40_GetMapAreas(
 			'LEVEL4' 	/* geolevel view */, 
 			a.y_max, a.x_max, a.y_min, a.x_min /* Bounding box - from cte */) AS json 
   FROM a LIMIT 4;
+  
+\set debug_level 1
+\set VERBOSITY terse
+DO LANGUAGE plpgsql $$
+DECLARE
+--
+	rif40_geo_pkg_functions 	VARCHAR[] := ARRAY['lf_check_rif40_hierarchy_lookup_tables', 
+							'populate_rif40_geometry_tables', 
+							'populate_hierarchy_table', 
+							'create_rif40_geolevels_geometry_tables',
+							'add_population_to_rif40_geolevels_geometry',
+							'fix_null_geolevel_names',
+							'rif40_ddl',
+							'simplify_geometry'];
+	l_function 			VARCHAR;
+	i				INTEGER:=0;
+--
+	stp TIMESTAMP WITH TIME ZONE;
+	etp TIMESTAMP WITH TIME ZONE;
+	took INTERVAL;
+BEGIN
+--
+	stp:=clock_timestamp();
+--
+-- Call init function is case called from main build scripts
+--
+	PERFORM rif40_sql_pkg.rif40_startup();
+--
+-- Turn on some debug
+--
+        PERFORM rif40_log_pkg.rif40_log_setup();
+        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+--
+-- Enabled debug on select rif40_sm_pkg functions
+--
+	FOREACH l_function IN ARRAY rif40_geo_pkg_functions LOOP
+		RAISE INFO 'Enable debug for function: %', l_function;
+		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
+	END LOOP;
+--
+-- Drop old geometry tables
+--
+	PERFORM rif40_geo_pkg.drop_rif40_geolevels_geometry_tables('SAHSU');
+	PERFORM rif40_geo_pkg.drop_rif40_geolevels_lookup_tables('SAHSU');
+	DROP TABLE IF EXISTS sahsuland_geography_orig;
+--
+-- These are the new T_RIF40_<GEOGRAPHY>_GEOMETRY tables and
+-- new T_RIF40_GEOLEVELS_GEOMETRY_<GEOGRAPHY>_<GEOELVELS> partitioned tables
+--
+	PERFORM rif40_geo_pkg.create_rif40_geolevels_geometry_tables('SAHSU');
+--
+-- Create and populate rif40_geolevels lookup and create hierarchy tables 
+--
+	PERFORM rif40_geo_pkg.create_rif40_geolevels_lookup_tables('SAHSU');
+--
+-- Populate geometry tables
+--
+	PERFORM rif40_geo_pkg.populate_rif40_geometry_tables('SAHSU');
+--
+-- Simplify geometry
+--
+-- Must be done before to avoid invalid geometry errors in intersection code:
+--
+-- psql:rif40_geolevels_ew01_geometry.sql:174: ERROR:  Error performing intersection: TopologyException: found non-noded intersection between LINESTRING (-2.9938 53.3669, -2.98342 53.367) and LINESTRING (-2.98556 53.367, -2.98556 53.367) at -2.9855578257498334 53.366966593247653
+--
+	PERFORM rif40_geo_pkg.simplify_geometry('SAHSU', 10 /* l_min_point_resolution [1] */);
+--
+-- Populate hierarchy tables
+--
+-- The following SQL snippet from rif40_geo_pkg.populate_hierarchy_table() 
+-- causes ERROR:  invalid join selectivity: 1.000000 in PostGIS 2.1.1 (fixed in 2.2.1/2.1.2 - to be release May 3rd 2014)
+--
+-- See: http://trac.osgeo.org/postgis/ticket/2543
+--
+-- SELECT a2.area_id AS level2, a3.area_id AS level3,
+--       ST_Area(a3.optimised_geometry) AS a3_area,
+--       ST_Area(ST_Intersection(a2.optimised_geometry, a3.optimised_geometry)) AS a23_area
+--  FROM t_rif40_geolevels_geometry_sahsu_level3 a3, t_rif40_geolevels_geometry_sahsu_level2 a2  
+-- WHERE ST_Intersects(a2.optimised_geometry, a3.optimised_geometry);
+--
+	PERFORM rif40_geo_pkg.populate_hierarchy_table('SAHSU'); 
+--
+-- Add denominator population table to geography geolevel geomtry data
+--
+	PERFORM rif40_geo_pkg.add_population_to_rif40_geolevels_geometry('SAHSU', 'SAHSULAND_POP'); 
+--
+-- Fix NULL geolevel names in geography geolevel geometry and lookup table data 
+--
+	PERFORM rif40_geo_pkg.fix_null_geolevel_names('SAHSU'); 
+--
+-- Make level1 names consistent
+--
+	UPDATE sahsuland_level1 a 
+	   SET name = (
+		SELECT name 
+		  FROM t_rif40_sahsu_geometry b
+		 WHERE b.geolevel_name = 'LEVEL1'
+		   AND b.area_id = a.level1);
+--
+	etp:=clock_timestamp();
+	took:=age(etp, stp);
+	RAISE INFO 'Processed SAHSU geography: %s', took;
+--
+END;
+$$;
   
 DO LANGUAGE plpgsql $$
 BEGIN

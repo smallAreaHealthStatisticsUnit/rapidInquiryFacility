@@ -115,7 +115,9 @@ Returns:	Nothing
 Description:	Populate geographic specific geometry tables
 
 INSERT INTO t_rif40_ew01_geometry(
-        geography, geolevel_name, area_id, name, gid, area, shapefile_geometry, optimised_geometry, optimised_geojson)
+        geography, geolevel_name, area_id, name, gid, area, shapefile_geometry, 
+		optimised_geometry, optimised_geometry_2, optimised_geometry_3, 
+		optimised_geojson, optimised_geojson_2, optimised_geojson_3)
 WITH a AS ( -* Aggregate geometries with the same area_id *-
         SELECT 'SCNTRY2001' AS geolevel_name, scntry2001 AS area_id,
          	   name AS name, ST_MakeValid(ST_Union(geom)) AS geom, 
@@ -159,7 +161,7 @@ WITH a AS ( -* Aggregate geometries with the same area_id *-
           FROM x_ew01_coa2001
          GROUP BY coa2001
 ), b -* t_rif40_geolevels *- AS (
-        SELECT geography, geolevel_name, st_simplify_tolerance
+        SELECT geography, geolevel_name
           FROM t_rif40_geolevels
          WHERE geography = 'EW01'
 ), c -* rif40_geographies *- AS (
@@ -168,20 +170,38 @@ WITH a AS ( -* Aggregate geometries with the same area_id *-
          WHERE geography = 'EW01'
 ), d AS (
         SELECT a.geolevel_name, geom, area_id, name, a.gid,
-   		       ST_MakeValid((ST_SimplifyPreserveTopology(geom, b.st_simplify_tolerance)) AS simplified_topology
+		       ST_transform(geom, 4326 -* WGS 84 *-) AS geom_4326
           FROM a, b
          WHERE a.geolevel_name = b.geolevel_name
+), e AS (	
+        SELECT geolevel_name, geom, area_id, name, gid,
+			   ST_SimplifyPreserveTopology(
+					geom_4326, 
+					b.st_simplify_tolerance) AS simplified_4326_topology,
+			   ST_SimplifyPreserveTopology(
+					geom_4326, 
+					b.st_simplify_tolerance) AS simplified_4326_topology_2,
+			   ST_SimplifyPreserveTopology(
+					geom_4326, 
+					b.st_simplify_tolerance) AS simplified_4326_topology_3
+		  FROM d
 )
-SELECT 'EW01' geography, b.geolevel_name, area_id, NULLIF(name, 'Unknown: ['||area_id||']') AS name, d.gid,
+SELECT 'EW01' geography, geolevel_name, area_id, NULLIF(name, 'Unknown: ['||area_id||']') AS name, d.gid,
         round(CAST(ST_area(geom)/1000000 AS numeric), 1) AS area,
         ST_Multi(geom) AS shapefile_geometry, 
-        ST_MakeValid(ST_transform(ST_Multi(simplified_topology), 4326 -* WGS 84 *-)) AS optimised_geometry,
-	ST_AsGeoJson(
-		ST_transform(
-        		simplified_topology, 4326 -* WGS 84 *-),
-       				c.max_geojson_digits, 0 -* no options *-) AS optimised_geojson
-  FROM b, c, d
- WHERE b.geolevel_name = d.geolevel_name
+        ST_Multi(simplified_4326_topology) AS optimised_geometry,
+        ST_Multi(simplified_4326_topology_2) AS optimised_geometry_2,
+        ST_Multi(simplified_4326_topology_3) AS optimised_geometry_3,
+      	ST_AsGeoJson(
+        	simplified_4326_topology,
+       		c.max_geojson_digits, 0 -* no options *-)::JSON AS optimised_geojson,
+      	ST_AsGeoJson(
+        	simplified_4326_topology_2,
+       		c.max_geojson_digits, 0 -* no options *-)::JSON AS optimised_geojson_2,
+      	ST_AsGeoJson(
+        	simplified_4326_topology_3,
+       		c.max_geojson_digits, 0 -* no options *-)::JSON AS optimised_geojson_3
+  FROM c, d
  ORDER BY 1, 2, 3;
 
 UPDATE t_rif40_geolevels a
@@ -206,18 +226,46 @@ UPDATE t_rif40_geolevels a
 DECLARE
 	c1 CURSOR(l_geography VARCHAR) FOR
 		SELECT *
-		  FROM rif40_geographies
+		  FROM rif40_geographies 
 		 WHERE geography = l_geography;
 	c2 CURSOR(l_geography VARCHAR) FOR
 		SELECT * 
 		  FROM t_rif40_geolevels
 		 WHERE geography = l_geography
-		 ORDER BY geolevel_id;
+		 ORDER BY geolevel_id DESC;
 	c3 REFCURSOR;
+	c4 CURSOR(l_geography VARCHAR) FOR
+		WITH b AS (
+			SELECT geography, srid, rif40_geo_pkg.rif40_zoom_levels(	
+				ST_Y( 														/* Get latitude */
+					ST_transform( 											/* Transform to 4326 */
+						ST_GeomFromEWKT('SRID='||a.srid||';POINT(0 0)') 	/* Grid Origin */, 
+						4326)
+					)::NUMERIC) AS zl
+			  FROM rif40_geographies a
+			 WHERE a.geography = l_geography		  
+		), c6 AS (
+		SELECT (zl).simplify_tolerance AS st_simplify_tolerance_zoomlevel_6
+		  FROM b
+		 WHERE (zl).zoom_level = 6 /* RIF zoomlevels */
+		), c8 AS (
+		SELECT (zl).simplify_tolerance AS st_simplify_tolerance_zoomlevel_8
+		  FROM b
+		 WHERE (zl).zoom_level = 8 /* RIF zoomlevels */
+		), c11 AS (
+		SELECT (zl).simplify_tolerance AS st_simplify_tolerance_zoomlevel_11
+		  FROM b
+		 WHERE (zl).zoom_level = 11 /* RIF zoomlevels */
+		)
+		SELECT c6.st_simplify_tolerance_zoomlevel_6,
+		       c8.st_simplify_tolerance_zoomlevel_8,
+			   c11.st_simplify_tolerance_zoomlevel_11
+		  FROM c6, c8, c11;
 --
 	c1_rec rif40_geographies%ROWTYPE;
 	c2_rec t_rif40_geolevels%ROWTYPE;
 	c3_rec RECORD;
+	c4_rec RECORD;
 --
 	sql_stmt VARCHAR;
 	i INTEGER:=0;
@@ -242,16 +290,27 @@ BEGIN
 --
 	IF c1_rec.geography IS NULL THEN
 		PERFORM rif40_log_pkg.rif40_error(-10006, 'populate_rif40_geometry_tables', 'geography: % not found', 
-			l_geography::VARCHAR	/* Geograpy */);
+			l_geography::VARCHAR	/* Geography */);
 	END IF;	
 --
 	sql_stmt:='DELETE FROM '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry');
 	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
+-- Now get lat/log of grid origin for geography and then call rif40_geo_pkg.rif40_zoom_levels()
+-- to get st_simplify_tolerance for zoom levels 6, 8, and 11
+--
+	OPEN c4(l_geography);
+	FETCH c4 INTO c4_rec;
+	CLOSE c4;
+--
+-- Now build INSERT statement
+--
 	sql_stmt:='INSERT INTO '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||'('||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'geography, geolevel_name, area_id, name, gid, area, shapefile_geometry, optimised_geometry, optimised_geojson)'||E'\n';	
+	sql_stmt:=sql_stmt||E'\t'||'geography, geolevel_name, area_id, name, gid, area, shapefile_geometry,'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'optimised_geometry, optimised_geometry_2, optimised_geometry_3,'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'optimised_geojson, optimised_geojson_2, optimised_geojson_3)'||E'\n';	
 	sql_stmt:=sql_stmt||'WITH a AS ( /* Aggregate geometries with the same area_id */'||E'\n';
-	FOR c2_rec IN c2(l_geography) LOOP
+	FOR c2_rec IN c2(l_geography) LOOP -- Geolevels 
 		i:=i+1;
 		IF i > 1 THEN
 			sql_stmt:=sql_stmt||E'\t'||'UNION'||E'\n';
@@ -300,7 +359,7 @@ BEGIN
 		PERFORM rif40_log_pkg.rif40_error(-10015, 'populate_rif40_geometry_tables', 'No rows found in: t_rif40_geolevels');
 	END IF;
 	sql_stmt:=sql_stmt||'), b /* t_rif40_geolevels */ AS ('||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'SELECT geography, geolevel_name, st_simplify_tolerance'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'SELECT geography, geolevel_name'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'  FROM t_rif40_geolevels'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||' WHERE geography = '||quote_literal(c1_rec.geography)||E'\n';
 	sql_stmt:=sql_stmt||'), c /* rif40_geographies */ AS ('||E'\n';
@@ -309,23 +368,41 @@ BEGIN
 	sql_stmt:=sql_stmt||E'\t'||' WHERE geography = '||quote_literal(c1_rec.geography)||E'\n';
 	sql_stmt:=sql_stmt||'), d AS ('||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'SELECT a.geolevel_name, geom, area_id, name, a.gid,'||E'\n';
---	sql_stmt:=sql_stmt||E'\t'||'       ST_MakeValid(ST_SimplifyPreserveTopology(geom, b.st_simplify_tolerance)) AS simplified_topology'||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'       ST_SimplifyPreserveTopology(geom, b.st_simplify_tolerance) AS simplified_topology'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'       ST_transform(geom, 4326 /* WGS 84 */) AS geom_4326'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'  FROM a, b'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||' WHERE a.geolevel_name = b.geolevel_name'||E'\n';
+	sql_stmt:=sql_stmt||'), e AS ('||E'\n';	
+	sql_stmt:=sql_stmt||E'\t'||'SELECT geolevel_name, geom, area_id, name, gid,'||E'\n';
+--	sql_stmt:=sql_stmt||E'\t'||'       ST_MakeValid(ST_SimplifyPreserveTopology(geom, b.st_simplify_tolerance)) AS simplified_topology'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'       ST_SimplifyPreserveTopology('||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'			geom_4326,'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'			'||c4_rec.st_simplify_tolerance_zoomlevel_6||') AS simplified_4326_topology,'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'       ST_SimplifyPreserveTopology('||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'			geom_4326,'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'			'||c4_rec.st_simplify_tolerance_zoomlevel_8||') AS simplified_4326_topology_2,'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'       ST_SimplifyPreserveTopology('||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'			geom_4326,'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'			'||c4_rec.st_simplify_tolerance_zoomlevel_11||') AS simplified_4326_topology_3'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||'  FROM d'||E'\n';
 	sql_stmt:=sql_stmt||')'||E'\n';
 	sql_stmt:=sql_stmt||'SELECT '||quote_literal(c1_rec.geography)||
-		' geography, b.geolevel_name, area_id, NULLIF(name, ''Unknown: [''||area_id||'']'') AS name, d.gid,'||E'\n';
+		' geography, geolevel_name, area_id, NULLIF(name, ''Unknown: [''||area_id||'']'') AS name, gid,'||E'\n';
 	sql_stmt:=sql_stmt||'        round(CAST(ST_area(geom)/1000000 AS numeric), 1) AS area,'||E'\n';
 	sql_stmt:=sql_stmt||'        ST_Multi(geom) AS shapefile_geometry, '||E'\n';
 --	sql_stmt:=sql_stmt||'        ST_MakeValid(ST_transform(ST_Multi(simplified_topology), 4326 /* WGS 84 */)) AS optimised_geometry,'||E'\n';
-	sql_stmt:=sql_stmt||'        ST_transform(ST_Multi(simplified_topology), 4326 /* WGS 84 */) AS optimised_geometry,'||E'\n';
+	sql_stmt:=sql_stmt||'        ST_Multi(simplified_4326_topology) AS optimised_geometry,'||E'\n';
+	sql_stmt:=sql_stmt||'        ST_Multi(simplified_4326_topology_2) AS optimised_geometry_2,'||E'\n';
+	sql_stmt:=sql_stmt||'        ST_Multi(simplified_4326_topology_3) AS optimised_geometry_3,'||E'\n';
 	sql_stmt:=sql_stmt||'        ST_AsGeoJson('||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||'ST_transform('||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'simplified_topology, 4326 /* WGS 84 */),'||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||'c.max_geojson_digits, 0 /* no options */) AS optimised_geojson'||E'\n';
-	sql_stmt:=sql_stmt||'  FROM b, c, d'||E'\n';
-	sql_stmt:=sql_stmt||' WHERE b.geolevel_name = d.geolevel_name'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'simplified_4326_topology,'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||'c.max_geojson_digits, 0 /* no options */)::JSON AS optimised_geojson,'||E'\n';
+	sql_stmt:=sql_stmt||'        ST_AsGeoJson('||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'simplified_4326_topology_2,'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||'c.max_geojson_digits, 0 /* no options */)::JSON AS optimised_geojson_2,'||E'\n';
+	sql_stmt:=sql_stmt||'        ST_AsGeoJson('||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'simplified_4326_topology_3,'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||'c.max_geojson_digits, 0 /* no options */)::JSON AS optimised_geojson_3'||E'\n';
+	sql_stmt:=sql_stmt||'  FROM e, c'||E'\n';
 	sql_stmt:=sql_stmt||' ORDER BY 1, 2, 3';
 --
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'populate_rif40_geometry_tables', 'SQL> %;', sql_stmt::VARCHAR);
