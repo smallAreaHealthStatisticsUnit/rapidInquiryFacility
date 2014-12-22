@@ -208,7 +208,9 @@ BEGIN
 			'geolevel_name     CHARACTER VARYING(30)  NOT NULL,'||E'\n'||
 			'area_id           CHARACTER VARYING(300) NOT NULL,'||E'\n'||
 			'name              CHARACTER VARYING(300) NULL,'||E'\n'||
-			'optimised_geojson CHARACTER VARYING      NOT NULL,'||E'\n'||
+			'optimised_geojson JSON			          NOT NULL,'||E'\n'||
+			'optimised_geojson_1 JSON			      NOT NULL,'||E'\n'||
+			'optimised_geojson_2 JSON		          NOT NULL,'||E'\n'||
 			'area              NUMERIC(12,2)          NOT NULL,'||E'\n'||
 			'total_males	   NUMERIC(12,2)          NULL,'||E'\n'||
 			'total_females	   NUMERIC(12,2)          NULL,'||E'\n'||
@@ -236,7 +238,18 @@ BEGIN
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.population_year 	IS ''Year of population data''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.optimised_geojson 	IS ''Shapefile multipolygon in optimised GeoJSON format. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works onj an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). This can be fixed using the PostGIS Topology extension and processing as edges. See also TOPO_OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_ChangeEdgeGeometry() and ST_Simplify(). The SRID is always 4326.''';
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||
+			'.optimised_geojson 	IS ''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel 6. '||
+			'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output '||
+			'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
+			'(in metres for most projections) between simplified points. '||
+			'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works onj an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). This can be fixed using the PostGIS Topology extension and processing as edges. See also TOPO_OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_ChangeEdgeGeometry() and ST_Simplify(). The SRID is always 4326.''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||
+			'.optimised_geojson_2 	IS ''Shapefile multipolygon in optimised GeoJSON format. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works onj an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). This can be fixed using the PostGIS Topology extension and processing as edges. See also TOPO_OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_ChangeEdgeGeometry() and ST_Simplify(). The SRID is always 4326.''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||
+			'.optimised_geojson_3 	IS ''Shapefile multipolygon in optimised GeoJSON format. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works onj an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). This can be fixed using the PostGIS Topology extension and processing as edges. See also TOPO_OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_ChangeEdgeGeometry() and ST_Simplify(). The SRID is always 4326.''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.gid 	IS ''Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);

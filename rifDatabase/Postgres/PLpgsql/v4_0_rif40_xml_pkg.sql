@@ -121,11 +121,15 @@ Returns:		area_id, num_adjacencies, adjacency_list as a table.
 Description: 	Get study area adjacency matrix required by INLA	
 
 Function: 	rif40_get_geojson_tiles()
-Parameters:	Geography, geolevel_view, Y max, X max, Y min, X min as a record, return one row (TRUE/FALSE)
+Parameters:	Geography, geolevel_view, 
+			Y max, X max, Y min, X min as a record (bounding box), 
+			Zoom level [Default: 8; scaling 1 in 2,325,012], tile name [Default: NULL]
+			return one row (TRUE/FALSE)
 Returns:	Text table [1 or more rows dependent on return_one_row]
 Description:	Get GeoJSON data as a Javascript variable. 
 		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
 		SRID is 4326 (WGS84)
+		Check bounding box is 1x1 tile in size.
 		Note: that this is NOT box 2d. Box 2d is defined as a box composed of x min, ymin, xmax, ymax. 
 
 		1 row means 1 row, no CRLFs etc!

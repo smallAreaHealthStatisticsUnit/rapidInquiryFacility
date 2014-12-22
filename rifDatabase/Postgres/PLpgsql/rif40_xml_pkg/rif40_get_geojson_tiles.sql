@@ -74,7 +74,7 @@ CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(
 	x_max 			REAL, 
 	y_min 			REAL, 
 	x_min 			REAL, 
-	zoom_level		INTEGER DEFAULT  9 /* 1 in 1,162,506 */,
+	zoom_level		INTEGER DEFAULT  8 /* 1 in 2,325,012 */,
 	tile_name		VARCHAR DEFAULT NULL,
 	return_one_row 		BOOLEAN DEFAULT TRUE)
 RETURNS SETOF text
@@ -85,7 +85,7 @@ AS $body$
 Function: 	rif40_get_geojson_tiles()
 Parameters:	Geography, geolevel_view, 
 			Y max, X max, Y min, X min as a record (bounding box), 
-			Zoom level [Default: 9; scaling 1 in 1,162,506], tile name [Default: NULL]
+			Zoom level [Default: 8; scaling 1 in 2,325,012], tile name [Default: NULL]
 			return one row (TRUE/FALSE)
 Returns:	Text table [1 or more rows dependent on return_one_row]
 Description:	Get GeoJSON data as a Javascript variable. 
@@ -725,10 +725,9 @@ LANGUAGE PLPGSQL;
 
 COMMENT ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, 
 	INTEGER, VARCHAR, BOOLEAN) IS 'Function: 	rif40_get_geojson_tiles()
-Function: 	rif40_get_geojson_tiles()
 Parameters:	Geography, geolevel_view, 
 			Y max, X max, Y min, X min as a record (bounding box), 
-			Zoom level [Default: 9; scaling 1 in 1,162,506], tile name [Default: NULL]
+			Zoom level [Default: 8; scaling 1 in 2,325,012], tile name [Default: NULL]
 			return one row (TRUE/FALSE)
 Returns:	Text table [1 or more rows dependent on return_one_row]
 Description:	Get GeoJSON data as a Javascript variable. 
