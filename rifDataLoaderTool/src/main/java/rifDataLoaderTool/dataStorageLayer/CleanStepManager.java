@@ -8,11 +8,11 @@ import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.DataSource;
 import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
+import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
 import rifServices.dataStorageLayer.SQLQueryUtility;
 import rifServices.businessConceptLayer.RIFResultTable;
-
-
 import rifServices.dataStorageLayer.SQLCountQueryFormatter;
+import rifServices.dataStorageLayer.SQLFieldVarianceQueryFormatter;
 import rifServices.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.util.RIFLogger;
 
@@ -679,6 +679,80 @@ public class CleanStepManager extends AbstractDataLoaderStepManager {
 		
 		return result;
 	}	
+	
+	public String[][] getVarianceInFieldData(
+		final Connection connection, 
+		final TableFieldCleaningConfiguration tableFieldCleaningConfiguration) 
+		throws RIFServiceException {
+		
+		tableFieldCleaningConfiguration.checkErrors();
+		
+				
+		String fieldOfInterest
+			= tableFieldCleaningConfiguration.getLoadTableFieldName();
+		String coreTableName
+			= tableFieldCleaningConfiguration.getCoreTableName();
+		String loadTableName
+			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreTableName);
+
+		//KLG: @TODO - eliminate junk data and uncomment code below
+		//to make it obtain real data
+		String[][] results = new String[50][2];
+		for (int i = 0; i < 50; i++) {
+			results[i][0] = "value"+ String.valueOf(i);
+			results[i][1] = String.valueOf(50 - i);
+		}
+		
+		return results;
+		
+		/*
+		SQLFieldVarianceQueryFormatter queryFormatter
+			= new SQLFieldVarianceQueryFormatter();		
+		queryFormatter.setFieldOfInterest(fieldOfInterest);		
+		queryFormatter.setFromTable(loadTableName);
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		String[][] results = new String[0][0];
+		try {
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			resultSet = statement.executeQuery();
+			resultSet.last();
+			
+			int numberOfResults = resultSet.getRow();
+			results = new String[numberOfResults][2];
+			
+			resultSet.beforeFirst();
+			
+			int i = 0;
+			while (resultSet.next()) {
+				results[i][0] = resultSet.getString(1);
+				results[i][1] = resultSet.getString(2);
+			}
+			
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"fieldVarianceDialog.error.unableToObtainVariance",
+					loadTableName,
+					fieldOfInterest);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.DATABASE_QUERY_FAILED,
+					errorMessage);
+			
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		
+		return results;
+		
+		*/
+	}
 	
 	// ==========================================
 	// Section Errors and Validation
