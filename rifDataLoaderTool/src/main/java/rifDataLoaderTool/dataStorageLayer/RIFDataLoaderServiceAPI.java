@@ -3,6 +3,9 @@ package rifDataLoaderTool.dataStorageLayer;
 import rifDataLoaderTool.businessConceptLayer.DataSource;
 
 import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
+import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFUserRole;
+
 import rifDataLoaderTool.businessConceptLayer.TableConversionConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 
@@ -13,6 +16,7 @@ import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Describes the API that will be used by the desktop GUI application that will be 
@@ -69,6 +73,33 @@ public interface RIFDataLoaderServiceAPI {
 
 	public void initialiseService() throws RIFServiceException;
 
+	public void login(
+		final String userID,
+		final String password) 
+		throws RIFServiceException;
+	
+	public void logout(
+		final User user) 
+		throws RIFServiceException;
+	
+	public void addUser(
+		final User user,
+		final String password,
+		final RIFUserRole rifUserRole,
+		final Date expiryDate)
+		throws RIFServiceException;
+
+	public void alterUser(
+		final User user,
+		final String updatedPassword,
+		final RIFUserRole updatedRIFUserRole,
+		final Date updatedExpirationDate) 
+		throws RIFServiceException;
+	
+	public void deleteUser(
+		final User user) 
+		throws RIFServiceException;
+	
 	public void registerDataSource(
 		final User user,
 		final DataSource dataSource)
@@ -167,6 +198,13 @@ public interface RIFDataLoaderServiceAPI {
 	
 	public void shutdown() 
 		throws RIFServiceException;
+	
+	public String[][] getVarianceInFieldData(
+		final User user,
+		final TableFieldCleaningConfiguration tableFieldCleaningConfiguration)
+		throws RIFServiceException;
+
+	
 }
 
 
