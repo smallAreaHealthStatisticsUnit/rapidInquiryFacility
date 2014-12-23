@@ -1144,7 +1144,6 @@ abstract class AbstractRIFStudySubmissionService
 		ArrayList<MapArea> results = new ArrayList<MapArea>();
 		Connection connection = null;
 		try {
-			
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
@@ -1176,8 +1175,8 @@ abstract class AbstractRIFStudySubmissionService
 			geoLevelToMap.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
-			String auditTrailMessage
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			String auditTrailMessage 
 				= RIFServiceMessages.getMessage(
 					"logging.getMapAreas",
 					user.getUserID(),
@@ -1185,6 +1184,7 @@ abstract class AbstractRIFStudySubmissionService
 					geography.getDisplayName(),
 					geoLevelSelect.getDisplayName(),
 					geoLevelToMap.getDisplayName());
+			
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
@@ -1206,6 +1206,7 @@ abstract class AbstractRIFStudySubmissionService
 		
 		}
 		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
 			//Audit failure of operation
 			logException(
 				user,
