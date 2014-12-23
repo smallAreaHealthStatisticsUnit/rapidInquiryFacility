@@ -436,7 +436,7 @@ class SQLMapDataManager
 		//having the specified geoLevelArea
 		
 		StringBuilder extractMapAreasQuery = new StringBuilder();
-		extractMapAreasQuery.append("SELECT ");
+		extractMapAreasQuery.append("SELECT DISTINCT ");
 		extractMapAreasQuery.append(geoLevelToMapTableName);
 		extractMapAreasQuery.append(".");
 		extractMapAreasQuery.append(useAppropriateFieldNameCase(geoLevelToMap.getName()));
@@ -484,6 +484,8 @@ class SQLMapDataManager
 				MapArea mapArea = MapArea.newInstance();
 				String identifier = resultSet.getString(1);
 				if (identifier != null) {
+					//KLG:  @TODO change this when db supports geographical identifier
+					mapArea.setGeographicalIdentifier(identifier);
 					mapArea.setIdentifier(identifier);					
 				}
 
@@ -495,7 +497,8 @@ class SQLMapDataManager
 			}			
 		}
 		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version			
+			//Record original exception, throw sanitised, human-readable version
+			sqlException.printStackTrace(System.out);
 			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
