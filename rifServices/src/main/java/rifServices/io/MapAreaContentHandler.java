@@ -241,9 +241,9 @@ public class MapAreaContentHandler
 				labelPhrase.append(",");				
 			}
 
-			geographicalIdentifierPhrase.append("'");
+			geographicalIdentifierPhrase.append("\"");
 			geographicalIdentifierPhrase.append(mapArea.getGeographicalIdentifier());
-			geographicalIdentifierPhrase.append("'");
+			geographicalIdentifierPhrase.append("\"");
 			
 			identifierPhrase.append("\"");
 			identifierPhrase.append(mapArea.getIdentifier());
