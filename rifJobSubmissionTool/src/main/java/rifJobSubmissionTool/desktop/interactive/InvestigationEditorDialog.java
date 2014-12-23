@@ -168,9 +168,9 @@ class InvestigationEditorDialog
 
 		currentInvestigation = Investigation.newInstance();
 		titleTextField
-			= userInterfaceFactory.createTextField(50);
+			= userInterfaceFactory.createTextField();
 		descriptionTextArea
-			= userInterfaceFactory.createTextArea(5, 30);
+			= userInterfaceFactory.createTextArea();
 		healthThemeComboBox 
 			= new OrderedListComboBox(userInterfaceFactory);
 		numeratorDenominatorComboBox 

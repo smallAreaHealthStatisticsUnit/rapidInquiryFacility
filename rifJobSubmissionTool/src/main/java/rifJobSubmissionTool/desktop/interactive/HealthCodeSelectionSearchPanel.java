@@ -211,7 +211,7 @@ class HealthCodeSelectionSearchPanel
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
-		searchTextField = uiFactory.createTextField(30);
+		searchTextField = uiFactory.createTextField();
 		panel.add(searchTextField, panelGC);
 		
 		panelGC.gridx++;

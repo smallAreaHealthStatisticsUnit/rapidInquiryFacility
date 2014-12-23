@@ -180,7 +180,7 @@ class DescribeStudyStepPanel
 		panelGC.weightx = 1;
 		panelGC.weighty = 1;
 		studyDescriptionTextArea
-			= userInterfaceFactory.createTextArea(5, 30);
+			= userInterfaceFactory.createTextArea();
 		JScrollPane studyDescriptionScrollPane
 			= userInterfaceFactory.createScrollPane(studyDescriptionTextArea);
 		panel.add(studyDescriptionScrollPane, panelGC);		
@@ -208,7 +208,7 @@ class DescribeStudyStepPanel
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
 		studyNameTextField
-			= userInterfaceFactory.createTextField(30);
+			= userInterfaceFactory.createTextField();
 		panel.add(studyNameTextField, panelGC);
 
 		return panel;

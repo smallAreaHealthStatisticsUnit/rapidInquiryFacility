@@ -90,6 +90,13 @@ public final class UserInterfaceFactory {
 // ==========================================
 // Section Constants
 // ==========================================
+	
+	/** Default width for text components */
+	private static final int DEFAULT_TEXT_FIELD_WIDTH = 20;
+	
+	/** Default height for text areas */
+	private static final int DEFAULT_TEXT_AREA_HEIGHT = 5;
+	
 	/** The Constant HORIZONTAL_COMPONENT_GAP. */
 	public static final int HORIZONTAL_COMPONENT_GAP = 10;
 	
@@ -607,10 +614,9 @@ public final class UserInterfaceFactory {
 	 * @param numberOfColumns the number of columns
 	 * @return the j text field
 	 */
-	public JTextField createTextField(
-		final int numberOfColumns) {
+	public JTextField createTextField() {
 
-		JTextField textField = new JTextField(numberOfColumns);
+		JTextField textField = new JTextField(DEFAULT_TEXT_FIELD_WIDTH);
 		return textField;
 	}
 	
@@ -620,10 +626,9 @@ public final class UserInterfaceFactory {
 	 * @param numberOfColumns the number of columns
 	 * @return the j text field
 	 */
-	public JTextField createNonEditableTextField(
-		int numberOfColumns) {
+	public JTextField createNonEditableTextField() {
 
-		JTextField textField = createTextField(numberOfColumns);
+		JTextField textField = createTextField();
 		textField.setEditable(false);
 		textField.setBackground( (new JLabel()).getBackground());
 		return textField;
@@ -636,11 +641,10 @@ public final class UserInterfaceFactory {
 	 * @param numberOfColumns the number of columns
 	 * @return the j text area
 	 */
-	public JTextArea createTextArea(
-		final int numberOfRows, 
-		final int numberOfColumns) {
+	public JTextArea createTextArea() {
 		
-		JTextArea textArea = new JTextArea(numberOfRows, numberOfColumns);
+		JTextArea textArea 
+			= new JTextArea(DEFAULT_TEXT_AREA_HEIGHT, DEFAULT_TEXT_FIELD_WIDTH);
 		textArea.setLineWrap(true);
 		textArea.setWrapStyleWord(true);
 		return textArea;
@@ -657,7 +661,7 @@ public final class UserInterfaceFactory {
 		final int numberOfRows, 
 		final int numberOfColumns) {
 		
-		JTextArea textArea = createTextArea(numberOfRows, numberOfColumns);		
+		JTextArea textArea = createTextArea();		
 		textArea.setEditable(false);
 		//textArea.setBackground( (new JLabel()).getBackground());
 		
@@ -796,7 +800,7 @@ public final class UserInterfaceFactory {
 
 		return constraints;
 	}
-	
+		
 	/**
 	 * Creates a new UserInterface object.
 	 *

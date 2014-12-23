@@ -134,7 +134,7 @@ class PreviewStepPanel extends AbstractStepPanel {
 		scrollPane 
 			= userInterfaceFactory.createScrollPane(previewReportHTMLPane);
 		
-		otherNotesTextArea = userInterfaceFactory.createTextArea(4, 20);
+		otherNotesTextArea = userInterfaceFactory.createTextArea();
 	}
 
 	/**

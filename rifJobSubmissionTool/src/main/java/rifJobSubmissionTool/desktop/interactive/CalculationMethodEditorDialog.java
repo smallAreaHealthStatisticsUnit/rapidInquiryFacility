@@ -198,7 +198,7 @@ class CalculationMethodEditorDialog
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1.0;
 		nameTextField
-			= userInterfaceFactory.createNonEditableTextField(20);
+			= userInterfaceFactory.createNonEditableTextField();
 		panel.add(nameTextField, panelGC);
 		
 		//Adding prior field
