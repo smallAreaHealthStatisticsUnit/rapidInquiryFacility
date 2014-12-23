@@ -115,7 +115,6 @@ public class RIFStudySubmissionWebServiceResource
 
 	public RIFStudySubmissionWebServiceResource() {
 		super();
-		System.out.println("RIFStudySubmissionWebServiceResource constructor 1");
 
 	}
 
@@ -400,13 +399,10 @@ public class RIFStudySubmissionWebServiceResource
 			User user = User.newInstance(userID, "xxx");
 
 			//Call service API
-			System.out.println("RIFStudySubmissionWebServiceResource 1 == processing user=="+user.getUserID()+"==");
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();	
 			ArrayList<Project> projects
 				= studySubmissionService.getProjects(user);			
-
-			System.out.println("RIFStudySubmissionWebServiceResource 2 there are =="+projects.size()+"==for user=="+user.getUserID()+"==");
 
 			//Convert results to support JSON
 			ArrayList<ProjectProxy> projectProxies 
@@ -550,6 +546,7 @@ public class RIFStudySubmissionWebServiceResource
 				= GeoLevelToMap.newInstance(geoLevelToMapName);			
 			geoLevelToMap.checkErrors();
 			
+			
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();	
@@ -560,7 +557,7 @@ public class RIFStudySubmissionWebServiceResource
 					geoLevelSelect,
 					geoLevelArea,
 					geoLevelToMap);
-					
+			
 			//Convert results to support JSON			
 			/*
 			ArrayList<MapAreaProxy> mapAreaProxies 
@@ -576,10 +573,12 @@ public class RIFStudySubmissionWebServiceResource
 			
 			//use a specialised serialiser to produce a useful way of 
 			//rendering map areas
+			
 			MapAreaContentHandler mapAreaContentHandler
 				= new MapAreaContentHandler();
 			result
 				= mapAreaContentHandler.writeJSONMapAreas(mapAreas);
+			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
