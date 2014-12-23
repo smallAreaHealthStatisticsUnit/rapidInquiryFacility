@@ -187,6 +187,34 @@ public class TableFieldCleaningConfiguration
 		return tableFieldCleaningConfiguration;
 	}
 	
+	public static TableFieldCleaningConfiguration createCopy(
+		final TableFieldCleaningConfiguration originalFieldConfiguration) {
+		
+		if (originalFieldConfiguration == null) {
+			return null;
+		}
+
+		String coreTableName = originalFieldConfiguration.getCoreTableName();
+		
+		String loadTableFieldName
+			= originalFieldConfiguration.getLoadTableFieldName();
+			
+		String cleanedTableFieldName
+			= originalFieldConfiguration.getCleanedTableFieldName();
+		RIFDataType originalRIFDataType
+			= originalFieldConfiguration.getRifDataType();
+		RIFDataType clonedRIFDataType
+			= originalRIFDataType.createCopy();
+		TableFieldCleaningConfiguration cloneFieldConfiguration
+			= new TableFieldCleaningConfiguration(
+				coreTableName,
+				loadTableFieldName,
+				cleanedTableFieldName,
+				clonedRIFDataType);
+		
+		return cloneFieldConfiguration;		
+	}
+	
 	public static ArrayList<TableFieldCleaningConfiguration> createCopy(
 		final ArrayList<TableFieldCleaningConfiguration> originalFieldConfigurations) {
 		
