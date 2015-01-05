@@ -69,7 +69,12 @@ RIF.dom = ( function() {
           icdHeader: $( '.healthCodesHeader' ),
           icdClassificationAvailable: ( '#icdClassificationAvailable' ),
           tree: get( 'tree' ),
-          healthCodesHeader: $( 'div.healthCodesHeader' )
+          healthCodesHeader: $( '.healthCodesHeader' ),
+          healthCodesHeaderSpans: $( '.healthCodesHeader span' ),
+          noChildElements: $( '.noChildElements' ),
+          selection: function() {
+            return $( '.icdSelected span' )
+          }
         };
       }
 

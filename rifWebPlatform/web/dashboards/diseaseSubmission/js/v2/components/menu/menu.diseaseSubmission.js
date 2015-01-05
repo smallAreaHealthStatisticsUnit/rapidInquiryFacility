@@ -24,18 +24,30 @@ RIF.menu = ( function( settings ) {
         studyAreaReady: function() {
           _p.healthCodes.request( 'getTaxonomy' );
         },
+        // Health Code tree
+
+        icd: 'icd10', //default  
 
         updateTopLevelHealthCodes: function( icd ) {
           _p.healthCodes.request( 'getTopLevelHealthCodes', icd );
+          _p.proxy.icd = icd;
         },
 
         updateSubLevelHealthCodes: function( code, domEl ) {
           _p.healthCodes.request( 'getSubLevelHealthCodes', {
-            "taxonomy": "icd10",
+            "taxonomy": _p.proxy.icd,
             "code": code,
             "dom": domEl
           } );
-        }
+        },
+
+        taxonomyChanged: function( args ) {
+          _p.facade.taxonomyChanged( args );
+        },
+
+        updateEventsHealthTree: function() {
+          _p.setEvents( [ 'healthCodes' ] );
+        },
 
       },
 
@@ -49,8 +61,9 @@ RIF.menu = ( function( settings ) {
         return _p;
       },
 
-      setEvents: function() {
-        var ev = this.setMenuEvent( _p, menus );
+      setEvents: function( menu ) {
+        var m = menu || menus;
+        var ev = this.setMenuEvent( _p, m );
       }
 
 

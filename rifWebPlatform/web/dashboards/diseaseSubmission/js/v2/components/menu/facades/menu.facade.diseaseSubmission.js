@@ -12,7 +12,6 @@ RIF.menu[ 'facade-diseaseSubmission' ] = ( function( _p ) {
     updateNumeratorAvailables: function() {},
     updateDenominatorAvailables: function() {},
 
-
     /* Firers  */
 
     studyNameChanged: function( arg ) {
@@ -33,7 +32,9 @@ RIF.menu[ 'facade-diseaseSubmission' ] = ( function( _p ) {
     resolutionChanged: function( arg ) {
       this.fire( 'resolutionChanged', arg );
     },
-
+    taxonomyChanged: function( arg ) {
+      this.fire( 'taxonomyChanged', arg );
+    }
 
     /* Study Related */
 

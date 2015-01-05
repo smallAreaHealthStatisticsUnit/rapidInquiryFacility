@@ -51,6 +51,10 @@ RIF.study[ 'facade-diseaseSubmission' ] = ( function() {
           };*/
       this.setStudyAreas( RIF.unique( rows ) );
     },
+    taxonomyChanged: function( arg ) {
+      this.setHealthConditionTaxonomy( arg );
+    },
+
 
     // Firer  
     selectAtChangeUpdate: function( geolvl ) {
