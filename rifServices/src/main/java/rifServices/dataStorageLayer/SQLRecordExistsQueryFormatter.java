@@ -4,8 +4,15 @@ import java.util.ArrayList;
 
 
 /**
- *
- *
+ * Class designed to create a template for queries that resemble this example:
+ * <code> 
+ * SELECT 1
+ * FROM
+ *    rif40_num_denom
+ * WHERE
+ *    geography=?
+ * </code>
+ * 
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
