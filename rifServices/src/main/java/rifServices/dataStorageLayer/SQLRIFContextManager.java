@@ -492,8 +492,8 @@ class SQLRIFContextManager
 		//Obtain the maximum value for geolevel_id. We need to return
 		//all geolevel choices which have a priority less than this
 		Integer maximumGeoLevelID = null;
-		SQLMinMaxQueryFormatter maximumGeoLevelIDQueryFormatter
-			= new SQLMinMaxQueryFormatter(SQLMinMaxQueryFormatter.OperationType.MAX);
+		SQLAggregateValueQueryFormatter maximumGeoLevelIDQueryFormatter
+			= new SQLAggregateValueQueryFormatter(SQLAggregateValueQueryFormatter.OperationType.MAX);
 		maximumGeoLevelIDQueryFormatter.setCountableFieldName("geolevel_id");
 		maximumGeoLevelIDQueryFormatter.setFromTable("rif40_geolevels");
 		maximumGeoLevelIDQueryFormatter.addWhereParameter("geography");
