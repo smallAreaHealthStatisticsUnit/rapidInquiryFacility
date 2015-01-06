@@ -86,7 +86,7 @@ import java.text.Collator;
  *
  */
 
-class SQLHealthOutcomeManager 
+class HealthOutcomeManager 
 	extends AbstractSQLManager {
 
 	// ==========================================
@@ -107,7 +107,7 @@ class SQLHealthOutcomeManager
 	/**
 	 * Instantiates a new SQL health outcome manager.
 	 */
-	public SQLHealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
+	public HealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
 		healthCodeProviders = new ArrayList<HealthCodeProvider>();
 		
 		String targetPathValue
@@ -136,7 +136,7 @@ class SQLHealthOutcomeManager
 		catch(RIFServiceException rifServiceException) {
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
-				SQLHealthOutcomeManager.class, 
+				HealthOutcomeManager.class, 
 				"constructor", 
 				rifServiceException);
 		}
@@ -159,7 +159,7 @@ class SQLHealthOutcomeManager
 		catch(RIFServiceException rifServiceException) {
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
-				SQLHealthOutcomeManager.class, 
+				HealthOutcomeManager.class, 
 				"constructor", 
 				rifServiceException);
 		}
@@ -183,7 +183,7 @@ class SQLHealthOutcomeManager
 		catch(RIFServiceException rifServiceException) {
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
-				SQLHealthOutcomeManager.class, 
+				HealthOutcomeManager.class, 
 				"constructor", 
 				rifServiceException);
 		}
@@ -357,7 +357,7 @@ class SQLHealthOutcomeManager
 			
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
-				SQLHealthOutcomeManager.class, 
+				HealthOutcomeManager.class, 
 				errorMessage, 
 				exception);
 			
