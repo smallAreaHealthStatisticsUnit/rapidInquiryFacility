@@ -95,6 +95,11 @@ RIF.diseaseSubmission = ( function() {
         method: "studyAreaSelectionEvent"
       },
 
+      taxonomyChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "taxonomyChanged"
+      },
 
 
       //Getters

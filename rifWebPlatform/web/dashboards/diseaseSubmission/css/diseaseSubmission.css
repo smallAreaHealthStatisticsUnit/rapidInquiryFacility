@@ -1167,30 +1167,34 @@ input.dropdownInput:-moz-placeholder {
 }
 
 .healthCodes #tree  div.healthCodesHeader{
-    font-weight: bold
+    font-weight: bold;
 }
 
 
 .healthCodes #tree  div.healthCodesHeader:hover{
     cursor: pointer;
-    background-color: rgba(132,112,255,0.1);   
+    background-color: rgba(132,112,255,0.2);   
 }
 
-.healthCodes #tree  div.healthCodesHeader  div.noChildElements{
+.healthCodes #tree div.noChildElements{
     font-weight:normal;
 }
-.healthCodes #tree  div.healthCodesHeader  div.noChildElements:hover{
+.healthCodes #tree div.noChildElements:hover{
     cursor: pointer;
-    background-color: rgba(255,240,245	,0.6);
+    background-color: rgba(255,240,245	,0.8);
 }
 
+.healthCodes #tree  div.icdSelected{
+       background-color: rgba( 152,251,152	,0.2);
+ }
 
-.healthCodes #tree  div.healthCodesHeader  div{
+
+.healthCodes #tree  div.healthCodesHeader  {
     line-height: 15px;
 }
 
-.healthCodes #tree  div.healthCodesHeader  div div{
-    padding: 1px 0 0 15px;
+.healthCodes #tree  .childrenContainer  {
+    padding: 2px 0 0 20px;
 }
 
 .healthCodes #tree > div > div > span{

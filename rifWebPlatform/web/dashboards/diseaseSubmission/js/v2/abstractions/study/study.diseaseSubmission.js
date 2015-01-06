@@ -4,6 +4,8 @@ RIF.study = ( function( type ) {
 
     diseaseSubmission: {
 
+      investigations: [],
+
       // SELECTION
       studyName: null,
       healthTheme: null,
@@ -21,7 +23,11 @@ RIF.study = ( function( type ) {
         selectAt: null
       },
 
-      healthConditions: [], // {name:ddd, icd: ooo }   
+      healthConditions: {
+        taxonomy: null,
+        codes: []
+      },
+
       parameters: {
         ageGroup: null,
         years: null,
@@ -64,8 +70,8 @@ RIF.study = ( function( type ) {
         this.comparisonArea.selectAt = s.selectAt;
       },
 
-      setHealthConditions: function( s ) {
-        this.healthConditions = s;
+      setHealthConditionTaxonomy: function( s ) {
+        this.healthConditions.taxonomy = s;
       },
 
       setParameters: function( s ) {
@@ -100,8 +106,8 @@ RIF.study = ( function( type ) {
         return this.comparisonArea;
       },
 
-      getHealthConditions: function() {
-        return this.healthConditions;
+      getHealthConditionTaxonomy: function() {
+        return this.healthConditions.taxonomy;
       },
 
       getParameters: function() {

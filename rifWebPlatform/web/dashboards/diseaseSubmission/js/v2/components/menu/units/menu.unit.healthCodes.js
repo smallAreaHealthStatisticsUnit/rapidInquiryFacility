@@ -25,7 +25,7 @@ RIF.menu.healthCodes = ( function( _dom ) {
         var taxonomies = [],
           l = this.length;
         while ( l-- ) {
-          taxonomies.push( this[ l ][ 'nameSpace' ] )
+          taxonomies.push( this[ l ][ 'nameSpace' ] );
         };
         parent.dropDownInputText( taxonomies, _dom.icdClassificationAvailable );
         _requests.getTopLevelHealthCodes( 'icd10' );
@@ -52,26 +52,32 @@ RIF.menu.healthCodes = ( function( _dom ) {
       while ( l-- ) {
         var container = document.createElement( "div" ),
           div = document.createElement( "div" ),
+          divHeader = document.createElement( "div" ),
+          childrenContainer = document.createElement( "div" ),
           expand = '';
 
         container.appendChild( div );
 
         if ( data[ l ][ 'numberOfSubTerms' ] > 0 ) {
-          expand = ' + ';
-          div.className = 'healthCodesHeader';
+          expand = '<span> + </span> ';
+          divHeader.className = 'healthCodesHeader';
         } else {
           container.className = 'noChildElements'
         };
 
         var description = ( data[ l ][ 'description' ] ).replace( ';', '' );
-        div.innerHTML = expand + '<span>' + data[ l ][ 'code' ] + '</span> - ' + description;
-        div.appendChild( document.createElement( "div" ) ); // for children elements
+        divHeader.innerHTML = expand + '<span>' + data[ l ][ 'code' ] + '</span> - ' + description;
+        div.appendChild( divHeader );
+
+        childrenContainer.className = 'childrenContainer';
+        div.appendChild( childrenContainer ); // for children elements
 
         fragment.appendChild( container );
       };
 
       domParent.appendChild( fragment );
       domParent.style.display = 'block';
+      parent.proxy.updateEventsHealthTree();
     },
 
     /* geolevel obj */
