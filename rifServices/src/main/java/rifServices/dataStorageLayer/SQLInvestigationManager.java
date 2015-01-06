@@ -93,7 +93,7 @@ class SQLInvestigationManager
 	// ==========================================
 	private SQLRIFContextManager rifContextManager;
 	private SQLAgeGenderYearManager ageGenderYearManager;
-	private SQLHealthOutcomeManager healthOutcomeManager;
+	private HealthOutcomeManager healthOutcomeManager;
 	private SQLCovariateManager covariateManager;
 	
 	// ==========================================
@@ -107,7 +107,7 @@ class SQLInvestigationManager
 		final SQLRIFContextManager rifContextManager,
 		final SQLAgeGenderYearManager ageGenderYearManager,
 		final SQLCovariateManager covariateManager,
-		final SQLHealthOutcomeManager healthOutcomeManager) {
+		final HealthOutcomeManager healthOutcomeManager) {
 
 		this.rifContextManager = rifContextManager;
 		this.ageGenderYearManager = ageGenderYearManager;
