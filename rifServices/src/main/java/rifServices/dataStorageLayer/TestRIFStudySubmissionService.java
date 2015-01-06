@@ -285,7 +285,7 @@ public final class TestRIFStudySubmissionService
 		//Part II: Check for security violations
 		try {
 			validateUser(adminUser);
-			SQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();
 			healthOutcomeManager.addHealthCodeProvider(healthCodeProvider);
 		}
@@ -318,7 +318,7 @@ public final class TestRIFStudySubmissionService
 		try {
 			//Part II: Check for security violations
 			validateUser(adminUser);
-			SQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();			
 			healthOutcomeManager.clearHealthCodeProviders();		
 		}

@@ -73,7 +73,7 @@ public class RIFServiceResources {
 	// Section Properties
 	// ==========================================
 	/** The health outcome manager. */
-	private SQLHealthOutcomeManager healthOutcomeManager;
+	private HealthOutcomeManager healthOutcomeManager;
 	
 	/** The covariate manager. */
 	private SQLCovariateManager sqlCovariateManager;
@@ -108,7 +108,7 @@ public class RIFServiceResources {
 		throws RIFServiceException {
 
 		sqlConnectionManager = new SQLConnectionManager(rifServiceStartupOptions);
-		healthOutcomeManager = new SQLHealthOutcomeManager(rifServiceStartupOptions);
+		healthOutcomeManager = new HealthOutcomeManager(rifServiceStartupOptions);
 		sqlRIFContextManager = new SQLRIFContextManager();
 		sqlAgeGenderYearManager 
 			= new SQLAgeGenderYearManager(sqlRIFContextManager);
@@ -199,7 +199,7 @@ public class RIFServiceResources {
 		return sqlResultsQueryManager;
 	}
 	
-	public SQLHealthOutcomeManager getHealthOutcomeManager() {
+	public HealthOutcomeManager getHealthOutcomeManager() {
 		return healthOutcomeManager;
 	}
 

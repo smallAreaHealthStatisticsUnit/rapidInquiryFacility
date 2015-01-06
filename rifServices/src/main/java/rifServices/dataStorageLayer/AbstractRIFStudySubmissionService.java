@@ -502,7 +502,7 @@ abstract class AbstractRIFStudySubmissionService
 				auditTrailMessage);
 			
 			//Delegate operation to a specialised manager class
-			SQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();
 			result
 				= healthOutcomeManager.getHealthCode(
@@ -568,7 +568,7 @@ abstract class AbstractRIFStudySubmissionService
 			
 
 			//Delegate operation to a specialised manager class
-			SQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();
 			results
 				= healthOutcomeManager.getImmediateSubterms(
@@ -631,7 +631,7 @@ abstract class AbstractRIFStudySubmissionService
 				auditTrailMessage);
 						
 			//Delegate operation to a specialised manager class
-			SQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();
 			result
 				= healthOutcomeManager.getParentHealthCode(
@@ -708,7 +708,7 @@ abstract class AbstractRIFStudySubmissionService
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class		
-			SQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();			
 			results 
 				= healthOutcomeManager.getHealthCodes(
@@ -1867,7 +1867,7 @@ abstract class AbstractRIFStudySubmissionService
 				auditTrailMessage);
 			
 			//Delegate operation to a specialised manager class
-			SQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();
 			result 
 				= healthOutcomeManager.getHealthCodeTaxonomyFromNameSpace(
@@ -1922,7 +1922,7 @@ abstract class AbstractRIFStudySubmissionService
 			
 			
 			//Delegate operation to a specialised manager class			
-			SQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();			
 			results 
 				= healthOutcomeManager.getHealthCodeTaxonomies();
@@ -1984,7 +1984,7 @@ abstract class AbstractRIFStudySubmissionService
 				auditTrailMessage);
 			
 			//Delegate operation to a specialised manager class
-			SQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();			
 			results 
 				= healthOutcomeManager.getTopLevelCodes(
