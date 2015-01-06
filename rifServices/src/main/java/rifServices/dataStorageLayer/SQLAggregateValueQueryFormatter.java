@@ -4,8 +4,18 @@ import java.util.ArrayList;
 
 
 /**
- *
- *
+ * A query formatter class that is designed to handle simple MIN, MAX, AVG and SUM
+ * operations.  This class may eventually be merged to accommodate COUNT as well,
+ * which is currently handled by {@link rifServices.dataStorageLayer.SQLCountQueryFormatter}.
+ * 
+ * <code>
+ * SELECT
+ *    MAX(age_group) AS maximum
+ * FROM
+ *    s1_extract
+ * WHERE
+ *    year=1994
+ * </code>
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
  * that rapidly addresses epidemiological and public health questions using 
@@ -67,7 +77,7 @@ import java.util.ArrayList;
  *
  */
 
-public class SQLSumQueryFormatter 
+public class SQLAggregateValueQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
@@ -82,7 +92,9 @@ public class SQLSumQueryFormatter
 		/** The max. */
 		MAX, 
 		/** The avg. */
-		AVG};
+		AVG,		
+		/** The sum. */
+		SUM};
 	
 	// ==========================================
 	// Section Properties
@@ -109,7 +121,7 @@ public class SQLSumQueryFormatter
 	 *
 	 * @param operationType the operation type
 	 */
-	public SQLSumQueryFormatter(
+	public SQLAggregateValueQueryFormatter(
 		final OperationType operationType) {
 		
 		this.operationType = operationType;
@@ -174,9 +186,7 @@ public class SQLSumQueryFormatter
 		whereConditions.add(whereCondition.toString());
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.dataStorageLayer.SQLQueryFormatter#generateQuery()
-	 */
+	@Override
 	public String generateQuery() {
 
 		resetAccumulatedQueryExpression();
@@ -188,21 +198,40 @@ public class SQLSumQueryFormatter
 		else if (operationType == OperationType.MIN) {
 			addQueryPhrase(1, "MIN(");			
 		}
+		else if (operationType == OperationType.AVG) {
+			addQueryPhrase(1, "AVG(");			
+		}
 		else {
-			addQueryPhrase("AVG(");			
+			addQueryPhrase(1,"SUM(");			
 		}
 		addQueryPhrase(countableFieldName);
-		addQueryPhrase(")");
+		addQueryPhrase(") ");
+		
+		if (operationType == OperationType.MAX) {
+			addQueryPhrase(1, "AS maximum");
+		}
+		else if (operationType == OperationType.MIN) {
+			addQueryPhrase(1, "AS minimum");			
+		}
+		else if (operationType == OperationType.AVG) {
+			addQueryPhrase(1, "AS average");			
+		}
+		else {
+			addQueryPhrase(1,"AS total");			
+		}
+		
 		padAndFinishLine();
 		
 		addQueryPhrase(0, "FROM");
 		padAndFinishLine();
-		
+
 		addQueryPhrase(1, convertCase(fromTableName));
+		padAndFinishLine();
 		
 		int numberOfWhereConditions = whereConditions.size();
 		if (numberOfWhereConditions > 0) {			
-			addQueryPhrase(" WHERE");
+			addQueryPhrase(0, "WHERE");
+			padAndFinishLine();
 			for (int i = 0; i < numberOfWhereConditions; i++) {
 				if (i != 0) {
 					addQueryPhrase(" AND");
@@ -212,6 +241,7 @@ public class SQLSumQueryFormatter
 			}
 		}
 		addQueryPhrase(";");
+		finishLine();
 				
 		return super.generateQuery();
 	}
