@@ -74,7 +74,7 @@ import java.util.ArrayList;
  *
  */
 
-public interface HealthCodeProvider {
+public interface HealthCodeProviderInterface {
 	
 	/**
 	 * Initialise.

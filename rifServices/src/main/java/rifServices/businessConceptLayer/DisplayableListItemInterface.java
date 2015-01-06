@@ -66,7 +66,7 @@ package rifServices.businessConceptLayer;
  *
  */
 
-public interface DisplayableListItem {
+public interface DisplayableListItemInterface {
 	
 	/**
 	 * Gets the identifier.

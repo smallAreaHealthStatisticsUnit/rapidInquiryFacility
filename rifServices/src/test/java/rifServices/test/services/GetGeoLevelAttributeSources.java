@@ -13,7 +13,7 @@ import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
 import rifServices.util.DisplayableItemSorter;
-import rifServices.businessConceptLayer.DisplayableListItem;
+import rifServices.businessConceptLayer.DisplayableListItemInterface;
 import static org.junit.Assert.*;
 
 import org.junit.After;
@@ -143,7 +143,7 @@ public class GetGeoLevelAttributeSources
 			}
 			
 			assertEquals(2, results.size());
-			ArrayList<DisplayableListItem> sortedResults
+			ArrayList<DisplayableListItemInterface> sortedResults
 				= sorter.sortList();
 			String expectedAttributeSourceTitle
 				= RIFServiceMessages.getMessage(

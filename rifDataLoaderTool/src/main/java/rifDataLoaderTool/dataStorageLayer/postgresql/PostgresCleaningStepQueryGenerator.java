@@ -233,7 +233,7 @@ public class PostgresCleaningStepQueryGenerator
 		String cleanedTableFieldName
 			= fieldCleaningConfiguration.getCleanedTableFieldName();
 
-		RIFDataType rifDataType 
+		RIFDataTypeInterface rifDataType 
 			= fieldCleaningConfiguration.getRifDataType();
 		RIFFieldCleaningPolicy rifFieldCleaningPolicy
 			= rifDataType.getFieldCleaningPolicy();
@@ -402,7 +402,7 @@ public class PostgresCleaningStepQueryGenerator
 		 * END
 		 *  
 		 */
-		RIFDataType rifDataType = fieldConfiguration.getRifDataType();
+		RIFDataTypeInterface rifDataType = fieldConfiguration.getRifDataType();
 		RIFFieldValidationPolicy fieldValidationPolicy
 			= rifDataType.getFieldValidationPolicy();
 		
@@ -1216,7 +1216,7 @@ public class PostgresCleaningStepQueryGenerator
 		
 		String cleanedTableFieldName
 			= tableFieldCleaningConfiguration.getCleanedTableFieldName();
-		RIFDataType rifDataType
+		RIFDataTypeInterface rifDataType
 			= tableFieldCleaningConfiguration.getRifDataType();
 		
 		/*

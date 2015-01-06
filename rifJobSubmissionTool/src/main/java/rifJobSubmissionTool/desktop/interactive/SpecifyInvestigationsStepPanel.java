@@ -10,7 +10,7 @@ import rifGenericUILibrary.ListEditingButtonPanel;
 
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
-import rifServices.businessConceptLayer.DisplayableListItem;
+import rifServices.businessConceptLayer.DisplayableListItemInterface;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.system.RIFServiceException;
@@ -263,10 +263,10 @@ class SpecifyInvestigationsStepPanel
 
 		//Obtain a list of unique titles from the current list of 
 		//investigations for the study
-		ArrayList<DisplayableListItem> listItems
+		ArrayList<DisplayableListItemInterface> listItems
 			= investigationsListPanel.getAllItems();
 		ArrayList<String> investigationTitles = new ArrayList<String>();
-		for (DisplayableListItem listItem : listItems) {
+		for (DisplayableListItemInterface listItem : listItems) {
 			Investigation investigation = (Investigation) listItem;
 			investigationTitles.add(investigation.getTitle());
 		}
@@ -331,7 +331,7 @@ class SpecifyInvestigationsStepPanel
 
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		
-		ArrayList<DisplayableListItem> listItems
+		ArrayList<DisplayableListItemInterface> listItems
 			= investigationsListPanel.getAllItems();
 		if (listItems.size() == 0) {
 			String errorMessage
@@ -342,7 +342,7 @@ class SpecifyInvestigationsStepPanel
 		else {			
 			ArrayList<Investigation> investigations
 				= new ArrayList<Investigation>();
-			for (DisplayableListItem listItem : listItems) {
+			for (DisplayableListItemInterface listItem : listItems) {
 				Investigation workingCopyInvestigation
 					= (Investigation) listItem;
 				try {
@@ -434,11 +434,11 @@ class SpecifyInvestigationsStepPanel
 
 		validateForm();
 		
-		ArrayList<DisplayableListItem> listItems
+		ArrayList<DisplayableListItemInterface> listItems
 			= investigationsListPanel.getAllItems();
 		ArrayList<Investigation> workingCopyInvestigations
 			= new ArrayList<Investigation>();
-		for (DisplayableListItem listItem : listItems) {
+		for (DisplayableListItemInterface listItem : listItems) {
 			Investigation workingCopyInvestigation
 				= (Investigation) listItem;
 			workingCopyInvestigations.add(workingCopyInvestigation);

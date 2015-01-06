@@ -2,7 +2,7 @@ package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
 import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
-import rifDataLoaderTool.businessConceptLayer.RIFDataType;
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
@@ -147,7 +147,7 @@ public class CleaningConfigurationTableModel extends AbstractTableModel {
 			result = tableFieldCleaningConfiguration.getCleanedTableFieldName();
 		}
 		else if (columnIndex == CASTED_DATA_TYPE_COLUMN) {
-			RIFDataType rifDataType
+			RIFDataTypeInterface rifDataType
 				= tableFieldCleaningConfiguration.getRifDataType();
 			result = rifDataType.getName();
 		}

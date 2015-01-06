@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 
 /**
- * The base class for classes which implement the {@link rifDataLoaderTool.businessConceptLayer.RIFDataType} 
+ * The base class for classes which implement the {@link rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface} 
  * interface. The RIF Data Loader Tool recognises a hierarchy of Data Types it associates with table columns 
  * in the data sources (see @link rifDataLoaderTool.businessConceptLayer.DataSource}).  By associating a RIF 
  * data type with each column, the Data Loader Tool is able to apply default cleaning behaviour and default 
@@ -129,7 +129,7 @@ import java.util.ArrayList;
  *
  */
 
-public abstract class AbstractRIFDataType implements RIFDataType {
+public abstract class AbstractRIFDataType implements RIFDataTypeInterface {
 
 	// ==========================================
 	// Section Constants

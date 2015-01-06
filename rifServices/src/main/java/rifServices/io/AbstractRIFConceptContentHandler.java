@@ -1,7 +1,7 @@
 
 package rifServices.io;
 
-import rifServices.businessConceptLayer.DisplayableListItem;
+import rifServices.businessConceptLayer.DisplayableListItemInterface;
 import rifServices.util.HTMLUtility;
 import rifServices.util.XMLCommentInjector;
 import rifServices.util.XMLUtility;
@@ -468,7 +468,7 @@ abstract class AbstractRIFConceptContentHandler
 	 */
 	protected void writeBulletedDisplayableItem(
 			
-		final DisplayableListItem displayableListItem) {
+		final DisplayableListItemInterface displayableListItem) {
 		htmlUtility.writeBulletedItem(displayableListItem.getDisplayName());
 	}
 	

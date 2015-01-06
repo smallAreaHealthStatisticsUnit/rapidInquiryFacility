@@ -1,7 +1,7 @@
 package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.businessConceptLayer.RIFDataType;
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 import rifDataLoaderTool.businessConceptLayer.CleaningRule;
 
 import javax.swing.table.AbstractTableModel;
@@ -69,7 +69,7 @@ public class CleaningRuleTableModel extends AbstractTableModel {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private RIFDataType rifDataType;
+	private RIFDataTypeInterface rifDataType;
 	private ArrayList<CleaningRule> cleaningRules;
 	// ==========================================
 	// Section Construction
@@ -131,7 +131,7 @@ public class CleaningRuleTableModel extends AbstractTableModel {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void setData(final RIFDataType rifDataType) {
+	public void setData(final RIFDataTypeInterface rifDataType) {
 		this.rifDataType = rifDataType;
 		
 		cleaningRules = rifDataType.getCleaningRules();

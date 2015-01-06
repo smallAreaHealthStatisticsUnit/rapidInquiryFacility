@@ -2,7 +2,7 @@
 package rifGenericUILibrary;
 
 
-import rifServices.businessConceptLayer.DisplayableListItem;
+import rifServices.businessConceptLayer.DisplayableListItemInterface;
 
 import java.awt.GridBagConstraints;
 import java.util.ArrayList;
@@ -103,7 +103,7 @@ public class OrderedListPanel {
 	
 	//GUI Components
 	/** The item from list name. */
-	private HashMap<String, DisplayableListItem> itemFromListName;	
+	private HashMap<String, DisplayableListItemInterface> itemFromListName;	
 	/** The panel. */
 	private JPanel panel;
 	/** The list. */
@@ -128,7 +128,7 @@ public class OrderedListPanel {
 		UserInterfaceFactory userInterfaceFactory,
 		boolean allowMultipleItemSelection) {
 	
-		itemFromListName = new HashMap<String, DisplayableListItem>();
+		itemFromListName = new HashMap<String, DisplayableListItemInterface>();
 		listItems = new Vector<String>();
 	
 		alphabeticallySortItems = true;
@@ -259,7 +259,7 @@ public class OrderedListPanel {
 	 * @param listItem the list item
 	 */
 	public void addListItem(
-		DisplayableListItem listItem) {
+		DisplayableListItemInterface listItem) {
 		
 		itemFromListName.put(listItem.getDisplayName(), listItem);	
 		listItems.add(listItem.getDisplayName());	
@@ -276,8 +276,8 @@ public class OrderedListPanel {
 	 * @param revisedItem the revised item
 	 */
 	public void replaceItem(
-			DisplayableListItem originalItem,
-			DisplayableListItem revisedItem) {
+			DisplayableListItemInterface originalItem,
+			DisplayableListItemInterface revisedItem) {
 		
 		String displayName
 			= originalItem.getDisplayName();
@@ -299,8 +299,8 @@ public class OrderedListPanel {
 		
 		int[] currentlySelectedRows
 			= list.getSelectedIndices();
-		ArrayList<DisplayableListItem> itemsToDelete
-			= new ArrayList<DisplayableListItem>();
+		ArrayList<DisplayableListItemInterface> itemsToDelete
+			= new ArrayList<DisplayableListItemInterface>();
 		for (int i = 0; i < currentlySelectedRows.length; i++) {
 			String displayNameToDelete
 				= listItems.get(currentlySelectedRows[i]);
@@ -308,7 +308,7 @@ public class OrderedListPanel {
 		}
 		
 		//now delete the items
-		for (DisplayableListItem itemToDelete : itemsToDelete) {
+		for (DisplayableListItemInterface itemToDelete : itemsToDelete) {
 			String displayNameToDelete 
 				= itemToDelete.getDisplayName();
 			itemFromListName.remove(displayNameToDelete);
@@ -323,10 +323,10 @@ public class OrderedListPanel {
 	 *
 	 * @return the all items
 	 */
-	public ArrayList<DisplayableListItem> getAllItems() {
+	public ArrayList<DisplayableListItemInterface> getAllItems() {
 		
-		ArrayList<DisplayableListItem> results
-			= new ArrayList<DisplayableListItem>();
+		ArrayList<DisplayableListItemInterface> results
+			= new ArrayList<DisplayableListItemInterface>();
 		results.addAll(itemFromListName.values());
 		return results;
 	}
@@ -363,7 +363,7 @@ public class OrderedListPanel {
 	 *
 	 * @return the selected item
 	 */
-	public DisplayableListItem getSelectedItem() {
+	public DisplayableListItemInterface getSelectedItem() {
 		
 		String selectedDisplayName
 			= (String) list.getSelectedValue();
@@ -371,7 +371,7 @@ public class OrderedListPanel {
 			return null;
 		}
 		else {
-			DisplayableListItem selectedItem
+			DisplayableListItemInterface selectedItem
 				= itemFromListName.get(selectedDisplayName);
 			return selectedItem;
 		}
@@ -382,17 +382,17 @@ public class OrderedListPanel {
 	 *
 	 * @return the selected items
 	 */
-	public ArrayList<DisplayableListItem> getSelectedItems() {
+	public ArrayList<DisplayableListItemInterface> getSelectedItems() {
 		
-		ArrayList<DisplayableListItem> results
-			= new ArrayList<DisplayableListItem>();
+		ArrayList<DisplayableListItemInterface> results
+			= new ArrayList<DisplayableListItemInterface>();
 
 		java.util.List<String> selectedDisplayNames
 			= list.getSelectedValuesList();
 		Iterator<String> iterator
 			= selectedDisplayNames.iterator();
 		while (iterator.hasNext() == true) {
-			DisplayableListItem selectedItem
+			DisplayableListItemInterface selectedItem
 				= itemFromListName.get(iterator.next());
 			results.add(selectedItem);		
 		}
@@ -427,7 +427,7 @@ public class OrderedListPanel {
 	 * @param selectableItem the new selected item
 	 */
 	public void setSelectedItem(
-		DisplayableListItem selectableItem) {
+		DisplayableListItemInterface selectableItem) {
 		
 		list.setSelectedValue(selectableItem.getDisplayName(), true);
 	}

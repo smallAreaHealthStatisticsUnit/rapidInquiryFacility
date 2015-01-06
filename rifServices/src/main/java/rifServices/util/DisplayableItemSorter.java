@@ -1,6 +1,6 @@
 package rifServices.util;
 
-import rifServices.businessConceptLayer.DisplayableListItem;
+import rifServices.businessConceptLayer.DisplayableListItemInterface;
 import rifServices.system.RIFServiceMessages;
 
 import java.util.ArrayList;
@@ -70,7 +70,7 @@ public class DisplayableItemSorter {
 	// Section Properties
 	// ==========================================
 	/** The displayable item from identifier. */
-	private Hashtable<String, DisplayableListItem> displayableItemFromIdentifier;
+	private Hashtable<String, DisplayableListItemInterface> displayableItemFromIdentifier;
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -80,7 +80,7 @@ public class DisplayableItemSorter {
 	 */
 	public DisplayableItemSorter() {
 
-		displayableItemFromIdentifier = new Hashtable<String, DisplayableListItem>();
+		displayableItemFromIdentifier = new Hashtable<String, DisplayableListItemInterface>();
 	}
 
 	// ==========================================
@@ -100,7 +100,7 @@ public class DisplayableItemSorter {
 	 * @param displayableListItem the displayable list item
 	 */
 	public void addDisplayableListItem(
-		final DisplayableListItem displayableListItem) {
+		final DisplayableListItemInterface displayableListItem) {
 		
 		displayableItemFromIdentifier.put(
 			displayableListItem.getDisplayName(),
@@ -130,7 +130,7 @@ public class DisplayableItemSorter {
 	 * @param identifier the identifier
 	 * @return the item from identifier
 	 */
-	public DisplayableListItem getItemFromIdentifier(
+	public DisplayableListItemInterface getItemFromIdentifier(
 		final String identifier) {
 		
 		return displayableItemFromIdentifier.get(identifier);
@@ -141,10 +141,10 @@ public class DisplayableItemSorter {
 	 *
 	 * @return the array list
 	 */
-	public ArrayList<DisplayableListItem> sortList() {
+	public ArrayList<DisplayableListItemInterface> sortList() {
 
-		ArrayList<DisplayableListItem> sortedDisplayableListItems
-			= new ArrayList<DisplayableListItem>();
+		ArrayList<DisplayableListItemInterface> sortedDisplayableListItems
+			= new ArrayList<DisplayableListItemInterface>();
 		
 		ArrayList<String> identifiers = new ArrayList<String>();
 		identifiers.addAll(displayableItemFromIdentifier.keySet());

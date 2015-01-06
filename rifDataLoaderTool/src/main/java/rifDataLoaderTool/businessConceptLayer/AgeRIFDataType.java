@@ -125,7 +125,7 @@ public final class AgeRIFDataType extends AbstractRIFDataType {
 	// Section Override
 	// ==========================================
 	
-	public RIFDataType createCopy() {
+	public RIFDataTypeInterface createCopy() {
 		AgeRIFDataType cloneAgeRIFDataType = AgeRIFDataType.newInstance();
 		copyAttributes(cloneAgeRIFDataType);
 		return cloneAgeRIFDataType;

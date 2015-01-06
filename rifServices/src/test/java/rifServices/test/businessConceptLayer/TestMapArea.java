@@ -9,7 +9,7 @@ import rifServices.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
 import rifServices.test.AbstractRIFTestCase;
 import rifServices.util.DisplayableItemSorter;
-import rifServices.businessConceptLayer.DisplayableListItem;
+import rifServices.businessConceptLayer.DisplayableListItemInterface;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -215,7 +215,7 @@ public class TestMapArea extends AbstractRIFTestCase {
 		ArrayList<MapArea> duplicates
 			= MapArea.identifyListOfDuplicates(sourceList, destinationList);
 		
-		ArrayList<DisplayableListItem> sortedResults = sortItems(duplicates);		
+		ArrayList<DisplayableListItemInterface> sortedResults = sortItems(duplicates);		
 		assertEquals(3, duplicates.size());
 		assertEquals("25", sortedResults.get(0).getIdentifier());
 		assertEquals("27", sortedResults.get(1).getIdentifier());
@@ -257,7 +257,7 @@ public class TestMapArea extends AbstractRIFTestCase {
 			= MapArea.identifyListOfUniqueAreas(sourceList, destinationList);
 		assertNotNull(nonDuplicates);
 		
-		ArrayList<DisplayableListItem> sortedResults
+		ArrayList<DisplayableListItemInterface> sortedResults
 			= sortItems(nonDuplicates);	
 		
 		assertEquals(2, sortedResults.size());
@@ -271,7 +271,7 @@ public class TestMapArea extends AbstractRIFTestCase {
 	 * @param mapAreas the map areas
 	 * @return the array list
 	 */
-	private ArrayList<DisplayableListItem> sortItems(ArrayList<MapArea> mapAreas) {
+	private ArrayList<DisplayableListItemInterface> sortItems(ArrayList<MapArea> mapAreas) {
 		DisplayableItemSorter sorter = new DisplayableItemSorter();
 
 		for (MapArea mapArea : mapAreas) {

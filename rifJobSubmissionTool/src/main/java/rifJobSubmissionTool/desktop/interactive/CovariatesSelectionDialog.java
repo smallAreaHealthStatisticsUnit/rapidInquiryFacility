@@ -11,7 +11,7 @@ import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
-import rifServices.businessConceptLayer.DisplayableListItem;
+import rifServices.businessConceptLayer.DisplayableListItemInterface;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelToMap;
@@ -319,9 +319,9 @@ class CovariatesSelectionDialog
 		
 		ArrayList<AbstractCovariate> covariates 
 			= new ArrayList<AbstractCovariate>();
-		ArrayList<DisplayableListItem> selectedListItems
+		ArrayList<DisplayableListItemInterface> selectedListItems
 			= covariatesListPanel.getSelectedItems();
-		for (DisplayableListItem currentListItem : selectedListItems) {
+		for (DisplayableListItemInterface currentListItem : selectedListItems) {
 			covariates.add((AbstractCovariate) currentListItem);
 		}
 		

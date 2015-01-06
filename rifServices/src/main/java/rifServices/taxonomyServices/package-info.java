@@ -2,7 +2,7 @@
  * Contains classes that are used to provide {@link rifServices.businessConceptLayer.HealthCode} 
  * instances. {@link rifServices.dataStorageLayer.SQLHealthOutcomeManager} delegates requests
  * for health codes to one of multiple sources of health codes.  Each source provides codes using
- * the {@link rifServices.taxonomyServices.HealthCodeProvider} interface.  The package includes
+ * the {@link rifServices.taxonomyServices.HealthCodeProviderInterface} interface.  The package includes
  * default implementations of ICD 9 and ICD 10 health code sources.  It also includes a generic
  * provider that obtains terms from an XML file.  The 
  * {@link rifServices.taxonomyServices.RIFXMLTaxonomyProvider} relies on the reader class

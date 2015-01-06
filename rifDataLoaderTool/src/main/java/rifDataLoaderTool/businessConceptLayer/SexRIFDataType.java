@@ -233,7 +233,7 @@ public final class SexRIFDataType extends AbstractRIFDataType {
 	// Section Override
 	// ==========================================
 	
-	public RIFDataType createCopy() {
+	public RIFDataTypeInterface createCopy() {
 		SexRIFDataType cloneSexRIFDataType = newInstance();
 		copyAttributes(cloneSexRIFDataType);
 		return cloneSexRIFDataType;

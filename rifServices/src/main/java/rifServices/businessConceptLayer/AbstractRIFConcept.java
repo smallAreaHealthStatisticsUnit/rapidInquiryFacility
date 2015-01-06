@@ -76,7 +76,7 @@ import java.text.Collator;
  */
 
 public abstract class AbstractRIFConcept 
-	implements DisplayableListItem {
+	implements DisplayableListItemInterface {
 
 	// ==========================================
 	// Section Constants

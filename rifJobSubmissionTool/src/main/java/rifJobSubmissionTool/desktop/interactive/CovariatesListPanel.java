@@ -8,7 +8,7 @@ import rifGenericUILibrary.UserInterfaceFactory;
 import rifGenericUILibrary.ListEditingButtonPanel;
 
 import rifServices.businessConceptLayer.AbstractCovariate;
-import rifServices.businessConceptLayer.DisplayableListItem;
+import rifServices.businessConceptLayer.DisplayableListItemInterface;
 import rifServices.system.RIFServiceMessages;
 
 import java.awt.event.ActionListener;
@@ -193,9 +193,9 @@ class CovariatesListPanel implements ActionListener {
 		ArrayList<AbstractCovariate> covariates
 			= new ArrayList<AbstractCovariate>();
 		
-		ArrayList<DisplayableListItem> listItems
+		ArrayList<DisplayableListItemInterface> listItems
 			= listPanel.getAllItems();
-		for (DisplayableListItem listItem : listItems) {
+		for (DisplayableListItemInterface listItem : listItems) {
 			covariates.add((AbstractCovariate) listItem);
 		}
 		return covariates;

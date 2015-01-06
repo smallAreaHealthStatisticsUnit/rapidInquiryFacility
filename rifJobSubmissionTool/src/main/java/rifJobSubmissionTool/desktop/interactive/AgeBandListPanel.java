@@ -8,7 +8,7 @@ import rifGenericUILibrary.UserInterfaceFactory;
 import rifGenericUILibrary.ListEditingButtonPanel;
 
 import rifServices.businessConceptLayer.AgeBand;
-import rifServices.businessConceptLayer.DisplayableListItem;
+import rifServices.businessConceptLayer.DisplayableListItemInterface;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.system.RIFServiceMessages;
 
@@ -244,10 +244,10 @@ class AgeBandListPanel
 	 */
 	public ArrayList<AgeBand> getAgeBands() {
 		
-		ArrayList<DisplayableListItem> listItems
+		ArrayList<DisplayableListItemInterface> listItems
 			= listPanel.getAllItems();
 		ArrayList<AgeBand> ageBands = new ArrayList<AgeBand>();
-		for (DisplayableListItem listItem : listItems) {
+		for (DisplayableListItemInterface listItem : listItems) {
 			ageBands.add((AgeBand) listItem);
 		}
 		return ageBands;

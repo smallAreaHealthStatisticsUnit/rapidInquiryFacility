@@ -117,7 +117,7 @@ public class ICDCodeRIFDataType extends AbstractRIFDataType {
 	// Section Override
 	// ==========================================
 
-	public RIFDataType createCopy() {
+	public RIFDataTypeInterface createCopy() {
 		ICDCodeRIFDataType cloneICDCodeRIFDataType = newInstance();
 		copyAttributes(cloneICDCodeRIFDataType);
 		return cloneICDCodeRIFDataType;

@@ -12,7 +12,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.util.RIFLogger;
-import rifServices.taxonomyServices.HealthCodeProvider;
+import rifServices.taxonomyServices.HealthCodeProviderInterface;
 import rifServices.taxonomyServices.RIFXMLTaxonomyProvider;
 
 import java.util.ArrayList;
@@ -98,7 +98,7 @@ class HealthOutcomeManager
 	// ==========================================
 
 	/** The health code providers. */
-	private ArrayList<HealthCodeProvider> healthCodeProviders;
+	private ArrayList<HealthCodeProviderInterface> healthCodeProviders;
 	
 	// ==========================================
 	// Section Construction
@@ -108,7 +108,7 @@ class HealthOutcomeManager
 	 * Instantiates a new SQL health outcome manager.
 	 */
 	public HealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
-		healthCodeProviders = new ArrayList<HealthCodeProvider>();
+		healthCodeProviders = new ArrayList<HealthCodeProviderInterface>();
 		
 		String targetPathValue
 			= rifServiceStartupOptions.getRIFServiceResourcePath();
@@ -232,7 +232,7 @@ class HealthOutcomeManager
 	 * @param healthCodeProvider the health code provider
 	 */
 	public void addHealthCodeProvider(
-		final HealthCodeProvider healthCodeProvider) {
+		final HealthCodeProviderInterface healthCodeProvider) {
 
 		healthCodeProviders.add(healthCodeProvider);
 	}
@@ -243,7 +243,7 @@ class HealthOutcomeManager
 	 * @param healthCodeProvider the health code provider
 	 */
 	public void clearHealthCodeProviders(
-		final HealthCodeProvider healthCodeProvider) {
+		final HealthCodeProviderInterface healthCodeProvider) {
 
 		healthCodeProviders.clear();	
 	}
@@ -259,7 +259,7 @@ class HealthOutcomeManager
 		throws RIFServiceException {
 
 
-		HealthCodeProvider healthCodeProvider
+		HealthCodeProviderInterface healthCodeProvider
 			= getRelevantHealthCodeProvider(healthCodeTaxonomyNameSpace);
 
 		if (healthCodeProvider == null) {
@@ -290,7 +290,7 @@ class HealthOutcomeManager
 		
 		ArrayList<HealthCodeTaxonomy> healthCodeTaxonomies
 			= new ArrayList<HealthCodeTaxonomy>();
-		for (HealthCodeProvider healthCodeProvider : healthCodeProviders) {
+		for (HealthCodeProviderInterface healthCodeProvider : healthCodeProviders) {
 			healthCodeTaxonomies.add(healthCodeProvider.getHealthCodeTaxonomy());
 		}
 
@@ -391,7 +391,7 @@ class HealthOutcomeManager
 		//Validate Parameters
 		healthCodeTaxonomy.checkErrors();
 		
-		HealthCodeProvider healthCodeProvider
+		HealthCodeProviderInterface healthCodeProvider
 			= getRelevantHealthCodeProvider(healthCodeTaxonomy);		
 		return healthCodeProvider.getTopLevelCodes();
 	}
@@ -411,7 +411,7 @@ class HealthOutcomeManager
 		//Validate Parameters
 		parentHealthCode.checkErrors();
 		
-		HealthCodeProvider healthCodeProvider
+		HealthCodeProviderInterface healthCodeProvider
 			= getRelevantHealthCodeProvider(parentHealthCode);		
 		return healthCodeProvider.getImmediateSubterms(parentHealthCode);		
 	}
@@ -422,7 +422,7 @@ class HealthOutcomeManager
 		throws RIFServiceException {
 		
 		
-		HealthCodeProvider healthCodeProvider
+		HealthCodeProviderInterface healthCodeProvider
 			= getRelevantHealthCodeProvider(nameSpace);	
 		if (healthCodeProvider == null) {
 			String errorMessage
@@ -454,7 +454,7 @@ class HealthOutcomeManager
 		//Validate Parameters
 		childHealthCode.checkErrors();
 				
-		HealthCodeProvider healthCodeProvider
+		HealthCodeProviderInterface healthCodeProvider
 			= getRelevantHealthCodeProvider(childHealthCode);		
 		return healthCodeProvider.getParentHealthCode(childHealthCode);		
 	}
@@ -466,12 +466,12 @@ class HealthOutcomeManager
 	 * @return the relevant health code provider
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	private HealthCodeProvider getRelevantHealthCodeProvider(
+	private HealthCodeProviderInterface getRelevantHealthCodeProvider(
 		final HealthCode healthCode) 
 		throws RIFServiceException {
 		
-		HealthCodeProvider relevantHealthCodeProvider = null;
-		for (HealthCodeProvider healthCodeProvider : healthCodeProviders) {
+		HealthCodeProviderInterface relevantHealthCodeProvider = null;
+		for (HealthCodeProviderInterface healthCodeProvider : healthCodeProviders) {
 			if (healthCodeProvider.supportsTaxonomy(healthCode)) {
 				relevantHealthCodeProvider = healthCodeProvider;
 				break;
@@ -491,11 +491,11 @@ class HealthOutcomeManager
 		return relevantHealthCodeProvider;
 	}
 
-	private HealthCodeProvider getRelevantHealthCodeProvider(
+	private HealthCodeProviderInterface getRelevantHealthCodeProvider(
 		final String nameSpace) {
 		
 		Collator collator = RIFServiceMessages.getCollator();
-		for (HealthCodeProvider healthCodeProvider : healthCodeProviders) {
+		for (HealthCodeProviderInterface healthCodeProvider : healthCodeProviders) {
 			HealthCodeTaxonomy healthCodeTaxonomy
 				= healthCodeProvider.getHealthCodeTaxonomy();
 			String currentTaxonomyNameSpace
@@ -515,12 +515,12 @@ class HealthOutcomeManager
 	 * @return the relevant health code provider
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	private HealthCodeProvider getRelevantHealthCodeProvider(
+	private HealthCodeProviderInterface getRelevantHealthCodeProvider(
 		final HealthCodeTaxonomy healthCodeTaxonomy) 
 		throws RIFServiceException {
 			
-		HealthCodeProvider relevantHealthCodeProvider = null;
-		for (HealthCodeProvider healthCodeProvider : healthCodeProviders) {
+		HealthCodeProviderInterface relevantHealthCodeProvider = null;
+		for (HealthCodeProviderInterface healthCodeProvider : healthCodeProviders) {
 			if (healthCodeProvider.supportsTaxonomy(healthCodeTaxonomy)) {
 				relevantHealthCodeProvider = healthCodeProvider;
 				break;
@@ -554,7 +554,7 @@ class HealthOutcomeManager
 		final String searchText) 
 		throws RIFServiceException {
 		
-		HealthCodeProvider healthCodeProvider
+		HealthCodeProviderInterface healthCodeProvider
 			= getRelevantHealthCodeProvider(healthCodeTaxonomy);
 		
 		return healthCodeProvider.getHealthCodes(searchText);
@@ -592,7 +592,7 @@ class HealthOutcomeManager
 				errorMessages.add(errorMessage);
 			}
 			else {
-				HealthCodeProvider healthCodeProvider
+				HealthCodeProviderInterface healthCodeProvider
 					= getRelevantHealthCodeProvider(healthCodeTaxonomy);
 				if (healthCodeProvider == null) {
 					String errorMessage

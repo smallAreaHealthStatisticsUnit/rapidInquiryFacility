@@ -113,7 +113,7 @@ public final class UKPostalCodeRIFDataType extends AbstractRIFDataType {
 	// Section Override
 	// ==========================================
 	
-	public RIFDataType createCopy() {
+	public RIFDataTypeInterface createCopy() {
 		UKPostalCodeRIFDataType cloneUKPostalCodeRIFDataType = newInstance();
 		copyAttributes(cloneUKPostalCodeRIFDataType);
 		return cloneUKPostalCodeRIFDataType;

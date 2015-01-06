@@ -1,6 +1,6 @@
 package rifGenericUILibrary;
 
-import rifServices.businessConceptLayer.DisplayableListItem;
+import rifServices.businessConceptLayer.DisplayableListItemInterface;
 import rifServices.system.RIFServiceMessages;
 
 import java.awt.event.ActionListener;
@@ -92,7 +92,7 @@ public class OrderedListComboBox {
 	/** The alphabetically sort items. */
 	private boolean alphabeticallySortItems;
 	/** The item from list name. */
-	private HashMap<String, DisplayableListItem> itemFromListName;	
+	private HashMap<String, DisplayableListItemInterface> itemFromListName;	
 	/** The list items. */
 	private Vector<String> listItems;
 
@@ -111,7 +111,7 @@ public class OrderedListComboBox {
  */
 public OrderedListComboBox(UserInterfaceFactory userInterfaceFactory) {
 	
-		itemFromListName = new HashMap<String, DisplayableListItem>();
+		itemFromListName = new HashMap<String, DisplayableListItemInterface>();
 		listItems = new Vector<String>();
 		
 		alphabeticallySortItems = true;
@@ -229,7 +229,7 @@ public OrderedListComboBox(UserInterfaceFactory userInterfaceFactory) {
 	 * @param listItem the list item
 	 */
 	public void addListItem(
-		DisplayableListItem listItem) {		
+		DisplayableListItemInterface listItem) {		
 		
 		itemFromListName.put(listItem.getDisplayName(), listItem);		
 		listItems.add(listItem.getDisplayName());				
@@ -243,13 +243,13 @@ public OrderedListComboBox(UserInterfaceFactory userInterfaceFactory) {
 	 *
 	 * @return the first item
 	 */
-	public DisplayableListItem getFirstItem() {
+	public DisplayableListItemInterface getFirstItem() {
 		
 		if (listItems.size() == 0) {
 			return null;
 		}
 		
-		DisplayableListItem firstItem
+		DisplayableListItemInterface firstItem
 			= itemFromListName.get(listItems.get(0));
 		return firstItem;
 	}
@@ -259,11 +259,11 @@ public OrderedListComboBox(UserInterfaceFactory userInterfaceFactory) {
 	 *
 	 * @return the selected item
 	 */
-	public DisplayableListItem getSelectedItem() {
+	public DisplayableListItemInterface getSelectedItem() {
 		
 		String selectedDisplayName
 			= (String) comboBox.getSelectedItem();
-		DisplayableListItem selectedItem
+		DisplayableListItemInterface selectedItem
 			= itemFromListName.get(selectedDisplayName);
 		return selectedItem;
 	}
@@ -317,7 +317,7 @@ public OrderedListComboBox(UserInterfaceFactory userInterfaceFactory) {
 	 * @return true, if successful
 	 */
 	public boolean contains(
-		DisplayableListItem displayableListItem) {
+		DisplayableListItemInterface displayableListItem) {
 		
 		if (displayableListItem == null) {
 			return false;
@@ -346,7 +346,7 @@ public OrderedListComboBox(UserInterfaceFactory userInterfaceFactory) {
 	 * @param displayableListItem the new selected item
 	 */
 	public void setSelectedItem(
-		DisplayableListItem displayableListItem) {
+		DisplayableListItemInterface displayableListItem) {
 		
 		if (displayableListItem == null) {
 			setSelectedItem(CHOOSE_PROMPT);

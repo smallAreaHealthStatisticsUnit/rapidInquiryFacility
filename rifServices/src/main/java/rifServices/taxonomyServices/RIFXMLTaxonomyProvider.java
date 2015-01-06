@@ -77,7 +77,7 @@ import java.util.ArrayList;
  */
 
 public class RIFXMLTaxonomyProvider 
-	implements HealthCodeProvider {
+	implements HealthCodeProviderInterface {
 
 	// ==========================================
 	// Section Constants

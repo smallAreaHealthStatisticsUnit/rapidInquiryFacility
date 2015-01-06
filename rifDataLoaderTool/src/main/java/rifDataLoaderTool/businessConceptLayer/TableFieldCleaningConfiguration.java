@@ -45,7 +45,7 @@ import rifServices.system.RIFServiceSecurityException;
  * 
  * <p>
  * Although most of the information used to validate field values comes from the 
- * {@link rifDataLoaderTool.businessConceptLayer.RIFDataType}, each cleaning field configuration contains
+ * {@link rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface}, each cleaning field configuration contains
  * a flag which indicates whether a value is required or not.  In one field configuration, an
  * {@link rifDataLoaderTool.businessConceptLayer.IntegerRIFDataType} might be optional whereas in another
  * table column it may be required.  This scenario explains why the flag for 'allows blank' is in the field
@@ -112,7 +112,7 @@ public class TableFieldCleaningConfiguration
 	private String coreTableName;
 	private String loadTableFieldName;
 	private String cleanedTableFieldName;
-	private RIFDataType rifDataType;
+	private RIFDataTypeInterface rifDataType;
 	private boolean allowBlankValues;
 	
 	private boolean applyDataTypeCleaningRules;
@@ -128,7 +128,7 @@ public class TableFieldCleaningConfiguration
 		final String coreTableName,
 		final String loadTableFieldName,
 		final String cleanedTableFieldName,
-		final RIFDataType rifDataType) {
+		final RIFDataTypeInterface rifDataType) {
 		
 		this.coreTableName = coreTableName;
 		this.loadTableFieldName = loadTableFieldName;
@@ -145,7 +145,7 @@ public class TableFieldCleaningConfiguration
 		final String coreTableName,
 		final String loadTableFieldName,
 		final String cleanedTableFieldName,
-		final RIFDataType rifDataType) {
+		final RIFDataTypeInterface rifDataType) {
 		
 		TableFieldCleaningConfiguration tableFieldCleaningConfiguration
 			= new TableFieldCleaningConfiguration(
@@ -175,7 +175,7 @@ public class TableFieldCleaningConfiguration
 	public static TableFieldCleaningConfiguration newInstance(
 		final String coreTableName,
 		final String coreFieldName,
-		final RIFDataType rifDataType) {
+		final RIFDataTypeInterface rifDataType) {
 				
 		TableFieldCleaningConfiguration tableFieldCleaningConfiguration
 			= new TableFieldCleaningConfiguration(
@@ -201,9 +201,9 @@ public class TableFieldCleaningConfiguration
 			
 		String cleanedTableFieldName
 			= originalFieldConfiguration.getCleanedTableFieldName();
-		RIFDataType originalRIFDataType
+		RIFDataTypeInterface originalRIFDataType
 			= originalFieldConfiguration.getRifDataType();
-		RIFDataType clonedRIFDataType
+		RIFDataTypeInterface clonedRIFDataType
 			= originalRIFDataType.createCopy();
 		TableFieldCleaningConfiguration cloneFieldConfiguration
 			= new TableFieldCleaningConfiguration(
@@ -239,9 +239,9 @@ public class TableFieldCleaningConfiguration
 			
 			String cleanedTableFieldName
 				= originalFieldConfiguration.getCleanedTableFieldName();
-			RIFDataType originalRIFDataType
+			RIFDataTypeInterface originalRIFDataType
 				= originalFieldConfiguration.getRifDataType();
-			RIFDataType clonedRIFDataType
+			RIFDataTypeInterface clonedRIFDataType
 				= originalRIFDataType.createCopy();
 			TableFieldCleaningConfiguration cloneFieldConfiguration
 				= new TableFieldCleaningConfiguration(
@@ -329,13 +329,13 @@ public class TableFieldCleaningConfiguration
 		this.cleanedTableFieldName = cleanedTableFieldName;
 	}
 
-	public RIFDataType getRifDataType() {
+	public RIFDataTypeInterface getRifDataType() {
 		return rifDataType;
 	}
 
 
 
-	public void setRifDataType(RIFDataType rifDataType) {
+	public void setRifDataType(RIFDataTypeInterface rifDataType) {
 		this.rifDataType = rifDataType;
 	}
 

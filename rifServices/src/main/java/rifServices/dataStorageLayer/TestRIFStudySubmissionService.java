@@ -9,7 +9,7 @@ import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.ExposureCovariate;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
-import rifServices.taxonomyServices.HealthCodeProvider;
+import rifServices.taxonomyServices.HealthCodeProviderInterface;
 import rifServices.util.FieldValidationUtility;
 
 /**
@@ -271,7 +271,7 @@ public final class TestRIFStudySubmissionService
 	 */
 	public void addHealthCodeProvider(
 		final User _adminUser,
-		final HealthCodeProvider healthCodeProvider) 
+		final HealthCodeProviderInterface healthCodeProvider) 
 		throws RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users

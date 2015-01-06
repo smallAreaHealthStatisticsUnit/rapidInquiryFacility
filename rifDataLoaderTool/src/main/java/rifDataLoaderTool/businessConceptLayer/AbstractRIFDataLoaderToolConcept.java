@@ -8,7 +8,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
-import rifServices.businessConceptLayer.DisplayableListItem;
+import rifServices.businessConceptLayer.DisplayableListItemInterface;
 
 /**
  * A convenience class that is meant to hold code common to all of the business class
@@ -71,7 +71,7 @@ import rifServices.businessConceptLayer.DisplayableListItem;
  */
 
 public abstract class AbstractRIFDataLoaderToolConcept
-	implements DisplayableListItem {
+	implements DisplayableListItemInterface {
 
 	// ==========================================
 	// Section Constants

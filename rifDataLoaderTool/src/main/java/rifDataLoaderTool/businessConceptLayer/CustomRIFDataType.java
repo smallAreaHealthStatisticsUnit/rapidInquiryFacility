@@ -109,7 +109,7 @@ public final class CustomRIFDataType
 	// Section Override
 	// ==========================================
 
-	public RIFDataType createCopy() {
+	public RIFDataTypeInterface createCopy() {
 		CustomRIFDataType clonedCustomRIFDataType
 			= new CustomRIFDataType(
 				getIdentifier(),

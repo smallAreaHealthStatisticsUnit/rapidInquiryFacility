@@ -1,7 +1,7 @@
 package rifDataLoaderTool.io;
 
 import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
-import rifDataLoaderTool.businessConceptLayer.RIFDataType;
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 import rifDataLoaderTool.businessConceptLayer.CleaningRule;
 
 
@@ -92,7 +92,7 @@ public class CleaningFieldConfigurationHandler {
     	
 		htmlUtility.beginBody();
 	
-		RIFDataType rifDataType
+		RIFDataTypeInterface rifDataType
 			= tableFieldCleaningConfiguration.getRifDataType();
 		ArrayList<CleaningRule> cleaningRules
 			= rifDataType.getCleaningRules();

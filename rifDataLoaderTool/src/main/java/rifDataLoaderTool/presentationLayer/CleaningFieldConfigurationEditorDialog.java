@@ -277,7 +277,7 @@ public class CleaningFieldConfigurationEditorDialog
 
 	public void setData(final TableFieldCleaningConfiguration tableFieldCleaningConfiguration) {
 		this.tableFieldCleaningConfiguration = tableFieldCleaningConfiguration;
-		RIFDataType rifDataType = tableFieldCleaningConfiguration.getRifDataType();
+		RIFDataTypeInterface rifDataType = tableFieldCleaningConfiguration.getRifDataType();
 		cleaningRuleEditingPanel.setData(rifDataType);
 	}
 	

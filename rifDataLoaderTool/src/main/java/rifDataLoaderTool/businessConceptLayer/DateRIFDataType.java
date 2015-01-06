@@ -133,7 +133,7 @@ public final class DateRIFDataType extends AbstractRIFDataType {
 	// Section Override
 	// ==========================================
 	
-	public RIFDataType createCopy() {
+	public RIFDataTypeInterface createCopy() {
 		DateRIFDataType cloneDateRIFDataType 
 			= newInstance();
 		copyAttributes(cloneDateRIFDataType);

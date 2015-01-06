@@ -132,7 +132,7 @@ public class TableCleaningConfiguration
 		final String coreTableName,
 		final String loadTableFieldName,
 		final String cleanedTableFieldName,
-		final RIFDataType rifDataType) {
+		final RIFDataTypeInterface rifDataType) {
 
 		TableFieldCleaningConfiguration	tableFieldCleaningConfiguration
 			= TableFieldCleaningConfiguration.newInstance(

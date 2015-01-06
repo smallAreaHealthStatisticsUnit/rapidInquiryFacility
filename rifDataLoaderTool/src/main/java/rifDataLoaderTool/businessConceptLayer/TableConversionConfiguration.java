@@ -201,7 +201,7 @@ public class TableConversionConfiguration {
 
 	public void addRequiredFieldConfiguration(		
 		final String conversionTableFieldName,
-		final RIFDataType rifDataType) {
+		final RIFDataTypeInterface rifDataType) {
 		
 		TableFieldConversionConfiguration fieldConversionConfiguration
 			= TableFieldConversionConfiguration.newInstance(

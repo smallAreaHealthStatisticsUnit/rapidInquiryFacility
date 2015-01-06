@@ -74,7 +74,7 @@ public class TableFieldConversionConfiguration
 	
 	private String coreTableName;
 	private String conversionTableFieldName;
-	private RIFDataType rifDataType;
+	private RIFDataTypeInterface rifDataType;
 		
 	// ==========================================
 	// Section Construction
@@ -87,7 +87,7 @@ public class TableFieldConversionConfiguration
 	public static TableFieldConversionConfiguration newInstance(
 		final String coreTableName,
 		final String convertedFieldName,
-		final RIFDataType rifDataType) {
+		final RIFDataTypeInterface rifDataType) {
 		
 		TableFieldConversionConfiguration fieldConfiguration
 			= new TableFieldConversionConfiguration();
@@ -107,9 +107,9 @@ public class TableFieldConversionConfiguration
 			originalFieldConfiguration.getConversionTableFieldName());
 		cloneFieldConfiguration.setCoreTableName(
 			originalFieldConfiguration.getCoreTableName());
-		RIFDataType originalRIFDataType
+		RIFDataTypeInterface originalRIFDataType
 			= originalFieldConfiguration.getRIFDataType();
-		RIFDataType cloneRIFDataType = originalRIFDataType.createCopy();
+		RIFDataTypeInterface cloneRIFDataType = originalRIFDataType.createCopy();
 		cloneFieldConfiguration.setRIFDataType(cloneRIFDataType);
 		return cloneFieldConfiguration;		
 	}
@@ -152,11 +152,11 @@ public class TableFieldConversionConfiguration
 		this.conversionTableFieldName = conversionTableFieldName;
 	}
 
-	public RIFDataType getRIFDataType() {
+	public RIFDataTypeInterface getRIFDataType() {
 		return rifDataType;
 	}
 
-	public void setRIFDataType(RIFDataType rifDataType) {
+	public void setRIFDataType(RIFDataTypeInterface rifDataType) {
 		this.rifDataType = rifDataType;
 	}
 
