@@ -422,8 +422,36 @@
             args = 'userID=ffabbri&healthCode='+ params[1]+'&healthCodeNameSpace='+ params[0]; 
 
         xhr( 'studySubmission/getImmediateChildHealthCodes?' + args, myCallback, msg, 'application/json' );
-      },    
+      },
         
+      getYearRange: function( myCallback, params ) {
+        var msg = "Retrieving Years",
+            args = 'userID=ffabbri&geographyName=SAHSU&numeratorTableName=SAHSULAND_CANCER';
+
+        xhr( 'studySubmission/getYearRange?' + args, myCallback, msg, 'application/json' );
+      },
+        
+      getSexes: function( myCallback, params ) {
+        var msg = "Retrieving Genders",
+            args = 'userID=ffabbri';
+
+        xhr( 'studySubmission/getSexes?' + args, myCallback, msg, 'application/json' );
+      },  
+        
+      getAgeGroups: function( myCallback, params ) {
+        var msg = "Retrieving Age groups",
+            args = 'userID=ffabbri&geographyName=SAHSU&numeratorTableName=SAHSULAND_CANCER';
+
+        xhr( 'studySubmission/getAgeGroups?' + args, myCallback, msg, 'application/json' );
+      }, 
+        
+      getCovariates: function( myCallback, params ) {
+        var msg = "Retrieving Covariates",
+            args = 'userID=ffabbri&geographyName=SAHSU&geoLevelSelectName=LEVEL1&geoLevelToMapName=LEVEL3';
+
+        xhr( 'studySubmission/getCovariates?' + args, myCallback, msg, 'application/json' );
+      }
+ 
     };
 
 

@@ -29,7 +29,7 @@ RIF.diseaseSubmission = ( function() {
       */
       menu: {
         studyType: 'diseaseSubmission',
-        menus: [ 'frontSubmission', 'studyArea', 'healthCodes' ]
+        menus: [ 'frontSubmission', 'studyArea', 'healthCodes', 'investigationParameters' ]
       },
       table: {
         studyType: 'diseaseSubmission',
@@ -100,6 +100,39 @@ RIF.diseaseSubmission = ( function() {
         firer: [ "menu" ],
         method: "taxonomyChanged"
       },
+
+      icdSelectionChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "icdSelectionChanged"
+      },
+
+      startYearChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "startYearChanged"
+      },
+
+      endYearChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "endYearChanged"
+      },
+
+      genderChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "genderChanged"
+      },
+
+      covariateChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "endYearChanged"
+      },
+
+
+
 
 
       //Getters

@@ -106,6 +106,17 @@ RIF.menu.utils = ( function() {
       };
     },
 
+    checkboxesCovariates: function( arr, el, name ) {
+      el.empty();
+      var counter = 0,
+        l = arr.length;
+      while ( l-- ) {
+        var id = "covariate" + counter++,
+          p = _p.getCheckBoxLabel( name, arr[ l ][ 'name' ], id, false );
+
+        el.prepend( '<div>' + p + '</div>' );
+      }
+    },
 
     fieldCheckboxes: function( obj, el, name ) {
       el.empty();

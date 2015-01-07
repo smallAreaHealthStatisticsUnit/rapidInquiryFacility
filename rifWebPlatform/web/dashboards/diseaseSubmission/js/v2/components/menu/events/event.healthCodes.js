@@ -2,6 +2,7 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
 
   var menuContext = this;
 
+  _dom.icdClassification.unbind( "change" );
   _dom.icdClassification.change( function() {
     var val = $( this ).val();
     menuContext.proxy.updateTopLevelHealthCodes( val );
@@ -25,7 +26,7 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
       codes.push( sel[ i ].innerHTML );
     };
 
-    menuContext.proxy.taxonomyChanged( codes );
+    menuContext.proxy.icdSelectionChanged( codes );
   } );
 
 

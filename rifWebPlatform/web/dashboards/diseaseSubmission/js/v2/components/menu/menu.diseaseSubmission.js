@@ -23,27 +23,30 @@ RIF.menu = ( function( settings ) {
 
         studyAreaReady: function() {
           _p.healthCodes.request( 'getTaxonomy' );
+          _p.investigationParameters.request( 'getYears' );
         },
         // Health Code tree
 
-        icd: 'icd10', //default  
+        taxonomi: 'icd10', //default  
 
-        updateTopLevelHealthCodes: function( icd ) {
-          _p.healthCodes.request( 'getTopLevelHealthCodes', icd );
-          _p.proxy.icd = icd;
+        updateTopLevelHealthCodes: function( taxonomi ) {
+          _p.healthCodes.request( 'getTopLevelHealthCodes', taxonomi );
+          _p.proxy.taxonomi = taxonomi;
+          _p.facade.taxonomyChanged( taxonomi );
         },
 
         updateSubLevelHealthCodes: function( code, domEl ) {
           _p.healthCodes.request( 'getSubLevelHealthCodes', {
-            "taxonomy": _p.proxy.icd,
+            "taxonomy": _p.proxy.taxonomi,
             "code": code,
             "dom": domEl
           } );
         },
 
-        taxonomyChanged: function( args ) {
-          _p.facade.taxonomyChanged( args );
+        icdSelectionChanged: function( args ) {
+          _p.facade.icdSelectionChanged( args );
         },
+
 
         updateEventsHealthTree: function() {
           _p.setEvents( [ 'healthCodes' ] );

@@ -76,8 +76,18 @@ RIF.dom = ( function() {
             return $( '.icdSelected span' )
           }
         };
+      },
+      investigationParameters: function() {
+        return {
+          startYear: $( '#startYear' ),
+          endYear: $( '#endYear' ),
+          gender: $( '#gender' ),
+          startYearAvailable: $( '#startYearAvailable' ),
+          endYearAvailable: $( '#endYearAvailable' ),
+          genderAvailable: $( '#genderAvailable' ),
+          covariatesAvailable: $( '.covariatesAvailable' ),
+        };
       }
-
     },
 
     table: {

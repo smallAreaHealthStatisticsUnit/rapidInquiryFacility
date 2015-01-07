@@ -30,9 +30,10 @@ RIF.study = ( function( type ) {
 
       parameters: {
         ageGroup: null,
-        years: null,
+        minYear: null,
+        maxYear: null,
         gender: null,
-        covariates: null
+        covariates: []
       },
 
 
@@ -74,11 +75,24 @@ RIF.study = ( function( type ) {
         this.healthConditions.taxonomy = s;
       },
 
-      setParameters: function( s ) {
-        this.ageGroup = s.ageGroup;
-        this.years = s.years;
-        this.gender = s.gender;
-        this.covariates = s.covariates;
+      setHealthCodes: function( s ) {
+        this.healthConditions.codes = s;
+      },
+
+      setMinYear: function( s ) {
+        this.parameters.minYear = s;
+      },
+
+      setMaxYear: function( s ) {
+        this.parameters.maxYear = s;
+      },
+
+      setGender: function( s ) {
+        this.parameters.gender = s;
+      },
+
+      setCovariates: function( s ) {
+        this.parameters.covariates = s;
       },
 
       //GETTERS
@@ -110,8 +124,20 @@ RIF.study = ( function( type ) {
         return this.healthConditions.taxonomy;
       },
 
-      getParameters: function() {
-        return this.parameters;
+      getMinYear: function() {
+        return this.parameters.minYear;
+      },
+
+      getMaxYear: function() {
+        return this.parameters.maxYear;
+      },
+
+      getGender: function() {
+        return this.parameters.gender;
+      },
+
+      getCovariates: function() {
+        return this.parameters.covariates;
       }
 
     }

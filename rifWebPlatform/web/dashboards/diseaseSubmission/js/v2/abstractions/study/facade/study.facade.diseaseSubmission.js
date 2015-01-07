@@ -3,10 +3,6 @@ RIF.study[ 'facade-diseaseSubmission' ] = ( function() {
   var facade = {
 
 
-    //FIRERS
-
-
-
     //SuBSCRIBERS
     studyNameChanged: function( arg ) {
       this.setStudyName( arg );
@@ -53,10 +49,26 @@ RIF.study[ 'facade-diseaseSubmission' ] = ( function() {
     },
     taxonomyChanged: function( arg ) {
       this.setHealthConditionTaxonomy( arg );
+      this.setHealthCodes( [] );
+    },
+    icdSelectionChanged: function( arg ) {
+      this.setHealthCodes( arg );
+    },
+    startYearChanged: function( arg ) {
+      this.setMinYear( arg );
+    },
+    endYearChanged: function( arg ) {
+      this.setMaxYear( arg );
+    },
+    genderChanged: function( arg ) {
+      this.setGender( arg );
+    },
+    covariatesChanged: function( arg ) {
+      this.setCovariates( arg );
     },
 
 
-    // Firer  
+    // FIRERS  
     selectAtChangeUpdate: function( geolvl ) {
       this.fire( 'selectAtChangeUpdate', geolvl );
     }

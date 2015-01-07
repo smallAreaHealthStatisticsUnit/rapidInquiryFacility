@@ -34,7 +34,19 @@ RIF.menu[ 'facade-diseaseSubmission' ] = ( function( _p ) {
     },
     taxonomyChanged: function( arg ) {
       this.fire( 'taxonomyChanged', arg );
-    }
+    },
+    icdSelectionChanged: function( arg ) {
+      this.fire( 'icdSelectionChanged', arg );
+    },
+    startYearChanged: function( arg ) {
+      this.fire( 'startYearChanged', arg );
+    },
+    endYearChanged: function( arg ) {
+      this.fire( 'endYearChanged', arg );
+    },
+    genderChanged: function( arg ) {
+      this.fire( 'genderChanged', arg );
+    },
 
     /* Study Related */
 
