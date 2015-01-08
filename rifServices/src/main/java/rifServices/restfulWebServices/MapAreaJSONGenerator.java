@@ -1,13 +1,8 @@
-package rifServices.test.io;
+package rifServices.restfulWebServices;
 
 import java.util.ArrayList;
 
 import rifServices.businessConceptLayer.MapArea;
-import rifServices.system.RIFServiceException;
-import rifServices.io.MapAreaContentHandler;
-import static org.junit.Assert.*;
-
-import org.junit.Test;
 
 /**
  *
@@ -69,7 +64,7 @@ import org.junit.Test;
  *
  */
 
-public class TestMapAreaHandler {
+public class MapAreaJSONGenerator {
 
 	// ==========================================
 	// Section Constants
@@ -83,7 +78,7 @@ public class TestMapAreaHandler {
 	// Section Construction
 	// ==========================================
 
-	public TestMapAreaHandler() {
+	public MapAreaJSONGenerator() {
 
 	}
 
@@ -91,44 +86,58 @@ public class TestMapAreaHandler {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	@Test
-	public void test_COMMON1() {
-		ArrayList<MapArea> mapAreas = new ArrayList<MapArea>();
-
-		MapArea mapArea1
-			= MapArea.newInstance("1", "Birganj", "Ruth");
-		MapArea mapArea2
-			= MapArea.newInstance("2", "Campo Largo", "Barbara");
-		MapArea mapArea3
-			= MapArea.newInstance("3", "Ashbourne", "Johnny");
-		MapArea mapArea4
-			= MapArea.newInstance("4", "Zarichchya", "Mildred");
-		MapArea mapArea5
-			= MapArea.newInstance("5", "Eixo", "Ruby");
-		mapAreas.add(mapArea1);
-		mapAreas.add(mapArea2);
-		mapAreas.add(mapArea3);
-		mapAreas.add(mapArea4);
-		mapAreas.add(mapArea5);
+	public String writeJSONMapAreas(
+		final ArrayList<MapArea> mapAreas) {
+		
+		StringBuilder result = new StringBuilder();
+		
+		StringBuilder geographicalIdentifierPhrase = new StringBuilder();
+		StringBuilder identifierPhrase = new StringBuilder();
+		StringBuilder labelPhrase = new StringBuilder();
+		
+		geographicalIdentifierPhrase.append("{\"gid\":[");
+		identifierPhrase.append("{\"id\":[");
+		labelPhrase.append("{\"label\":[");
+		
+		int numberOfMapAreas = mapAreas.size();
+		for (int i = 0; i < numberOfMapAreas; i++) {
+			MapArea mapArea = mapAreas.get(i);
 			
-		MapAreaContentHandler mapAreaContentHandler
-			= new MapAreaContentHandler();
-		String actualResult 	
-			= mapAreaContentHandler.writeJSONMapAreas(mapAreas);
-		
-		StringBuilder expectedResult = new StringBuilder();
-		expectedResult.append("[{\"gid\":[");
-		expectedResult.append("'1','2','3','4','5'");
-		expectedResult.append("]},");
-		expectedResult.append("{\"id\":[");
-		expectedResult.append("\"Birganj\",\"Campo Largo\",\"Ashbourne\",\"Zarichchya\",\"Eixo\"");
-		expectedResult.append("]},");
-		expectedResult.append("{\"label\":[");
-		expectedResult.append("\"Ruth\",\"Barbara\",\"Johnny\",\"Mildred\",\"Ruby\"");
-		expectedResult.append("]}]");
-		
-		assertEquals(expectedResult.toString(), actualResult);
+			if (i != 0) {
+				geographicalIdentifierPhrase.append(",");
+				identifierPhrase.append(",");
+				labelPhrase.append(",");				
+			}
+
+			geographicalIdentifierPhrase.append("\"");
+			geographicalIdentifierPhrase.append(mapArea.getGeographicalIdentifier());
+			geographicalIdentifierPhrase.append("\"");
+			
+			identifierPhrase.append("\"");
+			identifierPhrase.append(mapArea.getIdentifier());
+			identifierPhrase.append("\"");
+			
+			labelPhrase.append("\"");
+			labelPhrase.append(mapArea.getLabel());			
+			labelPhrase.append("\"");
+			
+		}
+		geographicalIdentifierPhrase.append("]}");
+		identifierPhrase.append("]}");
+		labelPhrase.append("]}");
+
+		result.append("[");
+		result.append(geographicalIdentifierPhrase.toString());
+		result.append(",");
+		result.append(identifierPhrase.toString());
+		result.append(",");
+		result.append(labelPhrase.toString());
+		result.append("]");
+				
+		return result.toString();		
 	}
+	
+	
 	
 	
 	// ==========================================

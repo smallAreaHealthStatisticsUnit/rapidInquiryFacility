@@ -220,55 +220,6 @@ public class MapAreaContentHandler
 		}
 	}
 	
-	public String writeJSONMapAreas(ArrayList<MapArea> mapAreas) {
-		StringBuilder result = new StringBuilder();
-		
-		StringBuilder geographicalIdentifierPhrase = new StringBuilder();
-		StringBuilder identifierPhrase = new StringBuilder();
-		StringBuilder labelPhrase = new StringBuilder();
-		
-		geographicalIdentifierPhrase.append("{\"gid\":[");
-		identifierPhrase.append("{\"id\":[");
-		labelPhrase.append("{\"label\":[");
-		
-		int numberOfMapAreas = mapAreas.size();
-		for (int i = 0; i < numberOfMapAreas; i++) {
-			MapArea mapArea = mapAreas.get(i);
-			
-			if (i != 0) {
-				geographicalIdentifierPhrase.append(",");
-				identifierPhrase.append(",");
-				labelPhrase.append(",");				
-			}
-
-			geographicalIdentifierPhrase.append("\"");
-			geographicalIdentifierPhrase.append(mapArea.getGeographicalIdentifier());
-			geographicalIdentifierPhrase.append("\"");
-			
-			identifierPhrase.append("\"");
-			identifierPhrase.append(mapArea.getIdentifier());
-			identifierPhrase.append("\"");
-			
-			labelPhrase.append("\"");
-			labelPhrase.append(mapArea.getLabel());			
-			labelPhrase.append("\"");
-			
-		}
-		geographicalIdentifierPhrase.append("]}");
-		identifierPhrase.append("]}");
-		labelPhrase.append("]}");
-
-		result.append("[");
-		result.append(geographicalIdentifierPhrase.toString());
-		result.append(",");
-		result.append(identifierPhrase.toString());
-		result.append(",");
-		result.append(labelPhrase.toString());
-		result.append("]");
-				
-		return result.toString();		
-	}
-	
 // ==========================================
 // Section Errors and Validation
 // ==========================================
