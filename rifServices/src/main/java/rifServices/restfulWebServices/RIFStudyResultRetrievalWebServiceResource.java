@@ -1031,16 +1031,12 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geoLevelAttributeSource,
 					geoLevelAttribute);
 			
-			//Convert results to support JSON
-			ArrayList<AgeGroupProxy> ageGroupProxies = new ArrayList<AgeGroupProxy>();
-			for (AgeGroup ageGroup : ageGroups) {
-				AgeGroupProxy ageGroupProxy = new AgeGroupProxy();
-				ageGroupProxy.setName(ageGroup.getName());
-				ageGroupProxy.setLowerLimit(ageGroup.getLowerLimit());
-				ageGroupProxy.setUpperLimit(ageGroup.getUpperLimit());
-				ageGroupProxies.add(ageGroupProxy);
-			}
-			result = serialiseArrayResult(ageGroupProxies);
+			
+			//Convert results to support JSON	
+			AgeGroupJSONGenerator ageGroupJSONGenerator
+				= new AgeGroupJSONGenerator();
+			result
+				= ageGroupJSONGenerator.writeJSONMapAreas(ageGroups);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON

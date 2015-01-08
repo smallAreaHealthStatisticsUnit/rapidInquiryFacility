@@ -5,7 +5,6 @@ package rifServices.restfulWebServices;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
-import rifServices.io.MapAreaContentHandler;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -734,25 +733,7 @@ public class RIFStudySubmissionWebServiceResource
 		return result;
 		
 	}
-	
-	//getCovariates
-	//
-	/*
-	public ArrayList<AbstractCovariate> getCovariates(
-			final User user,
-			final Geography geography,
-			final GeoLevelSelect geoLevelSelect,
-			final GeoLevelToMap geoLevelToMap)
-			throws RIFServiceException;	
-	
-	public ArrayList<AgeGroup> getAgeGroups(
-			final User user,
-			final Geography geography,
-			final NumeratorDenominatorPair ndPair,
-			final AgeGroupSortingOption sortingOrder) 
-			throws RIFServiceException;
-	*/
-	
+		
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getAgeGroups")

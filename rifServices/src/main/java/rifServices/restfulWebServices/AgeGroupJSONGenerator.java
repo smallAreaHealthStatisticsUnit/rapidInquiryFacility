@@ -1,11 +1,10 @@
 package rifServices.restfulWebServices;
 
+import java.util.ArrayList;
 
-import javax.xml.bind.annotation.*;
-
+import rifServices.businessConceptLayer.AgeGroup;
 
 /**
- *
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -14,13 +13,11 @@ import javax.xml.bind.annotation.*;
  * rates and relative risks for any given health outcome, for specified age 
  * and year ranges, for any given geographical area.
  *
- * <p>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
  * is funded by the Public Health England as part of the MRC-PHE Centre for 
  * Environment and Health. Funding for this project has also been received 
  * from the United States Centers for Disease Control and Prevention.  
- * </p>
  *
  * <pre> 
  * This file is part of the Rapid Inquiry Facility (RIF) project.
@@ -43,9 +40,7 @@ import javax.xml.bind.annotation.*;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
-
 
 /*
  * Code Road Map:
@@ -68,124 +63,90 @@ import javax.xml.bind.annotation.*;
  * (4)            Section Override
  *
  */
-@XmlRootElement(name="ageBand")
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(propOrder= {
-	"lowerLimit",
-	"upperLimit",
-	"name"}
-)
-public final class AgeGroupProxy {
+
+public class AgeGroupJSONGenerator {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-			
+
 	// ==========================================
 	// Section Properties
 	// ==========================================
 
-	@XmlElement(required = true)
-	private String lowerLimit;
-	
-	@XmlElement(required = true)
-	private String upperLimit;
-	
-	@XmlElement(required = true)
-	private String name;
-	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	/**
-	 * Instantiates a new age group.
-	 */
-	public AgeGroupProxy() {
-		lowerLimit = "";
-		upperLimit = "";
-		name = "";
+	public AgeGroupJSONGenerator() {
+
 	}
-	
+
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	/**
-	 * Gets the lower limit.
-	 *
-	 * @return the lower limit
-	 */
-	public String getLowerLimit() {
+	public String writeJSONMapAreas(
+		final ArrayList<AgeGroup> ageGroups) {
 		
-		return lowerLimit;
-	}
 
-	/**
-	 * Sets the lower limit.
-	 *
-	 * @param lowerLimit the new lower limit
-	 */
-	public void setLowerLimit(
-		final String lowerLimit) {
+		StringBuilder result = new StringBuilder();
 		
-		this.lowerLimit = lowerLimit;
-	}
+		StringBuilder namePhrase = new StringBuilder();
+		StringBuilder lowerAgeLimitPhrase = new StringBuilder();
+		StringBuilder upperLimitPhrase = new StringBuilder();
+		
+		namePhrase.append("{\"name\":[");
+		lowerAgeLimitPhrase.append("{\"lowerAgeLimit\":[");
+		upperLimitPhrase.append("{\"upperAgeLimit\":[");
+		
+		int numberOfAgeGroups = ageGroups.size();
+		for (int i = 0; i < numberOfAgeGroups; i++) {
+			AgeGroup ageGroup = ageGroups.get(i);
+			
+			if (i != 0) {
+				namePhrase.append(",");
+				lowerAgeLimitPhrase.append(",");
+				upperLimitPhrase.append(",");				
+			}
 
-	/**
-	 * Gets the upper limit.
-	 *
-	 * @return the upper limit
-	 */
-	public String getUpperLimit() {
-		
-		return upperLimit;
-	}
+			namePhrase.append("\"");
+			namePhrase.append(ageGroup.getName());
+			namePhrase.append("\"");
+			
+			lowerAgeLimitPhrase.append("\"");
+			lowerAgeLimitPhrase.append(ageGroup.getLowerLimit());
+			lowerAgeLimitPhrase.append("\"");
+			
+			upperLimitPhrase.append("\"");
+			upperLimitPhrase.append(ageGroup.getUpperLimit());			
+			upperLimitPhrase.append("\"");
+			
+		}
+		namePhrase.append("]}");
+		lowerAgeLimitPhrase.append("]}");
+		upperLimitPhrase.append("]}");
 
-	/**
-	 * Sets the upper limit.
-	 *
-	 * @param upperLimit the new upper limit
-	 */
-	public void setUpperLimit(
-		final String upperLimit) {
-		
-		this.upperLimit = upperLimit;
+		result.append("[");
+		result.append(namePhrase.toString());
+		result.append(",");
+		result.append(lowerAgeLimitPhrase.toString());
+		result.append(",");
+		result.append(upperLimitPhrase.toString());
+		result.append("]");
+				
+		return result.toString();		
 	}
-
-	/**
-	 * Gets the name.
-	 *
-	 * @return the name
-	 */
-	public String getName() {
-		
-		return name;
-	}
-
-	/**
-	 * Sets the name.
-	 *
-	 * @param name the new name
-	 */
-	public void setName(
-		final String name) {
-		
-		this.name = name;
-	}
-	
 	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
 
-	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
 
 	// ==========================================
 	// Section Override
-	// ==========================================	
-
+	// ==========================================
 }
