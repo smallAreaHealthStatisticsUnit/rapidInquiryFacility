@@ -574,10 +574,10 @@ public class RIFStudySubmissionWebServiceResource
 			//use a specialised serialiser to produce a useful way of 
 			//rendering map areas
 			
-			MapAreaContentHandler mapAreaContentHandler
-				= new MapAreaContentHandler();
+			MapAreaJSONGenerator mapAreaJSONGenerator
+				= new MapAreaJSONGenerator();
 			result
-				= mapAreaContentHandler.writeJSONMapAreas(mapAreas);
+				= mapAreaJSONGenerator.writeJSONMapAreas(mapAreas);
 			
 		}
 		catch(Exception exception) {
@@ -684,7 +684,6 @@ public class RIFStudySubmissionWebServiceResource
 	public String getCovariates(
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
 		@QueryParam("geoLevelToMapName") String geoLevelToMapName) {
 						
 		String result = "";
@@ -694,11 +693,10 @@ public class RIFStudySubmissionWebServiceResource
 			User user = User.newInstance(userID, "xxx");
 			Geography geography
 				= Geography.newInstance(geographyName, "");
-			GeoLevelSelect geoLevelSelect
-				= GeoLevelSelect.newInstance(geoLevelSelectName);
 			GeoLevelToMap geoLevelToMap
 				= GeoLevelToMap.newInstance(geoLevelToMapName);
-
+			System.out.println("RIFStudySubmissionWebService - getCovariates -"+geoLevelToMapName+"==");
+			
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();
@@ -706,7 +704,6 @@ public class RIFStudySubmissionWebServiceResource
 				= studySubmissionService.getCovariates(
 					user, 
 					geography, 
-					geoLevelSelect, 
 					geoLevelToMap);
 
 			//Convert results to support JSON						
@@ -786,16 +783,11 @@ public class RIFStudySubmissionWebServiceResource
 					ndPair, 
 					AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
 			
-			//Convert results to support JSON						
-			ArrayList<AgeGroupProxy> ageGroupProxies = new ArrayList<AgeGroupProxy>();
-			for (AgeGroup ageGroup : ageGroups) {
-				AgeGroupProxy ageGroupProxy = new AgeGroupProxy();
-				ageGroupProxy.setName(ageGroup.getName());
-				ageGroupProxy.setLowerLimit(ageGroup.getLowerLimit());
-				ageGroupProxy.setUpperLimit(ageGroup.getUpperLimit());
-				ageGroupProxies.add(ageGroupProxy);
-			}
-			result = serialiseArrayResult(ageGroupProxies);
+			//Convert results to support JSON	
+			AgeGroupJSONGenerator ageGroupJSONGenerator
+				= new AgeGroupJSONGenerator();
+			result
+				= ageGroupJSONGenerator.writeJSONMapAreas(ageGroups);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON

@@ -309,7 +309,6 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	public ArrayList<AbstractCovariate> getCovariates(
 		final User user,
 		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
 		final GeoLevelToMap geoLevelToMap)
 		throws RIFServiceException;
 	

@@ -280,15 +280,12 @@ class CovariatesSelectionDialog
 			User currentUser = rifSession.getUser();
 			Geography currentGeography
 				= rifSession.getCurrentGeography();
-			GeoLevelSelect currentGeoLevelSelect
-				= rifSession.getStudyGeoLevelSelect();
 			GeoLevelToMap currentGeoLevelToMap
 				= rifSession.getStudyGeoLevelToMap();
 			ArrayList<AbstractCovariate> covariates
 				= service.getCovariates(
 					currentUser, 
 					currentGeography, 
-					currentGeoLevelSelect, 
 					currentGeoLevelToMap);	
 			for (AbstractCovariate covariate : covariates) {
 				covariatesListPanel.addListItem(covariate);

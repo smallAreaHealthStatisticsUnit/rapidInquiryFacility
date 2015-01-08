@@ -207,15 +207,15 @@ class SQLCovariateManager
 	public ArrayList<AbstractCovariate> getCovariates(
 		final Connection connection,
 		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
 		final GeoLevelToMap geoLevelToMap)
 		throws RIFServiceException {
 				
+		
 		//Validate parameters
 		validateCommonMethodParameters(
 			connection,
 			geography,
-			geoLevelSelect,
+			null,
 			geoLevelToMap);
 
 		//Create SQL query		
@@ -323,13 +323,23 @@ class SQLCovariateManager
 		}
 		
 		if (geoLevelToMap != null) {
-			geoLevelToMap.checkErrors();
-			sqlRIFContextManager.checkGeoLevelToMapOrViewValueExists(
-				connection,
-				geography.getName(),
-				geoLevelSelect.getName(),
-				geoLevelToMap.getName(),
-				true);
+			
+			geoLevelToMap.checkErrors();			
+			if (geoLevelSelect == null) {				
+				sqlRIFContextManager.checkGeoLevelToMapOrViewValueExists(
+					connection,
+					geography.getName(),
+					geoLevelToMap.getName(),
+					true);
+			}
+			else {
+				sqlRIFContextManager.checkGeoLevelToMapOrViewValueExists(
+					connection,
+					geography.getName(),
+					geoLevelSelect.getName(),
+					geoLevelToMap.getName(),
+					true);				
+			}
 			
 		}	
 	}

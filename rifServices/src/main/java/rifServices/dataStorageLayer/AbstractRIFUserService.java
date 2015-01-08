@@ -801,7 +801,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 	public ArrayList<AbstractCovariate> getCovariates(
 		final User _user,
 		final Geography _geography,
-		final GeoLevelSelect _geoLevelSelect,
 		final GeoLevelToMap _geoLevelToMap)
 		throws RIFServiceException {
 		
@@ -813,8 +812,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 			return null;
 		}
 		Geography geography = Geography.createCopy(_geography);
-		GeoLevelSelect geoLevelSelect 
-			= GeoLevelSelect.createCopy(_geoLevelSelect);
 		GeoLevelToMap geoLevelToMap
 			= GeoLevelToMap.createCopy(_geoLevelToMap);
 	
@@ -833,10 +830,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 				"getCovariates",
 				"geography",
 				geography);
-			fieldValidationUtility.checkNullMethodParameter(
-				"getCovariates",
-				"geoLevelSelect",
-				geoLevelSelect);
 		
 			fieldValidationUtility.checkNullMethodParameter(
 				"getCovariates",
@@ -846,7 +839,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 			//Check for security violations
 			validateUser(user);
 			geography.checkSecurityViolations();
-			geoLevelSelect.checkSecurityViolations();
 			geoLevelToMap.checkSecurityViolations();
 
 			//Audit attempt to do operation
@@ -856,7 +848,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 					user.getUserID(),
 					user.getIPAddress(),
 					geography.getDisplayName(),
-					geoLevelSelect.getDisplayName(),
 					geoLevelToMap.getDisplayName());
 			rifLogger.info(
 				getClass(),
@@ -866,6 +857,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 			
+			System.out.println("AbstractRIFUserService - getCovariates 1 geoLevelToMap=="+geoLevelToMap.getName()+"==");
 			//Delegate operation to a specialised manager class		
 			SQLCovariateManager sqlCovariateManager
 				= rifServiceResources.getSqlCovariateManager();
@@ -873,7 +865,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 				= sqlCovariateManager.getCovariates(
 					connection, 
 					geography, 
-					geoLevelSelect,
 					geoLevelToMap);
 
 		}

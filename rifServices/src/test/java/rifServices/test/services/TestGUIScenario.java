@@ -232,7 +232,6 @@ public class TestGUIScenario extends AbstractRIFServiceTestCase {
 				= rifStudySubmissionService.getCovariates(
 					testUser, 
 					sahsuGeography, 
-					validSAHSUGeoLevelSelectValue, 
 					geoLevelToMap);
 			for (AbstractCovariate covariate : covariates) {
 				System.out.println("COVARIATE:=="+covariate.getDisplayName()+"==");
