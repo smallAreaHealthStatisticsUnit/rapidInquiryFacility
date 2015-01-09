@@ -33,7 +33,7 @@ RIF.diseaseSubmission = ( function() {
       },
       table: {
         studyType: 'diseaseSubmission',
-        tables: [ 'areaSelectionRenderer' ]
+        tables: [ 'areaSelectionRenderer', 'ageGroupsRenderer' ]
       }
     },
 

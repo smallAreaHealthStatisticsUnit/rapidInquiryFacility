@@ -1,4 +1,4 @@
-RIF.table[ 'event-areaSelectionRenderer' ] = ( function( _dom ) {
+RIF.table[ 'event-ageGroupsRenderer' ] = ( function( _dom ) {
 
   var menuContext = this,
     slctd = [],
@@ -6,7 +6,7 @@ RIF.table[ 'event-areaSelectionRenderer' ] = ( function( _dom ) {
 
   _dom.rows.unbind( 'mouseover' );
   _dom.rows.unbind( 'selectstart' );
-  _dom.rows.unbind( 'mouseup' );
+  _dom.rows.unbind( 'mousedown' );
 
   _dom.rows.mousedown( function() {
     menuContext.isMouseDown = true;
@@ -17,13 +17,14 @@ RIF.table[ 'event-areaSelectionRenderer' ] = ( function( _dom ) {
   } ).mouseover( function() {
     if ( menuContext.isMouseDown ) {
       $( this ).toggleClass( "rowSelected", isHighlighted );
-      var r = d3.selectAll( '#areaSelectionWrapper .rowSelected' ).each( function( d, i ) {
+      var r = d3.selectAll( '#ageGroupsWrapper .rowSelected' ).each( function( d, i ) {
         slctd.push( +this.id );
       } );
-      menuContext.facade.studyAreaSelectionEvent( slctd );
+      //menuContext.facade.studyAreaSelectionEvent(slctd) ;     
     }
   } ).bind( "selectstart", function() {
     return false;
   } )
+
 
 } );

@@ -87,6 +87,9 @@
     <script type="text/javascript" src="js/v2/components/table/units/table.unit.areaSelectionRenderer.js"></script>
     <script type="text/javascript" src="js/v2/components/table/facades/table-facade-diseaseSubmission.js"></script>
     <script type="text/javascript" src="js/v2/components/table/events/event.areaSelectionRenderer.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/facades/table-facade-diseaseSubmission.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/units/table.unit.ageGroupsRenderer.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/events/event.ageGroupsRenderer.js"></script>
     <script type="text/javascript" src="js/v2/components/table/table.utils.js"></script>
 
 
@@ -248,7 +251,7 @@
                         </div>
                     </div>
                     <div class='modalAreaSelectionContent'>
-                        <div class='areaSelectionTable'>
+                        <div class='areaSelectionTable' id='areaSelectionWrapper'>
                             <ul class='aSH'> 
                                 <li> ID </li>
                                 <li> Name </li>
@@ -312,6 +315,10 @@
                                 <input type="text"  placeholder="Start Year" id='startYear' class='dropdownInput dropdownInputSmall'>
                                 <div id='startYearAvailable' class='availables' ></div>
                             </div>
+                            <div  id='ageGroupsWrapper'>
+                                <div id='ageGroupsLabel'>Age Groups:</div>
+                                <div class='aSC availables' id="allRowsAgeGroups"></div>
+                            </div>
                             <div class='availablesWrapper'>
                                 <input type="text"  placeholder="End Year" id='endYear' class='dropdownInput dropdownInputSmall'>
                                 <div id='endYearAvailable' class='availables' ></div>
@@ -320,6 +327,7 @@
                                 <input type="text"  placeholder="Gender" id='gender' class='dropdownInput dropdownInputSmall'>
                                 <div id='genderAvailable' class='availables' ></div>
                             </div>
+                            
                             <div id='covariatesWrapper'>
                                 <div id='covariateLabel'>Covariates:</div>
                                 <div class='availables covariatesAvailable'>
@@ -328,11 +336,8 @@
                                         <label for="c1">Check Box 1</label>
                                     </div>
                                 </div>
-                            </div>
-                            <div id='ageGroupsWrapper'>
-                                
-                            </div>
-                            
+                            </div> 
+                            <div id='addInvestigation'> Add Investigation </div>
                         </div>
                         <div id='investigationRecap'></div>
                     </div>    

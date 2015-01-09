@@ -86,6 +86,9 @@ RIF.dom = ( function() {
           endYearAvailable: $( '#endYearAvailable' ),
           genderAvailable: $( '#genderAvailable' ),
           covariatesAvailable: $( '.covariatesAvailable' ),
+          labels: function() {
+            return $( '#covariatesWrapper label' )
+          }
         };
       }
     },
@@ -93,9 +96,16 @@ RIF.dom = ( function() {
     table: {
       areaSelectionRenderer: function() {
         return {
-          headers: $( '.aSH li' ),
+          headers: $( '#areaSelectionWrapper .aSH li' ),
           tableContent: get( 'allRows' ),
-          rows: $( '.aSR' )
+          rows: $( '#areaSelectionWrapper .aSR' )
+        };
+      },
+      ageGroupsRenderer: function() {
+        return {
+          headers: $( '#ageGroupsWrapper .aSH li' ),
+          tableContent: get( 'allRowsAgeGroups' ),
+          rows: $( '#ageGroupsWrapper .aSR' )
         };
       }
 

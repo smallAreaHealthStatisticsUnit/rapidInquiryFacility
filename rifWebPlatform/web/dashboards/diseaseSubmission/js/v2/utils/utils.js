@@ -151,9 +151,12 @@
          * args : url ,  callback , [mime]
          * Implement MORE OPTIONS!
          */
+
         var args = Array.prototype.slice.call( arguments, 0 ),
           mime = args[ 2 ] || "text/plain",
-          url = 'http://localhost:8080/rifServices/' + args[ 0 ];
+          parameters = args[ 0 ] + '&userID=' + RIF.user,
+          url = 'http://localhost:8080/rifServices/' + parameters;
+
         d3.xhr( url, mime, args[ 1 ] );
 
       }

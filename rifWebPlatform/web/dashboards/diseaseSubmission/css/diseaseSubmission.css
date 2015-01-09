@@ -282,13 +282,13 @@ input[type="range"]::-ms-thumb {
 	
 	#content{
 		/* Firefox */
-		height: -moz-calc(100% - 135px);
+		height: -moz-calc(83% - 135px);
 		/* WebKit */
-		height: -webkit-calc(100% - 135px);
+		height: -webkit-calc(83% - 135px);
 		/* Opera */
-		height: -o-calc(100% - 135px);
+		height: -o-calc(83% - 135px);
 		/* Standard */
-		height: calc(100% - 135px);
+		height: calc(83% - 135px);
 	}
 	
 	select {
@@ -580,25 +580,8 @@ input[type="range"]::-ms-thumb {
         position: absolute;
    }
 
-   .areaSelectionTable {
-        width: 40%;
-       /* Firefox */
-		max-height: 85%;
-       height:auto;
-       border: 1px solid #ddd;
-       overflow-y: auto;
-   }
-
     .modalAreaSelectionContent #areaSelectionMap {
         margin-left: 42%;
-        /* Firefox */
-		
-		/* WebKit */
-		
-		/* Opera */
-		
-		/* Standard */
-		
         border-bottom:1px solid;
         /* Firefox */
 		height: 85%;
@@ -620,6 +603,20 @@ input[type="range"]::-ms-thumb {
    #resolutionCount{
     font-weight:bold;
     color:#FF7D40   
+   }
+
+
+   /************************/
+   /* AREA SELECTION TABLE */
+   /************************/
+   
+   .areaSelectionTable {
+       width: 40%;
+       max-height: 85%;
+       height:auto;
+       border: 1px solid #ddd;
+       overflow-y: auto;
+       float:left;
    }
    
    .areaSelectionTable ul.aSH{
@@ -658,26 +655,30 @@ input[type="range"]::-ms-thumb {
        width:100%;
    }
 
-   div.aSR:hover,    .rowHovered{
-       background-color: rgba(171,130,255	,0.2);
+   div.aSR:hover, .rowHovered{
+       background-color: rgba(171,130,255,0.2);
        cursor: pointer
    }
    
 
-   .areaSelectionTable .rowSelected{
-       background-color: rgba( 152,251,152	,0.2);
+   .areaSelectionTable .rowSelected, #allRowsAgeGroups .rowSelected, .labelSelected {
+       background-color: rgba( 152,251,152,0.2);
    }
 
    .aSR div{
     padding: 5px 0;
     cursor: pointer;   
    }
-
+   
+   #ageGroupsWrapper .aSR div{
+      width:49% !important;
+   }
+   
    .aSR div:first-child{
     border-right: 2px solid #ddd;
     float:left;
     width: 170px;
-}
+   }
    .even{
        background-color: rgba(198, 226, 255 , 0.1);
        color: #757575;
@@ -692,6 +693,12 @@ input[type="range"]::-ms-thumb {
        padding: 2px 0px;
        overflow: hidden;
        word-break: break-all;
+    }
+
+   #allRowsAgeGroups .aSR div{
+       padding: 0px !important;
+       text-align: center;
+       line-height:15px;
     }
 
 
@@ -963,7 +970,7 @@ input[type="text"].dropdownInput:focus, .style-4 input[type="text"].focus {
 }
 
 .inputBorderSelection{
-   border-bottom: solid 2px #7CCD7C !important; 
+   border-bottom: solid 2px #B4EEB4 !important; 
 }
 
 .availablesWrapper{
@@ -972,7 +979,7 @@ input[type="text"].dropdownInput:focus, .style-4 input[type="text"].focus {
 
  .availables {
     width: 100%;
-    max-height: 250px;
+    max-height: 200px;
     height:auto;
     border: 1px solid #CAE1FF;
     background: white; 
@@ -981,6 +988,10 @@ input[type="text"].dropdownInput:focus, .style-4 input[type="text"].focus {
     display: none; 
     position: absolute;
     z-index: 9999;
+}
+
+#ageGroupsWrapper .availables {
+   max-height: 100% !important;
 }
 
  div.availables > div:hover {
@@ -1228,6 +1239,7 @@ input.dropdownInput:-moz-placeholder {
 
 .investigationBox > div#parameters{
     height: 65%;
+    position:relative;
 }
 
 .investigationBox > div#investigationRecap{
@@ -1240,16 +1252,29 @@ input.dropdownInput:-moz-placeholder {
 
 #parameters > div{
     width:38%;
-    margin:4%;
+    margin:4% 4% 0 4%;
     display:inline-block;
-}
-
-#covariatesWrapper {
-    position:relative;
     color:#999999;
 }
 
-#covariateLabel{
+#covariatesWrapper, #ageGroupsWrapper {
+    position:relative;
+}
+
+#ageGroupsWrapper{
+    /* Firefox */ 
+    height: -moz-calc(100% - 150px); 
+    /* WebKit */
+    height: -webkit-calc(100% - 150px); 
+    /* Opera */ 
+    height: -o-calc(100% - 150px); 
+    /* Standard */ 
+    height: calc(100% - 150px);
+    float: right;
+    margin-right: 10% !important;
+}
+
+#covariateLabel, #ageGroupsLabel{
     font-size:14px;  
     text-transform: uppercase;
     padding:10px;
@@ -1272,7 +1297,29 @@ input.dropdownInput:-moz-placeholder {
     width:100%;
 }
 
+#addInvestigation{
+    position: absolute;
+    bottom: 0;
+    background-color: rgba(135 ,206, 250, 1);
+    opacity: 0.5;
+    text-transform: uppercase;
+    width: auto !important;
+    padding: 1% 3%;
+    margin-left: 35% !important;
+    left: 0;
+    z-index: 999999999999999999999999;/
+    cursor: pointer;
+    border-radius: 10px 5px 0px 0px;
+    -moz-border-radius: 10px 5px 0px 0px;
+    -webkit-border-radius: 10px 5px 0px 0px;
+    border: 1px solid #9FB6CD;
+    color: white!important;
+    cursor:pointer;
+}
 
+#addInvestigation:hover{
+    opacity: 1;  
+}
 
 
 

@@ -18,4 +18,6 @@ RIF.menu[ 'event-investigationParameters' ] = ( function( _dom ) {
   } );
 
 
+
+
 } );

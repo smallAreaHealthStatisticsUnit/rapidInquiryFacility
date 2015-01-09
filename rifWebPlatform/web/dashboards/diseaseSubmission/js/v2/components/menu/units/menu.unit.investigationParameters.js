@@ -48,6 +48,9 @@ RIF.menu.investigationParameters = ( function( _dom ) {
         var elCovariates = _dom[ 'covariatesAvailable' ];
         //obj, el, name 
         parent.checkboxesCovariates( this, elCovariates, 'covariates' );
+        _dom.labels().bind( 'click', ( function() {
+          $( this ).toggleClass( 'labelSelected' );
+        } ) );
 
       },
       getAgeGroups: function() {}
