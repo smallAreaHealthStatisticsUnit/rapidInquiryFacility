@@ -111,7 +111,7 @@ RIF.menu.utils = ( function() {
       var counter = 0,
         l = arr.length;
       while ( l-- ) {
-        var id = "covariate" + counter++,
+        var id = "covariate" + arr[ l ][ 'name' ],
           p = _p.getCheckBoxLabel( name, arr[ l ][ 'name' ], id, false );
 
         el.prepend( '<div>' + p + '</div>' );

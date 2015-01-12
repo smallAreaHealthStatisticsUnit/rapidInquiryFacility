@@ -37,6 +37,7 @@ RIF.menu.investigationParameters = ( function( _dom ) {
         _requests.getGender();
 
       },
+
       getGender: function() {
         var genders = this[ 0 ].names,
           elGender = _dom[ 'genderAvailable' ];
@@ -44,16 +45,20 @@ RIF.menu.investigationParameters = ( function( _dom ) {
         parent.dropDownInputText( genders, elGender );
         _requests.getCovariates();
       },
+
       getCovariates: function() {
         var elCovariates = _dom[ 'covariatesAvailable' ];
         //obj, el, name 
         parent.checkboxesCovariates( this, elCovariates, 'covariates' );
-        _dom.labels().bind( 'click', ( function() {
-          $( this ).toggleClass( 'labelSelected' );
+
+        _dom.covariatesCheckbox().unbind( 'click' );
+        _dom.covariatesCheckbox().bind( 'click', ( function() {
+          $( this ).next().toggleClass( 'labelSelected' );
+          var slctd = parent.getCheckedValues( 'covariates' );
+          parent.facade.fire( 'covariateChanged', slctd );
         } ) );
 
-      },
-      getAgeGroups: function() {}
+      }
     },
 
     /* geolevel obj */

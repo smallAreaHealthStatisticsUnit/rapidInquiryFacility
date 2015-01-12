@@ -7,6 +7,7 @@ RIF.table[ 'event-ageGroupsRenderer' ] = ( function( _dom ) {
   _dom.rows.unbind( 'mouseover' );
   _dom.rows.unbind( 'selectstart' );
   _dom.rows.unbind( 'mousedown' );
+  _dom.rows.unbind( 'mouseup' );
 
   _dom.rows.mousedown( function() {
     menuContext.isMouseDown = true;
@@ -17,14 +18,15 @@ RIF.table[ 'event-ageGroupsRenderer' ] = ( function( _dom ) {
   } ).mouseover( function() {
     if ( menuContext.isMouseDown ) {
       $( this ).toggleClass( "rowSelected", isHighlighted );
-      var r = d3.selectAll( '#ageGroupsWrapper .rowSelected' ).each( function( d, i ) {
-        slctd.push( +this.id );
-      } );
-      //menuContext.facade.studyAreaSelectionEvent(slctd) ;     
     }
+  } ).mouseup( function() {
+    slctd = [];
+    var r = d3.selectAll( '#ageGroupsWrapper .rowSelected' ).each( function( d, i ) {
+      slctd.push( ( this.id ).split( 'ageGroup' )[ 1 ] );
+    } );
+    menuContext.facade.ageGroupsChanged( slctd );
+
   } ).bind( "selectstart", function() {
     return false;
-  } )
-
-
+  } );
 } );

@@ -88,6 +88,12 @@ RIF.dom = ( function() {
           covariatesAvailable: $( '.covariatesAvailable' ),
           labels: function() {
             return $( '#covariatesWrapper label' )
+          },
+          covariatesCheckbox: function() {
+            return $( '#covariatesWrapper input' )
+          },
+          covariatesChecked: function() {
+            return $( '#covariatesWrapper input:checked' )
           }
         };
       }

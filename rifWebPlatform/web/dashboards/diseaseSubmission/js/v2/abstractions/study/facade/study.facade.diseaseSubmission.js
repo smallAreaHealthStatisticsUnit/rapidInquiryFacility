@@ -49,9 +49,12 @@ RIF.study[ 'facade-diseaseSubmission' ] = ( function() {
     },
     taxonomyChanged: function( arg ) {
       this.setHealthConditionTaxonomy( arg );
-      this.setHealthCodes( [] );
+      this.setHealthCodes( null );
     },
     icdSelectionChanged: function( arg ) {
+      if ( arg.length == 0 ) {
+        arg = null;
+      };
       this.setHealthCodes( arg );
     },
     startYearChanged: function( arg ) {
@@ -66,12 +69,36 @@ RIF.study[ 'facade-diseaseSubmission' ] = ( function() {
     covariatesChanged: function( arg ) {
       this.setCovariates( arg );
     },
+    ageGroupsChanged: function( arg ) {
+      if ( arg.length <= 0 ) {
+        arg = null;
+      };
+      this.setAgeGroups( arg );
+    },
+
+    isInvestigationReady: function() {
+      for ( var i in this.parameters ) {
+        if ( i != 'covariates' && this.parameters[ i ] == null ) {
+          this.investigationNotReadyToBeAdded();
+          return;
+        }
+      }
+      this.investigationReadyToBeAdded();
+    },
 
 
     // FIRERS  
     selectAtChangeUpdate: function( geolvl ) {
       this.fire( 'selectAtChangeUpdate', geolvl );
-    }
+    },
+
+    investigationReadyToBeAdded: function() {
+      this.fire( 'investigationReadyToBeAdded', null );
+    },
+
+    investigationNotReadyToBeAdded: function() {
+      this.fire( 'investigationNotReadyToBeAdded', null );
+    },
 
   };
 

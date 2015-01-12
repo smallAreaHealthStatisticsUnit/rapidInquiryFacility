@@ -125,13 +125,35 @@ RIF.diseaseSubmission = ( function() {
         method: "genderChanged"
       },
 
-      covariateChanged: {
+      covariatesChanged: {
         subscribers: [ "study" ],
         firer: [ "menu" ],
-        method: "endYearChanged"
+        method: "covariatesChanged"
       },
 
+      ageGroupsChanged: {
+        subscribers: [ "study" ],
+        firer: [ "table" ],
+        method: "ageGroupsChanged"
+      },
 
+      isInvestigationReady: {
+        subscribers: [ "study" ],
+        firer: [ "table", "menu" ],
+        method: "isInvestigationReady"
+      },
+
+      investigationNotReadyToBeAdded: {
+        subscribers: [ "menu" ],
+        firer: [ "study" ],
+        method: "investigationNotReadyToBeAdded"
+      },
+
+      investigationReadyToBeAdded: {
+        subscribers: [ "menu" ],
+        firer: [ "study" ],
+        method: "investigationReadyToBeAdded"
+      },
 
 
 

@@ -5,12 +5,23 @@ RIF.table[ 'facade-diseaseSubmission' ] = ( function( _p ) {
   var facade = {
 
     //Subscriber
+    selectAtChanged: function( geolvl ) {
+      _p.proxy.updateStudyGrid( geolvl );
+    },
+
+
+    //FIRER
     studyAreaSelectionEvent: function( rowId ) {
       this.fire( 'studyAreaSelectionEvent', rowId )
     },
 
-    selectAtChanged: function( geolvl ) {
-      _p.proxy.updateStudyGrid( geolvl );
+    ageGroupsChanged: function( ageGroups ) {
+      this.fire( 'ageGroupsChanged', ageGroups );
+      this.isInvestigationReady();
+    },
+
+    isInvestigationReady: function() {
+      this.fire( 'isInvestigationReady', null );
     }
 
   };

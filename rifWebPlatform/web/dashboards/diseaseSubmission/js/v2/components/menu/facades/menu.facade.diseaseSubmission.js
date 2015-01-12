@@ -11,6 +11,12 @@ RIF.menu[ 'facade-diseaseSubmission' ] = ( function( _p ) {
     updateHealthThemeAvailables: function() {},
     updateNumeratorAvailables: function() {},
     updateDenominatorAvailables: function() {},
+    investigationReadyToBeAdded: function() {
+      _p.proxy.investigationReadyToBeAdded();
+    },
+    investigationNotReadyToBeAdded: function() {
+      _p.proxy.investigationNotReadyToBeAdded();
+    },
 
     /* Firers  */
 
@@ -47,6 +53,13 @@ RIF.menu[ 'facade-diseaseSubmission' ] = ( function( _p ) {
     genderChanged: function( arg ) {
       this.fire( 'genderChanged', arg );
     },
+    covariatesChanged: function( arg ) {
+      this.fire( 'covariatesChanged', arg );
+    },
+    isInvestigationReady: function() {
+      this.fire( 'isInvestigationReady', null );
+    }
+
 
     /* Study Related */
 

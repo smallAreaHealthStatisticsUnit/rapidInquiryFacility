@@ -32,7 +32,7 @@ RIF.menu = ( function( settings ) {
         updateTopLevelHealthCodes: function( taxonomi ) {
           _p.healthCodes.request( 'getTopLevelHealthCodes', taxonomi );
           _p.proxy.taxonomi = taxonomi;
-          _p.facade.taxonomyChanged( taxonomi );
+          this.investigationParameterChange( taxonomi, _p.facade.taxonomyChanged );
         },
 
         updateSubLevelHealthCodes: function( code, domEl ) {
@@ -40,16 +40,28 @@ RIF.menu = ( function( settings ) {
             "taxonomy": _p.proxy.taxonomi,
             "code": code,
             "dom": domEl
-          } );
+          } )
+        },
+
+        investigationParameterChange: function( val, fnct ) {
+          fnct.call( _p.facade, val );
+          _p.facade.isInvestigationReady();
         },
 
         icdSelectionChanged: function( args ) {
-          _p.facade.icdSelectionChanged( args );
+          this.investigationParameterChange( args, _p.facade.icdSelectionChanged );
         },
-
 
         updateEventsHealthTree: function() {
           _p.setEvents( [ 'healthCodes' ] );
+        },
+
+        investigationReadyToBeAdded: function() {
+          $( '#addInvestigation' ).addClass( 'addInvestigationActive' );
+        },
+
+        investigationNotReadyToBeAdded: function() {
+          $( '#addInvestigation' ).removeClass( 'addInvestigationActive' );
         },
 
       },
