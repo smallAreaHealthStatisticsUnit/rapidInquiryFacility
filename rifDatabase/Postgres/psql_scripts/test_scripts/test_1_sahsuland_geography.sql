@@ -125,16 +125,17 @@ SELECT area_id, a.name, area, a.gid, b.gid, total_males, total_females, populati
  01     | 01.013 | 01.013.016200 | 01.013.016100.2
 (22 rows)
  */
-\pset title 'SAHSULAND geography where level4 level3 substring != level3 (intersction fault in old RIF)'
+\pset title 'SAHSULAND geography WHERE level4 level3 substring != level3 (intersction fault in old RIF)'
 SELECT * FROM sahsuland_geography
  WHERE substr(level4, 1, 13) != level3;
 \pset title 
-  
+SELECT * FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200');
+
 DROP TABLE IF EXISTS sahsuland_geography_orig;
 CREATE TABLE sahsuland_geography_orig AS SELECT * FROM sahsuland_geography;
 TRUNCATE TABLE sahsuland_geography_orig;
 --
--- Import geospatial intersction files
+-- Import geospatial intersection files
 --
 \COPY sahsuland_geography_orig(level1, level2, level3, level4) FROM  '../sahsuland/data/sahsuland_geography.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 --
@@ -276,7 +277,6 @@ BEGIN
 		'test_1_temp_1', 'test_1_temp_2');
 	DROP TABLE test_1_temp_1;
 	DROP TABLE test_1_temp_2;
-
 --
 --	RAISE EXCEPTION 'TEST Abort';
 END;
@@ -313,6 +313,7 @@ SELECT level4,
        CASE WHEN missing_level1 = extra_level1 THEN 'Same: '||extra_level1 ELSE 'Move: '||extra_level1||'=>'||missing_level1 END AS level1
   FROM b
 ORDER BY 1, 2, 3, 4;
+
 \pset title
 
 DO LANGUAGE plpgsql $$

@@ -3157,7 +3157,9 @@ BEGIN
 	sql_stmt[array_length(sql_stmt, 1)+1]:=l_sql_stmt||
 ' area_id        		VARCHAR(300)  	    	NOT NULL,'||E'\n'||
 ' name	 			VARCHAR(300),'||E'\n'||
-' topo_optimised_geojson 	CHARACTER VARYING       NOT NULL,'||E'\n'||
+' topo_optimised_geojson 	JSON       NOT NULL,'||E'\n'||
+' topo_optimised_geojson_2 	JSON       NOT NULL,'||E'\n'||
+' topo_optimised_geojson_3 	JSON       NOT NULL,'||E'\n'||
 ' num_lines     		bigint,'||E'\n'||
 ' num_points     		bigint,'||E'\n'||
 ' topo_optimised_num_points    	bigint)';
@@ -3170,7 +3172,10 @@ BEGIN
 -- Add geometry columns: geometry, topo_optimised_geometry 
 --
 	PERFORM AddGeometryColumn('simplification_polygons', 'geometry', c1_rec.srid, 'MULTIPOLYGON', 2);
-       	PERFORM AddGeometryColumn('simplification_polygons', 'topo_optimised_geometry', 4326  /* WGS 84 */, 'MULTIPOLYGON', 2);
+    PERFORM AddGeometryColumn('simplification_polygons', 'topo_optimised_geometry', 4326  /* WGS 84 */, 'MULTIPOLYGON', 2);
+    PERFORM AddGeometryColumn('simplification_polygons', 'topo_optimised_geometry_2', 4326  /* WGS 84 */, 'MULTIPOLYGON', 2);
+    PERFORM AddGeometryColumn('simplification_polygons', 'topo_optimised_geometry_3', 4326  /* WGS 84 */, 'MULTIPOLYGON', 2);
+
 --
 -- Second block of SQL statements
 --
@@ -3181,7 +3186,10 @@ BEGIN
 -- Note that the SQL has not been split and indexed as the process is linear and does not consume huge amounts of sort
 --
 	sql_stmt[1]:='EXPLAIN ANALYZE VERBOSE INSERT INTO simplification_polygons'||E'\n'||
-' 	(area_id, name, geometry, topo_optimised_geometry, topo_optimised_geojson, num_lines, num_points, topo_optimised_num_points)'||E'\n'||
+' 	(area_id, name, geometry,'||E'\n'||
+' 	 topo_optimised_geometry, topo_optimised_geometry_2, topo_optimised_geometry_3,'||E'\n'||
+'    topo_optimised_geojson, topo_optimised_geojson_2, topo_optimised_geojson_3,'||E'\n'||
+' 	 num_lines, num_points, topo_optimised_num_points)'||E'\n'||
 'WITH a /* Join all lines in a polygon */ AS ('||E'\n'||
 '	SELECT area_id, polygon_number,'||E'\n'||
 '	       ST_Makeline(array_agg(line ORDER BY join_seq)) AS line,'||E'\n'||
@@ -3194,31 +3202,34 @@ BEGIN
 '        SELECT area_id, polygon_number,'||E'\n'|| 
 '               CASE      /* Close polygon if needed */'||E'\n'|| 
 '                         WHEN ST_IsClosed(line) THEN ST_Polygon(line, '||c1_rec.srid||')'||E'\n'|| 
-'                         ELSE /* Close LINESTRING */ ST_Polygon(ST_AddPoint(line, ST_Startpoint(line)), '||c1_rec.srid||')'||E'\n'|| 
+'                         ELSE /* Close LINESTRING */'||E'\n'|| 
+'                         	ST_Polygon(ST_AddPoint(line, ST_Startpoint(line)), '||c1_rec.srid||')'||E'\n'|| 
 '               END line_polygon,'||E'\n'|| 
 '               CASE      /* Close polygon if needed */'||E'\n'|| 
 '                         WHEN ST_IsClosed(simplified_line) THEN ST_Polygon(line, '||c1_rec.srid||')'||E'\n'|| 
-'                         ELSE /* Close LINESTRING */ ST_Polygon(ST_AddPoint(simplified_line, ST_Startpoint(line)), '||c1_rec.srid||')'||E'\n'|| 
+'                         ELSE /* Close LINESTRING */'||E'\n'|| 
+'                         	ST_Polygon(ST_AddPoint(simplified_line, ST_Startpoint(line)),'||E'\n'|| 
+'                         		'||c1_rec.srid||')'||E'\n'|| 
 '               END simplified_line_polygon,'||E'\n'|| 
 '               num_lines, num_points'||E'\n'|| 
 '	  FROM a'||E'\n'|| 
 '), c /* Create valid MULITPOLYGONs by aggregation to area_id */ AS ('||E'\n'|| 
 '	SELECT area_id, SUM(num_lines) AS num_lines, SUM(num_points) AS num_points,'||E'\n'|| 
-'              ST_ForceRHR(    	   	  /* Orientate all polygons clockwise */'||E'\n'|| 
+'              ST_ForceRHR(    	   		  /* Orientate all polygons clockwise */'||E'\n'|| 
 '                ST_CollectionExtract(    /* Remove orphaned LINESTRINGs and POINTs */'||E'\n'|| 
 '                  ST_Multi(              /* Convert to MULTIPOLYGON */'||E'\n'|| 
 '                    ST_Union(            /* Polygons */'||E'\n'|| 
-'			     CASE         /* Remove self intersections */'||E'\n'||  
+'			     CASE       			  /* Remove self intersections */'||E'\n'||  
 '				WHEN ST_IsValid(line_polygon) THEN line_polygon'||E'\n'|| 
 '				ELSE                               ST_MakeValid(line_polygon)'||E'\n'|| 
-'				 				   /* ST_Buffer(geom, 0.0) removed as was occaisonially causing corruption */'||E'\n'|| 
+'				 						   /* ST_Buffer(geom, 0.0) removed as was occaisonially causing corruption */'||E'\n'|| 
 '			      END)), 3 /* MULTIPOLYGON */)) AS geometry,'||E'\n'|| 
 '              ST_transform(              /* Convert to WGS 84 */'||E'\n'|| 
-'                ST_ForceRHR(    	  /* Orientate all polygons clockwise */'||E'\n'|| 
+'                ST_ForceRHR(    		  /* Orientate all polygons clockwise */'||E'\n'|| 
 '                  ST_CollectionExtract(  /* Remove orphaned LINESTRINGs and POINTs */'||E'\n'|| 
 '                    ST_Multi(            /* Convert to MULTIPOLYGON */'||E'\n'|| 
 '                      ST_Union(          /* Polygons */'||E'\n'|| 
-'			     CASE         /* Remove self intersections */'||E'\n'||  
+'			     CASE        			 /* Remove self intersections */'||E'\n'||  
 '				WHEN ST_IsValid(simplified_line_polygon) THEN simplified_line_polygon'||E'\n'|| 
 '				ELSE                                          ST_MakeValid(simplified_line_polygon)'||E'\n'|| 
 '				 					      /* ST_Buffer(geom, 0.0) removed as was occaisonially causing corruption */'||E'\n'|| 
@@ -3232,9 +3243,16 @@ BEGIN
 '	      CASE WHEN ST_IsValid(topo_optimised_geometry) THEN topo_optimised_geometry ELSE ST_MakeValid(topo_optimised_geometry) END topo_optimised_geometry'||E'\n'|| 
 '          FROM c'||E'\n'|| 
 ')'||E'\n'|| 
-'SELECT d.area_id, e.name, geometry, topo_optimised_geometry,'||E'\n'||
+'SELECT d.area_id, e.name, geometry,'||E'\n'||
+'       topo_optimised_geometry,'||E'\n'||
+'       topo_optimised_geometry AS topo_optimised_geometry_2,'||E'\n'||
+'       topo_optimised_geometry AS topo_optimised_geometry_3,'||E'\n'||
 '       ST_AsGeoJson(topo_optimised_geometry, '||c1_rec.max_geojson_digits||' /* max_geojson_digits */,'||E'\n'|| 
-'		0 /* no options */) AS topo_optimised_geojson,'||E'\n'||
+'			0 /* no options */)::JSON AS topo_optimised_geojson,'||E'\n'||
+'       ST_AsGeoJson(topo_optimised_geometry, '||c1_rec.max_geojson_digits||' /* max_geojson_digits */,'||E'\n'|| 
+'			0 /* no options */)::JSON AS topo_optimised_geojson_2,'||E'\n'||
+'       ST_AsGeoJson(topo_optimised_geometry, '||c1_rec.max_geojson_digits||' /* max_geojson_digits */,'||E'\n'|| 
+'			0 /* no options */)::JSON AS topo_optimised_geojson_3,'||E'\n'||
 '       num_lines, num_points, ST_NPoints(topo_optimised_geometry) AS topo_optimised_num_points'||E'\n'||
 '  FROM d'||E'\n'||
 '	LEFT OUTER JOIN '||quote_ident(LOWER(c2_rec.lookup_table))||' e ON (e.'||quote_ident(LOWER(l_geolevel))||' = d.area_id)'||E'\n'||
@@ -3251,7 +3269,7 @@ BEGIN
 -- Display the increase in geoJSON length between the old simplification algorithm and the new
 --
 	PERFORM rif40_sql_pkg.rif40_method4('WITH a AS ('||E'\n'||
-'	SELECT SUM(LENGTH(topo_optimised_geojson)) AS new_geojson_len'||E'\n'||
+'	SELECT SUM(LENGTH(topo_optimised_geojson::Text)) AS new_geojson_len'||E'\n'||
 '	  FROM simplification_polygons'||E'\n'||
 '), b AS ('||E'\n'||
 '	SELECT file_geojson_len AS old_geojson_len'||E'\n'||
@@ -3292,9 +3310,29 @@ old_geojson_len      | new_geojson_len      | pct_increase
 '	SELECT topo_optimised_geometry'||E'\n'||
 '	  FROM simplification_polygons b'||E'\n'||
 '	 WHERE a.area_id = b.area_id)';
-		sql_stmt[1]:='EXPLAIN ANALYZE VERBOSE UPDATE '||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE '||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
+'   SET optimised_geometry_2 = ('||E'\n'||
+'	SELECT topo_optimised_geometry_2'||E'\n'||
+'	  FROM simplification_polygons b'||E'\n'||
+'	 WHERE a.area_id = b.area_id)';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE '||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
+'   SET optimised_geometry_3 = ('||E'\n'||
+'	SELECT topo_optimised_geometry_3'||E'\n'||
+'	  FROM simplification_polygons b'||E'\n'||
+'	 WHERE a.area_id = b.area_id)';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE '||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
 '   SET optimised_geojson = ('||E'\n'||
 '	SELECT topo_optimised_geojson'||E'\n'||
+'	  FROM simplification_polygons b'||E'\n'||
+'	 WHERE a.area_id = b.area_id)';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE '||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
+'   SET optimised_geojson_2 = ('||E'\n'||
+'	SELECT topo_optimised_geojson_2'||E'\n'||
+'	  FROM simplification_polygons b'||E'\n'||
+'	 WHERE a.area_id = b.area_id)';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE '||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
+'   SET optimised_geojson_3 = ('||E'\n'||
+'	SELECT topo_optimised_geojson_3'||E'\n'||
 '	  FROM simplification_polygons b'||E'\n'||
 '	 WHERE a.area_id = b.area_id)';
 		sql_stmt[array_length(sql_stmt, 1)+1]:='ANALYZE '||quote_ident(LOWER(l_spatial_geolevel_table));

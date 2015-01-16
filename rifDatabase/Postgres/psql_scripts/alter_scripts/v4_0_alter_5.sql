@@ -104,6 +104,7 @@ $$;
 -- Add zoomlevel support etc
 --
 \i ../PLpgsql/v4_0_rif40_geo_pkg.sql
+\i ../PLpgsql/rif40_geo_pkg/v4_0_rif40_geo_pkg_simplification.sql
 \i ../PLpgsql/v4_0_rif40_xml_pkg.sql
 
 \set VERBOSITY terse
@@ -507,6 +508,63 @@ BEGIN
 --
 END;
 $$;
+  
+WITH b AS (
+			SELECT geography, srid, rif40_geo_pkg.rif40_zoom_levels(	
+				ST_Y( 														/* Get latitude */
+					ST_transform( 											/* Transform to 4326 */
+						ST_GeomFromEWKT('SRID='||a.srid||';POINT(0 0)') 	/* Grid Origin */, 
+						4326)
+					)::NUMERIC) AS zl
+			  FROM rif40_geographies a		  
+		), c6 AS (
+		SELECT geography, (zl).simplify_tolerance AS st_simplify_tolerance_zoomlevel_6
+		  FROM b
+		 WHERE (zl).zoom_level = 6 /* RIF zoomlevels */
+		), c8 AS (
+		SELECT geography, (zl).simplify_tolerance AS st_simplify_tolerance_zoomlevel_8
+		  FROM b
+		 WHERE (zl).zoom_level = 8 /* RIF zoomlevels */
+		), c11 AS (
+		SELECT geography, (zl).simplify_tolerance AS st_simplify_tolerance_zoomlevel_11
+		  FROM b
+		 WHERE (zl).zoom_level = 11 /* RIF zoomlevels */
+		)
+		SELECT c6.geography, c6.st_simplify_tolerance_zoomlevel_6,
+		       c8.st_simplify_tolerance_zoomlevel_8,
+			   c11.st_simplify_tolerance_zoomlevel_11
+		  FROM c6, c8, c11
+		 WHERE c6.geography = c8.geography
+		   AND c6.geography = c11.geography;  
+
+select geography, geolevel_name, st_simplify_tolerance from rif40_geolevels;
+SELECT /*
+ geography | st_simplify_tolerance_zoomlevel_6 | st_simplify_tolerance_zoomlevel_8 | st_simplify_tolerance_zoomlevel_11
+-----------+-----------------------------------+-----------------------------------+------------------------------------
+ SAHSU     |                             0.022 |                            0.0055 |                            0.00069
+ EW01      |                             0.022 |                            0.0055 |                            0.00069
+ UK91      |                             0.022 |                            0.0055 |                            0.00069
+(3 rows)
+
+
+ geography | geolevel_name | st_simplify_tolerance
+-----------+---------------+-----------------------
+ EW01      | LADUA2001     |                    50
+ EW01      | GOR2001       |                   100
+ EW01      | CNTRY2001     |                   100
+ EW01      | SCNTRY2001    |                   100
+ SAHSU     | LEVEL4        |                    10
+ SAHSU     | LEVEL3        |                    50
+ SAHSU     | LEVEL2        |                   100
+ SAHSU     | LEVEL1        |                   500
+ UK91      | DISTRICT91    |                    50
+ UK91      | COUNTY91      |                   100
+ UK91      | REGION91      |                   100
+ UK91      | COUNTRY91     |                   100
+ UK91      | SCOUNTRY91    |                   100
+ */ 1;
+ 
+\i ../psql_scripts/test_scripts/test_1_sahsuland_geography.sql
   
 DO LANGUAGE plpgsql $$
 BEGIN

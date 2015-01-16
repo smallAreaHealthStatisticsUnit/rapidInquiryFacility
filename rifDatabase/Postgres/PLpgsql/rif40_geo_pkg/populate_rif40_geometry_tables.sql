@@ -114,94 +114,80 @@ Parameters:	Geography
 Returns:	Nothing
 Description:	Populate geographic specific geometry tables
 
-INSERT INTO t_rif40_ew01_geometry(
-        geography, geolevel_name, area_id, name, gid, area, shapefile_geometry, 
-		optimised_geometry, optimised_geometry_2, optimised_geometry_3, 
-		optimised_geojson, optimised_geojson_2, optimised_geojson_3)
-WITH a AS ( -* Aggregate geometries with the same area_id *-
-        SELECT 'SCNTRY2001' AS geolevel_name, scntry2001 AS area_id,
-         	   name AS name, ST_MakeValid(ST_Union(geom)) AS geom, 
-			   ROW_NUMBER() OVER (ORDER BY scntry2001) AS gid
-          FROM x_ew01_scntry2001
-         GROUP BY scntry2001, name
+INSERT INTO t_rif40_sahsu_geometry(
+        geography, geolevel_name, area_id, name, gid, area, shapefile_geometry,
+        optimised_geometry, optimised_geometry_2, optimised_geometry_3,
+        optimised_geojson, optimised_geojson_2, optimised_geojson_3)
+WITH a AS ( /= Aggregate geometries with the same area_id -/
+        SELECT 'LEVEL4' AS geolevel_name, level4 AS area_id,         NULL::Text AS name,
+             ST_Union(CASE WHEN ST_IsValid(geom) = FALSE THEN ST_MakeValid(geom) ELSE geom END) AS geom 
+			 /- Make valid if required, Union polygons together -/,
+        ROW_NUMBER() OVER (ORDER BY level4) AS gid
+          FROM x_sahsu_level4
+         GROUP BY level4
         UNION
-        SELECT 'CNTRY2001' AS geolevel_name, cntry2001 AS area_id,
-         	   name AS name, ST_MakeValid(ST_Union(geom)) AS geom, 
-			   ROW_NUMBER() OVER (ORDER BY cntry2001) AS gid
-          FROM x_ew01_cntry2001
-         GROUP BY cntry2001, name
+        SELECT 'LEVEL3' AS geolevel_name, level3 AS area_id,         NULL::Text AS name,
+             ST_Union(CASE WHEN ST_IsValid(geom) = FALSE THEN ST_MakeValid(geom) ELSE geom END) AS geom 
+			 /- Make valid if required, Union polygons together -/,
+        ROW_NUMBER() OVER (ORDER BY level3) AS gid
+          FROM x_sahsu_level3
+         GROUP BY level3
         UNION
-        SELECT 'GOR2001' AS geolevel_name, gor2001 AS area_id,
-         	   gorname AS name, ST_MakeValid(ST_Union(geom)) AS geom, 
-			   ROW_NUMBER() OVER (ORDER BY gor2001) AS gid
-          FROM x_ew01_gor2001
-         GROUP BY gor2001, gorname
+        SELECT 'LEVEL2' AS geolevel_name, level2 AS area_id,         name AS name,
+             ST_Union(CASE WHEN ST_IsValid(geom) = FALSE THEN ST_MakeValid(geom) ELSE geom END) AS geom 
+			 /- Make valid if required, Union polygons together -/,
+        ROW_NUMBER() OVER (ORDER BY level2) AS gid
+          FROM x_sahsu_level2
+         GROUP BY level2, name
         UNION
-        SELECT 'LADUA2001' AS geolevel_name, ladua2001 AS area_id,
-         	   laduaname AS name, ST_MakeValid(ST_Union(geom)) AS geom, 
-			   ROW_NUMBER() OVER (ORDER BY ladua2001) AS gid
-          FROM x_ew01_ladua2001
-         GROUP BY ladua2001, laduaname
-        UNION
-        SELECT 'WARD2001' AS geolevel_name, ward2001 AS area_id,
-         	   wardname AS name, ST_MakeValid(ST_Union(geom)) AS geom, 
-			   ROW_NUMBER() OVER (ORDER BY ward2001) AS gid
-          FROM x_ew01_ward2001
-         GROUP BY ward2001, wardname
-        UNION
-        SELECT 'SOA2001' AS geolevel_name, soa2001 AS area_id,
-         	   NULL AS name, ST_MakeValid(ST_Union(geom)) AS geom, 
-			   ROW_NUMBER() OVER (ORDER BY soa2001) AS gid
-          FROM x_ew01_soa2001
-         GROUP BY soa2001
-        UNION
-        SELECT 'OA2001' AS geolevel_name, coa2001 AS area_id,
-         	   NULL AS name, ST_MakeValid(ST_Union(geom)) AS geom, 
-			   ROW_NUMBER() OVER (ORDER BY coa2001) AS gid
-          FROM x_ew01_coa2001
-         GROUP BY coa2001
-), b -* t_rif40_geolevels *- AS (
+        SELECT 'LEVEL1' AS geolevel_name, level1 AS area_id,         NULL::Text AS name,
+             ST_Union(CASE WHEN ST_IsValid(geom) = FALSE THEN ST_MakeValid(geom) ELSE geom END) AS geom 
+			 /- Make valid if required, Union polygons together -/,
+        ROW_NUMBER() OVER (ORDER BY level1) AS gid
+          FROM x_sahsu_level1
+         GROUP BY level1
+), b /- t_rif40_geolevels -/ AS (
         SELECT geography, geolevel_name
           FROM t_rif40_geolevels
-         WHERE geography = 'EW01'
-), c -* rif40_geographies *- AS (
+         WHERE geography = 'SAHSU'
+), c /- rif40_geographies -/ AS (
         SELECT max_geojson_digits
           FROM rif40_geographies
-         WHERE geography = 'EW01'
+         WHERE geography = 'SAHSU'
 ), d AS (
         SELECT a.geolevel_name, geom, area_id, name, a.gid,
-		       ST_transform(geom, 4326 -* WGS 84 *-) AS geom_4326
+               ST_transform(geom, 4326 /- WGS 84 -/) AS geom_4326
           FROM a, b
          WHERE a.geolevel_name = b.geolevel_name
-), e AS (	
+), e AS (
         SELECT geolevel_name, geom, area_id, name, gid,
-			   ST_SimplifyPreserveTopology(
-					geom_4326, 
-					b.st_simplify_tolerance) AS simplified_4326_topology,
-			   ST_SimplifyPreserveTopology(
-					geom_4326, 
-					b.st_simplify_tolerance) AS simplified_4326_topology_2,
-			   ST_SimplifyPreserveTopology(
-					geom_4326, 
-					b.st_simplify_tolerance) AS simplified_4326_topology_3
-		  FROM d
+               ST_SimplifyPreserveTopology(
+                                geom_4326,
+                                0.022) AS simplified_4326_topology,
+               ST_SimplifyPreserveTopology(
+                                geom_4326,
+                                0.0055) AS simplified_4326_topology_2,
+               ST_SimplifyPreserveTopology(
+                                geom_4326,
+                                0.00069) AS simplified_4326_topology_3
+          FROM d
 )
-SELECT 'EW01' geography, geolevel_name, area_id, NULLIF(name, 'Unknown: ['||area_id||']') AS name, d.gid,
+SELECT 'SAHSU' geography, geolevel_name, area_id, NULLIF(name, 'Unknown: ['||area_id||']') AS name, gid,
         round(CAST(ST_area(geom)/1000000 AS numeric), 1) AS area,
-        ST_Multi(geom) AS shapefile_geometry, 
+        ST_Multi(geom) AS shapefile_geometry,
         ST_Multi(simplified_4326_topology) AS optimised_geometry,
         ST_Multi(simplified_4326_topology_2) AS optimised_geometry_2,
         ST_Multi(simplified_4326_topology_3) AS optimised_geometry_3,
-      	ST_AsGeoJson(
-        	simplified_4326_topology,
-       		c.max_geojson_digits, 0 -* no options *-)::JSON AS optimised_geojson,
-      	ST_AsGeoJson(
-        	simplified_4326_topology_2,
-       		c.max_geojson_digits, 0 -* no options *-)::JSON AS optimised_geojson_2,
-      	ST_AsGeoJson(
-        	simplified_4326_topology_3,
-       		c.max_geojson_digits, 0 -* no options *-)::JSON AS optimised_geojson_3
-  FROM c, d
+        ST_AsGeoJson(
+                        simplified_4326_topology,
+                                c.max_geojson_digits, 0 /- no options -/)::JSON AS optimised_geojson,
+        ST_AsGeoJson(
+                        simplified_4326_topology_2,
+                                c.max_geojson_digits, 0 /- no options -/)::JSON AS optimised_geojson_2,
+        ST_AsGeoJson(
+                        simplified_4326_topology_3,
+                                c.max_geojson_digits, 0 /- no options -/)::JSON AS optimised_geojson_3
+  FROM e, c
  ORDER BY 1, 2, 3;
 
 UPDATE t_rif40_geolevels a
@@ -214,7 +200,7 @@ UPDATE t_rif40_geolevels a
         SELECT geolevel_name,
                ROUND(CAST(AVG(ST_NPOINTS(SHAPEFILE_GEOMETRY)) AS numeric), 1) AS avg_npoints_geom,
                ROUND(CAST(AVG(ST_NPoints(optimised_geometry)) AS numeric), 1) AS avg_npoints_opt,
-               ROUND(CAST(SUM(length(optimised_geojson)) AS numeric), 1) AS file_geojson_len,
+               ROUND(CAST(SUM(length(optimised_geojson::Text)) AS numeric), 1) AS file_geojson_len,
                ROUND(CAST(AVG(ST_perimeter(shapefile_geometry)/ST_NPoints(shapefile_geometry)) AS numeric), 1) AS leg_geom,
                ROUND(CAST(AVG(ST_perimeter(optimised_geometry)/ST_NPoints(optimised_geometry)) AS numeric), 1) AS leg_opt
          FROM t_rif40_ew01_geometry b
@@ -418,7 +404,7 @@ BEGIN
 	sql_stmt:=sql_stmt||E'\t'||'SELECT geolevel_name,'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'       ROUND(CAST(AVG(ST_NPOINTS(SHAPEFILE_GEOMETRY)) AS numeric), 1) AS avg_npoints_geom,'||E'\n'; 
 	sql_stmt:=sql_stmt||E'\t'||' 	   ROUND(CAST(AVG(ST_NPoints(optimised_geometry)) AS numeric), 1) AS avg_npoints_opt,'||E'\n'; 
-	sql_stmt:=sql_stmt||E'\t'||' 	   ROUND(CAST(SUM(length(optimised_geojson)) AS numeric), 1) AS file_geojson_len,'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||' 	   ROUND(CAST(SUM(length(optimised_geojson::Text)) AS numeric), 1) AS file_geojson_len,'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'       ROUND(CAST(AVG(ST_perimeter(shapefile_geometry)/ST_NPoints(shapefile_geometry)) AS numeric), 1) AS leg_geom,'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'       ROUND(CAST(AVG(ST_perimeter(optimised_geometry)/ST_NPoints(optimised_geometry)) AS numeric), 1) AS leg_opt'||E'\n'; 
 	sql_stmt:=sql_stmt||E'\t'||' FROM t_rif40_'||quote_ident(LOWER(c1_rec.geography))||'_geometry b'||E'\n';
@@ -472,75 +458,80 @@ Parameters:	Geography
 Returns:	Nothing
 Description:	Populate geographic specific geometry tables
 
-INSERT INTO t_rif40_ew01_geometry(
-        geography, geolevel_name, area_id, name, gid, area, shapefile_geometry, optimised_geometry, optimised_geojson)
+INSERT INTO t_rif40_sahsu_geometry(
+        geography, geolevel_name, area_id, name, gid, area, shapefile_geometry,
+        optimised_geometry, optimised_geometry_2, optimised_geometry_3,
+        optimised_geojson, optimised_geojson_2, optimised_geojson_3)
 WITH a AS ( /* Aggregate geometries with the same area_id */
-        SELECT ''SCNTRY2001'' AS geolevel_name, scntry2001 AS area_id,
-         	   name AS name, ST_MakeValid(ST_Union(geom)) AS geom, 
-			   ROW_NUMBER() OVER (ORDER BY scntry2001) AS gid
-          FROM x_ew01_scntry2001
-         GROUP BY scntry2001, name
+        SELECT ''LEVEL4'' AS geolevel_name, level4 AS area_id,         NULL::Text AS name,
+             ST_Union(CASE WHEN ST_IsValid(geom) = FALSE THEN ST_MakeValid(geom) ELSE geom END) AS geom 
+			 /* Make valid if required, Union polygons together */,
+        ROW_NUMBER() OVER (ORDER BY level4) AS gid
+          FROM x_sahsu_level4
+         GROUP BY level4
         UNION
-        SELECT ''CNTRY2001'' AS geolevel_name, cntry2001 AS area_id,
-         	   name AS name, ST_MakeValid(ST_Union(geom)) AS geom, 
-			   ROW_NUMBER() OVER (ORDER BY cntry2001) AS gid
-          FROM x_ew01_cntry2001
-         GROUP BY cntry2001, name
+        SELECT ''LEVEL3'' AS geolevel_name, level3 AS area_id,         NULL::Text AS name,
+             ST_Union(CASE WHEN ST_IsValid(geom) = FALSE THEN ST_MakeValid(geom) ELSE geom END) AS geom 
+			 /* Make valid if required, Union polygons together */,
+        ROW_NUMBER() OVER (ORDER BY level3) AS gid
+          FROM x_sahsu_level3
+         GROUP BY level3
         UNION
-        SELECT ''GOR2001'' AS geolevel_name, gor2001 AS area_id,
-         	   gorname AS name, ST_MakeValid(ST_Union(geom)) AS geom, 
-			   ROW_NUMBER() OVER (ORDER BY gor2001) AS gid
-          FROM x_ew01_gor2001
-         GROUP BY gor2001, gorname
+        SELECT ''LEVEL2'' AS geolevel_name, level2 AS area_id,         name AS name,
+             ST_Union(CASE WHEN ST_IsValid(geom) = FALSE THEN ST_MakeValid(geom) ELSE geom END) AS geom 
+			 /* Make valid if required, Union polygons together */,
+        ROW_NUMBER() OVER (ORDER BY level2) AS gid
+          FROM x_sahsu_level2
+         GROUP BY level2, name
         UNION
-        SELECT ''LADUA2001'' AS geolevel_name, ladua2001 AS area_id,
-         	   laduaname AS name, ST_MakeValid(ST_Union(geom)) AS geom, 
-			   ROW_NUMBER() OVER (ORDER BY ladua2001) AS gid
-          FROM x_ew01_ladua2001
-         GROUP BY ladua2001, laduaname
-        UNION
-        SELECT ''WARD2001'' AS geolevel_name, ward2001 AS area_id,
-         	   wardname AS name, ST_MakeValid(ST_Union(geom)) AS geom, 
-			   ROW_NUMBER() OVER (ORDER BY ward2001) AS gid
-          FROM x_ew01_ward2001
-         GROUP BY ward2001, wardname
-        UNION
-        SELECT ''SOA2001'' AS geolevel_name, soa2001 AS area_id,
-         	   NULL AS name, ST_MakeValid(ST_Union(geom)) AS geom, 
-			   ROW_NUMBER() OVER (ORDER BY soa2001) AS gid
-          FROM x_ew01_soa2001
-         GROUP BY soa2001
-        UNION
-        SELECT ''OA2001'' AS geolevel_name, coa2001 AS area_id,
-         	   NULL AS name, ST_MakeValid(ST_Union(geom)) AS geom, 
-			   ROW_NUMBER() OVER (ORDER BY coa2001) AS gid
-          FROM x_ew01_coa2001
-         GROUP BY coa2001
+        SELECT ''LEVEL1'' AS geolevel_name, level1 AS area_id,         NULL::Text AS name,
+             ST_Union(CASE WHEN ST_IsValid(geom) = FALSE THEN ST_MakeValid(geom) ELSE geom END) AS geom 
+			 /* Make valid if required, Union polygons together */,
+        ROW_NUMBER() OVER (ORDER BY level1) AS gid
+          FROM x_sahsu_level1
+         GROUP BY level1
 ), b /* t_rif40_geolevels */ AS (
-        SELECT geography, geolevel_name, st_simplify_tolerance
+        SELECT geography, geolevel_name
           FROM t_rif40_geolevels
-         WHERE geography = ''EW01''
+         WHERE geography = ''SAHSU''
 ), c /* rif40_geographies */ AS (
         SELECT max_geojson_digits
           FROM rif40_geographies
-         WHERE geography = ''EW01''
+         WHERE geography = ''SAHSU''
 ), d AS (
         SELECT a.geolevel_name, geom, area_id, name, a.gid,
-		       ST_MakeValid(ST_SimplifyPreserveTopology(geom, b.st_simplify_tolerance)) AS simplified_topology
+               ST_transform(geom, 4326 /* WGS 84 */) AS geom_4326
           FROM a, b
          WHERE a.geolevel_name = b.geolevel_name
+), e AS (
+        SELECT geolevel_name, geom, area_id, name, gid,
+               ST_SimplifyPreserveTopology(
+                                geom_4326,
+                                0.022) AS simplified_4326_topology,
+               ST_SimplifyPreserveTopology(
+                                geom_4326,
+                                0.0055) AS simplified_4326_topology_2,
+               ST_SimplifyPreserveTopology(
+                                geom_4326,
+                                0.00069) AS simplified_4326_topology_3
+          FROM d
 )
-SELECT ''EW01'' geography, b.geolevel_name, area_id, 
-        NULLIF(name, ''Unknown: [''||area_id||'']'') AS name, d.gid,
+SELECT ''SAHSU'' geography, geolevel_name, area_id, NULLIF(name, ''Unknown: [''||area_id||'']'') AS name, gid,
         round(CAST(ST_area(geom)/1000000 AS numeric), 1) AS area,
-        ST_Multi(geom) AS shapefile_geometry, 
-        ST_MakeValid(ST_transform(ST_Multi(simplified_topology), 4326 /* WGS 84 */)) AS optimised_geometry,
-	ST_AsGeoJson(
-		ST_transform(
-        		simplified_topology, 4326 /* WGS 84 */),
-       				c.max_geojson_digits, 0 /* no options */) AS optimised_geojson
-  FROM b, c, d
- WHERE b.geolevel_name = d.geolevel_name
+        ST_Multi(geom) AS shapefile_geometry,
+        ST_Multi(simplified_4326_topology) AS optimised_geometry,
+        ST_Multi(simplified_4326_topology_2) AS optimised_geometry_2,
+        ST_Multi(simplified_4326_topology_3) AS optimised_geometry_3,
+        ST_AsGeoJson(
+                        simplified_4326_topology,
+                                c.max_geojson_digits, 0 /* no options */)::JSON AS optimised_geojson,
+        ST_AsGeoJson(
+                        simplified_4326_topology_2,
+                                c.max_geojson_digits, 0 /* no options */)::JSON AS optimised_geojson_2,
+        ST_AsGeoJson(
+                        simplified_4326_topology_3,
+                                c.max_geojson_digits, 0 /* no options */)::JSON AS optimised_geojson_3
+  FROM e, c
  ORDER BY 1, 2, 3;
 
 UPDATE t_rif40_geolevels a
