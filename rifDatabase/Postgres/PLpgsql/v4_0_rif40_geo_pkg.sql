@@ -135,8 +135,8 @@ GRANT EXECUTE ON FUNCTION rif40_geo_pkg.populate_rif40_geometry_tables(VARCHAR) 
 GRANT EXECUTE ON FUNCTION rif40_geo_pkg.populate_rif40_geometry_tables(VARCHAR) TO rif40;
 GRANT EXECUTE ON FUNCTION rif40_geo_pkg.simplify_geometry(VARCHAR, NUMERIC) TO rif_manager;
 GRANT EXECUTE ON FUNCTION rif40_geo_pkg.simplify_geometry(VARCHAR, NUMERIC) TO rif40;
-GRANT EXECUTE ON FUNCTION rif40_geo_pkg.simplify_geometry(VARCHAR, VARCHAR, VARCHAR, NUMERIC, NUMERIC) TO rif_manager;
-GRANT EXECUTE ON FUNCTION rif40_geo_pkg.simplify_geometry(VARCHAR, VARCHAR, VARCHAR, NUMERIC, NUMERIC) TO rif40;
+GRANT EXECUTE ON FUNCTION rif40_geo_pkg.simplify_geometry(VARCHAR, VARCHAR, VARCHAR, NUMERIC) TO rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_geo_pkg.simplify_geometry(VARCHAR, VARCHAR, VARCHAR, NUMERIC) TO rif40;
 GRANT EXECUTE ON FUNCTION rif40_geo_pkg.rif40_get_default_comparison_area(VARCHAR, VARCHAR, VARCHAR[]) TO rif_manager;
 GRANT EXECUTE ON FUNCTION rif40_geo_pkg.rif40_get_default_comparison_area(VARCHAR, VARCHAR, VARCHAR[]) TO rif_user;
 GRANT EXECUTE ON FUNCTION rif40_geo_pkg.rif40_get_default_comparison_area(VARCHAR, VARCHAR, VARCHAR[]) TO rif40;

@@ -67,9 +67,15 @@ BEGIN
 END;
 $$;
 
+--
+-- Drop old and new (without st_simplify_tolerance) forms
+--
+DROP FUNCTION IF EXISTS rif40_geo_pkg._simplify_geometry_phase_II(VARCHAR, VARCHAR, VARCHAR, NUMERIC);
+DROP FUNCTION IF EXISTS rif40_geo_pkg._simplify_geometry_phase_II(VARCHAR, VARCHAR, VARCHAR, NUMERIC, NUMERIC);
+
 CREATE OR REPLACE FUNCTION rif40_geo_pkg._simplify_geometry_phase_II(
 	l_geography VARCHAR, l_geolevel VARCHAR, l_filter VARCHAR DEFAULT NULL, 
-	l_min_point_resolution NUMERIC DEFAULT 1 /* metre */, l_st_simplify_tolerance NUMERIC DEFAULT NULL)
+	l_min_point_resolution NUMERIC DEFAULT 1 /* metre */)
 RETURNS void 
 SECURITY INVOKER
 AS $body$
@@ -77,16 +83,12 @@ DECLARE
 /*
 Function: 	_simplify_geometry_phase_II()
 Parameters:	Geography, geolevel, 
-                geolevel; filter (for testing, no default), 
-                minimum point resolution (default 1 - assumed metre, but depends on the geometry), 
-                override for rif40_geoelvels.st_simplify_tolerance
+            geolevel; filter (for testing, no default), 
+            minimum point resolution (default 1 - assumed metre, but depends on the geometry)
 Returns:	Nothing
 Description:	Simplify geography geolevel - Phase II: Create the lines table
 
 Phase II: Create the lines table
-
-Set st_simplify_tolerance from command line parameter or rif40_geolevels table
-Check st_simplify_tolerance >= l_min_point_resolution
 
 Create and populate simplification_lines table. Processed in two sections:
 
@@ -142,15 +144,40 @@ Update spatial linestrings table, e.g. t_rif40_linestrings_ew01_ward2001 if ther
 		  FROM t_rif40_geolevels
 		 WHERE geography = l_geography
 		   AND geolevel_name = l_geolevel_name;
+	c3_s11 CURSOR(l_geography VARCHAR) FOR
+		WITH b AS (
+			SELECT geography, srid, rif40_geo_pkg.rif40_zoom_levels(	
+				ST_Y( 														/* Get latitude */
+						ST_GeomFromEWKT('SRID='||a.srid||';POINT(0 0)') 	/* Grid Origin */
+					)::NUMERIC) AS zl
+			  FROM rif40_geographies a
+			 WHERE a.geography = l_geography		  
+		), c6 AS (
+		SELECT (zl).simplify_tolerance AS st_simplify_tolerance_zoomlevel_6
+		  FROM b
+		 WHERE (zl).zoom_level = 6 /* RIF zoomlevels */
+		), c8 AS (
+		SELECT (zl).simplify_tolerance AS st_simplify_tolerance_zoomlevel_8
+		  FROM b
+		 WHERE (zl).zoom_level = 8 /* RIF zoomlevels */
+		), c11 AS (
+		SELECT (zl).simplify_tolerance AS st_simplify_tolerance_zoomlevel_11
+		  FROM b
+		 WHERE (zl).zoom_level = 11 /* RIF zoomlevels */
+		)
+		SELECT c6.st_simplify_tolerance_zoomlevel_6,
+		       c8.st_simplify_tolerance_zoomlevel_8,
+			   c11.st_simplify_tolerance_zoomlevel_11
+		  FROM c6, c8, c11;
 --
 	c1_rec rif40_geographies%ROWTYPE;
 	c2_rec t_rif40_geolevels%ROWTYPE;
+	c3_rec RECORD;
 --
 	sql_stmt	VARCHAR[];
 	l_sql_stmt	VARCHAR;
 --
 	l_spatial_linestrings_table	VARCHAR;
-	st_simplify_tolerance NUMERIC;
 --
 	stp TIMESTAMP WITH TIME ZONE;
 	etp TIMESTAMP WITH TIME ZONE;
@@ -183,34 +210,18 @@ BEGIN
 	ELSIF c1_rec.srid IS NULL THEN
 		PERFORM rif40_log_pkg.rif40_error(-10094, '_simplify_geometry_phase_II', 'No srid specified for geography: % geolevel: %',
 			l_geography::VARCHAR);
-	ELSE
---
--- Set st_simplify_tolerance from command line parameter or rif40_geolevels table
--- Check st_simplify_tolerance >= l_min_point_resolution
---
-		IF l_st_simplify_tolerance IS NULL THEN
-			st_simplify_tolerance:=c2_rec.st_simplify_tolerance;
-		ELSE
-			st_simplify_tolerance:=l_st_simplify_tolerance;
-		END IF;
-		IF st_simplify_tolerance IS NULL THEN
-			PERFORM rif40_log_pkg.rif40_error(-10093, '_simplify_geometry_phase_II', 'No st_simplify_tolerance specified for geography: % geolevel: %',
-				l_geography::VARCHAR,
-				l_geolevel::VARCHAR);
-		ELSIF st_simplify_tolerance < l_min_point_resolution THEN
-			PERFORM rif40_log_pkg.rif40_error(-10097, '_simplify_geometry_phase_II', 'st_simplify_tolerance (%) specified for geography: % geolevel: % < l_min_point_resolution (%); units: %',
-				st_simplify_tolerance::VARCHAR,
-				l_geography::VARCHAR,
-				l_geolevel::VARCHAR,
-				l_min_point_resolution::VARCHAR,
-				rif40_geo_pkg.get_srid_projection_parameters(l_geography, '+units')::VARCHAR);
-		END IF;
 	END IF;
 --
-	PERFORM rif40_log_pkg.rif40_log('INFO', '_simplify_geometry_phase_II', 'Phase II (lines creation) for geography: % geolevel: %. Parameters - st_simplify_tolerance: %; l_min_point_resolution: %; units: %',
+-- Now get lat/log of grid origin for geography and then call rif40_geo_pkg.rif40_zoom_levels()
+-- to get st_simplify_tolerance for zoom levels 6, 8, and 11
+--
+	OPEN c3_s11(l_geography);
+	FETCH c3_s11 INTO c3_rec;
+	CLOSE c3_s11;
+--
+	PERFORM rif40_log_pkg.rif40_log('INFO', '_simplify_geometry_phase_II', 'Phase II (lines creation) for geography: % geolevel: %. Parameters - l_min_point_resolution: %; units: %',
 		l_geography::VARCHAR,
 		l_geolevel::VARCHAR,
-		st_simplify_tolerance::VARCHAR,
 		l_min_point_resolution::VARCHAR,
 		rif40_geo_pkg.get_srid_projection_parameters(l_geography, '+units')::VARCHAR);
 --
@@ -247,7 +258,12 @@ BEGIN
 -- Add geometry
 --
 	PERFORM AddGeometryColumn('simplification_lines', 'line', c1_rec.srid, 'LINESTRING', 2);
-      	PERFORM AddGeometryColumn('simplification_lines', 'simplified_line', c1_rec.srid, 'LINESTRING', 2);
+    PERFORM AddGeometryColumn('simplification_lines', 
+		'simplified_line', c1_rec.srid, 'LINESTRING', 2) /* zoomlevel 6 */;
+    PERFORM AddGeometryColumn('simplification_lines', 
+		'simplified_line_2', c1_rec.srid, 'LINESTRING', 2) /* zoomlevel 8 */;
+    PERFORM AddGeometryColumn('simplification_lines', 
+		'simplified_line_3', c1_rec.srid, 'LINESTRING', 2) /* zoomlevel 11 */;
 --
 -- Second block of SQL statements
 --
@@ -266,7 +282,8 @@ BEGIN
 --
 	sql_stmt[1]:='EXPLAIN ANALYZE VERBOSE INSERT INTO simplification_lines'||E'\n'|| 
 '      (geolevel_name, area_id, polygon_number, join_seq, joined_join_seq, line_length, simplified_line_length,'||E'\n'||  
-'	min_num_polygon_number, max_num_polygon_number, min_pointflow, max_pointflow, num_points, line, simplified_line, duplicate_join_to_be_removed)'||E'\n'|| 
+'	    min_num_polygon_number, max_num_polygon_number, min_pointflow, max_pointflow, num_points, line,'||E'\n'|| 
+'       simplified_line, simplified_line_2, simplified_line_3, duplicate_join_to_be_removed)'||E'\n'|| 
 'WITH a AS /* Convert co-ordinate points to LINESTRINGs */ ('||E'\n'|| 
 '	SELECT area_id, polygon_number, join_seq, joined_join_seq,'||E'\n'||  
 '	       MIN(num_polygon_number) AS min_num_polygon_number,'||E'\n'|| 
@@ -281,7 +298,17 @@ BEGIN
 '	         ST_RemoveRepeatedPoints(  			/* Remove repeated points */'||E'\n'|| 
 '	           ST_Makeline(array_agg(			/* Convert to line */'||E'\n'|| 
 '	             ST_SetSRID(coordinate, '||c1_rec.srid||'	/* Convert coordinates to Geogrpahy SRID */) ORDER BY pointflow))), '||E'\n'|| 
-'	           '||st_simplify_tolerance||'			/* Simplify tolerance */) AS simplified_line'||E'\n'|| 
+'	           '||c3_rec.st_simplify_tolerance_zoomlevel_6||'			/* Simplify tolerance */) AS simplified_line,'||E'\n'|| 
+'	       ST_SimplifyPreserveTopology(			/* Run Douglas-Peuker on line to simplify zoomlevel 6 */'||E'\n'|| 
+'	         ST_RemoveRepeatedPoints(  			/* Remove repeated points */'||E'\n'|| 
+'	           ST_Makeline(array_agg(			/* Convert to line */'||E'\n'|| 
+'	             ST_SetSRID(coordinate, '||c1_rec.srid||'	/* Convert coordinates to Geogrpahy SRID */) ORDER BY pointflow))), '||E'\n'|| 
+'	           '||c3_rec.st_simplify_tolerance_zoomlevel_8||'			/* Simplify tolerance */) AS simplified_line_2,'||E'\n'|| 
+'	       ST_SimplifyPreserveTopology(			/* Run Douglas-Peuker on line to simplify zoomlevel 8 */'||E'\n'|| 
+'	         ST_RemoveRepeatedPoints(  			/* Remove repeated points */'||E'\n'|| 
+'	           ST_Makeline(array_agg(			/* Convert to line */'||E'\n'|| 
+'	             ST_SetSRID(coordinate, '||c1_rec.srid||'	/* Convert coordinates to Geogrpahy SRID */) ORDER BY pointflow))), '||E'\n'|| 
+'	           '||c3_rec.st_simplify_tolerance_zoomlevel_11||'			/* Simplify tolerance zoomlevel 11 */) AS simplified_line_3'||E'\n'|| 
 '	  FROM simplification_points'||E'\n'|| 
 '	 GROUP BY area_id, polygon_number, join_seq, joined_join_seq'||E'\n'|| 
 '), b AS /* 1:1 mapping between join_seq, polygon_number and joined_join_seq - can use shared implification */ ('||E'\n'|| 
@@ -311,7 +338,17 @@ BEGIN
 '	         ST_RemoveRepeatedPoints( 			/* Remove repeated points */'||E'\n'|| 
 '	           ST_Makeline(array_agg(			/* Convert to line */'||E'\n'|| 
 '	             ST_SetSRID(coordinate, '||c1_rec.srid||'	/* Convert coordinates to Geogrpahy SRID */) ORDER BY pointflow))), '||
-'                  '||st_simplify_tolerance||'			/* Simplify tolerance */) AS simplified_line'||E'\n'|| 
+'                  '||c3_rec.st_simplify_tolerance_zoomlevel_6||'	/* Simplify tolerance */) AS simplified_line,'||E'\n'|| 
+'	       ST_SimplifyPreserveTopology(			/* Run Douglas-Peuker on line to simplify */'||E'\n'|| 
+'	         ST_RemoveRepeatedPoints( 			/* Remove repeated points */'||E'\n'|| 
+'	           ST_Makeline(array_agg(			/* Convert to line */'||E'\n'|| 
+'	             ST_SetSRID(coordinate, '||c1_rec.srid||'	/* Convert coordinates to Geogrpahy SRID */) ORDER BY pointflow))), '||
+'                  '||c3_rec.st_simplify_tolerance_zoomlevel_8||'	/* Simplify tolerance */) AS simplified_line_2,'||E'\n'|| 
+'	       ST_SimplifyPreserveTopology(			/* Run Douglas-Peuker on line to simplify */'||E'\n'|| 
+'	         ST_RemoveRepeatedPoints( 			/* Remove repeated points */'||E'\n'|| 
+'	           ST_Makeline(array_agg(			/* Convert to line */'||E'\n'|| 
+'	             ST_SetSRID(coordinate, '||c1_rec.srid||'	/* Convert coordinates to Geogrpahy SRID */) ORDER BY pointflow))), '||
+'                  '||c3_rec.st_simplify_tolerance_zoomlevel_11||'	/* Simplify tolerance */) AS simplified_line_3'||E'\n'|| 
 '	  FROM simplification_points d1, c'||E'\n'|| 
 '	 WHERE d1.join_seq = c.join_seq'||E'\n'|| 
 '	 GROUP BY d1.area_id, d1.polygon_number, d1.join_seq'||E'\n'|| 
@@ -320,7 +357,8 @@ BEGIN
 '       area_id, a.polygon_number, a.join_seq, joined_join_seq,'||E'\n'||  
 '       ROUND(CAST(ST_Length(line) AS numeric), 0) AS line_length,'||E'\n'||  
 '       ROUND(CAST(ST_Length(simplified_line) AS numeric), 0) AS simplified_line_length, '||E'\n'|| 
-'       min_num_polygon_number, max_num_polygon_number, min_pointflow, max_pointflow, num_points, line, simplified_line, ''N'' AS duplicate_join_to_be_removed'||E'\n'|| 
+'       min_num_polygon_number, max_num_polygon_number, min_pointflow, max_pointflow, num_points, line,'||E'\n'|| 
+'       simplified_line, simplified_line_2, simplified_line_3, ''N'' AS duplicate_join_to_be_removed'||E'\n'|| 
 '  FROM a, b'||E'\n'|| 
 ' WHERE a.polygon_number  = b.polygon_number'||E'\n'|| 
 '   AND a.join_seq        = b.join_seq'||E'\n'|| 
@@ -329,7 +367,8 @@ BEGIN
 '       area_id, polygon_number, join_seq, joined_join_seq /* This is NULL */,'||E'\n'||  
 '       ROUND(CAST(ST_Length(line) AS numeric), 0) AS line_length,'||E'\n'||  
 '       ROUND(CAST(ST_Length(simplified_line) AS numeric), 0) AS simplified_line_length,'||E'\n'||  
-'       min_num_polygon_number, max_num_polygon_number, min_pointflow, max_pointflow, num_points, line, simplified_line,'||E'\n'||  
+'       min_num_polygon_number, max_num_polygon_number, min_pointflow, max_pointflow, num_points, line,'||E'\n'||  
+'       simplified_line, simplified_line_2, simplified_line_3,'||E'\n'||  
 '       CASE'||E'\n'||  
 '          	WHEN max_num_polygon_number > 2  THEN ''M'' /* Mutli (>2) polygon join, e.g. triple point between 3 polygons */'||E'\n'||  
 '          	WHEN max_num_polygon_number = 2  THEN ''Y'' /* Two polygon join */'||E'\n'||  
@@ -525,7 +564,21 @@ SELECT a.polygon_number, a.join_seq, joined_join_seq, line_length, min_pointflow
 '	       MAX(pointflow) AS max_pointflow,'||E'\n'||
 '	       COUNT(pointflow) AS num_points,'||E'\n'||
 '	       ST_Makeline(array_agg(ST_SetSRID(coordinate, '||c1_rec.srid||') ORDER BY pointflow)) AS line,'||E'\n'||
-'	       ST_SimplifyPreserveTopology(ST_Makeline(array_agg(ST_SetSRID(coordinate, '||c1_rec.srid||') ORDER BY pointflow)), '||st_simplify_tolerance||') AS simplified_line'||E'\n'||
+'	       ST_SimplifyPreserveTopology('||E'\n'||
+'	       		ST_Makeline('||E'\n'||
+'	       			array_agg('||E'\n'||
+'	       				ST_SetSRID(coordinate, '||c1_rec.srid||')'||E'\n'||
+'	       				ORDER BY pointflow)), '||c3_rec.st_simplify_tolerance_zoomlevel_6||') AS simplified_line,'||E'\n'||
+'	       ST_SimplifyPreserveTopology('||E'\n'||
+'	       		ST_Makeline('||E'\n'||
+'	       			array_agg('||E'\n'||
+'	       				ST_SetSRID(coordinate, '||c1_rec.srid||')'||E'\n'||
+'	       				ORDER BY pointflow)), '||c3_rec.st_simplify_tolerance_zoomlevel_8||') AS simplified_line_2,'||E'\n'||
+'	       ST_SimplifyPreserveTopology('||E'\n'||
+'	       		ST_Makeline('||E'\n'||
+'	       			array_agg('||E'\n'||
+'	       				ST_SetSRID(coordinate, '||c1_rec.srid||')'||E'\n'||
+'	       				ORDER BY pointflow)), '||c3_rec.st_simplify_tolerance_zoomlevel_11||') AS simplified_line_3'||E'\n'||
 '	  FROM simplification_points'||E'\n'||
 '	 GROUP BY polygon_number, join_seq, joined_join_seq'||E'\n'||
 '), b AS ('||E'\n'||
@@ -537,7 +590,8 @@ SELECT a.polygon_number, a.join_seq, joined_join_seq, line_length, min_pointflow
 'SELECT a.polygon_number, a.join_seq, COALESCE(joined_join_seq, 0) AS joined_join_seq,'||E'\n'||
 '       ROUND(CAST(ST_Length(line) AS numeric), 0) AS line_length,'||E'\n'||
 '       ROUND(CAST(ST_Length(simplified_line) AS numeric), 0) AS simplified_line_length,'||E'\n'||
-'       min_num_polygon_number, max_num_polygon_number, min_pointflow, max_pointflow, num_points, line, simplified_line, ''Y''::Text duplicate_join_to_be_removed'||E'\n'||
+'       min_num_polygon_number, max_num_polygon_number, min_pointflow, max_pointflow, num_points, line,'||E'\n'||
+'       simplified_line, simplified_line_2, simplified_line_3, ''Y''::Text duplicate_join_to_be_removed'||E'\n'||
 '  FROM a, b'||E'\n'||
 ' WHERE a.polygon_number  = b.polygon_number'||E'\n'||
 '   AND a.join_seq = b.join_seq'||E'\n'||
@@ -646,7 +700,10 @@ SELECT a.polygon_number, a.join_seq, joined_join_seq, line_length, min_pointflow
 '       ROUND(ABS(1-(CAST(ST_Length(a.line) AS numeric)/(CAST(ST_Length(b.line) AS numeric)+0.00000001))), 3) AS line_test,'||E'\n'||
 '       ST_Length(a.simplified_line) AS simplified_line_length,'||E'\n'||
 '       ST_Length(a.line) AS line_length,'||E'\n'||
-'       ST_Reverse(b.line) AS revered_line, ST_Reverse(b.simplified_line) AS reversed_simplified_line'||E'\n'||
+'       ST_Reverse(b.line) AS revered_line,'||E'\n'||
+'       ST_Reverse(b.simplified_line) AS reversed_simplified_line,'||E'\n'||
+'       ST_Reverse(b.simplified_line_2) AS reversed_simplified_line_2,'||E'\n'||
+'       ST_Reverse(b.simplified_line_3) AS reversed_simplified_line_3'||E'\n'||
 '  FROM simplification_lines a'||E'\n'||
 '	LEFT OUTER JOIN simplification_lines b ON (a.joined_join_seq = b.join_seq)'||E'\n'||
 ' ORDER BY a.polygon_number, a.join_seq';
@@ -660,6 +717,24 @@ SELECT a.polygon_number, a.join_seq, joined_join_seq, line_length, min_pointflow
 	sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE simplification_lines a'||E'\n'||
 '   SET simplified_line = ('||E'\n'||
 '	SELECT reversed_simplified_line'||E'\n'|| 
+'	  FROM simplification_lines_temp b'||E'\n'||
+'	 WHERE a.join_seq = b.join_seq), reverse_simplified_line = ''Y'''||E'\n'||
+' WHERE a.join_seq IN ('||E'\n'||
+'	SELECT join_seq'||E'\n'||
+'	  FROM simplification_lines_temp'||E'\n'||
+'	 WHERE reverse_simplified_line = ''Y'')';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE simplification_lines a'||E'\n'||
+'   SET simplified_line_2 = ('||E'\n'||
+'	SELECT reversed_simplified_line_2'||E'\n'|| 
+'	  FROM simplification_lines_temp b'||E'\n'||
+'	 WHERE a.join_seq = b.join_seq), reverse_simplified_line = ''Y'''||E'\n'||
+' WHERE a.join_seq IN ('||E'\n'||
+'	SELECT join_seq'||E'\n'||
+'	  FROM simplification_lines_temp'||E'\n'||
+'	 WHERE reverse_simplified_line = ''Y'')';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE simplification_lines a'||E'\n'||
+'   SET simplified_line_3 = ('||E'\n'||
+'	SELECT reversed_simplified_line_3'||E'\n'|| 
 '	  FROM simplification_lines_temp b'||E'\n'||
 '	 WHERE a.join_seq = b.join_seq), reverse_simplified_line = ''Y'''||E'\n'||
 ' WHERE a.join_seq IN ('||E'\n'||
@@ -748,18 +823,14 @@ END;
 $body$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_geo_pkg._simplify_geometry_phase_II(VARCHAR, VARCHAR, VARCHAR, NUMERIC, NUMERIC) IS 'Function: 	_simplify_geometry_phase_II()
+COMMENT ON FUNCTION rif40_geo_pkg._simplify_geometry_phase_II(VARCHAR, VARCHAR, VARCHAR, NUMERIC) IS 'Function: 	_simplify_geometry_phase_II()
 Parameters:	Geography, geolevel, 
-                geolevel; filter (for testing, no default), 
-                minimum point resolution (default 1 - assumed metre, but depends on the geometry), 
-                override for rif40_geoelvels.st_simplify_tolerance
+            geolevel; filter (for testing, no default), 
+            minimum point resolution (default 1 - assumed metre, but depends on the geometry)
 Returns:	Nothing
 Description:	Simplify geography geolevel - Phase II: Create the lines table
 
 Phase II: Create the lines table
-
-Set st_simplify_tolerance from command line parameter or rif40_geolevels table
-Check st_simplify_tolerance >= l_min_point_resolution
 
 Create and populate simplification_lines table. Processed in two sections:
 

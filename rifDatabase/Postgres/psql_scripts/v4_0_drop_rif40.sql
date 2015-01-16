@@ -344,12 +344,21 @@ DROP FUNCTION IF EXISTS rif40_geo_pkg.fix_null_geolevel_names();
 DROP FUNCTION IF EXISTS rif40_geo_pkg.get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR, VARCHAR);
 DROP FUNCTION IF EXISTS rif40_geo_pkg.add_population_to_rif40_geolevels_geometry(VARCHAR, VARCHAR);
 DROP FUNCTION IF EXISTS rif40_geo_pkg.add_population_to_rif40_geolevels_geometry();
+
+--
+-- Drop old and new (without st_simplify_tolerance) forms
+--
 DROP FUNCTION IF EXISTS rif40_geo_pkg.simplify_geometry(VARCHAR, NUMERIC);
+DROP FUNCTION IF EXISTS rif40_geo_pkg.simplify_geometry(VARCHAR);
 DROP FUNCTION IF EXISTS rif40_geo_pkg.simplify_geometry(VARCHAR, VARCHAR, VARCHAR, NUMERIC, NUMERIC);
+DROP FUNCTION IF EXISTS rif40_geo_pkg.simplify_geometry(VARCHAR, VARCHAR, VARCHAR, NUMERIC);
 DROP FUNCTION IF EXISTS rif40_geo_pkg._simplify_geometry_checks(VARCHAR, VARCHAR, INTEGER);
 DROP FUNCTION IF EXISTS rif40_geo_pkg._simplify_geometry_phase_I(VARCHAR, VARCHAR, VARCHAR, NUMERIC, NUMERIC);
+DROP FUNCTION IF EXISTS rif40_geo_pkg._simplify_geometry_phase_I(VARCHAR, VARCHAR, VARCHAR, NUMERIC);
 DROP FUNCTION IF EXISTS rif40_geo_pkg._simplify_geometry_phase_II(VARCHAR, VARCHAR, VARCHAR, NUMERIC, NUMERIC);
+DROP FUNCTION IF EXISTS rif40_geo_pkg._simplify_geometry_phase_II(VARCHAR, VARCHAR, VARCHAR, NUMERIC);
 DROP FUNCTION IF EXISTS rif40_geo_pkg._simplify_geometry_phase_III(VARCHAR, VARCHAR, VARCHAR, NUMERIC, NUMERIC);
+DROP FUNCTION IF EXISTS rif40_geo_pkg._simplify_geometry_phase_III(VARCHAR, VARCHAR, VARCHAR, NUMERIC);
 
 DROP FUNCTION IF EXISTS rif40_geo_pkg.longitude2tile(DOUBLE PRECISION, INTEGER);
 DROP FUNCTION IF EXISTS rif40_geo_pkg.latitude2tile(DOUBLE PRECISION, INTEGER);

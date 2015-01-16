@@ -55,6 +55,14 @@
 \set ON_ERROR_STOP ON
 \timing
 
+--
+-- Drop old and new (without st_simplify_tolerance) forms
+--
+DROP FUNCTION IF EXISTS rif40_geo_pkg.simplify_geometry(VARCHAR, NUMERIC);
+DROP FUNCTION IF EXISTS rif40_geo_pkg.simplify_geometry(VARCHAR);
+DROP FUNCTION IF EXISTS rif40_geo_pkg.simplify_geometry(VARCHAR, VARCHAR, VARCHAR, NUMERIC, NUMERIC);
+DROP FUNCTION IF EXISTS rif40_geo_pkg.simplify_geometry(VARCHAR, VARCHAR, VARCHAR, NUMERIC);
+
 CREATE OR REPLACE FUNCTION rif40_geo_pkg.simplify_geometry(
 	l_geography VARCHAR, l_min_point_resolution NUMERIC DEFAULT 1 /* metre */)
 RETURNS void 
@@ -64,11 +72,12 @@ DECLARE
 /*
 Function: 	simplify_geometry()
 Parameters:	Geography, 
-                minimum point resolution (default 1 - assumed metre, but depends on the geometry), 
-                override for rif40_geoelvels.st_simplify_tolerance
+            minimum point resolution (default 1 - assumed metre, but depends on the geometry)
 Returns:	Nothing
 Description:	Simplify geography geometry. Carried out in three phases:
 
+Phase I: Create the points table
+Phase II: Create the lines table
 Phase III: Create the polygons table, Update spatial geolevel table
  */
 	c1_sg	CURSOR FOR
@@ -96,8 +105,7 @@ BEGIN
 	FOR c1_rec IN c1_sg LOOP
 		PERFORM rif40_geo_pkg.simplify_geometry(c1_rec.geography, c1_rec.geolevel_name, 
 			NULL /* Filter */, 
-			l_min_point_resolution /* minimum point resolution (default 1 - assumed metre, but depends on the geometry) */,
-			c1_rec.st_simplify_tolerance /* Default for geolevel */);
+			l_min_point_resolution /* minimum point resolution (default 1 - assumed metre, but depends on the geometry) */);
 	END LOOP;
 --
 -- Drop temporary tables
@@ -120,17 +128,18 @@ LANGUAGE PLPGSQL;
 
 COMMENT ON FUNCTION rif40_geo_pkg.simplify_geometry(VARCHAR, NUMERIC) IS 'Function: 	simplify_geometry()
 Parameters:	Geography, 
-                minimum point resolution (default 1 - assumed metre, but depends on the geometry), 
-                override for rif40_geolevels.st_simplify_tolerance
+            minimum point resolution (default 1 - assumed metre, but depends on the geometry)
 Returns:	Nothing
 Description:	Simplify geography geometry. Carried out in three phases:
 
+Phase I: Create the points table
+Phase II: Create the lines table
 Phase III: Create the polygons table, Update spatial geolevel table';
 
 
 CREATE OR REPLACE FUNCTION rif40_geo_pkg.simplify_geometry(
 	l_geography VARCHAR, l_geolevel VARCHAR, l_filter VARCHAR DEFAULT NULL, 
-	l_min_point_resolution NUMERIC DEFAULT 1 /* metre */, l_st_simplify_tolerance NUMERIC DEFAULT 1)
+	l_min_point_resolution NUMERIC DEFAULT 1 /* metre */)
 RETURNS void 
 SECURITY INVOKER
 AS $body$
@@ -180,15 +189,15 @@ BEGIN
 -- Create a list of joined_area_ids (i.e. the num_join_seq is 1)
 -- Update from list of joined_area_ids (i.e. the num_join_seq is 1)
 --
-	PERFORM rif40_geo_pkg._simplify_geometry_phase_I(l_geography, l_geolevel, l_filter, l_min_point_resolution, l_st_simplify_tolerance);
+	PERFORM rif40_geo_pkg._simplify_geometry_phase_I(l_geography, l_geolevel, l_filter, l_min_point_resolution);
 --
 -- Phase II: Create the lines table
 --
-	PERFORM rif40_geo_pkg._simplify_geometry_phase_II(l_geography, l_geolevel, l_filter, l_min_point_resolution, l_st_simplify_tolerance);
+	PERFORM rif40_geo_pkg._simplify_geometry_phase_II(l_geography, l_geolevel, l_filter, l_min_point_resolution);
 --
 -- Phase III: Create the polygons table
 --
-	PERFORM rif40_geo_pkg._simplify_geometry_phase_III(l_geography, l_geolevel, l_filter, l_min_point_resolution, l_st_simplify_tolerance);
+	PERFORM rif40_geo_pkg._simplify_geometry_phase_III(l_geography, l_geolevel, l_filter, l_min_point_resolution);
 --
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
@@ -213,13 +222,16 @@ END;
 $body$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_geo_pkg.simplify_geometry(VARCHAR, VARCHAR, VARCHAR, NUMERIC, NUMERIC) IS 'Function: 	simplify_geometry()
+COMMENT ON FUNCTION rif40_geo_pkg.simplify_geometry(VARCHAR, VARCHAR, VARCHAR, NUMERIC) IS 'Function: 	simplify_geometry()
 Parameters:	Geography, geolevel, 
-                geolevel; filter (for testing, no default), 
-                minimum point resolution (default 1 - assumed metre, but depends on the geometry), 
-                override for rif40+geoelvelsl_st_simplify_tolerance
+            geolevel; filter (for testing, no default), 
+            minimum point resolution (default 1 - assumed metre, but depends on the geometry)
 Returns:	Nothing
-Description:	Simplify geography geolevel';
+Description:	Simplify geography geolevel. Carried out in three phases:
+
+Phase I: Create the points table
+Phase II: Create the lines table
+Phase III: Create the polygons table, Update spatial geolevel table';
 
 --
 -- Eof

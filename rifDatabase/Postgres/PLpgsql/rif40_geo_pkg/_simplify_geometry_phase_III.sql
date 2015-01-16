@@ -67,9 +67,15 @@ BEGIN
 END;
 $$;
 
+--
+-- Drop old and new (without st_simplify_tolerance) forms
+--
+DROP FUNCTION IF EXISTS rif40_geo_pkg._simplify_geometry_phase_III(VARCHAR, VARCHAR, VARCHAR, NUMERIC, NUMERIC);
+DROP FUNCTION IF EXISTS rif40_geo_pkg._simplify_geometry_phase_III(VARCHAR, VARCHAR, VARCHAR, NUMERIC);
+
 CREATE OR REPLACE FUNCTION rif40_geo_pkg._simplify_geometry_phase_III(
 	l_geography VARCHAR, l_geolevel VARCHAR, l_filter VARCHAR DEFAULT NULL, 
-	l_min_point_resolution NUMERIC DEFAULT 1 /* metre */, l_st_simplify_tolerance NUMERIC DEFAULT NULL)
+	l_min_point_resolution NUMERIC DEFAULT 1 /* metre */)
 RETURNS void 
 SECURITY INVOKER
 AS $body$
@@ -78,8 +84,7 @@ DECLARE
 Function: 	_simplify_geometry_phase_II()
 Parameters:	Geography, geolevel, 
                 geolevel; filter (for testing, no default), 
-                minimum point resolution (default 1 - assumed metre, but depends on the geometry), 
-                override for rif40_geoelvels.st_simplify_tolerance
+                minimum point resolution (default 1 - assumed metre, but depends on the geometry)
 Returns:	Nothing
 Description:	Simplify geography geolevel - Phase III: Create the polygons table, Update spatial geolevel table
 
@@ -197,6 +202,8 @@ BEGIN
 '	SELECT area_id, polygon_number,'||E'\n'||
 '	       ST_Makeline(array_agg(line ORDER BY join_seq)) AS line,'||E'\n'||
 '	       ST_Makeline(array_agg(simplified_line ORDER BY join_seq)) AS simplified_line,'||E'\n'||
+'	       ST_Makeline(array_agg(simplified_line_2 ORDER BY join_seq)) AS simplified_line_2,'||E'\n'||
+'	       ST_Makeline(array_agg(simplified_line_3 ORDER BY join_seq)) AS simplified_line_3,'||E'\n'||
 '	       COUNT(num_points) AS num_lines,'||E'\n'||
 '	       SUM(num_points) AS num_points'||E'\n'||
 '	  FROM simplification_lines'||E'\n'||
@@ -214,6 +221,18 @@ BEGIN
 '                         	ST_Polygon(ST_AddPoint(simplified_line, ST_Startpoint(line)),'||E'\n'|| 
 '                         		'||c1_rec.srid||')'||E'\n'|| 
 '               END simplified_line_polygon,'||E'\n'|| 
+'               CASE      /* Close polygon if needed */'||E'\n'|| 
+'                         WHEN ST_IsClosed(simplified_line_2) THEN ST_Polygon(line, '||c1_rec.srid||')'||E'\n'|| 
+'                         ELSE /* Close LINESTRING */'||E'\n'|| 
+'                         	ST_Polygon(ST_AddPoint(simplified_line_2, ST_Startpoint(line)),'||E'\n'|| 
+'                         		'||c1_rec.srid||')'||E'\n'|| 
+'               END simplified_line_polygon_2,'||E'\n'|| 
+'               CASE      /* Close polygon if needed */'||E'\n'|| 
+'                         WHEN ST_IsClosed(simplified_line_3) THEN ST_Polygon(line, '||c1_rec.srid||')'||E'\n'|| 
+'                         ELSE /* Close LINESTRING */'||E'\n'|| 
+'                         	ST_Polygon(ST_AddPoint(simplified_line_3, ST_Startpoint(line)),'||E'\n'|| 
+'                         		'||c1_rec.srid||')'||E'\n'|| 
+'               END simplified_line_polygon_3,'||E'\n'|| 
 '               num_lines, num_points'||E'\n'|| 
 '	  FROM a'||E'\n'|| 
 '), c /* Create valid MULITPOLYGONs by aggregation to area_id */ AS ('||E'\n'|| 
@@ -237,19 +256,46 @@ BEGIN
 '				ELSE                                          ST_MakeValid(simplified_line_polygon)'||E'\n'|| 
 '				 					      /* ST_Buffer(geom, 0.0) removed as was occaisonially causing corruption */'||E'\n'|| 
 '			      END)), 3 /* MULTIPOLYGON */)),'||E'\n'|| 
-'                      	       4326 /* WGS 84 */) AS topo_optimised_geometry'||E'\n'|| 
+'                      	       4326 /* WGS 84 */) AS topo_optimised_geometry,'||E'\n'|| 
+'              ST_transform(              /* Convert to WGS 84 */'||E'\n'|| 
+'                ST_ForceRHR(    		  /* Orientate all polygons clockwise */'||E'\n'|| 
+'                  ST_CollectionExtract(  /* Remove orphaned LINESTRINGs and POINTs */'||E'\n'|| 
+'                    ST_Multi(            /* Convert to MULTIPOLYGON */'||E'\n'|| 
+'                      ST_Union(          /* Polygons */'||E'\n'|| 
+'			     CASE        			 /* Remove self intersections */'||E'\n'||  
+'				WHEN ST_IsValid(simplified_line_polygon_2) THEN simplified_line_polygon_2'||E'\n'|| 
+'				ELSE                                          ST_MakeValid(simplified_line_polygon_2)'||E'\n'|| 
+'				 					      /* ST_Buffer(geom, 0.0) removed as was occaisonially causing corruption */'||E'\n'|| 
+'			      END)), 3 /* MULTIPOLYGON */)),'||E'\n'|| 
+'                      	       4326 /* WGS 84 */) AS topo_optimised_geometry_2,'||E'\n'|| 
+'              ST_transform(              /* Convert to WGS 84 */'||E'\n'|| 
+'                ST_ForceRHR(    		  /* Orientate all polygons clockwise */'||E'\n'|| 
+'                  ST_CollectionExtract(  /* Remove orphaned LINESTRINGs and POINTs */'||E'\n'|| 
+'                    ST_Multi(            /* Convert to MULTIPOLYGON */'||E'\n'|| 
+'                      ST_Union(          /* Polygons */'||E'\n'|| 
+'			     CASE        			 /* Remove self intersections */'||E'\n'||  
+'				WHEN ST_IsValid(simplified_line_polygon_3) THEN simplified_line_polygon_3'||E'\n'|| 
+'				ELSE                                          ST_MakeValid(simplified_line_polygon_3)'||E'\n'|| 
+'				 					      /* ST_Buffer(geom, 0.0) removed as was occaisonially causing corruption */'||E'\n'|| 
+'			      END)), 3 /* MULTIPOLYGON */)),'||E'\n'|| 
+'                      	       4326 /* WGS 84 */) AS topo_optimised_geometry_3'||E'\n'|| 
 '          FROM b'||E'\n'|| 
 '         GROUP BY area_id'||E'\n'|| 
 '), d AS /* Forcbily make valid if still not valid */ ('||E'\n'|| 
 '	SELECT area_id, num_lines, num_points,'||E'\n'|| 
-'   	      CASE WHEN ST_IsValid(geometry) THEN geometry ELSE ST_MakeValid(geometry) END geometry,'||E'\n'|| 
-'	      CASE WHEN ST_IsValid(topo_optimised_geometry) THEN topo_optimised_geometry ELSE ST_MakeValid(topo_optimised_geometry) END topo_optimised_geometry'||E'\n'|| 
+'   	   CASE WHEN ST_IsValid(geometry) THEN geometry ELSE ST_MakeValid(geometry) END geometry,'||E'\n'|| 
+'	       CASE WHEN ST_IsValid(topo_optimised_geometry) THEN topo_optimised_geometry'||E'\n'|| 
+'   	   		ELSE ST_MakeValid(topo_optimised_geometry) END topo_optimised_geometry,'||E'\n'|| 
+'	       CASE WHEN ST_IsValid(topo_optimised_geometry_2) THEN topo_optimised_geometry_2'||E'\n'|| 
+'   	   		ELSE ST_MakeValid(topo_optimised_geometry_2) END topo_optimised_geometry_2,'||E'\n'||
+'	       CASE WHEN ST_IsValid(topo_optimised_geometry_3) THEN topo_optimised_geometry_3'||E'\n'|| 
+'   	   		ELSE ST_MakeValid(topo_optimised_geometry_3) END topo_optimised_geometry_3'||E'\n'||
 '          FROM c'||E'\n'|| 
 ')'||E'\n'|| 
 'SELECT d.area_id, e.name, geometry,'||E'\n'||
 '       topo_optimised_geometry,'||E'\n'||
-'       topo_optimised_geometry AS topo_optimised_geometry_2,'||E'\n'||
-'       topo_optimised_geometry AS topo_optimised_geometry_3,'||E'\n'||
+'       topo_optimised_geometry,'||E'\n'||
+'       topo_optimised_geometry,'||E'\n'||
 '       ST_AsGeoJson(topo_optimised_geometry, '||c1_rec.max_geojson_digits||' /* max_geojson_digits */,'||E'\n'|| 
 '			0 /* no options */)::JSON AS topo_optimised_geojson,'||E'\n'||
 '       ST_AsGeoJson(topo_optimised_geometry, '||c1_rec.max_geojson_digits||' /* max_geojson_digits */,'||E'\n'|| 
@@ -363,11 +409,10 @@ END;
 $body$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_geo_pkg._simplify_geometry_phase_III(VARCHAR, VARCHAR, VARCHAR, NUMERIC, NUMERIC) IS 'Function: 	_simplify_geometry_phase_II()
+COMMENT ON FUNCTION rif40_geo_pkg._simplify_geometry_phase_III(VARCHAR, VARCHAR, VARCHAR, NUMERIC) IS 'Function: 	_simplify_geometry_phase_II()
 Parameters:	Geography, geolevel, 
                 geolevel; filter (for testing, no default), 
-                minimum point resolution (default 1 - assumed metre, but depends on the geometry), 
-                override for rif40_geoelvels.st_simplify_tolerance
+                minimum point resolution (default 1 - assumed metre, but depends on the geometry)
 Returns:	Nothing
 Description:	Simplify geography geolevel - Phase III: Create the polygons table, Update spatial geolevel table
 

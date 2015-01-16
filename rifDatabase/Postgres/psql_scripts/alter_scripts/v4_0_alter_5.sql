@@ -564,14 +564,15 @@ SELECT /*
  UK91      | SCOUNTRY91    |                   100
  */ 1;
  
-\i ../psql_scripts/test_scripts/test_1_sahsuland_geography.sql
-  
+--\i ../psql_scripts/test_scripts/test_1_sahsuland_geography.sql
+/*  
 DO LANGUAGE plpgsql $$
 BEGIN
 	RAISE INFO 'Aborting (script being tested)';
 	RAISE EXCEPTION 'C20999: Abort';
 END;
 $$;
+ */
 
 END;
 

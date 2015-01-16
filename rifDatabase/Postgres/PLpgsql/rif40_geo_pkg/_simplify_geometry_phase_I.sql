@@ -67,9 +67,15 @@ BEGIN
 END;
 $$;
 
+--
+-- Drop old and new (without st_simplify_tolerance) forms
+--
+DROP FUNCTION IF EXISTS rif40_geo_pkg._simplify_geometry_phase_I(VARCHAR, VARCHAR, VARCHAR, NUMERIC, NUMERIC);
+DROP FUNCTION IF EXISTS rif40_geo_pkg._simplify_geometry_phase_I(VARCHAR, VARCHAR, VARCHAR, NUMERIC);
+
 CREATE OR REPLACE FUNCTION rif40_geo_pkg._simplify_geometry_phase_I(
 	l_geography VARCHAR, l_geolevel VARCHAR, l_filter VARCHAR DEFAULT NULL, 
-	l_min_point_resolution NUMERIC DEFAULT 1 /* metre */, l_st_simplify_tolerance NUMERIC DEFAULT NULL)
+	l_min_point_resolution NUMERIC DEFAULT 1 /* metre */)
 RETURNS void 
 SECURITY INVOKER
 AS $body$
@@ -79,8 +85,7 @@ DECLARE
 Function: 	_simplify_geometry_phase_I()
 Parameters:	Geography, geolevel, 
                 geolevel; filter (for testing, no default), 
-                minimum point resolution (default 1 - assumed metre, but depends on the geometry), 
-                override for rif40_geoelvels.st_simplify_tolerance
+                minimum point resolution (default 1 - assumed metre, but depends on the geometry)
 Returns:	Nothing
 Description:	Simplify geography geolevel - Phase I: Create the points table
 
@@ -204,8 +209,6 @@ Test 7: areas(s) with non unique join sequences.
 	took INTERVAL;
 --
 	rel_size BIGINT=0;
---
-	st_simplify_tolerance	INTEGER;
 BEGIN
 --
 -- Must be rif40 or have rif_manager role
@@ -234,44 +237,12 @@ BEGIN
 			l_geography::VARCHAR);
 	ELSE
 --
--- Set st_simplify_tolerance from param or rif40_geolevels table
---
-		IF l_st_simplify_tolerance IS NULL THEN
-			st_simplify_tolerance:=c2_rec.st_simplify_tolerance;
-			PERFORM rif40_log_pkg.rif40_log('INFO', '_simplify_geometry_phase_I', 'Geography: % geolevel: %. Parameters - st_simplify_tolerance: % [default for geolevel]; units: %',
-				l_geography::VARCHAR,
-				l_geolevel::VARCHAR,
-				c2_rec.st_simplify_tolerance::VARCHAR,
-				rif40_geo_pkg.get_srid_projection_parameters(l_geography, '+units')::VARCHAR);
-		ELSE
-			st_simplify_tolerance:=l_st_simplify_tolerance;
-			PERFORM rif40_log_pkg.rif40_log('INFO', '_simplify_geometry_phase_I', 'Geography: % geolevel: %. Parameters - st_simplify_tolerance: %  overides default for geolevel: %; units: %',
-				l_geography::VARCHAR,
-				l_geolevel::VARCHAR,
-				l_st_simplify_tolerance::VARCHAR,
-				c2_rec.st_simplify_tolerance::VARCHAR,
-				rif40_geo_pkg.get_srid_projection_parameters(l_geography, '+units')::VARCHAR);
-		END IF;
-		IF st_simplify_tolerance IS NULL THEN
-			PERFORM rif40_log_pkg.rif40_error(-10093, '_simplify_geometry_phase_I', 'No st_simplify_tolerance specified for geography: % geolevel: %',
-				l_geography::VARCHAR,
-				l_geolevel::VARCHAR);
-		ELSIF st_simplify_tolerance < l_min_point_resolution THEN
-			PERFORM rif40_log_pkg.rif40_error(-10097, '_simplify_geometry_phase_I', 'st_simplify_tolerance (%) specified for geography: % geolevel: % < l_min_point_resolution (%); units: %',
-				st_simplify_tolerance::VARCHAR,
-				l_geography::VARCHAR,
-				l_geolevel::VARCHAR,
-				l_min_point_resolution::VARCHAR,
-				rif40_geo_pkg.get_srid_projection_parameters(l_geography, '+units')::VARCHAR);
-		END IF;
+		PERFORM rif40_log_pkg.rif40_log('INFO', '_simplify_geometry_phase_I', 'Phase I (points creation) for geography: % geolevel: %. Parameters - l_min_point_resolution: %; units: %',
+			l_geography::VARCHAR,
+			l_geolevel::VARCHAR,
+			l_min_point_resolution::VARCHAR,
+			rif40_geo_pkg.get_srid_projection_parameters(l_geography, '+units')::VARCHAR);
 	END IF;
---
-	PERFORM rif40_log_pkg.rif40_log('INFO', '_simplify_geometry_phase_I', 'Phase I (points creation) for geography: % geolevel: %. Parameters - st_simplify_tolerance: %; l_min_point_resolution: %; units: %',
-		l_geography::VARCHAR,
-		l_geolevel::VARCHAR,
-		st_simplify_tolerance::VARCHAR,
-		l_min_point_resolution::VARCHAR,
-		rif40_geo_pkg.get_srid_projection_parameters(l_geography, '+units')::VARCHAR);
 --
 -- Test 0 for valid geometry
 --
@@ -1179,11 +1150,10 @@ END;
 $body$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_geo_pkg._simplify_geometry_phase_I(VARCHAR, VARCHAR, VARCHAR, NUMERIC, NUMERIC) IS 'Function: 	_simplify_geometry_phase_I()
+COMMENT ON FUNCTION rif40_geo_pkg._simplify_geometry_phase_I(VARCHAR, VARCHAR, VARCHAR, NUMERIC) IS 'Function: 	_simplify_geometry_phase_I()
 Parameters:	Geography, geolevel, 
                 geolevel; filter (for testing, no default), 
-                minimum point resolution (default 1 - assumed metre, but depends on the geometry), 
-                override for rif40_geoelvels.st_simplify_tolerance
+                minimum point resolution (default 1 - assumed metre, but depends on the geometry)
 Returns:	Nothing
 Description:	Simplify geography geolevel - Phase I: Create the points table
 
