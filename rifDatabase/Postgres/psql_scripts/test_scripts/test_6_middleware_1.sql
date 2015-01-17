@@ -428,7 +428,7 @@ Time: 6559.317 ms
  */
 --
 -- Demo 3: Poor performance on large tables without gid, gid_rowindex built in and a sort
--- REF_CURSOR takes 12 secnds to parse and execute (caused by the rowindex sort) with explain plan
+-- REF_CURSOR takes 12 seconds to parse and execute (caused by the rowindex sort) with explain plan
 -- FETCH originally took 7 seconds - i.e. copies results (hopefully in server)! Fixed by creating scrollable REFCURSOR
 --
 -- Only sorting when the attribute list is specified sppeds things up 4x
@@ -451,7 +451,7 @@ SELECT *
 \pset title 'Create REFCURSOR'
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue('c4getallatt4theme_3' /* Temporary table */,
-		NULL /* Cursor name - NULL = same as temporarty table - must be unique with a TX */, 
+		NULL /* Cursor name - NULL = same as temporary table - must be unique with a TX */, 
 		0 /* No offset */, NULL /* No row limit */);
 --
 -- Fetch tests
@@ -478,7 +478,7 @@ SELECT * FROM pg_cursors;
 \pset title 'Demo 1+2: resources not released until end of transaction'
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue('c4getallatt4theme_3' /* Temporary table */,
-		NULL /* Cursor name - NULL = same as temporarty table - must be unique with a TX */, 
+		NULL /* Cursor name - NULL = same as temporary table - must be unique with a TX */, 
 		10000 /* Offset */, NULL /* No row limit */);
 FETCH FORWARD 5 IN c4getallatt4theme_3;
 
@@ -535,7 +535,9 @@ SELECT rif40_log_pkg.rif40_add_to_debug('rif40_CreateMapAreaAttributeSource:DEBU
 SELECT * 
   FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 		'c4getallatt4theme_5' /* Must be unique with a TX */, 
-		'SAHSU', 'LEVEL2', 'geometry', 't_rif40_sahsu_geometry');
+		'SAHSU', 'LEVEL2', 'geometry', 't_rif40_sahsu_geometry', 
+		ARRAY['name', 'area', 'total_males', 'total_females', 'population_year']);
+
 \pset title 'Demo 5: Check offset works OK'
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue('c4getallatt4theme_5' /* Temporary table */, 

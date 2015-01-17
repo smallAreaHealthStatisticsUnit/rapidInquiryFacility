@@ -427,9 +427,12 @@ by 3;
 					  FROM a, information_schema.columns b 
 					 WHERE quote_ident(LOWER(a.geometry_table)) = b.table_name
 					   AND b.column_name NOT IN ('area_id', 'geolevel_name', 'gid', 'gid_rowindex',
-							'optimised_geometry', 'shapefile_geometry', 'optimised_geojson', 'geography') 	
+							'optimised_geometry', 'optimised_geometry_2', 'optimised_geometry_3', 
+							'shapefile_geometry', 
+							'optimised_geojson', 'optimised_geojson_2', 'optimised_geojson_3', 'geography') 	
 						/* Not relevant/You get this anyway!!! */
-					   AND (l_attribute_name_array IS NULL OR UPPER(b.column_name) IN (SELECT UPPER(unnest(l_attribute_name_array)))) 
+					   AND (l_attribute_name_array IS NULL OR UPPER(b.column_name) IN (
+							SELECT UPPER(unnest(l_attribute_name_array)))) 
 		 		)
 				SELECT LOWER(b.geometry_table)::VARCHAR AS attribute_source,
 				       b.column_name::VARCHAR AS attribute_name,

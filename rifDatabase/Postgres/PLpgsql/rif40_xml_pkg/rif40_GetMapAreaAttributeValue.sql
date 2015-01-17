@@ -121,7 +121,7 @@ BEGIN
 			USER::VARCHAR	/* Username */);
 	END IF;
 --
--- Check if temporsry table exists
+-- Check if temporary table exists
 --
 	IF getmap_temp_table IS NULL THEN
 		PERFORM rif40_log_pkg.rif40_error(-51201, 'rif40_GetMapAreaAttributeValue', 

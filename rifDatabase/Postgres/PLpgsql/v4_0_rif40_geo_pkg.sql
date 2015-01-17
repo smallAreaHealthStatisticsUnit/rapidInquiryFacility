@@ -88,6 +88,7 @@ $$;
 \i ../PLpgsql/rif40_geo_pkg/drop_rif40_geolevels_geometry_tables.sql
 \i ../PLpgsql/rif40_geo_pkg/check_rif40_hierarchy_lookup_tables.sql
 \i ../PLpgsql/rif40_geo_pkg/rif40_get_default_comparison_area.sql
+\i ../PLpgsql/rif40_geo_pkg/gid_rowindex_fix.sql
 
 --
 -- Moved to XML package
