@@ -95,7 +95,7 @@ Add geometry columns: geometry, topo_optimised_geometry
 INSERT valid multipolygons INTO simplification_polygons
 Display the increase in geoJSON length between the old simplification algorithm and the new
 Test 8: areas(s) with invalid geometry in simplification_polygons
-Update spatial geolevel table, e.g. t_rif40_geolevels_ward2001 if there is no filter
+Update spatial geolevel table, e.g. p_rif40_geolevels_ward2001 if there is no filter
 
  */
 	c1_sIII	CURSOR(l_geography VARCHAR) FOR
@@ -338,9 +338,9 @@ old_geojson_len      | new_geojson_len      | pct_increase
 	PERFORM rif40_geo_pkg._simplify_geometry_checks(l_geography, l_geolevel, 8);
 
 --
--- Update spatial geolevel table, e.g. t_rif40_geolevels_geometry_ew01_ward2001 if there is no filter
+-- Update spatial geolevel table, e.g. p_rif40_geolevels_geometry_ew01_ward2001 if there is no filter
 --
-	l_spatial_geolevel_table:='t_rif40_geolevels_geometry_'||LOWER(l_geography)||'_'||LOWER(l_geolevel);
+	l_spatial_geolevel_table:='p_rif40_geolevels_geometry_'||LOWER(l_geography)||'_'||LOWER(l_geolevel);
 	IF l_filter IS NULL THEN /* Non test mode */
 		PERFORM rif40_log_pkg.rif40_log('INFO', '_simplify_geometry_phase_III', 'Simplify % geography geolevel %: Phase III (Create the polygons table) Update spatial geolevel table: %', 
 			l_geography::VARCHAR, 
@@ -423,7 +423,7 @@ Add geometry columns: geometry, topo_optimised_geometry
 INSERT valid multipolygons INTO simplification_polygons
 Display the increase in geoJSON length between the old simplification algorithm and the new
 Test 8: areas(s) with invalid geometry in simplification_polygons
-Update spatial geolevel table, e.g. t_rif40_geolevels_ward2001 if there is no filter
+Update spatial geolevel table, e.g. p_rif40_geolevels_ward2001 if there is no filter
 
 Example INSERT statements:
 
@@ -484,7 +484,7 @@ SELECT d.area_id, e.name, geometry, topo_optimised_geometry,
         LEFT OUTER JOIN sahsuland_level4 e ON (e.level4 = d.area_id)
  ORDER BY d.area_id;
 
-UPDATE t_rif40_geolevels_geometry_sahsu_level4 a
+UPDATE p_rif40_geolevels_geometry_sahsu_level4 a
    SET optimised_geojson = (
         SELECT topo_optimised_geojson
           FROM simplification_polygons b

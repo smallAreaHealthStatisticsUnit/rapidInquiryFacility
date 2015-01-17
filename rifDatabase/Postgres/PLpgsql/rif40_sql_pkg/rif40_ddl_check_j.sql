@@ -114,7 +114,8 @@ DECLARE
 		    OR viewowner IN (USER, l_schema, 'pop', 'gis', 'data_load') 
 			OR fdw_tableowner = USER)
                    AND a.table_schema  != 'rif_studies'			/* Exclude map/extract tables */
-		   AND NOT (a.table_name IN ('g_rif40_comparison_areas', 'g_rif40_study_areas', 'user_role_privs', 'sahsuland_geography_test')
+		   AND NOT (a.table_name IN ('g_rif40_comparison_areas', 'g_rif40_study_areas', 'user_role_privs', 
+									 'sahsuland_geography_test')
     		       OR   a.table_name IN (
 			SELECT tablename table_or_view		 		/* Geospatial tables created by rif40_geo_pkg functions */
 			  FROM pg_tables
@@ -129,7 +130,7 @@ DECLARE
 										/* Geometry tables */
 			        FROM rif40_geographies
 			       UNION 
-			      SELECT DISTINCT 't_rif40_geolevels_geometry_'||	/* Geometry table partitions */
+			      SELECT DISTINCT 'p_rif40_geolevels_geometry_'||	/* Geometry table partitions */
 					LOWER(geography)||'_'||LOWER(geolevel_name) tablename
 			        FROM t_rif40_geolevels
 			       UNION 

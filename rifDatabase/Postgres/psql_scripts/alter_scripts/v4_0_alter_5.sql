@@ -106,6 +106,7 @@ $$;
 \i ../PLpgsql/v4_0_rif40_geo_pkg.sql
 \i ../PLpgsql/rif40_geo_pkg/v4_0_rif40_geo_pkg_simplification.sql
 \i ../PLpgsql/v4_0_rif40_xml_pkg.sql
+\i ../PLpgsql/v4_0_rif40_sql_pkg_ddl_checks.sql
 
 \set VERBOSITY terse
 DO LANGUAGE plpgsql $$
@@ -450,7 +451,7 @@ BEGIN
 	DROP TABLE IF EXISTS sahsuland_geography_orig;
 --
 -- These are the new T_RIF40_<GEOGRAPHY>_GEOMETRY tables and
--- new T_RIF40_GEOLEVELS_GEOMETRY_<GEOGRAPHY>_<GEOELVELS> partitioned tables
+-- new p_rif40_geolevels_geometry_<GEOGRAPHY>_<GEOELVELS> partitioned tables
 --
 	PERFORM rif40_geo_pkg.create_rif40_geolevels_geometry_tables('SAHSU');
 --
@@ -480,7 +481,7 @@ BEGIN
 -- SELECT a2.area_id AS level2, a3.area_id AS level3,
 --       ST_Area(a3.optimised_geometry) AS a3_area,
 --       ST_Area(ST_Intersection(a2.optimised_geometry, a3.optimised_geometry)) AS a23_area
---  FROM t_rif40_geolevels_geometry_sahsu_level3 a3, t_rif40_geolevels_geometry_sahsu_level2 a2  
+--  FROM p_rif40_geolevels_geometry_sahsu_level3 a3, p_rif40_geolevels_geometry_sahsu_level2 a2  
 -- WHERE ST_Intersects(a2.optimised_geometry, a3.optimised_geometry);
 --
 	PERFORM rif40_geo_pkg.populate_hierarchy_table('SAHSU'); 

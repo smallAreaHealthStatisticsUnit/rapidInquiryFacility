@@ -143,7 +143,7 @@ DECLARE
 																		/* Geometry tables */
 			        FROM rif40_geographies
 			       UNION 
-			      SELECT DISTINCT 't_rif40_geolevels_geometry_'||		/* Geometry table partitions */
+			      SELECT DISTINCT 'p_rif40_geolevels_geometry_'||		/* Geometry table partitions */
 					LOWER(geography)||'_'||LOWER(geolevel_name) tablename
 			        FROM t_rif40_geolevels
 			       UNION 
@@ -202,7 +202,7 @@ DECLARE
 										/* Geometry tables */
 			        FROM rif40_geographies
 			       UNION 
-			      SELECT DISTINCT 't_rif40_geolevels_geometry_'||	/* Geometry table partitions */
+			      SELECT DISTINCT 'p_rif40_geolevels_geometry_'||	/* Geometry table partitions */
 					LOWER(geography)||'_'||LOWER(geolevel_name) tablename
 			        FROM t_rif40_geolevels
 			       UNION 

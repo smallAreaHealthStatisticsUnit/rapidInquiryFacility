@@ -130,7 +130,7 @@ BEGIN
 			'.gid_rowindex IS ''GID rowindex record locator unique key''';
 --
 		FOR c2_rec IN c2alter2(l_geography) LOOP
-			l_partition:=quote_ident('t_rif40_geolevels_geometry_'||
+			l_partition:=quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(l_geography)||'_'||LOWER(c2_rec.geolevel_name));
 			ddl_stmt[array_length(ddl_stmt, 1)+1]:='COMMENT ON COLUMN '||l_partition||
 				'.gid_rowindex IS ''GID rowindex record locator unique key''';
@@ -139,9 +139,9 @@ Other databases may have issue with this CTE update syntax:
 
 WITH a AS (
 	SELECT area_id, gid, gid||'_'||ROW_NUMBER() OVER(PARTITION BY gid ORDER BY area_id) AS gid_rowindex
-	  FROM t_rif40_geolevels_geometry_sahsu_level2
+	  FROM p_rif40_geolevels_geometry_sahsu_level2
 )
-UPDATE t_rif40_geolevels_geometry_sahsu_level2 b
+UPDATE p_rif40_geolevels_geometry_sahsu_level2 b
    SET gid_rowindex = a.gid_rowindex
   FROM a
  WHERE b.area_id = a.area_id;

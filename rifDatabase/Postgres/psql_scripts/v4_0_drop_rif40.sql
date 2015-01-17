@@ -529,10 +529,23 @@ DROP TABLE IF EXISTS rif_studies.test_4_study_id_1_bands;
 -- Added for Macos
 --
 DROP TABLE IF EXISTS t_rif40_sahsu_geometry CASCADE;
+DROP TABLE IF EXISTS t_rif40_sahsu_maptiles CASCADE;
 DROP TABLE IF EXISTS t_rif40_geolevels_geometry_sahsu_level1;
 DROP TABLE IF EXISTS t_rif40_geolevels_geometry_sahsu_level2;
 DROP TABLE IF EXISTS t_rif40_geolevels_geometry_sahsu_level3;
 DROP TABLE IF EXISTS t_rif40_geolevels_geometry_sahsu_level4;
+DROP TABLE IF EXISTS p_rif40_geolevels_geometry_sahsu_level1;
+DROP TABLE IF EXISTS p_rif40_geolevels_geometry_sahsu_level2;
+DROP TABLE IF EXISTS p_rif40_geolevels_geometry_sahsu_level3;
+DROP TABLE IF EXISTS p_rif40_geolevels_geometry_sahsu_level4;
+DROP TABLE IF EXISTS t_rif40_geolevels_maptiles_sahsu_level1;
+DROP TABLE IF EXISTS t_rif40_geolevels_maptiles_sahsu_level2;
+DROP TABLE IF EXISTS t_rif40_geolevels_maptiles_sahsu_level3;
+DROP TABLE IF EXISTS t_rif40_geolevels_maptiles_sahsu_level4;
+DROP TABLE IF EXISTS p_rif40_geolevels_maptiles_sahsu_level1;
+DROP TABLE IF EXISTS p_rif40_geolevels_maptiles_sahsu_level2;
+DROP TABLE IF EXISTS p_rif40_geolevels_maptiles_sahsu_level3;
+DROP TABLE IF EXISTS p_rif40_geolevels_maptiles_sahsu_level4;
 
 DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_rif40_covariates_checks();
 DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_rif40_study_shares_checks();
