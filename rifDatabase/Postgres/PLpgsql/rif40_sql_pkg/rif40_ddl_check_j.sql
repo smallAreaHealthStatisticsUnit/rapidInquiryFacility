@@ -130,7 +130,15 @@ DECLARE
 										/* Geometry tables */
 			        FROM rif40_geographies
 			       UNION 
+			      SELECT DISTINCT 't_rif40_'||LOWER(geography)||'_maptiles' tablename
+										/* Geometry tables */
+			        FROM rif40_geographies
+			       UNION 
 			      SELECT DISTINCT 'p_rif40_geolevels_geometry_'||	/* Geometry table partitions */
+					LOWER(geography)||'_'||LOWER(geolevel_name) tablename
+			        FROM t_rif40_geolevels
+			       UNION 
+			      SELECT DISTINCT 'p_rif40_geolevels_maptiles_'||	/* Maptile table partitions */
 					LOWER(geography)||'_'||LOWER(geolevel_name) tablename
 			        FROM t_rif40_geolevels
 			       UNION 
@@ -145,7 +153,7 @@ DECLARE
 			       UNION 
 			      SELECT DISTINCT LOWER(centroids_table) tablename	/* Centroids tables */
 			        FROM t_rif40_geolevels WHERE centroids_table IS NOT NULL
-				/* rif40_outcomes lookup tables not inluded in this list as supplied as part of the initial setup 
+				/* rif40_outcomes lookup tables not included in this list as supplied as part of the initial setup 
 			      UNION
 			     SELECT tablename 
 			       FROM (

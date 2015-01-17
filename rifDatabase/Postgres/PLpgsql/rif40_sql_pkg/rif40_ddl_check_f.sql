@@ -147,6 +147,14 @@ DECLARE
 					LOWER(geography)||'_'||LOWER(geolevel_name) tablename
 			        FROM t_rif40_geolevels
 			       UNION 
+			      SELECT DISTINCT 't_rif40_'||LOWER(geography)||'_maptiles' tablename
+										/* Geometry tables */
+			        FROM rif40_geographies
+			       UNION 
+			      SELECT DISTINCT 'p_rif40_geolevels_maptiles_'||	/* Maptile table partitions */
+					LOWER(geography)||'_'||LOWER(geolevel_name) tablename
+			        FROM t_rif40_geolevels
+			       UNION 
 			      SELECT DISTINCT LOWER(table_name) tablename			/* Numerator and denominators */
 			        FROM rif40_tables WHERE table_name IS NOT NULL
 			       UNION 
