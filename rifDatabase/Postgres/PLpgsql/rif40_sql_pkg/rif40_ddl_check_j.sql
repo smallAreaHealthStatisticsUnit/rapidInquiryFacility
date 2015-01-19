@@ -117,10 +117,19 @@ DECLARE
 		   AND NOT (a.table_name IN ('g_rif40_comparison_areas', 'g_rif40_study_areas', 'user_role_privs', 
 									 'sahsuland_geography_test')
     		       OR   a.table_name IN (
-			SELECT tablename table_or_view		 		/* Geospatial tables created by rif40_geo_pkg functions */
+			SELECT viewname table_or_view		 		/* Geospatial views created by rif40_geo_pkg functions */
+			  FROM pg_views
+			 WHERE viewname IN (
+			      SELECT DISTINCT 'rif40_'||LOWER(geography)||'_maptiles' viewname
+										/* Maptiles view */
+			        FROM rif40_geographies
+					)
+				)
+    		       OR   a.table_name IN (
+			SELECT tablename table_or_view		 		/* Geospatial views created by rif40_geo_pkg functions */
 			  FROM pg_tables
-			 WHERE tablename IN (
-		    	      SELECT DISTINCT LOWER(lookup_table) tablename	/* Geolevel lookup tables */
+			 WHERE tablename IN (			        
+		    	  SELECT DISTINCT LOWER(lookup_table) tablename	/* Geolevel lookup tables */
 			        FROM t_rif40_geolevels WHERE lookup_table IS NOT NULL
 			       UNION 
 			      SELECT DISTINCT LOWER(hierarchytable) tablename	/* Hierarchy table */
@@ -131,7 +140,7 @@ DECLARE
 			        FROM rif40_geographies
 			       UNION 
 			      SELECT DISTINCT 't_rif40_'||LOWER(geography)||'_maptiles' tablename
-										/* Geometry tables */
+										/* Maptiles tables */
 			        FROM rif40_geographies
 			       UNION 
 			      SELECT DISTINCT 'p_rif40_geolevels_geometry_'||	/* Geometry table partitions */
@@ -139,7 +148,15 @@ DECLARE
 			        FROM t_rif40_geolevels
 			       UNION 
 			      SELECT DISTINCT 'p_rif40_geolevels_maptiles_'||	/* Maptile table partitions */
-					LOWER(geography)||'_'||LOWER(geolevel_name) tablename
+					LOWER(geography)||'_'||LOWER(geolevel_name)||'_zoom_6' tablename
+			        FROM t_rif40_geolevels
+			       UNION 
+			      SELECT DISTINCT 'p_rif40_geolevels_maptiles_'||	/* Maptile table partitions */
+					LOWER(geography)||'_'||LOWER(geolevel_name)||'_zoom_8' tablename
+			        FROM t_rif40_geolevels
+			       UNION 
+			      SELECT DISTINCT 'p_rif40_geolevels_maptiles_'||	/* Maptile table partitions */
+					LOWER(geography)||'_'||LOWER(geolevel_name)||'_zoom_11' tablename
 			        FROM t_rif40_geolevels
 			       UNION 
 			      SELECT DISTINCT LOWER(table_name) tablename	/* Numerator and denominators */

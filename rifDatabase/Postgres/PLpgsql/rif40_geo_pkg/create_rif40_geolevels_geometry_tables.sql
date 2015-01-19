@@ -16,6 +16,8 @@
 --
 -- Rapid Enquiry Facility (RIF) - Create PG psql code (Geographic processing)
 --								  create_rif40_geolevels_geometry_tables() function
+--								  Create t_rif40_<geography>_geometry and 
+--							      t_rif40_<geography>_maptiles tables
 --
 -- Copyright:
 --
@@ -65,106 +67,6 @@ Function: 	create_rif40_geolevels_geometry_tables()
 Parameters:	Geography
 Returns:	Nothing
 Description:	Create t_rif40_<geography>_geometry and t_rif40_<geography>_maptiles tables
-
-INSERT INTO t_rif40_sahsu_geometry(
-        geography, geolevel_name, area_id, name, gid, area, 
-		shapefile_geometry, optimised_geometry, optimised_geojson)
-WITH a AS ( /- Aggregate geometries with the same area_id -/
-        SELECT 'LEVEL1' AS geolevel_name, level1 AS area_id,         NULL::Text AS name,
-             ST_Union(CASE WHEN ST_IsValid(geom) = FALSE THEN ST_MakeValid(geom) 
-				ELSE geom END) AS geom /- Make valid if required, Union polygons together -/,
-        ROW_NUMBER() OVER (ORDER BY level1) AS gid
-          FROM x_sahsu_level1
-         GROUP BY level1
-        UNION
-        SELECT 'LEVEL2' AS geolevel_name, level2 AS area_id,         name AS name,
-             ST_Union(CASE WHEN ST_IsValid(geom) = FALSE THEN ST_MakeValid(geom) 
-				ELSE geom END) AS geom /- Make valid if required, Union polygons together -/,
-        ROW_NUMBER() OVER (ORDER BY level2) AS gid
-          FROM x_sahsu_level2
-         GROUP BY level2, name
-        UNION
-        SELECT 'LEVEL3' AS geolevel_name, level3 AS area_id,         NULL::Text AS name,
-             ST_Union(CASE WHEN ST_IsValid(geom) = FALSE THEN ST_MakeValid(geom) 
-				ELSE geom END) AS geom /- Make valid if required, Union polygons together -/,
-        ROW_NUMBER() OVER (ORDER BY level3) AS gid
-          FROM x_sahsu_level3
-         GROUP BY level3
-        UNION
-        SELECT 'LEVEL4' AS geolevel_name, level4 AS area_id,         NULL::Text AS name,
-             ST_Union(CASE WHEN ST_IsValid(geom) = FALSE THEN ST_MakeValid(geom) 
-				ELSE geom END) AS geom /- Make valid if required, Union polygons together -/,
-        ROW_NUMBER() OVER (ORDER BY level4) AS gid
-          FROM x_sahsu_level4
-         GROUP BY level4
-), b /- t_rif40_geolevels -/ AS (
-        SELECT geography, geolevel_name, st_simplify_tolerance
-          FROM t_rif40_geolevels
-         WHERE geography = 'SAHSU'
-), c /- rif40_geographies -/ AS (
-        SELECT max_geojson_digits
-          FROM rif40_geographies
-         WHERE geography = 'SAHSU'
-), d AS (
-        SELECT a.geolevel_name, geom, area_id, name, a.gid,
-               ST_SimplifyPreserveTopology(geom, b.st_simplify_tolerance) AS simplified_topology
-          FROM a, b
-         WHERE a.geolevel_name = b.geolevel_name
-)
-SELECT 'SAHSU' geography, b.geolevel_name, area_id, NULLIF(name, 'Unknown: ['||area_id||']') AS name, d.gid,
-        round(CAST(ST_area(geom)/1000000 AS numeric), 1) AS area,
-        ST_Multi(geom) AS shapefile_geometry,
-        ST_transform(ST_Multi(simplified_topology), 4326 /- WGS 84 -/) AS optimised_geometry,
-        ST_AsGeoJson(
-                ST_transform(
-                        simplified_topology, 4326 /- WGS 84 -/),
-                                c.max_geojson_digits, 0 /- no options -/) AS optimised_geojson
-  FROM b, c, d
- WHERE b.geolevel_name = d.geolevel_name
- ORDER BY 1, 2, 3;
-
-UPDATE t_rif40_geolevels a
-   SET avg_npoints_geom = b1.avg_npoints_geom,
-       avg_npoints_opt  = b1.avg_npoints_opt,
-       file_geojson_len = b1.file_geojson_len,
-       leg_geom         = b1.leg_geom,
-       leg_opt          = b1.leg_opt
-  FROM (
-        SELECT geolevel_name,
-               ROUND(CAST(AVG(ST_NPOINTS(SHAPEFILE_GEOMETRY)) AS numeric), 1) AS avg_npoints_geom,
-                   ROUND(CAST(AVG(ST_NPoints(optimised_geometry)) AS numeric), 1) AS avg_npoints_opt,
-                   ROUND(CAST(SUM(length(optimised_geojson)) AS numeric), 1) AS file_geojson_len,
-               ROUND(CAST(AVG(ST_perimeter(shapefile_geometry)/ST_NPoints(shapefile_geometry)) AS numeric), 1) AS leg_geom,
-               ROUND(CAST(AVG(ST_perimeter(optimised_geometry)/ST_NPoints(optimised_geometry)) AS numeric), 1) AS leg_opt
-         FROM t_rif40_sahsu_geometry b
-         GROUP BY geolevel_name) AS b1
- WHERE a.geolevel_name = b1.geolevel_name
-   AND a.geography     = 'SAHSU';
-
- UPDATE t_rif40_geolevels a
-   SET avg_npoints_geom = b1.avg_npoints_geom,
-       avg_npoints_opt  = b1.avg_npoints_opt,
-       file_geojson_len = b1.file_geojson_len,
-       leg_geom         = b1.leg_geom,
-       leg_opt          = b1.leg_opt
-  FROM (
-        SELECT geolevel_name,
-               ROUND(CAST(AVG(ST_NPOINTS(SHAPEFILE_GEOMETRY)) AS numeric), 1) AS avg_npoints_geom,
-                   ROUND(CAST(AVG(ST_NPoints(optimised_geometry)) AS numeric), 1) AS avg_npoints_opt,
-                   ROUND(CAST(SUM(length(optimised_geojson)) AS numeric), 1) AS file_geojson_len,
-               ROUND(CAST(AVG(ST_perimeter(shapefile_geometry)/ST_NPoints(shapefile_geometry)) AS numeric), 1) AS leg_geom,
-               ROUND(CAST(AVG(ST_perimeter(optimised_geometry)/ST_NPoints(optimised_geometry)) AS numeric), 1) AS leg_opt
-         FROM t_rif40_sahsu_geometry b
-         GROUP BY geolevel_name) AS b1
- WHERE a.geolevel_name = b1.geolevel_name
-   AND a.geography     = 'SAHSU';
-CREATE INDEX t_rif40_sahsu_geo_gin1 ON t_rif40_sahsu_geometry USING GIST(shapefile_geometry);
-CREATE INDEX t_rif40_sahsu_geo_gin2 ON t_rif40_sahsu_geometry USING GIST(optimised_geometry);
-REINDEX INDEX t_rif40_sahsu_geometry_pk;
-REINDEX INDEX t_rif40_sahsu_geometry_uk;
-REINDEX INDEX t_rif40_sahsu_geometry_gid;
-ANALYZE VERBOSE t_rif40_sahsu_geometry;
-
  */
 DECLARE
  	c2geogeom CURSOR(l_geography VARCHAR) FOR
@@ -180,6 +82,9 @@ DECLARE
 	c3_count INTEGER:=0;
 	func_sql VARCHAR;
 	sql_stmt VARCHAR;
+--
+	zoomlevel INTEGER;
+	zoomlevel_arr INTEGER[] := ARRAY[6, 8, 11];
 BEGIN
 --
 -- Must be rif40 or have rif_manager role
@@ -576,7 +481,7 @@ BEGIN
 			'geography         CHARACTER VARYING(50)  NOT NULL,'||E'\n'||
 			'geolevel_name     CHARACTER VARYING(30)  NOT NULL,'||E'\n'||
 			'tile_id           CHARACTER VARYING(300) NOT NULL,'||E'\n'||
-			'zoomlevel		   INTEGER				  NOT NULL,'||E'\n'||
+			'zoomlevel		   INTEGER CHECK(zoomlevel IN (6, 8, 11)) NOT NULL,'||E'\n'||
 			'optimised_geojson JSON			          NOT NULL,'||E'\n'||
 			'optimised_topojson JSON			      NOT NULL,'||E'\n'||
 			'gid               INTEGER                NOT NULL)';
@@ -585,7 +490,7 @@ BEGIN
 -- Comment base table
 --
 		sql_stmt:='COMMENT ON TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
-			' IS ''Geolevels geometry: maptiles for hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE''';
+			' IS ''Maptiles table for geography; separate partions per geolevel and zoomlevel. Use this table for INSERT/UPDATE/DELETE''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.geography 	IS ''Geography (e.g EW2001)''';
@@ -597,7 +502,7 @@ BEGIN
 			'.tile_id 	IS ''Tile ID in the format''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
-			'.zoomlevel 	IS ''Zoom level''';
+			'.zoomlevel 	IS ''Zoom level: 6, 8 or 11''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.tile_id 	IS ''Tile ID in the format''';
@@ -652,99 +557,102 @@ BEGIN
 		c3_count:=0;
 		FOR c3_rec IN c3geogeom(c2_rec.geography) LOOP
 --
--- Create partitions P_RIF40_GEOLEVELS_MAPTILES_<GEOGRAPHY>_<GEOELVELS>
+-- Create partitions P_RIF40_GEOLEVELS_MAPTILES_<GEOGRAPHY>_<GEOELVEL>_zoom_<ZOOMLEVEL>
 --
-			c3_count:=c3_count+1;
-			sql_stmt:='CREATE TABLE '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||E'\n'||
-				'( CHECK (geography = '''||c2_rec.geography||
-				''' AND geolevel_name = '''||c3_rec.geolevel_name||''')'||E'\n'||
-				') INHERITS (t_rif40_'||LOWER(c2_rec.geography)||'_maptiles)';
-			IF c3_count = 1 THEN
-				func_sql:=func_sql||E'\n'||'	IF NEW.geography = '''||c2_rec.geography||
-					''' AND NEW.geolevel_name = '''||c3_rec.geolevel_name||''' THEN'||E'\n'||
-					'INSERT INTO '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||' VALUES (NEW.*);';
-			ELSE
-				func_sql:=func_sql||E'\n'||'	ELSIF NEW.geography = '''||c2_rec.geography||
-					''' AND NEW.geolevel_name = '''||c3_rec.geolevel_name||''' THEN'||E'\n'||
-					'INSERT INTO '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||' VALUES (NEW.*);';
-			END IF;
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+			FOREACH zoomlevel IN ARRAY zoomlevel_arr LOOP
+				c3_count:=c3_count+1;
+				sql_stmt:='CREATE TABLE '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||E'\n'||
+					'( CHECK (geography = '''||c2_rec.geography||''''||E'\n'||
+					'     AND zoomlevel = '||zoomlevel::Text||E'\n'||
+					'     AND geolevel_name = '''||c3_rec.geolevel_name||''')'||E'\n'||
+					') INHERITS (t_rif40_'||LOWER(c2_rec.geography)||'_maptiles)';
+				IF c3_count = 1 THEN
+					func_sql:=func_sql||E'\n'||'	IF NEW.geography = '''||c2_rec.geography||
+						''' AND NEW.geolevel_name = '''||c3_rec.geolevel_name||''' THEN'||E'\n'||
+						'INSERT INTO '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||' VALUES (NEW.*);';
+				ELSE
+					func_sql:=func_sql||E'\n'||'	ELSIF NEW.geography = '''||c2_rec.geography||
+						''' AND NEW.geolevel_name = '''||c3_rec.geolevel_name||''' THEN'||E'\n'||
+						'INSERT INTO '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||' VALUES (NEW.*);';
+				END IF;
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --		
--- Comment base table
+-- Comment partition table
 --
-			sql_stmt:='COMMENT ON TABLE '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||
-				' IS ''Geolevels geometry: maptiles for hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||
-				'.geography 	IS ''Geography (e.g EW2001)''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||
-				'.geolevel_name 	IS ''Name of geolevel. This will be a column name in the numerator/denominator tables''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||
-				'.tile_id 	IS ''Tile ID in the format''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
-			sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||
-				'.zoomlevel 	IS ''Zoom level''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
-			sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||
-				'.tile_id 	IS ''Tile ID in the format''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
-			sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||
-				'.optimised_geojson 	IS ''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel N. '||
-				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
-				'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
-				'(in metres for most projections) between simplified points. '||
-				'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
-				'(it works on an object by object basis; the edge between two areas will therefore be processed independently '||
-				'and not necessarily in the same manner). '||
-				'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
-				'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||
-				'.optimised_topojson 	IS ''Shapefile multipolygon in TopoJSON format, optimised for zoomlevel N. '||
-				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
-				'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
-				'(in metres for most projections) between simplified points. '||
-				'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
-				'(it works on an object by object basis; the edge between two areas will therefore be processed independently '||
-				'and not necessarily in the same manner). '||	
-				'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
-				'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.gid 	IS ''Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+				sql_stmt:='COMMENT ON TABLE '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
+					' IS ''Maptiles table for geography; separate partions per geolevel and zoomlevel. Use this table for INSERT/UPDATE/DELETE''';
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+				sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
+					'.geography 	IS ''Geography (e.g EW2001)''';
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+				sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
+					'.geolevel_name 	IS ''Name of geolevel. This will be a column name in the numerator/denominator tables''';
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+				sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
+					'.tile_id 	IS ''Tile ID in the format''';
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
+				sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
+					'.zoomlevel 	IS ''Zoom level; 6, 8 or 11''';
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+				sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
+					'.tile_id 	IS ''Tile ID in the format''';
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+				sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
+					'.optimised_geojson 	IS ''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel N. '||
+					'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
+					'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
+					'(in metres for most projections) between simplified points. '||
+					'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
+					'(it works on an object by object basis; the edge between two areas will therefore be processed independently '||
+					'and not necessarily in the same manner). '||
+					'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
+					'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+				sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
+					'.optimised_topojson 	IS ''Shapefile multipolygon in TopoJSON format, optimised for zoomlevel N. '||
+					'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
+					'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
+					'(in metres for most projections) between simplified points. '||
+					'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
+					'(it works on an object by object basis; the edge between two areas will therefore be processed independently '||
+					'and not necessarily in the same manner). '||	
+					'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
+					'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+				sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||'.gid 	IS ''Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)''';
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 -- Add PK/UK indexes
 --
-			sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_uk')||
-				' ON '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'(geography, tile_id)';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_gid')||
-				' ON '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'(geography, gid)';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='ALTER TABLE '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||
-				' ADD CONSTRAINT '||quote_ident('p_rif40_geolevels_maptiles_'||
-				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_pk')||
-				' PRIMARY KEY (geography, geolevel_name, tile_id)';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+				sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text||'_uk')||
+					' ON '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||'(geography, tile_id)';
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+				sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text||'_gid')||
+					' ON '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||'(geography, zoomlevel, gid)';
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+				sql_stmt:='ALTER TABLE '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
+					' ADD CONSTRAINT '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text||'_pk')||
+					' PRIMARY KEY (geography, geolevel_name, tile_id)';
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+			END LOOP;
 		END LOOP;
 --
 -- Create base insert function
@@ -786,6 +694,54 @@ BEGIN
 		sql_stmt:='GRANT SELECT ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||' TO PUBLIC';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='ANALYZE VERBOSE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles');
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+--
+-- View
+--
+		sql_stmt:='CREATE OR REPLACE VIEW '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||E'\n'||
+				  'AS SELECT * FROM '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles');
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON VIEW '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+			' IS ''Maptiles table for geography; separate partions per geolevel and zoomlevel. Use this table for INSERT/UPDATE/DELETE''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+			'.geography 	IS ''Geography (e.g EW2001)''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+			'.geolevel_name 	IS ''Name of geolevel. This will be a column name in the numerator/denominator tables''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+			'.tile_id 	IS ''Tile ID in the format''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+			'.zoomlevel 	IS ''Zoom level: 1 to 11''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+			'.tile_id 	IS ''Tile ID in the format''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+			'.optimised_geojson 	IS ''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel N. '||
+			'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
+			'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
+			'(in metres for most projections) between simplified points. '||
+			'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
+			'(it works on an object by object basis; the edge between two areas will therefore be processed independently '||
+			'and not necessarily in the same manner). '||
+			'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
+			'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+			'.optimised_topojson 	IS ''Shapefile multipolygon in TopoJSON format, optimised for zoomlevel N. '||
+			'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
+			'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
+			'(in metres for most projections) between simplified points. '||
+			'Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm '||
+			'(it works on an object by object basis; the edge between two areas will therefore be processed independently '||
+			'and not necessarily in the same manner). '||
+			'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
+			'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'.gid 	IS ''Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 	END IF;
@@ -838,7 +794,866 @@ Parameters:	Nothing
 Returns:	Nothing
 Description:	Create t_rif40_<geography>_geometry and t_rif40_<geography>_maptiles tables
 
-ADD GENERATED SQL';
+COMMENT ON TABLE t_rif40_sahsu_geometry IS ''Geolevels geometry: geometry for hierarchy of level with a ge
+ography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels are restricted to LADUA/DIST
+RICT level resolution or lower. This table contains no data on Oracle. This replaces the shapefiles used in previous RIF releases. Populating this table checks the lookup and hiera
+rchy tables and thus it must be populated last. Any insert into T_RIF40_GEOLEVELS_GEOMETRY must be a single statement insert.'';
+COMMENT ON COLUMN t_rif40_sahsu_geometry.geography   IS ''Geography (e.g EW2001)'';
+COMMENT ON COLUMN t_rif40_sahsu_geometry.geolevel_name       IS ''Name of geolevel. This will be a column
+name in the numerator/denominator tables'';
+COMMENT ON COLUMN t_rif40_sahsu_geometry.area_id     IS ''An area id, the value of a geolevel; i.e. the va
+lue of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE'';
+COMMENT ON COLUMN t_rif40_sahsu_geometry.name        IS ''The name of an area id'';
+COMMENT ON COLUMN t_rif40_sahsu_geometry.area        IS ''The area in square km of an area id'';
+COMMENT ON COLUMN t_rif40_sahsu_geometry.total_males         IS ''Total males'';
+COMMENT ON COLUMN t_rif40_sahsu_geometry.total_females       IS ''Total females'';
+COMMENT ON COLUMN t_rif40_sahsu_geometry.population_year     IS ''Year of population data'';
+COMMENT ON COLUMN t_rif40_sahsu_geometry.optimised_geojson   IS ''Shapefile multipolygon in GeoJSON format
+, optimised for zoomlevel 6. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. (i
+n metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by objec
+t basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GE
+OJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN t_rif40_sahsu_geometry.optimised_geojson_2         IS ''Shapefile multipolygon in optimi
+sed GeoJSON format, optimised for zoomlevel 8. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is
+no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on
+an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are replac
+ed by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN t_rif40_sahsu_geometry.optimised_geojson_3         IS ''Shapefile multipolygon in optimi
+sed GeoJSON format, optimised for zoomlevel 11. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is
+ no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on
+ an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are repla
+ced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN t_rif40_sahsu_geometry.gid         IS ''Geographic ID (artificial primary key originally
+ created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+SELECT AddGeometryColumn(''t_rif40_sahsu_geometry'', ''shapefile_geometry'', 27700, ''MULTIPOLYGON'', 2);
+ALTER TABLE t_rif40_sahsu_geometry ALTER COLUMN shapefile_geometry SET NOT NULL;
+COMMENT ON COLUMN t_rif40_sahsu_geometry.shapefile_geometry   IS ''Spatial data for geolevel (PostGress/Po
+stGIS only). Can also use SHAPEFILE instead,'';
+SELECT AddGeometryColumn(''t_rif40_sahsu_geometry'', ''optimised_geometry'', 4326, ''MULTIPOLYGON'', 2);
+ALTER TABLE t_rif40_sahsu_geometry ALTER COLUMN optimised_geometry SET NOT NULL;
+COMMENT ON COLUMN t_rif40_sahsu_geometry.optimised_geometry   IS ''Optimised spatial data for geolevel in
+SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 6. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the G
+eoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain small slivers and o
+verlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed independently and not nece
+ssarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.'';
+SELECT AddGeometryColumn(''t_rif40_sahsu_geometry'', ''optimised_geometry_2'', 4326, ''MULTIPOLYGON'', 2);
+ALTER TABLE t_rif40_sahsu_geometry ALTER COLUMN optimised_geometry_2 SET NOT NULL;
+COMMENT ON COLUMN t_rif40_sahsu_geometry.optimised_geometry_2         IS ''Optimised spatial data for geol
+evel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 8. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits
+in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain small slive
+rs and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed independently and
+not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.'';
+SELECT AddGeometryColumn(''t_rif40_sahsu_geometry'', ''optimised_geometry_3'', 4326, ''MULTIPOLYGON'', 2);
+ALTER TABLE t_rif40_sahsu_geometry ALTER COLUMN optimised_geometry_3 SET NOT NULL;
+COMMENT ON COLUMN t_rif40_sahsu_geometry.optimised_geometry_3         IS ''Optimised spatial data for geol
+evel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 11. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits
+ in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain small sliv
+ers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed independently and
+ not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.'';
+CREATE UNIQUE INDEX t_rif40_sahsu_geometry_uk ON t_rif40_sahsu_geometry(geography, area_id);
+CREATE UNIQUE INDEX t_rif40_sahsu_geometry_gid ON t_rif40_sahsu_geometry(geography, gid);
+ALTER TABLE t_rif40_sahsu_geometry ADD CONSTRAINT t_rif40_sahsu_geometry_pk PRIMARY KEY (geography, geole
+vel_name, area_id);
+CREATE TABLE p_rif40_geolevels_geometry_sahsu_level2
+( CHECK (geography = ''SAHSU'' AND geolevel_name = ''LEVEL2'')
+) INHERITS (t_rif40_sahsu_geometry);
+COMMENT ON TABLE p_rif40_geolevels_geometry_sahsu_level2             IS ''Geolevels geometry: geometry for
+ hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels
+ are restricted to LADUA/DISTRICT level resolution or lower. This table contains no data on Oracle. This replaces the shapefiles used in previous RIF releases. Populating this tabl
+e checks the lookup and hierarchy tables and thus it must be populated last. Any insert into T_RIF40_GEOLEVELS_GEOMETRY must be a single statement insert. This is the partition for
+ geogrpahy: sahsu, geo level: level2'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level2.geography  IS ''Geography (e.g EW2001)'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level2.geolevel_name      IS ''Name of geolevel. This w
+ill be a column name in the numerator/denominator tables'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level2.area_id    IS ''An area id, the value of a geole
+vel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level2.optimised_geojson  IS ''Shapefile multipolygon i
+n GeoJSON format, optimised for zoomlevel 6. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no
+ longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an
+ object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are replaced
+ by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level2.optimised_geojson_2        IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel 8. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERAN
+CE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wor
+ks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level2.optimised_geojson_3        IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel 11. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERA
+NCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wo
+rks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+ replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level2.area       IS ''The area in square km of an area
+ id'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level2.name       IS ''The name of an area id'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level2.gid        IS ''Geographic ID (artificial primar
+y key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level2.shapefile_geometry  IS ''Spatial data for geolev
+el (PostGress/PostGIS only). Can also use SHAPEFILE instead,'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level2.optimised_geometry  IS ''Optimised spatial data
+for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 6. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of
+ digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain sma
+ll slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed independen
+tly and not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level2.optimised_geometry_2        IS ''Optimised spati
+al data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 8. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the n
+umber of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will con
+tain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed in
+dependently and not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level2.optimised_geometry_3        IS ''Optimised spati
+al data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 11. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the
+number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will co
+ntain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed i
+ndependently and not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level2.total_males         IS ''Total males.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level2.total_females       IS ''Total females.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level2.population_year     IS ''Population year.'';
+CREATE UNIQUE INDEX p_rif40_geolevels_geometry_sahsu_level2_uk ON p_rif40_geolevels_geometry_sahsu_level2
+(geography, area_id);
+CREATE UNIQUE INDEX p_rif40_geolevels_geometry_sahsu_level2_gid ON p_rif40_geolevels_geometry_sahsu_level
+2(geography, gid);
+ALTER TABLE p_rif40_geolevels_geometry_sahsu_level2 ADD CONSTRAINT p_rif40_geolevels_geometry_sahsulevel2
+_geometry_pk PRIMARY KEY (geography, geolevel_name, area_id);
+CREATE INDEX p_rif40_geolevels_geometry_sahsu_level2_sgin1 ON p_rif40_geolevels_geometry_sahsu_level2 USI
+NG GIST(shapefile_geometry);
+CREATE INDEX p_rif40_geolevels_geometry_sahsu_level2_ogin1 ON p_rif40_geolevels_geometry_sahsu_level2 USI
+NG GIST(optimised_geometry);
+CREATE INDEX p_rif40_geolevels_geometry_sahsu_level2_ogin2 ON p_rif40_geolevels_geometry_sahsu_level2 USI
+NG GIST(optimised_geometry_2);
+CREATE INDEX p_rif40_geolevels_geometry_sahsu_level2_ogin3 ON p_rif40_geolevels_geometry_sahsu_level2 USI
+NG GIST(optimised_geometry_3);
+CREATE TABLE p_rif40_geolevels_geometry_sahsu_level1
+( CHECK (geography = ''SAHSU'' AND geolevel_name = ''LEVEL1'')
+) INHERITS (t_rif40_sahsu_geometry);
+COMMENT ON TABLE p_rif40_geolevels_geometry_sahsu_level1             IS ''Geolevels geometry: geometry for
+ hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels
+ are restricted to LADUA/DISTRICT level resolution or lower. This table contains no data on Oracle. This replaces the shapefiles used in previous RIF releases. Populating this tabl
+e checks the lookup and hierarchy tables and thus it must be populated last. Any insert into T_RIF40_GEOLEVELS_GEOMETRY must be a single statement insert. This is the partition for
+ geogrpahy: sahsu, geo level: level1'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level1.geography  IS ''Geography (e.g EW2001)'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level1.geolevel_name      IS ''Name of geolevel. This w
+ill be a column name in the numerator/denominator tables'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level1.area_id    IS ''An area id, the value of a geole
+vel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level1.optimised_geojson  IS ''Shapefile multipolygon i
+n GeoJSON format, optimised for zoomlevel 6. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no
+ longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an
+ object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are replaced
+ by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level1.optimised_geojson_2        IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel 8. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERAN
+CE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wor
+ks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level1.optimised_geojson_3        IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel 11. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERA
+NCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wo
+rks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+ replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level1.area       IS ''The area in square km of an area
+ id'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level1.name       IS ''The name of an area id'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level1.gid        IS ''Geographic ID (artificial primar
+y key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level1.shapefile_geometry  IS ''Spatial data for geolev
+el (PostGress/PostGIS only). Can also use SHAPEFILE instead,'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level1.optimised_geometry  IS ''Optimised spatial data
+for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 6. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of
+ digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain sma
+ll slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed independen
+tly and not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level1.optimised_geometry_2        IS ''Optimised spati
+al data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 8. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the n
+umber of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will con
+tain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed in
+dependently and not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level1.optimised_geometry_3        IS ''Optimised spati
+al data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 11. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the
+number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will co
+ntain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed i
+ndependently and not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level1.total_males         IS ''Total males.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level1.total_females       IS ''Total females.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level1.population_year     IS ''Population year.'';
+CREATE UNIQUE INDEX p_rif40_geolevels_geometry_sahsu_level1_uk ON p_rif40_geolevels_geometry_sahsu_level1
+(geography, area_id);
+CREATE UNIQUE INDEX p_rif40_geolevels_geometry_sahsu_level1_gid ON p_rif40_geolevels_geometry_sahsu_level
+1(geography, gid);
+ALTER TABLE p_rif40_geolevels_geometry_sahsu_level1 ADD CONSTRAINT p_rif40_geolevels_geometry_sahsulevel1
+_geometry_pk PRIMARY KEY (geography, geolevel_name, area_id);
+CREATE INDEX p_rif40_geolevels_geometry_sahsu_level1_sgin1 ON p_rif40_geolevels_geometry_sahsu_level1 USI
+NG GIST(shapefile_geometry);
+CREATE INDEX p_rif40_geolevels_geometry_sahsu_level1_ogin1 ON p_rif40_geolevels_geometry_sahsu_level1 USI
+NG GIST(optimised_geometry);
+CREATE INDEX p_rif40_geolevels_geometry_sahsu_level1_ogin2 ON p_rif40_geolevels_geometry_sahsu_level1 USI
+NG GIST(optimised_geometry_2);
+CREATE INDEX p_rif40_geolevels_geometry_sahsu_level1_ogin3 ON p_rif40_geolevels_geometry_sahsu_level1 USI
+NG GIST(optimised_geometry_3);
+CREATE TABLE p_rif40_geolevels_geometry_sahsu_level3
+( CHECK (geography = ''SAHSU'' AND geolevel_name = ''LEVEL3'')
+) INHERITS (t_rif40_sahsu_geometry);
+COMMENT ON TABLE p_rif40_geolevels_geometry_sahsu_level3             IS ''Geolevels geometry: geometry for
+ hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels
+ are restricted to LADUA/DISTRICT level resolution or lower. This table contains no data on Oracle. This replaces the shapefiles used in previous RIF releases. Populating this tabl
+e checks the lookup and hierarchy tables and thus it must be populated last. Any insert into T_RIF40_GEOLEVELS_GEOMETRY must be a single statement insert. This is the partition for
+ geogrpahy: sahsu, geo level: level3'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level3.geography  IS ''Geography (e.g EW2001)'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level3.geolevel_name      IS ''Name of geolevel. This w
+ill be a column name in the numerator/denominator tables'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level3.area_id    IS ''An area id, the value of a geole
+vel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level3.optimised_geojson  IS ''Shapefile multipolygon i
+n GeoJSON format, optimised for zoomlevel 6. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no
+ longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an
+ object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are replaced
+ by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level3.optimised_geojson_2        IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel 8. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERAN
+CE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wor
+ks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level3.optimised_geojson_3        IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel 11. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERA
+NCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wo
+rks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+ replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level3.area       IS ''The area in square km of an area
+ id'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level3.name       IS ''The name of an area id'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level3.gid        IS ''Geographic ID (artificial primar
+y key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level3.shapefile_geometry  IS ''Spatial data for geolev
+el (PostGress/PostGIS only). Can also use SHAPEFILE instead,'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level3.optimised_geometry  IS ''Optimised spatial data
+for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 6. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of
+ digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain sma
+ll slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed independen
+tly and not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level3.optimised_geometry_2        IS ''Optimised spati
+al data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 8. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the n
+umber of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will con
+tain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed in
+dependently and not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level3.optimised_geometry_3        IS ''Optimised spati
+al data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 11. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the
+number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will co
+ntain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed i
+ndependently and not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level3.total_males         IS ''Total males.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level3.total_females       IS ''Total females.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level3.population_year     IS ''Population year.'';
+CREATE UNIQUE INDEX p_rif40_geolevels_geometry_sahsu_level3_uk ON p_rif40_geolevels_geometry_sahsu_level3
+(geography, area_id);
+CREATE UNIQUE INDEX p_rif40_geolevels_geometry_sahsu_level3_gid ON p_rif40_geolevels_geometry_sahsu_level
+3(geography, gid);
+ALTER TABLE p_rif40_geolevels_geometry_sahsu_level3 ADD CONSTRAINT p_rif40_geolevels_geometry_sahsulevel3
+_geometry_pk PRIMARY KEY (geography, geolevel_name, area_id);
+CREATE INDEX p_rif40_geolevels_geometry_sahsu_level3_sgin1 ON p_rif40_geolevels_geometry_sahsu_level3 USI
+NG GIST(shapefile_geometry);
+CREATE INDEX p_rif40_geolevels_geometry_sahsu_level3_ogin1 ON p_rif40_geolevels_geometry_sahsu_level3 USI
+NG GIST(optimised_geometry);
+CREATE INDEX p_rif40_geolevels_geometry_sahsu_level3_ogin2 ON p_rif40_geolevels_geometry_sahsu_level3 USI
+NG GIST(optimised_geometry_2);
+CREATE INDEX p_rif40_geolevels_geometry_sahsu_level3_ogin3 ON p_rif40_geolevels_geometry_sahsu_level3 USI
+NG GIST(optimised_geometry_3);
+CREATE TABLE p_rif40_geolevels_geometry_sahsu_level4
+( CHECK (geography = ''SAHSU'' AND geolevel_name = ''LEVEL4'')
+) INHERITS (t_rif40_sahsu_geometry);
+COMMENT ON TABLE p_rif40_geolevels_geometry_sahsu_level4             IS ''Geolevels geometry: geometry for
+ hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels
+ are restricted to LADUA/DISTRICT level resolution or lower. This table contains no data on Oracle. This replaces the shapefiles used in previous RIF releases. Populating this tabl
+e checks the lookup and hierarchy tables and thus it must be populated last. Any insert into T_RIF40_GEOLEVELS_GEOMETRY must be a single statement insert. This is the partition for
+ geogrpahy: sahsu, geo level: level4'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level4.geography  IS ''Geography (e.g EW2001)'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level4.geolevel_name      IS ''Name of geolevel. This w
+ill be a column name in the numerator/denominator tables'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level4.area_id    IS ''An area id, the value of a geole
+vel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level4.optimised_geojson  IS ''Shapefile multipolygon i
+n GeoJSON format, optimised for zoomlevel 6. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no
+ longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an
+ object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are replaced
+ by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level4.optimised_geojson_2        IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel 8. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERAN
+CE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wor
+ks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level4.optimised_geojson_3        IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel 11. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERA
+NCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wo
+rks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+ replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level4.area       IS ''The area in square km of an area
+ id'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level4.name       IS ''The name of an area id'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level4.gid        IS ''Geographic ID (artificial primar
+y key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level4.shapefile_geometry  IS ''Spatial data for geolev
+el (PostGress/PostGIS only). Can also use SHAPEFILE instead,'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level4.optimised_geometry  IS ''Optimised spatial data
+for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 6. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of
+ digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain sma
+ll slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed independen
+tly and not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level4.optimised_geometry_2        IS ''Optimised spati
+al data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 8. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the n
+umber of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will con
+tain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed in
+dependently and not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level4.optimised_geometry_3        IS ''Optimised spati
+al data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 11. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the
+number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will co
+ntain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed i
+ndependently and not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level4.total_males         IS ''Total males.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level4.total_females       IS ''Total females.'';
+COMMENT ON COLUMN p_rif40_geolevels_geometry_sahsu_level4.population_year     IS ''Population year.'';
+CREATE UNIQUE INDEX p_rif40_geolevels_geometry_sahsu_level4_uk ON p_rif40_geolevels_geometry_sahsu_level4
+(geography, area_id);
+CREATE UNIQUE INDEX p_rif40_geolevels_geometry_sahsu_level4_gid ON p_rif40_geolevels_geometry_sahsu_level
+4(geography, gid);
+ALTER TABLE p_rif40_geolevels_geometry_sahsu_level4 ADD CONSTRAINT p_rif40_geolevels_geometry_sahsulevel4
+_geometry_pk PRIMARY KEY (geography, geolevel_name, area_id);
+CREATE INDEX p_rif40_geolevels_geometry_sahsu_level4_sgin1 ON p_rif40_geolevels_geometry_sahsu_level4 USI
+NG GIST(shapefile_geometry);
+CREATE INDEX p_rif40_geolevels_geometry_sahsu_level4_ogin1 ON p_rif40_geolevels_geometry_sahsu_level4 USI
+NG GIST(optimised_geometry);
+CREATE INDEX p_rif40_geolevels_geometry_sahsu_level4_ogin2 ON p_rif40_geolevels_geometry_sahsu_level4 USI
+NG GIST(optimised_geometry_2);
+CREATE INDEX p_rif40_geolevels_geometry_sahsu_level4_ogin3 ON p_rif40_geolevels_geometry_sahsu_level4 USI
+NG GIST(optimised_geometry_3);
+CREATE OR REPLACE FUNCTION t_rif40_sahsu_geometry_insert()
+RETURNS TRIGGER AS $func$
+BEGIN
+
+        IF NEW.geography = ''SAHSU'' AND NEW.geolevel_name = ''LEVEL2'' THEN
+INSERT INTO p_rif40_geolevels_geometry_sahsu_level2 VALUES (NEW.*);
+        ELSIF NEW.geography = ''SAHSU'' AND NEW.geolevel_name = ''LEVEL1'' THEN
+INSERT INTO p_rif40_geolevels_geometry_sahsu_level1 VALUES (NEW.*);
+        ELSIF NEW.geography = ''SAHSU'' AND NEW.geolevel_name = ''LEVEL3'' THEN
+INSERT INTO p_rif40_geolevels_geometry_sahsu_level3 VALUES (NEW.*);
+        ELSIF NEW.geography = ''SAHSU'' AND NEW.geolevel_name = ''LEVEL4'' THEN
+INSERT INTO p_rif40_geolevels_geometry_sahsu_level4 VALUES (NEW.*);
+        ELSE
+--
+-- Eventually this will automatically add a partition
+--
+                PERFORM rif40_log_pkg.rif40_error(-10002, ''p_rif40_geolevels_geometry_insert'', ''no partition for geography: %, geolevel: %'',
+                        NEW.geography, NEW.geolevel_name);
+        END IF;
+        RETURN NULL;
+END;
+$func$
+LANGUAGE plpgsql;
+COMMENT ON FUNCTION t_rif40_sahsu_geometry_insert() IS ''Partition INSERT function for geography: SAHSU'';
+CREATE TRIGGER t_rif40_sahsu_geometry_insert
+BEFORE INSERT ON t_rif40_sahsu_geometry
+FOR EACH ROW EXECUTE PROCEDURE t_rif40_sahsu_geometry_insert();
+COMMENT ON TRIGGER t_rif40_sahsu_geometry_insert
+        ON t_rif40_sahsu_geometry IS ''Partition INSERT trigger for geography: SAHSU'';
+GRANT SELECT,INSERT,UPDATE,DELETE ON t_rif40_sahsu_geometry TO rif_manager;
+GRANT SELECT ON t_rif40_sahsu_geometry TO PUBLIC;
+ANALYZE VERBOSE t_rif40_sahsu_geometry;
+CREATE TABLE t_rif40_sahsu_maptiles (
+geography         CHARACTER VARYING(50)  NOT NULL,
+geolevel_name     CHARACTER VARYING(30)  NOT NULL,
+tile_id           CHARACTER VARYING(300) NOT NULL,
+zoomlevel                  INTEGER CHECK(zoomlevel IN (6, 8, 11)) NOT NULL,
+optimised_geojson JSON                            NOT NULL,
+optimised_topojson JSON                       NOT NULL,
+gid               INTEGER                NOT NULL);
+COMMENT ON TABLE t_rif40_sahsu_maptiles IS ''Geolevels geometry: maptiles for hierarchy of level with a ge
+ography. Use this table for INSERT/UPDATE/DELETE'';
+COMMENT ON COLUMN t_rif40_sahsu_maptiles.geography   IS ''Geography (e.g EW2001)'';
+COMMENT ON COLUMN t_rif40_sahsu_maptiles.geolevel_name       IS ''Name of geolevel. This will be a column
+name in the numerator/denominator tables'';
+COMMENT ON COLUMN t_rif40_sahsu_maptiles.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN t_rif40_sahsu_maptiles.zoomlevel   IS ''Zoom level: 6, 8 or 11'';
+COMMENT ON COLUMN t_rif40_sahsu_maptiles.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN t_rif40_sahsu_maptiles.optimised_geojson   IS ''Shapefile multipolygon in GeoJSON format
+, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. (i
+n metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by objec
+t basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GE
+OJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN t_rif40_sahsu_maptiles.optimised_topojson  IS ''Shapefile multipolygon in TopoJSON forma
+t, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. (
+in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by obje
+ct basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_G
+EOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN t_rif40_sahsu_maptiles.gid         IS ''Geographic ID (artificial primary key originally
+ created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+CREATE UNIQUE INDEX t_rif40_sahsu_maptiles_uk ON t_rif40_sahsu_maptiles(geography, tile_id);
+CREATE UNIQUE INDEX t_rif40_sahsu_maptiles_gid ON t_rif40_sahsu_maptiles(geography, gid);
+ALTER TABLE t_rif40_sahsu_maptiles ADD CONSTRAINT t_rif40_sahsu_maptiles_pk PRIMARY KEY (geography, geole
+vel_name, tile_id);
+CREATE TABLE p_rif40_geolevels_maptiles_sahsu_level2_zoom_6
+( CHECK (geography = ''SAHSU''
+     AND zoomlevel = 6
+     AND geolevel_name = ''LEVEL2'')
+) INHERITS (t_rif40_sahsu_maptiles);
+COMMENT ON TABLE p_rif40_geolevels_maptiles_sahsu_level2_zoom_6 IS ''Geolevels geometry: maptiles for hier
+archy of level with a geography. Use this table for INSERT/UPDATE/DELETE'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_6.geography   IS ''Geography (e.g EW2001)'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_6.geolevel_name       IS ''Name of geolevel
+. This will be a column name in the numerator/denominator tables'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_6.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_6.zoomlevel   IS ''Zoom level; 6, 8 or 11'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_6.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_6.optimised_geojson   IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERAN
+CE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wor
+ks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_6.optimised_topojson  IS ''Shapefile multip
+olygon in TopoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERA
+NCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wo
+rks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+ replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_6.gid         IS ''Geographic ID (artificia
+l primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level2_zoom_6_uk ON p_rif40_geolevels_maptiles_sahsu
+_level2_zoom_6(geography, tile_id);
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level2_zoom_6_gid ON p_rif40_geolevels_maptiles_sahs
+u_level2_zoom_6(geography, zoomlevel, gid);
+ALTER TABLE p_rif40_geolevels_maptiles_sahsu_level2_zoom_6 ADD CONSTRAINT p_rif40_geolevels_maptiles_sahs
+u_level2_zoom_6_pk PRIMARY KEY (geography, geolevel_name, tile_id);
+CREATE TABLE p_rif40_geolevels_maptiles_sahsu_level2_zoom_8
+( CHECK (geography = ''SAHSU''
+     AND zoomlevel = 8
+     AND geolevel_name = ''LEVEL2'')
+) INHERITS (t_rif40_sahsu_maptiles);
+COMMENT ON TABLE p_rif40_geolevels_maptiles_sahsu_level2_zoom_8 IS ''Geolevels geometry: maptiles for hier
+archy of level with a geography. Use this table for INSERT/UPDATE/DELETE'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_8.geography   IS ''Geography (e.g EW2001)'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_8.geolevel_name       IS ''Name of geolevel
+. This will be a column name in the numerator/denominator tables'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_8.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_8.zoomlevel   IS ''Zoom level; 6, 8 or 11'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_8.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_8.optimised_geojson   IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERAN
+CE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wor
+ks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_8.optimised_topojson  IS ''Shapefile multip
+olygon in TopoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERA
+NCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wo
+rks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+ replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_8.gid         IS ''Geographic ID (artificia
+l primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level2_zoom_8_uk ON p_rif40_geolevels_maptiles_sahsu
+_level2_zoom_8(geography, tile_id);
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level2_zoom_8_gid ON p_rif40_geolevels_maptiles_sahs
+u_level2_zoom_8(geography, zoomlevel, gid);
+ALTER TABLE p_rif40_geolevels_maptiles_sahsu_level2_zoom_8 ADD CONSTRAINT p_rif40_geolevels_maptiles_sahs
+u_level2_zoom_8_pk PRIMARY KEY (geography, geolevel_name, tile_id);
+CREATE TABLE p_rif40_geolevels_maptiles_sahsu_level2_zoom_11
+( CHECK (geography = ''SAHSU''
+     AND zoomlevel = 11
+     AND geolevel_name = ''LEVEL2'')
+) INHERITS (t_rif40_sahsu_maptiles);
+COMMENT ON TABLE p_rif40_geolevels_maptiles_sahsu_level2_zoom_11 IS ''Geolevels geometry: maptiles for hie
+rarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_11.geography  IS ''Geography (e.g EW2001)'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_11.geolevel_name      IS ''Name of geolevel
+. This will be a column name in the numerator/denominator tables'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_11.tile_id    IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_11.zoomlevel  IS ''Zoom level; 6, 8 or 11'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_11.tile_id    IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_11.optimised_geojson  IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERAN
+CE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wor
+ks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_11.optimised_topojson         IS ''Shapefil
+e multipolygon in TopoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIF
+Y_TOLERANCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorith
+m (it works on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEO
+JSON are replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level2_zoom_11.gid        IS ''Geographic ID (artificia
+l primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level2_zoom_11_uk ON p_rif40_geolevels_maptiles_sahs
+u_level2_zoom_11(geography, tile_id);
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level2_zoom_11_gid ON p_rif40_geolevels_maptiles_sah
+su_level2_zoom_11(geography, zoomlevel, gid);
+ALTER TABLE p_rif40_geolevels_maptiles_sahsu_level2_zoom_11 ADD CONSTRAINT p_rif40_geolevels_maptiles_sah
+su_level2_zoom_11_pk PRIMARY KEY (geography, geolevel_name, tile_id);
+CREATE TABLE p_rif40_geolevels_maptiles_sahsu_level1_zoom_6
+( CHECK (geography = ''SAHSU''
+     AND zoomlevel = 6
+     AND geolevel_name = ''LEVEL1'')
+) INHERITS (t_rif40_sahsu_maptiles);
+COMMENT ON TABLE p_rif40_geolevels_maptiles_sahsu_level1_zoom_6 IS ''Geolevels geometry: maptiles for hier
+archy of level with a geography. Use this table for INSERT/UPDATE/DELETE'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_6.geography   IS ''Geography (e.g EW2001)'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_6.geolevel_name       IS ''Name of geolevel
+. This will be a column name in the numerator/denominator tables'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_6.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_6.zoomlevel   IS ''Zoom level; 6, 8 or 11'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_6.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_6.optimised_geojson   IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERAN
+CE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wor
+ks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_6.optimised_topojson  IS ''Shapefile multip
+olygon in TopoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERA
+NCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wo
+rks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+ replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_6.gid         IS ''Geographic ID (artificia
+l primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level1_zoom_6_uk ON p_rif40_geolevels_maptiles_sahsu
+_level1_zoom_6(geography, tile_id);
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level1_zoom_6_gid ON p_rif40_geolevels_maptiles_sahs
+u_level1_zoom_6(geography, zoomlevel, gid);
+ALTER TABLE p_rif40_geolevels_maptiles_sahsu_level1_zoom_6 ADD CONSTRAINT p_rif40_geolevels_maptiles_sahs
+u_level1_zoom_6_pk PRIMARY KEY (geography, geolevel_name, tile_id);
+CREATE TABLE p_rif40_geolevels_maptiles_sahsu_level1_zoom_8
+( CHECK (geography = ''SAHSU''
+     AND zoomlevel = 8
+     AND geolevel_name = ''LEVEL1'')
+) INHERITS (t_rif40_sahsu_maptiles);
+COMMENT ON TABLE p_rif40_geolevels_maptiles_sahsu_level1_zoom_8 IS ''Geolevels geometry: maptiles for hier
+archy of level with a geography. Use this table for INSERT/UPDATE/DELETE'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_8.geography   IS ''Geography (e.g EW2001)'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_8.geolevel_name       IS ''Name of geolevel
+. This will be a column name in the numerator/denominator tables'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_8.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_8.zoomlevel   IS ''Zoom level; 6, 8 or 11'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_8.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_8.optimised_geojson   IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERAN
+CE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wor
+ks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_8.optimised_topojson  IS ''Shapefile multip
+olygon in TopoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERA
+NCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wo
+rks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+ replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_8.gid         IS ''Geographic ID (artificia
+l primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level1_zoom_8_uk ON p_rif40_geolevels_maptiles_sahsu
+_level1_zoom_8(geography, tile_id);
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level1_zoom_8_gid ON p_rif40_geolevels_maptiles_sahs
+u_level1_zoom_8(geography, zoomlevel, gid);
+ALTER TABLE p_rif40_geolevels_maptiles_sahsu_level1_zoom_8 ADD CONSTRAINT p_rif40_geolevels_maptiles_sahs
+u_level1_zoom_8_pk PRIMARY KEY (geography, geolevel_name, tile_id);
+CREATE TABLE p_rif40_geolevels_maptiles_sahsu_level1_zoom_11
+( CHECK (geography = ''SAHSU''
+     AND zoomlevel = 11
+     AND geolevel_name = ''LEVEL1'')
+) INHERITS (t_rif40_sahsu_maptiles);
+COMMENT ON TABLE p_rif40_geolevels_maptiles_sahsu_level1_zoom_11 IS ''Geolevels geometry: maptiles for hie
+rarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_11.geography  IS ''Geography (e.g EW2001)'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_11.geolevel_name      IS ''Name of geolevel
+. This will be a column name in the numerator/denominator tables'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_11.tile_id    IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_11.zoomlevel  IS ''Zoom level; 6, 8 or 11'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_11.tile_id    IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_11.optimised_geojson  IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERAN
+CE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wor
+ks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_11.optimised_topojson         IS ''Shapefil
+e multipolygon in TopoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIF
+Y_TOLERANCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorith
+m (it works on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEO
+JSON are replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level1_zoom_11.gid        IS ''Geographic ID (artificia
+l primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level1_zoom_11_uk ON p_rif40_geolevels_maptiles_sahs
+u_level1_zoom_11(geography, tile_id);
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level1_zoom_11_gid ON p_rif40_geolevels_maptiles_sah
+su_level1_zoom_11(geography, zoomlevel, gid);
+ALTER TABLE p_rif40_geolevels_maptiles_sahsu_level1_zoom_11 ADD CONSTRAINT p_rif40_geolevels_maptiles_sah
+su_level1_zoom_11_pk PRIMARY KEY (geography, geolevel_name, tile_id);
+CREATE TABLE p_rif40_geolevels_maptiles_sahsu_level3_zoom_6
+( CHECK (geography = ''SAHSU''
+     AND zoomlevel = 6
+     AND geolevel_name = ''LEVEL3'')
+) INHERITS (t_rif40_sahsu_maptiles);
+COMMENT ON TABLE p_rif40_geolevels_maptiles_sahsu_level3_zoom_6 IS ''Geolevels geometry: maptiles for hier
+archy of level with a geography. Use this table for INSERT/UPDATE/DELETE'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_6.geography   IS ''Geography (e.g EW2001)'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_6.geolevel_name       IS ''Name of geolevel
+. This will be a column name in the numerator/denominator tables'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_6.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_6.zoomlevel   IS ''Zoom level; 6, 8 or 11'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_6.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_6.optimised_geojson   IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERAN
+CE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wor
+ks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_6.optimised_topojson  IS ''Shapefile multip
+olygon in TopoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERA
+NCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wo
+rks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+ replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_6.gid         IS ''Geographic ID (artificia
+l primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level3_zoom_6_uk ON p_rif40_geolevels_maptiles_sahsu
+_level3_zoom_6(geography, tile_id);
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level3_zoom_6_gid ON p_rif40_geolevels_maptiles_sahs
+u_level3_zoom_6(geography, zoomlevel, gid);
+ALTER TABLE p_rif40_geolevels_maptiles_sahsu_level3_zoom_6 ADD CONSTRAINT p_rif40_geolevels_maptiles_sahs
+u_level3_zoom_6_pk PRIMARY KEY (geography, geolevel_name, tile_id);
+CREATE TABLE p_rif40_geolevels_maptiles_sahsu_level3_zoom_8
+( CHECK (geography = ''SAHSU''
+     AND zoomlevel = 8
+     AND geolevel_name = ''LEVEL3'')
+) INHERITS (t_rif40_sahsu_maptiles);
+COMMENT ON TABLE p_rif40_geolevels_maptiles_sahsu_level3_zoom_8 IS ''Geolevels geometry: maptiles for hier
+archy of level with a geography. Use this table for INSERT/UPDATE/DELETE'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_8.geography   IS ''Geography (e.g EW2001)'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_8.geolevel_name       IS ''Name of geolevel
+. This will be a column name in the numerator/denominator tables'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_8.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_8.zoomlevel   IS ''Zoom level; 6, 8 or 11'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_8.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_8.optimised_geojson   IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERAN
+CE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wor
+ks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_8.optimised_topojson  IS ''Shapefile multip
+olygon in TopoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERA
+NCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wo
+rks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+ replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_8.gid         IS ''Geographic ID (artificia
+l primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level3_zoom_8_uk ON p_rif40_geolevels_maptiles_sahsu
+_level3_zoom_8(geography, tile_id);
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level3_zoom_8_gid ON p_rif40_geolevels_maptiles_sahs
+u_level3_zoom_8(geography, zoomlevel, gid);
+ALTER TABLE p_rif40_geolevels_maptiles_sahsu_level3_zoom_8 ADD CONSTRAINT p_rif40_geolevels_maptiles_sahs
+u_level3_zoom_8_pk PRIMARY KEY (geography, geolevel_name, tile_id);
+CREATE TABLE p_rif40_geolevels_maptiles_sahsu_level3_zoom_11
+( CHECK (geography = ''SAHSU''
+     AND zoomlevel = 11
+     AND geolevel_name = ''LEVEL3'')
+) INHERITS (t_rif40_sahsu_maptiles);
+COMMENT ON TABLE p_rif40_geolevels_maptiles_sahsu_level3_zoom_11 IS ''Geolevels geometry: maptiles for hie
+rarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_11.geography  IS ''Geography (e.g EW2001)'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_11.geolevel_name      IS ''Name of geolevel
+. This will be a column name in the numerator/denominator tables'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_11.tile_id    IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_11.zoomlevel  IS ''Zoom level; 6, 8 or 11'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_11.tile_id    IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_11.optimised_geojson  IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERAN
+CE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wor
+ks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_11.optimised_topojson         IS ''Shapefil
+e multipolygon in TopoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIF
+Y_TOLERANCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorith
+m (it works on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEO
+JSON are replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level3_zoom_11.gid        IS ''Geographic ID (artificia
+l primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level3_zoom_11_uk ON p_rif40_geolevels_maptiles_sahs
+u_level3_zoom_11(geography, tile_id);
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level3_zoom_11_gid ON p_rif40_geolevels_maptiles_sah
+su_level3_zoom_11(geography, zoomlevel, gid);
+ALTER TABLE p_rif40_geolevels_maptiles_sahsu_level3_zoom_11 ADD CONSTRAINT p_rif40_geolevels_maptiles_sah
+su_level3_zoom_11_pk PRIMARY KEY (geography, geolevel_name, tile_id);
+CREATE TABLE p_rif40_geolevels_maptiles_sahsu_level4_zoom_6
+( CHECK (geography = ''SAHSU''
+     AND zoomlevel = 6
+     AND geolevel_name = ''LEVEL4'')
+) INHERITS (t_rif40_sahsu_maptiles);
+COMMENT ON TABLE p_rif40_geolevels_maptiles_sahsu_level4_zoom_6 IS ''Geolevels geometry: maptiles for hier
+archy of level with a geography. Use this table for INSERT/UPDATE/DELETE'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_6.geography   IS ''Geography (e.g EW2001)'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_6.geolevel_name       IS ''Name of geolevel
+. This will be a column name in the numerator/denominator tables'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_6.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_6.zoomlevel   IS ''Zoom level; 6, 8 or 11'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_6.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_6.optimised_geojson   IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERAN
+CE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wor
+ks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_6.optimised_topojson  IS ''Shapefile multip
+olygon in TopoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERA
+NCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wo
+rks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+ replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_6.gid         IS ''Geographic ID (artificia
+l primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level4_zoom_6_uk ON p_rif40_geolevels_maptiles_sahsu
+_level4_zoom_6(geography, tile_id);
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level4_zoom_6_gid ON p_rif40_geolevels_maptiles_sahs
+u_level4_zoom_6(geography, zoomlevel, gid);
+ALTER TABLE p_rif40_geolevels_maptiles_sahsu_level4_zoom_6 ADD CONSTRAINT p_rif40_geolevels_maptiles_sahs
+u_level4_zoom_6_pk PRIMARY KEY (geography, geolevel_name, tile_id);
+CREATE TABLE p_rif40_geolevels_maptiles_sahsu_level4_zoom_8
+( CHECK (geography = ''SAHSU''
+     AND zoomlevel = 8
+     AND geolevel_name = ''LEVEL4'')
+) INHERITS (t_rif40_sahsu_maptiles);
+COMMENT ON TABLE p_rif40_geolevels_maptiles_sahsu_level4_zoom_8 IS ''Geolevels geometry: maptiles for hier
+archy of level with a geography. Use this table for INSERT/UPDATE/DELETE'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_8.geography   IS ''Geography (e.g EW2001)'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_8.geolevel_name       IS ''Name of geolevel
+. This will be a column name in the numerator/denominator tables'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_8.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_8.zoomlevel   IS ''Zoom level; 6, 8 or 11'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_8.tile_id     IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_8.optimised_geojson   IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERAN
+CE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wor
+ks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_8.optimised_topojson  IS ''Shapefile multip
+olygon in TopoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERA
+NCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wo
+rks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+ replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_8.gid         IS ''Geographic ID (artificia
+l primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level4_zoom_8_uk ON p_rif40_geolevels_maptiles_sahsu
+_level4_zoom_8(geography, tile_id);
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level4_zoom_8_gid ON p_rif40_geolevels_maptiles_sahs
+u_level4_zoom_8(geography, zoomlevel, gid);
+ALTER TABLE p_rif40_geolevels_maptiles_sahsu_level4_zoom_8 ADD CONSTRAINT p_rif40_geolevels_maptiles_sahs
+u_level4_zoom_8_pk PRIMARY KEY (geography, geolevel_name, tile_id);
+CREATE TABLE p_rif40_geolevels_maptiles_sahsu_level4_zoom_11
+( CHECK (geography = ''SAHSU''
+     AND zoomlevel = 11
+     AND geolevel_name = ''LEVEL4'')
+) INHERITS (t_rif40_sahsu_maptiles);
+COMMENT ON TABLE p_rif40_geolevels_maptiles_sahsu_level4_zoom_11 IS ''Geolevels geometry: maptiles for hie
+rarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_11.geography  IS ''Geography (e.g EW2001)'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_11.geolevel_name      IS ''Name of geolevel
+. This will be a column name in the numerator/denominator tables'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_11.tile_id    IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_11.zoomlevel  IS ''Zoom level; 6, 8 or 11'';
+
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_11.tile_id    IS ''Tile ID in the format'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_11.optimised_geojson  IS ''Shapefile multip
+olygon in GeoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERAN
+CE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it wor
+ks on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are
+replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_11.optimised_topojson         IS ''Shapefil
+e multipolygon in TopoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIF
+Y_TOLERANCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorith
+m (it works on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEO
+JSON are replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN p_rif40_geolevels_maptiles_sahsu_level4_zoom_11.gid        IS ''Geographic ID (artificia
+l primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level4_zoom_11_uk ON p_rif40_geolevels_maptiles_sahs
+u_level4_zoom_11(geography, tile_id);
+CREATE UNIQUE INDEX p_rif40_geolevels_maptiles_sahsu_level4_zoom_11_gid ON p_rif40_geolevels_maptiles_sah
+su_level4_zoom_11(geography, zoomlevel, gid);
+ALTER TABLE p_rif40_geolevels_maptiles_sahsu_level4_zoom_11 ADD CONSTRAINT p_rif40_geolevels_maptiles_sah
+su_level4_zoom_11_pk PRIMARY KEY (geography, geolevel_name, tile_id);
+CREATE OR REPLACE FUNCTION t_rif40_sahsu_maptiles_insert()
+RETURNS TRIGGER AS $func$
+BEGIN
+
+        IF NEW.geography = ''SAHSU'' AND NEW.geolevel_name = ''LEVEL2'' THEN
+INSERT INTO p_rif40_geolevels_maptiles_sahsu_level2_zoom_6 VALUES (NEW.*);
+        ELSIF NEW.geography = ''SAHSU'' AND NEW.geolevel_name = ''LEVEL2'' THEN
+INSERT INTO p_rif40_geolevels_maptiles_sahsu_level2_zoom_8 VALUES (NEW.*);
+        ELSIF NEW.geography = ''SAHSU'' AND NEW.geolevel_name = ''LEVEL2'' THEN
+INSERT INTO p_rif40_geolevels_maptiles_sahsu_level2_zoom_11 VALUES (NEW.*);
+        ELSIF NEW.geography = ''SAHSU'' AND NEW.geolevel_name = ''LEVEL1'' THEN
+INSERT INTO p_rif40_geolevels_maptiles_sahsu_level1_zoom_6 VALUES (NEW.*);
+        ELSIF NEW.geography = ''SAHSU'' AND NEW.geolevel_name = ''LEVEL1'' THEN
+INSERT INTO p_rif40_geolevels_maptiles_sahsu_level1_zoom_8 VALUES (NEW.*);
+        ELSIF NEW.geography = ''SAHSU'' AND NEW.geolevel_name = ''LEVEL1'' THEN
+INSERT INTO p_rif40_geolevels_maptiles_sahsu_level1_zoom_11 VALUES (NEW.*);
+        ELSIF NEW.geography = ''SAHSU'' AND NEW.geolevel_name = ''LEVEL3'' THEN
+INSERT INTO p_rif40_geolevels_maptiles_sahsu_level3_zoom_6 VALUES (NEW.*);
+        ELSIF NEW.geography = ''SAHSU'' AND NEW.geolevel_name = ''LEVEL3'' THEN
+INSERT INTO p_rif40_geolevels_maptiles_sahsu_level3_zoom_8 VALUES (NEW.*);
+        ELSIF NEW.geography = ''SAHSU'' AND NEW.geolevel_name = ''LEVEL3'' THEN
+INSERT INTO p_rif40_geolevels_maptiles_sahsu_level3_zoom_11 VALUES (NEW.*);
+        ELSIF NEW.geography = ''SAHSU'' AND NEW.geolevel_name = ''LEVEL4'' THEN
+INSERT INTO p_rif40_geolevels_maptiles_sahsu_level4_zoom_6 VALUES (NEW.*);
+        ELSIF NEW.geography = ''SAHSU'' AND NEW.geolevel_name = ''LEVEL4'' THEN
+INSERT INTO p_rif40_geolevels_maptiles_sahsu_level4_zoom_8 VALUES (NEW.*);
+        ELSIF NEW.geography = ''SAHSU'' AND NEW.geolevel_name = ''LEVEL4'' THEN
+INSERT INTO p_rif40_geolevels_maptiles_sahsu_level4_zoom_11 VALUES (NEW.*);
+        ELSE
+--
+-- Eventually this will automatically add a partition
+--
+                PERFORM rif40_log_pkg.rif40_error(-10003, ''p_rif40_geolevels_maptiles_insert'', ''no partition for maptiles geography: %, geolevel: %'',
+                        NEW.geography, NEW.geolevel_name);
+        END IF;
+        RETURN NULL;
+END;
+$func$
+LANGUAGE plpgsql;
+COMMENT ON FUNCTION t_rif40_sahsu_maptiles_insert() IS ''Partition INSERT function for maptile geography:
+SAHSU'';
+CREATE TRIGGER t_rif40_sahsu_maptiles_insert
+BEFORE INSERT ON t_rif40_sahsu_maptiles
+FOR EACH ROW EXECUTE PROCEDURE t_rif40_sahsu_maptiles_insert();
+COMMENT ON TRIGGER t_rif40_sahsu_maptiles_insert
+        ON t_rif40_sahsu_maptiles IS ''Partition INSERT trigger for maptiles geography: SAHSU'';
+GRANT SELECT,INSERT,UPDATE,DELETE ON t_rif40_sahsu_maptiles TO rif_manager;
+GRANT SELECT ON t_rif40_sahsu_maptiles TO PUBLIC;
+ANALYZE VERBOSE t_rif40_sahsu_maptiles;
+CREATE OR REPLACE VIEW rif40_sahsu_maptiles
+AS SELECT * FROM t_rif40_sahsu_maptiles;
+COMMENT ON VIEW rif40_sahsu_maptiles IS ''Geolevels geometry: maptiles for hierarchy of level with a geogr
+aphy. Use this table for INSERT/UPDATE/DELETE'';
+COMMENT ON COLUMN rif40_sahsu_maptiles.geography     IS ''Geography (e.g EW2001)'';
+COMMENT ON COLUMN rif40_sahsu_maptiles.geolevel_name         IS ''Name of geolevel. This will be a column
+name in the numerator/denominator tables'';
+COMMENT ON COLUMN rif40_sahsu_maptiles.tile_id       IS ''Tile ID in the format'';
+COMMENT ON COLUMN rif40_sahsu_maptiles.zoomlevel     IS ''Zoom level: 1 to 11'';
+COMMENT ON COLUMN rif40_sahsu_maptiles.tile_id       IS ''Tile ID in the format'';
+COMMENT ON COLUMN rif40_sahsu_maptiles.optimised_geojson     IS ''Shapefile multipolygon in GeoJSON format
+, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. (i
+n metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by objec
+t basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GE
+OJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN rif40_sahsu_maptiles.optimised_topojson    IS ''Shapefile multipolygon in TopoJSON forma
+t, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. (
+in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by obje
+ct basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_G
+EOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.'';
+COMMENT ON COLUMN rif40_sahsu_maptiles.gid   IS ''Geographic ID (artificial primary key originally created
+ by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'';
+';
 
 --
 -- Eof

@@ -130,6 +130,14 @@ DECLARE
 			SELECT LOWER(table_or_view_name_hide) table_or_view	/* RIF40 list of tables and views */
 			  FROM rif40_tables_and_views
 			 UNION
+			SELECT viewname table_or_view		 		/* Geospatial views created by rif40_geo_pkg functions */
+			  FROM pg_views
+			 WHERE viewname IN (		 
+			      SELECT DISTINCT 'rif40_'||LOWER(geography)||'_maptiles' viewname
+										/* Maptiles tables */
+			        FROM rif40_geographies
+					)
+			UNION
 			SELECT tablename table_or_view		 		/* Geospatial tables created by rif40_geo_pkg functions */
 			  FROM pg_tables
 			 WHERE tablename IN (
@@ -148,11 +156,19 @@ DECLARE
 			        FROM t_rif40_geolevels
 			       UNION 
 			      SELECT DISTINCT 't_rif40_'||LOWER(geography)||'_maptiles' tablename
-										/* Geometry tables */
+										/* Maptiles view */
 			        FROM rif40_geographies
 			       UNION 
 			      SELECT DISTINCT 'p_rif40_geolevels_maptiles_'||	/* Maptile table partitions */
-					LOWER(geography)||'_'||LOWER(geolevel_name) tablename
+					LOWER(geography)||'_'||LOWER(geolevel_name)||'_zoom_6' tablename
+			        FROM t_rif40_geolevels
+				  UNION
+			      SELECT DISTINCT 'p_rif40_geolevels_maptiles_'||	/* Maptile table partitions */
+					LOWER(geography)||'_'||LOWER(geolevel_name)||'_zoom_8' tablename
+			        FROM t_rif40_geolevels
+				  UNION
+			      SELECT DISTINCT 'p_rif40_geolevels_maptiles_'||	/* Maptile table partitions */
+					LOWER(geography)||'_'||LOWER(geolevel_name)||'_zoom_11' tablename
 			        FROM t_rif40_geolevels
 			       UNION 
 			      SELECT DISTINCT LOWER(table_name) tablename			/* Numerator and denominators */

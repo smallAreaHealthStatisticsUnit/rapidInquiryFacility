@@ -72,8 +72,8 @@ DECLARE
 		SELECT * FROM information_schema.tables 
 		 WHERE (table_name LIKE 't_rif40_%_geometry' /* Old */ 
 		    OR  table_name LIKE 'p_rif40_%_geometry' /* New */ 
-		    OR  table_name LIKE 't_rif40_%_maptiles' /* Old */ 
-		    OR  table_name LIKE 'p_rif40_%_maptiles' /* New */)
+		    OR  table_name LIKE 't_rif40_%_maptiles%' /* Old */ 
+		    OR  table_name LIKE 'p_rif40_%_maptiles%' /* New */)
  		   AND table_name NOT IN ('t_rif40_geolevels_geometry', 'p_rif40_geolevels_maptiles');
 	c1a CURSOR(l_trigger VARCHAR) FOR
 		SELECT * FROM information_schema.triggers 
