@@ -17,6 +17,9 @@ RIF.menu[ 'facade-diseaseSubmission' ] = ( function( _p ) {
     investigationNotReadyToBeAdded: function() {
       _p.proxy.investigationNotReadyToBeAdded();
     },
+    addInvestigationRow: function( arg ) {
+      _p.proxy.addInvestigationRow( arg );
+    },
 
     /* Firers  */
 
@@ -58,7 +61,14 @@ RIF.menu[ 'facade-diseaseSubmission' ] = ( function( _p ) {
     },
     isInvestigationReady: function() {
       this.fire( 'isInvestigationReady', null );
+    },
+    addInvestigation: function() {
+      this.fire( 'addInvestigation', null );
+    },
+    clearAllParameters: function() {
+      this.fire( 'clearAllParameters', null );
     }
+
 
 
     /* Study Related */

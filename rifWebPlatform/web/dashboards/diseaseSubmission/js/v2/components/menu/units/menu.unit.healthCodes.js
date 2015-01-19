@@ -2,16 +2,29 @@
 
       var parent = this,
 
+        _topLevelHealthCodesRequested = [],
+
         _requests = {
           getTaxonomy: function() {
             RIF.getHealthTaxonomy( _callbacks[ 'getTaxonomy' ], null );
           },
           getTopLevelHealthCodes: function( icd ) {
-            RIF.getTopLevelHealthCodes( _callbacks[ 'getTopLevelHealthCodes' ], [ icd ] ); // param hardcoded for now
+            if ( _topLevelHealthCodesRequested.indexOf( icd ) != -1 ) {
+              $( '#' + icd ).show();
+              return;
+            };
+
+            _topLevelHealthCodesRequested.push( icd );
+
+            var _callback = function() {
+              _callbacks[ 'getTopLevelHealthCodes' ].call( this, icd );
+            };
+
+            RIF.getTopLevelHealthCodes( _callback, [ icd ] ); // param hardcoded for now
           },
           getSubLevelHealthCodes: function( params ) { // {taxonomy,code,dom}
             var specialClbk = function() {
-              _callbacks.getSubLevelHealthCodes.call( this, params.dom );
+              _callbacks.getSubLevelHealthCodes.call( this, params.dom, params.taxonomy );
             };
             RIF.getSubHealthCodes( specialClbk, [ params.taxonomy, params.code ] ); // param hardcoded for now
           },
@@ -26,22 +39,31 @@
               l = this.length;
             while ( l-- ) {
               taxonomies.push( this[ l ][ 'nameSpace' ] );
+              $( tree ).append( "<div class='taxonomySection' id='" + this[ l ][ 'nameSpace' ] + "'></div>" )
             };
-            parent.dropDownInputText( taxonomies, _dom.icdClassificationAvailable );
-            _requests.getTopLevelHealthCodes( 'icd10' );
+
+            if ( this.length > 0 ) {
+              var firstTaxonomy = this[ 0 ][ 'nameSpace' ];
+              parent.proxy.taxonomy = firstTaxonomy
+              _requests.getTopLevelHealthCodes( firstTaxonomy );
+              parent.proxy.updateTopLevelHealthCodes( firstTaxonomy );
+              _dom.icdClassification.val( firstTaxonomy );
+              parent.dropDownInputText( taxonomies, _dom.icdClassificationAvailable );
+            };
           },
 
-          getTopLevelHealthCodes: function() {
-            _insertChildrenElements( this, _dom.tree );
+          getTopLevelHealthCodes: function( taxonomyName ) {
+            var el = document.getElementById( taxonomyName )
+            _insertChildrenElements( this, el );
           },
 
-          getSubLevelHealthCodes: function( domParent ) {
-            _insertChildrenElements( this, domParent );
+          getSubLevelHealthCodes: function( domParent, taxonomy ) {
+            _insertChildrenElements( this, domParent, taxonomy );
           },
 
         },
 
-        _insertChildrenElements = function( data, domParent ) {
+        _insertChildrenElements = function( data, domParent, taxonomy ) {
           var fragment = document.createDocumentFragment();
           l = data.length
 
@@ -62,11 +84,12 @@
               expand = '<span> + </span> ';
               divHeader.className = 'healthCodesHeader';
             } else {
-              container.className = 'noChildElements'
+              container.className = 'noChildElements ' + taxonomy;
             };
 
             var description = ( data[ l ][ 'description' ] ).replace( ';', '' );
-            divHeader.innerHTML = expand + '<span>' + data[ l ][ 'code' ] + '</span> - ' + description;
+            divHeader.innerHTML = expand + '<span>' + data[ l ][ 'code' ] + '</span> - ' +
+              '<span>' + description + '</span>';
             div.appendChild( divHeader );
 
             childrenContainer.className = 'childrenContainer';
@@ -77,7 +100,6 @@
 
           domParent.appendChild( fragment );
           domParent.style.display = 'block';
-          parent.proxy.updateEventsHealthTree();
         },
 
         /* geolevel obj */

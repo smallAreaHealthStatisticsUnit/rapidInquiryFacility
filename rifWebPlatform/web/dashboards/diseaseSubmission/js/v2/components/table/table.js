@@ -12,7 +12,15 @@ RIF.table = ( function( settings ) {
     proxy: {
       updateStudyGrid: function( geoLvl ) {
         _p.areaSelectionRenderer.request( 'getTabularData', geoLvl );
-      }
+      },
+
+      addInvestigationRow: function( inv ) {
+        _p.investigationsRecap.addRow( inv );
+      },
+
+      removeInvestigationRow: function( inv ) {
+        _p.facade.removeInvestigationRow( inv );
+      },
     },
 
     getFacade: function() {

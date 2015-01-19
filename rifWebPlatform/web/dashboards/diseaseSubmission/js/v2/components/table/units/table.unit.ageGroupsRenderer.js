@@ -39,7 +39,7 @@ RIF.table.ageGroupsRenderer = ( function( _dom ) {
 
         div.className = 'aSR ' + oddOreven;
         div.id = 'ageGroup' + l;
-        div.innerHTML = '<div>' + names[ l ] + '</div><div>' + lower[ l ] + ' - ' + upper[ l ] + '</div>';
+        div.innerHTML = '<div>' + names[ l ] + '</div><div class="ageBand">' + lower[ l ] + ' - ' + upper[ l ] + '</div>';
         fragment.appendChild( div );
       }
       _dom.tableContent.appendChild( fragment );

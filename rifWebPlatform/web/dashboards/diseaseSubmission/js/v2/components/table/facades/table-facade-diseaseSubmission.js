@@ -8,7 +8,13 @@ RIF.table[ 'facade-diseaseSubmission' ] = ( function( _p ) {
     selectAtChanged: function( geolvl ) {
       _p.proxy.updateStudyGrid( geolvl );
     },
+    addInvestigationRow: function( arg ) {
+      _p.proxy.addInvestigationRow( arg );
+    },
 
+    clearAllParameters: function() {
+      $( '.rowSelected' ).removeClass( 'rowSelected' );
+    },
 
     //FIRER
     studyAreaSelectionEvent: function( rowId ) {
@@ -22,7 +28,11 @@ RIF.table[ 'facade-diseaseSubmission' ] = ( function( _p ) {
 
     isInvestigationReady: function() {
       this.fire( 'isInvestigationReady', null );
-    }
+    },
+
+    removeInvestigationRow: function( invId ) {
+      this.fire( 'removeInvestigationRow', invId );
+    },
 
   };
 

@@ -4,7 +4,8 @@ RIF.study = ( function( type ) {
 
     diseaseSubmission: {
 
-      investigations: [],
+      investigations: {},
+      investigationCounts: 0,
 
       // SELECTION
       studyName: null,
@@ -24,8 +25,8 @@ RIF.study = ( function( type ) {
       },
 
       parameters: {
-        taxonomy: null,
-        codes: null,
+        //taxonomy:null,
+        healthOutcomes: null,
         ageGroups: null,
         minYear: null,
         maxYear: null,
@@ -33,7 +34,36 @@ RIF.study = ( function( type ) {
         covariates: null,
       },
 
+      showInvestigations: function() {
+        for ( var l in this.investigations ) {
+          for ( var i in this.investigations[ l ] ) {
+            console.log( this.investigations[ l ][ i ] );
 
+          };
+          console.log( '_____' );
+        }
+        console.log( '----------------------' );
+        console.log( '----------------------' );
+        console.log( '----------------------' );
+      },
+
+      addCurrentInvestigation: function() {
+        var parametersClone = RIF.extend( this.parameters, {} );
+        this.investigations[ this.investigationCounts ] = parametersClone;
+        console.log( "investigation " + this.investigationCounts + " added" );
+        this.showInvestigations();
+
+        return this.investigationCounts++;
+      },
+
+      removeInvestigation: function( i ) {
+        if ( typeof this.investigations[ i ] === 'object' ) {
+          delete this.investigations[ i ];
+          console.log( 'Investigation ' + i + ' removed' )
+        };
+        //this.investigations.splice( i, 1 ); 
+        this.showInvestigations();
+      },
       //SETTERS
       setStudyName: function( s ) {
         this.studyName = s;
@@ -72,8 +102,8 @@ RIF.study = ( function( type ) {
         this.parameters.taxonomy = s;
       },
 
-      setHealthCodes: function( s ) {
-        this.parameters.codes = s;
+      setHealthOutcomes: function( s ) {
+        this.parameters.healthOutcomes = s;
       },
 
       setMinYear: function( s ) {
@@ -97,6 +127,10 @@ RIF.study = ( function( type ) {
       },
 
       //GETTERS
+      getInvestigations: function() {
+        return this.investigations;
+      },
+
       getStudyName: function() {
         return this.studyName;
       },
@@ -125,8 +159,8 @@ RIF.study = ( function( type ) {
         return this.parameters.taxonomy;
       },
 
-      getCodes: function() {
-        return this.parameters.codes;
+      getHealthOutcomes: function() {
+        return this.parameters.healthOutcomes;
       },
 
       getMinYear: function() {
@@ -147,7 +181,7 @@ RIF.study = ( function( type ) {
 
       getAgeGroups: function() {
         return this.parameters.ageGroups;
-      }
+      },
 
     }
 

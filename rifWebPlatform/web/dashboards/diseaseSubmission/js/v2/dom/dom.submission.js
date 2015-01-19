@@ -69,12 +69,14 @@ RIF.dom = ( function() {
           icdHeader: $( '.healthCodesHeader' ),
           icdClassificationAvailable: ( '#icdClassificationAvailable' ),
           tree: get( 'tree' ),
-          healthCodesHeader: $( '.healthCodesHeader' ),
+          healthCodesHeader: '.healthCodesHeader',
           healthCodesHeaderSpans: $( '.healthCodesHeader span' ),
-          noChildElements: $( '.noChildElements' ),
+          noChildElements: '.noChildElements',
           selection: function() {
             return $( '.icdSelected span' )
-          }
+          },
+          healthSelection: 'icdSelected',
+          clearAll: $( '#clearParameters' ),
         };
       },
       investigationParameters: function() {
@@ -89,12 +91,15 @@ RIF.dom = ( function() {
           labels: function() {
             return $( '#covariatesWrapper label' )
           },
-          covariatesCheckbox: function() {
-            return $( '#covariatesWrapper input' )
-          },
+          covariatesWrapper: $( '#covariatesWrapper' ),
+          covariatesCheckbox: $( '#covariatesWrapper input' ),
           covariatesChecked: function() {
             return $( '#covariatesWrapper input:checked' )
-          }
+          },
+          addInvestigation: $( '#addInvestigation' ),
+          clearAll: $( '#clearParameters' ),
+          inputBorderSelection: 'inputBorderSelection',
+          labelSelected: 'labelSelected'
         };
       }
     },
@@ -109,9 +114,22 @@ RIF.dom = ( function() {
       },
       ageGroupsRenderer: function() {
         return {
+          investigationBox: $( '.investigationBox' ),
+          ageGroupsWrapper: $( '#ageGroupsWrapper' ),
           headers: $( '#ageGroupsWrapper .aSH li' ),
           tableContent: get( 'allRowsAgeGroups' ),
           rows: $( '#ageGroupsWrapper .aSR' )
+        };
+      },
+      investigationsRecap: function() {
+        return {
+          //headers: $('#areaSelectionWrapper .aSH li'),
+          tableHead: $( '#investigationRecap table thead' ),
+          tableBody: $( '#investigationRecap table tbody' ),
+          tableContent: get( 'allRowsInvestigations' ),
+          rows: $( '#investigationRecap .aSR' ),
+          removeInvestigation: '.removeInvestigation',
+          container: $( '#investigationRecap' )
         };
       }
 

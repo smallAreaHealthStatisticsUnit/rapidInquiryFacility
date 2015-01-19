@@ -48,16 +48,7 @@ RIF.menu.investigationParameters = ( function( _dom ) {
 
       getCovariates: function() {
         var elCovariates = _dom[ 'covariatesAvailable' ];
-        //obj, el, name 
         parent.checkboxesCovariates( this, elCovariates, 'covariates' );
-
-        _dom.covariatesCheckbox().unbind( 'click' );
-        _dom.covariatesCheckbox().bind( 'click', ( function() {
-          $( this ).next().toggleClass( 'labelSelected' );
-          var slctd = parent.getCheckedValues( 'covariates' );
-          parent.facade.fire( 'covariateChanged', slctd );
-        } ) );
-
       }
     },
 

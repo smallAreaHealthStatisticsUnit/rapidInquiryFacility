@@ -1,7 +1,7 @@
 RIF.menu = ( function( settings ) {
 
   var menus = settings.menus,
-
+    _investigationReady = false,
     _p = {
 
       init: function() {
@@ -27,17 +27,17 @@ RIF.menu = ( function( settings ) {
         },
         // Health Code tree
 
-        taxonomi: 'icd10', //default  
+        taxonomy: null,
 
-        updateTopLevelHealthCodes: function( taxonomi ) {
-          _p.healthCodes.request( 'getTopLevelHealthCodes', taxonomi );
-          _p.proxy.taxonomi = taxonomi;
-          this.investigationParameterChange( taxonomi, _p.facade.taxonomyChanged );
+        updateTopLevelHealthCodes: function( taxonomy ) {
+          _p.healthCodes.request( 'getTopLevelHealthCodes', taxonomy );
+          _p.proxy.taxonomy = taxonomy;
+          //this.investigationParameterChange( taxonomy, _p.facade.taxonomyChanged );    
         },
 
         updateSubLevelHealthCodes: function( code, domEl ) {
           _p.healthCodes.request( 'getSubLevelHealthCodes', {
-            "taxonomy": _p.proxy.taxonomi,
+            "taxonomy": _p.proxy.taxonomy,
             "code": code,
             "dom": domEl
           } )
@@ -52,17 +52,22 @@ RIF.menu = ( function( settings ) {
           this.investigationParameterChange( args, _p.facade.icdSelectionChanged );
         },
 
-        updateEventsHealthTree: function() {
-          _p.setEvents( [ 'healthCodes' ] );
-        },
-
         investigationReadyToBeAdded: function() {
+          _investigationReady = true;
           $( '#addInvestigation' ).addClass( 'addInvestigationActive' );
         },
 
         investigationNotReadyToBeAdded: function() {
+          _investigationReady = false;
           $( '#addInvestigation' ).removeClass( 'addInvestigationActive' );
         },
+
+        addCurrentInvestigation: function() {
+          if ( _investigationReady ) {
+            _p.facade.addInvestigation();
+          };
+        }
+
 
       },
 
@@ -80,7 +85,6 @@ RIF.menu = ( function( settings ) {
         var m = menu || menus;
         var ev = this.setMenuEvent( _p, m );
       }
-
 
     };
 

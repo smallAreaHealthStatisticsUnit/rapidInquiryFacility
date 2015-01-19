@@ -90,6 +90,8 @@
     <script type="text/javascript" src="js/v2/components/table/facades/table-facade-diseaseSubmission.js"></script>
     <script type="text/javascript" src="js/v2/components/table/units/table.unit.ageGroupsRenderer.js"></script>
     <script type="text/javascript" src="js/v2/components/table/events/event.ageGroupsRenderer.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/units/table.unit.investigationsRecap.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/events/event.investigationRecap.js"></script>
     <script type="text/javascript" src="js/v2/components/table/table.utils.js"></script>
 
 
@@ -337,9 +339,28 @@
                                     </div>
                                 </div>
                             </div> 
+                            <div id='clearParameters'> Clear All </div>
                             <div id='addInvestigation'> Add Investigation </div>
                         </div>
-                        <div id='investigationRecap'></div>
+                        <div id='investigationRecap'>
+                            <div class='aSC' id="allRowsInvestigations">
+                                <table>
+                                  <thead>
+                                    <tr>
+                                      <th class='taxonomiRow'>Taxonomy</th>
+                                      <th class='healthOutcomesRow'>Health outcomes</th>
+                                      <th class='agegroupsRow'>Age groups</th>
+                                      <th class='yearRow'>Years</th>
+                                      <th class='genderRow'>Gender</th>
+                                      <th class='covariatesRow'>Covariates</th>
+                                      <th></th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                  </tbody>
+                                </table>
+                            </div>                    
+                        </div>
                     </div>    
                 </div>
 			</div>

@@ -1,5 +1,7 @@
 RIF.menu.utils = ( function() {
 
+  $( ':input' ).val( '' ); //empty all inputs
+
   var _p = {
 
     dropDown: function( data, el ) {

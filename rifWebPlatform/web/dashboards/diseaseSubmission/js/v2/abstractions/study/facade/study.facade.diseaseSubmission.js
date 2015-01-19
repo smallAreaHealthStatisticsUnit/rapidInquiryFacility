@@ -1,5 +1,7 @@
 RIF.study[ 'facade-diseaseSubmission' ] = ( function() {
 
+
+
   var facade = {
 
 
@@ -24,38 +26,13 @@ RIF.study[ 'facade-diseaseSubmission' ] = ( function() {
       this.setStudyAreaResolution( arg );
     },
     studyAreaSelectionEvent: function( rows ) {
-      /*var currenSelection =  this.getStudyAreas(),
-              l = rows.length,
-              newSlct = [];
-           
-          while(l--){
-              var  current = rows[l],
-                  isPresent = false,
-                   k = currenSelection.length || 0;
-              while( k-- ){
-                if( currenSelection[k] ==  current ){
-                    isPresent = true;
-                    currenSelection.splice(k, 1);
-                    break;
-                }    
-              }
-              
-              if(! isPresent){
-                newSlct.push(current);  
-              }
-              
-          };*/
       this.setStudyAreas( RIF.unique( rows ) );
-    },
-    taxonomyChanged: function( arg ) {
-      this.setHealthConditionTaxonomy( arg );
-      this.setHealthCodes( null );
     },
     icdSelectionChanged: function( arg ) {
       if ( arg.length == 0 ) {
         arg = null;
       };
-      this.setHealthCodes( arg );
+      this.setHealthOutcomes( arg );
     },
     startYearChanged: function( arg ) {
       this.setMinYear( arg );
@@ -67,6 +44,9 @@ RIF.study[ 'facade-diseaseSubmission' ] = ( function() {
       this.setGender( arg );
     },
     covariatesChanged: function( arg ) {
+      if ( arg.length == 0 ) {
+        arg = null;
+      };
       this.setCovariates( arg );
     },
     ageGroupsChanged: function( arg ) {
@@ -78,12 +58,39 @@ RIF.study[ 'facade-diseaseSubmission' ] = ( function() {
 
     isInvestigationReady: function() {
       for ( var i in this.parameters ) {
-        if ( i != 'covariates' && this.parameters[ i ] == null ) {
+        if ( i == 'healthOutcomes' ) {
+          for ( var h in this.parameters[ i ] ) {
+            if ( this.parameters[ i ][ h ].length == 0 ) {
+              delete this.parameters[ i ][ h ];
+            };
+          };
+          if ( jQuery.isEmptyObject( this.parameters[ i ] ) ) {
+            this.investigationNotReadyToBeAdded();
+            return;
+          };
+        } else if ( i != 'covariates' && this.parameters[ i ] == null ) {
           this.investigationNotReadyToBeAdded();
           return;
         }
-      }
+      };
+
       this.investigationReadyToBeAdded();
+    },
+
+    addInvestigation: function() {
+      var nInvestigation = this.addCurrentInvestigation();
+      this.fire( 'addInvestigationRow', [ nInvestigation, this.parameters ] );
+    },
+
+    removeInvestigationRow: function( arg ) {
+      this.removeInvestigation( arg );
+    },
+
+    clearAllParameters: function() {
+      for ( var i in this.parameters ) {
+        this.parameters[ i ] = null;
+      };
+      console.log( this.parameters )
     },
 
 

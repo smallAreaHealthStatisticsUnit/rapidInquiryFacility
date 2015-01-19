@@ -484,7 +484,7 @@ input[type="range"]::-ms-thumb {
 
 	
 	.msettings {
-		width: 85%;
+		width: 95%;
 		padding-bottom: 2px;
 		display:block;
 		background: #FFF;
@@ -1072,8 +1072,7 @@ input.dropdownInput:-webkit-input-placeholder {
 
 .headerBlock h1 {
     font-size: 18px;
-    padding-top: 7%;
-        font-family: 'Oxygen', sans-serif;
+    padding-top: 5%;
 }
 
 .summary {
@@ -1169,7 +1168,7 @@ input.dropdownInput:-webkit-input-placeholder {
 
 .healthCodes {
     float:left;
-    width: 40%;
+    width: 35%;
     height: 100%;
     border-right: 2px solid #dbdbdb;
     position: relative;
@@ -1243,13 +1242,14 @@ input.dropdownInput:-webkit-input-placeholder {
 
 .investigationBox > div#investigationRecap{
     height: 35%;
+    overflow-y: auto;
 }
 
 #investigationRecap{
     border-top:1px solid #dbdbdb;
 }
 #parameters > div:first-child{
-    margin-top:4%;
+    margin-top:5%;
 }
 
 #parameters > div{
@@ -1299,14 +1299,12 @@ input.dropdownInput:-webkit-input-placeholder {
     width:100%;
 }
 
-#addInvestigation{
+#addInvestigation, #clearParameters{
     position: absolute;
     top: 0;
-    background-color: #B4EEB4;
     opacity: 0.2;
     text-transform: uppercase;
     width: auto !important;
-    padding: 12px 20px;
     z-index: 999999999999999999999999;
     border-radius: 0px 0px 10px 10px;
     -moz-border-radius: 0px 0px 10px 10px;
@@ -1314,18 +1312,112 @@ input.dropdownInput:-webkit-input-placeholder {
     border: 1px solid #F2F2F2;
     color: white! important;
     margin: 0 8% 0 0 !important;
-    right: 0;
     font-weight: bold;
+}
+
+#addInvestigation{
+    background-color: #B4EEB4;
+    right: 0;
+    padding: 12px 20px;
     font-size: 16px;
+}
+
+#clearParameters{
+    background-color: #FF7256;
+    left:3%;
+    padding: 8px 20px;
+    font-size: 14px;
 }
 
 .addInvestigationActive{
     opacity: 1 !important;
     cursor: pointer;
+    background-color:#00CD00 !important;
+}
+.addInvestigationActive:hover, #clearParameters:hover{
     text-decoration: underline;
+    cursor: pointer;
+}
+ #clearParameters:hover{
+     opacity:0.4
 }
 
+/*#allRowsInvestigations > div > div {
+    display: table-cell;
+}
 
+#allRowsInvestigations > div > div:last-child{
+    border:none;
+}
 
+#allRowsInvestigations > div > div p{
+    padding:0 15px;
+    word-break:  break-word
+}
+
+#allRowsInvestigations > div{
+    height:auto;
+    width: 100%;
+    border-bottom:1px solid #DDC;
+}
+#allRowsInvestigations .aSR div:first-child{
+    border-right:none;
+    float:none;
+}*/
+
+#investigationRecap table{
+    width:100%
+}
+thead{
+    background-color:#F2F2F2;
+}
+#investigationRecap th,td{
+   text-align: left
+}
+#investigationRecap th{
+   padding: 20px 10px;
+    background-color: #F2F2F2;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.removeInvestigation{
+    background: transparent url("../images/delete.png") no-repeat center center;
+    opacity: 0.3;
+    width:7%;
+}
+.removeInvestigation:hover{
+    opacity: 1;
+    cursor: pointer
+}
+#investigationRecap td{
+   padding:10px;
+}
+#investigationRecap tr.even{
+   background-color:rgba(198, 226, 255 , 0.3)
+}
+#investigationRecap tr.odd{
+   background-color:rgba(131,112,255, 0.1)
+}
+.taxonomiRow{
+    width: 10% !important;
+}
+.healthOutcomesRow{
+    width:30%;
+}
+.taxonomiRow div{
+    height:15px   
+}
+.agegroupsRow{
+    width:15%;
+}
+.yearRow{
+    width:15%
+}
+.genderRow{
+    width:10%;
+}
+.covariatesRow{
+    width:8%
+}
 
 

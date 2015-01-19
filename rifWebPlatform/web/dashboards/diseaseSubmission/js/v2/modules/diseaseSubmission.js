@@ -33,7 +33,7 @@ RIF.diseaseSubmission = ( function() {
       },
       table: {
         studyType: 'diseaseSubmission',
-        tables: [ 'areaSelectionRenderer', 'ageGroupsRenderer' ]
+        tables: [ 'areaSelectionRenderer', 'ageGroupsRenderer', 'investigationsRecap' ]
       }
     },
 
@@ -155,7 +155,35 @@ RIF.diseaseSubmission = ( function() {
         method: "investigationReadyToBeAdded"
       },
 
+      covariatesChanged: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "covariatesChanged"
+      },
 
+      addInvestigation: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "addInvestigation"
+      },
+
+      addInvestigationRow: {
+        subscribers: [ "table" ],
+        firer: [ "study" ],
+        method: "addInvestigationRow"
+      },
+
+      removeInvestigationRow: {
+        subscribers: [ "study" ],
+        firer: [ "table" ],
+        method: "removeInvestigationRow"
+      },
+
+      clearAllParameters: {
+        subscribers: [ "study", "table" ],
+        firer: [ "menu" ],
+        method: "clearAllParameters"
+      },
 
       //Getters
       /*getCurrentStudyAreaSelection: {

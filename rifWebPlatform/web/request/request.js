@@ -366,30 +366,28 @@
 
       getHealthThemes: function( myCallback, params ) {
         var msg = "Retrieving Health Themes ",
-          args = 'userID=ffabbri&geographyName=SAHSU';
+          args = 'geographyName=SAHSU';
 
         xhr( 'studySubmission/getHealthThemes?' + args, myCallback, msg );
       },
 
       getNumeratorDenominator: function( myCallback, params ) {
         var msg = "Retrieving Numerator denominator pairs ",
-          args = 'userID=ffabbri&geographyName=SAHSU&healthThemeDescription=' + params[ 0 ];
+          args = 'geographyName=SAHSU&healthThemeDescription=' + params[ 0 ];
 
         xhr( 'studySubmission/getNumerator?' + args, myCallback, msg );
       },
         
       getSelectAt: function( myCallback, params ) {
         var msg = "Retrieving geolevel resolutions ",
-            userName = params[0],
-            args = 'userID='+userName+'&geographyName=SAHSU';
+            args = 'geographyName=SAHSU';
 
         xhr( 'studySubmission/getGeoLevelSelectValues?' + args, myCallback, msg, 'application/json' );
       },
         
       getResolutions: function( myCallback, params ) {
         var msg = "Retrieving geolevel resolutions ",
-            userName = params[0],
-            args = 'userID='+userName+'&geoLevelSelectName='+params[1]+'&geographyName=SAHSU';
+            args = 'geoLevelSelectName='+params[1]+'&geographyName=SAHSU';
 
         xhr( 'studySubmission/getGeoLevelViews?' + args, myCallback, msg, 'application/json' );
       },  
@@ -397,7 +395,7 @@
         
       getGeolevelSelect: function( myCallback, params ) {
         var msg = "Retrieving Area ids for geolevel:" + params[0];
-            args = 'userID=ffabbri&geographyName=SAHSU&geoLevelSelectName=LEVEL2&geoLevelAreaName=Elliot',
+            args = 'geographyName=SAHSU&geoLevelSelectName=LEVEL2&geoLevelAreaName=Elliot',
             args += '&geoLevelToMapName=' + params[0];   
 
         xhr( 'studySubmission/getMapAreas?' + args, myCallback, msg, 'application/json' );
@@ -405,49 +403,49 @@
         
       getHealthTaxonomy: function( myCallback, params ) {
         var msg = "Retrieving taxonomy codes",
-            args = 'userID=ffabbri';  
+            args = '';  
 
         xhr( 'studySubmission/getHealthCodeTaxonomies?' + args, myCallback, msg, 'application/json' );
       },
         
       getTopLevelHealthCodes: function( myCallback, params ) {
         var msg = "Retrieving top level health codes",
-            args = 'userID=ffabbri&healthCodeTaxonomyNameSpace='+ params[0];  
+            args = 'healthCodeTaxonomyNameSpace='+ params[0];  
 
         xhr( 'studySubmission/getTopLevelCodes?' + args, myCallback, msg, 'application/json' );
       }, 
         
       getSubHealthCodes: function( myCallback, params ) {
         var msg = "Retrieving sub level health codes",
-            args = 'userID=ffabbri&healthCode='+ params[1]+'&healthCodeNameSpace='+ params[0]; 
+            args = 'healthCode='+ params[1]+'&healthCodeNameSpace='+ params[0]; 
 
         xhr( 'studySubmission/getImmediateChildHealthCodes?' + args, myCallback, msg, 'application/json' );
       },
         
       getYearRange: function( myCallback, params ) {
         var msg = "Retrieving Years",
-            args = 'userID=ffabbri&geographyName=SAHSU&numeratorTableName=SAHSULAND_CANCER';
+            args = 'geographyName=SAHSU&numeratorTableName=SAHSULAND_CANCER';
 
         xhr( 'studySubmission/getYearRange?' + args, myCallback, msg, 'application/json' );
       },
         
       getSexes: function( myCallback, params ) {
         var msg = "Retrieving Genders",
-            args = 'userID=ffabbri';
+            args = '';
 
         xhr( 'studySubmission/getSexes?' + args, myCallback, msg, 'application/json' );
       },  
         
       getAgeGroups: function( myCallback, params ) {
         var msg = "Retrieving Age groups",
-            args = 'userID=ffabbri&geographyName=SAHSU&numeratorTableName=SAHSULAND_CANCER';
+            args = 'geographyName=SAHSU&numeratorTableName=SAHSULAND_CANCER';
 
         xhr( 'studySubmission/getAgeGroups?' + args, myCallback, msg, 'application/json' );
       }, 
         
       getCovariates: function( myCallback, params ) {
         var msg = "Retrieving Covariates",
-            args = 'userID=ffabbri&geographyName=SAHSU&geoLevelSelectName=LEVEL1&geoLevelToMapName=LEVEL3';
+            args = 'geographyName=SAHSU&geoLevelSelectName=LEVEL1&geoLevelToMapName=LEVEL3';
 
         xhr( 'studySubmission/getCovariates?' + args, myCallback, msg, 'application/json' );
       }
