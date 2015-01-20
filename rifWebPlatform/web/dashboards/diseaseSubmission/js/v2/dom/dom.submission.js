@@ -77,6 +77,9 @@ RIF.dom = ( function() {
           },
           healthSelection: 'icdSelected',
           clearAll: $( '#clearParameters' ),
+          healthCodes: '.healthCodes',
+          searchCodeInput: $( '#searchCodeInput' )
+
         };
       },
       investigationParameters: function() {

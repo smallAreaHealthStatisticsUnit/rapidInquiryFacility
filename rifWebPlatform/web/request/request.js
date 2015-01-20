@@ -448,7 +448,16 @@
             args = 'geographyName=SAHSU&geoLevelSelectName=LEVEL1&geoLevelToMapName=LEVEL3';
 
         xhr( 'studySubmission/getCovariates?' + args, myCallback, msg, 'application/json' );
-      }
+      },
+        
+      getSearchHealthCodes: function( myCallback, params ) {
+        var msg = "Searching health codes",
+            taxonomy = params[0],
+            searchTxt = params[1],
+            args = 'healthCodeTaxonomyNameSpace='+ taxonomy +'&searchText='+params[1];
+
+        xhr( 'studySubmission/getHealthCodesForSearchText?' + args, myCallback, msg, 'application/json' );
+      }    
  
     };
 

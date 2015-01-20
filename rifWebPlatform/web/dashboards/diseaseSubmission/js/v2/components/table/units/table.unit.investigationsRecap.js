@@ -10,14 +10,13 @@ RIF.table.investigationsRecap = ( function( _dom ) {
           data = params[ 1 ];
 
         _dom.tableContent.style.display = 'none';
-        var fragment = document.createDocumentFragment(),
-          oddOreven = '',
+        var oddOreven = '',
           healthOutcomes = '',
           taxonomies = '',
           covariates = ( data.covariates != null ) ? data.covariates.join() : 'none',
-          ageGroups = data.ageGroups.map( function( elem ) {
-            return elem.band;
-          } ).join( " " );
+          ageGroups = data.ageGroups.reverse().map( function( elem ) {
+            return elem.band.replace( / /g, '' );
+          } ).join( '   ' );
 
         for ( var taxonomy in data.healthOutcomes ) {
           var counter = 0,
@@ -30,22 +29,7 @@ RIF.table.investigationsRecap = ( function( _dom ) {
           };
         };
 
-        /*div = document.createElement("tr");
-                
-                oddOreven = ( investigationId % 2 == 0 ) ? 'even' : 'odd',
-                 div.className = 'aSR ' + oddOreven;
-                 div.id = 'investigation' + investigationId;       
-                 
-                 div.innerHTML = '<div class="taxonomiRow">'+ taxonomies +'</div>' + 
-                     '<div class="healthOutcomesRow">'+  healthOutcomes +'</div>'+
-                     '<div class="agegroupsRow"><p>'+ ageGroups +'</p></div>' + 
-                     '<div class="yearRow"><p>'+ data.minYear + '-' + data.maxYear +'</p></div>'+
-                     '<div class="genderRow"><p>'+ data.gender +'</p></div>'+
-                     '<div class="covariatesRow"><p>'+ covariates +'</p></div>' + 
-                     '<div class="removeInvestigation"><p></p></div>';
-                */
-
-        tr = document.createElement( "tr" );
+        var tr = document.createElement( "tr" );
 
         oddOreven = ( investigationId % 2 == 0 ) ? 'even' : 'odd',
         tr.className = 'aSR ' + oddOreven;
@@ -60,15 +44,11 @@ RIF.table.investigationsRecap = ( function( _dom ) {
           '<td class="removeInvestigation"><p></p></td>';
 
 
-
         _dom.tableBody.append( tr );
-        //_dom.tableHead.show();
         _dom.tableContent.style.display = 'block';
-
       }
 
     };
-
 
   return {
     investigationsRecap: _p

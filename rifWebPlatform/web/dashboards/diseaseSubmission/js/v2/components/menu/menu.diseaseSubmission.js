@@ -66,6 +66,10 @@ RIF.menu = ( function( settings ) {
           if ( _investigationReady ) {
             _p.facade.addInvestigation();
           };
+        },
+
+        searchHealthCodes: function( params ) {
+          _p.healthCodes.request( 'getSearchHealthCodes', params );
         }
 
 

@@ -3,6 +3,7 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
   var menuContext = this,
     currentTaxonomy = null,
     index = 0,
+    searchEnter = false,
     indexSelection = {},
     healthSelection = {}; //{ taxonomy: null , description: null, code: null }
 
@@ -15,23 +16,14 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
 
   };
 
-  /*var getTaxonomy = function(){
-       if(currentTaxonomy == null){
-           currentTaxonomy = menuContext.proxy.taxonomy;
-           //checkTaxonomy(currentTaxonomy);
-       };
-        return currentTaxonomy;     
-  };*/
-
   _dom.icdClassification.change( function() {
     currentTaxonomy = $( this ).val();
     $( '.taxonomySection' ).hide();
     menuContext.proxy.updateTopLevelHealthCodes( currentTaxonomy );
-    //checkTaxonomy(currentTaxonomy);
   } );
 
 
-  $( ".healthCodes" ).on( "click", _dom.healthCodesHeader, function( aEvent ) {
+  $( _dom.healthCodes ).on( "click", _dom.healthCodesHeader, function( aEvent ) {
     var target = $( this );
 
     var spans = target.find( '>span' ),
@@ -62,7 +54,7 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
   } );
 
 
-  $( ".healthCodes" ).on( "click", _dom.noChildElements, function( aEvent ) {
+  $( _dom.healthCodes ).on( "click", _dom.noChildElements, function( aEvent ) {
 
     var spans = $( this ).find( 'span' ),
       code = spans[ 0 ].innerHTML.trim(),
@@ -102,6 +94,7 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
     menuContext.proxy.icdSelectionChanged( healthSelection );
   } );
 
+
   _dom.clearAll.click( function() {
     $( '.' + _dom.healthSelection )
       .removeClass( _dom.healthSelection )
@@ -109,6 +102,40 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
 
     indexSelection = {};
     healthSelection = {};
+
+    var taxonomy = currentTaxonomy || _dom.icdClassification.val();
+    menuContext.proxy.searchHealthCodes( {
+      taxonomy: taxonomy,
+      searchTxt: '',
+      dom: null
+    } );
+  } );
+
+
+  _dom.searchCodeInput.change( function() {
+    if ( searchEnter ) {
+      var searchTxt = $( this ).val(),
+        taxonomy = currentTaxonomy || _dom.icdClassification.val(),
+        domParent = document.getElementById( taxonomy );
+      if ( domParent === null ) {
+        RIF.statusBar( 'Could not find element to append health codes search', true, 'notify' );
+        return;
+      };
+      menuContext.proxy.searchHealthCodes( {
+        taxonomy: taxonomy,
+        searchTxt: searchTxt,
+        dom: domParent
+      } );
+
+    };
+    searchEnter = false;
+
+  } ).keypress( function( event ) {
+    var keycode = ( event.keyCode ? event.keyCode : event.which );
+    if ( keycode == '13' ) {
+      searchEnter = true;
+    };
+
   } );
 
 

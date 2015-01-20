@@ -1181,6 +1181,18 @@ input.dropdownInput:-webkit-input-placeholder {
 }
 .healthCodes #tree{
   margin-top:90px;
+  /* Firefox */ 
+  height: -moz-calc(100% - 200px); 
+  /* WebKit */
+  height: -webkit-calc(100% - 200px); 
+  /* Opera */ 
+  height: -o-calc(100% - 200px); 
+  /* Standard */ 
+  height: calc(100% - 200px);   
+}
+.healthCodes #searchCode{
+    position: absolute;
+    bottom: 30px;
 }
 .healthCodes #tree > div{
     width: 100%;
@@ -1342,28 +1354,6 @@ input.dropdownInput:-webkit-input-placeholder {
      opacity:0.4
 }
 
-/*#allRowsInvestigations > div > div {
-    display: table-cell;
-}
-
-#allRowsInvestigations > div > div:last-child{
-    border:none;
-}
-
-#allRowsInvestigations > div > div p{
-    padding:0 15px;
-    word-break:  break-word
-}
-
-#allRowsInvestigations > div{
-    height:auto;
-    width: 100%;
-    border-bottom:1px solid #DDC;
-}
-#allRowsInvestigations .aSR div:first-child{
-    border-right:none;
-    float:none;
-}*/
 
 #investigationRecap table{
     width:100%
@@ -1375,7 +1365,7 @@ thead{
    text-align: left
 }
 #investigationRecap th{
-   padding: 20px 10px;
+   padding: 10px;
     background-color: #F2F2F2;
     font-weight: bold;
     text-transform: uppercase;

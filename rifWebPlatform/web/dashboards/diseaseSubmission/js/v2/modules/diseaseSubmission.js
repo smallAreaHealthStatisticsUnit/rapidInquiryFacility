@@ -185,12 +185,6 @@ RIF.diseaseSubmission = ( function() {
         method: "clearAllParameters"
       },
 
-      //Getters
-      /*getCurrentStudyAreaSelection: {
-        subscribers: [ "study" ],
-        firer: [ "table" ],
-        method: "getCurrentStudyAreaSelection"
-      }*/
 
     },
 

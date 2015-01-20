@@ -4,6 +4,10 @@ RIF.menu[ 'event-frontSubmission' ] = ( function( dom ) {
 
 
   dom.dropdownInputs.keydown( function( e ) {
+    if ( this.id === 'searchCodeInput' ) {
+      return true;
+    };
+
     return false;
   } );
 

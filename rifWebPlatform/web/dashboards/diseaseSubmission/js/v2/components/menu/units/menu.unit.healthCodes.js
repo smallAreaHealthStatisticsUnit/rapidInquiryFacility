@@ -4,6 +4,15 @@
 
         _topLevelHealthCodesRequested = [],
 
+        _reRequestTopLevelHealthCodes = function( taxonomy ) {
+          var i = _topLevelHealthCodesRequested.indexOf( taxonomy );
+          if ( i >= 0 ) {
+            _topLevelHealthCodesRequested.splice( i, 1 );
+            _requests.getTopLevelHealthCodes( taxonomy );
+            return true;
+          };
+        },
+
         _requests = {
           getTaxonomy: function() {
             RIF.getHealthTaxonomy( _callbacks[ 'getTaxonomy' ], null );
@@ -27,6 +36,18 @@
               _callbacks.getSubLevelHealthCodes.call( this, params.dom, params.taxonomy );
             };
             RIF.getSubHealthCodes( specialClbk, [ params.taxonomy, params.code ] ); // param hardcoded for now
+          },
+
+          getSearchHealthCodes: function( params ) {
+            var specialClbk = function() {
+              _callbacks.getSearchHealthCodes.call( this, params.dom, params.taxonomy );
+            };
+            if ( params.searchTxt == '' ) {
+              _reRequestTopLevelHealthCodes( params.taxonomy );
+              return;
+            };
+
+            RIF.getSearchHealthCodes( specialClbk, [ params.taxonomy, params.searchTxt ] );
           },
 
 
@@ -58,6 +79,15 @@
           },
 
           getSubLevelHealthCodes: function( domParent, taxonomy ) {
+            _insertChildrenElements( this, domParent, taxonomy );
+          },
+
+          getSearchHealthCodes: function( domParent, taxonomy ) {
+            if ( this.length === 0 ) {
+              RIF.statusBar( 'No Health codes found', true, 'notify' );
+              //_reRequestTopLevelHealthCodes( taxonomy );
+              return;
+            };
             _insertChildrenElements( this, domParent, taxonomy );
           },
 
