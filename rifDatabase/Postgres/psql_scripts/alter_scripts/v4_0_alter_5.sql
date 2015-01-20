@@ -512,6 +512,10 @@ BEGIN
 --
 	PERFORM rif40_geo_pkg.gid_rowindex_fix('SAHSU');
 --
+-- Populate Map tiles
+--
+	PERFORM rif40_geo_pkg.populate_rif40_tiles('SAHSU'); 
+--
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
 	RAISE INFO 'Processed SAHSU geography: %s', took;

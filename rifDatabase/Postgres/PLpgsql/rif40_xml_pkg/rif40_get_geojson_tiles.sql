@@ -374,9 +374,9 @@ SELECT * FROM e;
 -- OK - different - display why
 --
 		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
-			'[50405] Geography: %, <geoevel view> % bound [%, %, %, %] tile XY(%,%) verified [% %]; zoom level %; percent diffs [% % % %]', 			 
+			'[50405] Geography: %, <geolevel view> % bound [%, %, %, %] tile XY(%,%) verified [% %]; zoom level %; expected bound [%, %, %, %]; percent diffs [% % % %]', 			 
 			l_geography::VARCHAR			/* Geography */, 
-			l_geolevel_view::VARCHAR		/* Geoelvel view */,  
+			l_geolevel_view::VARCHAR		/* Geolevel view */,  
 			x_min::VARCHAR					/* Xmin */,
 			y_min::VARCHAR					/* Ymin */,
 			x_max::VARCHAR					/* Xmax */,
@@ -386,6 +386,10 @@ SELECT * FROM e;
 			c6_rec.x_centroid::VARCHAR		/* X tile centroid */,
 			c6_rec.y_centroid::VARCHAR		/* Y tile centroid */,
 			zoom_level::VARCHAR				/* Zoom level */,
+			c6_rec.tile_x_min::VARCHAR		/* tile Xmin */,
+			c6_rec.tile_y_min::VARCHAR		/* tile Ymin */,
+			c6_rec.tile_x_max::VARCHAR		/* tile Xmax */,
+			c6_rec.tile_y_max::VARCHAR		/* tile Ymax */,			
 			c6_rec.x_min_diff_pct::VARCHAR	/* X min diff as a percentage */,
 			c6_rec.y_min_diff_pct::VARCHAR	/* Y max diff as a percentage */,
 			c6_rec.x_max_diff_pct::VARCHAR	/* X min diff as a percentage */,

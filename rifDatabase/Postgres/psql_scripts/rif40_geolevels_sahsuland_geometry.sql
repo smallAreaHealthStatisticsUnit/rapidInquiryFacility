@@ -187,6 +187,16 @@ BEGIN
 		 WHERE b.geolevel_name = 'LEVEL1'
 		   AND b.area_id = a.level1);
 --
+-- Add: gid_rowindex (i.e 1_1). Where gid corresponds to gid in geometry table
+-- row_index is an incremental serial aggregated by gid ( starts from one for each gid)
+--
+	PERFORM rif40_geo_pkg.gid_rowindex_fix('SAHSU');
+--
+-- Populate Map tiles
+--
+	PERFORM rif40_geo_pkg.populate_rif40_tiles('SAHSU'); 
+	
+--
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
 	RAISE INFO 'Processed SAHSU geography: %s', took;
