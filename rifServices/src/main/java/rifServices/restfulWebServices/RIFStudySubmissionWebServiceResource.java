@@ -3,6 +3,7 @@ package rifServices.restfulWebServices;
 
 
 import rifServices.system.RIFServiceMessages;
+
 import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 
@@ -11,6 +12,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response;
+
 import javax.servlet.http.*;
 
 import javax.ws.rs.QueryParam;
@@ -129,7 +132,7 @@ public class RIFStudySubmissionWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/login")
-	public String login(
+	public Response login(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("password") String password) {
@@ -148,7 +151,7 @@ public class RIFStudySubmissionWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/isLoggedIn")
-	public String login(
+	public Response login(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 
@@ -160,7 +163,7 @@ public class RIFStudySubmissionWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/logout")
-	public String logout(
+	public Response logout(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 
@@ -174,7 +177,7 @@ public class RIFStudySubmissionWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeographies")
-	public String getGeographies(
+	public Response getGeographies(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 
@@ -186,7 +189,7 @@ public class RIFStudySubmissionWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelSelectValues")
-	public String getGeographicalLevelSelectValues(
+	public Response getGeographicalLevelSelectValues(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName) {
@@ -201,7 +204,7 @@ public class RIFStudySubmissionWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getDefaultGeoLevelSelectValue")
-	public String getDefaultGeoLevelSelectValue(
+	public Response getDefaultGeoLevelSelectValue(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName) {
@@ -215,7 +218,7 @@ public class RIFStudySubmissionWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelAreaValues")
-	public String getGeoLevelAreaValues(
+	public Response getGeoLevelAreaValues(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
@@ -231,7 +234,7 @@ public class RIFStudySubmissionWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelViews")
-	public String getGeoLevelViewValues(
+	public Response getGeoLevelViewValues(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
@@ -247,7 +250,7 @@ public class RIFStudySubmissionWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getNumerator")
-	public String getNumerator(
+	public Response getNumerator(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,		
@@ -264,7 +267,7 @@ public class RIFStudySubmissionWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getDenominator")
-	public String getDenominator(
+	public Response getDenominator(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,		
@@ -280,7 +283,7 @@ public class RIFStudySubmissionWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getYearRange")
-	public String getYearRange(
+	public Response getYearRange(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,	
@@ -301,7 +304,7 @@ public class RIFStudySubmissionWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getAvailableRIFOutputOptions")
-	public String getAvailableRIFOutputOptions(
+	public Response getAvailableRIFOutputOptions(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 				
@@ -330,7 +333,9 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-		return result;
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 		
 	}
 	
@@ -343,7 +348,7 @@ public class RIFStudySubmissionWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getAvailableCalculationMethods")
-	public String getAvailableCalculationMethods(
+	public Response getAvailableCalculationMethods(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 				
@@ -396,14 +401,17 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-		return result;
+
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 		
 	}
 		
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getDiseaseMappingStudies")
-	public String getDiseaseMappingStudies(
+	public Response getDiseaseMappingStudies(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 				
@@ -430,15 +438,17 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-		return result;
-		
+
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 	}
 
 	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getProjects")
-	public String getProjects(
+	public Response getProjects(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 				
@@ -478,14 +488,15 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-		return result;
-		
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 	}
 	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getProjectDescription")
-	public String getProjectDescription(
+	public Response getProjectDescription(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("projectName") String projectName) {
@@ -534,13 +545,15 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-		return result;
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 		
 	}
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelToMapValues")
-	public String getGeoLevelToMapValues(
+	public Response getGeoLevelToMapValues(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
@@ -587,7 +600,9 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-		return result;
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 		
 	}
 
@@ -595,7 +610,7 @@ public class RIFStudySubmissionWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getMapAreas")
-	public String getGeoLevelToMapAreas(
+	public Response getGeoLevelToMapAreas(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
@@ -660,14 +675,15 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-		return result;
-		
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 	}
 		
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getHealthThemes")
-	public String getHealthThemes(
+	public Response getHealthThemes(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName) {
@@ -712,14 +728,16 @@ public class RIFStudySubmissionWebServiceResource
 					exception);
 		}
 		
-		return result;
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 		
 	}
 	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getSexes")
-	public String getSexes(
+	public Response getSexes(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 				
@@ -762,7 +780,9 @@ public class RIFStudySubmissionWebServiceResource
 					exception);
 		}
 		
-		return result;
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 		
 	}
 	
@@ -770,7 +790,7 @@ public class RIFStudySubmissionWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getCovariates")
-	public String getCovariates(
+	public Response getCovariates(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
@@ -827,14 +847,16 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-		return result;
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 		
 	}
 		
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getAgeGroups")
-	public String getAgeGroups(
+	public Response getAgeGroups(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,	
@@ -876,13 +898,16 @@ public class RIFStudySubmissionWebServiceResource
 					exception);
 		}
 
-		return result;
+
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 	}
 
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getHealthCodeTaxonomies")
-	public String getHealthCodeTaxonomies(
+	public Response getHealthCodeTaxonomies(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 	
@@ -923,13 +948,16 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-		return result;		
+
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 	}
 		
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getTopLevelCodes")
-	public String getTopLevelCodes(
+	public Response getTopLevelCodes(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("healthCodeTaxonomyNameSpace") String healthCodeTaxonomyNameSpace) {
@@ -975,14 +1003,17 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-		return result;
+
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 	}
 
 
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getHealthCodesForSearchText")
-	public String getTopLevelCodes(
+	public Response getTopLevelCodes(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("healthCodeTaxonomyNameSpace") String healthCodeTaxonomyNameSpace,
@@ -1032,13 +1063,16 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-		return result;
+
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 	}
 	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getParentHealthCode")
-	public String getParentHealthCode(
+	public Response getParentHealthCode(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("childHealthCode") String healthCode,
@@ -1063,10 +1097,7 @@ public class RIFStudySubmissionWebServiceResource
 			//Convert results to support JSON						
 			HealthCodeProxy healthCodeProxy
 				= new HealthCodeProxy();
-			if (parentHealthCode == null) {
-				return "";
-			}
-			else {
+			if (parentHealthCode != null) {
 				healthCodeProxy.setCode(parentHealthCode.getCode());
 				healthCodeProxy.setDescription(parentHealthCode.getDescription());
 				healthCodeProxy.setNameSpace(parentHealthCode.getNameSpace());
@@ -1086,14 +1117,17 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-		return result;
+
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 	}
 	
 
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getImmediateChildHealthCodes")
-	public String getImmediateChildHealthCodes(
+	public Response getImmediateChildHealthCodes(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("healthCode") String healthCode,
@@ -1140,14 +1174,16 @@ public class RIFStudySubmissionWebServiceResource
 					servletRequest,
 					exception);			
 		}
-		
-		return result;
+
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 	}
 
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getHealthCodesMatchingSearchText")
-	public String getHealthCodesMatchingSearchText(
+	public Response getHealthCodesMatchingSearchText(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("nameSpace") String nameSpace,
@@ -1196,8 +1232,10 @@ public class RIFStudySubmissionWebServiceResource
 					servletRequest,
 					exception);			
 		}
-		
-		return result;
+
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 	}
 
 	// ==========================================

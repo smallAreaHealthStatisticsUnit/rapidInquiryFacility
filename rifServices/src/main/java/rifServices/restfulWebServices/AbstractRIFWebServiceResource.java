@@ -3,11 +3,15 @@ package rifServices.restfulWebServices;
 import java.io.ByteArrayOutputStream;
 
 
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 import javax.servlet.http.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -126,7 +130,7 @@ abstract class AbstractRIFWebServiceResource {
 		}
 	}
 
-	protected String isLoggedIn(
+	protected Response isLoggedIn(
 		final HttpServletRequest servletRequest,
 		final String userID) {
 		
@@ -143,10 +147,12 @@ abstract class AbstractRIFWebServiceResource {
 					exception);			
 		}
 	
-		return result;		
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 	}
 	
-	protected String login(
+	protected Response login(
 		final HttpServletRequest servletRequest,
 		final String userID,
 		final String password) {
@@ -166,10 +172,12 @@ abstract class AbstractRIFWebServiceResource {
 					exception);			
 		}
 	
-		return result;
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 	}
 	
-	protected String logout(
+	protected Response logout(
 		final HttpServletRequest servletRequest,
 		final String userID) {
 		
@@ -188,7 +196,10 @@ abstract class AbstractRIFWebServiceResource {
 					exception);			
 		}
 	
-		return result;
+
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 	}
 	
 	// ==========================================
@@ -203,7 +214,7 @@ abstract class AbstractRIFWebServiceResource {
 	}
 	
 	
-	protected String getGeographies(
+	protected Response getGeographies(
 		final HttpServletRequest servletRequest,
 		final String userID) {
 			
@@ -220,10 +231,7 @@ abstract class AbstractRIFWebServiceResource {
 			ArrayList<Geography> geographies
 				= studySubmissionService.getGeographies(user);
 
-			if (geographies == null) {
-				return "";
-			}
-			else {
+			if (geographies != null) {
 				ArrayList<String> geographyNames = new ArrayList<String>();			
 				for (Geography geography : geographies) {
 					geographyNames.add(geography.getName());
@@ -244,12 +252,13 @@ abstract class AbstractRIFWebServiceResource {
 					servletRequest,
 					exception);			
 		}
-	
-		return result;
-	
+
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);		
 	}
 
-	protected String getGeographicalLevelSelectValues(
+	protected Response getGeographicalLevelSelectValues(
 		final HttpServletRequest servletRequest,
 		final String userID,
 		final String geographyName) {
@@ -290,11 +299,13 @@ abstract class AbstractRIFWebServiceResource {
 					exception);			
 		}
 	
-		return result;
-	
+		
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);		
 	}
 		
-	protected String getDefaultGeoLevelSelectValue(
+	protected Response getDefaultGeoLevelSelectValue(
 		final HttpServletRequest servletRequest,
 		final String userID,
 		final String geographyName) {
@@ -334,11 +345,13 @@ abstract class AbstractRIFWebServiceResource {
 					exception);			
 		}
 	
-		return result;
-	
+		
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);		
 	}
 
-	protected String getGeoLevelAreaValues(
+	protected Response getGeoLevelAreaValues(
 		final HttpServletRequest servletRequest,
 		final String userID,
 		final String geographyName,
@@ -383,11 +396,13 @@ abstract class AbstractRIFWebServiceResource {
 					exception);			
 		}
 		
-		return result;
 		
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);		
 	}
 	
-	protected String getGeoLevelViewValues(
+	protected Response getGeoLevelViewValues(
 		final HttpServletRequest servletRequest,
 		final String userID,
 		final String geographyName,
@@ -431,9 +446,11 @@ abstract class AbstractRIFWebServiceResource {
 					servletRequest,
 					exception);			
 		}
+
 		
-		return result;
-		
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);		
 	}	
 	
 	/**
@@ -444,7 +461,7 @@ abstract class AbstractRIFWebServiceResource {
 	 * @return
 	 */
 	
-	protected String getNumerator(
+	protected Response getNumerator(
 		final HttpServletRequest servletRequest,
 		final String userID,
 		final String geographyName,
@@ -495,10 +512,12 @@ abstract class AbstractRIFWebServiceResource {
 					exception);			
 		}
 		
-		return result;		
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);		
 	}
 
-	protected String getDenominator(
+	protected Response getDenominator(
 		final HttpServletRequest servletRequest,
 		final String userID,
 		final String geographyName,
@@ -551,12 +570,13 @@ abstract class AbstractRIFWebServiceResource {
 					exception);			
 		}
 		
-		return result;
-		
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);		
 	}
 	
 	
-	protected String getYearRange(
+	protected Response getYearRange(
 		final HttpServletRequest servletRequest,
 		final String userID,
 		final String geographyName,
@@ -597,7 +617,9 @@ abstract class AbstractRIFWebServiceResource {
 					exception);			
 		}
 		
-		return result;
+		return generateAppropriateContentTypeResponse(
+			servletRequest,
+			result);
 	}
 	
 
@@ -636,7 +658,8 @@ abstract class AbstractRIFWebServiceResource {
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.writeValue(out, objectArrayList);
 		final byte[] data = out.toByteArray();
-		return(new String(data));
+		
+		return new String(data);
 	}
 	
 	protected String serialiseStringResult(
@@ -653,6 +676,26 @@ abstract class AbstractRIFWebServiceResource {
 		return(new String(data));
 	}
 	
+	protected Response generateAppropriateContentTypeResponse(
+		final HttpServletRequest servletRequest,
+		final String data) {
+		
+		if (clientBrowserIsInternetExplorer(servletRequest)) {
+			ResponseBuilder responseBuilder 
+				= Response.ok(
+					data, 
+					MediaType.TEXT_PLAIN);
+			return responseBuilder.build();			
+		}
+		else {
+			ResponseBuilder responseBuilder 
+				= Response.ok(
+					data, 
+					MediaType.APPLICATION_JSON);
+			return responseBuilder.build();				
+		}
+	}
+
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -725,7 +768,7 @@ abstract class AbstractRIFWebServiceResource {
 		
 
 		//@TODO
-		return true;
+		return false;
 	}
 	
 	/*
@@ -738,8 +781,33 @@ abstract class AbstractRIFWebServiceResource {
 	private boolean clientBrowserIsInternetExplorer(
 		final HttpServletRequest servletRequest) {
 		
+		//this approach is known to be weak but it will do for now until
+		//we develop a more robust method
+	
+		//by default it's true
+		boolean result = true;
+		String browserType = servletRequest.getHeader("User-Agent");
+		
+		if (browserType != null) {
+			browserType = browserType.toUpperCase();
+			
+			int foundIndex
+				= browserType.indexOf("CHROME");
+			if (foundIndex != -1) {
+				result = false;
+			}			
+		}
+		
+		//we're going to make the incredibly lame assumption for now that if it
+		//doesn't contain "Chrome", we'll assume it's Internet Explorer.
+		//again, the question of what information do we use to determine if we
+		//send JSON content type back or not needs to be discussed more
+		System.out.println("isClientBrowserIE=="+result+"==");
+		
+		//System.out.println("clientBrowserIsInternetExplorer IS TRUE");
 		//@TODO
-		return true;
+		
+		return result;
 	}
 	
 	/*

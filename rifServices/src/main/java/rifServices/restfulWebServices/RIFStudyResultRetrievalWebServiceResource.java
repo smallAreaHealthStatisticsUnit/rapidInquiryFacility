@@ -1,6 +1,7 @@
 package rifServices.restfulWebServices;
 
 import rifServices.businessConceptLayer.*;
+
 import rifServices.dataStorageLayer.RIFStudyResultRetrievalAPI;
 import rifServices.system.RIFServiceException;
 
@@ -10,16 +11,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 
-import java.text.Collator;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.awt.geom.Rectangle2D;
-import java.io.*;
 import java.util.List;
-
-import com.fasterxml.jackson.databind.*;
 
 
 /**
@@ -132,7 +127,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeographies")
-	public String getGeographies(
+	public Response getGeographies(
 		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID) {
 
@@ -145,7 +140,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelSelectValues")
-	public String getGeographicalLevelSelectValues(
+	public Response getGeographicalLevelSelectValues(
 		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName) {
@@ -160,7 +155,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getDefaultGeoLevelSelectValue")
-	public String getDefaultGeoLevelSelectValue(
+	public Response getDefaultGeoLevelSelectValue(
 		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName) {
@@ -174,7 +169,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelAreaValues")
-	public String getGeoLevelAreaValues(
+	public Response getGeoLevelAreaValues(
 		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
@@ -190,7 +185,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelViews")
-	public String getGeoLevelViewValues(
+	public Response getGeoLevelViewValues(
 		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
@@ -206,7 +201,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getNumerator")
-	public String getNumerator(
+	public Response getNumerator(
 		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,		
@@ -223,7 +218,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getDenominator")
-	public String getDenominator(
+	public Response getDenominator(
 		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,		
@@ -239,7 +234,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getYearRange")
-	public String getYearRange(
+	public Response getYearRange(
 		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,	
