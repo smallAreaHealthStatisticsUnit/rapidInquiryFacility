@@ -1,6 +1,7 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifGenericUILibrary.ErrorDialog;
+
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
@@ -25,7 +26,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-
+import java.io.File;
 
 /**
  *
@@ -104,6 +105,20 @@ public class RIFInteractiveStudySubmissionTool
 			
 			RIFServiceStartupOptions startupOptions 
 				= new RIFServiceStartupOptions(false);
+			StringBuilder rifServiceResourcePath = new StringBuilder();
+			
+			//assume for now it will be (something)\rapidInquiryFacility\(something)
+			String currentExecutionPath = (new File(".")).getAbsolutePath();
+			int index = currentExecutionPath.indexOf("rapidInquiryFacility");
+			System.out.println("rifServiceResourcePath 10=="+currentExecutionPath.substring(0, index)+"==");
+			rifServiceResourcePath.append(currentExecutionPath.substring(0, index));
+			rifServiceResourcePath.append("rapidInquiryFacility");
+			rifServiceResourcePath.append(File.separator);
+			rifServiceResourcePath.append("rifServices");
+			
+			System.out.println("rifServiceResourcePath 11=="+rifServiceResourcePath.toString()+"==");
+			startupOptions.setRIFServiceClassDirectory(rifServiceResourcePath.toString());
+			
 			ProductionRIFStudyServiceBundle rifStudyServiceBundle
 				= new ProductionRIFStudyServiceBundle();
 			rifStudyServiceBundle.initialise(startupOptions);
