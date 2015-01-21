@@ -304,21 +304,17 @@ public final class RIFServiceStartupOptions {
 			currentDirectoryPath = (new File(rifServiceClassDirectoryPath)).getAbsolutePath();			
 		}
 		
-		int lastIndex = currentDirectoryPath.lastIndexOf(File.separator);
-		
-		
+
 		StringBuilder path = new StringBuilder();
-		
+		path.append(currentDirectoryPath);
+		path.append(File.separator);
+
 		if (isWebDeployment == false) {
-			path.append(currentDirectoryPath.substring(0, lastIndex));
-			path.append(File.separator);
 			path.append("target");
 			path.append(File.separator);
 			path.append("classes");
 		}
 		else {
-			path.append(currentDirectoryPath.substring(0, lastIndex));
-			path.append(File.separator);
 			path.append("webapps");
 			path.append(File.separator);
 			path.append("rifServices");
