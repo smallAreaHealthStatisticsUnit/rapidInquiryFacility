@@ -600,70 +600,105 @@ class SQLMapDataManager
 		//of resolution geoLevelToMap but restricted to only those 
 		//having the specified geoLevelArea
 		
-		StringBuilder extractMapAreasQuery = new StringBuilder();
-		extractMapAreasQuery.append("WITH ordered_results AS (");
+		SQLGeneralQueryFormatter extractMapAreasQuery = new SQLGeneralQueryFormatter();
+		//extractMapAreasQuery.addQueryPhrase("WITH ordered_results AS (");
+		//StringBuilder extractMapAreasQuery = new StringBuilder();
+
+		extractMapAreasQuery.addQueryLine(0, "WITH ordered_results AS ( ");
+		extractMapAreasQuery.addQueryLine(1, "SELECT row_number() ");
+		extractMapAreasQuery.addQueryPhrase(2, "OVER(ORDER BY ");
+		extractMapAreasQuery.addQueryPhrase(geoLevelToMapTableName);
+		extractMapAreasQuery.addQueryPhrase(".");
+		extractMapAreasQuery.addQueryPhrase(useAppropriateFieldNameCase(geoLevelToMap.getName()));
+		extractMapAreasQuery.addQueryPhrase(" ASC,");
+		extractMapAreasQuery.finishLine();
 		
-		extractMapAreasQuery.append("SELECT ");
-		extractMapAreasQuery.append("row_number() OVER(ORDER BY ");
-		extractMapAreasQuery.append(geoLevelToMapTableName);
-		extractMapAreasQuery.append(".");
-		extractMapAreasQuery.append(useAppropriateFieldNameCase(geoLevelToMap.getName()));
-		extractMapAreasQuery.append(" ASC,");
-		extractMapAreasQuery.append(geoLevelToMapTableName);
-		extractMapAreasQuery.append(".");
-		extractMapAreasQuery.append(useAppropriateFieldNameCase("name"));
-		extractMapAreasQuery.append(" ASC) AS row,");		
-		extractMapAreasQuery.append(geoLevelToMapTableName);
-		extractMapAreasQuery.append(".");
-		extractMapAreasQuery.append(useAppropriateFieldNameCase(geoLevelToMap.getName()));
-		extractMapAreasQuery.append(" AS identifier,");
-		extractMapAreasQuery.append(geoLevelToMapTableName);
-		extractMapAreasQuery.append(".");
-		extractMapAreasQuery.append(useAppropriateFieldNameCase("name"));
-		extractMapAreasQuery.append(" FROM ");
-		extractMapAreasQuery.append(geoLevelSelectTableName);		
-		extractMapAreasQuery.append(",");
-		extractMapAreasQuery.append(hierarchyTableName);		
-		extractMapAreasQuery.append(",");
-		extractMapAreasQuery.append(geoLevelToMapTableName);
-		extractMapAreasQuery.append(" WHERE ");
-		extractMapAreasQuery.append(geoLevelToMapTableName);
-		extractMapAreasQuery.append(".");
-		extractMapAreasQuery.append(useAppropriateFieldNameCase(geoLevelToMap.getName()));
-		extractMapAreasQuery.append("=");
-		extractMapAreasQuery.append(hierarchyTableName);		
-		extractMapAreasQuery.append(".");
-		extractMapAreasQuery.append(useAppropriateFieldNameCase(geoLevelToMap.getName()));
-		extractMapAreasQuery.append(" AND ");
-		extractMapAreasQuery.append(geoLevelSelectTableName);		
-		extractMapAreasQuery.append(".");
-		extractMapAreasQuery.append(useAppropriateFieldNameCase(geoLevelSelect.getName()));
-		extractMapAreasQuery.append("=");
-		extractMapAreasQuery.append(hierarchyTableName);		
-		extractMapAreasQuery.append(".");
-		extractMapAreasQuery.append(useAppropriateFieldNameCase(geoLevelSelect.getName()));
-		extractMapAreasQuery.append(" AND ");
-		extractMapAreasQuery.append(geoLevelSelectTableName);		
-		extractMapAreasQuery.append(".");
-		extractMapAreasQuery.append(useAppropriateFieldNameCase("name"));
-		extractMapAreasQuery.append("=?");
-		extractMapAreasQuery.append(")");
-		extractMapAreasQuery.append(" SELECT ");
-		extractMapAreasQuery.append("row,");
-		extractMapAreasQuery.append("identifier,");
-		extractMapAreasQuery.append("name ");
-		extractMapAreasQuery.append("FROM ");
-		extractMapAreasQuery.append("ordered_results ");
-		extractMapAreasQuery.append("WHERE ");
-		extractMapAreasQuery.append("row >= ?");
-		extractMapAreasQuery.append(" AND ");
-		extractMapAreasQuery.append("row <= ?");
+		extractMapAreasQuery.addQueryPhrase(2, geoLevelToMapTableName);
+		extractMapAreasQuery.addQueryPhrase(".");
+		extractMapAreasQuery.addQueryPhrase(useAppropriateFieldNameCase("name"));
+		extractMapAreasQuery.addQueryPhrase(" ASC) AS row,");	
+		extractMapAreasQuery.finishLine();
+
+		extractMapAreasQuery.addQueryPhrase(2, geoLevelToMapTableName);
+		extractMapAreasQuery.addQueryPhrase(".");
+		extractMapAreasQuery.addQueryPhrase(useAppropriateFieldNameCase(geoLevelToMap.getName()));
+		extractMapAreasQuery.addQueryPhrase(" AS identifier,");
+		extractMapAreasQuery.finishLine();
+				
+		extractMapAreasQuery.addQueryPhrase(2, geoLevelToMapTableName);
+		extractMapAreasQuery.addQueryPhrase(".");
+		extractMapAreasQuery.addQueryPhrase(useAppropriateFieldNameCase("name"));
+		extractMapAreasQuery.padAndFinishLine();
+		
+		extractMapAreasQuery.addQueryPhrase(1, "FROM");
+		extractMapAreasQuery.padAndFinishLine();
+		extractMapAreasQuery.addQueryPhrase(2, geoLevelSelectTableName);		
+		extractMapAreasQuery.addQueryPhrase(",");
+		extractMapAreasQuery.finishLine();
+		
+		extractMapAreasQuery.addQueryPhrase(2, hierarchyTableName);		
+		extractMapAreasQuery.addQueryPhrase(",");
+		extractMapAreasQuery.finishLine();
+		
+		extractMapAreasQuery.addQueryPhrase(2, geoLevelToMapTableName);
+		extractMapAreasQuery.finishLine();
+		
+		extractMapAreasQuery.addQueryPhrase(1, "WHERE");
+		extractMapAreasQuery.padAndFinishLine();
+
+		extractMapAreasQuery.addQueryPhrase(2, geoLevelToMapTableName);
+		extractMapAreasQuery.addQueryPhrase(".");
+		extractMapAreasQuery.addQueryPhrase(useAppropriateFieldNameCase(geoLevelToMap.getName()));
+		extractMapAreasQuery.addQueryPhrase("=");
+		extractMapAreasQuery.addQueryPhrase(hierarchyTableName);		
+		extractMapAreasQuery.addQueryPhrase(".");
+		extractMapAreasQuery.addQueryPhrase(useAppropriateFieldNameCase(geoLevelToMap.getName()));
+		extractMapAreasQuery.addQueryPhrase(" AND");
+		extractMapAreasQuery.padAndFinishLine();
+		
+		extractMapAreasQuery.addQueryPhrase(2, geoLevelSelectTableName);		
+		extractMapAreasQuery.addQueryPhrase(".");
+		extractMapAreasQuery.addQueryPhrase(useAppropriateFieldNameCase(geoLevelSelect.getName()));
+		extractMapAreasQuery.addQueryPhrase("=");
+		extractMapAreasQuery.addQueryPhrase(hierarchyTableName);		
+		extractMapAreasQuery.addQueryPhrase(".");
+		extractMapAreasQuery.addQueryPhrase(useAppropriateFieldNameCase(geoLevelSelect.getName()));
+		extractMapAreasQuery.addQueryPhrase(" AND");
+		extractMapAreasQuery.padAndFinishLine();
+		
+		extractMapAreasQuery.addQueryPhrase(2, geoLevelSelectTableName);		
+		extractMapAreasQuery.addQueryPhrase(".");
+		extractMapAreasQuery.addQueryPhrase(useAppropriateFieldNameCase("name"));
+		extractMapAreasQuery.addQueryPhrase("=?");
+		extractMapAreasQuery.addQueryPhrase(")");
+		extractMapAreasQuery.padAndFinishLine();
+		
+		extractMapAreasQuery.addQueryPhrase(0, "SELECT DISTINCT");
+		extractMapAreasQuery.padAndFinishLine();
+		
+		extractMapAreasQuery.addQueryLine(1, "identifier,");
+		extractMapAreasQuery.addQueryPhrase(1, "name");
+		extractMapAreasQuery.padAndFinishLine();
+
+		extractMapAreasQuery.addQueryPhrase(0, "FROM");
+		extractMapAreasQuery.padAndFinishLine();
+		extractMapAreasQuery.addQueryPhrase(1, "ordered_results");
+		extractMapAreasQuery.padAndFinishLine();
+
+		extractMapAreasQuery.addQueryPhrase(0, "WHERE");
+		extractMapAreasQuery.padAndFinishLine();
+
+		extractMapAreasQuery.addQueryPhrase(1, "row >= ? AND");
+		extractMapAreasQuery.padAndFinishLine();
+		extractMapAreasQuery.addQueryPhrase(1, "row <= ?");
+			
+		System.out.println("ExtractMapAreasQuery==\n"+extractMapAreasQuery.generateQuery()+"==");
 				
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		ArrayList<MapArea> results = new ArrayList<MapArea>();
 		try {
-			statement = connection.prepareStatement(extractMapAreasQuery.toString());
+			statement = connection.prepareStatement(extractMapAreasQuery.generateQuery());
 			statement.setString(1, geoLevelArea.getName());
 			statement.setInt(2, startIndex);
 			statement.setInt(3, endIndex);
@@ -671,11 +706,13 @@ class SQLMapDataManager
 			
 			while (resultSet.next()) {
 				MapArea mapArea = MapArea.newInstance();
-				String identifier = resultSet.getString(2);
+				String identifier = resultSet.getString(1);
 				if (identifier != null) {
+					//KLG: Later on, database should return these as separate things
 					mapArea.setIdentifier(identifier);
+					mapArea.setGeographicalIdentifier(identifier);
 				}
-				String label = resultSet.getString(3);
+				String label = resultSet.getString(2);
 				if (label != null) {
 					mapArea.setLabel(label);
 				}
