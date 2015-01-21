@@ -144,7 +144,7 @@ class MapAreaListSelectionPanel
 	/** The selected items status text area. */
 	private JTextArea selectedItemsStatusTextArea;	
 	/** The map image panel. */
-	private MapImagePanel mapImagePanel;	
+	//private MapImagePanel mapImagePanel;	
 	/** The add to basket button. */
 	
 	private ListEditingButtonPanel basketControlButtonPanel;
@@ -192,7 +192,7 @@ class MapAreaListSelectionPanel
 		selectedItemsStatusTextArea
 			= userInterfaceFactory.createNonEditableTextArea(4, 30);
 		
-		mapImagePanel = new MapImagePanel();
+		//mapImagePanel = new MapImagePanel();
 		panel = userInterfaceFactory.createPanel();
 		
 		basketControlButtonPanel = new ListEditingButtonPanel(userInterfaceFactory);
@@ -243,22 +243,24 @@ class MapAreaListSelectionPanel
 		GridBagConstraints panelGC 
 			= userInterfaceFactory.createGridBagConstraints();
 		panelGC.fill = GridBagConstraints.BOTH;
-		panelGC.weightx = 0.7;
+		panelGC.weightx = 1;
 		panelGC.weighty = 1;
 		panel.add(viewPanel, panelGC);
 		
+/*
 		panelGC.gridx++;
 		panelGC.weightx = 0.3;		
 		panel.add(createMapDisplayPanel(), panelGC);
-				
+*/				
 		return panel;
 	}
 	
 	/**
 	 * Creates the map display panel.
 	 *
-	 * @return the j panel
+	 * @return the jpanel
 	 */
+	/*
 	private JPanel createMapDisplayPanel() {
 		
 		JPanel panel = userInterfaceFactory.createPanel();
@@ -282,6 +284,7 @@ class MapAreaListSelectionPanel
 		
 		return panel;
 	}
+	*/
 	
 	/**
 	 * Creates the map area basket panel.
@@ -565,7 +568,7 @@ class MapAreaListSelectionPanel
 		
 		//no image can be established yet for the map image panel. 
 		//therefore it will display a "No map area established"
-		mapImagePanel.setData(null);
+		//mapImagePanel.setData(null);
 		
 		//an update should cause the basket to appear cleared.
 		String basketIsEmptyMessage
@@ -610,6 +613,7 @@ class MapAreaListSelectionPanel
 		currentMapAreaSelectionBasket.deleteObservers();
 		currentMapAreaSelectionBasket.addObserver(this);
 
+		/*
 		ArrayList<MapArea> mapAreas = currentMapAreaSelectionBasket.getMapAreas();
 		try {
 			RIFStudySubmissionAPI service 
@@ -629,6 +633,7 @@ class MapAreaListSelectionPanel
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(parentDialog, rifServiceException);
 		}
+		*/
 
 		//update the status panel
 		
@@ -667,7 +672,7 @@ class MapAreaListSelectionPanel
 				if (i != 0) {
 					duplicateList.append(",");
 				}
-				duplicateList.append(duplicateMapAreas.get(i));
+				duplicateList.append(duplicateMapAreas.get(i).getDisplayName());
 			}
 			
 			String errorMessage
@@ -745,6 +750,7 @@ class MapAreaListSelectionPanel
 			mapAreaSelectionTableView.clearHighlightedAreas();
 		}
 
+		/*
 		//Update the image of the map panel
 		RIFStudySubmissionAPI service 
 			= rifSession.getRIFStudySubmissionService();
@@ -763,11 +769,12 @@ class MapAreaListSelectionPanel
 					geoLevelView, 
 					mapAreas);
 		
-			mapImagePanel.setData(updatedImage);			
+			//mapImagePanel.setData(updatedImage);			
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(parentDialog, rifServiceException);
 		}
+		*/
 		
 		//update the statistics shown in the basket status display
 		updateBasketStatusPanel();
