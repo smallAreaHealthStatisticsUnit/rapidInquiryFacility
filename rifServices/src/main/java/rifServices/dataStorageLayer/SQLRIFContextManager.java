@@ -1506,6 +1506,79 @@ class SQLRIFContextManager
 		}				
 	}
 
+	
+	/**
+	 * Check non existent geo level to map value.
+	 *
+	 * @param connection the connection
+	 * @param geography the geography
+	 * @param geoLevelSelect the geo level select
+	 * @param geoLevelToMap the geo level to map
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	public void checkGeoLevelToMapOrViewValueExists(
+		final Connection connection,
+		final String geographyName,
+		final String geoLevelValueName,
+		final boolean isToMapValue) 
+		throws RIFServiceException {
+
+		SQLRecordExistsQueryFormatter query = new SQLRecordExistsQueryFormatter();
+		query.setFromTable("rif40_geolevels");
+		query.setLookupKeyFieldName("geolevel_name");
+					
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;			
+
+		RIFServiceException unableToCheckValueExistsException = null;
+		String unableToGetGeoLevelToMap
+			= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelToMap");
+		String unableToGetGeoLevelView
+			= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelView");
+
+		if (isToMapValue == true) {
+			unableToCheckValueExistsException
+				= new RIFServiceException(
+					RIFServiceError.GET_GEOLEVEL_TO_MAP_VALUES,
+					unableToGetGeoLevelToMap);				
+		}
+		else {
+			unableToCheckValueExistsException
+				= new RIFServiceException(
+					RIFServiceError.GET_GEOLEVEL_VIEW_VALUES,
+					unableToGetGeoLevelView);			
+		}
+		
+		try {
+			statement
+				= connection.prepareStatement(query.generateQuery());
+			statement.setString(1, geographyName);
+			statement.setString(2, geoLevelValueName);
+			resultSet = statement.executeQuery();	
+			if (resultSet.next() == false) {
+				//ERROR: no views available
+				throw unableToCheckValueExistsException;
+			}
+		}	
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version						
+			logSQLException(sqlException);
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			rifLogger.error(
+				SQLRIFContextManager.class, 
+				unableToGetGeoLevelToMap, 
+				sqlException);			
+										
+			throw unableToCheckValueExistsException;
+		}
+		finally {
+			//Cleanup database resources			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);			
+		}
+		
+	}
+	
 	/**
 	 * Check non existent health theme.
 	 *
