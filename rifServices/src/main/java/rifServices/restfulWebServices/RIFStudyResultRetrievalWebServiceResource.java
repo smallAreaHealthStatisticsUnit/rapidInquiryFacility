@@ -4,10 +4,12 @@ import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.RIFStudyResultRetrievalAPI;
 import rifServices.system.RIFServiceException;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 
 import java.text.Collator;
 import java.text.SimpleDateFormat;
@@ -131,19 +133,25 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getGeographies")
 	public String getGeographies(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID) {
 
-		return super.getGeographies(userID);
+		return 
+			super.getGeographies(
+				servletRequest,
+				userID);
 	}
 	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelSelectValues")
 	public String getGeographicalLevelSelectValues(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName) {
 	
 		return super.getGeographicalLevelSelectValues(
+			servletRequest,
 			userID, 
 			geographyName);
 	}	
@@ -153,10 +161,12 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getDefaultGeoLevelSelectValue")
 	public String getDefaultGeoLevelSelectValue(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName) {
 
 		return super.getDefaultGeoLevelSelectValue(
+			servletRequest,
 			userID,
 			geographyName);
 	}	
@@ -165,11 +175,13 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelAreaValues")
 	public String getGeoLevelAreaValues(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
 	
 		return super.getGeoLevelAreaValues(
+			servletRequest,
 			userID, 
 			geographyName, 
 			geoLevelSelectName);
@@ -179,11 +191,13 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelViews")
 	public String getGeoLevelViewValues(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
 	
 		return super.getGeoLevelViewValues(
+			servletRequest,
 			userID, 
 			geographyName, 
 			geoLevelSelectName);
@@ -193,12 +207,14 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getNumerator")
 	public String getNumerator(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,		
 		@QueryParam("healthThemeDescription") String healthThemeDescription) {
 	
 	
 		return super.getNumerator(
+			servletRequest,
 			userID,
 			geographyName,
 			healthThemeDescription);
@@ -208,11 +224,13 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getDenominator")
 	public String getDenominator(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,		
 		@QueryParam("healthThemeDescription") String healthThemeDescription) {
 
 		return super.getDenominator(
+			servletRequest,
 			userID,
 			geographyName,
 			healthThemeDescription);
@@ -222,39 +240,18 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getYearRange")
 	public String getYearRange(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,	
 		@QueryParam("numeratorTableName") String numeratorTableName) {
 
 		return super.getYearRange(
+			servletRequest,
 			userID, 
 			geographyName, 
 			numeratorTableName);		
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+			
 	/**
 	 * STUB
 	 * @param userID
@@ -268,6 +265,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getGeometry")
 	public String getGeometry(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,	
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -305,12 +303,17 @@ public class RIFStudyResultRetrievalWebServiceResource
 					mapAreas);
 			
 			//Convert results to support JSON
-			serialiseStringResult(result);
+			serialiseStringResult(
+				servletRequest,
+				result);
 			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -329,6 +332,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelBoundsForArea")
 	public String getGeoLevelBoundsForArea(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,	
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -368,7 +372,10 @@ public class RIFStudyResultRetrievalWebServiceResource
 				String.valueOf(boundaryRectangle.getXMax()));			
 			boundaryRectangleProxy.setYMax(
 				String.valueOf(boundaryRectangle.getYMax()));			
-			result = serialiseSingleItemAsArrayResult(boundaryRectangleProxy);
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					boundaryRectangleProxy);
 			
 		}
 		catch(Exception exception) {
@@ -378,7 +385,10 @@ public class RIFStudyResultRetrievalWebServiceResource
 				rifServiceException.printErrors();
 			}
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -400,6 +410,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelFullExtentForStudy")
 	public String getGeoLevelFullExtentForStudy(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -436,12 +447,18 @@ public class RIFStudyResultRetrievalWebServiceResource
 				String.valueOf(boundaryRectangle.getXMax()));			
 			boundaryRectangleProxy.setYMax(
 				String.valueOf(boundaryRectangle.getYMax()));			
-			result = serialiseSingleItemAsArrayResult(boundaryRectangleProxy);
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					boundaryRectangleProxy);
 			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -459,6 +476,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelFullExtent")
 	public String getGeoLevelFullExtent(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
@@ -492,12 +510,18 @@ public class RIFStudyResultRetrievalWebServiceResource
 					String.valueOf(boundaryRectangle.getXMax()));			
 			boundaryRectangleProxy.setYMax(
 					String.valueOf(boundaryRectangle.getYMax()));			
-			result = serialiseSingleItemAsArrayResult(boundaryRectangleProxy);
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					boundaryRectangleProxy);
 			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -508,6 +532,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getTiles")
 	public String getTiles(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -547,7 +572,10 @@ public class RIFStudyResultRetrievalWebServiceResource
 			
 		}
 		catch(Exception exception) {
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -567,6 +595,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getMapAreaAttributeValues")
 	public String getMapAreaAttributeValues(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -602,12 +631,18 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geoLevelAttributeName);			
 
 			//Convert results to support JSON
-			result = serialiseArrayResult(mapAreaAttributeValues);			
+			result 
+				= serialiseArrayResult(
+					servletRequest,
+					mapAreaAttributeValues);			
 			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -626,6 +661,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelAttributeThemes")
 	public String getGeoLevelAttributeThemes(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -655,11 +691,17 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geoLevelAttributeSource);
 
 			//Convert results to support JSON
-			result = serialiseArrayResult(geoLevelAttributeThemes);			
+			result 
+				= serialiseArrayResult(
+					servletRequest,
+					geoLevelAttributeThemes);			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -681,6 +723,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getAllAttributesForGeoLevelAttributeTheme")
 	public String getAllAttributesForGeoLevelAttributeTheme(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -714,11 +757,17 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geoLevelAttributeTheme);			
 
 			//Convert results to support JSON
-			result = serialiseSingleItemAsArrayResult(attributes);	
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					attributes);	
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -740,6 +789,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getNumericAttributesForGeoLevelAttributeTheme")
 	public String getNumericAttributesForGeoLevelAttributeTheme(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -774,12 +824,18 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geoLevelAttributeTheme);
 
 			//Convert results to support JSON
-			result = serialiseSingleItemAsArrayResult(attributes);						
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					attributes);						
 
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -802,6 +858,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getCalculatedResultsByBlock")
 	public String getCalculatedResultsByBlock(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -837,11 +894,17 @@ public class RIFStudyResultRetrievalWebServiceResource
 					endRowIndex);
 
 			//Convert results to support JSON
-			result = serialiseSingleItemAsArrayResult(rifResultTable);			
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					rifResultTable);			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -867,6 +930,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getExtractResultsByBlock")
 	public String getExtractResultsByBlock(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -902,12 +966,18 @@ public class RIFStudyResultRetrievalWebServiceResource
 					endRowIndex);
 
 			//Convert results to support JSON
-			result = serialiseSingleItemAsArrayResult(rifResultTable);						
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					rifResultTable);						
 			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -929,6 +999,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getResultsStratifiedByGenderAndAgeGroup")
 	public String getResultsStratifiedByGenderAndAgeGroup(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -976,12 +1047,18 @@ public class RIFStudyResultRetrievalWebServiceResource
 					year);
 
 			//Convert results to support JSON
-			result = serialiseSingleItemAsArrayResult(rifResultTable);						
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					rifResultTable);						
 
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -1001,6 +1078,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getResultAgeGroups")
 	public String getResultAgeGroups(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -1040,7 +1118,10 @@ public class RIFStudyResultRetrievalWebServiceResource
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -1061,6 +1142,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getPyramidData")
 	public String getPyramidData(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -1093,11 +1175,17 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geoLevelAttribute);
 
 			//Convert results to support JSON
-			result = serialiseSingleItemAsArrayResult(rifResultTable);						
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					rifResultTable);						
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -1119,6 +1207,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getPyramidDataByYear")
 	public String getPyramidDataByYear(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -1153,11 +1242,17 @@ public class RIFStudyResultRetrievalWebServiceResource
 					year);
 
 			//Convert results to support JSON
-			result = serialiseSingleItemAsArrayResult(rifResultTable);						
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					rifResultTable);						
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -1169,6 +1264,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getPyramidDataByMapAreas")
 	public String getPyramidDataByMapAreas(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -1213,12 +1309,18 @@ public class RIFStudyResultRetrievalWebServiceResource
 					mapAreas);
 
 			//Convert results to support JSON
-			result = serialiseSingleItemAsArrayResult(rifResultTable);						
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					rifResultTable);						
 			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -1228,6 +1330,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getResultFieldsStratifiedByAgeGroup")
 	public String getResultFieldsStratifiedByAgeGroup(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -1258,11 +1361,17 @@ public class RIFStudyResultRetrievalWebServiceResource
 					geoLevelAttributeSource);
 
 			//Convert results to support JSON
-			result = serialiseArrayResult(resultFields);		
+			result 
+				= serialiseArrayResult(
+					servletRequest,
+					resultFields);		
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -1274,6 +1383,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getSMRValues")
 	public String getSMRValues(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
 
@@ -1297,12 +1407,18 @@ public class RIFStudyResultRetrievalWebServiceResource
 					studySummary);
 
 			//Convert results to support JSON
-			result = serialiseSingleItemAsArrayResult(rifResultTable);						
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					rifResultTable);						
 						
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -1314,6 +1430,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getRRValues")
 	public String getRRValues(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
 
@@ -1337,12 +1454,18 @@ public class RIFStudyResultRetrievalWebServiceResource
 					studySummary);
 
 			//Convert results to support JSON
-			result = serialiseSingleItemAsArrayResult(rifResultTable);						
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					rifResultTable);						
 						
 		}
 		//Convert exceptions to support JSON
 		catch(Exception exception) {
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -1354,6 +1477,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getRRUnadjustedValues")
 	public String getRRUnadjustedValues(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
 
@@ -1377,11 +1501,17 @@ public class RIFStudyResultRetrievalWebServiceResource
 					studySummary);
 
 			//Convert results to support JSON
-			result = serialiseSingleItemAsArrayResult(rifResultTable);						
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					rifResultTable);						
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -1392,6 +1522,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getStudyResultGeneralInfo")
 	public String getStudyResultGeneralInfo(
+		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
 
@@ -1415,11 +1546,17 @@ public class RIFStudyResultRetrievalWebServiceResource
 					studySummary);
 
 			//Convert results to support JSON
-			result = serialiseSingleItemAsArrayResult(rifResultTable);
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					rifResultTable);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;

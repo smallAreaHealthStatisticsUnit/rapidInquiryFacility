@@ -2,10 +2,12 @@ package rifServices.restfulWebServices;
 
 import java.io.ByteArrayOutputStream;
 
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import javax.servlet.http.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -125,6 +127,7 @@ abstract class AbstractRIFWebServiceResource {
 	}
 
 	protected String isLoggedIn(
+		final HttpServletRequest servletRequest,
 		final String userID) {
 		
 		String result = "";
@@ -134,13 +137,17 @@ abstract class AbstractRIFWebServiceResource {
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 	
 		return result;		
 	}
 	
 	protected String login(
+		final HttpServletRequest servletRequest,
 		final String userID,
 		final String password) {
 
@@ -153,13 +160,17 @@ abstract class AbstractRIFWebServiceResource {
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 	
 		return result;
 	}
 	
 	protected String logout(
+		final HttpServletRequest servletRequest,
 		final String userID) {
 		
 		String result = "";
@@ -171,7 +182,10 @@ abstract class AbstractRIFWebServiceResource {
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 	
 		return result;
@@ -190,6 +204,7 @@ abstract class AbstractRIFWebServiceResource {
 	
 	
 	protected String getGeographies(
+		final HttpServletRequest servletRequest,
 		final String userID) {
 			
 		String result = "";
@@ -215,13 +230,19 @@ abstract class AbstractRIFWebServiceResource {
 				}
 				GeographiesProxy geographiesProxy = new GeographiesProxy();		
 				geographiesProxy.setNames(geographyNames.toArray(new String[0]));
-				result = serialiseSingleItemAsArrayResult(geographiesProxy);
+				result 
+					= serialiseSingleItemAsArrayResult(
+						servletRequest,
+						geographiesProxy);
 			}			
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 	
 		return result;
@@ -229,6 +250,7 @@ abstract class AbstractRIFWebServiceResource {
 	}
 
 	protected String getGeographicalLevelSelectValues(
+		final HttpServletRequest servletRequest,
 		final String userID,
 		final String geographyName) {
 			
@@ -255,11 +277,17 @@ abstract class AbstractRIFWebServiceResource {
 			GeoLevelSelectsProxy geoLevelSelectProxy
 				= new GeoLevelSelectsProxy();		
 			geoLevelSelectProxy.setNames(geoLevelSelectNames.toArray(new String[0]));
-			result = serialiseSingleItemAsArrayResult(geoLevelSelectProxy);
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest, 
+					geoLevelSelectProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 	
 		return result;
@@ -267,6 +295,7 @@ abstract class AbstractRIFWebServiceResource {
 	}
 		
 	protected String getDefaultGeoLevelSelectValue(
+		final HttpServletRequest servletRequest,
 		final String userID,
 		final String geographyName) {
 			
@@ -292,11 +321,17 @@ abstract class AbstractRIFWebServiceResource {
 			String[] geoLevelSelectValues = new String[1];
 			geoLevelSelectValues[0] = defaultGeoLevelSelect.getName();
 			geoLevelSelectProxy.setNames(geoLevelSelectValues);
-			result = serialiseSingleItemAsArrayResult(geoLevelSelectProxy);
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					geoLevelSelectProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest, 
+					exception);			
 		}
 	
 		return result;
@@ -304,6 +339,7 @@ abstract class AbstractRIFWebServiceResource {
 	}
 
 	protected String getGeoLevelAreaValues(
+		final HttpServletRequest servletRequest,
 		final String userID,
 		final String geographyName,
 		final String geoLevelSelectName) {
@@ -334,11 +370,17 @@ abstract class AbstractRIFWebServiceResource {
 				geoLevelAreaNames.add(area.getName());
 			}
 			geoLevelAreasProxy.setNames(geoLevelAreaNames.toArray(new String[0]));
-			result = serialiseSingleItemAsArrayResult(geoLevelAreasProxy);
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					geoLevelAreasProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -346,6 +388,7 @@ abstract class AbstractRIFWebServiceResource {
 	}
 	
 	protected String getGeoLevelViewValues(
+		final HttpServletRequest servletRequest,
 		final String userID,
 		final String geographyName,
 		final String geoLevelSelectName) {
@@ -376,11 +419,17 @@ abstract class AbstractRIFWebServiceResource {
 			}
 			geoLevelViewsProxy.setNames(geoLevelViewNames.toArray(new String[0]));
 			
-			result = serialiseSingleItemAsArrayResult(geoLevelViewsProxy);
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					geoLevelViewsProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -396,6 +445,7 @@ abstract class AbstractRIFWebServiceResource {
 	 */
 	
 	protected String getNumerator(
+		final HttpServletRequest servletRequest,
 		final String userID,
 		final String geographyName,
 		final String healthThemeDescription) {
@@ -432,17 +482,24 @@ abstract class AbstractRIFWebServiceResource {
 				ndPairProxy.setDenominatorTableDescription(ndPair.getDenominatorTableDescription());
 				ndPairProxies.add(ndPairProxy);
 			}			
-			result = serialiseArrayResult(ndPairProxies);
+			result 
+				= serialiseArrayResult(
+					servletRequest,
+					ndPairProxies);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;		
 	}
 
 	protected String getDenominator(
+		final HttpServletRequest servletRequest,
 		final String userID,
 		final String geographyName,
 		final String healthThemeDescription) {
@@ -481,11 +538,17 @@ abstract class AbstractRIFWebServiceResource {
 			ndPairProxy.setNumeratorTableDescription(firstResult.getNumeratorTableDescription());
 			ndPairProxy.setDenominatorTableName(firstResult.getDenominatorTableName());
 			ndPairProxy.setDenominatorTableDescription(firstResult.getDenominatorTableDescription());							
-			result = serialiseSingleItemAsArrayResult(firstResult);
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					firstResult);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -494,6 +557,7 @@ abstract class AbstractRIFWebServiceResource {
 	
 	
 	protected String getYearRange(
+		final HttpServletRequest servletRequest,
 		final String userID,
 		final String geographyName,
 		final String numeratorTableName) {
@@ -520,11 +584,17 @@ abstract class AbstractRIFWebServiceResource {
 			YearRangeProxy yearRangeProxy = new YearRangeProxy();
 			yearRangeProxy.setLowerBound(yearRange.getLowerBound());
 			yearRangeProxy.setUpperBound(yearRange.getUpperBound());
-			result = serialiseSingleItemAsArrayResult(yearRangeProxy);
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					yearRangeProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON			
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -540,8 +610,11 @@ abstract class AbstractRIFWebServiceResource {
 	 * @throws Exception
 	 */
 	protected String serialiseArrayResult(
+		final HttpServletRequest servletRequest,
 		final Object objectToWrite) 
 		throws Exception {
+
+		printClientInformation("serialiseArrayResult", servletRequest);
 
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		final ObjectMapper mapper = new ObjectMapper();
@@ -551,9 +624,12 @@ abstract class AbstractRIFWebServiceResource {
 	}
 	
 	protected String serialiseSingleItemAsArrayResult(
+		final HttpServletRequest servletRequest,
 		final Object objectToWrite) 
 		throws Exception {
 
+		printClientInformation("serialiseSingleItemAsArrayResult", servletRequest);
+		
 		final ArrayList<Object> objectArrayList = new ArrayList<Object>();
 		objectArrayList.add(objectToWrite);
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -564,9 +640,12 @@ abstract class AbstractRIFWebServiceResource {
 	}
 	
 	protected String serialiseStringResult(
+		final HttpServletRequest servletRequest,
 		final String result) 
 		throws Exception {
 
+		printClientInformation("serialiseStringResult", servletRequest);
+		
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.writeValue(out, result);
@@ -580,7 +659,10 @@ abstract class AbstractRIFWebServiceResource {
 	// ==========================================
 
 	protected String serialiseException(
+		final HttpServletRequest servletRequest,
 		final Exception exceptionThrownByRIFService) {
+	
+		printClientInformation("serialiseException", servletRequest);
 		
 		String result = "";
 		try {			
@@ -609,11 +691,15 @@ abstract class AbstractRIFWebServiceResource {
 			
 				rifServiceExceptionProxy.setErrorMessages(errorMessages);
 			}
-			result = serialiseSingleItemAsArrayResult(rifServiceExceptionProxy);
+			result = serialiseSingleItemAsArrayResult(
+				servletRequest, 
+				rifServiceExceptionProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			serialiseException(exception);
+			serialiseException(
+				servletRequest,
+				exception);
 			String timeStamp = sd.format(new Date());
 			result 
 				= RIFServiceMessages.getMessage(
@@ -622,6 +708,72 @@ abstract class AbstractRIFWebServiceResource {
 		}
 		
 		return result;
+	}
+
+	/*
+	 * Here we're trying to use some way of determining whether
+	 * the browser will automatically display JSON.  This method is
+	 * meant to use the 'feature detection' in the client browser.
+	 * 
+	 * In future this could be an extra parameter the client web 
+	 * page stuffs into the request header after is uses something like
+	 * Modernizr
+	 * 
+	 */
+	private boolean clientBrowserSupportsJSONContentType(
+		final HttpServletRequest servletRequest) {
+		
+
+		//@TODO
+		return true;
+	}
+	
+	/*
+	 * Here we are interrogating the value of "user-agent" in the header.
+	 * This approach would try to interrogate the free text field value
+	 * to figure out the type and version of the browser client.  In future,
+	 * it might use the WURFL project to do a look-up in a database of device
+	 * profiles.
+	 */
+	private boolean clientBrowserIsInternetExplorer(
+		final HttpServletRequest servletRequest) {
+		
+		//@TODO
+		return true;
+	}
+	
+	/*
+	 * Here we are interrogating the value of "Accept" in the header
+	 */
+	private boolean clientBrowserMimeTypesIncludeJSON(
+		final HttpServletRequest servletRequest) {
+		
+		
+		return true;		
+	}
+	
+	private void printClientInformation(
+		final String messageHeader,
+		final HttpServletRequest servletRequest) {
+		
+		String browserType = servletRequest.getHeader("User-Agent");
+		String mimeTypes = servletRequest.getHeader("Accept");
+		HttpSession session = servletRequest.getSession();
+		String sessionID = session.getId();
+		//String ipAddress = servletRequest.get
+		
+		StringBuilder message = new StringBuilder();
+		message.append("==================================================\n");
+		message.append(messageHeader);
+		message.append(":");
+		message.append("browser type:=="+browserType+"==\n");
+		message.append("mime types:=="+mimeTypes+"==\n");
+		message.append("session id:=="+sessionID+"==\n");
+		message.append("==================================================\n");
+		//message.append("IP address:=="+ipAdress+"")
+		//System.out.println("study submission login browserType=="+browserType+"==mime type=="+mimeTypes+"== session id=="+ sessionID + "==ipAddress=="+ipAddress+"==");
+		System.out.println(message.toString());
+		
 	}
 	
 	/**

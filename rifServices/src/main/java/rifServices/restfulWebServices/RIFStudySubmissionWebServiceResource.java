@@ -9,6 +9,10 @@ import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Request;
+import javax.servlet.http.*;
+
 import javax.ws.rs.QueryParam;
 
 import java.text.Collator;
@@ -126,28 +130,43 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/login")
 	public String login(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("password") String password) {
 
-		return super.login(userID, password);
+		
+
+		String ipAddress = servletRequest.getRemoteAddr();
+		
+		
+		return super.login(
+			servletRequest,
+			userID, 
+			password);
 	}
 	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/isLoggedIn")
 	public String login(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 
-		return super.isLoggedIn(userID);
+		return super.isLoggedIn(
+			servletRequest,
+			userID);
 	}
 	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/logout")
 	public String logout(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 
-		return super.logout(userID);
+		return super.logout(
+			servletRequest,
+			userID);
 	}
 	
 	
@@ -156,19 +175,24 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getGeographies")
 	public String getGeographies(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 
-		return super.getGeographies(userID);
+		return super.getGeographies(
+			servletRequest,
+			userID);
 	}
 	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelSelectValues")
 	public String getGeographicalLevelSelectValues(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName) {
 	
 		return super.getGeographicalLevelSelectValues(
+			servletRequest,
 			userID, 
 			geographyName);
 	}	
@@ -178,10 +202,12 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getDefaultGeoLevelSelectValue")
 	public String getDefaultGeoLevelSelectValue(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName) {
 
 		return super.getDefaultGeoLevelSelectValue(
+			servletRequest,
 			userID,
 			geographyName);
 	}	
@@ -190,11 +216,13 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelAreaValues")
 	public String getGeoLevelAreaValues(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
 	
 		return super.getGeoLevelAreaValues(
+			servletRequest,
 			userID, 
 			geographyName, 
 			geoLevelSelectName);
@@ -204,11 +232,13 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelViews")
 	public String getGeoLevelViewValues(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
 	
 		return super.getGeoLevelViewValues(
+			servletRequest,
 			userID, 
 			geographyName, 
 			geoLevelSelectName);
@@ -218,12 +248,14 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getNumerator")
 	public String getNumerator(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,		
 		@QueryParam("healthThemeDescription") String healthThemeDescription) {
 	
 	
 		return super.getNumerator(
+			servletRequest,
 			userID,
 			geographyName,
 			healthThemeDescription);
@@ -233,11 +265,13 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getDenominator")
 	public String getDenominator(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,		
 		@QueryParam("healthThemeDescription") String healthThemeDescription) {
 
 		return super.getDenominator(
+			servletRequest,
 			userID,
 			geographyName,
 			healthThemeDescription);
@@ -247,11 +281,13 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getYearRange")
 	public String getYearRange(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,	
 		@QueryParam("numeratorTableName") String numeratorTableName) {
 
 		return super.getYearRange(
+			servletRequest,
 			userID, 
 			geographyName, 
 			numeratorTableName);		
@@ -266,6 +302,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getAvailableRIFOutputOptions")
 	public String getAvailableRIFOutputOptions(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 				
 		String result = "";
@@ -287,7 +324,10 @@ public class RIFStudySubmissionWebServiceResource
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -304,6 +344,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getAvailableCalculationMethods")
 	public String getAvailableCalculationMethods(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 				
 		String result = "";
@@ -341,12 +382,18 @@ public class RIFStudySubmissionWebServiceResource
 				calculationMethodProxy.setParameterProxies(parameterProxies);				
 				calculationMethodProxies.add(calculationMethodProxy);
 			}
-			result = serialiseArrayResult(calculationMethodProxies);			
+			result 
+				= serialiseArrayResult(
+					servletRequest,
+					calculationMethodProxies);			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			exception.printStackTrace(System.out);
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -357,6 +404,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getDiseaseMappingStudies")
 	public String getDiseaseMappingStudies(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 				
 		String result = "";
@@ -376,7 +424,10 @@ public class RIFStudySubmissionWebServiceResource
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -388,6 +439,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getProjects")
 	public String getProjects(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 				
 		String result = "";
@@ -412,12 +464,18 @@ public class RIFStudySubmissionWebServiceResource
 				projectProxy.setName(project.getName());
 				projectProxies.add(projectProxy);
 			}		
-			result = serialiseArrayResult(projectProxies);
+			result 
+				= serialiseArrayResult(
+					servletRequest,
+					projectProxies);
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -428,6 +486,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getProjectDescription")
 	public String getProjectDescription(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("projectName") String projectName) {
 				
@@ -460,13 +519,19 @@ public class RIFStudySubmissionWebServiceResource
 						projectName);
 			}
 			else {
-				result = serialiseStringResult(selectedProject.getDescription());
+				result 
+					= serialiseStringResult(
+						servletRequest,	
+						selectedProject.getDescription());
 			}
 			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -476,6 +541,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelToMapValues")
 	public String getGeoLevelToMapValues(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
@@ -508,11 +574,17 @@ public class RIFStudySubmissionWebServiceResource
 				geoLevelToMapsNames.add(geoLevelToMap.getName());
 			}
 			geoLevelToMapsProxy.setNames(geoLevelToMapsNames.toArray(new String[0]));			
-			result = serialiseSingleItemAsArrayResult(geoLevelToMapsProxy);
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					geoLevelToMapsProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -524,6 +596,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getMapAreas")
 	public String getGeoLevelToMapAreas(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
@@ -581,7 +654,10 @@ public class RIFStudySubmissionWebServiceResource
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -592,6 +668,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getHealthThemes")
 	public String getHealthThemes(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName) {
 				
@@ -622,11 +699,17 @@ public class RIFStudySubmissionWebServiceResource
 				healthThemeProxy.setDescription(healthTheme.getDescription());
 				healthThemeProxies.add(healthThemeProxy);
 			}			
-			result = serialiseArrayResult(healthThemeProxies);
+			result 
+				= serialiseArrayResult(
+					servletRequest,
+					healthThemeProxies);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);
 		}
 		
 		return result;
@@ -637,6 +720,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getSexes")
 	public String getSexes(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 				
 		String result = "";
@@ -665,11 +749,17 @@ public class RIFStudySubmissionWebServiceResource
 
 			//Convert results to support JSON						
 			sexesProxy.setNames(sexNames.toArray(new String[0]));
-			result = serialiseSingleItemAsArrayResult(sexesProxy);
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					sexesProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);
 		}
 		
 		return result;
@@ -681,6 +771,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getCovariates")
 	public String getCovariates(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelToMapName") String geoLevelToMapName) {
@@ -723,11 +814,17 @@ public class RIFStudySubmissionWebServiceResource
 				covariateProxies.add(covariateProxy);
 			}
 			
-			result = serialiseArrayResult(covariateProxies);
+			result 
+				= serialiseArrayResult(
+					servletRequest,
+					covariateProxies);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -738,6 +835,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getAgeGroups")
 	public String getAgeGroups(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,	
 		@QueryParam("numeratorTableName") String numeratorTableName) {
@@ -772,7 +870,10 @@ public class RIFStudySubmissionWebServiceResource
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);
 		}
 
 		return result;
@@ -782,6 +883,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getHealthCodeTaxonomies")
 	public String getHealthCodeTaxonomies(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 	
 		String result = "";
@@ -808,11 +910,17 @@ public class RIFStudySubmissionWebServiceResource
 				healthCodeTaxonomyProxy.setVersion(healthCodeTaxonomy.getVersion());
 				healthCodeTaxonomyProxies.add(healthCodeTaxonomyProxy);
 			}
-			result = serialiseArrayResult(healthCodeTaxonomyProxies);					
+			result 
+				= serialiseArrayResult(
+					servletRequest,
+					healthCodeTaxonomyProxies);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;		
@@ -822,6 +930,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getTopLevelCodes")
 	public String getTopLevelCodes(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("healthCodeTaxonomyNameSpace") String healthCodeTaxonomyNameSpace) {
 			
@@ -853,11 +962,17 @@ public class RIFStudySubmissionWebServiceResource
 				healthCodeProxy.setNumberOfSubTerms(String.valueOf(healthCode.getNumberOfSubTerms()));
 				healthCodeProxies.add(healthCodeProxy);
 			}
-			result = serialiseArrayResult(healthCodeProxies);					
+			result 
+				= serialiseArrayResult(
+					servletRequest,
+					healthCodeProxies);					
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -868,6 +983,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getHealthCodesForSearchText")
 	public String getTopLevelCodes(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("healthCodeTaxonomyNameSpace") String healthCodeTaxonomyNameSpace,
 		@QueryParam("searchText") String searchText) {
@@ -903,11 +1019,17 @@ public class RIFStudySubmissionWebServiceResource
 				healthCodeProxy.setNumberOfSubTerms(String.valueOf(healthCode.getNumberOfSubTerms()));
 				healthCodeProxies.add(healthCodeProxy);
 			}
-			result = serialiseArrayResult(healthCodeProxies);					
+			result 
+				= serialiseArrayResult(
+					servletRequest,
+					healthCodeProxies);					
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -917,6 +1039,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getParentHealthCode")
 	public String getParentHealthCode(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("childHealthCode") String healthCode,
 		@QueryParam("childHealthCodeNameSpace") String healthCodeNameSpace) {
@@ -949,12 +1072,18 @@ public class RIFStudySubmissionWebServiceResource
 				healthCodeProxy.setNameSpace(parentHealthCode.getNameSpace());
 				healthCodeProxy.setIsTopLevelTerm(String.valueOf(parentHealthCode.isTopLevelTerm()));
 				healthCodeProxy.setNumberOfSubTerms(String.valueOf(parentHealthCode.getNumberOfSubTerms()));
-				result = serialiseSingleItemAsArrayResult(healthCodeProxy);
+				result 
+					= serialiseSingleItemAsArrayResult(
+						servletRequest,
+						healthCodeProxy);
 			}
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -965,6 +1094,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getImmediateChildHealthCodes")
 	public String getImmediateChildHealthCodes(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("healthCode") String healthCode,
 		@QueryParam("healthCodeNameSpace") String healthCodeNameSpace) {
@@ -998,11 +1128,17 @@ public class RIFStudySubmissionWebServiceResource
 				healthCodeProxy.setNumberOfSubTerms(String.valueOf(currentHealthCode.getNumberOfSubTerms()));
 				healthCodeProxies.add(healthCodeProxy);
 			}
-			result = serialiseArrayResult(healthCodeProxies);					
+			result 
+				= serialiseArrayResult(
+					servletRequest,
+					healthCodeProxies);					
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
@@ -1012,6 +1148,7 @@ public class RIFStudySubmissionWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getHealthCodesMatchingSearchText")
 	public String getHealthCodesMatchingSearchText(
+		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("nameSpace") String nameSpace,
 		@QueryParam("searchText") String searchText) {
@@ -1047,11 +1184,17 @@ public class RIFStudySubmissionWebServiceResource
 				healthCodeProxy.setNumberOfSubTerms(String.valueOf(matchingHealthCode.getNumberOfSubTerms()));
 			}
 			
-			result = serialiseArrayResult(healthCodeProxies);					
+			result 
+				= serialiseArrayResult(
+					servletRequest,
+					healthCodeProxies);					
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result = serialiseException(exception);			
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
 		}
 		
 		return result;
