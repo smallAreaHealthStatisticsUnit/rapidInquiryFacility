@@ -119,7 +119,7 @@ Description:	Get area IDs for <geolevel_view> for map area bounding box.
 --
 	error_message 	VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
- BEGIN
+BEGIN
 --
 -- Must be rif40 or have rif_user or rif_manager role
 --
@@ -177,7 +177,7 @@ Description:	Get area IDs for <geolevel_view> for map area bounding box.
 		  '	SELECT area_id,'||E'\n'||
 		  '            ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */) AS geom	/* Bound */'||E'\n'||
 		  '	  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||E'\n'||
-		  '	 WHERE ST_Intersects(optimised_geometry,'||E'\n'||
+		  '	 WHERE ST_Intersects(optimised_geometry_3,'||E'\n'||
 		  '        		ST_MakeEnvelope($1 /* Xmin */,'||E'\n'||
 		  '        					 $2 	/* Ymin */,'||E'\n'||
 		  '       			 		 $3 	/* Xmax */,'||E'\n'||
@@ -272,7 +272,7 @@ Description:	Get area IDs for <geolevel_view> for map area bounding box.
 	took:=age(etp, stp);
 --
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetMapAreas', 
-		'[52059] Geography: %, <geoevel view> % bound [%, %, %, %] complete, took: %.', 		
+		'[52059] Geography: %, <geolevel view> % bound [%, %, %, %] complete, took: %.', 		
 		l_geography::VARCHAR			/* Geography */, 
 		l_geolevel_view::VARCHAR		/* Geoelvel view */, 
 		x_min::VARCHAR				/* Xmin */,

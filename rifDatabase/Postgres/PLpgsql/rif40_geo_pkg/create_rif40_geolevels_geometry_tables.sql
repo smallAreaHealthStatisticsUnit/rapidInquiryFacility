@@ -569,12 +569,14 @@ BEGIN
 					') INHERITS (t_rif40_'||LOWER(c2_rec.geography)||'_maptiles)';
 				IF c3_count = 1 THEN
 					func_sql:=func_sql||E'\n'||'	IF NEW.geography = '''||c2_rec.geography||
-						''' AND NEW.geolevel_name = '''||c3_rec.geolevel_name||''' THEN'||E'\n'||
+						''' AND NEW.geolevel_name = '''||c3_rec.geolevel_name||''''||E'\n'||
+						'   AND NEW.zoomlevel     = '||zoomlevel::Text||' THEN'||E'\n'||
 						'INSERT INTO '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||' VALUES (NEW.*);';
 				ELSE
 					func_sql:=func_sql||E'\n'||'	ELSIF NEW.geography = '''||c2_rec.geography||
-						''' AND NEW.geolevel_name = '''||c3_rec.geolevel_name||''' THEN'||E'\n'||
+						''' AND NEW.geolevel_name = '''||c3_rec.geolevel_name||''''||E'\n'||
+						'   AND NEW.zoomlevel     = '||zoomlevel::Text||' THEN'||E'\n'||
 						'INSERT INTO '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||' VALUES (NEW.*);';
 				END IF;

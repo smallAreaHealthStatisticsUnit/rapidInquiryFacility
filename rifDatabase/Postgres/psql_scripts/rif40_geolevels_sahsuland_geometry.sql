@@ -107,7 +107,8 @@ DECLARE
 							'add_population_to_rif40_geolevels_geometry',
 							'fix_null_geolevel_names',
 							'rif40_ddl',
-							'simplify_geometry'];
+							'simplify_geometry',
+							'populate_rif40_tiles'];
 	l_function 			VARCHAR;
 	i				INTEGER:=0;
 --

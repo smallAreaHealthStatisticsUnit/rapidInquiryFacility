@@ -546,7 +546,7 @@ Total runtime: 19.472 ms
 		  '	SELECT area_id,'||E'\n'||
 		  '            ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */) AS geom	/* Bound */'||E'\n'||
 		  '	  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||E'\n'||
-		  '	 WHERE ST_Intersects(optimised_geometry,'||E'\n'||
+		  '	 WHERE ST_Intersects(optimised_geometry_3,'||E'\n'||
 		  '        		ST_MakeEnvelope($1 /* Xmin */,'||E'\n'||
 		  '        					 $2 	/* Ymin */,'||E'\n'||
 		  '       			 		 $3 	/* Xmax */,'||E'\n'||
