@@ -1,0 +1,248 @@
+<html>
+
+<title>
+General Coding Conventions in the RIF Code Base
+</title>
+
+<body>
+<h1>General Coding Conventions in the RIF Code Base</h1>
+
+
+<h2>Package Naming Conventions</h2>
+<table>
+
+<tr valign="top">
+<td>
+<b>Convention</b>
+</td>
+<td>
+<b>Meaning</b>
+</td>
+<td>
+<b>Example</b>
+</td>
+</tr>
+
+<tr valign="top">
+<td>
+<code>*.businessConceptLayer</code>
+</td>
+<td>
+
+<td>
+Contains all the classes that describe domain concepts which would have meaning for 
+the epidemiologists, GIS experts, statisticians and database managers.  The properties
+of the business classes should be understandable to a domain expert who is not involved
+with coding for the project.
+</td>
+<td>
+
+</td>
+<td>
+<code>rifServices.businessConceptLayer</code>
+</td>
+</tr>
+
+
+<tr valign="top">
+<td>
+<code>*.presentationLayer</code>
+</td>
+<td>
+
+<td>
+Contains all the GUI code used to create Java-swing based desktop front end applications.
+It should
+<ul>
+<li>
+only access the database indirectly by making calls to RIF service objects
+</li>
+<li>
+support as much guided-data entry as possible, but it should not contain bespoke validation code
+</li>
+</ul>
+
+<p>
+We want this layer to contain "dumb" desktop client applications that can later be ported to web applications.
+</td>
+<td>
+
+</td>
+<td>
+<code>rifStudySubmissionTool.presentationLayer</code>
+</td>
+</tr>
+
+
+
+<tr valign="top">
+<td>
+<code>*.dataStorageLayer</code>
+</td>
+<td>
+
+<td>
+Contains all the code in a sub-project that is used in the middleware.  It will contain:
+<ul>
+<li>
+RIF service definitions (ending in "API"), which publish behaviour used by client applications
+</li>
+<li>
+contain all the code used to construct or execute SQL queries
+</li>
+<li>
+will contain all vendor-specific code that is used to support PostgreSQL and SQLServer.
+</li>
+</ul>
+
+<td>
+
+</td>
+<td>
+<code>rifStudySubmissionTool.dataStorageLayer</code>
+</td>
+</tr>
+
+
+
+
+<tr valign="top">
+<td>
+<code>*.system</code>
+</td>
+<td>
+
+<td>
+
+Contains files which relate to RIF-specific ideas and are used throughout the sub-package.
+
+Contains all the code in a sub-project that is used in the middleware.  It will contain:
+<ul>
+<li>
+RIF service definitions (ending in "API"), which publish behaviour used by client applications
+</li>
+<li>
+contain all the code used to construct or execute SQL queries
+</li>
+<li>
+will contain all vendor-specific code that is used to support PostgreSQL and SQLServer.
+</li>
+</ul>
+
+<td>
+
+</td>
+<td>
+<code>rifServices.system</code>
+</td>
+</tr>
+
+
+
+
+
+</table>
+
+
+
+
+<h2>Source File Naming Conventions</h2>
+
+<table>
+
+<tr valign="top">
+<td>
+<b>Convention</b>
+</td>
+<td>
+<b>Meaning</b>
+</td>
+<td>
+<b>Example</b>
+</td>
+</tr>
+
+<tr valign="top">
+<td>
+<code>Abstract*</code>
+</td>
+<td>
+Class cannot be instantiated
+</td>
+<td>
+<code>AbstractStudy</code>
+</td>
+</tr>
+
+<tr valign="top">
+<td>
+<code>Production*</code>
+</td>
+<td>
+Describes a class which is meant to appear in the production version of the
+software.
+</td>
+<td>
+<code>ProductionRIFStudySubmissionService</code>
+</td>
+</tr>
+
+<tr valign="top">
+<td>
+<code>Test*</code>
+</td>
+<td>
+Has one of two meanings:
+<ul>
+<li>It is a JUnit test suite dedicated to a business concept</li>
+<li>It is a class that should only be used in testing scenarios and not be 
+used for production support</li>
+</ul>
+</td>
+<td>
+
+<ul>
+<li>
+<code>TestRIFStudySubmissionService</code>
+</li>
+<li>
+<code>TestGeography</code>
+</li>
+
+</ul>
+
+</td>
+</tr>
+
+<tr valign="top">
+<td>
+<code>*Interface</code>
+</td>
+<td>
+Describes a Java interface that will be used by a family of classes that support
+different implementations.
+</td>
+<td>
+<code>ProductionRIFStudySubmissionService</code>
+</td>
+</tr>
+
+<tr valign="top">
+<td>
+<code>*API</code>
+</td>
+<td>
+Describes a Java interface publishes methods of a RIF service that will be used by
+other applications.  For example, the desktop version of the Study Submission Tool
+will make use of the RIF service <code>RIFStudySubmissionAPI</code>.
+</td>
+<td>
+<code>rifServices.dataStorageLayer.ProductionRIFStudySubmissionService</code>
+</td>
+</tr>
+
+</table>
+
+
+</body>
+</html>
