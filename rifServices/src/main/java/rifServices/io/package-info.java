@@ -33,6 +33,7 @@
  * <b>readers and writers</b>are the classes which will either read or write files that describe a
  * <code>RIFJobSubmission</code> object.
  * </li>
+ * </ul>
  * </p>
  * 
  * <p>
@@ -63,6 +64,77 @@
  * Environment and Health. Funding for this project has also been received 
  * from the United States Centers for Disease Control and Prevention.  
  * </p>
+ *
+ * <h2>Coding Conventions</h2>
+ * <table>
+ * <tr valign="top">
+ * <td>
+ * <b>Convention</b>
+ * </td>
+ * <td>
+ * <b>Meaning</b>
+ * </td>
+ * <td>
+ * <b>Example</b>
+ * </td>
+ * </tr>
+ * 
+ * 
+ * <tr valign="top">
+ * <td>
+ * <code>*ContentHandler</code>
+ * </td>
+ * <td>
+ * indicates class that can write HTML and both read and write XML.  Note that the content
+ * handler uses the SAX parser to parse XML.
+ * </td>
+ * <td>
+ * <code>HealthCodeContentHandler</code>
+ * </td>
+ * </tr>
+ * 
+ * <tr valign="top">
+ * <td>
+ * <code>*Writer</code>
+ * </td>
+ * <td>
+ * indicates class that is designed to write a complete document.  Theses classes are meant to 
+ * hide references to ContentHandler classes from the rest of the application.  
+ * </td>
+ * <td>
+ * <code>HealthCodeContentHandler</code>
+ * </td>
+ * </tr>
+ * 
+ * <tr valign="top">
+ * <td>
+ * <code>*Reader</code>
+ * </td>
+ * <td>
+ * indicates class that is designed to read a complete document.  Like the <code>Writer</code> files, 
+ * theses classes are meant to hide references to ContentHandler classes from the rest of the application.  
+ * </td>
+ * <td>
+ * <code>RIFJobSubmissionXMLReader</code>
+ * </td>
+ * </tr>
+ * 
+ * <tr valign="top">
+ * <td>
+ * <code>*FileFilter</code>
+ * </td>
+ * <td>
+ * a class which is used to filter listings of files in a given directory.  For example, the 
+ * <code>XMLFileFilter</code> will cause files ending in <code>.xml</code> to appear in a list of 
+ * files shown with a <code>JFileChooser</code>.
+ * </td>
+ * <td>
+ * <code>RIFJobSubmissionXMLReader</code>
+ * </td>
+ * </tr>
+ * 
+ * </table>
+ *
  *
  * <pre> 
  * This file is part of the Rapid Inquiry Facility (RIF) project.
