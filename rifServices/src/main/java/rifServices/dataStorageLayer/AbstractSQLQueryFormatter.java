@@ -140,6 +140,24 @@ public abstract class AbstractSQLQueryFormatter {
 	}
 	
 
+	public void addPaddedQueryPhrase(
+		final String queryPhrase) {
+		
+		query.append(queryPhrase);
+		query.append(" ");
+		query.append("\n");		
+	}
+	
+	public void addPaddedQueryLine(
+		final int indentationLevel,
+		final String queryPhrase) {
+			
+		addIndentation(indentationLevel);	
+		query.append(queryPhrase);
+		query.append(" ");
+		query.append("\n");		
+	}
+
 	public void addQueryPhrase(
 		final int indentationLevel,
 		final String queryPhrase) {
