@@ -35,7 +35,7 @@ RIF.menu[ 'event-frontSubmission' ] = ( function( dom ) {
   } );
 
   $( dom.invParameters ).click( function() { //Fire
-    $( dom.investigationDialog ).show();
+    menuContext.proxy.isDialogReady( 'investigationDialog' );
   } );
 
   $( dom.logOut ).click( function() {
@@ -47,6 +47,12 @@ RIF.menu[ 'event-frontSubmission' ] = ( function( dom ) {
 
   dom.studyName.change( function() {
     var val = $( this ).val();
+    if ( val != '' ) {
+      dom.studyName.addClass( 'inputBorderSelection' );
+    } else {
+      dom.studyName.removeClass( 'inputBorderSelection' );
+      val = null;
+    };
     menuContext.facade.studyNameChanged( val );
   } );
 
@@ -57,7 +63,7 @@ RIF.menu[ 'event-frontSubmission' ] = ( function( dom ) {
 
   dom.numerator.change( function() {
     var val = $( this ).val();
-    menuContext.facade.numeratorChanged( val );
+    menuContext.proxy.numeratorChanged( val );
   } );
 
   dom.denominator.change( function() {

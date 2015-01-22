@@ -21,6 +21,10 @@ RIF.menu[ 'facade-diseaseSubmission' ] = ( function( _p ) {
       _p.proxy.addInvestigationRow( arg );
     },
 
+    showDialog: function( dialog ) {
+      _p.proxy.showDialog( dialog );
+    },
+
     /* Firers  */
 
     studyNameChanged: function( arg ) {
@@ -67,7 +71,11 @@ RIF.menu[ 'facade-diseaseSubmission' ] = ( function( _p ) {
     },
     clearAllParameters: function() {
       this.fire( 'clearAllParameters', null );
+    },
+    isDialogReady: function( dialog ) {
+      this.fire( 'isDialogReady', dialog );
     }
+
 
 
 

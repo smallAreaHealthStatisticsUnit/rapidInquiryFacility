@@ -4,17 +4,14 @@ RIF.menu.investigationParameters = ( function( _dom ) {
 
     _requests = {
 
-      getYears: function( user ) {
-        RIF.getYearRange( _callbacks[ 'getYears' ], null );
+      getYears: function( val ) {
+        RIF.getYearRange( _callbacks[ 'getYears' ], [ val ] );
       },
       getGender: function( params ) {
         RIF.getSexes( _callbacks[ 'getGender' ], null );
       },
       getCovariates: function() {
         RIF.getCovariates( _callbacks[ 'getCovariates' ], null );
-      },
-      getAgeGroups: function() {
-        RIF.getAgeGroups( _callbacks[ 'getAgeGroups' ], null );
       }
 
     },
@@ -54,6 +51,7 @@ RIF.menu.investigationParameters = ( function( _dom ) {
 
     /* geolevel obj */
     _p = {
+
 
       request: function( reqName, params ) {
         _requests[ reqName ]( params );

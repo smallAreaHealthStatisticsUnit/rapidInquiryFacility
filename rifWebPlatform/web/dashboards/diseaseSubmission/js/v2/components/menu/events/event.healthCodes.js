@@ -4,6 +4,7 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
     currentTaxonomy = null,
     index = 0,
     searchEnter = false,
+    previousSearch = '',
     indexSelection = {},
     healthSelection = {}; //{ taxonomy: null , description: null, code: null }
 
@@ -20,6 +21,7 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
     currentTaxonomy = $( this ).val();
     $( '.taxonomySection' ).hide();
     menuContext.proxy.updateTopLevelHealthCodes( currentTaxonomy );
+    previousSearch = '';
   } );
 
 
@@ -112,11 +114,17 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
   } );
 
 
-  _dom.searchCodeInput.change( function() {
-    if ( searchEnter ) {
-      var searchTxt = $( this ).val(),
+  _dom.searchCodeInput.keypress( function( event ) {
+    var keycode = ( event.keyCode ? event.keyCode : event.which );
+    if ( keycode == '13' ) {
+      var searchTxt = _dom.searchCodeInput.val(),
         taxonomy = currentTaxonomy || _dom.icdClassification.val(),
         domParent = document.getElementById( taxonomy );
+
+      if ( searchTxt === previousSearch ) {
+        return;
+      };
+
       if ( domParent === null ) {
         RIF.statusBar( 'Could not find element to append health codes search', true, 'notify' );
         return;
@@ -126,16 +134,8 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
         searchTxt: searchTxt,
         dom: domParent
       } );
-
+      previousSearch = searchTxt;
     };
-    searchEnter = false;
-
-  } ).keypress( function( event ) {
-    var keycode = ( event.keyCode ? event.keyCode : event.which );
-    if ( keycode == '13' ) {
-      searchEnter = true;
-    };
-
   } );
 
 

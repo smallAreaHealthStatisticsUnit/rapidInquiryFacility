@@ -54,7 +54,7 @@ RIF.diseaseSubmission = ( function() {
       },
 
       numeratorChanged: {
-        subscribers: [ "study" ],
+        subscribers: [ "study", "table" ],
         firer: [ "menu" ],
         method: "numeratorChanged"
       },
@@ -184,6 +184,19 @@ RIF.diseaseSubmission = ( function() {
         firer: [ "menu" ],
         method: "clearAllParameters"
       },
+
+      isDialogReady: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "isDialogReady"
+      },
+
+      showDialog: {
+        subscribers: [ "menu" ],
+        firer: [ "study" ],
+        method: "showDialog"
+      },
+
 
 
     },

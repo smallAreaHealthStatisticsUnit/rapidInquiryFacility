@@ -21,6 +21,10 @@ RIF.table = ( function( settings ) {
       removeInvestigationRow: function( inv ) {
         _p.facade.removeInvestigationRow( inv );
       },
+
+      getAgeGroups: function( numerator ) {
+        _p.ageGroupsRenderer.request( 'getAgeGroups', numerator );
+      }
     },
 
     getFacade: function() {

@@ -16,6 +16,10 @@ RIF.table[ 'facade-diseaseSubmission' ] = ( function( _p ) {
       $( '.rowSelected' ).removeClass( 'rowSelected' );
     },
 
+    numeratorChanged: function( numerator ) {
+      _p.proxy.getAgeGroups( numerator );
+    },
+
     //FIRER
     studyAreaSelectionEvent: function( rowId ) {
       this.fire( 'studyAreaSelectionEvent', rowId )

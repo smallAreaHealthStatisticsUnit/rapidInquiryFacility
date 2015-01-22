@@ -1023,14 +1023,6 @@ input.dropdownInput:-webkit-input-placeholder {
    color:#ccc;
 }
 
-/* firefox 19+ */
-/* input.dropdownInput:-moz-placeholder {
-   color:#969696;
-}
- input.dropdownInput::-moz-placeholder {
-   color:#969696;
-}*/
-
 
 #studyArea{
   margin-left: 0.5%;    
@@ -1077,16 +1069,21 @@ input.dropdownInput:-webkit-input-placeholder {
 
 .summary {
     width: 100%;
-    height:77%;
+    height: 80%;
     text-align: center;
     background-color: white;
     color:#999999;
 }
 
-.summary h2 {
-    font-size:14px;
-    padding: 3% 0;
+ .summary h2{ 
+    font-size: 12px;
+    text-align: center;
+    position: relative;
+    top: 10%;
+    padding: 2% 0;
+    text-transform: inherit;
 }
+
 
 .summary div {
     height: 88%;

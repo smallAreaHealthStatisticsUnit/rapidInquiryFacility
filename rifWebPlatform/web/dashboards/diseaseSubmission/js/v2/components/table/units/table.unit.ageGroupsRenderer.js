@@ -3,8 +3,8 @@ RIF.table.ageGroupsRenderer = ( function( _dom ) {
   var parent = this,
 
     _requests = {
-      getAgeGroups: function( /*Numearator*/) {
-        RIF.getAgeGroups( _callbacks[ 'getAgeGroups' ] /*,  Numerator table */ );
+      getAgeGroups: function( numerator ) {
+        RIF.getAgeGroups( _callbacks[ 'getAgeGroups' ], [ numerator ] );
       }
 
     },
@@ -54,7 +54,6 @@ RIF.table.ageGroupsRenderer = ( function( _dom ) {
 
     };
 
-  _p.request( 'getAgeGroups' );
 
   return {
     ageGroupsRenderer: _p

@@ -8,10 +8,13 @@ RIF.study = ( function( type ) {
       investigationCounts: 0,
 
       // SELECTION
-      studyName: null,
-      healthTheme: null,
-      numerator: null,
-      denominator: null,
+      front: {
+        studyName: null,
+        healthTheme: null,
+        numerator: null,
+        denominator: null,
+      },
+
       studyArea: {
         resolution: null,
         areas: [],
@@ -61,24 +64,23 @@ RIF.study = ( function( type ) {
           delete this.investigations[ i ];
           console.log( 'Investigation ' + i + ' removed' )
         };
-        //this.investigations.splice( i, 1 ); 
         this.showInvestigations();
       },
       //SETTERS
       setStudyName: function( s ) {
-        this.studyName = s;
+        this.front.studyName = s;
       },
 
       setHealthTheme: function( s ) {
-        this.healthTheme = s;
+        this.front.healthTheme = s;
       },
 
       setNumerator: function( s ) {
-        this.numerator = s;
+        this.front.numerator = s;
       },
 
       setDenominator: function( s ) {
-        this.denominator = s;
+        this.front.denominator = s;
       },
       setStudyAreaSelectAt: function( s ) {
         this.studyArea.selectAt = s;
@@ -132,19 +134,19 @@ RIF.study = ( function( type ) {
       },
 
       getStudyName: function() {
-        return this.studyName;
+        return this.front.studyName;
       },
 
       getHealthTheme: function() {
-        return this.healthTheme;
+        return this.front.healthTheme;
       },
 
       getNumerator: function() {
-        return this.numerator;
+        return this.front.numerator;
       },
 
       getDenominator: function() {
-        return this.denominator;
+        return this.front.denominator;
       },
 
       getStudyAreas: function() {
@@ -182,6 +184,39 @@ RIF.study = ( function( type ) {
       getAgeGroups: function() {
         return this.parameters.ageGroups;
       },
+
+      isFrontSubmissionReady: function() {
+        var toComplete = [];
+        for ( var i in this.front ) {
+          if ( this.front[ i ] == null ) {
+            toComplete.push( i );
+          }
+        };
+
+        if ( toComplete.length == 0 ) {
+          return true;
+        } else {
+          var msg = 'Before continuing make sure the following parameters are not empty: <br/> ' +
+            toComplete.join( ", " );
+          RIF.statusBar( msg, true, 'notify' );
+          return false;
+        };
+
+      },
+
+      isStudyAreaDialogReady: function() {
+
+      },
+
+      isComparisonAreaDialogReady: function() {
+
+      },
+
+      isInvestigationDialogReady: function() {
+        var ready = this.isFrontSubmissionReady();
+        return ready;
+        //this.isStudyAreaDialogReady();
+      }
 
     }
 

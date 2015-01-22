@@ -59,6 +59,10 @@ RIF.menu.frontSubmission = ( function( _dom ) {
     /* geolevel obj */
     _p = {
 
+      show: function( dialog ) {
+        $( _dom[ dialog ] ).show();
+      },
+
       initDiseaseSubmissionFront: function() {
         _requests.isLoggedIn();
       },

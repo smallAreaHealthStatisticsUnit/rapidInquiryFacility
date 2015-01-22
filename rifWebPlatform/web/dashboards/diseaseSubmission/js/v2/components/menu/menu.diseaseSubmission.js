@@ -23,16 +23,18 @@ RIF.menu = ( function( settings ) {
 
         studyAreaReady: function() {
           _p.healthCodes.request( 'getTaxonomy' );
-          _p.investigationParameters.request( 'getYears' );
         },
-        // Health Code tree
+
+        numeratorChanged: function( val ) {
+          _p.facade.numeratorChanged( val );
+          _p.investigationParameters.request( 'getYears', val ); // on numerator change!!  
+        },
 
         taxonomy: null,
 
         updateTopLevelHealthCodes: function( taxonomy ) {
           _p.healthCodes.request( 'getTopLevelHealthCodes', taxonomy );
           _p.proxy.taxonomy = taxonomy;
-          //this.investigationParameterChange( taxonomy, _p.facade.taxonomyChanged );    
         },
 
         updateSubLevelHealthCodes: function( code, domEl ) {
@@ -70,7 +72,15 @@ RIF.menu = ( function( settings ) {
 
         searchHealthCodes: function( params ) {
           _p.healthCodes.request( 'getSearchHealthCodes', params );
-        }
+        },
+
+        isDialogReady: function( dialog ) {
+          _p.facade.isDialogReady( dialog );
+        },
+
+        showDialog: function( dialog ) {
+          _p.frontSubmission.show( dialog );
+        },
 
 
       },

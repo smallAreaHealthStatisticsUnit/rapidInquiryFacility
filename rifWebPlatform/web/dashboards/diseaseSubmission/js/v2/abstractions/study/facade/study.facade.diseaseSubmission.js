@@ -90,9 +90,16 @@ RIF.study[ 'facade-diseaseSubmission' ] = ( function() {
       for ( var i in this.parameters ) {
         this.parameters[ i ] = null;
       };
-      console.log( this.parameters )
     },
 
+    isDialogReady: function( dialog ) {
+      var ready = ( dialog == 'investigationDialog' ) ?
+        this.isInvestigationDialogReady() : false;
+
+      if ( ready ) {
+        this.showDialog( dialog );
+      };
+    },
 
     // FIRERS  
     selectAtChangeUpdate: function( geolvl ) {
@@ -106,6 +113,11 @@ RIF.study[ 'facade-diseaseSubmission' ] = ( function() {
     investigationNotReadyToBeAdded: function() {
       this.fire( 'investigationNotReadyToBeAdded', null );
     },
+
+    showDialog: function( dialog ) {
+      this.fire( 'showDialog', dialog );
+    }
+
 
   };
 

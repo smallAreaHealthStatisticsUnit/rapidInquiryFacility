@@ -424,7 +424,8 @@
         
       getYearRange: function( myCallback, params ) {
         var msg = "Retrieving Years",
-            args = 'geographyName=SAHSU&numeratorTableName=SAHSULAND_CANCER';
+            numerator = params[0],
+            args = 'geographyName=SAHSU&numeratorTableName=' + numerator;
 
         xhr( 'studySubmission/getYearRange?' + args, myCallback, msg, 'application/json' );
       },
@@ -438,7 +439,8 @@
         
       getAgeGroups: function( myCallback, params ) {
         var msg = "Retrieving Age groups",
-            args = 'geographyName=SAHSU&numeratorTableName=SAHSULAND_CANCER';
+            numerator = params[0],
+            args = 'geographyName=SAHSU&numeratorTableName=' + numerator;
 
         xhr( 'studySubmission/getAgeGroups?' + args, myCallback, msg, 'application/json' );
       }, 
