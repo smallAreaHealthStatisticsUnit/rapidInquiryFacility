@@ -107,13 +107,13 @@
             </div>
             <div class='nav'>
                 <a href='#' >Manager</a>
-                <a href='#' class='active'>Disease Mapping Setup</a>
-                <a href='#' >Disease Mapping Viewer</a>
-                <a href='#'>Risk Analysis Setup</a>
+                <a href='#' class='active'>Disease Submission</a>
+                <a href='#' >Disease Mapping </a>
+                <a href='#'>Risk Analysis </a>
             </div>
         </div>
         
-        <div id="buttons">
+        <div id="buttons" class='positioning'>
             <div class='geoDrops'>
 				<div>
                     <div  class='styleUnderline'>
@@ -143,29 +143,25 @@
         </div>
 
         
-        <div id="content">
+        <div id="content" class='positioning'>
             <!-- Study area block -->
             <div id='studyArea' class='blocks'>
                 <div class='headerBlock'>
-                    <h1>Study area</h1>
+                    <!--<h1>Study area</h1>-->
                 </div>
                 <div class='summary bodyBlock'>
-                    <h2 class='areaSummaryLabel' > Study area selection scale  </h2>
-                    <h2 class='areaSummaryLabel' > Study resolution  </h2>
-                    <h2 class='areaSummaryLabel' > Administrtive areas  </h2>  
+                    Study Area
                 </div>    
             </div>
             
              <!-- Compaison area block -->
             <div id='comparisonArea' class='blocks'>
                 <div class='headerBlock'>
-                    <h1>Comparison area</h1>
                 </div>
                 <div class='summary bodyBlock'>
                     <div>
                       <div class='summary bodyBlock'>
-                        <h2 class='areaSummaryLabel' > Comparison area selection scale  </h2>
-                        <h2 class='areaSummaryLabel' > Comparison area selection  </h2>
+                          Comparison Area
                     </div>
                     </div>    
                 </div>  
@@ -174,28 +170,22 @@
              <!-- Investigation parameter block -->
             <div id='invParameters' class='blocks'>
                 <div class='headerBlock'>
-                    <h1>Investigations </h1>
                 </div>
                 <div class='summary bodyBlock'>
-                    <h2 class='areaSummaryLabel' > Health conditions  </h2>
-                    <h2 class='areaSummaryLabel' > Year range  </h2>
-                    <h2 class='areaSummaryLabel' > Gender  </h2> 
-                    <h2 class='areaSummaryLabel' > Age groups  </h2>
-                    <h2 class='areaSummaryLabel' > Covariates adjustment  </h2> 
+                    Investigation parameters
                 </div> 
             </div>
             
             <div id='statsParameters' class='blocks'>
                 <div class='headerBlock'>
-                    <h1>Stats</h1>
                 </div>
                 <div class='summary bodyBlock'>
-                    <h2 class='areaSummaryLabel' > Direct / Indirect rate  </h2>
-                    <h2 class='areaSummaryLabel' > Bayesian Modelling  </h2>
-                    <h2 class='areaSummaryLabel' > Cluster Detection  </h2>
+                    stats
                 </div> 
-            </div>
-            
+            </div> 
+        </div>
+        
+        <div class='positioning'>
             <div id='importExport' >
                 <div id='importExportContainer' class='buttonContainer'>
                     <div>Retrieve</div>
@@ -206,7 +196,10 @@
                 <div id='runContainer'  class='buttonContainer'>
                     <div>run</div>
                 </div>
-            </div>    
+            </div>
+        </div>
+        
+        <div>
             
         </div>
     </div>

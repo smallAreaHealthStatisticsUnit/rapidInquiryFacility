@@ -281,15 +281,17 @@ input[type="range"]::-ms-thumb {
 	
 	
 	#content{
-		/* Firefox */
-		height: -moz-calc(83% - 135px);
+		margin-top:3%;
+        /* Firefox */
+		margin-left: -moz-calc(5% + 10px);
 		/* WebKit */
-		height: -webkit-calc(83% - 135px);
+		margin-left: -webkit-calc(5% + 10px);
 		/* Opera */
-		height: -o-calc(83% - 135px);
+		margin-left: -o-calc(5% + 10px);
 		/* Standard */
-		height: calc(83% - 135px);
-	}
+		margin-left: calc(5% + 10px);
+		height: 50%;
+}
 	
 	select {
 		width: 120px;
@@ -905,8 +907,14 @@ input[type="range"]::-ms-thumb {
   *
   *
   */
+
+.positioning{
+    width: 90%;
+    margin-left: 5%;
+}
+
 #buttons{
-    height: 18%;
+    /* height: 20%; */
  }
 
  #buttons>div {
@@ -917,15 +925,15 @@ input[type="range"]::-ms-thumb {
 
 #buttons .geoDrops{	
      margin-top: 2%;
-     position: absolute;
+     position: relative;
 }
 
 #buttons .geoDrops>div{
     float: left;
-    margin-top: 10px;
+    margin-top: 2%;
     font-size: 11px;
-    width: 22%;
-    margin-right: 3%;
+    width: 20%;
+    margin-right: 5%;
 }
 
 #buttons .geoDrops>div select{
@@ -939,7 +947,7 @@ input[type="range"]::-ms-thumb {
 input[type="text"].dropdownInput {
   padding: 10px;    
   width: 100%;
-  font-size: 24px;
+  font-size: 20px;
   text-transform: uppercase;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -948,7 +956,7 @@ input[type="text"].dropdownInput {
   -moz-box-shadow: none;
   box-shadow: none;
   border: none;
-  border-bottom: solid 2px #CAE1FF;
+  border-bottom: solid 2px #DEDEDE;
   -webkit-transition: border 0.3s;
   -moz-transition: border 0.3s;
   -o-transition: border 0.3s;
@@ -1024,42 +1032,22 @@ input.dropdownInput:-webkit-input-placeholder {
 }
 
 
-#studyArea{
-  margin-left: 0.5%;    
-}
 
 #content>div.blocks {
-  float:left;
-  width: 22%;
-  margin-right: 2.5%;       
-  height:60%;  
-  background: none repeat scroll 0 0 rgba(135 ,206, 250, 0.3);    
-  -webkit-border-radius: 35px 35px 20px 20px;
-  -moz-border-radius: 35px 35px 20px 20px;
-  border-radius: 35px 35px 20px 20px; 
-  border: 1px solid #CDCDC1;
-  text-align: center;  
+  float: left;
+  margin-right: 5%;
+  height: 80%;
+  width: 20%;
+  text-align: center;
   text-transform: uppercase;
-}
-
-#content>div.blocks:hover {
-    cursor:pointer;
-    -webkit-transition: background-color 0.6s;
-    -moz-transition: background-color 0.6s;
-    -o-transition: background-color 0.6s;
-    transition: background-color 0.6s;
-    -webkit-box-shadow: #F2F2F2  5px 5px 5px;  ;
-    -moz-box-shadow: #F2F2F2  5px 5px 5px;  
-    box-shadow: #F2F2F2 5px 5px 5px;  
-    border:1px solid #CDCDC1;
-    background: none repeat scroll 0 0 rgba(99,	184,255, 0.8); 
-    color:#F2F2F2
+  min-height: 320px;
+  max-height: 400px;
 }
 
 
 .headerBlock {
-   height: 15%;
-   border-bottom: 1px solid #C1CDC1;    
+   height: 90%;   
+   border-bottom: 2px solid #DEDEDE;
 }
 
 .headerBlock h1 {
@@ -1067,12 +1055,55 @@ input.dropdownInput:-webkit-input-placeholder {
     padding-top: 5%;
 }
 
+div.headerBlock:hover{
+    cursor:pointer;
+    -webkit-transition: background 1s;
+    -moz-transition: background 1s;
+    -o-transition: background 1s;
+    transition: background 1s;
+}
+
+#studyArea .headerBlock{
+    background:white url(../images/trees/tree1bw.jpg) no-repeat center bottom;
+}
+
+#studyArea div.headerBlock:hover {
+    background:white url(../images/trees/tree1.png) no-repeat center bottom;
+    
+}
+
+#comparisonArea .headerBlock{
+    background:white url(../images/trees/tree2bw.png) no-repeat center bottom;
+}
+
+#comparisonArea div.headerBlock:hover {
+    background:white url(../images/trees/tree2.png) no-repeat center bottom;;  
+}
+
+#invParameters .headerBlock{
+    background:white url(../images/trees/tree3bw.png) no-repeat center bottom;
+}
+
+#invParameters div.headerBlock:hover {
+    background:white url(../images/trees/tree3.png) no-repeat center bottom;;  
+}
+
+#statsParameters .headerBlock{
+    background:white url(../images/trees/tree4bw.png) no-repeat center bottom;
+}
+
+#statsParameters div.headerBlock:hover {
+    background:white url(../images/trees/tree4.png) no-repeat center bottom;;  
+}
+
 .summary {
     width: 100%;
-    height: 80%;
+    height: 10%;
     text-align: center;
     background-color: white;
     color:#999999;
+    min-height: 50px;
+    padding-top: 5px;
 }
 
  .summary h2{ 
@@ -1103,18 +1134,17 @@ input.dropdownInput:-webkit-input-placeholder {
 }
 
 #importExport {
-    height:150px;
     float:left;
     margin-left:1%;
 }
 
 #run{
    float:right;
-   margin-right: 3%;    
+   margin-right: 4%;    
 }
 
 #runContainer  {
-     border-bottom: 5px solid #CAE1FF;
+     border-bottom: 5px solid #DEDEDE;
 }
 
 #importExportContainer  {
@@ -1136,7 +1166,7 @@ input.dropdownInput:-webkit-input-placeholder {
 .buttonContainer{
   width: 160px;
    color:#848484;    
-   height: 150px;
+   margin-top:40%;
   position: relative;    
 }
 

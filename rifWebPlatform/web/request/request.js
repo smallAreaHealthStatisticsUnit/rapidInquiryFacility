@@ -456,9 +456,9 @@
         var msg = "Searching health codes",
             taxonomy = params[0],
             searchTxt = params[1],
-            args = 'healthCodeTaxonomyNameSpace='+ taxonomy +'&searchText='+params[1];
+            args = 'nameSpace='+ taxonomy +'&searchText='+params[1] + '&isCaseSensitive=false';
 
-        xhr( 'studySubmission/getHealthCodesForSearchText?' + args, myCallback, msg, 'application/json' );
+        xhr( 'studySubmission/getHealthCodesMatchingSearchText?' + args, myCallback, msg, 'application/json' );
       }    
  
     };
