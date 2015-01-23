@@ -11,13 +11,9 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-
 import javax.servlet.http.*;
-
 import javax.ws.rs.QueryParam;
-
 import java.text.Collator;
 import java.util.ArrayList;
 
@@ -333,7 +329,10 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-		return generateAppropriateContentTypeResponse(
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+		
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);
 		
@@ -401,11 +400,12 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-
-		return generateAppropriateContentTypeResponse(
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+	
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);
-		
 	}
 		
 	@GET
@@ -438,10 +438,12 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-
-		return generateAppropriateContentTypeResponse(
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+	
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
-			result);
+			result);		
 	}
 
 	
@@ -488,9 +490,12 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-		return generateAppropriateContentTypeResponse(
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+	
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
-			result);
+			result);		
 	}
 	
 	@GET
@@ -544,11 +549,13 @@ public class RIFStudySubmissionWebServiceResource
 					servletRequest,
 					exception);			
 		}
-		
-		return generateAppropriateContentTypeResponse(
+				
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+	
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
-			result);
-		
+			result);		
 	}
 	@GET
 	@Produces({"application/json"})	
@@ -599,10 +606,14 @@ public class RIFStudySubmissionWebServiceResource
 					servletRequest,
 					exception);			
 		}
+
 		
-		return generateAppropriateContentTypeResponse(
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
-			result);
+			result);		
 		
 	}
 
@@ -675,9 +686,12 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-		return generateAppropriateContentTypeResponse(
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
-			result);
+			result);		
 	}
 		
 	@GET
@@ -728,10 +742,13 @@ public class RIFStudySubmissionWebServiceResource
 					exception);
 		}
 		
-		return generateAppropriateContentTypeResponse(
-			servletRequest,
-			result);
 		
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
+			servletRequest,
+			result);		
 	}
 	
 	@GET
@@ -779,11 +796,13 @@ public class RIFStudySubmissionWebServiceResource
 					servletRequest,
 					exception);
 		}
-		
-		return generateAppropriateContentTypeResponse(
+				
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
-			result);
-		
+			result);		
 	}
 	
 	
@@ -847,9 +866,13 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-		return generateAppropriateContentTypeResponse(
+		
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
-			result);
+			result);		
 		
 	}
 		
@@ -898,10 +921,13 @@ public class RIFStudySubmissionWebServiceResource
 					exception);
 		}
 
+		
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
 
-		return generateAppropriateContentTypeResponse(
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
-			result);
+			result);		
 	}
 
 	@GET
@@ -948,10 +974,13 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
+		
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
 
-		return generateAppropriateContentTypeResponse(
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
-			result);
+			result);		
 	}
 		
 	@GET
@@ -1003,21 +1032,26 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
+		
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
 
-		return generateAppropriateContentTypeResponse(
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
-			result);
+			result);		
 	}
 
-
+	
+	/*
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getHealthCodesForSearchText")
-	public Response getTopLevelCodes(
+	public Response getHealthCodesForSearchText(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
 		@QueryParam("healthCodeTaxonomyNameSpace") String healthCodeTaxonomyNameSpace,
-		@QueryParam("searchText") String searchText) {
+		@QueryParam("searchText") String searchText,
+		@DefaultValue("false") @QueryParam("isContextSensitive") boolean isContextSensitive) {
 	
 		String result = "";
 		try {			
@@ -1031,11 +1065,13 @@ public class RIFStudySubmissionWebServiceResource
 				= studySubmissionService.getHealthCodeTaxonomyFromNameSpace(
 					user, 
 					healthCodeTaxonomyNameSpace);
+			
 			ArrayList<HealthCode> healthCodes
 				= studySubmissionService.getHealthCodesMatchingSearchText(
 					user, 
 					healthCodeTaxonomy, 
-					searchText);
+					searchText,
+					isContextSensitive);
 
 			//Convert results to support JSON						
 			ArrayList<HealthCodeProxy> healthCodeProxies
@@ -1063,11 +1099,12 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
-
 		return generateAppropriateContentTypeResponse(
 			servletRequest,
 			result);
 	}
+*/
+	
 	
 	@GET
 	@Produces({"application/json"})	
@@ -1117,10 +1154,13 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 		
+		
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
 
-		return generateAppropriateContentTypeResponse(
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
-			result);
+			result);		
 	}
 	
 
@@ -1174,10 +1214,13 @@ public class RIFStudySubmissionWebServiceResource
 					servletRequest,
 					exception);			
 		}
+		
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
 
-		return generateAppropriateContentTypeResponse(
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
-			result);
+			result);		
 	}
 
 	@GET
@@ -1186,9 +1229,10 @@ public class RIFStudySubmissionWebServiceResource
 	public Response getHealthCodesMatchingSearchText(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
-		@QueryParam("nameSpace") String nameSpace,
-		@QueryParam("searchText") String searchText) {
-	
+		@QueryParam("nameSpace") String nameSpace,		
+		@QueryParam("searchText") String searchText,
+		@QueryParam("isCaseSensitive") boolean isCaseSensitive) {
+		
 		String result = "";
 		try {			
 			//Convert URL parameters to RIF service API parameters
@@ -1197,6 +1241,8 @@ public class RIFStudySubmissionWebServiceResource
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();
+			
+			System.out.println("zzzAbout to call get codes for matching text with nameSpace=="+nameSpace+"==searchText=="+searchText+"==isContextSensitive=="+isCaseSensitive+"==");
 			HealthCodeTaxonomy healthCodeTaxonomy
 				= studySubmissionService.getHealthCodeTaxonomyFromNameSpace(
 					user, 
@@ -1205,8 +1251,9 @@ public class RIFStudySubmissionWebServiceResource
 				= studySubmissionService.getHealthCodesMatchingSearchText(
 					user, 
 					healthCodeTaxonomy, 
-					searchText);
-
+					searchText,
+					isCaseSensitive);
+			
 			//Convert results to support JSON						
 			ArrayList<HealthCodeProxy> healthCodeProxies
 				= new ArrayList<HealthCodeProxy>();
@@ -1218,12 +1265,13 @@ public class RIFStudySubmissionWebServiceResource
 				healthCodeProxy.setNameSpace(matchingHealthCode.getNameSpace());
 				healthCodeProxy.setIsTopLevelTerm(String.valueOf(matchingHealthCode.isTopLevelTerm()));
 				healthCodeProxy.setNumberOfSubTerms(String.valueOf(matchingHealthCode.getNumberOfSubTerms()));
+				healthCodeProxies.add(healthCodeProxy);
 			}
 			
 			result 
 				= serialiseArrayResult(
 					servletRequest,
-					healthCodeProxies);					
+					healthCodeProxies);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -1233,9 +1281,13 @@ public class RIFStudySubmissionWebServiceResource
 					exception);			
 		}
 
-		return generateAppropriateContentTypeResponse(
+		
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
-			result);
+			result);		
 	}
 
 	// ==========================================

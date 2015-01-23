@@ -108,6 +108,8 @@ abstract class AbstractRIFWebServiceResource {
 	private SimpleDateFormat sd;
 	private Date startTime;
 	
+	private WebServiceResponseGenerator webServiceResponseGenerator;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -119,6 +121,8 @@ abstract class AbstractRIFWebServiceResource {
 
 		RIFServiceStartupOptions rifServiceStartupOptions
 			= new RIFServiceStartupOptions(true);
+		
+		webServiceResponseGenerator = new WebServiceResponseGenerator();
 		
 		try {
 			rifStudyServiceBundle.initialise(rifServiceStartupOptions);
@@ -147,7 +151,7 @@ abstract class AbstractRIFWebServiceResource {
 					exception);			
 		}
 	
-		return generateAppropriateContentTypeResponse(
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);
 	}
@@ -172,7 +176,7 @@ abstract class AbstractRIFWebServiceResource {
 					exception);			
 		}
 	
-		return generateAppropriateContentTypeResponse(
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);
 	}
@@ -197,7 +201,7 @@ abstract class AbstractRIFWebServiceResource {
 		}
 	
 
-		return generateAppropriateContentTypeResponse(
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);
 	}
@@ -213,6 +217,10 @@ abstract class AbstractRIFWebServiceResource {
 		return rifStudyServiceBundle.getRIFStudyRetrievalService();
 	}
 	
+	
+	protected WebServiceResponseGenerator getWebServiceResponseGenerator() {
+		return webServiceResponseGenerator;
+	}
 	
 	protected Response getGeographies(
 		final HttpServletRequest servletRequest,
@@ -253,7 +261,7 @@ abstract class AbstractRIFWebServiceResource {
 					exception);			
 		}
 
-		return generateAppropriateContentTypeResponse(
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);		
 	}
@@ -300,7 +308,7 @@ abstract class AbstractRIFWebServiceResource {
 		}
 	
 		
-		return generateAppropriateContentTypeResponse(
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);		
 	}
@@ -346,7 +354,7 @@ abstract class AbstractRIFWebServiceResource {
 		}
 	
 		
-		return generateAppropriateContentTypeResponse(
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);		
 	}
@@ -397,7 +405,7 @@ abstract class AbstractRIFWebServiceResource {
 		}
 		
 		
-		return generateAppropriateContentTypeResponse(
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);		
 	}
@@ -448,7 +456,7 @@ abstract class AbstractRIFWebServiceResource {
 		}
 
 		
-		return generateAppropriateContentTypeResponse(
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);		
 	}	
@@ -512,7 +520,7 @@ abstract class AbstractRIFWebServiceResource {
 					exception);			
 		}
 		
-		return generateAppropriateContentTypeResponse(
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);		
 	}
@@ -570,7 +578,7 @@ abstract class AbstractRIFWebServiceResource {
 					exception);			
 		}
 		
-		return generateAppropriateContentTypeResponse(
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);		
 	}
@@ -617,7 +625,7 @@ abstract class AbstractRIFWebServiceResource {
 					exception);			
 		}
 		
-		return generateAppropriateContentTypeResponse(
+		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);
 	}
@@ -676,25 +684,6 @@ abstract class AbstractRIFWebServiceResource {
 		return(new String(data));
 	}
 	
-	protected Response generateAppropriateContentTypeResponse(
-		final HttpServletRequest servletRequest,
-		final String data) {
-		
-		if (clientBrowserIsInternetExplorer(servletRequest)) {
-			ResponseBuilder responseBuilder 
-				= Response.ok(
-					data, 
-					MediaType.TEXT_PLAIN);
-			return responseBuilder.build();			
-		}
-		else {
-			ResponseBuilder responseBuilder 
-				= Response.ok(
-					data, 
-					MediaType.APPLICATION_JSON);
-			return responseBuilder.build();				
-		}
-	}
 
 	
 	// ==========================================
@@ -752,74 +741,6 @@ abstract class AbstractRIFWebServiceResource {
 		
 		return result;
 	}
-
-	/*
-	 * Here we're trying to use some way of determining whether
-	 * the browser will automatically display JSON.  This method is
-	 * meant to use the 'feature detection' in the client browser.
-	 * 
-	 * In future this could be an extra parameter the client web 
-	 * page stuffs into the request header after is uses something like
-	 * Modernizr
-	 * 
-	 */
-	private boolean clientBrowserSupportsJSONContentType(
-		final HttpServletRequest servletRequest) {
-		
-
-		//@TODO
-		return false;
-	}
-	
-	/*
-	 * Here we are interrogating the value of "user-agent" in the header.
-	 * This approach would try to interrogate the free text field value
-	 * to figure out the type and version of the browser client.  In future,
-	 * it might use the WURFL project to do a look-up in a database of device
-	 * profiles.
-	 */
-	private boolean clientBrowserIsInternetExplorer(
-		final HttpServletRequest servletRequest) {
-		
-		//this approach is known to be weak but it will do for now until
-		//we develop a more robust method
-	
-		//by default it's true
-		boolean result = true;
-		String browserType = servletRequest.getHeader("User-Agent");
-		
-		if (browserType != null) {
-			browserType = browserType.toUpperCase();
-			
-			int foundIndex
-				= browserType.indexOf("CHROME");
-			if (foundIndex != -1) {
-				result = false;
-			}			
-		}
-		
-		//we're going to make the incredibly lame assumption for now that if it
-		//doesn't contain "Chrome", we'll assume it's Internet Explorer.
-		//again, the question of what information do we use to determine if we
-		//send JSON content type back or not needs to be discussed more
-		System.out.println("isClientBrowserIE=="+result+"==");
-		
-		//System.out.println("clientBrowserIsInternetExplorer IS TRUE");
-		//@TODO
-		
-		return result;
-	}
-	
-	/*
-	 * Here we are interrogating the value of "Accept" in the header
-	 */
-	private boolean clientBrowserMimeTypesIncludeJSON(
-		final HttpServletRequest servletRequest) {
-		
-		
-		return true;		
-	}
-	
 	private void printClientInformation(
 		final String messageHeader,
 		final HttpServletRequest servletRequest) {
