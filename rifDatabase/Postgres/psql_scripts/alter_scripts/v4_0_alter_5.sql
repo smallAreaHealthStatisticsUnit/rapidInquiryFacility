@@ -443,9 +443,11 @@ BEGIN
 --
 -- Enabled debug on select rif40_sm_pkg functions
 --
+	SET rif40.debug = '';
 	FOREACH l_function IN ARRAY rif40_geo_pkg_functions LOOP
 		RAISE INFO 'Enable debug for function: %', l_function;
 		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
+
 	END LOOP;
 --
 -- Drop old geometry tables
@@ -588,7 +590,86 @@ BEGIN
 END;
 $$;
  */
+--
+-- Test performance (FAST..)
+--
+SELECT geolevel_name, geography, zoomlevel, x_tile_number, y_tile_number, optimised_topojson, tile_id
+  FROM rif40_sahsu_maptiles
+ WHERE geolevel_name = 'LEVEL1'
+   AND zoomlevel     = 9
+   AND x_tile_number IN (264, 265)
+   AND y_tile_number = 330
+ ORDER BY tile_id; 
 
+--
+-- Display tile summary
+-- 
+SELECT geolevel_name, zoomlevel, SUM(no_area_ids) AS tiles_with_no_area_ids, COUNT(optimised_topojson) AS aaas
+  FROM rif40_sahsu_maptiles
+ GROUP BY geolevel_name, zoomlevel
+ ORDER BY geolevel_name, zoomlevel; 
+/*
+                                                          rif40_GetMapAreas interface
+ geolevel_name | geography | zoomlevel | x_tile_number | y_tile_number |             optimised_topojson              |         tile_id
+---------------+-----------+-----------+---------------+---------------+---------------------------------------------+--------------------------
+ LEVEL1        | SAHSU     |         9 |           264 |           330 | {"type": "FeatureCollection","features":[]} | SAHSU_1_LEVEL1_9_264_330
+ LEVEL1        | SAHSU     |         9 |           265 |           330 | "X"                                         | SAHSU_1_LEVEL1_9_265_330
+(2 rows)
+
+Time: 31.834 ms
+                 rif40_GetMapAreas interface
+ geolevel_name | zoomlevel | tiles_with_no_area_ids |  aaas
+---------------+-----------+------------------------+---------
+ LEVEL1        |         0 |                      0 |       1
+ LEVEL1        |         1 |                      3 |       4
+ LEVEL1        |         2 |                     15 |      16
+ LEVEL1        |         3 |                     63 |      64
+ LEVEL1        |         4 |                    255 |     256
+ LEVEL1        |         5 |                   1023 |    1024
+ LEVEL1        |         6 |                   4094 |    4096
+ LEVEL1        |         7 |                  16380 |   16384
+ LEVEL1        |         8 |                  65527 |   65536
+ LEVEL1        |         9 |                 262125 |  262144
+ LEVEL1        |        10 |                1048515 | 1048576
+ LEVEL1        |        11 |                4194109 | 4194304
+ LEVEL2        |         0 |                      0 |       1
+ LEVEL2        |         1 |                      3 |       4
+ LEVEL2        |         2 |                     15 |      16
+ LEVEL2        |         3 |                     63 |      64
+ LEVEL2        |         4 |                    255 |     256
+ LEVEL2        |         5 |                   1023 |    1024
+ LEVEL2        |         6 |                   4094 |    4096
+ LEVEL2        |         7 |                  16380 |   16384
+ LEVEL2        |         8 |                  65527 |   65536
+ LEVEL2        |         9 |                 262125 |  262144
+ LEVEL2        |        10 |                1048515 | 1048576
+ LEVEL2        |        11 |                4194109 | 4194304
+ LEVEL3        |         0 |                      0 |       1
+ LEVEL3        |         1 |                      3 |       4
+ LEVEL3        |         2 |                     15 |      16
+ LEVEL3        |         3 |                     63 |      64
+ LEVEL3        |         4 |                    255 |     256
+ LEVEL3        |         5 |                   1023 |    1024
+ LEVEL3        |         6 |                   4094 |    4096
+ LEVEL3        |         7 |                  16380 |   16384
+ LEVEL3        |         8 |                  65527 |   65536
+ LEVEL3        |         9 |                 262125 |  262144
+ LEVEL3        |        10 |                1048515 | 1048576
+ LEVEL3        |        11 |                4194109 | 4194304
+ LEVEL4        |         0 |                      0 |       1
+ LEVEL4        |         1 |                      3 |       4
+ LEVEL4        |         2 |                     15 |      16
+ LEVEL4        |         3 |                     63 |      64
+ LEVEL4        |         4 |                    255 |     256
+ LEVEL4        |         5 |                   1023 |    1024
+ LEVEL4        |         6 |                   4094 |    4096
+ LEVEL4        |         7 |                  16380 |   16384
+ LEVEL4        |         8 |                  65527 |   65536
+ LEVEL4        |         9 |                 262125 |  262144
+ LEVEL4        |        10 |                1048515 | 1048576
+ LEVEL4        |        11 |                4194109 | 4194304
+(48 rows)
+ */ 
 END;
 
 --

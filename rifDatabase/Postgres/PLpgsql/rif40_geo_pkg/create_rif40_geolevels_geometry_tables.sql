@@ -84,7 +84,6 @@ DECLARE
 	sql_stmt VARCHAR;
 --
 	zoomlevel INTEGER;
-	zoomlevel_arr INTEGER[] := ARRAY[6, 8, 11];
 BEGIN
 --
 -- Must be rif40 or have rif_manager role
@@ -481,7 +480,9 @@ BEGIN
 			'geography         CHARACTER VARYING(50)  NOT NULL,'||E'\n'||
 			'geolevel_name     CHARACTER VARYING(30)  NOT NULL,'||E'\n'||
 			'tile_id           CHARACTER VARYING(300) NOT NULL,'||E'\n'||
-			'zoomlevel		   INTEGER CHECK(zoomlevel IN (6, 8, 11)) NOT NULL,'||E'\n'||
+			'x_tile_number     INTEGER NOT NULL,'||E'\n'||
+			'y_tile_number     INTEGER NOT NULL,'||E'\n'||
+			'zoomlevel		   INTEGER CHECK(zoomlevel BETWEEN 0 AND 11) NOT NULL,'||E'\n'||
 			'optimised_geojson JSON			          NOT NULL,'||E'\n'||
 			'optimised_topojson JSON			      NOT NULL,'||E'\n'||
 			'gid               INTEGER                NOT NULL)';
@@ -497,15 +498,18 @@ BEGIN
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.geolevel_name 	IS ''Name of geolevel. This will be a column name in the numerator/denominator tables''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
-			'.tile_id 	IS ''Tile ID in the format''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
-			'.zoomlevel 	IS ''Zoom level: 6, 8 or 11''';
+			'.x_tile_number IS ''X tile number. From 0 to (2**<zoomlevel>)-1''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+			'.y_tile_number IS ''Y tile number. From 0 to (2**<zoomlevel>)-1''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+			'.zoomlevel 	IS ''Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11.''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
-			'.tile_id 	IS ''Tile ID in the format''';
+			'.tile_id 	IS ''Tile ID in the format <geography>_<geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.optimised_geojson 	IS ''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel N. '||
@@ -538,12 +542,21 @@ BEGIN
 			' ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'(geography, tile_id)';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_gid')||
-			' ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'(geography, gid)';
+			' ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'(geography, zoomlevel, gid)';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='CREATE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_x_tile')||
+			' ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'(geolevel_name, zoomlevel, x_tile_number)';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='CREATE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_y_tile')||
+			' ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'(geolevel_name, zoomlevel, y_tile_number)';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt); 
+		sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_xy_tile')||
+			' ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'(geolevel_name, zoomlevel, x_tile_number, y_tile_number)';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt); 
 		sql_stmt:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			' ADD CONSTRAINT '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_pk')||
 			' PRIMARY KEY (geography, geolevel_name, tile_id)';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt); 
 --
 -- Base table INSERT function
 --
@@ -559,7 +572,7 @@ BEGIN
 --
 -- Create partitions P_RIF40_GEOLEVELS_MAPTILES_<GEOGRAPHY>_<GEOELVEL>_zoom_<ZOOMLEVEL>
 --
-			FOREACH zoomlevel IN ARRAY zoomlevel_arr LOOP
+			FOR zoomlevel IN 0 .. 11 LOOP
 				c3_count:=c3_count+1;
 				sql_stmt:='CREATE TABLE '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||E'\n'||
@@ -586,7 +599,8 @@ BEGIN
 --
 				sql_stmt:='COMMENT ON TABLE '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
-					' IS ''Maptiles table for geography; separate partions per geolevel and zoomlevel. Use this table for INSERT/UPDATE/DELETE''';
+					' IS ''Maptiles table for geography; separate partions per geolevel and zoomlevel. Partition for geolevel: '||c3_rec.geolevel_name||
+					'; zoomlevel: '||zoomlevel::Text||'. Use this table for INSERT/UPDATE/DELETE''';
 				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 				sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
@@ -595,18 +609,22 @@ BEGIN
 				sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
 					'.geolevel_name 	IS ''Name of geolevel. This will be a column name in the numerator/denominator tables''';
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-				sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
-					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
-					'.tile_id 	IS ''Tile ID in the format''';
 				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
 				sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
-					'.zoomlevel 	IS ''Zoom level; 6, 8 or 11''';
+					'.x_tile_number IS ''X tile number. From 0 to (2**<zoomlevel>)-1''';					
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
+				sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||	
+					'.y_tile_number IS ''Y tile number. From 0 to (2**<zoomlevel>)-1''';					
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
+				sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
+					'.zoomlevel 	IS ''Zoom level: '||zoomlevel::Text||'. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11.''';
 				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
 				sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
-					'.tile_id 	IS ''Tile ID in the format''';
+					'.tile_id 	IS ''Tile ID in the format: <geography>_<geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>''';
 				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
 				sql_stmt:='COMMENT ON COLUMN '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
@@ -647,6 +665,20 @@ BEGIN
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text||'_gid')||
 					' ON '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||'(geography, zoomlevel, gid)';
+				sql_stmt:='CREATE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text||'_x_tile')||
+					' ON '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||'(x_tile_number)';
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+				sql_stmt:='CREATE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text||'_y_tile')||
+					' ON '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||'(y_tile_number)';
+				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+				sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text||'_xy_tile')||
+					' ON '||quote_ident('p_rif40_geolevels_maptiles_'||
+					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||'(x_tile_number, y_tile_number)';
 				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 				sql_stmt:='ALTER TABLE '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
@@ -701,10 +733,62 @@ BEGIN
 -- View
 --
 		sql_stmt:='CREATE OR REPLACE VIEW '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||E'\n'||
-				  'AS SELECT * FROM '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles');
+'AS'||E'\n'||
+'WITH a AS ( /* Get max geolevels for geography */'||E'\n'||
+'	SELECT geography, MAX(geolevel_id) AS max_geolevel_id'||E'\n'||
+'	  FROM rif40_geolevels'||E'\n'|| 
+'	 WHERE geography = '''||c2_rec.geography||''''||E'\n'||
+'	 GROUP BY geography'||E'\n'||
+'), b AS ( /* Generate geolevels IDs */'||E'\n'||
+'	SELECT a.geography,'||E'\n'|| 
+'	       generate_series(1, a.max_geolevel_id, 1) AS geolevel_id'||E'\n'||
+'	  FROM a'||E'\n'||
+'), c AS ( /* Geolevel ID to names (hard coded) */'||E'\n'||
+'	SELECT CASE'||E'\n'; 
+		FOR c3_rec IN c3geogeom(c2_rec.geography) LOOP
+			sql_stmt:=sql_stmt||
+'				WHEN b.geolevel_id = '||c3_rec.geolevel_id||' THEN '''||c3_rec.geolevel_name||''''||E'\n';
+		END LOOP;
+		sql_stmt:=sql_stmt||
+'				ELSE NULL'||E'\n'||
+'	   END AS geolevel_name, b.geolevel_id, b.geography'||E'\n'||
+'	  FROM b'||E'\n'||
+'), d AS ( /* Zoomlevel generator */'||E'\n'||
+'	SELECT generate_series(0, 11, 1) AS zoomlevel'||E'\n'||
+'), ex AS ( /* X tile numnbers */'||E'\n'||
+'	SELECT d.zoomlevel, generate_series(0, POWER(2, d.zoomlevel)::INTEGER-1, 1) AS xy_series'||E'\n'||
+'	  FROM d'||E'\n'||
+'), ey AS ( /* Y tile numbers, geolevels */'||E'\n'||
+'	SELECT c.geolevel_name, c.geolevel_id, c.geography, ex.zoomlevel, ex.xy_series'||E'\n'||
+'	  FROM c, ex'||E'\n'||
+')'||E'\n'||
+'SELECT z.geography,'||E'\n'||
+'      z.geolevel_name,'||E'\n'||
+'      CASE WHEN h.tile_id IS NULL THEN 1 ELSE 0 END no_area_ids,'||E'\n'||
+'      COALESCE(h.tile_id, /* Generate tile_id for tile with no area_id */'||E'\n'||
+'			z.geography||''_''||'||E'\n'||
+'			z.geolevel_id||''_''||'||E'\n'||
+'			z.geolevel_name||''_''||'||E'\n'||			
+'			z.zoomlevel||''_''||'||E'\n'||
+'			z.x_tile_number||''_''||'||E'\n'||	
+'			z.y_tile_number	'||E'\n'||			
+'			) AS tile_id, '||E'\n'||
+'       z.x_tile_number, z.y_tile_number, z.zoomlevel, '||E'\n'||
+'	   COALESCE(h.optimised_topojson, ''{"type": "FeatureCollection","features":[]}''::JSON /* Null featureset */) AS optimised_topojson, '||E'\n'||
+'	   COALESCE(h.optimised_geojson, ''{"type": "FeatureCollection","features":[]}''::JSON /* Null featureset */) AS optimised_geojson'||E'\n'||
+'  FROM ( /* Use sub query so optimise can unnest; a CTE with cause all tile X Y numbers to be generated */'||E'\n'||
+'	SELECT ey.geolevel_name, ey.geolevel_id, ey.geography, ex.zoomlevel, ex.xy_series AS x_tile_number, ey.xy_series AS y_tile_number'||E'\n'||
+'	  FROM ey, ex'||E'\n'||
+'    WHERE ex.zoomlevel  = ey.zoomlevel) z'||E'\n'||
+'		LEFT OUTER JOIN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||' h /* For tiles with area IDs */'||E'\n'||
+'			ON (z.zoomlevel     = h.zoomlevel AND '||E'\n'||
+'			    z.x_tile_number = h.x_tile_number AND '||E'\n'||
+'			    z.y_tile_number = h.y_tile_number AND '||E'\n'||
+'			    z.geolevel_name = h.geolevel_name)';
+
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON VIEW '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
-			' IS ''Maptiles table for geography; separate partions per geolevel and zoomlevel. Use this table for INSERT/UPDATE/DELETE''';
+			' IS ''Maptiles view for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11. This view is efficent!''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.geography 	IS ''Geography (e.g EW2001)''';
@@ -712,14 +796,20 @@ BEGIN
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.geolevel_name 	IS ''Name of geolevel. This will be a column name in the numerator/denominator tables''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
-			'.tile_id 	IS ''Tile ID in the format''';
+			sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+			'.no_area_ids IS ''Tile contains no area_ids flag: 0/1''';			
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+			sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+			'.x_tile_number IS ''X tile number. From 0 to (2**<zoomlevel>)-1''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
-			'.zoomlevel 	IS ''Zoom level: 1 to 11''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+			'.y_tile_number IS ''Y tile number. From 0 to (2**<zoomlevel>)-1''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
-			'.tile_id 	IS ''Tile ID in the format''';
+			'.tile_id 	IS ''Tile ID in the format <geography>_<geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
+		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+			'.zoomlevel 	IS ''Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11.''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
 		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.optimised_geojson 	IS ''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel N. '||
@@ -743,7 +833,8 @@ BEGIN
 			'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
 			'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'.gid 	IS ''Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)''';
+--
+		sql_stmt:='GRANT SELECT ON '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||' TO PUBLIC';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 	END IF;

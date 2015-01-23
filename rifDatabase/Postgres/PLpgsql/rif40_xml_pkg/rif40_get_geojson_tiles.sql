@@ -235,10 +235,10 @@ DECLARE
 		       ABS(tile_X_max-l_x_max) AS x_max_diff,
 		       ABS(tile_Y_min-l_y_min) AS y_min_diff,
 		       ABS(tile_Y_max-l_y_max) AS y_max_diff,
-		       ROUND((ABS(tile_X_min-l_x_min)/tile_X_min)::NUMERIC*100, 4) AS x_min_diff_pct,
-		       ROUND((ABS(tile_X_max-l_x_max)/tile_X_max)::NUMERIC*100, 4) AS x_max_diff_pct,
-		       ROUND((ABS(tile_Y_min-l_y_min)/tile_Y_min)::NUMERIC*100, 4) AS y_min_diff_pct,
-		       ROUND((ABS(tile_Y_max-l_y_max)/tile_Y_max)::NUMERIC*100, 4) AS y_max_diff_pct
+		       CASE WHEN tile_X_min = 0 THEN 0 ELSE ROUND((ABS(tile_X_min-l_x_min)/tile_X_min)::NUMERIC*100, 4) END AS x_min_diff_pct,
+		       CASE WHEN tile_X_min = 0 THEN 0 ELSE ROUND((ABS(tile_X_max-l_x_max)/tile_X_max)::NUMERIC*100, 4) END AS x_max_diff_pct,
+		       CASE WHEN tile_X_min = 0 THEN 0 ELSE ROUND((ABS(tile_Y_min-l_y_min)/tile_Y_min)::NUMERIC*100, 4) END AS y_min_diff_pct,
+		       CASE WHEN tile_X_min = 0 THEN 0 ELSE ROUND((ABS(tile_Y_max-l_y_max)/tile_Y_max)::NUMERIC*100, 4) END AS y_max_diff_pct
   		  FROM e; 
 --
 	c1_rec rif40_geographies%ROWTYPE;
@@ -263,8 +263,9 @@ DECLARE
 	etp 			TIMESTAMP WITH TIME ZONE;
 	took 			INTERVAL;
 --
-	error_message 		VARCHAR;
+	error_message 	VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
+	v_context		VARCHAR;
 BEGIN
 --
 -- Must be rif40 or have rif_user or rif_manager role
@@ -345,15 +346,38 @@ SELECT * FROM e;
 -- Test tile bounds by computing the centroid of the bounding box, get X/Y tile numbers and then computing the correct tile bounds.
 -- Compare as a %; >0.01% different is an error 
 --
-	OPEN c6geojson2(y_max, x_max, y_min, x_min, zoom_level);
-	FETCH c6geojson2 INTO c6_rec;
-	CLOSE c6geojson2;
+	BEGIN
+		OPEN c6geojson2(y_max, x_max, y_min, x_min, zoom_level);
+		FETCH c6geojson2 INTO c6_rec;
+		CLOSE c6geojson2;
+	EXCEPTION
+
+		WHEN others THEN
+--
+-- Print exception to INFO, re-raise
+--
+			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL,
+								    v_context = PG_EXCEPTION_CONTEXT;
+			error_message:='rif40_get_geojson_tiles() caught: '||E'\n'||
+				SQLERRM::VARCHAR||' in cursor c6geojson2('||
+					y_max::Text||','||
+					x_max::Text||','||
+					y_min::Text||','||
+					x_min::Text||','||
+					zoom_level::Text||
+					')'||E'\n'||
+				'Detail: '||v_detail::VARCHAR||E'\n'||'Context: '||v_context::VARCHAR;
+			RAISE WARNING '50404: %', error_message;
+--
+		RAISE;
+	END;
+	
 --
 -- Check given vs comnputed
 --
 	IF c6_rec.x_min_diff_pct = 0 AND c6_rec.y_min_diff_pct = 0 AND c6_rec.x_max_diff_pct = 0 AND c6_rec.y_max_diff_pct = 0 THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-			'[50404] Geography: %, <geoevel view> % bound [%, %, %, %] tile XY(%,%) verified [% %]; zoom level %; percent diffs [% % % %]', 			 
+			'[50405] Geography: %, <geoevel view> % bound [%, %, %, %] tile XY(%,%) verified [% %]; zoom level %; percent diffs [% % % %]', 			 
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_view::VARCHAR		/* Geoelvel view */,  
 			x_min::VARCHAR					/* Xmin */,
@@ -374,7 +398,7 @@ SELECT * FROM e;
 -- OK - different - display why
 --
 		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
-			'[50405] Geography: %, <geolevel view> % bound [%, %, %, %] tile XY(%,%) verified [% %]; zoom level %; expected bound [%, %, %, %]; percent diffs [% % % %]', 			 
+			'[50406] Geography: %, <geolevel view> % bound [%, %, %, %] tile XY(%,%) verified [% %]; zoom level %; expected bound [%, %, %, %]; percent diffs [% % % %]', 			 
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_view::VARCHAR		/* Geolevel view */,  
 			x_min::VARCHAR					/* Xmin */,
@@ -399,7 +423,7 @@ SELECT * FROM e;
 --
 		IF c6_rec.y_max_diff_pct > 0.01 /* percent */ THEN
 			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
-				'[50406] Y max diff percent: %, diff: %, parameter Y max %, tile % Y max: %',
+				'[50407] Y max diff percent: %, diff: %, parameter Y max %, tile % Y max: %',
 				c6_rec.y_max_diff_pct::VARCHAR	/* Y max diff as a percentage */,
 				c6_rec.y_max_diff::VARCHAR		/* Y max diff */, 
 				y_max::VARCHAR					/* Ymax */,
@@ -408,7 +432,7 @@ SELECT * FROM e;
 			error_count:=error_count+1;
 		ELSE
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-				'[50407] Y max diff percent: %, diff: %, parameter Y max %, tile % Y max: %',
+				'[50408] Y max diff percent: %, diff: %, parameter Y max %, tile % Y max: %',
 				c6_rec.y_max_diff_pct::VARCHAR	/* Y max diff as a percentage */,
 				c6_rec.y_max_diff::VARCHAR		/* Y max diff */, 
 				y_max::VARCHAR					/* Ymax */,
@@ -417,7 +441,7 @@ SELECT * FROM e;
 		END IF;
 		IF c6_rec.x_max_diff_pct > 0.01 /* percent */ THEN
 			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
-				'[50408] X max diff percent: %, diff: %, parameter X max %, tile % X max: %',
+				'[50409] X max diff percent: %, diff: %, parameter X max %, tile % X max: %',
 				c6_rec.x_max_diff_pct::VARCHAR	/* X max diff as a percentage */,
 				c6_rec.x_max_diff::VARCHAR		/* X max diff */, 
 				y_max::VARCHAR					/* Ymax */,
@@ -426,7 +450,7 @@ SELECT * FROM e;
 			error_count:=error_count+1;
 		ELSE
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-				'[50409] X max diff percent: %, diff: %, parameter X max %, tile % X max: %',
+				'[50410] X max diff percent: %, diff: %, parameter X max %, tile % X max: %',
 				c6_rec.x_max_diff_pct::VARCHAR	/* X max diff as a percentage */,
 				c6_rec.x_max_diff::VARCHAR		/* X max diff */, 
 				y_max::VARCHAR					/* Xmax */,
@@ -436,7 +460,7 @@ SELECT * FROM e;
 		
 		IF c6_rec.y_min_diff_pct > 0.01 /* percent */ THEN
 			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
-				'[50410] Y min diff percent: %, diff: %, parameter Y min %, tile % Y min: %',
+				'[50411] Y min diff percent: %, diff: %, parameter Y min %, tile % Y min: %',
 				c6_rec.y_min_diff_pct::VARCHAR	/* Y min diff as a percentage */,
 				c6_rec.y_min_diff::VARCHAR		/* Y min diff */, 
 				y_min::VARCHAR					/* Ymin */,
@@ -445,7 +469,7 @@ SELECT * FROM e;
 			error_count:=error_count+1;
 		ELSE
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-				'[50411] Y min diff percent: %, diff: %, parameter Y min %, tile % Y min: %',
+				'[50412] Y min diff percent: %, diff: %, parameter Y min %, tile % Y min: %',
 				c6_rec.y_min_diff_pct::VARCHAR	/* Y min diff as a percentage */,
 				c6_rec.y_min_diff::VARCHAR		/* Y min diff */, 
 				y_min::VARCHAR					/* Ymin */,
@@ -454,7 +478,7 @@ SELECT * FROM e;
 		END IF;
 		IF c6_rec.x_min_diff_pct > 0.01 /* percent */ THEN
 			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
-				'[50412] X min diff percent: %, diff: %, parameter X min %, tile % X min: %',
+				'[50413] X min diff percent: %, diff: %, parameter X min %, tile % X min: %',
 				c6_rec.x_min_diff_pct::VARCHAR	/* X min diff as a percentage */,
 				c6_rec.x_min_diff::VARCHAR		/* X min diff */, 
 				x_min::VARCHAR					/* Ymin */,
@@ -463,7 +487,7 @@ SELECT * FROM e;
 			error_count:=error_count+1;
 		ELSE
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-				'[50413] X min diff percent: %, diff: %, parameter X min %, tile % X min: %',
+				'[50414] X min diff percent: %, diff: %, parameter X min %, tile % X min: %',
 				c6_rec.x_min_diff_pct::VARCHAR	/* X min diff as a percentage */,
 				c6_rec.x_min_diff::VARCHAR		/* X min diff */, 
 				x_min::VARCHAR					/* Xmin */,
@@ -475,7 +499,7 @@ SELECT * FROM e;
 --
 		IF error_count > 0 THEN
 			PERFORM rif40_log_pkg.rif40_error(-50414, 'rif40_get_geojson_tiles', 
-				'[50414] Geography: %, <geoevel view> % bound validation [%, %, %, %] tile XY(%,%); zoom level %; had % errors', 			 
+				'[50415] Geography: %, <geoevel view> % bound validation [%, %, %, %] tile XY(%,%); zoom level %; had % errors', 			 
 				l_geography::VARCHAR			/* Geography */, 
 				l_geolevel_view::VARCHAR		/* Geoelvel view */,  
 				x_min::VARCHAR					/* Xmin */,
@@ -568,7 +592,7 @@ Total runtime: 19.472 ms
 	took:=age(etp, stp);
 	stp:=clock_timestamp();
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-		'[50415] <geolevel area id list> SQL> [using %, %, %, %, %], time taken so far: %'||E'\n'||'%;',
+		'[50416] <geolevel area id list> SQL> [using %, %, %, %, %], time taken so far: %'||E'\n'||'%;',
 		x_min::VARCHAR			/* Xmin */,
 		y_min::VARCHAR			/* Ymin */,
 		x_max::VARCHAR			/* Xmax */,
@@ -615,7 +639,7 @@ Total runtime: 19.472 ms
 				RAISE;
 		END;
 --
-		PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_get_geojson_tiles', '[50212] Bounds EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);
+		PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_get_geojson_tiles', '[50217] Bounds EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);
 	ELSE
 		BEGIN
 			OPEN c3geojson2 FOR EXECUTE sql_stmt USING x_min, y_min, x_max, y_max, l_geolevel_view;
@@ -626,10 +650,11 @@ Total runtime: 19.472 ms
 --
 -- Print exception to INFO, re-raise
 --
-				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL,
+										v_context = PG_EXCEPTION_CONTEXT;
 				error_message:='rif40_get_geojson_tiles() caught: '||E'\n'||
-					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
-				RAISE INFO '50417: %', error_message;
+					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR||E'\n'||'Context: '||v_context::VARCHAR;
+				RAISE WARNING '50418: %', error_message;
 --
 				RAISE;
 		END;
@@ -644,7 +669,7 @@ Total runtime: 19.472 ms
 -- Check error flags
 --
 	IF c3_rec.is_valid = FALSE THEN
-		PERFORM rif40_log_pkg.rif40_error(-50418, 'rif40_get_geojson_tiles', 
+		PERFORM rif40_log_pkg.rif40_error(-50419, 'rif40_get_geojson_tiles', 
 			'Geography: %, <geoevel view> % bound [%, %, %, %] is invalid, ST_Intersects() took: %.', 			
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_view::VARCHAR		/* Geoelvel view */,  
@@ -654,7 +679,7 @@ Total runtime: 19.472 ms
 			y_max::VARCHAR				/* Ymax */,
 			took::VARCHAR				/* Time taken */);
 	ELSIF c3_rec.total = 0 THEN
-		PERFORM rif40_log_pkg.rif40_error(-50419, 'rif40_get_geojson_tiles', 
+		PERFORM rif40_log_pkg.rif40_error(-50420, 'rif40_get_geojson_tiles', 
 			'Geography: %, <geoevel view> % bound [%, %, %, %] returns no area IDs, ST_Intersects() took: %.', 			
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_view::VARCHAR		/* Geoelvel view */,  
@@ -663,9 +688,20 @@ Total runtime: 19.472 ms
 			x_max::VARCHAR				/* Xmax */,
 			y_max::VARCHAR				/* Ymax */,
 			took::VARCHAR				/* Time taken */);
+	ELSIF c3_rec.area_id_list IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
+			'[50421] Geography: %, <geoevel view> % bound [%, %, %, %] will return: no area_id, no intersction; ST_Intersects() took: %.', 		
+			l_geography::VARCHAR			/* Geography */, 
+			l_geolevel_view::VARCHAR		/* Geoelvel view */, 
+			x_min::VARCHAR				/* Xmin */,
+			y_min::VARCHAR				/* Ymin */,
+			x_max::VARCHAR				/* Xmax */,
+			y_max::VARCHAR				/* Ymax */,
+			took::VARCHAR				/* Time taken */);
+		RETURN;
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-			'[50420] Geography: %, <geoevel view> % bound [%, %, %, %] will return: % area_id, area: %, ST_Intersects() took: %.', 		
+			'[50421] Geography: %, <geoevel view> % bound [%, %, %, %] will return: % area_id, area: %, ST_Intersects() took: %.', 		
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_view::VARCHAR		/* Geoelvel view */, 
 			x_min::VARCHAR				/* Xmin */,
@@ -673,13 +709,13 @@ Total runtime: 19.472 ms
 			x_max::VARCHAR				/* Xmax */,
 			y_max::VARCHAR				/* Ymax */,
 			c3_rec.total::VARCHAR			/* Number of area_ids */,
-		        c3_rec.area::VARCHAR			/* Area of ST_MakeEnvelope() */,
+		    c3_rec.area::VARCHAR			/* Area of ST_MakeEnvelope() */,
 			took::VARCHAR				/* Time taken */);
 	END IF;
 --
 -- List of area IDs to dump
 --
-	geolevel_area_id_list:=c3_rec.area_id_list; 
+	geolevel_area_id_list:=c3_rec.area_id_list;
 --
 -- Call  rif40_xml_pkg._rif40_get_geojson_as_js()
 --
@@ -713,9 +749,10 @@ Total runtime: 19.472 ms
 	took:=age(etp, stp);
 --
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-		'[50421] Geography: %, <geoevel view> % bound [%, %, %, %] complete, db extract took: %.', 		
-		l_geography::VARCHAR			/* Geography */, 
-		l_geolevel_view::VARCHAR		/* Geoelvel view */, 
+		'[50422] Geography: %, <geoevel view> % zoomlevel % bound [%, %, %, %] complete, db extract took: %.', 		
+		l_geography::VARCHAR		/* Geography */, 
+		l_geolevel_view::VARCHAR	/* Geoelvel view */, 
+		zoom_level::VARCHAR			/* Zoom level */,
 		x_min::VARCHAR				/* Xmin */,
 		y_min::VARCHAR				/* Ymin */,
 		x_max::VARCHAR				/* Xmax */,
@@ -723,6 +760,19 @@ Total runtime: 19.472 ms
 		took::VARCHAR				/* Time taken */);
 --
 	RETURN;
+--
+--EXCEPTION
+--	WHEN others THEN
+--
+-- Print exception to INFO, re-raise
+--
+--		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL,
+--								v_context = PG_EXCEPTION_CONTEXT;
+--		error_message:='rif40_get_geojson_tiles() caught: '||E'\n'||
+--			SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR||E'\n'||'Context: '||v_context::VARCHAR;
+--		RAISE WARNING '50423: %', error_message;
+--
+--		RAISE;
 END;
 $body$
 LANGUAGE PLPGSQL;

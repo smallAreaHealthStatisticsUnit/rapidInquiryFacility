@@ -252,7 +252,7 @@ BEGIN
 	CLOSE c2geojson1;
 --
 	IF c2a_rec.geolevel_name IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-50203, 'rif40_get_geojson_as_js', 'geography: %, <geoevel view> %: not found', 
+		PERFORM rif40_log_pkg.rif40_error(-50203, 'rif40_get_geojson_as_js', 'geography: %, <geolevel view> %: not found', 
 			l_geography::VARCHAR	/* Geography */, 
 			geolevel_view::VARCHAR	/* geolevel view */);
 	END IF;	
@@ -262,25 +262,25 @@ BEGIN
 	CLOSE c2b_geojson1;
 --
 	IF c2b_rec.geolevel_name IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-50204, 'rif40_get_geojson_as_js', 'geography: %, <geoevel area> %: not found', 
+		PERFORM rif40_log_pkg.rif40_error(-50204, 'rif40_get_geojson_as_js', 'geography: %, <geolevel area> %: not found', 
 			l_geography::VARCHAR	/* Geography */, 
 			geolevel_area::VARCHAR	/* Geoelvel area */);
 	END IF;	
 --
--- Test <geoevel area> resolution is higher than <geoevel view> resolution
+-- Test <geolevel area> resolution is higher than <geolevel view> resolution
 -- e.g.
--- get_geojson_as_js() geography: EW01, <geoevel area> GOR2001 resolution (3) is NOT higher than <geoevel view> OA2001 resolution (7)
+-- get_geojson_as_js() geography: EW01, <geolevel area> GOR2001 resolution (3) is NOT higher than <geolevel view> OA2001 resolution (7)
 --
-	IF c2a_rec.geolevel_id /* <geoevel view> */ < c2b_rec.geolevel_id /* <geoevel area> */ THEN
+	IF c2a_rec.geolevel_id /* <geolevel view> */ < c2b_rec.geolevel_id /* <geolevel area> */ THEN
 		PERFORM rif40_log_pkg.rif40_error(-50205, 'rif40_get_geojson_as_js', 
-			'geography: %, <geoevel area> % resolution (%) higher than <geoevel view> % resolution (%)', 			
+			'geography: %, <geolevel area> % resolution (%) higher than <geolevel view> % resolution (%)', 			
 			l_geography::VARCHAR		/* Geography */, 
 			geolevel_area::VARCHAR		/* Geolevel area */, 
 			c2b_rec.geolevel_id::VARCHAR, 	/* Geolevel area ID (resolution) */
 			geolevel_view::VARCHAR		/* geolevel view */, c2a_rec.geolevel_id::VARCHAR);
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_as_js', 
-			'[50206] Geography: %, <geoevel area> % resolution (%) is NOT higher than <geoevel view> % resolution (%)', 		
+			'[50206] Geography: %, <geolevel area> % resolution (%) is NOT higher than <geolevel view> % resolution (%)', 		
 			l_geography::VARCHAR		/* Geography */, 
 			geolevel_area::VARCHAR		/* Geolevel area */, 
 			c2b_rec.geolevel_id::VARCHAR	/* Geolevel area ID (resolution) */, 
@@ -303,11 +303,11 @@ SELECT COUNT(DISTINCT(level4)) AS total,
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_as_js', '[50207] <geolevel area id> SQL> [using %]'||E'\n'||'%;',
 		geolevel_area_id::VARCHAR	/* Geolevel area ID */,
 		sql_stmt::VARCHAR		/* SQL statement */);
-		BEGIN
-			OPEN c3geojson1 FOR EXECUTE sql_stmt USING geolevel_area_id;
-			FETCH c3geojson1 INTO c3_rec;
-			CLOSE c3geojson1;
-		EXCEPTION
+	BEGIN
+		OPEN c3geojson1 FOR EXECUTE sql_stmt USING geolevel_area_id;
+		FETCH c3geojson1 INTO c3_rec;
+		CLOSE c3geojson1;
+	EXCEPTION
 		WHEN others THEN
 --
 -- Print exception to INFO, re-raise
@@ -321,14 +321,14 @@ SELECT COUNT(DISTINCT(level4)) AS total,
 	END;
 	IF c3_rec.total = 0 THEN
 		PERFORM rif40_log_pkg.rif40_error(-50209, 'rif40_get_geojson_as_js', 
-			'Geography: %, <geoevel area> % id % does not exist in hierarchy table: %', 			
+			'Geography: %, <geolevel area> % id % does not exist in hierarchy table: %', 			
 			l_geography::VARCHAR			/* Geography */, 
 			geolevel_area::VARCHAR			/* Geoelvel area */,  
 			geolevel_area_id::VARCHAR		/* Geoelvel area ID */, 
 			LOWER(c1_rec.hierarchytable)::VARCHAR	/* Hierarchy table */);
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_as_js', 
-			'[50210] Geography: %, <geoevel area> % id % will return: % area_id', 		
+			'[50210] Geography: %, <geolevel area> % id % will return: % area_id', 		
 			l_geography::VARCHAR		/* Geography */, 
 			geolevel_area::VARCHAR		/* Geoelvel area */, 
 			geolevel_area_id::VARCHAR	/* Geoelvel area ID */, 
@@ -341,9 +341,39 @@ SELECT COUNT(DISTINCT(level4)) AS total,
 --
 -- Call  rif40_xml_pkg._rif40_get_geojson_as_js()
 --
-	OPEN c5geojson1(l_geography, geolevel_view, geolevel_area_id_list, (c3_rec.total+2)::INTEGER /* l_expected_rows */);
-	FETCH c5geojson1 INTO c5_rec;
-	CLOSE c5geojson1;
+	BEGIN
+		OPEN c5geojson1(l_geography, geolevel_view, geolevel_area_id_list, (c3_rec.total+2)::INTEGER /* l_expected_rows */);
+		FETCH c5geojson1 INTO c5_rec;
+		CLOSE c5geojson1;
+	EXCEPTION
+		WHEN others THEN
+--
+-- Print exception to INFO, re-raise
+--
+			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+			error_message:='rif40_get_geojson_as_js() caught: '||E'\n'||
+				SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
+			RAISE INFO '50211: %', error_message;
+--
+			RAISE;
+	END;
+	IF c5_rec.js IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-50212, 'rif40_get_geojson_as_js', 
+			'Geography: %, <geolevel area> % id % should return: % area_id; NULL JSON resturned from rif40_xml_pkg._rif40_get_geojson_as_js()', 			
+			l_geography::VARCHAR		/* Geography */, 
+			geolevel_area::VARCHAR		/* Geolevel area */,  
+			geolevel_area_id::VARCHAR	/* Geolevel area ID */, 
+			c3_rec.total::VARCHAR		/* Number of area_ids */);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_as_js', 
+			'[50213] Geography: %, <geolevel area> % id % will return: % area_id; array size %,%', 		
+			l_geography::VARCHAR		/* Geography */, 
+			geolevel_area::VARCHAR		/* Geolevel area */, 
+			geolevel_area_id::VARCHAR	/* Geolevel area ID */, 
+			c3_rec.total::VARCHAR		/* Number of area_ids */,
+			array_lower(c5_rec.js, 1) 	/* Lower array bound */,
+			array_upper(c5_rec.js, 1) 	/* Upper array bound */);
+	END IF;
 --
 -- Return as one row
 --

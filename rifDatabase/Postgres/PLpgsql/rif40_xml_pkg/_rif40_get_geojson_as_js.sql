@@ -354,24 +354,24 @@ BEGIN
 	IF i IS NULL THEN
 		PERFORM rif40_log_pkg.rif40_error(-50214, '_rif40_get_geojson_as_js', 'geography: %, SQL fetch returned NULL area rows, took: %.', 
 			l_geography::VARCHAR			/* Geography */,
-			took::VARCHAR				/* Time taken */);
+			took::VARCHAR					/* Time taken */);
 	ELSIF i = 2 THEN
 		PERFORM rif40_log_pkg.rif40_error(-50215, '_rif40_get_geojson_as_js', 'geography: %, SQL fetch returned no area rows, took: %.', 
 			l_geography::VARCHAR			/* Geography */,
-			took::VARCHAR				/* Time taken */);
+			took::VARCHAR					/* Time taken */);
 	ELSIF i != l_expected_rows THEN
 		PERFORM rif40_log_pkg.rif40_error(-50216, '_rif40_get_geojson_as_js', 
 			'geography: %, SQL fetch returned wrong number of area rows, expecting: %, got: %, took: %.', 			
 			l_geography::VARCHAR			/* Geography */, 
 			l_expected_rows::VARCHAR		/* Expected rows */,
-			i::VARCHAR				/* Actual */,
-			took::VARCHAR				/* Time taken */);
+			i::VARCHAR						/* Actual */,
+			took::VARCHAR					/* Time taken */);
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_get_geojson_as_js', 
 			'[50217] Geography: %, SQL fetch returned correct number of area rows, got: %, took: %.', 			
 			l_geography::VARCHAR			/* Geography */, 
-			i::VARCHAR				/* Actual */,
-			took::VARCHAR				/* Time taken */);
+			i::VARCHAR						/* Actual */,
+			took::VARCHAR					/* Time taken */);
 	END IF;
 --
 	RETURN;

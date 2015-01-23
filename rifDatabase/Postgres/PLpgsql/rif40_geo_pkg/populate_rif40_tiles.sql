@@ -94,15 +94,18 @@ DECLARE
 --
 	sql_stmt 		VARCHAR;
 --
+	num_rows		INTEGER;
+--
 	stp 			TIMESTAMP WITH TIME ZONE:=clock_timestamp();
+	stp2 			TIMESTAMP WITH TIME ZONE:=clock_timestamp();
 	etp 			TIMESTAMP WITH TIME ZONE;
 	took 			INTERVAL;
 --
 	zoomlevel 		INTEGER;
-	zoomlevel_arr 	INTEGER[] := ARRAY[6, 8];
 --
 	error_message 	VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
+	v_context		VARCHAR;
  BEGIN
 --
 -- Must be rif40 or have rif_user or rif_manager role
@@ -131,7 +134,7 @@ DECLARE
 	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 	sql_stmt:='INSERT INTO '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_maptiles')||E'\n'||
-			'(geography, geolevel_name, tile_id, zoomlevel, optimised_geojson, optimised_topojson, gid)'||E'\n'||
+			'(geography, geolevel_name, tile_id, x_tile_number, y_tile_number, zoomlevel, optimised_geojson, optimised_topojson, gid)'||E'\n'||
 			'WITH a AS ( /* level geolevel */'||E'\n'||
 			'	SELECT a1.geography, a1.geolevel_name,'||E'\n'||
 			'	       MIN(geolevel_id) AS min_geolevel_id,'||E'\n'||
@@ -149,27 +152,27 @@ DECLARE
 			'	       a.max_geolevel_id,'||E'\n'||
 			'	       a.zoomlevel,'||E'\n'||
 			'          CASE '||E'\n'||
-			'				WHEN a.zoomlevel = 6 THEN ST_XMax(b.optimised_geometry)'||E'\n'||
-			'				WHEN a.zoomlevel = 8 THEN ST_XMax(b.optimised_geometry_2)'||E'\n'||
-			'				WHEN a.zoomlevel = 11 THEN ST_XMax(b.optimised_geometry_3)'||E'\n'||
+			'				WHEN a.zoomlevel <= 6 THEN ST_XMax(b.optimised_geometry) 				/* Optimised for zoom level 6 */'||E'\n'||
+			'				WHEN a.zoomlevel IN (7, 8) THEN ST_XMax(b.optimised_geometry_2) 		/* Optimised for zoom level 8 */'||E'\n'||
+			'				WHEN a.zoomlevel IN (9, 10, 11) THEN ST_XMax(b.optimised_geometry_3) 	/* Optimised for zoom level 11 */'||E'\n'||
 			'				ELSE NULL'||E'\n'||
 			'		   END AS Xmax,'||E'\n'||
 			'          CASE '||E'\n'||
-			'				WHEN a.zoomlevel = 6 THEN ST_XMin(b.optimised_geometry)'||E'\n'||
-			'				WHEN a.zoomlevel = 8 THEN ST_XMin(b.optimised_geometry_2)'||E'\n'||
-			'				WHEN a.zoomlevel = 11 THEN ST_XMin(b.optimised_geometry_3)'||E'\n'||
+			'				WHEN a.zoomlevel <= 6 THEN ST_XMin(b.optimised_geometry) 				/* Optimised for zoom level 6 */'||E'\n'||
+			'				WHEN a.zoomlevel IN (7, 8) THEN ST_XMin(b.optimised_geometry_2) 		/* Optimised for zoom level 8 */'||E'\n'||
+			'				WHEN a.zoomlevel IN (9, 10, 11) THEN ST_XMin(b.optimised_geometry_3) 	/* Optimised for zoom level 11 */'||E'\n'||
 			'				ELSE NULL'||E'\n'||
 			'		   END AS Xmin,'||E'\n'||
 			'          CASE '||E'\n'||
-			'				WHEN a.zoomlevel = 6 THEN ST_YMax(b.optimised_geometry)'||E'\n'||
-			'				WHEN a.zoomlevel = 8 THEN ST_YMax(b.optimised_geometry_2)'||E'\n'||
-			'				WHEN a.zoomlevel = 11 THEN ST_YMax(b.optimised_geometry_3)'||E'\n'||
+			'				WHEN a.zoomlevel <= 6 THEN ST_YMax(b.optimised_geometry) 				/* Optimised for zoom level 6 */'||E'\n'||
+			'				WHEN a.zoomlevel IN (7, 8) THEN ST_YMax(b.optimised_geometry_2) 		/* Optimised for zoom level 8 */'||E'\n'||
+			'				WHEN a.zoomlevel IN (9, 10, 11) THEN ST_YMax(b.optimised_geometry_3) 	/* Optimised for zoom level 11 */'||E'\n'||
 			'				ELSE NULL'||E'\n'||
 			'		   END AS Ymax,'||E'\n'||
 			'          CASE '||E'\n'||
-			'				WHEN a.zoomlevel = 6 THEN ST_YMin(b.optimised_geometry)'||E'\n'||
-			'				WHEN a.zoomlevel = 8 THEN ST_YMin(b.optimised_geometry_2)'||E'\n'||
-			'				WHEN a.zoomlevel = 11 THEN ST_YMin(b.optimised_geometry_3)'||E'\n'||
+			'				WHEN a.zoomlevel <= 6 THEN ST_YMin(b.optimised_geometry) 				/* Optimised for zoom level 6 */'||E'\n'||
+			'				WHEN a.zoomlevel IN (7, 8) THEN ST_YMin(b.optimised_geometry_2) 		/* Optimised for zoom level 8 */'||E'\n'||
+			'				WHEN a.zoomlevel IN (9, 10, 11) THEN ST_YMin(b.optimised_geometry_3) 	/* Optimised for zoom level 11 */'||E'\n'||
 			'				ELSE NULL'||E'\n'||
 			'		   END AS Ymin'||E'\n'||			
 			'      FROM '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||' b, a'||E'\n'||
@@ -213,54 +216,85 @@ DECLARE
 			'     WHERE g.min_geolevel_id = e.min_geolevel_id'||E'\n'||
 			'       AND h.geography       = g.geography'||E'\n'||
  			'       AND g.geolevel_series = h.geolevel_id'||E'\n'||
+			'), i AS ('||E'\n'||
+			'	SELECT geography,'||E'\n'||
+			'	       geolevel_name,'||E'\n'||
+			'		   tile_id,'||E'\n'|| 
+			'		   x_series AS x_tile_number,'||E'\n'|| 
+			'		   y_series AS y_tile_number,'||E'\n'||
+			'		   zoomlevel,'||E'\n'|| 
+			'		   rif40_xml_pkg.rif40_get_geojson_tiles('||E'\n'||
+			'						geography::VARCHAR,'||E'\n'|| 
+			'						geolevel_name::VARCHAR,'||E'\n'|| 
+			'						tile_Ymax::REAL,'||E'\n'|| 
+			'						tile_Xmax::REAL,'||E'\n'|| 
+			'						tile_Ymin::REAL,'||E'\n'|| 
+			'						tile_Xmin::REAL,'||E'\n'|| 
+			'						zoomlevel::INTEGER)::JSON AS optimised_geojson,'||E'\n'|| 
+			'		   to_json(''X''::Text)::JSON AS optimised_topojson /* Dummy value */'||E'\n'|| 
+			'  FROM h'||E'\n'||
 			')'||E'\n'||
 			'SELECT geography,'||E'\n'||
-			'       geolevel_name,'||E'\n'||
-			'	   tile_id,'||E'\n'|| 
-			'	   zoomlevel,'||E'\n'|| 
-			'	   rif40_xml_pkg.rif40_get_geojson_tiles('||E'\n'||
-			'					geography::VARCHAR,'||E'\n'|| 
-			'					geolevel_name::VARCHAR,'||E'\n'|| 
-			'					tile_Ymax::REAL,'||E'\n'|| 
-			'					tile_Xmax::REAL,'||E'\n'|| 
-			'					tile_Ymin::REAL,'||E'\n'|| 
-			'					tile_Xmin::REAL,'||E'\n'|| 
-			'					zoomlevel::INTEGER)::JSON AS optimised_geojson,'||E'\n'|| 
-			'	   to_json(''X''::Text)::JSON AS optimised_topojson, /* Dummy value */'||E'\n'|| 
-			'	   ROW_NUMBER() OVER() AS gid'||E'\n'||
-			'  FROM h'||E'\n'||
+			'	    geolevel_name,'||E'\n'||
+			'       tile_id,'||E'\n'|| 
+			'	    x_tile_number,'||E'\n'||
+			'	    y_tile_number,'||E'\n'||
+			'	    zoomlevel,'||E'\n'|| 
+			'	    optimised_geojson,'||E'\n'|| 
+			'	    optimised_topojson,'||E'\n'|| 
+			'	    ROW_NUMBER() OVER() AS gid'||E'\n'||
+			'  FROM i'||E'\n'||
+			' WHERE optimised_geojson IS NOT NULL'||E'\n'||
 			' ORDER BY 1';
 --		
-	FOREACH zoomlevel IN ARRAY zoomlevel_arr LOOP
+	FOR zoomlevel IN 0 .. 11 LOOP
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'populate_rif40_tiles', 
-			'[60104] Populated RIF tiles for geography: %; zoomlevel %',
+			'[60104] Populating RIF tiles for geography: %; zoomlevel %',
 			c1_rec.geography::VARCHAR		/* Geography */,
 			zoomlevel::VARCHAR				/* Zoom level */);
+		stp2:=clock_timestamp();
+
 		BEGIN
 			EXECUTE sql_stmt USING zoomlevel, c1_rec.geography;		
+			GET DIAGNOSTICS num_rows = ROW_COUNT;
 		EXCEPTION
 			WHEN others THEN
 --
 -- Print exception to INFO, re-raise
 --
-				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL,
+										v_context = PG_EXCEPTION_CONTEXT;
 				error_message:='populate_rif40_tiles('||c1_rec.geography||'); zoomlevel: '||zoomlevel||'; caught: '||E'\n'||
-					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
-				RAISE INFO '60105: %', error_message;
+					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR||E'\n'||'Context: '||v_context::VARCHAR;
+				RAISE NOTICE '60105: %', error_message;
 --
 				RAISE;
 		END;
+--
+-- Instrument
+--
+		etp:=clock_timestamp();
+		took:=age(etp, stp);
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'populate_rif40_tiles', 
+			'[60104] Populated RIF tiles for geography: %; zoomlevel %, rows: %, time taken: %',
+			c1_rec.geography::VARCHAR		/* Geography */,
+			zoomlevel::VARCHAR				/* Zoom level */,
+			num_rows::VARCHAR				/* Rows inserted */,
+			took::VARCHAR					/* Time taken */);
 	END LOOP;
 --
 -- Instrument
 --
 	etp:=clock_timestamp();
-	took:=age(etp, stp);
+	took:=age(etp, stp2);
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'populate_rif40_tiles', 
-		'[60105] Populated RIF tiles for geography: %, time taken: %'||E'\n'||'%;',
+		'[60106] Populated RIF tiles for geography: %, time taken: %'||E'\n'||'%;',
 		c1_rec.geography::VARCHAR	/* Geography */,
 		took::VARCHAR				/* Time taken */,
 		sql_stmt::VARCHAR			/* SQL statement */);
+--
+	sql_stmt:='ANALYZE VERBOSE '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_maptiles');
+	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 END;
 $body$
 LANGUAGE PLPGSQL;
