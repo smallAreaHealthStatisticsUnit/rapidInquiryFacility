@@ -3,11 +3,13 @@ package rifServices.dataStorageLayer;
 import java.util.ArrayList;
 
 import rifServices.businessConceptLayer.AbstractStudy;
+import rifServices.businessConceptLayer.BoundaryRectangle;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
@@ -170,6 +172,15 @@ public interface RIFStudyServiceAPI {
 		final Project project) 
 		throws RIFServiceException;
 
+	public ArrayList<MapArea> getMapAreasForBoundaryRectangle(
+		final User _user,
+		final Geography _geography,			
+		final GeoLevelSelect _geoLevelSelect,
+		final BoundaryRectangle _boundaryRectangle) 
+		throws RIFServiceException;	
+	
+	
+	
 	public void initialise(final Object startupParameter)
 		throws RIFServiceException;
 		
