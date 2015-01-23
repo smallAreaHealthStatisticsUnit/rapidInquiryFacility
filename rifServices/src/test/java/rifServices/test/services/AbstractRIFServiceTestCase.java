@@ -202,6 +202,8 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 	private Project masterNonExistentProject;
 	private Project masterMaliciousProject;
 	
+	private RIFServiceStartupOptions startupOptions;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -473,8 +475,9 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 	protected void initialiseService() throws RIFServiceException {
 		rifServiceBundle = new TestRIFStudyServiceBundle();
 		
-		RIFServiceStartupOptions startupOptions
+		startupOptions
 			= new RIFServiceStartupOptions(false);
+		startupOptions.setMaximumMapAreasAllowedForSingleDisplay(200);
 		rifServiceBundle.initialise(startupOptions);
 		rifStudySubmissionService 
 			= (TestRIFStudySubmissionService) rifServiceBundle.getRIFStudySubmissionService();
@@ -746,6 +749,9 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 		return Project.createCopy(masterMaliciousProject);
 	}
 	
+	protected RIFServiceStartupOptions getStartupOptions() {
+		return startupOptions;
+	}
 	
 	// ==========================================
 	// Section Errors and Validation
