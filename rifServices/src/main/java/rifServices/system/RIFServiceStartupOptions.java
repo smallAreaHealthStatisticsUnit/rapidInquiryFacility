@@ -82,6 +82,8 @@ public final class RIFServiceStartupOptions {
 	// Section Properties
 	// ==========================================
 
+	private int maximumMapAreasAllowedForSingleDisplay;
+	
 	private boolean isWebDeployment;
 	
 	private String databaseDriverClassName;
@@ -137,6 +139,8 @@ public final class RIFServiceStartupOptions {
 		rScriptDirectory
 			= RIFServiceStartupProperties.getRScriptDirectory();
 		
+		maximumMapAreasAllowedForSingleDisplay
+			= RIFServiceStartupProperties.getMaximumMapAreasAllowedForSingleDisplay();
 	}
 
 	
@@ -371,6 +375,18 @@ public final class RIFServiceStartupOptions {
 		
 		return urlText.toString();
 	}	
+	
+	
+	public int getMaximumMapAreasAllowedForSingleDisplay() {
+		return maximumMapAreasAllowedForSingleDisplay;
+	}
+	
+	public void setMaximumMapAreasAllowedForSingleDisplay(
+		final int maximumMapAreasAllowedForSingleDisplay) {
+		
+		this.maximumMapAreasAllowedForSingleDisplay = maximumMapAreasAllowedForSingleDisplay;
+	}
+	
 	
 	// ==========================================
 	// Section Errors and Validation

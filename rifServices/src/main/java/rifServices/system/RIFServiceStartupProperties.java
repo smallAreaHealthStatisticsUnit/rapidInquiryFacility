@@ -148,6 +148,21 @@ public class RIFServiceStartupProperties {
     	return getProperty("rScriptDirectory");    	
     }
     
+    public static int getMaximumMapAreasAllowedForSingleDisplay() {
+    	String property
+    		= getProperty("maximumMapAreasAllowedForSingleDisplay");
+    	Integer maximumValue = 0;
+    	try {
+    		maximumValue = Integer.valueOf(property);
+    	}
+    	catch(Exception exception) {
+    		maximumValue = 0;
+    	}
+    	
+    	return maximumValue;
+    }
+    
+    
     /**
      * Gets the message.
      *

@@ -337,7 +337,7 @@ class SQLMapDataManager
 			statement.setFloat(6, (float) boundaryRectangle.getXMin());
 			
 			resultSet = statement.executeQuery();
-			
+
 			while (resultSet.next()) {
 				String geographicalIdentifier = resultSet.getString(1);
 				String identifier = resultSet.getString(2);
@@ -351,6 +351,13 @@ class SQLMapDataManager
 				
 				results.add(mapArea);
 			}
+			
+			//@TODO: Ideally we'd like to put this first before we iterate
+			//through all the results.  Normally I would use resultSet.last(),
+			//followed by getRow() but this requires a scrollable result set.
+			//For now we have this but perhaps in future we need a separate
+			//method for indicating whether the count is too high
+			checkNumberMapAreaResultsBelowThreshold(results.size());				
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
@@ -435,48 +442,62 @@ class SQLMapDataManager
 		//of resolution geoLevelToMap but restricted to only those 
 		//having the specified geoLevelArea
 		
-		StringBuilder extractMapAreasQuery = new StringBuilder();
-		extractMapAreasQuery.append("SELECT DISTINCT ");
-		extractMapAreasQuery.append(geoLevelToMapTableName);
-		extractMapAreasQuery.append(".");
-		extractMapAreasQuery.append(useAppropriateFieldNameCase(geoLevelToMap.getName()));
-		extractMapAreasQuery.append(",");
-		extractMapAreasQuery.append(geoLevelToMapTableName);
-		extractMapAreasQuery.append(".");
-		extractMapAreasQuery.append(useAppropriateFieldNameCase("name"));
-		extractMapAreasQuery.append(" FROM ");
-		extractMapAreasQuery.append(geoLevelSelectTableName);		
-		extractMapAreasQuery.append(",");
-		extractMapAreasQuery.append(hierarchyTableName);		
-		extractMapAreasQuery.append(",");
-		extractMapAreasQuery.append(geoLevelToMapTableName);
-		extractMapAreasQuery.append(" WHERE ");
-		extractMapAreasQuery.append(geoLevelToMapTableName);
-		extractMapAreasQuery.append(".");
-		extractMapAreasQuery.append(useAppropriateFieldNameCase(geoLevelToMap.getName()));
-		extractMapAreasQuery.append("=");
-		extractMapAreasQuery.append(hierarchyTableName);		
-		extractMapAreasQuery.append(".");
-		extractMapAreasQuery.append(useAppropriateFieldNameCase(geoLevelToMap.getName()));
-		extractMapAreasQuery.append(" AND ");
-		extractMapAreasQuery.append(geoLevelSelectTableName);		
-		extractMapAreasQuery.append(".");
-		extractMapAreasQuery.append(useAppropriateFieldNameCase(geoLevelSelect.getName()));
-		extractMapAreasQuery.append("=");
-		extractMapAreasQuery.append(hierarchyTableName);		
-		extractMapAreasQuery.append(".");
-		extractMapAreasQuery.append(useAppropriateFieldNameCase(geoLevelSelect.getName()));
-		extractMapAreasQuery.append(" AND ");
-		extractMapAreasQuery.append(geoLevelSelectTableName);		
-		extractMapAreasQuery.append(".");
-		extractMapAreasQuery.append(useAppropriateFieldNameCase("name"));
-		extractMapAreasQuery.append("=?");
+		SQLGeneralQueryFormatter extractMapAreasQuery
+			= new SQLGeneralQueryFormatter();
 				
+		
+		extractMapAreasQuery.addPaddedQueryLine(0, "SELECT DISTINCT");
+		extractMapAreasQuery.addQueryPhrase(1, geoLevelToMapTableName);		
+		extractMapAreasQuery.addQueryPhrase(".");
+		extractMapAreasQuery.addQueryPhrase(useAppropriateFieldNameCase(geoLevelToMap.getName()));
+		extractMapAreasQuery.addQueryPhrase(",");
+		extractMapAreasQuery.finishLine();
+		
+		extractMapAreasQuery.addQueryPhrase(1, geoLevelToMapTableName);
+		extractMapAreasQuery.addQueryPhrase(".");
+		extractMapAreasQuery.addQueryPhrase(useAppropriateFieldNameCase("name"));
+		extractMapAreasQuery.padAndFinishLine();
+		extractMapAreasQuery.addPaddedQueryLine(0, "FROM");
+		extractMapAreasQuery.addQueryPhrase(1, geoLevelSelectTableName);		
+		extractMapAreasQuery.addQueryPhrase(",");
+		extractMapAreasQuery.finishLine();		
+		extractMapAreasQuery.addQueryPhrase(1, hierarchyTableName);		
+		extractMapAreasQuery.addQueryPhrase(",");
+		extractMapAreasQuery.finishLine();
+		extractMapAreasQuery.addPaddedQueryLine(1, geoLevelToMapTableName);		
+
+		extractMapAreasQuery.addPaddedQueryLine(0, "WHERE");
+		
+		extractMapAreasQuery.addQueryPhrase(1, geoLevelToMapTableName);		
+		extractMapAreasQuery.addQueryPhrase(".");
+		extractMapAreasQuery.addQueryPhrase(useAppropriateFieldNameCase(geoLevelToMap.getName()));
+		extractMapAreasQuery.addQueryPhrase("=");
+		extractMapAreasQuery.addQueryPhrase(hierarchyTableName);		
+		extractMapAreasQuery.addQueryPhrase(".");
+		extractMapAreasQuery.addQueryPhrase(useAppropriateFieldNameCase(geoLevelToMap.getName()));
+		extractMapAreasQuery.addQueryPhrase(" AND");
+		extractMapAreasQuery.padAndFinishLine();
+		
+		extractMapAreasQuery.addQueryPhrase(1, geoLevelSelectTableName);		
+		extractMapAreasQuery.addQueryPhrase(".");
+		extractMapAreasQuery.addQueryPhrase(useAppropriateFieldNameCase(geoLevelSelect.getName()));
+		extractMapAreasQuery.addQueryPhrase("=");
+		extractMapAreasQuery.addQueryPhrase(hierarchyTableName);		
+		extractMapAreasQuery.addQueryPhrase(".");
+		extractMapAreasQuery.addQueryPhrase(useAppropriateFieldNameCase(geoLevelSelect.getName()));
+		extractMapAreasQuery.addQueryPhrase(" AND");
+		extractMapAreasQuery.padAndFinishLine();
+				
+		extractMapAreasQuery.addQueryPhrase(1, geoLevelSelectTableName);		
+		extractMapAreasQuery.addQueryPhrase(".");
+		extractMapAreasQuery.addQueryPhrase(useAppropriateFieldNameCase("name"));
+		extractMapAreasQuery.addQueryPhrase("=?");
+		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		ArrayList<MapArea> results = new ArrayList<MapArea>();
 		try {
-			statement = connection.prepareStatement(extractMapAreasQuery.toString());
+			statement = connection.prepareStatement(extractMapAreasQuery.generateQuery());
 			statement.setString(1, geoLevelArea.getName());
 			resultSet = statement.executeQuery();
 			
@@ -494,7 +515,15 @@ class SQLMapDataManager
 					mapArea.setLabel(label);
 				}
 				results.add(mapArea);
-			}			
+			}
+
+			//@TODO: Ideally we'd like to put this first before we iterate
+			//through all the results.  Normally I would use resultSet.last(),
+			//followed by getRow() but this requires a scrollable result set.
+			//For now we have this but perhaps in future we need a separate
+			//method for indicating whether the count is too high
+			checkNumberMapAreaResultsBelowThreshold(results.size());	
+			
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
@@ -525,6 +554,7 @@ class SQLMapDataManager
 		
 		return results;		
 	}
+	
 	
 
 	/**
@@ -703,7 +733,7 @@ class SQLMapDataManager
 			statement.setInt(2, startIndex);
 			statement.setInt(3, endIndex);
 			resultSet = statement.executeQuery();
-			
+
 			while (resultSet.next()) {
 				MapArea mapArea = MapArea.newInstance();
 				String identifier = resultSet.getString(1);
@@ -717,7 +747,15 @@ class SQLMapDataManager
 					mapArea.setLabel(label);
 				}
 				results.add(mapArea);
-			}			
+			}	
+			
+			//@TODO: Ideally we'd like to put this first before we iterate
+			//through all the results.  Normally I would use resultSet.last(),
+			//followed by getRow() but this requires a scrollable result set.
+			//For now we have this but perhaps in future we need a separate
+			//method for indicating whether the count is too high
+			checkNumberMapAreaResultsBelowThreshold(results.size());	
+			
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
@@ -1070,6 +1108,26 @@ class SQLMapDataManager
 	// Section Errors and Validation
 	// ==========================================
 
+	public void checkNumberMapAreaResultsBelowThreshold(
+		final int numberOfMapAreasRetrieved) 
+		throws RIFServiceException {
+
+		int maximumMapAreasAllowedForSingleDisplay
+			= rifServiceStartupOptions.getMaximumMapAreasAllowedForSingleDisplay();
+		if (numberOfMapAreasRetrieved > maximumMapAreasAllowedForSingleDisplay) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlMapDataManager.error.thresholdMapAreasPerDisplayExceeded",
+					String.valueOf(numberOfMapAreasRetrieved),
+					String.valueOf(maximumMapAreasAllowedForSingleDisplay));
+			
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.THRESHOLD_MAP_AREAS_PER_DISPLAY_EXCEEDED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+	}
 	
 	public void checkAreasExist(
 		final Connection connection,
