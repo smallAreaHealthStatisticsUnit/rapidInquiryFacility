@@ -1,7 +1,6 @@
 package rifServices.restfulWebServices;
 
 import rifServices.businessConceptLayer.*;
-
 import rifServices.dataStorageLayer.RIFStudyResultRetrievalAPI;
 import rifServices.system.RIFServiceException;
 
@@ -270,8 +269,8 @@ public class RIFStudyResultRetrievalWebServiceResource
 					
 		String result = "";
 		try {
-			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			//Convert URL parameters to RIF service API parameters
+			User user = createUser(servletRequest, userID);
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(geoLevelSelectName);
@@ -337,7 +336,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
@@ -389,8 +388,6 @@ public class RIFStudyResultRetrievalWebServiceResource
 		return result;
 	}	
 	
-
-
 	/**
 	 * STUB
 	 * @param userID
@@ -415,7 +412,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 				
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
@@ -480,7 +477,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 
 		try {			
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(geoLevelSelectName);
@@ -526,7 +523,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getTiles")
-	public String getTiles(
+	public Response getTiles(
 		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
@@ -538,44 +535,48 @@ public class RIFStudyResultRetrievalWebServiceResource
 		@QueryParam("yMin") String yMin,
 		@QueryParam("xMin") String xMin) {
 					
-		String result = "";
-		
-		try {
-			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
-			Geography geography = Geography.newInstance(geographyName, "");
-			GeoLevelSelect geoLevelSelect
-				= GeoLevelSelect.newInstance(geoLevelSelectName);
-			BoundaryRectangle boundaryRectangle
-				= BoundaryRectangle.newInstance();
-			boundaryRectangle.setYMax(Double.valueOf(yMax));
-			boundaryRectangle.setXMax(Double.valueOf(xMax));
-			boundaryRectangle.setYMin(Double.valueOf(yMin));
-			boundaryRectangle.setXMin(Double.valueOf(xMin));
-						
-			//Call service API
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
-			result
-				= studyResultRetrievalService.getTiles(
-					user, 
-					geography, 
-					geoLevelSelect,
-					tileIdentifier,
-					zoomFactor,
-					boundaryRectangle);
-			
-		}
-		catch(Exception exception) {
-			result 
-				= serialiseException(
-					servletRequest,
-					exception);			
-		}
-		
-		return result;
+		return super.getTiles(
+			servletRequest, 
+			userID, 
+			geographyName, 
+			geoLevelSelectName, 
+			tileIdentifier, 
+			zoomFactor, 
+			yMax, 
+			xMax, 
+			yMin, 
+			xMin);		
 	}	
 
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getTiles")
+	public Response getMapAreasForBoundaryRectangle(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,
+		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+		@QueryParam("tileIdentifier") String tileIdentifier,
+		@QueryParam("zoomFactor") Integer zoomFactor,		
+		@QueryParam("yMax") String yMax,
+		@QueryParam("xMax") String xMax,
+		@QueryParam("yMin") String yMin,
+		@QueryParam("xMin") String xMin) {
+					
+		return super.getMapAreasForBoundaryRectangle(
+			servletRequest, 
+			userID, 
+			geographyName, 
+			geoLevelSelectName, 
+			yMax, 
+			xMax, 
+			yMin, 
+			xMin);
+		
+	}	
+	
+	
+	
 	/**
 	 * STUB
 	 * @param userID
@@ -602,7 +603,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(geoLevelSelectName);
@@ -667,7 +668,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
 					geographyName, 
@@ -729,8 +730,8 @@ public class RIFStudyResultRetrievalWebServiceResource
 		String result = "";
 		
 		try {
-			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			//Convert URL parameters to RIF service API parameters
+			User user = createUser(servletRequest, userID);
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
 					geographyName, 
@@ -796,7 +797,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			DiseaseMappingStudy diseaseMappingStudy = null;
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
@@ -866,7 +867,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			StudySummary studySummary
 				= StudySummary.newInstance(
 					diseaseMappingStudyID, 
@@ -938,7 +939,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			StudySummary studySummary
 				= StudySummary.newInstance(
 					diseaseMappingStudyID, 
@@ -1009,7 +1010,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
 					geographyName,
@@ -1085,7 +1086,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
 					geographyName,
@@ -1149,7 +1150,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
 					geographyName,
@@ -1215,7 +1216,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
 					geographyName,
@@ -1273,7 +1274,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
 					geographyName,
@@ -1337,7 +1338,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			StudyResultRetrievalContext studyResultRetrievalContext
 				= StudyResultRetrievalContext.newInstance(
 					geographyName,
@@ -1386,7 +1387,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			StudySummary studySummary
 				= StudySummary.newInstance(
 					diseaseMappingStudyID, 
@@ -1433,7 +1434,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			StudySummary studySummary
 				= StudySummary.newInstance(
 					diseaseMappingStudyID, 
@@ -1480,7 +1481,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			StudySummary studySummary
 				= StudySummary.newInstance(
 					diseaseMappingStudyID, 
@@ -1525,7 +1526,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			StudySummary studySummary
 				= StudySummary.newInstance(
 					diseaseMappingStudyID, 

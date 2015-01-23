@@ -3,7 +3,6 @@ package rifServices.restfulWebServices;
 
 
 import rifServices.system.RIFServiceMessages;
-
 import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 
@@ -14,6 +13,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.servlet.http.*;
 import javax.ws.rs.QueryParam;
+
 import java.text.Collator;
 import java.util.ArrayList;
 
@@ -133,11 +133,6 @@ public class RIFStudySubmissionWebServiceResource
 		@QueryParam("userID") String userID,
 		@QueryParam("password") String password) {
 
-		
-
-		String ipAddress = servletRequest.getRemoteAddr();
-		
-		
 		return super.login(
 			servletRequest,
 			userID, 
@@ -309,7 +304,7 @@ public class RIFStudySubmissionWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxx");
+			User user = createUser(servletRequest, userID);
 			
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
@@ -356,7 +351,7 @@ public class RIFStudySubmissionWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters			
-			User user = User.newInstance(userID, "xxx");
+			User user = createUser(servletRequest, userID);
 
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
@@ -420,7 +415,7 @@ public class RIFStudySubmissionWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters
-			User user = User.newInstance(userID, "xxx");
+			User user = createUser(servletRequest, userID);
 
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
@@ -459,7 +454,7 @@ public class RIFStudySubmissionWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters
-			User user = User.newInstance(userID, "xxx");
+			User user = createUser(servletRequest, userID);
 
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
@@ -510,7 +505,7 @@ public class RIFStudySubmissionWebServiceResource
 
 		try {
 			//Convert URL parameters to RIF service API parameters
-			User user = User.newInstance(userID, "xxx");
+			User user = createUser(servletRequest, userID);
 
 			
 			//Call service API
@@ -571,7 +566,7 @@ public class RIFStudySubmissionWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters
-			User user = User.newInstance(userID, "xxxx");
+			User user = createUser(servletRequest, userID);
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(geoLevelSelectName);
@@ -634,7 +629,7 @@ public class RIFStudySubmissionWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters
-			User user = User.newInstance(userID, "xxx");
+			User user = createUser(servletRequest, userID);
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(geoLevelSelectName);
@@ -707,7 +702,7 @@ public class RIFStudySubmissionWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters
-			User user = User.newInstance(userID, "xxx");
+			User user = createUser(servletRequest, userID);
 			Geography geography = Geography.newInstance(geographyName, "");
 
 			//Call service API
@@ -762,7 +757,7 @@ public class RIFStudySubmissionWebServiceResource
 				
 		try {
 			//Convert URL parameters to RIF service API parameters
-			User user = User.newInstance(userID, "xxx");
+			User user = createUser(servletRequest, userID);
 
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
@@ -819,7 +814,7 @@ public class RIFStudySubmissionWebServiceResource
 				
 		try {
 			//Convert URL parameters to RIF service API parameters
-			User user = User.newInstance(userID, "xxx");
+			User user = createUser(servletRequest, userID);
 			Geography geography
 				= Geography.newInstance(geographyName, "");
 			GeoLevelToMap geoLevelToMap
@@ -889,7 +884,7 @@ public class RIFStudySubmissionWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters
-			User user = User.newInstance(userID, "xxx");
+			User user = createUser(servletRequest, userID);
 			Geography geography = Geography.newInstance(geographyName, "xxx");
 
 			//Call service API
@@ -941,7 +936,7 @@ public class RIFStudySubmissionWebServiceResource
 
 		try {
 			//Convert URL parameters to RIF service API parameters
-			User user = User.newInstance(userID, "xxx");
+			User user = createUser(servletRequest, userID);
 
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
@@ -995,7 +990,7 @@ public class RIFStudySubmissionWebServiceResource
 		
 		try {
 			//Convert URL parameters to RIF service API parameters
-			User user = User.newInstance(userID, "xxx");
+			User user = createUser(servletRequest, userID);
 
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
@@ -1118,7 +1113,7 @@ public class RIFStudySubmissionWebServiceResource
 		String result = "";
 		try {			
 			//Convert URL parameters to RIF service API parameters
-			User user = User.newInstance(userID, "xxx");
+			User user = createUser(servletRequest, userID);
 
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
@@ -1176,7 +1171,7 @@ public class RIFStudySubmissionWebServiceResource
 		String result = "";
 		try {			
 			//Convert URL parameters to RIF service API parameters
-			User user = User.newInstance(userID, "xxx");
+			User user = createUser(servletRequest, userID);
 
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
@@ -1236,7 +1231,7 @@ public class RIFStudySubmissionWebServiceResource
 		String result = "";
 		try {			
 			//Convert URL parameters to RIF service API parameters
-			User user = User.newInstance(userID, "xxx");
+			User user = createUser(servletRequest, userID);
 
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
@@ -1289,6 +1284,62 @@ public class RIFStudySubmissionWebServiceResource
 			servletRequest,
 			result);		
 	}
+	
+
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getTiles")
+	public Response getMapAreasForBoundaryRectangle(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,
+		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+		@QueryParam("tileIdentifier") String tileIdentifier,
+		@QueryParam("zoomFactor") Integer zoomFactor,		
+		@QueryParam("yMax") String yMax,
+		@QueryParam("xMax") String xMax,
+		@QueryParam("yMin") String yMin,
+		@QueryParam("xMin") String xMin) {
+					
+		return super.getMapAreasForBoundaryRectangle(
+			servletRequest, 
+			userID, 
+			geographyName, 
+			geoLevelSelectName, 
+			yMax, 
+			xMax, 
+			yMin, 
+			xMin);
+		
+	}	
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getTiles")
+	public Response getTiles(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,
+		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+		@QueryParam("tileIdentifier") String tileIdentifier,
+		@QueryParam("zoomFactor") Integer zoomFactor,		
+		@QueryParam("yMax") String yMax,
+		@QueryParam("xMax") String xMax,
+		@QueryParam("yMin") String yMin,
+		@QueryParam("xMin") String xMin) {
+					
+		return super.getTiles(
+			servletRequest, 
+			userID, 
+			geographyName, 
+			geoLevelSelectName, 
+			tileIdentifier, 
+			zoomFactor, 
+			yMax, 
+			xMax, 
+			yMin, 
+			xMin);		
+	}	
 
 	// ==========================================
 	// Section Errors and Validation
