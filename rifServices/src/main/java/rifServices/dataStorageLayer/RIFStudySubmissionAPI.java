@@ -284,7 +284,8 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	public ArrayList<HealthCode> getHealthCodesMatchingSearchText(
 		final User user,
 		final HealthCodeTaxonomy healthCodeTaxonomy,
-		final String searchText) 
+		final String searchText,
+		final boolean isCaseSensitive) 
 		throws RIFServiceException;
 	
 

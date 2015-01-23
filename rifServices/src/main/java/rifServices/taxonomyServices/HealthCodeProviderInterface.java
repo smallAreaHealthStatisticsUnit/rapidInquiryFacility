@@ -122,7 +122,8 @@ public interface HealthCodeProviderInterface {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<HealthCode> getHealthCodes(
-		final String searchText)
+		final String searchText,
+		final boolean isCaseSensitive)
 		throws RIFServiceException;
 	
 	/**

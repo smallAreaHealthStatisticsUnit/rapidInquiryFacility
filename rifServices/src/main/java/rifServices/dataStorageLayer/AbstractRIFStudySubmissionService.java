@@ -652,7 +652,9 @@ abstract class AbstractRIFStudySubmissionService
 	public ArrayList<HealthCode> getHealthCodesMatchingSearchText(
 		final User _user,
 		final HealthCodeTaxonomy _healthCodeTaxonomy,
-		final String searchText) throws RIFServiceException {
+		final String searchText,
+		final boolean isCaseSensitive)
+		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);		
@@ -663,7 +665,7 @@ abstract class AbstractRIFStudySubmissionService
 		}
 		HealthCodeTaxonomy healthCodeTaxonomy
 			= HealthCodeTaxonomy.createCopy(_healthCodeTaxonomy);
-		
+
 		ArrayList<HealthCode> results = new ArrayList<HealthCode>(); 
 		Connection connection = null;
 		try {
@@ -682,7 +684,7 @@ abstract class AbstractRIFStudySubmissionService
 				"getHealthCodes",
 				"searchText", 
 				searchText);
-		
+			
 			//Check for security violations
 			validateUser(user);
 			healthCodeTaxonomy.checkSecurityViolations();
@@ -713,7 +715,8 @@ abstract class AbstractRIFStudySubmissionService
 			results 
 				= healthOutcomeManager.getHealthCodes(
 					healthCodeTaxonomy, 
-					searchText);
+					searchText,
+					isCaseSensitive);
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -1823,7 +1826,7 @@ abstract class AbstractRIFStudySubmissionService
 	 */
 	public HealthCodeTaxonomy getHealthCodeTaxonomyFromNameSpace(
 		final User _user, 
-		final String healthCodeTaxonomyNameSpace) throws RIFServiceException {
+		final String nameSpace) throws RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
@@ -1844,15 +1847,15 @@ abstract class AbstractRIFStudySubmissionService
 				user);		
 			fieldValidationUtility.checkNullMethodParameter(
 				"getHealthCodeTaxonomyFromNameSpace",
-				"healthCodeTaxonomyNameSpace",
-				healthCodeTaxonomyNameSpace);
+				"nameSpace",
+				nameSpace);
 			
 			//Check for security violations
 			validateUser(user);
 			fieldValidationUtility.checkMaliciousMethodParameter(
 				"getHealthCodeTaxonomyFromNameSpace", 
 				"healthCodeTaxonomyNameSpace", 
-				healthCodeTaxonomyNameSpace);
+				nameSpace);
 
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();	
@@ -1861,7 +1864,7 @@ abstract class AbstractRIFStudySubmissionService
 					"logging.getHealthCodeTaxonomyFromNameSpace",
 					user.getUserID(),
 					user.getIPAddress(),
-					healthCodeTaxonomyNameSpace);
+					nameSpace);
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
@@ -1871,7 +1874,7 @@ abstract class AbstractRIFStudySubmissionService
 				= rifServiceResources.getHealthOutcomeManager();
 			result 
 				= healthOutcomeManager.getHealthCodeTaxonomyFromNameSpace(
-					healthCodeTaxonomyNameSpace);
+					nameSpace);
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation

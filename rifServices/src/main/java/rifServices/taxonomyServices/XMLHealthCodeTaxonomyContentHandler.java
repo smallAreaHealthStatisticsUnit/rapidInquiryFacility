@@ -180,14 +180,25 @@ class XMLHealthCodeTaxonomyContentHandler
 	 * @return the terms containing phrase
 	 */
 	public ArrayList<TaxonomyTerm> getTermsContainingPhrase(
-		final String searchPhrase) {
+		final String searchPhrase,
+		final boolean isCaseSensitive) {
 		
 		/*
 		 * Using regular expressions to do a contains than a string.contains(...)
 		 * feature.  
 		 */
 		
-		Pattern searchPattern = Pattern.compile(".*"+searchPhrase+".*");		
+		Pattern searchPattern;
+		
+		if (isCaseSensitive) {
+			searchPattern
+				= Pattern.compile(".*"+searchPhrase+".*");
+		}
+		else {
+			searchPattern
+				= Pattern.compile(".*"+searchPhrase+".*", Pattern.CASE_INSENSITIVE);
+		}
+				
 		ArrayList<TaxonomyTerm> results = new ArrayList<TaxonomyTerm>();
 		for (TaxonomyTerm term : allTerms) {
 			Matcher patternCodeMatcher

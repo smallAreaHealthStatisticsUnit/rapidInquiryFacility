@@ -103,9 +103,6 @@ public class RIFXMLTaxonomyProvider
 		taxonomyReader = new XMLHealthCodeTaxonomyContentHandler();
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.taxonomyServices.HealthCodeProvider#initialise(java.util.ArrayList)
-	 */
 	public void initialise(
 		final ArrayList<Parameter> parameters) 
 		throws RIFServiceException {
@@ -156,17 +153,11 @@ public class RIFXMLTaxonomyProvider
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.taxonomyServices.HealthCodeProvider#getHealthCodeTaxonomy()
-	 */
 	public HealthCodeTaxonomy getHealthCodeTaxonomy() {
 		
 		return healthCodeTaxonomy;
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.taxonomyServices.HealthCodeProvider#supportsTaxonomy(rifServices.businessConceptLayer.HealthCodeTaxonomy)
-	 */
 	public boolean supportsTaxonomy(
 		final HealthCodeTaxonomy otherHealthCodeTaxonomy) {
 
@@ -182,9 +173,6 @@ public class RIFXMLTaxonomyProvider
 		return false;
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.taxonomyServices.HealthCodeProvider#supportsTaxonomy(rifServices.businessConceptLayer.HealthCode)
-	 */
 	public boolean supportsTaxonomy(
 		final HealthCode healthCode) {
 
@@ -200,21 +188,18 @@ public class RIFXMLTaxonomyProvider
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.taxonomyServices.HealthCodeProvider#getHealthCodes(java.sql.Connection, java.lang.String)
-	 */
 	public ArrayList<HealthCode> getHealthCodes(
-		final String searchText) 
+		final String searchText,
+		final boolean isCaseSensitive) 
 		throws RIFServiceException {
 		
 		ArrayList<TaxonomyTerm> searchTerms
-			= taxonomyReader.getTermsContainingPhrase(searchText);
+			= taxonomyReader.getTermsContainingPhrase(
+				searchText,
+				isCaseSensitive);
 		return convertToHealthCodes(searchTerms);
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.taxonomyServices.HealthCodeProvider#getTopLevelCodes(java.sql.Connection)
-	 */
 	public ArrayList<HealthCode> getTopLevelCodes()
 		throws RIFServiceException {
 				
@@ -246,9 +231,6 @@ public class RIFXMLTaxonomyProvider
 		return healthCodes;
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.taxonomyServices.HealthCodeProvider#getImmediateSubterms(java.sql.Connection, rifServices.businessConceptLayer.HealthCode)
-	 */
 	public ArrayList<HealthCode> getImmediateSubterms(
 		final HealthCode parentHealthCode) 
 		throws RIFServiceException {
@@ -266,9 +248,6 @@ public class RIFXMLTaxonomyProvider
 		return convertToHealthCodes(results);
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.taxonomyServices.HealthCodeProvider#getParentHealthCode(java.sql.Connection, rifServices.businessConceptLayer.HealthCode)
-	 */
 	public HealthCode getParentHealthCode(
 		final HealthCode childHealthCode) 
 		throws RIFServiceException {

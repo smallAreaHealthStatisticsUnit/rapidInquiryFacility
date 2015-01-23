@@ -100,7 +100,7 @@ public class GetHealthCodesMatchingSearchText extends
 	
 	@Test
 	/**
-	 * search text yields multiple results
+	 * case sensitive search text yields multiple results
 	 */
 	public void getHealthCodesMatchingSearchText_COMMON1() {
 		try {
@@ -114,7 +114,8 @@ public class GetHealthCodesMatchingSearchText extends
 				= rifStudySubmissionService.getHealthCodesMatchingSearchText(
 					validUser, 
 					icd10HealthCodeTaxonomy,
-					searchText);
+					searchText,
+					true);
 			assertEquals(4, healthCodes.size());
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -124,7 +125,7 @@ public class GetHealthCodesMatchingSearchText extends
 
 	@Test
 	/**
-	 * search text yields one result
+	 * case sensitive search text yields one result
 	 */
 	public void getHealthCodesMatchingSearchText_COMMON2() {
 		try {
@@ -137,7 +138,8 @@ public class GetHealthCodesMatchingSearchText extends
 				= rifStudySubmissionService.getHealthCodesMatchingSearchText(
 					validUser, 
 					icd10HealthCodeTaxonomy,
-					searchText);
+					searchText,
+					true);
 			assertEquals(1, healthCodes.size());
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -145,11 +147,13 @@ public class GetHealthCodesMatchingSearchText extends
 		}		
 	}
 	
+	
+	
 	@Test
 	/**
-	 * search text yields no results
+	 * case sensitive search text yields no results
 	 */
-	public void getHealthCodesMatchingSearchText_VALID3() {
+	public void getHealthCodesMatchingSearchText_COMMON3() {
 		try {
 			User validUser = cloneValidUser();
 			String searchText = "zzzz";
@@ -160,12 +164,49 @@ public class GetHealthCodesMatchingSearchText extends
 				= rifStudySubmissionService.getHealthCodesMatchingSearchText(
 					validUser, 
 					icd10HealthCodeTaxonomy,
-					searchText);
+					searchText,
+					true);
 			assertEquals(0, healthCodes.size());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
 		}		
+	}
+	
+	@Test
+	/**
+	 * case insensitive search text yields expected results
+	 */
+	public void getHealthCodesMatchingSearchText_COMMON4() {
+
+		try {
+			User validUser = cloneValidUser();
+			String searchText = "j206";
+			
+			HealthCodeTaxonomy icd10HealthCodeTaxonomy
+				= cloneICD10HealthTaxonomy();
+			ArrayList<HealthCode> healthCodes
+				= rifStudySubmissionService.getHealthCodesMatchingSearchText(
+					validUser, 
+					icd10HealthCodeTaxonomy,
+					searchText,
+					true);
+			assertEquals(0, healthCodes.size());
+			
+			healthCodes
+				= rifStudySubmissionService.getHealthCodesMatchingSearchText(
+					validUser, 
+					icd10HealthCodeTaxonomy,
+					searchText,
+					false);
+			assertEquals(1, healthCodes.size());
+
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}
+		
+		
 	}
 	
 	
@@ -178,7 +219,8 @@ public class GetHealthCodesMatchingSearchText extends
 			rifStudySubmissionService.getHealthCodesMatchingSearchText(
 				emptyUser, 
 				validHealthCodeTaxonomy,
-				getValidSearchText());
+				getValidSearchText(),
+				true);
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -196,7 +238,8 @@ public class GetHealthCodesMatchingSearchText extends
 			rifStudySubmissionService.getHealthCodesMatchingSearchText(
 				null, 
 				validHealthCodeTaxonomy,
-				getValidSearchText());
+				getValidSearchText(),
+				true);
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -215,7 +258,8 @@ public class GetHealthCodesMatchingSearchText extends
 			rifStudySubmissionService.getHealthCodesMatchingSearchText(
 				validUser, 
 				emptyHealthCodeTaxonomy,
-				getValidSearchText());
+				getValidSearchText(),
+				true);
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -234,7 +278,8 @@ public class GetHealthCodesMatchingSearchText extends
 			rifStudySubmissionService.getHealthCodesMatchingSearchText(
 				validUser, 
 				null,
-				getValidSearchText());
+				getValidSearchText(),
+				true);
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -253,7 +298,8 @@ public class GetHealthCodesMatchingSearchText extends
 			rifStudySubmissionService.getHealthCodesMatchingSearchText(
 				validUser, 
 				validHealthCodeTaxonomy,
-				getEmptySearchText());
+				getEmptySearchText(),
+				true);
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -272,7 +318,8 @@ public class GetHealthCodesMatchingSearchText extends
 			rifStudySubmissionService.getHealthCodesMatchingSearchText(
 				validUser, 
 				validHealthCodeTaxonomy,
-				null);
+				null,
+				true);
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -291,7 +338,8 @@ public class GetHealthCodesMatchingSearchText extends
 			rifStudySubmissionService.getHealthCodesMatchingSearchText(
 				nonExistentUser, 
 				validHealthCodeTaxonomy,
-				getValidSearchText());
+				getValidSearchText(),
+				true);
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -310,7 +358,8 @@ public class GetHealthCodesMatchingSearchText extends
 			rifStudySubmissionService.getHealthCodesMatchingSearchText(
 				validUser, 
 				nonExistentHealthCodeTaxonomy,
-				getValidSearchText());
+				getValidSearchText(),
+				true);
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -329,7 +378,8 @@ public class GetHealthCodesMatchingSearchText extends
 			rifStudySubmissionService.getHealthCodesMatchingSearchText(
 				maliciousUser, 
 				validHealthCodeTaxonomy,
-				getValidSearchText());
+				getValidSearchText(),
+				true);
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -348,7 +398,8 @@ public class GetHealthCodesMatchingSearchText extends
 			rifStudySubmissionService.getHealthCodesMatchingSearchText(
 				validUser, 
 				maliciousHealthCodeTaxonomy,
-				getValidSearchText());
+				getValidSearchText(),
+				true);
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -367,7 +418,8 @@ public class GetHealthCodesMatchingSearchText extends
 			rifStudySubmissionService.getHealthCodesMatchingSearchText(
 				validUser, 
 				maliciousHealthCodeTaxonomy,
-				getMaliciousSearchText());
+				getMaliciousSearchText(),
+				true);
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(

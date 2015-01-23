@@ -324,7 +324,8 @@ class HealthCodeSelectionSearchPanel
 				= service.getHealthCodesMatchingSearchText(
 					session.getUser(),
 					currentHealthCodeTaxonomy,
-					searchText);
+					searchText,
+					true);
 			healthCodeTableModel.clearList();
 			
 			healthCodeTableModel.setHealthCodes(searchResults);

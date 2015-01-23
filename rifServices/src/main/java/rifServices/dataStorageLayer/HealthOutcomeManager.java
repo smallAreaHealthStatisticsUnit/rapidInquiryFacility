@@ -115,7 +115,6 @@ class HealthOutcomeManager
 		if (targetPathValue == null) {
 			targetPathValue = RIFServiceMessages.getRIFServicesClassRootLocation();
 		}
-		System.out.println("SQLHealthOutcomeManager targetClassPathDirectory=="+targetPathValue+"==");
 		
 		//initialise each health code provider
 		try {			
@@ -551,13 +550,17 @@ class HealthOutcomeManager
 	 */
 	public ArrayList<HealthCode> getHealthCodes(
 		final HealthCodeTaxonomy healthCodeTaxonomy,
-		final String searchText) 
+		final String searchText,
+		final boolean isCaseSensitive) 
 		throws RIFServiceException {
+		
 		
 		HealthCodeProviderInterface healthCodeProvider
 			= getRelevantHealthCodeProvider(healthCodeTaxonomy);
 		
-		return healthCodeProvider.getHealthCodes(searchText);
+		return healthCodeProvider.getHealthCodes(
+			searchText,
+			isCaseSensitive);
 		
 	}
 
