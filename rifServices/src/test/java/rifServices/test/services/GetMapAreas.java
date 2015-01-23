@@ -1,6 +1,7 @@
 package rifServices.test.services;
 
 import static org.junit.Assert.assertEquals;
+
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
+import rifServices.system.RIFServiceStartupOptions;
 
 /**
  *
@@ -108,6 +110,7 @@ public class GetMapAreas extends AbstractRIFServiceTestCase {
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
 			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
+			validGeoLevelArea.setName("Tirado");
 			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
 			ArrayList<MapArea> mapAreas
 				= rifStudySubmissionService.getMapAreas(
@@ -116,7 +119,7 @@ public class GetMapAreas extends AbstractRIFServiceTestCase {
 					validGeoLevelSelect,
 					validGeoLevelArea,
 					validGeoLevelToMap);
-			assertEquals(20, mapAreas.size());
+			assertEquals(5, mapAreas.size());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -132,6 +135,7 @@ public class GetMapAreas extends AbstractRIFServiceTestCase {
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
 			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
+			validGeoLevelArea.setName("Hambly");
 			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
 			
 			ArrayList<MapArea> mapAreas
@@ -142,26 +146,25 @@ public class GetMapAreas extends AbstractRIFServiceTestCase {
 					validGeoLevelArea,
 					validGeoLevelToMap);
 			
-			assertEquals(8, mapAreas.size());
+			assertEquals(57, mapAreas.size());
 		}
 		catch(RIFServiceException rifServiceException) {
-			this.printErrors("TRTRT", rifServiceException);
 			fail();
 		}
 	}	
-
 	
 	@Test
 	/**
-	 * Range start and end have the same value
+	 * get a query where there are too many results
 	 */
-	public void getMapAreas_UNCOMMON1() {
+	public void getMapAreas_TOO_MANY_RESULTS1() {
 		
 		try {
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
 			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
+			validGeoLevelArea.setName("Clarke");
 			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
 			
 			ArrayList<MapArea> mapAreas
@@ -172,16 +175,16 @@ public class GetMapAreas extends AbstractRIFServiceTestCase {
 					validGeoLevelArea,
 					validGeoLevelToMap);
 			
-			assertEquals(8, mapAreas.size());
-			
-			//@TODO - fix this
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, RIFServiceError.THRESHOLD_MAP_AREAS_PER_DISPLAY_EXCEEDED, 
+				1);
 			this.printErrors("TRTRT", rifServiceException);
-			fail();
 		}
 	}	
+
 	
 	
 	@Test
