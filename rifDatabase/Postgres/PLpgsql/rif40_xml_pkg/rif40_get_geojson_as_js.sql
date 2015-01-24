@@ -371,8 +371,8 @@ SELECT COUNT(DISTINCT(level4)) AS total,
 			geolevel_area::VARCHAR		/* Geolevel area */, 
 			geolevel_area_id::VARCHAR	/* Geolevel area ID */, 
 			c3_rec.total::VARCHAR		/* Number of area_ids */,
-			array_lower(c5_rec.js, 1) 	/* Lower array bound */,
-			array_upper(c5_rec.js, 1) 	/* Upper array bound */);
+			array_lower(c5_rec.js, 1)::VARCHAR 	/* Lower array bound */,
+			array_upper(c5_rec.js, 1)::VARCHAR 	/* Upper array bound */);
 	END IF;
 --
 -- Return as one row
