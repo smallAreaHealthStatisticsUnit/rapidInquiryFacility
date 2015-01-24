@@ -67,16 +67,22 @@ $$;
 --
 -- rif40_xml_pkg.rif40_get_geojson_tiles: 		50400 to 50599
 --
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, 
+	INTEGER, VARCHAR, BOOLEAN, BOOLEAN);
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, 
+	INTEGER, VARCHAR, BOOLEAN);
+	
 CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(
 	l_geography 		VARCHAR, 
 	l_geolevel_view 	VARCHAR,
-	y_max 			REAL,
-	x_max 			REAL, 
-	y_min 			REAL, 
-	x_min 			REAL, 
-	zoom_level		INTEGER DEFAULT  8 /* 1 in 2,325,012 */,
-	tile_name		VARCHAR DEFAULT NULL,
-	return_one_row 		BOOLEAN DEFAULT TRUE)
+	y_max 				REAL,
+	x_max 				REAL, 
+	y_min 				REAL, 
+	x_min 				REAL, 
+	zoom_level			INTEGER DEFAULT  8 /* 1 in 2,325,012 */,
+	tile_name			VARCHAR DEFAULT NULL,
+	return_one_row 		BOOLEAN DEFAULT TRUE,
+	check_tile_coord 	BOOLEAN DEFAULT TRUE)
 RETURNS SETOF text
 SECURITY INVOKER
 AS $body$
@@ -86,7 +92,8 @@ Function: 	rif40_get_geojson_tiles()
 Parameters:	Geography, geolevel_view, 
 			Y max, X max, Y min, X min as a record (bounding box), 
 			Zoom level [Default: 8; scaling 1 in 2,325,012], tile name [Default: NULL]
-			return one row (TRUE/FALSE)
+			return one row (TRUE/FALSE)  [Default: TRUE]
+			Check tile co-ordinates  (TRUE/FALSE)  [Default: TRUE]
 Returns:	Text table [1 or more rows dependent on return_one_row]
 Description:	Get GeoJSON data as a Javascript variable. 
 		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
@@ -291,32 +298,36 @@ BEGIN
 		PERFORM rif40_sql_pkg.rif40_ddl(drop_stmt);
 	END IF;
 --
+-- Checks can be disabled (was used by populate_rif40_tiles())
+--
+	IF check_tile_coord THEN /* Checks are enable */
+--
 -- Test geography
 --
-	IF l_geography IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-50401, 'rif40_get_geojson_tiles', 'NULL geography parameter');
-	END IF;	
+		IF l_geography IS NULL THEN
+			PERFORM rif40_log_pkg.rif40_error(-50401, 'rif40_get_geojson_tiles', 'NULL geography parameter');
+		END IF;	
 --
-	OPEN c1geojson2(l_geography);
-	FETCH c1geojson2 INTO c1_rec;
-	CLOSE c1geojson2;
+		OPEN c1geojson2(l_geography);
+		FETCH c1geojson2 INTO c1_rec;
+		CLOSE c1geojson2;
 --
-	IF c1_rec.geography IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-50402, 'rif40_get_geojson_tiles', 'geography: % not found', 
-			l_geography::VARCHAR	/* Geography */);
-	END IF;	
+		IF c1_rec.geography IS NULL THEN
+			PERFORM rif40_log_pkg.rif40_error(-50402, 'rif40_get_geojson_tiles', 'geography: % not found', 
+				l_geography::VARCHAR	/* Geography */);
+		END IF;	
 --
 -- Test <geolevel view/area> exist
 --
-	OPEN c2geojson2(l_geography, l_geolevel_view);
-	FETCH c2geojson2 INTO c2a_rec;
-	CLOSE c2geojson2;
+		OPEN c2geojson2(l_geography, l_geolevel_view);
+		FETCH c2geojson2 INTO c2a_rec;
+		CLOSE c2geojson2;
 --
-	IF c2a_rec.geolevel_name IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-50403, 'rif40_get_geojson_tiles', 'geography: %, <geoevel view> %: not found', 
-			l_geography::VARCHAR	/* Geography */, 
-			geolevel_view::VARCHAR	/* Geolevel view */);
-	END IF;	
+		IF c2a_rec.geolevel_name IS NULL THEN
+			PERFORM rif40_log_pkg.rif40_error(-50403, 'rif40_get_geojson_tiles', 'geography: %, <geoevel view> %: not found', 
+				l_geography::VARCHAR	/* Geography */, 
+				geolevel_view::VARCHAR	/* Geolevel view */);
+		END IF;	
 /*
 WITH a AS (
 	SELECT *
@@ -346,160 +357,38 @@ SELECT * FROM e;
 -- Test tile bounds by computing the centroid of the bounding box, get X/Y tile numbers and then computing the correct tile bounds.
 -- Compare as a %; >0.01% different is an error 
 --
-	BEGIN
-		OPEN c6geojson2(y_max, x_max, y_min, x_min, zoom_level);
-		FETCH c6geojson2 INTO c6_rec;
-		CLOSE c6geojson2;
-	EXCEPTION
+		BEGIN
+			OPEN c6geojson2(y_max, x_max, y_min, x_min, zoom_level);
+			FETCH c6geojson2 INTO c6_rec;
+			CLOSE c6geojson2;
+		EXCEPTION
 
-		WHEN others THEN
+			WHEN others THEN
 --
 -- Print exception to INFO, re-raise
 --
-			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL,
-								    v_context = PG_EXCEPTION_CONTEXT;
-			error_message:='rif40_get_geojson_tiles() caught: '||E'\n'||
-				SQLERRM::VARCHAR||' in cursor c6geojson2('||
-					y_max::Text||','||
-					x_max::Text||','||
-					y_min::Text||','||
-					x_min::Text||','||
-					zoom_level::Text||
-					')'||E'\n'||
-				'Detail: '||v_detail::VARCHAR||E'\n'||'Context: '||v_context::VARCHAR;
-			RAISE WARNING '50404: %', error_message;
+				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL,
+										v_context = PG_EXCEPTION_CONTEXT;
+				error_message:='rif40_get_geojson_tiles() caught: '||E'\n'||
+					SQLERRM::VARCHAR||' in cursor c6geojson2('||
+						y_max::Text||','||
+						x_max::Text||','||
+						y_min::Text||','||
+						x_min::Text||','||
+						zoom_level::Text||
+						')'||E'\n'||
+					'Detail: '||v_detail::VARCHAR||E'\n'||'Context: '||v_context::VARCHAR;
+				RAISE WARNING '50404: %', error_message;
 --
-		RAISE;
-	END;
+			RAISE;
+		END;
 	
 --
 -- Check given vs comnputed
 --
-	IF c6_rec.x_min_diff_pct = 0 AND c6_rec.y_min_diff_pct = 0 AND c6_rec.x_max_diff_pct = 0 AND c6_rec.y_max_diff_pct = 0 THEN
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-			'[50405] Geography: %, <geoevel view> % bound [%, %, %, %] tile XY(%,%) verified [% %]; zoom level %; percent diffs [% % % %]', 			 
-			l_geography::VARCHAR			/* Geography */, 
-			l_geolevel_view::VARCHAR		/* Geoelvel view */,  
-			x_min::VARCHAR					/* Xmin */,
-			y_min::VARCHAR					/* Ymin */,
-			x_max::VARCHAR					/* Xmax */,
-			y_max::VARCHAR					/* Ymax */,
-			c6_rec.x_tile::VARCHAR			/* X tile */,
-			c6_rec.y_tile::VARCHAR			/* Y tile */,
-			c6_rec.x_centroid::VARCHAR		/* X tile centroid */,
-			c6_rec.y_centroid::VARCHAR		/* Y tile centroid */,
-			zoom_level::VARCHAR				/* Zoom level */,
-			c6_rec.x_min_diff_pct::VARCHAR	/* X min diff as a percentage */,
-			c6_rec.y_min_diff_pct::VARCHAR	/* Y max diff as a percentage */,
-			c6_rec.x_max_diff_pct::VARCHAR	/* X min diff as a percentage */,
-			c6_rec.y_max_diff_pct::VARCHAR	/* Y max diff as a percentage */);
-	ELSE
---
--- OK - different - display why
---
-		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
-			'[50406] Geography: %, <geolevel view> % bound [%, %, %, %] tile XY(%,%) verified [% %]; zoom level %; expected bound [%, %, %, %]; percent diffs [% % % %]', 			 
-			l_geography::VARCHAR			/* Geography */, 
-			l_geolevel_view::VARCHAR		/* Geolevel view */,  
-			x_min::VARCHAR					/* Xmin */,
-			y_min::VARCHAR					/* Ymin */,
-			x_max::VARCHAR					/* Xmax */,
-			y_max::VARCHAR					/* Ymax */,
-			c6_rec.x_tile::VARCHAR			/* X tile */,
-			c6_rec.y_tile::VARCHAR			/* Y tile */,
-			c6_rec.x_centroid::VARCHAR		/* X tile centroid */,
-			c6_rec.y_centroid::VARCHAR		/* Y tile centroid */,
-			zoom_level::VARCHAR				/* Zoom level */,
-			c6_rec.tile_x_min::VARCHAR		/* tile Xmin */,
-			c6_rec.tile_y_min::VARCHAR		/* tile Ymin */,
-			c6_rec.tile_x_max::VARCHAR		/* tile Xmax */,
-			c6_rec.tile_y_max::VARCHAR		/* tile Ymax */,			
-			c6_rec.x_min_diff_pct::VARCHAR	/* X min diff as a percentage */,
-			c6_rec.y_min_diff_pct::VARCHAR	/* Y max diff as a percentage */,
-			c6_rec.x_max_diff_pct::VARCHAR	/* X min diff as a percentage */,
-			c6_rec.y_max_diff_pct::VARCHAR	/* Y max diff as a percentage */);
---
--- Error if >0.01% different
---
-		IF c6_rec.y_max_diff_pct > 0.01 /* percent */ THEN
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
-				'[50407] Y max diff percent: %, diff: %, parameter Y max %, tile % Y max: %',
-				c6_rec.y_max_diff_pct::VARCHAR	/* Y max diff as a percentage */,
-				c6_rec.y_max_diff::VARCHAR		/* Y max diff */, 
-				y_max::VARCHAR					/* Ymax */,
-				c6_rec.y_tile::VARCHAR			/* Y tile */,
-				c6_rec.tile_Y_max::VARCHAR		/* Tile Y max (i.e. what is being diffed with) */);	
-			error_count:=error_count+1;
-		ELSE
+		IF c6_rec.x_min_diff_pct = 0 AND c6_rec.y_min_diff_pct = 0 AND c6_rec.x_max_diff_pct = 0 AND c6_rec.y_max_diff_pct = 0 THEN
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-				'[50408] Y max diff percent: %, diff: %, parameter Y max %, tile % Y max: %',
-				c6_rec.y_max_diff_pct::VARCHAR	/* Y max diff as a percentage */,
-				c6_rec.y_max_diff::VARCHAR		/* Y max diff */, 
-				y_max::VARCHAR					/* Ymax */,
-				c6_rec.y_tile::VARCHAR			/* Y tile */,
-				c6_rec.tile_Y_max::VARCHAR		/* Tile Y max (i.e. what is being diffed with) */);			
-		END IF;
-		IF c6_rec.x_max_diff_pct > 0.01 /* percent */ THEN
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
-				'[50409] X max diff percent: %, diff: %, parameter X max %, tile % X max: %',
-				c6_rec.x_max_diff_pct::VARCHAR	/* X max diff as a percentage */,
-				c6_rec.x_max_diff::VARCHAR		/* X max diff */, 
-				y_max::VARCHAR					/* Ymax */,
-				c6_rec.x_tile::VARCHAR			/* X tile */,
-				c6_rec.tile_X_max::VARCHAR		/* Tile X max (i.e. what is being diffed with)*/);	
-			error_count:=error_count+1;
-		ELSE
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-				'[50410] X max diff percent: %, diff: %, parameter X max %, tile % X max: %',
-				c6_rec.x_max_diff_pct::VARCHAR	/* X max diff as a percentage */,
-				c6_rec.x_max_diff::VARCHAR		/* X max diff */, 
-				y_max::VARCHAR					/* Xmax */,
-				c6_rec.x_tile::VARCHAR			/* X tile */,
-				c6_rec.tile_x_max::VARCHAR		/* Tile X max (i.e. what is being diffed with)*/);			
-		END IF;
-		
-		IF c6_rec.y_min_diff_pct > 0.01 /* percent */ THEN
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
-				'[50411] Y min diff percent: %, diff: %, parameter Y min %, tile % Y min: %',
-				c6_rec.y_min_diff_pct::VARCHAR	/* Y min diff as a percentage */,
-				c6_rec.y_min_diff::VARCHAR		/* Y min diff */, 
-				y_min::VARCHAR					/* Ymin */,
-				c6_rec.y_tile::VARCHAR			/* Y tile */,
-				c6_rec.tile_Y_min::VARCHAR		/* Tile Y min (i.e. what is being diffed with) */);	
-			error_count:=error_count+1;
-		ELSE
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-				'[50412] Y min diff percent: %, diff: %, parameter Y min %, tile % Y min: %',
-				c6_rec.y_min_diff_pct::VARCHAR	/* Y min diff as a percentage */,
-				c6_rec.y_min_diff::VARCHAR		/* Y min diff */, 
-				y_min::VARCHAR					/* Ymin */,
-				c6_rec.y_tile::VARCHAR			/* Y tile */,
-				c6_rec.tile_Y_min::VARCHAR		/* Tile Y min (i.e. what is being diffed with) */);			
-		END IF;
-		IF c6_rec.x_min_diff_pct > 0.01 /* percent */ THEN
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
-				'[50413] X min diff percent: %, diff: %, parameter X min %, tile % X min: %',
-				c6_rec.x_min_diff_pct::VARCHAR	/* X min diff as a percentage */,
-				c6_rec.x_min_diff::VARCHAR		/* X min diff */, 
-				x_min::VARCHAR					/* Ymin */,
-				c6_rec.x_tile::VARCHAR			/* X tile */,
-				c6_rec.tile_x_min::VARCHAR		/* Tile X min (i.e. what is being diffed with)*/);	
-			error_count:=error_count+1;
-		ELSE
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-				'[50414] X min diff percent: %, diff: %, parameter X min %, tile % X min: %',
-				c6_rec.x_min_diff_pct::VARCHAR	/* X min diff as a percentage */,
-				c6_rec.x_min_diff::VARCHAR		/* X min diff */, 
-				x_min::VARCHAR					/* Xmin */,
-				c6_rec.x_tile::VARCHAR			/* X tile */,
-				c6_rec.tile_x_min::VARCHAR		/* Tile X min (i.e. what is being diffed with)*/);			
-		END IF;
---
--- Raise error if required
---
-		IF error_count > 0 THEN
-			PERFORM rif40_log_pkg.rif40_error(-50414, 'rif40_get_geojson_tiles', 
-				'[50415] Geography: %, <geoevel view> % bound validation [%, %, %, %] tile XY(%,%); zoom level %; had % errors', 			 
+				'[50405] Geography: %, <geoevel view> % bound [%, %, %, %] tile XY(%,%) verified [% %]; zoom level %; percent diffs [% % % %]', 			 
 				l_geography::VARCHAR			/* Geography */, 
 				l_geolevel_view::VARCHAR		/* Geoelvel view */,  
 				x_min::VARCHAR					/* Xmin */,
@@ -508,23 +397,143 @@ SELECT * FROM e;
 				y_max::VARCHAR					/* Ymax */,
 				c6_rec.x_tile::VARCHAR			/* X tile */,
 				c6_rec.y_tile::VARCHAR			/* Y tile */,
+				c6_rec.x_centroid::VARCHAR		/* X tile centroid */,
+				c6_rec.y_centroid::VARCHAR		/* Y tile centroid */,
 				zoom_level::VARCHAR				/* Zoom level */,
-				error_count::VARCHAR			/* */);
+				c6_rec.x_min_diff_pct::VARCHAR	/* X min diff as a percentage */,
+				c6_rec.y_min_diff_pct::VARCHAR	/* Y max diff as a percentage */,
+				c6_rec.x_max_diff_pct::VARCHAR	/* X min diff as a percentage */,
+				c6_rec.y_max_diff_pct::VARCHAR	/* Y max diff as a percentage */);
+		ELSE
+--
+-- OK - different - display why
+--
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
+				'[50406] Geography: %, <geolevel view> % bound [%, %, %, %] tile XY(%,%) verified [% %]; zoom level %; expected bound [%, %, %, %]; percent diffs [% % % %]', 			 
+				l_geography::VARCHAR			/* Geography */, 
+				l_geolevel_view::VARCHAR		/* Geolevel view */,  
+				x_min::VARCHAR					/* Xmin */,
+				y_min::VARCHAR					/* Ymin */,
+				x_max::VARCHAR					/* Xmax */,
+				y_max::VARCHAR					/* Ymax */,
+				c6_rec.x_tile::VARCHAR			/* X tile */,
+				c6_rec.y_tile::VARCHAR			/* Y tile */,
+				c6_rec.x_centroid::VARCHAR		/* X tile centroid */,
+				c6_rec.y_centroid::VARCHAR		/* Y tile centroid */,
+				zoom_level::VARCHAR				/* Zoom level */,
+				c6_rec.tile_x_min::VARCHAR		/* tile Xmin */,
+				c6_rec.tile_y_min::VARCHAR		/* tile Ymin */,
+				c6_rec.tile_x_max::VARCHAR		/* tile Xmax */,
+				c6_rec.tile_y_max::VARCHAR		/* tile Ymax */,			
+				c6_rec.x_min_diff_pct::VARCHAR	/* X min diff as a percentage */,
+				c6_rec.y_min_diff_pct::VARCHAR	/* Y max diff as a percentage */,
+				c6_rec.x_max_diff_pct::VARCHAR	/* X min diff as a percentage */,
+				c6_rec.y_max_diff_pct::VARCHAR	/* Y max diff as a percentage */);
+--
+-- Error if >0.01% different
+--
+			IF c6_rec.y_max_diff_pct > 0.01 /* percent */ THEN
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
+					'[50407] Y max diff percent: %, diff: %, parameter Y max %, tile % Y max: %',
+					c6_rec.y_max_diff_pct::VARCHAR	/* Y max diff as a percentage */,
+					c6_rec.y_max_diff::VARCHAR		/* Y max diff */, 
+					y_max::VARCHAR					/* Ymax */,
+					c6_rec.y_tile::VARCHAR			/* Y tile */,
+					c6_rec.tile_Y_max::VARCHAR		/* Tile Y max (i.e. what is being diffed with) */);	
+				error_count:=error_count+1;
+			ELSE
+				PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
+					'[50408] Y max diff percent: %, diff: %, parameter Y max %, tile % Y max: %',
+					c6_rec.y_max_diff_pct::VARCHAR	/* Y max diff as a percentage */,
+					c6_rec.y_max_diff::VARCHAR		/* Y max diff */, 
+					y_max::VARCHAR					/* Ymax */,
+					c6_rec.y_tile::VARCHAR			/* Y tile */,
+					c6_rec.tile_Y_max::VARCHAR		/* Tile Y max (i.e. what is being diffed with) */);			
+			END IF;
+			IF c6_rec.x_max_diff_pct > 0.01 /* percent */ THEN
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
+					'[50409] X max diff percent: %, diff: %, parameter X max %, tile % X max: %',
+					c6_rec.x_max_diff_pct::VARCHAR	/* X max diff as a percentage */,
+					c6_rec.x_max_diff::VARCHAR		/* X max diff */, 
+					y_max::VARCHAR					/* Ymax */,
+					c6_rec.x_tile::VARCHAR			/* X tile */,
+					c6_rec.tile_X_max::VARCHAR		/* Tile X max (i.e. what is being diffed with)*/);	
+				error_count:=error_count+1;
+			ELSE
+				PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
+					'[50410] X max diff percent: %, diff: %, parameter X max %, tile % X max: %',
+					c6_rec.x_max_diff_pct::VARCHAR	/* X max diff as a percentage */,
+					c6_rec.x_max_diff::VARCHAR		/* X max diff */, 
+					y_max::VARCHAR					/* Xmax */,
+					c6_rec.x_tile::VARCHAR			/* X tile */,
+					c6_rec.tile_x_max::VARCHAR		/* Tile X max (i.e. what is being diffed with)*/);			
+			END IF;
+		
+			IF c6_rec.y_min_diff_pct > 0.01 /* percent */ THEN
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
+					'[50411] Y min diff percent: %, diff: %, parameter Y min %, tile % Y min: %',
+					c6_rec.y_min_diff_pct::VARCHAR	/* Y min diff as a percentage */,
+					c6_rec.y_min_diff::VARCHAR		/* Y min diff */, 
+					y_min::VARCHAR					/* Ymin */,
+					c6_rec.y_tile::VARCHAR			/* Y tile */,
+					c6_rec.tile_Y_min::VARCHAR		/* Tile Y min (i.e. what is being diffed with) */);	
+				error_count:=error_count+1;
+			ELSE
+				PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
+					'[50412] Y min diff percent: %, diff: %, parameter Y min %, tile % Y min: %',
+					c6_rec.y_min_diff_pct::VARCHAR	/* Y min diff as a percentage */,
+					c6_rec.y_min_diff::VARCHAR		/* Y min diff */, 
+					y_min::VARCHAR					/* Ymin */,
+					c6_rec.y_tile::VARCHAR			/* Y tile */,
+					c6_rec.tile_Y_min::VARCHAR		/* Tile Y min (i.e. what is being diffed with) */);			
+			END IF;
+			IF c6_rec.x_min_diff_pct > 0.01 /* percent */ THEN
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
+					'[50413] X min diff percent: %, diff: %, parameter X min %, tile % X min: %',
+					c6_rec.x_min_diff_pct::VARCHAR	/* X min diff as a percentage */,
+					c6_rec.x_min_diff::VARCHAR		/* X min diff */, 
+					x_min::VARCHAR					/* Ymin */,
+					c6_rec.x_tile::VARCHAR			/* X tile */,
+					c6_rec.tile_x_min::VARCHAR		/* Tile X min (i.e. what is being diffed with)*/);	
+				error_count:=error_count+1;
+			ELSE
+				PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
+					'[50414] X min diff percent: %, diff: %, parameter X min %, tile % X min: %',
+					c6_rec.x_min_diff_pct::VARCHAR	/* X min diff as a percentage */,
+					c6_rec.x_min_diff::VARCHAR		/* X min diff */, 
+					x_min::VARCHAR					/* Xmin */,
+					c6_rec.x_tile::VARCHAR			/* X tile */,
+					c6_rec.tile_x_min::VARCHAR		/* Tile X min (i.e. what is being diffed with)*/);			
+			END IF;
+--
+-- Raise error if required
+--
+			IF error_count > 0 THEN
+				PERFORM rif40_log_pkg.rif40_error(-50414, 'rif40_get_geojson_tiles', 
+					'[50415] Geography: %, <geoevel view> % bound validation [%, %, %, %] tile XY(%,%); zoom level %; had % errors', 			 
+					l_geography::VARCHAR			/* Geography */, 
+					l_geolevel_view::VARCHAR		/* Geoelvel view */,  
+					x_min::VARCHAR					/* Xmin */,
+					y_min::VARCHAR					/* Ymin */,
+					x_max::VARCHAR					/* Xmax */,
+					y_max::VARCHAR					/* Ymax */,
+					c6_rec.x_tile::VARCHAR			/* X tile */,
+					c6_rec.y_tile::VARCHAR			/* Y tile */,
+					zoom_level::VARCHAR				/* Zoom level */,
+					error_count::VARCHAR			/* */);
+			END IF;
 		END IF;
 	END IF;
---
--- Cache code will go here...
---	
 	
 --
--- Test  <geolevel area id list> is valid
+-- Get <geolevel area id list> 
 --
 /* 
 WITH a AS (
         SELECT area_id,
             ST_MakeEnvelope($1 /- Xmin -/, $2 /- Ymin -/, $3 /- Xmax -/, $4 /- YMax -/) AS geom /- Bound -/
           FROM t_rif40_sahsu_geometry
-         WHERE optimised_geometry && ST_MakeEnvelope($1 /- Xmin -/, $2 /- Ymin -/, $3 /- Xmax -/, $4 /- YMax -/)
+         WHERE optimised_geometry_3 && ST_MakeEnvelope($1 /- Xmin -/, $2 /- Ymin -/, $3 /- Xmax -/, $4 /- YMax -/)
            AND geolevel_name = $5               /- Partition eliminate -/
            /- Intersect bound with geolevel geometry -/
 )
@@ -778,11 +787,12 @@ $body$
 LANGUAGE PLPGSQL;
 
 COMMENT ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, 
-	INTEGER, VARCHAR, BOOLEAN) IS 'Function: 	rif40_get_geojson_tiles()
+	INTEGER, VARCHAR, BOOLEAN, BOOLEAN) IS 'Function: 	rif40_get_geojson_tiles()
 Parameters:	Geography, geolevel_view, 
 			Y max, X max, Y min, X min as a record (bounding box), 
 			Zoom level [Default: 8; scaling 1 in 2,325,012], tile name [Default: NULL]
-			return one row (TRUE/FALSE)
+			return one row (TRUE/FALSE)  [Default: TRUE]
+			Check tile co-ordinates  (TRUE/FALSE)  [Default: TRUE]
 Returns:	Text table [1 or more rows dependent on return_one_row]
 Description:	Get GeoJSON data as a Javascript variable. 
 		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
@@ -885,8 +895,8 @@ Generates geoJSON that looks (when prettified using http://jsbeautifier.org/) li
 
 Validated with JSlint: http://www.javascriptlint.com/online_lint.php';
 
-GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, VARCHAR, BOOLEAN) TO rif_manager;
-GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, VARCHAR, BOOLEAN) TO rif_user;
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, VARCHAR, BOOLEAN, BOOLEAN) TO rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, VARCHAR, BOOLEAN, BOOLEAN) TO rif_user;
 
 --
 -- Eof

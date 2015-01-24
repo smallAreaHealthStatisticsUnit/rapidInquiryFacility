@@ -361,10 +361,11 @@ BEGIN
 			took::VARCHAR					/* Time taken */);
 	ELSIF i != l_expected_rows THEN
 		PERFORM rif40_log_pkg.rif40_error(-50216, '_rif40_get_geojson_as_js', 
-			'geography: %, SQL fetch returned wrong number of area rows, expecting: %, got: %, took: %.', 			
+			'geography: %, SQL fetch returned wrong number of area rows, expecting: %, got: %, area_ids: %, took: %.', 			
 			l_geography::VARCHAR			/* Geography */, 
 			l_expected_rows::VARCHAR		/* Expected rows */,
 			i::VARCHAR						/* Actual */,
+			array_to_string(geolevel_area_id_list, ',')::VARCHAR		/* Area ID list */,
 			took::VARCHAR					/* Time taken */);
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_get_geojson_as_js', 

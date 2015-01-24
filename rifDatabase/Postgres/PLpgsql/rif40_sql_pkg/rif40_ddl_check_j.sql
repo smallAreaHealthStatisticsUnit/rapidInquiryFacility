@@ -148,15 +148,7 @@ DECLARE
 			        FROM t_rif40_geolevels
 			       UNION 
 			      SELECT DISTINCT 'p_rif40_geolevels_maptiles_'||	/* Maptile table partitions */
-					LOWER(geography)||'_'||LOWER(geolevel_name)||'_zoom_6' tablename
-			        FROM t_rif40_geolevels
-			       UNION 
-			      SELECT DISTINCT 'p_rif40_geolevels_maptiles_'||	/* Maptile table partitions */
-					LOWER(geography)||'_'||LOWER(geolevel_name)||'_zoom_8' tablename
-			        FROM t_rif40_geolevels
-			       UNION 
-			      SELECT DISTINCT 'p_rif40_geolevels_maptiles_'||	/* Maptile table partitions */
-					LOWER(geography)||'_'||LOWER(geolevel_name)||'_zoom_11' tablename
+					LOWER(geography)||'_'||LOWER(geolevel_name)||'_zoom_'||generate_series(0, 11, 1)::Text tablename
 			        FROM t_rif40_geolevels
 			       UNION 
 			      SELECT DISTINCT LOWER(table_name) tablename	/* Numerator and denominators */

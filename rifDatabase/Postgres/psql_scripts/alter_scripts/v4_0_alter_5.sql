@@ -591,8 +591,9 @@ END;
 $$;
  */
 --
--- Test performance (FAST..)
+-- Test performance (FAST .. 31.834 ms)
 --
+\timing on
 SELECT geolevel_name, geography, zoomlevel, x_tile_number, y_tile_number, optimised_topojson, tile_id
   FROM rif40_sahsu_maptiles
  WHERE geolevel_name = 'LEVEL1'
@@ -600,7 +601,14 @@ SELECT geolevel_name, geography, zoomlevel, x_tile_number, y_tile_number, optimi
    AND x_tile_number IN (264, 265)
    AND y_tile_number = 330
  ORDER BY tile_id; 
-
+SELECT geolevel_name, geography, zoomlevel, x_tile_number, y_tile_number, optimised_topojson, tile_id
+  FROM rif40_sahsu_maptiles
+ WHERE geolevel_name = 'LEVEL1'
+   AND zoomlevel     = 9
+   AND x_tile_number IN (264, 265)
+   AND y_tile_number = 330
+ ORDER BY tile_id; 
+ 
 --
 -- Display tile summary
 -- 
