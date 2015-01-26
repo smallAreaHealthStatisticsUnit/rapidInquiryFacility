@@ -178,6 +178,7 @@ public class SQLRecordExistsQueryFormatter
 		addQueryPhrase(1, convertCase(fromTableName));
 		padAndFinishLine();
 		addQueryPhrase(0, "WHERE");
+		padAndFinishLine();
 		
 		if (lookupKeyFieldName == null) {
 			int numberOfWhereConditions = whereConditions.size();
@@ -192,7 +193,7 @@ public class SQLRecordExistsQueryFormatter
 		}
 		else {
 			addQueryPhrase(1, convertCase(lookupKeyFieldName));
-			addQueryPhrase("=?");			
+			addQueryPhrase("=?");
 
 			int numberOfWhereConditions = whereConditions.size();
 			if (numberOfWhereConditions > 0) {			
