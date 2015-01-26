@@ -1525,8 +1525,9 @@ class SQLRIFContextManager
 
 		SQLRecordExistsQueryFormatter query = new SQLRecordExistsQueryFormatter();
 		query.setFromTable("rif40_geolevels");
+		query.addWhereParameter("geography");
 		query.setLookupKeyFieldName("geolevel_name");
-					
+		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;			
 
@@ -1552,13 +1553,44 @@ class SQLRIFContextManager
 		try {
 			statement
 				= connection.prepareStatement(query.generateQuery());
-			statement.setString(1, geographyName);
-			statement.setString(2, geoLevelValueName);
-			resultSet = statement.executeQuery();	
+			statement.setString(1, geoLevelValueName);
+			statement.setString(2, geographyName);
+			
+			resultSet = statement.executeQuery();
 			if (resultSet.next() == false) {
-				//ERROR: no views available
-				throw unableToCheckValueExistsException;
+				
+				if (isToMapValue == true) {
+					String recordType = RIFServiceMessages.getMessage("geoLevelToMap.label");
+
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"general.validation.nonExistentRecord",
+							recordType,
+							geoLevelValueName);
+
+					RIFServiceException rifServiceException
+						= new RIFServiceException(
+							RIFServiceError.NON_EXISTENT_GEOLEVEL_TO_MAP_VALUE, 
+							errorMessage);
+					throw rifServiceException;				
+				}
+				else {
+					String recordType = RIFServiceMessages.getMessage("geoLevelView.label");
+
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"general.validation.nonExistentRecord",
+							recordType,
+							geoLevelValueName);
+
+					RIFServiceException rifServiceException
+						= new RIFServiceException(
+							RIFServiceError.NON_EXISTENT_GEOLEVEL_VIEW_VALUE, 
+							errorMessage);
+					throw rifServiceException;				
+				}				
 			}
+			
 		}	
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
