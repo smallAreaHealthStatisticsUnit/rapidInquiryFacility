@@ -3,14 +3,10 @@ package rifServices.test.services;
 
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
-import rifServices.util.DisplayableItemSorter;
 
 import java.util.ArrayList;
 
 import static org.junit.Assert.*;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 
