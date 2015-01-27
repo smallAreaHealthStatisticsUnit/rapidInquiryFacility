@@ -87,6 +87,8 @@ Parameters:	Geography, geolevel_view, geolevel area ID list, expected_rows,
 			produce JSON only (i.e. not encapsulated in Javascript) - default FALSE, 
 			Zoom level [Default: 9; scaling 1 in 1,162,506], tile name [Default: NULL]
 Returns:	Text table
+			In produce JSON only mode only one row is returned to remove ARRAY_AGG() issues 
+			(There is no way of easily ordering without using a sub-query)
 Description:	Get GeoJSON data as a Javascript variable. 
 			If the zoom level is 12 (1 in 145,313) or more then the properties are minimised to just the gid.
 			This is to minimise the file size.
@@ -113,9 +115,13 @@ WITH a AS (
         UNION
         SELECT 999999 ord, ']} /- End: total expected rows: 59 -/' js
 )
-SELECT CASE WHEN ord BETWEEN 2 AND 999998 THEN ','||js ELSE js END::VARCHAR AS js
-  FROM a
- ORDER BY ord;
+SELECT string_agg(js, ',') AS js
+  FROM (SELECT CASE 
+					WHEN ord BETWEEN 2 AND 999998 THEN ','||js 
+					ELSE js 
+			   END::VARCHAR AS js 
+		  FROM a
+		 ORDER BY ord) AS a1;
 
 Generates a Javascript variable encapulation geoJSON that looks (when prettified using http://jsbeautifier.org/) like:
 
@@ -190,16 +196,17 @@ DECLARE
 --
 	sql_stmt 		VARCHAR;
 	drop_stmt 		VARCHAR;
-	i 			INTEGER:=0;
+	i 				INTEGER:=0;
 --
-	explain_text 		VARCHAR;
+	explain_text 	VARCHAR;
 	temp_table 		VARCHAR;
 --
-	stp 		TIMESTAMP WITH TIME ZONE:=clock_timestamp();
-	etp 		TIMESTAMP WITH TIME ZONE;
-	took 		INTERVAL;
+	stp 			TIMESTAMP WITH TIME ZONE:=clock_timestamp();
+	etp 			TIMESTAMP WITH TIME ZONE;
+	took 			INTERVAL;
 --
-	error_message 		VARCHAR;
+	error_message 	VARCHAR;
+	v_context 		VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN
 --
@@ -267,17 +274,34 @@ BEGIN
 	ELSE
 		sql_stmt:=sql_stmt||E'\t'||'SELECT 999999 ord, '']} /* End: total expected rows: '||l_expected_rows||' */'' js'||E'\n';
 	END IF;
-	sql_stmt:=sql_stmt||')'||E'\n';
 --
 -- EXPLAIN plan version has the ord field so they TEMP table can be ordered correctly
 --
 	IF rif40_log_pkg.rif40_is_debug_enabled('_rif40_get_geojson_as_js', 'DEBUG2') THEN
 		sql_stmt:=sql_stmt||'SELECT ord, CASE WHEN ord BETWEEN 2 AND 999998 THEN '',''||js ELSE js END::VARCHAR AS js'||E'\n';
+		sql_stmt:=sql_stmt||'  FROM a'||E'\n';
+		sql_stmt:=sql_stmt||' ORDER BY ord';
+--
+-- string_agg does not have an analytic form so and ordered subquery must be used to ensure the rows
+-- are aggregated in the intended order.
+--
+	ELSIF produce_json_only THEN
+		sql_stmt:=sql_stmt||')'||E'\n';
+		sql_stmt:=sql_stmt||'SELECT string_agg(js, '''')::VARCHAR AS js'||E'\n';
+ 		sql_stmt:=sql_stmt||'  FROM ('||E'\n';
+ 		sql_stmt:=sql_stmt||'		SELECT CASE'||E'\n';
+ 		sql_stmt:=sql_stmt||'					WHEN ord BETWEEN 2 AND 999998 THEN '',''||js'||E'\n';
+ 		sql_stmt:=sql_stmt||'					ELSE js'||E'\n';
+ 		sql_stmt:=sql_stmt||'              END::VARCHAR AS js'||E'\n';
+ 		sql_stmt:=sql_stmt||'		  FROM a'||E'\n';
+ 		sql_stmt:=sql_stmt||'		 ORDER BY ord) AS a1';
 	ELSE
+		sql_stmt:=sql_stmt||')'||E'\n';
 		sql_stmt:=sql_stmt||'SELECT CASE WHEN ord BETWEEN 2 AND 999998 THEN '',''||js ELSE js END::VARCHAR AS js'||E'\n';
+		sql_stmt:=sql_stmt||'  FROM a'||E'\n';
+		sql_stmt:=sql_stmt||' ORDER BY ord';
 	END IF;
-	sql_stmt:=sql_stmt||'  FROM a'||E'\n';
-	sql_stmt:=sql_stmt||' ORDER BY ord';
+
 --
 -- Execute SQL statement, returning Javascript
 --
@@ -335,9 +359,11 @@ BEGIN
 --
 -- Print exception to INFO, re-raise
 --
-				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL,
+										v_context = PG_EXCEPTION_CONTEXT;
 				error_message:='_rif40_get_geojson_as_js() caught: '||E'\n'||
-					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
+					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR||E'\n'||
+							'Context: '||v_context::VARCHAR;
 				RAISE INFO '50213: %', error_message;
 --
 				RAISE;
@@ -352,11 +378,19 @@ BEGIN
 -- Check number of rows processed
 --
 	IF i IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-50214, '_rif40_get_geojson_as_js', 'geography: %, SQL fetch returned NULL area rows, took: %.', 
+		PERFORM rif40_log_pkg.rif40_error(-50214, '_rif40_get_geojson_as_js', 
+			'geography: %, SQL fetch returned NULL area rows, took: %.', 
 			l_geography::VARCHAR			/* Geography */,
 			took::VARCHAR					/* Time taken */);
+	ELSIF produce_json_only AND i = 1 THEN	/* Expected result for JSON */
+		PERFORM rif40_log_pkg.rif40_log('DEBUG2', '_rif40_get_geojson_as_js', 
+			'[50217] Geography: %, SQL JSON fetch returned correct number of area rows, got: %, took: %.', 			
+			l_geography::VARCHAR			/* Geography */, 
+			i::VARCHAR						/* Actual */,
+			took::VARCHAR					/* Time taken */);
 	ELSIF i = 2 THEN
-		PERFORM rif40_log_pkg.rif40_error(-50215, '_rif40_get_geojson_as_js', 'geography: %, SQL fetch returned no area rows, took: %.', 
+		PERFORM rif40_log_pkg.rif40_error(-50215, '_rif40_get_geojson_as_js', 
+			'geography: %, SQL fetch returned no area rows, took: %.', 
 			l_geography::VARCHAR			/* Geography */,
 			took::VARCHAR					/* Time taken */);
 	ELSIF i != l_expected_rows THEN
@@ -386,6 +420,8 @@ Parameters:	Geography, geolevel_view, geolevel area ID list, l_expected_rows,
 			produce JSON only (i.e. not encapsulated in Javascript) - default FALSE, 
 			Zoom level [Default: 9; scaling 1 in 1,162,506], tile name [Default: NULL]
 Returns:	Text table of geoJSON
+			In produce JSON only mode only one row is returned to remove ARRAY_AGG() issues 
+			(There is no way of easily ordering without using a sub-query)
 Description:	Get GeoJSON data as a Javascript variable. 
 			If the zoom level is 12 (1 in 145,313) or more then the properties are minimised to just the gid.
 			This is to minimise the file size.
@@ -412,9 +448,13 @@ WITH a AS (
         UNION
         SELECT 999999 ord, '']} /* End: total expected rows: 59 */'' js
 )
-SELECT CASE WHEN ord BETWEEN 2 AND 999998 THEN '',''||js ELSE js END::VARCHAR AS js
-  FROM a
- ORDER BY ord;
+SELECT string_agg(js, '','') AS js
+  FROM (SELECT CASE 
+					WHEN ord BETWEEN 2 AND 999998 THEN '',''||js 
+					ELSE js 
+			   END::VARCHAR AS js 
+		  FROM a
+		 ORDER BY ord) AS a1;
 
 Generates a Javascript variable encapulation geoJSON that looks (when prettified using http://jsbeautifier.org/) like:
 

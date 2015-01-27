@@ -216,20 +216,29 @@ BEGIN
 	DROP FUNCTION IF EXISTS rif40_dmp_pkg.csv_dump(VARCHAR, rif40_dmp_pkg.DELIMITER_TYPE, rif40_dmp_pkg.LINE_TERMINATOR, BOOLEAN, BOOLEAN, INTEGER);
 EXCEPTION	
 	WHEN others THEN
-			RAISE INFO 'Ingored error in drop: %', sqlerrm;	
+			RAISE INFO 'Ignored error in drop: %', sqlerrm;	
 END;
 $$;
+
+--
+-- These cause mysterious error after a database drop (when they should not exist by definition). 
+-- Should not be here as owned by Postgres anyway.
+--
+--DROP FUNCTION IF EXISTS rif40_r_pkg.r_init(RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL, VARCHAR);
+--DROP FUNCTION IF EXISTS rif40_r_pkg._r_init(RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL);
 
 DROP TYPE IF EXISTS rif40_dmp_pkg.DELIMITER_TYPE CASCADE;
 DROP TYPE IF EXISTS rif40_dmp_pkg.LINE_TERMINATOR CASCADE;
 
-DROP FUNCTION IF EXISTS rif40_r_pkg.r_init(RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL, VARCHAR);
+DROP TYPE IF EXISTS rif40_log_pkg.rif40_log_debug_level CASCADE;
+DROP TYPE IF EXISTS rif40_log_pkg.rif40_debug_record CASCADE;
+
 DROP FUNCTION IF EXISTS rif40_r_pkg.r_cleanup();
 DROP FUNCTION IF EXISTS rif40_r_pkg._r_cleanup();
 DROP FUNCTION IF EXISTS rif40_r_pkg.installed_packages();
 DROP FUNCTION IF EXISTS rif40_r_pkg.install_package_from_internet(VARCHAR);
 DROP FUNCTION IF EXISTS rif40_r_pkg._install_all_packages_from_internet();
-DROP FUNCTION IF EXISTS rif40_r_pkg._r_init(RIF40_LOG_PKG.RIF40_LOG_DEBUG_LEVEL);
+
 DROP FUNCTION IF EXISTS rif40_r_pkg.rif40_install_rcmd(VARCHAR, VARCHAR);
 
 DROP FUNCTION IF EXISTS rif40_trg_pkg.create_instead_of_triggers() CASCADE;
@@ -296,9 +305,6 @@ DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_rif40_tables_checks();
 DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_rif40_table_outcomes_checks();
 DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_rif40_version_checks();
 
-DROP TYPE IF EXISTS rif40_log_pkg.rif40_log_debug_level CASCADE;
-DROP TYPE IF EXISTS rif40_log_pkg.rif40_debug_record CASCADE;
-
 DROP FUNCTION IF EXISTS rif40_log_pkg.rif40_log_setup() CASCADE;
 DROP FUNCTION IF EXISTS rif40_log_pkg.rif40_send_debug_to_info(BOOLEAN) CASCADE;
 DROP FUNCTION IF EXISTS rif40_log_pkg.rif40_get_error_code_action(INTEGER, VARCHAR) CASCADE;
@@ -344,6 +350,7 @@ DROP FUNCTION IF EXISTS rif40_geo_pkg.fix_null_geolevel_names();
 DROP FUNCTION IF EXISTS rif40_geo_pkg.get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR, VARCHAR);
 DROP FUNCTION IF EXISTS rif40_geo_pkg.add_population_to_rif40_geolevels_geometry(VARCHAR, VARCHAR);
 DROP FUNCTION IF EXISTS rif40_geo_pkg.add_population_to_rif40_geolevels_geometry();
+DROP FUNCTION IF EXISTS rif40_geo_pkg.populate_rif40_tiles(VARCHAR);
 
 --
 -- Drop old and new (without st_simplify_tolerance) forms

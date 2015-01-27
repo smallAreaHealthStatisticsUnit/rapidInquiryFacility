@@ -774,8 +774,8 @@ BEGIN
 '			z.y_tile_number	'||E'\n'||			
 '			) AS tile_id, '||E'\n'||
 '       z.x_tile_number, z.y_tile_number, z.zoomlevel, '||E'\n'||
-'	   COALESCE(h.optimised_topojson, ''{"type": "FeatureCollection","features":[]}''::JSON /* Null featureset */) AS optimised_topojson, '||E'\n'||
-'	   COALESCE(h.optimised_geojson, ''{"type": "FeatureCollection","features":[]}''::JSON /* Null featureset */) AS optimised_geojson'||E'\n'||
+'	   COALESCE(h.optimised_geojson, ''{"type": "FeatureCollection","features":[]}''::JSON /* Null featureset */) AS optimised_geojson,'||E'\n'||
+'	   COALESCE(h.optimised_topojson, ''{"type": "FeatureCollection","features":[]}''::JSON /* Null featureset */) AS optimised_topojson '||E'\n'||
 '  FROM ( /* Use sub query so optimise can unnest; a CTE with cause all tile X Y numbers to be generated */'||E'\n'||
 '	SELECT ey.geolevel_name, ey.geolevel_id, ey.geography, ex.zoomlevel, ex.xy_series AS x_tile_number, ey.xy_series AS y_tile_number'||E'\n'||
 '	  FROM ey, ex'||E'\n'||

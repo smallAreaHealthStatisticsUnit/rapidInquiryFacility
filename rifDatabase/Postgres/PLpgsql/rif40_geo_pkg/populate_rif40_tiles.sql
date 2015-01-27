@@ -217,27 +217,27 @@ DECLARE
 			'     WHERE g.min_geolevel_id = e.min_geolevel_id'||E'\n'||
 			'       AND h.geography       = g.geography'||E'\n'||
  			'       AND g.geolevel_series = h.geolevel_id'||E'\n'||
-			'), i AS ('||E'\n'||
+			'), i AS ( /* Intersect bound with geolevel geometry to build list of area_ids */'||E'\n'||
 			'	SELECT h.geography,'||E'\n'||
 			'           h.geolevel_name,'||E'\n'||
 			'           h.tile_id,'||E'\n'||
 			'           h.x_series AS x_tile_number,'||E'\n'||
 			'           h.y_series AS y_tile_number,'||E'\n'||
 			'           h.zoomlevel,'||E'\n'||
-			'	       i.area_id,'||E'\n'||
+			'	        i.area_id,'||E'\n'||
 			'           ST_MakeEnvelope(h.tile_Xmin, h.tile_Ymin, h.tile_Xmax, h.tile_Ymax) AS geom /* Bound */'||E'\n'||
 			'      FROM t_rif40_sahsu_geometry i, h'||E'\n'||
 			'     WHERE optimised_geometry_3 && ST_MakeEnvelope(h.tile_Xmin, h.tile_Ymin, h.tile_Xmax, h.tile_Ymax)'||E'\n'||
  			'      AND h.geolevel_name = i.geolevel_name    /* Partition eliminate */'||E'\n'||
 			'												/* Intersect bound with geolevel geometry */'||E'\n'||
-			'), j AS ('||E'\n'||
+			'), j AS ( /* Build array of area_ids for _rif40_get_geojson_as_js() */'||E'\n'||
 			'	SELECT i.geography,'||E'\n'||
 			'           i.geolevel_name,'||E'\n'||
 			'           i.tile_id,'||E'\n'||
 			'           i.x_tile_number,'||E'\n'||
 			'           i.y_tile_number,'||E'\n'||
 			'           i.zoomlevel,'||E'\n'||
-			'		   COUNT(DISTINCT(i.area_id)) AS total  	/* Total area IDs */,'||E'\n'||
+			'		    COUNT(DISTINCT(i.area_id)) AS total  	/* Total area IDs */,'||E'\n'||
 			'           ARRAY_AGG(i.area_id) AS area_id_list 	/* Array of area IDs */,'||E'\n'||
 			'           ST_IsValid(i.geom) AS is_valid   		/* Test bound */,'||E'\n'||
 			'           ST_Area(i.geom) AS area         		/* Area of bound */'||E'\n'||
@@ -250,13 +250,13 @@ DECLARE
 			'           i.zoomlevel,'||E'\n'||
 			'		   ST_IsValid(i.geom),'||E'\n'||
 			'		   ST_Area(i.geom)'||E'\n'||
-			'), k AS ('||E'\n'||
+			'), k AS ( /* Convert area_ids array to GeoJSON using _rif40_get_geojson_as_js() */'||E'\n'||
 			'	SELECT j.geography,'||E'\n'||
 			'		   j.geolevel_name,'||E'\n'||
-			'           j.tile_id,'||E'\n'||
-			'           j.x_tile_number,'||E'\n'||
-			'           j.y_tile_number,'||E'\n'||
-			'           j.zoomlevel,'||E'\n'||
+			'          j.tile_id,'||E'\n'||
+			'          j.x_tile_number,'||E'\n'||
+			'          j.y_tile_number,'||E'\n'||
+			'          j.zoomlevel,'||E'\n'||
 			'		   j.total,'||E'\n'||
 			'		   rif40_xml_pkg._rif40_get_geojson_as_js('||E'\n'||
 			'					j.geography, '||E'\n'||
@@ -264,7 +264,7 @@ DECLARE
 			'					j.area_id_list, '||E'\n'||
 			'					(j.total+2)::INTEGER	/* Add 2 for header and footer */,'||E'\n'||
 			'					TRUE 					/* Produce JSON not JS */, '||E'\n'||
-			'					j.zoomlevel::INTEGER) AS optimised_geojson'||E'\n'||
+			'					j.zoomlevel::INTEGER)::JSON AS optimised_geojson'||E'\n'||
 			'	FROM j'||E'\n'||
 			')'||E'\n'||
 			'SELECT geography,'||E'\n'||
@@ -273,18 +273,11 @@ DECLARE
 			'       x_tile_number,'||E'\n'||
 			'       y_tile_number,'||E'\n'||
 			'       zoomlevel,'||E'\n'||
-			'       array_to_string(			/* Aggregate header, footer and body */'||E'\n'||
-			'       	ARRAY_AGG(optimised_geojson), '' '')::JSON AS optimised_geojson,'||E'\n'||
- 			'       to_json(''X''::Text)::JSON AS optimised_topojson /* Dummy value */,'||E'\n'||
+			'       optimised_geojson,'||E'\n'||				
+	 		'       to_json(''X''::Text)::JSON AS optimised_topojson /* Dummy value */,'||E'\n'||			
 			'       ROW_NUMBER() OVER() AS gid'||E'\n'||
 			'  FROM k'||E'\n'||
-			' WHERE k.total != 0'||E'\n'||
-			'    GROUP BY k.geography,'||E'\n'||
-			'		   k.geolevel_name,'||E'\n'||
- 			'          k.tile_id,'||E'\n'||
- 			'          k.x_tile_number,'||E'\n'||
-			'           k.y_tile_number,'||E'\n'||
-			'           k.zoomlevel'||E'\n'||
+			' WHERE k.total > 0'||E'\n'||
 			' ORDER BY 1';
 --
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'populate_rif40_tiles', 

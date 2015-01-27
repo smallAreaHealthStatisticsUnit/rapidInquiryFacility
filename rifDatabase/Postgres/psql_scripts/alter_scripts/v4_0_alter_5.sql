@@ -608,14 +608,16 @@ SELECT geolevel_name, geography, zoomlevel, x_tile_number, y_tile_number, optimi
    AND x_tile_number IN (264, 265)
    AND y_tile_number = 330
  ORDER BY tile_id; 
- 
+
 --
--- Display tile summary
+-- Display tile summary [SLOW!]
 -- 
+/*
 SELECT geolevel_name, zoomlevel, SUM(no_area_ids) AS tiles_with_no_area_ids, COUNT(optimised_topojson) AS aaas
   FROM rif40_sahsu_maptiles
  GROUP BY geolevel_name, zoomlevel
  ORDER BY geolevel_name, zoomlevel; 
+ */
 /*
                                                           rif40_GetMapAreas interface
  geolevel_name | geography | zoomlevel | x_tile_number | y_tile_number |             optimised_topojson              |         tile_id
@@ -679,6 +681,11 @@ Time: 31.834 ms
 (48 rows)
  */ 
 END;
+
+--
+-- Vacuum ANALYZE all RIF40 tables
+--
+\i  ../psql_scripts/v4_0_vacuum_analyse.sql
 
 --
 -- Eof

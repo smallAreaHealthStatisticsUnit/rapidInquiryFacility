@@ -212,6 +212,11 @@ $$;
 \i ../PLpgsql/rif40_geo_pkg/v4_0_rif40_geo_pkg_simplification.sql
 
 --
+-- PG psql code (middleware)
+--
+\i ../PLpgsql/v4_0_rif40_xml_pkg.sql
+
+--
 -- PG psql code (state machine and extract SQL generation)
 --
 \i ../PLpgsql/v4_0_rif40_sm_pkg.sql
@@ -570,7 +575,7 @@ DECLARE
 		SELECT v.tablename, v.viewname
 		  FROM v
 			LEFT OUTER JOIN t ON (t.relname = v.viewname)
- 		WHERE viewname NOT IN ('rif40_num_denom', 'rif40_projects', 'rif40_geolevels') /* These views cannot be inserted into */
+ 		WHERE viewname NOT IN ('rif40_num_denom', 'rif40_projects', 'rif40_geolevels', 'rif40_sahsu_maptiles') /* These views cannot be inserted into */
  		  AND  t.trigger_name IS NULL
  		ORDER BY 1, 2;
 	c1_rec RECORD;

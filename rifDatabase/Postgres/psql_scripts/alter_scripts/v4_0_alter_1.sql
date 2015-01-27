@@ -413,10 +413,10 @@ END;
 -- Vacuum geometry tables, partitions and t_rif40_investigations
 --
 VACUUM ANALYSE t_rif40_sahsu_geometry;
-VACUUM ANALYSE t_rif40_geolevels_geometry_sahsu_level1;
-VACUUM ANALYSE t_rif40_geolevels_geometry_sahsu_level2;
-VACUUM ANALYSE t_rif40_geolevels_geometry_sahsu_level3;
-VACUUM ANALYSE t_rif40_geolevels_geometry_sahsu_level4;
+VACUUM ANALYSE p_rif40_geolevels_geometry_sahsu_level1;
+VACUUM ANALYSE p_rif40_geolevels_geometry_sahsu_level2;
+VACUUM ANALYSE p_rif40_geolevels_geometry_sahsu_level3;
+VACUUM ANALYSE p_rif40_geolevels_geometry_sahsu_level4;
 VACUUM ANALYSE t_rif40_investigations;
 
 DO LANGUAGE plpgsql $$
