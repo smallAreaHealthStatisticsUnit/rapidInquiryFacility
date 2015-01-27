@@ -99,8 +99,8 @@
 
           domParent.style.display = 'none';
           domParent.innerHTML = '';
-
           data.reverse();
+
           while ( l-- ) {
             var container = document.createElement( "div" ),
               div = document.createElement( "div" ),
@@ -116,6 +116,7 @@
             } else {
               container.className = 'noChildElements ' + taxonomy;
             };
+
 
             var description = ( data[ l ][ 'description' ] ).replace( ';', '' );
             divHeader.innerHTML = expand + '<span>' + data[ l ][ 'code' ] + '</span> - ' +

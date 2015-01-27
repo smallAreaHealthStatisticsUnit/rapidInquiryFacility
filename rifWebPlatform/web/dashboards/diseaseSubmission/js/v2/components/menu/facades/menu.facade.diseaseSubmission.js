@@ -74,9 +74,10 @@ RIF.menu[ 'facade-diseaseSubmission' ] = ( function( _p ) {
     },
     isDialogReady: function( dialog ) {
       this.fire( 'isDialogReady', dialog );
+    },
+    icdSearch: function() {
+      this.fire( 'icdSearch', null );
     }
-
-
 
 
     /* Study Related */

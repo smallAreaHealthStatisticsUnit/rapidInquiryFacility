@@ -25,9 +25,11 @@ RIF.menu.investigationParameters = ( function( _dom ) {
           elEnd = _dom[ 'endYearAvailable' ],
           years = [],
           i = 0;
+
         while ( lower <= upper ) {
           years.push( lower++ );
-        }
+        };
+
         parent.dropDownInputText( years, elStart );
         parent.dropDownInputText( years, elEnd );
 

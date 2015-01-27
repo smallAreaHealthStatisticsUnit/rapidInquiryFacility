@@ -101,6 +101,12 @@ RIF.study[ 'facade-diseaseSubmission' ] = ( function() {
       };
     },
 
+    icdSearch: function() {
+      //this.setHealthOutcomes(null);
+      //this.isInvestigationReady();
+    },
+
+
     // FIRERS  
     selectAtChangeUpdate: function( geolvl ) {
       this.fire( 'selectAtChangeUpdate', geolvl );

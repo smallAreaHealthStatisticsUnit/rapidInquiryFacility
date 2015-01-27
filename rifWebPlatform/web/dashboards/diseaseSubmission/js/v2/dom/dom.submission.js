@@ -75,10 +75,11 @@ RIF.dom = ( function() {
           selection: function() {
             return $( '.icdSelected span' )
           },
-          healthSelection: 'icdSelected',
+          icdSelection: 'icdSelected',
           clearAll: $( '#clearParameters' ),
           healthCodes: '.healthCodes',
-          searchCodeInput: $( '#searchCodeInput' )
+          searchCodeInput: $( '#searchCodeInput' ),
+          hiddenIcdSelection: $( '#icdSelection' )
 
         };
       },
