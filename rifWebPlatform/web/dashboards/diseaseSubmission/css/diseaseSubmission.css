@@ -1233,8 +1233,7 @@ color:#848484;
     overflow: auto;
 }
 .healthCodes #icdSelection div{
-    background-color:white
-;
+    background-color:white;
     padding: 1px 0  0 10px;
 }
 .healthCodes > div  {
@@ -1265,6 +1264,39 @@ color:#848484;
     padding: 2px 10px;
     text-align: right;
 }
+
+ #searchResults{
+    position:absolute;
+    display: none; 
+    height: 90%;
+    width: 96% !important;
+    z-index: 999999999999;
+    background: url('../images/close.png') no-repeat 100% 2%;
+}
+
+ #searchResults .opacityBackground{
+    opacity: 0.8;
+    background-color: #C1CDCD;
+    width: 100%;
+    height: 100%;
+    position: absolute
+}
+
+ #healthResults{
+    margin: 10%;
+    padding: 20px;
+    background-color: white;
+    z-index: 999999;
+    position: absolute;
+    width: 70%;
+    border: 3px solid #87CEFA;
+    overflow: auto; 
+    max-height: -moz-calc(80% - 30px); 
+    max-height: -webkit-calc(80% - 30px); 
+    max-height: -o-calc(80% - 30px);  
+    max-height: calc(80% - 30px);
+}
+
 .healthCodes #tree > div{
     width: 100%;
     padding: 2px 10px;

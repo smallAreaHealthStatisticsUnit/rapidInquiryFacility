@@ -79,7 +79,10 @@ RIF.dom = ( function() {
           clearAll: $( '#clearParameters' ),
           healthCodes: '.healthCodes',
           searchCodeInput: $( '#searchCodeInput' ),
-          hiddenIcdSelection: $( '#icdSelection' )
+          hiddenIcdSelection: $( '#icdSelection' ),
+          searchResults: get( 'searchResults' ),
+          healthResults: get( 'healthResults' )
+
 
         };
       },

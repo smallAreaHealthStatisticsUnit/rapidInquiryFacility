@@ -142,13 +142,15 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
 
       menuContext.proxy.searchHealthCodes( {
         taxonomy: taxonomy,
-        searchTxt: searchTxt,
-        dom: domParent
+        searchTxt: searchTxt /*, dom: domParent */
       } );
       previousSearch = searchTxt;
 
-
     };
+  } );
+
+  $( _dom.searchResults ).on( "click", '.opacityBackground', function( aEvent ) {
+    $( _dom.searchResults ).hide();
   } );
 
   var copySelection = function() {

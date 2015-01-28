@@ -40,7 +40,7 @@
 
           getSearchHealthCodes: function( params ) {
             var specialClbk = function() {
-              _callbacks.getSearchHealthCodes.call( this, params.dom, params.taxonomy );
+              _callbacks.getSearchHealthCodes.call( this, /*params.dom,*/ params.taxonomy );
             };
             if ( params.searchTxt == '' ) {
               _reRequestTopLevelHealthCodes( params.taxonomy );
@@ -82,13 +82,14 @@
             _insertChildrenElements( this, domParent, taxonomy );
           },
 
-          getSearchHealthCodes: function( domParent, taxonomy ) {
+          getSearchHealthCodes: function( /*domParent,*/ taxonomy ) {
             if ( this.length === 0 ) {
               RIF.statusBar( 'No Health codes found', true, 'notify' );
               //_reRequestTopLevelHealthCodes( taxonomy );
               return;
             };
-            _insertChildrenElements( this, domParent, taxonomy );
+            _insertChildrenElements( this, _dom.healthResults, taxonomy );
+            _dom.searchResults.style.display = 'block';
           },
 
         },
