@@ -301,7 +301,9 @@ DECLARE
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL,
 										v_context = PG_EXCEPTION_CONTEXT;
 				error_message:='populate_rif40_tiles('||c1_rec.geography||'); zoomlevel: '||zoomlevel||'; caught: '||E'\n'||
-					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR||E'\n'||'Context: '||v_context::VARCHAR;
+					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||
+							'Detail: '||v_detail::VARCHAR||E'\n'||
+							'Context: '||v_context::VARCHAR;
 				RAISE NOTICE '60105: %', error_message;
 --
 				RAISE;

@@ -196,7 +196,7 @@ BEGIN
 --
 	IF check_number = 0 THEN
 		sql_stmt:='SELECT COUNT(DISTINCT(CASE WHEN ST_Isvalid(shapefile_geometry) = FALSE THEN area_id ELSE NULL END)) AS invalid_area_id_geometry'||E'\n'||
-'          FROM '||quote_ident('p_rif40_geolevels_geometry_'||LOWER(l_geography)||'_'||LOWER(l_geolevel))||E'\n'||
+'          FROM rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||LOWER(l_geography)||'_'||LOWER(l_geolevel))||E'\n'||
 '         WHERE geolevel_name = '''||UPPER(l_geolevel)||'''';
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_simplify_geometry_checks', 'SQL> %;', sql_stmt::VARCHAR);
 		OPEN c0_sgck FOR EXECUTE sql_stmt;

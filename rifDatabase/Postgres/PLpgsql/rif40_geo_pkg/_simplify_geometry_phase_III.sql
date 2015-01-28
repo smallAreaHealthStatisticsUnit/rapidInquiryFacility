@@ -354,37 +354,37 @@ old_geojson_len      | new_geojson_len      | pct_increase
 -- Third block of SQL statements
 --
 		sql_stmt:=NULL;	/* Empty statement array */
-		sql_stmt[1]:='EXPLAIN ANALYZE VERBOSE UPDATE '||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
+		sql_stmt[1]:='EXPLAIN ANALYZE VERBOSE UPDATE rif40_partitions.'||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
 '   SET optimised_geometry = ('||E'\n'||
 '	SELECT topo_optimised_geometry'||E'\n'||
 '	  FROM simplification_polygons b'||E'\n'||
 '	 WHERE a.area_id = b.area_id)';
-		sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE '||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE rif40_partitions.'||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
 '   SET optimised_geometry_2 = ('||E'\n'||
 '	SELECT topo_optimised_geometry_2'||E'\n'||
 '	  FROM simplification_polygons b'||E'\n'||
 '	 WHERE a.area_id = b.area_id)';
-		sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE '||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE rif40_partitions.'||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
 '   SET optimised_geometry_3 = ('||E'\n'||
 '	SELECT topo_optimised_geometry_3'||E'\n'||
 '	  FROM simplification_polygons b'||E'\n'||
 '	 WHERE a.area_id = b.area_id)';
-		sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE '||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE rif40_partitions.'||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
 '   SET optimised_geojson = ('||E'\n'||
 '	SELECT topo_optimised_geojson'||E'\n'||
 '	  FROM simplification_polygons b'||E'\n'||
 '	 WHERE a.area_id = b.area_id)';
-		sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE '||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE rif40_partitions.'||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
 '   SET optimised_geojson_2 = ('||E'\n'||
 '	SELECT topo_optimised_geojson_2'||E'\n'||
 '	  FROM simplification_polygons b'||E'\n'||
 '	 WHERE a.area_id = b.area_id)';
-		sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE '||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='EXPLAIN ANALYZE VERBOSE UPDATE rif40_partitions.'||quote_ident(LOWER(l_spatial_geolevel_table))||' a'||E'\n'||
 '   SET optimised_geojson_3 = ('||E'\n'||
 '	SELECT topo_optimised_geojson_3'||E'\n'||
 '	  FROM simplification_polygons b'||E'\n'||
 '	 WHERE a.area_id = b.area_id)';
-		sql_stmt[array_length(sql_stmt, 1)+1]:='ANALYZE '||quote_ident(LOWER(l_spatial_geolevel_table));
+		sql_stmt[array_length(sql_stmt, 1)+1]:='ANALYZE VERBOSE rif40_partitions.'||quote_ident(LOWER(l_spatial_geolevel_table));
 --
 -- Execute third block of SQL statements
 --

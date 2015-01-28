@@ -126,7 +126,7 @@ ERROR:  Error performing intersection: TopologyException: found non-noded inters
 To test for invalid polygons:
 
 SELECT area_id, ST_Isvalid(shapefile_geometry) AS v1, ST_Isvalid(shapefile_geometry) AS v2
-  FROM p_rif40_geolevels_geometry_ew01_oa2001
+  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_oa2001
  WHERE NOT ST_Isvalid(shapefile_geometry) OR NOT ST_Isvalid(shapefile_geometry);
 
 NOTICE:  Self-intersection at or near point -2.9855576987063932 53.366966657364905
@@ -151,7 +151,7 @@ WITH x12 AS ( -* Subqueries x12 ... x67: intersection aggregate geometries start
 SELECT a1.area_id AS scntry2001, a2.area_id AS cntry2001,
        ST_Area(a2.shapefile_geometry) AS a2_area,
        ST_Area(ST_Intersection(a1.shapefile_geometry, a2.shapefile_geometry)) a12_area
-  FROM p_rif40_geolevels_geometry_ew01_scntry2001 a1 CROSS JOIN p_rif40_geolevels_geometry_ew01_cntry2001 a2
+  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_scntry2001 a1 CROSS JOIN rif40_partitions.p_rif40_geolevels_geometry_ew01_cntry2001 a2
  WHERE ST_Intersects(a1.shapefile_geometry, a2.shapefile_geometry)
 ), x23 AS ( -* Subqueries x23 ... x67: intersection aggregate geometries starting from the lowest resolution.
                Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
@@ -159,7 +159,7 @@ SELECT a1.area_id AS scntry2001, a2.area_id AS cntry2001,
 SELECT a2.area_id AS cntry2001, a3.area_id AS gor2001,
        ST_Area(a3.shapefile_geometry) AS a3_area,
        ST_Area(ST_Intersection(a2.shapefile_geometry, a3.shapefile_geometry)) a23_area
-  FROM p_rif40_geolevels_geometry_ew01_cntry2001 a2 CROSS JOIN p_rif40_geolevels_geometry_ew01_gor2001 a3
+  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_cntry2001 a2 CROSS JOIN rif40_partitions.p_rif40_geolevels_geometry_ew01_gor2001 a3
  WHERE ST_Intersects(a2.shapefile_geometry, a3.shapefile_geometry)
 ), x34 AS ( -* Subqueries x34 ... x67: intersection aggregate geometries starting from the lowest resolution.
                Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
@@ -167,7 +167,7 @@ SELECT a2.area_id AS cntry2001, a3.area_id AS gor2001,
 SELECT a3.area_id AS gor2001, a4.area_id AS ladua2001,
        ST_Area(a4.shapefile_geometry) AS a4_area,
        ST_Area(ST_Intersection(a3.shapefile_geometry, a4.shapefile_geometry)) a34_area
-  FROM p_rif40_geolevels_geometry_ew01_gor2001 a3 CROSS JOIN p_rif40_geolevels_geometry_ew01_ladua2001 a4
+  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_gor2001 a3 CROSS JOIN rif40_partitions.p_rif40_geolevels_geometry_ew01_ladua2001 a4
  WHERE ST_Intersects(a3.shapefile_geometry, a4.shapefile_geometry)
 ), x45 AS ( -* Subqueries x45 ... x67: intersection aggregate geometries starting from the lowest resolution.
                Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
@@ -175,7 +175,7 @@ SELECT a3.area_id AS gor2001, a4.area_id AS ladua2001,
 SELECT a4.area_id AS ladua2001, a5.area_id AS ward2001,
        ST_Area(a5.shapefile_geometry) AS a5_area,
        ST_Area(ST_Intersection(a4.shapefile_geometry, a5.shapefile_geometry)) a45_area
-  FROM p_rif40_geolevels_geometry_ew01_ladua2001 a4 CROSS JOIN p_rif40_geolevels_geometry_ew01_ward2001 a5
+  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_ladua2001 a4 CROSS JOIN rif40_partitions.p_rif40_geolevels_geometry_ew01_ward2001 a5
  WHERE ST_Intersects(a4.shapefile_geometry, a5.shapefile_geometry)
 ), x56 AS ( -* Subqueries x56 ... x67: intersection aggregate geometries starting from the lowest resolution.
                Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
@@ -183,7 +183,7 @@ SELECT a4.area_id AS ladua2001, a5.area_id AS ward2001,
 SELECT a5.area_id AS ward2001, a6.area_id AS soa2001,
        ST_Area(a6.shapefile_geometry) AS a6_area,
        ST_Area(ST_Intersection(a5.shapefile_geometry, a6.shapefile_geometry)) a56_area
-  FROM p_rif40_geolevels_geometry_ew01_ward2001 a5 CROSS JOIN p_rif40_geolevels_geometry_ew01_soa2001 a6
+  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_ward2001 a5 CROSS JOIN rif40_partitions.p_rif40_geolevels_geometry_ew01_soa2001 a6
  WHERE ST_Intersects(a5.shapefile_geometry, a6.shapefile_geometry)
 ), x67 AS ( -* Subqueries x67 ... x67: intersection aggregate geometries starting from the lowest resolution.
                Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
@@ -191,7 +191,7 @@ SELECT a5.area_id AS ward2001, a6.area_id AS soa2001,
 SELECT a6.area_id AS soa2001, a7.area_id AS oa2001,
        ST_Area(a7.shapefile_geometry) AS a7_area,
        ST_Area(ST_Intersection(a6.shapefile_geometry, a7.shapefile_geometry)) a67_area
-  FROM p_rif40_geolevels_geometry_ew01_soa2001 a6 CROSS JOIN p_rif40_geolevels_geometry_ew01_oa2001 a7
+  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_soa2001 a6 CROSS JOIN rif40_partitions.p_rif40_geolevels_geometry_ew01_oa2001 a7
  WHERE ST_Intersects(a6.shapefile_geometry, a7.shapefile_geometry)
 ), y AS ( -* Join x78 ... x67intersections, pass through the computed areas, compute intersected area/higher resolution geolevel area,
              compute maximum intersected area/higher resolution geolevel area using an analytic partition of all
@@ -348,7 +348,7 @@ x23 AS (
 				'SELECT a'||i||'.area_id AS '||geolevel_name[i]||', a'||i+1||'.area_id AS '||geolevel_name[i+1]||','||E'\n'||
 				'       ST_Area(a'||i+1||'.shapefile_geometry) AS a'||i+1||'_area,'||E'\n'||
 				'       ST_Area(ST_Intersection(a'||i||'.shapefile_geometry, a'||i+1||'.shapefile_geometry)) AS a'||i||i+1||'_area'||E'\n'||
-				'  FROM '||geolevel_table[i]||' a'||i||' CROSS JOIN '||geolevel_table[i+1]||' a'||i+1||''||E'\n'||
+				'  FROM rif40_partitions.'||geolevel_table[i]||' a'||i||' CROSS JOIN rif40_partitions.'||geolevel_table[i+1]||' a'||i+1||''||E'\n'||
 				' WHERE ST_Intersects(a'||i||'.shapefile_geometry, a'||i+1||'.shapefile_geometry)'||E'\n'||
 				'), ';
 		ELSIF i < (num_geolevels-1) THEN
@@ -359,7 +359,7 @@ x23 AS (
 				'SELECT a'||i||'.area_id AS '||geolevel_name[i]||', a'||i+1||'.area_id AS '||geolevel_name[i+1]||','||E'\n'||
 				'       ST_Area(a'||i+1||'.shapefile_geometry) AS a'||i+1||'_area,'||E'\n'||
 				'       ST_Area(ST_Intersection(a'||i||'.shapefile_geometry, a'||i+1||'.shapefile_geometry)) AS a'||i||i+1||'_area'||E'\n'||
-				'  FROM '||geolevel_table[i]||' a'||i||' CROSS JOIN '||geolevel_table[i+1]||' a'||i+1||''||E'\n'||
+				'  FROM rif40_partitions.'||geolevel_table[i]||' a'||i||' CROSS JOIN rif40_partitions.'||geolevel_table[i+1]||' a'||i+1||''||E'\n'||
 				' WHERE ST_Intersects(a'||i||'.shapefile_geometry, a'||i+1||'.shapefile_geometry)'||E'\n'||
 				'), ';
 		ELSIF i < num_geolevels THEN
@@ -380,7 +380,7 @@ x23 AS (
 				'SELECT a'||i||'.area_id AS '||geolevel_name[i]||', a'||i+1||'.area_id AS '||geolevel_name[i+1]||','||E'\n'||
 				'       ST_Area(a'||i+1||'.shapefile_geometry) AS a'||i+1||'_area,'||E'\n'||
 				'       ST_Area(ST_Intersection(a'||i||'.shapefile_geometry, a'||i+1||'.shapefile_geometry)) AS a'||i||i+1||'_area'||E'\n'||
-				'  FROM '||geolevel_table[i]||' a'||i||' CROSS JOIN '||geolevel_table[i+1]||' a'||i+1||''||E'\n'||
+				'  FROM rif40_partitions.'||geolevel_table[i]||' a'||i||' CROSS JOIN rif40_partitions.'||geolevel_table[i+1]||' a'||i+1||''||E'\n'||
 				' WHERE ST_Intersects(a'||i||'.shapefile_geometry, a'||i+1||'.shapefile_geometry)'||E'\n'||
 				'), ';
 		END IF;
@@ -544,7 +544,7 @@ ERROR:  Error performing intersection: TopologyException: found non-noded inters
 To test for invalid polygons:
 
 SELECT area_id, ST_Isvalid(shapefile_geometry) AS v1, ST_Isvalid(shapefile_geometry) AS v2
-  FROM p_rif40_geolevels_geometry_ew01_oa2001
+  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_oa2001
  WHERE NOT ST_Isvalid(shapefile_geometry) OR NOT ST_Isvalid(shapefile_geometry);
 
 NOTICE:  Self-intersection at or near point -2.9855576987063932 53.366966657364905
@@ -569,7 +569,7 @@ WITH x12 AS ( /* Subqueries x12 ... x67: intersection aggregate geometries start
 SELECT a1.area_id AS scntry2001, a2.area_id AS cntry2001,
        ST_Area(a2.shapefile_geometry) AS a2_area,
        ST_Area(ST_Intersection(a1.shapefile_geometry, a2.shapefile_geometry)) a12_area
-  FROM p_rif40_geolevels_geometry_ew01_scntry2001 a1 CROSS JOIN p_rif40_geolevels_geometry_ew01_cntry2001 a2
+  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_scntry2001 a1 CROSS JOIN rif40_partitions.p_rif40_geolevels_geometry_ew01_cntry2001 a2
  WHERE ST_Intersects(a1.shapefile_geometry, a2.shapefile_geometry)
 ), x23 AS ( /* Subqueries x23 ... x67: intersection aggregate geometries starting from the lowest resolution.
                Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
@@ -577,7 +577,7 @@ SELECT a1.area_id AS scntry2001, a2.area_id AS cntry2001,
 SELECT a2.area_id AS cntry2001, a3.area_id AS gor2001,
        ST_Area(a3.shapefile_geometry) AS a3_area,
        ST_Area(ST_Intersection(a2.shapefile_geometry, a3.shapefile_geometry)) a23_area
-  FROM p_rif40_geolevels_geometry_ew01_cntry2001 a2 CROSS JOIN p_rif40_geolevels_geometry_ew01_gor2001 a3
+  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_cntry2001 a2 CROSS JOIN rif40_partitions.p_rif40_geolevels_geometry_ew01_gor2001 a3
  WHERE ST_Intersects(a2.shapefile_geometry, a3.shapefile_geometry)
 ), x34 AS ( /* Subqueries x34 ... x67: intersection aggregate geometries starting from the lowest resolution.
                Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
@@ -585,7 +585,7 @@ SELECT a2.area_id AS cntry2001, a3.area_id AS gor2001,
 SELECT a3.area_id AS gor2001, a4.area_id AS ladua2001,
        ST_Area(a4.shapefile_geometry) AS a4_area,
        ST_Area(ST_Intersection(a3.shapefile_geometry, a4.shapefile_geometry)) a34_area
-  FROM p_rif40_geolevels_geometry_ew01_gor2001 a3 CROSS JOIN p_rif40_geolevels_geometry_ew01_ladua2001 a4
+  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_gor2001 a3 CROSS JOIN rif40_partitions.p_rif40_geolevels_geometry_ew01_ladua2001 a4
  WHERE ST_Intersects(a3.shapefile_geometry, a4.shapefile_geometry)
 ), x45 AS ( /* Subqueries x45 ... x67: intersection aggregate geometries starting from the lowest resolution.
                Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
@@ -593,7 +593,7 @@ SELECT a3.area_id AS gor2001, a4.area_id AS ladua2001,
 SELECT a4.area_id AS ladua2001, a5.area_id AS ward2001,
        ST_Area(a5.shapefile_geometry) AS a5_area,
        ST_Area(ST_Intersection(a4.shapefile_geometry, a5.shapefile_geometry)) a45_area
-  FROM p_rif40_geolevels_geometry_ew01_ladua2001 a4 CROSS JOIN p_rif40_geolevels_geometry_ew01_ward2001 a5
+  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_ladua2001 a4 CROSS JOIN rif40_partitions.p_rif40_geolevels_geometry_ew01_ward2001 a5
  WHERE ST_Intersects(a4.shapefile_geometry, a5.shapefile_geometry)
 ), x56 AS ( /* Subqueries x56 ... x67: intersection aggregate geometries starting from the lowest resolution.
                Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
@@ -601,7 +601,7 @@ SELECT a4.area_id AS ladua2001, a5.area_id AS ward2001,
 SELECT a5.area_id AS ward2001, a6.area_id AS soa2001,
        ST_Area(a6.shapefile_geometry) AS a6_area,
        ST_Area(ST_Intersection(a5.shapefile_geometry, a6.shapefile_geometry)) a56_area
-  FROM p_rif40_geolevels_geometry_ew01_ward2001 a5 CROSS JOIN p_rif40_geolevels_geometry_ew01_soa2001 a6
+  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_ward2001 a5 CROSS JOIN rif40_partitions.p_rif40_geolevels_geometry_ew01_soa2001 a6
  WHERE ST_Intersects(a5.shapefile_geometry, a6.shapefile_geometry)
 ), x67 AS ( /* Subqueries x67 ... x67: intersection aggregate geometries starting from the lowest resolution.
                Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
@@ -609,7 +609,7 @@ SELECT a5.area_id AS ward2001, a6.area_id AS soa2001,
 SELECT a6.area_id AS soa2001, a7.area_id AS oa2001,
        ST_Area(a7.shapefile_geometry) AS a7_area,
        ST_Area(ST_Intersection(a6.shapefile_geometry, a7.shapefile_geometry)) a67_area
-  FROM p_rif40_geolevels_geometry_ew01_soa2001 a6 CROSS JOIN p_rif40_geolevels_geometry_ew01_oa2001 a7
+  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_soa2001 a6 CROSS JOIN rif40_partitions.p_rif40_geolevels_geometry_ew01_oa2001 a7
  WHERE ST_Intersects(a6.shapefile_geometry, a7.shapefile_geometry)
 ), y AS ( /* Join x78 ... x67intersections, pass through the computed areas, compute intersected area/higher resolution geolevel area,
              compute maximum intersected area/higher resolution geolevel area using an analytic partition of all
@@ -659,7 +659,7 @@ See: http://trac.osgeo.org/postgis/ticket/2543
 SELECT a2.area_id AS level2, a3.area_id AS level3,
        ST_Area(a3.shapefile_geometry) AS a3_area,
        ST_Area(ST_Intersection(a2.shapefile_geometry, a3.shapefile_geometry)) AS a23_area
-  FROM p_rif40_geolevels_geometry_sahsu_level3 a3, p_rif40_geolevels_geometry_sahsu_level2 a2  
+  FROM rif40_partitions.p_rif40_geolevels_geometry_sahsu_level3 a3, p_rif40_geolevels_geometry_sahsu_level2 a2  
  WHERE ST_Intersects(a2.shapefile_geometry, a3.shapefile_geometry);
 
 ';

@@ -63,25 +63,41 @@ Alter script #5
 
 Rebuilds all geolevel tables with full partitioning (alter #3 support):
 
+Done:
+
 1. Convert to 4326 (WGS84 GPS projection) after simplification. Optimised geometry is 
    always in 4326.
 2. Zoomlevel support. Optimised geometry is level 6, OPTIMISED_GEOMETRY_2 is level 8,
    OPTIMISED_GEOMETRY_3 is level 11; likewise OPTIMISED_GEOJSON (which will become a JOSN type). 
    TOPO_OPTIMISED_GEOJSON is removed.
+3. Add t_rif40_sahsu_maptiles for zoomlevels 6, 8, 11, rif40_sahsu_maptiles for other zoomlevels.
+4. Calculate the latitude of the middle of the total map bound; use this as the latitude
+   in if40_geo_pkg.rif40_zoom_levels() for the correct m/pixel.
+5. Partition t_rif40_sahsu_maptiles; convert partition to p_ naming convention, move to
+    rif40_partitions schema, added indexes and constraints as required.
+   
+To do:
+
+?. convert rif40_get_geojson_tiles to use t_rif40_sahsu_maptiles tables
+?. Re-index partition indexes
+?. populate_rif40_tiles() to correctly report rows inserted (using RETURNING); make
+   more efficient; create EXPLAIN PLAN version.
+
+
 3. Simplification to warn if bounds of map at zoomlevel 6 exceeds 4x3 tiles.
 4. Simplification to fail if bounds of map < 5% of zoomlevel 11 (bound area: 19.6x19.4km); 
    i.e. the map is not projected correctly (as sahsuland is not at present). Fix
    sahsuland projection (i.e. it is 27700; do the export using GDAL correctly).
-5. Calculate the latitude of the middle of the total map bound; use this as the latitude
-   in if40_geo_pkg.rif40_zoom_levels() for the correct m/pixel.
+
 6. Remove ST_SIMPLIFY_TOLERANCE; replace with m/pixel for zoomlevel (hence the reason 
    for converting to 4326 before simplification).
+9. Intersection to use shapefile SRID projection; after simplification to be tested again intersections 
+   using zoomlevels 11
 8. Add support for regionINLA.txt on a per study basis.
 7. Convert simplification and intersection code to Java; call via PL/Java. Object creation
    functions will remain port specific (because of Postgres partitioning).
-8. Add t_rif40_sahsu_maptiles for zoomlevels 6, 8, 11, rif40_sahsu_maptiles for other zoomlevels.
-9. Intersection to use SRID projection; after simplification to be tested again intersections 
-   using zoomlevels 6, 8, 11
+
+
 
 <total area_id>
 <area_id> <total (N)> <adjacent area 1> .. <adjacent area N>

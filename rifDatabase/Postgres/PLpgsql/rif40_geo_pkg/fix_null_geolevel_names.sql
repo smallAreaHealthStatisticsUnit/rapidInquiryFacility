@@ -148,7 +148,7 @@ SELECT DISTINCT a.ladua2001 -* source *-, a.oa2001 -* target *-, b2.name||' OA20
                 -* highest resolution geolevel with complete descriptive names *-
          WHERE NOT EXISTS (
                 SELECT b1.area_id
-                  FROM p_rif40_geolevels_geometry_ew01_oa2001 b1
+                  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_oa2001 b1
                  WHERE b1.name IS NOT NULL
                    AND a.oa2001 /- target -/ = b1.area_id);
 
@@ -156,7 +156,7 @@ CREATE UNIQUE INDEX oa2001_pk ON temp_fix_null_geolevel_names(oa2001);
 
 ANALYZE VERBOSE temp_fix_null_geolevel_names;
 
-UPDATE p_rif40_geolevels_geometry_ew01_oa2001 c
+UPDATE rif40_partitions.p_rif40_geolevels_geometry_ew01_oa2001 c
            SET name = (SELECT oa2001_name -* Replacement *- 
                          FROM temp_fix_null_geolevel_names a
                         WHERE a.oa2001 = c.area_id)
@@ -193,7 +193,7 @@ UPDATE ew2001_ward2001 c
          WHERE c.ward2001 IN (SELECT ward2001
 			  FROM temp_fix_null_geolevel_names);
 
-UPDATE p_rif40_geolevels_geometry_ew01_ward2001 c
+UPDATE rif40_partitions.p_rif40_geolevels_geometry_ew01_ward2001 c
            SET name = (SELECT new_name -* Replacement *- 
                          FROM temp_fix_null_geolevel_names a
                         WHERE a.ward2001 = c.area_id)
@@ -453,7 +453,7 @@ UPDATE ew2001_ward2001 c
          WHERE c.ward2001 IN (SELECT ward2001
 			  FROM temp_fix_null_geolevel_names);
 
-UPDATE p_rif40_geolevels_geometry_ew01_ward2001 c
+UPDATE rif40_partitions.p_rif40_geolevels_geometry_ew01_ward2001 c
            SET name = (SELECT new_name -* Replacement *- 
                          FROM temp_fix_null_geolevel_names a
                         WHERE a.ward2001 = c.area_id)
@@ -504,7 +504,7 @@ UPDATE p_rif40_geolevels_geometry_ew01_ward2001 c
 				c2_rec.lookup_table::VARCHAR		/* Lookup table */,
 				l_rows::VARCHAR				/* Rows updated */);
 --
-			sql_stmt:='UPDATE /* d.2 */ '||quote_ident('p_rif40_geolevels_geometry_'||LOWER(l_geography)||'_'||LOWER(c2_rec.geolevel_name))||' /* Geometry table */ c'||E'\n'||
+			sql_stmt:='UPDATE /* d.2 */ rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||LOWER(l_geography)||'_'||LOWER(c2_rec.geolevel_name))||' /* Geometry table */ c'||E'\n'||
 				'   SET name = (SELECT new_name /* Replacement 4 */ '||E'\n'||
 				'		  FROM temp_fix_null_geolevel_names a'||E'\n'||
 				'		 WHERE a.'||quote_ident(LOWER(c2_rec.geolevel_name))||' = c.area_id)'||E'\n'||
@@ -695,7 +695,7 @@ SELECT DISTINCT a.ladua2001 -* source *-, a.oa2001 -* target *-, b2.name||' OA20
                 -* highest resolution geolevel with complete descriptive names *-
          WHERE NOT EXISTS (
                 SELECT b1.area_id
-                  FROM p_rif40_geolevels_geometry_ew01_oa2001 b1
+                  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_oa2001 b1
                  WHERE b1.name IS NOT NULL
                    AND a.oa2001 /- target -/ = b1.area_id);
 
@@ -703,7 +703,7 @@ CREATE UNIQUE INDEX oa2001_pk ON temp_fix_null_geolevel_names(oa2001);
 
 ANALYZE VERBOSE temp_fix_null_geolevel_names;
 
-UPDATE p_rif40_geolevels_geometry_ew01_oa2001 c
+UPDATE rif40_partitions.p_rif40_geolevels_geometry_ew01_oa2001 c
            SET name = (SELECT oa2001_name -* Replacement *- 
                          FROM temp_fix_null_geolevel_names a
                         WHERE a.oa2001 = c.area_id)
@@ -725,7 +725,7 @@ ANALYZE VERBOSE ew2001_coa2001;
 				E'\t'||E'\t'||'/* highest resolution geolevel with complete descriptive names */'||E'\n'||
 				E'\t'||' WHERE NOT EXISTS ('||E'\n'||
 				E'\t'||E'\t'||'SELECT b1.area_id'||E'\n'||
-				E'\t'||E'\t'||'  FROM '||quote_ident('p_rif40_geolevels_geometry_'||LOWER(l_geography)||'_'||LOWER(c2_rec.geolevel_name))||' b1 /* Geometry table */'||E'\n'||
+				E'\t'||E'\t'||'  FROM rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||LOWER(l_geography)||'_'||LOWER(c2_rec.geolevel_name))||' b1 /* Geometry table */'||E'\n'||
 				E'\t'||E'\t'||' WHERE b1.'||COALESCE(quote_ident(LOWER(c2_rec.shapefile_desc_column)), 'name')||' IS NOT NULL'||E'\n'||
 				E'\t'||E'\t'||'   AND a.'||quote_ident(LOWER(c2_rec.geolevel_name))||' /* target */ = b1.area_id)';
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
@@ -734,7 +734,7 @@ ANALYZE VERBOSE ew2001_coa2001;
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 			sql_stmt:='ANALYZE VERBOSE temp_fix_null_geolevel_names';
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='UPDATE /* f.2 */ '||quote_ident('p_rif40_geolevels_geometry_'||LOWER(l_geography)||'_'||LOWER(c2_rec.geolevel_name))||' c /* Geometry table */'||E'\n'||
+			sql_stmt:='UPDATE /* f.2 */ rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||LOWER(l_geography)||'_'||LOWER(c2_rec.geolevel_name))||' c /* Geometry table */'||E'\n'||
 				'   SET name = (SELECT '||quote_ident(LOWER(c2_rec.geolevel_name)||'_name')||' /* Replacement 2 */ '||E'\n'||
 				'		 FROM temp_fix_null_geolevel_names a'||E'\n'||
 				'		WHERE a.'||quote_ident(LOWER(c2_rec.geolevel_name))||' = c.area_id)'||E'\n'||
@@ -867,7 +867,7 @@ SELECT DISTINCT a.ladua2001 /* source */, a.oa2001 /* target */, b2.name||'' OA2
                 /* highest resolution geolevel with complete descriptive names */
          WHERE NOT EXISTS (
                 SELECT b1.area_id
-                  FROM p_rif40_geolevels_geometry_ew01_oa2001 b1
+                  FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_oa2001 b1
                  WHERE b1.name IS NOT NULL
                    AND a.oa2001 /- target -/ = b1.area_id);
 
@@ -875,7 +875,7 @@ CREATE UNIQUE INDEX oa2001_pk ON temp_fix_null_geolevel_names(oa2001);
 
 ANALYZE VERBOSE temp_fix_null_geolevel_names;
 
-UPDATE p_rif40_geolevels_geometry_ew01_oa2001 c
+UPDATE rif40_partitions.p_rif40_geolevels_geometry_ew01_oa2001 c
            SET name = (SELECT oa2001_name /* Replacement */ 
                          FROM temp_fix_null_geolevel_names a
                         WHERE a.oa2001 = c.area_id)
@@ -912,7 +912,7 @@ UPDATE ew2001_ward2001 c
          WHERE c.ward2001 IN (SELECT ward2001
 			  FROM temp_fix_null_geolevel_names);
 
-UPDATE p_rif40_geolevels_geometry_ew01_ward2001 c
+UPDATE rif40_partitions.p_rif40_geolevels_geometry_ew01_ward2001 c
            SET name = (SELECT new_name /* Replacement */ 
                          FROM temp_fix_null_geolevel_names a
                         WHERE a.ward2001 = c.area_id)

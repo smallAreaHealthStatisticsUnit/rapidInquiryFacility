@@ -154,6 +154,7 @@ DECLARE
 --
 	error_message 	VARCHAR;
 	v_detail 	VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
+	v_context   VARCHAR;
 BEGIN
 --
 	stp:=clock_timestamp();
@@ -209,12 +210,12 @@ BEGIN
 EXCEPTION
 	WHEN others THEN
 -- 
--- Not supported until 9.2
---
---		IF v_version THEN
---			GET STACKED DIAGNOTICS v_detail = PG_EXCETION_DETAIL;
---		END IF;
-		error_message:='simplify_geometry('||l_geography::VARCHAR||', '||l_geolevel::VARCHAR||') caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||'Detail: '||v_detail::VARCHAR;
+		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL,
+										v_context = PG_EXCEPTION_CONTEXT;
+		error_message:='simplify_geometry('||l_geography::VARCHAR||', '||l_geolevel::VARCHAR||
+			') caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||
+			'Detail: '||v_detail::VARCHAR||E'\n'||
+			'Context: '||v_context::VARCHAR;
 		RAISE INFO '1: %', error_message;
 --
 		RAISE;

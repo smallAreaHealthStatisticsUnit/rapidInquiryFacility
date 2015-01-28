@@ -132,16 +132,16 @@ BEGIN
 		FOR c2_rec IN c2alter2(l_geography) LOOP
 			l_partition:=quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(l_geography)||'_'||LOWER(c2_rec.geolevel_name));
-			ddl_stmt[array_length(ddl_stmt, 1)+1]:='COMMENT ON COLUMN '||l_partition||
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||l_partition||
 				'.gid_rowindex IS ''GID rowindex record locator unique key''';
 /*
 Other databases may have issue with this CTE update syntax:
 
 WITH a AS (
 	SELECT area_id, gid, gid||'_'||ROW_NUMBER() OVER(PARTITION BY gid ORDER BY area_id) AS gid_rowindex
-	  FROM p_rif40_geolevels_geometry_sahsu_level2
+	  FROM rif40_partitions.p_rif40_geolevels_geometry_sahsu_level2
 )
-UPDATE p_rif40_geolevels_geometry_sahsu_level2 b
+UPDATE rif40_partitions.p_rif40_geolevels_geometry_sahsu_level2 b
    SET gid_rowindex = a.gid_rowindex
   FROM a
  WHERE b.area_id = a.area_id;
@@ -150,13 +150,13 @@ UPDATE p_rif40_geolevels_geometry_sahsu_level2 b
 -- Fix gid so it it unique per area_id /(ST_Union'ed together - so are)
 			ddl_stmt[array_length(ddl_stmt, 1)+1]:='WITH a AS ('||E'\n'||
 E'\t'||'SELECT area_id, gid'||E'\n'||
-E'\t'||'  FROM '||l_partition||E'\n'||
+E'\t'||'  FROM rif40_partitions.'||l_partition||E'\n'||
 E'\t'||'  ORDER BY area_id '||E'\n'||
 '), b AS ('||E'\n'||
 E'\t'||'SELECT a.area_id, a.gid, ROW_NUMBER() OVER() AS new_gid'||E'\n'||
 E'\t'||'  FROM a'||E'\n'||
 ')'||E'\n'||
-'UPDATE '||l_partition||' c'||E'\n'||
+'UPDATE rif40_partitions.'||l_partition||' c'||E'\n'||
 '   SET gid = b.new_gid'||E'\n'||
 '  FROM b'||E'\n'||
 ' WHERE c.area_id = b.area_id';
@@ -164,20 +164,22 @@ E'\t'||'  FROM a'||E'\n'||
 				ddl_stmt[array_length(ddl_stmt, 1)+1]:='WITH a AS ('||E'\n'||
 E'\t'||'SELECT area_id, gid,'||E'\n'||
 E'\t'||'       LPAD(gid::Text, 10, ''0''::Text)||''_''||LPAD(ROW_NUMBER() OVER(PARTITION BY gid ORDER BY area_id)::Text, 10, ''0''::Text) AS gid_rowindex'||E'\n'||
-E'\t'||'  FROM '||l_partition||E'\n'||
+E'\t'||'  FROM rif40_partitions.'||l_partition||E'\n'||
 ')'||E'\n'||
-'UPDATE '||l_partition||' b'||E'\n'||
+'UPDATE rif40_partitions.'||l_partition||' b'||E'\n'||
 '   SET gid_rowindex = a.gid_rowindex'||E'\n'||
 '  FROM a'||E'\n'||
 ' WHERE b.area_id = a.area_id';
 -- Create unqiue indexes
-			ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE UNIQUE INDEX '||l_partition||'_gidr ON '||l_partition||'(gid_rowindex)';
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE UNIQUE INDEX '||l_partition||'_gidr ON rif40_partitions.'||l_partition||'(gid_rowindex)';
 			ddl_stmt[array_length(ddl_stmt, 1)+1]:='DROP INDEX IF EXISTS '||l_partition||'_gid';
-			ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE UNIQUE INDEX '||l_partition||'_gid ON '||l_partition||'(gid)';
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:='DROP INDEX IF EXISTS '||l_partition||'_gid2';
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE UNIQUE INDEX '||l_partition||'_gid2 ON rif40_partitions.'||l_partition||'(gid)';
 -- Make not null
-			ddl_stmt[array_length(ddl_stmt, 1)+1]:='ALTER TABLE '||l_partition||' ALTER COLUMN gid_rowindex SET NOT NULL';
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:='ALTER TABLE rif40_partitions.'||l_partition||
+				' ALTER COLUMN gid_rowindex SET NOT NULL';
 -- Analyse
-			ddl_stmt[array_length(ddl_stmt, 1)+1]:='ANALYZE VERBOSE '||l_partition;
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:='ANALYZE VERBOSE rif40_partitions.'||l_partition;
 		END LOOP;
 
 -- Analyze at master level

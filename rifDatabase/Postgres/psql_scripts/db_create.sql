@@ -867,7 +867,7 @@ DECLARE
 --
 	schemalist VARCHAR[]:=ARRAY['rif40_dmp_pkg', 'rif40_sql_pkg', 'rif40_sm_pkg', 'rif40_log_pkg', 'rif40_trg_pkg',
 			'rif40_geo_pkg', 'rif40_xml_pkg', 'rif40_R_pkg', 
-			'rif40', 'gis', 'pop', 'rif_studies', 'rif_data', 'data_load'];
+			'rif40', 'gis', 'pop', 'rif_studies', 'rif_data', 'data_load', 'rif40_partitions'];
 	x VARCHAR;
 	sql_stmt VARCHAR;
 	u_name	VARCHAR;
