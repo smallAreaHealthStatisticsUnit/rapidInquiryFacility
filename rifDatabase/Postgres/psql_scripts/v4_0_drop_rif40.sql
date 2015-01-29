@@ -572,6 +572,7 @@ DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_contextualstats_checks
 DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_study_sql_log_checks();
 DROP FUNCTION IF EXISTS rif40_trg_pkg.trigger_fct_t_rif40_study_sql_checks();
 DROP FUNCTION IF EXISTS rif40.t_rif40_sahsu_geometry_insert();
+DROP FUNCTION IF EXISTS rif40.t_rif40_sahsu_maptiles_insert();
 DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_comparison_areas();
 DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_contextual_stats();
 DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_inv_conditions();
