@@ -172,9 +172,8 @@ E'\t'||'  FROM rif40_partitions.'||l_partition||E'\n'||
 ' WHERE b.area_id = a.area_id';
 -- Create unqiue indexes
 			ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE UNIQUE INDEX '||l_partition||'_gidr ON rif40_partitions.'||l_partition||'(gid_rowindex)';
-			ddl_stmt[array_length(ddl_stmt, 1)+1]:='DROP INDEX IF EXISTS '||l_partition||'_gid';
-			ddl_stmt[array_length(ddl_stmt, 1)+1]:='DROP INDEX IF EXISTS '||l_partition||'_gid2';
-			ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE UNIQUE INDEX '||l_partition||'_gid2 ON rif40_partitions.'||l_partition||'(gid)';
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:='DROP INDEX IF EXISTS rif40_partitions.'||l_partition||'_gid';
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE UNIQUE INDEX '||l_partition||'_gid ON rif40_partitions.'||l_partition||'(gid)';
 -- Make not null
 			ddl_stmt[array_length(ddl_stmt, 1)+1]:='ALTER TABLE rif40_partitions.'||l_partition||
 				' ALTER COLUMN gid_rowindex SET NOT NULL';

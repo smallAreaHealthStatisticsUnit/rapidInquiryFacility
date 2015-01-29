@@ -149,8 +149,9 @@ SELECT recnum, schema, CASE
 			WHEN recnum IN (9,10) AND schema = 'data_load' THEN true
 			WHEN recnum IN (10,11) AND schema = 'rif40_sql_pkg' THEN true
 			WHEN recnum IN (11,12) AND schema = 'rif_studies' THEN true
+			WHEN recnum IN (12,13) AND schema = 'rif40_partitions' THEN true
 			ELSE false
-	   END schema_ok, CASE	
+	   END AS schema_ok, CASE	
 			WHEN recnum = 1 THEN 'pg_temp%'
 			WHEN recnum = 2 THEN 'pg_catalog'
 			WHEN recnum = 3 THEN USER
@@ -163,24 +164,27 @@ SELECT recnum, schema, CASE
 			WHEN recnum = 10 THEN 'data_load'
 			WHEN recnum = 11 THEN 'rif40_sql_pkg'
 			WHEN recnum = 12 THEN 'rif_studies'
+			WHEN recnum = 13 THEN 'rif40_partitions'
 			ELSE 'UNKNOWN'
 	   END expected_schema
   FROM b;
 \pset title	   
 /*
- recnum |    schema     | schema_ok | expected_schema
---------+---------------+-----------+-----------------
-      1 | pg_temp_6     | t         | pg_temp%
-      2 | pg_catalog    | t         | pg_catalog
-      3 | pch           | t         | pch
-      4 | rif40         | t         | rif40
-      5 | public        | t         | public
-      6 | topology      | t         | topology
-      7 | gis           | t         | gis
-      8 | pop           | t         | pop
-      9 | rif40_sql_pkg | t         | rif40_sql_pkg
-     10 | rif_studies   | t         | rif_studies
-(10 rows)
+ recnum |      schema      | schema_ok | expected_schema
+--------+------------------+-----------+-----------------
+      1 | pg_temp_2        | t         | pg_temp%
+      2 | pg_catalog       | t         | pg_catalog
+      3 | pch              | t         | pch
+      4 | rif40            | t         | rif40
+      5 | public           | t         | public
+      6 | gis              | t         | topology
+      7 | pop              | t         | gis
+      8 | rif_data         | t         | pop
+      9 | data_load        | t         | rif_data
+     10 | rif40_sql_pkg    | t         | data_load
+     11 | rif_studies      | t         | rif40_sql_pkg
+     12 | rif40_partitions | t         | rif_studies
+(12 rows)
  */
 
 DO LANGUAGE plpgsql $$
@@ -212,8 +216,9 @@ DECLARE
 					WHEN recnum IN (9,10) AND schema = 'data_load' THEN true
 					WHEN recnum IN (10,11) AND schema = 'rif40_sql_pkg' THEN true
 					WHEN recnum IN (11,12) AND schema = 'rif_studies' THEN true
+					WHEN recnum IN (12,13) AND schema = 'rif40_partitions' THEN true
 					ELSE false
-			   END schema_ok, CASE	
+			END AS schema_ok, CASE
 					WHEN recnum = 1 THEN 'pg_temp%'
 					WHEN recnum = 2 THEN 'pg_catalog'
 					WHEN recnum = 3 THEN USER
@@ -226,6 +231,7 @@ DECLARE
 					WHEN recnum = 10 THEN 'data_load'
 					WHEN recnum = 11 THEN 'rif40_sql_pkg'
 					WHEN recnum = 12 THEN 'rif_studies'
+					WHEN recnum = 12 THEN 'rif40_partitions'
 					ELSE 'UNKNOWN'
 			   END expected_schema
 		  FROM b; 

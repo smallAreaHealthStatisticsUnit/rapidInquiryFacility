@@ -836,7 +836,7 @@ BEGIN
 --
 -- Set default search pathname
 --
-	sql_stmt:='ALTER DATABASE sahsuland SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies';
+	sql_stmt:='ALTER DATABASE sahsuland SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions';
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;
 END;
@@ -953,7 +953,7 @@ BEGIN
 --
 -- Set default search pathname
 --
-	sql_stmt:='ALTER DATABASE sahsuland_dev SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies';
+	sql_stmt:='ALTER DATABASE sahsuland_dev SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions';
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;
 END;
@@ -964,9 +964,9 @@ $$;
 -- Set search path for rif40
 --
 ALTER USER rif40 SET search_path 
-	TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies;
+	TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions;
 SET search_path 
-	TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies;
+	TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions;
 	
 --
 -- End transaction 3: sahsuland_dev build
