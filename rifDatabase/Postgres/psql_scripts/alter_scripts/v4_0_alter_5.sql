@@ -75,29 +75,24 @@ Done:
    in if40_geo_pkg.rif40_zoom_levels() for the correct m/pixel.
 5. Partition t_rif40_sahsu_maptiles; convert partition to p_ naming convention, move to
     rif40_partitions schema, added indexes and constraints as required.
-   
+6. Convert rif40_get_geojson_tiles to use t_rif40_sahsu_maptiles tables
+  
 To do:
 
-?. convert rif40_get_geojson_tiles to use t_rif40_sahsu_maptiles tables
-?. Re-index partition indexes
-?. populate_rif40_tiles() to correctly report rows inserted (using RETURNING); make
+7. Re-index partition indexes
+8. populate_rif40_tiles() to correctly report rows inserted (using RETURNING); make
    more efficient; create EXPLAIN PLAN version.
 
+9. Simplification to warn if bounds of map at zoomlevel 6 exceeds 4x3 tiles.
+10. Simplification to fail if bounds of map < 5% of zoomlevel 11 (bound area: 19.6x19.4km); 
+    i.e. the map is not projected correctly (as sahsuland is not at present). Fix
+    sahsuland projection (i.e. it is 27700; do the export using GDAL correctly).
 
-3. Simplification to warn if bounds of map at zoomlevel 6 exceeds 4x3 tiles.
-4. Simplification to fail if bounds of map < 5% of zoomlevel 11 (bound area: 19.6x19.4km); 
-   i.e. the map is not projected correctly (as sahsuland is not at present). Fix
-   sahsuland projection (i.e. it is 27700; do the export using GDAL correctly).
-
-6. Remove ST_SIMPLIFY_TOLERANCE; replace with m/pixel for zoomlevel (hence the reason 
-   for converting to 4326 before simplification).
-9. Intersection to use shapefile SRID projection; after simplification to be tested again intersections 
-   using zoomlevels 11
-8. Add support for regionINLA.txt on a per study basis.
-7. Convert simplification and intersection code to Java; call via PL/Java. Object creation
-   functions will remain port specific (because of Postgres partitioning).
-
-
+11. Remove ST_SIMPLIFY_TOLERANCE; replace with m/pixel for zoomlevel (hence the reason 
+    for converting to 4326 before simplification).
+12. Intersection to use shapefile SRID projection; after simplification to be tested again intersections 
+    using zoomlevels 11
+13. Add support for regionINLA.txt on a per study basis.
 
 <total area_id>
 <area_id> <total (N)> <adjacent area 1> .. <adjacent area N>
@@ -377,39 +372,6 @@ SELECT * FROM e;
 		
  */
 	
-WITH a AS (
-	SELECT *
-          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
-), b AS (
-	SELECT ST_Centroid(ST_MakeEnvelope(a.x_min, a.y_min, a.x_max, a.y_max)) AS centroid
-	  FROM a
-), c AS (
-	SELECT ST_X(b.centroid) AS X_centroid, ST_Y(b.centroid) AS Y_centroid, 11 AS zoom_level	  
-	  FROM b
-), d AS (
-	SELECT zoom_level, X_centroid, Y_centroid, 
-		   rif40_geo_pkg.latitude2tile(X_centroid, zoom_level) AS X_tile,
-		   rif40_geo_pkg.longitude2tile(Y_centroid, zoom_level) AS Y_tile
-	  FROM c
-), e AS (
-	SELECT zoom_level, X_centroid, Y_centroid,
-		   rif40_geo_pkg.tile2latitude(X_tile, zoom_level) AS X_min,
-		   rif40_geo_pkg.tile2longitude(Y_tile, zoom_level) AS Y_min,	
-		   rif40_geo_pkg.tile2latitude(X_tile+1, zoom_level) AS X_max,
-		   rif40_geo_pkg.tile2longitude(Y_tile+1, zoom_level) AS Y_max,
-		   X_tile, Y_tile
-	  FROM d
-) 
-SELECT SUBSTRING(
-		rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU'::VARCHAR 	/* Geography */, 
-			'LEVEL4'::VARCHAR 	/* geolevel view */, 
-			e.y_max::REAL, e.x_max::REAL, e.y_min::REAL, e.x_min::REAL, /* Bounding box - from cte */
-			e.zoom_level::INTEGER /* Zoom level */,
-			NULL		/* Tile name */, 
-			FALSE 		/* return_one_row flag: output multiple rows so it is readable! */) 
-			FROM 1 FOR 160 /* Truncate to 160 chars */) AS json 
-  FROM e LIMIT 4;	
 --
 -- rif40_GetMapAreas interface
 --
@@ -625,6 +587,40 @@ SELECT geolevel_name, geography, zoomlevel, x_tile_number, y_tile_number, optimi
    AND y_tile_number = 330
  ORDER BY tile_id; 
 
+--
+-- Test new rif40_get_geojson_tiles()
+-- 	
+WITH a AS (
+	SELECT *
+          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
+), b AS (
+	SELECT ST_Centroid(ST_MakeEnvelope(a.x_min, a.y_min, a.x_max, a.y_max)) AS centroid
+	  FROM a
+), c AS (
+	SELECT ST_X(b.centroid) AS X_centroid, ST_Y(b.centroid) AS Y_centroid, 11 AS zoom_level	  
+	  FROM b
+), d AS (
+	SELECT zoom_level, X_centroid, Y_centroid, 
+		   rif40_geo_pkg.latitude2tile(X_centroid, zoom_level) AS X_tile,
+		   rif40_geo_pkg.longitude2tile(Y_centroid, zoom_level) AS Y_tile
+	  FROM c
+), e AS (
+	SELECT zoom_level, X_centroid, Y_centroid,
+		   rif40_geo_pkg.tile2latitude(X_tile, zoom_level) AS X_min,
+		   rif40_geo_pkg.tile2longitude(Y_tile, zoom_level) AS Y_min,	
+		   rif40_geo_pkg.tile2latitude(X_tile+1, zoom_level) AS X_max,
+		   rif40_geo_pkg.tile2longitude(Y_tile+1, zoom_level) AS Y_max,
+		   X_tile, Y_tile
+	  FROM d
+) 
+SELECT SUBSTRING(
+		rif40_xml_pkg.rif40_get_geojson_tiles(
+			'SAHSU'::VARCHAR 	/* Geography */, 
+			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			e.y_max::REAL, e.x_max::REAL, e.y_min::REAL, e.x_min::REAL, /* Bounding box - from cte */
+			e.zoom_level::INTEGER /* Zoom level */)::Text 
+			FROM 1 FOR 160 /* Truncate to 160 chars */) AS json 
+  FROM e LIMIT 4;
 --
 -- Display tile summary [SLOW!]
 -- 

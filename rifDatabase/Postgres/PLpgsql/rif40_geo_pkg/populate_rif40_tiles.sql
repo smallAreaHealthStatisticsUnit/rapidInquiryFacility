@@ -281,7 +281,7 @@ DECLARE
 			' ORDER BY 1';
 --
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'populate_rif40_tiles', 
-		'[60104] Populating RIF tiles for geography: %; % zoomlevels; SQL>'||E'\n'||'%',
+		'[60104] Populating RIF tiles for geography: %; % zoomlevels; SQL>'||E'\n'||'%;',
 		c1_rec.geography::VARCHAR		/* Geography */,
 		max_zoomlevel::VARCHAR			/* Max zoom level */,
 		sql_stmt::VARCHAR				/* SQL */);
@@ -327,10 +327,9 @@ DECLARE
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'populate_rif40_tiles', 
-		'[60106] Populated RIF tiles for geography: %, overall time taken: %'||E'\n'||'%;',
+		'[60106] Populated RIF tiles for geography: %, overall time taken: %',
 		c1_rec.geography::VARCHAR	/* Geography */,
-		took::VARCHAR				/* Time taken */,
-		sql_stmt::VARCHAR			/* SQL statement */);
+		took::VARCHAR				/* Time taken */);
 --
 	sql_stmt:='ANALYZE VERBOSE '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_maptiles');
 	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
@@ -344,9 +343,8 @@ Returns:		Nothing
 Description:	Populate tile lookup table T_RIF40_<GEOGRAPHY>_MAPTILES from simplified geometry
 
 SQL>
-
 INSERT INTO t_rif40_sahsu_maptiles
-(geography, geolevel_name, tile_id, zoomlevel, optimised_geojson, optimised_topojson, gid)
+(geography, geolevel_name, tile_id, x_tile_number, y_tile_number, zoomlevel, optimised_geojson, optimised_topojson, gid)
 WITH a AS ( /* level geolevel */
         SELECT a1.geography, a1.geolevel_name,
                MIN(geolevel_id) AS min_geolevel_id,
@@ -364,27 +362,27 @@ WITH a AS ( /* level geolevel */
                a.max_geolevel_id,
                a.zoomlevel,
           CASE
-                                WHEN a.zoomlevel = 6 THEN ST_XMax(b.optimised_geometry)
-                                WHEN a.zoomlevel = 8 THEN ST_XMax(b.optimised_geometry_2)
-                                WHEN a.zoomlevel = 11 THEN ST_XMax(b.optimised_geometry_3)
+                                WHEN a.zoomlevel <= 6 THEN ST_XMax(b.optimised_geometry)                /* Optimised for zoom level 6 */
+                                WHEN a.zoomlevel IN (7, 8) THEN ST_XMax(b.optimised_geometry_2)         /* Optimised for zoom level 8 */
+                                WHEN a.zoomlevel IN (9, 10, 11) THEN ST_XMax(b.optimised_geometry_3)    /* Optimised for zoom level 11 */
                                 ELSE NULL
                    END AS Xmax,
           CASE
-                                WHEN a.zoomlevel = 6 THEN ST_XMin(b.optimised_geometry)
-                                WHEN a.zoomlevel = 8 THEN ST_XMin(b.optimised_geometry_2)
-                                WHEN a.zoomlevel = 11 THEN ST_XMin(b.optimised_geometry_3)
+                                WHEN a.zoomlevel <= 6 THEN ST_XMin(b.optimised_geometry)                /* Optimised for zoom level 6 */
+                                WHEN a.zoomlevel IN (7, 8) THEN ST_XMin(b.optimised_geometry_2)         /* Optimised for zoom level 8 */
+                                WHEN a.zoomlevel IN (9, 10, 11) THEN ST_XMin(b.optimised_geometry_3)    /* Optimised for zoom level 11 */
                                 ELSE NULL
                    END AS Xmin,
           CASE
-                                WHEN a.zoomlevel = 6 THEN ST_YMax(b.optimised_geometry)
-                                WHEN a.zoomlevel = 8 THEN ST_YMax(b.optimised_geometry_2)
-                                WHEN a.zoomlevel = 11 THEN ST_YMax(b.optimised_geometry_3)
+                                WHEN a.zoomlevel <= 6 THEN ST_YMax(b.optimised_geometry)                /* Optimised for zoom level 6 */
+                                WHEN a.zoomlevel IN (7, 8) THEN ST_YMax(b.optimised_geometry_2)         /* Optimised for zoom level 8 */
+                                WHEN a.zoomlevel IN (9, 10, 11) THEN ST_YMax(b.optimised_geometry_3)    /* Optimised for zoom level 11 */
                                 ELSE NULL
                    END AS Ymax,
           CASE
-                                WHEN a.zoomlevel = 6 THEN ST_YMin(b.optimised_geometry)
-                                WHEN a.zoomlevel = 8 THEN ST_YMin(b.optimised_geometry_2)
-                                WHEN a.zoomlevel = 11 THEN ST_YMin(b.optimised_geometry_3)
+                                WHEN a.zoomlevel <= 6 THEN ST_YMin(b.optimised_geometry)                /* Optimised for zoom level 6 */
+                                WHEN a.zoomlevel IN (7, 8) THEN ST_YMin(b.optimised_geometry_2)         /* Optimised for zoom level 8 */
+                                WHEN a.zoomlevel IN (9, 10, 11) THEN ST_YMin(b.optimised_geometry_3)    /* Optimised for zoom level 11 */
                                 ELSE NULL
                    END AS Ymin
       FROM t_rif40_sahsu_geometry b, a
@@ -417,8 +415,8 @@ WITH a AS ( /* level geolevel */
         SELECT g.geography, g.geolevel_series AS geolevel_id, zoomlevel,
                    area_Xmin, area_Xmax, area_Ymin, area_Ymax,
                    x_series, y_series, h.geolevel_name,
-                   g.geography||''_''||g.geolevel_series::Text||''_''||h.geolevel_name||''_''||
-                                zoomlevel::Text||''_''||x_series::Text||''_''||y_series::Text AS tile_id,
+                   g.geography||'_'||g.geolevel_series::Text||'_'||h.geolevel_name||'_'||
+                                zoomlevel::Text||'_'||x_series::Text||'_'||y_series::Text AS tile_id,
                rif40_geo_pkg.tile2latitude(x_series::INTEGER, zoomlevel) AS tile_Xmin,
                rif40_geo_pkg.tile2latitude((x_series+1)::INTEGER, zoomlevel) AS tile_Xmax,
                rif40_geo_pkg.tile2longitude(y_series::INTEGER, zoomlevel) AS tile_Ymin,
@@ -428,23 +426,84 @@ WITH a AS ( /* level geolevel */
      WHERE g.min_geolevel_id = e.min_geolevel_id
        AND h.geography       = g.geography
        AND g.geolevel_series = h.geolevel_id
+), i AS ( /* Intersect bound with geolevel geometry to build list of area_ids */
+        SELECT h.geography,
+           h.geolevel_name,
+           h.tile_id,
+           h.x_series AS x_tile_number,
+           h.y_series AS y_tile_number,
+           h.zoomlevel,
+                i.area_id,
+           ST_MakeEnvelope(h.tile_Xmin, h.tile_Ymin, h.tile_Xmax, h.tile_Ymax) AS geom /* Bound */
+      FROM t_rif40_sahsu_geometry i, h
+     WHERE optimised_geometry_3 && ST_MakeEnvelope(h.tile_Xmin, h.tile_Ymin, h.tile_Xmax, h.tile_Ymax)
+      AND h.geolevel_name = i.geolevel_name    /* Partition eliminate */
+                                                                                                /* Intersect bound with geolevel geometry */
+), j AS ( /* Build array of area_ids for _rif40_get_geojson_as_js() */
+        SELECT i.geography,
+           i.geolevel_name,
+           i.tile_id,
+           i.x_tile_number,
+           i.y_tile_number,
+           i.zoomlevel,
+                    COUNT(DISTINCT(i.area_id)) AS total /* Total area IDs */,
+           ARRAY_AGG(i.area_id) AS area_id_list         /* Array of area IDs */,
+           ST_IsValid(i.geom) AS is_valid               /* Test bound */,
+           ST_Area(i.geom) AS area                      /* Area of bound */
+        FROM i
+        GROUP BY i.geography,
+           i.geolevel_name,
+           i.tile_id,
+           i.x_tile_number,
+           i.y_tile_number,
+           i.zoomlevel,
+                   ST_IsValid(i.geom),
+                   ST_Area(i.geom)
+), k AS ( /* Convert area_ids array to GeoJSON using _rif40_get_geojson_as_js() */
+        SELECT j.geography,
+                   j.geolevel_name,
+          j.tile_id,
+          j.x_tile_number,
+          j.y_tile_number,
+          j.zoomlevel,
+                   j.total,
+                   rif40_xml_pkg._rif40_get_geojson_as_js(
+                                        j.geography,
+                                        j.geolevel_name,
+                                        j.area_id_list,
+                                        (j.total+2)::INTEGER    /* Add 2 for header and footer */,
+                                        TRUE                    /* Produce JSON not JS */,
+                                        j.zoomlevel::INTEGER)::JSON AS optimised_geojson
+        FROM j
 )
 SELECT geography,
        geolevel_name,
-           tile_id,
-           zoomlevel,
-           rif40_xml_pkg.rif40_get_geojson_tiles(
-                                        geography::VARCHAR,
-                                        geolevel_name::VARCHAR,
-                                        tile_Ymax::REAL,
-                                        tile_Xmax::REAL,
-                                        tile_Ymin::REAL,
-                                        tile_Xmin::REAL,
-                                        zoomlevel::INTEGER)::JSON AS optimised_geojson,
-           to_json(''X''::Text)::JSON AS optimised_topojson, /* Dummy value */
-           ROW_NUMBER() OVER() AS gid
-  FROM h
- ORDER BY 1';
+       tile_id,
+       x_tile_number,
+       y_tile_number,
+       zoomlevel,
+       optimised_geojson,
+       to_json('X'::Text)::JSON AS optimised_topojson /* Dummy value */,
+       ROW_NUMBER() OVER() AS gid
+  FROM k
+ WHERE k.total > 0
+ ORDER BY 1;
+ 
+psql:alter_scripts/v4_0_alter_5.sql:542: INFO:  [DEBUG1] populate_rif40_tiles(): [60104] Populated RIF tiles for geography: SAHSU; zoomlevel 0/11, rows: 0, time taken: 00:00:05.998
+psql:alter_scripts/v4_0_alter_5.sql:542: INFO:  [DEBUG1] populate_rif40_tiles(): [60104] Populated RIF tiles for geography: SAHSU; zoomlevel 1/11, rows: 0, time taken: 00:00:05.93
+psql:alter_scripts/v4_0_alter_5.sql:542: INFO:  [DEBUG1] populate_rif40_tiles(): [60104] Populated RIF tiles for geography: SAHSU; zoomlevel 2/11, rows: 0, time taken: 00:00:06.335
+psql:alter_scripts/v4_0_alter_5.sql:542: INFO:  [DEBUG1] populate_rif40_tiles(): [60104] Populated RIF tiles for geography: SAHSU; zoomlevel 3/11, rows: 0, time taken: 00:00:05.911
+psql:alter_scripts/v4_0_alter_5.sql:542: INFO:  [DEBUG1] populate_rif40_tiles(): [60104] Populated RIF tiles for geography: SAHSU; zoomlevel 4/11, rows: 0, time taken: 00:00:05.852
+psql:alter_scripts/v4_0_alter_5.sql:542: INFO:  [DEBUG1] populate_rif40_tiles(): [60104] Populated RIF tiles for geography: SAHSU; zoomlevel 5/11, rows: 0, time taken: 00:00:05.861
+psql:alter_scripts/v4_0_alter_5.sql:542: INFO:  [DEBUG1] populate_rif40_tiles(): [60104] Populated RIF tiles for geography: SAHSU; zoomlevel 6/11, rows: 0, time taken: 00:00:09.295
+psql:alter_scripts/v4_0_alter_5.sql:542: INFO:  [DEBUG1] populate_rif40_tiles(): [60104] Populated RIF tiles for geography: SAHSU; zoomlevel 7/11, rows: 0, time taken: 00:00:16.339
+psql:alter_scripts/v4_0_alter_5.sql:542: INFO:  [DEBUG1] populate_rif40_tiles(): [60104] Populated RIF tiles for geography: SAHSU; zoomlevel 8/11, rows: 0, time taken: 00:00:34.829
+psql:alter_scripts/v4_0_alter_5.sql:542: INFO:  [DEBUG1] populate_rif40_tiles(): [60104] Populated RIF tiles for geography: SAHSU; zoomlevel 9/11, rows: 0, time taken: 00:01:18.221
+psql:alter_scripts/v4_0_alter_5.sql:542: INFO:  [DEBUG1] populate_rif40_tiles(): [60104] Populated RIF tiles for geography: SAHSU; zoomlevel 10/11, rows: 0, time taken: 00:04:02.419
+psql:alter_scripts/v4_0_alter_5.sql:542: INFO:  [DEBUG1] populate_rif40_tiles(): [60104] Populated RIF tiles for geography: SAHSU; zoomlevel 11/11, rows: 0, time taken: 00:14:03.615
+psql:alter_scripts/v4_0_alter_5.sql:542: INFO:  [DEBUG1] populate_rif40_tiles(): [60106] Populated RIF tiles for geography: SAHSU, overall time taken: 00:21:02.701
+
+';
  
  --
  -- Eof

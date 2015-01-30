@@ -218,9 +218,7 @@ SELECT SUBSTRING(
 			'SAHSU'::VARCHAR 	/* Geography */, 
 			'LEVEL4'::VARCHAR 	/* geolevel view */, 
 			e.y_max::REAL, e.x_max::REAL, e.y_min::REAL, e.x_min::REAL, /* Bounding box - from cte */
-			e.zoom_level::INTEGER /* Zoom level */,
-			NULL		/* Tile name */, 
-			FALSE 		/* return_one_row flag: output multiple rows so it is readable! */) 
+			e.zoom_level::INTEGER /* Zoom level */)::Text 
 			FROM 1 FOR 160 /* Truncate to 160 chars */) AS json 
   FROM e LIMIT 4;	
 /*
@@ -235,7 +233,7 @@ SELECT SUBSTRING(
 --
 -- Use copy to create a Javascript file that can be tested
 --
---\copy (WITH a AS (SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')) SELECT rif40_xml_pkg.rif40_get_geojson_tiles('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, a.y_max, a.x_max, a.y_min, a.x_min, 9 /* Zoom level */, NULL /* Tile name */, FALSE /* return_one_row flag: output multiple rows so it is readable! */) FROM a) to ../psql_scripts/test_scripts/data/test_6_geojson_test_02.json
+--\copy (WITH a AS (SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')) SELECT rif40_xml_pkg.rif40_get_geojson_tiles('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, a.y_max, a.x_max, a.y_min, a.x_min, 9 /* Zoom level */) FROM a) to ../psql_scripts/test_scripts/data/test_6_geojson_test_02.json
 
 --
 -- rif40_GetMapAreas interface
