@@ -483,7 +483,7 @@ SELECT geography,
        y_tile_number,
        zoomlevel,
        optimised_geojson,
-       to_json('X'::Text)::JSON AS optimised_topojson /* Dummy value */,
+       to_json(''X''::Text)::JSON AS optimised_topojson /* Dummy value */,
        ROW_NUMBER() OVER() AS gid
   FROM k
  WHERE k.total > 0
