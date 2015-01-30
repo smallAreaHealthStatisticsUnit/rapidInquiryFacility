@@ -415,8 +415,8 @@ WITH a AS ( /* level geolevel */
         SELECT g.geography, g.geolevel_series AS geolevel_id, zoomlevel,
                    area_Xmin, area_Xmax, area_Ymin, area_Ymax,
                    x_series, y_series, h.geolevel_name,
-                   g.geography||'_'||g.geolevel_series::Text||'_'||h.geolevel_name||'_'||
-                                zoomlevel::Text||'_'||x_series::Text||'_'||y_series::Text AS tile_id,
+                   g.geography||''_''||g.geolevel_series::Text||''_''||h.geolevel_name||''_''||
+                                zoomlevel::Text||''_''||x_series::Text||''_''||y_series::Text AS tile_id,
                rif40_geo_pkg.tile2latitude(x_series::INTEGER, zoomlevel) AS tile_Xmin,
                rif40_geo_pkg.tile2latitude((x_series+1)::INTEGER, zoomlevel) AS tile_Xmax,
                rif40_geo_pkg.tile2longitude(y_series::INTEGER, zoomlevel) AS tile_Ymin,
@@ -457,8 +457,8 @@ WITH a AS ( /* level geolevel */
            i.x_tile_number,
            i.y_tile_number,
            i.zoomlevel,
-                   ST_IsValid(i.geom),
-                   ST_Area(i.geom)
+           ST_IsValid(i.geom),
+           ST_Area(i.geom)
 ), k AS ( /* Convert area_ids array to GeoJSON using _rif40_get_geojson_as_js() */
         SELECT j.geography,
                    j.geolevel_name,
