@@ -76,26 +76,25 @@ Done:
 5. Partition t_rif40_sahsu_maptiles; convert partition to p_ naming convention, move to
     rif40_partitions schema, added indexes and constraints as required.
 6. Convert rif40_get_geojson_tiles to use t_rif40_sahsu_maptiles tables
-  
-To do:
-
 7. Re-index partition indexes
-8. populate_rif40_tiles() to correctly report rows inserted (using RETURNING); make
-   more efficient; create EXPLAIN PLAN version.
-
-9. Simplification to warn if bounds of map at zoomlevel 6 exceeds 4x3 tiles.
-10. Simplification to fail if bounds of map < 5% of zoomlevel 11 (bound area: 19.6x19.4km); 
-    i.e. the map is not projected correctly (as sahsuland is not at present). Fix
-    sahsuland projection (i.e. it is 27700; do the export using GDAL correctly).
-
-11. Remove ST_SIMPLIFY_TOLERANCE; replace with m/pixel for zoomlevel (hence the reason 
-    for converting to 4326 before simplification).
-12. Intersection to use shapefile SRID projection; after simplification to be tested again intersections 
-    using zoomlevels 11
-13. Add support for regionINLA.txt on a per study basis.
+8. Add support for regionINLA.txt on a per study basis as rif40_GetAdjacencyMatrix()
 
 <total area_id>
 <area_id> <total (N)> <adjacent area 1> .. <adjacent area N>
+
+9. populate_rif40_tiles() to correctly report rows inserted (using RETURNING); make
+   more efficient; create EXPLAIN PLAN version.
+   
+To do:
+
+10. Simplification to warn if bounds of map at zoomlevel 6 exceeds 4x3 tiles.
+11. Simplification to fail if bounds of map < 5% of zoomlevel 11 (bound area: 19.6x19.4km); 
+    i.e. the map is not projected correctly (as sahsuland is not at present). Fix
+    sahsuland projection (i.e. it is 27700; do the export using GDAL correctly).
+12. Remove ST_SIMPLIFY_TOLERANCE; replace with m/pixel for zoomlevel (hence the reason 
+    for converting to 4326 before simplification).
+13. Intersection to use shapefile SRID projection; after simplification to be tested against intersections 
+    using zoomlevels 11
 
 */
    

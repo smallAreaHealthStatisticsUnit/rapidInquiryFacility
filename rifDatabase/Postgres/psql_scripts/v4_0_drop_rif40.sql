@@ -405,6 +405,7 @@ DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_as_js(l_geography charac
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, BOOLEAN);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, VARCHAR, BOOLEAN);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, VARCHAR, BOOLEAN, BOOLEAN);
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, BOOLEAN);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getgeolevelfullextent(l_geography character varying, l_geolevel_view character varying, OUT y_max real, OUT x_max real, OUT y_min real, OUT x_min real);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getgeolevelfullextentforstudy(l_geography character varying, l_geolevel_view character varying, l_study_id integer, OUT y_max real, OUT x_max real, OUT y_min real, OUT x_min real);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getgeolevelboundsforarea(l_geography character varying, l_geolevel_view character varying, l_map_area character varying, OUT y_max real, OUT x_max real, OUT y_min real, OUT x_min real);

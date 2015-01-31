@@ -654,6 +654,9 @@ Total runtime: 19.472 ms
 	END LOOP;
 	CLOSE c5geojson2;
 	IF i = 0 THEN
+--
+-- This could be changed to return a synthetic NULL as tile as per the rif40_<geography>_maptiles view
+--
 		PERFORM rif40_log_pkg.rif40_error(-50423, 'rif40_get_geojson_tiles', 
 			'Geography: %, <geoevel view> % bound [%, %, %, %] returns no tiles, took: %.', 			
 			l_geography::VARCHAR		/* Geography */, 
