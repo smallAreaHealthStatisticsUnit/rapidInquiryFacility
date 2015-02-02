@@ -351,6 +351,7 @@ DROP FUNCTION IF EXISTS rif40_geo_pkg.get_geojson_as_js(VARCHAR, VARCHAR, VARCHA
 DROP FUNCTION IF EXISTS rif40_geo_pkg.add_population_to_rif40_geolevels_geometry(VARCHAR, VARCHAR);
 DROP FUNCTION IF EXISTS rif40_geo_pkg.add_population_to_rif40_geolevels_geometry();
 DROP FUNCTION IF EXISTS rif40_geo_pkg.populate_rif40_tiles(VARCHAR);
+DROP FUNCTION IF EXISTS rif40_xml_pkg._populate_rif40_tiles_explain_ddl(sql_stmt character varying, l_zoomlevel integer, l_geography character varying);
 
 --
 -- Drop old and new (without st_simplify_tolerance) forms

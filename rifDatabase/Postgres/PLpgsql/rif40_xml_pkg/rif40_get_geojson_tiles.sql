@@ -93,7 +93,7 @@ Parameters:	Geography, geolevel_view,
 			Zoom level [Default: 8; scaling 1 in 2,325,012].
 			Check tile co-ordinates  (TRUE/FALSE)  [Default: FALSE]
 Returns:	JSON
-Description:	Get GeoJSON data as a Javascript variable. 
+Description:	Get TopoJSON (if not "X") or GeoJSON for area_ids in map tile. 
 		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
 		SRID is 4326 (WGS84)
 		Check bounding box is 1x1 tile in size.
@@ -649,7 +649,11 @@ Total runtime: 19.472 ms
 		EXIT WHEN NOT FOUND;
 		i=i+1;
 		IF 1 = 1 THEN
-			RETURN NEXT c5_rec.optimised_geojson;		
+			IF c5_rec.optimised_topojson::Text = to_json('X'::Text)::Text /* GeoJSON not converted to topoJSON */ THEN
+				RETURN NEXT c5_rec.optimised_geojson;	
+			ELSE
+				RETURN NEXT c5_rec.optimised_topojson;
+			END IF;
 		END IF;
 	END LOOP;
 	CLOSE c5geojson2;
@@ -722,7 +726,7 @@ Parameters:	Geography, geolevel_view,
 			Zoom level [Default: 8; scaling 1 in 2,325,012], 
 			Check tile co-ordinates TRUE/FALSE)  [Default: FALSE]
 Returns:	JSON
-Description:	Get GeoJSON data as a Javascript variable. 
+Description:	Get TopoJSON (if not "X") or GeoJSON for area_ids in map tile. 
 		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
 		SRID is 4326 (WGS84)
 		Check bounding box is 1x1 tile in size.
