@@ -95,6 +95,7 @@ To do:
     for converting to 4326 before simplification).
 13. Intersection to use shapefile SRID projection; after simplification to be tested against intersections 
     using zoomlevels 11
+14. Move all geospatial data to rif_data schema
 
 */
    
