@@ -185,7 +185,8 @@ SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU' /* Geography 
 --
 \copy (SELECT * FROM rif40_xml_pkg.rif40_get_geojson_as_js('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, 'LEVEL2' /* geolevel area */, '01.004' /* geolevel area id */, FALSE /* return_one_row flag: output multiple rows so it is readable! */)) to ../psql_scripts/test_scripts/data/test_6_geojson_test_01.js 
 \copy (SELECT * FROM rif40_xml_pkg.rif40_get_geojson_as_js('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, 'LEVEL2' /* geolevel area */, '01.004' /* geolevel area id */, FALSE /* return_one_row flag: output multiple rows so it is readable! */, TRUE /* Produce JSON not JS */)) to ../psql_scripts/test_scripts/data/test_6_geojson_test_01.json 
-
+\copy (SELECT optimised_geojson FROM t_rif40_sahsu_maptiles WHERE tile_id = 'SAHSU_4_LEVEL4_0_0_0') to ../psql_scripts/test_scripts/data/test_6_sahsu_4_level4_0_0_0.json
+ 
 --
 -- GetGeoJsonTiles interface
 --
