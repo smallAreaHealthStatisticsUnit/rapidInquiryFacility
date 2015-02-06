@@ -1,0 +1,21 @@
+
+
+
+								
+								
+			if ((typeof(tile_id) !== 'undefined') && (tile_id !== null)) {
+				
+				}
+				});
+				console.log('CC ' + i + '] ' + tile_id);
+			}
+			else {
+					client.end();
+					return console.error('Unexpected null processing query: ' + sql_stmt + ';', err);
+			}
+ 
+		}
+		var end = client.query('COMMIT');
+		console.log('Commit');
+		client.end();
+
