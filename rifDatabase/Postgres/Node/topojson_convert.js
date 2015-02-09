@@ -1,5 +1,52 @@
 #!/usr/bin/env node
 
+// ************************************************************************
+//
+// GIT Header
+//
+// $Format:Git ID: (%h) %ci$
+// $Id: 7ccec3471201c4da4d181af6faef06a362b29526 $
+// Version hash: $Format:%H$
+//
+// Description:
+//
+// Rapid Enquiry Facility (RIF) - GeoJSON to topoJSON converter
+//								  Uses node.js TopoJHSON module
+//
+// Copyright:
+//
+// The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+// that rapidly addresses epidemiological and public health questions using 
+// routinely collected health and population data and generates standardised 
+// rates and relative risks for any given health outcome, for specified age 
+// and year ranges, for any given geographical area.
+//
+// Copyright 2014 Imperial College London, developed by the Small Area
+// Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+// is funded by the Public Health England as part of the MRC-PHE Centre for 
+// Environment and Health. Funding for this project has also been received 
+// from the Centers for Disease Control and Prevention.  
+//
+// This file is part of the Rapid Inquiry Facility (RIF) project.
+// RIF is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// RIF is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+// to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+// Boston, MA 02110-1301 USA
+//
+// Author:
+//
+// Peter Hambly, SAHSU
+//
 var pg = require('pg');
 var topojson = require('topojson');
 
@@ -10,105 +57,166 @@ var geography = process.argv[2];
 if (!geography) {
 	geography = 'sahsu';
 }
-var row_count = 0;
-var tile_id = [];
-var optimised_topojson = [];
-var client = new pg.Client(conString);
-client.on('drain', client.end.bind(client)); //disconnect client when all queries are finished
 
+var client = new pg.Client(conString);
+		
+// Connect to Postgres database
 client.connect(function(err) {
 	if (err) {
 		return console.error('Could not connect to postgres using: ' + conString, err);
 	}
-}); // End of connect
-
-var sql_stmt = 'SELECT tile_id, optimised_geojson::Text AS optimised_geojson FROM t_rif40_' + geography + '_maptiles LIMIT 5';  
-
-var query = client.query(sql_stmt, function(err, result) {
-		if (err) {
-			client.end();
-			return console.error('Error running query: ' + sql_stmt + ';', err);
-		}
-		else {	
-			query.on('row', function(row) {
-				//fired once for each row returned
-				result.addRow(row);
-			});
-			query.on('end', function(result) {
-			//fired once and only once, after the last row has been returned and after all 'row' events are emitted
-			//in this example, the 'rows' array now contains an ordered set of all the rows which we received from postgres
-				row_count = result.rowCount;
-				tile_id = new Array();
-				optimised_topojson = new Array();				
-				for (i = 0; i < row_count; i++) { 
-					object = JSON.parse(result.rows[i].optimised_geojson);
-					tile_id.push(result.rows[i].tile_id);
-					objects = {};
-					if (object.type === "Topology") {
-						for (var key in object.objects) {
-							objects[key] = topojson.feature(object, object.objects[key]);
-						}
-					}
-					else {
-						objects[tile_id[i] + '.json'] = object;
-					}   
-					// Convert GeoJSON to TopoJSON.
-
-					console.log('Converting GeoJSON to TopoJSON for tile [ ' + i + ']: ' + tile_id[i]);					
-					topology = topojson.topology(objects, options); // convert to TopoJSON
-					optimised_topojson.push(JSON.stringify(topology)); 
+	else {
+		var sql_stmt = 'SELECT tile_id, optimised_geojson::Text AS optimised_geojson FROM t_rif40_' + 
+				geography + '_maptiles';
+				
+		// Connected OK, run SQL query
+		var query = client.query(sql_stmt, function(err, result) {
+			if (err) {
+				// Error handler
+				client.end();
+				return console.error('Error running query: ' + sql_stmt + ';', err);
+			}
+			else {	
+				// Query OK
 			
-					// Clear the objects to allow garbage collection.
-					objects = null;
-					object = null;
-					topology = null;
-				}
-//				console.log('SQL> ' + sql_stmt + ' complete, ' + row_count + ' rows were processed.');
+				var row_count = null;
+				var last_tile_id = null;			
+				var tile_id = [];
+				var optimised_topojson = [];
+				var optimised_geojson = [];
+				var object = {};
+				var objects = {};	
+				var tile_id = null;
+				var topology = null;
+				
+				query.on('row', function(row) {
+					//fired once for each row returned
+					result.addRow(row);
+				});
+				query.on('end', function(result) {
+					// End of query processing - process results array
+					row_count = result.rowCount;
+					// Setup arrays for results
+					tile_id = new Array();
+					optimised_topojson = new Array();
+					optimised_geojson = new Array();
+					for (i = 0; i < row_count; i++) { 
+						object = JSON.parse(result.rows[i].optimised_geojson);
+						tile_id.push(result.rows[i].tile_id);
+						optimised_geojson.push(result.rows[i].optimised_geojson);
+						objects = {};
+						if (object.type === "Topology") {
+							for (var key in object.objects) {
+								objects[key] = topojson.feature(object, object.objects[key]);
+							}
+						}
+						else {
+							objects[tile_id[i] + '.json'] = object;
+						}   
+						// Convert GeoJSON to TopoJSON.
 
-			}); // End of query close processing
-	}
-}); // End of query;
+						console.log('Converting GeoJSON to TopoJSON for tile [ ' + i + ']: ' + tile_id[i]);					
+						topology = topojson.topology(objects, options); // convert to TopoJSON
+						optimised_topojson.push(JSON.stringify(topology)); 
+			
+						// Clear the objects to force garbage collection.
+						objects = null;
+						object = null;
+						topology = null;
+					}
+					last_tile_id = tile_id[row_count - 1];
+					// Call topojson update loop
+					update_topojson_loop(tile_id, optimised_topojson, optimised_geojson, row_count, last_tile_id);
+					// Clear the objects to force garbage collection.
+					tile_id = null;
+					optimised_topojson = null;
+					optimised_geojson = null;
+				}); // End of query close processing
+		}
+	}); // End of query;
 
-var update_stmt = 'UPDATE t_rif40_' + geography + '_maptiles SET optimised_topojson = $1 WHERE tile_id = $2';  
 
 var options = {
 		"verbose": true,
 		"post-quantization": 1e4};
-var optimised_geojson = null;
-var object = {};
-var objects = {};	
-var tile_id = null;
-var topology = null;
-		
-var begin = client.query('BEGIN', function(err, result) {
+
+
+	}
+}); // End of connect
+
+
+/* 
+ */
+function do_update(ptile_id, poptimised_topojson, lrow_count, llast_tile_id) {
+	var update_stmt = 'WITH a AS ( UPDATE t_rif40_' + 
+			geography + '_maptiles SET optimised_topojson = $1 WHERE tile_id = $2 ' + 
+			'RETURNING tile_id, LENGTH(optimised_geojson::Text) AS length_geojson, ' + 
+			'LENGTH(optimised_topojson::Text) AS length_topojson, ' + 
+			'ROUND((1-(LENGTH(optimised_topojson::Text)::NUMERIC/LENGTH(optimised_geojson::Text)::NUMERIC))*100, 2) AS pct_reduction) ' + 
+			'SELECT a.tile_id, a.length_geojson, a.length_topojson, a.pct_reduction FROM a'; 
+				
+	var update = client.query(update_stmt, [poptimised_topojson,ptile_id], function(err, result) {
+		if(err) {
+			client.end();
+			return console.error('Error running update >>>\n' + 
+				update_stmt + ';', err);
+		}
+		else {
+			// Update OK
+			update.on('row', function(row) {
+				//fired once for each row returned
+				result.addRow(row);
+			});
+			// End of update processing
+			update.on('end', function(result) {	
+				// Check 1 row updated
+				if (result.rowCount != 1) {
+					client.end();
+					return console.error('Error running update, expected: 1 got: ' + result.rowCount + ' >>>\n' + 
+						update_stmt + ';', err);
+				}
+				else {
+					console.log('Processed tile_id: ' + result.rows[0].tile_id +
+						'; lengths geoJSON: ' + result.rows[0].length_geojson +
+						', topoJSON: ' + result.rows[0].length_topojson +
+						', % reduction: ' + result.rows[0].pct_reduction);
+					// Commit and disconnect after last row				
+					if (llast_tile_id === result.rows[0].tile_id) {
+						client.on('drain', client.end.bind(client)); 
+						// Commit transaction and disconnect client when all queries are finished
+						var END = client.query('COMMIT', function(err, result) {
+							if (err) {
+								client.end();
+								return console.error('Error in COMMIT transaction;', err);
+							}
+							else {
+								console.log('Tranaction end: ' + lrow_count + ' rows processed; ' + result.command);
+							}
+						});	
+					}
+				}					
+			});
+		}
+	});
+}
+
+/*
+ */
+function update_topojson_loop(ltile_id, loptimised_topojson, loptimised_geojson, lrow_count, llast_tile_id) {
+
+	var begin = client.query('BEGIN', function(err, result) {
 		if (err) {
 			client.end();
 			return console.error('Error in BEGIN transaction;', err);
 		}
 		else {
-			console.log('Tranaction start: ' + row_count + ' rows to process');
-
-
-			for (i = 0; i < row_count; i++) { 
-
-				console.log('BB ' + i + '] ' + tile_id[i]'; length: ' + optimised_geojson[i].length + 
-							' => ' + optimised_topojson[i].length + 
-							'>>>\n' + optimised_topojson[i].substr(1, 80) + ' ... ');
-				var update = client.query(update_stmt, [optimised_topojson, tile_id], function(err, result) {
-					if(err) {
-						client.end();
-						return console.error('Error running update[' + i + ']: ' + tile_id + '; ' + update_stmt + ';', err);
-					}
-					else {
-						update.on('end', function() {
-							console.log('Processed tile_id [' + i + '] ' + tile_id + '; length: ' + optimised_geojson.length + 
-							' => ' + optimised_topojson.length + 
-							'>>>\n' + optimised_topojson.substr(1, 80) + ' ... ');
-						});	
-					}
-				});
+			// Transaction start OK 
+			console.log('Tranaction start: ' + lrow_count + ' rows to process');
+			for (var i = 0; i < lrow_count; i++) { 
+				do_update(ltile_id[i], loptimised_topojson[i], lrow_count, llast_tile_id);
 			}
 		}
-});
+	});
+}
 
 // Eof
