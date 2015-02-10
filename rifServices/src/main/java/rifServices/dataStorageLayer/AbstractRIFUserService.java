@@ -6,13 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.BoundaryRectangle;

@@ -16,9 +16,6 @@ import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 import rifServices.io.RIFZFileFilter;
 import rifServices.system.RIFServiceException;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Observable;

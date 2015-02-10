@@ -110,18 +110,47 @@ abstract class AbstractSQLManager {
 	 * @param fieldName the field name
 	 * @return the string
 	 */
+	/*
 	protected String useAppropriateFieldNameCase(
 		final String fieldName) {
 
 		return fieldName.toLowerCase();
 	}
-	
-	
-	
+	*/
+		
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
 
+	protected void logSQLQuery(
+		final String queryName,
+		final AbstractSQLQueryFormatter queryFormatter,
+		final String... parameters) {
+		
+		StringBuilder queryLog = new StringBuilder();
+		queryLog.append("==========================================================\n");
+		queryLog.append("QUERY NAME:");
+		queryLog.append(queryName);
+		queryLog.append("\n");
+		
+		queryLog.append("PARAMETERS:");
+		queryLog.append("\n");
+		for (int i = 0; i < parameters.length; i++) {
+			queryLog.append("\t");
+			queryLog.append(i + 1);
+			queryLog.append(":\"");
+			queryLog.append(parameters[i]);
+			queryLog.append("\"\n");			
+		}
+		queryLog.append("\n");
+		queryLog.append("SQL QUERY TEXT\n");
+		queryLog.append(queryFormatter.generateQuery());
+		queryLog.append("\n");
+		queryLog.append("==========================================================\n");
+		
+		System.out.println(queryLog.toString());		
+	}
+	
 	protected void logSQLException(final SQLException sqlException) {
 		sqlException.printStackTrace();
 	}
