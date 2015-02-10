@@ -296,7 +296,7 @@ class CalculationMethodEditorDialog
 		panelGC.weighty = 1.0;
 		parameterTable = new ParameterTable(userInterfaceFactory);
 				
-		JScrollPane scrollPane = userInterfaceFactory.createScrollPane(parameterTable);
+		JScrollPane scrollPane = userInterfaceFactory.createScrollPane(parameterTable.getTable());
 		panel.add(scrollPane, panelGC);		
 		
 		return panel;
@@ -408,7 +408,7 @@ class CalculationMethodEditorDialog
 			= CalculationMethodPrior.getCalculationMethodPrior(currentPriorPhrase);
 		originalCalculationMethod.setPrior(currentCalculationMethodPrior);
 		
-		CellEditor tableCellEditor = parameterTable.getCellEditor();
+		CellEditor tableCellEditor = parameterTable.getTable().getCellEditor();
 		if (tableCellEditor != null) {
 			tableCellEditor.stopCellEditing();			
 		}

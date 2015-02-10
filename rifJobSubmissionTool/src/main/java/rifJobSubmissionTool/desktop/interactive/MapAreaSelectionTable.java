@@ -75,13 +75,11 @@ import java.util.ArrayList;
  *
  */
 
-class MapAreaSelectionTable 
-	extends JTable {
+class MapAreaSelectionTable {
 	
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final long serialVersionUID = 3471627219064225804L;
 
 	// ==========================================
 	// Section Properties
@@ -91,6 +89,7 @@ class MapAreaSelectionTable
 	
 	
 	//GUI Components
+	private JTable table;
 	/** The map area selection table model. */
 	private MapAreaSelectionTableModel mapAreaSelectionTableModel;
 	/** The identifier column header renderer. */
@@ -111,11 +110,12 @@ class MapAreaSelectionTable
 		UserInterfaceFactory userInterfaceFactory) {
 
 		mapAreaSelectionTableModel = new MapAreaSelectionTableModel();
-		setModel(mapAreaSelectionTableModel);
+		table = userInterfaceFactory.createTable(mapAreaSelectionTableModel);
+		table.setModel(mapAreaSelectionTableModel);
 	
-		TableColumnModel tableColumnModel = getColumnModel();
+		TableColumnModel tableColumnModel = table.getColumnModel();
 
-		JTableHeader tableHeader = getTableHeader();
+		JTableHeader tableHeader = table.getTableHeader();
 		
 		TableColumn identifierTableColumn
 			= tableColumnModel.getColumn(MapAreaSelectionTableModel.ID_COLUMN);
@@ -142,12 +142,16 @@ class MapAreaSelectionTable
 	// Section Accessors and Mutators
 	// ==========================================
 	
+	public JTable getTable() {
+		return table;
+	}
+	
 	/**
 	 * Delete selected map areas.
 	 */
 	public void deleteSelectedMapAreas() {
 		
-		int[] selectedIndices = getSelectedRows();
+		int[] selectedIndices = table.getSelectedRows();
 		
 		ArrayList<MapArea> mapAreasToDelete = new ArrayList<MapArea>();
 		for (int i = 0; i < selectedIndices.length; i++) {
@@ -177,7 +181,7 @@ class MapAreaSelectionTable
 		
 		labelColumnHeaderRenderer.addRowNumbersToHighlight(mapAreaIndices);
 		identifierColumnHeaderRenderer.addRowNumbersToHighlight(mapAreaIndices);
-		updateUI();
+		table.updateUI();
 	}
 	
 	/**
@@ -185,10 +189,10 @@ class MapAreaSelectionTable
 	 */
 	public void clearHighlightedAreas() {
 		
-		clearSelection();
+		table.clearSelection();
 		labelColumnHeaderRenderer.clearHighlightedRows();
 		identifierColumnHeaderRenderer.clearHighlightedRows();
-		updateUI();
+		table.updateUI();
 	}
 	
 	/**
@@ -211,7 +215,7 @@ class MapAreaSelectionTable
 		
 		labelColumnHeaderRenderer.deleteRowNumbersToHighlight(mapAreaIndices);
 		identifierColumnHeaderRenderer.deleteRowNumbersToHighlight(mapAreaIndices);		
-		updateUI();
+		table.updateUI();
 	}
 		
 	/**
@@ -222,7 +226,7 @@ class MapAreaSelectionTable
 	public ArrayList<MapArea> getSelectedMapAreas() {
 		
 		ArrayList<MapArea> results = new ArrayList<MapArea>();
-		int[] selectedIndices = getSelectedRows();
+		int[] selectedIndices = table.getSelectedRows();
 		for (int i = 0; i < selectedIndices.length; i++) {
 			MapArea mapArea
 				= mapAreaSelectionTableModel.getRow(selectedIndices[i]);

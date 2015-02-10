@@ -83,18 +83,19 @@ import javax.swing.table.TableColumnModel;
 
 
 class ParameterTable 
-	extends JTable 
 	implements TableModelListener {
 
 // ==========================================
 // Section Constants
 // ==========================================
 	
-	private static final long serialVersionUID = -5046000625464746240L;
 
-	// ==========================================
+// ==========================================
 // Section Properties
 // ==========================================
+	
+	private JTable table;
+	
 	/** The parameter table model. */
 	private ParameterTableModel parameterTableModel;
 	
@@ -128,15 +129,19 @@ class ParameterTable
 			= new DefaultTableCellRenderer();
 		valueColumn.setCellRenderer(defaultTableCellRenderer);
 		tableColumnModel.addColumn(valueColumn);		
-
-		setModel(parameterTableModel);
-		setColumnModel(tableColumnModel);	
+		
+		table = userInterfaceFactory.createTable(parameterTableModel);
+		table.setColumnModel(tableColumnModel);	
 		parameterTableModel.addTableModelListener(this);		
 	}
 
 // ==========================================
 // Section Accessors and Mutators
 // ==========================================
+	
+	public JTable getTable() {
+		return table;
+	}
 	
 	/**
 	 * Gets the parameters.
@@ -168,15 +173,12 @@ class ParameterTable
 // ==========================================
 	//Interface: ActionListener
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.JTable#tableChanged(javax.swing.event.TableModelEvent)
-	 */
 	public void tableChanged(
 		TableModelEvent event) {
 		
 		if (event.getType() == TableModelEvent.UPDATE) {
 					
-			TableCellEditor editor = this.getCellEditor();
+			TableCellEditor editor = table.getCellEditor();
 			if (editor == null) {
 				//no editing taking place
 				return;

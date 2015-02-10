@@ -26,7 +26,6 @@ import rifServices.system.RIFServiceMessages;
 
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
-import java.awt.image.BufferedImage;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -34,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
 
-import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;

@@ -184,7 +184,7 @@ class MapAreaSelectionTableView
 		panelGC.weightx = 1;
 		panelGC.weighty = 1;		
 		JScrollPane scrollPane
-			= userInterfaceFactory.createScrollPane(mapAreaSelectionTable);
+			= userInterfaceFactory.createScrollPane(mapAreaSelectionTable.getTable());
 		panel.add(scrollPane, panelGC);
 		
 		panelGC.gridy++;
