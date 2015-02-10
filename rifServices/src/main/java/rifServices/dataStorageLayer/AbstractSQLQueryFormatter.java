@@ -139,6 +139,16 @@ public abstract class AbstractSQLQueryFormatter {
 		this.alphabeticalCase = alphabeticalCase;
 	}
 	
+	/*
+	 * This method is largely stubbed and will be filled out later.  The purpose
+	 * is to help convert to lower case or upper case, depending on database-specific
+	 * needs.  eg: one vendor uses capital letters, another does not
+	 */
+	public void addCaseSensitivePhrase(
+		final String queryPhrase) {
+		
+		query.append(queryPhrase);
+	}
 
 	public void addPaddedQueryPhrase(
 		final String queryPhrase) {
