@@ -71,6 +71,7 @@ DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, 
 	INTEGER, VARCHAR, BOOLEAN, BOOLEAN);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, 
 	INTEGER, VARCHAR, BOOLEAN);
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, BOOLEAN);
 	
 CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(
 	l_geography 		VARCHAR, 
@@ -80,10 +81,8 @@ CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(
 	y_min 				REAL, 
 	x_min 				REAL, 
 	zoom_level			INTEGER DEFAULT  8 /* 1 in 2,325,012 */,
-	tile_name			VARCHAR DEFAULT NULL,
-	return_one_row 		BOOLEAN DEFAULT TRUE,
-	check_tile_coord 	BOOLEAN DEFAULT TRUE)
-RETURNS SETOF text
+	check_tile_coord 	BOOLEAN DEFAULT FALSE)
+RETURNS SETOF JSON
 SECURITY INVOKER
 AS $body$
 /*
@@ -91,111 +90,16 @@ AS $body$
 Function: 	rif40_get_geojson_tiles()
 Parameters:	Geography, geolevel_view, 
 			Y max, X max, Y min, X min as a record (bounding box), 
-			Zoom level [Default: 8; scaling 1 in 2,325,012], tile name [Default: NULL]
-			return one row (TRUE/FALSE)  [Default: TRUE]
-			Check tile co-ordinates  (TRUE/FALSE)  [Default: TRUE]
-Returns:	Text table [1 or more rows dependent on return_one_row]
-Description:	Get GeoJSON data as a Javascript variable. 
+			Zoom level [Default: 8; scaling 1 in 2,325,012].
+			Check tile co-ordinates  (TRUE/FALSE)  [Default: FALSE]
+Returns:	JSON
+Description:	Get TopoJSON (if not "X") or GeoJSON for area_ids in map tile. 
 		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
 		SRID is 4326 (WGS84)
 		Check bounding box is 1x1 tile in size.
 		Note: that this is NOT box 2d. Box 2d is defined as a box composed of x min, ymin, xmax, ymax. 
-
-		1 row means 1 row, no CRLFs etc!
-		If return_one_row is false then a header, 1 rows/area_id and a footer is returned so the Javascript is easier to read
-
-Calls: _rif40_get_geojson_as_js to extract the data using the following SQL:
-
-WITH a AS (
-        SELECT 0 ord, '{ "type": "FeatureCollection","features": [ /- Start -/' js
-        UNION
-        SELECT ROW_NUMBER() OVER(ORDER BY area_id) ord,
-               '{"type": "Feature","properties":'||
-                        '{"area_id":"'||area_id||'",'||
-                         '"name":"'||COALESCE(name, '')||'",'||
-                         '"area":"'||COALESCE(area::Text, '')||'",'||
-                         '"total_males":"'||COALESCE(total_males::Text, '')||'",'||
-                         '"total_females":"'||COALESCE(total_females::Text, '')||'",'||
-                         '"population_year":"'||COALESCE(LTRIM(TO_CHAR(population_year, '9990')), '')||'",'||
-                         '"gid":"'||gid||'"},'||
-                         '"geometry": '||optimised_geojson||'} /- '||
-               row_number() over()||' : '||area_id||' : '||' : '||COALESCE(name, '')||' -/ ' AS js
-          FROM t_rif40_sahsu_geometry
-         WHERE geolevel_name = $1 /- <geolevel view> -/ AND area_id IN (SELECT UNNEST($2) /- <geolevel area id list> -/)
-        UNION
-        SELECT 999999 ord, ']} /- End: total expected rows: 59 -/' js
-)
-SELECT CASE WHEN ord BETWEEN 2 AND 999998 THEN ','||js ELSE js END::VARCHAR AS js
-  FROM a
- ORDER BY ord;
-
-Generates geoJSON that looks (when prettified using http://jsbeautifier.org/) like:
-
-{
-    "type": "FeatureCollection",
-    "features": [ {
-        "type": "Feature",
-        "properties": {
-            "area_id": "01.004.011100.1",
-            "name": "Hambly LEVEL4(01.004.011100.1)",
-            "area": "20.60",
-            "total_males": "2540.00",
-            "total_females": "2710.00",
-            "population_year": "1996",
-            "gid": "231"
-        },
-        "geometry": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [-6.53098091, 55.01219818],
-                        [-6.53098091, 55.01219818],
-                        [-6.53096899, 55.0120511],
-
-...
-
-                        [-6.54086072, 55.0093148],
-                        [-6.53129474, 55.01219097],
-                        [-6.53098091, 55.01219818]
-                    ]
-                ]
-            ]
-        }
-    }, {
-        "type": "Feature",
-        "properties": {
-            "area_id": "01.004.011100.2",
-            "name": "Hambly LEVEL4(01.004.011100.2)",
-            "area": "17.70",
-            "total_males": "8560.00",
-            "total_females": "8678.00",
-            "population_year": "1996",
-            "gid": "233"
-        },
-        "geometry": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [-6.5047827, 54.96467527],
-                        [-6.5047827, 54.96467527],
-                        [-6.50468401, 54.96445045],
-
-...
-
-                        [-6.45468136, 54.66232533],
-                        [-6.45341036, 54.66048396],
-                        [-6.45273179, 54.65880877]
-                    ]
-                ]
-            ]
-        }
-    }]
-} ;
-
-Validated with JSlint: http://www.javascriptlint.com/online_lint.php
-
+		
+		Always returns 1 row with no CRs
 */
 DECLARE
 	c1geojson2 CURSOR(l_geography VARCHAR) FOR
@@ -208,14 +112,7 @@ DECLARE
 		 WHERE geography     = l_geography
 		   AND geolevel_name = l_geolevel;
 	c3geojson2 REFCURSOR;
-	c5geojson2 CURSOR(l_geography VARCHAR, l_geolevel_view VARCHAR, l_geolevel_area_id_list VARCHAR[], l_expected_rows INTEGER, l_zoom_level INTEGER) FOR
-		WITH a AS (
-			SELECT js FROM rif40_xml_pkg._rif40_get_geojson_as_js(
-						l_geography, l_geolevel_view, l_geolevel_area_id_list, l_expected_rows, 
-						TRUE /* Produce JSON not JS */, l_zoom_level)
-		)
-		SELECT ARRAY_AGG(js) AS js
-		  FROM a;
+	c5geojson2 REFCURSOR;
 	c6geojson2 CURSOR(l_y_max REAL, l_x_max REAL, l_y_min REAL, l_x_min REAL, l_zoom_level INTEGER) FOR
 		WITH b AS (
 			SELECT ST_Centroid(ST_MakeEnvelope(l_x_min, l_y_min, l_x_max, l_y_max)) AS centroid
@@ -256,11 +153,8 @@ DECLARE
 	c6_rec RECORD;
 --
 	sql_stmt 		VARCHAR;
-	i 				INTEGER:=0;
-	geolevel_area_id_list	VARCHAR[];
-	js				VARCHAR[];
-	js_text			VARCHAR;
 	error_count		INTEGER:=0;
+	i				INTEGER:=0;
 --
 	drop_stmt 		VARCHAR;
 	explain_text 	VARCHAR;
@@ -300,7 +194,7 @@ BEGIN
 --
 -- Checks can be disabled (was used by populate_rif40_tiles())
 --
-	IF check_tile_coord THEN /* Checks are enable */
+	IF check_tile_coord THEN /* Checks are enabled */
 --
 -- Test geography
 --
@@ -523,7 +417,6 @@ SELECT * FROM e;
 					error_count::VARCHAR			/* */);
 			END IF;
 		END IF;
-	END IF;
 	
 --
 -- Get <geolevel area id list> 
@@ -575,181 +468,219 @@ Total runtime: 19.472 ms
 */
 -- 		  '	  optimised_geometry && ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */)'||E'\n'||
 
-	sql_stmt:='WITH a AS ('||E'\n'||
-		  '	SELECT area_id,'||E'\n'||
-		  '            ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */) AS geom	/* Bound */'||E'\n'||
-		  '	  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||E'\n'||
-		  '	 WHERE ST_Intersects(optimised_geometry_3,'||E'\n'||
-		  '        		ST_MakeEnvelope($1 /* Xmin */,'||E'\n'||
-		  '        					 $2 	/* Ymin */,'||E'\n'||
-		  '       			 		 $3 	/* Xmax */,'||E'\n'||
-		  '        					 $4 	/* YMax */,'||E'\n'||
-		  '        					 4326 	/* WGS 84 */))'||E'\n'||
-		  '	   AND geolevel_name = $5		/* Partition eliminate */'||E'\n'||
-		  '	   /* Intersect bound with geolevel geometry */'||E'\n'||
-		  ')'||E'\n'||
-		  'SELECT COUNT(DISTINCT(a.area_id)) AS total	/* Total area IDs */,'||E'\n'||
-		  '       ARRAY_AGG(a.area_id) AS area_id_list	/* Array of area IDs */,'||E'\n'||
-		  '       ST_IsValid(a.geom) AS is_valid	/* Test bound */,'||E'\n'||
-		  '       ST_Area(a.geom) AS area		/* Area of bound */'||E'\n'||
-		  '  FROM a'||E'\n'||
-		  ' GROUP BY ST_IsValid(a.geom), ST_Area(a.geom)';
+		sql_stmt:='WITH a AS ('||E'\n'||
+			'	SELECT area_id,'||E'\n'||
+			'            ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */) AS geom	/* Bound */'||E'\n'||
+			'	  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||E'\n'||
+			'	 WHERE ST_Intersects(optimised_geometry_3,'||E'\n'||
+		    '        		ST_MakeEnvelope($1 /* Xmin */,'||E'\n'||
+			'        					 $2 	/* Ymin */,'||E'\n'||
+			'       			 		 $3 	/* Xmax */,'||E'\n'||
+			'        					 $4 	/* YMax */,'||E'\n'||
+			'        					 4326 	/* WGS 84 */))'||E'\n'||
+			'	   AND geolevel_name = $5		/* Partition eliminate */'||E'\n'||
+			'	   /* Intersect bound with geolevel geometry */'||E'\n'||
+			')'||E'\n'||
+			'SELECT COUNT(DISTINCT(a.area_id)) AS total	/* Total area IDs */,'||E'\n'||
+			'       ARRAY_AGG(a.area_id) AS area_id_list	/* Array of area IDs */,'||E'\n'||
+			'       ST_IsValid(a.geom) AS is_valid	/* Test bound */,'||E'\n'||
+			'       ST_Area(a.geom) AS area		/* Area of bound */'||E'\n'||
+			  '  FROM a'||E'\n'||
+			' GROUP BY ST_IsValid(a.geom), ST_Area(a.geom)';
 --
 -- Instrument
 --
-	etp:=clock_timestamp();
-	took:=age(etp, stp);
-	stp:=clock_timestamp();
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-		'[50416] <geolevel area id list> SQL> [using %, %, %, %, %], time taken so far: %'||E'\n'||'%;',
-		x_min::VARCHAR			/* Xmin */,
-		y_min::VARCHAR			/* Ymin */,
-		x_max::VARCHAR			/* Xmax */,
-		y_max::VARCHAR			/* Ymax */,
-		l_geolevel_view::VARCHAR	/* Geolevel view */,
-		took::VARCHAR			/* Time taken */,
-		sql_stmt::VARCHAR		/* SQL statement */);
+		etp:=clock_timestamp();
+		took:=age(etp, stp);
+		stp:=clock_timestamp();
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
+			'[50416] <geolevel area id list> SQL> [using %, %, %, %, %], time taken so far: %'||E'\n'||'%;',
+			x_min::VARCHAR			/* Xmin */,
+			y_min::VARCHAR			/* Ymin */,
+			x_max::VARCHAR			/* Xmax */,
+			y_max::VARCHAR			/* Ymax */,
+			l_geolevel_view::VARCHAR	/* Geolevel view */,
+			took::VARCHAR			/* Time taken */,
+			sql_stmt::VARCHAR		/* SQL statement */);
 --
 -- Begin execution block to trap parse errors
 --
 -- EXPLAIN PLAN version
 --
-	IF rif40_log_pkg.rif40_is_debug_enabled('rif40_get_geojson_tiles', 'DEBUG2') THEN
-		BEGIN
+		IF rif40_log_pkg.rif40_is_debug_enabled('rif40_get_geojson_tiles', 'DEBUG2') THEN
+			BEGIN
 --
 -- Create results temporary table, extract explain plan  using _rif40_geojson_explain_ddl2() helper function.
 -- This ensures the EXPLAIN PLAN output is a field called explain_line 
 --
-			sql_stmt:='SELECT explain_line FROM rif40_xml_pkg._rif40_geojson_explain_ddl2('||quote_literal(
-					'EXPLAIN ANALYZE VERBOSE CREATE TEMPORARY TABLE '||temp_table||' AS '||E'\n'||sql_stmt)||', $1, $2, $3, $4, $5)';
-			FOR c4_rec IN EXECUTE sql_stmt USING x_min, y_min, x_max, y_max, l_geolevel_view LOOP
-				IF explain_text IS NULL THEN
-					explain_text:=c4_rec.explain_line;
-				ELSE
-					explain_text:=explain_text||E'\n'||c4_rec.explain_line;
-				END IF;
-			END LOOP;
+				sql_stmt:='SELECT explain_line FROM rif40_xml_pkg._rif40_geojson_explain_ddl2('||quote_literal(
+							'EXPLAIN ANALYZE VERBOSE CREATE TEMPORARY TABLE '||temp_table||' AS '||E'\n'||sql_stmt)||', $1, $2, $3, $4, $5)';
+				FOR c4_rec IN EXECUTE sql_stmt USING x_min, y_min, x_max, y_max, l_geolevel_view LOOP
+					IF explain_text IS NULL THEN
+						explain_text:=c4_rec.explain_line;
+					ELSE
+						explain_text:=explain_text||E'\n'||c4_rec.explain_line;
+					END IF;
+				END LOOP;
 --
 -- Now extract actual results from temp table
 --	
-			OPEN c3geojson2 FOR EXECUTE 'SELECT * FROM '||temp_table;
-			FETCH c3geojson2 INTO c3_rec;
-			CLOSE c3geojson2;
-		EXCEPTION
-			WHEN others THEN
+				OPEN c3geojson2 FOR EXECUTE 'SELECT * FROM '||temp_table;
+				FETCH c3geojson2 INTO c3_rec;
+				CLOSE c3geojson2;
+			EXCEPTION
+				WHEN others THEN
 --
 -- Print exception to INFO, re-raise
 --
-				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
-				error_message:='rif40_get_geojson_tiles() caught: '||E'\n'||
-					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
-				RAISE INFO '50416: %', error_message;
+					GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+					error_message:='rif40_get_geojson_tiles() caught: '||E'\n'||
+						SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
+					RAISE INFO '50416: %', error_message;
 --
-				RAISE;
-		END;
+					RAISE;
+			END;
 --
-		PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_get_geojson_tiles', '[50217] Bounds EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);
-	ELSE
-		BEGIN
-			OPEN c3geojson2 FOR EXECUTE sql_stmt USING x_min, y_min, x_max, y_max, l_geolevel_view;
-			FETCH c3geojson2 INTO c3_rec;
-			CLOSE c3geojson2;
-		EXCEPTION
-			WHEN others THEN
+			PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_get_geojson_tiles', '[50217] Bounds EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);
+			sql_stmt:='DROP TABLE IF EXISTS '||temp_table;
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		ELSE
+			BEGIN
+				OPEN c3geojson2 FOR EXECUTE sql_stmt USING x_min, y_min, x_max, y_max, l_geolevel_view;
+				FETCH c3geojson2 INTO c3_rec;
+				CLOSE c3geojson2;
+			EXCEPTION
+				WHEN others THEN
 --
 -- Print exception to INFO, re-raise
 --
-				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL,
-										v_context = PG_EXCEPTION_CONTEXT;
-				error_message:='rif40_get_geojson_tiles() caught: '||E'\n'||
-					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR||E'\n'||'Context: '||v_context::VARCHAR;
-				RAISE WARNING '50418: %', error_message;
+					GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL,
+											v_context = PG_EXCEPTION_CONTEXT;
+					error_message:='rif40_get_geojson_tiles() caught: '||E'\n'||
+						SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR||E'\n'||'Context: '||v_context::VARCHAR;
+					RAISE WARNING '50418: %', error_message;
 --
-				RAISE;
-		END;
-	END IF;
+					RAISE;
+			END;
+		END IF;
 --
 -- Instrument
 --
-	etp:=clock_timestamp();
-	took:=age(etp, stp);
-	stp:=clock_timestamp();
+		etp:=clock_timestamp();
+		took:=age(etp, stp);
+		stp:=clock_timestamp();
 --
 -- Check error flags
 --
-	IF c3_rec.is_valid = FALSE THEN
-		PERFORM rif40_log_pkg.rif40_error(-50419, 'rif40_get_geojson_tiles', 
-			'Geography: %, <geoevel view> % bound [%, %, %, %] is invalid, ST_Intersects() took: %.', 			
-			l_geography::VARCHAR			/* Geography */, 
-			l_geolevel_view::VARCHAR		/* Geoelvel view */,  
-			x_min::VARCHAR				/* Xmin */,
-			y_min::VARCHAR				/* Ymin */,
-			x_max::VARCHAR				/* Xmax */,
-			y_max::VARCHAR				/* Ymax */,
-			took::VARCHAR				/* Time taken */);
-	ELSIF c3_rec.total = 0 THEN
-		PERFORM rif40_log_pkg.rif40_error(-50420, 'rif40_get_geojson_tiles', 
-			'Geography: %, <geoevel view> % bound [%, %, %, %] returns no area IDs, ST_Intersects() took: %.', 			
-			l_geography::VARCHAR			/* Geography */, 
-			l_geolevel_view::VARCHAR		/* Geoelvel view */,  
-			x_min::VARCHAR				/* Xmin */,
-			y_min::VARCHAR				/* Ymin */,
-			x_max::VARCHAR				/* Xmax */,
-			y_max::VARCHAR				/* Ymax */,
-			took::VARCHAR				/* Time taken */);
-	ELSIF c3_rec.area_id_list IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-			'[50421] Geography: %, <geoevel view> % bound [%, %, %, %] will return: no area_id, no intersction; ST_Intersects() took: %.', 		
-			l_geography::VARCHAR			/* Geography */, 
-			l_geolevel_view::VARCHAR		/* Geoelvel view */, 
-			x_min::VARCHAR				/* Xmin */,
-			y_min::VARCHAR				/* Ymin */,
-			x_max::VARCHAR				/* Xmax */,
-			y_max::VARCHAR				/* Ymax */,
-			took::VARCHAR				/* Time taken */);
-		RETURN;
-	ELSE
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-			'[50421] Geography: %, <geoevel view> % bound [%, %, %, %] will return: % area_id, area: %, ST_Intersects() took: %.', 		
-			l_geography::VARCHAR			/* Geography */, 
-			l_geolevel_view::VARCHAR		/* Geoelvel view */, 
-			x_min::VARCHAR				/* Xmin */,
-			y_min::VARCHAR				/* Ymin */,
-			x_max::VARCHAR				/* Xmax */,
-			y_max::VARCHAR				/* Ymax */,
-			c3_rec.total::VARCHAR			/* Number of area_ids */,
-		    c3_rec.area::VARCHAR			/* Area of ST_MakeEnvelope() */,
-			took::VARCHAR				/* Time taken */);
+		IF c3_rec.is_valid = FALSE THEN
+			PERFORM rif40_log_pkg.rif40_error(-50419, 'rif40_get_geojson_tiles', 
+				'Geography: %, <geoevel view> % bound [%, %, %, %] is invalid, ST_Intersects() took: %.', 			
+				l_geography::VARCHAR			/* Geography */, 
+				l_geolevel_view::VARCHAR		/* Geoelvel view */,  
+				x_min::VARCHAR				/* Xmin */,
+				y_min::VARCHAR				/* Ymin */,
+				x_max::VARCHAR				/* Xmax */,
+				y_max::VARCHAR				/* Ymax */,
+				took::VARCHAR				/* Time taken */);
+		ELSIF c3_rec.total = 0 THEN
+			PERFORM rif40_log_pkg.rif40_error(-50420, 'rif40_get_geojson_tiles', 
+				'Geography: %, <geoevel view> % bound [%, %, %, %] returns no area IDs, ST_Intersects() took: %.', 			
+				l_geography::VARCHAR			/* Geography */, 
+				l_geolevel_view::VARCHAR		/* Geoelvel view */,  
+				x_min::VARCHAR				/* Xmin */,
+				y_min::VARCHAR				/* Ymin */,
+				x_max::VARCHAR				/* Xmax */,
+				y_max::VARCHAR				/* Ymax */,
+				took::VARCHAR				/* Time taken */);
+		ELSIF c3_rec.area_id_list IS NULL THEN
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
+				'[50421] Geography: %, <geoevel view> % bound [%, %, %, %] will return: no area_id, no intersction; ST_Intersects() took: %.', 		
+				l_geography::VARCHAR			/* Geography */, 
+				l_geolevel_view::VARCHAR		/* Geoelvel view */, 
+				x_min::VARCHAR				/* Xmin */,
+				y_min::VARCHAR				/* Ymin */,
+				x_max::VARCHAR				/* Xmax */,
+				y_max::VARCHAR				/* Ymax */,
+				took::VARCHAR				/* Time taken */);
+			RETURN;
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
+				'[50421] Geography: %, <geoevel view> % bound [%, %, %, %] will return: % area_id, area: %, ST_Intersects() took: %.', 		
+				l_geography::VARCHAR			/* Geography */, 
+				l_geolevel_view::VARCHAR		/* Geoelvel view */, 
+				x_min::VARCHAR				/* Xmin */,
+				y_min::VARCHAR				/* Ymin */,
+				x_max::VARCHAR				/* Xmax */,
+				y_max::VARCHAR				/* Ymax */,
+				c3_rec.total::VARCHAR			/* Number of area_ids */,
+				c3_rec.area::VARCHAR			/* Area of ST_MakeEnvelope() */,
+				took::VARCHAR				/* Time taken */);
+		END IF;
+--
+-- End of optional checks
+--
 	END IF;
 --
--- List of area IDs to dump
+-- Direct SELECT FROM t_rif40_<geography>_maptiles
 --
-	geolevel_area_id_list:=c3_rec.area_id_list;
+	sql_stmt:='SELECT *'||E'\n'||
+			  '  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_maptiles')||' f'||E'\n'||
+			  '	WHERE rif40_geo_pkg.latitude2tile($2 /* X_min */, $4 /* zoom level */)  = f.x_tile_number'||E'\n'||
+		  	  '   AND rif40_geo_pkg.longitude2tile($3 /* Y_min */, $4 /* zoom level */) = f.y_tile_number'||E'\n'||
+			  '   AND $1 /* l_geolevel_view */                                          = f.geolevel_name'||E'\n'||
+			  '   AND $4 /* zoom level */                                               = f.zoomlevel';
+	BEGIN
+		OPEN c5geojson2 FOR EXECUTE sql_stmt USING l_geolevel_view, x_min, y_min, zoom_level;
+	EXCEPTION
+		WHEN others THEN
 --
--- Call  rif40_xml_pkg._rif40_get_geojson_as_js()
+-- Print exception to INFO, re-raise
 --
-	OPEN c5geojson2(l_geography, l_geolevel_view, geolevel_area_id_list, (c3_rec.total+2)::INTEGER /* l_expected_rows */, zoom_level);
-	FETCH c5geojson2 INTO c5_rec;
-	CLOSE c5geojson2;
+			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL,
+										v_context = PG_EXCEPTION_CONTEXT;
+			error_message:='rif40_get_geojson_tiles() caught: '||E'\n'||
+			SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR||E'\n'||'Context: '||v_context::VARCHAR;
+			RAISE WARNING '50422: %', error_message;
 --
--- Return as one row
---
-	IF return_one_row THEN
-		FOR i IN array_lower(c5_rec.js, 1) .. array_upper(c5_rec.js, 1) LOOP
-			IF i = 1 THEN
-				js_text:=c5_rec.js[i];
+			RAISE;
+	END;
+	LOOP
+		FETCH c5geojson2 INTO c5_rec;
+		EXIT WHEN NOT FOUND;
+		i=i+1;
+		IF 1 = 1 THEN
+			IF c5_rec.optimised_topojson::Text = to_json('X'::Text)::Text /* GeoJSON not converted to topoJSON */ THEN
+				RETURN NEXT c5_rec.optimised_geojson;	
 			ELSE
-				js_text:=js_text||c5_rec.js[i]; /* Do not add CRLF or CR - it irritates psql copy command */
+				RETURN NEXT c5_rec.optimised_topojson;
 			END IF;
-		END LOOP;
-		RETURN NEXT js_text;
-	ELSE
+		END IF;
+	END LOOP;
+	CLOSE c5geojson2;
+	IF i = 0 THEN
 --
--- Multi row return
+-- This could be changed to return a synthetic NULL as tile as per the rif40_<geography>_maptiles view
 --
-		FOR i IN array_lower(c5_rec.js, 1) .. array_upper(c5_rec.js, 1) LOOP
-			RETURN NEXT c5_rec.js[i];
-		END LOOP;
+		PERFORM rif40_log_pkg.rif40_error(-50423, 'rif40_get_geojson_tiles', 
+			'Geography: %, <geoevel view> % bound [%, %, %, %] returns no tiles, took: %.', 			
+			l_geography::VARCHAR		/* Geography */, 
+			l_geolevel_view::VARCHAR	/* Geoelvel view */,  
+			x_min::VARCHAR				/* Xmin */,
+			y_min::VARCHAR				/* Ymin */,
+			x_max::VARCHAR				/* Xmax */,
+			y_max::VARCHAR				/* Ymax */,
+			took::VARCHAR				/* Time taken */);	
+	ELSIF i > 1 THEN
+		PERFORM rif40_log_pkg.rif40_error(-50424, 'rif40_get_geojson_tiles', 
+			'Geography: %, <geoevel view> % bound [%, %, %, %] returns >1 (%) tiles, took: %.', 			
+			l_geography::VARCHAR		/* Geography */, 
+			l_geolevel_view::VARCHAR	/* Geoelvel view */,  
+			x_min::VARCHAR				/* Xmin */,
+			y_min::VARCHAR				/* Ymin */,
+			x_max::VARCHAR				/* Xmax */,
+			y_max::VARCHAR				/* Ymax */,
+			i::VARCHAR					/* Rows returned by query */,
+			took::VARCHAR				/* Time taken */);				
 	END IF;
 --
 -- Instrument
@@ -758,7 +689,7 @@ Total runtime: 19.472 ms
 	took:=age(etp, stp);
 --
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-		'[50422] Geography: %, <geoevel view> % zoomlevel % bound [%, %, %, %] complete, db extract took: %.', 		
+		'[50425] Geography: %, <geoevel view> % zoomlevel % bound [%, %, %, %] complete: tile: %, db extract took: %;'||E'\n'||'SQL> %;', 		
 		l_geography::VARCHAR		/* Geography */, 
 		l_geolevel_view::VARCHAR	/* Geoelvel view */, 
 		zoom_level::VARCHAR			/* Zoom level */,
@@ -766,7 +697,9 @@ Total runtime: 19.472 ms
 		y_min::VARCHAR				/* Ymin */,
 		x_max::VARCHAR				/* Xmax */,
 		y_max::VARCHAR				/* Ymax */,
-		took::VARCHAR				/* Time taken */);
+		c5_rec.tile_id::VARCHAR		/* Tile ID */,
+		took::VARCHAR				/* Time taken */,
+		sql_stmt::VARCHAR			/* SQL */);
 --
 	RETURN;
 --
@@ -787,47 +720,89 @@ $body$
 LANGUAGE PLPGSQL;
 
 COMMENT ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, 
-	INTEGER, VARCHAR, BOOLEAN, BOOLEAN) IS 'Function: 	rif40_get_geojson_tiles()
+	INTEGER, BOOLEAN) IS 'Function: 	rif40_get_geojson_tiles()
 Parameters:	Geography, geolevel_view, 
 			Y max, X max, Y min, X min as a record (bounding box), 
-			Zoom level [Default: 8; scaling 1 in 2,325,012], tile name [Default: NULL]
-			return one row (TRUE/FALSE)  [Default: TRUE]
-			Check tile co-ordinates  (TRUE/FALSE)  [Default: TRUE]
-Returns:	Text table [1 or more rows dependent on return_one_row]
-Description:	Get GeoJSON data as a Javascript variable. 
+			Zoom level [Default: 8; scaling 1 in 2,325,012], 
+			Check tile co-ordinates TRUE/FALSE)  [Default: FALSE]
+Returns:	JSON
+Description:	Get TopoJSON (if not "X") or GeoJSON for area_ids in map tile. 
 		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
 		SRID is 4326 (WGS84)
 		Check bounding box is 1x1 tile in size.
 		Note: that this is NOT box 2d. Box 2d is defined as a box composed of x min, ymin, xmax, ymax. 
 
-		1 row means 1 row, no CRLFs etc!
-		If return_one_row is false then a header, 1 rows/area_id and a footer is returned so the Javascript is easier to read
-
-Calls: _rif40_get_geojson_as_js to extract the data using the following SQL:
-
+		Always returns 1 row with no CRs, e.g.:
+		
 WITH a AS (
-        SELECT 0 ord, ''{ "type": "FeatureCollection","features": [ /* Start */'' js
-        UNION
-        SELECT ROW_NUMBER() OVER(ORDER BY area_id) ord,
-               ''{"type": "Feature","properties":''||
-                        ''{"area_id":"''||area_id||''",''||
-                         ''"name":"''||COALESCE(name, '''')||''",''||
-                         ''"area":"''||COALESCE(area::Text, '''')||''",''||
-                         ''"total_males":"''||COALESCE(total_males::Text, '''')||''",''||
-                         ''"total_females":"''||COALESCE(total_females::Text, '''')||''",''||
-                         ''"population_year":"''||COALESCE(LTRIM(TO_CHAR(population_year, ''9990'')), '''')||''",''||
-                         ''"gid":"''||gid||''"},''||
-                         ''"geometry": ''||optimised_geojson||''} /* ''||
-               row_number() over()||'' : ''||area_id||'' : ''||'' : ''||COALESCE(name, '''')||'' */ '' AS js
+	SELECT *
+          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea(''SAHSU'', ''LEVEL2'', ''01.004'')
+), b AS (
+	SELECT ST_Centroid(ST_MakeEnvelope(a.x_min, a.y_min, a.x_max, a.y_max)) AS centroid
+	  FROM a
+), c AS (
+	SELECT ST_X(b.centroid) AS X_centroid, ST_Y(b.centroid) AS Y_centroid, 11 AS zoom_level	  
+	  FROM b
+), d AS (
+	SELECT zoom_level, X_centroid, Y_centroid, 
+		   rif40_geo_pkg.latitude2tile(X_centroid, zoom_level) AS X_tile,
+		   rif40_geo_pkg.longitude2tile(Y_centroid, zoom_level) AS Y_tile
+	  FROM c
+), e AS (
+	SELECT zoom_level, X_centroid, Y_centroid,
+		   rif40_geo_pkg.tile2latitude(X_tile, zoom_level) AS X_min,
+		   rif40_geo_pkg.tile2longitude(Y_tile, zoom_level) AS Y_min,	
+		   rif40_geo_pkg.tile2latitude(X_tile+1, zoom_level) AS X_max,
+		   rif40_geo_pkg.tile2longitude(Y_tile+1, zoom_level) AS Y_max,
+		   X_tile, Y_tile
+	  FROM d
+) 
+SELECT SUBSTRING(
+		rif40_xml_pkg.rif40_get_geojson_tiles(
+			''SAHSU''::VARCHAR 	/* Geography */, 
+			''LEVEL4''::VARCHAR 	/* geolevel view */, 
+			e.y_max::REAL, e.x_max::REAL, e.y_min::REAL, e.x_min::REAL, /* Bounding box - from cte */
+			e.zoom_level::INTEGER /* Zoom level */,
+			TRUE /* Check tile co-ordinates */)  
+			FROM 1 FOR 160 /* Truncate to 160 chars */)::Text AS json 
+  FROM e LIMIT 4;	
+  
+INFO:  [DEBUG1] rif40_get_geojson_tiles(): [50405] Geography: SAHSU, <geoevel view> LEVEL4 bound [-6.48998, 54.668, -6.66461, 54.8438] tile XY(1061,1335) verified [-6.57729554176331 54.755859375]; zoom level 11; percent diffs [0.0000 0.0000 0.0000 0.0000]
+INFO:  [DEBUG1] rif40_get_geojson_tiles(): [50416] <geolevel area id list> SQL> [using -6.48998, 54.668, -6.66461, 54.8438, LEVEL4], time taken so far: 00:00:00.093
+WITH a AS (
+        SELECT area_id,
+            ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */) AS geom /* Bound */
           FROM t_rif40_sahsu_geometry
-         WHERE geolevel_name = $1 /* <geolevel view> */ AND area_id IN (SELECT UNNEST($2) /* <geolevel area id list> */)
-        UNION
-        SELECT 999999 ord, '']} /* End: total expected rows: 59 */'' js
+         WHERE ST_Intersects(optimised_geometry_3,
+                        ST_MakeEnvelope($1 /* Xmin */,
+                                        $2     /* Ymin */,
+                                        $3     /* Xmax */,
+                                        $4     /* YMax */,
+                                        4326   /* WGS 84 */))
+           AND geolevel_name = $5              /* Partition eliminate */
+           /* Intersect bound with geolevel geometry */
 )
-SELECT CASE WHEN ord BETWEEN 2 AND 999998 THEN '',''||js ELSE js END::VARCHAR AS js
+SELECT COUNT(DISTINCT(a.area_id)) AS total      /* Total area IDs */,
+       ARRAY_AGG(a.area_id) AS area_id_list     /* Array of area IDs */,
+       ST_IsValid(a.geom) AS is_valid   /* Test bound */,
+       ST_Area(a.geom) AS area          /* Area of bound */
   FROM a
- ORDER BY ord;
+ GROUP BY ST_IsValid(a.geom), ST_Area(a.geom);
+INFO:  [DEBUG1] rif40_get_geojson_tiles(): [50421] Geography: SAHSU, <geoevel view> LEVEL4 bound [-6.48998, 54.668, -6.66461, 54.8438] will return: 54 area_id, area: 0.0306956190615892, ST_Intersects() took: 00:00:00.101.
+INFO:  [DEBUG1] rif40_get_geojson_tiles(): [50425] Geography: SAHSU, <geoevel view> LEVEL4 zoomlevel 11 bound [-6.48998, 54.668, -6.66461, 54.8438] complete: tile: , db extract took: 00:00:00.057.
+SQL> SELECT *
+  FROM t_rif40_sahsu_maptiles f
+ WHERE rif40_geo_pkg.latitude2tile($2 /* X_min */, $4 /* zoom level */)  = f.x_tile_number
+   AND rif40_geo_pkg.longitude2tile($3 /* Y_min */, $4 /* zoom level */) = f.y_tile_number
+   AND $1 /* l_geolevel_view */                                          = f.geolevel_name
+   AND $4 /* zoom level */                                               = f.zoomlevel;
+  y_max  |  x_max   | y_min  |  x_min   |                                                                               json
+---------+----------+--------+----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 54.8438 | -6.66461 | 54.668 | -6.48998 | {"type": "FeatureCollection","features":[{"type": "Feature","properties":{"area_id":"01.002.002200.6","name":"Cobley LEVEL4(01.002.002200.6)","area":"32.00","to
+(1 row)
 
+Time: 606.442 ms
+  
 Generates geoJSON that looks (when prettified using http://jsbeautifier.org/) like:
 
 {
@@ -895,8 +870,8 @@ Generates geoJSON that looks (when prettified using http://jsbeautifier.org/) li
 
 Validated with JSlint: http://www.javascriptlint.com/online_lint.php';
 
-GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, VARCHAR, BOOLEAN, BOOLEAN) TO rif_manager;
-GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, VARCHAR, BOOLEAN, BOOLEAN) TO rif_user;
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, BOOLEAN) TO rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, BOOLEAN) TO rif_user;
 
 --
 -- Eof

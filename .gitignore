@@ -16,3 +16,5 @@ rifDatabase/Postgres/~$NSTALL.docx
 rifDatabase/Postgres/install/pg_restore.rpt
 rifDatabase/Postgres/install/pg_restore.rpt
 rifDatabase/Thumbs.db
+rifDatabase/Postgres/psql_scripts/npm-debug.log
+rifDatabase/Postgres/Node/npm-debug.log

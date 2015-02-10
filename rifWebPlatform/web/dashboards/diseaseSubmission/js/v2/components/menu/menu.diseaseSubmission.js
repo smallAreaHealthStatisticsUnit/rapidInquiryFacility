@@ -72,6 +72,7 @@ RIF.menu = ( function( settings ) {
 
         searchHealthCodes: function( params ) {
           _p.healthCodes.request( 'getSearchHealthCodes', params );
+          _p.facade.icdSearch();
         },
 
         isDialogReady: function( dialog ) {

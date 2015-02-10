@@ -197,7 +197,11 @@ RIF.diseaseSubmission = ( function() {
         method: "showDialog"
       },
 
-
+      icdSearch: {
+        subscribers: [ "study" ],
+        firer: [ "menu" ],
+        method: "icdSearch"
+      },
 
     },
 

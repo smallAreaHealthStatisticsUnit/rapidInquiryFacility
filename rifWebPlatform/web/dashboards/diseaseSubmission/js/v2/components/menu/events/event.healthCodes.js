@@ -9,12 +9,22 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
     healthSelection = {}; //{ taxonomy: null , description: null, code: null }
 
 
+  var clearIcdCodes = function() {
+    $( '.' + _dom.icdSelection )
+      .removeClass( _dom.icdSelection )
+      .css( 'background-color', 'white' );
+  };
+
   var checkTaxonomy = function( tax ) {
     if ( !healthSelection.hasOwnProperty( tax ) ) {
       healthSelection[ tax ] = [];
       indexSelection[ tax ] = [];
     };
 
+  };
+
+  var getTaxonomy = function() {
+    return currentTaxonomy || _dom.icdClassification.val();
   };
 
   _dom.icdClassification.change( function() {
@@ -56,7 +66,7 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
   } );
 
 
-  $( _dom.healthCodes ).on( "click", _dom.noChildElements, function( aEvent ) {
+  $( _dom.tree ).on( "click", _dom.noChildElements, function( aEvent ) {
 
     var spans = $( this ).find( 'span' ),
       code = spans[ 0 ].innerHTML.trim(),
@@ -82,6 +92,7 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
         description: description,
         code: code
       } );
+      $( this ).addClass( 'icdSelected' );
     } else {
       $( this ).css( 'background-color', 'white' );
       var i = indexSelection[ taxonomy ].indexOf( code );
@@ -90,22 +101,21 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
       if ( healthSelection[ taxonomy ].length == 0 ) {
         delete healthSelection[ taxonomy ];
       };
+      $( this ).removeClass( 'icdSelected' );
     };
 
-    $( this ).toggleClass( 'icdSelected' );
     menuContext.proxy.icdSelectionChanged( healthSelection );
+    copySelection();
   } );
 
 
   _dom.clearAll.click( function() {
-    $( '.' + _dom.healthSelection )
-      .removeClass( _dom.healthSelection )
-      .css( 'background-color', 'white' );
-
+    clearIcdCodes();
     indexSelection = {};
     healthSelection = {};
 
-    var taxonomy = currentTaxonomy || _dom.icdClassification.val();
+    var taxonomy = getTaxonomy();
+
     menuContext.proxy.searchHealthCodes( {
       taxonomy: taxonomy,
       searchTxt: '',
@@ -129,14 +139,29 @@ RIF.menu[ 'event-healthCodes' ] = ( function( _dom ) {
         RIF.statusBar( 'Could not find element to append health codes search', true, 'notify' );
         return;
       };
+
       menuContext.proxy.searchHealthCodes( {
         taxonomy: taxonomy,
-        searchTxt: searchTxt,
-        dom: domParent
+        searchTxt: searchTxt /*, dom: domParent */
       } );
       previousSearch = searchTxt;
+
     };
   } );
 
+  $( _dom.searchResults ).on( "click", '.opacityBackground', function( aEvent ) {
+    $( _dom.searchResults ).hide();
+  } );
+
+  var copySelection = function() {
+    _dom.hiddenIcdSelection.empty();
+    var taxonomy = getTaxonomy();
+    for ( var t in healthSelection ) {
+      for ( var i = 0; i < healthSelection[ t ].length; i++ ) {
+        _dom.hiddenIcdSelection.append( "<div>" + healthSelection[ t ][ i ][ 'code' ] +
+          " - " + healthSelection[ t ][ i ][ 'description' ] + "</div>" )
+      };
+    }
+  };
 
 } );

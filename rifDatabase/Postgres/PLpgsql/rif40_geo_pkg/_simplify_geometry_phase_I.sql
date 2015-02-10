@@ -265,7 +265,7 @@ BEGIN
 '        SELECT area_id,'||E'\n'||
 '               ST_DumpPoints(shapefile_geometry) AS geometry_data,     /* Convert geometry to points */'||E'\n'||
 '               nextval(''simplification_points_seq'') AS point_order_seq'||E'\n'||
-'          FROM '||quote_ident('p_rif40_geolevels_geometry_'||LOWER(l_geography)||'_'||LOWER(l_geolevel))||E'\n'||
+'          FROM rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||LOWER(l_geography)||'_'||LOWER(l_geolevel))||E'\n'||
 '         WHERE geolevel_name = '''||UPPER(l_geolevel)||''''||E'\n';
 	IF l_filter IS NOT NULL THEN
 		l_sql_stmt:=l_sql_stmt||E'\t'||'   AND '||l_filter||E'\n';
@@ -319,7 +319,7 @@ BEGIN
 --
 -- Check array dimensions are [1:3] as expected (Test 22)
 --
-PERFORM rif40_geo_pkg._simplify_geometry_checks(l_geography, l_geolevel, 22);
+	PERFORM rif40_geo_pkg._simplify_geometry_checks(l_geography, l_geolevel, 22);
 --
 -- Print out polygon/points reports [limited to first 20 rows]
 --
@@ -1264,7 +1264,7 @@ WITH a AS (
         SELECT area_id,
                ST_DumpPoints(shapefile_geometry) AS geometry_data,     /* Convert geometry to points */
                nextval(''simplification_points_seq'') AS point_order_seq
-          FROM p_rif40_geolevels_geometry_ew01_ladua2001
+          FROM rif40_partitions.p_rif40_geolevels_geometry_ew01_ladua2001
          WHERE geolevel_name = ''LADUA2001''
            AND area_id IN (SELECT DISTINCT ladua2001 FROM ew2001_geography WHERE gor2001 = ''K'') /* Restrict to The South West  */
 ), b /* Extract points and point order within a polygon */ AS (

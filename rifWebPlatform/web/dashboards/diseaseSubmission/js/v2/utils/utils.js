@@ -147,17 +147,23 @@
 
       xhr: function() {
         /* 
-         * mime Types : https://github.com/mbostock/d3/wiki/Requests#wiki-d3_json
          * args : url ,  callback , [mime]
-         * Implement MORE OPTIONS!
          */
-
         var args = Array.prototype.slice.call( arguments, 0 ),
+          callback = args[ 1 ],
           mime = args[ 2 ] || "text/plain",
           parameters = args[ 0 ] + '&userID=' + RIF.user,
           url = 'http://localhost:8080/rifServices/' + parameters;
 
-        d3.xhr( url, mime, args[ 1 ] );
+        //d3.xhr( url, mime, args[ 1 ] ); /* NOT WORKING IN ie*/
+        $.ajax( {
+          url: url
+        } )
+          .done( callback )
+          .error( function( jqXHR, textStatus, errorThrown ) {
+            var msg = textStatus + '<br/>' + errorThrown;
+            RIF.statusBar( msg, true, 1 );
+          } );
 
       }
     };

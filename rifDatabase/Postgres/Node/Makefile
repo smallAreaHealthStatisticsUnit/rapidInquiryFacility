@@ -46,8 +46,6 @@
 #
 # Peter Hambly, SAHSU
 #
-SUBDIRS = alter_scripts test_scripts
-#
 # Conditional environment variables - can be changed to point to sahsuland by higher makefiles
 #
 # Postgres ENV variables
@@ -86,7 +84,7 @@ DEFAULT_WINDOWS_ADMIN_USER=Administrator
 #
 # Local overrides; copy Makefile.local.example to Makefile.local and edit Makefile.local
 #
--include Makefile.local
+-include ../psql_scripts/Makefile.local
 
 #
 # PL/pgsql debug levels (DEBUG_LEVEL);
@@ -153,7 +151,7 @@ PSQL_FLAGS=-U $(PSQL_USER) -d $(PGDATABASE) -h $(PGHOST) -w -e -P pager=off \
 #
 # Phony (i.e. not a file) targets
 #
-.PHONY: recurse $(SUBDIRS) all dev devclean clean sahsuland_dev patch test
+.PHONY: all
  
 #
 # Run bash on Linux, Powershell on Windows_NT
@@ -173,11 +171,14 @@ ifeq ($(OS),Windows_NT)
 	COPY=powershell -ExecutionPolicy ByPass -file copy.ps1 
 	PGPASS=powershell -ExecutionPolicy ByPass -file pgpass.ps1
 	# Assumes tr came with make. Force to lowercase
-	TESTUSER=$(shell echo $(USERNAME) | tr â€˜[:upper:]â€™ â€˜[:lower:]â€™)
+	TESTUSER=$(shell echo $(USERNAME) | tr ‘[:upper:]’ ‘[:lower:]’)
 	ifeq ($(TESTUSER),)
 		TESTUSER=$(USERNAME)
 	endif
-	TOPOJSON="C:\node_modules\.bin\topojson.cmd"
+#	TOPOJSON=C:\Users\$(USERNAME)\AppData\Roaming\npm\topojson.cmd
+	TOPOJSON=node_modules\topojson\bin\topojson
+	NODE=node
+	NPM=npm
 	PGPASSFILE=$(APPDATA)\postgresql\pgpass.conf
 else
 #
@@ -191,8 +192,10 @@ else
 	SUDO_CHOWN_TESUSER=chown -R $(TESTUSER) "$@"
 	SUDO_CHOWN_POSTGRES=chown -R postgres "$@"
 	COPY=cp
-	TESTUSER=$(shell id -un | tr â€˜[:upper:]â€™ â€˜[:lower:]â€™)
+	TESTUSER=$(shell id -un | tr ‘[:upper:]’ ‘[:lower:]’)
 	TOPOJSON=topojson
+	NODE=node
+	NPM=npm
     ifeq ($(UNAME_S),Linux)
 		OS=$(UNAME_S)
 #		POSTGRES_ETC_DIR=/var/opt/PostgreSQL/9.3/etc
@@ -212,199 +215,30 @@ else
 	PGPASSFILE=~/.pgpass
 endif
 #
-# Escape directory names. This assumes that Postgres is installed on the C drive
-# Make assumes the usual Windows names, not the Postgres funny onews, so the slashes need to be the windows way around and C: in capitals
-#
-POSTGRES_ETC_DIR=$(shell pg_config --sysconfdir)
-empty=
-ESC_POSTGRES_ETC_DIR:=$(subst $(empty)/$(empty),$(empty)\$(empty),$(subst c:,C:,$(subst $(empty) $(empty),$(empty)\ $(empty),$(POSTGRES_ETC_DIR))))
-#
-# R output directories (under PG_DATA)
-#
-R_LIBRARY=$(ESC_POSTGRES_ETC_DIR)\..\data\R_library
-R_SOURCE=$(ESC_POSTGRES_ETC_DIR)\..\data\R_source
-ifeq ($(USE_PLR),Y)
-	PLR_DIRS=$(R_LIBRARY) $(R_SOURCE)
-	R_SOURCE_FILES=R_source/rif40_capture_output.R
-else
-	PLR_DIRS=
-	R_SOURCE_FILES=
-endif
 #
 # Target extension depends on source, build rule
 #
-.SUFFIXES: .sql .rpt
-.sql.rpt:
-	$(RUN) $@ "$(CURDIR)" $(PSQL) $(PSQL_FLAGS) -f $< 
+#.SUFFIXES: .sql .rpt
+#.sql.rpt:
+#	$(RUN) $@ "$(CURDIR)" $(PSQL) $(PSQL_FLAGS) -f $< 
+MODULES=node_modules/pg node_modules/pg-native node_modules/topojson
+
+all: modules topojson_convert
+
+modules: $(MODULES)
+
+$(MODULES):
+	$(NPM) install pg pg-native topojson
 	
-#-	
-#- PL/pgsql debug levels (DEBUG_LEVEL);
-#-
-#- 0 - Suppressed, INFO only
-#- 1 - Major function calls
-#- 2 - Major function calls, data
-#- 3 - Reserved for future used
-#- 4 - Reserved for future used
-#-
-#- PSQL verbosity (VERBOSITY):
-#-
-#- verbose	- Messages/errors with full context
-#- terse 	- Just the error or message
-#-
-#- PSQL echo (ECHO)
-#-
-#- all: 		- All SQL
-#- none:		- No SQL
-#-
-#- Targets
-#- 
-#- 1. patching
-#-
-#- all: Run all completed alter scripts and test [DEFAULT]
-all: $(PLR_DIRS)
-	$(MAKE) -C alter_scripts clean all
-	$(MAKE) -C test_scripts clean all
-
-#- patch: Run all completed alter scripts on both sahsuland_dev and sahusland	
-patch:
-	$(MAKE) -C alter_scripts clean
-	$(MAKE) -C alter_scripts all
-	$(MAKE) -C alter_scripts clean
-	$(MAKE) -C alter_scripts all PGDATABASE=sahsuland
-
-#- dev: Run all alter scripts in development
-dev: $(PLR_DIRS)
-	$(MAKE) -C alter_scripts dev DEBUG_LEVEL=1
-
-# Dummy for test	
-noop: $(PLR_DIRS)
-
-#-
-#- 2. build
-#-	
-#- sahsuland_dev_no_alter: Rebuild sahsuland_dev, test [State of SAHSULAND at port to SQL server], finally VACUUM ANALYSE
-sahsuland_dev_no_alter: clean v4_0_create_sahsuland.rpt 
-	$(MAKE) -C test_scripts all DEBUG_LEVEL=1 ECHO=all
-	$(MAKE) v4_0_vacuum_analyse_dev
+install:
+	$(NPM) install pg pg-native topojson
+	$(TOPOJSON) --version
 	
-#- sahsuland_dev: Rebuild sahsuland_dev, test, then patch dev only, retest, finally VACUUM ANALYZE
-#- Does not run all alter scripts in development
-sahsuland_dev: clean $(PLR_DIRS) v4_0_create_sahsuland.rpt 
-	$(MAKE) -C test_scripts no_alter DEBUG_LEVEL=1 ECHO=all
-	$(MAKE) -C alter_scripts clean all DEBUG_LEVEL=1 ECHO=all
-	$(MAKE) -C test_scripts clean all DEBUG_LEVEL=1 ECHO=all
-	$(MAKE) v4_0_vacuum_analyse_dev
-	
-#- topojson_convert: GeoJSON to topoJSON converter
+topojson: $(TOPOJSON) ..\psql_scripts\test_scripts\data\test_6_geojson_test_01.json ..\psql_scripts\test_scripts\data\test_6_sahsu_4_level4_0_0_0.json
+	$(TOPOJSON) -q 1e6 -o test_6_geojson_test_01.json ..\psql_scripts\test_scripts\data\test_6_geojson_test_01.json
+	$(TOPOJSON) -q 1e6 -o test_6_sahsu_4_level4_0_0_0.json ..\psql_scripts\test_scripts\data\test_6_sahsu_4_level4_0_0_0.json
+
 topojson_convert:
-	$(MAKE) -C ../Node topojson_convert
-# create a completed target
-	
-# Add UK gis
-
-#-
-#- 3. installers
-#-	
-#- sahsuland_dump: Dump sahsuland database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
-sahsuland_dump: ../install/sahsuland.sql
-	pg_dump -U postgres -w -F plain -T '*x_uk*' -T '*.x_ew01*' -v -C sahsuland > ../install/sahsuland.sql	
-# make dependent on completed target
-../install/sahsuland.sql: 
-#- sahsuland_dev_dump: Dump sahsuland_dev database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
-#-                     Used to create sahsuland
-sahsuland_dev_dump: ../install/sahsuland_dev.dump 
-../install/sahsuland_dev.dump:
-	pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland_dev > ../install/sahsuland_dev.dump	
-	
-#-
-#- 4. test
-#-	
-#- test: Run all test scripts [Non verbose, no debug]
-test:
-	$(MAKE) -C test_scripts clean all
-#- test_no_alter: Run test scripts able to be run before the alter scripts [Non verbose, no debug]
-test_no_alter:
-	$(MAKE) -C test_scripts clean no_alter
-#- test: Run all test scripts [debug_level=1]
-debug_level_1_test:
-	$(MAKE) -C test_scripts clean all DEBUG_LEVEL=1 ECHO=all
-#- test: Run all test scripts [Verbose, debug_level=2, echo=all]
-verbose_test:
-	$(MAKE) -C test_scripts clean all VERBOSITY=verbose DEBUG_LEVEL=2 ECHO=all
-	
-#-
-#- 5. cleanup
-#-	
-#- clean: Remove logs so completed scripts can be re-run
-clean:
-	$(MAKE) -C alter_scripts clean
-	$(MAKE) -C test_scripts clean
-	$(DELETE) db_setup.rpt db_create.rpt v4_0_create_sahsuland.rpt v4_0_vacuum_analyse.rpt ../install/sahsuland_dev.dump ../install/sahsuland.sql
-#- devclean: Remove logs so alter scripts in development can be r-run 
-#-           Not normally needed as they abort.
-devclean:
-	$(MAKE) -C alter_scripts devclean
-
-#-
-#- 7. Database setup. Needs to be able to connect to postgresDB as postgres
-#-
-# Stored password file is in ~/.pgpass on Linux or: %APPDATA%\postgresql\pgpass.conf on Windows
-# Format is: hostname:port:database:username:password
-#
-#- db_setup: Create sahusland, sahsuland_dev
-db_setup: psqlrc $(PGPASSFILE) $(PLR_DIRS)
-	$(MAKE) clean
-	$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
-	$(MAKE) sahsuland_dev 
-	$(MAKE) sahsuland_dev_dump
-	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
-	$(MAKE) -C alter_scripts clean all PGDATABASE=sahsuland		
-	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
-	$(MAKE) clean v4_0_vacuum_analyse_dev PGDATABASE=sahsuland
-	
-db_create: db_create.rpt
-
-#
-# Files to create/install
-#
-# pgpass: password file [not supported yet]
-$(PGPASSFILE):
-		$(error Please create $(PGPASSFILE))
-		
-# psqlrc: psql logon script
-psqlrc:	../etc/psqlrc C:\Program\ Files\PostgreSQL\9.3\etc
-		$(COPY) ../etc/psqlrc "$(POSTGRES_ETC_DIR)"
-#
-# R library directory - need to be created aka POSTGRES_ETC_DIR
-#
-$(R_LIBRARY):
-		$(error Please create $(R_LIBRARY))
-$(R_SOURCE):
-		$(error Please create $(R_SOURCE))
-#
-# $(ESC_POSTGRES_ETC_DIR): Create directory for psqlrc (requires privilege) - NEEDS TO BE FIXED
-#		
-$(ESC_POSTGRES_ETC_DIR):
-		-$(SUDO_MKDIR)
-		-$(SUDO_CHOWN_TESUSER)
-		
-#-
-#- 7. miscellaneous
-#-	
-
-#- v4_0_vacuum_analyse_dev: VACUUM ANALYZE sahsuland dev database
-v4_0_vacuum_analyse_dev: v4_0_vacuum_analyse.rpt
-
-#- help: Display this help
-help:
-	$(HELP)
-
-#- recurse: Recursive make target: make recurse <recursive target>
-#-          e.g. make recurse alter_1.rpt
-recurse: $(SUBDIRS)	
-$(SUBDIRS):
-	$(MAKE) -C $@ $(MAKECMDGOALS)
-
-#-
+	$(NODE) topojson_convert.js $(PGHOST) sahsu
 #
 # Eof

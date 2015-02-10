@@ -63,28 +63,39 @@ Alter script #5
 
 Rebuilds all geolevel tables with full partitioning (alter #3 support):
 
+Done:
+
 1. Convert to 4326 (WGS84 GPS projection) after simplification. Optimised geometry is 
    always in 4326.
 2. Zoomlevel support. Optimised geometry is level 6, OPTIMISED_GEOMETRY_2 is level 8,
    OPTIMISED_GEOMETRY_3 is level 11; likewise OPTIMISED_GEOJSON (which will become a JOSN type). 
    TOPO_OPTIMISED_GEOJSON is removed.
-3. Simplification to warn if bounds of map at zoomlevel 6 exceeds 4x3 tiles.
-4. Simplification to fail if bounds of map < 5% of zoomlevel 11 (bound area: 19.6x19.4km); 
-   i.e. the map is not projected correctly (as sahsuland is not at present). Fix
-   sahsuland projection (i.e. it is 27700; do the export using GDAL correctly).
-5. Calculate the latitude of the middle of the total map bound; use this as the latitude
+3. Add t_rif40_sahsu_maptiles for zoomlevels 6, 8, 11, rif40_sahsu_maptiles for other zoomlevels.
+4. Calculate the latitude of the middle of the total map bound; use this as the latitude
    in if40_geo_pkg.rif40_zoom_levels() for the correct m/pixel.
-6. Remove ST_SIMPLIFY_TOLERANCE; replace with m/pixel for zoomlevel (hence the reason 
-   for converting to 4326 before simplification).
-8. Add support for regionINLA.txt on a per study basis.
-7. Convert simplification and intersection code to Java; call via PL/Java. Object creation
-   functions will remain port specific (because of Postgres partitioning).
-8. Add t_rif40_sahsu_maptiles for zoomlevels 6, 8, 11, rif40_sahsu_maptiles for other zoomlevels.
-9. Intersection to use SRID projection; after simplification to be tested again intersections 
-   using zoomlevels 6, 8, 11
+5. Partition t_rif40_sahsu_maptiles; convert partition to p_ naming convention, move to
+    rif40_partitions schema, added indexes and constraints as required.
+6. Convert rif40_get_geojson_tiles to use t_rif40_sahsu_maptiles tables.
+7. Re-index partition indexes.
+8. Add support for regionINLA.txt on a per study basis as rif40_GetAdjacencyMatrix().
 
 <total area_id>
 <area_id> <total (N)> <adjacent area 1> .. <adjacent area N>
+
+9. populate_rif40_tiles() to correctly report rows inserted (using RETURNING); make
+   more efficient; create EXPLAIN PLAN version.
+10. Fix sahsuland projection (i.e. it is 27700; do the export using GDAL correctly).
+11. Use Node.js topojson_convert.js GeoJSON to topoJSON conversion.  
+12. Remove ST_SIMPLIFY_TOLERANCE from T_RIF40_GEOLEVELS; replace with m/pixel for zoomlevel.
+
+To do:
+
+13. Simplification to warn if bounds of map at zoomlevel 6 exceeds 4x3 tiles.
+14. Simplification to fail if bounds of map < 5% of zoomlevel 11 (bound area: 19.6x19.4km); 
+    i.e. the map is not projected correctly (as sahsuland is not at present). 
+15. Intersection to use shapefile SRID projection; after simplification to be tested against intersections 
+    using zoomlevel 11.
+16. Move all geospatial data to rif_data schema.
 
 */
    
@@ -152,6 +163,104 @@ EXCEPTION
 END;
 $$;	
 
+--
+-- DROP t_rif40_geolevels.st_simplify_tolerance
+--
+ALTER TABLE t_rif40_geolevels DROP COLUMN IF EXISTS st_simplify_tolerance CASCADE;
+CREATE OR REPLACE VIEW rif40_geolevels AS 
+ SELECT a.geography,
+    a.geolevel_name,
+    a.geolevel_id,
+    a.description,
+    a.lookup_table,
+    a.lookup_desc_column,
+    a.shapefile,
+    a.centroidsfile,
+    a.shapefile_table,
+    a.shapefile_area_id_column,
+    a.shapefile_desc_column,
+    a.centroids_table,
+    a.centroids_area_id_column,
+    a.avg_npoints_geom,
+    a.avg_npoints_opt,
+    a.file_geojson_len,
+    a.leg_geom,
+    a.leg_opt,
+    a.covariate_table,
+    a.resolution,
+    a.comparea,
+    a.listing,
+    a.restricted,
+    a.centroidxcoordinate_column,
+    a.centroidycoordinate_column
+   FROM t_rif40_geolevels a
+  WHERE sys_context('SAHSU_CONTEXT'::character varying, 'RIF_STUDENT'::character varying)::text = 'YES'::text AND a.restricted <> 1
+UNION
+ SELECT a.geography,
+    a.geolevel_name,
+    a.geolevel_id,
+    a.description,
+    a.lookup_table,
+    a.lookup_desc_column,
+    a.shapefile,
+    a.centroidsfile,
+    a.shapefile_table,
+    a.shapefile_area_id_column,
+    a.shapefile_desc_column,
+    a.centroids_table,
+    a.centroids_area_id_column,
+    a.avg_npoints_geom,
+    a.avg_npoints_opt,
+    a.file_geojson_len,
+    a.leg_geom,
+    a.leg_opt,
+    a.covariate_table,
+    a.resolution,
+    a.comparea,
+    a.listing,
+    a.restricted,
+    a.centroidxcoordinate_column,
+    a.centroidycoordinate_column
+   FROM t_rif40_geolevels a
+  WHERE sys_context('SAHSU_CONTEXT'::character varying, 'RIF_STUDENT'::character varying) IS NULL OR sys_context('SAHSU_CONTEXT'::character varying, 'RIF_STUDENT'::character varying)::text = 'NO'::text
+  ORDER BY 1, 3 DESC;
+
+ALTER TABLE rif40_geolevels
+  OWNER TO rif40;
+GRANT ALL ON TABLE rif40_geolevels TO rif40;
+GRANT SELECT ON TABLE rif40_geolevels TO rif_user;
+GRANT SELECT ON TABLE rif40_geolevels TO rif_manager;
+COMMENT ON VIEW rif40_geolevels
+  IS 'Geolevels: hierarchy of level with a geography. Use this table for SELECT; use T_RIF40_GEOLEVELS for INSERT/UPDATE/DELETE. View with RIF_STUDENT security context support. If the user has the RIF_STUDENT role the geolevels are restricted to e.g. LADUA/DISTRICT level resolution or lower. This is controlled by the RESTRICTED field.';
+COMMENT ON COLUMN rif40_geolevels.geography IS 'Geography (e.g EW2001)';
+COMMENT ON COLUMN rif40_geolevels.geolevel_name IS 'Name of geolevel. This will be a column name in the numerator/denominator tables';
+COMMENT ON COLUMN rif40_geolevels.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
+COMMENT ON COLUMN rif40_geolevels.description IS 'Description';
+COMMENT ON COLUMN rif40_geolevels.lookup_table IS 'Lookup table name. This is used to translate codes to the common names, e.g a LADUA of 00BK is &quot;Westminster&quot;';
+COMMENT ON COLUMN rif40_geolevels.lookup_desc_column IS 'Lookup table description column name.';
+COMMENT ON COLUMN rif40_geolevels.shapefile IS 'Location of the GIS shape file. NULL if PostGress/PostGIS used. Can also use SHAPEFILE_GEOMETRY instead,';
+COMMENT ON COLUMN rif40_geolevels.centroidsfile IS 'Location of the GIS centroids file. Can also use CENTROIDXCOORDINATE_COLUMN, CENTROIDYCOORDINATE_COLUMN instead.';
+COMMENT ON COLUMN rif40_geolevels.shapefile_table IS 'Table containing GIS shape file data (created using shp2pgsql).';
+COMMENT ON COLUMN rif40_geolevels.shapefile_area_id_column IS 'Column containing the AREA_IDs in SHAPEFILE_TABLE';
+COMMENT ON COLUMN rif40_geolevels.shapefile_desc_column IS 'Column containing the AREA_ID descriptions in SHAPEFILE_TABLE';
+COMMENT ON COLUMN rif40_geolevels.centroids_table IS 'Table containing GIS shape file data with Arc GIS calculated population weighted centroids (created using shp2pgsql). PostGIS does not support population weighted centroids.';
+COMMENT ON COLUMN rif40_geolevels.centroids_area_id_column IS 'Column containing the AREA_IDs in CENTROIDS_TABLE. X and Y co-ordinates ciolumns are asummed to be named after CENTROIDXCOORDINATE_COLUMN and CENTROIDYCOORDINATE_COLUMN.';
+COMMENT ON COLUMN rif40_geolevels.avg_npoints_geom IS 'Average number of points in a geometry object (AREA_ID). Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.';
+COMMENT ON COLUMN rif40_geolevels.avg_npoints_opt IS 'Average number of points in a ST_SimplifyPreserveTopology() optimsed geometry object (AREA_ID). Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.';
+COMMENT ON COLUMN rif40_geolevels.file_geojson_len IS 'File length estimate (in bytes) for conversion of the entire geolevel geometry to GeoJSON. Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.';
+COMMENT ON COLUMN rif40_geolevels.leg_geom IS 'The average length (in projection units - usually metres) of a vector leg. Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.';
+COMMENT ON COLUMN rif40_geolevels.leg_opt IS 'The average length (in projection units - usually metres) of a ST_SimplifyPreserveTopology() optimsed geometryvector leg. Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.';
+COMMENT ON COLUMN rif40_geolevels.covariate_table IS 'Name of table used for covariates at this geolevel';
+COMMENT ON COLUMN rif40_geolevels.resolution IS 'Can use a map for selection at this resolution (0/1)';
+COMMENT ON COLUMN rif40_geolevels.comparea IS 'Able to be used as a comparison area (0/1)';
+COMMENT ON COLUMN rif40_geolevels.listing IS 'Able to be used in a disease map listing (0/1)';
+COMMENT ON COLUMN rif40_geolevels.restricted IS 'Is geolevel access rectricted by Inforamtion Governance restrictions (0/1). If 1 (Yes) then a) students cannot access this geolevel and b) if the system parameter ExtractControl=1 then the user must be granted permission by a RIF_MANAGER to extract from the database the results, data extract and maps tables. This is enforced by the RIF application.';
+COMMENT ON COLUMN rif40_geolevels.centroidxcoordinate_column IS 'Lookup table centroid X co-ordinate column name. Can also use CENTROIDSFILE instead.';
+COMMENT ON COLUMN rif40_geolevels.centroidycoordinate_column IS 'Lookup table centroid Y co-ordinate column name.';
+
+--SELECT * FROM rif40_columns WHERE column_name_hide = 'ST_SIMPLIFY_TOLERANCE';
+DELETE FROM rif40_columns WHERE column_name_hide = 'ST_SIMPLIFY_TOLERANCE';
+
 WITH b AS (
 	SELECT geography, srid, rif40_geo_pkg.rif40_zoom_levels(	
 			ST_Y( 														/* Get latitude */
@@ -204,7 +313,6 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 -- Projection was wrong, is now correct; i.e. SAHSULAND is 3,286 square km is size...
 --
 SELECT a.geolevel_name, 
-       b.st_simplify_tolerance,
 /*	   ST_Distance_Spheroid(
 			ST_GeomFromEWKT('SRID=27700;POINT(0 0)'), 
 			ST_GeomFromEWKT('SRID=27700;POINT('||b.st_simplify_tolerance||' 0)'),
@@ -217,7 +325,7 @@ SELECT a.geolevel_name,
 	   ROUND((SUM(ST_perimeter(a.shapefile_geometry))/1000)::NUMERIC, 1) AS t_perimeter_km
   FROM t_rif40_sahsu_geometry a, rif40_geolevels b
  WHERE a.geolevel_name = b.geolevel_name
- GROUP BY b.geolevel_id, a.geolevel_name, b.st_simplify_tolerance
+ GROUP BY b.geolevel_id, a.geolevel_name
  ORDER BY b.geolevel_id;
 /*
  geolevel_name | st_simplify_tolerance | st_simplify_tolerance_in_m | t_areas | t_points |    t_area     | t_perimeter | t_area_km2 | t_perimeter_km
@@ -228,7 +336,7 @@ SELECT a.geolevel_name,
  LEVEL4        |                    10 |           1113094.79501005 |    1230 |   135813 | 32857211853.1 |  15287760.5 |     3285.7 |        15287.8
 (4 rows)
  */
- 
+
  /*
  "PROJCS["OSGB 1936 / British National Grid",
 	GEOGCS["OSGB 1936",
@@ -361,39 +469,6 @@ SELECT * FROM e;
 		
  */
 	
-WITH a AS (
-	SELECT *
-          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
-), b AS (
-	SELECT ST_Centroid(ST_MakeEnvelope(a.x_min, a.y_min, a.x_max, a.y_max)) AS centroid
-	  FROM a
-), c AS (
-	SELECT ST_X(b.centroid) AS X_centroid, ST_Y(b.centroid) AS Y_centroid, 11 AS zoom_level	  
-	  FROM b
-), d AS (
-	SELECT zoom_level, X_centroid, Y_centroid, 
-		   rif40_geo_pkg.latitude2tile(X_centroid, zoom_level) AS X_tile,
-		   rif40_geo_pkg.longitude2tile(Y_centroid, zoom_level) AS Y_tile
-	  FROM c
-), e AS (
-	SELECT zoom_level, X_centroid, Y_centroid,
-		   rif40_geo_pkg.tile2latitude(X_tile, zoom_level) AS X_min,
-		   rif40_geo_pkg.tile2longitude(Y_tile, zoom_level) AS Y_min,	
-		   rif40_geo_pkg.tile2latitude(X_tile+1, zoom_level) AS X_max,
-		   rif40_geo_pkg.tile2longitude(Y_tile+1, zoom_level) AS Y_max,
-		   X_tile, Y_tile
-	  FROM d
-) 
-SELECT SUBSTRING(
-		rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU'::VARCHAR 	/* Geography */, 
-			'LEVEL4'::VARCHAR 	/* geolevel view */, 
-			e.y_max::REAL, e.x_max::REAL, e.y_min::REAL, e.x_min::REAL, /* Bounding box - from cte */
-			e.zoom_level::INTEGER /* Zoom level */,
-			NULL		/* Tile name */, 
-			FALSE 		/* return_one_row flag: output multiple rows so it is readable! */) 
-			FROM 1 FOR 160 /* Truncate to 160 chars */) AS json 
-  FROM e LIMIT 4;	
 --
 -- rif40_GetMapAreas interface
 --
@@ -554,8 +629,7 @@ WITH b AS (
 		 WHERE c6.geography = c8.geography
 		   AND c6.geography = c11.geography;  
 
-select geography, geolevel_name, st_simplify_tolerance from rif40_geolevels;
-SELECT /*
+/*
  geography | st_simplify_tolerance_zoomlevel_6 | st_simplify_tolerance_zoomlevel_8 | st_simplify_tolerance_zoomlevel_11
 -----------+-----------------------------------+-----------------------------------+------------------------------------
  SAHSU     |                             0.022 |                            0.0055 |                            0.00069
@@ -563,23 +637,7 @@ SELECT /*
  UK91      |                             0.022 |                            0.0055 |                            0.00069
 (3 rows)
 
-
- geography | geolevel_name | st_simplify_tolerance
------------+---------------+-----------------------
- EW01      | LADUA2001     |                    50
- EW01      | GOR2001       |                   100
- EW01      | CNTRY2001     |                   100
- EW01      | SCNTRY2001    |                   100
- SAHSU     | LEVEL4        |                    10
- SAHSU     | LEVEL3        |                    50
- SAHSU     | LEVEL2        |                   100
- SAHSU     | LEVEL1        |                   500
- UK91      | DISTRICT91    |                    50
- UK91      | COUNTY91      |                   100
- UK91      | REGION91      |                   100
- UK91      | COUNTRY91     |                   100
- UK91      | SCOUNTRY91    |                   100
- */ 1;
+ */
  
 --\i ../psql_scripts/test_scripts/test_1_sahsuland_geography.sql
 /*  
@@ -590,6 +648,7 @@ BEGIN
 END;
 $$;
  */
+ \dS+ rif40_sahsu_maptiles
 --
 -- Test performance (FAST .. 31.834 ms)
 --
@@ -608,14 +667,50 @@ SELECT geolevel_name, geography, zoomlevel, x_tile_number, y_tile_number, optimi
    AND x_tile_number IN (264, 265)
    AND y_tile_number = 330
  ORDER BY tile_id; 
- 
+
 --
--- Display tile summary
+-- Test new rif40_get_geojson_tiles()
+-- 	
+WITH a AS (
+	SELECT *
+          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
+), b AS (
+	SELECT ST_Centroid(ST_MakeEnvelope(a.x_min, a.y_min, a.x_max, a.y_max)) AS centroid
+	  FROM a
+), c AS (
+	SELECT ST_X(b.centroid) AS X_centroid, ST_Y(b.centroid) AS Y_centroid, 11 AS zoom_level	  
+	  FROM b
+), d AS (
+	SELECT zoom_level, X_centroid, Y_centroid, 
+		   rif40_geo_pkg.latitude2tile(X_centroid, zoom_level) AS X_tile,
+		   rif40_geo_pkg.longitude2tile(Y_centroid, zoom_level) AS Y_tile
+	  FROM c
+), e AS (
+	SELECT zoom_level, X_centroid, Y_centroid,
+		   rif40_geo_pkg.tile2latitude(X_tile, zoom_level) AS X_min,
+		   rif40_geo_pkg.tile2longitude(Y_tile, zoom_level) AS Y_min,	
+		   rif40_geo_pkg.tile2latitude(X_tile+1, zoom_level) AS X_max,
+		   rif40_geo_pkg.tile2longitude(Y_tile+1, zoom_level) AS Y_max,
+		   X_tile, Y_tile
+	  FROM d
+) 
+SELECT SUBSTRING(
+		rif40_xml_pkg.rif40_get_geojson_tiles(
+			'SAHSU'::VARCHAR 	/* Geography */, 
+			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			e.y_max::REAL, e.x_max::REAL, e.y_min::REAL, e.x_min::REAL, /* Bounding box - from cte */
+			e.zoom_level::INTEGER /* Zoom level */)::Text 
+			FROM 1 FOR 160 /* Truncate to 160 chars */) AS json 
+  FROM e LIMIT 4;
+--
+-- Display tile summary [SLOW!]
 -- 
+/*
 SELECT geolevel_name, zoomlevel, SUM(no_area_ids) AS tiles_with_no_area_ids, COUNT(optimised_topojson) AS aaas
   FROM rif40_sahsu_maptiles
  GROUP BY geolevel_name, zoomlevel
  ORDER BY geolevel_name, zoomlevel; 
+ */
 /*
                                                           rif40_GetMapAreas interface
  geolevel_name | geography | zoomlevel | x_tile_number | y_tile_number |             optimised_topojson              |         tile_id
@@ -679,6 +774,40 @@ Time: 31.834 ms
 (48 rows)
  */ 
 END;
+
+--
+-- Vacuum ANALYZE all RIF40 tables
+--
+\i  ../psql_scripts/v4_0_vacuum_analyse.sql
+
+UPDATE t_rif40_sahsu_maptiles
+   SET optimised_topojson = '"X"'::JSON;
+   
+--
+-- Run geoJSON to topoJSON converter
+--
+\! make -C ../Node topojson_convert
+
+--
+-- Check TopoJSON really has been converted
+--
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR
+		SELECT COUNT(tile_id) AS tiles
+		  FROM t_rif40_sahsu_maptiles 
+		 WHERE optimised_topojson::Text = '"X"'::Text;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.tiles > 0 THEN
+		RAISE EXCEPTION 'C20999: Unconverted optimised_topojson files found';
+	END IF;
+END;
+$$; 
 
 --
 -- Eof

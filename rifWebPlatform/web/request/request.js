@@ -1,16 +1,13 @@
 ( function() {
 
   var c = function( myFunc, msg ) {
-      return function( error, json ) {
-        if ( error !== null ) {
-          RIF.statusBar( error, true, 1 );
-          return;
-        }
+      //IE compatible
+      return function( error, status ,json ) {
         try {   
           var data = jQuery.parseJSON( json.responseText );
           callback( myFunc, data );
         } catch ( e ) {
-          callback( myFunc, json.responseText ); // This should change
+          callback( myFunc, json.responseText ); // This should change when working on results viewer
         }
 
         RIF.statusBar( msg, false );

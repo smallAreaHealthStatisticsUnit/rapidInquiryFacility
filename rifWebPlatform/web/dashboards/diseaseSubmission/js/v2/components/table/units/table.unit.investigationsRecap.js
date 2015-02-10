@@ -35,13 +35,14 @@ RIF.table.investigationsRecap = ( function( _dom ) {
         tr.className = 'aSR ' + oddOreven;
         tr.id = 'investigation' + investigationId;
 
-        tr.innerHTML = '<td class="taxonomiRow">' + taxonomies + '</td>' +
+        // Jquery needed to make IE compatible, .innerHTML wouldnt work otherwise  
+        $( tr ).html( '<td class="taxonomiRow">' + taxonomies + '</td>' +
           '<td class="healthOutcomesRow">' + healthOutcomes + '</td>' +
           '<td class="agegroupsRow"><p>' + ageGroups + '</p></td>' +
           '<td class="yearRow"><p>' + data.minYear + '-' + data.maxYear + '</p></td>' +
           '<td class="genderRow"><p>' + data.gender + '</p></td>' +
           '<td class="covariatesRow"><p>' + covariates + '</p></td>' +
-          '<td class="removeInvestigation"><p></p></td>';
+          '<td class="removeInvestigation"><p></p></td>' );
 
 
         _dom.tableBody.append( tr );

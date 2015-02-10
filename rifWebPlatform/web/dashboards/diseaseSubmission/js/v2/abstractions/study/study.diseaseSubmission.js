@@ -54,7 +54,7 @@ RIF.study = ( function( type ) {
         var parametersClone = RIF.extend( this.parameters, {} );
         this.investigations[ this.investigationCounts ] = parametersClone;
         console.log( "investigation " + this.investigationCounts + " added" );
-        this.showInvestigations();
+        // this.showInvestigations();  
 
         return this.investigationCounts++;
       },
@@ -64,7 +64,7 @@ RIF.study = ( function( type ) {
           delete this.investigations[ i ];
           console.log( 'Investigation ' + i + ' removed' )
         };
-        this.showInvestigations();
+        // this.showInvestigations();  
       },
       //SETTERS
       setStudyName: function( s ) {
