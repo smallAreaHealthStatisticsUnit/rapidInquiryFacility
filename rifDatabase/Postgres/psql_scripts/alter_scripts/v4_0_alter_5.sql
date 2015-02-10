@@ -700,4 +700,9 @@ END;
 \i  ../psql_scripts/v4_0_vacuum_analyse.sql
 
 --
+-- Run geoJSON to topoJSON converter
+--
+\! make topojson_convert
+
+--
 -- Eof

@@ -157,7 +157,7 @@ endif
 all: $(TARGETS)
 #- dev: Run all alter scripts in development
 dev: $(DEV_TARGETS)
-#- clean: Remove logs so completed scripts can be r-run
+#- clean: Remove logs so completed scripts can be re-run
 clean: 
 	$(DELETE) $(TARGETS)
 #- devclean: Remove logs so alter scripts in development can be re-run 
@@ -165,6 +165,10 @@ clean:
 devclean: 
 	$(DELETE) $(DEV_TARGETS)
 
+#- topojson_convert: GeoJSON to topoJSON converter
+topojson_convert:
+	$(MAKE) -C ../../Node topojson_convert
+	
 # Do nothing
 recurse:
 	

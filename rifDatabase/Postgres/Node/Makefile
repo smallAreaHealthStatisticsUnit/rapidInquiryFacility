@@ -84,7 +84,7 @@ DEFAULT_WINDOWS_ADMIN_USER=Administrator
 #
 # Local overrides; copy Makefile.local.example to Makefile.local and edit Makefile.local
 #
--include Makefile.local
+-include ../psql_scripts/Makefile.local
 
 #
 # PL/pgsql debug levels (DEBUG_LEVEL);
@@ -223,18 +223,22 @@ endif
 #	$(RUN) $@ "$(CURDIR)" $(PSQL) $(PSQL_FLAGS) -f $< 
 MODULES=node_modules/pg node_modules/pg-native node_modules/topojson
 
-all: modules topojson topojson_convert
+all: modules topojson_convert
 
 modules: $(MODULES)
 
 $(MODULES):
 	$(NPM) install pg pg-native topojson
 	
-topojson: 
+install:
+	$(NPM) install pg pg-native topojson
+	$(TOPOJSON) --version
+	
+topojson: $(TOPOJSON) ..\psql_scripts\test_scripts\data\test_6_geojson_test_01.json ..\psql_scripts\test_scripts\data\test_6_sahsu_4_level4_0_0_0.json
 	$(TOPOJSON) -q 1e6 -o test_6_geojson_test_01.json ..\psql_scripts\test_scripts\data\test_6_geojson_test_01.json
 	$(TOPOJSON) -q 1e6 -o test_6_sahsu_4_level4_0_0_0.json ..\psql_scripts\test_scripts\data\test_6_sahsu_4_level4_0_0_0.json
 
 topojson_convert:
-	$(NODE) topojson_convert.js
+	$(NODE) topojson_convert.js $(PGHOST) sahsu
 #
 # Eof

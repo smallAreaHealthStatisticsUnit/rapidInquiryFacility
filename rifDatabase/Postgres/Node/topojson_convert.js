@@ -11,7 +11,7 @@
 // Description:
 //
 // Rapid Enquiry Facility (RIF) - GeoJSON to topoJSON converter
-//								  Uses node.js TopoJHSON module
+//								  Uses node.js TopoJSON module
 //
 // Copyright:
 //
@@ -47,25 +47,50 @@
 //
 // Peter Hambly, SAHSU
 //
+// Usage: node topojson_convert.js <PGHOST; default: localhost> <geography; default: sahsu>
+//
+// Connects using Postgres native driver (not JDBC) as rif40.
+//
 var pg = require('pg');
 var topojson = require('topojson');
 
-//var conString = "postgres://rif40:se11afield2012@wpea-rif1/sahsuland_dev";
-var conString = "postgres://rif40@localhost/sahsuland_dev"; // Use 
+var pghost = process.argv[2];
+if (!pghost) {
+	pghost = 'localhost';
+}
+else {
+	console.log('Using environment host: ' + pghost);
+}
+var conString = 'postgres://rif40@' + pghost + '/sahsuland_dev'; // Use PGHOST, native authentication (i.e. same as psql)
 
-var geography = process.argv[2];
+var geography = process.argv[3];
 if (!geography) {
 	geography = 'sahsu';
 }
 
-var client = new pg.Client(conString);
-		
+var client = null;
+
+try {
+	client = new pg.Client(conString);
+	console.log('Connected to Postgres using: ' + conString);
+	
+}
+catch(err) {
+		return console.error('Could create postgres client using: ' + conString, err);
+}
+
+// Notice message
+client.on('notice', function(msg) {
+      console.log('notice: %s', msg);
+});
+	
 // Connect to Postgres database
 client.connect(function(err) {
 	if (err) {
 		return console.error('Could not connect to postgres using: ' + conString, err);
 	}
 	else {
+		var start = new Date().getTime();
 		var sql_stmt = 'SELECT tile_id, optimised_geojson::Text AS optimised_geojson FROM t_rif40_' + 
 				geography + '_maptiles';
 				
@@ -88,7 +113,10 @@ client.connect(function(err) {
 				var objects = {};	
 				var tile_id = null;
 				var topology = null;
-				
+				var options = {
+					"verbose": true,
+					"post-quantization": 1e4};
+		
 				query.on('row', function(row) {
 					//fired once for each row returned
 					result.addRow(row);
@@ -126,28 +154,23 @@ client.connect(function(err) {
 					}
 					last_tile_id = tile_id[row_count - 1];
 					// Call topojson update loop
-					update_topojson_loop(tile_id, optimised_topojson, optimised_geojson, row_count, last_tile_id);
+					update_topojson_loop(tile_id, optimised_topojson, optimised_geojson, row_count, last_tile_id, start);
 					// Clear the objects to force garbage collection.
 					tile_id = null;
 					optimised_topojson = null;
 					optimised_geojson = null;
 				}); // End of query close processing
-		}
+
+		} 
 	}); // End of query;
 
-
-var options = {
-		"verbose": true,
-		"post-quantization": 1e4};
-
-
-	}
+	} // End of else connected OK 
 }); // End of connect
 
 
 /* 
  */
-function do_update(ptile_id, poptimised_topojson, lrow_count, llast_tile_id) {
+function do_update(ptile_id, poptimised_topojson, lrow_count, llast_tile_id, lstart) {
 	var update_stmt = 'WITH a AS ( UPDATE t_rif40_' + 
 			geography + '_maptiles SET optimised_topojson = $1 WHERE tile_id = $2 ' + 
 			'RETURNING tile_id, LENGTH(optimised_geojson::Text) AS length_geojson, ' + 
@@ -181,9 +204,8 @@ function do_update(ptile_id, poptimised_topojson, lrow_count, llast_tile_id) {
 						', topoJSON: ' + result.rows[0].length_topojson +
 						', % reduction: ' + result.rows[0].pct_reduction);
 					// Commit and disconnect after last row				
-					if (llast_tile_id === result.rows[0].tile_id) {
-						client.on('drain', client.end.bind(client)); 
-						// Commit transaction and disconnect client when all queries are finished
+					if (llast_tile_id === result.rows[0].tile_id) { 
+						// Commit transaction 
 						var END = client.query('COMMIT', function(err, result) {
 							if (err) {
 								client.end();
@@ -193,6 +215,22 @@ function do_update(ptile_id, poptimised_topojson, lrow_count, llast_tile_id) {
 								console.log('Tranaction end: ' + lrow_count + ' rows processed; ' + result.command);
 							}
 						});	
+						client.on('drain', client.end.bind(client)); 
+						// Vacuum analyze maptiles table and disconnect client when all queries are finished
+						var analyze = client.query('VACUUM ANALYZE VERBOSE t_rif40_' + 
+								geography + '_maptiles', function(err, result) {
+							if (err) {
+								client.end();
+								return console.error('Error in VACUUM ANALYZE', err);
+							}
+							else {
+								var end = new Date().getTime();
+								var time = (end - lstart)/1000;		
+								var rows_per_sec = lrow_count/time;
+								console.log('VACUUM ANALYZE complete; overall ' + lrow_count + ' tiles processed in: ' + 
+									time + ' S; ' + Math.round(rows_per_sec*100)/100 + ' tiles/S');								
+							}
+						});							
 					}
 				}					
 			});
@@ -202,7 +240,7 @@ function do_update(ptile_id, poptimised_topojson, lrow_count, llast_tile_id) {
 
 /*
  */
-function update_topojson_loop(ltile_id, loptimised_topojson, loptimised_geojson, lrow_count, llast_tile_id) {
+function update_topojson_loop(ltile_id, loptimised_topojson, loptimised_geojson, lrow_count, llast_tile_id, lstart) {
 
 	var begin = client.query('BEGIN', function(err, result) {
 		if (err) {
@@ -213,7 +251,7 @@ function update_topojson_loop(ltile_id, loptimised_topojson, loptimised_geojson,
 			// Transaction start OK 
 			console.log('Tranaction start: ' + lrow_count + ' rows to process');
 			for (var i = 0; i < lrow_count; i++) { 
-				do_update(ltile_id[i], loptimised_topojson[i], lrow_count, llast_tile_id);
+				do_update(ltile_id[i], loptimised_topojson[i], lrow_count, llast_tile_id, lstart);
 			}
 		}
 	});
