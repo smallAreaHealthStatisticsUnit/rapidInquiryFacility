@@ -38,4 +38,4 @@
  * @author kgarwood
  * @version
  */
-package rifServices.test.io;
+package rifServices.test.fileFormats;
