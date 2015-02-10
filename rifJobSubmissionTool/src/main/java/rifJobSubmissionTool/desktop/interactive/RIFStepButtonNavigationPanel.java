@@ -13,7 +13,7 @@ import rifGenericUILibrary.WorkflowNavigationButtonPanel;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
-import rifServices.io.RIFZFileFilter;
+import rifServices.fileFormats.RIFZFileFilter;
 import rifServices.system.RIFServiceException;
 
 import java.awt.event.ActionEvent;

@@ -5,12 +5,11 @@ import rifGenericUILibrary.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
-
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.ComparisonArea;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.io.RIFJobSubmissionHTMLWriter;
+import rifServices.fileFormats.RIFJobSubmissionHTMLWriter;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 

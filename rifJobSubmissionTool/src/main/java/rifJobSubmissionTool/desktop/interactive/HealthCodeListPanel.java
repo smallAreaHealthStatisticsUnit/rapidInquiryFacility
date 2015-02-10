@@ -2,15 +2,14 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifGenericUILibrary.ErrorDialog;
-
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifGenericUILibrary.ListEditingButtonPanel;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.HealthCode;
-import rifServices.io.HealthCodeListReader;
-import rifServices.io.HealthCodeListWriter;
-import rifServices.io.XMLFileFilter;
+import rifServices.fileFormats.HealthCodeListReader;
+import rifServices.fileFormats.HealthCodeListWriter;
+import rifServices.fileFormats.XMLFileFilter;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 

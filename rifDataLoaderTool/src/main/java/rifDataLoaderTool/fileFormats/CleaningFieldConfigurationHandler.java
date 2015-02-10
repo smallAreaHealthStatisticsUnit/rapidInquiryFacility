@@ -1,16 +1,14 @@
-package rifDataLoaderTool.presentationLayer;
+package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolSession;
-import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
 import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
-import rifDataLoaderTool.fileFormats.FieldVarianceReport;
-import rifServices.system.RIFServiceException;
-import rifGenericUILibrary.UserInterfaceFactory;
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
+import rifDataLoaderTool.businessConceptLayer.CleaningRule;
 
-import javax.swing.*;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
+import rifServices.util.HTMLUtility;
+
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 
 /**
  *
@@ -62,7 +60,7 @@ import java.awt.event.ActionEvent;
  *
  */
 
-public class FieldVarianceDialog extends AbstractDataLoaderToolDialog {
+public class CleaningFieldConfigurationHandler {
 
 	// ==========================================
 	// Section Constants
@@ -71,77 +69,45 @@ public class FieldVarianceDialog extends AbstractDataLoaderToolDialog {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private JEditorPane editorPane;
-
-	private TableFieldCleaningConfiguration tableFieldCleaningConfiguration;
 
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public FieldVarianceDialog(
-		final RIFDataLoaderToolSession session) {
+	public CleaningFieldConfigurationHandler() {
 
-		//here we want the button panel to only show "Close"
-		//we want to leave out the "OK" button because the
-		//dialog is read only.
-		super(session, false);
-				
-		UserInterfaceFactory userInterfaceFactory
-			= session.getUserInterfaceFactory();
-		JPanel panel = userInterfaceFactory.createPanel();
-		GridBagConstraints panelGC = userInterfaceFactory.createGridBagConstraints();
-		
-		panelGC.fill = GridBagConstraints.BOTH;
-		panelGC.weightx = 1;
-		panelGC.weighty = 1;
-		editorPane = userInterfaceFactory.createHTMLEditorPane();		
-		JScrollPane scrollPane
-			= userInterfaceFactory.createScrollPane(editorPane);
-		
-		JScrollBar scrollBar = scrollPane.getVerticalScrollBar();
-		panel.add(scrollPane, panelGC);
-		
-		panelGC.gridy++;
-		panelGC.anchor = GridBagConstraints.SOUTHEAST;
-		panelGC.fill = GridBagConstraints.NONE;
-		
-		panelGC.weightx = 0;
-		panelGC.weighty = 0;
-		
-		panel.add(getOKCloseButtonPanel(), panelGC);
-		
-		setMainPanel(panel);	
-		setSize(300, 300);
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void setData(
-		final TableFieldCleaningConfiguration tableFieldCleaningConfiguration) 
-		throws RIFServiceException {
+
+	public String getHTML(
+		final TableFieldCleaningConfiguration tableFieldCleaningConfiguration) {
 		
-		this.tableFieldCleaningConfiguration = tableFieldCleaningConfiguration;
+		HTMLUtility htmlUtility = new HTMLUtility();
+    	ByteArrayOutputStream outputStream
+			= new ByteArrayOutputStream();	
+    	htmlUtility.initialise(outputStream, "UTF-8");
+    	
+		htmlUtility.beginBody();
 	
-		RIFDataLoaderServiceAPI service = getService();
+		RIFDataTypeInterface rifDataType
+			= tableFieldCleaningConfiguration.getRifDataType();
+		ArrayList<CleaningRule> cleaningRules
+			= rifDataType.getCleaningRules();
+		htmlUtility.beginInvisibleTable();
+		for (CleaningRule cleaningRule : cleaningRules) {
+			htmlUtility.beginRow();
+			htmlUtility.writeBoldColumnValue(cleaningRule.getName());
+			htmlUtility.writeColumnValue(cleaningRule.getDescription());
+			htmlUtility.endRow();
+		}
+		htmlUtility.endTable();
 		
-		String[][] varianceData
-			= service.getVarianceInFieldData(
-				getCurrentUser(),
-				tableFieldCleaningConfiguration);
-		FieldVarianceReport fieldVarianceReport
-			 = new FieldVarianceReport();
-		String htmlText
-			= fieldVarianceReport.getHTML(
-				tableFieldCleaningConfiguration, 
-				varianceData);
-		editorPane.setText(htmlText);
-		editorPane.setCaretPosition(0);
-	}
-	
-	private void close() {
-		hide();
+		htmlUtility.endBody();
+
+		return htmlUtility.getHTML();
 	}
 	
 	// ==========================================
@@ -152,15 +118,6 @@ public class FieldVarianceDialog extends AbstractDataLoaderToolDialog {
 	// Section Interfaces
 	// ==========================================
 
-	public void actionPerformed(ActionEvent event) {
-		Object button = event.getSource();
-		
-		if (isCloseButton(button)) {
-			close();
-		}
-	}
-
-	
 	// ==========================================
 	// Section Override
 	// ==========================================

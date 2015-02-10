@@ -18,7 +18,7 @@ import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
-import rifServices.io.CovariateContentHandler;
+import rifServices.fileFormats.CovariateContentHandler;
 
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;

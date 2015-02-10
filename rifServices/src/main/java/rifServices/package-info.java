@@ -43,7 +43,7 @@
  * </p>
  * 
  * <p>
- * The {@link rifServices.io} package 
+ * The {@link rifServices.fileFormats} package 
  * contains classes that are used to generate XML and HTML fragments that correspond to 
  * business objects described in {@link rifServices.businessConceptLayer}.  Support for XML will
  * be used to let end users save and load fragments of a study specification.  It would also be

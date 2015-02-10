@@ -16,7 +16,7 @@ import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
 import rifDataLoaderTool.businessConceptLayer.UKPostalCodeRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
 import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
-import rifDataLoaderTool.io.CleaningFieldConfigurationHandler;
+import rifDataLoaderTool.fileFormats.CleaningFieldConfigurationHandler;
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifServices.businessConceptLayer.User;

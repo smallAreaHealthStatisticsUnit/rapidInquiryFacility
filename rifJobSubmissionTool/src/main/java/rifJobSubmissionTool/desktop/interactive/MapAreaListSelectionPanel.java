@@ -18,9 +18,9 @@ import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.MapAreaSummaryData;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
-import rifServices.io.MapAreaListReader;
-import rifServices.io.MapAreaListWriter;
-import rifServices.io.XMLFileFilter;
+import rifServices.fileFormats.MapAreaListReader;
+import rifServices.fileFormats.MapAreaListWriter;
+import rifServices.fileFormats.XMLFileFilter;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
