@@ -1288,7 +1288,7 @@ public class RIFStudySubmissionWebServiceResource
 
 	@GET
 	@Produces({"application/json"})	
-	@Path("/getTiles")
+	@Path("/getMapAreasForBoundaryRectangle")
 	public Response getMapAreasForBoundaryRectangle(
 		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
