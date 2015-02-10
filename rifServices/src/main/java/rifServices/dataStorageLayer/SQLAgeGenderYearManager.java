@@ -140,17 +140,23 @@ class SQLAgeGenderYearManager
 		
 		//Create query
 		Integer ageGroupID = null;
-		SQLSelectQueryFormatter getAgeIDQuery = new SQLSelectQueryFormatter();
-		getAgeIDQuery.addSelectField("age_group_id");
-		getAgeIDQuery.addFromTable("rif40_tables");
-		getAgeIDQuery.addWhereParameter("table_name");
-		getAgeIDQuery.addWhereParameter("isnumerator");
+		SQLSelectQueryFormatter getAgeIDQueryFormatter = new SQLSelectQueryFormatter();
+		getAgeIDQueryFormatter.addSelectField("age_group_id");
+		getAgeIDQueryFormatter.addFromTable("rif40_tables");
+		getAgeIDQueryFormatter.addWhereParameter("table_name");
+		getAgeIDQueryFormatter.addWhereParameter("isnumerator");
+				
+		logSQLQuery(
+			"getAgeIDQuery",
+			getAgeIDQueryFormatter,
+			ndPair.getNumeratorTableName(),
+			String.valueOf(1));
 		
 		PreparedStatement getAgeIDStatement = null;
-		ResultSet getAgeIDResultSet = null;		
+		ResultSet getAgeIDResultSet = null;
 		try {
 			getAgeIDStatement
-				= connection.prepareStatement(getAgeIDQuery.generateQuery());
+				= connection.prepareStatement(getAgeIDQueryFormatter.generateQuery());
 			getAgeIDStatement.setString(1, ndPair.getNumeratorTableName());
 			//set isnumerator flag to 'true'
 			getAgeIDStatement.setInt(2, 1);
@@ -240,7 +246,12 @@ class SQLAgeGenderYearManager
 				SQLSelectQueryFormatter.SortOrder.DESCENDING);		
 			assert sortingOrder == AgeGroupSortingOption.DESCENDING_UPPER_LIMIT;			
 		}
-		
+
+		logSQLQuery(
+			"getAgesForAgeGroupIDQuery",
+			getAgesForAgeGroupID,
+			String.valueOf(ageGroupID));
+				
 		//Execute query and generate results
 		PreparedStatement statement = null;
 		ResultSet dbResultSet = null;
@@ -324,16 +335,21 @@ class SQLAgeGenderYearManager
 			ndPair);
 		
 		//Create query
-		SQLSelectQueryFormatter query = new SQLSelectQueryFormatter();
-		query.addSelectField("year_start");
-		query.addSelectField("year_stop");
-		query.addFromTable("rif40_tables");
-		query.addWhereParameter("table_name");
-		
+		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		queryFormatter.addSelectField("year_start");
+		queryFormatter.addSelectField("year_stop");
+		queryFormatter.addFromTable("rif40_tables");
+		queryFormatter.addWhereParameter("table_name");
+
+		logSQLQuery(
+			"getYearRange",
+			queryFormatter,
+			ndPair.getNumeratorTableName());
+				
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			statement = connection.prepareStatement(query.generateQuery());
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			
 			
 			//TOUR_SECURITY
@@ -460,19 +476,26 @@ class SQLAgeGenderYearManager
 		Integer id = Integer.valueOf(ageGroup.getIdentifier());
 		
 		//Create query
-		SQLRecordExistsQueryFormatter query
+		SQLRecordExistsQueryFormatter queryFormatter
 			= new SQLRecordExistsQueryFormatter();
-		query.setFromTable("rif40_age_groups");
-		query.setLookupKeyFieldName("age_group_id");
-		query.addWhereParameter("low_age");
-		query.addWhereParameter("high_age");
-		
+		queryFormatter.setFromTable("rif40_age_groups");
+		queryFormatter.setLookupKeyFieldName("age_group_id");
+		queryFormatter.addWhereParameter("low_age");
+		queryFormatter.addWhereParameter("high_age");
+
+		logSQLQuery(
+			"getYearRange",
+			queryFormatter,
+			String.valueOf(id),
+			ageGroup.getLowerLimit(),
+			ageGroup.getUpperLimit());
+							
 		//Execute query and generate results
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
 			statement 
-				= connection.prepareStatement(query.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, id);
 			statement.setInt(2, Integer.valueOf(ageGroup.getLowerLimit()));
 			statement.setInt(3, Integer.valueOf(ageGroup.getUpperLimit()));

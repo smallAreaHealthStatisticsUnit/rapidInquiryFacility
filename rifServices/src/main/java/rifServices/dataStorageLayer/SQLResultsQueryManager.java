@@ -216,17 +216,24 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			studyResultRetrievalContext);
 		
 		//Create query
-		SQLFunctionCallerQueryFormatter query
+		SQLFunctionCallerQueryFormatter queryFormatter
 			= new SQLFunctionCallerQueryFormatter();
-		query.setSchema("rif40_xml_pkg");
-		query.setFunctionName("rif40_getgeolevelfullextentforstudy");
-		query.setNumberOfFunctionParameters(3);
+		queryFormatter.setSchema("rif40_xml_pkg");
+		queryFormatter.setFunctionName("rif40_getgeolevelfullextentforstudy");
+		queryFormatter.setNumberOfFunctionParameters(3);
 
+		logSQLQuery(
+			"checkNumeratorTableExists",
+			queryFormatter,
+			studyResultRetrievalContext.getGeographyName(),
+			studyResultRetrievalContext.getGeoLevelSelectName(),
+			studyResultRetrievalContext.getStudyID());
+				
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
 			statement
-				= connection.prepareStatement(query.generateQuery());			
+				= connection.prepareStatement(queryFormatter.generateQuery());			
 			statement.setString(1, studyResultRetrievalContext.getGeographyName());
 			statement.setString(2, studyResultRetrievalContext.getGeoLevelSelectName());
 			statement.setInt(3, Integer.valueOf(studyResultRetrievalContext.getStudyID()));
@@ -252,7 +259,6 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			return result;
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace();
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
 			String studyName 
@@ -294,18 +300,24 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			geoLevelSelect);		
 					
 		//Create query
-		SQLFunctionCallerQueryFormatter query
+		SQLFunctionCallerQueryFormatter queryFormatter
 			= new SQLFunctionCallerQueryFormatter();
-		query.setSchema("rif40_xml_pkg");
-		query.setFunctionName("rif40_getgeolevelfullextent");
-		query.setNumberOfFunctionParameters(2);		
-			
+		queryFormatter.setSchema("rif40_xml_pkg");
+		queryFormatter.setFunctionName("rif40_getgeolevelfullextent");
+		queryFormatter.setNumberOfFunctionParameters(2);		
+		
+		logSQLQuery(
+			"getGeoLevelFullExtent",
+			queryFormatter,
+			geography.getName(),
+			geoLevelSelect.getName());
+		
 		//Execute query and generate results
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
 			statement
-				= connection.prepareStatement(query.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, geography.getName());
 			statement.setString(2, geoLevelSelect.getName());				
 			resultSet = statement.executeQuery();
@@ -373,18 +385,29 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		
 		
 		//Create query
-		SQLFunctionCallerQueryFormatter query
+		SQLFunctionCallerQueryFormatter queryFormatter
 			= new SQLFunctionCallerQueryFormatter();
-		query.setSchema("rif40_xml_pkg");
-		query.setFunctionName("rif40_get_geojson_tiles");
-		query.setNumberOfFunctionParameters(7);		
+		queryFormatter.setSchema("rif40_xml_pkg");
+		queryFormatter.setFunctionName("rif40_get_geojson_tiles");
+		queryFormatter.setNumberOfFunctionParameters(7);		
+
+		logSQLQuery(
+			"getTiles",
+			queryFormatter,
+			String.valueOf(geography.getName()),
+			String.valueOf(geoLevelSelect.getName()),
+			String.valueOf(boundaryRectangle.getYMax()),
+			String.valueOf(boundaryRectangle.getXMax()),
+			String.valueOf(boundaryRectangle.getYMin()),
+			String.valueOf(boundaryRectangle.getXMin()),
+			String.valueOf(false));
 		
 		//Execute query and generate results
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
 			statement 
-				= connection.prepareStatement(query.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, geography.getName());
 			statement.setString(2, geoLevelSelect.getName());
 			statement.setFloat(3, (float) boundaryRectangle.getYMax());
@@ -403,7 +426,6 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			return result;
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
 			String errorMessage
@@ -507,19 +529,22 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			throw rifServiceException;
 		}		
 
-	
 		//Create query
-		SQLSelectQueryFormatter query
+		SQLSelectQueryFormatter queryFormatter
 			= new SQLSelectQueryFormatter();
-		query.addFromTable(calculatedResultTableName);
+		queryFormatter.addFromTable(calculatedResultTableName);
 		for (String resultTableFieldName : calculatedResultTableFieldNames) {
-			query.addSelectField(resultTableFieldName);
+			queryFormatter.addSelectField(resultTableFieldName);
 		}
-		query.addFromTable(calculatedResultTableName);
-		query.addWhereBetweenParameter(
+		queryFormatter.addFromTable(calculatedResultTableName);
+		queryFormatter.addWhereBetweenParameter(
 			"row", 
 			startRowPhrase, 
 			endRowPhrase);
+
+		logSQLQuery(
+			"getCalculatedResultsByBlock",
+			queryFormatter);
 		
 		int totalRowsInBlock = totalRowsInResultTable - startRowIndex;
 		if (endRowIndex > totalRowsInResultTable) {
@@ -534,13 +559,12 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		try {
 			statement 
 				= connection.prepareStatement(
-					query.generateQuery());
+			queryFormatter.generateQuery());
 			resultSet = statement.executeQuery();
 			result = generateResultTable(resultSet);
 			return result;		
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace();
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
 			String studyName 
@@ -584,19 +608,23 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		throws RIFServiceException {
 		
 		//Create query
-		SQLSelectQueryFormatter query
+		SQLSelectQueryFormatter queryFormatter
 			= new SQLSelectQueryFormatter();
-		query.addSelectField("map_table");
-		query.addFromTable("rif40_studies");
-		query.addWhereParameter("study_id");
+		queryFormatter.addSelectField("map_table");
+		queryFormatter.addFromTable("rif40_studies");
+		queryFormatter.addWhereParameter("study_id");
+		
+		logSQLQuery(
+			"getCalculatedResultTableName",
+			queryFormatter,
+			studyID);
 		
 		//Execute query and generate results
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			System.out.println("getCalculatedResultTableName query=="+query.generateQuery()+"==");
 			statement 
-				= connection.prepareStatement(query.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, Integer.valueOf(studyID));
 			resultSet = statement.executeQuery();
 			//there should be an entry for the study in rif40_studies.
@@ -606,7 +634,6 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			return result;
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace();
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
 			String studyName 
@@ -677,15 +704,18 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		//@TODO: fill in the database function name
 		
 		//Create query		
-		SQLFunctionCallerQueryFormatter query
+		SQLFunctionCallerQueryFormatter queryFormatter
 			= new SQLFunctionCallerQueryFormatter();
-		query.setSchema("rif40_xml_pkg");
-		query.setFunctionName("");
-		query.setNumberOfFunctionParameters(2);		
+		queryFormatter.setSchema("rif40_xml_pkg");
+		queryFormatter.setFunctionName("");
+		queryFormatter.setNumberOfFunctionParameters(2);		
 		
-
-		
-		
+		//@TODO: fill this in properly, this query has not been completed yet
+		logSQLQuery(
+			"getMapAreaAttributeValues",
+			queryFormatter,
+			geoLevelAttributeSource.getName(),
+			geoLevelAttribute);
 		
 		/*		
 		//Execute query and generate results
@@ -758,13 +788,18 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			studyResultRetrievalContext.getStudyID());
 				
 		//Create query		
-		SQLSelectQueryFormatter query 
+		SQLSelectQueryFormatter queryFormatter 
 			= new SQLSelectQueryFormatter();
-		query.addSelectField("extract_table");
-		query.addSelectField("map_table");
-		query.addFromTable("rif40_studies");
-		query.addWhereParameter("study_id");
+		queryFormatter.addSelectField("extract_table");
+		queryFormatter.addSelectField("map_table");
+		queryFormatter.addFromTable("rif40_studies");
+		queryFormatter.addWhereParameter("study_id");
 				
+		logSQLQuery(
+			"getGeoLevelAttributeSources",
+			queryFormatter,
+			studyResultRetrievalContext.getStudyID());
+		
 		//Execute query and generate results
 		ArrayList<GeoLevelAttributeSource> results
 			= new ArrayList<GeoLevelAttributeSource>();
@@ -773,7 +808,7 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		ResultSet resultSet = null;
 		try {
 			statement 
-				= connection.prepareStatement(query.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(
 				1, 
 				Integer.valueOf(studyResultRetrievalContext.getStudyID()));
@@ -855,19 +890,24 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		ArrayList<GeoLevelAttributeTheme> results
 			= new ArrayList<GeoLevelAttributeTheme>();
 		
-		SQLFunctionCallerQueryFormatter query
+		SQLFunctionCallerQueryFormatter queryFormatter
 			= new SQLFunctionCallerQueryFormatter();
-		query.setSchema("rif40_xml_pkg");
-		query.setFunctionName("");
-		query.setNumberOfFunctionParameters(2);
+		queryFormatter.setSchema("rif40_xml_pkg");
+		queryFormatter.setFunctionName("");
+		queryFormatter.setNumberOfFunctionParameters(2);
 		
+		logSQLQuery(
+			"getGeoLevelAttributeThemes",
+			queryFormatter,
+			studyResultRetrievalContext.getGeographyName(),
+			studyResultRetrievalContext.getGeoLevelSelectName());
 		
 		//Execute query and generate results
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
 			statement 
-				= connection.prepareStatement(query.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, studyResultRetrievalContext.getGeographyName());
 			statement.setString(2, studyResultRetrievalContext.getGeoLevelSelectName());
 			resultSet = statement.executeQuery();
@@ -936,19 +976,25 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			geoLevelAttributeTheme);
 		
 		//Create query		
-		SQLFunctionCallerQueryFormatter query
+		SQLFunctionCallerQueryFormatter queryFormatter
 			= new SQLFunctionCallerQueryFormatter();
-		query.setSchema("rif40_xml_pkg");
-		query.setFunctionName("rif40_getallattributesforgeolevelattributetheme");
-		query.setNumberOfFunctionParameters(4);
-			
+		queryFormatter.setSchema("rif40_xml_pkg");
+		queryFormatter.setFunctionName("rif40_getallattributesforgeolevelattributetheme");
+		queryFormatter.setNumberOfFunctionParameters(4);
+
+		logSQLQuery(
+			"getAllAttributesForGeoLevelAttributeTheme",
+			queryFormatter,
+			studyResultRetrievalContext.getGeographyName(),
+			studyResultRetrievalContext.getGeoLevelSelectName());
+		
 		//Execute query and generate results
 		String[] results = new String[0];			
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
 			statement 
-				= connection.prepareStatement(query.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(
 				1, 
 				studyResultRetrievalContext.getGeographyName());
@@ -1031,22 +1077,30 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			geoLevelAttributeTheme);
 					
 		//Create query		
-		SQLFunctionCallerQueryFormatter query
+		SQLFunctionCallerQueryFormatter queryFormatter
 			= new SQLFunctionCallerQueryFormatter();
 
-		query.addSelectField("attribute");
-		query.setSchema("rif40_xml_pkg");
-		query.setFunctionName("rif40_getAllAttributesForGeoLevelAttributeTheme");
-		query.setNumberOfFunctionParameters(3);
-		query.addWhereParameter("attribute_source");
-		query.addOrderByCondition("attribute");
+		queryFormatter.addSelectField("attribute");
+		queryFormatter.setSchema("rif40_xml_pkg");
+		queryFormatter.setFunctionName("rif40_getAllAttributesForGeoLevelAttributeTheme");
+		queryFormatter.setNumberOfFunctionParameters(3);
+		queryFormatter.addWhereParameter("attribute_source");
+		queryFormatter.addOrderByCondition("attribute");
+
+		logSQLQuery(
+			"getNumericAttributesForGeoLevelAttributeTheme",
+			queryFormatter,
+			studyResultRetrievalContext.getGeographyName(),
+			studyResultRetrievalContext.getGeoLevelSelectName(),
+			geoLevelAttributeTheme.getName(),
+			geoLevelAttributeSource.getName());
 		
 		//Execute query and generate results
 		String[] results = new String[0];
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			statement = connection.prepareStatement(query.generateQuery());
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, studyResultRetrievalContext.getGeographyName());
 			statement.setString(2, studyResultRetrievalContext.getGeoLevelSelectName());
 			statement.setString(3, geoLevelAttributeTheme.getName());
@@ -1175,17 +1229,23 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 
 		//Create query		
 				
-		SQLSelectQueryFormatter query
+		SQLSelectQueryFormatter queryFormatter
 			= new SQLSelectQueryFormatter();
 		for (String extractTableFieldName : extractTableFieldNames) {
-			query.addSelectField(extractTableFieldName);
+			queryFormatter.addSelectField(extractTableFieldName);
 		}
-		query.addFromTable(extractTableName);
-		query.addWhereBetweenParameter(
+		queryFormatter.addFromTable(extractTableName);
+		queryFormatter.addWhereBetweenParameter(
 			"row", 
 			startRowPhrase, 
 			endRowPhrase);
-		
+
+		logSQLQuery(
+			"getExtractResultsByBlock",
+			queryFormatter,
+			String.valueOf(extractStartRowIndex),
+			String.valueOf(extractEndRowIndex));
+			
 		int totalRowsInBlock;
 		if (extractEndRowIndex > totalRowsInResultTable) {
 			//it means the last block of results will not be completely filled
@@ -1203,7 +1263,7 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		try {
 			statement 
 				= connection.prepareStatement(
-					query.generateQuery());
+					queryFormatter.generateQuery());
 			resultSet = statement.executeQuery();
 			result = generateResultTable(resultSet);
 					
@@ -1305,17 +1365,23 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		throws RIFServiceException {
 					
 		//Create query		
-		SQLSelectQueryFormatter query
+		SQLSelectQueryFormatter queryFormatter
 			= new SQLSelectQueryFormatter();
-		query.addSelectField("extract_table");
-		query.addFromTable("rif40_studies");
-		query.addWhereParameter("study_id");
+		queryFormatter.addSelectField("extract_table");
+		queryFormatter.addFromTable("rif40_studies");
+		queryFormatter.addWhereParameter("study_id");
 				
+		logSQLQuery(
+			"getExtractTableName",
+			queryFormatter,
+			studyID);
+		
+		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
 			statement 
-				= connection.prepareStatement(query.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, Integer.valueOf(studyID));
 			resultSet = statement.executeQuery();
 			
@@ -1388,9 +1454,15 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		user.checkErrors();
 		diseaseMappingStudy.checkErrors();
 		
-		//Create query		
-		StringBuilder query = new StringBuilder();
-
+		//Create query
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		
+		//KLG: TODO unfinished method
+		logSQLQuery(
+			"getGeometryColumnNames",
+			queryFormatter,
+			diseaseMappingStudy.getIdentifier());
+		
 		//Execute query and generate results
 		String[] results = new String[0];
 		//get the name of the calculated results table - ie the map table
@@ -1402,7 +1474,7 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			statement = connection.prepareStatement(query.toString());
+			statement = connection.prepareStatement(queryFormatter.toString());
 			statement.setString(1, diseaseMappingStudy.getIdentifier());
 			
 			ArrayList<String> columnNames = new ArrayList<String>();
@@ -1470,7 +1542,6 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			mapArea.checkErrors();
 		}
 
-		
 		validateCommonParameters(
 			connection,
 			user,
@@ -1488,17 +1559,23 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			mapAreas);
 		
 		/*
-		@TODO - KLG - create database function for this.
+		//@TODO - KLG - create database function for this.
 
 		//Create query
-		StringBuilder query = new StringBuilder();
+	
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		
+		//fill in parameters we need for the query
+		logSQLQuery(
+			"",
+			queryFormatter);
 		
 		//Execute query and generate results
 		RIFResultTable result = null;
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			statement = connection.prepareStatement(query.toString());
+			statement = connection.prepareStatement(queryFormatter.toString());
 			resultSet = statement.executeQuery();
 			result = generateResultTable(resultSet);			
 		}
@@ -1576,25 +1653,33 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			geoLevelAttributeSource,
 			geoLevelAttribute);
 
+		
+		
 		/*
 		 * @TODO - we need to develop this procedure in the DB
 		 */
+		
 		RIFResultTable result = new RIFResultTable();
 
 		/*
-		SQLFunctionCallerQueryFormatter query
+		SQLFunctionCallerQueryFormatter queryFormatter
 			= new SQLFunctionCallerQueryFormatter();
-		query.setSchema("rif40_xml_pkg");
-		query.setFunctionName("get_pyramid_data");
-		query.setNumberOfFunctionParameters(3);
+		queryFormatter.setSchema("rif40_xml_pkg");
+		queryFormatter.setFunctionName("get_pyramid_data");
+		queryFormatter.setNumberOfFunctionParameters(3);
 		
-		
-		RIFResultTable result = null;
+		logSQLQuery(
+			"getPyramidData",
+			queryFormatter,
+			studyResultRetrievalContext.getStudyID(),
+			geoLevelAttributeSource.getName(),
+			geoLevelAttribute);
+			
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		
 		try {
-			statement = connection.prepareStatement(query.generateQuery());
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			resultSet = statement.executeQuery();
 			result = generateResultTable(resultSet);
 		}
@@ -1616,7 +1701,7 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			SQLQueryUtility.close(statement);
 			SQLQueryUtility.close(resultSet);
 		}
-		*/
+		 */
 		return result;		
 	}	
 	
@@ -1649,11 +1734,39 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			geoLevelAttributeSource,
 			geoLevelAttribute);
 
+		RIFResultTable result = new RIFResultTable();
+		
 		/*
 		 * @TODO - we need to develop this procedure in the DB
 		 */
-		RIFResultTable result = new RIFResultTable();
-				
+
+		/*
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+
+		
+		logSQLQuery(
+			"getPyramidDataByYear",
+			queryFormatter);
+
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;		
+		try {
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
+
+			resultSet = statement.executeQuery();
+			while(resultSet.next()) {
+				//KLG: @TODO - fill in
+			}
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);			
+		}
+		 */		
+		
 		return result;
 	}
 	
@@ -1679,13 +1792,6 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			mapArea.checkErrors();
 		}
 		
-		System.out.println("getPyramidDataByMapAreas==geography=="
-			+ studyResultRetrievalContext.getGeographyName()
-			+ "==geoLevelSelect=="
-			+ studyResultRetrievalContext.getGeoLevelSelectName()
-			+ "==geoLevelToMap=="
-			+ geoLevelToMap.getName());
-		
 		//check non-existent geo level to map
 		sqlRIFContextManager.checkGeoLevelToMapOrViewValueExists(
 			connection, 
@@ -1707,8 +1813,6 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			studyResultRetrievalContext.getStudyID(),
 			geoLevelAttributeSource);
 	
-		System.out.println("getPyramidDataByMapAreas 3");
-		
 		//check geo level attribute exists
 		checkGeoLevelAttributeExists(
 			connection,
@@ -1716,8 +1820,6 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			geoLevelAttributeSource,
 			geoLevelAttribute);
 
-		System.out.println("getPyramidDataByMapAreas 4");
-		
 		//check map areas are valid
 		for (MapArea mapArea : mapAreas) {
 			mapArea.checkErrors();
@@ -1725,6 +1827,33 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		
 		RIFResultTable results = new RIFResultTable();
 		
+
+		/*
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+
+		
+		logSQLQuery(
+			"getPyramidDataByYear",
+			queryFormatter);
+
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;		
+		try {
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
+
+			resultSet = statement.executeQuery();
+			while(resultSet.next()) {
+				//KLG: @TODO - fill in
+			}
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);			
+		}
+		 */		
 		
 		return results;
 	}
@@ -1738,6 +1867,33 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 	
 		String[] results = new String[0];
 	
+
+		/*
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+
+		
+		logSQLQuery(
+			"getPyramidDataByYear",
+			queryFormatter);
+
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;		
+		try {
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
+
+			resultSet = statement.executeQuery();
+			while(resultSet.next()) {
+				//KLG: @TODO - fill in
+			}
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);			
+		}
+		 */		
 		
 		return results;
 	}
@@ -1962,6 +2118,7 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			
 		}
 		catch(SQLException sqlException) {
+			logSQLException(sqlException);
 			//Record original exception, throw sanitised, human-readable version			
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -2041,17 +2198,22 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 		final String studyID)
 		throws RIFServiceException {
 				
-		SQLSelectQueryFormatter query
+		SQLSelectQueryFormatter queryFormatter
 			= new SQLSelectQueryFormatter();
-		query.addSelectField("study_name");
-		query.addFromTable("rif40_studies");
-		query.addWhereParameter("study_id");
+		queryFormatter.addSelectField("study_name");
+		queryFormatter.addFromTable("rif40_studies");
+		queryFormatter.addWhereParameter("study_id");
+		
+		logSQLQuery(
+			"getStudyName",
+			queryFormatter,
+			studyID);
 		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
 			statement 
-				= connection.prepareStatement(query.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(
 				1, 
 				Integer.valueOf(studyID));
@@ -2073,7 +2235,8 @@ class SQLResultsQueryManager extends AbstractSQLManager {
 			return resultSet.getString(1);
 		}
 		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version			
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlResultsQueryManager.unableToGetStudyName",

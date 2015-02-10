@@ -134,22 +134,28 @@ class SQLCovariateManager
 		final Investigation investigation) 
 		throws RIFServiceException {
 		
-		SQLSelectQueryFormatter formatter 
+		SQLSelectQueryFormatter queryFormatter 
 			= new SQLSelectQueryFormatter();
-		formatter.addSelectField("covariate_name");
-		formatter.addSelectField("min");
-		formatter.addSelectField("max");
-		formatter.addFromTable("t_rif40_inv_covariates");
-		formatter.addWhereParameter("inv_id");
-		formatter.addWhereParameter("study_id");
-		
+		queryFormatter.addSelectField("covariate_name");
+		queryFormatter.addSelectField("min");
+		queryFormatter.addSelectField("max");
+		queryFormatter.addFromTable("t_rif40_inv_covariates");
+		queryFormatter.addWhereParameter("inv_id");
+		queryFormatter.addWhereParameter("study_id");
+				
+		logSQLQuery(
+			"getCovariatesForInvestigation",
+			queryFormatter,
+			investigation.getIdentifier(),
+			diseaseMappingStudy.getIdentifier());
+										
 		ArrayList<AbstractCovariate> results 
 			= new ArrayList<AbstractCovariate>();
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
 			statement
-				= connection.prepareStatement(formatter.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			Integer investigationID
 				= Integer.valueOf(investigation.getIdentifier());
 			statement.setInt(1, investigationID);
@@ -175,7 +181,8 @@ class SQLCovariateManager
 			}
 			return results;
 		}
-		catch(Exception exception) {
+		catch(SQLException exception) {
+			logSQLException(exception);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"covariateManager.db.unableToGetCovariatesForInvestigation",
@@ -219,15 +226,21 @@ class SQLCovariateManager
 			geoLevelToMap);
 
 		//Create SQL query		
-		SQLSelectQueryFormatter query = new SQLSelectQueryFormatter();
-		query.addSelectField("covariate_name");
-		query.addSelectField("min");
-		query.addSelectField("max");
-		query.addSelectField("type");
-		query.addFromTable("rif40_covariates");
-		query.addWhereParameter("geography");
-		query.addWhereParameter("geolevel_name");
-		query.addOrderByCondition("covariate_name");
+		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		queryFormatter.addSelectField("covariate_name");
+		queryFormatter.addSelectField("min");
+		queryFormatter.addSelectField("max");
+		queryFormatter.addSelectField("type");
+		queryFormatter.addFromTable("rif40_covariates");
+		queryFormatter.addWhereParameter("geography");
+		queryFormatter.addWhereParameter("geolevel_name");
+		queryFormatter.addOrderByCondition("covariate_name");
+		
+		logSQLQuery(
+			"getCovariates",
+			queryFormatter,
+			geography.getName(),
+			geoLevelToMap.getName());
 		
 		//Parameterise and execute query
 		ArrayList<AbstractCovariate> results = new ArrayList<AbstractCovariate>();
@@ -236,7 +249,7 @@ class SQLCovariateManager
 				
 		try {
 			statement
-				= connection.prepareStatement(query.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, geography.getName());
 			statement.setString(2, geoLevelToMap.getName());
 
@@ -350,17 +363,23 @@ class SQLCovariateManager
 		final ArrayList<AbstractCovariate> covariates)
 		throws RIFServiceException {
 				
-		SQLRecordExistsQueryFormatter covariateExistsQueryFormatter
+		SQLRecordExistsQueryFormatter queryFormatter
 			= new SQLRecordExistsQueryFormatter();
-		covariateExistsQueryFormatter.setFromTable("rif40_covariates");
-		covariateExistsQueryFormatter.setLookupKeyFieldName("covariate_name");
+		queryFormatter.setFromTable("rif40_covariates");
+		queryFormatter.setLookupKeyFieldName("covariate_name");
+
 		
+		logSQLQuery(
+			"checkNonExistentCovariates - example query",
+			queryFormatter,
+			covariates.get(0).getName());
+				
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;		
 		AbstractCovariate currentCovariate = null;
 		try {
 			statement 
-				= connection.prepareStatement(covariateExistsQueryFormatter.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			
 			for (AbstractCovariate covariate : covariates) {
 				statement.setString(1, covariate.getName());

@@ -196,17 +196,23 @@ class SQLInvestigationManager
 		final Investigation investigation) 
 		throws RIFServiceException {
 		
-		SQLRecordExistsQueryFormatter investigationExistsQuery
+		SQLRecordExistsQueryFormatter queryFormatter
 			= new SQLRecordExistsQueryFormatter();
-		investigationExistsQuery.setFromTable("rif40_investigations");
-		investigationExistsQuery.addWhereParameter("study_id");
-		investigationExistsQuery.addWhereParameter("inv_id");
+		queryFormatter.setFromTable("rif40_investigations");
+		queryFormatter.addWhereParameter("study_id");
+		queryFormatter.addWhereParameter("inv_id");
 
+		logSQLQuery(
+			"checkInvestigationExists",
+			queryFormatter,
+			study.getIdentifier(),
+			investigation.getIdentifier());
+				
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
 			statement 
-				= connection.prepareStatement(investigationExistsQuery.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, study.getIdentifier());
 			statement.setString(2, investigation.getIdentifier());
 			resultSet = statement.executeQuery();
@@ -254,8 +260,6 @@ class SQLInvestigationManager
 		}
 		
 	}
-		
-	
 	
 	// ==========================================
 	// Section Interfaces

@@ -120,19 +120,23 @@ class SQLDiseaseMappingStudyManager extends AbstractSQLManager {
 		final User user) 
 		throws RIFServiceException {
 		
-		SQLSelectQueryFormatter query = new SQLSelectQueryFormatter();
-		query.addSelectField("project");
-		query.addSelectField("description");
-		query.addSelectField("date_started");		
-		query.addSelectField("date_ended");		
-		query.addFromTable("rif40_projects");
-		
+		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		queryFormatter.addSelectField("project");
+		queryFormatter.addSelectField("description");
+		queryFormatter.addSelectField("date_started");		
+		queryFormatter.addSelectField("date_ended");		
+		queryFormatter.addFromTable("rif40_projects");
+				
+		logSQLQuery(
+			"getProjects",
+			queryFormatter);
+							
 		ArrayList<Project> results = new ArrayList<Project>();
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		
 		try {
-			statement = connection.prepareStatement(query.generateQuery());
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			resultSet = statement.executeQuery();
 			while (resultSet.next()) {
 				Project project = Project.newInstance();
@@ -318,16 +322,21 @@ class SQLDiseaseMappingStudyManager extends AbstractSQLManager {
 		final String studyID)
 		throws RIFServiceException {
 		
-		SQLRecordExistsQueryFormatter diseaseMappingStudyExistsQuery
+		SQLRecordExistsQueryFormatter queryFormatter
 			= new SQLRecordExistsQueryFormatter();
-		diseaseMappingStudyExistsQuery.setFromTable("rif40_studies");
-		diseaseMappingStudyExistsQuery.setLookupKeyFieldName("study_id");
+		queryFormatter.setFromTable("rif40_studies");
+		queryFormatter.setLookupKeyFieldName("study_id");
+
+		logSQLQuery(
+			"checkDiseaseMappingStudyExists",
+			queryFormatter,
+			studyID);
 		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
 			statement 
-				= connection.prepareStatement(diseaseMappingStudyExistsQuery.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, Integer.valueOf(studyID));
 			resultSet = statement.executeQuery();
 			
