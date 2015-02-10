@@ -1,10 +1,9 @@
 package rifDataLoaderTool.presentationLayer;
 
+import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
 import rifDataLoaderTool.businessConceptLayer.RIFUserRole;
-import rifDataLoaderTool.dataStorageLayer.RIFDataLoaderServiceAPI;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
-
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifServices.system.RIFServiceMessages;

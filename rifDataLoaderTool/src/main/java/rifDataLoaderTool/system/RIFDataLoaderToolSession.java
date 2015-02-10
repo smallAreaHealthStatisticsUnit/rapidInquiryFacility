@@ -1,6 +1,6 @@
 package rifDataLoaderTool.system;
 
-import rifDataLoaderTool.dataStorageLayer.RIFDataLoaderServiceAPI;
+import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
 import rifServices.businessConceptLayer.User;
 import rifGenericUILibrary.UserInterfaceFactory;
 

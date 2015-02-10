@@ -14,8 +14,6 @@ import javax.ws.rs.core.Response;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
-import rifServices.dataStorageLayer.RIFStudyResultRetrievalAPI;
-import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
@@ -27,14 +25,16 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.YearRange;
 
 /**
  * This is a web service class that is analoguous to  
  * to {@link rifServices.dataStorageLayer.AbstractRIFService}. Its purpose is
- * to wrap API methods that are common to both {@link rifServices.dataStorageLayer.RIFStudySubmissionAPI}
- * and {@link rifServices.dataStorageLayer.RIFStudyResultRetrievalAPI}.
+ * to wrap API methods that are common to both {@link rifServices.businessConceptLayer.RIFStudySubmissionAPI}
+ * and {@link rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI}.
  * 
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 

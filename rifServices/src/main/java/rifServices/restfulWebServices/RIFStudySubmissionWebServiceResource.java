@@ -4,7 +4,6 @@ package rifServices.restfulWebServices;
 
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

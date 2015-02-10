@@ -1,16 +1,14 @@
 package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
+import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
 import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
 import rifDataLoaderTool.io.FieldVarianceReport;
-
-import rifDataLoaderTool.dataStorageLayer.RIFDataLoaderServiceAPI;
-
 import rifServices.system.RIFServiceException;
-
 import rifGenericUILibrary.UserInterfaceFactory;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 

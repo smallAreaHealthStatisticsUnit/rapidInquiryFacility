@@ -1,14 +1,13 @@
 package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
-import rifDataLoaderTool.dataStorageLayer.RIFDataLoaderServiceAPI;
-
+import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
 import rifServices.businessConceptLayer.User;
-
 import rifGenericUILibrary.OKCloseButtonPanel;
 import rifGenericUILibrary.UserInterfaceFactory;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;

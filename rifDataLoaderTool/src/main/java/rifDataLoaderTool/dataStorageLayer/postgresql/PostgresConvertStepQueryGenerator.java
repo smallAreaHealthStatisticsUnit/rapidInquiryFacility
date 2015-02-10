@@ -2,10 +2,10 @@ package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import java.util.ArrayList;
 
+import rifDataLoaderTool.businessConceptLayer.ConvertStepQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.TableConversionConfiguration;
 import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
 import rifDataLoaderTool.businessConceptLayer.TableFieldConversionConfiguration;
-import rifDataLoaderTool.dataStorageLayer.ConvertStepQueryGeneratorAPI;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifServices.dataStorageLayer.SQLGeneralQueryFormatter;
 

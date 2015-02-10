@@ -3,13 +3,12 @@ package rifDataLoaderTool.presentationLayer;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
-import rifDataLoaderTool.dataStorageLayer.RIFDataLoaderServiceAPI;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.RIFGenericUIMessages;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifGenericUILibrary.OKCloseButtonPanel;
-
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
 import rifServices.system.RIFServiceStartupOptions;

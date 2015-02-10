@@ -1,14 +1,14 @@
 package rifDataLoaderTool.presentationLayer;
 
 import rifGenericUILibrary.ErrorDialog;
-import rifDataLoaderTool.dataStorageLayer.RIFDataLoaderServiceAPI;
+import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
-import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 import rifServices.system.RIFServiceException;
 
 import javax.swing.JDialog;

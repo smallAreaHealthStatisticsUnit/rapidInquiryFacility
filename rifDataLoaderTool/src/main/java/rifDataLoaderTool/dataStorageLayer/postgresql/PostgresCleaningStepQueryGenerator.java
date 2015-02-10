@@ -2,7 +2,6 @@ package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.dataStorageLayer.CleaningStepQueryGeneratorAPI;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifServices.dataStorageLayer.SQLDeleteRowsQueryFormatter;
 import rifServices.dataStorageLayer.SQLDeleteTableQueryFormatter;

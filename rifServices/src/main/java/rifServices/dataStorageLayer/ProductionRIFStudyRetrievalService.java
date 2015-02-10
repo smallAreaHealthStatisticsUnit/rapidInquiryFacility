@@ -82,7 +82,7 @@ package rifServices.dataStorageLayer;
  * The class is declared final to prevent a malicious client application to submit a subclass
  * that overrides methods to produce harmful effects.  It should be visible only within this 
  * package.  It is made available through {@link rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle},
- * but that class only retrieves it as an instance of {@link rifServices.dataStorageLayer.RIFStudyResultRetrievalAPI}.
+ * but that class only retrieves it as an instance of {@link rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI}.
  * Client code cannot cast the RIFStudyResultRetrievalAPI to a ProductionRIFStudySubmissionService because
  * this class is not visible outside the package.  Therefore, the client would not be able to use
  * casting as a way of getting access to more of a class's methods than are advertised through the 

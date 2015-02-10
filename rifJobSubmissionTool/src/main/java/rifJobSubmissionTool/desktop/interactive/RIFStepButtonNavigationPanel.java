@@ -11,8 +11,8 @@ import rifGenericUILibrary.WorkflowNavigationButtonPanel;
 
 
 import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
-import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 import rifServices.io.RIFZFileFilter;
 import rifServices.system.RIFServiceException;
 

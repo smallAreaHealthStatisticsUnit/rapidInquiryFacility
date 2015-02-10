@@ -2,10 +2,10 @@ package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
-import rifDataLoaderTool.dataStorageLayer.RIFDataLoaderServiceAPI;
 
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
 import rifServices.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
 

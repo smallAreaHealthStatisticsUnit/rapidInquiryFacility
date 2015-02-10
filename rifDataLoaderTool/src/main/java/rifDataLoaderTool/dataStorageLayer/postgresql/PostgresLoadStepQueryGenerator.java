@@ -1,11 +1,11 @@
 package rifDataLoaderTool.dataStorageLayer.postgresql;
 
+import rifDataLoaderTool.businessConceptLayer.LoadStepQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
 
 
 import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifDataLoaderTool.dataStorageLayer.LoadStepQueryGeneratorAPI;
 import rifServices.dataStorageLayer.SQLGeneralQueryFormatter;
 
 import java.util.ArrayList;

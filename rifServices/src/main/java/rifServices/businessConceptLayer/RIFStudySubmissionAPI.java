@@ -1,27 +1,5 @@
-package rifServices.dataStorageLayer;
+package rifServices.businessConceptLayer;
 
-import rifServices.businessConceptLayer.AbstractCovariate;
-import rifServices.businessConceptLayer.AgeGroup;
-import rifServices.businessConceptLayer.AgeGroupSortingOption;
-import rifServices.businessConceptLayer.CalculationMethod;
-import rifServices.businessConceptLayer.GeoLevelArea;
-import rifServices.businessConceptLayer.GeoLevelSelect;
-import rifServices.businessConceptLayer.GeoLevelToMap;
-import rifServices.businessConceptLayer.GeoLevelView;
-import rifServices.businessConceptLayer.Geography;
-import rifServices.businessConceptLayer.HealthCode;
-import rifServices.businessConceptLayer.HealthCodeTaxonomy;
-import rifServices.businessConceptLayer.HealthTheme;
-import rifServices.businessConceptLayer.MapArea;
-import rifServices.businessConceptLayer.MapAreaSummaryData;
-import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.businessConceptLayer.Project;
-import rifServices.businessConceptLayer.RIFOutputOption;
-import rifServices.businessConceptLayer.RIFServiceInformation;
-import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.businessConceptLayer.Sex;
-import rifServices.businessConceptLayer.User;
-import rifServices.businessConceptLayer.YearRange;
 import rifServices.system.RIFServiceException;
 
 import java.awt.image.BufferedImage;

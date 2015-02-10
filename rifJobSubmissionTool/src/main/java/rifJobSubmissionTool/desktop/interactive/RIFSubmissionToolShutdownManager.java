@@ -5,9 +5,9 @@ import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 
 
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
-import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 import rifServices.system.RIFServiceException;
 
 import javax.swing.JDialog;

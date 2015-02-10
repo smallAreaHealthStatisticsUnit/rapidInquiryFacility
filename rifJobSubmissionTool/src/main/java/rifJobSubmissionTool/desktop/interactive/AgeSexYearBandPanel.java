@@ -10,12 +10,12 @@ import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.Investigation;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearInterval;
 import rifServices.businessConceptLayer.YearRange;
-import rifServices.dataStorageLayer.RIFStudySubmissionAPI;
 import rifServices.util.FieldValidationUtility;
 
 import java.awt.GridBagConstraints;

@@ -6,6 +6,7 @@ import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.businessConceptLayer.CleaningStepQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.DataSource;
 import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
 import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
