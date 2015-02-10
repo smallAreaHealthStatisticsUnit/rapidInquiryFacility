@@ -406,7 +406,7 @@ SELECT level4 FROM x_sahsu_level4 EXCEPT SELECT level4 FROM sahsuland_geography;
  */
 
 \pset title 'T_RIF40_GEOLEVELS a)'
-SELECT geography, geolevel_name, geolevel_id, shapefile_table, shapefile_area_id_column, shapefile_desc_column, st_simplify_tolerance
+SELECT geography, geolevel_name, geolevel_id, shapefile_table, shapefile_area_id_column, shapefile_desc_column
   FROM t_rif40_geolevels
  WHERE geography = 'SAHSU'
  ORDER BY geography, geolevel_id;

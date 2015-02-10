@@ -292,9 +292,12 @@ sahsuland_dev_no_alter: clean v4_0_create_sahsuland.rpt
 sahsuland_dev: clean $(PLR_DIRS) v4_0_create_sahsuland.rpt 
 	$(MAKE) -C test_scripts no_alter DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) -C alter_scripts clean all DEBUG_LEVEL=1 ECHO=all
-	$(MAKE) -C ../../Node topojson_convert	
 	$(MAKE) -C test_scripts clean all DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) v4_0_vacuum_analyse_dev
+	
+#- topojson_convert: GeoJSON to topoJSON converter
+topojson_convert:
+	$(MAKE) -C ../Node topojson_convert
 # create a completed target
 	
 # Add UK gis

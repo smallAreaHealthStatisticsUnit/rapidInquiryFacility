@@ -51,9 +51,17 @@
 //
 // Connects using Postgres native driver (not JDBC) as rif40.
 //
+// Uses:
+//
+// https://github.com/mbostock/topojson
+// https://github.com/brianc/node-postgres
+//
+// See: Node Makefile for build instructions
+//
 var pg = require('pg');
 var topojson = require('topojson');
 
+// Process Args
 var pghost = process.argv[2];
 if (!pghost) {
 	pghost = 'localhost';
@@ -68,8 +76,8 @@ if (!geography) {
 	geography = 'sahsu';
 }
 
+// Create Postgres client
 var client = null;
-
 try {
 	client = new pg.Client(conString);
 	console.log('Connected to Postgres using: ' + conString);
@@ -79,7 +87,7 @@ catch(err) {
 		return console.error('Could create postgres client using: ' + conString, err);
 }
 
-// Notice message
+// Notice message event processor
 client.on('notice', function(msg) {
       console.log('notice: %s', msg);
 });
@@ -113,7 +121,7 @@ client.connect(function(err) {
 				var objects = {};	
 				var tile_id = null;
 				var topology = null;
-				var options = {
+				var options = { // TopoJSON options
 					"verbose": true,
 					"post-quantization": 1e4};
 		
@@ -169,6 +177,11 @@ client.connect(function(err) {
 
 
 /* 
+ * Function: 	do_update()
+ * Parameters: 	Tile Id, optimised topoJSON (as text), row count, last tile ID, start time
+ * Returns:		N/A
+ * Description: Process Update row.
+ *				When processed last tile ID, commit transaction, VACUUM ANALYZE maptile table, logoff
  */
 function do_update(ptile_id, poptimised_topojson, lrow_count, llast_tile_id, lstart) {
 	var update_stmt = 'WITH a AS ( UPDATE t_rif40_' + 
@@ -238,7 +251,11 @@ function do_update(ptile_id, poptimised_topojson, lrow_count, llast_tile_id, lst
 	});
 }
 
-/*
+/* 
+ * Function: 	update_topojson_loop()
+ * Parameters: 	Tile Id array, optimised topoJSON array (as text), optimised geoJSON array (as text),row count, last tile ID, start time
+ * Returns:		N/A
+ * Description: For each row call do_update()
  */
 function update_topojson_loop(ltile_id, loptimised_topojson, loptimised_geojson, lrow_count, llast_tile_id, lstart) {
 
