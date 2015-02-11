@@ -123,6 +123,7 @@ client.connect(function(err) {
 				var topology = null;
 				var options = { // TopoJSON options
 					"verbose": true,
+					"projection": "4326",
 					"post-quantization": 1e4};
 		
 				query.on('row', function(row) {

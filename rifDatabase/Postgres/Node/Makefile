@@ -10,8 +10,6 @@
 #-
 #- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts
 #-
-#- DO NOT RUN THE SUBDIRECTORY MAKEFILES DIRECTLY; THEY REQUIRE ENVIRONMENT SETUP TO WORK CORRECTLY
-#-
 # Copyright:
 #
 # The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -234,9 +232,9 @@ install:
 	$(NPM) install pg pg-native topojson
 	$(TOPOJSON) --version
 	
-topojson: $(TOPOJSON) ..\psql_scripts\test_scripts\data\test_6_geojson_test_01.json ..\psql_scripts\test_scripts\data\test_6_sahsu_4_level4_0_0_0.json
-	$(TOPOJSON) -q 1e6 -o test_6_geojson_test_01.json ..\psql_scripts\test_scripts\data\test_6_geojson_test_01.json
-	$(TOPOJSON) -q 1e6 -o test_6_sahsu_4_level4_0_0_0.json ..\psql_scripts\test_scripts\data\test_6_sahsu_4_level4_0_0_0.json
+topojson: $(TOPOJSON) ../psql_scripts/test_scripts/data/test_6_geojson_test_01.json ../psql_scripts/test_scripts/data/test_6_sahsu_4_level4_0_0_0.json
+	$(TOPOJSON) -q 1e6 -o test_6_geojson_test_01.json ../psql_scripts/test_scripts/data/test_6_geojson_test_01.json
+	$(TOPOJSON) -q 1e6 -o test_6_sahsu_4_level4_0_0_0.json ../psql_scripts/test_scripts/data/test_6_sahsu_4_level4_0_0_0.json
 
 topojson_convert:
 	$(NODE) topojson_convert.js $(PGHOST) sahsu
