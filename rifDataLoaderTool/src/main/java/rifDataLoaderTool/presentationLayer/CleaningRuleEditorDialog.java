@@ -239,7 +239,9 @@ public class CleaningRuleEditorDialog extends AbstractDataLoaderToolDialog
 			currentCleaningRule.setRegularExpressionSearch(yesNoQuestionPanel.isYesSelected());
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(getDialog(), rifServiceException);
+			ErrorDialog.showError(
+				getDialog(), 
+				rifServiceException.getErrorMessages());
 		}
 		
 		hide();

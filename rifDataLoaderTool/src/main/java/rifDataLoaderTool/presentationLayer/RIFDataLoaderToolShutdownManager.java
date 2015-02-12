@@ -150,7 +150,9 @@ class RIFDataLoaderToolShutdownManager extends WindowAdapter {
 			service.shutdown();
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());
 		}
 		
 		System.exit(0);

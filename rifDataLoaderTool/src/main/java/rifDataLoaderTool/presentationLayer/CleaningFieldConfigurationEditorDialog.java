@@ -292,7 +292,7 @@ public class CleaningFieldConfigurationEditorDialog
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(
 				getDialog(), 
-				rifServiceException);
+				rifServiceException.getErrorMessages());
 		}
 	}
 	
@@ -306,7 +306,7 @@ public class CleaningFieldConfigurationEditorDialog
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(
 				getDialog(),
-				rifServiceException);
+				rifServiceException.getErrorMessages());
 		}
 	}
 	
