@@ -172,6 +172,8 @@ public class UserEditorDialog extends AbstractDataLoaderToolDialog
 	}
 	
 	private void ok() {
+		/*
+
 		try {
 			
 			RIFDataLoaderServiceAPI service = getService();
@@ -198,7 +200,11 @@ public class UserEditorDialog extends AbstractDataLoaderToolDialog
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(getDialog(), rifServiceException);
 		}
+		
+		*/
+		
 	}
+	
 	
 	private void close() {
 		hide();
