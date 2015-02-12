@@ -25,5 +25,6 @@
   	<groupId>rapidInquiryFacility</groupId>
   	<artifactId>rapidInquiryFacility</artifactId>
   	<version>0.0.1-SNAPSHOT</version>
+  	<relativePath>../rapidInquiryFacility/pom.xml</relativePath>
   </parent>
 </project>

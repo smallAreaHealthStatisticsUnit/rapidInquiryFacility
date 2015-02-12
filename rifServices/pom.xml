@@ -4,13 +4,33 @@
     <groupId>rapidInquiryFacility</groupId>
     <artifactId>rapidInquiryFacility</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../rapidInquiryFacility/pom.xml</relativePath>
   </parent>
   <groupId>rifServices</groupId>
   <artifactId>rifServices</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <name>RIF Middleware</name>
   <description>Contains the code for the middleware used by the tools of the RIF Tool Suite</description>
   <dependencies>
+
+	<dependency>
+		<groupId>org.apache.commons</groupId>
+		<artifactId>commons-lang3</artifactId>
+		<version>3.3.2</version>
+	</dependency>
+
+	<dependency>
+		<groupId>commons-validator</groupId>
+		<artifactId>commons-validator</artifactId>
+		<version>1.4.0</version>
+	</dependency>
+
+
+	<dependency>
+		<groupId>javax.servlet</groupId>
+		<artifactId>servlet-api</artifactId>
+		<version>2.5</version>
+	</dependency>
+
   	<dependency>
   		<groupId>org.postgresql</groupId>
   		<artifactId>postgresql</artifactId>
@@ -77,4 +97,13 @@
   		<version>2.3.2</version>
   	</dependency>
   </dependencies>
+  <dependencyManagement>
+  	<dependencies>
+  		<dependency>
+  			<groupId>rifGenericUILibrary</groupId>
+  			<artifactId>rifGenericUILibrary</artifactId>
+  			<version>0.0.1-SNAPSHOT</version>
+  		</dependency>
+  	</dependencies>
+  </dependencyManagement>
 </project>

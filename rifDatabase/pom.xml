@@ -4,10 +4,10 @@
     <groupId>rapidInquiryFacility</groupId>
     <artifactId>rapidInquiryFacility</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../rapidInquiryFacility/pom.xml</relativePath>
   </parent>
   <groupId>rifDatabase</groupId>
   <artifactId>rifDatabase</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <name>rifDatabase</name>
   <description>Contains all files related to setting up RIF database</description>
 </project>

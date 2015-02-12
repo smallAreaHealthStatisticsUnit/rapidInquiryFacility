@@ -6,6 +6,11 @@
   <packaging>pom</packaging>
   <name>General RIF Tool Suite Settings</name>
   <description>This project contains the general project settings that are shared by the family of applications in the RIF Tool Suite</description>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  
+  
   <dependencies>
   	<dependency>
   		<groupId>junit</groupId>
