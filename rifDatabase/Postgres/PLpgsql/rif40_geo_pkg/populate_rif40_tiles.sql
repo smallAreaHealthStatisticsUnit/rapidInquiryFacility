@@ -94,11 +94,13 @@ DECLARE
 		   FROM pg_indexes
  		  WHERE tablename LIKE 'p_rif40_geolevels_maptiles_%_zoom_%';
 	c4pop_tiles	REFCURSOR;
+	c5pop_tiles	REFCURSOR;
 --
 	c1_rec 			RECORD;
 	c2_rec 			RECORD;	
 	c3_rec 			RECORD;
-	c4_rec 			RECORD;	
+	c4_rec 			RECORD;
+	c5_rec 			RECORD;		
 --
 	sql_stmt 		VARCHAR;
 	sql_stmt2		VARCHAR;
@@ -207,17 +209,17 @@ DECLARE
 			'), d AS ( /* Convert XY bounds to tile numbers */'||E'\n'||
 			'	SELECT geography, min_geolevel_id, max_geolevel_id, zoomlevel,'||E'\n'|| 
 			'		   Xmin AS area_Xmin, Xmax AS area_Xmax, Ymin AS area_Ymin, Ymax AS area_Ymax,'||E'\n'||
-			'           rif40_geo_pkg.latitude2tile(Xmin, zoomlevel) AS X_mintile,'||E'\n'||
-			'           rif40_geo_pkg.latitude2tile(Xmax, zoomlevel) AS X_maxtile,'||E'\n'||
-			'           rif40_geo_pkg.longitude2tile(Ymin, zoomlevel) AS Y_mintile,'||E'\n'||
-			'           rif40_geo_pkg.longitude2tile(Ymax, zoomlevel) AS Y_maxtile'||E'\n'||
+			'           rif40_geo_pkg.latitude2tile(Ymin, zoomlevel) AS Y_mintile,'||E'\n'||
+			'           rif40_geo_pkg.latitude2tile(Ymax, zoomlevel) AS Y_maxtile,'||E'\n'||
+			'           rif40_geo_pkg.longitude2tile(Xmin, zoomlevel) AS X_mintile,'||E'\n'||
+			'           rif40_geo_pkg.longitude2tile(Xmax, zoomlevel) AS X_maxtile'||E'\n'||
 			'      FROM b'||E'\n'||
-			'), e AS ( /* Generate latitude tile series */'||E'\n'||
+			'), e AS ( /* Generate longitude tile series */'||E'\n'||
 			'	SELECT min_geolevel_id,'||E'\n'|| 
 			'		   CASE WHEN X_mintile > X_maxtile THEN generate_series(X_mintile, X_maxtile, -1)'||E'\n'||
 			'				ELSE generate_series(X_mintile, X_maxtile) END AS x_series'||E'\n'||
 			'	  FROM d'||E'\n'||
-			'), f AS ( /* Generate longitude tile series */'||E'\n'||
+			'), f AS ( /* Generate latitude tile series */'||E'\n'||
 			'	SELECT min_geolevel_id,'||E'\n'||
 			'		   CASE WHEN Y_mintile > Y_maxtile THEN generate_series(Y_mintile, Y_maxtile, -1)'||E'\n'||
 			'				ELSE generate_series(Y_mintile, Y_maxtile) END AS y_series'||E'\n'|| 
@@ -233,10 +235,10 @@ DECLARE
 			'		   x_series, y_series, h.geolevel_name,'||E'\n'||
 			'		   g.geography||''_''||g.geolevel_series::Text||''_''||h.geolevel_name||''_''||'||E'\n'||
 			'				zoomlevel::Text||''_''||x_series::Text||''_''||y_series::Text AS tile_id,'||E'\n'||
-			'	       rif40_geo_pkg.tile2latitude(x_series::INTEGER, zoomlevel) AS tile_Xmin,'||E'\n'||
-			'	       rif40_geo_pkg.tile2latitude((x_series+1)::INTEGER, zoomlevel) AS tile_Xmax,'||E'\n'||
-			'	       rif40_geo_pkg.tile2longitude(y_series::INTEGER, zoomlevel) AS tile_Ymin,'||E'\n'||
-			'	       rif40_geo_pkg.tile2longitude((y_series+1)::INTEGER, zoomlevel) AS tile_Ymax'||E'\n'||
+			'	       rif40_geo_pkg.tile2latitude(y_series::INTEGER, zoomlevel) AS tile_Ymin,'||E'\n'||
+			'	       rif40_geo_pkg.tile2latitude((y_series+1)::INTEGER, zoomlevel) AS tile_Ymax,'||E'\n'||
+			'	       rif40_geo_pkg.tile2longitude(x_series::INTEGER, zoomlevel) AS tile_Xmin,'||E'\n'||
+			'	       rif40_geo_pkg.tile2longitude((x_series+1)::INTEGER, zoomlevel) AS tile_Xmax'||E'\n'||
 			'      FROM rif40_geolevels h, g, /* Twin full joins */'||E'\n'||
 			'      		e FULL JOIN f ON (e.min_geolevel_id = f.min_geolevel_id)'||E'\n'||
 			'     WHERE g.min_geolevel_id = e.min_geolevel_id'||E'\n'||
@@ -385,7 +387,108 @@ DECLARE
 				RAISE;
 		END;
 	END LOOP;
-
+--
+-- Checks
+--
+-- 14. Map tiles build to warn if bounds of map at zoomlevel 6 exceeds 4x3 tiles.
+-- 15. Map tiles build  to fail if a zoomlevel 11 maptile(bound area: 19.6x19.4km) > 10% of the area bounded by the map; 
+--     i.e. the map is not projected correctly (as sahsuland was at one point). 
+--	   There area 1024x as many tiles at 11 compared to 6; 10% implies there could be 1 tile at zoomlevel 8.
+--	   This means that the Smallest geography supported is 3,804 km2 - about the size of Suffolk (1,489 square miles)
+--	   so the Smallest US State (Rhode Island @4,002 square km) can be supported.
+--
+	sql_stmt:='WITH a AS ( /* level geolevel */'||E'\n'||
+			'	SELECT a1.geography, a1.geolevel_name,'||E'\n'||
+			'	       MIN(geolevel_id) AS min_geolevel_id,'||E'\n'||
+			'		   a2.max_geolevel_id'||E'\n'||
+			'	  FROM rif40_geolevels a1, ('||E'\n'||
+			'			SELECT geography, MAX(geolevel_id) AS max_geolevel_id FROM rif40_geolevels GROUP BY geography) a2'||E'\n'||
+			'	 WHERE a1.geography = $1'||E'\n'||
+			'	   AND a1.geography = a2.geography'||E'\n'||
+			'	 GROUP BY a1.geography, a1.geolevel_name, a2.max_geolevel_id'||E'\n'||
+			'	HAVING MIN(geolevel_id) = 1'||E'\n'||
+			'), b AS ( /* Area of geolevel */'||E'\n'||
+			'	SELECT a.geolevel_name,'||E'\n'||
+			' 	      ST_Area(b.optimised_geometry_3::GEOGRAPHY) AS geographical_area,'||E'\n'||
+			'   	  ST_YMax(b.optimised_geometry_3) AS Ymax,'||E'\n'||			
+			'         ST_YMin(b.optimised_geometry_3) AS Ymin'||E'\n'||
+			'     FROM '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||' b, a'||E'\n'||
+ 			'    WHERE a.geography     = b.geography'||E'\n'||
+			'	   AND a.geolevel_name = b.geolevel_name'||E'\n'||
+			'), c AS ( /* Number of tiles at zoom level 6 */'||E'\n'||
+			'	SELECT a.geolevel_name,'||E'\n'||
+			' 	      COUNT(c.x_tile_number) AS x_tiles,'||E'\n'||
+			' 	      COUNT(c.y_tile_number) AS y_tiles'||E'\n'||
+			'     FROM '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_maptiles')||' c, a'||E'\n'||
+ 			'    WHERE a.geography     = c.geography'||E'\n'||
+			'	   AND a.geolevel_name = c.geolevel_name'||E'\n'||
+			'	   AND c.zoomlevel     = 6'||E'\n'||
+			'	 GROUP BY a.geolevel_name'||E'\n'||			
+			')'||E'\n'||			
+			'SELECT b.geolevel_name,'||E'\n'||
+			' 	    b.geographical_area,'||E'\n'||
+			' 	    d.m_x,'||E'\n'||
+			' 	    d.m_y,'||E'\n'||
+			' 	    c.x_tiles,'||E'\n'||
+			' 	    c.y_tiles,'||E'\n'||
+			' 	    d.m_x*d.m_y AS tile_area'||E'\n'||
+			'  FROM b, c, (SELECT * FROM b, rif40_geo_pkg.rif40_zoom_levels(b.Ymin::NUMERIC) d WHERE d.zoom_level = 11) d';			
+	BEGIN
+		OPEN c5pop_tiles FOR EXECUTE sql_stmt USING c1_rec.geography;
+		FETCH c5pop_tiles INTO c5_rec;
+		CLOSE c5pop_tiles;	
+--
+-- Map tiles build to warn if bounds of map at zoomlevel 6 exceeds 4x3 tiles.
+--
+	IF c5_rec.x_tiles > 4 OR c5_rec.y_tiles > 3 THEN
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'populate_rif40_tiles', 
+			'[60110] Map tiles at zoomlevel 6 exceeds 4x3 tiles (%x%) for geography: %',	
+			c5_rec.x_tiles::VARCHAR 	/* X */,
+			c5_rec.y_tiles::VARCHAR 	/* Y */,
+			c1_rec.geography::VARCHAR	/* Geography */);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'populate_rif40_tiles', 
+			'[60111] Map tiles at zoomlevel 6 does not exceed 4x3 tiles (%x%) for geography: %',	
+			c5_rec.x_tiles::VARCHAR 	/* X */,
+			c5_rec.y_tiles::VARCHAR 	/* Y */,
+			c1_rec.geography::VARCHAR	/* Geography */);
+	END IF;
+--
+-- 15. Map tiles build to fail if a zoomlevel 11 maptile(bound area: 19.6x19.4km) > 10% of the area bounded by the map; 
+--     i.e. the map is not projected correctly (as sahsuland was at one point). 
+--	   There area 1024x as many tiles at 11 compared to 6; 10% implies there could be 1 tile at zoomlevel 8.
+--	   This means that the Smallest geography supported is 3,804 km2 - about the size of Suffolk (1,489 square miles)
+--	   so the Smallest US State (Rhode Island @4,002 square km) can be supported.
+--
+	IF c5_rec.geographical_area < 10*c5_rec.tile_area THEN
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'populate_rif40_tiles', 
+			'[60112] Map tile area (%) at zoomlevel 11 > 10% total area (%) for geography: %',	
+			c5_rec.tile_area::VARCHAR 			/* Tile area */,
+			c5_rec.geographical_area::VARCHAR 	/* Geographical area */,
+			c1_rec.geography::VARCHAR			/* Geography */);	
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'populate_rif40_tiles', 
+			'[60113] Map tile area (%) at zoomlevel 11 <= 10% total area (%) for geography: %',	
+			c5_rec.tile_area::VARCHAR 			/* Tile area */,
+			c5_rec.geographical_area::VARCHAR 	/* Geographical area */,
+			c1_rec.geography::VARCHAR			/* Geography */);		
+	END IF;
+--	
+	EXCEPTION
+		WHEN others THEN
+--
+-- Print exception to INFO, re-raise
+--
+			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL,
+									v_context = PG_EXCEPTION_CONTEXT;
+			error_message:='populate_rif40_tiles('||c1_rec.geography||'); checks caught: '||E'\n'||
+				SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||
+						'Detail: '||v_detail::VARCHAR||E'\n'||
+						'Context: '||v_context::VARCHAR;
+			RAISE NOTICE '60112: %', error_message;
+--
+			RAISE;
+	END;	
 --
 	sql_stmt:='ANALYZE VERBOSE '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_maptiles');
 	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
@@ -404,7 +507,7 @@ DECLARE
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'populate_rif40_tiles', 
-		'[60109] Populated RIF tiles for geography: %, overall time taken: %',
+		'[60113] Populated RIF tiles for geography: %, overall time taken: %',
 		c1_rec.geography::VARCHAR	/* Geography */,
 		took::VARCHAR				/* Time taken */);
 
