@@ -1,9 +1,8 @@
 
 package rifServices.fileFormats;
 
+import rifGenericUILibrary.HTMLUtility;
 import rifServices.businessConceptLayer.YearInterval;
-import rifServices.util.HTMLUtility;
-import rifServices.util.XMLUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

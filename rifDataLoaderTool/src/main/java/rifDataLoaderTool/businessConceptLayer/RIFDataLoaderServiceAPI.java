@@ -3,7 +3,7 @@ package rifDataLoaderTool.businessConceptLayer;
 import rifServices.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceException;
+
 
 import java.util.ArrayList;
 import java.util.Date;
