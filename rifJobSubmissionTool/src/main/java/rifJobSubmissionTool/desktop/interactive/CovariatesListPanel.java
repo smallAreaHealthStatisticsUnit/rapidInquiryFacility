@@ -2,13 +2,11 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
-
+import rifGenericUILibrary.DisplayableListItemInterface;
 import rifGenericUILibrary.OrderedListPanel;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifGenericUILibrary.ListEditingButtonPanel;
-
 import rifServices.businessConceptLayer.AbstractCovariate;
-import rifServices.businessConceptLayer.DisplayableListItemInterface;
 import rifServices.system.RIFServiceMessages;
 
 import java.awt.event.ActionListener;

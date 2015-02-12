@@ -4,11 +4,11 @@ import java.util.ArrayList;
 
 
 
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
 
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifGenericUILibrary.DisplayableListItemInterface;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
-import rifServices.businessConceptLayer.DisplayableListItemInterface;
 
 /**
  * A convenience class that is meant to hold code common to all of the business class

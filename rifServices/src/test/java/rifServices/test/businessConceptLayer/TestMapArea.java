@@ -3,13 +3,14 @@ package rifServices.test.businessConceptLayer;
 import java.util.ArrayList;
 
 
+
+import rifGenericUILibrary.DisplayableListItemInterface;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
 import rifServices.test.AbstractRIFTestCase;
 import rifServices.util.DisplayableItemSorter;
-import rifServices.businessConceptLayer.DisplayableListItemInterface;
 import static org.junit.Assert.*;
 
 import org.junit.Test;

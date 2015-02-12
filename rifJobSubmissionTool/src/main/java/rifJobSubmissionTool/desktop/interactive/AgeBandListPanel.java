@@ -3,12 +3,11 @@ package rifJobSubmissionTool.desktop.interactive;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 
 
+import rifGenericUILibrary.DisplayableListItemInterface;
 import rifGenericUILibrary.OrderedListPanel;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifGenericUILibrary.ListEditingButtonPanel;
-
 import rifServices.businessConceptLayer.AgeBand;
-import rifServices.businessConceptLayer.DisplayableListItemInterface;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.system.RIFServiceMessages;
 

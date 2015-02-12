@@ -1,6 +1,6 @@
 package rifServices.util;
 
-import rifServices.businessConceptLayer.DisplayableListItemInterface;
+import rifGenericUILibrary.DisplayableListItemInterface;
 import rifServices.system.RIFServiceMessages;
 
 import java.util.ArrayList;

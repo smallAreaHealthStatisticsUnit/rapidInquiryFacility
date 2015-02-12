@@ -1,6 +1,6 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifServices.businessConceptLayer.DisplayableListItemInterface;
+import rifGenericUILibrary.DisplayableListItemInterface;
 
 import java.util.ArrayList;
 

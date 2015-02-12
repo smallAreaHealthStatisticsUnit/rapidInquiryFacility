@@ -3,14 +3,12 @@ package rifJobSubmissionTool.desktop.interactive;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
-
+import rifGenericUILibrary.DisplayableListItemInterface;
 import rifGenericUILibrary.OrderedListPanel;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifGenericUILibrary.ListEditingButtonPanel;
-
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
-import rifServices.businessConceptLayer.DisplayableListItemInterface;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.system.RIFServiceException;
@@ -20,6 +18,7 @@ import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 

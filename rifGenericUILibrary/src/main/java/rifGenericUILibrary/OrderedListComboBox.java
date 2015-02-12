@@ -1,13 +1,9 @@
 package rifGenericUILibrary;
 
-import rifServices.businessConceptLayer.DisplayableListItemInterface;
-import rifServices.system.RIFServiceMessages;
-
 import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Vector;
-
 import javax.swing.JComboBox;
 
 
@@ -82,7 +78,7 @@ public class OrderedListComboBox {
 // ==========================================
 	/** The Constant CHOOSE_PROMPT. */
 	private static final String CHOOSE_PROMPT 
-		= RIFServiceMessages.getMessage("general.choices.choose");
+		= RIFGenericUIMessages.getMessage("comboBox.choices.choose");
 
 // ==========================================
 // Section Properties

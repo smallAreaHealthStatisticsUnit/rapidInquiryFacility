@@ -2,8 +2,6 @@
 package rifGenericUILibrary;
 
 
-import rifServices.businessConceptLayer.DisplayableListItemInterface;
-
 import java.awt.GridBagConstraints;
 import java.util.ArrayList;
 import java.util.Collections;

@@ -1,6 +1,7 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 
+import rifGenericUILibrary.DisplayableListItemInterface;
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.OKCloseButtonPanel;
 import rifGenericUILibrary.OrderedListPanel;
@@ -11,7 +12,6 @@ import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
-import rifServices.businessConceptLayer.DisplayableListItemInterface;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelToMap;

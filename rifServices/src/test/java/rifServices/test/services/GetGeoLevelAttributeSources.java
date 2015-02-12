@@ -1,5 +1,6 @@
 package rifServices.test.services;
 
+import rifGenericUILibrary.DisplayableListItemInterface;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.StudyResultRetrievalContext;
@@ -13,7 +14,6 @@ import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
 import rifServices.util.DisplayableItemSorter;
-import rifServices.businessConceptLayer.DisplayableListItemInterface;
 import static org.junit.Assert.*;
 
 import org.junit.After;
