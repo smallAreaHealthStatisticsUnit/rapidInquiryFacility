@@ -1,14 +1,13 @@
 
 package rifServices.fileFormats;
 
+import rifGenericUILibrary.HTMLUtility;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.GeoLevelView;
-import rifServices.util.HTMLUtility;
-import rifServices.util.XMLUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

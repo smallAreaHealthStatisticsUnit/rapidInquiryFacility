@@ -1,8 +1,6 @@
 package rifServices.fileFormats;
 
 import rifServices.businessConceptLayer.MapArea;
-import rifServices.util.XMLCommentInjector;
-import rifServices.util.XMLUtility;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;

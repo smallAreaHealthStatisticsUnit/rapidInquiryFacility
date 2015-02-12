@@ -7,7 +7,6 @@ import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.MapArea;
-import rifServices.util.XMLCommentInjector;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

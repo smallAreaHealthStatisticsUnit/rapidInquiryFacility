@@ -5,8 +5,6 @@ import rifServices.businessConceptLayer.HealthCode;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
-import rifServices.util.XMLCommentInjector;
-import rifServices.util.XMLUtility;
 
 import java.io.File;
 import java.io.FileOutputStream;

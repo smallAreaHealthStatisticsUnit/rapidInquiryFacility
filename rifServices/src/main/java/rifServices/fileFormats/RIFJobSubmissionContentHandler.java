@@ -1,6 +1,7 @@
 
 package rifServices.fileFormats;
 
+import rifGenericUILibrary.HTMLUtility;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Project;
@@ -8,9 +9,6 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFOutputOption;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceMessages;
-import rifServices.util.HTMLUtility;
-import rifServices.util.XMLCommentInjector;
-import rifServices.util.XMLUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

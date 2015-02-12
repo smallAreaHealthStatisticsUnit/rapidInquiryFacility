@@ -1,14 +1,12 @@
 
 package rifServices.fileFormats;
 
+import rifGenericUILibrary.HTMLUtility;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudyArea;
 import rifServices.businessConceptLayer.ComparisonArea;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.Project;
-import rifServices.util.HTMLUtility;
-import rifServices.util.XMLUtility;
-import rifServices.util.XMLCommentInjector;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

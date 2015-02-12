@@ -1,6 +1,7 @@
 
 package rifServices.fileFormats;
 
+import rifGenericUILibrary.HTMLUtility;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.HealthCode;
@@ -11,9 +12,6 @@ import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearInterval;
 import rifServices.businessConceptLayer.YearRange;
 import rifServices.system.RIFServiceMessages;
-import rifServices.util.HTMLUtility;
-import rifServices.util.XMLCommentInjector;
-import rifServices.util.XMLUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

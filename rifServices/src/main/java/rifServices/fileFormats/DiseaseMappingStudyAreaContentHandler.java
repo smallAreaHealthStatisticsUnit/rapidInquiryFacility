@@ -1,11 +1,9 @@
 
 package rifServices.fileFormats;
 
+import rifGenericUILibrary.HTMLUtility;
 import rifServices.businessConceptLayer.DiseaseMappingStudyArea;
 import rifServices.system.RIFServiceMessages;
-import rifServices.util.HTMLUtility;
-import rifServices.util.XMLCommentInjector;
-import rifServices.util.XMLUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

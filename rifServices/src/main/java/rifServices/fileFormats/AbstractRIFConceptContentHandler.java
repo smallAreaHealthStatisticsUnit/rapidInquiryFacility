@@ -1,10 +1,8 @@
 
 package rifServices.fileFormats;
 
-import rifServices.businessConceptLayer.DisplayableListItemInterface;
-import rifServices.util.HTMLUtility;
-import rifServices.util.XMLCommentInjector;
-import rifServices.util.XMLUtility;
+import rifGenericUILibrary.DisplayableListItemInterface;
+import rifGenericUILibrary.HTMLUtility;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
