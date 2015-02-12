@@ -1,5 +1,5 @@
 
-package rifServices.util;
+package rifGenericUILibrary;
 
 import java.io.*;
 import java.util.ArrayList;

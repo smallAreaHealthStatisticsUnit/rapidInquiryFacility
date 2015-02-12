@@ -1,5 +1,5 @@
 
-package rifServices.util;
+package rifServices.fileFormats;
 
 import rifServices.system.RIFServiceMessages;
 

@@ -1,10 +1,12 @@
 
-package rifServices.util;
+package rifServices.fileFormats;
 
 import java.io.*;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import rifServices.util.FieldValidationUtility;
 
 
 /**
