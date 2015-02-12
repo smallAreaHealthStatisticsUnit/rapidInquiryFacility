@@ -110,7 +110,7 @@ final public class YearRange
      * @param lowerBound the lower bound
      * @param upperBound the upper bound
      */
-	public YearRange(
+	private YearRange(
 		final String lowerBound,
 		final String upperBound) {
 
@@ -121,7 +121,7 @@ final public class YearRange
     /**
      * Instantiates a new year range.
      */
-    public YearRange() {
+    private YearRange() {
 
     	lowerBound = "";
     	upperBound = "";
