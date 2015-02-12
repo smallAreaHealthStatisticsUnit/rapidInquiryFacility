@@ -5,7 +5,7 @@ import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 import rifDataLoaderTool.businessConceptLayer.CleaningRule;
 
 
-import rifServices.util.HTMLUtility;
+import rifGenericUILibrary.HTMLUtility;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;

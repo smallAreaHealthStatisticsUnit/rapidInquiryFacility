@@ -7,7 +7,7 @@ import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
 
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifServices.util.HTMLUtility;
+import rifGenericUILibrary.HTMLUtility;
 
 /**
  *
