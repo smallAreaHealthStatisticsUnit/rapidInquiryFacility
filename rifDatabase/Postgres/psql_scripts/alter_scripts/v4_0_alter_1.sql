@@ -121,9 +121,10 @@ DECLARE
 		'rif40_getAllAttributesForGeoLevelAttributeTheme', 'rif40_GetGeometryColumnNames', 'rif40_GetMapAreaAttributeValue',
 		'rif40_closeGetMapAreaAttributeCursor', 'rif40_CreateMapAreaAttributeSource', 'rif40_DeleteMapAreaAttributeSource'];
 --
-	c1alter2 CURSOR FOR
+	c1alter2 CURSOR FOR /* Built geographies */
 		SELECT *
-		  FROM rif40_geographies;
+		  FROM rif40_geographies a, pg_tables b
+		 WHERE b.tablename = 't_rif40_'||LOWER(a.geography)||'_geometry';
 	c1_rec RECORD;
 --
 	l_function 			VARCHAR;
