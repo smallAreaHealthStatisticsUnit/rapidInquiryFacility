@@ -2,12 +2,10 @@ package rifGenericUILibrary;
 
 
 import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import javax.swing.JButton;
 import java.util.ArrayList;
 import javax.swing.JPanel;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 
 /**
  *
