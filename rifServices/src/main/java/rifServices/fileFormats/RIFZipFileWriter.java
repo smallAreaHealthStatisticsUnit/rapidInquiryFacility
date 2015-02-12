@@ -9,7 +9,6 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.RIFDateFormat;
-import rifServices.util.XMLCommentInjector;
 
 import java.io.File;
 import java.io.FileOutputStream;
