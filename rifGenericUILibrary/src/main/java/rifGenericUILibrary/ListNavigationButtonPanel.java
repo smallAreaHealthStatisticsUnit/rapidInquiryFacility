@@ -1,7 +1,6 @@
 package rifGenericUILibrary;
 
 import java.awt.event.ActionListener;
-
 import java.awt.GridBagConstraints;
 import javax.swing.JPanel;
 

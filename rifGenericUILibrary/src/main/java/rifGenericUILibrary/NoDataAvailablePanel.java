@@ -1,7 +1,6 @@
 package rifGenericUILibrary;
 
 import java.awt.GridBagConstraints;
-
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
