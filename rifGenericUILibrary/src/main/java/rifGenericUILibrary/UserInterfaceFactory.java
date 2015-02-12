@@ -1,8 +1,6 @@
 
 package rifGenericUILibrary;
 
-import rifServices.util.HTMLUtility;
-
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -17,6 +15,8 @@ import javax.swing.plaf.basic.BasicArrowButton;
 import javax.swing.table.TableModel;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+
+
 
 
 /**
