@@ -154,8 +154,7 @@ public final class AgeBand
 		
 		return cloneAgeGroup;
 	}
-	
-	
+		
 	/**
 	 * Creates the copy.
 	 *

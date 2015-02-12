@@ -2,7 +2,6 @@ package rifGenericUILibrary;
 
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
-
 import java.awt.GridBagConstraints;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
