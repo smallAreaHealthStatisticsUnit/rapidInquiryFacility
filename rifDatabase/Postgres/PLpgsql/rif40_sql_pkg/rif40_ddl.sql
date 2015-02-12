@@ -191,7 +191,8 @@ Returns:	Rows
 Description:	Log and execute SQL (rif40 schema create version)
 ';
 
-CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_ddl(sql_stmt VARCHAR[])
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl(VARCHAR[]);
+CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_ddl(sql_stmt_array VARCHAR[])
 RETURNS integer
 SECURITY INVOKER
 AS $func$
@@ -203,29 +204,104 @@ Parameters:	SQL statement array (0+ statements; not multiline statements)
 Returns:	Rows
 Description:	Log and execute SQL (rif40 schema create version) - ARRAY VERSION
 
+This is now optimised with the non array version code inline
  */
 DECLARE
-	l_rows INTEGER:=NULL;
-	l2_rows INTEGER:=0;
+	stp TIMESTAMP WITH TIME ZONE;
+	etp TIMESTAMP WITH TIME ZONE;
+	took INTERVAL;
+	l_pos INTEGER:=NULL;
 --
-	l_sql_stmt VARCHAR;
-	l_idx INTEGER;
+	l_rows 		INTEGER:=NULL;
+	l2_rows 	INTEGER:=0;
+--
+	l_sql_stmt 	VARCHAR;
+	l_idx 		INTEGER;
+--
+	i 			INTEGER=-1;
+--
+	explain_rec	RECORD;
+	explain_text	VARCHAR;
 BEGIN
 --
-	IF sql_stmt IS NULL THEN
+	IF sql_stmt_array IS NULL THEN
 		PERFORM rif40_log_pkg.rif40_error(-20997, 'rif40_ddl', 'Null SQL statement array');
 	END IF;
 --
-	FOR i IN array_lower(sql_stmt, 1) .. array_upper(sql_stmt, 1) LOOP
+	FOR i IN array_lower(sql_stmt_array, 1) .. array_upper(sql_stmt_array, 1) LOOP
 		l_idx:=i;
-		l_sql_stmt:=sql_stmt[l_idx];
-		l_rows:=rif40_sql_pkg.rif40_ddl(l_sql_stmt);
+		l_sql_stmt:=sql_stmt_array[l_idx];
+		IF l_sql_stmt IS NULL THEN
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl', 'Null SQL statement');
+			RAISE SQLSTATE '02000' /* No data found */ USING MESSAGE='rif40_ddl('||i||') Null SQL statement';
+		END IF;
+--
+		stp:=clock_timestamp();
+		l_pos:=position('EXPLAIN' IN UPPER(l_sql_stmt));
+		IF l_pos = 1 THEN /* EXPLAIN ANALYZE statement */
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_ddl', 'EXPLAIN SQL(%)> %;', 
+				i::VARCHAR				/* Index */,
+				l_sql_stmt::VARCHAR		/* SQL statement */);
+			l_sql_stmt:='SELECT explain_line FROM rif40_sql_pkg._rif40_explain_ddl('||quote_literal(l_sql_stmt)||')';
+			FOR explain_rec IN EXECUTE l_sql_stmt LOOP
+				IF explain_text IS NULL THEN
+					explain_text:=explain_rec.explain_line::VARCHAR;
+				ELSE
+					explain_text:=explain_text||E'\n'||explain_rec.explain_line::VARCHAR;
+				END IF;
+			END LOOP;
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_ddl', '%', 
+				explain_text::VARCHAR	/* Explain plan */);
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_ddl', 'SQL(%)> %;', 
+				i::VARCHAR				/* Index */,
+				l_sql_stmt::VARCHAR		/* SQL statement */);
+			EXECUTE l_sql_stmt;
+		END IF;
+		GET DIAGNOSTICS l_rows = ROW_COUNT;
+		etp:=clock_timestamp();
+		took:=age(etp, stp);
+--	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_ddl', 'Statement took: % (%)', 
+--			took::VARCHAR, EXTRACT ('epoch' FROM took)::VARCHAR);
+		if (EXTRACT ('epoch' FROM took) > 1) THEN
+			IF l_rows IS NULL THEN
+				PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_ddl', 'Statement % took: %', 
+					i::VARCHAR				/* Index */,
+					took::VARCHAR			/* Time taken */);
+			ELSE
+				PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_ddl', 'Statement % took: %, proccessed % rows', 
+					i::VARCHAR				/* Index */,
+					took::VARCHAR			/* Time taken */, 
+					l_rows::VARCHAR			/* Rows processed */);
+			END IF;
+		ELSE
+			IF l_rows IS NULL THEN
+				PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_ddl', 'Statement % took: %', 
+					i::VARCHAR				/* Index */,
+					took::VARCHAR			/* Time taken */);
+			ELSE
+				PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_ddl', 'Statement % took: %, proccessed % rows', 
+					i::VARCHAR				/* Index */,
+					took::VARCHAR			/* Time taken */, 
+					l_rows::VARCHAR			/* Rows processed */);
+			END IF;
+		END IF;
+--
 		IF l_rows IS NOT NULL THEN
 			l2_rows:=l2_rows+l_rows;
 		END IF;
 	END LOOP;
 --
 	RETURN l2_rows;
+EXCEPTION
+	WHEN SQLSTATE '02000' /* No data found */ THEN
+		RAISE;
+	WHEN others THEN
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl', 'SQL statement (%) in error (%)> %;', 
+			l_idx::VARCHAR			/* Index */,
+			SQLSTATE::VARCHAR 		/* SQL error state */,
+			l_sql_stmt::VARCHAR 	/* SQL statement */); 
+		RAISE;
 END;
 $func$
 LANGUAGE PLPGSQL;
@@ -234,6 +310,8 @@ COMMENT ON FUNCTION rif40_sql_pkg.rif40_ddl(VARCHAR[]) IS 'Function: 	rif40_ddl(
 Parameters:	SQL statement array (0+ statements; not multiline statements)
 Returns:	Rows
 Description:	Log and execute SQL (rif40 schema create version) - ARRAY VERSION
+
+This is now optimised with the non array version code inline
 ';
 
 \df rif40_sql_pkg.rif40_ddl

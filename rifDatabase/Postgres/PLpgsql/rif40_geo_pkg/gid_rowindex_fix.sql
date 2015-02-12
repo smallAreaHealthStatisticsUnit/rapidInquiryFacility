@@ -77,7 +77,10 @@ Description:	Add: gid_rowindex (i.e 1_1). Where gid corresponds to gid in geomet
 	c3alter2 CURSOR(l_table VARCHAR) FOR
 		SELECT relhassubclass 
 		  FROM pg_class t, pg_namespace n
-		 WHERE t.relname = l_table AND t.relkind = 'r' /* Table */ AND n.nspname = 'rif40'  AND t.relnamespace = n.oid ;
+		 WHERE t.relname = l_table
+ 		   AND t.relkind = 'r' /* Table */ 
+		   AND n.nspname IN ('rif40', 'rif_data')
+		   AND t.relnamespace = n.oid ;
 	c4alter2 CURSOR(l_table VARCHAR, l_column VARCHAR) FOR
 		SELECT column_name 
 		  FROM information_schema.columns 
@@ -105,27 +108,30 @@ BEGIN
 	FETCH c4alter2 INTO c4_rec;
 	CLOSE c4alter2;
 -- Geometry table exists and column has not been added yet
-	IF c3_rec.relhassubclass THEN 
+	IF NOT c3_rec.relhassubclass THEN 
+		PERFORM rif40_log_pkg.rif40_error(-10002, 'simplify_geometry', 'Partitioned geometry table % not found', 
+			quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')	/* Geometry table */);	
+	ELSE
 		IF c4_rec.column_name IS NOT NULL THEN
 			IF ddl_stmt IS NULL THEN
-				ddl_stmt[1]:='ALTER TABLE '||quote_ident('t_rif40_'||
+				ddl_stmt[1]:='ALTER TABLE rif_data.'||quote_ident('t_rif40_'||
 					LOWER(l_geography)||'_geometry')||' DROP COLUMN gid_rowindex';
 			ELSE
-				ddl_stmt[array_length(ddl_stmt, 1)+1]:='ALTER TABLE '||
+				ddl_stmt[array_length(ddl_stmt, 1)+1]:='ALTER TABLE rif_data.'||
 					quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||' DROP COLUMN gid_rowindex';
 			END IF;
 		END IF;
 -- Add column to master table
 		IF ddl_stmt IS NULL THEN
-			ddl_stmt[1]:='ALTER TABLE '||
+			ddl_stmt[1]:='ALTER TABLE rif_data.'||
 				quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||' ADD COLUMN gid_rowindex VARCHAR(50)';
 		ELSE
-			ddl_stmt[array_length(ddl_stmt, 1)+1]:='ALTER TABLE '||
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:='ALTER TABLE rif_data.'||
 				quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||
 				' ADD COLUMN gid_rowindex VARCHAR(50)';
 		END IF;
 -- Comment master and inherited partitions
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:='COMMENT ON COLUMN '||
+		ddl_stmt[array_length(ddl_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||
 			quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||
 			'.gid_rowindex IS ''GID rowindex record locator unique key''';
 --
@@ -182,7 +188,7 @@ E'\t'||'  FROM rif40_partitions.'||l_partition||E'\n'||
 		END LOOP;
 
 -- Analyze at master level
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:='ANALYZE VERBOSE '||
+		ddl_stmt[array_length(ddl_stmt, 1)+1]:='ANALYZE VERBOSE rif_data.'||
 			quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry');
 	END IF;
 --

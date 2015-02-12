@@ -87,15 +87,19 @@ Done:
 10. Fix sahsuland projection (i.e. it is 27700; do the export using GDAL correctly).
 11. Use Node.js topojson_convert.js GeoJSON to topoJSON conversion.  
 12. Remove ST_SIMPLIFY_TOLERANCE from T_RIF40_GEOLEVELS; replace with m/pixel for zoomlevel.
+13. Move all geospatial data to rif_data schema.
 
 To do:
 
-13. Simplification to warn if bounds of map at zoomlevel 6 exceeds 4x3 tiles.
-14. Simplification to fail if bounds of map < 5% of zoomlevel 11 (bound area: 19.6x19.4km); 
-    i.e. the map is not projected correctly (as sahsuland is not at present). 
-15. Intersection to use shapefile SRID projection; after simplification to be tested against intersections 
+14. Simplification to warn if bounds of map at zoomlevel 6 exceeds 4x3 tiles.
+15. Simplification to fail if a zoomlevel 11 maptile(bound area: 19.6x19.4km) > 10% of the area bounded by the map; 
+    i.e. the map is not projected correctly (as sahsuland was at one point). 
+	There area 1024x as many tiles at 11 compared to 6; 10% implies there could be 1 tile at zoomlevel 8.
+	This means that the Smallest geography supported is 3,804 km2 - about the size of Suffolk (1,489 square miles)
+	so the Smallest US State (Rhode Island @4,002 square km) can be supported.
+16. Intersection to use shapefile SRID projection; after simplification to be tested against intersections 
     using zoomlevel 11.
-16. Move all geospatial data to rif_data schema.
+
 
 */
    
@@ -121,6 +125,7 @@ $$;
 \i ../PLpgsql/rif40_geo_pkg/v4_0_rif40_geo_pkg_simplification.sql
 \i ../PLpgsql/v4_0_rif40_xml_pkg.sql
 \i ../PLpgsql/v4_0_rif40_sql_pkg_ddl_checks.sql
+\i ../PLpgsql/rif40_sql_pkg/rif40_ddl.sql
 
 \set VERBOSITY terse
 DO LANGUAGE plpgsql $$

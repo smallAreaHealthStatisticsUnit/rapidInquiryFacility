@@ -175,13 +175,13 @@ BEGIN
 			FETCH c2geolook INTO c2_rec;
 			CLOSE c2geolook;
 			hierarchytable:=c2_rec.hierarchytable;
-			hier_stmt1:='CREATE TABLE '||quote_ident(LOWER(hierarchytable))||' ('||E'\n'||E'\t'||'  '||quote_ident(LOWER(c1_rec.geolevel_name))||' VARCHAR(100)'||E'\n';
+			hier_stmt1:='CREATE TABLE rif_data.'||quote_ident(LOWER(hierarchytable))||' ('||E'\n'||E'\t'||'  '||quote_ident(LOWER(c1_rec.geolevel_name))||' VARCHAR(100)'||E'\n';
 		ELSIF previous_geography != c1_rec.geography THEN
 			PERFORM rif40_log_pkg.rif40_log('INFO', 'create_rif40_geolevels_lookup_tables', 'Creating % geography hierarchy table: %',
 				c1_rec.geography, hierarchytable);
 			hier_stmt1:=hier_stmt1||')';
 			PERFORM rif40_sql_pkg.rif40_ddl(hier_stmt1);
-			hier_stmt1:='GRANT SELECT ON '||quote_ident(LOWER(hierarchytable))||' TO PUBLIC';
+			hier_stmt1:='GRANT SELECT ON rif_data.'||quote_ident(LOWER(hierarchytable))||' TO PUBLIC';
 			PERFORM rif40_sql_pkg.rif40_ddl(hier_stmt1);
 			i:=0;
 			last:=0;
@@ -200,12 +200,12 @@ BEGIN
 			FOREACH hier_stmt1 IN ARRAY hier_stmt2 LOOP
 				PERFORM rif40_sql_pkg.rif40_ddl(hier_stmt1);
 			END LOOP;	
-			hier_stmt1:='ANALYZE VERBOSE '||quote_ident(LOWER(hierarchytable));
+			hier_stmt1:='ANALYZE VERBOSE rif_data.'||quote_ident(LOWER(hierarchytable));
 			PERFORM rif40_sql_pkg.rif40_ddl(hier_stmt1);
 			OPEN c2geolook(previous_geography);
 			FETCH c2geolook INTO c2_rec;
 			CLOSE c2geolook;
-			hier_stmt1:='COMMENT ON TABLE '||quote_ident(LOWER(hierarchytable))||' IS '||quote_literal(c2_rec.description||' geo-level hierarchy table');
+			hier_stmt1:='COMMENT ON TABLE rif_data.'||quote_ident(LOWER(hierarchytable))||' IS '||quote_literal(c2_rec.description||' geo-level hierarchy table');
 			PERFORM rif40_sql_pkg.rif40_ddl(hier_stmt1);
 --
 -- Next geography
@@ -222,13 +222,13 @@ BEGIN
 --
 -- Create table - can be CTAS in future (see comment at top)
 --
-			hier_stmt1:='CREATE TABLE '||quote_ident(LOWER(hierarchytable))||' ('||E'\n'||E'\t'||'  '||quote_ident(LOWER(c1_rec.geolevel_name))||' VARCHAR(100)'||E'\n';
+			hier_stmt1:='CREATE TABLE rif_data.'||quote_ident(LOWER(hierarchytable))||' ('||E'\n'||E'\t'||'  '||quote_ident(LOWER(c1_rec.geolevel_name))||' VARCHAR(100)'||E'\n';
 		ELSE
 			hier_stmt1:=hier_stmt1||E'\t'||', '||quote_ident(LOWER(c1_rec.geolevel_name))||' VARCHAR(100)'||E'\n';
 		END IF;
-		hier_stmt2[c1_rec.geolevel_id]:='COMMENT ON COLUMN '||quote_ident(LOWER(hierarchytable))||'.'||quote_ident(LOWER(c1_rec.geolevel_name))||
+		hier_stmt2[c1_rec.geolevel_id]:='COMMENT ON COLUMN rif_data.'||quote_ident(LOWER(hierarchytable))||'.'||quote_ident(LOWER(c1_rec.geolevel_name))||
 			' IS '||quote_literal(c1_rec.description);
-		hier_stmt3[c1_rec.geolevel_id]:='/* Create index */ '||quote_ident(LOWER(c1_rec.geolevel_name)||'_idx'||c1_rec.geolevel_id)||' ON '||
+		hier_stmt3[c1_rec.geolevel_id]:='/* Create index */ '||quote_ident(LOWER(c1_rec.geolevel_name)||'_idx'||c1_rec.geolevel_id)||' ON rif_data.'||
 			quote_ident(LOWER(hierarchytable))||'('||quote_ident(LOWER(c1_rec.geolevel_name))||')';
 		previous_geography:=c1_rec.geography;
 --
@@ -237,7 +237,7 @@ BEGIN
 --
 -- Create table - using CTAS
 --
-		sql_stmt:='CREATE TABLE '||quote_ident(LOWER(c1_rec.lookup_table))||E'\n'||'AS'||E'\n';
+		sql_stmt:='CREATE TABLE rif_data.'||quote_ident(LOWER(c1_rec.lookup_table))||E'\n'||'AS'||E'\n';
 --
 -- WITH block
 --
@@ -282,39 +282,39 @@ BEGIN
 --
 -- Fix name column type
 --
-		sql_stmt:='ALTER TABLE '||quote_ident(LOWER(c1_rec.lookup_table))||' ALTER COLUMN name TYPE VARCHAR(100);'||E'\n';
+		sql_stmt:='ALTER TABLE rif_data.'||quote_ident(LOWER(c1_rec.lookup_table))||' ALTER COLUMN name TYPE VARCHAR(100);'||E'\n';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 -- Index
 --
 		sql_stmt:='CREATE UNIQUE INDEX '||quote_ident(LOWER(c1_rec.lookup_table)||'_pk')||
-			' ON '||quote_ident(LOWER(c1_rec.lookup_table))||
+			' ON rif_data.'||quote_ident(LOWER(c1_rec.lookup_table))||
 			'('||quote_ident(LOWER(c1_rec.geolevel_name))||')';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='CREATE UNIQUE INDEX '||quote_ident(LOWER(c1_rec.lookup_table)||'_gid')||
-			' ON '||quote_ident(LOWER(c1_rec.lookup_table))||
+			' ON rif_data.'||quote_ident(LOWER(c1_rec.lookup_table))||
 			'(gid)';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 -- Grant
 --
-		sql_stmt:='GRANT SELECT ON '||quote_ident(LOWER(c1_rec.lookup_table))||' TO PUBLIC';
+		sql_stmt:='GRANT SELECT ON rif_data.'||quote_ident(LOWER(c1_rec.lookup_table))||' TO PUBLIC';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 --  Analyze
 --
-		sql_stmt:='ANALYZE VERBOSE '||quote_ident(LOWER(c1_rec.lookup_table));
+		sql_stmt:='ANALYZE VERBOSE rif_data.'||quote_ident(LOWER(c1_rec.lookup_table));
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 -- Comment
 --
-		sql_stmt:='COMMENT ON TABLE '||quote_ident(LOWER(c1_rec.lookup_table))||' IS '||quote_literal(c1_rec.description||' lookup table');
+		sql_stmt:='COMMENT ON TABLE rif_data.'||quote_ident(LOWER(c1_rec.lookup_table))||' IS '||quote_literal(c1_rec.description||' lookup table');
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident(LOWER(c1_rec.lookup_table))||'.'||quote_ident(LOWER(c1_rec.geolevel_name))||' IS '''||quote_ident(LOWER(c1_rec.geolevel_name))||'''';
+		sql_stmt:='COMMENT ON COLUMN rif_data.'||quote_ident(LOWER(c1_rec.lookup_table))||'.'||quote_ident(LOWER(c1_rec.geolevel_name))||' IS '''||quote_ident(LOWER(c1_rec.geolevel_name))||'''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident(LOWER(c1_rec.lookup_table))||'.name IS '''||quote_ident(LOWER(c1_rec.geolevel_name))||' name''';
+		sql_stmt:='COMMENT ON COLUMN rif_data.'||quote_ident(LOWER(c1_rec.lookup_table))||'.name IS '''||quote_ident(LOWER(c1_rec.geolevel_name))||' name''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident(LOWER(c1_rec.lookup_table))||'.gid IS ''Artifical primary key for RIF web interface''';
+		sql_stmt:='COMMENT ON COLUMN rif_data.'||quote_ident(LOWER(c1_rec.lookup_table))||'.gid IS ''Artifical primary key for RIF web interface''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 	END LOOP;
 --
@@ -326,7 +326,7 @@ BEGIN
 --
 	hier_stmt1:=hier_stmt1||')';
 	PERFORM rif40_sql_pkg.rif40_ddl(hier_stmt1);
-	hier_stmt1:='ANALYZE VERBOSE '||quote_ident(LOWER(hierarchytable));
+	hier_stmt1:='ANALYZE VERBOSE rif_data.'||quote_ident(LOWER(hierarchytable));
 	PERFORM rif40_sql_pkg.rif40_ddl(hier_stmt1);
 	hier_stmt1:='GRANT SELECT ON '||quote_ident(LOWER(hierarchytable))||' TO PUBLIC';
 	PERFORM rif40_sql_pkg.rif40_ddl(hier_stmt1);
@@ -350,7 +350,7 @@ BEGIN
 	OPEN c2geolook(previous_geography);
 	FETCH c2geolook INTO c2_rec;
 	CLOSE c2geolook;
-	hier_stmt1:='COMMENT ON TABLE '||quote_ident(LOWER(hierarchytable))||' IS '||quote_literal(c2_rec.description||' geo-level hierarchy table');
+	hier_stmt1:='COMMENT ON TABLE rif_data.'||quote_ident(LOWER(hierarchytable))||' IS '||quote_literal(c2_rec.description||' geo-level hierarchy table');
 	PERFORM rif40_sql_pkg.rif40_ddl(hier_stmt1);
 END;
 $body$

@@ -497,14 +497,14 @@ BEGIN
 	IF l_theme IN ('extract', 'results') THEN
 		OPEN c6_6getallatt4theme('rif_studies', lower(l_attribute_source), 'gid');
 	ELSE
-		OPEN c6_6getallatt4theme('rif40', lower(l_attribute_source), 'gid');
+		OPEN c6_6getallatt4theme('rif_data', lower(l_attribute_source), 'gid');
 	END IF;
 	FETCH c6_6getallatt4theme INTO c6a_rec;
 	CLOSE c6_6getallatt4theme;
 	IF l_theme IN ('extract', 'results') THEN
 		OPEN c6_6getallatt4theme('rif_studies', lower(l_attribute_source), 'gid_rowindex');
 	ELSE
-		OPEN c6_6getallatt4theme('rif40', lower(l_attribute_source), 'gid_rowindex');
+		OPEN c6_6getallatt4theme('rif_data', lower(l_attribute_source), 'gid_rowindex');
 	END IF;
 	FETCH c6_6getallatt4theme INTO c6b_rec;
 	CLOSE c6_6getallatt4theme;

@@ -81,7 +81,8 @@ DECLARE
 --
 	c3_count INTEGER:=0;
 	func_sql VARCHAR;
-	sql_stmt VARCHAR;
+	l_sql_stmt VARCHAR;	
+	sql_stmt VARCHAR[];
 --
 	zoomlevel INTEGER;
 BEGIN
@@ -107,7 +108,7 @@ BEGIN
 --
 -- Create a T_RIF40_<GEOGRAPHY>_GEOMETRY base table to inherit from 
 --
-		sql_stmt:='CREATE TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' ('||E'\n'||
+		sql_stmt[1]:='CREATE TABLE rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' ('||E'\n'||
 			'geography         CHARACTER VARYING(50)  NOT NULL,'||E'\n'||
 			'geolevel_name     CHARACTER VARYING(30)  NOT NULL,'||E'\n'||
 			'area_id           CHARACTER VARYING(300) NOT NULL,'||E'\n'||
@@ -120,29 +121,19 @@ BEGIN
 			'total_females	   NUMERIC(12,2)          NULL,'||E'\n'||
 			'population_year   NUMERIC(12,2)          NULL,'||E'\n'||
 			'gid               INTEGER                NOT NULL)';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --		
 -- Comment base table
 --
-		sql_stmt:='COMMENT ON TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' IS ''Geolevels geometry: geometry for hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels are restricted to LADUA/DISTRICT level resolution or lower. This table contains no data on Oracle. This replaces the shapefiles used in previous RIF releases. Populating this table checks the lookup and hierarchy tables and thus it must be populated last. Any insert into T_RIF40_GEOLEVELS_GEOMETRY must be a single statement insert.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.geography 	IS ''Geography (e.g EW2001)''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.geolevel_name 	IS ''Name of geolevel. This will be a column name in the numerator/denominator tables''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.area_id 	IS ''An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.name 	IS ''The name of an area id''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.area 	IS ''The area in square km of an area id''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.total_males 	IS ''Total males''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.total_females 	IS ''Total females''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.population_year 	IS ''Year of population data''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON TABLE rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' IS ''Geolevels geometry: geometry for hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels are restricted to LADUA/DISTRICT level resolution or lower. This table contains no data on Oracle. This replaces the shapefiles used in previous RIF releases. Populating this table checks the lookup and hierarchy tables and thus it must be populated last. Any insert into T_RIF40_GEOLEVELS_GEOMETRY must be a single statement insert.''';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.geography 	IS ''Geography (e.g EW2001)''';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.geolevel_name 	IS ''Name of geolevel. This will be a column name in the numerator/denominator tables''';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.area_id 	IS ''An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE''';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.name 	IS ''The name of an area id''';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.area 	IS ''The area in square km of an area id''';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.total_males 	IS ''Total males''';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.total_females 	IS ''Total females''';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.population_year 	IS ''Year of population data''';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||
 			'.optimised_geojson 	IS ''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel 6. '||
 			'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
 			'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
@@ -152,8 +143,7 @@ BEGIN
 			'and not necessarily in the same manner). '||
 			'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
 			'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||
 			'.optimised_geojson_2 	IS ''Shapefile multipolygon in optimised GeoJSON format, optimised for zoomlevel 8. '||
 			'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
 			'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
@@ -163,8 +153,7 @@ BEGIN
 			'and not necessarily in the same manner). '||
 			'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
 			'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||
 			'.optimised_geojson_3 	IS ''Shapefile multipolygon in optimised GeoJSON format, optimised for zoomlevel 11. '||
 			'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
 			'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
@@ -174,26 +163,19 @@ BEGIN
 			'and not necessarily in the same manner). '||
 			'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
 			'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.gid 	IS ''Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.gid 	IS ''Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)''';
 --
 -- Add a multipolygon columns SHAPEFILE_GEOMETRY and OPTIMISED_GEOMETRY with the SRID for the geography
 --
-		sql_stmt:='SELECT AddGeometryColumn('||quote_literal('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||', ''shapefile_geometry'', '||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='SELECT AddGeometryColumn(''rif_data'', '||quote_literal('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||', ''shapefile_geometry'', '||
 			c2_rec.srid||', ''MULTIPOLYGON'', 2)';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
-		sql_stmt:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' ALTER COLUMN shapefile_geometry SET NOT NULL';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.shapefile_geometry	 IS ''Spatial data for geolevel (PostGress/PostGIS only). Can also use SHAPEFILE instead,''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt[array_length(sql_stmt, 1)+1]:='ALTER TABLE rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' ALTER COLUMN shapefile_geometry SET NOT NULL';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.shapefile_geometry	 IS ''Spatial data for geolevel (PostGress/PostGIS only). Can also use SHAPEFILE instead,''';
 --
-		sql_stmt:='SELECT AddGeometryColumn('||quote_literal('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||', ''optimised_geometry'', 4326, ''MULTIPOLYGON'', 2)';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' ALTER COLUMN optimised_geometry SET NOT NULL';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.optimised_geometry	 IS '||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='SELECT AddGeometryColumn(''rif_data'', '||quote_literal('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||', ''optimised_geometry'', 4326, ''MULTIPOLYGON'', 2)';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='ALTER TABLE rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' ALTER COLUMN optimised_geometry SET NOT NULL';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.optimised_geometry	 IS '||
 				'''Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 6. '||
 				'p_Can also use SHAPEFILE instead. '||
 				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and '||
@@ -203,13 +185,10 @@ BEGIN
 				'(it works on an object by object basis; the edge between two areas will therefore be processed '||
 				'independently and not necessarily in the same manner. '||
 				'This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		
-		sql_stmt:='SELECT AddGeometryColumn('||quote_literal('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||', ''optimised_geometry_2'', 4326, ''MULTIPOLYGON'', 2)';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' ALTER COLUMN optimised_geometry_2 SET NOT NULL';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.optimised_geometry_2	 IS '||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='SELECT AddGeometryColumn(''rif_data'', '||quote_literal('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||', ''optimised_geometry_2'', 4326, ''MULTIPOLYGON'', 2)';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='ALTER TABLE rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' ALTER COLUMN optimised_geometry_2 SET NOT NULL';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.optimised_geometry_2	 IS '||
 				'''Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 8. '||
 				'Can also use SHAPEFILE instead. '||
 				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and '||
@@ -219,13 +198,10 @@ BEGIN
 				'(it works on an object by object basis; the edge between two areas will therefore be processed '||
 				'independently and not necessarily in the same manner. '||
 				'This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		
-		sql_stmt:='SELECT AddGeometryColumn('||quote_literal('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||', ''optimised_geometry_3'', 4326, ''MULTIPOLYGON'', 2)';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' ALTER COLUMN optimised_geometry_3 SET NOT NULL';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.optimised_geometry_3	 IS '||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='SELECT AddGeometryColumn(''rif_data'', '||quote_literal('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||', ''optimised_geometry_3'', 4326, ''MULTIPOLYGON'', 2)';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='ALTER TABLE rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' ALTER COLUMN optimised_geometry_3 SET NOT NULL';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'.optimised_geometry_3	 IS '||
 				'''Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 11. '||
 				'Can also use SHAPEFILE instead. '||
 				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and '||
@@ -235,21 +211,17 @@ BEGIN
 				'(it works on an object by object basis; the edge between two areas will therefore be processed '||
 				'independently and not necessarily in the same manner. '||
 				'This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 -- Add PK/UK indexes
 --
-		sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_uk')||' ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'(geography, area_id)';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_gid')||' ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'(geography, gid)';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE UNIQUE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_uk')||' ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'(geography, area_id)';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE UNIQUE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_gid')||' ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||'(geography, gid)';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='ALTER TABLE rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||
 			' ADD CONSTRAINT '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_pk')||' PRIMARY KEY (geography, geolevel_name, area_id)';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 -- Base table INSERT fuuntion
 --
-		func_sql:='CREATE OR REPLACE FUNCTION '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_insert')||'()'||E'\n'||
+		func_sql:='CREATE OR REPLACE FUNCTION rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_insert')||'()'||E'\n'||
 			'RETURNS TRIGGER AS $func$'||E'\n'||
 			'BEGIN'||E'\n';
 --
@@ -261,7 +233,7 @@ BEGIN
 -- Create partitions P_RIF40_GEOLEVELS_GEOMETRY_<GEOGRAPHY>_<GEOELVELS>
 --
 			c3_count:=c3_count+1;
-			sql_stmt:='CREATE TABLE rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TABLE rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||E'\n'||
 				'( CHECK (geography = '''||c2_rec.geography||
 				''' AND geolevel_name = '''||c3_rec.geolevel_name||''')'||E'\n'||
@@ -277,25 +249,20 @@ BEGIN
 					'INSERT INTO rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||' VALUES (NEW.*);';
 			END IF;
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 -- Comment
 --
-			sql_stmt:='COMMENT ON TABLE rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON TABLE rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||' 		IS ''Geolevels geometry: geometry for hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels are restricted to LADUA/DISTRICT level resolution or lower. This table contains no data on Oracle. This replaces the shapefiles used in previous RIF releases. Populating this table checks the lookup and hierarchy tables and thus it must be populated last. Any insert into T_RIF40_GEOLEVELS_GEOMETRY must be a single statement insert. This is the partition for geogrpahy: '||
 				LOWER(c2_rec.geography)||', geo level: '||LOWER(c3_rec.geolevel_name)||'''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 			
-			sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.geography 	IS ''Geography (e.g EW2001)''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.geolevel_name 	IS ''Name of geolevel. This will be a column name in the numerator/denominator tables''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.area_id 	IS ''An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.optimised_geojson 	IS '||
 				'''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel 6. '||
 				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
@@ -306,8 +273,7 @@ BEGIN
 				'and not necessarily in the same manner). '||
 				'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
 				'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';			
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.optimised_geojson_2 	IS '||
 				'''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel 8. '||
 				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
@@ -318,8 +284,7 @@ BEGIN
 				'and not necessarily in the same manner). '||
 				'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
 				'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';			
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.optimised_geojson_3 	IS '||
 				'''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel 11. '||
 				'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
@@ -330,20 +295,15 @@ BEGIN
 				'and not necessarily in the same manner). '||
 				'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
 				'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';			
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.area 	IS ''The area in square km of an area id''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.name 	IS ''The name of an area id''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.gid 	IS ''Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.shapefile_geometry	 IS ''Spatial data for geolevel (PostGress/PostGIS only). Can also use SHAPEFILE instead,''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.optimised_geometry	 IS '||
 				'''Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 6. '||
 				'Can also use SHAPEFILE instead. '||
@@ -354,8 +314,7 @@ BEGIN
 				'(it works on an object by object basis; the edge between two areas will therefore be processed '||
 				'independently and not necessarily in the same manner. '||
 				'This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.optimised_geometry_2	 IS '||
 				'''Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 8. '||
 				'Can also use SHAPEFILE instead. '||
@@ -366,8 +325,7 @@ BEGIN
 				'(it works on an object by object basis; the edge between two areas will therefore be processed '||
 				'independently and not necessarily in the same manner. '||
 				'This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.optimised_geometry_3	 IS '||
 				'''Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 11. '||
 				'Can also use SHAPEFILE instead. '||
@@ -378,62 +336,51 @@ BEGIN
 				'(it works on an object by object basis; the edge between two areas will therefore be processed '||
 				'independently and not necessarily in the same manner. '||
 				'This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges.''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
-			sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.total_males	 IS ''Total males.''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.total_females	 IS ''Total females.''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'.population_year	 IS ''Population year.''';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 -- Add PK/UK indexes
 --
-			sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE UNIQUE INDEX '||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_uk')||
 				' ON rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'(geography, area_id)';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 			
-			sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE UNIQUE INDEX '||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_gid')||
 				' ON rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||'(geography, gid)';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 			
-			sql_stmt:='ALTER TABLE rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='ALTER TABLE rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||
 				' ADD CONSTRAINT '||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||LOWER(c3_rec.geolevel_name)||'_geometry_pk')||
 				' PRIMARY KEY (geography, geolevel_name, area_id)';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 -- Add GIST/GIN indexes
 --
-			sql_stmt:='CREATE INDEX '||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE INDEX '||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_sgin1')||
 				' ON rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||' USING GIST(shapefile_geometry)';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 
-			sql_stmt:='CREATE INDEX '||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE INDEX '||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_ogin1')||
 				' ON rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||' USING GIST(optimised_geometry)';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='CREATE INDEX '||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE INDEX '||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_ogin2')||
 				' ON rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||' USING GIST(optimised_geometry_2)';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='CREATE INDEX '||quote_ident('p_rif40_geolevels_geometry_'||
+			sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE INDEX '||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_ogin3')||
 				' ON rif40_partitions.'||quote_ident('p_rif40_geolevels_geometry_'||
 				LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name))||' USING GIST(optimised_geometry_3)';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		END LOOP;
 --
 -- Create base insert function
@@ -450,33 +397,32 @@ BEGIN
 'END;'||E'\n'||
 '$func$'||E'\n'||
 'LANGUAGE plpgsql';
-		PERFORM rif40_sql_pkg.rif40_ddl(func_sql);
-		sql_stmt:='COMMENT ON FUNCTION '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_insert')||'() IS ''Partition INSERT function for geography: '||c2_rec.geography||'''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt[array_length(sql_stmt, 1)+1]:=func_sql;
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON FUNCTION rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_insert')||'() IS ''Partition INSERT function for geography: '||c2_rec.geography||'''';
 --
 -- Trigger
 --
-		sql_stmt:='CREATE TRIGGER '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_insert')||E'\n'||
-			'BEFORE INSERT ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||E'\n'||
-			'FOR EACH ROW EXECUTE PROCEDURE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_insert')||'()';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON TRIGGER '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_insert')||E'\n'||E'\t'||'ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' IS ''Partition INSERT trigger for geography: '||c2_rec.geography||'''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TRIGGER '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_insert')||E'\n'||
+			'BEFORE INSERT ON rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||E'\n'||
+			'FOR EACH ROW EXECUTE PROCEDURE rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_insert')||'()';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON TRIGGER '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry_insert')||E'\n'||E'\t'||'ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' IS ''Partition INSERT trigger for geography: '||c2_rec.geography||'''';
 
 --
 -- Analyze
 --
-		sql_stmt:='GRANT SELECT,INSERT,UPDATE,DELETE ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' TO rif_manager';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='GRANT SELECT,INSERT,UPDATE,DELETE ON rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' TO rif_manager';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='GRANT SELECT ON rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' TO PUBLIC';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='ANALYZE VERBOSE rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry');
+--
+-- Run SQL
+--
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='GRANT SELECT ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry')||' TO PUBLIC';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='ANALYZE VERBOSE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_geometry');
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:=NULL;
 
 --
 -- Create a T_RIF40_<GEOGRAPHY>_MAPTILES base table to inherit from 
 --
-		sql_stmt:='CREATE TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||' ('||E'\n'||
+		sql_stmt[1]:='CREATE TABLE rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||' ('||E'\n'||
 			'geography         CHARACTER VARYING(50)  NOT NULL,'||E'\n'||
 			'geolevel_name     CHARACTER VARYING(30)  NOT NULL,'||E'\n'||
 			'tile_id           CHARACTER VARYING(300) NOT NULL,'||E'\n'||
@@ -486,32 +432,24 @@ BEGIN
 			'optimised_geojson JSON			          NOT NULL,'||E'\n'||
 			'optimised_topojson JSON			      NOT NULL,'||E'\n'||
 			'gid               INTEGER                NOT NULL)';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --		
 -- Comment base table
 --
-		sql_stmt:='COMMENT ON TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON TABLE rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			' IS ''Maptiles table for geography; separate partions per geolevel and zoomlevel. Use this table for INSERT/UPDATE/DELETE''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.geography 	IS ''Geography (e.g EW2001)''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.geolevel_name 	IS ''Name of geolevel. This will be a column name in the numerator/denominator tables''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.x_tile_number IS ''X tile number. From 0 to (2**<zoomlevel>)-1''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.y_tile_number IS ''Y tile number. From 0 to (2**<zoomlevel>)-1''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.zoomlevel 	IS ''Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.tile_id 	IS ''Tile ID in the format <geography>_<geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.optimised_geojson 	IS ''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel N. '||
 			'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
 			'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
@@ -521,8 +459,7 @@ BEGIN
 			'and not necessarily in the same manner). '||
 			'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
 			'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.optimised_topojson 	IS ''Shapefile multipolygon in TopoJSON format, optimised for zoomlevel N. '||
 			'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
 			'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
@@ -532,35 +469,27 @@ BEGIN
 			'and not necessarily in the same manner). '||
 			'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
 			'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'.gid 	IS ''Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'.gid 	IS ''Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)''';
 --
 -- Add PK/UK indexes
 --
-		sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_uk')||
-			' ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'(geography, tile_id)';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_gid')||
-			' ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'(geography, zoomlevel, gid)';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='CREATE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_x_tile')||
-			' ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'(geolevel_name, zoomlevel, x_tile_number)';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='CREATE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_y_tile')||
-			' ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'(geolevel_name, zoomlevel, y_tile_number)';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt); 
-		sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_xy_tile')||
-			' ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'(geolevel_name, zoomlevel, x_tile_number, y_tile_number)';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt); 
-		sql_stmt:='ALTER TABLE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE UNIQUE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_uk')||
+			' ON rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'(geography, tile_id)';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE UNIQUE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_gid')||
+			' ON rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'(geography, zoomlevel, gid)';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_x_tile')||
+			' ON rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'(geolevel_name, zoomlevel, x_tile_number)';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_y_tile')||
+			' ON rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'(geolevel_name, zoomlevel, y_tile_number)';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE UNIQUE INDEX '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_xy_tile')||
+			' ON rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||'(geolevel_name, zoomlevel, x_tile_number, y_tile_number)';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='ALTER TABLE rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			' ADD CONSTRAINT '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_pk')||
 			' PRIMARY KEY (geography, geolevel_name, tile_id)';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt); 
 --
 -- Base table INSERT function
 --
-		func_sql:='CREATE OR REPLACE FUNCTION '||
+		func_sql:='CREATE OR REPLACE FUNCTION rif_data.'||
 			quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_insert')||'()'||E'\n'||
 			'RETURNS TRIGGER AS $func$'||E'\n'||
 			'BEGIN'||E'\n';
@@ -574,7 +503,7 @@ BEGIN
 --
 			FOR zoomlevel IN 0 .. 11 LOOP
 				c3_count:=c3_count+1;
-				sql_stmt:='CREATE TABLE rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TABLE rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||E'\n'||
 					'( CHECK (geography = '''||c2_rec.geography||''''||E'\n'||
 					'     AND zoomlevel = '||zoomlevel::Text||E'\n'||
@@ -593,40 +522,32 @@ BEGIN
 						'INSERT INTO rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||' VALUES (NEW.*);';
 				END IF;
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --		
 -- Comment partition table
 --
-				sql_stmt:='COMMENT ON TABLE rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON TABLE rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
 					' IS ''Maptiles table for geography; separate partions per geolevel and zoomlevel. Partition for geolevel: '||c3_rec.geolevel_name||
 					'; zoomlevel: '||zoomlevel::Text||'. Use this table for INSERT/UPDATE/DELETE''';
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-				sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
 					'.geography 	IS ''Geography (e.g EW2001)''';
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-				sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
 					'.geolevel_name 	IS ''Name of geolevel. This will be a column name in the numerator/denominator tables''';
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
-				sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
 					'.x_tile_number IS ''X tile number. From 0 to (2**<zoomlevel>)-1''';					
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
-				sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||	
 					'.y_tile_number IS ''Y tile number. From 0 to (2**<zoomlevel>)-1''';					
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
-				sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
 					'.zoomlevel 	IS ''Zoom level: '||zoomlevel::Text||'. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11.''';
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
-				sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
 					'.tile_id 	IS ''Tile ID in the format: <geography>_<geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>''';
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
-				sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
 					'.optimised_geojson 	IS ''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel N. '||
 					'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
@@ -637,8 +558,7 @@ BEGIN
 					'and not necessarily in the same manner). '||
 					'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
 					'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-				sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
 					'.optimised_topojson 	IS ''Shapefile multipolygon in TopoJSON format, optimised for zoomlevel N. '||
 					'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
@@ -649,43 +569,36 @@ BEGIN
 					'and not necessarily in the same manner). '||	
 					'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
 					'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-				sql_stmt:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||'.gid 	IS ''Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)''';
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 -- Add PK/UK indexes
 --
-				sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE UNIQUE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text||'_uk')||
 					' ON rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||'(geography, tile_id)';
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-				sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE UNIQUE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text||'_gid')||
 					' ON rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||'(geography, zoomlevel, gid)';
-				sql_stmt:='CREATE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text||'_x_tile')||
 					' ON rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||'(x_tile_number)';
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-				sql_stmt:='CREATE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text||'_y_tile')||
 					' ON rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||'(y_tile_number)';
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-				sql_stmt:='CREATE UNIQUE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE UNIQUE INDEX '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text||'_xy_tile')||
 					' ON rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||'(x_tile_number, y_tile_number)';
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-				sql_stmt:='ALTER TABLE rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
+				sql_stmt[array_length(sql_stmt, 1)+1]:='ALTER TABLE rif40_partitions.'||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text)||
 					' ADD CONSTRAINT '||quote_ident('p_rif40_geolevels_maptiles_'||
 					LOWER(c2_rec.geography)||'_'||LOWER(c3_rec.geolevel_name)||'_zoom_'||zoomlevel::Text||'_pk')||
 					' PRIMARY KEY (geography, geolevel_name, tile_id)';
-				PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 			END LOOP;
 		END LOOP;
 --
@@ -703,36 +616,30 @@ BEGIN
 'END;'||E'\n'||
 '$func$'||E'\n'||
 'LANGUAGE plpgsql';
-		PERFORM rif40_sql_pkg.rif40_ddl(func_sql);
-		sql_stmt:='COMMENT ON FUNCTION '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_insert')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:=func_sql;
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON FUNCTION rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_insert')||
 			'() IS ''Partition INSERT function for maptile geography: '||c2_rec.geography||'''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 -- Trigger
 --
-		sql_stmt:='CREATE TRIGGER '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_insert')||E'\n'||
-			'BEFORE INSERT ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||E'\n'||
-			'FOR EACH ROW EXECUTE PROCEDURE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_insert')||'()';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON TRIGGER '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_insert')||E'\n'||E'\t'||
-			'ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TRIGGER '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_insert')||E'\n'||
+			'BEFORE INSERT ON rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||E'\n'||
+			'FOR EACH ROW EXECUTE PROCEDURE rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_insert')||'()';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON TRIGGER '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles_insert')||E'\n'||E'\t'||
+			'ON rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			' IS ''Partition INSERT trigger for maptiles geography: '||c2_rec.geography||'''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 
 --
 -- Analyze
 --
-		sql_stmt:='GRANT SELECT,INSERT,UPDATE,DELETE ON '||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='GRANT SELECT,INSERT,UPDATE,DELETE ON rif_data.'||
 			quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||' TO rif_manager';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='GRANT SELECT ON '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||' TO PUBLIC';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='ANALYZE VERBOSE '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles');
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt[array_length(sql_stmt, 1)+1]:='GRANT SELECT ON rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||' TO PUBLIC';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='ANALYZE VERBOSE rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles');
 --
 -- View
 --
-		sql_stmt:='CREATE OR REPLACE VIEW '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||E'\n'||
+		l_sql_stmt:='CREATE OR REPLACE VIEW rif_data.'||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||E'\n'||
 'AS'||E'\n'||
 'WITH a AS ( /* Get max geolevels for geography */'||E'\n'||
 '	SELECT geography, MAX(geolevel_id) AS max_geolevel_id'||E'\n'||
@@ -746,10 +653,10 @@ BEGIN
 '), c AS ( /* Geolevel ID to names (hard coded) */'||E'\n'||
 '	SELECT CASE'||E'\n'; 
 		FOR c3_rec IN c3geogeom(c2_rec.geography) LOOP
-			sql_stmt:=sql_stmt||
+			l_sql_stmt:=l_sql_stmt||
 '				WHEN b.geolevel_id = '||c3_rec.geolevel_id||' THEN '''||c3_rec.geolevel_name||''''||E'\n';
 		END LOOP;
-		sql_stmt:=sql_stmt||
+		l_sql_stmt:=l_sql_stmt||
 '				ELSE NULL'||E'\n'||
 '	   END AS geolevel_name, b.geolevel_id, b.geography'||E'\n'||
 '	  FROM b'||E'\n'||
@@ -780,38 +687,30 @@ BEGIN
 '	SELECT ey.geolevel_name, ey.geolevel_id, ey.geography, ex.zoomlevel, ex.xy_series AS x_tile_number, ey.xy_series AS y_tile_number'||E'\n'||
 '	  FROM ey, ex'||E'\n'||
 '    WHERE ex.zoomlevel  = ey.zoomlevel) z'||E'\n'||
-'		LEFT OUTER JOIN '||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||' h /* For tiles with area IDs */'||E'\n'||
+'		LEFT OUTER JOIN rif_data.'||quote_ident('t_rif40_'||LOWER(c2_rec.geography)||'_maptiles')||' h /* For tiles with area IDs */'||E'\n'||
 '			ON (z.zoomlevel     = h.zoomlevel AND '||E'\n'||
 '			    z.x_tile_number = h.x_tile_number AND '||E'\n'||
 '			    z.y_tile_number = h.y_tile_number AND '||E'\n'||
 '			    z.geolevel_name = h.geolevel_name)';
-
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON VIEW '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:=l_sql_stmt;
+--
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON VIEW rif_data.'||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			' IS ''Maptiles view for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11. This view is efficent!''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.geography 	IS ''Geography (e.g EW2001)''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.geolevel_name 	IS ''Name of geolevel. This will be a column name in the numerator/denominator tables''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.no_area_ids IS ''Tile contains no area_ids flag: 0/1''';			
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.x_tile_number IS ''X tile number. From 0 to (2**<zoomlevel>)-1''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.y_tile_number IS ''Y tile number. From 0 to (2**<zoomlevel>)-1''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.tile_id 	IS ''Tile ID in the format <geography>_<geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);		
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.zoomlevel 	IS ''Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.optimised_geojson 	IS ''Shapefile multipolygon in GeoJSON format, optimised for zoomlevel N. '||
 			'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
 			'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
@@ -821,8 +720,7 @@ BEGIN
 			'and not necessarily in the same manner). '||
 			'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
 			'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
+		sql_stmt[array_length(sql_stmt, 1)+1]:='COMMENT ON COLUMN rif_data.'||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||
 			'.optimised_topojson 	IS ''Shapefile multipolygon in TopoJSON format, optimised for zoomlevel N. '||
 			'RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. '||
 			'RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. '||
@@ -832,9 +730,8 @@ BEGIN
 			'and not necessarily in the same manner). '||
 			'Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; '||
 			'i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
-		sql_stmt:='GRANT SELECT ON '||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||' TO PUBLIC';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='GRANT SELECT ON rif_data.'||quote_ident('rif40_'||LOWER(c2_rec.geography)||'_maptiles')||' TO PUBLIC';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 	END IF;
