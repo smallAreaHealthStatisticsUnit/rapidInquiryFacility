@@ -306,7 +306,9 @@ class DescribeStudyStepPanel
 			}
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(getParentDialog(), rifServiceException);
+			ErrorDialog.showError(
+				getParentDialog(), 
+				rifServiceException.getErrorMessages());
 		}
 	}
 	

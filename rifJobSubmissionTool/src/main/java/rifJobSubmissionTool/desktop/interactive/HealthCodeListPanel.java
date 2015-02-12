@@ -379,7 +379,9 @@ class HealthCodeListPanel
     		updateListGUIFeatures();    		
     	}
     	catch(RIFServiceException rifServiceException) {
-    		ErrorDialog.showError(parentDialog, rifServiceException);
+    		ErrorDialog.showError(
+    			parentDialog, 
+    			rifServiceException.getErrorMessages());
     	}		
 	}
 	

@@ -410,7 +410,9 @@ class GeographicalExtentPanel
 			addActionListeners();
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());
 		}	
 	}
 	
@@ -486,7 +488,9 @@ class GeographicalExtentPanel
 			updateGeoLevelAreaViewAndToMapValues();
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);			
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());			
 		}
 				
 		//Enable most of the display, as if we have just pressed the
@@ -547,7 +551,9 @@ class GeographicalExtentPanel
 			notifyObservers(ObservableEvent.RESET);
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);			
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());			
 		}
 	}
 
@@ -622,7 +628,9 @@ class GeographicalExtentPanel
 			geoLevelSelectComboBox.setSelectedItem(defaultGeoLevelSelect);			
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());
 		}		
 	}
 	
@@ -734,7 +742,9 @@ class GeographicalExtentPanel
 			previewMapAreasTextArea.setText(previewStatusMessage);		
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());
 		}
 		
 	}

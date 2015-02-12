@@ -140,7 +140,9 @@ public class RIFInteractiveStudySubmissionTool
 			ErrorDialog.showError(null, unknownHostException.toString());			
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(null, rifServiceException);
+			ErrorDialog.showError(
+				null, 
+				rifServiceException.getErrorMessages());
 		}
 	}
 	
@@ -326,7 +328,9 @@ public class RIFInteractiveStudySubmissionTool
 			currentActivityPanel.initialiseForm();			
 		}
 		catch(RIFServiceException rifJobSubmissionToolException) {
-			ErrorDialog.showError(dialog, rifJobSubmissionToolException);
+			ErrorDialog.showError(
+				dialog, 
+				rifJobSubmissionToolException.getErrorMessages());
 		}
 		mainViewPanel.add(currentActivityPanel.getPanel(), BorderLayout.CENTER);
 		mainViewPanel.updateUI();

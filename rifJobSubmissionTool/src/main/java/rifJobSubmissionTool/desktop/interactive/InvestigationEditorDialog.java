@@ -426,7 +426,9 @@ class InvestigationEditorDialog
     		numeratorDenominatorComboBox.addActionListener(this);
     	}
     	catch(RIFServiceException rifServiceException) {
-    		ErrorDialog.showError(dialog, rifServiceException);
+    		ErrorDialog.showError(
+    			dialog, 
+    			rifServiceException.getErrorMessages());
     	}  	
     }
     
@@ -595,7 +597,9 @@ class InvestigationEditorDialog
 			dialog.setVisible(false);
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(dialog, rifServiceException);
+			ErrorDialog.showError(
+				dialog, 
+				rifServiceException.getErrorMessages());
 		}		
 	}
 	

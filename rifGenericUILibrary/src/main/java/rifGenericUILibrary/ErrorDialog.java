@@ -1,8 +1,6 @@
 package rifGenericUILibrary;
 
 
-import rifServices.system.RIFServiceException;
-
 import java.awt.Component;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
@@ -99,19 +97,6 @@ public class ErrorDialog {
      * @param parent the parent
      * @param rifServiceException the rif service exception
      */
-	static public void showError(
-    	Component parent, 
-    	RIFServiceException rifServiceException) {
-    	
-    	ArrayList<String> errorMessages
-    		= rifServiceException.getErrorMessages();
-    	if (errorMessages.size() == 1) {
-    		showError(parent, errorMessages.get(0));
-    	}
-    	else {
-    		showError(parent, errorMessages);    		
-    	} 	
-    }
     
 	/**
 	 * Show error.

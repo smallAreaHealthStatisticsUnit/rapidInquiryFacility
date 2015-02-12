@@ -274,7 +274,9 @@ class CreateOrCopyStudyStepPanel
 			availableStudiesListPanel.updateUI();
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(getParentDialog(), rifServiceException);
+			ErrorDialog.showError(
+				getParentDialog(), 
+				rifServiceException.getErrorMessages());
 		}
 	}
 	

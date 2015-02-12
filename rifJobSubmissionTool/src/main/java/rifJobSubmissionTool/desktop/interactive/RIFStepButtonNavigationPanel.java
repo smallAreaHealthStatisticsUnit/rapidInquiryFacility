@@ -199,7 +199,9 @@ class RIFStepButtonNavigationPanel
 			rifActivityStateMachine.nextActivityStep();
 		}
 		catch(RIFServiceException rifJobSubmissionToolException) {
-			ErrorDialog.showError(parentDialog, rifJobSubmissionToolException);
+			ErrorDialog.showError(
+				parentDialog, 
+				rifJobSubmissionToolException.getErrorMessages());
 		}		
 	}
 	
@@ -236,7 +238,9 @@ class RIFStepButtonNavigationPanel
 			rifActivityStateMachine.firstActivityStep();
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);			
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());			
 		}
 	}
 	

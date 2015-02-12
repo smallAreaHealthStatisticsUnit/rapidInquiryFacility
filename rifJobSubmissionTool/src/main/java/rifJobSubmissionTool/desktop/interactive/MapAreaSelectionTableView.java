@@ -287,7 +287,9 @@ class MapAreaSelectionTableView
 			}
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());
 		}		
 	}
 	
@@ -455,7 +457,9 @@ class MapAreaSelectionTableView
 			}
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());
 		}
 	}
 

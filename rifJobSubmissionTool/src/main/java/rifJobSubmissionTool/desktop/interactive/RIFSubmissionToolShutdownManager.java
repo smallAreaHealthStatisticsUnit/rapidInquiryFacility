@@ -151,7 +151,9 @@ class RIFSubmissionToolShutdownManager extends WindowAdapter {
 			rifStudyServiceBundle.logout(user);
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());
 		}
 		
 		System.exit(0);

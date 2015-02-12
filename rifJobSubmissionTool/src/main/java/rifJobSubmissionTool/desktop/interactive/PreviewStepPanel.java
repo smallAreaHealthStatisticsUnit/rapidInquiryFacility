@@ -254,7 +254,9 @@ class PreviewStepPanel extends AbstractStepPanel {
 			otherNotesTextArea.setText(study.getOtherNotes());
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(getParentDialog(), rifServiceException);
+			ErrorDialog.showError(
+				getParentDialog(), 
+				rifServiceException.getErrorMessages());
 		}
 		
 		buildUI();		

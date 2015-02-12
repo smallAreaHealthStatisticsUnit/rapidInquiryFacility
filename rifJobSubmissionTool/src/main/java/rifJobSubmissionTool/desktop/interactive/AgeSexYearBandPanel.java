@@ -514,7 +514,9 @@ class AgeSexYearBandPanel
 			yearIntervals = yearRange.splitYearRange(intervalValue);			
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());
 		}
 		return yearIntervals;
 	}
@@ -596,7 +598,9 @@ class AgeSexYearBandPanel
 			sexComboBox.setSelectedItem(currentSex.getName());			
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);			
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());			
 		}
 				
 		ArrayList<YearInterval> yearIntervals 

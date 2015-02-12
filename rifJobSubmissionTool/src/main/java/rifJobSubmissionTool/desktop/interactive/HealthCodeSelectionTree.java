@@ -173,7 +173,9 @@ class HealthCodeSelectionTree
 			treeModel.nodeStructureChanged(rootNode);
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());
 		}		
 	}
 	
@@ -285,7 +287,9 @@ class HealthCodeSelectionTree
 			
 			}
 			catch(RIFServiceException rifServiceException) {
-				ErrorDialog.showError(parentDialog, rifServiceException);
+				ErrorDialog.showError(
+					parentDialog, 
+					rifServiceException.getErrorMessages());
 			}
 		}
 	}

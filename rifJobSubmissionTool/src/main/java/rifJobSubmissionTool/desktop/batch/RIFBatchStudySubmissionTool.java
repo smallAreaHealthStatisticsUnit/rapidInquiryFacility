@@ -93,7 +93,9 @@ public class RIFBatchStudySubmissionTool {
 			ErrorDialog.showError(null, unknownHostException.toString());			
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(null, rifServiceException);
+			ErrorDialog.showError(
+				null, 
+				rifServiceException.getErrorMessages());
 		}
 	}
 

@@ -337,7 +337,9 @@ class HealthCodeSelectionSearchPanel
 			rebuildUI();
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());
 		}
 	}
 	

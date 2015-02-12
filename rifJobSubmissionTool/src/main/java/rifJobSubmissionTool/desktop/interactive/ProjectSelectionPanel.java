@@ -266,7 +266,9 @@ class ProjectSelectionPanel implements ActionListener {
 			}			
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(null, rifServiceException);
+			ErrorDialog.showError(
+				null, 
+				rifServiceException.getErrorMessages());
 		}
 	}
 	

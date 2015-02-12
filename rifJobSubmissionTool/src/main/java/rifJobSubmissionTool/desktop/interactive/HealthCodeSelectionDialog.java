@@ -263,7 +263,9 @@ class HealthCodeSelectionDialog
 			availableHealthCodeTaxonomies.addActionListener(this);			
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(dialog, rifServiceException);
+			ErrorDialog.showError(
+				dialog, 
+				rifServiceException.getErrorMessages());
 		}		
 		
 		GridBagConstraints panelGC

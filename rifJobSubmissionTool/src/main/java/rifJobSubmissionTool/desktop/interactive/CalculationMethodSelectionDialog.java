@@ -217,7 +217,9 @@ class CalculationMethodSelectionDialog
     		}    		    		
     	}
     	catch(RIFServiceException rifServiceException) {
-    		ErrorDialog.showError(dialog, rifServiceException);
+    		ErrorDialog.showError(
+    			dialog, 
+    			rifServiceException.getErrorMessages());
     	}
     }
     

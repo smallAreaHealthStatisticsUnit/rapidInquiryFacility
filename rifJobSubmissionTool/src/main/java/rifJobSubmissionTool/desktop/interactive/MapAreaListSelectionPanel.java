@@ -470,7 +470,9 @@ class MapAreaListSelectionPanel
 			}
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());
 		}
 	}
 	
@@ -500,7 +502,9 @@ class MapAreaListSelectionPanel
 			currentMapAreaSelectionBasket.addMapAreas(mapAreasToAdd);
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());
 		}
 	}
 	
@@ -530,7 +534,9 @@ class MapAreaListSelectionPanel
 			mapAreaListWriter.writeFile(selectedFile, mapAreasToWrite);			
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(parentDialog, rifServiceException);
+			ErrorDialog.showError(
+				parentDialog, 
+				rifServiceException.getErrorMessages());
 		}		
 	}
 	
