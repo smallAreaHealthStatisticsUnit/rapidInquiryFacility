@@ -202,15 +202,15 @@ WITH a AS (
 	  FROM b
 ), d AS (
 	SELECT zoom_level, X_centroid, Y_centroid, 
-		   rif40_geo_pkg.latitude2tile(X_centroid, zoom_level) AS X_tile,
-		   rif40_geo_pkg.longitude2tile(Y_centroid, zoom_level) AS Y_tile
+		   rif40_geo_pkg.latitude2tile(Y_centroid, zoom_level) AS Y_tile,
+		   rif40_geo_pkg.longitude2tile(X_centroid, zoom_level) AS X_tile
 	  FROM c
 ), e AS (
 	SELECT zoom_level, X_centroid, Y_centroid,
-		   rif40_geo_pkg.tile2latitude(X_tile, zoom_level) AS X_min,
-		   rif40_geo_pkg.tile2longitude(Y_tile, zoom_level) AS Y_min,	
-		   rif40_geo_pkg.tile2latitude(X_tile+1, zoom_level) AS X_max,
-		   rif40_geo_pkg.tile2longitude(Y_tile+1, zoom_level) AS Y_max,
+		   rif40_geo_pkg.tile2latitude(Y_tile, zoom_level) AS Y_min,
+		   rif40_geo_pkg.tile2longitude(X_tile, zoom_level) AS X_min,	
+		   rif40_geo_pkg.tile2latitude(Y_tile+1, zoom_level) AS Y_max,
+		   rif40_geo_pkg.tile2longitude(X_tile+1, zoom_level) AS X_max,
 		   X_tile, Y_tile
 	  FROM d
 ) 

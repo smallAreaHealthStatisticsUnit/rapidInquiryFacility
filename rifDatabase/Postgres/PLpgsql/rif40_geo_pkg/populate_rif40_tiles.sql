@@ -566,10 +566,10 @@ SQL>WITH a AS ( /* level geolevel */
 ), d AS ( /* Convert XY bounds to tile numbers */
         SELECT geography, min_geolevel_id, max_geolevel_id, zoomlevel,
                    Xmin AS area_Xmin, Xmax AS area_Xmax, Ymin AS area_Ymin, Ymax AS area_Ymax,
-           rif40_geo_pkg.latitude2tile(Xmin, zoomlevel) AS X_mintile,
-           rif40_geo_pkg.latitude2tile(Xmax, zoomlevel) AS X_maxtile,
-           rif40_geo_pkg.longitude2tile(Ymin, zoomlevel) AS Y_mintile,
-           rif40_geo_pkg.longitude2tile(Ymax, zoomlevel) AS Y_maxtile
+           rif40_geo_pkg.latitude2tile(Ymin, zoomlevel) AS Y_mintile,
+           rif40_geo_pkg.latitude2tile(Ymax, zoomlevel) AS Y_maxtile,
+           rif40_geo_pkg.longitude2tile(Xmin, zoomlevel) AS X_mintile,
+           rif40_geo_pkg.longitude2tile(Xmax, zoomlevel) AS X_maxtile
       FROM b
 ), e AS ( /* Generate latitude tile series */
         SELECT min_geolevel_id,
@@ -592,10 +592,10 @@ SQL>WITH a AS ( /* level geolevel */
                    x_series, y_series, h.geolevel_name,
                    g.geography||''_''||g.geolevel_series::Text||''_''||h.geolevel_name||''_''||
                                 zoomlevel::Text||''_''||x_series::Text||''_''||y_series::Text AS tile_id,
-               rif40_geo_pkg.tile2latitude(x_series::INTEGER, zoomlevel) AS tile_Xmin,
-               rif40_geo_pkg.tile2latitude((x_series+1)::INTEGER, zoomlevel) AS tile_Xmax,
-               rif40_geo_pkg.tile2longitude(y_series::INTEGER, zoomlevel) AS tile_Ymin,
-               rif40_geo_pkg.tile2longitude((y_series+1)::INTEGER, zoomlevel) AS tile_Ymax
+               rif40_geo_pkg.tile2latitude(y_series::INTEGER, zoomlevel) AS tile_Ymin,
+               rif40_geo_pkg.tile2latitude((y_series+1)::INTEGER, zoomlevel) AS tile_Ymax,
+               rif40_geo_pkg.tile2longitude(x_series::INTEGER, zoomlevel) AS tile_Xmin,
+               rif40_geo_pkg.tile2longitude((x_series+1)::INTEGER, zoomlevel) AS tile_Xmax
       FROM rif40_geolevels h, g, /* Twin full joins */
                 e FULL JOIN f ON (e.min_geolevel_id = f.min_geolevel_id)
      WHERE g.min_geolevel_id = e.min_geolevel_id
