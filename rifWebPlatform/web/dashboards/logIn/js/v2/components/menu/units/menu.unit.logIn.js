@@ -18,7 +18,7 @@ RIF.menu.logIn = ( function( _dom ) {
     _callbacks = {
         
       isLoggedIn: function(){
-         if (this == true){
+         if (this[0] == 't'){//
             window.top.location = "../diseaseSubmission/#"+ RIF.user;//default to this for now
          };
       },   
