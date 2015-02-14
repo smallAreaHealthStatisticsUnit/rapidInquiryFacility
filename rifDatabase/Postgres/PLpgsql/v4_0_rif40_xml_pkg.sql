@@ -86,7 +86,25 @@ $$;
 DROP TYPE IF EXISTS rif40_xml_pkg.rif40_geolevelAttributeTheme CASCADE;
 CREATE TYPE rif40_xml_pkg.rif40_geolevelAttributeTheme AS ENUM (
 	'covariate', 'health', 'extract', 'results', 'population', 'geometry');
+DROP AGGREGATE IF EXISTS array_agg_mult(anyarray);
+CREATE AGGREGATE array_agg_mult(anyarray) (
+    SFUNC = array_cat,
+    STYPE = anyarray,
+    INITCOND = '{}'
+);
+COMMENT ON AGGREGATE array_agg_mult(anyarray) IS 'Allow array_agg() to aggregate anyarray';
 
+DROP TYPE IF EXISTS rif40_goejson_type;
+CREATE TYPE rif40_goejson_type AS (
+	area_id 					Text, 
+	name						Text,
+	area 						NUMERIC, 
+	total_males					INTEGER,
+	total_females				INTEGER, 
+	population_year				INTEGER,
+	gid							INTEGER);
+COMMENT ON TYPE rif40_goejson_type IS 'Special type to allow ROW() elements to be named; for ROW_TO_JSON()';
+	
 --
 -- Include common code
 --
