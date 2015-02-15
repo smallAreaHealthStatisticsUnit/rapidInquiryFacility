@@ -563,9 +563,9 @@ BEGIN
 	OPEN c1alter5;
 	FETCH c1alter5 INTO c1_rec;
 	CLOSE c1alter5;
-	IF c1_rec.column_name = 'optimised_geojson_3' THEN
-		RAISE INFO 'Column: t_rif40_sahsu_geometry.optimised_geojson_3 exists; no need to rebuild geometry tables';
-	ELSE
+--	IF c1_rec.column_name = 'optimised_geojson_3' THEN
+--		RAISE INFO 'Column: t_rif40_sahsu_geometry.optimised_geojson_3 exists; no need to rebuild geometry tables';
+--	ELSE
 --
 -- Drop old geometry tables
 --
@@ -631,7 +631,7 @@ BEGIN
 -- row_index is an incremental serial aggregated by gid ( starts from one for each gid)
 --
 		PERFORM rif40_geo_pkg.gid_rowindex_fix('SAHSU');
-	END IF;
+--	END IF;
 --
 -- Populate Map tiles
 --
