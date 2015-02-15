@@ -252,7 +252,12 @@ DECLARE
 			'           h.y_series AS y_tile_number,'||E'\n'||
 			'           h.zoomlevel,'||E'\n'||
 			'	        i.area_id,'||E'\n'||
-			'			i.optimised_geojson,'||E'\n'||
+			'			CASE'||E'\n'||
+            '    			WHEN h.zoomlevel <= 6 THEN i.optimised_geojson                /* Optimised for zoom level 6 */'||E'\n'||
+            '    			WHEN h.zoomlevel IN (7, 8) THEN i.optimised_geojson_2         /* Optimised for zoom level 8 */'||E'\n'||
+            '    			WHEN h.zoomlevel IN (9, 10, 11) THEN i.optimised_geojson_3    /* Optimised for zoom level 11 */'||E'\n'||
+            '    			ELSE NULL'||E'\n'||
+            ' 			END AS optimised_geojson,'||E'\n'||
 			'           ROW(	/* Build complex type for row_to_json() */'||E'\n'||
 			'           	i.area_id, i.name,'||E'\n'|| 
 			'				ST_Area(ST_MakeEnvelope(h.tile_Xmin, h.tile_Ymin, h.tile_Xmax, h.tile_Ymax, 4326)) /* Area of area_id */,'||E'\n'||
@@ -262,6 +267,7 @@ DECLARE
 			'     WHERE optimised_geometry_3 && ST_MakeEnvelope(h.tile_Xmin, h.tile_Ymin, h.tile_Xmax, h.tile_Ymax, 4326)'||E'\n'||
  			'      AND h.geolevel_name = i.geolevel_name    /* Partition eliminate */'||E'\n'||
 			'												/* Intersect bound with geolevel geometry */'||E'\n'||
+			'	 ORDER BY h.tile_id, i.area_id			    /* Forces geojson features in area_id order */'||E'\n'||
 			'), j AS ( /* Build array of area_ids for _rif40_get_geojson_as_js() */'||E'\n'||
 			'	SELECT i.geography,'||E'\n'||
 			'           i.geolevel_name,'||E'\n'||
@@ -272,7 +278,7 @@ DECLARE
 			'		    COUNT(DISTINCT(i.area_id)) AS total  	/* Total area IDs */,'||E'\n'||
 			'           string_agg('||E'\n'||
 			'					''{"type":"Feature","properties":''||row_to_json(i.geojson_row)::Text||'',''||'||E'\n'||
-			'				   	''"geometry":''||i.optimised_geojson::Text||''}'', '','') AS togeojson_array'||E'\n'||
+			'				   	''"geometry":''||i.optimised_geojson::Text||''}'', '','' ORDER BY i.area_id) AS togeojson_array'||E'\n'||
 			'	FROM i'||E'\n'||
 			'	GROUP BY i.geography,'||E'\n'||
 			'           i.geolevel_name,'||E'\n'||
@@ -280,7 +286,7 @@ DECLARE
 			'           i.x_tile_number,'||E'\n'||
 			'           i.y_tile_number,'||E'\n'||
 			'           i.zoomlevel'||E'\n'||
-			'	HAVING COUNT(DISTINCT(i.area_id)) > 0'||E'\n'||
+			'	HAVING COUNT(DISTINCT(i.area_id)) > 0 /* Remove tiles with no area_ids in */'||E'\n'||
 			'), k AS ( /* Convert area_ids array to GeoJSON using _rif40_get_geojson_as_js() */'||E'\n'||	
 			'	SELECT j.geography,'||E'\n'||
 			'		   j.geolevel_name,'||E'\n'||
@@ -290,7 +296,8 @@ DECLARE
 			'          j.zoomlevel,'||E'\n'||
 			'		   j.total,'||E'\n'||
 			'		   CASE WHEN j.togeojson_array IS NULL THEN NULL'||E'\n'||
-			'   		    ELSE ''{"type":"FeatureCollection","features":[''||j.togeojson_array||'']}'''||E'\n'||
+			'   		    ELSE ''{"type":"FeatureCollection","features":[''||'||E'\n'||
+			'   		         j.togeojson_array||'']}'''||E'\n'||
 			'   	   END::JSON AS optimised_geojson'||E'\n'||
 			'	FROM j'||E'\n'||
 			'), l AS ( /* Lovely UPSERT! - Postgres specific, to handle lack of returned rows processed values */'||E'\n'||
@@ -306,7 +313,6 @@ DECLARE
 	 		'       to_json(''X''::Text)::JSON AS optimised_topojson /* Dummy value */,'||E'\n'||			
 			'       ROW_NUMBER() OVER() AS gid'||E'\n'||
 			'  FROM k'||E'\n'||
-			' WHERE k.total > 0'||E'\n'||
 			' ORDER BY 1'||E'\n'||
 			')'||E'\n'||
 			'SELECT COUNT(k.tile_id) AS total_tiles'||E'\n'||
@@ -342,11 +348,27 @@ DECLARE
 				FETCH c4pop_tiles INTO c4_rec;
 				CLOSE c4pop_tiles;
 				PERFORM rif40_sql_pkg.rif40_ddl(drop_stmt);				
+			ELSE
+				OPEN c4pop_tiles FOR EXECUTE sql_stmt USING zoomlevel, c1_rec.geography;
+				FETCH c4pop_tiles INTO c4_rec;
+				CLOSE c4pop_tiles;			
+			END IF;
 --
 -- Instrument
 --
 				etp:=clock_timestamp();
-				took:=age(etp, stp2);
+				took:=age(etp, stp2);	
+--
+-- Check tiles were actually inserted
+--				
+			IF c4_rec.total_tiles = 0 THEN
+				PERFORM rif40_log_pkg.rif40_error(-60106, 'populate_rif40_tiles', 
+					'Populated no RIF tiles for geography: %; zoomlevel %/%, time taken: %',
+					c1_rec.geography::VARCHAR		/* Geography */,
+					zoomlevel::VARCHAR				/* Zoom level */,
+					max_zoomlevel::VARCHAR			/* Max zoom level */,
+					took::VARCHAR					/* Time taken */);				
+			ELSE
 				PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'populate_rif40_tiles', 
 					'[60106] Populated RIF tiles for geography: %; zoomlevel %/%, rows: %, time taken: %',
 					c1_rec.geography::VARCHAR		/* Geography */,
@@ -354,23 +376,7 @@ DECLARE
 					max_zoomlevel::VARCHAR			/* Max zoom level */,
 					c4_rec.total_tiles::VARCHAR		/* Rows inserted */,
 					took::VARCHAR					/* Time taken */);
-			ELSE
-				OPEN c4pop_tiles FOR EXECUTE sql_stmt USING zoomlevel, c1_rec.geography;
-				FETCH c4pop_tiles INTO c4_rec;
-				CLOSE c4pop_tiles;
---
--- Instrument
---
-				etp:=clock_timestamp();
-				took:=age(etp, stp2);
-				PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'populate_rif40_tiles', 
-					'[60107] Populated RIF tiles for geography: %; zoomlevel %/%, rows: %, time taken: %',
-					c1_rec.geography::VARCHAR		/* Geography */,
-					zoomlevel::VARCHAR				/* Zoom level */,
-					max_zoomlevel::VARCHAR			/* Max zoom level */,
-					c4_rec.total_tiles::VARCHAR		/* Rows inserted */,
-					took::VARCHAR					/* Time taken */);			
-			END IF;
+			END IF;			
 		EXCEPTION
 			WHEN others THEN
 --
@@ -779,8 +785,13 @@ WITH a AS ( /* level geolevel */
            h.x_series AS x_tile_number,
            h.y_series AS y_tile_number,
            h.zoomlevel,
-                i.area_id,
-                        i.optimised_geojson,
+           i.area_id,
+           CASE
+                WHEN h.zoomlevel <= 6 THEN i.optimised_geojson                /* Optimised for zoom level 6 */
+                WHEN h.zoomlevel IN (7, 8) THEN i.optimised_geojson_2         /* Optimised for zoom level 8 */
+                WHEN h.zoomlevel IN (9, 10, 11) THEN i.optimised_geojson_3    /* Optimised for zoom level 11 */
+                ELSE NULL
+           END AS optimised_geojson,		   
            ROW( /* Build complex type for row_to_json() */
                 i.area_id, i.name,
                                 ST_Area(ST_MakeEnvelope(h.tile_Xmin, h.tile_Ymin, h.tile_Xmax, h.tile_Ymax, 4326)) /* Area of area_id */,
@@ -790,6 +801,7 @@ WITH a AS ( /* level geolevel */
      WHERE optimised_geometry_3 && ST_MakeEnvelope(h.tile_Xmin, h.tile_Ymin, h.tile_Xmax, h.tile_Ymax, 4326)
       AND h.geolevel_name = i.geolevel_name    /* Partition eliminate */
                                                /* Intersect bound with geolevel geometry */
+	 ORDER BY h.tile_id, i.area_id		       /* Forces geojson features in area_id order */										
 ), j AS ( /* Build array of area_ids for _rif40_get_geojson_as_js() */
         SELECT i.geography,
            i.geolevel_name,
@@ -800,7 +812,7 @@ WITH a AS ( /* level geolevel */
            COUNT(DISTINCT(i.area_id)) AS total         /* Total area IDs */,
            string_agg(
                     ''{"type":"Feature","properties":''||row_to_json(i.geojson_row)::Text||'',''||
-                    ''"geometry":''||i.optimised_geojson::Text||''}'', '','') AS togeojson_array
+                    ''"geometry":''||i.optimised_geojson::Text||''}'', '','' ORDER BY i.area_id) AS togeojson_array
         FROM i
         GROUP BY i.geography,
            i.geolevel_name,
@@ -808,7 +820,7 @@ WITH a AS ( /* level geolevel */
            i.x_tile_number,
            i.y_tile_number,
            i.zoomlevel
-		HAVING COUNT(DISTINCT(i.area_id)) > 0
+		HAVING COUNT(DISTINCT(i.area_id)) > 0  /* Remove tiles with no area_ids in */
 ), k AS ( /* Convert area_ids array to GeoJSON using _rif40_get_geojson_as_js() */
         SELECT j.geography,
                j.geolevel_name,
