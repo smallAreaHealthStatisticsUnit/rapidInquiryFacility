@@ -453,15 +453,15 @@ WITH a AS (
 	  FROM b
 ), d AS (
 	SELECT zoom_level, X_centroid, Y_centroid, 
-		   rif40_geo_pkg.latitude2tile(X_centroid, zoom_level) AS X_tile,
-		   rif40_geo_pkg.longitude2tile(Y_centroid, zoom_level) AS Y_tile
+		   rif40_geo_pkg.latitude2tile(Y_centroid, zoom_level) AS Y_tile,
+		   rif40_geo_pkg.longitude2tile(X_centroid, zoom_level) AS X_tile
 	  FROM c
 ), e AS (
 	SELECT zoom_level, X_centroid, Y_centroid,
-		   rif40_geo_pkg.tile2latitude(X_tile, zoom_level) AS X_min,
-		   rif40_geo_pkg.tile2longitude(Y_tile, zoom_level) AS Y_min,	
-		   rif40_geo_pkg.tile2latitude(X_tile+1, zoom_level) AS X_max,
-		   rif40_geo_pkg.tile2longitude(Y_tile+1, zoom_level) AS Y_max,
+		   rif40_geo_pkg.tile2latitude(Y_tile, zoom_level) AS Y_min,
+		   rif40_geo_pkg.tile2longitude(X_tile, zoom_level) AS X_min,	
+		   rif40_geo_pkg.tile2latitude(Y_tile+1, zoom_level) AS Y_max,
+		   rif40_geo_pkg.tile2longitude(X_tile+1, zoom_level) AS X_max,
 		   X_tile, Y_tile
 	  FROM d
 ) 
@@ -490,8 +490,36 @@ SELECT rif40_xml_pkg.rif40_GetMapAreas(
   
 \set debug_level 1
 \set VERBOSITY terse
+
+--
+-- Create types for fast JSON tile making
+--
+DROP AGGREGATE IF EXISTS array_agg_mult(anyarray);
+CREATE AGGREGATE array_agg_mult(anyarray) (
+    SFUNC = array_cat,
+    STYPE = anyarray,
+    INITCOND = '{}'
+);
+COMMENT ON AGGREGATE array_agg_mult(anyarray) IS 'Allow array_agg() to aggregate anyarray';
+
+DROP TYPE IF EXISTS rif40_goejson_type;
+CREATE TYPE rif40_goejson_type AS (
+	area_id 					Text, 
+	name						Text,
+	area 						NUMERIC, 
+	total_males					INTEGER,
+	total_females				INTEGER, 
+	population_year				INTEGER,
+	gid							INTEGER);
+COMMENT ON TYPE rif40_goejson_type IS 'Special type to allow ROW() elements to be named; for ROW_TO_JSON()';
+	
 DO LANGUAGE plpgsql $$
 DECLARE
+	c1alter5 CURSOR FOR
+		SELECT column_name 
+		  FROM information_schema.columns 
+		 WHERE table_name = 't_rif40_sahsu_geometry' AND column_name = 'optimised_geojson_3' AND table_schema = 'rif_data';
+	c1_rec RECORD;
 --
 	rif40_geo_pkg_functions 	VARCHAR[] := ARRAY['lf_check_rif40_hierarchy_lookup_tables', 
 							'populate_rif40_geometry_tables', 
@@ -518,8 +546,8 @@ BEGIN
 --
 -- Turn on some debug
 --
-        PERFORM rif40_log_pkg.rif40_log_setup();
-        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+    PERFORM rif40_log_pkg.rif40_log_setup();
+    PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
 --
 -- Enabled debug on select rif40_sm_pkg functions
 --
@@ -530,25 +558,34 @@ BEGIN
 
 	END LOOP;
 --
+-- Check if run already
+--
+	OPEN c1alter5;
+	FETCH c1alter5 INTO c1_rec;
+	CLOSE c1alter5;
+--	IF c1_rec.column_name = 'optimised_geojson_3' THEN
+--		RAISE INFO 'Column: t_rif40_sahsu_geometry.optimised_geojson_3 exists; no need to rebuild geometry tables';
+--	ELSE
+--
 -- Drop old geometry tables
 --
-	PERFORM rif40_geo_pkg.drop_rif40_geolevels_geometry_tables('SAHSU');
-	PERFORM rif40_geo_pkg.drop_rif40_geolevels_lookup_tables('SAHSU');
-	DROP TABLE IF EXISTS sahsuland_geography_orig;
+		PERFORM rif40_geo_pkg.drop_rif40_geolevels_geometry_tables('SAHSU');
+		PERFORM rif40_geo_pkg.drop_rif40_geolevels_lookup_tables('SAHSU');
+		DROP TABLE IF EXISTS sahsuland_geography_orig;
 --
 -- These are the new T_RIF40_<GEOGRAPHY>_GEOMETRY tables and
 -- new p_rif40_geolevels_geometry_<GEOGRAPHY>_<GEOELVELS> partitioned tables
 --
-	PERFORM rif40_geo_pkg.create_rif40_geolevels_geometry_tables('SAHSU');
+		PERFORM rif40_geo_pkg.create_rif40_geolevels_geometry_tables('SAHSU');
 --	RAISE EXCEPTION 'Stop!!!';
 --
 -- Create and populate rif40_geolevels lookup and create hierarchy tables 
 --
-	PERFORM rif40_geo_pkg.create_rif40_geolevels_lookup_tables('SAHSU');
+		PERFORM rif40_geo_pkg.create_rif40_geolevels_lookup_tables('SAHSU');
 --
 -- Populate geometry tables
 --
-	PERFORM rif40_geo_pkg.populate_rif40_geometry_tables('SAHSU');
+		PERFORM rif40_geo_pkg.populate_rif40_geometry_tables('SAHSU');
 --
 -- Simplify geometry
 --
@@ -556,7 +593,7 @@ BEGIN
 --
 -- psql:rif40_geolevels_ew01_geometry.sql:174: ERROR:  Error performing intersection: TopologyException: found non-noded intersection between LINESTRING (-2.9938 53.3669, -2.98342 53.367) and LINESTRING (-2.98556 53.367, -2.98556 53.367) at -2.9855578257498334 53.366966593247653
 --
-	PERFORM rif40_geo_pkg.simplify_geometry('SAHSU', 10 /* l_min_point_resolution [1] */);
+		PERFORM rif40_geo_pkg.simplify_geometry('SAHSU', 10 /* l_min_point_resolution [1] */);
 --
 -- Populate hierarchy tables
 --
@@ -571,29 +608,30 @@ BEGIN
 --  FROM p_rif40_geolevels_geometry_sahsu_level3 a3, p_rif40_geolevels_geometry_sahsu_level2 a2  
 -- WHERE ST_Intersects(a2.optimised_geometry, a3.optimised_geometry);
 --
-	PERFORM rif40_geo_pkg.populate_hierarchy_table('SAHSU'); 
+		PERFORM rif40_geo_pkg.populate_hierarchy_table('SAHSU'); 
 --
 -- Add denominator population table to geography geolevel geomtry data
 --
-	PERFORM rif40_geo_pkg.add_population_to_rif40_geolevels_geometry('SAHSU', 'SAHSULAND_POP'); 
+		PERFORM rif40_geo_pkg.add_population_to_rif40_geolevels_geometry('SAHSU', 'SAHSULAND_POP'); 
 --
 -- Fix NULL geolevel names in geography geolevel geometry and lookup table data 
 --
-	PERFORM rif40_geo_pkg.fix_null_geolevel_names('SAHSU'); 
+		PERFORM rif40_geo_pkg.fix_null_geolevel_names('SAHSU'); 
 --
 -- Make level1 names consistent
 --
-	UPDATE sahsuland_level1 a 
-	   SET name = (
-		SELECT name 
-		  FROM t_rif40_sahsu_geometry b
-		 WHERE b.geolevel_name = 'LEVEL1'
-		   AND b.area_id = a.level1);
+		UPDATE sahsuland_level1 a 
+		SET name = (
+			SELECT name 
+			  FROM t_rif40_sahsu_geometry b
+ 			 WHERE b.geolevel_name = 'LEVEL1'
+		       AND b.area_id = a.level1);
 --
 -- Add: gid_rowindex (i.e 1_1). Where gid corresponds to gid in geometry table
 -- row_index is an incremental serial aggregated by gid ( starts from one for each gid)
 --
-	PERFORM rif40_geo_pkg.gid_rowindex_fix('SAHSU');
+		PERFORM rif40_geo_pkg.gid_rowindex_fix('SAHSU');
+--	END IF;
 --
 -- Populate Map tiles
 --
@@ -687,15 +725,15 @@ WITH a AS (
 	  FROM b
 ), d AS (
 	SELECT zoom_level, X_centroid, Y_centroid, 
-		   rif40_geo_pkg.latitude2tile(X_centroid, zoom_level) AS X_tile,
-		   rif40_geo_pkg.longitude2tile(Y_centroid, zoom_level) AS Y_tile
+		   rif40_geo_pkg.latitude2tile(Y_centroid, zoom_level) AS Y_tile,
+		   rif40_geo_pkg.longitude2tile(X_centroid, zoom_level) AS X_tile
 	  FROM c
 ), e AS (
 	SELECT zoom_level, X_centroid, Y_centroid,
-		   rif40_geo_pkg.tile2latitude(X_tile, zoom_level) AS X_min,
-		   rif40_geo_pkg.tile2longitude(Y_tile, zoom_level) AS Y_min,	
-		   rif40_geo_pkg.tile2latitude(X_tile+1, zoom_level) AS X_max,
-		   rif40_geo_pkg.tile2longitude(Y_tile+1, zoom_level) AS Y_max,
+		   rif40_geo_pkg.tile2latitude(Y_tile, zoom_level) AS Y_min,
+		   rif40_geo_pkg.tile2longitude(X_tile, zoom_level) AS X_min,	
+		   rif40_geo_pkg.tile2latitude(Y_tile+1, zoom_level) AS Y_max,
+		   rif40_geo_pkg.tile2longitude(X_tile+1, zoom_level) AS X_max,
 		   X_tile, Y_tile
 	  FROM d
 ) 

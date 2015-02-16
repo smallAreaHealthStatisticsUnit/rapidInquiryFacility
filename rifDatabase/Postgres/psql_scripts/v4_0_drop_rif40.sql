@@ -586,6 +586,9 @@ DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_study_sql();
 DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_study_sql_log();
 DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_user_projects();
 
+DROP AGGREGATE IF EXISTS array_agg_mult(anyarray);
+DROP TYPE IF EXISTS rif40_goejson_type;
+
 \echo Dropped all objects.
 
 --

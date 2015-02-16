@@ -121,15 +121,15 @@ DECLARE
 			FROM b
 		), d AS (
 			SELECT X_centroid, Y_centroid, 
-				rif40_geo_pkg.latitude2tile(X_centroid, l_zoom_level) AS X_tile,
-				rif40_geo_pkg.longitude2tile(Y_centroid, l_zoom_level) AS Y_tile
+				rif40_geo_pkg.latitude2tile(Y_centroid, l_zoom_level) AS Y_tile,
+				rif40_geo_pkg.longitude2tile(X_centroid, l_zoom_level) AS X_tile
 			FROM c
 		), e AS (
 			SELECT X_centroid, Y_centroid,
-				   rif40_geo_pkg.tile2latitude(X_tile, l_zoom_level) AS tile_X_min,
-				   rif40_geo_pkg.tile2longitude(Y_tile, l_zoom_level) AS tile_Y_min,			
-				   rif40_geo_pkg.tile2latitude(X_tile+1, l_zoom_level) AS tile_X_max,
-				   rif40_geo_pkg.tile2longitude(Y_tile+1, l_zoom_level) AS tile_Y_max,
+				   rif40_geo_pkg.tile2latitude(Y_tile, l_zoom_level) AS tile_Y_min,
+				   rif40_geo_pkg.tile2longitude(X_tile, l_zoom_level) AS tile_X_min,			
+				   rif40_geo_pkg.tile2latitude(Y_tile+1, l_zoom_level) AS tile_Y_max,
+				   rif40_geo_pkg.tile2longitude(X_tile+1, l_zoom_level) AS tile_X_max,
 				   X_tile, Y_tile
 		     FROM d
 		)
@@ -140,9 +140,9 @@ DECLARE
 		       ABS(tile_Y_min-l_y_min) AS y_min_diff,
 		       ABS(tile_Y_max-l_y_max) AS y_max_diff,
 		       CASE WHEN tile_X_min = 0 THEN 0 ELSE ROUND((ABS(tile_X_min-l_x_min)/tile_X_min)::NUMERIC*100, 4) END AS x_min_diff_pct,
-		       CASE WHEN tile_X_min = 0 THEN 0 ELSE ROUND((ABS(tile_X_max-l_x_max)/tile_X_max)::NUMERIC*100, 4) END AS x_max_diff_pct,
-		       CASE WHEN tile_X_min = 0 THEN 0 ELSE ROUND((ABS(tile_Y_min-l_y_min)/tile_Y_min)::NUMERIC*100, 4) END AS y_min_diff_pct,
-		       CASE WHEN tile_X_min = 0 THEN 0 ELSE ROUND((ABS(tile_Y_max-l_y_max)/tile_Y_max)::NUMERIC*100, 4) END AS y_max_diff_pct
+		       CASE WHEN tile_X_max = 0 THEN 0 ELSE ROUND((ABS(tile_X_max-l_x_max)/tile_X_max)::NUMERIC*100, 4) END AS x_max_diff_pct,
+		       CASE WHEN tile_Y_min = 0 THEN 0 ELSE ROUND((ABS(tile_Y_min-l_y_min)/tile_Y_min)::NUMERIC*100, 4) END AS y_min_diff_pct,
+		       CASE WHEN tile_Y_max = 0 THEN 0 ELSE ROUND((ABS(tile_Y_max-l_y_max)/tile_Y_max)::NUMERIC*100, 4) END AS y_max_diff_pct
   		  FROM e; 
 --
 	c1_rec rif40_geographies%ROWTYPE;
@@ -234,13 +234,13 @@ WITH a AS (
 	  FROM b
 ), d AS (
 	SELECT zoom_level, X_min, Y_min, 
-		   rif40_geo_pkg.latitude2tile(X_min, zoom_level) AS X_tile,
-		   rif40_geo_pkg.longitude2tile(Y_min, zoom_level) AS Y_tile
+		   rif40_geo_pkg.latitude2tile(Y_min, zoom_level) AS Y_tile,
+		   rif40_geo_pkg.longitude2tile(X_min, zoom_level) AS X_tile
 	  FROM c
 ), e AS (
 	SELECT zoom_level, X_min, Y_min, 
-		   rif40_geo_pkg.tile2latitude(X_tile+1, zoom_level) AS X_max,
-		   rif40_geo_pkg.tile2longitude(Y_tile+1, zoom_level) AS Y_max,
+		   rif40_geo_pkg.tile2latitude(Y_tile+1, zoom_level) AS Y_max,
+		   rif40_geo_pkg.tile2longitude(X_tile+1, zoom_level) AS X_max,
 		   X_tile, Y_tile
 	  FROM d
 )
@@ -625,8 +625,8 @@ Total runtime: 19.472 ms
 --
 	sql_stmt:='SELECT *'||E'\n'||
 			  '  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_maptiles')||' f'||E'\n'||
-			  '	WHERE rif40_geo_pkg.latitude2tile($2 /* X_min */, $4 /* zoom level */)  = f.x_tile_number'||E'\n'||
-		  	  '   AND rif40_geo_pkg.longitude2tile($3 /* Y_min */, $4 /* zoom level */) = f.y_tile_number'||E'\n'||
+			  '	WHERE rif40_geo_pkg.latitude2tile($3 /* Y_min */, $4 /* zoom level */)  = f.y_tile_number'||E'\n'||
+		  	  '   AND rif40_geo_pkg.longitude2tile($2 /* X_min */, $4 /* zoom level */) = f.x_tile_number'||E'\n'||
 			  '   AND $1 /* l_geolevel_view */                                          = f.geolevel_name'||E'\n'||
 			  '   AND $4 /* zoom level */                                               = f.zoomlevel';
 	BEGIN
@@ -657,6 +657,12 @@ Total runtime: 19.472 ms
 		END IF;
 	END LOOP;
 	CLOSE c5geojson2;
+--
+-- Instrument
+--
+	etp:=clock_timestamp();
+	took:=age(etp, stp);
+--
 	IF i = 0 THEN
 --
 -- This could be changed to return a synthetic NULL as tile as per the rif40_<geography>_maptiles view
@@ -682,11 +688,7 @@ Total runtime: 19.472 ms
 			i::VARCHAR					/* Rows returned by query */,
 			took::VARCHAR				/* Time taken */);				
 	END IF;
---
--- Instrument
---
-	etp:=clock_timestamp();
-	took:=age(etp, stp);
+
 --
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
 		'[50425] Geography: %, <geoevel view> % zoomlevel % bound [%, %, %, %] complete: tile: %, db extract took: %;'||E'\n'||'SQL> %;', 		
@@ -745,15 +747,15 @@ WITH a AS (
 	  FROM b
 ), d AS (
 	SELECT zoom_level, X_centroid, Y_centroid, 
-		   rif40_geo_pkg.latitude2tile(X_centroid, zoom_level) AS X_tile,
-		   rif40_geo_pkg.longitude2tile(Y_centroid, zoom_level) AS Y_tile
+		   rif40_geo_pkg.latitude2tile(Y_centroid, zoom_level) AS Y_tile,
+		   rif40_geo_pkg.longitude2tile(X_centroid, zoom_level) AS X_tile
 	  FROM c
 ), e AS (
 	SELECT zoom_level, X_centroid, Y_centroid,
-		   rif40_geo_pkg.tile2latitude(X_tile, zoom_level) AS X_min,
-		   rif40_geo_pkg.tile2longitude(Y_tile, zoom_level) AS Y_min,	
-		   rif40_geo_pkg.tile2latitude(X_tile+1, zoom_level) AS X_max,
-		   rif40_geo_pkg.tile2longitude(Y_tile+1, zoom_level) AS Y_max,
+		   rif40_geo_pkg.tile2latitude(Y_tile, zoom_level) AS Y_min,
+		   rif40_geo_pkg.tile2longitude(X_tile, zoom_level) AS X_min,	
+		   rif40_geo_pkg.tile2latitude(Y_tile+1, zoom_level) AS Y_max,
+		   rif40_geo_pkg.tile2longitude(X_tile+1, zoom_level) AS X_max,
 		   X_tile, Y_tile
 	  FROM d
 ) 
@@ -792,8 +794,8 @@ INFO:  [DEBUG1] rif40_get_geojson_tiles(): [50421] Geography: SAHSU, <geoevel vi
 INFO:  [DEBUG1] rif40_get_geojson_tiles(): [50425] Geography: SAHSU, <geoevel view> LEVEL4 zoomlevel 11 bound [-6.48998, 54.668, -6.66461, 54.8438] complete: tile: , db extract took: 00:00:00.057.
 SQL> SELECT *
   FROM t_rif40_sahsu_maptiles f
- WHERE rif40_geo_pkg.latitude2tile($2 /* X_min */, $4 /* zoom level */)  = f.x_tile_number
-   AND rif40_geo_pkg.longitude2tile($3 /* Y_min */, $4 /* zoom level */) = f.y_tile_number
+ WHERE rif40_geo_pkg.latitude2tile($3 /* Y_min */, $4 /* zoom level */)  = f.y_tile_number
+   AND rif40_geo_pkg.longitude2tile($2 /* X_min */, $4 /* zoom level */) = f.x_tile_number
    AND $1 /* l_geolevel_view */                                          = f.geolevel_name
    AND $4 /* zoom level */                                               = f.zoomlevel;
   y_max  |  x_max   | y_min  |  x_min   |                                                                               json

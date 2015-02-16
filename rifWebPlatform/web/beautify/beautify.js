@@ -8,7 +8,7 @@ var reformat = function( filePath ){
 		}
 		
 		var outputFilename = filePath;
-		fs.writeFile(outputFilename, beautify(data, { indent_size: 2, space_in_paren: 1, keep_array_indentation: 1  }) , function(err) {
+		fs.writeFile(outputFilename, beautify(data, { indent_size: 3, space_in_paren: 0, keep_array_indentation: 1,indent_level: 1 }) , function(err) {
 			if(err) {
 				console.log(err);
 			} else {
@@ -50,11 +50,11 @@ var callback = function(err, results) {
   }	
 };
 
-walk( "../dashboards/diseaseSubmission/js", callback );
-/*walk( "../dashboards/dataViewer/js", callback );
-walk( "../dashboards/diseaseMapping/js", callback );
-walk( "../dashboards/diseaseSubmission/js", callback );
-walk( "../dashboards/dataViewer/js", callback );
-walk( "../logIn/js", callback );
 walk( "../request", callback );
-walk( "../statusBar", callback );*/
+walk( "../topojson service", callback );
+walk( "../test", callback );
+//walk( "../dashboards/dataViewer/js", callback );
+//walk( "../dashboards/diseaseMapping/js", callback );
+walk( "../dashboards/diseaseSubmission/js", callback );
+//walk( "../dashboards/dataViewer/js", callback );
+//walk( "../logIn/js", callback );
