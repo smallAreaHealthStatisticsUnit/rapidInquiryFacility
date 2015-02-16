@@ -159,8 +159,8 @@ public class AbstractRIFService {
 		final User user) 
 		throws RIFServiceException {
 				
-		user.checkErrors();
 		user.checkSecurityViolations();
+		user.checkErrors();
 
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
