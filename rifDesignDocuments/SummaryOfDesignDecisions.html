@@ -1,0 +1,715 @@
+<head>
+<title>
+Summary of Design Decisions
+</title>
+
+<meta 
+	name="author" 
+	lang="en" 
+	content="Kevin Garwood">
+<meta 
+	name="keywords" 
+	lang="en" 
+	content="Rapid Inquiry Facility, RIF, environmental health, Kevin Garwood">
+	
+<link rel="stylesheet" href="./rifDesignManual.css" type="text/css">
+</head>
+
+<body>
+
+<h1>Summary of Design Decisions</h1>
+
+<h2>General Design Decisions</h2>
+<table border="1">
+
+<tr>
+<td>
+<b>
+Decision
+</b>
+</td>
+
+<td>
+<b>
+Description
+</b>
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#gen_design1"></a>
+<a href="GeneralArchitecture.html">
+General Design-1
+</a>
+</td>
+
+<td>
+Support the feature set with a suite of interacting tools.  They will include: a study submission 
+tool, a study result retrieval tool, a data loader tool and an information governance tool.
+</td>
+</tr>
+
+
+<tr>
+<td>
+<a name="#gen_design2"></a>
+<a href="GeneralArchitecture.html">
+General Design-2
+</a>
+</td>
+
+<td>
+Organise code using a common three tier architecture that has the 	following layers: a presentation layer 
+for managing GUI code; a business concept layer for 	managing the way business concepts are expressed 
+in the system; and a data storage layer 	for managing the task of reading data from or writing data 
+to the database.
+</td>
+</tr>
+
+
+<tr>
+<td>
+<a name="#gen_design3"></a>
+<a href="GeneralArchitecture.html">
+General Design-3
+</a>
+</td>
+
+<td>
+Ensure that the presentation layer only interacts with the data storage layer via the business concept 
+layer.  Never let presentation and data storage layer have direct communication with one another.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#gen_design4"></a>
+<a href="GeneralArchitecture.html">
+General Design-4
+</a>
+</td>
+
+<td>
+Wherever possible, limit the paths of execution that are likely to occur.
+</td>
+</tr>
+
+
+<tr>
+<td>
+<a name="#gen_design5"></a>
+<a href="GeneralArchitecture.html">
+General Design-5
+</a>
+</td>
+
+<td>
+By default, give class variables and class methods the most restrictive visibility.
+</td>
+</tr>
+
+
+<tr>
+<td>
+<a name="#gen_design6"></a>
+<a href="GeneralArchitecture.html">
+General Design-6
+</a>
+</td>
+
+<td>
+By default, give classes package-level access.  Increase the visibility of a class only when there 
+is a need to do so.
+</td>
+</tr>
+
+
+<tr>
+<td>
+<a name="#gen_design7"></a>
+<a href="GeneralArchitecture.html">
+General Design-7
+</a>
+</td>
+
+<td>
+Encapsulate business concept and data storage layers of the architecture through service APIs.  
+Do not allow clients to know which class is implementing the service interfaces.
+</td>
+</tr>
+
+
+<tr>
+<td>
+<a name="#gen_design8"></a>
+<a href="GeneralArchitecture.html">
+General Design-8
+</a>
+</td>
+
+<td>
+Apply the steps of the coding philosophy:
+<ol>
+<li>get it working</li>
+<li>get it working for the next developer</li>
+<li>get it working well</li>
+</ol>
+<p>
+As well, favour coding to convention over coding to circumstance.
+</td>
+</tr>
+
+</table>
+
+<h2>Validation Decisions</h2>
+<table border="1">
+
+<tr>
+<td>
+<b>
+Decision
+</b>
+</td>
+
+<td>
+<b>
+Description
+</b>
+</td>
+</tr>
+
+
+<tr>
+<td>
+<a name="#validation1"></a>
+<a href="PresentationLayer.html">
+Validation-1
+</a>
+</td>
+
+<td>
+Wherever possible, code in the presentation layer should control and limit end-user input through 
+guided data entry facilities.  However, the code should not 	contain any code used to validate 
+form data.
+</td>
+</tr>
+
+</table>
+
+
+
+
+
+
+
+<h2>Maintenance Decisions</h2>
+<table border="1">
+
+<tr>
+<td>
+<b>
+Decision
+</b>
+</td>
+
+<td>
+<b>
+Description
+</b>
+</td>
+</tr>
+
+
+<tr>
+<td>
+<a name="#maintenance1"></a>
+<a href="PresentationLayer.html">
+Maintenance-1
+</a>
+</td>
+
+<td>
+Maintain the text for all GUI components and text for error messages in a properties file.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#maintenance2"></a>
+<a href="PresentationLayer.html">
+Maintenance-2
+</a>
+</td>
+
+<td>
+Centralise code for creating and initialising Java Swing components in a single factory class.
+</td>
+</tr>
+
+
+<tr>
+<td>
+<a name="#maintenance3"></a>
+<a href="PresentationLayer.html">
+Maintenance-3
+</a>
+</td>
+
+<td>
+Create classes that render user interface features that appear across multiple tools.  
+Isolate these classes into a sub-project that shows no dependencies on 	classes that relate 
+specifically to the RIF.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#maintenance4"></a>
+<a href="PresentationLayer.html">
+Maintenance-4
+</a>
+</td>
+
+<td>
+Contain rather than inherit from GUI classes.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#maintenance5"></a>
+<a href="BusinessConceptLayer.html">
+Maintenance-5
+</a>
+</td>
+
+<td>
+Do not try to override the behaviour of <code>equals()</code> and 
+<code>getHashCode()</code>.  In the RIF code base, the effort needed to do this correctly outweighs 
+the performance benefit we would gain from using Java's collection classes.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#maintenance6"></a>
+<a href="DataStorageLayer.html">
+Maintenance-6
+</a>
+</td>
+<td>
+Instead of having one service API with many methods, develop a service API for each tool instead.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#maintenance7"></a>
+<a href="DataStorageLayer.html">
+Maintenance-7
+</a>
+</td>
+<td>
+Develop a hierarchy of super classes which can reduce repetitive coding efforts and hold the bulk 
+of implementation code.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#maintenance8"></a>
+<a href="DataStorageLayer.html">
+Maintenance-8
+</a>
+</td>
+<td>
+Make service classes invoke delegation classes to support most of the implementation for a 
+business task.  Ensure that the service class and the manager classes have a clearly defined 
+separation of concerns.
+</td>
+</tr>
+
+
+
+<tr>
+<td>
+<a name="#maintenance9"></a>
+<a href="DataStorageLayer.html">
+Maintenance-9
+</a>
+</td>
+<td>
+Create query formatter classes that standardise the way common types of SQL queries are constructed.  
+Allow the query formatters to support changes of case and have them adopt a consistent way of 
+indenting lines of SQL code to make them more readable.
+</td>
+</tr>
+
+</table>
+
+
+<h2>Business Concept Layer Decisions</h2>
+<table border="1">
+
+<tr>
+<td>
+<b>
+Decision
+</b>
+</td>
+
+<td>
+<b>
+Description
+</b>
+</td>
+</tr>
+
+
+<tr>
+<td>
+<a name="#business_concept_layer1"></a>
+<a href="BusinessConceptLayer.html">
+Business Concept Layer-1
+</a>
+</td>
+
+<td>
+Provide a generic identifier field within each business class definition. The identifier allows Java 
+objects to be mapped to primary key values in corresponding database records.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#business_concept_layer2"></a>
+<a href="BusinessConceptLayer.html">
+Business Concept Layer-2
+</a>
+</td>
+
+<td>
+Support a business class method <code>getDisplayName()</code>, which returns <code>String</code> 
+that allows end-users to distinguish an object in a list.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#business_concept_layer3"></a>
+<a href="BusinessConceptLayer.html">
+Business Concept Layer-3
+</a>
+</td>
+
+<td>
+By default, the fields of business classes should be of type <code>String</code>.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#business_concept_layer4"></a>
+<a href="BusinessConceptLayer.html">
+Business Concept Layer-4
+</a>
+</td>
+
+<td>
+Business classes should have a method <code>ArrayList<String> getDifferences()</code>, which 
+describes the differences between two objects of the same class.
+</td>
+</tr>
+
+
+</table>
+
+
+<h2>Concurrency Decisions</h2>
+<table border="1">
+
+<tr>
+<td>
+<b>
+Decision
+</b>
+</td>
+
+<td>
+<b>
+Description
+</b>
+</td>
+</tr>
+
+
+
+<tr>
+<td>
+<a name="#concurrency1"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-1
+</a>
+</td>
+<td>
+Identify scenarios for concurrent access that may occur in interactions between various pairings 
+of tools in the tool suite.  Systematically evaluate potential scenarios for concurrent writes and 
+stale reads situations.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency1"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-2
+</a>
+</td>
+<td>
+When the Data Loader Tool is loading data sets, the other tools should not be in use. When
+end user tools are being used, the Data Loader Tool should not be in use.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency3"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-3
+</a>
+</td>
+<td>
+The Study Submission Tool should submit a new study as part of a single atomic database transaction.  Once a study
+has been created it becomes immutable.  However, it can be copied to make a new study.  Until a study description has 
+been completely created in the database, neither the Study Submission Tool nor the Study Viewer Tools should be able
+to access it.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency4"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-4
+</a>
+</td>
+<td>
+The tool suite should allow only one instance of the Data Loader Tool and one instance of the IT Governance
+Tool to run at the same time.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency5"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-5
+</a>
+</td>
+<td>
+In the Swing-based Data Loader Tool and Information Governance Tool, rely on guided data-entry features and modal
+dialogs in the GUI to help limit the likelihood of concurrency problems.  For the web-based Study Submission and 
+Study Result Viewer tools, assume they can may call any service method in any order.
+</td>
+</tr>
+
+
+<tr>
+<td>
+<a name="#concurrency6"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-6
+</a>
+</td>
+<td>
+Maintain test suites that will pass in a single-threaded environment.  Then adapt copies of those test suites
+for a multi-threaded environment.  Use the differences in pass results to identify potential concurrency problems.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency7"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-7
+</a>
+</td>
+<td>
+Assume that various database vendors may not support concurrent access to records in exactly the same way.
+Further assume that none of the JDBC database connections are thread-safe, even though for some databases they
+definitely are.  Assume that the middleware must take its own measures to mediate concurrent access for queries it 
+applies to the database.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency8"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-8
+</a>
+</td>
+<td>
+Assume that the front-end client applications will have multiple threads that may each be trying to alter parameter
+values the applications pass to the middleware service methods.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency9"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-9
+</a>
+</td>
+<td>
+Perform a deep-copy of any mutable object that is passed to a service method by a client application.  This 
+action will prevent the client from altering parameter values while they are being processed by the middleware.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency10"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-10
+</a>
+</td>
+<td>
+Where it is possible, favour using method variables over using class variables.  Class variables can be
+accessed by multiple threads, but local variables in methods will be used by only a single calling thread.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency11"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-11
+</a>
+</td>
+<td>
+Declare variables as close as possible to when they will be first used.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency12"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-12
+</a>
+</td>
+<td>
+Wherever possible, declare class variables as <code>final</code>.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency13"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-13
+</a>
+</td>
+
+<td>
+Support "safe construction" of business objects.  In business classes, make constructors private and 
+rely on static factory methods <code>newInstance(...)</code> and 
+<code>createCopy(...)</code> to control the creation of new objects.
+</td>
+</tr>
+
+</table>
+
+
+<h2>Security Decisions</h2>
+<table border="1">
+
+<tr>
+<td>
+<b>
+Decision
+</b>
+</td>
+
+<td>
+<b>
+Description
+</b>
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#security1"></a>
+<a href="BusinessConceptLayer.html">
+Security-1
+</a>
+</td>
+
+<td>
+Business classes should have a method <code>checkSecurityViolations()</code>, which recursively 
+check whether any String fields have any malicious code values.  Field values should be compared 
+against a variable collection of regular expression patterns that are commonly associated with 
+code attacks.
+</td>
+</tr>
+
+</table>
+
+
+
+<h2>Data Storage Layer Decisions</h2>
+<table border="1">
+
+<tr>
+<td>
+<b>
+Decision
+</b>
+</td>
+
+<td>
+<b>
+Description
+</b>
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#data_storage_layer1"></a>
+<a href="DataStorageLayer.html">
+Data Storage Layer-1
+</a>
+</td>
+
+<td>
+Classes that implement service APIs are responsible for: safe-copying parameter values; 
+checking for empty or malicious values in parameters; checking for invalid users; and 
+acquiring and relinquishing database connections from a pool of connections.
+</td>
+</tr>
+
+
+<tr>
+<td>
+<a name="#data_storage_layer2"></a>
+<a href="DataStorageLayer.html">
+Data Storage Layer-2
+</a>
+</td>
+
+<td>
+A Manager class is responsible for: calling the checkErrors() method of parameter values that 
+are business objects; constructing and executing SQL queries using 	parameter values; packaging 
+results as business objects; recording SQL exceptions and returning human-readable exception 
+messages; closing database resources associated with obtaining results.
+</td>
+</tr>
+
+
+</body>
+</html>

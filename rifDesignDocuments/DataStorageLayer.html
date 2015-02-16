@@ -1,0 +1,287 @@
+<head>
+<title>
+RIF Architecture: Data Storage Layer
+</title>
+
+<meta 
+	name="author" 
+	lang="en" 
+	content="Kevin Garwood">
+<meta 
+	name="keywords" 
+	lang="en" 
+	content="Rapid Inquiry Facility, RIF, environmental health, Kevin Garwood">
+	
+<link rel="stylesheet" href="./rifDesignManual.css" type="text/css">
+</head>
+
+<body>
+
+<h1>RIF Architecture: Data Storage Layer</h1>
+The most important source files in the data storage layer are the classes which implement the service 
+APIs.  For example, rifServices.businessconceptLayer.ProductionRIFStudySubmissionService</code> 
+implements the service API 
+
+<code>rifServices.dataStorageLayer.RIFStudySubmissionAPI.</code>
+
+<p>
+For reasons that are explained in the section on Designing for Testability, most of the 
+implementation for <code>rifServices.dataStorageLayer.ProductionRIFStudySubmissionService</code> 
+is implemented by the class <code>rifServices.dataStorageLayer.AbstractRIFStudySubmissionService</code>.
+</p>
+
+<p>
+One of the design challenges for making maintainable code in this layer is that as the service 
+APIs grow to include more methods, so do the classes which implement those methods.  There is a risk 
+of producing a "God class" which attempts to do everything.  There are at least three ways of simplifying 
+these classes:
+<ul>
+<li>
+make them implement service APIs which have fewer methods
+</li>
+<li>
+find ways that classes that implement service APIs can share code through a common superclass
+</li>
+<li>
+allow these classes to delegate the main part of implementing the methods to other classes
+</li>
+</ul>
+
+<p>
+Rather than try to have a single service API to service all the tools, we developed separate 
+service APIs for each tool in the suite.  For example, we developed separate interfaces 
+<code>rifServices.businessConceptLayer.RIFStudySubmissionAPI</code> 
+and rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI to separate concerns for 
+submitting studies and loading health data sets.
+	
+	
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#maintenance6">
+Maintenance-6
+</a>
+</b>: 
+Instead of having one service API with many methods, develop a service API for each tool instead.
+</i>
+</font>
+</blockquote>
+		
+<p>
+The second way we simplified the service implementation classes was to look for service APIs that 
+appeared to have a lot of overlap.  The best examples are APIs for study submission and viewing study 
+results.  Both APIs have a need for methods that can let client applications manipulate maps at 
+different resolutions.  We have tried to maintain a correspondence between the inheritance hierarchy 
+of interfaces and the inheritance hierarchy for the classes that implement them.
+</p>
+
+
+	
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#maintenance7">
+Maintenance-7
+</a>
+</b>: 
+Develop a hierarchy of super classes which can reduce repetitive coding efforts and hold the bulk 
+of implementation code.
+</i>
+</font>
+</blockquote>
+
+
+
+
+<p>
+The most important way of minimising the complexity of service implementation classes is to have 
+them delegate to other classes for the bulk of the implementation code.  Typically, a service 
+class will delegate to a method with the same name in a Manager class.  
+
+
+	
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#maintenance8">
+Maintenance-8
+</a>
+</b>: 
+Make service classes invoke delegation classes to support most of the implementation for a 
+business task.  Ensure that the service class and the manager classes have a clearly defined 
+separation of concerns.
+</i>
+</font>
+</blockquote>
+
+
+<p>
+For delegation to work, the service and the manager classes need a clear definition of roles and a 
+clear separation of concerns.
+</p>
+
+
+<p>
+A service class will have the following responsibilities:
+<ul>
+<li>
+make local copies of all mutable parameter values passed to service methods.  Called "safe copying", 
+this technique helps ensure that the middleware is not vulnerable to changes a client may make 
+to parameter values it passes while the middleware is running.
+</li>
+<li>
+check that required parameter values are not null or empty
+</li>
+<li>
+check for malicious code and invalid users
+</li>
+<li>
+acquire and release database connections from a connection pool
+</li>
+<li>
+audit attempts to perform an operation and audit any exceptions that may occur
+</li>
+</ul>
+</p>
+
+
+	
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#data_storage_layer1">
+Data Storage Layer-1
+</a>
+</b>: 
+Classes that implement service APIs are responsible for: safe-copying parameter values; 
+checking for empty or malicious values in parameters; checking for invalid users; and 
+acquiring and relinquishing database connections from a pool of connections.
+
+</i>
+</font>
+</blockquote>
+
+
+
+
+
+
+<p>
+A typical delegation Manager class will have the following responsibilities
+<ul>
+<li>
+check for field-level data type errors and illegal combinations of field values in parameter values
+</li>
+<li>
+assemble and execute an SQL query using Java's PreparedStatement mechanism
+</li>
+<li>
+audit SQL exceptions
+</li>
+<li>
+package the results as collections of business objects
+</li>
+<li>
+ensure that result sets and statement resources are closed so that database resources are freed-up for the 
+next call.
+</li>
+</ul>
+</p>
+
+
+	
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#data_storage_layer2">
+Data Storage Layer-2
+</a>
+</b>: 
+A Manager class is responsible for: calling the checkErrors() method of parameter values that 
+are business objects; constructing and executing SQL queries using 	parameter values; packaging 
+results as business objects; recording SQL exceptions and returning human-readable exception 
+messages; closing database resources associated with obtaining results.
+
+</i>
+</font>
+</blockquote>
+
+
+
+
+<p>
+The roles of each class will be described in greater detail in the various aspects of design that 
+follow.  The important point here is that in order to allow the RIF code base cope with more 
+service methods, we must rely on a class delegation chain that spreads the implementation code over 
+a number of classes that can be separately maintained.
+
+<p>
+The requirement for the RIF to support both PostgreSQL and SQL Server is perhaps the greatest 
+source of complexity in the middleware design.  We anticipate that as code we've written 
+for PostgreSQL is ported to SQL Server, there will be a need to rewrite database queries.
+</p>
+
+
+<p>
+Originally, the SQL queries that appeared in the <code>SQL*Manager</code> classes used a 
+<code>StringBuilder</code> class to concatenate SQL phrases with tables and field names that 
+suited a particular operation.  However, this task seemed repetitive, error-prone, produced 
+queries that were difficult to read and which might have to be reworked so they could be executed 
+with both <code>PostgreSQL</code> and <code>SQL Server</code> databases.
+</p>
+
+<p>
+We later developed a set of query formatter classes, which are meant to simplify and standardise 
+the way the text for SQL queries is constructed.  The classes encapsulate details for whether 
+SQL key words should be in upper or lower case, and how much each line should be indented.  
+They also have methods that allow clauses such as SELECT, FROM, WHERE being built up in a systematic way.  
+During porting activities, it may become useful to display the SQL query that is being executed in 
+order to study how it should be modified to support execution on SQL Server.  Because the construction 
+of different types of queries has been standardised, it may be easy to make queries more portable 
+by changing the query formatter classes.
+</p>
+
+
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#maintenance9">
+Maintenance-9
+</a>
+</b>: 
+Create query formatter classes that standardise the way common types of SQL queries are constructed.  
+Allow the query formatters to support changes of case and have them adopt a consistent way of 
+indenting lines of SQL code to make them more readable.
+</i>
+</font>
+</blockquote>
+
+
+<h2>
+Coding Conventions
+</h2>
+Coding conventions for this layer are described <a href="CodingConventions.html#data_storage_layer">here</a>.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
