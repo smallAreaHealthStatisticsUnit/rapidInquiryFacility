@@ -64,7 +64,7 @@ import rifServices.businessConceptLayer.AgeGroup;
  *
  */
 
-public class AgeGroupJSONGenerator {
+final class AgeGroupJSONGenerator {
 
 	// ==========================================
 	// Section Constants

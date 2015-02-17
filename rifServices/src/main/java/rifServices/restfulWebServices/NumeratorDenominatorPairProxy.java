@@ -70,7 +70,7 @@ import javax.xml.bind.annotation.*;
 	"numeratorTableDescription",
 	"denominatorTableName",
 	"denominatorTableDescription"})
-public class NumeratorDenominatorPairProxy {
+final class NumeratorDenominatorPairProxy {
 
 	// ==========================================
 	// Section Constants

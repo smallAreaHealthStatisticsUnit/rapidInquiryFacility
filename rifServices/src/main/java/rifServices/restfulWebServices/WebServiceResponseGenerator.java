@@ -5,8 +5,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response;
 
 /**
  * This class was developed to help configure the content type that can be 
@@ -182,7 +180,7 @@ import javax.ws.rs.core.Response;
  *
  */
 
-public class WebServiceResponseGenerator {
+final class WebServiceResponseGenerator {
 
 	// ==========================================
 	// Section Constants

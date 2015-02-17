@@ -73,7 +73,7 @@ import javax.xml.bind.annotation.XmlType;
 	"value"
 	}
 )
-public class ParameterProxy {
+final class ParameterProxy {
 
 	// ==========================================
 	// Section Constants

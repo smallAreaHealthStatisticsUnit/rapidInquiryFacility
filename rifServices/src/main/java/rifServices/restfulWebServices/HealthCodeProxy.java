@@ -73,7 +73,7 @@ import javax.xml.bind.annotation.*;
 	"isTopLevelTerm",
 	"numberOfSubTerms"
 	})
-public class HealthCodeProxy {
+final class HealthCodeProxy {
 
 	// ==========================================
 	// Section Constants

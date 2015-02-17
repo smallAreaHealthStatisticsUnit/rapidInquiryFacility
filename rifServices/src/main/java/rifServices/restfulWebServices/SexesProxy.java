@@ -67,7 +67,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name="sexes")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class SexesProxy {
+final class SexesProxy {
 
 	// ==========================================
 	// Section Constants

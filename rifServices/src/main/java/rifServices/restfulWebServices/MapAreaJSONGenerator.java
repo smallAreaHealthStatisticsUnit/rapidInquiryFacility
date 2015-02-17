@@ -64,7 +64,7 @@ import rifServices.businessConceptLayer.MapArea;
  *
  */
 
-public class MapAreaJSONGenerator {
+public final class MapAreaJSONGenerator {
 
 	// ==========================================
 	// Section Constants

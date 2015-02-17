@@ -65,8 +65,9 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  *
  */
 
-public class NumeratorDenominatorPairProxyConverter
-	extends XmlAdapter<NumeratorDenominatorPairProxy, NumeratorDenominatorPair> {
+final class NumeratorDenominatorPairProxyConverter
+	extends XmlAdapter<NumeratorDenominatorPairProxy, 
+	NumeratorDenominatorPair> {
 
 	// ==========================================
 	// Section Constants

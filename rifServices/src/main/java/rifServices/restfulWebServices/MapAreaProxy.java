@@ -71,7 +71,7 @@ import javax.xml.bind.annotation.XmlType;
 	"identifier, label"
 	}
 )
-public class MapAreaProxy {
+final class MapAreaProxy {
 
 	// ==========================================
 	// Section Constants

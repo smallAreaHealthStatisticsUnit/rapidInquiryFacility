@@ -76,7 +76,7 @@ import javax.xml.bind.annotation.*;
 	"upperLimitAgeGroupEnd"
 	}
 )
-public class AgeBandProxy {
+final class AgeBandProxy {
 
 	// ==========================================
 	// Section Constants

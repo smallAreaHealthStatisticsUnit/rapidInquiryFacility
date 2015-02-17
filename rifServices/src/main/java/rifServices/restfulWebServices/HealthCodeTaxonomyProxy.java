@@ -81,7 +81,7 @@ import javax.xml.bind.annotation.XmlType;
 	"nameSpace",
 	"version"
 	})
-public class HealthCodeTaxonomyProxy {
+final class HealthCodeTaxonomyProxy {
 
 	// ==========================================
 	// Section Constants

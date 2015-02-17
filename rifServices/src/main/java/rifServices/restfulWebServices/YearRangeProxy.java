@@ -79,7 +79,7 @@ import javax.xml.bind.annotation.XmlType;
 	"lowerBound, upperBound"
 	}
 )
-final public class YearRangeProxy {
+final class YearRangeProxy {
 
 
 // ==========================================

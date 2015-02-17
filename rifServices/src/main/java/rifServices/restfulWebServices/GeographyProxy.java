@@ -72,7 +72,7 @@ import javax.xml.bind.annotation.XmlType;
 	"name"
 	}
 )
-public class GeographyProxy {
+final class GeographyProxy {
 
 	// ==========================================
 	// Section Constants

@@ -72,7 +72,8 @@ import javax.xml.bind.annotation.XmlType;
 	"name"
 	}
 )
-public class ProjectProxy {
+
+final class ProjectProxy {
 
 	// ==========================================
 	// Section Constants

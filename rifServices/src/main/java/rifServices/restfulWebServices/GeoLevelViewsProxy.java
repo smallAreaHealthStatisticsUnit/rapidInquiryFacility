@@ -72,7 +72,7 @@ import javax.xml.bind.annotation.XmlType;
 	"name"
 	}
 )
-public class GeoLevelViewsProxy {
+final class GeoLevelViewsProxy {
 
 	// ==========================================
 	// Section Constants

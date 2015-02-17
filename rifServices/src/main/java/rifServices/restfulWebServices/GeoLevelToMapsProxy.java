@@ -67,7 +67,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name="geoLevelToMap")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class GeoLevelToMapsProxy {
+final class GeoLevelToMapsProxy {
 
 	// ==========================================
 	// Section Constants
