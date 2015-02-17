@@ -103,25 +103,23 @@ public class RIFInteractiveStudySubmissionTool
 	public static void main(String[] args) {
 		try {	
 			
-			RIFServiceStartupOptions startupOptions 
-				= new RIFServiceStartupOptions(false);
+			RIFServiceStartupOptions rifServiceStartupOptions
+				= RIFServiceStartupOptions.newInstance(false);
 			StringBuilder rifServiceResourcePath = new StringBuilder();
 			
 			//assume for now it will be (something)\rapidInquiryFacility\(something)
 			String currentExecutionPath = (new File(".")).getAbsolutePath();
 			int index = currentExecutionPath.indexOf("rapidInquiryFacility");
-			System.out.println("rifServiceResourcePath 10=="+currentExecutionPath.substring(0, index)+"==");
 			rifServiceResourcePath.append(currentExecutionPath.substring(0, index));
 			rifServiceResourcePath.append("rapidInquiryFacility");
 			rifServiceResourcePath.append(File.separator);
 			rifServiceResourcePath.append("rifServices");
 			
-			System.out.println("rifServiceResourcePath 11=="+rifServiceResourcePath.toString()+"==");
-			startupOptions.setRIFServiceClassDirectory(rifServiceResourcePath.toString());
+			rifServiceStartupOptions.setRIFServiceClassDirectory(rifServiceResourcePath.toString());
 			
 			ProductionRIFStudyServiceBundle rifStudyServiceBundle
 				= new ProductionRIFStudyServiceBundle();
-			rifStudyServiceBundle.initialise(startupOptions);
+			rifStudyServiceBundle.initialise(rifServiceStartupOptions);
 			rifStudyServiceBundle.login("kgarwood", "kgarwood");				
 
 			String ipAddress = InetAddress.getLocalHost().getHostAddress();

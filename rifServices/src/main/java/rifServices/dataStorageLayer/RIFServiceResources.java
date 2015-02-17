@@ -163,7 +163,7 @@ public class RIFServiceResources {
 		throws RIFServiceException {
 			
 		RIFServiceStartupOptions rifServiceStartupOptions
-			= new RIFServiceStartupOptions(isWebDeployment);
+			= RIFServiceStartupOptions.newInstance(isWebDeployment);
 		RIFServiceResources rifServiceResources
 			= new RIFServiceResources(rifServiceStartupOptions);
 		

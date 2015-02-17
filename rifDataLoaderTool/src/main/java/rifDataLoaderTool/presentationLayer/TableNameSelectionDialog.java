@@ -83,9 +83,9 @@ public class TableNameSelectionDialog
 		try {
 			ProductionRIFStudyServiceBundle rifStudyServiceBundle
 				= new ProductionRIFStudyServiceBundle();
-			RIFServiceStartupOptions startupOptions 
-				= new RIFServiceStartupOptions(false);			
-			rifStudyServiceBundle.initialise(startupOptions);
+			RIFServiceStartupOptions rifServiceStartupOptions 
+				= RIFServiceStartupOptions.newInstance(false);
+			rifStudyServiceBundle.initialise(rifServiceStartupOptions);
 			rifStudyServiceBundle.login("kgarwood", "kgarwood");				
 
 			String ipAddress = InetAddress.getLocalHost().getHostAddress();

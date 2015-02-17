@@ -117,7 +117,7 @@ public final class RIFServiceStartupOptions {
 	/**
 	 * Instantiates a new RIF service startup options.
 	 */
-	public RIFServiceStartupOptions(boolean isWebDeployment) {
+	private RIFServiceStartupOptions(boolean isWebDeployment) {
 		
 		this.isWebDeployment = isWebDeployment;
 		
@@ -143,7 +143,13 @@ public final class RIFServiceStartupOptions {
 			= RIFServiceStartupProperties.getMaximumMapAreasAllowedForSingleDisplay();
 	}
 
-	
+	public static RIFServiceStartupOptions newInstance(
+		final boolean isWebDeployment) {
+		
+		RIFServiceStartupOptions rifServiceStartupOptions
+			= new RIFServiceStartupOptions(isWebDeployment);
+		return rifServiceStartupOptions;		
+	}
 	
 	// ==========================================
 	// Section Accessors and Mutators

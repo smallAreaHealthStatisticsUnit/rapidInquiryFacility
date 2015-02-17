@@ -188,7 +188,8 @@ public class TestYearRangeYearInterval extends AbstractRIFTestCase {
 		try {
 			rifStudyServiceBundle
 				= new TestRIFStudyServiceBundle();
-			RIFServiceStartupOptions startupOptions = new RIFServiceStartupOptions(false);
+			RIFServiceStartupOptions startupOptions
+				= RIFServiceStartupOptions.newInstance(false);
 			rifStudyServiceBundle.initialise(startupOptions);
 		
 			service

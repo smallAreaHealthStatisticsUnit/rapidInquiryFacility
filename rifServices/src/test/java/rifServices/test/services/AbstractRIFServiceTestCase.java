@@ -476,7 +476,7 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 		rifServiceBundle = new TestRIFStudyServiceBundle();
 		
 		startupOptions
-			= new RIFServiceStartupOptions(false);
+			= RIFServiceStartupOptions.newInstance(false);
 		startupOptions.setMaximumMapAreasAllowedForSingleDisplay(200);
 		rifServiceBundle.initialise(startupOptions);
 		rifStudySubmissionService 

@@ -210,7 +210,7 @@ public class DataLoaderService
 		throws RIFServiceException {
 
 		RIFServiceStartupOptions rifServiceStartupOptions
-			= new RIFServiceStartupOptions(false);
+			= RIFServiceStartupOptions.newInstance(false);
 		rifServiceResources
 			= RIFServiceResources.newInstance(rifServiceStartupOptions);
 		

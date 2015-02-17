@@ -120,7 +120,7 @@ abstract class AbstractRIFWebServiceResource {
 		sd = new SimpleDateFormat("HH:mm:ss:SSS");
 
 		RIFServiceStartupOptions rifServiceStartupOptions
-			= new RIFServiceStartupOptions(true);
+			= RIFServiceStartupOptions.newInstance(true);
 		
 		webServiceResponseGenerator = new WebServiceResponseGenerator();
 		
