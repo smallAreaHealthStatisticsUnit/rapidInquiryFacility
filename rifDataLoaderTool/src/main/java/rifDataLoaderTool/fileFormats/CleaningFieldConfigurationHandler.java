@@ -60,7 +60,7 @@ import java.util.ArrayList;
  *
  */
 
-public class CleaningFieldConfigurationHandler {
+public final class CleaningFieldConfigurationHandler {
 
 	// ==========================================
 	// Section Constants

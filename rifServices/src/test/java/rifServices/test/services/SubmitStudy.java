@@ -75,7 +75,8 @@ import org.junit.Test;
  *
  */
 
-public class SubmitStudy extends AbstractHealthCodeProviderTestCase {
+public final class SubmitStudy 
+	extends AbstractHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants

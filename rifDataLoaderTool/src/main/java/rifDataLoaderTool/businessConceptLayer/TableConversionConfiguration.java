@@ -89,7 +89,7 @@ import rifServices.system.RIFServiceSecurityException;
  *
  */
 
-public class TableConversionConfiguration {
+public final class TableConversionConfiguration {
 
 	// ==========================================
 	// Section Constants

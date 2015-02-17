@@ -76,7 +76,7 @@ import javax.swing.border.LineBorder;
  *
  */
 
-class MapImagePanel 
+final class MapImagePanel 
 	extends JPanel 
 	implements ComponentListener {
 	

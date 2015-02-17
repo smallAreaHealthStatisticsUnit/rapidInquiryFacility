@@ -73,7 +73,8 @@ import org.junit.Test;
  *
  */
 
-public class TestNumeratorDenominatorPair extends AbstractRIFTestCase {
+public final class TestNumeratorDenominatorPair 
+	extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants

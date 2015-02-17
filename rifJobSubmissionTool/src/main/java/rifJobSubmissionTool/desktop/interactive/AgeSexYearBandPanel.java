@@ -98,7 +98,7 @@ import javax.swing.JPanel;
  */
 
 
-class AgeSexYearBandPanel 
+final class AgeSexYearBandPanel 
 	implements ActionListener {
 
 

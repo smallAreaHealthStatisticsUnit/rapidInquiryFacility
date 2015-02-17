@@ -69,7 +69,7 @@ import java.util.ArrayList;
  *
  */
 
-public class MapAreaSelectionEvent {
+public final class MapAreaSelectionEvent {
 	// ==========================================
 	// Section Constants
 	// ==========================================

@@ -61,7 +61,7 @@ import rifServices.system.RIFServiceSecurityException;
  *
  */
 
-public class TableFieldConversionConfiguration 
+public final class TableFieldConversionConfiguration 
 	extends AbstractRIFDataLoaderToolConcept {
 
 	// ==========================================

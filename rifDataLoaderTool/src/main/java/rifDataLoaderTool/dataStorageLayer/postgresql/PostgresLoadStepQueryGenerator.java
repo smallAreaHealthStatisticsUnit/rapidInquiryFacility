@@ -61,7 +61,7 @@ import java.util.ArrayList;
  *
  */
 
-public class PostgresLoadStepQueryGenerator 
+public final class PostgresLoadStepQueryGenerator 
 	implements LoadStepQueryGeneratorAPI {
 
 	// ==========================================

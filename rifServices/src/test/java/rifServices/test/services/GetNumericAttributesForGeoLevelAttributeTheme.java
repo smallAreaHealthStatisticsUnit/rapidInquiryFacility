@@ -72,8 +72,8 @@ import org.junit.Test;
  *
  */
 
-public class GetNumericAttributesForGeoLevelAttributeTheme extends
-		AbstractRIFServiceTestCase {
+public final class GetNumericAttributesForGeoLevelAttributeTheme 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -388,8 +388,6 @@ public class GetNumericAttributesForGeoLevelAttributeTheme extends
 				= cloneValidResultContext();
 			GeoLevelAttributeSource validGeoLevelAttributeSource
 				= cloneValidGeoLevelAttributeSource();
-			GeoLevelAttributeTheme emptyGeoLevelAttributeTheme
-				= cloneEmptyGeoLevelAttributeTheme();
 			rifStudyRetrievalService.getNumericAttributesForGeoLevelAttributeTheme(
 				validUser, 
 				validStudyResultRetrievalContext, 

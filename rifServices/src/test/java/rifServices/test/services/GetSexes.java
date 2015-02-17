@@ -72,7 +72,8 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public class GetSexes extends AbstractRIFServiceTestCase {
+public final class GetSexes 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

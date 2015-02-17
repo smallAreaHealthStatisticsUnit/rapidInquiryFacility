@@ -80,7 +80,7 @@ import javax.swing.event.ListSelectionEvent;
  *
  */
 
-public class CleanDataActivityStepDialog 
+public final class CleanDataActivityStepDialog 
 	extends AbstractDataLoaderToolDialog
 	implements ListSelectionListener {
 

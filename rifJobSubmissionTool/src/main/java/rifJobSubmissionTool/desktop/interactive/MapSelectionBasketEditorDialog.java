@@ -81,7 +81,7 @@ import javax.swing.JPanel;
  *
  */
 
-class MapSelectionBasketEditorDialog 
+final class MapSelectionBasketEditorDialog 
 	implements ActionListener, 
 	Observer {
 

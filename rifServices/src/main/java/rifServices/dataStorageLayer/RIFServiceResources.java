@@ -63,7 +63,7 @@ import rifServices.system.RIFServiceStartupOptions;
  *
  */
 
-public class RIFServiceResources {
+public final class RIFServiceResources {
 
 	// ==========================================
 	// Section Constants

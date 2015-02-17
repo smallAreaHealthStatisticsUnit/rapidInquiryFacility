@@ -19,7 +19,6 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 
-import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -96,7 +95,7 @@ import javax.swing.table.TableColumn;
  */
 
 
-class HealthCodeListPanel 
+final class HealthCodeListPanel 
 	implements ActionListener {
 
 // ==========================================

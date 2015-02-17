@@ -51,7 +51,7 @@ package rifDataLoaderTool.system;
  *
  */
 
-public class RIFDataLoaderStartupOptions {
+public final class RIFDataLoaderStartupOptions {
 
 	// ==========================================
 	// Section Constants

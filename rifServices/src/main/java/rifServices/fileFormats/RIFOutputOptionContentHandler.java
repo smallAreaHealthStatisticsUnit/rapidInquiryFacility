@@ -76,7 +76,7 @@ import java.util.ArrayList;
  */
 
 
-class RIFOutputOptionContentHandler 
+final class RIFOutputOptionContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 // ==========================================

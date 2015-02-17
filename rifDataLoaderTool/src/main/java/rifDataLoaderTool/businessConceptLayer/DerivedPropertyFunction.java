@@ -53,7 +53,7 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public class DerivedPropertyFunction {
+public final class DerivedPropertyFunction {
 
 	// ==========================================
 	// Section Constants

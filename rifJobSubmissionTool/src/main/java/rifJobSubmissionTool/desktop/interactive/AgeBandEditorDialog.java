@@ -92,7 +92,7 @@ import javax.swing.JPanel;
  *
  */
 
-class AgeBandEditorDialog 
+final class AgeBandEditorDialog 
 	implements ActionListener {
 	
 	// ==========================================

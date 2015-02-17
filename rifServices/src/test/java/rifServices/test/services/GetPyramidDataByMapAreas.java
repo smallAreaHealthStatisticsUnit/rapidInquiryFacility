@@ -74,7 +74,8 @@ import java.util.ArrayList;
  *
  */
 
-public class GetPyramidDataByMapAreas extends AbstractRIFServiceTestCase {
+public final class GetPyramidDataByMapAreas 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -103,10 +104,7 @@ public class GetPyramidDataByMapAreas extends AbstractRIFServiceTestCase {
 		return new Integer(masterValidYear);
 	}
 	
-	private Integer cloneNonExistentYear() {
-		return new Integer(masterNonExistentYear);
-	}
-	
+
 	@Test
 	public void getPyramidDataByMapAreas_COMMON1() {
 		
@@ -490,7 +488,7 @@ public class GetPyramidDataByMapAreas extends AbstractRIFServiceTestCase {
 			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
 			GeoLevelAttributeSource validGeoLevelAttributeSource
 				= cloneValidGeoLevelAttributeSource();
-			Integer validYear = cloneValidYear();
+
 			String validGeoLevelAttribute = getValidGeoLevelSourceAttribute();
 			rifStudyRetrievalService.getPyramidDataByMapAreas(
 				validUser, 

@@ -1,12 +1,5 @@
 package rifDataLoaderTool.dataStorageLayer;
 
-import java.sql.*;
-
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
-
-import rifServices.businessConceptLayer.User;
-import rifServices.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifServices.dataStorageLayer.SQLQueryUtility;
 
 /**
  *
@@ -60,7 +53,7 @@ import rifServices.dataStorageLayer.SQLQueryUtility;
  *
  */
 
-public class RIFTableCreationUtility {
+public final class RIFTableCreationUtility {
 
 	
 	// ==========================================

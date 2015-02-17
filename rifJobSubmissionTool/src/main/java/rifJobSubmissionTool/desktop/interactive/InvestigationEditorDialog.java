@@ -101,8 +101,7 @@ import javax.swing.JScrollPane;
  *
  */
 
-
-class InvestigationEditorDialog 
+final class InvestigationEditorDialog 
 	implements ActionListener {
 		
 // ==========================================

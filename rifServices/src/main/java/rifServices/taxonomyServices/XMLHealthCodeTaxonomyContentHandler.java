@@ -86,7 +86,7 @@ import javax.xml.parsers.SAXParserFactory;
  */
 
 
-class XMLHealthCodeTaxonomyContentHandler 
+final class XMLHealthCodeTaxonomyContentHandler 
 	extends DefaultHandler {
 
 // ==========================================

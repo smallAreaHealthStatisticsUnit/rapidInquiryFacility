@@ -80,7 +80,8 @@ import org.junit.Test;
  *
  */
 
-public class TestYearRangeYearInterval extends AbstractRIFTestCase {
+public final class TestYearRangeYearInterval 
+	extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants

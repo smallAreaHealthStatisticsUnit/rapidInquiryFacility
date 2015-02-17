@@ -83,7 +83,7 @@ import java.io.UnsupportedEncodingException;
  */
 
 
-public class CovariateContentHandler 
+public final class CovariateContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 // ==========================================

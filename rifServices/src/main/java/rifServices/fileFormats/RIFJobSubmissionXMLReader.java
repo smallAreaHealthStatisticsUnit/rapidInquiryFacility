@@ -76,7 +76,7 @@ import java.io.File;
  */
 
 
-public class RIFJobSubmissionXMLReader {
+public final class RIFJobSubmissionXMLReader {
 
 // ==========================================
 // Section Constants

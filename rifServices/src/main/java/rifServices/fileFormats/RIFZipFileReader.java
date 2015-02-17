@@ -87,7 +87,7 @@ import javax.xml.parsers.SAXParserFactory;
  */
 
 
-public class RIFZipFileReader {
+public final class RIFZipFileReader {
 
 // ==========================================
 // Section Constants

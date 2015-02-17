@@ -67,7 +67,7 @@ import java.util.ArrayList;
  *
  */
 
-public class SQLInsertQueryFormatter 
+public final class SQLInsertQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================

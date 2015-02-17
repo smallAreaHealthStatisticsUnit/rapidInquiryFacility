@@ -73,7 +73,8 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public class GetYearRange extends AbstractRIFServiceTestCase {
+public final class GetYearRange 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

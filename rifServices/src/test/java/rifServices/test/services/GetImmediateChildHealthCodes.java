@@ -73,7 +73,8 @@ import rifServices.util.DisplayableItemSorter;
  *
  */
 
-public class GetImmediateChildHealthCodes extends AbstractHealthCodeProviderTestCase {
+public final class GetImmediateChildHealthCodes 
+	extends AbstractHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants

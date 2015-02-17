@@ -72,7 +72,8 @@ import rifServices.util.DisplayableItemSorter;
  *
  */
 
-public class GetGeographies extends AbstractRIFServiceTestCase {
+public final class GetGeographies 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

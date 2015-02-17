@@ -72,7 +72,8 @@ import rifServices.system.RIFServiceError;
  *
  */
 
-public class GetExtractResultsByBlock extends AbstractRIFServiceTestCase {
+public final class GetExtractResultsByBlock 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

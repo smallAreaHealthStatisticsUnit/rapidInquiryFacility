@@ -72,7 +72,8 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public class GetAvailableRIFOutputOptions extends AbstractRIFServiceTestCase {
+public final class GetAvailableRIFOutputOptions 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

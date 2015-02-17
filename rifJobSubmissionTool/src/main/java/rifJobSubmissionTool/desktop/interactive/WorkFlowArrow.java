@@ -72,7 +72,8 @@ import javax.swing.JPanel;
  *
  */
 
-class WorkFlowArrow extends JPanel {
+final class WorkFlowArrow 
+	extends JPanel {
 
 	// ==========================================
 	// Section Constants

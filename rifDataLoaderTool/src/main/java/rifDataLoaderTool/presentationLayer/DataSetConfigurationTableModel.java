@@ -64,7 +64,8 @@ import java.util.ArrayList;
  *
  */
 
-public class DataSetConfigurationTableModel extends AbstractTableModel {
+public final class DataSetConfigurationTableModel 
+	extends AbstractTableModel {
 
 	// ==========================================
 	// Section Constants

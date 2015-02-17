@@ -72,7 +72,7 @@ import javax.xml.bind.annotation.XmlType;
 	"name"
 	}
 )
-public class HealthThemeProxy {
+final class HealthThemeProxy {
 
 	// ==========================================
 	// Section Constants

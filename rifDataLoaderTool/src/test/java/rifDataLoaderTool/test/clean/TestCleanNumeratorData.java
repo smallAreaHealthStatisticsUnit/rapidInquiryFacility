@@ -1,10 +1,6 @@
 package rifDataLoaderTool.test.clean;
 
 
-import rifServices.system.RIFServiceException;
-
-import org.junit.After;
-import org.junit.Before;
 import junit.framework.TestCase;
 
 /**
@@ -57,7 +53,8 @@ import junit.framework.TestCase;
  *
  */
 
-public class TestCleanNumeratorData extends TestCase {
+public final class TestCleanNumeratorData 
+	extends TestCase {
 
 	// ==========================================
 	// Section Constants

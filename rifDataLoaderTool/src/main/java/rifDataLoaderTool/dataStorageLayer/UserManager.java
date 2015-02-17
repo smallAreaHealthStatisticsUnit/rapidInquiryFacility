@@ -64,7 +64,7 @@ import java.sql.*;
  *
  */
 
-public class UserManager {
+public final class UserManager {
 
 	// ==========================================
 	// Section Constants

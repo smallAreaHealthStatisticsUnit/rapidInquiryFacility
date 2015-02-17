@@ -76,7 +76,8 @@ import java.util.ArrayList;
  *
  */
 
-class SQLRIFSubmissionManager extends AbstractSQLManager {
+final class SQLRIFSubmissionManager 
+	extends AbstractSQLManager {
 		
 	// ==========================================
 	// Section Constants

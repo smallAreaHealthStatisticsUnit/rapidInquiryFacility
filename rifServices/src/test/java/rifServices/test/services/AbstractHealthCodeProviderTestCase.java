@@ -71,8 +71,8 @@ import rifServices.util.FieldValidationUtility;
  *
  */
 
-public abstract class AbstractHealthCodeProviderTestCase extends
-		AbstractRIFServiceTestCase {
+public abstract class AbstractHealthCodeProviderTestCase 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

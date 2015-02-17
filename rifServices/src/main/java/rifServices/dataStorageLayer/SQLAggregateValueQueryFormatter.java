@@ -77,7 +77,7 @@ import java.util.ArrayList;
  *
  */
 
-public class SQLAggregateValueQueryFormatter 
+public final class SQLAggregateValueQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================

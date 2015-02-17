@@ -80,7 +80,8 @@ import org.junit.Test;
  *
  */
 
-public class TestGeoLevelClasses extends AbstractRIFTestCase {
+public final class TestGeoLevelClasses 
+	extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants

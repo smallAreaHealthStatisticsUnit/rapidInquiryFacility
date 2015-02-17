@@ -77,7 +77,7 @@ import java.util.ArrayList;
  *
  */
 
-public class HealthCodeListWriter {
+public final class HealthCodeListWriter {
 
 	// ==========================================
 	// Section Constants

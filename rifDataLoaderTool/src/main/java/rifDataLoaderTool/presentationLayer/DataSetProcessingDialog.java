@@ -69,7 +69,7 @@ import javax.swing.*;
  *
  */
 
-public class DataSetProcessingDialog 
+public final class DataSetProcessingDialog 
 	implements ActionListener,
 	ListSelectionListener {
 

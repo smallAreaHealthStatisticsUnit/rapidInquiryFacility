@@ -1,9 +1,7 @@
 package rifServices.system;
 
 
-import java.io.File;
 import java.text.Collator;
-import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -74,7 +72,7 @@ import java.util.ResourceBundle;
  *
 */
 
-public class RIFServiceStartupProperties {
+public final class RIFServiceStartupProperties {
 
     // ==========================================
     // Section Constants

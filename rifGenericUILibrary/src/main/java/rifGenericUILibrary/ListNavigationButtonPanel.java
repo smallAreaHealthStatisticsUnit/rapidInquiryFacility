@@ -58,7 +58,8 @@ import javax.swing.JPanel;
  *
  */
 
-public class ListNavigationButtonPanel extends AbstractNavigationPanel {
+public final class ListNavigationButtonPanel 
+	extends AbstractNavigationPanel {
 
 	// ==========================================
 	// Section Constants

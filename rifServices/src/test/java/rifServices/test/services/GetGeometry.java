@@ -1,6 +1,5 @@
 package rifServices.test.services;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -79,7 +78,8 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public class GetGeometry extends AbstractRIFServiceTestCase {
+public final class GetGeometry 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -194,7 +194,6 @@ public class GetGeometry extends AbstractRIFServiceTestCase {
 			User validUser = cloneValidUser();
 			Geography emptyGeography = cloneEmptyGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
 			GeoLevelView validGeoLevelView = cloneValidGeoLevelView();
 			ArrayList<MapArea> validMapAreas = new ArrayList<MapArea>();
 			

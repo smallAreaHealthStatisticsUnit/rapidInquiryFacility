@@ -71,7 +71,8 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public class GetDefaultGeoLevelSelectValue extends AbstractRIFServiceTestCase {
+public final class GetDefaultGeoLevelSelectValue 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

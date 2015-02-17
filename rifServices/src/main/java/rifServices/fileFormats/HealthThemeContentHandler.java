@@ -74,7 +74,7 @@ import java.util.ArrayList;
  */
 
 
-class HealthThemeContentHandler 
+final class HealthThemeContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 // ==========================================

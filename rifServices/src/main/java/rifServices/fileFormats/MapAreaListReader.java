@@ -77,7 +77,7 @@ import javax.xml.parsers.SAXParserFactory;
  */
 
 
-public class MapAreaListReader {
+public final class MapAreaListReader {
 
 
 // ==========================================

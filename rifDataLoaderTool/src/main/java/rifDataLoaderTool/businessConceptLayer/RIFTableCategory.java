@@ -55,7 +55,7 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public class RIFTableCategory {
+public final class RIFTableCategory {
 
 	// ==========================================
 	// Section Constants

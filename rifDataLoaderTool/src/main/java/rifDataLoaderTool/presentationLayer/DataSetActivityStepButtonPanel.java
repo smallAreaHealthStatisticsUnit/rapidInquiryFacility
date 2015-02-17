@@ -61,7 +61,7 @@ import java.awt.event.ActionListener;
  *
  */
 
-public class DataSetActivityStepButtonPanel {
+public final class DataSetActivityStepButtonPanel {
 
 	// ==========================================
 	// Section Constants

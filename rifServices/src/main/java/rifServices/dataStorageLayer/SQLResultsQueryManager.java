@@ -84,7 +84,7 @@ import java.util.ArrayList;
  *
  */
 
-class SQLResultsQueryManager extends AbstractSQLManager {
+final class SQLResultsQueryManager extends AbstractSQLManager {
 
 	// ==========================================
 	// Section Constants

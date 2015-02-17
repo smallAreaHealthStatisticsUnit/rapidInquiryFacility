@@ -98,7 +98,7 @@ import rifServices.system.RIFServiceSecurityException;
  *
  */
 
-public class TableFieldCleaningConfiguration 
+public final class TableFieldCleaningConfiguration 
 	extends AbstractRIFDataLoaderToolConcept {
 
 	// ==========================================

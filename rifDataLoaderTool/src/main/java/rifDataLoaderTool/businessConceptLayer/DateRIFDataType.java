@@ -55,7 +55,8 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class DateRIFDataType extends AbstractRIFDataType {
+public final class DateRIFDataType 
+	extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants

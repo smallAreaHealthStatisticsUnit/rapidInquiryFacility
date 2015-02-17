@@ -74,7 +74,7 @@ import java.io.IOException;
  */
 
 
-class NumeratorDenominatorPairContentHandler 
+final class NumeratorDenominatorPairContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 // ==========================================

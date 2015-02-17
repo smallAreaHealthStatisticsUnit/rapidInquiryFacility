@@ -76,7 +76,8 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public class GetGeoLevelToMapAreas extends AbstractRIFServiceTestCase {
+public final class GetGeoLevelToMapAreas 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

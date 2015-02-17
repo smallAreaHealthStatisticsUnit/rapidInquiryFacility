@@ -73,7 +73,8 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public class GetTopLevelHealthCodes extends AbstractHealthCodeProviderTestCase {
+public final class GetTopLevelHealthCodes 
+	extends AbstractHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants

@@ -59,7 +59,7 @@ import rifGenericUILibrary.HTMLUtility;
  *
  */
 
-public class FieldVarianceReport {
+public final class FieldVarianceReport {
 
 	// ==========================================
 	// Section Constants

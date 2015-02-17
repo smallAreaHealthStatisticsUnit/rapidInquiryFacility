@@ -82,7 +82,7 @@ import javax.swing.table.TableColumnModel;
  */
 
 
-class ParameterTable 
+final class ParameterTable 
 	implements TableModelListener {
 
 // ==========================================

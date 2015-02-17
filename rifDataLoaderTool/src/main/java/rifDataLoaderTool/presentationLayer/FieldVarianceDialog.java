@@ -62,7 +62,8 @@ import java.awt.event.ActionEvent;
  *
  */
 
-public class FieldVarianceDialog extends AbstractDataLoaderToolDialog {
+public final class FieldVarianceDialog 
+	extends AbstractDataLoaderToolDialog {
 
 	// ==========================================
 	// Section Constants

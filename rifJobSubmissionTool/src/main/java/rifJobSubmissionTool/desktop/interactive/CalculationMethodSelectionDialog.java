@@ -87,7 +87,7 @@ import javax.swing.JScrollPane;
  *
  */
 
-class CalculationMethodSelectionDialog 
+final class CalculationMethodSelectionDialog 
 	implements ActionListener {
 
 // ==========================================

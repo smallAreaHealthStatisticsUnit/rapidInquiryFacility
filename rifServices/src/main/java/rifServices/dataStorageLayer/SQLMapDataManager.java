@@ -94,7 +94,7 @@ import javax.imageio.ImageIO;
  *
  */
 
-class SQLMapDataManager 
+final class SQLMapDataManager 
 	extends AbstractSQLManager {
 
 	// ==========================================

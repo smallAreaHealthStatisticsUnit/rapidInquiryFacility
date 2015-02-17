@@ -62,7 +62,7 @@ import java.util.ArrayList;
  */
 
 
-public class XMLCommentInjector {
+public final class XMLCommentInjector {
 
 // ==========================================
 // Section Constants

@@ -60,7 +60,7 @@ import rifServices.dataStorageLayer.SQLGeneralQueryFormatter;
  *
  */
 
-public class PostgresConvertStepQueryGenerator 
+public final class PostgresConvertStepQueryGenerator 
 	implements ConvertStepQueryGeneratorAPI {
 
 	// ==========================================

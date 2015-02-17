@@ -66,7 +66,7 @@ package rifServices.dataStorageLayer;
  *
  */
 
-public class SQLDeleteTableQueryFormatter 
+public final class SQLDeleteTableQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================

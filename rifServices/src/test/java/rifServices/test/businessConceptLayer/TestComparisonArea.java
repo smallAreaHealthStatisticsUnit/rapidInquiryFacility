@@ -83,7 +83,8 @@ import org.junit.Test;
  *
  */
 
-public class TestComparisonArea extends AbstractRIFTestCase {
+public final class TestComparisonArea 
+	extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants

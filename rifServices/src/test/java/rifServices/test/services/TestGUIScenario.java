@@ -69,7 +69,8 @@ import java.util.ArrayList;
  *
  */
 
-public class TestGUIScenario extends AbstractRIFServiceTestCase {
+public final class TestGUIScenario 
+	extends AbstractRIFServiceTestCase {
 
 	/**
 	 * The main method.

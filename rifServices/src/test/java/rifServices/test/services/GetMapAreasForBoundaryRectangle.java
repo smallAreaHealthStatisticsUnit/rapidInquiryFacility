@@ -1,12 +1,5 @@
 package rifServices.test.services;
 
-import static org.junit.Assert.assertEquals;
-
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-
-import org.junit.Test;
 
 import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.GeoLevelSelect;
@@ -16,7 +9,11 @@ import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
-import rifServices.system.RIFServiceStartupOptions;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import java.util.ArrayList;
+import org.junit.Test;
 
 /**
  *
@@ -78,7 +75,8 @@ import rifServices.system.RIFServiceStartupOptions;
  *
  */
 
-public class GetMapAreasForBoundaryRectangle extends AbstractRIFServiceTestCase {
+public final class GetMapAreasForBoundaryRectangle 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -167,13 +165,12 @@ public class GetMapAreasForBoundaryRectangle extends AbstractRIFServiceTestCase 
 			validGeoLevelArea.setName("Clarke");
 			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
 			
-			ArrayList<MapArea> mapAreas
-				= rifStudySubmissionService.getMapAreas(
-					validUser, 
-					validGeography,
-					validGeoLevelSelect,
-					validGeoLevelArea,
-					validGeoLevelToMap);
+			rifStudySubmissionService.getMapAreas(
+				validUser, 
+				validGeography,
+				validGeoLevelSelect,
+				validGeoLevelArea,
+				validGeoLevelToMap);
 			
 			fail();
 		}

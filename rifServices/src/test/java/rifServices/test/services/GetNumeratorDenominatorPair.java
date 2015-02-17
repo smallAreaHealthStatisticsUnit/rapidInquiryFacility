@@ -74,7 +74,8 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public class GetNumeratorDenominatorPair extends AbstractRIFServiceTestCase {
+public final class GetNumeratorDenominatorPair 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

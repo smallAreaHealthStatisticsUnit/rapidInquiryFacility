@@ -1,17 +1,13 @@
 package rifDataLoaderTool.presentationLayer;
 
-import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
 import rifDataLoaderTool.businessConceptLayer.RIFUserRole;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
-import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceException;
 
 import javax.swing.*;
-
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -68,7 +64,8 @@ import java.awt.event.ActionListener;
  *
  */
 
-public class UserEditorDialog extends AbstractDataLoaderToolDialog 
+public final class UserEditorDialog 
+	extends AbstractDataLoaderToolDialog 
 	implements ActionListener {
 
 	// ==========================================

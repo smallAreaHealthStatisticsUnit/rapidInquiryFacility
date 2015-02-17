@@ -72,7 +72,7 @@ import java.io.File;
  *
  */
 
-public class SampleTestObjectGenerator {
+public final class SampleTestObjectGenerator {
 
 	// ==========================================
 	// Section Constants

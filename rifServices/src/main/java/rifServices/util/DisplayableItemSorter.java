@@ -60,7 +60,7 @@ import java.text.Collator;
  *
  */
 
-public class DisplayableItemSorter {
+public final class DisplayableItemSorter {
 
 	// ==========================================
 	// Section Constants

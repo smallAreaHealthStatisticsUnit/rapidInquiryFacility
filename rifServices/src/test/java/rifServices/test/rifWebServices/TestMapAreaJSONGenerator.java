@@ -3,7 +3,6 @@ package rifServices.test.rifWebServices;
 import java.util.ArrayList;
 
 import rifServices.businessConceptLayer.MapArea;
-import rifServices.system.RIFServiceException;
 import rifServices.restfulWebServices.MapAreaJSONGenerator;
 import static org.junit.Assert.*;
 
@@ -69,7 +68,7 @@ import org.junit.Test;
  *
  */
 
-public class TestMapAreaJSONGenerator {
+public final class TestMapAreaJSONGenerator {
 
 	// ==========================================
 	// Section Constants

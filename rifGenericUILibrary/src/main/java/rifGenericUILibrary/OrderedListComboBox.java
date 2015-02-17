@@ -71,7 +71,7 @@ import javax.swing.JComboBox;
  */
 
 
-public class OrderedListComboBox {
+public final class OrderedListComboBox {
 
 // ==========================================
 // Section Constants

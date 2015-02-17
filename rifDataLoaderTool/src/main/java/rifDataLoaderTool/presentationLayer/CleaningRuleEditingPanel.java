@@ -65,7 +65,7 @@ import java.awt.event.ActionEvent;
  *
  */
 
-public class CleaningRuleEditingPanel 
+public final class CleaningRuleEditingPanel 
 	implements ActionListener {
 
 	// ==========================================

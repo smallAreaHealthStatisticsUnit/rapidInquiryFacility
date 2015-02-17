@@ -67,7 +67,7 @@ import java.util.ArrayList;
  *
  */
 
-class TaxonomyTerm {
+final class TaxonomyTerm {
 
 	// ==========================================
 	// Section Constants

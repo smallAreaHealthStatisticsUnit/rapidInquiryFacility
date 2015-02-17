@@ -74,7 +74,8 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public class GetAgeGroups extends AbstractRIFServiceTestCase {
+public final class GetAgeGroups 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

@@ -10,8 +10,6 @@ import rifServices.businessConceptLayer.GeoLevelAttributeSource;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.MapArea;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 import java.util.ArrayList;
@@ -76,8 +74,8 @@ import java.util.ArrayList;
  *
  */
 
-public class GetResultsStratifiedByGenderAndAgeGroup extends
-		AbstractRIFServiceTestCase {
+public final class GetResultsStratifiedByGenderAndAgeGroup 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

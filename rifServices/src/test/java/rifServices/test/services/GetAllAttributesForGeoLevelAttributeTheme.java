@@ -72,8 +72,8 @@ import org.junit.Test;
  *
  */
 
-public class GetAllAttributesForGeoLevelAttributeTheme extends
-		AbstractRIFServiceTestCase {
+public final class GetAllAttributesForGeoLevelAttributeTheme 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

@@ -74,7 +74,8 @@ import rifServices.util.RIFLogger;
  *
  */
 
-class SQLDiseaseMappingStudyManager extends AbstractSQLManager {
+final class SQLDiseaseMappingStudyManager 
+	extends AbstractSQLManager {
 
 	// ==========================================
 	// Section Constants

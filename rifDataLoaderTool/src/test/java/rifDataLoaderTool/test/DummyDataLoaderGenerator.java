@@ -53,7 +53,7 @@ import rifServices.businessConceptLayer.User;
  *
  */
 
-public class DummyDataLoaderGenerator {
+public final class DummyDataLoaderGenerator {
 
 	// ==========================================
 	// Section Constants

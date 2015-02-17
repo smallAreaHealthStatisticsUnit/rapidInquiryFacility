@@ -54,7 +54,8 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public class ICDCodeRIFDataType extends AbstractRIFDataType {
+public final class ICDCodeRIFDataType 
+	extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants

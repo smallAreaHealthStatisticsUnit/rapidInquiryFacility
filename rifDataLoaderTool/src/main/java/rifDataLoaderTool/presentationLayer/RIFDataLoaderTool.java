@@ -4,8 +4,6 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
 
 import rifGenericUILibrary.UserInterfaceFactory;
 import javax.swing.JDialog;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Dimension;
 import javax.swing.JPanel;
 
@@ -60,7 +58,7 @@ import javax.swing.JPanel;
  *
  */
 
-public class RIFDataLoaderTool {
+public final class RIFDataLoaderTool {
 
 	// ==========================================
 	// Section Constants

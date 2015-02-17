@@ -72,7 +72,8 @@ import rifServices.util.FieldValidationUtility;
  *
  */
 
-public class GetHealthCode extends AbstractHealthCodeProviderTestCase {
+public final class GetHealthCode 
+	extends AbstractHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -143,7 +144,6 @@ public class GetHealthCode extends AbstractHealthCodeProviderTestCase {
 	@Test
 	public void getHealthCode_NULL1() {
 		try {
-			User emptyUser = cloneEmptyUser();
 			HealthCode healthCode = cloneValidHealthCode();
 			
 			rifStudySubmissionService.getHealthCode(

@@ -84,7 +84,8 @@ import javax.swing.JTextArea;
  *
  */
 
-class ProjectSelectionPanel implements ActionListener {
+final class ProjectSelectionPanel 
+	implements ActionListener {
 	
 	// ==========================================
 	// Section Constants

@@ -53,7 +53,7 @@ import javax.swing.JButton;
  *
  */
 
-abstract public class AbstractNavigationPanel {
+public abstract class AbstractNavigationPanel {
 
 	// ==========================================
 	// Section Constants

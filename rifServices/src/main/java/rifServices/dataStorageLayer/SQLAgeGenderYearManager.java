@@ -84,7 +84,7 @@ import java.util.ArrayList;
  *
  */
 
-class SQLAgeGenderYearManager 
+final class SQLAgeGenderYearManager 
 	extends AbstractSQLManager {
 
 	// ==========================================

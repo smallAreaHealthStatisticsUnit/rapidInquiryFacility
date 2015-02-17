@@ -79,7 +79,8 @@ import org.junit.Test;
  *
  */
 
-public class TestMapArea extends AbstractRIFTestCase {
+public final class TestMapArea 
+	extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants

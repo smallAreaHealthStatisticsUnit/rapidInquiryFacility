@@ -15,7 +15,6 @@ import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelToMap;
-import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.fileFormats.CovariateContentHandler;
@@ -103,7 +102,7 @@ import javax.swing.event.ListSelectionListener;
  *
  */
 
-class CovariatesSelectionDialog 
+final class CovariatesSelectionDialog 
 	implements ActionListener, 
 	ListSelectionListener {
 		

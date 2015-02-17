@@ -54,7 +54,7 @@ import rifGenericUILibrary.UserInterfaceFactory;
  *
  */
 
-public class RIFDataLoaderToolSession {
+public final class RIFDataLoaderToolSession {
 
 	// ==========================================
 	// Section Constants

@@ -62,7 +62,7 @@ import javax.swing.event.ListSelectionListener;
  *
  */
 
-public class DataSetConfigurationTable {
+public final class DataSetConfigurationTable {
 
 	// ==========================================
 	// Section Constants

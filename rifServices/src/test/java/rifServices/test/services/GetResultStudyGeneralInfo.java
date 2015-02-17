@@ -70,7 +70,8 @@ import org.junit.Test;
  *
  */
 
-public class GetResultStudyGeneralInfo extends AbstractRIFServiceTestCase {
+public final class GetResultStudyGeneralInfo 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

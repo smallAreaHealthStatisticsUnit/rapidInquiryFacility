@@ -71,7 +71,7 @@ import java.util.Locale;
  */
 
 
-public class RIFQFileFilter 
+public final class RIFQFileFilter 
 	implements FileFilter {
 
 // ==========================================

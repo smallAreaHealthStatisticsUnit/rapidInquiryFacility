@@ -74,7 +74,7 @@ import rifServices.util.DisplayableItemSorter;
  *
  */
 
-public class GetGeoLevelSelectValues extends
+public final class GetGeoLevelSelectValues extends
 		AbstractRIFServiceTestCase {
 
 	// ==========================================

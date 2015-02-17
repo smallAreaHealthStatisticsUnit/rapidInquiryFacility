@@ -92,7 +92,7 @@ import javax.swing.JPanel;
  *
  */
 
-class RIFStepButtonNavigationPanel 
+final class RIFStepButtonNavigationPanel 
 	extends Observable 
 	implements ActionListener {
 	

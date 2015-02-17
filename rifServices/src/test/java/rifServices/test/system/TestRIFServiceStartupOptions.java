@@ -75,7 +75,8 @@ import org.junit.Test;
  *
  */
 
-public class TestRIFServiceStartupOptions extends AbstractRIFTestCase {
+public final class TestRIFServiceStartupOptions 
+	extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants

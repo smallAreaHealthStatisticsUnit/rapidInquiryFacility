@@ -80,7 +80,7 @@ import java.util.ArrayList;
  */
 
 
-class CalculationMethodContentHandler 
+final class CalculationMethodContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 

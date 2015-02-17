@@ -89,7 +89,7 @@ import javax.swing.JTextField;
  *
  */
 
-class HealthCodeSelectionSearchPanel 
+final class HealthCodeSelectionSearchPanel 
 	implements ActionListener {
 
 	// ==========================================

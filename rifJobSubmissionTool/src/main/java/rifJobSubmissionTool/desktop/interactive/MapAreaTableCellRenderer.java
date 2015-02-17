@@ -76,7 +76,7 @@ import javax.swing.table.DefaultTableCellRenderer;
  *
  */
 
-class MapAreaTableCellRenderer 
+final class MapAreaTableCellRenderer 
 	extends DefaultTableCellRenderer {
 
 	// ==========================================

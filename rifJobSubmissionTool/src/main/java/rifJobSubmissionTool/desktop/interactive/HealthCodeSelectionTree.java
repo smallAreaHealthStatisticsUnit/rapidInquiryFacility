@@ -83,7 +83,7 @@ import javax.swing.tree.TreePath;
  *
  */
 
-class HealthCodeSelectionTree 
+final class HealthCodeSelectionTree 
 	implements MouseListener {
 
 	// ==========================================

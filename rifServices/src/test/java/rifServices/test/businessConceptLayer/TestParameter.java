@@ -76,7 +76,8 @@ import org.junit.Test;
  *
  */
 
-public class TestParameter extends AbstractRIFTestCase {
+public final class TestParameter 
+	extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants

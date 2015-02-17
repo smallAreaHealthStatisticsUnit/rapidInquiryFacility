@@ -79,7 +79,8 @@ import java.util.Date;
  *
  */
 
-public class TestRIFStudySubmission extends AbstractRIFTestCase {
+public final class TestRIFStudySubmission 
+	extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants

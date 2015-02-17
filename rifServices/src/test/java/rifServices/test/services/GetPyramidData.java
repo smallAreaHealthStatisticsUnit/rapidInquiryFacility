@@ -70,7 +70,8 @@ import org.junit.Test;
  *
  */
 
-public class GetPyramidData extends AbstractRIFServiceTestCase {
+public final class GetPyramidData 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

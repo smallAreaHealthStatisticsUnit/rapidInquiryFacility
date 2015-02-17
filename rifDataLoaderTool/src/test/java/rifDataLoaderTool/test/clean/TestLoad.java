@@ -8,7 +8,6 @@ import rifDataLoaderTool.test.DummyDataLoaderGenerator;
 import rifServices.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceException;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -63,7 +62,8 @@ import org.junit.Test;
  *
  */
 
-public class TestLoad extends AbstractRIFDataLoaderTestCase {
+public final class TestLoad 
+	extends AbstractRIFDataLoaderTestCase {
 
 	// ==========================================
 	// Section Constants

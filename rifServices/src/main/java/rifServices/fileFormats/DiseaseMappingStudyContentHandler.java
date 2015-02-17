@@ -83,7 +83,7 @@ import java.util.ArrayList;
  */
 
 
-class DiseaseMappingStudyContentHandler 
+final class DiseaseMappingStudyContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 // ==========================================

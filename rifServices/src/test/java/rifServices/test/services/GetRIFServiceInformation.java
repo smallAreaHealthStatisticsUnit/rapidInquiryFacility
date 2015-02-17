@@ -71,7 +71,8 @@ import org.junit.Test;
  *
  */
 
-public class GetRIFServiceInformation extends AbstractRIFServiceTestCase {
+public final class GetRIFServiceInformation 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

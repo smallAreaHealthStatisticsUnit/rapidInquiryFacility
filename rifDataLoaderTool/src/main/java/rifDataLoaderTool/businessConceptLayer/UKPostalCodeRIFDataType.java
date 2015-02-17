@@ -51,7 +51,8 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class UKPostalCodeRIFDataType extends AbstractRIFDataType {
+public final class UKPostalCodeRIFDataType 
+	extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants

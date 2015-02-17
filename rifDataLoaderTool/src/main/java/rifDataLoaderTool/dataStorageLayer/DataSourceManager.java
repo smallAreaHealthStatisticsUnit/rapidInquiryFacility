@@ -67,7 +67,7 @@ import java.sql.*;
  *
  */
 
-public class DataSourceManager {
+public final class DataSourceManager {
 
 	// ==========================================
 	// Section Constants

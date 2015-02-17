@@ -77,7 +77,7 @@ import java.util.ArrayList;
  *
  */
 
-public class SQLRecordExistsQueryFormatter 
+public final class SQLRecordExistsQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================

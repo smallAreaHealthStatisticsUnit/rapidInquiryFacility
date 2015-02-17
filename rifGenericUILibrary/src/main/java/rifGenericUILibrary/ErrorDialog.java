@@ -71,7 +71,7 @@ import javax.swing.JOptionPane;
 /**
  * The Class ErrorDialog.
  */
-public class ErrorDialog {
+public final class ErrorDialog {
 
 // ==========================================
 // Section Constants

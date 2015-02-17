@@ -85,7 +85,7 @@ import java.io.File;
  *
  */
 
-public class RIFStudySubmissionToolSession {
+public final class RIFStudySubmissionToolSession {
 	// ==========================================
 	// Section Constants
 	// ==========================================

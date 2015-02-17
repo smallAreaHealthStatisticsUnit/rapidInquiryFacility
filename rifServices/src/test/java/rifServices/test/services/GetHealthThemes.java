@@ -73,7 +73,8 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public class GetHealthThemes extends AbstractRIFServiceTestCase {
+public final class GetHealthThemes 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

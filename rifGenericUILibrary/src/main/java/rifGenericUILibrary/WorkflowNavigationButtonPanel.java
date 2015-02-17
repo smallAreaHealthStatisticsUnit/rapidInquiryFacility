@@ -63,7 +63,8 @@ import javax.swing.JPanel;
  *
  */
 
-public class WorkflowNavigationButtonPanel extends AbstractNavigationPanel {
+public final class WorkflowNavigationButtonPanel 
+	extends AbstractNavigationPanel {
 
 	// ==========================================
 	// Section Constants

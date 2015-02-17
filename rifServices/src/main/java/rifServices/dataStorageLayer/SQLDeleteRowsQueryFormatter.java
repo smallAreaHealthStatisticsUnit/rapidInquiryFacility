@@ -66,7 +66,7 @@ import java.util.ArrayList;
  *
  */
 
-public class SQLDeleteRowsQueryFormatter 
+public final class SQLDeleteRowsQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================

@@ -77,7 +77,8 @@ import java.util.ArrayList;
  *
  */
 
-public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
+public class AbstractRIFServiceTestCase 
+	extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants

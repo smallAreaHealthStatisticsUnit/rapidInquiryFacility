@@ -77,7 +77,7 @@ import java.util.ArrayList;
  */
 
 
-class YearIntervalContentHandler 
+final class YearIntervalContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 // ==========================================

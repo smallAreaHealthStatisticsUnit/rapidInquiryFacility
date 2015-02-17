@@ -74,7 +74,8 @@ import org.junit.Test;
  *
  */
 
-public class GetCovariates extends AbstractRIFServiceTestCase {
+public final class GetCovariates 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

@@ -8,11 +8,9 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 
-import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.util.DisplayableItemSorter;
 
@@ -76,7 +74,8 @@ import rifServices.util.DisplayableItemSorter;
  *
  */
 
-public class RIFStudySubmissionServiceCalls extends AbstractRIFServiceTestCase {
+public final class RIFStudySubmissionServiceCalls 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

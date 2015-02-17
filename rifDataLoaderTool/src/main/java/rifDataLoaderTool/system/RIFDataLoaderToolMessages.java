@@ -73,7 +73,7 @@ import java.util.ResourceBundle;
  *
 */
 
-public class RIFDataLoaderToolMessages {
+public final class RIFDataLoaderToolMessages {
 
     // ==========================================
     // Section Constants

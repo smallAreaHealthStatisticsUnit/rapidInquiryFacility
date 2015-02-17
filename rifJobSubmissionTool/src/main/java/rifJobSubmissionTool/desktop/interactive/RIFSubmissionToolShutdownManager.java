@@ -81,7 +81,9 @@ import javax.swing.JOptionPane;
  *
  */
 
-class RIFSubmissionToolShutdownManager extends WindowAdapter {
+final class RIFSubmissionToolShutdownManager 
+	extends WindowAdapter {
+	
 	// ==========================================
 	// Section Constants
 	// ==========================================

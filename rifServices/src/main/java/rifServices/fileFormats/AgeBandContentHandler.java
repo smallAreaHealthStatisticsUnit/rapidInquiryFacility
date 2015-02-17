@@ -75,7 +75,7 @@ import java.util.ArrayList;
  */
 
 
-class AgeBandContentHandler 
+final class AgeBandContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 // ==========================================

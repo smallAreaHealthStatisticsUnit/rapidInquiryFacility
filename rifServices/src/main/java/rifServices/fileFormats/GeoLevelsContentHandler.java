@@ -79,7 +79,7 @@ import java.io.IOException;
  */
 
 
-class GeoLevelsContentHandler 
+final class GeoLevelsContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 // ==========================================

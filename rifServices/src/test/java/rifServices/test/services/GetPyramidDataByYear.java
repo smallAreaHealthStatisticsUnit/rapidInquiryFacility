@@ -70,7 +70,8 @@ import org.junit.Test;
  *
  */
 
-public class GetPyramidDataByYear extends AbstractRIFServiceTestCase {
+public final class GetPyramidDataByYear 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -357,7 +358,6 @@ public class GetPyramidDataByYear extends AbstractRIFServiceTestCase {
 				= cloneValidResultContext();
 			GeoLevelAttributeSource validGeoLevelAttributeSource
 				= cloneValidGeoLevelAttributeSource();
-			Integer validYear = cloneValidYear();
 			String validGeoLevelAttribute = getValidGeoLevelSourceAttribute();
 			rifStudyRetrievalService.getPyramidDataByYear(
 				validUser, 

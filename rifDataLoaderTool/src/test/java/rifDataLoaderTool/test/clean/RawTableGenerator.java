@@ -52,7 +52,7 @@ import java.util.ArrayList;
  *
  */
 
-public class RawTableGenerator {
+public final class RawTableGenerator {
 
 	// ==========================================
 	// Section Constants

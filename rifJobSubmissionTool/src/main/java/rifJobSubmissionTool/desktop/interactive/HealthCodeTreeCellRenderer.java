@@ -72,7 +72,7 @@ import javax.swing.JTree;
  *
  */
 
-class HealthCodeTreeCellRenderer 
+final class HealthCodeTreeCellRenderer 
 	extends DefaultTreeCellRenderer {
 	
 	// ==========================================

@@ -89,7 +89,8 @@ import java.util.ArrayList;
  *
  */
 
-public class CleaningRule extends AbstractRIFDataLoaderToolConcept {
+public final class CleaningRule 
+	extends AbstractRIFDataLoaderToolConcept {
 
 	// ==========================================
 	// Section Constants

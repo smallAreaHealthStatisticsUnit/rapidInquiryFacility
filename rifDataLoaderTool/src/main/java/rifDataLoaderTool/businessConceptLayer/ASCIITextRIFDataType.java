@@ -53,7 +53,8 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class ASCIITextRIFDataType extends AbstractRIFDataType {
+public final class ASCIITextRIFDataType 
+	extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants

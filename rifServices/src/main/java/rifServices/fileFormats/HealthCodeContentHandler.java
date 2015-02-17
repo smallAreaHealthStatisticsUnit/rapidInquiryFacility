@@ -77,7 +77,7 @@ import java.util.ArrayList;
  */
 
 
-class HealthCodeContentHandler 
+final class HealthCodeContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 

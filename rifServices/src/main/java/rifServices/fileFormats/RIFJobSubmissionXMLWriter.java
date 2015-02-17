@@ -65,7 +65,7 @@ package rifServices.fileFormats;
  *
  */
 
-public class RIFJobSubmissionXMLWriter {
+public final class RIFJobSubmissionXMLWriter {
 
 	// ==========================================
 	// Section Constants

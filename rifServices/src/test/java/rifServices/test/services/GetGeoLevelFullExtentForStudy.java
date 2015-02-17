@@ -71,7 +71,8 @@ import org.junit.Test;
  *
  */
 
-public class GetGeoLevelFullExtentForStudy extends AbstractRIFServiceTestCase {
+public final class GetGeoLevelFullExtentForStudy 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

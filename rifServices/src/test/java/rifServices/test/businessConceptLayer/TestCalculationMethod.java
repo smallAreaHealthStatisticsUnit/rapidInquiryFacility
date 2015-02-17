@@ -77,7 +77,8 @@ import org.junit.Test;
  *
  */
 
-public class TestCalculationMethod extends AbstractRIFTestCase {
+public final class TestCalculationMethod 
+	extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants

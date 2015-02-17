@@ -95,7 +95,7 @@ import javax.swing.ListSelectionModel;
  *
  */
 
-class SpecifyReportingOptionsStepPanel 
+final class SpecifyReportingOptionsStepPanel 
 	extends AbstractStepPanel
 	implements ActionListener, 
 	MouseListener {

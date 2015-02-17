@@ -91,7 +91,7 @@ import java.io.File;
  *
  */
 
-public class RIFInteractiveStudySubmissionTool 
+public final class RIFInteractiveStudySubmissionTool 
 	implements Observer, 
 	ActionListener {
 

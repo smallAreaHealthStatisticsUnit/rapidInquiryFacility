@@ -7,7 +7,7 @@ import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 import javax.swing.table.AbstractTableModel;
-import java.util.ArrayList;
+
 
 /**
  *
@@ -59,7 +59,8 @@ import java.util.ArrayList;
  *
  */
 
-public class CleaningConfigurationTableModel extends AbstractTableModel {
+public final class CleaningConfigurationTableModel 
+	extends AbstractTableModel {
 
 	// ==========================================
 	// Section Constants

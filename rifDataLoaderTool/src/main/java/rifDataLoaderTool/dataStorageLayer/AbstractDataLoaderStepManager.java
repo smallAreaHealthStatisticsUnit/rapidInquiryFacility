@@ -60,7 +60,7 @@ import rifServices.dataStorageLayer.SQLQueryUtility;
  *
  */
 
-public class AbstractDataLoaderStepManager {
+public abstract class AbstractDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants

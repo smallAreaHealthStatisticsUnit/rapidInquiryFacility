@@ -70,7 +70,7 @@ import java.io.File;
  *
  */
 
-public class XMLFileFilter 
+public final class XMLFileFilter 
 	extends javax.swing.filechooser.FileFilter 
 	implements java.io.FileFilter {
 

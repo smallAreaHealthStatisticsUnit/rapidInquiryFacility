@@ -75,7 +75,7 @@ import java.io.IOException;
  */
 
 
-class ProjectContentHandler 
+final class ProjectContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 

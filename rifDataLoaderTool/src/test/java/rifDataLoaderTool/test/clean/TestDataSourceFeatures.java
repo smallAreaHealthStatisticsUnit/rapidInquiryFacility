@@ -1,17 +1,14 @@
 package rifDataLoaderTool.test.clean;
 
-import static org.junit.Assert.*;
 import rifDataLoaderTool.businessConceptLayer.DataSource;
 import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
 import rifDataLoaderTool.test.AbstractRIFDataLoaderTestCase;
 import rifDataLoaderTool.test.DummyDataLoaderGenerator;
 import rifServices.system.RIFServiceException;
-import rifServices.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 
 /**
@@ -64,7 +61,8 @@ import org.junit.Test;
  *
  */
 
-public class TestDataSourceFeatures extends AbstractRIFDataLoaderTestCase {
+public final class TestDataSourceFeatures 
+	extends AbstractRIFDataLoaderTestCase {
 
 	// ==========================================
 	// Section Constants

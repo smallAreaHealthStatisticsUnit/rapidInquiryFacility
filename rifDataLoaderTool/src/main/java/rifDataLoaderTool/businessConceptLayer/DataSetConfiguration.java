@@ -55,7 +55,7 @@ import java.util.Date;
  *
  */
 
-public class DataSetConfiguration {
+public final class DataSetConfiguration {
 
 	// ==========================================
 	// Section Constants

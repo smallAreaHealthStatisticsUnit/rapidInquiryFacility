@@ -70,8 +70,8 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public class GetHealthCodeTaxonomyFromNameSpace extends
-		AbstractHealthCodeProviderTestCase {
+public final class GetHealthCodeTaxonomyFromNameSpace 
+	extends AbstractHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants

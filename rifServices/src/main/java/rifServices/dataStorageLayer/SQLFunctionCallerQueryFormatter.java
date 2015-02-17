@@ -71,7 +71,7 @@ import rifServices.dataStorageLayer.SQLSelectQueryFormatter.SortOrder;
  *
  */
 
-public class SQLFunctionCallerQueryFormatter 
+public final class SQLFunctionCallerQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================

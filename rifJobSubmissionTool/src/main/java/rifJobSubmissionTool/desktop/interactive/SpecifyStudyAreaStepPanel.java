@@ -84,9 +84,10 @@ import javax.swing.JPanel;
  *
  */
 
-class SpecifyStudyAreaStepPanel 
+final class SpecifyStudyAreaStepPanel 
 	extends AbstractStepPanel 
 	implements Observer {
+	
 	// ==========================================
 	// Section Constants
 	// ==========================================

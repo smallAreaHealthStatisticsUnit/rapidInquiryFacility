@@ -52,7 +52,8 @@ package rifServices.dataStorageLayer;
  *
  */
 
-public class SQLGeneralQueryFormatter extends AbstractSQLQueryFormatter {
+public final class SQLGeneralQueryFormatter 
+	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -61,14 +62,14 @@ public class SQLGeneralQueryFormatter extends AbstractSQLQueryFormatter {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private StringBuilder query;
+
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public SQLGeneralQueryFormatter() {
-		query = new StringBuilder();
+
 	}
 
 	// ==========================================

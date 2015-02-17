@@ -58,7 +58,8 @@ import java.util.ArrayList;
  *
  */
 
-public class CleaningRuleTableModel extends AbstractTableModel {
+public final class CleaningRuleTableModel 
+	extends AbstractTableModel {
 
 	// ==========================================
 	// Section Constants

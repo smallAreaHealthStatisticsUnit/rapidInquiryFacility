@@ -60,7 +60,8 @@ package rifServices.dataStorageLayer;
  *
  */
 
-public class SQLCountTableRowsQueryFormatter extends AbstractSQLQueryFormatter {
+public final class SQLCountTableRowsQueryFormatter 
+	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants

@@ -74,7 +74,8 @@ import org.junit.Test;
  *
  */
 
-public class TestAgeGroup extends AbstractRIFTestCase {
+public final class TestAgeGroup 
+	extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants

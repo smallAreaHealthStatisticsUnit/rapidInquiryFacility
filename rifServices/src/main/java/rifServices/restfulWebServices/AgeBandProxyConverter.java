@@ -67,7 +67,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  *
  */
 
-public final class AgeBandProxyConverter 
+public class AgeBandProxyConverter 
 	extends XmlAdapter<AgeBandProxy, AgeBand>{
 
 	// ==========================================

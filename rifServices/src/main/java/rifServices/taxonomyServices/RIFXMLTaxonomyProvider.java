@@ -76,7 +76,7 @@ import java.util.ArrayList;
  *
  */
 
-public class RIFXMLTaxonomyProvider 
+public final class RIFXMLTaxonomyProvider 
 	implements HealthCodeProviderInterface {
 
 	// ==========================================

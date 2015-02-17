@@ -61,7 +61,8 @@ import java.sql.*;
  *
  */
 
-public class ConvertStepManager extends AbstractDataLoaderStepManager {
+public final class ConvertStepManager 
+	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants

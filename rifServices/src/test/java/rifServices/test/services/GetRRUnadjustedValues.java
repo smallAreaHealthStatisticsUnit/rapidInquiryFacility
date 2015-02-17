@@ -70,7 +70,8 @@ import org.junit.Test;
  *
  */
 
-public class GetRRUnadjustedValues extends AbstractRIFServiceTestCase {
+public final class GetRRUnadjustedValues 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

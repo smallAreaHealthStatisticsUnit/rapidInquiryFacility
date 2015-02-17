@@ -65,7 +65,7 @@ import rifServices.businessConceptLayer.AdjustableCovariate;
  *
  */
 
-public final class CovariateProxyConverter 
+public class CovariateProxyConverter 
 	extends XmlAdapter<CovariateProxy, 
 	AdjustableCovariate>{
 	

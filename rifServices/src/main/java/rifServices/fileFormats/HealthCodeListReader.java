@@ -78,7 +78,7 @@ import javax.xml.parsers.SAXParserFactory;
  */
 
 
-public class HealthCodeListReader {
+final public class HealthCodeListReader {
 
 
 // ==========================================

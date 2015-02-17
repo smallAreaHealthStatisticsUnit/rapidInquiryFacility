@@ -76,7 +76,8 @@ import org.junit.Test;
  *
  */
 
-public class TestAdjustableCovariate extends AbstractRIFTestCase {
+public final class TestAdjustableCovariate 
+	extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants

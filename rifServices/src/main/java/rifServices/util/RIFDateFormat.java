@@ -57,7 +57,7 @@ import java.util.Date;
  */
 
 
-public class RIFDateFormat {
+public final class RIFDateFormat {
 
 // ==========================================
 // Section Constants

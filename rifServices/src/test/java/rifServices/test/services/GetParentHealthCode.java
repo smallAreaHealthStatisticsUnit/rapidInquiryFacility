@@ -71,7 +71,8 @@ import org.junit.Test;
  *
  */
 
-public class GetParentHealthCode extends AbstractHealthCodeProviderTestCase {
+public final class GetParentHealthCode 
+	extends AbstractHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants

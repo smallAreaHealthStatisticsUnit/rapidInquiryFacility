@@ -58,7 +58,8 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
  *
  */
 
-public final class SexRIFDataType extends AbstractRIFDataType {
+public final class SexRIFDataType 
+	extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants

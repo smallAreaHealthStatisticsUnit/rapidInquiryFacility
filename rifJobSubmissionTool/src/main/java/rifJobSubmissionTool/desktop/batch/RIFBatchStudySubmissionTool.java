@@ -65,7 +65,7 @@ import java.awt.GridBagConstraints;
  *
  */
 
-public class RIFBatchStudySubmissionTool {
+public final class RIFBatchStudySubmissionTool {
 
 	/**
 	 * The main method.

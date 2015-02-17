@@ -77,7 +77,7 @@ import java.io.IOException;
  */
 
 
-public class RIFJobSubmissionHTMLWriter {
+public final class RIFJobSubmissionHTMLWriter {
 
 	
 

@@ -71,7 +71,7 @@ import java.util.ResourceBundle;
  *
 */
 
-public class RIFJobSubmissionToolMessages {
+public final class RIFJobSubmissionToolMessages {
 
     // ==========================================
     // Section Constants

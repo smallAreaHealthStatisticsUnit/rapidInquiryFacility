@@ -89,7 +89,8 @@ import javax.swing.border.LineBorder;
  *
  */
 
-class PreviewStepPanel extends AbstractStepPanel {
+final class PreviewStepPanel 
+	extends AbstractStepPanel {
 	
 	// ==========================================
 	// Section Constants

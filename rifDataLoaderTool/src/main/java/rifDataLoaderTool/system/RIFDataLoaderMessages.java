@@ -80,7 +80,7 @@ import java.util.ResourceBundle;
  *
 */
 
-public class RIFDataLoaderMessages {
+public final class RIFDataLoaderMessages {
 
     // ==========================================
     // Section Constants

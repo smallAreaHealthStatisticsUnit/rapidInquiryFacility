@@ -4,7 +4,6 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 import rifDataLoaderTool.businessConceptLayer.CleaningRule;
 import rifGenericUILibrary.ErrorDialog;
-import rifGenericUILibrary.RIFGenericUIMessages;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifGenericUILibrary.YesNoQuestionPanel;
 import rifServices.system.RIFServiceException;
@@ -66,7 +65,8 @@ import java.awt.event.ActionEvent;
  *
  */
 
-public class CleaningRuleEditorDialog extends AbstractDataLoaderToolDialog
+public final class CleaningRuleEditorDialog 
+	extends AbstractDataLoaderToolDialog
 	implements ActionListener {
 
 	// ==========================================

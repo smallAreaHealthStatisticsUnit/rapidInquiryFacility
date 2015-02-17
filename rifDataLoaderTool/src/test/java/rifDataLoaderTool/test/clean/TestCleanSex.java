@@ -64,7 +64,8 @@ import static org.junit.Assert.*;
  *
  */
 
-public class TestCleanSex extends AbstractRIFDataLoaderTestCase {
+public final class TestCleanSex 
+	extends AbstractRIFDataLoaderTestCase {
 
 	// ==========================================
 	// Section Constants

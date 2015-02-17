@@ -87,7 +87,7 @@ import java.util.zip.ZipOutputStream;
  */
 
 
-public class RIFZipFileWriter {
+public final class RIFZipFileWriter {
 	
 
 // ==========================================

@@ -1,25 +1,17 @@
 package rifServices.test.services;
 
 import rifGenericUILibrary.DisplayableListItemInterface;
-import rifServices.businessConceptLayer.GeoLevelSelect;
-import rifServices.businessConceptLayer.Geography;
+
 import rifServices.businessConceptLayer.StudyResultRetrievalContext;
-import rifServices.businessConceptLayer.GeoLevelToMap;
-import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.GeoLevelAttributeSource;
-import rifServices.businessConceptLayer.BoundaryRectangle;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
-import rifServices.util.FieldValidationUtility;
 import rifServices.util.DisplayableItemSorter;
+
 import static org.junit.Assert.*;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-
 import java.util.ArrayList;
 
 /**
@@ -102,7 +94,7 @@ import java.util.ArrayList;
  *
  */
 
-public class GetGeoLevelAttributeSources 
+public final class GetGeoLevelAttributeSources 
 	extends AbstractRIFServiceTestCase {
 
 	// ==========================================

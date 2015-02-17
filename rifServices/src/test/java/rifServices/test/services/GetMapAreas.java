@@ -16,7 +16,6 @@ import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
-import rifServices.system.RIFServiceStartupOptions;
 
 /**
  *
@@ -78,7 +77,8 @@ import rifServices.system.RIFServiceStartupOptions;
  *
  */
 
-public class GetMapAreas extends AbstractRIFServiceTestCase {
+public final class GetMapAreas 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -167,13 +167,12 @@ public class GetMapAreas extends AbstractRIFServiceTestCase {
 			validGeoLevelArea.setName("Clarke");
 			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
 			
-			ArrayList<MapArea> mapAreas
-				= rifStudySubmissionService.getMapAreas(
-					validUser, 
-					validGeography,
-					validGeoLevelSelect,
-					validGeoLevelArea,
-					validGeoLevelToMap);
+			rifStudySubmissionService.getMapAreas(
+				validUser, 
+				validGeography,
+				validGeoLevelSelect,
+				validGeoLevelArea,
+				validGeoLevelToMap);
 			
 			fail();
 		}

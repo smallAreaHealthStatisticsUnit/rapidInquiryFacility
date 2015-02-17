@@ -8,7 +8,6 @@ import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifGenericUILibrary.UserInterfaceFactory;
 import rifGenericUILibrary.RIFGenericUIMessages;
-import rifGenericUILibrary.OKCloseButtonPanel;
 import rifGenericUILibrary.ErrorDialog;
 
 import javax.swing.*;
@@ -71,7 +70,7 @@ import java.util.ArrayList;
  *
  */
 
-public class LoadDataActivityStepDialog 
+public final class LoadDataActivityStepDialog 
 	extends AbstractDataLoaderToolDialog
 	implements ActionListener {
 

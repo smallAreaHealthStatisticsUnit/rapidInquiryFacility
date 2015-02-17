@@ -82,7 +82,7 @@ import javax.swing.event.ListSelectionListener;
  */
 
 
-public class OrderedListPanel {
+public final class OrderedListPanel {
 
 
 // ==========================================

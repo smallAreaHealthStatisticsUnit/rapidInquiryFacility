@@ -72,7 +72,8 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public class GetAvailableCalculationMethods extends AbstractRIFServiceTestCase {
+public final class GetAvailableCalculationMethods 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

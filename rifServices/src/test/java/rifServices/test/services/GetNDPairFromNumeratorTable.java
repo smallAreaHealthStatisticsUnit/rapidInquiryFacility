@@ -72,7 +72,8 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public class GetNDPairFromNumeratorTable extends AbstractRIFServiceTestCase {
+public final class GetNDPairFromNumeratorTable 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

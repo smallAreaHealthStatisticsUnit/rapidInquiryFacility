@@ -72,7 +72,7 @@ import java.util.Locale;
  *
  */
 
-public class RIFZFileFilter 
+public final class RIFZFileFilter 
 	extends javax.swing.filechooser.FileFilter 
 	implements java.io.FileFilter {
 

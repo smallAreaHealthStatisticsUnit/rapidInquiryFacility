@@ -69,7 +69,7 @@ import java.util.ArrayList;
  *
  */
 
-public class SQLSelectQueryFormatter 
+public final class SQLSelectQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================

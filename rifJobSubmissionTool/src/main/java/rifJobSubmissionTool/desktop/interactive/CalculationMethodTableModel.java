@@ -75,7 +75,7 @@ import javax.swing.table.AbstractTableModel;
  *
  */
 
-class CalculationMethodTableModel 
+final class CalculationMethodTableModel 
 	extends AbstractTableModel {
 
 

@@ -74,7 +74,7 @@ import javax.swing.ListSelectionModel;
  *
  */
 
-class CalculationMethodTable extends JTable {
+final class CalculationMethodTable extends JTable {
 
 // ==========================================
 // Section Constants

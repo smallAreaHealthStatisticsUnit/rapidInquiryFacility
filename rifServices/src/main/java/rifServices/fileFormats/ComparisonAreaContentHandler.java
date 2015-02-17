@@ -77,7 +77,7 @@ import java.io.IOException;
  */
 
 
-class ComparisonAreaContentHandler 
+final class ComparisonAreaContentHandler 
 	extends AbstractGeographicalAreaContentHandler {
 
 // ==========================================

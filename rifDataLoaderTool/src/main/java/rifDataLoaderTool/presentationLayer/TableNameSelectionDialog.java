@@ -3,7 +3,6 @@ package rifDataLoaderTool.presentationLayer;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
-import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
 import rifGenericUILibrary.ErrorDialog;
 import rifGenericUILibrary.RIFGenericUIMessages;
@@ -15,12 +14,10 @@ import rifServices.system.RIFServiceStartupOptions;
 import rifServices.util.FieldValidationUtility;
 
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.net.InetAddress;
-
 import javax.swing.event.CaretListener;
 import javax.swing.event.CaretEvent;
 
@@ -75,7 +72,7 @@ import javax.swing.event.CaretEvent;
  *
  */
 
-public class TableNameSelectionDialog 
+public final class TableNameSelectionDialog 
 	implements ActionListener,
 	CaretListener {
 

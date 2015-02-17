@@ -71,7 +71,7 @@ import java.util.ResourceBundle;
  *
 */
 
-public class RIFGenericUIMessages {
+public final class RIFGenericUIMessages {
 
     // ==========================================
     // Section Constants

@@ -79,7 +79,7 @@ import java.sql.SQLException;
  *
  */
 
-public class SQLQueryUtility {
+public final class SQLQueryUtility {
 
 	// ==========================================
 	// Section Constants

@@ -69,7 +69,7 @@ import java.util.ArrayList;
  *
  */
 
-public class SQLCountQueryFormatter 
+public final class SQLCountQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================

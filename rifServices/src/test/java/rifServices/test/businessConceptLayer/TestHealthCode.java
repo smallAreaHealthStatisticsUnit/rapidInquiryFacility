@@ -75,7 +75,8 @@ import org.junit.Test;
  *
  */
 
-public class TestHealthCode extends AbstractRIFTestCase {
+public final class TestHealthCode 
+	extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants

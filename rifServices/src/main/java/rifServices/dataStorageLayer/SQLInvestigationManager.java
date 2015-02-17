@@ -81,7 +81,7 @@ import java.util.ArrayList;
  *
  */
 
-class SQLInvestigationManager 
+final class SQLInvestigationManager 
 	extends AbstractSQLManager {
 
 	// ==========================================

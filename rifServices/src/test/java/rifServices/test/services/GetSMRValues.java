@@ -70,7 +70,8 @@ import org.junit.Test;
  *
  */
 
-public class GetSMRValues extends AbstractRIFServiceTestCase {
+public final class GetSMRValues 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -99,10 +100,9 @@ public class GetSMRValues extends AbstractRIFServiceTestCase {
 			User validUser = cloneValidUser();
 			StudySummary validStudySummary
 				= cloneValidStudySummary();
-			RIFResultTable rifResultTable
-				= rifStudyRetrievalService.getSMRValues(
-					validUser, 
-					validStudySummary);
+			rifStudyRetrievalService.getSMRValues(
+				validUser, 
+				validStudySummary);
 			//@TODO: fix this test case by adding assertions
 			//for now, fail the test case
 			fail();

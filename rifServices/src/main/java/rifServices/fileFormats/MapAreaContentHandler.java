@@ -79,7 +79,7 @@ import java.util.ArrayList;
  */
 
 
-public class MapAreaContentHandler 
+public final class MapAreaContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 // ==========================================

@@ -10,7 +10,7 @@ import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
 import rifGenericUILibrary.UserInterfaceFactory;
 
 import javax.swing.JTable;
-import java.awt.event.ActionListener;
+
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 
@@ -64,7 +64,7 @@ import javax.swing.event.ListSelectionListener;
  *
  */
 
-public class CleaningConfigurationTable {
+public final class CleaningConfigurationTable {
 
 	// ==========================================
 	// Section Constants

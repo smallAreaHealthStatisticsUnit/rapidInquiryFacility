@@ -64,7 +64,7 @@ import java.sql.*;
  *
  */
 
-public class TableIntegrityChecker {
+public final class TableIntegrityChecker {
 
 	// ==========================================
 	// Section Constants

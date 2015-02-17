@@ -86,7 +86,7 @@ import java.util.Date;
  */
 
 
-class RIFJobSubmissionContentHandler 
+final class RIFJobSubmissionContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 // ==========================================

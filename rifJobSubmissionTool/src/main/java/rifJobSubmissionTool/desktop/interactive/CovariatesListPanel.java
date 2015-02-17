@@ -83,7 +83,8 @@ import javax.swing.JPanel;
  */
 
 
-class CovariatesListPanel implements ActionListener {
+final class CovariatesListPanel 
+	implements ActionListener {
 	
 // ==========================================
 // Section Constants

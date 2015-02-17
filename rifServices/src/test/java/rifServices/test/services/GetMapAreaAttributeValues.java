@@ -4,13 +4,10 @@ import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
 import rifServices.businessConceptLayer.StudyResultRetrievalContext;
 import rifServices.businessConceptLayer.GeoLevelAttributeSource;
-import rifServices.businessConceptLayer.MapAreaAttributeValue;
 import rifServices.businessConceptLayer.User;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import org.junit.Test;
-import java.util.ArrayList;
 
 /**
  *
@@ -72,7 +69,8 @@ import java.util.ArrayList;
  *
  */
 
-public class GetMapAreaAttributeValues extends AbstractRIFServiceTestCase {
+public final class GetMapAreaAttributeValues 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -104,12 +102,11 @@ public class GetMapAreaAttributeValues extends AbstractRIFServiceTestCase {
 				= cloneValidGeoLevelAttributeSource();
 			String validGeoLevelSourceAttribute
 				= getValidGeoLevelSourceAttribute();
-			ArrayList<MapAreaAttributeValue> results
-				= rifStudyRetrievalService.getMapAreaAttributeValues(
-					validUser, 
-					validStudyResultRetrievalContext, 
-					validGeoLevelAttributeSource, 
-					validGeoLevelSourceAttribute);
+			rifStudyRetrievalService.getMapAreaAttributeValues(
+				validUser, 
+				validStudyResultRetrievalContext, 
+				validGeoLevelAttributeSource, 
+				validGeoLevelSourceAttribute);
 			
 			//KLG: Fail for now because this has not been implemented
 			fail();

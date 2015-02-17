@@ -70,7 +70,8 @@ import java.util.ArrayList;
  *
  */
 
-public class LoadStepManager extends AbstractDataLoaderStepManager {
+public final class LoadStepManager 
+	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants

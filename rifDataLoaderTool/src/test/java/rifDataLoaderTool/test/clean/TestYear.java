@@ -54,7 +54,7 @@ import org.junit.Test;
  *
  */
 
-public class TestYear {
+public final class TestYear {
 
 	// ==========================================
 	// Section Constants

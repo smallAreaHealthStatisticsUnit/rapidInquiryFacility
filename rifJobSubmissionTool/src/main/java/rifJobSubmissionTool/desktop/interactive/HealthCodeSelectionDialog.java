@@ -88,7 +88,7 @@ import javax.swing.JTextArea;
  *
  */
 
-class HealthCodeSelectionDialog 
+final class HealthCodeSelectionDialog 
 	implements ActionListener {
 	
 	// ==========================================

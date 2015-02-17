@@ -67,7 +67,7 @@ package rifServices.system;
  *
  */
 
-public class RIFServiceSecurityException 
+public final class RIFServiceSecurityException 
 	extends RIFServiceException {
 
 	// ==========================================

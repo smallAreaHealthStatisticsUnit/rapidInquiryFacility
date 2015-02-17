@@ -70,7 +70,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 
-public class RIFLogger {
+public final class RIFLogger {
 
 	// ==========================================
 	// Section Constants

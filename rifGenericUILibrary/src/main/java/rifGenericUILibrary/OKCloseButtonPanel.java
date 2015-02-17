@@ -73,7 +73,7 @@ import javax.swing.JPanel;
  */
 
 
-public class OKCloseButtonPanel {
+public final class OKCloseButtonPanel {
 
 // ==========================================
 // Section Constants

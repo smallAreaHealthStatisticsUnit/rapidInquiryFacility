@@ -68,7 +68,7 @@ import java.util.Observable;
  *
  */
 
-class RIFStudySubmissionActivityStateMachine 
+final class RIFStudySubmissionActivityStateMachine 
 	extends Observable {
 	// ==========================================
 	// Section Constants

@@ -72,7 +72,8 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
  *
  */
 
-public class YearRIFDataType extends AbstractRIFDataType {
+public final class YearRIFDataType 
+	extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants

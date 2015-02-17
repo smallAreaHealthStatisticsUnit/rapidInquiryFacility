@@ -75,7 +75,7 @@ import javax.swing.filechooser.FileFilter;
  */
 
 
-public class RIFGenericFileFilter 
+public final class RIFGenericFileFilter 
 	extends FileFilter {
 
 // ==========================================

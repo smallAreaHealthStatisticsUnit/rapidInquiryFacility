@@ -3,13 +3,11 @@ package rifServices.test.services;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
 import rifServices.businessConceptLayer.User;
-import rifServices.businessConceptLayer.AgeGroup;
 import rifServices.businessConceptLayer.StudyResultRetrievalContext;
 import rifServices.businessConceptLayer.GeoLevelAttributeSource;
 
 import static org.junit.Assert.fail;
 import org.junit.Test;
-import java.util.ArrayList;
 
 /**
  *
@@ -71,7 +69,8 @@ import java.util.ArrayList;
  *
  */
 
-public class GetResultAgeGroups extends AbstractRIFServiceTestCase {
+public final class GetResultAgeGroups 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -103,12 +102,11 @@ public class GetResultAgeGroups extends AbstractRIFServiceTestCase {
 				= cloneValidGeoLevelAttributeSource();
 			String validGeoLevelSourceAttribute
 				= getValidGeoLevelSourceAttribute();
-			ArrayList<AgeGroup> results
-				= rifStudyRetrievalService.getResultAgeGroups(
-					validUser, 
-					validResultRetrievalContext, 
-					validGeoLevelAttributeSource, 
-					validGeoLevelSourceAttribute);
+			rifStudyRetrievalService.getResultAgeGroups(
+				validUser, 
+				validResultRetrievalContext, 
+				validGeoLevelAttributeSource, 
+				validGeoLevelSourceAttribute);
 			
 			fail();
 		}

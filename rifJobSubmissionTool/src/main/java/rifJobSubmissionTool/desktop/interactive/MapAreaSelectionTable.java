@@ -75,7 +75,7 @@ import java.util.ArrayList;
  *
  */
 
-class MapAreaSelectionTable {
+final class MapAreaSelectionTable {
 	
 	// ==========================================
 	// Section Constants

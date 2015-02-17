@@ -52,7 +52,8 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class NHSNumberRIFDataType extends AbstractRIFDataType {
+public final class NHSNumberRIFDataType 
+	extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants

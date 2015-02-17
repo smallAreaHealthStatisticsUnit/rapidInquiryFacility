@@ -72,7 +72,7 @@ import java.util.Observable;
  *
  */
 
-public class MapAreaSelectionBasket 
+public final class MapAreaSelectionBasket 
 	extends Observable {
 	
 	// ==========================================

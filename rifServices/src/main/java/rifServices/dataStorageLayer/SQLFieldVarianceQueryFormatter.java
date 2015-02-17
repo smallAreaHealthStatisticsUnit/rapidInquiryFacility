@@ -1,6 +1,5 @@
 package rifServices.dataStorageLayer;
 
-import java.util.ArrayList;
 
 
 /**
@@ -69,7 +68,7 @@ import java.util.ArrayList;
  *
  */
 
-public class SQLFieldVarianceQueryFormatter 
+public final class SQLFieldVarianceQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================

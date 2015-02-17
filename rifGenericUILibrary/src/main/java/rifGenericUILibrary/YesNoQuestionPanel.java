@@ -54,7 +54,7 @@ import java.awt.*;
  *
  */
 
-public class YesNoQuestionPanel {
+public final class YesNoQuestionPanel {
 
 	// ==========================================
 	// Section Constants

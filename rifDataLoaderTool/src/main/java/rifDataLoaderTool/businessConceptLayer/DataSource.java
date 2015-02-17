@@ -80,7 +80,7 @@ import rifServices.util.FieldValidationUtility;
  *
  */
 
-public class DataSource extends AbstractRIFDataLoaderToolConcept {
+public final class DataSource extends AbstractRIFDataLoaderToolConcept {
 
 	// ==========================================
 	// Section Constants

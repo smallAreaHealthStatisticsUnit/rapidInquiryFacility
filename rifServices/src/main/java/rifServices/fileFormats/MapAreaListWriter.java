@@ -75,7 +75,7 @@ import java.util.ArrayList;
  *
  */
 
-public class MapAreaListWriter {
+public final class MapAreaListWriter {
 
 	// ==========================================
 	// Section Constants

@@ -84,7 +84,7 @@ import javax.swing.JPanel;
  *
  */
 
-class SpecifyComparisonAreaStepPanel 
+final class SpecifyComparisonAreaStepPanel 
 	extends AbstractStepPanel 
 	implements Observer {
 	// ==========================================

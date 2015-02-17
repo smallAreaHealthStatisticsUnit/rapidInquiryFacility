@@ -76,7 +76,8 @@ import java.util.ArrayList;
  *
  */
 
-public class GetMapAreasByBlock extends AbstractRIFServiceTestCase {
+public final class GetMapAreasByBlock 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

@@ -109,7 +109,7 @@ import java.util.Date;
  *
  */
 
-public class DataLoaderService 
+public final class DataLoaderService 
 	extends AbstractRIFService
 	implements RIFDataLoaderServiceAPI {
 	

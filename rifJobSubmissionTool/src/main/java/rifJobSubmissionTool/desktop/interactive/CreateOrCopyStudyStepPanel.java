@@ -89,7 +89,7 @@ import javax.swing.JRadioButton;
  *
  */
 
-class CreateOrCopyStudyStepPanel 
+final class CreateOrCopyStudyStepPanel 
 	extends AbstractStepPanel 
 	implements ActionListener{
 

@@ -69,7 +69,8 @@ import java.sql.*;
  *
  */
 
-public class CleanStepManager extends AbstractDataLoaderStepManager {
+public final class CleanStepManager 
+	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants

@@ -76,7 +76,7 @@ import java.text.Collator;
  */
 
 
-class YearRangeContentHandler 
+final class YearRangeContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 // ==========================================

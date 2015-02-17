@@ -78,7 +78,7 @@ import java.io.UnsupportedEncodingException;
  */
 
 
-class DiseaseMappingStudyAreaContentHandler 
+final class DiseaseMappingStudyAreaContentHandler 
 	extends AbstractGeographicalAreaContentHandler {
 
 // ==========================================

@@ -75,7 +75,7 @@ import java.awt.GridBagConstraints;
  *
  */
 
-public class ListEditingButtonPanel {
+public final class ListEditingButtonPanel {
 
 	// ==========================================
 	// Section Constants

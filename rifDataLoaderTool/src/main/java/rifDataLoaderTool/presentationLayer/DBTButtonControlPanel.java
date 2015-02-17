@@ -61,7 +61,7 @@ import java.awt.Color;
  *
  */
 
-public class DBTButtonControlPanel {
+public final class DBTButtonControlPanel {
 
 	// ==========================================
 	// Section Constants
