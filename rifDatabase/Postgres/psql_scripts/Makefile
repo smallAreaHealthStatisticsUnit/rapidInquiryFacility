@@ -371,6 +371,16 @@ db_setup: psqlrc $(PGPASSFILE) $(PLR_DIRS)
 		
 db_create: db_create.rpt
 
+#- db_install: Create sahusland, sahsuland_dev from ../install/sahsuland.dump (mimick installer)
+db_install:
+	$(MAKE) clean
+	$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
+	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland.dump
+	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland_dev -U postgres -v ../install/sahsuland.dump
+	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
+	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland_dev	
+
+#
 #
 # Files to create/install
 #
