@@ -371,7 +371,7 @@ db_setup: psqlrc $(PGPASSFILE) $(PLR_DIRS)
 		
 db_create: db_create.rpt
 
-#- db_install: Create sahusland, sahsuland_dev from 
+#- db_install: Create sahsuland, sahsuland_dev from production pg_dump 
 db_install: ../install/sahsuland/sahsuland.dump
 	$(MAKE) clean
 	$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
