@@ -6,8 +6,7 @@ var formData = {
    my_buffer: new Buffer([1, 2, 3]),
    // my_file: fs.createReadStream(  './geojsons/npm-debug.log'),
    attachments: [
-    fs.createReadStream('./geojsons/78.json'),
-    fs.createReadStream('./geojsons/26.json')
+    fs.createReadStream('./geojs/4.json')
   ]
 };
 request.post({
