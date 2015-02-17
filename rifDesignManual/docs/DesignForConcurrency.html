@@ -1432,10 +1432,18 @@ different threads.  Therefore, objects from these classes will not present concu
 <p>
 Instances of manager classes in <code>rifServices.dataStorageLayer</code> are created in 
 <code>rifServices.dataStorageLayer.RIFServiceResource</code>, which then shares them between
-the <code>RIFStudySubmissionAPI</code> and <code>RIFStudyResultRetrievalAPI</code> services.
+the <code>RIFStudySubmissionAPI</code> and <code>RIFStudyResultRetrievalAPI</code> services.  The
+<code>RIFServiceResources</code> class uses a static factory method to ensure that the manager objects
+are created before they can be used.
 </p>
 
-
+<p>
+The manager classes have very little state which can be subject to contention by multiple threads.
+Most of them only contain references to other manager classes.  One also has an instance of <code>
+RIFStartupOptions</code>, which contains configuration options that can configure the service.
+The <code>RIFStartupOptions</code> object is created through a static factory method that ensures
+it can't be used before it has been initialised.  Its startup properties can only be set by reading
+them from a properties file and the class has no set methods that would be available to other threads.
 
 
 
