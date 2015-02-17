@@ -52,11 +52,12 @@ longer than it would take in projects that had more people.  The difficulty in f
 provides great motivation to invest in a strategy that prevents them from happening in the first place.  
 
 
-We break our approach down into two parts.  First, we take a high-level view to examine how the different tools
+We break our approach down into three parts.  First, we take a high-level view to examine how the different tools
 might be used together to encourage concurrent access problems to occur.  The goal of the analysis is to identify 
 ways that the tools are used and created could help reduce the likelihood of certain patterns of use from happening.  
-Then we look at the code base and develop ways to minimise the likelihood that executing the code will cause 
-concurrency problems.
+Second, we look at the code base in general and develop ways to minimise the likelihood that executing the code will cause 
+concurrency problems.  Third, we identify specific resources that may cause contention amongst threads and try to
+protect them.
 
 
 
@@ -1298,6 +1299,186 @@ rely on static factory methods <code>newInstance(...)</code> and
 <p>
 We can use the same safe construction technique to help control the creation of manager class objects that
 may be used by multiple services
+
+<h2>
+Identifying and protecting resources that could experience contention by multiple threads
+</h2>
+In the previous section, we took steps to help reduce the likelihood of concurrency problems happening in the 
+code base in general.  Now we will try to identify specific places within the code which may cause contention.
+
+<ul>
+<li>
+sharing connections amongst multiple threads
+</li>
+<li>
+sharing manager objects amongst multiple services
+</li>
+</ul>
+
+<p>
+We begin by identifying class variables that are managed within the classes that implement the service APIs.  
+We will focus on services supporting study submission and viewing study results because at this point in the 
+project these services are the most well-developed.
+</p>
+
+<h3>
+Business Classes
+</h3>
+<p>
+Business classes are used to create input parameter values and return values for service methods.  Once client 
+applications pass business objects to service methods, the objects which could be mutable are safe-copied so that 
+the middleware uses local copies.  The safe copying activity relies on safe-construction methods which ensure 
+that objects are properly instantiated before they are referenced by calling code.
+</p>
+
+<p>
+Neither the classes which implement the service APIs nor the manager classes they use for delegation retain 
+reference to these business objects as class variables.  The only exception is that the SQLConnectionManager 
+retains a hash map of registered userIDs, but this is discussed later.
+</p>
+
+<p>
+References to safe-copied parameter values are passed to various methods that eventually delegate to the 
+manager classes.  In general, the business objects that are used as service parameter values are 'alive' for 
+as long as it takes to execute a service method and are considered thread-bound.  
+</p>
+
+
+<p>
+The main exception are calls to the <code>HealthCodeManager</code>, which in some scenarios passes <code>HealthCode</code> 
+objects to abstract taxonomy services.  In theory these taxonomy services could hold onto references of the 
+<code>HealthCode</code> objects.  We do not control how other developers could implement the 
+<code>rifServices.taxonomyServices.HealthCodeProviderInterface.  </code>  But in our implementation of taxonomy 
+services, the classes do not try to retain the references.
+</p>
+
+
+<p>
+Business class objects can also be created when the manager classes are attempting to convert result sets into 
+a form that is returned to the client by the middleware.  For example, the ResultSet that is returned from an 
+SQL query to select geo level select values is copied into a collection of GeoLevelSelect business objects.  
+Again, the creation of the business objects uses safe construction provided by the static factory 
+method newInstance().  
+</p>
+
+<p>
+In general, the lifetime of result objects will last as long as client applications hold references to them.  
+For the web-based applications, the objects will not be referenced after web service methods have serialised 
+them into JSON text.  Therefore, we don't expect that references to old result objects will linger in memory 
+and be vulnerable to be accessed by other threads.
+</p>
+
+<p>
+The result objects may persist in the Swing-based Data Loader Tool and Information Governance Tool.  Here it 
+is possible the client applications could introduce multiple threads which may try to simultaneously access 
+the same result object.  However, wherever possible, we try to minimise this possibility.  
+</p>
+
+<p>
+If the client applications exhibit multi-threaded access to business objects, the middleware should not be 
+affected.  In the case of parameter values for service methods, the values are safe-copied and those copies 
+are then thread-bound.  In the case of return values, the middleware does not retain references to result 
+objects it sends back to the client applications.
+</p>
+
+<p>
+The remaining area of concern about concurrency problems with business objects is whether the middleware itself 
+may create multi-threading activity that could contend for them.  An inspection of the code shows that neither 
+the service implementation classes nor the manager classes spawn and manage new threads that could cause 
+a problem.
+</p>
+
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#concurrency14">
+Concurrency-14
+</a>
+</b>: 
+
+The business classes do not appear to be used in any scenario which would cause them to be the source of 
+contention in a way that would affect the middleware.
+</i>
+</font>
+</blockquote>
+
+
+<h3>
+Data Storage Layer Classes
+</h3>
+<p>
+The data storage layer contains three major kinds of classes that we will examine:
+<ul>
+<li>
+query formatter classes
+</li>
+<li>
+manager classes
+</li>
+<li>
+service implementation classes
+</li>
+</ul>
+</p>
+
+<p>
+Instances of the query formatter classes are always declared as local variables within methods of 
+manager classes.  They are thread-bound and are not exposed to any middleware code that spawns 
+different threads.  Therefore, objects from these classes will not present concurrency problems.
+</p>
+
+<p>
+Instances of manager classes in <code>rifServices.dataStorageLayer</code> are created in 
+<code>rifServices.dataStorageLayer.RIFServiceResource</code>, which then shares them between
+the <code>RIFStudySubmissionAPI</code> and <code>RIFStudyResultRetrievalAPI</code> services.
+</p>
+
+
+
+
+
+
+Next, we consider the manager classes.  For most of them, their state is limited to variables that reference 
+other manager classes.  Some also retain a reference to a <code>RIFStartupOptions</code> object, which contains 
+settings to help configure the runtime behaviour of RIF services.  <code>RIFStartupOptions</code> is created using 
+safe construction techniques, and is only set with a value once, before the services become active.  The 
+public methods of manager classes assume that most of their parameter values are objects that were 
+safe-copied from the original parameter values passed by the client applications.  
+</p>
+
+<p>
+The only parameter which could be vulnerable to multi-threaded problems is the <code>Connection</code> object.  
+However, in any service method, the service class will obtain a single <code>Connection</code> object from a 
+pool, and thread that through all of the methods it uses in the managers.
+</p>
+
+<p>
+Next, we examine the potential shared resources that could be used by service classes.  It is possible that Study 
+Submission and Study Result Retrival services could be running at the same time.  They share a lot of common code 
+and would access the same set of manager objects.  In order to ensure that they both share the same manager 
+objects and that these manager objects are not referenced before they have finished being initialised, we use the 
+safe construction technique again.
+</p>
+
+<p>
+The class <code>rifServices.dataStorageLayer.RIFServiceResources</code> is designed to create and properly 
+initialise all the manager objects before the services use them.   The class centralises initialisation code that 
+would otherwise be vulnerable to concurrent access problems caused by multiple services trying to share 
+manager objects. 
+</p>
+
+<p>
+Besides manager classes, the other main source of contention would be database connection objects.  
+If we were just using PostgreSQL, then we could rely on the JDBC driver to create a thread-safe connection object.  
+However, we're unclear how drivers that support Microsoft SQL Server.
+</p>
+
+
+
+
+
 
 
 
