@@ -309,7 +309,7 @@ topojson_convert:
 sahsuland_dump: ../install/sahsuland.sql
 	pg_dump -U postgres -w -F plain -T '*x_uk*' -T '*.x_ew01*' -v -C sahsuland > ../install/sahsuland.sql
 sahsuland.dump: ../install/sahsuland.dump
-	pg_dump -U postgres -w -F plain -T '*x_uk*' -T '*.x_ew01*' -v sahsuland > ../install/sahsuland.dump		
+	pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland > ../install/sahsuland.dump		
 # make dependent on completed target
 ../install/sahsuland.sql: 
 #- sahsuland_dev_dump: Dump sahsuland_dev database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
@@ -319,7 +319,7 @@ sahsuland_dev_dump: ../install/sahsuland_dev.dump
 	pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland_dev > ../install/sahsuland_dev.dump	
 #
 ../install/sahsuland.dump:
-	pg_dump -U postgres -w -F plain -T '*x_uk*' -T '*.x_ew01*' -v sahsuland > ../install/sahsuland.dump		
+	pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland > ../install/sahsuland.dump		
 	
 #-
 #- 4. test
@@ -371,12 +371,12 @@ db_setup: psqlrc $(PGPASSFILE) $(PLR_DIRS)
 		
 db_create: db_create.rpt
 
-#- db_install: Create sahusland, sahsuland_dev from ../install/sahsuland.dump (mimick installer)
-db_install:
+#- db_install: Create sahusland, sahsuland_dev from 
+db_install: ../install/sahsuland/sahsuland.dump
 	$(MAKE) clean
 	$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
-	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland.dump
-	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland_dev -U postgres -v ../install/sahsuland.dump
+	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland/sahsuland.dump
+	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland_dev -U postgres -v ../install/sahsuland/sahsuland.dump
 	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
 	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland_dev	
 
