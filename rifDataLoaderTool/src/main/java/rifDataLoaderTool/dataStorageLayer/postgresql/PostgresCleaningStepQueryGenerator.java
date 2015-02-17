@@ -3,9 +3,9 @@ package rifDataLoaderTool.dataStorageLayer.postgresql;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifServices.dataStorageLayer.SQLDeleteRowsQueryFormatter;
-import rifServices.dataStorageLayer.SQLDeleteTableQueryFormatter;
-import rifServices.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 
 import java.util.ArrayList;
 

@@ -1,5 +1,9 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 import rifServices.util.RIFLogger;

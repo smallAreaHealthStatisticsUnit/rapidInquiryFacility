@@ -1,12 +1,6 @@
-package rifGenericUILibrary;
-
-import java.awt.GridBagConstraints;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-
+package rifGenericLibrary.dataStorageLayer;
 
 /**
- *
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -15,13 +9,11 @@ import javax.swing.JTextArea;
  * rates and relative risks for any given health outcome, for specified age 
  * and year ranges, for any given geographical area.
  *
- * <p>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
  * is funded by the Public Health England as part of the MRC-PHE Centre for 
  * Environment and Health. Funding for this project has also been received 
  * from the United States Centers for Disease Control and Prevention.  
- * </p>
  *
  * <pre> 
  * This file is part of the Rapid Inquiry Facility (RIF) project.
@@ -44,8 +36,8 @@ import javax.swing.JTextArea;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
+
 /*
  * Code Road Map:
  * --------------
@@ -68,7 +60,9 @@ import javax.swing.JTextArea;
  *
  */
 
-public final class NoDataAvailablePanel {
+public final class SQLCountTableRowsQueryFormatter 
+	extends AbstractSQLQueryFormatter {
+
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -76,50 +70,21 @@ public final class NoDataAvailablePanel {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
-	//GUI Components
-	/** The panel. */
-	private JPanel panel;
+	private String tableName;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	/**
-	 * Instantiates a new no data available panel.
-	 *
-	 * @param userInterfaceFactory the user interface factory
-	 * @param noDataMessage the no data message
-	 * @param useMultiLine the use multi line
-	 */
-	public NoDataAvailablePanel(
-		UserInterfaceFactory userInterfaceFactory,
-		String noDataMessage,
-		boolean useMultiLine) {
-		
-		panel = userInterfaceFactory.createPanel();
-		GridBagConstraints panelGC = userInterfaceFactory.createGridBagConstraints();
-		panelGC.fill = GridBagConstraints.BOTH;
-		panelGC.weightx = 1.0;
-		panelGC.weighty = 1.0;		
-		
-		JTextArea textArea = userInterfaceFactory.createNonEditableTextArea(5, 30);
-		textArea.setText(noDataMessage);
-		panel.add(textArea, panelGC);
+	public SQLCountTableRowsQueryFormatter() {
+
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
-	/**
-	 * Gets the panel.
-	 *
-	 * @return the panel
-	 */
-	public JPanel getPanel() {
-
-		return panel;		
+	public void setTableName(final String tableName) {
+		this.tableName = tableName;
 	}
 	
 	// ==========================================
@@ -133,6 +98,14 @@ public final class NoDataAvailablePanel {
 	// ==========================================
 	// Section Override
 	// ==========================================
-
+	public String generateQuery() {
+		StringBuilder query = new StringBuilder();
+		
+		query.append("SELECT");
+		query.append("COUNT(*)");
+		query.append("FROM");
+		query.append(convertCase(tableName));
+		
+		return query.toString();		
+	}
 }
-

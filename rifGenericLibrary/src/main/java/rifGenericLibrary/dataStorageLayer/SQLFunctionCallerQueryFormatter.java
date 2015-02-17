@@ -1,6 +1,8 @@
-package rifServices.dataStorageLayer;
+package rifGenericLibrary.dataStorageLayer;
 
 import java.util.ArrayList;
+
+import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter.SortOrder;
 
 
 /**
@@ -69,21 +71,12 @@ import java.util.ArrayList;
  *
  */
 
-public final class SQLCountQueryFormatter 
+public final class SQLFunctionCallerQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	/**
-	 * The Enum SortOrder.
-	 */
-	public enum SortOrder {
-		
-	/** The ascending. */
-	ASCENDING, 
-	/** The descending. */
-	DESCENDING};
 
 	
 	// ==========================================
@@ -93,29 +86,27 @@ public final class SQLCountQueryFormatter
 	/** The use distinct. */
 	private boolean useDistinct;
 	
-	/** The count field. */
-	private String countField;
-	
-	/** The from tables. */
-	private ArrayList<String> fromTables;
-	
-	/** The where conditions. */
+	private String schema;
+	private String functionName;
+	private int numberOfFunctionParameters;
+
+	/** The select fields. */
+	private ArrayList<String> selectFields;
 	private ArrayList<String> whereConditions;
-	
+
 	/** The order by conditions. */
 	private ArrayList<String> orderByConditions;
-		
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	/**
-	 * Instantiates a new SQL count query formatter.
+	 * Instantiates a new SQL select query formatter.
 	 */
-	public SQLCountQueryFormatter() {
-
+	public SQLFunctionCallerQueryFormatter() {
 		useDistinct = false;
-		fromTables = new ArrayList<String>();
+		selectFields = new ArrayList<String>();
 		whereConditions = new ArrayList<String>();
 		orderByConditions = new ArrayList<String>();
 	}
@@ -123,82 +114,41 @@ public final class SQLCountQueryFormatter
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	/**
-	 * Sets the use distinct.
-	 *
-	 * @param useDistinct the new use distinct
-	 */
-	public void setUseDistinct(
-		final boolean useDistinct) {
-		
-		this.useDistinct = useDistinct;
-	}
-	
-	/**
-	 * Sets the count field.
-	 *
-	 * @param countField the new count field
-	 */
-	public void setCountField(
-		final String countField) {
 
-		this.countField = countField;
+	public String getSchema() {
+		return schema;
 	}
 	
-	/**
-	 * Adds the from table.
-	 *
-	 * @param fromTable the from table
-	 */
-	public void addFromTable(
-		final String fromTable) {
-		
-		fromTables.add(fromTable);
+	public void setSchema(final String schema) {
+		this.schema = schema;
 	}
 	
-	/**
-	 * Adds the where join condition.
-	 *
-	 * @param tableA the table a
-	 * @param fieldNameA the field name a
-	 * @param tableB the table b
-	 * @param fieldNameB the field name b
-	 */
-	public void addWhereJoinCondition(
-		final String tableA,
-		final String fieldNameA,
-		final String tableB,
-		final String fieldNameB) {
+	public String getFunctionName() {
+		return functionName;
+	}
+	
+	public void setFunctionName(final String functionName) {
+		this.functionName = functionName;
+	}
+	
+	public int getNumberOfFunctionParameters() {
+		return numberOfFunctionParameters;
+	}
+	
+	public void setNumberOfFunctionParameters(final int numberOfFunctionParameters) {
+		this.numberOfFunctionParameters = numberOfFunctionParameters;
+	}
 
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableA);
-		whereCondition.append(".");
-		whereCondition.append(fieldNameA);
-		whereCondition.append("=");
-		whereCondition.append(tableB);
-		whereCondition.append(".");
-		whereCondition.append(fieldNameB);
-		
-		whereConditions.add(whereCondition.toString());
-	}
-	
 	/**
-	 * Adds the where join condition.
+	 * Adds the select field.
 	 *
-	 * @param tableFieldA the table field a
-	 * @param tableFieldB the table field b
+	 * @param selectField the select field
 	 */
-	public void addWhereJoinCondition(
-		final String tableFieldA,
-		final String tableFieldB) {
+	public void addSelectField(
+		final String selectField) {
 
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableFieldA);
-		whereCondition.append("=");
-		whereCondition.append(tableFieldB);
-		
-		whereConditions.add(whereCondition.toString());		
-	}
+		selectFields.add(selectField);		
+	}	
 	
 	/**
 	 * Adds the where parameter.
@@ -214,44 +164,6 @@ public final class SQLCountQueryFormatter
 
 		whereConditions.add(whereCondition.toString());
 	}
-	
-	/**
-	 * Adds the where parameter with operator.
-	 *
-	 * @param fieldName the field name
-	 * @param operator the operator
-	 */
-	public void addWhereParameterWithOperator(
-		final String fieldName,
-		final String operator) {
-
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(fieldName);
-		whereCondition.append(operator);
-		whereCondition.append("?");
-		
-		whereConditions.add(whereCondition.toString());
-	}
-
-	/**
-	 * Adds the where parameter.
-	 *
-	 * @param tableName the table name
-	 * @param fieldName the field name
-	 */
-	public void addWhereParameter(
-		final String tableName, 
-		final String fieldName) {
-		
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableName);
-		whereCondition.append(".");		
-		whereCondition.append(fieldName);
-		whereCondition.append("=?");
-
-		whereConditions.add(whereCondition.toString());
-	}
-
 	
 	/**
 	 * Adds the order by condition.
@@ -262,37 +174,8 @@ public final class SQLCountQueryFormatter
 		final String fieldName) {
 			
 		addOrderByCondition(null, fieldName, SortOrder.ASCENDING);
-	}
+	}	
 
-	/**
-	 * Adds the order by condition.
-	 *
-	 * @param fieldName the field name
-	 * @param sortOrder the sort order
-	 */
-	public void addOrderByCondition(
-		final String fieldName,
-		final SortOrder sortOrder) {
-		
-		addOrderByCondition(null, fieldName, sortOrder);
-	}
-	
-	/**
-	 * Adds the order by condition.
-	 *
-	 * @param tableName the table name
-	 * @param fieldName the field name
-	 */
-	public void addOrderByCondition(
-		final String tableName,
-		final String fieldName) {
-
-		addOrderByCondition(
-			tableName, 
-			fieldName, 
-			SortOrder.ASCENDING);		
-	}
-	
 	/**
 	 * Adds the order by condition.
 	 *
@@ -323,63 +206,92 @@ public final class SQLCountQueryFormatter
 		orderByConditions.add(orderByCondition.toString());
 	}
 	
-	@Override
-	public String generateQuery() {
+	/**
+	 * Sets the use distinct.
+	 *
+	 * @param useDistinct the new use distinct
+	 */
+	public void setUseDistinct(
+		final boolean useDistinct) {
 		
+		this.useDistinct = useDistinct;
+	}
+	
+	/*
+	 * @see rifServices.dataStorageLayer.SQLQueryFormatter#generateQuery()
+	 */
+	public String generateQuery() {
 		resetAccumulatedQueryExpression();
-		addQueryPhrase(0, "SELECT");
-		padAndFinishLine();
+		addQueryPhrase(0, "SELECT ");
 		if (useDistinct == true) {
-			addQueryPhrase(1, "COUNT( DISTINCT ");
+			addQueryPhrase("DISTINCT");
+		}
+		padAndFinishLine();
+		
+		int numberOfSelectFields = selectFields.size();
+		if (numberOfSelectFields == 0) {
+			addQueryPhrase(1, "*");
+			padAndFinishLine();
 		}
 		else {
-			addQueryPhrase(1, "COUNT( ");
+			for (int i = 0; i < numberOfSelectFields; i++) {
+				if(i > 0) {
+					addQueryPhrase(",");
+					finishLine();
+				}
+				addQueryPhrase(1, convertCase(selectFields.get(i)));
+			}
 		}
-
-		addQueryPhrase(countField);
-		addQueryPhrase(")");
 		padAndFinishLine();
-		addQueryPhrase(0, "FROM ");
-		int numberOfFromTables = fromTables.size();
-		for (int i = 0; i < numberOfFromTables; i++) {
-			if (i > 0) {
+		
+		addQueryPhrase(0, "FROM");
+		padAndFinishLine();
+		addQueryPhrase(1, schema);
+		addQueryPhrase(".");
+		addQueryPhrase(functionName);
+		addQueryPhrase("(");
+		
+		for (int i = 0; i < numberOfFunctionParameters; i++) {
+			if (i != 0) {
 				addQueryPhrase(",");
 			}
-			addQueryPhrase(1, convertCase(fromTables.get(i)));
+			addQueryPhrase("?");
 		}
+		addQueryPhrase(")");
 		
 		int numberOfWhereConditions = whereConditions.size();
 		if (numberOfWhereConditions > 0) {			
 			padAndFinishLine();
 			addQueryPhrase(0, "WHERE");
-			
+			padAndFinishLine();
 			for (int i = 0; i < numberOfWhereConditions; i++) {
 				if (i > 0) {
 					addQueryPhrase(" AND");
-					padAndFinishLine();
+					padAndFinishLine();					
 				}
 				addQueryPhrase(1, convertCase(whereConditions.get(i)));
 			}
 		}
-		
+
 		int numberOfOrderByConditions = orderByConditions.size();
 		if (numberOfOrderByConditions > 0) {
 			padAndFinishLine();
-			addQueryPhrase("ORDER BY ");
+			addQueryPhrase(0, " ORDER BY");
+			padAndFinishLine();
 			for (int i = 0; i < numberOfOrderByConditions; i++) {
 				if (i > 0) {
 					addQueryPhrase(",");
-					padAndFinishLine();
 				}
 				addQueryPhrase(convertCase(orderByConditions.get(i)));
 			}
 		}
 		
 		addQueryPhrase(";");
+		finishLine();
 				
 		return super.generateQuery();
 	}
-		
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

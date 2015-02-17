@@ -1,5 +1,7 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.AdjustableCovariate;
 import rifServices.businessConceptLayer.CovariateType;

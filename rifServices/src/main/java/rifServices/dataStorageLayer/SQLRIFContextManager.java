@@ -1,5 +1,8 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.dataStorageLayer.SQLAggregateValueQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.GeoLevelView;

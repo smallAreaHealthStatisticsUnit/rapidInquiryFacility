@@ -1,4 +1,4 @@
-package rifServices.dataStorageLayer;
+package rifGenericLibrary.dataStorageLayer;
 
 import java.util.ArrayList;
 

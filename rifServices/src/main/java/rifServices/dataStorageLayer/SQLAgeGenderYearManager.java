@@ -1,7 +1,8 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.businessConceptLayer.AgeGroup;
-
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.AgeGroupSortingOption;

@@ -11,9 +11,9 @@ import rifDataLoaderTool.businessConceptLayer.DataSource;
 import rifDataLoaderTool.businessConceptLayer.LoadStepQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
 import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
+import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifServices.dataStorageLayer.SQLQueryUtility;
 import rifServices.businessConceptLayer.RIFResultTable;
-import rifServices.dataStorageLayer.SQLInsertQueryFormatter;
 import rifServices.util.RIFLogger;
 
 import java.sql.*;

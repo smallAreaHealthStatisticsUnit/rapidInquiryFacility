@@ -2,8 +2,8 @@ package rifDataLoaderTool.dataStorageLayer;
 
 import java.sql.*;
 
+import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.businessConceptLayer.RIFResultTable;
-import rifServices.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceException;
 import rifServices.dataStorageLayer.SQLQueryUtility;

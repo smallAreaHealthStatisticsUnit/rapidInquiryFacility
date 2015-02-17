@@ -1,16 +1,15 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.DataSource;
-
 import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 
 
-import rifServices.dataStorageLayer.SQLDeleteRowsQueryFormatter;
-import rifServices.dataStorageLayer.SQLInsertQueryFormatter;
-import rifServices.dataStorageLayer.SQLRecordExistsQueryFormatter;
-import rifServices.dataStorageLayer.SQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.dataStorageLayer.SQLQueryUtility;
 
 import java.sql.*;

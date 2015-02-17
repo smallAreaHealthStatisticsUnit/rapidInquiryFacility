@@ -6,7 +6,7 @@ import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
 
 import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifServices.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 
 import java.util.ArrayList;
 

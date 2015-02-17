@@ -1,6 +1,10 @@
-package rifServices.dataStorageLayer;
+package rifGenericLibrary.dataStorageLayer;
+
+import java.util.ArrayList;
+
 
 /**
+ *
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -9,11 +13,13 @@ package rifServices.dataStorageLayer;
  * rates and relative risks for any given health outcome, for specified age 
  * and year ranges, for any given geographical area.
  *
+ * <p>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
  * is funded by the Public Health England as part of the MRC-PHE Centre for 
  * Environment and Health. Funding for this project has also been received 
  * from the United States Centers for Disease Control and Prevention.  
+ * </p>
  *
  * <pre> 
  * This file is part of the Rapid Inquiry Facility (RIF) project.
@@ -36,6 +42,7 @@ package rifServices.dataStorageLayer;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
+ * @version
  */
 
 /*
@@ -60,7 +67,7 @@ package rifServices.dataStorageLayer;
  *
  */
 
-public final class SQLCountTableRowsQueryFormatter 
+public final class SQLInsertQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
@@ -70,21 +77,78 @@ public final class SQLCountTableRowsQueryFormatter
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String tableName;
+	/** The into table. */
+	private String intoTable;
 	
+	/** The insert fields. */
+	private ArrayList<String> insertFields;
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public SQLCountTableRowsQueryFormatter() {
-
+	/**
+	 * Instantiates a new SQL insert query formatter.
+	 */
+	public SQLInsertQueryFormatter() {
+		insertFields = new ArrayList<String>();
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void setTableName(final String tableName) {
-		this.tableName = tableName;
+
+	/**
+	 * Sets the into table.
+	 *
+	 * @param intoTable the new into table
+	 */
+	public void setIntoTable(
+		final String intoTable) {
+		
+		this.intoTable = intoTable;
+	}
+	
+	/**
+	 * Adds the insert field.
+	 *
+	 * @param insertField the insert field
+	 */
+	public void addInsertField(
+		final String insertField) {
+		
+		insertFields.add(insertField);
+	}
+	
+	@Override
+	public String generateQuery() {
+		resetAccumulatedQueryExpression();
+		addQueryPhrase(0, "INSERT INTO ");
+		addQueryPhrase(intoTable);
+		addQueryPhrase("(");
+
+		int numberOfInsertFields = insertFields.size();
+		for (int i = 0; i < numberOfInsertFields; i++) {
+			if (i != 0) {
+				addQueryPhrase(",");
+				finishLine();
+			}
+			addQueryPhrase(1, insertFields.get(i));			
+		}
+		addQueryPhrase(")");
+		padAndFinishLine();
+		addQueryPhrase(0, "VALUES (");
+		for (int i = 0; i < numberOfInsertFields; i++) {
+			if (i != 0) {
+				addQueryPhrase(",");
+			}
+			addQueryPhrase("?");			
+		}
+
+		addQueryPhrase(");");
+		finishLine();
+		
+		return super.generateQuery();		
 	}
 	
 	// ==========================================
@@ -98,14 +162,4 @@ public final class SQLCountTableRowsQueryFormatter
 	// ==========================================
 	// Section Override
 	// ==========================================
-	public String generateQuery() {
-		StringBuilder query = new StringBuilder();
-		
-		query.append("SELECT");
-		query.append("COUNT(*)");
-		query.append("FROM");
-		query.append(convertCase(tableName));
-		
-		return query.toString();		
-	}
 }

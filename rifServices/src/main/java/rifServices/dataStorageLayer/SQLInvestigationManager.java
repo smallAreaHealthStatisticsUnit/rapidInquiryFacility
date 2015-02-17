@@ -1,7 +1,7 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifServices.businessConceptLayer.AbstractStudy;
-
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.AbstractCovariate;
@@ -9,7 +9,6 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;

@@ -1,10 +1,12 @@
-package rifServices.dataStorageLayer;
+package rifGenericLibrary.dataStorageLayer;
 
-import java.util.ArrayList;
 
 
 /**
- *
+ * Convenience class used to help format typical SELECT FROM WHERE clauses.
+ * We don't expect all SQL queries to follow the basic SELECT statement but
+ * the utility class is meant to help format the text and alignment of SQL
+ * queries, and to reduce the risk of having syntax problems occur.
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -44,7 +46,6 @@ import java.util.ArrayList;
  * @author kgarwood
  * @version
  */
-
 /*
  * Code Road Map:
  * --------------
@@ -67,90 +68,94 @@ import java.util.ArrayList;
  *
  */
 
-public final class SQLInsertQueryFormatter 
+public final class SQLFieldVarianceQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The into table. */
-	private String intoTable;
+		
+	/** The count field. */
+	private String fieldOfInterest;
 	
-	/** The insert fields. */
-	private ArrayList<String> insertFields;
-
+	/** The from tables. */
+	private String fromTable;
+			
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	/**
-	 * Instantiates a new SQL insert query formatter.
+	 * Instantiates a new SQL count query formatter.
 	 */
-	public SQLInsertQueryFormatter() {
-		insertFields = new ArrayList<String>();
+	public SQLFieldVarianceQueryFormatter() {
+
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
+	
 	/**
-	 * Sets the into table.
+	 * Sets the count field.
 	 *
-	 * @param intoTable the new into table
+	 * @param countField the new count field
 	 */
-	public void setIntoTable(
-		final String intoTable) {
-		
-		this.intoTable = intoTable;
+	public void setFieldOfInterest(
+		final String fieldOfInterest) {
+
+		this.fieldOfInterest = fieldOfInterest;
 	}
 	
 	/**
-	 * Adds the insert field.
+	 * Adds the from table.
 	 *
-	 * @param insertField the insert field
+	 * @param fromTable the from table
 	 */
-	public void addInsertField(
-		final String insertField) {
+	
+	public void setFromTable(
+		final String fromTable) {
 		
-		insertFields.add(insertField);
+		this.fromTable = fromTable;
 	}
+	
 	
 	@Override
 	public String generateQuery() {
-		resetAccumulatedQueryExpression();
-		addQueryPhrase(0, "INSERT INTO ");
-		addQueryPhrase(intoTable);
-		addQueryPhrase("(");
-
-		int numberOfInsertFields = insertFields.size();
-		for (int i = 0; i < numberOfInsertFields; i++) {
-			if (i != 0) {
-				addQueryPhrase(",");
-				finishLine();
-			}
-			addQueryPhrase(1, insertFields.get(i));			
-		}
-		addQueryPhrase(")");
-		padAndFinishLine();
-		addQueryPhrase(0, "VALUES (");
-		for (int i = 0; i < numberOfInsertFields; i++) {
-			if (i != 0) {
-				addQueryPhrase(",");
-			}
-			addQueryPhrase("?");			
-		}
-
-		addQueryPhrase(");");
-		finishLine();
 		
-		return super.generateQuery();		
+		resetAccumulatedQueryExpression();
+		addQueryPhrase(0, "SELECT");
+		padAndFinishLine();
+		addQueryPhrase(1, fieldOfInterest);
+		addQueryPhrase(" AS value,");
+		padAndFinishLine();
+		addQueryPhrase(1, "COUNT(");
+		addQueryPhrase(fieldOfInterest);
+		addQueryPhrase(") AS frequency");
+		padAndFinishLine();
+
+		addQueryPhrase(0, "FROM ");
+		padAndFinishLine();
+		addQueryPhrase(1, fromTable);		
+		padAndFinishLine();
+		addQueryPhrase(0, "GROUP BY");
+		padAndFinishLine();
+		addQueryPhrase(1, "value");
+		padAndFinishLine();
+		addQueryPhrase(0, "ORDER BY");
+		padAndFinishLine();
+		addQueryPhrase(1, "COUNT(");
+		addQueryPhrase(fieldOfInterest);
+		addQueryPhrase(") DESC;");
+				
+		return super.generateQuery();
 	}
-	
+		
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

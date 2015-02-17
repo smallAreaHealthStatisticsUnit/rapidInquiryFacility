@@ -1,9 +1,10 @@
 package rifServices.dataStorageLayer;
 
 import java.util.ArrayList;
-
 import java.sql.*;
 
+import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.businessConceptLayer.*;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;

@@ -2,6 +2,8 @@ package rifServices.dataStorageLayer;
 
 import java.sql.SQLException;
 
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+
 /**
  *
  *

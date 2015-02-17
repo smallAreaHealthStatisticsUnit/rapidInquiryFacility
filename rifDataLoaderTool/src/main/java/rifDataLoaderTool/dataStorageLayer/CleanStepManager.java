@@ -10,11 +10,11 @@ import rifDataLoaderTool.businessConceptLayer.CleaningStepQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.DataSource;
 import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
 import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
+import rifGenericLibrary.dataStorageLayer.SQLCountQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLFieldVarianceQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.dataStorageLayer.SQLQueryUtility;
 import rifServices.businessConceptLayer.RIFResultTable;
-import rifServices.dataStorageLayer.SQLCountQueryFormatter;
-import rifServices.dataStorageLayer.SQLFieldVarianceQueryFormatter;
-import rifServices.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.util.RIFLogger;
 
 import java.sql.*;

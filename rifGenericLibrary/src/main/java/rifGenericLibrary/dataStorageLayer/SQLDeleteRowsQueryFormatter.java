@@ -1,21 +1,10 @@
-package rifServices.dataStorageLayer;
+package rifGenericLibrary.dataStorageLayer;
 
 import java.util.ArrayList;
 
 
 /**
- * Class designed to create a template for queries that resemble this example:
- * <code> 
- * SELECT 1
- * FROM
- *    rif40_num_denom
- * WHERE
- *    geography=?
- * </code>
- * 
- * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
- * Health Statistics Unit. 
+ *
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -77,7 +66,7 @@ import java.util.ArrayList;
  *
  */
 
-public final class SQLRecordExistsQueryFormatter 
+public final class SQLDeleteRowsQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
@@ -87,51 +76,80 @@ public final class SQLRecordExistsQueryFormatter
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The from table name. */
-	private String fromTableName;
-	
-	/** The lookup key field name. */
-	private String lookupKeyFieldName;
+	/** The from table. */
+	private String fromTable;
 	
 	/** The where conditions. */
 	private ArrayList<String> whereConditions;
 
-	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	/**
-	 * Instantiates a new SQL record exists query formatter.
+	 * Instantiates a new SQL delete query formatter.
 	 */
-	public SQLRecordExistsQueryFormatter() {
-		
+	public SQLDeleteRowsQueryFormatter() {
 		whereConditions = new ArrayList<String>();
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
 	/**
 	 * Sets the from table.
 	 *
-	 * @param fromTableName the new from table
+	 * @param fromTable the new from table
 	 */
 	public void setFromTable(
-		final String fromTableName) {
-
-		this.fromTableName = fromTableName;
+		final String fromTable) {
+		
+		this.fromTable = fromTable;
 	}
 	
 	/**
-	 * Sets the lookup key field name.
+	 * Adds the where join condition.
 	 *
-	 * @param lookupKeyFieldName the new lookup key field name
+	 * @param tableA the table a
+	 * @param fieldNameA the field name a
+	 * @param tableB the table b
+	 * @param fieldNameB the field name b
 	 */
-	public void setLookupKeyFieldName(
-		final String lookupKeyFieldName) {
+	public void addWhereJoinCondition(
+		final String tableA,
+		final String fieldNameA,
+		final String tableB,
+		final String fieldNameB) {
 
-		this.lookupKeyFieldName = lookupKeyFieldName;
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(tableA);
+		whereCondition.append(".");
+		whereCondition.append(fieldNameA);
+		whereCondition.append("=");
+		whereCondition.append(tableB);
+		whereCondition.append(".");
+		whereCondition.append(fieldNameB);
+		
+		whereConditions.add(whereCondition.toString());
+	}
+	
+	/**
+	 * Adds the where join condition.
+	 *
+	 * @param tableFieldA the table field a
+	 * @param tableFieldB the table field b
+	 */
+	public void addWhereJoinCondition(
+		final String tableFieldA,
+		final String tableFieldB) {
+
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(tableFieldA);
+		whereCondition.append("=");
+		whereCondition.append(tableFieldB);
+		
+		whereConditions.add(whereCondition.toString());		
 	}
 	
 	/**
@@ -163,52 +181,55 @@ public final class SQLRecordExistsQueryFormatter
 		whereCondition.append(fieldName);
 		whereCondition.append(operator);
 		whereCondition.append("?");
-			
+		
 		whereConditions.add(whereCondition.toString());
 	}
 
+	/**
+	 * Adds the where parameter.
+	 *
+	 * @param tableName the table name
+	 * @param fieldName the field name
+	 */
+	public void addWhereParameter(
+		final String tableName, 
+		final String fieldName) {
+		
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(tableName);
+		whereCondition.append(".");		
+		whereCondition.append(fieldName);
+		whereCondition.append("=?");
+
+		whereConditions.add(whereCondition.toString());
+	}
+	
 	@Override
 	public String generateQuery() {
+	
 		resetAccumulatedQueryExpression();
-		addQueryPhrase(0, "SELECT 1");
-		padAndFinishLine();
-		addQueryPhrase(0, "FROM");
-		padAndFinishLine();
-		
-		addQueryPhrase(1, convertCase(fromTableName));
-		padAndFinishLine();
-		addQueryPhrase(0, "WHERE");
-		padAndFinishLine();
-		
-		if (lookupKeyFieldName == null) {
-			int numberOfWhereConditions = whereConditions.size();
-			if (numberOfWhereConditions > 0) {			
-				for (int i = 0; i < numberOfWhereConditions; i++) {
-					if (i != 0) {
-						addQueryPhrase(" AND ");
-					}
-					addQueryPhrase(1, convertCase(whereConditions.get(i)));
-				}
-			}
-		}
-		else {
-			addQueryPhrase(1, convertCase(lookupKeyFieldName));
-			addQueryPhrase("=?");
+		addQueryPhrase(0, "DELETE FROM ");
+		addQueryPhrase(fromTable);
 
-			int numberOfWhereConditions = whereConditions.size();
-			if (numberOfWhereConditions > 0) {			
-				for (int i = 0; i < numberOfWhereConditions; i++) {
+		
+		int numberOfWhereConditions = whereConditions.size();
+		if (numberOfWhereConditions > 0) {			
+			padAndFinishLine();
+			addQueryPhrase("WHERE");
+			padAndFinishLine();			
+			for (int i = 0; i < numberOfWhereConditions; i++) {
+				if (i > 0) {
 					addQueryPhrase(" AND");
 					padAndFinishLine();
-					addQueryPhrase(1, convertCase(whereConditions.get(i)));
 				}
-			}		
+				addQueryPhrase(1, convertCase(whereConditions.get(i)));
+			}
 		}
-
+		
 		addQueryPhrase(";");
 		finishLine();
-				
-		return super.generateQuery();
+		
+		return super.generateQuery();		
 	}
 	
 	// ==========================================

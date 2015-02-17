@@ -7,7 +7,7 @@ import rifDataLoaderTool.businessConceptLayer.TableConversionConfiguration;
 import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
 import rifDataLoaderTool.businessConceptLayer.TableFieldConversionConfiguration;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifServices.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 
 /**
  * Contains methods that generate Postgres-specific SQL code that supports

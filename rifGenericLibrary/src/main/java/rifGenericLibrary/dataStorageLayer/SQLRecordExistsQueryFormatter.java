@@ -1,12 +1,21 @@
-package rifServices.dataStorageLayer;
+package rifGenericLibrary.dataStorageLayer;
 
+import java.util.ArrayList;
 
 
 /**
- * Convenience class used to help format typical SELECT FROM WHERE clauses.
- * We don't expect all SQL queries to follow the basic SELECT statement but
- * the utility class is meant to help format the text and alignment of SQL
- * queries, and to reduce the risk of having syntax problems occur.
+ * Class designed to create a template for queries that resemble this example:
+ * <code> 
+ * SELECT 1
+ * FROM
+ *    rif40_num_denom
+ * WHERE
+ *    geography=?
+ * </code>
+ * 
+ * <hr>
+ * Copyright 2014 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. 
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -68,94 +77,140 @@ package rifServices.dataStorageLayer;
  *
  */
 
-public final class SQLFieldVarianceQueryFormatter 
+public final class SQLRecordExistsQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	
+
 	// ==========================================
 	// Section Properties
 	// ==========================================
-		
-	/** The count field. */
-	private String fieldOfInterest;
+	/** The from table name. */
+	private String fromTableName;
 	
-	/** The from tables. */
-	private String fromTable;
-			
+	/** The lookup key field name. */
+	private String lookupKeyFieldName;
+	
+	/** The where conditions. */
+	private ArrayList<String> whereConditions;
+
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	/**
-	 * Instantiates a new SQL count query formatter.
+	 * Instantiates a new SQL record exists query formatter.
 	 */
-	public SQLFieldVarianceQueryFormatter() {
-
+	public SQLRecordExistsQueryFormatter() {
+		
+		whereConditions = new ArrayList<String>();
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
-	
 	/**
-	 * Sets the count field.
+	 * Sets the from table.
 	 *
-	 * @param countField the new count field
+	 * @param fromTableName the new from table
 	 */
-	public void setFieldOfInterest(
-		final String fieldOfInterest) {
-
-		this.fieldOfInterest = fieldOfInterest;
-	}
-	
-	/**
-	 * Adds the from table.
-	 *
-	 * @param fromTable the from table
-	 */
-	
 	public void setFromTable(
-		final String fromTable) {
-		
-		this.fromTable = fromTable;
+		final String fromTableName) {
+
+		this.fromTableName = fromTableName;
 	}
 	
+	/**
+	 * Sets the lookup key field name.
+	 *
+	 * @param lookupKeyFieldName the new lookup key field name
+	 */
+	public void setLookupKeyFieldName(
+		final String lookupKeyFieldName) {
+
+		this.lookupKeyFieldName = lookupKeyFieldName;
+	}
 	
+	/**
+	 * Adds the where parameter.
+	 *
+	 * @param fieldName the field name
+	 */
+	public void addWhereParameter(
+		final String fieldName) {
+		
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(fieldName);
+		whereCondition.append("=?");
+
+		whereConditions.add(whereCondition.toString());
+	}
+	
+	/**
+	 * Adds the where parameter with operator.
+	 *
+	 * @param fieldName the field name
+	 * @param operator the operator
+	 */
+	public void addWhereParameterWithOperator(
+		final String fieldName,
+		final String operator) {
+
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(fieldName);
+		whereCondition.append(operator);
+		whereCondition.append("?");
+			
+		whereConditions.add(whereCondition.toString());
+	}
+
 	@Override
 	public String generateQuery() {
-		
 		resetAccumulatedQueryExpression();
-		addQueryPhrase(0, "SELECT");
+		addQueryPhrase(0, "SELECT 1");
 		padAndFinishLine();
-		addQueryPhrase(1, fieldOfInterest);
-		addQueryPhrase(" AS value,");
+		addQueryPhrase(0, "FROM");
 		padAndFinishLine();
-		addQueryPhrase(1, "COUNT(");
-		addQueryPhrase(fieldOfInterest);
-		addQueryPhrase(") AS frequency");
+		
+		addQueryPhrase(1, convertCase(fromTableName));
 		padAndFinishLine();
+		addQueryPhrase(0, "WHERE");
+		padAndFinishLine();
+		
+		if (lookupKeyFieldName == null) {
+			int numberOfWhereConditions = whereConditions.size();
+			if (numberOfWhereConditions > 0) {			
+				for (int i = 0; i < numberOfWhereConditions; i++) {
+					if (i != 0) {
+						addQueryPhrase(" AND ");
+					}
+					addQueryPhrase(1, convertCase(whereConditions.get(i)));
+				}
+			}
+		}
+		else {
+			addQueryPhrase(1, convertCase(lookupKeyFieldName));
+			addQueryPhrase("=?");
 
-		addQueryPhrase(0, "FROM ");
-		padAndFinishLine();
-		addQueryPhrase(1, fromTable);		
-		padAndFinishLine();
-		addQueryPhrase(0, "GROUP BY");
-		padAndFinishLine();
-		addQueryPhrase(1, "value");
-		padAndFinishLine();
-		addQueryPhrase(0, "ORDER BY");
-		padAndFinishLine();
-		addQueryPhrase(1, "COUNT(");
-		addQueryPhrase(fieldOfInterest);
-		addQueryPhrase(") DESC;");
+			int numberOfWhereConditions = whereConditions.size();
+			if (numberOfWhereConditions > 0) {			
+				for (int i = 0; i < numberOfWhereConditions; i++) {
+					addQueryPhrase(" AND");
+					padAndFinishLine();
+					addQueryPhrase(1, convertCase(whereConditions.get(i)));
+				}
+			}		
+		}
+
+		addQueryPhrase(";");
+		finishLine();
 				
 		return super.generateQuery();
 	}
-		
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
