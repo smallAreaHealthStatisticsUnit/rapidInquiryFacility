@@ -1,13 +1,13 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 
-import rifGenericUILibrary.DisplayableListItemInterface;
-import rifGenericUILibrary.ErrorDialog;
-import rifGenericUILibrary.OKCloseButtonPanel;
-import rifGenericUILibrary.OrderedListPanel;
-import rifGenericUILibrary.UserInterfaceFactory;
 
 
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
+import rifGenericLibrary.presentationLayer.OrderedListPanel;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.system.RIFServiceException;

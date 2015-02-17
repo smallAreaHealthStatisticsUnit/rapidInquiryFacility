@@ -1,7 +1,6 @@
 package rifServices.test.services;
 
-import rifGenericUILibrary.DisplayableListItemInterface;
-
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifServices.businessConceptLayer.StudyResultRetrievalContext;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.GeoLevelAttributeSource;
@@ -9,9 +8,10 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.DisplayableItemSorter;
-
 import static org.junit.Assert.*;
+
 import org.junit.Test;
+
 import java.util.ArrayList;
 
 /**

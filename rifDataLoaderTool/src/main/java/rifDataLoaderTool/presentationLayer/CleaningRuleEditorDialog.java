@@ -3,14 +3,17 @@ package rifDataLoaderTool.presentationLayer;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 import rifDataLoaderTool.businessConceptLayer.CleaningRule;
-import rifGenericUILibrary.ErrorDialog;
-import rifGenericUILibrary.UserInterfaceFactory;
-import rifGenericUILibrary.YesNoQuestionPanel;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.presentationLayer.YesNoQuestionPanel;
 import rifServices.system.RIFServiceException;
 
 
 
+
+
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;

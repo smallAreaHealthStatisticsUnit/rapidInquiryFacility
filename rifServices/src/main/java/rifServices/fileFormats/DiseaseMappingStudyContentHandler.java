@@ -1,7 +1,7 @@
 
 package rifServices.fileFormats;
 
-import rifGenericUILibrary.HTMLUtility;
+import rifGenericLibrary.presentationLayer.HTMLUtility;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudyArea;
 import rifServices.businessConceptLayer.ComparisonArea;

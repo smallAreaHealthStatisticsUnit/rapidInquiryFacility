@@ -1,6 +1,6 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.HealthCode;

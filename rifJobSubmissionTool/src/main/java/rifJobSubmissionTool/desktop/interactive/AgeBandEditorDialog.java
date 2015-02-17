@@ -1,9 +1,9 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifGenericUILibrary.ErrorDialog;
-import rifGenericUILibrary.OKCloseButtonPanel;
-import rifGenericUILibrary.OrderedListComboBox;
-import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
+import rifGenericLibrary.presentationLayer.OrderedListComboBox;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 
 

@@ -1,6 +1,6 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifGenericUILibrary.ErrorDialog;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 
 

@@ -2,7 +2,7 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 
-import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifServices.businessConceptLayer.Parameter;
 
 import java.util.ArrayList;

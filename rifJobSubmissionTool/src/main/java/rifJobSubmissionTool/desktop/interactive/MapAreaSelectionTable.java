@@ -1,6 +1,6 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.system.RIFServiceMessages;
 

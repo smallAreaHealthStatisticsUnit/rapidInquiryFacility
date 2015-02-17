@@ -4,7 +4,10 @@ import java.util.ArrayList;
 
 
 
-import rifGenericUILibrary.DisplayableListItemInterface;
+
+
+
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;

@@ -28,6 +28,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/rifServices"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/rifGenericUILibrary"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/rifGenericLibrary"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

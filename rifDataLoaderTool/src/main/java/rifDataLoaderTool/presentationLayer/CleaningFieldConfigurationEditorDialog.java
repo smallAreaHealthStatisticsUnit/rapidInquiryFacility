@@ -3,10 +3,9 @@ package rifDataLoaderTool.presentationLayer;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifGenericUILibrary.ErrorDialog;
-import rifGenericUILibrary.UserInterfaceFactory;
-import rifGenericUILibrary.OrderedListComboBox;
-
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.presentationLayer.OrderedListComboBox;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifServices.system.RIFServiceException;
 
 import javax.swing.border.LineBorder;

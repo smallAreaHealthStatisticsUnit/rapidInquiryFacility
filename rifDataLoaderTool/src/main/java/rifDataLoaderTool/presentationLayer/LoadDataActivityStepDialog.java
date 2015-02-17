@@ -6,9 +6,9 @@ import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 
 import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifGenericUILibrary.UserInterfaceFactory;
-import rifGenericUILibrary.RIFGenericUIMessages;
-import rifGenericUILibrary.ErrorDialog;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.presentationLayer.RIFGenericUIMessages;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 
 import javax.swing.*;
 

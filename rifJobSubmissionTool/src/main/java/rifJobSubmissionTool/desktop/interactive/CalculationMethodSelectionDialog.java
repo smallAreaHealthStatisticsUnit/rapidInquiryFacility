@@ -1,9 +1,9 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifGenericUILibrary.ErrorDialog;
-import rifGenericUILibrary.NoDataAvailablePanel;
-import rifGenericUILibrary.OKCloseButtonPanel;
-import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.presentationLayer.NoDataAvailablePanel;
+import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.CalculationMethod;

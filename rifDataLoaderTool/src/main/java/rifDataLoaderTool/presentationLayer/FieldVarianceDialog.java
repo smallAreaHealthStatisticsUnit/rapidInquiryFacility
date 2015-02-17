@@ -4,8 +4,8 @@ import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
 import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
 import rifDataLoaderTool.fileFormats.FieldVarianceReport;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifServices.system.RIFServiceException;
-import rifGenericUILibrary.UserInterfaceFactory;
 
 import javax.swing.*;
 

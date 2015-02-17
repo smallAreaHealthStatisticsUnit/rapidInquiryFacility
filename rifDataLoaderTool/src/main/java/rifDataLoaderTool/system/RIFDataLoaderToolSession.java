@@ -1,8 +1,8 @@
 package rifDataLoaderTool.system;
 
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifServices.businessConceptLayer.User;
-import rifGenericUILibrary.UserInterfaceFactory;
 
 /**
  *

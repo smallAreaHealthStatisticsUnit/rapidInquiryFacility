@@ -1,12 +1,12 @@
 package rifJobSubmissionTool.desktop.interactive;
 
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
+import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
+import rifGenericLibrary.presentationLayer.OrderedListPanel;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
-import rifGenericUILibrary.DisplayableListItemInterface;
-import rifGenericUILibrary.OrderedListPanel;
-import rifGenericUILibrary.UserInterfaceFactory;
-import rifGenericUILibrary.ListEditingButtonPanel;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Investigation;

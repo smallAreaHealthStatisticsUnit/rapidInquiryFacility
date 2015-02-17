@@ -1,9 +1,9 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifGenericUILibrary.ErrorDialog;
-import rifGenericUILibrary.ListEditingButtonPanel;
-import rifGenericUILibrary.NoDataAvailablePanel;
-import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
+import rifGenericLibrary.presentationLayer.NoDataAvailablePanel;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
 import rifJobSubmissionTool.system.MapAreaSelectionEvent;

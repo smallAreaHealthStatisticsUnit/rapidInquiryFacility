@@ -2,9 +2,9 @@ package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
+import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifServices.businessConceptLayer.User;
-import rifGenericUILibrary.OKCloseButtonPanel;
-import rifGenericUILibrary.UserInterfaceFactory;
 
 import javax.swing.*;
 

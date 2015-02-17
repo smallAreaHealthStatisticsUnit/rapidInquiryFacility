@@ -1,15 +1,17 @@
 package rifDataLoaderTool.presentationLayer;
 
-import rifGenericUILibrary.ErrorDialog;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 
 import javax.swing.JDialog;
+
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+
 import javax.swing.JOptionPane;
 
 

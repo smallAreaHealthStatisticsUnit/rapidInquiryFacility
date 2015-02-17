@@ -6,11 +6,9 @@ import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
 
 
 import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
-
-import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 
 import javax.swing.JTable;
-
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 

@@ -3,11 +3,12 @@ package rifDataLoaderTool.presentationLayer;
 import rifDataLoaderTool.businessConceptLayer.RIFUserRole;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
-import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.User;
 
 import javax.swing.*;
+
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

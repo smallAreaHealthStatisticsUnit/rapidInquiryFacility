@@ -2,7 +2,7 @@ package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
 import rifDataLoaderTool.system.RIFDataLoaderActivityStep;
-import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 
 import javax.swing.JPanel;
 import javax.swing.JButton;

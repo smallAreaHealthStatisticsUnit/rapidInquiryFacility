@@ -1,10 +1,12 @@
 package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 
-import rifGenericUILibrary.UserInterfaceFactory;
 import javax.swing.JDialog;
+
 import java.awt.Dimension;
+
 import javax.swing.JPanel;
 
 

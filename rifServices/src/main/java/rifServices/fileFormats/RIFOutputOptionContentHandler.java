@@ -1,7 +1,7 @@
 
 package rifServices.fileFormats;
 
-import rifGenericUILibrary.HTMLUtility;
+import rifGenericLibrary.presentationLayer.HTMLUtility;
 import rifServices.businessConceptLayer.RIFOutputOption;
 import rifServices.system.RIFServiceMessages;
 

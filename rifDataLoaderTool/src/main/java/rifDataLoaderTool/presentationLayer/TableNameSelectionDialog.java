@@ -4,20 +4,22 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
-import rifGenericUILibrary.ErrorDialog;
-import rifGenericUILibrary.RIFGenericUIMessages;
-import rifGenericUILibrary.UserInterfaceFactory;
-import rifGenericUILibrary.OKCloseButtonPanel;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
+import rifGenericLibrary.presentationLayer.RIFGenericUIMessages;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.util.FieldValidationUtility;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.net.InetAddress;
+
 import javax.swing.event.CaretListener;
 import javax.swing.event.CaretEvent;
 

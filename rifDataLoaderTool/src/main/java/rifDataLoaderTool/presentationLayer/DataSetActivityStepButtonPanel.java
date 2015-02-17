@@ -4,10 +4,12 @@ package rifDataLoaderTool.presentationLayer;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderActivityStep;
 
-import rifGenericUILibrary.UserInterfaceFactory;
 
+
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 

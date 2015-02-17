@@ -1,7 +1,7 @@
 
 package rifServices.fileFormats;
 
-import rifGenericUILibrary.HTMLUtility;
+import rifGenericLibrary.presentationLayer.HTMLUtility;
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.system.RIFServiceMessages;

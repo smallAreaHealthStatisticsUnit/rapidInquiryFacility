@@ -1,8 +1,8 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifGenericUILibrary.DisplayableListItemInterface;
-
 import java.util.ArrayList;
+
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 
 /**
  * An interface for RIF data types. The purpose of this interface is to encourage

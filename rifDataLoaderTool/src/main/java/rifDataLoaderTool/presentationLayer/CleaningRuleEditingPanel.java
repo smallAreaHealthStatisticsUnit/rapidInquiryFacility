@@ -4,13 +4,13 @@ import rifDataLoaderTool.businessConceptLayer.CleaningRule;
 
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifGenericUILibrary.UserInterfaceFactory;
-import rifGenericUILibrary.ListEditingButtonPanel;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
+import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;

@@ -1,13 +1,11 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 
+import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
-
-import rifGenericUILibrary.UserInterfaceFactory;
-import rifGenericUILibrary.ListEditingButtonPanel;
-
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFOutputOption;

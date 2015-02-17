@@ -1,6 +1,6 @@
 package rifServices.businessConceptLayer;
 
-import rifGenericUILibrary.DisplayableListItemInterface;
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;

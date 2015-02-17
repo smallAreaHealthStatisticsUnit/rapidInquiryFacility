@@ -1,9 +1,9 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 
-import rifGenericUILibrary.ErrorDialog;
-import rifGenericUILibrary.OrderedListComboBox;
-import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.presentationLayer.OrderedListComboBox;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;

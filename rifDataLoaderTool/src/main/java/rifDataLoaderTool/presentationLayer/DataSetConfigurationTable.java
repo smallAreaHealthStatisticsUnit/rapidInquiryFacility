@@ -2,13 +2,13 @@ package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 import rifServices.system.RIFServiceException;
-
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-
-import rifGenericUILibrary.UserInterfaceFactory;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 
 import javax.swing.*;
+
 import java.util.ArrayList;
+
 import javax.swing.event.ListSelectionListener;
 
 

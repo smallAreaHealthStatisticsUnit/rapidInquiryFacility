@@ -1,22 +1,20 @@
 package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.*;
-
-
 import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifGenericUILibrary.UserInterfaceFactory;
-import rifGenericUILibrary.OKCloseButtonPanel;
-import rifGenericUILibrary.ErrorDialog;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
-
 import javax.swing.*;
 
 /**

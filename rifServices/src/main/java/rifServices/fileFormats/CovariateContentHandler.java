@@ -1,7 +1,7 @@
 
 package rifServices.fileFormats;
 
-import rifGenericUILibrary.HTMLUtility;
+import rifGenericLibrary.presentationLayer.HTMLUtility;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.AdjustableCovariate;

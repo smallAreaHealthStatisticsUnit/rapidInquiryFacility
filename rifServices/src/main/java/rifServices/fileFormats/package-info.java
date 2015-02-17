@@ -40,7 +40,7 @@
  * The content handler classes make use of utility classes to produce HTML and XML files.  These
  * classes are in the <code>rifServices.util</code> package and are:
  * <ul>
- * <li>{@link rifGenericUILibrary.HTMLUtility}</li>
+ * <li>{@link rifGenericLibrary.presentationLayer.HTMLUtility}</li>
  * <li>{@link rifServices.fileFormats.XMLUtility}</li>
  * </ul>
  * </p>
