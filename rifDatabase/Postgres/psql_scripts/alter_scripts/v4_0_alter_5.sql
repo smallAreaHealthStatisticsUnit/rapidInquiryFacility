@@ -837,17 +837,21 @@ UPDATE t_rif40_sahsu_maptiles
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR
-		SELECT COUNT(tile_id) AS tiles
-		  FROM t_rif40_sahsu_maptiles 
-		 WHERE optimised_topojson::Text = '"X"'::Text;
+		SELECT COUNT(CASE WHEN optimised_topojson::Text = '"X"'::Text THEN tile_id ELSE NULL END) AS unconverted_tiles, 
+		       COUNT(tile_id) AS total_tiles
+		  FROM t_rif40_sahsu_maptiles;
 	c1_rec RECORD;
 BEGIN
 	OPEN c1;
 	FETCH c1 INTO c1_rec;
 	CLOSE c1;
 --
-	IF c1_rec.tiles > 0 THEN
-		RAISE EXCEPTION 'C20999: Unconverted optimised_topojson files found';
+	IF c1_rec.total_tiles = 0 THEN
+		RAISE WARNING 'C20999: No tiles found';	
+	ELSIF c1_rec.unconverted_tiles > 0 THEN
+		RAISE WARNING 'C20999: %/% Unconverted optimised_topojson files found', c1_rec.unconverted_tiles, c1_rec.total_tiles;
+	ELSE
+		RAISE INFO 'C20999: All % optimised_topojson files converted', c1_rec.total_tiles;
 	END IF;
 END;
 $$; 

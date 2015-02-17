@@ -67,14 +67,27 @@ if (!pghost) {
 	pghost = 'localhost';
 }
 else {
-	console.log('Using environment host: ' + pghost);
+	console.log('Using arg[2] host: ' + pghost);
 }
-var conString = 'postgres://rif40@' + pghost + '/sahsuland_dev'; // Use PGHOST, native authentication (i.e. same as psql)
 
 var geography = process.argv[3];
 if (!geography) {
 	geography = 'sahsu';
 }
+else {
+	console.log('Using arg[3] geography: ' + geography);
+}
+
+var pgdatabase = process.argv[4];
+if (!pgdatabase) {
+	pgdatabase = 'sahsuland_dev';
+}
+else {
+	console.log('Using arg[4] pgdatabase: ' + pgdatabase);
+}
+var conString = 'postgres://rif40@' + pghost + '/' + pgdatabase; // Use PGHOST, native authentication (i.e. same as psql)
+
+
 
 // Create Postgres client
 var client = null;

@@ -307,7 +307,9 @@ topojson_convert:
 #-	
 #- sahsuland_dump: Dump sahsuland database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
 sahsuland_dump: ../install/sahsuland.sql
-	pg_dump -U postgres -w -F plain -T '*x_uk*' -T '*.x_ew01*' -v -C sahsuland > ../install/sahsuland.sql	
+	pg_dump -U postgres -w -F plain -T '*x_uk*' -T '*.x_ew01*' -v -C sahsuland > ../install/sahsuland.sql
+sahsuland.dump: ../install/sahsuland.dump
+	pg_dump -U postgres -w -F plain -T '*x_uk*' -T '*.x_ew01*' -v sahsuland > ../install/sahsuland.dump		
 # make dependent on completed target
 ../install/sahsuland.sql: 
 #- sahsuland_dev_dump: Dump sahsuland_dev database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
@@ -315,6 +317,9 @@ sahsuland_dump: ../install/sahsuland.sql
 sahsuland_dev_dump: ../install/sahsuland_dev.dump 
 ../install/sahsuland_dev.dump:
 	pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland_dev > ../install/sahsuland_dev.dump	
+#
+../install/sahsuland.dump:
+	pg_dump -U postgres -w -F plain -T '*x_uk*' -T '*.x_ew01*' -v sahsuland > ../install/sahsuland.dump		
 	
 #-
 #- 4. test
@@ -339,7 +344,7 @@ verbose_test:
 clean:
 	$(MAKE) -C alter_scripts clean
 	$(MAKE) -C test_scripts clean
-	$(DELETE) db_setup.rpt db_create.rpt v4_0_create_sahsuland.rpt v4_0_vacuum_analyse.rpt ../install/sahsuland_dev.dump ../install/sahsuland.sql
+	$(DELETE) db_setup.rpt db_create.rpt v4_0_create_sahsuland.rpt v4_0_vacuum_analyse.rpt ../install/sahsuland_dev.dump ../install/sahsuland.dump ../install/sahsuland.sql
 #- devclean: Remove logs so alter scripts in development can be r-run 
 #-           Not normally needed as they abort.
 devclean:
@@ -359,9 +364,11 @@ db_setup: psqlrc $(PGPASSFILE) $(PLR_DIRS)
 	$(MAKE) sahsuland_dev_dump
 	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
 	$(MAKE) -C alter_scripts clean all PGDATABASE=sahsuland		
-	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
+	$(MAKE) -C ../Node topojson_convert	PGDATABASE=sahsuland
 	$(MAKE) clean v4_0_vacuum_analyse_dev PGDATABASE=sahsuland
-	
+	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
+	$(MAKE) sahsuland_dump
+		
 db_create: db_create.rpt
 
 #

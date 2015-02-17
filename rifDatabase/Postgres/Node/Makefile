@@ -237,6 +237,6 @@ topojson: $(TOPOJSON) ../psql_scripts/test_scripts/data/test_6_geojson_test_01.j
 	$(TOPOJSON) -q 1e6 -o test_6_sahsu_4_level4_0_0_0.json ../psql_scripts/test_scripts/data/test_6_sahsu_4_level4_0_0_0.json
 
 topojson_convert:
-	$(NODE) topojson_convert.js $(PGHOST) sahsu
+	$(NODE) topojson_convert.js $(PGHOST) sahsu $(PGDATABASE)
 #
 # Eof
