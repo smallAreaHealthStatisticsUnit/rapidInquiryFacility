@@ -8,7 +8,7 @@ import java.util.ArrayList;
  * <code> 
  * SELECT 1
  * FROM
- *    rif40_num_denom
+ *    rif40_geographies
  * WHERE
  *    geography=?
  * </code>

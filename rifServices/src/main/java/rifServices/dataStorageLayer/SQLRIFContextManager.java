@@ -204,19 +204,19 @@ final class SQLRIFContextManager
 		ArrayList<HealthTheme> results = new ArrayList<HealthTheme>();
 		
 		//Create SQL query		
-		SQLSelectQueryFormatter formatter = new SQLSelectQueryFormatter();
-		formatter.setUseDistinct(true);
-		formatter.addSelectField("theme");
-		formatter.addSelectField("description");
-		formatter.addFromTable("rif40_health_study_themes");
-		formatter.addOrderByCondition("description");
+		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		queryFormatter.setUseDistinct(true);
+		queryFormatter.addSelectField("theme");
+		queryFormatter.addSelectField("description");
+		queryFormatter.addFromTable("rif40_health_study_themes");
+		queryFormatter.addOrderByCondition("description");
 		
 		//Parameterise and execute query		
 		PreparedStatement statement = null;
 		ResultSet dbResultSet = null;
 		try {
 			statement
-				= connection.prepareStatement(formatter.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			dbResultSet = statement.executeQuery();
 			while (dbResultSet.next()) {
 				HealthTheme healthTheme = HealthTheme.newInstance();
@@ -283,13 +283,13 @@ final class SQLRIFContextManager
 			numeratorTableName);
 		
 		//Create SQL query		
-		SQLSelectQueryFormatter query = new SQLSelectQueryFormatter();
-		query.setUseDistinct(true);
-		query.addSelectField("numerator_description");
-		query.addSelectField("denominator_table");
-		query.addSelectField("denominator_description");		
-		query.addFromTable("rif40_num_denom");
-		query.addWhereParameter("numerator_table");
+		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		queryFormatter.setUseDistinct(true);
+		queryFormatter.addSelectField("numerator_description");
+		queryFormatter.addSelectField("denominator_table");
+		queryFormatter.addSelectField("denominator_description");		
+		queryFormatter.addFromTable("rif40_num_denom");
+		queryFormatter.addWhereParameter("numerator_table");
 
 		//Parameterise and execute query		
 		ArrayList<NumeratorDenominatorPair> results 
@@ -299,7 +299,7 @@ final class SQLRIFContextManager
 		
 		try {
 			statement
-				= connection.prepareStatement(query.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, numeratorTableName);			
 			
 			dbResultSet = statement.executeQuery();
@@ -1152,7 +1152,7 @@ final class SQLRIFContextManager
 		//Create SQL query
 		SQLRecordExistsQueryFormatter queryFormatter
 			= new SQLRecordExistsQueryFormatter();
-		queryFormatter.setFromTable("rif40_num_denom");
+		queryFormatter.setFromTable("rif40_geographies");
 		queryFormatter.setLookupKeyFieldName("geography");
 
 		logSQLQuery(
