@@ -531,7 +531,6 @@ public class RIFStudySubmissionWebServiceResource
 			else {
 				result 
 					= serialiseStringResult(
-						servletRequest,	
 						selectedProject.getDescription());
 			}
 			

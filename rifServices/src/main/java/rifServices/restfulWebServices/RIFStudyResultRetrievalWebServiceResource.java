@@ -297,7 +297,6 @@ public class RIFStudyResultRetrievalWebServiceResource
 			
 			//Convert results to support JSON
 			serialiseStringResult(
-				servletRequest,
 				result);
 			
 		}

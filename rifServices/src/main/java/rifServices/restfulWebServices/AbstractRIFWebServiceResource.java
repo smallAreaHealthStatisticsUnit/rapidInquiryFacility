@@ -140,7 +140,9 @@ abstract class AbstractRIFWebServiceResource {
 		
 		String result = "";
 		try {			
-			result = String.valueOf(rifStudyServiceBundle.isLoggedIn(userID));
+			String isLoggedInMessage
+				= String.valueOf(rifStudyServiceBundle.isLoggedIn(userID));
+			result = serialiseStringResult(isLoggedInMessage);
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
@@ -164,8 +166,9 @@ abstract class AbstractRIFWebServiceResource {
 		String result = "";
 		try {			
 			rifStudyServiceBundle.login(userID, password);
-			result
+			String loginMessage
 				= RIFServiceMessages.getMessage("general.login.success", userID);
+			result = serialiseStringResult(loginMessage);
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
@@ -190,7 +193,9 @@ abstract class AbstractRIFWebServiceResource {
 			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
 			rifStudyServiceBundle.logout(user);
-			result = RIFServiceMessages.getMessage("general.logout.success", userID);
+			String logoutMessage
+				= RIFServiceMessages.getMessage("general.logout.success", userID);
+			result = serialiseStringResult(logoutMessage);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
@@ -788,17 +793,29 @@ abstract class AbstractRIFWebServiceResource {
 	}
 	
 	protected String serialiseStringResult(
-		final HttpServletRequest servletRequest,
 		final String result) 
 		throws Exception {
 
-		printClientInformation("serialiseStringResult", servletRequest);
+		StringBuilder responseText = new StringBuilder();
+		responseText.append("[{\"");
+		String resultPropertyName
+			= RIFServiceMessages.getMessage("webService.json.messagePropertyName");
+		responseText.append(resultPropertyName);
+		responseText.append("\"");
+		responseText.append(":");
+		responseText.append("\"");
+		responseText.append(result);
+		responseText.append("\"}]");
+
+		return responseText.toString();
 		
+		/*
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.writeValue(out, result);
 		final byte[] data = out.toByteArray();
 		return(new String(data));
+		*/
 	}
 	
 
