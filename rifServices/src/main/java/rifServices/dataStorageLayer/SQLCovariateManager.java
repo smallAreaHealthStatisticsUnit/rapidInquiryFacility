@@ -14,6 +14,7 @@ import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFDatabaseProperties;
 import rifServices.util.RIFLogger;
 
 import java.util.ArrayList;
@@ -110,8 +111,10 @@ final class SQLCovariateManager
 	 * @param sqlRIFContextManager the sql rif context manager
 	 */
 	public SQLCovariateManager(
+		final RIFDatabaseProperties rifDatabaseProperties,
 		final SQLRIFContextManager sqlRIFContextManager) {
 		
+		super(rifDatabaseProperties);
 		this.sqlRIFContextManager = sqlRIFContextManager;
 	}
 
@@ -138,6 +141,7 @@ final class SQLCovariateManager
 		
 		SQLSelectQueryFormatter queryFormatter 
 			= new SQLSelectQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);		
 		queryFormatter.addSelectField("covariate_name");
 		queryFormatter.addSelectField("min");
 		queryFormatter.addSelectField("max");
@@ -229,6 +233,7 @@ final class SQLCovariateManager
 
 		//Create SQL query		
 		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);		
 		queryFormatter.addSelectField("covariate_name");
 		queryFormatter.addSelectField("min");
 		queryFormatter.addSelectField("max");
@@ -367,6 +372,7 @@ final class SQLCovariateManager
 				
 		SQLRecordExistsQueryFormatter queryFormatter
 			= new SQLRecordExistsQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);		
 		queryFormatter.setFromTable("rif40_covariates");
 		queryFormatter.setLookupKeyFieldName("covariate_name");
 
@@ -434,8 +440,6 @@ final class SQLCovariateManager
 		
 	}
 
-	
-	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

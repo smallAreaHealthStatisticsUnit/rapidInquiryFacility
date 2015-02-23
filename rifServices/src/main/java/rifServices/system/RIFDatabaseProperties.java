@@ -1,9 +1,8 @@
-package rifGenericLibrary.dataStorageLayer;
+package rifServices.system;
 
-
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
 
 /**
- *
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -12,13 +11,11 @@ package rifGenericLibrary.dataStorageLayer;
  * rates and relative risks for any given health outcome, for specified age 
  * and year ranges, for any given geographical area.
  *
- * <p>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
  * is funded by the Public Health England as part of the MRC-PHE Centre for 
  * Environment and Health. Funding for this project has also been received 
  * from the United States Centers for Disease Control and Prevention.  
- * </p>
  *
  * <pre> 
  * This file is part of the Rapid Inquiry Facility (RIF) project.
@@ -41,7 +38,6 @@ package rifGenericLibrary.dataStorageLayer;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 
 /*
@@ -66,184 +62,53 @@ package rifGenericLibrary.dataStorageLayer;
  *
  */
 
-public abstract class AbstractSQLQueryFormatter {
+public class RIFDatabaseProperties {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The query. */
-	private StringBuilder query;
-	
-	
 	private DatabaseType databaseType;
 	private boolean isCaseSensitive;
+
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	/**
-	 * Instantiates a new SQL query formatter.
-	 */
-	public AbstractSQLQueryFormatter() {
-		isCaseSensitive = true;
-		query = new StringBuilder();
+	private RIFDatabaseProperties(
+		final DatabaseType databaseType,
+		final boolean isCaseSensitive) {
+
+		this.databaseType = databaseType;
+		this.isCaseSensitive = isCaseSensitive;
 	}
 
+	public static RIFDatabaseProperties newInstance(
+		final DatabaseType databaseType,
+		final boolean isCaseSensitive) {
+		
+		RIFDatabaseProperties rifDatabaseProperties
+			= new RIFDatabaseProperties(
+				databaseType,
+				isCaseSensitive);
+		
+		return rifDatabaseProperties;
+	}
+	
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	/**
-	 * Convert case.
-	 *
-	 * @param sqlPhrase the sql phrase
-	 * @return the string
-	 */
-	protected String convertCase(
-		final String sqlPhrase) {
-
-		if (isCaseSensitive == false) {
-			return sqlPhrase.toUpperCase();				
-		}
-		else {
-			return sqlPhrase;								
-		}		
-	}
-	
-	public DatabaseType getDatabaseType() {
-		return databaseType;
-	}
-	
-	public void setDatabaseType(
-		final DatabaseType databaseType) {
-		
-		this.databaseType = databaseType;
-	}
-	
 	public boolean isCaseSensitive() {
 		return isCaseSensitive;
 	}
 	
-	public void setCaseSensitive(
-		final boolean isCaseSensitive) {
-
-		this.isCaseSensitive = isCaseSensitive;
-	}
-	
-	/*
-	 * This method is largely stubbed and will be filled out later.  The purpose
-	 * is to help convert to lower case or upper case, depending on database-specific
-	 * needs.  eg: one vendor uses capital letters, another does not
-	 */
-	public void addCaseSensitivePhrase(
-		final String queryPhrase) {
-		
-		query.append(queryPhrase);
-	}
-
-	public void addPaddedQueryPhrase(
-		final String queryPhrase) {
-		
-		query.append(queryPhrase);
-		query.append(" ");
-		query.append("\n");		
-	}
-	
-	public void addPaddedQueryLine(
-		final int indentationLevel,
-		final String queryPhrase) {
-			
-		addIndentation(indentationLevel);	
-		query.append(queryPhrase);
-		query.append(" ");
-		query.append("\n");		
-	}
-
-	public void addQueryPhrase(
-		final int indentationLevel,
-		final String queryPhrase) {
-		
-		addIndentation(indentationLevel);	
-		query.append(queryPhrase);		
-	}
-	
-	public void addQueryPhrase(
-		final String queryPhrase) {
-		
-		query.append(queryPhrase);
-	}
-	
-	public void addQueryLine(
-		final int indentationLevel,
-		final String queryPhrase) {
-		
-		addIndentation(indentationLevel);		
-		query.append(queryPhrase);
-		query.append("\n");
-	
-	}
-
-	public void addUnderline() {
-		
-		query.append(" -- ");
-		for (int i = 0; i < 60; i++) {
-			query.append("=");
-		}
-		query.append("\n");
-	}
-	
-	public void addComment(
-		final String lineComment) {
-		
-		query.append(" -- ");
-		query.append(lineComment);
-	}
-	
-	public void addCommentLine(
-		final String lineComment) {
-			
-		query.append(" -- ");
-		query.append(lineComment);
-		query.append("\n");
-	}	
-	
-	private void addIndentation(
-		final int indentationLevel) {
-		
-		for (int i = 0; i < indentationLevel; i++) {
-			query.append("   ");
-		}
-		
-		//query.append("\t");
-	}
-	
-	public void finishLine(
-		final String queryPhrase) {
-		
-		query.append(queryPhrase);
-		query.append("\n");
-	}
-	
-	public void finishLine() {
-		query.append("\n");
-	}
-	
-	public void padAndFinishLine() {
-		query.append(" ");
-		query.append("\n");
-	}
-	
-	protected void resetAccumulatedQueryExpression() {
-		query = new StringBuilder();
-	}
-	
-	
-	public String generateQuery() {
-		return query.toString();
+	public DatabaseType getDatabaseType() {
+		return databaseType;
 	}
 	
 	// ==========================================

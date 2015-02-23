@@ -4,6 +4,7 @@ import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 import rifServices.util.RIFLogger;
@@ -103,11 +104,13 @@ final class SQLRIFSubmissionManager
 	 * Instantiates a new SQLRIF submission manager.
 	 */
 	public SQLRIFSubmissionManager(
+		final RIFDatabaseProperties rifDatabaseProperties,
 		final SQLRIFContextManager rifContextManager,
 		final SQLAgeGenderYearManager ageGenderYearManager,
 		final SQLCovariateManager covariateManager,
 		final SQLDiseaseMappingStudyManager diseaseMappingStudyManager) {
 
+		super(rifDatabaseProperties);		
 		this.rifContextManager = rifContextManager;
 		this.ageGenderYearManager = ageGenderYearManager;
 		this.covariateManager = covariateManager;		
@@ -136,40 +139,48 @@ final class SQLRIFSubmissionManager
 		PreparedStatement deleteStudiesStatement = null;
 
 		try {
-			SQLDeleteRowsQueryFormatter deleteComparisonAreasQuery
+			SQLDeleteRowsQueryFormatter deleteComparisonAreasQueryFormatter
 				= new SQLDeleteRowsQueryFormatter();
-			deleteComparisonAreasQuery.setFromTable("t_rif40_comparison_areas");
-			deleteComparisonAreasQuery.addWhereParameter("username");
+			configureQueryFormatterForDB(deleteComparisonAreasQueryFormatter);
+			deleteComparisonAreasQueryFormatter.setFromTable("t_rif40_comparison_areas");
+			deleteComparisonAreasQueryFormatter.addWhereParameter("username");
 			
 			deleteComparisonAreasStatement 
-				= connection.prepareStatement(deleteComparisonAreasQuery.generateQuery());
+				= connection.prepareStatement(
+					deleteComparisonAreasQueryFormatter.generateQuery());
 			deleteComparisonAreasStatement.setString(1, userID);
 			deleteComparisonAreasStatement.executeUpdate();
 			
-			SQLDeleteRowsQueryFormatter deleteStudyAreasQuery
+			SQLDeleteRowsQueryFormatter deleteStudyAreasQueryFormatter
 				= new SQLDeleteRowsQueryFormatter();
-			deleteStudyAreasQuery.setFromTable("t_rif40_study_areas");
-			deleteStudyAreasQuery.addWhereParameter("username");
+			configureQueryFormatterForDB(deleteStudyAreasQueryFormatter);
+			deleteStudyAreasQueryFormatter.setFromTable("t_rif40_study_areas");
+			deleteStudyAreasQueryFormatter.addWhereParameter("username");
 			deleteStudyAreasStatement 
-				= connection.prepareStatement(deleteStudyAreasQuery.generateQuery());
+				= connection.prepareStatement(
+					deleteStudyAreasQueryFormatter.generateQuery());
 			deleteStudyAreasStatement.setString(1, userID);
 			deleteStudyAreasStatement.executeUpdate();
 			
-			SQLDeleteRowsQueryFormatter deleteInvestigationsQuery
+			SQLDeleteRowsQueryFormatter deleteInvestigationsQueryFormatter
 				= new SQLDeleteRowsQueryFormatter();
-			deleteInvestigationsQuery.setFromTable("t_rif40_investigations");
-			deleteInvestigationsQuery.addWhereParameter("username");
+			configureQueryFormatterForDB(deleteInvestigationsQueryFormatter);
+			deleteInvestigationsQueryFormatter.setFromTable("t_rif40_investigations");
+			deleteInvestigationsQueryFormatter.addWhereParameter("username");
 			deleteInvestigationsStatement
-				= connection.prepareStatement(deleteInvestigationsQuery.generateQuery());
+				= connection.prepareStatement(
+					deleteInvestigationsQueryFormatter.generateQuery());
 			deleteInvestigationsStatement.setString(1, userID);
 			deleteInvestigationsStatement.executeUpdate();
 			
-			SQLDeleteRowsQueryFormatter deleteStudiesQuery
+			SQLDeleteRowsQueryFormatter deleteStudiesQueryFormatter
 				= new SQLDeleteRowsQueryFormatter();
-			deleteStudiesQuery.setFromTable("t_rif40_studies");
-			deleteStudiesQuery.addWhereParameter("username");
+			configureQueryFormatterForDB(deleteStudiesQueryFormatter);
+			deleteStudiesQueryFormatter.setFromTable("t_rif40_studies");
+			deleteStudiesQueryFormatter.addWhereParameter("username");
 			deleteStudiesStatement
-				= connection.prepareStatement(deleteStudiesQuery.generateQuery());
+				= connection.prepareStatement(
+					deleteStudiesQueryFormatter.generateQuery());
 			deleteStudiesStatement.setString(1, userID);
 			deleteStudiesStatement.executeUpdate();
 
@@ -283,29 +294,30 @@ final class SQLRIFSubmissionManager
 		throws SQLException,
 		RIFServiceException {
 		
-		SQLInsertQueryFormatter insertStudyQueryFormatter
+		SQLInsertQueryFormatter queryFormatter
 			= new SQLInsertQueryFormatter();
-		insertStudyQueryFormatter.setIntoTable("rif40_studies");
-		insertStudyQueryFormatter.addInsertField("project");
-		insertStudyQueryFormatter.addInsertField("study_name");		
+		configureQueryFormatterForDB(queryFormatter);
+		queryFormatter.setIntoTable("rif40_studies");
+		queryFormatter.addInsertField("project");
+		queryFormatter.addInsertField("study_name");		
 		//to delete when schema changes take effect
-		insertStudyQueryFormatter.addInsertField("summary");				
-		insertStudyQueryFormatter.addInsertField("description");
-		insertStudyQueryFormatter.addInsertField("other_notes");
-		insertStudyQueryFormatter.addInsertField("geography");
+		queryFormatter.addInsertField("summary");				
+		queryFormatter.addInsertField("description");
+		queryFormatter.addInsertField("other_notes");
+		queryFormatter.addInsertField("geography");
 		//Until we develop risk analysis studies, study_type will be '1'
-		insertStudyQueryFormatter.addInsertField("study_type");
+		queryFormatter.addInsertField("study_type");
 		//Here, study state will always be 'C' for created
-		insertStudyQueryFormatter.addInsertField("study_state");		
-		insertStudyQueryFormatter.addInsertField("study_geolevel_name");
-		insertStudyQueryFormatter.addInsertField("comparison_geolevel_name");
-		insertStudyQueryFormatter.addInsertField("denom_tab");
-		insertStudyQueryFormatter.addInsertField("covariate_table");
+		queryFormatter.addInsertField("study_state");		
+		queryFormatter.addInsertField("study_geolevel_name");
+		queryFormatter.addInsertField("comparison_geolevel_name");
+		queryFormatter.addInsertField("denom_tab");
+		queryFormatter.addInsertField("covariate_table");
 		
 		PreparedStatement statement = null;
 		try {
 			statement 
-				= connection.prepareStatement(insertStudyQueryFormatter.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, project.getName());
 			statement.setString(2, diseaseMappingStudy.getName());
 			statement.setString(3, "");
@@ -354,19 +366,20 @@ final class SQLRIFSubmissionManager
 		throws SQLException,
 		RIFServiceException {
 				
-		SQLSelectQueryFormatter getCovariateTableNameQueryFormatter
+		SQLSelectQueryFormatter queryFormatter
 			= new SQLSelectQueryFormatter();
-		getCovariateTableNameQueryFormatter.addSelectField("covariate_table");
-		getCovariateTableNameQueryFormatter.addFromTable("rif40_geolevels");
-		getCovariateTableNameQueryFormatter.addWhereParameter("geography");
-		getCovariateTableNameQueryFormatter.addWhereParameter("geolevel_name");
+		configureQueryFormatterForDB(queryFormatter);
+		queryFormatter.addSelectField("covariate_table");
+		queryFormatter.addFromTable("rif40_geolevels");
+		queryFormatter.addWhereParameter("geography");
+		queryFormatter.addWhereParameter("geolevel_name");
 		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		String covariateTableName = null;
 		try {
 			statement 
-				= connection.prepareStatement(getCovariateTableNameQueryFormatter.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, geography.getName());
 			statement.setString(2, studyAreaGeoLevelToMap.getName());
 			resultSet = statement.executeQuery();
@@ -399,18 +412,20 @@ final class SQLRIFSubmissionManager
 		String[] mapIdentifiers
 			= studyArea.getMapAreaIdentifiers();
 				
-		StringBuilder query = new StringBuilder();
-		query.append("INSERT INTO rif40_study_areas ");
-		query.append("(area_id, band_id) ");
-		query.append("SELECT ");
-		query.append("unnest AS area_id,");
-		query.append("row_number() OVER() AS band_id ");
-		query.append("FROM ");
-		query.append("unnest(?)");
-			
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);
+		queryFormatter.addQueryPhrase(0, "INSERT INTO rif40_study_areas ");
+		queryFormatter.addQueryPhrase("(area_id, band_id)");
+		queryFormatter.padAndFinishLine();
+		queryFormatter.addPaddedQueryLine(1, "SELECT");
+		queryFormatter.addPaddedQueryLine(2, "unnest AS area_id,");
+		queryFormatter.addPaddedQueryLine(2, "row_number() OVER() AS band_id");
+		queryFormatter.addPaddedQueryLine(1, "FROM");
+		queryFormatter.addQueryPhrase(2, "unnest(?)");
+				
 		PreparedStatement statement = null;
 		try {
-			statement = connection.prepareStatement(query.toString());
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			Array names = connection.createArrayOf("text", mapIdentifiers);
 			statement.setArray(1, names);
 			statement.executeUpdate();		
@@ -496,22 +511,23 @@ final class SQLRIFSubmissionManager
 		
 		
 				
-		SQLInsertQueryFormatter insertInvestigationQueryFormatter
+		SQLInsertQueryFormatter queryFormatter
 			= new SQLInsertQueryFormatter();
-		insertInvestigationQueryFormatter.setIntoTable("rif40_investigations");
-		insertInvestigationQueryFormatter.addInsertField("inv_name");		
-		insertInvestigationQueryFormatter.addInsertField("inv_description");
-		insertInvestigationQueryFormatter.addInsertField("year_start");
-		insertInvestigationQueryFormatter.addInsertField("year_stop");
-		insertInvestigationQueryFormatter.addInsertField("max_age_group");
-		insertInvestigationQueryFormatter.addInsertField("min_age_group");
-		insertInvestigationQueryFormatter.addInsertField("genders");
-		insertInvestigationQueryFormatter.addInsertField("numer_tab");
+		configureQueryFormatterForDB(queryFormatter);
+		queryFormatter.setIntoTable("rif40_investigations");
+		queryFormatter.addInsertField("inv_name");		
+		queryFormatter.addInsertField("inv_description");
+		queryFormatter.addInsertField("year_start");
+		queryFormatter.addInsertField("year_stop");
+		queryFormatter.addInsertField("max_age_group");
+		queryFormatter.addInsertField("min_age_group");
+		queryFormatter.addInsertField("genders");
+		queryFormatter.addInsertField("numer_tab");
 		
 		PreparedStatement statement = null;
 		try {
 			statement 
-				= connection.prepareStatement(insertInvestigationQueryFormatter.generateQuery());
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, investigation.getTitle());
 			statement.setString(2, investigation.getDescription());
 			
@@ -559,6 +575,7 @@ final class SQLRIFSubmissionManager
 		RIFServiceException {
 		
 		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);
 		queryFormatter.addSelectField("inv_description");
 		queryFormatter.addSelectField("year_start");
 		queryFormatter.addSelectField("year_stop");
@@ -676,6 +693,7 @@ final class SQLRIFSubmissionManager
 		AgeGroup result = null;
 		
 		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);
 		queryFormatter.addSelectField("low_age");
 		queryFormatter.addSelectField("high_age");
 		queryFormatter.addFromTable("rif40_age_groups");
@@ -715,6 +733,7 @@ final class SQLRIFSubmissionManager
 		NumeratorDenominatorPair result = null;
 		
 		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);
 		queryFormatter.setUseDistinct(true);
 		queryFormatter.addSelectField("numerator_description");
 		queryFormatter.addSelectField("denominator_table");
@@ -749,14 +768,15 @@ final class SQLRIFSubmissionManager
 		final Investigation investigation) {
 		
 		//add in covariates
-		SQLInsertQueryFormatter insertCovariatesQueryFormatter
+		SQLInsertQueryFormatter queryFormatter
 			= new SQLInsertQueryFormatter();
-		insertCovariatesQueryFormatter.setIntoTable("rif40_inv_covariates");
-		insertCovariatesQueryFormatter.addInsertField("covariate_name");		
-		insertCovariatesQueryFormatter.addInsertField("min");
-		insertCovariatesQueryFormatter.addInsertField("max");
-		insertCovariatesQueryFormatter.addInsertField("geography");
-		insertCovariatesQueryFormatter.addInsertField("study_geolevel_name");			
+		configureQueryFormatterForDB(queryFormatter);
+		queryFormatter.setIntoTable("rif40_inv_covariates");
+		queryFormatter.addInsertField("covariate_name");		
+		queryFormatter.addInsertField("min");
+		queryFormatter.addInsertField("max");
+		queryFormatter.addInsertField("geography");
+		queryFormatter.addInsertField("study_geolevel_name");			
 		
 		PreparedStatement statement = null;
 		
@@ -783,6 +803,7 @@ final class SQLRIFSubmissionManager
 		RIFServiceException {
 		
 		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);
 		queryFormatter.addSelectField("covariate_name");
 		queryFormatter.addSelectField("min");
 		queryFormatter.addSelectField("max");
@@ -916,10 +937,11 @@ final class SQLRIFSubmissionManager
 		throws RIFServiceException {
 		
 		//Create SQL query
-		SQLRecordExistsQueryFormatter query
+		SQLRecordExistsQueryFormatter queryFormatter
 			= new SQLRecordExistsQueryFormatter();
-		query.setLookupKeyFieldName("project");
-		query.setFromTable("t_rif40_projects");
+		configureQueryFormatterForDB(queryFormatter);
+		queryFormatter.setLookupKeyFieldName("project");
+		queryFormatter.setFromTable("t_rif40_projects");
 		
 		//KLG: TODO - change table name
 		
@@ -929,7 +951,8 @@ final class SQLRIFSubmissionManager
 		//Parameterise and execute query		
 		try {
 			checkProjectExistsStatement
-				= connection.prepareStatement(query.generateQuery());
+				= connection.prepareStatement(
+					queryFormatter.generateQuery());
 			checkProjectExistsStatement.setString(1, project.getName());
 			checkProjectExistsResultSet 
 				= checkProjectExistsStatement.executeQuery();

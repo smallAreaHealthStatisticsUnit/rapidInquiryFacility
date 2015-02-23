@@ -238,6 +238,25 @@ abstract public class AbstractCovariate
 		String otherMaximumValue = otherCovariate.getMaximumValue();
 		CovariateType otherCovariateType = otherCovariate.getCovariateType();
 
+		ArrayList<String> errorMessages = new ArrayList<String>();
+		
+		
+		if (FieldValidationUtility.hasDifferentNullity(name, otherName)) {
+			//reject if one is null and the other is non-null
+			String errorMessage
+				= RIFServiceMessages.getMessage("");
+			errorMessages.add(errorMessage);
+		}
+		else if (name != null) {
+			//they must both be non-null
+			if (collator.equals(name, otherName) == false) {
+				return false;
+			}
+		}
+		
+		
+		
+		
 		if (FieldValidationUtility.hasDifferentNullity(name, otherName)) {
 			//reject if one is null and the other is non-null
 			return false;

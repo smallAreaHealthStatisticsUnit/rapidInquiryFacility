@@ -129,7 +129,8 @@ final class SQLMapDataManager
 	public SQLMapDataManager(
 		final RIFServiceStartupOptions rifServiceStartupOptions,
 		final SQLRIFContextManager sqlRIFContextManager) {
-		
+
+		super(rifServiceStartupOptions.getRIFDatabaseProperties());
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		this.sqlRIFContextManager = sqlRIFContextManager;
 		
@@ -231,7 +232,8 @@ final class SQLMapDataManager
 		
 		//SQLCountQueryFormatter queryFormatter = new SQLCountQueryFormatter();
 		//queryFormatter.setCountField(countField);
-		
+
+		/*
 		StringBuilder countMapAreasForExtentQuery = new StringBuilder();
 		countMapAreasForExtentQuery.append("SELECT ");
 		countMapAreasForExtentQuery.append("COUNT(");		
@@ -266,12 +268,63 @@ final class SQLMapDataManager
 		countMapAreasForExtentQuery.append(".");
 		countMapAreasForExtentQuery.append("name");
 		countMapAreasForExtentQuery.append("=?");
+		*/
+				
+		SQLGeneralQueryFormatter queryFormatter
+			= new SQLGeneralQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);
+		queryFormatter.addPaddedQueryLine(0, "SELECT");
+		queryFormatter.addQueryPhrase(1, "COUNT(");
+		queryFormatter.addQueryPhrase(geoLevelToMapTableName);
+		queryFormatter.addQueryPhrase(".");
+		queryFormatter.addQueryPhrase(geoLevelToMap.getName());
+		queryFormatter.addQueryPhrase(")");
+		queryFormatter.padAndFinishLine();
 		
+		queryFormatter.addPaddedQueryLine(0, "FROM");
+		queryFormatter.addQueryPhrase(1, geoLevelSelectTableName);
+		queryFormatter.addQueryPhrase(geoLevelSelectTableName);
+		queryFormatter.addQueryPhrase(",");
+		queryFormatter.padAndFinishLine();		
+		queryFormatter.addQueryPhrase(1, hierarchyTableName);		
+		queryFormatter.addQueryPhrase(",");		
+		queryFormatter.padAndFinishLine();		
+		queryFormatter.addQueryPhrase(1, geoLevelToMapTableName);		
+		queryFormatter.padAndFinishLine();		
+		
+		queryFormatter.addPaddedQueryLine(0, "WHERE");
+		queryFormatter.addQueryPhrase(1, geoLevelToMapTableName);
+		queryFormatter.addQueryPhrase(".");
+		queryFormatter.addQueryPhrase(geoLevelToMap.getName());
+		queryFormatter.addQueryPhrase("=");
+		queryFormatter.addQueryPhrase(hierarchyTableName);		
+		queryFormatter.addQueryPhrase(".");
+		queryFormatter.addQueryPhrase(geoLevelToMap.getName());
+		queryFormatter.addQueryPhrase(" AND");
+		queryFormatter.padAndFinishLine();		
+		
+		queryFormatter.addQueryPhrase(1, geoLevelSelectTableName);		
+		queryFormatter.addQueryPhrase(".");
+		queryFormatter.addQueryPhrase(geoLevelSelect.getName());
+		queryFormatter.addQueryPhrase("=");
+		queryFormatter.addQueryPhrase(hierarchyTableName);		
+		queryFormatter.addQueryPhrase(".");
+		queryFormatter.addQueryPhrase(geoLevelSelect.getName());
+		queryFormatter.addQueryPhrase(" AND");
+		queryFormatter.padAndFinishLine();		
+
+		queryFormatter.addQueryPhrase(1, geoLevelSelectTableName);		
+		queryFormatter.addQueryPhrase(".");
+		queryFormatter.addQueryPhrase("name");
+		queryFormatter.addQueryPhrase("=?");
+		queryFormatter.finishLine();
+				
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		Integer numberOfAreas = null;
 		try {
-			statement = connection.prepareStatement(countMapAreasForExtentQuery.toString());
+			statement = connection.prepareStatement(
+				queryFormatter.generateQuery());
 			statement.setString(1, geoLevelArea.getName());
 			resultSet = statement.executeQuery();			
 			resultSet.next();			
@@ -328,6 +381,7 @@ final class SQLMapDataManager
 		boundaryRectangle.checkErrors();
 		
 		SQLFunctionCallerQueryFormatter queryFormatter = new SQLFunctionCallerQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);
 		queryFormatter.setSchema("rif40_xml_pkg");
 		queryFormatter.setFunctionName("rif40_getMapAreasForBoundaryRectangle");
 		queryFormatter.setNumberOfFunctionParameters(3);
@@ -452,8 +506,8 @@ final class SQLMapDataManager
 		
 		SQLGeneralQueryFormatter extractMapAreasQuery
 			= new SQLGeneralQueryFormatter();
-				
-		
+		configureQueryFormatterForDB(extractMapAreasQuery);
+			
 		extractMapAreasQuery.addPaddedQueryLine(0, "SELECT DISTINCT");
 		extractMapAreasQuery.addQueryPhrase(1, geoLevelToMapTableName);		
 		extractMapAreasQuery.addQueryPhrase(".");
@@ -639,6 +693,7 @@ final class SQLMapDataManager
 		//having the specified geoLevelArea
 		
 		SQLGeneralQueryFormatter extractMapAreasQuery = new SQLGeneralQueryFormatter();
+		configureQueryFormatterForDB(extractMapAreasQuery);
 		//extractMapAreasQuery.addQueryPhrase("WITH ordered_results AS (");
 		//StringBuilder extractMapAreasQuery = new StringBuilder();
 
@@ -819,6 +874,7 @@ final class SQLMapDataManager
 				
 		SQLSelectQueryFormatter queryFormatter 
 			= new SQLSelectQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);
 		queryFormatter.addSelectField("lookup_table");
 		queryFormatter.addFromTable("rif40_geolevels");
 		queryFormatter.addWhereParameter("geography");
@@ -893,6 +949,7 @@ final class SQLMapDataManager
 					
 		SQLSelectQueryFormatter queryFormatter 
 			= new SQLSelectQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);
 		queryFormatter.addSelectField("hierarchytable");
 		queryFormatter.addFromTable("rif40_geographies");
 		queryFormatter.addWhereParameter("geography");
@@ -1081,6 +1138,7 @@ final class SQLMapDataManager
 		
 		SQLFunctionCallerQueryFormatter queryFormatter
 			= new SQLFunctionCallerQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);
 		queryFormatter.setSchema("rif40_xml_pkg");
 		queryFormatter.setFunctionName("rif40_get_geojson_as_js");
 		queryFormatter.setNumberOfFunctionParameters(5);
@@ -1182,6 +1240,7 @@ final class SQLMapDataManager
 
 			SQLRecordExistsQueryFormatter queryFormatter
 				= new SQLRecordExistsQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setFromTable(geographyTableName);
 			queryFormatter.setLookupKeyFieldName(geoLevelName);
 			
@@ -1251,6 +1310,7 @@ final class SQLMapDataManager
 
 		SQLSelectQueryFormatter queryFormatter
 			= new SQLSelectQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);
 		queryFormatter.addSelectField("hierarchytable");
 		queryFormatter.addFromTable("rif40_geographies");
 		queryFormatter.addWhereParameter("geography");

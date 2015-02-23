@@ -12,6 +12,7 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFDatabaseProperties;
 import rifServices.util.RIFLogger;
 
 import java.sql.*;
@@ -103,11 +104,13 @@ final class SQLInvestigationManager
 	 * Instantiates a new SQL investigation manager.
 	 */
 	public SQLInvestigationManager(
+		final RIFDatabaseProperties rifDatabaseProperties,
 		final SQLRIFContextManager rifContextManager,
 		final SQLAgeGenderYearManager ageGenderYearManager,
 		final SQLCovariateManager covariateManager,
 		final HealthOutcomeManager healthOutcomeManager) {
 
+		super(rifDatabaseProperties);
 		this.rifContextManager = rifContextManager;
 		this.ageGenderYearManager = ageGenderYearManager;
 		this.covariateManager = covariateManager;
@@ -197,6 +200,7 @@ final class SQLInvestigationManager
 		
 		SQLRecordExistsQueryFormatter queryFormatter
 			= new SQLRecordExistsQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);		
 		queryFormatter.setFromTable("rif40_investigations");
 		queryFormatter.addWhereParameter("study_id");
 		queryFormatter.addWhereParameter("inv_id");

@@ -9,6 +9,7 @@ import rifServices.businessConceptLayer.*;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFDatabaseProperties;
 import rifServices.util.RIFLogger;
 
 
@@ -96,10 +97,12 @@ final class SQLDiseaseMappingStudyManager
 	 * Instantiates a new SQL disease mapping study manager.
 	 */
 	public SQLDiseaseMappingStudyManager(
+		final RIFDatabaseProperties rifDatabaseProperties,
 		final SQLRIFContextManager rifContextManager,
 		final SQLInvestigationManager investigationManager,
 		final SQLMapDataManager mapDataManager) {
 
+		super(rifDatabaseProperties);
 		this.rifContextManager = rifContextManager;
 		this.investigationManager = investigationManager;
 		this.mapDataManager = mapDataManager;
@@ -123,6 +126,7 @@ final class SQLDiseaseMappingStudyManager
 		throws RIFServiceException {
 		
 		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);		
 		queryFormatter.addSelectField("project");
 		queryFormatter.addSelectField("description");
 		queryFormatter.addSelectField("date_started");		
@@ -326,6 +330,7 @@ final class SQLDiseaseMappingStudyManager
 		
 		SQLRecordExistsQueryFormatter queryFormatter
 			= new SQLRecordExistsQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);
 		queryFormatter.setFromTable("rif40_studies");
 		queryFormatter.setLookupKeyFieldName("study_id");
 

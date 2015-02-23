@@ -1,6 +1,7 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
+
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.businessConceptLayer.AgeGroup;
 import rifServices.businessConceptLayer.AgeBand;
@@ -12,6 +13,7 @@ import rifServices.businessConceptLayer.YearRange;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFDatabaseProperties;
 import rifServices.util.RIFLogger;
 
 import java.sql.Connection;
@@ -107,8 +109,10 @@ final class SQLAgeGenderYearManager
 	 * @param sqlRIFContextManager the sql rif context manager
 	 */
 	public SQLAgeGenderYearManager(
+		final RIFDatabaseProperties rifDatabaseProperties,
 		final SQLRIFContextManager sqlRIFContextManager) {
 
+		super(rifDatabaseProperties);
 		this.sqlRIFContextManager = sqlRIFContextManager;
 	}
 
@@ -141,7 +145,9 @@ final class SQLAgeGenderYearManager
 		
 		//Create query
 		Integer ageGroupID = null;
-		SQLSelectQueryFormatter getAgeIDQueryFormatter = new SQLSelectQueryFormatter();
+		SQLSelectQueryFormatter getAgeIDQueryFormatter 
+			= new SQLSelectQueryFormatter();
+		configureQueryFormatterForDB(getAgeIDQueryFormatter);
 		getAgeIDQueryFormatter.addSelectField("age_group_id");
 		getAgeIDQueryFormatter.addFromTable("rif40_tables");
 		getAgeIDQueryFormatter.addWhereParameter("table_name");
@@ -216,7 +222,10 @@ final class SQLAgeGenderYearManager
 		//"2" may represent age ranges that are broken down every 4 years
 		//After obtaining the list of age groups having the correct age group id
 		//sort them by low_age
-		SQLSelectQueryFormatter getAgesForAgeGroupID = new SQLSelectQueryFormatter();
+		SQLSelectQueryFormatter getAgesForAgeGroupID 
+			= new SQLSelectQueryFormatter();
+		configureQueryFormatterForDB(getAgesForAgeGroupID);
+
 		getAgesForAgeGroupID.addSelectField("age_group_id");
 		getAgesForAgeGroupID.addSelectField("low_age");
 		getAgesForAgeGroupID.addSelectField("high_age");
@@ -337,6 +346,7 @@ final class SQLAgeGenderYearManager
 		
 		//Create query
 		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);
 		queryFormatter.addSelectField("year_start");
 		queryFormatter.addSelectField("year_stop");
 		queryFormatter.addFromTable("rif40_tables");
@@ -479,6 +489,7 @@ final class SQLAgeGenderYearManager
 		//Create query
 		SQLRecordExistsQueryFormatter queryFormatter
 			= new SQLRecordExistsQueryFormatter();
+		configureQueryFormatterForDB(queryFormatter);
 		queryFormatter.setFromTable("rif40_age_groups");
 		queryFormatter.setLookupKeyFieldName("age_group_id");
 		queryFormatter.addWhereParameter("low_age");

@@ -1,6 +1,7 @@
 package rifServices.system;
 
 import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -100,6 +101,10 @@ public final class RIFServiceStartupOptions {
 	/** The database name. */
 	private String databaseName;
 	
+	
+	private DatabaseType databaseType;
+	private boolean isDatabaseCaseSensitive;
+	
 	private String rifServiceClassDirectoryPath;
 	
 	/** The server side cache directory. */
@@ -141,6 +146,11 @@ public final class RIFServiceStartupOptions {
 		
 		maximumMapAreasAllowedForSingleDisplay
 			= RIFServiceStartupProperties.getMaximumMapAreasAllowedForSingleDisplay();
+		
+		isDatabaseCaseSensitive
+			= RIFServiceStartupProperties.isDatabaseCaseSensitive();
+		
+		
 	}
 
 	public static RIFServiceStartupOptions newInstance(
@@ -154,7 +164,17 @@ public final class RIFServiceStartupOptions {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	
+	public RIFDatabaseProperties getRIFDatabaseProperties() {
+				
+		RIFDatabaseProperties rifDatabaseProperties
+			= RIFDatabaseProperties.newInstance(
+				databaseType, 
+				isDatabaseCaseSensitive);
+		
+		return rifDatabaseProperties;
+	}
+	
 	/**
 	 * Gets the database driver class name
 	 *

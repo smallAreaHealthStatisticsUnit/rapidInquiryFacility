@@ -86,8 +86,7 @@ import java.text.Collator;
  *
  */
 
-final class HealthOutcomeManager 
-	extends AbstractSQLManager {
+final class HealthOutcomeManager {
 
 	// ==========================================
 	// Section Constants

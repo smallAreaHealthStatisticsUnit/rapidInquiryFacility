@@ -1,5 +1,6 @@
 package rifServices.system;
 
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
 
 import java.text.Collator;
 import java.util.Locale;
@@ -115,23 +116,23 @@ public final class RIFServiceStartupProperties {
    }
 
     public static String getDatabaseDriverClassName() {
-    	return getProperty("driverClassName");
+    	return getProperty("database.driverClassName");
     }
    
     public static String getDatabaseDriverPrefix() {
-    	return getProperty("jdbcDriverPrefix");
+    	return getProperty("database.jdbcDriverPrefix");
     }
     
     public static String getHost() {
-    	return getProperty("host");
+    	return getProperty("database.host");
     }
     
     public static String getPort() {
-    	return getProperty("port");    	
+    	return getProperty("database.port");    	
     }
 
     public static String getDatabaseName() {
-    	return getProperty("databaseName");    	
+    	return getProperty("database.databaseName");    	
     }
 	
     public static String getServerSideCacheDirectory() {
@@ -144,6 +145,40 @@ public final class RIFServiceStartupProperties {
     
     public static String getRScriptDirectory() {
     	return getProperty("rScriptDirectory");    	
+    }
+    
+    public static DatabaseType getDatabaseType() {
+    	
+    	DatabaseType databaseType
+    		= DatabaseType.UNKNOWN;
+    	
+    	String property
+    		= getProperty("database.databaseType").toUpperCase();
+    	if (property != null) {
+    		property = property.toUpperCase();
+    		
+    		Collator collator
+    			= RIFServiceMessages.getCollator();
+    		if (collator.equals(property, "postgresql")) {
+    			databaseType
+    				= DatabaseType.POSTGRESQL;
+    		}
+    		else if (collator.equals(property, "sqlServer")) {
+    			databaseType
+    				= DatabaseType.SQL_SERVER;  			
+    		}   		
+    	}
+    	
+    	return databaseType;
+
+    }
+    
+    public static boolean isDatabaseCaseSensitive() {
+    	String property
+    		= getProperty("database.isCaseSensitive");
+    	Boolean result
+    		= Boolean.valueOf(property);
+    	return result;
     }
     
     public static int getMaximumMapAreasAllowedForSingleDisplay() {

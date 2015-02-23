@@ -2,6 +2,7 @@ package rifServices.dataStorageLayer;
 
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceStartupOptions;
+import rifServices.system.RIFDatabaseProperties;
 
 /**
  *
@@ -106,20 +107,31 @@ public final class RIFServiceResources {
 	private RIFServiceResources(
 		final RIFServiceStartupOptions rifServiceStartupOptions) 
 		throws RIFServiceException {
-
+		
 		sqlConnectionManager = new SQLConnectionManager(rifServiceStartupOptions);
 		healthOutcomeManager = new HealthOutcomeManager(rifServiceStartupOptions);
-		sqlRIFContextManager = new SQLRIFContextManager();
+
+		RIFDatabaseProperties rifDatabaseProperties
+			= rifServiceStartupOptions.getRIFDatabaseProperties();
+		
+		sqlRIFContextManager 
+			= new SQLRIFContextManager(rifDatabaseProperties);
 		sqlAgeGenderYearManager 
-			= new SQLAgeGenderYearManager(sqlRIFContextManager);
+			= new SQLAgeGenderYearManager(
+				rifDatabaseProperties,
+				sqlRIFContextManager);
 		sqlMapDataManager 
 			= new SQLMapDataManager(
 				rifServiceStartupOptions, 
 				sqlRIFContextManager);
-		sqlCovariateManager = new SQLCovariateManager(sqlRIFContextManager);
+		sqlCovariateManager 
+			= new SQLCovariateManager(
+				rifDatabaseProperties,
+				sqlRIFContextManager);
 
 		sqlInvestigationManager 
 			= new SQLInvestigationManager(
+				rifDatabaseProperties,
 				sqlRIFContextManager,
 				sqlAgeGenderYearManager,
 				sqlCovariateManager,
@@ -128,6 +140,7 @@ public final class RIFServiceResources {
 		
 		sqlDiseaseMappingStudyManager 
 			= new SQLDiseaseMappingStudyManager(
+				rifDatabaseProperties,
 				sqlRIFContextManager,
 				sqlInvestigationManager,
 				sqlMapDataManager);
@@ -135,6 +148,7 @@ public final class RIFServiceResources {
 				
 		sqlRIFSubmissionManager 
 			= new SQLRIFSubmissionManager(
+				rifDatabaseProperties,
 				sqlRIFContextManager,
 				sqlAgeGenderYearManager,
 				sqlCovariateManager,
@@ -142,6 +156,7 @@ public final class RIFServiceResources {
 
 		sqlResultsQueryManager
 			= new SQLResultsQueryManager(
+				rifDatabaseProperties,
 				sqlRIFContextManager,
 				sqlMapDataManager,
 				sqlDiseaseMappingStudyManager);

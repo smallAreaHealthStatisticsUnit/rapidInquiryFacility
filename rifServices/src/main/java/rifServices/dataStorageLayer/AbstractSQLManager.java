@@ -1,8 +1,11 @@
 package rifServices.dataStorageLayer;
 
-import java.sql.SQLException;
+
 
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifServices.system.RIFDatabaseProperties;
+
+import java.sql.SQLException;
 
 /**
  *
@@ -76,7 +79,8 @@ abstract class AbstractSQLManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private RIFDatabaseProperties rifDatabaseProperties;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -84,8 +88,10 @@ abstract class AbstractSQLManager {
 	/**
 	 * Instantiates a new abstract sql manager.
 	 */
-	public AbstractSQLManager() {
+	public AbstractSQLManager(
+		final RIFDatabaseProperties rifDatabaseProperties) {
 
+		this.rifDatabaseProperties = rifDatabaseProperties;
 	}
 
 	// ==========================================
@@ -104,6 +110,20 @@ abstract class AbstractSQLManager {
 		//TODO: KLG - find out more about when we will need to convert
 		//to one case or another
 		return tableComponentName;
+	}
+	
+	protected RIFDatabaseProperties getRIFDatabaseProperties() {
+		return rifDatabaseProperties;
+	}
+	
+	protected void configureQueryFormatterForDB(
+		final AbstractSQLQueryFormatter queryFormatter) {
+		
+		queryFormatter.setDatabaseType(
+			rifDatabaseProperties.getDatabaseType());
+		queryFormatter.setCaseSensitive(
+			rifDatabaseProperties.isCaseSensitive());
+		
 	}
 	
 	/**
