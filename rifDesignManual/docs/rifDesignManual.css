@@ -11,8 +11,7 @@ FORM {margin: 0px}
 DIV, TABLE, TD {font-size: 1em}
 
 TABLE {margin: 0px 0px .75em 0px;
-border: 0px solid #C1C8B2;
-background-color: #FFFFFF}
+border: 0px solid #C1C8B2;}
 
 TH {font-weight: bold;
 text-align: left;
@@ -25,8 +24,7 @@ color: #000000}
 TD {text-align: left;
 vertical-align: top;
 border: 0px solid #C1C8B2;
-padding: 5px;
-background-color: #FFFFFF}
+padding: 5px;}
 
 TD.blank {background-color: #F1EEEE}
 
@@ -58,6 +56,12 @@ SELECT {font-size: 1em}
 A {}
 
 BLOCKQUOTE {margin: 1em 0px 1em 3em}
+
+
+CODE {
+	font-size:60%
+    line-height: 1.1em;
+}
 
 /* Classes */
 
@@ -95,90 +99,42 @@ color: #000}
 .flatSpacerDiv {height: 1px;
 font-size: 1px}
 
-/* IDs */
 
-#logo,
-#menuContainer,
-#contentContainer, 
-#breadcrumb, 
-#footer <!-- , 
-#betsie {visibility: visible}
 
-#betsie {font-size: 1em;
-padding-top: 15px} -->
-
-#logo {position: absolute;
-top: 5px; /* changed from 0px */
-left: 1px; /* changed from 0px */
-width: 870px;
-height: 60px; /* changed from 106px */
-visibility: visible;
-background-color: #ffffff} /* changed from #FFFFFF */
-
-#menuContainer {position: absolute;
-top: 85px; /* changed from 85px */
-left: 1px;
-width: 1px; /* changed from 125px */
-padding-left: 5px;
-padding-top: 0px; /* changed from 20px */
-visibility: visible;
-background-color: #F5F5F5}
-
-#contentContainer {position: absolute;
-width: 800px; /* changed from 750px */
-top: 85px; /* changed from 75px */
-left: 5px; /* changed from 125px */
-visibility: visible;
-padding-left: 38px; /* changed from 38px */
-padding-top: 21px;
-background-color: #FFFFFF;
-background-image: url(/images/common/main-content-wedge.gif);
-background-repeat: no-repeat;
-max-width: 618px}
-
-#breadcrumb {font-size: .8em;
-padding: 10px 0em 0px 0em}
-
-#footer {position: absolute;
-top: 0px;
-left: 0px;
-visibility: visible;
-width: 780px;
-background-color: #FFF;
-filter: alpha(opacity=0)}
-
-#printHeader {position: absolute;
-top: 0px;
-left: 0px;
-width: 600px;
-height: 50px;
-visibility: hidden}
-	
-@media print {
-	.dummy {font-size: 1em}
-
-	#logo, 
-	#menuContainer, 
-	#footer {visibility: hidden}
-	#contentContainer {visibility: visible;
-	top: 50px;
-	left: 0px;
-	padding: 0px;
-	width: 100%} 
-	#breadcrumb {visibility: visible}
-	
-	#printHeader {visibility: visible}
+<style>
+header {
+    background-color:#b9cde5;
+     color: #b9cde5;
+    text-align:center;
+     padding:5px; 
+}
+nav {
+    line-height:30px;
+    background-color:#eeeeee;
+     height:3000px;
+    width:200px;
+    float:left;
+     padding:5px;           
 }
 
-@media screen {
-	.dummy {font-size: 1em}
-	
-	#logo,
-	#menuContainer,
-	#contentContainer, 
-	#breadcrumb, 
-	#footer {visibility: visible}
-	
-	#printHeader {visibility: hidden}
+nav.sideBarMenu li {
+    list-style:none;
+    background-image:none;
+    background-repeat:none;
+    background-position:0; 
 }
 
+section {
+    width:800px;
+    float:left;
+     padding:10px; 
+}
+footer {
+     background-color:black;
+    color:white;
+    clear:both;
+     text-align:center;
+     padding:5px; 
+} 
+
+</style>
