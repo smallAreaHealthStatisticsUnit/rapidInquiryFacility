@@ -222,6 +222,14 @@ abstract public class AbstractCovariate
 	public abstract String getRecordType();
 	
 	
+	public void identifyDifferences(
+		final AbstractCovariate anotherCovariate,
+		final ArrayList<String> differences) {
+		
+
+	}
+	
+	
 	/**
 	 * Checks for identical contents.
 	 *

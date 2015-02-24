@@ -189,6 +189,9 @@ public class HealthCodeTaxonomy
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================	
+	
+	
+	
 	/**
 	 * Gets the name.
 	 *
@@ -281,7 +284,18 @@ public class HealthCodeTaxonomy
 		
 		return version;
 	}
-		
+
+	
+	public void identifyDifferences(
+		final HealthCodeTaxonomy anotherHealthCodeTaxonomy,
+		final ArrayList<String> differences) {
+			
+		super.identifyDifferences(
+			anotherHealthCodeTaxonomy, 
+			differences);
+	}
+	
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

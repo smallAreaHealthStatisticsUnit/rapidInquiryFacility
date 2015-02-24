@@ -186,6 +186,13 @@ final public class User {
 		this.ipAddress = ipAddress;
 	}
 	
+	public void identifyDifferences(
+		final User anotherUser,
+		final ArrayList<String> differences) {
+		
+		
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

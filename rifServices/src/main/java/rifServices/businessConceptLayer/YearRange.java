@@ -465,7 +465,14 @@ final public class YearRange
 		return REALISTIC_LOWEST_YEAR;
 	}
 	
-	
+	public void identifyDifferences(
+		final YearRange anotherYearRange,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherYearRange, 
+			differences);		
+	}
 	
 	/**
 	 * Checks for identical contents.

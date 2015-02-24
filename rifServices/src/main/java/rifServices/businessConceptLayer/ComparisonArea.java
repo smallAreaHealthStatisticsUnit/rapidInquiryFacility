@@ -143,6 +143,17 @@ public final class ComparisonArea
 // ==========================================
 // Section Accessors and Mutators
 // ==========================================
+	
+	
+	public void identifyDifferences(
+		final ComparisonArea anotherComparisonArea,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherComparisonArea, 
+			differences);
+	}
+	
     /**
      * Checks for identical contents.
      *

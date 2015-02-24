@@ -83,15 +83,15 @@ public final class DiseaseMappingStudy
 // Section Properties
 // ==========================================
 	/** The disease mapping study area. */
-private DiseaseMappingStudyArea diseaseMappingStudyArea;
+	private DiseaseMappingStudyArea diseaseMappingStudyArea;
     
 // ==========================================
 // Section Construction
 // ==========================================
     /**
- * Instantiates a new disease mapping study.
- */
-private DiseaseMappingStudy() {
+     * Instantiates a new disease mapping study.
+	*/
+	private DiseaseMappingStudy() {
     	
 		diseaseMappingStudyArea = DiseaseMappingStudyArea.newInstance();
     }
@@ -150,11 +150,11 @@ private DiseaseMappingStudy() {
 // Section Accessors and Mutators
 // ==========================================
     /**
- * Gets the disease mapping study area.
- *
- * @return the disease mapping study area
- */
-public DiseaseMappingStudyArea getDiseaseMappingStudyArea() {
+     * Gets the disease mapping study area.
+     *
+     * @return the disease mapping study area
+     */
+	public DiseaseMappingStudyArea getDiseaseMappingStudyArea() {
     	
 		return diseaseMappingStudyArea;
 	}
@@ -168,6 +168,16 @@ public DiseaseMappingStudyArea getDiseaseMappingStudyArea() {
 		final DiseaseMappingStudyArea diseaseMappingStudyArea) {
 		
 		this.diseaseMappingStudyArea = diseaseMappingStudyArea;
+	}
+
+	
+	public void identifyDifferences(
+		final DiseaseMappingStudy anotherDiseaseMappingStudy,
+		final ArrayList<String> differences) {
+	
+		super.identifyDifferences(
+			anotherDiseaseMappingStudy, 
+			differences);
 	}
 	
 	/**

@@ -165,6 +165,15 @@ public final class GeoLevelAttributeTheme
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public void identifyDifferences(
+		final GeoLevelAttributeTheme anotherGeoLevelAttributeTheme,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherGeoLevelAttributeTheme, 
+			differences);
+	}
+	
 	/**
 	 * Checks for identical contents.
 	 *

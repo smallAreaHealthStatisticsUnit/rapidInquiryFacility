@@ -421,6 +421,15 @@ final public class YearInterval
 				
 		return results;
 	}
+	
+	public void identifyDifferences(
+		final YearInterval anotherYearInterval,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherYearInterval, 
+			differences);		
+	}
 		
 	/**
 	 * Checks for identical contents.

@@ -1,7 +1,6 @@
 package rifServices.businessConceptLayer;
 
 import rifServices.system.RIFServiceError;
-
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceSecurityException;
@@ -220,6 +219,18 @@ public final class AgeBand
 		final AgeGroup upperLimitAgeGroup) {
 		
 		this.upperLimitAgeGroup = upperLimitAgeGroup;
+	}
+
+	
+	public void identifyDifferences(
+		final AgeBand anotherAgeBand,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherAgeBand, 
+			differences);
+		
+
 	}
 	
 	/**

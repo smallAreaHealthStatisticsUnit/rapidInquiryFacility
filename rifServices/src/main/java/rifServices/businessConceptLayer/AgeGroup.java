@@ -252,6 +252,16 @@ public final class AgeGroup
 		this.name = name;
 	}
 	
+	public void identifyDifferences(
+		final AgeGroup anotherAgeGroup,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherAgeGroup, 
+			differences);
+		
+	}
+	
 	/**
 	 * Checks for identical contents.
 	 *

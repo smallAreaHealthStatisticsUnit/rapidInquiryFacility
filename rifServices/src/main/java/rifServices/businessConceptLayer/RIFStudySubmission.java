@@ -326,6 +326,16 @@ public final class RIFStudySubmission
 		
 		this.jobSubmissionTime = jobSubmissionTime;
 	}
+
+	
+	public void identifyDifferences(
+		final RIFStudySubmission anotherStudySubmission,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherStudySubmission, 
+			differences);		
+	}
 	
 	/**
 	 * Checks for identical contents.

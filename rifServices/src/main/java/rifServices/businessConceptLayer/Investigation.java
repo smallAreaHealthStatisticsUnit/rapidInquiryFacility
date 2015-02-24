@@ -7,10 +7,10 @@ import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceSecurityException;
 import rifServices.util.DisplayableItemSorter;
 import rifServices.util.FieldValidationUtility;
+import rifServices.util.RIFComparisonUtility;
 
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 
 /**
@@ -86,6 +86,7 @@ public class Investigation
 	// ==========================================
 	// Section Properties
 	// ==========================================
+
 	/** The title. */
 	private String title;
 	
@@ -578,6 +579,110 @@ public class Investigation
 	}
 	
 
+	public void identifyDifferences(
+		final Investigation anotherInvestigation,
+		final ArrayList<String> differences) {
+
+
+		if (RIFComparisonUtility.identifyNullityDifferences(
+			this, 
+			anotherInvestigation, 
+			differences)) {
+			
+			return;
+		}
+		
+		super.identifyDifferences(
+			anotherInvestigation, 
+			differences);
+		
+		
+		RIFComparisonUtility.identifyDifferences(
+			"investigation.title.label", 
+			this, 
+			this.getTitle(), 
+			anotherInvestigation, 
+			anotherInvestigation.getTitle(), 
+			differences);
+		
+		
+		RIFComparisonUtility.identifyDifferences(
+			"investigation.description.label", 
+			this, 
+			this.getDescription(), 
+			anotherInvestigation, 
+			anotherInvestigation.getDescription(), 
+			differences);
+		
+		
+		RIFComparisonUtility.identifyDifferences(
+			"investigation.interval.label", 
+			this, 
+			this.getInterval(), 
+			anotherInvestigation, 
+			anotherInvestigation.getInterval(), 
+			differences);
+
+		//compare sex values
+		Sex anotherSex = anotherInvestigation.getSex();		
+		if (RIFComparisonUtility.identifyFieldNullityDifferences(
+			"sex.label", 
+			this, 
+			sex, 
+			anotherInvestigation, 
+			anotherInvestigation.getSex(), 
+			differences) == false) {
+			
+			
+			if (sex != anotherSex) {
+				
+				String sexFieldName
+					= RIFServiceMessages.getMessage("sex.label");
+				System.out.println("inv sex 2");
+				String difference
+					= RIFServiceMessages.getMessage(
+						"differences.fieldsDiffer",
+						sexFieldName,
+						this.getDisplayName(),
+						sex.getName(),
+						anotherInvestigation.getDisplayName(),
+						anotherSex.getName());
+				differences.add(difference);
+			}	
+			else {
+				System.out.println("inv sex 3");
+				
+			}
+		}
+		else {
+			System.out.println("inv sex 4");
+
+		}
+
+		
+		//compare health theme values
+		if (RIFComparisonUtility.identifyFieldNullityDifferences(
+			"healthTheme.label", 
+			this, 
+			healthTheme, 
+			anotherInvestigation, 
+			anotherInvestigation.getHealthTheme(), 
+			differences) == false) {
+
+			if (healthTheme != null) {
+				
+				//we're guaranteed that the other health theme will not be null
+				healthTheme.identifyDifferences(
+					anotherInvestigation.getHealthTheme(), 
+					differences);
+			}
+		}
+
+
+		//@TODO: more to do!
+		
+	}
+	
 	/**
 	 * Checks for identical contents.
 	 *
@@ -840,9 +945,7 @@ public class Investigation
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkSecurityViolations()
-	 */
+
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
 		

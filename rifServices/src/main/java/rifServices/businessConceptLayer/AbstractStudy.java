@@ -279,6 +279,17 @@ abstract public class AbstractStudy
 		investigations.clear();
 	}
 	
+	public void identifyDifferences(
+		final AbstractStudy anotherAbstractStudy,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherAbstractStudy, 
+			differences);
+		
+	}
+			
+	
 	/**
 	 * Checks for identical contents.
 	 *

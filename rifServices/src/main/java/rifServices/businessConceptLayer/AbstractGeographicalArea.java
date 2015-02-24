@@ -124,7 +124,17 @@ protected AbstractGeographicalArea() {
 // ==========================================
 // Section Accessors and Mutators
 // ==========================================
-    
+
+	public void identifyDifferences(
+		final AbstractGeographicalArea anotherGeographicalArea,
+		final ArrayList<String> differences) {
+	
+		super.identifyDifferences(
+			anotherGeographicalArea, 
+			differences);
+	}
+
+
 	/**
 	 * Checks for identical contents.
 	 *

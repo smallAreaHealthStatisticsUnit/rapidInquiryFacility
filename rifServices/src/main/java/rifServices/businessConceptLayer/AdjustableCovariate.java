@@ -171,6 +171,17 @@ public final class AdjustableCovariate
 // ==========================================
 // Section Accessors and Mutators
 // ==========================================
+
+	
+	public void identifyDifferences(
+		final AdjustableCovariate anotherAdjustableCovariate,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherAdjustableCovariate, 
+			differences);
+	}
+		
 	/**
 	 * Checks for identical contents.
 	 *

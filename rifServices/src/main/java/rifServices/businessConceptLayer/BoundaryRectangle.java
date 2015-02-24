@@ -166,6 +166,12 @@ public class BoundaryRectangle {
 		this.yMax = yMax;
 	}
 	
+	public void identifyDifferences(
+		final BoundaryRectangle anotherBoundaryRectangle,
+		final ArrayList<String> differences) {
+		
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

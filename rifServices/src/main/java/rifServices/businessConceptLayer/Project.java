@@ -237,6 +237,17 @@ public class Project
 		this.endDate = endDate;
 	}
 		
+	
+	public void identifyDifferences(
+		final Project anotherProject,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherProject, 
+			differences);
+		
+	}
+	
 	/**
 	 * Checks for identical contents.
 	 *

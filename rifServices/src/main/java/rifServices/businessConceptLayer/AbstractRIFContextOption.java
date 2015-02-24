@@ -151,6 +151,16 @@ public abstract class AbstractRIFContextOption
 		this.description = description;
 	}
 
+	public void identifyDifferences(
+		final AbstractRIFContextOption anotherRIFContextOption,
+		final ArrayList<String> differences) {
+	
+		super.identifyDifferences(
+			anotherRIFContextOption, 
+			differences);
+
+	}
+		
 	/**
 	 * Checks for identical contents.
 	 *

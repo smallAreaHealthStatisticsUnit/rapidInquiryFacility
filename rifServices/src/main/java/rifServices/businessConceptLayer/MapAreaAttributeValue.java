@@ -8,8 +8,7 @@ import rifServices.util.FieldValidationUtility;
 
 import java.util.ArrayList;
 import java.text.Collator;
-import java.util.Collections;
-import java.util.HashSet;
+
 
 
 /**
@@ -242,6 +241,15 @@ public final class MapAreaAttributeValue
 		this.attributeValue = attributeValue;
 	}
 
+	public void identifyDifferences(
+		final MapAreaAttributeValue anotherMapAreaAttributeValue,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherMapAreaAttributeValue, 
+			differences);
+	}
+	
 	/**
 	 * Checks for identical contents.
 	 *

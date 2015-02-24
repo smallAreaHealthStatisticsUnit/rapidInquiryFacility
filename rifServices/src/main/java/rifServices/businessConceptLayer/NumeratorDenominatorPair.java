@@ -274,6 +274,16 @@ public final class NumeratorDenominatorPair
 		this.denominatorTableDescription = denominatorTableDescription;
 	}
 	
+	public void identifyDifferences(
+		final NumeratorDenominatorPair anotherNDPair,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherNDPair, 
+			differences);
+			
+	}
+	
 	/**
 	 * Checks for identical contents.
 	 *
@@ -418,9 +428,6 @@ public final class NumeratorDenominatorPair
 			denominatorTableDescription);
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
 	public void checkErrors() 
 		throws RIFServiceException {
 		
@@ -477,9 +484,7 @@ public final class NumeratorDenominatorPair
 			errorMessages);
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
+
 	public String getRecordType() {
 		
 		String recordType
@@ -487,9 +492,7 @@ public final class NumeratorDenominatorPair
 		return recordType;
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */
+
 	public String getDisplayName() {
 		
 		StringBuilder buffer = new StringBuilder();

@@ -235,6 +235,37 @@ public final class Parameter
 		this.value = value;
 	}
 
+	public void identifyDifferences(
+		final Parameter anotherParameter,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherParameter, 
+			differences);		
+	}
+	
+	/**
+	 * Could be useful for identifying which parameters are in one 
+	 * list but not the other
+	 * @param nameOfListOwnerA
+	 * @param parameterListA
+	 * @param nameOfListOwnerB
+	 * @param parameterListB
+	 * @return
+	 */
+	public static ArrayList<String> identifyDifferences(
+		final String nameOfListOwnerA,
+		final ArrayList<Parameter> parameterListA,
+		final String nameOfListOwnerB,
+		final ArrayList<Parameter> parameterListB) {
+		
+		ArrayList<String> differences 
+			= new ArrayList<String>();
+		
+		return differences;
+	}
+	
+	
 	/**
 	 * Checks for identical contents.
 	 *

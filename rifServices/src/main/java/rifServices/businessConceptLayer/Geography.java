@@ -147,6 +147,18 @@ public final class Geography
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	
+	public void identifyDifferences(
+		final Geography anotherGeography,
+		final ArrayList<String> differences) {
+	
+		super.identifyDifferences(
+			anotherGeography, 
+			differences);
+		
+	}
+	
 	/**
 	 * Checks for identical contents.
 	 *

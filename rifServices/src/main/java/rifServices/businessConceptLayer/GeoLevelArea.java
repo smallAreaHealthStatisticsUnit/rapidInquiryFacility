@@ -171,6 +171,17 @@ public final class GeoLevelArea
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	public void identifyDifferences(
+		final GeoLevelArea anotherGeoLevelArea,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherGeoLevelArea, 
+			differences);
+		
+	}
+	
 	/**
 	 * Checks for identical contents.
 	 *

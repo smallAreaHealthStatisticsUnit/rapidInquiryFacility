@@ -169,6 +169,16 @@ public class GeoLevelView
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public void identifyDifferences(
+		final GeoLevelView anotherGeoLevelView,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherGeoLevelView, 
+			differences);
+		
+	}
+	
 	/**
 	 * Checks for identical contents.
 	 *

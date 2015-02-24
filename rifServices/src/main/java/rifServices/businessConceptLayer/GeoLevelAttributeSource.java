@@ -165,6 +165,15 @@ public final class GeoLevelAttributeSource
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public void identifyDifferences(
+		final GeoLevelAttributeSource anotherGeoLevelAttributeSource,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherGeoLevelAttributeSource, 
+			differences);		
+	}
+	
 	/**
 	 * Checks for identical contents.
 	 *

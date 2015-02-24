@@ -323,6 +323,15 @@ public final class HealthCode
 		return numberOfSubTerms;
 	}
 	
+	public void identifyDifferences(
+		final HealthCode anotherHealthCode,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherHealthCode, 
+			differences);
+	}
+	
 	/**
 	 * Checks for identical contents.
 	 *

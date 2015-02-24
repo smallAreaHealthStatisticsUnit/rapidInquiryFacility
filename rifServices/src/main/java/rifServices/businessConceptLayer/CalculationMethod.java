@@ -337,6 +337,16 @@ private String name;
 		this.parameters = parameters;
 	}
 	
+	
+	public void identifyDifferences(
+		final CalculationMethod anotherCalculationMethod,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherCalculationMethod, 
+			differences);
+	}
+	
 	/**
 	 * Checks for identical contents.
 	 *

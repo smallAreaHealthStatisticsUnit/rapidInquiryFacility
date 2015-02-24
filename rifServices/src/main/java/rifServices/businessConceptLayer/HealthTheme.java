@@ -164,6 +164,15 @@ public final class HealthTheme
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public void identifyDifferences(
+		final HealthTheme anotherHealthTheme,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherHealthTheme, 
+			differences);
+	}
+	
 	/**
 	 * Checks for identical contents.
 	 *

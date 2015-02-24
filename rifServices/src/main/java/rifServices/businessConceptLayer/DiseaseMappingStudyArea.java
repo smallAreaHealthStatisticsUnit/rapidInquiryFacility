@@ -8,6 +8,7 @@ import rifServices.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceMessages;
 
 
+
 import java.util.ArrayList;
 
 
@@ -150,6 +151,16 @@ private DiseaseMappingStudyArea() {
 // ==========================================
 // Section Accessors and Mutators
 // ==========================================
+		
+	public void identifyDifferences(
+		final DiseaseMappingStudyArea anotherDiseaseMappingStudyArea,
+		final ArrayList<String> differences) {
+	
+		super.identifyDifferences(
+			anotherDiseaseMappingStudyArea, 
+			differences);
+	}
+	
 	/**
 	 * Checks for identical contents.
 	 *

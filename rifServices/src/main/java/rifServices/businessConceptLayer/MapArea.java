@@ -311,6 +311,16 @@ public final class MapArea
 		return results;
 	}
 	
+	
+	public void identifyDifferences(
+		final MapArea anotherMapArea,
+		final ArrayList<String> differences) {
+		
+		super.identifyDifferences(
+			anotherMapArea, 
+			differences);		
+	}
+	
 	/**
 	 * Checks for identical contents.
 	 *

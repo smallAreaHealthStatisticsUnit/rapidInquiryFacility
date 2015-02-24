@@ -173,7 +173,18 @@ public final class ExposureCovariate
 // ==========================================
 // Section Accessors and Mutators
 // ==========================================
+
+	
+	public void identifyDifferences(
+		final ExposureCovariate anotherExposureCovariate,
+		final ArrayList<String> differences) {
 		
+		super.identifyDifferences(
+			anotherExposureCovariate, 
+			differences);
+	}
+	
+	
 // ==========================================
 // Section Errors and Validation
 // ==========================================

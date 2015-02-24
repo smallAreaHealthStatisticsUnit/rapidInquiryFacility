@@ -186,6 +186,12 @@ public final class StudySummary {
 		return studySummary;
 	}
 	
+	public void identifyDifferences(
+		final StudySummary anotherStudySummary) {
+		
+		
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

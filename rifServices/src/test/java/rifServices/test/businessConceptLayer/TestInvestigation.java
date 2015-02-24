@@ -191,6 +191,31 @@ public final class TestInvestigation
 	// Section Errors and Validation
 	// ==========================================
 	
+	
+	
+	@Test
+	public void acceptDetectionOfDifferences_COMMON() {
+		Investigation investigationA
+			= Investigation.createCopy(masterInvestigation);
+		investigationA.setSex(Sex.FEMALES);
+		
+		Investigation investigationB
+			= Investigation.createCopy(masterInvestigation);
+		investigationB.setDescription("something totally different");
+		investigationB.setSex(Sex.BOTH);
+		
+		ArrayList<String> differences = new ArrayList<String>();
+		investigationA.identifyDifferences(
+			investigationB, 
+			differences);
+			
+		for (String difference : differences) {
+			System.out.println("acceptDetectionOfDifferences=="+difference+"==");
+		}
+		assertEquals(2, differences.size());			
+	}
+	
+	
 	/**
 	 * Test valid investigation n1.
 	 */

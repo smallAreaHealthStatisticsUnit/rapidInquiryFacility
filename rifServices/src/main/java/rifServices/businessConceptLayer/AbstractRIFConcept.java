@@ -151,6 +151,14 @@ public abstract class AbstractRIFConcept
 	 */
 	abstract public String getRecordType();
 
+	
+	public void identifyDifferences(
+		final AbstractRIFConcept anotherConcept,
+		final ArrayList<String> differences) {
+	
+
+	}
+	
 	/**
 	 * Checks for identical contents.
 	 *

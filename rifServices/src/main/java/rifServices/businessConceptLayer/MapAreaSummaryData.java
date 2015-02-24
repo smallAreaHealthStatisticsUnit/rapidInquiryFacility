@@ -1,5 +1,6 @@
 package rifServices.businessConceptLayer;
 
+import java.util.ArrayList;
 
 /**
  *
@@ -192,6 +193,13 @@ public class MapAreaSummaryData {
 		final int totalNumberToMapAreas) {
 
 		this.totalNumberToMapAreas = totalNumberToMapAreas;
+	}
+	
+	public void identifyDifferences(
+		final MapAreaSummaryData mapAreaSummaryData,
+		final ArrayList<String> differences) {
+		
+		
 	}
 	
 	// ==========================================
