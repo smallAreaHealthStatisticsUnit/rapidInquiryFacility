@@ -94,6 +94,10 @@ public final class GetGeographies
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 
 
 	@Test
@@ -187,10 +191,6 @@ public final class GetGeographies
 				1);
 		}			
 	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

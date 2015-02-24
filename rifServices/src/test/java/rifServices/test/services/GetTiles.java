@@ -107,6 +107,11 @@ public final class GetTiles
 	// Section Accessors and Mutators
 	// ==========================================
 
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
 
 	@Test
 	public void getTiles_COMMON1() {
@@ -668,11 +673,6 @@ public final class GetTiles
 		}
 	}
 	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

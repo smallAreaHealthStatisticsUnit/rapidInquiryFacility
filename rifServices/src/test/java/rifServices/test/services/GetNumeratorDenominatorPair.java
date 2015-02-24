@@ -97,6 +97,9 @@ public final class GetNumeratorDenominatorPair
 	// Section Accessors and Mutators
 	// ==========================================
 
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 	
 	
 	@Test
@@ -386,9 +389,6 @@ public final class GetNumeratorDenominatorPair
 		}
 	}	
 	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

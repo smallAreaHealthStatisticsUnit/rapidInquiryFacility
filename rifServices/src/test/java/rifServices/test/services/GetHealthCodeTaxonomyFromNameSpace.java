@@ -92,7 +92,10 @@ public final class GetHealthCodeTaxonomyFromNameSpace
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 
 	
 	@Test
@@ -244,11 +247,6 @@ public final class GetHealthCodeTaxonomyFromNameSpace
 				1);
 		}		
 	}
-	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

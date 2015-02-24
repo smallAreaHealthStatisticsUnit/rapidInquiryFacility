@@ -96,11 +96,14 @@ public final class GetCovariates
 	
 	}
 
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
 	@Test
 	public void getCovariates_COMMON1() {
 		try {
@@ -396,10 +399,6 @@ public final class GetCovariates
 				1);
 		}			
 	}
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

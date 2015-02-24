@@ -123,6 +123,11 @@ public final class TestRIFStudySubmission
 	// Section Accessors and Mutators
 	// ==========================================
 
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
 	/**
 	 * Accept valid rif job submission.
 	 */
@@ -130,7 +135,7 @@ public final class TestRIFStudySubmission
 	/**
 	 * Accept a valid rif job submission with typical values.
 	 */
-	public void acceptValidRIFStudySubmission() {
+	public void acceptValidInstance_COMMON() {
 		try {
 			RIFStudySubmission rifStudySubmission
 				= RIFStudySubmission.createCopy(masterRIFStudySubmission);
@@ -148,7 +153,9 @@ public final class TestRIFStudySubmission
 	/**
 	 * rif job submission is invalid if no study is specified
 	 */
-	public void rejectBlankStudy() {
+	public void rejectBlankRequiredFields_ERROR() {
+
+		//no study specified
 		try {
 			RIFStudySubmission rifStudySubmission
 				= RIFStudySubmission.createCopy(masterRIFStudySubmission);
@@ -162,6 +169,13 @@ public final class TestRIFStudySubmission
 				RIFServiceError.INVALID_RIF_JOB_SUBMISSION, 
 				1);
 		}
+		
+		
+		
+		
+		
+		
+		
 	}
 
 	/**
@@ -171,7 +185,7 @@ public final class TestRIFStudySubmission
 	/**
 	 * rif job submission is invalid if its study is invalid
 	 */
-	public void rejectInvalidStudy() {
+	public void rejectInvalidStudy_ERROR() {
 		try {
 			RIFStudySubmission rifStudySubmission
 				= RIFStudySubmission.createCopy(masterRIFStudySubmission);
@@ -200,32 +214,7 @@ public final class TestRIFStudySubmission
 	/**
 	 * rif job submission is invalid if it has an invalid calculation method
 	 */
-	public void rejectInvalidCalculationMethod() {
-		try {
-			RIFStudySubmission rifStudySubmission
-				= RIFStudySubmission.createCopy(masterRIFStudySubmission);	
-			SampleTestObjectGenerator generator
-				= new SampleTestObjectGenerator();
-			CalculationMethod invalidCalculationMethod
-				= generator.createSampleCalculationMethod("Blah");
-			invalidCalculationMethod.setPrior(null);			
-			rifStudySubmission.addCalculationMethod(invalidCalculationMethod);
-			rifStudySubmission.checkErrors();
-			fail();	
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException, 
-				RIFServiceError.INVALID_RIF_JOB_SUBMISSION, 
-				1);
-		}
-	}
-	
-	@Test
-	/**
-	 * rif job submission is invalid if it has an invalid calculation method
-	 */
-	public void rejectEmptyCalculationMethod() {
+	public void rejectInvalidCalculationMethod_ERROR() {
 		try {
 			RIFStudySubmission rifStudySubmission
 				= RIFStudySubmission.createCopy(masterRIFStudySubmission);	
@@ -259,13 +248,9 @@ public final class TestRIFStudySubmission
 				rifServiceException, 
 				RIFServiceError.INVALID_RIF_JOB_SUBMISSION, 
 				1);
-		}
-		
+		}		
 	}
-	
-	
-	
-	
+		
 	/**
 	 * Reject empty rif output options.
 	 */
@@ -273,7 +258,8 @@ public final class TestRIFStudySubmission
 	/**
 	 * rif job submission is invalid if no output options specified
 	 */
-	public void rejectEmptyRIFOutputOptions() {
+	public void rejectEmptyRIFOutputOptionsList_ERROR() {
+
 		try {
 			RIFStudySubmission rifStudySubmission
 				= RIFStudySubmission.createCopy(masterRIFStudySubmission);
@@ -323,7 +309,7 @@ public final class TestRIFStudySubmission
 	 * Test security violations.
 	 */
 	@Test
-	public void testSecurityViolations() {
+	public void rejectSecurityViolations_MALICIOUS() {
 		RIFStudySubmission maliciousRIFStudySubmission
 			= RIFStudySubmission.createCopy(masterRIFStudySubmission);
 		maliciousRIFStudySubmission.setIdentifier(getTestMaliciousValue());
@@ -395,11 +381,6 @@ public final class TestRIFStudySubmission
 	}
 	
 	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

@@ -95,6 +95,10 @@ public final class GetGeoLevelFullExtentForStudy
 	// ==========================================
 
 	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	@Test
 	public void getGeoLevelFullExtentForStudy_COMMON1() {
 	
@@ -281,10 +285,6 @@ public final class GetGeoLevelFullExtentForStudy
 		}		
 	}
 	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

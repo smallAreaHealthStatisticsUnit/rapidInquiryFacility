@@ -98,6 +98,11 @@ public final class GetGeoLevelAreaValues
 	// ==========================================
 
 	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
+	
 	@Test
 	public void getGeoLevelAreaValues_COMMON1() {
 		try {
@@ -388,11 +393,6 @@ public final class GetGeoLevelAreaValues
 		}
 	}
 	
-
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

@@ -94,6 +94,10 @@ public final class GetHealthCode
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 
 	
 	@Test
@@ -343,10 +347,6 @@ public final class GetHealthCode
 				1);
 		}		
 	}
-		
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

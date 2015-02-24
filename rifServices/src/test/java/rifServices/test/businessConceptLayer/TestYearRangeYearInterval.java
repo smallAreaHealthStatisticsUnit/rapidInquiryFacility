@@ -207,6 +207,10 @@ public final class TestYearRangeYearInterval
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 
 	/**
 	 * Valid year range n1.
@@ -215,7 +219,7 @@ public final class TestYearRangeYearInterval
 	/**
 	 * Accept a vaid year range with typical values.
 	 */
-	public void validYearRangeN1() {
+	public void acceptValidInstance_COMMON() {
 		try {
 			YearRange yearRange = YearRange.newInstance("1989", "1992");
 			yearRange.checkErrors();
@@ -223,7 +227,29 @@ public final class TestYearRangeYearInterval
 		catch(RIFServiceException rifServiceException) {
 			fail();
 		}
+		
+		try {
+			YearInterval yearInterval = YearInterval.newInstance("1992", "1993");
+			yearInterval.checkErrors();
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}
 	}
+	
+	@Test
+	public void acceptValidInstance_UNCOMMON() {
+		
+		try {
+			YearInterval yearInterval = YearInterval.newInstance("1993", "1993");
+			yearInterval.checkErrors();
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}		
+	}
+	
+	
 	
 	/**
 	 * Reject blank lower bound for year range.
@@ -232,7 +258,7 @@ public final class TestYearRangeYearInterval
 	/**
 	 * A year range is invalid if its lower bound is not specified.
 	 */
-	public void rejectBlankLowerBoundForYearRange() {
+	public void rejectBlankLowerBoundForYearRange_ERROR() {
 		try {
 			YearRange yearRange = YearRange.newInstance(null, "1992");
 			yearRange.checkErrors();
@@ -265,7 +291,7 @@ public final class TestYearRangeYearInterval
 	/**
 	 * A year range is invalid if its lower bound is not a valid number
 	 */
-	public void rejectInvalidLowerBoundForYearRange() {
+	public void rejectInvalidLowerBoundForYearRange_ERROR() {
 		try {
 			YearRange yearRange = YearRange.newInstance("blah", "1992");
 			yearRange.checkErrors();
@@ -286,7 +312,7 @@ public final class TestYearRangeYearInterval
 	/**
 	 * A year range is invalid if its lower bound has an unrealistic value
 	 */
-	public void rejectUnrealisticLowerBoundForYearRange() {
+	public void rejectUnrealisticLowerBoundForYearRange_ERROR() {
 		try {
 			YearRange yearRange = YearRange.newInstance("1758", "1992");
 			yearRange.checkErrors();
@@ -321,7 +347,7 @@ public final class TestYearRangeYearInterval
 	/**
 	 * A year range is invalid if it has no upper bound specified.
 	 */
-	public void rejectBlankUpperBoundForYearRange() {
+	public void rejectBlankUpperBoundForYearRange_ERROR() {
 		try {
 			YearRange yearRange = YearRange.newInstance("1991", null);
 			yearRange.checkErrors();
@@ -354,7 +380,7 @@ public final class TestYearRangeYearInterval
 	/**
 	 * A year range is invalid if its upper bound is not a valid number
 	 */
-	public void rejectInvalidUpperBoundForYearRange() {
+	public void rejectInvalidUpperBoundForYearRange_ERROR() {
 		try {
 			YearRange yearRange = YearRange.newInstance("1991", "blah");
 			yearRange.checkErrors();
@@ -375,7 +401,7 @@ public final class TestYearRangeYearInterval
 	/**
 	 * A year range is invalid if its upper bound has an unrealistic value
 	 */
-	public void rejectUnrealisticUpperBoundForYearRange() {
+	public void rejectUnrealisticUpperBoundForYearRange_ERROR() {
 		try {
 			YearRange yearRange = YearRange.newInstance("1991", "1666");
 			yearRange.checkErrors();
@@ -409,7 +435,7 @@ public final class TestYearRangeYearInterval
 	/**
 	 * A year range is invalid if its lower bound exceeds its upper bound.
 	 */
-	public void illegalLowerBoundUpperBoundCombinationE1() {
+	public void illegalLowerBoundUpperBoundCombination_ERROR() {
 		try {
 			YearRange yearRange = YearRange.newInstance("2001", "1987");
 			yearRange.checkErrors();
@@ -426,30 +452,13 @@ public final class TestYearRangeYearInterval
 	
 	
 	/**
-	 * Accept valid year interval.
-	 */
-	@Test
-	/**
-	 * Accept a valid year interval with typical values.
-	 */
-	public void acceptValidYearInterval() {
-		try {
-			YearInterval yearInterval = YearInterval.newInstance("1992", "1993");
-			yearInterval.checkErrors();
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}
-	}
-	
-	/**
 	 * Reject blank start year for year interval.
 	 */
 	@Test
 	/**
 	 * A year interval is invalid if it has no start year specified.
 	 */
-	public void rejectBlankStartYearForYearInterval() {
+	public void rejectBlankStartYearForYearInterval_ERROR() {
 		try {
 			YearInterval yearInterval = YearInterval.newInstance(null, "1992");
 			yearInterval.checkErrors();
@@ -478,7 +487,7 @@ public final class TestYearRangeYearInterval
 	/**
 	 * A year interval is invalid if its start year is not a valid number.
 	 */
-	public void rejectInvalidStartYearForYearInterval() {
+	public void rejectInvalidStartYearForYearInterval_ERROR() {
 		try {
 			YearInterval yearInterval = YearInterval.newInstance("blah", "1992");
 			yearInterval.checkErrors();
@@ -499,7 +508,7 @@ public final class TestYearRangeYearInterval
 	/**
 	 * A year interval is invalid if its start year has an unrealistic value.
 	 */
-	public void rejectUnrealisticStartYearForYearInterval() {
+	public void rejectUnrealisticStartYearForYearInterval_ERROR() {
 		try {
 			YearInterval yearInterval = YearInterval.newInstance("1758", "1992");
 			yearInterval.checkErrors();
@@ -534,7 +543,7 @@ public final class TestYearRangeYearInterval
 	/**
 	 * A year interval is invalid if it has no end year specified.
 	 */
-	public void rejectEmptyEndYearForYearInterval() {
+	public void rejectEmptyEndYearForYearInterval_ERROR() {
 		try {
 			YearInterval yearInterval = YearInterval.newInstance("1991", null);
 			yearInterval.checkErrors();
@@ -567,7 +576,7 @@ public final class TestYearRangeYearInterval
 	/**
 	 * A year interval is invalid if its end year is not a valid number.
 	 */
-	public void rejectInvalidEndYearForYearInterval() {
+	public void rejectInvalidEndYearForYearInterval_ERROR() {
 		try {
 			YearInterval yearInterval = YearInterval.newInstance("1991", "blah");
 			yearInterval.checkErrors();
@@ -588,7 +597,7 @@ public final class TestYearRangeYearInterval
 	/**
 	 * A year interval is invalid if its end year is an unrealistic value.
 	 */
-	public void rejectUnrealisticEndYearForYearInterval() {
+	public void rejectUnrealisticEndYearForYearInterval_ERROR() {
 		try {
 			//We should get two errors: (1) lower bound is greater than upper
 			//bound and (2) upper bound is unrealistic
@@ -623,7 +632,7 @@ public final class TestYearRangeYearInterval
 	/**
 	 * A year interval is invalid if its start year exceeds its end year.
 	 */
-	public void illegalLowerStardEndDateCombinationE1() {
+	public void illegalLowerStartEndDateCombination_ERROR() {
 		try {
 			YearInterval yearInterval = YearInterval.newInstance("2001", "1987");
 			yearInterval.checkErrors();
@@ -646,7 +655,7 @@ public final class TestYearRangeYearInterval
 	 * into year intervals.  N should be an integer but it is managed as a
 	 * String.
 	 */
-	public void acceptValidIntervalValue() {
+	public void acceptValidIntervalValue_COMMON() {
 		YearRange yearRange = YearRange.newInstance("2000", "2010");
 
 		boolean isValidInterval = yearRange.isValidInterval(2);
@@ -662,7 +671,7 @@ public final class TestYearRangeYearInterval
 	 * An interval value is invalid if it is zero.  It must be non-zero in order
 	 * to help split a year range into multiple year intervals.
 	 */
-	public void rejectZeroIntervalValue() {
+	public void rejectZeroIntervalValue_ERROR() {
 		YearRange yearRange = YearRange.newInstance("2000", "2005");
 		boolean isValidInterval1 = yearRange.isValidInterval(0);
 		assertEquals(false, isValidInterval1);
@@ -679,7 +688,7 @@ public final class TestYearRangeYearInterval
 	 * A utility should detect the extent of gap or overlap between two year
 	 * intervals.
 	 */
-	public void detectExtentOfGapsAndOverlaps() {
+	public void acceptExtentCalculationsOfGapsAndOverlaps_COMMON() {
 		
 		YearInterval interval919293 = YearInterval.createCopy(masterInterval919293);
 		YearInterval interval959697 = YearInterval.createCopy(masterInterval959697);
@@ -819,7 +828,7 @@ public final class TestYearRangeYearInterval
 	 * A utility should be able to detect multiple gaps and overlaps within 
 	 * a collection of year intervals.
 	 */
-	public void detectMultipleGapsOverlapsE1() {
+	public void rejectMultipleGapsOverlaps_ERROR() {
 		
 		//[1991] [1991,1993] [1995,1996] [1997]
 		ArrayList<YearInterval> yearIntervals1 = new ArrayList<YearInterval>();
@@ -859,7 +868,7 @@ public final class TestYearRangeYearInterval
 	 * A utility should be able to identify whether an ordered collection of 
 	 * year intervals has contiguous values 
 	 */
-	public void detectAllContiguousYearIntervals1() {		
+	public void acceptAllContiguousYearIntervals_COMMON() {		
 		YearRange yearRange = YearRange.newInstance("1993", "1996");
 		//[1993, 1994], [1995, 1995], [1996, 1996]
 		ArrayList<YearInterval> yearIntervals1 = new ArrayList<YearInterval>();
@@ -881,7 +890,7 @@ public final class TestYearRangeYearInterval
 	 * A utility should be able to identify year intervals which fall outside
 	 * of bounds set by year range
 	 */
-	public void detectOutOfBoundsYearIntervalsE1() {
+	public void rejectOutOfBoundsYearIntervals_ERROR() {
 		
 		YearRange yearRange = YearRange.newInstance("1993", "1996");
 		//[1991, 1992] [1993,1994] [1995,1995] [1996, 1997], [1998, 1998]
@@ -905,7 +914,7 @@ public final class TestYearRangeYearInterval
 	 * A utility should be able to use a year range and an interval value
 	 * to create a collection of year intervals that fit within that year range.
 	 */
-	public void splitYearRangeN1() {
+	public void acceptSplitYearRange_COMMON() {
 		YearRange yearRange1 = YearRange.newInstance("1992", "1996");
 		try {
 			ArrayList<YearInterval> yearIntervals1
@@ -952,10 +961,6 @@ public final class TestYearRangeYearInterval
 			fail();
 		}
 	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

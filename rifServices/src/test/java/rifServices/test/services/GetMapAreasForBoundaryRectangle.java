@@ -98,8 +98,11 @@ public final class GetMapAreasForBoundaryRectangle
 	// Section Accessors and Mutators
 	// ==========================================
 
-	
-	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
+		
 	@Test
 	public void getMapAreas_COMMON1() {
 		
@@ -706,11 +709,6 @@ public final class GetMapAreasForBoundaryRectangle
 	
 	
 	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

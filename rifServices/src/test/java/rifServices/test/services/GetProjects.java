@@ -93,8 +93,10 @@ public final class GetProjects
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
 	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 	
 	public void getProjects_COMMON1() {
 		try {
@@ -166,10 +168,6 @@ public final class GetProjects
 		}		
 	}
 	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

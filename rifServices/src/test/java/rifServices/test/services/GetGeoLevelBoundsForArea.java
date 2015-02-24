@@ -94,6 +94,10 @@ public final class GetGeoLevelBoundsForArea
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 
 	
 	@Test
@@ -412,10 +416,6 @@ public final class GetGeoLevelBoundsForArea
 		}		
 	}
 	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

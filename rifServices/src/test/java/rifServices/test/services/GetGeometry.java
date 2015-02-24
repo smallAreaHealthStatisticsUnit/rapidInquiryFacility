@@ -105,6 +105,11 @@ public final class GetGeometry
 	// Section Accessors and Mutators
 	// ==========================================
 
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	@Override
 	public ArrayList<MapArea> cloneValidMapAreas() {
 		return MapArea.createCopy(validMapAreas);
@@ -668,10 +673,6 @@ public final class GetGeometry
 				1);
 		}
 	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

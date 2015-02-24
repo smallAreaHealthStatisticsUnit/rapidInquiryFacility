@@ -96,6 +96,10 @@ public final class GetTopLevelHealthCodes
 	// Section Accessors and Mutators
 	// ==========================================
 
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 
 	@Test
 	public void getTopLevelHealthCodes_COMMON1() {
@@ -265,10 +269,6 @@ public final class GetTopLevelHealthCodes
 				1);
 		}
 	}
-		
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

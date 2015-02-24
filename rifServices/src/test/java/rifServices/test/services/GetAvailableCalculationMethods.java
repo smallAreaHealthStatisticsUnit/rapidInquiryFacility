@@ -94,6 +94,11 @@ public final class GetAvailableCalculationMethods
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 
 	
 	@Test
@@ -168,11 +173,6 @@ public final class GetAvailableCalculationMethods
 				1);
 		}		
 	}
-	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

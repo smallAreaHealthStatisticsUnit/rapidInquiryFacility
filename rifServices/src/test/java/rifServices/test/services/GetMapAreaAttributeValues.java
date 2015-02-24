@@ -92,6 +92,10 @@ public final class GetMapAreaAttributeValues
 	// Section Accessors and Mutators
 	// ==========================================
 
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	@Test
 	public void getMapAreaAttributeValues_COMMON1() {
 		try {
@@ -527,10 +531,6 @@ public final class GetMapAreaAttributeValues
 				1);
 		}
 	}
-		
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

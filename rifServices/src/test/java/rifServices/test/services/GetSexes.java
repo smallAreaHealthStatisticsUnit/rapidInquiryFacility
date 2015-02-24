@@ -95,6 +95,10 @@ public final class GetSexes
 	// Section Accessors and Mutators
 	// ==========================================
 
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 
 	
 	/**
@@ -159,10 +163,6 @@ public final class GetSexes
 		}
 	}
 	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

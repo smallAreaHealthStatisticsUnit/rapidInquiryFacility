@@ -107,6 +107,10 @@ public final class TestCalculationMethod
 	// Section Accessors and Mutators
 	// ==========================================
 
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
 	
 	/**
 	 * Accept valid calculation method.
@@ -115,7 +119,7 @@ public final class TestCalculationMethod
 	/**
 	 * Accept a valid calculation method with typical values.
 	 */
-	public void acceptValidCalculationMethod() {
+	public void acceptValidInstance_COMMON() {
 		try {
 			CalculationMethod calculationMethod
 				= CalculationMethod.createCopy(masterCalculationMethod);
@@ -134,7 +138,9 @@ public final class TestCalculationMethod
 	/**
 	 * A calculation method is invalid if it has a blank name
 	 */
-	public void rejectBlankName() {
+	public void rejectBlankRequiredFields_ERROR() {
+		
+		//name is blank
 		try {
 			CalculationMethod calculationMethod
 				= CalculationMethod.createCopy(masterCalculationMethod);
@@ -162,16 +168,8 @@ public final class TestCalculationMethod
 				RIFServiceError.INVALID_CALCULATION_METHOD, 
 				1);
 		}		
-	}
-	
-	/**
-	 * Reject blank code routine name.
-	 */
-	@Test
-	/**
-	 * A calculation method is invalid if it has a blank code routine name
-	 */
-	public void rejectBlankCodeRoutineName() {
+		
+		//the code routine name is blank
 		try {
 			CalculationMethod calculationMethod
 				= CalculationMethod.createCopy(masterCalculationMethod);
@@ -199,16 +197,8 @@ public final class TestCalculationMethod
 				RIFServiceError.INVALID_CALCULATION_METHOD, 
 				1);
 		}
-	}
-
-	/**
-	 * Reject blank calculation method prior.
-	 */
-	@Test	
-	/**
-	 * A calculation method is invalid if it has a blank prior
-	 */
-	public void rejectBlankCalculationMethodPrior() {
+		
+		//the calculation method prior is blank
 		try {
 			CalculationMethod calculationMethod
 				= CalculationMethod.createCopy(masterCalculationMethod);
@@ -222,16 +212,8 @@ public final class TestCalculationMethod
 				RIFServiceError.INVALID_CALCULATION_METHOD, 
 				1);
 		}	
-	}
-	
-	/**
-	 * Reject blank description.
-	 */
-	@Test
-	/**
-	 * A calculation method is invalid if it has a blank code routine name
-	 */
-	public void rejectBlankDescription() {
+		
+		//reject blank description
 		try {
 			CalculationMethod calculationMethod
 				= CalculationMethod.createCopy(masterCalculationMethod);
@@ -261,6 +243,25 @@ public final class TestCalculationMethod
 		}	
 	}
 	
+	@Test
+	public void rejectMultipleFieldErrors_ERROR() {
+		try {
+			CalculationMethod calculationMethod
+				= CalculationMethod.createCopy(masterCalculationMethod);
+			calculationMethod.setName("");
+			calculationMethod.setDescription(null);
+			calculationMethod.setPrior(null);
+			calculationMethod.checkErrors();
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_CALCULATION_METHOD, 
+				3);
+		}		
+	}
+	
 	/**
 	 * A calculation method is invalid if one of its parameters is invalid.
 	 */
@@ -268,7 +269,7 @@ public final class TestCalculationMethod
 	 * A calculation method is invalid if it has an invalid parameter
 	 */
 	@Test
-	public void rejectInvalidParameter() {
+	public void rejectInvalidParameter_ERROR() {
 		try {
 			CalculationMethod calculationMethod
 				= CalculationMethod.createCopy(masterCalculationMethod);
@@ -292,7 +293,7 @@ public final class TestCalculationMethod
 	 * Reject duplicate parameters.
 	 */
 	@Test
-	public void rejectDuplicateParameters() {
+	public void rejectDuplicateParameters_ERROR() {
 		CalculationMethod calculationMethod
 			= CalculationMethod.createCopy(masterCalculationMethod);
 		
@@ -320,7 +321,7 @@ public final class TestCalculationMethod
 	 * Check security violations.
 	 */
 	@Test
-	public void checkSecurityViolations() {
+	public void rejectSecurityViolations_MALICIOUS() {
 		CalculationMethod maliciousCalculationMethod
 			= CalculationMethod.createCopy(masterCalculationMethod);
 		masterCalculationMethod.setIdentifier(getTestMaliciousValue());
@@ -383,14 +384,11 @@ public final class TestCalculationMethod
 			//pass
 		}		
 	}
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
-
+	
 	// ==========================================
 	// Section Override
 	// ==========================================

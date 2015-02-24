@@ -107,11 +107,15 @@ public final class TestProject
 	// Section Accessors and Mutators
 	// ==========================================
 
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	/**
 	 * Accept valid project.
 	 */
 	@Test
-	public void acceptValidProject() {		
+	public void acceptValidInstance_COMMON() {		
 		Project project = Project.createCopy(masterProject);
 		try {
 			project.checkErrors();
@@ -121,12 +125,12 @@ public final class TestProject
 		}
 	}
 	
+	@Test
 	/**
 	 * Reject blank fields.
 	 */
-	
 	//@TODO: We have temporarily disabled the check for end date being null
-	public void rejectBlankFields() {
+	public void rejectBlankRequiredFields_ERROR() {
 		try {
 			Project testProject = Project.createCopy(masterProject);
 			testProject.setName(null);
@@ -205,6 +209,7 @@ public final class TestProject
 				1);			
 		}			
 		
+		/*
 		try {
 			Project testProject = Project.createCopy(masterProject);
 			testProject.setEndDate(null);
@@ -216,7 +221,7 @@ public final class TestProject
 				rifServiceException,
 				RIFServiceError.INVALID_PROJECT,
 				1);			
-		}			
+		}
 		
 		try {
 			Project testProject = Project.createCopy(masterProject);
@@ -230,6 +235,7 @@ public final class TestProject
 				RIFServiceError.INVALID_PROJECT,
 				1);			
 		}			
+		*/			
 		
 	}
 	
@@ -237,7 +243,7 @@ public final class TestProject
 	 * Reject multiple field errors.
 	 */
 	@Test
-	public void rejectMultipleFieldErrors() {
+	public void rejectMultipleFieldErrors_ERROR() {
 		try {
 			Project testProject = Project.createCopy(masterProject);
 			testProject.setName("");
@@ -259,7 +265,7 @@ public final class TestProject
 	 * Test security violations.
 	 */
 	@Test
-	public void testSecurityViolations() {
+	public void rejectSecurityViolations_MALICIOUS() {
 		Project maliciousProject = Project.createCopy(masterProject);
 		maliciousProject.setIdentifier(getTestMaliciousValue());
 		try {
@@ -312,10 +318,6 @@ public final class TestProject
 		
 	}
 	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

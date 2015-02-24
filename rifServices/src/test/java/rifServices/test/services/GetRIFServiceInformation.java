@@ -95,6 +95,10 @@ public final class GetRIFServiceInformation
 	// ==========================================
 	
 	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	@Test
 	public void getRIFServiceInformation_COMMON1() {
 		try {
@@ -191,10 +195,6 @@ public final class GetRIFServiceInformation
 		}
 	}
 	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

@@ -117,6 +117,11 @@ public final class GetGeoLevelAttributeSources
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	@Test
 	public void getGeoLevelAttributeSources_COMMON1() {
 	
@@ -329,10 +334,6 @@ public final class GetGeoLevelAttributeSources
 		}
 		
 	}
-			
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

@@ -93,6 +93,10 @@ public final class GetDefaultGeoLevelSelectValue
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 
 	
 	@Test
@@ -265,10 +269,6 @@ public final class GetDefaultGeoLevelSelectValue
 				1);
 		}		
 	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

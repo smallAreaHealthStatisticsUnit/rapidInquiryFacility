@@ -97,6 +97,9 @@ public final class GetYearRange
 	// ==========================================
 
 	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 	
 	@Test
 	public void getYearRange_COMMON1() {
@@ -356,11 +359,6 @@ public final class GetYearRange
 		}
 	}	
 	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

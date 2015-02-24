@@ -187,6 +187,10 @@ public final class TestInvestigation
 	// Section Accessors and Mutators
 	// ==========================================
 
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	/**
 	 * Test valid investigation n1.
 	 */
@@ -194,7 +198,7 @@ public final class TestInvestigation
 	/**
 	 * Accept a valid investigation with typical values.
 	 */
-	public void testValidInvestigationN1() {
+	public void acceptValidInstance_COMMON() {
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -209,7 +213,7 @@ public final class TestInvestigation
 	/**
 	 * Ensures that the table is able to accept a minimal value for a table name
 	 */
-	public void acceptBriefTitle() {
+	public void acceptValidInstance_UNCOMMON1() {
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -220,6 +224,37 @@ public final class TestInvestigation
 			fail();			
 		}		
 	}
+
+
+	/**
+	 * An investigation is invalid if no interval value is specified.
+	 * The interval value indicates how the year range should be split to
+	 * produce year intervals.  For example, if the year range were [1992, 1995]
+	 * an interval of "2" would yield year intervals [1992, 1993], [1994, 1995].
+	 */
+	@Test
+	public void acceptValidInstance_UNCOMMON2() {
+		try {
+			Investigation investigation
+				= Investigation.createCopy(masterInvestigation);
+			investigation.setInterval("");
+			investigation.checkErrors();
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();			
+		}		
+
+		try {
+			Investigation investigation
+				= Investigation.createCopy(masterInvestigation);
+			investigation.setInterval(null);
+			investigation.checkErrors();
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();			
+		}		
+	}
+	
 	
 	@Test
 	/**
@@ -228,7 +263,7 @@ public final class TestInvestigation
 	 * For now we're not sure what kind of restrictions apply across 
 	 * PostgreSQL, Oracle and SQL Server.  
 	 */
-	public void rejectInvalidTitle() {
+	public void rejectInvalidTitle_ERROR() {
 		try {
 			//should not begin with a number
 			Investigation investigation
@@ -297,7 +332,9 @@ public final class TestInvestigation
 	/**
 	 * An investigation is invalid if it has no health theme specified.
 	 */
-	public void rejectBlankHealthTheme() {
+	public void rejectBlankRequiredFields_ERROR() {
+		
+		//title is blank
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -325,16 +362,9 @@ public final class TestInvestigation
 				RIFServiceError.INVALID_INVESTIGATION, 
 				1);
 		}		
-	}
-	
-	/**
-	 * Reject blank numerator denominator pair.
-	 */
-	@Test
-	/**
-	 * An investigation is invalid if it has no numerator denominator pair specified
-	 */
-	public void rejectBlankNumeratorDenominatorPair() {
+		
+		
+		//blank numerator denominator pair
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -348,6 +378,38 @@ public final class TestInvestigation
 				RIFServiceError.INVALID_INVESTIGATION, 
 				1);
 		}		
+		
+		//sex is blank
+		try {
+			Investigation investigation
+				= Investigation.createCopy(masterInvestigation);
+			investigation.setSex(null);
+			investigation.checkErrors();
+			fail();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_INVESTIGATION, 
+				1);
+		}
+		
+		//year range is blank
+		try {
+			Investigation investigation
+				= Investigation.createCopy(masterInvestigation);
+			investigation.setYearRange(null);
+			investigation.checkErrors();
+			fail();			
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_INVESTIGATION, 
+				1);
+		}
+		
+		
 	}
 	
 	/**
@@ -355,7 +417,7 @@ public final class TestInvestigation
 	 * pair.
 	 */
 	@Test
-	public void rejectInvalidNumeratorDenominatorPair() {
+	public void rejectInvalidNumeratorDenominatorPair_ERROR() {
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -379,7 +441,7 @@ public final class TestInvestigation
 	 * An investigation is invalid if it has no list of health codes specified.
 	 */
 	@Test
-	public void rejectEmptyHealthCodeList() {
+	public void rejectEmptyHealthCodeList_ERROR() {
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -432,7 +494,7 @@ public final class TestInvestigation
 	 * An investigation is invalid if any of its health codes are invalid.
 	 */
 	@Test
-	public void rejectInvalidHealthCode() {
+	public void rejectInvalidHealthCode_ERROR() {
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -455,7 +517,7 @@ public final class TestInvestigation
 	 * An investigation is invalid if it has no age bands specified.
 	 */
 	@Test
-	public void rejectNoAgeBands() {
+	public void rejectNoAgeBands_ERROR() {
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -481,7 +543,7 @@ public final class TestInvestigation
 	 * will also be invalid.  Therefore the total error count will be 3 + 3 + 1 = 7.
 	 */
 	@Test
-	public void rejectInvalidAgeBand() {
+	public void rejectInvalidAgeBand_ERROR() {
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -500,53 +562,12 @@ public final class TestInvestigation
 	}
 	
 	/**
-	 * An investigation is invalid if it has no sex specified.
-	 */
-	@Test
-	public void rejectBlankGender() {
-		try {
-			Investigation investigation
-				= Investigation.createCopy(masterInvestigation);
-			investigation.setSex(null);
-			investigation.checkErrors();
-			fail();			
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException, 
-				RIFServiceError.INVALID_INVESTIGATION, 
-				1);
-		}
-	}	
-
-	/**
-	 * An investigation is invalid it has no year range specified.
-	 * error if investigation has no year range
-	 */
-	@Test	
-	public void rejectBlankYearRange() {
-		try {
-			Investigation investigation
-				= Investigation.createCopy(masterInvestigation);
-			investigation.setYearRange(null);
-			investigation.checkErrors();
-			fail();			
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException, 
-				RIFServiceError.INVALID_INVESTIGATION, 
-				1);
-		}
-	}	
-
-	/**
 	 * error if investigation has a flawed year range
 	 * The goal here is to just to ensure error checking in year range
 	 * is being called.
 	 */
 	@Test	
-	public void invalidYearRange() {
+	public void invalidYearRange_ERROR() {
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -568,7 +589,8 @@ public final class TestInvestigation
 	 * error if investigation has no year intervals specified.
 	 */
 	@Test
-	public void emptyYearIntervalList() {
+	public void rejectEmptyYearIntervalList_ERROR() {
+
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -607,7 +629,7 @@ public final class TestInvestigation
 	 * is being called.
 	 */
 	@Test
-	public void invalidYearInterval() {
+	public void rejectInvalidYearInterval_ERROR() {
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -629,7 +651,7 @@ public final class TestInvestigation
 	 * error if investigation has a year intervals with gaps or overlaps.
 	 */
 	@Test
-	public void invalidGappingOverlappingYearIntervals() {
+	public void rejectInvalidGappingOverlappingYearIntervals_ERROR() {
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -676,7 +698,7 @@ public final class TestInvestigation
 	 * in either of its lower or upper limit.
 	 */
 	@Test
-	public void unreasonableStartEndYearsForYearRange() {
+	public void rejectUnreasonableStartEndYearsForYearRange_ERROR() {
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -762,39 +784,10 @@ public final class TestInvestigation
 	}
 
 	/**
-	 * An investigation is invalid if no interval value is specified.
-	 * The interval value indicates how the year range should be split to
-	 * produce year intervals.  For example, if the year range were [1992, 1995]
-	 * an interval of "2" would yield year intervals [1992, 1993], [1994, 1995].
-	 */
-	@Test
-	public void acceptBlankIntervalValue() {
-		try {
-			Investigation investigation
-				= Investigation.createCopy(masterInvestigation);
-			investigation.setInterval("");
-			investigation.checkErrors();
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();			
-		}		
-
-		try {
-			Investigation investigation
-				= Investigation.createCopy(masterInvestigation);
-			investigation.setInterval(null);
-			investigation.checkErrors();
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();			
-		}		
-	}
-
-	/**
 	 * An investigation is invalid if it has no list of covariates specified.
 	 */
 	@Test
-	public void rejectEmptyCovariateList() {
+	public void rejectEmptyCovariateList_ERROR() {
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
@@ -849,7 +842,7 @@ public final class TestInvestigation
 	 * amongst its age bands
 	 */
 	@Test
-	public void correctlySortsAgeBands() {
+	public void acceptCorrectlySortedAgeBands_COMMON() {
 		Investigation investigation
 			= Investigation.createCopy(masterInvestigation);	
 		
@@ -875,7 +868,7 @@ public final class TestInvestigation
 	 * Test security violations.
 	 */
 	@Test
-	public void testSecurityViolations() {
+	public void rejectSecurityViolations_MALICIOUS() {
 		Investigation maliciousInvestigation
 			= Investigation.createCopy(masterInvestigation);
 		maliciousInvestigation.setIdentifier(getTestMaliciousValue());
@@ -999,9 +992,6 @@ public final class TestInvestigation
 	}
 	
 	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

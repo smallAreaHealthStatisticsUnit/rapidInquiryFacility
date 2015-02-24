@@ -122,10 +122,6 @@ public final class GetNumericAttributesForGeoLevelAttributeTheme
 		
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
 	@Override
 	protected GeoLevelAttributeSource cloneValidGeoLevelAttributeSource() {
 		return GeoLevelAttributeSource.createCopy(validGeoLevelAttributeSource);
@@ -161,6 +157,15 @@ public final class GetNumericAttributesForGeoLevelAttributeTheme
 	private GeoLevelAttributeTheme cloneMaliciousGeoLevelAttributeTheme() {
 		return GeoLevelAttributeTheme.createCopy(maliciousGeoLevelAttributeTheme);
 	}
+
+
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 	
 	@Test
 	public void getNumericAttributesForGeoLevelAttributeTheme_COMMON1() {
@@ -608,10 +613,6 @@ public final class GetNumericAttributesForGeoLevelAttributeTheme
 				1);
 		}
 	}
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

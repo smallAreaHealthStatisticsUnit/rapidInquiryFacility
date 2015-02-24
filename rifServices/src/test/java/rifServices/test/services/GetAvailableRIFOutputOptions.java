@@ -96,6 +96,11 @@ public final class GetAvailableRIFOutputOptions
 	// ==========================================
 
 	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
+	
 	@Test
 	public void getAvailableRIFOutputOptions_COMMON1() {
 		try {
@@ -167,10 +172,6 @@ public final class GetAvailableRIFOutputOptions
 				1);
 		}	
 	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

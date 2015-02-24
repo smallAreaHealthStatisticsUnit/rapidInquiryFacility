@@ -100,6 +100,10 @@ public final class GetResultsStratifiedByGenderAndAgeGroup
 	// Section Accessors and Mutators
 	// ==========================================
 
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
 	public Integer cloneValidYear() {
 		return (new Integer(masterValidYear));
 	}
@@ -915,8 +919,6 @@ public final class GetResultsStratifiedByGenderAndAgeGroup
 	}
 	
 	
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

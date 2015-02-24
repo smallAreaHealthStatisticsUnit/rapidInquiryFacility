@@ -93,7 +93,10 @@ public final class GetParentHealthCode
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 	
 	@Test 
 	public void getParentHealthCode_COMMON1() {
@@ -280,10 +283,6 @@ public final class GetParentHealthCode
 		}
 	}
 	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

@@ -101,6 +101,16 @@ public final class TestAgeGroup
 		masterAgeGroup1.setUpperLimit("9");
 	}
 
+	
+	
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	/**
 	 * Accept valid age group.
 	 */
@@ -108,7 +118,7 @@ public final class TestAgeGroup
 	/**
 	 * Accept an age group with typical values.
 	 */
-	public void acceptValidAgeGroup() {
+	public void acceptValidInstance_COMMON() {
 		AgeGroup ageGroup = AgeGroup.createCopy(masterAgeGroup1);
 		
 		try {
@@ -126,7 +136,9 @@ public final class TestAgeGroup
 	/**
 	 * An age group is invalid if it has a blank name field.
 	 */
-	public void rejectBlankRequiredFields() {
+	public void rejectBlankRequiredFields_ERROR() {
+
+		//name field is empty
 		AgeGroup ageGroup1 = AgeGroup.createCopy(masterAgeGroup1);		
 		try {
 			ageGroup1.setName("");			
@@ -138,17 +150,9 @@ public final class TestAgeGroup
 				rifServiceException,
 				RIFServiceError.INVALID_AGE_GROUP,
 				1);
-		}		
-	}
-	
-	/**
-	 * Blank required fields e2.
-	 */
-	@Test
-	/**
-	 * An age group is invalid if its lower limit is blank
-	 */
-	public void blankRequiredFieldsE2() {
+		}	
+		
+		//lower limit field is empty
 		AgeGroup ageGroup2 = AgeGroup.createCopy(masterAgeGroup1);		
 		try {
 			ageGroup2.setLowerLimit(null);		
@@ -161,16 +165,8 @@ public final class TestAgeGroup
 				RIFServiceError.INVALID_AGE_GROUP,
 				1);
 		}		
-	}	
-		
-	/**
-	 * Blank required fields e3.
-	 */
-	@Test
-	/**
-	 * An age group is invalid if its upper limit is blank
-	 */
-	public void blankRequiredFieldsE3() {
+
+		//upper limit is empty
 		AgeGroup ageGroup3 = AgeGroup.createCopy(masterAgeGroup1);		
 		try {
 			ageGroup3.setUpperLimit("");		
@@ -185,7 +181,6 @@ public final class TestAgeGroup
 		}		
 	}
 		
-	
 	/**
 	 * Reject invalid number for limit values.
 	 */
@@ -194,7 +189,7 @@ public final class TestAgeGroup
 	 * An age group is invalid if either its lower limit or upper limit
 	 * contains an invalid number.
 	 */
-	public void rejectInvalidNumberForLimitValues() {
+	public void rejectInvalidNumberForLimitValues_ERROR() {
 		AgeGroup ageGroup1 = AgeGroup.createCopy(masterAgeGroup1);		
 		try {
 			ageGroup1.setLowerLimit("abc");
@@ -244,7 +239,7 @@ public final class TestAgeGroup
 	 * An age group is invalid if either its lower limit or its upper limit
 	 * have a double value.  It should be an integer.
 	 */
-	public void rejectDoublePrecisionValuesForLimits() {
+	public void rejectDoublePrecisionValuesForLimits_ERROR() {
 		AgeGroup ageGroup4 = AgeGroup.createCopy(masterAgeGroup1);		
 		try {
 			ageGroup4.setUpperLimit("11.456");
@@ -263,7 +258,7 @@ public final class TestAgeGroup
 	 * An age group is invalid if its lower limit exceeds its upper limit.
 	 */
 	@Test
-	public void rejectlowerLimitExceedsUpperLimit() {
+	public void rejectLowerLimitExceedsUpperLimit_ERROR() {
 		AgeGroup ageGroup1 = AgeGroup.createCopy(masterAgeGroup1);		
 		try {
 			ageGroup1.setLowerLimit("10");
@@ -283,7 +278,7 @@ public final class TestAgeGroup
 	 * An age group is invalid if it contains multiple field errors.
 	 */
 	@Test
-	public void identifyMultipleFieldErrorsE1() {
+	public void rejectMultipleFieldErrors_ERROR() {
 		AgeGroup ageGroup1 = AgeGroup.createCopy(masterAgeGroup1);		
 		try {
 			ageGroup1.setName("");
@@ -304,7 +299,7 @@ public final class TestAgeGroup
 	 * Test security violations.
 	 */
 	@Test
-	public void testSecurityViolations() {
+	public void rejectSecurityViolations_MALICIOUS() {
 		AgeGroup maliciousAgeGroup
 			= AgeGroup.createCopy(masterAgeGroup1);
 		maliciousAgeGroup.setIdentifier(getTestMaliciousValue());		
@@ -349,14 +344,6 @@ public final class TestAgeGroup
 			//pass
 		}
 	}
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

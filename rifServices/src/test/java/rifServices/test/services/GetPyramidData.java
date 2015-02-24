@@ -93,6 +93,9 @@ public final class GetPyramidData
 	// Section Accessors and Mutators
 	// ==========================================
 
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 	
 	@Test
 	public void getPyramidDataByUser_COMMON1() {
@@ -532,10 +535,6 @@ public final class GetPyramidData
 				1);
 		}
 	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

@@ -97,11 +97,20 @@ public final class TestRIFServiceStartupOptions
 		//the default constructor should provide valid field values
 	}
 
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
+	
 	/**
 	 * Accept valid startup options.
 	 */
 	@Test
-	public void acceptValidStartupOptions() {
+	public void acceptValidStartupOptions_COMMON() {
 		RIFServiceStartupOptions rifServiceStartupOptions
 			= RIFServiceStartupOptions.newInstance(false);
 
@@ -214,7 +223,7 @@ public final class TestRIFServiceStartupOptions
 	 * Test security violations.
 	 */
 	@Test 
-	public void testSecurityViolations() {
+	public void rejectSecurityViolations_MALICIOUS() {
 		RIFServiceStartupOptions rifServiceStartupOptions
 			= RIFServiceStartupOptions.newInstance(false);
 		
@@ -276,14 +285,6 @@ public final class TestRIFServiceStartupOptions
 		}
 	}
 	
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

@@ -92,6 +92,10 @@ public final class GetGeoLevelToMapValues
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 
 	
 	
@@ -369,10 +373,6 @@ public final class GetGeoLevelToMapValues
 		}
 	}
 	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

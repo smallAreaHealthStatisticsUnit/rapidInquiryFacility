@@ -120,6 +120,10 @@ public final class GetExtractResultsByBlock
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 
 	@Test
 	public void getCalculatedResultsByBlock_COMMON1() {
@@ -549,10 +553,6 @@ public final class GetExtractResultsByBlock
 		}
 	}
 		
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

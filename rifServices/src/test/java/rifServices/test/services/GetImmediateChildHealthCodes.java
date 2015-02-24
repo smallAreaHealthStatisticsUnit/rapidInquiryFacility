@@ -96,8 +96,11 @@ public final class GetImmediateChildHealthCodes
 	// Section Accessors and Mutators
 	// ==========================================
 
-
 	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
 	@Test
 	public void getImmediateChildHealthCodes_COMMON1() {
 		try {		
@@ -311,10 +314,6 @@ public final class GetImmediateChildHealthCodes
 				1);
 		}
 	}	
-		
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

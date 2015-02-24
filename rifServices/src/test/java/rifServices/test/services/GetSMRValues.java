@@ -93,6 +93,11 @@ public final class GetSMRValues
 	// Section Accessors and Mutators
 	// ==========================================
 
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	@Test
 	public void getSMRValues_COMMON1() {
 		
@@ -262,10 +267,6 @@ public final class GetSMRValues
 				1);
 		}
 	}
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

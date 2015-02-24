@@ -122,6 +122,10 @@ public final class GetCalculatedResultsByBlock
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 
 	@Test
 	public void getCalculatedResultsByBlock_COMMON1() {
@@ -550,11 +554,6 @@ public final class GetCalculatedResultsByBlock
 				1);
 		}
 	}
-		
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

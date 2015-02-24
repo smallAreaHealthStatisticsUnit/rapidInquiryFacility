@@ -99,6 +99,10 @@ public final class GetPyramidDataByMapAreas
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 
 	private Integer cloneValidYear() {
 		return new Integer(masterValidYear);
@@ -881,10 +885,6 @@ public final class GetPyramidDataByMapAreas
 				1);
 		}
 	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

@@ -95,7 +95,10 @@ public final class GetHealthThemes
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 	@Test
 	public void getHealthThemes_COMMON1() {
 		try {

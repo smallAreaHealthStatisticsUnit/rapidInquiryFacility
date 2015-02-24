@@ -100,11 +100,20 @@ public final class TestParameter
 		masterParameter = Parameter.newInstance("x", "20");
 	}
 
+
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	/**
 	 * Accept valid parameter.
 	 */
 	@Test
-	public void acceptValidParameter() {
+	public void acceptValidInstance_COMMON() {
 		Parameter parameter = Parameter.createCopy(masterParameter);
 		try {
 			parameter.checkErrors();
@@ -119,7 +128,7 @@ public final class TestParameter
 	 * Reject blank values.
 	 */
 	@Test
-	public void rejectBlankValues() {
+	public void rejectBlankRequiredFields_ERROR() {
 		Parameter parameter = Parameter.createCopy(masterParameter);
 		parameter.setName("");
 		try {
@@ -177,7 +186,7 @@ public final class TestParameter
 	 * Test security violations.
 	 */
 	@Test
-	public void testSecurityViolations() {
+	public void rejectSecurityViolations_MALICIOUS() {
 		Parameter maliciousParameter
 			= Parameter.createCopy(masterParameter);
 		maliciousParameter.setIdentifier(getTestMaliciousValue());
@@ -213,14 +222,6 @@ public final class TestParameter
 		}
 	
 	}
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

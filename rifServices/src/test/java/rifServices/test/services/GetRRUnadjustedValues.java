@@ -93,6 +93,10 @@ public final class GetRRUnadjustedValues
 	// Section Accessors and Mutators
 	// ==========================================
 
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	@Test
 	public void getRRUnadjustedValues_COMMON1() {
 		
@@ -263,10 +267,6 @@ public final class GetRRUnadjustedValues
 				1);
 		}
 	}
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

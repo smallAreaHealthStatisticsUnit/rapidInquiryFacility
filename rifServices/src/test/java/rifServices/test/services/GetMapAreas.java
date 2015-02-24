@@ -100,7 +100,9 @@ public final class GetMapAreas
 	// Section Accessors and Mutators
 	// ==========================================
 
-	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================	
 	
 	@Test
 	public void getMapAreas_COMMON1() {
@@ -704,14 +706,6 @@ public final class GetMapAreas
 				1);
 		}
 	}	
-	
-	
-	
-	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

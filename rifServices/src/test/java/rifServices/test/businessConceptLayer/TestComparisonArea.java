@@ -121,6 +121,15 @@ public final class TestComparisonArea
 		masterComparisonArea.addMapArea(mapArea2);		
 	}
 
+	// =========================================
+	// Section Accessors and Mutators
+	// ==========================================
+
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	/**
 	 * Accept valid comparison area.
 	 */
@@ -128,7 +137,7 @@ public final class TestComparisonArea
 	/**
 	 * Accept a comparison area with typical values.
 	 */
-	public void acceptValidComparisonArea() {
+	public void acceptValidInstance_COMMON() {
 		try {
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
@@ -147,7 +156,9 @@ public final class TestComparisonArea
 	/**
 	 * A comparison area is invalid if no geo level select is specified
 	 */
-	public void rejectBlankGeoLevelSelect() {
+	public void rejectBlankRequiredFields_ERROR() {
+
+		//no geo level select specified
 		try {			
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
@@ -161,17 +172,8 @@ public final class TestComparisonArea
 				RIFServiceError.INVALID_COMPARISON_AREA, 
 				1);
 		}		
-	}
-	
-
-	/**
-	 * Reject blank geo level area.
-	 */
-	@Test
-	/**
-	 * A comparison area is invalid if no geo level area is specified
-	 */
-	public void rejectBlankGeoLevelArea() {
+		
+		//no geo level area specified
 		try {			
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
@@ -185,16 +187,8 @@ public final class TestComparisonArea
 				RIFServiceError.INVALID_COMPARISON_AREA, 
 				1);
 		}	
-	}
-	
-	/**
-	 * Reject blank geo level view.
-	 */
-	@Test
-	/**
-	 * A comparison area is invalid if no geo level view is specified
-	 */
-	public void rejectBlankGeoLevelView() {
+		
+		//no geo level view specified
 		try {			
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
@@ -208,16 +202,9 @@ public final class TestComparisonArea
 				RIFServiceError.INVALID_COMPARISON_AREA, 
 				1);
 		}		
-	}
-	
-	/**
-	 * Reject blank geo level to map.
-	 */
-	@Test
-	/**
-	 * A comparison area is invalid if no geo-level-to-map is specified
-	 */
-	public void rejectBlankGeoLevelToMap() {
+		
+		
+		//no geo level to map specified
 		try {			
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
@@ -231,8 +218,7 @@ public final class TestComparisonArea
 				RIFServiceError.INVALID_COMPARISON_AREA, 
 				1);
 		}
-	}	
-
+	}
 	
 	/**
 	 * Reject empty map area list.
@@ -242,7 +228,7 @@ public final class TestComparisonArea
 	 * A comparison area is invalid if its list of map areas is either
 	 * null or empty.
 	 */
-	public void rejectEmptyMapAreaList() {
+	public void rejectEmptyMapAreaList_ERROR() {
 		try {			
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
@@ -279,7 +265,7 @@ public final class TestComparisonArea
 	/**
 	 * A comparison area is invalid if it contains any duplicate map areas.
 	 */
-	public void rejectDuplicateMapAreas() {
+	public void rejectDuplicateMapAreas_ERROR() {
 		try {			
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
@@ -303,7 +289,7 @@ public final class TestComparisonArea
 	 * A comparison area is invalid if it has an invalid geo level select.
 	 */
 	@Test	
-	public void rejectInvalidGeoLevelValue() {
+	public void rejectInvalidGeoLevelValue_ERROR() {
 		try {			
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
@@ -325,7 +311,7 @@ public final class TestComparisonArea
 	 * A comparison area is invalid if it has an invalid geo level area.
 	 */
 	@Test
-	public void rejectInvalidGeoLevelArea() {
+	public void rejectInvalidGeoLevelArea_ERROR() {
 		try {			
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
@@ -347,7 +333,7 @@ public final class TestComparisonArea
 	 * A comparison area is invalid if it has an invalid geo level view.
 	 */
 	@Test
-	public void rejectInvalidGeoLevelView() {
+	public void rejectInvalidGeoLevelView_ERROR() {
 		try {			
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
@@ -369,7 +355,7 @@ public final class TestComparisonArea
 	 * A comparison area is invalid if it has an invalid geo-level-to-map.
 	 */
 	@Test
-	public void rejectInvalidGeoLevelToMap() {
+	public void rejectInvalidGeoLevelToMap_ERROR() {
 		try {			
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
@@ -391,7 +377,7 @@ public final class TestComparisonArea
 	 * Test security violations.
 	 */
 	@Test
-	public void testSecurityViolations() {
+	public void rejectSecurityViolations_MALICIOUS() {
 		ComparisonArea maliciousComparisonArea
 			= ComparisonArea.createCopy(masterComparisonArea);
 		maliciousComparisonArea.setIdentifier(getTestMaliciousValue());
@@ -472,16 +458,6 @@ public final class TestComparisonArea
 		}
 	}
 	
-	// =========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

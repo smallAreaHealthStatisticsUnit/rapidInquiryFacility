@@ -98,7 +98,10 @@ public final class GetGeoLevelToMapAreas
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 	
 	
 	@Test
@@ -640,10 +643,6 @@ public final class GetGeoLevelToMapAreas
 				1);
 		}
 	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

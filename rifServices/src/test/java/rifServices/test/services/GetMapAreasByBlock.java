@@ -98,9 +98,11 @@ public final class GetMapAreasByBlock
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
 	
-	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+		
 	@Test
 	public void getMapAreasByBlock_COMMON1() {
 		
@@ -908,10 +910,6 @@ public final class GetMapAreasByBlock
 		}
 	}	
 	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

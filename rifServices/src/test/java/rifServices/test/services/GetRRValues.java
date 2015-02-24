@@ -93,6 +93,11 @@ public final class GetRRValues
 	// Section Accessors and Mutators
 	// ==========================================
 
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	@Test
 	public void getRRValues_COMMON1() {
 		
@@ -263,10 +268,6 @@ public final class GetRRValues
 				1);
 		}
 	}
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

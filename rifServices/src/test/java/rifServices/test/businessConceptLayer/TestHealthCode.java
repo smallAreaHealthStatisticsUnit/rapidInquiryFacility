@@ -105,6 +105,15 @@ public final class TestHealthCode
 		masterHealthCode.setNameSpace("icd10");
 	}
 
+	
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	/**
 	 * Accept valid health code.
 	 */
@@ -112,7 +121,7 @@ public final class TestHealthCode
 	/**
 	 * Accept a valid health code with typical values.
 	 */
-	public void acceptValidHealthCode() {
+	public void acceptValidInstance_COMMON() {
 		try {
 			HealthCode healthCode
 				= HealthCode.createCopy(masterHealthCode);
@@ -130,7 +139,9 @@ public final class TestHealthCode
 	/**
 	 * A health code is invalid if it has a blank code.
 	 */
-	public void rejectBlankCode() {
+	public void rejectBlankRequiredFields_ERROR() {
+		
+		//code is blank
 		try {
 			HealthCode healthCode1
 				= HealthCode.createCopy(masterHealthCode);
@@ -144,16 +155,8 @@ public final class TestHealthCode
 				RIFServiceError.INVALID_HEALTH_CODE,
 				1);			
 		}		
-	}
-	
-	/**
-	 * Reject blank name space.
-	 */
-	@Test
-	/**
-	 * A health code is invalid if it has a blank name space
-	 */
-	public void rejectBlankNameSpace() {
+
+		//blank name space
 		try {
 			HealthCode healthCode2
 				= HealthCode.createCopy(masterHealthCode);
@@ -167,16 +170,8 @@ public final class TestHealthCode
 				RIFServiceError.INVALID_HEALTH_CODE,
 				1);			
 		}		
-	}
-	
-	/**
-	 * Reject blank health code.
-	 */
-	@Test
-	/**
-	 * A health code is invalid if it has a blank description
-	 */
-	public void rejectBlankHealthCode() {
+
+		//blank description
 		try {
 			HealthCode healthCode3
 				= HealthCode.createCopy(masterHealthCode);
@@ -189,8 +184,9 @@ public final class TestHealthCode
 				rifServiceException,
 				RIFServiceError.INVALID_HEALTH_CODE,
 				1);			
-		}		
+		}
 	}
+	
 	
 	/**
 	 * Reject multiple field errors.
@@ -199,7 +195,7 @@ public final class TestHealthCode
 	/**
 	 * A health code is invalid if it has multiple field errors.
 	 */
-	public void rejectMultipleFieldErrors() {
+	public void rejectMultipleFieldErrors_ERROR() {
 		//Check capacity to detect multiple field errors
 		try {
 			HealthCode healthCode4
@@ -236,7 +232,7 @@ public final class TestHealthCode
 	 * Test security violations.
 	 */
 	@Test
-	public void testSecurityViolations() {
+	public void rejectSecurityViolations_MALICIOUS() {
 		HealthCode maliciousHealthCode
 			= HealthCode.createCopy(masterHealthCode);
 		maliciousHealthCode.setIdentifier(getTestMaliciousValue());
@@ -284,13 +280,6 @@ public final class TestHealthCode
 			//pass
 		}	
 	}
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

@@ -92,10 +92,7 @@ public final class GetPyramidDataByYear
 		masterNonExistentYear = 1978;
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
+	
 	private Integer cloneValidYear() {
 		return new Integer(masterValidYear);
 	}
@@ -103,6 +100,14 @@ public final class GetPyramidDataByYear
 	private Integer cloneNonExistentYear() {
 		return new Integer(masterNonExistentYear);
 	}
+
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 	
 	@Test
 	public void getPyramidDataByYear_COMMON1() {
@@ -623,10 +628,6 @@ public final class GetPyramidDataByYear
 				1);
 		}
 	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

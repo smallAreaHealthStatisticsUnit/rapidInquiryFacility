@@ -133,6 +133,11 @@ public final class TestDiseaseMappingStudy
 	// Section Accessors and Mutators
 	// ==========================================
 
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	/**
 	 * Accept valid disease mapping study.
 	 */
@@ -140,7 +145,7 @@ public final class TestDiseaseMappingStudy
 	/**
 	 * Accept a valid disease mapping study with typical fields
 	 */
-	public void acceptValidDiseaseMappingStudy() {
+	public void acceptValidInstance_COMMON1() {
 		try {
 			DiseaseMappingStudy diseaseMappingStudy
 				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
@@ -158,7 +163,9 @@ public final class TestDiseaseMappingStudy
 	/**
 	 * A disease mapping study is invalid if it has a blank name
 	 */
-	public void rejectBlankName() {
+	public void rejectBlankRequiredFields_ERROR() {		
+		
+		//name is blank
 		try {
 			DiseaseMappingStudy diseaseMappingStudy
 				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
@@ -186,16 +193,9 @@ public final class TestDiseaseMappingStudy
 				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY, 
 				1);			
 		}
-	}
-	
-	/**
-	 * Reject blank description.
-	 */
-	@Test
-	/**
-	 * A disease mapping study is invalid if it has a blank description
-	 */
-	public void rejectBlankDescription() {
+		
+		//description is blank
+		
 		try {
 			DiseaseMappingStudy diseaseMappingStudy
 				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
@@ -222,17 +222,9 @@ public final class TestDiseaseMappingStudy
 				rifServiceException, 
 				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY, 
 				1);			
-		}		
-	}
-	
-	/**
-	 * Reject empty comparison area.
-	 */
-	@Test
-	/**
-	 * A disease mapping study is invalid if no comparison area is specified.
-	 */
-	public void rejectEmptyComparisonArea() {
+		}
+
+		//comparison area is blank
 		try {
 			DiseaseMappingStudy diseaseMappingStudy
 				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
@@ -246,6 +238,34 @@ public final class TestDiseaseMappingStudy
 				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY, 
 				1);			
 		}		
+		
+		
+	}
+	
+	@Test
+	public void rejectMultipleFieldErrors_ERROR() {
+		
+		
+		try {
+			DiseaseMappingStudy diseaseMappingStudy
+				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			diseaseMappingStudy.setName("");
+			diseaseMappingStudy.setDescription(null);
+			diseaseMappingStudy.setGeography(null);
+			diseaseMappingStudy.setComparisonArea(null);
+			diseaseMappingStudy.checkErrors();
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY, 
+				4);			
+		}
+		
+		
+		
+		
 	}
 	
 	/**
@@ -255,7 +275,7 @@ public final class TestDiseaseMappingStudy
 	/**
 	 * A disease mapping study is invalid if no investigations are specified
 	 */
-	public void rejectEmptyInvestigationList() {
+	public void rejectEmptyInvestigationList_ERROR() {
 		
 		try {
 			DiseaseMappingStudy diseaseMappingStudy
@@ -293,7 +313,7 @@ public final class TestDiseaseMappingStudy
 	/**
 	 * A disease mapping study is invalid if its comparison area is invalid
 	 */
-	public void rejectInvalidComparisonArea() {
+	public void rejectInvalidComparisonArea_ERROR() {
 		//Intentionally creating a comparison area that has an invalid
 		//GeoLevelArea.  This should be picked up when disease mapping study
 		//validates
@@ -339,7 +359,7 @@ public final class TestDiseaseMappingStudy
 	/**
 	 * A disease mapping study is invalid if it has an invalid investigation
 	 */	
-	public void rejectInvalidInvestigation() {
+	public void rejectInvalidInvestigation_ERROR() {
 		SampleTestObjectGenerator generator 
 			= new SampleTestObjectGenerator();
 		Investigation invalidInvestigation
@@ -366,7 +386,7 @@ public final class TestDiseaseMappingStudy
 
 	
 	@Test
-	public void rejectInvestigationsWithDifferentDenominators() {
+	public void rejectInvestigationsWithDifferentDenominators_ERROR() {
 		
 		DiseaseMappingStudy diseaseMappingStudy
 			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
@@ -412,7 +432,7 @@ public final class TestDiseaseMappingStudy
 	/**
 	 * 
 	 */
-	public void acceptInvestigationsWithIdenticalCovariates() {
+	public void acceptInvestigationsWithIdenticalCovariates_COMMON() {
 		
 		/**
 		 * Investigation 1 has {nearDist, ses}
@@ -456,7 +476,7 @@ public final class TestDiseaseMappingStudy
 	 * 
 	 */
 	@Test
-	public void rejectInvestigationsWithDifferentCovariatesE1() {
+	public void rejectInvestigationsWithDifferentCovariates_ERROR() {
 
 		
 		/**
@@ -545,7 +565,7 @@ public final class TestDiseaseMappingStudy
 	 * Test security violations.
 	 */
 	@Test
-	public void testSecurityViolations() {
+	public void rejectSecurityViolations_MALICIOUS() {
 		DiseaseMappingStudy maliciousDiseaseMappingStudy
 			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 		maliciousDiseaseMappingStudy.setIdentifier(getTestMaliciousValue());
@@ -647,9 +667,6 @@ public final class TestDiseaseMappingStudy
 			//pass
 		}		
 	}
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

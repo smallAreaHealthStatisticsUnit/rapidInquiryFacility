@@ -102,12 +102,20 @@ public final class TestHealthCodeTaxonomy
 				"icd9",
 				"1.0");
 	}
+	
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
 
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	/**
 	 * Accept valid health code taxonomy.
 	 */
 	@Test
-	public void acceptValidHealthCodeTaxonomy() {
+	public void acceptValidInstance_COMMON() {
 		HealthCodeTaxonomy healthCodeTaxonomy
 			= HealthCodeTaxonomy.createCopy(masterHealthCodeTaxonomy);		
 		try {
@@ -122,7 +130,7 @@ public final class TestHealthCodeTaxonomy
 	 * Reject blank field values.
 	 */
 	@Test
-	public void rejectBlankFieldValues() {
+	public void rejectBlankRequiredFields_ERROR() {
 		HealthCodeTaxonomy healthCodeTaxonomy
 			= HealthCodeTaxonomy.createCopy(masterHealthCodeTaxonomy);		
 		healthCodeTaxonomy.setName(null);
@@ -219,7 +227,7 @@ public final class TestHealthCodeTaxonomy
 	 * Check security violations.
 	 */
 	@Test
-	public void checkSecurityViolations() {
+	public void rejectSecurityViolations_MALICIOUS() {
 		HealthCodeTaxonomy healthCodeTaxonomy
 			= HealthCodeTaxonomy.createCopy(masterHealthCodeTaxonomy);		
 		
@@ -280,15 +288,6 @@ public final class TestHealthCodeTaxonomy
 		}
 	}
 	
-	
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

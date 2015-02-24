@@ -1,18 +1,19 @@
-package rifServices.test.services;
+package rifServices.test.businessConceptLayer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import rifServices.businessConceptLayer.GeoLevelToMap;
+import rifServices.system.RIFServiceException;
+import rifServices.system.RIFServiceSecurityException;
+import rifServices.system.RIFServiceError;
+import rifServices.test.AbstractRIFTestCase;
 
-import java.util.ArrayList;
-
+import static org.junit.Assert.*;
 import org.junit.Test;
 
-import rifServices.businessConceptLayer.HealthCodeTaxonomy;
-import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 
 /**
+ * This test case covers valid GeoLevelToMap, GeoLevelToMap, GeoLevelToMap, 
+ * GeoLevelToMap classes. Note that test methods exercise features which 
+ * do not require knowledge from the database.
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -21,11 +22,13 @@ import rifServices.system.RIFServiceException;
  * rates and relative risks for any given health outcome, for specified age 
  * and year ranges, for any given geographical area.
  *
+ * <p>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
  * is funded by the Public Health England as part of the MRC-PHE Centre for 
  * Environment and Health. Funding for this project has also been received 
  * from the United States Centers for Disease Control and Prevention.  
+ * </p>
  *
  * <pre> 
  * This file is part of the Rapid Inquiry Facility (RIF) project.
@@ -48,8 +51,8 @@ import rifServices.system.RIFServiceException;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
+ * @version
  */
-
 /*
  * Code Road Map:
  * --------------
@@ -72,8 +75,8 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public final class GetHealthCodeTaxonomies 
-	extends AbstractHealthCodeProviderTestCase {
+public final class TestGeoLevelToMap 
+	extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -82,15 +85,23 @@ public final class GetHealthCodeTaxonomies
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	/** The master geo level to map. */
+	private GeoLevelToMap masterGeoLevelToMap;
+		
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public GetHealthCodeTaxonomies() {
 
+	public TestGeoLevelToMap() {
+		
+		masterGeoLevelToMap 
+			= GeoLevelToMap.newInstance(
+				"LEVEL3", 
+				"level three");
 	}
 
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
@@ -98,79 +109,101 @@ public final class GetHealthCodeTaxonomies
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-	
+		
+	/**
+	 * accept a valid geo level to map with typical values.
+	 */
 	@Test
-	public void getHealthCodeTaxonomies_COMMON1() {
+	public void acceptValidInstance_COMMON() {
+
 		try {
-			User validUser = cloneValidUser();
-			ArrayList<HealthCodeTaxonomy> healthCodeTaxonomies
-				= rifStudySubmissionService.getHealthCodeTaxonomies(validUser);
-			assertEquals(3, healthCodeTaxonomies.size());
+			GeoLevelToMap geoLevelToMap 
+				= GeoLevelToMap.createCopy(masterGeoLevelToMap);
+			geoLevelToMap.checkErrors();
 		}
-		catch(RIFServiceException exception) {
+		catch(RIFServiceException rifServiceException) {
 			fail();
-		}		
+		}
+	}
+	
+	/**
+	 * A geo level to map is invalid if it has a blank name.
+	 */
+	@Test
+	public void rejectBlankRequiredFields_ERROR() {
+
+		try {
+			GeoLevelToMap geoLevelToMap 
+				= GeoLevelToMap.createCopy(masterGeoLevelToMap);
+			geoLevelToMap.setName("");
+			geoLevelToMap.checkErrors();
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_GEOLEVEL_TO_MAP, 
+				1);
+		}
+		
+
+		try {
+			GeoLevelToMap geoLevelToMap 
+				= GeoLevelToMap.createCopy(masterGeoLevelToMap);
+			geoLevelToMap.setName(null);
+			geoLevelToMap.checkErrors();
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_GEOLEVEL_TO_MAP, 
+				1);
+		}
+		
 	}
 
 	@Test
-	public void getHealthCodeTaxonomies_EMPTY1() {
-		try {
-			User emptyUser = cloneEmptyUser();
-			rifStudySubmissionService.getHealthCodeTaxonomies(emptyUser);
-			fail();
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException, 
-				RIFServiceError.INVALID_USER, 
-				1);
-		}		
-	}
-	
-	@Test
-	public void getHealthCodeTaxonomies_NULL1() {
-		try {
-			rifStudySubmissionService.getHealthCodeTaxonomies(null);
-			fail();
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
-				1);
-		}		
-	}
+	/**
+	 * Test geo level to map security violations.
+	 */
+	public void rejectSecurityViolations_MALICIOUS() {
 
-	@Test
-	public void getHealthCodeTaxonomies_NONEXISTENT1() {
+		GeoLevelToMap maliciousGeoLevelToMap
+			= GeoLevelToMap.createCopy(masterGeoLevelToMap);
+		maliciousGeoLevelToMap.setIdentifier(getTestMaliciousValue());
 		try {
-			User nonExistentUser = cloneNonExistentUser();
-			rifStudySubmissionService.getHealthCodeTaxonomies(nonExistentUser);
+			maliciousGeoLevelToMap.checkSecurityViolations();
 			fail();
 		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
-				1);
-		}		
-	}
+		catch(RIFServiceSecurityException rifServiceSecurityException) {
+			//pass
+		}
 	
-	@Test
-	public void getHealthCodeTaxonomies_MALICIOUS1() {
+		maliciousGeoLevelToMap
+			= GeoLevelToMap.createCopy(masterGeoLevelToMap);
+		maliciousGeoLevelToMap.setName(getTestMaliciousValue());
 		try {
-			User maliciousUser = cloneMaliciousUser();
-			rifStudySubmissionService.getHealthCodeTaxonomies(maliciousUser);
+			maliciousGeoLevelToMap.checkSecurityViolations();
 			fail();
 		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
-				1);
-		}		
-	}
+		catch(RIFServiceSecurityException rifServiceSecurityException) {
+			//pass
+		}
+		
+		maliciousGeoLevelToMap
+			= GeoLevelToMap.createCopy(masterGeoLevelToMap);
+		maliciousGeoLevelToMap.setDescription(getTestMaliciousValue());
+		try {
+			maliciousGeoLevelToMap.checkSecurityViolations();
+			fail();
+		}
+		catch(RIFServiceSecurityException rifServiceSecurityException) {
+			//pass
+		}
 
+	}
+			
 
 	// ==========================================
 	// Section Interfaces

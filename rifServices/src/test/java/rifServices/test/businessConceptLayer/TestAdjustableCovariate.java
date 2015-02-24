@@ -104,6 +104,14 @@ public final class TestAdjustableCovariate
 		masterAdjustableCovariate.setMaximumValue("5");
 	}
 
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
 	/**
 	 * Accept valid adjustable covariate.
 	 */
@@ -111,7 +119,7 @@ public final class TestAdjustableCovariate
 	/**
 	 * Accept an adjustable covariate with typical values.
 	 */
-	public void acceptValidAdjustableCovariate() {
+	public void acceptValidInstance_COMMON() {
 		try {
 			AdjustableCovariate adjustableCovariate1
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
@@ -132,7 +140,9 @@ public final class TestAdjustableCovariate
 	/**
 	 * An adjustable covariate is invalid if it has blank name
 	 */
-	public void rejectBlankName() {
+	public void rejectBlankRequiredFields_ERROR() {
+
+		//name is blank
 		try {
 			AdjustableCovariate adjustableCovariate
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
@@ -158,16 +168,8 @@ public final class TestAdjustableCovariate
 				RIFServiceError.INVALID_ADJUSTABLE_COVARIATE, 
 				1);
 		}		
-	}
-	
-	/**
-	 * Reject blank covariate type.
-	 */
-	@Test
-	/**
-	 * An adjustable covariate is invalid if it has no covariate type specified.
-	 */
-	public void rejectBlankCovariateType() {
+		
+		//covariate type is blank		
 		try {
 			AdjustableCovariate adjustableCovariate
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
@@ -180,16 +182,8 @@ public final class TestAdjustableCovariate
 				RIFServiceError.INVALID_ADJUSTABLE_COVARIATE, 
 				1);
 		}	
-	}
-
-	/**
-	 * Reject blank minimum value.
-	 */
-	@Test
-	/**
-	 * An adjustable covariate is invalid if it has a blank minimum value 
-	 */
-	public void rejectBlankMinimumValue() {
+		
+		//minimum value is blank
 		try {
 			AdjustableCovariate adjustableCovariate
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
@@ -215,16 +209,8 @@ public final class TestAdjustableCovariate
 				RIFServiceError.INVALID_ADJUSTABLE_COVARIATE, 
 				1);
 		}		
-	}
-	
-	/**
-	 * Reject blank maximum value.
-	 */
-	@Test
-	/**
-	 * An adjustable covariate is invalid if it has a blank maximum value
-	 */
-	public void rejectBlankMaximumValue() {
+		
+		//maximum value is blank		
 		try {
 			AdjustableCovariate adjustableCovariate5
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
@@ -237,9 +223,17 @@ public final class TestAdjustableCovariate
 				RIFServiceError.INVALID_ADJUSTABLE_COVARIATE, 
 				1);
 		}		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 	}
-	
-	
+		
 	/**
 	 * Reject invalid range values.
 	 */
@@ -249,7 +243,7 @@ public final class TestAdjustableCovariate
 	 * are not valid integers.  It should fail if a value is a String.  If it
 	 * is a binary integer score, it should not have a double number
 	 */
-	public void rejectInvalidRangeValues() {		
+	public void rejectInvalidRangeValues_ERROR() {		
 		try {
 			AdjustableCovariate adjustableCovariate1
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
@@ -310,7 +304,7 @@ public final class TestAdjustableCovariate
 	 * An adjustable covariate is invalid if its minimum value is greater than 
 	 * its maximum value
 	 */
-	public void rejectIllegalMinMaxBounds() {
+	public void rejectIllegalMinMaxBounds_ERROR() {
 		try {
 			AdjustableCovariate adjustableCovariate1
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
@@ -349,7 +343,7 @@ public final class TestAdjustableCovariate
 	/**
 	 * An adjustable covariate is invalid if it has multiple field errors
 	 */
-	public void rejectMultipleFieldErrors() {
+	public void rejectMultipleFieldErrors_ERROR() {
 		try {
 			AdjustableCovariate adjustableCovariate1
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
@@ -385,7 +379,7 @@ public final class TestAdjustableCovariate
 	 * Test security violations.
 	 */
 	@Test
-	public void testSecurityViolations() {
+	public void rejectSecurityViolations_MALICIOUS() {
 		AdjustableCovariate maliciousCovariate
 			= AdjustableCovariate.createCopy(masterAdjustableCovariate);
 		maliciousCovariate.setIdentifier(getTestMaliciousValue());
@@ -434,13 +428,6 @@ public final class TestAdjustableCovariate
 		
 	}
 	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

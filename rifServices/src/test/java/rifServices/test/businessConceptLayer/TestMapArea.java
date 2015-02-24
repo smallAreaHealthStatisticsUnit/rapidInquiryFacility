@@ -104,6 +104,16 @@ public final class TestMapArea
 
 	}
 
+	
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
+	
 	/**
 	 * Accept valid map area.
 	 */
@@ -111,8 +121,9 @@ public final class TestMapArea
 	/**
 	 * Accept a valid map area with typical values.
 	 */
-	public void acceptValidMapArea() {
-		MapArea mapArea = MapArea.newInstance("123", "123", "Brent");
+	public void acceptValidInstance_COMMON() {
+		MapArea mapArea 
+			= MapArea.newInstance("123", "123", "Brent");
 		try {
 			mapArea.checkErrors();
 		}
@@ -125,9 +136,14 @@ public final class TestMapArea
 	 * A map area is invalid if it has a blank identifier.
 	 */
 	@Test	
-	public void rejectBlankIdentifier() {
+	public void rejectBlankRequiredFields_ERROR() {
+
 		try {
-			MapArea mapArea = MapArea.newInstance(null, "123", "Brent");
+			MapArea mapArea 
+				= MapArea.newInstance(
+					null, 
+					"123", 
+					"Brent");
 			mapArea.checkErrors();
 			fail();
 		}
@@ -136,12 +152,19 @@ public final class TestMapArea
 		}
 
 		try {
-			MapArea mapArea = MapArea.newInstance("", "123", "Brent");
+			MapArea mapArea 
+				= MapArea.newInstance(
+					"", 
+					"123", 
+					"Brent");
 			mapArea.checkErrors();
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
-			checkErrorType(rifServiceException, RIFServiceError.INVALID_MAP_AREA, 1);
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_MAP_AREA, 
+				1);
 		}
 	}
 	
@@ -198,7 +221,7 @@ public final class TestMapArea
 	 * collections of map areas.
 	 */
 	@Test
-	public void identifyMapAreasInListAListB() {
+	public void acceptSharedMapAreasInListAListB_COMMON() {
 		//List Destination: {24, 25, 26, 27, 28, 40}
 		ArrayList<MapArea> destinationList = new ArrayList<MapArea>();
 		destinationList.add(MapArea.newInstance("24", "24", "24"));
@@ -236,7 +259,7 @@ public final class TestMapArea
 	 * A utility should identify map areas found in one list of 
 	 * map areas but not another.
 	 */
-	public void identifyMapAreasInListANotListB() {
+	public void acceptMapAreasInListANotListB_COMMON() {
 		//List Destination: {24, 25, 26, 27, 28, 40}
 		//List Source: {21, 25, 27, 40, 92}
 
@@ -276,7 +299,9 @@ public final class TestMapArea
 	 * @param mapAreas the map areas
 	 * @return the array list
 	 */
-	private ArrayList<DisplayableListItemInterface> sortItems(ArrayList<MapArea> mapAreas) {
+	private ArrayList<DisplayableListItemInterface> sortItems(
+		final ArrayList<MapArea> mapAreas) {
+
 		DisplayableItemSorter sorter = new DisplayableItemSorter();
 
 		for (MapArea mapArea : mapAreas) {
@@ -290,7 +315,7 @@ public final class TestMapArea
 	 * Test security violations.
 	 */
 	@Test
-	public void testSecurityViolations() {
+	public void rejectSecurityViolations_MALICIOUS() {
 		MapArea maliciousMapArea 
 			= MapArea.newInstance(getTestMaliciousValue(), "123", "Brent");
 		try {
@@ -314,14 +339,6 @@ public final class TestMapArea
 		
 		
 	}
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

@@ -95,7 +95,10 @@ public final class GetHealthCodesMatchingSearchText
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 
 	
 	@Test
@@ -429,10 +432,6 @@ public final class GetHealthCodesMatchingSearchText
 		}
 	}
 	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

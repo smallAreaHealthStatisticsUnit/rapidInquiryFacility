@@ -103,11 +103,20 @@ public final class TestNumeratorDenominatorPair
 		
 	}
 
+	
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	/**
 	 * Accept valid nd pair.
 	 */
 	@Test
-	public void acceptValidNDPair() {
+	public void acceptValidInstance_COMMON() {
 		NumeratorDenominatorPair ndPair
 			= NumeratorDenominatorPair.createCopy(masterNDPair);
 		
@@ -128,7 +137,7 @@ public final class TestNumeratorDenominatorPair
 	 * Reject empty field values.
 	 */
 	@Test
-	public void rejectEmptyFieldValues() {
+	public void rejectBlankRequiredFields_ERROR() {
 		NumeratorDenominatorPair ndPair
 			= NumeratorDenominatorPair.createCopy(masterNDPair);
 		ndPair.setNumeratorTableName(null);
@@ -243,7 +252,7 @@ public final class TestNumeratorDenominatorPair
 	 * Test security violations.
 	 */
 	@Test
-	public void testSecurityViolations() {
+	public void rejectSecurityViolations_MALICIOUS() {
 		NumeratorDenominatorPair maliciousNDPair
 			= NumeratorDenominatorPair.createCopy(masterNDPair);
 		maliciousNDPair.setIdentifier(getTestMaliciousValue());
@@ -301,14 +310,6 @@ public final class TestNumeratorDenominatorPair
 		}
 		
 	}
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

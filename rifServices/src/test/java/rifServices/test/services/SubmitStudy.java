@@ -117,10 +117,6 @@ public final class SubmitStudy
 		masterMaliciousCalculationMethod.setName(
 			fieldValidationUtility.getTestMaliciousFieldValue());
 	}
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
 
 	private CalculationMethod cloneValidCalculationMethod() {
 		return CalculationMethod.createCopy(masterValidCalculationMethod);
@@ -139,6 +135,13 @@ public final class SubmitStudy
 	}
 	
 	
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 	
 	
 	@Test
@@ -983,10 +986,6 @@ public final class SubmitStudy
 		fail();
 	}
 	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

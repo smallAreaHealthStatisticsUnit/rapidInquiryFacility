@@ -121,11 +121,21 @@ public final class TestDiseaseMappingStudyArea
 		masterDiseaseMappingStudyArea.addMapArea(mapArea2);		
 	}
 
+	
+// ==========================================
+// Section Accessors and Mutators
+// ==========================================
+
+// ==========================================
+// Section Errors and Validation
+// ==========================================
+
+
 	/**
 	 * Valid comparison area.
 	 */
 	@Test
-	public void validComparisonArea() {
+	public void acceptValidInstance_COMMON() {
 		try {
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
@@ -135,12 +145,14 @@ public final class TestDiseaseMappingStudyArea
 			fail();
 		}
 	}
-
+	
 	/**
 	 * error when comparison area has empty GeoLevelSelect.
 	 */
 	@Test	
-	public void emptyComparisonAreaFieldsE1() {
+	public void rejectBlankRequiredFields_ERROR() {
+		
+		//no geo level select specified
 		try {			
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
@@ -154,13 +166,8 @@ public final class TestDiseaseMappingStudyArea
 				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY_AREA, 
 				1);
 		}
-	}
-	
-	/**
-	 * error when comparison area has empty GeoLevelArea.
-	 */
-	@Test
-	public void emptyComparisonAreaFieldsE2() {
+
+		//no geo level area specified
 		try {			
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
@@ -174,13 +181,8 @@ public final class TestDiseaseMappingStudyArea
 				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY_AREA, 
 				1);
 		}
-	}
 
-	/**
-	 * error when comparison area has empty GeoLevelView.
-	 */
-	@Test
-	public void emptyComparisonAreaFieldsE3() {
+		//no geo level view specified
 		try {			
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
@@ -193,14 +195,9 @@ public final class TestDiseaseMappingStudyArea
 				rifServiceException, 
 				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY_AREA, 
 				1);
-		}
-	}
-	
-	/**
-	 * error when comparison area has empty GeoLevelToMap.
-	 */
-	@Test	
-	public void emptyComparisonAreaFieldsE4() {
+		}		
+		
+		//no geo level to map specified
 		try {			
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
@@ -214,13 +211,8 @@ public final class TestDiseaseMappingStudyArea
 				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY_AREA, 
 				1);
 		}
-	}	
-	
-	/**
-	 * error when comparison area has empty list of map areas.
-	 */
-	@Test	
-	public void emptyComparisonAreaFieldsE5() {
+
+		//no disease mapping study area specified
 		try {			
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
@@ -234,6 +226,13 @@ public final class TestDiseaseMappingStudyArea
 				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY_AREA, 
 				1);
 		}
+	}
+	
+	/**
+	 * error when comparison area has empty list of map areas.
+	 */
+	@Test	
+	public void rejectEmptyMapAreas_ERROR() {
 		
 		try {			
 			DiseaseMappingStudyArea diseaseMappingStudyArea
@@ -249,12 +248,12 @@ public final class TestDiseaseMappingStudyArea
 				1);
 		}
 	}	
-
+	
 	/**
 	 * Duplicate map areas e1.
 	 */
 	@Test
-	public void duplicateMapAreasE1() {
+	public void rejectDuplicateMapAreas_ERROR() {
 		try {			
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
@@ -280,7 +279,9 @@ public final class TestDiseaseMappingStudyArea
 	 * object used by the comparison area.
 	 */
 	@Test	
-	public void invalidGeoLevelValuesForComparisonAreaE1() {
+	public void rejectInvalidGeoLevelValuesForComparisonArea_ERROR() {
+		
+		//reject invalid geo level select
 		try {			
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
@@ -296,14 +297,8 @@ public final class TestDiseaseMappingStudyArea
 				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY_AREA, 
 				1);
 		}	
-	}	
-	
-	/**
-	 * check that error checking picks up errors in the geo level area
-	 * object used by the comparison area.
-	 */
-	@Test	
-	public void invalidGeoLevelValuesForComparisonAreaE2() {
+		
+		//reject invalid geo level area
 		try {			
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
@@ -319,14 +314,8 @@ public final class TestDiseaseMappingStudyArea
 				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY_AREA, 
 				1);
 		}		
-	}
-	
-	/**
-	 * check that error checking picks up errors in the geo level view
-	 * object used by the comparison area.
-	 */
-	@Test	
-	public void invalidGeoLevelValuesForComparisonAreaE3() {
+		
+		//reject invalid geo level view
 		try {			
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
@@ -341,16 +330,9 @@ public final class TestDiseaseMappingStudyArea
 				rifServiceException, 
 				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY_AREA, 
 				1);
-		}		
-	}	
-	
+		}			
 
-	/**
-	 * check that error checking picks up errors in the geo level to map
-	 * object used by the comparison area.
-	 */
-	@Test	
-	public void invalidGeoLevelValuesForComparisonAreaE4() {
+		//reject invalid geo level to map
 		try {			
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
@@ -365,29 +347,14 @@ public final class TestDiseaseMappingStudyArea
 				rifServiceException, 
 				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY_AREA, 
 				1);
-		}		
-	}
-		
-	/**
-	 * Valid disease mapping study area.
-	 */
-	@Test	
-	public void validDiseaseMappingStudyArea() {
-		try {
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
-			diseaseMappingStudyArea.checkErrors();
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}		
-	}
+		}	
+	}	
 	
 	/**
 	 * Test security violations.
 	 */
 	@Test
-	public void testSecurityViolations() {
+	public void rejectSecurityViolations_MALICIOUS() {
 		DiseaseMappingStudyArea maliciousDiseaseMappingArea
 			= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
 		maliciousDiseaseMappingArea.setIdentifier(getTestMaliciousValue());
@@ -468,15 +435,6 @@ public final class TestDiseaseMappingStudyArea
 		
 	}
 	
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

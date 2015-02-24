@@ -90,8 +90,13 @@ public final class TestMapAreaJSONGenerator {
 	// Section Accessors and Mutators
 	// ==========================================
 
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	@Test
-	public void test_COMMON1() {
+	public void acceptGeneratedJSONResult_COMMON1() {
 		ArrayList<MapArea> mapAreas = new ArrayList<MapArea>();
 
 		MapArea mapArea1
@@ -129,10 +134,6 @@ public final class TestMapAreaJSONGenerator {
 		assertEquals(expectedResult.toString(), actualResult);
 	}
 	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

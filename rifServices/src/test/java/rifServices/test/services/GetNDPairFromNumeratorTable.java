@@ -94,7 +94,10 @@ public final class GetNDPairFromNumeratorTable
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 	
 	@Test
 	public void getNDPairFromNumeratorTable_COMMON1() {
@@ -378,10 +381,6 @@ public final class GetNDPairFromNumeratorTable
 				1);
 		}				
 	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

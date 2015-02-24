@@ -93,6 +93,11 @@ public final class GetResultStudyGeneralInfo
 	// Section Accessors and Mutators
 	// ==========================================
 
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	@Test
 	public void getResultStudyGeneralInfo_COMMON1() {
 		
@@ -263,10 +268,6 @@ public final class GetResultStudyGeneralInfo
 				1);
 		}
 	}
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

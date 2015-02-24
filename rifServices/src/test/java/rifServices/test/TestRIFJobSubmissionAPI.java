@@ -96,7 +96,7 @@ public class TestRIFJobSubmissionAPI extends AbstractRIFTestCase {
 	 * Test security violations.
 	 */
 	@Test
-	public void testSecurityViolations() {
+	public void rejectSecurityViolations_ERROR() {
 		
 		
 		

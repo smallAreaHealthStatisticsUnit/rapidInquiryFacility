@@ -96,6 +96,9 @@ public final class GetAgeGroups
 	// Section Accessors and Mutators
 	// ==========================================
 
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 	
 	@Test
 	public void getAgeGroups_COMMON1() {
@@ -393,10 +396,6 @@ public final class GetAgeGroups
 	}	
 		
 	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

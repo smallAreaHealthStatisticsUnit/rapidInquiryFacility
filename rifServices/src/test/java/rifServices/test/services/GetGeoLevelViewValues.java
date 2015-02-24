@@ -93,6 +93,9 @@ public final class GetGeoLevelViewValues
 	// Section Accessors and Mutators
 	// ==========================================
 
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 	
 	@Test
 	public void getGeoLevelViewValues_COMMON1() {
@@ -372,10 +375,6 @@ public final class GetGeoLevelViewValues
 		}		
 	}
 	
-		
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

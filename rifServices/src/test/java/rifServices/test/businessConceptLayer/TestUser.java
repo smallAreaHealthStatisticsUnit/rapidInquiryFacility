@@ -99,11 +99,20 @@ public final class TestUser
 		masterUser = User.newInstance("jsmith", "11.111.11.228");
 	}
 
+	
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
 	/**
 	 * Accept valid user.
 	 */
 	@Test
-	public void acceptValidUser() {
+	public void acceptValidInstance_COMMON() {
 		User user = User.createCopy(masterUser);
 		try {
 			user.checkErrors();
@@ -117,7 +126,7 @@ public final class TestUser
 	 * Reject empty field values.
 	 */
 	@Test
-	public void rejectEmptyFieldValues() {
+	public void rejectBlankRequiredFields_ERROR() {
 
 		User user = User.newInstance("", "11.111.11.228");
 		try {
@@ -156,7 +165,7 @@ public final class TestUser
 	 * Check security violations.
 	 */
 	@Test
-	public void checkSecurityViolations() {
+	public void rejectSecurityViolations_MALICIOUS() {
 
 		User user 
 			= User.newInstance(getTestMaliciousValue(), "11.111.11.228");
@@ -179,14 +188,6 @@ public final class TestUser
 		}
 	
 	}
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces

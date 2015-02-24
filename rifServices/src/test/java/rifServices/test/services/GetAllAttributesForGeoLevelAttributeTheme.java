@@ -126,6 +126,10 @@ public final class GetAllAttributesForGeoLevelAttributeTheme
 	// Section Accessors and Mutators
 	// ==========================================
 
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	
 	@Override
 	protected GeoLevelAttributeSource cloneValidGeoLevelAttributeSource() {
 		return GeoLevelAttributeSource.createCopy(validGeoLevelAttributeSource);
@@ -610,10 +614,6 @@ public final class GetAllAttributesForGeoLevelAttributeTheme
 				1);
 		}
 	}
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	// ==========================================
 	// Section Interfaces
