@@ -314,246 +314,7 @@ If a class is not abstract, it should be marked "final".
 
 </table>
 
-
-
-<h2>Validation Decisions</h2>
-<table border="1">
-
-<tr>
-<td>
-<b>
-Decision
-</b>
-</td>
-
-<td>
-<b>
-Description
-</b>
-</td>
-</tr>
-
-
-<tr>
-<td>
-<a name="#validation1"></a>
-<a href="PresentationLayer.html">
-Validation-1
-</a>
-</td>
-
-<td>
-Assume the client applications will do no validation.  Validation code will be distributed
-between the business concept and data storage layers of the architecture.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#validation2"></a>
-<a href="PresentationLayer.html">
-Validation-2
-</a>
-</td>
-
-<td>
-Limit validation support to execution paths that support service API methods.  Specifically, focus 
-validation efforts on validating values the client application passes to methods of service APIs.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#validation3"></a>
-<a href="DesignForValidation.html">
-Validation-3
-</a>
-</td>
-
-<td>
-By default, the fields in business classes should be of type String.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#validation4"></a>
-<a href="PresentationLayer.html">
-Validation-4
-</a>
-</td>
-
-<td>
-Identify and prioritise the validation checks that are applied to the parameter values of service methods.
-Order the validation checks so they
-<ul>
-<li>
-cause validation to fail as quickly as possible and 
-</li>
-<li>
-wherever possible, give highest priority to fail a security validation check over other types of checks 
-</li>
-<li>
-minimise the load placed on the database.
-</li>
-</ul>
-</td>
-</tr>
-
-
-</table>
-
-
-
-
-
-
-
-<h2>Maintenance Decisions</h2>
-<table border="1">
-
-<tr>
-<td>
-<b>
-Decision
-</b>
-</td>
-
-<td>
-<b>
-Description
-</b>
-</td>
-</tr>
-
-
-<tr>
-<td>
-<a name="#maintenance1"></a>
-<a href="PresentationLayer.html">
-Maintenance-1
-</a>
-</td>
-
-<td>
-Maintain the text for all GUI components and text for error messages in a properties file.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#maintenance2"></a>
-<a href="PresentationLayer.html">
-Maintenance-2
-</a>
-</td>
-
-<td>
-Centralise code for creating and initialising Java Swing components in a single factory class.
-</td>
-</tr>
-
-
-<tr>
-<td>
-<a name="#maintenance3"></a>
-<a href="PresentationLayer.html">
-Maintenance-3
-</a>
-</td>
-
-<td>
-Create classes that render user interface features that appear across multiple tools.  
-Isolate these classes into a sub-project that shows no dependencies on 	classes that relate 
-specifically to the RIF.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#maintenance4"></a>
-<a href="PresentationLayer.html">
-Maintenance-4
-</a>
-</td>
-
-<td>
-Contain rather than inherit from GUI classes.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#maintenance5"></a>
-<a href="BusinessConceptLayer.html">
-Maintenance-5
-</a>
-</td>
-
-<td>
-Do not try to override the behaviour of <code>equals()</code> and 
-<code>getHashCode()</code>.  In the RIF code base, the effort needed to do this correctly outweighs 
-the performance benefit we would gain from using Java's collection classes.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#maintenance6"></a>
-<a href="DataStorageLayer.html">
-Maintenance-6
-</a>
-</td>
-<td>
-Instead of having one service API with many methods, develop a service API for each tool instead.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#maintenance7"></a>
-<a href="DataStorageLayer.html">
-Maintenance-7
-</a>
-</td>
-<td>
-Develop a hierarchy of super classes which can reduce repetitive coding efforts and hold the bulk 
-of implementation code.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#maintenance8"></a>
-<a href="DataStorageLayer.html">
-Maintenance-8
-</a>
-</td>
-<td>
-Make service classes invoke delegation classes to support most of the implementation for a 
-business task.  Ensure that the service class and the manager classes have a clearly defined 
-separation of concerns.
-</td>
-</tr>
-
-
-
-<tr>
-<td>
-<a name="#maintenance9"></a>
-<a href="DataStorageLayer.html">
-Maintenance-9
-</a>
-</td>
-<td>
-Create query formatter classes that standardise the way common types of SQL queries are constructed.  
-Allow the query formatters to support changes of case and have them adopt a consistent way of 
-indenting lines of SQL code to make them more readable.
-</td>
-</tr>
-
-</table>
-
+<hr>
 
 <h2>Business Concept Layer Decisions</h2>
 <table border="1">
@@ -631,8 +392,9 @@ describes the differences between two objects of the same class.
 
 </table>
 
+<hr>
 
-<h2>Concurrency Decisions</h2>
+<h2>Data Storage Layer Decisions</h2>
 <table border="1">
 
 <tr>
@@ -649,187 +411,41 @@ Description
 </td>
 </tr>
 
-
-
 <tr>
 <td>
-<a name="#concurrency1"></a>
-<a href="DesignForConcurrency.html">
-Concurrency-1
+<a name="#data_storage_layer1"></a>
+<a href="DataStorageLayer.html">
+Data Storage Layer-1
 </a>
 </td>
-<td>
-Identify scenarios for concurrent access that may occur in interactions between various pairings 
-of tools in the tool suite.  Systematically evaluate potential scenarios for concurrent writes and 
-stale reads situations.
-</td>
-</tr>
 
-<tr>
 <td>
-<a name="#concurrency1"></a>
-<a href="DesignForConcurrency.html">
-Concurrency-2
-</a>
-</td>
-<td>
-When the Data Loader Tool is loading data sets, the other tools should not be in use. When
-end user tools are being used, the Data Loader Tool should not be in use.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#concurrency3"></a>
-<a href="DesignForConcurrency.html">
-Concurrency-3
-</a>
-</td>
-<td>
-The Study Submission Tool should submit a new study as part of a single atomic database transaction.  Once a study
-has been created it becomes immutable.  However, it can be copied to make a new study.  Until a study description has 
-been completely created in the database, neither the Study Submission Tool nor the Study Viewer Tools should be able
-to access it.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#concurrency4"></a>
-<a href="DesignForConcurrency.html">
-Concurrency-4
-</a>
-</td>
-<td>
-The tool suite should allow only one instance of the Data Loader Tool and one instance of the IT Governance
-Tool to run at the same time.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#concurrency5"></a>
-<a href="DesignForConcurrency.html">
-Concurrency-5
-</a>
-</td>
-<td>
-In the Swing-based Data Loader Tool and Information Governance Tool, rely on guided data-entry features and modal
-dialogs in the GUI to help limit the likelihood of concurrency problems.  For the web-based Study Submission and 
-Study Result Viewer tools, assume they can may call any service method in any order.
+Classes that implement service APIs are responsible for: safe-copying parameter values; 
+checking for empty or malicious values in parameters; checking for invalid users; and 
+acquiring and relinquishing database connections from a pool of connections.
 </td>
 </tr>
 
 
 <tr>
 <td>
-<a name="#concurrency6"></a>
-<a href="DesignForConcurrency.html">
-Concurrency-6
-</a>
-</td>
-<td>
-Maintain test suites that will pass in a single-threaded environment.  Then adapt copies of those test suites
-for a multi-threaded environment.  Use the differences in pass results to identify potential concurrency problems.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#concurrency7"></a>
-<a href="DesignForConcurrency.html">
-Concurrency-7
-</a>
-</td>
-<td>
-Assume that various database vendors may not support concurrent access to records in exactly the same way.
-Further assume that none of the JDBC database connections are thread-safe, even though for some databases they
-definitely are.  Assume that the middleware must take its own measures to mediate concurrent access for queries it 
-applies to the database.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#concurrency8"></a>
-<a href="DesignForConcurrency.html">
-Concurrency-8
-</a>
-</td>
-<td>
-Assume that the front-end client applications will have multiple threads that may each be trying to alter parameter
-values the applications pass to the middleware service methods.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#concurrency9"></a>
-<a href="DesignForConcurrency.html">
-Concurrency-9
-</a>
-</td>
-<td>
-Perform a deep-copy of any mutable object that is passed to a service method by a client application.  This 
-action will prevent the client from altering parameter values while they are being processed by the middleware.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#concurrency10"></a>
-<a href="DesignForConcurrency.html">
-Concurrency-10
-</a>
-</td>
-<td>
-Where it is possible, favour using method variables over using class variables.  Class variables can be
-accessed by multiple threads, but local variables in methods will be used by only a single calling thread.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#concurrency11"></a>
-<a href="DesignForConcurrency.html">
-Concurrency-11
-</a>
-</td>
-<td>
-Declare variables as close as possible to when they will be first used.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#concurrency12"></a>
-<a href="DesignForConcurrency.html">
-Concurrency-12
+<a name="#data_storage_layer2"></a>
+<a href="DataStorageLayer.html">
+Data Storage Layer-2
 </a>
 </td>
 
 <td>
-Support "safe construction" of business objects.  In business classes, make constructors private and 
-rely on static factory methods <code>newInstance(...)</code> and 
-<code>createCopy(...)</code> to control the creation of new objects.
-</td>
-</tr>
-
-<tr>
-<td>
-<a name="#concurrency13"></a>
-<a href="DesignForConcurrency.html">
-Concurrency-13
-</a>
-</td>
-
-<td>
-The business classes do not appear to be used in any scenario which would cause them to be the source of 
-contention in a way that would affect the middleware.
+A Manager class is responsible for: calling the checkErrors() method of parameter values that 
+are business objects; constructing and executing SQL queries using 	parameter values; packaging 
+results as business objects; recording SQL exceptions and returning human-readable exception 
+messages; closing database resources associated with obtaining results.
 </td>
 </tr>
 
 </table>
+
+<hr>
 
 
 <h2>Security Decisions</h2>
@@ -1063,13 +679,213 @@ not expose sensitive information beyond what is necessary.
 </td>
 </tr>
 
+</table>
+
+<hr>
 
 
+<h2>Concurrency Decisions</h2>
+<table border="1">
+
+<tr>
+<td>
+<b>
+Decision
+</b>
+</td>
+
+<td>
+<b>
+Description
+</b>
+</td>
+</tr>
+
+
+
+<tr>
+<td>
+<a name="#concurrency1"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-1
+</a>
+</td>
+<td>
+Identify scenarios for concurrent access that may occur in interactions between various pairings 
+of tools in the tool suite.  Systematically evaluate potential scenarios for concurrent writes and 
+stale reads situations.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency1"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-2
+</a>
+</td>
+<td>
+When the Data Loader Tool is loading data sets, the other tools should not be in use. When
+end user tools are being used, the Data Loader Tool should not be in use.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency3"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-3
+</a>
+</td>
+<td>
+The Study Submission Tool should submit a new study as part of a single atomic database transaction.  Once a study
+has been created it becomes immutable.  However, it can be copied to make a new study.  Until a study description has 
+been completely created in the database, neither the Study Submission Tool nor the Study Viewer Tools should be able
+to access it.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency4"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-4
+</a>
+</td>
+<td>
+The tool suite should allow only one instance of the Data Loader Tool and one instance of the IT Governance
+Tool to run at the same time.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency5"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-5
+</a>
+</td>
+<td>
+In the Swing-based Data Loader Tool and Information Governance Tool, rely on guided data-entry features and modal
+dialogs in the GUI to help limit the likelihood of concurrency problems.  For the web-based Study Submission and 
+Study Result Viewer tools, assume they can may call any service method in any order.
+</td>
+</tr>
+
+
+<tr>
+<td>
+<a name="#concurrency6"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-6
+</a>
+</td>
+<td>
+Maintain test suites that will pass in a single-threaded environment.  Then adapt copies of those test suites
+for a multi-threaded environment.  Use the differences in pass results to identify potential concurrency problems.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency7"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-7
+</a>
+</td>
+<td>
+Assume that various database vendors may not support concurrent access to records in exactly the same way.
+Further assume that none of the JDBC database connections are thread-safe, even though for some databases they
+definitely are.  Assume that the middleware must take its own measures to mediate concurrent access for queries it 
+applies to the database.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency8"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-8
+</a>
+</td>
+<td>
+Assume that the front-end client applications will have multiple threads that may each be trying to alter parameter
+values the applications pass to the middleware service methods.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency9"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-9
+</a>
+</td>
+<td>
+Perform a deep-copy of any mutable object that is passed to a service method by a client application.  This 
+action will prevent the client from altering parameter values while they are being processed by the middleware.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency10"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-10
+</a>
+</td>
+<td>
+Where it is possible, favour using method variables over using class variables.  Class variables can be
+accessed by multiple threads, but local variables in methods will be used by only a single calling thread.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency11"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-11
+</a>
+</td>
+<td>
+Declare variables as close as possible to when they will be first used.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency12"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-12
+</a>
+</td>
+
+<td>
+Support "safe construction" of business objects.  In business classes, make constructors private and 
+rely on static factory methods <code>newInstance(...)</code> and 
+<code>createCopy(...)</code> to control the creation of new objects.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#concurrency13"></a>
+<a href="DesignForConcurrency.html">
+Concurrency-13
+</a>
+</td>
+
+<td>
+The business classes do not appear to be used in any scenario which would cause them to be the source of 
+contention in a way that would affect the middleware.
+</td>
+</tr>
 
 </table>
 
+<hr>
 
-<h2>Data Storage Layer Decisions</h2>
+<h2>Testability Decisions</h2>
 <table border="1">
 
 <tr>
@@ -1088,37 +904,350 @@ Description
 
 <tr>
 <td>
-<a name="#data_storage_layer1"></a>
-<a href="DataStorageLayer.html">
-Data Storage Layer-1
+<a name="#testability1"></a>
+<a href="DesigningForTestability.html">
+Testability-1
 </a>
+</td>
+<td>
+Test coverage will be limited to public methods of classes and service interfaces that are
+defined within the business concept layer.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#testability2"></a>
+<a href="DesigningForTestability.html">
+Testability-2
+</a>
+</td>
+<td>
+Test scenarios will be divided based on the following categories: common, uncommon, error, 
+and malicious.
+</td>
+</tr>
+
+
+</table>
+
+<hr>
+
+
+<h2>Validation Decisions</h2>
+<table border="1">
+
+<tr>
+<td>
+<b>
+Decision
+</b>
 </td>
 
 <td>
-Classes that implement service APIs are responsible for: safe-copying parameter values; 
-checking for empty or malicious values in parameters; checking for invalid users; and 
-acquiring and relinquishing database connections from a pool of connections.
+<b>
+Description
+</b>
 </td>
 </tr>
 
 
 <tr>
 <td>
-<a name="#data_storage_layer2"></a>
-<a href="DataStorageLayer.html">
-Data Storage Layer-2
+<a name="#validation1"></a>
+<a href="PresentationLayer.html">
+Validation-1
 </a>
 </td>
 
 <td>
-A Manager class is responsible for: calling the checkErrors() method of parameter values that 
-are business objects; constructing and executing SQL queries using 	parameter values; packaging 
-results as business objects; recording SQL exceptions and returning human-readable exception 
-messages; closing database resources associated with obtaining results.
+Assume the client applications will do no validation.  Validation code will be distributed
+between the business concept and data storage layers of the architecture.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#validation2"></a>
+<a href="PresentationLayer.html">
+Validation-2
+</a>
+</td>
+
+<td>
+Limit validation support to execution paths that support service API methods.  Specifically, focus 
+validation efforts on validating values the client application passes to methods of service APIs.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#validation3"></a>
+<a href="DesignForValidation.html">
+Validation-3
+</a>
+</td>
+
+<td>
+By default, the fields in business classes should be of type String.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#validation4"></a>
+<a href="PresentationLayer.html">
+Validation-4
+</a>
+</td>
+
+<td>
+Identify and prioritise the validation checks that are applied to the parameter values of service methods.
+Order the validation checks so they
+<ul>
+<li>
+cause validation to fail as quickly as possible and 
+</li>
+<li>
+wherever possible, give highest priority to fail a security validation check over other types of checks 
+</li>
+<li>
+minimise the load placed on the database.
+</li>
+</ul>
+</td>
+</tr>
+
+
+</table>
+
+
+<hr>
+
+<h2>Maintenance Decisions</h2>
+<table border="1">
+
+<tr>
+<td>
+<b>
+Decision
+</b>
+</td>
+
+<td>
+<b>
+Description
+</b>
+</td>
+</tr>
+
+
+<tr>
+<td>
+<a name="#maintenance1"></a>
+<a href="PresentationLayer.html">
+Maintenance-1
+</a>
+</td>
+
+<td>
+Maintain the text for all GUI components and text for error messages in a properties file.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#maintenance2"></a>
+<a href="PresentationLayer.html">
+Maintenance-2
+</a>
+</td>
+
+<td>
+Centralise code for creating and initialising Java Swing components in a single factory class.
+</td>
+</tr>
+
+
+<tr>
+<td>
+<a name="#maintenance3"></a>
+<a href="PresentationLayer.html">
+Maintenance-3
+</a>
+</td>
+
+<td>
+Create classes that render user interface features that appear across multiple tools.  
+Isolate these classes into a sub-project that shows no dependencies on 	classes that relate 
+specifically to the RIF.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#maintenance4"></a>
+<a href="PresentationLayer.html">
+Maintenance-4
+</a>
+</td>
+
+<td>
+Contain rather than inherit from GUI classes.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#maintenance5"></a>
+<a href="BusinessConceptLayer.html">
+Maintenance-5
+</a>
+</td>
+
+<td>
+Do not try to override the behaviour of <code>equals()</code> and 
+<code>getHashCode()</code>.  In the RIF code base, the effort needed to do this correctly outweighs 
+the performance benefit we would gain from using Java's collection classes.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#maintenance6"></a>
+<a href="DataStorageLayer.html">
+Maintenance-6
+</a>
+</td>
+<td>
+Instead of having one service API with many methods, develop a service API for each tool instead.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#maintenance7"></a>
+<a href="DataStorageLayer.html">
+Maintenance-7
+</a>
+</td>
+<td>
+Develop a hierarchy of super classes which can reduce repetitive coding efforts and hold the bulk 
+of implementation code.
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#maintenance8"></a>
+<a href="DataStorageLayer.html">
+Maintenance-8
+</a>
+</td>
+<td>
+Make service classes invoke delegation classes to support most of the implementation for a 
+business task.  Ensure that the service class and the manager classes have a clearly defined 
+separation of concerns.
+</td>
+</tr>
+
+
+
+<tr>
+<td>
+<a name="#maintenance9"></a>
+<a href="DataStorageLayer.html">
+Maintenance-9
+</a>
+</td>
+<td>
+Create query formatter classes that standardise the way common types of SQL queries are constructed.  
+Allow the query formatters to support changes of case and have them adopt a consistent way of 
+indenting lines of SQL code to make them more readable.
 </td>
 </tr>
 
 </table>
+
+<hr>
+
+
+<h2>Error Handling Decisions</h2>
+<table border="1">
+
+<tr>
+<td>
+<b>
+Decision
+</b>
+</td>
+
+<td>
+<b>
+Description
+</b>
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#errorHandling1"></a>
+<a href="ErrorHandling.html">
+Error Handling-1
+</a>
+</td>
+<td>
+Error handling will be designed to pass exceptions back to client applications via the
+service methods.  The signatures of all methods for a service interface will allow
+them to throw an exception.
+</td>
+</tr>
+
+
+
+<tr>
+<td>
+<a name="#errorHandling2"></a>
+<a href="ErrorHandling.html">
+Error Handling-2
+</a>
+</td>
+<td>
+
+All service methods will be able to throw a checked exception 
+<code>rifServices.system.RIFServiceException</code>.  This checked exception will support
+two features:
+<ul>
+<li>
+an error code that provides a machine-readable cause for the error.  The error codes will
+come from some enumerated type.
+</li>
+<li>
+a collection of human-readable error messages that client applications can display or
+log for the benefit of end-users.
+</li>
+</ul>
+</td>
+</tr>
+
+<tr>
+<td>
+<a name="#errorHandling3"></a>
+<a href="ErrorHandling.html">
+Error Handling-3
+</a>
+</td>
+<td>
+
+All checked exceptions should be caught and logged before being re-thrown using a
+<code>RIFServiceException</code> instead. 
+
+</td>
+</tr>
+
+</table>
+
+
 
 </section>
 

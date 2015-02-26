@@ -1,0 +1,490 @@
+<head>
+<title>
+Error Handling
+</title>
+
+<meta 
+	name="author" 
+	lang="en" 
+	content="Kevin Garwood">
+<meta 
+	name="keywords" 
+	lang="en" 
+	content="Rapid Inquiry Facility, RIF, environmental health, Kevin Garwood">
+	
+<link rel="stylesheet" href="../rifDesignManual.css" type="text/css">
+</head>
+
+<body>
+
+<header>
+<!-- Top Banner -->
+
+
+<table bgcolor="#B9CDE5">
+
+<tr>
+<td width="1000">
+<img src="../img/RIFMainBanner.jpg">
+</td>
+</tr>
+
+
+
+<tr>
+<td width="1000">
+
+<table align="right">
+<tr">
+<td width="16%">
+<a href="../index.html">Welcome</a>
+</td>
+
+<td width="16%">
+	<a href="../history/DesignHistory.html">History</a>
+</td>
+<td width="16%">
+<a href="../history/Design.html">Design</a>
+</td>
+<td width="16%">
+<a href="../tools/Tools.html">Tools</a>
+</td>
+<td width="16%">
+<a href="../database/Database.html">Tools</a>
+</td>
+<td width="20%">
+<a href="../aboutUs/AboutUs.html">About Us</a>
+</td>
+</tr>
+</table>
+
+</td>
+</tr>
+</table>
+
+</header>
+
+<nav id="sideBarNavigationLinks">
+<!-- Left Side Bar -->
+
+<p>
+<b>Client Applications</b>
+<p></p>
+<p></p>
+<p></p>
+<br>
+
+<b>Middleware</b>
+<br>
+
+<ul>
+
+<li>
+<a href="CodingPhilosophy.html">Coding Philosophy</a>
+</li>
+
+<li>
+<a href="SummaryOfDesignDecisions.html">Summary of Design Decisions</a>
+</li>
+
+<li>
+<a href="GeneralArchitecture.html">General Architecture</a>
+	<ul>
+	<li>
+		<a href="PresentationLayer.html">Presentation Layer</a>
+	</li>
+	<li>
+		<a href="BusinessConceptLayer.html">Business Concept layer</a>
+	</li>
+	<li>
+		<a href="DataStorageLayer.html">Data Storage Layer</a>
+	</li>
+	</ul>
+</li>
+
+<li>
+<a href="WebServices.html">Web Services</a>
+</li>
+
+<li>
+<a href="FileFormats.html">Support for File Formats</a>
+</li>
+
+<li>
+<b>Design Aspects</b>
+	<ul>
+	<li>
+		<a href="DesigningForSecurity.html">Security</a>
+	</li>
+	<li>
+		<a href="DesigningForConcurrency.html">Concurrency</a>
+	</li>
+	<li>
+		<a href="DesigningForTestability.html">Testability</a>
+	</li>
+	<li>
+		<a href="DesigningForValidation.html">Validation</a>
+	</li>
+	<li>
+		<a href="DesigningForMaintenance.html">Maintenance</a>
+	</li>
+	</ul>
+</li>
+
+<li>
+<a href="CodeRoadMap.html">Code Road Map</a>
+</li>
+
+<li>
+<a href="CodingConventions.html">Coding Conventions</a>
+</li>
+
+</ul>
+
+<br>
+<b>Database</b>
+<p></p>
+<p></p>
+<p></p>
+
+</nav>
+
+
+<section>
+<!-- Main Content Area -->
+
+
+<h1>Error Handling</h1>
+<p>
+The ability for a code base to identify and recover from errors is an important aspect of design
+that can influence the way validation is supported and the way test cases are designed.  In this
+section, we develop an approach for error handling that meets three objectives:
+<ul>
+<li>
+it allows the middleware and client applications to recover gracefully from an error
+</li>
+<li>
+it provides client applications with a human-readable explanation of the error that contains 
+minimal sensitive data.
+</li>
+<li>
+it provides automated test suites with a machine-readable code that identifies specific
+causes of errors.
+</li>
+</ul>
+</p>
+
+<h2>
+Limiting the scope of concern of error handling
+</h2>
+Our first task is to limit our concern about what scenarios will cause errors.  We turn to 
+two general design decisions:
+
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#gen_design4">
+General Design-4
+</a>
+</b>: 
+Wherever possible, limit the paths of execution that are likely to occur.
+</i>
+</font>
+</blockquote>
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#gen_design7">
+General Design-7
+</a>
+</b>: 
+Encapsulate business concept and data storage layers of the architecture through service APIs.  
+Do not allow clients to know which class is implementing the service interfaces.
+</i>
+</font>
+</blockquote>
+
+
+<p>
+These two decisions mean that the only execution paths we need to be concerned about are 
+those that begin by using the service methods.  Therefore, we can assume that all
+exceptions that are thrown or caught will occur along these paths.
+</p>
+
+
+<p>
+If an error occurs, client applications should be informed by a thrown exception.  They should
+not rely on interpreting errors based on the nature of returned results. Therefore, all
+methods specified in service interfaces should be able to throw an exception.
+</p>
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#errorHandling1">
+Error Handling-1
+</a>
+</b>: 
+Error handling will be designed to pass exceptions back to client applications via the
+service methods.  The signatures of all methods for a service interface will allow
+them to throw an exception.
+</i>
+</font>
+</blockquote>
+
+
+
+
+<h2>
+Designing an application exception class that appeals to human and machine users
+</h2>
+<p>
+The service methods need to appeal to both client applications that service end users and
+to automated test suites that simply compare expected and actual outcomes.  When a test 
+suite tries induce the middleware to throw exceptions, it may not be sufficient to know 
+that an exception did or did not occur.  Test cases need to verify that an exception 
+was caused for a specific reason.  
+</p>
+
+<p>
+One way to provide test cases with a reason is to make a subclass of 
+<code>java.lang.Exception</code> for every type of problem we can envision.  When the service
+method throws an exception, the test code can catch the exception and verify the class of
+the exception.  However, the hierarchy of exception classes may prove unreliable if new subclasses are added
+that might make the cause of a problem ambiguous.
+</p>
+
+<p>
+A better way is to provide a test with an error code.  Rather than returning an arbitrary number,
+we can return a more meaningful value defined in an enumerated type.  The enumeration 
+<code>rifServices.system.RIFServiceError</code> lists a large number of specific errors that 
+allow test cases to be very specific in the kinds of exception cases they test.
+</p>
+
+<p>
+The general <code>java.lang.Exception</code> class allows one error message to be passed.  However,
+it may be important to include a distinct message for every problem that was detected when the 
+problem was detected.  For example, a call to <code>investigation.checkErrors()</code> may 
+reveal multiple blank fields.  It is useful for client applications if they can display 
+multiple discrete causes of the exception from which they are trying to recover.
+</p>
+
+<p>
+In order to appeal to both human and machine users, we developed the class 
+<code>rifServices.system.RIFServiceException</code>.  The following diagram illustrates
+how its properties are used by client applications.
+</p>
+
+<p>
+<img src="../img/RIFExceptionAnatomy.jpg">
+
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#errorHandling2">
+Error Handling-2
+</a>
+</b>: 
+All service methods will be able to throw a checked exception 
+<code>rifServices.system.RIFServiceException</code>.  This checked exception will support
+two features:
+<ul>
+<li>
+an error code that provides a machine-readable cause for the error.  The error codes will
+come from some enumerated type.
+</li>
+<li>
+a collection of human-readable error messages that client applications can display or
+log for the benefit of end-users.
+</li>
+</ul>
+</i>
+</font>
+</blockquote>
+
+
+<h2>
+Logging exceptions before throwing them
+</h2>
+<p>
+In order to help ensure that <code>RIFServiceException</code> is the only kind of checked
+exception a client could expect, the middleware needs to try and trap and log all other 
+checked exceptions.  For example, suppose executing a query produces an 
+<code>SQLException</code>.  The exception should be caught and logged so that the original
+stack trace for the error is preserved.  A new instance of <code>RIFServiceException</code>
+which describes the error for a client should be created and thrown.  The error messages
+will provide useful information for end users and wherever possible they will contain 
+a minimum of sensitive information.
+</p>
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#errorHandling3">
+Error Handling-3
+</a>
+</b>: 
+All checked exceptions should be caught and logged before being re-thrown using a
+<code>RIFServiceException</code> instead. 
+</i>
+</font>
+</blockquote>
+
+<p>
+Not all <code>RIFServiceException</code> will be created as a way of masking other
+exceptions.  We expect that most instances of the exception will be generated from
+the <code>checkErrors()</code> and <code>checkSecurityViolations()</code> methods 
+that appear in business classes.  To ensure that all exceptions are captured for 
+auditing, we need to log <code>RIFServiceException</code> instances as well.  However,
+they should all be logged and re-thrown to the client application at the same point
+in the code.  We decided that the service classes will be responsible for catching
+and rethrowing them.
+</p>
+
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#errorHandling4">
+Error Handling-4
+</a>
+</b>: 
+All instances of <code>RIFServiceException</code> that are generated in the code
+base will be thrown until they are caught by service classes.  The service classes
+will then log these exceptions before returning them to client applications.
+</i>
+</font>
+</blockquote>
+
+<h2>
+Supporting graceful recovery through <code>finally {...}</code> code blocks.
+</h2>
+<p>
+In order to promote graceful recovery for the middleware, we make use of the
+<code>finally</code> part of the try {..} catch {...} finally {...} exception 
+handling mechanism that Java provides.  We use the finally {...} block to ensure
+that whether a method returns normally or throws an exception, that persistent
+resources are reclaimed or closed.  The two examples that follow show the 
+importance of cleaning up resources using this mechanism.  
+
+
+<h3>
+Gracefully closing <code>PreparedStatement</code> and <code>ResultSet</code> resources
+</h3>
+All methods in the manager classes that execute SQL queries use the following
+code template: 
+
+<pre>
+	PreparedStatement statement = null;
+	ResultSet resultSet = null;
+	try {
+	
+	   //do query
+	   statement = connection.createPreparedStatement([[queryText]]);
+	   
+	   ...
+	   ...
+	
+	   resultSet = statement.executeQuery();
+	   ...
+	   ...
+	   //return results;
+	}
+	catch(SQLException sqlException) {
+          logSQLException(sqlException);
+	   
+          String errorMessage
+             = RIFServiceMessages.getMessage(
+                "...",
+                paramA,
+                paramB,
+                ...);
+
+          RIFServiceException rifServiceException
+             = new RIFServiceException(
+                [[[some error code, eg: RIFServiceError.INVALID_INVESTIGATION]]],
+                errorMessage);	
+                
+          throw rifServiceException;      
+	}
+	finally {
+	   SQLQueryUtility.close(statement);
+	   SQLQueryUtility.close(resultSet);	
+	}
+</pre>
+
+<p>
+In this example, if an exception is thrown after <code>statement</code> or
+<code>resultSet</code> have been assigned values, then may not be closed properly.
+</p>
+
+<h3>
+Gracefully recovering pooled database connections
+</h3>
+<p>
+The other major example where the <code>finally {...}</code> block is used is
+when the service classes are assigning and reclaiming database connections.
+
+<code>
+<pre>
+   Connection connection = null;
+   try {
+      Connection connection
+         = sqlConnectionManager.assignPooledReadConnection(user);
+      ...
+      //do something
+      ...
+   
+   }
+   catch(RIFServiceException rifServiceException) {
+       logException(
+          user,
+          [[method name]],
+          rifServiceException); 
+   }
+   finally {
+      sqlConnectionManager.reclaimPooledReadConnection(
+         user,
+         connection); 
+   }
+   
+</pre>
+</code>
+
+<p>
+This code block ensures that when exceptions occur, the connection manager
+is still able to reclaim the connection that was used.  If the <code>finally</code>
+block were not there, then repeated exceptions could cause the database to run
+out of available database connections.
+</p>
+
+
+
+</pre>
+
+
+
+
+
+
+
+</section>
+
+<footer>
+<!-- Bottom Footer -->
+Copyright (c) Small Area Health Statistics Unit, Imperial College.
+</footer>
+
+
+
+</body>
+</html>
