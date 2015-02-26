@@ -420,9 +420,4 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 		final User user,
 		final StudySummary studySummary)
 		throws RIFServiceException;
-
-	public void initialise(final Object startupParameter)
-		throws RIFServiceException;
-	
-	public boolean isInitialised();
 }
