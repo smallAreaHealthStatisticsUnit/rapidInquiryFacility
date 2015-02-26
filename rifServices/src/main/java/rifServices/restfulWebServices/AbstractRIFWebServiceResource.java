@@ -364,6 +364,38 @@ abstract class AbstractRIFWebServiceResource {
 			result);		
 	}
 
+	//TOUR_WEB_SERVICES-3
+	/*
+	 * You'll find that most of the important code for advertising a lot of
+	 * service methods is in this class.  Each of these methods follows
+	 * a similar sequence of steps:
+	 * (1) "Inflate" URL parameters so that we end up with Java objects.
+	 * (2) Call the corresponding service method in the Java service API.  Note
+	 * that the service has no idea that it is being used within a web service.
+	 * (3) Convert results into Java objects that can be easily transformed into a
+	 * JSON format.  These are the classes that the 
+	 * com.fasterxml.jackson.databind.ObjectMapper class uses.
+	 * (4) Call serialisation methods that will produce a String value that is a 
+	 * JSON representation of the objects.
+	 * (5) Use the web service response generator to determine whether the
+	 * response should tell the client that the String value is JSON or plain text.
+	 * 
+	 * Originally, the service API was designed to use parameter values that were 
+	 * instances of RIF business classes and not just a String value taken from the
+	 * URL.  The reason for this was that we didn't want the API to strictly cater to 
+	 * clients that would pass parameters in a URL.  The "xxx" is a temporary measure
+	 * I've taken to ensure we can inflate a multi-field Geography RIF object from a single
+	 * geography String value that is passed by a browser.  In future, we may elect to either
+	 * (1) require the URL to pass more information or
+	 * (2) relax the validation requirements and shorten the parameter list used to 
+	 * create a new instance of Geography.
+	 * 
+	 * In these methods, the studySubmissionService has no awareness of what is calling it.  We've
+	 * done this to help insulate the core part of our data storage and business concepts from
+	 * changes that may occur when we are supporting web services. 
+	 * 
+	 * Please visit the next step of the tour, where we visit the GeoLevelArea proxy class
+	 */
 	protected Response getGeoLevelAreaValues(
 		final HttpServletRequest servletRequest,
 		final String userID,
@@ -372,9 +404,8 @@ abstract class AbstractRIFWebServiceResource {
 						
 		String result = "";
 		
-		GeoLevelAreasProxy geoLevelAreasProxy = new GeoLevelAreasProxy();
-		
 		try {
+
 			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
 			Geography geography = Geography.newInstance(geographyName, "xxx");
@@ -395,6 +426,8 @@ abstract class AbstractRIFWebServiceResource {
 			for (GeoLevelArea area : areas) {
 				geoLevelAreaNames.add(area.getName());
 			}
+
+			GeoLevelAreasProxy geoLevelAreasProxy = new GeoLevelAreasProxy();
 			geoLevelAreasProxy.setNames(geoLevelAreaNames.toArray(new String[0]));
 			result 
 				= serialiseSingleItemAsArrayResult(
@@ -409,7 +442,31 @@ abstract class AbstractRIFWebServiceResource {
 					exception);			
 		}
 		
-		
+		//TOUR_WEB_SERVICES-6
+		/*
+		 * By now we have a String value that contains the data of the 
+		 * GeoLevelArea objects expressed in the JSON format.  The last issue
+		 * we have to deal with is whether we indicate in the response that the
+		 * data are in plain text or in JSON.  The web browsers use this 
+		 * information to determine how they will display results on the screen.
+		 * 
+		 * Earlier in development we realised that although Chrome seemed to 
+		 * render a JSON response correctly, IE kept asking the user if they
+		 * wanted to save the response as a document.  This usually indicates that
+		 * the browser isn't sure what to do with what the web service has given it.
+		 * 
+		 * After we did a little investigation, we found that we would probably
+		 * need a way of deciding whether a client should be given a 
+		 * "application/json" or "text/plain" response.  
+		 * 
+		 * In order to make that decision, we needed additional information that gets 
+		 * provided in the servletRequest object.
+		 * 
+		 * Before you return a result in a web service method, call the method below.
+		 * It hides a lot of complicated decisions that need to be made to make
+		 * the decision of returning application/json or text/plain.
+		 * 
+		 */
 		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);		
@@ -775,6 +832,18 @@ abstract class AbstractRIFWebServiceResource {
 		return(new String(data));
 	}
 	
+	//TOUR_WEB_SERVICES-5
+	/*
+	 * So far in our tour, we have created a GeoLevelAreasProxy object that can contain
+	 * data from an array of GeoLevelArea objects which considers the needs of JavaScript
+	 * clients.  By catering to a particular type of front end client, the proxy classes
+	 * are almost between presentatation and business concept layers.  
+	 * 
+	 * All the methods beginning with "serialise" are meant to hide references to
+	 * Jackson's ObjectMapper class.  We do this so we have a minimum amount of code that is
+	 * dependent on referencing Jackson's class libraries. 
+	 * 
+	 */
 	protected String serialiseSingleItemAsArrayResult(
 		final HttpServletRequest servletRequest,
 		final Object objectToWrite) 

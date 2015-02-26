@@ -1,6 +1,5 @@
 package rifServices.restfulWebServices;
 
-import rifServices.system.RIFServiceStartupOptions;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
@@ -68,6 +67,19 @@ import java.util.HashSet;
  * (5)            Section Interfaces
  * (4)            Section Override
  *
+ */
+
+
+//TOUR_WEB_SERVICES-1
+/*
+ * This describes a service that will be accessible by client applications.
+ * For example, the web-based study submission written in JavaScript will
+ * make Ajax calls using a url like this:
+ * 
+ * http://localhost:8080/rifServices/studySubmission/getGeographies?userID=kgarwood
+ * 
+ * The "studySubmission" part of the URL comes from the ApplicationPath annotation
+ * shown below.
  */
 
 @ApplicationPath("/studySubmission")

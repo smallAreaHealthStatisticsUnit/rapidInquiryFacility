@@ -6,6 +6,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 
+//TOUR_WEB_SERVICES-7
+/*
+ * We finish the web services tour by looking at the issues that the
+ * WebServiceResponseGenerator has to consider when it decides whether
+ * a Response should use "application/json" or "text/plain".  Please read the
+ * main class comments below.  It's not easy, and represents a future area of development! 
+ */
+
+
 /**
  * This class was developed to help configure the content type that can be 
  * returned in the response for a web service method.  The class was developed

@@ -204,7 +204,54 @@ public class RIFStudySubmissionWebServiceResource
 			userID,
 			geographyName);
 	}	
-	
+
+	//TOUR_WEB_SERVICES-2
+	/*
+	 * This advertises the web service for returning a collection of geographic
+	 * areas.  For example, if userID=kgarwood, geographyName=UK and
+	 * geoLevelSelectName="region", it might return something like:
+	 * "Northwest England", "Southwest England", etc.
+	 * 
+	 * The annotations help Jersey advertise this method to clients and 
+	 * they tell it how to advertise the results.
+	 * 
+	 * Here "Path" helps determine how the web service is going to appear
+	 * in the URL that is used by the client.  Here it is used in a call
+	 * like:
+	 * 
+	 * http://localhost:8080/rifServices/studySubmission/getGeoLevelAreaValues?
+	 * userID=kgarwood&geographyName=SAHSULAND&geoLevelSelectName=LEVEL2
+	 * 
+	 * The QueryParam annotations help map parameters in the URL to parameters
+	 * in Java.  In this example, the formal String parameter userID would be
+	 * assigned kgarwood, geographyName would be assigned 'SAHSULAND' and
+	 * geoLevelSelectName would be assigned LEVEL2.
+	 * 
+	 * Wherever possible we try to ensure that the names of parameters in the URL
+	 * are exactly the same as the parameter names in the method that is used in 
+	 * a web service.
+	 * 
+	 * The Produces annotation path is used to tell the client that the return
+	 * value is in the format application/json.  We have this annotation set for
+	 * all of the web service methods.  However, we recently discovered that
+	 * IE 11+ and Google Chrome do not support JSON format equally well.
+	 * 
+	 * We now end up overriding the assumption that we return "application/json"
+	 * and at some point we may try to remove the Produces tag.
+	 * 
+	 * Because so many web service methods will be shared between study submission
+	 * and study result retrieval, we have moved a lot of the method implementations
+	 * into a superclass.
+	 * 
+	 * Originally I tried to move all of these annotations into the superclass as well.
+	 * However, I encountered an error and (consulting poor memory!) it either indicated that 
+	 * indicated there was confusion about this method being in an abstract class or that
+	 * there was some kind of ambiguous interpretation about whether the method was part
+	 * of the study submission or study result retrieval service.
+	 * 
+	 * The problems disappeared when I made copies of the annotations in the subclassess,
+	 * as the code below shows.  This problem should be revisited later on.
+	 */
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelAreaValues")
