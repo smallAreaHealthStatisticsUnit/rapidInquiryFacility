@@ -11,14 +11,14 @@ CONVERTS GEOJSON(MAX 1MB) TO TOPOJSON <br/>
 </p>
 <h2> simplify </h2>
 <p>
-COPY / UNZIP / SIMPLIFY FIRST SHAPEFILE FOUND <br/>
+COPY / UNZIP / SIMPLIFY FIRST SHAPEFILE FOUND IN ZIPPED FOLDER <br/>
  Only POST requests are processed <br/>
  Expects a shapefile as input <br/>
  Simplified shapefile as output  <br/>
  NOTE: ADM-ZIP is blocking <br/>
 </p>
 
-<h6>The API make use of the following modules downloadable via npm:</h6>
+<h5>The API make use of the following modules downloadable via npm:</h5>
 <ul>
   <li>Express</li>
   <li>ADM-ZIP</li>
@@ -26,7 +26,7 @@ COPY / UNZIP / SIMPLIFY FIRST SHAPEFILE FOUND <br/>
   <li>Connect-Busboy</li>
   <li>Mapshaper</li>
 </ul>
-<h2>To test using the request script the following are also needed:</h2>
+<h6>To test using the request script the following are also needed:</h6>
 <ul>
   <li>Request</li>
   <li>Form-Data</li>
