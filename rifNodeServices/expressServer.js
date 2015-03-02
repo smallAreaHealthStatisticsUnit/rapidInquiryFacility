@@ -1,7 +1,7 @@
 var express = require('express'),
     toTopojson = require('./routes/toTopojson'),
     simplify = require('./routes/simplify'),
-     busboy = require('connect-busboy');
+    busboy = require('connect-busboy');
 
 
 var app = express();

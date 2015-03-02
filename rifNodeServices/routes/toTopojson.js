@@ -32,36 +32,41 @@ var inspect = require('util').inspect,
          } else {
             return 10000;
          }
-     };
+     },
+     TempData = function(){
+        this.fullData = '';
+        this.fName = '';
+        this.topology = '';
+        this.withinLimit = true;
+        
+        return this; 
+     },
+     UPPER_LIMIT = 1e6;
+     
 
 
 
 exports.convert = function(req, res) {
-    var fullData = '',
-         fName = '',
-         topology = '',
-         withinLimit = true,
-         UPPER_LIMIT = 1e6;
 
       req.setEncoding('utf-8');
       res.setHeader("Content-Type", "text/plain");
+      var d = new TempData();
     
       if (req.method == 'POST') {
-           
-         console.log("___");  
+            
          var options = {
             verbose: false,
             //quantization:default
          };
           
          req.busboy.on('file', function(fieldname, stream, filename, encoding, mimetype) {
-            fName = filename;
+            d.fName = filename;
             stream.on('data', function(data) {
-               fullData += data;  
-               if (fullData.length > UPPER_LIMIT) { // Max geojs allowed 2MB
-                  withinLimit = false;  
+               d.fullData += data;  
+               if (d.fullData.length > d.UPPER_LIMIT) { // Max geojs allowed 2MB
+                  d.withinLimit = false;  
                   try { 
-                      throw new Error("Stopping file upload...");
+                      console.log("Stopping file upload...");
                   } catch (e) { 
                       res.end("File upload stopped."); 
                   };     
@@ -70,13 +75,13 @@ exports.convert = function(req, res) {
 
             stream.on('end', function() {
                console.log("end");
-               if (fName != '' && withinLimit) {
+               if (d.fName != '' && d.withinLimit) {
                   try {
-                     jsonData = JSON.parse(fullData);
-                     topology = topojson.topology({
+                     jsonData = JSON.parse(d.fullData);
+                     d.topology = topojson.topology({
                         collection: jsonData
                      }, options);
-                     var output = JSON.stringify(topology); 
+                     var output = JSON.stringify(d.topology); 
                      res.write(output);  
                   } catch (e) {
                      res.write("Your input file does not seem to be valid." );
@@ -97,7 +102,7 @@ exports.convert = function(req, res) {
          });
           
         req.busboy.on('finish', function() {
-            if(withinLimit){
+            if(d.withinLimit){
                 res.end();
             }
          });
