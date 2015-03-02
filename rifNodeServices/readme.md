@@ -1,4 +1,4 @@
-<h1>Node Web Services API for RIF 4.0:</h1>
+<h1>Node Web Services API for RIF 4.0</h1>
 <h2> toTopojson </h2>
 <p>
 CONVERTS GEOJSON(MAX 1MB) TO TOPOJSON <br/>
@@ -18,7 +18,7 @@ COPY / UNZIP / SIMPLIFY FIRST SHAPEFILE FOUND <br/>
  NOTE: ADM-ZIP is blocking <br/>
 </p>
 
-<h2>The API make use of the following modules downloadable via npm:</h2>
+<h6>The API make use of the following modules downloadable via npm:</h6>
 <ul>
   <li>Express</li>
   <li>ADM-ZIP</li>
