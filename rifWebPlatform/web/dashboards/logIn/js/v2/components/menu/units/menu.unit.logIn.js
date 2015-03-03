@@ -1,57 +1,63 @@
-RIF.menu.logIn = ( function( _dom ) {
+RIF.menu.logIn = (function(_dom) {
 
-  var parent = this,
+   var parent = this,
 
-
-    _requests = {
-        
-     isLoggedIn: function( params ){
-         RIF.getIsLoggedIn( _callbacks['isLoggedIn'], params);
-     },    
-      
-      logIn: function( params ) {
-        RIF.getLogIn(_callbacks['logIn'], params);
-      },
-        
-    },
-
-    _callbacks = {
-        
-      isLoggedIn: function(){
-         if (this[0] == 't'){//
-            window.top.location = "../diseaseSubmission/#"+ RIF.user;//default to this for now
-         };
-      },   
-          
-      logIn: function() {
-          if (typeof this === 'object' && this.hasOwnProperty('errorMessages')){
-              var t = this.errorMessages[0];
-                RIF.statusBar(t, 1, 1);
-          }else{  
-              window.top.location = "../diseaseSubmission/#"+ RIF.user;//default to this for now
-          }
-      }
-        
-    },
-
-
-    _p = {
-
-      request: function( reqName, params ) {
-        _requests[ reqName ]( params );
+      _redirect = function() {
+         var url = RIF.getRedirectFromURL();
+         window.top.location = "../" + url + "/?user=" + RIF.user;
       },
 
-      callback: function( clbkName, params ) {
-        _callbacks[ clbkName ]( params );
-      }
+      _requests = {
 
-    };
+         isLoggedIn: function(params) {
+            RIF.getIsLoggedIn(_callbacks['isLoggedIn'], params);
+         },
 
-  
-  _requests.isLoggedIn([RIF.user]);  
+         logIn: function(params) {
+            RIF.getLogIn(_callbacks['logIn'], params);
+         },
 
-  return {
-    logIn: _p
-  };
-    
-} );
+      },
+
+      _callbacks = {
+
+         isLoggedIn: function() {
+            if (this["result"] == "true") { //
+               _redirect();
+            };
+         },
+
+         logIn: function() {
+            if (this.hasOwnProperty("result")) {
+               _redirect();
+            } else if (this.hasOwnProperty('errorMessages')) {
+               var t = this.errorMessages[0];
+               RIF.statusBar(t, 1, 1);
+            } else {
+               RIF.statusBar("Could not log you in.", 1, 1);
+            }
+         }
+
+      },
+
+
+      _p = {
+
+         request: function(reqName, params) {
+            _requests[reqName](params);
+         },
+
+         callback: function(clbkName, params) {
+            _callbacks[clbkName](params);
+         }
+
+      };
+
+
+   _requests.isLoggedIn([RIF.user]);
+
+   return {
+      logIn: _p
+   };
+
+});

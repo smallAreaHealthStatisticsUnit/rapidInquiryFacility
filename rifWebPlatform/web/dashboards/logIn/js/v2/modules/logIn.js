@@ -16,31 +16,31 @@
  *      ->method
  *          method which must be implemented in subscriber object
  */
-RIF.logIn = ( function() {
+RIF.logIn = (function() {
 
-  var _p = {
+   var _p = {
 
-    components: {
-      menu: {
-        studyType: 'logIn',
-        menus: [ 'logIn' ]
+      components: {
+         menu: {
+            studyType: 'logIn',
+            menus: ['logIn']
+         }
+      },
+
+      events: {},
+
+      init: function() {
+         RIF.dom();
+         RIF.initComponents.call(this);
+         RIF.addEvents.call(this);
       }
-    },
 
-    events: {},
+   };
 
-    init: function() {
-      RIF.dom();
-      RIF.initComponents.call( this );
-      RIF.addEvents.call( this );
-    }
+   return {
+      setUp: (function(args) {
+         _p.init();
+      }())
+   };
 
-  };
-
-  return {
-    setUp: ( function( args ) {
-      _p.init();
-    }() )
-  };
-
-} );
+});
