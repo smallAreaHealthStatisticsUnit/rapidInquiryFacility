@@ -362,7 +362,17 @@ final class SQLMapDataManager
 		return result;		
 	}
 	
-	public ArrayList<MapArea> getMapAreasForBoundaryRectangle(
+	//TOUR_ADD_METHOD-3
+	/*
+	 * The service method will delegate to a manager class, which is responsible
+	 * for executing the SQL query.  By this point in the execution path, we
+	 * assume that the parameter values are:
+	 * <ul>
+	 * <li>not null</li>
+	 * <li>contain no malicious code</code>
+	 * </ul>
+	 */
+	public String getMapAreasForBoundaryRectangle(
 			final Connection connection,
 			final Geography geography,
 			final GeoLevelSelect geoLevelSelect,
@@ -380,46 +390,50 @@ final class SQLMapDataManager
 		
 		boundaryRectangle.checkErrors();
 		
-		SQLFunctionCallerQueryFormatter queryFormatter = new SQLFunctionCallerQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.setSchema("rif40_xml_pkg");
-		queryFormatter.setFunctionName("rif40_getMapAreasForBoundaryRectangle");
-		queryFormatter.setNumberOfFunctionParameters(3);
+		/*
+		 * In many cases we're just calling a stored procedure in the database
+		 * Some of these may be migrated into the middleware if it turns out that
+		 * SQL Server and PostgreSQL cannot support them uniformly.  We may also
+		 * choose to migrate them into the middleware if the function call produces
+		 * too great a performance overhead.  In these cases, we would presumably 
+		 * obtain better performance by running the code within the functions here
+		 * 'inline'.
+		 */
+		SQLGeneralQueryFormatter queryFormatter
+			= new SQLGeneralQueryFormatter();
+		queryFormatter.addPaddedQueryLine(0, "SELECT");
+		queryFormatter.addQueryPhrase("rif40_xml_pkg.rif40_getMapAreas(?,?,?,?,?,?)");
+		queryFormatter.padAndFinishLine();		
+		queryFormatter.addQueryPhrase(0, "LIMIT 4");
 				
+		logSQLQuery("getMapAreasForBoundaryRectangle", 
+			queryFormatter, 
+			geography.getName(),
+			geoLevelSelect.getName(),
+			String.valueOf( Float.valueOf(boundaryRectangle.getYMax())),
+			String.valueOf( Float.valueOf(boundaryRectangle.getXMax())),
+			String.valueOf( Float.valueOf(boundaryRectangle.getYMin())),
+			String.valueOf( Float.valueOf(boundaryRectangle.getXMin())));
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
-		ArrayList<MapArea> results = new ArrayList<MapArea>();
+		StringBuilder results = new StringBuilder();
 		try {
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
+									
+			statement 
+				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, geography.getName());
 			statement.setString(2, geoLevelSelect.getName());
-			statement.setFloat(3, (float) boundaryRectangle.getYMax());
-			statement.setFloat(4, (float) boundaryRectangle.getXMax());
-			statement.setFloat(5, (float) boundaryRectangle.getYMin());
-			statement.setFloat(6, (float) boundaryRectangle.getXMin());
+			statement.setFloat(3, Float.valueOf(boundaryRectangle.getYMax()));
+			statement.setFloat(4, Float.valueOf(boundaryRectangle.getXMax()));
+			statement.setFloat(5, Float.valueOf(boundaryRectangle.getYMin()));
+			statement.setFloat(6, Float.valueOf(boundaryRectangle.getXMin()));
 			
 			resultSet = statement.executeQuery();
 
 			while (resultSet.next()) {
-				String geographicalIdentifier = resultSet.getString(1);
-				String identifier = resultSet.getString(2);
-				String label = resultSet.getString(3);
-				
-				MapArea mapArea 
-					= MapArea.newInstance(
-						geographicalIdentifier,
-						identifier,
-						label);
-				
-				results.add(mapArea);
-			}
-			
-			//@TODO: Ideally we'd like to put this first before we iterate
-			//through all the results.  Normally I would use resultSet.last(),
-			//followed by getRow() but this requires a scrollable result set.
-			//For now we have this but perhaps in future we need a separate
-			//method for indicating whether the count is too high
-			checkNumberMapAreaResultsBelowThreshold(results.size());				
+				//the method returns a JSON string.  We're just concatenating them together
+				results.append(resultSet.getString(1));
+			}			
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
@@ -438,7 +452,8 @@ final class SQLMapDataManager
 				sqlException);
 								
 			RIFServiceException rifServiceException
-				= new RIFServiceException(RIFServiceError.DATABASE_QUERY_FAILED, 
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -448,7 +463,7 @@ final class SQLMapDataManager
 			SQLQueryUtility.close(resultSet);			
 		}
 		
-		return results;		
+		return results.toString();		
 	}
 	
 	/**

@@ -1135,6 +1135,111 @@ abstract class AbstractRIFStudySubmissionService
 		return results;
 	}
 
+	
+	//TOUR_ADD_METHOD-2
+	/*	
+	 * Once we add a new method to the interface, we need to implement it in the
+	 * appropriate service class.
+	 */
+	public String getMapAreasForBoundaryRectangle(
+		final User _user,
+		final Geography _geography,			
+		final GeoLevelSelect _geoLevelSelect,
+		final BoundaryRectangle _boundaryRectangle) 
+		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);		
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();	
+		if (sqlConnectionManager.isUserBlocked(user) == true) {			
+			return null;
+		}
+		
+		Geography geography 
+			= Geography.createCopy(_geography);
+		GeoLevelSelect geoLevelSelect
+			= GeoLevelSelect.createCopy(_geoLevelSelect);
+		BoundaryRectangle boundaryRectangle
+			= BoundaryRectangle.createCopy(_boundaryRectangle);
+
+		//Check for empty parameters
+		String results = "";
+		Connection connection = null;
+		try {
+			
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getMapAreasForBoundaryRectangle",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getMapAreasForBoundaryRectangle",
+				"geography",
+				geography);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getMapAreasForBoundaryRectangle",
+				"geoLevelSelect",
+				geoLevelSelect);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getMapAreasForBoundaryRectangle",
+				"boundaryRectangle",
+				boundaryRectangle);
+						
+			//Check for security violations
+			validateUser(user);
+			geography.checkSecurityViolations();
+			geoLevelSelect.checkSecurityViolations();
+			boundaryRectangle.checkSecurityViolations();
+			
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage(
+					"logging.getMapAreasForBoundaryRectangle",
+					user.getUserID(),
+					user.getIPAddress(),
+					geography.getDisplayName(),
+					geoLevelSelect.getDisplayName(),
+					boundaryRectangle.getDisplayName());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+			
+			//Assign pooled connection
+			connection 
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
+			SQLMapDataManager sqlMapDataManager
+				= rifServiceResources.getSQLMapDataManager();			
+			results
+				= sqlMapDataManager.getMapAreasForBoundaryRectangle(
+					connection, 
+					geography,
+					geoLevelSelect,
+					boundaryRectangle);						
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getMapAreasForBoundaryArea",
+				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+	
+	
+		return results;
+	}
+
+	
 	public ArrayList<MapArea> getMapAreasByBlock(
 		final User _user,
 		final Geography _geography,
