@@ -131,10 +131,10 @@ public final class GetGeoLevelBoundsForArea
 					validStudyResultRetrievalContext,
 					validMapArea);
 			
-			assertEquals(-6.56952, boundaryRectangle.getXMax(), TOLERANCE);
-			assertEquals(54.5492, boundaryRectangle.getYMax(), TOLERANCE);
-			assertEquals(54.5205, boundaryRectangle.getYMin(), TOLERANCE);
-			assertEquals(-6.62246, boundaryRectangle.getXMin(), TOLERANCE);
+			assertEquals("-6.56952", boundaryRectangle.getXMax());
+			assertEquals("54.5492", boundaryRectangle.getYMax());
+			assertEquals("54.5205", boundaryRectangle.getYMin());
+			assertEquals("-6.62246", boundaryRectangle.getXMin());
 		}
 		catch(RIFServiceException rifServiceException) {
 			
@@ -173,10 +173,10 @@ public final class GetGeoLevelBoundsForArea
 					validStudyResultRetrievalContext,
 					validMapArea);
 			
-			assertEquals(-6.57221, boundaryRectangle.getXMax(), TOLERANCE);
-			assertEquals(54.7442, boundaryRectangle.getYMax(), TOLERANCE);
-			assertEquals(54.2998, boundaryRectangle.getYMin(), TOLERANCE);
-			assertEquals(-7.00093, boundaryRectangle.getXMin(), TOLERANCE);
+			assertEquals("-6.57221", boundaryRectangle.getXMax());
+			assertEquals("54.7442", boundaryRectangle.getYMax());
+			assertEquals("54.2998", boundaryRectangle.getYMin());
+			assertEquals("-7.00093", boundaryRectangle.getXMin());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
