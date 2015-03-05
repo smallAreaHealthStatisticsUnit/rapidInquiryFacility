@@ -1,11 +1,10 @@
 package rifServices.test.services;
 
 
-import rifServices.businessConceptLayer.GeoLevelArea;
+
 import rifServices.businessConceptLayer.GeoLevelSelect;
-import rifServices.businessConceptLayer.GeoLevelToMap;
+import rifServices.businessConceptLayer.BoundaryRectangle;
 import rifServices.businessConceptLayer.Geography;
-import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
@@ -85,123 +84,146 @@ public final class GetMapAreasForBoundaryRectangle
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private GeoLevelSelect validGeoLevelSelect;
+	
+	private BoundaryRectangle validBoundaryRectangle;
+	private BoundaryRectangle emptyBoundaryRectangle;
+	private BoundaryRectangle maliciousBoundaryRectangle;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public GetMapAreasForBoundaryRectangle() {
+		validGeoLevelSelect
+			= GeoLevelSelect.newInstance("LEVEL4");
+		
 
+		validBoundaryRectangle 
+			= BoundaryRectangle.newInstance(
+				"-6.68853", 
+				"54.6456", 
+				"-6.32507", 
+				"55.0122");
+
+		emptyBoundaryRectangle
+			= BoundaryRectangle.newInstance(
+				"-6.68853", 
+				"54.6456", 
+				"", 
+				"55.0122");
+
+
+		maliciousBoundaryRectangle
+			= BoundaryRectangle.newInstance(
+				"-6.68853", 
+				getTestMaliciousValue(), 
+				"-6.32507", 
+				"55.0122");
+		
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
+	@Override
+	protected GeoLevelSelect cloneValidGeoLevelSelect() {
+		GeoLevelSelect geoLevelSelect
+			= GeoLevelSelect.createCopy(validGeoLevelSelect);
+		return geoLevelSelect;
+	}
+	
+	protected BoundaryRectangle cloneValidBoundaryRectangle() {
+		BoundaryRectangle boundaryRectangle
+			= BoundaryRectangle.createCopy(validBoundaryRectangle);
+		return boundaryRectangle;
+	}
+	
+	protected BoundaryRectangle cloneEmptyBoundaryRectangle() {
+		BoundaryRectangle boundaryRectangle
+			= BoundaryRectangle.createCopy(emptyBoundaryRectangle);
+		return boundaryRectangle;
+	}
+
+	protected BoundaryRectangle cloneMaliciousBoundaryRectangle() {
+		BoundaryRectangle boundaryRectangle
+			= BoundaryRectangle.createCopy(maliciousBoundaryRectangle);
+		return boundaryRectangle;
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
 
-		
-	@Test
-	public void getMapAreas_COMMON1() {
-		
-		try {
-			User validUser = cloneValidUser();
-			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			validGeoLevelArea.setName("Tirado");
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-			ArrayList<MapArea> mapAreas
-				= rifStudySubmissionService.getMapAreas(
-					validUser, 
-					validGeography,
-					validGeoLevelSelect,
-					validGeoLevelArea,
-					validGeoLevelToMap);
-			assertEquals(5, mapAreas.size());
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}
-
-	}
-
-	@Test
-	public void getMapAreas_COMMON2() {
-	
-		try {
-			User validUser = cloneValidUser();
-			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			validGeoLevelArea.setName("Hambly");
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-			
-			ArrayList<MapArea> mapAreas
-				= rifStudySubmissionService.getMapAreas(
-					validUser, 
-					validGeography,
-					validGeoLevelSelect,
-					validGeoLevelArea,
-					validGeoLevelToMap);
-			
-			assertEquals(57, mapAreas.size());
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}
-	}	
-	
-	@Test
-	/**
-	 * get a query where there are too many results
+	//TOUR_ADD_METHOD-4
+	/*
+	 * Here we're testing the new service method.  This method happens to return
+	 * a JSON string, which makes it more difficult to compare expected and actual results.
+	 * In most of the methods, we return a collection of RIF business objects which can be 
+	 * ordered and counted.  Here, the String result mixes both the results and the 
+	 * format.  We will need a utility which can extract and order 'gid' values that 
+	 * are embedded in the JSON result.
 	 */
-	public void getMapAreas_TOO_MANY_RESULTS1() {
+
+	
+	@Test
+	public void getMapAreasForBoundaryRectangle_COMMON() {
 		
-		try {
+		/**
+		 * Geography='SAHSU'
+		 * GeoLevelView='LEVEL4'
+		 * Boundary Rectangle
+		 * yMax = 55.0122
+		 * xMax = -6.32507
+		 * yMin = 54.6456
+		 * xMin = -6.68853
+		 * 
+		 * Should return a JSON string with 4 results and the following gids:
+		 * 1, 85, 86, 87
+		 * 
+		 * 
+		 */
+		
+		try {			
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			validGeoLevelArea.setName("Clarke");
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-			
-			rifStudySubmissionService.getMapAreas(
-				validUser, 
-				validGeography,
-				validGeoLevelSelect,
-				validGeoLevelArea,
-				validGeoLevelToMap);
-			
-			fail();
+			GeoLevelSelect validGeoLevelSelect 
+				= cloneValidGeoLevelSelect();
+			System.out.println("common case=="+validGeoLevelSelect.getName()+"==");
+			BoundaryRectangle validBoundaryRectangle
+				= cloneValidBoundaryRectangle();
+		
+			String result
+				= rifStudySubmissionService.getMapAreasForBoundaryRectangle(
+					validUser, 
+					validGeography, 
+					validGeoLevelSelect, 
+					validBoundaryRectangle);
+		
+			//@TODO: Develop a utility that extract gids from JSON stream and orders them.
 		}
 		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException, RIFServiceError.THRESHOLD_MAP_AREAS_PER_DISPLAY_EXCEEDED, 
-				1);
-			this.printErrors("TRTRT", rifServiceException);
-		}
-	}	
-
-	
+			fail();			
+		}		
+	}
 	
 	@Test
-	public void getMapAreas_NULL1() {
-	
-		try {
+	public void getMapAreasForBoundaryRectangle_NULL_VALUES() {
+		
+		//null user
+		try {						
 			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-			
-			rifStudySubmissionService.getMapAreas(
+			GeoLevelSelect validGeoLevelSelect 
+				= cloneValidGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle
+				= cloneValidBoundaryRectangle();
+		
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
 				null, 
-				validGeography,
-				validGeoLevelSelect,
-				validGeoLevelArea,
-				validGeoLevelToMap);
+				validGeography, 
+				validGeoLevelSelect, 
+				validBoundaryRectangle);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -209,50 +231,21 @@ public final class GetMapAreasForBoundaryRectangle
 				rifServiceException,
 				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
 				1);
-		}
-	}	
-	
-	@Test
-	public void getMapAreas_EMPTY1() {
-	
-		try {
-			User emptyUser = cloneEmptyUser();
-			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-			
-			rifStudySubmissionService.getMapAreas(
-				emptyUser, 
-				validGeography,
-				validGeoLevelSelect,
-				validGeoLevelArea,
-				validGeoLevelToMap);
-			fail();
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException,
-				RIFServiceError.INVALID_USER,
-				1);
-		}
-	}	
-
-	@Test
-	public void getMapAreas_NULL2() {
-	
-		try {
+		}		
+		
+		//null geography
+		try {			
 			User validUser = cloneValidUser();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-			
-			rifStudySubmissionService.getMapAreas(
+			GeoLevelSelect validGeoLevelSelect 
+				= cloneValidGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle
+				= cloneValidBoundaryRectangle();
+		
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
 				validUser, 
-				null,
-				validGeoLevelSelect,
-				validGeoLevelArea,
-				validGeoLevelToMap);
+				null, 
+				validGeoLevelSelect, 
+				validBoundaryRectangle);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -260,51 +253,21 @@ public final class GetMapAreasForBoundaryRectangle
 				rifServiceException,
 				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
 				1);
-		}
-	}	
-	
-	
-	@Test
-	public void getMapAreas_EMPTY2() {
-	
-		try {
-			User validUser = cloneValidUser();
-			Geography emptyGeography = cloneEmptyGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-			
-			rifStudySubmissionService.getMapAreas(
-				validUser, 
-				emptyGeography,
-				validGeoLevelSelect,
-				validGeoLevelArea,
-				validGeoLevelToMap);
-			fail();
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException,
-				RIFServiceError.INVALID_GEOGRAPHY,
-				1);
-		}
-	}	
+		}		
 
-	@Test
-	public void getMapAreas_NULL3() {
-	
-		try {
+		
+		//null geo level
+		try {						
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-			
-			rifStudySubmissionService.getMapAreas(
+			BoundaryRectangle validBoundaryRectangle
+				= cloneValidBoundaryRectangle();
+		
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
 				validUser, 
-				validGeography,
-				null,
-				validGeoLevelArea,
-				validGeoLevelToMap);
+				validGeography, 
+				null, 
+				validBoundaryRectangle);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -312,100 +275,18 @@ public final class GetMapAreasForBoundaryRectangle
 				rifServiceException,
 				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
 				1);
-		}
-	}
-	
-	
-	@Test
-	public void getMapAreas_EMPTY3() {
-	
-		try {
-			User validUser = cloneValidUser();
-			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect emptyGeoLevelSelect = cloneEmptyGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-			
-			rifStudySubmissionService.getMapAreas(
-				validUser, 
-				validGeography,
-				emptyGeoLevelSelect,
-				validGeoLevelArea,
-				validGeoLevelToMap);
-			fail();
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException,
-				RIFServiceError.INVALID_GEOLEVEL_SELECT,
-				1);
-		}
-	}
-
-	@Test
-	public void getMapAreas_NULL4() {
-	
-		try {
+		}		
+				
+		//null boundary rectangle
+		try {						
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-
-			rifStudySubmissionService.getMapAreas(
+		
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
 				validUser, 
-				validGeography,
-				validGeoLevelSelect,
-				null,
-				validGeoLevelToMap);
-			fail();
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
-				1);
-		}
-	}	
-	
-	@Test
-	public void getMapAreas_EMPTY4() {
-	
-		try {
-			User validUser = cloneValidUser();
-			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea emptyGeoLevelArea = cloneValidGeoLevelArea();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-
-			rifStudySubmissionService.getMapAreas(
-				validUser, 
-				validGeography,
-				validGeoLevelSelect,
-				emptyGeoLevelArea,
-				validGeoLevelToMap);
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException,
-				RIFServiceError.INVALID_GEOLEVEL_AREA,
-				1);
-		}
-	}	
-
-	@Test
-	public void getMapAreas_NULL5() {
-	
-		try {
-			User validUser = cloneValidUser();
-			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-
-			rifStudySubmissionService.getMapAreas(
-				validUser, 
-				validGeography,
-				validGeoLevelSelect,
-				validGeoLevelArea,
+				validGeography, 
+				validGeoLevelSelect, 
 				null);
 			fail();
 		}
@@ -414,51 +295,150 @@ public final class GetMapAreasForBoundaryRectangle
 				rifServiceException,
 				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
 				1);
-		}
-	}	
+		}		
+	}
 	
 	@Test
-	public void getMapAreas_EMPTY5() {
-	
-		try {
-			User validUser = cloneValidUser();
+	public void getMapAreasForBoundaryRectangle_EMPTY_VALUES() {
+		
+		//empty user
+		try {			
+			User emptyUser = cloneEmptyUser();
 			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			GeoLevelToMap emptyGeoLevelToMap = cloneEmptyGeoLevelToMap();
-
-			rifStudySubmissionService.getMapAreas(
-				validUser, 
-				validGeography,
-				validGeoLevelSelect,
-				validGeoLevelArea,
-				emptyGeoLevelToMap);
+			GeoLevelSelect validGeoLevelSelect 
+				= cloneValidGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle
+				= cloneValidBoundaryRectangle();
+		
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
+				emptyUser, 
+				validGeography, 
+				validGeoLevelSelect, 
+				validBoundaryRectangle);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.INVALID_GEOLEVEL_TO_MAP,
+				RIFServiceError.INVALID_USER,
 				1);
 		}
-	}	
-
-	@Test
-	public void getMapAreas_NONEXISTENT1() {
-	
-		try {
-			User nonExistentUser = cloneNonExistentUser();
-			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+		
+		//empty geography
+		try {			
+			User validUser = cloneValidUser();
+			Geography emptyGeography = cloneEmptyGeography();
+			GeoLevelSelect validGeoLevelSelect 
+				= cloneValidGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle
+				= cloneValidBoundaryRectangle();
+		
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
+				validUser, 
+				emptyGeography, 
+				validGeoLevelSelect, 
+				validBoundaryRectangle);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_GEOGRAPHY,
+				1);
+		}		
 			
-			rifStudySubmissionService.getMapAreas(
-				nonExistentUser, 
-				validGeography,
-				validGeoLevelSelect,
-				validGeoLevelArea,
-				validGeoLevelToMap);
+		//empty geo level
+		try {			
+			User validUser = cloneValidUser();
+			Geography validGeography = cloneValidGeography();
+			GeoLevelSelect emptyGeoLevelSelect
+				= cloneEmptyGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle
+				= cloneValidBoundaryRectangle();
+		
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
+				validUser, 
+				validGeography, 
+				emptyGeoLevelSelect, 
+				validBoundaryRectangle);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_GEOLEVEL_SELECT,
+				1);
+		}		
+				
+		try {			
+			User validUser = cloneValidUser();
+			Geography validGeography = cloneValidGeography();
+			GeoLevelSelect validGeoLevelSelect
+				= cloneValidGeoLevelSelect();
+			BoundaryRectangle emptyBoundaryRectangle
+				= cloneEmptyBoundaryRectangle();
+	
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
+				validUser, 
+				validGeography, 
+				validGeoLevelSelect, 
+				emptyBoundaryRectangle);
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.INVALID_BOUNDARY_RECTANGLE,
+				1);
+		}		
+	}
+	
+	@Test
+	public void getMapAreasForBoundaryRectangle_MALICIOUS1() {
+				
+		//malicious user
+		try {
+			User maliciousUser = cloneMaliciousUser();
+			Geography validGeography = cloneValidGeography();
+			GeoLevelSelect validGeoLevelSelect 
+				= cloneValidGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle
+				= cloneValidBoundaryRectangle();
+		
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
+				maliciousUser, 
+				validGeography, 
+				validGeoLevelSelect, 
+				validBoundaryRectangle);			
+			fail();
+
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}		
+		
+	}
+	
+	@Test
+	public void getMapAreasForBoundaryRectangle_MALICIOUS2() {
+	
+		//malicious geography
+		try {
+			User validUser = cloneValidUser();
+			Geography maliciousGeography = cloneMaliciousGeography();
+			GeoLevelSelect validGeoLevelSelect 
+				= cloneValidGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle
+				= cloneValidBoundaryRectangle();
+
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
+				validUser, 
+				maliciousGeography, 
+				validGeoLevelSelect, 
+				validBoundaryRectangle);			
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -466,26 +446,138 @@ public final class GetMapAreasForBoundaryRectangle
 				rifServiceException,
 				RIFServiceError.SECURITY_VIOLATION,
 				1);
-		}
-	}	
+		}		
 
+	}
 	
 	@Test
-	public void getMapAreas_NONEXISTENT2() {
-	
+	public void getMapAreasForBoundaryRectangle_MALICIOUS3() {
+		
+		//malicious geo level
 		try {
 			User validUser = cloneValidUser();
-			Geography nonExistentGeography = cloneNonExistentGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-			
-			rifStudySubmissionService.getMapAreas(
+			Geography validGeography = cloneValidGeography();
+			GeoLevelSelect maliciousGeoLevelSelect 
+				= cloneMaliciousGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle
+				= cloneValidBoundaryRectangle();
+
+			System.out.println("GetMapAreasForBoundRect - sec1");
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
 				validUser, 
-				nonExistentGeography,
-				validGeoLevelSelect,
-				validGeoLevelArea,
-				validGeoLevelToMap);
+				validGeography, 
+				maliciousGeoLevelSelect, 
+				validBoundaryRectangle);			
+			System.out.println("GetMapAreasForBoundRect - sec2");
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}		
+	}
+	
+	
+	@Test
+	public void getMapAreasForBoundaryRectangle_MALICIOUS4() {	
+		//malicious valid boundary rectangle
+
+		try {
+			User validUser = cloneValidUser();
+			Geography validGeography = cloneValidGeography();
+			GeoLevelSelect maliciousGeoLevelSelect 
+				= cloneValidGeoLevelSelect();
+			BoundaryRectangle maliciousBoundaryRectangle
+				= cloneMaliciousBoundaryRectangle();
+
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
+				validUser, 
+				validGeography, 
+				maliciousGeoLevelSelect, 
+				validBoundaryRectangle);			
+			//fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}
+
+	}
+	
+	
+	
+	@Test
+	public void getMapAreasForBoundaryRectangle_NONEXISTENT_VALUES() {
+	
+		//non-existent user	
+		/*
+		try {			
+			User nonExistentUser = cloneNonExistentUser();
+			Geography validGeography = cloneValidGeography();
+			GeoLevelSelect validGeoLevelSelect 
+				= cloneValidGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle
+				= cloneValidBoundaryRectangle();
+		
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
+				nonExistentUser, 
+				validGeography, 
+				validGeoLevelSelect, 
+				validBoundaryRectangle);
+			
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,
+				RIFServiceError.SECURITY_VIOLATION,
+				1);
+		}		
+		*/
+
+		//non-existent geography
+		try {			
+			User validUser = cloneValidUser();
+			Geography nonExistentGeography = cloneNonExistentGeography();
+			GeoLevelSelect validGeoLevelSelect 
+				= cloneValidGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle
+				= cloneValidBoundaryRectangle();
+		
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
+				validUser, 
+				nonExistentGeography, 
+				validGeoLevelSelect, 
+				validBoundaryRectangle);
+			
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException,				
+				RIFServiceError.NON_EXISTENT_GEOGRAPHY,
+				1);
+		}		
+
+		//non-existent geography
+		try {			
+			User validUser = cloneValidUser();
+			Geography nonExistentGeography = cloneNonExistentGeography();
+			GeoLevelSelect validGeoLevelSelect 
+				= cloneValidGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle
+				= cloneValidBoundaryRectangle();
+		
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
+				validUser, 
+				nonExistentGeography, 
+				validGeoLevelSelect, 
+				validBoundaryRectangle);
+			
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -493,25 +585,23 @@ public final class GetMapAreasForBoundaryRectangle
 				rifServiceException,
 				RIFServiceError.NON_EXISTENT_GEOGRAPHY,
 				1);
-		}
-	}	
-	
-	@Test
-	public void getMapAreas_NONEXISTENT3() {
-	
-		try {
+		}		
+
+		//non-existent geo level
+		try {			
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect nonExistentGeoLevelSelect = cloneNonExistentGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-			
-			rifStudySubmissionService.getMapAreas(
+			GeoLevelSelect nonExistentGeoLevelSelect 
+				= cloneNonExistentGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle
+				= cloneValidBoundaryRectangle();
+		
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
 				validUser, 
-				validGeography,
-				nonExistentGeoLevelSelect,
-				validGeoLevelArea,
-				validGeoLevelToMap);
+				validGeography, 
+				nonExistentGeoLevelSelect, 
+				validBoundaryRectangle);
+			
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -519,196 +609,40 @@ public final class GetMapAreasForBoundaryRectangle
 				rifServiceException,
 				RIFServiceError.NON_EXISTENT_GEOLEVEL_SELECT_VALUE,
 				1);
-		}
-	}
-
+		}		
 	
-	@Test
-	public void getMapAreas_NONEXISTENT4() {
-	
-		try {
+		//non-existent boundary rectangle
+		/*
+		try {			
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea nonExistentGeoLevelArea = cloneNonExistentGeoLevelArea();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-
-			rifStudySubmissionService.getMapAreas(
+			GeoLevelSelect nonExistentGeoLevelSelect 
+				= cloneValidGeoLevelSelect();
+			BoundaryRectangle validBoundaryRectangle
+				= cloneValidBoundaryRectangle();
+		
+			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
 				validUser, 
-				validGeography,
-				validGeoLevelSelect,
-				nonExistentGeoLevelArea,
-				validGeoLevelToMap);
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException,
-				RIFServiceError.NON_EXISTENT_GEOLEVEL_AREA_VALUE,
-				1);
-		}
-	}	
-
-	
-	@Test
-	public void getMapAreas_NONEXISTENT5() {
-	
-		try {
-			User validUser = cloneValidUser();
-			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			GeoLevelToMap nonExistentGeoLevelToMap = cloneNonExistentGeoLevelToMap();
-
-			rifStudySubmissionService.getMapAreas(
-				validUser, 
-				validGeography,
-				validGeoLevelSelect,
-				validGeoLevelArea,
-				nonExistentGeoLevelToMap);
-			fail();
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException,
-				RIFServiceError.NON_EXISTENT_GEOLEVEL_TO_MAP_VALUE,
-				1);
-		}
-	}	
-
-	
-	@Test
-	public void getMapAreas_MALICIOUS1() {
-	
-		try {
-			User maliciousUser = cloneMaliciousUser();
-			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+				validGeography, 
+				nonExistentGeoLevelSelect, 
+				validBoundaryRectangle);
 			
-			rifStudySubmissionService.getMapAreas(
-				maliciousUser, 
-				validGeography,
-				validGeoLevelSelect,
-				validGeoLevelArea,
-				validGeoLevelToMap);
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFServiceError.NON_EXISTENT_GEOLEVEL_SELECT_VALUE,
 				1);
-		}
-	}	
-
-	@Test
-	public void getMapAreas_MALICIOUS2() {
-	
-		try {
-			User validUser = cloneValidUser();
-			Geography maliciousGeography = cloneMaliciousGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-			
-			rifStudySubmissionService.getMapAreas(
-				validUser, 
-				maliciousGeography,
-				validGeoLevelSelect,
-				validGeoLevelArea,
-				validGeoLevelToMap);
-			fail();
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
-				1);
-		}
-	}	
-	
-	@Test
-	public void getMapAreas_MALICIOUS3() {
-	
-		try {
-			User validUser = cloneValidUser();
-			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect maliciousGeoLevelSelect = cloneMaliciousGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-			
-			rifStudySubmissionService.getMapAreas(
-				validUser, 
-				validGeography,
-				maliciousGeoLevelSelect,
-				validGeoLevelArea,
-				validGeoLevelToMap);
-			fail();
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
-				1);
-		}
-	}
-
-	@Test
-	public void getMapAreas_MALICIOUS4() {
-	
-		try {
-			User validUser = cloneValidUser();
-			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea maliciousGeoLevelArea = cloneMaliciousGeoLevelArea();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
-
-			rifStudySubmissionService.getMapAreas(
-				validUser, 
-				validGeography,
-				validGeoLevelSelect,
-				maliciousGeoLevelArea,
-				validGeoLevelToMap);
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
-				1);
-		}
+		}		
+		*/
+		
 	}	
 
 	
-	@Test
-	public void getMapAreas_MALICIOUS5() {
-	
-		try {
-			User validUser = cloneValidUser();
-			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			GeoLevelArea validGeoLevelArea = cloneValidGeoLevelArea();
-			GeoLevelToMap maliciousGeoLevelToMap = cloneMaliciousGeoLevelToMap();
-
-			rifStudySubmissionService.getMapAreas(
-				validUser, 
-				validGeography,
-				validGeoLevelSelect,
-				validGeoLevelArea,
-				maliciousGeoLevelToMap);
-			fail();
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
-				1);
-		}
-	}	
 	
 	
-	
-	
+		
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
