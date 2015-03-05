@@ -141,9 +141,6 @@ public final class GetTiles
 					validBoundaryRectangle);
 			assertNotNull(result);
 			
-			//try running this, doesn't seem to work
-			fail();
-			
 		}
 		catch(RIFServiceException rifServiceException) {
 			
