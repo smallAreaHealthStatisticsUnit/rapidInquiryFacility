@@ -400,7 +400,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		configureQueryFormatterForDB(queryFormatter);
 		queryFormatter.setSchema("rif40_xml_pkg");
 		queryFormatter.setFunctionName("rif40_get_geojson_tiles");
-		queryFormatter.setNumberOfFunctionParameters(7);		
+		queryFormatter.setNumberOfFunctionParameters(8);		
 
 		logSQLQuery(
 			"getTiles",
@@ -411,6 +411,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			String.valueOf(boundaryRectangle.getXMax()),
 			String.valueOf(boundaryRectangle.getYMin()),
 			String.valueOf(boundaryRectangle.getXMin()),
+			String.valueOf(zoomFactor),
 			String.valueOf(false));
 		
 		//Execute query and generate results
@@ -425,7 +426,8 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			statement.setFloat(4, Float.valueOf(boundaryRectangle.getXMax()));
 			statement.setFloat(5, Float.valueOf(boundaryRectangle.getYMin()));
 			statement.setFloat(6, Float.valueOf(boundaryRectangle.getXMin()));
-			statement.setBoolean(7, false);
+			statement.setInt(7, zoomFactor);
+			statement.setBoolean(8, false);
 			
 			resultSet = statement.executeQuery();
 
