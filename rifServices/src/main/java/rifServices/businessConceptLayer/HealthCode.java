@@ -519,9 +519,6 @@ public final class HealthCode
 		countErrors(RIFServiceError.INVALID_HEALTH_CODE, errorMessages);
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkSecurityViolations()
-	 */
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
 
@@ -589,9 +586,6 @@ public final class HealthCode
 		return displayName.toString();
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
 	@Override
 	public String getRecordType() {
 		
@@ -600,9 +594,7 @@ public final class HealthCode
 		return recordNameLabel;
 	}	
 		
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getIdentifier()
-	 */
+
 	@Override
 	public String getIdentifier() {
 		
