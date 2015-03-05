@@ -1091,11 +1091,8 @@ class AbstractRIFUserService extends AbstractRIFService {
 			//Check for security violations
 			validateUser(user);
 			geography.checkSecurityViolations();
-			geoLevelSelect.checkSecurityViolations();			
-			fieldValidationUtility.checkMaliciousMethodParameter(
-				"getTiles", 
-				"boundaryRectangle", 
-				tileIdentifier);
+			geoLevelSelect.checkSecurityViolations();	
+			boundaryRectangle.checkSecurityViolations();
 			
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
