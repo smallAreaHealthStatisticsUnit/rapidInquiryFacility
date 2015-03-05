@@ -452,6 +452,7 @@ public class AbstractRIFServiceTestCase
 	@Before
 	public void setUp() {
 		try {
+			initialiseService();			
 			rifServiceBundle.login("kgarwood", "kgarwood");			
 		}
 		catch(RIFServiceException exception) {
