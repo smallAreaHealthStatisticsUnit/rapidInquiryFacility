@@ -7,11 +7,11 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
+import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
-import rifServices.util.DisplayableItemSorter;
 
 /**
  *

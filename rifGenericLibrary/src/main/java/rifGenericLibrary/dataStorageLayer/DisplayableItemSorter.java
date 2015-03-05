@@ -1,7 +1,6 @@
-package rifServices.util;
+package rifGenericLibrary.dataStorageLayer;
 
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
-import rifServices.system.RIFServiceMessages;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -117,8 +116,7 @@ public final class DisplayableItemSorter {
 		ArrayList<String> identifiers = new ArrayList<String>();
 		identifiers.addAll(displayableItemFromIdentifier.keySet());
 		
-		Collator collator
-			= RIFServiceMessages.getCollator();
+		Collator collator = Collator.getInstance();
 		Collections.sort(identifiers, collator);
 	
 		return identifiers;
@@ -149,7 +147,7 @@ public final class DisplayableItemSorter {
 		ArrayList<String> identifiers = new ArrayList<String>();
 		identifiers.addAll(displayableItemFromIdentifier.keySet());
 		Collator collator
-			= RIFServiceMessages.getCollator();
+			= Collator.getInstance();
 		Collections.sort(identifiers, collator);
 		
 		for (String identifier : identifiers) {

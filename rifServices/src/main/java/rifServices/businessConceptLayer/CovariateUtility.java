@@ -2,7 +2,7 @@ package rifServices.businessConceptLayer;
 
 import java.util.ArrayList;
 
-import rifServices.util.DisplayableItemSorter;
+import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifServices.util.FieldValidationUtility;
 
 

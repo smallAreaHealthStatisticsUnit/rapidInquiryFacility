@@ -7,13 +7,14 @@ import java.util.ArrayList;
 
 
 
+
+import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
 import rifServices.test.AbstractRIFTestCase;
-import rifServices.util.DisplayableItemSorter;
 import static org.junit.Assert.*;
 
 import org.junit.Test;

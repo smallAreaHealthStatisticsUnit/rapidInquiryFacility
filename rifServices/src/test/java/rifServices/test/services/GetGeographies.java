@@ -2,15 +2,16 @@ package rifServices.test.services;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 import java.util.ArrayList;
 
+import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
-import rifServices.util.DisplayableItemSorter;
 
 /**
  *

@@ -1,6 +1,7 @@
 
 package rifServices.businessConceptLayer;
 
+import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifServices.businessConceptLayer.AbstractRIFConcept;
 
 
@@ -9,7 +10,6 @@ import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
-import rifServices.util.DisplayableItemSorter;
 
 import java.util.ArrayList;
 import java.util.HashSet;

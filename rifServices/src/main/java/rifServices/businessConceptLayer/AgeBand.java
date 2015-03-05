@@ -1,10 +1,10 @@
 package rifServices.businessConceptLayer;
 
+import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceSecurityException;
-import rifServices.util.DisplayableItemSorter;
 import rifServices.util.FieldValidationUtility;
 
 import java.util.ArrayList;
