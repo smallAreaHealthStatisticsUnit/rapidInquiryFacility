@@ -112,10 +112,10 @@ public final class GetGeoLevelFullExtentForStudy
 				= rifStudyRetrievalService.getGeoLevelFullExtentForStudy(
 					validUser, 
 					validStudyResultRetrievalContext);
-			assertEquals(-4.88654, boundaryRectangle.getXMax(), TOLERANCE);
-			assertEquals(55.5268, boundaryRectangle.getYMax(), TOLERANCE);
-			assertEquals(52.6875, boundaryRectangle.getYMin(), TOLERANCE);
-			assertEquals(-7.58829,boundaryRectangle.getXMin(), TOLERANCE);
+			assertEquals("-4.88654", boundaryRectangle.getXMax());
+			assertEquals("55.5268", boundaryRectangle.getYMax());
+			assertEquals("52.6875", boundaryRectangle.getYMin());
+			assertEquals("-7.58829", boundaryRectangle.getXMin());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();

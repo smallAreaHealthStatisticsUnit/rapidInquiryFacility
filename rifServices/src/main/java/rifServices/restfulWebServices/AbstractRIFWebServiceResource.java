@@ -710,26 +710,22 @@ abstract class AbstractRIFWebServiceResource {
 			
 			BoundaryRectangle boundaryRectangle
 				= BoundaryRectangle.newInstance();
-			boundaryRectangle.setYMax(Double.valueOf(yMax));
-			boundaryRectangle.setXMax(Double.valueOf(xMax));
-			boundaryRectangle.setYMin(Double.valueOf(yMin));
-			boundaryRectangle.setXMin(Double.valueOf(xMin));
+			boundaryRectangle.setYMax(yMax);
+			boundaryRectangle.setXMax(xMax);
+			boundaryRectangle.setYMin(yMin);
+			boundaryRectangle.setXMin(xMin);
 			
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= rifStudyServiceBundle.getRIFStudySubmissionService();			
 			
-			ArrayList<MapArea> mapAreas
+			result
 				= studySubmissionService.getMapAreasForBoundaryRectangle(
 					user,
 					geography,
 					geoLevelSelect,
 					boundaryRectangle);
 			
-			MapAreaJSONGenerator mapAreaJSONGenerator
-				= new MapAreaJSONGenerator();
-			result 
-				= mapAreaJSONGenerator.writeJSONMapAreas(mapAreas);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON			
@@ -766,10 +762,10 @@ abstract class AbstractRIFWebServiceResource {
 				= GeoLevelSelect.newInstance(geoLevelSelectName);
 			BoundaryRectangle boundaryRectangle
 				= BoundaryRectangle.newInstance();
-			boundaryRectangle.setYMax(Double.valueOf(yMax));
-			boundaryRectangle.setXMax(Double.valueOf(xMax));
-			boundaryRectangle.setYMin(Double.valueOf(yMin));
-			boundaryRectangle.setXMin(Double.valueOf(xMin));
+			boundaryRectangle.setYMax(yMax);
+			boundaryRectangle.setXMax(xMax);
+			boundaryRectangle.setYMin(yMin);
+			boundaryRectangle.setXMin(xMin);
 						
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService

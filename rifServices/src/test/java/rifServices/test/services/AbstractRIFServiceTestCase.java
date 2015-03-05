@@ -369,17 +369,17 @@ public class AbstractRIFServiceTestCase
 
 		validBoundaryRectangle
 			= BoundaryRectangle.newInstance(
-				-7.00093,
-				54.2998,
-				-6.57221,
-				54.7442);
+				"-7.00093",
+				"54.2998",
+				"-6.57221",
+				"54.7442");
 
 		invalidBoundaryRectangle
 			= BoundaryRectangle.newInstance(
-				-6.57221,
-				54.7442,
-				-7.00093,
-				54.2998);
+				"-6.57221",
+				"54.7442",
+				"-7.00093",
+				"54.2998");
 		
 		validGeoLevelAttributeSource
 			= GeoLevelAttributeSource.newInstance("s1_map");

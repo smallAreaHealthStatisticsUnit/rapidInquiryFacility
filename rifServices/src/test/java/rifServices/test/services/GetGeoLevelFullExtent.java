@@ -122,10 +122,10 @@ public final class GetGeoLevelFullExtent
 					validGeography, 
 					validGeoLevelSelect);
 			
-			assertEquals(55.5268, result.getYMax(), TOLERANCE);
-			assertEquals(-4.88654, result.getXMax(), TOLERANCE);
-			assertEquals(52.6875, result.getYMin(), TOLERANCE);
-			assertEquals(-7.58829, result.getXMin(), TOLERANCE);
+			assertEquals("55.5268", result.getYMax());
+			assertEquals("-4.88654", result.getXMax());
+			assertEquals("52.6875", result.getYMin());
+			assertEquals("-7.58829", result.getXMin());
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();

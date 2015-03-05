@@ -182,10 +182,10 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			
 			BoundaryRectangle result
 				= BoundaryRectangle.newInstance(
-					xMin,
-					yMin,
-					xMax,
-					yMax);
+					String.valueOf(xMin),
+					String.valueOf(yMin),
+					String.valueOf(xMax),
+					String.valueOf(yMax));
 			return result;
 		}
 		catch(SQLException sqlException) {
@@ -261,10 +261,10 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			
 			BoundaryRectangle result
 				= BoundaryRectangle.newInstance(
-					xMin,
-					yMin,
-					xMax,
-					yMax);
+					String.valueOf(xMin),
+					String.valueOf(yMin),
+					String.valueOf(xMax),
+					String.valueOf(yMax));
 			return result;
 		}
 		catch(SQLException sqlException) {
@@ -342,10 +342,10 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			
 			BoundaryRectangle result
 				= BoundaryRectangle.newInstance(
-					xMin,
-					yMin,
-					xMax,
-					yMax);
+					String.valueOf(xMin),
+					String.valueOf(yMin),
+					String.valueOf(xMax),
+					String.valueOf(yMax));
 			return result;
 		}
 		catch(SQLException sqlException) {
@@ -421,10 +421,10 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, geography.getName());
 			statement.setString(2, geoLevelSelect.getName());
-			statement.setFloat(3, (float) boundaryRectangle.getYMax());
-			statement.setFloat(4, (float) boundaryRectangle.getXMax());
-			statement.setFloat(5, (float) boundaryRectangle.getYMin());
-			statement.setFloat(6, (float) boundaryRectangle.getXMin());
+			statement.setFloat(3, Float.valueOf(boundaryRectangle.getYMax()));
+			statement.setFloat(4, Float.valueOf(boundaryRectangle.getXMax()));
+			statement.setFloat(5, Float.valueOf(boundaryRectangle.getYMin()));
+			statement.setFloat(6, Float.valueOf(boundaryRectangle.getXMin()));
 			statement.setBoolean(7, false);
 			
 			resultSet = statement.executeQuery();

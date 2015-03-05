@@ -5,6 +5,10 @@ import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
 
 
+
+import rifServices.system.RIFServiceSecurityException;
+import rifServices.util.FieldValidationUtility;
+
 import java.util.ArrayList;
 
 /**
@@ -67,7 +71,7 @@ import java.util.ArrayList;
  *
  */
 
-public class BoundaryRectangle {
+public class BoundaryRectangle extends AbstractRIFConcept {
 
 	// ==========================================
 	// Section Constants
@@ -76,10 +80,10 @@ public class BoundaryRectangle {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private double xMin;
-	private double yMin;
-	private double xMax;
-	private double yMax;
+	private String xMin;
+	private String yMin;
+	private String xMax;
+	private String yMax;
 	
 	// ==========================================
 	// Section Construction
@@ -94,10 +98,10 @@ public class BoundaryRectangle {
 	}
 	
 	public static BoundaryRectangle newInstance(
-		final double xMin,
-		final double yMin,
-		final double xMax,
-		final double yMax) {
+		final String xMin,
+		final String yMin,
+		final String xMax,
+		final String yMax) {
 		
 		BoundaryRectangle boundaryRectangle 
 			= new BoundaryRectangle();
@@ -132,37 +136,37 @@ public class BoundaryRectangle {
 	// Section Accessors and Mutators
 	// ==========================================
 	
-	public double getXMin() {
+	public String getXMin() {
 		return xMin;
 	}
 
-	public void setXMin(final double xMin) {
+	public void setXMin(final String xMin) {
 		this.xMin = xMin;
 	}
 	
 
-	public double getYMin() {
+	public String getYMin() {
 		return yMin;
 	}
 
-	public void setYMin(final double yMin) {
+	public void setYMin(final String yMin) {
 		this.yMin = yMin;
 	}
 
 	
-	public double getXMax() {
+	public String getXMax() {
 		return xMax;
 	}
 
-	public void setXMax(final double xMax) {
+	public void setXMax(final String xMax) {
 		this.xMax = xMax;
 	}
 
-	public double getYMax() {
+	public String getYMax() {
 		return yMax;
 	}
 
-	public void setYMax(final double yMax) {
+	public void setYMax(final String yMax) {
 		this.yMax = yMax;
 	}
 	
@@ -176,12 +180,217 @@ public class BoundaryRectangle {
 	// Section Errors and Validation
 	// ==========================================
 
+	public void checkSecurityViolations() 
+		throws RIFServiceSecurityException {	
+		
+		super.checkSecurityViolations();
+		FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+		String recordType = getRecordType();
+		if (yMax != null) {
+			String yMaxFieldName
+				= RIFServiceMessages.getMessage("boundaryRectangle.yMax.label");		
+			fieldValidationUtility.checkMaliciousCode(
+				recordType,
+				yMaxFieldName,
+				yMax);
+		}
+
+		if (xMax != null) {
+			String xMaxFieldName
+				= RIFServiceMessages.getMessage("boundaryRectangle.xMax.label");		
+			fieldValidationUtility.checkMaliciousCode(
+				recordType,
+				xMaxFieldName,
+				xMax);
+		}
+
+
+		if (yMin != null) {
+			String yMinFieldName
+				= RIFServiceMessages.getMessage("boundaryRectangle.yMin.label");		
+			fieldValidationUtility.checkMaliciousCode(
+				recordType,
+				yMinFieldName,
+				yMin);
+		}
+
+
+		if (xMin != null) {
+			String xMinFieldName
+				= RIFServiceMessages.getMessage("boundaryRectangle.xMin.label");		
+			fieldValidationUtility.checkMaliciousCode(
+				recordType,
+				xMinFieldName,
+				xMin);
+		}
+		
+		
+	}
+
+	
 	public void checkErrors() 
 		throws RIFServiceException {
 
+				
 		//ensure that xMax >= xMin
 		ArrayList<String> errorMessages = new ArrayList<String>(); 
-		if (xMax < xMin) {
+
+		FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+
+		
+		Float xMaxValue = null;
+		Float yMaxValue = null;
+		Float xMinValue = null;
+		Float yMinValue = null;
+
+		String recordType = getRecordType();
+
+		String xMaxFieldName
+			= RIFServiceMessages.getMessage("boundaryRectangle.xMax.label");
+		if (fieldValidationUtility.isEmpty(xMax)) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordType,
+					xMaxFieldName);
+			errorMessages.add(errorMessage);
+		}
+		else {
+			try {			
+				xMaxValue = Float.valueOf(xMax);
+			}
+			catch(NumberFormatException numericFormatException) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"boundaryRectangle.error.invalidBoundaryValue",
+						xMax);
+				errorMessages.add(errorMessage);
+			}
+		}
+
+
+		String yMaxFieldName
+			= RIFServiceMessages.getMessage("boundaryRectangle.yMax.label");
+		if (fieldValidationUtility.isEmpty(yMax)) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordType,
+					yMaxFieldName);
+			errorMessages.add(errorMessage);
+		}
+		else {
+			try {			
+				yMaxValue = Float.valueOf(yMax);
+			}
+			catch(NumberFormatException numericFormatException) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"boundaryRectangle.error.invalidBoundaryValue",
+						yMax);
+				errorMessages.add(errorMessage);
+			}
+		}
+
+		
+
+		String xMinFieldName
+			= RIFServiceMessages.getMessage("boundaryRectangle.xMin.label");
+		if (fieldValidationUtility.isEmpty(xMin)) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordType,
+					xMinFieldName);
+			errorMessages.add(errorMessage);
+		}
+		else {
+			try {			
+				xMinValue = Float.valueOf(xMin);
+			}
+			catch(NumberFormatException numericFormatException) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"boundaryRectangle.error.invalidBoundaryValue",
+						xMin);
+				errorMessages.add(errorMessage);
+			}
+		}
+		
+
+		String yMinFieldName
+			= RIFServiceMessages.getMessage("boundaryRectangle.yMin.label");
+		if (fieldValidationUtility.isEmpty(yMin)) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordType,
+					yMinFieldName);
+			errorMessages.add(errorMessage);
+		}
+		else {
+			try {
+				yMinValue = Float.valueOf(yMin);
+			}
+			catch(NumberFormatException numericFormatException) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"boundaryRectangle.error.invalidBoundaryValue",
+						yMin);
+				errorMessages.add(errorMessage);
+			}
+		}
+		
+		countErrors(
+			RIFServiceError.INVALID_BOUNDARY_RECTANGLE, 
+			errorMessages);
+		
+		try {			
+			yMaxValue = Float.valueOf(yMax);
+		}
+		catch(NumberFormatException numericFormatException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"boundaryRectangle.error.invalidBoundaryValue",
+					yMax);
+			errorMessages.add(errorMessage);
+		}
+		
+		
+		try {			
+			xMinValue = Float.valueOf(xMin);
+		}
+		catch(NumberFormatException numericFormatException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"boundaryRectangle.error.invalidBoundaryValue",
+					xMin);
+			errorMessages.add(errorMessage);
+		}
+
+		
+		try {			
+			yMinValue = Float.valueOf(yMin);
+		}
+		catch(NumberFormatException numericFormatException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"boundaryRectangle.error.invalidBoundaryValue",
+					yMin);
+			errorMessages.add(errorMessage);
+		}
+
+		//another opportunity to throw an exception
+		//there is no point comparing numeric values if some of them are not valid numbers
+		countErrors(
+			RIFServiceError.INVALID_BOUNDARY_RECTANGLE, 
+			errorMessages);
+
+		
+		
+		if (xMaxValue < xMinValue) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"boundaryRectangle.error.xMaxLessThanMin",
@@ -190,7 +399,7 @@ public class BoundaryRectangle {
 			errorMessages.add(errorMessage);
 		}
 		
-		if (yMax < yMin) {
+		if (yMaxValue < yMinValue) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"boundaryRectangle.error.yMaxLessThanMin",
@@ -198,16 +407,10 @@ public class BoundaryRectangle {
 					String.valueOf(yMin));
 			errorMessages.add(errorMessage);			
 		}
-		
-		//ensure that yMax >= yMin
-		if (errorMessages.size() > 0) {
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.INVALID_BOUNDARY_RECTANGLE,
-					errorMessages);
-			throw rifServiceException;
-		}
-		
+
+		countErrors(
+			RIFServiceError.INVALID_BOUNDARY_RECTANGLE, 
+			errorMessages);
 	}
 	
 	// ==========================================
@@ -228,4 +431,14 @@ public class BoundaryRectangle {
 	// ==========================================
 	// Section Override
 	// ==========================================
+	
+	@Override
+	public String getRecordType() {
+		
+		String recordNameLabel
+			= RIFServiceMessages.getMessage("boundaryRectangle.label");
+		return recordNameLabel;
+	}	
+
+	
 }

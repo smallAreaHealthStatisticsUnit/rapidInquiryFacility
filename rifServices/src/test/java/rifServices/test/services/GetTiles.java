@@ -122,10 +122,10 @@ public final class GetTiles
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
 			validGeoLevelSelect.setName("LEVEL3");
 			BoundaryRectangle validBoundaryRectangle = cloneValidBoundaryRectangle();
-			validBoundaryRectangle.setYMax(55.5268);
-			validBoundaryRectangle.setXMax(-4.88654);
-			validBoundaryRectangle.setYMin(52.6875);
-			validBoundaryRectangle.setXMin(-7.58829);
+			validBoundaryRectangle.setYMax("55.5268");
+			validBoundaryRectangle.setXMax("-4.88654");
+			validBoundaryRectangle.setYMin("52.6875");
+			validBoundaryRectangle.setXMin("-7.58829");
 			//y_max  |  x_max   |  y_min  |  x_min
 			 //---------+----------+---------+----------
 			 // 55.5268 | -4.88654 | 52.6875 | -7.58829
@@ -160,10 +160,10 @@ public final class GetTiles
 		validGeoLevelSelect.setName("LEVEL3");
 		Integer invalidZoomFactor = 21;
 		BoundaryRectangle validBoundaryRectangle = cloneValidBoundaryRectangle();
-		validBoundaryRectangle.setYMax(55.5268);
-		validBoundaryRectangle.setXMax(-4.88654);
-		validBoundaryRectangle.setYMin(52.6875);
-		validBoundaryRectangle.setXMin(-7.58829);
+		validBoundaryRectangle.setYMax("55.5268");
+		validBoundaryRectangle.setXMax("-4.88654");
+		validBoundaryRectangle.setYMin("52.6875");
+		validBoundaryRectangle.setXMin("-7.58829");
 		//y_max  |  x_max   |  y_min  |  x_min
 		 //---------+----------+---------+----------
 		 // 55.5268 | -4.88654 | 52.6875 | -7.58829
