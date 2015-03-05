@@ -326,6 +326,29 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 		throws RIFServiceException;	
 	
 	/**
+	 * Gets the map areas for a boundary rectangle
+	 *
+	 * @param user the user
+	 * @param geography the geography
+	 * @param geoLevelSelect the geo level select
+	 * @param boundaryRectangle the box that would provide the boundaries for map areas
+	 * @return String JSON result
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	 //TOUR_ADD_METHOD-1
+	 //Add the signature of our new method to the appropriate service interface	 
+	public String getMapAreasForBoundaryRectangle(
+		final User user,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect,
+		final BoundaryRectangle boundaryRectangle)
+		throws RIFServiceException;
+	
+
+	
+	
+	
+	/**
 	 * Gets the map areas.
 	 *
 	 * @param user the user

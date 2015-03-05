@@ -161,15 +161,6 @@ public interface RIFStudyServiceAPI {
 		final User user,
 		final Project project) 
 		throws RIFServiceException;
-
-	public ArrayList<MapArea> getMapAreasForBoundaryRectangle(
-		final User _user,
-		final Geography _geography,			
-		final GeoLevelSelect _geoLevelSelect,
-		final BoundaryRectangle _boundaryRectangle) 
-		throws RIFServiceException;	
-	
-	
 	
 	public void initialise(final Object startupParameter)
 		throws RIFServiceException;
