@@ -157,10 +157,10 @@ SELECT AddGeometryColumn('gis','x_sahsu_level2','geom','27700'/* UK */,'MULTIPOL
 SELECT AddGeometryColumn('gis','x_sahsu_level3','geom','27700'/* UK */,'MULTIPOLYGON',2);
 SELECT AddGeometryColumn('gis','x_sahsu_level4','geom','27700'/* UK */,'MULTIPOLYGON',2);
 
-\COPY gis.sahsu_grd_level1(wkt, id, level1, area) FROM  '../../GeospatialData/SAHSULAND/sahsu_grd_level1.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
-\COPY gis.sahsu_grd_level2(wkt, level2, area, level1, name) FROM  '../../GeospatialData/SAHSULAND/sahsu_grd_level2.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
-\COPY gis.sahsu_grd_level3(wkt, level2, level1, level3) FROM  '../../GeospatialData/SAHSULAND/sahsu_grd_level3.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
-\COPY gis.sahsu_grd_level4(wkt, perimeter, level4, level2, level1, level3) FROM  '../../GeospatialData/SAHSULAND/sahsu_grd_level4.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
+\COPY gis.sahsu_grd_level1(wkt, id, level1, area) FROM  '../../GeospatialData/SAHSULAND/SAHSU_GRD_Level1.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
+\COPY gis.sahsu_grd_level2(wkt, level2, area, level1, name) FROM  '../../GeospatialData/SAHSULAND/SAHSU_GRD_Level2.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
+\COPY gis.sahsu_grd_level3(wkt, level2, level1, level3) FROM  '../../GeospatialData/SAHSULAND/SAHSU_GRD_Level3.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
+\COPY gis.sahsu_grd_level4(wkt, perimeter, level4, level2, level1, level3) FROM  '../../GeospatialData/SAHSULAND/SAHSU_GRD_Level4.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
 --
 -- For editor's benefit
 --
@@ -222,7 +222,7 @@ CREATE TABLE gis.x_sahsu_cen_level4 (
 	ycentroid 	numeric);
 ALTER TABLE gis.x_sahsu_cen_level4 ADD PRIMARY KEY (gid);
 SELECT AddGeometryColumn('gis','x_sahsu_cen_level4','geom','27700','POINT',2);
-\COPY gis.sahsu_cen_level4(wkt, perimeter, level4, level2, level1, level3, xcentroid, ycentroid) FROM  '../../GeospatialData/SAHSULAND/sahsu_cen_level4.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
+\COPY gis.sahsu_cen_level4(wkt, perimeter, level4, level2, level1, level3, xcentroid, ycentroid) FROM  '../../GeospatialData/SAHSULAND/SAHSU_CEN_Level4.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
 --
 -- For editor's benefit
 --

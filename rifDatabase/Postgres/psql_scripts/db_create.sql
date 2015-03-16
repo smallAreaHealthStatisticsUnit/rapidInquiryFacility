@@ -44,8 +44,9 @@
 --
 -- Peter Hambly, SAHSU
 --
-\set ECHO OFF
-\set ON_ERROR_STOP ON
+--\set ECHO all
+\set ECHO none
+\set ON_ERROR_STOP on
 \echo Creating SAHSULAND database if required
 --
 -- This script is tightly coupled to the Makefile and requires the following variables to run:
@@ -388,6 +389,44 @@ BEGIN
 		EXECUTE sql_stmt;
 	END IF;
 --
+-- Non login roles
+--
+	FOREACH x IN ARRAY rolelist LOOP
+		OPEN c3(x);
+		FETCH c3 INTO c3_rec;
+		CLOSE c3;
+		IF c3_rec.rolname IS NOT NULL THEN
+			RAISE INFO 'db_create.sql() RIF schema role % exists', c3_rec.rolname::VARCHAR;
+--
+-- User is a rif user; and MUST be non privileged; streaming replication for backup is allowed
+--
+			OPEN c11(c3_rec.rolname);
+			FETCH c11 INTO c11_rec;
+			CLOSE c11;
+			IF c11_rec.usesuper IS NULL THEN
+				RAISE INFO 'db_create.sql() Role % is not a superuser',
+					c3_rec.rolname::VARCHAR;
+			ELSIF c11_rec.usesuper THEN
+				RAISE EXCEPTION 'db_create.sql() C209xy: Role % is superuser', 
+					c11_rec.usename::VARCHAR;
+			ELSIF c11_rec.usecreatedb THEN
+				RAISE EXCEPTION 'db_create.sql() C209xx: Role % has database creation privilege', 
+					c11_rec.usename::VARCHAR;
+			ELSIF c11_rec.usecatupd THEN
+				RAISE EXCEPTION 'db_create.sql() C209xx: Role % has update system catalog privilege', 
+					c11_rec.usename::VARCHAR;
+			END IF;
+--
+		ELSE
+	    		sql_stmt:='CREATE ROLE '||x||
+				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOLOGIN NOREPLICATION';
+			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+			EXECUTE sql_stmt;
+		END IF;
+	END LOOP;
+--
+-- Logon roles (users)
+--
 	FOREACH x IN ARRAY userlist LOOP
 		OPEN c1(x);
 		FETCH c1 INTO c1_rec;
@@ -477,42 +516,6 @@ BEGIN
 		END IF;
 	END LOOP;
 --
--- Non login roles
---
-	FOREACH x IN ARRAY rolelist LOOP
-		OPEN c3(x);
-		FETCH c3 INTO c3_rec;
-		CLOSE c3;
-		IF c3_rec.rolname IS NOT NULL THEN
-			RAISE INFO 'db_create.sql() RIF schema role % exists', c3_rec.rolname::VARCHAR;
---
--- User is a rif user; and MUST be non privileged; streaming replication for backup is allowed
---
-			OPEN c11(c3_rec.rolname);
-			FETCH c11 INTO c11_rec;
-			CLOSE c11;
-			IF c11_rec.usesuper IS NULL THEN
-				RAISE INFO 'db_create.sql() Role % is not a superuser',
-					c3_rec.rolname::VARCHAR;
-			ELSIF c11_rec.usesuper THEN
-				RAISE EXCEPTION 'db_create.sql() C209xy: User % is superuser', 
-					c11_rec.usename::VARCHAR;
-			ELSIF c11_rec.usecreatedb THEN
-				RAISE EXCEPTION 'db_create.sql() C209xx: User % has database creation privilege', 
-					c11_rec.usename::VARCHAR;
-			ELSIF c11_rec.usecatupd THEN
-				RAISE EXCEPTION 'db_create.sql() C209xx: User % has update system catalog privilege', 
-					c11_rec.usename::VARCHAR;
-			END IF;
---
-		ELSE
-	    		sql_stmt:='CREATE ROLE '||x||
-				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOLOGIN NOREPLICATION';
-			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
-			EXECUTE sql_stmt;
-		END IF;
-	END LOOP;
---
 -- Revoke PUBLIC
 --
 	sql_stmt:='REVOKE CREATE ON SCHEMA public FROM PUBLIC';
@@ -599,6 +602,7 @@ END;
 \echo * Format is: hostname:port:database:username:password
 \echo *****************************************************************************************************
 --
+\set ECHO all
 \c postgres :testuser :pghost
 \echo "Try to connect as rif40. This will fail if if the password file is not setup correctly"
 \c postgres rif40 :pghost
@@ -608,6 +612,7 @@ END;
 -- Re-connect as postgres
 \c postgres postgres :pghost
 
+\set ECHO none
 \echo ************************************************************************************
 \echo *                                                                                  
 \echo * WARNING !!!                                                                      

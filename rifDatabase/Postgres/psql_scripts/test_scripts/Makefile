@@ -144,7 +144,7 @@ endif
 # Programs and parameters
 #
 PSQL=psql
-PSQL_FLAGS=-U rif40 -d $(DBNAME) -w -P pager=off \
+PSQL_FLAGS=-U rif40 -d $(DBNAME) -h $(PGHOST) -w -P pager=off \
 	-v testuser=$(TESTUSER) -v verbosity=$(VERBOSITY) -v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO) \
 	-v pghost=$(PGHOST)
 #
