@@ -101,6 +101,7 @@
 --
 --\set ON_ERROR_STOP OFF
 \set VERBOSITY terse
+--\set VERBOSITY verbose
 DO LANGUAGE plpgsql $$
 DECLARE
 --
@@ -110,7 +111,7 @@ DECLARE
 							'_rif40_common_partition_create_setup',
 							'_rif40_range_partition_create_insert',
 							'_rif40_common_partition_create_complete',
-							'_rif40_method4',
+							'rif40_method4',
 							'rif40_ddl'];
 	l_function 			VARCHAR;
 --
@@ -122,7 +123,7 @@ DECLARE
 		   AND c.relkind    = 'r' /* Relational table */
 		   AND c.relpersistence IN ('p', 'u') /* Persistence: permanent/unlogged */ 
 		   AND b.attname    = 'year'
-		   AND a.schemaname = 'rif40'
+		   AND a.schemaname = 'rif_data'
 		 ORDER BY 1;
 --
 	c1_rec RECORD;
@@ -153,6 +154,7 @@ BEGIN
 	FOR c1_rec IN c1 LOOP
 		PERFORM rif40_sql_pkg.rif40_range_partition(c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR, 'year'::VARCHAR);
 	END LOOP;
+--	RAISE EXCEPTION 'Stop';
 END;
 $$;
 

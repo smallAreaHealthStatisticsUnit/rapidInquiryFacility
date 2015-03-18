@@ -416,9 +416,13 @@ DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_GetMapAreas(VARCHAR, VARCHAR, REAL, 
 
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash_partition_functional_index(l_schema character varying, l_table character varying, l_column character varying, num_partitions integer, OUT ddl_stmt character varying[]);
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(l_schema character varying, l_table character varying, l_column character varying, l_num_partitions integer);
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR, INTEGER, INTEGER);
+
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash_partition_create(l_schema character varying, master_table character varying, partition_table character varying, l_column character varying, l_value integer, num_partitions integer);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash_partition_create_insert(l_schema character varying, l_table character varying, l_column character varying, total_rows integer, num_partitions integer, OUT ddl_stmt character varying[], OUT index_name character varying);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create_insert(l_schema character varying, l_table character varying, l_column character varying, total_rows integer, OUT ddl_stmt character varying[], OUT index_name character varying);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash_partition_create_insert(VARCHAR, VARCHAR, VARCHAR, integer, integer, OUT ddl_stmt character varying[], OUT index_name character varying);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash_partition_create_insert(VARCHAR, VARCHAR, VARCHAR, VARCHAR, integer, integer, OUT ddl_stmt character varying[], OUT index_name character varying);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create_insert(VARCHAR, VARCHAR, VARCHAR, integer, OUT ddl_stmt character varying[], OUT index_name character varying);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create_insert(VARCHAR, VARCHAR, VARCHAR, VARCHAR, integer, OUT ddl_stmt character varying[], OUT index_name character varying);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_partition_count(l_schema character varying, l_table character varying);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_drop_master_trigger(l_schema character varying, l_table character varying);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_triggers(l_schema character varying, l_table character varying, l_column character varying, enable_or_disable character varying, OUT ddl_stmt character varying[]);

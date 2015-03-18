@@ -82,8 +82,6 @@ $$;
 
 \echo Partition all tables with study_id as a column...
 
-DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR);
-
 \set VERBOSITY terse
 DO LANGUAGE plpgsql $$
 DECLARE
@@ -110,9 +108,12 @@ DECLARE
 		   AND a.schemaname = 'rif40'
 		 ORDER BY 1;
 --
-	c1_rec RECORD;
+	c1_rec 		RECORD;
 --
-	sql_stmt VARCHAR[];
+	sql_stmt 	VARCHAR[];
+	num_fks 	INTEGER:=0;
+	i 			INTEGER:=0;
+	l_num_fks	INTEGER;
 BEGIN
 --
 -- Check user is rif40
@@ -138,9 +139,13 @@ BEGIN
 -- Enable hash partitioning on each table in turn
 --
 	FOR c1_rec IN c1 LOOP
-		RAISE INFO 'Hash partitioning: %.%', c1_rec.schemaname, c1_rec.tablename;
-		PERFORM rif40_sql_pkg.rif40_hash_partition(c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR, 'study_id');
+		i:=i+1;
+		RAISE INFO 'Hash partitioning[%]: %.%', i::VARCHAR, c1_rec.schemaname, c1_rec.tablename;
+		l_num_fks:=rif40_sql_pkg.rif40_hash_partition(c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR, 'study_id');
+		num_fks:=num_fks+l_num_fks;
+--		RAISE EXCEPTION 'Stop';
 	END LOOP;
+	RAISE INFO '% hash partitions created % foreign keys', i::VARCHAR, num_fks::VARCHAR;
 END;
 $$;
 

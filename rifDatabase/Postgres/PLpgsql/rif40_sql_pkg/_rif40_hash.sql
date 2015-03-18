@@ -1,10 +1,5 @@
 -- ************************************************************************
 --
--- This view code is for use by alter_N.sql series scripts, not the initial 
--- SAHSULAND build
---
--- ***********************************************************************
---
 -- GIT Header
 --
 -- $Format:Git ID: (%h) %ci$
@@ -13,7 +8,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - RIF40_COMPARISON_AREAS view
+-- Rapid Enquiry Facility (RIF) - Common partitioning functions
 --
 -- Copyright:
 --
@@ -66,28 +61,14 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE VIEW "rif40_comparison_areas" ("username", "study_id", "area_id", "hash_partition_number") 
-AS 
-SELECT  username, c.study_id, area_id, c.hash_partition_number
-   FROM t_rif40_comparison_areas c
-	LEFT OUTER JOIN rif40_study_shares s ON (c.study_id = s.study_id AND s.grantee_username = USER)
- WHERE username = USER OR
-       ('RIF_MANAGER' = (SELECT granted_role FROM user_role_privs WHERE granted_role = 'RIF_MANAGER')) OR
-       (s.grantee_username IS NOT NULL AND s.grantee_username::text <> '')
- ORDER BY 1;
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash(l_value VARCHAR, l_bucket INTEGER)
+RETURNS INTEGER
+AS 'SELECT (ABS(hashtext(l_value))%l_bucket)+1;' LANGUAGE sql IMMUTABLE STRICT;
 
-GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_comparison_areas TO rif_user;
-GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_comparison_areas TO rif_manager;
-COMMENT ON VIEW rif40_comparison_areas
-  IS 'Links study areas and bands for a given study.';
-COMMENT ON COLUMN rif40_comparison_areas.username IS 'Username';
-COMMENT ON COLUMN rif40_comparison_areas.study_id IS 'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq';
-COMMENT ON COLUMN rif40_comparison_areas.area_id IS 'An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE';
-COMMENT ON COLUMN rif40_comparison_areas.hash_partition_number IS 'Hash partition number. Used for partition elimination';
-
---
--- UPDATE/INSERT trigger created separately by rif40_trg_pkg.drop/create_instead_of_triggers
---
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_hash(VARCHAR, INTEGER) IS 'Function: 	_rif40_hash()
+Parameters:	Value (must be cast if required), number of buckets
+Returns:	Hash in the range 1 .. l_bucket 
+Description:	Hashing function (in SQL for speed)';
 
 --
 -- Eof

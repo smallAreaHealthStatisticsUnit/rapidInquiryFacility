@@ -1,10 +1,5 @@
 -- ************************************************************************
 --
--- This view code is for use by alter_N.sql series scripts, not the initial 
--- SAHSULAND build
---
--- ***********************************************************************
---
 -- GIT Header
 --
 -- $Format:Git ID: (%h) %ci$
@@ -13,7 +8,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - RIF40_COMPARISON_AREAS view
+-- Rapid Enquiry Facility (RIF) - Common partitioning functions
 --
 -- Copyright:
 --
@@ -66,28 +61,29 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE VIEW "rif40_comparison_areas" ("username", "study_id", "area_id", "hash_partition_number") 
-AS 
-SELECT  username, c.study_id, area_id, c.hash_partition_number
-   FROM t_rif40_comparison_areas c
-	LEFT OUTER JOIN rif40_study_shares s ON (c.study_id = s.study_id AND s.grantee_username = USER)
- WHERE username = USER OR
-       ('RIF_MANAGER' = (SELECT granted_role FROM user_role_privs WHERE granted_role = 'RIF_MANAGER')) OR
-       (s.grantee_username IS NOT NULL AND s.grantee_username::text <> '')
- ORDER BY 1;
-
-GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_comparison_areas TO rif_user;
-GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_comparison_areas TO rif_manager;
-COMMENT ON VIEW rif40_comparison_areas
-  IS 'Links study areas and bands for a given study.';
-COMMENT ON COLUMN rif40_comparison_areas.username IS 'Username';
-COMMENT ON COLUMN rif40_comparison_areas.study_id IS 'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq';
-COMMENT ON COLUMN rif40_comparison_areas.area_id IS 'An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE';
-COMMENT ON COLUMN rif40_comparison_areas.hash_partition_number IS 'Hash partition number. Used for partition elimination';
-
 --
--- UPDATE/INSERT trigger created separately by rif40_trg_pkg.drop/create_instead_of_triggers
+-- CHECK constraint functions for partition elimination. Do not work - suspect IMMUTABLE functions not supported in C
+-- All apart from INTEGER are commented out. Usage:
 --
+-- CREATE TABLE rif40_study_shares_p15 (
+-- CONSTRAINT rif40_study_shares_p15_ck CHECK (hash_partition_number = 15 /* bucket requested */)
+-- ) INHERITS (rif40_study_shares);
+--
+--CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash_bucket_check(l_value VARCHAR, l_bucket INTEGER, l_bucket_requested INTEGER)
+--RETURNS VARCHAR
+--AS 'SELECT CASE WHEN l_bucket_requested IS NULL THEN NULL WHEN l_bucket_requested = (ABS(hashtext(l_value))%l_bucket)+1 THEN l_value ELSE NULL END;' LANGUAGE sql IMMUTABLE STRICT;
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash_bucket_check(l_value INTEGER, l_bucket INTEGER, l_bucket_requested INTEGER)
+RETURNS INTEGER
+AS 'SELECT CASE WHEN l_bucket_requested IS NULL THEN NULL WHEN l_bucket_requested = (ABS(hashtext(l_value::TEXT))%l_bucket)+1 THEN l_value ELSE NULL END;' LANGUAGE sql IMMUTABLE STRICT;
+
+--COMMENT ON FUNCTION rif40_sql_pkg._rif40_hash_bucket_check(VARCHAR, INTEGER, INTEGER) IS 'Function: 	_rif40_hash()
+--Parameters:	Value, number of buckets, bucket number requested
+--Returns:	Value if bucket number requested = Hash computed in the range 1 .. l_bucket; NULL otherwise 
+--Description:	Hashing function; suitable for partition elimination equalities';
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_hash_bucket_check(INTEGER, INTEGER, INTEGER) IS 'Function: 	_rif40_hash()
+Parameters:	Value, number of buckets, bucket number requested
+Returns:	Value if bucket number requested = Hash computed in the range 1 .. l_bucket; NULL otherwise 
+Description:	Hashing function; suitable for partition elimination equalities';
 
 --
 -- Eof
