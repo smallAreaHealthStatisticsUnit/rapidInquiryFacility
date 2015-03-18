@@ -416,7 +416,7 @@ DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_GetMapAreas(VARCHAR, VARCHAR, REAL, 
 
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash_partition_functional_index(l_schema character varying, l_table character varying, l_column character varying, num_partitions integer, OUT ddl_stmt character varying[]);
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(l_schema character varying, l_table character varying, l_column character varying, l_num_partitions integer);
-DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR, INTEGER, INTEGER);
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR, VARCHAR[], INTEGER);
 
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash_partition_create(l_schema character varying, master_table character varying, partition_table character varying, l_column character varying, l_value integer, num_partitions integer);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash_partition_create_insert(VARCHAR, VARCHAR, VARCHAR, integer, integer, OUT ddl_stmt character varying[], OUT index_name character varying);
@@ -427,7 +427,10 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_partition_count(l_schema character 
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_drop_master_trigger(l_schema character varying, l_table character varying);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_triggers(l_schema character varying, l_table character varying, l_column character varying, enable_or_disable character varying, OUT ddl_stmt character varying[]);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create(l_schema character varying, master_table character varying, partition_table character varying, l_column character varying, l_value character varying);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_setup(l_schema character varying, l_table character varying, l_column character varying, hash_partition_count integer, OUT ddl_stmt character varying[], OUT fk_stmt character varying[], OUT num_partitions integer, OUT min_value character varying, OUT total_rows integer, OUT warnings integer);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, INTEGER, 
+	OUT VARCHAR[], OUT VARCHAR[], OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[], INTEGER, 
+	OUT VARCHAR[], OUT VARCHAR[], OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_complete(l_schema character varying, l_table character varying, l_column character varying, index_name character varying);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getmapareaattributevalue(getmap_temp_table character varying, getmap_ref_cursor refcursor, l_offset integer, l_row_limit integer);
 DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_createmapareaattributesource_explain_ddl(sql_stmt character varying, l_geography character varying, l_geolevel_select character varying);

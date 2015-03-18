@@ -1,21 +1,23 @@
-
-
-
-								
-								
-			if ((typeof(tile_id) !== 'undefined') && (tile_id !== null)) {
-				
-				}
-				});
-				console.log('CC ' + i + '] ' + tile_id);
-			}
-			else {
-					client.end();
-					return console.error('Unexpected null processing query: ' + sql_stmt + ';', err);
-			}
- 
-		}
-		var end = client.query('COMMIT');
-		console.log('Commit');
-		client.end();
-
+SELECT con.conname, 
+			       con.oid AS constraint_oid,
+			       c1.oid AS this_table_oid,
+			       c2.oid AS ref_fk_part_oid,
+			       ns1.nspname AS con_schema_name,
+			       c1.relname AS this_table_name,
+			       c2.relname AS ref_fk_table_name,
+			       c1.relnamespace AS schema_oid,
+			       c2.relnamespace AS ref_fk_schema_oid,
+			       c1.relhassubclass AS is_partitioned,
+			       c2.relhassubclass AS is_ref_fk_partitioned,
+		               CASE WHEN ih2.inhrelid IS NOT NULL THEN TRUE ELSE FALSE END is_a_ref_fk_partition,
+			       ih2.inhseqno AS inhseqno_ref_fk,
+			       ih2.inhparent AS ref_fk_master_oid
+			  FROM pg_constraint con
+			        LEFT OUTER JOIN pg_namespace ns1 ON (con.connamespace = ns1.oid)
+			        LEFT OUTER JOIN pg_class c1 ON (con.confrelid = c1.oid) /* Foreign keys referencing this table */
+			        LEFT OUTER JOIN pg_class c2 ON (con.conrelid  = c2.oid) /* Tables referencing this table by foreign keys */
+		        	LEFT OUTER JOIN pg_inherits ih2 ON (c2.oid    = ih2.inhrelid)
+							/* Is the table referencing this table inheriting (i.e. is a partition) */
+			   WHERE  c1.relname    = 't_rif40_studies' 	/* This table */
+			   AND c1.relname IS NOT NULL
+			   AND con.contype   = 'f'     	/* Foreign key constraints */;

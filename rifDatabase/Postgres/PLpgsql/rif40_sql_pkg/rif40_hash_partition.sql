@@ -62,17 +62,17 @@ END;
 $$;
 
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR, INTEGER);
---DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR, INTEGER, INTEGER);
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR, VARCHAR[], INTEGER);
 
 CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_hash_partition(
-	l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, l_num_partitions INTEGER DEFAULT 16)
-RETURNS INTEGER
+	l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, l_table_list VARCHAR[], l_num_partitions INTEGER DEFAULT 16)
+RETURNS VARCHAR[]
 SECURITY INVOKER
 AS $func$
 /*
 Function: 	rif40_hash_partition()
-Parameters:	Schema, table, column, number of partitions, number of foreign keys (OUT)
-Returns:	Nothing
+Parameters:	Schema, table, column, number of partitions, list of tables in current partition build, number of foreign keys (OUT)
+Returns:	Foreign key rebuild SQL array
 Description:	Hash partition schema.table on column
 
  */
@@ -93,7 +93,6 @@ DECLARE
 	rec_list		VARCHAR;
 	bind_list		VARCHAR;
 	ddl_stmt 		VARCHAR[];
-	fk_stmt 		VARCHAR[];
 	l_ddl_stmt 		VARCHAR[];
 	num_partitions		INTEGER;
 	min_value		VARCHAR;
@@ -104,8 +103,8 @@ DECLARE
 	j			INTEGER:=0;
 	warnings		INTEGER:=0;
 	total_partitions	INTEGER;
-	p_schema	VARCHAR:='rif40_partitions';	
-	l_num_fks	INTEGER;
+	p_schema	VARCHAR:='rif40_partitions';
+	fk_stmt VARCHAR[];	
 --
 	error_message 		VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
@@ -133,7 +132,7 @@ BEGIN
 --
 -- Call: _rif40_common_partition_create_setup()
 --
-	create_setup:=rif40_sql_pkg._rif40_common_partition_create_setup(l_schema, l_table, l_column, l_num_partitions);
+	create_setup:=rif40_sql_pkg._rif40_common_partition_create_setup(l_schema, p_schema, l_table, l_column, l_table_list, l_num_partitions);
 --
 -- Force creation - tables are mainly empty in dev.
 --
@@ -254,7 +253,7 @@ BEGIN
 	create_insert:=rif40_sql_pkg._rif40_hash_partition_create_insert(p_schema /* partitions schema */, l_schema /* Source table schema */,
 			l_table, l_column, total_rows, l_num_partitions);
 	IF create_insert.ddl_stmt IS NULL THEN /* Un partitionable */
-		RETURN 0;
+		RETURN NULL;
 	END IF;
 --
 -- Copy out parameters
@@ -307,59 +306,8 @@ BEGIN
 			RAISE;
 	END;
 
---
--- Put back foreign keys, e.g.
---
-/*
-CREATE TRIGGER t_rif40_investigations_p16_checks BEFORE INSERT OR UPDATE OF username, inv_name, inv_description, year_start, year_stop, max_age_group, min_age_group, genders, numer_tab, investigation_state, geography, study_id, inv_id, classifier, classifier_bands, mh_test_type ON t_rif40_investigations_p16 FOR EACH ROW WHEN ((((((((((((((((((new.username IS NOT NULL) AND ((new.username)::text <> ''::text)) OR ((new.inv_name IS NOT NULL) AND ((new.inv_name)::text <> ''::text))) OR ((new.inv_description IS NOT NULL) AND ((new.inv_description)::text <> ''::text))) OR ((new.year_start IS NOT NULL) AND ((new.year_start)::text <> ''::text))) OR ((new.year_stop IS NOT NULL) AND ((new.year_stop)::text <> ''::text))) OR ((new.max_age_group IS NOT NULL) AND ((new.max_age_group)::text <> ''::text))) OR ((new.min_age_group IS NOT NULL) AND ((new.min_age_group)::text <> ''::text))) OR ((new.genders IS NOT NULL) AND ((new.genders)::text <> ''::text))) OR ((new.investigation_state IS NOT NULL) AND ((new.investigation_state)::text <> ''::text))) OR ((new.numer_tab IS NOT NULL) AND ((new.numer_tab)::text <> ''::text))) OR ((new.geography IS NOT NULL) AND ((new.geography)::text <> ''::text))) OR ((new.study_id IS NOT NULL) AND ((new.study_id)::text <> ''::text))) OR ((new.inv_id IS NOT NULL) AND ((new.inv_id)::text <> ''::text))) OR ((new.classifier IS NOT NULL) AND ((new.classifier)::text <> ''::text))) OR ((new.classifier_bands IS NOT NULL) AND ((new.classifier_bands)::text <> ''::text))) OR ((new.mh_test_type IS NOT NULL) AND ((new.mh_test_type)::text <> ''::text)))) EXECUTE PROCEDURE rif40_trg_pkg.trigger_fct_t_rif40_investigations_checks();
- */
--- 
---
-	IF fk_stmt IS NOT NULL THEN
-		BEGIN
-			PERFORM rif40_sql_pkg.rif40_ddl(fk_stmt);
---			RAISE plpgsql_error;
-		EXCEPTION
-			WHEN others THEN
---
--- Catch foreign key errors:
---
--- psql:../psql_scripts/v4_0_study_id_partitions.sql:145: INFO:  [DEBUG1] rif40_ddl(): SQL> ALTER TABLE rif40.rif40_study_shares_p10
---       ADD CONSTRAINT /* Add support for local partitions */ rif40_study_shares_p10_study_id_fk FOREIGN KEY (study_id) REFERENCES t_rif40_studies_p10(study_id)
--- /* Referenced foreign key table: rif40.rif40_study_shares_p10 has partitions: false, is a partition: true */
--- /* Referenced foreign key partition: 10 of 16 */;
--- psql:../psql_scripts/v4_0_study_id_partitions.sql:145: WARNING:  rif40_ddl(): SQL in error (42830)> ALTER TABLE rif40.rif40_study_shares_p10
---        ADD CONSTRAINT /* Add support for local partitions */ rif40_study_shares_p10_study_id_fk
--- FOREIGN KEY (study_id) REFERENCES t_rif40_studies_p10(study_id)
--- /* Referenced foreign key table: rif40.rif40_study_shares_p10 has partitions: false, is a partition: true */
--- /* Referenced foreign key partition: 10 of 16 */;
--- psql:../psql_scripts/v4_0_study_id_partitions.sql:145: ERROR:  there is no unique constraint matching given keys for referenced table "t_rif40_studies_p10"
--- Time: 205205.927 ms
---
--- [this is caused by a missing PRIMARY KEY on t_rif40_studies_p10]
---
-				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
-				error_message:='rif40_hash_partition() caught in rif40_ddl(fk_stmt): '||E'\n'||
-					SQLERRM::VARCHAR||' in SQL> '||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
-				RAISE INFO '2: %', error_message;
---				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM rif40_study_shares_p10', 'rif40_study_shares_p10');
---				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM rif40_study_shares', 'rif40_study_shares');
---				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM t_rif40_studies_p10', 't_rif40_studies_p10');
---				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM t_rif40_studies', 't_rif40_studies');
---
-				RAISE;
-		END;
---		
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_hash_partition', '% foreign keys during partition of: %.% created % partitions, % rows total OK', 
-			array_length(fk_stmt, 1)::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, num_partitions::VARCHAR, total_rows::VARCHAR);
-		l_num_fks:=array_length(fk_stmt, 1);
-	ELSE
-		l_num_fks:=0;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_hash_partition', 'No foreign keys during partition of: %.% created % partitions, % rows total OK', 
-			l_schema::VARCHAR, l_table::VARCHAR, num_partitions::VARCHAR, total_rows::VARCHAR);
-	END IF;
 	IF l_table = 't_rif40_studies' THEN
---		RAISE plpgsql_error;
+		RAISE plpgsql_error;
 	END IF;
 
 --
@@ -431,13 +379,13 @@ Total runtime: 1.310 ms
 -- Used to halt alter_1.sql for testing
 --
 --	RAISE plpgsql_error;
-	RETURN l_num_fks;
+	RETURN fk_stmt;
 END;
 $func$ LANGUAGE plpgsql;
 
-COMMENT ON FUNCTION rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR, INTEGER) IS 'Function: 	rif40_hash_partition()
+COMMENT ON FUNCTION rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR, VARCHAR[], INTEGER) IS 'Function: 	rif40_hash_partition()
 Parameters:	Schema, table, columnn, number of partitions
-Returns:	Nothing
+Returns:	Foreign key rebuild SQL array
 Description:	Hash partition schema.table on column
 ';
 

@@ -98,8 +98,18 @@ DECLARE
 	l_function 			VARCHAR;
 --
 	c1 CURSOR FOR
-		SELECT a.tablename AS tablename, b.attname AS columnname, schemaname AS schemaname	/* Tables */
-		  FROM pg_tables a, pg_attribute b, pg_class c
+		WITH d AS (
+			SELECT ARRAY_AGG(a.tablename) AS table_list
+			  FROM pg_tables a, pg_attribute b, pg_class c
+	 		 WHERE c.oid        = b.attrelid
+			   AND c.relname    = a.tablename
+  		       AND c.relkind    = 'r' /* Relational table */
+		       AND c.relpersistence IN ('p', 'u') /* Persistence: permanent/unlogged */ 
+		       AND b.attname    = 'study_id'
+		       AND a.schemaname = 'rif40'	
+		)
+		SELECT a.tablename AS tablename, b.attname AS columnname, schemaname AS schemaname, d.table_list	/* Tables */
+		  FROM pg_tables a, pg_attribute b, pg_class c, d
 		 WHERE c.oid        = b.attrelid
 		   AND c.relname    = a.tablename
 		   AND c.relkind    = 'r' /* Relational table */
@@ -113,7 +123,12 @@ DECLARE
 	sql_stmt 	VARCHAR[];
 	num_fks 	INTEGER:=0;
 	i 			INTEGER:=0;
-	l_num_fks	INTEGER;
+--
+	l_fk_stmt	VARCHAR[];
+	fk_stmt	VARCHAR[];	
+--
+	error_message 		VARCHAR;
+	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
 BEGIN
 --
 -- Check user is rif40
@@ -126,8 +141,8 @@ BEGIN
 --
 -- Turn on some debug
 --
-        PERFORM rif40_log_pkg.rif40_log_setup();
-        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+    PERFORM rif40_log_pkg.rif40_log_setup();
+    PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
 --
 -- Enabled debug on select rif40_sm_pkg functions
 --
@@ -140,11 +155,69 @@ BEGIN
 --
 	FOR c1_rec IN c1 LOOP
 		i:=i+1;
-		RAISE INFO 'Hash partitioning[%]: %.%', i::VARCHAR, c1_rec.schemaname, c1_rec.tablename;
-		l_num_fks:=rif40_sql_pkg.rif40_hash_partition(c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR, 'study_id');
-		num_fks:=num_fks+l_num_fks;
+		RAISE INFO '%********************************************************************************%*%* Hash partitioning[%]: %.% %*%********************************************************************************', 
+			E'\n', E'\n', E'\n', i::VARCHAR, c1_rec.schemaname, c1_rec.tablename, E'\n', E'\n';
+		l_fk_stmt:=NULL;
+		l_fk_stmt:=rif40_sql_pkg.rif40_hash_partition(c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR, 'study_id', c1_rec.table_list::VARCHAR[], 2);
+		IF fk_stmt IS NULL AND l_fk_stmt IS NOT NULL THEN	
+			num_fks:=num_fks+array_length(l_fk_stmt, 1);	
+			fk_stmt:=l_fk_stmt;
+		ELSIF fk_stmt IS NOT NULL AND l_fk_stmt IS NOT NULL THEN
+			num_fks:=num_fks+array_length(l_fk_stmt, 1);
+			fk_stmt:=array_append(fk_stmt, l_fk_stmt);
+		END IF;
 --		RAISE EXCEPTION 'Stop';
 	END LOOP;
+--
+-- Put back foreign keys, e.g.
+--
+/*
+CREATE TRIGGER t_rif40_investigations_p16_checks BEFORE INSERT OR UPDATE OF username, inv_name, inv_description, year_start, year_stop, max_age_group, min_age_group, genders, numer_tab, investigation_state, geography, study_id, inv_id, classifier, classifier_bands, mh_test_type ON t_rif40_investigations_p16 FOR EACH ROW WHEN ((((((((((((((((((new.username IS NOT NULL) AND ((new.username)::text <> ''::text)) OR ((new.inv_name IS NOT NULL) AND ((new.inv_name)::text <> ''::text))) OR ((new.inv_description IS NOT NULL) AND ((new.inv_description)::text <> ''::text))) OR ((new.year_start IS NOT NULL) AND ((new.year_start)::text <> ''::text))) OR ((new.year_stop IS NOT NULL) AND ((new.year_stop)::text <> ''::text))) OR ((new.max_age_group IS NOT NULL) AND ((new.max_age_group)::text <> ''::text))) OR ((new.min_age_group IS NOT NULL) AND ((new.min_age_group)::text <> ''::text))) OR ((new.genders IS NOT NULL) AND ((new.genders)::text <> ''::text))) OR ((new.investigation_state IS NOT NULL) AND ((new.investigation_state)::text <> ''::text))) OR ((new.numer_tab IS NOT NULL) AND ((new.numer_tab)::text <> ''::text))) OR ((new.geography IS NOT NULL) AND ((new.geography)::text <> ''::text))) OR ((new.study_id IS NOT NULL) AND ((new.study_id)::text <> ''::text))) OR ((new.inv_id IS NOT NULL) AND ((new.inv_id)::text <> ''::text))) OR ((new.classifier IS NOT NULL) AND ((new.classifier)::text <> ''::text))) OR ((new.classifier_bands IS NOT NULL) AND ((new.classifier_bands)::text <> ''::text))) OR ((new.mh_test_type IS NOT NULL) AND ((new.mh_test_type)::text <> ''::text)))) EXECUTE PROCEDURE rif40_trg_pkg.trigger_fct_t_rif40_investigations_checks();
+ */
+-- 
+--
+	IF fk_stmt IS NOT NULL THEN
+		BEGIN
+			PERFORM rif40_sql_pkg.rif40_ddl(fk_stmt);
+--			RAISE plpgsql_error;
+		EXCEPTION
+			WHEN others THEN
+--
+-- Catch foreign key errors:
+--
+-- psql:../psql_scripts/v4_0_study_id_partitions.sql:145: INFO:  [DEBUG1] rif40_ddl(): SQL> ALTER TABLE rif40.rif40_study_shares_p10
+--       ADD CONSTRAINT /* Add support for local partitions */ rif40_study_shares_p10_study_id_fk FOREIGN KEY (study_id) REFERENCES t_rif40_studies_p10(study_id)
+-- /* Referenced foreign key table: rif40.rif40_study_shares_p10 has partitions: false, is a partition: true */
+-- /* Referenced foreign key partition: 10 of 16 */;
+-- psql:../psql_scripts/v4_0_study_id_partitions.sql:145: WARNING:  rif40_ddl(): SQL in error (42830)> ALTER TABLE rif40.rif40_study_shares_p10
+--        ADD CONSTRAINT /* Add support for local partitions */ rif40_study_shares_p10_study_id_fk
+-- FOREIGN KEY (study_id) REFERENCES t_rif40_studies_p10(study_id)
+-- /* Referenced foreign key table: rif40.rif40_study_shares_p10 has partitions: false, is a partition: true */
+-- /* Referenced foreign key partition: 10 of 16 */;
+-- psql:../psql_scripts/v4_0_study_id_partitions.sql:145: ERROR:  there is no unique constraint matching given keys for referenced table "t_rif40_studies_p10"
+-- Time: 205205.927 ms
+--
+-- [this is caused by a missing PRIMARY KEY on t_rif40_studies_p10]
+--
+				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+				error_message:='v4_0_study_id_partitions.sql: caught in rif40_ddl(fk_stmt): '||E'\n'||
+					SQLERRM::VARCHAR||' in SQL> '||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
+				RAISE INFO '2: %', error_message;
+--				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM rif40_study_shares_p10', 'rif40_study_shares_p10');
+--				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM rif40_study_shares', 'rif40_study_shares');
+--				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM t_rif40_studies_p10', 't_rif40_studies_p10');
+--				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM t_rif40_studies', 't_rif40_studies');
+--
+				RAISE;
+		END;
+--		
+		RAISE INFO 'v4_0_study_id_partitions.sql: % foreign keys during partition of: %.% created % partitions, % rows total OK', 
+			array_length(fk_stmt, 1)::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, num_partitions::VARCHAR, total_rows::VARCHAR;
+
+	ELSE
+		RAISE INFO 'v4_0_study_id_partitions.sql: No foreign keys during partition of: %.% created % partitions, % rows total OK', 
+			l_schema::VARCHAR, l_table::VARCHAR, num_partitions::VARCHAR, total_rows::VARCHAR;
+	END IF;	
 	RAISE INFO '% hash partitions created % foreign keys', i::VARCHAR, num_fks::VARCHAR;
 END;
 $$;

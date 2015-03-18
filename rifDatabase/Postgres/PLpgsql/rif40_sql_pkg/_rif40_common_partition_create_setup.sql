@@ -61,16 +61,23 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_create_setup(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR,
-	hash_partition_count INTEGER,
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, INTEGER, 
+	OUT VARCHAR[], OUT VARCHAR[], OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[], INTEGER, 
+	OUT VARCHAR[], OUT VARCHAR[], OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER);
+	
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_create_setup(master_schema VARCHAR, partition_schema VARCHAR, 
+		l_table VARCHAR, l_column VARCHAR,
+		l_table_list VARCHAR[], hash_partition_count INTEGER,
        	OUT ddl_stmt VARCHAR[], OUT fk_stmt VARCHAR[], OUT num_partitions INTEGER, OUT min_value VARCHAR, OUT total_rows INTEGER, OUT warnings INTEGER)
 RETURNS RECORD
 SECURITY DEFINER
 AS $func$
 /*
 Function: 	_rif40_common_partition_create_setup()
-Parameters:	Schema of source data (rif_data usually), table, column, if hash partition: number of partitions that will be created
-                [OUT] ddl statement array, [OUT] foreign key statement (re-)creation array,
+Parameters:	Schema of source data (rif_data usually), partition schema, table, column, 
+			list of tables in current partition build, if hash partition: number of partitions that will be created
+            [OUT] ddl statement array, [OUT] foreign key statement (re-)creation array,
 	       	[OUT] num_partitions, [OUT] min_value, [OUT] total_rows, [OUT] warnings
 Returns:	OUT parameters as a record
  		DDL statement array is NULL if the function is unable to partition
@@ -105,10 +112,11 @@ Foreign keys need to be disabled to avoid:
 psql:../psql_scripts/v4_0_study_id_partitions.sql:141: WARNING:  rif40_ddl(): SQL in error (0A000)> TRUNCATE TABLE rif40.t_rif40_investigations;
 psql:../psql_scripts/v4_0_study_id_partitions.sql:141: ERROR:  cannot truncate a table referenced in a foreign key constraint
 
+Error: range: _rif40_common_partition_create_setup:				71050 to 71099
  */
 DECLARE
 	c1gangep 		REFCURSOR;
-	c2gangep CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get trigger, unique, check and exclusion constraints */
+	c2gangep CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Foreign keys referencing this table */
 		WITH a AS (
 			SELECT con.conname, 
 			       con.oid AS constraint_oid,
@@ -130,8 +138,7 @@ DECLARE
 			        LEFT OUTER JOIN pg_class c2 ON (con.conrelid  = c2.oid) /* Tables referencing this table by foreign keys */
 		        	LEFT OUTER JOIN pg_inherits ih2 ON (c2.oid    = ih2.inhrelid)
 							/* Is the table referencing this table inheriting (i.e. is a partition) */
-			 WHERE ns1.nspname   = l_schema
-			   AND c1.relname    = l_table 	/* This table */
+			 WHERE c1.relname    = l_table 	/* This table */
 			   AND con.contype   = 'f'     	/* Foreign key constraints */
 		)
 		SELECT conname, constraint_oid, this_table_oid, ref_fk_part_oid, ref_fk_master_oid,
@@ -214,7 +221,7 @@ BEGIN
 -- Must be rif40 or have rif_user or rif_manager role
 --
 	IF USER != 'rif40' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, '_rif40_common_partition_create_setup', 'User % must be rif40 or have rif_user or rif_manager role', 
+		PERFORM rif40_log_pkg.rif40_error(-71050, '_rif40_common_partition_create_setup', 'User % must be rif40 or have rif_user or rif_manager role', 
 			USER::VARCHAR);
 	END IF;
 	warnings:=0;
@@ -222,8 +229,8 @@ BEGIN
 -- Check if table is valid
 --
 	BEGIN
-		sql_stmt:='SELECT COUNT(DISTINCT('||quote_ident(l_column)||')) AS num_partitions, COUNT('||quote_ident(l_column)||') AS total_rows, MIN('||quote_ident(l_column)||')::VARCHAR AS l_min_value FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||' LIMIT 1'; 
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', 'SQL> %;', sql_stmt::VARCHAR);
+		sql_stmt:='SELECT COUNT(DISTINCT('||quote_ident(l_column)||')) AS num_partitions, COUNT('||quote_ident(l_column)||') AS total_rows, MIN('||quote_ident(l_column)||')::VARCHAR AS l_min_value FROM '||quote_ident(master_schema)||'.'||quote_ident(l_table)||' LIMIT 1'; 
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', '[71051] SQL> %;', sql_stmt::VARCHAR);
 		OPEN c1gangep FOR EXECUTE sql_stmt;
 		FETCH c1gangep INTO num_partitions, total_rows, l_min_value;
 		GET DIAGNOSTICS l_rows = ROW_COUNT;
@@ -236,7 +243,7 @@ BEGIN
 	EXCEPTION
 		WHEN others THEN
 			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
-			error_message:='_rif40_common_partition_create_setup() caught: '||E'\n'||
+			error_message:='[-71052] _rif40_common_partition_create_setup() caught: '||E'\n'||
 				SQLERRM::VARCHAR||' in SQL> '||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
 			RAISE INFO '2: %', error_message;
 --
@@ -247,32 +254,32 @@ BEGIN
 --
 	table_length:=length(quote_ident(l_table));
 --
--- Hash partiitions depends on the hash, not the data so set
+-- Hash partitions depends on the hash, not the data so set
 --
 	IF hash_partition_count IS NOT NULL THEN
 		num_partitions:=hash_partition_count;
 	END IF;
 --
 	IF table_length > name_length_limit-5 THEN
-		PERFORM rif40_log_pkg.rif40_error(-20997, '_rif40_common_partition_create_setup', 
+		PERFORM rif40_log_pkg.rif40_error(-71053, '_rif40_common_partition_create_setup', 
 			'Automatic range/hash partition by %: %.%; table name is too long %, limit is %', 
-			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, table_length::VARCHAR, (name_length_limit-5)::VARCHAR);
+			l_column::VARCHAR, master_schema::VARCHAR, l_table::VARCHAR, table_length::VARCHAR, (name_length_limit-5)::VARCHAR);
 -- 
 -- IF yes, copy to temporary table, truncate
 --
 	ELSIF l_rows > 0 AND num_partitions > 1 THEN
 --
 		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_common_partition_create_setup', 
-			'Automatic range/hash partition by %: %.%; % partitions', 
-			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, num_partitions::VARCHAR);
+			'[71054] Automatic range/hash partition by %: %.%; % partitions', 
+			l_column::VARCHAR, master_schema::VARCHAR, l_table::VARCHAR, num_partitions::VARCHAR);
 --
 -- Check if table is already partitioned
 --
-		total_partitions:=rif40_sql_pkg._rif40_partition_count(l_schema, l_table);
+		total_partitions:=rif40_sql_pkg._rif40_partition_count(master_schema, l_table);
 		IF total_partitions >= 1 THEN
-			PERFORM rif40_log_pkg.rif40_error(-20991, '_rif40_common_partition_create_setup', 
+			PERFORM rif40_log_pkg.rif40_error(-71055, '_rif40_common_partition_create_setup', 
 				'Automatic range/hash partition by %: %.%; table name is already partitioned into: % partitions', 
-				l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, total_partitions::VARCHAR);
+				l_column::VARCHAR, master_schema::VARCHAR, l_table::VARCHAR, total_partitions::VARCHAR);
 		END IF;
 --
 -- Check data is partitionable 
@@ -290,7 +297,7 @@ SELECT year AS value,
 			sql_stmt:='SELECT '||quote_ident(l_column)||' AS value, '||E'\n'||
 '       SUBSTRING('||quote_ident(l_column)||'::Text FROM ''[[:alnum:]_]{1,'||(name_length_limit-table_length-1)::VARCHAR||'}'') AS valid_chars,'||E'\n'||
 '       COUNT('||quote_ident(l_column)||') as total'||E'\n'||
-'  FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||
+'  FROM '||quote_ident(master_schema)||'.'||quote_ident(l_table)||E'\n'||
 ' WHERE SUBSTRING('||quote_ident(l_column)||'::Text FROM ''[[:alnum:]_]{1,'||(name_length_limit-table_length-1)::VARCHAR||'}'') != '||quote_ident(l_column)||'::Text'||E'\n'||
 ' GROUP BY '||quote_ident(l_column)||E'\n'||
 ' ORDER BY '||quote_ident(l_column)||'';
@@ -298,19 +305,19 @@ SELECT year AS value,
 			FOR part_test_rec IN EXECUTE sql_stmt LOOP
 				i:=i+1;
 				PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_setup', 
-					'Automatic range/hash partition by %: %.%; partition % contains invalid characters to be part of a partition table name', 
-					l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, part_test_rec.value::VARCHAR);
+					'[71056] Automatic range/hash partition by %: %.%; partition % contains invalid characters to be part of a partition table name', 
+					l_column::VARCHAR, master_schema::VARCHAR, l_table::VARCHAR, part_test_rec.value::VARCHAR);
 			END LOOP;
 --
 			IF i > 0 THEN
-				PERFORM rif40_log_pkg.rif40_error(-20998, '_rif40_common_partition_create_setup',
+				PERFORM rif40_log_pkg.rif40_error(-71057, '_rif40_common_partition_create_setup',
 					'Automatic range/hash partition by %: %.%; % partitions contains invalid characters to be part of partition table names', 
-					l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, i::VARCHAR);
+					l_column::VARCHAR, master_schema::VARCHAR, l_table::VARCHAR, i::VARCHAR);
 			END IF;
 		EXCEPTION
 			WHEN others THEN
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
-				error_message:='_rif40_common_partition_create_setup() caught: '||E'\n'||
+				error_message:='[-71058] _rif40_common_partition_create_setup() caught: '||E'\n'||
 					SQLERRM::VARCHAR||' in SQL> '||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
 				RAISE INFO '2: %', error_message;
 --
@@ -321,25 +328,25 @@ SELECT year AS value,
 --
 -- Do not partition if table has only one distinct row
 --
-		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_setup', 'Unable to automatic range/hash partition by %: %.%; Not partitionable, only 1 distinct row', 
-			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR);
+		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_setup', '[71059] Unable to automatic range/hash partition by %: %.%; Not partitionable, only 1 distinct row', 
+			l_column::VARCHAR, master_schema::VARCHAR, l_table::VARCHAR);
 		RETURN;
 	ELSE
 --
 -- Warn if table has no rows or only 1 partition
 --
-		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_setup', 'Automatic range/hash partition by %: %.%; no rows (%)/only 1 partition (%)', 
-			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR,
+		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_setup', '[71060] Automatic range/hash partition by %: %.%; no rows (%)/only 1 partition (%)', 
+			l_column::VARCHAR, master_schema::VARCHAR, l_table::VARCHAR,
 			l_rows::VARCHAR, num_partitions::VARCHAR);
 	END IF;
 
 --
--- Copy to temp table, defer foreign key constraint triggers on table, truncate (dont panic - Postgres DDL is part of a transaction)
+-- Copy to temp table, defer foreign key constraint triggers on table, truncate (don''t panic - Postgres DDL is part of a transaction)
 --
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', 'Copy data to temporary table fron: %.%', 
-		l_schema::VARCHAR, l_table::VARCHAR);
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', '[71061] Copy data to temporary table fron: %.%', 
+		master_schema::VARCHAR, l_table::VARCHAR);
 --
--- Foreign key constraints cause:
+-- Foreign key constraints referencing this table cause:
 --
 -- psql:../psql_scripts/v4_0_study_id_partitions.sql:141: WARNING:  rif40_ddl(): SQL in error (0A000)> TRUNCATE TABLE rif40.t_rif40_investigations;
 -- psql:../psql_scripts/v4_0_study_id_partitions.sql:141: ERROR:  cannot truncate a table referenced in a foreign key constraint
@@ -347,12 +354,17 @@ SELECT year AS value,
 -- It would be better to defer foreign key constraints, but
 -- defer needs Postgres 9.4; so drop and re-create
 --
-	ddl_stmt[1]:='CREATE TEMPORARY TABLE rif40_auto_partition AS SELECT * FROM '||quote_ident(l_schema)||'.'||quote_ident(l_table);
+	ddl_stmt[1]:='CREATE TEMPORARY TABLE rif40_auto_partition AS SELECT * FROM '||quote_ident(master_schema)||'.'||quote_ident(l_table);
 	i:=0;
-	FOR c2_rec IN c2gangep(l_schema, l_table) LOOP
+--
+-- Foreign keys referencing this table 
+--
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', '[71062] Referencing foriegn key constaints; partitioning run table list: %',
+		array_to_string(l_table_list, ', '::Text)::VARCHAR);	
+	FOR c2_rec IN c2gangep(master_schema, l_table) LOOP
 		IF c2_rec.defer_constraint_def IS NOT NULL THEN
 			i:=i+1;
-
+--
 --			ddl_stmt[array_length(ddl_stmt, 1)+1]:=c2_rec.defer_constraint_def;
 			ddl_stmt[array_length(ddl_stmt, 1)+1]:=c2_rec.drop_constraint_def;
 --
@@ -375,23 +387,27 @@ SELECT year AS value,
 -- FOREIGN KEY (study_id, inv_id) REFERENCES t_rif40_investigations_p1(study_id, inv_id) /* has partitions: false, is a partition: true */;
 --psql:../psql_scripts/v4_0_study_id_partitions.sql:145: ERROR:  insert or update on table "t_rif40_inv_conditions_p8" violates foreign key constraint "t_rif40_inv_conditions_p8_si_fk" 
 --
-			IF c2_rec.is_ref_fk_partitioned = TRUE /* has partitions */ AND 
-			   c2_rec.is_a_ref_fk_partition = FALSE /* is NOT a partition */ THEN
+			IF c2_rec.is_ref_fk_partitioned = TRUE 	/* has partitions */ AND 
+			   c2_rec.is_a_ref_fk_partition = FALSE /* is NOT a partition */ AND
+			   NOT ARRAY[c2_rec.ref_fk_table_name]::VARCHAR[] <@ l_table_list   	/* List does not contain c2_rec.ref_fk_table_name */ THEN
 --
--- Referenced foreign key is not partitioned, but this table is
+-- Referenced foreign key is not partitioned, but this table is. If this is one of set of tables being partitioned the constraints
+-- can be enabled after all tables have been created. For the moment this is an error
 --
-				PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', 
-					'Ignoring referenced foreign key constraint[%.%] as has partitions (partitions has: %, is a: %): % on: %.% from: %.%', 
-					i::VARCHAR,
-					j::VARCHAR,
+--				PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_setup', 
+				PERFORM rif40_log_pkg.rif40_error(-71063, '_rif40_common_partition_create_setup', 
+					'Referencing foreign key constraint[%] as has partitions%(partitions: has: %, is a: %); % on: %.% from: %.% in list: %', 
+					i::VARCHAR								/* Index */,
+					E'\n'::VARCHAR,
 					c2_rec.is_ref_fk_partitioned::VARCHAR	/* has partitions */,
 					c2_rec.is_a_ref_fk_partition::VARCHAR	/* is a partition */,
-					c2_rec.conname::VARCHAR			/* Foreign key constraint */,
-					l_schema::VARCHAR, 
-					l_table::VARCHAR,
-					c2_rec.ref_fk_schema_name::VARCHAR	/* Schema of table referencing foreign key */,
-					c2_rec.ref_fk_table_name::VARCHAR	/* Table referencing foreign key */);
-			ELSE
+					c2_rec.conname::VARCHAR					/* Foreign key constraint */,
+					master_schema::VARCHAR						/* Schema */, 
+					l_table::VARCHAR						/* Table */,
+					c2_rec.ref_fk_schema_name::VARCHAR		/* Schema of table referencing foreign key */,
+					c2_rec.ref_fk_table_name::VARCHAR		/* Table referencing foreign key */,
+					(ARRAY[c2_rec.ref_fk_table_name]::VARCHAR[] <@ l_table_list)::VARCHAR /* list contains c2_rec.ref_fk_table_name */);
+			ELSE	
 --
 -- Referenced foreign key is partitioned, workout which partition it is in the sequence
 --
@@ -403,23 +419,56 @@ SELECT year AS value,
 				IF c3_rec.total_part IS NULL THEN
 					FETCH c3gangep INTO c3b_rec;
 					IF c3_rec.total_part IS NOT NULL THEN
-						PERFORM rif40_log_pkg.rif40_error(-20792, '_rif40_common_partition_create_setup', 
-							'Automatic range/hash partition by %: %.%; table name has % partitions, referenced foreign key table: %.% c3gangep partition error; expected 1 row, got >1', 
-							l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, total_partitions::VARCHAR,
+						PERFORM rif40_log_pkg.rif40_error(-71064, '_rif40_common_partition_create_setup', 
+							'Automatic range/hash partition by %: %.%; table name has % partitions, referencing foreign key table: %.% c3gangep partition error; expected 1 row, got >1', 
+							l_column::VARCHAR, master_schema::VARCHAR, l_table::VARCHAR, total_partitions::VARCHAR,
 							c2_rec.ref_fk_schema_name::VARCHAR	/* Schema of table referencing foreign key */,
 							c2_rec.ref_fk_table_name::VARCHAR	/* Table referencing foreign key */);
 					END IF;
 				END IF;
 				CLOSE c3gangep;
 --
--- No master table for ref_fk (i.e. it is not partition and can be ignored)
+-- No master table for ref_fk (i.e. it is not partition and can be ignored as long as it is part of this partition build)
 --
 				IF c2_rec.ref_fk_master_oid IS NULL THEN
-					PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', 
-						'Automatic range/hash partition by %: %.%; table name has % partitions, referenced foreign key table: %.% has no partitions; ignored', 
-						l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, total_partitions::VARCHAR,
-						c2_rec.ref_fk_schema_name::VARCHAR	/* Schema of table referencing foreign key */,
-						c2_rec.ref_fk_table_name::VARCHAR	/* Table referencing foreign key */);
+					IF ARRAY[c2_rec.ref_fk_table_name]::VARCHAR[] <@ l_table_list::VARCHAR[] THEN
+						PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', 
+							'[71065] Automatic range/hash partition by %: %.%; table name is being partitions,%referencing foreign key table: %.% his being partitioned; part of partition build: % ; ignored;', 
+							l_column::VARCHAR, 
+							master_schema::VARCHAR, 
+							l_table::VARCHAR, 
+							E'\n'::VARCHAR,						
+							c2_rec.ref_fk_schema_name::VARCHAR	/* Schema of table referencing foreign key */,
+							c2_rec.ref_fk_table_name::VARCHAR	/* Table referencing foreign key */,
+							(ARRAY[c2_rec.ref_fk_table_name]::VARCHAR[] <@ l_table_list::VARCHAR[])::VARCHAR /* list contains c2_rec.ref_fk_table_name */);
+						FOR j IN 1 .. hash_partition_count LOOP
+							sql_stmt:=REPLACE(
+									REPLACE(c2_rec.add_constraint_def,
+										'REFERENCES '||l_table,
+										'REFERENCES '||partition_schema||'.'||l_table||'_p'||j),
+									'ALTER TABLE '||master_schema||'.'||c2_rec.ref_fk_table_name,
+									'ALTER TABLE '||partition_schema||'.'||c2_rec.ref_fk_table_name||'_p'||j);
+							PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', 
+								'[71066] Foreign key SQL for restroing reference> %;',
+									sql_stmt::VARCHAR);
+							IF fk_stmt IS NULL THEN
+								fk_stmt:=sql_stmt;
+							ELSE
+								fk_stmt[array_length(fk_stmt, 1)+1]:=sql_stmt;
+							END IF;
+						END LOOP;
+					ELSE 
+						PERFORM rif40_log_pkg.rif40_error(-71067, '_rif40_common_partition_create_setup', 
+							'Automatic range/hash partition by %: %.%; table name has % partitions,%referencing foreign key table: %.% has no partitions; part of partition build: % ; ignored;', 
+							l_column::VARCHAR, 
+							master_schema::VARCHAR, 
+							l_table::VARCHAR, 
+							total_partitions::VARCHAR,
+							E'\n'::VARCHAR,						
+							c2_rec.ref_fk_schema_name::VARCHAR	/* Schema of table referencing foreign key */,
+							c2_rec.ref_fk_table_name::VARCHAR	/* Table referencing foreign key */,
+							(ARRAY[c2_rec.ref_fk_table_name]::VARCHAR[] <@ l_table_list::VARCHAR)::VARCHAR /* list contains c2_rec.ref_fk_table_name */);
+					END IF;
 				ELSIF c3_rec.total_part IS NULL THEN
 --
 -- OK I am expecting partitions, but have found none
@@ -450,9 +499,9 @@ SELECT inhrelid, inhparent, inhseqno,
 )
 SELECT * FROM a', 'inheritance table');
 --
-					PERFORM rif40_log_pkg.rif40_error(-20791, '_rif40_common_partition_create_setup', 
-						'Automatic range/hash partition by %: %.%; table name has % partitions, referenced foreign key table: %.% has no partitions; expected it to be partitioned', 
-						l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, total_partitions::VARCHAR,
+					PERFORM rif40_log_pkg.rif40_error(-71068, '_rif40_common_partition_create_setup', 
+						'Automatic range/hash partition by %: %.%; table name has % partitions, referencing foreign key table: %.% has no partitions; expected it to be partitioned', 
+						l_column::VARCHAR, master_schema::VARCHAR, l_table::VARCHAR, total_partitions::VARCHAR,
 						c2_rec.ref_fk_schema_name::VARCHAR	/* Schema of table referencing foreign key */,
 						c2_rec.ref_fk_table_name::VARCHAR	/* Table referencing foreign key */);
 --
@@ -460,9 +509,9 @@ SELECT * FROM a', 'inheritance table');
 --
 				ELSIF c3_rec.total_part != num_partitions THEN
 --					PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create_setup', 
-					PERFORM rif40_log_pkg.rif40_error(-20991, '_rif40_common_partition_create_setup', 
-						'Automatic range/hash partition by %: %.%; table name has % partitions, referenced foreign key table: %.% has % partitions, expecting: %', 
-						l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, total_partitions::VARCHAR,
+					PERFORM rif40_log_pkg.rif40_error(-71069, '_rif40_common_partition_create_setup', 
+						'Automatic range/hash partition by %: %.%; table name has % partitions, referencing foreign key table: %.% has % partitions, expecting: %', 
+						l_column::VARCHAR, master_schema::VARCHAR, l_table::VARCHAR, total_partitions::VARCHAR,
 						c2_rec.ref_fk_schema_name::VARCHAR	/* Schema of table referencing foreign key */,
 						c2_rec.ref_fk_table_name::VARCHAR	/* Table referencing foreign key */,
 						c3_rec.total_part::VARCHAR,
@@ -475,20 +524,20 @@ SELECT * FROM a', 'inheritance table');
 						fk_stmt[1]:=REPLACE(c2_rec.add_constraint_def, 
 							'REFERENCES '||l_table,
 							'REFERENCES '||l_table||'_p'||c3_rec.part_seq_no::Text)||E'\n'||
-							'/* Referenced foreign key partition: '||c3_rec.part_seq_no::Text||' of '||c3_rec.total_part::Text||' */';
+							'/* Referencing foreign key partition: '||c3_rec.part_seq_no::Text||' of '||c3_rec.total_part::Text||' */';
 					ELSE
 						fk_stmt[array_length(fk_stmt, 1)+1]:=REPLACE(c2_rec.add_constraint_def, 
 							'REFERENCES '||l_table,
 							'REFERENCES '||l_table||'_p'||c3_rec.part_seq_no::Text)||E'\n'||
-							'/* Referenced foreign key partition: '||c3_rec.part_seq_no::Text||' of '||c3_rec.total_part::Text||' */';
+							'/* Referencing foreign key partition: '||c3_rec.part_seq_no::Text||' of '||c3_rec.total_part::Text||' */';
 					END IF;
 					PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_setup', 
-						'Drop, re-create [later after data re import] referenced foreign key constraint[%] (partitions has: %, is a: %): % on: %.% from: %.% [%,%,%]%;', 
+						'[71070] Drop, re-create [later after data re import] referencing foreign key constraint[%] (partitions has: %, is a: %): % on: %.% from: %.% [%,%,%]%;', 
 						i::VARCHAR,
 						c2_rec.is_ref_fk_partitioned::VARCHAR	/* has partitions */,
 						c2_rec.is_a_ref_fk_partition::VARCHAR	/* is a partition */,
 						c2_rec.conname::VARCHAR			/* Foreign key constraint */,
-						l_schema::VARCHAR, 
+						master_schema::VARCHAR, 
 						l_table::VARCHAR,
 						c2_rec.ref_fk_schema_name::VARCHAR	/* Schema of table referencing foreign key */,
 						c2_rec.ref_fk_table_name::VARCHAR	/* Table referencing foreign key */,
@@ -603,16 +652,17 @@ inhrelid | inhparent | inhseqno   | partition_table_name | master_table_name | p
 --		RAISE plpgsql_error;
 	END IF;
 --	ddl_stmt[array_length(ddl_stmt, 1)+1]:='SET CONSTRAINTS ALL DEFERRED';
-	ddl_stmt[array_length(ddl_stmt, 1)+1]:='TRUNCATE TABLE '||quote_ident(l_schema)||'.'||quote_ident(l_table);
+	ddl_stmt[array_length(ddl_stmt, 1)+1]:='TRUNCATE TABLE '||quote_ident(master_schema)||'.'||quote_ident(l_table);
 END;
 $func$ 
 LANGUAGE plpgsql;
 
 --\df+ rif40_sql_pkg._rif40_common_partition_create_setup
 
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, INTEGER, OUT VARCHAR[], OUT VARCHAR[], OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER) IS 'Function: 	_rif40_common_partition_create_setup()
-Parameters:	Schema, table, column, if hash partition: number of partitions that will be created
-                [OUT] ddl statement array, [OUT] foreign key statement (re-)creation array,
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[], INTEGER, OUT VARCHAR[], OUT VARCHAR[], OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER) IS 'Function: 	_rif40_common_partition_create_setup()
+Parameters:	Schema of source data (rif_data usually), partition schema, table, column, 
+			list of tables in current partition build, if hash partition: number of partitions that will be created
+            [OUT] ddl statement array, [OUT] foreign key statement (re-)creation array,
 	       	[OUT] num_partitions, [OUT] min_value, [OUT] total_rows, [OUT] warnings
 Returns:	OUT parameters as a record
  		DDL statement array is NULL if the function is unable to partition
