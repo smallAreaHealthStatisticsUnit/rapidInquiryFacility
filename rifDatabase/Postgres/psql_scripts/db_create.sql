@@ -3,7 +3,7 @@
 -- GIT Header
 --
 -- $Format:Git ID: (%h) %ci$
--- $Id$
+-- $Id: 4319ab4d06167ae7460e74bd8da5a4b2a5b75dbb $
 -- Version hash: $Format:%H$
 --
 -- Description:
@@ -51,12 +51,22 @@
 --
 -- This script is tightly coupled to the Makefile and requires the following variables to run:
 --
---
 
 --
 -- Start transaction 1: extensions and user accounts, roles
 --
 BEGIN;
+
+--
+-- check connected as postgres to postgres
+--
+DO LANGUAGE plpgsql $$
+BEGIN
+	IF current_user != 'postgres' OR current_database() != 'postgres' THEN
+		RAISE EXCEPTION 'db_create.sql() current_user: % and current database: % must both be postgres', current_user, current_database();
+	END IF;
+END;
+$$;
 
 --
 -- Check command line parameters

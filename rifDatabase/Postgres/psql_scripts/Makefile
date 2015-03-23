@@ -360,14 +360,15 @@ devclean:
 db_setup: psqlrc $(PGPASSFILE) $(PLR_DIRS)
 	$(MAKE) clean
 	$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
-	$(MAKE) sahsuland_dev 
-	$(MAKE) sahsuland_dev_dump
-	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
+	$(MAKE) sahsuland_dev PGDATABASE=sahsuland_dev
+	$(MAKE) sahsuland_dev_dump PGDATABASE=sahsuland_dev
+	-$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
 	$(MAKE) -C alter_scripts clean all PGDATABASE=sahsuland		
-	$(MAKE) -C ../Node topojson_convert	PGDATABASE=sahsuland
+	$(MAKE) -C ../Node topojson_convert PGDATABASE=sahsuland
 	$(MAKE) clean v4_0_vacuum_analyse_dev PGDATABASE=sahsuland
 	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
 	$(MAKE) sahsuland_dump
+	@echo "SAHSULAND and SAHSULAND_DEV setup"
 		
 db_create: db_create.rpt
 
@@ -390,7 +391,7 @@ $(PGPASSFILE):
 		
 # psqlrc: psql logon script
 "$(POSTGRES_ETC_DIR)":
-	echo "Please create $(POSTGRES_ETC_DIR) as root/Administrator"
+	@echo "Please create $(POSTGRES_ETC_DIR) as root/Administrator"
 psqlrc:	../etc/psqlrc "$(POSTGRES_ETC_DIR)"
 		$(COPY) ../etc/psqlrc "$(POSTGRES_ETC_DIR)"
 #
