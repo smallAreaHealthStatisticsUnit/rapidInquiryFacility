@@ -69,7 +69,8 @@ $$;
 CREATE OR REPLACE VIEW "rif40_contextual_stats" ("username", "study_id", "inv_id", "area_id", "area_population", 
 	"area_observed", "total_comparision_population", "variance_high", "variance_low", "hash_partition_number") 
 AS 
-SELECT  username, c.study_id, inv_id, area_id, area_population, area_observed, total_comparision_population, variance_high, variance_low, hash_partition_number
+SELECT  username, c.study_id, inv_id, area_id, area_population, area_observed, total_comparision_population, 
+        variance_high, variance_low, c.hash_partition_number
    FROM t_rif40_contextual_stats c
 	LEFT OUTER JOIN rif40_study_shares s ON (c.study_id = s.study_id AND s.grantee_username = USER)
  WHERE username = USER OR

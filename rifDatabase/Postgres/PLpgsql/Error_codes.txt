@@ -37,7 +37,7 @@ rif40_geo_pkg:
 rif40_zoom_levels:									60000 to 60099
 populate_rif40_tiles:								60100 to 60149
 
-rif40_sqk_pkg:
+rif40_sql_pkg:
 
 rif40_ddl_checks:									70000 to 70049
 rif40_ddl_check_a:									70050 to 70099
@@ -51,4 +51,6 @@ rif40_ddl_check_h:									70400 to 70449
 rif40_ddl_check_i:									70450 to 70499
 rif40_ddl_check_j:									70500 to 70549
 rif40_ddl_check_k:									70550 to 70599
-rif40_table_diff:									71000 to 71050
+rif40_table_diff:									71000 to 71049
+
+_rif40_common_partition_create_setup:				71050 to 71099

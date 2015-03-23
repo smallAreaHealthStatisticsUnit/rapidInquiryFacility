@@ -1,10 +1,5 @@
 -- ************************************************************************
 --
--- This view code is for use by alter_N.sql series scripts, not the initial 
--- SAHSULAND build
---
--- ***********************************************************************
---
 -- GIT Header
 --
 -- $Format:Git ID: (%h) %ci$
@@ -13,7 +8,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - RIF40_COMPARISON_AREAS view
+-- Rapid Enquiry Facility (RIF) - Common partitioning functions
 --
 -- Copyright:
 --
@@ -66,28 +61,35 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE VIEW "rif40_comparison_areas" ("username", "study_id", "area_id", "hash_partition_number") 
-AS 
-SELECT  username, c.study_id, area_id, c.hash_partition_number
-   FROM t_rif40_comparison_areas c
-	LEFT OUTER JOIN rif40_study_shares s ON (c.study_id = s.study_id AND s.grantee_username = USER)
- WHERE username = USER OR
-       ('RIF_MANAGER' = (SELECT granted_role FROM user_role_privs WHERE granted_role = 'RIF_MANAGER')) OR
-       (s.grantee_username IS NOT NULL AND s.grantee_username::text <> '')
- ORDER BY 1;
-
-GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_comparison_areas TO rif_user;
-GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_comparison_areas TO rif_manager;
-COMMENT ON VIEW rif40_comparison_areas
-  IS 'Links study areas and bands for a given study.';
-COMMENT ON COLUMN rif40_comparison_areas.username IS 'Username';
-COMMENT ON COLUMN rif40_comparison_areas.study_id IS 'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq';
-COMMENT ON COLUMN rif40_comparison_areas.area_id IS 'An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE';
-COMMENT ON COLUMN rif40_comparison_areas.hash_partition_number IS 'Hash partition number. Used for partition elimination';
-
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash_partition_functional_index(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, 
+	num_partitions INTEGER,
+	OUT ddl_stmt VARCHAR[])
+RETURNS VARCHAR[]
+AS $func$
+/*
+Function: 	_rif40_hash_partition_functional_index()
+Parameters:	Schema, table, columnn, number of partitions
+Returns:	DDL statement array
+Description:	Create indexes by partition on hashing function
+ */
+DECLARE
+ 	i INTEGER:=0;
 --
--- UPDATE/INSERT trigger created separately by rif40_trg_pkg.drop/create_instead_of_triggers
---
+BEGIN
+	FOR i IN 1 .. num_partitions LOOP
+--		ddl_stmt[i]:='CREATE INDEX '||l_table||'_p'||i||'_hash ON '||l_schema||'.'||l_table||'_p'||i||
+--			'(rif40_sql_pkg._rif40_hash_bucket_check('||l_column||', '||num_partitions||' /* total buckets */, '||i||' /* bucket requested */))';
+		ddl_stmt[i]:='CREATE INDEX '||l_table||'_p'||i||'_hash ON '||l_schema||'.'||l_table||'_p'||i||
+			'(rif40_sql_pkg._rif40_hash('||l_column||'::VARCHAR, '||num_partitions||' /* total buckets */))';
+	END LOOP;
+END;
+$func$ 
+LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_hash_partition_functional_index(VARCHAR, VARCHAR, VARCHAR, INTEGER, OUT VARCHAR[]) IS 'Function: 	_rif40_hash_partition_functional_index()
+Parameters:	Schema, table, columnn, number of partitions, partition value
+Returns:	DDL statement array
+Description:	Create indexes by partition on hashing function';
 
 --
 -- Eof

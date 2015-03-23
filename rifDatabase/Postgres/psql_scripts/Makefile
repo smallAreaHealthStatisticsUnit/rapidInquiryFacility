@@ -215,7 +215,8 @@ endif
 # Escape directory names. This assumes that Postgres is installed on the C drive
 # Make assumes the usual Windows names, not the Postgres funny onews, so the slashes need to be the windows way around and C: in capitals
 #
-POSTGRES_ETC_DIR=$(shell pg_config --sysconfdir)
+PG_SYSCONFDIR=$(shell pg_config --sysconfdir)
+POSTGRES_ETC_DIR=$(PG_SYSCONFDIR)
 empty=
 ESC_POSTGRES_ETC_DIR:=$(subst $(empty)/$(empty),$(empty)\$(empty),$(subst c:,C:,$(subst $(empty) $(empty),$(empty)\ $(empty),$(POSTGRES_ETC_DIR))))
 #
@@ -390,10 +391,10 @@ $(PGPASSFILE):
 		$(error Please create $(PGPASSFILE))
 		
 # psqlrc: psql logon script
-"$(POSTGRES_ETC_DIR)":
+$(POSTGRES_ETC_DIR):
 	@echo "Please create $(POSTGRES_ETC_DIR) as root/Administrator"
-psqlrc:	../etc/psqlrc "$(POSTGRES_ETC_DIR)"
-		$(COPY) ../etc/psqlrc "$(POSTGRES_ETC_DIR)"
+psqlrc:	../etc/psqlrc $(POSTGRES_ETC_DIR)
+		$(COPY) ../etc/psqlrc $(POSTGRES_ETC_DIR)
 #
 # R library directory - need to be created aka POSTGRES_ETC_DIR
 #
