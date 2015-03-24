@@ -32,7 +32,7 @@ Unlike the other RIF database Makefiles this is Linux only bacause it
 * Uses awk to extract the rif40_password ffrom ~/.pgpass
 * Use wget and unzip to install dbms_tools
 
-Requires python and grpahviz
+Requires python and graphviz
 
 XML styntac errors E.g. 
 
