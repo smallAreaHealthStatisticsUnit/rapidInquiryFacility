@@ -1,0 +1,34 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+<title>Table: rif40_error_messages</title>
+<link href="../schema.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<table class="item-table">
+<tr class="item-header"><td class="item-header" colspan="4"><a name="Tab-rif40_error_messages">Table: rif40.rif40_error_messages</a></td></tr>
+<tr class="item-element"><td class="item-element" colspan="4"><span class="description">RIF error messages resulting from schema violations</span></td></tr>
+<tr class="item-element"><td class="item-element" colspan="4">Size: medium, Select frequency: medium, Update frequency: medium</td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Columns</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3">Type</td><td class="item-header-3">Constraints</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_error_messages-error_code"><span class="pk-col">error_code</span></a></td><td class="item-element">INTEGER</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">Error code</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_error_messages-tag"><span class="pk-col">tag</span></a></td><td class="item-element">VARCHAR (80)</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">Contextual tag for error code</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_error_messages-table_name">table_name</a></td><td class="item-element">VARCHAR (30)</td><td class="item-element"></td><td class="item-element"><span class="description">Table raising error. If NULL, procedure or other code.</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_error_messages-cause">cause</a></td><td class="item-element">VARCHAR (4000)</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">Cause of error</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_error_messages-action">action</a></td><td class="item-element">VARCHAR (512)</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">Action to resolve error</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_error_messages-message">message</a></td><td class="item-element">VARCHAR (512)</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">Error message</span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Primary key</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3" colspan="2">Columns</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element">rif40_error_messages_pk</td><td colspan="2" class="item-element"><a href="../objects/sahsuland-postgres8-rif40_error_messages.html#Col-rif40_error_messages-error_code">error_code</a>, <a href="../objects/sahsuland-postgres8-rif40_error_messages.html#Col-rif40_error_messages-tag">tag</a></td><td class="item-element"><span class="description"></span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Grants</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Role</td><td class="item-header-3" colspan="2">Actions</td><td class="item-header-3">&nbsp;</td></tr>
+<tr class="item-element"><td class="item-element">rif40</td><td colspan="2" class="item-element">select, references, insert, delete, update</td><td class="item-element">&nbsp;</td></tr>
+<tr class="item-element"><td class="item-element">PUBLIC</td><td colspan="2" class="item-element">select</td><td class="item-element">&nbsp;</td></tr>
+</table><p>
+<img src="../images/sahsuland-postgres8-rif40_error_messages.png" usemap="#TableGraph" align="middle" alt="Schema diagram" border="0">
+<map id="TableGraph" name="TableGraph">
+<area shape="rect" id="node1" href="../objects/sahsuland-postgres8-rif40_error_messages.html" target="detailFrame" title="rif40_error_messages" alt="" coords="5,5,152,149"/>
+</map>
+
+</body></html>

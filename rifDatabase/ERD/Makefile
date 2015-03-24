@@ -226,12 +226,16 @@ endif
 #	$(RUN) $@ "$(CURDIR)" $(PSQL) $(PSQL_FLAGS) -f $< 
 
 #- all: build tool chain, ERD document database
-all: dbms_tools docs/index-sahsuland-postgres8.html
+all: dbms_tools rif40/index-rif40-postgres8.html sahusland/index-sahsuland-postgres8.html
+
 
 #- clean: remove ERD and documentation
 clean: 
 	rm -f ../Postgres/install/sahsuland.xml
+	rm -f sahsuland.xml rif40.xml
 	rm -rf docs/*
+	rm -rf rif40/*
+	rm -rf sahsuland/*
 
 #- veryclean: remove dbmstools tool chain
 veryclean:
@@ -246,17 +250,41 @@ dbmstools-0.4.5rc1.zip:
 	(cd dbmstools-0.4.5rc1/jdbc-drivers; wget https://jdbc.postgresql.org/download/postgresql-9.4-1201.jdbc41.jar)
 	
 #- sahusland.xml: ERD model of database
-#- Note use of sed to fix the output into valid XML
-../Postgres/install/sahsuland.xml:
+#- Note use of sed to fix the output into valid XML; there is a lot of specific cleaning, specifically:
+#
+# View definitions needs CDATA
+# current_user() is not handled correctly
+# The usual description substitutions (& => &amp; etc). These get very specific in the sahusland example data and you cannot use CDATA in a description field
+# Functional indexes blow the program and are removed
+#
+sahsuland.xml:
+	./dbmstools-0.4.5rc1/main/dbmsjy.py db2xml.py -j jdbc:postgresql://$(PG_HOPST):5432/sahsuland\?user=rif40\&password=$(RIF40_PASSWORD) -d postgres8 -s rif_data -g -v | \
+		sed "s/\&/\&amp;/g" | \
+		sed "s/\"\"current_user\"()\"/\"current_user()\"/g" | \
+		sed "/column name\=/ s/>=/\&gt;\=/g" | \
+		sed "/column name\=/ s/<=/\&lt;\=/g" | \
+		sed "/column name\=/ s/: </: \&lt;/g" | \
+		sed "/column name\=/ s/>_</\&gt;_\&lt;/g" | \
+		sed "/column name\=/ s/<zoomlevel>/\&lt;zoomlevel\&gt;/g" | \
+		sed "/column name\=/ s/<zoom level>/\&lt;zoomlevel\&gt;/g" | \
+		sed "/column name\=/ s/tile number>/tile number\&gt;/g" | \
+		sed "/column name\=/ s/format <geography/format \&lt;geography/g" | \
+		sed "/<index name=\"sahsuland_cancer_age_group\"/,+2 d" | \
+		sed "/<index name=\"sahsuland_cancer_sex\"/,+2 d" | \
+		sed "s/<view-definition>/<view-definition><\![CDATA["/g | \
+		sed "s/<\/view-definition>/]]><\/view-definition>/g" > sahsuland.xml
+rif40.xml:
 	./dbmstools-0.4.5rc1/main/dbmsjy.py db2xml.py -j jdbc:postgresql://$(PG_HOPST):5432/sahsuland\?user=rif40\&password=$(RIF40_PASSWORD) -d postgres8 -s rif40 -g -v | \
 		sed "s/\&/\&amp;/g" | \
 		sed "s/\"\"current_user\"()\"/\"current_user()\"/g" | \
 		sed "s/<view-definition>/<view-definition><\![CDATA["/g | \
-		sed "s/<\/view-definition>/]]><\/view-definition>/g" > ../Postgres/install/sahsuland.xml
+		sed "s/<\/view-definition>/]]><\/view-definition>/g" > rif40.xml
 
 #- docs/index-sahsuland-postgres8.html: Documentation target WARNING: Needs graphviz
-docs/index-sahsuland-postgres8.html:  ../Postgres/install/sahsuland.xml
-	./dbmstools-0.4.5rc1/main/xml2doc.py -d postgres8 -f -v -g -w -o docs ../Postgres/install/sahsuland.xml
+sahusland/index-sahsuland-postgres8.html: sahsuland.xml
+	./dbmstools-0.4.5rc1/main/xml2doc.py -d postgres8 -f -v -g -w -o sahsuland sahsuland.xml
+rif40/index-rif40-postgres8.html: rif40.xml
+	./dbmstools-0.4.5rc1/main/xml2doc.py -d postgres8 -f -v -g -w -o rif40 rif40.xml
 
 #
 # Eof

@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE db-schema SYSTEM "file:///db-schema.dtd">
+
+<!--
+    Imported schema:
+        Driver class: org.postgresql.Driver
+        JDBC URL: jdbc:postgresql://:5432/sahsuland?user=rif40&amp;password=Se11afield2014
+        DBMS type: postgres8
+-->
+
+<db-schema name="sahsuland" schema="rif_data">
+    <templates>
+        <!-- TODO -->
+    </templates>
+
+    <!--
+    ======================================================================
+        Tables
+    ======================================================================
+    -->
+
+    <table name="sahsuland_cancer" description="SAHSU land Population"
+            size="medium" update-frequency="medium" select-frequency="medium">
+        <columns>
+            <column name="year" description="Year" type="short" allows-null="false" />
+            <column name="age_sex_group" description="Age sex group" type="short" allows-null="false" />
+            <column name="level1" description="level1" type="varchar" length="20" allows-null="false" />
+            <column name="level2" description="level2" type="varchar" length="20" allows-null="false" />
+            <column name="level3" description="level3" type="varchar" length="20" allows-null="false" />
+            <column name="level4" description="level4" type="varchar" length="20" allows-null="false" />
+            <column name="icd" description="ICD" type="varchar" length="4" allows-null="false" />
+            <column name="total" description="Total" length="17" scale="17" allows-null="false" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+        </columns>
+        <constraints>
+        </constraints>
+        <indexes>
+            <index name="sahsuland_cancer_pk" unique="true">
+                <column-ref name="year" />
+                <column-ref name="level4" />
+                <column-ref name="age_sex_group" />
+                <column-ref name="icd" />
+            </index>
+            <index name="sahsuland_cancer_age_sex_group" unique="false">
+                <column-ref name="age_sex_group" />
+            </index>
+            <index name="sahsuland_cancer_icd" unique="false">
+                <column-ref name="icd" />
+            </index>
+            <index name="sahsuland_cancer_level1" unique="false">
+                <column-ref name="level1" />
+            </index>
+            <index name="sahsuland_cancer_level2" unique="false">
+                <column-ref name="level2" />
+            </index>
+            <index name="sahsuland_cancer_level3" unique="false">
+                <column-ref name="level3" />
+            </index>
+            <index name="sahsuland_cancer_level4" unique="false">
+                <column-ref name="level4" />
+            </index>
+            <index name="sahsuland_cancer_year" unique="false">
+                <column-ref name="year" />
+            </index>
+        </indexes>
+        <grants>
+            <grant role="rif_manager" actions="select" />
+            <grant role="rif_user" actions="select" />
+            <grant role="rif40" actions="select, references, insert, delete, update" />
+        </grants>
+    </table>
+
+    <table name="sahsuland_covariates_level3" description="SAHSU land covariates - level3"
+            size="medium" update-frequency="medium" select-frequency="medium">
+        <columns>
+            <column name="year" description="Year" type="short" allows-null="false" />
+            <column name="level3" description="Level3" type="varchar" length="20" allows-null="false" />
+            <column name="ses" description="Social Economic Status (quintiles)" type="short" allows-null="false" />
+            <column name="ethnicity" description="Ethnicity % non white - 1: &lt;5%, 2: 5 to 10%, 3: &gt;= 10%" type="short" allows-null="false" />
+        </columns>
+        <constraints>
+        </constraints>
+        <indexes>
+            <index name="sahsuland_covariates_level3_pk" unique="true">
+                <column-ref name="year" />
+                <column-ref name="level3" />
+            </index>
+        </indexes>
+        <grants>
+            <grant role="rif_manager" actions="select" />
+            <grant role="rif_user" actions="select" />
+            <grant role="rif40" actions="select, references, insert, delete, update" />
+        </grants>
+    </table>
+
+    <table name="sahsuland_covariates_level4" description="SAHSU land covariates - level4"
+            size="medium" update-frequency="medium" select-frequency="medium">
+        <columns>
+            <column name="year" description="Year" type="short" allows-null="false" />
+            <column name="level4" description="Level4" type="varchar" length="20" allows-null="false" />
+            <column name="ses" description="Social Economic Status (quintiles)" type="short" allows-null="false" />
+            <column name="areatri1km" description="Toxic Release Inventory within 1km of area (0=no/1=yes)" type="short" allows-null="false" />
+            <column name="near_dist" description="Distance (m) from area centroid to nearest TRI site" length="17" scale="17" allows-null="false" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+            <column name="tri_1km" description="Toxic Release Inventory within 1km of areai centroid (0=no/1=yes)" type="short" allows-null="false" />
+        </columns>
+        <constraints>
+        </constraints>
+        <indexes>
+            <index name="sahsuland_covariates_level4_pk" unique="true">
+                <column-ref name="year" />
+                <column-ref name="level4" />
+            </index>
+        </indexes>
+        <grants>
+            <grant role="rif_manager" actions="select" />
+            <grant role="rif_user" actions="select" />
+            <grant role="rif40" actions="select, references, insert, delete, update" />
+        </grants>
+    </table>
+
+    <table name="sahsuland_geography" description="SAHSU example database geo-level hierarchy table"
+            size="medium" update-frequency="medium" select-frequency="medium">
+        <columns>
+            <column name="level1" description="Lowest level of resolution" type="varchar" length="100" allows-null="true" />
+            <column name="level2" description="2nd level of resolution" type="varchar" length="100" allows-null="true" />
+            <column name="level3" description="3rd level of resolution" type="varchar" length="100" allows-null="true" />
+            <column name="level4" description="Highest level of resolution" type="varchar" length="100" allows-null="true" />
+        </columns>
+        <constraints>
+        </constraints>
+        <indexes>
+            <index name="level4_idx4" unique="true">
+                <column-ref name="level4" />
+            </index>
+            <index name="level1_idx1" unique="false">
+                <column-ref name="level1" />
+            </index>
+            <index name="level2_idx2" unique="false">
+                <column-ref name="level2" />
+            </index>
+            <index name="level3_idx3" unique="false">
+                <column-ref name="level3" />
+            </index>
+        </indexes>
+        <grants>
+            <grant role="rif40" actions="select, references, insert, delete, update" />
+            <grant role="PUBLIC" actions="select" />
+        </grants>
+    </table>
+
+    <table name="sahsuland_level1" description="Lowest level of resolution lookup table"
+            size="medium" update-frequency="medium" select-frequency="medium">
+        <columns>
+            <column name="level1" description="level1" type="varchar" length="5" allows-null="true" />
+            <column name="name" description="level1 name" type="varchar" length="100" allows-null="true" />
+            <column name="gid" description="Artifical primary key for RIF web interface" type="long" allows-null="true" />
+        </columns>
+        <constraints>
+        </constraints>
+        <indexes>
+            <index name="sahsuland_level1_gid" unique="true">
+                <column-ref name="gid" />
+            </index>
+            <index name="sahsuland_level1_pk" unique="true">
+                <column-ref name="level1" />
+            </index>
+            <index name="sahsuland_level1_uk2" unique="true">
+                <column-ref name="name" />
+            </index>
+        </indexes>
+        <grants>
+            <grant role="rif40" actions="select, references, insert, delete, update" />
+            <grant role="PUBLIC" actions="select" />
+        </grants>
+    </table>
+
+    <table name="sahsuland_level2" description="2nd level of resolution lookup table"
+            size="medium" update-frequency="medium" select-frequency="medium">
+        <columns>
+            <column name="level2" description="level2" type="varchar" length="6" allows-null="true" />
+            <column name="name" description="level2 name" type="varchar" length="100" allows-null="true" />
+            <column name="gid" description="Artifical primary key for RIF web interface" type="long" allows-null="true" />
+        </columns>
+        <constraints>
+        </constraints>
+        <indexes>
+            <index name="sahsuland_level2_gid" unique="true">
+                <column-ref name="gid" />
+            </index>
+            <index name="sahsuland_level2_pk" unique="true">
+                <column-ref name="level2" />
+            </index>
+        </indexes>
+        <grants>
+            <grant role="rif40" actions="select, references, insert, delete, update" />
+            <grant role="PUBLIC" actions="select" />
+        </grants>
+    </table>
+
+    <table name="sahsuland_level3" description="3rd level of resolution lookup table"
+            size="medium" update-frequency="medium" select-frequency="medium">
+        <columns>
+            <column name="level3" description="level3" type="varchar" length="15" allows-null="true" />
+            <column name="name" description="level3 name" type="varchar" length="100" allows-null="true" />
+            <column name="gid" description="Artifical primary key for RIF web interface" type="long" allows-null="true" />
+        </columns>
+        <constraints>
+        </constraints>
+        <indexes>
+            <index name="sahsuland_level3_gid" unique="true">
+                <column-ref name="gid" />
+            </index>
+            <index name="sahsuland_level3_pk" unique="true">
+                <column-ref name="level3" />
+            </index>
+            <index name="sahsuland_level3_uk2" unique="true">
+                <column-ref name="name" />
+            </index>
+        </indexes>
+        <grants>
+            <grant role="rif40" actions="select, references, insert, delete, update" />
+            <grant role="PUBLIC" actions="select" />
+        </grants>
+    </table>
+
+    <table name="sahsuland_level4" description="Highest level of resolution lookup table"
+            size="medium" update-frequency="medium" select-frequency="medium">
+        <columns>
+            <column name="level4" description="level4" type="varchar" length="15" allows-null="true" />
+            <column name="name" description="level4 name" type="varchar" length="100" allows-null="true" />
+            <column name="gid" description="Artifical primary key for RIF web interface" type="long" allows-null="true" />
+        </columns>
+        <constraints>
+        </constraints>
+        <indexes>
+            <index name="sahsuland_level4_gid" unique="true">
+                <column-ref name="gid" />
+            </index>
+            <index name="sahsuland_level4_pk" unique="true">
+                <column-ref name="level4" />
+            </index>
+            <index name="sahsuland_level4_uk2" unique="true">
+                <column-ref name="name" />
+            </index>
+        </indexes>
+        <grants>
+            <grant role="rif40" actions="select, references, insert, delete, update" />
+            <grant role="PUBLIC" actions="select" />
+        </grants>
+    </table>
+
+    <table name="t_rif40_sahsu_geometry" description="Geolevels geometry: geometry for hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels are restricted to LADUA/DISTRICT level resolution or lower. This table contains no data on Oracle. This replaces the shapefiles used in previous RIF releases. Populating this table checks the lookup and hierarchy tables and thus it must be populated last. Any insert into T_RIF40_GEOLEVELS_GEOMETRY must be a single statement insert."
+            size="medium" update-frequency="medium" select-frequency="medium">
+        <columns>
+            <column name="geography" description="Geography (e.g EW2001)" type="varchar" length="50" allows-null="false" />
+            <column name="geolevel_name" description="Name of geolevel. This will be a column name in the numerator/denominator tables" type="varchar" length="30" allows-null="false" />
+            <column name="area_id" description="An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE" type="varchar" length="300" allows-null="false" />
+            <column name="name" description="The name of an area id" type="varchar" length="300" allows-null="true" />
+            <column name="optimised_geojson" description="Shapefile multipolygon in GeoJSON format, optimised for zoomlevel 6. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326." length="2147483647" allows-null="false" >
+                <column-override dbms="postgres8" raw-type="json" />
+            </column>
+            <column name="optimised_geojson_2" description="Shapefile multipolygon in optimised GeoJSON format, optimised for zoomlevel 8. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326." length="2147483647" allows-null="false" >
+                <column-override dbms="postgres8" raw-type="json" />
+            </column>
+            <column name="optimised_geojson_3" description="Shapefile multipolygon in optimised GeoJSON format, optimised for zoomlevel 11. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326." length="2147483647" allows-null="false" >
+                <column-override dbms="postgres8" raw-type="json" />
+            </column>
+            <column name="area" description="The area in square km of an area id" type="numeric" length="12" scale="2" allows-null="false" />
+            <column name="total_males" description="Total males" type="numeric" length="12" scale="2" allows-null="true" />
+            <column name="total_females" description="Total females" type="numeric" length="12" scale="2" allows-null="true" />
+            <column name="population_year" description="Year of population data" type="numeric" length="12" scale="2" allows-null="true" />
+            <column name="gid" description="Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)" type="int" allows-null="false" />
+            <column name="shapefile_geometry" description="Spatial data for geolevel (PostGress/PostGIS only). Can also use SHAPEFILE instead," length="2147483647" allows-null="false" >
+                <column-override dbms="postgres8" raw-type="geometry" />
+            </column>
+            <column name="optimised_geometry" description="Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 6. p_Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges." length="2147483647" allows-null="false" >
+                <column-override dbms="postgres8" raw-type="geometry" />
+            </column>
+            <column name="optimised_geometry_2" description="Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 8. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges." length="2147483647" allows-null="false" >
+                <column-override dbms="postgres8" raw-type="geometry" />
+            </column>
+            <column name="optimised_geometry_3" description="Optimised spatial data for geolevel in SRID 4326 [WGS84] (PostGress/PostGIS only), optimised for zoomlevel 11. Can also use SHAPEFILE instead. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output and RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE determines the minimum distance (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner. This is fixed using the simplifaction package rif40_geo_pkg.simplify_geometry() function and processing as edges." length="2147483647" allows-null="false" >
+                <column-override dbms="postgres8" raw-type="geometry" />
+            </column>
+            <column name="gid_rowindex" description="GID rowindex record locator unique key" type="varchar" length="50" allows-null="true" />
+        </columns>
+        <constraints>
+            <primary-key name="t_rif40_sahsu_geometry_pk">
+                <column-ref name="geography" />
+                <column-ref name="geolevel_name" />
+                <column-ref name="area_id" />
+            </primary-key>
+        </constraints>
+        <indexes>
+            <index name="t_rif40_sahsu_geometry_gid" unique="true">
+                <column-ref name="geography" />
+                <column-ref name="gid" />
+            </index>
+            <index name="t_rif40_sahsu_geometry_uk" unique="true">
+                <column-ref name="geography" />
+                <column-ref name="area_id" />
+            </index>
+            <index name="t_rif40_sahsu_geometry_uk2" unique="true">
+                <column-ref name="name" />
+            </index>
+            <index name="t_rif40_sahsu_geo_gin1" unique="false">
+                <column-ref name="shapefile_geometry" />
+            </index>
+            <index name="t_rif40_sahsu_geo_gin2" unique="false">
+                <column-ref name="optimised_geometry" />
+            </index>
+        </indexes>
+        <grants>
+            <grant role="rif_manager" actions="select, insert, delete, update" />
+            <grant role="rif40" actions="select, references, insert, delete, update" />
+            <grant role="PUBLIC" actions="select" />
+        </grants>
+    </table>
+
+    <table name="t_rif40_sahsu_maptiles" description="Maptiles table for geography; separate partions per geolevel and zoomlevel. Use this table for INSERT/UPDATE/DELETE"
+            size="medium" update-frequency="medium" select-frequency="medium">
+        <columns>
+            <column name="geography" description="Geography (e.g EW2001)" type="varchar" length="50" allows-null="false" />
+            <column name="geolevel_name" description="Name of geolevel. This will be a column name in the numerator/denominator tables" type="varchar" length="30" allows-null="false" />
+            <column name="tile_id" description="Tile ID in the format &lt;geography&gt;_&lt;geolevel number&gt;_&lt;geolevel name&gt;_&lt;zoomlevel&gt;_&lt;X tile number&gt;_&lt;Y tile number&gt;" type="varchar" length="300" allows-null="false" />
+            <column name="x_tile_number" description="X tile number. From 0 to (2**&lt;zoomlevel&gt;)-1" type="int" allows-null="false" />
+            <column name="y_tile_number" description="Y tile number. From 0 to (2**&lt;zoomlevel&gt;)-1" type="int" allows-null="false" />
+            <column name="zoomlevel" description="Zoom level: 0 to 11. Number of tiles is 2**&lt;zoomlevel&gt; * 2**&lt;zoomlevel&gt;; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11." type="int" allows-null="false" />
+            <column name="optimised_geojson" description="Shapefile multipolygon in GeoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326." length="2147483647" allows-null="false" >
+                <column-override dbms="postgres8" raw-type="json" />
+            </column>
+            <column name="optimised_topojson" description="Shapefile multipolygon in TopoJSON format, optimised for zoomlevel N. RIF40_GEOGRAPHIES.MAX_GEOJSON_DIGITS determines the number of digits in the GeoJSON output. RIF40_GEOLEVELS.ST_SIMPLIFY_TOLERANCE is no longer used. (in metres for most projections) between simplified points. Will contain small slivers and overlaps due to limitation in the Douglas-Peucker algorithm (it works on an object by object basis; the edge between two areas will therefore be processed independently and not necessarily in the same manner). Note also TOPO_OPTIMISED_GEOJSON are replaced by OPTIMISED_GEOJSON; i.e. GeoJson optimised using ST_Simplify(). The SRID is always 4326." length="2147483647" allows-null="false" >
+                <column-override dbms="postgres8" raw-type="json" />
+            </column>
+            <column name="gid" description="Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)" type="int" allows-null="false" />
+        </columns>
+        <constraints>
+            <primary-key name="t_rif40_sahsu_maptiles_pk">
+                <column-ref name="geography" />
+                <column-ref name="geolevel_name" />
+                <column-ref name="tile_id" />
+            </primary-key>
+        </constraints>
+        <indexes>
+            <index name="t_rif40_sahsu_maptiles_gid" unique="true">
+                <column-ref name="geography" />
+                <column-ref name="zoomlevel" />
+                <column-ref name="gid" />
+            </index>
+            <index name="t_rif40_sahsu_maptiles_uk" unique="true">
+                <column-ref name="geography" />
+                <column-ref name="tile_id" />
+            </index>
+            <index name="t_rif40_sahsu_maptiles_xy_tile" unique="true">
+                <column-ref name="geolevel_name" />
+                <column-ref name="zoomlevel" />
+                <column-ref name="x_tile_number" />
+                <column-ref name="y_tile_number" />
+            </index>
+            <index name="t_rif40_sahsu_maptiles_x_tile" unique="false">
+                <column-ref name="geolevel_name" />
+                <column-ref name="zoomlevel" />
+                <column-ref name="x_tile_number" />
+            </index>
+            <index name="t_rif40_sahsu_maptiles_y_tile" unique="false">
+                <column-ref name="geolevel_name" />
+                <column-ref name="zoomlevel" />
+                <column-ref name="y_tile_number" />
+            </index>
+        </indexes>
+        <grants>
+            <grant role="rif_manager" actions="select, insert, delete, update" />
+            <grant role="rif40" actions="select, references, insert, delete, update" />
+            <grant role="PUBLIC" actions="select" />
+        </grants>
+    </table>
+
+    <!--
+    ======================================================================
+        Views
+    ======================================================================
+    -->
+
+    <view name="rif40_sahsu_maptiles" description="">
+        <view-definition><![CDATA[
+             WITH a AS (
+         SELECT rif40_geolevels.geography,
+            max(rif40_geolevels.geolevel_id) AS max_geolevel_id
+           FROM rif40_geolevels
+          WHERE ((rif40_geolevels.geography)::text = 'SAHSU'::text)
+          GROUP BY rif40_geolevels.geography
+        ), b AS (
+         SELECT a.geography,
+            generate_series(1, (a.max_geolevel_id)::integer, 1) AS geolevel_id
+           FROM a
+        ), c AS (
+         SELECT
+                CASE
+                    WHEN (b.geolevel_id = 2) THEN 'LEVEL2'::text
+                    WHEN (b.geolevel_id = 1) THEN 'LEVEL1'::text
+                    WHEN (b.geolevel_id = 3) THEN 'LEVEL3'::text
+                    WHEN (b.geolevel_id = 4) THEN 'LEVEL4'::text
+                    ELSE NULL::text
+                END AS geolevel_name,
+            b.geolevel_id,
+            b.geography
+           FROM b
+        ), d AS (
+         SELECT generate_series(0, 11, 1) AS zoomlevel
+        ), ex AS (
+         SELECT d.zoomlevel,
+            generate_series(0, ((power((2)::double precision, (d.zoomlevel)::double precision))::integer - 1), 1) AS xy_series
+           FROM d
+        ), ey AS (
+         SELECT c.geolevel_name,
+            c.geolevel_id,
+            c.geography,
+            ex.zoomlevel,
+            ex.xy_series
+           FROM c,
+            ex
+        )
+ SELECT z.geography,
+    z.geolevel_name,
+        CASE
+            WHEN (h.tile_id IS NULL) THEN 1
+            ELSE 0
+        END AS no_area_ids,
+    COALESCE(h.tile_id, ((((((((((((z.geography)::text || '_'::text) || z.geolevel_id) || '_'::text) || z.geolevel_name) || '_'::text) || z.zoomlevel) || '_'::text) || z.x_tile_number) || '_'::text) || z.y_tile_number))::character varying) AS tile_id,
+    z.x_tile_number,
+    z.y_tile_number,
+    z.zoomlevel,
+    COALESCE(h.optimised_geojson, '{"type": "FeatureCollection","features":[]}'::json) AS optimised_geojson,
+    COALESCE(h.optimised_topojson, '{"type": "FeatureCollection","features":[]}'::json) AS optimised_topojson
+   FROM (( SELECT ey.geolevel_name,
+            ey.geolevel_id,
+            ey.geography,
+            ex.zoomlevel,
+            ex.xy_series AS x_tile_number,
+            ey.xy_series AS y_tile_number
+           FROM ey,
+            ex
+          WHERE (ex.zoomlevel = ey.zoomlevel)) z
+     LEFT JOIN t_rif40_sahsu_maptiles h ON (((((z.zoomlevel = h.zoomlevel) AND (z.x_tile_number = h.x_tile_number)) AND (z.y_tile_number = h.y_tile_number)) AND (z.geolevel_name = (h.geolevel_name)::text))));
+        ]]></view-definition>
+    </view>
+</db-schema>
