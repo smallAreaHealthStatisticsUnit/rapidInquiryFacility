@@ -16,7 +16,6 @@ The following are not documented:
 
 * Partitioning (rif40_partitions schema). This will be a separate series of WIKIs.
 * PL/pgsql code in rif40_<code area/type, e.g. R, sql, sm - for statemachine, geo>_pkgs. Again this will be documented separately.
-* rif_studies (example test case data; also show structure of the output tables)
 
 A Makefile is provided to build the doucmentation. 
 
