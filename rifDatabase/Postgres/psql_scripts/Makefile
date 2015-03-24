@@ -211,6 +211,7 @@ else
 	endif
 	PGPASSFILE=~/.pgpass
 endif
+PG_VERSION=$(shell pg_config --version)
 #
 # Escape directory names. This assumes that Postgres is installed on the C drive
 # Make assumes the usual Windows names, not the Postgres funny onews, so the slashes need to be the windows way around and C: in capitals
@@ -359,18 +360,30 @@ devclean:
 #
 #- db_setup: Create sahusland, sahsuland_dev
 db_setup: psqlrc $(PGPASSFILE) $(PLR_DIRS)
+ifneq ($(OS),Windows_NT)
+	$(MAKE) -C ../../ERD veryclean dbms_tools
+endif
+	$(MAKE) -C ../Node install
 	$(MAKE) clean
 	$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) sahsuland_dev PGDATABASE=sahsuland_dev
 	$(MAKE) sahsuland_dev_dump PGDATABASE=sahsuland_dev
+ifeq ($(PG_VERSION),PostgreSQL 9.4.1)
 	-$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
+else
+	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
+endif
 	$(MAKE) -C alter_scripts clean all PGDATABASE=sahsuland		
 	$(MAKE) -C ../Node topojson_convert PGDATABASE=sahsuland
 	$(MAKE) clean v4_0_vacuum_analyse_dev PGDATABASE=sahsuland
 	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
 	$(MAKE) sahsuland_dump
+	$(MAKE) -C ../../ERD dbms_tools
 	@echo "SAHSULAND and SAHSULAND_DEV setup"
-		
+#
+# Now has Node, ERD integration, pg_restore allowed to fail on Postgres 9.4.1
+#
+
 db_create: db_create.rpt
 
 #- db_install: Create sahsuland, sahsuland_dev from production pg_dump 

@@ -191,7 +191,7 @@ else
 	SUDO_CHOWN_POSTGRES=chown -R postgres "$@"
 	COPY=cp
 	TESTUSER=$(shell id -un | tr ‘[:upper:]’ ‘[:lower:]’)
-	TOPOJSON=topojson
+	TOPOJSON=node_modules/topojson/bin/topojson
 	NODE=node
 	NPM=npm
     ifeq ($(UNAME_S),Linux)
