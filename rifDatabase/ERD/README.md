@@ -15,7 +15,7 @@ You will need a Windows version of the github client installed to view these sch
 The following are not documented:
 
 * Partitioning (rif40_partitions schema). This will be a separate series of WIKIs.
-* PL/pgsql code in rif40_<code area/type, e.g. R, sql, sm - for statemachine, geo>_pkgs. Again this will be documented separately.
+* PL/pgsql code in rif40_&lt;code area/type, e.g. R, sql, sm - for statemachine, geo&gt;_pkgs. Again this will be documented separately.
 
 A Makefile is provided to build the doucmentation. 
 
@@ -42,6 +42,7 @@ Requires python and grpahviz
 
 XML styntac errors E.g. 
 
+```
 Traceback (most recent call last):
   File "../dbmstools-0.4.5rc1/main/xml2doc.py", line 990, in ?
     main()
@@ -59,6 +60,7 @@ Traceback (most recent call last):
     parser.Parse(buffer, 0)
 xml.parsers.expat.ExpatError: not well-formed (invalid token): line 504, column 77
 Exit 1
+```
 
 Specifically the following are handled:
 
