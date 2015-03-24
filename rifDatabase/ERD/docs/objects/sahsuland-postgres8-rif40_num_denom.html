@@ -10,7 +10,7 @@
 <tr class="item-header"><td class="item-header" colspan="4"><a name="View-rif40_num_denom">View: rif40.rif40_num_denom</a></td></tr>
 <tr class="item-header-2"><td class="item-header-2" colspan="4">View definition</td></tr>
 <tr class="item-element"><td class="item-element" colspan="4"><tt class="no-background">
-WITH n AS (SELECT n1.geography, n1.numerator_table, n1.numerator_description, n1.automatic, n1.theme_description FROM (SELECT g.geography, n.table_name AS numerator_table, n.description AS numerator_description, n.automatic, t.description AS theme_description FROM rif40_geographies g, rif40_tables n, rif40_health_study_themes t WHERE ((((n.isnumerator = 1) AND (n.automatic = 1)) AND (rif40_is_object_resolvable(n.table_name) = 1)) AND ((n.theme)::text = (t.theme)::text))) n1 WHERE (rif40_num_denom_validate(n1.geography, n1.numerator_table) = 1)), d AS (SELECT d1.geography, d1.denominator_table, d1.denominator_description FROM (SELECT g.geography, d.table_name AS denominator_table, d.description AS denominator_description FROM rif40_geographies g, rif40_tables d WHERE (((d.isindirectdenominator = 1) AND (d.automatic = 1)) AND (rif40_is_object_resolvable(d.table_name) = 1))) d1 WHERE ((rif40_num_denom_validate(d1.geography, d1.denominator_table) = 1) AND (rif40_auto_indirect_checks(d1.denominator_table) IS NULL))) SELECT n.geography, n.numerator_table, n.numerator_description, n.theme_description, d.denominator_table, d.denominator_description, n.automatic FROM n, d WHERE ((n.geography)::text = (d.geography)::text) ORDER BY n.geography, n.numerator_table, n.theme_description;
+
 </tt></td></tr>
 <tr class="item-element"><td class="item-element" colspan="4">
 </table><p>

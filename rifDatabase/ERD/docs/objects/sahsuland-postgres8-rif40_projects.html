@@ -10,7 +10,7 @@
 <tr class="item-header"><td class="item-header" colspan="4"><a name="View-rif40_projects">View: rif40.rif40_projects</a></td></tr>
 <tr class="item-header-2"><td class="item-header-2" colspan="4">View definition</td></tr>
 <tr class="item-element"><td class="item-element" colspan="4"><tt class="no-background">
-SELECT t_rif40_projects.project, t_rif40_projects.description, t_rif40_projects.date_started, t_rif40_projects.date_ended FROM t_rif40_projects WHERE ((t_rif40_projects.project)::text IN (SELECT t_rif40_user_projects.project FROM t_rif40_user_projects WHERE (((t_rif40_user_projects.username)::name = current_user()) OR ('RIF_MANAGER'::text = (SELECT user_role_privs.granted_role FROM user_role_privs WHERE (user_role_privs.granted_role = 'RIF_MANAGER'::text)))))) ORDER BY t_rif40_projects.project;
+
 </tt></td></tr>
 <tr class="item-element"><td class="item-element" colspan="4">
 </table><p>

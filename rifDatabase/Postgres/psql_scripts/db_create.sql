@@ -3,7 +3,7 @@
 -- GIT Header
 --
 -- $Format:Git ID: (%h) %ci$
--- $Id: 4319ab4d06167ae7460e74bd8da5a4b2a5b75dbb $
+-- $Id$
 -- Version hash: $Format:%H$
 --
 -- Description:

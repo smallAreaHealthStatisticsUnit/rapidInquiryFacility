@@ -40,12 +40,6 @@
 <td class="index-element">Collection of Health outcomes into logical groups. E.g. Single variable ICD9 and 10</td></tr>
 <tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-rif40_outcomes.html" target="detailFrame">rif40.rif40_outcomes</a></td>
 <td class="index-element">Health Outcomes. This table give the locations of the various Health Outcomes lookup tables, e.g RIF40_ICD10. Outcomes typically supported are ICD 9, 10, OPCS4 operation codes, ICD-0 Histology</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-rif40_population_europe.html" target="detailFrame">rif40.rif40_population_europe</a></td>
-<td class="index-element">1991 European standarised populations (to be updated)</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-rif40_population_us.html" target="detailFrame">rif40.rif40_population_us</a></td>
-<td class="index-element">2000 United States of America standarised populations (to be updated)</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-rif40_population_world.html" target="detailFrame">rif40.rif40_population_world</a></td>
-<td class="index-element">1991 World standarised populations (to be updated)</td></tr>
 <tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-rif40_predefined_groups.html" target="detailFrame">rif40.rif40_predefined_groups</a></td>
 <td class="index-element">Predefined Health Outcomes</td></tr>
 <tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-rif40_reference_tables.html" target="detailFrame">rif40.rif40_reference_tables</a></td>
@@ -62,24 +56,6 @@
 <td class="index-element">RIF40 Triggers</td></tr>
 <tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-rif40_version.html" target="detailFrame">rif40.rif40_version</a></td>
 <td class="index-element">RIF version</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-sahsuland_cancer.html" target="detailFrame">rif40.sahsuland_cancer</a></td>
-<td class="index-element">SAHSU land Population</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-sahsuland_covariates_level3.html" target="detailFrame">rif40.sahsuland_covariates_level3</a></td>
-<td class="index-element">SAHSU land covariates - level3</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-sahsuland_covariates_level4.html" target="detailFrame">rif40.sahsuland_covariates_level4</a></td>
-<td class="index-element">SAHSU land covariates - level4</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-sahsuland_geography.html" target="detailFrame">rif40.sahsuland_geography</a></td>
-<td class="index-element">SAHSU example database geo-level hierarchy table</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-sahsuland_level1.html" target="detailFrame">rif40.sahsuland_level1</a></td>
-<td class="index-element">Lowest level of resolution lookup table</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-sahsuland_level2.html" target="detailFrame">rif40.sahsuland_level2</a></td>
-<td class="index-element">2nd level of resolution lookup table</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-sahsuland_level3.html" target="detailFrame">rif40.sahsuland_level3</a></td>
-<td class="index-element">3rd level of resolution lookup table</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-sahsuland_level4.html" target="detailFrame">rif40.sahsuland_level4</a></td>
-<td class="index-element">Highest level of resolution lookup table</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-sahsuland_pop.html" target="detailFrame">rif40.sahsuland_pop</a></td>
-<td class="index-element">SAHSU land Population</td></tr>
 <tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-t_rif40_comparison_areas.html" target="detailFrame">rif40.t_rif40_comparison_areas</a></td>
 <td class="index-element">Links comparison areas and bands for a given study.</td></tr>
 <tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-t_rif40_contextual_stats.html" target="detailFrame">rif40.t_rif40_contextual_stats</a></td>
@@ -88,14 +64,6 @@
 <td class="index-element">RIF numerator tables which are Foreign data wrappers in Postgres</td></tr>
 <tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-t_rif40_geolevels.html" target="detailFrame">rif40.t_rif40_geolevels</a></td>
 <td class="index-element">Geolevels: hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels are restricted to LADUA/DISTRICT level resolution or lower.</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-t_rif40_geolevels_geometry_sahsu_level1.html" target="detailFrame">rif40.t_rif40_geolevels_geometry_sahsu_level1</a></td>
-<td class="index-element">Geolevels geometry: geometry for hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels are restricted to LADUA/DISTRICT level resolution or lower. This table contains no data on Oracle. This replaces the shapefiles used in previous RIF releases. Populating this table checks the lookup and hierarchy tables and thus it must be populated last. Any insert into T_RIF40_GEOLEVELS_GEOMETRY must be a single statement insert. This is the partition for geogrpahy: sahsu, geo level: level1</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-t_rif40_geolevels_geometry_sahsu_level2.html" target="detailFrame">rif40.t_rif40_geolevels_geometry_sahsu_level2</a></td>
-<td class="index-element">Geolevels geometry: geometry for hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels are restricted to LADUA/DISTRICT level resolution or lower. This table contains no data on Oracle. This replaces the shapefiles used in previous RIF releases. Populating this table checks the lookup and hierarchy tables and thus it must be populated last. Any insert into T_RIF40_GEOLEVELS_GEOMETRY must be a single statement insert. This is the partition for geogrpahy: sahsu, geo level: level2</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-t_rif40_geolevels_geometry_sahsu_level3.html" target="detailFrame">rif40.t_rif40_geolevels_geometry_sahsu_level3</a></td>
-<td class="index-element">Geolevels geometry: geometry for hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels are restricted to LADUA/DISTRICT level resolution or lower. This table contains no data on Oracle. This replaces the shapefiles used in previous RIF releases. Populating this table checks the lookup and hierarchy tables and thus it must be populated last. Any insert into T_RIF40_GEOLEVELS_GEOMETRY must be a single statement insert. This is the partition for geogrpahy: sahsu, geo level: level3</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-t_rif40_geolevels_geometry_sahsu_level4.html" target="detailFrame">rif40.t_rif40_geolevels_geometry_sahsu_level4</a></td>
-<td class="index-element">Geolevels geometry: geometry for hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels are restricted to LADUA/DISTRICT level resolution or lower. This table contains no data on Oracle. This replaces the shapefiles used in previous RIF releases. Populating this table checks the lookup and hierarchy tables and thus it must be populated last. Any insert into T_RIF40_GEOLEVELS_GEOMETRY must be a single statement insert. This is the partition for geogrpahy: sahsu, geo level: level4</td></tr>
 <tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-t_rif40_inv_conditions.html" target="detailFrame">rif40.t_rif40_inv_conditions</a></td>
 <td class="index-element">Lines of SQL conditions pertinent to an investigation.</td></tr>
 <tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-t_rif40_inv_covariates.html" target="detailFrame">rif40.t_rif40_inv_covariates</a></td>
@@ -110,8 +78,6 @@
 <td class="index-element">RIF projects</td></tr>
 <tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-t_rif40_results.html" target="detailFrame">rif40.t_rif40_results</a></td>
 <td class="index-element">RIF Results Table</td></tr>
-<tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-t_rif40_sahsu_geometry.html" target="detailFrame">rif40.t_rif40_sahsu_geometry</a></td>
-<td class="index-element">Geolevels geometry: geometry for hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels are restricted to LADUA/DISTRICT level resolution or lower. This table contains no data on Oracle. This replaces the shapefiles used in previous RIF releases. Populating this table checks the lookup and hierarchy tables and thus it must be populated last. Any insert into T_RIF40_GEOLEVELS_GEOMETRY must be a single statement insert.</td></tr>
 <tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-t_rif40_studies.html" target="detailFrame">rif40.t_rif40_studies</a></td>
 <td class="index-element">RIF studies</td></tr>
 <tr class="summary-element"><td class="summary-element" width="30%"><a href="sahsuland-postgres8-t_rif40_study_areas.html" target="detailFrame">rif40.t_rif40_study_areas</a></td>
