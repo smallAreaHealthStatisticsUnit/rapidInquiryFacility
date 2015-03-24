@@ -10,7 +10,7 @@ The ERDs have been split into two:
 
 * [Example test case data; also show structure of the output tables - the rif_studies schema](github-windows://openRepo/https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility?branch=master&filepath=rifDatabase%2FERD%2Frif_studies%2Findex-sahsuland-postgres8.html)
 
-You will need a Windows version of the github client installed to view these schemas or point your browser to the rapidInquiryFacilit/rifDatabase/ERD/rif40 or sahsuland or rif_studies directory.
+**You will need a Windows version of the github client installed to view these schemas or point your browser to the rapidInquiryFacility/rifDatabase/ERD/rif40 or sahsuland or rif_studies directory.**
 
 The following are not documented:
 
