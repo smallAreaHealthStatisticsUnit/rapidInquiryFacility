@@ -226,8 +226,7 @@ endif
 #	$(RUN) $@ "$(CURDIR)" $(PSQL) $(PSQL_FLAGS) -f $< 
 
 #- all: build tool chain, ERD document database
-all: dbms_tools rif40/index-rif40-postgres8.html sahusland/index-sahsuland-postgres8.html
-
+all: dbms_tools rif40/index-sahsuland-postgres8.html sahsuland/index-sahsuland-postgres8.html rif_studies/index-sahsuland-postgres8.html
 
 #- clean: remove ERD and documentation
 clean: 
@@ -279,12 +278,20 @@ rif40.xml:
 		sed "s/\"\"current_user\"()\"/\"current_user()\"/g" | \
 		sed "s/<view-definition>/<view-definition><\![CDATA["/g | \
 		sed "s/<\/view-definition>/]]><\/view-definition>/g" > rif40.xml
+rif_studies.xml:
+	./dbmstools-0.4.5rc1/main/dbmsjy.py db2xml.py -j jdbc:postgresql://$(PG_HOPST):5432/sahsuland\?user=rif40\&password=$(RIF40_PASSWORD) -d postgres8 -s rif_studies -g -v | \
+		sed "s/\&/\&amp;/g" | \
+		sed "s/\"\"current_user\"()\"/\"current_user()\"/g" | \
+		sed "s/<view-definition>/<view-definition><\![CDATA["/g | \
+		sed "s/<\/view-definition>/]]><\/view-definition>/g" > rif_studies.xml
 
 #- docs/index-sahsuland-postgres8.html: Documentation target WARNING: Needs graphviz
-sahusland/index-sahsuland-postgres8.html: sahsuland.xml
+sahsuland/index-sahsuland-postgres8.html: sahsuland.xml
 	./dbmstools-0.4.5rc1/main/xml2doc.py -d postgres8 -f -v -g -w -o sahsuland sahsuland.xml
-rif40/index-rif40-postgres8.html: rif40.xml
+rif40/index-sahsuland-postgres8.html: rif40.xml
 	./dbmstools-0.4.5rc1/main/xml2doc.py -d postgres8 -f -v -g -w -o rif40 rif40.xml
+rif_studies/index-sahsuland-postgres8.html: rif_studies.xml
+	./dbmstools-0.4.5rc1/main/xml2doc.py -d postgres8 -f -v -g -w -o rif_studies rif_studies.xml
 
 #
 # Eof

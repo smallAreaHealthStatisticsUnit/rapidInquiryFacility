@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE db-schema SYSTEM "file:///db-schema.dtd">
+
+<!--
+    Imported schema:
+        Driver class: org.postgresql.Driver
+        JDBC URL: jdbc:postgresql://:5432/sahsuland?user=rif40&amp;password=Se11afield2014
+        DBMS type: postgres8
+-->
+
+<db-schema name="sahsuland" schema="rif_studies">
+    <templates>
+        <!-- TODO -->
+    </templates>
+
+    <!--
+    ======================================================================
+        Tables
+    ======================================================================
+    -->
+
+    <table name="s1_extract" description="Study 1 extract: No description"
+            size="medium" update-frequency="medium" select-frequency="medium">
+        <columns>
+            <column name="year" description="Year" type="short" allows-null="false" />
+            <column name="study_or_comparison" description="Study (S) or comparison (C) area" type="varchar" length="1" allows-null="false" />
+            <column name="study_id" description="Study ID" type="int" allows-null="false" />
+            <column name="area_id" description="Area ID" type="varchar" length="2147483647" allows-null="false" />
+            <column name="band_id" description="Band ID" type="int" allows-null="true" />
+            <column name="sex" description="Sex" type="short" allows-null="true" />
+            <column name="age_group" description="Age group" type="short" allows-null="true" />
+            <column name="ses" description="SES" type="varchar" length="2147483647" allows-null="true" />
+            <column name="inv_1" description="Lung cancer" type="long" allows-null="true" />
+            <column name="total_pop" description="Total population" length="17" scale="17" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+        </columns>
+        <constraints>
+        </constraints>
+        <indexes>
+            <index name="s3_extract_age_group" unique="false">
+                <column-ref name="age_group" />
+            </index>
+            <index name="s3_extract_area_id" unique="false">
+                <column-ref name="area_id" />
+            </index>
+            <index name="s3_extract_band_id" unique="false">
+                <column-ref name="band_id" />
+            </index>
+            <index name="s3_extract_sex" unique="false">
+                <column-ref name="sex" />
+            </index>
+            <index name="s3_extract_study_or_comparison" unique="false">
+                <column-ref name="study_or_comparison" />
+            </index>
+            <index name="s3_extract_year" unique="false">
+                <column-ref name="year" />
+            </index>
+        </indexes>
+        <grants>
+            <grant role="rif40" actions="select, references, insert, delete, update" />
+            <grant role="peterh" actions="select, insert" />
+        </grants>
+    </table>
+
+    <table name="s1_map" description="Study 1 extract: No description"
+            size="medium" update-frequency="medium" select-frequency="medium">
+        <columns>
+            <column name="area_id" description="An area id, the value of the study geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE" type="varchar" length="300" allows-null="true" />
+            <column name="gid" description="Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)" type="int" allows-null="true" />
+            <column name="gid_rowindex" description="GID rowindex record locator unique key" type="varchar" length="2147483647" allows-null="true" />
+            <column name="username" description="Username" type="varchar" length="90" allows-null="true" />
+            <column name="study_id" description="Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq" type="int" allows-null="false" />
+            <column name="inv_id" description="Unique investigation inde:inv_id. Created by SEQUENCE rif40_inv_id_seq" type="int" allows-null="false" />
+            <column name="band_id" description="A band allocated to the area" type="int" allows-null="false" />
+            <column name="genders" description="Genders to be investigated: 1 - males, 2 female or 3 - both" type="short" allows-null="false" />
+            <column name="direct_standardisation" description="Standardisation: indirect (0) or direct (1)" type="short" allows-null="false" />
+            <column name="adjusted" description="Covariate adjustment: Unadjusted (0) or adjusted (1)" type="short" allows-null="false" />
+            <column name="observed" description="The number of observed cases" length="17" scale="17" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+            <column name="expected" description="The number of expected cases or the rate (for direct standardised results)" length="17" scale="17" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+            <column name="lower95" description="The lower 95% confidence interval for the relative risk (for indirectly standarised results) or the lower 95% confidence interval for the rate (for directly standardised results)" length="17" scale="17" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+            <column name="upper95" description="The upper 95% confidence interval for the relative risk (for indirectly standarised results) or the upper 95% confidence interval for the rate (for directly standardised results)" length="17" scale="17" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+            <column name="relative_risk" description="Relaitive risk (for indirectly standarised results) or NULL (for directly standardised results)" length="17" scale="17" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+            <column name="smoothed_relative_risk" description="Smoothed relaive risk (for indirectly standarised results) or NULL (for directly standardised results)" length="17" scale="17" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+            <column name="posterior_probability" description="The posterior probability (for indirectly standarised results) or NULL (for directly standardised results)" length="17" scale="17" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+            <column name="posterior_probability_upper95" description="The upper 95% confidence interval of the posterior probability (for indirectly standarised results) or NULL (for directly standardised results)" length="17" scale="17" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+            <column name="posterior_probability_lower95" description="The lower 95% confidence interval of the posterior probability (for indirectly standarised results) or NULL (for directly standardised results)" length="17" scale="17" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+            <column name="residual_relative_risk" description="The residual relative risk(for indirectly standarised results) or NULL (for directly standardised results)" length="17" scale="17" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+            <column name="residual_rr_lower95" description="The lower 95% confidence interval of the residual relative risk(for indirectly standarised results) or NULL (for directly standardised results)" length="17" scale="17" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+            <column name="residual_rr_upper95" description="The upper 95% confidence interval of the residual relative risk(for indirectly standarised results) or NULL (for directly standardised results)" length="17" scale="17" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+            <column name="smoothed_smr" description="The smoothed SMR [fully Bayesian smoothing] (for indirectly standarised results) or NULL (for directly standardised results)" length="17" scale="17" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+            <column name="smoothed_smr_lower95" description="The lower 95% confidence interval of the smoothed SMR [fully Bayesian smoothing] (for indirectly standarised results) or NULL (for directly standardised results)" length="17" scale="17" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+            <column name="smoothed_smr_upper95" description="The upper 95% confidence interval of the smoothed SMR [fully Bayesian smoothing] (for indirectly standarised results) or NULL (for directly standardised results)" length="17" scale="17" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="float8" />
+            </column>
+        </columns>
+        <constraints>
+            <primary-key name="s3_map_pk">
+                <column-ref name="study_id" />
+                <column-ref name="band_id" />
+                <column-ref name="inv_id" />
+                <column-ref name="genders" />
+                <column-ref name="adjusted" />
+                <column-ref name="direct_standardisation" />
+            </primary-key>
+        </constraints>
+        <grants>
+            <grant role="rif40" actions="select, references, insert, delete, update" />
+            <grant role="peterh" actions="select, insert" />
+        </grants>
+    </table>
+</db-schema>
