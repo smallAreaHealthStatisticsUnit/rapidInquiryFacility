@@ -1,5 +1,4 @@
-RIF database TOOD List
-======================
+# RIF database TOOD List
 
 Peter Hambly.
 Last update: 4/4/2014
@@ -7,11 +6,9 @@ Last update: 4/4/2014
 Current highest priority is [Urgent] and [Enhancements - GIS]
 
 
-1. RIF development blocks
-   ----------------------
+## RIF development blocks
 
-1.1 RIF Block I
-    -----------
+### RIF Block I
 
 Aug-Sept
 
@@ -19,8 +16,7 @@ FF - Rif manager, leaflet geoJSON performance issues, chart prototypes
 KG - Java frontend/middleware, test cases
 PH - Study extract to observed, triggers, GIS simplification
 
-1.2 RIF Block II
-    ------------
+### RIF Block II
 
 Was Dec-Jan, then Mar-Apr, now Jun-Jul
 
@@ -33,8 +29,7 @@ MD - Expected, R integration
 AL - R calculations from expected
 RH - SQL server port to sahsuland
 
-1.2.3 Database work queue
-      -------------------
+#### Database work queue
 
 This is work in progres
 
@@ -57,8 +52,7 @@ May be deferred to block III:
            Missing covariates, no numerators should be an error either globally or within a year.
 * Make state machine capable of handling year/age group gaps at the investigation level.
 
-1.3 RIF Block III
-    -------------
+### RIF Block III
 
 Aug-Sep. Expected to include:
 
@@ -66,11 +60,9 @@ Aug-Sep. Expected to include:
 * Remote health database support (Oracle only)
 * Full support for age/sex/age_sex_group)
 
-2. Current Faults  
-   --------------
+## Current Faults  
 
-2.1 Fixed
-    -----
+### Fixed
 
 1. rif40_sql_log and t_rif40_sql_log need to use the same enum for statement_type (so you can INSERT into rif40_sql_log) [FIXED]
 2. AUDSID is missing from rif_studies view [FIXED]. 
@@ -80,8 +72,7 @@ Aug-Sep. Expected to include:
    * Must NOT contain: ew01/uk91 GIS tables (far, far too big); ICD9/10 tables (WHO copyright issues). ICD9/10 reduced to Lung Cancer rows
    * Also applies to github source files [FIXED]
 
-2.2 Outstanding
-    -----------
+### Outstanding
 
 3. rif40_sm_pkg.rif40_study_ddl_definer() needs to be split into 2 functions and the SQL generator moved from 
    rif40_sm_pkg.rif40_create_extract() to these functions (before/after INSERT). rif40_study_ddl_definer() 
@@ -103,8 +94,7 @@ SELECT a2.area_id AS level2, a3.area_id AS level3,
 
 Currently sahsuland_geography is loaded from the CSV file as a workaround
 
-2.2.1 Issues to be handled better on startup
-      --------------------------------------
+#### Issues to be handled better on startup
 
 These are problem with the startup procedure: rif40_sql_pkg.rif40_startup()
 
@@ -146,17 +136,14 @@ CAUSE: Schema pch not granted ro role pch
 
 FIX: GRANT ALL ON SCHEMA pch TO pch;
 
-2.3 Schema Issues
-    -------------
+### Schema Issues
 
 MIN/MAX on RIF40_INV_COVARIATES - can this be removed
 Also, RIF40_INV_COVARIATES.study_geolevel_name/geography - is it really needed - it is used for enforce as foreign key (it is/should be an error in the state machine and triggers to attempt change either)
 
-3 Current State of the Development
-  --------------------------------
+## Current State of the Development
 
-3.1 Disabled functions
-    ------------------
+### Disabled functions
 
 * Functionality reduction restrictions. Restricted to:
 	One covariate
@@ -168,20 +155,17 @@ Also, RIF40_INV_COVARIATES.study_geolevel_name/geography - is it really needed -
 
 [This is a statement and not a priority]
 
-3.2 Projected functionality
-    -----------------------
+### Projected functionality
 
 * Temporal analysis (run by year/groups of years)
 * Covariates without years
 * Study age bands, e.g. 0-19,20-29,60-74,75+
 
-3.4 R Integration
-    -------------
+### R Integration
 
 To be defined
 
-4 Code layout 
-  -----------
+## Code layout 
 
 a) Private Network
 
@@ -222,8 +206,7 @@ The directory structure is rifDatabase\Postgres\ with the same file type as abov
 
 As of March 2014, the Java test programs (dumpdata) and the installation notes and scripts are not in the repository. They will be added when tidied come more.
 
-5 Documentation
-  -------------
+## Documentation
 
 * Fix constraint ordering bug in dbmstools
 * Add/via another route document triggers, trigger functions, schemas and
@@ -231,11 +214,9 @@ As of March 2014, the Java test programs (dumpdata) and the installation notes a
 * Use function schema comment to describe library overall
 * Tidy ERD
 
-6 Enhancements
-  ------------
+## Enhancements
 
-6.1 ISS [Italian] Enhancements
-    --------------------------
+### ISS [Italian] Enhancements
 
 Project and theme specific permissions: project/theme/user/time intersection
 
@@ -247,13 +228,11 @@ Population weight exposure functionality
 
 To be defined
 
-6.2 CDC Enhancements
-    ----------------
+### CDC Enhancements
 
 To be defined
  
-6.3 Enhancements - GIS
-    ------------------
+### Enhancements - GIS
 
 In progress
 
@@ -275,14 +254,12 @@ In progress
   description + area_id code (needs a defaulted column) [DONE]
 * Add BAND_ID to area_id translation for disease mapping extract/results tables (also name, geometry, geojson to results)
 
-6.4 Enhancements - for plugins
-    --------------------------
+### Enhancements - for plugins
 
 * Study extract preview
 * Charts
 
-6.5 Enhancements - General
-    ----------------------
+### Enhancements - General
 
 * Middleware enhancements as required by Kev (being specified):
 
@@ -303,8 +280,7 @@ In progress
         - version
         - code
 
-6.6 Performance enhancements
-    ------------------------
+### Performance enhancements
 
 * Partitioning support - SAHSULAND example tables (Cancer+pop), study_id tables
 * Cluster population tables (i.e. IOT) [DONE for SAHSUland]
@@ -323,8 +299,7 @@ In progress
 * Extracts - add RIF_ROW support (order by highest resolution study geolevel, event 
   date, postcode, record order number) and index 
 
-6.7 RIF Auditing Enhancements
-    -------------------------
+### RIF Auditing Enhancements
 
 * Enable pg_stat_statement; max=50000; save=true
 
@@ -344,8 +319,7 @@ update_process_table=true
 * Use NSYSLOG to log send syslog events to DB
 * Use PG Foiune for log tracer analysis
 
-6.8 Security Enhancements
-    ---------------------
+### Security Enhancements
 
 * Remove INSERT/UPDATE/DELETE permissions from t_ tables. This has been tested and works on Postgres. [DONE]
   This will be used to implement Fine grained access control (but not the auditing)
@@ -369,8 +343,7 @@ update_process_table=true
 * EXPLAIN PLAN is a potential security risk; needs to have the have SQL injection
   security controls as prepare/execute SQL
 
-6.8.1 Security Enhancements - unresolved issues
-      -----------------------------------------
+#### Security Enhancements - unresolved issues
 
 * Proactive un detected SQL injection attack [i.e. kill session on detecting
   suspicious errors]. This could be done as part of pg_stat_statement audit
@@ -380,8 +353,7 @@ update_process_table=true
   the row actually fetched in sub queries as this would cause performance problems. 
   Really CREATE RULE needs extending to support FGA/FGAC.
 
-6.9 SAHSUland data Enhancements 
-    ---------------------------
+### SAHSUland data Enhancements 
 
 * SAHSLAND cancer, deaths, episodes; extend period to 1974-2010
 * ICD9/10, ICD-O-1, HES oper codes, HES A+E
@@ -394,11 +366,9 @@ update_process_table=true
 * Add GID_<fgeolevel>, GID_ROWINDEX support (order by highest resolution study geolevel, event date, 
   postcode, record order number) and index 
 
-6.10 Remote Health Database Support
-     ------------------------------
+### Remote Health Database Support
 
-6.10.1 Oracle FDW (foreign data wrapper) port
-       --------------------------------------
+#### Oracle FDW (foreign data wrapper) port
 
 * Try using a dblink direct cursor to extract data from remote databases, rather than created a 
   local copy of health data via a FDW select. Use async query so can call session longops
@@ -406,27 +376,23 @@ update_process_table=true
 * Add remote dbms_xplan/EXPLAIN PLAN support 
 * [Auto?] map user remote tables into schema
 
-6.01.2 SQL Server remote access port
-       -----------------------------
+#### SQL Server remote access port
 
 TO BE DEFINED; expect to be the same method as Oracle FDW port
 
-7 Tools
-  -----
+## Tools
 
-7.1 IG tool
-    -------
+### IG tool
 
 To be defined
 
-* Support for PHE approvals process; dataset permisisons
+* Support for PHE approvals process; dataset permissions
 * Create and manage users; manage projects and themes
 * Manage FDW interconnect
 * rif_user/manager runs study; rif_student needs permission
 * Set by the Parameters extract_hold and run_hold - CSV list of roles to hld run and extract
 
-7.2 Dump data replacement
-    ---------------------
+### Dump data replacement
 
 Dumpdata is a high speed data extract tool (originally an Oracle C/Pro*C program). It is written in Java 
 so it can be called from the middleware. 
@@ -459,8 +425,7 @@ so it can be called from the middleware.
 
 * Shapefile support needs to be investigated (i.e. can you interface to the Postgis load/unload program)
 
-7.3 Load data
-    ---------
+### Load data
 
 Loaddata is a high speed data load tool (originally an C program/shell script). It is written in Java 
 so it can be called from the middleware. 
@@ -469,8 +434,7 @@ so it can be called from the middleware.
 * RIF40_VLD_PKG
 * Similar to dumpdata
 
-7.4 RIF Batch
-    ---------
+### RIF Batch
 
 * Use pgbatch module (part of pgadminIII)
 * Java program, calls PL/pgsql
@@ -504,17 +468,14 @@ a) rif40_run_study()
 * Java tool to a) list recently completed, running and queued studies 
   b) real time updates from the batch
 
-8 Testing
-   -------
+## Testing
 
-Schema verifaction (rif40_tables_and_columns, rif40_triggers)
+Schema verification (rif40_tables_and_columns, rif40_triggers)
 PG tap (Unit testing)
 
-9 Database Administration
-  -----------------------
+## Database Administration
 
-9.1 Load Balancing
-    --------------
+### Load Balancing
 
 The new SAHSU Private Network RIF server will be replicated, and the replica is 
 powerful enough to support load balancing.  The Java Middleware is intended to have 
@@ -530,24 +491,20 @@ Investigate:
 
 This should provide excelent scaleability.
 
-9.2 Backup and Recovery
-    -------------------
+### Backup and Recovery
 
 Use PG Barman for physical backups
 pg_dump for logical
 Use Slony replication (logical standby) in preference physical standby
 
-9.3 Vacuum and index rebuild
-    ------------------------
+### Vacuum and index rebuild
 
 * Turn on auto vacuum
 * Create batch job to rebuild indexes
 
-10 Alter scripts
-   -------------
+## Alter scripts
 
-10.1 Alter 1
-     -------
+### Alter 1
 
 a) gid_rowindex (i.e 0000000001_0000000001). Where gid corresponds to gid in geometry table
    row_index is an incremental serial aggregated by gid ( starts from one for each gid). 
@@ -557,8 +514,7 @@ c) Add middleware support functions
 
 Completed 1/7/2014
 
-10.2 Alter 2
-     -------
+### Alter 2
 
 a) Add covariates to comparision area extract
 b) GID, GID_ROWINDEX support in extracts/maps
