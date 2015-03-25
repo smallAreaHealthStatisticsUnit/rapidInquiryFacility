@@ -1,7 +1,7 @@
-# RIF database TOOD List
+# RIF database Deveopment Log
 
 Peter Hambly.
-Last update: 4/4/2014
+Last update: 25/3/2015
 
 Current highest priority is [Urgent] and [Enhancements - GIS]
 
