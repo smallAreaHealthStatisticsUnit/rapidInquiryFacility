@@ -58,7 +58,7 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres>make
 make: *** No targets specified and no makefile found.  Stop.
 ```
 * Check logon to psql with a password for:
-··* postgres
+  * postgres
 * Check Node.js is correctly installed; *cd GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node*; *make install topojson*
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node>make install topojson
@@ -142,17 +142,17 @@ node_modules\topojson\bin\topojson --version
 1.6.18
 node_modules\topojson\bin\topojson -q 1e6 -o test_6_geojson_test_01.json ../psql_scripts/test_scripts/data/test_6_geojson_test_01.json
 bounds: -6.68852598 54.6456466 -6.32507059 55.01219818 (spherical)
-pre-quantization: 0.0404m (3.63e-7°) 0.0408m (3.67e-7°)
+pre-quantization: 0.0404m (3.63e-7Â°) 0.0408m (3.67e-7Â°)
 topology: 160 arcs, 3502 points
 prune: retained 160 / 160 arcs (100%)
 node_modules\topojson\bin\topojson -q 1e6 -o test_6_sahsu_4_level4_0_0_0.json ../psql_scripts/test_scripts/data/test_6_sahsu_4_level4_0_0_0.json
 bounds: -7.58829438 52.68753577 -4.886537859999999 55.5268098 (spherical)
-pre-quantization: 0.300m (0.00000270°) 0.316m (0.00000284°)
+pre-quantization: 0.300m (0.00000270Â°) 0.316m (0.00000284Â°)
 topology: 3299 arcs, 70897 points
 prune: retained 3299 / 3299 arcs (100%)
 
 ```
-···**If the toposjon node.js does not run correctly then node is not properly installed**. 
+  **If the toposjon node.js does not run correctly then node is not properly installed**. 
 * Check R is integrated into Postgres as PLR (See the PLR build instructions).
 
 ### Build control using make
@@ -166,12 +166,12 @@ The RIF database is built using GNU make for ease of portability. The RIF is bui
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node> make db_setup
 ```
-···**Note that this does not apply the alter scripts under development**
+   **Note that this does not apply the alter scripts under development**
 * To build or rebuild sahsuland_dev:
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node> make clean sahsuland_dev
 ```
-···**Note that this does not apply the alter scripts under development**
+   **Note that this does not apply the alter scripts under development**
 * To build or rebuild sahsuland_dev:
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node> make clean sahsuland_dev
