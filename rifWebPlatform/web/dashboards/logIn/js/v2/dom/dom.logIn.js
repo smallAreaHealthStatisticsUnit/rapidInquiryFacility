@@ -1,20 +1,20 @@
-RIF.dom = (function() {
+RIF.dom = ( function () {
 
 
-   var dom = {
-      menu: {
-         logIn: function() {
-            return {
-               username: $('#userName'),
-               password: $('#pw'),
-               logInBtn: $('#logInBtn'),
-               dialogClose: $('.modal_close')
-            }
-         }
+  var dom = {
+    menu: {
+      logIn: function () {
+        return {
+          username: $( '#userName' ),
+          password: $( '#pw' ),
+          logInBtn: $( '#logInBtn' ),
+          dialogClose: $( '.modal_close' )
+        }
       }
-   };
+    }
+  };
 
 
-   RIF.dom = dom;
+  RIF.dom = dom;
 
-});
+} );

@@ -14,7 +14,6 @@
     <link href="css/statusBar.css" rel="stylesheet" media="screen" />
 
 
-
     <!-- libraries -->
     <script type="text/javascript" src="../../libs/jquery-2.0.3.js"></script>
     <script type="text/javascript" src="../../libs/jquery-ui-1.10.4.custom.min.js"></script>
@@ -31,27 +30,25 @@
     <script type="text/javascript" src="../../libs/detect.js"></script>
     
     <!-- RIF4 -->
+    
 	<!-- The order on which the Rif files are downloaded must be maintained -->
-	<script type="text/javascript" src="js/v2/RIF.js"></script>
-	<script type="text/javascript" src="js/v2/abstractions/study/study.diseaseSubmission.js"></script>
-    <script type="text/javascript" src="js/v2/abstractions/study/facade/study.facade.diseaseSubmission.js"></script>
-     
+	<script type="text/javascript" src="js/RIF.js"></script>
     <!-- utils -->
-    <script type="text/javascript" src="js/v2/utils/utils.js"></script>
+    <script type="text/javascript" src="js/v2/utils/utilsRefactor.js"></script>
     <script type="text/javascript" src="js/v2/utils/publisher.js"></script>
     <script type="text/javascript" src="js/v2/utils/resultNames.js"></script>
-    <script type="text/javascript" src="js/v2/dom/dom.submission.js"></script>
-    <script type="text/javascript" src="js/v2/utils/gui_events/resizable.js"></script>
-    
-    <!-- request -->
-    <script type="text/javascript" src="../../request/request.js"></script>
-    
+     <!-- request -->
+    <script type="text/javascript" src="js/v2/utils/request/request.js"></script>
      <!-- status bar -->
-    <script type="text/javascript" src="../../statusBar/statusBar.js"></script>
-    
-    <!-- modules -->
-    <script type="text/javascript" src="js/v2/modules/diseaseSubmission.js"></script>
-    
+    <script type="text/javascript" src="js/v2/utils/statusBar/statusBar.js"></script>
+    <!-- DOM -->
+    <script type="text/javascript" src="js/v2/dom/dom.submission.js"></script>
+    <!-- STUDY LOGIC -->
+	<script type="text/javascript" src="js/v2/abstractions/study/study.diseaseSubmission.js"></script>
+    <script type="text/javascript" src="js/v2/abstractions/study/facade/study.facade.diseaseSubmission.js"></script>
+
+    <!-- Initialize -->
+    <script type="text/javascript" src="js/v2/initialize.js"></script>    
 	<!-- components -->
     <!-- map -->
     <!--<script type="text/javascript" src="js/v2/components/map/map.js"></script>
@@ -71,28 +68,69 @@
     
     <!-- menu -->
     <script type="text/javascript" src="js/v2/components/menu/menu.diseaseSubmission.js"></script>
-	<script type="text/javascript" src="js/v2/components/menu/facades/menu.facade.diseaseSubmission.js"></script>
+
+    
+    <script type="text/javascript" src="js/v2/components/menu/units/unit.frontSubmission.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/firers/firer.frontSubmission.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/subscribers/subscriber.frontSubmission.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/events/event.frontSubmission.js"></script>
-    <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.studyArea.js"></script>
-    <script type="text/javascript" src="js/v2/components/menu/events/event.studyArea.js"></script>
-    <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.frontSubmission.js"></script>
-    <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.healthCodes.js"></script>
-    <script type="text/javascript" src="js/v2/components/menu/events/event.healthCodes.js"></script>
-    <script type="text/javascript" src="js/v2/components/menu/units/menu.unit.investigationParameters.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/controllers/controller.frontSubmission.js"></script>
+    
+    <script type="text/javascript" src="js/v2/components/menu/units/unit.investigationParameters.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/events/event.investigationParameters.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/controllers/controller.investigationParameters.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/firers/firer.investigationParameters.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/subscribers/subscriber.investigationParameters.js"></script>
+    
+    <script type="text/javascript" src="js/v2/components/menu/units/unit.healthCodes.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/events/event.healthCodes.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/controllers/controller.healthCodes.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/firers/firer.healthCodes.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/subscribers/subscriber.healthCodes.js"></script>
+    
+    
+    <script type="text/javascript" src="js/v2/components/menu/units/unit.areaSelection.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/controllers/controller.areaSelection.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/firers/firer.areaSelection.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/subscribers/subscriber.areaSelection.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/events/event.areaSelection.js"></script>
+    
+    
     <script type="text/javascript" src="js/v2/components/menu/menu.utils.js"></script>
     
     <!-- table -->
     <script type="text/javascript" src="js/v2/components/table/table.js"></script>
-    <script type="text/javascript" src="js/v2/components/table/units/table.unit.areaSelectionRenderer.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/table.utils.js"></script>
+    
+    <script type="text/javascript" src="js/v2/components/table/units/unit.ageGroups.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/events/event.ageGroups.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/controllers/controller.ageGroups.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/firers/firer.ageGroups.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/subscribers/subscriber.ageGroups.js"></script>
+    
+    <script type="text/javascript" src="js/v2/components/table/units/unit.investigationsRecap.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/events/event.investigationRecap.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/controllers/controller.investigationsRecap.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/firers/firer.investigationsRecap.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/subscribers/subscriber.investigationsRecap.js"></script>
+    
+    
+        
+    <script type="text/javascript" src="js/v2/components/table/units/unit.areaSelection.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/events/event.areaSelection.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/controllers/controller.areaSelection.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/firers/firer.areaSelection.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/subscribers/subscriber.areaSelection.js"></script>
+    
+    <!--<script type="text/javascript" src="js/v2/components/table/units/table.unit.areaSelectionRenderer.js"></script>
     <script type="text/javascript" src="js/v2/components/table/facades/table-facade-diseaseSubmission.js"></script>
     <script type="text/javascript" src="js/v2/components/table/events/event.areaSelectionRenderer.js"></script>
     <script type="text/javascript" src="js/v2/components/table/facades/table-facade-diseaseSubmission.js"></script>
     <script type="text/javascript" src="js/v2/components/table/units/table.unit.ageGroupsRenderer.js"></script>
     <script type="text/javascript" src="js/v2/components/table/events/event.ageGroupsRenderer.js"></script>
     <script type="text/javascript" src="js/v2/components/table/units/table.unit.investigationsRecap.js"></script>
-    <script type="text/javascript" src="js/v2/components/table/events/event.investigationRecap.js"></script>
-    <script type="text/javascript" src="js/v2/components/table/table.utils.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/events/event.investigationRecap.js"></script>-->
+    
 
 
     <title>The Rapid Inquiry Facility, RIF 4.0</title>
@@ -219,7 +257,7 @@
 					<h2>Study area</h2>
 					<a class="modal_close" href="#areaSelectionModal"></a>
 				</div>
-                <div class='modalContainer'>
+                <div class='modalContainer areasSelectionDialog'>
                     <div class='modalAreaSelectionMenu'>
                         <div id='selectAtSelection' class='dropdowns availablesWrapper'>
                            <input type="text"  placeholder="Select at" id='selectAt' class='dropdownInput'>
@@ -368,7 +406,7 @@
 	</div>   
     
     <script>
-      window.onload = RIF.diseaseSubmission;
+      window.onload = RIF.initialize;
     </script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 RIF.study = (function(type) {
    var _study = {
       diseaseSubmission: {
+         investigationReady: false,  
          investigations: {},
          investigationCounts: 0,
          // SELECTION
@@ -40,7 +41,7 @@ RIF.study = (function(type) {
             console.log('----------------------');
          },
          addCurrentInvestigation: function() {
-            var parametersClone = RIF.extend(this.parameters, {});
+            var parametersClone = RIF.utils.extend(this.parameters, {});
             this.investigations[this.investigationCounts] = parametersClone;
             console.log("investigation " + this.investigationCounts + " added");
             // this.showInvestigations();  
@@ -144,6 +145,8 @@ RIF.study = (function(type) {
          getAgeGroups: function() {
             return this.parameters.ageGroups;
          },
+          
+         
          isFrontSubmissionReady: function() {
             var toComplete = [];
             for (var i in this.front) {
@@ -168,5 +171,5 @@ RIF.study = (function(type) {
          }
       }
    };
-   return RIF.mix(_study[type], RIF.study['facade-diseaseSubmission']());
+   return RIF.utils.mix(_study[type], RIF.study['facade-diseaseSubmission']());
 });

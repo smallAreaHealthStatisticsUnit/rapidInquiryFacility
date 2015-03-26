@@ -43,7 +43,7 @@ RIF.dom = (function() {
                dropdownInputs: $('.dropdownInput:not(.editable)')
             };
          },
-         studyArea: function() {
+         areaSelection: function() {
             return {
                /* Resolution field */
                resolution: $('#resolution'),
@@ -107,15 +107,17 @@ RIF.dom = (function() {
          }
       },
       table: {
-         areaSelectionRenderer: function() {
+         areaSelection: function() {
             return {
                headers: $('#areaSelectionWrapper .aSH li'),
                tableContent: get('allRows'),
                rows: $('#areaSelectionWrapper .aSR'),
-               studyAreaCount: get('resolutionCount')
+               studyAreaCount: get('resolutionCount'),
+               areaSelectionWrapper: $('#areaSelectionWrapper'),
+               areasSelectionDialog: $('.areasSelectionDialog')    
             };
          },
-         ageGroupsRenderer: function() {
+         ageGroups: function() {
             return {
                investigationBox: $('.investigationBox'),
                ageGroupsWrapper: $('#ageGroupsWrapper'),

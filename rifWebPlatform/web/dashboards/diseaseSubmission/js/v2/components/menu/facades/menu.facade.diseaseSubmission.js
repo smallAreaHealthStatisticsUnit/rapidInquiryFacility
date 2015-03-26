@@ -1,4 +1,4 @@
-RIF.menu['facade-diseaseSubmission'] = (function(_p) {
+RIF.menu['facade-frontSubmission'] = (function(_p) {
    /*
     * Facades can only communicate to main component.
     * Cannot call directly component sub units
@@ -45,6 +45,7 @@ RIF.menu['facade-diseaseSubmission'] = (function(_p) {
       icdSelectionChanged: function(arg) {
          this.fire('icdSelectionChanged', arg);
       },
+      // investigation parameters   
       startYearChanged: function(arg) {
          this.fire('startYearChanged', arg);
       },

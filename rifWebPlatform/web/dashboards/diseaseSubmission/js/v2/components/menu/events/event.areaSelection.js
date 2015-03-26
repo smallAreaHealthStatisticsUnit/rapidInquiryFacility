@@ -1,0 +1,12 @@
+RIF.menu['event-areaSelection'] = (function(_dom, firer) {
+   
+   _dom.selectAt.change(function() {
+      var val = $(this).val();
+      _dom.resolutionCountLabel.innerHTML = val + ' ';
+     firer.selectAtChanged(val);
+   });
+   _dom.resolution.change(function() {
+      var val = $(this).val();
+      menuContext.facade.resolutionChanged(val);
+   });
+});

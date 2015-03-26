@@ -1,11 +1,13 @@
-RIF.menu['event-frontSubmission'] = (function(dom) {
-   var menuContext = this;
+RIF.menu['event-frontSubmission'] = (function(dom, firer) {
+   
+    
    dom.dropdownInputs.keydown(function(e) {
       if (this.id === 'searchCodeInput') {
          return true;
       };
       return false;
    });
+   
    $(dom.dialogClose).click(function() {
       var id = $(this).attr('href');
       $(id).hide();
@@ -13,23 +15,29 @@ RIF.menu['event-frontSubmission'] = (function(dom) {
          RIF.statusBar(null, null, -1); //remove error msgs   
       };
    });
-   $('#statusbar').click(function() {
+   
+    $('#statusbar').click(function() {
       $(this).hide();
       RIF.statusBar(null, null, -1); //remove error msgs   
    });
-   $(dom.studyArea).click(function() { //Fire
+   
+    $(dom.studyArea).click(function() { //Fire
       $(dom.studyAreaDialog).show();
    });
-   $(dom.compArea).click(function() { //Fire
+   
+    $(dom.compArea).click(function() { //Fire
       $(dom.compAreaDialog).show();
    });
-   $(dom.invParameters).click(function() { //Fire
-      menuContext.proxy.isDialogReady('investigationDialog');
+   
+    $(dom.invParameters).click(function() { //Fire
+      firer.isDialogReady('investigationDialog');
    });
-   $(dom.logOut).click(function() {
-      menuContext.frontSubmission.request('logOut');
+   
+    $(dom.logOut).click(function() {
+      firer.fire('logOut', null);    
    })
    /*  Signal change to facade --> Study */
+   
    dom.studyName.change(function() {
       var val = $(this).val();
       if (val != '') {
@@ -38,18 +46,21 @@ RIF.menu['event-frontSubmission'] = (function(dom) {
          dom.studyName.removeClass('inputBorderSelection');
          val = null;
       };
-      menuContext.facade.studyNameChanged(val);
+      firer.studyNameChanged(val);
    });
+    
    dom.healthTheme.change(function() {
       var val = $(this).val();
-      menuContext.facade.healthThemeChanged(val);
+      firer.healthThemeChanged( val);
    });
+    
    dom.numerator.change(function() {
       var val = $(this).val();
-      menuContext.proxy.numeratorChanged(val);
+      firer.numeratorChanged(val);
    });
+    
    dom.denominator.change(function() {
       var val = $(this).val();
-      menuContext.facade.denominatorChanged(val);
+      firer.denominatorChanged(val);
    });
 });

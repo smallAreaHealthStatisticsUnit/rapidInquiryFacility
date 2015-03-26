@@ -669,7 +669,7 @@ input[type="range"]::-ms-thumb {
    
 
    .areaSelectionTable .rowSelected, #allRowsAgeGroups .rowSelected, .labelSelected {
-       background-color: rgba( 152,251,152,0.2);
+       background-color: rgba( 152,251,152,0.2) !important;
    }
 
    .aSR div{
@@ -860,7 +860,7 @@ input[type="range"]::-ms-thumb {
 	  background: #fff;
 	  border: solid 1px #aaa;
 	  height: 140px;
-	  overflow-y: scroll;
+	  overflow: scroll;
 	  z-index:9999;
 	}
 	
@@ -1083,10 +1083,6 @@ input.dropdownInput:-webkit-input-placeholder {
 
 div.headerBlock:hover{
     cursor:pointer;
-    -webkit-transition: background 1s;
-    -moz-transition: background 1s;
-    -o-transition: background 1s;
-    transition: background 1s;
 }
 
 #studyArea .headerBlock{
@@ -1227,7 +1223,7 @@ color:#848484;
 }
 .healthCodes #icdSelection{
     background-color:#B4EEB4;
-    max-height: 180px;
+    max-height: 80px;
     padding: 2px 15px 5px 7px;
     margin-top:10px;
     overflow: auto;
@@ -1240,6 +1236,7 @@ color:#848484;
    margin: 4% 4% 0 4%;
    width: 80%;    
    position: relative;
+   padding: 0px 15px 5px 7px;
 }
 
 .healthCodes #availableTaxomonomies{
@@ -1250,8 +1247,9 @@ color:#848484;
   height: -moz-calc(100% - 300px); 
   height: -webkit-calc(100% - 300px); 
   height: -o-calc(100% - 300px);  
-  height: calc(100% - 300px);
+  height: calc(100% - 200px);
   margin-top:2%;    
+  overflow-x: hidden;
 }
 .healthCodes #searchCode{
     width: 20%;

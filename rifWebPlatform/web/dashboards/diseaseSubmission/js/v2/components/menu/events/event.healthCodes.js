@@ -1,29 +1,35 @@
-RIF.menu['event-healthCodes'] = (function(_dom) {
-   var menuContext = this,
-      currentTaxonomy = null,
+RIF.menu['event-healthCodes'] = (function(_dom, firer) {
+  
+  var currentTaxonomy = null,
       index = 0,
       searchEnter = false,
       previousSearch = '',
       indexSelection = {},
       healthSelection = {}; //{ taxonomy: null , description: null, code: null }
+   
    var clearIcdCodes = function() {
       $('.' + _dom.icdSelection).removeClass(_dom.icdSelection).css('background-color', 'white');
+       $(_dom.hiddenIcdSelection).empty();
    };
+    
    var checkTaxonomy = function(tax) {
       if (!healthSelection.hasOwnProperty(tax)) {
          healthSelection[tax] = [];
          indexSelection[tax] = [];
       };
    };
+    
    var getTaxonomy = function() {
       return currentTaxonomy || _dom.icdClassification.val();
    };
+    
    _dom.icdClassification.change(function() {
       currentTaxonomy = $(this).val();
       $('.taxonomySection').hide();
-      menuContext.proxy.updateTopLevelHealthCodes(currentTaxonomy);
+      firer.updateTopLevelHealthCodes(currentTaxonomy);
       previousSearch = '';
    });
+    
    $(_dom.healthCodes).on("click", _dom.healthCodesHeader, function(aEvent) {
       var target = $(this);
       var spans = target.find('>span'),
@@ -44,8 +50,15 @@ RIF.menu['event-healthCodes'] = (function(_dom) {
       var val = spans[1].innerHTML.trim();
       plusMinus.innerHTML = ' - ';
       target.toggleClass('headerClicked');
-      menuContext.proxy.updateSubLevelHealthCodes(val, childContainer);
+      
+      var tax = getTaxonomy();   
+      firer.updateSubLevelHealthCodes({
+                  "taxonomy": tax,
+                  "code": val,
+                  "dom": childContainer
+      })   
    });
+    
    $(_dom.tree).on("click", _dom.noChildElements, function(aEvent) {
       var spans = $(this).find('span'),
          code = spans[0].innerHTML.trim(),
@@ -79,20 +92,23 @@ RIF.menu['event-healthCodes'] = (function(_dom) {
          };
          $(this).removeClass('icdSelected');
       };
-      menuContext.proxy.icdSelectionChanged(healthSelection);
+      firer.healthSelectionChanged(healthSelection);
+      firer.isInvestigationReady();  
       copySelection();
    });
+    
    _dom.clearAll.click(function() {
       clearIcdCodes();
       indexSelection = {};
       healthSelection = {};
       var taxonomy = getTaxonomy();
-      menuContext.proxy.searchHealthCodes({
+      firer.searchHealthCodes({
          taxonomy: taxonomy,
          searchTxt: '',
          dom: null
       });
    });
+    
    _dom.searchCodeInput.keypress(function(event) {
       var keycode = (event.keyCode ? event.keyCode : event.which);
       if (keycode == '13') {
@@ -106,16 +122,18 @@ RIF.menu['event-healthCodes'] = (function(_dom) {
             RIF.statusBar('Could not find element to append health codes search', true, 'notify');
             return;
          };
-         menuContext.proxy.searchHealthCodes({
+         firer.searchHealthCodes({
             taxonomy: taxonomy,
-            searchTxt: searchTxt /*, dom: domParent */
+            searchTxt: searchTxt
          });
          previousSearch = searchTxt;
       };
    });
+    
    $(_dom.searchResults).on("click", '.opacityBackground', function(aEvent) {
       $(_dom.searchResults).hide();
    });
+    
    var copySelection = function() {
       _dom.hiddenIcdSelection.empty();
       var taxonomy = getTaxonomy();
