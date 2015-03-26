@@ -152,7 +152,7 @@ topology: 3299 arcs, 70897 points
 prune: retained 3299 / 3299 arcs (100%)
 
 ```
----**If the toposjon node.js does not run correctly then node is not properly installed**. 
+···**If the toposjon node.js does not run correctly then node is not properly installed**. 
 * Check R is integrated into Postgres as PLR (See the PLR build instructions).
 
 ### Build control using make
@@ -166,12 +166,12 @@ The RIF database is built using GNU make for ease of portability. The RIF is bui
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node> make db_setup
 ```
----**Note that this does not apply the alter scripts under development**
+···**Note that this does not apply the alter scripts under development**
 * To build or rebuild sahsuland_dev:
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node> make clean sahsuland_dev
 ```
----**Note that this does not apply the alter scripts under development**
+···**Note that this does not apply the alter scripts under development**
 * To build or rebuild sahsuland_dev:
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node> make clean sahsuland_dev
