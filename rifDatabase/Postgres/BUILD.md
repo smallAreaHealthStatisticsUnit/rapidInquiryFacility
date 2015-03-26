@@ -61,8 +61,8 @@ make: *** No targets specified and no makefile found.  Stop.
 * Check logon to psql with a password for:
   * postgres
 * Check Node.js is correctly installed; *cd GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node*; *make install topojson*. 
-  [Node.js install dialog] 
-(https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/Node/Node%20Install.md
+  The [Node.js install dialog]
+(https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/Node/Node%20Install.md) is provided as an example.
   **If the toposjon node.js does not run correctly then node is not properly installed**. 
 * Check R is integrated into Postgres as PLR (See the PLR build instructions).
 
@@ -108,10 +108,9 @@ Makefiles have the following limitations:
 
 #### Help
 
-The Makefile has help:
+The Makefile has [help](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/psql_scripts/Make%20Help.md):
 
 ```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>[make help] 
-(https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/psql_scripts/Make%20Help.md)
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>make help
 ```
  
