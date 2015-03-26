@@ -58,7 +58,7 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres>make
 make: *** No targets specified and no makefile found.  Stop.
 ```
 * Check logon to psql with a password for:
---* postgres
+··* postgres
 * Check Node.js is correctly installed; *cd GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node*; *make install topojson*
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node>make install topojson
