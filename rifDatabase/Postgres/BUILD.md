@@ -26,8 +26,8 @@ The databases sahsuland and sahsuland_dev are built using make and Node.js.
 
 On Windows:
 
-* Install MinGW with the full development environment and add c:\MinGW\msys\1.0\bin to path
-* Install Python 2.7 ## Not Python 3.n##
+* Install MinGW with the full development environment and add *c:\MinGW\msys\1.0\bin* to path
+* Install Python 2.7 **Not Python 3.n**
 * Install a C/C++ compiler, suitable for use by Node.js. I used Microsoft Visual Studio 2012 
   under an Academic licence. The dependency on Node.js will be reduced by replacing the current 
   program with Node.js web services available for use by the wider RIF community.
@@ -35,7 +35,7 @@ On Windows:
 On Windows, Linux and MacOS
 
 * Install Postgres 9.3.5+ or 9.4.1+ and PostGIS 2.1.3+. Building will failed on Postgres 9.2 or 
-  below as PL/pgsql GET DIAGNOSTICS is used; PostGIS before 2.1.3 has bugs that 
+  below as PL/pgsql GET STACKED DIAGNOSTICS is used; PostGIS before 2.1.3 has bugs that 
 * Install 64 bit Node.js. The 32 bit node will run into memory limitation problems will vary large 
   shapefiles.
 * Install R; integrate R into Postgres [optional]
@@ -49,7 +49,7 @@ Run up a command tool, *not* in the Postgres build directory (psql_scripts):
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres>make
 make: *** No targets specified and no makefile found.  Stop.
 ```
-* Check Node.js is correctly installed; *cd GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node*; *make install topojson
+* Check Node.js is correctly installed; *cd GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node*; *make install topojson*
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node>make install topojson
 Debug level set to default: 0
@@ -154,7 +154,7 @@ The RIF database is built using GNU make for ease of portability. The RIF is bui
 
 #### Configuring make
 
-** Do not edit the Makefile directly; subsequent git changes will cause conflicts and you may loose 
+**Do not edit the Makefile directly; subsequent git changes will cause conflicts and you may loose 
 your changes.** Instead copy Makefile.local.example to Makefile.local and edit Makefile.local. Beware 
 of your choice of editor on especially Windows. The RIF is developed on Windows and Linux at the same time so 
 you will have files with both Linux <CR> and Windows <CRLF> semantics. Windows Notepad in particular 
@@ -166,8 +166,8 @@ does not understand Linux files.
 
 Makefiles have the following limitations:
 
-* Full dependency tracking for SQL scripts has not yet been implemented; you are advised to do a ''make clean'' 
-  or ''make devclean'' before building as in the below examples or nothing much may happen.
+* Full dependency tracking for SQL scripts has not yet been implemented; you are advised to do a *make clean* 
+  or *make devclean* before building as in the below examples or nothing much may happen.
 * A fully working version of Node.js that can compile is required or you ewill not be able to generate the 
   topoJSON tiles data.
 
