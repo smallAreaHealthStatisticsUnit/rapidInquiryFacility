@@ -227,7 +227,10 @@ modules: $(MODULES)
 
 $(MODULES):
 	$(NPM) install pg pg-native topojson
-	
+
+#clean:
+#	 $(DELETE) node_modules
+	 
 install:
 	$(NPM) install pg pg-native topojson
 	$(TOPOJSON) --version
