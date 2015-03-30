@@ -24,6 +24,18 @@ footer, header, hgroup, menu, nav, section {
 	display: block;
 }
 
+@media screen and (max-height: 700px) {
+    .buttonContainer {
+         margin-top:40% !important; 
+    }
+    .headerBlock {
+        background-size: 90% 90% !important;
+    }
+    
+    #content>div.blocks{
+        height:70% !important;
+    }
+}
 
 body {
 	line-height: 1;
@@ -1059,14 +1071,14 @@ input.dropdownInput:-webkit-input-placeholder {
 
 
 #content>div.blocks {
+  margin-top: 25px;    
   float: left;
   margin-right: 5%;
   height: 100%;
   width: 20%;
   text-align: center;
   text-transform: uppercase;
-  min-height: 320px;
-  max-height: 400px;
+  max-height: 400px;*/
   margin-top:3%;    
 }
 
@@ -1168,6 +1180,14 @@ div.headerBlock:hover{
      border-bottom: 5px solid #DEDEDE;
 }
 
+#runContainer  #fromFile{
+    top: 15px;
+    font-size: 12px;
+}
+  #fromFile:hover,#retrieve:hover,#run:hover{
+    color:black;
+  }
+  
 #importExportContainer  {
      border-bottom: 5px solid #FFDAB9;
      width: 200px !important;
@@ -1184,9 +1204,10 @@ div.headerBlock:hover{
 }
 
 
+
 .buttonContainer{
   width: 160px;
-color:#848484;    
+  color:#848484;    
   margin-top:100px;
   position: relative;    
 }
@@ -1244,10 +1265,10 @@ color:#848484;
 }
 
 .healthCodes #tree{
-  height: -moz-calc(100% - 300px); 
-  height: -webkit-calc(100% - 300px); 
-  height: -o-calc(100% - 300px);  
-  height: calc(100% - 200px);
+  height: -moz-calc(100% - 205px); 
+  height: -webkit-calc(100% - 205px); 
+  height: -o-calc(100% - 205px);  
+  height: calc(100% - 205px);
   margin-top:2%;    
   overflow-x: hidden;
 }

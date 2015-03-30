@@ -44,8 +44,9 @@ RIF.menu.frontSubmission = (function( _dom, menuUtils ) {
     /* geolevel obj */
 
     var _p = {
-         showDialog: function() {
-            $(_dom['investigationDialog']).show();
+         showDialog: function(dialog) {
+            console.log(dialog); 
+            $(_dom[dialog]).show();
          },
          getHealthThemes: function( themes, description ) {
             var el = _dom['healthThemeAvailablesEl'];

@@ -4,8 +4,12 @@ RIF.menu['firer-areaSelection'] = (function() {
 
       selectAtChanged: function(arg) {
          this.fire('selectAtChanged', arg);
+         this.getResolutions(arg);  
       },
-
+       
+       resolutionChanged: function(arg) {
+         this.fire('resolutionChanged', arg);
+      },
    };
    return firer;
 });

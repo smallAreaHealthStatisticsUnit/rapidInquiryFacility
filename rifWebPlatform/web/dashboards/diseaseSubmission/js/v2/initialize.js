@@ -19,7 +19,7 @@
 RIF.initialize = (function() {
    var _p = {
       components: {
-         study: 'diseaseSubmission',
+         model: 'diseaseSubmission',
          /*map: {
             studyType: 'diseaseSubmission',
             layerType: 'tilesvg'
@@ -36,22 +36,22 @@ RIF.initialize = (function() {
       events: {
          /**--FRONT SUBMISSION MENU---**/
          studyNameChanged: {
-            subscribers: ["study"],
+            subscribers: ["model"],
             firer: ["menu"],
             method: "studyNameChanged"
          },
          healthThemeChanged: {
-            subscribers: ["study"],
+            subscribers: ["model"],
             firer: ["menu"],
             method: "healthThemeChanged"
          },
          numeratorChanged: {
-            subscribers: ["study" /*, "table" */],
+            subscribers: ["model" /*, "table" */],
             firer: ["menu"],
             method: "numeratorChanged"
          },
          denominatorChanged: {
-            subscribers: ["study"],
+            subscribers: ["model"],
             firer: ["menu"],
             method: "denominatorChanged"
          },
@@ -61,13 +61,13 @@ RIF.initialize = (function() {
             method: "logOut"
          },
          isDialogReady: {
-            subscribers: ["study"],
+            subscribers: ["model"],
             firer: ["menu"],
             method: "isDialogReady"
          },
          showDialog: {
             subscribers: ["menu"],
-            firer: ["study"],
+            firer: ["model"],
             method: "showDialog"
          },
          
@@ -75,101 +75,113 @@ RIF.initialize = (function() {
         /**-- Area Selection ---**/  
          
          selectAtChanged: {
-            subscribers: ["study","table"],
+            subscribers: ["model","table"],
             firer: ["menu"],
             method: "selectAtChanged"
          },
           
         studyAreaSelectionEvent: {
-            subscribers: ["study"],
+            subscribers: ["model"],
             firer: ["table"],
             method: "studyAreaSelectionEvent"
          },  
+         
+         startAreaSelection: {
+            subscribers: ["menu"],
+            firer: ["model"],
+            method: "startAreaSelection"
+         },  
+          
+         resolutionChanged: {
+            subscribers: ["model"],
+            firer: ["menu"],
+            method: "resolutionChanged"
+         },
           
          /**-- INVESTIGATION PARAMETER ---**/
          
          startInvestigationParameter: {
             subscribers: ["menu","table"],
-            firer: ["study"],
+            firer: ["model"],
             method: "startInvestigationParameter"
          },
          
          startYearChanged: {
-            subscribers: ["study"],
+            subscribers: ["model"],
             firer: ["menu"],
             method: "startYearChanged"
          }, 
           
         endYearChanged: {
-            subscribers: ["study"],
+            subscribers: ["model"],
             firer: ["menu"],
             method: "endYearChanged"
          },  
           
          genderChanged: {
-            subscribers: ["study"],
+            subscribers: ["model"],
             firer: ["menu"],
             method: "genderChanged"
          },
           
          covariatesChanged: {
-            subscribers: ["study"],
+            subscribers: ["model"],
             firer: ["menu"],
             method: "covariatesChanged"
          },
           
          isInvestigationReady: {
-            subscribers: ["study"],
+            subscribers: ["model"],
             firer: ["table", "menu"],
             method: "isInvestigationReady"
          }, 
           
          investigationReadyToBeAdded: {
             subscribers: ["menu"],
-            firer: ["study"],
+            firer: ["model"],
             method: "investigationReadyToBeAdded"
          },
           
         investigationNotReadyToBeAdded: {
             subscribers: ["menu"],
-            firer: ["study"],
+            firer: ["model"],
             method: "investigationNotReadyToBeAdded"
          },
           
         addInvestigation: {
-            subscribers: ["study"],
+            subscribers: ["model"],
             firer: ["menu"],
             method: "addInvestigation"
         },
           
         addInvestigationRow: {
             subscribers: ["table"],
-            firer: ["study"],
+            firer: ["model"],
             method: "addInvestigationRow"
          },
           
         removeInvestigationRow: {
-            subscribers: ["study"],
+            subscribers: ["model"],
             firer: ["table"],
             method: "removeInvestigationRow"
          },
           
         clearAllParameters: {
-            subscribers: ["study", "table"],
+            subscribers: ["model", "table"],
             firer: ["menu"],
             method: "clearAllParameters"
          },  
           
         /**-- INVESTIGATION PARAMETER: Health Codes ---**/  
         healthSelectionChanged: {
-            subscribers: ["study"],
+            subscribers: ["model"],
             firer: ["menu"],
             method: "healthSelectionChanged"
          },
         
          /**-- INVESTIGATION PARAMETER: Age groups table ---**/    
          ageGroupsChanged: {
-            subscribers: ["study"],
+            subscribers: ["model"],
             firer: ["table"],
             method: "ageGroupsChanged"
          },  

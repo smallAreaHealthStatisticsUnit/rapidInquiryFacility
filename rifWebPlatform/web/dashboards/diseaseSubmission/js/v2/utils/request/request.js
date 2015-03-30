@@ -24,7 +24,7 @@
       var args = Array.prototype.slice.call( arguments, 0 ),
         callback = args[ 1 ],
         mime = args[ 2 ] || "text/plain",
-        parameters = args[ 0 ] + '&userID=' + RIF.user,
+        parameters = args[ 0 ] + '&userID=' + RIF.user + '&geographyName=' + RIF.geography,
         url = 'http://localhost:8080/rifServices/' + parameters;
 
       $.ajax( {
@@ -65,54 +65,46 @@
       getIsLoggedIn: ( function ( myCallback, params ) {
         var msg = " Checking if already logged in.. ",
           userName = params[ 0 ],
-          pw = params[ 1 ],
-          args = 'userID=' + userName;
-        xhr( 'studySubmission/isLoggedIn?' + args, myCallback, msg );
-      } ),
+          pw = params[ 1 ];
+        xhr( 'studySubmission/isLoggedIn?' , myCallback, msg );
+      }),
+        
       getLogOut: ( function ( myCallback, params ) {
-        var msg = " Checking if already logged in.. ",
-          userName = params[ 0 ],
-          pw = params[ 1 ],
-          args = 'userID=' + userName;
-        xhr( 'studySubmission/logout?' + args, myCallback, msg );
-      } ),
-      getLogIn: ( function ( myCallback, params ) {
-        var msg = "Logging in.. ",
-          userName = params[ 0 ],
-          pw = params[ 1 ],
-          args = 'userID=' + userName + '&password=' + pw;
-        xhr( 'studySubmission/login?' + args, myCallback, msg );
-      } ),
+        var msg = " Checking if already logged in.. ";
+        xhr( 'studySubmission/logout?' , myCallback, msg );
+      }),
+
       getHealthThemes: function ( myCallback, params ) {
-        var msg = "Retrieving Health Themes ",
-          args = 'geographyName=SAHSU';
-        xhr( 'studySubmission/getHealthThemes?' + args, myCallback, msg );
+        var msg = "Retrieving Health Themes ";
+        xhr( 'studySubmission/getHealthThemes?' , myCallback, msg );
       },
+        
       getNumeratorDenominator: function ( myCallback, params ) {
         var msg = "Retrieving Numerator denominator pairs ",
-          args = 'geographyName=SAHSU&healthThemeDescription=' + params[ 0 ];
+          args = 'healthThemeDescription=' + params[ 0 ];
         xhr( 'studySubmission/getNumerator?' + args, myCallback, msg );
       },
+        
       getSelectAt: function ( myCallback, params ) {
-        var msg = "Retrieving geolevel resolutions ",
-          args = 'geographyName=SAHSU';
-        xhr( 'studySubmission/getGeoLevelSelectValues?' + args, myCallback, msg, 'application/json' );
+        var msg = "Retrieving geolevel resolutions ";
+        xhr( 'studySubmission/getGeoLevelSelectValues?' , myCallback, msg, 'application/json' );
       },
+        
       getResolutions: function ( myCallback, params ) {
         var msg = "Retrieving geolevel resolutions ",
-          args = 'geoLevelSelectName=' + params[ 1 ] + '&geographyName=SAHSU';
+          args = 'geoLevelSelectName=' + params[ 0 ];
         xhr( 'studySubmission/getGeoLevelViews?' + args, myCallback, msg, 'application/json' );
       },
+        
       getGeolevelSelect: function ( myCallback, params ) {
         var msg = "Retrieving Area ids for geolevel:" + params[ 0 ];
-        args = 'geographyName=SAHSU&geoLevelSelectName=LEVEL2&geoLevelAreaName=Elliot',
+        args = 'geoLevelSelectName=LEVEL2&geoLevelAreaName=Elliot',
         args += '&geoLevelToMapName=' + params[ 0 ];
         xhr( 'studySubmission/getMapAreas?' + args, myCallback, msg, 'application/json' );
       },
       getHealthTaxonomy: function ( myCallback, params ) {
-        var msg = "Retrieving taxonomy codes",
-          args = '';
-        xhr( 'studySubmission/getHealthCodeTaxonomies?' + args, myCallback, msg, 'application/json' );
+        var msg = "Retrieving taxonomy codes";
+        xhr( 'studySubmission/getHealthCodeTaxonomies?' , myCallback, msg, 'application/json' );
       },
       getTopLevelHealthCodes: function ( myCallback, params ) {
         var msg = "Retrieving top level health codes",
@@ -124,28 +116,32 @@
           args = 'healthCode=' + params[ 1 ] + '&healthCodeNameSpace=' + params[ 0 ];
         xhr( 'studySubmission/getImmediateChildHealthCodes?' + args, myCallback, msg, 'application/json' );
       },
+        
       getYearRange: function ( myCallback, params ) {
         var msg = "Retrieving Years",
           numerator = params[ 0 ],
-          args = 'geographyName=SAHSU&numeratorTableName=' + numerator;
+          args = 'numeratorTableName=' + numerator;
         xhr( 'studySubmission/getYearRange?' + args, myCallback, msg, 'application/json' );
       },
       getSexes: function ( myCallback, params ) {
-        var msg = "Retrieving Genders",
-          args = '';
-        xhr( 'studySubmission/getSexes?' + args, myCallback, msg, 'application/json' );
+        var msg = "Retrieving Genders";;
+        xhr( 'studySubmission/getSexes?' , myCallback, msg, 'application/json' );
       },
+        
       getAgeGroups: function ( myCallback, params ) {
         var msg = "Retrieving Age groups",
           numerator = params[ 0 ],
           args = 'geographyName=SAHSU&numeratorTableName=' + numerator;
         xhr( 'studySubmission/getAgeGroups?' + args, myCallback, msg, 'application/json' );
       },
+      
+      /*This may need to be amended: geoLevelSelectName? geoLevelToMapName? */    
       getCovariates: function ( myCallback, params ) {
         var msg = "Retrieving Covariates",
-          args = 'geographyName=SAHSU&geoLevelSelectName=LEVEL1&geoLevelToMapName=LEVEL3';
+          args = 'geoLevelSelectName=LEVEL1&geoLevelToMapName=LEVEL3';
         xhr( 'studySubmission/getCovariates?' + args, myCallback, msg, 'application/json' );
       },
+        
       getSearchHealthCodes: function ( myCallback, params ) {
         var msg = "Searching health codes",
           taxonomy = params[ 0 ],

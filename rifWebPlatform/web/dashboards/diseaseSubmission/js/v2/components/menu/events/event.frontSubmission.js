@@ -12,31 +12,32 @@ RIF.menu['event-frontSubmission'] = (function(dom, firer) {
       var id = $(this).attr('href');
       $(id).hide();
       if (id === '#statusbar') {
-         RIF.statusBar(null, null, -1); //remove error msgs   
+         RIF.statusBar(null, null, -1); 
       };
    });
    
     $('#statusbar').click(function() {
       $(this).hide();
-      RIF.statusBar(null, null, -1); //remove error msgs   
+      RIF.statusBar(null, null, -1);   
    });
    
-    $(dom.studyArea).click(function() { //Fire
+    $(dom.studyArea).click(function() { 
+      firer.isDialogReady('areaSelection');    
       $(dom.studyAreaDialog).show();
    });
    
-    $(dom.compArea).click(function() { //Fire
+    $(dom.compArea).click(function() { 
       $(dom.compAreaDialog).show();
    });
    
-    $(dom.invParameters).click(function() { //Fire
+    $(dom.invParameters).click(function() { 
       firer.isDialogReady('investigationDialog');
    });
    
     $(dom.logOut).click(function() {
       firer.fire('logOut', null);    
    })
-   /*  Signal change to facade --> Study */
+   
    
    dom.studyName.change(function() {
       var val = $(this).val();

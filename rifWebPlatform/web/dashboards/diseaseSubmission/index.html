@@ -44,12 +44,12 @@
     <!-- DOM -->
     <script type="text/javascript" src="js/v2/dom/dom.submission.js"></script>
     <!-- STUDY LOGIC -->
-	<script type="text/javascript" src="js/v2/abstractions/study/study.diseaseSubmission.js"></script>
-    <script type="text/javascript" src="js/v2/abstractions/study/facade/study.facade.diseaseSubmission.js"></script>
+	<script type="text/javascript" src="js/v2/model/model.diseaseSubmission.js"></script>
+    <script type="text/javascript" src="js/v2/model/model.observable.diseaseSubmission.js"></script>
 
     <!-- Initialize -->
     <script type="text/javascript" src="js/v2/initialize.js"></script>    
-	<!-- components -->
+
     <!-- map -->
     <!--<script type="text/javascript" src="js/v2/components/map/map.js"></script>
 	<script type="text/javascript" src="js/v2/components/map/facades/map-facade-diseaseMapping.js"></script>
@@ -88,13 +88,11 @@
     <script type="text/javascript" src="js/v2/components/menu/firers/firer.healthCodes.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/subscribers/subscriber.healthCodes.js"></script>
     
-    
     <script type="text/javascript" src="js/v2/components/menu/units/unit.areaSelection.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/controllers/controller.areaSelection.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/firers/firer.areaSelection.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/subscribers/subscriber.areaSelection.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/events/event.areaSelection.js"></script>
-    
     
     <script type="text/javascript" src="js/v2/components/menu/menu.utils.js"></script>
     
@@ -114,24 +112,12 @@
     <script type="text/javascript" src="js/v2/components/table/firers/firer.investigationsRecap.js"></script>
     <script type="text/javascript" src="js/v2/components/table/subscribers/subscriber.investigationsRecap.js"></script>
     
-    
-        
     <script type="text/javascript" src="js/v2/components/table/units/unit.areaSelection.js"></script>
     <script type="text/javascript" src="js/v2/components/table/events/event.areaSelection.js"></script>
     <script type="text/javascript" src="js/v2/components/table/controllers/controller.areaSelection.js"></script>
     <script type="text/javascript" src="js/v2/components/table/firers/firer.areaSelection.js"></script>
     <script type="text/javascript" src="js/v2/components/table/subscribers/subscriber.areaSelection.js"></script>
     
-    <!--<script type="text/javascript" src="js/v2/components/table/units/table.unit.areaSelectionRenderer.js"></script>
-    <script type="text/javascript" src="js/v2/components/table/facades/table-facade-diseaseSubmission.js"></script>
-    <script type="text/javascript" src="js/v2/components/table/events/event.areaSelectionRenderer.js"></script>
-    <script type="text/javascript" src="js/v2/components/table/facades/table-facade-diseaseSubmission.js"></script>
-    <script type="text/javascript" src="js/v2/components/table/units/table.unit.ageGroupsRenderer.js"></script>
-    <script type="text/javascript" src="js/v2/components/table/events/event.ageGroupsRenderer.js"></script>
-    <script type="text/javascript" src="js/v2/components/table/units/table.unit.investigationsRecap.js"></script>
-    <script type="text/javascript" src="js/v2/components/table/events/event.investigationRecap.js"></script>-->
-    
-
 
     <title>The Rapid Inquiry Facility, RIF 4.0</title>
 
@@ -226,13 +212,14 @@
         <div class='positioning'>
             <div id='importExport' >
                 <div id='importExportContainer' class='buttonContainer'>
-                    <div>Retrieve</div>
+                    <div id='retrieve'>Retrieve</div>
                 </div>
             </div>
             
             <div id='run'>
                 <div id='runContainer'  class='buttonContainer'>
-                    <div>run</div>
+                    <div id='run'>run</div>
+                    <div id='fromFile'>Run from file</div>
                 </div>
             </div>
         </div>
