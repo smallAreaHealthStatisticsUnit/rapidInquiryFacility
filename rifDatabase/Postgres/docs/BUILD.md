@@ -47,7 +47,7 @@ On Windows, Linux and MacOS
 * Install 64 bit Node.js. The 32 bit node will run into memory limitation problems will vary large 
   shapefiles. node.js is required to build to geoJSON to topoJSON converter by Mike Bostock at: 
   (https://github.com/mbostock/topojson/wiki/Installation). Node.js is available from: (http://nodejs.org/)
-* Install R; integrate R into Postgres (https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/plr.md)[optional R integration]
+* Install R; integrate R into Postgres [optional R integration](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/plr.md)
 
 ### Pre build tests
 
