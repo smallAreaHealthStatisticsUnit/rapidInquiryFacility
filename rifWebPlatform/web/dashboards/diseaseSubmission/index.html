@@ -209,6 +209,9 @@
             </div> 
         </div>
         
+        
+
+        
         <div class='positioning'>
             <div id='importExport' >
                 <div id='importExportContainer' class='buttonContainer'>
@@ -216,7 +219,7 @@
                 </div>
             </div>
             
-            <div id='run'>
+            <div id='runnable'>
                 <div id='runContainer'  class='buttonContainer'>
                     <div id='run'>run</div>
                     <div id='fromFile'>Run from file</div>
@@ -387,6 +390,49 @@
 		</div>
 	</div>
 	
+    
+     <!---Retrieve Study--->
+	<div class="overlay" id="retrieveModal" >
+		<div class="msettingsSmall">
+			<div class="msettings-ct">
+				<div class="msettings-header">
+					<h2>Retrieve study parameters</h2>
+					<a class="modal_close" href="#retrieveModal"></a>
+				</div>
+                <div class='modalContainer retrieveModalDialog'>
+                    <div class='retrieveMenu'>
+                        <div id='retrieveSelection' class='dropdowns availablesWrapper'>
+                           <input type="text"  placeholder="Retrieve study" id='retrieveSelection' class='dropdownInput'>
+                           <div id='retrieveAvailable' class='availables' ></div>
+                        </div>
+                    </div>
+                </div>
+			</div>
+		</div>
+	</div>
+    
+    
+    <!---Run from File--->
+	<div class="overlay" id="runFromFileModal" >
+		<div class="msettingsSmall">
+			<div class="msettings-ct">
+				<div class="msettings-header">
+					<h2>Run study from setup file</h2>
+					<a class="modal_close" href="#runFromFileModal"></a>
+				</div>
+                <div class='modalContainer runFromFileModalDialog'>
+                    <div class='runFromFileMenu'>
+                        <div id='runFromFileSelection' class='dropdowns availablesWrapper'>
+                           <input type="text"  placeholder="Open File" id='openFileStudy' class='dropdownInput'>
+                           <!--<div id='retrieveAvailable' class='availables' ></div>-->
+                        </div>
+                    </div>
+                </div>
+			</div>
+		</div>
+	</div>
+    
+    
     <div class="overlay" id="statusbar">
 		<a class="modal_close" href="#statusbar"></a>
         <div></div>

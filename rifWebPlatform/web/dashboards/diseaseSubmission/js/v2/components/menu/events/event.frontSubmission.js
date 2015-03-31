@@ -30,6 +30,15 @@ RIF.menu['event-frontSubmission'] = (function(dom, firer) {
       $(dom.compAreaDialog).show();
    });
    
+    $(dom.importExportEl).click(function() { 
+      $(dom.retrieveDialog).show();
+   });    
+       
+   $(dom.fromFile).click(function() { 
+      $(dom.runFromFileModal).show();
+   }); 
+    
+    
     $(dom.invParameters).click(function() { 
       firer.isDialogReady('investigationDialog');
    });

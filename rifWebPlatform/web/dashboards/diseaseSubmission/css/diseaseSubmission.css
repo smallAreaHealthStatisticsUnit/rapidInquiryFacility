@@ -24,9 +24,9 @@ footer, header, hgroup, menu, nav, section {
 	display: block;
 }
 
-@media screen and (max-height: 700px) {
+@media screen and (max-height: 650px) {
     .buttonContainer {
-         margin-top:40% !important; 
+         margin-top:30% !important; 
     }
     .headerBlock {
         background-size: 90% 90% !important;
@@ -34,6 +34,22 @@ footer, header, hgroup, menu, nav, section {
     
     #content>div.blocks{
         height:70% !important;
+    }
+    #buttons .geoDrops>div{
+        margin-top:0  !important;
+    }
+}
+
+@media screen and (min-height: 651px)and (max-height: 850px) {
+    .buttonContainer {
+         margin-top:40% !important; 
+    }
+    .headerBlock {
+        background-size: 92% 92% !important;
+    }
+    
+    #content>div.blocks{
+        height:85% !important;
     }
 }
 
@@ -81,11 +97,15 @@ a:hover{
 		background-color: #87CEFA;
 
 	}
+
+
 	#navigation .nav{
-		float: right;
+		right:15%;
         width: auto;
         margin-right: 10%;
+        position:absolute;
 	}
+
 	#navigation .nav a{
 		display: block;
         float: right;
@@ -107,19 +127,14 @@ a:hover{
     #navigation .logOutUsername{
         float: right;
         cursor: pointer;
+        margin: 40px 8%;
+        text-transform: uppercase
+    }
     
-        margin: 0 8%;
-        margin-top: 40px;
-}
-    
-    #navigation .logOutUsername a{
-    
-}
 
     #logOut{  
-    
-        color: white;
-}
+        color: white;  
+    }
 
 
     #logOut:hover{
@@ -298,7 +313,6 @@ input[type="range"]::-ms-thumb {
 	
 	
 	#content{
-		margin-top: 3%;
         /* Firefox */
 		margin-left: -moz-calc(5% + 10px);
 		/* WebKit */
@@ -574,6 +588,23 @@ input[type="range"]::-ms-thumb {
        width: 94%;
    }
    
+   .msettingsSmall{
+     padding-bottom: 2px;
+     display:block;
+     background: #FFF;
+     border-radius: 5px; -moz-border-radius: 5px; 
+    -webkit-border-radius: 5px;
+     width: 420px ;
+     height:200px ;
+     margin:10% 38%;
+   }
+
+    .msettingsSmall input{
+        width: 300px !important;
+        margin: 20px 30px !important;
+        font-size: 18px !important;    
+    }
+
    .modalAreaSelectionMenu #resolutionSelection{
         float: right;
    }
@@ -924,17 +955,17 @@ input[type="range"]::-ms-thumb {
  */
    #footer{
      width:100%;
-     height:10%;;  
+     /*height:10%;; */ 
      background-color:#87CEFA;
      position: absolute;
      bottom:0;
-     height: -moz-calc(10% - 50px); 
+     height: -moz-calc(20% - 50px); 
       /* WebKit */
-     height: -webkit-calc(10% - 50px); 
+     height: -webkit-calc(20% - 50px); 
       /* Opera */ 
-     height: -o-calc(10% - 50px); 
+     height: -o-calc(20% - 50px); 
       /* Standard */ 
-     height: calc(12% - 50px);
+     height: calc(20% - 50px);
         
    }
 
@@ -950,9 +981,9 @@ input[type="range"]::-ms-thumb {
     margin-left: 5%;
 }
 
-#buttons{
-    /* height: 20%; */
- }
+.positioning #runnable{
+    float:right
+}
 
  #buttons>div {
     float:left;
@@ -961,7 +992,6 @@ input[type="range"]::-ms-thumb {
  }
 
 #buttons .geoDrops{	
-     margin-top: 2%;
      position: relative;
 }
 
@@ -1070,8 +1100,7 @@ input.dropdownInput:-webkit-input-placeholder {
 
 
 
-#content>div.blocks {
-  margin-top: 25px;    
+#content>div.blocks {  
   float: left;
   margin-right: 5%;
   height: 100%;
@@ -1170,10 +1199,6 @@ div.headerBlock:hover{
 #importExport {
     float:left;
     margin-left:1%;
-}
-
-#run{
-   float:right;    
 }
 
 #runContainer  {
