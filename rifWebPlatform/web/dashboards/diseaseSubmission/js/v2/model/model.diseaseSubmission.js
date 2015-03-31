@@ -1,16 +1,14 @@
-RIF.study = (function(type) {
-   var _study = {
-      diseaseSubmission: {
-         investigationReady: false,  
+RIF.model = (function(type) {
+   
+    var _study = {
+         
+         studyName: null,
+         healthTheme: null,
+         numerator: null,
+         denominator: null,
+        
          investigations: {},
-         investigationCounts: 0,
-         // SELECTION
-         front: {
-            studyName: null,
-            healthTheme: null,
-            numerator: null,
-            denominator: null,
-         },
+        
          studyArea: {
             resolution: null,
             areas: [],
@@ -20,7 +18,13 @@ RIF.study = (function(type) {
             resolution: null,
             areas: [],
             selectAt: null
-         },
+         }
+     },
+       _studyMethods = {
+       
+         investigationReady: false,  
+         investigationCounts: 0,
+         
          parameters: {
             healthOutcomes: null,
             ageGroups: null,
@@ -28,11 +32,12 @@ RIF.study = (function(type) {
             maxYear: null,
             gender: null,
             covariates: null,
-         },
+         },   
+           
          showInvestigations: function() {
-            for (var l in this.investigations) {
-               for (var i in this.investigations[l]) {
-                  console.log(this.investigations[l][i]);
+            for (var l in _study.investigations) {
+               for (var i in _study.investigations[l]) {
+                  console.log(_study.investigations[l][i]);
                };
                console.log('_____');
             }
@@ -42,44 +47,44 @@ RIF.study = (function(type) {
          },
          addCurrentInvestigation: function() {
             var parametersClone = RIF.utils.extend(this.parameters, {});
-            this.investigations[this.investigationCounts] = parametersClone;
-            console.log("investigation " + this.investigationCounts + " added");
+            _study.investigations[this.investigationCounts] = parametersClone;
+            console.log(JSON.stringify(_study));
             // this.showInvestigations();  
             return this.investigationCounts++;
          },
          removeInvestigation: function(i) {
-            if (typeof this.investigations[i] === 'object') {
-               delete this.investigations[i];
+            if (typeof _study.investigations[i] === 'object') {
+               delete _study.investigations[i];
                console.log('Investigation ' + i + ' removed')
             };
             // this.showInvestigations();  
          },
          //SETTERS
          setStudyName: function(s) {
-            this.front.studyName = s;
+            _study.studyName = s;
          },
          setHealthTheme: function(s) {
-            this.front.healthTheme = s;
+            _study.healthTheme = s;
          },
          setNumerator: function(s) {
-            this.front.numerator = s;
+            _study.numerator = s;
          },
          setDenominator: function(s) {
-            this.front.denominator = s;
+            _study.denominator = s;
          },
          setStudyAreaSelectAt: function(s) {
-            this.studyArea.selectAt = s;
+            _study.studyArea.selectAt = s;
          },
          setStudyAreaResolution: function(s) {
-            this.studyArea.resolution = s;
+            _study.studyArea.resolution = s;
          },
          setStudyAreas: function(s) {
-            this.studyArea.areas = s;
+            _study.studyArea.areas = s;
          },
          setComparisonArea: function(s) {
-            this.comparisonArea.resolution = s.resolution;
-            this.comparisonArea.areas = s.areas;
-            this.comparisonArea.selectAt = s.selectAt;
+            _study.comparisonArea.resolution = s.resolution;
+            _study.comparisonArea.areas = s.areas;
+            _study.comparisonArea.selectAt = s.selectAt;
          },
          setHealthConditionTaxonomy: function(s) {
             this.parameters.taxonomy = s;
@@ -102,27 +107,30 @@ RIF.study = (function(type) {
          setAgeGroups: function(s) {
             this.parameters.ageGroups = s;
          },
+         setParameter: function(param, s ){
+            this.parameters[param] = s;
+         },   
          //GETTERS
          getInvestigations: function() {
-            return this.investigations;
+            return _study.investigations;
          },
          getStudyName: function() {
-            return this.front.studyName;
+            return _study.studyName;
          },
          getHealthTheme: function() {
-            return this.front.healthTheme;
+            return _study.healthTheme;
          },
          getNumerator: function() {
-            return this.front.numerator;
+            return _study.numerator;
          },
          getDenominator: function() {
-            return this.front.denominator;
+            return _study.denominator;
          },
          getStudyAreas: function() {
-            return this.studyArea.areas;;
+            return _study.studyArea.areas;;
          },
          getComparisonArea: function() {
-            return this.comparisonArea;
+            return _study.comparisonArea;
          },
          getHealthConditionTaxonomy: function() {
             return this.parameters.taxonomy;
@@ -145,12 +153,25 @@ RIF.study = (function(type) {
          getAgeGroups: function() {
             return this.parameters.ageGroups;
          },
-          
+         getParameters: function(){
+            return this.parameters;
+         },   
          
+           
+         unsetParameter: function(i,h){
+            delete this.parameters[i][h];
+         },
+           
          isFrontSubmissionReady: function() {
+            var front = {
+                studyName:_study.studyName,
+                healthTheme:_study.healthTheme,
+                numerator:_study.numerator,
+                denominator:_study.denominator
+            };  
             var toComplete = [];
-            for (var i in this.front) {
-               if (this.front[i] == null) {
+            for (var i in front) {
+               if (front[i] == null) {
                   toComplete.push(i);
                }
             };
@@ -162,14 +183,14 @@ RIF.study = (function(type) {
                return false;
             };
          },
-         isStudyAreaDialogReady: function() {},
+          
+           
          isComparisonAreaDialogReady: function() {},
          isInvestigationDialogReady: function() {
             var ready = this.isFrontSubmissionReady();
             return ready;
             //this.isStudyAreaDialogReady();
          }
-      }
    };
-   return RIF.utils.mix(_study[type], RIF.study['facade-diseaseSubmission']());
+   return RIF.utils.mix(_studyMethods, RIF.model['observable-diseaseSubmission']());
 });

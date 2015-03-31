@@ -66,7 +66,11 @@ RIF.menu.utils = (function() {
             $(this).parent().hide();
          });
       },
-
+      
+      removeDropDownInputTextEvents: function(dropdown, available){
+      
+      },   
+         
       checkboxesCovariates: function(arr, el, name) {
          el.empty();
          var counter = 0,

@@ -23,7 +23,10 @@ RIF.dom = (function() {
                importExportEl: get('importExport'),
                /* Run button */
                runEl: get('run'),
+               /* Run from file modal */ 
+               runFromFileModal:get('runFromFileModal'),    
                /* Study area front summary */
+               fromFile: get('fromFile'),    
                studyArea: get('studyArea'),
                /* Comparison area front summary */
                compArea: get('comparisonArea'),
@@ -35,6 +38,8 @@ RIF.dom = (function() {
                compAreaDialog: get('areaSelectionModal'),
                /* Investigation modal dialog  */
                investigationDialog: get('parametersModal'),
+               /* Retrieve modal dialog  */ 
+               retrieveDialog:get('retrieveModal'),    
                /* All Close button on modal dialogs */
                dialogClose: $('.modal_close'),
                /* Log out button */

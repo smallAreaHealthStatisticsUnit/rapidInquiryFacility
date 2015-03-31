@@ -4,10 +4,10 @@ RIF.menu['controller-frontSubmission'] = (function( unit ) {
        
             isLoggedIn: function() {
               var clbk = function(){
-                  if (this["result"] == "true") {
+                  if (this[0]["result"] == "true") {
                      _p.getHealthThemes();
                   }else {
-                      RIF.utils.redirect("../logIn/?rd=diseaseSubmission");
+                     RIF.utils.redirect("../logIn/?rd=diseaseSubmission");
                   };
               };
               RIF.getIsLoggedIn(clbk, [RIF.user]);
@@ -43,8 +43,8 @@ RIF.menu['controller-frontSubmission'] = (function( unit ) {
               RIF.getLogOut( clbk, [RIF.user]);
            },
        
-           showDialog: function(){
-                unit.showDialog();
+           showDialog: function(dialog){
+                unit.showDialog(dialog);
            }    
         };
     

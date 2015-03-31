@@ -12,8 +12,8 @@ RIF.menu['subscriber-frontSubmission'] = (function(  controller ) {
          _p.proxy.investigationNotReadyToBeAdded();
       },*/
 
-      showDialog: function() {
-         controller.showDialog();
+      showDialog: function(dialog) {
+         controller.showDialog(dialog);
       },
       
       logOut: function(){

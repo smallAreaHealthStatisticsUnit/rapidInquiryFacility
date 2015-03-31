@@ -53,10 +53,11 @@ RIF.menu['event-healthCodes'] = (function(_dom, firer) {
       
       var tax = getTaxonomy();   
       firer.updateSubLevelHealthCodes({
-                  "taxonomy": tax,
-                  "code": val,
-                  "dom": childContainer
-      })   
+            "taxonomy": tax,
+            "code": val,
+            "dom": childContainer
+      });
+       
    });
     
    $(_dom.tree).on("click", _dom.noChildElements, function(aEvent) {

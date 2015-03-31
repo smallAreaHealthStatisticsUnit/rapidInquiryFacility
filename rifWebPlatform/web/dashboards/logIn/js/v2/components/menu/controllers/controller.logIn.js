@@ -9,7 +9,7 @@ RIF.menu[ 'controller-logIn' ] = ( function ( unit ) {
 
     isLoggedIn: function ( params ) {
       var callback = function () {
-        if ( this[ "result" ] == "true" ) { //
+        if ( this[0][ "result" ] == "true" ) { //
           _p._redirect();
           console.log( "redirect" );
         };
@@ -19,7 +19,7 @@ RIF.menu[ 'controller-logIn' ] = ( function ( unit ) {
 
     logIn: function ( params ) {
       var callback = function () {
-        if ( this.hasOwnProperty( "result" ) ) {
+        if ( this[0].hasOwnProperty( "result" ) ) {
           _p._redirect();
         } else if ( this.hasOwnProperty( 'errorMessages' ) ) {
           var t = this.errorMessages[ 0 ];

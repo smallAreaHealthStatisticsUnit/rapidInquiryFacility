@@ -1,4 +1,4 @@
-# RIF40 Postgres dastbase build from Github
+# RIF40 Postgres database build from Github
 
 ## Database development environment
 
@@ -16,16 +16,16 @@ be re-run.
 
 The directory structure is rifDatabase\Postgres\:
 
-* conf				- Exmaples of varaious configuration files
-* etc				- Postgres psql logon script (.psqlrc)
-* example_data		- Example extracts and results creating as part of SAHSUland build
-* logs				- Logs from psql_scripts runs
-* PLpgsql			- PL/pgsql scripts
-* psql_scripts		- PSQL scripts; **Postgres database build directory**
-* sahsuland			- SAHSUland creation psql scripts
-* sahsuland\data	- SAHSUland data
-* shapefiles		- Postgres psql SQL scripts derived from shapefiles, creation scripts
-* shapefiles\data	- Shapefiles
+* conf            - Exmaples of varaious configuration files
+* etc             - Postgres psql logon script (.psqlrc)
+* example_data    - Example extracts and results creating as part of SAHSUland build
+* logs            - Logs from psql_scripts runs
+* PLpgsql         - PL/pgsql scripts
+* psql_scripts    - PSQL scripts; **Postgres database build directory**
+* sahsuland       - SAHSUland creation psql scripts
+* sahsuland\data  - SAHSUland data
+* shapefiles      - Postgres psql SQL scripts derived from shapefiles, creation scripts
+* shapefiles\data - Shapefiles
 
 The databases *sahsuland* and *sahsuland_dev* are built using make and Node.js. 
 
@@ -47,7 +47,7 @@ On Windows, Linux and MacOS
 * Install 64 bit Node.js. The 32 bit node will run into memory limitation problems will vary large 
   shapefiles. node.js is required to build to geoJSON to topoJSON converter by Mike Bostock at: 
   (https://github.com/mbostock/topojson/wiki/Installation). Node.js is available from: (http://nodejs.org/)
-* Install R; integrate R into Postgres [optional]
+* Install R; integrate R into Postgres [optional R integration](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/plr.md)
 
 ### Pre build tests
 

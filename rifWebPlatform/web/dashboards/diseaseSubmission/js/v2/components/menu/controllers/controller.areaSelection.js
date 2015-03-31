@@ -5,24 +5,23 @@ RIF.menu['controller-areaSelection'] = (function( unit ) {
         getSelectAtsAvailable: function() {
             var callback = function(){
                var selectAts = this[0].names;
-               unit.getSelectAt(selectAts);
+               _p.getResolutionsAvailable(selectAts[0]);
+               unit.getSelectAt(selectAts);     
             };
             
             RIF.getSelectAt(callback, null);
          },
        
-         getResolutionsAvailable: function(params) {
+         getResolutionsAvailable: function(selectAt) {
             var callback = function(){
                 var selectAts = this[0].names;
                 unit.getResolutions(selectAts); 
             };
              
-            RIF.getResolutions(callback, [params[0], params[1]]);
+            RIF.getResolutions(callback, [selectAt]);
          }
        
     };
-    
-    _p.getSelectAtsAvailable();
     
     return _p;
 });

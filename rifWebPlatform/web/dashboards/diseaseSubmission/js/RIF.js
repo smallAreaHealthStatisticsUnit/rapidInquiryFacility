@@ -12,6 +12,8 @@ var RIF = (function(R) {
    R.modules = {};
    R.resizeWidth = function( /*obj,*/ px) {};
    R.user = 'ffabbri';
+   R.geography = 'SAHSU';
+    
    if (detectBrowser.browser === "Explorer" && parseInt(detectBrowser.version) < 9) {
       window.top.location = ""; //LANDING PAGE
    };
