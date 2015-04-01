@@ -114,7 +114,7 @@ For make to work it needs to be able to logon as following users:
 
 * postgres     - The database administrator
 * rif40        - The schema owner
-* <user login> - Your user login. This must be in lowercase and without spaces
+* &lt;user login&gt; - Your user login. This must be in lowercase and without spaces
 * notarifuser  - A security test user
 
 The password for all users must be set in your local .pgpass files (see Postgres documentation for its location on various OS). 
