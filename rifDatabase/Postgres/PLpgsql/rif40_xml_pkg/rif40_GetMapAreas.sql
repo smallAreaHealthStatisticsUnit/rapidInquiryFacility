@@ -88,6 +88,20 @@ Parameters:		Geography, geolevel_view,
 Returns:		JSON: gid, area_id, name
 Description:	Get area IDs for <geolevel_view> for map area bounding box. 
 
+This has now been rotated to reduce size so the variable names appear only once.
+
+Beware of the ORDER BY clause in the ARRAY_AGG() aggregator; this is Postgres specific - it does need to be ordered though...
+
+Example format:
+
+ {"gid": [231,235,257,1204,1221], 
+  "area_id": ["01.005.002400.1","01.006.002500.3","01.007.012400.1","01.015.016200.4","01.018.019200.3"], 
+  "name": ["Briggs LEVEL4(01.005.002400.1)",
+           "Andersson LEVEL4(01.006.002500.3)",
+		   "Hodgson LEVEL4(01.007.012400.1)",
+		   "Maitland LEVEL4(01.015.016200.4)",
+		   "Cockings LEVEL4(01.018.019200.3)"]
+ }
 
  */
  DECLARE
@@ -186,12 +200,11 @@ BEGIN
 		  '	   AND geolevel_name = $5		/* Partition eliminate */'||E'\n'||
 		  '	   /* Intersect bound with geolevel geometry */'||E'\n'||
 		  ')'||E'\n'||
-		  'SELECT row_to_json(rec) AS map_area FROM ('||E'\n'||
-		  '		SELECT b.gid, a.area_id, b.name'||E'\n'||
-		  '		  FROM a, '||quote_ident(LOWER(c2_rec.lookup_table))||' b'||E'\n'||
-		  '		 WHERE a.area_id = b.'||quote_ident(LOWER(c2_rec.geolevel_name))||E'\n'||
-		  '		 ORDER BY b.gid) rec';
-
+		  'SELECT (''{"gid": ''||ARRAY_TO_JSON(ARRAY_AGG(b.gid ORDER BY b.gid))::Text||'', "area_id": ''||'||E'\n'||
+		  '       ARRAY_TO_JSON(ARRAY_AGG(a.area_id ORDER BY b.gid))::Text||'', "name": ''||'||E'\n'||
+		  '	      ARRAY_TO_JSON(ARRAY_AGG(b.name ORDER BY b.gid))::Text||''}'')::JSON as map_area'||E'\n'||
+		  '  FROM a, sahsuland_level4 b'||E'\n'||
+		  ' WHERE a.area_id = b.level4';
 --
 -- Begin execution block to trap parse errors
 --
@@ -307,11 +320,11 @@ WITH a AS (
            AND geolevel_name = $5              /* Partition eliminate */
            /* Intersect bound with geolevel geometry */
 )
-SELECT row_to_json(rec) AS map_area FROM (
-                SELECT b.gid, a.area_id, b.name
+SELECT (''{"gid": ''||ARRAY_TO_JSON(ARRAY_AGG(b.gid ORDER BY b.gid))::Text||'', "area_id": ''||
+       ARRAY_TO_JSON(ARRAY_AGG(a.area_id ORDER BY b.gid))::Text||'', "name": ''||
+	   ARRAY_TO_JSON(ARRAY_AGG(b.name ORDER BY b.gid))::Text||''}'')::JSON as map_area
                   FROM a, sahsuland_level4 b
-                 WHERE a.area_id = b.level4
-                 ORDER BY b.gid) rec;
+                 WHERE a.area_id = b.level4;
 			
 Test example:
 
@@ -330,11 +343,9 @@ Example JSON output:
                                         rif40_GetMapAreas interface
                                                    json
 -----------------------------------------------------------------------------------------------------------
- {"gid":1,"area_id":"01.001.000100.1","name":"Abellan LEVEL4(01.001.000100.1)"}
- {"gid":85,"area_id":"01.002.001300.5","name":"Cobley LEVEL4(01.002.001300.5)"}
- {"gid":86,"area_id":"01.002.001300.6","name":"Cobley LEVEL4(01.002.001300.6)"}
- {"gid":87,"area_id":"01.002.001300.7","name":"Cobley LEVEL4(01.002.001300.7)"}
-(4 rows)
+ {"gid": [231,235,257,1204,1221], "area_id": ["01.005.002400.1","01.006.002500.3","01.007.012400.1","01.015.016200.4","01.018.019200.3"], "name": ["Briggs LEVEL4(01.005.002400.1)",
+"Andersson LEVEL4(01.006.002500.3)","Hodgson LEVEL4(01.007.012400.1)","Maitland LEVEL4(01.015.016200.4)","Cockings LEVEL4(01.018.019200.3)"]}
+(1 row)
 
 Time: 448.753 ms';
 GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_GetMapAreas(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL) TO rif40, rif_user, rif_manager;

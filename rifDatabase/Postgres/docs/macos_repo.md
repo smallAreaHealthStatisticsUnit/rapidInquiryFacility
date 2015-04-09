@@ -1,0 +1,1 @@
+# MacOS installation from standard distribution repository notes
