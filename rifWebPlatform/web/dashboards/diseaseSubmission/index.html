@@ -94,6 +94,12 @@
     <script type="text/javascript" src="js/v2/components/menu/subscribers/subscriber.areaSelection.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/events/event.areaSelection.js"></script>
     
+    <script type="text/javascript" src="js/v2/components/menu/units/unit.retrievableRunnable.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/controllers/controller.retrievableRunnable.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/firers/firer.retrievableRunnable.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/subscribers/subscriber.retrievableRunnable.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/events/event.retrievableRunnable.js"></script>
+    
     <script type="text/javascript" src="js/v2/components/menu/menu.utils.js"></script>
     
     <!-- table -->
@@ -127,9 +133,10 @@
     <div id="rifwrap">
         <div id="navigation">
             <div class='logOutUsername'> 
-                <a class="userName" >ffabbri <span id="logOut">log out </span></a>
+                <a class="userName" href='#'> </a><span id="logOut"> log out </span>
             </div>
             <div class='nav'>
+                <a href='../logIn/' >Log In</a>
                 <a href='#' >Manager</a>
                 <a href='#' class='active'>Disease Submission</a>
                 <a href='#' >Disease Mapping </a>
@@ -210,8 +217,6 @@
         </div>
         
         
-
-        
         <div class='positioning'>
             <div id='importExport' >
                 <div id='importExportContainer' class='buttonContainer'>
@@ -221,13 +226,34 @@
             
             <div id='runnable'>
                 <div id='runContainer'  class='buttonContainer'>
-                    <div id='run'>run</div>
+                    <div id='run'>Run study</div>
                     <div id='fromFile'>Run from file</div>
                 </div>
             </div>
         </div>
         
-        <div id='footer'></div>
+        <div id='footer'>
+            <div class="authors">
+                <p class='footerHeadings'>Developed by </p>
+                <p ><a href='http://www.sahsu.org/' target="_blank" >The Small Area Health Statistic Unit</a></p>
+                <p ><a href='http://www.imperial.ac.uk/' target="_blank" >Imperial College London </a></p>
+            </div>    
+            <div class="collaborators">
+                <p class='footerHeadings'> Funded by </p>
+                <p ><a href='http://www.cdc.gov/' target="_blank" >The US Centers for Disease Control and Prevention (CDC) </a></p>
+                <p ><a href='http://www.nihr.ac.uk/' target="_blank" >The National Institute for Health Research Health Protection Research Unit </a> </p>
+            </div>  
+            <div class="otherContributors">
+                <p class='footerHeadings'> Contributors </p>
+                <p ><a href='http://ec.europa.eu/' target="_blank" >The European commission has supported previous RIF versions </a></p>
+                <p ><a href='https://www.gov.uk/government/organisations/public-health-england' target="_blank" >Public Health England (PHE) </a> </p>
+            </div>  
+            <div class="licence">
+                <p class='footerHeadings'> Other </p>
+                <p ><a href='https://www.gnu.org/licenses/gpl-2.0.html#SEC1' target="_blank" >  GNU General Public License</a></p>
+                <p><a href='https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility' target="_blank" > GitHub page </a></p>
+            </div> 
+        </div>
     </div>
 	
 	<!--ToolTip-->
@@ -320,7 +346,7 @@
                             <div id='icdClassificationAvailable' class='availables' ></div>
                         </div>
                         <div id='searchCode'>
-                            <input type="text"  placeholder="Search" id='searchCodeInput' class='dropdownInput'>
+                            <input type="text"  placeholder="Search" id='searchCodeInput' class='dropdownInput editable'>
                         </div>
                         <!--<div id='searchResults'> 
                             <div class='opacityBackground'></div>
@@ -396,15 +422,16 @@
 		<div class="msettingsSmall">
 			<div class="msettings-ct">
 				<div class="msettings-header">
-					<h2>Retrieve study parameters</h2>
+					<h2>Retrieve study </h2>
 					<a class="modal_close" href="#retrieveModal"></a>
 				</div>
                 <div class='modalContainer retrieveModalDialog'>
                     <div class='retrieveMenu'>
                         <div id='retrieveSelection' class='dropdowns availablesWrapper'>
-                           <input type="text"  placeholder="Retrieve study" id='retrieveSelection' class='dropdownInput'>
-                           <div id='retrieveAvailable' class='availables' ></div>
+                           <input type="text"  placeholder="Retrieve study parameters" id='retrieveSelection' class='dropdownInput'>
+                           <div id='retrieveAvailable' class='availables' ></div> 
                         </div>
+                        <button   id='expotrStudyParameters' class='myButton' >EXPORT FILE</button>
                     </div>
                 </div>
 			</div>
@@ -423,8 +450,29 @@
                 <div class='modalContainer runFromFileModalDialog'>
                     <div class='runFromFileMenu'>
                         <div id='runFromFileSelection' class='dropdowns availablesWrapper'>
-                           <input type="text"  placeholder="Open File" id='openFileStudy' class='dropdownInput'>
-                           <!--<div id='retrieveAvailable' class='availables' ></div>-->
+                           <input type="file" name='open file' class='fileOpener' id="setUpFile" />
+                           <button   id='finalRunFromFile' class='myButton' > RUN </button>
+                        </div>
+                    </div>
+                </div>
+			</div>
+		</div>
+	</div>
+    
+    <!---Run study--->
+	<div class="overlay" id="runModal" >
+		<div class="msettingsMedium">
+			<div class="msettings-ct">
+				<div class="msettings-header">
+					<h2>Run study </h2>
+					<a class="modal_close" href="#runModal"></a>
+				</div>
+                <div class='modalContainer runFromFileModalDialog'>
+                    <div class='runMenu'>
+                        <div id='studyOptions' >
+                            <input type="text"  placeholder="Project" id='projectCode' class='dropdownInput editable'>
+                            <textarea  name='description' id='studyDescription' class='description' placeholder="STUDY DESCRIPTION(optional)"></textarea>   
+                            <button   id='finalRun' class='myButton' > RUN </button>
                         </div>
                     </div>
                 </div>

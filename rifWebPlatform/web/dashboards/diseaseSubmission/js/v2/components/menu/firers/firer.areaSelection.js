@@ -1,15 +1,15 @@
-RIF.menu['firer-areaSelection'] = (function() {
+RIF.menu[ 'firer-areaSelection' ] = ( function () {
 
-   var firer = {
+  var firer = {
 
-      selectAtChanged: function(arg) {
-         this.fire('selectAtChanged', arg);
-         this.getResolutions(arg);  
-      },
-       
-       resolutionChanged: function(arg) {
-         this.fire('resolutionChanged', arg);
-      },
-   };
-   return firer;
-});
+    selectAtChanged: function ( arg ) {
+      this.fire( 'selectAtChanged', arg );
+      this.getResolutions( arg );
+    },
+
+    resolutionChanged: function ( arg ) {
+      this.fire( 'resolutionChanged', arg );
+    },
+  };
+  return firer;
+} );

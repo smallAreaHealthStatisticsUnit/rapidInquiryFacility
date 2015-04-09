@@ -6,6 +6,8 @@ RIF.menu[ 'event-logIn' ] = ( function ( dom, firer ) {
       var username = dom.username.val(),
         pw = dom.password.val();
 
+      RIF.utils.setUser( username );
+
       firer.fireLogIn( [ username, pw ] );
     };
 

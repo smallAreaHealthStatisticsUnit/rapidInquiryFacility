@@ -39,6 +39,10 @@ RIF.menu = ( function ( settings ) {
         }
       },
 
+      setUser: function ( userName ) {
+        localStorage.setItem( 'RIF_user', userName );
+      },
+
       getUnit: function ( dom, name ) {
         var unit = RIF.utils.getUnit( 'menu', name, dom, this.menuUtils );
         return unit;

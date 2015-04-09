@@ -1,14 +1,14 @@
-RIF.chart.pyramidchart = (function() {
-   var _p = {
-         lineSettings: {
-            field: "SMR",
-            color: "blue",
-            scale: null
-         },
-         setLineSettings: function(sett) {
-            _p.lineSettings = RIF.extend(_p.lineSettings, sett);
-         }
+RIF.chart.pyramidchart = ( function () {
+  var _p = {
+      lineSettings: {
+        field: "SMR",
+        color: "blue",
+        scale: null
       },
-      _render = function() {};
-   return p;
-});
+      setLineSettings: function ( sett ) {
+        _p.lineSettings = RIF.extend( _p.lineSettings, sett );
+      }
+    },
+    _render = function () {};
+  return p;
+} );

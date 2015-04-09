@@ -1,24 +1,24 @@
-RIF.menu['firer-frontSubmission'] = (function() {
+RIF.menu[ 'firer-frontSubmission' ] = ( function () {
 
-   var firer = {
+  var firer = {
 
-      studyNameChanged: function(arg) {
-         this.fire('studyNameChanged', arg);
-      },
-      healthThemeChanged: function(arg) {
-         this.fire('healthThemeChanged', arg);
-      },
-      numeratorChanged: function(arg) {
-         this.fire('numeratorChanged', arg);
-      },
-      denominatorChanged: function(arg) {
-         this.fire('denominatorChanged', arg);
-      },
-    
-      isDialogReady: function(dialog) {
-         this.fire('isDialogReady', dialog);
-      }
+    studyNameChanged: function ( arg ) {
+      this.fire( 'studyNameChanged', arg );
+    },
+    healthThemeChanged: function ( arg ) {
+      this.fire( 'healthThemeChanged', arg );
+    },
+    numeratorChanged: function ( arg ) {
+      this.fire( 'numeratorChanged', arg );
+    },
+    denominatorChanged: function ( arg ) {
+      this.fire( 'denominatorChanged', arg );
+    },
 
-   };
-   return firer;
-});
+    isDialogReady: function ( dialog ) {
+      this.fire( 'isDialogReady', dialog );
+    }
+
+  };
+  return firer;
+} );

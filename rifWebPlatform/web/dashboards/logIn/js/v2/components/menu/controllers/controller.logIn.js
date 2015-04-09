@@ -9,17 +9,17 @@ RIF.menu[ 'controller-logIn' ] = ( function ( unit ) {
 
     isLoggedIn: function ( params ) {
       var callback = function () {
-        if ( this[0][ "result" ] == "true" ) { //
+        if ( this[ 0 ][ "result" ] == "true" ) { //
           _p._redirect();
-          console.log( "redirect" );
         };
       };
+
       RIF.getIsLoggedIn( callback, null );
     },
 
     logIn: function ( params ) {
       var callback = function () {
-        if ( this[0].hasOwnProperty( "result" ) ) {
+        if ( this[ 0 ].hasOwnProperty( "result" ) ) {
           _p._redirect();
         } else if ( this.hasOwnProperty( 'errorMessages' ) ) {
           var t = this.errorMessages[ 0 ];
@@ -33,8 +33,9 @@ RIF.menu[ 'controller-logIn' ] = ( function ( unit ) {
 
   };
 
-
-  _p.isLoggedIn();
+  if ( RIF.user != null ) {
+    _p.isLoggedIn();
+  };
 
   return _p;
 } );

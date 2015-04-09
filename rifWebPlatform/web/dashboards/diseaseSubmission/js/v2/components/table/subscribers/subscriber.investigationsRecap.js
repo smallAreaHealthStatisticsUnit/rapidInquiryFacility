@@ -1,13 +1,13 @@
-RIF.table['subscriber-investigationsRecap'] = (function(  controller ) {
+RIF.table[ 'subscriber-investigationsRecap' ] = ( function ( controller ) {
 
-   var subscriber = {  
-       
-       addInvestigationRow: function(args){
-          controller.addInvestigationRow(args);
-       }
-       
-       
-   };
-    
-   return subscriber;
-});
+  var subscriber = {
+
+    addInvestigationRow: function ( args ) {
+      controller.addInvestigationRow( args );
+    }
+
+
+  };
+
+  return subscriber;
+} );

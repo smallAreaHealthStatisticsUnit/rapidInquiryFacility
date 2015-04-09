@@ -59,6 +59,12 @@
       getURLParameter: function ( name ) {
         return decodeURIComponent( ( new RegExp( '[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)' ).exec( location.search ) || [ , "" ] )[ 1 ].replace( /\+/g, '%20' ) ) || null
       },
+
+      getUser: function () {
+        return localStorage.getItem( 'RIF_user' );
+      },
+
+
       removeG: function ( id ) {
         return id.replace( "g", '' );
       },

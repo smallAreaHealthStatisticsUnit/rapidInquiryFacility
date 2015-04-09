@@ -18,7 +18,7 @@
         RIF.statusBar( msg, false );
       };
     },
-      
+
     asynCall = function () {
 
       var args = Array.prototype.slice.call( arguments, 0 ),
@@ -46,12 +46,12 @@
         myFuncts.call( data )
       };
     },
-      
+
     xhr = function ( url, clbk, msg, mime ) {
       RIF.statusBar( msg, true );
       asynCall( url, c( clbk, msg ), mime );
     },
-      
+
     requests = {
       getGeneralRequest: function ( url, myCallback ) {
         xhr( url, myCallback );
@@ -66,36 +66,36 @@
         var msg = " Checking if already logged in.. ",
           userName = params[ 0 ],
           pw = params[ 1 ];
-        xhr( 'studySubmission/isLoggedIn?' , myCallback, msg );
-      }),
-        
+        xhr( 'studySubmission/isLoggedIn?', myCallback, msg );
+      } ),
+
       getLogOut: ( function ( myCallback, params ) {
         var msg = " Checking if already logged in.. ";
-        xhr( 'studySubmission/logout?' , myCallback, msg );
-      }),
+        xhr( 'studySubmission/logout?', myCallback, msg );
+      } ),
 
       getHealthThemes: function ( myCallback, params ) {
         var msg = "Retrieving Health Themes ";
-        xhr( 'studySubmission/getHealthThemes?' , myCallback, msg );
+        xhr( 'studySubmission/getHealthThemes?', myCallback, msg );
       },
-        
+
       getNumeratorDenominator: function ( myCallback, params ) {
         var msg = "Retrieving Numerator denominator pairs ",
           args = 'healthThemeDescription=' + params[ 0 ];
         xhr( 'studySubmission/getNumerator?' + args, myCallback, msg );
       },
-        
+
       getSelectAt: function ( myCallback, params ) {
         var msg = "Retrieving geolevel resolutions ";
-        xhr( 'studySubmission/getGeoLevelSelectValues?' , myCallback, msg, 'application/json' );
+        xhr( 'studySubmission/getGeoLevelSelectValues?', myCallback, msg, 'application/json' );
       },
-        
+
       getResolutions: function ( myCallback, params ) {
         var msg = "Retrieving geolevel resolutions ",
           args = 'geoLevelSelectName=' + params[ 0 ];
         xhr( 'studySubmission/getGeoLevelViews?' + args, myCallback, msg, 'application/json' );
       },
-        
+
       getGeolevelSelect: function ( myCallback, params ) {
         var msg = "Retrieving Area ids for geolevel:" + params[ 0 ];
         args = 'geoLevelSelectName=LEVEL2&geoLevelAreaName=Elliot',
@@ -104,7 +104,7 @@
       },
       getHealthTaxonomy: function ( myCallback, params ) {
         var msg = "Retrieving taxonomy codes";
-        xhr( 'studySubmission/getHealthCodeTaxonomies?' , myCallback, msg, 'application/json' );
+        xhr( 'studySubmission/getHealthCodeTaxonomies?', myCallback, msg, 'application/json' );
       },
       getTopLevelHealthCodes: function ( myCallback, params ) {
         var msg = "Retrieving top level health codes",
@@ -116,7 +116,7 @@
           args = 'healthCode=' + params[ 1 ] + '&healthCodeNameSpace=' + params[ 0 ];
         xhr( 'studySubmission/getImmediateChildHealthCodes?' + args, myCallback, msg, 'application/json' );
       },
-        
+
       getYearRange: function ( myCallback, params ) {
         var msg = "Retrieving Years",
           numerator = params[ 0 ],
@@ -125,23 +125,23 @@
       },
       getSexes: function ( myCallback, params ) {
         var msg = "Retrieving Genders";;
-        xhr( 'studySubmission/getSexes?' , myCallback, msg, 'application/json' );
+        xhr( 'studySubmission/getSexes?', myCallback, msg, 'application/json' );
       },
-        
+
       getAgeGroups: function ( myCallback, params ) {
         var msg = "Retrieving Age groups",
           numerator = params[ 0 ],
           args = 'geographyName=SAHSU&numeratorTableName=' + numerator;
         xhr( 'studySubmission/getAgeGroups?' + args, myCallback, msg, 'application/json' );
       },
-      
-      /*This may need to be amended: geoLevelSelectName? geoLevelToMapName? */    
+
+      /*This may need to be amended: geoLevelSelectName? geoLevelToMapName? */
       getCovariates: function ( myCallback, params ) {
         var msg = "Retrieving Covariates",
           args = 'geoLevelSelectName=LEVEL1&geoLevelToMapName=LEVEL3';
         xhr( 'studySubmission/getCovariates?' + args, myCallback, msg, 'application/json' );
       },
-        
+
       getSearchHealthCodes: function ( myCallback, params ) {
         var msg = "Searching health codes",
           taxonomy = params[ 0 ],

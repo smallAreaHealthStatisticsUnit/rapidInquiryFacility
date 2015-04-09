@@ -60,25 +60,23 @@
       },
 
       getIsLoggedIn: ( function ( myCallback, params ) {
-        var msg = " Checking if already logged in.. ",
-          userName = RIF.user,
-          args = 'userID=' + userName;
-        xhr( 'studySubmission/isLoggedIn?' + args, myCallback, msg );
+        var msg = " Checking if already logged in.. ";
+        xhr( 'studySubmission/isLoggedIn?', myCallback, msg );
       } ),
 
       getLogOut: ( function ( myCallback, params ) {
         var msg = " Checking if already logged in.. ",
           userName = params[ 0 ],
-          pw = params[ 1 ],
-          args = 'userID=' + userName;
-        xhr( 'studySubmission/logout?' + args, myCallback, msg );
+          pw = params[ 1 ];
+
+        xhr( 'studySubmission/logout?', myCallback, msg );
       } ),
 
       getLogIn: ( function ( myCallback, params ) {
         var msg = "Logging in.. ",
           userName = params[ 0 ],
           pw = params[ 1 ],
-          args = 'userID=' + userName + '&password=' + pw;
+          args = 'password=' + pw;
         xhr( 'studySubmission/login?' + args, myCallback, msg );
       } )
 

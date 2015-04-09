@@ -1,12 +1,18 @@
 ( function () {
   var statusBarMsgs = {},
     utils = {
+
+      /*
+       *  USED IN INITIALIZATION
+       *
+       */
       initComponents: function () { /* context passed by calling object */
         for ( var c in this.components ) {
           this[ c ] = RIF[ c ]( this.components[ c ] );
-          RIF.makePublisher( this[ c ] );
+          utils.makePublisher( this[ c ] );
         }
       },
+
       addEvents: function () { /* context passed by calling object */
         var evts = this.events;
         for ( var c in evts ) {
@@ -21,6 +27,7 @@
           }
         }
       },
+
       makePublisher: function ( o ) {
         var i;
         for ( i in RIF.publisher ) {
@@ -32,6 +39,58 @@
           any: []
         };
       },
+
+      getFirer: function ( componentName, unitName ) {
+        var name = [ 'firer', unitName ].join( '-' );
+        return RIF[ componentName ][ name ]();
+      },
+
+      getSubscriber: function ( componentName, unitName, controller ) {
+        var name = [ 'subscriber', unitName ].join( '-' );
+        return RIF[ componentName ][ name ]( controller );
+      },
+
+      getController: function ( componentName, unit, unitName ) {
+        var controllerName = [ 'controller', unitName ].join( '-' );
+        return RIF[ componentName ][ controllerName ]( unit );
+      },
+
+      getUnit: function ( componetName, unitName, dom, mUtils ) {
+        return RIF[ componetName ][ unitName ]( dom, mUtils );
+      },
+
+      getEvent: function ( componentName, studyType ) {
+        var eventName = [ componentName, 'event', studyType ].join( '-' );
+        return RIF[ componentName ][ eventName ];
+      },
+
+      setMenuEvent: function ( firer, dom, unitName, menuUtils ) {
+        var eventName = [ 'event', unitName ].join( '-' );
+        RIF[ 'menu' ][ eventName ]( dom, firer, menuUtils );
+      },
+
+      setTableEvent: function ( firer, dom, unitName ) {
+        var eventName = [ 'event', unitName ].join( '-' );
+        RIF[ 'table' ][ eventName ]( dom, firer );
+      },
+      /*
+       * User session UTILS functions
+       *
+       */
+      getUser: function () {
+        return localStorage.getItem( 'RIF_user' );
+      },
+
+      setUser: function ( userName ) {
+        RIF.user = userName;
+        localStorage.setItem( 'RIF_user', userName );
+      },
+
+      /*
+       * General UTILS functions
+       *
+       */
+
       extend: function ( parent, child ) {
         var i,
           toStr = Object.prototype.toString,
@@ -113,22 +172,15 @@
       arraysEqual: function ( arr1, arr2 ) {
         return $( arr1 ).not( arr2 ).length == 0 && $( arr2 ).not( arr1 ).length == 0;
       },
-      getFacade: function ( componentName, studyType, componentContext ) {
-        var facadeName = [ 'facade', studyType ].join( '-' );
-        return RIF[ componentName ][ facadeName ]( componentContext );
-      },
-      getEvent: function ( componentName, studyType ) {
-        var eventName = [ componentName, 'event', studyType ].join( '-' );
-        return RIF[ componentName ][ eventName ];
-      },
+
       extendComponent: function ( componentName, component, units ) {
         var l = units.length;
         while ( l-- ) {
           var r = RIF[ componentName ][ units[ l ] ].call( component );
-          component = RIF.mix( r, component );
+          component = utils.mix( r, component );
         };
         return component;
       }
     };
-  utils.extend( utils, RIF );
+  RIF.utils = utils;
 }() );

@@ -1,6 +1,10 @@
-RIF.menu['firer-retrievableRunnable'] = (function() {
+RIF.menu[ 'firer-retrievableRunnable' ] = ( function () {
 
-   var firer = {};
-    
-   return firer;
-});
+  var firer = {
+    isStudyReady: function () {
+      this.fire( "isStudyReady", null );
+    }
+  };
+
+  return firer;
+} );
