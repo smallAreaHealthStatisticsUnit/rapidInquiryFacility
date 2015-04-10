@@ -595,6 +595,9 @@ path.polygon:hover {
     
     height: calc(100% - 80px);
 }
+.areasSelectionDialog{
+    position:relative
+}
 .msettings-header a.modal_close {
     background: url('../images/close.png');
     width: 20px;
@@ -1456,6 +1459,7 @@ textarea.description {
     margin: 2% 4% 0 4%;
     display: inline-block;
     color: #999999;
+    
 }
 #covariatesWrapper,
 #ageGroupsWrapper {
@@ -1463,16 +1467,12 @@ textarea.description {
 }
 #ageGroupsWrapper {
     /* Firefox */
-    
     height: -moz-calc(100% - 80px);
     /* WebKit */
-    
     height: -webkit-calc(100% - 80px);
     /* Opera */
-    
     height: -o-calc(100% - 80px);
     /* Standard */
-    
     height: calc(100% - 80px);
     float: right;
     margin-right: 10% !important;
@@ -1499,31 +1499,51 @@ textarea.description {
     width: 100%;
 }
 #addInvestigation,
-#clearParameters {
+#clearParameters{
+   opacity: 0.2;
+   margin: 0 8% 0 0 !important;
+   border-radius: 0px 0px 10px 10px;
+   -moz-border-radius: 0px 0px 10px 10px;
+   -webkit-border-radius: 0px 0px 10px 10px    
+}
+#addInvestigation,
+#clearParameters,
+.done{
     position: absolute;
     top: 0;
-    opacity: 0.2;
     text-transform: uppercase;
     width: auto !important;
     z-index: 999999999999999999999999;
-    border-radius: 0px 0px 10px 10px;
-    -moz-border-radius: 0px 0px 10px 10px;
-    -webkit-border-radius: 0px 0px 10px 10px;
     border: 1px solid #F2F2F2;
     color: white! important;
-    margin: 0 8% 0 0 !important;
     font-weight: bold;
 }
+
+.done{
+    padding: 12px 3%;
+    background-color: #87CEFA;
+    font-size: 20px;
+    right: 0;
+     border-radius: 10px 0px 00px 10px;
+    -moz-border-radius:10px 0px 00px 10px;
+    -webkit-border-radius: 10px 0px 00px 10px;
+    margin: 0 !important;
+}
+
+.done a,.done a:hover {
+    color:white   
+}
+
 #addInvestigation {
     background-color: #B4EEB4;
-    right: 0;
-    padding: 12px 20px;
+    left: 150px;
+    padding: 10px 20px;
     font-size: 16px;
 }
 #clearParameters {
     background-color: #FF7256;
     left: 3%;
-    padding: 8px 20px;
+    padding: 6px 15px;
     font-size: 14px;
 }
 .addInvestigationActive {
@@ -1532,7 +1552,8 @@ textarea.description {
     background-color: #00CD00 !important;
 }
 .addInvestigationActive:hover,
-#clearParameters:hover {
+#clearParameters:hover,
+.done:hover{
     text-decoration: underline;
     cursor: pointer;
 }

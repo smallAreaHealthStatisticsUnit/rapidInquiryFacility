@@ -8,9 +8,11 @@ RIF.menu[ 'controller-frontSubmission' ] = ( function ( unit ) {
           unit.writeUserName( RIF.user );
           _p.getHealthThemes();
         } else {
-          var msg = "User: " + RIF.user + " is not a valid user or has not logged in.<br/>" +
-            "You may need to <a href='../logIn/'>log in </a>";
-          RIF.statusBar( msg, true, 1 );
+
+          var msg = "User:" + RIF.user + " is  not currently authenticated.<br/>" +
+            "Please <a href='../logIn/'>log in </a>";
+
+          RIF.statusBar( msg, true, 1, true );
         };
       };
       RIF.getIsLoggedIn( clbk, [ RIF.user ] );

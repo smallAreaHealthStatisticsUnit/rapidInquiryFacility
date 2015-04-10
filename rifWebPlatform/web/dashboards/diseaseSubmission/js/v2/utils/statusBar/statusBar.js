@@ -6,6 +6,7 @@
  */
 RIF.statusBar = ( function () {
 
+
   var statusBarMsgs = {},
     _error = 0,
 
@@ -40,11 +41,20 @@ RIF.statusBar = ( function () {
     },
 
     _hide = function () {
+      if ( $( "#statusbar" ).hasClass( "unclosable" ) ) {
+        return;
+      };
+
       $( "#statusbar" ).hide();
-    }
+    },
+
+    _makeUnclosable = function () {
+      $( "#statusbar>a" ).remove();
+      $( "#statusbar" ).addClass( "unclosable" );
+    };
 
 
-  var updateStatusBar = function ( msg, showOrHide, error ) {
+  var updateStatusBar = function ( msg, showOrHide, error, unclosable ) {
 
     if ( error === -1 ) { // reset errors
       _removeErrors();
@@ -52,7 +62,11 @@ RIF.statusBar = ( function () {
     };
 
     if ( error == 1 ) { // errors notification
+      if ( unclosable ) {
+        _makeUnclosable()
+      };
       _showError( msg );
+
       return;
     };
 

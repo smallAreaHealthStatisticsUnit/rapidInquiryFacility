@@ -48,6 +48,7 @@ RIF.dom = ( function () {
           logOut: get( 'logOut' ),
           /* User name*/
           userName: $( '.userName' ),
+          done: $( '.done a' ),
           /* All custom made drop downs*/
           dropdownInputs: $( '.dropdownInput:not(.editable)' )
         };
@@ -119,7 +120,9 @@ RIF.dom = ( function () {
         return {
           openFileStudy: $( '#openFileStudy' ),
           setUpFile: $( '#setUpFile' ),
-          finalRun: $( '#finalRun' )
+          finalRun: $( '#finalRun' ),
+          project: $( '#projectCode' ),
+          studyDescription: $( '#studyDescription' )
         };
       }
     },

@@ -50,11 +50,11 @@ var callback = function(err, results) {
   }	
 };
 
-walk( "../request", callback );
-walk( "../topojson service", callback );
-walk( "../test", callback );
+//walk( "../request", callback );
+//walk( "../topojson service", callback );
+//walk( "../test", callback );
 //walk( "../dashboards/dataViewer/js", callback );
 //walk( "../dashboards/diseaseMapping/js", callback );
 walk( "../dashboards/diseaseSubmission/js", callback );
 //walk( "../dashboards/dataViewer/js", callback );
-//walk( "../logIn/js", callback );
+walk( "../dashboards/logIn/js", callback );

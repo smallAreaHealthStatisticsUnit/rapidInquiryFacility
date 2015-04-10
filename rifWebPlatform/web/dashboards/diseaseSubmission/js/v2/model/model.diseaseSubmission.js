@@ -12,16 +12,19 @@ RIF.model = ( function ( type ) {
       investigations: {},
 
       studyArea: {
-        resolution: null,
-        areas: [],
-        selectAt: null
+        studyArea_resolution: null,
+        studyArea_areas: [],
+        studyArea_selectAt: null
       },
       comparisonArea: {
-        resolution: null,
-        areas: [],
-        selectAt: null
+        comparisonArea_resolution: null,
+        comparisonArea_areas: [],
+        comparisonArea_selectAt: null
       }
     },
+
+    _optionalVariables = [ "covariates", "description" ],
+
     _studyMethods = {
 
       investigationReady: false,
@@ -81,18 +84,18 @@ RIF.model = ( function ( type ) {
         _study.description = s;
       },
       setStudyAreaSelectAt: function ( s ) {
-        _study.studyArea.selectAt = s;
+        _study.studyArea.studyArea_selectAt = s;
       },
       setStudyAreaResolution: function ( s ) {
-        _study.studyArea.resolution = s;
+        _study.studyArea.studyArea_resolution = s;
       },
       setStudyAreas: function ( s ) {
-        _study.studyArea.areas = s;
+        _study.studyArea.studyArea_areas = s;
       },
       setComparisonArea: function ( s ) {
-        _study.comparisonArea.resolution = s.resolution;
-        _study.comparisonArea.areas = s.areas;
-        _study.comparisonArea.selectAt = s.selectAt;
+        _study.comparisonArea.comparisonArea_resolution = s.resolution;
+        _study.comparisonArea.comparisonArea_areas = s.areas;
+        _study.comparisonArea.comparisonArea_selectAt = s.selectAt;
       },
       setHealthConditionTaxonomy: function ( s ) {
         this.parameters.taxonomy = s;
@@ -143,7 +146,7 @@ RIF.model = ( function ( type ) {
         return _study.denominator;
       },
       getStudyAreas: function () {
-        return _study.studyArea.areas;;
+        return _study.studyArea.studyArea_areas;;
       },
       getComparisonArea: function () {
         return _study.comparisonArea;
@@ -203,7 +206,10 @@ RIF.model = ( function ( type ) {
         var toComplete = [],
           iterate = function ( o ) {
             for ( var i in o ) {
-              if ( o[ i ] == null ) {
+              if ( _studyMethods.isOptional( i ) ) {
+                continue;
+              };
+              if ( o[ i ] == null || jQuery.isEmptyObject( o[ i ] ) ) {
                 toComplete.push( i );
               } else if ( typeof o[ i ] == 'object' ) {
                 iterate( o[ i ] );
@@ -214,17 +220,28 @@ RIF.model = ( function ( type ) {
         return this.displayMissingParameters( toComplete );
       },
 
+      isOptional: function ( p ) {
+        var l = _optionalVariables.length;
+        while ( l-- ) {
+          if ( p == _optionalVariables[ l ] ) {
+            return true;
+          };
+        }
+        return false;
+      },
+
       displayMissingParameters: function ( missing ) {
         if ( missing.length == 0 ) {
           return true;
         } else {
-          var msg = 'Before continuing make sure the following parameters are not empty: <br/> ' + missing.join( ", " );
+          var msg = 'Before continuing make sure the following parameters are set: <p> ' + missing.join( ", " ) + '</p>';
           RIF.statusBar( msg, true, 'notify' );
           return false;
         };
       },
 
       isStudyReadyToBeSubmitted: function () {
+        var study = RIF.utils.extend( _studyMethods.parameters, _study );
         var ready = this.isReady( _study );
         console.log( "Ready:" + ready )
         return ready

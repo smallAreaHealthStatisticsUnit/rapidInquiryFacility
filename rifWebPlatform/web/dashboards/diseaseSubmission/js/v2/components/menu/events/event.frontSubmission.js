@@ -1,22 +1,27 @@
 RIF.menu[ 'event-frontSubmission' ] = ( function ( dom, firer ) {
 
-
-  dom.dropdownInputs.keydown( function ( e ) {
-    return false;
-  } );
-
-  $( dom.dialogClose ).click( function () {
+  var close = function () {
     var id = $( this ).attr( 'href' );
     $( id ).hide();
     if ( id === '#statusbar' ) {
       RIF.statusBar( null, null, -1 );
     };
+  };
+
+  dom.dropdownInputs.keydown( function ( e ) {
+    return false;
   } );
 
-  $( '#statusbar' ).click( function () {
+  $( dom.dialogClose ).click( close );
+  $( dom.done ).click( close );
+
+  /*$( '#statusbar' ).click( function () {
+    if ($(this).hasClass("unclosable")){
+        return;
+     };  
     $( this ).hide();
     RIF.statusBar( null, null, -1 );
-  } );
+  } );*/
 
   $( dom.studyArea ).click( function () {
     firer.isDialogReady( 'areaSelection' );

@@ -71,12 +71,26 @@ RIF.initialize = ( function () {
         firer: [ "model" ],
         method: "showDialog"
       },
+
+
+      /**-- Run Dialog ---**/
       isStudyReady: {
         subscribers: [ "model" ],
         firer: [ "menu" ],
         method: "isStudyReady"
       },
 
+      projectChanged: {
+        subscribers: [ "model" ],
+        firer: [ "menu" ],
+        method: "projectChanged"
+      },
+
+      studyDescriptionChanged: {
+        subscribers: [ "model" ],
+        firer: [ "menu" ],
+        method: "studyDescriptionChanged"
+      },
 
       /**-- Area Selection ---**/
 

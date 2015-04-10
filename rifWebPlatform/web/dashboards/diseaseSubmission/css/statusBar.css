@@ -20,7 +20,11 @@
 	#statusbar div.info{
 		background-color:rgba(135,206,250, 0.7);
 	}
-	   
+     
+    #statusbar div.notification p {
+        text-transform: lowercase;
+
+    }
 	#statusbar div.error{
 		background-color:rgba(255, 102, 102, 0.9);
         padding: 30px 10px;
@@ -40,3 +44,11 @@
 		opacity: 1;
         float:right;
 	}
+
+    .error a  {
+        color:#87CEFA;
+    }
+
+    .error a:hover  {
+        text-decoration: underline
+    }

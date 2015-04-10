@@ -38,6 +38,7 @@ RIF.model[ 'observable-diseaseSubmission' ] = ( function () {
     startYearChanged: function ( arg ) {
       this.setMinYear( arg );
     },
+
     endYearChanged: function ( arg ) {
       this.setMaxYear( arg );
     },
@@ -60,6 +61,13 @@ RIF.model[ 'observable-diseaseSubmission' ] = ( function () {
       this.setAgeGroups( arg );
     },
 
+    projectChanged: function ( arg ) {
+      this.setProject( arg );
+    },
+
+    studyDescriptionChanged: function ( arg ) {
+      this.setDescription( arg );
+    },
 
     isStudyReady: function () {
       this.isStudyReadyToBeSubmitted()
