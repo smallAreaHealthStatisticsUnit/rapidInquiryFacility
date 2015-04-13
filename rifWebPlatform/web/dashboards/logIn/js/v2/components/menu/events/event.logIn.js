@@ -11,8 +11,8 @@ RIF.menu[ 'event-logIn' ] = ( function ( dom, firer ) {
       firer.fireLogIn( [ username, pw ] );
     };
 
-  $( 'body' ).keydown( function () {
-    if ( event.keyCode == 13 ) {
+  $( 'body' ).keydown( function (e) {
+    if ( e.keyCode == 13 ) {
       _attemptLogIn();
     }
   } );
