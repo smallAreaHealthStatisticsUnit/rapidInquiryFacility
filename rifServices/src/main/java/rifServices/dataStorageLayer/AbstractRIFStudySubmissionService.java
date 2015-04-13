@@ -1741,20 +1741,22 @@ abstract class AbstractRIFStudySubmissionService
 		return result;
 	}
 	
-	public void submitStudy(
+	public String submitStudy(
 		final User _user,
-		final RIFStudySubmission _rifJobSubmission,
+		final RIFStudySubmission _rifStudySubmission,
 		final File _outputFile) throws RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();	
+		
+		String result = null;
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
-			return;
+			return result;
 		}
-		RIFStudySubmission rifJobSubmission
-			= RIFStudySubmission.createCopy(_rifJobSubmission);
+		RIFStudySubmission rifStudySubmission
+			= RIFStudySubmission.createCopy(_rifStudySubmission);
 		
 		File outputFile = null;
 		if (_outputFile != null) {
@@ -1773,18 +1775,12 @@ abstract class AbstractRIFStudySubmissionService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"submitStudy",
-				"rifJobSubmission",
-				rifJobSubmission);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"submitStudy",
-				"outputFile",
-				outputFile);	
-					
+				"rifStudySubmission",
+				rifStudySubmission);	
+						
 			//Check for security violations
 			validateUser(user);
-			rifJobSubmission.checkSecurityViolations();		
-			rifJobSubmission.checkErrors();		
-
+			rifStudySubmission.checkSecurityViolations();		
 			
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();	
@@ -1792,7 +1788,7 @@ abstract class AbstractRIFStudySubmissionService
 				= RIFServiceMessages.getMessage("logging.submittingStudy",
 					user.getUserID(),
 					user.getIPAddress(),
-					rifJobSubmission.getDisplayName(),
+					rifStudySubmission.getDisplayName(),
 					outputFile.getAbsolutePath());
 			rifLogger.info(
 				getClass(),
@@ -1807,10 +1803,11 @@ abstract class AbstractRIFStudySubmissionService
 			
 			SQLRIFSubmissionManager rifSubmissionManager
 				= rifServiceResources.getRIFSubmissionManager();
-			rifSubmissionManager.submitStudy(
-				connection, 
-				user, 
-				rifJobSubmission);
+			result
+				= rifSubmissionManager.submitStudy(
+					connection, 
+					user, 
+					rifStudySubmission);
 
 			//RIFZipFileWriter rifZipFileWriter = new RIFZipFileWriter();
 			//rifZipFileWriter.writeZipFile(outputFile, rifJobSubmission);		
@@ -1829,6 +1826,7 @@ abstract class AbstractRIFStudySubmissionService
 				connection);			
 		}
 
+		return result;
 	}
 		
 	/**
