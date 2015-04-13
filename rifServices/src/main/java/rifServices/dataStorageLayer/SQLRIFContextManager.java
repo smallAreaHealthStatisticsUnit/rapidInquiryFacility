@@ -1766,7 +1766,7 @@ final class SQLRIFContextManager
 		SQLRecordExistsQueryFormatter queryFormatter
 			= new SQLRecordExistsQueryFormatter();
 		configureQueryFormatterForDB(queryFormatter);		
-		queryFormatter.setLookupKeyFieldName("description");
+		queryFormatter.setLookupKeyFieldName("theme");
 		queryFormatter.setFromTable("rif40_health_study_themes");
 
 		logSQLQuery(
