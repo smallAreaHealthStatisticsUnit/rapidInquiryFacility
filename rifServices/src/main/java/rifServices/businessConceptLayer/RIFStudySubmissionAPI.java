@@ -450,9 +450,10 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @param user the user
 	 * @param rifJobSubmission the rif job submission
 	 * @param outputFile the output file
+	 * @return the studyID for the study that has just been submitted
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void submitStudy(
+	public String submitStudy(
 		final User user,
 		final RIFStudySubmission rifJobSubmission,
 		final File outputFile) 
