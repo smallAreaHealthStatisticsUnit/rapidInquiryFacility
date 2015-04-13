@@ -8,7 +8,6 @@ import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
-import rifServices.util.FieldValidationUtility;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -76,7 +75,7 @@ import org.junit.Test;
  */
 
 public final class SubmitStudy 
-	extends AbstractHealthCodeProviderTestCase {
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -85,10 +84,10 @@ public final class SubmitStudy
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private CalculationMethod masterValidCalculationMethod;
-	private CalculationMethod masterEmptyCalculationMethod;
-	private CalculationMethod masterNonExistentCalculationMethod;
-	private CalculationMethod masterMaliciousCalculationMethod;
+	//private CalculationMethod masterValidCalculationMethod;
+	//private CalculationMethod masterEmptyCalculationMethod;
+	//private CalculationMethod masterNonExistentCalculationMethod;
+	//private CalculationMethod masterMaliciousCalculationMethod;
 	
 	// ==========================================
 	// Section Construction
@@ -97,27 +96,10 @@ public final class SubmitStudy
 	public SubmitStudy() {
 		
 		
-		SampleTestObjectGenerator generator
-			= new SampleTestObjectGenerator();
-		masterValidCalculationMethod
-			= generator.createSampleBYMMethod();
 
-		masterEmptyCalculationMethod
-			= CalculationMethod.createCopy(masterValidCalculationMethod);
-		masterEmptyCalculationMethod.setCodeRoutineName("");
-
-		masterNonExistentCalculationMethod
-			= CalculationMethod.createCopy(masterValidCalculationMethod);
-		masterNonExistentCalculationMethod.setName("Blah");
-		
-		FieldValidationUtility fieldValidationUtility
-			= new FieldValidationUtility();
-		masterMaliciousCalculationMethod
-			= CalculationMethod.createCopy(masterValidCalculationMethod);
-		masterMaliciousCalculationMethod.setName(
-			fieldValidationUtility.getTestMaliciousFieldValue());
 	}
 
+	/*
 	private CalculationMethod cloneValidCalculationMethod() {
 		return CalculationMethod.createCopy(masterValidCalculationMethod);
 	}
@@ -133,7 +115,7 @@ public final class SubmitStudy
 	private CalculationMethod cloneMaliciousCalculationMethod() {
 		return CalculationMethod.createCopy(masterMaliciousCalculationMethod);
 	}
-	
+	*/
 	
 	// ==========================================
 	// Section Accessors and Mutators
@@ -700,47 +682,6 @@ public final class SubmitStudy
 		}		
 	}
 
-
-	@Test
-	/**
-	 * check whether non-existent calculation method is done
-	 */
-	public void submitStudy_NONEXISTENT7() {
-		File validOutputFile = null;
-		
-		try {
-			User validUser = cloneValidUser();
-			//use an example rif submission from the sample data
-			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
-			RIFStudySubmission nonExistentStudySubmission
-				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
-			//randomly insert an empty value into the field of some
-			//object that is part of the study submission
-			nonExistentStudySubmission.addCalculationMethod(cloneNonExistentCalculationMethod());
-
-			validOutputFile
-				= sampleTestObjectGenerator.generateSampleOutputFile();
-			rifStudySubmissionService.submitStudy(
-				validUser, 
-				nonExistentStudySubmission, 
-				validOutputFile);
-			fail();			
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(
-				rifServiceException,
-				RIFServiceError.NON_EXISTENT_CALCULATION_METHOD,
-				1);
-		}
-		finally {
-			validOutputFile.delete();
-		}		
-	}
-	
-	
-	
 	
 	/**
 	 * ensure malicious user checked
@@ -920,7 +861,7 @@ public final class SubmitStudy
 				= diseaseMappingStudy.getInvestigations();
 			Investigation firstInvestigation
 				= investigations.get(0);
-			firstInvestigation.addHealthCode(cloneMaliciousHealthCode());
+			firstInvestigation.setDescription(getTestMaliciousValue());
 			
 			validOutputFile
 				= sampleTestObjectGenerator.generateSampleOutputFile();
@@ -943,7 +884,7 @@ public final class SubmitStudy
 	
 	@Test
 	/**
-	 * ensure malicious code checks are happening in the Calculation Methods
+	 * ensure malicious code checks are happening in the study
 	 */
 	public void submitStudy_MALICIOUS6() {
 
@@ -957,7 +898,10 @@ public final class SubmitStudy
 				= new SampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
-			maliciousStudySubmission.addCalculationMethod(cloneMaliciousCalculationMethod());
+			
+			DiseaseMappingStudy diseaseMappingStudy
+				= (DiseaseMappingStudy) maliciousStudySubmission.getStudy();
+			diseaseMappingStudy.setName(getTestMaliciousValue());
 			
 			validOutputFile
 				= sampleTestObjectGenerator.generateSampleOutputFile();
