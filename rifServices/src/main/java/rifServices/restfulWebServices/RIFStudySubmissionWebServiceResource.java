@@ -1339,8 +1339,6 @@ public class RIFStudySubmissionWebServiceResource
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("tileIdentifier") String tileIdentifier,
-		@QueryParam("zoomFactor") Integer zoomFactor,		
 		@QueryParam("yMax") String yMax,
 		@QueryParam("xMax") String xMax,
 		@QueryParam("yMin") String yMin,
