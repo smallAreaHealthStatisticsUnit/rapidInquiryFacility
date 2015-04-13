@@ -68,6 +68,22 @@ import rifServices.system.RIFServiceException;
 
 public interface RIFStudyServiceAPI {
 	
+
+	/**
+	 * gets summaries of studies created by each user
+	 * @param user
+	 * @return
+	 * @throws RIFServiceException
+	 */
+	public ArrayList<StudySummary> getStudySummaries(
+		final User user)
+		throws RIFServiceException;
+
+	public DiseaseMappingStudy getDiseaseMappingStudy(
+		final User user,
+		final String studyID)
+		throws RIFServiceException;
+		
 	/**
 	 * Gets the disease mapping studies.
 	 *
