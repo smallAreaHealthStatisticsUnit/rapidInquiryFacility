@@ -2,7 +2,6 @@ RIF.menu.frontSubmission = ( function ( _dom, menuUtils ) {
 
   var _p = {
     showDialog: function ( dialog ) {
-      console.log( dialog );
       $( _dom[ dialog ] ).show();
     },
     getHealthThemes: function ( themes, description ) {

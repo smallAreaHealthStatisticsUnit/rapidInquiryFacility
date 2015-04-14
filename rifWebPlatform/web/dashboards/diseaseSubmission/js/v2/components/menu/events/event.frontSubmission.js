@@ -1,11 +1,17 @@
 RIF.menu[ 'event-frontSubmission' ] = ( function ( dom, firer ) {
 
-  var close = function () {
+ var checkDialogSelection = function( d ){
+    var dialogName =  d.replace('#','');
+    firer.isDialogSelectionComplete(dialogName);  
+ }; 
+    
+ var close = function () {
     var id = $( this ).attr( 'href' );
     $( id ).hide();
     if ( id === '#statusbar' ) {
       RIF.statusBar( null, null, -1 );
     };
+    checkDialogSelection(id);
   };
 
   dom.dropdownInputs.keydown( function ( e ) {
@@ -15,17 +21,9 @@ RIF.menu[ 'event-frontSubmission' ] = ( function ( dom, firer ) {
   $( dom.dialogClose ).click( close );
   $( dom.done ).click( close );
 
-  /*$( '#statusbar' ).click( function () {
-    if ($(this).hasClass("unclosable")){
-        return;
-     };  
-    $( this ).hide();
-    RIF.statusBar( null, null, -1 );
-  } );*/
 
   $( dom.studyArea ).click( function () {
-    firer.isDialogReady( 'areaSelection' );
-    $( dom.studyAreaDialog ).show();
+    firer.isDialogReady( 'studyAreaDialog' );
   } );
 
   $( dom.compArea ).click( function () {
@@ -50,7 +48,7 @@ RIF.menu[ 'event-frontSubmission' ] = ( function ( dom, firer ) {
 
   $( dom.logOut ).click( function () {
     firer.fire( 'logOut', null );
-  } )
+  } );
 
 
   dom.studyName.change( function () {

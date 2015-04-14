@@ -12,7 +12,7 @@ var RIF = ( function ( R ) {
   R.components = {};
   R.modules = {};
   R.resizeWidth = function ( /*obj,*/ px ) {};
-  R.user = null;
+  R.user = localStorage.getItem( 'RIF_user' ) || null;
 
   if ( detectBrowser.browser === "Explorer" && parseInt( detectBrowser.version ) < 9 ) {
     window.top.location = ""; //LANDING PAGE

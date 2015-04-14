@@ -14,17 +14,29 @@
 		text-align: center;
         font-size:18px;
         text-transform:uppercase;
+        line-height: 30px;
 	}
 
 	#statusbar div.info{
-		background-color:rgba(135 ,206, 250, 0.5);
+		background-color:rgba(135,206,250, 0.7);
 	}
-	   
+     
+    #statusbar div.notification p {
+        text-transform: lowercase;
+
+    }
 	#statusbar div.error{
 		background-color:rgba(255, 102, 102, 0.9);
         padding: 30px 10px;
 	}
-    
+
+   #statusbar div.notification{
+		background-color:rgba(162, 205, 90, 0.6);
+        padding: 30px 10px;
+	}
+   div.notification a{
+        color: #D1EEEE
+   }
 
     #statusbar a.modal_close{
 		background: url('../images/close.png');
@@ -34,3 +46,11 @@
 		opacity: 1;
         float:right;
 	}
+
+    .error a  {
+        color:#87CEFA;
+    }
+
+    .error a:hover  {
+        text-decoration: underline
+    }

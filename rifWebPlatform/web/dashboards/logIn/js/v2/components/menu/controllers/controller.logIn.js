@@ -3,14 +3,17 @@ RIF.menu[ 'controller-logIn' ] = ( function ( unit ) {
   var _p = {
 
     _redirect: function () {
-      var url = RIF.utils.getRedirectFromURL();
+      var url = RIF.utils.getRedirectFromURL() || 'diseaseSubmission';
       RIF.utils.redirect( "../" + url + "/?user=" + RIF.user );
     },
 
     isLoggedIn: function ( params ) {
       var callback = function () {
         if ( this[ 0 ][ "result" ] == "true" ) { //
-          _p._redirect();
+          //_p._redirect();
+           var msg = "You are already logged in as: "+ RIF.utils.getUser() 
+            + "<div>Continue <a href='../diseaseSubmission/'> here </a></div>";
+           RIF.statusBar( msg, true, 'notify', true ); 
         };
       };
 
@@ -33,9 +36,9 @@ RIF.menu[ 'controller-logIn' ] = ( function ( unit ) {
 
   };
 
-  if ( RIF.user != null ) {
+ // if ( RIF.user != null ) {
     _p.isLoggedIn();
-  };
+  //};
 
   return _p;
 } );

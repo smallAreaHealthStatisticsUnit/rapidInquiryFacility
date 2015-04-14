@@ -16,6 +16,10 @@ RIF.menu[ 'subscriber-frontSubmission' ] = ( function ( controller ) {
       controller.showDialog( dialog );
     },
 
+    dialogClosed: function(dialog){
+        console.log('dialog interface Change')
+    },  
+      
     logOut: function () {
       controller.logOut();
     }

@@ -53,9 +53,14 @@ RIF.menu[ 'controller-frontSubmission' ] = ( function ( unit ) {
     }
   };
 
-
-  _p.isLoggedIn();
-
+    
+  if(RIF.user == null || RIF.user == ""){
+    var msg = "Please <a href='../logIn/'>log in </a> first.";
+    RIF.statusBar( msg, true, 1, true );  
+  }else{
+    _p.isLoggedIn();
+  };
 
   return _p;
-} );
+
+});

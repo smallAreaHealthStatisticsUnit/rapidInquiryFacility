@@ -119,7 +119,7 @@ RIF.model[ 'observable-diseaseSubmission' ] = ( function () {
         if ( ready && this[ dialog ] != 1 ) {
           this.startInvestigationParameter( this.getNumerator() );
         };
-      } else if ( dialog == 'areaSelection' ) {
+      } else if ( dialog == 'studyAreaDialog' ) {
         ready = true;
         if ( ready && this[ dialog ] != 1 ) {
           this.startAreaSelection();
@@ -131,6 +131,23 @@ RIF.model[ 'observable-diseaseSubmission' ] = ( function () {
         this[ dialog ] = 1;
       };
     },
+        
+    isDialogSelectionComplete: function(dialog){
+        var ready = false;
+        if ( dialog == 'parametersModal' ) {
+             ready = this.isInvestigationSelectionComplete();    
+        } else if ( dialog == 'areaSelectionModal' ) {
+             ready = this.isStudyAreaSelectionComplete();
+        };
+        
+        if(this.getDialogStatus(dialog) != ready){
+            this.fire('dialogClosed', ready);
+        };
+        
+        console.log(dialog + ' Selection is ready:' + ready);
+    },
+      
+      
     // FIRERS  
     selectAtChangeUpdate: function ( geolvl ) {
       this.fire( 'selectAtChangeUpdate', geolvl );

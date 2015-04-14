@@ -17,7 +17,11 @@ RIF.menu[ 'firer-frontSubmission' ] = ( function () {
 
     isDialogReady: function ( dialog ) {
       this.fire( 'isDialogReady', dialog );
-    }
+    },
+      
+    isDialogSelectionComplete: function ( dialog ) {
+      this.fire( 'isDialogSelectionComplete', dialog );
+    },   
 
   };
   return firer;
