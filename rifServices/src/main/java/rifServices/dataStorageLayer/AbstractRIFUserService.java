@@ -17,11 +17,11 @@ import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
-import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.YearRange;
+import rifServices.businessConceptLayer.StudySummary;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -114,7 +114,153 @@ class AbstractRIFUserService extends AbstractRIFService {
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
+	
+	public ArrayList<StudySummary> getStudySummaries(
+		final User _user)
+		throws RIFServiceException {
+				
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+
+		ArrayList<StudySummary> results = new ArrayList<StudySummary>();
+		Connection connection = null;
+		try {
 			
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getStudySummaries",
+				"user",
+				user);
+		
+			//Check for security violations
+			validateUser(user);
+			
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getStudySummaries",
+					user.getUserID(),
+					user.getIPAddress());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);			
+
+			//Assign pooled connection
+			connection 
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			
+			SQLRIFSubmissionManager rifSubmissionManager
+				= rifServiceResources.getRIFSubmissionManager();
+			results
+				= rifSubmissionManager.getStudySummariesForUser(
+					connection, 
+					user);
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getStudySummaries",
+				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}		
+
+		return results;
+	}
+		
+	public DiseaseMappingStudy getDiseaseMappingStudy(
+		final User _user,
+		final String studyID)
+		throws RIFServiceException {
+		
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		
+		Connection connection = null;
+		DiseaseMappingStudy result = null;
+		try {
+			
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getDiseaseMappingStudy",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getDiseaseMappingStudy",
+				"studyID",
+				studyID);
+			
+			//Check for security violations
+			validateUser(user);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getDiseaseMappingStudy", 
+				"studyID", 
+				studyID);
+			
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getDiseaseMappingStudy",
+					user.getUserID(),
+					user.getIPAddress());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+			//Assign pooled connection
+			connection 
+				= sqlConnectionManager.assignPooledReadConnection(user);
+						
+			//Delegate operation to a specialised manager class
+			SQLRIFSubmissionManager rifSubmissionManager
+				= rifServiceResources.getRIFSubmissionManager();
+			
+			result
+				= rifSubmissionManager.getDiseaseMappingStudy(
+					connection,
+					studyID);
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getDiseaseMappingStudy",
+				rifServiceException);
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}			
+		return result;		
+
+	}
+			
+	
+	
+	
 	public ArrayList<DiseaseMappingStudy> getDiseaseMappingStudies(
 		final User _user) 
 		throws RIFServiceException {
