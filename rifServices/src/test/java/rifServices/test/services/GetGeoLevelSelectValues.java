@@ -135,7 +135,10 @@ public final class GetGeoLevelSelectValues extends
 			//it will be impossible to choose a GeoLevelView or GeoLevelToMap
 			//value.  Both of these values must be at least one level lower
 
-			assertEquals(3, geoLevelSelectValues.size());
+                        //Nan edit on April 15, 2015, the method now should return all levels.
+                        //change magic number from 3 to 4.
+
+			assertEquals(4, geoLevelSelectValues.size());
 			
 			//first one should be LEVEL1
 			GeoLevelSelect firstValue = geoLevelSelectValues.get(0);

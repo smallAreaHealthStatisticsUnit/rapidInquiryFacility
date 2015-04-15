@@ -576,7 +576,7 @@ final class SQLRIFContextManager
 			getGeoLevelSelectValuesQueryFormatter.addFromTable("rif40_geolevels");
 			getGeoLevelSelectValuesQueryFormatter.addWhereParameter("geography");
 			getGeoLevelSelectValuesQueryFormatter.addWhereParameter("listing");
-			getGeoLevelSelectValuesQueryFormatter.addWhereParameterWithOperator("geolevel_id", "<");
+			getGeoLevelSelectValuesQueryFormatter.addWhereParameterWithOperator("geolevel_id", "<=");
 			getGeoLevelSelectValuesQueryFormatter.addOrderByCondition("geolevel_id");
 		
 			logSQLQuery(
@@ -921,7 +921,7 @@ final class SQLRIFContextManager
 			geoLevelViewsQueryFormatter.addSelectField("geolevel_name");
 			geoLevelViewsQueryFormatter.addFromTable("rif40_geolevels");
 			geoLevelViewsQueryFormatter.addWhereParameter("geography");
-			geoLevelViewsQueryFormatter.addWhereParameterWithOperator("geolevel_id",">");
+			geoLevelViewsQueryFormatter.addWhereParameterWithOperator("geolevel_id",">=");
 			geoLevelViewsQueryFormatter.addOrderByCondition("geolevel_name");
 
 			logSQLQuery(
