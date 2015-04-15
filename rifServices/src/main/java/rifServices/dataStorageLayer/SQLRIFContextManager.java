@@ -126,28 +126,29 @@ final class SQLRIFContextManager
 		final Connection connection) 
 		throws RIFServiceException {
 		
-		ArrayList<Geography> results = new ArrayList<Geography>();
-
-		//Create SQL query		
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.setUseDistinct(true);
-		queryFormatter.addSelectField("geography");
-		queryFormatter.addFromTable("rif40_geographies");
-		queryFormatter.addOrderByCondition("geography");
-		
 		//Parameterise and execute query		
 		PreparedStatement statement = null;
 		ResultSet dbResultSet = null;
-
-		logSQLQuery(
-			"getGeographies",
-			queryFormatter);
-
+		ArrayList<Geography> results = new ArrayList<Geography>();
 		try {
+		
+			//Create SQL query		
+			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.setUseDistinct(true);
+			queryFormatter.addSelectField("geography");
+			queryFormatter.addFromTable("rif40_geographies");
+			queryFormatter.addOrderByCondition("geography");
+		
+			logSQLQuery(
+				"getGeographies",
+				queryFormatter);
+
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			dbResultSet = statement.executeQuery();
+			connection.commit();
+
 			while (dbResultSet.next()) {
 				Geography geography = Geography.newInstance();
 				geography.setName(dbResultSet.getString(1));
@@ -156,10 +157,15 @@ final class SQLRIFContextManager
 				geography.setDescription("");
 				results.add(geography);
 			}
+			
+			connection.commit();
+			
+			return results;
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeographies");
 			
@@ -178,10 +184,7 @@ final class SQLRIFContextManager
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
 			SQLQueryUtility.close(dbResultSet);
-		}
-		
-		return results;
-		
+		}		
 	}
 
 	
@@ -205,38 +208,43 @@ final class SQLRIFContextManager
 			null,
 			null);
 		
-		ArrayList<HealthTheme> results = new ArrayList<HealthTheme>();
-		
-		//Create SQL query		
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.setUseDistinct(true);
-		queryFormatter.addSelectField("theme");
-		queryFormatter.addSelectField("description");
-		queryFormatter.addFromTable("rif40_health_study_themes");
-		queryFormatter.addOrderByCondition("description");
-
-		logSQLQuery(
-			"getHealthThemes",
-			queryFormatter);
-				
-		//Parameterise and execute query		
 		PreparedStatement statement = null;
 		ResultSet dbResultSet = null;
+		ArrayList<HealthTheme> results = new ArrayList<HealthTheme>();
 		try {
+		
+			//Create SQL query		
+			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.setUseDistinct(true);
+			queryFormatter.addSelectField("theme");
+			queryFormatter.addSelectField("description");
+			queryFormatter.addFromTable("rif40_health_study_themes");
+			queryFormatter.addOrderByCondition("description");
+
+			logSQLQuery(
+				"getHealthThemes",
+				queryFormatter);
+				
+			//Parameterise and execute query		
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			dbResultSet = statement.executeQuery();
+
 			while (dbResultSet.next()) {
 				HealthTheme healthTheme = HealthTheme.newInstance();
 				healthTheme.setName(dbResultSet.getString(1));
 				healthTheme.setDescription(dbResultSet.getString(2));
 				results.add(healthTheme);
 			}
+			
+			connection.commit();
+			return results;
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetHealthThemes");
@@ -255,9 +263,7 @@ final class SQLRIFContextManager
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
 			SQLQueryUtility.close(dbResultSet);
-		}
-		
-		return results;
+		}		
 	}
 	
 	/**
@@ -290,35 +296,37 @@ final class SQLRIFContextManager
 			connection,
 			geography,
 			numeratorTableName);
-		
-		//Create SQL query		
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.setUseDistinct(true);
-		queryFormatter.addSelectField("numerator_description");
-		queryFormatter.addSelectField("denominator_table");
-		queryFormatter.addSelectField("denominator_description");		
-		queryFormatter.addFromTable("rif40_num_denom");
-		queryFormatter.addWhereParameter("numerator_table");
 
-
-		logSQLQuery(
-			"getNDPairFromNumeratorTableName",
-			queryFormatter,
-			numeratorTableName);
-				
-		//Parameterise and execute query		
 		ArrayList<NumeratorDenominatorPair> results 
 			= new ArrayList<NumeratorDenominatorPair>();;
-		PreparedStatement statement = null;
-		ResultSet dbResultSet = null;
-		
+			PreparedStatement statement = null;
+			ResultSet dbResultSet = null;
+	
 		try {
+		
+			//Create SQL query		
+			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.setUseDistinct(true);
+			queryFormatter.addSelectField("numerator_description");
+			queryFormatter.addSelectField("denominator_table");
+			queryFormatter.addSelectField("denominator_description");		
+			queryFormatter.addFromTable("rif40_num_denom");
+			queryFormatter.addWhereParameter("numerator_table");
+
+
+			logSQLQuery(
+				"getNDPairFromNumeratorTableName",
+				queryFormatter,
+				numeratorTableName);
+				
+			//Parameterise and execute query		
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, numeratorTableName);			
 			
 			dbResultSet = statement.executeQuery();
+
 			while (dbResultSet.next()) {
 				String numeratorDescription = dbResultSet.getString(1);
 				String denominatorTable = dbResultSet.getString(2);
@@ -343,15 +351,20 @@ final class SQLRIFContextManager
 					= new RIFServiceException(
 						RIFServiceError.NO_ND_PAIR_FOR_NUMERATOR_TABLE_NAME,
 						errorMessage);
+				
+				connection.commit();
 				throw rifServiceException;
 			}
-			
+
+			connection.commit();
+
 			return results.get(0);
 			
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetNumeratorDenominatorPair");
@@ -397,34 +410,36 @@ final class SQLRIFContextManager
 			healthTheme,
 			null);
 				
-		//Create SQL query		
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.setUseDistinct(true);
-		queryFormatter.addSelectField("numerator_table");
-		queryFormatter.addSelectField("numerator_description");
-		queryFormatter.addSelectField("denominator_table");
-		queryFormatter.addSelectField("denominator_description");		
-		queryFormatter.addFromTable("rif40_num_denom");
-		queryFormatter.addWhereParameter("theme_description");
+		PreparedStatement statement = null;
+		ResultSet dbResultSet = null;
+		ArrayList<NumeratorDenominatorPair> results 
+			= new ArrayList<NumeratorDenominatorPair>();;
+	
+		try {
+			//Create SQL query		
+			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.setUseDistinct(true);
+			queryFormatter.addSelectField("numerator_table");
+			queryFormatter.addSelectField("numerator_description");
+			queryFormatter.addSelectField("denominator_table");
+			queryFormatter.addSelectField("denominator_description");		
+			queryFormatter.addFromTable("rif40_num_denom");
+			queryFormatter.addWhereParameter("theme_description");
 		
-		logSQLQuery(
+			logSQLQuery(
 			"getNumeratorDenominatorPairs",
 			queryFormatter,
 			healthTheme.getDescription());
 		
-		//Parameterise and execute query		
-		ArrayList<NumeratorDenominatorPair> results 
-			= new ArrayList<NumeratorDenominatorPair>();;
-		PreparedStatement statement = null;
-		ResultSet dbResultSet = null;
-		
-		try {
+			//Parameterise and execute query		
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, healthTheme.getDescription());			
 			
 			dbResultSet = statement.executeQuery();
+			connection.commit();
+
 			while (dbResultSet.next()) {
 				String numeratorTable = dbResultSet.getString(1);
 				String numeratorDescription = dbResultSet.getString(2);
@@ -439,6 +454,8 @@ final class SQLRIFContextManager
 						denominatorDescription);			
 				results.add(result);				
 			}
+			
+			connection.commit();
 			
 			if (results.size() == 0) {
 				//ERROR: There is no numerator denominator pair for this health theme
@@ -456,6 +473,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetNumeratorDenominatorPair");
@@ -494,8 +512,7 @@ final class SQLRIFContextManager
 		final Connection connection,
 		final Geography geography) 
 		throws RIFServiceException {
-		
-		
+				
 		//TOUR_VALIDATION
 		/* Here, we assume that all the parameters are non-null
 		 * and that they contain no security risks.  
@@ -507,35 +524,36 @@ final class SQLRIFContextManager
 			geography,
 			null,
 			null);
-			
-		ArrayList<GeoLevelSelect> results = new ArrayList<GeoLevelSelect>();		
+
 		
+		PreparedStatement getMaxGeoLevelIDStatement = null;
+		ResultSet getMaxGeoLevelIDResultSet = null;
+		PreparedStatement getGeoLevelSelectStatement = null;
+		ResultSet getGeoLevelSelectResultSet = null;		
+		ArrayList<GeoLevelSelect> results = new ArrayList<GeoLevelSelect>();		
 		String errorMessage
 			= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelSelect");
 		RIFServiceException getGeoLevelSelectValuesException
 			= new RIFServiceException(
 				RIFServiceError.GET_GEOLEVEL_SELECT_VALUES, 
 				errorMessage);
-		
-		
-		//Obtain the maximum value for geolevel_id. We need to return
-		//all geolevel choices which have a priority less than this
 		Integer maximumGeoLevelID = null;
-		SQLAggregateValueQueryFormatter maximumGeoLevelIDQueryFormatter
-			= new SQLAggregateValueQueryFormatter(SQLAggregateValueQueryFormatter.OperationType.MAX);
-		configureQueryFormatterForDB(maximumGeoLevelIDQueryFormatter);
-		maximumGeoLevelIDQueryFormatter.setCountableFieldName("geolevel_id");
-		maximumGeoLevelIDQueryFormatter.setFromTable("rif40_geolevels");
-		maximumGeoLevelIDQueryFormatter.addWhereParameter("geography");
-		
-		logSQLQuery(
-			"maximumGeoLevelIDQuery",
-			maximumGeoLevelIDQueryFormatter,
-			geography.getName());
-		
-		PreparedStatement getMaxGeoLevelIDStatement = null;
-		ResultSet getMaxGeoLevelIDResultSet = null;
 		try {
+					
+			//Obtain the maximum value for geolevel_id. We need to return
+			//all geolevel choices which have a priority less than this
+			SQLAggregateValueQueryFormatter maximumGeoLevelIDQueryFormatter
+				= new SQLAggregateValueQueryFormatter(SQLAggregateValueQueryFormatter.OperationType.MAX);
+			configureQueryFormatterForDB(maximumGeoLevelIDQueryFormatter);
+			maximumGeoLevelIDQueryFormatter.setCountableFieldName("geolevel_id");
+			maximumGeoLevelIDQueryFormatter.setFromTable("rif40_geolevels");
+			maximumGeoLevelIDQueryFormatter.addWhereParameter("geography");
+		
+			logSQLQuery(
+				"maximumGeoLevelIDQuery",
+				maximumGeoLevelIDQueryFormatter,
+				geography.getName());
+		
 			getMaxGeoLevelIDStatement
 				= connection.prepareStatement(maximumGeoLevelIDQueryFormatter.generateQuery());
 			getMaxGeoLevelIDStatement.setString(1, geography.getName());
@@ -543,10 +561,50 @@ final class SQLRIFContextManager
 				= getMaxGeoLevelIDStatement.executeQuery();
 			getMaxGeoLevelIDResultSet.next();
 			maximumGeoLevelID = getMaxGeoLevelIDResultSet.getInt(1);
+		
+			if (maximumGeoLevelID == null) {
+				
+				connection.commit();				
+				return results;
+			}
+		
+			//Create SQL query		
+			SQLSelectQueryFormatter getGeoLevelSelectValuesQueryFormatter 
+				= new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(getGeoLevelSelectValuesQueryFormatter);
+			getGeoLevelSelectValuesQueryFormatter.addSelectField("geolevel_name");
+			getGeoLevelSelectValuesQueryFormatter.addFromTable("rif40_geolevels");
+			getGeoLevelSelectValuesQueryFormatter.addWhereParameter("geography");
+			getGeoLevelSelectValuesQueryFormatter.addWhereParameter("listing");
+			getGeoLevelSelectValuesQueryFormatter.addWhereParameterWithOperator("geolevel_id", "<");
+			getGeoLevelSelectValuesQueryFormatter.addOrderByCondition("geolevel_id");
+		
+			logSQLQuery(
+				"getGeoLevelSelectValuesQuery",
+				getGeoLevelSelectValuesQueryFormatter,
+				geography.getName());
+		
+			//Parameterise and execute query		
+
+			getGeoLevelSelectStatement
+				= connection.prepareStatement(getGeoLevelSelectValuesQueryFormatter.generateQuery());
+			getGeoLevelSelectStatement.setString(1, geography.getName());
+			//only include those ids that are designated as 'listable'
+			getGeoLevelSelectStatement.setInt(2, 1);
+			getGeoLevelSelectStatement.setInt(3, maximumGeoLevelID);
+			getGeoLevelSelectResultSet = getGeoLevelSelectStatement.executeQuery();
+			connection.commit();
+			
+			while (getGeoLevelSelectResultSet.next()) {
+				GeoLevelSelect geoLevelSelect
+					= GeoLevelSelect.newInstance(getGeoLevelSelectResultSet.getString(1));
+				results.add(geoLevelSelect);				
+			}
 		}
-		catch(SQLException sqlException) {
+		catch(SQLException sqlException) {		
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
@@ -558,58 +616,6 @@ final class SQLRIFContextManager
 			//Cleanup database resources			
 			SQLQueryUtility.close(getMaxGeoLevelIDStatement);
 			SQLQueryUtility.close(getMaxGeoLevelIDResultSet);			
-		}
-		
-		if (maximumGeoLevelID == null) {
-			return results;
-		}
-		
-		//Create SQL query		
-		SQLSelectQueryFormatter getGeoLevelSelectValuesQueryFormatter 
-			= new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(getGeoLevelSelectValuesQueryFormatter);
-		getGeoLevelSelectValuesQueryFormatter.addSelectField("geolevel_name");
-		getGeoLevelSelectValuesQueryFormatter.addFromTable("rif40_geolevels");
-		getGeoLevelSelectValuesQueryFormatter.addWhereParameter("geography");
-		getGeoLevelSelectValuesQueryFormatter.addWhereParameter("listing");
-		getGeoLevelSelectValuesQueryFormatter.addWhereParameterWithOperator("geolevel_id", "<");
-		getGeoLevelSelectValuesQueryFormatter.addOrderByCondition("geolevel_id");
-		
-		logSQLQuery(
-			"getGeoLevelSelectValuesQuery",
-			getGeoLevelSelectValuesQueryFormatter,
-			geography.getName());
-		
-		//Parameterise and execute query		
-		PreparedStatement getGeoLevelSelectStatement = null;
-		ResultSet getGeoLevelSelectResultSet = null;		
-		try {
-			getGeoLevelSelectStatement
-				= connection.prepareStatement(getGeoLevelSelectValuesQueryFormatter.generateQuery());
-			getGeoLevelSelectStatement.setString(1, geography.getName());
-			//only include those ids that are designated as 'listable'
-			getGeoLevelSelectStatement.setInt(2, 1);
-			getGeoLevelSelectStatement.setInt(3, maximumGeoLevelID);
-			getGeoLevelSelectResultSet = getGeoLevelSelectStatement.executeQuery();
-			
-			while (getGeoLevelSelectResultSet.next()) {
-				GeoLevelSelect geoLevelSelect
-					= GeoLevelSelect.newInstance(getGeoLevelSelectResultSet.getString(1));
-				results.add(geoLevelSelect);				
-			}			
-		}
-		catch(SQLException sqlException) {		
-			//Record original exception, throw sanitised, human-readable version			
-			logSQLException(sqlException);
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLRIFContextManager.class, 
-				errorMessage, 
-				sqlException);										
-			throw getGeoLevelSelectValuesException;
-		}
-		finally {
-			//Cleanup database resources			
 			SQLQueryUtility.close(getGeoLevelSelectStatement);
 			SQLQueryUtility.close(getGeoLevelSelectResultSet);			
 		}		
@@ -635,29 +641,30 @@ final class SQLRIFContextManager
 			geography,
 			null,
 			null);
-		
-		//Create SQL query		
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.addSelectField("defaultcomparea");
-		queryFormatter.addFromTable("rif40_geographies");
-		queryFormatter.addWhereParameter("geography");
 
-		logSQLQuery(
-			"getDefaultGeoLevelSelectValue",
-			queryFormatter,
-			geography.getName());
-
-		//Parameterise and execute query				
-		GeoLevelSelect result = null;				
 		PreparedStatement statement = null;
 		ResultSet dbResultSet = null;		
-
+		GeoLevelSelect result = null;
 		try {
+		
+			//Create SQL query		
+			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.addSelectField("defaultcomparea");
+			queryFormatter.addFromTable("rif40_geographies");
+			queryFormatter.addWhereParameter("geography");
+
+			logSQLQuery(
+				"getDefaultGeoLevelSelectValue",
+				queryFormatter,
+				geography.getName());
+
+			//Parameterise and execute query
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, geography.getName());
 			dbResultSet = statement.executeQuery();
+			connection.commit();
 				
 			if (dbResultSet.next() == false) {
 				//ERROR: no default value found
@@ -671,10 +678,14 @@ final class SQLRIFContextManager
 			}
 			result = GeoLevelSelect.newInstance(dbResultSet.getString(1));
 			
+			connection.commit();
+			
+			return result;
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelSelect");
 
@@ -695,8 +706,6 @@ final class SQLRIFContextManager
 			SQLQueryUtility.close(statement);
 			SQLQueryUtility.close(dbResultSet);			
 		}		
-		
-		return result;		
 	}
 
 	/**
@@ -740,6 +749,8 @@ final class SQLRIFContextManager
 	
 		PreparedStatement lookupTableStatement = null;
 		ResultSet lookupTableResultSet = null;			
+		PreparedStatement geographicAreaStatement = null;
+		ResultSet geographicAreaResultSet = null;		
 		
 		//Declaring an exception here because it may be thrown in multiple
 		//places and putting it here reduces repetitive code 
@@ -748,7 +759,6 @@ final class SQLRIFContextManager
 		RIFServiceException rifServiceException
 			= new RIFServiceException(RIFServiceError.GET_GEOLEVEL_AREA_VALUES,
 				errorMessage);
-
 		String lookupTableName = null;
 		try {
 			lookupTableStatement
@@ -764,51 +774,34 @@ final class SQLRIFContextManager
 			else {
 				lookupTableName = lookupTableResultSet.getString(1);
 			}
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version			
-			logSQLException(sqlException);
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLRIFContextManager.class, 
-				errorMessage, 
-				sqlException);										
-					
-			throw rifServiceException;
-		}
-		finally {
-			//Cleanup database resources			
-			SQLQueryUtility.close(lookupTableStatement);
-			SQLQueryUtility.close(lookupTableResultSet);				
-		}
 		
-		if (lookupTableName == null) {
-			throw rifServiceException;
-		}
-
-	
-		//Given the lookup table name, retrieve the areas
-		SQLSelectQueryFormatter geographicAreaQueryFormatter
-			= new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(geographicAreaQueryFormatter);
-		geographicAreaQueryFormatter.addSelectField(geoLevelSelect.getName());		
-		geographicAreaQueryFormatter.addSelectField("name");
-		geographicAreaQueryFormatter.addFromTable(lookupTableName);
-		geographicAreaQueryFormatter.addOrderByCondition("name");
-
-		logSQLQuery(
-			"geographicAreaQuery",
-			geographicAreaQueryFormatter,
-			geography.getName());
+			if (lookupTableName == null) {
 				
-		PreparedStatement geographicAreaStatement = null;
-		ResultSet geographicAreaResultSet = null;		
+				connection.commit();
+				
+				throw rifServiceException;
+			}
+
+			//Given the lookup table name, retrieve the areas
+			SQLSelectQueryFormatter geographicAreaQueryFormatter
+				= new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(geographicAreaQueryFormatter);
+			geographicAreaQueryFormatter.addSelectField(geoLevelSelect.getName());		
+			geographicAreaQueryFormatter.addSelectField("name");
+			geographicAreaQueryFormatter.addFromTable(lookupTableName);
+			geographicAreaQueryFormatter.addOrderByCondition("name");
+
+			logSQLQuery(
+				"geographicAreaQuery",
+				geographicAreaQueryFormatter,
+				geography.getName());
+				
 		
-		try {
 			geographicAreaStatement
 				= connection.prepareStatement(geographicAreaQueryFormatter.generateQuery());
 						
 			geographicAreaResultSet = geographicAreaStatement.executeQuery();	
+			connection.commit();
 			while (geographicAreaResultSet.next()) {
 				String identifier = geographicAreaResultSet.getString(1);
 				GeoLevelArea geoLevelArea 
@@ -830,6 +823,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
@@ -840,6 +834,8 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources			
+			SQLQueryUtility.close(lookupTableStatement);
+			SQLQueryUtility.close(lookupTableResultSet);				
 			SQLQueryUtility.close(geographicAreaStatement);
 			SQLQueryUtility.close(geographicAreaResultSet);			
 		}
@@ -870,34 +866,35 @@ final class SQLRIFContextManager
 			null,
 			geoLevelSelect);
 		
-		ArrayList<GeoLevelView> results = new ArrayList<GeoLevelView>();
-		
-		//Create SQL query		
-		SQLSelectQueryFormatter geoLevelIDQueryFormatter 
-			= new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(geoLevelIDQueryFormatter);
-		geoLevelIDQueryFormatter.addSelectField("geolevel_id");
-		geoLevelIDQueryFormatter.addFromTable("rif40_geolevels");
-		geoLevelIDQueryFormatter.addWhereParameter("geography");
-		geoLevelIDQueryFormatter.addWhereParameter("geolevel_name");
-
-		logSQLQuery(
-			"geoLevelIDQuery",
-			geoLevelIDQueryFormatter,
-			geography.getName());
-				
 		PreparedStatement geoLevelIDStatement = null;
 		ResultSet geoLevelIDResultSet = null;			
-
+		PreparedStatement geoLevelViewsStatement = null;
+		ResultSet geoLevelViewsResultSet = null;
+		Integer geoLevelID = null;
 		String errorMessage
 			= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelView");
 		RIFServiceException rifServiceException
 			= new RIFServiceException(
 				RIFServiceError.GET_GEOLEVEL_VIEW_VALUES,
 				errorMessage);	
-		
-		Integer geoLevelID = null;
+		ArrayList<GeoLevelView> results = new ArrayList<GeoLevelView>();
 		try {
+			
+			//Create SQL query		
+			SQLSelectQueryFormatter geoLevelIDQueryFormatter 
+				= new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(geoLevelIDQueryFormatter);
+			geoLevelIDQueryFormatter.addSelectField("geolevel_id");
+			geoLevelIDQueryFormatter.addFromTable("rif40_geolevels");
+			geoLevelIDQueryFormatter.addWhereParameter("geography");
+			geoLevelIDQueryFormatter.addWhereParameter("geolevel_name");
+
+			logSQLQuery(
+				"geoLevelIDQuery",
+				geoLevelIDQueryFormatter,
+				geography.getName());
+				
+		
 			geoLevelIDStatement
 				= connection.prepareStatement(geoLevelIDQueryFormatter.generateQuery());
 			geoLevelIDStatement.setString(1, geography.getName());
@@ -910,62 +907,52 @@ final class SQLRIFContextManager
 			else {
 				geoLevelID = geoLevelIDResultSet.getInt(1);
 			}
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version			
-			logSQLException(sqlException);
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLRIFContextManager.class, 
-				errorMessage, 
-				sqlException);										
-						
-			throw rifServiceException;
-		}
-		finally {
-			//Cleanup database resources			
-			SQLQueryUtility.close(geoLevelIDStatement);
-			SQLQueryUtility.close(geoLevelIDResultSet);			
-		}
-		if (geoLevelID == null) {
-			throw rifServiceException;
-		}
-		
-		PreparedStatement geoLevelViewsStatement = null;
-		ResultSet geoLevelViewsResultSet = null;
-		SQLSelectQueryFormatter geoLevelViewsQueryFormatter 
-			= new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(geoLevelViewsQueryFormatter);
-		geoLevelViewsQueryFormatter.addSelectField("geolevel_name");
-		geoLevelViewsQueryFormatter.addFromTable("rif40_geolevels");
-		geoLevelViewsQueryFormatter.addWhereParameter("geography");
-		geoLevelViewsQueryFormatter.addWhereParameterWithOperator("geolevel_id",">");
-		geoLevelViewsQueryFormatter.addOrderByCondition("geolevel_name");
 
+			if (geoLevelID == null) {
+				
+				connection.commit();
 
-		logSQLQuery(
-			"geoLevelViewsQuery",
-			geoLevelIDQueryFormatter,
-			geography.getName(),
-			String.valueOf(geoLevelID.intValue()));
+				throw rifServiceException;
+			}
 		
-		try {
+			SQLSelectQueryFormatter geoLevelViewsQueryFormatter 
+				= new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(geoLevelViewsQueryFormatter);
+			geoLevelViewsQueryFormatter.addSelectField("geolevel_name");
+			geoLevelViewsQueryFormatter.addFromTable("rif40_geolevels");
+			geoLevelViewsQueryFormatter.addWhereParameter("geography");
+			geoLevelViewsQueryFormatter.addWhereParameterWithOperator("geolevel_id",">");
+			geoLevelViewsQueryFormatter.addOrderByCondition("geolevel_name");
+
+			logSQLQuery(
+				"geoLevelViewsQuery",
+				geoLevelIDQueryFormatter,
+				geography.getName(),
+				String.valueOf(geoLevelID.intValue()));
+		
 			geoLevelViewsStatement
 				= connection.prepareStatement(
 					geoLevelViewsQueryFormatter.generateQuery());
 			geoLevelViewsStatement.setString(1, geography.getName());
 			geoLevelViewsStatement.setInt(2, geoLevelID.intValue());
 			geoLevelViewsResultSet = geoLevelViewsStatement.executeQuery();
+			connection.commit();
 			
 			while (geoLevelViewsResultSet.next()) {
 				GeoLevelView geoLevelView 
 					= GeoLevelView.newInstance(geoLevelViewsResultSet.getString(1));
 				results.add(geoLevelView);
-			}			
+			}
+			
+			connection.commit();
+			
+			return results;
+			
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
@@ -976,11 +963,11 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources			
+			SQLQueryUtility.close(geoLevelIDStatement);
+			SQLQueryUtility.close(geoLevelIDResultSet);			
 			SQLQueryUtility.close(geoLevelViewsStatement);
 			SQLQueryUtility.close(geoLevelViewsResultSet);			
-		}
-		
-		return results;
+		}		
 	}
 		
 	/**
@@ -1005,33 +992,33 @@ final class SQLRIFContextManager
 			null,
 			geoLevelSelect);
 				
-		ArrayList<GeoLevelToMap> results = new ArrayList<GeoLevelToMap>();
-			
-		//Create SQL query		
-		SQLSelectQueryFormatter geoLevelIDQueryFormatter 
-			= new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(geoLevelIDQueryFormatter);
-		geoLevelIDQueryFormatter.addSelectField("geolevel_id");
-		geoLevelIDQueryFormatter.addFromTable("rif40_geolevels");
-		geoLevelIDQueryFormatter.addWhereParameter("geography");
-		geoLevelIDQueryFormatter.addWhereParameter("geolevel_name");
-
-		logSQLQuery(
-			"geoLevelIDQuery",
-			geoLevelIDQueryFormatter,
-			geography.getName(),
-			geoLevelSelect.getName());
-			
 		PreparedStatement geoLevelIDStatement = null;
-		ResultSet geoLevelIDResultSet = null;			
-			
+		ResultSet geoLevelIDResultSet = null;						
+		PreparedStatement geoLevelToMapStatement = null;
+		ResultSet geoLevelToMapResultSet = null;
 		Integer geoLevelID = null;
+		ArrayList<GeoLevelToMap> results = new ArrayList<GeoLevelToMap>();
 		try {
+			
+			//Create SQL query		
+			SQLSelectQueryFormatter geoLevelIDQueryFormatter 
+				= new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(geoLevelIDQueryFormatter);
+			geoLevelIDQueryFormatter.addSelectField("geolevel_id");
+			geoLevelIDQueryFormatter.addFromTable("rif40_geolevels");
+			geoLevelIDQueryFormatter.addWhereParameter("geography");
+			geoLevelIDQueryFormatter.addWhereParameter("geolevel_name");
+
+			logSQLQuery(
+				"geoLevelIDQuery",
+				geoLevelIDQueryFormatter,
+				geography.getName(),
+				geoLevelSelect.getName());
+			
 			geoLevelIDStatement
 				= connection.prepareStatement(geoLevelIDQueryFormatter.generateQuery());
 			geoLevelIDStatement.setString(1, geography.getName());
 			geoLevelIDStatement.setString(2, geoLevelSelect.getName());
-			geoLevelIDResultSet = geoLevelIDStatement.executeQuery();	
 			if (geoLevelIDResultSet.next() == false) {
 				//ERROR: no views available
 				String errorMessage
@@ -1039,22 +1026,71 @@ final class SQLRIFContextManager
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
 						RIFServiceError.GET_GEOLEVEL_TO_MAP_VALUES,
-						errorMessage);	
+						errorMessage);
+
+				connection.commit();
+				
 				throw rifServiceException;
 			}
 			else {
 				geoLevelID = geoLevelIDResultSet.getInt(1);
 			}
+
+			if (geoLevelID == null) {
+				String errorMessage
+					= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelToMap");
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.GET_GEOLEVEL_TO_MAP_VALUES,
+						errorMessage);
+			
+				connection.commit();
+				
+				throw rifServiceException;
+			}
+			
+			SQLSelectQueryFormatter geoLevelToMapQueryFormatter 
+				= new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(geoLevelToMapQueryFormatter);
+			geoLevelToMapQueryFormatter.addSelectField("geolevel_name");
+			geoLevelToMapQueryFormatter.addFromTable("rif40_geolevels");
+			geoLevelToMapQueryFormatter.addWhereParameter("geography");
+			geoLevelToMapQueryFormatter.addWhereParameterWithOperator("geolevel_id",">");
+			geoLevelToMapQueryFormatter.addOrderByCondition("geolevel_name");
+		
+			logSQLQuery(
+				"geoLevelToMapQueryFormatter",
+				geoLevelToMapQueryFormatter,
+				geography.getName(),
+				String.valueOf(geoLevelID));
+		
+			geoLevelToMapStatement
+				= connection.prepareStatement(geoLevelToMapQueryFormatter.generateQuery());
+			geoLevelToMapStatement.setString(1, geography.getName());
+			geoLevelToMapStatement.setInt(2, geoLevelID.intValue());
+			geoLevelToMapResultSet = geoLevelToMapStatement.executeQuery();
+			connection.commit();
+			
+			while (geoLevelToMapResultSet.next()) {
+				GeoLevelToMap geoLevelToMap
+					= GeoLevelToMap.newInstance(geoLevelToMapResultSet.getString(1));
+				results.add(geoLevelToMap);
+			}			
+			
+			connection.commit();
+			
+			return results;
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelToMap");
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.GET_GEOLEVEL_TO_MAP_VALUES,
-					errorMessage);	
+					errorMessage);
 
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
@@ -1068,72 +1104,10 @@ final class SQLRIFContextManager
 			//Cleanup database resources			
 			SQLQueryUtility.close(geoLevelIDStatement);
 			SQLQueryUtility.close(geoLevelIDResultSet);			
-		}
-		if (geoLevelID == null) {
-			String errorMessage
-				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelToMap");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.GET_GEOLEVEL_TO_MAP_VALUES,
-					errorMessage);
-			throw rifServiceException;
-		}
-			
-		PreparedStatement geoLevelToMapStatement = null;
-		ResultSet geoLevelToMapResultSet = null;
-		SQLSelectQueryFormatter geoLevelToMapQueryFormatter 
-			= new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(geoLevelToMapQueryFormatter);
-		geoLevelToMapQueryFormatter.addSelectField("geolevel_name");
-		geoLevelToMapQueryFormatter.addFromTable("rif40_geolevels");
-		geoLevelToMapQueryFormatter.addWhereParameter("geography");
-		geoLevelToMapQueryFormatter.addWhereParameterWithOperator("geolevel_id",">");
-		geoLevelToMapQueryFormatter.addOrderByCondition("geolevel_name");
-		
-		logSQLQuery(
-			"geoLevelToMapQueryFormatter",
-			geoLevelToMapQueryFormatter,
-			geography.getName(),
-			String.valueOf(geoLevelID));
-		
-		try {
-			geoLevelToMapStatement
-				= connection.prepareStatement(geoLevelToMapQueryFormatter.generateQuery());
-			geoLevelToMapStatement.setString(1, geography.getName());
-			geoLevelToMapStatement.setInt(2, geoLevelID.intValue());
-			geoLevelToMapResultSet = geoLevelToMapStatement.executeQuery();
-			
-			while (geoLevelToMapResultSet.next()) {
-				GeoLevelToMap geoLevelToMap
-					= GeoLevelToMap.newInstance(geoLevelToMapResultSet.getString(1));
-				results.add(geoLevelToMap);
-			}			
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version			
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelToMap");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.GET_GEOLEVEL_TO_MAP_VALUES,
-					errorMessage);
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLRIFContextManager.class, 
-				errorMessage, 
-				sqlException);										
-								
-			throw rifServiceException;
-		}
-		finally {
-			//Cleanup database resources			
 			SQLQueryUtility.close(geoLevelToMapStatement);
 			SQLQueryUtility.close(geoLevelToMapResultSet);			
 		}
 			
-		return results;		
 	}
 			
 	// ==========================================
@@ -1187,24 +1161,25 @@ final class SQLRIFContextManager
 		final Connection connection,
 		final String geographyName)
 		throws RIFServiceException {
-	
-		//Create SQL query
-		SQLRecordExistsQueryFormatter queryFormatter
-			= new SQLRecordExistsQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.setFromTable("rif40_geographies");
-		queryFormatter.setLookupKeyFieldName("geography");
 
-		logSQLQuery(
-			"checkGeographyExists",
-			queryFormatter,
-			geographyName);
-			
+		
 		PreparedStatement checkGeographyExistsStatement = null;
 		ResultSet checkGeographyExistsResultSet = null;
-		
-		//Parameterise and execute query
 		try {
+		
+			//Create SQL query
+			SQLRecordExistsQueryFormatter queryFormatter
+				= new SQLRecordExistsQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.setFromTable("rif40_geographies");
+			queryFormatter.setLookupKeyFieldName("geography");
+
+			logSQLQuery(
+				"checkGeographyExists",
+				queryFormatter,
+				geographyName);
+					
+			//Parameterise and execute query
 			checkGeographyExistsStatement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			checkGeographyExistsStatement.setString(1, geographyName);
@@ -1225,12 +1200,17 @@ final class SQLRIFContextManager
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_GEOGRAPHY, 
 						errorMessage);
+				
+				connection.commit();
 				throw rifServiceException;
 			}
+			
+			connection.commit();
 		}
 		catch(SQLException sqlException) {	
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("geography.label");
 			String errorMessage
@@ -1272,27 +1252,27 @@ final class SQLRIFContextManager
 		final String geoLevelSelectName)
 		throws RIFServiceException {
 
-		//Create SQL query
-		SQLRecordExistsQueryFormatter queryFormatter
-			= new SQLRecordExistsQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.setLookupKeyFieldName("geolevel_name");
-		queryFormatter.setFromTable("rif40_geolevels");
-		queryFormatter.addWhereParameter("geography");
-		queryFormatter.addWhereParameter("listing");
-
-		logSQLQuery(
-			"checkGeoLevelViewExistsQuery",
-			queryFormatter,
-			geoLevelSelectName,
-			geographyName,
-			String.valueOf(1));
-						
 		PreparedStatement checkGeoLevelViewExistsStatement = null;
 		ResultSet checkGeoLevelViewExistsResultSet = null;
-		
-		//Parameterise and execute query		
 		try {
+
+			//Create SQL query
+			SQLRecordExistsQueryFormatter queryFormatter
+				= new SQLRecordExistsQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.setLookupKeyFieldName("geolevel_name");
+			queryFormatter.setFromTable("rif40_geolevels");
+			queryFormatter.addWhereParameter("geography");
+			queryFormatter.addWhereParameter("listing");
+
+			logSQLQuery(
+				"checkGeoLevelViewExistsQuery",
+				queryFormatter,
+				geoLevelSelectName,
+				geographyName,
+				String.valueOf(1));
+					
+			//Parameterise and execute query		
 			checkGeoLevelViewExistsStatement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			checkGeoLevelViewExistsStatement.setString(1, geoLevelSelectName);
@@ -1300,7 +1280,7 @@ final class SQLRIFContextManager
 			checkGeoLevelViewExistsStatement.setInt(3, 1);
 			checkGeoLevelViewExistsResultSet 
 				= checkGeoLevelViewExistsStatement.executeQuery();
-			
+
 			if (checkGeoLevelViewExistsResultSet.next() == false) {
 				//ERROR: no such geography exists
 				String recordType
@@ -1314,12 +1294,19 @@ final class SQLRIFContextManager
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_GEOLEVEL_SELECT_VALUE, 
 						errorMessage);
+				
+				connection.commit();
+				
 				throw rifServiceException;
 			}
+			
+			connection.commit();
+			
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("geoLevelSelect.label");			
 			String errorMessage
@@ -1371,69 +1358,55 @@ final class SQLRIFContextManager
 				RIFServiceError.DB_UNABLE_CHECK_GEO_LEVEL_AREA_EXISTS,
 				unableToCheckGeoLevelArea);	
 		
-		SQLSelectQueryFormatter lookupTableQueryQueryFormatter = new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(lookupTableQueryQueryFormatter);
-		lookupTableQueryQueryFormatter.addSelectField("lookup_table");
-		lookupTableQueryQueryFormatter.addFromTable("rif40_geolevels");
-		lookupTableQueryQueryFormatter.addWhereParameter("geography");
-		lookupTableQueryQueryFormatter.addWhereParameter("geolevel_name");
-
-		logSQLQuery(
-			"lookupTableQuery",
-			lookupTableQueryQueryFormatter,
-			geographyName,
-			geoLevelSelectName,
-			String.valueOf(1));
-				
+		
 		String geoLevelSelectLookupTable = null;
 		PreparedStatement getLookupTableStatement = null;
+		PreparedStatement geoLevelAreaExistsStatement = null;
+		ResultSet geoLevelAreaExistsResultSet = null;
 		ResultSet getLookupTableResultSet = null;
 		try {
+			SQLSelectQueryFormatter lookupTableQueryQueryFormatter = new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(lookupTableQueryQueryFormatter);
+			lookupTableQueryQueryFormatter.addSelectField("lookup_table");
+			lookupTableQueryQueryFormatter.addFromTable("rif40_geolevels");
+			lookupTableQueryQueryFormatter.addWhereParameter("geography");
+			lookupTableQueryQueryFormatter.addWhereParameter("geolevel_name");
+
+			logSQLQuery(
+				"lookupTableQuery",
+				lookupTableQueryQueryFormatter,
+				geographyName,
+				geoLevelSelectName,
+				String.valueOf(1));
+
 			getLookupTableStatement 
-				= connection.prepareStatement(lookupTableQueryQueryFormatter.generateQuery());
+					= connection.prepareStatement(lookupTableQueryQueryFormatter.generateQuery());
 			getLookupTableStatement.setString(1, geographyName);
 			getLookupTableStatement.setString(2, geoLevelSelectName);
 			getLookupTableResultSet
 				= getLookupTableStatement.executeQuery();
 			getLookupTableResultSet.next();
 			geoLevelSelectLookupTable = getLookupTableResultSet.getString(1);			
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version						
-			logSQLException(sqlException);
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLRIFContextManager.class, 
-				unableToCheckGeoLevelArea, 
-				sqlException);										
 			
-			throw unableToCheckGeoLevelAreaExistsException;
-		}
-		finally {
-			//Cleanup database resources			
-			SQLQueryUtility.close(getLookupTableStatement);
-			SQLQueryUtility.close(getLookupTableResultSet);			
-		}
+
+			if (geoLevelSelectLookupTable == null) {
+				
+				connection.commit();
+				
+				return;
+			}
 		
-		if (geoLevelSelectLookupTable == null) {
-			return;
-		}
+			//Check whether the name exists
+			SQLRecordExistsQueryFormatter recordExistsQueryFormatter 
+				= new SQLRecordExistsQueryFormatter();
+			recordExistsQueryFormatter.setFromTable(geoLevelSelectLookupTable);
+			recordExistsQueryFormatter.setLookupKeyFieldName("name");
 		
-		//Check whether the name exists
-		SQLRecordExistsQueryFormatter recordExistsQueryFormatter 
-			= new SQLRecordExistsQueryFormatter();
-		recordExistsQueryFormatter.setFromTable(geoLevelSelectLookupTable);
-		recordExistsQueryFormatter.setLookupKeyFieldName("name");
+			logSQLQuery(
+				"checkGeoLevelSelectExistsQuery",
+				recordExistsQueryFormatter,
+				geoLevelAreaName);
 		
-		logSQLQuery(
-			"checkGeoLevelSelectExistsQuery",
-			recordExistsQueryFormatter,
-			geoLevelAreaName);
-		
-		PreparedStatement geoLevelAreaExistsStatement = null;
-		ResultSet geoLevelAreaExistsResultSet = null;
-		
-		try {
 			geoLevelAreaExistsStatement
 				= connection.prepareStatement(recordExistsQueryFormatter.generateQuery());
 			geoLevelAreaExistsStatement.setString(1, geoLevelAreaName);
@@ -1453,12 +1426,19 @@ final class SQLRIFContextManager
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_GEOLEVEL_AREA_VALUE,
 						errorMessage);
+
+				connection.commit();
+				
 				throw rifServiceException;
 			}
+			
+			connection.commit();
+
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
@@ -1468,6 +1448,8 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources
+			SQLQueryUtility.close(getLookupTableStatement);
+			SQLQueryUtility.close(getLookupTableResultSet);			
 			SQLQueryUtility.close(getLookupTableStatement);
 			SQLQueryUtility.close(getLookupTableResultSet);			
 		}	
@@ -1490,25 +1472,12 @@ final class SQLRIFContextManager
 		final String geoLevelValueName,
 		final boolean isToMapValue) 
 		throws RIFServiceException {
-				
-		//Obtain the minimimum geolevel ID that the geoLevelMap needs to have
-		SQLSelectQueryFormatter geoLevelIDQueryFormatter 
-			= new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(geoLevelIDQueryFormatter);		
-		geoLevelIDQueryFormatter.addSelectField("geolevel_id");
-		geoLevelIDQueryFormatter.addFromTable("rif40_geolevels");
-		geoLevelIDQueryFormatter.addWhereParameter("geography");
-		geoLevelIDQueryFormatter.addWhereParameter("geolevel_name");
-			
-		logSQLQuery(
-			"geoLevelIDQuery",
-			geoLevelIDQueryFormatter,
-			geographyName,
-			geoLevelSelectName);
-					
+
 		PreparedStatement geoLevelIDStatement = null;
 		ResultSet geoLevelIDResultSet = null;			
-
+		PreparedStatement geoLevelValueExistsStatement = null;
+		ResultSet geoLevelValueExistsResultSet = null;
+		Integer geoLevelID = null;
 		RIFServiceException unableToCheckValueExistsException = null;
 		String unableToGetGeoLevelToMap
 			= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelToMap");
@@ -1527,9 +1496,24 @@ final class SQLRIFContextManager
 					RIFServiceError.GET_GEOLEVEL_VIEW_VALUES,
 					unableToGetGeoLevelView);			
 		}
-			
-		Integer geoLevelID = null;
+
 		try {
+		
+			//Obtain the minimimum geolevel ID that the geoLevelMap needs to have
+			SQLSelectQueryFormatter geoLevelIDQueryFormatter 
+				= new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(geoLevelIDQueryFormatter);		
+			geoLevelIDQueryFormatter.addSelectField("geolevel_id");
+			geoLevelIDQueryFormatter.addFromTable("rif40_geolevels");
+			geoLevelIDQueryFormatter.addWhereParameter("geography");
+			geoLevelIDQueryFormatter.addWhereParameter("geolevel_name");
+			
+			logSQLQuery(
+				"geoLevelIDQuery",
+				geoLevelIDQueryFormatter,
+				geographyName,
+				geoLevelSelectName);
+					
 			geoLevelIDStatement
 				= connection.prepareStatement(geoLevelIDQueryFormatter.generateQuery());
 			geoLevelIDStatement.setString(1, geographyName);
@@ -1537,46 +1521,29 @@ final class SQLRIFContextManager
 			geoLevelIDResultSet = geoLevelIDStatement.executeQuery();	
 			if (geoLevelIDResultSet.next() == false) {
 				//ERROR: no views available
+				
+				connection.commit();
+				
 				throw unableToCheckValueExistsException;
 			}
 			else {
 				geoLevelID = geoLevelIDResultSet.getInt(1);
 			}
-		}	
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version						
-			logSQLException(sqlException);
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLRIFContextManager.class, 
-				unableToGetGeoLevelToMap, 
-				sqlException);			
-										
-			throw unableToCheckValueExistsException;
-		}
-		finally {
-			//Cleanup database resources			
-			SQLQueryUtility.close(geoLevelIDStatement);
-			SQLQueryUtility.close(geoLevelIDResultSet);			
-		}
+			
+			SQLRecordExistsQueryFormatter geoLevelMapExistsQueryFormatter
+				= new SQLRecordExistsQueryFormatter();
+			configureQueryFormatterForDB(geoLevelMapExistsQueryFormatter);		
+			geoLevelMapExistsQueryFormatter.setFromTable("rif40_geolevels");
+			geoLevelMapExistsQueryFormatter.addWhereParameter("geography");
+			geoLevelMapExistsQueryFormatter.addWhereParameterWithOperator("geolevel_id",">");
+			geoLevelMapExistsQueryFormatter.addWhereParameter("geolevel_name");
 		
-		PreparedStatement geoLevelValueExistsStatement = null;
-		ResultSet geoLevelValueExistsResultSet = null;
-		SQLRecordExistsQueryFormatter geoLevelMapExistsQueryFormatter
-			= new SQLRecordExistsQueryFormatter();
-		configureQueryFormatterForDB(geoLevelMapExistsQueryFormatter);		
-		geoLevelMapExistsQueryFormatter.setFromTable("rif40_geolevels");
-		geoLevelMapExistsQueryFormatter.addWhereParameter("geography");
-		geoLevelMapExistsQueryFormatter.addWhereParameterWithOperator("geolevel_id",">");
-		geoLevelMapExistsQueryFormatter.addWhereParameter("geolevel_name");
-		
-		logSQLQuery(
-			"geoLevelMapExistsQuery",
-			geoLevelMapExistsQueryFormatter,
-			geographyName,
-			geoLevelSelectName);
+			logSQLQuery(
+				"geoLevelMapExistsQuery",
+				geoLevelMapExistsQueryFormatter,
+				geographyName,
+				geoLevelSelectName);
 				
-		try {
 			geoLevelValueExistsStatement
 				= connection.prepareStatement(geoLevelMapExistsQueryFormatter.generateQuery());
 			geoLevelValueExistsStatement.setString(1, geographyName);
@@ -1600,6 +1567,9 @@ final class SQLRIFContextManager
 						= new RIFServiceException(
 							RIFServiceError.NON_EXISTENT_GEOLEVEL_TO_MAP_VALUE,
 							errorMessage);
+					
+					connection.commit();
+					
 					throw rifServiceException;
 				}
 				else {
@@ -1616,13 +1586,19 @@ final class SQLRIFContextManager
 						= new RIFServiceException(
 							RIFServiceError.NON_EXISTENT_GEOLEVEL_VIEW_VALUE,
 							errorMessage);
+					
+					connection.commit();
+					
 					throw rifServiceException;
 				}
 			}
+			
+			connection.commit();
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
@@ -1633,6 +1609,8 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources			
+			SQLQueryUtility.close(geoLevelIDStatement);
+			SQLQueryUtility.close(geoLevelIDResultSet);			
 			SQLQueryUtility.close(geoLevelValueExistsStatement);
 			SQLQueryUtility.close(geoLevelValueExistsResultSet);			
 		}				
@@ -1676,7 +1654,6 @@ final class SQLRIFContextManager
 			= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelToMap");
 		String unableToGetGeoLevelView
 			= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelView");
-
 		if (isToMapValue == true) {
 			unableToCheckValueExistsException
 				= new RIFServiceException(
@@ -1697,7 +1674,10 @@ final class SQLRIFContextManager
 			statement.setString(2, geographyName);
 			
 			resultSet = statement.executeQuery();
+			connection.commit();
 			if (resultSet.next() == false) {
+
+				connection.commit();
 				
 				if (isToMapValue == true) {
 					String recordType = RIFServiceMessages.getMessage("geoLevelToMap.label");
@@ -1712,6 +1692,7 @@ final class SQLRIFContextManager
 						= new RIFServiceException(
 							RIFServiceError.NON_EXISTENT_GEOLEVEL_TO_MAP_VALUE, 
 							errorMessage);
+										
 					throw rifServiceException;				
 				}
 				else {
@@ -1727,14 +1708,18 @@ final class SQLRIFContextManager
 						= new RIFServiceException(
 							RIFServiceError.NON_EXISTENT_GEOLEVEL_VIEW_VALUE, 
 							errorMessage);
+					
 					throw rifServiceException;				
 				}				
 			}
+			
+			connection.commit();
 			
 		}	
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
@@ -1763,20 +1748,20 @@ final class SQLRIFContextManager
 		final String healthThemeDescription)
 		throws RIFServiceException {
 
-		SQLRecordExistsQueryFormatter queryFormatter
-			= new SQLRecordExistsQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);		
-		queryFormatter.setLookupKeyFieldName("theme");
-		queryFormatter.setFromTable("rif40_health_study_themes");
-
-		logSQLQuery(
-			"checkHealthThemeExists",
-			queryFormatter,
-			healthThemeDescription);
-				
 		PreparedStatement checkHealthThemeExistsStatement = null;
 		ResultSet checkHealthThemeExistsResultSet = null;
 		try {
+			SQLRecordExistsQueryFormatter queryFormatter
+				= new SQLRecordExistsQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);		
+			queryFormatter.setLookupKeyFieldName("theme");
+			queryFormatter.setFromTable("rif40_health_study_themes");
+
+			logSQLQuery(
+				"checkHealthThemeExists",
+				queryFormatter,
+				healthThemeDescription);
+				
 			checkHealthThemeExistsStatement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			checkHealthThemeExistsStatement.setString(1, healthThemeDescription);
@@ -1796,12 +1781,19 @@ final class SQLRIFContextManager
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_HEALTH_THEME,
 						errorMessage);
+				
+				connection.commit();
+				
 				throw rifServiceException;
 			}
+			
+			connection.commit();
+			
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("healthTheme.label");
 			String errorMessage
@@ -1843,24 +1835,24 @@ final class SQLRIFContextManager
 		final NumeratorDenominatorPair ndPair) 
 		throws RIFServiceException {
 				
-		SQLRecordExistsQueryFormatter ndPairExistsQueryFormatter
-			= new SQLRecordExistsQueryFormatter();
-		configureQueryFormatterForDB(ndPairExistsQueryFormatter);		
-		ndPairExistsQueryFormatter.setFromTable("rif40_num_denom");
-		ndPairExistsQueryFormatter.addWhereParameter("geography");
-		ndPairExistsQueryFormatter.addWhereParameter("numerator_table");
-		ndPairExistsQueryFormatter.addWhereParameter("denominator_table");
-
-		logSQLQuery(
-			"ndPairExistsQuery",
-			ndPairExistsQueryFormatter,
-			geography.getName(),
-			ndPair.getNumeratorTableName(),
-			ndPair.getDenominatorTableName());
-		
 		PreparedStatement getNDPairExistsStatement = null;
 		ResultSet getNDPairExistsResultSet = null;
 		try {
+			SQLRecordExistsQueryFormatter ndPairExistsQueryFormatter
+				= new SQLRecordExistsQueryFormatter();
+			configureQueryFormatterForDB(ndPairExistsQueryFormatter);		
+			ndPairExistsQueryFormatter.setFromTable("rif40_num_denom");
+			ndPairExistsQueryFormatter.addWhereParameter("geography");
+			ndPairExistsQueryFormatter.addWhereParameter("numerator_table");
+			ndPairExistsQueryFormatter.addWhereParameter("denominator_table");
+
+			logSQLQuery(
+				"ndPairExistsQuery",
+				ndPairExistsQueryFormatter,
+				geography.getName(),
+				ndPair.getNumeratorTableName(),
+				ndPair.getDenominatorTableName());
+		
 			getNDPairExistsStatement
 				= connection.prepareStatement(ndPairExistsQueryFormatter.generateQuery());
 			getNDPairExistsStatement.setString(1, geography.getName());
@@ -1869,6 +1861,7 @@ final class SQLRIFContextManager
 
 			getNDPairExistsResultSet
 				= getNDPairExistsStatement.executeQuery();
+			connection.commit();
 			if (getNDPairExistsResultSet.next() == false) {
 				//no such ND pair exists
 				String errorMessage
@@ -1880,13 +1873,17 @@ final class SQLRIFContextManager
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_ND_PAIR, 
 						errorMessage);
-				
+
+				connection.commit();
 				throw rifServiceException;
 			}
+			
+			connection.commit();
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);			
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
@@ -1926,22 +1923,22 @@ final class SQLRIFContextManager
 		final String numeratorTableName) 
 		throws RIFServiceException {
 				
-		SQLRecordExistsQueryFormatter queryFormatter
-			= new SQLRecordExistsQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);		
-		queryFormatter.setFromTable("rif40_num_denom");
-		queryFormatter.addWhereParameter("geography");
-		queryFormatter.addWhereParameter("numerator_table");
-
-		logSQLQuery(
-			"checkNumeratorTableExists",
-			queryFormatter,
-			geography.getName(),
-			numeratorTableName);
-
 		PreparedStatement getNDPairExistsStatement = null;
 		ResultSet getNDPairExistsResultSet = null;
 		try {
+			SQLRecordExistsQueryFormatter queryFormatter
+				= new SQLRecordExistsQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);		
+			queryFormatter.setFromTable("rif40_num_denom");
+			queryFormatter.addWhereParameter("geography");
+			queryFormatter.addWhereParameter("numerator_table");
+
+			logSQLQuery(
+				"checkNumeratorTableExists",
+				queryFormatter,
+				geography.getName(),
+				numeratorTableName);
+
 			getNDPairExistsStatement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			getNDPairExistsStatement.setString(1, geography.getName());
@@ -1962,12 +1959,19 @@ final class SQLRIFContextManager
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_NUMERATOR_TABLE, 
 						errorMessage);				
+				
+				connection.commit();
+
 				throw rifServiceException;
 			}
+
+			connection.commit();
+
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);			
 			String recordType
 				= RIFServiceMessages.getMessage("numeratorDenominatorPair.numerator.label");
 			String errorMessage

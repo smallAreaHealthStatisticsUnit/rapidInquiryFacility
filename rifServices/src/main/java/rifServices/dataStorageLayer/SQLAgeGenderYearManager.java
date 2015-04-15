@@ -142,32 +142,37 @@ final class SQLAgeGenderYearManager
 			connection,
 			geography,
 			ndPair);
-		
-		//Create query
-		Integer ageGroupID = null;
-		SQLSelectQueryFormatter getAgeIDQueryFormatter 
-			= new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(getAgeIDQueryFormatter);
-		getAgeIDQueryFormatter.addSelectField("age_group_id");
-		getAgeIDQueryFormatter.addFromTable("rif40_tables");
-		getAgeIDQueryFormatter.addWhereParameter("table_name");
-		getAgeIDQueryFormatter.addWhereParameter("isnumerator");
-				
-		logSQLQuery(
-			"getAgeIDQuery",
-			getAgeIDQueryFormatter,
-			ndPair.getNumeratorTableName(),
-			String.valueOf(1));
-		
+
 		PreparedStatement getAgeIDStatement = null;
 		ResultSet getAgeIDResultSet = null;
+		PreparedStatement getAgesForAgeGroupStatement = null;
+		ResultSet getAgesForAgeGroupResultSet = null;
+		ArrayList<AgeGroup> results = new ArrayList<AgeGroup>();		
 		try {
+
+			//Create query
+			Integer ageGroupID = null;
+			SQLSelectQueryFormatter getAgeIDQueryFormatter 
+				= new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(getAgeIDQueryFormatter);
+			getAgeIDQueryFormatter.addSelectField("age_group_id");
+			getAgeIDQueryFormatter.addFromTable("rif40_tables");
+			getAgeIDQueryFormatter.addWhereParameter("table_name");
+			getAgeIDQueryFormatter.addWhereParameter("isnumerator");
+				
+			logSQLQuery(
+				"getAgeIDQuery",
+				getAgeIDQueryFormatter,
+				ndPair.getNumeratorTableName(),
+				String.valueOf(1));
+		
 			getAgeIDStatement
 				= connection.prepareStatement(getAgeIDQueryFormatter.generateQuery());
 			getAgeIDStatement.setString(1, ndPair.getNumeratorTableName());
 			//set isnumerator flag to 'true'
 			getAgeIDStatement.setInt(2, 1);
 			getAgeIDResultSet = getAgeIDStatement.executeQuery();
+			
 			if (getAgeIDResultSet.next() == false) {
 				//ERROR: No entry available
 				String errorMessage
@@ -178,111 +183,90 @@ final class SQLAgeGenderYearManager
 					= new RIFServiceException(
 						RIFServiceError.NO_AGE_GROUP_ID_FOR_NUMERATOR, 
 						errorMessage);
+
+				connection.commit();
+				
 				throw rifServiceException;
 			}
 			else {
 				ageGroupID = getAgeIDResultSet.getInt(1);
 			}
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlAgeGenderYearManager.error.unableToGetAgeGroupID",
-					ndPair.getNumeratorTableDescription());
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLAgeGenderYearManager.class, 
-				errorMessage, 
-				sqlException);
 			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			//Cleanup database resources			
-			SQLQueryUtility.close(getAgeIDStatement);
-			SQLQueryUtility.close(getAgeIDResultSet);			
-		}
-
-		ArrayList<AgeGroup> results = new ArrayList<AgeGroup>();		
-		if (ageGroupID == null) {
-			return results;
-		}
-		
-		//Step II: Obtain the list of age groups that are appropriate
-		//for the age group ID associated with the numerator table
-		//The age group id helps group together age groups based on different
-		//needs.  "1" may represent the standard breakdown of age ranges.
-		//"2" may represent age ranges that are broken down every 4 years
-		//After obtaining the list of age groups having the correct age group id
-		//sort them by low_age
-		SQLSelectQueryFormatter getAgesForAgeGroupID 
-			= new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(getAgesForAgeGroupID);
-
-		getAgesForAgeGroupID.addSelectField("age_group_id");
-		getAgesForAgeGroupID.addSelectField("low_age");
-		getAgesForAgeGroupID.addSelectField("high_age");
-		getAgesForAgeGroupID.addSelectField("fieldname");
-		getAgesForAgeGroupID.addFromTable("rif40_age_groups");
-		getAgesForAgeGroupID.addWhereParameter("age_group_id");
-		
-		if ((sortingOrder == null) ||
-			(sortingOrder == AgeGroupSortingOption.ASCENDING_LOWER_LIMIT)) {
-			getAgesForAgeGroupID.addOrderByCondition(
-				"low_age", 
-				SQLSelectQueryFormatter.SortOrder.ASCENDING);			
-		}
-		else if (sortingOrder == AgeGroupSortingOption.DESCENDING_LOWER_LIMIT) {
-			getAgesForAgeGroupID.addOrderByCondition(
-				"low_age",
-				SQLSelectQueryFormatter.SortOrder.DESCENDING);
-		}
-		else if (sortingOrder == AgeGroupSortingOption.ASCENDING_UPPER_LIMIT) {
-			getAgesForAgeGroupID.addOrderByCondition(
-				"high_age",
-				SQLSelectQueryFormatter.SortOrder.ASCENDING);		
-		}
-		else {
-			//it must be descending lower limit.		
-			getAgesForAgeGroupID.addOrderByCondition(
-				"high_age",
-				SQLSelectQueryFormatter.SortOrder.DESCENDING);		
-			assert sortingOrder == AgeGroupSortingOption.DESCENDING_UPPER_LIMIT;			
-		}
-
-		logSQLQuery(
-			"getAgesForAgeGroupIDQuery",
-			getAgesForAgeGroupID,
-			String.valueOf(ageGroupID));
+			if (ageGroupID == null) {
 				
-		//Execute query and generate results
-		PreparedStatement statement = null;
-		ResultSet dbResultSet = null;
-		try {
-			statement 
-				= connection.prepareStatement(getAgesForAgeGroupID.generateQuery());
-			statement.setInt(1, ageGroupID);
-			dbResultSet = statement.executeQuery();
+				connection.commit();
+				return results;
+			}
+		
+			//Step II: Obtain the list of age groups that are appropriate
+			//for the age group ID associated with the numerator table
+			//The age group id helps group together age groups based on different
+			//needs.  "1" may represent the standard breakdown of age ranges.
+			//"2" may represent age ranges that are broken down every 4 years
+			//After obtaining the list of age groups having the correct age group id
+			//sort them by low_age
+			SQLSelectQueryFormatter getAgesForAgeGroupID 
+				= new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(getAgesForAgeGroupID);
 
-			while (dbResultSet.next()) {
+			getAgesForAgeGroupID.addSelectField("age_group_id");
+			getAgesForAgeGroupID.addSelectField("low_age");
+			getAgesForAgeGroupID.addSelectField("high_age");
+			getAgesForAgeGroupID.addSelectField("fieldname");
+			getAgesForAgeGroupID.addFromTable("rif40_age_groups");
+			getAgesForAgeGroupID.addWhereParameter("age_group_id");
+		
+			if ((sortingOrder == null) ||
+				(sortingOrder == AgeGroupSortingOption.ASCENDING_LOWER_LIMIT)) {
+				getAgesForAgeGroupID.addOrderByCondition(
+					"low_age", 
+					SQLSelectQueryFormatter.SortOrder.ASCENDING);			
+			}
+			else if (sortingOrder == AgeGroupSortingOption.DESCENDING_LOWER_LIMIT) {
+				getAgesForAgeGroupID.addOrderByCondition(
+					"low_age",
+					SQLSelectQueryFormatter.SortOrder.DESCENDING);
+			}
+			else if (sortingOrder == AgeGroupSortingOption.ASCENDING_UPPER_LIMIT) {
+				getAgesForAgeGroupID.addOrderByCondition(
+					"high_age",
+					SQLSelectQueryFormatter.SortOrder.ASCENDING);		
+			}
+			else {
+				//it must be descending lower limit.		
+				getAgesForAgeGroupID.addOrderByCondition(
+					"high_age",
+					SQLSelectQueryFormatter.SortOrder.DESCENDING);		
+				assert sortingOrder == AgeGroupSortingOption.DESCENDING_UPPER_LIMIT;			
+			}
+
+			logSQLQuery(
+				"getAgesForAgeGroupIDQuery",
+				getAgesForAgeGroupID,
+				String.valueOf(ageGroupID));
+				
+			//Execute query and generate results
+			getAgesForAgeGroupStatement 
+				= connection.prepareStatement(getAgesForAgeGroupID.generateQuery());
+			getAgesForAgeGroupStatement.setInt(1, ageGroupID);
+			getAgesForAgeGroupResultSet = getAgesForAgeGroupStatement.executeQuery();
+			connection.commit();
+			
+			while (getAgesForAgeGroupResultSet.next()) {
 				AgeGroup ageGroup = AgeGroup.newInstance();
-				ageGroup.setIdentifier(String.valueOf(dbResultSet.getInt(1)));
-				ageGroup.setLowerLimit(String.valueOf(dbResultSet.getInt(2)));
-				ageGroup.setUpperLimit(String.valueOf(dbResultSet.getInt(3)));
-				ageGroup.setName(dbResultSet.getString(4));
+				ageGroup.setIdentifier(String.valueOf(getAgesForAgeGroupResultSet.getInt(1)));
+				ageGroup.setLowerLimit(String.valueOf(getAgesForAgeGroupResultSet.getInt(2)));
+				ageGroup.setUpperLimit(String.valueOf(getAgesForAgeGroupResultSet.getInt(3)));
+				ageGroup.setName(getAgesForAgeGroupResultSet.getString(4));
 				results.add(ageGroup);
 			}
+			
+			connection.commit();
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("ageGroup.error.unableToGetAgeGroups");
 
@@ -300,8 +284,10 @@ final class SQLAgeGenderYearManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(dbResultSet);
+			SQLQueryUtility.close(getAgeIDStatement);
+			SQLQueryUtility.close(getAgeIDResultSet);			
+			SQLQueryUtility.close(getAgesForAgeGroupStatement);
+			SQLQueryUtility.close(getAgesForAgeGroupResultSet);
 		}
 		return results;		
 	}
@@ -343,26 +329,26 @@ final class SQLAgeGenderYearManager
 			connection,
 			geography,
 			ndPair);
-		
-		//Create query
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.addSelectField("year_start");
-		queryFormatter.addSelectField("year_stop");
-		queryFormatter.addFromTable("rif40_tables");
-		queryFormatter.addWhereParameter("table_name");
 
-		logSQLQuery(
-			"getYearRange",
-			queryFormatter,
-			ndPair.getNumeratorTableName());
-				
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+
+			//Create query
+			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.addSelectField("year_start");
+			queryFormatter.addSelectField("year_stop");
+			queryFormatter.addFromTable("rif40_tables");
+			queryFormatter.addWhereParameter("table_name");
+
+			logSQLQuery(
+				"getYearRange",
+				queryFormatter,
+				ndPair.getNumeratorTableName());
+				
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
-			
-			
+						
 			//TOUR_SECURITY
 			/*
 			 * Using PreparedStatements means that even if the numerator table name
@@ -371,7 +357,6 @@ final class SQLAgeGenderYearManager
 			 */
 			statement.setString(1, ndPair.getNumeratorTableName());
 			resultSet = statement.executeQuery();
-			
 			//there should be exactly one result
 			if (resultSet.next() == false) {
 				//no entry found in the rif40 tables
@@ -383,6 +368,9 @@ final class SQLAgeGenderYearManager
 					= new RIFServiceException(
 						RIFServiceError.NO_START_END_YEAR_FOR_NUMERATOR, 
 						errorMessage);
+				
+				connection.commit();
+				
 				throw rifServiceException;
 			}
 			
@@ -392,6 +380,8 @@ final class SQLAgeGenderYearManager
 				= YearRange.newInstance(
 						String.valueOf(yearStartValue), 
 						String.valueOf(yearEndValue));
+			
+			connection.commit();
 			return result;
 		}
 		catch(SQLException sqlException) {	
@@ -404,6 +394,7 @@ final class SQLAgeGenderYearManager
 
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlAgeGenderYearManager.error.unableToGetStartEndYear",
@@ -484,35 +475,37 @@ final class SQLAgeGenderYearManager
 		final AgeGroup ageGroup) 
 		throws RIFServiceException {
 			
-		Integer id = Integer.valueOf(ageGroup.getIdentifier());
-		
-		//Create query
-		SQLRecordExistsQueryFormatter queryFormatter
-			= new SQLRecordExistsQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.setFromTable("rif40_age_groups");
-		queryFormatter.setLookupKeyFieldName("age_group_id");
-		queryFormatter.addWhereParameter("low_age");
-		queryFormatter.addWhereParameter("high_age");
-
-		logSQLQuery(
-			"getYearRange",
-			queryFormatter,
-			String.valueOf(id),
-			ageGroup.getLowerLimit(),
-			ageGroup.getUpperLimit());
-							
-		//Execute query and generate results
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+
+			Integer id = Integer.valueOf(ageGroup.getIdentifier());
+		
+			//Create query
+			SQLRecordExistsQueryFormatter queryFormatter
+				= new SQLRecordExistsQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.setFromTable("rif40_age_groups");
+			queryFormatter.setLookupKeyFieldName("age_group_id");
+			queryFormatter.addWhereParameter("low_age");
+			queryFormatter.addWhereParameter("high_age");
+
+			logSQLQuery(
+				"getYearRange",
+				queryFormatter,
+				String.valueOf(id),
+				ageGroup.getLowerLimit(),
+				ageGroup.getUpperLimit());
+							
+			//Execute query and generate results
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, id);
 			statement.setInt(2, Integer.valueOf(ageGroup.getLowerLimit()));
 			statement.setInt(3, Integer.valueOf(ageGroup.getUpperLimit()));
 				
-			resultSet = statement.executeQuery();		
+			resultSet = statement.executeQuery();
+			
 			if (resultSet.next() == false) {
 				//ERROR: no such age group exists
 				String recordType
@@ -527,12 +520,18 @@ final class SQLAgeGenderYearManager
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_AGE_GROUP, 
 						errorMessage);
+				
+				connection.commit();
+				
 				throw rifServiceException;
-			}		
+			}
+						
+			connection.commit();
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",

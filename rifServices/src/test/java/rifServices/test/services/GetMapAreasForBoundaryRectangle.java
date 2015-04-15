@@ -200,7 +200,8 @@ public final class GetMapAreasForBoundaryRectangle
 					validGeography, 
 					validGeoLevelSelect, 
 					validBoundaryRectangle);
-		
+			System.out.println("Result=="+result+"==");
+			
 			//@TODO: Develop a utility that extract gids from JSON stream and orders them.
 		}
 		catch(RIFServiceException rifServiceException) {

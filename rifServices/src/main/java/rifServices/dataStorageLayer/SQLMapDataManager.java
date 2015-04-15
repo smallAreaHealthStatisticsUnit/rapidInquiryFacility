@@ -204,135 +204,103 @@ final class SQLMapDataManager
 			geoLevelArea,
 			geoLevelToMap,
 			null);	
-		
-		//Step I: Obtain the lookup table associated with the resolution
-		//of geoLevelSelect (which is also the one used by geoLevelArea)
-		String geoLevelSelectTableName
-			= getGeoLevelLookupTableName(
-				connection,
-				geography,
-				geoLevelSelect.getName());
 
-		//Step II: Obtain the lookup table associated with the resolution
-		//of geoLevelToMap
-		String geoLevelToMapTableName
-			= getGeoLevelLookupTableName(
-				connection,
-				geography,
-				geoLevelToMap.getName());
-		
-		//Step III: Obtain the hierarchy table associated with this geography
-		String hierarchyTableName
-			=  getGeographyHierarchyTableName(connection, geography); 
-				
-		//Step IV: Assemble the query needed to extract the map areas
-		//of resolution geoLevelToMap but restricted to only those 
-		//having the specified geoLevelArea
-		
-		
-		//SQLCountQueryFormatter queryFormatter = new SQLCountQueryFormatter();
-		//queryFormatter.setCountField(countField);
-
-		/*
-		StringBuilder countMapAreasForExtentQuery = new StringBuilder();
-		countMapAreasForExtentQuery.append("SELECT ");
-		countMapAreasForExtentQuery.append("COUNT(");		
-		countMapAreasForExtentQuery.append(geoLevelToMapTableName);
-		countMapAreasForExtentQuery.append(".");
-		countMapAreasForExtentQuery.append(geoLevelToMap.getName());
-		countMapAreasForExtentQuery.append(") ");		
-		countMapAreasForExtentQuery.append("FROM ");
-		countMapAreasForExtentQuery.append(geoLevelSelectTableName);		
-		countMapAreasForExtentQuery.append(",");
-		countMapAreasForExtentQuery.append(hierarchyTableName);		
-		countMapAreasForExtentQuery.append(",");
-		countMapAreasForExtentQuery.append(geoLevelToMapTableName);
-		countMapAreasForExtentQuery.append(" WHERE ");
-		countMapAreasForExtentQuery.append(geoLevelToMapTableName);
-		countMapAreasForExtentQuery.append(".");
-		countMapAreasForExtentQuery.append(geoLevelToMap.getName());
-		countMapAreasForExtentQuery.append("=");
-		countMapAreasForExtentQuery.append(hierarchyTableName);		
-		countMapAreasForExtentQuery.append(".");
-		countMapAreasForExtentQuery.append(geoLevelToMap.getName());
-		countMapAreasForExtentQuery.append(" AND ");
-		countMapAreasForExtentQuery.append(geoLevelSelectTableName);		
-		countMapAreasForExtentQuery.append(".");
-		countMapAreasForExtentQuery.append(geoLevelSelect.getName());
-		countMapAreasForExtentQuery.append("=");
-		countMapAreasForExtentQuery.append(hierarchyTableName);		
-		countMapAreasForExtentQuery.append(".");
-		countMapAreasForExtentQuery.append(geoLevelSelect.getName());
-		countMapAreasForExtentQuery.append(" AND ");
-		countMapAreasForExtentQuery.append(geoLevelSelectTableName);		
-		countMapAreasForExtentQuery.append(".");
-		countMapAreasForExtentQuery.append("name");
-		countMapAreasForExtentQuery.append("=?");
-		*/
-				
-		SQLGeneralQueryFormatter queryFormatter
-			= new SQLGeneralQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.addPaddedQueryLine(0, "SELECT");
-		queryFormatter.addQueryPhrase(1, "COUNT(");
-		queryFormatter.addQueryPhrase(geoLevelToMapTableName);
-		queryFormatter.addQueryPhrase(".");
-		queryFormatter.addQueryPhrase(geoLevelToMap.getName());
-		queryFormatter.addQueryPhrase(")");
-		queryFormatter.padAndFinishLine();
-		
-		queryFormatter.addPaddedQueryLine(0, "FROM");
-		queryFormatter.addQueryPhrase(1, geoLevelSelectTableName);
-		queryFormatter.addQueryPhrase(geoLevelSelectTableName);
-		queryFormatter.addQueryPhrase(",");
-		queryFormatter.padAndFinishLine();		
-		queryFormatter.addQueryPhrase(1, hierarchyTableName);		
-		queryFormatter.addQueryPhrase(",");		
-		queryFormatter.padAndFinishLine();		
-		queryFormatter.addQueryPhrase(1, geoLevelToMapTableName);		
-		queryFormatter.padAndFinishLine();		
-		
-		queryFormatter.addPaddedQueryLine(0, "WHERE");
-		queryFormatter.addQueryPhrase(1, geoLevelToMapTableName);
-		queryFormatter.addQueryPhrase(".");
-		queryFormatter.addQueryPhrase(geoLevelToMap.getName());
-		queryFormatter.addQueryPhrase("=");
-		queryFormatter.addQueryPhrase(hierarchyTableName);		
-		queryFormatter.addQueryPhrase(".");
-		queryFormatter.addQueryPhrase(geoLevelToMap.getName());
-		queryFormatter.addQueryPhrase(" AND");
-		queryFormatter.padAndFinishLine();		
-		
-		queryFormatter.addQueryPhrase(1, geoLevelSelectTableName);		
-		queryFormatter.addQueryPhrase(".");
-		queryFormatter.addQueryPhrase(geoLevelSelect.getName());
-		queryFormatter.addQueryPhrase("=");
-		queryFormatter.addQueryPhrase(hierarchyTableName);		
-		queryFormatter.addQueryPhrase(".");
-		queryFormatter.addQueryPhrase(geoLevelSelect.getName());
-		queryFormatter.addQueryPhrase(" AND");
-		queryFormatter.padAndFinishLine();		
-
-		queryFormatter.addQueryPhrase(1, geoLevelSelectTableName);		
-		queryFormatter.addQueryPhrase(".");
-		queryFormatter.addQueryPhrase("name");
-		queryFormatter.addQueryPhrase("=?");
-		queryFormatter.finishLine();
-				
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		Integer numberOfAreas = null;
 		try {
+
+		
+			//Step I: Obtain the lookup table associated with the resolution
+			//of geoLevelSelect (which is also the one used by geoLevelArea)
+			String geoLevelSelectTableName
+				= getGeoLevelLookupTableName(
+					connection,
+					geography,
+					geoLevelSelect.getName());
+
+			//Step II: Obtain the lookup table associated with the resolution
+			//of geoLevelToMap
+			String geoLevelToMapTableName
+				= getGeoLevelLookupTableName(
+					connection,
+					geography,
+					geoLevelToMap.getName());
+		
+			//Step III: Obtain the hierarchy table associated with this geography
+			String hierarchyTableName
+				=  getGeographyHierarchyTableName(connection, geography); 
+				
+			//Step IV: Assemble the query needed to extract the map areas
+			//of resolution geoLevelToMap but restricted to only those 
+			//having the specified geoLevelArea
+		
+		
+			//SQLCountQueryFormatter queryFormatter = new SQLCountQueryFormatter();
+			//queryFormatter.setCountField(countField);
+
+			SQLGeneralQueryFormatter queryFormatter
+				= new SQLGeneralQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.addPaddedQueryLine(0, "SELECT");
+			queryFormatter.addQueryPhrase(1, "COUNT(");
+			queryFormatter.addQueryPhrase(geoLevelToMapTableName);
+			queryFormatter.addQueryPhrase(".");
+			queryFormatter.addQueryPhrase(geoLevelToMap.getName());
+			queryFormatter.addQueryPhrase(")");
+			queryFormatter.padAndFinishLine();
+		
+			queryFormatter.addPaddedQueryLine(0, "FROM");
+			queryFormatter.addQueryPhrase(1, geoLevelSelectTableName);
+			queryFormatter.addQueryPhrase(geoLevelSelectTableName);
+			queryFormatter.addQueryPhrase(",");
+			queryFormatter.padAndFinishLine();		
+			queryFormatter.addQueryPhrase(1, hierarchyTableName);		
+			queryFormatter.addQueryPhrase(",");		
+			queryFormatter.padAndFinishLine();		
+			queryFormatter.addQueryPhrase(1, geoLevelToMapTableName);		
+			queryFormatter.padAndFinishLine();		
+		
+			queryFormatter.addPaddedQueryLine(0, "WHERE");
+			queryFormatter.addQueryPhrase(1, geoLevelToMapTableName);
+			queryFormatter.addQueryPhrase(".");
+			queryFormatter.addQueryPhrase(geoLevelToMap.getName());
+			queryFormatter.addQueryPhrase("=");
+			queryFormatter.addQueryPhrase(hierarchyTableName);		
+			queryFormatter.addQueryPhrase(".");
+			queryFormatter.addQueryPhrase(geoLevelToMap.getName());
+			queryFormatter.addQueryPhrase(" AND");
+			queryFormatter.padAndFinishLine();		
+		
+			queryFormatter.addQueryPhrase(1, geoLevelSelectTableName);		
+			queryFormatter.addQueryPhrase(".");
+			queryFormatter.addQueryPhrase(geoLevelSelect.getName());
+			queryFormatter.addQueryPhrase("=");
+			queryFormatter.addQueryPhrase(hierarchyTableName);		
+			queryFormatter.addQueryPhrase(".");
+			queryFormatter.addQueryPhrase(geoLevelSelect.getName());
+			queryFormatter.addQueryPhrase(" AND");
+			queryFormatter.padAndFinishLine();		
+
+			queryFormatter.addQueryPhrase(1, geoLevelSelectTableName);		
+			queryFormatter.addQueryPhrase(".");
+			queryFormatter.addQueryPhrase("name");
+			queryFormatter.addQueryPhrase("=?");
+			queryFormatter.finishLine();
+				
 			statement = connection.prepareStatement(
 				queryFormatter.generateQuery());
 			statement.setString(1, geoLevelArea.getName());
 			resultSet = statement.executeQuery();			
 			resultSet.next();			
 			numberOfAreas = resultSet.getInt(1);
+			
+			connection.commit();
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToGetAreaCount",
@@ -388,36 +356,37 @@ final class SQLMapDataManager
 			null,
 			null);	
 		
-		boundaryRectangle.checkErrors();
-		
-		/*
-		 * In many cases we're just calling a stored procedure in the database
-		 * Some of these may be migrated into the middleware if it turns out that
-		 * SQL Server and PostgreSQL cannot support them uniformly.  We may also
-		 * choose to migrate them into the middleware if the function call produces
-		 * too great a performance overhead.  In these cases, we would presumably 
-		 * obtain better performance by running the code within the functions here
-		 * 'inline'.
-		 */
-		SQLGeneralQueryFormatter queryFormatter
-			= new SQLGeneralQueryFormatter();
-		queryFormatter.addPaddedQueryLine(0, "SELECT");
-		queryFormatter.addQueryPhrase("rif40_xml_pkg.rif40_getMapAreas(?,?,?,?,?,?)");
-		queryFormatter.padAndFinishLine();		
-		queryFormatter.addQueryPhrase(0, "LIMIT 4");
-				
-		logSQLQuery("getMapAreasForBoundaryRectangle", 
-			queryFormatter, 
-			geography.getName(),
-			geoLevelSelect.getName(),
-			String.valueOf( Float.valueOf(boundaryRectangle.getYMax())),
-			String.valueOf( Float.valueOf(boundaryRectangle.getXMax())),
-			String.valueOf( Float.valueOf(boundaryRectangle.getYMin())),
-			String.valueOf( Float.valueOf(boundaryRectangle.getXMin())));
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		StringBuilder results = new StringBuilder();
 		try {
+
+			boundaryRectangle.checkErrors();
+		
+			/*
+			 * In many cases we're just calling a stored procedure in the database
+			 * Some of these may be migrated into the middleware if it turns out that
+			 * SQL Server and PostgreSQL cannot support them uniformly.  We may also
+			 * choose to migrate them into the middleware if the function call produces
+			 * too great a performance overhead.  In these cases, we would presumably 
+			 * obtain better performance by running the code within the functions here
+			 * 'inline'.
+			 */
+			SQLGeneralQueryFormatter queryFormatter
+				= new SQLGeneralQueryFormatter();
+			queryFormatter.addPaddedQueryLine(0, "SELECT");
+			queryFormatter.addQueryPhrase("rif40_xml_pkg.rif40_getMapAreas(?,?,?,?,?,?)");
+			queryFormatter.padAndFinishLine();		
+			queryFormatter.addQueryPhrase(0, "LIMIT 4");
+				
+			logSQLQuery("getMapAreasForBoundaryRectangle", 
+				queryFormatter, 
+				geography.getName(),
+				geoLevelSelect.getName(),
+				String.valueOf( Float.valueOf(boundaryRectangle.getYMax())),
+				String.valueOf( Float.valueOf(boundaryRectangle.getXMax())),
+				String.valueOf( Float.valueOf(boundaryRectangle.getYMin())),
+				String.valueOf( Float.valueOf(boundaryRectangle.getXMin())));
 									
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
@@ -429,15 +398,19 @@ final class SQLMapDataManager
 			statement.setFloat(6, Float.valueOf(boundaryRectangle.getXMin()));
 			
 			resultSet = statement.executeQuery();
+			connection.commit();
 
 			while (resultSet.next()) {
 				//the method returns a JSON string.  We're just concatenating them together
 				results.append(resultSet.getString(1));
-			}			
+			}
+			
+			connection.commit();
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToGetMapAreasForBoundaryRectangle",
@@ -494,89 +467,91 @@ final class SQLMapDataManager
 			geoLevelToMap,
 			null);	
 
-		//Step I: Obtain the lookup table associated with the resolution
-		//of geoLevelSelect (which is also the one used by geoLevelArea)
-		String geoLevelSelectTableName
-			= getGeoLevelLookupTableName(
-				connection,
-				geography,
-				geoLevelSelect.getName());
-
-		//Step II: Obtain the lookup table associated with the resolution
-		//of geoLevelToMap
-		String geoLevelToMapTableName
-			= getGeoLevelLookupTableName(
-				connection,
-				geography,
-				geoLevelToMap.getName());
-		
-		//Step III: Obtain the hierarchy table associated with this geography
-		String hierarchyTableName
-			=  getGeographyHierarchyTableName(connection, geography); 
-		
-				
-		//Step IV: Assemble the query needed to extract the map areas
-		//of resolution geoLevelToMap but restricted to only those 
-		//having the specified geoLevelArea
-		
-		SQLGeneralQueryFormatter extractMapAreasQuery
-			= new SQLGeneralQueryFormatter();
-		configureQueryFormatterForDB(extractMapAreasQuery);
-			
-		extractMapAreasQuery.addPaddedQueryLine(0, "SELECT DISTINCT");
-		extractMapAreasQuery.addQueryPhrase(1, geoLevelToMapTableName);		
-		extractMapAreasQuery.addQueryPhrase(".");
-		extractMapAreasQuery.addQueryPhrase(geoLevelToMap.getName());
-		extractMapAreasQuery.addQueryPhrase(",");
-		extractMapAreasQuery.finishLine();
-		
-		extractMapAreasQuery.addQueryPhrase(1, geoLevelToMapTableName);
-		extractMapAreasQuery.addQueryPhrase(".");
-		extractMapAreasQuery.addQueryPhrase("name");
-		extractMapAreasQuery.padAndFinishLine();
-		extractMapAreasQuery.addPaddedQueryLine(0, "FROM");
-		extractMapAreasQuery.addQueryPhrase(1, geoLevelSelectTableName);		
-		extractMapAreasQuery.addQueryPhrase(",");
-		extractMapAreasQuery.finishLine();		
-		extractMapAreasQuery.addQueryPhrase(1, hierarchyTableName);		
-		extractMapAreasQuery.addQueryPhrase(",");
-		extractMapAreasQuery.finishLine();
-		extractMapAreasQuery.addPaddedQueryLine(1, geoLevelToMapTableName);		
-
-		extractMapAreasQuery.addPaddedQueryLine(0, "WHERE");
-		
-		extractMapAreasQuery.addQueryPhrase(1, geoLevelToMapTableName);		
-		extractMapAreasQuery.addQueryPhrase(".");
-		extractMapAreasQuery.addQueryPhrase(geoLevelToMap.getName());
-		extractMapAreasQuery.addQueryPhrase("=");
-		extractMapAreasQuery.addQueryPhrase(hierarchyTableName);		
-		extractMapAreasQuery.addQueryPhrase(".");
-		extractMapAreasQuery.addQueryPhrase(geoLevelToMap.getName());
-		extractMapAreasQuery.addQueryPhrase(" AND");
-		extractMapAreasQuery.padAndFinishLine();
-		
-		extractMapAreasQuery.addQueryPhrase(1, geoLevelSelectTableName);		
-		extractMapAreasQuery.addQueryPhrase(".");
-		extractMapAreasQuery.addQueryPhrase(geoLevelSelect.getName());
-		extractMapAreasQuery.addQueryPhrase("=");
-		extractMapAreasQuery.addQueryPhrase(hierarchyTableName);		
-		extractMapAreasQuery.addQueryPhrase(".");
-		extractMapAreasQuery.addQueryPhrase(geoLevelSelect.getName());
-		extractMapAreasQuery.addQueryPhrase(" AND");
-		extractMapAreasQuery.padAndFinishLine();
-				
-		extractMapAreasQuery.addQueryPhrase(1, geoLevelSelectTableName);		
-		extractMapAreasQuery.addQueryPhrase(".");
-		extractMapAreasQuery.addQueryPhrase("name");
-		extractMapAreasQuery.addQueryPhrase("=?");
-		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		ArrayList<MapArea> results = new ArrayList<MapArea>();
 		try {
+
+			//Step I: Obtain the lookup table associated with the resolution
+			//of geoLevelSelect (which is also the one used by geoLevelArea)
+			String geoLevelSelectTableName
+				= getGeoLevelLookupTableName(
+					connection,
+					geography,
+					geoLevelSelect.getName());
+
+			//Step II: Obtain the lookup table associated with the resolution
+			//of geoLevelToMap
+			String geoLevelToMapTableName
+				= getGeoLevelLookupTableName(
+					connection,
+					geography,
+					geoLevelToMap.getName());
+		
+			//Step III: Obtain the hierarchy table associated with this geography
+			String hierarchyTableName
+				=  getGeographyHierarchyTableName(connection, geography); 
+		
+				
+			//Step IV: Assemble the query needed to extract the map areas
+			//of resolution geoLevelToMap but restricted to only those 
+			//having the specified geoLevelArea
+		
+			SQLGeneralQueryFormatter extractMapAreasQuery
+				= new SQLGeneralQueryFormatter();
+			configureQueryFormatterForDB(extractMapAreasQuery);
+			
+			extractMapAreasQuery.addPaddedQueryLine(0, "SELECT DISTINCT");
+			extractMapAreasQuery.addQueryPhrase(1, geoLevelToMapTableName);		
+			extractMapAreasQuery.addQueryPhrase(".");
+			extractMapAreasQuery.addQueryPhrase(geoLevelToMap.getName());
+			extractMapAreasQuery.addQueryPhrase(",");
+			extractMapAreasQuery.finishLine();
+		
+			extractMapAreasQuery.addQueryPhrase(1, geoLevelToMapTableName);
+			extractMapAreasQuery.addQueryPhrase(".");
+			extractMapAreasQuery.addQueryPhrase("name");
+			extractMapAreasQuery.padAndFinishLine();
+			extractMapAreasQuery.addPaddedQueryLine(0, "FROM");
+			extractMapAreasQuery.addQueryPhrase(1, geoLevelSelectTableName);		
+			extractMapAreasQuery.addQueryPhrase(",");
+			extractMapAreasQuery.finishLine();		
+			extractMapAreasQuery.addQueryPhrase(1, hierarchyTableName);		
+			extractMapAreasQuery.addQueryPhrase(",");
+			extractMapAreasQuery.finishLine();
+			extractMapAreasQuery.addPaddedQueryLine(1, geoLevelToMapTableName);		
+
+			extractMapAreasQuery.addPaddedQueryLine(0, "WHERE");
+		
+			extractMapAreasQuery.addQueryPhrase(1, geoLevelToMapTableName);		
+			extractMapAreasQuery.addQueryPhrase(".");
+			extractMapAreasQuery.addQueryPhrase(geoLevelToMap.getName());
+			extractMapAreasQuery.addQueryPhrase("=");
+			extractMapAreasQuery.addQueryPhrase(hierarchyTableName);		
+			extractMapAreasQuery.addQueryPhrase(".");
+			extractMapAreasQuery.addQueryPhrase(geoLevelToMap.getName());
+			extractMapAreasQuery.addQueryPhrase(" AND");
+			extractMapAreasQuery.padAndFinishLine();
+		
+			extractMapAreasQuery.addQueryPhrase(1, geoLevelSelectTableName);		
+			extractMapAreasQuery.addQueryPhrase(".");
+			extractMapAreasQuery.addQueryPhrase(geoLevelSelect.getName());
+			extractMapAreasQuery.addQueryPhrase("=");
+			extractMapAreasQuery.addQueryPhrase(hierarchyTableName);		
+			extractMapAreasQuery.addQueryPhrase(".");
+			extractMapAreasQuery.addQueryPhrase(geoLevelSelect.getName());
+			extractMapAreasQuery.addQueryPhrase(" AND");
+			extractMapAreasQuery.padAndFinishLine();
+				
+			extractMapAreasQuery.addQueryPhrase(1, geoLevelSelectTableName);		
+			extractMapAreasQuery.addQueryPhrase(".");
+			extractMapAreasQuery.addQueryPhrase("name");
+			extractMapAreasQuery.addQueryPhrase("=?");
+		
 			statement = connection.prepareStatement(extractMapAreasQuery.generateQuery());
 			statement.setString(1, geoLevelArea.getName());
 			resultSet = statement.executeQuery();
+			connection.commit();
 			
 			while (resultSet.next()) {
 				MapArea mapArea = MapArea.newInstance();
@@ -593,7 +568,9 @@ final class SQLMapDataManager
 				}
 				results.add(mapArea);
 			}
-
+			
+			connection.commit();
+			
 			//@TODO: Ideally we'd like to put this first before we iterate
 			//through all the results.  Normally I would use resultSet.last(),
 			//followed by getRow() but this requires a scrollable result set.
@@ -604,8 +581,8 @@ final class SQLMapDataManager
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
-			sqlException.printStackTrace(System.out);
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToGetMapAreas",
@@ -681,141 +658,143 @@ final class SQLMapDataManager
 					errorMessage);
 			throw rifServiceException;
 		}
-		
-		//Step I: Obtain the lookup table associated with the resolution
-		//of geoLevelSelect (which is also the one used by geoLevelArea)
-		String geoLevelSelectTableName
-			= getGeoLevelLookupTableName(
-				connection,
-				geography,
-				geoLevelSelect.getName());
 
-		//Step II: Obtain the lookup table associated with the resolution
-		//of geoLevelToMap
-		String geoLevelToMapTableName
-			= getGeoLevelLookupTableName(
-				connection,
-				geography,
-				geoLevelToMap.getName());
-		
-		//Step III: Obtain the hierarchy table associated with this geography
-		String hierarchyTableName
-			=  getGeographyHierarchyTableName(connection, geography); 
-		
-				
-		//Step IV: Assemble the query needed to extract the map areas
-		//of resolution geoLevelToMap but restricted to only those 
-		//having the specified geoLevelArea
-		
-		SQLGeneralQueryFormatter extractMapAreasQuery = new SQLGeneralQueryFormatter();
-		configureQueryFormatterForDB(extractMapAreasQuery);
-		//extractMapAreasQuery.addQueryPhrase("WITH ordered_results AS (");
-		//StringBuilder extractMapAreasQuery = new StringBuilder();
-
-		extractMapAreasQuery.addQueryLine(0, "WITH ordered_results AS ( ");
-		extractMapAreasQuery.addQueryLine(1, "SELECT row_number() ");
-		extractMapAreasQuery.addQueryPhrase(2, "OVER(ORDER BY ");
-		extractMapAreasQuery.addQueryPhrase(geoLevelToMapTableName);
-		extractMapAreasQuery.addQueryPhrase(".");
-		extractMapAreasQuery.addQueryPhrase(geoLevelToMap.getName());
-		extractMapAreasQuery.addQueryPhrase(" ASC,");
-		extractMapAreasQuery.finishLine();
-		
-		extractMapAreasQuery.addQueryPhrase(2, geoLevelToMapTableName);
-		extractMapAreasQuery.addQueryPhrase(".");
-		extractMapAreasQuery.addQueryPhrase("name");
-		extractMapAreasQuery.addQueryPhrase(" ASC) AS row,");	
-		extractMapAreasQuery.finishLine();
-
-		extractMapAreasQuery.addQueryPhrase(2, geoLevelToMapTableName);
-		extractMapAreasQuery.addQueryPhrase(".");
-		extractMapAreasQuery.addQueryPhrase(geoLevelToMap.getName());
-		extractMapAreasQuery.addQueryPhrase(" AS identifier,");
-		extractMapAreasQuery.finishLine();
-				
-		extractMapAreasQuery.addQueryPhrase(2, geoLevelToMapTableName);
-		extractMapAreasQuery.addQueryPhrase(".");
-		extractMapAreasQuery.addQueryPhrase("name");
-		extractMapAreasQuery.padAndFinishLine();
-		
-		extractMapAreasQuery.addQueryPhrase(1, "FROM");
-		extractMapAreasQuery.padAndFinishLine();
-		extractMapAreasQuery.addQueryPhrase(2, geoLevelSelectTableName);		
-		extractMapAreasQuery.addQueryPhrase(",");
-		extractMapAreasQuery.finishLine();
-		
-		extractMapAreasQuery.addQueryPhrase(2, hierarchyTableName);		
-		extractMapAreasQuery.addQueryPhrase(",");
-		extractMapAreasQuery.finishLine();
-		
-		extractMapAreasQuery.addQueryPhrase(2, geoLevelToMapTableName);
-		extractMapAreasQuery.finishLine();
-		
-		extractMapAreasQuery.addQueryPhrase(1, "WHERE");
-		extractMapAreasQuery.padAndFinishLine();
-
-		extractMapAreasQuery.addQueryPhrase(2, geoLevelToMapTableName);
-		extractMapAreasQuery.addQueryPhrase(".");
-		extractMapAreasQuery.addQueryPhrase(geoLevelToMap.getName());
-		extractMapAreasQuery.addQueryPhrase("=");
-		extractMapAreasQuery.addQueryPhrase(hierarchyTableName);		
-		extractMapAreasQuery.addQueryPhrase(".");
-		extractMapAreasQuery.addQueryPhrase(geoLevelToMap.getName());
-		extractMapAreasQuery.addQueryPhrase(" AND");
-		extractMapAreasQuery.padAndFinishLine();
-		
-		extractMapAreasQuery.addQueryPhrase(2, geoLevelSelectTableName);		
-		extractMapAreasQuery.addQueryPhrase(".");
-		extractMapAreasQuery.addQueryPhrase(geoLevelSelect.getName());
-		extractMapAreasQuery.addQueryPhrase("=");
-		extractMapAreasQuery.addQueryPhrase(hierarchyTableName);		
-		extractMapAreasQuery.addQueryPhrase(".");
-		extractMapAreasQuery.addQueryPhrase(geoLevelSelect.getName());
-		extractMapAreasQuery.addQueryPhrase(" AND");
-		extractMapAreasQuery.padAndFinishLine();
-		
-		extractMapAreasQuery.addQueryPhrase(2, geoLevelSelectTableName);		
-		extractMapAreasQuery.addQueryPhrase(".");
-		extractMapAreasQuery.addQueryPhrase("name");
-		extractMapAreasQuery.addQueryPhrase("=?");
-		extractMapAreasQuery.addQueryPhrase(")");
-		extractMapAreasQuery.padAndFinishLine();
-		
-		extractMapAreasQuery.addQueryPhrase(0, "SELECT DISTINCT");
-		extractMapAreasQuery.padAndFinishLine();
-		
-		extractMapAreasQuery.addQueryLine(1, "identifier,");
-		extractMapAreasQuery.addQueryPhrase(1, "name");
-		extractMapAreasQuery.padAndFinishLine();
-
-		extractMapAreasQuery.addQueryPhrase(0, "FROM");
-		extractMapAreasQuery.padAndFinishLine();
-		extractMapAreasQuery.addQueryPhrase(1, "ordered_results");
-		extractMapAreasQuery.padAndFinishLine();
-
-		extractMapAreasQuery.addQueryPhrase(0, "WHERE");
-		extractMapAreasQuery.padAndFinishLine();
-
-		extractMapAreasQuery.addQueryPhrase(1, "row >= ? AND");
-		extractMapAreasQuery.padAndFinishLine();
-		extractMapAreasQuery.addQueryPhrase(1, "row <= ?");
-			
-		logSQLQuery(
-			"getMapAreas",
-			extractMapAreasQuery,
-			geoLevelArea.getName(),
-			String.valueOf(startIndex),
-			String.valueOf(endIndex));
-		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		ArrayList<MapArea> results = new ArrayList<MapArea>();
 		try {
+		
+			//Step I: Obtain the lookup table associated with the resolution
+			//of geoLevelSelect (which is also the one used by geoLevelArea)
+			String geoLevelSelectTableName
+				= getGeoLevelLookupTableName(
+					connection,
+					geography,
+					geoLevelSelect.getName());
+
+			//Step II: Obtain the lookup table associated with the resolution
+			//of geoLevelToMap
+			String geoLevelToMapTableName
+				= getGeoLevelLookupTableName(
+					connection,
+					geography,
+					geoLevelToMap.getName());
+		
+			//Step III: Obtain the hierarchy table associated with this geography
+			String hierarchyTableName
+				=  getGeographyHierarchyTableName(connection, geography); 
+		
+				
+			//Step IV: Assemble the query needed to extract the map areas
+			//of resolution geoLevelToMap but restricted to only those 
+			//having the specified geoLevelArea
+		
+			SQLGeneralQueryFormatter extractMapAreasQuery = new SQLGeneralQueryFormatter();
+			configureQueryFormatterForDB(extractMapAreasQuery);
+			//extractMapAreasQuery.addQueryPhrase("WITH ordered_results AS (");
+			//StringBuilder extractMapAreasQuery = new StringBuilder();
+
+			extractMapAreasQuery.addQueryLine(0, "WITH ordered_results AS ( ");
+			extractMapAreasQuery.addQueryLine(1, "SELECT row_number() ");
+			extractMapAreasQuery.addQueryPhrase(2, "OVER(ORDER BY ");
+			extractMapAreasQuery.addQueryPhrase(geoLevelToMapTableName);
+			extractMapAreasQuery.addQueryPhrase(".");
+			extractMapAreasQuery.addQueryPhrase(geoLevelToMap.getName());
+			extractMapAreasQuery.addQueryPhrase(" ASC,");
+			extractMapAreasQuery.finishLine();
+		
+			extractMapAreasQuery.addQueryPhrase(2, geoLevelToMapTableName);
+			extractMapAreasQuery.addQueryPhrase(".");
+			extractMapAreasQuery.addQueryPhrase("name");
+			extractMapAreasQuery.addQueryPhrase(" ASC) AS row,");	
+			extractMapAreasQuery.finishLine();
+
+			extractMapAreasQuery.addQueryPhrase(2, geoLevelToMapTableName);
+			extractMapAreasQuery.addQueryPhrase(".");
+			extractMapAreasQuery.addQueryPhrase(geoLevelToMap.getName());
+			extractMapAreasQuery.addQueryPhrase(" AS identifier,");
+			extractMapAreasQuery.finishLine();
+				
+			extractMapAreasQuery.addQueryPhrase(2, geoLevelToMapTableName);
+			extractMapAreasQuery.addQueryPhrase(".");
+			extractMapAreasQuery.addQueryPhrase("name");
+			extractMapAreasQuery.padAndFinishLine();
+		
+			extractMapAreasQuery.addQueryPhrase(1, "FROM");
+			extractMapAreasQuery.padAndFinishLine();
+			extractMapAreasQuery.addQueryPhrase(2, geoLevelSelectTableName);		
+			extractMapAreasQuery.addQueryPhrase(",");
+			extractMapAreasQuery.finishLine();
+		
+			extractMapAreasQuery.addQueryPhrase(2, hierarchyTableName);		
+			extractMapAreasQuery.addQueryPhrase(",");
+			extractMapAreasQuery.finishLine();
+		
+			extractMapAreasQuery.addQueryPhrase(2, geoLevelToMapTableName);
+			extractMapAreasQuery.finishLine();
+		
+			extractMapAreasQuery.addQueryPhrase(1, "WHERE");
+			extractMapAreasQuery.padAndFinishLine();
+
+			extractMapAreasQuery.addQueryPhrase(2, geoLevelToMapTableName);
+			extractMapAreasQuery.addQueryPhrase(".");
+			extractMapAreasQuery.addQueryPhrase(geoLevelToMap.getName());
+			extractMapAreasQuery.addQueryPhrase("=");
+			extractMapAreasQuery.addQueryPhrase(hierarchyTableName);		
+			extractMapAreasQuery.addQueryPhrase(".");
+			extractMapAreasQuery.addQueryPhrase(geoLevelToMap.getName());
+			extractMapAreasQuery.addQueryPhrase(" AND");
+			extractMapAreasQuery.padAndFinishLine();
+		
+			extractMapAreasQuery.addQueryPhrase(2, geoLevelSelectTableName);		
+			extractMapAreasQuery.addQueryPhrase(".");
+			extractMapAreasQuery.addQueryPhrase(geoLevelSelect.getName());
+			extractMapAreasQuery.addQueryPhrase("=");
+			extractMapAreasQuery.addQueryPhrase(hierarchyTableName);		
+			extractMapAreasQuery.addQueryPhrase(".");
+			extractMapAreasQuery.addQueryPhrase(geoLevelSelect.getName());
+			extractMapAreasQuery.addQueryPhrase(" AND");
+			extractMapAreasQuery.padAndFinishLine();
+		
+			extractMapAreasQuery.addQueryPhrase(2, geoLevelSelectTableName);		
+			extractMapAreasQuery.addQueryPhrase(".");
+			extractMapAreasQuery.addQueryPhrase("name");
+			extractMapAreasQuery.addQueryPhrase("=?");
+			extractMapAreasQuery.addQueryPhrase(")");
+			extractMapAreasQuery.padAndFinishLine();
+		
+			extractMapAreasQuery.addQueryPhrase(0, "SELECT DISTINCT");
+			extractMapAreasQuery.padAndFinishLine();
+		
+			extractMapAreasQuery.addQueryLine(1, "identifier,");
+			extractMapAreasQuery.addQueryPhrase(1, "name");
+			extractMapAreasQuery.padAndFinishLine();
+
+			extractMapAreasQuery.addQueryPhrase(0, "FROM");
+			extractMapAreasQuery.padAndFinishLine();
+			extractMapAreasQuery.addQueryPhrase(1, "ordered_results");
+			extractMapAreasQuery.padAndFinishLine();
+
+			extractMapAreasQuery.addQueryPhrase(0, "WHERE");
+			extractMapAreasQuery.padAndFinishLine();
+
+			extractMapAreasQuery.addQueryPhrase(1, "row >= ? AND");
+			extractMapAreasQuery.padAndFinishLine();
+			extractMapAreasQuery.addQueryPhrase(1, "row <= ?");
+			
+			logSQLQuery(
+				"getMapAreas",
+				extractMapAreasQuery,
+				geoLevelArea.getName(),
+				String.valueOf(startIndex),
+				String.valueOf(endIndex));
+		
 			statement = connection.prepareStatement(extractMapAreasQuery.generateQuery());
 			statement.setString(1, geoLevelArea.getName());
 			statement.setInt(2, startIndex);
 			statement.setInt(3, endIndex);
 			resultSet = statement.executeQuery();
+			connection.commit();
 
 			while (resultSet.next()) {
 				MapArea mapArea = MapArea.newInstance();
@@ -832,6 +811,8 @@ final class SQLMapDataManager
 				results.add(mapArea);
 			}	
 			
+			connection.commit();
+			
 			//@TODO: Ideally we'd like to put this first before we iterate
 			//through all the results.  Normally I would use resultSet.last(),
 			//followed by getRow() but this requires a scrollable result set.
@@ -843,6 +824,7 @@ final class SQLMapDataManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToGetMapAreas",
@@ -883,60 +865,42 @@ final class SQLMapDataManager
 		final Connection connection,
 		final Geography geography,
 		final String resolutionLevel) 
-		throws RIFServiceException { 
+		throws SQLException,
+		RIFServiceException { 
 
-		String geoLevelSelectTableName = null;
-				
-		SQLSelectQueryFormatter queryFormatter 
-			= new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.addSelectField("lookup_table");
-		queryFormatter.addFromTable("rif40_geolevels");
-		queryFormatter.addWhereParameter("geography");
-		queryFormatter.addWhereParameter("geolevel_name");
-		
-		logSQLQuery(
-			"getGeoLevelLookupTableName",
-			queryFormatter,
-			geography.getName(),
-			resolutionLevel);
-		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
+		String result = null;
 		try {
+		
+			SQLSelectQueryFormatter queryFormatter 
+				= new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.addSelectField("lookup_table");
+			queryFormatter.addFromTable("rif40_geolevels");
+			queryFormatter.addWhereParameter("geography");
+			queryFormatter.addWhereParameter("geolevel_name");
+		
+			logSQLQuery(
+				"getGeoLevelLookupTableName",
+				queryFormatter,
+				geography.getName(),
+				resolutionLevel);
+		
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, geography.getName());
 			statement.setString(2, resolutionLevel);
 			resultSet = statement.executeQuery();
-	
+			connection.commit();
+			
 			if (resultSet.next() == false) {
 				//this method assumes that geoLevelSelect is valid
 				//Therefore, it must be associated with a lookup table
 				assert false;
-			}			
-			geoLevelSelectTableName
-				= useAppropariateTableNameCase(resultSet.getString(1));
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version			
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlMapDataManager.error.unableToGetGeoLevelLookupTable",
-					geography.getName(),
-					resolutionLevel);
+			}		
 			
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLMapDataManager.class, 
-				errorMessage, 
-				sqlException);
-									
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
+			result
+				= useAppropariateTableNameCase(resultSet.getString(1));
 		}
 		finally {
 			//Cleanup database resources			
@@ -944,7 +908,7 @@ final class SQLMapDataManager
 			SQLQueryUtility.close(resultSet);		
 		}
 		
-		return geoLevelSelectTableName;
+		return result;
 	}
 	
 	/**
@@ -958,56 +922,37 @@ final class SQLMapDataManager
 	private String getGeographyHierarchyTableName( 
 		final Connection connection,
 		final Geography geography) 
-		throws RIFServiceException { 
+		throws SQLException,
+		RIFServiceException { 
 
-		String geographyHierarchyTableName = null;
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		String result = null;
+		try {
 					
-		SQLSelectQueryFormatter queryFormatter 
-			= new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.addSelectField("hierarchytable");
-		queryFormatter.addFromTable("rif40_geographies");
-		queryFormatter.addWhereParameter("geography");
+			SQLSelectQueryFormatter queryFormatter 
+				= new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.addSelectField("hierarchytable");
+			queryFormatter.addFromTable("rif40_geographies");
+			queryFormatter.addWhereParameter("geography");
 
-		logSQLQuery(
+			logSQLQuery(
 				"getGeographyHierarchyTableName",
 				queryFormatter,
 				geography.getName());
 		
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		try {
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, geography.getName());
 			resultSet = statement.executeQuery();
-	
+			connection.commit();
 			if (resultSet.next() == false) {
 				//this method assumes that geoLevelSelect is valid
 				//Therefore, it must be associated with a lookup table
 				assert false;
 			}			
-			geographyHierarchyTableName
-				= useAppropariateTableNameCase(resultSet.getString(1));
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version			
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlMapDataManager.error.unableToGetHierarchyTable",
-					geography.getName());
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLMapDataManager.class, 
-				errorMessage, 
-				sqlException);
-											
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
+			result
+				= useAppropariateTableNameCase(resultSet.getString(1));			
 		}
 		finally {
 			//Cleanup database resources			
@@ -1015,7 +960,7 @@ final class SQLMapDataManager
 			SQLQueryUtility.close(resultSet);		
 		}
 			
-		return geographyHierarchyTableName;
+		return result;
 	}
 	
 	/**
@@ -1110,7 +1055,7 @@ final class SQLMapDataManager
 		geography.checkErrors();
 		geoLevelSelect.checkErrors();
 		geoLevelView.checkErrors();
-
+		
 		if (mapAreas.size() == 0) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -1125,10 +1070,10 @@ final class SQLMapDataManager
 		for (MapArea mapArea : mapAreas) {
 			mapArea.checkErrors();
 		}
-		
+
 		String geographyName = geography.getName();
 		String geoLevelSelectName = geoLevelSelect.getName();
-		
+
 		sqlRIFContextManager.checkGeographyExists(
 			connection, 
 			geographyName);
@@ -1148,32 +1093,31 @@ final class SQLMapDataManager
 			geography.getName(),
 			geoLevelSelect.getName(),
 			mapAreas);
-				
-		String result = "";
-		
-		SQLFunctionCallerQueryFormatter queryFormatter
-			= new SQLFunctionCallerQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.setSchema("rif40_xml_pkg");
-		queryFormatter.setFunctionName("rif40_get_geojson_as_js");
-		queryFormatter.setNumberOfFunctionParameters(5);
-
-		//@TODO: the DB query needs to be altered to support an array of 
-		//map areas
-		String[] mapAreaIdentifiers = MapArea.getMapAreaIdentifierList(mapAreas);
-
-		logSQLQuery(
-			"getGeometry",
-			queryFormatter,
-			geography.getName(),
-			geoLevelView.getName(),
-			geoLevelSelect.getName(),
-			mapAreaIdentifiers[0],
-			String.valueOf(false));				
-		
+						
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
-		try {
+		String result = "";
+		try {		
+			SQLFunctionCallerQueryFormatter queryFormatter
+				= new SQLFunctionCallerQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.setSchema("rif40_xml_pkg");
+			queryFormatter.setFunctionName("rif40_get_geojson_as_js");
+			queryFormatter.setNumberOfFunctionParameters(5);
+
+			//@TODO: the DB query needs to be altered to support an array of 
+			//map areas
+			String[] mapAreaIdentifiers = MapArea.getMapAreaIdentifierList(mapAreas);
+
+			logSQLQuery(
+				"getGeometry",
+				queryFormatter,
+				geography.getName(),
+				geoLevelView.getName(),
+				geoLevelSelect.getName(),
+				mapAreaIdentifiers[0],
+				String.valueOf(false));				
+		
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, geography.getName());
@@ -1182,11 +1126,15 @@ final class SQLMapDataManager
 			statement.setString(4, mapAreaIdentifiers[0]);
 			statement.setBoolean(5, false);		
 			resultSet = statement.executeQuery();
+			connection.commit();
 			resultSet.next();
 			result = resultSet.getString(1);
+			
+			connection.commit();
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToGetGeometry",
@@ -1213,7 +1161,7 @@ final class SQLMapDataManager
 	// Section Errors and Validation
 	// ==========================================
 
-	public void checkNumberMapAreaResultsBelowThreshold(
+	private void checkNumberMapAreaResultsBelowThreshold(
 		final int numberOfMapAreasRetrieved) 
 		throws RIFServiceException {
 
@@ -1264,7 +1212,8 @@ final class SQLMapDataManager
 				queryFormatter,
 				mapAreas.get(0).getIdentifier());
 			
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement 
+				= connection.prepareStatement(queryFormatter.generateQuery());			
 			ArrayList<String> errorMessages = new ArrayList<String>();
 			for (MapArea mapArea : mapAreas) {
 				statement.setString(1, mapArea.getIdentifier());
@@ -1282,6 +1231,8 @@ final class SQLMapDataManager
 				}
 			}	
 			
+			connection.commit();
+			
 			if (errorMessages.size() > 0) {
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
@@ -1293,6 +1244,7 @@ final class SQLMapDataManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToCheckMapAreasExists",
@@ -1342,6 +1294,7 @@ final class SQLMapDataManager
 			statement.setString(1, geographyName);
 			
 			resultSet = statement.executeQuery();
+			connection.commit();
 			resultSet.next();
 						
 			return resultSet.getString(1);			

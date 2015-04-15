@@ -1,11 +1,15 @@
 package rifServices.dataStorageLayer;
 
 
-
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifServices.system.RIFDatabaseProperties;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceException;
+import rifServices.system.RIFServiceMessages;
+import rifServices.util.RIFLogger;
 
 import java.sql.SQLException;
+import java.sql.Connection;
 
 /**
  *
@@ -139,7 +143,9 @@ abstract class AbstractSQLManager {
 		return fieldName.toLowerCase();
 	}
 	*/
-		
+	
+	
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -176,6 +182,28 @@ abstract class AbstractSQLManager {
 	protected void logSQLException(final SQLException sqlException) {
 		sqlException.printStackTrace();
 	}
+	
+	protected void setAutoCommitOn(
+		final Connection connection,
+		final boolean isAutoCommitOn)
+		throws RIFServiceException {
+		
+		try {
+			System.out.println("Setting autocommit to=="+isAutoCommitOn+"==");
+			connection.setAutoCommit(isAutoCommitOn);			
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage("general.db.error.unableToSetCommit");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DB_UNABLE_TO_ADJUST_AUTO_COMMIT,
+					errorMessage);
+			throw rifServiceException;
+		}
+		
+	}
+	
 	
 	// ==========================================
 	// Section Interfaces

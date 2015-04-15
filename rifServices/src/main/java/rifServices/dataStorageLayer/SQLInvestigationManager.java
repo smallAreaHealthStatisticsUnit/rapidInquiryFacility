@@ -18,6 +18,7 @@ import rifServices.util.RIFLogger;
 import java.sql.*;
 import java.util.ArrayList;
 
+
 /**
  *
  *
@@ -148,8 +149,8 @@ final class SQLInvestigationManager
 		
 	}
 		
-*/		
-	
+*/
+
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -198,28 +199,28 @@ final class SQLInvestigationManager
 		final Investigation investigation) 
 		throws RIFServiceException {
 		
-		SQLRecordExistsQueryFormatter queryFormatter
-			= new SQLRecordExistsQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);		
-		queryFormatter.setFromTable("rif40_investigations");
-		queryFormatter.addWhereParameter("study_id");
-		queryFormatter.addWhereParameter("inv_id");
-
-		logSQLQuery(
-			"checkInvestigationExists",
-			queryFormatter,
-			study.getIdentifier(),
-			investigation.getIdentifier());
-				
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			SQLRecordExistsQueryFormatter queryFormatter
+				= new SQLRecordExistsQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);		
+			queryFormatter.setFromTable("rif40_investigations");
+			queryFormatter.addWhereParameter("study_id");
+			queryFormatter.addWhereParameter("inv_id");
+
+			logSQLQuery(
+				"checkInvestigationExists",
+				queryFormatter,
+				study.getIdentifier(),
+				investigation.getIdentifier());
+				
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, study.getIdentifier());
 			statement.setString(2, investigation.getIdentifier());
 			resultSet = statement.executeQuery();
-			
+			RIFServiceException rifServiceException = null;
 			if (resultSet.next() == false) {
 				String recordType
 					= investigation.getRecordType();
@@ -229,16 +230,23 @@ final class SQLInvestigationManager
 						recordType,
 						investigation.getDisplayName());
 
-				RIFServiceException rifServiceException
+				rifServiceException
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_AGE_GROUP, 
 						errorMessage);
+				
+				connection.commit();
+				
 				throw rifServiceException;
 			}
+
+			connection.commit();
+			
 		}
 		catch(SQLException sqlException) {			
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",

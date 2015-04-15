@@ -3,6 +3,7 @@ package rifServices.dataStorageLayer;
 import rifServices.businessConceptLayer.User;
 
 
+import rifServices.system.RIFDatabaseProperties;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -96,7 +97,8 @@ import java.util.ArrayList;
  *
  */
 
-public final class SQLConnectionManager {
+public final class SQLConnectionManager 
+	extends AbstractSQLManager {
 
 	// ==========================================
 	// Section Constants
@@ -148,6 +150,7 @@ public final class SQLConnectionManager {
 	public SQLConnectionManager(
 		final RIFServiceStartupOptions rifServiceStartupOptions) {
 
+		super(rifServiceStartupOptions.getRIFDatabaseProperties());
 		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		usedReadConnectionsFromUser = new HashMap<String, ArrayList<Connection>>();
@@ -410,34 +413,60 @@ public final class SQLConnectionManager {
 		final User user) 
 		throws RIFServiceException {
 		
+		Connection result = null;
+
 		String userID = user.getUserID();
 		if (userIDsToBlock.contains(userID)) {
-			return null;
+			return result;
 		}
 		
 		ArrayList<Connection> availableReadConnections
 			= availableReadConnectionsFromUser.get(user.getUserID());
 
-		if (availableReadConnections.isEmpty()) {
+		try {			
+			if (availableReadConnections.isEmpty()) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"sqlConnectionmanager.error.maximumReadConnectionsExceeded",
+						user.getUserID());
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.MAXIMUM_READ_CONNECTIONS_EXCEEDED, 
+						errorMessage);
+				throw rifServiceException;
+			}
+			else {
+				Connection connection = availableReadConnections.get(0);
+				ArrayList<Connection> usedReadConnections
+					= usedReadConnectionsFromUser.get(user.getUserID());
+			
+				//turn AUTOCOMMMIT OFF		
+				connection.setAutoCommit(false);
+				availableReadConnections.remove(0);
+				usedReadConnections.add(connection);
+				result = connection;
+			}
+		}
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
-					"sqlConnectionmanager.error.maximumReadConnectionsExceeded",
-					user.getUserID());
+					"general.db.error.unableToSetCommit");
+
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			rifLogger.error(
+				SQLConnectionManager.class, 
+				errorMessage, 
+				sqlException);
+			
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.MAXIMUM_READ_CONNECTIONS_EXCEEDED, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
-		else {
-			Connection connection = availableReadConnections.get(0);
-			ArrayList<Connection> usedReadConnections
-				= usedReadConnectionsFromUser.get(user.getUserID());
-			availableReadConnections.remove(0);
-			
-			usedReadConnections.add(connection);
-			return connection;
-		}
+		return result;
 	}
 	
 	public void reclaimPooledReadConnection(
@@ -445,23 +474,49 @@ public final class SQLConnectionManager {
 		final Connection connection) 
 		throws RIFServiceException {
 		
-		if (user == null) {
-			return;
+//		try {
+			
+			if (user == null) {
+				return;
+			}
+			if (connection == null) {
+				return;
+			}
+			String userID = user.getUserID();
+			
+			//turn auto commit ON
+			//connection.setAutoCommit(true);			
+			ArrayList<Connection> usedReadConnections
+				= usedReadConnectionsFromUser.get(userID);
+		
+			usedReadConnections.remove(connection);
+		
+			ArrayList<Connection> availableReadConnections
+				= availableReadConnectionsFromUser.get(userID);
+			availableReadConnections.add(connection);		
+//		}
+/*			
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlRIFSubmissionManager.error.unableToControlAutocommitSetting");
+
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			rifLogger.error(
+				SQLConnectionManager.class, 
+				errorMessage, 
+				sqlException);
+			
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
 		}
-		if (connection == null) {
-			return;
-		}
-		String userID = user.getUserID();
+*/
 		
-		
-		ArrayList<Connection> usedReadConnections
-			= usedReadConnectionsFromUser.get(userID);
-		
-		usedReadConnections.remove(connection);
-		
-		ArrayList<Connection> availableReadConnections
-			= availableReadConnectionsFromUser.get(userID);
-		availableReadConnections.add(connection);		
 	}
 	
 	public void reclaimPooledWriteConnection(
@@ -469,21 +524,48 @@ public final class SQLConnectionManager {
 		final Connection connection) 
 		throws RIFServiceException {
 
-		if (user == null) {
-			return;
-		}
-		if (connection == null) {
-			return;
-		}
-				
-		ArrayList<Connection> usedWriteConnections
-			= usedWriteConnectionsFromUser.get(user.getUserID());
-		usedWriteConnections.remove(connection);
 		
-		ArrayList<Connection> availableWriteConnections
-			= availableWriteConnectionsFromUser.get(user.getUserID());
-		availableWriteConnections.add(connection);				
+//		try {
+			
+			if (user == null) {
+				return;
+			}
+			if (connection == null) {
+				return;
+			}
 		
+			//connection.setAutoCommit(true);
+			
+			ArrayList<Connection> usedWriteConnections
+				= usedWriteConnectionsFromUser.get(user.getUserID());
+			usedWriteConnections.remove(connection);
+		
+			ArrayList<Connection> availableWriteConnections
+				= availableWriteConnectionsFromUser.get(user.getUserID());
+			availableWriteConnections.add(connection);				
+//		}
+/*			
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlRIFSubmissionManager.error.unableToControlAutocommitSetting");
+
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			rifLogger.error(
+				SQLConnectionManager.class, 
+				errorMessage, 
+				sqlException);
+			
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+*/		
+
 	}
 	
 	/**
@@ -505,33 +587,59 @@ public final class SQLConnectionManager {
 	public Connection assignPooledWriteConnection(
 		final User user) 
 		throws RIFServiceException {
+		
+		Connection result = null;
+		try {
 			
-		String userID = user.getUserID();
-		if (userIDsToBlock.contains(userID)) {
-			return null;
+			String userID = user.getUserID();
+			if (userIDsToBlock.contains(userID)) {
+				return result;
+			}
+			
+			ArrayList<Connection> availableWriteConnections
+				= availableWriteConnectionsFromUser.get(user.getUserID());
+			if (availableWriteConnections.isEmpty()) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"sqlConnectionmanager.error.maximumWriteConnectionsExceeded",
+						user.getUserID());
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.MAXIMUM_READ_CONNECTIONS_EXCEEDED, 
+						errorMessage);
+				throw rifServiceException;
+			}
+			else {
+				Connection connection = availableWriteConnections.get(0);
+				ArrayList<Connection> usedWriteConnections
+					= usedWriteConnectionsFromUser.get(user.getUserID());
+				connection.setAutoCommit(false);
+				availableWriteConnections.remove(0);
+				usedWriteConnections.add(connection);
+				result = connection;
+			}		
 		}
-			
-		ArrayList<Connection> availableWriteConnections
-			= availableWriteConnectionsFromUser.get(user.getUserID());
-		if (availableWriteConnections.isEmpty()) {
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
-					"sqlConnectionmanager.error.maximumWriteConnectionsExceeded",
-					user.getUserID());
+					"general.db.error.unableToSetCommit");
+
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			rifLogger.error(
+				SQLConnectionManager.class, 
+				errorMessage, 
+				sqlException);
+			
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.MAXIMUM_READ_CONNECTIONS_EXCEEDED, 
+					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
-		else {
-			Connection connection = availableWriteConnections.get(0);
-			ArrayList<Connection> usedWriteConnections
-				= usedWriteConnectionsFromUser.get(user.getUserID());
-			availableWriteConnections.remove(0);
-			usedWriteConnections.add(connection);
-			return connection;
-		}
+
+		return result;
 	}
 
 	public void logout(

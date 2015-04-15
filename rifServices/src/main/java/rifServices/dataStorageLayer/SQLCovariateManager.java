@@ -139,27 +139,27 @@ final class SQLCovariateManager
 		final Investigation investigation) 
 		throws RIFServiceException {
 		
-		SQLSelectQueryFormatter queryFormatter 
-			= new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);		
-		queryFormatter.addSelectField("covariate_name");
-		queryFormatter.addSelectField("min");
-		queryFormatter.addSelectField("max");
-		queryFormatter.addFromTable("t_rif40_inv_covariates");
-		queryFormatter.addWhereParameter("inv_id");
-		queryFormatter.addWhereParameter("study_id");
-				
-		logSQLQuery(
-			"getCovariatesForInvestigation",
-			queryFormatter,
-			investigation.getIdentifier(),
-			diseaseMappingStudy.getIdentifier());
-										
-		ArrayList<AbstractCovariate> results 
-			= new ArrayList<AbstractCovariate>();
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			SQLSelectQueryFormatter queryFormatter 
+				= new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);		
+			queryFormatter.addSelectField("covariate_name");
+			queryFormatter.addSelectField("min");
+			queryFormatter.addSelectField("max");
+			queryFormatter.addFromTable("t_rif40_inv_covariates");
+			queryFormatter.addWhereParameter("inv_id");
+			queryFormatter.addWhereParameter("study_id");
+				
+			logSQLQuery(
+				"getCovariatesForInvestigation",
+				queryFormatter,
+				investigation.getIdentifier(),
+				diseaseMappingStudy.getIdentifier());
+										
+			ArrayList<AbstractCovariate> results 
+				= new ArrayList<AbstractCovariate>();
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			Integer investigationID
@@ -185,10 +185,12 @@ final class SQLCovariateManager
 						covariateType);	
 				results.add(adjustableCovariate);
 			}
+			connection.commit();
 			return results;
 		}
 		catch(SQLException exception) {
 			logSQLException(exception);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"covariateManager.db.unableToGetCovariatesForInvestigation",
@@ -231,36 +233,38 @@ final class SQLCovariateManager
 			null,
 			geoLevelToMap);
 
-		//Create SQL query		
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);		
-		queryFormatter.addSelectField("covariate_name");
-		queryFormatter.addSelectField("min");
-		queryFormatter.addSelectField("max");
-		queryFormatter.addSelectField("type");
-		queryFormatter.addFromTable("rif40_covariates");
-		queryFormatter.addWhereParameter("geography");
-		queryFormatter.addWhereParameter("geolevel_name");
-		queryFormatter.addOrderByCondition("covariate_name");
 		
-		logSQLQuery(
-			"getCovariates",
-			queryFormatter,
-			geography.getName(),
-			geoLevelToMap.getName());
-		
-		//Parameterise and execute query
-		ArrayList<AbstractCovariate> results = new ArrayList<AbstractCovariate>();
 		PreparedStatement statement = null;
 		ResultSet dbResultSet = null;
-				
+		ArrayList<AbstractCovariate> results = new ArrayList<AbstractCovariate>();		
 		try {
+			//Create SQL query		
+			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);		
+			queryFormatter.addSelectField("covariate_name");
+			queryFormatter.addSelectField("min");
+			queryFormatter.addSelectField("max");
+			queryFormatter.addSelectField("type");
+			queryFormatter.addFromTable("rif40_covariates");
+			queryFormatter.addWhereParameter("geography");
+			queryFormatter.addWhereParameter("geolevel_name");
+			queryFormatter.addOrderByCondition("covariate_name");
+		
+			logSQLQuery(
+				"getCovariates",
+				queryFormatter,
+				geography.getName(),
+				geoLevelToMap.getName());
+		
+			//Parameterise and execute query
+				
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, geography.getName());
 			statement.setString(2, geoLevelToMap.getName());
 
 			dbResultSet = statement.executeQuery();
+			connection.commit();
 			while (dbResultSet.next()) {				
 				AdjustableCovariate adjustableCovariate
 					= AdjustableCovariate.newInstance();
@@ -282,11 +286,14 @@ final class SQLCovariateManager
 				}				
 				
 				results.add(adjustableCovariate);
-			}		
+			}
+			
+			connection.commit();
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("covariateManager.db.unableToGetCovariates");
 
@@ -370,22 +377,23 @@ final class SQLCovariateManager
 		final ArrayList<AbstractCovariate> covariates)
 		throws RIFServiceException {
 				
-		SQLRecordExistsQueryFormatter queryFormatter
-			= new SQLRecordExistsQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);		
-		queryFormatter.setFromTable("rif40_covariates");
-		queryFormatter.setLookupKeyFieldName("covariate_name");
-
-		
-		logSQLQuery(
-			"checkNonExistentCovariates - example query",
-			queryFormatter,
-			covariates.get(0).getName());
-				
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;		
 		AbstractCovariate currentCovariate = null;
 		try {
+		
+			SQLRecordExistsQueryFormatter queryFormatter
+				= new SQLRecordExistsQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);		
+			queryFormatter.setFromTable("rif40_covariates");
+			queryFormatter.setLookupKeyFieldName("covariate_name");
+
+		
+			logSQLQuery(
+				"checkNonExistentCovariates - example query",
+				queryFormatter,
+				covariates.get(0).getName());
+				
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			
@@ -404,17 +412,24 @@ final class SQLCovariateManager
 						= new RIFServiceException(
 							RIFServiceError.NON_EXISTENT_COVARIATE, 
 							errorMessage);
-					
+			
 					SQLQueryUtility.close(statement);
 					SQLQueryUtility.close(resultSet);
+
+					connection.commit();
 					
-					throw rifServiceException;				
+					throw rifServiceException;
 				}
+				
 			}
+			
+			connection.commit();
+		
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",

@@ -125,23 +125,23 @@ final class SQLDiseaseMappingStudyManager
 		final User user) 
 		throws RIFServiceException {
 		
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);		
-		queryFormatter.addSelectField("project");
-		queryFormatter.addSelectField("description");
-		queryFormatter.addSelectField("date_started");		
-		queryFormatter.addSelectField("date_ended");		
-		queryFormatter.addFromTable("rif40_projects");
-				
-		logSQLQuery(
-			"getProjects",
-			queryFormatter);
-							
-		ArrayList<Project> results = new ArrayList<Project>();
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
-		
+		ArrayList<Project> results = new ArrayList<Project>();
 		try {
+			
+			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);		
+			queryFormatter.addSelectField("project");
+			queryFormatter.addSelectField("description");
+			queryFormatter.addSelectField("date_started");		
+			queryFormatter.addSelectField("date_ended");		
+			queryFormatter.addFromTable("rif40_projects");
+				
+			logSQLQuery(
+				"getProjects",
+				queryFormatter);
+									
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			resultSet = statement.executeQuery();
 			while (resultSet.next()) {
@@ -162,10 +162,13 @@ final class SQLDiseaseMappingStudyManager
 				}
 				results.add(project);
 			}
+			
+			connection.commit();
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"diseaseMappingStudyManager.error.unableToGetProjects",
@@ -328,25 +331,25 @@ final class SQLDiseaseMappingStudyManager
 		final String studyID)
 		throws RIFServiceException {
 		
-		SQLRecordExistsQueryFormatter queryFormatter
-			= new SQLRecordExistsQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.setFromTable("rif40_studies");
-		queryFormatter.setLookupKeyFieldName("study_id");
-
-		logSQLQuery(
-			"checkDiseaseMappingStudyExists",
-			queryFormatter,
-			studyID);
-		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+
+			SQLRecordExistsQueryFormatter queryFormatter
+				= new SQLRecordExistsQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.setFromTable("rif40_studies");
+			queryFormatter.setLookupKeyFieldName("study_id");
+
+			logSQLQuery(
+				"checkDiseaseMappingStudyExists",
+				queryFormatter,
+				studyID);
+		
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, Integer.valueOf(studyID));
 			resultSet = statement.executeQuery();
-			
 			if (resultSet.next() == false) {
 				String recordType
 					= RIFServiceMessages.getMessage("diseaseMappingStudy.label");
@@ -359,12 +362,18 @@ final class SQLDiseaseMappingStudyManager
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_DISEASE_MAPPING_STUDY, 
 						errorMessage);
+				
+				connection.commit();
+				
 				throw rifServiceException;
 			}
+
+			connection.commit();
 		}
 		catch(SQLException sqlException) {			
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("diseaseMappingStudy.label");			
 			String errorMessage

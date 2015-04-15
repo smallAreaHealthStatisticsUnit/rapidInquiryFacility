@@ -10,7 +10,6 @@ import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 import rifServices.util.RIFLogger;
 
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -138,7 +137,6 @@ final class SQLRIFSubmissionManager
 		PreparedStatement deleteStudyAreasStatement = null;
 		PreparedStatement deleteInvestigationsStatement = null;
 		PreparedStatement deleteStudiesStatement = null;
-
 		try {
 			SQLDeleteRowsQueryFormatter deleteComparisonAreasQueryFormatter
 				= new SQLDeleteRowsQueryFormatter();
@@ -185,10 +183,14 @@ final class SQLRIFSubmissionManager
 			deleteStudiesStatement.setString(1, userID);
 			deleteStudiesStatement.executeUpdate();
 
+			
+			connection.commit();
+			
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToClearSubmissionsForUser",
@@ -232,30 +234,48 @@ final class SQLRIFSubmissionManager
 
 		//KLG: TODO: Later on we should not rely on casting - it might
 		//be a risk analysis study
+		String result = null;
 		DiseaseMappingStudy diseaseMappingStudy
 			= (DiseaseMappingStudy) studySubmission.getStudy();
+		try {
+			
 		
-		Project project = studySubmission.getProject();
-		addGeneralInformationToStudy(
-			connection,
-			user,
-			project,
-			diseaseMappingStudy);
+			Project project = studySubmission.getProject();
+			addGeneralInformationToStudy(
+				connection,
+				user,
+				project,
+				diseaseMappingStudy);
 
-		addComparisonAreaToStudy(
-			connection, 
-			diseaseMappingStudy);
+			addComparisonAreaToStudy(
+				connection, 
+				diseaseMappingStudy);
 		
-		addStudyAreaToStudy(
-			connection,
-			diseaseMappingStudy);
+			addStudyAreaToStudy(
+				connection,
+				diseaseMappingStudy);
 		
-		addInvestigationsToStudy(
-			connection, 
-			true, 
-			diseaseMappingStudy);
+			addInvestigationsToStudy(
+				connection, 
+				true, 
+				diseaseMappingStudy);
 		
-		return getCurrentStudyID(connection);
+			result = getCurrentStudyID(connection);
+			
+			connection.commit();
+			return result;
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlRIFSubmissionManager.error.unableToAddStudySubmission",
+					diseaseMappingStudy.getDisplayName());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;			
+		}
 	}
 	
 	/*
@@ -263,42 +283,27 @@ final class SQLRIFSubmissionManager
 	 */
 	private String getCurrentStudyID(
 		final Connection connection) 
-		throws RIFServiceException {
+		throws SQLException,
+		RIFServiceException {
 					
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		queryFormatter.addQueryLine(0, "SELECT");
-		queryFormatter.addQueryLine(1, "currval('rif40_study_id_seq'::regclass);");
 
 		String result = null;
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryLine(0, "SELECT");
+			queryFormatter.addQueryLine(1, "currval('rif40_study_id_seq'::regclass);");
+
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			resultSet
 				= statement.executeQuery();
 			resultSet.next();
 			
-			result = resultSet.getString(1);			
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToGetCurrentStudyIdentifier");
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLRIFSubmissionManager.class, 
-				errorMessage, 
-				sqlException);
-		
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
+			result = resultSet.getString(1);	
+			
+			return result;
 		}
 		finally {
 			//Cleanup database resources			
@@ -306,7 +311,6 @@ final class SQLRIFSubmissionManager
 			SQLQueryUtility.close(resultSet);
 		}
 		
-		return result;
 	}
 
 	private void addGeneralInformationToStudy(
@@ -314,99 +318,75 @@ final class SQLRIFSubmissionManager
 		final User user,
 		final Project project,
 		final DiseaseMappingStudy diseaseMappingStudy) 
-		throws RIFServiceException {
+		throws SQLException,
+		RIFServiceException {
 	
-		//add information about who can share the study
-		SQLInsertQueryFormatter studyShareQueryFormatter
-			= new SQLInsertQueryFormatter();
-		studyShareQueryFormatter.setIntoTable("rif40_study_shares");
-		studyShareQueryFormatter.addInsertField("grantee_username");
 
 		PreparedStatement studyShareStatement = null;
+		PreparedStatement addStudyStatement = null;
 		try {
+			//add information about who can share the study
+			SQLInsertQueryFormatter studyShareQueryFormatter
+				= new SQLInsertQueryFormatter();
+			studyShareQueryFormatter.setIntoTable("rif40_study_shares");
+			studyShareQueryFormatter.addInsertField("grantee_username");
+
 			studyShareStatement 
 				= connection.prepareStatement(studyShareQueryFormatter.generateQuery());
 			studyShareStatement.setString(1, user.getUserID());
-			studyShareStatement.executeUpdate();			
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToAddComparisonAreaToStudy",
-					diseaseMappingStudy.getName());
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLRIFSubmissionManager.class, 
-				errorMessage, 
-				sqlException);
+			studyShareStatement.executeUpdate();
 			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			//Cleanup database resources			
-			SQLQueryUtility.close(studyShareStatement);
-		}
-		
-		//add information about who can share the study
-		SQLInsertQueryFormatter studyQueryFormatter
-			= new SQLInsertQueryFormatter();
-		studyQueryFormatter.setIntoTable("rif40_studies");
-		studyQueryFormatter.addInsertField("geography");
-		studyQueryFormatter.addInsertField("project");
-		studyQueryFormatter.addInsertField("study_name");
-		studyQueryFormatter.addInsertField("study_type");
-		studyQueryFormatter.addInsertField("comparison_geolevel_name");
-		studyQueryFormatter.addInsertField("study_geolevel_name");
-		studyQueryFormatter.addInsertField("denom_tab");
-		studyQueryFormatter.addInsertField("year_start");
-		studyQueryFormatter.addInsertField("year_stop");
-		studyQueryFormatter.addInsertField("max_age_group");
-		studyQueryFormatter.addInsertField("min_age_group");
-		studyQueryFormatter.addInsertField("suppression_value");
-		studyQueryFormatter.addInsertField("extract_permitted");
-		studyQueryFormatter.addInsertField("transfer_permitted");
+			//add information about who can share the study
+			SQLInsertQueryFormatter studyQueryFormatter
+				= new SQLInsertQueryFormatter();
+			studyQueryFormatter.setIntoTable("rif40_studies");
+			studyQueryFormatter.addInsertField("geography");
+			studyQueryFormatter.addInsertField("project");
+			studyQueryFormatter.addInsertField("study_name");
+			studyQueryFormatter.addInsertField("study_type");
+			studyQueryFormatter.addInsertField("comparison_geolevel_name");
+			studyQueryFormatter.addInsertField("study_geolevel_name");
+			studyQueryFormatter.addInsertField("denom_tab");
+			studyQueryFormatter.addInsertField("year_start");
+			studyQueryFormatter.addInsertField("year_stop");
+			studyQueryFormatter.addInsertField("max_age_group");
+			studyQueryFormatter.addInsertField("min_age_group");
+			studyQueryFormatter.addInsertField("suppression_value");
+			studyQueryFormatter.addInsertField("extract_permitted");
+			studyQueryFormatter.addInsertField("transfer_permitted");
 
-		PreparedStatement statement = null;
-		try {
-			statement
+			addStudyStatement
 				= connection.prepareStatement(studyQueryFormatter.generateQuery());
 			int ithQueryParameter = 0;	
 			
 			Geography geography 
 				= diseaseMappingStudy.getGeography();
-			statement.setString(
+			addStudyStatement.setString(
 				ithQueryParameter++, 
 				geography.getName());
 			
-			statement.setString(
+			addStudyStatement.setString(
 				ithQueryParameter++, 
 				project.getName());
 			
-			statement.setString(
+			addStudyStatement.setString(
 				ithQueryParameter++, 
 				diseaseMappingStudy.getName());
 			
 			//study type will always be "C" for created
-			statement.setString(
+			addStudyStatement.setString(
 				ithQueryParameter++,
 				"C");
 			
 			ComparisonArea comparisonArea
 				= diseaseMappingStudy.getComparisonArea();
-			statement.setString(
+			addStudyStatement.setString(
 				ithQueryParameter++, 
 				comparisonArea.getGeoLevelToMap().getName());
 						
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= diseaseMappingStudy.getDiseaseMappingStudyArea();
-			statement.setString(
+			addStudyStatement.setString(
 				ithQueryParameter++, 
 				diseaseMappingStudyArea.getGeoLevelToMap().getName());
 			
@@ -416,72 +396,53 @@ final class SQLRIFSubmissionManager
 				= diseaseMappingStudy.getInvestigations().get(0);
 			NumeratorDenominatorPair ndPair
 				= firstInvestigation.getNdPair();
-			statement.setString(
+			addStudyStatement.setString(
 				ithQueryParameter++,
 				ndPair.getDenominatorTableName());
 			
 			YearRange yearRange 
 				= firstInvestigation.getYearRange();
 			//year_start
-			statement.setInt(
+			addStudyStatement.setInt(
 				ithQueryParameter++, 
 				Integer.valueOf(yearRange.getLowerBound()));
 			//year_stop
-			statement.setInt(
+			addStudyStatement.setInt(
 				ithQueryParameter++, 
 				Integer.valueOf(yearRange.getUpperBound()));
 			//max_age_group
 			AgeGroup maximumAgeGroup = firstInvestigation.getMaximumAgeGroup();
-			statement.setInt(
+			addStudyStatement.setInt(
 				ithQueryParameter++, 
 				Integer.valueOf(maximumAgeGroup.getUpperLimit()));
 			//min_age_group
 			AgeGroup minimumAgeGroup = firstInvestigation.getMinimumAgeGroup();
-			statement.setInt(
+			addStudyStatement.setInt(
 				ithQueryParameter++, 
 				Integer.valueOf(minimumAgeGroup.getLowerLimit()));
 
 			//KLG: Ask about this -- if we left it out would it get a value automatically?
 			//for now, set suppression threshold to zero
-			statement.setInt(
+			addStudyStatement.setInt(
 				ithQueryParameter++, 
 				0);
 			
 			//setting extract permitted
-			statement.setInt(
+			addStudyStatement.setInt(
 				ithQueryParameter++, 
 				0);			
 
 			//setting transfer permitted
-			statement.setInt(
+			addStudyStatement.setInt(
 				ithQueryParameter++, 
 				0);			
 			
-			statement.executeUpdate();			
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToAddComparisonAreaToStudy",
-					diseaseMappingStudy.getName());
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLAgeGenderYearManager.class, 
-				errorMessage, 
-				sqlException);
-		
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
+			addStudyStatement.executeUpdate();			
 		}
 		finally {
-			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
+			//Cleanup database resources	
+			SQLQueryUtility.close(studyShareStatement);
+			SQLQueryUtility.close(addStudyStatement);
 		}
 	}
 	
@@ -489,50 +450,41 @@ final class SQLRIFSubmissionManager
 		final Connection connection,
 		final boolean isGeography,
 		final DiseaseMappingStudy diseaseMappingStudy) 
-		throws RIFServiceException {
+		throws SQLException,
+		RIFServiceException {
 		
-		//we assume that the study is valid and that the caller has 
-		//invoked rifStudySubmission.checkErrors();
-		
-		ArrayList<Investigation> investigations
-			= diseaseMappingStudy.getInvestigations();
-		if (investigations.isEmpty()) {
-			return;
-		}
-		
-		SQLInsertQueryFormatter queryFormatter
-			= new SQLInsertQueryFormatter();
-		queryFormatter.setIntoTable("rif40_investigations");
-		
-		if (isGeography == true) {
-			queryFormatter.addInsertField("geography");			
-		}
-				
-		queryFormatter.addInsertField("inv_name");
-		queryFormatter.addInsertField("inv_description");
-		queryFormatter.addInsertField("genders");
-		queryFormatter.addInsertField("numer_tab");
-		queryFormatter.addInsertField("year_start");
-		queryFormatter.addInsertField("year_stop");
-		queryFormatter.addInsertField("max_age_group");
-		queryFormatter.addInsertField("min_age_group");
-			
 		PreparedStatement statement = null;
-		Investigation currentInvestigation = null;
 		try {
+		
+			//we assume that the study is valid and that the caller has 
+			//invoked rifStudySubmission.checkErrors();
+		
+			ArrayList<Investigation> investigations
+				= diseaseMappingStudy.getInvestigations();
+			if (investigations.isEmpty()) {
+				return;
+			}
+
+			SQLInsertQueryFormatter queryFormatter
+				= new SQLInsertQueryFormatter();
+			queryFormatter.setIntoTable("rif40_investigations");
+		
+			if (isGeography == true) {
+				queryFormatter.addInsertField("geography");			
+			}
+				
+			queryFormatter.addInsertField("inv_name");
+			queryFormatter.addInsertField("inv_description");
+			queryFormatter.addInsertField("genders");
+			queryFormatter.addInsertField("numer_tab");
+			queryFormatter.addInsertField("year_start");
+			queryFormatter.addInsertField("year_stop");
+			queryFormatter.addInsertField("max_age_group");
+			queryFormatter.addInsertField("min_age_group");
+			
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			
-			for (Investigation investigation : investigations) {
-				
-				//setting current investigation so that if there is a problem the
-				//catch block will have a reference to the offending investigation
-				//Another way to do this would be to have a for loop that encloses a 
-				//try...catch statement.  However, this is probably slower and we
-				//want to fail the operation if we have problems adding any investigation
-				//to the study
-				currentInvestigation = investigation;
-				
-				
+			for (Investigation investigation : investigations) {				
 				int ithQueryParameter = 0;	
 				if (isGeography == true) {
 					Geography geography = diseaseMappingStudy.getGeography();
@@ -595,27 +547,6 @@ final class SQLRIFSubmissionManager
 					investigation);				
 			}
 		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToAddInvestigationToStudy",
-					currentInvestigation.getTitle(),
-					diseaseMappingStudy.getName());
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLAgeGenderYearManager.class, 
-				errorMessage, 
-				sqlException);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
 		finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -629,23 +560,31 @@ final class SQLRIFSubmissionManager
 		throws RIFServiceException {
 		
 		
-		SQLFunctionCallerQueryFormatter queryFormatter 
-			= new SQLFunctionCallerQueryFormatter();
-		queryFormatter.setSchema("rif40_sm_pkg");
-		queryFormatter.setFunctionName("rif40_delete_study");
-		queryFormatter.setNumberOfFunctionParameters(1);
-		
+		String studyID 
+			= study.getIdentifier();
+		checkNonExistentStudyID(
+			connection, 
+			studyID);
 		
 		PreparedStatement statement = null;
 		try {
+			SQLFunctionCallerQueryFormatter queryFormatter 
+				= new SQLFunctionCallerQueryFormatter();
+			queryFormatter.setSchema("rif40_sm_pkg");
+			queryFormatter.setFunctionName("rif40_delete_study");
+			queryFormatter.setNumberOfFunctionParameters(1);
+		
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, study.getIdentifier());
 			statement.executeUpdate();
+			
+			connection.commit();
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToDeleteStudy",
@@ -668,23 +607,21 @@ final class SQLRIFSubmissionManager
 			SQLQueryUtility.close(statement);
 		}	
 	}
-	
-	
-	
-	
+		
 	private void addStudyAreaToStudy(
 		final Connection connection,
 		final DiseaseMappingStudy diseaseMappingStudy) 
-		throws RIFServiceException {
-				
-		SQLInsertQueryFormatter queryFormatter
-			= new SQLInsertQueryFormatter();
-		queryFormatter.setIntoTable("rif40_study_areas");
-		queryFormatter.addInsertField("area_id");
-		queryFormatter.addInsertField("band_id");
+		throws SQLException,
+		RIFServiceException {
 				
 		PreparedStatement statement = null;
 		try {
+			SQLInsertQueryFormatter queryFormatter
+				= new SQLInsertQueryFormatter();
+			queryFormatter.setIntoTable("rif40_study_areas");
+			queryFormatter.addInsertField("area_id");
+			queryFormatter.addInsertField("band_id");
+				
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 						
@@ -704,26 +641,6 @@ final class SQLRIFSubmissionManager
 				statement.executeUpdate();
 			}			
 		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToAddStudyAreaToStudy",
-					diseaseMappingStudy.getName());
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLAgeGenderYearManager.class, 
-				errorMessage, 
-				sqlException);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
 		finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -733,15 +650,16 @@ final class SQLRIFSubmissionManager
 	private void addComparisonAreaToStudy(
 		final Connection connection,
 		final DiseaseMappingStudy diseaseMappingStudy) 
-		throws RIFServiceException {
+		throws SQLException,
+		RIFServiceException {
 	
-		SQLInsertQueryFormatter queryFormatter
-			= new SQLInsertQueryFormatter();
-		queryFormatter.setIntoTable("rif40_comparison_areas");
-		queryFormatter.addInsertField("area_id");
-		
 		PreparedStatement statement = null;
 		try {
+			SQLInsertQueryFormatter queryFormatter
+				= new SQLInsertQueryFormatter();
+			queryFormatter.setIntoTable("rif40_comparison_areas");
+			queryFormatter.addInsertField("area_id");
+		
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			
@@ -753,26 +671,6 @@ final class SQLRIFSubmissionManager
 				statement.setString(1, mapArea.getGeographicalIdentifier());
 				statement.executeUpdate();
 			}
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToAddComparisonAreaToStudy",
-					diseaseMappingStudy.getName());
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLRIFSubmissionManager.class, 
-				errorMessage, 
-				sqlException);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
 		}
 		finally {
 			//Cleanup database resources			
@@ -786,19 +684,20 @@ final class SQLRIFSubmissionManager
 		final Connection connection,
 		final DiseaseMappingStudy diseaseMappingStudy,
 		final Investigation investigation) 
-		throws RIFServiceException {
-		
-		SQLInsertQueryFormatter queryFormatter
-			= new SQLInsertQueryFormatter();
-		queryFormatter.setIntoTable("rif40_inv_covariates");
-		queryFormatter.addInsertField("geography");
-		queryFormatter.addInsertField("covariate_name");
-		queryFormatter.addInsertField("study_geolevel_name");
-		queryFormatter.addInsertField("min");
-		queryFormatter.addInsertField("max");
+		throws SQLException,
+		RIFServiceException {
 		
 		PreparedStatement statement = null;
 		try {
+			SQLInsertQueryFormatter queryFormatter
+				= new SQLInsertQueryFormatter();
+			queryFormatter.setIntoTable("rif40_inv_covariates");
+			queryFormatter.addInsertField("geography");
+			queryFormatter.addInsertField("covariate_name");
+			queryFormatter.addInsertField("study_geolevel_name");
+			queryFormatter.addInsertField("min");
+			queryFormatter.addInsertField("max");
+		
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			int ithQueryParameter = 0;
@@ -832,26 +731,6 @@ final class SQLRIFSubmissionManager
 				statement.executeUpdate();
 			}
 		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToAddCovariatesToStudy",
-					diseaseMappingStudy.getName());
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLAgeGenderYearManager.class, 
-				errorMessage, 
-				sqlException);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
 		finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -862,15 +741,16 @@ final class SQLRIFSubmissionManager
 		final Connection connection,
 		final DiseaseMappingStudy diseaseMappingStudy,
 		final Investigation investigation) 
-		throws RIFServiceException {
-				
-		SQLInsertQueryFormatter queryFormatter
-			= new SQLInsertQueryFormatter();
-		queryFormatter.setIntoTable("rif40_inv_conditions");
-		queryFormatter.addInsertField("condition");
+		throws SQLException,
+		RIFServiceException {
 				
 		PreparedStatement statement = null;
 		try {
+			SQLInsertQueryFormatter queryFormatter
+				= new SQLInsertQueryFormatter();
+			queryFormatter.setIntoTable("rif40_inv_conditions");
+			queryFormatter.addInsertField("condition");
+				
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 
@@ -883,26 +763,6 @@ final class SQLRIFSubmissionManager
 				statement.setString(1, healthCode.getCode());				
 				statement.executeUpdate();
 			}
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToAddComparisonAreaToStudy",
-					diseaseMappingStudy.getName());
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLAgeGenderYearManager.class, 
-				errorMessage, 
-				sqlException);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
 		}
 		finally {
 			//Cleanup database resources			
@@ -921,49 +781,67 @@ final class SQLRIFSubmissionManager
 		//check for non-existent study given id
 		//checkNonExistentStudy(studyID);
 		
+		checkNonExistentStudyID(
+			connection, 
+			studyID);
+
 		DiseaseMappingStudy result
 			= DiseaseMappingStudy.newInstance();
-		result.setIdentifier(studyID);
+		try {
+			result.setIdentifier(studyID);
 		
-		retrieveGeneralInformationForStudy(
-			connection,
-			result);
+			retrieveGeneralInformationForStudy(
+				connection,
+				result);
 		
-		retrieveStudyAreaForStudy(
-			connection,
-			result);
+			retrieveStudyAreaForStudy(
+				connection,
+				result);
 		
-		retrieveComparisonAreaForStudy(
-			connection,
-			result);
+			retrieveComparisonAreaForStudy(
+				connection,
+				result);
 
-		retrieveInvestigationsForStudy(
-			connection,
-			result);
-		
-		return result;
-		
+			retrieveInvestigationsForStudy(
+				connection,
+				result);
+			return result;
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);			
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlRIFSubmissionManager.error.unableToGetDiseaseMappingStudy",
+					studyID);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+			throw rifServiceException;
+		}		
 	}
 	
 	private void retrieveGeneralInformationForStudy(
 		final Connection connection,
 		final DiseaseMappingStudy diseaseMappingStudy) 
-		throws RIFServiceException {
+		throws SQLException,
+		RIFServiceException {
 				
-		SQLSelectQueryFormatter queryFormatter
-			= new SQLSelectQueryFormatter();
-		queryFormatter.addFromTable("rif40_studies");
-		queryFormatter.addSelectField("study_name");
-		queryFormatter.addSelectField("geography");
-		//queryFormatter.addSelectField("project");
-		queryFormatter.addSelectField("comparison_geolevel_name");
-		queryFormatter.addSelectField("study_geolevel_name");
-		queryFormatter.addSelectField("denom_tab");
-		queryFormatter.addWhereParameter("study_id");
-
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			SQLSelectQueryFormatter queryFormatter
+				= new SQLSelectQueryFormatter();
+			queryFormatter.addFromTable("rif40_studies");
+			queryFormatter.addSelectField("study_name");
+			queryFormatter.addSelectField("geography");
+			//queryFormatter.addSelectField("project");
+			queryFormatter.addSelectField("comparison_geolevel_name");
+			queryFormatter.addSelectField("study_geolevel_name");
+			queryFormatter.addSelectField("denom_tab");
+			queryFormatter.addWhereParameter("study_id");
+
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, diseaseMappingStudy.getIdentifier());
@@ -974,6 +852,7 @@ final class SQLRIFSubmissionManager
 			diseaseMappingStudy.setName(resultSet.getString(1));
 			Geography geography
 				= Geography.newInstance(resultSet.getString(2), "");
+			diseaseMappingStudy.setGeography(geography);		
 			
 			//KLG: Note that we cannot reconstitute geolevel select, geolevel view,
 			//geo level area -- just 'to map'
@@ -991,32 +870,6 @@ final class SQLRIFSubmissionManager
 			
 			//retrieving denom is awkward because we need both denom and numer to
 			//reconstitute ndPair
-			
-			
-			
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			
-			//KLG TODO: perhaps modify what we report here.  We may not have a name
-			//to report here yet
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToRetrieveGeneralInformationForStudy",
-					diseaseMappingStudy.getName());
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLAgeGenderYearManager.class, 
-				errorMessage, 
-				sqlException);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
 		}
 		finally {
 			//Cleanup database resources			
@@ -1028,19 +881,19 @@ final class SQLRIFSubmissionManager
 	private void retrieveStudyAreaForStudy(
 		final Connection connection,
 		final DiseaseMappingStudy diseaseMappingStudy)
-		throws RIFServiceException {
+		throws SQLException,
+		RIFServiceException {
 					
-		SQLSelectQueryFormatter queryFormatter
-			= new SQLSelectQueryFormatter();
-		queryFormatter.addFromTable("rif40_study_areas");
-		queryFormatter.addSelectField("area_id");
-		queryFormatter.addSelectField("band_id");
-		queryFormatter.addWhereParameter("study_id");
-			
-			
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			SQLSelectQueryFormatter queryFormatter
+				= new SQLSelectQueryFormatter();
+			queryFormatter.addFromTable("rif40_study_areas");
+			queryFormatter.addSelectField("area_id");
+			queryFormatter.addSelectField("band_id");
+			queryFormatter.addWhereParameter("study_id");
+			
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, diseaseMappingStudy.getIdentifier());
@@ -1061,26 +914,6 @@ final class SQLRIFSubmissionManager
 			}
 				diseaseMappingStudy.setDiseaseMappingStudyArea(diseaseMappingStudyArea);
 		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToRetrieveHealthCodesForStudy",
-					diseaseMappingStudy.getName());
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLAgeGenderYearManager.class, 
-				errorMessage, 
-				sqlException);
-				
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
 		finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -1091,17 +924,18 @@ final class SQLRIFSubmissionManager
 	private void retrieveComparisonAreaForStudy(
 		final Connection connection,
 		final DiseaseMappingStudy diseaseMappingStudy)
-		throws RIFServiceException {
+		throws SQLException,
+		RIFServiceException {
 				
-		SQLSelectQueryFormatter queryFormatter
-			= new SQLSelectQueryFormatter();
-		queryFormatter.addFromTable("rif40_comparison_areas");
-		queryFormatter.addSelectField("area_id");
-		queryFormatter.addWhereParameter("study_id");
-		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			SQLSelectQueryFormatter queryFormatter
+			= new SQLSelectQueryFormatter();
+			queryFormatter.addFromTable("rif40_comparison_areas");
+			queryFormatter.addSelectField("area_id");
+			queryFormatter.addWhereParameter("study_id");
+		
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, diseaseMappingStudy.getIdentifier());
@@ -1123,26 +957,6 @@ final class SQLRIFSubmissionManager
 
 			diseaseMappingStudy.setComparisonArea(comparisonArea);
 		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToRetrieveComparisonAreaForStudy",
-					diseaseMappingStudy.getName());
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLAgeGenderYearManager.class, 
-				errorMessage, 
-				sqlException);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
 		finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -1153,26 +967,27 @@ final class SQLRIFSubmissionManager
 	private void retrieveInvestigationsForStudy(
 		final Connection connection,
 		final DiseaseMappingStudy diseaseMappingStudy)
-		throws RIFServiceException {
+		throws SQLException,
+		RIFServiceException {
 		
-		SQLSelectQueryFormatter queryFormatter
-			= new SQLSelectQueryFormatter();
-		queryFormatter.addSelectField("inv_id");
-		queryFormatter.addSelectField("inv_name");
-		queryFormatter.addSelectField("inv_description");
-		queryFormatter.addSelectField("year_start");
-		queryFormatter.addSelectField("year_stop");
-		queryFormatter.addSelectField("max_age_group");
-		queryFormatter.addSelectField("min_age_group");
-		queryFormatter.addSelectField("genders");
-		queryFormatter.addSelectField("numer_tab");
-		
-		queryFormatter.addFromTable("rif40_investigations");
-		queryFormatter.addWhereParameter("study_id");
-				
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			SQLSelectQueryFormatter queryFormatter
+				= new SQLSelectQueryFormatter();
+			queryFormatter.addSelectField("inv_id");
+			queryFormatter.addSelectField("inv_name");
+			queryFormatter.addSelectField("inv_description");
+			queryFormatter.addSelectField("year_start");
+			queryFormatter.addSelectField("year_stop");
+			queryFormatter.addSelectField("max_age_group");
+			queryFormatter.addSelectField("min_age_group");
+			queryFormatter.addSelectField("genders");
+			queryFormatter.addSelectField("numer_tab");
+		
+			queryFormatter.addFromTable("rif40_investigations");
+			queryFormatter.addWhereParameter("study_id");
+				
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, diseaseMappingStudy.getIdentifier());
@@ -1249,26 +1064,6 @@ final class SQLRIFSubmissionManager
 			}
 			
 		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToRetrieveInvestigationsForStudy",
-					diseaseMappingStudy.getName());
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLAgeGenderYearManager.class, 
-				errorMessage, 
-				sqlException);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
 		finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -1289,17 +1084,18 @@ final class SQLRIFSubmissionManager
 		throws SQLException,
 		RIFServiceException {
 				
-		SQLSelectQueryFormatter queryFormatter
-			= new SQLSelectQueryFormatter();
-		queryFormatter.addFromTable("rif40_age_groups");
-		queryFormatter.addSelectField("low_age");
-		queryFormatter.addSelectField("high_age");
-		queryFormatter.addSelectField("fieldname");
-			
-		AgeGroup result = null;
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
+		AgeGroup result = null;
 		try {
+			
+			SQLSelectQueryFormatter queryFormatter
+				= new SQLSelectQueryFormatter();
+			queryFormatter.addFromTable("rif40_age_groups");
+			queryFormatter.addSelectField("low_age");
+			queryFormatter.addSelectField("high_age");
+			queryFormatter.addSelectField("fieldname");
+			
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, ageGroupIdentifier);
@@ -1321,170 +1117,28 @@ final class SQLRIFSubmissionManager
 		return result;
 	}
 	
-	private void retrieveCovariatesForStudy(
-		final Connection connection,
-		final DiseaseMappingStudy diseaseMappingStudy,
-		final Investigation investigation)
-		throws RIFServiceException {
-		
-
-		SQLSelectQueryFormatter queryFormatter
-			= new SQLSelectQueryFormatter();
-		queryFormatter.addFromTable("rif40_inv_covariates");
-		queryFormatter.addSelectField("covariate_name");
-		queryFormatter.addSelectField("min");
-		queryFormatter.addSelectField("max");				
-		queryFormatter.addWhereParameter("study_id");
-		queryFormatter.addWhereParameter("inv_id");
-
-		
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		try {
-			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
-			int ithParameter = 0;
-			statement.setString(
-				ithParameter++, 
-				diseaseMappingStudy.getIdentifier());
-			statement.setString(
-				ithParameter++,
-				investigation.getIdentifier());
-			
-			resultSet
-				= statement.executeQuery();
-			while (resultSet.next()) {
-				//KLG: TODO - In the future we will have either adjustable or 
-				//exposure covariates.  We will need a way of telling the difference
-				//when we retrieve covariate data from the database.
-				
-				ExposureCovariate covariate
-					= ExposureCovariate.newInstance();
-				//We need a way of finding covariate type out.  This is just a guess
-				covariate.setCovariateType(CovariateType.BINARY_INTEGER_SCORE);
-				
-				//do we need geography?
-				ithParameter = 0;
-				
-				covariate.setName(
-					resultSet.getString(ithParameter++));
-				covariate.setMinimumValue(String.valueOf(resultSet.getDouble(ithParameter++)));
-				covariate.setMaximumValue(String.valueOf(resultSet.getDouble(ithParameter++)));
-				investigation.addCovariate(covariate);
-			}
-			
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToRetrieveHealthCodesForStudy",
-					diseaseMappingStudy.getName());
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLAgeGenderYearManager.class, 
-				errorMessage, 
-				sqlException);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
-		}
-	}
-	
-
-	private void retrieveHealthCodesForStudy(
-		final Connection connection,
-		final DiseaseMappingStudy diseaseMappingStudy,
-		final Investigation investigation) 
-		throws RIFServiceException {
-		
-		SQLSelectQueryFormatter queryFormatter
-			= new SQLSelectQueryFormatter();
-		queryFormatter.addFromTable("rif40_inv_conditions");
-		queryFormatter.addSelectField("condition");
-		queryFormatter.addWhereParameter("study_id");
-		queryFormatter.addWhereParameter("inv_id");
-		
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		try {
-			statement
-				= connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setString(1, diseaseMappingStudy.getIdentifier());
-			statement.setString(2, investigation.getIdentifier());
-			resultSet
-				= statement.executeQuery();
-						
-			while (resultSet.next()) {
-				HealthCode healthCode
-					= HealthCode.newInstance();
-				//KLG TODO:
-				//at the moment we can only get the code.  later we should
-				//get the name space as well
-				healthCode.setCode(resultSet.getString(1));
-				healthCode.setNameSpace("needs_name_space");
-				investigation.addHealthCode(healthCode);
-			}
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToRetrieveHealthCodesForStudy",
-					diseaseMappingStudy.getName());
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLAgeGenderYearManager.class, 
-				errorMessage, 
-				sqlException);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
-		}		
-	}
-	
 	private NumeratorDenominatorPair getNDPairForNumeratorTableName(
 		final Connection connection,
 		final String numeratorTableName) 
 		throws SQLException,
 		RIFServiceException {
-			
-		NumeratorDenominatorPair result = null;
-		
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.setUseDistinct(true);
-		queryFormatter.addSelectField("numerator_description");
-		queryFormatter.addSelectField("denominator_table");
-		queryFormatter.addSelectField("denominator_description");		
-		queryFormatter.addFromTable("rif40_num_denom");
-		queryFormatter.addWhereParameter("numerator_table");
-		
-		PreparedStatement statement 
-			= connection.prepareStatement(queryFormatter.generateQuery());
-		statement.setString(1, numeratorTableName);
+
 		ResultSet resultSet = null;
+		NumeratorDenominatorPair result = null;
+		PreparedStatement statement = null;
 		try {
+			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.setUseDistinct(true);
+			queryFormatter.addSelectField("numerator_description");
+			queryFormatter.addSelectField("denominator_table");
+			queryFormatter.addSelectField("denominator_description");		
+			queryFormatter.addFromTable("rif40_num_denom");
+			queryFormatter.addWhereParameter("numerator_table");
+		
+			statement 
+				= connection.prepareStatement(queryFormatter.generateQuery());
+			statement.setString(1, numeratorTableName);
 			resultSet = statement.executeQuery();
 			resultSet.next();
 			result = NumeratorDenominatorPair.newInstance();
@@ -1506,18 +1160,18 @@ final class SQLRIFSubmissionManager
 		final User user) 
 		throws RIFServiceException {
 		
-		SQLSelectQueryFormatter queryFormatter
-			= new SQLSelectQueryFormatter();
-		queryFormatter.addFromTable("rif40_studies");
-		queryFormatter.addSelectField("study_id");
-		queryFormatter.addSelectField("study_name");
-		queryFormatter.addSelectField("description");
-		queryFormatter.addWhereParameter("username");
-
 		ArrayList<StudySummary> results = new ArrayList<StudySummary>();
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			SQLSelectQueryFormatter queryFormatter
+				= new SQLSelectQueryFormatter();
+			queryFormatter.addFromTable("rif40_studies");
+			queryFormatter.addSelectField("study_id");
+			queryFormatter.addSelectField("study_name");
+			queryFormatter.addSelectField("description");
+			queryFormatter.addWhereParameter("username");
+
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, user.getUserID());
@@ -1536,14 +1190,16 @@ final class SQLRIFSubmissionManager
 				results.add(studySummary);
 			}
 			
+			connection.commit();
 			return results;			
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToRetrieveHealthCodesForStudy",
+					"sqlRIFSubmissionManager.error.unableToGetStudySummariesForUser",
 					user.getUserID());
 
 			RIFLogger rifLogger = RIFLogger.getLogger();
@@ -1565,31 +1221,7 @@ final class SQLRIFSubmissionManager
 		}		
 		
 	}
-			
-			
-			
-			
-	/*
-	public ArrayList<RIFJobSubmission> getRIFJobSubmissionsForUser(
-		final Connection connection,
-		final User user) {
 		
-		//Step 1: Obtain study records
-		
-		
-		//Step 2: Obtain investigations for a given study
-		
-		//Step 3: Find health outcomes for a given investigation
-		
-		//Step 4: Find covariates for a given investigation
-		
-
-		
-		
-		
-	}
-	*/
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -1629,21 +1261,21 @@ final class SQLRIFSubmissionManager
 		final String studyID)
 		throws RIFServiceException {
 		
-		SQLRecordExistsQueryFormatter queryFormatter
-			= new SQLRecordExistsQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.setLookupKeyFieldName("study_id");
-		queryFormatter.setFromTable("rif40_studies");		
-
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			SQLRecordExistsQueryFormatter queryFormatter
+				= new SQLRecordExistsQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.setLookupKeyFieldName("study_id");
+			queryFormatter.setFromTable("rif40_studies");		
+
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, studyID);
 			resultSet = statement.executeQuery();
 
 			if (resultSet.next() == false) {
-				//ERROR: no such project exists
+				//ERROR: no such study exists
 				String recordType
 					= RIFServiceMessages.getMessage("abstractStudy.label");
 				String errorMessage
@@ -1655,12 +1287,19 @@ final class SQLRIFSubmissionManager
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_STUDY, 
 						errorMessage);
+				
+				connection.commit();
+				
 				throw rifServiceException;
-			}			
+				
+			}	
+		
+			connection.commit();
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("abstractStudy.label");			
 			String errorMessage
@@ -1693,27 +1332,26 @@ final class SQLRIFSubmissionManager
 		final Project project) 
 		throws RIFServiceException {
 		
-		//Create SQL query
-		SQLRecordExistsQueryFormatter queryFormatter
-			= new SQLRecordExistsQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.setLookupKeyFieldName("project");
-		queryFormatter.setFromTable("t_rif40_projects");
-		
-		//KLG: TODO - change table name
-		
+		//Parameterise and execute query		
 		PreparedStatement checkProjectExistsStatement = null;
 		ResultSet checkProjectExistsResultSet = null;
-		
-		//Parameterise and execute query		
 		try {
+			//Create SQL query
+			SQLRecordExistsQueryFormatter queryFormatter
+				= new SQLRecordExistsQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.setLookupKeyFieldName("project");
+			queryFormatter.setFromTable("t_rif40_projects");
+		
+			//KLG: TODO - change table name
+				
 			checkProjectExistsStatement
 				= connection.prepareStatement(
 					queryFormatter.generateQuery());
 			checkProjectExistsStatement.setString(1, project.getName());
 			checkProjectExistsResultSet 
 				= checkProjectExistsStatement.executeQuery();
-			
+		
 			if (checkProjectExistsResultSet.next() == false) {
 				//ERROR: no such project exists
 				String recordType
@@ -1727,12 +1365,19 @@ final class SQLRIFSubmissionManager
 					= new RIFServiceException(
 						RIFServiceError.NON_EXISTENT_PROJECT, 
 						errorMessage);
+				
+				connection.commit();
+				
 				throw rifServiceException;
 			}
+			
+			connection.commit();
+			
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("project.label");			
 			String errorMessage

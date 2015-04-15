@@ -212,6 +212,30 @@ public final class SQLQueryUtility {
 		}		
 	}
 	
+	public static void rollback(
+		final Connection connection ) 
+		throws RIFServiceException {
+		
+		if (connection == null) {
+			return;
+		}
+		
+		try {
+			connection.rollback();
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage("general.db.error.unableToRollback");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DB_UNABLE_TO_ROLLBACK,
+					errorMessage);
+			throw rifServiceException;
+		}
+		
+		
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
