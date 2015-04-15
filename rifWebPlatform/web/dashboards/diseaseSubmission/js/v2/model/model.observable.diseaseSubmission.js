@@ -112,6 +112,12 @@ RIF.model[ 'observable-diseaseSubmission' ] = ( function () {
       };
     },
 
+
+    /*
+     *  Check if dialog is ready to be opened
+     *
+     */
+
     isDialogReady: function ( dialog ) {
       var ready = false;
       if ( dialog == 'investigationDialog' ) {
@@ -131,23 +137,32 @@ RIF.model[ 'observable-diseaseSubmission' ] = ( function () {
         this[ dialog ] = 1;
       };
     },
-        
-    isDialogSelectionComplete: function(dialog){
-        var ready = false;
-        if ( dialog == 'parametersModal' ) {
-             ready = this.isInvestigationSelectionComplete();    
-        } else if ( dialog == 'areaSelectionModal' ) {
-             ready = this.isStudyAreaSelectionComplete();
-        };
-        
-        if(this.getDialogStatus(dialog) != ready){
-            this.fire('dialogClosed', ready);
-        };
-        
-        console.log(dialog + ' Selection is ready:' + ready);
+
+
+    /*
+     *  Check if all parameters for the specific
+     *  dialog have been selected
+     */
+
+    isDialogSelectionComplete: function ( dialog ) {
+      var previousState = {
+        state: this.getDialogStatus( dialog )
+      };
+      var ready;
+
+      if ( dialog == 'parametersModal' ) {
+        ready = this.isInvestigationSelectionComplete( dialog );
+      } else if ( dialog == 'areaSelectionModal' ) {
+        ready = this.isStudyAreaSelectionComplete( dialog );
+      };
+
+      if ( previousState.state != ready ) {
+        this.fire( 'dialogBgChange', dialog );
+      };
+
     },
-      
-      
+
+
     // FIRERS  
     selectAtChangeUpdate: function ( geolvl ) {
       this.fire( 'selectAtChangeUpdate', geolvl );

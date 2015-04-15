@@ -50,17 +50,22 @@ RIF.menu[ 'controller-frontSubmission' ] = ( function ( unit ) {
 
     showDialog: function ( dialog ) {
       unit.showDialog( dialog );
-    }
+    },
+
+    dialogBgChange: function ( dialog ) {
+      unit.dialogBgChange( dialog );
+    },
+
   };
 
-    
-  if(RIF.user == null || RIF.user == ""){
+
+  if ( RIF.user == null || RIF.user == "" ) {
     var msg = "Please <a href='../logIn/'>log in </a> first.";
-    RIF.statusBar( msg, true, 1, true );  
-  }else{
+    RIF.statusBar( msg, true, 1, true );
+  } else {
     _p.isLoggedIn();
   };
 
   return _p;
 
-});
+} );

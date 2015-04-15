@@ -76,11 +76,11 @@ RIF.initialize = ( function () {
         firer: [ "menu" ],
         method: "isDialogSelectionComplete"
       },
-      dialogClosed: {
+      dialogBgChange: {
         subscribers: [ "menu" ],
         firer: [ "model" ],
-        method: "dialogClosed"
-      },     
+        method: "dialogBgChange"
+      },
 
       /**-- Run Dialog ---**/
       isStudyReady: {

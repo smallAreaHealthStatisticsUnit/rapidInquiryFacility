@@ -1,17 +1,17 @@
 RIF.menu[ 'event-frontSubmission' ] = ( function ( dom, firer ) {
 
- var checkDialogSelection = function( d ){
-    var dialogName =  d.replace('#','');
-    firer.isDialogSelectionComplete(dialogName);  
- }; 
-    
- var close = function () {
+  var checkDialogSelection = function ( d ) {
+    var dialogName = d.replace( '#', '' );
+    firer.isDialogSelectionComplete( dialogName );
+  };
+
+  var close = function () {
     var id = $( this ).attr( 'href' );
     $( id ).hide();
     if ( id === '#statusbar' ) {
       RIF.statusBar( null, null, -1 );
     };
-    checkDialogSelection(id);
+    checkDialogSelection( id );
   };
 
   dom.dropdownInputs.keydown( function ( e ) {

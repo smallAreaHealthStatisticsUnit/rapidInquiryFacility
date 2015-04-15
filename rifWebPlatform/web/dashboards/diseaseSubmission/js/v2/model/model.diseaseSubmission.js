@@ -22,13 +22,13 @@ RIF.model = ( function ( type ) {
         comparisonArea_selectAt: null
       }
     },
-      
-    _dialogsStatus =  {
-        areaSelectionModal: 'false',
-        //comparisonArea: 'false',
-        parametersModal: 'false',    
-        //stats: 'false'     
-    },  
+
+    _dialogsStatus = {
+      areaSelectionModal: false,
+      //comparisonArea: false,
+      parametersModal: false,
+      //stats: false     
+    },
 
     _optionalVariables = [ "covariates", "description" ],
 
@@ -57,6 +57,7 @@ RIF.model = ( function ( type ) {
         console.log( '----------------------' );
         console.log( '----------------------' );
       },
+        
       addCurrentInvestigation: function () {
         var parametersClone = RIF.utils.extend( this.parameters, {} );
         _study.investigations[ this.investigationCounts ] = parametersClone;
@@ -64,6 +65,7 @@ RIF.model = ( function ( type ) {
         // this.showInvestigations();  
         return this.investigationCounts++;
       },
+        
       removeInvestigation: function ( i ) {
         if ( typeof _study.investigations[ i ] === 'object' ) {
           delete _study.investigations[ i ];
@@ -182,28 +184,28 @@ RIF.model = ( function ( type ) {
       getParameters: function () {
         return this.parameters;
       },
-     
+
       /* 
        * Model utils
        *
        */
-        
+
       unsetParameter: function ( i, h ) {
         delete this.parameters[ i ][ h ];
       },
-        
-      setDialogStatus: function(dialog, status){
-        _dialogsStatus[dialog] = status;
+
+      setDialogStatus: function ( dialog, status ) {
+        _dialogsStatus[ dialog ] = status;
       },
-      
-      getDialogStatus: function(dialog){
-        return _dialogsStatus[dialog];
-      },    
-          
-      isReady: function ( o ) {
-        if( jQuery.isEmptyObject( o ) ){
-            return false;
-        }; 
+
+      getDialogStatus: function ( dialog ) {
+        return _dialogsStatus[ dialog ];
+      },
+
+      isReadyAndNotify: function ( o ) {
+        if ( jQuery.isEmptyObject( o ) ) {
+          return false;
+        };
         var toComplete = [],
           iterate = function ( o ) {
             for ( var i in o ) {
@@ -219,6 +221,27 @@ RIF.model = ( function ( type ) {
           };
         iterate( o );
         return this.displayMissingParameters( toComplete );
+      },
+
+      isReady: function ( o ) {
+        if ( jQuery.isEmptyObject( o ) ) {
+          return false;
+        };
+        var toComplete = [],
+          iterate = function ( o ) {
+            for ( var i in o ) {
+              if ( _studyMethods.isOptional( i ) ) {
+                continue;
+              };
+              if ( o[ i ] == null || jQuery.isEmptyObject( o[ i ] ) ) {
+                toComplete.push( i );
+              } else if ( typeof o[ i ] == 'object' ) {
+                iterate( o[ i ] );
+              };
+            };
+          };
+        iterate( o );
+        return ( toComplete.length > 0 ) ? false : true;
       },
 
       isOptional: function ( p ) {
@@ -243,17 +266,19 @@ RIF.model = ( function ( type ) {
 
       isStudyReadyToBeSubmitted: function () {
         var study = RIF.utils.extend( _studyMethods.parameters, _study );
-        var ready = this.isReady( _study );
+        var ready = this.isReadyAndNotify( _study );
         console.log( "Ready:" + ready )
         return ready
       },
-        
+
+
+
       /*
        * The following methods are invoked  when a tree is clicked
        * Some dialogs require certain parameter to be set before opening
        */
-        
-      isstudyAreaDialogReady: function () {},  
+
+      isstudyAreaDialogReady: function () {},
       isComparisonAreaDialogReady: function () {},
 
       isInvestigationDialogReady: function () {
@@ -263,12 +288,15 @@ RIF.model = ( function ( type ) {
           numerator: _study.numerator,
           denominator: _study.denominator
         };
-        var ready = this.isReady( front );
+        var ready = this.isReadyAndNotify( front );
         return ready;
       },
-      
-      isStatDialogReady: function () {},    
-        
+
+      isStatDialogReady: function () {},
+
+
+
+
       /*
        * SELECTION COMPLETE CHECKS
        * The following methods are invoked  when a dialog is closed
@@ -276,22 +304,24 @@ RIF.model = ( function ( type ) {
        * Which then allows to singnal the completion of a specific dialog
        * And change of background image
        *
-       */  
-        
-      isStudyAreaSelectionComplete: function( dialog ){
-        var r =  this.isReady(_study.studyArea);
-        this.setDialogStatus(dialog, true);
-        return r;  
-      }, 
-        
-      isComparisonAreaSelectionComplete: function(){},
-      isInvestigationSelectionComplete: function(dialog){
-        var r =  this.isReady(_study.investigations);
-        this.setDialogStatus(dialog, true);
-        return r; 
+       */
+
+      isStudyAreaSelectionComplete: function ( dialog ) {
+        var r = this.isReady( _study.studyArea );
+        this.setDialogStatus( dialog, true );
+        return r;
       },
-      isStatSelectionComplete: function(){},    
-        
+
+      isComparisonAreaSelectionComplete: function () {},
+      isInvestigationSelectionComplete: function ( dialog ) {
+        var r = this.isReady( _study.investigations );
+        this.setDialogStatus( dialog, r );
+        return r;
+      },
+      isStatSelectionComplete: function () {},
+
     };
+    
   return RIF.utils.mix( _studyMethods, RIF.model[ 'observable-diseaseSubmission' ]() );
+    
 } );

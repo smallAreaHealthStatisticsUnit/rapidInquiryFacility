@@ -16,6 +16,10 @@ RIF.menu.frontSubmission = ( function ( _dom, menuUtils ) {
     writeUserName: function ( userName ) {
       _dom.userName.text( userName );
       $( _dom.logOut ).show();
+    },
+
+    dialogBgChange: function ( dialog ) {
+      $( "." + dialog ).toggleClass( "active" );
     }
 
 
