@@ -143,9 +143,11 @@ final class SQLRIFContextManager
 			logSQLQuery(
 				"getGeographies",
 				queryFormatter);
-
-			statement
-				= connection.prepareStatement(queryFormatter.generateQuery());
+			
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			dbResultSet = statement.executeQuery();
 			connection.commit();
 
@@ -227,8 +229,11 @@ final class SQLRIFContextManager
 				queryFormatter);
 				
 			//Parameterise and execute query		
-			statement
-				= connection.prepareStatement(queryFormatter.generateQuery());
+			
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			dbResultSet = statement.executeQuery();
 
 			while (dbResultSet.next()) {
@@ -320,9 +325,11 @@ final class SQLRIFContextManager
 				queryFormatter,
 				numeratorTableName);
 				
-			//Parameterise and execute query		
-			statement
-				= connection.prepareStatement(queryFormatter.generateQuery());
+			//Parameterise and execute query			
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			statement.setString(1, numeratorTableName);			
 			
 			dbResultSet = statement.executeQuery();
@@ -432,9 +439,11 @@ final class SQLRIFContextManager
 			queryFormatter,
 			healthTheme.getDescription());
 		
-			//Parameterise and execute query		
-			statement
-				= connection.prepareStatement(queryFormatter.generateQuery());
+			//Parameterise and execute query			
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			statement.setString(1, healthTheme.getDescription());			
 			
 			dbResultSet = statement.executeQuery();
@@ -555,7 +564,10 @@ final class SQLRIFContextManager
 				geography.getName());
 		
 			getMaxGeoLevelIDStatement
-				= connection.prepareStatement(maximumGeoLevelIDQueryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					maximumGeoLevelIDQueryFormatter);			
+			
 			getMaxGeoLevelIDStatement.setString(1, geography.getName());
 			getMaxGeoLevelIDResultSet
 				= getMaxGeoLevelIDStatement.executeQuery();
@@ -587,7 +599,9 @@ final class SQLRIFContextManager
 			//Parameterise and execute query		
 
 			getGeoLevelSelectStatement
-				= connection.prepareStatement(getGeoLevelSelectValuesQueryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					getGeoLevelSelectValuesQueryFormatter);
 			getGeoLevelSelectStatement.setString(1, geography.getName());
 			//only include those ids that are designated as 'listable'
 			getGeoLevelSelectStatement.setInt(2, 1);
@@ -661,7 +675,9 @@ final class SQLRIFContextManager
 
 			//Parameterise and execute query
 			statement
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					queryFormatter);
 			statement.setString(1, geography.getName());
 			dbResultSet = statement.executeQuery();
 			connection.commit();
@@ -762,7 +778,9 @@ final class SQLRIFContextManager
 		String lookupTableName = null;
 		try {
 			lookupTableStatement
-				= connection.prepareStatement(lookupTableQueryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					lookupTableQueryFormatter);
 			lookupTableStatement.setString(1, geography.getName());
 			lookupTableStatement.setString(2, geoLevelSelect.getName());
 			
@@ -798,7 +816,9 @@ final class SQLRIFContextManager
 				
 		
 			geographicAreaStatement
-				= connection.prepareStatement(geographicAreaQueryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					geographicAreaQueryFormatter);
 						
 			geographicAreaResultSet = geographicAreaStatement.executeQuery();	
 			connection.commit();
@@ -896,7 +916,9 @@ final class SQLRIFContextManager
 				
 		
 			geoLevelIDStatement
-				= connection.prepareStatement(geoLevelIDQueryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					geoLevelIDQueryFormatter);
 			geoLevelIDStatement.setString(1, geography.getName());
 			geoLevelIDStatement.setString(2, geoLevelSelect.getName());
 			geoLevelIDResultSet = geoLevelIDStatement.executeQuery();	
@@ -931,8 +953,9 @@ final class SQLRIFContextManager
 				String.valueOf(geoLevelID.intValue()));
 		
 			geoLevelViewsStatement
-				= connection.prepareStatement(
-					geoLevelViewsQueryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					geoLevelViewsQueryFormatter);
 			geoLevelViewsStatement.setString(1, geography.getName());
 			geoLevelViewsStatement.setInt(2, geoLevelID.intValue());
 			geoLevelViewsResultSet = geoLevelViewsStatement.executeQuery();
@@ -1016,7 +1039,9 @@ final class SQLRIFContextManager
 				geoLevelSelect.getName());
 			
 			geoLevelIDStatement
-				= connection.prepareStatement(geoLevelIDQueryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					geoLevelIDQueryFormatter);
 			geoLevelIDStatement.setString(1, geography.getName());
 			geoLevelIDStatement.setString(2, geoLevelSelect.getName());
 			if (geoLevelIDResultSet.next() == false) {
@@ -1065,7 +1090,9 @@ final class SQLRIFContextManager
 				String.valueOf(geoLevelID));
 		
 			geoLevelToMapStatement
-				= connection.prepareStatement(geoLevelToMapQueryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					geoLevelToMapQueryFormatter);
 			geoLevelToMapStatement.setString(1, geography.getName());
 			geoLevelToMapStatement.setInt(2, geoLevelID.intValue());
 			geoLevelToMapResultSet = geoLevelToMapStatement.executeQuery();
@@ -1181,7 +1208,9 @@ final class SQLRIFContextManager
 					
 			//Parameterise and execute query
 			checkGeographyExistsStatement
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					queryFormatter);
 			checkGeographyExistsStatement.setString(1, geographyName);
 			checkGeographyExistsResultSet 
 				= checkGeographyExistsStatement.executeQuery();
@@ -1274,7 +1303,9 @@ final class SQLRIFContextManager
 					
 			//Parameterise and execute query		
 			checkGeoLevelViewExistsStatement
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					queryFormatter);
 			checkGeoLevelViewExistsStatement.setString(1, geoLevelSelectName);
 			checkGeoLevelViewExistsStatement.setString(2, geographyName);
 			checkGeoLevelViewExistsStatement.setInt(3, 1);
@@ -1380,7 +1411,9 @@ final class SQLRIFContextManager
 				String.valueOf(1));
 
 			getLookupTableStatement 
-					= connection.prepareStatement(lookupTableQueryQueryFormatter.generateQuery());
+					= createPreparedStatement(
+						connection,
+						lookupTableQueryQueryFormatter);
 			getLookupTableStatement.setString(1, geographyName);
 			getLookupTableStatement.setString(2, geoLevelSelectName);
 			getLookupTableResultSet
@@ -1408,7 +1441,9 @@ final class SQLRIFContextManager
 				geoLevelAreaName);
 		
 			geoLevelAreaExistsStatement
-				= connection.prepareStatement(recordExistsQueryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					recordExistsQueryFormatter);
 			geoLevelAreaExistsStatement.setString(1, geoLevelAreaName);
 			geoLevelAreaExistsResultSet
 				= geoLevelAreaExistsStatement.executeQuery();
@@ -1515,7 +1550,9 @@ final class SQLRIFContextManager
 				geoLevelSelectName);
 					
 			geoLevelIDStatement
-				= connection.prepareStatement(geoLevelIDQueryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					geoLevelIDQueryFormatter);
 			geoLevelIDStatement.setString(1, geographyName);
 			geoLevelIDStatement.setString(2, geoLevelSelectName);
 			geoLevelIDResultSet = geoLevelIDStatement.executeQuery();	
@@ -1545,7 +1582,9 @@ final class SQLRIFContextManager
 				geoLevelSelectName);
 				
 			geoLevelValueExistsStatement
-				= connection.prepareStatement(geoLevelMapExistsQueryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					geoLevelMapExistsQueryFormatter);
 			geoLevelValueExistsStatement.setString(1, geographyName);
 			geoLevelValueExistsStatement.setInt(2, geoLevelID);
 			geoLevelValueExistsStatement.setString(3, geoLevelValueName);
@@ -1669,7 +1708,9 @@ final class SQLRIFContextManager
 		
 		try {
 			statement
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					queryFormatter);
 			statement.setString(1, geoLevelValueName);
 			statement.setString(2, geographyName);
 			
@@ -1763,7 +1804,9 @@ final class SQLRIFContextManager
 				healthThemeDescription);
 				
 			checkHealthThemeExistsStatement
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					queryFormatter);
 			checkHealthThemeExistsStatement.setString(1, healthThemeDescription);
 			checkHealthThemeExistsResultSet 
 				= checkHealthThemeExistsStatement.executeQuery();
@@ -1854,7 +1897,9 @@ final class SQLRIFContextManager
 				ndPair.getDenominatorTableName());
 		
 			getNDPairExistsStatement
-				= connection.prepareStatement(ndPairExistsQueryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					ndPairExistsQueryFormatter);
 			getNDPairExistsStatement.setString(1, geography.getName());
 			getNDPairExistsStatement.setString(2, ndPair.getNumeratorTableName());
 			getNDPairExistsStatement.setString(3, ndPair.getDenominatorTableName());
@@ -1940,7 +1985,9 @@ final class SQLRIFContextManager
 				numeratorTableName);
 
 			getNDPairExistsStatement
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					queryFormatter);
 			getNDPairExistsStatement.setString(1, geography.getName());
 			getNDPairExistsStatement.setString(2, numeratorTableName);
 

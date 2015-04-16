@@ -161,7 +161,9 @@ final class SQLCovariateManager
 			ArrayList<AbstractCovariate> results 
 				= new ArrayList<AbstractCovariate>();
 			statement
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			Integer investigationID
 				= Integer.valueOf(investigation.getIdentifier());
 			statement.setInt(1, investigationID);
@@ -259,7 +261,7 @@ final class SQLCovariateManager
 			//Parameterise and execute query
 				
 			statement
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(connection, queryFormatter);
 			statement.setString(1, geography.getName());
 			statement.setString(2, geoLevelToMap.getName());
 
@@ -395,7 +397,9 @@ final class SQLCovariateManager
 				covariates.get(0).getName());
 				
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			
 			for (AbstractCovariate covariate : covariates) {
 				statement.setString(1, covariate.getName());

@@ -169,10 +169,14 @@ public final class UserDatabaseConnections {
 						userID,
 						new String(password));
 				statement
-					= currentConnection.prepareStatement(initialisationQuery);
+					= SQLQueryUtility.createPreparedStatement(
+						currentConnection, 
+						initialisationQuery);
 				statement.execute();
 				statement.close();
 				currentConnection.setReadOnly(true);
+				currentConnection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+				currentConnection.setAutoCommit(false);
 				availableReadOnlyConnections.add(currentConnection);
 			}
 			
@@ -183,10 +187,14 @@ public final class UserDatabaseConnections {
 						userID,
 						new String(password));
 				statement
-					= currentConnection.prepareStatement(initialisationQuery);
+					= SQLQueryUtility.createPreparedStatement(
+						currentConnection, 
+						initialisationQuery);
 				statement.execute();
 				statement.close();
 				currentConnection.setReadOnly(false);
+				currentConnection.setAutoCommit(false);
+				currentConnection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 				availableWriteOnlyConnections.add(currentConnection);
 			}
 			

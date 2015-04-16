@@ -167,7 +167,9 @@ final class SQLAgeGenderYearManager
 				String.valueOf(1));
 		
 			getAgeIDStatement
-				= connection.prepareStatement(getAgeIDQueryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection, 
+					getAgeIDQueryFormatter);
 			getAgeIDStatement.setString(1, ndPair.getNumeratorTableName());
 			//set isnumerator flag to 'true'
 			getAgeIDStatement.setInt(2, 1);
@@ -246,8 +248,10 @@ final class SQLAgeGenderYearManager
 				String.valueOf(ageGroupID));
 				
 			//Execute query and generate results
-			getAgesForAgeGroupStatement 
-				= connection.prepareStatement(getAgesForAgeGroupID.generateQuery());
+			getAgesForAgeGroupStatement
+				= createPreparedStatement(
+					connection, 
+					getAgesForAgeGroupID);				
 			getAgesForAgeGroupStatement.setInt(1, ageGroupID);
 			getAgesForAgeGroupResultSet = getAgesForAgeGroupStatement.executeQuery();
 			connection.commit();
@@ -347,7 +351,10 @@ final class SQLAgeGenderYearManager
 				queryFormatter,
 				ndPair.getNumeratorTableName());
 				
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement 
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 						
 			//TOUR_SECURITY
 			/*
@@ -499,7 +506,9 @@ final class SQLAgeGenderYearManager
 							
 			//Execute query and generate results
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setInt(1, id);
 			statement.setInt(2, Integer.valueOf(ageGroup.getLowerLimit()));
 			statement.setInt(3, Integer.valueOf(ageGroup.getUpperLimit()));

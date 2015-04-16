@@ -1,11 +1,13 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.RIFLogger;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.SQLException;
@@ -231,10 +233,40 @@ public final class SQLQueryUtility {
 					RIFServiceError.DB_UNABLE_TO_ROLLBACK,
 					errorMessage);
 			throw rifServiceException;
-		}
-		
-		
+		}		
 	}
+	
+	public static PreparedStatement createPreparedStatement(
+		final Connection connection,
+		final AbstractSQLQueryFormatter queryFormatter) 
+		throws SQLException {
+		
+			PreparedStatement statement
+				= connection.prepareStatement(
+					queryFormatter.generateQuery(),
+					ResultSet.TYPE_FORWARD_ONLY,
+					ResultSet.CONCUR_READ_ONLY,
+					ResultSet.CLOSE_CURSORS_AT_COMMIT);
+					
+			return statement;	
+	}
+
+	public static PreparedStatement createPreparedStatement(
+		final Connection connection,
+		final String query) 
+		throws SQLException {
+		
+		PreparedStatement statement
+			= connection.prepareStatement(
+				query,
+				ResultSet.TYPE_FORWARD_ONLY,
+				ResultSet.CONCUR_READ_ONLY,
+				ResultSet.CLOSE_CURSORS_AT_COMMIT);
+					
+		return statement;
+	
+	}
+
 	
 	// ==========================================
 	// Section Errors and Validation

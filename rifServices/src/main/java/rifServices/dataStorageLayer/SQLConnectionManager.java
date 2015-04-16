@@ -324,7 +324,9 @@ public final class SQLConnectionManager
 						userID,
 						password);
 				statement
-					= currentConnection.prepareStatement(initialisationQuery);
+					= SQLQueryUtility.createPreparedStatement(
+						currentConnection, 
+						initialisationQuery);
 				statement.execute();
 				statement.close();
 				currentConnection.setReadOnly(false);
@@ -343,7 +345,9 @@ public final class SQLConnectionManager
 						userID,
 						password);
 				statement
-					= currentConnection.prepareStatement(initialisationQuery);
+					= SQLQueryUtility.createPreparedStatement(
+						currentConnection, 
+						initialisationQuery);
 				statement.execute();
 				statement.close();
 				writeOnlyConnections.add(currentConnection);

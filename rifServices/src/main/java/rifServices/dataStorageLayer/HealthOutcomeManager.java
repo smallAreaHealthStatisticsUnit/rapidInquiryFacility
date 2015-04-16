@@ -313,19 +313,22 @@ final class HealthOutcomeManager {
 		final Investigation investigation) 
 		throws RIFServiceException {
 			
-		SQLSelectQueryFormatter formatter 
+		SQLSelectQueryFormatter queryFormatter 
 			= new SQLSelectQueryFormatter();
-		formatter.addSelectField("condition");
-		formatter.addFromTable("t_rif40_inv_conditions");
-		formatter.addWhereParameter("inv_id");
-		formatter.addWhereParameter("study_id");
+		queryFormatter.addSelectField("condition");
+		queryFormatter.addFromTable("t_rif40_inv_conditions");
+		queryFormatter.addWhereParameter("inv_id");
+		queryFormatter.addWhereParameter("study_id");
 		
 		ArrayList<HealthCode> results 
 			= new ArrayList<HealthCode>();
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			statement = connection.prepareStatement(formatter.generateQuery());
+			statement 
+				= SQLQueryUtility.createPreparedStatement(
+					connection, 
+					queryFormatter);
 			Integer investigationID
 				= Integer.valueOf(investigation.getIdentifier());
 			statement.setInt(1, investigationID);

@@ -288,8 +288,10 @@ final class SQLMapDataManager
 			queryFormatter.addQueryPhrase("=?");
 			queryFormatter.finishLine();
 				
-			statement = connection.prepareStatement(
-				queryFormatter.generateQuery());
+			statement 
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setString(1, geoLevelArea.getName());
 			resultSet = statement.executeQuery();			
 			resultSet.next();			
@@ -389,7 +391,9 @@ final class SQLMapDataManager
 				String.valueOf( Float.valueOf(boundaryRectangle.getXMin())));
 									
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setString(1, geography.getName());
 			statement.setString(2, geoLevelSelect.getName());
 			statement.setFloat(3, Float.valueOf(boundaryRectangle.getYMax()));
@@ -548,7 +552,8 @@ final class SQLMapDataManager
 			extractMapAreasQuery.addQueryPhrase("name");
 			extractMapAreasQuery.addQueryPhrase("=?");
 		
-			statement = connection.prepareStatement(extractMapAreasQuery.generateQuery());
+			statement 
+				= createPreparedStatement(connection, extractMapAreasQuery);
 			statement.setString(1, geoLevelArea.getName());
 			resultSet = statement.executeQuery();
 			connection.commit();
@@ -789,7 +794,8 @@ final class SQLMapDataManager
 				String.valueOf(startIndex),
 				String.valueOf(endIndex));
 		
-			statement = connection.prepareStatement(extractMapAreasQuery.generateQuery());
+			statement 
+				= createPreparedStatement(connection, extractMapAreasQuery);
 			statement.setString(1, geoLevelArea.getName());
 			statement.setInt(2, startIndex);
 			statement.setInt(3, endIndex);
@@ -887,7 +893,10 @@ final class SQLMapDataManager
 				geography.getName(),
 				resolutionLevel);
 		
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement 
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setString(1, geography.getName());
 			statement.setString(2, resolutionLevel);
 			resultSet = statement.executeQuery();
@@ -942,7 +951,10 @@ final class SQLMapDataManager
 				queryFormatter,
 				geography.getName());
 		
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement 
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setString(1, geography.getName());
 			resultSet = statement.executeQuery();
 			connection.commit();
@@ -1119,7 +1131,7 @@ final class SQLMapDataManager
 				String.valueOf(false));				
 		
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(connection, queryFormatter);
 			statement.setString(1, geography.getName());
 			statement.setString(2, geoLevelView.getName());
 			statement.setString(3, geoLevelSelect.getName());
@@ -1213,7 +1225,7 @@ final class SQLMapDataManager
 				mapAreas.get(0).getIdentifier());
 			
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());			
+				= createPreparedStatement(connection, queryFormatter);
 			ArrayList<String> errorMessages = new ArrayList<String>();
 			for (MapArea mapArea : mapAreas) {
 				statement.setString(1, mapArea.getIdentifier());
@@ -1290,7 +1302,10 @@ final class SQLMapDataManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement 
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setString(1, geographyName);
 			
 			resultSet = statement.executeQuery();

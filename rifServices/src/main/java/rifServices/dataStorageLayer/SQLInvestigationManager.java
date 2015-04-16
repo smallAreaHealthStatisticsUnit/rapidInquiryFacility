@@ -216,7 +216,9 @@ final class SQLInvestigationManager
 				investigation.getIdentifier());
 				
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setString(1, study.getIdentifier());
 			statement.setString(2, investigation.getIdentifier());
 			resultSet = statement.executeQuery();

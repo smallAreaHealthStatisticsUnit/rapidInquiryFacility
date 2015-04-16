@@ -142,7 +142,10 @@ final class SQLDiseaseMappingStudyManager
 				"getProjects",
 				queryFormatter);
 									
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement 
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			resultSet = statement.executeQuery();
 			while (resultSet.next()) {
 				Project project = Project.newInstance();
@@ -347,7 +350,9 @@ final class SQLDiseaseMappingStudyManager
 				studyID);
 		
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setInt(1, Integer.valueOf(studyID));
 			resultSet = statement.executeQuery();
 			if (resultSet.next() == false) {

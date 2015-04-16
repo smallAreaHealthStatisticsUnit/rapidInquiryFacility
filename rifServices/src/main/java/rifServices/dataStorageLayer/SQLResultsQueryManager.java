@@ -158,7 +158,9 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		
 			//Execute query and generate results
 			statement
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setString(1, studyResultRetrievalContext.getGeographyName());
 			statement.setString(2, studyResultRetrievalContext.getGeoLevelSelectName());
 			statement.setString(3, mapArea.getIdentifier());
@@ -246,7 +248,9 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 				studyResultRetrievalContext.getStudyID());
 				
 			statement
-				= connection.prepareStatement(queryFormatter.generateQuery());			
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setString(1, studyResultRetrievalContext.getGeographyName());
 			statement.setString(2, studyResultRetrievalContext.getGeoLevelSelectName());
 			statement.setInt(3, Integer.valueOf(studyResultRetrievalContext.getStudyID()));
@@ -347,7 +351,9 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		
 			//Execute query and generate results
 			statement
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setString(1, geography.getName());
 			statement.setString(2, geoLevelSelect.getName());				
 			resultSet = statement.executeQuery();
@@ -441,7 +447,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		
 			//Execute query and generate results
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(connection, queryFormatter);
 			statement.setString(1, geography.getName());
 			statement.setString(2, geoLevelSelect.getName());
 			statement.setFloat(3, Float.valueOf(boundaryRectangle.getYMax()));
@@ -598,8 +604,9 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		
 			//Execute query and generate results
 			statement 
-				= connection.prepareStatement(
-			queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			resultSet = statement.executeQuery();
 			result = generateResultTable(resultSet);
 			return result;		
@@ -667,7 +674,9 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		
 			//Execute query and generate results
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setInt(1, Integer.valueOf(studyID));
 			resultSet = statement.executeQuery();
 			//there should be an entry for the study in rif40_studies.
@@ -767,7 +776,9 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		
 			//Execute query and generate results
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setString(1, geoLevelAttribute);
 			resultSet = statement.executeQuery();
 			
@@ -856,7 +867,9 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 				= new ArrayList<GeoLevelAttributeSource>();
 		
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setInt(
 				1, 
 				Integer.valueOf(studyResultRetrievalContext.getStudyID()));
@@ -961,7 +974,9 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		
 			//Execute query and generate results
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setString(1, studyResultRetrievalContext.getGeographyName());
 			statement.setString(2, studyResultRetrievalContext.getGeoLevelSelectName());
 			resultSet = statement.executeQuery();
@@ -1055,7 +1070,9 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		
 			//Execute query and generate results
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setString(
 				1, 
 				studyResultRetrievalContext.getGeographyName());
@@ -1163,7 +1180,10 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 				geoLevelAttributeSource.getName());
 		
 			//Execute query and generate results
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement 
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setString(1, studyResultRetrievalContext.getGeographyName());
 			statement.setString(2, studyResultRetrievalContext.getGeoLevelSelectName());
 			statement.setString(3, geoLevelAttributeTheme.getName());
@@ -1319,8 +1339,9 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			
 			//Execute query and generate results
 			statement 
-				= connection.prepareStatement(
-					queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					queryFormatter);
 			resultSet = statement.executeQuery();
 			result = generateResultTable(resultSet);
 
@@ -1444,7 +1465,9 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 				studyID);
 				
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					queryFormatter);
 			statement.setInt(1, Integer.valueOf(studyID));
 			resultSet = statement.executeQuery();
 			
@@ -1544,7 +1567,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			statement = connection.prepareStatement(queryFormatter.toString());
+
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			statement.setString(1, diseaseMappingStudy.getIdentifier());
 			
 			ArrayList<String> columnNames = new ArrayList<String>();
@@ -1645,7 +1672,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 				queryFormatter);
 		
 			//Execute query and generate results
-			statement = connection.prepareStatement(queryFormatter.toString());
+
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			resultSet = statement.executeQuery();
 			results = generateResultTable(resultSet);
 			
@@ -1747,7 +1778,10 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			geoLevelAttributeSource.getName(),
 			geoLevelAttribute);
 			
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			resultSet = statement.executeQuery();
 			result = generateResultTable(resultSet);
 		}
@@ -1815,8 +1849,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			logSQLQuery(
 				"getPyramidDataByYear",
 				queryFormatter);
-
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 
 			resultSet = statement.executeQuery();
 			while(resultSet.next()) {
@@ -1902,8 +1939,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			logSQLQuery(
 				"getPyramidDataByYear",
 				queryFormatter);
-
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 
 			resultSet = statement.executeQuery();
 			while(resultSet.next()) {
@@ -1940,8 +1980,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			logSQLQuery(
 				"getPyramidDataByYear",
 				queryFormatter);
-
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 
 			resultSet = statement.executeQuery();
 			while(resultSet.next()) {
@@ -1980,10 +2023,12 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		ResultSet resultSet = null;		
 		RIFResultTable results = new RIFResultTable();
 		try {
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();		
 			
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			resultSet = statement.executeQuery();
 	
 			//Obtain the column names
@@ -2050,8 +2095,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;		
 		try {
+			
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			resultSet = statement.executeQuery();
 
 	
@@ -2121,8 +2169,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		RIFResultTable results = new RIFResultTable();
 		try {
 			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();				
+			
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			resultSet = statement.executeQuery();
 	
 			//Obtain the column names
@@ -2191,8 +2242,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		ResultSet resultSet = null;		
 		RIFResultTable results = new RIFResultTable();		
 		try {
-			statement
-				= connection.prepareStatement(queryFormatter.generateQuery());
+			
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			resultSet
 				= statement.executeQuery();
 			
@@ -2208,7 +2262,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			//Record original exception, throw sanitised, human-readable version			
 			String errorMessage
 				= RIFServiceMessages.getMessage(
-					"");
+					"sqlResultsQueryManager.error.unableToGetResultStudyGeneralInfo");
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED,
@@ -2242,8 +2296,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			resultSet = statement.executeQuery();
 			
 			while (resultSet.next()) {
@@ -2299,9 +2356,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 				"getStudyName",
 				queryFormatter,
 				studyID);
-		
+				
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			statement.setInt(
 				1, 
 				Integer.valueOf(studyID));
@@ -2365,10 +2424,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			queryFormatter.setSchema("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_getgeometrycolumnnames");
 			queryFormatter.setNumberOfFunctionParameters(1);
-		
+			
 			statement 
-				= connection.prepareStatement(
-					queryFormatter.generateQuery());
+				= createPreparedStatement(
+					connection,
+					queryFormatter);
 			statement.setString(1, geography.getName());
 			resultSet = statement.executeQuery();
 			resultSet.last();			
@@ -2430,8 +2490,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			queryFormatter.setFunctionName("rif40_createmapareaattributesource");		
 			queryFormatter.setNumberOfFunctionParameters(6);
 			
-			statement = connection.prepareStatement(
-				queryFormatter.generateQuery());
+			
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);
 			statement.setString(1, temporaryTableName);
 			statement.setString(2, geography.getName());
 			statement.setString(3, geoLevelSelect.getName());
@@ -2481,9 +2544,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			queryFormatter.setSchema("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_closegetmapareaattributecursor");		
 			queryFormatter.setNumberOfFunctionParameters(1);
-		
-			statement = connection.prepareStatement(
-				queryFormatter.generateQuery());
+				
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			statement.setString(1, cursorName);
 			statement.executeQuery();
 			
@@ -2523,10 +2588,12 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.setSchema("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_deletemapareaattributesource");		
-			queryFormatter.setNumberOfFunctionParameters(1);
-		
-			statement = connection.prepareStatement(
-				queryFormatter.generateQuery());
+			queryFormatter.setNumberOfFunctionParameters(1);		
+			
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			statement.setString(1, temporaryTableName);
 			statement.executeUpdate();
 			
@@ -2633,9 +2700,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 				= getStudyName(
 					connection, 
 					studyID);
-			statement
-				= connection.prepareStatement(
-					queryFormatter.generateQuery());
+			
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);
 			statement.setInt(1, Integer.valueOf(studyID));
 			resultSet = statement.executeQuery();
 			//We can assume that the table will have an entry for the study
@@ -2735,8 +2804,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 				throw rifServiceException;
 			}
 		
-			statement = connection.prepareStatement(
-				queryFormatter.generateQuery());
+			
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 						
 			for (String tableFieldName : tableFieldNames) {
 				//check if field exists in table
@@ -2811,9 +2883,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 				= getStudyName(
 					connection, 
 					studyID);
-			statement
-				= connection.prepareStatement(
-					queryFormatter.generateQuery());
+			
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			statement.setString(1, studyID);
 			resultSet 
 				= statement.executeQuery();
@@ -2872,10 +2946,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			SQLRecordExistsQueryFormatter queryFormatter
 				= new SQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);		
-		
-			statement
-				= connection.prepareStatement(
-					queryFormatter.generateQuery());
+			
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			resultSet 
 				= statement.executeQuery();
 			if (resultSet.next() == false) {
@@ -2954,8 +3029,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			
 			statement 
-				= connection.prepareStatement(query.generateQuery());
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			statement.setString(1, mapArea.getIdentifier());
 			resultSet = statement.executeQuery();
 		
@@ -3034,8 +3112,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {			
-			statement 	
-				= connection.prepareStatement(query.generateQuery());
+			
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			statement.setString(
 				1, 
 				studyResultRetrievalContext.getGeographyName());
@@ -3120,10 +3201,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 				studyResultRetrievalContext.getGeoLevelSelectName(),
 				geoLevelAttributeTheme.getName(),
 				geoLevelAttributeSource.getName());
-			
-			statement 	
-				= connection.prepareStatement(
-					queryFormatter.generateQuery());
+						
+			statement 
+				= createPreparedStatement(
+					connection,
+					queryFormatter);			
 			statement.setString(
 				1, 
 				studyResultRetrievalContext.getGeographyName());

@@ -8,8 +8,7 @@ import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.RIFLogger;
 
-import java.sql.SQLException;
-import java.sql.Connection;
+import java.sql.*;
 
 /**
  *
@@ -128,6 +127,17 @@ abstract class AbstractSQLManager {
 		queryFormatter.setCaseSensitive(
 			rifDatabaseProperties.isCaseSensitive());
 		
+	}
+	
+	protected PreparedStatement createPreparedStatement(
+		final Connection connection,
+		final AbstractSQLQueryFormatter queryFormatter) 
+		throws SQLException {
+				
+		return SQLQueryUtility.createPreparedStatement(
+			connection,
+			queryFormatter);
+
 	}
 	
 	/**

@@ -1116,17 +1116,19 @@ class AbstractRIFUserService extends AbstractRIFService {
 		final String studyID)
 		throws RIFServiceException {
 					
-		SQLSelectQueryFormatter query
+		SQLSelectQueryFormatter queryFormatter
 			= new SQLSelectQueryFormatter();
-		query.addSelectField("study_name");
-		query.addFromTable("rif40_studies");
-		query.addWhereParameter("study_id");
+		queryFormatter.addSelectField("study_name");
+		queryFormatter.addFromTable("rif40_studies");
+		queryFormatter.addWhereParameter("study_id");
 			
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
 			statement 
-				= connection.prepareStatement(query.generateQuery());
+				= SQLQueryUtility.createPreparedStatement(
+					connection, 
+					queryFormatter);
 			statement.setInt(
 				1, 
 				Integer.valueOf(studyID));
