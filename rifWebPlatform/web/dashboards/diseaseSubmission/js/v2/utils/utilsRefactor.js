@@ -22,6 +22,7 @@
             var s = evts[ c ].subscribers,
               sl = s.length;
             while ( sl-- ) {
+              console.log( f[ fl ] );
               this[ f[ fl ] ].on( c, evts[ c ].method, this[ s[ sl ] ] );
             }
           }

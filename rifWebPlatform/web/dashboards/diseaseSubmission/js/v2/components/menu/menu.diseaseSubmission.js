@@ -4,64 +4,6 @@ RIF.menu = ( function ( settings, publisher ) {
     _investigationReady = false,
     _observable = {},
     _p = {
-      /*proxy: {
-            frontMappingready: function() {
-               _p.studyArea.request('getSelectAtsAvailable', RIF.user);
-            },
-            selectAtChange: function(selectAt) {
-               _p.studyArea.request('getResolutionsAvailable', [RIF.user, selectAt]);
-               _p.facade.selectAtChanged(selectAt);
-               _p.facade.resolutionChanged(null);
-            },
-            studyAreaReady: function() {
-               _p.healthCodes.request('getTaxonomy');
-            },
-            numeratorChanged: function(val) {
-               _p.facade.numeratorChanged(val);
-               _p.investigationParameters.request('getYears', val); // on numerator change!!  
-            },
-            taxonomy: null,
-            updateTopLevelHealthCodes: function(taxonomy) {
-               _p.healthCodes.request('getTopLevelHealthCodes', taxonomy);
-               _p.proxy.taxonomy = taxonomy;
-            },
-            updateSubLevelHealthCodes: function(code, domEl) {
-               _p.healthCodes.request('getSubLevelHealthCodes', {
-                  "taxonomy": _p.proxy.taxonomy,
-                  "code": code,
-                  "dom": domEl
-               })
-            },
-            investigationParameterChange: function(val, fnct) {
-               fnct.call(_p.facade, val);
-               _p.facade.isInvestigationReady();
-            },
-            icdSelectionChanged: function(args) {
-               this.investigationParameterChange(args, _p.facade.icdSelectionChanged);
-            },
-            investigationReadyToBeAdded: function() {
-               _investigationReady = true;
-               $('#addInvestigation').addClass('addInvestigationActive');
-            },
-            investigationNotReadyToBeAdded: function() {
-               _investigationReady = false;
-               $('#addInvestigation').removeClass('addInvestigationActive');
-            },
-            addCurrentInvestigation: function() {
-               if (_investigationReady) {
-                  _p.facade.addInvestigation();
-               };
-            },
-            searchHealthCodes: function(params) {
-               _p.healthCodes.request('getSearchHealthCodes', params);
-            },
-            isDialogReady: function(dialog) {
-               _p.facade.isDialogReady(dialog);
-            },
-            showDialog: function(dialog) {
-               _p.frontSubmission.show(dialog);
-            },
-         },*/
 
       menuUtils: RIF.menu.utils(),
 

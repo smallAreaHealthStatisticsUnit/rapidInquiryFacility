@@ -20,7 +20,7 @@ RIF.initialize = ( function () {
 
   var _p = {
     components: {
-      model: 'diseaseSubmission',
+      mediator: '',
       /*map: {
             studyType: 'diseaseSubmission',
             layerType: 'tilesvg'
@@ -37,22 +37,22 @@ RIF.initialize = ( function () {
     events: {
       /**--FRONT SUBMISSION MENU---**/
       studyNameChanged: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "menu" ],
         method: "studyNameChanged"
       },
       healthThemeChanged: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "menu" ],
         method: "healthThemeChanged"
       },
       numeratorChanged: {
-        subscribers: [ "model" /*, "table" */ ],
+        subscribers: [ "mediator" /*, "table" */ ],
         firer: [ "menu" ],
         method: "numeratorChanged"
       },
       denominatorChanged: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "menu" ],
         method: "denominatorChanged"
       },
@@ -62,41 +62,41 @@ RIF.initialize = ( function () {
         method: "logOut"
       },
       isDialogReady: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "menu" ],
         method: "isDialogReady"
       },
       showDialog: {
         subscribers: [ "menu" ],
-        firer: [ "model" ],
+        firer: [ "mediator" ],
         method: "showDialog"
       },
       isDialogSelectionComplete: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "menu" ],
         method: "isDialogSelectionComplete"
       },
       dialogBgChange: {
         subscribers: [ "menu" ],
-        firer: [ "model" ],
+        firer: [ "mediator" ],
         method: "dialogBgChange"
       },
 
       /**-- Run Dialog ---**/
       isStudyReady: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "menu" ],
         method: "isStudyReady"
       },
 
       projectChanged: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "menu" ],
         method: "projectChanged"
       },
 
       studyDescriptionChanged: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "menu" ],
         method: "studyDescriptionChanged"
       },
@@ -104,25 +104,25 @@ RIF.initialize = ( function () {
       /**-- Area Selection ---**/
 
       selectAtChanged: {
-        subscribers: [ "model", "table" ],
+        subscribers: [ "mediator", "table" ],
         firer: [ "menu" ],
         method: "selectAtChanged"
       },
 
       studyAreaSelectionEvent: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "table" ],
         method: "studyAreaSelectionEvent"
       },
 
       startAreaSelection: {
         subscribers: [ "menu" ],
-        firer: [ "model" ],
+        firer: [ "mediator" ],
         method: "startAreaSelection"
       },
 
       resolutionChanged: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "menu" ],
         method: "resolutionChanged"
       },
@@ -131,86 +131,86 @@ RIF.initialize = ( function () {
 
       startInvestigationParameter: {
         subscribers: [ "menu", "table" ],
-        firer: [ "model" ],
+        firer: [ "mediator" ],
         method: "startInvestigationParameter"
       },
 
       startYearChanged: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "menu" ],
         method: "startYearChanged"
       },
 
       endYearChanged: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "menu" ],
         method: "endYearChanged"
       },
 
       genderChanged: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "menu" ],
         method: "genderChanged"
       },
 
       covariatesChanged: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "menu" ],
         method: "covariatesChanged"
       },
 
       isInvestigationReady: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "table", "menu" ],
         method: "isInvestigationReady"
       },
 
       investigationReadyToBeAdded: {
         subscribers: [ "menu" ],
-        firer: [ "model" ],
+        firer: [ "mediator" ],
         method: "investigationReadyToBeAdded"
       },
 
       investigationNotReadyToBeAdded: {
         subscribers: [ "menu" ],
-        firer: [ "model" ],
+        firer: [ "mediator" ],
         method: "investigationNotReadyToBeAdded"
       },
 
       addInvestigation: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "menu" ],
         method: "addInvestigation"
       },
 
       addInvestigationRow: {
         subscribers: [ "table" ],
-        firer: [ "model" ],
+        firer: [ "mediator" ],
         method: "addInvestigationRow"
       },
 
       removeInvestigationRow: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "table" ],
         method: "removeInvestigationRow"
       },
 
       clearAllParameters: {
-        subscribers: [ "model", "table" ],
+        subscribers: [ "mediator", "table" ],
         firer: [ "menu" ],
         method: "clearAllParameters"
       },
 
       /**-- INVESTIGATION PARAMETER: Health Codes ---**/
       healthSelectionChanged: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "menu" ],
         method: "healthSelectionChanged"
       },
 
       /**-- INVESTIGATION PARAMETER: Age groups table ---**/
       ageGroupsChanged: {
-        subscribers: [ "model" ],
+        subscribers: [ "mediator" ],
         firer: [ "table" ],
         method: "ageGroupsChanged"
       },
