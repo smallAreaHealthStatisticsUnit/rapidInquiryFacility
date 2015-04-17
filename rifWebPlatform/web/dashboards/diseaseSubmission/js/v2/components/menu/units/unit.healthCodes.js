@@ -42,6 +42,7 @@ RIF.menu.healthCodes = ( function ( _dom, menuUtils ) {
     },
 
     _p = {
+
       getTaxonomy: function ( entries ) {
         var l = entries.length;
         while ( l-- ) {

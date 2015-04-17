@@ -34,7 +34,7 @@
 	<!-- The order on which the Rif files are downloaded must be maintained -->
 	<script type="text/javascript" src="js/RIF.js"></script>
     <!-- utils -->
-    <script type="text/javascript" src="js/v2/utils/utilsRefactor.js"></script>
+    <script type="text/javascript" src="js/v2/utils/utils.js"></script>
     <script type="text/javascript" src="js/v2/utils/publisher.js"></script>
     <script type="text/javascript" src="js/v2/utils/resultNames.js"></script>
      <!-- request -->
@@ -482,6 +482,39 @@
                             <input type="text"  placeholder="Project" id='projectCode' class='dropdownInput editable'>
                             <textarea  name='description' id='studyDescription' class='description' placeholder="STUDY DESCRIPTION(optional)"></textarea>   
                             <button   id='finalRun' class='myButton' > RUN </button>
+                        </div>
+                    </div>
+                </div>
+			</div>
+		</div>
+	</div>
+    
+    
+    <!---Summary study--->
+	<div class="overlay" id="summaryModal" style="display:block" >
+		<div class="msettings">
+			<div class="msettings-ct">
+				<div class="msettings-header">
+					<h2>Study summary </h2>
+					<a class="modal_close" href="#summaryModal"></a>
+				</div>
+                <div class='modalContainer modalScrollable'>
+                    <div class='summaryStudy'>
+                        <div class='summaryStudyArea'>
+                            <h3>Study Area</h3>
+                            <div></div>
+                        </div>
+                        <div class='summaryComparisonArea'>
+                            <h3>Comparison Area</h3>
+                            <div></div>
+                        </div>
+                        <div class='summaryInvestigations'>
+                            <h3>Investigations</h3>
+                            <div></div>
+                        </div>
+                        <div class='summaryStats'>
+                            <h3>Stats</h3>
+                            <div></div>
                         </div>
                     </div>
                 </div>

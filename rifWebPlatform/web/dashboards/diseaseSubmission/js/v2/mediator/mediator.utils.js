@@ -28,27 +28,10 @@ RIF.mediator.utils = ( function ( modelAccessor ) {
       };
     },
 
-    /* Could be deleted */
-    showInvestigations: function () {
-      var invs = modelAccessor.getInvestigations();
-      for ( var l in invs ) {
-        for ( var i in invs[ l ] ) {
-          console.log( invs[ l ][ i ] );
-        };
-        console.log( '_____' );
-      }
-      console.log( '----------------------' );
-      console.log( '----------------------' );
-      console.log( '----------------------' );
-    },
-
     addCurrentInvestigation: function () {
       var parametersClone = RIF.utils.extend( modelAccessor.parameters, {} );
       var invs = modelAccessor.getInvestigations();
-
       invs[ _utils.investigationCounts ] = parametersClone;
-      //console.log( JSON.stringify( _study ) );
-      //_utils.showInvestigations();  
       return _utils.investigationCounts++;
     },
 
@@ -178,12 +161,12 @@ RIF.mediator.utils = ( function ( modelAccessor ) {
       };
       return true
     },
-      
+
     /*
      * The following methods are invoked  when a tree is clicked
      * Some dialogs require certain parameter to be set before opening
      */
-      
+
     isInvestigationDialogReady: function () {
       var front = {
         studyName: modelAccessor.getStudyName(),
@@ -197,8 +180,8 @@ RIF.mediator.utils = ( function ( modelAccessor ) {
     isstudyAreaDialogReady: function () {},
     isComparisonAreaDialogReady: function () {},
     isStatDialogReady: function () {},
-      
-      
+
+
     /*
      * SELECTION COMPLETE CHECKS
      * The following methods are invoked  when a dialog is closed
@@ -220,7 +203,6 @@ RIF.mediator.utils = ( function ( modelAccessor ) {
     isComparisonAreaSelectionComplete: function () {},
     isStatSelectionComplete: function () {},
   };
-
 
   return _utils;
 

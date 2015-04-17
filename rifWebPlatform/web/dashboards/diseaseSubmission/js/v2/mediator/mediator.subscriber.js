@@ -129,7 +129,6 @@ RIF.mediator[ 'subscriber-' ] = ( function ( mediatorUtils ) {
     }
   };
 
-
   return subscriber;
 
 } );

@@ -744,6 +744,20 @@ path.polygon:hover {
     color: #FF7D40
 }
 /************************/
+/* SUMMARY TABLES *******/
+/************************/
+.modalScrollable{
+    overflow-y: auto;
+}
+.summaryStudy{
+    margin:0 2%;
+}
+.summaryStudy h3{
+    font-size: 18px;
+    padding-top: 2%;
+    text-align: left;
+}
+/************************/
 /* AREA SELECTION TABLE */
 /************************/
 
