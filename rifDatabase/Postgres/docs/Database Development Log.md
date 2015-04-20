@@ -83,6 +83,7 @@ Aug-Sep. Expected to include:
     causes ERROR:  invalid join selectivity: 1.000000 
     in PostGIS 2.1.1 (fixed in 2.2.1/2.1.2 - to be release May 3rd 2014)
 11. Missing comments in RIF40_STUDIES (year_stop, start etc)
+12. Rename "offset" in RIF40_AGE_GROUPS to age_group_offset
 
 See: http://trac.osgeo.org/postgis/ticket/2543
 
