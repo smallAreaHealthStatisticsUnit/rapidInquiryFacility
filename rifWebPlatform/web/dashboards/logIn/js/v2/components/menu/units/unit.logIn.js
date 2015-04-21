@@ -1,7 +1,7 @@
-RIF.menu.logIn = ( function ( _dom, menuUtils ) {
+RIF.menu.logIn = (function(_dom, menuUtils) {
 
-  var _p = {};
+   var _p = {};
 
-  return _p;
+   return _p;
 
-} );
+});

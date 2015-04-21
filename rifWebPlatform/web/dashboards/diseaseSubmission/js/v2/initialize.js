@@ -31,7 +31,7 @@ RIF.initialize = ( function () {
       },
       table: {
         studyType: 'diseaseSubmission',
-        tables: [ 'ageGroups', 'investigationsRecap', 'areaSelection' ]
+        tables: [ 'ageGroups', 'investigationsRecap', 'areaSelection', 'summary' ]
       }
     },
     events: {
@@ -214,6 +214,22 @@ RIF.initialize = ( function () {
         firer: [ "table" ],
         method: "ageGroupsChanged"
       },
+
+      /**-- SUMMARY TABLE ---**/
+
+      //getModelObject: {
+      //    subscribers: [ "mediator" ],
+      //    firer: [ "menu" ],
+      //    method: "getModelObject"   
+      //},
+      // showModelObject: {
+      //   subscribers: [ "table" ],
+      //   firer: [ "mediator" ],
+      //   method: "getModelObject"
+      // },  
+
+
+
       /*
          resolutionChanged: {
             subscribers: ["study"],

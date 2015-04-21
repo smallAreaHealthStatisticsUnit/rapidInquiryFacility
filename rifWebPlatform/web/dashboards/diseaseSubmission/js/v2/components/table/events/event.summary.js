@@ -1,0 +1,1 @@
+RIF[ 'table' ][ 'event-summary' ] = ( function ( dom, firer ) {} );

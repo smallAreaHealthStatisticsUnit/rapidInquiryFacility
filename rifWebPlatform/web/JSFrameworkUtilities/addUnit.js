@@ -79,7 +79,7 @@
             "});"
         ],
         units: [
-          main + "[ 'unit- " + unit + "'] = ( function ( _dom, menuUtils ) { \n" , 
+          main + "[ '" + unit + "'] = ( function ( _dom, menuUtils ) { \n" , 
           "var _p = {}; \n" +
           "return _p; \n" +
           "});"

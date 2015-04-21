@@ -1,11 +1,11 @@
-RIF.menu[ 'firer-logIn' ] = ( function () {
+RIF.menu['firer-logIn'] = (function() {
 
-  var firer = {
+   var firer = {
 
-    fireLogIn: function ( params ) {
-      this.logIn( params );
-    }
+      fireLogIn: function(params) {
+         this.logIn(params);
+      }
 
-  };
-  return firer;
-} );
+   };
+   return firer;
+});

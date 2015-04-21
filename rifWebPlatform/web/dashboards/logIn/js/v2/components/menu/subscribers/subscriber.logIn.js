@@ -1,12 +1,12 @@
-RIF.menu[ 'subscriber-logIn' ] = ( function ( controller ) {
+RIF.menu['subscriber-logIn'] = (function(controller) {
 
-  var subscriber = {
+   var subscriber = {
 
-    logIn: function ( params ) {
-      controller.logIn( params );
-    }
+      logIn: function(params) {
+         controller.logIn(params);
+      }
 
-  };
+   };
 
-  return subscriber;
-} );
+   return subscriber;
+});

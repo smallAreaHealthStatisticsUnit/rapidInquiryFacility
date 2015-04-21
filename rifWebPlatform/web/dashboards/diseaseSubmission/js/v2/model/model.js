@@ -2,7 +2,7 @@ RIF.model = ( function () {
 
   var _model = {
 
-    studyName: null,
+    studyName: 'sdfdf',
     healthTheme: null,
     numerator: null,
     denominator: null,

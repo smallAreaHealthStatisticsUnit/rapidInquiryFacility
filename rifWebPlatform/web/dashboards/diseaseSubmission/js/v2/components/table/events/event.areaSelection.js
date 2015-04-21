@@ -28,8 +28,16 @@ RIF.table[ 'event-areaSelection' ] = ( function ( _dom, firer ) {
     if ( isMouseDown ) {
       var slctd = [];
       var r = d3.selectAll( '#areaSelectionWrapper .rowSelected' ).each( function ( d, i ) {
-        slctd.push( +this.id );
+
+        var idLabel = $( this ).children();
+
+        slctd.push( {
+          id: $( idLabel[ 0 ] ).text(),
+          label: $( idLabel[ 1 ] ).text()
+        } );
+
       } );
+
       firer.studyAreaSelectionEvent( slctd );
       _dom.studyAreaCount.innerHTML = slctd.length;
     }

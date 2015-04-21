@@ -14,7 +14,7 @@ RIF.table.areaSelection = ( function ( _dom ) {
       var oddOreven = ( l % 2 == 0 ) ? 'even' : 'odd',
         div = document.createElement( "div" );
       div.className = 'aSR ' + oddOreven;
-      div.id = l;
+      div.id = "studyArea_" + l;
       div.innerHTML = '<div>' + ids[ l ] + '</div><div>' + labels[ l ] + '</div>';
       fragment.appendChild( div );
     };

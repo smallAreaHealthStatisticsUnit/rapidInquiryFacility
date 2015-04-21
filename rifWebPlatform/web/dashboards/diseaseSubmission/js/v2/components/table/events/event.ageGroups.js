@@ -37,7 +37,11 @@ RIF.table[ 'event-ageGroups' ] = ( function ( _dom, firer ) {
         band: bandRow
       } );
     } );
+
+
+
     firer.ageGroupsChanged( slctd );
+
     ageGroupClicked = false;
   } ) );
 

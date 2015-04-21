@@ -753,10 +753,32 @@ path.polygon:hover {
     margin:0 2%;
 }
 .summaryStudy h3{
-    font-size: 18px;
-    padding-top: 2%;
+    font-size: 16px;
+    padding-top: 1%;
     text-align: left;
+    
+    color: #B5B5B5;
 }
+.summaryStudy h4{
+    font-size: 13px;
+    
+    padding-left: 10px;
+    color: #A1A1A1;
+}
+.summaryStudy > div  {
+    margin:20px 0;
+}
+.summaryStudy > div  {
+    padding: 0px  10px;
+    text-align: left; 
+}
+
+.summaryStudy div div div{
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 0px 25px 5px 25px;
+}
+
 /************************/
 /* AREA SELECTION TABLE */
 /************************/

@@ -1,6 +1,8 @@
 RIF.modelAccessor = ( function () {
 
-  var modelAccessor = Object.create( RIF.model() ); //ECMA5  
+
+  var model = RIF.model();
+  var mapper = RIF.modelMapper();
 
   var _mandatory = [ "studyName", "healthTheme", "numerator", "denominator", "project", "parameters.taxonomy", "parameters.healthOutcomes",
     "parameters.gender", "parameters.minYear", "parameters.maxYear", "parameters.ageGroups", "studyArea_resolution", "studyArea_areas",
@@ -10,7 +12,7 @@ RIF.modelAccessor = ( function () {
   var _optional = [ "covariates", "description" ];
 
 
-  modelAccessor.prototype = {
+  var modelAccessor = {
 
     parameters: {
       healthOutcomes: null,
@@ -23,36 +25,37 @@ RIF.modelAccessor = ( function () {
 
     //SETTERS
     setStudyName: function ( s ) {
-      modelAccessor.studyName = s;
+      model.studyName = s;
+      mapper( modelAccessor );
     },
     setHealthTheme: function ( s ) {
-      modelAccessor.healthTheme = s;
+      model.healthTheme = s;
     },
     setNumerator: function ( s ) {
-      modelAccessor.numerator = s;
+      model.numerator = s;
     },
     setDenominator: function ( s ) {
-      modelAccessor.denominator = s;
+      model.denominator = s;
     },
     setProject: function ( s ) {
-      modelAccessor.project = s;
+      model.project = s;
     },
     setDescription: function ( s ) {
-      modelAccessor.description = s;
+      model.description = s;
     },
     setStudyAreaSelectAt: function ( s ) {
-      modelAccessor.studyArea.studyArea_selectAt = s;
+      model.studyArea.studyArea_selectAt = s;
     },
     setStudyAreaResolution: function ( s ) {
-      modelAccessor.studyArea.studyArea_resolution = s;
+      model.studyArea.studyArea_resolution = s;
     },
     setStudyAreas: function ( s ) {
-      modelAccessor.studyArea.studyArea_areas = s;
+      model.studyArea.studyArea_areas = s;
     },
     setComparisonArea: function ( s ) {
-      modelAccessor.comparisonArea.comparisonArea_resolution = s.resolution;
-      modelAccessor.comparisonArea.comparisonArea_areas = s.areas;
-      modelAccessor.comparisonArea.comparisonArea_selectAt = s.selectAt;
+      model.comparisonArea.comparisonArea_resolution = s.resolution;
+      model.comparisonArea.comparisonArea_areas = s.areas;
+      model.comparisonArea.comparisonArea_selectAt = s.selectAt;
     },
     setHealthConditionTaxonomy: function ( s ) {
       this.parameters.taxonomy = s;
@@ -81,52 +84,65 @@ RIF.modelAccessor = ( function () {
 
     //UNSET
     unsetInvestigation: function ( i ) {
-      delete modelAccessor.investigations[ i ];
+      delete model.investigations[ i ];
     },
     unsetParameter: function ( i, h ) {
       delete this.parameters[ i ][ h ];
     },
 
     //GETTERS
+    getMappedObject: function () {
+      return mapper.call( this );
+    },
 
     get: function ( param ) {
-      return modelAccessor[ param ];
+      return model[ param ];
     },
+
     getInvestigations: function () {
-      return modelAccessor.investigations;
+      return model.investigations;
     },
     getStudyName: function () {
-      return modelAccessor.studyName;
+      return model.studyName;
     },
     getHealthTheme: function () {
-      return modelAccessor.healthTheme;
+      return model.healthTheme;
     },
     getDescription: function () {
-      return modelAccessor.description;
+      return model.description;
     },
     getProject: function () {
-      return modelAccessor.project;
+      return model.project;
     },
     getNumerator: function () {
-      return modelAccessor.numerator;
+      return model.numerator;
     },
     getDenominator: function () {
-      return modelAccessor.denominator;
+      return model.denominator;
     },
     getStudyAreas: function () {
-      return modelAccessor.studyArea.studyArea_areas;
+      return model.studyArea.studyArea_areas;
     },
     getStudyAreaSelectAt: function () {
-      return modelAccessor.studyArea.studyArea_selectAt;
+      return model.studyArea.studyArea_selectAt;
     },
     getStudyAreaResolution: function () {
-      return modelAccessor.studyArea.studyArea_resolution;
+      return model.studyArea.studyArea_resolution;
     },
     getStudyArea: function () {
-      return modelAccessor.studyArea;
+      return model.studyArea;
+    },
+    getComparisonAreaAreaSelectAt: function () {
+      return model.comparisonArea.comparisonArea_selectAt;
+    },
+    getComparisonAreaResolution: function () {
+      return model.comparisonArea.comparisonArea_resolution;
+    },
+    getComparisonAreas: function () {
+      return model.comparisonArea.comparisonArea_areas;
     },
     getComparisonArea: function () {
-      return modelAccessor.comparisonArea;
+      return model.comparisonArea;
     },
     getHealthConditionTaxonomy: function () {
       return this.parameters.taxonomy;
@@ -162,5 +178,6 @@ RIF.modelAccessor = ( function () {
   };
 
 
-  return modelAccessor.prototype;
+
+  return modelAccessor;
 } );

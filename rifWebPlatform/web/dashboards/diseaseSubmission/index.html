@@ -46,6 +46,7 @@
 
     <!-- MODEL-->
     <script type="text/javascript" src="js/v2/model/model.js"></script>
+    <script type="text/javascript" src="js/v2/model/modelMapper.js"></script>
     <script type="text/javascript" src="js/v2/model/modelAccessor.js"></script>
     <!-- Mediator-->
     <script type="text/javascript" src="js/v2/mediator/mediator.js"></script>
@@ -129,6 +130,12 @@
     <script type="text/javascript" src="js/v2/components/table/controllers/controller.areaSelection.js"></script>
     <script type="text/javascript" src="js/v2/components/table/firers/firer.areaSelection.js"></script>
     <script type="text/javascript" src="js/v2/components/table/subscribers/subscriber.areaSelection.js"></script>
+    
+    <script type="text/javascript" src="js/v2/components/table/units/unit.summary.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/events/event.summary.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/controllers/controller.summary.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/firers/firer.summary.js"></script>
+    <script type="text/javascript" src="js/v2/components/table/subscribers/subscriber.summary.js"></script>
     
 
     <title>The Rapid Inquiry Facility, RIF 4.0</title>
@@ -491,7 +498,7 @@
     
     
     <!---Summary study--->
-	<div class="overlay" id="summaryModal" style="display:block" >
+	<div class="overlay" id="summaryModal"  >
 		<div class="msettings">
 			<div class="msettings-ct">
 				<div class="msettings-header">
@@ -500,19 +507,58 @@
 				</div>
                 <div class='modalContainer modalScrollable'>
                     <div class='summaryStudy'>
-                        <div class='summaryStudyArea'>
+                        <div id='summary_studyName'>
+                            <h3>Study Name</h3>
+                            <div>
+                                <div>test</div>
+                            </div>
+                        </div>
+                        <div id='summary_project'>
+                            <h3>Project</h3>
+                            <div></div>
+                        </div>
+                         <div id='summary_healthTheme'>
+                            <h3>Health Theme</h3>
+                            <div></div>
+                        </div>
+                        <div id='summary_numerator'>
+                            <h3>Numerator</h3>
+                            <div></div>
+                        </div>
+                        <div id='summary_denominator'>
+                            <h3>Denominator</h3>
+                            <div></div>
+                        </div>
+                        <div id='summary_studyArea'>
                             <h3>Study Area</h3>
-                            <div></div>
+                            <div id='summary_studyArea_resolution'>
+                                <h4>Resolution</h4>
+                                <div>WARDS</div>
+                            </div>
+                            <div id='summary_studyArea_selectAt'>
+                                <h4>Areas selected at</h4>
+                            </div>
+                            <div id='summary_studyArea_areas'>
+                                <h4>Areas selected</h4>
+                            </div>
                         </div>
-                        <div class='summaryComparisonArea'>
+                        <div id='summary_comparisonArea'>
                             <h3>Comparison Area</h3>
-                            <div></div>
+                            <div id='summary_comparisonArea_resolution'>
+                                <h4>Comparison areas resolution</h4>
+                            </div>
+                            <div id='summary_comparisonArea_selectAt'>
+                                <h4>Areas selected at</h4>
+                            </div>
+                            <div id='summary_comparisonArea_areas'>
+                                <h4>Areas selected</h4>
+                            </div>
                         </div>
-                        <div class='summaryInvestigations'>
+                        <div id='summary_investigations'>
                             <h3>Investigations</h3>
                             <div></div>
                         </div>
-                        <div class='summaryStats'>
+                        <div id='summaryStats'>
                             <h3>Stats</h3>
                             <div></div>
                         </div>

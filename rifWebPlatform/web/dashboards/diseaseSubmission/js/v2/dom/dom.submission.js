@@ -156,7 +156,21 @@ RIF.dom = ( function () {
           removeInvestigation: '.removeInvestigation',
           container: $( '#investigationRecap' )
         };
+      },
+      summary: function () {
+        return {
+          studyName: $( '#summaryStudyName' ),
+          project: $( '#summaryProject' ),
+          healthTheme: $( '#summaryHealthTheme' ),
+          numerator: $( '#summaryNumerator' ),
+          denominator: $( '#summaryDenominator' ),
+          studyArea: $( '#summaryStudyArea' ),
+          comparisonArea: $( '#summaryComparisonArea' ),
+          investigations: $( '#summaryInvestigations' ),
+          stats: $( '#summaryStats' )
+        };
       }
+
     }
   };
   RIF.dom = dom;
