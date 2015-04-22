@@ -192,13 +192,13 @@ RIF.mediator.utils = ( function ( modelAccessor ) {
      */
     isStudyAreaSelectionComplete: function ( dialog ) {
       var r = this.isReady( modelAccessor.getStudyArea() );
-      this.setDialogStatus( dialog, true );
+      this.setDialogStatus( dialog, r );
       return r;
     },
     isInvestigationSelectionComplete: function ( dialog ) {
-      var r = this.isReady( modelAccessor.getInvestigations() );
-      this.setDialogStatus( dialog, r );
-      return r;
+      var ready = !jQuery.isEmptyObject( modelAccessor.getInvestigations() );
+      this.setDialogStatus( dialog, ready );
+      return ready;
     },
     isComparisonAreaSelectionComplete: function () {},
     isStatSelectionComplete: function () {},

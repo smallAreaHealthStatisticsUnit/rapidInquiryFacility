@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+	<rif_job_submission>
+		<submitted_by>ffabbri</submitted_by>
+		<job_submission_date>1429707838808</job_submission_date>
+		<disease_mapping_study>
+			<name>test_early_days s</name>
+			<disease_mapping_study_area>
+				<geo_levels>
+					<geolevel_select>LEVEL3</geolevel_select>
+					<geolevel_view>LEVEL4</geolevel_view>
+					<geolevel_area></geolevel_area>
+					<geolevel_to_map></geolevel_to_map>
+				</geo_levels>
+				<map_areas>
+					<map_area>
+						<id>01.009.003100</id>
+						<label>Elliot LEVEL3(01.009.003100)</label>
+					</map_area>
+					<map_area>
+						<id>01.009.003000</id>
+						<label>Elliot LEVEL3(01.009.003000)</label>
+					</map_area>
+					<map_area>
+						<id>01.009.002900</id>
+						<label>Elliot LEVEL3(01.009.002900)</label>
+					</map_area>
+					<map_area>
+						<id>01.009.002800</id>
+						<label>Elliot LEVEL3(01.009.002800)</label>
+					</map_area>
+					<map_area>
+						<id>01.009.003200</id>
+						<label>Elliot LEVEL3(01.009.003200)</label>
+					</map_area>
+				</map_areas>
+			</disease_mapping_study_area>
+			<comparison_area>
+				<geo_levels>
+					<geolevel_select />
+					<geolevel_view />
+					<geolevel_area></geolevel_area>
+					<geolevel_to_map></geolevel_to_map>
+				</geo_levels>
+				<map_areas></map_areas>
+			</comparison_area>
+			<investigations>
+				<investigation id="1">
+					<title>investigation_1</title>
+					<numerator_denominator_pair>
+						<numerator_table_name>SAHSULAND_CANCER</numerator_table_name>
+						<numerator_table_description></numerator_table_description>
+						<denominator_table_name>SAHSULAND_POP</denominator_table_name>
+						<denominator_table_description></denominator_table_description>
+					</numerator_denominator_pair>
+					<health_codes>
+						<health_code>
+							<name_space>icd9</name_space>
+							<code>2010</code>
+							<description>Hodgkin's paragranuloma</description>
+							<is_top_level_term>false</is_top_level_term>
+						</health_code>
+						<health_code>
+							<name_space>icd9</name_space>
+							<code>2016</code>
+							<description>Mixed cellularity</description>
+							<is_top_level_term>false</is_top_level_term>
+						</health_code>
+					</health_codes>
+					<year_range>
+						<lower_bound>1992</lower_bound>
+						<upper_bound>1991</upper_bound>
+					</year_range>
+					<sex>Both</sex>
+				</investigation>
+				<investigation id="2">
+					<title>investigation_2</title>
+					<numerator_denominator_pair>
+						<numerator_table_name>SAHSULAND_CANCER</numerator_table_name>
+						<numerator_table_description></numerator_table_description>
+						<denominator_table_name>SAHSULAND_POP</denominator_table_name>
+						<denominator_table_description></denominator_table_description>
+					</numerator_denominator_pair>
+					<health_codes>
+						<health_code>
+							<name_space>icd10</name_space>
+							<code>J450</code>
+							<description>Predominantly allergic asthma</description>
+							<is_top_level_term>false</is_top_level_term>
+						</health_code>
+						<health_code>
+							<name_space>icd10</name_space>
+							<code>J451</code>
+							<description>Nonallergenic asthma</description>
+							<is_top_level_term>false</is_top_level_term>
+						</health_code>
+						<health_code>
+							<name_space>icd10</name_space>
+							<code>J458</code>
+							<description>Mixed asthma</description>
+							<is_top_level_term>false</is_top_level_term>
+						</health_code>
+					</health_codes>
+					<year_range>
+						<lower_bound>1996</lower_bound>
+						<upper_bound>1996</upper_bound>
+					</year_range>
+					<sex>Females</sex>
+				</investigation>
+			</investigations>
+		</disease_mapping_study>
+	</rif_job_submission>
+	

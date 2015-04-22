@@ -115,6 +115,7 @@ RIF.mediator[ 'subscriber-' ] = ( function ( mediatorUtils ) {
       var previousState = {
         state: mediatorUtils.getDialogStatus( dialog )
       };
+
       var ready;
 
       if ( dialog == 'parametersModal' ) {

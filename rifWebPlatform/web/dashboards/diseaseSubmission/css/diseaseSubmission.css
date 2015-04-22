@@ -1246,7 +1246,9 @@ div.headerBlock{
 #studyArea .headerBlock {
     background: white url(../images/trees/tree1bw.jpg) no-repeat center bottom;
 }
-#studyArea div.headerBlock:hover {}
+#studyArea div.headerBlock.active {
+    background: white url(../images/trees/tree1.png) no-repeat center bottom;
+}
 
 #comparisonArea .headerBlock {
     background: white url(../images/trees/tree2bw.png) no-repeat center bottom;
@@ -1260,10 +1262,6 @@ div.headerBlock{
 #invParameters .headerBlock {
     background: white url(../images/trees/tree3bw.png) no-repeat center bottom;
 }
-/*#invParameters div.headerBlock:hover {
-    background: white url(../images/trees/tree3.png) no-repeat center bottom;
-    
-}*/
 
 #statsParameters .headerBlock {
     background: white url(../images/trees/tree4bw.png) no-repeat center bottom;

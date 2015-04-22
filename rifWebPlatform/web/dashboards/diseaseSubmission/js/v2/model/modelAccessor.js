@@ -4,9 +4,15 @@ RIF.modelAccessor = ( function () {
   var model = RIF.model();
   var mapper = RIF.modelMapper();
 
-  var _mandatory = [ "studyName", "healthTheme", "numerator", "denominator", "project", "parameters.taxonomy", "parameters.healthOutcomes",
-    "parameters.gender", "parameters.minYear", "parameters.maxYear", "parameters.ageGroups", "studyArea_resolution", "studyArea_areas",
-    "studyArea_selectAt", "comparisonArea_resolution", "comparisonArea_areas", "comparisonArea_selectAt"
+  /*var _mandatory = [ "studyName", "healthTheme", "numerator", "denominator", "project", "parameters.taxonomy", "parameters.healthOutcomes",
+    "parameters.gender", "parameters.minYear", "parameters.maxYear", "parameters.ageGroups", "studyArea.studyArea_resolution", "studyArea.studyArea_areas",
+    "studyArea.studyArea_selectAt", "comparisonArea.comparisonArea_resolution", "comparisonArea.comparisonArea_areas", "comparisonArea.comparisonArea_selectAt"
+  ];*/
+
+  var _mandatory = [ "studyName", "healthTheme", "numerator", "denominator", "project", "investigations",
+    "studyArea.studyArea_resolution", "studyArea.studyArea_areas",
+    "studyArea.studyArea_selectAt", "comparisonArea.comparisonArea_resolution", "comparisonArea.comparisonArea_areas",
+    "comparisonArea.comparisonArea_selectAt"
   ];
 
   var _optional = [ "covariates", "description" ];
@@ -96,7 +102,11 @@ RIF.modelAccessor = ( function () {
     },
 
     get: function ( param ) {
-      return model[ param ];
+      var props = param.split( "." );
+      return ( props.length > 1 ) ?
+        model[ props[ 0 ] ][ props[ 1 ] ] :
+        ( props.length == 1 ) ?
+        model[ props[ 0 ] ] : null;
     },
 
     getInvestigations: function () {

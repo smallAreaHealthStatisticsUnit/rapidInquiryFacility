@@ -1,0 +1,124 @@
+{
+    "rif_job_submission": {
+        "submitted_by": "ffabbri",
+        "job_submission_date": 1429707838808,
+        "disease_mapping_study": {
+            "name": "test_early_days s",
+            "disease_mapping_study_area": {
+                "geo_levels": {
+                    "geolevel_select": "LEVEL3",
+                    "geolevel_view": "LEVEL4",
+                    "geolevel_area": "",
+                    "geolevel_to_map": ""
+                },
+                "map_areas": {
+                    "map_area": [
+                        {
+                            "id": "01.009.003100",
+                            "label": "Elliot LEVEL3(01.009.003100)"
+                        },
+                        {
+                            "id": "01.009.003000",
+                            "label": "Elliot LEVEL3(01.009.003000)"
+                        },
+                        {
+                            "id": "01.009.002900",
+                            "label": "Elliot LEVEL3(01.009.002900)"
+                        },
+                        {
+                            "id": "01.009.002800",
+                            "label": "Elliot LEVEL3(01.009.002800)"
+                        },
+                        {
+                            "id": "01.009.003200",
+                            "label": "Elliot LEVEL3(01.009.003200)"
+                        }
+                    ]
+                }
+            },
+            "comparison_area": {
+                "geo_levels": {
+                    "geolevel_select": null,
+                    "geolevel_view": null,
+                    "geolevel_area": "",
+                    "geolevel_to_map": ""
+                },
+                "map_areas": {
+                    "map_area": []
+                }
+            },
+            "investigations": {
+                "investigation": [
+                    {
+                        "-id": 1,
+                        "title": "investigation_1",
+                        "numerator_denominator_pair": {
+                            "numerator_table_name": "SAHSULAND_CANCER",
+                            "numerator_table_description": "",
+                            "denominator_table_name": "SAHSULAND_POP",
+                            "denominator_table_description": ""
+                        },
+                        "health_codes": {
+                            "health_code": [
+                                {
+                                    "name_space": "icd9",
+                                    "code": "2010",
+                                    "description": "Hodgkin's paragranuloma",
+                                    "is_top_level_term": "false"
+                                },
+                                {
+                                    "name_space": "icd9",
+                                    "code": "2016",
+                                    "description": "Mixed cellularity",
+                                    "is_top_level_term": "false"
+                                }
+                            ]
+                        },
+                        "year_range": {
+                            "lower_bound": "1992",
+                            "upper_bound": "1991"
+                        },
+                        "sex": "Both"
+                    },
+                    {
+                        "-id": 2,
+                        "title": "investigation_2",
+                        "numerator_denominator_pair": {
+                            "numerator_table_name": "SAHSULAND_CANCER",
+                            "numerator_table_description": "",
+                            "denominator_table_name": "SAHSULAND_POP",
+                            "denominator_table_description": ""
+                        },
+                        "health_codes": {
+                            "health_code": [
+                                {
+                                    "name_space": "icd10",
+                                    "code": "J450",
+                                    "description": "Predominantly allergic asthma",
+                                    "is_top_level_term": "false"
+                                },
+                                {
+                                    "name_space": "icd10",
+                                    "code": "J451",
+                                    "description": "Nonallergenic asthma",
+                                    "is_top_level_term": "false"
+                                },
+                                {
+                                    "name_space": "icd10",
+                                    "code": "J458",
+                                    "description": "Mixed asthma",
+                                    "is_top_level_term": "false"
+                                }
+                            ]
+                        },
+                        "year_range": {
+                            "lower_bound": "1996",
+                            "upper_bound": "1996"
+                        },
+                        "sex": "Females"
+                    }
+                ]
+            }
+        }
+    }
+}
