@@ -2,13 +2,17 @@
 package rifServices.fileFormats;
 
 import rifServices.system.RIFServiceError;
+
+
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.xml.sax.InputSource;
 
-import java.io.File;
+import java.io.*;
 
 
 /**
@@ -85,7 +89,8 @@ public final class RIFJobSubmissionXMLReader {
 // ==========================================
 // Section Properties
 // ==========================================
-    
+	private RIFJobSubmissionContentHandler rifJobSubmissionContentHandler;
+	
 // ==========================================
 // Section Construction
 // ==========================================
@@ -93,7 +98,8 @@ public final class RIFJobSubmissionXMLReader {
      * Instantiates a new RIF job submission xml reader.
      */
 	public RIFJobSubmissionXMLReader() {
-
+		rifJobSubmissionContentHandler
+			= new RIFJobSubmissionContentHandler();
     }
 
 // ==========================================
@@ -110,14 +116,13 @@ public final class RIFJobSubmissionXMLReader {
 		final File rifSubmissionFile) 
 		throws RIFServiceException {
 
-		try {
+		try {			
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
-			RIFJobSubmissionContentHandler rifJobSubmissionContentHandler
-				= new RIFJobSubmissionContentHandler();
 			saxParser.parse(rifSubmissionFile, rifJobSubmissionContentHandler);
 		}
 		catch(Exception exception) {
+			exception.printStackTrace(System.out);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"io.error.problemReadingFile",
@@ -128,6 +133,63 @@ public final class RIFJobSubmissionXMLReader {
 					errorMessage);
 			throw rifServiceException;
 		}
+	}
+	
+	public void readFileFromString (
+		final String rifStudySubmissionAsXML) 
+		throws RIFServiceException {
+
+		try {
+			StringReader stringReader = new StringReader(rifStudySubmissionAsXML);
+			InputSource inputSource = new InputSource(stringReader);
+			
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();
+			saxParser.parse(inputSource, rifJobSubmissionContentHandler);
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"io.error.problemReadingFile",
+					"blah");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.XML_FILE_PARSING_PROBLEM, 
+					errorMessage);
+			throw rifServiceException;
+		}
+	}			
+
+	public void readFile(
+		final InputStream inputStream) 
+		throws RIFServiceException {
+
+		try {
+
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();
+			saxParser.parse(
+				inputStream, 
+				rifJobSubmissionContentHandler);
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"io.error.problemReadingFile",
+					"blah");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.XML_FILE_PARSING_PROBLEM, 
+					errorMessage);
+			throw rifServiceException;
+		}
+	}			
+	
+	
+	public RIFStudySubmission getStudySubmission() {
+		return rifJobSubmissionContentHandler.getRIFJobSubmission();		
 	}
 	
 // ==========================================

@@ -1,5 +1,21 @@
 package rifServices.fileFormats;
 
+import java.io.ByteArrayOutputStream;
+
+
+import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.businessConceptLayer.User;
+
+
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceException;
+import rifServices.system.RIFServiceMessages;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.util.zip.ZipOutputStream;
+import java.io.File;
 
 /**
  *
@@ -91,10 +107,75 @@ public final class RIFJobSubmissionXMLWriter {
 	/**
 	 * Write html.
 	 */
-	public void writeHTML() {
+	public String writeToString(
+		final User user,
+		final RIFStudySubmission rifStudySubmission) 
+		throws RIFServiceException {
 		
+		try {
+			RIFJobSubmissionContentHandler rifStudySubmissionContentHandler
+				= new RIFJobSubmissionContentHandler();
+			ByteArrayOutputStream outputStream
+				= new ByteArrayOutputStream();
+			XMLCommentInjector commentInjector = new XMLCommentInjector();			
+			rifStudySubmissionContentHandler.initialise(
+				outputStream, 
+				commentInjector);
+			rifStudySubmissionContentHandler.writeXML(user, rifStudySubmission);
+    		String result 
+				= new String(outputStream.toByteArray(), "UTF-8");	
+    		outputStream.close();			
+    		return result;
+		}
+		catch(Exception exception) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"io.error.problemWritingFileContentsToString");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.XML_FILE_PARSING_PROBLEM, 
+					errorMessage);
+			throw rifServiceException;			
+		}
 		
 	}
+
+	public String write(
+		final User user,
+		final RIFStudySubmission rifStudySubmission,
+		final File file) 
+		throws RIFServiceException {
+			
+		try {
+			FileOutputStream fileOutputStream
+				= new FileOutputStream(file);
+			
+			RIFJobSubmissionContentHandler rifStudySubmissionContentHandler
+				= new RIFJobSubmissionContentHandler();
+			ByteArrayOutputStream outputStream
+				= new ByteArrayOutputStream();
+			XMLCommentInjector commentInjector = new XMLCommentInjector();			
+			rifStudySubmissionContentHandler.initialise(
+				fileOutputStream, 
+				commentInjector);
+			rifStudySubmissionContentHandler.writeXML(user, rifStudySubmission);
+	    	String result 
+				= new String(outputStream.toByteArray(), "UTF-8");	
+	    	outputStream.close();			
+	    	return result;
+		}
+		catch(Exception exception) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"io.error.problemWritingFileContentsToString");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.XML_FILE_PARSING_PROBLEM, 
+					errorMessage);
+			throw rifServiceException;			
+		}
+	}	
+	
 	
 	// ==========================================
 	// Section Errors and Validation
