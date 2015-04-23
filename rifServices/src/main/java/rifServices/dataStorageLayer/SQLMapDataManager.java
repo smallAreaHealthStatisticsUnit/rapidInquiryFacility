@@ -1317,9 +1317,92 @@ final class SQLMapDataManager
 		finally {
 			SQLQueryUtility.close(statement);
 			SQLQueryUtility.close(resultSet);
+		}		
+	}
+
+	public BoundaryRectangle getGeoLevelFullExtent(
+		final Connection connection,
+		final User user,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect)
+		throws RIFServiceException {
+		
+		//Validate parameters
+		geography.checkErrors();
+		geoLevelSelect.checkErrors();
+		sqlRIFContextManager.checkGeographyExists(
+			connection, 
+			geography.getName());
+		sqlRIFContextManager.checkGeoLevelSelectExists(
+			connection, 
+			geography.getName(), 
+			geoLevelSelect.getName());
+					
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+
+			//Create query
+			SQLFunctionCallerQueryFormatter queryFormatter
+				= new SQLFunctionCallerQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.setSchema("rif40_xml_pkg");
+			queryFormatter.setFunctionName("rif40_getgeolevelfullextent");
+			queryFormatter.setNumberOfFunctionParameters(2);		
+		
+			logSQLQuery(
+				"getGeoLevelFullExtent",
+				queryFormatter,
+				geography.getName(),
+				geoLevelSelect.getName());
+		
+			//Execute query and generate results
+			statement
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
+			statement.setString(1, geography.getName());
+			statement.setString(2, geoLevelSelect.getName());				
+			resultSet = statement.executeQuery();
+			
+			//Assume there is at least one row result
+			resultSet.next();
+			
+			double yMax = resultSet.getDouble(1);
+			double xMax = resultSet.getDouble(2);
+			double yMin = resultSet.getDouble(3);			
+			double xMin = resultSet.getDouble(4);
+			
+			BoundaryRectangle result
+				= BoundaryRectangle.newInstance(
+					String.valueOf(xMin),
+					String.valueOf(yMin),
+					String.valueOf(xMax),
+					String.valueOf(yMax));
+			
+			connection.commit();
+			
+			return result;
 		}
-		
-		
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version			
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.unableToGetBoundsForGeoLevel",
+					geography.getDisplayName(),
+					geoLevelSelect.getDisplayName());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			//Cleanup database resources
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}		
 	}
 	
 	/**
