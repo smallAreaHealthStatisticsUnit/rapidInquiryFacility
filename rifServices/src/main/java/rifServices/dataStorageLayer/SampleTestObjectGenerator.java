@@ -394,7 +394,9 @@ public final class SampleTestObjectGenerator {
 				"5",
 				CovariateType.NTILE_INTEGER_SCORE);
 		adjustableCovariate1.setNewRecord(false);
+
 		investigation.addCovariate(adjustableCovariate1);
+		/*		
 		AdjustableCovariate adjustableCovariate2
 			= AdjustableCovariate.newInstance(
 				"ETHNICITY", 
@@ -403,6 +405,7 @@ public final class SampleTestObjectGenerator {
 				CovariateType.NTILE_INTEGER_SCORE);
 		adjustableCovariate2.setNewRecord(false);
 		investigation.addCovariate(adjustableCovariate2);
+		 */
 		
 		return investigation;
 	}
