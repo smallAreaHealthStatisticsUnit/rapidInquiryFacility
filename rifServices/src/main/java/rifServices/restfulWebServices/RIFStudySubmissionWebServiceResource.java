@@ -1,22 +1,21 @@
 package rifServices.restfulWebServices;
 
-
-
 import rifServices.system.RIFServiceMessages;
+
 import rifServices.businessConceptLayer.*;
+import rifServices.fileFormats.*;
+//import com.sun.jersey.core.header.FormDataContentDisposition;
+//import com.sun.jersey.multipart.FormDataParam;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 import javax.servlet.http.*;
-import javax.ws.rs.QueryParam;
-
 import java.text.Collator;
 import java.util.ArrayList;
+import java.io.*;
 
-
+//import org.glassfish.jersey.
 
 /**
  * This class advertises API methods found in 
@@ -163,6 +162,31 @@ public class RIFStudySubmissionWebServiceResource
 	}
 	
 	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/isInformationGovernancePolicyActive")
+	public Response isInformationGovernancePolicyActive(
+		@Context HttpServletRequest servletRequest,
+		@QueryParam("userID") String userID) {
+
+		return super.isInformationGovernancePolicyActive(
+			servletRequest,
+			userID);
+	}
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getStudyStatusUpdates")
+	public Response getStudyStatusUpdates(
+		@Context HttpServletRequest servletRequest,
+		@QueryParam("userID") String userID,
+		@QueryParam("studyID") String studyID) {
+
+		return super.getStudyStatusUpdates(
+			servletRequest,
+			userID,
+			studyID);
+	}
 	
 	@GET
 	@Produces({"application/json"})	
@@ -171,6 +195,8 @@ public class RIFStudySubmissionWebServiceResource
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 
+		
+		System.out.println("Testing");
 		return super.getGeographies(
 			servletRequest,
 			userID);
@@ -1383,7 +1409,66 @@ public class RIFStudySubmissionWebServiceResource
 			yMin, 
 			xMin);		
 	}	
+	
+/*	
+	@POST
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/submitStudy")
+	public Response submitStudy(
+		@Context HttpServletRequest servletRequest,
+		@QueryParam("userID") String userID,
+		@FormDataParam("file") InputStream inputStream) {
 
+		return super.submitStudy(			
+			servletRequest,
+			userID,
+			inputStream);			
+	}
+*/	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getStudySubmission")
+	public Response getstudy(
+		@Context HttpServletRequest servletRequest,
+		@QueryParam("userID") String userID,
+		@QueryParam("studyID") String studyID) {
+
+		
+		return super.getStudySubmission(
+			servletRequest, 
+			userID, 
+			studyID);
+
+		/*
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
+			servletRequest,
+			"Testing getStuff method");
+		*/
+	}	
+	
+	/*
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getStudySubmission")	
+	protected Response getStudySubmission(
+		@Context HttpServletRequest servletRequest,
+		@QueryParam("userID") String userID,
+		@QueryParam("studyID") String studyID) { 
+		
+		
+		return super.getStudySubmission(
+			servletRequest, 
+			userID, 
+			studyID);
+	}
+
+	*/
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
