@@ -324,17 +324,19 @@ public final class FieldValidationUtility {
 	 * @param fieldValue the field value
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void checkEmptyRequiredFieldValue(
+	public void checkEmptyRequiredParameterValue(
 		final String fieldName, 
 		final String fieldValue) 
 		throws RIFServiceException {
 		
 		if (isEmpty(fieldValue)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage("", fieldName);
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredParameter", 
+					fieldName);
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.EMPTY_REQUIRED_FIELD,
+					RIFServiceError.EMPTY_API_METHOD_PARAMETER,
 					errorMessage);
 			throw rifServiceException;			
 		}		
