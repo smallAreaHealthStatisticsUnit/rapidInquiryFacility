@@ -115,6 +115,111 @@ class AbstractRIFUserService extends AbstractRIFService {
 	// Section Errors and Validation
 	// ==========================================
 	
+	
+	public boolean isInformationGovernancePolicyActive(
+		final User _user) 
+		throws RIFServiceException {
+
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return true;
+		}
+		
+		try {
+			
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"isInformationGovernancePolicyActive",
+				"user",
+				user);
+		
+			//Check for security violations
+			validateUser(user);
+			
+			//This will change when the Information governance tool 
+			//is developed
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"isInformationGovernancePolicyActive",
+				rifServiceException);	
+		}		
+
+		return false;		
+	
+	}
+	
+	public String[] getStudyStatusUpdates(
+		final User _user,
+		final String studyID) 
+		throws RIFServiceException {
+		
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		
+		Connection connection = null;
+		String[] results = new String[0];
+		try {
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getStudySummaries",
+				"user",
+				user);
+			fieldValidationUtility.checkEmptyRequiredParameterValue(
+				"studyID", 
+				studyID);
+			
+			validateUser(user);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getStudyStatus",
+				"studyID",
+				studyID);
+
+			//Assign pooled connection
+			connection 
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			
+			SQLRIFSubmissionManager rifSubmissionManager
+				= rifServiceResources.getRIFSubmissionManager();
+			results
+				= rifSubmissionManager.getStudyStatusUpdates(
+					connection,
+					user,
+					studyID);
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getStudyStatus",
+				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}		
+		return results;
+		
+		
+		
+	}
+	
 	public ArrayList<StudySummary> getStudySummaries(
 		final User _user)
 		throws RIFServiceException {
@@ -238,6 +343,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 			result
 				= rifSubmissionManager.getDiseaseMappingStudy(
 					connection,
+					user,
 					studyID);
 			
 		}
@@ -865,7 +971,91 @@ class AbstractRIFUserService extends AbstractRIFService {
 	}
 	
 	
-	
+	public BoundaryRectangle getGeoLevelFullExtent(
+		final User _user,
+		final Geography _geography,
+		final GeoLevelSelect _geoLevelSelect)
+		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		Geography geography = Geography.createCopy(_geography);
+		GeoLevelSelect geoLevelSelect = GeoLevelSelect.createCopy(_geoLevelSelect);
+			
+		BoundaryRectangle result = BoundaryRectangle.newInstance();
+		Connection connection = null;
+		try {
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelFullExtent",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelFullExtent",
+				"geography",
+				geography);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelFullExtent",
+				"geoLevelSelect",
+				geoLevelSelect);
+				
+			//Check for security violations
+			validateUser(user);
+			geography.checkSecurityViolations();
+			geoLevelSelect.checkSecurityViolations();
+				
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getGeoLevelFullExtent",
+					user.getUserID(),
+					user.getIPAddress(),
+					geography.getDisplayName(),
+					geoLevelSelect.getDisplayName());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+			
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
+			SQLMapDataManager sqlMapDataManager
+				= rifServiceResources.getSQLMapDataManager();		
+					
+			result
+				= sqlMapDataManager.getGeoLevelFullExtent(
+					connection,
+					user,
+					geography,
+					geoLevelSelect);
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getGeoLevelFullExtent",
+				rifServiceException);			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+
+		return result;
+	}
+		
 	public ArrayList<HealthTheme> getHealthThemes(
 		final User _user,
 		final Geography _geography)
