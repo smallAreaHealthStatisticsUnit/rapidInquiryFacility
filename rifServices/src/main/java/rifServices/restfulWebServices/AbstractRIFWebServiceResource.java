@@ -1,6 +1,10 @@
 package rifServices.restfulWebServices;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.File;
+
+
 
 
 
@@ -11,24 +15,18 @@ import java.util.Date;
 import javax.servlet.http.*;
 import javax.ws.rs.core.Response;
 
+import org.json.JSONObject;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
+import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.businessConceptLayer.BoundaryRectangle;
-import rifServices.businessConceptLayer.GeoLevelArea;
-import rifServices.businessConceptLayer.GeoLevelSelect;
-import rifServices.businessConceptLayer.GeoLevelView;
-import rifServices.businessConceptLayer.Geography;
-import rifServices.businessConceptLayer.HealthTheme;
-import rifServices.businessConceptLayer.MapArea;
-import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
-import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.businessConceptLayer.User;
-import rifServices.businessConceptLayer.YearRange;
+import rifServices.businessConceptLayer.*;
+import rifServices.fileFormats.RIFJobSubmissionXMLReader;
+import rifServices.fileFormats.RIFJobSubmissionXMLWriter;
 
 /**
  * This is a web service class that is analoguous to  
@@ -225,6 +223,79 @@ abstract class AbstractRIFWebServiceResource {
 	
 	protected WebServiceResponseGenerator getWebServiceResponseGenerator() {
 		return webServiceResponseGenerator;
+	}
+	
+	
+	
+	protected Response isInformationGovernancePolicyActive(
+		final HttpServletRequest servletRequest,
+		final String userID) {
+		
+		String result = "";
+		
+		try {
+			//Convert URL parameters to RIF service API parameters
+			User user = createUser(servletRequest, userID);
+			
+			//Call service API
+			RIFStudySubmissionAPI studySubmissionService
+				= rifStudyServiceBundle.getRIFStudySubmissionService();
+			
+			result
+				= String.valueOf(studySubmissionService.isInformationGovernancePolicyActive(user));
+			
+			serialiseStringResult(result);			
+		}
+		catch(Exception exception) {
+			//Convert exceptions to support JSON
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
+		}
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
+			servletRequest,
+			result);		
+	}
+	
+	
+	protected Response getStudyStatusUpdates(
+		final HttpServletRequest servletRequest,
+		final String userID,
+		final String studyID) {
+	
+		String result = "";
+		
+		try {
+			//Convert URL parameters to RIF service API parameters
+			User user = createUser(servletRequest, userID);
+			
+			//Call service API
+			RIFStudySubmissionAPI studySubmissionService
+				= rifStudyServiceBundle.getRIFStudySubmissionService();
+					
+			String[] statusUpdates
+				= studySubmissionService.getStudyStatusUpdates(
+					user, 
+					studyID);
+
+			result 
+				= serialiseArrayResult(
+					servletRequest, 
+					statusUpdates);
+		}
+		catch(Exception exception) {
+			//Convert exceptions to support JSON
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
+		}
+		
+		return webServiceResponseGenerator.generateWebServiceResponse(
+				servletRequest,
+				result);
 	}
 	
 	protected Response getGeographies(
@@ -792,7 +863,114 @@ abstract class AbstractRIFWebServiceResource {
 			servletRequest,
 			result);		
 	}	
+	
+	protected Response getStudySubmission(
+		final HttpServletRequest servletRequest,
+		final String userID,
+		final String studyID) { 
+		
+		System.out.println("getStudySubmission stub userID==" + userID + "==studyID=="+studyID+"==");
+		
+		String result = "";
+		
+		try {
+			User user = createUser(servletRequest, userID);
 
+			RIFStudySubmissionAPI studySubmissionService
+				= getRIFStudySubmissionService();
+			
+			DiseaseMappingStudy diseaseMappingStudy = 
+				studySubmissionService.getDiseaseMappingStudy(
+					user, 
+					studyID);
+			
+			SampleTestObjectGenerator generator = new SampleTestObjectGenerator();
+			RIFStudySubmission sampleStudySubmission
+				= generator.createSampleRIFJobSubmission();
+			sampleStudySubmission.setStudy(diseaseMappingStudy);
+			
+			RIFJobSubmissionXMLWriter writer = new RIFJobSubmissionXMLWriter();
+			String xmlResults
+				= writer.writeToString(
+					user,
+					sampleStudySubmission);
+
+			JSONObject jsonObject
+				= org.json.XML.toJSONObject(xmlResults);
+			
+			//run through XML To JSON converter
+			result = jsonObject.toString(4);
+		}
+		catch(RIFServiceException rifServiceException) {
+			result 
+				= serialiseException(
+					servletRequest,
+					rifServiceException);			
+		}
+		
+		return webServiceResponseGenerator.generateWebServiceResponse(
+			servletRequest,
+			result);		
+	}
+	
+	protected Response submitStudy(
+		final HttpServletRequest servletRequest,
+		final String userID,
+		final InputStream inputStream) {
+		
+		String result = "";
+		
+		try {
+			//Convert URL parameters to RIF service API parameters			
+			User user = createUser(servletRequest, userID);
+			
+			/*
+			RIFJobSubmissionXMLReader rifStudySubmissionReader
+				= new RIFJobSubmissionXMLReader();
+			rifStudySubmissionReader.readFile(inputStream);
+			RIFStudySubmission rifStudySubmission
+				= rifStudySubmissionReader.getStudySubmission();
+			*/
+			RIFStudySubmissionAPI studySubmissionService
+				= getRIFStudySubmissionService();
+
+			System.out.println("Reading local file");
+			File file = new File("C://rif_scripts//walley.xml");
+			RIFJobSubmissionXMLReader rifStudySubmissionReader
+				= new RIFJobSubmissionXMLReader();
+			rifStudySubmissionReader.readFile(file);
+			RIFStudySubmission rifStudySubmission
+				= rifStudySubmissionReader.getStudySubmission();
+			
+			
+			/*
+			 * studyAsXML = converter(studyAsJSON);
+			 */
+			
+			studySubmissionService.submitStudy(
+				user, 
+				rifStudySubmission, 
+				null);
+
+			RIFJobSubmissionXMLWriter writer = new RIFJobSubmissionXMLWriter();
+			result = writer.writeToString(user, rifStudySubmission);
+			
+			System.out.println("submitStudy success!");
+		}
+		catch(Exception exception) {
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
+		}
+		
+		
+		return webServiceResponseGenerator.generateWebServiceResponse(
+			servletRequest,
+			result);		
+	}
+	
+	
 	protected User createUser(
 		final HttpServletRequest servletRequest,
 		final String userID) {
