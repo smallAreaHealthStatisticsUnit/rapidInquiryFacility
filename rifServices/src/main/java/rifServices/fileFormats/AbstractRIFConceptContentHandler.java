@@ -321,6 +321,10 @@ abstract class AbstractRIFConceptContentHandler
 	public boolean isPluralRecordTypeApplicable(
 		final String currentTagName) {
 
+		if (pluralXMLTag == null) {
+			return false;
+		}
+		
 		return pluralXMLTag.equals(currentTagName);
 	}	
 	
