@@ -1,6 +1,6 @@
 package rifServices.test.services;
 
-import static org.junit.Assert.fail;
+
 
 
 
@@ -9,9 +9,11 @@ import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 
+import rifServices.fileFormats.RIFZipFileWriter;
+
 import java.io.File;
 import java.util.ArrayList;
-
+import static org.junit.Assert.fail;
 import org.junit.Test;
 
 /**
@@ -93,7 +95,7 @@ public final class GetDiseaseMappingStudy
 	// ==========================================
 
 	public GetDiseaseMappingStudy() {
-		validStudyID = "123";
+		validStudyID = "13";
 		
 		maliciousStudyID = getTestMaliciousValue();
 		nonExistentStudyID = "blah";
@@ -137,6 +139,17 @@ public final class GetDiseaseMappingStudy
 				= rifStudySubmissionService.getDiseaseMappingStudy(
 					validUser, 
 					validStudyID);
+			
+			RIFStudySubmission submission
+				= RIFStudySubmission.newInstance();
+			submission.setStudy(diseaseMappingStudy);
+			
+			RIFZipFileWriter writer = new RIFZipFileWriter();
+			User user = User.newInstance("kgarwood", "xxx");
+			File targetFile = new File("C://rif_scripts/result.zip");
+			writer.writeZipFile(user, targetFile, submission);
+			
+			
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();			
