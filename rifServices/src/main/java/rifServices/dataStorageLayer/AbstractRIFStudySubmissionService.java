@@ -1783,13 +1783,17 @@ abstract class AbstractRIFStudySubmissionService
 			rifStudySubmission.checkSecurityViolations();		
 			
 			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();	
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			String outputFileName = "";
+			if (outputFile != null) {
+				outputFileName = outputFile.getAbsolutePath();
+			}
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.submittingStudy",
 					user.getUserID(),
 					user.getIPAddress(),
 					rifStudySubmission.getDisplayName(),
-					outputFile.getAbsolutePath());
+					outputFileName);
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
