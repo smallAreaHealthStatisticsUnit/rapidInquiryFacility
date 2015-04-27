@@ -148,6 +148,11 @@
           searchTxt = params[ 1 ],
           args = 'nameSpace=' + taxonomy + '&searchText=' + params[ 1 ] + '&isCaseSensitive=false';
         xhr( 'studySubmission/getHealthCodesMatchingSearchText?' + args, myCallback, msg, 'application/json' );
+      },
+
+      getAvailableCalculationMethods: function ( myCallback, params ) {
+        var msg = "Retrieving Calculation Methods";
+        xhr( 'studySubmission/getAvailableCalculationMethods?', myCallback, msg, 'application/json' );
       }
     };
 

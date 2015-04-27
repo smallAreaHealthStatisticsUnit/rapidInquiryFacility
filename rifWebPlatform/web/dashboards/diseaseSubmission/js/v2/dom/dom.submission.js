@@ -34,12 +34,16 @@ RIF.dom = ( function () {
           compArea: get( 'comparisonArea' ),
           /* Investigation  front summary */
           invParameters: get( 'invParameters' ),
+          /* Investigation  front summary */
+          stat: get( 'statsParameters' ),
           /* Study area modal dialog  */
           studyAreaDialog: get( 'areaSelectionModal' ),
           /* Comparison area modal dialog  */
           compAreaDialog: get( 'areaSelectionModal' ),
           /* Investigation modal dialog  */
           investigationDialog: get( 'parametersModal' ),
+          /* Investigation modal dialog  */
+          statDialog: get( 'statModal' ),
           /* Retrieve modal dialog  */
           retrieveDialog: get( 'retrieveModal' ),
           /* All Close button on modal dialogs */
@@ -123,6 +127,12 @@ RIF.dom = ( function () {
           finalRun: $( '#finalRun' ),
           project: $( '#projectCode' ),
           studyDescription: $( '#studyDescription' )
+        };
+      },
+
+      models: function () {
+        return {
+          modelsList: $( '#modelsList' )
         };
       }
     },

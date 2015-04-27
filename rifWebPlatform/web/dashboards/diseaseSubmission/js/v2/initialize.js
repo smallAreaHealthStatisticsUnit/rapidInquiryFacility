@@ -24,10 +24,10 @@ RIF.initialize = ( function () {
       /*map: {
             studyType: 'diseaseSubmission',
             layerType: 'tilesvg'
-         },*/
+      },*/
       menu: {
         studyType: 'diseaseSubmission',
-        menus: [ 'frontSubmission', 'investigationParameters', 'healthCodes', 'areaSelection', 'retrievableRunnable' ]
+        menus: [ 'frontSubmission', 'investigationParameters', 'healthCodes', 'areaSelection', 'retrievableRunnable', 'models' ]
       },
       table: {
         studyType: 'diseaseSubmission',
@@ -213,6 +213,13 @@ RIF.initialize = ( function () {
         subscribers: [ "mediator" ],
         firer: [ "table" ],
         method: "ageGroupsChanged"
+      },
+
+      /**-- RETRIEVE CALCULATION MODELS AVAILABLE ---**/
+      startStatDialog: {
+        subscribers: [ "menu" ],
+        firer: [ "mediator" ],
+        method: "startStatDialog"
       },
 
       /**-- SUMMARY TABLE ---**/

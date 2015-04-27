@@ -1,0 +1,1 @@
+RIF[ 'menu' ][ 'event-models' ] = ( function ( dom, firer ) {} );

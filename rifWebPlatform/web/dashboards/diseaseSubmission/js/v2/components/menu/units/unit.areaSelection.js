@@ -3,7 +3,6 @@ RIF.menu.areaSelection = ( function ( _dom, menuUtils ) {
     getSelectAt: function ( data ) {
       menuUtils.dropDownInputText( data, _dom.selectAtAvailable );
       _dom.resolutionCountLabel.innerHTML = '';
-      //menuUtils.proxy.studyAreaReady();
     },
     getResolutions: function ( data ) {
       _dom.resolution.removeClass( 'inputBorderSelection' ).val( '' );

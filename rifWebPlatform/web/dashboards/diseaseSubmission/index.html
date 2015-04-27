@@ -8,7 +8,6 @@
     <meta name="keywords" content="Disease mapping,Point source analysis, Risk, Health data">
 
     <!--CSS Stylesheets-->
-    <link rel="stylesheet" href="css/jquery/jquery-ui-1.10.3.custom.min.css" />
     <link rel="stylesheet" href="css/leaflet/leaflet.css" />
     <link href="css/diseaseSubmission.css" rel="stylesheet" media="screen" />
     <link href="css/statusBar.css" rel="stylesheet" media="screen" />
@@ -16,7 +15,6 @@
 
     <!-- libraries -->
     <script type="text/javascript" src="../../libs/jquery-2.0.3.js"></script>
-    <script type="text/javascript" src="../../libs/jquery-ui-1.10.4.custom.min.js"></script>
     <script type="text/javascript" src="../../libs/leaflet-0.7.3.js"></script>
     <script src="../../libs/d3.v3.min.js" charset="utf-8"></script>
 	<script src="../../libs/topojson.v1.min.js" charset="utf-8"></script>
@@ -105,6 +103,13 @@
     <script type="text/javascript" src="js/v2/components/menu/firers/firer.retrievableRunnable.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/subscribers/subscriber.retrievableRunnable.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/events/event.retrievableRunnable.js"></script>
+    
+    
+    <script type="text/javascript" src="js/v2/components/menu/units/unit.models.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/controllers/controller.models.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/firers/firer.models.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/subscribers/subscriber.models.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/events/event.models.js"></script>
     
     <script type="text/javascript" src="js/v2/components/menu/menu.utils.js"></script>
     
@@ -328,20 +333,7 @@
                 <div></div>
 			</div>
 		</div>
-	</div>--->
-	
-    <!---Health conditions
-    <div class="overlay" id="healththemeModal">
-		<div class="msettings">
-			<div class="msettings-ct">
-				<div class="msettings-header">
-					<h2>Health conditions</h2>
-					<a class="modal_close" href="#"></a>
-				</div>
-                <div></div>
-			</div>
-		</div>
-	</div>--->
+	</div>--->	
     
     
     <!--Investigation parameters -->
@@ -353,7 +345,6 @@
 					<a class="modal_close" href="#parametersModal"></a>
 				</div>
                 <div class='modalContainer'>
-                    
                     <div class='healthCodes'>
                         <div class='availablesWrapper' id='availableTaxomonomies'>
                             <input type="text"  placeholder="ICD Classification" id='icdClassification' class='dropdownInput'>
@@ -431,6 +422,32 @@
 		</div>
 	</div>
 	
+    <!--- Stat Dialog --->
+    <div class="overlay" id="statModal">
+		<div class="msettingsMedium">
+			<div class="msettings-ct">
+				<div class="msettings-header">
+					<h2>Statistical functions</h2>
+					<a class="modal_close" href="#statModal"></a>
+				</div>
+                <div class = "statsInfo">
+                    <h2>Default</h2>
+                    <p> Directly standardised rates, Relative risk ratio, Empirical Bayes </p>
+                </div>
+                <div class = "statsInfo">
+                    <h2>Optional</h2>
+                    <!--<div> Include  spatial smoothing to your analysis by selecting the Bayesian model(s) of interest below. 
+                        Prior specification Independent inverse gamma IGamma(0.5,0.0005) priors are assigned to the model parameters &delta;_u^2 and &delta;_v^2. 
+                    </div>-->
+                    <div id="modelsList" class="availables modelsAvailable"></div>
+                    <div class="statsManual">
+                        <a href='#' >Statistical Manual </a>
+                    </div>    
+                    </div>
+                </div>
+			</div>
+		</div>
+	</div>
     
      <!---Retrieve Study--->
 	<div class="overlay" id="retrieveModal" >

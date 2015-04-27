@@ -98,6 +98,11 @@ RIF.mediator[ 'subscriber-' ] = ( function ( mediatorUtils ) {
         if ( ready && this[ dialog ] != 1 ) {
           this.startAreaSelection(); //firer
         };
+      } else if ( dialog == 'statDialog' ) {
+        ready = true;
+        if ( ready && this[ dialog ] != 1 ) {
+          this.startStatDialog(); //firer
+        };
       };
 
       if ( ready ) {

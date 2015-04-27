@@ -651,6 +651,17 @@ path.polygon:hover {
     margin-right: auto;
     margin-top:8%;
 }
+.statsInfo{
+    padding:15px 15px 0px 15px;
+}
+.statsInfo h2{
+    font-weight:bold;
+    font-size:14px;
+    text-transform: uppercase
+}
+.statsInfo p{ 
+    font-style: italic
+}
 .myButton {
 	-moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
 	-webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
@@ -1253,7 +1264,9 @@ div.headerBlock{
 #comparisonArea .headerBlock {
     background: white url(../images/trees/tree2bw.png) no-repeat center bottom;
 }
-#comparisonArea div.headerBlock:hover {}
+#comparisonArea div.headerBlock.active {
+    background: white url(../images/trees/tree2.png) no-repeat center bottom;
+}
 
 
 #invParameters .headerBlock.active{
@@ -1524,21 +1537,48 @@ textarea.description {
     text-transform: uppercase;
     padding: 10px;
 }
-.covariatesAvailable {
+
+.modelsAvailable{
+    margin-top:10px;
+    width:350px;
+    position: relative
+}
+
+.covariatesAvailable, .modelsAvailable {
     display: block !important;
     max-height: 150px !important;
     z-index: 1;
 }
-.covariatesAvailable div {
+.covariatesAvailable div, .modelsAvailable div  {
     padding: 3px 5px;
 }
-.covariatesAvailable input[type='checkbox'] {
+
+.modelsAvailable > div {
+  padding-bottom: 10px;
+}
+
+
+
+.covariatesAvailable input[type='checkbox'],  .modelsAvailable input[type='checkbox'] {
     float: left;
 }
-.covariatesAvailable label {
+.covariatesAvailable label ,.modelsAvailable label {
     display: block;
     width: 100%;
 }
+.modelsAvailable label{
+    font-weight: bold;
+}
+
+.modelsAvailable div div {
+  padding-left: 20px;
+}
+
+.modelsAvailable div input[type="text"] {
+  width: 80px !important;
+  margin: 0 !important;
+}
+
 #addInvestigation,
 #clearParameters{
    opacity: 0.2;
@@ -1655,4 +1695,13 @@ td {
 }
 .covariatesRow {
     width: 8%
+}
+.statsManual{
+    margin-top:10px;
+}
+.statsManual a {
+    float:right;
+    margin-right: 20px;
+    font-weight: bold;
+    
 }

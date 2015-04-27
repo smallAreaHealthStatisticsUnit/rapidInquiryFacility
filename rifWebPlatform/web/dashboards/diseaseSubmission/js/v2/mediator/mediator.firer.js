@@ -26,6 +26,10 @@ RIF.mediator[ 'firer-' ] = ( function () {
       this.fire( 'startAreaSelection', null );
     },
 
+    startStatDialog: function () {
+      this.fire( 'startStatDialog', null );
+    },
+
     addInvestigationRow: function ( nInvestigation, parameters ) {
       this.fire( 'addInvestigationRow', [ nInvestigation, parameters ] );
     }
