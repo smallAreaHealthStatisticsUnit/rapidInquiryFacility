@@ -100,7 +100,7 @@ public class TestRIFSubmisssionWriter {
 		RIFStudySubmission rifStudySubmission
 			= testObjectGenerator.createSampleRIFJobSubmission();
 		try {
-			RIFJobSubmissionXMLWriter writer = new RIFJobSubmissionXMLWriter();
+			RIFStudySubmissionXMLWriter writer = new RIFStudySubmissionXMLWriter();
 			String xmlResults
 				= writer.writeToString(
 					validUser,
@@ -133,8 +133,8 @@ public class TestRIFSubmisssionWriter {
 		
 		File file = new File("C://rif_scripts//result-kgarwood-17-Apr-15.xml");
 		
-		RIFJobSubmissionXMLReader reader = new RIFJobSubmissionXMLReader();
-		RIFJobSubmissionXMLWriter writer = new RIFJobSubmissionXMLWriter();
+		RIFStudySubmissionXMLReader reader = new RIFStudySubmissionXMLReader();
+		RIFStudySubmissionXMLWriter writer = new RIFStudySubmissionXMLWriter();
 		
 		StringBuilder buffer = new StringBuilder();
 		buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
@@ -184,27 +184,27 @@ public class TestRIFSubmisssionWriter {
 			User validUser = User.newInstance("kgarwood", "XXX");
 			RIFStudySubmission rifStudySubmission
 				= testObjectGenerator.createSampleRIFJobSubmission();
-			RIFJobSubmissionXMLWriter writer
-				 = new RIFJobSubmissionXMLWriter();
+			RIFStudySubmissionXMLWriter writer
+				 = new RIFStudySubmissionXMLWriter();
 			File file = new File("C://rif_scripts//walley.xml");
 			writer.write(validUser, rifStudySubmission, file);
 			
 			//now read it
-			RIFJobSubmissionXMLReader reader1
-				= new RIFJobSubmissionXMLReader();
+			RIFStudySubmissionXMLReader reader1
+				= new RIFStudySubmissionXMLReader();
 			reader1.readFile(file);
 			
 			RIFStudySubmission rifStudySubmission2
 				=  reader1.getStudySubmission();
 			
 			File file2 = new File("C://rif_scripts//walley-2.xml");
-			RIFJobSubmissionXMLWriter writer2
-				= new RIFJobSubmissionXMLWriter();
+			RIFStudySubmissionXMLWriter writer2
+				= new RIFStudySubmissionXMLWriter();
 			writer2.write(validUser, rifStudySubmission2, file2);
 			
 			
-			RIFJobSubmissionXMLReader reader2
-				= new RIFJobSubmissionXMLReader();
+			RIFStudySubmissionXMLReader reader2
+				= new RIFStudySubmissionXMLReader();
 			reader2.readFile(file2);
 		}
 		catch(Exception exception) {
@@ -218,8 +218,8 @@ public class TestRIFSubmisssionWriter {
 			File file = new File("C://rif_scripts//zepo.xml");
 			
 			//now read it
-			RIFJobSubmissionXMLReader reader1
-				= new RIFJobSubmissionXMLReader();
+			RIFStudySubmissionXMLReader reader1
+				= new RIFStudySubmissionXMLReader();
 			reader1.readFile(file);
 			
 			RIFStudySubmission rifStudySubmission2
@@ -243,8 +243,8 @@ public class TestRIFSubmisssionWriter {
 			User validUser = User.newInstance("kgarwood", "XXX");
 			RIFStudySubmission rifStudySubmission
 				= testObjectGenerator.createSampleRIFJobSubmission();
-			RIFJobSubmissionXMLWriter writer
-				= new RIFJobSubmissionXMLWriter();
+			RIFStudySubmissionXMLWriter writer
+				= new RIFStudySubmissionXMLWriter();
 
 			File file = new File("C://rif_scripts//zepo.xml");
 			writer.write(validUser, rifStudySubmission, file);			

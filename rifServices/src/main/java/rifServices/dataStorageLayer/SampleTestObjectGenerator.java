@@ -103,34 +103,34 @@ public final class SampleTestObjectGenerator {
 	 * @return the sample rif job submission
 	 */
 	public RIFStudySubmission createSampleRIFJobSubmission() {
-		RIFStudySubmission rifJobSubmission = RIFStudySubmission.newInstance();
-		rifJobSubmission.setNewRecord(false);
+		RIFStudySubmission rifStudySubmission = RIFStudySubmission.newInstance();
+		rifStudySubmission.setNewRecord(false);
 
-		rifJobSubmission.setJobSubmissionTime(new Date());
+		rifStudySubmission.setJobSubmissionTime(new Date());
 		
 		Project project = Project.newInstance();
 		project.setName("SAHSU");
 		project.setDescription("SAHSU Project used for all old projects on import. Disabled after import");
-		rifJobSubmission.setProject(project);
+		rifStudySubmission.setProject(project);
 		
 		SampleTestObjectGenerator generator
 			= new SampleTestObjectGenerator();
 		DiseaseMappingStudy diseaseMappingStudy
 			= generator.createSampleDiseaseMappingStudy();
-		rifJobSubmission.setStudy(diseaseMappingStudy);
+		rifStudySubmission.setStudy(diseaseMappingStudy);
 
 		CalculationMethod bymMethod = generator.createSampleBYMMethod();
 		CalculationMethod hetMethod = generator.createSampleHETMethod();
 		CalculationMethod carMethod = generator.createSampleCARMethod();
-		rifJobSubmission.addCalculationMethod(bymMethod);
-		rifJobSubmission.addCalculationMethod(hetMethod);
-		rifJobSubmission.addCalculationMethod(carMethod);
+		rifStudySubmission.addCalculationMethod(bymMethod);
+		rifStudySubmission.addCalculationMethod(hetMethod);
+		rifStudySubmission.addCalculationMethod(carMethod);
 
-		rifJobSubmission.addRIFOutputOption(RIFOutputOption.DATA);
-		rifJobSubmission.addRIFOutputOption(RIFOutputOption.MAPS);
-		rifJobSubmission.addRIFOutputOption(RIFOutputOption.RATIOS_AND_RATES);
+		rifStudySubmission.addRIFOutputOption(RIFOutputOption.DATA);
+		rifStudySubmission.addRIFOutputOption(RIFOutputOption.MAPS);
+		rifStudySubmission.addRIFOutputOption(RIFOutputOption.RATIOS_AND_RATES);
 		
-		return rifJobSubmission;
+		return rifStudySubmission;
 	}
 	
 	/**

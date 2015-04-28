@@ -81,7 +81,7 @@ import java.io.File;
  *
  */
 
-public final class RIFJobSubmissionXMLWriter {
+public final class RIFStudySubmissionXMLWriter {
 
 	// ==========================================
 	// Section Constants
@@ -97,7 +97,7 @@ public final class RIFJobSubmissionXMLWriter {
 	/**
 	 * Instantiates a new RIF job submission xml writer.
 	 */
-	public RIFJobSubmissionXMLWriter() {
+	public RIFStudySubmissionXMLWriter() {
 
 	}
 
@@ -113,8 +113,8 @@ public final class RIFJobSubmissionXMLWriter {
 		throws RIFServiceException {
 		
 		try {
-			RIFJobSubmissionContentHandler rifStudySubmissionContentHandler
-				= new RIFJobSubmissionContentHandler();
+			RIFStudySubmissionContentHandler rifStudySubmissionContentHandler
+				= new RIFStudySubmissionContentHandler();
 			ByteArrayOutputStream outputStream
 				= new ByteArrayOutputStream();
 			XMLCommentInjector commentInjector = new XMLCommentInjector();			
@@ -150,8 +150,8 @@ public final class RIFJobSubmissionXMLWriter {
 			FileOutputStream fileOutputStream
 				= new FileOutputStream(file);
 			
-			RIFJobSubmissionContentHandler rifStudySubmissionContentHandler
-				= new RIFJobSubmissionContentHandler();
+			RIFStudySubmissionContentHandler rifStudySubmissionContentHandler
+				= new RIFStudySubmissionContentHandler();
 			ByteArrayOutputStream outputStream
 				= new ByteArrayOutputStream();
 			XMLCommentInjector commentInjector = new XMLCommentInjector();			

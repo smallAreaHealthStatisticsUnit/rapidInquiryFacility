@@ -1,0 +1,13 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>rapidInquiryFacility</groupId>
+    <artifactId>rapidInquiryFacility</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../rapidInquiryFacility/pom.xml</relativePath>    
+  </parent>
+  <groupId>rifJobSubmissionTool</groupId>
+  <artifactId>rifJobSubmissionTool</artifactId>
+  <name>RIF Job Submission Tool</name>
+  <description>The tool submits a request for a data extraction from teh RIF database.</description>
+</project>

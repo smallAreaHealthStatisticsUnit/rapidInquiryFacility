@@ -77,7 +77,7 @@ import java.io.IOException;
  */
 
 
-public final class RIFJobSubmissionHTMLWriter {
+public final class RIFStudySubmissionHTMLWriter {
 
 	
 
@@ -89,7 +89,7 @@ public final class RIFJobSubmissionHTMLWriter {
 // Section Properties
 // ==========================================
 	/** The rif job submission content handler. */
-	private RIFJobSubmissionContentHandler rifJobSubmissionContentHandler;
+	private RIFStudySubmissionContentHandler rifStudySubmissionContentHandler;
     
 // ==========================================
 // Section Construction
@@ -97,9 +97,9 @@ public final class RIFJobSubmissionHTMLWriter {
     /**
      * Instantiates a new RIF job submission html writer.
      */
-	public RIFJobSubmissionHTMLWriter() {
+	public RIFStudySubmissionHTMLWriter() {
 		
-		rifJobSubmissionContentHandler = new RIFJobSubmissionContentHandler();
+		rifStudySubmissionContentHandler = new RIFStudySubmissionContentHandler();
     }
 
     // ==========================================
@@ -109,19 +109,19 @@ public final class RIFJobSubmissionHTMLWriter {
     /**
      * Write job submission.
      *
-     * @param rifJobSubmission the rif job submission
+     * @param rifStudySubmission the rif job submission
      * @return the string
      * @throws RIFServiceException the RIF service exception
      */
     public String writeJobSubmission(
-    	final RIFStudySubmission rifJobSubmission) 
+    	final RIFStudySubmission rifStudySubmission) 
     	throws RIFServiceException {    
     	
     	try {
     		ByteArrayOutputStream byteArrayOutputStream
 				= new ByteArrayOutputStream();
-    		rifJobSubmissionContentHandler.initialise(byteArrayOutputStream);
-    		rifJobSubmissionContentHandler.writeHTML(rifJobSubmission);
+    		rifStudySubmissionContentHandler.initialise(byteArrayOutputStream);
+    		rifStudySubmissionContentHandler.writeHTML(rifStudySubmission);
     		String htmlReport 
 				= new String(byteArrayOutputStream.toByteArray(), "UTF-8");
     		return htmlReport;    		
@@ -131,7 +131,7 @@ public final class RIFJobSubmissionHTMLWriter {
     		String errorMessage
     			= RIFServiceMessages.getMessage(
     				"io.error.problemGeneratingReport",
-    				rifJobSubmission.getDisplayName());
+    				rifStudySubmission.getDisplayName());
     		RIFServiceException rifServiceException
     			= new RIFServiceException(
     				RIFServiceError.FILE_WRITE_PROBLEM,
@@ -143,20 +143,20 @@ public final class RIFJobSubmissionHTMLWriter {
     /**
      * Write file.
      *
-     * @param rifJobSubmission the rif job submission
+     * @param rifStudySubmission the rif job submission
      * @param outputFile the output file
      * @throws RIFServiceException the RIF service exception
      */
     public void writeFile(
-    	final RIFStudySubmission rifJobSubmission, 
+    	final RIFStudySubmission rifStudySubmission, 
     	final File outputFile) 
     	throws RIFServiceException {
 
     	try {
         	FileOutputStream fileOutputStream
         		= new FileOutputStream(outputFile); 
-        	rifJobSubmissionContentHandler.initialise(fileOutputStream);
-        	rifJobSubmissionContentHandler.writeHTML(rifJobSubmission);
+        	rifStudySubmissionContentHandler.initialise(fileOutputStream);
+        	rifStudySubmissionContentHandler.writeHTML(rifStudySubmission);
     	}  	
 		catch(IOException exception) {
 			String errorMessage

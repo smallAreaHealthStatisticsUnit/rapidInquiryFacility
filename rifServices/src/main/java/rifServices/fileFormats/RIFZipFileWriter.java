@@ -103,7 +103,7 @@ public final class RIFZipFileWriter {
 	private ArrayList<File> otherDirectoriesToInclude;
 	
 	/** The rif job submission content handler. */
-	private RIFJobSubmissionContentHandler rifJobSubmissionContentHandler;
+	private RIFStudySubmissionContentHandler rifStudySubmissionContentHandler;
 	
 	/** The source directory for rif output option. */
 	private HashMap<RIFOutputOption, File> sourceDirectoryForRIFOutputOption;
@@ -115,7 +115,7 @@ public final class RIFZipFileWriter {
      * Instantiates a new RIF zip file writer.
      */
 	public RIFZipFileWriter() {
-		rifJobSubmissionContentHandler = new RIFJobSubmissionContentHandler();
+		rifStudySubmissionContentHandler = new RIFStudySubmissionContentHandler();
 		sourceDirectoryForRIFOutputOption = new HashMap<RIFOutputOption, File>();
 		otherDirectoriesToInclude = new ArrayList<File>();		
     }
@@ -151,13 +151,13 @@ public final class RIFZipFileWriter {
 	 * Write zip file.
 	 *
 	 * @param zipFile the zip file
-	 * @param rifJobSubmission the rif job submission
+	 * @param rifStudySubmission the rif job submission
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public void writeZipFile(
 		final User user,
 		final File zipFile, 
-		final RIFStudySubmission rifJobSubmission) 
+		final RIFStudySubmission rifStudySubmission) 
 		throws RIFServiceException {
 
 		try {
@@ -174,7 +174,7 @@ public final class RIFZipFileWriter {
 				= new ZipOutputStream(new FileOutputStream(zipFileNameWithTimeStamp));
 
 			XMLCommentInjector commentInjector = new XMLCommentInjector();
-			rifJobSubmissionContentHandler.initialise(zipOutputStream, commentInjector);
+			rifStudySubmissionContentHandler.initialise(zipOutputStream, commentInjector);
 			
 			File rifQueryFile 
 				= getSubmissionFileName(
@@ -192,14 +192,14 @@ public final class RIFZipFileWriter {
 			
 			ZipEntry rifQueryFileNameZipEntry = new ZipEntry(queryFileName.toString());
 			zipOutputStream.putNextEntry(rifQueryFileNameZipEntry);
-			rifJobSubmissionContentHandler.writeXML(
+			rifStudySubmissionContentHandler.writeXML(
 				user, 
-				rifJobSubmission);
+				rifStudySubmission);
 			zipOutputStream.closeEntry();
 
 			//Add subdirectories for each output option
 			ArrayList<RIFOutputOption> selectedRIFOutputOptions
-				= rifJobSubmission.getRIFOutputOptions();
+				= rifStudySubmission.getRIFOutputOptions();
 			for (RIFOutputOption rifOutputOption : selectedRIFOutputOptions) {
 				StringBuilder rifOutputOptionDirectoryName
 					= new StringBuilder();

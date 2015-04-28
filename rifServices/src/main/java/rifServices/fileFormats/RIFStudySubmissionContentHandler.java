@@ -86,7 +86,7 @@ import java.util.Date;
  */
 
 
-final class RIFJobSubmissionContentHandler 
+final class RIFStudySubmissionContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 // ==========================================
@@ -119,7 +119,7 @@ final class RIFJobSubmissionContentHandler
     /**
      * Instantiates a new RIF job submission content handler.
      */
-	public RIFJobSubmissionContentHandler() {
+	public RIFStudySubmissionContentHandler() {
 		
     	setSingularRecordName("rif_job_submission");
     	projectContentHandler = new ProjectContentHandler();
@@ -150,11 +150,11 @@ final class RIFJobSubmissionContentHandler
 	/**
 	 * Write html.
 	 *
-	 * @param rifJobSubmission the rif job submission
+	 * @param rifStudySubmission the rif job submission
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public void writeHTML(
-		final RIFStudySubmission rifJobSubmission) 
+		final RIFStudySubmission rifStudySubmission) 
 		throws IOException {
 
 		HTMLUtility htmlUtility = getHTMLUtility();
@@ -162,8 +162,8 @@ final class RIFJobSubmissionContentHandler
 		htmlUtility.beginDocument();
 				
     	DiseaseMappingStudy diseaseMappingStudy
-    		= (DiseaseMappingStudy) rifJobSubmission.getStudy();
-    	Project project = rifJobSubmission.getProject();
+    		= (DiseaseMappingStudy) rifStudySubmission.getStudy();
+    	Project project = rifStudySubmission.getProject();
     	diseaseMappingStudyContentHandler.writeHTML(
     		1, 
     		diseaseMappingStudy,
@@ -178,7 +178,7 @@ final class RIFJobSubmissionContentHandler
 			false);
     	
     	ArrayList<RIFOutputOption> rifOutputOptions
-    		= rifJobSubmission.getRIFOutputOptions();
+    		= rifStudySubmission.getRIFOutputOptions();
     	rifOutputOptionContentHandler.writeHTML(
     		1, 
     		rifOutputOptions,
@@ -190,12 +190,12 @@ final class RIFJobSubmissionContentHandler
     /**
      * Write xml.
      *
-     * @param rifJobSubmission the rif job submission
+     * @param rifStudySubmission the rif job submission
      * @throws IOException Signals that an I/O exception has occurred.
      */
     public void writeXML(
     	final User user,
-    	final RIFStudySubmission rifJobSubmission) 
+    	final RIFStudySubmission rifStudySubmission) 
     	throws IOException {
 
     	XMLUtility xmlUtility = getXMLUtility();
@@ -218,7 +218,7 @@ final class RIFJobSubmissionContentHandler
 			user.getUserID());
 		
 		Date jobSubmissionTime
-			= rifJobSubmission.getJobSubmissionTime();
+			= rifStudySubmission.getJobSubmissionTime();
 		if (jobSubmissionTime == null) {
 			xmlUtility.writeField(
 				recordName,
@@ -234,14 +234,14 @@ final class RIFJobSubmissionContentHandler
 				jobSubmissionDatePhrase);			
 		}
 		
-		Project project = rifJobSubmission.getProject();
+		Project project = rifStudySubmission.getProject();
 		projectContentHandler.writeXML(project);
 		
 		DiseaseMappingStudy diseaseMappingStudy
-			= (DiseaseMappingStudy) rifJobSubmission.getStudy();
+			= (DiseaseMappingStudy) rifStudySubmission.getStudy();
 		diseaseMappingStudyContentHandler.writeXML(diseaseMappingStudy);
-		calculationMethodContentHandler.writeXML(rifJobSubmission.getCalculationMethods());		
-		rifOutputOptionContentHandler.writeXML(rifJobSubmission.getRIFOutputOptions());
+		calculationMethodContentHandler.writeXML(rifStudySubmission.getCalculationMethods());		
+		rifOutputOptionContentHandler.writeXML(rifStudySubmission.getRIFOutputOptions());
 		
 		xmlUtility.writeRecordEndTag(recordName);
 	}

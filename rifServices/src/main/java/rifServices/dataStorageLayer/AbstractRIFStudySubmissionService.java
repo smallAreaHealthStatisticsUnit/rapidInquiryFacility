@@ -1814,7 +1814,7 @@ abstract class AbstractRIFStudySubmissionService
 					rifStudySubmission);
 
 			//RIFZipFileWriter rifZipFileWriter = new RIFZipFileWriter();
-			//rifZipFileWriter.writeZipFile(outputFile, rifJobSubmission);		
+			//rifZipFileWriter.writeZipFile(outputFile, rifStudySubmission);		
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation

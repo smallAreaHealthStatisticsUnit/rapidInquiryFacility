@@ -9,7 +9,7 @@ import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.ComparisonArea;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.fileFormats.RIFJobSubmissionHTMLWriter;
+import rifServices.fileFormats.RIFStudySubmissionHTMLWriter;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
@@ -242,8 +242,8 @@ final class PreviewStepPanel
 
 		RIFStudySubmission originalJobSubmission = rifSession.getRIFJobSubmission();	
 		try {
-			RIFJobSubmissionHTMLWriter rifJobSubmissionWriter
-				= new RIFJobSubmissionHTMLWriter();
+			RIFStudySubmissionHTMLWriter rifJobSubmissionWriter
+				= new RIFStudySubmissionHTMLWriter();
 			String htmlReport
 				= rifJobSubmissionWriter.writeJobSubmission(originalJobSubmission);
 			previewReportHTMLPane.setText(htmlReport);	

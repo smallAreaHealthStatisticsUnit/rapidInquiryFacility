@@ -80,7 +80,7 @@ import java.io.*;
  */
 
 
-public final class RIFJobSubmissionXMLReader {
+public final class RIFStudySubmissionXMLReader {
 
 // ==========================================
 // Section Constants
@@ -89,7 +89,7 @@ public final class RIFJobSubmissionXMLReader {
 // ==========================================
 // Section Properties
 // ==========================================
-	private RIFJobSubmissionContentHandler rifJobSubmissionContentHandler;
+	private RIFStudySubmissionContentHandler rifStudySubmissionContentHandler;
 	
 // ==========================================
 // Section Construction
@@ -97,9 +97,9 @@ public final class RIFJobSubmissionXMLReader {
     /**
      * Instantiates a new RIF job submission xml reader.
      */
-	public RIFJobSubmissionXMLReader() {
-		rifJobSubmissionContentHandler
-			= new RIFJobSubmissionContentHandler();
+	public RIFStudySubmissionXMLReader() {
+		rifStudySubmissionContentHandler
+			= new RIFStudySubmissionContentHandler();
     }
 
 // ==========================================
@@ -119,7 +119,7 @@ public final class RIFJobSubmissionXMLReader {
 		try {			
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
-			saxParser.parse(rifSubmissionFile, rifJobSubmissionContentHandler);
+			saxParser.parse(rifSubmissionFile, rifStudySubmissionContentHandler);
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
@@ -145,7 +145,7 @@ public final class RIFJobSubmissionXMLReader {
 			
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
-			saxParser.parse(inputSource, rifJobSubmissionContentHandler);
+			saxParser.parse(inputSource, rifStudySubmissionContentHandler);
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
@@ -171,7 +171,7 @@ public final class RIFJobSubmissionXMLReader {
 			SAXParser saxParser = factory.newSAXParser();
 			saxParser.parse(
 				inputStream, 
-				rifJobSubmissionContentHandler);
+				rifStudySubmissionContentHandler);
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
@@ -189,7 +189,7 @@ public final class RIFJobSubmissionXMLReader {
 	
 	
 	public RIFStudySubmission getStudySubmission() {
-		return rifJobSubmissionContentHandler.getRIFJobSubmission();		
+		return rifStudySubmissionContentHandler.getRIFJobSubmission();		
 	}
 	
 // ==========================================

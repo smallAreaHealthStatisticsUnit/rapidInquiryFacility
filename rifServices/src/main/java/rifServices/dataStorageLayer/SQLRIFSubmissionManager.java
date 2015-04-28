@@ -311,7 +311,7 @@ final class SQLRIFSubmissionManager
 	 *
 	 * @param connection the connection
 	 * @param user the user
-	 * @param rifJobSubmission the rif job submission
+	 * @param rifStudySubmission the rif job submission
 	 * @throws RIFServiceException the RIF service exception
 	 */	
 	public String submitStudy(

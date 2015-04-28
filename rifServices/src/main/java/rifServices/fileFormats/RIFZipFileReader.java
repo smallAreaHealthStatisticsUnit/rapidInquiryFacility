@@ -97,7 +97,7 @@ public final class RIFZipFileReader {
 // Section Properties
 // ==========================================
 	/** The job submission content handler. */
-	private RIFJobSubmissionContentHandler jobSubmissionContentHandler;
+	private RIFStudySubmissionContentHandler jobSubmissionContentHandler;
 	
 	/** The query folder. */
 	private String queryFolder = "rif_query";
@@ -111,7 +111,7 @@ public final class RIFZipFileReader {
 	public RIFZipFileReader() {
 		
 		jobSubmissionContentHandler
-			= new RIFJobSubmissionContentHandler();
+			= new RIFStudySubmissionContentHandler();
     }
 
 // ==========================================

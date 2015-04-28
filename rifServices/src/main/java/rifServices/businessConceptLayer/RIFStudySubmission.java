@@ -124,8 +124,8 @@ public final class RIFStudySubmission
      * @return the RIF job submission
      */
     public static RIFStudySubmission newInstance() {
-    	RIFStudySubmission rifJobSubmission = new RIFStudySubmission();	
-    	return rifJobSubmission;
+    	RIFStudySubmission rifStudySubmission = new RIFStudySubmission();	
+    	return rifStudySubmission;
     }
     
     /**
@@ -491,7 +491,7 @@ public final class RIFStudySubmission
 					if (uniqueCalculationMethodNames.contains(displayName) == true) {
 						String errorMessage
 							= RIFServiceMessages.getMessage(
-								"rifJobSubmission.error.duplicateCalculationMethod", 
+								"rifStudySubmission.error.duplicateCalculationMethod", 
 								displayName);
 						errorMessages.add(errorMessage);
 					}
@@ -519,7 +519,7 @@ public final class RIFStudySubmission
 		else if (rifOutputOptions.isEmpty()) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
-					"rifJobSubmission.error.noRIFOutputOptionsSpecified");
+					"rifStudySubmission.error.noRIFOutputOptionsSpecified");
 			errorMessages.add(errorMessage);			
 		}
 		else {
@@ -541,7 +541,7 @@ public final class RIFStudySubmission
 					if (uniqueRIFOutputOptions.contains(rifOutputOption) == true) {
 						String errorMessage
 							= RIFServiceMessages.getMessage(
-								"rifJobSubmission.error.duplicateOutputOption", 
+								"rifStudySubmission.error.duplicateOutputOption", 
 								rifOutputOption.getName());
 						errorMessages.add(errorMessage);
 					}
@@ -570,7 +570,7 @@ public final class RIFStudySubmission
 	@Override
 	public String getRecordType() {
 		String recordType
-			= RIFServiceMessages.getMessage("rifJobSubmission.label");
+			= RIFServiceMessages.getMessage("rifStudySubmission.label");
 		return recordType;
 	}
 	

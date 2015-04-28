@@ -27,8 +27,8 @@ import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.businessConceptLayer.*;
-import rifServices.fileFormats.RIFJobSubmissionXMLReader;
-import rifServices.fileFormats.RIFJobSubmissionXMLWriter;
+import rifServices.fileFormats.RIFStudySubmissionXMLReader;
+import rifServices.fileFormats.RIFStudySubmissionXMLWriter;
 
 /**
  * This is a web service class that is analoguous to  
@@ -891,7 +891,7 @@ abstract class AbstractRIFWebServiceResource {
 				= generator.createSampleRIFJobSubmission();
 			sampleStudySubmission.setStudy(diseaseMappingStudy);
 			
-			RIFJobSubmissionXMLWriter writer = new RIFJobSubmissionXMLWriter();
+			RIFStudySubmissionXMLWriter writer = new RIFStudySubmissionXMLWriter();
 			String xmlResults
 				= writer.writeToString(
 					user,
@@ -945,8 +945,8 @@ abstract class AbstractRIFWebServiceResource {
 			
 			
 
-			RIFJobSubmissionXMLReader rifStudySubmissionReader2
-				= new RIFJobSubmissionXMLReader();
+			RIFStudySubmissionXMLReader rifStudySubmissionReader2
+				= new RIFStudySubmissionXMLReader();
 			rifStudySubmissionReader2.readFile(inputStream);
 			RIFStudySubmission rifStudySubmission2
 				= rifStudySubmissionReader2.getStudySubmission();
@@ -957,8 +957,8 @@ abstract class AbstractRIFWebServiceResource {
 
 			System.out.println("Reading local file");
 			File file = new File("C://rif_scripts//walley.xml");
-			RIFJobSubmissionXMLReader rifStudySubmissionReader
-				= new RIFJobSubmissionXMLReader();
+			RIFStudySubmissionXMLReader rifStudySubmissionReader
+				= new RIFStudySubmissionXMLReader();
 			rifStudySubmissionReader.readFile(file);
 			RIFStudySubmission rifStudySubmission
 				= rifStudySubmissionReader.getStudySubmission();
@@ -973,7 +973,7 @@ abstract class AbstractRIFWebServiceResource {
 				rifStudySubmission, 
 				null);
 
-			RIFJobSubmissionXMLWriter writer = new RIFJobSubmissionXMLWriter();
+			RIFStudySubmissionXMLWriter writer = new RIFStudySubmissionXMLWriter();
 			result = writer.writeToString(user, rifStudySubmission);
 			
 			System.out.println("submitStudy success!");
