@@ -72,6 +72,7 @@ DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, 
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, 
 	INTEGER, VARCHAR, BOOLEAN);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, BOOLEAN);
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, BOOLEAN, BOOLEAN);
 	
 CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(
 	l_geography 		VARCHAR, 
@@ -81,7 +82,8 @@ CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(
 	y_min 				REAL, 
 	x_min 				REAL, 
 	zoom_level			INTEGER DEFAULT  8 /* 1 in 2,325,012 */,
-	check_tile_coord 	BOOLEAN DEFAULT FALSE)
+	check_tile_coord 	BOOLEAN DEFAULT FALSE,
+	no_topojson_is_error BOOLEAN DEFAULT TRUE)
 RETURNS SETOF JSON
 SECURITY INVOKER
 AS $body$
@@ -90,8 +92,9 @@ AS $body$
 Function: 	rif40_get_geojson_tiles()
 Parameters:	Geography, geolevel_view, 
 			Y max, X max, Y min, X min as a record (bounding box), 
-			Zoom level [Default: 8; scaling 1 in 2,325,012].
-			Check tile co-ordinates  (TRUE/FALSE)  [Default: FALSE]
+			Zoom level [Default: 8; scaling 1 in 2,325,012],
+			Check tile co-ordinates  (TRUE/FALSE)  [Default: FALSE],
+			Lack of topoJSON is an error (TRUE/FALSE)  [Default: TRUE]
 Returns:	JSON
 Description:	Get TopoJSON (if not "X") or GeoJSON for area_ids in map tile. 
 		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
@@ -644,16 +647,43 @@ Total runtime: 19.472 ms
 --
 			RAISE;
 	END;
+	i:=0;
 	LOOP
 		FETCH c5geojson2 INTO c5_rec;
 		EXIT WHEN NOT FOUND;
 		i=i+1;
-		IF 1 = 1 THEN
-			IF c5_rec.optimised_topojson::Text = to_json('X'::Text)::Text /* GeoJSON not converted to topoJSON */ THEN
-				RETURN NEXT c5_rec.optimised_geojson;	
+--
+		IF c5_rec.optimised_topojson::Text = to_json('X'::Text)::Text /* GeoJSON not converted to topoJSON */ THEN
+			IF no_topojson_is_error THEN
+				PERFORM rif40_log_pkg.rif40_error(-50423, 'rif40_get_geojson_tiles', 
+					'Geography: %, <geoevel view> % bound [%, %, %, %] will return geoJSON (expecting topoJSON).', 		
+					l_geography::VARCHAR		/* Geography */, 
+					l_geolevel_view::VARCHAR	/* Geoelvel view */, 
+					x_min::VARCHAR				/* Xmin */,
+					y_min::VARCHAR				/* Ymin */,
+					x_max::VARCHAR				/* Xmax */,
+					y_max::VARCHAR				/* Ymax */);				
 			ELSE
-				RETURN NEXT c5_rec.optimised_topojson;
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
+					'[50424] Geography: %, <geoevel view> % bound [%, %, %, %] will return geoJSON (expecting topoJSON).', 		
+					l_geography::VARCHAR		/* Geography */, 
+					l_geolevel_view::VARCHAR	/* Geoelvel view */, 
+					x_min::VARCHAR				/* Xmin */,
+					y_min::VARCHAR				/* Ymin */,
+					x_max::VARCHAR				/* Xmax */,
+					y_max::VARCHAR				/* Ymax */);	
 			END IF;
+			RETURN NEXT c5_rec.optimised_geojson;	
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
+				'[50425] Geography: %, <geoevel view> % bound [%, %, %, %] will return topoJSON.', 		
+				l_geography::VARCHAR		/* Geography */, 
+				l_geolevel_view::VARCHAR	/* Geoelvel view */, 
+				x_min::VARCHAR				/* Xmin */,
+				y_min::VARCHAR				/* Ymin */,
+				x_max::VARCHAR				/* Xmax */,
+				y_max::VARCHAR				/* Ymax */);			
+			RETURN NEXT c5_rec.optimised_topojson;
 		END IF;
 	END LOOP;
 	CLOSE c5geojson2;
@@ -667,7 +697,7 @@ Total runtime: 19.472 ms
 --
 -- This could be changed to return a synthetic NULL as tile as per the rif40_<geography>_maptiles view
 --
-		PERFORM rif40_log_pkg.rif40_error(-50423, 'rif40_get_geojson_tiles', 
+		PERFORM rif40_log_pkg.rif40_error(-50426, 'rif40_get_geojson_tiles', 
 			'Geography: %, <geoevel view> % bound [%, %, %, %] returns no tiles, took: %.', 			
 			l_geography::VARCHAR		/* Geography */, 
 			l_geolevel_view::VARCHAR	/* Geoelvel view */,  
@@ -677,7 +707,7 @@ Total runtime: 19.472 ms
 			y_max::VARCHAR				/* Ymax */,
 			took::VARCHAR				/* Time taken */);	
 	ELSIF i > 1 THEN
-		PERFORM rif40_log_pkg.rif40_error(-50424, 'rif40_get_geojson_tiles', 
+		PERFORM rif40_log_pkg.rif40_error(-50427, 'rif40_get_geojson_tiles', 
 			'Geography: %, <geoevel view> % bound [%, %, %, %] returns >1 (%) tiles, took: %.', 			
 			l_geography::VARCHAR		/* Geography */, 
 			l_geolevel_view::VARCHAR	/* Geoelvel view */,  
@@ -691,7 +721,7 @@ Total runtime: 19.472 ms
 
 --
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-		'[50425] Geography: %, <geoevel view> % zoomlevel % bound [%, %, %, %] complete: tile: %, db extract took: %;'||E'\n'||'SQL> %;', 		
+		'[50428] Geography: %, <geoevel view> % zoomlevel % bound [%, %, %, %] complete: tile: %, db extract took: %;'||E'\n'||'SQL> %;', 		
 		l_geography::VARCHAR		/* Geography */, 
 		l_geolevel_view::VARCHAR	/* Geoelvel view */, 
 		zoom_level::VARCHAR			/* Zoom level */,
@@ -714,7 +744,7 @@ Total runtime: 19.472 ms
 --								v_context = PG_EXCEPTION_CONTEXT;
 --		error_message:='rif40_get_geojson_tiles() caught: '||E'\n'||
 --			SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR||E'\n'||'Context: '||v_context::VARCHAR;
---		RAISE WARNING '50423: %', error_message;
+--		RAISE WARNING '50429: %', error_message;
 --
 --		RAISE;
 END;
@@ -722,11 +752,12 @@ $body$
 LANGUAGE PLPGSQL;
 
 COMMENT ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, 
-	INTEGER, BOOLEAN) IS 'Function: 	rif40_get_geojson_tiles()
+	INTEGER, BOOLEAN, BOOLEAN) IS 'Function: 	rif40_get_geojson_tiles()
 Parameters:	Geography, geolevel_view, 
 			Y max, X max, Y min, X min as a record (bounding box), 
 			Zoom level [Default: 8; scaling 1 in 2,325,012], 
-			Check tile co-ordinates TRUE/FALSE)  [Default: FALSE]
+			Check tile co-ordinates TRUE/FALSE)  [Default: FALSE],
+			Lack of topoJSON is an error (TRUE/FALSE)  [Default: TRUE]
 Returns:	JSON
 Description:	Get TopoJSON (if not "X") or GeoJSON for area_ids in map tile. 
 		Fetch tiles bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
@@ -872,8 +903,8 @@ Generates geoJSON that looks (when prettified using http://jsbeautifier.org/) li
 
 Validated with JSlint: http://www.javascriptlint.com/online_lint.php';
 
-GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, BOOLEAN) TO rif_manager;
-GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, BOOLEAN) TO rif_user;
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, BOOLEAN, BOOLEAN) TO rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, BOOLEAN, BOOLEAN) TO rif_user;
 
 --
 -- Eof

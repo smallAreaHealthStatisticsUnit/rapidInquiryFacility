@@ -400,6 +400,7 @@ DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_getgeolevelextentcommon(l_geography
 DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR[], INTEGER);
 DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR[], INTEGER, BOOLEAN);
 DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR[], INTEGER, BOOLEAN, INTEGER);
+DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_get_geojson_as_js(VARCHAR, VARCHAR, VARCHAR[], INTEGER, BOOLEAN, INTEGER, BOOLEAN);
 DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_geojson_explain_ddl(sql_stmt character varying, geolevel_view character varying, geolevel_area_id_list character varying[]);
 DROP FUNCTION IF EXISTS rif40_xml_pkg._rif40_geojson_explain_ddl2(sql_stmt character varying, x_min real, y_min real, x_max real, y_max real, l_geolevel_view character varying);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_as_js(l_geography character varying, geolevel_view character varying, geolevel_area character varying, geolevel_area_id character varying, return_one_row boolean, produce_json_only boolean);
@@ -407,6 +408,7 @@ DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, 
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, VARCHAR, BOOLEAN);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, VARCHAR, BOOLEAN, BOOLEAN);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, BOOLEAN);
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, BOOLEAN, BOOLEAN);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getgeolevelfullextent(l_geography character varying, l_geolevel_view character varying, OUT y_max real, OUT x_max real, OUT y_min real, OUT x_min real);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getgeolevelfullextentforstudy(l_geography character varying, l_geolevel_view character varying, l_study_id integer, OUT y_max real, OUT x_max real, OUT y_min real, OUT x_min real);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_getgeolevelboundsforarea(l_geography character varying, l_geolevel_view character varying, l_map_area character varying, OUT y_max real, OUT x_max real, OUT y_min real, OUT x_min real);

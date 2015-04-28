@@ -358,7 +358,9 @@ devclean:
 # Stored password file is in ~/.pgpass on Linux or: %APPDATA%\postgresql\pgpass.conf on Windows
 # Format is: hostname:port:database:username:password
 #
-#- db_setup: Create sahusland, sahsuland_dev
+#- db_setup: Re-create empty sahsuland, sahsuland_dev; build sahusland_dev from scripts; 
+#-           build dev dump files; restore sahsuland from dev dump; patch sahsuland to dev standard; 
+#-           build production dump file; rebuild ERD model
 db_setup: psqlrc $(PGPASSFILE) $(PLR_DIRS)
 ifneq ($(OS),Windows_NT)
 	$(MAKE) -C ../../ERD veryclean dbms_tools
@@ -386,7 +388,7 @@ endif
 
 db_create: db_create.rpt
 
-#- db_install: Create sahsuland, sahsuland_dev from production pg_dump 
+#- db_install: Re-create empty sahsuland, sahsuland_dev; restore from production pg_dump 
 db_install: ../install/sahsuland/sahsuland.dump
 	$(MAKE) clean
 	$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
@@ -395,7 +397,6 @@ db_install: ../install/sahsuland/sahsuland.dump
 	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
 	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland_dev	
 
-#
 #
 # Files to create/install
 #

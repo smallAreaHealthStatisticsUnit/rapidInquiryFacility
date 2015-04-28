@@ -742,7 +742,9 @@ SELECT SUBSTRING(
 			'SAHSU'::VARCHAR 	/* Geography */, 
 			'LEVEL4'::VARCHAR 	/* geolevel view */, 
 			e.y_max::REAL, e.x_max::REAL, e.y_min::REAL, e.x_min::REAL, /* Bounding box - from cte */
-			e.zoom_level::INTEGER /* Zoom level */)::Text 
+			e.zoom_level::INTEGER /* Zoom level */,
+			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
+			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text 
 			FROM 1 FOR 160 /* Truncate to 160 chars */) AS json 
   FROM e LIMIT 4;
 --
@@ -856,5 +858,42 @@ BEGIN
 END;
 $$; 
 
+--
+-- Test new rif40_get_geojson_tiles() produces topoJSON
+-- 	
+WITH a AS (
+	SELECT *
+          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
+), b AS (
+	SELECT ST_Centroid(ST_MakeEnvelope(a.x_min, a.y_min, a.x_max, a.y_max)) AS centroid
+	  FROM a
+), c AS (
+	SELECT ST_X(b.centroid) AS X_centroid, ST_Y(b.centroid) AS Y_centroid, 11 AS zoom_level	  
+	  FROM b
+), d AS (
+	SELECT zoom_level, X_centroid, Y_centroid, 
+		   rif40_geo_pkg.latitude2tile(Y_centroid, zoom_level) AS Y_tile,
+		   rif40_geo_pkg.longitude2tile(X_centroid, zoom_level) AS X_tile
+	  FROM c
+), e AS (
+	SELECT zoom_level, X_centroid, Y_centroid,
+		   rif40_geo_pkg.tile2latitude(Y_tile, zoom_level) AS Y_min,
+		   rif40_geo_pkg.tile2longitude(X_tile, zoom_level) AS X_min,	
+		   rif40_geo_pkg.tile2latitude(Y_tile+1, zoom_level) AS Y_max,
+		   rif40_geo_pkg.tile2longitude(X_tile+1, zoom_level) AS X_max,
+		   X_tile, Y_tile
+	  FROM d
+) 
+SELECT SUBSTRING(
+		rif40_xml_pkg.rif40_get_geojson_tiles(
+			'SAHSU'::VARCHAR 	/* Geography */, 
+			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			e.y_max::REAL, e.x_max::REAL, e.y_min::REAL, e.x_min::REAL, /* Bounding box - from cte */
+			e.zoom_level::INTEGER /* Zoom level */,
+			FALSE /* Check tile co-ordinates [Default: FALSE] */,
+			TRUE /* Lack of topoJSON is an error [DEFAULT] */)::Text 
+			FROM 1 FOR 160 /* Truncate to 160 chars */) AS json 
+  FROM e LIMIT 4;
+  
 --
 -- Eof
