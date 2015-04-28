@@ -116,6 +116,9 @@ RETURNS TABLE(
 SECURITY INVOKER
 AS $body$
 BEGIN
+--
+-- Service information
+--
 	RETURN QUERY 
 		SELECT 'rif40_xml_pkg'::VARCHAR AS service_name, 
 			   'RIF XML/Jersey/JS support for middleware'::VARCHAR AS service_description,
