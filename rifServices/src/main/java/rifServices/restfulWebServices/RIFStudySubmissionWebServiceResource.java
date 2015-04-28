@@ -1,21 +1,21 @@
 package rifServices.restfulWebServices;
 
 import rifServices.system.RIFServiceMessages;
-
 import rifServices.businessConceptLayer.*;
 import rifServices.fileFormats.*;
-//import com.sun.jersey.core.header.FormDataContentDisposition;
-//import com.sun.jersey.multipart.FormDataParam;
 
+import com.sun.jersey.multipart.*;
+//import org.glassfish.jersey.media.multipart.*;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
-import javax.servlet.http.*;
+import javax.servlet.http.HttpServletRequest;
+
 import java.text.Collator;
 import java.util.ArrayList;
 import java.io.*;
 
-//import org.glassfish.jersey.
+
 
 /**
  * This class advertises API methods found in 
@@ -409,8 +409,7 @@ public class RIFStudySubmissionWebServiceResource
 	 * STUB 
 	 * @param userID
 	 * @return
-	 */
-	
+	 */	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getAvailableCalculationMethods")
@@ -1409,23 +1408,32 @@ public class RIFStudySubmissionWebServiceResource
 			yMin, 
 			xMin);		
 	}	
-	
-/*	
+
+
 	@POST
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	@Produces(MediaType.APPLICATION_JSON)
+	@Produces({"application/json"})	
 	@Path("/submitStudy")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response submitStudy(
 		@Context HttpServletRequest servletRequest,
-		@QueryParam("userID") String userID,
-		@FormDataParam("file") InputStream inputStream) {
+		@FormDataParam("userID") String userID,
+		@FormDataParam("fileField") InputStream inputStream) {
 
-		return super.submitStudy(			
-			servletRequest,
-			userID,
-			inputStream);			
-	}
-*/	
+			
+		return super.submitStudy(
+			servletRequest, 
+			"kgarwood", 
+			inputStream);
+
+		//WebServiceResponseGenerator webServiceResponseGenerator
+		//	= getWebServiceResponseGenerator();
+
+		//return webServiceResponseGenerator.generateWebServiceResponse(
+		//	servletRequest,
+		//	"Testing getStuff method");
+	}	
+	
+	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getStudySubmission")
@@ -1449,25 +1457,6 @@ public class RIFStudySubmissionWebServiceResource
 			"Testing getStuff method");
 		*/
 	}	
-	
-	/*
-	
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getStudySubmission")	
-	protected Response getStudySubmission(
-		@Context HttpServletRequest servletRequest,
-		@QueryParam("userID") String userID,
-		@QueryParam("studyID") String studyID) { 
-		
-		
-		return super.getStudySubmission(
-			servletRequest, 
-			userID, 
-			studyID);
-	}
-
-	*/
 	
 	// ==========================================
 	// Section Errors and Validation

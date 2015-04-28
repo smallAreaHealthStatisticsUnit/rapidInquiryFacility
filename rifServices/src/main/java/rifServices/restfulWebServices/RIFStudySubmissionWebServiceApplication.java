@@ -5,7 +5,6 @@ import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
 
-
 import java.util.Set;
 import java.util.HashSet;
 
@@ -119,8 +118,11 @@ public class RIFStudySubmissionWebServiceApplication extends Application {
 	
 	@Override
 	public Set<Class<?>> getClasses() {
+		
+		System.out.println("RIFStudySubmissionWebServiceApplication getClasses 1");
 		Set<Class<?>> set = new HashSet<Class<?>>();
 		set.add(RIFStudySubmissionWebServiceResource.class);
+		//set.add(MultiPartFeature.class);
 		return set;
 	}
 	

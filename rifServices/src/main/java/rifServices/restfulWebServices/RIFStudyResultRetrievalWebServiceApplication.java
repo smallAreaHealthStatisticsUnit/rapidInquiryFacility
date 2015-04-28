@@ -105,6 +105,7 @@ public class RIFStudyResultRetrievalWebServiceApplication extends Application {
 	public Set<Class<?>> getClasses() {
 		Set<Class<?>> set = new HashSet<Class<?>>();
 		set.add(RIFStudyResultRetrievalWebServiceResource.class);
+		//set.add(MultiPartFeature.class);
 		return set;
 	}
 	
