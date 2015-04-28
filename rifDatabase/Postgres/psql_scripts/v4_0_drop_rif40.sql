@@ -389,6 +389,7 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_get_function_arg_types(oid[]) CASCAD
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_auto_indirect_checks(VARCHAR) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_object_resolve(VARCHAR) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_object_resolve(VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_service_information();
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_is_object_resolvable(VARCHAR) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_num_denom_validate(VARCHAR, VARCHAR) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_create_fdw_table(VARCHAR, INTEGER, BOOLEAN, VARCHAR, VARCHAR) CASCADE;
