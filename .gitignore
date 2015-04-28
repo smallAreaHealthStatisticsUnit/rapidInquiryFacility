@@ -29,3 +29,6 @@ rifNodeServices/old/
 rifNodeServices/node_modules/
 rifDatabase/Postgres/Node/new  1.txt
 rifDatabase/Postgres/Node/new  1.txt
+rifServices/.classpath
+*.classpath
+rifServices/.classpath

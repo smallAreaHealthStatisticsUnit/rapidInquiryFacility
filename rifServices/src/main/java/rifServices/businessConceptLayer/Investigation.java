@@ -1035,11 +1035,13 @@ public class Investigation
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
 		if (fieldValidationUtility.isEmpty(title)) {
+			String titleFieldName
+				= RIFServiceMessages.getMessage("investigation.title.label");
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
-					"investigation.title.label");
+					titleFieldName);
 			errorMessages.add(errorMessage);
 		}
 		else {
@@ -1353,18 +1355,13 @@ public class Investigation
 	
 
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */
+
 	@Override
 	public String getDisplayName() {
 		
 		return title;
 	}
-	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
+
 	@Override
 	public String getRecordType() {
 		
