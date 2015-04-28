@@ -306,9 +306,7 @@ public final class MapAreaAttributeValue
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkSecurityViolations()
-	 */
+
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
 
@@ -348,9 +346,7 @@ public final class MapAreaAttributeValue
 		}	
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors() 
 		throws RIFServiceException {
 
@@ -395,9 +391,7 @@ public final class MapAreaAttributeValue
 	// Section Override
 	// ==========================================
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */
+
 	@Override
 	public String getDisplayName() {
 
@@ -409,9 +403,7 @@ public final class MapAreaAttributeValue
 		return buffer.toString();		
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
+
 	@Override
 	public String getRecordType() {
 

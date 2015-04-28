@@ -294,9 +294,8 @@ public final class CovariateContentHandler
 // ==========================================
 // Section Override
 // ==========================================
-	/* (non-Javadoc)
-	 * @see rifServices.io.AbstractRIFConceptContentHandler#initialise(java.io.OutputStream, rifServices.util.XMLCommentInjector)
-	 */
+
+	
 	@Override
 	public void initialise(
 		final OutputStream outputStream,
@@ -306,9 +305,7 @@ public final class CovariateContentHandler
 		super.initialise(outputStream, commentInjector);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-	 */
+
 	@Override
 	public void startElement(
 		final String nameSpaceURI,
@@ -332,9 +329,7 @@ public final class CovariateContentHandler
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-	 */
+
 	@Override
 	public void endElement(
 		final String nameSpaceURI,

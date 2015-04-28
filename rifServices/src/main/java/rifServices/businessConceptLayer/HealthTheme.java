@@ -189,18 +189,14 @@ public final class HealthTheme
 	// Section Errors and Validation
 	// ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFContextOption#checkSecurityViolations()
-	 */
+
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {	
 		
 		super.checkSecurityViolations();
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors()
 		throws RIFServiceException {
 		

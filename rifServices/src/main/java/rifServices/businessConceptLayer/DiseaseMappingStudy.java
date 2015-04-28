@@ -215,9 +215,7 @@ public final class DiseaseMappingStudy
 // ==========================================
 	
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors() 
 		throws RIFServiceException {	
 		
@@ -259,9 +257,7 @@ public final class DiseaseMappingStudy
 // Section Override
 // ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
+
 	@Override
 	public String getRecordType() {
 		
@@ -270,9 +266,7 @@ public final class DiseaseMappingStudy
 		return recordTypeLabel;
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractStudy#checkSecurityViolations()
-	 */
+
 	@Override
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {

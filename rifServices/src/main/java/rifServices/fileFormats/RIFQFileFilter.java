@@ -105,9 +105,7 @@ public final class RIFQFileFilter
 // ==========================================
 // Section Interfaces
 // ==========================================
-	/* (non-Javadoc)
-	 * @see java.io.FileFilter#accept(java.io.File)
-	 */
+
 	public boolean accept(
 		final File file) {
 	

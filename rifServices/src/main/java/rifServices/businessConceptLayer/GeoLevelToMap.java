@@ -189,18 +189,14 @@ final public class GeoLevelToMap
 	// Section Errors and Validation
 	// ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFContextOption#checkSecurityViolations()
-	 */
+
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {	
 		
 		super.checkSecurityViolations();
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors()
 		throws RIFServiceException {
 		
@@ -216,10 +212,7 @@ final public class GeoLevelToMap
 	// ==========================================
 	// Section Override
 	// ==========================================
-	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
+
 	@Override
 	public String getRecordType() {
 		

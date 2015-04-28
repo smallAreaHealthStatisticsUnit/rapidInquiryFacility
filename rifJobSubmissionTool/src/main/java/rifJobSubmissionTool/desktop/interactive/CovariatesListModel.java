@@ -175,9 +175,7 @@ final class CovariatesListModel
 		return covariate;
 	}
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.ListModel#getElementAt(int)
-	 */
+
 	public Object getElementAt(
 		int index) {		
 
@@ -185,9 +183,7 @@ final class CovariatesListModel
 		return covariate.getDisplayName();
 	}
 
-	/* (non-Javadoc)
-	 * @see javax.swing.ListModel#getSize()
-	 */
+
 	public int getSize() {
 		
 		return covariates.size();

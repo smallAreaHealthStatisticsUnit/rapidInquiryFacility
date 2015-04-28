@@ -356,9 +356,7 @@ public final class RIFInteractiveStudySubmissionTool
 	
 	//Interface: Observer
 	//updating in reaction to a change in the state machine
-	/* (non-Javadoc)
-	 * @see java.util.Observer#update(java.util.Observable, java.lang.Object)
-	 */
+
 	public void update(
 		Observable observable, 
 		Object argument) {

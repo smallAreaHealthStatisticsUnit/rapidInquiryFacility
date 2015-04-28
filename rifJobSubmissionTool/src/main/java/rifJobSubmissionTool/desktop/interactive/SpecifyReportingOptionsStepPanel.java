@@ -505,10 +505,7 @@ final class SpecifyReportingOptionsStepPanel
 
 	//Interface: ActionListener
 
-	/* (non-Javadoc)
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
-	
+
 	public void actionPerformed(
 		ActionEvent event) {
 
@@ -526,9 +523,6 @@ final class SpecifyReportingOptionsStepPanel
 	}
 	
 	//Interface: MouseListener
-	/* (non-Javadoc)
-	 * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
-	 */
 	public void mouseClicked(
 		MouseEvent event) {
 
@@ -537,30 +531,21 @@ final class SpecifyReportingOptionsStepPanel
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
-	 */
+
 	public void mouseEntered(
 		MouseEvent event) {		
 	}
 	
-	/* (non-Javadoc)
-	 * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
-	 */
+
 	public void mouseExited(
 		MouseEvent event) {
 	}
 	
-	/* (non-Javadoc)
-	 * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
-	 */
+
 	public void mousePressed(
 		MouseEvent event) {
 	}
-	
-	/* (non-Javadoc)
-	 * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
-	 */
+
 	public void mouseReleased(
 		MouseEvent event) {
 	}
@@ -569,9 +554,7 @@ final class SpecifyReportingOptionsStepPanel
 // Section Override
 // ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifJobSubmissionTool.desktopApplication.AbstractStepPanel#initialiseForm()
-	 */
+
 	@Override
 	public void initialiseForm() 
 		throws RIFServiceException {
@@ -637,9 +620,7 @@ final class SpecifyReportingOptionsStepPanel
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see rifJobSubmissionTool.desktopApplication.AbstractStepPanel#commitChanges()
-	 */
+
 	@Override
 	public void commitChanges() 
 		throws RIFServiceException {

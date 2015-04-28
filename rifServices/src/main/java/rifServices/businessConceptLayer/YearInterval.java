@@ -479,9 +479,7 @@ final public class YearInterval
 // ==========================================
 
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkSecurityViolations()
-	 */
+
 	@Override
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
@@ -743,9 +741,7 @@ final public class YearInterval
 // Section Override
 // ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */
+
     @Override
 	public String getDisplayName() {
 	
@@ -758,9 +754,7 @@ final public class YearInterval
 		return buffer.toString();
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
+
 	@Override
 	public String getRecordType() {
 

@@ -174,9 +174,7 @@ public final class ComparisonArea
 // ==========================================
 	
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractGeographicalArea#checkSecurityViolations()
-	 */
+
 	@Override
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
@@ -184,9 +182,7 @@ public final class ComparisonArea
 		super.checkSecurityViolations();
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors() 
 		throws RIFServiceException {		
 		

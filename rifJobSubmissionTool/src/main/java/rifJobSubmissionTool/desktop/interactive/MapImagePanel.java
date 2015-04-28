@@ -115,9 +115,7 @@ final class MapImagePanel
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	/* (non-Javadoc)
-	 * @see javax.swing.JComponent#paint(java.awt.Graphics)
-	 */
+
 	public void paint(
 		Graphics graphics) {
 		
@@ -201,30 +199,22 @@ final class MapImagePanel
 	// ==========================================
 
 	//Interface: Component Listener
-	/* (non-Javadoc)
-	 * @see java.awt.event.ComponentListener#componentHidden(java.awt.event.ComponentEvent)
-	 */
+
 	public void componentHidden(
 		ComponentEvent event) {}
 	
-	/* (non-Javadoc)
-	 * @see java.awt.event.ComponentListener#componentMoved(java.awt.event.ComponentEvent)
-	 */
+
 	public void componentMoved(
 		ComponentEvent event) {}
 	
-	/* (non-Javadoc)
-	 * @see java.awt.event.ComponentListener#componentResized(java.awt.event.ComponentEvent)
-	 */
+
 	public void componentResized(
 		ComponentEvent event) {
 				
 		repaint();
 	}
 	
-	/* (non-Javadoc)
-	 * @see java.awt.event.ComponentListener#componentShown(java.awt.event.ComponentEvent)
-	 */
+
 	public void componentShown(
 		ComponentEvent event) {}
 		

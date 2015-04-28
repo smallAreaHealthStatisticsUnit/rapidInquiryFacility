@@ -207,9 +207,7 @@ public AbstractGeographicalAreaContentHandler() {
 // Section Override
 // ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifServices.io.AbstractRIFConceptContentHandler#initialise(java.io.OutputStream, rifServices.util.XMLCommentInjector)
-	 */
+
     @Override
 	public void initialise(
 		final OutputStream outputStream,
@@ -222,9 +220,7 @@ public AbstractGeographicalAreaContentHandler() {
 		mapAreaContentHandler.initialise(outputStream, commentInjector);	
 	}	
 	
-	/* (non-Javadoc)
-	 * @see rifServices.io.AbstractRIFConceptContentHandler#initialise(java.io.OutputStream)
-	 */
+
 	@Override
 	public void initialise(
 		final OutputStream outputStream) 
@@ -237,9 +233,7 @@ public AbstractGeographicalAreaContentHandler() {
 	}	
 		
 	
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-	 */
+
 	@Override
     public void startElement(
 		final String nameSpaceURI,
@@ -283,9 +277,7 @@ public AbstractGeographicalAreaContentHandler() {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-	 */
+
 	public void endElement(
 		final String nameSpaceURI,
 		final String localName,

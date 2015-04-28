@@ -208,25 +208,19 @@ final class HealthCodeTableModel
     	addHealthCodes(_healthCodesForInvestigation);
 	}
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.table.TableModel#getRowCount()
-	 */
+
 	public int getRowCount() {
 		
 		return healthCodesForInvestigation.size();
 	}
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.table.TableModel#getColumnCount()
-	 */
+
 	public int getColumnCount() {
 		
 		return 3;
 	}
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.table.TableModel#getValueAt(int, int)
-	 */
+
 	public Object getValueAt(
 		int row, 
 		int column) {
@@ -288,9 +282,7 @@ final class HealthCodeTableModel
 	}
 	
 
-	/* (non-Javadoc)
-	 * @see javax.swing.table.AbstractTableModel#getColumnName(int)
-	 */
+
 	@Override
 	public String getColumnName(
 		int column) {

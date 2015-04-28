@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--<meta charset="utf-8">-->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" >
+    <!-- libraries -->
+    <script type="text/javascript" src="jquery-2.0.3.js"></script>
+    <title>test - Submit Study</title>
+</head>
+
+<body>
+    <h2  style="margin:2% 1%;text-transform:uppercase">Submit study test suite platform</h2>
+    <form id="submitStudy" method="post" action="javascript:;" name="submit" enctype="multipart/form-data" style="margin:2% 1%">
+      <input type="file" name="fileField"><br />
+      <input type="text" name="userID" placeholder="user id" style="margin-top:5px;"/> <br/>   <br/>   
+      <input type="submit" name="submit" value="Submit study">
+    </form>
+    <script>
+        
+      $("form").submit(function( event ) {
+          var formData = new FormData(this);//$(this).serialize();
+          /*$.ajax({
+             url: "http://localhost:8080/rifServices/studySubmission/submitStudy/",
+             type: "POST",    
+             data: o,
+             processData: false,
+             contentType: false
+          }).done( function(){
+            $("body").append("<div>Study Submitted!<div>")
+          }).error( function ( jqXHR, textStatus, errorThrown ) {
+             console.log(textStatus);
+             console.log(errorThrown);
+             //alert(textStatus);
+          });*/
+          var request = new XMLHttpRequest();
+          request.open("POST", "http://localhost:8080/rifServices/studySubmission/submitStudy/");
+          request.send(formData);
+          
+          event.preventDefault();
+        });  
+          
+    </script>    
+</body>
+</html>

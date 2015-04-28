@@ -206,9 +206,7 @@ final class SpecifyComparisonAreaStepPanel
 	// ==========================================
 	//Interface: Observer
 	
-	/* (non-Javadoc)
-	 * @see java.util.Observer#update(java.util.Observable, java.lang.Object)
-	 */
+
 	public void update(
 		Observable observedObject, 
 		Object argument) {
@@ -230,9 +228,7 @@ final class SpecifyComparisonAreaStepPanel
 	// Section Override
 	// ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifJobSubmissionTool.desktopApplication.AbstractStepPanel#initialiseForm()
-	 */
+
 	@Override
 	public void initialiseForm() 
 		throws RIFServiceException {
@@ -282,9 +278,7 @@ final class SpecifyComparisonAreaStepPanel
 	}
 
 	
-	/* (non-Javadoc)
-	 * @see rifJobSubmissionTool.desktopApplication.AbstractStepPanel#commitChanges()
-	 */
+
 	@Override
 	public void commitChanges() 
 		throws RIFServiceException {

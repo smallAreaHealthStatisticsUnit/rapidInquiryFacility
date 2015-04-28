@@ -571,9 +571,7 @@ final public class YearRange
 		return errorMessages;
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors() 
 		throws RIFServiceException {
 
@@ -744,9 +742,7 @@ final public class YearRange
 // ==========================================
 // Section Override
 // ==========================================
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */
+
 	@Override
 	public String getDisplayName() {
 
@@ -759,9 +755,7 @@ final public class YearRange
 		return buffer.toString();
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
+
 	@Override
 	public String getRecordType() {
 

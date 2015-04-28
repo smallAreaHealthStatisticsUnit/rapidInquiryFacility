@@ -173,9 +173,7 @@ final class RIFSubmissionToolShutdownManager
 	// Section Override
 	// ==========================================
 
-	/* (non-Javadoc)
-	 * @see java.awt.event.WindowAdapter#windowClosing(java.awt.event.WindowEvent)
-	 */
+
 	@Override
 	public void windowClosing(
 		WindowEvent event) {

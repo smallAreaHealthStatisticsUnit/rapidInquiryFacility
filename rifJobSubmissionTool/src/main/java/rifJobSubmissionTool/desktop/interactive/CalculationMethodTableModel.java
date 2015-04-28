@@ -218,17 +218,13 @@ final class CalculationMethodTableModel
 // ==========================================
 // Section Override
 // ==========================================
-	/* (non-Javadoc)
-	 * @see javax.swing.table.TableModel#getRowCount()
-	 */
+
 	public int getRowCount() {
 		
 		return calculationMethods.size();
 	}
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.table.TableModel#getColumnCount()
-	 */
+
 	public int getColumnCount() {
 		
 		return 3;
@@ -266,9 +262,7 @@ final class CalculationMethodTableModel
 		return calculationMethods.get(row);
 	}
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.table.TableModel#getValueAt(int, int)
-	 */
+
 	public Object getValueAt(
 		int row, 
 		int column) {
@@ -317,9 +311,7 @@ final class CalculationMethodTableModel
 	}
 
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.table.AbstractTableModel#getColumnName(int)
-	 */
+
 	@Override
 	public String getColumnName(
 		int column) {
@@ -343,9 +335,7 @@ final class CalculationMethodTableModel
 		return columnName;		
 	}
 
-	/* (non-Javadoc)
-	 * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
-	 */
+
 	@Override
 	public boolean isCellEditable(
 		int row, 

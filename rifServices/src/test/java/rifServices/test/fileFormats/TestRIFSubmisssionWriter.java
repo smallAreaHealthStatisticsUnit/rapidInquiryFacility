@@ -210,11 +210,52 @@ public class TestRIFSubmisssionWriter {
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
 		}
-		
-	
-		
 	}
 	
+	@Test
+	public void test4() {
+		try {
+			File file = new File("C://rif_scripts//zepo.xml");
+			
+			//now read it
+			RIFJobSubmissionXMLReader reader1
+				= new RIFJobSubmissionXMLReader();
+			reader1.readFile(file);
+			
+			RIFStudySubmission rifStudySubmission2
+				=  reader1.getStudySubmission();
+			rifStudySubmission2.checkErrors();
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+		}		
+	}
+
+	@Test
+	public void test5() {
+		try {
+			SampleTestObjectGenerator testObjectGenerator
+				= new SampleTestObjectGenerator();
+			User validUser = User.newInstance("kgarwood", "XXX");
+			RIFStudySubmission rifStudySubmission
+				= testObjectGenerator.createSampleRIFJobSubmission();
+			RIFJobSubmissionXMLWriter writer
+				= new RIFJobSubmissionXMLWriter();
+
+			File file = new File("C://rif_scripts//zepo.xml");
+			writer.write(validUser, rifStudySubmission, file);			
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+		}		
+	}	
 	
 	// ==========================================
 	// Section Accessors and Mutators

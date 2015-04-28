@@ -376,9 +376,6 @@ protected AbstractGeographicalArea() {
 // Section Errors and Validation
 // ==========================================
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkSecurityViolations()
-	 */
 	@Override
 	protected void checkSecurityViolations() 
 		throws RIFServiceSecurityException {

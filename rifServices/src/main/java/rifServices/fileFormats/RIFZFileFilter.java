@@ -142,9 +142,7 @@ public final class RIFZFileFilter
     	return resultFile;
     }
     
-	/* (non-Javadoc)
-	 * @see javax.swing.filechooser.FileFilter#accept(java.io.File)
-	 */
+
 	public boolean accept(
 		final File pathName) {
 
@@ -172,9 +170,7 @@ public final class RIFZFileFilter
 		return false;
 	}
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.filechooser.FileFilter#getDescription()
-	 */
+
 	public String getDescription() {
 		
 		String rifZFileTypeDescription

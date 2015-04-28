@@ -495,9 +495,6 @@ private String name;
 // Section Errors and Validation
 // ==========================================
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkSecurityViolations()
-	 */
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
 		
@@ -535,9 +532,7 @@ private String name;
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors() 
 		throws RIFServiceException {	
 		
@@ -633,18 +628,14 @@ private String name;
 // ==========================================
 // Section Override
 // ==========================================
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */
+
 	@Override
 	public String getDisplayName() {
 		
 		return name;
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
+
 	@Override
 	public String getRecordType() {
 		

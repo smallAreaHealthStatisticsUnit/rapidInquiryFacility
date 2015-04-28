@@ -367,9 +367,6 @@ abstract public class AbstractStudy
 // Section Errors and Validation
 // ==========================================
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkSecurityViolations()
-	 */
 	@Override
 	protected void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
@@ -654,9 +651,6 @@ abstract public class AbstractStudy
 // ==========================================
 
 	//Interface: Displayable List Item
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */
 	@Override
 	public String getDisplayName() {
 		

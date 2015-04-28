@@ -233,9 +233,7 @@ final class SpecifyStudyAreaStepPanel
 	// Section Override
 	// ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifJobSubmissionTool.desktopApplication.AbstractStepPanel#initialiseForm()
-	 */
+
 	@Override
 	public void initialiseForm() 
 		throws RIFServiceException {		
@@ -295,9 +293,7 @@ final class SpecifyStudyAreaStepPanel
 		buildUI();
 	}
 
-	/* (non-Javadoc)
-	 * @see rifJobSubmissionTool.desktopApplication.AbstractStepPanel#commitChanges()
-	 */
+
 	@Override
 	public void commitChanges() 
 		throws RIFServiceException {

@@ -189,9 +189,7 @@ public final class ExposureCovariate
 // Section Errors and Validation
 // ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractCovariate#checkSecurityViolations()
-	 */
+
 	@Override
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
@@ -199,9 +197,7 @@ public final class ExposureCovariate
 		super.checkSecurityViolations();		
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors() 
 		throws RIFServiceException {	
 		
@@ -234,9 +230,7 @@ public final class ExposureCovariate
 // Section Override
 // ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractCovariate#getRecordType()
-	 */
+
 	@Override
 	public String getRecordType() {
 		

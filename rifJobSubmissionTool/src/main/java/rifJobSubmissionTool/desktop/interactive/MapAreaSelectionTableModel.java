@@ -163,9 +163,7 @@ final class MapAreaSelectionTableModel
 		return mapAreas.get(row);
 	}
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.table.TableModel#getRowCount()
-	 */
+
 	public int getRowCount() {
 		
 		return mapAreas.size();
@@ -180,17 +178,13 @@ final class MapAreaSelectionTableModel
 		fireTableDataChanged();
 	}
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.table.TableModel#getColumnCount()
-	 */
+
 	public int getColumnCount() {
 		
 		return 2;
 	}
 
-	/* (non-Javadoc)
-	 * @see javax.swing.table.TableModel#getValueAt(int, int)
-	 */
+
 	public Object getValueAt(
 		int row, 
 		int column) {
@@ -262,9 +256,7 @@ final class MapAreaSelectionTableModel
 	// Section Override
 	// ==========================================
 
-	/* (non-Javadoc)
-	 * @see javax.swing.table.AbstractTableModel#getColumnName(int)
-	 */
+
 	@Override
 	public String getColumnName(
 		int column) {
@@ -285,9 +277,7 @@ final class MapAreaSelectionTableModel
 		return columnName;		
 	}
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
-	 */
+
 	@Override
 	public boolean isCellEditable(
 		int row, 

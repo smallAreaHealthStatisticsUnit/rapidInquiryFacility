@@ -254,9 +254,7 @@ public class HealthCodeTaxonomy
 		this.nameSpace = nameSpace;
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
+
 	public String getRecordType() {
 		
 		String recordType
@@ -300,9 +298,7 @@ public class HealthCodeTaxonomy
 	// Section Errors and Validation
 	// ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkSecurityViolations()
-	 */
+
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
 
@@ -347,9 +343,7 @@ public class HealthCodeTaxonomy
 		}	
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors() 
 		throws RIFServiceException {
 
@@ -412,9 +406,7 @@ public class HealthCodeTaxonomy
 	// ==========================================
 
 	//Interface: DisplayableItem
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */
+
 	public String getDisplayName() {
 
 		return name;

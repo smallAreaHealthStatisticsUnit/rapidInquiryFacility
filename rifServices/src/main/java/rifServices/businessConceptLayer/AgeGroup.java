@@ -355,9 +355,7 @@ public final class AgeGroup
 	// ==========================================
 	// Section Override
 	// ==========================================
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors() 
 		throws RIFServiceException {
 		
@@ -480,9 +478,7 @@ public final class AgeGroup
 			upperLimit);
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */
+
 	@Override
 	public String getDisplayName() {
 		
@@ -510,9 +506,7 @@ public final class AgeGroup
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
+
 	@Override
 	public String getRecordType() {
 		

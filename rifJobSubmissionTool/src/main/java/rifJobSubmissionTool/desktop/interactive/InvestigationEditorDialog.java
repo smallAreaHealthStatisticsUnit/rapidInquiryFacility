@@ -691,9 +691,7 @@ final class InvestigationEditorDialog
 // ==========================================
 
 	//ActionListener
-	/* (non-Javadoc)
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
+
 	public void actionPerformed(
 		ActionEvent event) {
 		

@@ -129,17 +129,13 @@ final class ParameterTableModel
 		fireTableDataChanged();
 	}
 
-	/* (non-Javadoc)
-	 * @see javax.swing.table.TableModel#getRowCount()
-	 */
+
 	public int getRowCount() {
 		
 		return parameters.size();
 	}
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.table.TableModel#getColumnCount()
-	 */
+
 	public int getColumnCount() {
 		
 		return 2;
@@ -157,9 +153,7 @@ final class ParameterTableModel
 		return parameters.get(row);
 	}
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.table.TableModel#getValueAt(int, int)
-	 */
+
 	public Object getValueAt(
 		int row, 
 		int column) {
@@ -191,9 +185,7 @@ final class ParameterTableModel
 // Section Override
 // ==========================================
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
-	 */
+
 	@Override
 	public void setValueAt(
 		Object revisedParameterValue, 
@@ -203,10 +195,7 @@ final class ParameterTableModel
 		Parameter parameter = parameters.get(row);
 		parameter.setValue(String.valueOf(revisedParameterValue));			
 	}
-	
-	/* (non-Javadoc)
-	 * @see javax.swing.table.AbstractTableModel#getColumnName(int)
-	 */
+
 	@Override
 	public String getColumnName(
 		int column) {
@@ -227,9 +216,7 @@ final class ParameterTableModel
 		return columnName;		
 	}
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
-	 */
+
 	@Override
 	public boolean isCellEditable(
 		int row, 

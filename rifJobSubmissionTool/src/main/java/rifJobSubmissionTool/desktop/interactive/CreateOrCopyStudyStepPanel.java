@@ -289,9 +289,7 @@ final class CreateOrCopyStudyStepPanel
 	// ==========================================
 
 	//Action Listener
-	/* (non-Javadoc)
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
+
 	public void actionPerformed(
 		ActionEvent event) {
 		
@@ -312,9 +310,7 @@ final class CreateOrCopyStudyStepPanel
 	// Section Override
 	// ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifJobSubmissionTool.desktopApplication.AbstractStepPanel#initialiseForm()
-	 */
+
 	@Override
 	public void initialiseForm() {
 		
@@ -351,9 +347,7 @@ final class CreateOrCopyStudyStepPanel
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifJobSubmissionTool.desktopApplication.AbstractStepPanel#commitChanges()
-	 */
+
 	@Override
 	public void commitChanges() 
 		throws RIFServiceException {

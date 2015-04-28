@@ -112,9 +112,7 @@ final class HealthCodeTreeCellRenderer
 	// Section Override
 	// ==========================================
 
-	/* (non-Javadoc)
-	 * @see javax.swing.tree.DefaultTreeCellRenderer#getTreeCellRendererComponent(javax.swing.JTree, java.lang.Object, boolean, boolean, boolean, int, boolean)
-	 */
+
 	@Override	
 	public Component getTreeCellRendererComponent(
 		JTree tree,

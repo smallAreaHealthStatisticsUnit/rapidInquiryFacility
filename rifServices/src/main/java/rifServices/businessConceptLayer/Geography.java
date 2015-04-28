@@ -204,9 +204,7 @@ public final class Geography
 	// Section Override
 	// ==========================================
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
+
 	@Override
 	public String getRecordType() {
 		
@@ -215,9 +213,7 @@ public final class Geography
 		return recordType;
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFContextOption#getDisplayName()
-	 */
+
 	public String getDisplayName() {	
 		
 		return getName();

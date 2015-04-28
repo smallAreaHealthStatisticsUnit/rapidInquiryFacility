@@ -181,9 +181,6 @@ final class ComparisonAreaContentHandler
 // Section Override
 // ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifServices.io.AbstractGeographicalAreaContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-	 */
 	@Override
     public void startElement(
 		final String nameSpaceURI,
@@ -201,9 +198,7 @@ final class ComparisonAreaContentHandler
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.io.AbstractGeographicalAreaContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-	 */
+
 	@Override
 	public void endElement(
 		final String nameSpaceURI,

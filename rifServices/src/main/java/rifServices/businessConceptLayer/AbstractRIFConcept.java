@@ -253,9 +253,6 @@ public abstract class AbstractRIFConcept
 	// ==========================================
 	
 	//Interface: DisplayableListItem
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.DisplayableListItem#getDisplayName()
-	 */
 	public abstract String getDisplayName();
 	
 	// ==========================================

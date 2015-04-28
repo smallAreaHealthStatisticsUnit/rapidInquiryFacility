@@ -217,9 +217,7 @@ final class HealthCodeTaxonomyProxy {
 	// ==========================================
 
 	//Interface: DisplayableItem
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */
+
 	public String getDisplayName() {
 
 		return name;

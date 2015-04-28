@@ -255,9 +255,7 @@ final class MapSelectionBasketEditorDialog
 
 	//Interface: Action Listener
 	
-	/* (non-Javadoc)
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
+
 	public void actionPerformed(
 		ActionEvent event) {
 		
@@ -272,9 +270,7 @@ final class MapSelectionBasketEditorDialog
 	}
 	
 	//Interface: Action Listener
-	/* (non-Javadoc)
-	 * @see java.util.Observer#update(java.util.Observable, java.lang.Object)
-	 */
+
 	public void update(
 		Observable observable, 
 		Object argument) {

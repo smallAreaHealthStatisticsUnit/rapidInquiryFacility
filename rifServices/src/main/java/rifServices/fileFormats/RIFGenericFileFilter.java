@@ -167,9 +167,7 @@ public final class RIFGenericFileFilter
 // Section Override
 // ==========================================
 
-	/* (non-Javadoc)
-	 * @see javax.swing.filechooser.FileFilter#accept(java.io.File)
-	 */
+
 	@Override
 	public boolean accept(
 		final File file) {
@@ -190,9 +188,7 @@ public final class RIFGenericFileFilter
 		return false;		
 	}
 	
-	/* (non-Javadoc)
-	 * @see javax.swing.filechooser.FileFilter#getDescription()
-	 */
+
 	@Override
 	public String getDescription() {
 		

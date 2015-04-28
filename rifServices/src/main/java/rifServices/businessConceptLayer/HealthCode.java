@@ -469,9 +469,7 @@ public final class HealthCode
 	// ==========================================
 	
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors()
 		throws RIFServiceException {
 		
@@ -565,9 +563,7 @@ public final class HealthCode
 	// Section Override
 	// ==========================================
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */
+
 	@Override
 	public String getDisplayName() {
 		

@@ -326,9 +326,7 @@ public class Project
 	// Section Override
 	// ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkSecurityViolations()
-	 */
+
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
 
@@ -380,9 +378,7 @@ public class Project
 		}
 	}
 		
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors() 
 		throws RIFServiceException {
 		
@@ -474,9 +470,7 @@ public class Project
 		countErrors(RIFServiceError.INVALID_PROJECT, errorMessages);
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
+
 	public String getRecordType() {
 
 		String recordType
@@ -484,9 +478,7 @@ public class Project
 		return recordType;
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */
+
 	public String getDisplayName() {
 
 		return name;

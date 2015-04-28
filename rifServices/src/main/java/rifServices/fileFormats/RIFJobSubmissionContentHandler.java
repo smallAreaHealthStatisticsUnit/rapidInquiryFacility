@@ -272,9 +272,7 @@ final class RIFJobSubmissionContentHandler
 		rifOutputOptionContentHandler.initialise(outputStream, commentInjector);
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.io.AbstractRIFConceptContentHandler#initialise(java.io.OutputStream)
-	 */
+
 	@Override
 	public void initialise(
 		final OutputStream outputStream) 

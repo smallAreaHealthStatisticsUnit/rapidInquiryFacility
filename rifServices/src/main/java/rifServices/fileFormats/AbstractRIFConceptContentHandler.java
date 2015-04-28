@@ -539,10 +539,7 @@ abstract class AbstractRIFConceptContentHandler
 // Section Override
 // ==========================================
 
-	/* (non-Javadoc)
- * @see org.xml.sax.helpers.DefaultHandler#characters(char[], int, int)
- */
-@Override
+	@Override
 	public void characters(
 		final char[] characters, 
 		final int start, 

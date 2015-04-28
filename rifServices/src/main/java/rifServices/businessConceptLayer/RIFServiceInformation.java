@@ -352,9 +352,7 @@ public final class RIFServiceInformation
 // ==========================================
 // Section Override
 // ==========================================
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
- 	*/
+
 	public String getDisplayName() {
 	
 		StringBuilder buffer = new StringBuilder();
@@ -365,9 +363,7 @@ public final class RIFServiceInformation
 		return buffer.toString();
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
+
 	@Override
 	public String getRecordType() {
 		

@@ -238,9 +238,7 @@ final class HealthCodeSelectionTree
 	// Section Interfaces
 	// ==========================================
 	//Interface: MouseListener
-	/* (non-Javadoc)
-	 * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
-	 */
+
 	public void mouseClicked(
 		MouseEvent event) {
 
@@ -294,24 +292,16 @@ final class HealthCodeSelectionTree
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
-	 */
+
 	public void mouseEntered(
 		MouseEvent event) {}	
-	/* (non-Javadoc)
-	 * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
-	 */
+
 	public void mouseExited(
 		MouseEvent event) {}
-	/* (non-Javadoc)
-	 * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
-	 */
+
 	public void mousePressed(
 		MouseEvent event) {}
-	/* (non-Javadoc)
-	 * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
-	 */
+
 	public void mouseReleased(
 		MouseEvent event) {}
 	

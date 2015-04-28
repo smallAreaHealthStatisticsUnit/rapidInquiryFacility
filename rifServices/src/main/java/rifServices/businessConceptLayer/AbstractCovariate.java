@@ -216,9 +216,6 @@ abstract public class AbstractCovariate
 		this.maximumValue = maximumValue;
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
 	public abstract String getRecordType();
 	
 	

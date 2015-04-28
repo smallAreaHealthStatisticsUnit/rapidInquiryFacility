@@ -388,9 +388,7 @@ public final class Parameter
 // ==========================================
 // Section Errors and Validation
 // ==========================================
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkSecurityViolations()
-	 */
+
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
 		
@@ -418,9 +416,7 @@ public final class Parameter
 			value);
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors() 
 		throws RIFServiceException {
 					
@@ -505,9 +501,7 @@ public final class Parameter
 // Section Interfaces
 // ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */
+
 	@Override
 	public String getDisplayName() {
 
@@ -523,9 +517,7 @@ public final class Parameter
 // Section Override
 // ==========================================
 	
-	/* (non-Javadoc)
- * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
- */
+
 @Override
 	public String getRecordType() {
 		String recordNameLabel

@@ -535,9 +535,7 @@ public final class AgeBand
 	// ==========================================
 	// Section Override
 	// ==========================================
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors() 
 		throws RIFServiceException {
 		
@@ -625,9 +623,7 @@ public final class AgeBand
 		countErrors(RIFServiceError.INVALID_AGE_GROUP, errorMessages);
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkSecurityViolations()
-	 */
+
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
 
@@ -637,9 +633,7 @@ public final class AgeBand
 		upperLimitAgeGroup.checkSecurityViolations();		
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getDisplayName()
-	 */
+
 	@Override
 	public String getDisplayName() {
 		
@@ -692,9 +686,7 @@ public final class AgeBand
 		return buffer.toString();
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
+
 	@Override
 	public String getRecordType() {
 		

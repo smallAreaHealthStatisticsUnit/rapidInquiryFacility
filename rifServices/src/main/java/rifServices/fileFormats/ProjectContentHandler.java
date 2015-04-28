@@ -145,10 +145,8 @@ final class ProjectContentHandler
 // Section Override
 // ==========================================
     
-	/* (non-Javadoc)
- * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
- */
-@Override
+
+    @Override
 	public void startElement(
 		final String nameSpaceURI,
 		final String localName,
@@ -162,9 +160,7 @@ final class ProjectContentHandler
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-	 */
+
 	@Override
 	public void endElement(
 		final String nameSpaceURI,

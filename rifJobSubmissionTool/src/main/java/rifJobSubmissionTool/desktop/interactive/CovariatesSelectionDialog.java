@@ -358,9 +358,7 @@ final class CovariatesSelectionDialog
 // ==========================================
 	//Interface: ActionListener
 
-	/* (non-Javadoc)
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
+
 	public void actionPerformed(
 		ActionEvent event) {
 		
@@ -375,9 +373,6 @@ final class CovariatesSelectionDialog
 	}
 	
 	//Interface: ListSelectionListener
-	/* (non-Javadoc)
-	 * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
-	 */
 	public void valueChanged(
 		ListSelectionEvent event) {
 

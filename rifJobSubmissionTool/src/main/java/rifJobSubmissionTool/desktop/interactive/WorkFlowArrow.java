@@ -202,9 +202,7 @@ final class WorkFlowArrow
 	// ==========================================
 	// Section Override
 	// ==========================================
-	/* (non-Javadoc)
-	 * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
-	 */
+
 	@Override
 	public void paintComponent(
 		Graphics graphics) {

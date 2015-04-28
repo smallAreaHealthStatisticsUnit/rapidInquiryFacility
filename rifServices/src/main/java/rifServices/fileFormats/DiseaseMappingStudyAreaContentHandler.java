@@ -192,9 +192,7 @@ final class DiseaseMappingStudyAreaContentHandler
 		super.initialise(outputStream, commentInjector);
 	}
 		
-	/* (non-Javadoc)
-	 * @see rifServices.io.AbstractGeographicalAreaContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-	 */
+
 	@Override
     public void startElement(
 		final String nameSpaceURI,
@@ -212,9 +210,7 @@ final class DiseaseMappingStudyAreaContentHandler
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.io.AbstractGeographicalAreaContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-	 */
+
 	@Override
 	public void endElement(
 		final String nameSpaceURI,

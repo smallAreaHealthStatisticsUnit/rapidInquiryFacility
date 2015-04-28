@@ -181,9 +181,7 @@ private DiseaseMappingStudyArea() {
 // Section Errors and Validation
 // ==========================================
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractGeographicalArea#checkSecurityViolations()
-	 */
+
 	@Override
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
@@ -191,9 +189,7 @@ private DiseaseMappingStudyArea() {
 		super.checkSecurityViolations();		
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors() 
 		throws RIFServiceException {		
 		

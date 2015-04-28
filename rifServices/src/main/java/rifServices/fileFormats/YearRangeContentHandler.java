@@ -143,9 +143,7 @@ final class YearRangeContentHandler
 // Section Override
 // ==========================================
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-	 */
+
 	@Override
     public void startElement(
 		final String nameSpaceURI,
@@ -162,9 +160,7 @@ final class YearRangeContentHandler
 		}		
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-	 */
+
 	@Override
 	public void endElement(
 		final String nameSpaceURI,

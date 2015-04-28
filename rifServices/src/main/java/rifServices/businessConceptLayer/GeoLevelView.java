@@ -199,18 +199,14 @@ public class GeoLevelView
 	// Section Errors and Validation
 	// ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFContextOption#checkSecurityViolations()
-	 */
+
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {	
 		
 		super.checkSecurityViolations();
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#checkErrors()
-	 */
+
 	public void checkErrors()
 		throws RIFServiceException {
 		
@@ -227,9 +223,7 @@ public class GeoLevelView
 	// Section Override
 	// ==========================================
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFConcept#getRecordType()
-	 */
+
 	@Override
 	public String getRecordType() {
 		
@@ -238,9 +232,7 @@ public class GeoLevelView
 		return recordType;
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.businessConceptLayer.AbstractRIFContextOption#getDisplayName()
-	 */
+
 	public String getDisplayName() {	
 		
 		return getName();
