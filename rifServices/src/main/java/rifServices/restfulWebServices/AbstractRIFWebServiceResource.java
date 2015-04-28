@@ -17,7 +17,9 @@ import javax.ws.rs.core.Response;
 
 import org.json.JSONObject;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.codehaus.jackson.map.ObjectMapper;
+//import com.fasterxml.jackson.databind.ObjectMapper;
 
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.SampleTestObjectGenerator;
@@ -921,16 +923,35 @@ abstract class AbstractRIFWebServiceResource {
 		String result = "";
 		
 		try {
+			
+			System.out.println("submitStudy userID=="+userID+"==");
+			if (servletRequest == null) {
+				System.out.println("submitStudy - servletRequest was null");
+			}
+			else {
+				System.out.println("submitStudy - servletRequest was not null");				
+			}
+			
+			if (inputStream == null) {
+				System.out.println("input stream is null");
+			}
+			else {
+				System.out.println("input stream is NOT null");				
+			}
+			
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			
-			/*
-			RIFJobSubmissionXMLReader rifStudySubmissionReader
+			
+			
+
+			RIFJobSubmissionXMLReader rifStudySubmissionReader2
 				= new RIFJobSubmissionXMLReader();
-			rifStudySubmissionReader.readFile(inputStream);
-			RIFStudySubmission rifStudySubmission
-				= rifStudySubmissionReader.getStudySubmission();
-			*/
+			rifStudySubmissionReader2.readFile(inputStream);
+			RIFStudySubmission rifStudySubmission2
+				= rifStudySubmissionReader2.getStudySubmission();
+
+			
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();
 
@@ -979,7 +1000,8 @@ abstract class AbstractRIFWebServiceResource {
 		if(ipAddress == null) {
 			ipAddress = servletRequest.getRemoteAddr();	  
 		}
-				
+			
+		System.out.println("ARWSR createUser userID=="+userID+"==ipAddress=="+ipAddress+"==");
 		User user = User.newInstance(userID, ipAddress);
 		
 		return user;
