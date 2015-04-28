@@ -87,6 +87,9 @@ RIF.modelAccessor = ( function () {
     setParameter: function ( param, s ) {
       this.parameters[ param ] = s;
     },
+    setCalculationMethods: function ( s ) {
+      model.calculationMethods = s;
+    },
 
     //UNSET
     unsetInvestigation: function ( i ) {

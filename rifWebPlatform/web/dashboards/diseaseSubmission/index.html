@@ -225,7 +225,7 @@
             </div>
             
             <div id='statsParameters' class='blocks'>
-                <div class='headerBlock'>
+                <div class='headerBlock statModal'>
                 </div>
                 <div class='summary bodyBlock'>
                     stats
@@ -424,22 +424,23 @@
 	
     <!--- Stat Dialog --->
     <div class="overlay" id="statModal">
-		<div class="msettingsMedium">
+		<div class="msettingsStats" style="height:550px">
 			<div class="msettings-ct">
 				<div class="msettings-header">
 					<h2>Statistical functions</h2>
 					<a class="modal_close" href="#statModal"></a>
 				</div>
                 <div class = "statsInfo">
+                    <div class='done' style='' id='statDone'><a href="#statModal">Done</a></div>
                     <h2>Default</h2>
-                    <p> Directly standardised rates, Relative risk ratio, Empirical Bayes </p>
+                    <p> Directly standardised rates, Relative risk ratios, Empirical Bayes </p>
                 </div>
                 <div class = "statsInfo">
                     <h2>Optional</h2>
                     <!--<div> Include  spatial smoothing to your analysis by selecting the Bayesian model(s) of interest below. 
                         Prior specification Independent inverse gamma IGamma(0.5,0.0005) priors are assigned to the model parameters &delta;_u^2 and &delta;_v^2. 
                     </div>-->
-                    <div id="modelsList" class="availables modelsAvailable"></div>
+                    <div id="modelsList" class="modelsAvailable"></div>
                     <div class="statsManual">
                         <a href='#' >Statistical Manual </a>
                     </div>    

@@ -57,6 +57,9 @@ RIF.mediator[ 'subscriber-' ] = ( function ( mediatorUtils ) {
     projectChanged: function ( arg ) {
       _setProperty( 'setProject', arg );
     },
+    calculationMethodsChanged: function ( arg ) {
+      _setProperty( 'setCalculationMethods', arg );
+    },
     studyDescriptionChanged: function ( arg ) {
       _setProperty( 'setDescription', arg );
     },
@@ -103,7 +106,7 @@ RIF.mediator[ 'subscriber-' ] = ( function ( mediatorUtils ) {
         if ( ready && this[ dialog ] != 1 ) {
           this.startStatDialog(); //firer
         };
-      };
+      }
 
       if ( ready ) {
         this.showDialog( dialog );
@@ -127,7 +130,9 @@ RIF.mediator[ 'subscriber-' ] = ( function ( mediatorUtils ) {
         ready = mediatorUtils.isInvestigationSelectionComplete( dialog );
       } else if ( dialog == 'areaSelectionModal' ) {
         ready = mediatorUtils.isStudyAreaSelectionComplete( dialog );
-      };
+      } else if ( dialog == 'statModal' ) {
+        ready = mediatorUtils.isStatSelectionComplete( dialog );
+      }
 
       if ( previousState.state != ready ) {
         this.fire( 'dialogBgChange', dialog );

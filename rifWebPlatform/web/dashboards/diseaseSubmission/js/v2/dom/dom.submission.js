@@ -132,7 +132,8 @@ RIF.dom = ( function () {
 
       models: function () {
         return {
-          modelsList: $( '#modelsList' )
+          modelsList: $( '#modelsList' ),
+          statDone: $( '#statDone' )
         };
       }
     },

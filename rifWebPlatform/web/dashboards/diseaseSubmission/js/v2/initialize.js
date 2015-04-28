@@ -222,6 +222,12 @@ RIF.initialize = ( function () {
         method: "startStatDialog"
       },
 
+      calculationMethodsChanged: {
+        subscribers: [ "mediator" ],
+        firer: [ "menu" ],
+        method: "calculationMethodsChanged"
+      },
+
       /**-- SUMMARY TABLE ---**/
 
       //getModelObject: {

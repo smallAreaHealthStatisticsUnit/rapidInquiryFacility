@@ -5,7 +5,7 @@ RIF.mediator.utils = ( function ( modelAccessor ) {
     areaSelectionModal: false,
     comparisonArea: false,
     parametersModal: false,
-    statsModal: false
+    statModal: false
   };
 
   var _utils = {
@@ -201,7 +201,11 @@ RIF.mediator.utils = ( function ( modelAccessor ) {
       return ready;
     },
     isComparisonAreaSelectionComplete: function () {},
-    isStatSelectionComplete: function () {},
+
+    isStatSelectionComplete: function ( dialog ) {
+      this.setDialogStatus( dialog, true ); // hardcoded to true as the stat dialog is optional
+      return true;
+    },
   };
 
   return _utils;

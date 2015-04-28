@@ -20,6 +20,7 @@ RIF[ 'menu' ][ 'models' ] = ( function ( _dom, menuUtils ) {
       var input = document.createElement( "input" );
       input.type = "text";
       input.name = model[ "parameterProxies" ][ i ][ "name" ];
+      input.value = model[ "parameterProxies" ][ i ][ "value" ];
       priorContainer.appendChild( priorName );
       priorContainer.appendChild( input );
       container.appendChild( priorContainer );

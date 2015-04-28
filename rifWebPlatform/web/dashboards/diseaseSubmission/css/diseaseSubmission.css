@@ -651,8 +651,24 @@ path.polygon:hover {
     margin-right: auto;
     margin-top:8%;
 }
+
+.msettingsStats {
+    padding-bottom: 2px;
+    display: block;
+    background: #FFF;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    width: 450px;
+    height: 550px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top:5%;
+}
+
 .statsInfo{
     padding:15px 15px 0px 15px;
+    position: relative
 }
 .statsInfo h2{
     font-weight:bold;
@@ -1204,12 +1220,7 @@ input[type="text"].dropdownInput:focus,
 #ageGroupsWrapper .availables {
     max-height: 100% !important;
 }
-div.availables > div:hover {
-    background-color: #F2F2F2
-}
-.availables div {
-    border-bottom: 1px solid #F2F2F2;
-}
+
 .availables div a {
     display: block;
     padding: 5px 10px;
@@ -1279,6 +1290,11 @@ div.headerBlock{
 #statsParameters .headerBlock {
     background: white url(../images/trees/tree4bw.png) no-repeat center bottom;
 }
+
+#statsParameters .headerBlock.active {
+    background: white url(../images/trees/tree4.png) no-repeat center bottom;
+}
+
 #statsParameters div.headerBlock:hover {}
 .summary {
     width: 100%;
@@ -1540,11 +1556,24 @@ textarea.description {
 
 .modelsAvailable{
     margin-top:10px;
-    width:350px;
-    position: relative
+    width:400px;
+    position: relative; 
+    height: auto;
+    border: 1px solid #CAE1FF;
+    background: white;
+    overflow: auto;
+    padding: 4px 9px;    
+    display: block ;
+    max-height: 300px ;
+    z-index: 1;
 }
 
-.covariatesAvailable, .modelsAvailable {
+div.modelsAvailable > div:hover {
+    background-color: #F2F2F2
+}
+
+
+.covariatesAvailable {
     display: block !important;
     max-height: 150px !important;
     z-index: 1;
@@ -1554,10 +1583,11 @@ textarea.description {
 }
 
 .modelsAvailable > div {
-  padding-bottom: 10px;
+  padding-bottom: 20px;
 }
-
-
+.modelsAvailable input {
+ color:#777777
+}
 
 .covariatesAvailable input[type='checkbox'],  .modelsAvailable input[type='checkbox'] {
     float: left;
