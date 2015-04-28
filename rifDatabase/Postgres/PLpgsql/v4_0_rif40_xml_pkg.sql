@@ -105,30 +105,32 @@ CREATE TYPE rif40_goejson_type AS (
 	gid							INTEGER);
 COMMENT ON TYPE rif40_goejson_type IS 'Special type to allow ROW() elements to be named; for ROW_TO_JSON()';
 	
-CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_service_information
+CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_service_information()
 RETURNS TABLE(
 		service_name			VARCHAR,
 		service_description		VARCHAR,
 		id						VARCHAR,
-		version_number			NUMBER,
+		version_number			NUMERIC,
 		contact_name			VARCHAR,
 		contact_email			VARCHAR)
 SECURITY INVOKER
 AS $body$
 BEGIN
 	RETURN QUERY 
-		SELECT 'rif40_xml_pkg' AS service_name, 
-			   'RIF XML/Jersey/JS support for middleware' AS service_description,
-               '$id$' AS id,
-				4.0 AS version_number,
-				'Peter Hambly' AS contact_name,
-				'p.hambly@imperial.ac.uk' AS contact_email;
+		SELECT 'rif40_xml_pkg'::VARCHAR AS service_name, 
+			   'RIF XML/Jersey/JS support for middleware'::VARCHAR AS service_description,
+               '$Id$'::VARCHAR AS id,
+				4.0::NUMERIC AS version_number,
+				'Peter Hambly'::VARCHAR AS contact_name,
+				'p.hambly@imperial.ac.uk'::VARCHAR AS contact_email;
 --
 	RETURN;
 END;
 $body$
 LANGUAGE PLPGSQL;
-		
+COMMENT ON FUNCTION rif40_xml_pkg.rif40_service_information() IS 'Service Information and version control function';	
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_service_information() TO PUBLIC;
+SELECT rif40_xml_pkg.rif40_service_information();
 		
 --
 -- Include common code
