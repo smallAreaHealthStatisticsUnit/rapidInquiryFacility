@@ -120,12 +120,12 @@ BEGIN
 -- Service information
 --
 	RETURN QUERY 
-		SELECT 'rif40_xml_pkg'::VARCHAR AS service_name, 
-			   'RIF XML/Jersey/JS support for middleware'::VARCHAR AS service_description,
-               '$Id$'::VARCHAR AS id,
-				4.0::NUMERIC AS version_number,
-				'Peter Hambly'::VARCHAR AS contact_name,
-				'p.hambly@imperial.ac.uk'::VARCHAR AS contact_email;
+		SELECT 'rif40_xml_pkg'::VARCHAR 							AS service_name, 
+			   'RIF XML/Jersey/JS support for middleware'::VARCHAR 	AS service_description,
+               '$Id$'::VARCHAR 										AS id,
+				4.0::NUMERIC 										AS version_number,
+				'Peter Hambly'::VARCHAR 							AS contact_name,
+				'p.hambly@imperial.ac.uk'::VARCHAR 					AS contact_email;
 --
 	RETURN;
 END;
