@@ -105,6 +105,31 @@ CREATE TYPE rif40_goejson_type AS (
 	gid							INTEGER);
 COMMENT ON TYPE rif40_goejson_type IS 'Special type to allow ROW() elements to be named; for ROW_TO_JSON()';
 	
+CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_service_information
+RETURNS TABLE(
+		service_name			VARCHAR,
+		service_description		VARCHAR,
+		id						VARCHAR,
+		version_number			NUMBER,
+		contact_name			VARCHAR,
+		contact_email			VARCHAR)
+SECURITY INVOKER
+AS $body$
+BEGIN
+	RETURN QUERY 
+		SELECT 'rif40_xml_pkg' AS service_name, 
+			   'RIF XML/Jersey/JS support for middleware' AS service_description,
+               '$id$' AS id,
+				4.0 AS version_number,
+				'Peter Hambly' AS contact_name,
+				'p.hambly@imperial.ac.uk' AS contact_email;
+--
+	RETURN;
+END;
+$body$
+LANGUAGE PLPGSQL;
+		
+		
 --
 -- Include common code
 --
@@ -128,8 +153,9 @@ COMMENT ON TYPE rif40_goejson_type IS 'Special type to allow ROW() elements to b
 \i ../PLpgsql/rif40_xml_pkg/rif40_GetAdjacencyMatrix.sql
 \i ../PLpgsql/rif40_xml_pkg/rif40_GetMapAreas.sql
 
+
 COMMENT ON SCHEMA rif40_xml_pkg
-  IS 'RIF XML support.
+  IS 'RIF XML/Jersey/JS support for middleware.
 
 Functions:
 
