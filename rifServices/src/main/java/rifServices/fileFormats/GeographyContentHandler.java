@@ -1,15 +1,17 @@
 
 package rifServices.fileFormats;
 
-import rifServices.businessConceptLayer.HealthCode;
+import rifGenericLibrary.presentationLayer.HTMLUtility;
 import rifServices.system.RIFServiceMessages;
+import rifServices.businessConceptLayer.Geography;
+
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.text.Collator;
-import java.util.ArrayList;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 
 /**
@@ -77,7 +79,7 @@ import java.util.ArrayList;
  */
 
 
-final class HealthCodeContentHandler 
+final class GeographyContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 
@@ -88,99 +90,87 @@ final class HealthCodeContentHandler
 // ==========================================
 // Section Properties
 // ==========================================
-	/** The health codes. */
-	private ArrayList<HealthCode> healthCodes;
+	/** The calculation methods. */
+	private Geography geography;
 	
-	/** The current health code. */
-	private HealthCode currentHealthCode;
-	
-	/** The collator. */
-	private Collator collator;
-	
-	/** The yes answer. */
-	private String yesAnswer;
-	
-	/** The no answer. */
-	private String noAnswer;
 // ==========================================
 // Section Construction
 // ==========================================
     /**
-     * Instantiates a new health code content handler.
- 	*/
-	public HealthCodeContentHandler(){
+     * Instantiates a new calculation method content handler.
+     */
+	public GeographyContentHandler() {
 		
-		healthCodes = new ArrayList<HealthCode>();
-		setSingularRecordName("health_code");
-		this.setPluralRecordName("health_codes");
-		collator = RIFServiceMessages.getCollator();
-		
-		yesAnswer 
-			= RIFServiceMessages.getMessage("general.xml.yes");
-		noAnswer 
-			= RIFServiceMessages.getMessage("general.xml.no");		
+		setSingularRecordName("geography");		
     }
 
 // ==========================================
 // Section Accessors and Mutators
 // ==========================================
-
 	/**
-	 * Gets the health codes.
+	 * Gets the calculation methods.
 	 *
-	 * @return the health codes
+	 * @return the calculation methods
 	 */
-	public ArrayList<HealthCode> getHealthCodes() {
-		return healthCodes;
-	}
+	public Geography getGeography() {
 		
+		return geography;
+	}
+
+	
+	/**
+	 * Write html.
+	 *
+	 * @param headerLevel the header level
+	 * @param investigations the investigations
+	 * @param isFragmentWithinLargerReport the is fragment within larger report
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
+	public void writeHTML(
+		final int headerLevel,
+		final Geography geography, 
+		final boolean isFragmentWithinLargerReport) 
+		throws IOException {
+
+		HTMLUtility htmlUtility = getHTMLUtility();		
+		if (isFragmentWithinLargerReport == false) {
+			htmlUtility.beginDocument();
+		}
+		
+		String investigationsTitle
+			= RIFServiceMessages.getMessage("geography.label");
+		htmlUtility.writeHeader(headerLevel, investigationsTitle);
+		
+		if (isFragmentWithinLargerReport == false) {
+			htmlUtility.endDocument();
+		}
+	}	
+	
+	
 	/**
 	 * Write xml.
 	 *
-	 * @param healthCodes the health codes
+	 * @param calculationMethods the calculation methods
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public void writeXML(final ArrayList<HealthCode> healthCodes) 
+	public void writeXML(
+		final Geography geography) 
 		throws IOException {
 
 		XMLUtility xmlUtility = getXMLUtility();
-		xmlUtility.writeRecordStartTag(getPluralRecordName());
-		
-		for (HealthCode healthCode : healthCodes) {
-			writeXML(healthCode);
-		}
-		
-		xmlUtility.writeRecordEndTag(getPluralRecordName());
-	}
-	
-    /**
-     * Write xml.
-     *
-     * @param healthCode the health code
-     * @throws IOException Signals that an I/O exception has occurred.
-     */
-    public void writeXML(
-    	final HealthCode healthCode) 
-    	throws IOException {
-
-    	XMLUtility xmlUtility = getXMLUtility();
 		String recordName = getSingularRecordName();
-		xmlUtility.writeRecordStartTag(recordName);
-		xmlUtility.writeField(recordName, "code", healthCode.getCode());
-		xmlUtility.writeField(recordName, "name_space", healthCode.getNameSpace());
-		xmlUtility.writeField(recordName, "description", healthCode.getDescription());
-		if (healthCode.isTopLevelTerm() == true) {
-			String yesAnswer
-				= RIFServiceMessages.getMessage("general.xml.yes");
-			xmlUtility.writeField(recordName, "is_top_level_term", yesAnswer);
-		}
-		else {
-			String noAnswer
-				= RIFServiceMessages.getMessage("general.xml.no");
-			xmlUtility.writeField(recordName, "is_top_level_term", noAnswer);			
-		}
+
+		xmlUtility.writeRecordStartTag(getSingularRecordName());
+		xmlUtility.writeField(
+			recordName, 
+			"name", 
+			geography.getName());
+		xmlUtility.writeField(
+			recordName, 
+			"description", 
+			geography.getDescription());
 		
-		xmlUtility.writeRecordEndTag(recordName);
+		xmlUtility.writeRecordEndTag(getSingularRecordName());
 	}
 	
 // ==========================================
@@ -195,25 +185,15 @@ final class HealthCodeContentHandler
 // Section Override
 // ==========================================
 
-	/**
-	 * Read health code list.
-	 *
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 */
-    public void readHealthCodeList() 
-    	throws IOException {
+	@Override
+	public void initialise(
+		final OutputStream outputStream,
+		final XMLCommentInjector commentInjector) 
+		throws UnsupportedEncodingException {
 
-    	XMLUtility xmlUtility = getXMLUtility();
-		xmlUtility.writeRecordStartTag(getPluralRecordName());
-		xmlUtility.writeStartXML();
-		
-		xmlUtility.writeRecordStartTag(getPluralRecordName());
-		for (HealthCode healthCode : healthCodes) {
-			writeXML(healthCode);
-		}		
-		xmlUtility.writeRecordEndTag(getPluralRecordName());
+		super.initialise(outputStream, commentInjector);
 	}
-
+	
 	@Override
 	public void startElement(
 		final String nameSpaceURI,
@@ -222,12 +202,9 @@ final class HealthCodeContentHandler
 		final Attributes attributes) 
 		throws SAXException {
 
-		if (isPluralRecordName(qualifiedName) == true) {
-			healthCodes.clear();
+		if (isSingularRecordName(qualifiedName)) {
 			activate();
-		}
-		else if (isSingularRecordName(qualifiedName) == true) {
-			currentHealthCode = HealthCode.newInstance();
+			geography = Geography.newInstance();
 		}
 	}
 	
@@ -237,33 +214,19 @@ final class HealthCodeContentHandler
 		final String localName,
 		final String qualifiedName) 
 		throws SAXException {
-
-		if (isPluralRecordName(qualifiedName) == true) {
+		
+		if (isSingularRecordName(qualifiedName) == true) {
 			deactivate();
 		}
-		else if (isSingularRecordName(qualifiedName) == true) {
-			healthCodes.add(currentHealthCode);
+		else if ( equalsFieldName("name", qualifiedName) == true) {
+			geography.setName(getCurrentFieldValue());
 		}
-		else if (equalsFieldName("code", qualifiedName) == true) {
-			currentHealthCode.setCode(getCurrentFieldValue());
+		else if ( equalsFieldName("description", qualifiedName) == true) {
+			geography.setDescription(getCurrentFieldValue());
 		}
-		else if (equalsFieldName("name_space", qualifiedName) == true) {
-			currentHealthCode.setNameSpace(getCurrentFieldValue());						
+		else if (isIgnoredEndTag(qualifiedName) == false) {
+			//illegal field name
+			assert false;
 		}
-		else if (equalsFieldName("description", qualifiedName) == true) {
-			currentHealthCode.setDescription(getCurrentFieldValue());
-		}
-		else if (equalsFieldName("health_condition_name", qualifiedName) == true) {
-			String yesNoAnswer = getCurrentFieldValue();
-			if (collator.equals(yesNoAnswer, yesAnswer) == true) {
-				currentHealthCode.setTopLevelTerm(true);
-			}
-			else if (collator.equals(yesNoAnswer, noAnswer) == true) {				
-				currentHealthCode.setTopLevelTerm(false);
-			}
-			else {
-				assert false;
-			}			
-		}		
 	}
 }

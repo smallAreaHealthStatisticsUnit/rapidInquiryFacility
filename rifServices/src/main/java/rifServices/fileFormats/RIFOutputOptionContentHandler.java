@@ -164,15 +164,15 @@ final class RIFOutputOptionContentHandler
 		String recordName = getPluralRecordName();
 		XMLUtility xmlUtility = getXMLUtility();
 		
-		xmlUtility.writeRecordStartTag(recordName);	
+		xmlUtility.writeRecordStartTag(getPluralRecordName());	
 		for (RIFOutputOption rifOutputOption : rifOutputOptions) {
 			xmlUtility.writeField(
 				recordName, 
-				getPluralRecordName(), 
+				getSingularRecordName(), 
 				rifOutputOption.getName());			
 		}
 		
-		xmlUtility.writeRecordEndTag(recordName);	
+		xmlUtility.writeRecordEndTag(getPluralRecordName());	
     }	
     	
 // ==========================================
@@ -187,9 +187,6 @@ final class RIFOutputOptionContentHandler
 // Section Override
 // ==========================================
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-	 */
     @Override
     public void startElement(
 		final String nameSpaceURI,
@@ -198,14 +195,12 @@ final class RIFOutputOptionContentHandler
 		final Attributes attributes) 
 		throws SAXException {
 
-		if (equalsFieldName(qualifiedName, getPluralRecordName()) == true) {
+		if (isPluralRecordName(qualifiedName) == true) {
+			currentRIFOutputOptions.clear();
 			activate();
 		}		
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-	 */
 	@Override
 	public void endElement(
 		final String nameSpaceURI,

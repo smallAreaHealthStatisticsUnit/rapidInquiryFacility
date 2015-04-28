@@ -166,6 +166,7 @@ public final class MapAreaContentHandler
 		XMLUtility xmlUtility = getXMLUtility();
 		xmlUtility.writeRecordStartTag(recordName);	
 		xmlUtility.writeField(recordName, "id", mapArea.getIdentifier());
+		xmlUtility.writeField(recordName, "gid", mapArea.getGeographicalIdentifier());
 		xmlUtility.writeField(recordName, "label", mapArea.getLabel());
 
 		xmlUtility.writeRecordEndTag(recordName);
@@ -268,7 +269,10 @@ public final class MapAreaContentHandler
 		}
 		else if (equalsFieldName(qualifiedName, "id") == true) {
 			currentMapArea.setIdentifier(getCurrentFieldValue());
-		}		
+		}	
+		else if (equalsFieldName(qualifiedName, "gid") == true) {
+			currentMapArea.setGeographicalIdentifier(getCurrentFieldValue());
+		}	
 		else if (equalsFieldName(qualifiedName, "label") == true) {
 			currentMapArea.setLabel(getCurrentFieldValue());
 		}		

@@ -2,11 +2,13 @@
 package rifServices.fileFormats;
 
 import rifGenericLibrary.presentationLayer.HTMLUtility;
+
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudyArea;
 import rifServices.businessConceptLayer.ComparisonArea;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.Project;
+import rifServices.businessConceptLayer.Geography;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -93,8 +95,13 @@ final class DiseaseMappingStudyContentHandler
 // ==========================================
 // Section Properties
 // ==========================================
+
+	private GeographyContentHandler geographyContentHandler;
+
+	
 	/** The current disease mapping study. */
 	private DiseaseMappingStudy currentDiseaseMappingStudy;
+	
 	
 	/** The disease mapping study area content handler. */
 	private DiseaseMappingStudyAreaContentHandler diseaseMappingStudyAreaContentHandler;
@@ -105,6 +112,8 @@ final class DiseaseMappingStudyContentHandler
 	/** The investigation content handler. */
 	private InvestigationContentHandler investigationContentHandler;
 	
+	private RIFOutputOptionContentHandler rifOutputOptionContentHandler;
+	
 // ==========================================
 // Section Construction
 // ==========================================
@@ -114,14 +123,14 @@ final class DiseaseMappingStudyContentHandler
 	public DiseaseMappingStudyContentHandler() {
 		
 		setSingularRecordName("disease_mapping_study");
+		geographyContentHandler = new GeographyContentHandler();
 		diseaseMappingStudyAreaContentHandler = new DiseaseMappingStudyAreaContentHandler();
 		comparisonAreaContentHandler = new ComparisonAreaContentHandler();
-		investigationContentHandler = new InvestigationContentHandler();
+		investigationContentHandler = new InvestigationContentHandler();		
+		rifOutputOptionContentHandler = new RIFOutputOptionContentHandler();
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.io.AbstractRIFConceptContentHandler#initialise(java.io.OutputStream, rifServices.util.XMLCommentInjector)
-	 */
+
 	@Override
 	public void initialise(
 		final OutputStream outputStream,
@@ -130,22 +139,23 @@ final class DiseaseMappingStudyContentHandler
 
 		super.initialise(outputStream, commentInjector);
 		
+		geographyContentHandler.initialise(outputStream, commentInjector);
 		diseaseMappingStudyAreaContentHandler.initialise(outputStream, commentInjector);
 		comparisonAreaContentHandler.initialise(outputStream, commentInjector);
-		investigationContentHandler.initialise(outputStream, commentInjector);		
+		investigationContentHandler.initialise(outputStream, commentInjector);	
+		rifOutputOptionContentHandler.initialise(outputStream, commentInjector);
 	}
 
-	/* (non-Javadoc)
-	 * @see rifServices.io.AbstractRIFConceptContentHandler#initialise(java.io.OutputStream)
-	 */
 	public void initialise(
 		final OutputStream outputStream) 
 		throws UnsupportedEncodingException {
 
 		super.initialise(outputStream);
+		geographyContentHandler.initialise(outputStream);
 		diseaseMappingStudyAreaContentHandler.initialise(outputStream);
 		comparisonAreaContentHandler.initialise(outputStream);
-		investigationContentHandler.initialise(outputStream);		
+		investigationContentHandler.initialise(outputStream);	
+		rifOutputOptionContentHandler.initialise(outputStream);		
 	}
 	
 	
@@ -190,6 +200,9 @@ final class DiseaseMappingStudyContentHandler
 		xmlUtility.writeRecordStartTag(recordName);
 		xmlUtility.writeField(recordName, "name", diseaseMappingStudy.getName());
 		xmlUtility.writeField(recordName, "description", diseaseMappingStudy.getDescription());
+		
+		Geography geography = diseaseMappingStudy.getGeography();
+		geographyContentHandler.writeXML(geography);
 				
 		DiseaseMappingStudyArea studyArea = diseaseMappingStudy.getDiseaseMappingStudyArea();
 		diseaseMappingStudyAreaContentHandler.writeXML(studyArea);
@@ -226,6 +239,12 @@ final class DiseaseMappingStudyContentHandler
 		
 		htmlUtility.writeHeader(1, diseaseMappingStudy.getDisplayName());
 		htmlUtility.writeParagraph(diseaseMappingStudy.getDescription());
+		
+		Geography geography = diseaseMappingStudy.getGeography();
+		geographyContentHandler.writeHTML(
+			2,
+			geography,
+			isFragmentWithinLargerReport);
 		
 		DiseaseMappingStudyArea studyArea = diseaseMappingStudy.getDiseaseMappingStudyArea();
 		diseaseMappingStudyAreaContentHandler.writeHTML(
@@ -291,12 +310,19 @@ final class DiseaseMappingStudyContentHandler
 				= getCurrentDelegatedHandler();
 			
 			//check to see if handlers could be assigned to delegate parsing
-			if (diseaseMappingStudyAreaContentHandler.isSingularRecordTypeApplicable(qualifiedName)) {
+			if (geographyContentHandler.isSingularRecordTypeApplicable(qualifiedName)) {
+				assignDelegatedHandler(geographyContentHandler);
+			}
+			else if (diseaseMappingStudyAreaContentHandler.isSingularRecordTypeApplicable(qualifiedName)) {
 				assignDelegatedHandler(diseaseMappingStudyAreaContentHandler);
 			}
 			else if (comparisonAreaContentHandler.isSingularRecordTypeApplicable(qualifiedName) == true) {
 				assignDelegatedHandler(comparisonAreaContentHandler);
 			}
+			else if (investigationContentHandler.isPluralRecordTypeApplicable(qualifiedName) == true) {
+				assignDelegatedHandler(investigationContentHandler);
+			}
+			
 
 			//delegate to a handler.  If not, then scan for fields relating to this handler
 			if (isDelegatedHandlerAssigned()) {
@@ -320,9 +346,6 @@ final class DiseaseMappingStudyContentHandler
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-	 */
 	@Override
 	public void endElement(
 		final String nameSpaceURI,
@@ -336,8 +359,34 @@ final class DiseaseMappingStudyContentHandler
 		else if (isDelegatedHandlerAssigned()) {
 			AbstractRIFConceptContentHandler currentDelegatedHandler
 				= getCurrentDelegatedHandler();
-			currentDelegatedHandler.endElement(nameSpaceURI, localName, qualifiedName);
+			currentDelegatedHandler.endElement(
+				nameSpaceURI, 
+				localName, 
+				qualifiedName);
 			if (currentDelegatedHandler.isActive() == false) {
+				if (currentDelegatedHandler == geographyContentHandler) {
+					Geography geography = geographyContentHandler.getGeography();
+					currentDiseaseMappingStudy.setGeography(geography);
+				}
+				else if (currentDelegatedHandler == diseaseMappingStudyAreaContentHandler) {
+					DiseaseMappingStudyArea diseaseMappingStudyArea
+						= diseaseMappingStudyAreaContentHandler.getDiseaseMappingStudyArea();
+					currentDiseaseMappingStudy.setDiseaseMappingStudyArea(diseaseMappingStudyArea);					
+				}
+				else if (currentDelegatedHandler == comparisonAreaContentHandler) {
+					ComparisonArea comparisonArea
+						= comparisonAreaContentHandler.getComparisonArea();
+					currentDiseaseMappingStudy.setComparisonArea(comparisonArea);
+				}
+				else if (currentDelegatedHandler == investigationContentHandler) {
+					ArrayList<Investigation> investigations
+						= investigationContentHandler.getInvestigations();
+					currentDiseaseMappingStudy.setInvestigations(investigations);					
+				}
+				else {
+					assert false;
+				}				
+				
 				//handler just finished				
 				unassignDelegatedHandler();				
 			}

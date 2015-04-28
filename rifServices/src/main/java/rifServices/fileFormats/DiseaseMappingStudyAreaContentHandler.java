@@ -183,9 +183,6 @@ final class DiseaseMappingStudyAreaContentHandler
 // Section Override
 // ==========================================
 
-	/* (non-Javadoc)
-	 * @see rifServices.io.AbstractGeographicalAreaContentHandler#initialise(java.io.OutputStream, rifServices.util.XMLCommentInjector)
-	 */
 	@Override
 	public void initialise(
 		final OutputStream outputStream,

@@ -109,6 +109,9 @@ final class InvestigationContentHandler
 	/** The age group content handler. */
 	private AgeBandContentHandler ageGroupContentHandler;
 	
+	
+	private HealthThemeContentHandler healthThemeContentHandler;
+	
 	/** The nd pair content handler. */
 	private NumeratorDenominatorPairContentHandler ndPairContentHandler;
 	
@@ -139,6 +142,9 @@ final class InvestigationContentHandler
 		
 		ageGroupContentHandler
 			= new AgeBandContentHandler();
+		
+		healthThemeContentHandler
+			= new HealthThemeContentHandler();
 		ndPairContentHandler
 			= new NumeratorDenominatorPairContentHandler();
 		yearIntervalContentHandler
@@ -214,8 +220,8 @@ final class InvestigationContentHandler
 		xmlUtility.writeField(recordName, "title", investigation.getTitle());
 		
 		HealthTheme healthTheme = investigation.getHealthTheme();
-		xmlUtility.writeField(recordName, "health_theme", healthTheme.getName());
-		
+		healthThemeContentHandler.writeXML(healthTheme);
+				
 		NumeratorDenominatorPair ndPair = investigation.getNdPair();
 		ndPairContentHandler.writeXML(ndPair);
 		
@@ -418,17 +424,15 @@ final class InvestigationContentHandler
 // Section Override
 // ==========================================
 
-	/* (non-Javadoc)
- * @see rifServices.io.AbstractRIFConceptContentHandler#initialise(java.io.OutputStream, rifServices.util.XMLCommentInjector)
- */
-@Override
+
+	@Override
 	public void initialise(
 		final OutputStream outputStream,
 		final XMLCommentInjector commentInjector) 
 		throws UnsupportedEncodingException {
 
 		super.initialise(outputStream, commentInjector);
-				
+		healthThemeContentHandler.initialise(outputStream, commentInjector);
 		ndPairContentHandler.initialise(outputStream, commentInjector);
 		ageGroupContentHandler.initialise(outputStream, commentInjector);
 		yearIntervalContentHandler.initialise(outputStream, commentInjector);
@@ -437,9 +441,7 @@ final class InvestigationContentHandler
 		healthCodeContentHandler.initialise(outputStream, commentInjector);				
 	}
 	
-	/* (non-Javadoc)
-	 * @see rifServices.io.AbstractRIFConceptContentHandler#initialise(java.io.OutputStream)
-	 */
+
 	@Override
 	public void initialise(
 		final OutputStream outputStream) 
@@ -447,6 +449,7 @@ final class InvestigationContentHandler
 
 		super.initialise(outputStream);
 				
+		healthThemeContentHandler.initialise(outputStream);
 		ndPairContentHandler.initialise(outputStream);
 		ageGroupContentHandler.initialise(outputStream);
 		yearIntervalContentHandler.initialise(outputStream);
@@ -455,9 +458,7 @@ final class InvestigationContentHandler
 		healthCodeContentHandler.initialise(outputStream);				
 	}	
 	
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-	 */
+
 	@Override
 	public void startElement(
 		final String nameSpaceURI,
@@ -468,6 +469,7 @@ final class InvestigationContentHandler
 				
 		if (isPluralRecordName(qualifiedName)) {
 			currentInvestigations.clear();
+			activate();
 		}
 		else if (isSingularRecordName(qualifiedName)) {
 			currentInvestigation = Investigation.newInstance();
@@ -483,20 +485,26 @@ final class InvestigationContentHandler
 		}
 		else {
 			//determine if a delegated handler can be assigned
-			if (ndPairContentHandler.isSingularRecordTypeApplicable(qualifiedName) == true) {
+			if (healthThemeContentHandler.isSingularRecordTypeApplicable(qualifiedName) == true) {
+				assignDelegatedHandler(healthThemeContentHandler);				
+			}
+			else if (ndPairContentHandler.isSingularRecordTypeApplicable(qualifiedName) == true) {
 				assignDelegatedHandler(ndPairContentHandler);
 			}	
 			else if (ageGroupContentHandler.isSingularRecordTypeApplicable(qualifiedName) == true) {
 				assignDelegatedHandler(ageGroupContentHandler);
 			}
-			else if (yearIntervalContentHandler.isSingularRecordTypeApplicable(qualifiedName) == true) {
+			else if (yearIntervalContentHandler.isPluralRecordTypeApplicable(qualifiedName) == true) {
 				assignDelegatedHandler(yearIntervalContentHandler);
 			}
-			else if (covariateContentHandler.isSingularRecordTypeApplicable(qualifiedName) == true) {
+			else if (covariateContentHandler.isPluralRecordTypeApplicable(qualifiedName) == true) {
 				assignDelegatedHandler(covariateContentHandler);
 			}
-			else if (healthCodeContentHandler.isSingularRecordTypeApplicable(qualifiedName) == true) {
+			else if (healthCodeContentHandler.isPluralRecordTypeApplicable(qualifiedName) == true) {
 				assignDelegatedHandler(healthCodeContentHandler);
+			}
+			else if (yearRangeContentHandler.isSingularRecordTypeApplicable(qualifiedName) == true) {
+				assignDelegatedHandler(yearRangeContentHandler);
 			}
 		
 			//either delegate or scan for field name tags relevant to this handler
@@ -510,27 +518,10 @@ final class InvestigationContentHandler
 					qualifiedName, 
 					attributes);
 			}
-			else {
-				//examine other fields
-				if (equalsFieldName(qualifiedName, "id")) {
-					currentInvestigation.setIdentifier(getCurrentFieldValue());
-				}
-				else if (equalsFieldName(qualifiedName, "title")) {
-					currentInvestigation.setTitle(getCurrentFieldValue());
-				}
-				else if (equalsFieldName(qualifiedName, "years_per_interval")) {
-					currentInvestigation.setInterval(getCurrentFieldValue());
-				}
-				else {
-					assert false;
-				}
-			}
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-	 */
+
 	@Override
 	public void endElement(
 		final String nameSpaceURI,
@@ -538,7 +529,13 @@ final class InvestigationContentHandler
 		final String qualifiedName) 
 		throws SAXException {
 		
-		if (isDelegatedHandlerAssigned() == true) {
+		if (isPluralRecordName(qualifiedName)) {
+			deactivate();
+		}
+		else if (isSingularRecordName(qualifiedName)) {
+			currentInvestigations.add(currentInvestigation);
+		}
+		else if (isDelegatedHandlerAssigned() == true) {
 			AbstractRIFConceptContentHandler currentDelegatedHandler
 				= getCurrentDelegatedHandler();
 			currentDelegatedHandler.endElement(
@@ -548,7 +545,12 @@ final class InvestigationContentHandler
 			if (currentDelegatedHandler.isActive() == false) {
 				//current handler just finished
 				
-				if (currentDelegatedHandler == ndPairContentHandler) {
+				if (currentDelegatedHandler == healthThemeContentHandler) {
+					HealthTheme healthTheme
+						= healthThemeContentHandler.getHealthTheme();
+					currentInvestigation.setHealthTheme(healthTheme);
+				}
+				else if (currentDelegatedHandler == ndPairContentHandler) {
 					NumeratorDenominatorPair ndPair
 						= ndPairContentHandler.getNumeratorDenominatorPair();
 					currentInvestigation.setNdPair(ndPair);				
@@ -562,6 +564,11 @@ final class InvestigationContentHandler
 					ArrayList<YearInterval> yearIntervals
 						= yearIntervalContentHandler.getYearIntervals();
 					currentInvestigation.setYearIntervals(yearIntervals);
+				}
+				else if (currentDelegatedHandler == yearRangeContentHandler) {
+					YearRange yearRange
+						= yearRangeContentHandler.getYearRange();
+					currentInvestigation.setYearRange(yearRange);
 				}
 				else if (currentDelegatedHandler == covariateContentHandler) {
 					ArrayList<AbstractCovariate> covariates
@@ -583,6 +590,16 @@ final class InvestigationContentHandler
 		else if (equalsFieldName("sex", qualifiedName) == true) {
 			Sex sex = Sex.getSexFromName(getCurrentFieldValue());
 			currentInvestigation.setSex(sex);
+		}
+		//examine other fields
+		else if (equalsFieldName(qualifiedName, "id")) {
+			currentInvestigation.setIdentifier(getCurrentFieldValue());
+		}
+		else if (equalsFieldName(qualifiedName, "title")) {
+			currentInvestigation.setTitle(getCurrentFieldValue());
+		}
+		else if (equalsFieldName(qualifiedName, "years_per_interval")) {
+			currentInvestigation.setInterval(getCurrentFieldValue());
 		}
 		else {
 			assert false;

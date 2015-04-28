@@ -131,6 +131,7 @@ final class RIFJobSubmissionContentHandler
     	ignoreXMLStartTag("job_submission_date");
     }
 
+	
 // ==========================================
 // Section Accessors and Mutators
 // ==========================================
@@ -239,7 +240,8 @@ final class RIFJobSubmissionContentHandler
 		DiseaseMappingStudy diseaseMappingStudy
 			= (DiseaseMappingStudy) rifJobSubmission.getStudy();
 		diseaseMappingStudyContentHandler.writeXML(diseaseMappingStudy);
-		calculationMethodContentHandler.writeXML(rifJobSubmission.getCalculationMethods());
+		calculationMethodContentHandler.writeXML(rifJobSubmission.getCalculationMethods());		
+		rifOutputOptionContentHandler.writeXML(rifJobSubmission.getRIFOutputOptions());
 		
 		xmlUtility.writeRecordEndTag(recordName);
 	}
@@ -255,9 +257,8 @@ final class RIFJobSubmissionContentHandler
 // ==========================================
 // Section Override
 // ==========================================
-	/* (non-Javadoc)
-	 * @see rifServices.io.AbstractRIFConceptContentHandler#initialise(java.io.OutputStream, rifServices.util.XMLCommentInjector)
-	 */
+
+
     @Override
 	public void initialise(
 		final OutputStream outputStream,
@@ -286,9 +287,7 @@ final class RIFJobSubmissionContentHandler
 		rifOutputOptionContentHandler.initialise(outputStream);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-	 */
+
 	@Override
 	public void startElement(
 		final String nameSpaceURI,
@@ -310,12 +309,13 @@ final class RIFJobSubmissionContentHandler
 				qualifiedName, 
 				attributes);
 		}
-		else {			
+		else {				
 			//determine if a delegate handler can be assigned to do future processing
 			if (projectContentHandler.isPluralRecordTypeApplicable(qualifiedName)) {
 				assignDelegatedHandler(projectContentHandler);
 			}
 			else if (diseaseMappingStudyContentHandler.isSingularRecordTypeApplicable(qualifiedName)) {
+				System.out.println("RIFJobSubmissionContentHandler diseaseMappingStudy 3==");
 				assignDelegatedHandler(diseaseMappingStudyContentHandler);
 			}
 			else if (calculationMethodContentHandler.isPluralRecordTypeApplicable(qualifiedName)) {
@@ -352,9 +352,7 @@ final class RIFJobSubmissionContentHandler
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-	 */
+
 	@Override
 	public void endElement(
 		final String nameSpaceURI,
