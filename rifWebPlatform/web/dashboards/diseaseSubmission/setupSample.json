@@ -1,124 +1,264 @@
 {
-    "rif_job_submission": {
-        "submitted_by": "ffabbri",
-        "job_submission_date": 1429707838808,
-        "disease_mapping_study": {
-            "name": "test_early_days s",
-            "disease_mapping_study_area": {
-                "geo_levels": {
-                    "geolevel_select": "LEVEL3",
-                    "geolevel_view": "LEVEL4",
-                    "geolevel_area": "",
-                    "geolevel_to_map": ""
-                },
-                "map_areas": {
-                    "map_area": [
-                        {
-                            "id": "01.009.003100",
-                            "label": "Elliot LEVEL3(01.009.003100)"
-                        },
-                        {
-                            "id": "01.009.003000",
-                            "label": "Elliot LEVEL3(01.009.003000)"
-                        },
-                        {
-                            "id": "01.009.002900",
-                            "label": "Elliot LEVEL3(01.009.002900)"
-                        },
-                        {
-                            "id": "01.009.002800",
-                            "label": "Elliot LEVEL3(01.009.002800)"
-                        },
-                        {
-                            "id": "01.009.003200",
-                            "label": "Elliot LEVEL3(01.009.003200)"
-                        }
-                    ]
-                }
+  "rif_job_submission": {
+    "submitted_by": "kgarwood",
+    "job_submission_date": "28-Apr-2015 16:23:33:689",
+      
+    "project": {
+      "name": "SAHSU",
+      "description": "SAHSU Project used for all old projects on import. Disabled after import"
+    },
+      
+    "disease_mapping_study": {
+      "name": "Extremely cool demo study",
+      "description": "So close to total utter success",
+      "geography": {
+        "name": "SAHSU",
+        "description": "xxx"
+      },
+      "disease_mapping_study_area": {
+        "geo_levels": {
+          "geolevel_select": { "name": "LEVEL2" },
+          "geolevel_area": { "name": "Clarke" },
+          "geolevel_view": { "name": "LEVEL4" },
+          "geolevel_to_map": { "name": "LEVEL4" }
+        },
+        "map_areas": {
+          "map_area": [
+            {
+              "id": "01.011.012600.1",
+              "gid": "01.011.012600.1",
+              "label": "Clarke LEVEL4(01.011.012600.1)"
             },
-            "comparison_area": {
-                "geo_levels": {
-                    "geolevel_select": null,
-                    "geolevel_view": null,
-                    "geolevel_area": "",
-                    "geolevel_to_map": ""
-                },
-                "map_areas": {
-                    "map_area": []
-                }
-            },
-            "investigations": {
-                "investigation": [
-                    {
-                        "-id": 1,
-                        "title": "investigation_1",
-                        "numerator_denominator_pair": {
-                            "numerator_table_name": "SAHSULAND_CANCER",
-                            "numerator_table_description": "",
-                            "denominator_table_name": "SAHSULAND_POP",
-                            "denominator_table_description": ""
-                        },
-                        "health_codes": {
-                            "health_code": [
-                                {
-                                    "name_space": "icd9",
-                                    "code": "2010",
-                                    "description": "Hodgkin's paragranuloma",
-                                    "is_top_level_term": "false"
-                                },
-                                {
-                                    "name_space": "icd9",
-                                    "code": "2016",
-                                    "description": "Mixed cellularity",
-                                    "is_top_level_term": "false"
-                                }
-                            ]
-                        },
-                        "year_range": {
-                            "lower_bound": "1992",
-                            "upper_bound": "1991"
-                        },
-                        "sex": "Both"
-                    },
-                    {
-                        "-id": 2,
-                        "title": "investigation_2",
-                        "numerator_denominator_pair": {
-                            "numerator_table_name": "SAHSULAND_CANCER",
-                            "numerator_table_description": "",
-                            "denominator_table_name": "SAHSULAND_POP",
-                            "denominator_table_description": ""
-                        },
-                        "health_codes": {
-                            "health_code": [
-                                {
-                                    "name_space": "icd10",
-                                    "code": "J450",
-                                    "description": "Predominantly allergic asthma",
-                                    "is_top_level_term": "false"
-                                },
-                                {
-                                    "name_space": "icd10",
-                                    "code": "J451",
-                                    "description": "Nonallergenic asthma",
-                                    "is_top_level_term": "false"
-                                },
-                                {
-                                    "name_space": "icd10",
-                                    "code": "J458",
-                                    "description": "Mixed asthma",
-                                    "is_top_level_term": "false"
-                                }
-                            ]
-                        },
-                        "year_range": {
-                            "lower_bound": "1996",
-                            "upper_bound": "1996"
-                        },
-                        "sex": "Females"
-                    }
-                ]
+            {
+              "id": "01.011.012600.2",
+              "gid": "01.011.012600.2",
+              "label": "Clarke LEVEL4(01.011.012600.2)"
             }
+          ]
         }
+      },
+      "comparison_area": {
+        "geo_levels": {
+          "geolevel_select": { "name": "LEVEL2" },
+          "geolevel_area": { "name": "Clarke" },
+          "geolevel_view": { "name": "LEVEL4" },
+          "geolevel_to_map": { "name": "LEVEL4" }
+        },
+        "map_areas": {
+          "map_area": [
+            {
+              "id": "01.011.012600.1",
+              "gid": "01.011.012600.1",
+              "label": "Clarke LEVEL4(01.011.012600.1)"
+            },
+            {
+              "id": "01.011.012600.2",
+              "gid": "01.011.012600.2",
+              "label": "Clarke LEVEL4(01.011.012600.2)"
+            }
+          ]
+        }
+      },
+      "investigations": {
+        "investigation": [
+          {
+            "title": "CANCERSTUDY1",
+            "health_theme": {
+              "name": "SAHSULAND",
+              "description": "SAHSU land cancer incidence example data"
+            },
+            "numerator_denominator_pair": {
+              "numerator_table_name": "SAHSULAND_CANCER",
+              "numerator_table_description": "Cancer cases in SAHSU land",
+              "denominator_table_name": "SAHSULAND_POP",
+              "denominator_table_description": "SAHSU land population"
+            },
+            "age_band": {
+              "lower_age_group": {
+                "id": "1",
+                "name": "5_9",
+                "lower_limit": "5",
+                "upper_limit": "9"
+              },
+              "upper_age_group": {
+                "id": "1",
+                "name": "5_9",
+                "lower_limit": "5",
+                "upper_limit": "9"
+              }
+            },
+            "health_codes": {
+              "health_code": [
+                {
+                  "code": { "#text": "C34" },
+                  "name_space": "icd10",
+                  "description": "malignant neoplasm of bronchus and lung",
+                  "is_top_level_term": "no"
+                },
+                {
+                  "code": "C81",
+                  "name_space": "icd10",
+                  "description": "Hodgkin's disease",
+                  "is_top_level_term": "no"
+                }
+              ]
+            },
+            "year_range": {
+              "lower_bound": "1992",
+              "upper_bound": "1997"
+            },
+            "year_intervals": {
+              "year_interval": [
+                {
+                  "start_year": "1992",
+                  "end_year": "1993"
+                },
+                {
+                  "start_year": "1994",
+                  "end_year": "1995"
+                },
+                {
+                  "start_year": "1996",
+                  "end_year": "1997"
+                }
+              ]
+            },
+            "years_per_interval": "2",
+            "sex": "Both",
+            "covariates": {
+              "adjustable_covariate": {
+                "name": "SES",
+                "minimum_value": "1",
+                "maximum_value": "5",
+                "covariate_type": "NTile Integer"
+              }
+            }
+          },
+          {
+            "title": "BRAINCANCERSTUDY",
+            "health_theme": {
+              "name": "SAHSULAND",
+              "description": "SAHSU land cancer incidence example data"
+            },
+            "numerator_denominator_pair": {
+              "numerator_table_name": "SAHSULAND_CANCER",
+              "numerator_table_description": "Cancer cases in SAHSU land",
+              "denominator_table_name": "SAHSULAND_POP",
+              "denominator_table_description": "SAHSU land population"
+            },
+            "age_band": {
+              "lower_age_group": {
+                "id": "1",
+                "name": "5_9",
+                "lower_limit": "5",
+                "upper_limit": "9"
+              },
+              "upper_age_group": {
+                "id": "1",
+                "name": "5_9",
+                "lower_limit": "5",
+                "upper_limit": "9"
+              }
+            },
+            "health_codes": {
+              "health_code": [
+                {
+                  "code": "C34",
+                  "name_space": "icd10",
+                  "description": "malignant neoplasm of bronchus and lung",
+                  "is_top_level_term": "no"
+                },
+                {
+                  "code": "C81",
+                  "name_space": "icd10",
+                  "description": "Hodgkin's disease",
+                  "is_top_level_term": "no"
+                }
+              ]
+            },
+            "year_range": {
+              "lower_bound": "1992",
+              "upper_bound": "1997"
+            },
+            "year_intervals": {
+              "year_interval": [
+                {
+                  "start_year": "1992",
+                  "end_year": "1993"
+                },
+                {
+                  "start_year": "1994",
+                  "end_year": "1995"
+                },
+                {
+                  "start_year": "1996",
+                  "end_year": "1997"
+                }
+              ]
+            },
+            "years_per_interval": "2",
+            "sex": "Both",
+            "covariates": {
+              "adjustable_covariate": {
+                "name": "SES",
+                "minimum_value": "1",
+                "maximum_value": "5",
+                "covariate_type": "NTile Integer"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "calculation_methods": {
+      "calculation_method": [
+        {
+          "name": "BYM",
+          "code_routine_name": "bym_r_procedure",
+          "description": "Besag, York and Mollie Model",
+          "parameters": {
+            "parameter": {
+              "name": "c",
+              "value": "10"
+            }
+          }
+        },
+        {
+          "name": "HET",
+          "code_routine_name": "het_r_procedure",
+          "description": "Does HET things",
+          "parameters": {
+            "parameter": [
+              {
+                "name": "a",
+                "value": "10"
+              },
+              {
+                "name": "b",
+                "value": "5"
+              }
+            ]
+          }
+        },
+        {
+          "name": "CAR",
+          "code_routine_name": "car_r_procedure",
+          "description": "Applies CAR-based bayesian smoothing",
+          "parameters": {
+            "parameter": {
+              "name": "a",
+              "value": "5"
+            }
+          }
+        }
+      ]
+    },
+    "rif_output_options": {
+      "rif_output_option": [
+        "Data",
+        "Maps",
+        "Ratios and Rates"
+      ]
     }
+  }
 }

@@ -16,8 +16,8 @@ RIF.table.ageGroups = ( function ( _dom ) {
         var oddOreven = ( l % 2 == 0 ) ? 'even' : 'odd',
           div = document.createElement( "div" );
         div.className = 'aSR ' + oddOreven;
-        div.id = 'ageGroup' + l;
-        div.innerHTML = '<div>' + names[ l ] + '</div><div class="ageBand">' + lower[ l ] + ' - ' + upper[ l ] + '</div>';
+        div.id = 'ageGroup_' + l;
+        div.innerHTML = '<div class="ageGroupName">' + names[ l ] + '</div><div class="ageBand">' + lower[ l ] + ' - ' + upper[ l ] + '</div>';
         fragment.appendChild( div );
       }
 

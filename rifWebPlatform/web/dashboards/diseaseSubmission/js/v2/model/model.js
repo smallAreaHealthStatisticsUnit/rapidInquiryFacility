@@ -2,7 +2,7 @@ RIF.model = ( function () {
 
   var _model = {
 
-    studyName: 'sdfdf',
+    studyName: null,
     healthTheme: null,
     numerator: null,
     denominator: null,
@@ -25,9 +25,6 @@ RIF.model = ( function () {
 
     calculationMethods: [], //[{name:'', parameterProxies:[{"name":"a","value":"5"}]}]  
   };
-
-
-
 
   return _model;
 

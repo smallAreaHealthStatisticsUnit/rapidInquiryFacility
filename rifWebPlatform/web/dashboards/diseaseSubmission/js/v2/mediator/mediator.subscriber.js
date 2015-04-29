@@ -85,10 +85,14 @@ RIF.mediator[ 'subscriber-' ] = ( function ( mediatorUtils ) {
     clearAllParameters: function () {
       mediatorUtils.clearAllParameters()
     },
+
+    mapModelToSchema: function () {
+      mediatorUtils.mapToSchema();
+    },
+
     /*
      *  Check if dialog is ready to be opened
      */
-
     isDialogReady: function ( dialog ) {
       var ready = false;
       if ( dialog == 'investigationDialog' ) {
@@ -107,25 +111,22 @@ RIF.mediator[ 'subscriber-' ] = ( function ( mediatorUtils ) {
           this.startStatDialog(); //firer
         };
       }
-
       if ( ready ) {
         this.showDialog( dialog );
         this[ dialog ] = 1;
       };
     },
 
+
     /*
      *  Check if all parameters for the specific
      *  dialog have been selected
      */
-
     isDialogSelectionComplete: function ( dialog ) {
       var previousState = {
         state: mediatorUtils.getDialogStatus( dialog )
       };
-
       var ready;
-
       if ( dialog == 'parametersModal' ) {
         ready = mediatorUtils.isInvestigationSelectionComplete( dialog );
       } else if ( dialog == 'areaSelectionModal' ) {

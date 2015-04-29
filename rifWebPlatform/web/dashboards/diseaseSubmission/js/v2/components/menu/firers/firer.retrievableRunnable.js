@@ -11,7 +11,11 @@ RIF.menu[ 'firer-retrievableRunnable' ] = ( function () {
 
     studyDescriptionChanged: function ( arg ) {
       this.fire( "studyDescriptionChanged", arg );
-    }
+    },
+
+    mapModelToSchema: function () {
+      this.fire( "mapModelToSchema", null );
+    },
   };
 
   return firer;

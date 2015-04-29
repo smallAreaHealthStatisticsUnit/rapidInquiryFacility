@@ -4,11 +4,6 @@ RIF.modelAccessor = ( function () {
   var model = RIF.model();
   var mapper = RIF.modelMapper();
 
-  /*var _mandatory = [ "studyName", "healthTheme", "numerator", "denominator", "project", "parameters.taxonomy", "parameters.healthOutcomes",
-    "parameters.gender", "parameters.minYear", "parameters.maxYear", "parameters.ageGroups", "studyArea.studyArea_resolution", "studyArea.studyArea_areas",
-    "studyArea.studyArea_selectAt", "comparisonArea.comparisonArea_resolution", "comparisonArea.comparisonArea_areas", "comparisonArea.comparisonArea_selectAt"
-  ];*/
-
   var _mandatory = [ "studyName", "healthTheme", "numerator", "denominator", "project", "investigations",
     "studyArea.studyArea_resolution", "studyArea.studyArea_areas",
     "studyArea.studyArea_selectAt", "comparisonArea.comparisonArea_resolution", "comparisonArea.comparisonArea_areas",
@@ -178,6 +173,9 @@ RIF.modelAccessor = ( function () {
     getAgeGroups: function () {
       return this.parameters.ageGroups;
     },
+    getCalculationMethods: function () {
+      return model.calculationMethods;
+    },
     getParameters: function () {
       return this.parameters;
     },
@@ -186,6 +184,10 @@ RIF.modelAccessor = ( function () {
     },
     getOptionals: function () {
       return _optional;
+    },
+
+    mapToSchema: function () {
+      mapper( modelAccessor );
     }
 
   };

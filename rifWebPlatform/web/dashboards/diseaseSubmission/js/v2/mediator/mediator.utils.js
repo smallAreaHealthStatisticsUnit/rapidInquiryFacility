@@ -21,7 +21,6 @@ RIF.mediator.utils = ( function ( modelAccessor ) {
       return modelAccessor[ fn ]();
     },
 
-
     clearAllParameters: function () {
       for ( var i in modelAccessor.getParameters() ) {
         modelAccessor.setParameter( i, null );
@@ -206,6 +205,10 @@ RIF.mediator.utils = ( function ( modelAccessor ) {
       this.setDialogStatus( dialog, true ); // hardcoded to true as the stat dialog is optional
       return true;
     },
+
+    mapToSchema: function () {
+      modelAccessor.mapToSchema()
+    }
   };
 
   return _utils;

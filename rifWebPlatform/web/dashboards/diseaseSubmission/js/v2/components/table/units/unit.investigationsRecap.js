@@ -12,9 +12,13 @@ RIF.table.investigationsRecap = ( function ( _dom ) {
 
         covariates = ( data.covariates != null ) ? data.covariates.join() : 'none',
 
-        ageGroups = data.ageGroups.reverse().map( function ( elem ) {
+        /*ageGroups = data.ageGroups.reverse().map( function ( elem ) {
           return elem.band.replace( / /g, '' );
-        } ).join( '   ' );
+        } ).join( '   ' );*/
+
+        lower = data.ageGroups.lower.ageLimits.split( '-' )[ 0 ];
+      upper = data.ageGroups.upper.ageLimits.split( '-' )[ 1 ];
+      ageGroups = lower + ' To ' + upper;
 
       for ( var taxonomy in data.healthOutcomes ) {
         var counter = 0,

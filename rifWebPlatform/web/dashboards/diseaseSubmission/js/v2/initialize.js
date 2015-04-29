@@ -101,6 +101,12 @@ RIF.initialize = ( function () {
         method: "studyDescriptionChanged"
       },
 
+      mapModelToSchema: {
+        subscribers: [ "mediator" ],
+        firer: [ "menu" ],
+        method: "mapModelToSchema"
+      },
+
       /**-- Area Selection ---**/
 
       selectAtChanged: {

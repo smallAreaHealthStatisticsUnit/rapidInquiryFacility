@@ -7,12 +7,13 @@ RIF[ 'menu' ][ 'event-models' ] = ( function ( dom, firer ) {
     while ( l-- ) {
       var modelObj = {};
       modelObj.name = modelsChecked[ l ].name;
-      modelObj.params = [];
+      modelObj.parameters = {};
+      modelObj.parameters.parameter = [];
       var params = $( modelsChecked[ l ] ).parent().find( " div input" );
       for ( var i = 0; i < params.length; i++ ) {
         var paramName = params[ i ].name;
         var paramValue = params[ i ].value;
-        modelObj.params.push( {
+        modelObj.parameters.parameter.push( {
           name: paramName,
           value: paramValue
         } );

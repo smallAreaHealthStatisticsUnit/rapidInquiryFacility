@@ -24,24 +24,35 @@ RIF.table[ 'event-ageGroups' ] = ( function ( _dom, firer ) {
   } );
 
 
-  _dom.investigationBox.on( 'mouseup', _dom.ageGroupsWrapper, ( function () {
+  _dom.investigationBox.on( 'mouseup', _dom.ageGroupsWrapper, ( function ( aEvent ) {
     if ( !ageGroupClicked ) {
       return;
     };
-    slctd = [];
-    var r = d3.selectAll( '#ageGroupsWrapper .rowSelected' ).each( function ( d, i ) {
-      var idRow = ( this.id ).split( 'ageGroup' )[ 1 ],
-        bandRow = $( this ).find( '.ageBand' ).text();
-      slctd.push( {
-        id: idRow,
-        band: bandRow
-      } );
-    } );
+    var rows = $( '#ageGroupsWrapper .rowSelected' );
+    if ( rows.length > 0 ) {
+      var max = rows[ 0 ],
+        maxageGroupName = $( max ).find( '.ageGroupName' ).text(),
+        maxageGroupLimits = $( max ).find( '.ageBand' ).text();
 
+      var min = rows[ rows.length - 1 ],
+        minageGroupName = $( min ).find( '.ageGroupName' ).text(),
+        minageGroupLimits = $( min ).find( '.ageBand' ).text();
 
+      var band = {
+        lower: {
+          name: minageGroupName,
+          ageLimits: minageGroupLimits
+        },
+        upper: {
+          name: maxageGroupName,
+          ageLimits: maxageGroupLimits
+        }
+      };
+      console.log( band );
+      firer.ageGroupsChanged( band );
+    };
 
-    firer.ageGroupsChanged( slctd );
-
+    isMouseDown = false;
     ageGroupClicked = false;
   } ) );
 
