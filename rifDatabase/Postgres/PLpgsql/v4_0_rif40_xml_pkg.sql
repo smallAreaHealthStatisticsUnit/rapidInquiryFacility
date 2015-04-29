@@ -105,12 +105,12 @@ CREATE TYPE rif40_goejson_type AS (
 	gid							INTEGER);
 COMMENT ON TYPE rif40_goejson_type IS 'Special type to allow ROW() elements to be named; for ROW_TO_JSON()';
 	
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_service_information();	
 CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_service_information()
 RETURNS TABLE(
 		service_name			VARCHAR,
 		service_description		VARCHAR,
-		id						VARCHAR,
-		version_number			NUMERIC,
+		version_number			VARCHAR,
 		contact_name			VARCHAR,
 		contact_email			VARCHAR)
 SECURITY INVOKER
@@ -119,13 +119,17 @@ BEGIN
 --
 -- Service information
 --
+-- It is possible to get the last commit date; but it needs a git command line and this is horrid on Windows. Needs a Powershell helper
+-- script... so hard coded it
+--
+-- P:\Github\rapidInquiryFacility\rifDatabase\Postgres\PLpgsql>C:\Users\pch\AppData\Local\GitHub\PortableGit_c2ba306e536fdf878271f7fe636a147ff37326ad\bin\git log --pretty=format:"%ad" -1 v4_0_rif40_xml_pkg.sql
+-- WARNING: terminal is not fully functional
+-- Wed Apr 29 09:41:07 2015 +0100
+--
 	RETURN QUERY 
 		SELECT 'rif40_xml_pkg'::VARCHAR 							AS service_name, 
 			   'RIF XML/Jersey/JS support for middleware'::VARCHAR 	AS service_description,
-               '
-$Id$
-'::VARCHAR 										AS id,
-				4.0::NUMERIC 										AS version_number,
+				'4.0.1'::VARCHAR 									AS version_number,
 				'Peter Hambly'::VARCHAR 							AS contact_name,
 				'p.hambly@imperial.ac.uk'::VARCHAR 					AS contact_email;
 --
