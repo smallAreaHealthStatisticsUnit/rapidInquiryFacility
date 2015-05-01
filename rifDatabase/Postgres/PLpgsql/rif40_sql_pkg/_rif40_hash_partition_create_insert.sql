@@ -158,7 +158,7 @@ BEGIN
 --  LIMIT 1;
 -- psql:../psql_scripts/v4_0_study_id_partitions.sql:139: ERROR:  rif40_trg_pkg.trigger_fct_rif40_study_shares_checks(): RIF40_STUDY_SHARES study_id: 1 grantor username: pch is not USER: rif40 or a RIF40_MANAGER
 --
-	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(master_schema, l_table, l_column, 'DISABLE'::VARCHAR);
+	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(master_schema, l_table, l_column, 'DISABLE'::VARCHAR, partition_schema);
 	IF l_ddl_stmt IS NOT NULL THEN
 --
 -- Copy out parameters
@@ -239,7 +239,7 @@ BEGIN
 --
 -- Re-enable ON-INSERT triggers
 --
-	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(master_schema, l_table, l_column, 'ENABLE'::VARCHAR);
+	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(master_schema, l_table, l_column, 'ENABLE'::VARCHAR, partition_schema);
 	IF l_ddl_stmt IS NOT NULL THEN
 		FOR i IN 1 .. array_length(l_ddl_stmt, 1) LOOP
 			ddl_stmt[array_length(ddl_stmt, 1)+1]:=l_ddl_stmt[i];

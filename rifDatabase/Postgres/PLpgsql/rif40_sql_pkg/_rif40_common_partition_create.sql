@@ -61,18 +61,23 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[]);
+
+
 CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_create(
 	l_schema 	VARCHAR, 
 	master_table 	VARCHAR, 
 	partition_table VARCHAR, 
 	l_column	VARCHAR, 
-	l_value		VARCHAR)
+	l_value		VARCHAR,
+	l_table_list VARCHAR[])
 RETURNS void
 SECURITY DEFINER
 AS $func$
 /*
 Function: 	_rif40_common_partition_create()
-Parameters:	Schema, master table, partition table, column, value
+Parameters:	Schema, master table, partition table, column, value, list of tables in current partition build
 Returns:	Nothing
 Description:	Clones master table primary and foreign keys; trigger, unique, check and exclusion 
 		constraints; validation triggers, grants; table and column comments to partition 
@@ -287,18 +292,30 @@ BEGIN
 --
 -- Add indexes, primary key
 --
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Adding indexes, primary key to: %.%', 
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Adding indexes, primary key to: %.% using: %.%', 
 		l_schema::VARCHAR, 
-		partition_table::VARCHAR);
-	FOR c4_rec IN c4rpcr(l_schema, master_table, l_column) LOOP
+		partition_table::VARCHAR, 
+		l_schema::VARCHAR, 
+		master_table::VARCHAR);
+	FOR c4_rec IN c4rpcr('rif40', master_table, l_column) LOOP
 		I:=i+1;
 		IF c4_rec.indisunique AND c4_rec.indisprimary AND c4_rec.constraint_def IS NOT NULL THEN
-			ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c4_rec.constraint_def::VARCHAR, master_table, partition_table)||E'\n'||'/* Primary key */';
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(
+														REPLACE(
+																c4_rec.constraint_def::VARCHAR, 
+																master_table, partition_table),
+														'rif40.', 
+														l_schema||'.')||E'\n'||'/* Primary key */';
 		ELSE
 			ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(
-								REPLACE(c4_rec.index_def::VARCHAR, master_table, partition_table),
-									c4_rec.index_name, c4_rec.index_name||'_p'||l_value 
-									/* Handle indexes without master table in name */)||E'\n'||'/* Index */';
+														REPLACE(
+																REPLACE(
+																		c4_rec.index_def::VARCHAR, 
+																		master_table, partition_table),
+																c4_rec.index_name, c4_rec.index_name||'_p'||l_value 
+																/* Handle indexes without master table in name */),
+														'rif40.', 
+														l_schema||'.')||E'\n'||'/* Index */';
 		END IF;
 		IF c4_rec.indisprimary THEN
 			pk_found:=TRUE;
@@ -314,26 +331,27 @@ BEGIN
 			ddl_stmt[array_length(ddl_stmt, 1)]::VARCHAR);
 --		
 	END LOOP;
-	IF i > 0 THEN
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Added % indexes to partition: %.%', 
-			i::VARCHAR,
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR);
-	ELSIF NOT pk_found THEN
-		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create', 'Added % indexes to partition: %.%, no primary key', 
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR);
-		warnings:=warnings+1;
-	ELSE
+	IF i = 0 THEN
 		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create', 'Added no indexes to partition: %.%', 
 			l_schema::VARCHAR, 
 			partition_table::VARCHAR);
 		warnings:=warnings+1;
+	ELSIF NOT pk_found THEN
+		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create', 'Added % indexes to partition: %.%, no primary key',
+			i::VARCHAR,		
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR);
+		warnings:=warnings+1;
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Added % indexes to partition: %.%', 
+			i::VARCHAR,
+			l_schema::VARCHAR, 
+			partition_table::VARCHAR);
 	END IF;
 
-	IF partition_table = 't_rif40_studies_p9' THEN
+--	IF partition_table = 't_rif40_studies_p9' THEN
 --		RAISE plpgsql_error;
-	END IF;
+--	END IF;
 
 --
 -- Add foreign keys
@@ -342,18 +360,31 @@ BEGIN
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Adding foreign keys to: %.%', 
 		l_schema::VARCHAR, 
 		partition_table::VARCHAR);
-	FOR c5_rec IN c5rpcr(l_schema, master_table) LOOP
-		I:=i+1;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'FK Constraint[%] % on: %.%(%)', 
-			i::VARCHAR,
-			c5_rec.conname::VARCHAR, 
-			l_schema::VARCHAR, 
-			partition_table::VARCHAR, 
-			c5_rec.child_columns::VARCHAR);
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(
-							REPLACE(c5_rec.constraint_def, master_table, partition_table),
-								c5_rec.conname, c5_rec.conname||'_p'||l_value
-								/* Handle constraints without master table in name */);
+	FOR c5_rec IN c5rpcr('rif40', master_table) LOOP
+		i:=i+1;
+		IF NOT ARRAY[master_table]::VARCHAR[] <@ l_table_list THEN /* List does not contain c2_rec.ref_fk_table_name */
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'FK Constraint[%] % on: %.%(%)', 
+				i::VARCHAR,
+				c5_rec.conname::VARCHAR, 
+				l_schema::VARCHAR, 
+				partition_table::VARCHAR, 
+				c5_rec.child_columns::VARCHAR);
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(
+														REPLACE(
+																REPLACE(c5_rec.constraint_def, 
+																		master_table, partition_table),
+																c5_rec.conname, c5_rec.conname||'_p'||l_value
+																/* Handle constraints without master table in name */),
+														'rif40.', 
+														l_schema||'.');
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Defferred FK Constraint[%] % on: %.%(%)', 
+				i::VARCHAR,
+				c5_rec.conname::VARCHAR, 
+				l_schema::VARCHAR, 
+				partition_table::VARCHAR, 
+				c5_rec.child_columns::VARCHAR) /* Should be created by _rif40_common_partition_create_setup() */;		
+		END IF;
 	END LOOP;
 	IF i > 0 THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Added % foreign keys to partition: %.%', 
@@ -373,8 +404,8 @@ BEGIN
 		l_schema::VARCHAR, 
 		partition_table::VARCHAR);
 	i:=0;
-	FOR c6_rec IN c6rpcr(l_schema, master_table) LOOP
-		I:=i+1;
+	FOR c6_rec IN c6rpcr('rif40', master_table) LOOP
+		i:=i+1;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', '% constraint[%] % on: %.%', 
 			c6_rec.constraint_type::VARCHAR,
 			i::VARCHAR,
@@ -382,9 +413,13 @@ BEGIN
 			l_schema::VARCHAR, 
 			partition_table::VARCHAR);
 		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(
-							REPLACE(c6_rec.constraint_def, master_table, partition_table),
-								c6_rec.conname, c6_rec.conname||'_p'||l_value
-								/* Handle constraints without master table in name */);
+													REPLACE(
+															REPLACE(c6_rec.constraint_def, 
+																	master_table, partition_table),
+															c6_rec.conname, c6_rec.conname||'_p'||l_value
+															/* Handle constraints without master table in name */),
+													'rif40.', 
+													l_schema||'.');
 		IF ddl_stmt[array_length(ddl_stmt, 1)] IS NULL THEN
 			PERFORM rif40_log_pkg.rif40_error(-20555, '_rif40_common_partition_create',  '% constraint[%] % on: %.% NULL SQL statement', 
 			c6_rec.constraint_type::VARCHAR,
@@ -412,7 +447,7 @@ BEGIN
 		l_schema::VARCHAR, 
 		partition_table::VARCHAR);
 	i:=0;
-	FOR c7_rec IN c7rpcr(l_schema, master_table) LOOP
+	FOR c7_rec IN c7rpcr('rif40', master_table) LOOP
 		I:=i+1;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Validation trigger[%] % on: %.% calls %', 
 			i::VARCHAR,
@@ -462,7 +497,7 @@ BEGIN
 		l_schema::VARCHAR, 
 		partition_table::VARCHAR);
 	i:=0;
-	FOR c8_rec IN c8rpcr(l_schema, master_table) LOOP
+	FOR c8_rec IN c8rpcr('rif40', master_table) LOOP
 		I:=i+1;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Grant[%] % on: %.% to %; grant option: %', 
 			i::VARCHAR,
@@ -471,7 +506,11 @@ BEGIN
 			partition_table::VARCHAR,
 			c8_rec.grantee::VARCHAR,
 			c8_rec.is_grantable::VARCHAR);
-		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(c8_rec.grant_def, master_table, partition_table);
+		ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(
+													REPLACE(
+															c8_rec.grant_def, master_table, partition_table),
+													'rif40.', 
+													l_schema||'.');
 	END LOOP;
 	IF i > 0 THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Added % grants to partition: %.%', 
@@ -489,6 +528,10 @@ BEGIN
 -- Run
 --
 	PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
+	
+--	IF master_table = 't_rif40_investigations' THEN
+--		RAISE EXCEPTION 'Stop I';
+--	END IF;
 --
 	IF warnings > 0 THEN
 		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_common_partition_create', 
@@ -501,8 +544,8 @@ END;
 $func$ 
 LANGUAGE plpgsql;
 
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_common_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR) IS 'Function: 	_rif40_common_partition_create()
-Parameters:	Schema, master table, partition table, column
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_common_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[]) IS 'Function: 	_rif40_common_partition_create()
+Parameters:	Schema, master table, partition table, column, list of tables in current partition build
 Returns:	Nothing
 Description:	Clones master table primary and foreign keys; trigger, unique, check and exclusion 
 		constraints; validation triggers, grants; table and column comments to partition 

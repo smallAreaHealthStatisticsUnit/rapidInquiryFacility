@@ -90,6 +90,9 @@ $$;
 --
 \i ../psql_scripts/v4_0_study_id_partitions.sql
 
+\dS+ t_rif40_investigations
+\dS+ rif40_partitions.t_rif40_investigations_p1
+
 DO LANGUAGE plpgsql $$
 BEGIN
 	RAISE INFO 'Aborting (script being tested)';

@@ -126,6 +126,7 @@ DECLARE
 --
 	l_fk_stmt	VARCHAR[];
 	fk_stmt	VARCHAR[];	
+	table_list VARCHAR[];
 --
 	error_message 		VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
@@ -158,15 +159,18 @@ BEGIN
 		RAISE INFO '%********************************************************************************%*%* Hash partitioning[%]: %.% %*%********************************************************************************', 
 			E'\n', E'\n', E'\n', i::VARCHAR, c1_rec.schemaname, c1_rec.tablename, E'\n', E'\n';
 		l_fk_stmt:=NULL;
-		l_fk_stmt:=rif40_sql_pkg.rif40_hash_partition(c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR, 'study_id', c1_rec.table_list::VARCHAR[], 2);
+		l_fk_stmt:=rif40_sql_pkg.rif40_hash_partition(c1_rec.schemaname::VARCHAR, 
+			c1_rec.tablename::VARCHAR, 'study_id', c1_rec.table_list::VARCHAR[], 2);
 		IF fk_stmt IS NULL AND l_fk_stmt IS NOT NULL THEN	
+			table_list:=c1_rec.table_list;
 			num_fks:=num_fks+array_length(l_fk_stmt, 1);	
 			fk_stmt:=l_fk_stmt;
 		ELSIF fk_stmt IS NOT NULL AND l_fk_stmt IS NOT NULL THEN
 			num_fks:=num_fks+array_length(l_fk_stmt, 1);
-			fk_stmt:=array_append(fk_stmt, l_fk_stmt);
+			fk_stmt:=array_cat(fk_stmt, l_fk_stmt);
 		END IF;
---		RAISE EXCEPTION 'Stop';
+		RAISE INFO '%********************************************************************************%*%* Hash partitioning[%] complete: %.% %*%********************************************************************************', 
+			E'\n', E'\n', E'\n', i::VARCHAR, c1_rec.schemaname, c1_rec.tablename, E'\n', E'\n';		
 	END LOOP;
 --
 -- Put back foreign keys, e.g.
@@ -177,9 +181,17 @@ CREATE TRIGGER t_rif40_investigations_p16_checks BEFORE INSERT OR UPDATE OF user
 -- 
 --
 	IF fk_stmt IS NOT NULL THEN
+	
+		RAISE INFO '%Tables: % % %**************** FOREIGN KEYS **********************%', 
+			E'\n', array_to_string(table_list, ','||E'\n'), E'\n', E'\n', E'\n';
+		FOR i IN array_lower(fk_stmt, 1) .. array_upper(fk_stmt, 1) LOOP
+			RAISE INFO 'SQL> %;', fk_stmt[i];
+		END LOOP;
+		RAISE INFO '%**************** FOREIGN KEYS **********************%', E'\n', E'\n';		
+--		RAISE EXCEPTION 'Stop 1';
 		BEGIN
 			PERFORM rif40_sql_pkg.rif40_ddl(fk_stmt);
---			RAISE plpgsql_error;
+--			RAISE EXCEPTION 'Stop 2';
 		EXCEPTION
 			WHEN others THEN
 --
@@ -200,8 +212,8 @@ CREATE TRIGGER t_rif40_investigations_p16_checks BEFORE INSERT OR UPDATE OF user
 -- [this is caused by a missing PRIMARY KEY on t_rif40_studies_p10]
 --
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
-				error_message:='v4_0_study_id_partitions.sql: caught in rif40_ddl(fk_stmt): '||E'\n'||
-					SQLERRM::VARCHAR||' in SQL> '||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
+				error_message:='v4_0_study_id_partitions.sql: caught in rif40_ddl(fk_stmt): '::VARCHAR||E'\n'::VARCHAR||
+					SQLERRM::VARCHAR||' in SQL> '::VARCHAR||sql_stmt::VARCHAR||E'\n'::VARCHAR||'Detail: '::VARCHAR||v_detail::VARCHAR;
 				RAISE INFO '2: %', error_message;
 --				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM rif40_study_shares_p10', 'rif40_study_shares_p10');
 --				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM rif40_study_shares', 'rif40_study_shares');
@@ -210,15 +222,9 @@ CREATE TRIGGER t_rif40_investigations_p16_checks BEFORE INSERT OR UPDATE OF user
 --
 				RAISE;
 		END;
---		
-		RAISE INFO 'v4_0_study_id_partitions.sql: % foreign keys during partition of: %.% created % partitions, % rows total OK', 
-			array_length(fk_stmt, 1)::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, num_partitions::VARCHAR, total_rows::VARCHAR;
-
-	ELSE
-		RAISE INFO 'v4_0_study_id_partitions.sql: No foreign keys during partition of: %.% created % partitions, % rows total OK', 
-			l_schema::VARCHAR, l_table::VARCHAR, num_partitions::VARCHAR, total_rows::VARCHAR;
 	END IF;	
 	RAISE INFO '% hash partitions created % foreign keys', i::VARCHAR, num_fks::VARCHAR;
+--	RAISE EXCEPTION 'Stop 3';
 END;
 $$;
 
@@ -233,7 +239,7 @@ $$;
 --
 
 --
--- Check all vieww for t_ tables now have hash_partition_number
+-- Check all view for t_ tables now have hash_partition_number
 --
 
 \echo Partitioning of all tables with study_id as a column complete.

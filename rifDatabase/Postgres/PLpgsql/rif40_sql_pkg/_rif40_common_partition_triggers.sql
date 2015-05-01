@@ -61,19 +61,25 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_triggers(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, enable_or_disable VARCHAR, OUT ddl_stmt VARCHAR[])
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_triggers(master_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, 
+	enable_or_disable VARCHAR, partition_schema VARCHAR, OUT ddl_stmt VARCHAR[]);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_triggers(master_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, 
+	enable_or_disable VARCHAR, OUT ddl_stmt VARCHAR[]);
+	
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_triggers(master_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, 
+	enable_or_disable VARCHAR, partition_schema VARCHAR, OUT ddl_stmt VARCHAR[])
 RETURNS VARCHAR[]
 SECURITY INVOKER
 AS $func$
 /*
 Function: 	_rif40_common_partition_triggers()
-Parameters:	Schema, table, column, enable or disable
+Parameters:	Schema, table, column, enable or disable, partition schema
 Returns:	DDL statement array
 Description:	Automatic range/hash partitioning schema.table on column: ENABLE or DISABLE ON-INSERT triggers
   		on master table and all inherited tables
  */
 DECLARE
-	c1rpct CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get triggers */
+	c1rpct CURSOR(master_schema VARCHAR, l_table VARCHAR) FOR /* Get triggers */
 		SELECT tg.tgname,
 		       tg.tgenabled,
 		       ns.nspname AS schema_name,
@@ -86,16 +92,16 @@ DECLARE
 		  FROM pg_trigger tg, pg_proc pc, information_schema.triggers tgi, pg_class cl
 		        LEFT OUTER JOIN pg_namespace ns ON (cl.relnamespace = ns.oid)
 		 WHERE tg.tgrelid              = cl.oid
-		   AND ns.nspname              = l_schema
+		   AND ns.nspname              = master_schema
 		   AND cl.relname              = l_table
 		   AND tgi.event_object_table  = l_table
-		   AND tgi.event_object_schema = l_schema
+		   AND tgi.event_object_schema = master_schema
 		   AND tgi.trigger_name        = tg.tgname
 		   AND tgi.event_manipulation  = 'INSERT'
 		   AND cl.relname||'_insert'  != pc.proname /* Ignore partition INSERT function */
 		   AND tg.tgfoid               = pc.oid
 		   AND tg.tgisinternal         = FALSE	   /* Ignore constraints triggers */;
-	c2rpct CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get partitions */
+	c2rpct CURSOR(master_schema VARCHAR, l_table VARCHAR) FOR /* Get partitions */
 		SELECT i.inhseqno, 
 		       ns1.nspname AS child_schema,
 		       c.relname AS child, 
@@ -106,7 +112,7 @@ DECLARE
    			LEFT OUTER JOIN pg_class as p ON (i.inhparent=p.oid)
 		        LEFT OUTER JOIN pg_namespace ns1 ON (c.relnamespace = ns1.oid)
 		        LEFT OUTER JOIN pg_namespace ns2 ON (p.relnamespace = ns2.oid)
-		 WHERE ns2.nspname = l_schema
+		 WHERE ns2.nspname = master_schema
 		   AND p.relname   = l_table
 		 ORDER BY 1, 3;
 	c1_rec RECORD;
@@ -129,10 +135,10 @@ BEGIN
 			enable_or_disable::VARCHAR);
 	END IF;
 --
-	FOR c1_rec IN c1rpct(l_schema, l_table) LOOP
+	FOR c1_rec IN c1rpct(master_schema, l_table) LOOP
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_triggers', 'Trigger [%] %.%(%): (state %)%', 
 			i::VARCHAR,
-			l_schema::VARCHAR, 
+			master_schema::VARCHAR, 
 			c1_rec.tgname::VARCHAR, 
 			c1_rec.function_name::VARCHAR, 
 			c1_rec.tgenabled::VARCHAR, 
@@ -142,31 +148,31 @@ BEGIN
 --
 		IF enable_or_disable = 'DISABLE' THEN
 			i:=i+1;
-			ddl_stmt[i]:='ALTER TABLE '||l_schema||'.'||l_table||' '||enable_or_disable||' TRIGGER '||c1_rec.tgname;
+			ddl_stmt[i]:='ALTER TABLE '||master_schema||'.'||l_table||' '||enable_or_disable||' TRIGGER '||c1_rec.tgname;
 		END IF;
 	END LOOP;
 --
 -- Now do inherited tables
 --
-	FOR c2_rec IN c2rpct(l_schema, l_table) LOOP
-		FOR c1_rec IN c1rpct(l_schema, c2_rec.child) LOOP
+	FOR c2_rec IN c2rpct(master_schema, l_table) LOOP
+		FOR c1_rec IN c1rpct(partition_schema, c2_rec.child) LOOP
 			i:=i+1;
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_triggers', 'Child trigger [%] %.%(%): (%)%', 
 				i::VARCHAR,
-				l_schema::VARCHAR, 
+				master_schema::VARCHAR, 
 				c1_rec.tgname::VARCHAR, 
 				c1_rec.function_name::VARCHAR, 
 				c1_rec.tgenabled::VARCHAR, 
 				enable_or_disable::VARCHAR);
-			ddl_stmt[i]:='ALTER TABLE '||l_schema||'.'||c2_rec.child||' '||enable_or_disable||' TRIGGER '||c1_rec.tgname;
+			ddl_stmt[i]:='ALTER TABLE '||partition_schema||'.'||c2_rec.child||' '||enable_or_disable||' TRIGGER '||c1_rec.tgname;
 		END LOOP;
 	END LOOP;
 END;
 $func$ 
 LANGUAGE plpgsql;
 
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_common_partition_triggers(VARCHAR, VARCHAR, VARCHAR, VARCHAR, OUT VARCHAR[]) IS 'Function: 	_rif40_common_partition_triggers()
-Parameters:	Schema, table, column, enable or disable
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_common_partition_triggers(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, OUT VARCHAR[]) IS 'Function: 	_rif40_common_partition_triggers()
+Parameters:	Schema, table, column, enable or disable, partition schema
 Returns:	DDL statement array
 Description:	Automatic range/hash partitioning schema.table on column: ENABLE or DISABLE ON-INSERT triggers
   		on master table and all inherited tables';

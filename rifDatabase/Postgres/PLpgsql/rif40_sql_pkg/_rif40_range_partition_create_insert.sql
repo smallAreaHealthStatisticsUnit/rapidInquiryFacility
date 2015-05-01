@@ -66,7 +66,7 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create_insert(VARCH
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create_insert(VARCHAR, VARCHAR, VARCHAR, INTEGER,
 	OUT VARCHAR[], OUT VARCHAR);
 	
-CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_range_partition_create_insert(partitions_schema VARCHAR, data_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, total_rows INTEGER,
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_range_partition_create_insert(partition_schema VARCHAR, master_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, total_rows INTEGER,
 	OUT ddl_stmt VARCHAR[], OUT index_name VARCHAR)
 RETURNS RECORD
 SECURITY DEFINER
@@ -156,7 +156,7 @@ BEGIN
 --  LIMIT 1;
 -- psql:../psql_scripts/v4_0_study_id_partitions.sql:139: ERROR:  rif40_trg_pkg.trigger_fct_rif40_study_shares_checks(): RIF40_STUDY_SHARES study_id: 1 grantor username: pch is not USER: rif40 or a RIF40_MANAGER
 --
-	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(partitions_schema, l_table, l_column, 'DISABLE'::VARCHAR);
+	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(master_schema, l_table, l_column, 'DISABLE'::VARCHAR, partition_schema);
 	IF l_ddl_stmt IS NOT NULL THEN
 --
 -- Copy out parameters
@@ -169,7 +169,7 @@ BEGIN
 --
 -- GET PK/unique index column
 --
-	OPEN c3gangep(data_schema, l_table, l_column);
+	OPEN c3gangep(master_schema, l_table, l_column);
 	FETCH c3gangep INTO c3_rec;
 	CLOSE c3gangep;
 	index_name:=c3_rec.index_name;
@@ -182,33 +182,33 @@ BEGIN
 	IF total_rows > 0 THEN
 		BEGIN
 			sql_stmt:='SELECT '||quote_ident(l_column)||' AS partition_value, COUNT('||quote_ident(l_column)||') AS total_rows'||E'\n'||
-				'  FROM '||quote_ident(data_schema)||'.'||quote_ident(l_table)||E'\n'||
+				'  FROM '||quote_ident(master_schema)||'.'||quote_ident(l_table)||E'\n'||
 				' GROUP BY '||quote_ident(l_column)||E'\n'||
 				' ORDER BY 1'; 
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_range_partition_create_insert', 'SQL> %;', sql_stmt::VARCHAR);
 			FOR c6_rec IN EXECUTE sql_stmt LOOP
 --
 				IF ddl_stmt IS NULL THEN
-					ddl_stmt[1]:='INSERT INTO '||quote_ident(data_schema)||'.'||quote_ident(l_table)||
+					ddl_stmt[1]:='INSERT INTO '||quote_ident(master_schema)||'.'||quote_ident(l_table)||
 						' /* Create partition '||c6_rec.partition_value||' */'||E'\n'||
 						'SELECT * FROM rif40_auto_partition /* Temporary table */'||E'\n'||
 						' WHERE '||l_column||' = '''||c6_rec.partition_value||''''||E'\n'||
 						' LIMIT 1';
 				ELSE
-					ddl_stmt[array_length(ddl_stmt, 1)+1]:='INSERT INTO '||quote_ident(data_schema)||'.'||quote_ident(l_table)||
+					ddl_stmt[array_length(ddl_stmt, 1)+1]:='INSERT INTO '||quote_ident(master_schema)||'.'||quote_ident(l_table)||
 						' /* Create partition '||c6_rec.partition_value||' */'||E'\n'||
 						'SELECT * FROM rif40_auto_partition /* Temporary table */'||E'\n'||
 						' WHERE '||l_column||' = '''||c6_rec.partition_value||''''||E'\n'||
 						' LIMIT 1';
 				END IF;
 				ddl_stmt[array_length(ddl_stmt, 1)+1]:='TRUNCATE TABLE '||
-					quote_ident(partitions_schema)||'.'||quote_ident('p_'||l_table||'_'||c6_rec.partition_value)||
+					quote_ident(partition_schema)||'.'||quote_ident('p_'||l_table||'_'||c6_rec.partition_value)||
 					' /* Empty newly created partition '||c6_rec.partition_value||' */';
 --				
 -- Bring data back, order by range partition, primary key
 --
 				IF c3_rec.column_names IS NOT NULL THEN
-					ddl_stmt[array_length(ddl_stmt, 1)+1]:='INSERT INTO '||quote_ident(partitions_schema)||'.'||quote_ident('p_'||l_table||'_'||c6_rec.partition_value)||
+					ddl_stmt[array_length(ddl_stmt, 1)+1]:='INSERT INTO '||quote_ident(partition_schema)||'.'||quote_ident('p_'||l_table||'_'||c6_rec.partition_value)||
 						' /* Directly populate partition: '||c6_rec.partition_value||
 						', total rows expected: '||c6_rec.total_rows||' */'||E'\n'||
 						'SELECT * FROM rif40_auto_partition /* Temporary table */'||E'\n'||
@@ -216,7 +216,7 @@ BEGIN
 						' ORDER BY '||l_column||' /* Partition column */, '||
 						c3_rec.column_names||' /* [Rest of ] primary key */';
 				ELSE
-					ddl_stmt[array_length(ddl_stmt, 1)+1]:='INSERT INTO '||quote_ident(partitions_schema)||'.'||quote_ident('p_'||l_table||'_'||c6_rec.partition_value)||
+					ddl_stmt[array_length(ddl_stmt, 1)+1]:='INSERT INTO '||quote_ident(partition_schema)||'.'||quote_ident('p_'||l_table||'_'||c6_rec.partition_value)||
 						' /* Directly populate partition: '||c6_rec.partition_value||
 						', total rows expected: '||c6_rec.total_rows||' */'||E'\n'||
 						'SELECT * FROM rif40_auto_partition /* Temporary table */'||E'\n'||
@@ -239,7 +239,7 @@ BEGIN
 --
 -- Re-enable ON-INSERT triggers
 --
-	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(partitions_schema, l_table, l_column, 'ENABLE'::VARCHAR);
+	l_ddl_stmt:=rif40_sql_pkg._rif40_common_partition_triggers(master_schema, l_table, l_column, 'ENABLE'::VARCHAR, partition_schema);
 	IF l_ddl_stmt IS NOT NULL THEN
 		FOR i IN 1 .. array_length(l_ddl_stmt, 1) LOOP
 			ddl_stmt[array_length(ddl_stmt, 1)+1]:=l_ddl_stmt[i];

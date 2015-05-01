@@ -236,12 +236,13 @@ BEGIN
 --
 	FOR i IN 1 .. l_num_partitions LOOP
 		PERFORM _rif40_hash_partition_create(p_schema /* partitions schema */,
-			l_table, l_table||'_p'||i::Text, l_column, i, l_num_partitions);
+			l_table, l_table||'_p'||i::Text, l_column, i, l_num_partitions, l_table_list);
 	END LOOP;
 
-	IF l_table = 't_rif40_investigations' THEN
+--	IF l_table = 't_rif40_investigations' THEN
 --		RAISE plpgsql_error;
-	END IF;
+--	END IF;
+
 --
 -- Remove INSERT triggers from master table so they don't fire twice (replace with no re-enable) 
 --
@@ -266,7 +267,6 @@ BEGIN
 -- Run
 --
 	PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmt);
-
 
 --
 -- Check number of rows match original
@@ -306,9 +306,9 @@ BEGIN
 			RAISE;
 	END;
 
-	IF l_table = 't_rif40_studies' THEN
-		RAISE plpgsql_error;
-	END IF;
+--	IF l_table = 't_rif40_studies' THEN
+--		RAISE EXCEPTION 'C20999: Stopping at t_rif40_studies';
+--	END IF;
 
 --
 -- Test partition exclusion. This currently does not work and Postgres only supports range values (e.g. year = 1999; not 
