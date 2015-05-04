@@ -156,6 +156,7 @@ BEGIN
 --
 	FOR c1_rec IN c1 LOOP
 		i:=i+1;
+--
 		RAISE INFO '%********************************************************************************%*%* Hash partitioning[%]: %.% %*%********************************************************************************', 
 			E'\n', E'\n', E'\n', i::VARCHAR, c1_rec.schemaname, c1_rec.tablename, E'\n', E'\n';
 		l_fk_stmt:=NULL;
@@ -172,6 +173,7 @@ BEGIN
 		RAISE INFO '%********************************************************************************%*%* Hash partitioning[%] complete: %.% %*%********************************************************************************', 
 			E'\n', E'\n', E'\n', i::VARCHAR, c1_rec.schemaname, c1_rec.tablename, E'\n', E'\n';		
 	END LOOP;
+	
 --
 -- Put back foreign keys, e.g.
 --
