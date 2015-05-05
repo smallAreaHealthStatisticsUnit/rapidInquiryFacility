@@ -31,7 +31,6 @@ RIF.menu[ 'event-frontSubmission' ] = ( function ( dom, firer ) {
   } );
 
   $( dom.stat ).click( function () {
-    //$( dom.statDialog ).show();
     firer.isDialogReady( 'statDialog' );
   } );
 

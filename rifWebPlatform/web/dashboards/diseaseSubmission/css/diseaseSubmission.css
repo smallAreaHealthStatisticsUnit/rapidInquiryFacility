@@ -779,29 +779,28 @@ path.polygon:hover {
 .summaryStudy{
     margin:0 2%;
 }
+.summaryStudy h3,.summaryStudy h4,.summaryStudy h5{
+    font-weight: bold;
+    color: #A1A1A1;
+}
+
 .summaryStudy h3{
     font-size: 16px;
     padding-top: 1%;
     text-align: left;
-    
-    color: #B5B5B5;
 }
 .summaryStudy h4{
     font-size: 13px;
-    
     padding-left: 10px;
-    color: #A1A1A1;
 }
+
+
 .summaryStudy > div  {
-    margin:20px 0;
-}
-.summaryStudy > div  {
-    padding: 0px  10px;
+    padding: 5px 25px 0px 25px;
     text-align: left; 
 }
 
 .summaryStudy div div div{
-    font-weight: bold;
     text-transform: uppercase;
     padding: 0px 25px 5px 25px;
 }
@@ -873,13 +872,13 @@ div.aSR:hover,
     float: left;
     width: 170px;
 }
-.even {
+.summaryStudy .even {
     background-color: rgba(198, 226, 255, 0.1);
     color: #757575;
 }
 .odd {
-    /*background-color: rgba(242, 242, 242  ,0.2);
-       color: #696969;*/
+    background-color: rgba(242, 242, 242  ,0.2);
+    color: #696969;
 }
 .aSR div {
     padding: 2px 0px;
@@ -1311,7 +1310,6 @@ div.headerBlock{
     position: relative;
     top: 10%;
     padding: 2% 0;
-    text-transform: inherit;
 }
 .summary div {
     height: 88%;
@@ -1734,4 +1732,13 @@ td {
     margin-right: 20px;
     font-weight: bold;
     
+}
+.runDialog {
+    position:relative
+}
+.runDialog > a{
+    position:absolute;
+    bottom:90px;
+    left:30px;
+    font-weight: bold;
 }

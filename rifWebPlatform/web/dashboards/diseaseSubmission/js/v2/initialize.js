@@ -107,6 +107,12 @@ RIF.initialize = ( function () {
         method: "mapModelToSchema"
       },
 
+      modelToSchemaReady: {
+        subscribers: [ "table" ],
+        firer: [ "mediator" ],
+        method: "modelToSchemaReady"
+      },
+
       /**-- Area Selection ---**/
 
       selectAtChanged: {
@@ -245,104 +251,8 @@ RIF.initialize = ( function () {
       //   subscribers: [ "table" ],
       //   firer: [ "mediator" ],
       //   method: "getModelObject"
-      // },  
+      //},  
 
-
-
-      /*
-         resolutionChanged: {
-            subscribers: ["study"],
-            firer: ["menu"],
-            method: "resolutionChanged"
-         },
-         selectAtChanged: {
-            subscribers: ["study"],
-            firer: ["menu"],
-            method: "selectAtChanged"
-         },
-         selectAtChangeUpdate: {
-            subscribers: ["table"], //Table too later
-            firer: ["study"],
-            method: "selectAtChanged"
-         },
-         resolutiontChangeUpdate: {
-            subscribers: ["menu"], //Table too later
-            firer: ["study"],
-            method: "resolutiontChangeUpdate"
-         },
-         studyAreaSelectionEvent: {
-            subscribers: ["study"],
-            firer: ["table"],
-            method: "studyAreaSelectionEvent"
-         },
-         taxonomyChanged: {
-            subscribers: ["study"],
-            firer: ["menu"],
-            method: "taxonomyChanged"
-         },
-         icdSelectionChanged: {
-            subscribers: ["study"],
-            firer: ["menu"],
-            method: "icdSelectionChanged"
-         },
-
-         endYearChanged: {
-            subscribers: ["study"],
-            firer: ["menu"],
-            method: "endYearChanged"
-         },
-         genderChanged: {
-            subscribers: ["study"],
-            firer: ["menu"],
-            method: "genderChanged"
-         },
-         covariatesChanged: {
-            subscribers: ["study"],
-            firer: ["menu"],
-            method: "covariatesChanged"
-         },
-         ageGroupsChanged: {
-            subscribers: ["study"],
-            firer: ["table"],
-            method: "ageGroupsChanged"
-         },
-
-         investigationNotReadyToBeAdded: {
-            subscribers: ["menu"],
-            firer: ["study"],
-            method: "investigationNotReadyToBeAdded"
-         },
-         investigationReadyToBeAdded: {
-            subscribers: ["menu"],
-            firer: ["study"],
-            method: "investigationReadyToBeAdded"
-         },
-         covariatesChanged: {
-            subscribers: ["study"],
-            firer: ["menu"],
-            method: "covariatesChanged"
-         },
-         addInvestigation: {
-            subscribers: ["study"],
-            firer: ["menu"],
-            method: "addInvestigation"
-         },
-         addInvestigationRow: {
-            subscribers: ["table"],
-            firer: ["study"],
-            method: "addInvestigationRow"
-         },
-         removeInvestigationRow: {
-            subscribers: ["study"],
-            firer: ["table"],
-            method: "removeInvestigationRow"
-         },
-         clearAllParameters: {
-            subscribers: ["study", "table"],
-            firer: ["menu"],
-            method: "clearAllParameters"
-         },
-         */
     },
     init: function () {
       RIF.dom();

@@ -187,8 +187,10 @@ RIF.modelAccessor = ( function () {
     },
 
     mapToSchema: function () {
-      mapper( modelAccessor );
+      return mapper( modelAccessor );
     }
+
+
 
   };
 

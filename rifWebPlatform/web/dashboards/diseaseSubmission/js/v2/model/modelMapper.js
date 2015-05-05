@@ -121,7 +121,7 @@ RIF.modelMapper = ( function ( modelAccessor ) {
                   var mappedCovs = {};
                   mappedCovs.adjustable_covariate = [];
                   var covs = accessor.getCovariates();
-                  var l = covs.length;
+                  var l = ( covs != null ) ? covs.length : 0;
                   while ( l-- ) {
                     mappedCovs.adjustable_covariate.push( {
                       name: covs[ l ]
@@ -141,8 +141,8 @@ RIF.modelMapper = ( function ( modelAccessor ) {
         }
       }
     };
-
-    console.log( JSON.stringify( _mapper ) )
+    console.log( JSON.stringify( _mapper ) );
+    return _mapper;
 
   };
 } );

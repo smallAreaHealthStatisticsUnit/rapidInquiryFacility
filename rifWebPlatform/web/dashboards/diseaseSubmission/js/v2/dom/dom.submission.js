@@ -122,11 +122,14 @@ RIF.dom = ( function () {
 
       retrievableRunnable: function () {
         return {
+          summaryModal: ( '#summaryModal' ),
           openFileStudy: $( '#openFileStudy' ),
           setUpFile: $( '#setUpFile' ),
           finalRun: $( '#finalRun' ),
           project: $( '#projectCode' ),
-          studyDescription: $( '#studyDescription' )
+          studyDescription: $( '#studyDescription' ),
+          viewSummary: ( '.viewSummary' ),
+
         };
       },
 
@@ -178,7 +181,8 @@ RIF.dom = ( function () {
           studyArea: $( '#summaryStudyArea' ),
           comparisonArea: $( '#summaryComparisonArea' ),
           investigations: $( '#summaryInvestigations' ),
-          stats: $( '#summaryStats' )
+          stats: $( '#summaryStats' ),
+          summaryStudy: $( '.summaryStudy' )
         };
       }
 

@@ -207,7 +207,7 @@ RIF.mediator.utils = ( function ( modelAccessor ) {
     },
 
     mapToSchema: function () {
-      modelAccessor.mapToSchema()
+      return modelAccessor.mapToSchema()
     }
   };
 

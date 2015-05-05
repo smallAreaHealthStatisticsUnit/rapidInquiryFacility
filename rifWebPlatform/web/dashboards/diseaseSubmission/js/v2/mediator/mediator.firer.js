@@ -32,7 +32,11 @@ RIF.mediator[ 'firer-' ] = ( function () {
 
     addInvestigationRow: function ( nInvestigation, parameters ) {
       this.fire( 'addInvestigationRow', [ nInvestigation, parameters ] );
-    }
+    },
+
+    modelToSchemaReady: function ( modelToSchema ) {
+      this.fire( 'modelToSchemaReady', [ modelToSchema ] );
+    },
   };
 
   return firer;

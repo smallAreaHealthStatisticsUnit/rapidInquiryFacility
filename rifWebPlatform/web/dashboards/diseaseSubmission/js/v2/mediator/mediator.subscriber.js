@@ -87,7 +87,8 @@ RIF.mediator[ 'subscriber-' ] = ( function ( mediatorUtils ) {
     },
 
     mapModelToSchema: function () {
-      mediatorUtils.mapToSchema();
+      var modelToSchema = mediatorUtils.mapToSchema();
+      this.modelToSchemaReady( modelToSchema );
     },
 
     /*
@@ -139,6 +140,7 @@ RIF.mediator[ 'subscriber-' ] = ( function ( mediatorUtils ) {
         this.fire( 'dialogBgChange', dialog );
       };
     }
+
   };
 
   return subscriber;
