@@ -379,6 +379,7 @@ public final class AgeGroup
 			errorMessages.add(errorMessage);
 		}
 		
+		/*
 		//Test whether lower limit and upper limit are numbers
 		String lowerLimitFieldName
 			= RIFServiceMessages.getMessage("ageGroup.lowerLimit.label");
@@ -445,6 +446,8 @@ public final class AgeGroup
 				errorMessages.add(errorMessage);
 			}			
 		}
+		
+		*/
 		
 		countErrors(RIFServiceError.INVALID_AGE_GROUP, errorMessages);
 	}
