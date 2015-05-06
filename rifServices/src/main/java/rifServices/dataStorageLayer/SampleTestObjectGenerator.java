@@ -368,8 +368,8 @@ public final class SampleTestObjectGenerator {
 		healthCode2.setNewRecord(false);
 		investigation.addHealthCode(healthCode2);
 		
-		AgeGroup lowerLimitAgeGroup = AgeGroup.newInstance("1", "5", "9", "[5-9]");
-		AgeGroup upperLimitAgeGroup = AgeGroup.newInstance("1", "15", "19", "[15-19]");
+		AgeGroup lowerLimitAgeGroup = AgeGroup.newInstance("1", "5", "9", "5_9");
+		AgeGroup upperLimitAgeGroup = AgeGroup.newInstance("1", "15", "19", "15_19");
 
 		AgeBand ageBand1 = AgeBand.newInstance(lowerLimitAgeGroup, upperLimitAgeGroup);
 		ageBand1.setNewRecord(false);
