@@ -96,6 +96,8 @@ public final class RIFServiceResources {
 	
 	private SQLRIFSubmissionManager sqlRIFSubmissionManager;
 	
+	private SQLStudyExtractManager sqlStudyExtractManager;
+	
 	private SQLResultsQueryManager sqlResultsQueryManager;
 	
 	private SQLInvestigationManager sqlInvestigationManager;
@@ -154,6 +156,10 @@ public final class RIFServiceResources {
 				sqlCovariateManager,
 				sqlDiseaseMappingStudyManager);
 
+		sqlStudyExtractManager
+			= new SQLStudyExtractManager(
+				rifDatabaseProperties);
+		
 		sqlResultsQueryManager
 			= new SQLResultsQueryManager(
 				rifDatabaseProperties,
@@ -222,6 +228,9 @@ public final class RIFServiceResources {
 		return sqlRIFSubmissionManager;
 	}
 	
+	public SQLStudyExtractManager getSQLStudyExtractManager() {
+		return sqlStudyExtractManager;		
+	}
 	public SQLMapDataManager getSQLMapDataManager() {
 		return this.sqlMapDataManager;
 	}
