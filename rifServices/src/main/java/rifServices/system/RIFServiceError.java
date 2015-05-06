@@ -89,6 +89,8 @@ public enum RIFServiceError {
 	/** The db unable check geo level area exists. */
 	DB_UNABLE_CHECK_GEO_LEVEL_AREA_EXISTS,
 	
+	DB_UNABLE_TO_RESET_CONNECTION_POOL,
+	
 	/** The get top level icd terms. */
 	GET_TOP_LEVEL_ICD_TERMS,
 	
