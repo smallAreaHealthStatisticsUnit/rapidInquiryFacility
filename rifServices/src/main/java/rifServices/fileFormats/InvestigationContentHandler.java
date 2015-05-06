@@ -107,8 +107,7 @@ final class InvestigationContentHandler
 	private Investigation currentInvestigation;	
 	
 	/** The age group content handler. */
-	private AgeBandContentHandler ageGroupContentHandler;
-	
+	private AgeBandContentHandler ageBandContentHandler;
 	
 	private HealthThemeContentHandler healthThemeContentHandler;
 	
@@ -140,7 +139,7 @@ final class InvestigationContentHandler
 
 		currentInvestigations = new ArrayList<Investigation>();
 		
-		ageGroupContentHandler
+		ageBandContentHandler
 			= new AgeBandContentHandler();
 		
 		healthThemeContentHandler
@@ -224,6 +223,9 @@ final class InvestigationContentHandler
 				
 		NumeratorDenominatorPair ndPair = investigation.getNdPair();
 		ndPairContentHandler.writeXML(ndPair);
+
+		ArrayList<AgeBand> ageBands = investigation.getAgeBands();
+		ageBandContentHandler.writeXML(ageBands);		
 		
 		ArrayList<HealthCode> healthCodes
 			= investigation.getHealthCodes();
@@ -235,6 +237,8 @@ final class InvestigationContentHandler
 		ArrayList<YearInterval> yearIntervals
 			= investigation.getYearIntervals();
 		yearIntervalContentHandler.writeXML(yearIntervals);
+		
+
 		
 		xmlUtility.writeField(recordName, "years_per_interval", investigation.getInterval());
 		
@@ -434,7 +438,7 @@ final class InvestigationContentHandler
 		super.initialise(outputStream, commentInjector);
 		healthThemeContentHandler.initialise(outputStream, commentInjector);
 		ndPairContentHandler.initialise(outputStream, commentInjector);
-		ageGroupContentHandler.initialise(outputStream, commentInjector);
+		ageBandContentHandler.initialise(outputStream, commentInjector);
 		yearIntervalContentHandler.initialise(outputStream, commentInjector);
 		yearRangeContentHandler.initialise(outputStream, commentInjector);
 		covariateContentHandler.initialise(outputStream, commentInjector);		
@@ -451,7 +455,7 @@ final class InvestigationContentHandler
 				
 		healthThemeContentHandler.initialise(outputStream);
 		ndPairContentHandler.initialise(outputStream);
-		ageGroupContentHandler.initialise(outputStream);
+		ageBandContentHandler.initialise(outputStream);
 		yearIntervalContentHandler.initialise(outputStream);
 		yearRangeContentHandler.initialise(outputStream);
 		covariateContentHandler.initialise(outputStream);		
@@ -491,8 +495,8 @@ final class InvestigationContentHandler
 			else if (ndPairContentHandler.isSingularRecordTypeApplicable(qualifiedName) == true) {
 				assignDelegatedHandler(ndPairContentHandler);
 			}	
-			else if (ageGroupContentHandler.isSingularRecordTypeApplicable(qualifiedName) == true) {
-				assignDelegatedHandler(ageGroupContentHandler);
+			else if (ageBandContentHandler.isSingularRecordTypeApplicable(qualifiedName) == true) {
+				assignDelegatedHandler(ageBandContentHandler);
 			}
 			else if (yearIntervalContentHandler.isPluralRecordTypeApplicable(qualifiedName) == true) {
 				assignDelegatedHandler(yearIntervalContentHandler);
@@ -555,10 +559,9 @@ final class InvestigationContentHandler
 						= ndPairContentHandler.getNumeratorDenominatorPair();
 					currentInvestigation.setNdPair(ndPair);				
 				}
-				else if (currentDelegatedHandler == ageGroupContentHandler) {
-					ArrayList<AgeBand> ageBands
-						= ageGroupContentHandler.getAgeBands();
-					currentInvestigation.setAgeBands(ageBands);				
+				else if (currentDelegatedHandler == ageBandContentHandler) {
+					AgeBand ageBand = ageBandContentHandler.getAgeBand();
+					currentInvestigation.addAgeBand(ageBand);
 				}
 				else if (currentDelegatedHandler == yearIntervalContentHandler) {
 					ArrayList<YearInterval> yearIntervals
