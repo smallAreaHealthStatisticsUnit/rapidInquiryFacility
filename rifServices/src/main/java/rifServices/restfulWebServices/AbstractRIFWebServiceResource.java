@@ -2,7 +2,7 @@ package rifServices.restfulWebServices;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.File;
+
 
 
 
@@ -13,6 +13,11 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import javax.servlet.http.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 import org.json.JSONObject;
@@ -20,6 +25,9 @@ import org.json.JSONObject;
 
 import org.codehaus.jackson.map.ObjectMapper;
 //import com.fasterxml.jackson.databind.ObjectMapper;
+
+
+
 
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.SampleTestObjectGenerator;
@@ -865,6 +873,189 @@ abstract class AbstractRIFWebServiceResource {
 			servletRequest,
 			result);		
 	}	
+
+	protected Response getGeoLevelBoundsForArea(
+		final HttpServletRequest servletRequest,	
+		final String userID,
+		final String geographyName,	
+		final String geoLevelSelectName,
+		final String diseaseMappingStudyID,		
+		final String geographicalIdentifier) {
+							
+		String result = "";
+		try {
+			//Convert URL parameters to RIF service API parameters			
+			User user = createUser(servletRequest, userID);
+			
+			StudyResultRetrievalContext studyResultRetrievalContext
+				= StudyResultRetrievalContext.newInstance(
+					geographyName, 
+					geoLevelSelectName, 
+					diseaseMappingStudyID);			
+			MapArea mapArea
+				= MapArea.newInstance(geographicalIdentifier, "", "");		
+			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
+			BoundaryRectangle boundaryRectangle
+				= studyResultRetrievalService.getGeoLevelBoundsForArea(
+					user, 
+					studyResultRetrievalContext,
+					mapArea);
+
+			//convert into JSON using proxy object
+			BoundaryRectangleProxy boundaryRectangleProxy
+				= new BoundaryRectangleProxy();
+			boundaryRectangleProxy.setXMin(
+					String.valueOf(boundaryRectangle.getXMin()));
+			boundaryRectangleProxy.setYMin(
+				String.valueOf(boundaryRectangle.getYMin()));
+			boundaryRectangleProxy.setXMax(
+				String.valueOf(boundaryRectangle.getXMax()));			
+			boundaryRectangleProxy.setYMax(
+				String.valueOf(boundaryRectangle.getYMax()));			
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					boundaryRectangleProxy);
+			
+		}
+		catch(Exception exception) {
+			if (exception instanceof RIFServiceException) {
+				RIFServiceException rifServiceException	
+					= (RIFServiceException) exception;
+				rifServiceException.printErrors();
+			}
+			//Convert exceptions to support JSON
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
+		}
+		
+		return webServiceResponseGenerator.generateWebServiceResponse(
+			servletRequest,
+			result);
+	}	
+	
+	
+	
+	protected Response getGeoLevelFullExtentForStudy(
+		final HttpServletRequest servletRequest,	
+		final String userID,
+		final String geographyName,
+		final String geoLevelSelectName,
+		final String diseaseMappingStudyID) {
+					
+		String result = "";
+				
+		try {
+			//Convert URL parameters to RIF service API parameters			
+			User user = createUser(servletRequest, userID);
+
+			StudyResultRetrievalContext studyResultRetrievalContext
+				= StudyResultRetrievalContext.newInstance(
+					geographyName,
+					geoLevelSelectName,
+					diseaseMappingStudyID);
+
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
+			BoundaryRectangle boundaryRectangle
+				= studyResultRetrievalService.getGeoLevelFullExtentForStudy(
+					user, 
+					studyResultRetrievalContext);
+
+			//convert into JSON using proxy object
+			BoundaryRectangleProxy boundaryRectangleProxy
+				= new BoundaryRectangleProxy();
+			boundaryRectangleProxy.setXMin(
+					String.valueOf(boundaryRectangle.getXMin()));
+			boundaryRectangleProxy.setYMin(
+				String.valueOf(boundaryRectangle.getYMin()));
+			boundaryRectangleProxy.setXMax(
+				String.valueOf(boundaryRectangle.getXMax()));			
+			boundaryRectangleProxy.setYMax(
+				String.valueOf(boundaryRectangle.getYMax()));			
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					boundaryRectangleProxy);
+			
+		}
+		catch(Exception exception) {
+			//Convert exceptions to support JSON
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
+		}
+		
+		return webServiceResponseGenerator.generateWebServiceResponse(
+			servletRequest,
+			result);
+	}	
+	
+	
+	protected Response getGeoLevelFullExtent(
+		final HttpServletRequest servletRequest,	
+		final String userID,
+		final String geographyName,
+		final String geoLevelSelectName) {
+					
+		String result = "";
+
+		try {			
+			//Convert URL parameters to RIF service API parameters			
+			User user = createUser(servletRequest, userID);
+			Geography geography = Geography.newInstance(geographyName, "");
+			GeoLevelSelect geoLevelSelect
+				= GeoLevelSelect.newInstance(geoLevelSelectName);
+
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
+			BoundaryRectangle boundaryRectangle
+				= studyResultRetrievalService.getGeoLevelFullExtent(
+					user, 
+					geography, 
+					geoLevelSelect);
+			
+			//Convert results to support JSON
+			BoundaryRectangleProxy boundaryRectangleProxy
+				= new BoundaryRectangleProxy();
+			boundaryRectangleProxy.setXMin(
+				String.valueOf(boundaryRectangle.getXMin()));
+			boundaryRectangleProxy.setYMin(
+					String.valueOf(boundaryRectangle.getYMin()));
+			boundaryRectangleProxy.setXMax(
+					String.valueOf(boundaryRectangle.getXMax()));			
+			boundaryRectangleProxy.setYMax(
+					String.valueOf(boundaryRectangle.getYMax()));			
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					boundaryRectangleProxy);
+			
+		}
+		catch(Exception exception) {
+			//Convert exceptions to support JSON
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
+		}
+		
+		return webServiceResponseGenerator.generateWebServiceResponse(
+			servletRequest,
+			result);
+
+	}	
+	
+	
+	
 	
 	protected Response getStudySubmission(
 		final HttpServletRequest servletRequest,
@@ -948,21 +1139,12 @@ abstract class AbstractRIFWebServiceResource {
 			RIFStudySubmissionXMLReader rifStudySubmissionReader2
 				= new RIFStudySubmissionXMLReader();
 			rifStudySubmissionReader2.readFile(inputStream);
-			RIFStudySubmission rifStudySubmission2
+			RIFStudySubmission rifStudySubmission
 				= rifStudySubmissionReader2.getStudySubmission();
 
 			
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();
-
-			System.out.println("Reading local file");
-			File file = new File("C://rif_scripts//walley.xml");
-			RIFStudySubmissionXMLReader rifStudySubmissionReader
-				= new RIFStudySubmissionXMLReader();
-			rifStudySubmissionReader.readFile(file);
-			RIFStudySubmission rifStudySubmission
-				= rifStudySubmissionReader.getStudySubmission();
-			
 			
 			/*
 			 * studyAsXML = converter(studyAsJSON);
@@ -978,7 +1160,11 @@ abstract class AbstractRIFWebServiceResource {
 			
 			System.out.println("submitStudy success!");
 		}
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
+		}
 		catch(Exception exception) {
+			exception.printStackTrace(System.out);
 			result 
 				= serialiseException(
 					servletRequest,
