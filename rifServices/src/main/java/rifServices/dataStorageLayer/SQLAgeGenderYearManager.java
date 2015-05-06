@@ -462,6 +462,7 @@ final class SQLAgeGenderYearManager
 
 	public void checkNonExistentAgeGroups(
 		final Connection connection,
+		final NumeratorDenominatorPair ndPair,
 		final ArrayList<AgeBand> ageBands) 
 		throws RIFServiceException {
 			
@@ -469,16 +470,19 @@ final class SQLAgeGenderYearManager
 			AgeGroup lowerAgeGroup = ageBand.getLowerLimitAgeGroup();
 			checkNonExistentAgeGroup(
 				connection, 
+				ndPair,
 				lowerAgeGroup);
 			AgeGroup upperAgeGroup = ageBand.getUpperLimitAgeGroup();
 			checkNonExistentAgeGroup(
 				connection, 
+				ndPair,
 				upperAgeGroup);				
 		}
 	}
 		
 	private void checkNonExistentAgeGroup(
 		final Connection connection,
+		final NumeratorDenominatorPair ndPair,
 		final AgeGroup ageGroup) 
 		throws RIFServiceException {
 			
@@ -486,33 +490,64 @@ final class SQLAgeGenderYearManager
 		ResultSet resultSet = null;
 		try {
 
-			Integer id = Integer.valueOf(ageGroup.getIdentifier());
-		
 			//Create query
+			SQLSelectQueryFormatter queryFormatter
+				= new SQLSelectQueryFormatter();
+			queryFormatter.addSelectField("fieldname");
+			queryFormatter.addFromTable("rif40_age_groups");
+			queryFormatter.addFromTable("rif40_tables");
+			queryFormatter.addWhereJoinCondition(
+				"rif40_tables", 
+				"age_group_id", 
+				"rif40_age_groups", 
+				"age_group_id");
+			queryFormatter.addWhereParameter(
+				"rif40_tables", 
+				"isnumerator");
+			queryFormatter.addWhereParameter(
+				"rif40_tables", 
+				"table_name");
+			queryFormatter.addWhereParameter(
+				"rif40_age_groups", 
+				"fieldname");		
+			
+			/*
 			SQLRecordExistsQueryFormatter queryFormatter
 				= new SQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setFromTable("rif40_age_groups");
+
 			queryFormatter.setLookupKeyFieldName("age_group_id");
 			queryFormatter.addWhereParameter("low_age");
 			queryFormatter.addWhereParameter("high_age");
-
+			*/
+			
+			String denominatorTableName
+				= ndPair.getDenominatorTableName();			
 			logSQLQuery(
 				"getYearRange",
 				queryFormatter,
-				String.valueOf(id),
-				ageGroup.getLowerLimit(),
-				ageGroup.getUpperLimit());
+				"0",
+				denominatorTableName,
+				ageGroup.getName());
 							
 			//Execute query and generate results
 			statement 
 				= createPreparedStatement(
 					connection, 
 					queryFormatter);
+			
+			
+			//yes, it is a denominator table
+			statement.setInt(1, 0);
+			statement.setString(2, denominatorTableName);
+			statement.setString(3, ageGroup.getName());
+			
+			/*
 			statement.setInt(1, id);
 			statement.setInt(2, Integer.valueOf(ageGroup.getLowerLimit()));
 			statement.setInt(3, Integer.valueOf(ageGroup.getUpperLimit()));
-				
+			*/
 			resultSet = statement.executeQuery();
 			
 			if (resultSet.next() == false) {
