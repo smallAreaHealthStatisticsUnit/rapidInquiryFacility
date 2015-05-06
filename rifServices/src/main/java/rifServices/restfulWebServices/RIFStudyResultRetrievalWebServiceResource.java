@@ -320,72 +320,26 @@ public class RIFStudyResultRetrievalWebServiceResource
 	 * @param mapAreaValues
 	 * @return
 	 */
+	
 	@GET
 	@Produces({"application/json"})	
-	@Path("/getGeoLevelBoundsForArea")
-	public String getGeoLevelBoundsForArea(
+	@Path("/getGeoLevelFullExtentForStudy")
+	public Response getGeoLevelFullExtentForStudy(
 		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,	
+		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,		
-		@QueryParam("gid") String geographicalIdentifier) {
-							
-		String result = "";
-		try {
-			//Convert URL parameters to RIF service API parameters			
-			User user = createUser(servletRequest, userID);
-			
-			StudyResultRetrievalContext studyResultRetrievalContext
-				= StudyResultRetrievalContext.newInstance(
-					geographyName, 
-					geoLevelSelectName, 
-					diseaseMappingStudyID);			
-			MapArea mapArea
-				= MapArea.newInstance(geographicalIdentifier, "", "");		
-			
-			//Call service API
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
-			BoundaryRectangle boundaryRectangle
-				= studyResultRetrievalService.getGeoLevelBoundsForArea(
-					user, 
-					studyResultRetrievalContext,
-					mapArea);
+		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
 
-			//convert into JSON using proxy object
-			BoundaryRectangleProxy boundaryRectangleProxy
-				= new BoundaryRectangleProxy();
-			boundaryRectangleProxy.setXMin(
-					String.valueOf(boundaryRectangle.getXMin()));
-			boundaryRectangleProxy.setYMin(
-				String.valueOf(boundaryRectangle.getYMin()));
-			boundaryRectangleProxy.setXMax(
-				String.valueOf(boundaryRectangle.getXMax()));			
-			boundaryRectangleProxy.setYMax(
-				String.valueOf(boundaryRectangle.getYMax()));			
-			result 
-				= serialiseSingleItemAsArrayResult(
-					servletRequest,
-					boundaryRectangleProxy);
-			
-		}
-		catch(Exception exception) {
-			if (exception instanceof RIFServiceException) {
-				RIFServiceException rifServiceException	
-					= (RIFServiceException) exception;
-				rifServiceException.printErrors();
-			}
-			//Convert exceptions to support JSON
-			result 
-				= serialiseException(
-					servletRequest,
-					exception);			
-		}
-		
-		return result;
+		return super.getGeoLevelFullExtentForStudy(
+			servletRequest,	
+			userID,
+			geographyName,
+			geoLevelSelectName,
+			diseaseMappingStudyID);		
 	}	
 	
+
 	/**
 	 * STUB
 	 * @param userID
@@ -395,128 +349,44 @@ public class RIFStudyResultRetrievalWebServiceResource
 	 * @param mapAreaValues
 	 * @return
 	 */
-	
 	@GET
 	@Produces({"application/json"})	
-	@Path("/getGeoLevelFullExtentForStudy")
-	public String getGeoLevelFullExtentForStudy(
+	@Path("/getGeoLevelBoundsForArea")
+	public Response getGeoLevelBoundsForArea(
 		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
+		@QueryParam("geographyName") String geographyName,	
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
-					
-		String result = "";
-				
-		try {
-			//Convert URL parameters to RIF service API parameters			
-			User user = createUser(servletRequest, userID);
-
-			StudyResultRetrievalContext studyResultRetrievalContext
-				= StudyResultRetrievalContext.newInstance(
-					geographyName,
-					geoLevelSelectName,
-					diseaseMappingStudyID);
-
-			//Call service API
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
-			BoundaryRectangle boundaryRectangle
-				= studyResultRetrievalService.getGeoLevelFullExtentForStudy(
-					user, 
-					studyResultRetrievalContext);
-
-			//convert into JSON using proxy object
-			BoundaryRectangleProxy boundaryRectangleProxy
-				= new BoundaryRectangleProxy();
-			boundaryRectangleProxy.setXMin(
-					String.valueOf(boundaryRectangle.getXMin()));
-			boundaryRectangleProxy.setYMin(
-				String.valueOf(boundaryRectangle.getYMin()));
-			boundaryRectangleProxy.setXMax(
-				String.valueOf(boundaryRectangle.getXMax()));			
-			boundaryRectangleProxy.setYMax(
-				String.valueOf(boundaryRectangle.getYMax()));			
-			result 
-				= serialiseSingleItemAsArrayResult(
-					servletRequest,
-					boundaryRectangleProxy);
+		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,		
+		@QueryParam("gid") String geographicalIdentifier) {
 			
-		}
-		catch(Exception exception) {
-			//Convert exceptions to support JSON
-			result 
-				= serialiseException(
-					servletRequest,
-					exception);			
-		}
 		
-		return result;
-	}	
+		return super.getGeoLevelBoundsForArea(
+			servletRequest, 
+			userID, 
+			geographyName, 
+			geoLevelSelectName, 
+			diseaseMappingStudyID, 
+			geographicalIdentifier);
+	}		
 	
-	/**
-	 * STUB
-	 * @param userID
-	 * @param geographyName
-	 * @param geoLevelSelectName
-	 * @return
-	 */
-
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelFullExtent")
-	public String getGeoLevelFullExtent(
+	public Response getGeoLevelFullExtent(
 		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
 					
-		String result = "";
 
-		try {			
-			//Convert URL parameters to RIF service API parameters			
-			User user = createUser(servletRequest, userID);
-			Geography geography = Geography.newInstance(geographyName, "");
-			GeoLevelSelect geoLevelSelect
-				= GeoLevelSelect.newInstance(geoLevelSelectName);
-
-			//Call service API
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
-			BoundaryRectangle boundaryRectangle
-				= studyResultRetrievalService.getGeoLevelFullExtent(
-					user, 
-					geography, 
-					geoLevelSelect);
-			
-			//Convert results to support JSON
-			BoundaryRectangleProxy boundaryRectangleProxy
-				= new BoundaryRectangleProxy();
-			boundaryRectangleProxy.setXMin(
-				String.valueOf(boundaryRectangle.getXMin()));
-			boundaryRectangleProxy.setYMin(
-					String.valueOf(boundaryRectangle.getYMin()));
-			boundaryRectangleProxy.setXMax(
-					String.valueOf(boundaryRectangle.getXMax()));			
-			boundaryRectangleProxy.setYMax(
-					String.valueOf(boundaryRectangle.getYMax()));			
-			result 
-				= serialiseSingleItemAsArrayResult(
-					servletRequest,
-					boundaryRectangleProxy);
-			
-		}
-		catch(Exception exception) {
-			//Convert exceptions to support JSON
-			result 
-				= serialiseException(
-					servletRequest,
-					exception);			
-		}
+		return super.getGeoLevelFullExtent(
+			servletRequest, 
+			userID, 
+			geographyName, 
+			geoLevelSelectName);
 		
-		return result;
-	}	
-	
+	}
 
 	@GET
 	@Produces({"application/json"})	
