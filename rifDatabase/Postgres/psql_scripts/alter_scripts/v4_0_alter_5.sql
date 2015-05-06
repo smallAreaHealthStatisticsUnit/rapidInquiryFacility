@@ -748,6 +748,33 @@ SELECT SUBSTRING(
 			FROM 1 FOR 160 /* Truncate to 160 chars */) AS json 
   FROM e LIMIT 4;
 --
+-- Test for code 50426 - now a debug message - not an error. Tile does not intersect sahsuland
+--
+SELECT rif40_xml_pkg.rif40_get_geojson_tiles(
+			'SAHSU'::VARCHAR 	/* Geography */, 
+			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			52.4827805::REAL, 0::REAL, 50.736454::REAL, -2.8125 /* Bounding box */,
+			6::INTEGER /* Zoom level */,
+			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
+			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text;
+--
+-- WARNING:  rif40_get_geojson_tiles(): Geography: SAHSU, <geoevel view> LEVEL4 bound [-2.8125, 50.7365, 0, 52.4828] returns no tiles, took: 00:00:00.031.
+-- CONTEXT:  SQL statement "SELECT rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles',
+--                        'Geography: %, <geoevel view> % bound [%, %, %, %] returns no tiles, took: %.',
+--                        l_geography::VARCHAR            /* Geography */,
+--                        l_geolevel_view::VARCHAR        /* Geoelvel view */,
+--                        x_min::VARCHAR                          /* Xmin */,
+--                        y_min::VARCHAR                          /* Ymin */,
+--                        x_max::VARCHAR                          /* Xmax */,
+--                        y_max::VARCHAR                          /* Ymax */,
+--                        took::VARCHAR                           /* Time taken */)"
+--PL/pgSQL function rif40_xml_pkg.rif40_get_geojson_tiles(character varying,character varying,real,real,real,real,integer,boolean,boolean) line 612 at PERFORM
+--           rif40_get_geojson_tiles
+-----------------------------------------------
+-- {"type": "FeatureCollection","features":[]}
+--(1 row)
+--			
+--
 -- Display tile summary [SLOW!]
 -- 
 /*

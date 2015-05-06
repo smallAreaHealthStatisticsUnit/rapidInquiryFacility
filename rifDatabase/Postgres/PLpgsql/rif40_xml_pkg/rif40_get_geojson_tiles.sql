@@ -407,9 +407,10 @@ SELECT * FROM e;
 --
 			IF error_count > 0 THEN
 				PERFORM rif40_log_pkg.rif40_error(-50414, 'rif40_get_geojson_tiles', 
-					'[50415] Geography: %, <geoevel view> % bound validation [%, %, %, %] tile XY(%,%); zoom level %; had % errors', 			 
+					'[50415] Geography: %, <geoevel view> % zoomlevel % bound validation [%, %, %, %] tile XY(%,%); zoom level %; had % errors', 			 
 					l_geography::VARCHAR			/* Geography */, 
-					l_geolevel_view::VARCHAR		/* Geoelvel view */,  
+					l_geolevel_view::VARCHAR		/* Geoelvel view */,
+					zoom_level::VARCHAR			/* Zoom level */,  
 					x_min::VARCHAR					/* Xmin */,
 					y_min::VARCHAR					/* Ymin */,
 					x_max::VARCHAR					/* Xmax */,
@@ -577,9 +578,10 @@ Total runtime: 19.472 ms
 --
 		IF c3_rec.is_valid = FALSE THEN
 			PERFORM rif40_log_pkg.rif40_error(-50419, 'rif40_get_geojson_tiles', 
-				'Geography: %, <geoevel view> % bound [%, %, %, %] is invalid, ST_Intersects() took: %.', 			
+				'Geography: %, <geoevel view> % zoomlevel % bound [%, %, %, %] is invalid, ST_Intersects() took: %.', 			
 				l_geography::VARCHAR			/* Geography */, 
 				l_geolevel_view::VARCHAR		/* Geoelvel view */,  
+				zoom_level::VARCHAR			/* Zoom level */,
 				x_min::VARCHAR				/* Xmin */,
 				y_min::VARCHAR				/* Ymin */,
 				x_max::VARCHAR				/* Xmax */,
@@ -587,9 +589,10 @@ Total runtime: 19.472 ms
 				took::VARCHAR				/* Time taken */);
 		ELSIF c3_rec.total = 0 THEN
 			PERFORM rif40_log_pkg.rif40_error(-50420, 'rif40_get_geojson_tiles', 
-				'Geography: %, <geoevel view> % bound [%, %, %, %] returns no area IDs, ST_Intersects() took: %.', 			
+				'Geography: %, <geoevel view> % zoomlevel % bound [%, %, %, %] returns no area IDs, ST_Intersects() took: %.', 			
 				l_geography::VARCHAR			/* Geography */, 
 				l_geolevel_view::VARCHAR		/* Geoelvel view */,  
+				zoom_level::VARCHAR			/* Zoom level */,
 				x_min::VARCHAR				/* Xmin */,
 				y_min::VARCHAR				/* Ymin */,
 				x_max::VARCHAR				/* Xmax */,
@@ -597,9 +600,10 @@ Total runtime: 19.472 ms
 				took::VARCHAR				/* Time taken */);
 		ELSIF c3_rec.area_id_list IS NULL THEN
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-				'[50421] Geography: %, <geoevel view> % bound [%, %, %, %] will return: no area_id, no intersction; ST_Intersects() took: %.', 		
+				'[50421] Geography: %, <geoevel view> % zoomlevel % bound [%, %, %, %] will return: no area_id, no intersction; ST_Intersects() took: %.', 		
 				l_geography::VARCHAR			/* Geography */, 
 				l_geolevel_view::VARCHAR		/* Geoelvel view */, 
+				zoom_level::VARCHAR			/* Zoom level */,
 				x_min::VARCHAR				/* Xmin */,
 				y_min::VARCHAR				/* Ymin */,
 				x_max::VARCHAR				/* Xmax */,
@@ -608,9 +612,10 @@ Total runtime: 19.472 ms
 			RETURN;
 		ELSE
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-				'[50421] Geography: %, <geoevel view> % bound [%, %, %, %] will return: % area_id, area: %, ST_Intersects() took: %.', 		
+				'[50421] Geography: %, <geoevel view> % zoomlevel % bound [%, %, %, %] will return: % area_id, area: %, ST_Intersects() took: %.', 		
 				l_geography::VARCHAR			/* Geography */, 
 				l_geolevel_view::VARCHAR		/* Geoelvel view */, 
+				zoom_level::VARCHAR			/* Zoom level */,
 				x_min::VARCHAR				/* Xmin */,
 				y_min::VARCHAR				/* Ymin */,
 				x_max::VARCHAR				/* Xmax */,
@@ -656,18 +661,20 @@ Total runtime: 19.472 ms
 		IF c5_rec.optimised_topojson::Text = to_json('X'::Text)::Text /* GeoJSON not converted to topoJSON */ THEN
 			IF no_topojson_is_error THEN
 				PERFORM rif40_log_pkg.rif40_error(-50423, 'rif40_get_geojson_tiles', 
-					'Geography: %, <geoevel view> % bound [%, %, %, %] will return geoJSON (expecting topoJSON).', 		
+					'Geography: %, <geoevel view> % zoomlevel % bound [%, %, %, %] will return geoJSON (expecting topoJSON).', 		
 					l_geography::VARCHAR		/* Geography */, 
 					l_geolevel_view::VARCHAR	/* Geoelvel view */, 
+					zoom_level::VARCHAR			/* Zoom level */,
 					x_min::VARCHAR				/* Xmin */,
 					y_min::VARCHAR				/* Ymin */,
 					x_max::VARCHAR				/* Xmax */,
 					y_max::VARCHAR				/* Ymax */);				
 			ELSE
 				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
-					'[50424] Geography: %, <geoevel view> % bound [%, %, %, %] will return geoJSON (expecting topoJSON).', 		
+					'[50424] Geography: %, <geoevel view> % zoomlevel % bound [%, %, %, %] will return geoJSON (expecting topoJSON).', 		
 					l_geography::VARCHAR		/* Geography */, 
 					l_geolevel_view::VARCHAR	/* Geoelvel view */, 
+					zoom_level::VARCHAR			/* Zoom level */,
 					x_min::VARCHAR				/* Xmin */,
 					y_min::VARCHAR				/* Ymin */,
 					x_max::VARCHAR				/* Xmax */,
@@ -676,9 +683,10 @@ Total runtime: 19.472 ms
 			RETURN NEXT c5_rec.optimised_geojson;	
 		ELSE
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
-				'[50425] Geography: %, <geoevel view> % bound [%, %, %, %] will return topoJSON.', 		
+				'[50425] Geography: %, <geoevel view> % zoomlevel % bound [%, %, %, %] will return topoJSON.', 		
 				l_geography::VARCHAR		/* Geography */, 
 				l_geolevel_view::VARCHAR	/* Geoelvel view */, 
+				zoom_level::VARCHAR			/* Zoom level */,
 				x_min::VARCHAR				/* Xmin */,
 				y_min::VARCHAR				/* Ymin */,
 				x_max::VARCHAR				/* Xmax */,
@@ -695,22 +703,25 @@ Total runtime: 19.472 ms
 --
 	IF i = 0 THEN
 --
--- This could be changed to return a synthetic NULL as tile as per the rif40_<geography>_maptiles view
+-- This has been changed to return a synthetic NULL as tile as per the rif40_<geography>_maptiles view
 --
-		PERFORM rif40_log_pkg.rif40_error(-50426, 'rif40_get_geojson_tiles', 
-			'Geography: %, <geoevel view> % bound [%, %, %, %] returns no tiles, took: %.', 			
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
+			'Geography: %, <geoevel view> % zoomlevel % bound [%, %, %, %] returns no tiles, took: %.', 			
 			l_geography::VARCHAR		/* Geography */, 
 			l_geolevel_view::VARCHAR	/* Geoelvel view */,  
+			zoom_level::VARCHAR			/* Zoom level */,
 			x_min::VARCHAR				/* Xmin */,
 			y_min::VARCHAR				/* Ymin */,
 			x_max::VARCHAR				/* Xmax */,
 			y_max::VARCHAR				/* Ymax */,
 			took::VARCHAR				/* Time taken */);	
+			RETURN NEXT '{"type": "FeatureCollection","features":[]}'::json;
 	ELSIF i > 1 THEN
 		PERFORM rif40_log_pkg.rif40_error(-50427, 'rif40_get_geojson_tiles', 
-			'Geography: %, <geoevel view> % bound [%, %, %, %] returns >1 (%) tiles, took: %.', 			
+			'Geography: %, <geoevel view> % zoomlevel % bound [%, %, %, %] returns >1 (%) tiles, took: %.', 			
 			l_geography::VARCHAR		/* Geography */, 
 			l_geolevel_view::VARCHAR	/* Geoelvel view */,  
+			zoom_level::VARCHAR			/* Zoom level */,
 			x_min::VARCHAR				/* Xmin */,
 			y_min::VARCHAR				/* Ymin */,
 			x_max::VARCHAR				/* Xmax */,
