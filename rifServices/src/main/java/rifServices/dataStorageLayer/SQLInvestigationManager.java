@@ -162,11 +162,6 @@ final class SQLInvestigationManager
 		final Investigation investigation)
 		throws RIFServiceException {
 		
-		ArrayList<AgeBand> ageBands
-			= investigation.getAgeBands();
-		ageGenderYearManager.checkNonExistentAgeGroups(
-			connection, 
-			ageBands);
 
 		ArrayList<AbstractCovariate> covariates
 			= investigation.getCovariates();
@@ -184,13 +179,22 @@ final class SQLInvestigationManager
 			= investigation.getHealthTheme();
 		rifContextManager.checkHealthThemeExists(
 			connection, 
-			healthTheme.getName());
+			healthTheme.getDescription());
 
 		NumeratorDenominatorPair ndPair = investigation.getNdPair();
 		rifContextManager.checkNDPairExists(
 			connection, 
 			geography, 
 			ndPair);
+		
+		ArrayList<AgeBand> ageBands
+			= investigation.getAgeBands();
+		ageGenderYearManager.checkNonExistentAgeGroups(
+			connection, 
+			ndPair,
+			ageBands);
+		
+		
 	}
 	
 	public void checkInvestigationExists(
