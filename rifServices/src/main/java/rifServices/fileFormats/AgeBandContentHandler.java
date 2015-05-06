@@ -86,10 +86,9 @@ final class AgeBandContentHandler
 // Section Properties
 // ==========================================
 	/** The age bands. */
-	private ArrayList<AgeBand> ageBands;
 	
 	/** The current age band. */
-	private AgeBand currentAgeBand;
+	private AgeBand ageBand;
 	
 	/** The current age group. */
 	private AgeGroup currentAgeGroup;
@@ -101,10 +100,7 @@ final class AgeBandContentHandler
      * Instantiates a new age band content handler.
      */
 	public AgeBandContentHandler() {
-		
-    	setPluralRecordName("age_bands");
 		setSingularRecordName("age_band");
-		ageBands = new ArrayList<AgeBand>();
     }
 
 // ==========================================
@@ -116,27 +112,37 @@ final class AgeBandContentHandler
      *
  	 * @return the age bands
  	 */
-	public ArrayList<AgeBand> getAgeBands() {
-
-		return ageBands;
+	
+	public AgeBand getAgeBand() {
+		StringBuilder buffer = new StringBuilder();
+		buffer.append("Lower Age Group lower limit=="+ageBand.getLowerLimitAgeGroup().getLowerLimit()+"==");
+		buffer.append("Lower Age Group upper limit=="+ageBand.getLowerLimitAgeGroup().getUpperLimit()+"==");
+		
+		buffer.append("Upper Age Group lower limit=="+ageBand.getUpperLimitAgeGroup().getLowerLimit()+"==");
+		buffer.append("Upper Age Group upper limit=="+ageBand.getUpperLimitAgeGroup().getUpperLimit()+"==");
+		
+		return ageBand;
     }
 
     
     /**
      * Write xml.
      *
-     * @param ageBands the age bands
+     * @param ageBands the age band
      * @throws IOException Signals that an I/O exception has occurred.
      */
     public void writeXML(
     	final ArrayList<AgeBand> ageBands) 
     	throws IOException {
 
-    	String recordName = getPluralRecordName();
-		XMLUtility xmlUtility = getXMLUtility();
-		xmlUtility.writeRecordStartTag(recordName);
-		
-		xmlUtility.writeRecordEndTag(recordName);
+    	if (ageBands.size() == 0) {
+    		return;
+    	}
+    	
+    	AgeBand firstAgeBand = ageBands.get(0);
+    	
+    	writeXML(firstAgeBand);
+    	
     }
     
 	/**
@@ -149,32 +155,32 @@ final class AgeBandContentHandler
 		final AgeBand ageBand) 
 		throws IOException {		
 
-		String recordName = getSingularRecordName();
+    	String recordName = getSingularRecordName();
 		XMLUtility xmlUtility = getXMLUtility();
 		xmlUtility.writeRecordStartTag(recordName);
-		
-		AgeGroup lowerLimitAgeGroup = ageBand.getLowerLimitAgeGroup();
-		xmlUtility.writeRecordStartTag("lower_limit_age_group");
-		xmlUtility.writeField(
-			recordName, 
-			"lower_limit_age", 
-			lowerLimitAgeGroup.getLowerLimit());
-		xmlUtility.writeField(
-			recordName, 
-			"upper_limit_age", 
-			lowerLimitAgeGroup.getUpperLimit());
-		
-		AgeGroup upperLimitAgeGroup = ageBand.getUpperLimitAgeGroup();
-		xmlUtility.writeRecordStartTag("upper_limit_age_group");
-		xmlUtility.writeField(
-			recordName, 
-			"lower_limit_age", 
-			upperLimitAgeGroup.getLowerLimit());
-		xmlUtility.writeField(
-			recordName, 
-			"upper_limit_age", 
-			upperLimitAgeGroup.getUpperLimit());
-		xmlUtility.writeRecordEndTag(recordName);
+ 	
+    	//we only care about the first one
+
+    	AgeGroup lowerAgeGroup 
+    		= ageBand.getLowerLimitAgeGroup(); 		
+    	xmlUtility.writeRecordStartTag("lower_age_group");
+    	xmlUtility.writeField(recordName, "id", lowerAgeGroup.getIdentifier());
+    	xmlUtility.writeField(recordName, "name", lowerAgeGroup.getName());
+    	xmlUtility.writeField(recordName, "lower_limit", lowerAgeGroup.getLowerLimit());
+    	xmlUtility.writeField(recordName, "upper_limit", lowerAgeGroup.getUpperLimit());
+    	xmlUtility.writeRecordEndTag("lower_age_group");
+    	
+    	AgeGroup upperAgeGroup 
+    		= ageBand.getLowerLimitAgeGroup(); 		
+    	xmlUtility.writeRecordStartTag("upper_age_group");
+    	xmlUtility.writeField(recordName, "id", upperAgeGroup.getIdentifier());
+    	xmlUtility.writeField(recordName, "name", upperAgeGroup.getName());
+    	xmlUtility.writeField(recordName, "lower_limit", upperAgeGroup.getLowerLimit());
+    	xmlUtility.writeField(recordName, "upper_limit", upperAgeGroup.getUpperLimit());
+    	xmlUtility.writeRecordEndTag("upper_age_group");
+    			
+    	xmlUtility.writeRecordEndTag(recordName);
+	
 	}
 	
 // ==========================================
@@ -198,15 +204,15 @@ final class AgeBandContentHandler
 		final Attributes attributes) 
 		throws SAXException {
 
-		if (isPluralRecordName(qualifiedName) == true) {
-			activate();
-		}
 		if (isSingularRecordName(qualifiedName) == true) {
-			currentAgeBand = AgeBand.newInstance();
+			ageBand = AgeBand.newInstance();
+			activate();
+		}		
+		else if ( equalsFieldName(qualifiedName, "lower_age_group")) {
+			currentAgeGroup = ageBand.getLowerLimitAgeGroup();
 		}
-		else if ( equalsFieldName(qualifiedName, "lower_limit_age_group") || 
-			equalsFieldName(qualifiedName, "upper_limit_age_group")) {
-			currentAgeGroup = AgeGroup.newInstance();
+		else if ( equalsFieldName(qualifiedName, "upper_age_group")) {
+			currentAgeGroup = ageBand.getUpperLimitAgeGroup();
 		}
 	}
 	
@@ -218,23 +224,20 @@ final class AgeBandContentHandler
 		final String qualifiedName) 
 		throws SAXException {
 				
-		if (isPluralRecordName(qualifiedName) == true) {
+		if (isSingularRecordName(qualifiedName) == true) {
 			deactivate();
-		}	
-		else if (isSingularRecordName(qualifiedName) == true) {
-			ageBands.add(currentAgeBand);
+		}
+		else if (equalsFieldName(qualifiedName, "id") == true) {
+			currentAgeGroup.setName(getCurrentFieldValue());
 		}		
-		else if (equalsFieldName(qualifiedName, "lower_limit_age_group") == true) {
-			currentAgeBand.setLowerLimitAgeGroup(currentAgeGroup);
-		}
-		else if (equalsFieldName(qualifiedName, "upper_limit_age_group") == true) {
-			currentAgeBand.setUpperLimitAgeGroup(currentAgeGroup);
-		}
-		else if (equalsFieldName(qualifiedName, "lower_limit_age") == true) {
+		else if (equalsFieldName(qualifiedName, "name") == true) {
+			currentAgeGroup.setName(getCurrentFieldValue());
+		}		
+		else if (equalsFieldName(qualifiedName, "lower_limit") == true) {
 			currentAgeGroup.setLowerLimit(getCurrentFieldValue());
 		}
-		else if (equalsFieldName(qualifiedName, "lower_limit_age") == true) {
-			currentAgeGroup.setLowerLimit(getCurrentFieldValue());
+		else if (equalsFieldName(qualifiedName, "upper_limit") == true) {
+			currentAgeGroup.setUpperLimit(getCurrentFieldValue());
 		}
 		else {
 			assert false;
