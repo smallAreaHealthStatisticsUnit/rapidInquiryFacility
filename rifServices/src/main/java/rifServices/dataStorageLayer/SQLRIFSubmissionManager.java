@@ -1,7 +1,6 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
-
 import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
@@ -345,29 +344,26 @@ final class SQLRIFSubmissionManager
 				project,
 				diseaseMappingStudy);
 
-			System.out.println("rif submission manager study 2");
-			
 			addComparisonAreaToStudy(
 				connection, 
 				diseaseMappingStudy);
 
-			System.out.println("rif submission manager study 3");
-
 			addStudyAreaToStudy(
 				connection,
 				diseaseMappingStudy);
-
-			System.out.println("rif submission manager study 4");
 
 			addInvestigationsToStudy(
 				connection, 
 				true, 
 				diseaseMappingStudy);
 	
-			System.out.println("rif submission manager study 5");
-
-			result = getCurrentStudyID(connection);
+			String studyID = getCurrentStudyID(connection);
 			
+			connection.commit();
+
+			System.out.println("Just added a study with id=="+result+"==");
+			result = runStudy(connection, studyID);
+
 			connection.commit();
 
 			return result;
@@ -386,6 +382,70 @@ final class SQLRIFSubmissionManager
 			throw rifServiceException;			
 		}
 	}
+	
+	
+	private String runStudy(
+		final Connection connection,
+		final String studyID)
+		throws RIFServiceException {
+		
+		
+		System.out.println("About to run study=="+studyID+"==");
+		String result = null;
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		
+		try {
+			SQLFunctionCallerQueryFormatter queryFormatter = new SQLFunctionCallerQueryFormatter();
+			queryFormatter.setSchema("rif40_sm_pkg");
+			queryFormatter.setFunctionName("rif40_run_study");
+			queryFormatter.setNumberOfFunctionParameters(2);
+			
+			statement
+				= createPreparedStatement(
+					connection,
+					queryFormatter);
+			statement.setInt(1, Integer.valueOf(studyID));
+			statement.setInt(2, 0);
+			resultSet
+				= statement.executeQuery();
+			resultSet.next();
+			
+			result = String.valueOf(resultSet.getBoolean(1));	
+			
+			return result;
+		}
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlRIFSubmissionManager.error.unableToRunStudy",
+					studyID);
+
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			rifLogger.error(
+				SQLAgeGenderYearManager.class, 
+				errorMessage, 
+				sqlException);
+			
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			//Cleanup database resources			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		
+		
+		
+	}
+	
 	
 	/*
 	 * This function returns the study ID of the most recently created study
@@ -412,7 +472,7 @@ final class SQLRIFSubmissionManager
 				= statement.executeQuery();
 			resultSet.next();
 			
-			result = resultSet.getString(1);	
+			result = String.valueOf(resultSet.getInt(1));
 			
 			return result;
 		}
@@ -901,6 +961,30 @@ final class SQLRIFSubmissionManager
 			SQLQueryUtility.close(statement);
 		}		
 	}
+
+	
+	
+	
+	public RIFStudySubmission getRIFStudySubmission(
+		final Connection connection,
+		final User user,
+		final String studyID)
+		throws RIFServiceException {
+		
+		SampleTestObjectGenerator testDataGenerator
+			= new SampleTestObjectGenerator();
+		RIFStudySubmission rifStudySubmission
+			= testDataGenerator.createSampleRIFJobSubmission();
+		DiseaseMappingStudy diseaseMappingStudy
+			= getDiseaseMappingStudy(
+				connection, 
+				user, 
+				studyID);		
+		rifStudySubmission.setStudy(diseaseMappingStudy);
+		
+		return rifStudySubmission;
+	}
+
 
 	/*
 	 * Methods below are for retrieving a study
