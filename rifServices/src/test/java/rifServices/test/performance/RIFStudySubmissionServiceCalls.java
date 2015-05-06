@@ -3,12 +3,14 @@ package rifServices.test.performance;
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifServices.test.services.AbstractRIFServiceTestCase;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
 import java.util.ArrayList;
 
+import rifServices.businessConceptLayer.BoundaryRectangle;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.User;
@@ -187,6 +189,49 @@ public final class RIFStudySubmissionServiceCalls
 		}		
 	}
 
+	@Test
+	public void getTiles() {
+		try {
+			User validUser = cloneValidUser();
+			Geography validGeography = cloneValidGeography();
+			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
+			validGeoLevelSelect.setName("LEVEL3");
+			BoundaryRectangle validBoundaryRectangle = cloneValidBoundaryRectangle();
+			validBoundaryRectangle.setYMax("55.5268");
+			validBoundaryRectangle.setXMax("-4.88654");
+			validBoundaryRectangle.setYMin("52.6875");
+			validBoundaryRectangle.setXMin("-7.58829");
+			//y_max  |  x_max   |  y_min  |  x_min
+			 //---------+----------+---------+----------
+			 // 55.5268 | -4.88654 | 52.6875 | -7.58829
+			 //(1 row)			
+			
+			long startTime = System.currentTimeMillis();
+			for (int i = 0; i < NUMBER_REPETITIONS; i++) {
+				rifStudyRetrievalService.getTiles(
+					validUser, 
+					validGeography, 
+					validGeoLevelSelect,
+					"123",
+					5,
+					validBoundaryRectangle);
+			}
+
+			long finishTime = System.currentTimeMillis();	
+			double duration = finishTime - startTime;
+			double averageRoundTripTime = (duration/(double) NUMBER_REPETITIONS);
+			
+			printPerformanceResult(
+				"getTiles",
+				startTime,
+				finishTime);
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			
+			fail();
+		}
+	}
 	
 	
 	private void printPerformanceResult(
