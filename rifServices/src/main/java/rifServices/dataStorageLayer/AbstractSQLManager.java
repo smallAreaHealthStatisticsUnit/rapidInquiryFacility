@@ -192,6 +192,10 @@ abstract class AbstractSQLManager {
 	protected void logSQLException(final SQLException sqlException) {
 		sqlException.printStackTrace();
 	}
+
+	protected void logException(final Exception exception) {
+		exception.printStackTrace();
+	}
 	
 	protected void setAutoCommitOn(
 		final Connection connection,
