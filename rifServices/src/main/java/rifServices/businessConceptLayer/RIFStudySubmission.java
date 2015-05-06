@@ -327,6 +327,14 @@ public final class RIFStudySubmission
 		this.jobSubmissionTime = jobSubmissionTime;
 	}
 
+	public String getStudyID() {
+		if (study == null) {
+			return null;
+		}
+		else {
+			return study.getIdentifier();
+		}		
+	}
 	
 	public void identifyDifferences(
 		final RIFStudySubmission anotherStudySubmission,
