@@ -1,16 +1,19 @@
 package rifServices.dataStorageLayer;
 
-import java.sql.Connection;
-import java.util.ArrayList;
 
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.AdjustableCovariate;
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.ExposureCovariate;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.User;
+import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.system.RIFServiceException;
 import rifServices.taxonomyServices.HealthCodeProviderInterface;
 import rifServices.util.FieldValidationUtility;
+
+import java.sql.Connection;
+import java.util.ArrayList;
 
 /**
  *
@@ -119,6 +122,7 @@ public final class TestRIFStudySubmissionService
 	 */
 	public void checkNonExistentAgeGroups(
 		final User _user,
+		final NumeratorDenominatorPair ndPair,
 		final ArrayList<AgeBand> _ageBands) 
 		throws RIFServiceException {
 
@@ -164,6 +168,7 @@ public final class TestRIFStudySubmissionService
 				= rifServiceResources.getSqlAgeGenderYearManager();
 			sqlAgeGenderYearManager.checkNonExistentAgeGroups(
 				connection,
+				ndPair,
 				ageBands); 
 			
 			sqlConnectionManager.reclaimPooledReadConnection(
@@ -423,4 +428,135 @@ public final class TestRIFStudySubmissionService
 				rifServiceException);	
 		}		
 	}
+	
+	public RIFStudySubmission getRIFStudySubmission(
+		final User _user,
+		final String studyID)
+		throws RIFServiceException {
+		
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();	
+		
+		RIFStudySubmission result = null;
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return result;
+		}
+		
+		Connection connection = null;
+		try {
+			
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getRIFStudySubmission",
+				"user",
+				user);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getRIFStudySubmission",
+				"studyID",
+				studyID);	
+			//Check for security violations
+			validateUser(user);
+
+			//Delegate operation to a specialised manager class
+			connection 
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			SQLRIFSubmissionManager sqlRIFSubmissionManager
+				= rifServiceResources.getRIFSubmissionManager();	
+			result
+				= sqlRIFSubmissionManager.getRIFStudySubmission(
+					connection, 
+					user, 
+					studyID);
+
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"getRIFStudySubmission",
+				rifServiceException);	
+		}
+		finally {
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);				
+		}
+		
+		return result;		
+		
+		
+	}
+
+	
+	public void generateExtract(
+		final User _user,
+		final RIFStudySubmission _rifStudySubmission)
+		throws RIFServiceException {
+	
+		
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		RIFStudySubmission rifStudySubmission
+			= RIFStudySubmission.createCopy(_rifStudySubmission);
+		
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();	
+		
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return;
+		}
+		
+		Connection connection = null;
+		try {
+			
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"generateExtract",
+				"user",
+				user);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"generateExtract",
+				"rifStudySubmission",
+				rifStudySubmission);	
+			//Check for security violations
+			validateUser(user);
+
+			//Delegate operation to a specialised manager class
+			connection 
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			SQLStudyExtractManager sqlStudyExtractManager
+				= rifServiceResources.getSQLStudyExtractManager();
+			sqlStudyExtractManager.generateExtract(
+				connection, 
+				user, 
+				rifStudySubmission);
+
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"generateExtract",
+				rifServiceException);	
+		}
+		finally {
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);				
+		}		
+		
+	}
+
+
+
+
+
+
 }
+
