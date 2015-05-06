@@ -86,7 +86,7 @@ import java.util.Date;
  */
 
 
-final class RIFStudySubmissionContentHandler 
+final public class RIFStudySubmissionContentHandler 
 	extends AbstractRIFConceptContentHandler {
 
 // ==========================================
@@ -309,7 +309,7 @@ final class RIFStudySubmissionContentHandler
 		}
 		else {				
 			//determine if a delegate handler can be assigned to do future processing
-			if (projectContentHandler.isPluralRecordTypeApplicable(qualifiedName)) {
+			if (projectContentHandler.isSingularRecordTypeApplicable(qualifiedName)) {
 				assignDelegatedHandler(projectContentHandler);
 			}
 			else if (diseaseMappingStudyContentHandler.isSingularRecordTypeApplicable(qualifiedName)) {
