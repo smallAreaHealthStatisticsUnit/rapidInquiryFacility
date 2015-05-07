@@ -136,9 +136,23 @@ client.connect(function(err) {
 				var topology = null;
 				var options = { // TopoJSON options
 					"verbose": true,
+					"properties": "gid",					
 					"projection": "4326",
-					"post-quantization": 1e4};
-		
+					"post-quantization": 1e4,
+					"propertyTransform": propertyTransform,
+					"id": id};
+//
+// Promote tile gid to id
+//					
+				function id(d) {
+					return d.properties.gid;
+				}
+//
+// Retain properties gid
+//				
+				function propertyTransform(feature) {
+					return feature.properties.gid;
+				}		
 				query.on('row', function(row) {
 					//fired once for each row returned
 					result.addRow(row);
@@ -199,7 +213,10 @@ client.connect(function(err) {
  */
 function do_update(ptile_id, poptimised_topojson, lrow_count, llast_tile_id, lstart) {
 	var update_stmt = 'WITH a AS ( UPDATE t_rif40_' + 
-			geography + '_maptiles SET optimised_topojson = $1 WHERE tile_id = $2 ' + 
+			geography + '_maptiles SET optimised_topojson = ' +
+					'REPLACE($1::Text, ' +
+							'tile_id||\'.json\', ' +
+							'zoomlevel::Text||\'_\'||x_tile_number::Text||\'_\'||y_tile_number::Text)::JSON WHERE tile_id = $2 ' + 
 			'RETURNING tile_id, LENGTH(optimised_geojson::Text) AS length_geojson, ' + 
 			'LENGTH(optimised_topojson::Text) AS length_topojson, ' + 
 			'ROUND((1-(LENGTH(optimised_topojson::Text)::NUMERIC/LENGTH(optimised_geojson::Text)::NUMERIC))*100, 2) AS pct_reduction) ' + 
