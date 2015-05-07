@@ -1,4 +1,4 @@
-RIF[ 'menu' ][ 'models' ] = ( function ( _dom, menuUtils ) {
+RIF[ 'menu' ][ 'unit-models' ] = ( function ( _dom, menuUtils ) {
 
 
   var _insertModel = function ( model, id ) {

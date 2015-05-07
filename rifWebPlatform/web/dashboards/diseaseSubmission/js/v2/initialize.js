@@ -21,10 +21,11 @@ RIF.initialize = ( function () {
   var _p = {
     components: {
       mediator: '',
-      /*map: {
-            studyType: 'diseaseSubmission',
-            layerType: 'tilesvg'
-      },*/
+      map: {
+        studyType: 'diseaseSubmission',
+        layerType: 'tilesvg',
+        maps: [ 'studyArea' ]
+      },
       menu: {
         studyType: 'diseaseSubmission',
         menus: [ 'frontSubmission', 'investigationParameters', 'healthCodes', 'areaSelection', 'retrievableRunnable', 'models' ]

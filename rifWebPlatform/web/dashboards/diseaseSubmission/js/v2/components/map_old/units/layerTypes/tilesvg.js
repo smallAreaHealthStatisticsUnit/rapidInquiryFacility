@@ -1,11 +1,11 @@
 RIF.map.layer.tilesvg = ( function () {
   var layer = this,
     tiled = {
-      url: "backend/gets/getTiles.php",
+      /*url: "backend/gets/getTiles.php",*/
       ids: {},
       firstLoad: true,
       init: function () {
-        RIF.statusBar( "Rendering Map", true );
+        //RIF.statusBar( "Rendering Map", true );
         var sett = {
             class: "polygon",
             evntHndl: this.evntHndl,
@@ -14,19 +14,20 @@ RIF.map.layer.tilesvg = ( function () {
             resetIds: tiled.resetIds,
             deduplicate: tiled.checkId,
             style: tiled.getStyle,
-            getUrlFromTile: tiled.getUrlFromTile
+            getTilesParams: tiled.getTilesParams
           },
           registerTitles = function () {
             layer.hoverLbls = this;
             layer.add.tile( tiled.getLayer( sett ) );
             layer.highlight = tiled.highlight; // register select function					 
           };
-        RIF.getSingleFieldData( registerTitles, [ layer.geoLevel, layer.selectionField ] );
+        registerTitles();
+        //RIF.getSingleFieldData( registerTitles, [ layer.geoLevel, layer.selectionField ] );
       },
       getLayer: function ( sett ) {
         return new L.TileLayer.d3_geoJSON( layer.tilegeojsonUrl, sett );
       },
-      getUrlFromTile: function ( tilePoint, zoom ) {
+      getTilesParams: function ( tilePoint, zoom ) {
         var tileX = tilePoint.x,
           tileY = tilePoint.y,
           tileId = tileX + '_' + tileY,
@@ -34,14 +35,14 @@ RIF.map.layer.tilesvg = ( function () {
           to = tiled.getTileBounds( tileX + 1, tileY + 1, zoom ),
           geolevel = layer.geoLevel,
           field = layer.selectionField,
-          url = [ tiled.url + '?x=' + start[ 0 ],
-            'y=' + Math.abs( start[ 1 ] ),
-            'x2=' + to[ 0 ],
-            'y2=' + Math.abs( to[ 1 ] ),
-            'zoom=' + zoom,
-            'tileId=' + tileId,
-            'geolevel=' + geolevel,
-            'field=' + field
+          url = [
+            'xMin=' + start[ 0 ], //'-6.68853', //
+            'yMax=' + Math.abs( start[ 1 ] ), //'54.6456', //Math.abs( start[ 1 ] ),
+            'xMax=' + to[ 0 ], //'-6.32507', //
+            'yMin=' + Math.abs( to[ 1 ] ), //'55.0122', //
+            'zoomFactor=' + zoom,
+            'tileIdentifier=' + tileId,
+            'geoLevelSelectName=' + 'LEVEL4'
           ].join( "&" );
         return url;
       },
@@ -72,15 +73,16 @@ RIF.map.layer.tilesvg = ( function () {
         } )
       },
       getStyle: function ( d ) {
-        var id = tiled.getPathId( d ),
+        /*var id = tiled.getPathId( d ),
           isSlctd = layer.isSlctd( id );
         if ( isSlctd ) {
           return "fill:" + layer.style.slctd.fill;
-        }
-        return layer.style.getStyle( id, "tilesvg" );
+        }*/
+
+        return layer.style.getStyle( /*id*/ '', "tilesvg" );
       },
       getPathId: function ( d ) {
-        var id = RIF.addG( d.id ); //+ "__" + d.properties.field.trim();
+        var id = RIF.utils.addG( d.id ); //+ "__" + d.properties.field.trim();
         return id.replace( /\s+/g, '' );
       },
       getPathTitle: function ( d ) {

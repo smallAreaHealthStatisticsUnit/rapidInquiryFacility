@@ -56,6 +56,7 @@
       },
 
       getUnit: function ( componetName, unitName, dom, mUtils ) {
+        var unitName = [ 'unit', unitName ].join( '-' );
         return RIF[ componetName ][ unitName ]( dom, mUtils );
       },
 

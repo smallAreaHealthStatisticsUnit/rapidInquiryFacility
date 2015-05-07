@@ -1,4 +1,4 @@
-RIF[ 'table' ][ 'summary' ] = ( function ( _dom, menuUtils ) {
+RIF[ 'table' ][ 'unit-summary' ] = ( function ( _dom, menuUtils ) {
 
 
   var summarizers = {

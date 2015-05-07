@@ -5,5 +5,5 @@ RIF.map.layer.settings = ( function ( mysett, type ) {
     style: RIF.style( type, mysett.study ),
     study: null
   };
-  return RIF.extend( mysett, settings );
+  return RIF.utils.extend( mysett, settings );
 } );

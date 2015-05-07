@@ -5,8 +5,8 @@ RIF.style.tilesvg = ( function ( type ) {
     },
     style: function ( id ) {
       var c = this.default.fill;
-      this.setAreaColor( id, c );
-      return "fill:" + c + ";stroke:" + this.default.stroke + ";stroke-width" + this.default[ "stroke-width" ];
+      //this.setAreaColor( id, c );
+      return "fill-opacity:0.5;fill:" + c + ";stroke:" + this.default.stroke + ";stroke-width:" + this.default[ "stroke-width" ];
     },
     applyTransparency: function ( val, selectionFill ) {
       stylesvg.paths().style( {

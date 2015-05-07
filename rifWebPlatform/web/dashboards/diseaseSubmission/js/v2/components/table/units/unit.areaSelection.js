@@ -1,4 +1,4 @@
-RIF.table.areaSelection = ( function ( _dom ) {
+RIF.table[ 'unit-areaSelection' ] = ( function ( _dom ) {
 
   var _renderTable = function ( data ) {
 

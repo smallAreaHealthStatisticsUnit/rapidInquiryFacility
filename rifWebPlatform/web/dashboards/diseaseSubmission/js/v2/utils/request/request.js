@@ -6,8 +6,8 @@
           var data = jQuery.parseJSON( json.responseText );
           for ( var key in data[ 0 ] ) {
             if ( key == 'errorMessages' ) {
-              RIF.statusBar( msg, false );
-              RIF.statusBar( data[ 0 ][ key ], true, 1 );
+              statusBar( msg, false );
+              statusBar( data[ 0 ][ key ], true, 1 );
               return;
             };
           };
@@ -15,7 +15,7 @@
         } catch ( e ) {
           callback( myFunc, json.responseText ); // This should change when working on results viewer
         }
-        RIF.statusBar( msg, false );
+        statusBar( msg, false );
       };
     },
 
@@ -31,7 +31,7 @@
         url: url
       } ).done( callback ).error( function ( jqXHR, textStatus, errorThrown ) {
         var msg = "Something went wrong with the following service: <br/>" + url + '<br/><br/>' + textStatus + '<br/>' + errorThrown;
-        RIF.statusBar( msg, true, 1 );
+        statusBar( msg, true, 1 );
       } );
     },
 
@@ -48,8 +48,14 @@
     },
 
     xhr = function ( url, clbk, msg, mime ) {
-      RIF.statusBar( msg, true );
+      statusBar( msg, true );
       asynCall( url, c( clbk, msg ), mime );
+    },
+
+    statusBar = function ( msg, showHide, statusCode ) {
+      if ( msg != -1 ) {
+        RIF.statusBar( msg, showHide, statusCode );
+      }
     },
 
     requests = {
@@ -153,7 +159,19 @@
       getAvailableCalculationMethods: function ( myCallback, params ) {
         var msg = "Retrieving Calculation Methods";
         xhr( 'studySubmission/getAvailableCalculationMethods?', myCallback, msg, 'application/json' );
+      },
+
+      getFullExtent: function ( myCallback, params ) {
+        var msg = "Retrieving full extent",
+          args = 'geoLevelSelectName=' + params[ 0 ];
+        xhr( 'studySubmission/getGeoLevelFullExtent?' + args, myCallback, msg, 'application/json' );
+      },
+
+      getTiles: function ( myCallback, params ) {
+        var msg = "Retrieving Map tiles";
+        xhr( 'studySubmission/getTiles?' + params, myCallback, -1, 'application/json' );
       }
+
     };
 
   RIF.utils.extend( requests, RIF );

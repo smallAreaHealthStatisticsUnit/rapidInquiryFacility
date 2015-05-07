@@ -8,9 +8,12 @@
  */
 RIF.map.layer = ( function ( type, sett ) {
   var map = this,
-    layer = RIF.mix( RIF.map.layer.settings( sett, type ), RIF.map.layer.hover(), {
+
+    layer = RIF.utils.mix( RIF.map.layer.settings( sett, type ), RIF.map.layer.hover(), {
+
       selection: {},
       hoverLbls: {}, // selection field
+
       init: function ( layerType ) {
         if ( sett.study === "diseaseMapping" ) {
           layer.applyDefaultChoro( layerType );
@@ -25,6 +28,7 @@ RIF.map.layer = ( function ( type, sett ) {
         tile: function ( myLyr ) {
           layer.mylyr = myLyr;
           map.addTiled( layer.mylyr, layer.geoLevel );
+          console.log( "tile added" )
         },
         geojson: function () {},
         topojson: function () {}
@@ -48,7 +52,7 @@ RIF.map.layer = ( function ( type, sett ) {
         this.style.setTransparency( val );
       },
       applyDefaultChoro: function ( layerType ) {
-        var params = RIF.extend( {
+        var params = RIF.utils.extend( {
           field: sett.field
         }, layer.style.defaultChoro );
         var doChoro = function () {
@@ -150,6 +154,8 @@ RIF.map.layer = ( function ( type, sett ) {
         map.facade.selectionChanged( selection );
       }
     } );
+
   layer.init( type );
+
   return layer;
 } );

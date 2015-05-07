@@ -1,4 +1,4 @@
-RIF.table.investigationsRecap = ( function ( _dom ) {
+RIF.table[ 'unit-investigationsRecap' ] = ( function ( _dom ) {
 
   var addRow = function ( params ) {
 

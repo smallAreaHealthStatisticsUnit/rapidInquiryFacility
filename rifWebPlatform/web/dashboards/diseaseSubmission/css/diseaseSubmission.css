@@ -749,12 +749,9 @@ path.polygon:hover {
     position: absolute;
 }
 .modalAreaSelectionContent #areaSelectionMap {
-    margin-left: 42%;
-    border-bottom: 1px solid;
-    /* Firefox */
-    
+    margin-left: 50%;
     height: 85%;
-    width: 58%;
+    width: 50%;
 }
 .modalAreaSelectionContent #selectionCounter {
     position: absolute;

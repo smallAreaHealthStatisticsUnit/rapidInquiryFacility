@@ -1,4 +1,4 @@
-RIF.menu.healthCodes = ( function ( _dom, menuUtils ) {
+RIF.menu[ 'unit-healthCodes' ] = ( function ( _dom, menuUtils ) {
 
   var _topLevelHealthCodesRequested = [],
 

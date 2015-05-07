@@ -1,4 +1,4 @@
-RIF.menu.frontSubmission = ( function ( _dom, menuUtils ) {
+RIF.menu[ 'unit-frontSubmission' ] = ( function ( _dom, menuUtils ) {
 
   var _p = {
     showDialog: function ( dialog ) {

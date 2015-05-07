@@ -1,4 +1,4 @@
-RIF.menu.investigationParameters = ( function ( _dom, menuUtils ) {
+RIF.menu[ 'unit-investigationParameters' ] = ( function ( _dom, menuUtils ) {
 
   var _p = {
     getYears: function ( years ) {

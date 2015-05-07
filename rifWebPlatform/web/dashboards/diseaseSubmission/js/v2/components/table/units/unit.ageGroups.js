@@ -1,12 +1,11 @@
-RIF.table.ageGroups = ( function ( _dom ) {
+RIF.table[ 'unit-ageGroups' ] = ( function ( _dom ) {
 
   var _renderTable = function ( data ) {
 
       _dom.tableContent.style.display = 'none';
       $( _dom.tableContent ).empty();
 
-      var fragment = document.createDocumentFragment();
-
+      var fragment = document.createDocumentFragment().
       names = data[ 0 ].name,
       lower = data[ 1 ].lowerAgeLimit,
       upper = data[ 2 ].upperAgeLimit,

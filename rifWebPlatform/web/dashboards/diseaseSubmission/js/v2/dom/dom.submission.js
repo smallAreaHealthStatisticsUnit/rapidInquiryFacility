@@ -3,6 +3,13 @@ RIF.dom = ( function () {
     return document.getElementById( id )
   },
   dom = {
+    map: {
+      studyArea: function () {
+        return {
+          id: 'areaSelectionMap'
+        }
+      }
+    },
     menu: {
       frontSubmission: function () {
         return {

@@ -7,7 +7,7 @@
  *
  */
 RIF.style = ( function ( type ) {
-  var style = RIF.mix( RIF.style[ type ](), {
+  var style = RIF.utils.mix( RIF.style[ type ](), {
     colors: {},
     transparency: 1,
     mappedField: {},

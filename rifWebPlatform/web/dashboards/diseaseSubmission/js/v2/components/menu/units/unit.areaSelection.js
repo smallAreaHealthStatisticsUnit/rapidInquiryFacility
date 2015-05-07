@@ -1,4 +1,4 @@
-RIF.menu.areaSelection = ( function ( _dom, menuUtils ) {
+RIF.menu[ 'unit-areaSelection' ] = ( function ( _dom, menuUtils ) {
   var _p = {
     getSelectAt: function ( data ) {
       menuUtils.dropDownInputText( data, _dom.selectAtAvailable );
