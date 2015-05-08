@@ -716,6 +716,8 @@ E'\n'||
 'Runs DEFINER USER; calls rif40_sm_pkg.rif40_run_study(). Intended for batch.'||E'\n'||
 '''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+		sql_stmt:='GRANT EXECUTE ON FUNCTION '||USER||'.rif40_run_study(INTEGER, INTEGER) TO rif40';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
 	END IF;
 	IF NOT t_rif40_num_denom THEN
 		sql_stmt:='CREATE TABLE '||USER||'.t_rif40_num_denom ('||E'\n';
