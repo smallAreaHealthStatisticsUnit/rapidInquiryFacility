@@ -372,7 +372,7 @@ LANGUAGE sql IMMUTABLE;
 COMMENT ON FUNCTION rif40_geo_pkg.longitude2tile(DOUBLE PRECISION, INTEGER) IS 'Function: 	 longitude2tile()
 Parameters:	 Latitude, zoom level
 Returns:	 OSM Tile x
-Description: Convert longitude to OSM tile x';
+Description: Convert longitude (mercator: 3857) to OSM tile x';
  
 CREATE OR REPLACE FUNCTION rif40_geo_pkg.latitude2tile(latitude DOUBLE PRECISION, zoom_level INTEGER)
 RETURNS INTEGER AS
@@ -384,7 +384,7 @@ LANGUAGE sql IMMUTABLE;
 COMMENT ON FUNCTION rif40_geo_pkg.latitude2tile(DOUBLE PRECISION, INTEGER) IS 'Function: 	 latitude2tile()
 Parameters:	 Latitude, zoom level
 Returns:	 OSM Tile y
-Description: Convert latitude to OSM tile y';
+Description: Convert latitude (mercator: 3857) to OSM tile y';
  
 CREATE OR REPLACE FUNCTION rif40_geo_pkg.tile2latitude(y INTEGER, zoom_level INTEGER)
 RETURNS DOUBLE PRECISION AS
@@ -404,7 +404,7 @@ LANGUAGE plpgsql IMMUTABLE;
 COMMENT ON FUNCTION rif40_geo_pkg.tile2latitude(INTEGER, INTEGER) IS 'Function: 	 tile2latitude()
 Parameters:	 OSM Tile y, zoom level
 Returns:	 Latitude
-Description: Convert OSM tile y to latitude';
+Description: Convert OSM tile y to latitude (mercator: 3857)';
  
 CREATE OR REPLACE FUNCTION rif40_geo_pkg.tile2longitude(x INTEGER, zoom_level INTEGER)
 RETURNS DOUBLE PRECISION AS
@@ -415,8 +415,8 @@ LANGUAGE sql IMMUTABLE;
  
 COMMENT ON FUNCTION rif40_geo_pkg.tile2longitude(INTEGER, INTEGER) IS 'Function: 	 tile2latitude()
 Parameters:	 OSM Tile y, zoom level
-Returns:	 Latitude
-Description: Convert OSM tile y to latitude';
+Returns:	 Longitude
+Description: Convert OSM tile y to longitude (mercator: 3857)';
 
 CREATE OR REPLACE FUNCTION rif40_geo_pkg.y_osm_tile2_tms_tile(y INTEGER, zoom_level INTEGER)
 RETURNS INTEGER AS

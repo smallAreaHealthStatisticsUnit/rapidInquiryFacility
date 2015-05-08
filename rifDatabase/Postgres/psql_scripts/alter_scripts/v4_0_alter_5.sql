@@ -747,16 +747,7 @@ SELECT SUBSTRING(
 			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text 
 			FROM 1 FOR 160 /* Truncate to 160 chars */) AS json 
   FROM e LIMIT 4;
---
--- Test for code 50426 - now a debug message - not an error. Tile does not intersect sahsuland
---
-SELECT rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU'::VARCHAR 	/* Geography */, 
-			'LEVEL4'::VARCHAR 	/* geolevel view */, 
-			52.4827805::REAL, 0::REAL, 50.736454::REAL, -2.8125 /* Bounding box */,
-			6::INTEGER /* Zoom level */,
-			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
-			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text;
+			
 --
 -- WARNING:  rif40_get_geojson_tiles(): Geography: SAHSU, <geoevel view> LEVEL4 bound [-2.8125, 50.7365, 0, 52.4828] returns no tiles, took: 00:00:00.031.
 -- CONTEXT:  SQL statement "SELECT rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles',
@@ -921,6 +912,41 @@ SELECT SUBSTRING(
 			TRUE /* Lack of topoJSON is an error [DEFAULT] */)::Text 
 			FROM 1 FOR 160 /* Truncate to 160 chars */) AS json 
   FROM e LIMIT 4;
-  
+ 
+--
+-- Test for code 50426 - now a debug message - not an error. Tile does not intersect sahsuland
+--
+SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
+			'SAHSU'::VARCHAR 	/* Geography */, 
+			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			52.4827805::REAL /* y_max */, 0::REAL /* x_max */, 50.736454::REAL /* y_min */, -2.8125 /* x_min - Bounding box */,
+			6::INTEGER /* Zoom level */,
+			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
+			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text from 1 for 100) AS json;	
+--
+-- Test for missing tiles
+--
+SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
+			'SAHSU'::VARCHAR 	/* Geography */, 
+			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			54.52108149544362::REAL /* y_max */, 6.679687499999985::REAL /* x_max */, 54.47003761280576::REAL /* y_min */, -6.767578125000016 /* x_min - Bounding box */,
+			10::INTEGER /* Zoom level */,
+			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
+			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text from 1 for 100) AS json;
+SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
+			'SAHSU'::VARCHAR 	/* Geography */, 
+			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			54.52108149544362::REAL /* y_max */, 6.679687499999985::REAL /* x_max */, 54.47003761280576::REAL /* y_min */, 6.767578125000016 /* x_min - Bounding box */,
+			12::INTEGER /* Zoom level */,
+			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
+			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text from 1 for 100) AS json;
+SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
+			'SAHSU'::VARCHAR 	/* Geography */, 
+			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			54.110942942724314::REAL /* y_max */, -6.328124999999994::REAL /* x_max */, 54.05938788662357::REAL /* y_min */, -6.416015624999993 /* x_min - Bounding box */,
+			12::INTEGER /* Zoom level */,
+			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
+			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text from 1 for 100) AS json;
+ 
 --
 -- Eof

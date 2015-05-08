@@ -76,7 +76,7 @@ AS $func$
 /*
 Function: 	rif40_getGeoLevelBoundsForArea()
 Parameters:	Geography, geolevel_view, map area id
-Returns:	Y max, X max, Y min, X min as a record. Cast to REAL (6 decimal digits precision)
+Returns:	Y max, X max, Y min, X min as a record. Cast to REAL (6 decimal digits precision). In WGS 84 (4326)
 Description:	Get bounding box Y max, X max, Y min, X min for <geography> <geolevel view> <map area ID>
 		SRID is 4326 (WGS84)
 		Note: that this is NOT box 2d. Box 2d is defined as a box composed of x min, ymin, xmax, ymax. 
@@ -137,7 +137,7 @@ LANGUAGE PLPGSQL;
 COMMENT ON FUNCTION rif40_xml_pkg.rif40_getGeoLevelBoundsForArea(VARCHAR, VARCHAR, VARCHAR, 
 	OUT REAL, OUT REAL, OUT REAL, OUT REAL) IS 'Function: 	rif40_getGeoLevelBoundsForArea()
 Parameters:	Geography, geolevel_view, map area id
-Returns:	Y max, X max, Y min, X min as a record. Cast to REAL (6 decimal digits precision)
+Returns:	Y max, X max, Y min, X min as a record. Cast to REAL (6 decimal digits precision). In WGS 84 (4326)
 Description:	Get bounding box Y max, X max, Y min, X min for <geography> <geolevel view> <map area ID>
 		SRID is 4326 (WGS84)
 		Note: that this is NOT box 2d. Box 2d is defined as a box composed of x min, ymin, xmax, ymax. 
