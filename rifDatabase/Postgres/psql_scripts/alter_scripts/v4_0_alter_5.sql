@@ -914,6 +914,16 @@ SELECT SUBSTRING(
   FROM e LIMIT 4;
  
 --
+-- New function
+-- 
+SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
+			'SAHSU'::VARCHAR 	/* Geography */, 
+			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			11::INTEGER 		/* Zoom level */,
+			989::INTEGER 		/* X tile number */,
+			660::INTEGER		/* Y tile number */)::Text from 1 for 100) AS json;
+			
+--
 -- Test for code 50426 - now a debug message - not an error. Tile does not intersect sahsuland
 --
 SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
