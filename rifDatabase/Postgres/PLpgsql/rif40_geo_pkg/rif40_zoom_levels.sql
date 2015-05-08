@@ -372,7 +372,23 @@ LANGUAGE sql IMMUTABLE;
 COMMENT ON FUNCTION rif40_geo_pkg.longitude2tile(DOUBLE PRECISION, INTEGER) IS 'Function: 	 longitude2tile()
 Parameters:	 Latitude, zoom level
 Returns:	 OSM Tile x
-Description: Convert longitude (mercator: 3857) to OSM tile x';
+Description: Convert longitude (WGS84 - 4326) to OSM tile x
+
+Derivation of the tile X/Y 
+
+* Reproject the coordinates to the Mercator projection (from EPSG:4326 to EPSG:3857):
+
+x = lon
+y = arsinh(tan(lat)) = log[tan(lat) + sec(lat)]
+(lat and lon are in radians)
+
+* Transform range of x and y to 0 – 1 and shift origin to top left corner:
+
+x = [1 + (x / π)] / 2
+y = [1 − (y / π)] / 2
+
+* Calculate the number of tiles across the map, n, using 2**zoom
+* Multiply x and y by n. Round results down to give tilex and tiley.';
  
 CREATE OR REPLACE FUNCTION rif40_geo_pkg.latitude2tile(latitude DOUBLE PRECISION, zoom_level INTEGER)
 RETURNS INTEGER AS
@@ -384,7 +400,23 @@ LANGUAGE sql IMMUTABLE;
 COMMENT ON FUNCTION rif40_geo_pkg.latitude2tile(DOUBLE PRECISION, INTEGER) IS 'Function: 	 latitude2tile()
 Parameters:	 Latitude, zoom level
 Returns:	 OSM Tile y
-Description: Convert latitude (mercator: 3857) to OSM tile y';
+Description: Convert latitude (WGS84 - 4326) to OSM tile y
+
+Derivation of the tile X/Y 
+
+* Reproject the coordinates to the Mercator projection (from EPSG:4326 to EPSG:3857):
+
+x = lon
+y = arsinh(tan(lat)) = log[tan(lat) + sec(lat)]
+(lat and lon are in radians)
+
+* Transform range of x and y to 0 – 1 and shift origin to top left corner:
+
+x = [1 + (x / π)] / 2
+y = [1 − (y / π)] / 2
+
+* Calculate the number of tiles across the map, n, using 2**zoom
+* Multiply x and y by n. Round results down to give tilex and tiley.';
  
 CREATE OR REPLACE FUNCTION rif40_geo_pkg.tile2latitude(y INTEGER, zoom_level INTEGER)
 RETURNS DOUBLE PRECISION AS
@@ -404,7 +436,7 @@ LANGUAGE plpgsql IMMUTABLE;
 COMMENT ON FUNCTION rif40_geo_pkg.tile2latitude(INTEGER, INTEGER) IS 'Function: 	 tile2latitude()
 Parameters:	 OSM Tile y, zoom level
 Returns:	 Latitude
-Description: Convert OSM tile y to latitude (mercator: 3857)';
+Description: Convert OSM tile y to latitude (WGS84 - 4326)';
  
 CREATE OR REPLACE FUNCTION rif40_geo_pkg.tile2longitude(x INTEGER, zoom_level INTEGER)
 RETURNS DOUBLE PRECISION AS
@@ -416,7 +448,7 @@ LANGUAGE sql IMMUTABLE;
 COMMENT ON FUNCTION rif40_geo_pkg.tile2longitude(INTEGER, INTEGER) IS 'Function: 	 tile2latitude()
 Parameters:	 OSM Tile y, zoom level
 Returns:	 Longitude
-Description: Convert OSM tile y to longitude (mercator: 3857)';
+Description: Convert OSM tile y to longitude (WGS84 - 4326)';
 
 CREATE OR REPLACE FUNCTION rif40_geo_pkg.y_osm_tile2_tms_tile(y INTEGER, zoom_level INTEGER)
 RETURNS INTEGER AS
