@@ -77,9 +77,11 @@ DECLARE
 Function:	rif40_run_study()
 Parameter:	Study ID
 Returns:	Success or failure [BOOLEAN]
-		Note this is to allow SQL executed by study extraction/results created to be logged (Postgres does not allow autonomous transactions)
-		Verification and error checking raises EXCEPTIONS in the usual way; and will cause the SQL log to be lost
+			Note this is to allow SQL executed by study extraction/results created to be logged (Postgres does not allow autonomous transactions)
+			Verification and error checking raises EXCEPTIONS in the usual way; and will cause the SQL log to be lost
 Description:	Run study 
+
+Runs as INVOKER. Alternate version calling this function runs as DEFINER USER
 
 Check study state - 
 

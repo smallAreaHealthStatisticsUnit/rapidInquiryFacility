@@ -371,6 +371,12 @@ DECLARE
 	c11 CURSOR FOR 
 		SELECT *
 		  FROM pg_user WHERE usename = CURRENT_USER;
+	c12 CURSOR FOR
+		SELECT proname
+		  FROM pg_proc a, pg_namespace b
+		 WHERE a.proname      = 'rif40_run_study'
+		   AND a.pronamespace = b.oid
+		   AND b.nspname      = USER;
 --
 	c1_rec RECORD;
 	c2_rec RECORD;
@@ -383,7 +389,9 @@ DECLARE
 	c9_rec RECORD;
 	c10_rec RECORD;
 	c11_rec RECORD;
+	c12_rec RECORD;
 --
+	rif40_run_study BOOLEAN:=FALSE;	
 	rif40_num_denom BOOLEAN:=FALSE;	
 	rif40_num_denom_errors BOOLEAN:=FALSE;	
 	t_rif40_num_denom BOOLEAN:=FALSE;	
@@ -576,6 +584,17 @@ BEGIN
 	END IF;
 	CLOSE c2;
 --
+-- Only build DEFINER rif40_run_study if NOT rif40
+--
+	IF USER != 'rif40' THEN
+		OPEN c12;
+		FETCH c12 INTO c12_rec;
+		CLOSE c12;
+		IF c12_rec.proname = 'rif40_run_study' THEN
+			rif40_run_study:=TRUE;
+		END IF;
+	END IF;
+--
 -- Get rif40_user_version revision
 --
 	IF rif40_user_version THEN
@@ -644,6 +663,12 @@ BEGIN
 			t_rif40_num_denom:=FALSE;
 			j:=j+1;
 		END IF;
+		IF rif40_run_study AND USER != 'rif40' THEN
+			sql_stmt:='DROP FUNCTION '||USER||'.rif40_run_study(INTEGER, INTEGER)';
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+			rif40_run_study:=FALSE;
+			j:=j+1;
+		END IF;		
 	END IF;
 --
 -- Check for the presence of dependent tables - only continue of they do
@@ -657,6 +682,41 @@ BEGIN
 --
 -- If user objects do not exist them create them
 --
+	IF NOT rif40_run_study AND USER != 'rif40' THEN
+		sql_stmt:='CREATE OR REPLACE FUNCTION '||USER||'.rif40_run_study(study_id INTEGER, recursion_level INTEGER DEFAULT 0)'||E'\n'||
+'RETURNS BOOLEAN'||E'\n'||		
+'SECURITY DEFINER'||E'\n'||
+'AS '||CHR(36)||'func'||CHR(36)||E'\n'||
+'DECLARE'||E'\n'||
+'/*'||E'\n'||
+'Function:	rif40_run_study()'||E'\n'||
+'Parameter:	Study ID'||E'\n'||
+'Returns:	Success or failure [BOOLEAN]'||E'\n'||
+'			Note this is to allow SQL executed by study extraction/results created to be logged (Postgres does not allow autonomous transactions)'||E'\n'||
+'			Verification and error checking raises EXCEPTIONS in the usual way; and will cause the SQL log to be lost'||E'\n'||
+'Description:	Run study '||E'\n'||
+'Runs DEFINER USER; calls rif40_sm_pkg.rif40_run_study(). Intended for batch.'||E'\n'||
+' */'||E'\n'||
+'BEGIN'||E'\n'||
+'	RETURN rif40_sm_pkg.rif40_run_study(study_id, recursion_level);'||E'\n'||
+'END;'||E'\n'||
+CHR(36)||'func'||CHR(36)||E'\n'||
+'LANGUAGE ''plpgsql'''||E'\n'||
+'';
+--
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON FUNCTION '||USER||'.rif40_run_study(INTEGER, INTEGER) IS '''||
+'Function:	rif40_run_study()'||E'\n'||
+'Parameter:	Study ID'||E'\n'||
+'Returns:	Success or failure [BOOLEAN]'||E'\n'||
+'			Note this is to allow SQL executed by study extraction/results created to be logged (Postgres does not allow autonomous transactions)'||E'\n'||
+'			Verification and error checking raises EXCEPTIONS in the usual way; and will cause the SQL log to be lost'||E'\n'||
+'Description:	Run study '||E'\n'||
+E'\n'||
+'Runs DEFINER USER; calls rif40_sm_pkg.rif40_run_study(). Intended for batch.'||E'\n'||
+'''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+	END IF;
 	IF NOT t_rif40_num_denom THEN
 		sql_stmt:='CREATE TABLE '||USER||'.t_rif40_num_denom ('||E'\n';
 		sql_stmt:=sql_stmt||E'\t'||'geography              VARCHAR(50)     NOT NULL,'||E'\n';
