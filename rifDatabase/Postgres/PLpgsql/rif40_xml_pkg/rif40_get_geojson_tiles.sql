@@ -73,7 +73,166 @@ DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, 
 	INTEGER, VARCHAR, BOOLEAN);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, BOOLEAN);
 DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, REAL, REAL, REAL, REAL, INTEGER, BOOLEAN, BOOLEAN);
+
+DROP FUNCTION IF EXISTS rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, INTEGER, INTEGER, INTEGER);
 	
+CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(
+	l_geography 		VARCHAR, 
+	l_geolevel_view 	VARCHAR,
+	zoom_level			INTEGER,
+	x_tile 				INTEGER,
+	y_tile 				INTEGER)
+RETURNS SETOF JSON
+SECURITY INVOKER
+AS $body$
+/*
+Function: 	rif40_get_geojson_tiles()
+Parameters:	Geography, geolevel_view, Zoom level, X tile, Y tile
+Returns:	JSON
+Description:	Get TopoJSON direct from map tiles table
+
+		Fetch tiles by tile id
+		SRID is 4326 (WGS84)
+		No topoJSON is an error
+		Always returns 1 row with no CRs
+*/
+DECLARE
+	c5geojson2 		REFCURSOR;
+	c5_rec 			RECORD;
+--
+	sql_stmt 		VARCHAR;
+	i				INTEGER;
+--
+	stp 			TIMESTAMP WITH TIME ZONE:=clock_timestamp();
+	etp 			TIMESTAMP WITH TIME ZONE;
+	took 			INTERVAL;	
+--
+	error_message 	VARCHAR;
+	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
+	v_context		VARCHAR;
+BEGIN
+--
+-- Direct SELECT FROM t_rif40_<geography>_maptiles
+--
+	sql_stmt:='SELECT *'||E'\n'||
+			  '  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_maptiles')||' f'||E'\n'||
+			  '	WHERE $3 /* Y_tile */          = f.y_tile_number'||E'\n'||
+		  	  '   AND $2 /* X_tile */          = f.x_tile_number'||E'\n'||
+			  '   AND $1 /* l_geolevel_view */ = f.geolevel_name'||E'\n'||
+			  '   AND $4 /* zoom level */      = f.zoomlevel';
+	BEGIN
+		OPEN c5geojson2 FOR EXECUTE sql_stmt USING l_geolevel_view, x_tile, y_tile, zoom_level;
+	EXCEPTION
+		WHEN others THEN
+--
+-- Print exception to INFO, re-raise
+--
+			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL,
+										v_context = PG_EXCEPTION_CONTEXT;
+			error_message:='rif40_get_geojson_tiles() caught: '||E'\n'||
+			SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR||E'\n'||'Context: '||v_context::VARCHAR;
+			RAISE WARNING '50422: %', error_message;
+--
+			RAISE;
+	END;
+	i:=0;
+	LOOP
+		FETCH c5geojson2 INTO c5_rec;
+		EXIT WHEN NOT FOUND;
+		i=i+1;
+--
+		IF c5_rec.optimised_topojson::Text = to_json('X'::Text)::Text /* GeoJSON not converted to topoJSON */ THEN
+			PERFORM rif40_log_pkg.rif40_error(-50423, 'rif40_get_geojson_tiles', 
+				'Geography: %, <geolevel view> % zoomlevel % tile [%, %] will return geoJSON (expecting topoJSON).', 		
+				l_geography::VARCHAR		/* Geography */, 
+				l_geolevel_view::VARCHAR	/* Geoelvel view */, 
+				zoom_level::VARCHAR			/* Zoom level */,
+				x_tile::VARCHAR				/* Xtile */,
+				y_tile::VARCHAR				/* Ytile */);	
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
+				'[50425] Geography: %, <geolevel view> % zoomlevel % tile [%, %] will return topoJSON.', 		
+				l_geography::VARCHAR		/* Geography */, 
+				l_geolevel_view::VARCHAR	/* Geoelvel view */, 
+				zoom_level::VARCHAR			/* Zoom level */,
+				x_tile::VARCHAR				/* Xtile */,
+				y_tile::VARCHAR				/* Ytile */);			
+			RETURN NEXT c5_rec.optimised_topojson;
+		END IF;
+	END LOOP;
+	CLOSE c5geojson2;
+--
+-- Instrument
+--
+	etp:=clock_timestamp();
+	took:=age(etp, stp);
+--
+	IF i = 0 THEN
+--
+-- This has been changed to return a synthetic NULL as tile as per the rif40_<geography>_maptiles view
+--
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_get_geojson_tiles', 
+			'Geography: %, <geolevel view> % zoomlevel % tile [%, %] returns no tiles, took: %.', 			
+			l_geography::VARCHAR		/* Geography */, 
+			l_geolevel_view::VARCHAR	/* Geoelvel view */,  
+			zoom_level::VARCHAR			/* Zoom level */,
+			x_tile::VARCHAR				/* Xtile */,
+			y_tile::VARCHAR				/* Ytile */,
+			took::VARCHAR				/* Time taken */);	
+			RETURN NEXT '{"type": "FeatureCollection","features":[]}'::json;
+	ELSIF i > 1 THEN
+		PERFORM rif40_log_pkg.rif40_error(-50427, 'rif40_get_geojson_tiles', 
+			'Geography: %, <geolevel view> % zoomlevel % tile [%, %] returns >1 (%) tiles, took: %.', 			
+			l_geography::VARCHAR		/* Geography */, 
+			l_geolevel_view::VARCHAR	/* Geoelvel view */,  
+			zoom_level::VARCHAR			/* Zoom level */,
+			x_tile::VARCHAR				/* Xtile */,
+			y_tile::VARCHAR				/* Ytile */,
+			i::VARCHAR					/* Rows returned by query */,
+			took::VARCHAR				/* Time taken */);				
+	END IF;
+
+--
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_get_geojson_tiles', 
+		'[50428] Geography: %, <geolevel view> % zoomlevel % tile [%, %] complete: tile: %, db extract took: %;'||E'\n'||'SQL> %;', 		
+		l_geography::VARCHAR		/* Geography */, 
+		l_geolevel_view::VARCHAR	/* Geoelvel view */, 
+		zoom_level::VARCHAR			/* Zoom level */,
+		x_tile::VARCHAR				/* Xtile */,
+		y_tile::VARCHAR				/* Ytile */,
+		c5_rec.tile_id::VARCHAR		/* Tile ID */,
+		took::VARCHAR				/* Time taken */,
+		sql_stmt::VARCHAR			/* SQL */);
+--
+--
+	RETURN;
+--
+--EXCEPTION
+--	WHEN others THEN
+--
+-- Print exception to INFO, re-raise
+--
+--		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL,
+--								v_context = PG_EXCEPTION_CONTEXT;
+--		error_message:='rif40_get_geojson_tiles() caught: '||E'\n'||
+--			SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR||E'\n'||'Context: '||v_context::VARCHAR;
+--		RAISE WARNING '50429: %', error_message;
+--
+--		RAISE;
+END;
+$body$
+LANGUAGE PLPGSQL;
+
+COMMENT ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, INTEGER, INTEGER, INTEGER) IS 'SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
+			''SAHSU''::VARCHAR 	/* Geography */, 
+			''LEVEL4''::VARCHAR 	/* geolevel view */, 
+			52.4827805::REAL /* y_max */, 0::REAL /* x_max */, 50.736454::REAL /* y_min */, -2.8125 /* x_min - Bounding box */,
+			6::INTEGER /* Zoom level */,
+			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
+			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text from 1 for 100) AS json;';
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, INTEGER, INTEGER, INTEGER) TO rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(VARCHAR, VARCHAR, INTEGER, INTEGER, INTEGER) TO rif_manager;
+
 CREATE OR REPLACE FUNCTION rif40_xml_pkg.rif40_get_geojson_tiles(
 	l_geography 		VARCHAR, 
 	l_geolevel_view 	VARCHAR,
@@ -88,7 +247,6 @@ RETURNS SETOF JSON
 SECURITY INVOKER
 AS $body$
 /*
-
 Function: 	rif40_get_geojson_tiles()
 Parameters:	Geography, geolevel_view, 
 			Y max, X max, Y min, X min as a record (bounding box), 
