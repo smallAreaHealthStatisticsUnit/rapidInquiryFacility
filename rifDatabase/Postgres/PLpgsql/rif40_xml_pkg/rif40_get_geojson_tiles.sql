@@ -179,6 +179,9 @@ BEGIN
 			x_tile::VARCHAR				/* Xtile */,
 			y_tile::VARCHAR				/* Ytile */,
 			took::VARCHAR				/* Time taken */);	
+--
+-- Return tile_id
+--
 			RETURN NEXT '{"type": "FeatureCollection","features":[]}'::json;
 	ELSIF i > 1 THEN
 		PERFORM rif40_log_pkg.rif40_error(-50427, 'rif40_get_geojson_tiles', 

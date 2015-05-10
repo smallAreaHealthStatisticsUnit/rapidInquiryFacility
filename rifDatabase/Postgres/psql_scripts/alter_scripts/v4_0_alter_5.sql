@@ -922,41 +922,69 @@ SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
 			11::INTEGER 		/* Zoom level */,
 			989::INTEGER 		/* X tile number */,
 			660::INTEGER		/* Y tile number */)::Text from 1 for 100) AS json;
-			
---
--- Test for code 50426 - now a debug message - not an error. Tile does not intersect sahsuland
---
-SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU'::VARCHAR 	/* Geography */, 
-			'LEVEL4'::VARCHAR 	/* geolevel view */, 
-			52.4827805::REAL /* y_max */, 0::REAL /* x_max */, 50.736454::REAL /* y_min */, -2.8125 /* x_min - Bounding box */,
-			6::INTEGER /* Zoom level */,
-			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
-			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text from 1 for 100) AS json;	
---
--- Test for missing tiles
---
-SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU'::VARCHAR 	/* Geography */, 
-			'LEVEL4'::VARCHAR 	/* geolevel view */, 
-			54.52108149544362::REAL /* y_max */, 6.679687499999985::REAL /* x_max */, 54.47003761280576::REAL /* y_min */, -6.767578125000016 /* x_min - Bounding box */,
-			10::INTEGER /* Zoom level */,
-			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
-			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text from 1 for 100) AS json;
-SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU'::VARCHAR 	/* Geography */, 
-			'LEVEL4'::VARCHAR 	/* geolevel view */, 
-			54.52108149544362::REAL /* y_max */, 6.679687499999985::REAL /* x_max */, 54.47003761280576::REAL /* y_min */, 6.767578125000016 /* x_min - Bounding box */,
-			12::INTEGER /* Zoom level */,
-			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
-			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text from 1 for 100) AS json;
-SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU'::VARCHAR 	/* Geography */, 
-			'LEVEL4'::VARCHAR 	/* geolevel view */, 
-			54.110942942724314::REAL /* y_max */, -6.328124999999994::REAL /* x_max */, 54.05938788662357::REAL /* y_min */, -6.416015624999993 /* x_min - Bounding box */,
-			12::INTEGER /* Zoom level */,
-			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
-			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text from 1 for 100) AS json;
+
+
+SELECT geolevel_name, zoomlevel, 
+       MIN(X_tile_number) AS min_x_tile, MAX(X_tile_number) AS max_x_tile,
+       MIN(Y_tile_number) AS min_y_tile, MAX(Y_tile_number) AS max_y_tile, 
+	   COUNT(zoomlevel) AS total, 
+	   (MAX(X_tile_number)-MIN(X_tile_number)+1)*(MAX(X_tile_number)-MIN(X_tile_number)+1) AS check
+  FROM t_rif40_sahsu_maptiles
+  GROUP BY geolevel_name, zoomlevel
+  ORDER BY 1, 2;
+/*  
+ geolevel_name | zoomlevel | min_x_tile | max_x_tile | min_y_tile | max_y_tile | total | check
+---------------+-----------+------------+------------+------------+------------+-------+-------
+ LEVEL1        |         0 |          0 |          0 |          0 |          0 |     1 |     1
+ LEVEL1        |         1 |          0 |          0 |          0 |          0 |     1 |     1
+ LEVEL1        |         2 |          1 |          1 |          1 |          1 |     1 |     1
+ LEVEL1        |         3 |          3 |          3 |          2 |          2 |     1 |     1
+ LEVEL1        |         4 |          7 |          7 |          5 |          5 |     1 |     1
+ LEVEL1        |         5 |         15 |         15 |         10 |         10 |     1 |     1
+ LEVEL1        |         6 |         30 |         31 |         20 |         20 |     2 |     4
+ LEVEL1        |         7 |         61 |         62 |         40 |         41 |     4 |     4
+ LEVEL1        |         8 |        122 |        124 |         80 |         83 |    12 |     9
+ LEVEL1        |         9 |        245 |        249 |        160 |        167 |    40 |    25
+ LEVEL1        |        10 |        490 |        498 |        321 |        335 |   135 |    81
+ LEVEL1        |        11 |        980 |        996 |        642 |        670 |   493 |   289
+ LEVEL2        |         0 |          0 |          0 |          0 |          0 |     1 |     1
+ LEVEL2        |         1 |          0 |          0 |          0 |          0 |     1 |     1
+ LEVEL2        |         2 |          1 |          1 |          1 |          1 |     1 |     1
+ LEVEL2        |         3 |          3 |          3 |          2 |          2 |     1 |     1
+ LEVEL2        |         4 |          7 |          7 |          5 |          5 |     1 |     1
+ LEVEL2        |         5 |         15 |         15 |         10 |         10 |     1 |     1
+ LEVEL2        |         6 |         30 |         31 |         20 |         20 |     2 |     4
+ LEVEL2        |         7 |         61 |         62 |         40 |         41 |     4 |     4
+ LEVEL2        |         8 |        122 |        124 |         80 |         83 |    11 |     9
+ LEVEL2        |         9 |        245 |        249 |        160 |        167 |    33 |    25
+ LEVEL2        |        10 |        490 |        498 |        321 |        335 |   110 |    81
+ LEVEL2        |        11 |        980 |        996 |        642 |        670 |   378 |   289
+ LEVEL3        |         0 |          0 |          0 |          0 |          0 |     1 |     1
+ LEVEL3        |         1 |          0 |          0 |          0 |          0 |     1 |     1
+ LEVEL3        |         2 |          1 |          1 |          1 |          1 |     1 |     1
+ LEVEL3        |         3 |          3 |          3 |          2 |          2 |     1 |     1
+ LEVEL3        |         4 |          7 |          7 |          5 |          5 |     1 |     1
+ LEVEL3        |         5 |         15 |         15 |         10 |         10 |     1 |     1
+ LEVEL3        |         6 |         30 |         31 |         20 |         20 |     2 |     4
+ LEVEL3        |         7 |         61 |         62 |         40 |         41 |     4 |     4
+ LEVEL3        |         8 |        122 |        124 |         80 |         83 |    11 |     9
+ LEVEL3        |         9 |        245 |        249 |        160 |        167 |    31 |    25
+ LEVEL3        |        10 |        490 |        498 |        321 |        335 |   103 |    81
+ LEVEL3        |        11 |        980 |        996 |        642 |        670 |   353 |   289
+ LEVEL4        |         0 |          0 |          0 |          0 |          0 |     1 |     1
+ LEVEL4        |         1 |          0 |          0 |          0 |          0 |     1 |     1
+ LEVEL4        |         2 |          1 |          1 |          1 |          1 |     1 |     1
+ LEVEL4        |         3 |          3 |          3 |          2 |          2 |     1 |     1
+ LEVEL4        |         4 |          7 |          7 |          5 |          5 |     1 |     1
+ LEVEL4        |         5 |         15 |         15 |         10 |         10 |     1 |     1
+ LEVEL4        |         6 |         30 |         31 |         20 |         20 |     2 |     4
+ LEVEL4        |         7 |         61 |         62 |         40 |         41 |     4 |     4
+ LEVEL4        |         8 |        122 |        124 |         80 |         83 |    11 |     9
+ LEVEL4        |         9 |        245 |        249 |        160 |        167 |    31 |    25
+ LEVEL4        |        10 |        490 |        498 |        321 |        335 |   103 |    81
+ LEVEL4        |        11 |        980 |        996 |        642 |        670 |   353 |   289
+(48 rows)
+ */ 
  
 --
 -- Eof

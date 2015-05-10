@@ -554,6 +554,48 @@ FETCH FORWARD 15 IN c4getallatt4theme_5a /* Only fetches 10... */;
 SELECT * FROM pg_cursors;
 
 --
+-- Test for code 50426 - now a debug message - not an error. Tile does not intersect sahsuland
+--
+SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
+			'SAHSU'::VARCHAR 	/* Geography */, 
+			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			52.4827805::REAL /* y_max */, 0::REAL /* x_max */, 50.736454::REAL /* y_min */, -2.8125 /* x_min - Bounding box */,
+			6::INTEGER /* Zoom level */,
+			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
+			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text from 1 for 100) AS json;	
+--
+-- Test for missing tiles
+--
+SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
+			'SAHSU'::VARCHAR 	/* Geography */, 
+			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			54.52108149544362::REAL /* y_max */, 6.679687499999985::REAL /* x_max */, 54.47003761280576::REAL /* y_min */, -6.767578125000016 /* x_min - Bounding box */,
+			10::INTEGER /* Zoom level */,
+			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
+			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text from 1 for 100) AS json;
+SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
+			'SAHSU'::VARCHAR 	/* Geography */, 
+			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			54.52108149544362::REAL /* y_max */, 6.679687499999985::REAL /* x_max */, 54.47003761280576::REAL /* y_min */, 6.767578125000016 /* x_min - Bounding box */,
+			12::INTEGER /* Zoom level */,
+			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
+			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text from 1 for 100) AS json;
+SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
+			'SAHSU'::VARCHAR 	/* Geography */, 
+			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			54.110942942724314::REAL /* y_max */, -6.328124999999994::REAL /* x_max */, 54.05938788662357::REAL /* y_min */, -6.416015624999993 /* x_min - Bounding box */,
+			12::INTEGER /* Zoom level */,
+			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
+			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text from 1 for 100) AS json;
+			
+SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
+			'SAHSU'::VARCHAR 	/* Geography */, 
+			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			11::INTEGER 		/* Zoom level */,
+			989::INTEGER 		/* X tile number */,
+			660::INTEGER		/* Y tile number */)::Text from 1 for 100) AS json;
+			
+--
 -- End single transaction
 --
 END;
