@@ -380,7 +380,7 @@ endif
 	$(MAKE) clean v4_0_vacuum_analyse_dev PGDATABASE=sahsuland
 	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
 	$(MAKE) sahsuland_dump
-	$(MAKE) -C ../../ERD dbms_tools
+	-$(MAKE) -C ../../ERD dbms_tools
 	@echo "SAHSULAND and SAHSULAND_DEV setup"
 #
 # Now has Node, ERD integration, pg_restore allowed to fail on Postgres 9.4.1

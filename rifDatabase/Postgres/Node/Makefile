@@ -231,9 +231,7 @@ $(MODULES):
 #clean:
 #	 $(DELETE) node_modules
 	 
-install:
-	$(NPM) install pg pg-native topojson
-	$(TOPOJSON) --version
+install: $(TOPOJSON)
 	
 topojson: $(TOPOJSON) ../psql_scripts/test_scripts/data/test_6_geojson_test_01.json ../psql_scripts/test_scripts/data/test_6_sahsu_4_level4_0_0_0.json
 	$(TOPOJSON) -q 1e6 -o test_6_geojson_test_01.json ../psql_scripts/test_scripts/data/test_6_geojson_test_01.json
@@ -241,5 +239,11 @@ topojson: $(TOPOJSON) ../psql_scripts/test_scripts/data/test_6_geojson_test_01.j
 
 topojson_convert:
 	$(NODE) topojson_convert.js $(PGHOST) sahsu $(PGDATABASE)
+	
+$(TOPOJSON):
+	@echo Building $(TOPOJSON)...
+	$(NPM) install pg pg-native topojson
+	$(TOPOJSON) --version	
+	
 #
 # Eof
