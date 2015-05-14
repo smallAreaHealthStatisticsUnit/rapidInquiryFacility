@@ -1,10 +1,10 @@
-RIF[ 'menu' ][ 'subscriber-models' ] = ( function ( controller ) {
+RIF['menu']['subscriber-models'] = (function(controller) {
 
-  var subscriber = {
-    startStatDialog: function () {
-      controller.startStatDialog();
-    }
-  };
+   var subscriber = {
+      startStatDialog: function() {
+         controller.startStatDialog();
+      }
+   };
 
-  return subscriber;
-} );
+   return subscriber;
+});

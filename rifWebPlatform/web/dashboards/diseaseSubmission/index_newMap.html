@@ -57,13 +57,23 @@
     <!-- map -->
     
     <script type="text/javascript" src="js/v2/components/map/Map.js"></script>
-    <script type="text/javascript" src="js/v2/components/map/SVGlayer.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/Layer.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/LayerStyle.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/TileTopojson.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/TileTopojsonUtils.js"></script>
+    
     <script type="text/javascript" src="js/v2/components/map/map.diseaseSubmission.js"></script>
     <script type="text/javascript" src="js/v2/components/map/controllers/controller.studyArea.js"></script>
     <script type="text/javascript" src="js/v2/components/map/events/event.studyArea.js"></script>
     <script type="text/javascript" src="js/v2/components/map/firers/firer.studyArea.js"></script>
     <script type="text/javascript" src="js/v2/components/map/subscribers/subscriber.studyArea.js"></script>
     <script type="text/javascript" src="js/v2/components/map/units/unit.studyArea.js"></script>
+    
+    <script type="text/javascript" src="js/v2/components/map/controllers/controller.comparisonArea.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/events/event.comparisonArea.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/firers/firer.comparisonArea.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/subscribers/subscriber.comparisonArea.js"></script>
+    <script type="text/javascript" src="js/v2/components/map/units/unit.comparisonArea.js"></script>
     
     <!-- menu -->
     <script type="text/javascript" src="js/v2/components/menu/menu.diseaseSubmission.js"></script>
@@ -317,7 +327,7 @@
 		</div>
 	</div>
     
-    <!---Comparison area
+    <!---Comparison area --->
     <div class="overlay" id="comparisonAreaModal">
 		<div class="msettings">
 			<div class="msettings-ct">
@@ -326,9 +336,10 @@
 					<a class="modal_close" href="#"></a>
 				</div>
                 <div></div>
+                <div id='comparisonAreaSelectionMap'></div>
 			</div>
 		</div>
-	</div>--->	
+	</div>	
     
     
     <!--Investigation parameters -->

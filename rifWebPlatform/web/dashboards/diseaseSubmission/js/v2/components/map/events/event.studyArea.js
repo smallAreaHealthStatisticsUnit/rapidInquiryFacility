@@ -1,1 +1,1 @@
-RIF[ 'map' ][ 'event-studyArea' ] = ( function ( dom, firer ) {} );
+RIF['map']['event-studyArea'] = (function(dom, firer) {});

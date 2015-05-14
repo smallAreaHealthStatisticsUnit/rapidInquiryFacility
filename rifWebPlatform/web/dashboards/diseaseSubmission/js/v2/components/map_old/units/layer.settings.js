@@ -1,9 +1,9 @@
-RIF.map.layer.settings = ( function ( mysett, type ) {
-  var settings = {
-    geoLevel: "",
-    selectionField: "code",
-    style: RIF.style( type, mysett.study ),
-    study: null
-  };
-  return RIF.utils.extend( mysett, settings );
-} );
+RIF.map.layer.settings = (function(mysett, type) {
+   var settings = {
+      geoLevel: "",
+      selectionField: "code",
+      style: RIF.style(type, mysett.study),
+      study: null
+   };
+   return RIF.utils.extend(mysett, settings);
+});

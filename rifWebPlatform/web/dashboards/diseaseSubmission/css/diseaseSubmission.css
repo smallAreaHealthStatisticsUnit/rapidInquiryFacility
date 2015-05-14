@@ -1488,6 +1488,9 @@ textarea.description {
 .healthCodes #tree div.icdSelected {
     background-color: rgba( 152, 251, 152, 0.2);
 }
+.healthCodes #tree div.icdSelected:hover {
+    background-color: rgba( 152, 251, 152, 0.2);
+}
 .healthCodes #tree div.healthCodesHeader {
     line-height: 15px;
 }

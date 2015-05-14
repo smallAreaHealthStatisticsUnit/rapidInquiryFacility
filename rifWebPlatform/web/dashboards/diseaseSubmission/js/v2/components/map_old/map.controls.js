@@ -1,6 +1,6 @@
-RIF.map.controls = ( function () {
-  var _p = {
-    /*addLegend: function () {
+RIF.map.controls = (function() {
+   var _p = {
+      /*addLegend: function () {
       var legend = L.Control.extend( {
         options: {
           position: 'topright'
@@ -15,5 +15,5 @@ RIF.map.controls = ( function () {
     add: function ( ctrl ) {
       this.map.addControl( ctrl );
     }*/
-  };
-} );
+   };
+});

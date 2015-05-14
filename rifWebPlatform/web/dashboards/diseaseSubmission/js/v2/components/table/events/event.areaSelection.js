@@ -1,48 +1,48 @@
-RIF.table[ 'event-areaSelection' ] = ( function ( _dom, firer ) {
-  var slctd = [],
-    isMouseDown = false,
-    isHighlighted;
+RIF.table['event-areaSelection'] = (function(_dom, firer) {
+   var slctd = [],
+      isMouseDown = false,
+      isHighlighted;
 
 
-  _dom.areaSelectionWrapper.on( "mousedown", _dom.rows, function ( aEvent ) {
-    var row = $( aEvent.target ).parent();
-    if ( !row.hasClass( 'aSR' ) ) {
-      return false;
-    };
-    isMouseDown = true;
+   _dom.areaSelectionWrapper.on("mousedown", _dom.rows, function(aEvent) {
+      var row = $(aEvent.target).parent();
+      if (!row.hasClass('aSR')) {
+         return false;
+      };
+      isMouseDown = true;
 
-    $( row ).toggleClass( "rowSelected" );
-    isHighlighted = $( row ).hasClass( "rowSelected" );
-    return false; // prevent text selection
-  } ).on( "mouseover", _dom.rows, function ( aEvent ) {
-    var row = $( aEvent.target ).parent();
-    if ( !row.hasClass( 'aSR' ) ) {
-      return false;
-    };
-    if ( isMouseDown ) {
-      $( row ).toggleClass( "rowSelected", isHighlighted );
-    }
-  } );
+      $(row).toggleClass("rowSelected");
+      isHighlighted = $(row).hasClass("rowSelected");
+      return false; // prevent text selection
+   }).on("mouseover", _dom.rows, function(aEvent) {
+      var row = $(aEvent.target).parent();
+      if (!row.hasClass('aSR')) {
+         return false;
+      };
+      if (isMouseDown) {
+         $(row).toggleClass("rowSelected", isHighlighted);
+      }
+   });
 
-  _dom.areasSelectionDialog.on( "mouseup", _dom.areaSelectionWrapper, function ( aEvent ) {
-    if ( isMouseDown ) {
-      var slctd = [];
-      var r = d3.selectAll( '#areaSelectionWrapper .rowSelected' ).each( function ( d, i ) {
+   _dom.areasSelectionDialog.on("mouseup", _dom.areaSelectionWrapper, function(aEvent) {
+      if (isMouseDown) {
+         var slctd = [];
+         var r = d3.selectAll('#areaSelectionWrapper .rowSelected').each(function(d, i) {
 
-        var idLabel = $( this ).children();
+            var idLabel = $(this).children();
 
-        slctd.push( {
-          id: $( idLabel[ 0 ] ).text(),
-          label: $( idLabel[ 1 ] ).text()
-        } );
+            slctd.push({
+               id: $(idLabel[0]).text(),
+               label: $(idLabel[1]).text()
+            });
 
-      } );
+         });
 
-      firer.studyAreaSelectionEvent( slctd );
-      _dom.studyAreaCount.innerHTML = slctd.length;
-    }
-    isMouseDown = false;
-  } );
+         firer.studyAreaSelectionEvent(slctd);
+         _dom.studyAreaCount.innerHTML = slctd.length;
+      }
+      isMouseDown = false;
+   });
 
 
-} );
+});

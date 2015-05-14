@@ -1,4 +1,4 @@
-RIF[ 'map' ][ 'firer-studyArea' ] = ( function () {
-  var firer = {};
-  return firer;
-} );
+RIF['map']['firer-studyArea'] = (function() {
+   var firer = {};
+   return firer;
+});

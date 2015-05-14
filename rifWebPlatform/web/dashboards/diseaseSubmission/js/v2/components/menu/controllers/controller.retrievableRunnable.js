@@ -1,6 +1,6 @@
-RIF.menu[ 'controller-retrievableRunnable' ] = ( function ( unit ) {
+RIF.menu['controller-retrievableRunnable'] = (function(unit) {
 
-  var _p = {};
+   var _p = {};
 
-  return _p;
-} );
+   return _p;
+});
