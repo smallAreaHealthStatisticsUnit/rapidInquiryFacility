@@ -93,8 +93,8 @@ endif
 # List of source code
 #
 SOURCES=v4_0_alter_1.sql v4_0_alter_2.sql v4_0_alter_5.sql $(PLR_SOURCES)
-# DEV_SOURCES=v4_0_alter_3.sql v4_0_alter_4.sql 
-DEV_SOURCES=v4_0_alter_4.sql $(PLR_DEV_SOURCES)
+# DEV_SOURCES=v4_0_alter_3.sql v4_0_alter_4.sql v4_0_alter_7.sql 
+DEV_SOURCES=v4_0_alter_7.sql $(PLR_DEV_SOURCES)
 
 #
 # Derive targets from sources
