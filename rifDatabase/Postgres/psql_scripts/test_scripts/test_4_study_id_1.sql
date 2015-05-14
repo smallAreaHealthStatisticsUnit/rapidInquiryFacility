@@ -111,6 +111,7 @@ DECLARE
 --
 	sql_stmt		VARCHAR[];
 	debug_level		INTEGER;
+	study_ran_ok	BOOLEAN;
 BEGIN
 	OPEN c4sm;
 	FETCH c4sm INTO c4sm_rec;
@@ -225,7 +226,10 @@ BEGIN
 	sql_stmt[array_length(sql_stmt, 1)+1]:='UPDATE test_4_study_id_1_map SET study_id = 1, inv_id = 1';
 	sql_stmt[array_length(sql_stmt, 1)+1]:='UPDATE test_4_study_id_1_bands SET study_id = 1';
 --
-	IF rif40_sm_pkg.rif40_run_study(currval('rif40_study_id_seq'::regclass)::INTEGER) THEN
+-- Execute in USER context
+--
+	EXECUTE 'SELECT '||USER||'.rif40_run_study(currval(''rif40_study_id_seq''::regclass)::INTEGER)' INTO study_ran_ok;
+	IF study_ran_ok THEN
 		RAISE INFO 'test_4_study_id_1.sql: T4--08: Test 4; Study: % run OK', currval('rif40_study_id_seq'::regclass)::VARCHAR;
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 	ELSE
