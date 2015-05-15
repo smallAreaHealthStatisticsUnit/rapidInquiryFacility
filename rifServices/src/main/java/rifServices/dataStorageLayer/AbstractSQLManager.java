@@ -2,6 +2,8 @@ package rifServices.dataStorageLayer;
 
 
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+
+import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
 import rifServices.system.RIFDatabaseProperties;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
@@ -140,6 +142,54 @@ abstract class AbstractSQLManager {
 
 	}
 	
+	protected void enableDatabaseDebugMessages(
+		final Connection connection) 
+		throws RIFServiceException {
+			
+		SQLFunctionCallerQueryFormatter setupDatabaseLogQueryFormatter 
+			= new SQLFunctionCallerQueryFormatter();
+		setupDatabaseLogQueryFormatter.setSchema("rif40_log_pkg");
+		setupDatabaseLogQueryFormatter.setFunctionName("rif40_log_setup");
+		setupDatabaseLogQueryFormatter.setNumberOfFunctionParameters(0);		
+		PreparedStatement setupLogStatement = null;
+		
+		SQLFunctionCallerQueryFormatter sendDebugToInfoQueryFormatter 
+			= new SQLFunctionCallerQueryFormatter();
+		sendDebugToInfoQueryFormatter.setSchema("rif40_log_pkg");
+		sendDebugToInfoQueryFormatter.setFunctionName("rif40_send_debug_to_info");
+		sendDebugToInfoQueryFormatter.setNumberOfFunctionParameters(1);		
+		
+		
+		PreparedStatement sendDebugToInfoStatement = null;
+		try {
+			setupLogStatement 
+				= createPreparedStatement(
+					connection, 
+					setupDatabaseLogQueryFormatter);
+			setupLogStatement.executeQuery();
+			
+			sendDebugToInfoStatement 
+				= createPreparedStatement(
+					connection, 
+					sendDebugToInfoQueryFormatter);
+			sendDebugToInfoStatement.setBoolean(1, true);
+			sendDebugToInfoStatement.executeQuery();						
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage("abstractSQLManager.error.unableToEnableDatabaseDebugging");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DB_UNABLE_TO_MAINTAIN_DEBUG, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(setupLogStatement);
+			SQLQueryUtility.close(sendDebugToInfoStatement);	
+		}		
+	}
+	
 	/**
 	 * Use appropriate field name case.
 	 *
@@ -164,7 +214,7 @@ abstract class AbstractSQLManager {
 		final String queryName,
 		final AbstractSQLQueryFormatter queryFormatter,
 		final String... parameters) {
-		
+
 		StringBuilder queryLog = new StringBuilder();
 		queryLog.append("==========================================================\n");
 		queryLog.append("QUERY NAME:");
@@ -186,7 +236,8 @@ abstract class AbstractSQLManager {
 		queryLog.append("\n");
 		queryLog.append("==========================================================\n");
 		
-		System.out.println(queryLog.toString());		
+		System.out.println(queryLog.toString());	
+
 	}
 	
 	protected void logSQLException(final SQLException sqlException) {
