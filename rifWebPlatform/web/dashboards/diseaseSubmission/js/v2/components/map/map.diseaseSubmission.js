@@ -20,7 +20,7 @@ RIF.map = (function(settings, publisher) {
                firer = _p.getFirer(name),
                subscriber = _p.getSubscriber(controller, name);
 
-            //_p.setEvent( _observable, dom, name );
+            _p.setEvent(_observable, dom, name);
          },
 
          localExtend: function(obj) {
@@ -64,7 +64,7 @@ RIF.map = (function(settings, publisher) {
          },
 
          setEvent: function(firer, dom, unitName) {
-            RIF.utils.setMenuEvent(firer, dom, unitName, this.menuUtils);
+            RIF.utils.setMapEvent(firer, dom, unitName);
          }
 
       };

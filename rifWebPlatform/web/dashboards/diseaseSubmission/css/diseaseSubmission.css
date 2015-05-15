@@ -525,15 +525,17 @@ li.maxkey a {
 path.polygon {
     fill-opacity: 1;
     stroke: #1B1;
-    stroke-width: 0.2px;
+    stroke-width: 0.6px;
+
 }
 path.polygon:hover {
     fill-opacity: 0.5;
     cursor: auto
 }
+    
 /*
-		Modal
-	*/
+   Modal
+*/
 
 .overlay {
     display: none;
@@ -1064,8 +1066,9 @@ div.aSR:hover,
 #tooltip {
     background: none repeat scroll 0 0 rgba(255, 255, 255, 0.8);
     position: absolute;
-    padding: 5px 10px;
-    display: block;
+    padding: 10px;
+    display: none;
+    z-index: 99999999;
 }
 #tooltip #geoname {
     position: relative;

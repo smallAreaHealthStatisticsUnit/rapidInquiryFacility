@@ -70,6 +70,11 @@
             RIF['menu'][eventName](dom, firer, menuUtils);
          },
 
+         setMapEvent: function(firer, dom, unitName) {
+            var eventName = ['event', unitName].join('-');
+            RIF['map'][eventName](dom, firer);
+         },
+
          setTableEvent: function(firer, dom, unitName) {
             var eventName = ['event', unitName].join('-');
             RIF['table'][eventName](dom, firer);

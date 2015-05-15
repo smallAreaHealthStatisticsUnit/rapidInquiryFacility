@@ -6,7 +6,8 @@ RIF.dom = (function() {
       map: {
          studyArea: function() {
             return {
-               id: 'areaSelectionMap'
+               id: 'areaSelectionMap',
+               tooltip: $('#tooltip')
             }
          },
          comparisonArea: function() {

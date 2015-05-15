@@ -169,7 +169,6 @@
 
          getTiles: function(myCallback, params) {
             var msg = "Retrieving Map tiles";
-            //xhr( 'studySubmission/getTiles?' + params, myCallback, -1, 'application/json' );  
             xhr('studySubmission/getTilesGivenTile?' + params, myCallback, -1, 'application/json');
          }
 

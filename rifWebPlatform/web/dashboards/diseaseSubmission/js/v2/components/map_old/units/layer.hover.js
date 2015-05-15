@@ -1,7 +1,9 @@
 RIF.map.layer.hover = (function() {
+
    var tooltip = document.getElementById('tooltip'),
       geoname = document.getElementById('geoname'),
       offset = 25;
+
    leaflet_svg = {
       hover: function(label) {
          $(this).mousemove(function(e) {

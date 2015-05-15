@@ -1,15 +1,18 @@
-RIF.Layer = (function(mapId) {
+RIF.Layer = (function(mapId, tooltipId) {
 
    /* Initialize a Map */
    this.makeMap(mapId);
 
 
    /* Add Tiled Layer */
-   var utils = RIF.TileTopojsonUtils();
-   this.addTiled(new L.TileLayer.TileTopojson('', utils), "LEVEL4");
+   var utils = RIF.TileTopojsonUtils(tooltipId);
 
-   /* Rents a style layer object */
-   RIF.LayerStyle.call(this, []);
+   var options = RIF.utils.mix(utils, {
+      mapId: mapId
+   });
+
+   this.addTiled(new L.TileLayer.TileTopojson('', options), "LEVEL4");
+
 
    /* Layer specific - implementation starts */
    var _selection = {};
@@ -41,7 +44,7 @@ RIF.Layer = (function(mapId) {
    this.slct = function(id) {
       this.addRemoveId(id);
       this.selectionChanged()
-      this.highlight(id);
+      this.style.highlight(id);
    };
 
 

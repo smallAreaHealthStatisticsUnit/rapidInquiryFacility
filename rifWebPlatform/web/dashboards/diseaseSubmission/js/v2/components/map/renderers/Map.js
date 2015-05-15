@@ -9,10 +9,13 @@ RIF.Map = (function() {
       _map = new L.Map(mapId, options);
       new L.geoJson({
          "type": "LineString",
-         "coordinates": [[0, 0], [0, 0]]
+         "coordinates": [
+        [0, 0],
+        [0, 0]
+      ]
       }).addTo(_map);
       _map.invalidateSize();
-
+      _map.doubleClickZoom.disable();
    };
 
    this.setFullExtent = function(geolevel) {

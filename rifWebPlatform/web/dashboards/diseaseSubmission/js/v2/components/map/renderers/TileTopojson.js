@@ -26,7 +26,6 @@ L.TileLayer.TileTopojson = L.TileLayer.extend({
          var params = this.options.getTilesParams(tilePoint, this._rif_map_zoom()),
             callback = this._d3Callback.call(this, tile, tilePoint);
          //this.start = new Date().getTime() / 1000;
-         //tile.xhr = d3.xhr( url, c );
          RIF.getTiles(callback, params);
       }
    },
@@ -49,13 +48,11 @@ L.TileLayer.TileTopojson = L.TileLayer.extend({
    _d3Callback: function(tile, tilePoint) {
 
       var self = tile._layer = this,
-         opt = self.options,
-         obj = tilePoint.x + "_" + tilePoint.y + "_" + tilePoint.z,
-         drag = d3.behavior.drag();
+         opt = self.options;
 
       return function(r) {
-
          var r = this;
+         var drag = d3.behavior.drag();
 
          drag.on('drag', function(d, i) {
             self.drag = 1;
@@ -67,9 +64,6 @@ L.TileLayer.TileTopojson = L.TileLayer.extend({
             self._tileOnLoad.call(tile);
             return;
          }
-
-         /* var mytopo = jQuery.parseJSON( r.responseText.split( "________" )[ 1 ] ),
-        o = mytopo.objects[ obj ];*/
 
          for (var i in r.objects) {
             var tileId = i;
@@ -85,33 +79,37 @@ L.TileLayer.TileTopojson = L.TileLayer.extend({
          var geoJS = topojson.feature(r, o).features;
          if (geoJS === 'undefined') {
             return;
-         }
+         };
 
-         console.log(d3.select("#areaSelectionMap").select("svg"));
-         tile.nodes = d3.select("#areaSelectionMap").select("svg").append("g");
+         tile.nodes = d3.select("#" + opt.mapId).select("svg").append("g");
          tile.nodes
             .selectAll("path")
             .data(geoJS)
             .enter()
             .append("path")
             .attr("d", self._path)
-         //.attr( "style", opt.style )
-         /*.attr( "class", opt.class )
-        .attr( "id", opt.id )*/
+            .attr("style", opt.getStyle)
+            .attr("class", opt.class)
+            .attr("id", opt.id)
+            .on("mouseout", function() {
+               opt.evntHndl.call(this, "mouseout");
+            }).on("mousedown", function() {
+               console.log("mousedown")
+               self.drag = -1;
+            }).on("mouseup", function() {
+               console.log("mouseup")
+            })
+            .on("mouseover", function() {
+               opt.evntHndl.call(this, "mouseover");
+            }).on("click", function() {
+               console.log("mouseclick")
+               if (self.drag === 1) {
+                  return;
+               }
+               opt.evntHndl.call(this, "click");
+            }).call(drag);
 
-         /*.on( "mouseout", function () {
-          opt.evntHndl.call( this, "mouseout" );
-        }).on( "mousedown", function () {
-          self.drag = -1;
-        }).on( "mouseup", function () {} )
-        .on( "mouseover", function () {
-          opt.evntHndl.call( this, "mouseover" );
-        }).on( "click", function () {
-          if ( self.drag === 1 ) {
-            return;
-          }
-          opt.evntHndl.call( this, "click" );
-        }).call( drag );*/
+
          self._tileOnLoad.call(tile);
       }
    },

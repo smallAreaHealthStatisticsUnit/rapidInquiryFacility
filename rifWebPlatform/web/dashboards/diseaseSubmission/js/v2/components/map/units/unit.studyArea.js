@@ -8,13 +8,12 @@ RIF['map']['unit-studyArea'] = (function(_dom, menuUtils) {
     *
     */
 
-   var mapLayer = new RIF.Layer(_dom.id);
+   var mapLayer = new RIF.Layer(_dom.id, _dom.tooltip);
 
    var _p = {
 
    };
 
-   console.log(mapLayer)
    return _p;
 
 });
