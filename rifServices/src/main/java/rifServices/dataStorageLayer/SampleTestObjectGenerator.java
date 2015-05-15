@@ -132,6 +132,38 @@ public final class SampleTestObjectGenerator {
 		
 		return rifStudySubmission;
 	}
+
+	public RIFStudySubmission createSampleRIFJobSubmissionHavingResults() {
+		RIFStudySubmission rifStudySubmission = RIFStudySubmission.newInstance();
+		rifStudySubmission.setNewRecord(false);
+
+		rifStudySubmission.setJobSubmissionTime(new Date());
+		
+		Project project = Project.newInstance();
+		project.setName("SAHSU");
+		project.setDescription("SAHSU Project that generates results");
+		rifStudySubmission.setProject(project);
+		
+		SampleTestObjectGenerator generator
+			= new SampleTestObjectGenerator();
+		DiseaseMappingStudy diseaseMappingStudy
+			= generator.createSampleDiseaseMappingStudyHavingResults();
+		rifStudySubmission.setStudy(diseaseMappingStudy);
+
+		CalculationMethod bymMethod = generator.createSampleBYMMethod();
+		CalculationMethod hetMethod = generator.createSampleHETMethod();
+		CalculationMethod carMethod = generator.createSampleCARMethod();
+		rifStudySubmission.addCalculationMethod(bymMethod);
+		rifStudySubmission.addCalculationMethod(hetMethod);
+		rifStudySubmission.addCalculationMethod(carMethod);
+
+		rifStudySubmission.addRIFOutputOption(RIFOutputOption.DATA);
+		rifStudySubmission.addRIFOutputOption(RIFOutputOption.MAPS);
+		rifStudySubmission.addRIFOutputOption(RIFOutputOption.RATIOS_AND_RATES);
+		
+		return rifStudySubmission;
+	}
+	
 	
 	/**
 	 * Gets the sample rif service information.
@@ -323,6 +355,109 @@ public final class SampleTestObjectGenerator {
 		return diseaseMappingStudy;
 	}
 	
+	
+	/**
+	 * Creates the sample disease mapping study.
+	 *
+	 * @return the disease mapping study
+	 */
+	public DiseaseMappingStudy createSampleDiseaseMappingStudyHavingResults() {
+		DiseaseMappingStudy diseaseMappingStudy
+			= DiseaseMappingStudy.newInstance();
+		diseaseMappingStudy.setNewRecord(false);
+		diseaseMappingStudy.setName("public health study with results");
+		diseaseMappingStudy.setDescription("Examining air pollution");
+		
+		Geography geography = Geography.newInstance("SAHSU", "xxx");
+		diseaseMappingStudy.setGeography(geography);
+		
+		GeoLevelSelect geoLevelSelect = GeoLevelSelect.newInstance("LEVEL2");
+		geoLevelSelect.setNewRecord(false);
+		GeoLevelArea geoLevelArea = GeoLevelArea.newInstance("Clarke");
+		geoLevelArea.setNewRecord(false);
+		GeoLevelView geoLevelView = GeoLevelView.newInstance("LEVEL3");
+		geoLevelView.setNewRecord(false);
+		GeoLevelToMap geoLevelToMap = GeoLevelToMap.newInstance("LEVEL3");
+		geoLevelToMap.setNewRecord(false);
+	
+		MapArea mapArea1 = MapArea.newInstance(
+			"01.011.012800", 
+			"01.011.012800", 
+			"Clarke LEVEL4(01.011.012800)");
+		mapArea1.setNewRecord(false);
+		MapArea mapArea2 = MapArea.newInstance(
+			"01.011.012900", 
+			"01.011.012900",
+			"Clarke LEVEL4(01.011.012900)");
+		mapArea2.setNewRecord(false);
+
+		MapArea mapArea3 = MapArea.newInstance(
+			"01.011.013000", 
+			"01.011.013000",
+			"Clarke LEVEL4(01.011.013000)");
+		mapArea3.setNewRecord(false);
+		MapArea mapArea4 = MapArea.newInstance(
+			"01.011.013400", 
+			"01.011.013400",
+			"Clarke LEVEL4(01.011.013400)");
+		mapArea4.setNewRecord(false);
+		MapArea mapArea5 = MapArea.newInstance(
+			"01.011.013500", 
+			"01.011.013500",
+			"Clarke LEVEL4(01.011.013500)");
+		mapArea5.setNewRecord(false);		
+		MapArea mapArea6 = MapArea.newInstance(
+			"01.011.013600", 
+			"01.011.013600",
+			"Clarke LEVEL4(01.011.013600)");
+		mapArea6.setNewRecord(false);	
+		
+		ComparisonArea comparisonArea
+			= ComparisonArea.newInstance();
+		comparisonArea.setNewRecord(false);		
+		comparisonArea.addMapArea(mapArea1);
+		comparisonArea.addMapArea(mapArea2);
+		comparisonArea.addMapArea(mapArea3);
+		comparisonArea.addMapArea(mapArea4);
+		comparisonArea.addMapArea(mapArea5);		
+		comparisonArea.addMapArea(mapArea6);		
+		
+		comparisonArea.setGeoLevelSelect(geoLevelSelect);
+		comparisonArea.setGeoLevelArea(geoLevelArea);
+		comparisonArea.setGeoLevelView(geoLevelView);
+		comparisonArea.setGeoLevelToMap(geoLevelToMap);
+		diseaseMappingStudy.setComparisonArea(comparisonArea);
+	
+		DiseaseMappingStudyArea diseaseMappingStudyArea
+			= DiseaseMappingStudyArea.newInstance();
+		diseaseMappingStudyArea.setNewRecord(false);		
+
+		diseaseMappingStudyArea.addMapArea(mapArea1);
+		diseaseMappingStudyArea.addMapArea(mapArea2);
+		diseaseMappingStudyArea.addMapArea(mapArea3);
+		diseaseMappingStudyArea.addMapArea(mapArea4);
+		diseaseMappingStudyArea.addMapArea(mapArea5);		
+		diseaseMappingStudyArea.addMapArea(mapArea6);		
+		
+		diseaseMappingStudyArea.setGeoLevelSelect(geoLevelSelect);
+		diseaseMappingStudyArea.setGeoLevelArea(geoLevelArea);
+		diseaseMappingStudyArea.setGeoLevelView(geoLevelView);
+		diseaseMappingStudyArea.setGeoLevelToMap(geoLevelToMap);		
+		diseaseMappingStudy.setDiseaseMappingStudyArea(diseaseMappingStudyArea);
+	
+		SampleTestObjectGenerator generator
+			= new SampleTestObjectGenerator();
+		//Investigation sampleInvestigation1
+		//	= generator.createSampleInvestigation("Lung cancer study");
+		Investigation sampleInvestigation1
+			= generator.createSampleInvestigationHavingResults("CANCERSTUDY2");
+		sampleInvestigation1.setNewRecord(false);
+		diseaseMappingStudy.addInvestigation(sampleInvestigation1);	
+		
+		return diseaseMappingStudy;
+	}
+	
+
 	/**
 	 * Creates the sample investigation.
 	 *
@@ -351,23 +486,25 @@ public final class SampleTestObjectGenerator {
 		
 		HealthCode healthCode1 
 			= HealthCode.newInstance(
-				"C34", 
+				"C340", 
 				"icd10",
 				"malignant neoplasm of bronchus and lung", 
 				false);
 		healthCode1.setNewRecord(false);
 		investigation.addHealthCode(healthCode1);
 
+		/*
 		HealthCode healthCode2
 			= HealthCode.newInstance(
 				"C81", 
 				"icd10",
 				"Hodgkin's disease", 
 				false);
-						
+
+		
 		healthCode2.setNewRecord(false);
 		investigation.addHealthCode(healthCode2);
-		
+		*/		
 		AgeGroup lowerLimitAgeGroup = AgeGroup.newInstance("1", "5", "9", "5_9");
 		AgeGroup upperLimitAgeGroup = AgeGroup.newInstance("1", "15", "19", "15_19");
 
@@ -376,13 +513,12 @@ public final class SampleTestObjectGenerator {
 		
 		investigation.addAgeBand(ageBand1);		
 		investigation.setSex(Sex.BOTH);
-		YearRange yearRange = YearRange.newInstance("1992", "1997");
+		YearRange yearRange = YearRange.newInstance("1995", "1996");
 		yearRange.setNewRecord(false);
 		investigation.setYearRange(yearRange);
-		investigation.setInterval("2");;
-		investigation.addYearInterval(YearInterval.newInstance("1992", "1993"));
-		investigation.addYearInterval(YearInterval.newInstance("1994", "1995"));
-		investigation.addYearInterval(YearInterval.newInstance("1996", "1997"));
+		investigation.setInterval("1");;
+		investigation.addYearInterval(YearInterval.newInstance("1995", "1995"));
+		investigation.addYearInterval(YearInterval.newInstance("1996", "1996"));
 		
 		Geography sahsuGeography = Geography.newInstance("SAHSU", "Describes SAHSU Land");
 		sahsuGeography.setNewRecord(false);
@@ -409,6 +545,83 @@ public final class SampleTestObjectGenerator {
 		
 		return investigation;
 	}
+
+	/**
+	 * Creates the sample investigation.
+	 *
+	 * @param investigationTitle the investigation title
+	 * @return the investigation
+	 */
+	public Investigation createSampleInvestigationHavingResults(final String investigationTitle) {
+		Investigation investigation = Investigation.newInstance();
+		investigation.setNewRecord(false);
+		investigation.setTitle(investigationTitle);
+		
+		HealthTheme healthTheme
+			= HealthTheme.newInstance(
+				"SAHSULAND",  
+				"SAHSU land cancer incidence example data");
+		investigation.setHealthTheme(healthTheme);
+
+		NumeratorDenominatorPair ndPair
+			= NumeratorDenominatorPair.newInstance(
+				"SAHSULAND_CANCER", 
+				"Cancer cases in SAHSU land", 
+				"SAHSULAND_POP", 
+				"SAHSU land population");
+		ndPair.setNewRecord(false);
+		investigation.setNdPair(ndPair);		
+		
+		HealthCode healthCode1 
+			= HealthCode.newInstance(
+				"C340", 
+				"icd10",
+				"malignant neoplasm of bronchus and lung", 
+				false);
+		healthCode1.setNewRecord(false);
+		investigation.addHealthCode(healthCode1);
+	
+		AgeGroup lowerLimitAgeGroup = AgeGroup.newInstance("1", "50", "54", "50_54");
+		AgeGroup upperLimitAgeGroup = AgeGroup.newInstance("1", "70", "74", "70_74");
+
+		AgeBand ageBand1 = AgeBand.newInstance(lowerLimitAgeGroup, upperLimitAgeGroup);
+		ageBand1.setNewRecord(false);
+		
+		investigation.addAgeBand(ageBand1);		
+		investigation.setSex(Sex.BOTH);
+		YearRange yearRange = YearRange.newInstance("1995", "1996");
+		yearRange.setNewRecord(false);
+		investigation.setYearRange(yearRange);
+		investigation.setInterval("1");
+		investigation.addYearInterval(YearInterval.newInstance("1995", "1995"));
+		investigation.addYearInterval(YearInterval.newInstance("1996", "1996"));
+		
+		Geography sahsuGeography = Geography.newInstance("SAHSU", "Describes SAHSU Land");
+		sahsuGeography.setNewRecord(false);
+
+		AdjustableCovariate adjustableCovariate1
+			= AdjustableCovariate.newInstance(
+				"SES", 
+				"1", 
+				"5",
+				CovariateType.NTILE_INTEGER_SCORE);
+		adjustableCovariate1.setNewRecord(false);
+
+		investigation.addCovariate(adjustableCovariate1);
+		/*		
+		AdjustableCovariate adjustableCovariate2
+			= AdjustableCovariate.newInstance(
+				"ETHNICITY", 
+				"1", 
+				"3",
+				CovariateType.NTILE_INTEGER_SCORE);
+		adjustableCovariate2.setNewRecord(false);
+		investigation.addCovariate(adjustableCovariate2);
+		 */
+		
+		return investigation;
+	}
+	
 	
 	public File generateSampleOutputFile() {
 		StringBuilder fileName = new StringBuilder();
