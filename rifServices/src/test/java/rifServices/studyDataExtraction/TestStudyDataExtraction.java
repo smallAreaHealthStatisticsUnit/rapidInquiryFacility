@@ -119,12 +119,9 @@ public final class TestStudyDataExtraction
 					validUser, 
 					validStudyID);
 		
-			System.out.println("TestStudyDataExtraction testExtract1 1");
 			testSubmissionService.generateExtract(
 				validUser, 
 				rifStudySubmission);
-
-			System.out.println("TestStudyDataExtraction testExtract1 2");
 			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -132,6 +129,62 @@ public final class TestStudyDataExtraction
 		}
 	}
 	
+	@Test
+	public void runStudy_COMMON1() {		
+		try {
+			User validUser = cloneValidUser();
+			String validStudyID = "31";
+			
+			TestRIFStudyServiceBundle testRIFStudyServiceBundle
+				= getRIFServiceBundle();
+			
+			TestRIFStudySubmissionService testSubmissionService
+				= (TestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
+			testSubmissionService.runStudy(validUser, validStudyID);			
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}
+	}
+	
+	@Test
+	public void clearStudiesForUser() {		
+		try {
+			User validUser = cloneValidUser();
+			String validStudyID = "19";
+			
+			TestRIFStudyServiceBundle testRIFStudyServiceBundle
+				= getRIFServiceBundle();
+			
+			TestRIFStudySubmissionService testSubmissionService
+				= (TestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
+			testSubmissionService.clearRIFJobSubmissionsForUser(validUser);		
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}
+	}	
+	
+	@Test
+	public void deleteStudy() {		
+		try {
+			User validUser = cloneValidUser();
+			String validStudyID = "18";
+			
+			TestRIFStudyServiceBundle testRIFStudyServiceBundle
+				= getRIFServiceBundle();
+			
+			TestRIFStudySubmissionService testSubmissionService
+				= (TestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
+			testSubmissionService.deleteStudy(validUser, validStudyID);
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}
+	}		
 	
 	// ==========================================
 	// Section Interfaces

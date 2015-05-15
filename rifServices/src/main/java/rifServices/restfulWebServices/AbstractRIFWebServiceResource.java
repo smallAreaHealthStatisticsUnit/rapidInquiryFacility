@@ -836,6 +836,7 @@ abstract class AbstractRIFWebServiceResource {
 		String result = "";
 		
 		try {
+			
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			Geography geography = Geography.newInstance(geographyName, "");
@@ -847,7 +848,8 @@ abstract class AbstractRIFWebServiceResource {
 			boundaryRectangle.setXMax(xMax);
 			boundaryRectangle.setYMin(yMin);
 			boundaryRectangle.setXMin(xMin);
-						
+
+			
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
 				= getRIFStudyResultRetrievalService();
@@ -859,6 +861,7 @@ abstract class AbstractRIFWebServiceResource {
 					tileIdentifier,
 					zoomFactor,
 					boundaryRectangle);
+
 			
 		}
 		catch(Exception exception) {
@@ -874,6 +877,51 @@ abstract class AbstractRIFWebServiceResource {
 			result);		
 	}	
 
+	
+	protected Response getTilesGivenTile(
+		final HttpServletRequest servletRequest,	
+		final String userID,
+		final String geographyName,
+		final String geoLevelSelectName,
+		final Integer zoomFactor,
+		final Integer xTileIdentifier,
+		final Integer yTileIdentifier) {
+					
+		String result = "";
+		
+		try {
+			
+			//Convert URL parameters to RIF service API parameters			
+			User user = createUser(servletRequest, userID);
+			Geography geography = Geography.newInstance(geographyName, "");
+			GeoLevelSelect geoLevelSelect
+				= GeoLevelSelect.newInstance(geoLevelSelectName);
+			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
+			result
+				= studyResultRetrievalService.getTilesGivenTile(
+					user, 
+					geography, 
+					geoLevelSelect,
+					zoomFactor,
+					xTileIdentifier,
+					yTileIdentifier);			
+		}
+		catch(Exception exception) {
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
+		}
+		
+		return webServiceResponseGenerator.generateWebServiceResponse(
+			servletRequest,
+			result);		
+	}	
+	
+	
 	protected Response getGeoLevelBoundsForArea(
 		final HttpServletRequest servletRequest,	
 		final String userID,

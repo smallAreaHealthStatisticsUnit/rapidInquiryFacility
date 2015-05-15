@@ -139,7 +139,7 @@ public final class SubmitStudy
 			SampleTestObjectGenerator sampleTestObjectGenerator
 				= new SampleTestObjectGenerator();
 			RIFStudySubmission studySubmission
-				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
+				= sampleTestObjectGenerator.createSampleRIFJobSubmissionHavingResults();
 			validOutputFile
 				= sampleTestObjectGenerator.generateSampleOutputFile();
 

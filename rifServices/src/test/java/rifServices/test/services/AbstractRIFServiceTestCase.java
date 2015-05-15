@@ -485,7 +485,11 @@ public class AbstractRIFServiceTestCase
 		rifStudyRetrievalService
 			= (TestRIFStudyRetrievalService) rifServiceBundle.getRIFStudyRetrievalService();
 	}
-		
+	
+	protected TestRIFStudyServiceBundle getRIFServiceBundle() {
+		return rifServiceBundle;
+	}
+	
 	protected Geography cloneValidGeography() {
 		return Geography.createCopy(validGeography);
 	}

@@ -147,6 +147,77 @@ public final class GetTiles
 			fail();
 		}
 	}
+
+	@Test
+	public void getTilesGivenTile_COMMON1() {
+		
+		try {
+			User validUser = cloneValidUser();
+			Geography validGeography = cloneValidGeography();
+			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
+			validGeoLevelSelect.setName("LEVEL4");
+			
+			
+			String result
+				= rifStudyRetrievalService.getTilesGivenTile(
+					validUser, 
+					validGeography, 
+					validGeoLevelSelect,
+					11,
+					989,
+					660);
+			
+			System.out.println("===");
+			System.out.println(result);
+			System.out.println("===");
+			
+			assertNotNull(result);
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			
+			fail();
+		}
+	}
+
+	
+	
+	@Test
+	public void getTiles_COMMON2() {
+		
+		try {
+			User validUser = cloneValidUser();
+			Geography validGeography = cloneValidGeography();
+			validGeography.setName("SAHSU");
+			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
+			validGeoLevelSelect.setName("LEVEL4");
+			String tileIdentifier = "1979_1321";
+			BoundaryRectangle validBoundaryRectangle = cloneValidBoundaryRectangle();
+			validBoundaryRectangle.setYMax("53.69670647530323");
+			validBoundaryRectangle.setXMax("-5.9765625000000036");
+			validBoundaryRectangle.setYMin("53.64463782485651");
+			validBoundaryRectangle.setXMin("-6.064453125000001");
+		
+			
+			String result
+				= rifStudyRetrievalService.getTiles(
+					validUser, 
+					validGeography, 
+					validGeoLevelSelect,
+					tileIdentifier,
+					12,
+					validBoundaryRectangle);
+			System.out.println("===");
+			System.out.println(result);
+			System.out.println("===");
+			assertNotNull(result);
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			
+			fail();
+		}
+	}	
 	
 	@Test
 	public void getTiles_INVALID1() {

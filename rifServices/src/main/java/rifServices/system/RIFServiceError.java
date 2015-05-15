@@ -70,9 +70,12 @@ package rifServices.system;
 
 public enum RIFServiceError {
 	
+	DB_UNABLE_TO_CLOSE_CONNECTIONS,
+	
 	/** The db unable to load driver. */
 	DB_UNABLE_TO_LOAD_DRIVER,
 
+	DB_UNABLE_TO_MAINTAIN_DEBUG,
 	
 	/** The db unable to grant connection. */
 	DB_UNABLE_TO_GRANT_CONNECTION,

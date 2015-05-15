@@ -1,11 +1,10 @@
 package rifServices.restfulWebServices;
 
+import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.*;
-import rifServices.fileFormats.*;
 
 import com.sun.jersey.multipart.*;
-//import org.glassfish.jersey.media.multipart.*;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -1409,7 +1408,96 @@ public class RIFStudySubmissionWebServiceResource
 			xMin);		
 	}	
 
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getTilesGivenTile")
+	public Response getTilesGivenTile(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,
+		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+		@QueryParam("zoomFactor") Integer zoomFactor,		
+		@QueryParam("xTileIdentifier") Integer xTileIdentifier,
+		@QueryParam("yTileIdentifier") Integer yTileIdentifier) {
+					
+		return super.getTilesGivenTile(
+			servletRequest, 
+			userID, 
+			geographyName, 
+			geoLevelSelectName, 
+			zoomFactor, 
+			xTileIdentifier, 
+			yTileIdentifier);				
+	}	
+	
 
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getGeoLevelFullExtentForStudy")
+	public Response getGeoLevelFullExtentForStudy(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,
+		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
+
+		return super.getGeoLevelFullExtentForStudy(
+			servletRequest,	
+			userID,
+			geographyName,
+			geoLevelSelectName,
+			diseaseMappingStudyID);		
+	}	
+	
+	/**
+	 * STUB
+	 * @param userID
+	 * @param geographyName
+	 * @param geoLevelSelectName
+	 * @param geoLevelToMapName
+	 * @param mapAreaValues
+	 * @return
+	 */
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getGeoLevelBoundsForArea")
+	public Response getGeoLevelBoundsForArea(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,	
+		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,		
+		@QueryParam("gid") String geographicalIdentifier) {
+			
+		
+		return super.getGeoLevelBoundsForArea(
+			servletRequest, 
+			userID, 
+			geographyName, 
+			geoLevelSelectName, 
+			diseaseMappingStudyID, 
+			geographicalIdentifier);
+	}	
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getGeoLevelFullExtent")
+	public Response getGeoLevelFullExtent(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName,
+		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
+					
+
+		return super.getGeoLevelFullExtent(
+			servletRequest, 
+			userID, 
+			geographyName, 
+			geoLevelSelectName);
+		
+	}
+		
 	@POST
 	@Produces({"application/json"})	
 	@Path("/submitStudy")

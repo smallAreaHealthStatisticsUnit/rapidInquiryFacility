@@ -334,7 +334,63 @@ public final class TestRIFStudySubmissionService
 				rifServiceException);
 		}
 	}
+	
+	public void deleteStudy(
+		final User _user,
+		final String studyID)
+		throws RIFServiceException {
+		
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();	
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return;
+		}
+		
+		try {
 			
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"deleteStudy",
+				"user",
+				user);	
+			fieldValidationUtility.checkNullMethodParameter(
+					"deleteStudy",
+					"studyID",
+					studyID);	
+
+			//Check for security violations
+			validateUser(user);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"deleteStudy", 
+				"studyID", 
+				studyID);
+					
+			//Delegate operation to a specialised manager class
+			Connection connection 
+				= sqlConnectionManager.assignPooledWriteConnection(user);
+
+			SQLRIFSubmissionManager sqlRIFSubmissionManager
+				= rifServiceResources.getRIFSubmissionManager();
+			sqlRIFSubmissionManager.deleteStudy(connection, studyID);
+
+			sqlConnectionManager.reclaimPooledWriteConnection(
+				user, 
+				connection);		
+		
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"deleteStudy",
+				rifServiceException);	
+		}		
+	}
+	
 	public void clearRIFJobSubmissionsForUser(
 		final User _user) 
 		throws RIFServiceException {
@@ -362,13 +418,13 @@ public final class TestRIFStudySubmissionService
 
 			//Delegate operation to a specialised manager class
 			Connection connection 
-				= sqlConnectionManager.assignPooledReadConnection(user);
+				= sqlConnectionManager.assignPooledWriteConnection(user);
 
 			SQLRIFSubmissionManager sqlRIFSubmissionManager
 				= rifServiceResources.getRIFSubmissionManager();
 			sqlRIFSubmissionManager.clearRIFJobSubmissionsForUser(connection, user);
 
-			sqlConnectionManager.reclaimPooledReadConnection(
+			sqlConnectionManager.reclaimPooledWriteConnection(
 				user, 
 				connection);		
 		
@@ -492,6 +548,64 @@ public final class TestRIFStudySubmissionService
 	}
 
 	
+	public void runStudy(
+		final User _user,
+		final String studyID)
+		throws RIFServiceException {
+	
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();	
+	
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return;
+		}
+				
+		Connection connection = null;
+		try {
+			
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"runStudy",
+				"user",
+				user);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"runStudy",
+				"studyID",
+				studyID);
+			
+			//Check for security violations
+			validateUser(user);
+		
+			//Delegate operation to a specialised manager class
+			connection 
+				= sqlConnectionManager.assignPooledWriteConnection(user);
+			SQLRIFSubmissionManager sqlRIFSubmissionManager
+				= rifServiceResources.getRIFSubmissionManager();
+			sqlRIFSubmissionManager.runStudy(
+				connection, 
+				studyID);			
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"runStudy",
+				rifServiceException);	
+		}
+		finally {
+			sqlConnectionManager.reclaimPooledWriteConnection(
+				user, 
+				connection);				
+		}		
+		
+		
+		
+	}
+		
 	public void generateExtract(
 		final User _user,
 		final RIFStudySubmission _rifStudySubmission)

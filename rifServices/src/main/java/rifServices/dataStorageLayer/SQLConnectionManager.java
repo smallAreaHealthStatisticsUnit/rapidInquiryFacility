@@ -16,7 +16,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ArrayList;
-
+import java.util.Properties;
 
 /**
  * Responsible for managing a pool of connections for each registered user.  Connections will
@@ -301,52 +301,35 @@ public final class SQLConnectionManager
 			return;
 		}
 
-		Connection currentConnection = null;
-		PreparedStatement statement = null;
+		ConnectionQueue readOnlyConnectionQueue = new ConnectionQueue();
+		ConnectionQueue writeOnlyConnectionQueue = new ConnectionQueue();
 		try {
 			Class.forName(rifServiceStartupOptions.getDatabaseDriverClassName());
 
 			//Establish read-only connections
-			ConnectionQueue readOnlyConnectionQueue = new ConnectionQueue();
 			for (int i = 0; i < POOLED_READ_ONLY_CONNECTIONS_PER_PERSON; i++) {
-				currentConnection 
-					= DriverManager.getConnection(
-						databaseURL,
+				Connection currentConnection
+					= createConnection(
 						userID,
-						password);
-				statement
-					= SQLQueryUtility.createPreparedStatement(
-						currentConnection, 
-						initialisationQuery);
-				statement.execute();
-				statement.close();
-				currentConnection.setReadOnly(false);
-				currentConnection.setAutoCommit(false);
+						password,
+						true);
 				readOnlyConnectionQueue.addConnection(currentConnection);
 			}
 			readOnlyConnectionsFromUser.put(userID, readOnlyConnectionQueue);
 			
 			//Establish write-only connections
-			ConnectionQueue writeOnlyConnectionQueue = new ConnectionQueue();
 			for (int i = 0; i < POOLED_WRITE_CONNECTIONS_PER_PERSON; i++) {
-				currentConnection 
-					= DriverManager.getConnection(
-						databaseURL,
+				Connection currentConnection
+					= createConnection(
 						userID,
-						password);
-				statement
-					= SQLQueryUtility.createPreparedStatement(
-						currentConnection, 
-						initialisationQuery);
-				statement.execute();
-				statement.close();
-				currentConnection.setAutoCommit(false);
+						password,
+						false);
 				writeOnlyConnectionQueue.addConnection(currentConnection);
 			}			
 			writeConnectionsFromUser.put(userID, writeOnlyConnectionQueue);
+
 			
-			registeredUserIDs.add(userID);
-			
+			registeredUserIDs.add(userID);			
 		}
 		catch(ClassNotFoundException classNotFoundException) {
 			classNotFoundException.printStackTrace(System.out);
@@ -362,6 +345,8 @@ public final class SQLConnectionManager
 		}
 		catch(SQLException sqlException) {
 			sqlException.printStackTrace(System.out);
+			readOnlyConnectionQueue.closeAllConnections();
+			writeOnlyConnectionQueue.closeAllConnections();				
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlConnectionManager.error.unableToRegisterUser",
@@ -378,9 +363,6 @@ public final class SQLConnectionManager
 					RIFServiceError.DB_UNABLE_REGISTER_USER,
 					errorMessage);
 			throw rifServiceException;
-		}
-		finally {
-			SQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -419,8 +401,6 @@ public final class SQLConnectionManager
 
 		try {
 			Connection connection = availableReadConnectionQueue.assignConnection();
-			//turn AUTOCOMMMIT OFF		
-			connection.setAutoCommit(false);
 			result = connection;
 		}
 		catch(Exception exception) {
@@ -622,40 +602,18 @@ public final class SQLConnectionManager
 		final String userID) 
 		throws RIFServiceException {
 				
-		try {
-			ConnectionQueue readOnlyConnectionQueue
-				= readOnlyConnectionsFromUser.get(userID);
-			if (readOnlyConnectionQueue != null) {
-				readOnlyConnectionQueue.closeAllConnections();
-			}
-			
-			ConnectionQueue writeConnectionQueue
-				= writeConnectionsFromUser.get(userID);
-			if (writeConnectionQueue != null) {
-				writeConnectionQueue.closeAllConnections();
-			}
-		}
-		catch(SQLException sqlException) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlConnectionManager.error.unableToDeregisterUser",
-					userID);
-			
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-					SQLConnectionManager.class, 
-				errorMessage, 
-				sqlException);
-			
-			RIFServiceException serviceException
-				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_DEREGISTER_USER,
-					errorMessage);
-			throw serviceException;			
+		ConnectionQueue readOnlyConnectionQueue
+			= readOnlyConnectionsFromUser.get(userID);
+		if (readOnlyConnectionQueue != null) {
+			readOnlyConnectionQueue.closeAllConnections();
 		}
 		
-		//We ignore the finally clause because it is essentially doing
-		//the close action of the connection
+		ConnectionQueue writeConnectionQueue
+			= writeConnectionsFromUser.get(userID);
+		if (writeConnectionQueue != null) {
+			writeConnectionQueue.closeAllConnections();
+		}
+		
 	}
 
 	public void resetConnectionPoolsForUser(final User user)
@@ -670,36 +628,22 @@ public final class SQLConnectionManager
 			return;
 		}
 		
-		try {
-			
-			//adding all the used read connections back to the available
-			//connections pool
-			ConnectionQueue readOnlyConnectionQueue
-				= readOnlyConnectionsFromUser.get(userID);	
-			if (readOnlyConnectionQueue != null) {
-				readOnlyConnectionQueue.closeAllConnections();
-				readOnlyConnectionQueue.clearConnections();
-			}
-		
-			//adding all the used write connections back to the available
-			//connections pool
-			ConnectionQueue writeConnectionQueue
-				= writeConnectionsFromUser.get(userID);
-			if (writeConnectionQueue != null) {
-				writeConnectionQueue.closeAllConnections();
-				writeConnectionQueue.clearConnections();
-			}
+		//adding all the used read connections back to the available
+		//connections pool
+		ConnectionQueue readOnlyConnectionQueue
+			= readOnlyConnectionsFromUser.get(userID);	
+		if (readOnlyConnectionQueue != null) {
+			readOnlyConnectionQueue.closeAllConnections();
+			readOnlyConnectionQueue.clearConnections();
 		}
-		catch(SQLException sqlException) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlConnectionManager.error.unableToResetConnectionPools",
-					user.getUserID());
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_TO_RESET_CONNECTION_POOL, 
-					errorMessage);
-			throw rifServiceException;
+		
+		//adding all the used write connections back to the available
+		//connections pool
+		ConnectionQueue writeConnectionQueue
+			= writeConnectionsFromUser.get(userID);
+		if (writeConnectionQueue != null) {
+			writeConnectionQueue.closeAllConnections();
+			writeConnectionQueue.clearConnections();
 		}
 	}
 	
@@ -709,6 +653,64 @@ public final class SQLConnectionManager
 		}
 		
 		registeredUserIDs.clear();
+	}
+	
+	private Connection createConnection(
+		final String userID,
+		final String password,
+		boolean isReadOnly)
+		throws SQLException,
+		RIFServiceException {
+		
+		Connection connection = null;
+		PreparedStatement statement = null;
+		try {
+			
+			Properties databaseProperties = new Properties();
+			databaseProperties.setProperty("user", userID);
+			databaseProperties.setProperty("password", password);
+			//databaseProperties.setProperty("ssl", "true");
+			//databaseProperties.setProperty("logUnclosedConnections", "true");
+			databaseProperties.setProperty("prepareThreshold", "3");
+			//KLG: @TODO this introduces a porting issue
+			int logLevel = org.postgresql.Driver.DEBUG;
+			databaseProperties.setProperty("loglevel", String.valueOf(logLevel));
+			
+			connection
+				= DriverManager.getConnection(databaseURL, databaseProperties);
+			/*
+			Connection currentConnection 
+				= DriverManager.getConnection(
+					databaseURL,
+					userID,
+					password);
+			*/
+			statement
+				= SQLQueryUtility.createPreparedStatement(
+					connection, 
+					initialisationQuery);
+			statement.execute();
+			statement.close();
+
+			if (isReadOnly) {
+				connection.setReadOnly(true);
+			}
+			else {
+				connection.setReadOnly(false);				
+			}
+			connection.setAutoCommit(false);
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+
+		return connection;
+		
+		
+		
+	
+		
+		
 	}
 		
 	// ==========================================

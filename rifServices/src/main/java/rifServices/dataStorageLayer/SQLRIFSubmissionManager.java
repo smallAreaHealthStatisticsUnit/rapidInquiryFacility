@@ -1,6 +1,7 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
+
 import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
@@ -361,10 +362,8 @@ final class SQLRIFSubmissionManager
 			
 			connection.commit();
 
-			System.out.println("Just added a study with id=="+result+"==");
-			result = runStudy(connection, studyID);
-
-			connection.commit();
+			//System.out.println("Just added a study with id=="+result+"==");
+			//result = runStudy(connection, studyID);
 
 			return result;
 		}
@@ -384,7 +383,8 @@ final class SQLRIFSubmissionManager
 	}
 	
 	
-	private String runStudy(
+	
+	public String runStudy(
 		final Connection connection,
 		final String studyID)
 		throws RIFServiceException {
@@ -396,6 +396,9 @@ final class SQLRIFSubmissionManager
 		ResultSet resultSet = null;
 		
 		try {
+			
+			enableDatabaseDebugMessages(connection);		
+			
 			SQLFunctionCallerQueryFormatter queryFormatter = new SQLFunctionCallerQueryFormatter();
 			queryFormatter.setSchema("rif40_sm_pkg");
 			queryFormatter.setFunctionName("rif40_run_study");
@@ -412,6 +415,7 @@ final class SQLRIFSubmissionManager
 			resultSet.next();
 			
 			result = String.valueOf(resultSet.getBoolean(1));	
+			connection.commit();
 			
 			return result;
 		}
@@ -426,7 +430,7 @@ final class SQLRIFSubmissionManager
 
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
-				SQLAgeGenderYearManager.class, 
+				SQLRIFSubmissionManager.class, 
 				errorMessage, 
 				sqlException);
 			
@@ -445,6 +449,69 @@ final class SQLRIFSubmissionManager
 		
 		
 	}
+
+	
+	public String deleteStudy(
+		final Connection connection,
+		final String studyID)
+		throws RIFServiceException {
+		
+		
+		System.out.println("About to run study=="+studyID+"==");
+		String result = null;
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		
+		try {
+			
+			SQLFunctionCallerQueryFormatter queryFormatter = new SQLFunctionCallerQueryFormatter();
+			queryFormatter.setSchema("rif40_sm_pkg");
+			queryFormatter.setFunctionName("rif40_delete_study");
+			queryFormatter.setNumberOfFunctionParameters(1);
+			
+			statement
+				= createPreparedStatement(
+					connection,
+					queryFormatter);
+			statement.setInt(1, Integer.valueOf(studyID));
+			resultSet
+				= statement.executeQuery();
+			resultSet.next();
+			
+			result = String.valueOf(resultSet.getBoolean(1));	
+			
+			connection.commit();
+			
+			return result;
+		}
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlRIFSubmissionManager.error.unableToDeleteStudy",
+					studyID);
+
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			rifLogger.error(
+				SQLRIFSubmissionManager.class, 
+				errorMessage, 
+				sqlException);
+			
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			//Cleanup database resources			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+	}
+	
 	
 	
 	/*
@@ -536,12 +603,11 @@ final class SQLRIFSubmissionManager
 				ithQueryParameter++, 
 				diseaseMappingStudy.getName());
 			
-			//study type will always be "C" for created
-			int cValue = Character.getNumericValue('C');
+			//study type will be "1" for diseaseMappingStudy
 			addStudyStatement.setInt(
 				ithQueryParameter++,
-				cValue);
-			
+				1);
+
 			ComparisonArea comparisonArea
 				= diseaseMappingStudy.getComparisonArea();
 			addStudyStatement.setString(
@@ -576,14 +642,29 @@ final class SQLRIFSubmissionManager
 				Integer.valueOf(yearRange.getUpperBound()));
 			//max_age_group
 			AgeGroup maximumAgeGroup = firstInvestigation.getMaximumAgeGroup();
+
+			
+			int maximumAgeGroupOffset
+				= getOffsetFromAgeGroup(
+					connection, 
+					ndPair,
+					maximumAgeGroup);
+						
 			addStudyStatement.setInt(
 				ithQueryParameter++, 
 				Integer.valueOf(maximumAgeGroup.getUpperLimit()));
 			//min_age_group
 			AgeGroup minimumAgeGroup = firstInvestigation.getMinimumAgeGroup();
+			
+			int minimumAgeGroupOffset
+				= getOffsetFromAgeGroup(
+					connection, 
+					ndPair,
+					minimumAgeGroup);
+			
 			addStudyStatement.setInt(
 				ithQueryParameter++, 
-				Integer.valueOf(minimumAgeGroup.getLowerLimit()));
+				minimumAgeGroupOffset);
 
 			//KLG: Ask about this -- if we left it out would it get a value automatically?
 			//for now, set suppression threshold to zero
@@ -697,14 +778,27 @@ final class SQLRIFSubmissionManager
 					Integer.valueOf(yearRange.getUpperBound()));
 				//max_age_group
 				AgeGroup maximumAgeGroup = investigation.getMaximumAgeGroup();
+				int maximumAgeGroupOffset
+					= getOffsetFromAgeGroup(
+						connection,
+						ndPair,
+						maximumAgeGroup);
+						
 				statement.setInt(
 					ithQueryParameter++, 
-					Integer.valueOf(maximumAgeGroup.getUpperLimit()));
+					maximumAgeGroupOffset);
+
 				//min_age_group
 				AgeGroup minimumAgeGroup = investigation.getMinimumAgeGroup();
+				int minimumAgeGroupOffset
+					= getOffsetFromAgeGroup(
+						connection, 
+						ndPair,
+						minimumAgeGroup);
+				
 				statement.setInt(
 					ithQueryParameter++, 
-					Integer.valueOf(minimumAgeGroup.getLowerLimit()));
+					minimumAgeGroupOffset);
 				
 				statement.executeUpdate();
 				
@@ -726,6 +820,63 @@ final class SQLRIFSubmissionManager
 		}
 
 	}
+	
+	/*
+	 * A convenience method that assumes the parameters have already been checked
+	 */
+	private int getOffsetFromAgeGroup(
+		final Connection connection,
+		final NumeratorDenominatorPair ndPair,
+		final AgeGroup ageGroup)
+		throws SQLException,
+		RIFServiceException {
+		
+		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+
+		queryFormatter.addSelectField("\"offset\"");
+		queryFormatter.addFromTable("rif40_age_groups");
+		queryFormatter.addFromTable("rif40_tables");
+		queryFormatter.addWhereJoinCondition(
+			"rif40_age_groups", 
+			"age_group_id", 
+			"rif40_tables", 
+			"age_group_id");
+		queryFormatter.addWhereParameter("rif40_tables", "isnumerator");
+		queryFormatter.addWhereParameter("rif40_tables", "table_name");
+		queryFormatter.addWhereParameter("rif40_age_groups", "fieldname");
+		
+		logSQLQuery(
+			"getOffsetFromAgeGroup", 
+			queryFormatter, 
+			"1",
+			ndPair.getNumeratorTableName(),
+			ageGroup.getName());
+		
+		//here it doesn't matter which of numerator or denominator table we get
+		//In any ndPair, both numerator and denominator should recognise the same
+		//age group classifications
+		String numeratorTableName
+			= ndPair.getNumeratorTableName();
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement 
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
+			statement.setInt(1, 1);
+			statement.setString(2, numeratorTableName);
+			statement.setString(3, ageGroup.getName());
+			resultSet = statement.executeQuery();
+			resultSet.next();
+			return resultSet.getInt(1);
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+	}
+	
 	
 	public void deleteStudy(
 		final Connection connection,
@@ -939,19 +1090,27 @@ final class SQLRIFSubmissionManager
 				= createPreparedStatement(
 					connection,
 					queryFormatter);
-
+			
+			
+			NumeratorDenominatorPair ndPair
+				= investigation.getNdPair();
+			
 			ArrayList<HealthCode> healthCodes
 				= investigation.getHealthCodes();
 			
 			//KLG: TODO: try adding one health code maximum
 			if (healthCodes.size() > 0) {
-				
-				HealthCode healthCode = healthCodes.get(0);
 			
+				String sqlHealthCodePhrase
+					= createSQLHealthCodePhrase(
+						connection,
+						ndPair,
+						healthCodes);
+				
 				//for (HealthCode healthCode : healthCodes) {
 					//KLG: Note - we need to improve what we capture for health codes
 					//table should be expanded to include name space
-					statement.setString(1, healthCode.getCode());				
+					statement.setString(1, sqlHealthCodePhrase);				
 					statement.executeUpdate();
 				//}			
 			}
@@ -962,6 +1121,81 @@ final class SQLRIFSubmissionManager
 		}		
 	}
 
+	private String createSQLHealthCodePhrase(
+		final Connection connection,
+		final NumeratorDenominatorPair ndPair,
+		final ArrayList<HealthCode> healthCodes)
+		throws SQLException,
+		RIFServiceException {
+
+		
+		StringBuilder sqlHealthCodePhrase = new StringBuilder();
+		int numberOfHealthCodes = healthCodes.size();
+		for (int i = 0; i < numberOfHealthCodes; i++) {
+			
+			if (i != 0) {
+				sqlHealthCodePhrase.append(" OR ");
+			}
+			HealthCode currentHealthCode = healthCodes.get(i);
+			String healthCodeTableFieldName 
+				= getHealthCodeTableFieldName(
+					connection,
+					ndPair.getNumeratorTableName());
+			sqlHealthCodePhrase.append("\"");
+			sqlHealthCodePhrase.append(healthCodeTableFieldName);
+			sqlHealthCodePhrase.append("\" LIKE ");
+			sqlHealthCodePhrase.append("'");
+			sqlHealthCodePhrase.append(currentHealthCode.getCode());
+			sqlHealthCodePhrase.append("%'");
+		}
+		
+		return sqlHealthCodePhrase.toString();
+
+	}
+	
+	private String getHealthCodeTableFieldName(
+		final Connection connection,
+		final String numeratorTableName) 
+		throws SQLException,
+		RIFServiceException {
+
+		String result = null;
+		
+		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		queryFormatter.addSelectField("outcome_type");
+		queryFormatter.addFromTable("rif40_outcome_groups");
+		queryFormatter.addFromTable("rif40_table_outcomes");
+		queryFormatter.addWhereJoinCondition(
+			"rif40_outcome_groups", 
+			"outcome_group_name", 
+			"rif40_outcome_groups",
+			"outcome_group_name");
+		queryFormatter.addWhereParameter("rif40_table_outcomes", "numer_tab");
+				
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
+			statement.setString(1, numeratorTableName);
+			
+			resultSet = statement.executeQuery();
+			resultSet.next();
+			
+			result = resultSet.getString(1);
+			if (result != null) {
+				result = result.toLowerCase();
+			}
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		
+		return result;
+	}
 	
 	
 	

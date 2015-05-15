@@ -1,16 +1,9 @@
-package rifServices.dataStorageLayer;
+package rifServices.businessConceptLayer;
 
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceException;
-import rifServices.system.RIFServiceError;
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.sql.SQLException;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.sql.*;
 
 
 /**
@@ -73,7 +66,7 @@ import java.util.concurrent.BlockingQueue;
  *
  */
 
-public class ConnectionQueue {
+public class PreparedStatementCache {
 
 	// ==========================================
 	// Section Constants
@@ -82,70 +75,36 @@ public class ConnectionQueue {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private ArrayList<Connection> allConnections = new ArrayList<Connection>();
-	private BlockingQueue<Connection> pool = new ArrayBlockingQueue<Connection>(10);
+	private ConcurrentHashMap<Connection, PreparedStatement> statementFromConnection;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public ConnectionQueue() {
-
+	public PreparedStatementCache() {
+		statementFromConnection = new ConcurrentHashMap<Connection, PreparedStatement>();
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void addConnection(final Connection connection) {
-		allConnections.add(connection);
-		pool.add(connection);
-	}
-	
-	public Connection assignConnection() 
-	throws InterruptedException {
+
+
+	public PreparedStatement getStatement(
+		final Connection connection,
+		final AbstractSQLQueryFormatter queryFormatter)
+		throws SQLException {
 		
-		Connection connection
-			= pool.poll(1000, TimeUnit.MILLISECONDS);
-		return connection;
-	}
-	
-	
-	public void reclaimConnection(
-		final Connection connection) 
-		throws InterruptedException {
-		
-		pool.put(connection);
-	}
-	
-	public void closeAllConnections() 
-		throws RIFServiceException {
-		
-		try {		
-			for (Connection connection : allConnections) {
-				connection.close();
-			}
-			allConnections.clear();
-			pool.clear();		
+		PreparedStatement statement
+			= statementFromConnection.get(connection);
+		if (statement == null) {			
+			statement
+				= connection.prepareStatement(queryFormatter.generateQuery());
+			statementFromConnection.put(connection, statement);
 		}
-		catch(SQLException sqlException) {
-			String errorMessage
-				= RIFServiceMessages.getMessage("sqlConnectionManager.error.unableCloseConnections");
-			RIFServiceException rifServiceException
-				 = new RIFServiceException(
-					RIFServiceError.DB_UNABLE_TO_CLOSE_CONNECTIONS, 
-					errorMessage);
-			throw rifServiceException;
-		}		
-		
-		
+
+		return statement;
 	}
-	
-	public void clearConnections() {
-	
-		allConnections.clear();
-		pool.clear();
-	}
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

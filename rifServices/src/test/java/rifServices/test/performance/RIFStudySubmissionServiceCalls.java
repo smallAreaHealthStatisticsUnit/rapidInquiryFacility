@@ -82,7 +82,7 @@ public final class RIFStudySubmissionServiceCalls
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final long NUMBER_REPETITIONS = 100000;
+	private static final long NUMBER_REPETITIONS = 1000;
 	
 	// ==========================================
 	// Section Properties
@@ -218,14 +218,17 @@ public final class RIFStudySubmissionServiceCalls
 			}
 
 			long finishTime = System.currentTimeMillis();	
-			double duration = finishTime - startTime;
-			double averageRoundTripTime = (duration/(double) NUMBER_REPETITIONS);
+			double duration = (finishTime - startTime) / 1000; //in milliseconds
+			double averageRoundTripTime = (duration/(double) NUMBER_REPETITIONS );
 			
+			System.out.println("getTiles duration=="+duration+"==averageRoundTripTime=="+averageRoundTripTime+"==");
+
+			/*
 			printPerformanceResult(
 				"getTiles",
 				startTime,
 				finishTime);
-			
+			*/
 		}
 		catch(RIFServiceException rifServiceException) {
 			
