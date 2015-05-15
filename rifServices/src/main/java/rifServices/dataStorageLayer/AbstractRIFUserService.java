@@ -1380,6 +1380,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 			= GeoLevelSelect.createCopy(_geoLevelSelect);
 		BoundaryRectangle boundaryRectangle
 			= BoundaryRectangle.createCopy(_boundaryRectangle);
+
 		
 		String result = "";
 		Connection connection = null;
@@ -1444,7 +1445,8 @@ class AbstractRIFUserService extends AbstractRIFService {
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
-			
+
+
 			//Assign pooled connection
 			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
@@ -1480,6 +1482,131 @@ class AbstractRIFUserService extends AbstractRIFService {
 		return result;
 		
 	}	
+	
+	public String getTilesGivenTile(
+		final User _user,
+		final Geography _geography,
+		final GeoLevelSelect _geoLevelSelect,
+		final Integer zoomFactor,
+		final Integer xTileIdentifier,
+		final Integer yTileIdentifier)
+		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		Geography geography
+			= Geography.createCopy(_geography);
+		GeoLevelSelect geoLevelSelect 
+			= GeoLevelSelect.createCopy(_geoLevelSelect);
+				
+		String result = "";
+		Connection connection = null;
+		try {
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getTilesGivenTile",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getTilesGivenTile",
+				"geography",
+				geography);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getTilesGivenTile",
+				"getLevelSelect",
+				geoLevelSelect);				
+			fieldValidationUtility.checkNullMethodParameter(
+				"getTiles",
+				"zoomFactor",
+				zoomFactor);		
+			fieldValidationUtility.checkNullMethodParameter(
+				"getTilesGivenTile",
+				"xTileIdentifier",
+				xTileIdentifier);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getTilesGivenTile",
+				"yTileIdentifier",
+				yTileIdentifier);	
+
+			//check that zoomFactor
+			if ((zoomFactor <1) || (zoomFactor > 20)) {
+				//zoom factor is out of range.
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"getTilesGivenTile.zoomFactor.error",
+						String.valueOf(zoomFactor));
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.INVALID_ZOOM_FACTOR, 
+						errorMessage);
+				throw rifServiceException;
+			}
+			
+			//Check for security violations
+			validateUser(user);
+			geography.checkSecurityViolations();
+			geoLevelSelect.checkSecurityViolations();	
+			
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getTilesGivenTile",
+					user.getUserID(),
+					user.getIPAddress(),
+					geography.getDisplayName(),
+					geoLevelSelect.getDisplayName(),
+					String.valueOf(zoomFactor),
+					String.valueOf(xTileIdentifier),
+					String.valueOf(yTileIdentifier));
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
+			SQLResultsQueryManager sqlResultsQueryManager
+				= rifServiceResources.getSqlResultsQueryManager();
+			result
+				= sqlResultsQueryManager.getTilesGivenTile(
+					connection,
+					user,
+					geography,
+					geoLevelSelect,
+					zoomFactor,
+					xTileIdentifier,
+					yTileIdentifier);			
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getTilesGivenTile",
+				rifServiceException);			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+
+		return result;
+		
+	}	
+	
+	
+	
 	
 	// ==========================================
 	// Section Interfaces
