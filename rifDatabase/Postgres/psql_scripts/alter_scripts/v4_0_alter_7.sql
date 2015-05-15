@@ -82,6 +82,10 @@ Done:
   - Add check constraints: 
     1. min_condition or predefined_group_name
     2. max_condition may be null, but if set != min_condition
+* Rebuild rif40_inv_conditions:
+  - Add back condition, derive from: min_condition, max_condition, predefined_group_name, outcome_group_name
+  - Add numer_tab, field_name, column_exists and column_comments fields for enhanced information
+ * Load new rif40_create_disease_mapping_example()
 
 */
    
@@ -355,13 +359,174 @@ BEGIN
 												CHECK ((predefined_group_name IS NULL AND max_condition IS NOT NULL AND min_condition IS NOT NULL AND max_condition != min_condition) OR
 												       (predefined_group_name IS NULL AND max_condition IS NULL) OR
 												       (predefined_group_name IS NOT NULL));
-	
+
+--
+-- Rebuild rif40_inv_conditions:
+-- Add back condition, derive from: min_condition, max_condition, predefined_group_name, outcome_group_name
+-- Add numer_tab, field_name, column_exists and column_comments fields for enhanced information
+--
+			CREATE OR REPLACE VIEW rif40_inv_conditions AS 
+			WITH a AS (
+				SELECT c.username,
+					   c.study_id,
+					   c.inv_id,
+					   c.line_number,
+					   c.min_condition,
+					   c.max_condition,
+					   c.predefined_group_name,
+					   c.outcome_group_name,
+					   i.numer_tab,
+					   b.field_name,
+					   CASE 
+							WHEN c.predefined_group_name IS NOT NULL THEN 
+									(g.condition, '%', quote_ident(LOWER(b.field_name)))||
+											' /* Pre defined group: '||g.predefined_group_description::Text||' */' 
+							WHEN c.max_condition IS NOT NULL THEN
+									quote_ident(LOWER(b.field_name))||' BETWEEN '''||
+									c.min_condition||''' AND '''||c.max_condition||'~'' /* Range filter */' 
+							ELSE 
+									quote_ident(LOWER(b.field_name))||' LIKE '''||c.min_condition||'%'' /* Value filter */'
+					   END AS condition
+				  FROM t_rif40_investigations i, rif40_outcome_groups b, t_rif40_inv_conditions c
+						LEFT OUTER JOIN rif40_study_shares s ON c.study_id = s.study_id AND s.grantee_username::name = "current_user"()
+						LEFT OUTER JOIN rif40_predefined_groups g ON (c.predefined_group_name = g.predefined_group_name)
+				 WHERE c.inv_id = i.inv_id AND c.study_id = i.study_id
+				   AND c.outcome_group_name = b.outcome_group_name
+				   AND (USER = 'rif40' OR c.username::name = USER OR 'RIF_MANAGER'::text = ((
+						SELECT user_role_privs.granted_role
+						  FROM user_role_privs
+						 WHERE user_role_privs.granted_role = 'RIF_MANAGER'::text)) OR s.grantee_username IS NOT NULL AND s.grantee_username::text <> ''::text)
+			)
+			SELECT a.*, 
+				   CASE WHEN d.attrelid IS NOT NULL THEN true ELSE false END columnn_exists,
+				   col_description(LOWER(a.numer_tab)::regclass, d.attnum) AS column_comment
+			  FROM a
+				LEFT OUTER JOIN pg_attribute d ON (LOWER(a.numer_tab)::regclass = d.attrelid AND d.attname = LOWER(a.field_name)) 
+			  ORDER BY a.username, a.inv_id;
+  
+			GRANT ALL ON TABLE rif40_inv_conditions TO rif40;
+			GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_inv_conditions TO rif_user;
+			GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_inv_conditions TO rif_manager;
+			COMMENT ON VIEW rif40_inv_conditions
+			  IS 'Lines of SQL conditions pertinent to an investigation.';
+			COMMENT ON COLUMN rif40_inv_conditions.username IS 'Username';
+			COMMENT ON COLUMN rif40_inv_conditions.study_id IS 'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq';
+			COMMENT ON COLUMN rif40_inv_conditions.inv_id IS 'Unique investigation index: inv_id. Created by SEQUENCE rif40_inv_id_seq';
+			COMMENT ON COLUMN rif40_inv_conditions.line_number IS 'Line number';
+			COMMENT ON COLUMN rif40_inv_conditions.min_condition 
+				IS 'Minimum condition; if max condition is not null SQL WHERE Clause evaluates to: "WHERE <field_name> LIKE ''<min_condition>%''". '; 	
+			COMMENT ON COLUMN rif40_inv_conditions.max_condition 
+				IS 'Maximum condition; if max condition is not null SQL WHERE Clause evaluates to: "WHERE <field_name> BETWEEN ''<min_condition> AND <max_condition>~''" '; 	
+			-- COMMENT ON COLUMN rif40_inv_conditions.field_name IS 'Numerator table outcome field name, e.g. ICD_SAHSU_01, ICD_SAHSU'; 			
+			COMMENT ON COLUMN rif40_inv_conditions.predefined_group_name IS 'Predefined Group Name. E.g LUNG_CANCER'; 
+			COMMENT ON COLUMN rif40_inv_conditions.outcome_group_name IS 'Outcome Group Name. E.g SINGLE_VARIABLE_ICD'; 
+			COMMENT ON COLUMN rif40_inv_conditions.numer_tab IS 'Numerator table'; 
+			COMMENT ON COLUMN rif40_inv_conditions.columnn_exists IS 'Numerator table outcome columnn exists';
+			COMMENT ON COLUMN rif40_inv_conditions.column_comment IS 'Numerator table outcome column comment';
+			COMMENT ON COLUMN rif40_inv_conditions.field_name IS 'Numerator table outcome field name, e.g. ICD_SAHSU_01, ICD_SAHSU';
+			COMMENT ON COLUMN rif40_inv_conditions.condition IS 'Condition SQL fragment';
+
+-- Function: rif40_trg_pkg.trgf_rif40_inv_conditions()
+
+-- DROP FUNCTION rif40_trg_pkg.trgf_rif40_inv_conditions();
+
+			CREATE OR REPLACE FUNCTION rif40_trg_pkg.trgf_rif40_inv_conditions()
+			  RETURNS trigger AS
+$BODY$
+BEGIN
+	IF TG_OP = 'INSERT' THEN
+--
+-- Check (USER = NEW.username OR NULL) and USER is a RIF user; if OK INSERT
+--
+		IF ((USER = NEW.username OR NEW.username IS NULL /* Will be defaulted */) AND 
+		    (rif40_sql_pkg.is_rif40_user_manager_or_schema())) OR 
+			(USER = 'rif40' AND NEW.study_id = 1 AND NEW.inv_id = 1) /* Allow alter_7 */ THEN
+			INSERT INTO t_rif40_inv_conditions (
+				username,
+				study_id,
+				inv_id,
+				line_number,
+				outcome_group_name, 
+				min_condition, 
+				max_condition, 
+				predefined_group_name)
+			VALUES(
+				coalesce(NEW.username, "current_user"()),
+				coalesce(NEW.study_id, (currval('rif40_study_id_seq'::regclass))::integer),
+				coalesce(NEW.inv_id, (currval('rif40_inv_id_seq'::regclass))::integer),
+				coalesce(NEW.line_number, 1),
+				NEW.outcome_group_name, 
+				NEW.min_condition, 
+				NEW.max_condition, 
+				NEW.predefined_group_name);
+		ELSE
+			PERFORM rif40_log_pkg.rif40_error(-20999, 'trg_rif40_inv_conditions',
+				'Cannot INSERT: User % must have rif_user or rif_manager role, NEW.username (%) must be USER or NULL', USER::VARCHAR, NEW.username::VARCHAR);
+		END IF;
+		RETURN NEW;
+	ELSIF TG_OP = 'UPDATE' THEN
+--
+-- Check USER = OLD.username and NEW.username = OLD.username; if OK UPDATE
+--
+		IF USER = OLD.username AND NEW.username = OLD.username THEN
+			UPDATE t_rif40_inv_conditions
+			   SET username=NEW.username,
+			       study_id=NEW.study_id,
+			       inv_id=NEW.inv_id,
+			       line_number=NEW.line_number,
+				   outcome_group_name=NEW.outcome_group_name,
+			       min_condition=NEW.min_condition, 
+				   max_condition=NEW.max_condition, 
+				   predefined_group_name=NEW.predefined_group_name
+			 WHERE study_id=OLD.study_id
+			   AND inv_id=OLD.inv_id
+			   AND line_number=OLD.line_number;
+		ELSE
+			PERFORM rif40_log_pkg.rif40_error(-20999, 'trg_rif40_inv_conditions',
+				'Cannot UPDATE: User % is not the owner (%) of the record', USER::VARCHAR, OLD.username::VARCHAR);
+		END IF;
+		RETURN NEW;
+	ELSIF TG_OP = 'DELETE' THEN
+--
+-- Check USER = OLD.username; if OK DELETE
+--
+		IF USER = OLD.username THEN
+			DELETE FROM t_rif40_inv_conditions
+			 WHERE study_id=OLD.study_id
+			   AND inv_id=OLD.inv_id
+			   AND line_number=OLD.line_number;
+		ELSE
+			PERFORM rif40_log_pkg.rif40_error(-20999, 'trg_rif40_inv_conditions',
+				'Cannot DELETE: User % is not the owner (%) of the record', USER::VARCHAR, OLD.username::VARCHAR);
+		END IF;
+		RETURN NULL;
+	END IF;
+	RETURN NEW;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION rif40_trg_pkg.trgf_rif40_inv_conditions()
+  OWNER TO rif40;
+COMMENT ON FUNCTION rif40_trg_pkg.trgf_rif40_inv_conditions() IS 'INSTEAD OF trigger for view T_RIF40_INV_CONDITIONS to allow INSERT/UPDATE/DELETE. INSERT/UPDATE/DELETE of another users data is NOT permitted. 
+ [NO TABLE/VIEW comments available]';
+
+-- Trigger: trg_rif40_inv_conditions on rif40_inv_conditions
+
+			CREATE TRIGGER trg_rif40_inv_conditions
+			  INSTEAD OF INSERT OR DELETE OR UPDATE 
+			  ON rif40_inv_conditions
+			  FOR EACH ROW
+			  EXECUTE PROCEDURE rif40_trg_pkg.trgf_rif40_inv_conditions();
+			COMMENT ON TRIGGER trg_rif40_inv_conditions ON rif40_inv_conditions IS 'INSTEAD OF trigger for view T_RIF40_INV_CONDITIONS to allow INSERT/UPDATE/DELETE. INSERT/UPDATE/DELETE of another users data is NOT permitted. 
+			 [Lines of SQL conditions pertinent to an investigation.]';
+ 													   
 --						
 -- Put data back
 --							
-			INSERT INTO t_rif40_inv_conditions(inv_id, study_id, username, line_number, outcome_group_name, min_condition)
+			INSERT INTO rif40_inv_conditions(inv_id, study_id, username, line_number, outcome_group_name, min_condition)
 				VALUES (1, 1, c3_rec.username, 1, 'SAHSULAND_ICD', 'C34');
-			INSERT INTO t_rif40_inv_conditions(inv_id, study_id, username, line_number, outcome_group_name, min_condition)
+			INSERT INTO rif40_inv_conditions(inv_id, study_id, username, line_number, outcome_group_name, min_condition)
 				VALUES (1, 1, c3_rec.username, 2, 'SAHSULAND_ICD', '162');	
 		ELSE
 			RAISE EXCEPTION 'C20198: ERROR!	t_rif40_inv_conditons has not been upgrade, unexpected condition data';	
@@ -387,84 +552,27 @@ $$;
 --
 \i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_inv_conditions_checks.sql
 
---
--- Put rif40_inv_conditions view back
---
-CREATE OR REPLACE VIEW rif40_inv_conditions AS 
-WITH a AS (
-	SELECT c.username,
-		   c.study_id,
-		   c.inv_id,
-		   c.line_number,
-		   c.min_condition,
-		   c.max_condition,
-		   c.predefined_group_name,
-		   c.outcome_group_name,
-		   i.numer_tab,
-		   b.field_name
-	  FROM t_rif40_investigations i, rif40_outcome_groups b, t_rif40_inv_conditions c
-			LEFT OUTER JOIN rif40_study_shares s ON c.study_id = s.study_id AND s.grantee_username::name = "current_user"()
-     WHERE c.inv_id = i.inv_id AND c.study_id = i.study_id
-	   AND c.outcome_group_name = b.outcome_group_name
-       AND (USER = 'rif40' OR c.username::name = USER OR 'RIF_MANAGER'::text = ((
-			SELECT user_role_privs.granted_role
-			  FROM user_role_privs
-			 WHERE user_role_privs.granted_role = 'RIF_MANAGER'::text)) OR s.grantee_username IS NOT NULL AND s.grantee_username::text <> ''::text)
-)
-SELECT a.*, 
-       CASE WHEN d.attrelid IS NOT NULL THEN true ELSE false END columnn_exists,
-	   col_description(LOWER(a.numer_tab)::regclass, d.attnum) AS column_comment
-  FROM a
-  	LEFT OUTER JOIN pg_attribute d ON (LOWER(a.numer_tab)::regclass = d.attrelid AND d.attname = LOWER(a.field_name)) 
-  ORDER BY a.username, a.inv_id;
-  
-GRANT ALL ON TABLE rif40_inv_conditions TO rif40;
-GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_inv_conditions TO rif_user;
-GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_inv_conditions TO rif_manager;
-COMMENT ON VIEW rif40_inv_conditions
-  IS 'Lines of SQL conditions pertinent to an investigation.';
-COMMENT ON COLUMN rif40_inv_conditions.username IS 'Username';
-COMMENT ON COLUMN rif40_inv_conditions.study_id IS 'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq';
-COMMENT ON COLUMN rif40_inv_conditions.inv_id IS 'Unique investigation index: inv_id. Created by SEQUENCE rif40_inv_id_seq';
-COMMENT ON COLUMN rif40_inv_conditions.line_number IS 'Line number';
-COMMENT ON COLUMN rif40_inv_conditions.min_condition 
-	IS 'Minimum condition; if max condition is not null SQL WHERE Clause evaluates to: "WHERE <field_name> LIKE ''<min_condition>%''". '; 	
-COMMENT ON COLUMN rif40_inv_conditions.max_condition 
-	IS 'Maximum condition; if max condition is not null SQL WHERE Clause evaluates to: "WHERE <field_name> BETWEEN ''<min_condition> AND <max_condition>~''" '; 	
--- COMMENT ON COLUMN rif40_inv_conditions.field_name IS 'Numerator table outcome field name, e.g. ICD_SAHSU_01, ICD_SAHSU'; 			
-COMMENT ON COLUMN rif40_inv_conditions.predefined_group_name IS 'Predefined Group Name. E.g LUNG_CANCER'; 
-COMMENT ON COLUMN rif40_inv_conditions.outcome_group_name IS 'Outcome Group Name. E.g SINGLE_VARIABLE_ICD'; 
-COMMENT ON COLUMN rif40_inv_conditions.numer_tab IS 'Numerator table'; 
-COMMENT ON COLUMN rif40_inv_conditions.columnn_exists IS 'Numerator table outcome columnn exists';
-COMMENT ON COLUMN rif40_inv_conditions.column_comment IS 'Numerator table outcome column comment';
-COMMENT ON COLUMN rif40_inv_conditions.field_name IS 'Numerator table outcome field name, e.g. ICD_SAHSU_01, ICD_SAHSU';
-
--- Trigger: trg_rif40_inv_conditions on rif40_inv_conditions
-
-CREATE TRIGGER trg_rif40_inv_conditions
-  INSTEAD OF INSERT OR UPDATE OR DELETE
-  ON rif40_inv_conditions
-  FOR EACH ROW
-  EXECUTE PROCEDURE rif40_trg_pkg.trgf_rif40_inv_conditions();
-COMMENT ON TRIGGER trg_rif40_inv_conditions ON rif40_inv_conditions IS 'INSTEAD OF trigger for view T_RIF40_INV_CONDITIONS to allow INSERT/UPDATE/DELETE. INSERT/UPDATE/DELETE of another users data is NOT permitted. 
- [NO TABLE/VIEW comments available]';
- 
 \dS+ t_rif40_inv_conditions
 \dS+ rif40_inv_conditions
 
 --
--- Repair view: rif40_inv_conditions
+-- Check repaired view: rif40_inv_conditions
 --
 SELECT * FROM rif40_inv_conditions LIMIT 20;
 
 --
+-- Load new rif40_create_disease_mapping_example()
+--
+\i ../PLpgsql/rif40_sm_pkg/rif40_create_disease_mapping_example.sql
+
+--
 -- Testing stop
 --
-DO LANGUAGE plpgsql $$
-BEGIN
-	RAISE EXCEPTION 'Stop processing';
-END;
-$$;
+--DO LANGUAGE plpgsql $$
+--BEGIN
+--	RAISE EXCEPTION 'Stop processing';
+--END;
+--$$;
 
 END;
 --

@@ -262,6 +262,8 @@ DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_reset_study(INTEGER);
 DROP FUNCTION IF EXISTS rif40_sm_pkg.cleanup_orphaned_extract_and_map_tables(BOOLEAN);
 DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_clone_study(INTEGER);
 DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_create_disease_mapping_example(
+	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[]);
+DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_create_disease_mapping_example(
 	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[],VARCHAR[],VARCHAR[]) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.does_role_exist(VARCHAR) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_does_role_exist(VARCHAR) CASCADE;
@@ -521,6 +523,8 @@ DROP TABLE IF EXISTS t_rif40_geolevels;
 DROP VIEW IF EXISTS rif40_user_version;
 DROP VIEW IF EXISTS user_role_privs;
 DROP VIEW IF EXISTS user_role_privs;
+
+DROP VIEW IF EXISTS rif40_numerator_outcome_columns;
 
 --
 -- Test data

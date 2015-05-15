@@ -213,6 +213,7 @@ BEGIN
        	 		NEW.inv_id::VARCHAR		/* Investigation */,
 			NEW.line_number::VARCHAR 	/* Line */);
 --
+		RETURN NEW;
 	END IF;
 END; 
 $BODY$

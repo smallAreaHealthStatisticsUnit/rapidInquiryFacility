@@ -68,30 +68,33 @@ BEGIN
 END;
 $$;
 
---DROP FUNCTION rif40_sm_pkg.rif40_create_disease_mapping_example(
---	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[],VARCHAR[]);
-
+DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_create_disease_mapping_example(
+	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[],VARCHAR[],VARCHAR[]); 
+DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_create_disease_mapping_example(
+	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[][],VARCHAR[],VARCHAR[]);
+DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_create_disease_mapping_example(
+	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[]);
 --
 -- Error codes
 --
 -- rif40_create_disease_mapping_example:	56200 to 56399
 --
 CREATE OR REPLACE FUNCTION rif40_sm_pkg.rif40_create_disease_mapping_example(
-	geography		VARCHAR,
-	geolevel_view		VARCHAR,
-	geolevel_area		VARCHAR,
-	geolevel_map		VARCHAR,
-	geolevel_select		VARCHAR,
-	geolevel_selection	VARCHAR[],
-	project			VARCHAR,
-	study_name		VARCHAR,
-	denom_tab		VARCHAR,
-	numer_tab		VARCHAR,
-	year_start		INTEGER,
-	year_stop		INTEGER,
-	investigation_icd_array	VARCHAR[],
-	investigation_desc_array VARCHAR[],
-	covariate_array		VARCHAR[]
+	geography					VARCHAR,
+	geolevel_view				VARCHAR,
+	geolevel_area				VARCHAR,
+	geolevel_map				VARCHAR,
+	geolevel_select				VARCHAR,
+	geolevel_selection			VARCHAR[],
+	project						VARCHAR,
+	study_name					VARCHAR,
+	denom_tab					VARCHAR,
+	numer_tab					VARCHAR,
+	year_start					INTEGER,
+	year_stop					INTEGER,
+	condition_array				VARCHAR[][],
+	investigation_desc_array 	VARCHAR[],
+	covariate_array				VARCHAR[]
 	)
 RETURNS void
 SECURITY INVOKER
@@ -101,9 +104,28 @@ Function: 	rif40_create_disease_mapping_example()
 Parameters:	Geography, geolevel view, geolevel area, geolevel map, geolevel select, 
 			geolevel selection array, project, study name, denominator table, numerator table,
 			year_start, year_stop,
-			investigation ICD conditions array, investigation descriptions array, covariate array
+			investigation ICD conditions 2 dimensional array (i.e. matrix); 4 columnsxN rows:
+				outcome_group_name, min_condition, max_condition, predefined_group_name
+			investigation descriptions array, 
+			covariate array
 Returns:	Nothing
 Description:	Create disease mapping exmaple
+
+Example of condition_array data:
+
+WITH data AS (
+    SELECT '{{"SAHSULAND_ICD", "C34", NULL, NULL}, {"SAHSULAND_ICD", "162", "1629", NULL}}'::text[] AS arr
+)
+SELECT arr[i][1] AS outcome_group_name, 
+       arr[i][2] AS min_condition, 
+       arr[i][3] AS max_condition, 
+       arr[i][4] AS predefined_group_name
+  FROM data, generate_subscripts((SELECT arr FROM data), 1) i;
+ outcome_group_name | min_condition | max_condition | predefined_group_name
+--------------------+---------------+---------------+-----------------------
+ SAHSULAND_ICD      | C34           |               |
+ SAHSULAND_ICD      | 162           | 1629          |
+(2 rows)
 
 Setup a disease mapping example.
 
@@ -286,16 +308,19 @@ DECLARE
 	l_extract_permitted 	INTEGER:=0;
 	l_transfer_permitted 	INTEGER:=0;
 --
+	v_detail		VARCHAR;
+	error_message	VARCHAR;
+	inv_cond_rec	RECORD;
 BEGIN
 --
 -- Check INVESTIGATION array are the same length
 --
-	IF array_length(investigation_icd_array, 1) != array_length(investigation_desc_array, 1) THEN
-		PERFORM rif40_log_pkg.rif40_error(-56200, 'rif40_create_disease_mapping_example', 
-			'icd array length (%) != description array length (%)',
-			array_length(investigation_icd_array, 1)::VARCHAR,
-			array_length(investigation_desc_array, 1)::VARCHAR);
-	END IF;
+--	IF array_ndims(condition_array) != array_length(investigation_desc_array, 1) THEN
+--		PERFORM rif40_log_pkg.rif40_error(-56200, 'rif40_create_disease_mapping_example', 
+--			'icd condition array dimension (%) != description array length (%)',
+--			array_ndims(condition_array)::VARCHAR,
+--			array_length(investigation_desc_array, 1)::VARCHAR);
+--	END IF;
 --
 -- Get MIN/MAX age groups. Check table exists
 --
@@ -394,7 +419,7 @@ BEGIN
 --
 -- Process investigations array
 --
-	FOREACH icd IN ARRAY investigation_icd_array LOOP
+	FOREACH icd IN ARRAY investigation_desc_array LOOP
 		i:=i+1;
 		l_inv_name:='INV_'||i::VARCHAR;
 --
@@ -449,17 +474,44 @@ BEGIN
 --
 -- 4. INSERT INTO rif40_inv_conditions
 --
-		INSERT INTO rif40_inv_conditions(
-			condition)
-		VALUES (
-			investigation_icd_array[i]	/* ICD */);
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_create_disease_mapping_example', 	
-			'[56209] Created investigation: % (%): %; numerator: %; condition: "%"',  
-			currval('rif40_inv_id_seq'::regclass)::VARCHAR,
-			l_inv_name::VARCHAR,
-			investigation_desc_array[i]::VARCHAR,
-			numer_tab::VARCHAR,
-			investigation_icd_array[i]::VARCHAR);
+		sql_stmt:='INSERT INTO rif40_inv_conditions('||E'\n'||
+'			outcome_group_name, min_condition, max_condition, predefined_group_name, line_number)'||E'\n'||
+'		WITH data AS ('||E'\n'||
+'				SELECT $1 AS arr'||E'\n'||
+'			), b AS ('||E'\n'||
+'				SELECT arr[i][1] AS outcome_group_name,'||E'\n'|| 
+'					   arr[i][2] AS min_condition, '||E'\n'||
+'					   arr[i][3] AS max_condition, '||E'\n'||
+'					   arr[i][4] AS predefined_group_name, '||E'\n'||
+'       	           ROW_NUMBER() OVER() AS line_number'||E'\n'||
+'			      FROM data, generate_subscripts((SELECT arr FROM data), 1) i'||E'\n'||
+'			)'||E'\n'||
+'		SELECT outcome_group_name, min_condition, max_condition, predefined_group_name, line_number'||E'\n'||
+'		  FROM b'||E'\n'||
+'		RETURNING outcome_group_name, min_condition, max_condition, predefined_group_name';
+		BEGIN
+			FOR inv_cond_rec IN EXECUTE sql_stmt USING condition_array LOOP
+	--
+				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_create_disease_mapping_example', 	
+					'[56209] Created investigation: % (%): %; numerator: %; outcome_group_names: %, min/max/predefined group conditions: "%/%/%"',  
+					currval('rif40_inv_id_seq'::regclass)::VARCHAR,
+					l_inv_name::VARCHAR,
+					investigation_desc_array[i]::VARCHAR,
+					numer_tab::VARCHAR,
+					inv_cond_rec.outcome_group_name::VARCHAR,
+					inv_cond_rec.min_condition::VARCHAR,
+					inv_cond_rec.max_condition::VARCHAR,
+					inv_cond_rec.predefined_group_name::VARCHAR);
+			END LOOP;
+		EXCEPTION
+			WHEN others THEN
+				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+				error_message:='rif40_hash_partition() caught in rif40_create_disease_mapping_example(): '||E'\n'||
+					SQLERRM::VARCHAR||' in SQL> '||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
+				RAISE INFO '2: %', error_message;
+--
+				RAISE;
+	END;
 	END LOOP;
 --
 -- 5. INSERT INTO rif40_study_areas
@@ -571,14 +623,32 @@ END;
 $func$ LANGUAGE plpgsql;
 
 COMMENT ON FUNCTION rif40_sm_pkg.rif40_create_disease_mapping_example(
-	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[],VARCHAR[],VARCHAR[]) 
+	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[]) 
 IS 'Function: 	rif40_create_disease_mapping_example()
 Parameters:	Geography, geolevel view, geolevel area, geolevel map, geolevel select, 
 		geolevel selection array, project, study name, denominator table, numerator table,
  		year_start, year_stop,
-		investigation ICD conditions array, investigation descriptions array, covariate array
+		investigation ICD conditions 2 dimensional array (i.e. matrix); 4 columnsxN rows:
+				outcome_group_name, min_condition, max_condition, predefined_group_name, 
+		investigation descriptions array, covariate array
 Returns:	Nothing
 Description:	Create disease mapping exmaple
+
+Example of condition_array data:
+
+WITH data AS (
+    SELECT ''{{"SAHSULAND_ICD", "C34", NULL, NULL}, {"SAHSULAND_ICD", "162", "1629", NULL}}''::text[] AS arr
+)
+SELECT arr[i][1] AS outcome_group_name, 
+       arr[i][2] AS min_condition, 
+       arr[i][3] AS max_condition, 
+       arr[i][4] AS predefined_group_name
+  FROM data, generate_subscripts((SELECT arr FROM data), 1) i;
+ outcome_group_name | min_condition | max_condition | predefined_group_name
+--------------------+---------------+---------------+-----------------------
+ SAHSULAND_ICD      | C34           |               |
+ SAHSULAND_ICD      | 162           | 1629          |
+(2 rows)
 
 Setup a disease mapping example.
 
@@ -706,10 +776,10 @@ study_id 		(currval(''rif40_study_id_seq''::regclass))::integer
 ';
 
 GRANT EXECUTE ON FUNCTION rif40_sm_pkg.rif40_create_disease_mapping_example(
-	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[],VARCHAR[],VARCHAR[]) 
+	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[]) 
 	TO rif_manager;
 GRANT EXECUTE ON FUNCTION rif40_sm_pkg.rif40_create_disease_mapping_example(
-	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[],VARCHAR[],VARCHAR[]) 
+	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[]) 
  	TO rif40;
 
 --

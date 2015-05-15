@@ -54,6 +54,7 @@
 
 \set ndebug_level '''XXXX':debug_level''''
 SET rif40.debug_level TO :ndebug_level;
+--\set VERBOSITY verbose
 --
 -- Start transaction
 --
@@ -97,7 +98,9 @@ DECLARE
 	c3sm_rec RECORD;
 	c4sm_rec RECORD;
 --
-	investigation_icd_array		VARCHAR[]:=array['"icd" LIKE ''C34%'' OR "icd" LIKE ''162%'''];	
+	condition_array				VARCHAR[4][2]:='{{"SAHSULAND_ICD", "C34", NULL, NULL}, {"SAHSULAND_ICD", "162", "1629", NULL}}';	
+										 /* investigation ICD conditions 2 dimensional array (i.e. matrix); 4 columnsxN rows:
+											outcome_group_name, min_condition, max_condition, predefined_group_name */
 	investigation_desc_array	VARCHAR[]:=array['Lung cancer'];
 	covariate_array				VARCHAR[]:=array['SES'];	
 --
@@ -176,21 +179,22 @@ BEGIN
 -- Create new test study
 --
 	PERFORM rif40_sm_pkg.rif40_create_disease_mapping_example(
-		'SAHSU'::VARCHAR 		/* Geography */,
-		'LEVEL1'::VARCHAR		/* Geolevel view */,
-		'01'::VARCHAR			/* Geolevel area */,
-		'LEVEL4'::VARCHAR		/* Geolevel map */,
-		'LEVEL3'::VARCHAR		/* Geolevel select */,
-		c2sm_rec.level3_array 	/* Geolevel selection array */,
-		'TEST'::VARCHAR 		/* project */, 
+		'SAHSU'::VARCHAR 			/* Geography */,
+		'LEVEL1'::VARCHAR			/* Geolevel view */,
+		'01'::VARCHAR				/* Geolevel area */,
+		'LEVEL4'::VARCHAR			/* Geolevel map */,
+		'LEVEL3'::VARCHAR			/* Geolevel select */,
+		c2sm_rec.level3_array 		/* Geolevel selection array */,
+		'TEST'::VARCHAR 			/* project */, 
 		'SAHSULAND test 4 study_id 1 example'::VARCHAR /* study name */, 
 		'SAHSULAND_POP'::VARCHAR 	/* denominator table */, 
-		'SAHSULAND_CANCER'::VARCHAR 	/* numerator table */,
- 		1989				/* year_start */, 
-		1996				/* year_stop */,
-		investigation_icd_array 	/* investigation ICD  condition array */,
+		'SAHSULAND_CANCER'::VARCHAR /* numerator table */,
+ 		1989						/* year_start */, 
+		1996						/* year_stop */,
+		condition_array 			/* investigation ICD conditions 2 dimensional array (i.e. matrix); 4 columnsxN rows:
+											outcome_group_name, min_condition, max_condition, predefined_group_name */,
 		investigation_desc_array 	/* investigation description array */,
-		covariate_array			/* covariate array */);
+		covariate_array				/* covariate array */);
 --
 -- Dump extract/map tables to CSV via a temporary table
 -- Ordering is for githubs benefit
