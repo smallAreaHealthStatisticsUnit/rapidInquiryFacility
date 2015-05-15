@@ -176,6 +176,19 @@ public class BoundaryRectangle extends AbstractRIFConcept {
 		
 	}
 	
+	public String convertToKey() {
+		StringBuilder key = new StringBuilder();
+		key.append(String.valueOf(xMin));
+		key.append("-");
+		key.append(String.valueOf(yMin));
+		key.append("-");
+		key.append(String.valueOf(xMax));
+		key.append("-");
+		key.append(String.valueOf(yMax));
+		
+		return key.toString();		
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
