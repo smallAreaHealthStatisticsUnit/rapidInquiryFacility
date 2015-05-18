@@ -116,7 +116,12 @@ public final class RIFStudySubmission
     	study = DiseaseMappingStudy.newInstance();
 		calculationMethods = new ArrayList<CalculationMethod>();
 		rifOutputOptions = new ArrayList<RIFOutputOption>();
-    }
+		rifOutputOptions.add(RIFOutputOption.DATA);
+		rifOutputOptions.add(RIFOutputOption.MAPS);
+		rifOutputOptions.add(RIFOutputOption.POPULATION_HOLES);
+		rifOutputOptions.add(RIFOutputOption.RATIOS_AND_RATES);
+
+	}
 
     /**
      * New instance.
@@ -168,11 +173,13 @@ public final class RIFStudySubmission
     	
     	cloneRIFStudySubmission.setCalculationMethods(clonedCalculationMethods);
    
+    	/*
     	ArrayList<RIFOutputOption> originalRIFOutputOptions
     		= originalRIFStudySubmission.getRIFOutputOptions();
     	for (RIFOutputOption originalRIFOutputOption : originalRIFOutputOptions) {
     		cloneRIFStudySubmission.addRIFOutputOption(originalRIFOutputOption);
     	}
+    	*/
     	
     	return cloneRIFStudySubmission;
 
@@ -207,12 +214,13 @@ public final class RIFStudySubmission
 	 *
 	 * @param rifOutputOption the rif output option
 	 */
+/*
 	public void addRIFOutputOption(
 		final RIFOutputOption rifOutputOption) {
 		
 		rifOutputOptions.add(rifOutputOption);
 	}
-	
+*/	
 	/**
 	 * Gets the RIF output options.
 	 *
@@ -534,6 +542,7 @@ public final class RIFStudySubmission
 			ArrayList<RIFOutputOption> uniqueRIFOutputOptions 
 				= new ArrayList<RIFOutputOption>();
 		
+			/*
 			for (RIFOutputOption rifOutputOption : rifOutputOptions) {
 				if (rifOutputOption == null) {
 					String covariateRecordType
@@ -557,8 +566,8 @@ public final class RIFStudySubmission
 						uniqueRIFOutputOptions.add(rifOutputOption);
 					}
 				}
-
 			}	
+			*/
 		}
 		
 		countErrors(RIFServiceError.INVALID_RIF_JOB_SUBMISSION, errorMessages);

@@ -126,9 +126,9 @@ public final class SampleTestObjectGenerator {
 		rifStudySubmission.addCalculationMethod(hetMethod);
 		rifStudySubmission.addCalculationMethod(carMethod);
 
-		rifStudySubmission.addRIFOutputOption(RIFOutputOption.DATA);
-		rifStudySubmission.addRIFOutputOption(RIFOutputOption.MAPS);
-		rifStudySubmission.addRIFOutputOption(RIFOutputOption.RATIOS_AND_RATES);
+		//rifStudySubmission.addRIFOutputOption(RIFOutputOption.DATA);
+		//rifStudySubmission.addRIFOutputOption(RIFOutputOption.MAPS);
+		//rifStudySubmission.addRIFOutputOption(RIFOutputOption.RATIOS_AND_RATES);
 		
 		return rifStudySubmission;
 	}
@@ -157,9 +157,9 @@ public final class SampleTestObjectGenerator {
 		rifStudySubmission.addCalculationMethod(hetMethod);
 		rifStudySubmission.addCalculationMethod(carMethod);
 
-		rifStudySubmission.addRIFOutputOption(RIFOutputOption.DATA);
-		rifStudySubmission.addRIFOutputOption(RIFOutputOption.MAPS);
-		rifStudySubmission.addRIFOutputOption(RIFOutputOption.RATIOS_AND_RATES);
+		//rifStudySubmission.addRIFOutputOption(RIFOutputOption.DATA);
+		//rifStudySubmission.addRIFOutputOption(RIFOutputOption.MAPS);
+		//rifStudySubmission.addRIFOutputOption(RIFOutputOption.RATIOS_AND_RATES);
 		
 		return rifStudySubmission;
 	}

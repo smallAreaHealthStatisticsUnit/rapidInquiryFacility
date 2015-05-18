@@ -116,7 +116,7 @@ public final class TestRIFStudySubmission
 			= generator.createSampleDiseaseMappingStudy();
 		masterRIFStudySubmission.setStudy(diseaseMappingStudy);
 		
-		masterRIFStudySubmission.addRIFOutputOption(RIFOutputOption.RATIOS_AND_RATES);
+		//masterRIFStudySubmission.addRIFOutputOption(RIFOutputOption.RATIOS_AND_RATES);
 	}
 		
 	// ==========================================
