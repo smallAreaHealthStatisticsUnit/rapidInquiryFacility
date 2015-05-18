@@ -66,7 +66,7 @@ DECLARE
 --
 -- Functions to enable debug for
 --
-	rif40_xml_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 
+	rif40_xml_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl', 'rif40_GetMapAreas',
 		'rif40_getAllAttributesForGeoLevelAttributeTheme', 'rif40_GetMapAreaAttributeValue',
 		'rif40_GetMapAreaAttributeValue','rif40_CreateMapAreaAttributeSource'];
 	l_function				VARCHAR;
@@ -224,6 +224,13 @@ BEGIN
 	END IF;
 END;
 $$; 
+
+SELECT SUBSTRING(rif40_xml_pkg.rif40_GetMapAreas(
+			'SAHSU' 	/* Geography */, 
+			'LEVEL3' 	/* geolevel view */, 
+			55.5268097::REAL /* y_max */, -4.88653803 /* x_max */, 52.6875343 /* y_min */, -7.58829451 /* x_min - Bounding box - from cte */)::Text
+				FROM 1 FOR 160) AS json 
+LIMIT 4;
 
 --
 -- End single transaction

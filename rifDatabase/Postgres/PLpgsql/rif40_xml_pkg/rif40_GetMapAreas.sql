@@ -189,7 +189,7 @@ BEGIN
 --
 	sql_stmt:='WITH a AS ('||E'\n'||
 		  '	SELECT area_id,'||E'\n'||
-		  '            ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */) AS geom	/* Bound */'||E'\n'||
+		  '            ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */, 4326 /* WGS 84 */) AS geom	/* Bound */'||E'\n'||
 		  '	  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||E'\n'||
 		  '	 WHERE ST_Intersects(optimised_geometry_3,'||E'\n'||
 		  '        		ST_MakeEnvelope($1 /* Xmin */,'||E'\n'||
@@ -203,8 +203,8 @@ BEGIN
 		  'SELECT (''{"gid": ''||ARRAY_TO_JSON(ARRAY_AGG(b.gid ORDER BY b.gid))::Text||'', "area_id": ''||'||E'\n'||
 		  '       ARRAY_TO_JSON(ARRAY_AGG(a.area_id ORDER BY b.gid))::Text||'', "name": ''||'||E'\n'||
 		  '	      ARRAY_TO_JSON(ARRAY_AGG(b.name ORDER BY b.gid))::Text||''}'')::JSON as map_area'||E'\n'||
-		  '  FROM a, sahsuland_level4 b'||E'\n'||
-		  ' WHERE a.area_id = b.level4';
+		  '  FROM a, quote_ident(sahsuland_'||LOWER(l_geolevel_view)||') b'||E'\n'||
+		  ' WHERE a.area_id = b.'||quote_ident(LOWER(l_geolevel_view));
 --
 -- Begin execution block to trap parse errors
 --
