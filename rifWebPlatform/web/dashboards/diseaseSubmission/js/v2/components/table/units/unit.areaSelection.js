@@ -26,7 +26,8 @@ RIF.table['unit-areaSelection'] = (function(_dom) {
 
    _p = {
       getTabularData: function(data) {
-         _renderTable(data);
+         //_renderTable( data );
+         console.log(data);
       }
    };
 

@@ -102,12 +102,27 @@
             xhr('studySubmission/getGeoLevelViews?' + args, myCallback, msg, 'application/json');
          },
 
-         getGeolevelSelect: function(myCallback, params) {
+         /*getGeolevelSelect: function ( myCallback, params ) {
+        var msg = "Retrieving Area ids for geolevel:" + params[ 0 ];
+        args = 'geoLevelSelectName=LEVEL2&geoLevelAreaName=Elliot',
+        args += '&geoLevelToMapName=' + params[ 0 ];
+        xhr( 'studySubmission/getMapAreas?' + args, myCallback, msg, 'application/json' );
+      },*/
+
+         getTableMapAreas: function(myCallback, params) {
+            //geoLevelSelectName=LEVEL4&yMax=55.0122&xMax=-6.32507&yMin=54.6456&xMin=-6.68853
             var msg = "Retrieving Area ids for geolevel:" + params[0];
-            args = 'geoLevelSelectName=LEVEL2&geoLevelAreaName=Elliot',
-            args += '&geoLevelToMapName=' + params[0];
-            xhr('studySubmission/getMapAreas?' + args, myCallback, msg, 'application/json');
+            args = [
+            'geoLevelSelectName=' + params[0],
+            'yMax=' + params[1]["yMax"],
+            'yMin=' + params[1]["yMin"],
+            'xMin=' + params[1]["xMin"],
+            'xMax=' + params[1]["xMax"]
+        ].join('&');
+
+            xhr('studySubmission/getMapAreasForBoundaryRectangle?' + args, myCallback, msg, 'application/json');
          },
+
          getHealthTaxonomy: function(myCallback, params) {
             var msg = "Retrieving taxonomy codes";
             xhr('studySubmission/getHealthCodeTaxonomies?', myCallback, msg, 'application/json');

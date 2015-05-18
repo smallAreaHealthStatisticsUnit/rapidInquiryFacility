@@ -11,7 +11,13 @@ RIF['map']['unit-studyArea'] = (function(_dom, menuUtils) {
    var mapLayer = new RIF.Layer(_dom.id, _dom.tooltip);
 
    var _p = {
+      updateGeolevel: function(geolvl) {
+         mapLayer.initLayer(geolvl);
+      },
 
+      setExtent: function(ext) {
+         mapLayer.setInitialExtent(ext);
+      }
    };
 
    return _p;

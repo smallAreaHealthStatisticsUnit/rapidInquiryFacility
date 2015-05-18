@@ -117,9 +117,15 @@ RIF.initialize = (function() {
          /**-- Area Selection ---**/
 
          selectAtChanged: {
-            subscribers: ["mediator", "table"],
+            subscribers: ["mediator" /*, "table", "map"*/ ],
             firer: ["menu"],
             method: "selectAtChanged"
+         },
+
+         selectAtChangeUpdate: {
+            subscribers: ["table", "map"],
+            firer: ["mediator"],
+            method: "selectAtChangeUpdate"
          },
 
          studyAreaSelectionEvent: {
@@ -240,6 +246,21 @@ RIF.initialize = (function() {
             firer: ["menu"],
             method: "calculationMethodsChanged"
          },
+
+         /**-- MAPS ---**/
+         syncStudyArea: {
+            subscribers: ["table"], // not going through mediator
+            firer: ["menu"],
+            method: "syncStudyArea"
+         },
+
+
+         /* setInitialExtent: {
+        subscribers: [ "map" ],
+        firer: [ "mediator" ],
+        method: "setInitialExtent"
+      }, */
+
 
          /**-- SUMMARY TABLE ---**/
 

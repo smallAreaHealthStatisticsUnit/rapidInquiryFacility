@@ -6,8 +6,14 @@ RIF.menu['event-areaSelection'] = (function(_dom, firer) {
       firer.selectAtChanged(val);
 
    });
+
    _dom.resolution.change(function() {
       var val = $(this).val();
       firer.resolutionChanged(val);
    });
+
+   _dom.sync.click(function() {
+      firer.syncStudyArea();
+   });
+
 });

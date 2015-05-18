@@ -2,7 +2,7 @@
  *
  *
  *
- * @style(id)
+ *
  *
  */
 RIF.LayerStyle = (function() {

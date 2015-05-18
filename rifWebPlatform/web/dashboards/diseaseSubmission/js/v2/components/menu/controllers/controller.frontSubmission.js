@@ -35,7 +35,6 @@ RIF.menu['controller-frontSubmission'] = (function(unit) {
                denom = [this[0].denominatorTableName];
 
             unit.getNumDenom(num, denom);
-            // FIRE parent.proxy.frontMappingready();     
          };
          RIF.getNumeratorDenominator(clbk, desc);
       },

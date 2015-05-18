@@ -1,4 +1,11 @@
 RIF['map']['firer-studyArea'] = (function() {
-   var firer = {};
+
+   var firer = {
+
+      propagateMapExtent: function(ext) {
+         console.log(ext);
+      }
+
+   };
    return firer;
 });

@@ -20,6 +20,7 @@ RIF.mediator['subscriber-'] = (function(mediatorUtils) {
       },
       selectAtChanged: function(arg) {
          _setProperty('setStudyAreaSelectAt', arg);
+         this.selectAtChangeUpdate(arg);
       },
       resolutionChanged: function(arg) {
          _setProperty('setStudyAreaResolution', arg);

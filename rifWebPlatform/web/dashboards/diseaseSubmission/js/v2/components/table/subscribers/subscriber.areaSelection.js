@@ -1,9 +1,15 @@
 RIF.table['subscriber-areaSelection'] = (function(controller) {
 
    var subscriber = {
-      selectAtChanged: function(geolvl) {
+
+      selectAtChangeUpdate: function(geolvl) {
+         //console.log(RIF.mapExtent)    
          controller.getTabularData(geolvl);
+      },
+      syncStudyArea: function() {
+         controller.getTabularData();
       }
+
    };
 
    return subscriber;

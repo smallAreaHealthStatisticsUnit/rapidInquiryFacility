@@ -14,7 +14,10 @@ RIF['map']['event-studyArea'] = (function(dom, firer) {
          'left': xPos,
          'display': 'block'
       });
-      //geoname.innerHTML = label;
+   });
+
+   $('#' + dom.id).on("mouseout", function(aEvent) {
+      dom.tooltip.hide();
    });
 
 });

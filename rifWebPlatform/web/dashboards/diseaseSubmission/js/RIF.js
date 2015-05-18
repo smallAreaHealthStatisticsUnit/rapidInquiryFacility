@@ -13,6 +13,7 @@ var RIF = (function(R) {
    R.resizeWidth = function( /*obj,*/ px) {};
    R.user = localStorage.getItem('RIF_user');
    R.geography = 'SAHSU';
+   R.mapExtent = null; // shortcut to facilitate communication between map and table -  
 
    if (detectBrowser.browser === "Explorer" && parseInt(detectBrowser.version) < 9) {
       window.top.location = ""; //LANDING PAGE

@@ -1,4 +1,4 @@
-RIF.TileTopojsonUtils = (function(tooltip) {
+RIF.TileTopojsonUtils = (function(tooltip, geolvl) {
 
    var that = this;
 
@@ -29,7 +29,7 @@ RIF.TileTopojsonUtils = (function(tooltip) {
           'xTileIdentifier=' + tileX,
           'yTileIdentifier=' + tileY,
           'zoomFactor=' + zoom,
-          'geoLevelSelectName=' + 'LEVEL4'
+          'geoLevelSelectName=' + geolvl
         ].join("&");
 
          return params;

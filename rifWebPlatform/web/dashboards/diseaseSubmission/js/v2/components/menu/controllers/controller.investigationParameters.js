@@ -46,7 +46,6 @@ RIF.menu['controller-investigationParameters'] = (function(unit) {
       }
    };
 
-
-
    return _p;
+
 });

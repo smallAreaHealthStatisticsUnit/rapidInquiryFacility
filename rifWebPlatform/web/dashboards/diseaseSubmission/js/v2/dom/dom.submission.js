@@ -84,7 +84,10 @@ RIF.dom = (function() {
                /* Map available for selection of study/comparison area */
                areaSelectionMap: $('#areaSelectionMap'),
                /* Label used to count number of areas selected */
-               resolutionCountLabel: get('resolutionCountLabel')
+               resolutionCountLabel: get('resolutionCountLabel'),
+               /* Sync button */
+               sync: $('.syncronize')
+
             };
          },
          healthCodes: function() {

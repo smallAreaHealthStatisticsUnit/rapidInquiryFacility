@@ -10,6 +10,11 @@ RIF.menu['firer-areaSelection'] = (function() {
       resolutionChanged: function(arg) {
          this.fire('resolutionChanged', arg);
       },
+
+      syncStudyArea: function() {
+         this.fire('syncStudyArea', []);
+      }
+
    };
    return firer;
 });

@@ -26,7 +26,7 @@ RIF.mediator['firer-'] = (function() {
          this.fire('startAreaSelection', null);
       },
 
-      startStatDialog: function() {
+      startStatDialog: function g() {
          this.fire('startStatDialog', null);
       },
 
@@ -37,6 +37,11 @@ RIF.mediator['firer-'] = (function() {
       modelToSchemaReady: function(modelToSchema) {
          this.fire('modelToSchemaReady', [modelToSchema]);
       },
+
+      setMapExtent: function() {
+         this.fire('setMapExtent', []);
+      }
+
    };
 
    return firer;
