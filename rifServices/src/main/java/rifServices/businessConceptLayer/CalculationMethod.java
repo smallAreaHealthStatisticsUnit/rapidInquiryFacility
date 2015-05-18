@@ -553,6 +553,8 @@ private String name;
 		//These checks will throw a security exception and stop further validation
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
+		
+/*		
 		if (fieldValidationUtility.isEmpty(name) == true) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -570,7 +572,7 @@ private String name;
 					priorFieldNameLabel);
 			errorMessages.add(errorMessage);		
 		}
-				
+*/				
 		if (fieldValidationUtility.isEmpty(codeRoutineName) == true) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -580,6 +582,7 @@ private String name;
 			errorMessages.add(errorMessage);		
 		}
 
+/*		
 		if (fieldValidationUtility.isEmpty(description) == true) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -588,7 +591,7 @@ private String name;
 					descriptionFieldNameLabel);
 			errorMessages.add(errorMessage);		
 		}
-			
+*/			
 		if (parameters == null) {
 			String parametersFieldLabel
 				= RIFServiceMessages.getMessage("parameter.plural.label");

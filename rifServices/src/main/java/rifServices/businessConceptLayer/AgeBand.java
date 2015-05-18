@@ -543,7 +543,9 @@ public final class AgeBand
 		
 		String recordType
 			= RIFServiceMessages.getMessage("ageBand.label");
+
 		
+/*		
 		//Test whether lower limit and upper limit are numbers
 		boolean bothLimitsAreValid = true;
 		String lowerLimitFieldName
@@ -621,6 +623,7 @@ public final class AgeBand
 			}
 		}
 		countErrors(RIFServiceError.INVALID_AGE_GROUP, errorMessages);
+		*/
 	}
 	
 

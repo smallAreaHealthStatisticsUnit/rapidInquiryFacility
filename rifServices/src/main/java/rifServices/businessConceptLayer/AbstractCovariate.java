@@ -369,6 +369,8 @@ abstract public class AbstractCovariate
 			errorMessages.add(errorMessage);
 		}
   
+		/*
+		
 		if (covariateType == null) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -436,6 +438,8 @@ abstract public class AbstractCovariate
 				}
 			}					
 		}	
+		
+		*/
 	}
 // ==========================================
 // Section Interfaces
