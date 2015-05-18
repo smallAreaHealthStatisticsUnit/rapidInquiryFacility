@@ -408,7 +408,7 @@ public final class SQLConnectionManager
 			logException(exception);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
-					"general.db.error.unableToSetCommit");
+					"sqlConnectionManager.error.unableToAssignReadConnection");
 
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
@@ -448,7 +448,7 @@ public final class SQLConnectionManager
 			logException(exception);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToControlAutocommitSetting");
+					"sqlConnectionManager.error.unableToReclaimReadConnection");
 
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
@@ -490,7 +490,7 @@ public final class SQLConnectionManager
 			logException(exception);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToControlAutocommitSetting");
+					"sqlConnectionManager.error.unableToReclaimWriteConnection");
 
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
@@ -547,7 +547,7 @@ public final class SQLConnectionManager
 			logException(exception);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
-					"general.db.error.unableToSetCommit");
+					"sqlConnectionManager.error.unableToAssignWriteConnection");
 
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
