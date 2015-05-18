@@ -124,7 +124,7 @@ public final class TestCalculationMethod
 			CalculationMethod calculationMethod
 				= CalculationMethod.createCopy(masterCalculationMethod);
 			
-			calculationMethod.checkErrors();
+			calculationMethod.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -145,7 +145,7 @@ public final class TestCalculationMethod
 			CalculationMethod calculationMethod
 				= CalculationMethod.createCopy(masterCalculationMethod);
 			calculationMethod.setName(null);
-			calculationMethod.checkErrors();
+			calculationMethod.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -159,7 +159,7 @@ public final class TestCalculationMethod
 			CalculationMethod calculationMethod
 				= CalculationMethod.createCopy(masterCalculationMethod);
 			calculationMethod.setName("");
-			calculationMethod.checkErrors();
+			calculationMethod.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -174,7 +174,7 @@ public final class TestCalculationMethod
 			CalculationMethod calculationMethod
 				= CalculationMethod.createCopy(masterCalculationMethod);
 			calculationMethod.setCodeRoutineName("");
-			calculationMethod.checkErrors();
+			calculationMethod.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -188,7 +188,7 @@ public final class TestCalculationMethod
 			CalculationMethod calculationMethod
 				= CalculationMethod.createCopy(masterCalculationMethod);
 			calculationMethod.setCodeRoutineName(null);
-			calculationMethod.checkErrors();
+			calculationMethod.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -203,7 +203,7 @@ public final class TestCalculationMethod
 			CalculationMethod calculationMethod
 				= CalculationMethod.createCopy(masterCalculationMethod);
 			calculationMethod.setPrior(null);
-			calculationMethod.checkErrors();
+			calculationMethod.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -218,7 +218,7 @@ public final class TestCalculationMethod
 			CalculationMethod calculationMethod
 				= CalculationMethod.createCopy(masterCalculationMethod);
 			calculationMethod.setDescription(null);
-			calculationMethod.checkErrors();
+			calculationMethod.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -232,7 +232,7 @@ public final class TestCalculationMethod
 			CalculationMethod calculationMethod
 				= CalculationMethod.createCopy(masterCalculationMethod);
 			calculationMethod.setDescription("");
-			calculationMethod.checkErrors();
+			calculationMethod.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -251,7 +251,7 @@ public final class TestCalculationMethod
 			calculationMethod.setName("");
 			calculationMethod.setDescription(null);
 			calculationMethod.setPrior(null);
-			calculationMethod.checkErrors();
+			calculationMethod.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -278,7 +278,7 @@ public final class TestCalculationMethod
 			Parameter invalidParameter
 				= Parameter.newInstance(null, "");
 			calculationMethod.addParameter(invalidParameter);
-			calculationMethod.checkErrors();
+			calculationMethod.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -305,7 +305,7 @@ public final class TestCalculationMethod
 		calculationMethod.addParameter(p3);
 		
 		try {
-			calculationMethod.checkErrors();
+			calculationMethod.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

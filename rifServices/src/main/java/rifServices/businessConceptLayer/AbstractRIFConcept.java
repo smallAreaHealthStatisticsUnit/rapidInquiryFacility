@@ -82,7 +82,8 @@ public abstract class AbstractRIFConcept
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	public enum ValidationPolicy {STRICT, RELAXED};
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -223,7 +224,8 @@ public abstract class AbstractRIFConcept
 	 *
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public abstract void checkErrors() throws RIFServiceException;
+	public abstract void checkErrors(
+		final ValidationPolicy validationPolicy) throws RIFServiceException;
 		
 	/**
 	 * Check security violations.

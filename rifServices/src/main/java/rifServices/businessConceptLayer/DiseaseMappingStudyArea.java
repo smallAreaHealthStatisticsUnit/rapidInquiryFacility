@@ -2,10 +2,12 @@
 package rifServices.businessConceptLayer;
 
 
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceMessages;
+
 
 
 
@@ -189,13 +191,15 @@ private DiseaseMappingStudyArea() {
 		super.checkSecurityViolations();		
 	}
 	
-
-	public void checkErrors() 
-		throws RIFServiceException {		
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
+		throws RIFServiceException {	
 		
 		//do security checks on String area identifiers
 		ArrayList<String> errorMessages = new ArrayList<String>();
-		super.checkErrors(errorMessages);
+		super.checkErrors(
+			validationPolicy,
+			errorMessages);
 		countErrors(
 			RIFServiceError.INVALID_DISEASE_MAPPING_STUDY_AREA, 
 			errorMessages);		

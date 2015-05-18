@@ -122,7 +122,7 @@ public final class TestGeoLevelView
 		try {
 			GeoLevelView geoLevelView 
 				= GeoLevelView.createCopy(masterGeoLevelView);
-			geoLevelView.checkErrors();
+			geoLevelView.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -139,7 +139,7 @@ public final class TestGeoLevelView
 			GeoLevelView geoLevelView 
 				= GeoLevelView.createCopy(masterGeoLevelView);
 			geoLevelView.setName("");
-			geoLevelView.checkErrors();
+			geoLevelView.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -154,7 +154,7 @@ public final class TestGeoLevelView
 			GeoLevelView geoLevelView 
 				= GeoLevelView.createCopy(masterGeoLevelView);
 			geoLevelView.setName(null);
-			geoLevelView.checkErrors();
+			geoLevelView.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

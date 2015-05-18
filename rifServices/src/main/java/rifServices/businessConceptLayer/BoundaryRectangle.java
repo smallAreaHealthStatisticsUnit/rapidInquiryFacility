@@ -1,5 +1,6 @@
 package rifServices.businessConceptLayer;
 
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
@@ -241,11 +242,11 @@ public class BoundaryRectangle extends AbstractRIFConcept {
 		
 	}
 
-	
-	public void checkErrors() 
-		throws RIFServiceException {
 
-				
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
+		throws RIFServiceException {
+		
 		//ensure that xMax >= xMin
 		ArrayList<String> errorMessages = new ArrayList<String>(); 
 

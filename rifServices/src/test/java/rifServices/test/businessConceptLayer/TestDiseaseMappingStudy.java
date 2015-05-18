@@ -149,7 +149,7 @@ public final class TestDiseaseMappingStudy
 		try {
 			DiseaseMappingStudy diseaseMappingStudy
 				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
-			diseaseMappingStudy.checkErrors();
+			diseaseMappingStudy.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -170,7 +170,7 @@ public final class TestDiseaseMappingStudy
 			DiseaseMappingStudy diseaseMappingStudy
 				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.setName(null);
-			diseaseMappingStudy.checkErrors();
+			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -184,7 +184,7 @@ public final class TestDiseaseMappingStudy
 			DiseaseMappingStudy diseaseMappingStudy
 				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.setName("");
-			diseaseMappingStudy.checkErrors();
+			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -200,7 +200,7 @@ public final class TestDiseaseMappingStudy
 			DiseaseMappingStudy diseaseMappingStudy
 				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.setDescription(null);
-			diseaseMappingStudy.checkErrors();
+			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -214,7 +214,7 @@ public final class TestDiseaseMappingStudy
 			DiseaseMappingStudy diseaseMappingStudy
 				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.setDescription("");
-			diseaseMappingStudy.checkErrors();
+			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -229,7 +229,7 @@ public final class TestDiseaseMappingStudy
 			DiseaseMappingStudy diseaseMappingStudy
 				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.setComparisonArea(null);
-			diseaseMappingStudy.checkErrors();
+			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -253,7 +253,7 @@ public final class TestDiseaseMappingStudy
 			diseaseMappingStudy.setDescription(null);
 			diseaseMappingStudy.setGeography(null);
 			diseaseMappingStudy.setComparisonArea(null);
-			diseaseMappingStudy.checkErrors();
+			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -281,7 +281,7 @@ public final class TestDiseaseMappingStudy
 			DiseaseMappingStudy diseaseMappingStudy
 				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.setInvestigations(null);
-			diseaseMappingStudy.checkErrors();
+			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -295,7 +295,7 @@ public final class TestDiseaseMappingStudy
 			DiseaseMappingStudy diseaseMappingStudy
 				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.clearInvestigations();
-			diseaseMappingStudy.checkErrors();
+			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -341,7 +341,7 @@ public final class TestDiseaseMappingStudy
 			DiseaseMappingStudy diseaseMappingStudy
 				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.setComparisonArea(invalidComparisonArea);
-			diseaseMappingStudy.checkErrors();
+			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -373,7 +373,7 @@ public final class TestDiseaseMappingStudy
 			DiseaseMappingStudy diseaseMappingStudy
 				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.addInvestigation(invalidInvestigation);
-			diseaseMappingStudy.checkErrors();
+			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -416,7 +416,7 @@ public final class TestDiseaseMappingStudy
 		diseaseMappingStudy.addInvestigation(investigation3);
 
 		try {
-			diseaseMappingStudy.checkErrors();
+			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -465,7 +465,7 @@ public final class TestDiseaseMappingStudy
 			investigation2.addCovariate(sesCovariate2);
 			diseaseMappingStudy.addInvestigation(investigation2);
 			
-			diseaseMappingStudy.checkErrors();			
+			diseaseMappingStudy.checkErrors(getValidationPolicy());			
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -507,7 +507,7 @@ public final class TestDiseaseMappingStudy
 			investigation2.addCovariate(tri1KMCovariate);
 			diseaseMappingStudy.addInvestigation(investigation2);
 			
-			diseaseMappingStudy.checkErrors();
+			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -545,7 +545,7 @@ public final class TestDiseaseMappingStudy
 			investigation2.addCovariate(sesCovariate2);		
 			diseaseMappingStudy.addInvestigation(investigation2);
 			
-			diseaseMappingStudy.checkErrors();
+			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			
 		}
 		catch(RIFServiceException rifServiceException) {

@@ -1,5 +1,6 @@
 package rifServices.businessConceptLayer;
 
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -209,12 +210,15 @@ public final class GeoLevelArea
 		super.checkSecurityViolations();
 	}
 	
-
-	public void checkErrors()
-		throws RIFServiceException {
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
+		throws RIFServiceException {	
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();		
-		super.checkErrors(RIFServiceError.INVALID_GEOLEVEL_AREA, errorMessages);
+		super.checkErrors(
+			validationPolicy,
+			RIFServiceError.INVALID_GEOLEVEL_AREA, 
+			errorMessages);
 		countErrors(RIFServiceError.INVALID_GEOLEVEL_AREA, errorMessages);
 	}
 	

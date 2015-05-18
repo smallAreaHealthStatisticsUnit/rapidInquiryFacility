@@ -2,6 +2,7 @@ package rifServices.businessConceptLayer;
 
 import rifServices.system.RIFServiceException;
 
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceMessages;
@@ -201,7 +202,8 @@ final public class User {
 	 *
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void checkErrors() 
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
 		throws RIFServiceException {
 
 		ArrayList<String> errorMessages = new ArrayList<String>();

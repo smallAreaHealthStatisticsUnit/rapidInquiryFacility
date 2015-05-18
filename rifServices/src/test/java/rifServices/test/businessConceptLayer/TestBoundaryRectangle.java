@@ -122,7 +122,7 @@ public final class TestBoundaryRectangle
 		try {
 			BoundaryRectangle boundaryRectangle
 				= BoundaryRectangle.createCopy(masterBoundaryRectangle);
-			boundaryRectangle.checkErrors();
+			boundaryRectangle.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -143,7 +143,7 @@ public final class TestBoundaryRectangle
 			BoundaryRectangle boundaryRectangle
 				= BoundaryRectangle.createCopy(masterBoundaryRectangle);
 			boundaryRectangle.setYMax("");
-			boundaryRectangle.checkErrors();
+			boundaryRectangle.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -158,7 +158,7 @@ public final class TestBoundaryRectangle
 			BoundaryRectangle boundaryRectangle
 				= BoundaryRectangle.createCopy(masterBoundaryRectangle);
 			boundaryRectangle.setXMax("");
-			boundaryRectangle.checkErrors();
+			boundaryRectangle.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -173,7 +173,7 @@ public final class TestBoundaryRectangle
 			BoundaryRectangle boundaryRectangle
 				= BoundaryRectangle.createCopy(masterBoundaryRectangle);
 			boundaryRectangle.setYMin("");
-			boundaryRectangle.checkErrors();
+			boundaryRectangle.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -188,7 +188,7 @@ public final class TestBoundaryRectangle
 			BoundaryRectangle boundaryRectangle
 				= BoundaryRectangle.createCopy(masterBoundaryRectangle);
 			boundaryRectangle.setXMin("");
-			boundaryRectangle.checkErrors();
+			boundaryRectangle.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -212,7 +212,7 @@ public final class TestBoundaryRectangle
 			boundaryRectangle.setYMax("");
 			boundaryRectangle.setXMax("aaa");
 			boundaryRectangle.setYMin(null);
-			boundaryRectangle.checkErrors();
+			boundaryRectangle.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

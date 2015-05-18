@@ -254,6 +254,7 @@ public abstract class AbstractRIFContextOption
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	protected void checkErrors(
+		final ValidationPolicy validationPolicy,
 		final RIFServiceError rifServiceError,
 		final ArrayList<String> errorMessages) 
 		throws RIFServiceException {

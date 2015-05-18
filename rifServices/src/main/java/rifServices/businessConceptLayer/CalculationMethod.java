@@ -1,6 +1,7 @@
 
 package rifServices.businessConceptLayer;
 
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
@@ -532,9 +533,9 @@ private String name;
 		}
 	}
 	
-
-	public void checkErrors() 
-		throws RIFServiceException {	
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
+		throws RIFServiceException {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		String recordType = getRecordType();
@@ -605,7 +606,7 @@ private String name;
 		else if (parameters.isEmpty() == false) {
 			for (Parameter parameter : parameters) {
 				try {
-					parameter.checkErrors();
+					parameter.checkErrors(validationPolicy);
 				}
 				catch(RIFServiceException exception) {
 					errorMessages.addAll(exception.getErrorMessages());

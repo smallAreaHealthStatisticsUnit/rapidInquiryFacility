@@ -227,7 +227,7 @@ public final class TestInvestigation
 		try {
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();			
@@ -243,7 +243,7 @@ public final class TestInvestigation
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
 			investigation.setTitle("b");
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();			
@@ -263,7 +263,7 @@ public final class TestInvestigation
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
 			investigation.setInterval("");
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();			
@@ -273,7 +273,7 @@ public final class TestInvestigation
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
 			investigation.setInterval(null);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();			
@@ -294,7 +294,7 @@ public final class TestInvestigation
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
 			investigation.setTitle("1 very interesting investigation");
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -309,7 +309,7 @@ public final class TestInvestigation
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
 			investigation.setTitle(" very interesting investigation");
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -324,7 +324,7 @@ public final class TestInvestigation
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
 			investigation.setTitle("_my_investigation");
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -339,7 +339,7 @@ public final class TestInvestigation
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
 			investigation.setTitle("My qur+$%y investigation");
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -364,7 +364,7 @@ public final class TestInvestigation
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
 			investigation.setTitle("");
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -378,7 +378,7 @@ public final class TestInvestigation
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
 			investigation.setTitle(null);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -394,7 +394,7 @@ public final class TestInvestigation
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
 			investigation.setNdPair(null);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -409,7 +409,7 @@ public final class TestInvestigation
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
 			investigation.setSex(null);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -424,7 +424,7 @@ public final class TestInvestigation
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
 			investigation.setYearRange(null);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -450,7 +450,7 @@ public final class TestInvestigation
 			NumeratorDenominatorPair ndPair
 				= NumeratorDenominatorPair.newInstance(null, "", "", "");
 			investigation.setNdPair(ndPair);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -471,7 +471,7 @@ public final class TestInvestigation
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
 			investigation.setHealthCodes(null);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -487,7 +487,7 @@ public final class TestInvestigation
 			ArrayList<HealthCode> emptyHealthCodeList 
 				= new ArrayList<HealthCode>();
 			investigation.setHealthCodes(emptyHealthCodeList);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -503,7 +503,7 @@ public final class TestInvestigation
 			ArrayList<HealthCode> healthCodes
 				= investigation.getHealthCodes();
 			healthCodes.add(null);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -527,7 +527,7 @@ public final class TestInvestigation
 			HealthCode invalidHealthCode
 				= HealthCode.newInstance("", "", "", false);
 			investigation.addHealthCode(invalidHealthCode);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -547,7 +547,7 @@ public final class TestInvestigation
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
 			investigation.clearAgeBands();
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -574,7 +574,7 @@ public final class TestInvestigation
 				= Investigation.createCopy(masterInvestigation);
 			AgeBand invalidAgeBand = AgeBand.newInstance();
 			investigation.addAgeBand(invalidAgeBand);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -598,7 +598,7 @@ public final class TestInvestigation
 				= Investigation.createCopy(masterInvestigation);
 			YearRange yearRange = YearRange.newInstance("1997", "1992");
 			investigation.setYearRange(yearRange);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -620,7 +620,7 @@ public final class TestInvestigation
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
 			investigation.setYearIntervals(null);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -636,7 +636,7 @@ public final class TestInvestigation
 			ArrayList<YearInterval> emptyYearIntervalList 
 				= new ArrayList<YearInterval>();
 			investigation.setYearIntervals(emptyYearIntervalList);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -660,7 +660,7 @@ public final class TestInvestigation
 				= Investigation.createCopy(masterInvestigation);
 			YearInterval yearInterval = YearInterval.newInstance("abc", "def");
 			investigation.addYearInterval(yearInterval);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -687,7 +687,7 @@ public final class TestInvestigation
 			yearIntervals.add(YearInterval.newInstance("1992", "1995"));
 			yearIntervals.add(YearInterval.newInstance("1994", "1996"));
 			investigation.setYearIntervals(yearIntervals);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -707,7 +707,7 @@ public final class TestInvestigation
 			yearIntervals.add(YearInterval.newInstance("1992", "1994"));
 			yearIntervals.add(YearInterval.newInstance("1996", "1997"));
 			investigation.setYearIntervals(yearIntervals);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -734,7 +734,7 @@ public final class TestInvestigation
 			yearIntervals.add(YearInterval.newInstance("1066", "1992"));
 			yearIntervals.add(YearInterval.newInstance("1996", "1997"));
 			investigation.setYearIntervals(yearIntervals);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -755,7 +755,7 @@ public final class TestInvestigation
 			yearIntervals.add(YearInterval.newInstance("1994", "1066"));
 			yearIntervals.add(YearInterval.newInstance("1996", "1997"));
 			investigation.setYearIntervals(yearIntervals);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -776,7 +776,7 @@ public final class TestInvestigation
 			yearIntervals.add(YearInterval.newInstance("3453", "1995"));
 			yearIntervals.add(YearInterval.newInstance("1996", "1997"));
 			investigation.setYearIntervals(yearIntervals);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -796,7 +796,7 @@ public final class TestInvestigation
 			yearIntervals.add(YearInterval.newInstance("1994", "4567"));
 			yearIntervals.add(YearInterval.newInstance("1996", "1997"));
 			investigation.setYearIntervals(yearIntervals);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -817,7 +817,7 @@ public final class TestInvestigation
 			Investigation investigation
 				= Investigation.createCopy(masterInvestigation);
 			investigation.setCovariates(null);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -833,7 +833,7 @@ public final class TestInvestigation
 			ArrayList<AbstractCovariate> emptyCovariateList
 				= new ArrayList<AbstractCovariate>();
 			investigation.setCovariates(emptyCovariateList);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -849,7 +849,7 @@ public final class TestInvestigation
 			ArrayList<AbstractCovariate> covariates
 				= investigation.getCovariates();
 			covariates.add(null);
-			investigation.checkErrors();
+			investigation.checkErrors(getValidationPolicy());
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {

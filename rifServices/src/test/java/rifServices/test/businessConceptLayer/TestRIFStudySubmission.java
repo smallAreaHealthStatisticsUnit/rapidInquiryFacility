@@ -139,7 +139,7 @@ public final class TestRIFStudySubmission
 		try {
 			RIFStudySubmission rifStudySubmission
 				= RIFStudySubmission.createCopy(masterRIFStudySubmission);
-			rifStudySubmission.checkErrors();
+			rifStudySubmission.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();	
@@ -160,7 +160,7 @@ public final class TestRIFStudySubmission
 			RIFStudySubmission rifStudySubmission
 				= RIFStudySubmission.createCopy(masterRIFStudySubmission);
 			rifStudySubmission.setStudy(null);
-			rifStudySubmission.checkErrors();
+			rifStudySubmission.checkErrors(getValidationPolicy());
 			fail();	
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -196,7 +196,7 @@ public final class TestRIFStudySubmission
 				= generator.createSampleDiseaseMappingStudy();
 			invalidDiseaseMappingStudy.setName(null);
 			rifStudySubmission.setStudy(invalidDiseaseMappingStudy);
-			rifStudySubmission.checkErrors();
+			rifStudySubmission.checkErrors(getValidationPolicy());
 			fail();	
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -224,7 +224,7 @@ public final class TestRIFStudySubmission
 				= generator.createSampleCalculationMethod("Blah");
 			invalidCalculationMethod.setPrior(null);			
 			rifStudySubmission.addCalculationMethod(invalidCalculationMethod);
-			rifStudySubmission.checkErrors();
+			rifStudySubmission.checkErrors(getValidationPolicy());
 			fail();	
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -240,7 +240,7 @@ public final class TestRIFStudySubmission
 			SampleTestObjectGenerator generator
 				= new SampleTestObjectGenerator();
 			rifStudySubmission.addCalculationMethod(null);
-			rifStudySubmission.checkErrors();
+			rifStudySubmission.checkErrors(getValidationPolicy());
 			fail();	
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -264,7 +264,7 @@ public final class TestRIFStudySubmission
 			RIFStudySubmission rifStudySubmission
 				= RIFStudySubmission.createCopy(masterRIFStudySubmission);
 			rifStudySubmission.setRIFOutputOptions(null);			
-			rifStudySubmission.checkErrors();
+			rifStudySubmission.checkErrors(getValidationPolicy());
 			fail();	
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -278,7 +278,7 @@ public final class TestRIFStudySubmission
 			RIFStudySubmission rifStudySubmission
 				= RIFStudySubmission.createCopy(masterRIFStudySubmission);
 			rifStudySubmission.clearRIFOutputOptions();			
-			rifStudySubmission.checkErrors();
+			rifStudySubmission.checkErrors(getValidationPolicy());
 			fail();	
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -294,7 +294,7 @@ public final class TestRIFStudySubmission
 			ArrayList<RIFOutputOption> rifOutputOptions
 				= rifStudySubmission.getRIFOutputOptions();
 			rifOutputOptions.add(null);
-			rifStudySubmission.checkErrors();
+			rifStudySubmission.checkErrors(getValidationPolicy());
 			fail();	
 		}
 		catch(RIFServiceException rifServiceException) {

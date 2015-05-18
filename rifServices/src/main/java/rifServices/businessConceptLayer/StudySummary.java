@@ -5,6 +5,7 @@ import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceSecurityException;
 import rifServices.util.FieldValidationUtility;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 
 import java.util.ArrayList;
 
@@ -196,7 +197,8 @@ public final class StudySummary {
 	// Section Errors and Validation
 	// ==========================================
 
-	public void checkErrors() 
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
 		throws RIFServiceException {
 
 		FieldValidationUtility fieldValidationUtility

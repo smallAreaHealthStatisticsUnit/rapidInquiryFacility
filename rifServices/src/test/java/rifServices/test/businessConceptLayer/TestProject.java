@@ -118,7 +118,7 @@ public final class TestProject
 	public void acceptValidInstance_COMMON() {		
 		Project project = Project.createCopy(masterProject);
 		try {
-			project.checkErrors();
+			project.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();		
@@ -134,7 +134,7 @@ public final class TestProject
 		try {
 			Project testProject = Project.createCopy(masterProject);
 			testProject.setName(null);
-			testProject.checkErrors();
+			testProject.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -147,7 +147,7 @@ public final class TestProject
 		try {
 			Project testProject = Project.createCopy(masterProject);
 			testProject.setName("");
-			testProject.checkErrors();
+			testProject.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -160,7 +160,7 @@ public final class TestProject
 		try {
 			Project testProject = Project.createCopy(masterProject);
 			testProject.setDescription(null);
-			testProject.checkErrors();
+			testProject.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -173,7 +173,7 @@ public final class TestProject
 		try {
 			Project testProject = Project.createCopy(masterProject);
 			testProject.setDescription("");
-			testProject.checkErrors();
+			testProject.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -186,7 +186,7 @@ public final class TestProject
 		try {
 			Project testProject = Project.createCopy(masterProject);
 			testProject.setStartDate(null);
-			testProject.checkErrors();
+			testProject.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -199,7 +199,7 @@ public final class TestProject
 		try {
 			Project testProject = Project.createCopy(masterProject);
 			testProject.setStartDate("");
-			testProject.checkErrors();
+			testProject.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -213,7 +213,7 @@ public final class TestProject
 		try {
 			Project testProject = Project.createCopy(masterProject);
 			testProject.setEndDate(null);
-			testProject.checkErrors();
+			testProject.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -226,7 +226,7 @@ public final class TestProject
 		try {
 			Project testProject = Project.createCopy(masterProject);
 			testProject.setEndDate("");
-			testProject.checkErrors();
+			testProject.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -250,7 +250,7 @@ public final class TestProject
 			testProject.setDescription(null);
 			testProject.setStartDate("15-XXX-2006");
 			testProject.setEndDate("15-JAN-QTQ3");
-			testProject.checkErrors();
+			testProject.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

@@ -419,6 +419,7 @@ abstract public class AbstractStudy
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	protected void checkErrors(
+		final ValidationPolicy validationPolicy,
 		final ArrayList<String> errorMessages) 
 		throws RIFServiceException {
 
@@ -462,7 +463,7 @@ abstract public class AbstractStudy
 		}
 		else {
 			try {
-				geography.checkErrors();
+				geography.checkErrors(validationPolicy);
 			}
 			catch(RIFServiceException exception) {
 				errorMessages.addAll(exception.getErrorMessages());
@@ -481,7 +482,7 @@ abstract public class AbstractStudy
 		}
 		else {
 			try {
-				comparisonArea.checkErrors();
+				comparisonArea.checkErrors(validationPolicy);
 			}
 			catch(RIFServiceException exception) {
 				errorMessages.addAll(exception.getErrorMessages());
@@ -520,7 +521,7 @@ abstract public class AbstractStudy
 				}
 				else {
 					try {
-						investigation.checkErrors();
+						investigation.checkErrors(validationPolicy);
 					}
 					catch(RIFServiceException exception) {
 						errorMessages.addAll(exception.getErrorMessages());			

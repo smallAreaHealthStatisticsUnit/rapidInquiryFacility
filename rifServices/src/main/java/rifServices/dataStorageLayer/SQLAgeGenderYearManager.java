@@ -2,7 +2,9 @@ package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 
+
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.businessConceptLayer.AgeGroup;
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.Geography;
@@ -444,15 +446,17 @@ final class SQLAgeGenderYearManager
 		final NumeratorDenominatorPair ndPair) 
 		throws RIFServiceException {
 
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		
 		if (geography != null) {
-			geography.checkErrors();
+			geography.checkErrors(validationPolicy);
 		
 			sqlRIFContextManager.checkGeographyExists(
 				connection, 
 				geography.getName());	
 		}
 		if (ndPair != null) {
-			ndPair.checkErrors();
+			ndPair.checkErrors(validationPolicy);
 			sqlRIFContextManager.checkNDPairExists(
 				connection, 
 				geography,

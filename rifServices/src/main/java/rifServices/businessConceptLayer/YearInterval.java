@@ -606,7 +606,8 @@ final public class YearInterval
      *
      * @throws RIFServiceException the RIF service exception
      */
-    public void checkErrors() 
+    public void checkErrors(
+    	final ValidationPolicy validationPolicy) 
     	throws RIFServiceException {
 
     	String recordType = getRecordType();	

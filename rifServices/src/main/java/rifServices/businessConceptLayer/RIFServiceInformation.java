@@ -313,7 +313,8 @@ public final class RIFServiceInformation
 // Section Errors and Validation
 // ==========================================
 
-	public void checkErrors() throws RIFServiceException {
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) throws RIFServiceException {
 		
 		String recordType 
 			= RIFServiceMessages.getMessage("rifServiceInformation.label");

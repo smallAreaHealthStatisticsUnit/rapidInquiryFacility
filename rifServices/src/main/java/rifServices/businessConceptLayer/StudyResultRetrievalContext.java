@@ -2,12 +2,13 @@ package rifServices.businessConceptLayer;
 
 import java.text.Collator;
 
+
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceSecurityException;
 import rifServices.util.FieldValidationUtility;
-
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import java.util.ArrayList;
 
 /**
@@ -247,7 +248,8 @@ public class StudyResultRetrievalContext {
 	// Section Errors and Validation
 	// ==========================================
 
-	public void checkErrors() 
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
 		throws RIFServiceException {
 
 		ArrayList<String> errorMessages = new ArrayList<String>();

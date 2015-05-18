@@ -122,7 +122,7 @@ public final class TestAgeGroup
 		AgeGroup ageGroup = AgeGroup.createCopy(masterAgeGroup1);
 		
 		try {
-			ageGroup.checkErrors();		
+			ageGroup.checkErrors(getValidationPolicy());		
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -142,7 +142,7 @@ public final class TestAgeGroup
 		AgeGroup ageGroup1 = AgeGroup.createCopy(masterAgeGroup1);		
 		try {
 			ageGroup1.setName("");			
-			ageGroup1.checkErrors();		
+			ageGroup1.checkErrors(getValidationPolicy());		
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -156,7 +156,7 @@ public final class TestAgeGroup
 		AgeGroup ageGroup2 = AgeGroup.createCopy(masterAgeGroup1);		
 		try {
 			ageGroup2.setLowerLimit(null);		
-			ageGroup2.checkErrors();		
+			ageGroup2.checkErrors(getValidationPolicy());		
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -170,7 +170,7 @@ public final class TestAgeGroup
 		AgeGroup ageGroup3 = AgeGroup.createCopy(masterAgeGroup1);		
 		try {
 			ageGroup3.setUpperLimit("");		
-			ageGroup3.checkErrors();		
+			ageGroup3.checkErrors(getValidationPolicy());		
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -193,7 +193,7 @@ public final class TestAgeGroup
 		AgeGroup ageGroup1 = AgeGroup.createCopy(masterAgeGroup1);		
 		try {
 			ageGroup1.setLowerLimit("abc");
-			ageGroup1.checkErrors();		
+			ageGroup1.checkErrors(getValidationPolicy());		
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -206,7 +206,7 @@ public final class TestAgeGroup
 		AgeGroup ageGroup2 = AgeGroup.createCopy(masterAgeGroup1);		
 		try {
 			ageGroup2.setLowerLimit(".");
-			ageGroup2.checkErrors();		
+			ageGroup2.checkErrors(getValidationPolicy());		
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -219,7 +219,7 @@ public final class TestAgeGroup
 		AgeGroup ageGroup3 = AgeGroup.createCopy(masterAgeGroup1);		
 		try {
 			ageGroup3.setUpperLimit("unknown");
-			ageGroup3.checkErrors();		
+			ageGroup3.checkErrors(getValidationPolicy());		
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -243,7 +243,7 @@ public final class TestAgeGroup
 		AgeGroup ageGroup4 = AgeGroup.createCopy(masterAgeGroup1);		
 		try {
 			ageGroup4.setUpperLimit("11.456");
-			ageGroup4.checkErrors();		
+			ageGroup4.checkErrors(getValidationPolicy());		
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -263,7 +263,7 @@ public final class TestAgeGroup
 		try {
 			ageGroup1.setLowerLimit("10");
 			ageGroup1.setUpperLimit("5");
-			ageGroup1.checkErrors();		
+			ageGroup1.checkErrors(getValidationPolicy());		
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -284,7 +284,7 @@ public final class TestAgeGroup
 			ageGroup1.setName("");
 			ageGroup1.setLowerLimit("10");
 			ageGroup1.setUpperLimit("5");
-			ageGroup1.checkErrors();		
+			ageGroup1.checkErrors(getValidationPolicy());		
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

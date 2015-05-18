@@ -207,11 +207,15 @@ public class GeoLevelView
 	}
 	
 
-	public void checkErrors()
+	public void checkErrors(
+		final ValidationPolicy validationPolicy)
 		throws RIFServiceException {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
-		super.checkErrors(RIFServiceError.INVALID_GEOLEVEL_VIEW, errorMessages);
+		super.checkErrors(
+			validationPolicy,
+			RIFServiceError.INVALID_GEOLEVEL_VIEW, 
+			errorMessages);
 		countErrors(RIFServiceError.INVALID_GEOLEVEL_VIEW, errorMessages);
 	}
 	

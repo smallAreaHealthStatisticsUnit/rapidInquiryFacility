@@ -1,17 +1,17 @@
 package rifServices.test.fileFormats;
 
 import rifServices.fileFormats.*;
+
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.User;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceException;
 import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 
+
 import org.json.*;
-
 import static org.junit.Assert.*;
-
 import org.junit.Test;
-
 import java.io.*;
 
 /**
@@ -83,7 +83,8 @@ public class TestRIFSubmisssionWriter {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -92,6 +93,10 @@ public class TestRIFSubmisssionWriter {
 
 	}
 
+	public ValidationPolicy getValidationPolicy() {
+		return validationPolicy;
+	}
+	
 	@Test
 	public void test1() {
 		SampleTestObjectGenerator testObjectGenerator
@@ -224,7 +229,7 @@ public class TestRIFSubmisssionWriter {
 			
 			RIFStudySubmission rifStudySubmission2
 				=  reader1.getStudySubmission();
-			rifStudySubmission2.checkErrors();
+			rifStudySubmission2.checkErrors(getValidationPolicy());
 			
 		}
 		catch(RIFServiceException rifServiceException) {

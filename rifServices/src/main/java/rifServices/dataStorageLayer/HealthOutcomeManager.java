@@ -1,6 +1,8 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
@@ -99,6 +101,7 @@ final class HealthOutcomeManager {
 	/** The health code providers. */
 	private ArrayList<HealthCodeProviderInterface> healthCodeProviders;
 	
+	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -390,7 +393,7 @@ final class HealthOutcomeManager {
 		throws RIFServiceException {
 
 		//Validate Parameters
-		healthCodeTaxonomy.checkErrors();
+		healthCodeTaxonomy.checkErrors(ValidationPolicy.STRICT);
 		
 		HealthCodeProviderInterface healthCodeProvider
 			= getRelevantHealthCodeProvider(healthCodeTaxonomy);		
@@ -410,7 +413,7 @@ final class HealthOutcomeManager {
 		throws RIFServiceException {
 		
 		//Validate Parameters
-		parentHealthCode.checkErrors();
+		parentHealthCode.checkErrors(validationPolicy);
 		
 		HealthCodeProviderInterface healthCodeProvider
 			= getRelevantHealthCodeProvider(parentHealthCode);		
@@ -453,7 +456,7 @@ final class HealthOutcomeManager {
 		throws RIFServiceException {
 				
 		//Validate Parameters
-		childHealthCode.checkErrors();
+		childHealthCode.checkErrors(validationPolicy);
 				
 		HealthCodeProviderInterface healthCodeProvider
 			= getRelevantHealthCodeProvider(childHealthCode);		

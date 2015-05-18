@@ -1,6 +1,7 @@
 
 package rifServices.businessConceptLayer;
 
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
@@ -214,16 +215,18 @@ public final class DiseaseMappingStudy
 // Section Errors and Validation
 // ==========================================
 	
-	
 
-	public void checkErrors() 
-		throws RIFServiceException {	
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
+		throws RIFServiceException {		
 		
 		String recordType
 			= RIFServiceMessages.getMessage("diseaseMappingStudy.label");	
 	
 		ArrayList<String> errorMessages = new ArrayList<String>();
-		super.checkErrors(errorMessages);
+		super.checkErrors(
+			validationPolicy,
+			errorMessages);
 				
 		//add any errors inherent in the study area object
 		if (diseaseMappingStudyArea == null) {
@@ -239,7 +242,7 @@ public final class DiseaseMappingStudy
 		}
 		else {			
 			try {
-				diseaseMappingStudyArea.checkErrors();
+				diseaseMappingStudyArea.checkErrors(validationPolicy);
 			}
 			catch(RIFServiceException exception) {
 				errorMessages.addAll(exception.getErrorMessages());

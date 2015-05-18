@@ -119,7 +119,7 @@ public final class TestGeoLevelToMap
 		try {
 			GeoLevelToMap geoLevelToMap 
 				= GeoLevelToMap.createCopy(masterGeoLevelToMap);
-			geoLevelToMap.checkErrors();
+			geoLevelToMap.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -136,7 +136,7 @@ public final class TestGeoLevelToMap
 			GeoLevelToMap geoLevelToMap 
 				= GeoLevelToMap.createCopy(masterGeoLevelToMap);
 			geoLevelToMap.setName("");
-			geoLevelToMap.checkErrors();
+			geoLevelToMap.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -151,7 +151,7 @@ public final class TestGeoLevelToMap
 			GeoLevelToMap geoLevelToMap 
 				= GeoLevelToMap.createCopy(masterGeoLevelToMap);
 			geoLevelToMap.setName(null);
-			geoLevelToMap.checkErrors();
+			geoLevelToMap.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

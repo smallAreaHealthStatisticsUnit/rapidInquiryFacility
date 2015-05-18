@@ -2,6 +2,8 @@ package rifServices.dataStorageLayer;
 
 
 import rifServices.businessConceptLayer.RIFServiceInformation;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -89,7 +91,9 @@ public class AbstractRIFService {
 	
 	protected RIFServiceResources rifServiceResources;
 	private boolean isInitialised;
-		
+	
+	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -160,7 +164,7 @@ public class AbstractRIFService {
 		throws RIFServiceException {
 				
 		user.checkSecurityViolations();
-		user.checkErrors();
+		user.checkErrors(validationPolicy);
 
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();

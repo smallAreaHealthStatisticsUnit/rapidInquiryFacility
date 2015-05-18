@@ -125,7 +125,7 @@ public final class TestHealthCode
 		try {
 			HealthCode healthCode
 				= HealthCode.createCopy(masterHealthCode);
-			healthCode.checkErrors();
+			healthCode.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -146,7 +146,7 @@ public final class TestHealthCode
 			HealthCode healthCode1
 				= HealthCode.createCopy(masterHealthCode);
 			healthCode1.setCode("");
-			healthCode1.checkErrors();
+			healthCode1.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -161,7 +161,7 @@ public final class TestHealthCode
 			HealthCode healthCode2
 				= HealthCode.createCopy(masterHealthCode);
 			healthCode2.setNameSpace(null);
-			healthCode2.checkErrors();
+			healthCode2.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -176,7 +176,7 @@ public final class TestHealthCode
 			HealthCode healthCode3
 				= HealthCode.createCopy(masterHealthCode);
 			healthCode3.setDescription("");
-			healthCode3.checkErrors();
+			healthCode3.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -203,7 +203,7 @@ public final class TestHealthCode
 			healthCode4.setCode(null);
 			healthCode4.setNameSpace(null);
 			healthCode4.setDescription(null);
-			healthCode4.checkErrors();
+			healthCode4.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

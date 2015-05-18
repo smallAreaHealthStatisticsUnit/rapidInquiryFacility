@@ -139,7 +139,7 @@ public final class TestDiseaseMappingStudyArea
 		try {
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
-			diseaseMappingStudyArea.checkErrors();
+			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -157,7 +157,7 @@ public final class TestDiseaseMappingStudyArea
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
 			diseaseMappingStudyArea.setGeoLevelSelect(null);
-			diseaseMappingStudyArea.checkErrors();
+			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -172,7 +172,7 @@ public final class TestDiseaseMappingStudyArea
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
 			diseaseMappingStudyArea.setGeoLevelArea(null);
-			diseaseMappingStudyArea.checkErrors();
+			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -187,7 +187,7 @@ public final class TestDiseaseMappingStudyArea
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
 			diseaseMappingStudyArea.setGeoLevelView(null);
-			diseaseMappingStudyArea.checkErrors();
+			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -202,7 +202,7 @@ public final class TestDiseaseMappingStudyArea
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
 			diseaseMappingStudyArea.setGeoLevelToMap(null);
-			diseaseMappingStudyArea.checkErrors();
+			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -217,7 +217,7 @@ public final class TestDiseaseMappingStudyArea
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
 			diseaseMappingStudyArea.setMapAreas(null);
-			diseaseMappingStudyArea.checkErrors();
+			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -238,7 +238,7 @@ public final class TestDiseaseMappingStudyArea
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
 			diseaseMappingStudyArea.clearMapAreas();
-			diseaseMappingStudyArea.checkErrors();
+			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -263,7 +263,7 @@ public final class TestDiseaseMappingStudyArea
 			diseaseMappingStudyArea.addMapArea(duplicateMapArea1);
 			diseaseMappingStudyArea.addMapArea(duplicateMapArea2);
 			
-			diseaseMappingStudyArea.checkErrors();
+			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -288,7 +288,7 @@ public final class TestDiseaseMappingStudyArea
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(null, "");
 			diseaseMappingStudyArea.setGeoLevelSelect(geoLevelSelect);
-			diseaseMappingStudyArea.checkErrors();
+			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -305,7 +305,7 @@ public final class TestDiseaseMappingStudyArea
 			GeoLevelArea geoLevelArea
 				= GeoLevelArea.newInstance(null, "");			
 			diseaseMappingStudyArea.setGeoLevelArea(geoLevelArea);
-			diseaseMappingStudyArea.checkErrors();
+			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -322,7 +322,7 @@ public final class TestDiseaseMappingStudyArea
 			GeoLevelView geoLevelView
 				= GeoLevelView.newInstance(null, "");
 			diseaseMappingStudyArea.setGeoLevelView(geoLevelView);
-			diseaseMappingStudyArea.checkErrors();
+			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -339,7 +339,7 @@ public final class TestDiseaseMappingStudyArea
 			GeoLevelToMap geoLevelToMap
 				= GeoLevelToMap.newInstance(null, "");
 			diseaseMappingStudyArea.setGeoLevelToMap(geoLevelToMap);
-			diseaseMappingStudyArea.checkErrors();
+			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

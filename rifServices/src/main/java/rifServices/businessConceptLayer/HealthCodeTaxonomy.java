@@ -343,8 +343,8 @@ public class HealthCodeTaxonomy
 		}	
 	}
 	
-
-	public void checkErrors() 
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
 		throws RIFServiceException {
 
 		ArrayList<String> errorMessages = new ArrayList<String>();

@@ -1022,7 +1022,8 @@ public class Investigation
 	}
 	
 
-	public void checkErrors() 
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
 		throws RIFServiceException {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
@@ -1076,7 +1077,7 @@ public class Investigation
 		}
 		else {
 			try {
-				healthTheme.checkErrors();
+				healthTheme.checkErrors(validationPolicy);
 			}
 			catch(RIFServiceException rifServiceException) {
 				errorMessages.addAll(rifServiceException.getErrorMessages());
@@ -1102,7 +1103,8 @@ public class Investigation
 				//it manages, it gathers the error messages. At the end, all of these
 				//errors will be associated with an error type of INVALID_INVESTIGATION,
 				//rather than what it might otherwise be here - INVALID_NUMERATOR_DENOMINATOR_PAIR
-				ndPair.checkErrors();
+				ndPair.checkErrors(
+					validationPolicy);
 			}
 			catch(RIFServiceException rifServiceException) {
 				errorMessages.addAll(rifServiceException.getErrorMessages());
@@ -1140,7 +1142,7 @@ public class Investigation
 				}
 				else {
 					try {
-						healthCode.checkErrors();
+						healthCode.checkErrors(validationPolicy);
 					}
 					catch(RIFServiceException rifServiceException) {
 						errorMessages.addAll(rifServiceException.getErrorMessages());					
@@ -1182,7 +1184,7 @@ public class Investigation
 				}
 				else {
 					try {
-						ageBand.checkErrors();
+						ageBand.checkErrors(validationPolicy);
 					}
 					catch(RIFServiceException rifServiceException) {
 						errorMessages.addAll(rifServiceException.getErrorMessages());
@@ -1220,7 +1222,7 @@ public class Investigation
 		}
 		else {
 			try {
-				yearRange.checkErrors();
+				yearRange.checkErrors(validationPolicy);
 			}
 			catch(RIFServiceException rifServiceException) {
 				errorMessages.addAll(rifServiceException.getErrorMessages());
@@ -1259,7 +1261,7 @@ public class Investigation
 				}
 				else {
 					try {
-						yearInterval.checkErrors();					
+						yearInterval.checkErrors(validationPolicy);					
 					}
 					catch(RIFServiceException rifServiceException) {
 						errorMessages.addAll(rifServiceException.getErrorMessages());
@@ -1329,7 +1331,7 @@ public class Investigation
 				}
 				else {
 					try {
-						covariate.checkErrors();
+						covariate.checkErrors(validationPolicy);
 					}
 					catch(RIFServiceException rifServiceException) {
 						errorMessages.addAll(rifServiceException.getErrorMessages());					

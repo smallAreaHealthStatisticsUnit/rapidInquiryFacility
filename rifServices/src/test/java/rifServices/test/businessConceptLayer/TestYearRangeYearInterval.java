@@ -222,7 +222,7 @@ public final class TestYearRangeYearInterval
 	public void acceptValidInstance_COMMON() {
 		try {
 			YearRange yearRange = YearRange.newInstance("1989", "1992");
-			yearRange.checkErrors();
+			yearRange.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -230,7 +230,7 @@ public final class TestYearRangeYearInterval
 		
 		try {
 			YearInterval yearInterval = YearInterval.newInstance("1992", "1993");
-			yearInterval.checkErrors();
+			yearInterval.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -242,7 +242,7 @@ public final class TestYearRangeYearInterval
 		
 		try {
 			YearInterval yearInterval = YearInterval.newInstance("1993", "1993");
-			yearInterval.checkErrors();
+			yearInterval.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -261,7 +261,7 @@ public final class TestYearRangeYearInterval
 	public void rejectBlankLowerBoundForYearRange_ERROR() {
 		try {
 			YearRange yearRange = YearRange.newInstance(null, "1992");
-			yearRange.checkErrors();
+			yearRange.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -273,7 +273,7 @@ public final class TestYearRangeYearInterval
 
 		try {
 			YearRange yearRange = YearRange.newInstance("", "1992");
-			yearRange.checkErrors();
+			yearRange.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -294,7 +294,7 @@ public final class TestYearRangeYearInterval
 	public void rejectInvalidLowerBoundForYearRange_ERROR() {
 		try {
 			YearRange yearRange = YearRange.newInstance("blah", "1992");
-			yearRange.checkErrors();
+			yearRange.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -315,7 +315,7 @@ public final class TestYearRangeYearInterval
 	public void rejectUnrealisticLowerBoundForYearRange_ERROR() {
 		try {
 			YearRange yearRange = YearRange.newInstance("1758", "1992");
-			yearRange.checkErrors();
+			yearRange.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -329,7 +329,7 @@ public final class TestYearRangeYearInterval
 			//Should get two errors: (1) 2544 is unrealistic and
 			//(2) lower bound greater than upper bound
 			YearRange yearRange = YearRange.newInstance("2544", "1993");
-			yearRange.checkErrors();
+			yearRange.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -350,7 +350,7 @@ public final class TestYearRangeYearInterval
 	public void rejectBlankUpperBoundForYearRange_ERROR() {
 		try {
 			YearRange yearRange = YearRange.newInstance("1991", null);
-			yearRange.checkErrors();
+			yearRange.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -362,7 +362,7 @@ public final class TestYearRangeYearInterval
 
 		try {
 			YearRange yearRange = YearRange.newInstance("1991", "");
-			yearRange.checkErrors();
+			yearRange.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -383,7 +383,7 @@ public final class TestYearRangeYearInterval
 	public void rejectInvalidUpperBoundForYearRange_ERROR() {
 		try {
 			YearRange yearRange = YearRange.newInstance("1991", "blah");
-			yearRange.checkErrors();
+			yearRange.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -404,7 +404,7 @@ public final class TestYearRangeYearInterval
 	public void rejectUnrealisticUpperBoundForYearRange_ERROR() {
 		try {
 			YearRange yearRange = YearRange.newInstance("1991", "1666");
-			yearRange.checkErrors();
+			yearRange.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -416,7 +416,7 @@ public final class TestYearRangeYearInterval
 		
 		try {
 			YearRange yearRange = YearRange.newInstance("1991", "3456");
-			yearRange.checkErrors();
+			yearRange.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -438,7 +438,7 @@ public final class TestYearRangeYearInterval
 	public void illegalLowerBoundUpperBoundCombination_ERROR() {
 		try {
 			YearRange yearRange = YearRange.newInstance("2001", "1987");
-			yearRange.checkErrors();
+			yearRange.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -461,7 +461,7 @@ public final class TestYearRangeYearInterval
 	public void rejectBlankStartYearForYearInterval_ERROR() {
 		try {
 			YearInterval yearInterval = YearInterval.newInstance(null, "1992");
-			yearInterval.checkErrors();
+			yearInterval.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -473,7 +473,7 @@ public final class TestYearRangeYearInterval
 
 		try {
 			YearInterval yearInterval = YearInterval.newInstance("", "1992");
-			yearInterval.checkErrors();
+			yearInterval.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -490,7 +490,7 @@ public final class TestYearRangeYearInterval
 	public void rejectInvalidStartYearForYearInterval_ERROR() {
 		try {
 			YearInterval yearInterval = YearInterval.newInstance("blah", "1992");
-			yearInterval.checkErrors();
+			yearInterval.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -511,7 +511,7 @@ public final class TestYearRangeYearInterval
 	public void rejectUnrealisticStartYearForYearInterval_ERROR() {
 		try {
 			YearInterval yearInterval = YearInterval.newInstance("1758", "1992");
-			yearInterval.checkErrors();
+			yearInterval.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -525,7 +525,7 @@ public final class TestYearRangeYearInterval
 			//We should get two errors: (1) 2544 is unrealistic and 
 			//(2) it is higher than upper bound
 			YearInterval yearInterval = YearInterval.newInstance("2544", "1993");
-			yearInterval.checkErrors();
+			yearInterval.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -546,7 +546,7 @@ public final class TestYearRangeYearInterval
 	public void rejectEmptyEndYearForYearInterval_ERROR() {
 		try {
 			YearInterval yearInterval = YearInterval.newInstance("1991", null);
-			yearInterval.checkErrors();
+			yearInterval.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -558,7 +558,7 @@ public final class TestYearRangeYearInterval
 
 		try {
 			YearInterval yearInterval = YearInterval.newInstance("1991", "");
-			yearInterval.checkErrors();
+			yearInterval.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -579,7 +579,7 @@ public final class TestYearRangeYearInterval
 	public void rejectInvalidEndYearForYearInterval_ERROR() {
 		try {
 			YearInterval yearInterval = YearInterval.newInstance("1991", "blah");
-			yearInterval.checkErrors();
+			yearInterval.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -602,7 +602,7 @@ public final class TestYearRangeYearInterval
 			//We should get two errors: (1) lower bound is greater than upper
 			//bound and (2) upper bound is unrealistic
 			YearInterval yearInterval = YearInterval.newInstance("1991", "1666");
-			yearInterval.checkErrors();
+			yearInterval.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -614,7 +614,7 @@ public final class TestYearRangeYearInterval
 		
 		try {
 			YearInterval yearInterval = YearInterval.newInstance("1991", "3456");
-			yearInterval.checkErrors();
+			yearInterval.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -635,7 +635,7 @@ public final class TestYearRangeYearInterval
 	public void illegalLowerStartEndDateCombination_ERROR() {
 		try {
 			YearInterval yearInterval = YearInterval.newInstance("2001", "1987");
-			yearInterval.checkErrors();
+			yearInterval.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -876,7 +876,9 @@ public final class TestYearRangeYearInterval
 		yearIntervals1.add(YearInterval.createCopy(masterInterval95));
 		yearIntervals1.add(YearInterval.createCopy(masterInterval96));
 		ArrayList<String> errorMessages
-			= yearRange.identifyOutOfBoundsErrors(yearIntervals1);
+			= yearRange.identifyOutOfBoundsErrors(
+				getValidationPolicy(), 
+				yearIntervals1);
 		
 		//no gaps or overlaps
 		assertEquals(0, errorMessages.size());
@@ -902,7 +904,9 @@ public final class TestYearRangeYearInterval
 		yearIntervals1.add(YearInterval.createCopy(masterInterval98));
 		
 		ArrayList<String> errorMessages
-			= yearRange.identifyOutOfBoundsErrors(yearIntervals1);
+			= yearRange.identifyOutOfBoundsErrors(
+				getValidationPolicy(),
+				yearIntervals1);
 		assertEquals(3, errorMessages.size());
 	}
 	

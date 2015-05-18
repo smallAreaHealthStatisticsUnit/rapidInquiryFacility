@@ -2,6 +2,8 @@ package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.AdjustableCovariate;
 import rifServices.businessConceptLayer.CovariateType;
@@ -336,15 +338,17 @@ final class SQLCovariateManager
 		final GeoLevelToMap geoLevelToMap) 
 		throws RIFServiceException {
 
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		
 		if (geography != null) {
-			geography.checkErrors();
+			geography.checkErrors(validationPolicy);
 			sqlRIFContextManager.checkGeographyExists(
 				connection, 
 				geography.getName());			
 		}
 		
 		if (geoLevelSelect != null) {
-			geoLevelSelect.checkErrors();
+			geoLevelSelect.checkErrors(validationPolicy);
 			sqlRIFContextManager.checkGeoLevelSelectExists(
 				connection,
 				geography.getName(), 
@@ -353,7 +357,7 @@ final class SQLCovariateManager
 		
 		if (geoLevelToMap != null) {
 			
-			geoLevelToMap.checkErrors();			
+			geoLevelToMap.checkErrors(validationPolicy);			
 			if (geoLevelSelect == null) {				
 				sqlRIFContextManager.checkGeoLevelToMapOrViewValueExists(
 					connection,

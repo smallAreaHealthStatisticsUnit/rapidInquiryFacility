@@ -428,7 +428,8 @@ public final class NumeratorDenominatorPair
 			denominatorTableDescription);
 	}
 	
-	public void checkErrors() 
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
 		throws RIFServiceException {
 		
 		FieldValidationUtility fieldValidationUtility

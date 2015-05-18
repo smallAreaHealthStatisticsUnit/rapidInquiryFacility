@@ -1,11 +1,13 @@
 package rifServices.dataStorageLayer;
 
 import java.util.ArrayList;
+
 import java.sql.*;
 
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.businessConceptLayer.*;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -213,7 +215,9 @@ final class SQLDiseaseMappingStudyManager
 		final Project project) 
 		throws RIFServiceException {
 		
-		project.checkErrors();
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		
+		project.checkErrors(validationPolicy);
 		
 		ArrayList<AbstractStudy> results
 			= new ArrayList<AbstractStudy>();

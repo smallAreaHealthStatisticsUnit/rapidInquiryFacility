@@ -123,7 +123,7 @@ public final class TestAdjustableCovariate
 		try {
 			AdjustableCovariate adjustableCovariate1
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
-			adjustableCovariate1.checkErrors();
+			adjustableCovariate1.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -147,7 +147,7 @@ public final class TestAdjustableCovariate
 			AdjustableCovariate adjustableCovariate
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
 			adjustableCovariate.setName(null);
-			adjustableCovariate.checkErrors();
+			adjustableCovariate.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -160,7 +160,7 @@ public final class TestAdjustableCovariate
 			AdjustableCovariate adjustableCovariate
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
 			adjustableCovariate.setName("");
-			adjustableCovariate.checkErrors();
+			adjustableCovariate.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -174,7 +174,7 @@ public final class TestAdjustableCovariate
 			AdjustableCovariate adjustableCovariate
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
 			adjustableCovariate.setCovariateType(null);
-			adjustableCovariate.checkErrors();
+			adjustableCovariate.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -188,7 +188,7 @@ public final class TestAdjustableCovariate
 			AdjustableCovariate adjustableCovariate
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
 			adjustableCovariate.setMinimumValue("");
-			adjustableCovariate.checkErrors();
+			adjustableCovariate.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -201,7 +201,7 @@ public final class TestAdjustableCovariate
 			AdjustableCovariate adjustableCovariate
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
 			adjustableCovariate.setMinimumValue(null);
-			adjustableCovariate.checkErrors();
+			adjustableCovariate.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -215,7 +215,7 @@ public final class TestAdjustableCovariate
 			AdjustableCovariate adjustableCovariate5
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
 			adjustableCovariate5.setMaximumValue("");
-			adjustableCovariate5.checkErrors();
+			adjustableCovariate5.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -248,7 +248,7 @@ public final class TestAdjustableCovariate
 			AdjustableCovariate adjustableCovariate1
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
 			adjustableCovariate1.setMinimumValue("abc");
-			adjustableCovariate1.checkErrors();
+			adjustableCovariate1.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -261,7 +261,7 @@ public final class TestAdjustableCovariate
 			AdjustableCovariate adjustableCovariate2
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
 			adjustableCovariate2.setMaximumValue("xyz");
-			adjustableCovariate2.checkErrors();
+			adjustableCovariate2.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -285,7 +285,7 @@ public final class TestAdjustableCovariate
 			adjustableCovariate3.setCovariateType(CovariateType.BINARY_INTEGER_SCORE);
 			adjustableCovariate3.setMinimumValue("3.4");
 			adjustableCovariate3.setMaximumValue("4.5");
-			adjustableCovariate3.checkErrors();
+			adjustableCovariate3.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -311,7 +311,7 @@ public final class TestAdjustableCovariate
 			adjustableCovariate1.setCovariateType(CovariateType.CONTINUOUS_VARIABLE);
 			adjustableCovariate1.setMinimumValue("5.6");
 			adjustableCovariate1.setMaximumValue("3.4");
-			adjustableCovariate1.checkErrors();
+			adjustableCovariate1.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -326,7 +326,7 @@ public final class TestAdjustableCovariate
 			adjustableCovariate2.setCovariateType(CovariateType.BINARY_INTEGER_SCORE);
 			adjustableCovariate2.setMinimumValue("4");
 			adjustableCovariate2.setMaximumValue("3");
-			adjustableCovariate2.checkErrors();
+			adjustableCovariate2.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -351,7 +351,7 @@ public final class TestAdjustableCovariate
 			adjustableCovariate1.setCovariateType(null);
 			adjustableCovariate1.setMinimumValue("");
 			adjustableCovariate1.setMaximumValue("");
-			adjustableCovariate1.checkErrors();
+			adjustableCovariate1.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -365,7 +365,7 @@ public final class TestAdjustableCovariate
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
 			adjustableCovariate2.setMinimumValue("abc");
 			adjustableCovariate2.setMaximumValue("def");
-			adjustableCovariate2.checkErrors();
+			adjustableCovariate2.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

@@ -705,7 +705,6 @@ public class RIFStudySubmissionWebServiceResource
 				= GeoLevelArea.newInstance(geoLevelAreaName);
 			GeoLevelToMap geoLevelToMap
 				= GeoLevelToMap.newInstance(geoLevelToMapName);			
-			geoLevelToMap.checkErrors();
 			
 			
 			//Call service API

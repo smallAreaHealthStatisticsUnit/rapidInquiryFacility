@@ -417,7 +417,8 @@ public final class Parameter
 	}
 	
 
-	public void checkErrors() 
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
 		throws RIFServiceException {
 					
 		String recordType = getRecordType();

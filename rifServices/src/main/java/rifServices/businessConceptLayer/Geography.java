@@ -1,5 +1,6 @@
 package rifServices.businessConceptLayer;
 
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -183,8 +184,9 @@ public final class Geography
 	}
 	
 
-	public void checkErrors()
-		throws RIFServiceException {
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
+		throws RIFServiceException {	
 
 		//TOUR_VALIDATION
 		//goes through all its fields and checks if there are any errors
@@ -192,7 +194,10 @@ public final class Geography
 		//superclass, which will in turn call the checkErrors() method of its
 		//superclass, etc. etc.
 		ArrayList<String> errorMessages = new ArrayList<String>();
-		super.checkErrors(RIFServiceError.INVALID_GEOGRAPHY, errorMessages);
+		super.checkErrors(
+			validationPolicy,
+			RIFServiceError.INVALID_GEOGRAPHY, 
+			errorMessages);
 		countErrors(RIFServiceError.INVALID_GEOGRAPHY, errorMessages);
 	}
 	

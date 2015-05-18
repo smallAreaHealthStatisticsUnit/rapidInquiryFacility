@@ -2,9 +2,10 @@ package rifServices.test;
 
 
 import rifServices.system.RIFServiceError;
+
 import rifServices.system.RIFServiceException;
 import rifServices.util.FieldValidationUtility;
-
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
@@ -84,6 +85,8 @@ public class AbstractRIFTestCase {
 	// ==========================================
 	/** The test malicious field value. */
 	private String testMaliciousFieldValue;
+	
+	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -101,6 +104,10 @@ public class AbstractRIFTestCase {
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public ValidationPolicy getValidationPolicy() {
+		return validationPolicy;
+	}
+	
 	/**
 	 * Check error type.
 	 *

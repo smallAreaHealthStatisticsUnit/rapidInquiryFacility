@@ -1,6 +1,7 @@
 
 package rifServices.businessConceptLayer;
 
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.*;
 
 import java.util.ArrayList;
@@ -183,12 +184,15 @@ public final class ComparisonArea
 	}
 	
 
-	public void checkErrors() 
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
 		throws RIFServiceException {		
 		
 		//do security checks on String area identifiers
 		ArrayList<String> errorMessages = new ArrayList<String>();
-		super.checkErrors(errorMessages);
+		super.checkErrors(
+			validationPolicy,
+			errorMessages);
 		countErrors(RIFServiceError.INVALID_COMPARISON_AREA, errorMessages);
 	}
 	

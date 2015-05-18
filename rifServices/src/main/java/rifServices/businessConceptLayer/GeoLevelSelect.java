@@ -218,7 +218,8 @@ public class GeoLevelSelect
 	}
 	
 
-	public void checkErrors()
+	public void checkErrors(
+		final ValidationPolicy validationPolicy)
 		throws RIFServiceException {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
@@ -229,8 +230,13 @@ public class GeoLevelSelect
 		 * super classes are checked.
 		 */
 		
-		super.checkErrors(RIFServiceError.INVALID_GEOLEVEL_SELECT, errorMessages);
-		countErrors(RIFServiceError.INVALID_GEOLEVEL_SELECT, errorMessages);
+		super.checkErrors(
+			validationPolicy,
+			RIFServiceError.INVALID_GEOLEVEL_SELECT, 
+			errorMessages);
+		countErrors(
+			RIFServiceError.INVALID_GEOLEVEL_SELECT, 
+			errorMessages);
 	}
 	
 	/**

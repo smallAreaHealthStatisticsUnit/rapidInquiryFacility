@@ -116,7 +116,7 @@ public final class TestParameter
 	public void acceptValidInstance_COMMON() {
 		Parameter parameter = Parameter.createCopy(masterParameter);
 		try {
-			parameter.checkErrors();
+			parameter.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -132,7 +132,7 @@ public final class TestParameter
 		Parameter parameter = Parameter.createCopy(masterParameter);
 		parameter.setName("");
 		try {
-			parameter.checkErrors();
+			parameter.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -145,7 +145,7 @@ public final class TestParameter
 		parameter = Parameter.createCopy(masterParameter);
 		parameter.setName(null);
 		try {
-			parameter.checkErrors();
+			parameter.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -158,7 +158,7 @@ public final class TestParameter
 		parameter = Parameter.createCopy(masterParameter);
 		parameter.setValue("");
 		try {
-			parameter.checkErrors();
+			parameter.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -171,7 +171,7 @@ public final class TestParameter
 		parameter = Parameter.createCopy(masterParameter);
 		parameter.setValue(null);
 		try {
-			parameter.checkErrors();
+			parameter.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

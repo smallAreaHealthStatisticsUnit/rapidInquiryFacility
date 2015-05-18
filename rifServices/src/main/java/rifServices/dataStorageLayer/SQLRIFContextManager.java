@@ -1,6 +1,7 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.SQLAggregateValueQueryFormatter;
+
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.businessConceptLayer.GeoLevelSelect;
@@ -10,6 +11,7 @@ import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -1157,19 +1159,20 @@ final class SQLRIFContextManager
 		final GeoLevelSelect geoLevelSelect) 
 		throws RIFServiceException {
 
+		ValidationPolicy validationPolicy = getValidationPolicy();
 		if (geography != null) {
-			geography.checkErrors();			
+			geography.checkErrors(validationPolicy);			
 			checkGeographyExists(connection, geography.getName());
 		}
 		
 		if (healthTheme != null) {
-			healthTheme.checkErrors();			
+			healthTheme.checkErrors(validationPolicy);			
 			checkHealthThemeExists(connection, 
 			healthTheme.getDescription());
 		}
 		
 		if (geoLevelSelect != null) {
-			geoLevelSelect.checkErrors();
+			geoLevelSelect.checkErrors(validationPolicy);
 			checkGeoLevelSelectExists(
 				connection, 
 				geography.getName(), 

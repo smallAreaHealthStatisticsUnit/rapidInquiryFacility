@@ -427,6 +427,7 @@ protected AbstractGeographicalArea() {
 	 * @param errorMessages the error messages
 	 */
 	protected void checkErrors(
+		final ValidationPolicy validationPolicy,
 		final ArrayList<String> errorMessages) {
 		
 		String recordType = getRecordType();
@@ -443,7 +444,7 @@ protected AbstractGeographicalArea() {
 		}
 		else {
 			try {
-				geoLevelView.checkErrors();			
+				geoLevelView.checkErrors(validationPolicy);			
 			}
 			catch(RIFServiceException exception) {
 				errorMessages.addAll(exception.getErrorMessages());
@@ -461,7 +462,7 @@ protected AbstractGeographicalArea() {
 		}
 		else {
 			try {
-				geoLevelArea.checkErrors();			
+				geoLevelArea.checkErrors(validationPolicy);			
 			}
 			catch(RIFServiceException exception) {
 				errorMessages.addAll(exception.getErrorMessages());
@@ -480,7 +481,7 @@ protected AbstractGeographicalArea() {
 		}
 		else {
 			try {
-				geoLevelSelect.checkErrors();			
+				geoLevelSelect.checkErrors(validationPolicy);			
 			}
 			catch(RIFServiceException exception) {
 				errorMessages.addAll(exception.getErrorMessages());
@@ -499,7 +500,7 @@ protected AbstractGeographicalArea() {
 		}
 		else {
 			try {
-				geoLevelToMap.checkErrors();			
+				geoLevelToMap.checkErrors(validationPolicy);			
 			}
 			catch(RIFServiceException exception) {
 				errorMessages.addAll(exception.getErrorMessages());
@@ -543,7 +544,7 @@ protected AbstractGeographicalArea() {
 					}
 					else {
 						try {
-							mapArea.checkErrors();
+							mapArea.checkErrors(validationPolicy);
 						}
 						catch(RIFServiceException rifServiceException) {
 							areMapAreasValid = false;

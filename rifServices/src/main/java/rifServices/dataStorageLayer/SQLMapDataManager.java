@@ -1,9 +1,12 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
+
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelView;
@@ -363,7 +366,8 @@ final class SQLMapDataManager
 		StringBuilder results = new StringBuilder();
 		try {
 
-			boundaryRectangle.checkErrors();
+			ValidationPolicy validationPolicy = getValidationPolicy();
+			boundaryRectangle.checkErrors(validationPolicy);
 		
 			/*
 			 * In many cases we're just calling a stored procedure in the database
@@ -1063,10 +1067,13 @@ final class SQLMapDataManager
 		final GeoLevelView geoLevelView,
 		final ArrayList<MapArea> mapAreas) throws RIFServiceException {
 
-		user.checkErrors();
-		geography.checkErrors();
-		geoLevelSelect.checkErrors();
-		geoLevelView.checkErrors();
+		
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		
+		user.checkErrors(validationPolicy);
+		geography.checkErrors(validationPolicy);
+		geoLevelSelect.checkErrors(validationPolicy);
+		geoLevelView.checkErrors(validationPolicy);
 		
 		if (mapAreas.size() == 0) {
 			String errorMessage
@@ -1080,7 +1087,7 @@ final class SQLMapDataManager
 		}
 		
 		for (MapArea mapArea : mapAreas) {
-			mapArea.checkErrors();
+			mapArea.checkErrors(validationPolicy);
 		}
 
 		String geographyName = geography.getName();
@@ -1328,8 +1335,9 @@ final class SQLMapDataManager
 		throws RIFServiceException {
 		
 		//Validate parameters
-		geography.checkErrors();
-		geoLevelSelect.checkErrors();
+		ValidationPolicy validationPolicy = getValidationPolicy();		
+		geography.checkErrors(validationPolicy);
+		geoLevelSelect.checkErrors(validationPolicy);
 		sqlRIFContextManager.checkGeographyExists(
 			connection, 
 			geography.getName());
@@ -1413,7 +1421,8 @@ final class SQLMapDataManager
 		throws RIFServiceException {
 		
 		//Validate parameters
-		geography.checkErrors();
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		geography.checkErrors(validationPolicy);
 		sqlRIFContextManager.checkGeographyExists(
 			connection, 
 			geography.getName());
@@ -1585,15 +1594,16 @@ final class SQLMapDataManager
 		throws RIFServiceException {
 		
 		//Validate parameters
+		ValidationPolicy validationPolicy = getValidationPolicy();
 		if (geography != null) {
-			geography.checkErrors();
+			geography.checkErrors(validationPolicy);
 			sqlRIFContextManager.checkGeographyExists(
 				connection, 
 				geography.getName());			
 		}
 
 		if (geoLevelSelect != null) {
-			geoLevelSelect.checkErrors();
+			geoLevelSelect.checkErrors(validationPolicy);
 			sqlRIFContextManager.checkGeoLevelSelectExists(
 				connection, 
 				geography.getName(), 
@@ -1602,7 +1612,7 @@ final class SQLMapDataManager
 		}
 
 		if (geoLevelArea != null) {
-			geoLevelArea.checkErrors();	
+			geoLevelArea.checkErrors(validationPolicy);	
 			sqlRIFContextManager.checkGeoLevelAreaExists(
 				connection,
 				geography.getName(),
@@ -1611,7 +1621,7 @@ final class SQLMapDataManager
 		}
 		
 		if (geoLevelToMap != null) {
-			geoLevelToMap.checkErrors();			
+			geoLevelToMap.checkErrors(validationPolicy);			
 			sqlRIFContextManager.checkGeoLevelToMapOrViewValueExists(
 				connection, 
 				geography.getName(), 

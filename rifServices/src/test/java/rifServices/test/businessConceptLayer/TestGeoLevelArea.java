@@ -123,7 +123,7 @@ public final class TestGeoLevelArea
 		try {
 			GeoLevelArea geoLevelArea 
 				= GeoLevelArea.createCopy(masterGeoLevelArea);
-			geoLevelArea.checkErrors();
+			geoLevelArea.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -140,7 +140,7 @@ public final class TestGeoLevelArea
 			GeoLevelArea geoLevelArea 
 				= GeoLevelArea.createCopy(masterGeoLevelArea);
 			geoLevelArea.setName("");
-			geoLevelArea.checkErrors();
+			geoLevelArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -155,7 +155,7 @@ public final class TestGeoLevelArea
 			GeoLevelArea geoLevelArea 
 				= GeoLevelArea.createCopy(masterGeoLevelArea);
 			geoLevelArea.setName(null);
-			geoLevelArea.checkErrors();
+			geoLevelArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

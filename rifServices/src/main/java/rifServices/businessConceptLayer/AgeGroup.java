@@ -1,5 +1,6 @@
 package rifServices.businessConceptLayer;
 
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
@@ -356,7 +357,8 @@ public final class AgeGroup
 	// Section Override
 	// ==========================================
 
-	public void checkErrors() 
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
 		throws RIFServiceException {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();

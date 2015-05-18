@@ -197,11 +197,15 @@ final public class GeoLevelToMap
 	}
 	
 
-	public void checkErrors()
+	public void checkErrors(
+		final ValidationPolicy validationPolicy)
 		throws RIFServiceException {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
-		super.checkErrors(RIFServiceError.INVALID_GEOLEVEL_TO_MAP, errorMessages);
+		super.checkErrors(
+			validationPolicy,
+			RIFServiceError.INVALID_GEOLEVEL_TO_MAP, 
+			errorMessages);
 		countErrors(RIFServiceError.INVALID_GEOLEVEL_TO_MAP, errorMessages);
 	}
 	

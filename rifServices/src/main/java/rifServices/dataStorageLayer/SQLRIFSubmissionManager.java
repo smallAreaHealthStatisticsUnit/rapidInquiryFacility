@@ -2,12 +2,14 @@ package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
 
+
 import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifServices.businessConceptLayer.*;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.*;
 import rifServices.util.RIFLogger;
 
@@ -321,7 +323,8 @@ final class SQLRIFSubmissionManager
 		throws RIFServiceException {
 		
 		//Validate parameters
-		studySubmission.checkErrors();
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		studySubmission.checkErrors(validationPolicy);
 		
 		//perform various checks for non-existent objects
 		//such as geography,  geo level selects, covariates

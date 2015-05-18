@@ -197,11 +197,14 @@ public final class HealthTheme
 	}
 	
 
-	public void checkErrors()
+	public void checkErrors(
+		final ValidationPolicy validationPolicy)
 		throws RIFServiceException {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
-		super.checkErrors(RIFServiceError.INVALID_HEALTH_THEME, errorMessages);
+		super.checkErrors(
+			validationPolicy,
+			RIFServiceError.INVALID_HEALTH_THEME, errorMessages);
 		countErrors(RIFServiceError.INVALID_HEALTH_THEME, errorMessages);
 	}
 	

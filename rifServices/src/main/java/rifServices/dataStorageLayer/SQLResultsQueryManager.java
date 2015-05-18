@@ -1,10 +1,12 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
+
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.businessConceptLayer.*;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
@@ -142,11 +144,12 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		throws RIFServiceException {
 	
 		//Validate parameters
+		ValidationPolicy validationPolicy = getValidationPolicy();
 		validateCommonParameters(
 			connection,
 			user,
 			studyResultRetrievalContext);
-		mapArea.checkErrors();
+		mapArea.checkErrors(validationPolicy);
 		checkMapAreaExists(
 			connection, 
 			studyResultRetrievalContext,
@@ -234,7 +237,8 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		throws RIFServiceException {
 	
 		//Validate parameters
-		user.checkErrors();
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		user.checkErrors(validationPolicy);
 		validateCommonParameters(
 			connection,
 			user,
@@ -597,8 +601,9 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		throws RIFServiceException {
 			
 		//Validate parameters
-		user.checkErrors();
-		studySummary.checkErrors();
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		user.checkErrors(validationPolicy);
+		studySummary.checkErrors(validationPolicy);
 
 		String studyID = studySummary.getStudyID();
 		String calculatedResultTableName
@@ -815,13 +820,14 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		throws RIFServiceException {
 		
 		//Validate parameters
+		ValidationPolicy validationPolicy = getValidationPolicy();		
 		validateCommonParameters(
 			connection,
 			user,
 			studyResultRetrievalContext);
 
 		//check geo level source has no errors
-		geoLevelAttributeSource.checkErrors();
+		geoLevelAttributeSource.checkErrors(validationPolicy);
 		
 		//check geo level source exists in the database
 		checkGeoLevelAttributeSourceExists(
@@ -923,8 +929,9 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		throws RIFServiceException {
 		
 		//Validate parameters
-		user.checkErrors();
-		studyResultRetrievalContext.checkErrors();		
+		ValidationPolicy validationPolicy = getValidationPolicy();		
+		user.checkErrors(validationPolicy);
+		studyResultRetrievalContext.checkErrors(validationPolicy);		
 		sqlDiseaseMappingStudyManager.checkDiseaseMappingStudyExists(
 			connection, 
 			studyResultRetrievalContext.getStudyID());
@@ -1117,16 +1124,17 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		throws RIFServiceException {
 			
 		//Validate parameters
+		ValidationPolicy validationPolicy = getValidationPolicy();		
 		validateCommonParameters(
 			connection,
 			user,
 			studyResultRetrievalContext);		
-		geoLevelAttributeSource.checkErrors();		
+		geoLevelAttributeSource.checkErrors(validationPolicy);		
 		checkGeoLevelAttributeSourceExists(
 			connection, 
 			studyResultRetrievalContext.getStudyID(),
 			geoLevelAttributeSource);
-		geoLevelAttributeTheme.checkErrors();
+		geoLevelAttributeTheme.checkErrors(validationPolicy);
 		checkGeoLevelAttributeThemeExists(
 			connection, 
 			studyResultRetrievalContext,
@@ -1222,17 +1230,18 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		throws RIFServiceException {
 			
 		//Validate parameters
+		ValidationPolicy validationPolicy = getValidationPolicy();
 		validateCommonParameters(
 			connection,
 			user,
 			studyResultRetrievalContext);
-		geoLevelAttributeSource.checkErrors();		
+		geoLevelAttributeSource.checkErrors(validationPolicy);		
 		checkGeoLevelAttributeSourceExists(
 			connection, 
 			studyResultRetrievalContext.getStudyID(),
 			geoLevelAttributeSource);
 		
-		geoLevelAttributeTheme.checkErrors();
+		geoLevelAttributeTheme.checkErrors(validationPolicy);
 		checkGeoLevelAttributeThemeExists(
 			connection, 
 			studyResultRetrievalContext,
@@ -1330,8 +1339,9 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		throws RIFServiceException {
 				
 		//Validate parameters
-		user.checkErrors();
-		studySummary.checkErrors();
+		ValidationPolicy validationPolicy = getValidationPolicy();		
+		user.checkErrors(validationPolicy);
+		studySummary.checkErrors(validationPolicy);
 		sqlDiseaseMappingStudyManager.checkDiseaseMappingStudyExists(
 			connection, 
 			studySummary.getStudyID());
@@ -1626,8 +1636,9 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		throws RIFServiceException {
 		
 		//Validate parameters
-		user.checkErrors();
-		diseaseMappingStudy.checkErrors();
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		user.checkErrors(validationPolicy);
+		diseaseMappingStudy.checkErrors(validationPolicy);
 		
 		//Create query
 		SQLGeneralQueryFormatter queryFormatter 
@@ -1715,12 +1726,14 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		final Integer year) 
 		throws RIFServiceException {
 		
-		user.checkErrors();
-		studyResultRetrievalContext.checkErrors();
-		geoLevelToMap.checkErrors();
-		geoLevelAttributeSource.checkErrors();
+
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		user.checkErrors(validationPolicy);
+		studyResultRetrievalContext.checkErrors(validationPolicy);
+		geoLevelToMap.checkErrors(validationPolicy);
+		geoLevelAttributeSource.checkErrors(validationPolicy);
 		for (MapArea mapArea : mapAreas) {
-			mapArea.checkErrors();
+			mapArea.checkErrors(validationPolicy);
 		}
 
 		validateCommonParameters(
@@ -1819,11 +1832,12 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		throws RIFServiceException {
 	
 		//Validate parameters
+		ValidationPolicy validationPolicy = getValidationPolicy();
 		validateCommonParameters(
 			connection,
 			user,
 			studyResultRetrievalContext);
-		geoLevelAttributeSource.checkErrors();
+		geoLevelAttributeSource.checkErrors(validationPolicy);
 		
 		//check geoLevelAttributeSource exists
 		checkGeoLevelAttributeSourceExists(
@@ -1901,11 +1915,12 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		throws RIFServiceException {
 				
 		//Validate parameters
+		ValidationPolicy validationPolicy = getValidationPolicy();
 		validateCommonParameters(
 			connection,
 			user,
 			studyResultRetrievalContext);
-		geoLevelAttributeSource.checkErrors();
+		geoLevelAttributeSource.checkErrors(validationPolicy);
 		
 		//check geoLevelAttributeSource exists
 		checkGeoLevelAttributeSourceExists(
@@ -1970,15 +1985,16 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		throws RIFServiceException {
 
 		//Validate parameters
+		ValidationPolicy validationPolicy = getValidationPolicy();
 		validateCommonParameters(
 			connection,
 			user,
 			studyResultRetrievalContext);
-		geoLevelToMap.checkErrors();
-		geoLevelAttributeSource.checkErrors();
+		geoLevelToMap.checkErrors(validationPolicy);
+		geoLevelAttributeSource.checkErrors(validationPolicy);
 
 		for (MapArea mapArea : mapAreas) {
-			mapArea.checkErrors();
+			mapArea.checkErrors(validationPolicy);
 		}
 		
 		//check non-existent geo level to map
@@ -2011,7 +2027,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 
 		//check map areas are valid
 		for (MapArea mapArea : mapAreas) {
-			mapArea.checkErrors();
+			mapArea.checkErrors(validationPolicy);
 		}
 		
 		PreparedStatement statement = null;
@@ -2095,7 +2111,8 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		final StudySummary studySummary)
 		throws RIFServiceException {
 	
-		studySummary.checkErrors();
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		studySummary.checkErrors(validationPolicy);
 		String studyID = studySummary.getStudyID();
 		sqlDiseaseMappingStudyManager.checkDiseaseMappingStudyExists(
 			connection, 
@@ -2167,7 +2184,8 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		final StudySummary studySummary)
 		throws RIFServiceException {
 				
-		studySummary.checkErrors();
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		studySummary.checkErrors(validationPolicy);
 		String studyID = studySummary.getStudyID();
 		sqlDiseaseMappingStudyManager.checkDiseaseMappingStudyExists(
 			connection, 
@@ -2241,7 +2259,8 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		final StudySummary studySummary)
 		throws RIFServiceException {
 				
-		studySummary.checkErrors();
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		studySummary.checkErrors(validationPolicy);
 		String studyID = studySummary.getStudyID();
 		sqlDiseaseMappingStudyManager.checkDiseaseMappingStudyExists(
 			connection, 
@@ -2313,7 +2332,8 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		final StudySummary studySummary)
 		throws RIFServiceException {
 	
-		studySummary.checkErrors();
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		studySummary.checkErrors(validationPolicy);
 		String studyID = studySummary.getStudyID();
 		sqlDiseaseMappingStudyManager.checkDiseaseMappingStudyExists(
 			connection, 
@@ -2367,9 +2387,10 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		final String geoLevelSourceAttribute)
 		throws RIFServiceException {
 		
-		user.checkErrors();
-		studyResultRetrievalContext.checkErrors();
-		geoLevelAttributeSource.checkErrors();
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		user.checkErrors(validationPolicy);
+		studyResultRetrievalContext.checkErrors(validationPolicy);
+		geoLevelAttributeSource.checkErrors(validationPolicy);
 
 		//@TODO: KLG - we need to implement this database method
 
@@ -2495,7 +2516,8 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		final Geography geography) 
 		throws RIFServiceException {
 		
-		geography.checkErrors();
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		geography.checkErrors(validationPolicy);
 
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
@@ -2557,10 +2579,11 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		final GeoLevelAttributeSource geoLevelAttributeSource,
 		final String attributeNameArray) throws RIFServiceException {
 		
-		geography.checkErrors();
-		geoLevelSelect.checkErrors();
-		geoLevelAttributeTheme.checkErrors();
-		geoLevelAttributeSource.checkErrors();
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		geography.checkErrors(validationPolicy);
+		geoLevelSelect.checkErrors(validationPolicy);
+		geoLevelAttributeTheme.checkErrors(validationPolicy);
+		geoLevelAttributeSource.checkErrors(validationPolicy);
 		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
@@ -2710,8 +2733,9 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		final StudyResultRetrievalContext studyResultRetrievalContext)
 		throws RIFServiceException {
 
-		user.checkErrors();
-		studyResultRetrievalContext.checkErrors();		
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		user.checkErrors(validationPolicy);
+		studyResultRetrievalContext.checkErrors(validationPolicy);		
 		sqlRIFContextManager.checkGeographyExists(
 			connection, 
 			studyResultRetrievalContext.getGeographyName());
@@ -2734,9 +2758,10 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		final GeoLevelSelect geoLevelSelect)
 		throws RIFServiceException {
 		
-		user.checkErrors();
-		geography.checkErrors();	
-		geoLevelSelect.checkErrors();
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		user.checkErrors(validationPolicy);
+		geography.checkErrors(validationPolicy);	
+		geoLevelSelect.checkErrors(validationPolicy);
 		sqlRIFContextManager.checkGeographyExists(
 			connection, 
 			geography.getName());

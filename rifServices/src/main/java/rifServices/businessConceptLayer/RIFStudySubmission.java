@@ -437,7 +437,8 @@ public final class RIFStudySubmission
 		}
 	}
 	
-	public void checkErrors() 
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
 		throws RIFServiceException {	
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
@@ -458,7 +459,7 @@ public final class RIFStudySubmission
 			try {
 				DiseaseMappingStudy diseaseMappingStudy
 					= (DiseaseMappingStudy) study;
-				diseaseMappingStudy.checkErrors();
+				diseaseMappingStudy.checkErrors(validationPolicy);
 			}
 			catch(RIFServiceException rifServiceException) {
 				errorMessages.addAll(rifServiceException.getErrorMessages());
@@ -491,7 +492,7 @@ public final class RIFStudySubmission
 			}
 			else {
 				try {
-					calculationMethod.checkErrors();
+					calculationMethod.checkErrors(validationPolicy);
 				}
 				catch(RIFServiceException rifServiceException) {
 					errorMessages.addAll(errorMessages);
@@ -514,7 +515,7 @@ public final class RIFStudySubmission
 					else {
 						uniqueCalculationMethodNames.add(displayName);
 					}
-					calculationMethod.checkErrors();				
+					calculationMethod.checkErrors(validationPolicy);				
 				}
 				catch(RIFServiceException rifServiceException) {
 					errorMessages.addAll(rifServiceException.getErrorMessages());				

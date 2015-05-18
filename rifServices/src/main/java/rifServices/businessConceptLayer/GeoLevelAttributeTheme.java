@@ -198,11 +198,15 @@ public final class GeoLevelAttributeTheme
 	}
 	
 
-	public void checkErrors()
+	public void checkErrors(
+		final ValidationPolicy validationPolicy)
 		throws RIFServiceException {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
-		super.checkErrors(RIFServiceError.INVALID_GEO_LEVEL_ATTRIBUTE_THEME, errorMessages);
+		super.checkErrors(
+			validationPolicy,
+			RIFServiceError.INVALID_GEO_LEVEL_ATTRIBUTE_THEME, 
+			errorMessages);
 		countErrors(RIFServiceError.INVALID_GEO_LEVEL_ATTRIBUTE_THEME, errorMessages);
 	}
 	

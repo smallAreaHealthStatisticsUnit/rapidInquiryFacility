@@ -530,6 +530,7 @@ final public class YearRange
 	 * @return the array list
 	 */
 	public ArrayList<String> identifyOutOfBoundsErrors(
+		final ValidationPolicy validationPolicy,
 		final ArrayList<YearInterval> yearIntervals) {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
@@ -539,7 +540,7 @@ final public class YearRange
 			int upperBoundValue = Integer.valueOf(upperBound);
 			
 			for (YearInterval yearInterval : yearIntervals) {
-				yearInterval.checkErrors();
+				yearInterval.checkErrors(validationPolicy);
 				int startYear = Integer.valueOf(yearInterval.getStartYear());
 				int endYear = Integer.valueOf(yearInterval.getEndYear());
 				
@@ -572,7 +573,8 @@ final public class YearRange
 	}
 	
 
-	public void checkErrors() 
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
 		throws RIFServiceException {
 
 		ArrayList<String> errorMessages = new ArrayList<String>();

@@ -126,7 +126,7 @@ public final class TestMapArea
 		MapArea mapArea 
 			= MapArea.newInstance("123", "123", "Brent");
 		try {
-			mapArea.checkErrors();
+			mapArea.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -145,7 +145,7 @@ public final class TestMapArea
 					null, 
 					"123", 
 					"Brent");
-			mapArea.checkErrors();
+			mapArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -158,7 +158,7 @@ public final class TestMapArea
 					"", 
 					"123", 
 					"Brent");
-			mapArea.checkErrors();
+			mapArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -177,7 +177,7 @@ public final class TestMapArea
 	public void rejectBlankLabel() {
 		try {
 			MapArea mapArea = MapArea.newInstance("123", null);
-			mapArea.checkErrors();
+			mapArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -186,7 +186,7 @@ public final class TestMapArea
 		
 		try {
 			MapArea mapArea = MapArea.newInstance("123", null);
-			mapArea.checkErrors();
+			mapArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -208,7 +208,7 @@ public final class TestMapArea
 	public void invalidMapAreaMultipleErrorsE1() {
 		MapArea mapArea = MapArea.newInstance(null, "");
 		try {
-			mapArea.checkErrors();
+			mapArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

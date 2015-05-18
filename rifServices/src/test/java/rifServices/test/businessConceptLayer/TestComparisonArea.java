@@ -141,7 +141,7 @@ public final class TestComparisonArea
 		try {
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
-			comparisonArea.checkErrors();
+			comparisonArea.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -163,7 +163,7 @@ public final class TestComparisonArea
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
 			comparisonArea.setGeoLevelSelect(null);
-			comparisonArea.checkErrors();
+			comparisonArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -178,7 +178,7 @@ public final class TestComparisonArea
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
 			comparisonArea.setGeoLevelArea(null);
-			comparisonArea.checkErrors();
+			comparisonArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -193,7 +193,7 @@ public final class TestComparisonArea
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
 			comparisonArea.setGeoLevelView(null);
-			comparisonArea.checkErrors();
+			comparisonArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -209,7 +209,7 @@ public final class TestComparisonArea
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
 			comparisonArea.setGeoLevelToMap(null);
-			comparisonArea.checkErrors();
+			comparisonArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -233,7 +233,7 @@ public final class TestComparisonArea
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
 			comparisonArea.setMapAreas(null);
-			comparisonArea.checkErrors();
+			comparisonArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -247,7 +247,7 @@ public final class TestComparisonArea
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
 			comparisonArea.clearMapAreas();
-			comparisonArea.checkErrors();
+			comparisonArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -274,7 +274,7 @@ public final class TestComparisonArea
 			MapArea duplicateMapArea2 = MapArea.newInstance("222", "222", "Barnet");
 			comparisonArea.addMapArea(duplicateMapArea1);
 			comparisonArea.addMapArea(duplicateMapArea2);			
-			comparisonArea.checkErrors();
+			comparisonArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -296,7 +296,7 @@ public final class TestComparisonArea
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(null, "");
 			comparisonArea.setGeoLevelSelect(geoLevelSelect);
-			comparisonArea.checkErrors();
+			comparisonArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -318,7 +318,7 @@ public final class TestComparisonArea
 			GeoLevelArea geoLevelArea
 				= GeoLevelArea.newInstance(null, "");			
 			comparisonArea.setGeoLevelArea(geoLevelArea);
-			comparisonArea.checkErrors();
+			comparisonArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -340,7 +340,7 @@ public final class TestComparisonArea
 			GeoLevelView geoLevelView
 				= GeoLevelView.newInstance(null, "");
 			comparisonArea.setGeoLevelView(geoLevelView);
-			comparisonArea.checkErrors();
+			comparisonArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -362,7 +362,7 @@ public final class TestComparisonArea
 			GeoLevelToMap geoLevelToMap
 				= GeoLevelToMap.newInstance(null, "");
 			comparisonArea.setGeoLevelToMap(geoLevelToMap);
-			comparisonArea.checkErrors();
+			comparisonArea.checkErrors(getValidationPolicy());
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

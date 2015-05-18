@@ -115,7 +115,7 @@ public final class TestUser
 	public void acceptValidInstance_COMMON() {
 		User user = User.createCopy(masterUser);
 		try {
-			user.checkErrors();
+			user.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -130,7 +130,7 @@ public final class TestUser
 
 		User user = User.newInstance("", "11.111.11.228");
 		try {
-			user.checkErrors();
+			user.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			this.checkErrorType(rifServiceException, RIFServiceError.INVALID_USER, 1);
@@ -138,7 +138,7 @@ public final class TestUser
 		
 		user = User.newInstance(null, "11.111.11.228");		
 		try {
-			user.checkErrors();
+			user.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			this.checkErrorType(rifServiceException, RIFServiceError.INVALID_USER, 1);
@@ -146,7 +146,7 @@ public final class TestUser
 
 		user = User.newInstance("kgarwood", "");		
 		try {
-			user.checkErrors();
+			user.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			this.checkErrorType(rifServiceException, RIFServiceError.INVALID_USER, 1);
@@ -154,7 +154,7 @@ public final class TestUser
 
 		user = User.newInstance("kgarwood", null);		
 		try {
-			user.checkErrors();
+			user.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			this.checkErrorType(rifServiceException, RIFServiceError.INVALID_USER, 1);

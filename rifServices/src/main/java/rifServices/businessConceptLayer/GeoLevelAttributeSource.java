@@ -198,11 +198,15 @@ public final class GeoLevelAttributeSource
 	}
 	
 
-	public void checkErrors()
+	public void checkErrors(
+		final ValidationPolicy validationPolicy)
 		throws RIFServiceException {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
-		super.checkErrors(RIFServiceError.INVALID_GEO_LEVEL_ATTRIBUTE_SOURCE, errorMessages);
+		super.checkErrors(
+			validationPolicy,
+			RIFServiceError.INVALID_GEO_LEVEL_ATTRIBUTE_SOURCE, 
+			errorMessages);
 		countErrors(RIFServiceError.INVALID_GEO_LEVEL_ATTRIBUTE_SOURCE, errorMessages);
 	}
 	

@@ -121,7 +121,7 @@ public final class TestNumeratorDenominatorPair
 			= NumeratorDenominatorPair.createCopy(masterNDPair);
 		
 		try {
-			ndPair.checkErrors();			
+			ndPair.checkErrors(getValidationPolicy());			
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -142,7 +142,7 @@ public final class TestNumeratorDenominatorPair
 			= NumeratorDenominatorPair.createCopy(masterNDPair);
 		ndPair.setNumeratorTableName(null);
 		try {
-			ndPair.checkErrors();
+			ndPair.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -155,7 +155,7 @@ public final class TestNumeratorDenominatorPair
 			= NumeratorDenominatorPair.createCopy(masterNDPair);
 		ndPair.setNumeratorTableName("");
 		try {
-			ndPair.checkErrors();
+			ndPair.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -169,7 +169,7 @@ public final class TestNumeratorDenominatorPair
 			= NumeratorDenominatorPair.createCopy(masterNDPair);
 		ndPair.setNumeratorTableDescription(null);
 		try {
-			ndPair.checkErrors();
+			ndPair.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -183,7 +183,7 @@ public final class TestNumeratorDenominatorPair
 			= NumeratorDenominatorPair.createCopy(masterNDPair);
 		ndPair.setNumeratorTableDescription("");
 		try {
-			ndPair.checkErrors();
+			ndPair.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -198,7 +198,7 @@ public final class TestNumeratorDenominatorPair
 			= NumeratorDenominatorPair.createCopy(masterNDPair);
 		ndPair.setDenominatorTableName(null);
 		try {
-			ndPair.checkErrors();
+			ndPair.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -211,7 +211,7 @@ public final class TestNumeratorDenominatorPair
 			= NumeratorDenominatorPair.createCopy(masterNDPair);
 		ndPair.setDenominatorTableName("");
 		try {
-			ndPair.checkErrors();
+			ndPair.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -224,7 +224,7 @@ public final class TestNumeratorDenominatorPair
 			= NumeratorDenominatorPair.createCopy(masterNDPair);
 		ndPair.setDenominatorTableDescription(null);
 		try {
-			ndPair.checkErrors();
+			ndPair.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -237,7 +237,7 @@ public final class TestNumeratorDenominatorPair
 			= NumeratorDenominatorPair.createCopy(masterNDPair);
 		ndPair.setDenominatorTableDescription("");
 		try {
-			ndPair.checkErrors();
+			ndPair.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(

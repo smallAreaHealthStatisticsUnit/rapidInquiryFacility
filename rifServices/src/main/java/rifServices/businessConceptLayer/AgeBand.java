@@ -1,6 +1,7 @@
 package rifServices.businessConceptLayer;
 
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -536,8 +537,9 @@ public final class AgeBand
 	// Section Override
 	// ==========================================
 
-	public void checkErrors() 
-		throws RIFServiceException {
+	public void checkErrors(
+		final ValidationPolicy validationPolicy) 
+		throws RIFServiceException {			
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		

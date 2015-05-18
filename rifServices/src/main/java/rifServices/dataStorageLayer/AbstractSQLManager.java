@@ -2,8 +2,8 @@ package rifServices.dataStorageLayer;
 
 
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-
 import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFDatabaseProperties;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
@@ -85,7 +85,7 @@ abstract class AbstractSQLManager {
 	// Section Properties
 	// ==========================================
 	private RIFDatabaseProperties rifDatabaseProperties;
-	
+	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -103,6 +103,10 @@ abstract class AbstractSQLManager {
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public ValidationPolicy getValidationPolicy() {
+		return validationPolicy;
+	}
+	
 	/**
 	 * Use appropariate table name case.
 	 *

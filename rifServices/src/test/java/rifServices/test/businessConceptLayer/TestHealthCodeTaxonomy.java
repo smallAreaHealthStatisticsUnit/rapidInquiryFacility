@@ -119,7 +119,7 @@ public final class TestHealthCodeTaxonomy
 		HealthCodeTaxonomy healthCodeTaxonomy
 			= HealthCodeTaxonomy.createCopy(masterHealthCodeTaxonomy);		
 		try {
-			healthCodeTaxonomy.checkErrors();
+			healthCodeTaxonomy.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -135,7 +135,7 @@ public final class TestHealthCodeTaxonomy
 			= HealthCodeTaxonomy.createCopy(masterHealthCodeTaxonomy);		
 		healthCodeTaxonomy.setName(null);
 		try {
-			healthCodeTaxonomy.checkErrors();
+			healthCodeTaxonomy.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -148,7 +148,7 @@ public final class TestHealthCodeTaxonomy
 			= HealthCodeTaxonomy.createCopy(masterHealthCodeTaxonomy);		
 		healthCodeTaxonomy.setName("");
 		try {
-			healthCodeTaxonomy.checkErrors();
+			healthCodeTaxonomy.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -161,7 +161,7 @@ public final class TestHealthCodeTaxonomy
 			= HealthCodeTaxonomy.createCopy(masterHealthCodeTaxonomy);		
 		healthCodeTaxonomy.setName(null);
 		try {
-			healthCodeTaxonomy.checkErrors();
+			healthCodeTaxonomy.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -174,7 +174,7 @@ public final class TestHealthCodeTaxonomy
 			= HealthCodeTaxonomy.createCopy(masterHealthCodeTaxonomy);		
 		healthCodeTaxonomy.setDescription("");
 		try {
-			healthCodeTaxonomy.checkErrors();
+			healthCodeTaxonomy.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -187,7 +187,7 @@ public final class TestHealthCodeTaxonomy
 			= HealthCodeTaxonomy.createCopy(masterHealthCodeTaxonomy);		
 		healthCodeTaxonomy.setDescription(null);
 		try {
-			healthCodeTaxonomy.checkErrors();
+			healthCodeTaxonomy.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -200,7 +200,7 @@ public final class TestHealthCodeTaxonomy
 			= HealthCodeTaxonomy.createCopy(masterHealthCodeTaxonomy);		
 		healthCodeTaxonomy.setNameSpace("");
 		try {
-			healthCodeTaxonomy.checkErrors();
+			healthCodeTaxonomy.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
@@ -213,7 +213,7 @@ public final class TestHealthCodeTaxonomy
 			= HealthCodeTaxonomy.createCopy(masterHealthCodeTaxonomy);		
 		healthCodeTaxonomy.setNameSpace(null);
 		try {
-			healthCodeTaxonomy.checkErrors();
+			healthCodeTaxonomy.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
