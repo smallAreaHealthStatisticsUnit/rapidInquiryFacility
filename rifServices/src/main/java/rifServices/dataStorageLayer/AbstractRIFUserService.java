@@ -19,6 +19,7 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Project;
+import rifServices.businessConceptLayer.StudyResultRetrievalContext;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.YearRange;
 import rifServices.businessConceptLayer.StudySummary;
@@ -971,6 +972,84 @@ class AbstractRIFUserService extends AbstractRIFService {
 	}
 	
 	
+	
+	public BoundaryRectangle getGeoLevelFullExtentForStudy(
+		final User _user,		
+		final StudyResultRetrievalContext _studyResultRetrievalContext)
+		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		StudyResultRetrievalContext studyResultRetrievalContext
+			= StudyResultRetrievalContext.createCopy(_studyResultRetrievalContext);
+				
+		BoundaryRectangle result = BoundaryRectangle.newInstance();
+		Connection connection = null;
+		try {
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelFullExtentForStudy",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeoLevelFullExtentForStudy",
+				"studyResultRetrievalContext",
+				studyResultRetrievalContext);
+
+			//Check for security violations
+			validateUser(user);
+			studyResultRetrievalContext.checkSecurityViolations();
+			
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getGeoLevelFullExtentForStudy",
+					user.getUserID(),
+					user.getIPAddress(),
+					studyResultRetrievalContext.getStudyID());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+			
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+			
+			//Delegate operation to a specialised manager class
+			SQLResultsQueryManager sqlResultsQueryManager
+				= rifServiceResources.getSqlResultsQueryManager();		
+			result
+				= sqlResultsQueryManager.getGeoLevelFullExtentForStudy(
+					connection,
+					user,
+					studyResultRetrievalContext);
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getGeoLevelFullExtentForStudy",
+				rifServiceException);			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+
+		return result;
+	}
+
+	
 	public BoundaryRectangle getGeoLevelFullExtent(
 		final User _user,
 		final Geography _geography,
@@ -1055,7 +1134,85 @@ class AbstractRIFUserService extends AbstractRIFService {
 
 		return result;
 	}
+
+	public BoundaryRectangle getGeographyFullExtent(
+			final User _user,
+			final Geography _geography) 
+			throws RIFServiceException {		
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		Geography geography = Geography.createCopy(_geography);
+			
+		BoundaryRectangle result = BoundaryRectangle.newInstance();
+		Connection connection = null;
+		try {
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeographyFullExtent",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getGeographyFullExtent",
+				"geography",
+				geography);	
+				
+			//Check for security violations
+			validateUser(user);
+			geography.checkSecurityViolations();
+				
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getGeographyFullExtent",
+					user.getUserID(),
+					user.getIPAddress(),
+					geography.getDisplayName());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+			
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
+			SQLMapDataManager sqlMapDataManager
+				= rifServiceResources.getSQLMapDataManager();		
+					
+			result
+				= sqlMapDataManager.getGeographyFullExtent(
+					connection,
+					user,
+					geography);
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getGeographyFullExtent",
+				rifServiceException);			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+
+		return result;
 		
+	}
+	
+	
 	public ArrayList<HealthTheme> getHealthThemes(
 		final User _user,
 		final Geography _geography)

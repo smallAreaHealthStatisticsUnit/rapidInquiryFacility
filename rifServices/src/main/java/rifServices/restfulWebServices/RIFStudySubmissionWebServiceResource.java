@@ -1,6 +1,5 @@
 package rifServices.restfulWebServices;
 
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.*;
 
@@ -1479,7 +1478,22 @@ public class RIFStudySubmissionWebServiceResource
 			diseaseMappingStudyID, 
 			geographicalIdentifier);
 	}	
-	
+		
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getGeographyFullExtent")
+	public Response getGeographyFullExtent(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName) {
+						
+
+		return super.getGeographyFullExtent(
+			servletRequest, 
+			userID, 
+			geographyName);			
+	}
+		
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelFullExtent")

@@ -1389,7 +1389,7 @@ final class SQLMapDataManager
 			logSQLException(sqlException);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
-					"sqlResultsQueryManager.unableToGetBoundsForGeoLevel",
+					"sqlMapDataManager.unableToGetBoundsForGeoLevel",
 					geography.getDisplayName(),
 					geoLevelSelect.getDisplayName());
 			RIFServiceException rifServiceException
@@ -1402,6 +1402,158 @@ final class SQLMapDataManager
 			//Cleanup database resources
 			SQLQueryUtility.close(statement);
 			SQLQueryUtility.close(resultSet);
+		}		
+	}
+
+
+	public BoundaryRectangle getGeographyFullExtent(
+		final Connection connection,
+		final User user,
+		final Geography geography)
+		throws RIFServiceException {
+		
+		//Validate parameters
+		geography.checkErrors();
+		sqlRIFContextManager.checkGeographyExists(
+			connection, 
+			geography.getName());
+					
+		PreparedStatement findLowestResolutionStatement = null;
+		ResultSet findLowestResolutionResultSet = null;
+		PreparedStatement getMapAreaIDStatement = null;
+		ResultSet getMapAreaIDResultSet = null;
+
+		PreparedStatement getBoundsForGeographyStatement = null;
+		ResultSet getBoundsForGeographyResultSet = null;		
+		
+		try {
+				
+			//Determine the geo level name and look up table for the lowest resolution
+			//of the geography
+			SQLGeneralQueryFormatter findLowestResolutionQueryFormatter
+				= new SQLGeneralQueryFormatter();
+			findLowestResolutionQueryFormatter.addQueryLine(0, "SELECT");
+			findLowestResolutionQueryFormatter.addQueryLine(1, "geolevel_name,");
+			findLowestResolutionQueryFormatter.addQueryLine(1, "LOWER(lookup_table) AS lookup_table");
+			findLowestResolutionQueryFormatter.addQueryLine(0, "FROM");
+			findLowestResolutionQueryFormatter.addQueryLine(1, "rif40_geolevels");
+			findLowestResolutionQueryFormatter.addQueryLine(0, "WHERE");
+			
+			findLowestResolutionQueryFormatter.addQueryLine(1, "geography=? AND ");
+			findLowestResolutionQueryFormatter.addQueryLine(1, "geolevel_id=1");
+			
+			logSQLQuery(
+				"findLowestResolutionQueryFormatter",
+				findLowestResolutionQueryFormatter,
+				geography.getName());
+		
+			//Execute query and generate results
+			findLowestResolutionStatement
+				= createPreparedStatement(
+					connection, 
+					findLowestResolutionQueryFormatter);
+			findLowestResolutionStatement.setString(1, geography.getName());				
+			findLowestResolutionResultSet = findLowestResolutionStatement.executeQuery();
+			
+			//Assume there is at least one row result
+			findLowestResolutionResultSet.next();
+			
+			String geoLevelName = findLowestResolutionResultSet.getString(1);
+			String lookupTable = findLowestResolutionResultSet.getString(2);
+			
+			
+			//Obtain the map area id
+			SQLSelectQueryFormatter getMapAreaIDQueryFormatter = new SQLSelectQueryFormatter();
+			getMapAreaIDQueryFormatter.addSelectField(geoLevelName);
+			getMapAreaIDQueryFormatter.addFromTable(lookupTable);
+
+			logSQLQuery(
+				"getMapAreaIDQueryFormatter",
+				getMapAreaIDQueryFormatter);
+			
+			getMapAreaIDStatement 
+				= createPreparedStatement(
+					connection, 
+					getMapAreaIDQueryFormatter);
+			getMapAreaIDResultSet
+				= getMapAreaIDStatement.executeQuery();
+			getMapAreaIDResultSet.next();			
+			String mapAreaID
+				= getMapAreaIDResultSet.getString(1);
+			
+			
+			
+			//now call the getGeoLevelBoundsForArea function 
+			SQLFunctionCallerQueryFormatter getBoundsForGeographyQueryFormatter
+				= new SQLFunctionCallerQueryFormatter();
+			getBoundsForGeographyQueryFormatter.addSelectField("y_max");
+			getBoundsForGeographyQueryFormatter.addSelectField("x_max");
+			getBoundsForGeographyQueryFormatter.addSelectField("y_min");
+			getBoundsForGeographyQueryFormatter.addSelectField("x_min");
+			getBoundsForGeographyQueryFormatter.setSchema("rif40_xml_pkg");
+			getBoundsForGeographyQueryFormatter.setFunctionName("rif40_getGeoLevelBoundsForArea");
+			getBoundsForGeographyQueryFormatter.setNumberOfFunctionParameters(3);
+			
+			getBoundsForGeographyStatement
+				= createPreparedStatement(
+					connection, 
+					getBoundsForGeographyQueryFormatter);
+					
+			getBoundsForGeographyStatement.setString(1, geography.getName());
+			getBoundsForGeographyStatement.setString(2, geoLevelName);
+			getBoundsForGeographyStatement.setString(3, mapAreaID);
+						
+			logSQLQuery(
+				"getBoundsForGeographyQueryFormatter",
+				getBoundsForGeographyQueryFormatter,
+				geography.getName(),
+				geoLevelName,
+				mapAreaID);
+			
+			getBoundsForGeographyResultSet
+				= getBoundsForGeographyStatement.executeQuery();
+			getBoundsForGeographyResultSet.next();
+			
+			double yMax = getBoundsForGeographyResultSet.getDouble(1);
+			double xMax = getBoundsForGeographyResultSet.getDouble(2);
+			double yMin = getBoundsForGeographyResultSet.getDouble(3);			
+			double xMin = getBoundsForGeographyResultSet.getDouble(4);
+			
+			BoundaryRectangle result
+				= BoundaryRectangle.newInstance(
+					String.valueOf(xMin),
+					String.valueOf(yMin),
+					String.valueOf(xMax),
+					String.valueOf(yMax));
+			
+			connection.commit();
+			
+			return result;
+		}
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version			
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlMapDataManager.unableToGetBoundsForGeography",
+					geography.getDisplayName());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			//Cleanup database resources
+			SQLQueryUtility.close(findLowestResolutionStatement);						
+			SQLQueryUtility.close(findLowestResolutionResultSet);
+			
+			SQLQueryUtility.close(getMapAreaIDStatement);
+			SQLQueryUtility.close(getMapAreaIDResultSet);
+			
+			SQLQueryUtility.close(getBoundsForGeographyStatement);
+			SQLQueryUtility.close(getBoundsForGeographyResultSet);
+			
 		}		
 	}
 	
