@@ -321,7 +321,9 @@ class AbstractStudyServiceBundle {
 			//and subsequent calls have one less available connection
 			//because the try...catch setup didn't allow connection to
 			//be put back in the "unused pile".
-			sqlConnectionManager.resetConnectionPoolsForUser(user);					
+			
+			//KLG: This may be causing problems so leave it out
+			//sqlConnectionManager.resetConnectionPoolsForUser(user);					
 		}
 					
 		RIFLogger rifLogger = RIFLogger.getLogger();
