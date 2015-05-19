@@ -62,7 +62,7 @@
 
 Alter script #7
 
-Support for ontologies (e.g. ICD9, 10); removed previous table based support.
+Support for taxonomies/ontologies (e.g. ICD9, 10); removed previous table based support.
 Modify t_rif40_inv_conditions to remove SQL injection risk
 
 Done:
@@ -153,6 +153,7 @@ COMMENT ON COLUMN rif40_numerator_outcome_columns.multiple_field_count
 	IS 'Outcome Group multiple field count (0-99). E.g if NULL then field is ICD_SAHSU_01; if 20 then fields are ICD_SAHSU_01 to ICD_SAHSU_20. Field numbers are assumed to tbe left padded to 2 characters with &quot;0&quot; and preceeded by an &quot;_&quot;';
 COMMENT ON COLUMN rif40_numerator_outcome_columns.columnn_exists IS 'Numerator table outcome columnn exists';
 COMMENT ON COLUMN rif40_numerator_outcome_columns.column_comment IS 'Numerator table outcome column comment';
+GRANT SELECT ON rif40_numerator_outcome_columns TO rif_manager, rif_user;
 
 SELECT * FROM rif40_numerator_outcome_columns;
 
@@ -307,9 +308,11 @@ BEGIN
 	FETCH c1_a7 INTO c1_rec;
 	CLOSE c1_a7;		
 --
+-- This will need to be improved to handle V3.1 rif upgraded data
+--
 	IF c2_rec.investigations NOT BETWEEN 0 AND 1 AND c2_rec.lines NOT BETWEEN 0 AND 2 AND c1_rec.column_name = 'condition' THEN
 			RAISE EXCEPTION 'C20199: ERROR! expecting 0 or 1 investigations (%), 0, 1 or 2 lines (%) in t_rif40_inv_conditions',
-				c2_rec.investigations, c2_rec.total;
+				c2_rec.investigations, c2_rec.lines;
 	ELSIF c1_rec.column_name = 'condition' THEN	
 		OPEN c3_a7;
 	    FETCH c3_a7 INTO c3_rec;
@@ -498,6 +501,7 @@ BEGIN
 		ELSE
 			PERFORM rif40_log_pkg.rif40_error(-20999, 'trg_rif40_inv_conditions',
 				'Cannot DELETE: User % is not the owner (%) of the record', USER::VARCHAR, OLD.username::VARCHAR);
+			RETURN OLD;
 		END IF;
 		RETURN NULL;
 	END IF;

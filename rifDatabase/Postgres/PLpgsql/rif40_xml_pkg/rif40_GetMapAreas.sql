@@ -203,7 +203,7 @@ BEGIN
 		  'SELECT (''{"gid": ''||ARRAY_TO_JSON(ARRAY_AGG(b.gid ORDER BY b.gid))::Text||'', "area_id": ''||'||E'\n'||
 		  '       ARRAY_TO_JSON(ARRAY_AGG(a.area_id ORDER BY b.gid))::Text||'', "name": ''||'||E'\n'||
 		  '	      ARRAY_TO_JSON(ARRAY_AGG(b.name ORDER BY b.gid))::Text||''}'')::JSON as map_area'||E'\n'||
-		  '  FROM a, quote_ident(sahsuland_'||LOWER(l_geolevel_view)||') b'||E'\n'||
+		  '  FROM a, '||quote_ident('sahsuland_'||LOWER(l_geolevel_view))||' b'||E'\n'||
 		  ' WHERE a.area_id = b.'||quote_ident(LOWER(l_geolevel_view));
 --
 -- Begin execution block to trap parse errors

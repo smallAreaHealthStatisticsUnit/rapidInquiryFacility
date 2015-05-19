@@ -139,19 +139,21 @@ client.connect(function(err) {
 					"properties": "gid",					
 					"projection": "4326",
 					"post-quantization": 1e4,
-					"propertyTransform": propertyTransform,
-					"id": id};
+					"property-transform": myPropertyTransform,
+					"id": myId};
 //
 // Promote tile gid to id
 //					
-				function id(d) {
+				function myId(d) {
+//					console.log('call myId()');					
 					return d.properties.gid;
 				}
 //
 // Retain properties gid
 //				
-				function propertyTransform(feature) {
-					return feature.properties.gid;
+				function myPropertyTransform(feature) {
+//					console.log('call myPropertyTransform()');
+					return { "name": feature.properties.name, "area_id": feature.properties.area_id, "gid": feature.properties.gid };
 				}		
 				query.on('row', function(row) {
 					//fired once for each row returned

@@ -1,4 +1,7 @@
 # Peter Hambly Progress Report RIF 4.0
+
+Principal Work Area: Postgres Database
+
 ## 2015
 ### May
 #### 10th-15 May
@@ -28,11 +31,11 @@ Done:
 * Rebuild rif40_inv_conditions:
   - Add back condition, derive from: min_condition, max_condition, predefined_group_name, outcome_group_name
   - Add numer_tab, field_name, column_exists and column_comments fields for enhanced information
- * Load new rif40_create_disease_mapping_example()
+* Load new rif40_create_disease_mapping_example()
  
 #### 18th-22nd May
 
-* rif40_GetMapAreas() fix - the following query works at LEVEL4 but not at other levels
+* rif40_GetMapAreas() fix - the following query works at LEVEL4 but returns NULL at other levels
 
 ```sql
 SELECT SUBSTRING(rif40_xml_pkg.rif40_GetMapAreas(
@@ -42,4 +45,6 @@ SELECT SUBSTRING(rif40_xml_pkg.rif40_GetMapAreas(
 				FROM 1 FOR 160) AS json 
 LIMIT 4;
 ```
+
+* topojson_convert.js - add name, gid and area_id as properties; validated link
 
