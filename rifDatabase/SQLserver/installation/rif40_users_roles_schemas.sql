@@ -1,3 +1,7 @@
+/*
+Where did my code for creating the original sahsuland_dev go?  I should have another file somewhere to set things up better.
+*/
+
 USE [master]
 GO
 IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = N'mdouglas')
