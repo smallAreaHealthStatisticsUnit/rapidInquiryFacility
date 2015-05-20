@@ -5,6 +5,8 @@ RIF.TileTopojsonUtils = (function(tooltip, geolvl) {
    /* Inherit style */
    RIF.LayerStyle.apply(this, []);
 
+   /* Global map area selection to facilitate sync, to be refactored in the future*/
+   that.studyMapAreaSelection = [];
 
    var _slct = function(id, isSlctd) {
       tiled.addOrRemoveId(id, isSlctd);
@@ -81,19 +83,47 @@ RIF.TileTopojsonUtils = (function(tooltip, geolvl) {
          }
       },
 
-      evntHndl: function(c) {
+      getClass: function(d) {
+         var id = tiled.getPathId(d);
+         if (tiled.isSlctd(id)) {
+            return "areaSelected polygon";
+         } else {
+            return "polygon";
+         }
+      },
+
+      addToSelection: function(d) {
+         slctd.push({
+            id: d.properties["area_id"],
+            id: d.properties.gid,
+            label: d.properties.name
+         });
+
+      },
+
+      removeFromSelection: function(d) {
+         slctd.push({
+            id: d.properties["area_id"],
+            id: d.properties.gid,
+            label: d.properties.name
+         });
+      },
+
+      evntHndl: function(c, d) {
          /* 'this' is the intialized layer's context */
          var id = this.id;
          var isSlctd = tiled.isSlctd(id);
          switch (c) {
             case "click":
                _slct(id, isSlctd);
-               //console.log( tiled.selection )      
                break;
             case "mouseout":
                break;
             case "mouseover":
-               $(tooltip).find('div').text(this.id)
+               /*
+                * This should be replaced when getAttribute web service is ready
+                */
+               $(tooltip).find('div').text(d.properties.name)
                break;
          }
       }
@@ -101,7 +131,7 @@ RIF.TileTopojsonUtils = (function(tooltip, geolvl) {
    };
 
    return {
-      class: "polygon",
+      class: tiled.getClass,
       evntHndl: tiled.evntHndl,
       id: tiled.getPathId,
       resetIds: tiled.resetIds,

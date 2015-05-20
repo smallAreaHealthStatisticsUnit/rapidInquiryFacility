@@ -40,6 +40,10 @@ RIF.mediator['firer-'] = (function() {
 
       setMapExtent: function() {
          this.fire('setMapExtent', []);
+      },
+
+      syncStudyAreaTable: function(mapAreas) {
+         this.fire('syncStudyAreaTable', mapAreas);
       }
 
    };

@@ -7,7 +7,6 @@ RIF['map']['unit-comparisonArea'] = (function(_dom, menuUtils) {
 
    };
 
-   console.log(mapLayer);
 
    return _p;
 

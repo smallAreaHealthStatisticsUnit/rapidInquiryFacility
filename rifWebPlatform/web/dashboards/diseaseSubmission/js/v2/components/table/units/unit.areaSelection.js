@@ -1,20 +1,22 @@
 RIF.table['unit-areaSelection'] = (function(_dom) {
 
-   var _renderTable = function(data) {
-
-      _dom.tableContent.style.display = 'none';
-      $(_dom.tableContent).empty();
-
+   var _renderTable = function(data, toBeSelected) {
+      var select = (typeof toBeSelected != 'undefined') ? _dom.selectionClass : '';
       var fragment = document.createDocumentFragment();
 
-      ids = data[1].id,
-      labels = data[2].label,
-      l = ids.length;
+      var gids = data.gid,
+         ids = data.area_id,
+         labels = data.name,
+         l = ids.length;
       while (l--) {
+         var id = "studyArea_" + gids[l];
+         if (document.getElementById(id) != null) {
+            continue;
+         };
          var oddOreven = (l % 2 == 0) ? 'even' : 'odd',
             div = document.createElement("div");
-         div.className = 'aSR ' + oddOreven;
-         div.id = "studyArea_" + l;
+         div.className = 'aSR ' + oddOreven + ' ' + select;
+         div.id = "studyArea_" + gids[l];
          div.innerHTML = '<div>' + ids[l] + '</div><div>' + labels[l] + '</div>';
          fragment.appendChild(div);
       };
@@ -23,11 +25,26 @@ RIF.table['unit-areaSelection'] = (function(_dom) {
       _dom.tableContent.style.display = 'block';
    };
 
+   var _hide = function() {
+      _dom.tableContent.style.display = 'none';
+   };
+
 
    _p = {
       getTabularData: function(data) {
-         //_renderTable( data );
-         console.log(data);
+         _renderTable(data);
+      },
+      getTabularDataFromMap: function(data) {
+         _renderTable(data, true);
+      },
+
+      empty: function() {
+         _hide();
+         $(_dom.tableContent).empty();
+      },
+      emptyPreserveSelection: function() {
+         _hide()
+         $(_dom.tableContent).find(">div:not(." + _dom.selectionClass + ")").remove();
       }
    };
 

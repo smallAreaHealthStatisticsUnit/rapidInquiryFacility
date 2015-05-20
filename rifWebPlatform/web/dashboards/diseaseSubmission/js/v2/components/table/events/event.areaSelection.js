@@ -28,11 +28,11 @@ RIF.table['event-areaSelection'] = (function(_dom, firer) {
       if (isMouseDown) {
          var slctd = [];
          var r = d3.selectAll('#areaSelectionWrapper .rowSelected').each(function(d, i) {
-
             var idLabel = $(this).children();
-
+            var gid = this.id.split('_')[1];
             slctd.push({
                id: $(idLabel[0]).text(),
+               gid: gid, // USING GID FOR NOW RATHER THAN THE ACTUAL AREA ID ABOVE    
                label: $(idLabel[1]).text()
             });
 

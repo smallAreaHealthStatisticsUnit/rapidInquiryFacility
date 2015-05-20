@@ -2,6 +2,7 @@ RIF.Map = (function() {
 
    var _map;
    var _initialExtent = null;
+   var _geolvlsChangeCount = 0;
 
    this.makeMap = function(mapId) {
       var options = {
@@ -24,24 +25,24 @@ RIF.Map = (function() {
    };
 
    this.setFullExtent = function(geolevel) {
-      RIF.getFullExtent(this.zoomTo, [geolevel]);
+      RIF.getExtent(this.zoomTo, [geolevel]);
    };
 
 
    this.addTiled = function(lyr, geoTable) {
       if (_initialExtent == null) {
          this.setFullExtent(geoTable);
-      } else {
+      } else if (_geolvlsChangeCount++ == 0) {
          this.zoomTo();
       };
       _map.addLayer(lyr);
    };
 
-   this.removeLayer = function() {
-      if (typeof this.layer === 'object') {
+   this.removeLayer = function(lyr) {
+      if (typeof lyr === 'object') {
          $('svg.leaflet-zoom-animated g').remove();
-         _map.removeLayer(this.layer);
-         _map.invalidateSize();
+         $('svg.leaflet-zoom-animated g path').unbind();
+         _map.removeLayer(lyr);
       };
    };
 
@@ -50,7 +51,8 @@ RIF.Map = (function() {
    };
 
    this.setInitialExtent = function(ext) {
-      RIF.mapExtent = _initialExtent = ext;
+      RIF.mapExtent = ext;
+      _initialExtent = ext
    };
 
    this.zoomTo = function() {

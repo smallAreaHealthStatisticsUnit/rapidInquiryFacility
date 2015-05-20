@@ -529,7 +529,7 @@ path.polygon {
 
 }
 path.polygon:hover {
-    fill-opacity: 0.5;
+    fill-opacity: 0.8;
     cursor: auto
 }
     
@@ -545,10 +545,7 @@ path.polygon:hover {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.4);
-    /*dim the background*/
-    
     z-index: 99999;
-    1
 }
 .msettings {
     width: 95%;
@@ -762,20 +759,29 @@ path.polygon:hover {
     font-size: 15px;
     left: 10px;
 }
-
-.syncronize {
+.areaButtons {
+    float:left;
+    margin-top: 8%;
+    margin-left: 3%;
+}
+.areaButtons div{
+    opacity:0.6;
     width:50px;
     height:50px;
-    float:left;
-    margin-top: 10%;
-    margin-left: 4%;
-    background: url('../images/sync2.png')  no-repeat;
-    opacity:0.6;
 }
-.syncronize:hover {
+.areaButtons div:hover {
     opacity:1;
     cursor : pointer;
 }
+
+.syncronize {
+    background: url('../images/sync2.png')  no-repeat;
+}
+
+.clearSelection {
+    background: url('../images/clear.png')  no-repeat 3px ;
+}
+
 
 #resolutionCountLabel {
     font-weight: bold;
@@ -872,7 +878,9 @@ div.aSR:hover,
 .areaSelectionTable .rowSelected,
 #allRowsAgeGroups .rowSelected,
 .labelSelected {
-    background-color: rgba( 152, 251, 152, 0.2) !important;
+    background-color: rgba( 255,69,0, 0.6) !important;
+    border-color:#FFC125;
+    color:white;
 }
 .aSR div {
     padding: 5px 0;

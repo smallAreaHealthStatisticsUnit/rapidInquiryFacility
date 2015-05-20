@@ -1,5 +1,7 @@
 RIF.Layer = (function(mapId, tooltipId) {
 
+   var _layer;
+
    /* Initialize a Map */
    this.makeMap(mapId);
 
@@ -14,9 +16,9 @@ RIF.Layer = (function(mapId, tooltipId) {
    //this.addTiled( new L.TileLayer.TileTopojson( '', options ), "LEVEL4" );
 
    this.initLayer = function(geolvl) {
-      this.removeLayer();
-      this.layer = new L.TileLayer.TileTopojson('', _getOptions(geolvl));;
-      this.addTiled(this.layer, geolvl);
+      this.removeLayer(_layer);
+      _layer = new L.TileLayer.TileTopojson('', _getOptions(geolvl));;
+      this.addTiled(_layer, geolvl);
    };
 
    this.resetSlctd = function() {

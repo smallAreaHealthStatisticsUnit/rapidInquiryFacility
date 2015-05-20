@@ -10,7 +10,7 @@ RIF['map']['controller-studyArea'] = (function(unit) {
          var callback = function() {
             unit.setExtent(this);
          };
-         RIF.getFullExtent(callback, ['LEVEL1']); // Web service need to change to allow no geolevelselect
+         RIF.getFullExtent(callback, []); // Web service need to change to allow no geolevelselect
       }(),
 
    };

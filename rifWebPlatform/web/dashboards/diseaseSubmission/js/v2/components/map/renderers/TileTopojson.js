@@ -94,19 +94,16 @@ L.TileLayer.TileTopojson = L.TileLayer.extend({
             .on("mouseout", function() {
                opt.evntHndl.call(this, "mouseout");
             }).on("mousedown", function() {
-               //console.log( "mousedown" )
                self.drag = -1;
             }).on("mouseup", function() {})
-            .on("mouseover", function() {
-               opt.evntHndl.call(this, "mouseover");
+            .on("mouseover", function(d) {
+               opt.evntHndl.call(this, "mouseover", d);
             }).on("click", function() {
-               //console.log( "mouseclick" )
                if (self.drag === 1) {
                   return;
                }
                opt.evntHndl.call(this, "click");
             }).call(drag);
-
 
          self._tileOnLoad.call(tile);
       }

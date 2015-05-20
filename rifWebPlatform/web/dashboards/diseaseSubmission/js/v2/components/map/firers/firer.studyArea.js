@@ -4,6 +4,10 @@ RIF['map']['firer-studyArea'] = (function() {
 
       propagateMapExtent: function(ext) {
          console.log(ext);
+      },
+
+      studyMapAreaSelectionEvent: function(areaId) {
+         this.fire('studyMapAreaSelectionEvent', areaId);
       }
 
    };

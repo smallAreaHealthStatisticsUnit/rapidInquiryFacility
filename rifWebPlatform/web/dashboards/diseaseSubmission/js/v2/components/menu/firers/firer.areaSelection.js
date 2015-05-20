@@ -11,8 +11,8 @@ RIF.menu['firer-areaSelection'] = (function() {
          this.fire('resolutionChanged', arg);
       },
 
-      syncStudyArea: function() {
-         this.fire('syncStudyArea', []);
+      syncStudyAreaButtonClicked: function() {
+         this.fire('syncStudyAreaButtonClicked', []);
       }
 
    };

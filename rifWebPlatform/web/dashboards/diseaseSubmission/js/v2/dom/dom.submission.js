@@ -164,7 +164,8 @@ RIF.dom = (function() {
                rows: $('#areaSelectionWrapper .aSR'),
                studyAreaCount: get('resolutionCount'),
                areaSelectionWrapper: $('#areaSelectionWrapper'),
-               areasSelectionDialog: $('.areasSelectionDialog')
+               areasSelectionDialog: $('.areasSelectionDialog'),
+               selectionClass: 'rowSelected'
             };
          },
          ageGroups: function() {

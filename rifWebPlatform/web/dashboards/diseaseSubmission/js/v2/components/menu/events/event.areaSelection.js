@@ -13,7 +13,7 @@ RIF.menu['event-areaSelection'] = (function(_dom, firer) {
    });
 
    _dom.sync.click(function() {
-      firer.syncStudyArea();
+      firer.syncStudyAreaButtonClicked();
    });
 
 });

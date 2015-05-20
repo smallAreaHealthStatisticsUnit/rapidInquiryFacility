@@ -27,6 +27,22 @@ RIF.mediator.utils = (function(modelAccessor) {
          };
       },
 
+      filterUniqueStudyAreas: function(currentSelection, newSelection) {
+         var newLength = newSelection.length;
+         while (newLength--) {
+            var id = newSelection[newLength]['id'];
+            //console.log("checking gid" + id);
+            for (var k = 0, l = currentSelection.length; k < l; ++k) {
+               if (currentSelection[k]['id'] == id) {
+                  currentSelection.splice(k);
+                  l--;
+               };
+            };
+         };
+         return currentSelection.concat(newSelection);
+      },
+
+
       addCurrentInvestigation: function() {
          var parametersClone = RIF.utils.extend(modelAccessor.parameters, {});
          var invs = modelAccessor.getInvestigations();
@@ -41,6 +57,7 @@ RIF.mediator.utils = (function(modelAccessor) {
             console.log('Investigation ' + i + ' removed')
          };
       },
+
       /* 
        * Model utils
        *
@@ -86,6 +103,7 @@ RIF.mediator.utils = (function(modelAccessor) {
                   };
                   if (o[i] == null || jQuery.isEmptyObject(o[i])) {
                      toComplete.push(i);
+                     console.log(jQuery.isEmptyObject(o[i]));
                   } else if (typeof o[i] == 'object') {
                      iterate(o[i]);
                   };

@@ -14,6 +14,7 @@ RIF.model = (function() {
       studyArea: {
          studyArea_resolution: null,
          studyArea_areas: [],
+         studyArea_areasFromMap: [],
          studyArea_selectAt: null
       },
 

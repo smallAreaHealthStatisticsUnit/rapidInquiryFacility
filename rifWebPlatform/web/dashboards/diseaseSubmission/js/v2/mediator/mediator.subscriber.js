@@ -20,13 +20,18 @@ RIF.mediator['subscriber-'] = (function(mediatorUtils) {
       },
       selectAtChanged: function(arg) {
          _setProperty('setStudyAreaSelectAt', arg);
+         _setProperty('setStudyAreas', []);
+         _setProperty('setStudyMapAreas', []);
          this.selectAtChangeUpdate(arg);
       },
       resolutionChanged: function(arg) {
          _setProperty('setStudyAreaResolution', arg);
       },
       studyAreaSelectionEvent: function(rows) {
-         _setProperty('setStudyAreas', RIF.utils.unique(rows));
+         _setProperty('setStudyAreas', rows);
+      },
+      studyMapAreaSelectionEvent: function(rows) {
+         _setProperty('setStudyMapAreas', rows);
       },
       healthSelectionChanged: function(arg) {
          if (arg.length == 0) {
@@ -91,6 +96,24 @@ RIF.mediator['subscriber-'] = (function(mediatorUtils) {
          var modelToSchema = mediatorUtils.mapToSchema();
          this.modelToSchemaReady(modelToSchema);
       },
+
+      syncStudyAreaButtonClicked: function() {
+         var mapSelection = _getProperty('getStudyAreaFromMap');
+         var gids = [],
+            area_ids = [],
+            names = [];
+         mapSelection.map(function(o) {
+            gids.push(o.gid);
+            area_ids.push(o.id);
+            names.push(o.label);
+         });
+         this.syncStudyAreaTable({
+            gid: gids,
+            area_id: area_ids,
+            name: names
+         });
+      },
+
 
       /*
        *  Check if dialog is ready to be opened

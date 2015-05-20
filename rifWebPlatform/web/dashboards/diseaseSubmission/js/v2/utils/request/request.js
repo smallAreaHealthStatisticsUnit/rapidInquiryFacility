@@ -176,10 +176,15 @@
             xhr('studySubmission/getAvailableCalculationMethods?', myCallback, msg, 'application/json');
          },
 
-         getFullExtent: function(myCallback, params) {
-            var msg = "Retrieving full extent",
+         getExtent: function(myCallback, params) {
+            var msg = "Retrieving extent for geolevel  " + parmas[0],
                args = 'geoLevelSelectName=' + params[0];
             xhr('studySubmission/getGeoLevelFullExtent?' + args, myCallback, msg, 'application/json');
+         },
+
+         getFullExtent: function(myCallback, params) {
+            var msg = "Retrieving full extent";
+            xhr('studySubmission/getGeographyFullExtent?', myCallback, msg, 'application/json');
          },
 
          getTiles: function(myCallback, params) {

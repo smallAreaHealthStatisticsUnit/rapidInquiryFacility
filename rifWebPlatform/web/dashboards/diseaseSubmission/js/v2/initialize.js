@@ -134,6 +134,12 @@ RIF.initialize = (function() {
             method: "studyAreaSelectionEvent"
          },
 
+         studyMapAreaSelectionEvent: {
+            subscribers: ["mediator"],
+            firer: ["map"],
+            method: "studyMapAreaSelectionEvent"
+         },
+
          startAreaSelection: {
             subscribers: ["menu"],
             firer: ["mediator"],
@@ -248,10 +254,16 @@ RIF.initialize = (function() {
          },
 
          /**-- MAPS ---**/
-         syncStudyArea: {
-            subscribers: ["table"], // not going through mediator
+         syncStudyAreaButtonClicked: {
+            subscribers: ["mediator"], // not going through mediator
             firer: ["menu"],
-            method: "syncStudyArea"
+            method: "syncStudyAreaButtonClicked"
+         },
+
+         syncStudyAreaTable: {
+            subscribers: ["table"], // not going through mediator
+            firer: ["mediator"],
+            method: "syncStudyAreaTable"
          },
 
 

@@ -53,6 +53,10 @@ RIF.modelAccessor = (function() {
       setStudyAreas: function(s) {
          model.studyArea.studyArea_areas = s;
       },
+      setStudyMapAreas: function(s) {
+         model.studyArea.studyArea_areasFromMap = s;
+      },
+
       setComparisonArea: function(s) {
          model.comparisonArea.comparisonArea_resolution = s.resolution;
          model.comparisonArea.comparisonArea_areas = s.areas;
@@ -130,6 +134,9 @@ RIF.modelAccessor = (function() {
       },
       getStudyAreas: function() {
          return model.studyArea.studyArea_areas;
+      },
+      getStudyAreaFromMap: function() {
+         return model.studyArea.studyArea_areasFromMap;
       },
       getStudyAreaSelectAt: function() {
          return model.studyArea.studyArea_selectAt;
