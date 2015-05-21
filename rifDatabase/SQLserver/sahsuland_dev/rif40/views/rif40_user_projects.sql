@@ -19,7 +19,7 @@ CREATE  VIEW [rif40].[rif40_user_projects] AS
    FROM [rif40].[t_rif40_user_projects] a,
     [rif40].[t_rif40_projects] b
   WHERE a.project = b.project AND a.username= SUSER_SNAME() 
-  OR  IS_MEMBER(N'[rif40_manager]') = 1
+  OR  IS_MEMBER(N'[rif_manager]') = 1
 GO
 
 GRANT SELECT ON [rif40].[rif40_user_projects] TO [rif_user]

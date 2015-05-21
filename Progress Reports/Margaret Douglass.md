@@ -3,12 +3,17 @@
 ##2015
 
 ###May
-######20 May 2015:
+######21 May
+* Finished adapting RH's old view code to my new database, but that is only 10 out of 19 views needed for the rif40 schema.  All her code is now integrated the sahsuland_dev new version.
+* Added new views: rif40_user_version, rif40_geolevels (flagged question to discuss with Peter)
+To do: write code for remaining views, trigger code for tables that had not been written, all trigger code for views (+ remind myself how to write triggers in T-SQL)
+
+######20 May
 * Finally moved all my current code onto Github and reorganized Raunaque's old code so it can be out of the way while still accessible.
 * Added remaining missing tables: rif40_columns, rif40_tables_and_views, rif40_triggers
 * Started on adapting Raunaque's view code.  No view triggers have been written yet.
-  - missing views: rif40_geolevels, rif40_inv_conditions, rif40_num_denom, rif40_num_denom_errors, rif40_numerator_outcome_columns,
-  rif40_numerator_outcome_columns, rif40_projects, rif40_studies
+  - missing views (not ported by RH): rif40_geolevels, rif40_inv_conditions, rif40_num_denom, rif40_num_denom_errors, rif40_numerator_outcome_columns,
+  rif40_numerator_outcome_columns, rif40_projects, rif40_studies, rif40_user_version
   
 ---
 ###April

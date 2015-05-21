@@ -22,7 +22,7 @@ CREATE VIEW [rif40].[rif40_study_sql_log] AS
    FROM [rif40].[t_rif40_study_sql_log] c
      LEFT JOIN [rif40].[rif40_study_shares] s ON c.study_id = s.study_id AND s.grantee_username=SUSER_SNAME()
   WHERE c.username=SUSER_SNAME() OR 
-  IS_MEMBER(N'[rif40_manager]') = 1 OR 
+  IS_MEMBER(N'[rif_manager]') = 1 OR 
   (s.grantee_username IS NOT NULL AND s.grantee_username <> '')
 GO
 
