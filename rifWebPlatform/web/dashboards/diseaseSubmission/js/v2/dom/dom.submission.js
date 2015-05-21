@@ -7,7 +7,8 @@ RIF.dom = (function() {
          studyArea: function() {
             return {
                id: 'areaSelectionMap',
-               tooltip: $('#tooltip')
+               tooltip: $('#tooltip'),
+               areaCounter: get('areaCounter')
             }
          },
          comparisonArea: function() {
@@ -85,8 +86,13 @@ RIF.dom = (function() {
                areaSelectionMap: $('#areaSelectionMap'),
                /* Label used to count number of areas selected */
                resolutionCountLabel: get('resolutionCountLabel'),
-               /* Sync button */
-               sync: $('.syncronize')
+               /* Sync buttons */
+               syncTable: $('#syncStudyTable'),
+               syncMap: $('#syncStudyMap'),
+               /* Clear all  rows */
+               clearStudy: $('#clearStudy'),
+               /* Select all study rows */
+               selectAlRowsStudy: $('#selectAlRowsStudy')
 
             };
          },
@@ -157,15 +163,17 @@ RIF.dom = (function() {
          }
       },
       table: {
-         areaSelection: function() {
+         studyArea: function() {
             return {
                headers: $('#areaSelectionWrapper .aSH li'),
                tableContent: get('allRows'),
                rows: $('#areaSelectionWrapper .aSR'),
+               rowClass: 'aSR',
                studyAreaCount: get('resolutionCount'),
                areaSelectionWrapper: $('#areaSelectionWrapper'),
                areasSelectionDialog: $('.areasSelectionDialog'),
-               selectionClass: 'rowSelected'
+               selectionClass: 'rowSelected',
+               selectionClassD3Compatible: '#areaSelectionWrapper .rowSelected'
             };
          },
          ageGroups: function() {

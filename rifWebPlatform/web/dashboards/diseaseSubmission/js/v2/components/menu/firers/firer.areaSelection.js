@@ -11,9 +11,25 @@ RIF.menu['firer-areaSelection'] = (function() {
          this.fire('resolutionChanged', arg);
       },
 
-      syncStudyAreaButtonClicked: function() {
-         this.fire('syncStudyAreaButtonClicked', []);
-      }
+      syncTableButtonClicked: function() {
+         this.fire('syncTableButtonClicked', []);
+      },
+
+      syncMapButtonClicked: function() {
+         this.fire('syncMapButtonClicked', []);
+      },
+
+      studyMapAreaSelectionEvent: function(areaId) {
+         this.fire('studyMapAreaSelectionEvent', RIF.mapAreasSelected);
+      },
+
+      studySelectAllRowsClicked: function() {
+         this.fire('studySelectAllRowsClicked', []);
+      },
+
+      clearAreaSelectionEvent: function() {
+         this.fire('clearAreaSelectionEvent', ['studyArea']);
+      },
 
    };
    return firer;

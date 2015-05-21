@@ -12,8 +12,22 @@ RIF.menu['event-areaSelection'] = (function(_dom, firer) {
       firer.resolutionChanged(val);
    });
 
-   _dom.sync.click(function() {
-      firer.syncStudyAreaButtonClicked();
+   _dom.syncMap.click(function() {
+      firer.syncMapButtonClicked();
+   });
+
+   _dom.syncTable.click(function() {
+      firer.studyMapAreaSelectionEvent();
+      firer.syncTableButtonClicked();
+   });
+
+   _dom.selectAlRowsStudy.click(function() {
+      firer.studySelectAllRowsClicked();
+   });
+
+   _dom.clearStudy.click(function() {
+      firer.clearAreaSelectionEvent();
+      console.log("selection cleared");
    });
 
 });

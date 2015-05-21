@@ -1,4 +1,4 @@
-RIF.table['controller-areaSelection'] = (function(unit) {
+RIF.table['controller-studyArea'] = (function(unit) {
 
    var _currentGeolvl;
    var _getBounds = function() {
@@ -26,13 +26,25 @@ RIF.table['controller-areaSelection'] = (function(unit) {
 
       syncTabularData: function(mapAreas) {
          var callback = function() {
-            unit.emptyPreserveSelection();
+            unit.empty();
             unit.getTabularDataFromMap(mapAreas);
             unit.getTabularData(this);
          };
 
          RIF.getTableMapAreas(callback, [_currentGeolvl, _getBounds()]);
       },
+
+      studySelectAllRows: function() {
+         unit.selectAll();
+      },
+
+      getSelection: function() {
+         return unit.getSelection();
+      },
+
+      clearSelection() {
+         unit.clearAll();
+      }
 
    };
 

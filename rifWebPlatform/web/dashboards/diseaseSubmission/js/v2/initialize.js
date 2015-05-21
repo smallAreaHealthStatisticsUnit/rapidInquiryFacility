@@ -1,20 +1,9 @@
 /*
+ *
  *  The initialize file allows you to choose components and units as
  *  needed. The events object sets all relationships between
  *  each component.
  *
- *  @components
- *      list of components [map,chart,table,menu] dynamically initialized
- *  @units
- *      list of units which take care of the rendering for parts of the component they belong to
- *  @events
- *      list of events occurring within the manager module
- *      ->firer:
- *          objects that will fire the specific event
- *      ->subscriber
- *          objects that will handle the event fired
- *      ->method
- *          method which must be implemented in subscriber object
  */
 RIF.initialize = (function() {
 
@@ -32,7 +21,7 @@ RIF.initialize = (function() {
          },
          table: {
             studyType: 'diseaseSubmission',
-            tables: ['ageGroups', 'investigationsRecap', 'areaSelection', 'summary']
+            tables: ['ageGroups', 'investigationsRecap', 'studyArea', 'summary']
          }
       },
       events: {
@@ -136,7 +125,7 @@ RIF.initialize = (function() {
 
          studyMapAreaSelectionEvent: {
             subscribers: ["mediator"],
-            firer: ["map"],
+            firer: ["menu"],
             method: "studyMapAreaSelectionEvent"
          },
 
@@ -254,24 +243,49 @@ RIF.initialize = (function() {
          },
 
          /**-- MAPS ---**/
-         syncStudyAreaButtonClicked: {
-            subscribers: ["mediator"], // not going through mediator
+         syncMapButtonClicked: {
+            subscribers: ["mediator"],
             firer: ["menu"],
-            method: "syncStudyAreaButtonClicked"
+            method: "syncMapButtonClicked"
+         },
+
+         syncTableButtonClicked: {
+            subscribers: ["mediator"],
+            firer: ["menu"],
+            method: "syncTableButtonClicked"
          },
 
          syncStudyAreaTable: {
-            subscribers: ["table"], // not going through mediator
+            subscribers: ["table"],
             firer: ["mediator"],
             method: "syncStudyAreaTable"
          },
 
+         syncStudyAreaMap: {
+            subscribers: ["map"],
+            firer: ["mediator"],
+            method: "syncStudyAreaMap"
+         },
 
-         /* setInitialExtent: {
-        subscribers: [ "map" ],
-        firer: [ "mediator" ],
-        method: "setInitialExtent"
-      }, */
+         /**-- SELECT ALL ROWS ---**/
+         studySelectAllRowsClicked: {
+            subscribers: ["table"],
+            firer: ["menu"],
+            method: "studySelectAllRowsClicked"
+         },
+
+         /**-- CLEAR ALL Selection ---**/
+         clearAreaSelectionEvent: {
+            subscribers: ["mediator"],
+            firer: ["menu"],
+            method: "clearAreaSelectionEvent"
+         },
+
+         clearStudySelection: {
+            subscribers: ["map", "table"],
+            firer: ["mediator"],
+            method: "clearStudySelection"
+         },
 
 
          /**-- SUMMARY TABLE ---**/
@@ -294,9 +308,11 @@ RIF.initialize = (function() {
          RIF.utils.addEvents.call(this);
       }
    };
+
    return {
       setUp: (function(args) {
          _p.init();
-      }())
+      }());
    };
+
 });

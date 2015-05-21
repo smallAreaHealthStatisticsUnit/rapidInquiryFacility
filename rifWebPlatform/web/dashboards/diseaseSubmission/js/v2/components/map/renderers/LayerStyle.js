@@ -15,8 +15,8 @@ RIF.LayerStyle = (function() {
          fill: "#1E90FF"
       },
       slctd: {
-         fill: '#FF7F50',
-         stroke: '#FFC125',
+         fill: '#CD96CD',
+         stroke: '#F8F8FF',
          "fill-opacity": 1
       }
    };
@@ -42,6 +42,12 @@ RIF.LayerStyle = (function() {
       unhighlight: function(id, isSlctd) {
          d3.select("#" + id).style(style.default);
       },
+
+      unhighlightAll: function(mapContainerId) {
+         d3.selectAll("#" + mapContainerId + " path")
+            .style(style.default)
+            .attr('class', 'polygon');
+      }
    };
 
 

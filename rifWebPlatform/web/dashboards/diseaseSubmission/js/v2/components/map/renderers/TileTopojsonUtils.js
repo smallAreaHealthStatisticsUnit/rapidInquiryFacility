@@ -1,6 +1,7 @@
-RIF.TileTopojsonUtils = (function(tooltip, geolvl) {
+RIF.TileTopojsonUtils = (function(tooltip, geolvl, counter) {
 
    var that = this;
+   var slctd = RIF.mapAreasSelected = [];
 
    /* Inherit style */
    RIF.LayerStyle.apply(this, []);
@@ -8,14 +9,37 @@ RIF.TileTopojsonUtils = (function(tooltip, geolvl) {
    /* Global map area selection to facilitate sync, to be refactored in the future*/
    that.studyMapAreaSelection = [];
 
-   var _slct = function(id, isSlctd) {
-      tiled.addOrRemoveId(id, isSlctd);
-      if (isSlctd) {
-         that.style.unhighlight(id, isSlctd);
-      } else {
-         that.style.highlight(id, isSlctd);
+   var addToSelection = function(dProperties) {
+      slctd.push({
+         "area_id": dProperties["area_id"],
+         gid: String(dProperties.gid),
+         label: dProperties.name
+      });
+   };
+
+   var removeFromSelection = function(dProperties) {
+      var l = slctd.length;
+      for (var i = 0; i < l; i++) {
+         if (dProperties.gid == slctd[i].gid) {
+            slctd.splice(i, 1);
+            break;
+         };
       };
    };
+
+   var _slct = function(dProperties, isSlctd, id) {
+      var id = (typeof id == 'undefined') ? 'g' + dProperties.gid : id;
+      tiled.addOrRemoveId(id, isSlctd);
+      if (isSlctd) {
+         that.style.unhighlight(id);
+         removeFromSelection(dProperties);
+      } else {
+         that.style.highlight(id);
+         addToSelection(dProperties);
+      };
+      $(counter).text(slctd.length);
+   };
+
 
    var tiled = {
 
@@ -74,6 +98,18 @@ RIF.TileTopojsonUtils = (function(tooltip, geolvl) {
          return true;
       },
 
+      slct: function(d) {
+         var actualPathId = 'g' + d.gid; //Coming from mediator subscriber, cannot use getPathTildId
+         var isSlctd = tiled.isSlctd(actualPathId);
+         tiled.addOrRemoveId(actualPathId, isSlctd);
+         if (!isSlctd) {
+            that.style.highlight(actualPathId);
+            addToSelection(d);
+         };
+         $(counter).text(slctd.length);
+      },
+
+
       getStyle: function(d) {
          var id = tiled.getPathId(d);
          if (tiled.isSlctd(id)) {
@@ -102,11 +138,13 @@ RIF.TileTopojsonUtils = (function(tooltip, geolvl) {
       },
 
       removeFromSelection: function(d) {
-         slctd.push({
-            id: d.properties["area_id"],
-            id: d.properties.gid,
-            label: d.properties.name
-         });
+
+      },
+
+      clear: function(mapContainerId) {
+         tiled.selection = {};
+         slctd = RIF.mapAreasSelected = [];
+         that.style.unhighlightAll(mapContainerId);
       },
 
       evntHndl: function(c, d) {
@@ -115,7 +153,7 @@ RIF.TileTopojsonUtils = (function(tooltip, geolvl) {
          var isSlctd = tiled.isSlctd(id);
          switch (c) {
             case "click":
-               _slct(id, isSlctd);
+               _slct(d /*properties*/ , isSlctd);
                break;
             case "mouseout":
                break;
@@ -127,7 +165,6 @@ RIF.TileTopojsonUtils = (function(tooltip, geolvl) {
                break;
          }
       }
-
    };
 
    return {
@@ -137,7 +174,9 @@ RIF.TileTopojsonUtils = (function(tooltip, geolvl) {
       resetIds: tiled.resetIds,
       deduplicate: tiled.checkId,
       getTilesParams: tiled.getTilesParams,
-      getStyle: tiled.getStyle
+      getStyle: tiled.getStyle,
+      slct: tiled.slct,
+      clear: tiled.clear
    };
 
 });

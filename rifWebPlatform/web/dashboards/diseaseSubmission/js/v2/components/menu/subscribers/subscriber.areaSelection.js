@@ -7,7 +7,8 @@ RIF.menu['subscriber-areaSelection'] = (function(controller) {
 
       getResolutions: function(selectAt) {
          controller.getResolutionsAvailable(selectAt);
-      }
+      },
+
    };
 
    return subscriber;

@@ -44,6 +44,14 @@ RIF.mediator['firer-'] = (function() {
 
       syncStudyAreaTable: function(mapAreas) {
          this.fire('syncStudyAreaTable', mapAreas);
+      },
+
+      syncStudyAreaMap: function(gids) {
+         this.fire('syncStudyAreaMap', gids);
+      },
+
+      clearStudySelection: function() {
+         this.fire('clearStudySelection', []);
       }
 
    };

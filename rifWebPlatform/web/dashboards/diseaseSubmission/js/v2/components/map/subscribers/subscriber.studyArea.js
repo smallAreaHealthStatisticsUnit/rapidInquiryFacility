@@ -10,6 +10,14 @@ RIF['map']['subscriber-studyArea'] = (function(controller) {
          controller.setInitialExtent();
       },
 
+      syncStudyAreaMap: function(gids) {
+         controller.syncStudyArea(gids);
+      },
+
+      clearStudySelection: function() {
+         controller.clearSelection();
+      }
+
    };
 
    return subscriber;

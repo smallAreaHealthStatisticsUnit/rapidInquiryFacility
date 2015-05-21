@@ -1,4 +1,4 @@
-RIF.table['firer-areaSelection'] = (function() {
+RIF.table['firer-studyArea'] = (function() {
 
    var firer = {
       studyAreaSelectionEvent: function(rowId) {

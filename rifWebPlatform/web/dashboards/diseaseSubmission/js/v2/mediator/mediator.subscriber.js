@@ -20,8 +20,8 @@ RIF.mediator['subscriber-'] = (function(mediatorUtils) {
       },
       selectAtChanged: function(arg) {
          _setProperty('setStudyAreaSelectAt', arg);
-         _setProperty('setStudyAreas', []);
-         _setProperty('setStudyMapAreas', []);
+         this.studyAreaSelectionEvent([]);
+         this.studyMapAreaSelectionEvent([])
          this.selectAtChangeUpdate(arg);
       },
       resolutionChanged: function(arg) {
@@ -92,19 +92,51 @@ RIF.mediator['subscriber-'] = (function(mediatorUtils) {
          mediatorUtils.clearAllParameters()
       },
 
+      clearAreaSelectionEvent: function(args) {
+         var dialog = args[0];
+         if (dialog == 'studyArea') {
+            this.studyAreaSelectionEvent([]);
+            this.studyMapAreaSelectionEvent([]);
+         };
+         this.clearStudySelection();
+      },
+
       mapModelToSchema: function() {
          var modelToSchema = mediatorUtils.mapToSchema();
          this.modelToSchemaReady(modelToSchema);
       },
 
-      syncStudyAreaButtonClicked: function() {
+      syncMapButtonClicked: function() {
+         /* Set map selection to be equal table's */
+         var tableSelection = _getProperty('getStudyAreas');
+         this.studyMapAreaSelectionEvent(tableSelection);
+
+         var gids = [],
+            area_ids = [],
+            names = [];
+         var selection = tableSelection.map(function(o) {
+            gids.push(o.gid);
+            area_ids.push(o.id);
+            names.push(o.label);
+         });
+         this.syncStudyAreaMap({
+            gid: gids,
+            area_id: area_ids,
+            name: names
+         });
+      },
+
+      syncTableButtonClicked: function() {
+         /* Set table selection to be equal map's */
          var mapSelection = _getProperty('getStudyAreaFromMap');
+         this.studyAreaSelectionEvent(mapSelection);
+
          var gids = [],
             area_ids = [],
             names = [];
          mapSelection.map(function(o) {
             gids.push(o.gid);
-            area_ids.push(o.id);
+            area_ids.push(o["area_id"]);
             names.push(o.label);
          });
          this.syncStudyAreaTable({

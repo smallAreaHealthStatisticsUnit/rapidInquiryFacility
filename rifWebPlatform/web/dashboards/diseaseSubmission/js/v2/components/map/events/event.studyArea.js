@@ -14,22 +14,30 @@ RIF['map']['event-studyArea'] = (function(dom, firer) {
    };
 
 
-   $('#' + dom.id).on("mousedown", "path", function() {
-      $(window).mousemove(function() {
-         isDragging = true;
-         $(window).unbind("mousemove");
-      });
+   /* $( '#' + dom.id).on("mousedown", "path", function() {
+        $(window).mousemove(function() {
+            isDragging = true;
+            $(window).unbind("mousemove");
+        });
    }).on("mouseup", "path", function() {
-      var wasDragging = isDragging;
-      isDragging = false;
-      $(window).unbind("mousemove");
-      if (!wasDragging) { //was clicking
-         var c = this.getAttribute("class");
-         var newClass = (c == 'polygon') ? "areaSelected polygon" : "polygon";
-         this.setAttribute("class", newClass);
-         firer.studyMapAreaSelectionEvent(_getAreaSelection());
-      };
-   });
+        var wasDragging = isDragging;
+        isDragging = false;
+        $(window).unbind("mousemove");
+        if (!wasDragging) { //was clicking
+            var c = this.getAttribute("class");
+            var newClass = (c =='polygon' ) ? "areaSelected polygon" : "polygon";
+            this.setAttribute("class", newClass);
+            var row;
+            d3.select('#' + this.id).each(function(o){                         
+                row = {
+                  id: o.properties["area_id"],
+                  gid: String(o.properties.gid), // USING GID FOR NOW RATHER THAN THE ACTUAL AREA ID ABOVE    
+                  label: o.properties.name
+                };
+            });
+            firer.studyMapAreaSelectionEvent( row  );
+        };
+  });*/
 
 
    $('#' + dom.id).on("mousemove", 'path', function(aEvent) {

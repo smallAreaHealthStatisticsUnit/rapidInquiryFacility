@@ -13,7 +13,13 @@ var RIF = (function(R) {
    R.resizeWidth = function( /*obj,*/ px) {};
    R.user = localStorage.getItem('RIF_user');
    R.geography = 'SAHSU';
+   /*
+    * The Following global variable should be refactored when more time
+    * is available. Find best way to propagate events from TileJSON.
+    *
+    */
    R.mapExtent = null; // shortcut to facilitate communication between map and table -  
+   R.mapAreasSelected = []; // Another shortcut to facilitate map area selection propagation -    
 
    if (detectBrowser.browser === "Explorer" && parseInt(detectBrowser.version) < 9) {
       window.top.location = ""; //LANDING PAGE

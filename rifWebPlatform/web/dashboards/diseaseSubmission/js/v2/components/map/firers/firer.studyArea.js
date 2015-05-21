@@ -6,10 +6,8 @@ RIF['map']['firer-studyArea'] = (function() {
          console.log(ext);
       },
 
-      studyMapAreaSelectionEvent: function(areaId) {
-         this.fire('studyMapAreaSelectionEvent', areaId);
-      }
-
    };
+
    return firer;
+
 });

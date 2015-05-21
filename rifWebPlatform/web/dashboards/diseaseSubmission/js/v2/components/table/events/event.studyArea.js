@@ -1,43 +1,37 @@
-RIF.table['event-areaSelection'] = (function(_dom, firer) {
+RIF.table['event-studyArea'] = (function(_dom, firer) {
+
    var slctd = [],
       isMouseDown = false,
+      shiftKeyDown = false,
       isHighlighted;
 
+   var tableUtils = RIF.table.utils();
+
+   var selectionClass = _dom.selectionClass;
 
    _dom.areaSelectionWrapper.on("mousedown", _dom.rows, function(aEvent) {
       var row = $(aEvent.target).parent();
-      if (!row.hasClass('aSR')) {
+      if (!row.hasClass(_dom.rowClass)) {
          return false;
       };
       isMouseDown = true;
 
-      $(row).toggleClass("rowSelected");
-      isHighlighted = $(row).hasClass("rowSelected");
+      $(row).toggleClass(selectionClass);
+      isHighlighted = $(row).hasClass(selectionClass);
       return false; // prevent text selection
    }).on("mouseover", _dom.rows, function(aEvent) {
       var row = $(aEvent.target).parent();
-      if (!row.hasClass('aSR')) {
+      if (!row.hasClass(_dom.rowClass)) {
          return false;
       };
       if (isMouseDown) {
-         $(row).toggleClass("rowSelected", isHighlighted);
+         $(row).toggleClass(selectionClass, isHighlighted);
       }
    });
 
    _dom.areasSelectionDialog.on("mouseup", _dom.areaSelectionWrapper, function(aEvent) {
       if (isMouseDown) {
-         var slctd = [];
-         var r = d3.selectAll('#areaSelectionWrapper .rowSelected').each(function(d, i) {
-            var idLabel = $(this).children();
-            var gid = this.id.split('_')[1];
-            slctd.push({
-               id: $(idLabel[0]).text(),
-               gid: gid, // USING GID FOR NOW RATHER THAN THE ACTUAL AREA ID ABOVE    
-               label: $(idLabel[1]).text()
-            });
-
-         });
-
+         var slctd = tableUtils.getTableSelection(_dom.selectionClassD3Compatible);
          firer.studyAreaSelectionEvent(slctd);
          _dom.studyAreaCount.innerHTML = slctd.length;
       }

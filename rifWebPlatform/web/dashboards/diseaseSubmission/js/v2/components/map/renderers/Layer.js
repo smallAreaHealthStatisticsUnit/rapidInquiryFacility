@@ -1,13 +1,13 @@
-RIF.Layer = (function(mapId, tooltipId) {
+RIF.Layer = (function(mapId, tooltipId, counter) {
 
-   var _layer;
+   var _layer, _utils;
 
    /* Initialize a Map */
    this.makeMap(mapId);
 
    var _getOptions = function(geolvl) {
-      var utils = RIF.TileTopojsonUtils(tooltipId, geolvl);
-      var options = RIF.utils.mix(utils, {
+      _utils = RIF.TileTopojsonUtils(tooltipId, geolvl, counter);
+      var options = RIF.utils.mix(_utils, {
          mapId: mapId
       });
       return options;
@@ -34,12 +34,19 @@ RIF.Layer = (function(mapId, tooltipId) {
       };
    };
 
+   this.clearSelection = function(mapContainerId) {
+      _utils.clear.call(null, mapContainerId);
+   };
 
-   this.selectAreas = function(ids) {
-      var l = ids.length;
+   this.selectAreas = function(selection) {
+      var l = selection.gid.length;
       while (l--) {
-         var id = "g" + ids[l];
-         this.slct(id);
+         var row = selection[l];
+         _utils.slct({
+            gid: selection.gid[l],
+            name: selection.name[l],
+            "area_id": selection["area_id"][l]
+         });
       };
    };
 

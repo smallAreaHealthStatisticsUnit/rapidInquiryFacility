@@ -135,6 +135,10 @@ RIF.mediator.utils = (function(modelAccessor) {
          return false;
       },
 
+      mapAreaObjectProperties: function() {
+
+      },
+
       displayMissingParameters: function(missing) {
          if (missing.length == 0) {
             return true;
