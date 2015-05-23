@@ -1,53 +1,54 @@
-RIF.table['controller-studyArea'] = (function(unit) {
+RIF.table['controller-studyArea'] = (function (unit) {
 
-   var _currentGeolvl;
-   var _getBounds = function() {
-      var bounds = {
-         yMax: RIF.mapExtent['_northEast']['lat'],
-         xMax: RIF.mapExtent['_northEast']['lng'],
-         yMin: RIF.mapExtent['_southWest']['lat'],
-         xMin: RIF.mapExtent['_southWest']['lng']
+  var _currentGeolvl;
+
+  var _getBounds = function () {
+    var bounds = {
+      ymax: RIF.mapExtent['ymax'],
+      xmax: RIF.mapExtent['xmax'],
+      ymin: RIF.mapExtent['ymin'],
+      xmin: RIF.mapExtent['xmin']
+    };
+    return bounds;
+  };
+
+  var _p = {
+
+    getTabularData: function (geolvl) {
+      if (typeof geolvl != 'undefined') {
+        _currentGeolvl = geolvl;
       };
-      return bounds;
-   };
+      var callback = function () {
+        unit.empty();
+        unit.getTabularData(this);
+      };
+      RIF.getTableMapAreas(callback, [_currentGeolvl, _getBounds()]);
+    },
 
-   var _p = {
+    syncTabularData: function (mapAreas) {
+      var callback = function () {
+        unit.empty();
+        unit.getTabularDataFromMap(mapAreas);
+        unit.getTabularData(this);
+      };
 
-      getTabularData: function(geolvl) {
-         if (typeof geolvl != 'undefined') {
-            _currentGeolvl = geolvl;
-         };
-         var callback = function() {
-            unit.empty();
-            unit.getTabularData(this);
-         };
-         RIF.getTableMapAreas(callback, [_currentGeolvl, _getBounds()]);
-      },
+      RIF.getTableMapAreas(callback, [_currentGeolvl, _getBounds()]);
+    },
 
-      syncTabularData: function(mapAreas) {
-         var callback = function() {
-            unit.empty();
-            unit.getTabularDataFromMap(mapAreas);
-            unit.getTabularData(this);
-         };
+    studySelectAllRows: function () {
+      unit.selectAll();
+    },
 
-         RIF.getTableMapAreas(callback, [_currentGeolvl, _getBounds()]);
-      },
+    getSelection: function () {
+      return unit.getSelection();
+    },
 
-      studySelectAllRows: function() {
-         unit.selectAll();
-      },
+    clearSelection() {
+      unit.clearAll();
+    }
 
-      getSelection: function() {
-         return unit.getSelection();
-      },
-
-      clearSelection() {
-         unit.clearAll();
-      }
-
-   };
+  };
 
 
-   return _p;
+  return _p;
 });

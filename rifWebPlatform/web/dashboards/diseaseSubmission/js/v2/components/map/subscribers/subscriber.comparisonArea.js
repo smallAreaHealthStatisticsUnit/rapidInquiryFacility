@@ -1,6 +1,25 @@
-RIF['map']['subscriber-comparisonArea'] = (function(controller) {
+RIF['map']['subscriber-comparisonArea'] = (function (controller) {
 
-   var subscriber = {};
+  var subscriber = {
 
-   return subscriber;
+    comparisonSelectAtChangeUpdate: function (geolvl) {
+      controller.updateGeolevel(geolvl);
+    },
+
+    /*setInitialExtent: function(){
+        controller.setInitialExtent();
+    },  
+      
+    syncStudyAreaMap: function( gids ){
+        controller.syncStudyArea( gids );
+    },
+      
+    clearStudySelection: function(){
+        controller.clearSelection();
+    } */
+
+
+  };
+
+  return subscriber;
 });

@@ -1,10 +1,10 @@
-RIF['table']['controller-summary'] = (function(unit) {
-   var _p = {
+RIF['table']['controller-summary'] = (function (unit) {
+  var _p = {
 
-      updateSummary: function(modelToSchemaObj) {
-         unit.updateSummaryView(modelToSchemaObj);
-      }
+    updateSummary: function (modelToSchemaObj) {
+      unit.updateSummaryView(modelToSchemaObj);
+    }
 
-   };
-   return _p;
+  };
+  return _p;
 });

@@ -1,28 +1,29 @@
-RIF['map']['controller-studyArea'] = (function(unit) {
+RIF['map']['controller-studyArea'] = (function (unit) {
 
-   var _p = {
+  var _p = {
 
-      updateGeolevel: function(geolvl) {
-         unit.updateGeolevel(geolvl);
-      },
+    updateGeolevel: function (geolvl) {
+      unit.updateGeolevel(geolvl);
+    },
 
-      setInitialExtent: function() {
-         var callback = function() {
-            unit.setExtent(this);
-         };
-         RIF.getFullExtent(callback, []); // Web service need to change to allow no geolevelselect
-      }(),
+    syncStudyArea: function (selection) {
+      unit.sync(selection);
+    },
 
-      syncStudyArea: function(selection) {
-         unit.sync(selection);
-      },
+    clearSelection: function () {
+      unit.clearAll();
+    },
 
-      clearSelection: function() {
-         unit.clearAll();
-      }
+    removeMapGs: function () {
+      unit.removeMapGs();
+    },
 
-   };
+    refreshMap: function () {
+      unit.refreshMap();
+    }
 
-   return _p;
+  };
+
+  return _p;
 
 });

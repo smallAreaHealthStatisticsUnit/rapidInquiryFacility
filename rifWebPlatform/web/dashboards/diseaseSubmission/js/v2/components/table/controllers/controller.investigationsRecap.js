@@ -1,11 +1,11 @@
-RIF.table['controller-investigationsRecap'] = (function(unit) {
+RIF.table['controller-investigationsRecap'] = (function (unit) {
 
-   var _p = {
-      addInvestigationRow: function(args) {
-         unit.addRow(args);
-      }
-   };
+  var _p = {
+    addInvestigationRow: function (args) {
+      unit.addRow(args);
+    }
+  };
 
 
-   return _p;
+  return _p;
 });

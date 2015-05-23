@@ -722,10 +722,10 @@ path.polygon:hover {
 	position:relative;
 	top:1px;
 }
-.modalAreaSelectionMenu #resolutionSelection {
+.modalAreaSelectionMenu>div:last-child {
     float: right;
 }
-.modalAreaSelectionMenu #selectAtSelection {
+.modalAreaSelectionMenu > div:first-child{
     float: left;
 }
 .modalAreaSelectionContent {
@@ -740,30 +740,23 @@ path.polygon:hover {
     margin: 1%  2%;
     position: relative;
 }
-#areaSelectionMap {
+#areaSelectionMap, #comparisonAreaSelectionMap{
     position: absolute;
-}
-.modalAreaSelectionContent #areaSelectionMap {
     margin-left: 50%;
     height: 85%;
     width: 50%;
 }
-.modalAreaSelectionContent #selectionCounter {
+
+
+
+.tableCounter {
     position: absolute;
     bottom: 20px;
     text-transform: uppercase;
     font-size: 15px;
     left: 10px;
 }
-.modalAreaSelectionContent #mapSelectionCounter {
-    position: absolute;
-    bottom: 20px;
-    text-transform: uppercase;
-    font-size: 15px;
-    right: 10px;
-}
-
-.modalAreaSelectionContent #mapSelectionCounter {
+.mapCounter {
     position: absolute;
     bottom: 20px;
     text-transform: uppercase;

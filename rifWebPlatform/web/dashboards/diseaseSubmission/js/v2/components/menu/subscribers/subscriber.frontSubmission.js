@@ -1,24 +1,24 @@
-RIF.menu['subscriber-frontSubmission'] = (function(controller) {
+RIF.menu['subscriber-frontSubmission'] = (function (controller) {
 
-   var subscriber = {
+  var subscriber = {
 
-      updateHealthThemeAvailables: function() {},
-      updateNumeratorAvailables: function() {},
-      updateDenominatorAvailables: function() {},
+    updateHealthThemeAvailables: function () {},
+    updateNumeratorAvailables: function () {},
+    updateDenominatorAvailables: function () {},
 
-      showDialog: function(dialog) {
-         controller.showDialog(dialog);
-      },
+    showDialog: function (dialog) {
+      controller.showDialog(dialog);
+    },
 
-      dialogBgChange: function(dialog) {
-         controller.dialogBgChange(dialog);
-      },
+    dialogBgChange: function (dialog) {
+      controller.dialogBgChange(dialog);
+    },
 
-      logOut: function() {
-         controller.logOut();
-      }
+    logOut: function () {
+      controller.logOut();
+    }
 
-   };
+  };
 
-   return subscriber;
+  return subscriber;
 });

@@ -1,36 +1,33 @@
-RIF.menu['firer-areaSelection'] = (function() {
+RIF.menu['firer-areaSelection'] = (function () {
 
-   var firer = {
+  var firer = {
 
-      selectAtChanged: function(arg) {
-         this.fire('selectAtChanged', arg);
-         this.getResolutions(arg);
-      },
+    selectAtChanged: function (arg) {
+      this.fire('selectAtChanged', arg);
+      this.getResolutions(arg);
+    },
 
-      resolutionChanged: function(arg) {
-         this.fire('resolutionChanged', arg);
-      },
+    resolutionChanged: function (arg) {
+      this.fire('resolutionChanged', arg);
+    },
 
-      syncTableButtonClicked: function() {
-         this.fire('syncTableButtonClicked', []);
-      },
+    syncTableButtonClicked: function () {
+      this.fire('syncTableButtonClicked', []);
+    },
 
-      syncMapButtonClicked: function() {
-         this.fire('syncMapButtonClicked', []);
-      },
+    syncMapButtonClicked: function () {
+      this.fire('syncMapButtonClicked', []);
+    },
 
-      studyMapAreaSelectionEvent: function(areaId) {
-         this.fire('studyMapAreaSelectionEvent', RIF.mapAreasSelected);
-      },
+    studySelectAllRowsClicked: function () {
+      this.fire('studySelectAllRowsClicked', []);
+    },
 
-      studySelectAllRowsClicked: function() {
-         this.fire('studySelectAllRowsClicked', []);
-      },
+    clearAreaSelectionEvent: function () {
+      this.fire('clearAreaSelectionEvent', ['studyArea']);
+    },
 
-      clearAreaSelectionEvent: function() {
-         this.fire('clearAreaSelectionEvent', ['studyArea']);
-      },
+  };
+  return firer;
 
-   };
-   return firer;
 });

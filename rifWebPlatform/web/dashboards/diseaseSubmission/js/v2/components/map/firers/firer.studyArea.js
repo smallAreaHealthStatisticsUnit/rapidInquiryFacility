@@ -1,13 +1,13 @@
-RIF['map']['firer-studyArea'] = (function() {
+RIF['map']['firer-studyArea'] = (function () {
 
-   var firer = {
+  var firer = {
 
-      propagateMapExtent: function(ext) {
-         console.log(ext);
-      },
+    studyMapAreaSelectionEvent: function (mapId) {
+      this.fire('studyMapAreaSelectionEvent', RIF[mapId]);
+    },
 
-   };
+  };
 
-   return firer;
+  return firer;
 
 });

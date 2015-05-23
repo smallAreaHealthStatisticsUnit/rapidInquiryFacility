@@ -12,7 +12,6 @@
     <link href="css/diseaseSubmission.css" rel="stylesheet" media="screen" />
     <link href="css/statusBar.css" rel="stylesheet" media="screen" />
 
-
     <!-- libraries -->
     <script type="text/javascript" src="../../libs/jquery-2.0.3.js"></script>
     <script type="text/javascript" src="../../libs/leaflet-0.7.3.src.js"></script>
@@ -91,12 +90,18 @@
     <script type="text/javascript" src="js/v2/components/menu/controllers/controller.healthCodes.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/firers/firer.healthCodes.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/subscribers/subscriber.healthCodes.js"></script>
-    <!-- area selection -->
+    <!-- study area -->
     <script type="text/javascript" src="js/v2/components/menu/units/unit.areaSelection.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/controllers/controller.areaSelection.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/firers/firer.areaSelection.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/subscribers/subscriber.areaSelection.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/events/event.areaSelection.js"></script>
+    <!-- comparison area -->
+    <script type="text/javascript" src="js/v2/components/menu/units/unit.comparisonArea.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/controllers/controller.comparisonArea.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/firers/firer.comparisonArea.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/subscribers/subscriber.comparisonArea.js"></script>
+    <script type="text/javascript" src="js/v2/components/menu/events/event.comparisonArea.js"></script>
     <!-- retrieve / run menus -->
     <script type="text/javascript" src="js/v2/components/menu/units/unit.retrievableRunnable.js"></script>
     <script type="text/javascript" src="js/v2/components/menu/controllers/controller.retrievableRunnable.js"></script>
@@ -141,9 +146,8 @@
     <script type="text/javascript" src="js/v2/components/table/firers/firer.summary.js"></script>
     <script type="text/javascript" src="js/v2/components/table/subscribers/subscriber.summary.js"></script>
     
-
     <title>The Rapid Inquiry Facility, RIF 4.0</title>
-
+    
 </head>
 
 <body>
@@ -190,7 +194,6 @@
             </div>
         </div>
 
-        
         <div id="content">
             <!-- Study area block -->
             <div id='studyArea' class='blocks'>
@@ -233,14 +236,12 @@
             </div> 
         </div>
         
-        
         <div class='positioning'>
             <div id='importExport' >
                 <div id='importExportContainer' class='buttonContainer'>
                     <div id='retrieve'>Retrieve</div>
                 </div>
             </div>
-            
             <div id='runnable'>
                 <div id='runContainer'  class='buttonContainer'>
                     <div id='run'>Run study</div>
@@ -285,7 +286,7 @@
     <!------------------->
     
     <!---Study area--->
-	<div class="overlay" id="areaSelectionModal">
+	<div class="overlay" id="areaSelectionModal" >
 		<div class="msettings">
 			<div class="msettings-ct">
 				<div class="msettings-header">
@@ -318,12 +319,12 @@
                             <div class='clearSelection' id='clearStudy'></div>
                         </div>    
                         <div id='areaSelectionMap'></div>
-                        <div id='selectionCounter'>
+                        <div id='selectionCounter' class='tableCounter'>
                             <span id='resolutionCount' class='counter'> 0 </span> 
                             <span id="resolutionCountLabel">  </span>
                             <span> rows selected </span>
                         </div>
-                        <div id='mapSelectionCounter'>
+                        <div id='mapSelectionCounter' class='mapCounter'>
                             <span id='areaCounter' class='counter'> 0 </span> 
                             <span> areas selected </span>
                         </div>
@@ -334,20 +335,56 @@
 		</div>
 	</div>
     
-    <!---Comparison area --->
-    <div class="overlay" id="comparisonAreaModal">
+    
+    <!---Comparison area--->
+	<div class="overlay" id="comparisonAreaSelectionModal" >
 		<div class="msettings">
 			<div class="msettings-ct">
 				<div class="msettings-header">
 					<h2>Comparison area</h2>
-					<a class="modal_close" href="#"></a>
+					<a class="modal_close" href="#comparisonAreaSelectionModal"></a>
 				</div>
-                <div></div>
-                <div id='comparisonAreaSelectionMap'></div>
+                <div class='modalContainer areasSelectionDialog'>
+                    <div class='modalAreaSelectionMenu'>
+                        <div id='comparisonSelectAtSelection' class='dropdowns availablesWrapper'>
+                           <input type="text"  placeholder="Select at" id='comparisonSelectAt' class='dropdownInput'>
+                           <div id='comparisonSelectAtAvailable' class='availables' ></div>
+                        </div>
+                         <div id='comparisonResolutionSelection' class="dropdowns availablesWrapper">
+                           <input type="text"  placeholder="Comparison resolution" id='comparisonResolution' class='dropdownInput' >
+                           <div id='comparisonResolutionAvailable' class='availables' ></div>
+                        </div>
+                    </div>
+                    <div class='modalAreaSelectionContent'>
+                        <div class='selectAllBtn' id='comparisonSelectAlRowsStudy'> Select all rows </div>
+                        <div class='areaSelectionTable' id='comparisonAreaSelectionWrapper'>
+                            <ul class='aSH'> 
+                                <li> ID </li>
+                                <li> Name </li>
+                            </ul>
+                            <div class='aSC' id="comparisonAllRows"></div>
+                        </div>
+                        <div class='areaButtons'>
+                            <div class='syncronizeTable' id='comparisonSyncStudyTable'></div>
+                            <div class='syncronizeMap'  id='comparisonSyncStudyMap'></div>
+                            <div class='clearSelection' id='comparisonClearStudy'></div>
+                        </div>    
+                        <div id='comparisonAreaSelectionMap'></div>
+                        <div id='comparisonSelectionCounter' class='tableCounter'>
+                            <span id='comparisonResolutionCount' class='counter'> 0 </span> 
+                            <span id="comparisonResolutionCountLabel">  </span>
+                            <span> rows selected </span>
+                        </div>
+                        <div id='comparisonMapSelectionCounter' class='mapCounter'>
+                            <span id='comparisonAreaCounter' class='counter'> 0 </span> 
+                            <span> areas selected </span>
+                        </div>
+                    </div>
+                     <div class='done' style=''><a href="#comparisonAreaSelectionModal">Done</a></div>
+                </div>
 			</div>
 		</div>
-	</div>	
-    
+	</div>
     
     <!--Investigation parameters -->
     <div class="overlay" id="parametersModal">
@@ -366,10 +403,6 @@
                         <div id='searchCode'>
                             <input type="text"  placeholder="Search" id='searchCodeInput' class='dropdownInput editable'>
                         </div>
-                        <!--<div id='searchResults'> 
-                            <div class='opacityBackground'></div>
-                            <div id='healthResults'>results</div>
-                        </div>-->
                         <div id='tree' >
                             <div id='searchResults'> 
                                 <div class='opacityBackground' ></div>

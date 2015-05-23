@@ -1,9 +1,9 @@
-RIF.table['firer-studyArea'] = (function() {
+RIF.table['firer-studyArea'] = (function () {
 
-   var firer = {
-      studyAreaSelectionEvent: function(rowId) {
-         this.fire('studyAreaSelectionEvent', rowId);
-      },
-   };
-   return firer;
+  var firer = {
+    studyAreaSelectionEvent: function (rowId) {
+      this.fire('studyAreaSelectionEvent', rowId);
+    },
+  };
+  return firer;
 });

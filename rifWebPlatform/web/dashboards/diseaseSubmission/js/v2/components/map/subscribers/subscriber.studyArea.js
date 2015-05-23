@@ -1,25 +1,22 @@
-RIF['map']['subscriber-studyArea'] = (function(controller) {
+RIF['map']['subscriber-studyArea'] = (function (controller) {
 
-   var subscriber = {
 
-      selectAtChangeUpdate: function(geolvl) {
-         controller.updateGeolevel(geolvl);
-      },
+  var subscriber = {
 
-      setInitialExtent: function() {
-         controller.setInitialExtent();
-      },
+    selectAtChangeUpdate: function (geolvl) {
+      controller.updateGeolevel(geolvl);
+    },
 
-      syncStudyAreaMap: function(gids) {
-         controller.syncStudyArea(gids);
-      },
+    syncStudyAreaMap: function (gids) {
+      controller.syncStudyArea(gids);
+    },
 
-      clearStudySelection: function() {
-         controller.clearSelection();
-      }
+    clearStudySelection: function () {
+      controller.clearSelection();
+    }
 
-   };
+  };
 
-   return subscriber;
+  return subscriber;
 
 });

@@ -1,4 +1,4 @@
-RIF.menu['controller-areaSelection'] = (function (unit) {
+RIF['menu']['controller-comparisonArea'] = (function (unit) {
 
   var _p = {
 
@@ -20,8 +20,8 @@ RIF.menu['controller-areaSelection'] = (function (unit) {
 
       RIF.getResolutions(callback, [selectAt]);
     }
-
   };
 
   return _p;
+
 });

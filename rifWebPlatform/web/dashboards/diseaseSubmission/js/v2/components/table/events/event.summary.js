@@ -1,1 +1,1 @@
-RIF['table']['event-summary'] = (function(dom, firer) {});
+RIF['table']['event-summary'] = (function (dom, firer) {});

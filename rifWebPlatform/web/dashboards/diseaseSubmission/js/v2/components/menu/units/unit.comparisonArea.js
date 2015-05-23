@@ -1,10 +1,10 @@
-RIF.menu['unit-areaSelection'] = (function (_dom, menuUtils) {
+RIF['menu']['unit-comparisonArea'] = (function (_dom, menuUtils) {
 
   var _p = {
 
     getSelectAt: function (data) {
       _dom.selectAt.val(data[0]);
-      _dom.selectAt.change()
+      _dom.selectAt.change() //-- TEMPORARILY DISABLED
       menuUtils.dropDownInputText(data, _dom.selectAtAvailable);
       _dom.resolutionCountLabel.innerHTML = '';
     },
@@ -16,6 +16,5 @@ RIF.menu['unit-areaSelection'] = (function (_dom, menuUtils) {
 
   };
 
-  return _p
-
+  return _p;
 });

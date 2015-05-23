@@ -1,15 +1,15 @@
-RIF.table['subscriber-ageGroups'] = (function(controller) {
+RIF.table['subscriber-ageGroups'] = (function (controller) {
 
-   var subscriber = {
-      startInvestigationParameter: function(numerator) {
-         controller.getAgeGroups(numerator);
-      },
+  var subscriber = {
+    startInvestigationParameter: function (numerator) {
+      controller.getAgeGroups(numerator);
+    },
 
-      clearAllParameters: function() {
-         $('.rowSelected').removeClass('rowSelected');
-      },
+    clearAllParameters: function () {
+      $('.rowSelected').removeClass('rowSelected');
+    },
 
-   };
+  };
 
-   return subscriber;
+  return subscriber;
 });

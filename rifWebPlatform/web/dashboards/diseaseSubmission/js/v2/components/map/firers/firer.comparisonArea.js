@@ -1,4 +1,12 @@
-RIF['map']['firer-comparisonArea'] = (function() {
-   var firer = {};
-   return firer;
+RIF['map']['firer-comparisonArea'] = (function () {
+
+  var firer = {
+
+    comparisonMapAreaSelectionEvent: function (mapId) {
+      this.fire('comparisonMapAreaSelectionEvent', RIF[mapId]);
+    }
+
+  };
+
+  return firer;
 });

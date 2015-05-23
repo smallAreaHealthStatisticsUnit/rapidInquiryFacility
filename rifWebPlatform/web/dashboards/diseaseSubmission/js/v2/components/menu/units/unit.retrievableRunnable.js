@@ -1,7 +1,7 @@
-RIF.menu['unit-retrievableRunnable'] = (function(_dom, menuUtils) {
+RIF.menu['unit-retrievableRunnable'] = (function (_dom, menuUtils) {
 
-   var _p = {};
+  var _p = {};
 
-   return _p
+  return _p
 
 });

@@ -1,6 +1,6 @@
-RIF.menu['subscriber-retrievableRunnable'] = (function(controller) {
+RIF.menu['subscriber-retrievableRunnable'] = (function (controller) {
 
-   var subscriber = {};
+  var subscriber = {};
 
-   return subscriber;
+  return subscriber;
 });
