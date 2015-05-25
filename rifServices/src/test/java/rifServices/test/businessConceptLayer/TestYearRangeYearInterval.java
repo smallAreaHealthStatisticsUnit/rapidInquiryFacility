@@ -190,7 +190,7 @@ public final class TestYearRangeYearInterval
 			rifStudyServiceBundle
 				= new TestRIFStudyServiceBundle();
 			RIFServiceStartupOptions startupOptions
-				= RIFServiceStartupOptions.newInstance(false);
+				= RIFServiceStartupOptions.newInstance(false, true);
 			rifStudyServiceBundle.initialise(startupOptions);
 		
 			service
