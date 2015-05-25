@@ -643,28 +643,25 @@ final class SQLRIFSubmissionManager
 			addStudyStatement.setInt(
 				ithQueryParameter++, 
 				Integer.valueOf(yearRange.getUpperBound()));
+
 			//max_age_group
 			AgeGroup maximumAgeGroup = firstInvestigation.getMaximumAgeGroup();
-
-			
 			int maximumAgeGroupOffset
 				= getOffsetFromAgeGroup(
 					connection, 
 					ndPair,
-					maximumAgeGroup);
-						
+					maximumAgeGroup);						
 			addStudyStatement.setInt(
 				ithQueryParameter++, 
-				Integer.valueOf(maximumAgeGroup.getUpperLimit()));
-			//min_age_group
-			AgeGroup minimumAgeGroup = firstInvestigation.getMinimumAgeGroup();
+				maximumAgeGroupOffset);
 			
+			//min_age_group
+			AgeGroup minimumAgeGroup = firstInvestigation.getMinimumAgeGroup();			
 			int minimumAgeGroupOffset
 				= getOffsetFromAgeGroup(
 					connection, 
 					ndPair,
-					minimumAgeGroup);
-			
+					minimumAgeGroup);			
 			addStudyStatement.setInt(
 				ithQueryParameter++, 
 				minimumAgeGroupOffset);
@@ -745,65 +742,92 @@ final class SQLRIFSubmissionManager
 					connection,
 					queryFormatter);
 			
-			for (Investigation investigation : investigations) {				
-				int ithQueryParameter = 1;	
-				statement.setString(
-					ithQueryParameter++, 
-					investigation.getTitle());
-				statement.setString(
-					ithQueryParameter++,
-					investigation.getDescription());
+			for (Investigation investigation : investigations) {		
+				System.out.println("5555555555555555555555About to add record to rif40_investigations with inv name=="+investigation.getTitle() + "==");
 				
+				//extracting field values that will be used for the query
+				String invNameParameter
+					= investigation.getTitle();
+				String invDescriptionParameter
+					= investigation.getDescription();
 				Sex sex = investigation.getSex();
+				Integer genderCodeParameter = null;
 				if (sex == Sex.MALES) {
-					statement.setInt(ithQueryParameter++, 1);	
+					genderCodeParameter = 1;
 				}
-				else if (sex == Sex.FEMALES){
-					statement.setInt(ithQueryParameter++, 2);	
-				}	
+				else if (sex == Sex.FEMALES) {
+					genderCodeParameter = 2;
+				}
 				else {
-					//assume both
-					statement.setInt(ithQueryParameter++, 3);	
+					genderCodeParameter = 3;
 				}
 				
-				//setting name of numerator table
 				NumeratorDenominatorPair ndPair = investigation.getNdPair();
-				statement.setString(ithQueryParameter++, ndPair.getNumeratorTableName());
-
+				String numerTabParameter
+					= ndPair.getNumeratorTableName();
+					
+				
 				YearRange yearRange = investigation.getYearRange();
-				//year_start
-				statement.setInt(
-					ithQueryParameter++, 
-					Integer.valueOf(yearRange.getLowerBound()));
-				//year_stop
-				statement.setInt(
-					ithQueryParameter++, 
-					Integer.valueOf(yearRange.getUpperBound()));
-				//max_age_group
+				Integer yearStartParameter = Integer.valueOf(yearRange.getLowerBound());
+				Integer yearStopParameter = Integer.valueOf(yearRange.getUpperBound());
+				
 				AgeGroup maximumAgeGroup = investigation.getMaximumAgeGroup();
-				int maximumAgeGroupOffset
+				int maxAgeGroupParameter
 					= getOffsetFromAgeGroup(
 						connection,
 						ndPair,
 						maximumAgeGroup);
-						
-				statement.setInt(
-					ithQueryParameter++, 
-					maximumAgeGroupOffset);
 
-				//min_age_group
 				AgeGroup minimumAgeGroup = investigation.getMinimumAgeGroup();
-				int minimumAgeGroupOffset
+				int minAgeGroupParameter
 					= getOffsetFromAgeGroup(
-						connection, 
-						ndPair,
-						minimumAgeGroup);
+					connection, 
+					ndPair,
+					minimumAgeGroup);
 				
+				logSQLQuery(
+					"addInvestigation", 
+					queryFormatter, 
+					invNameParameter,
+					invDescriptionParameter,
+					String.valueOf(genderCodeParameter),
+					numerTabParameter,
+					String.valueOf(yearStartParameter),
+					String.valueOf(yearStopParameter),
+					String.valueOf(maxAgeGroupParameter),
+					String.valueOf(minAgeGroupParameter));
+					
+				
+				//setting the parameters
+				int ithQueryParameter = 1;	
+				statement.setString(
+					ithQueryParameter++, 
+					invNameParameter);
+				statement.setString(
+					ithQueryParameter++,
+					invDescriptionParameter);
+				statement.setInt(ithQueryParameter++, genderCodeParameter);	
+				statement.setString(ithQueryParameter++, numerTabParameter);				
+				//year_start
 				statement.setInt(
 					ithQueryParameter++, 
-					minimumAgeGroupOffset);
+					yearStartParameter);
+				//year_stop
+				statement.setInt(
+					ithQueryParameter++, 
+					yearStopParameter);
+				//max_age_group						
+				statement.setInt(
+					ithQueryParameter++, 
+					maxAgeGroupParameter);
+				//min_age_group				
+				statement.setInt(
+					ithQueryParameter++, 
+					minAgeGroupParameter);
 				
+				System.out.println("111About to add record to rif40_investigations with inv name=="+investigation.getTitle() + "==");
 				statement.executeUpdate();
+				System.out.println("112About to add record to rif40_investigations with inv name=="+investigation.getTitle() + "==");
 				
 				addCovariatesToStudy(
 					connection,
