@@ -523,6 +523,7 @@ public final class RIFStudySubmission
 			}
 		}
 		
+		
 		if (rifOutputOptions == null) {
 			String rifOutputOptionsFieldName
 				= RIFServiceMessages.getMessage("rifOutputOption.plural.label");
@@ -539,39 +540,10 @@ public final class RIFStudySubmission
 					"rifStudySubmission.error.noRIFOutputOptionsSpecified");
 			errorMessages.add(errorMessage);			
 		}
-		else {
-			ArrayList<RIFOutputOption> uniqueRIFOutputOptions 
-				= new ArrayList<RIFOutputOption>();
 		
-			/*
-			for (RIFOutputOption rifOutputOption : rifOutputOptions) {
-				if (rifOutputOption == null) {
-					String covariateRecordType
-						= RIFServiceMessages.getMessage("rifOutputOption.label");
-					String errorMessage
-						= RIFServiceMessages.getMessage(
-							"general.validation.nullListItem",
-							getRecordType(),
-							covariateRecordType);
-					errorMessages.add(errorMessage);
-				}
-				else {
-					if (uniqueRIFOutputOptions.contains(rifOutputOption) == true) {
-						String errorMessage
-							= RIFServiceMessages.getMessage(
-								"rifStudySubmission.error.duplicateOutputOption", 
-								rifOutputOption.getName());
-						errorMessages.add(errorMessage);
-					}
-					else {
-						uniqueRIFOutputOptions.add(rifOutputOption);
-					}
-				}
-			}	
-			*/
-		}
-		
-		countErrors(RIFServiceError.INVALID_RIF_JOB_SUBMISSION, errorMessages);
+		countErrors(
+			RIFServiceError.INVALID_RIF_JOB_SUBMISSION, 
+			errorMessages);
 	}
 	
 // ==========================================
