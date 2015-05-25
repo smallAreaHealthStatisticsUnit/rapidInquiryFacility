@@ -272,7 +272,7 @@ final class SQLCovariateManager
 			while (dbResultSet.next()) {				
 				AdjustableCovariate adjustableCovariate
 					= AdjustableCovariate.newInstance();
-				adjustableCovariate.setName(dbResultSet.getString(1).toLowerCase());
+				adjustableCovariate.setName(dbResultSet.getString(1));
 				double minimumValue = dbResultSet.getDouble(2);
 				double maximumValue = dbResultSet.getDouble(3);
 				adjustableCovariate.setMinimumValue(String.valueOf(minimumValue));
