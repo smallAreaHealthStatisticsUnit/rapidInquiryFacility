@@ -345,6 +345,7 @@ abstract public class AbstractCovariate
 	 * @param errorMessages the error messages
 	 */
 	protected void checkErrors(
+		final ValidationPolicy validationPolicy,
 		final ArrayList<String> errorMessages) {
 			
 		//Obtain field names for possible error messages
@@ -367,79 +368,78 @@ abstract public class AbstractCovariate
 					recordType,
 					nameLabel);
 			errorMessages.add(errorMessage);
-		}
-  
-		/*
+		} 
 		
-		if (covariateType == null) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"general.validation.undefinedObject", 
-					recordType,
-					covariateFieldTypeLabel);
-			errorMessages.add(errorMessage);
-		}
+		if (validationPolicy == ValidationPolicy.STRICT) {
 		
-		if (fieldValidationUtility.isEmpty(minimumValue)) {				
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"general.validation.emptyRequiredRecordField",
-					recordType,
-					minimumFieldNameLabel);
-			errorMessages.add(errorMessage);
-		}
+			if (covariateType == null) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"general.validation.undefinedObject", 
+						recordType,
+						covariateFieldTypeLabel);
+				errorMessages.add(errorMessage);
+			}
+		
+			if (fieldValidationUtility.isEmpty(minimumValue)) {				
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"general.validation.emptyRequiredRecordField",
+						recordType,
+						minimumFieldNameLabel);
+				errorMessages.add(errorMessage);
+			}
 
-		if (fieldValidationUtility.isEmpty(maximumValue)) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"general.validation.emptyRequiredRecordField",
-					recordType,
-					maximumFieldNameLabel);
-			errorMessages.add(errorMessage);			
-		}
+			if (fieldValidationUtility.isEmpty(maximumValue)) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"general.validation.emptyRequiredRecordField",
+						recordType,
+						maximumFieldNameLabel);
+				errorMessages.add(errorMessage);			
+			}
 		
-		if ( (fieldValidationUtility.isEmpty(minimumValue) == false) && 
-			 (fieldValidationUtility.isEmpty(maximumValue) == false) &&
-			 (covariateType != null)) {
+			if ( (fieldValidationUtility.isEmpty(minimumValue) == false) && 
+				(fieldValidationUtility.isEmpty(maximumValue) == false) &&
+				(covariateType != null)) {
 			
-			Double minimumDoubleValue = null;
-			Double maximumDoubleValue = null;
+				Double minimumDoubleValue = null;
+				Double maximumDoubleValue = null;
 				
-			try {
-				minimumDoubleValue = Double.valueOf(minimumValue);
-			}
-			catch(NumberFormatException numberFormatException) {
-				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"covariate.minimum.error.invalidContinuousMinimum", 
-						minimumValue);
-				errorMessages.add(errorMessage);
-			}					
-				
-			try {
-				maximumDoubleValue = Double.valueOf(maximumValue);
-			}
-			catch(NumberFormatException numberFormatException) {
-				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"covariate.minimum.error.invalidContinuousMaximum",
-						maximumValue);
-				errorMessages.add(errorMessage);
-			}
-					
-			if ((minimumDoubleValue != null) && (maximumDoubleValue != null) ) {
-				if (minimumDoubleValue.doubleValue() > maximumDoubleValue.doubleValue() ) {
+				try {
+					minimumDoubleValue = Double.valueOf(minimumValue);
+				}
+				catch(NumberFormatException numberFormatException) {
 					String errorMessage
 						= RIFServiceMessages.getMessage(
-							"covariate.boundaries.error.minMoreThanMax",
-							String.valueOf(minimumDoubleValue),
-							String.valueOf(maximumDoubleValue));
+							"covariate.minimum.error.invalidContinuousMinimum", 
+							minimumValue);
+					errorMessages.add(errorMessage);
+				}					
+				
+				try {
+					maximumDoubleValue = Double.valueOf(maximumValue);
+				}
+				catch(NumberFormatException numberFormatException) {
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"covariate.minimum.error.invalidContinuousMaximum",
+							maximumValue);
 					errorMessages.add(errorMessage);
 				}
-			}					
-		}	
-		
-		*/
+					
+				if ((minimumDoubleValue != null) && (maximumDoubleValue != null) ) {
+					if (minimumDoubleValue.doubleValue() > maximumDoubleValue.doubleValue() ) {
+						String errorMessage
+							= RIFServiceMessages.getMessage(
+								"covariate.boundaries.error.minMoreThanMax",
+								String.valueOf(minimumDoubleValue),
+								String.valueOf(maximumDoubleValue));
+						errorMessages.add(errorMessage);
+					}
+				}					
+			}
+		}
 	}
 // ==========================================
 // Section Interfaces

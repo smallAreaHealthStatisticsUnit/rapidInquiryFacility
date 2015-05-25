@@ -1230,52 +1230,55 @@ public class Investigation
 		
 		}
 		
-		if (yearIntervals == null) {
-			String yearIntervalsFieldName
-				= RIFServiceMessages.getMessage("yearInterval.plural.label");
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"general.validation.emptyRequiredRecordField",
-					recordType,
-					yearIntervalsFieldName);
-			errorMessages.add(errorMessage);
-		}
-		else if (yearIntervals.size() == 0) {
-			String errorMessage
-				= RIFServiceMessages.getMessage("investigation.error.noYearIntervalsSpecified");
-			errorMessages.add(errorMessage);
-		}
-		else {
-			boolean allYearIntervalsAreValid = true;
-			for (YearInterval yearInterval : yearIntervals) {
-				if (yearInterval == null) {
-					String yearIntervalRecordType
-						= RIFServiceMessages.getMessage("yearInterval.label");
-					String errorMessage
-						= RIFServiceMessages.getMessage(
-							"general.validation.nullListItem",
-							getRecordType(),
-							yearIntervalRecordType);
-					errorMessages.add(errorMessage);
-					allYearIntervalsAreValid = false;
-				}
-				else {
-					try {
-						yearInterval.checkErrors(validationPolicy);					
-					}
-					catch(RIFServiceException rifServiceException) {
-						errorMessages.addAll(rifServiceException.getErrorMessages());
+		if (validationPolicy == ValidationPolicy.STRICT) {
+			
+			if (yearIntervals == null) {
+				String yearIntervalsFieldName
+					= RIFServiceMessages.getMessage("yearInterval.plural.label");
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"general.validation.emptyRequiredRecordField",
+						recordType,
+						yearIntervalsFieldName);
+				errorMessages.add(errorMessage);
+			}
+			else if (yearIntervals.size() == 0) {
+				String errorMessage
+					= RIFServiceMessages.getMessage("investigation.error.noYearIntervalsSpecified");
+				errorMessages.add(errorMessage);
+			}
+			else {
+				boolean allYearIntervalsAreValid = true;
+				for (YearInterval yearInterval : yearIntervals) {
+					if (yearInterval == null) {
+						String yearIntervalRecordType
+							= RIFServiceMessages.getMessage("yearInterval.label");
+						String errorMessage
+							= RIFServiceMessages.getMessage(
+								"general.validation.nullListItem",
+								getRecordType(),
+								yearIntervalRecordType);
+						errorMessages.add(errorMessage);
 						allYearIntervalsAreValid = false;
 					}
+					else {
+						try {
+							yearInterval.checkErrors(validationPolicy);					
+						}
+						catch(RIFServiceException rifServiceException) {
+							errorMessages.addAll(rifServiceException.getErrorMessages());
+							allYearIntervalsAreValid = false;
+						}
+					}
 				}
-			}
 			
-			//now check that there are no duplicate or overlapping year intervals
-			//but only bother doing this if all the year interval values are valid
-			if (allYearIntervalsAreValid == true) {
-				ArrayList<String> gapAndOverlapErrorMessages
-					= YearInterval.checkGapsAndOverlaps(yearIntervals);			
-				errorMessages.addAll(gapAndOverlapErrorMessages);			
+				//now check that there are no duplicate or overlapping year intervals
+				//but only bother doing this if all the year interval values are valid
+				if (allYearIntervalsAreValid == true) {
+					ArrayList<String> gapAndOverlapErrorMessages
+						= YearInterval.checkGapsAndOverlaps(yearIntervals);			
+					errorMessages.addAll(gapAndOverlapErrorMessages);			
+				}
 			}
 		}
 

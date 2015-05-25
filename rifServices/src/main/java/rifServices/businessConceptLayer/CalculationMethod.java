@@ -555,25 +555,26 @@ private String name;
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
 		
-/*		
-		if (fieldValidationUtility.isEmpty(name) == true) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"general.validation.emptyRequiredRecordField", 
-					recordType,
-					nameFieldNameLabel);
-			errorMessages.add(errorMessage);		
-		}
+		if (validationPolicy == ValidationPolicy.STRICT) { 
+			if (fieldValidationUtility.isEmpty(name) == true) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"general.validation.emptyRequiredRecordField", 
+						recordType,
+						nameFieldNameLabel);
+				errorMessages.add(errorMessage);		
+			}
 
-		if (calculationMethodPrior == null) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"general.validation.emptyRequiredRecordField", 
-					recordType,
-					priorFieldNameLabel);
-			errorMessages.add(errorMessage);		
+			if (calculationMethodPrior == null) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"general.validation.emptyRequiredRecordField", 
+						recordType,
+						priorFieldNameLabel);
+				errorMessages.add(errorMessage);		
+			}
 		}
-*/				
+		
 		if (fieldValidationUtility.isEmpty(codeRoutineName) == true) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(

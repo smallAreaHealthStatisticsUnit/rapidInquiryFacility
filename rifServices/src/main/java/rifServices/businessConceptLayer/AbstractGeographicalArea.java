@@ -450,25 +450,28 @@ protected AbstractGeographicalArea() {
 				errorMessages.addAll(exception.getErrorMessages());
 			}			
 		}
-		
-		if (geoLevelArea == null) {
-			String fieldName
-				= RIFServiceMessages.getMessage("geoLevelArea.label");
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"general.validation.emptyRequiredRecordField", 
-					fieldName);
-			errorMessages.add(errorMessage);
-		}
-		else {
-			try {
-				geoLevelArea.checkErrors(validationPolicy);			
-			}
-			catch(RIFServiceException exception) {
-				errorMessages.addAll(exception.getErrorMessages());
-			}			
-		}
 
+		if (validationPolicy == ValidationPolicy.STRICT) { 		
+			if (geoLevelArea == null) {
+				String fieldName
+					= RIFServiceMessages.getMessage("geoLevelArea.label");
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"general.validation.emptyRequiredRecordField", 
+						fieldName);
+				errorMessages.add(errorMessage);
+			}
+			else {
+				try {
+					geoLevelArea.checkErrors(validationPolicy);			
+				}
+				catch(RIFServiceException exception) {
+					errorMessages.addAll(exception.getErrorMessages());
+				}			
+			}
+		}
+		
+		
 		if (geoLevelSelect == null) {
 			String fieldName
 				= RIFServiceMessages.getMessage("geoLevelSelect.label");

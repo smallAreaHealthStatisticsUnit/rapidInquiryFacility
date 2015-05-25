@@ -381,75 +381,76 @@ public final class AgeGroup
 			errorMessages.add(errorMessage);
 		}
 		
-		/*
-		//Test whether lower limit and upper limit are numbers
-		String lowerLimitFieldName
-			= RIFServiceMessages.getMessage("ageGroup.lowerLimit.label");
-		String lowerLimitFieldValue = getLowerLimit();
-		Integer lowerLimitNumber = null;
-		if (fieldValidationUtility.isEmpty(lowerLimitFieldValue)) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"general.validation.emptyRequiredRecordField", 
-					recordType,
-					lowerLimitFieldName);
-			errorMessages.add(errorMessage);
-		}
-		else { 
-			try {
-				lowerLimitNumber = Integer.valueOf(lowerLimitFieldValue);			
-			}
-			catch(NumberFormatException numberFormatException) {
+		if (validationPolicy == ValidationPolicy.STRICT) {
+			
+			//Test whether lower limit and upper limit are numbers
+			String lowerLimitFieldName
+				= RIFServiceMessages.getMessage("ageGroup.lowerLimit.label");
+			String lowerLimitFieldValue = getLowerLimit();
+			Integer lowerLimitNumber = null;
+			if (fieldValidationUtility.isEmpty(lowerLimitFieldValue)) {
 				String errorMessage
 					= RIFServiceMessages.getMessage(
-						"general.validation.nonNumericRecordField",
+						"general.validation.emptyRequiredRecordField", 
 						recordType,
-						lowerLimitFieldName,
-						lowerLimitFieldValue);
+						lowerLimitFieldName);
 				errorMessages.add(errorMessage);
 			}
-		}
-		
-		String upperLimitFieldName
-			= RIFServiceMessages.getMessage("ageGroup.upperLimit.label");
-		String upperLimitFieldValue = getUpperLimit();
-		Integer upperLimitNumber = null;
-		if (fieldValidationUtility.isEmpty(upperLimitFieldValue)) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"general.validation.emptyRequiredRecordField", 
-					recordType,
-					upperLimitFieldName,
-					upperLimitFieldValue);
-			errorMessages.add(errorMessage);
-		}
-		else {
-			try {
-				upperLimitNumber = Integer.valueOf(upperLimitFieldValue);
+			else { 
+				try {
+					lowerLimitNumber = Integer.valueOf(lowerLimitFieldValue);			
+				}
+				catch(NumberFormatException numberFormatException) {
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"general.validation.nonNumericRecordField",
+							recordType,
+							lowerLimitFieldName,
+							lowerLimitFieldValue);
+					errorMessages.add(errorMessage);
+				}
 			}
-			catch(NumberFormatException numberFormatException) {
+		
+			String upperLimitFieldName
+				= RIFServiceMessages.getMessage("ageGroup.upperLimit.label");
+			String upperLimitFieldValue = getUpperLimit();
+			Integer upperLimitNumber = null;
+			if (fieldValidationUtility.isEmpty(upperLimitFieldValue)) {
 				String errorMessage
 					= RIFServiceMessages.getMessage(
-						"general.validation.nonNumericRecordField",
+						"general.validation.emptyRequiredRecordField", 
 						recordType,
 						upperLimitFieldName,
 						upperLimitFieldValue);
 				errorMessages.add(errorMessage);
 			}
+			else {
+				try {
+					upperLimitNumber = Integer.valueOf(upperLimitFieldValue);
+				}
+				catch(NumberFormatException numberFormatException) {
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"general.validation.nonNumericRecordField",
+							recordType,
+							upperLimitFieldName,
+							upperLimitFieldValue);
+					errorMessages.add(errorMessage);
+				}
+			}
+		
+			if ((lowerLimitNumber != null) && (upperLimitNumber) != null) {
+				if (lowerLimitNumber.intValue() > upperLimitNumber.intValue()) {
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"ageGroup.error.lowerGreaterthanUpperLimit",
+							lowerLimitFieldValue,
+							upperLimitFieldValue);
+					errorMessages.add(errorMessage);
+				}
+			}
 		}
 		
-		if ((lowerLimitNumber != null) && (upperLimitNumber) != null) {
-			if (lowerLimitNumber.intValue() > upperLimitNumber.intValue()) {
-				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"ageGroup.error.lowerGreaterthanUpperLimit",
-						lowerLimitFieldValue,
-						upperLimitFieldValue);
-				errorMessages.add(errorMessage);
-			}			
-		}
-		
-		*/
 		
 		countErrors(RIFServiceError.INVALID_AGE_GROUP, errorMessages);
 	}
