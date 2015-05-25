@@ -1817,7 +1817,7 @@ final class SQLRIFSubmissionManager
 				= new SQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setLookupKeyFieldName("project");
-			queryFormatter.setFromTable("t_rif40_projects");
+			queryFormatter.setFromTable("rif40_projects");
 		
 			//KLG: TODO - change table name
 				
