@@ -299,14 +299,19 @@ final class SQLDiseaseMappingStudyManager
 			geographyName, 
 			geoLevelSelect.getName());
 
-		GeoLevelArea geoLevelArea
-			= area.getGeoLevelArea();
-		rifContextManager.checkGeoLevelAreaExists(
-			connection, 
-			geographyName, 
-			geoLevelSelect.getName(), 
-			geoLevelArea.getName());
-
+		ValidationPolicy validationPolicy
+			= getValidationPolicy();
+		
+		if (getValidationPolicy() == ValidationPolicy.STRICT) {
+			GeoLevelArea geoLevelArea
+				= area.getGeoLevelArea();
+			rifContextManager.checkGeoLevelAreaExists(
+				connection, 
+				geographyName, 
+				geoLevelSelect.getName(), 
+				geoLevelArea.getName());
+		}
+		
 		GeoLevelView geoLevelView
 			= area.getGeoLevelView();
 		rifContextManager.checkGeoLevelToMapOrViewValueExists(
