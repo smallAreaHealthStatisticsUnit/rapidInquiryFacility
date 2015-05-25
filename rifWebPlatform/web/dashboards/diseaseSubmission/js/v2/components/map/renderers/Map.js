@@ -34,6 +34,10 @@ RIF.Map = (function (mapId) {
     });
   }();
 
+  this.setInitialExtent = function () {
+    _ext = RIF.mapExtent;
+  };
+
   this.addTiled = function (lyr, geoTable) {
     this.setInitialExtent();
     this.zoomToExtent();
@@ -65,9 +69,7 @@ RIF.Map = (function (mapId) {
     _fitBounds(bounds);
   };
 
-  this.setInitialExtent = function () {
-    _ext = RIF.mapExtent;
-  };
+
 
   this.zoomToExtent = function () {
     if (_ext == null) {

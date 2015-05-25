@@ -194,13 +194,14 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
      *  dialog have been selected
      */
     isDialogSelectionComplete: function (dialog) {
-      var ready = mediatorUtils.isDialogSelectionComplete(dialog);
+      var isReady = mediatorUtils.isDialogSelectionComplete(dialog);
       var previousState = {
         state: mediatorUtils.getDialogStatus(dialog)
       };
-      if (previousState.state != ready) {
+      if (previousState.state != isReady) {
         this.fire('dialogBgChange', dialog);
       };
+      mediatorUtils.setDialogStatus(dialog, isReady);
     }
 
   };

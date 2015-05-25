@@ -27,11 +27,10 @@ RIF.mediator.utils = (function (modelAccessor) {
       };
     },
 
-    filterUniqueStudyAreas: function (currentSelection, newSelection) {
+    /*filterUniqueStudyAreas: function (currentSelection, newSelection) {
       var newLength = newSelection.length;
       while (newLength--) {
         var id = newSelection[newLength]['id'];
-        //console.log("checking gid" + id);
         for (var k = 0, l = currentSelection.length; k < l; ++k) {
           if (currentSelection[k]['id'] == id) {
             currentSelection.splice(k);
@@ -40,7 +39,7 @@ RIF.mediator.utils = (function (modelAccessor) {
         };
       };
       return currentSelection.concat(newSelection);
-    },
+    },*/
 
 
     addCurrentInvestigation: function () {
@@ -90,7 +89,6 @@ RIF.mediator.utils = (function (modelAccessor) {
         area_ids.push(o["area_id"]);
         names.push(o.label);
       });
-
       return {
         gid: gids,
         area_id: area_ids,
@@ -291,23 +289,19 @@ RIF.mediator.utils = (function (modelAccessor) {
     isStudyAreaSelectionComplete: function (dialog) {
       var studyArea = modelAccessor.getStudyArea();
       var r = this.isReady(studyArea);
-      this.setDialogStatus(dialog, r);
       return r;
     },
     isInvestigationSelectionComplete: function (dialog) {
       var ready = !jQuery.isEmptyObject(modelAccessor.getInvestigations());
-      this.setDialogStatus(dialog, ready);
       return ready;
     },
     isComparisonAreaSelectionComplete: function (dialog) {
       var compArea = modelAccessor.getStudyArea();
       var r = this.isReady(compArea);
-      this.setDialogStatus(dialog, r);
       return r;
     },
 
     isStatSelectionComplete: function (dialog) {
-      this.setDialogStatus(dialog, true); // hardcoded to true as the stat dialog is optional
       return true;
     },
 
