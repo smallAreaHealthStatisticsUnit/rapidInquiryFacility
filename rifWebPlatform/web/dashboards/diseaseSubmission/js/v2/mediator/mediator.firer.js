@@ -62,6 +62,14 @@ RIF.mediator['firer-'] = (function () {
       this.fire('startComparisonAreaSelection', null);
     },
 
+    /*syncComparisonAreaTable: function (mapAreas) {
+      this.fire('syncStudyAreaTable', mapAreas);
+    },
+
+    syncComparisonAreaMap: function (gids) {
+      this.fire('syncStudyAreaMap', gids);
+    },*/
+
 
   };
 

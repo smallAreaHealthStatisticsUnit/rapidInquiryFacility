@@ -20,8 +20,6 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
     },
     //--- END OF FRONT  
 
-
-
     //---STUDY AREA 
     selectAtChanged: function (arg) {
       _setProperty('setStudyAreaSelectAt', arg);
@@ -47,46 +45,18 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
       this.clearStudySelection();
     },
     syncMapButtonClicked: function () {
-      /* Set map selection to be equal table's */
       var tableSelection = _getProperty('getStudyAreas');
-      this.studyMapAreaSelectionEvent(tableSelection);
-
-      var gids = [],
-        area_ids = [],
-        names = [];
-      var selection = tableSelection.map(function (o) {
-        gids.push(o.gid);
-        area_ids.push(o.id);
-        names.push(o.label);
-      });
-      this.syncStudyAreaMap({
-        gid: gids,
-        area_id: area_ids,
-        name: names
-      });
+      var mappedData = mediatorUtils.tableToMap(tableSelection);
+      this.studyMapAreaSelectionEvent(tableSelection); //Set map selection to be equal to table's  
+      this.syncStudyAreaMap(mappedData);
     },
     syncTableButtonClicked: function () {
-      /* Set table selection to be equal map's */
       var mapSelection = _getProperty('getStudyAreaFromMap');
-      this.studyAreaSelectionEvent(mapSelection);
-
-      var gids = [],
-        area_ids = [],
-        names = [];
-      mapSelection.map(function (o) {
-        gids.push(o.gid);
-        area_ids.push(o["area_id"]);
-        names.push(o.label);
-      });
-      this.syncStudyAreaTable({
-        gid: gids,
-        area_id: area_ids,
-        name: names
-      });
+      var mappedData = mediatorUtils.mapToTable(mapSelection);
+      this.studyAreaSelectionEvent(mapSelection); //Set table selection to be equal to map's 
+      this.syncStudyAreaTable(mappedData);
     },
     //---END OF STUDY AREA 
-
-
 
     //COMPARISON AREA 
     comparisonSelectAtChanged: function (arg) {
@@ -105,33 +75,16 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
       _setProperty('setComparisonAreas', rows);
     },
     comparisonSyncTableButtonClicked: function () {
-      /* Set table selection to be equal map's */
       var mapSelection = _getProperty('getComparisonAreaFromMap');
+      var mappedData = mediatorUtils.mapToTable(mapSelection);
       this.comparisonAreaSelectionEvent(mapSelection);
-      var gids = [],
-        area_ids = [],
-        names = [];
-      mapSelection.map(function (o) {
-        gids.push(o.gid);
-        area_ids.push(o["area_id"]);
-        names.push(o.label);
-      });
-      //this.syncStudyAreaTable({ gid: gids, area_id:area_ids, name: names });   
+      //this.syncComparisonAreaTable( mappedData );   
     },
     comparisonSyncMapButtonClicked: function () {
-      /* Set map selection to be equal table's */
       var tableSelection = _getProperty('getComparisonAreas');
       this.comparisonMapAreaSelectionEvent(tableSelection);
-
-      var gids = [],
-        area_ids = [],
-        names = [];
-      var selection = tableSelection.map(function (o) {
-        gids.push(o.gid);
-        area_ids.push(o.id);
-        names.push(o.label);
-      });
-      //this.syncStudyAreaMap({ gid: gids, area_id:area_ids, name: names });  
+      var mappedData = mediatorUtils.tableToMap(tableSelection);
+      //this.syncComparisonAreaMap( mappedData );  
     },
     comparisonClearAreaSelectionEvent: function (args) {
       //this.comparisonAreaSelectionEvent([]);
@@ -141,8 +94,7 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
     //----------------------------------------------  
     //----------------------------------------------  
 
-
-
+    //INVESTIGATION PARAMETERS
     healthSelectionChanged: function (arg) {
       if (arg.length == 0) {
         arg = null;
@@ -212,24 +164,20 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
      *  Check if dialog is ready to be opened
      */
     isDialogReady: function (dialog) {
-      var ready = false;
+      var ready = mediatorUtils.isDialogReady(dialog);
       if (dialog == 'investigationDialog') {
-        ready = mediatorUtils.isInvestigationDialogReady();
         if (ready && this[dialog] != 1) {
           this.startInvestigationParameter(_getProperty('getNumerator')); //firer
         };
       } else if (dialog == 'studyAreaDialog') {
-        ready = true;
         if (ready && this[dialog] != 1) {
           this.startAreaSelection()
         }
       } else if (dialog == 'comparisonAreaDialog') {
-        ready = true;
         if (ready && this[dialog] != 1) { //refactor
           this.startComparisonAreaSelection();
         };
       } else if (dialog == 'statDialog') {
-        ready = true;
         if (ready && this[dialog] != 1) { //refactor
           this.startStatDialog();
         };
@@ -246,21 +194,10 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
      *  dialog have been selected
      */
     isDialogSelectionComplete: function (dialog) {
-      var ready = false;
+      var ready = mediatorUtils.isDialogSelectionComplete(dialog);
       var previousState = {
         state: mediatorUtils.getDialogStatus(dialog)
       };
-
-      if (dialog == 'parametersModal') {
-        ready = mediatorUtils.isInvestigationSelectionComplete(dialog);
-      } else if (dialog == 'areaSelectionModal') {
-        ready = mediatorUtils.isStudyAreaSelectionComplete(dialog);
-      } else if (dialog == 'comparisonAreaSelectionModal') {
-        ready = mediatorUtils.isComparisonAreaSelectionComplete(dialog);
-      } else if (dialog == 'statModal') {
-        ready = mediatorUtils.isStatSelectionComplete(dialog);
-      }
-
       if (previousState.state != ready) {
         this.fire('dialogBgChange', dialog);
       };

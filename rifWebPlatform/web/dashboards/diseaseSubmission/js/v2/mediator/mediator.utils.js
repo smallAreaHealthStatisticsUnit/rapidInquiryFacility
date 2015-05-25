@@ -59,6 +59,83 @@ RIF.mediator.utils = (function (modelAccessor) {
     },
 
     /* 
+     * Used to map data uniformly
+     * between table and map
+     *
+     */
+    tableToMap: function (tableSelection) {
+      var gids = [],
+        area_ids = [],
+        names = [];
+
+      tableSelection.map(function (o) {
+        gids.push(o.gid);
+        area_ids.push(o.id);
+        names.push(o.label);
+      });
+
+      return {
+        gid: gids,
+        area_id: area_ids,
+        name: names
+      };
+    },
+    mapToTable: function (tableSelection) {
+      var gids = [],
+        area_ids = [],
+        names = [];
+
+      tableSelection.map(function (o) {
+        gids.push(o.gid);
+        area_ids.push(o["area_id"]);
+        names.push(o.label);
+      });
+
+      return {
+        gid: gids,
+        area_id: area_ids,
+        name: names
+      };
+    },
+
+    /* 
+     * Check if Modal dialog is ready to be opened
+     */
+    isDialogReady: function (dialog) {
+      switch (dialog) {
+      case 'studyAreaDialog':
+        return true;
+      case 'comparisonAreaDialog':
+        return true;
+      case 'investigationDialog':
+        return _utils.isInvestigationDialogReady();
+      case 'statDialog':
+        return true;
+      default:
+        return false;
+      };
+    },
+
+    /* 
+     * Check if Modal dialog is ready to be opened
+     */
+    isDialogSelectionComplete: function (dialog) {
+      switch (dialog) {
+      case 'areaSelectionModal':
+        return _utils.isStudyAreaSelectionComplete(dialog);
+      case 'comparisonAreaSelectionModal':
+        return _utils.isComparisonAreaSelectionComplete(dialog);
+      case 'parametersModal':
+        return _utils.isInvestigationSelectionComplete(dialog);
+      case 'statModal':
+        return _utils.isStatSelectionComplete(dialog);
+      default:
+        return false;
+      };
+    },
+
+
+    /* 
      * Model utils
      *
      */

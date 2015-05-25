@@ -65,13 +65,13 @@ RIF.table['unit-studyArea'] = (function (_dom, tableUtils) {
 
   var _p = {
     getTabularData: function (data) {
-      _renderTable(data);
+      _renderTable(data); //refactor to tableUtils
     },
     updateCounter: function (nRows) {
       _dom.studyAreaCount.innerHTML = nRows;
     },
     getTabularDataFromMap: function (data) {
-      _addSelected(data);
+      _addSelected(data); //refactor to Table Utils
       _p.updateCounter(data.gid.length);
     },
     empty: function () {
