@@ -10,6 +10,7 @@ import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.AbstractCovariate;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthCode;
@@ -581,7 +582,7 @@ final class InvestigationEditorDialog
 		try {			
 			Investigation investigationFromForm
 				= getInvestigationFromFormData();
-			investigationFromForm.checkErrors();
+			investigationFromForm.checkErrors(ValidationPolicy.STRICT);
 			
 			currentInvestigation.setTitle(investigationFromForm.getTitle());
 			currentInvestigation.setHealthTheme(investigationFromForm.getHealthTheme());

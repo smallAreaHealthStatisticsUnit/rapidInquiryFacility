@@ -7,6 +7,7 @@ import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Investigation;
@@ -345,7 +346,7 @@ final class SpecifyInvestigationsStepPanel
 				Investigation workingCopyInvestigation
 					= (Investigation) listItem;
 				try {
-					workingCopyInvestigation.checkErrors();
+					workingCopyInvestigation.checkErrors(ValidationPolicy.STRICT);
 					investigations.add(workingCopyInvestigation);
 				}
 				catch(RIFServiceException rifServiceException) {

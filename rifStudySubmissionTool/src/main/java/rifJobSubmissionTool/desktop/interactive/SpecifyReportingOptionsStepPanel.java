@@ -6,6 +6,7 @@ import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFOutputOption;
@@ -472,7 +473,7 @@ final class SpecifyReportingOptionsStepPanel
 	
 		for (CalculationMethod calculationMethod : calculationMethods) {
 			try {
-				calculationMethod.checkErrors();				
+				calculationMethod.checkErrors(ValidationPolicy.STRICT);				
 			}
 			catch(RIFServiceException rifServiceException) {
 				errorMessages.addAll(rifServiceException.getErrorMessages());

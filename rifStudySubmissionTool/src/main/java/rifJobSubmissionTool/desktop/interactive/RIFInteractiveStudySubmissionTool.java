@@ -104,7 +104,7 @@ public final class RIFInteractiveStudySubmissionTool
 		try {	
 			
 			RIFServiceStartupOptions rifServiceStartupOptions
-				= RIFServiceStartupOptions.newInstance(false);
+				= RIFServiceStartupOptions.newInstance(false, true);
 			StringBuilder rifServiceResourcePath = new StringBuilder();
 			
 			//assume for now it will be (something)\rapidInquiryFacility\(something)
