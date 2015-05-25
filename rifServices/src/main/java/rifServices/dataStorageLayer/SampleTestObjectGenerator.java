@@ -109,8 +109,8 @@ public final class SampleTestObjectGenerator {
 		rifStudySubmission.setJobSubmissionTime(new Date());
 		
 		Project project = Project.newInstance();
-		project.setName("SAHSU");
-		project.setDescription("SAHSU Project used for all old projects on import. Disabled after import");
+		project.setName("TEST");
+		project.setDescription("Test Project. Will be disabled when in production.");
 		rifStudySubmission.setProject(project);
 		
 		SampleTestObjectGenerator generator
