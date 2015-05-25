@@ -1,8 +1,10 @@
 package rifServices.dataStorageLayer;
 
 import rifServices.system.RIFServiceException;
+
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.RIFDatabaseProperties;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 
 /**
  *
@@ -167,6 +169,26 @@ public final class RIFServiceResources {
 				sqlMapDataManager,
 				sqlDiseaseMappingStudyManager);
 
+		ValidationPolicy validationPolicy = null;
+		if (rifServiceStartupOptions.useStrictValidationPolicy()) {
+			validationPolicy = ValidationPolicy.STRICT;
+		}
+		else {
+			validationPolicy = ValidationPolicy.RELAXED;			
+		}
+
+		sqlCovariateManager.setValidationPolicy(validationPolicy);
+		sqlRIFContextManager.setValidationPolicy(validationPolicy);
+		sqlAgeGenderYearManager.setValidationPolicy(validationPolicy);
+		sqlMapDataManager.setValidationPolicy(validationPolicy);
+		sqlDiseaseMappingStudyManager.setValidationPolicy(validationPolicy);
+		sqlRIFContextManager.setValidationPolicy(validationPolicy);
+		sqlRIFSubmissionManager.setValidationPolicy(validationPolicy);
+		sqlStudyExtractManager.setValidationPolicy(validationPolicy);
+		sqlResultsQueryManager.setValidationPolicy(validationPolicy);
+		sqlRIFContextManager.setValidationPolicy(validationPolicy);
+		sqlInvestigationManager.setValidationPolicy(validationPolicy);
+			
 		healthOutcomeManager.initialiseTaxomies();	
 	}
 	
@@ -180,11 +202,15 @@ public final class RIFServiceResources {
 		return rifServiceResources;
 	}
 
-	public static RIFServiceResources newInstance(boolean isWebDeployment)
+	public static RIFServiceResources newInstance(
+		final boolean isWebDeployment,
+		final boolean useStrictValidationPolicy)
 		throws RIFServiceException {
 			
 		RIFServiceStartupOptions rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(isWebDeployment);
+			= RIFServiceStartupOptions.newInstance(
+				isWebDeployment,
+				useStrictValidationPolicy);
 		RIFServiceResources rifServiceResources
 			= new RIFServiceResources(rifServiceStartupOptions);
 		

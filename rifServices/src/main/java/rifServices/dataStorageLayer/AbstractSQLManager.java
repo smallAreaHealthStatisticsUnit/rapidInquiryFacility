@@ -8,7 +8,6 @@ import rifServices.system.RIFDatabaseProperties;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
-import rifServices.util.RIFLogger;
 
 import java.sql.*;
 
@@ -105,6 +104,12 @@ abstract class AbstractSQLManager {
 
 	public ValidationPolicy getValidationPolicy() {
 		return validationPolicy;
+	}
+	
+	public void setValidationPolicy(
+		final ValidationPolicy validationPolicy) {
+		
+		this.validationPolicy = validationPolicy;
 	}
 	
 	/**
