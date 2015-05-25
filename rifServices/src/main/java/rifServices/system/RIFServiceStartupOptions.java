@@ -114,6 +114,9 @@ public final class RIFServiceStartupOptions {
 
 	private String rScriptDirectory;
 	
+	
+	private boolean useStrictValidationPolicy;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -122,9 +125,12 @@ public final class RIFServiceStartupOptions {
 	/**
 	 * Instantiates a new RIF service startup options.
 	 */
-	private RIFServiceStartupOptions(boolean isWebDeployment) {
+	private RIFServiceStartupOptions(
+		final boolean isWebDeployment,
+		final boolean useStrictValidationPolicy) {
 		
 		this.isWebDeployment = isWebDeployment;
+		this.useStrictValidationPolicy = useStrictValidationPolicy;
 		
 		//We should be able to read startup properties from
 		//a startup properties file
@@ -148,16 +154,17 @@ public final class RIFServiceStartupOptions {
 			= RIFServiceStartupProperties.getMaximumMapAreasAllowedForSingleDisplay();
 		
 		isDatabaseCaseSensitive
-			= RIFServiceStartupProperties.isDatabaseCaseSensitive();
-		
-		
+			= RIFServiceStartupProperties.isDatabaseCaseSensitive();		
 	}
 
 	public static RIFServiceStartupOptions newInstance(
-		final boolean isWebDeployment) {
+		final boolean isWebDeployment,
+		final boolean useStrictValidationPolicy) {
 		
 		RIFServiceStartupOptions rifServiceStartupOptions
-			= new RIFServiceStartupOptions(isWebDeployment);
+			= new RIFServiceStartupOptions(
+				isWebDeployment,
+				useStrictValidationPolicy);
 		return rifServiceStartupOptions;		
 	}
 	
@@ -411,6 +418,16 @@ public final class RIFServiceStartupOptions {
 		final int maximumMapAreasAllowedForSingleDisplay) {
 		
 		this.maximumMapAreasAllowedForSingleDisplay = maximumMapAreasAllowedForSingleDisplay;
+	}
+	
+	
+	public boolean useStrictValidationPolicy() {
+		return useStrictValidationPolicy;
+	}
+	
+	public void setUseStrictValidationPolicy(
+		final boolean useStrictValidationPolicy) {
+		this.useStrictValidationPolicy = useStrictValidationPolicy;
 	}
 	
 	

@@ -477,7 +477,7 @@ public class AbstractRIFServiceTestCase
 		rifServiceBundle = new TestRIFStudyServiceBundle();
 		
 		startupOptions
-			= RIFServiceStartupOptions.newInstance(false);
+			= RIFServiceStartupOptions.newInstance(false, true);
 		startupOptions.setMaximumMapAreasAllowedForSingleDisplay(200);
 		rifServiceBundle.initialise(startupOptions);
 		rifStudySubmissionService 

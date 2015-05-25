@@ -13,11 +13,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import javax.servlet.http.*;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 import org.json.JSONObject;
@@ -128,7 +123,9 @@ abstract class AbstractRIFWebServiceResource {
 		sd = new SimpleDateFormat("HH:mm:ss:SSS");
 
 		RIFServiceStartupOptions rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(true);
+			= RIFServiceStartupOptions.newInstance(
+				true,
+				false);
 		
 		webServiceResponseGenerator = new WebServiceResponseGenerator();
 		

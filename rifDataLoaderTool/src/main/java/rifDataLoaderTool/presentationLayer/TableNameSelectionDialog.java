@@ -83,7 +83,7 @@ public final class TableNameSelectionDialog
 			ProductionRIFStudyServiceBundle rifStudyServiceBundle
 				= new ProductionRIFStudyServiceBundle();
 			RIFServiceStartupOptions rifServiceStartupOptions 
-				= RIFServiceStartupOptions.newInstance(false);
+				= RIFServiceStartupOptions.newInstance(false, true);
 			rifStudyServiceBundle.initialise(rifServiceStartupOptions);
 			rifStudyServiceBundle.login("kgarwood", "kgarwood");				
 

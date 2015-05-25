@@ -112,7 +112,7 @@ public final class TestRIFServiceStartupOptions
 	@Test
 	public void acceptValidStartupOptions_COMMON() {
 		RIFServiceStartupOptions rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false);
+			= RIFServiceStartupOptions.newInstance(false, true);
 
 		try {
 			rifServiceStartupOptions.checkErrors();			
@@ -129,7 +129,7 @@ public final class TestRIFServiceStartupOptions
 	public void rejectNullFieldValues() {
 		
 		RIFServiceStartupOptions rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false);
+			= RIFServiceStartupOptions.newInstance(false, true);
 		rifServiceStartupOptions.setDatabaseDriverClassName(null);
 		try {
 			rifServiceStartupOptions.checkErrors();
@@ -143,7 +143,7 @@ public final class TestRIFServiceStartupOptions
 		}		
 
 		rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false);
+			= RIFServiceStartupOptions.newInstance(false, true);
 		rifServiceStartupOptions.setDatabaseDriverPrefix(null);
 		try {
 			rifServiceStartupOptions.checkErrors();
@@ -157,7 +157,7 @@ public final class TestRIFServiceStartupOptions
 		}		
 				
 		rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false);
+			= RIFServiceStartupOptions.newInstance(false, true);
 		rifServiceStartupOptions.setDatabaseName(null);
 		try {
 			rifServiceStartupOptions.checkErrors();
@@ -172,7 +172,7 @@ public final class TestRIFServiceStartupOptions
 		
 		
 		rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false);
+			= RIFServiceStartupOptions.newInstance(false, true);
 		rifServiceStartupOptions.setHost(null);
 		try {
 			rifServiceStartupOptions.checkErrors();
@@ -187,7 +187,7 @@ public final class TestRIFServiceStartupOptions
 		
 		
 		rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false);
+			= RIFServiceStartupOptions.newInstance(false, true);
 		rifServiceStartupOptions.setPort(null);
 		try {
 			rifServiceStartupOptions.checkErrors();
@@ -202,7 +202,7 @@ public final class TestRIFServiceStartupOptions
 		
 		//check multiple null field values		
 		rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false);
+			= RIFServiceStartupOptions.newInstance(false, true);
 		rifServiceStartupOptions.setPort(null);
 		rifServiceStartupOptions.setHost(null);
 		rifServiceStartupOptions.setDatabaseName(null);
@@ -225,7 +225,7 @@ public final class TestRIFServiceStartupOptions
 	@Test 
 	public void rejectSecurityViolations_MALICIOUS() {
 		RIFServiceStartupOptions rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false);
+			= RIFServiceStartupOptions.newInstance(false, true);
 		
 		rifServiceStartupOptions.setDatabaseDriverClassName(getTestMaliciousValue());
 		try {
@@ -237,7 +237,7 @@ public final class TestRIFServiceStartupOptions
 		}
 		
 		rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false);
+			= RIFServiceStartupOptions.newInstance(false, true);
 		rifServiceStartupOptions.setDatabaseDriverPrefix(getTestMaliciousValue());
 		try {
 			rifServiceStartupOptions.checkSecurityViolations();
@@ -250,7 +250,7 @@ public final class TestRIFServiceStartupOptions
 		
 		
 		rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false);
+			= RIFServiceStartupOptions.newInstance(false, true);
 		rifServiceStartupOptions.setDatabaseName(getTestMaliciousValue());
 		try {
 			rifServiceStartupOptions.checkSecurityViolations();
@@ -262,7 +262,7 @@ public final class TestRIFServiceStartupOptions
 		
 		
 		rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false);
+			= RIFServiceStartupOptions.newInstance(false, true);
 		rifServiceStartupOptions.setHost(getTestMaliciousValue());
 		try {
 			rifServiceStartupOptions.checkSecurityViolations();
@@ -274,7 +274,7 @@ public final class TestRIFServiceStartupOptions
 		
 		
 		rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false);
+			= RIFServiceStartupOptions.newInstance(false, true);
 		rifServiceStartupOptions.setPort(getTestMaliciousValue());
 		try {
 			rifServiceStartupOptions.checkSecurityViolations();
