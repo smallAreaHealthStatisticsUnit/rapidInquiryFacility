@@ -1167,8 +1167,9 @@ final class SQLRIFContextManager
 		
 		if (healthTheme != null) {
 			healthTheme.checkErrors(validationPolicy);			
-			checkHealthThemeExists(connection, 
-			healthTheme.getDescription());
+			checkHealthThemeExists(
+				connection, 
+				healthTheme.getDescription());
 		}
 		
 		if (geoLevelSelect != null) {
@@ -1575,7 +1576,7 @@ final class SQLRIFContextManager
 			configureQueryFormatterForDB(geoLevelMapExistsQueryFormatter);		
 			geoLevelMapExistsQueryFormatter.setFromTable("rif40_geolevels");
 			geoLevelMapExistsQueryFormatter.addWhereParameter("geography");
-			geoLevelMapExistsQueryFormatter.addWhereParameterWithOperator("geolevel_id",">");
+			geoLevelMapExistsQueryFormatter.addWhereParameterWithOperator("geolevel_id",">=");
 			geoLevelMapExistsQueryFormatter.addWhereParameter("geolevel_name");
 		
 			logSQLQuery(
@@ -1798,7 +1799,7 @@ final class SQLRIFContextManager
 			SQLRecordExistsQueryFormatter queryFormatter
 				= new SQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);		
-			queryFormatter.setLookupKeyFieldName("description");
+			queryFormatter.setLookupKeyFieldName("theme");
 			queryFormatter.setFromTable("rif40_health_study_themes");
 
 			logSQLQuery(
