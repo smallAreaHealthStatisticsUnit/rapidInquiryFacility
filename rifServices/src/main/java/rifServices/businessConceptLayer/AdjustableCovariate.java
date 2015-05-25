@@ -216,7 +216,9 @@ public final class AdjustableCovariate
 		throws RIFServiceException {		
 		
         ArrayList<String> errorMessages = new ArrayList<String>();     
-		super.checkErrors(errorMessages);    
+		super.checkErrors(
+			validationPolicy, 
+			errorMessages);    
 		countErrors(RIFServiceError.INVALID_ADJUSTABLE_COVARIATE, errorMessages);
 	}
     	

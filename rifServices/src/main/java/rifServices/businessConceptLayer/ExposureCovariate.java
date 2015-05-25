@@ -205,7 +205,9 @@ public final class ExposureCovariate
 		String recordType = getRecordType();
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
-		super.checkErrors(errorMessages);
+		super.checkErrors(
+			validationPolicy, 
+			errorMessages);
       
         CovariateType covariateType = getCovariateType();
         if (covariateType == null) {
