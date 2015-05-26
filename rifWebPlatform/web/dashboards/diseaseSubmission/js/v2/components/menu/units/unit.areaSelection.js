@@ -16,6 +16,7 @@ RIF.menu['unit-areaSelection'] = (function (_dom, menuUtils) {
 
   };
 
+
   return _p
 
 });

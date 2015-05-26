@@ -60,9 +60,10 @@ RIF.table.utils = (function () {
         fragment.appendChild(div);
       };
       return fragment;
-    },
-
+    }
 
   };
+
   return _p;
+
 });

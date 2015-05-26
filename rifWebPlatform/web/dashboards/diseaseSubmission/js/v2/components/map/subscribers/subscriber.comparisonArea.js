@@ -6,25 +6,23 @@ RIF['map']['subscriber-comparisonArea'] = (function (controller) {
       controller.setGlobalMapFullExtent();
     },
 
-    /*setMapExtent: function(){
-        console.log('setting comparison area extent');
-    },*/
+    syncComparisonAreaMap: function (gids) {
+      controller.syncComparisonArea(gids);
+    },
 
     comparisonSelectAtChangeUpdate: function (geolvl) {
       controller.updateGeolevel(geolvl);
     },
 
+    comparisonClearStudySelection: function () {
+      controller.clearSelection();
+    }
+
     /*setInitialExtent: function(){
         controller.setInitialExtent();
     },  
-      
-    syncStudyAreaMap: function( gids ){
-        controller.syncStudyArea( gids );
-    },
-      
-    clearStudySelection: function(){
-        controller.clearSelection();
-    } */
+       
+     */
 
 
   };

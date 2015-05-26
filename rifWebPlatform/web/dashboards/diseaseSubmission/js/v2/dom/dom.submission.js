@@ -210,9 +210,9 @@ RIF.dom = (function () {
           rowClass: 'aSR',
           studyAreaCount: get('comparisonResolutionCount'),
           areaSelectionWrapper: $('#comparisonAreaSelectionWrapper'),
-          areasSelectionDialog: $('.areasSelectionDialog'),
-          selectionClass: 'rowSelected',
-          selectionClassD3Compatible: '#comparisonAreaSelectionWrapper .rowSelected'
+          areasSelectionDialog: $('#comparisonAreaSelectionModal .areasSelectionDialog'), //need to make it comparison Specific
+          selectionClass: 'comparisonRowSelected', //need to make it comparison Specific
+          selectionClassD3Compatible: '#comparisonAreaSelectionWrapper .comparisonRowSelected'
         };
       },
 

@@ -14,7 +14,7 @@ RIF['map']['controller-comparisonArea'] = (function (unit) {
       unit.updateGeolevel(geolvl);
     },
 
-    syncStudyArea: function (selection) {
+    syncComparisonArea: function (selection) {
       unit.sync(selection);
     },
 

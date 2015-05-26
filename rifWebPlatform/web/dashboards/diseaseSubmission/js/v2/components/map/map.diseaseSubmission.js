@@ -37,8 +37,6 @@ RIF.map = (function (settings, publisher) {
               copy2(args);
               copy(args);
             };
-            console.log(_observable[i].toString())
-
           };
         }
       },

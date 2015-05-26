@@ -4,7 +4,7 @@ RIF['menu']['firer-comparisonArea'] = (function () {
 
     comparisonSelectAtChanged: function (arg) {
       this.fire('comparisonSelectAtChanged', arg);
-      this.getResolutions(arg);
+      this.comparisonGetResolutions(arg);
     },
 
     comparisonResolutionChanged: function (arg) {

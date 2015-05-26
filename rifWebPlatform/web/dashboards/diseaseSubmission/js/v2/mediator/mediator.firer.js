@@ -64,9 +64,6 @@ RIF.mediator['firer-'] = (function () {
       this.fire('modelToSchemaReady', [modelToSchema]);
     },
 
-    setMapExtent: function () {
-      this.fire('setMapExtent', []);
-    },
 
     syncStudyAreaTable: function (mapAreas) {
       this.fire('syncStudyAreaTable', mapAreas);
@@ -88,13 +85,17 @@ RIF.mediator['firer-'] = (function () {
       this.fire('startComparisonAreaSelection', null);
     },
 
-    /*syncComparisonAreaTable: function (mapAreas) {
-      this.fire('syncStudyAreaTable', mapAreas);
+    syncComparisonAreaTable: function (mapAreas) {
+      this.fire('syncComparisonAreaTable', mapAreas);
     },
 
     syncComparisonAreaMap: function (gids) {
-      this.fire('syncStudyAreaMap', gids);
-    },*/
+      this.fire('syncComparisonAreaMap', gids);
+    },
+
+    comparisonClearStudySelection: function () {
+      this.fire('comparisonClearStudySelection', []);
+    },
 
 
   };

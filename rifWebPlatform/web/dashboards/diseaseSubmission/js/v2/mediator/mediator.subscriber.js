@@ -78,18 +78,18 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
       var mapSelection = _getProperty('getComparisonAreaFromMap');
       var mappedData = mediatorUtils.mapToTable(mapSelection);
       this.comparisonAreaSelectionEvent(mapSelection);
-      //this.syncComparisonAreaTable( mappedData );   
+      this.syncComparisonAreaTable(mappedData);
     },
     comparisonSyncMapButtonClicked: function () {
       var tableSelection = _getProperty('getComparisonAreas');
-      this.comparisonMapAreaSelectionEvent(tableSelection);
       var mappedData = mediatorUtils.tableToMap(tableSelection);
-      //this.syncComparisonAreaMap( mappedData );  
+      this.comparisonMapAreaSelectionEvent(tableSelection);
+      this.syncComparisonAreaMap(mappedData);
     },
     comparisonClearAreaSelectionEvent: function (args) {
-      //this.comparisonAreaSelectionEvent([]);
-      //this.comparisonMapAreaSelectionEvent([]);
-      //this.clearStudySelection(); 
+      this.comparisonAreaSelectionEvent([]);
+      this.comparisonMapAreaSelectionEvent([]);
+      this.comparisonClearStudySelection();
     },
     //----------------------------------------------  
     //----------------------------------------------  

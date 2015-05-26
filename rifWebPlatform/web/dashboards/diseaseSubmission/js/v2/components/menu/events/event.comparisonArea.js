@@ -4,7 +4,6 @@ RIF['menu']['event-comparisonArea'] = (function (_dom, firer) {
     var val = $(this).val();
     _dom.resolutionCountLabel.innerHTML = val + ' ';
     firer.comparisonSelectAtChanged(val);
-
   });
 
   _dom.resolution.change(function () {
@@ -12,21 +11,21 @@ RIF['menu']['event-comparisonArea'] = (function (_dom, firer) {
     firer.comparisonResolutionChanged(val);
   });
 
-  /*_dom.syncMap.click( function () {    
-    firer.comparisonSyncMapButtonClicked();
-  }); 
-
-  _dom.syncTable.click( function () {
-    firer.studyMapAreaSelectionEvent();  
-    firer.syncTableButtonClicked();
-  }); 
-    
-  _dom.selectAlRowsStudy.click( function () {
-      firer.studySelectAllRowsClicked();
+  _dom.syncTable.click(function () {
+    firer.comparisonSyncTableButtonClicked();
   });
-      
-  _dom.clearStudy.click( function () {
-      firer.clearAreaSelectionEvent();
-  });*/
+
+  _dom.syncMap.click(function () {
+    firer.comparisonSyncMapButtonClicked();
+  });
+
+  _dom.clearStudy.click(function () {
+    firer.comparisonClearAreaSelectionEvent();
+  });
+
+  _dom.selectAlRowsStudy.click(function () {
+    firer.comparisonSelectAllRowsClicked();
+  });
+
 
 });

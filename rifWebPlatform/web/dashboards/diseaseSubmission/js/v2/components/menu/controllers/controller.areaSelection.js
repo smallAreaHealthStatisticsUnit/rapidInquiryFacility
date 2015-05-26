@@ -5,7 +5,6 @@ RIF.menu['controller-areaSelection'] = (function (unit) {
     getSelectAtsAvailable: function () {
       var callback = function () {
         var selectAts = this[0].names;
-        _p.getResolutionsAvailable(selectAts[0]);
         unit.getSelectAt(selectAts);
       };
 

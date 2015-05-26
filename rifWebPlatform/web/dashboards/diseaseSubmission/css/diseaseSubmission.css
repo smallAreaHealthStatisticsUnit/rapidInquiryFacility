@@ -902,6 +902,7 @@ div.aSR:hover,
 }
 .areaSelectionTable .rowSelected,
 #allRowsAgeGroups .rowSelected,
+.comparisonRowSelected,
 .labelSelected {
     background-color: #CD96CD !important;
     color:white;
@@ -924,7 +925,7 @@ div.aSR:hover,
 }
 .odd {
     background-color: rgba(242, 242, 242  ,0.2);
-    color: #696969;
+    /*color: #696969;*/
 }
 .aSR div {
     padding: 2px 0px;

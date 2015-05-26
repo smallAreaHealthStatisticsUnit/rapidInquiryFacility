@@ -166,7 +166,7 @@ RIF.modelAccessor = (function () {
       return model.comparisonArea.comparisonArea_areas;
     },
     getComparisonAreaFromMap: function () {
-      return model.comparisonArea.comparisonArea__areasFromMap;
+      return model.comparisonArea.comparisonArea_areasFromMap;
     },
     getComparisonArea: function () {
       return model.comparisonArea;

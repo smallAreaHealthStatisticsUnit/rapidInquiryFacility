@@ -21,7 +21,7 @@ RIF.initialize = (function () {
       },
       table: {
         studyType: 'diseaseSubmission',
-        tables: ['ageGroups', 'investigationsRecap', 'studyArea', 'summary']
+        tables: ['ageGroups', 'investigationsRecap', 'studyArea', 'comparisonArea', 'summary']
       }
     },
     events: {
@@ -120,16 +120,6 @@ RIF.initialize = (function () {
         method: "modelToSchemaReady"
       },
 
-      /*************************/
-      /*************************/
-      /**     MAP EXTENT      **/
-      /*************************/
-      /*************************/
-      setMapExtent: {
-        subscribers: ["map"],
-        firer: ["mediator"],
-        method: "setMapExtent"
-      },
 
       /*************************/
       /*************************/
@@ -223,11 +213,22 @@ RIF.initialize = (function () {
       /**  COMPARISON AREA    **/
       /*************************/
       /*************************/
+      startComparisonAreaSelection: { //done
+        subscribers: ["menu"],
+        firer: ["mediator"],
+        method: "startComparisonAreaSelection"
+      },
 
       comparisonSelectAtChanged: { //done
         subscribers: ["mediator"],
         firer: ["menu"],
         method: "comparisonSelectAtChanged"
+      },
+
+      comparisonSelectAtChangeUpdate: {
+        subscribers: ["table", "map"],
+        firer: ["mediator"],
+        method: "comparisonSelectAtChangeUpdate"
       },
 
       comparisonResolutionChanged: { //done
@@ -242,16 +243,10 @@ RIF.initialize = (function () {
         method: "comparisonMapAreaSelectionEvent"
       },
 
-      comparisonSyncTableButtonClicked: { //done
+      comparisonAreaSelectionEvent: {
         subscribers: ["mediator"],
-        firer: ["menu"],
-        method: "comparisonSyncTableButtonClicked"
-      },
-
-      startComparisonAreaSelection: { //done
-        subscribers: ["menu"],
-        firer: ["mediator"],
-        method: "startComparisonAreaSelection"
+        firer: ["table"],
+        method: "comparisonAreaSelectionEvent"
       },
 
       // COMPARISON AREA - MAP
@@ -261,11 +256,35 @@ RIF.initialize = (function () {
         method: "comparisonSyncMapButtonClicked"
       },
 
-      // STUDY AREA - CLEAR ALL SELECTION
+      comparisonSyncTableButtonClicked: { //done
+        subscribers: ["mediator"],
+        firer: ["menu"],
+        method: "comparisonSyncTableButtonClicked"
+      },
+
+      syncComparisonAreaTable: {
+        subscribers: ["table"],
+        firer: ["mediator"],
+        method: "syncComparisonAreaTable"
+      },
+
+      syncComparisonAreaMap: {
+        subscribers: ["map"],
+        firer: ["mediator"],
+        method: "syncComparisonAreaMap"
+      },
+
+      // COMPARISON AREA - CLEAR ALL SELECTION
       comparisonClearAreaSelectionEvent: { //done
         subscribers: ["mediator"],
         firer: ["menu"],
         method: "comparisonClearAreaSelectionEvent"
+      },
+
+      comparisonClearStudySelection: {
+        subscribers: ["map", "table"],
+        firer: ["mediator"],
+        method: "comparisonClearStudySelection"
       },
 
       // COMPARISON AREA - SELECT ALL ROWS FROM TABLE
@@ -274,43 +293,6 @@ RIF.initialize = (function () {
         firer: ["menu"],
         method: "comparisonSelectAllRowsClicked"
       },
-
-      comparisonSelectAtChangeUpdate: {
-        subscribers: [ /*"table",*/ "map"],
-        firer: ["mediator"],
-        method: "comparisonSelectAtChangeUpdate"
-      },
-
-      /** Comparison TODO **/
-      /*
-      
-        
-      comparisonStudyAreaSelectionEvent: {
-        subscribers: [ "mediator" ],
-        firer: [ "table" ],
-        method: "comparisonStudyAreaSelectionEvent"
-      },
-      
-      
-      comparisonSyncStudyAreaTable: {
-        subscribers: [ "table" ], 
-        firer: [ "mediator" ],
-        method: "comparisonSyncStudyAreaTable"
-      },
-        
-      comparisonSyncStudyAreaMap: {
-        subscribers: [ "map" ], 
-        firer: [ "mediator" ],
-        method: "comparisonSyncStudyAreaMap"
-      }, 
-        
-      comparisonClearStudySelection: {
-        subscribers: [ "map", "table" ], 
-        firer: [ "mediator" ],
-        method: "comparisonClearStudySelection"
-      }, 
-      
-      */
 
 
       /*************************/
