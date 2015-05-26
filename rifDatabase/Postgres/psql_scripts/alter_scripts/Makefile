@@ -89,24 +89,6 @@ else
 	PLR_DEV_SOURCES=
 	PLR_SOURCES=
 endif
-#
-# List of source code
-#
-SOURCES=v4_0_alter_1.sql v4_0_alter_2.sql v4_0_alter_5.sql $(PLR_SOURCES) v4_0_alter_7.sql
-# DEV_SOURCES=v4_0_alter_3.sql v4_0_alter_4.sql v4_0_alter_7.sql 
-DEV_SOURCES=$(PLR_DEV_SOURCES)
-
-#
-# Derive targets from sources
-#
-TARGETS=$(SOURCES:.sql=.rpt)
-DEV_TARGETS=$(DEV_SOURCES:.sql=.rpt)
-DEV_TARGETS2=$(DEV_SOURCES:.sql=)
-	
-#
-# Phony (i.e. not a file) targets
-#
-.PHONY: all dev clean devclean recurse $(DEV_TARGETS2)
 
 #
 # Run bash on Linux, Powershell on Windows_NT
@@ -144,11 +126,54 @@ else
 endif
 
 #
+# List of source code
+#
+SOURCES=v4_0_alter_1.sql v4_0_alter_2.sql v4_0_alter_5.sql $(PLR_SOURCES) v4_0_alter_7.sql
+# DEV_SOURCES=v4_0_alter_3.sql v4_0_alter_4.sql v4_0_alter_7.sql 
+DEV_SOURCES=$(PLR_DEV_SOURCES)
+
+#
+# Derive targets from sources
 # Target extension depends on source, build rule
 #
-.SUFFIXES: .sql .rpt
-.sql.rpt:
+DEV_TARGETS2=$(DEV_SOURCES:%.sql=)
+#
+# Phony (i.e. not a file) targets
+#
+.PHONY: all dev clean devclean recurse $(DEV_TARGETS2)
+
+ifeq ($(PGDATABASE),sahsuland)
+#
+TARGETS=$(SOURCES:%.sql=%.sahsuland_rpt)
+DEV_TARGETS=$(DEV_SOURCES:%.sql=%.sahsuland_rpt)
+.SUFFIXES: .sql .sahsuland_rpt
+.sql.sahsuland_rpt:
 	$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f alter_scripts/$< 
+#
+$(info Database is: sahsuland;  targets: $(TARGETS)) 	
+#	
+else
+ifeq ($(PGDATABASE),sahsuland_dev)
+#
+TARGETS=$(SOURCES:%.sql=%.sahsuland_dev_rpt)
+DEV_TARGETS=$(DEV_SOURCES:%.sql=%.sahsuland_dev_rpt)
+.SUFFIXES: .sql .sahsuland_dev_rpt
+.sql.sahsuland_dev_rpt:
+	$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f alter_scripts/$< 	
+#
+$(info Database is: sahsuland_dev;  targets: $(TARGETS)) 		
+#	
+else
+$(error Unknown database: $(PGDATABASE))
+#
+#TARGETS=$(SOURCES:%.sql=%.rpt)
+#DEV_TARGETS=$(DEV_SOURCES:%.sql=%.rpt)	
+#.SUFFIXES: .sql .rpt
+#.sql.rpt:
+#	$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f alter_scripts/$< 		
+#	
+endif
+endif
 	
 #
 # Targets

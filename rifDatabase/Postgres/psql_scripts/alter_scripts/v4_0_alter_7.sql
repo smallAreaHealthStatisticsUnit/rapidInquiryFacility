@@ -86,7 +86,9 @@ Done:
   - Add back condition, derive from: min_condition, max_condition, predefined_group_name, outcome_group_name
   - Add numer_tab, field_name, column_exists and column_comments fields for enhanced information
  * Load new rif40_create_disease_mapping_example()
-
+ * Load new rif40_startup() with ability to disable most checks for middleware testing
+   Note: must be run once to create TEMPORARY TABLES
+   
 */
    
 BEGIN;
@@ -138,7 +140,7 @@ WITH a AS (
 )
 SELECT a.*, 
        CASE WHEN d.attrelid IS NOT NULL THEN true ELSE false END columnn_exists,
-	   col_description(LOWER(a.table_name)::regclass, d.attnum) AS column_comment
+	   CASE WHEN d.attrelid IS NOT NULL THEN col_description(LOWER(a.table_name)::regclass, d.attnum) ELSE NULL END AS column_comment
   FROM a
   	LEFT OUTER JOIN pg_attribute d ON (LOWER(a.table_name)::regclass = d.attrelid AND d.attname = LOWER(a.field_name));
 
@@ -560,14 +562,251 @@ $$;
 \dS+ rif40_inv_conditions
 
 --
+-- Clean up rif40_columns, rif40_tables_and_views
+--
+-- 1. Tidy up RIF40_TABLES_AND_VIEWS table_or_view column, drop column TABLE_OR_VIEW_NAME_HREF, add primary key and check constraint
+--
+UPDATE rif40_tables_and_views
+   SET table_or_view = 'VIEW'
+ WHERE table_or_view LIKE '<a href="?proc=web_common.view_source&owner=''RIF40''&view_name=%';
+SELECT class, table_or_view, COUNT(table_or_view_name_hide) AS total
+  FROM rif40_tables_and_views
+ GROUP BY class, table_or_view
+ ORDER BY 1, 2;
+ALTER TABLE rif40_tables_and_views ALTER COLUMN table_or_view_name_hide 		SET DATA TYPE VARCHAR(40);
+ALTER TABLE rif40_tables_and_views
+  DROP CONSTRAINT IF EXISTS class_ck;
+ALTER TABLE rif40_tables_and_views
+  DROP CONSTRAINT IF EXISTS table_or_view_name_hide_pk CASCADE;
+ALTER TABLE rif40_tables_and_views
+  ADD CONSTRAINT class_ck CHECK (class IN ('Configuration', 'Documentation', 'Lookup',
+			'Other', 'Results', 'SQL Generator', 'Study Setup'));
+ALTER TABLE rif40_tables_and_views			
+  ADD CONSTRAINT table_or_view_name_hide_pk PRIMARY KEY (table_or_view_name_hide);
+ALTER TABLE rif40_tables_and_views DROP COLUMN IF EXISTS table_or_view_name_href RESTRICT;	
+
+SELECT table_or_view_name_hide, column_name_hide
+  FROM rif40_columns
+ WHERE column_name_hide        = 'TABLE_OR_VIEW_NAME_HREF'
+   AND table_or_view_name_hide = 'RIF40_TABLES_AND_VIEWS';
+DELETE FROM rif40_columns
+ WHERE column_name_hide        = 'TABLE_OR_VIEW_NAME_HREF'
+   AND table_or_view_name_hide = 'RIF40_TABLES_AND_VIEWS';
+\dS+ rif40_tables_and_views
+
+--
+-- 2. Tidy up RIF40_COLUMNS, drop columns: TABLE_OR_VIEW_NAME_HREF, COLUMN_NAME_HREF; add primary and foreign key and check constraint 
+--   
+SELECT oracle_data_type, COUNT(column_name_hide) AS total
+  FROM rif40_columns
+ GROUP BY oracle_data_type
+ ORDER BY 1;
+SELECT nullable, COUNT(column_name_hide) AS total
+  FROM rif40_columns
+ GROUP BY nullable
+ ORDER BY 1;
+ALTER TABLE rif40_columns ALTER COLUMN table_or_view_name_hide 	SET DATA TYPE VARCHAR(40);
+ALTER TABLE rif40_columns ALTER COLUMN column_name_hide 		SET DATA TYPE VARCHAR(40);
+ALTER TABLE rif40_columns DROP COLUMN IF EXISTS table_or_view_name_href RESTRICT;	
+ALTER TABLE rif40_columns DROP COLUMN IF EXISTS column_name_href RESTRICT;	
+ALTER TABLE rif40_columns
+  DROP CONSTRAINT IF EXISTS rif40_columns_pk CASCADE;
+ALTER TABLE rif40_columns
+  DROP CONSTRAINT IF EXISTS table_or_view_name_hide_fk;  
+ALTER TABLE rif40_columns
+  DROP CONSTRAINT IF EXISTS nullable_ck;
+ALTER TABLE rif40_columns			
+  ADD CONSTRAINT rif40_columns_pk PRIMARY KEY (table_or_view_name_hide, column_name_hide);
+ALTER TABLE rif40_columns	
+  ADD CONSTRAINT table_or_view_name_hide_fk 
+		FOREIGN KEY (table_or_view_name_hide) REFERENCES rif40_tables_and_views(table_or_view_name_hide);	  
+ALTER TABLE rif40_columns
+  ADD CONSTRAINT nullable_ck CHECK (nullable IN ('NOT NULL', 'NULL'));
+  
+SELECT table_or_view_name_hide, column_name_hide
+  FROM rif40_columns
+ WHERE table_or_view_name_hide = 'RIF40_COLUMNS'
+   AND column_name_hide        IN ('TABLE_OR_VIEW_NAME_HREF', 'COLUMN_NAME_HREF');
+DELETE FROM rif40_columns
+ WHERE table_or_view_name_hide = 'RIF40_COLUMNS'
+   AND column_name_hide        IN ('TABLE_OR_VIEW_NAME_HREF', 'COLUMN_NAME_HREF');
+\dS+ rif40_columns
+
+--
+-- 3. Remove existing ontology tables (keep icd9/10 until new ontology middleware is ready)
+--
+SELECT table_or_view_name_hide, column_name_hide
+  FROM rif40_columns
+ WHERE table_or_view_name_hide IN ('RIF40_ICD_O_3', 'RIF40_OPCS4', 'RIF40_A_AND_E'); 
+DELETE FROM rif40_columns WHERE table_or_view_name_hide IN ('RIF40_ICD_O_3', 'RIF40_OPCS4', 'RIF40_A_AND_E');
+SELECT class, table_or_view, table_or_view_name_hide
+  FROM rif40_tables_and_views
+ WHERE table_or_view_name_hide IN ('RIF40_ICD_O_3', 'RIF40_OPCS4', 'RIF40_A_AND_E'); 
+DELETE FROM rif40_tables_and_views WHERE table_or_view_name_hide IN ('RIF40_ICD_O_3', 'RIF40_OPCS4', 'RIF40_A_AND_E'); 
+
+--
+-- 4. Remove columns dropped from RIF40_OUTCOMES and T_RIF40_INV_CONDITIONS
+--
+SELECT table_or_view_name_hide, column_name_hide
+  FROM rif40_columns
+ WHERE column_name_hide        IN (
+			'CURRENT_DESCRIPTION_1CHAR',
+			'CURRENT_DESCRIPTION_2CHAR',
+			'CURRENT_DESCRIPTION_3CHAR',
+			'CURRENT_DESCRIPTION_4CHAR',
+			'CURRENT_DESCRIPTION_5CHAR',
+			'CURRENT_LOOKUP_TABLE',
+			'CURRENT_VALUE_1CHAR',
+			'CURRENT_VALUE_2CHAR',
+			'CURRENT_VALUE_3CHAR',
+			'CURRENT_VALUE_4CHAR',
+			'CURRENT_VALUE_5CHAR',
+			'PREVIOUS_DESCRIPTION_1CHAR',
+			'PREVIOUS_DESCRIPTION_2CHAR',
+			'PREVIOUS_DESCRIPTION_3CHAR',
+			'PREVIOUS_DESCRIPTION_4CHAR',
+			'PREVIOUS_DESCRIPTION_5CHAR',
+			'PREVIOUS_LOOKUP_TABLE',
+			'PREVIOUS_VALUE_1CHAR',
+			'PREVIOUS_VALUE_2CHAR',
+			'PREVIOUS_VALUE_3CHAR',
+			'PREVIOUS_VALUE_4CHAR',
+			'PREVIOUS_VALUE_5CHAR')
+   AND table_or_view_name_hide = 'RIF40_OUTCOMES';
+DELETE FROM rif40_columns
+ WHERE column_name_hide        IN (
+			'CURRENT_DESCRIPTION_1CHAR',
+			'CURRENT_DESCRIPTION_2CHAR',
+			'CURRENT_DESCRIPTION_3CHAR',
+			'CURRENT_DESCRIPTION_4CHAR',
+			'CURRENT_DESCRIPTION_5CHAR',
+			'CURRENT_LOOKUP_TABLE',
+			'CURRENT_VALUE_1CHAR',
+			'CURRENT_VALUE_2CHAR',
+			'CURRENT_VALUE_3CHAR',
+			'CURRENT_VALUE_4CHAR',
+			'CURRENT_VALUE_5CHAR',
+			'PREVIOUS_DESCRIPTION_1CHAR',
+			'PREVIOUS_DESCRIPTION_2CHAR',
+			'PREVIOUS_DESCRIPTION_3CHAR',
+			'PREVIOUS_DESCRIPTION_4CHAR',
+			'PREVIOUS_DESCRIPTION_5CHAR',
+			'PREVIOUS_LOOKUP_TABLE',
+			'PREVIOUS_VALUE_1CHAR',
+			'PREVIOUS_VALUE_2CHAR',
+			'PREVIOUS_VALUE_3CHAR',
+			'PREVIOUS_VALUE_4CHAR',
+			'PREVIOUS_VALUE_5CHAR')
+   AND table_or_view_name_hide = 'RIF40_OUTCOMES';
+
+SELECT table_or_view_name_hide, column_name_hide
+  FROM rif40_columns
+ WHERE column_name_hide        = 'CONDITION'
+   AND table_or_view_name_hide = 'T_RIF40_INV_CONDITIONS';
+DELETE FROM rif40_columns
+ WHERE column_name_hide        = 'CONDITION'
+   AND table_or_view_name_hide = 'T_RIF40_INV_CONDITIONS';
+
+--
+-- 5. Add new view: RIF40_NUMERATOR_OUTCOME_COLUMNS
+-- 
+INSERT INTO rif40_tables_and_views (class, table_or_view, comments, table_or_view_name_hide)
+SELECT 'Configuration' AS class, 'VIEW' AS table_or_view, 
+       obj_description(b.oid) AS comments, UPPER(b.relname) AS table_or_view_name_hide
+  FROM pg_class b
+ WHERE b.relname = 'rif40_numerator_outcome_columns'
+   AND b.relkind = 'v'
+   AND NOT EXISTS (SELECT 1 FROM rif40_tables_and_views WHERE table_or_view_name_hide IN ('RIF40_NUMERATOR_OUTCOME_COLUMNS'));  
+
+INSERT INTO rif40_columns (table_or_view_name_hide, column_name_hide, nullable, oracle_data_type, comments)   
+SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_name_hide, 
+      CASE WHEN d.attnotnull THEN 'NOT NULL' ELSE 'NULL' END AS nullable, t.typname AS oracle_data_type,
+       col_description(b.oid, d.attnum) AS comments
+  FROM pg_class b, pg_attribute d, pg_type t
+ WHERE b.relname::regclass = d.attrelid
+   AND d.atttypid = t.oid
+   AND b.relname = 'rif40_numerator_outcome_columns'
+   AND b.relkind = 'v'
+   AND NOT EXISTS (SELECT 1 FROM rif40_columns WHERE table_or_view_name_hide IN ('RIF40_NUMERATOR_OUTCOME_COLUMNS')); 
+
+--
+-- 6. Add new columns for: RIF40_INV_CONDITIONS and T_RIF40_INV_CONDITIONS
+--
+INSERT INTO rif40_columns (table_or_view_name_hide, column_name_hide, nullable, oracle_data_type, comments)   
+SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_name_hide, 
+      CASE WHEN d.attnotnull THEN 'NOT NULL' ELSE 'NULL' END AS nullable, t.typname AS oracle_data_type,
+       col_description(b.oid, d.attnum) AS comments
+  FROM pg_class b, pg_attribute d, pg_type t
+ WHERE b.relname::regclass = d.attrelid
+   AND d.atttypid = t.oid
+   AND b.relname = 'rif40_inv_conditions'
+   AND b.relkind = 'v'
+   AND col_description(b.oid, d.attnum) IS NOT NULL
+   AND d.attname NOT IN (
+		SELECT LOWER(column_name_hide) AS column_name
+ 		  FROM rif40_columns
+		 WHERE table_or_view_name_hide IN ('RIF40_INV_CONDITIONS')); 
+
+INSERT INTO rif40_columns (table_or_view_name_hide, column_name_hide, nullable, oracle_data_type, comments)   		 
+SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_name_hide, 
+      CASE WHEN d.attnotnull THEN 'NOT NULL' ELSE 'NULL' END AS nullable, t.typname AS oracle_data_type,
+       col_description(b.oid, d.attnum) AS comments
+  FROM pg_class b, pg_attribute d, pg_type t
+ WHERE b.relname::regclass = d.attrelid
+   AND d.atttypid = t.oid
+   AND b.relname = 't_rif40_inv_conditions'
+   AND b.relkind = 'r'
+   AND col_description(b.oid, d.attnum) IS NOT NULL
+   AND d.attname NOT IN (
+		SELECT LOWER(column_name_hide) AS column_name
+ 		  FROM rif40_columns
+		 WHERE table_or_view_name_hide IN ('T_RIF40_INV_CONDITIONS')); 
+
+SELECT class, table_or_view, table_or_view_name_hide
+  FROM rif40_tables_and_views
+ WHERE table_or_view_name_hide IN ('RIF40_INV_CONDITIONS', 'T_RIF40_INV_CONDITIONS', 'RIF40_NUMERATOR_OUTCOME_COLUMNS', 'RIF40_COLUMNS', 'RIF40_TABLES_AND_VIEWS');
+SELECT table_or_view_name_hide, column_name_hide
+  FROM rif40_columns
+ WHERE table_or_view_name_hide IN ('RIF40_INV_CONDITIONS', 'T_RIF40_INV_CONDITIONS', 'RIF40_NUMERATOR_OUTCOME_COLUMNS', 'RIF40_COLUMNS', 'RIF40_TABLES_AND_VIEWS');
+ 
+--
+-- 8. RIF40_OUTCOMES triggers
+--
+SELECT * FROM rif40_triggers WHERE table_name = 'RIF40_OUTCOMES';
+DELETE FROM rif40_triggers WHERE table_name = 'RIF40_OUTCOMES';
+
+ALTER TABLE rif40_triggers
+  DROP CONSTRAINT IF EXISTS rif40_triggers_pk CASCADE;
+ALTER TABLE rif40_triggers
+  DROP CONSTRAINT IF EXISTS table_or_view_name_hide_fk;  
+ALTER TABLE rif40_triggers			
+  ADD CONSTRAINT rif40_triggers_pk PRIMARY KEY (table_name, trigger_name);
+ALTER TABLE rif40_triggers	
+  ADD CONSTRAINT table_or_view_name_hide_fk 
+		FOREIGN KEY (table_name) REFERENCES rif40_tables_and_views(table_or_view_name_hide);	 
+		
+--
 -- Check repaired view: rif40_inv_conditions
 --
 SELECT * FROM rif40_inv_conditions LIMIT 20;
 
 --
--- Load new rif40_create_disease_mapping_example()
+-- Check all tables, triggers, columns and comments are present, objects granted to rif_user/rif_manmger, sequences granted
+-- 
+\set VERBOSITY :verbosity
+--\i ../psql_scripts/v4_0_postgres_ddl_checks.sql
+
+--
+-- Load new rif40_create_disease_mapping_example() and rif40_clone_study()
 --
 \i ../PLpgsql/rif40_sm_pkg/rif40_create_disease_mapping_example.sql
+\i ../PLpgsql/rif40_sm_pkg/rif40_clone_study.sql
+
+--
+-- Load new rif40_startup() with ability to disable most checks for middleware testing
+-- Note: must be run once to create TEMPORARY TABLES
+--
+\i ../PLpgsql/rif40_sql_pkg/rif40_startup.sql
 
 --
 -- Testing stop

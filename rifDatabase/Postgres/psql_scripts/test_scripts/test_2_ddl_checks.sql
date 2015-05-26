@@ -145,6 +145,7 @@ SELECT 'TABLE' AS table_or_view, table_name AS table_or_view_name
 --
 -- Check all tables, triggers, columns and comments are present, objects granted to rif_user/rif_manmger, sequences granted
 -- 
+\set VERBOSITY terse
 \i ../psql_scripts/v4_0_postgres_ddl_checks.sql
 
 \echo Test 2 - DDL checks completed OK.

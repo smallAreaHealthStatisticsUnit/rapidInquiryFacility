@@ -61,22 +61,30 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_startup()
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_startup();
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_startup(BOOLEAN);
+
+CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_startup(no_checks BOOLEAN DEFAULT FALSE)
 RETURNS void
 SECURITY INVOKER
 AS $func$
 /*
 
 Function: 	rif40_startup()
-Parameters:	None
+Parameters:	No check boolean; default FALSE (do the checks)
 Returns:	1 
 Description:	Startup functions - for calling from /usr/local/pgsql/etc/psqlrc
 		Postgres has no ON-LOGON trigger
 		Java users will need to run this first
-		Check 1FDW functionality enabled (RIF40_PARAMETER FDWServerName), settings, FOREIGN SERVER setup OK 
+		
+		Check running non privileged, SET search path, setup logging
+		If no checks flag is set, no further checks or object creation carried out
+		
+		Check if FDW functionality enabled (RIF40_PARAMETER FDWServerName), settings, FOREIGN SERVER setup OK 
 		Create if required FDW tables i.e. those numerators in RIF40_NUM_DENOM_ERRORS with no local table of the same name
 
-Create:	 	TABLE t_rif40_num_denom [if required]
+Create:	 	
+        TABLE t_rif40_num_denom [if required]
 		VIEWS rif40_user_version, rif40_num_denom, rif40_num_denom_errors [if required]
 		TEMPORARY TABLE g_rif40_study_areas, g_rif40_comparison_areas
 
@@ -460,6 +468,73 @@ BEGIN
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'search_path not set for: %', USER::VARCHAR);
 	END IF;	
+	
+--
+-- Create temporary tables if required
+--
+	OPEN c2('g_rif40_study_areas');
+	FETCH c2 INTO c2_rec;
+--
+-- Fixed - for multiple logons 
+--
+	IF c2_rec.table_or_view = 'g_rif40_study_areas' THEN
+		g_rif40_study_areas:=TRUE;
+	END IF;
+	CLOSE c2;
+	OPEN c2('g_rif40_comparison_areas');
+	FETCH c2 INTO c2_rec;
+	IF c2_rec.table_or_view = 'g_rif40_comparison_areas' THEN		
+		g_rif40_comparison_areas:=TRUE;
+	END IF;
+	CLOSE c2;
+	IF NOT g_rif40_study_areas THEN
+--		sql_stmt:='DROP TABLE IF EXISTS g_rif40_study_areas';
+--		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='CREATE TEMPORARY TABLE g_rif40_study_areas ('||E'\n'||
+			E'\t'||'study_id		INTEGER 	NOT NULL,'||E'\n'||
+			E'\t'||'area_id			VARCHAR(300) 	NOT NULL,'||E'\n'||
+			E'\t'||'band_id			INTEGER) ON COMMIT PRESERVE ROWS';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON TABLE g_rif40_study_areas 		IS ''Local session cache of links study areas and bands for a given study. Created for high performance in extracts.''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.study_id 	IS ''Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.area_id 	IS ''An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.band_id 	IS ''A band allocated to the area''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Created temporary table: g_rif40_study_areas');
+		i:=i+1;
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_startup', 'Temporary table: g_rif40_study_areas exists');
+	END IF;
+	IF NOT g_rif40_comparison_areas THEN
+--		sql_stmt:='DROP TABLE IF EXISTS g_rif40_comparison_areas';
+--		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='CREATE TEMPORARY TABLE g_rif40_comparison_areas ('||E'\n'||
+			E'\t'||'study_id		INTEGER 	NOT NULL,'||E'\n'||
+			E'\t'||'area_id			VARCHAR(300) 	NOT NULL) ON COMMIT PRESERVE ROWS';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON TABLE g_rif40_comparison_areas 		IS ''Local session cache of links comparison areas and bands for a given study. Created for high performance in extracts.''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN g_rif40_comparison_areas.study_id 	IS ''Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN g_rif40_comparison_areas.area_id 	IS ''An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Created temporary table: g_rif40_comparison_areas');
+		i:=i+1;
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Temporary table: g_rif40_comparison_areas exists');
+	END IF;
+	
+--
+-- If no checks flag is set, no further checks or object creation carried out
+--
+	IF no_checks THEN
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'No checks flag set, no checks or object creation carried out');
+		RETURN;
+	END IF;
+	
 --
 -- Check extensions Required: postgis plpgsql; optional: adminpack, plperl, oracle_fdw, postgis_topology, dblink
 -- 
@@ -560,21 +635,6 @@ BEGIN
 	FETCH c2 INTO c2_rec;
 	IF c2_rec.table_or_view = 't_rif40_num_denom' THEN
 		t_rif40_num_denom:=TRUE;
-	END IF;
-	CLOSE c2;
-	OPEN c2('g_rif40_study_areas');
-	FETCH c2 INTO c2_rec;
---
--- Fixed - for multiple logons 
---
-	IF c2_rec.table_or_view = 'g_rif40_study_areas' THEN
-		g_rif40_study_areas:=TRUE;
-	END IF;
-	CLOSE c2;
-	OPEN c2('g_rif40_comparison_areas');
-	FETCH c2 INTO c2_rec;
-	IF c2_rec.table_or_view = 'g_rif40_comparison_areas' THEN		
-		g_rif40_comparison_areas:=TRUE;
 	END IF;
 	CLOSE c2;
 	OPEN c2('rif40_user_version');
@@ -945,45 +1005,7 @@ E'\n'||
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Created view: rif40_num_denom');
 		i:=i+1;
 	END IF;
-	IF NOT g_rif40_study_areas THEN
---		sql_stmt:='DROP TABLE IF EXISTS g_rif40_study_areas';
---		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='CREATE TEMPORARY TABLE g_rif40_study_areas ('||E'\n'||
-			E'\t'||'study_id		INTEGER 	NOT NULL,'||E'\n'||
-			E'\t'||'area_id			VARCHAR(300) 	NOT NULL,'||E'\n'||
-			E'\t'||'band_id			INTEGER) ON COMMIT PRESERVE ROWS';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON TABLE g_rif40_study_areas 		IS ''Local session cache of links study areas and bands for a given study. Created for high performance in extracts.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.study_id 	IS ''Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.area_id 	IS ''An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.band_id 	IS ''A band allocated to the area''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Created temporary table: g_rif40_study_areas');
-		i:=i+1;
-	ELSE
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_startup', 'Temporary table: g_rif40_study_areas exists');
-	END IF;
-	IF NOT g_rif40_comparison_areas THEN
---		sql_stmt:='DROP TABLE IF EXISTS g_rif40_comparison_areas';
---		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='CREATE TEMPORARY TABLE g_rif40_comparison_areas ('||E'\n'||
-			E'\t'||'study_id		INTEGER 	NOT NULL,'||E'\n'||
-			E'\t'||'area_id			VARCHAR(300) 	NOT NULL) ON COMMIT PRESERVE ROWS';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON TABLE g_rif40_comparison_areas 		IS ''Local session cache of links comparison areas and bands for a given study. Created for high performance in extracts.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN g_rif40_comparison_areas.study_id 	IS ''Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN g_rif40_comparison_areas.area_id 	IS ''An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Created temporary table: g_rif40_comparison_areas');
-		i:=i+1;
-	ELSE
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Temporary table: g_rif40_comparison_areas exists');
-	END IF;
+
 --
 -- FDW  support
 --
@@ -1041,13 +1063,19 @@ END;
 $func$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_sql_pkg.rif40_startup() IS 'Function: 	rif40_startup()
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_startup(BOOLEAN) TO rif40, PUBLIC;
+
+COMMENT ON FUNCTION rif40_sql_pkg.rif40_startup(BOOLEAN) IS 'Function: 	rif40_startup()
 Parameters:	None
 Returns:	1 
 Description:	Startup functions - for calling from /usr/local/pgsql/etc/psqlrc
 		Postgres has no ON-LOGON trigger
 		Java users will need to run this first
-		Check 1FDW functionality enabled (RIF40_PARAMETER FDWServerName), settings, FOREIGN SERVER setup OK 
+						
+		Check running non privileged, SET search path, setup logging
+		If no checks flag is set, no further checks or object creation carried out
+
+		Check if FDW functionality enabled (RIF40_PARAMETER FDWServerName), settings, FOREIGN SERVER setup OK 
 		Create if required FDW tables i.e. those numerators in RIF40_NUM_DENOM_ERRORS with no local table of the same name
 
 Create:	 	TABLE t_rif40_num_denom [if required]

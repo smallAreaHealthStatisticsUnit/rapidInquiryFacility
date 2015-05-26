@@ -264,16 +264,16 @@ endif
 #-
 #- all: Run all completed alter scripts and test [DEFAULT]
 all: $(PLR_DIRS)
-	$(MAKE) -C alter_scripts clean all
+	$(MAKE) -C alter_scripts all
 	$(MAKE) -C test_scripts clean all
 
 #- patch: Run all completed alter scripts on both sahsuland_dev and sahusland	
 patch:
-	$(MAKE) -C alter_scripts clean
-	$(MAKE) -C alter_scripts all
-	$(MAKE) -C alter_scripts clean
-	$(MAKE) -C alter_scripts all PGDATABASE=sahsuland
-
+	$(MAKE) -C alter_scripts clean all
+	$(MAKE) -C test_scripts clean all
+	$(MAKE) -C alter_scripts clean all PGDATABASE=sahsuland
+	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland
+	
 #- dev: Run all alter scripts in development
 dev: $(PLR_DIRS)
 	$(MAKE) -C alter_scripts dev DEBUG_LEVEL=1

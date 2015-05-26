@@ -87,24 +87,6 @@ PSQL_USER?=$(DEFAULT_PSQL_USER)
 USE_PLR?=$(DEFAULT_USE_PLR)
 
 #
-# List of source code
-#
-NO_ALTER_SOURCES=test_1_sahsuland_geography.sql test_2_ddl_checks.sql test_3_user_setup.sql test_4_study_id_1.sql \
-		test_5_clone_delete_test.sql
-SOURCES=$(NO_ALTER_SOURCES) test_6_middleware_1.sql test_7_middleware_2.sql
-
-#
-# Derive targets from sources
-#
-TARGETS=$(SOURCES:.sql=.rpt)
-NO_ALTER_TARGETS=$(NO_ALTER_SOURCES:.sql=.rpt)
-	
-#
-# Phony (i.e. not a file) targets
-#
-.PHONY: all clean recurse
-
-#
 # Run bash on Linux, Powershell on Windows_NT
 #
 OS?=Unknown
@@ -147,12 +129,52 @@ PSQL=psql
 PSQL_FLAGS=-U rif40 -d $(DBNAME) -h $(PGHOST) -w -P pager=off \
 	-v testuser=$(TESTUSER) -v verbosity=$(VERBOSITY) -v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO) \
 	-v pghost=$(PGHOST)
+	
+
 #
-# Target extension depends on source, build rule
+# List of source code
 #
-.SUFFIXES: .sql .rpt
-.sql.rpt:
+NO_ALTER_SOURCES=test_1_sahsuland_geography.sql test_2_ddl_checks.sql test_3_user_setup.sql test_4_study_id_1.sql \
+		test_5_clone_delete_test.sql
+SOURCES=$(NO_ALTER_SOURCES) test_6_middleware_1.sql test_7_middleware_2.sql
+
+#
+# Derive targets from sources
+# Phony (i.e. not a file) targets
+#
+.PHONY: all clean recurse
+ifeq ($(PGDATABASE),sahsuland)
+#
+TARGETS=$(SOURCES:%.sql=%.sahsuland_rpt)
+NO_ALTER_TARGETS=$(NO_ALTER_SOURCES:.sql=.rpt)
+.SUFFIXES: .sql .sahsuland_rpt
+.sql.sahsuland_rpt:
+		$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f test_scripts/$< 
+#
+$(info Database is: sahsuland;  targets: $(TARGETS)) 	
+#	
+else
+ifeq ($(PGDATABASE),sahsuland_dev)
+#
+TARGETS=$(SOURCES:%.sql=%.sahsuland_dev_rpt)
+NO_ALTER_TARGETS=$(NO_ALTER_SOURCES:.sql=.rpt)
+.SUFFIXES: .sql .sahsuland_dev_rpt
+.sql.sahsuland_dev_rpt:
 	$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f test_scripts/$< 
+#
+$(info Database is: sahsuland_dev;  targets: $(TARGETS)) 		
+#	
+else
+$(error Unknown database: $(PGDATABASE))
+#
+#TARGETS=$(SOURCES:%.sql=%.rpt)
+#NO_ALTER_TARGETS=$(NO_ALTER_SOURCES:.sql=.rpt)
+#.SUFFIXES: .sql .rpt
+#.sql.rpt:
+#		$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f test_scripts/$< 	
+#	
+endif
+endif	
 	
 #
 # Targets
@@ -164,7 +186,6 @@ no_alter: $(NO_ALTER_TARGETS)
 #- clean: Remove run logs
 clean: 
 	$(DELETE) $(TARGETS)
-
 
 # Do nothing
 recurse:

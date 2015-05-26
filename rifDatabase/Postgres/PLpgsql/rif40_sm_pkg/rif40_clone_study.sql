@@ -102,7 +102,9 @@ BEGIN
 	FETCH c5clo INTO c5clo_rec;
 	CLOSE c5clo;
 --
-	sql_stmt[7]:='INSERT INTO rif40_inv_conditions(condition) SELECT condition FROM rif40_inv_conditions WHERE study_id = '||study_id::VARCHAR;
+	sql_stmt[7]:='INSERT INTO rif40_inv_conditions(line_number, min_condition, max_condition, predefined_group_name, outcome_group_name) 
+				SELECT line_number, min_condition, max_condition, predefined_group_name, outcome_group_name
+ 				  FROM t_rif40_inv_conditions WHERE study_id = '||study_id::VARCHAR;
 	sql_stmt[6]:='INSERT INTO rif40_inv_covariates(geography, covariate_name, study_geolevel_name, min, max)
 		 SELECT geography, covariate_name, study_geolevel_name, min, max FROM rif40_inv_covariates WHERE study_id = '||study_id::VARCHAR;
 --
@@ -125,7 +127,8 @@ BEGIN
 	sql_stmt[1]:='INSERT INTO rif40_studies(geography, project, study_name, study_type,
  		comparison_geolevel_name, study_geolevel_name, denom_tab,            
  		year_start, year_stop, max_age_group, min_age_group, 
- 		suppression_value, extract_permitted, transfer_permitted) SELECT geography, project, study_name, study_type,
+ 		suppression_value, extract_permitted, transfer_permitted)
+		SELECT geography, project, study_name, study_type,
  		comparison_geolevel_name, study_geolevel_name, denom_tab,            
  		year_start, year_stop, max_age_group, min_age_group, 
  		suppression_value, extract_permitted, transfer_permitted FROM rif40_studies WHERE study_id = '||study_id::VARCHAR;

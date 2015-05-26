@@ -82,7 +82,7 @@ DECLARE
 	new_study_id	INTEGER;
 --
 	rif40_sm_pkg_functions 		VARCHAR[] := ARRAY[
-				'rif40_compute_results', 'rif40_startup', 'rif40_clone_study', 'rif40_reset_study', 'rif40_delete_study'];
+				'rif40_compute_results', 'rif40_startup', 'rif40_clone_study', 'rif40_reset_study', 'rif40_delete_study', 'rif40_ddl'];
 	l_function 			VARCHAR;
 	debug_level		INTEGER;
 BEGIN

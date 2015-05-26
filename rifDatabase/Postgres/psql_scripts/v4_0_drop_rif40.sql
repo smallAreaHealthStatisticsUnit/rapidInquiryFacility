@@ -384,6 +384,7 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl(VARCHAR[]) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.sys_context(VARCHAR, VARCHAR) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.systimestamp(BIGINT) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_startup() CASCADE;
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_startup(BOOLEAN) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl_checks() CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.is_rif40_user_manager_or_schema() CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.is_rif40_manager_or_schema() CASCADE;
