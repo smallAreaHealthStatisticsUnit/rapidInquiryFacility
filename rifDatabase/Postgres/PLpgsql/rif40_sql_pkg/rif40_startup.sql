@@ -385,6 +385,10 @@ DECLARE
 		 WHERE a.proname      = 'rif40_run_study'
 		   AND a.pronamespace = b.oid
 		   AND b.nspname      = USER;
+	c14 CURSOR FOR
+		SELECT *
+		  FROM pg_stat_activity
+		 WHERE pid = pg_backend_pid();
 --
 	c1_rec RECORD;
 	c2_rec RECORD;
@@ -398,6 +402,7 @@ DECLARE
 	c10_rec RECORD;
 	c11_rec RECORD;
 	c12_rec RECORD;
+	c14_rec RECORD;
 --
 	rif40_run_study BOOLEAN:=FALSE;	
 	rif40_num_denom BOOLEAN:=FALSE;	
@@ -526,7 +531,25 @@ BEGIN
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Temporary table: g_rif40_comparison_areas exists');
 	END IF;
-	
+
+--
+-- Set application name to RIF; save original
+--
+	OPEN c14;
+	FETCH c14 INTO c14_rec;
+	CLOSE c14;
+	sql_stmt:='SET rif40.application_name = '''||c14_rec.application_name||''';';
+	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+	IF c14_rec.application_name = 'psql' THEN
+		sql_stmt:='SET application_name = ''RIF (psql)'';';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+--
+-- Need to detect JAVA
+--
+	ELSE
+		sql_stmt:='SET application_name = ''RIF (other/'||c14_rec.application_name||')'';';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+	END IF;
 --
 -- If no checks flag is set, no further checks or object creation carried out
 --
