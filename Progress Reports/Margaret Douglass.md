@@ -3,9 +3,20 @@
 ##2015
 
 ###May
+######26 May
+* Finished a new view: rif40_inv_conditions
+* Discovered that table t_rif40_inv_conditions definition was out-of-date and required creation of sequence objects
+* Experimented with comments in SQL Server.  I will need to spend a boring afternoon porting that code for all the existing rif40 objects.
+	(ex. sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Username' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_investigations', @level2type=N'COLUMN',@level2name=N'username'
+		fn_listextendedproperty (NULL, 'schema', 'rif40', 'view', 'rif40_investigations', 'column', 'inv_id'))
+
+Additional To do:
+	- add comments to tables and views in the extended properties fields
+	
 ######21 May
 * Finished adapting RH's old view code to my new database, but that is only 10 out of 19 views needed for the rif40 schema.  All her code is now integrated the sahsuland_dev new version.
 * Added new views: rif40_user_version, rif40_geolevels (flagged question to discuss with Peter)
+
 To do: write code for remaining views, trigger code for tables that had not been written, all trigger code for views (+ remind myself how to write triggers in T-SQL)
 
 ######20 May
