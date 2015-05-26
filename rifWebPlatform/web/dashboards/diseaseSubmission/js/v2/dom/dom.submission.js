@@ -22,6 +22,7 @@ RIF.dom = (function () {
     menu: {
       frontSubmission: function () {
         return {
+          /* Study name input */
           studyName: $('#studyName'),
           /* Health theme drop down list */
           healthThemeAvailablesEl: $('#healthThemeAvailables'),

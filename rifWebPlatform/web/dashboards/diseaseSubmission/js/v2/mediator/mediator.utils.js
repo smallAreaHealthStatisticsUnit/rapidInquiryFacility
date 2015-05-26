@@ -1,6 +1,8 @@
 RIF.mediator.utils = (function (modelAccessor) {
 
 
+  var _mapExtentSet = false;
+
   var _dialogsStatus = {
     areaSelectionModal: false,
     comparisonArea: false,
@@ -143,6 +145,14 @@ RIF.mediator.utils = (function (modelAccessor) {
 
     getDialogStatus: function (dialog) {
       return _dialogsStatus[dialog];
+    },
+
+    setMapExtentStatus: function (status) {
+      _mapExtentSet = status;
+    },
+
+    getMapExtentStatus: function (dialog) {
+      return _mapExtentSet;
     },
 
     isReadyAndNotify: function (o) {

@@ -5,6 +5,10 @@ RIF['map']['unit-studyArea'] = (function (_dom, menuUtils) {
 
   var _p = {
 
+    setExtent: function (ext) {
+      mapLayer.setExtent(ext);
+    },
+
     updateCounter: function (n) {
       $(_dom.areaCounter).text(n);
     },

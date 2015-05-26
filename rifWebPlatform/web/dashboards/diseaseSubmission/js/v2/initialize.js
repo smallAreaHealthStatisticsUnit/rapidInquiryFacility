@@ -25,6 +25,13 @@ RIF.initialize = (function () {
       }
     },
     events: {
+
+      userLoggedIn: {
+        subscribers: ["menu", "map"],
+        firer: ["mediator"],
+        method: "userLoggedIn"
+      },
+
       /*************************/
       /*************************/
       /**     FRONT MENU      **/
@@ -111,6 +118,17 @@ RIF.initialize = (function () {
         subscribers: ["table"],
         firer: ["mediator"],
         method: "modelToSchemaReady"
+      },
+
+      /*************************/
+      /*************************/
+      /**     MAP EXTENT      **/
+      /*************************/
+      /*************************/
+      setMapExtent: {
+        subscribers: ["map"],
+        firer: ["mediator"],
+        method: "setMapExtent"
       },
 
       /*************************/
@@ -401,8 +419,6 @@ RIF.initialize = (function () {
       },
 
 
-
-
       /**-- SUMMARY TABLE ---**/
 
       //getModelObject: {
@@ -427,6 +443,7 @@ RIF.initialize = (function () {
   return {
     setUp: (function (args) {
       _p.init();
+      _p.mediator.isLoggedIn();
     }())
   };
 

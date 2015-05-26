@@ -30,10 +30,15 @@ RIF.map = (function (settings, publisher) {
           } else {
             var copy = _observable[i],
               copy2 = obj[i];
+            //console.log(i +'----------') 
+            //console.log(copy.toString()) 
+            //console.log(copy2.toString()) 
             _observable[i] = function (args) {
               copy2(args);
               copy(args);
             };
+            console.log(_observable[i].toString())
+
           };
         }
       },

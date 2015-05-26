@@ -2,9 +2,15 @@ RIF.menu['subscriber-frontSubmission'] = (function (controller) {
 
   var subscriber = {
 
+    userLoggedIn: function () {
+      controller.userLoggedIn();
+    },
+
     updateHealthThemeAvailables: function () {},
     updateNumeratorAvailables: function () {},
     updateDenominatorAvailables: function () {},
+
+
 
     showDialog: function (dialog) {
       controller.showDialog(dialog);

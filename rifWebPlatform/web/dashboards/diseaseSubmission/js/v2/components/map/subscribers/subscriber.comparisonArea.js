@@ -2,6 +2,14 @@ RIF['map']['subscriber-comparisonArea'] = (function (controller) {
 
   var subscriber = {
 
+    userLoggedIn: function () {
+      controller.setGlobalMapFullExtent();
+    },
+
+    /*setMapExtent: function(){
+        console.log('setting comparison area extent');
+    },*/
+
     comparisonSelectAtChangeUpdate: function (geolvl) {
       controller.updateGeolevel(geolvl);
     },

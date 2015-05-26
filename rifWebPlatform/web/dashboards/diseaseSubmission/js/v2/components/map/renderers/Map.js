@@ -34,12 +34,12 @@ RIF.Map = (function (mapId) {
     });
   }();
 
-  this.setInitialExtent = function () {
-    _ext = RIF.mapExtent;
+  this.setExtent = function (ext) {
+    _ext = ext;
   };
 
   this.addTiled = function (lyr, geoTable) {
-    this.setInitialExtent();
+    //this.setInitialExtent();
     this.zoomToExtent();
     _map.addLayer(lyr);
   };

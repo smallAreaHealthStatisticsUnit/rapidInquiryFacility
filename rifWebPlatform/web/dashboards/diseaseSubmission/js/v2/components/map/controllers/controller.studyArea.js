@@ -2,6 +2,14 @@ RIF['map']['controller-studyArea'] = (function (unit) {
 
   var _p = {
 
+    setGlobalMapFullExtent: function () {
+      var callback = function () {
+        var ext = this[0];
+        unit.setExtent(ext);
+      };
+      RIF.getFullExtent(callback, []);
+    },
+
     updateGeolevel: function (geolvl) {
       unit.updateGeolevel(geolvl);
     },

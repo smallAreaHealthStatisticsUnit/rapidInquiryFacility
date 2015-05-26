@@ -2,6 +2,32 @@ RIF.mediator['firer-'] = (function () {
 
 
   var firer = {
+
+    isLoggedIn: function () { //Called by Initializer
+      if (RIF.user == null || RIF.user == "") {
+        var msg = "Please <a href='../logIn/'>log in </a> first.";
+        RIF.statusBar(msg, true, 1, true);
+        return;
+      };
+      // Callback stores results in this object hence local copy is necessary to recreate a reference to the firer object
+      var that = this;
+      var clbk = function () {
+        if (this[0]["result"] == "true") {
+          firer.userLoggedIn.call(that);
+        } else {
+          var msg = "User:" + RIF.user + " is  not currently authenticated.<br/>" +
+            "Please <a href='../logIn/'>log in </a>";
+          RIF.statusBar(msg, true, 1, true);
+        };
+      };
+
+      RIF.getIsLoggedIn(clbk, [RIF.user]);
+    },
+
+    userLoggedIn: function () {
+      this.fire('userLoggedIn', []);
+    },
+
     // FIRERS  
     selectAtChangeUpdate: function (geolvl) {
       this.fire('selectAtChangeUpdate', geolvl);

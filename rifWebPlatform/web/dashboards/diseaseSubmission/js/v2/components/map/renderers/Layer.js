@@ -57,8 +57,8 @@ RIF.Layer = (function (mapId, tooltipId, counter) {
     return this.geolevel || 'noGeolevelSelected';
   };
 
-  this.setInitialExtent = function (ext) {
-    _map.setInitialExtent(ext)
+  this.setExtent = function (ext) {
+    _map.setExtent(ext)
   };
 
 

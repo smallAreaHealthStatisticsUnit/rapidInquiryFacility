@@ -165,13 +165,14 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
      */
     isDialogReady: function (dialog) {
       var ready = mediatorUtils.isDialogReady(dialog);
+      var mapExtent = mediatorUtils.getMapExtentStatus();
       if (dialog == 'investigationDialog') {
         if (ready && this[dialog] != 1) {
           this.startInvestigationParameter(_getProperty('getNumerator')); //firer
         };
       } else if (dialog == 'studyAreaDialog') {
         if (ready && this[dialog] != 1) {
-          this.startAreaSelection()
+          this.startAreaSelection();
         }
       } else if (dialog == 'comparisonAreaDialog') {
         if (ready && this[dialog] != 1) { //refactor
