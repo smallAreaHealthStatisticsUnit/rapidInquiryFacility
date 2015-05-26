@@ -770,7 +770,7 @@ SELECT table_or_view_name_hide, column_name_hide
  WHERE table_or_view_name_hide IN ('RIF40_INV_CONDITIONS', 'T_RIF40_INV_CONDITIONS', 'RIF40_NUMERATOR_OUTCOME_COLUMNS', 'RIF40_COLUMNS', 'RIF40_TABLES_AND_VIEWS');
  
 --
--- 8. RIF40_OUTCOMES triggers
+-- 7. RIF40_OUTCOMES trigger removed from rif40_triggers
 --
 SELECT * FROM rif40_triggers WHERE table_name = 'RIF40_OUTCOMES';
 DELETE FROM rif40_triggers WHERE table_name = 'RIF40_OUTCOMES';
@@ -779,6 +779,11 @@ ALTER TABLE rif40_triggers
   DROP CONSTRAINT IF EXISTS rif40_triggers_pk CASCADE;
 ALTER TABLE rif40_triggers
   DROP CONSTRAINT IF EXISTS table_or_view_name_hide_fk;  
+   
+   
+--
+-- 8. Add PK, FK to rif40_triggers
+--
 ALTER TABLE rif40_triggers			
   ADD CONSTRAINT rif40_triggers_pk PRIMARY KEY (table_name, trigger_name);
 ALTER TABLE rif40_triggers	
