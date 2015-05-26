@@ -48,3 +48,25 @@ LIMIT 4;
 
 * topojson_convert.js - add name, gid and area_id as properties; validated link
 
+#### 26th-29th May
+
+Alter script #7 continued.
+
+Clean up rif40_columns, rif40_tables_and_views, rif40_triggers. This is so the DDL tests now pass
+
+Done:
+
+* DDL test suite fixes:
+
+	1. Tidy up RIF40_TABLES_AND_VIEWS table_or_view column, drop column TABLE_OR_VIEW_NAME_HREF, add primary key and check constraint
+	2. Tidy up RIF40_COLUMNS, drop columns: TABLE_OR_VIEW_NAME_HREF, COLUMN_NAME_HREF; add primary and foreign key and check constraint 
+	3. Remove existing ontology tables (keep icd9/10 until new ontology middleware is ready)
+	4. Remove columns dropped from RIF40_OUTCOMES and T_RIF40_INV_CONDITIONS
+	5. Add new view: RIF40_NUMERATOR_OUTCOME_COLUMNS 
+	6. Add new columns for: RIF40_INV_CONDITIONS and T_RIF40_INV_CONDITIONS
+    7. RIF40_OUTCOMES trigger removed from rif40_triggers
+    8. Add primary and foreign keys to rif40_triggers
+	
+* Regression tested OK. Still expecting some problems on wpea-rif1. Still no support for old studies
+* Improved make targets - made database aware
+* RIF startup procedure: added application name support, no check mode (for middleware testing) 
