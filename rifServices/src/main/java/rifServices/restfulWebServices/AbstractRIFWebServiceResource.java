@@ -1253,11 +1253,6 @@ abstract class AbstractRIFWebServiceResource {
 				user, 
 				rifStudySubmission, 
 				null);
-
-			RIFStudySubmissionXMLWriter writer = new RIFStudySubmissionXMLWriter();
-			result = writer.writeToString(user, rifStudySubmission);
-			
-			System.out.println("submitStudy success!");
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();
