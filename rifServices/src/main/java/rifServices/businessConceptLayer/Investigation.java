@@ -2,6 +2,7 @@ package rifServices.businessConceptLayer;
 
 
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
+
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -11,6 +12,8 @@ import rifServices.util.RIFComparisonUtility;
 
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 
 /**
@@ -1049,13 +1052,12 @@ public class Investigation
 			//TOUR_VALIDATION
 			//Ensuring that the title can be converted into something that serves as the 
 			//table name for the investigation
-			String adjustedTableName
-				= fieldValidationUtility.convertToDatabaseTableName(title);
-			if (fieldValidationUtility.isValidDatabaseTableName(adjustedTableName) == false) {
+			
+			if (Pattern.matches("^[a-zA-Z][a-zA-Z0-9_ ]{0,19}$", title) == false) {
 				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"investigation.error.titleContainsIllegalCharacters",
-						title);
+				= RIFServiceMessages.getMessage(
+					"investigation.error.titleContainsIllegalCharacters",
+					title);
 				errorMessages.add(errorMessage);
 			}
 		}
