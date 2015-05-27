@@ -10,6 +10,17 @@ RIF.modelAccessor = (function () {
     "comparisonArea.comparisonArea_selectAt"
   ];
 
+  var _getMandatoryFrontVariables = function () {
+    var _frontMandatory = {
+      studyName: modelAccessor.getStudyName(),
+      healthTheme: modelAccessor.getHealthTheme(),
+      numerator: modelAccessor.getNumerator(),
+      denominator: modelAccessor.getDenominator(),
+      project: modelAccessor.getProject()
+    };
+    return _frontMandatory;
+  };
+
   var _optional = ["covariates", "description"];
 
 
@@ -27,7 +38,6 @@ RIF.modelAccessor = (function () {
     //SETTERS
     setStudyName: function (s) {
       model.studyName = s;
-      mapper(modelAccessor);
     },
     setHealthTheme: function (s) {
       model.healthTheme = s;
@@ -206,6 +216,9 @@ RIF.modelAccessor = (function () {
     },
     getOptionals: function () {
       return _optional;
+    },
+    getMandatoryFrontVariables: function () {
+      return _getMandatoryFrontVariables();
     },
 
     mapToSchema: function () {

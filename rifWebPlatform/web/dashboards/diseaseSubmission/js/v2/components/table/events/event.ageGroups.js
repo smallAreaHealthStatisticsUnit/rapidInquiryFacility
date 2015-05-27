@@ -48,7 +48,6 @@ RIF.table['event-ageGroups'] = (function (_dom, firer) {
           ageLimits: maxageGroupLimits
         }
       };
-      console.log(band);
       firer.ageGroupsChanged(band);
     };
 

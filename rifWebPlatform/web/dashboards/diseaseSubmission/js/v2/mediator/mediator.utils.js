@@ -34,11 +34,11 @@ RIF.mediator.utils = (function (modelAccessor) {
         modelAccessor.unsetInvestigation(i);
       };
     },
-   /* 
-    * Used to map data uniformly
-    * between table and map
-    *
-    */
+    /* 
+     * Used to map data uniformly
+     * between table and map
+     *
+     */
     tableToMap: function (tableSelection) {
       var gids = [],
         area_ids = [],
@@ -56,7 +56,7 @@ RIF.mediator.utils = (function (modelAccessor) {
         name: names
       };
     },
-      
+
     mapToTable: function (tableSelection) {
       var gids = [],
         area_ids = [],
@@ -140,7 +140,7 @@ RIF.mediator.utils = (function (modelAccessor) {
       if (missing.length == 0) {
         return true;
       } else {
-        var msg = 'Before continuing make sure the following parameters are set: <p> ' + missing.join(", ") + '</p>';
+        var msg = 'Before continuing make sure to complete the following: <p> ' + missing.join(", ") + '</p>';
         RIF.statusBar(msg, true, 'notify');
         return false;
       };
@@ -176,7 +176,7 @@ RIF.mediator.utils = (function (modelAccessor) {
 
   };
 
-    
+
   RIF.mediator.validator.call(_utils, modelAccessor);
 
   return _utils;

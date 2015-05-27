@@ -19,8 +19,15 @@ RIF['table']['unit-summary'] = (function (_dom, menuUtils) {
       return selectAt + resolution + areas;
     },
 
-    comparison_area: function () {
-
+    comparison_area: function (o) {
+      var selectAt = "<h5>Select at</h5>" + _getDiv(o.geo_levels.geolevel_select.name);
+      var resolution = "<h5>Resolution</h5>" + _getDiv(o.geo_levels.geolevel_view.name);
+      var mapAreas = o.map_areas.map_area;
+      var areas = "<h5>Map Areas</h5>";
+      for (var i in mapAreas) {
+        areas += _getDiv(mapAreas[i].id + ' - ' + mapAreas[i].label);
+      };
+      return selectAt + resolution + areas;
     },
 
     investigations: function () {
@@ -31,7 +38,7 @@ RIF['table']['unit-summary'] = (function (_dom, menuUtils) {
     calculation_method: function (o) {
       var cMethods = '';
       for (var i in o) {
-        cMethods += '<h5>' + o[i].name + '</h5>';
+        cMethods += '<h5>' + o[i]["code_routine_name"] + '</h5>';
         var params = o[i].parameters.parameter;
         for (var h in params) {
           cMethods += _getDiv(params[h].name + ' : ' + params[h].value);

@@ -370,8 +370,9 @@ input[type="range"]::-ms-thumb {
     margin-left: -o-calc(5% + 10px);
     /* Standard */
     
-    margin-left: calc(5% + 10px);
+    margin-left: calc(3% + 10px);
     height: 50%;
+    margin-top: 7%;
 }
 select {
     width: 120px;
@@ -1194,7 +1195,7 @@ div.aSR:hover,
 }
 #buttons .geoDrops>div {
     float: left;
-    margin-top: 2%;
+    margin-top: 1%;
     font-size: 11px;
     width: 20%;
     margin-right: 5%;
@@ -1285,7 +1286,7 @@ input.dropdownInput:-webkit-input-placeholder {
 }
 #content>div.blocks {
     float: left;
-    margin-right: 5%;
+    margin-right: 4%;
     height: 100%;
     width: 20%;
     text-align: center;
@@ -1348,9 +1349,9 @@ div.headerBlock{
     height: 10%;
     text-align: center;
     background-color: white;
-    color: #999999;
     min-height: 50px;
     padding-top: 5px;
+    font-weight: bold;
 }
 .summary h2 {
     font-size: 12px;
@@ -1492,7 +1493,7 @@ textarea.description {
     height: 90%;
     width: 96% !important;
     z-index: 999999999999;
-    background: url('../images/close.png') no-repeat 100% 2%;
+    background: url('../images/close.png') no-repeat 97% 3%;
 }
 #searchResults .opacityBackground {
     opacity: 0.8;
@@ -1571,11 +1572,12 @@ textarea.description {
     border-top: 1px solid #dbdbdb;
 }
 #parameters > div:first-child {
-    margin-top: 5%;
+    margin-top: 5% !important;
 }
+
 #parameters > div:not(.done) {
     width: 38%;
-    margin: 2% 4% 0 4%;
+    margin: 1% 4% 0 4%;
     display: inline-block;
     color: #999999;
     
