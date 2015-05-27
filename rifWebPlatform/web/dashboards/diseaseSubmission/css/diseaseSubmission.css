@@ -1573,7 +1573,7 @@ textarea.description {
 #parameters > div:first-child {
     margin-top: 5%;
 }
-#parameters > div {
+#parameters > div:not(.done) {
     width: 38%;
     margin: 2% 4% 0 4%;
     display: inline-block;
@@ -1680,18 +1680,19 @@ div.modelsAvailable > div:hover {
 }
 
 .done{
-    padding: 12px 3%;
     background-color: #87CEFA;
     font-size: 20px;
     right: 0;
      border-radius: 10px 0px 00px 10px;
     -moz-border-radius:10px 0px 00px 10px;
     -webkit-border-radius: 10px 0px 00px 10px;
-    margin: 0 !important;
 }
 
 .done a,.done a:hover {
     color:white   
+;
+    display: table-cell;
+    padding: 12px 30px;
 }
 
 #addInvestigation {

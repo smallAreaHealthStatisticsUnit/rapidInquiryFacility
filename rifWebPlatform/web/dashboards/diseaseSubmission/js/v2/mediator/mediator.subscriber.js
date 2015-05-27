@@ -24,7 +24,8 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
     selectAtChanged: function (arg) {
       _setProperty('setStudyAreaSelectAt', arg);
       this.studyAreaSelectionEvent([]);
-      this.studyMapAreaSelectionEvent([])
+      this.studyMapAreaSelectionEvent([]);
+      this.resolutionChanged([]);
       this.selectAtChangeUpdate(arg);
     },
     resolutionChanged: function (arg) {
@@ -62,7 +63,8 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
     comparisonSelectAtChanged: function (arg) {
       _setProperty('setComparisonAreaSelectAt', arg);
       this.comparisonAreaSelectionEvent([]);
-      this.comparisonMapAreaSelectionEvent([])
+      this.comparisonMapAreaSelectionEvent([]);
+      this.comparisonResolutionChanged([]);
       this.comparisonSelectAtChangeUpdate(arg);
     },
     comparisonResolutionChanged: function (arg) {

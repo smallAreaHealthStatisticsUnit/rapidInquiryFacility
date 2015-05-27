@@ -213,13 +213,13 @@ RIF.initialize = (function () {
       /**  COMPARISON AREA    **/
       /*************************/
       /*************************/
-      startComparisonAreaSelection: { //done
+      startComparisonAreaSelection: {
         subscribers: ["menu"],
         firer: ["mediator"],
         method: "startComparisonAreaSelection"
       },
 
-      comparisonSelectAtChanged: { //done
+      comparisonSelectAtChanged: {
         subscribers: ["mediator"],
         firer: ["menu"],
         method: "comparisonSelectAtChanged"
@@ -231,13 +231,13 @@ RIF.initialize = (function () {
         method: "comparisonSelectAtChangeUpdate"
       },
 
-      comparisonResolutionChanged: { //done
+      comparisonResolutionChanged: {
         subscribers: ["mediator"],
         firer: ["menu"],
         method: "comparisonResolutionChanged"
       },
 
-      comparisonMapAreaSelectionEvent: { //done
+      comparisonMapAreaSelectionEvent: {
         subscribers: ["mediator"],
         firer: ["map"],
         method: "comparisonMapAreaSelectionEvent"
@@ -250,13 +250,13 @@ RIF.initialize = (function () {
       },
 
       // COMPARISON AREA - MAP
-      comparisonSyncMapButtonClicked: { //done
+      comparisonSyncMapButtonClicked: {
         subscribers: ["mediator"],
         firer: ["menu"],
         method: "comparisonSyncMapButtonClicked"
       },
 
-      comparisonSyncTableButtonClicked: { //done
+      comparisonSyncTableButtonClicked: {
         subscribers: ["mediator"],
         firer: ["menu"],
         method: "comparisonSyncTableButtonClicked"
@@ -275,7 +275,7 @@ RIF.initialize = (function () {
       },
 
       // COMPARISON AREA - CLEAR ALL SELECTION
-      comparisonClearAreaSelectionEvent: { //done
+      comparisonClearAreaSelectionEvent: {
         subscribers: ["mediator"],
         firer: ["menu"],
         method: "comparisonClearAreaSelectionEvent"
