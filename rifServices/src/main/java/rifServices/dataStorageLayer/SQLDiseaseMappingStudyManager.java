@@ -262,6 +262,9 @@ final class SQLDiseaseMappingStudyManager
 			geography.getName());
 		DiseaseMappingStudyArea diseaseMappingStudyArea
 			= diseaseMappingStudy.getDiseaseMappingStudyArea();
+		GeoLevelSelect geoLevelSelect
+			= diseaseMappingStudyArea.getGeoLevelSelect();
+		
 		checkAreaNonExistentItems(
 			connection,
 			geography.getName(),
@@ -280,9 +283,9 @@ final class SQLDiseaseMappingStudyManager
 			investigationManager.checkNonExistentItems(
 				connection, 
 				geography,
+				geoLevelSelect,
 				investigation);
 		}
-		
 		
 	}
 	

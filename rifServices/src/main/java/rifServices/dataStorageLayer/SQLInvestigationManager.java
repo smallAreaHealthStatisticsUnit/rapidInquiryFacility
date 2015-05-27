@@ -1,11 +1,13 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
+
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
@@ -159,6 +161,7 @@ final class SQLInvestigationManager
 	public void checkNonExistentItems(
 		final Connection connection, 
 		final Geography geography,
+		final GeoLevelSelect geoLevelSelect,
 		final Investigation investigation)
 		throws RIFServiceException {
 		
@@ -167,6 +170,8 @@ final class SQLInvestigationManager
 			= investigation.getCovariates();
 		covariateManager.checkNonExistentCovariates(
 			connection, 
+			geography,
+			geoLevelSelect,
 			covariates);
 
 		//we will not check whether the health codes exist

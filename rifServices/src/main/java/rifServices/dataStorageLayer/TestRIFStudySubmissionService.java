@@ -2,9 +2,12 @@ package rifServices.dataStorageLayer;
 
 
 import rifServices.businessConceptLayer.AbstractCovariate;
+
 import rifServices.businessConceptLayer.AdjustableCovariate;
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.ExposureCovariate;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
@@ -193,6 +196,8 @@ public final class TestRIFStudySubmissionService
 	 */
 	public void checkNonExistentCovariates(
 		final User _user,
+		final Geography _geography,
+		final GeoLevelSelect _geoLevelSelect,
 		final ArrayList<AbstractCovariate> _covariates) 
 		throws RIFServiceException {
 
@@ -203,6 +208,8 @@ public final class TestRIFStudySubmissionService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return;
 		}
+		Geography geography = Geography.createCopy(_geography);
+		GeoLevelSelect geoLevelSelect = GeoLevelSelect.createCopy(_geoLevelSelect);
 		ArrayList<AbstractCovariate> covariates = new ArrayList<AbstractCovariate>();	
 		for (AbstractCovariate _covariate : _covariates) {
 			if (_covariate instanceof AdjustableCovariate) {
@@ -232,6 +239,14 @@ public final class TestRIFStudySubmissionService
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
 				"checkNonExistentCovariates",
+				"geography",
+				geography);
+			fieldValidationUtility.checkNullMethodParameter(
+				"checkNonExistentCovariates",
+				"geoLevelSelect",
+				geoLevelSelect);			
+			fieldValidationUtility.checkNullMethodParameter(
+				"checkNonExistentCovariates",
 				"covariates",
 				covariates);
 
@@ -252,6 +267,8 @@ public final class TestRIFStudySubmissionService
 				= rifServiceResources.getSqlCovariateManager();
 			sqlCovariateManager.checkNonExistentCovariates(
 				connection,
+				geography,
+				geoLevelSelect,
 				covariates); 		
 
 			sqlConnectionManager.reclaimPooledReadConnection(
@@ -618,8 +635,7 @@ public final class TestRIFStudySubmissionService
 			= RIFStudySubmission.createCopy(_rifStudySubmission);
 		
 		SQLConnectionManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();	
-		
+			= rifServiceResources.getSqlConnectionManager();		
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return;
 		}
@@ -667,10 +683,64 @@ public final class TestRIFStudySubmissionService
 		
 	}
 
+	public void dumpDatabaseTableToCSVFile(
+		final User _user,
+		final String tableName,
+		final String outputFilePath)
+		throws Exception {
 
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);		
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();		
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return;
+		}
+		
+		Connection connection = null;
+		try {
+			
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"dumpDatabaseTableToCSVFile",
+				"user",
+				user);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"dumpDatabaseTableToCSVFile",
+				"tableName",
+				tableName);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"dumpDatabaseTableToCSVFile",
+				"outputFilePath",
+				outputFilePath);	
+			
+			//Check for security violations
+			validateUser(user);
 
+			//Delegate operation to a specialised manager class
+			connection 
+				= sqlConnectionManager.assignPooledReadConnection(user);
 
-
-
+			SQLStudyExtractManager sqlStudyExtractManager
+				= rifServiceResources.getSQLStudyExtractManager();
+			sqlStudyExtractManager.dumpDatabaseTableToCSVFile(
+				connection, 
+				tableName,
+				outputFilePath);
+		}
+		catch(RIFServiceException rifServiceException) {
+			logException(
+				user,
+				"dumpDatabaseTableToCSVFile",
+				rifServiceException);	
+		}
+		finally {
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);				
+		}
+	}
 }
 
