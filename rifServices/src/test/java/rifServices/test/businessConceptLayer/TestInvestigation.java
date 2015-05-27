@@ -101,7 +101,7 @@ public final class TestInvestigation
 	 */
 	public TestInvestigation() {
 		masterInvestigation = Investigation.newInstance();
-		masterInvestigation.setTitle("My Investigation of Lung Cancer");
+		masterInvestigation.setTitle("Lung Cancer inv");
 		HealthTheme healthTheme = HealthTheme.newInstance("cancer");
 		masterInvestigation.setHealthTheme(healthTheme);
 
@@ -210,7 +210,6 @@ public final class TestInvestigation
 			differences);
 			
 		for (String difference : differences) {
-			System.out.println("acceptDetectionOfDifferences=="+difference+"==");
 		}
 		assertEquals(2, differences.size());			
 	}
@@ -348,6 +347,22 @@ public final class TestInvestigation
 				RIFServiceError.INVALID_INVESTIGATION, 
 				1);			
 		}
+		
+		try {
+			//should not allow a value that is more than twenty characters long
+			Investigation investigation
+				= Investigation.createCopy(masterInvestigation);
+			investigation.setTitle("This title is more than 20 characters long");
+			investigation.checkErrors(getValidationPolicy());
+			fail();
+		}
+		catch(RIFServiceException rifServiceException) {
+			checkErrorType(
+				rifServiceException, 
+				RIFServiceError.INVALID_INVESTIGATION, 
+				1);			
+		}
+			
 	}
 		
 	/**
@@ -578,7 +593,6 @@ public final class TestInvestigation
 			fail();			
 		}
 		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printErrors();
 			checkErrorType(
 				rifServiceException, 
 				RIFServiceError.INVALID_INVESTIGATION, 
