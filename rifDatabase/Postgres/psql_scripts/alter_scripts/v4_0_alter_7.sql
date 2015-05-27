@@ -573,6 +573,85 @@ SELECT class, table_or_view, COUNT(table_or_view_name_hide) AS total
   FROM rif40_tables_and_views
  GROUP BY class, table_or_view
  ORDER BY 1, 2;
+ 
+--
+-- Prune duplicates from rif40_tables_and_views, rif40_columns, rif40_triggers
+-- (appears to be a build problem on wpea-darwin (Linux reference)
+--
+/*
+SELECT table_or_view_name_hide, COUNT(table_or_view_name_hide) AS total
+  FROM rif40_tables_and_views
+ GROUP BY table_or_view_name_hide
+HAVING COUNT(table_or_view_name_hide) > 1
+ ORDER BY 1, 2;
+WITH RECURSIVE a(ctid, rnt, cnt, table_or_view_name_hide) AS (
+	SELECT ctid, ROW_NUMBER() OVER w AS rnt, COUNT(table_or_view_name_hide) OVER w AS cnt, table_or_view_name_hide
+	  FROM rif40_tables_and_views
+	WINDOW w AS (PARTITION BY table_or_view_name_hide)
+)
+DELETE FROM rif40_tables_and_views 
+ WHERE ctid IN (
+	SELECT ctid 
+	   FROM a 
+	  WHERE rnt != cnt
+        AND cnt > 1)
+RETURNING ctid, table_or_view_name_hide, class;
+
+SELECT table_or_view_name_hide, COUNT(table_or_view_name_hide) AS total
+  FROM rif40_tables_and_views
+ GROUP BY table_or_view_name_hide
+HAVING COUNT(table_or_view_name_hide) > 1
+ ORDER BY 1, 2;
+ 
+SELECT table_or_view_name_hide, column_name_hide, COUNT(table_or_view_name_hide) AS total
+  FROM rif40_columns 
+ GROUP BY table_or_view_name_hide, column_name_hide
+HAVING COUNT(table_or_view_name_hide) > 1
+ ORDER BY 1, 2; 
+WITH RECURSIVE a(ctid, rnt, cnt, table_or_view_name_hide, column_name_hide) AS (
+	SELECT ctid, ROW_NUMBER() OVER w AS rnt, COUNT(table_or_view_name_hide) OVER w AS cnt, table_or_view_name_hide, column_name_hide
+	  FROM rif40_columns
+	WINDOW w AS (PARTITION BY table_or_view_name_hide, column_name_hide)
+)
+DELETE FROM rif40_columns 
+ WHERE ctid IN (
+	SELECT ctid 
+	   FROM a 
+	  WHERE rnt != cnt
+        AND cnt > 1)
+RETURNING ctid, table_or_view_name_hide, column_name_hide;
+SELECT table_or_view_name_hide, column_name_hide, COUNT(table_or_view_name_hide) AS total
+  FROM rif40_columns 
+ GROUP BY table_or_view_name_hide, column_name_hide
+HAVING COUNT(table_or_view_name_hide) > 1
+ ORDER BY 1, 2; 
+
+SELECT table_name, trigger_name, COUNT(table_name) AS total
+  FROM rif40_triggers 
+ GROUP BY table_name, trigger_name
+HAVING COUNT(table_name) > 1
+ ORDER BY 1, 2; 
+
+WITH RECURSIVE a(ctid, rnt, cnt, table_name, trigger_name) AS (
+	SELECT ctid, ROW_NUMBER() OVER w AS rnt, COUNT(table_name) OVER w AS cnt, table_name, trigger_name
+	  FROM rif40_triggers
+	WINDOW w AS (PARTITION BY table_name, trigger_name)
+)
+DELETE FROM rif40_triggers 
+ WHERE ctid IN (
+	SELECT ctid 
+	   FROM a 
+	  WHERE rnt != cnt
+        AND cnt > 1)
+RETURNING ctid, table_name, trigger_name;
+SELECT table_name, trigger_name, COUNT(table_name) AS total
+  FROM rif40_triggers 
+ GROUP BY table_name, trigger_name
+HAVING COUNT(table_name) > 1
+ ORDER BY 1, 2; 
+ 
+ */
+ 
 ALTER TABLE rif40_tables_and_views ALTER COLUMN table_or_view_name_hide 		SET DATA TYPE VARCHAR(40);
 ALTER TABLE rif40_tables_and_views
   DROP CONSTRAINT IF EXISTS class_ck;
