@@ -313,8 +313,9 @@ BEGIN
 -- This will need to be improved to handle V3.1 rif upgraded data
 --
 	IF c2_rec.investigations NOT BETWEEN 0 AND 1 AND c2_rec.lines NOT BETWEEN 0 AND 2 AND c1_rec.column_name = 'condition' THEN
-			RAISE EXCEPTION 'C20199: ERROR! expecting 0 or 1 investigations (%), 0, 1 or 2 lines (%) in t_rif40_inv_conditions',
-				c2_rec.investigations, c2_rec.lines;
+		PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM t_rif40_inv_conditions LIMIT 20', 't_rif40_inv_conditions');
+		RAISE EXCEPTION 'C20199: ERROR! expecting 0 or 1 investigations (%), 0, 1 or 2 lines (%) in t_rif40_inv_conditions',
+			c2_rec.investigations, c2_rec.lines;
 	ELSIF c1_rec.column_name = 'condition' THEN	
 		OPEN c3_a7;
 	    FETCH c3_a7 INTO c3_rec;
@@ -512,10 +513,10 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-ALTER FUNCTION rif40_trg_pkg.trgf_rif40_inv_conditions()
-  OWNER TO rif40;
-COMMENT ON FUNCTION rif40_trg_pkg.trgf_rif40_inv_conditions() IS 'INSTEAD OF trigger for view T_RIF40_INV_CONDITIONS to allow INSERT/UPDATE/DELETE. INSERT/UPDATE/DELETE of another users data is NOT permitted. 
- [NO TABLE/VIEW comments available]';
+			ALTER FUNCTION rif40_trg_pkg.trgf_rif40_inv_conditions()
+			  OWNER TO rif40;
+			COMMENT ON FUNCTION rif40_trg_pkg.trgf_rif40_inv_conditions() IS 'INSTEAD OF trigger for view T_RIF40_INV_CONDITIONS to allow INSERT/UPDATE/DELETE. INSERT/UPDATE/DELETE of another users data is NOT permitted. 
+			 [NO TABLE/VIEW comments available]';
 
 -- Trigger: trg_rif40_inv_conditions on rif40_inv_conditions
 
@@ -535,7 +536,8 @@ COMMENT ON FUNCTION rif40_trg_pkg.trgf_rif40_inv_conditions() IS 'INSTEAD OF tri
 			INSERT INTO rif40_inv_conditions(inv_id, study_id, username, line_number, outcome_group_name, min_condition)
 				VALUES (1, 1, c3_rec.username, 2, 'SAHSULAND_ICD', '162');	
 		ELSE
-			RAISE EXCEPTION 'C20198: ERROR!	t_rif40_inv_conditons has not been upgrade, unexpected condition data';	
+			RAISE EXCEPTION 'C20198: ERROR!	t_rif40_inv_conditons has not been upgrade, unexpected condition data; investigations: %, lines: %, column_name: %', 			
+				c2_rec.investigations::VARCHAR, c2_rec.lines::VARCHAR, c1_rec.column_name::VARCHAR;	
 		END IF;
 	ELSE
 		RAISE INFO 'v4_0_alter_7.sql: t_rif40_inv_conditons already upgraded.';

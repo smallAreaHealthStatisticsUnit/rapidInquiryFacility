@@ -345,7 +345,7 @@ BEGIN
 		ELSE 
 			sql_stmt:=sql_stmt||E'\t'||'   AND MOD(c.'||LOWER(c8_rec.age_sex_group_field_name)||', 100) BETWEEN '||
 				c1_rec.min_age_group::VARCHAR||' AND '||c1_rec.max_age_group::VARCHAR||
-				' /* All valid age groups for denominator */'||E'\n';
+				' /* All valid age groups for denominator I */'||E'\n';
 		END IF;
 		sql_stmt:=sql_stmt||E'\t'||'   AND s.study_id = $1'||E'\t'||E'\t'||'/* Current study ID */'||E'\n';
 --
@@ -426,9 +426,9 @@ BEGIN
 	IF c8_rec.min_age_group = c1_rec.min_age_group AND c8_rec.max_age_group = c1_rec.max_age_group THEN
 		sql_stmt:=sql_stmt||E'\t'||'       /* No age group filter required for denominator */'||E'\n';
 	ELSE 
-		sql_stmt:=sql_stmt||E'\t'||'   AND MOD(c.'||quote_ident(LOWER(c8_rec.age_sex_group_field_name))||', 100) BETWEEN '||
+		sql_stmt:=sql_stmt||E'\t'||'   AND MOD(d1.'||quote_ident(LOWER(c8_rec.age_sex_group_field_name))||', 100) BETWEEN '||
 			c1_rec.min_age_group::VARCHAR||' AND '||c1_rec.max_age_group::VARCHAR||
-			' /* All valid age groups for denominator */'||E'\n';
+			' /* All valid age groups for denominator II */'||E'\n';
 	END IF;
 --
 -- [Add gender filter]
