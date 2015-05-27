@@ -3,6 +3,7 @@ package rifServices.dataStorageLayer;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
 
 
+
 import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
@@ -12,6 +13,7 @@ import rifServices.businessConceptLayer.*;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.*;
 import rifServices.util.RIFLogger;
+import rifServices.util.FieldValidationUtility;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -338,9 +340,7 @@ final class SQLRIFSubmissionManager
 		DiseaseMappingStudy diseaseMappingStudy
 			= (DiseaseMappingStudy) studySubmission.getStudy();
 		try {
-			
-			System.out.println("rif submission manager study 1");
-		
+					
 			Project project = studySubmission.getProject();
 			addGeneralInformationToStudy(
 				connection,
@@ -742,24 +742,27 @@ final class SQLRIFSubmissionManager
 					connection,
 					queryFormatter);
 			
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
 			for (Investigation investigation : investigations) {		
 				System.out.println("5555555555555555555555About to add record to rif40_investigations with inv name=="+investigation.getTitle() + "==");
 				
 				//extracting field values that will be used for the query
+				
 				String invNameParameter
-					= investigation.getTitle();
+					= fieldValidationUtility.convertToDatabaseTableName(investigation.getTitle());
 				String invDescriptionParameter
 					= investigation.getDescription();
 				Sex sex = investigation.getSex();
 				Integer genderCodeParameter = null;
 				if (sex == Sex.MALES) {
-					genderCodeParameter = 1;
+					genderCodeParameter = 0;
 				}
 				else if (sex == Sex.FEMALES) {
-					genderCodeParameter = 2;
+					genderCodeParameter = 1;
 				}
 				else {
-					genderCodeParameter = 3;
+					genderCodeParameter = 2;
 				}
 				
 				NumeratorDenominatorPair ndPair = investigation.getNdPair();
@@ -1046,21 +1049,37 @@ final class SQLRIFSubmissionManager
 		throws SQLException,
 		RIFServiceException {
 		
-		PreparedStatement statement = null;
+		PreparedStatement getMinMaxCovariateValueStatement = null;
+		PreparedStatement addCovariateStatement = null;
 		try {
-			SQLInsertQueryFormatter queryFormatter
-				= new SQLInsertQueryFormatter();
-			queryFormatter.setIntoTable("rif40_inv_covariates");
-			queryFormatter.addInsertField("geography");
-			queryFormatter.addInsertField("covariate_name");
-			queryFormatter.addInsertField("study_geolevel_name");
-			queryFormatter.addInsertField("min");
-			queryFormatter.addInsertField("max");
 		
-			statement 
+			SQLSelectQueryFormatter getMinMaxCovariateValuesQueryFormatter
+				= new SQLSelectQueryFormatter();
+			getMinMaxCovariateValuesQueryFormatter.addSelectField("min");
+			getMinMaxCovariateValuesQueryFormatter.addSelectField("max");
+			getMinMaxCovariateValuesQueryFormatter.addFromTable("rif40_covariates");
+			getMinMaxCovariateValuesQueryFormatter.addWhereParameter("geography");
+			getMinMaxCovariateValuesQueryFormatter.addWhereParameter("geolevel_name");
+			getMinMaxCovariateValuesQueryFormatter.addWhereParameter("covariate_name");
+			
+			SQLInsertQueryFormatter addCovariateQueryFormatter
+				= new SQLInsertQueryFormatter();
+			addCovariateQueryFormatter.setIntoTable("rif40_inv_covariates");
+			addCovariateQueryFormatter.addInsertField("geography");
+			addCovariateQueryFormatter.addInsertField("covariate_name");
+			addCovariateQueryFormatter.addInsertField("study_geolevel_name");
+			addCovariateQueryFormatter.addInsertField("min");
+			addCovariateQueryFormatter.addInsertField("max");
+		
+			getMinMaxCovariateValueStatement
 				= createPreparedStatement(
 					connection,
-					queryFormatter);
+					getMinMaxCovariateValuesQueryFormatter);
+			
+			addCovariateStatement 
+				= createPreparedStatement(
+					connection,
+					addCovariateQueryFormatter);
 			int ithQueryParameter = 1;
 						
 			Geography geography = diseaseMappingStudy.getGeography();
@@ -1073,29 +1092,63 @@ final class SQLRIFSubmissionManager
 
 			ArrayList<AbstractCovariate> covariates
 				= investigation.getCovariates();
+			ResultSet getMinMaxCovariateValueResultSet = null;
 			for (AbstractCovariate covariate : covariates) {
-				statement.setString(
+				
+				logSQLQuery(
+					"getMinMaxCovariateValue", 
+					getMinMaxCovariateValuesQueryFormatter, 
+					geographyName,
+					studyGeoLevelName,
+					covariate.getName().toUpperCase());
+				
+				getMinMaxCovariateValueStatement.setString(1, geographyName);
+				getMinMaxCovariateValueStatement.setString(2, studyGeoLevelName);
+				getMinMaxCovariateValueStatement.setString(3, covariate.getName().toUpperCase());
+				//we can assume that the covariate will exist
+				getMinMaxCovariateValueResultSet
+					= getMinMaxCovariateValueStatement.executeQuery();
+				getMinMaxCovariateValueResultSet.next();
+				Double minimumCovariateValue = getMinMaxCovariateValueResultSet.getDouble(1);
+				Double maximumCovariateValue = getMinMaxCovariateValueResultSet.getDouble(2);
+				getMinMaxCovariateValueResultSet.close();
+				
+				System.out.println("addCovariatesToStudy geographyName=="+geographyName+"==");
+				System.out.println("addCovariatesToStudy name=="+covariate.getName()+"==");
+				System.out.println("addCovariatesToStudy minimumValue=="+minimumCovariateValue+"==");
+				System.out.println("addCovariatesToStudy maximumValue=="+maximumCovariateValue+"==");
+
+				logSQLQuery(
+					"addCovariateValue", 
+					addCovariateQueryFormatter, 
+					geographyName,
+					covariate.getName().toUpperCase(),
+					studyGeoLevelName,
+					String.valueOf(minimumCovariateValue),
+					String.valueOf(maximumCovariateValue));				
+				
+				addCovariateStatement.setString(
 					ithQueryParameter++, 
 					geographyName);
-				statement.setString(
+				addCovariateStatement.setString(
 					ithQueryParameter++,
-					covariate.getName());
-				statement.setString(
+					covariate.getName().toUpperCase());
+				addCovariateStatement.setString(
 					ithQueryParameter++,
 					studyGeoLevelName);
-				statement.setDouble(
+				addCovariateStatement.setDouble(
 					ithQueryParameter++,
-					Double.valueOf(covariate.getMinimumValue()));
-				statement.setDouble(
+					minimumCovariateValue);
+				addCovariateStatement.setDouble(
 					ithQueryParameter++,
-					Double.valueOf(covariate.getMaximumValue()));
-				statement.executeUpdate();
+					maximumCovariateValue);
+				addCovariateStatement.executeUpdate();
 				ithQueryParameter = 1;
 			}
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(addCovariateStatement);
 		}
 	}
 		
