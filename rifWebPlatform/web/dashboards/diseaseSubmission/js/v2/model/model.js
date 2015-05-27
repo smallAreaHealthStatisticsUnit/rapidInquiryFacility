@@ -25,7 +25,7 @@ RIF.model = (function () {
       comparisonArea_selectAt: null
     },
 
-    calculationMethods: [], //[{name:'', parameterProxies:[{"name":"a","value":"5"}]}]  
+    calculationMethods: [], //[{name:'', parameterProxies:[{"code_routine_name":"a","value":"5"}]}]  
   };
 
   return _model;

@@ -130,12 +130,6 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
     calculationMethodsChanged: function (arg) {
       _setProperty('setCalculationMethods', arg);
     },
-    studyDescriptionChanged: function (arg) {
-      _setProperty('setDescription', arg);
-    },
-    isStudyReady: function () {
-      mediatorUtils.isStudyReadyToBeSubmitted()
-    },
     isInvestigationReady: function () {
       if (mediatorUtils.isInvestigationReadyToBeSubmitted()) {
         this.investigationReadyToBeAdded(); //firer
@@ -155,16 +149,29 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
     clearAllParameters: function () {
       mediatorUtils.clearAllParameters()
     },
+    //----------------------------------------------  
+    //----------------------------------------------    
+
+    //STUDY DIALOG
+    studyDescriptionChanged: function (arg) {
+      _setProperty('setDescription', arg);
+    },
+    isStudyReady: function () {
+      var isReady = mediatorUtils.isStudyReadyToBeSubmitted();
+      if (isReady) {
+        var modelToSchema = mediatorUtils.mapToSchema();
+        console.log(JSON.stringify(modelToSchema));
+      };
+    },
 
     mapModelToSchema: function () {
       var modelToSchema = mediatorUtils.mapToSchema();
       this.modelToSchemaReady(modelToSchema);
     },
+    //----------------------------------------------  
+    //----------------------------------------------    
 
-
-    /*
-     *  Check if dialog is ready to be opened
-     */
+    //Check if dialog is ready to be opened
     isDialogReady: function (dialog) {
       var ready = mediatorUtils.isDialogReady(dialog);
       var mapExtent = mediatorUtils.getMapExtentStatus();
@@ -191,11 +198,7 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
       };
     },
 
-
-    /*
-     *  Check if all parameters for the specific
-     *  dialog have been selected
-     */
+    //Check if all parameters for the specific dialog have been selected
     isDialogSelectionComplete: function (dialog) {
       var isReady = mediatorUtils.isDialogSelectionComplete(dialog);
       var previousState = {

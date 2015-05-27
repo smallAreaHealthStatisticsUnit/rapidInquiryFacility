@@ -25,7 +25,7 @@ RIF.modelMapper = (function (modelAccessor) {
           "description": "",
           "geography": {
             "name": RIF.geography,
-            "description": "xxx"
+            "description": "Geography description cannot be edited from web interface"
           },
 
           "disease_mapping_study_area": {
@@ -36,8 +36,8 @@ RIF.modelMapper = (function (modelAccessor) {
               "geolevel_view": {
                 name: accessor.getStudyAreaResolution()
               },
-              "geolevel_area": '',
-              "geolevel_to_map": ''
+              "geolevel_to_map": accessor.getStudyAreaResolution(),
+              "geolevel_area": ''
             },
             "map_areas": {
               "map_area": accessor.getStudyAreas()
@@ -52,8 +52,8 @@ RIF.modelMapper = (function (modelAccessor) {
               "geolevel_view": {
                 name: accessor.getComparisonAreaResolution()
               },
-              "geolevel_area": '',
-              "geolevel_to_map": ''
+              "geolevel_to_map": accessor.getComparisonAreaResolution(),
+              "geolevel_area": ''
             },
             "map_areas": {
               "map_area": accessor.getComparisonAreas()
@@ -65,6 +65,7 @@ RIF.modelMapper = (function (modelAccessor) {
               var invs = accessor.getInvestigations();
               var investigations = [];
               for (var l in invs) {
+                var currentInv = invs[l];
                 var inv = {};
                 //inv[ "-id" ] = parseInt( l ) + 1;
                 inv["title"] = 'investigation_' + (parseInt(l) + 1);
@@ -73,21 +74,21 @@ RIF.modelMapper = (function (modelAccessor) {
                   "description": ""
                 };
                 inv["numerator_denominator_pair"] = {
-                  "numerator_table_name": invs[l]["numerator"] || accessor.getNumerator(),
+                  "numerator_table_name": currentInv["numerator"] || accessor.getNumerator(),
                   "numerator_table_description": "",
-                  "denominator_table_name": invs[l]["denominator"] || accessor.getDenominator(),
+                  "denominator_table_name": currentInv["denominator"] || accessor.getDenominator(),
                   "denominator_table_description": ""
                 };
-                var ageGroups = accessor.getAgeGroups();
+                var ageGroups = currentInv.ageGroups;
                 inv["age_band"] = {
                   "lower_age_group": {
-                    "id": "",
+                    "id": "n/a",
                     "name": ageGroups.lower.name,
                     "lower_limit": ageGroups.lower.ageLimits.split('-')[0],
                     "upper_limit": ageGroups.lower.ageLimits.split('-')[1]
                   },
                   "upper_age_group": {
-                    "id": "",
+                    "id": "n/a",
                     "name": ageGroups.upper.name,
                     "lower_limit": ageGroups.upper.ageLimits.split('-')[0],
                     "upper_limit": ageGroups.upper.ageLimits.split('-')[1]
@@ -112,15 +113,15 @@ RIF.modelMapper = (function (modelAccessor) {
                   };
                 }();
                 inv["year_range"] = {
-                  "lower_bound": accessor.getMinYear(),
-                  "upper_bound": accessor.getMaxYear()
+                  "lower_bound": currentInv.minYear,
+                  "upper_bound": currentInv.maxYear
                 };
 
                 inv["years_per_interval"] = 1;
                 inv["covariates"] = function () {
                   var mappedCovs = {};
                   mappedCovs.adjustable_covariate = [];
-                  var covs = accessor.getCovariates();
+                  var covs = currentInv.covariates;
                   var l = (covs != null) ? covs.length : 0;
                   while (l--) {
                     mappedCovs.adjustable_covariate.push({
@@ -141,7 +142,7 @@ RIF.modelMapper = (function (modelAccessor) {
         }
       }
     };
-    console.log(JSON.stringify(_mapper));
+
     return _mapper;
 
   };

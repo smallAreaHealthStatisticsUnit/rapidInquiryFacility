@@ -9,7 +9,6 @@ RIF.mediator.validator = (function (modelAccessor) {
   };
 
   var _dialogsComplete = {
-    "Main menu": false,
     "Study area": false,
     "Comparison area": false,
     "Investigation parameters": false,
@@ -25,7 +24,7 @@ RIF.mediator.validator = (function (modelAccessor) {
     return _dialogsStatus[dialog];
   };
 
-  this.isStudyReadyToBeSubmitted = function () {
+  /*this.isStudyReadyToBeSubmitted = function () {
     var mandatory = modelAccessor.getMandatoryVariablesNames()
     l = mandatory.length,
     toBeSet = [];
@@ -37,8 +36,26 @@ RIF.mediator.validator = (function (modelAccessor) {
     };
     this.displayMissingParameters(toBeSet);
     return (toBeSet.length > 0) ? false : true;
-  };  
-      
+  };*/
+
+  this.isStudyReadyToBeSubmitted = function () {
+    var mandatory = modelAccessor.getMandatoryFrontVariables(),
+      toBeSet = [];
+    for (var l in mandatory) {
+      var isSet = mandatory[l];
+      if (isSet == null || jQuery.isEmptyObject(isSet)) {
+        toBeSet.push(l);
+      }
+    };
+    for (var i in _dialogsComplete) {
+      if (!_dialogsComplete[i]) {
+        toBeSet.push(i);
+      };
+    };
+    this.displayMissingParameters(toBeSet);
+    return (toBeSet.length > 0) ? false : true;
+  };
+
   this.isDialogReady = function (dialog) {
     switch (dialog) {
     case 'studyAreaDialog':
@@ -62,34 +79,24 @@ RIF.mediator.validator = (function (modelAccessor) {
     case 'areaSelectionModal':
       var isComplete = this.isStudyAreaSelectionComplete(dialog);
       _dialogsComplete['Study area'] = isComplete;
-      return isComplete;        
+      return isComplete;
     case 'comparisonAreaSelectionModal':
-      var isComplete =  this.isComparisonAreaSelectionComplete(dialog);
+      var isComplete = this.isComparisonAreaSelectionComplete(dialog);
       _dialogsComplete['Comparison area'] = isComplete;
-      return isComplete;           
+      return isComplete;
     case 'parametersModal':
-      var isComplete =  this.isInvestigationSelectionComplete(dialog);
+      var isComplete = this.isInvestigationSelectionComplete(dialog);
       _dialogsComplete['Investigation parameters'] = isComplete;
-      return isComplete;        
+      return isComplete;
     case 'statModal':
-      var isComplete =  this.isStatSelectionComplete(dialog);
+      var isComplete = this.isStatSelectionComplete(dialog);
       _dialogsComplete['Statistical parameters'] = isComplete;
-      return isComplete;        
+      return isComplete;
     default:
       return false;
     };
   };
 
-  /*getFrontMenuVariables: function () {
-      var front = {
-        studyName: modelAccessor.getStudyName(),
-        healthTheme: modelAccessor.getHealthTheme(),
-        numerator: modelAccessor.getNumerator(),
-        denominator: modelAccessor.getDenominator()
-      };
-
-      return front;
-  },*/
 
   this.isOptional = function (p) {
     var optional = modelAccessor.getOptionals();
