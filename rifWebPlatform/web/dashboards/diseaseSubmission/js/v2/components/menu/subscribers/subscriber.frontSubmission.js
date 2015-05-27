@@ -10,7 +10,9 @@ RIF.menu['subscriber-frontSubmission'] = (function (controller) {
     updateNumeratorAvailables: function () {},
     updateDenominatorAvailables: function () {},
 
-
+    /*updateCovariates: function () {
+        controller.getCovariates();
+    },*/
 
     showDialog: function (dialog) {
       controller.showDialog(dialog);

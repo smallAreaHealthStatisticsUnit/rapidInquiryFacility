@@ -16,11 +16,11 @@ RIF.menu['controller-investigationParameters'] = (function (unit) {
       RIF.getYearRange(clbk, [val]);
     },
 
-    getCovariates: function () {
+    getCovariates: function (selectAt, resoution) {
       var clbk = function () {
         unit.getCovariates(this);
       };
-      RIF.getCovariates(clbk, null);
+      RIF.getCovariates(clbk, [selectAt, resoution]);
     },
 
     getGender: function () {
@@ -31,9 +31,9 @@ RIF.menu['controller-investigationParameters'] = (function (unit) {
       RIF.getSexes(clbk, null);
     },
 
-    startInvestigationParameter: function (num) {
+    startInvestigationParameter: function (num, selectAt, resoution) {
       _p.getYears(num);
-      _p.getCovariates();
+      _p.getCovariates(selectAt, resoution);
       _p.getGender();
     },
 

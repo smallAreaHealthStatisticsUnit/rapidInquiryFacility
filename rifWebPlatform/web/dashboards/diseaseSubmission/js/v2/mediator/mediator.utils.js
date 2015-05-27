@@ -1,6 +1,5 @@
 RIF.mediator.utils = (function (modelAccessor) {
 
-  var _mapExtentSet = false;
 
   var _utils = {
 
@@ -72,14 +71,6 @@ RIF.mediator.utils = (function (modelAccessor) {
         area_id: area_ids,
         name: names
       };
-    },
-
-    setMapExtentStatus: function (status) {
-      _mapExtentSet = status;
-    },
-
-    getMapExtentStatus: function (dialog) {
-      return _mapExtentSet;
     },
 
     isReadyAndNotify: function (o) {

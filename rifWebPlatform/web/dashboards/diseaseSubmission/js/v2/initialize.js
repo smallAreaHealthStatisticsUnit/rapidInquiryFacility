@@ -331,6 +331,12 @@ RIF.initialize = (function () {
         method: "covariatesChanged"
       },
 
+      /*updateCovariates: {
+        subscribers: ["menu"],
+        firer: ["mediator"],
+        method: "updateCovariates"
+      },*/
+
       isInvestigationReady: {
         subscribers: ["mediator"],
         firer: ["table", "menu"],

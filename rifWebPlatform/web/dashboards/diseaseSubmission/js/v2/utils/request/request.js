@@ -153,7 +153,9 @@
       /*This may need to be amended: geoLevelSelectName? geoLevelToMapName? */
       getCovariates: function (myCallback, params) {
         var msg = "Retrieving Covariates",
-          args = 'geoLevelSelectName=LEVEL1&geoLevelToMapName=LEVEL3';
+          selectAt = params[0],
+          resolution = params[1],
+          args = 'geoLevelSelectName=' + selectAt + '&geoLevelToMapName=' + resolution;
         xhr('studySubmission/getCovariates?' + args, myCallback, msg, 'application/json');
       },
 

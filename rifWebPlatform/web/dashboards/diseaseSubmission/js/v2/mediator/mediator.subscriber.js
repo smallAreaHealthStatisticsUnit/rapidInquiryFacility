@@ -11,6 +11,7 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
     },
     healthThemeChanged: function (arg) {
       _setProperty('setHealthTheme', arg);
+      //get Num Denom pairs    
     },
     numeratorChanged: function (arg) {
       _setProperty('setNumerator', arg);
@@ -174,10 +175,12 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
     //Check if dialog is ready to be opened
     isDialogReady: function (dialog) {
       var ready = mediatorUtils.isDialogReady(dialog);
-      var mapExtent = mediatorUtils.getMapExtentStatus();
       if (dialog == 'investigationDialog') {
         if (ready && this[dialog] != 1) {
-          this.startInvestigationParameter(_getProperty('getNumerator')); //firer
+          var num = _getProperty('getNumerator');
+          var selectAt = _getProperty('getStudyAreaSelectAt');
+          var resolution = _getProperty('getStudyAreaResolution');
+          this.startInvestigationParameter(num, selectAt, resolution); //firer
         };
       } else if (dialog == 'studyAreaDialog') {
         if (ready && this[dialog] != 1) {

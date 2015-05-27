@@ -44,8 +44,12 @@ RIF.mediator['firer-'] = (function () {
       this.fire('showDialog', dialog);
     },
 
-    startInvestigationParameter: function (num) {
-      this.fire('startInvestigationParameter', num);
+    startInvestigationParameter: function (num, selectAt, resolution) {
+      this.fire('startInvestigationParameter', [{
+        "numerator": num,
+        "selectAt": selectAt,
+        "resolution": resolution
+      }]);
     },
 
     startAreaSelection: function () {
@@ -76,6 +80,10 @@ RIF.mediator['firer-'] = (function () {
     clearStudySelection: function () {
       this.fire('clearStudySelection', []);
     },
+
+    /*updateCovariates: function () {
+      this.fire('updateCovariates', []);
+    },*/
 
     //Comparison Area  
     comparisonSelectAtChangeUpdate: function (geolvl) {
