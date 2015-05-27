@@ -380,6 +380,8 @@ final class SQLCovariateManager
 	
 	public void checkNonExistentCovariates(
 		final Connection connection,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect,
 		final ArrayList<AbstractCovariate> covariates)
 		throws RIFServiceException {
 				
@@ -393,7 +395,8 @@ final class SQLCovariateManager
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.setFromTable("rif40_covariates");
 			queryFormatter.setLookupKeyFieldName("covariate_name");
-
+			queryFormatter.addWhereParameter("geography");
+			queryFormatter.addWhereParameter("geolevel_name");
 		
 			logSQLQuery(
 				"checkNonExistentCovariates - example query",
@@ -406,15 +409,20 @@ final class SQLCovariateManager
 					queryFormatter);
 			
 			for (AbstractCovariate covariate : covariates) {
+				
 				statement.setString(1, covariate.getName());
+				statement.setString(2, geography.getName());
+				statement.setString(3, geoLevelSelect.getName());	
+				
 				resultSet = statement.executeQuery();
 				if (resultSet.next() == false) {
 					String recordType = covariate.getRecordType();
 					String errorMessage
 						= RIFServiceMessages.getMessage(
-							"general.validation.nonExistentRecord",
-							recordType,
-							covariate.getDisplayName());
+							"covariateManager.error.noCovariateFound",
+							covariate.getName(),
+							geography.getName(),
+							geoLevelSelect.getName());
 
 					RIFServiceException rifServiceException
 						= new RIFServiceException(
