@@ -1,14 +1,6 @@
 RIF.mediator.utils = (function (modelAccessor) {
 
-
   var _mapExtentSet = false;
-
-  var _dialogsStatus = {
-    areaSelectionModal: false,
-    comparisonArea: false,
-    parametersModal: false,
-    statModal: false
-  };
 
   var _utils = {
 
@@ -29,21 +21,6 @@ RIF.mediator.utils = (function (modelAccessor) {
       };
     },
 
-    /*filterUniqueStudyAreas: function (currentSelection, newSelection) {
-      var newLength = newSelection.length;
-      while (newLength--) {
-        var id = newSelection[newLength]['id'];
-        for (var k = 0, l = currentSelection.length; k < l; ++k) {
-          if (currentSelection[k]['id'] == id) {
-            currentSelection.splice(k);
-            l--;
-          };
-        };
-      };
-      return currentSelection.concat(newSelection);
-    },*/
-
-
     addCurrentInvestigation: function () {
       var parametersClone = RIF.utils.extend(modelAccessor.parameters, {});
       var invs = modelAccessor.getInvestigations();
@@ -55,15 +32,13 @@ RIF.mediator.utils = (function (modelAccessor) {
       var invs = modelAccessor.getInvestigations();
       if (typeof invs[i] === 'object') {
         modelAccessor.unsetInvestigation(i);
-        console.log('Investigation ' + i + ' removed')
       };
     },
-
-    /* 
-     * Used to map data uniformly
-     * between table and map
-     *
-     */
+   /* 
+    * Used to map data uniformly
+    * between table and map
+    *
+    */
     tableToMap: function (tableSelection) {
       var gids = [],
         area_ids = [],
@@ -81,6 +56,7 @@ RIF.mediator.utils = (function (modelAccessor) {
         name: names
       };
     },
+      
     mapToTable: function (tableSelection) {
       var gids = [],
         area_ids = [],
@@ -96,55 +72,6 @@ RIF.mediator.utils = (function (modelAccessor) {
         area_id: area_ids,
         name: names
       };
-    },
-
-    /* 
-     * Check if Modal dialog is ready to be opened
-     */
-    isDialogReady: function (dialog) {
-      switch (dialog) {
-      case 'studyAreaDialog':
-        return true;
-      case 'comparisonAreaDialog':
-        return true;
-      case 'investigationDialog':
-        return _utils.isInvestigationDialogReady();
-      case 'statDialog':
-        return true;
-      default:
-        return false;
-      };
-    },
-
-    /* 
-     * Check if Modal dialog is ready to be opened
-     */
-    isDialogSelectionComplete: function (dialog) {
-      switch (dialog) {
-      case 'areaSelectionModal':
-        return _utils.isStudyAreaSelectionComplete(dialog);
-      case 'comparisonAreaSelectionModal':
-        return _utils.isComparisonAreaSelectionComplete(dialog);
-      case 'parametersModal':
-        return _utils.isInvestigationSelectionComplete(dialog);
-      case 'statModal':
-        return _utils.isStatSelectionComplete(dialog);
-      default:
-        return false;
-      };
-    },
-
-
-    /* 
-     * Model utils
-     *
-     */
-    setDialogStatus: function (dialog, status) {
-      _dialogsStatus[dialog] = status;
-    },
-
-    getDialogStatus: function (dialog) {
-      return _dialogsStatus[dialog];
     },
 
     setMapExtentStatus: function (status) {
@@ -198,17 +125,6 @@ RIF.mediator.utils = (function (modelAccessor) {
       return (toComplete.length > 0) ? false : true;
     },
 
-    getFrontMenuVariables: function () {
-      var front = {
-        studyName: modelAccessor.getStudyName(),
-        healthTheme: modelAccessor.getHealthTheme(),
-        numerator: modelAccessor.getNumerator(),
-        denominator: modelAccessor.getDenominator()
-      };
-
-      return front;
-    },
-
     isOptional: function (p) {
       var optional = modelAccessor.getOptionals();
       var l = optional.length;
@@ -218,10 +134,6 @@ RIF.mediator.utils = (function (modelAccessor) {
         };
       }
       return false;
-    },
-
-    mapAreaObjectProperties: function () {
-
     },
 
     displayMissingParameters: function (missing) {
@@ -234,91 +146,38 @@ RIF.mediator.utils = (function (modelAccessor) {
       };
     },
 
-    isStudyReadyToBeSubmitted: function () {
-      var mandatory = modelAccessor.getMandatoryVariablesNames()
-      l = mandatory.length,
-      toBeSet = [];
-      while (l--) {
-        var isSet = modelAccessor.get(mandatory[l]);
-        if (isSet == null || jQuery.isEmptyObject(isSet)) {
-          toBeSet.push(mandatory[l]);
-        }
-      };
-      this.displayMissingParameters(toBeSet);
-      return (toBeSet.length > 0) ? false : true;
+    mapToSchema: function () {
+      return modelAccessor.mapToSchema()
     },
 
-    isInvestigationReadyToBeSubmitted: function () {
-      var params = modelAccessor.getParameters();
-      for (var i in params) {
-        if (i == 'healthOutcomes') {
-          for (var h in params[i]) {
-            if (params[i][h].length == 0) {
-              modelAccessor.unsetParameter(i, h);
-            };
-          };
-          if (jQuery.isEmptyObject(params[i])) {
+    getGIDs: function (areas) {
+      return areas.map(function (o) {
+        return o.gid;
+      });
+      return gids;
+    },
 
-            return false;
-          };
-        } else if (i != 'covariates' && params[i] == null) {
+    areEqual: function (arr1, arr2) {
+      arr1.sort();
+      arr2.sort();
+      if (arr1.length !== arr2.length)
+        return false;
+      for (var i = arr1.length; i--;) {
+        if (arr1[i] !== arr2[i])
           return false;
-        }
-      };
-      return true
-    },
-
-    /*
-     * The following methods are invoked  when a tree is clicked
-     * Some dialogs require certain parameter to be set before opening
-     */
-
-    isInvestigationDialogReady: function () {
-      var front = {
-        studyName: modelAccessor.getStudyName(),
-        healthTheme: modelAccessor.getHealthTheme(),
-        numerator: modelAccessor.getNumerator(),
-        denominator: modelAccessor.getDenominator()
-      };
-      var ready = this.isReadyAndNotify(front);
-      return ready;
-    },
-    isstudyAreaDialogReady: function () {},
-    isComparisonAreaDialogReady: function () {},
-    isStatDialogReady: function () {},
-
-
-    /*
-     * SELECTION COMPLETE CHECKS
-     * The following methods are invoked  when a dialog is closed
-     * Check if all parameters have been set for each dialog
-     * Which then allows to singnal the completion of a specific dialog
-     * And change of background image
-     *
-     */
-    isStudyAreaSelectionComplete: function (dialog) {
-      var studyArea = modelAccessor.getStudyArea();
-      var r = this.isReady(studyArea);
-      return r;
-    },
-    isInvestigationSelectionComplete: function (dialog) {
-      var ready = !jQuery.isEmptyObject(modelAccessor.getInvestigations());
-      return ready;
-    },
-    isComparisonAreaSelectionComplete: function (dialog) {
-      var compArea = modelAccessor.getStudyArea();
-      var r = this.isReady(compArea);
-      return r;
-    },
-
-    isStatSelectionComplete: function (dialog) {
+      }
       return true;
     },
 
-    mapToSchema: function () {
-      return modelAccessor.mapToSchema()
+    syncMapTableNotification(dialog) {
+      $('#' + dialog).show();
+      RIF.statusBar('Please syncronize map with table or table with map', true, 'notify');
     }
+
   };
+
+    
+  RIF.mediator.validator.call(_utils, modelAccessor);
 
   return _utils;
 
