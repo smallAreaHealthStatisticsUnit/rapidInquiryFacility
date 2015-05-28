@@ -57,6 +57,13 @@ RIF.initialize = (function () {
         firer: ["menu"],
         method: "denominatorChanged"
       },
+
+      updateNumDenom: {
+        subscribers: ["menu"],
+        firer: ["mediator"],
+        method: "updateNumDenom"
+      },
+
       logOut: {
         subscribers: ["menu"],
         firer: ["menu"],

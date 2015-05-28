@@ -7,8 +7,13 @@ RIF.menu['subscriber-frontSubmission'] = (function (controller) {
     },
 
     updateHealthThemeAvailables: function () {},
+
+    // This may need to be refactored to allow health theme rather than description as parameter   
+    updateNumDenom: function (description) {
+      controller.getNumDenom(description)
+    },
+
     /*
-    updateNumeratorDenominatorAvailables: function () {},
     updateCovariates: function () {
         controller.getCovariates();
     },

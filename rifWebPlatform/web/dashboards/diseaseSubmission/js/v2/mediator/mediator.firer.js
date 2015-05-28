@@ -44,6 +44,10 @@ RIF.mediator['firer-'] = (function () {
       this.fire('showDialog', dialog);
     },
 
+    updateNumDenom: function (healthThemeDesc) {
+      this.fire('updateNumDenom', [healthThemeDesc]);
+    },
+
     startInvestigationParameter: function (num, selectAt, resolution) {
       this.fire('startInvestigationParameter', [{
         "numerator": num,

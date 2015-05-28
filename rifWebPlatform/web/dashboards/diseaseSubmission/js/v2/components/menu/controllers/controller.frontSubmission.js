@@ -11,12 +11,12 @@ RIF.menu['controller-frontSubmission'] = (function (unit) {
         var themes = [this[0].name],
           description = [this[0].description];
         unit.getHealthThemes(themes, description);
-        _p.getNumDenom(description);
-
       };
 
       RIF.getHealthThemes(clbk, null);
     },
+
+    // This may need to be refactored to allow health theme rather than description as parameter to getNumeratorDenominator  
     getNumDenom: function (desc) {
       var clbk = function () {
         var num = [this[0].numeratorTableName],

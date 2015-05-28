@@ -6,7 +6,7 @@ RIF.menu['unit-frontSubmission'] = (function (_dom, menuUtils) {
     },
     getHealthThemes: function (themes, description) {
       var el = _dom['healthThemeAvailablesEl'];
-      menuUtils.dropDownInputText(themes, el);
+      menuUtils.dropDownInputText( /*themes*/ description, el);
     },
     getNumDenom: function (num, denom) {
       menuUtils.dropDownInputText(num, _dom['numeratorAvailablesEl']);

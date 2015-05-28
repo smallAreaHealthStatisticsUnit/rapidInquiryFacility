@@ -10,7 +10,14 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
       _setProperty('setStudyName', arg);
     },
     healthThemeChanged: function (arg) {
-      _setProperty('setHealthTheme', arg);
+      var current = _getProperty('getHealthTheme');
+      if (typeof current == 'undefined' || current == null) {
+        current = '';
+      };
+      if (current.replace(/ /g, '') != arg.replace(/ /g, '')) {
+        this.updateNumDenom(arg);
+        _setProperty('setHealthTheme', arg);
+      };
     },
     numeratorChanged: function (arg) {
       _setProperty('setNumerator', arg);
