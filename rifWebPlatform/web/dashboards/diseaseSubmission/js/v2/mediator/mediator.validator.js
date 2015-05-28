@@ -24,20 +24,6 @@ RIF.mediator.validator = (function (modelAccessor) {
     return _dialogsStatus[dialog];
   };
 
-  /*this.isStudyReadyToBeSubmitted = function () {
-    var mandatory = modelAccessor.getMandatoryVariablesNames()
-    l = mandatory.length,
-    toBeSet = [];
-    while (l--) {
-      var isSet = modelAccessor.get(mandatory[l]);
-      if (isSet == null || jQuery.isEmptyObject(isSet)) {
-        toBeSet.push(mandatory[l]);
-      }
-    };
-    this.displayMissingParameters(toBeSet);
-    return (toBeSet.length > 0) ? false : true;
-  };*/
-
   this.isStudyReadyToBeSubmitted = function () {
     var mandatory = modelAccessor.getMandatoryFrontVariables(),
       toBeSet = [];
@@ -119,9 +105,10 @@ RIF.mediator.validator = (function (modelAccessor) {
           };
         };
         if (jQuery.isEmptyObject(params[i])) {
-
           return false;
         };
+      } else if (i == 'ageGroups' && params[i] == null) {
+        return false;
       } else if (i != 'covariates' && params[i] == null) {
         return false;
       }

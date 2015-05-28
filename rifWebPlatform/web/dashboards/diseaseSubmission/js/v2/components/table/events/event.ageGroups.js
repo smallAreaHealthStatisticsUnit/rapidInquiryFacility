@@ -28,6 +28,7 @@ RIF.table['event-ageGroups'] = (function (_dom, firer) {
     if (!ageGroupClicked) {
       return;
     };
+    var band = null;
     var rows = $('#ageGroupsWrapper .rowSelected');
     if (rows.length > 0) {
       var max = rows[0],
@@ -38,7 +39,7 @@ RIF.table['event-ageGroups'] = (function (_dom, firer) {
         minageGroupName = $(min).find('.ageGroupName').text(),
         minageGroupLimits = $(min).find('.ageBand').text();
 
-      var band = {
+      band = {
         lower: {
           name: minageGroupName,
           ageLimits: minageGroupLimits
@@ -48,8 +49,10 @@ RIF.table['event-ageGroups'] = (function (_dom, firer) {
           ageLimits: maxageGroupLimits
         }
       };
-      firer.ageGroupsChanged(band);
+
     };
+
+    firer.ageGroupsChanged(band);
 
     isMouseDown = false;
     ageGroupClicked = false;

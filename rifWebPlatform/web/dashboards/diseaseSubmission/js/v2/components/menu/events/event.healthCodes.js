@@ -8,7 +8,7 @@ RIF.menu['event-healthCodes'] = (function (_dom, firer) {
     healthSelection = {}; //{ taxonomy: null , description: null, code: null }
 
   var clearIcdCodes = function () {
-    $('.' + _dom.icdSelection).removeClass(_dom.icdSelection).css('background-color', 'white');
+    $(_dom.tree).find("div").removeClass(_dom.icdSelection);
     $(_dom.hiddenIcdSelection).empty();
   };
 

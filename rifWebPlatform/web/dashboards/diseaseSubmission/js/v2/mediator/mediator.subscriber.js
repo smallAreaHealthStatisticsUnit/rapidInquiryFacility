@@ -125,10 +125,7 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
       };
       _setProperty('setCovariates', arg);
     },
-    ageGroupsChanged: function (arg) {
-      if (arg.length <= 0) {
-        arg = null;
-      };
+    ageGroupsChanged: function (arg) { //when no age groups are slected make sure to pass a null arg
       _setProperty('setAgeGroups', arg);
     },
     projectChanged: function (arg) {
