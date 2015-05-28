@@ -10,7 +10,9 @@ This month is dedicated to completing scripts necessary to create all tables and
 * Completed draft functions needed for rif40_num_denom (no logging or good error handling): 
 	rif40_object_resolve, rif40_num_denom_validate, rif40_auto_indirect_checks
 * Reviewed how SQL Server deals with cursors.
+* Started going through the tables to add comments, and I have found several tables that have been changed significantly since we began porting the database.  I need an easy way to compare all of Peter's tables/columns to mine in order to spot the differences.  Stopped commenting at rif40_outcomes
 
+Still to do: logs/error handling, more comments
 
 ######27 May
 * Continuing to work on new views: rif40_numerator_outcome_columns (done), rif40_num_denom (still in progress)
