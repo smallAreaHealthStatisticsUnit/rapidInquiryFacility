@@ -1046,6 +1046,7 @@ final class SQLRIFContextManager
 					geoLevelIDQueryFormatter);
 			geoLevelIDStatement.setString(1, geography.getName());
 			geoLevelIDStatement.setString(2, geoLevelSelect.getName());
+			geoLevelIDResultSet = geoLevelIDStatement.executeQuery();
 			if (geoLevelIDResultSet.next() == false) {
 				//ERROR: no views available
 				String errorMessage
