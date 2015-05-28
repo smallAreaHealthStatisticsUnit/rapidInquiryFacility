@@ -3,14 +3,22 @@
 ##2015
 
 ###May
+This month is dedicated to completing scripts necessary to create all tables and views in the rif40 schema (+ the required functions and objects needed for the creation of tables and views). 
+
+######28 May
+* All views are now done!  Finished rif40_num_denom, corrected typos in rif40_numerator_outcome_columns, wrote rif40_num_denom_errors and rif40_parameters
+* Completed draft functions needed for rif40_num_denom (no logging or good error handling): 
+	rif40_object_resolve, rif40_num_denom_validate, rif40_auto_indirect_checks
+* Reviewed how SQL Server deals with cursors.
+
 
 ######27 May
-* Continuing to work on new views: simple rif40_numerator_outcome_columns, complicated rif40_num_denom
+* Continuing to work on new views: rif40_numerator_outcome_columns (done), rif40_num_denom (still in progress)
 * All the functions needed for rif40_num_denom are rather complicated.  I put together a draft of rif_is_object_resolvable that will be refined once I sort out logging and error handling.
 * Experimenting with customized error messages and how RH handled errors.  She added new customized error messages to the SQL Server master system tables.  There does not appear to be a way to have schema-level customized error messages.  Are system-wide customized error messages wise?  (what if other tools in db were already using those codes?)
 * Looking into logging options.  Custom logging seems to be an SSIS thing, not standard T-SQL/SQL Server.  Take the easy approach of manually inserting rows into a rif40_log table?  But then database rollbacks would also rollback log of what went wrong.
 
-To do: decide how to deal with logs and error messages to be consistent with what the middleware expects
+To do: decide how to deal with logs and error messages to be consistent with what the middleware expects and what Peter produces in Postgres
 
 ######26 May
 * Finished new views: rif40_inv_conditions, rif40_projects, rif40_studies.  Starting rif40_num_denom
@@ -25,7 +33,7 @@ Additional To do: add comments to tables and views in the extended properties fi
 * Finished adapting RH's old view code to my new database, but that is only 10 out of 19 views needed for the rif40 schema.  All her code is now integrated the sahsuland_dev new version.
 * Added new views: rif40_user_version, rif40_geolevels (flagged question to discuss with Peter)
 
-To do: write code for remaining views, trigger code for tables that had not been written, all trigger code for views (+ remind myself how to write triggers in T-SQL)
+To do: write code for remaining views, trigger code for tables that had not been written, all trigger code for views 
 
 ######20 May
 * Finally moved all my current code onto Github and reorganized Raunaque's old code so it can be out of the way while still accessible.
