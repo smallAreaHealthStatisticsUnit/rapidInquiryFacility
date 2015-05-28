@@ -1,7 +1,3 @@
-/*
-Cannot be run until rif40_num_denom is complicated (which is complicated!)
-*/
-
 USE [sahsuland_dev]
 GO
 
@@ -37,13 +33,13 @@ CREATE VIEW [rif40].[rif40_numerator_outcome_columns] AS
         CASE
             WHEN d.name IS NOT NULL THEN 'true'
             ELSE 'false'
-        END AS columnn_exists,
+        END AS column_exists,
     e.value AS column_comment
    FROM a
      LEFT JOIN sys.columns d
-            ON lower(d.name) = lower(a.field_name) and Object_ID = object_id(a.numer_tab)
+            ON lower(d.name) = lower(a.field_name) and Object_ID = object_id(a.table_name)
 	LEFT JOIN  sys.extended_properties e
-		ON e.name='MS_Description' and major_id=object_id(a.numer_tab)
+		ON e.name='MS_Description' and major_id=object_id(a.table_name)
 		and e.minor_id=0
 GO
 
@@ -66,7 +62,7 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Outcome Group 
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Numerator table outcome field name, e.g. ICD_SAHSU_01, ICD_SAHSU' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_numerator_outcome_columns', @level2type=N'COLUMN',@level2name=N'field_name'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Outcome Group multiple field count (0-99). E.g if NULL then field is ICD_SAHSU_01; if 20 then fields are ICD_SAHSU_01 to ICD_SAHSU_20. Field numbers are assumed to tbe left padded to 2 characters with &quot;0&quot; and preceeded by an &quot;_&quot;' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_numerator_outcome_columns', @level2type=N'COLUMN',@level2name=N'multiple_field_count IS'
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Outcome Group multiple field count (0-99). E.g if NULL then field is ICD_SAHSU_01; if 20 then fields are ICD_SAHSU_01 to ICD_SAHSU_20. Field numbers are assumed to tbe left padded to 2 characters with &quot;0&quot; and preceeded by an &quot;_&quot;' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_numerator_outcome_columns', @level2type=N'COLUMN',@level2name=N'multiple_field_count'
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Numerator table outcome columnn exists (''yes'' or ''no'')' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_numerator_outcome_columns', @level2type=N'COLUMN',@level2name=N'column_exists'
 GO
