@@ -136,7 +136,7 @@ WITH a AS (
 	  FROM rif40_num_denom z, rif40_tables a, rif40_table_outcomes b, rif40_outcome_groups c
 	 WHERE a.table_name         = z.numerator_table
 	   AND a.table_name         = b.numer_tab
-
+       AND c.outcome_group_name = b.outcome_group_name
 )
 SELECT a.*, 
        CASE WHEN d.attrelid IS NOT NULL THEN true ELSE false END columnn_exists,
