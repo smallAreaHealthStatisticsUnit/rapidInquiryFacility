@@ -11,7 +11,6 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
     },
     healthThemeChanged: function (arg) {
       _setProperty('setHealthTheme', arg);
-      //get Num Denom pairs    
     },
     numeratorChanged: function (arg) {
       _setProperty('setNumerator', arg);

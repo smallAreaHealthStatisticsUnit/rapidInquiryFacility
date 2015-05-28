@@ -7,12 +7,12 @@ RIF.menu['subscriber-frontSubmission'] = (function (controller) {
     },
 
     updateHealthThemeAvailables: function () {},
-    updateNumeratorAvailables: function () {},
-    updateDenominatorAvailables: function () {},
-
-    /*updateCovariates: function () {
+    /*
+    updateNumeratorDenominatorAvailables: function () {},
+    updateCovariates: function () {
         controller.getCovariates();
-    },*/
+    },
+    */
 
     showDialog: function (dialog) {
       controller.showDialog(dialog);
