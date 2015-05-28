@@ -39,6 +39,7 @@ t_rif40_studies.sql needs t_rif40_projects, t_rif40_geolevels, rif40_tables, rif
 t_rif40_study_sql_log.sql needs t_rif40_studies
 t_rif40_study_sql needs t_rif40_study_sql_log
 
+view rif40_num_num needs many functions to be built
 view rif40_numerator_outcome_columns needs view rif40_num_denom
 
 http://stackoverflow.com/questions/3523365/execute-sql-server-scripts?rq=1

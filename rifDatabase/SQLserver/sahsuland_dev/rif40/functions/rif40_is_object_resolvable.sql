@@ -116,10 +116,10 @@ where  subentity_name = N'' ) -- you have some sort of permissions
 			RETURN 0; -- no permission to access
 			
 	RETURN 0;
-END;
+END
+GO
 
-
-GRANT EXECUTE ON rif40.rif40_is_object_resolvable(varchar) TO rif40
+GRANT EXECUTE ON rif40.rif40_is_object_resolvable(varchar) TO public
 GO
 
 /*
