@@ -31,12 +31,15 @@ GO
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[rif40_outcome_groups] TO [rif_manager]
 GO
 
-/*
-COMMENT ON TABLE rif40_outcome_groups
-  IS 'Collection of Health outcomes into logical groups. E.g. Single variable ICD9 and 10';
-COMMENT ON COLUMN rif40_outcome_groups.outcome_type IS 'Outcome type: ICD, ICD-0 or OPCS';
-COMMENT ON COLUMN rif40_outcome_groups.outcome_group_name IS 'Outcome Group Name. E.g SINGLE_VARIABLE_ICD';
-COMMENT ON COLUMN rif40_outcome_groups.outcome_group_description IS 'Outcome Group Description. E.g. &quot;Single variable ICD&quot;';
-COMMENT ON COLUMN rif40_outcome_groups.field_name IS 'Outcome field name, e.g. ICD_SAHSU_01, ICD_SAHSU';
-COMMENT ON COLUMN rif40_outcome_groups.multiple_field_count IS 'Outcome Group multiple field count (0-99). E.g if NULL then field is ICD_SAHSU_01; if 20 then fields are ICD_SAHSU_01 to ICD_SAHSU_20. Field numbers are assumed to tbe left padded to 2 characters with &quot;0&quot; and preceeded by an &quot;_&quot;';
-*/
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Collection of Health outcomes into logical groups. E.g. Single variable ICD9 and 10' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_outcome_groups'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Outcome type: ICD, ICD-0 or OPCS', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_outcome_groups', @level2type=N'COLUMN',@level2name=N'outcome_type'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Outcome Group Name. E.g SINGLE_VARIABLE_ICD', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_outcome_groups', @level2type=N'COLUMN',@level2name=N'outcome_group_name'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Outcome Group Description. E.g. &quot;Single variable ICD&quot;', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_outcome_groups', @level2type=N'COLUMN',@level2name=N'outcome_group_description'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Outcome field name, e.g. ICD_SAHSU_01, ICD_SAHSU', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_outcome_groups', @level2type=N'COLUMN',@level2name=N'field_name'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Outcome Group multiple field count (0-99). E.g if NULL then field is ICD_SAHSU_01; if 20 then fields are ICD_SAHSU_01 to ICD_SAHSU_20. Field numbers are assumed to tbe left padded to 2 characters with &quot;0&quot; and preceeded by an &quot;_&quot;', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_outcome_groups', @level2type=N'COLUMN',@level2name=N'multiple_field_count'
+GO

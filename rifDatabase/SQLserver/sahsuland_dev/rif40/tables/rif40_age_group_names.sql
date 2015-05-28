@@ -22,3 +22,10 @@ GRANT SELECT, REFERENCES ON  [rif40].[rif40_age_group_names] TO public
 GO
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[rif40_age_group_names] TO [rif_manager]
 GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF Age group names' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_age_group_names'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'AGE_GROUP_ID', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_age_group_names', @level2type=N'COLUMN',@level2name=N'age_group_id'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Age Group Name', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_age_group_names', @level2type=N'COLUMN',@level2name=N'age_group_name'
+GO

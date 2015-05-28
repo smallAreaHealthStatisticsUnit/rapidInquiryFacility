@@ -8,14 +8,18 @@ BEGIN
 END
 GO
 
+
 CREATE TABLE [rif40].[rif40_columns](
-	[table_or_view_name_hide] [varchar](30), 
-	[column_name_hide] [varchar] (30),
-	[table_or_view_name_href] [varchar] (522),
-	[column_name_href] [varchar](847), 
+	[table_or_view_name_hide] [varchar](40), 
+	[column_name_hide] [varchar] (40),
 	[nullable] [varchar](8),
 	[oracle_data_type] [varchar](189),
-	[comments] [varchar](4000)
+	[comments] [varchar](4000),
+  CONSTRAINT rif40_columns_pk PRIMARY KEY (table_or_view_name_hide, column_name_hide),
+  CONSTRAINT table_or_view_name_hide_fk FOREIGN KEY ([table_or_view_name_hide])
+      REFERENCES [rif40].[rif40_tables_and_views] ([table_or_view_name_hide])
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT nullable_ck CHECK (nullable = 'NOT NULL' OR nullable = 'NULL')
 ) ON [PRIMARY]
 GO
 
@@ -24,14 +28,15 @@ GO
 GRANT SELECT ON [rif40].[rif40_columns] TO [rif_manager]
 GO
 
-/*
-COMMENT ON TABLE rif40_columns
-  IS 'RIF40 Columns';
-COMMENT ON COLUMN rif40_columns.table_or_view_name_hide IS 'Table name';
-COMMENT ON COLUMN rif40_columns.column_name_hide IS 'Column name';
-COMMENT ON COLUMN rif40_columns.table_or_view_name_href IS 'Table name (web version)';
-COMMENT ON COLUMN rif40_columns.column_name_href IS 'Column name (web version)';
-COMMENT ON COLUMN rif40_columns.nullable IS 'Nullable';
-COMMENT ON COLUMN rif40_columns.oracle_data_type IS 'Oracle data type';
-COMMENT ON COLUMN rif40_columns.comments IS 'Comments';
-*/
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF40 Columns' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_columns'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Table name', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_columns', @level2type=N'COLUMN',@level2name=N'table_or_view_name_hide'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Column name', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_columns', @level2type=N'COLUMN',@level2name=N'column_name_hide'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Nullable', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_columns', @level2type=N'COLUMN',@level2name=N'nullable'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Oracle data type', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_columns', @level2type=N'COLUMN',@level2name=N'oracle_data_type'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Comments', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_columns', @level2type=N'COLUMN',@level2name=N'comments'
+GO

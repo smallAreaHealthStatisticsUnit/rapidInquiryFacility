@@ -1,3 +1,7 @@
+/*
+29 May 2015: This table no longer appears in Postgres rif40 table list.  Was it moved or deleted?
+*/
+
 USE [sahsuland_dev]
 GO
 
@@ -20,3 +24,5 @@ GO
 
 GRANT SELECT ON [rif40].[rif40_a_and_e] TO public
 GO
+
+

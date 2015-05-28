@@ -30,15 +30,17 @@ GO
 GRANT SELECT ON [rif40].[rif40_error_messages] TO public
 GO
 
-/*
-COMMENT ON TABLE rif40_error_messages
-  IS 'RIF error messages resulting from schema violations';
-COMMENT ON COLUMN rif40_error_messages.error_code IS 'Error code';
-COMMENT ON COLUMN rif40_error_messages.tag IS 'Contextual tag for error code';
-COMMENT ON COLUMN rif40_error_messages.table_name IS 'Table raising error. If NULL, procedure or other code.';
-COMMENT ON COLUMN rif40_error_messages.cause IS 'Cause of error';
-COMMENT ON COLUMN rif40_error_messages.action IS 'Action to resolve error';
-COMMENT ON COLUMN rif40_error_messages.message IS 'Error message';
-*/
-
---triggers
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF error messages resulting from schema violations' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_error_messages'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Error code', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_error_messages', @level2type=N'COLUMN',@level2name=N'error_code'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Contextual tag for error code', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_error_messages', @level2type=N'COLUMN',@level2name=N'tag'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Table raising error. If NULL, procedure or other code.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_error_messages', @level2type=N'COLUMN',@level2name=N'table_name'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Cause of error', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_error_messages', @level2type=N'COLUMN',@level2name=N'cause'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Action to resolve error', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_error_messages', @level2type=N'COLUMN',@level2name=N'action'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Error message', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_error_messages', @level2type=N'COLUMN',@level2name=N'message'
+GO

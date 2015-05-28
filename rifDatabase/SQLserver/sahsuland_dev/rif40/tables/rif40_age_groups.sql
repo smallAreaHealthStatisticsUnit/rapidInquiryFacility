@@ -33,3 +33,16 @@ GO
 CREATE UNIQUE INDEX [rif40_age_groups_pk2]
 ON [rif40].[rif40_age_groups] (age_group_id)
 GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF age groups' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_age_groups'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'AGE_GROUP_ID', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_age_groups', @level2type=N'COLUMN',@level2name=N'age_group_id'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Offset', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_age_groups', @level2type=N'COLUMN',@level2name=N'offset'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Low age', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_age_groups', @level2type=N'COLUMN',@level2name=N'low_age'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'High age', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_age_groups', @level2type=N'COLUMN',@level2name=N'high_age'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Fieldname', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_age_groups', @level2type=N'COLUMN',@level2name=N'fieldname'
+GO

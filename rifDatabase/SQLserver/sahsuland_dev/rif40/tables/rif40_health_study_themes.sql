@@ -24,3 +24,9 @@ GO
 GRANT SELECT, REFERENCES ON [rif40].[rif40_health_study_themes] TO public
 GO
 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF health study themes' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_health_study_themes'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Theme', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_health_study_themes', @level2type=N'COLUMN',@level2name=N'theme'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Description', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_health_study_themes', @level2type=N'COLUMN',@level2name=N'description'
+GO

@@ -38,15 +38,18 @@ GO
 GRANT SELECT ON [rif40].[rif40_covariates] TO [rif_user]
 GO
 
-/*
-COMMENT ON TABLE rif40_covariates
-  IS 'RIF multiple covariates';
-COMMENT ON COLUMN rif40_covariates.geography IS 'Geography (e.g EW2001)';
-COMMENT ON COLUMN rif40_covariates.geolevel_name IS 'Name of geolevel. This will be a column name in the numerator/denominator tables';
-COMMENT ON COLUMN rif40_covariates.covariate_name IS 'Covariate name. This will be a column name in RIF40_GEOLEVELS.COVARIATE_TABLE';
-COMMENT ON COLUMN rif40_covariates.min IS 'Minimum value';
-COMMENT ON COLUMN rif40_covariates.max IS 'Maximum value';
-COMMENT ON COLUMN rif40_covariates.type IS 'TYPE of covariate (1=integer score/2=continuous variable). Min &lt; max  max/min precison is appropriate to type. Continuous variables are not currently supported. Integer scores can be a binary variable 0/1 or an NTILE e.g. 1..5 for a quintile.';
-*/
--- + trigger
---EXEC rif40_covariates_trigger.sql
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF multiple covariates' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_covariates'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Geography (e.g EW2001)', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_covariates', @level2type=N'COLUMN',@level2name=N'geography'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Name of geolevel. This will be a column name in the numerator/denominator tables', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_covariates', @level2type=N'COLUMN',@level2name=N'geolevel_name'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Covariate name. This will be a column name in RIF40_GEOLEVELS.COVARIATE_TABLE', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_covariates', @level2type=N'COLUMN',@level2name=N'covariate_name'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Minimum value', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_covariates', @level2type=N'COLUMN',@level2name=N'min'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Maximum value', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_covariates', @level2type=N'COLUMN',@level2name=N'max'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'TYPE of covariate (1=integer score/2=continuous variable). Min &lt; max  max/min precison is appropriate to type. Continuous variables are not currently supported. Integer scores can be a binary variable 0/1 or an NTILE e.g. 1..5 for a quintile.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_covariates', @level2type=N'COLUMN',@level2name=N'type'
+GO
+
