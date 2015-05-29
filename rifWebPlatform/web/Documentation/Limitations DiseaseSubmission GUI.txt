@@ -1,0 +1,27 @@
+29/05/2015
+- Limitations RIF 4.0 Javascript GUI
+
+	1. Within the investigation modal dialog, parameters will not update should numerator/denominator selection change or study area resolution/selectAt change.
+	   --- Solve as follows:
+		       Add update parameter's button in investigation modal dialog, preferably next to the add investigation button.  
+			   This  event should propagate from menu unit "investigationParameters" to mediator and then back to menu unit "investigationParameters".
+	   --- Parameters affected:
+		       Max/Min years available ( dependent on num/denom selection)
+               Age groups available    ( dependent on num/denom selection)	   
+			   Covariates available    ( dependent on study area resolution/selectAt selection)
+			   
+	2. Study Geography parameter hardcode to 'SAHSU'
+	   --- Solve as follows:
+		       Create an extra drop down in the front menus following the custom drop down style adopted consistently across the diseasSubmission dahsboard. 
+			   Implement javascript code within the 'frontSubmission' unit, handle selection and variable event change to set the RIF.geography global variable.
+			   
+	3. Replace health theme description parameter in getNumeratorDenominator request method with health theme name 
+	   --- Solve as follows:
+		       Wait for middleware and database to be ready for the change in parameter.
+			   Store health theme name somewhere eithr in the HTML or javascript, each dropdown entry follows the same html format:
+			   <div><a href="#"> some text </a></div>
+			   An idea could be to have the name in the href attribute as "#aGivenName" then retrieve that upon click and pass it on to Mediator. Right now mediator receives the text between the <a> tag, which is the Health theme description.
+			   
+	4. Map clicks stop being captured in Chrome occasionally when inspector/debugger is open, 
+	   --- Solve as follows:
+		       Close and reopen Chrome.	  
