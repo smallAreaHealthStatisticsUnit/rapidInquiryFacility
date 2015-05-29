@@ -174,7 +174,7 @@
       getAgeGroups: function (myCallback, params) {
         var msg = "Retrieving Age groups",
           numerator = params[0],
-          args = 'geographyName=SAHSU&numeratorTableName=' + numerator;
+          args = 'numeratorTableName=' + numerator;
         xhr('getAgeGroups?' + args, myCallback, msg, 'application/json');
       },
 
