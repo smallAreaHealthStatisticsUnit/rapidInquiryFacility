@@ -26,7 +26,7 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
       _setProperty('setDenominator', arg);
     },
     //--- END OF FRONT  
-
+    /*-------------------------------------------------------------------*/
     //---STUDY AREA 
     selectAtChanged: function (arg) {
       _setProperty('setStudyAreaSelectAt', arg);
@@ -65,6 +65,7 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
       this.syncStudyAreaTable(mappedData);
     },
     //---END OF STUDY AREA 
+    /*-------------------------------------------------------------------*/
 
     //COMPARISON AREA 
     comparisonSelectAtChanged: function (arg) {
@@ -100,8 +101,7 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
       this.comparisonMapAreaSelectionEvent([]);
       this.comparisonClearStudySelection();
     },
-    //----------------------------------------------  
-    //----------------------------------------------  
+    /*-------------------------------------------------------------------*/
 
     //INVESTIGATION PARAMETERS
     healthSelectionChanged: function (arg) {
@@ -153,9 +153,7 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
     clearAllParameters: function () {
       mediatorUtils.clearAllParameters()
     },
-    //----------------------------------------------  
-    //----------------------------------------------    
-
+    /*-------------------------------------------------------------------*/
     //STUDY DIALOG
     studyDescriptionChanged: function (arg) {
       _setProperty('setDescription', arg);
@@ -164,16 +162,16 @@ RIF.mediator['subscriber-'] = (function (mediatorUtils) {
       var isReady = mediatorUtils.isStudyReadyToBeSubmitted();
       if (isReady) {
         var modelToSchema = mediatorUtils.mapToSchema();
+        RIF.submitStudy(modelToSchema);
+
         console.log(JSON.stringify(modelToSchema));
       };
     },
-
     mapModelToSchema: function () {
       var modelToSchema = mediatorUtils.mapToSchema();
       this.modelToSchemaReady(modelToSchema);
     },
-    //----------------------------------------------  
-    //----------------------------------------------    
+    /*-------------------------------------------------------------------*/
 
     //Check if dialog is ready to be opened
     isDialogReady: function (dialog) {
