@@ -1,6 +1,7 @@
 USE [sahsuland_dev]
 GO
 
+--drop table if exists
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_contextual_stats]') AND type in (N'U'))
 BEGIN
@@ -8,17 +9,17 @@ BEGIN
 END
 GO
 
+--table definition
 CREATE TABLE [rif40].[t_rif40_contextual_stats](
-	[username] [varchar](90) NOT NULL DEFAULT (user_name()),
-	[study_id] [numeric](8, 0) NOT NULL,
-	[inv_id] [numeric](8, 0) NOT NULL,
-	[area_id] [numeric](8, 0) NOT NULL,
+	[username] [varchar](90) NOT NULL DEFAULT (SUSER_SNAME()),
+	[study_id] [integer] NOT NULL DEFAULT ([rif40].[rif40_sequence_current_value](N'rif40.rif40_study_id_seq')),
+	[inv_id] [integer] NOT NULL DEFAULT ([rif40].[rif40_sequence_current_value](N'rif40.rif40_inv_id_seq')),
+	[area_id]  [integer] NOT NULL,
 	[area_population] [numeric](38, 6) NULL,
 	[area_observed] [numeric](38, 6) NULL,
 	[total_comparision_population] [numeric](38, 6) NULL,
 	[variance_high] [numeric](38, 6) NULL,
 	[variance_low] [numeric](38, 6) NULL,
-	[rowid] [uniqueidentifier] NOT NULL DEFAULT (newid()),
  CONSTRAINT [t_rif40_contextual_stats_pk] PRIMARY KEY CLUSTERED 
 (
 	[study_id] ASC,

@@ -1,17 +1,36 @@
 USE [sahsuland_dev]
 GO
 
+--drop table if exists
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_studies]') AND type in (N'U'))
 BEGIN
-	DROP TABLE [rif40].[t_rif40_studies]
+
+	--first disable foreign key references
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_study_sql_log]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='t_rif40_study_sqllog_stdid_fk')
+	BEGIN
+		ALTER TABLE [rif40].[t_rif40_study_sql_log] DROP CONSTRAINT [t_rif40_study_sqllog_stdid_fk];
+	END;
+	
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_investigations]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='t_rif40_inv_study_id_fk')
+	BEGIN
+		ALTER TABLE [rif40].[t_rif40_investigations] DROP CONSTRAINT [t_rif40_inv_study_id_fk];
+	END;
+	
+	DROP TABLE [rif40].[t_rif40_studies];
 END
 GO
 
-
+--table definition
 CREATE TABLE [rif40].[t_rif40_studies](
-	[study_id] [numeric](8, 0) NOT NULL,
-	[username] [varchar](90) NOT NULL DEFAULT (user_name()),
+	[study_id] [integer] NOT NULL DEFAULT (NEXT VALUE FOR [rif40].[rif40_study_id_seq]),
+	[username] [varchar](90) NOT NULL DEFAULT (SUSER_SNAME()),
 	[geography] [varchar](50) NOT NULL,
 	[project] [varchar](30) NOT NULL,
 	[study_name] [varchar](200) NOT NULL,
@@ -67,40 +86,89 @@ CONSTRAINT [t_rif40_studies_geography_fk] FOREIGN KEY ([geography])
 ) ON [PRIMARY]
 GO
 
+--recreate foreign key references -- current study_id datatype issues
+
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_study_sql_log]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[t_rif40_study_sql_log]  WITH CHECK ADD  
+	CONSTRAINT [t_rif40_study_sqllog_stdid_fk] FOREIGN KEY([study_id])
+	REFERENCES [rif40].[t_rif40_studies] ([study_id])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
+GO
+
+/*
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_investigations]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[t_rif40_investigations]  WITH CHECK ADD  
+	CONSTRAINT [t_rif40_inv_study_id_fk] FOREIGN KEY([study_id])
+	REFERENCES [rif40].[t_rif40_studies] ([study_id])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
+GO
+*/
+	
+--permissions
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[t_rif40_studies] TO [rif_user]
 GO
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[t_rif40_studies] TO [rif_manager]
 GO
 
-/*
-COMMENT ON TABLE t_rif40_studies
-  IS 'RIF studies';
-COMMENT ON COLUMN t_rif40_studies.study_id IS 'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq';
-COMMENT ON COLUMN t_rif40_studies.username IS 'Username';
-COMMENT ON COLUMN t_rif40_studies.geography IS 'Geography (e.g EW2001)';
-COMMENT ON COLUMN t_rif40_studies.project IS 'Project running the study. The user must be allocated to the project.';
-COMMENT ON COLUMN t_rif40_studies.study_name IS 'Study name';
-COMMENT ON COLUMN t_rif40_studies.summary IS 'Study summary';
-COMMENT ON COLUMN t_rif40_studies.description IS 'Study description';
-COMMENT ON COLUMN t_rif40_studies.other_notes IS 'Study other notes';
-COMMENT ON COLUMN t_rif40_studies.extract_table IS 'Extract table. Must only contain A-Z0-9_ and start with a letter.';
-COMMENT ON COLUMN t_rif40_studies.map_table IS 'Map table. Must only contain A-Z0-9_ and start with a letter.';
-COMMENT ON COLUMN t_rif40_studies.study_date IS 'Study date';
-COMMENT ON COLUMN t_rif40_studies.study_type IS 'Study type: 1 - disease mapping, 11 - Risk Analysis (many areas, one band), 12 - Risk Analysis (point sources), 13 - Risk Analysis (exposure covariates), 14 - Risk Analysis (coverage shapefile), 15 - Risk Analysis (exposure shapefile)';
-COMMENT ON COLUMN t_rif40_studies.study_state IS 'Study state - C: created, not verfied; V: verified, but no other work done; E - extracted imported or created, but no results or maps created; R: results computed; U: upgraded record from V3.1 RIF (has an indeterminate state; probably R.';
-COMMENT ON COLUMN t_rif40_studies.comparison_geolevel_name IS 'Comparison area geolevel name. Must be a valid GEOLEVEL_NAME for the study GEOGRPAHY in T_RIF40_GEOLEVELS, with COMPAREA=1';
-COMMENT ON COLUMN t_rif40_studies.study_geolevel_name IS 'Study area geolevel name';
-COMMENT ON COLUMN t_rif40_studies.denom_tab IS 'Denominator table name. May be &quot;DUMMY&quot; if extract created outside of the RIF. Note the old RIF allowed studies to have different denominators between investigations; this capability has been removed to simplify the extract SQL and to allow a single rotated high performance extract table to be used for all investigations in a study. The extract table is then based on the standard rotated denominator (i.e. in age_sex_group, total format rather than M0 .. M5-9 ... etc) with one extract column per covariate and investigation. Multiple investigations may use a different numerator (1 per investigation).';
-COMMENT ON COLUMN t_rif40_studies.direct_stand_tab IS 'Name of table to be used in direct standardisation. COMPARISON_GEOLEVEL_NAME must be NULL. May be &quot;DUMMY&quot; if extract created outside of the RIF. Note the old RIF allowed studies to have different denominators between investigations; this capability has been removed to simplify the extract SQL and to allow a single rotated high performance extract table to be used for all investigations in a study. The extract table is then based on the standard rotated denominator (i.e. in age_sex_group, total format rather than M0 ... M5-9 ... etc) with one extract column per covariate and investigation. Multiple investigations may use a different numerator (1 per investigation).';
-COMMENT ON COLUMN t_rif40_studies.suppression_value IS 'Suppress results with low cell counts below this value. If the role RIF_NO_SUPRESSION is granted and the user is not a RIF_STUDENT then SUPPRESSION_VALUE=0; otherwise is equals the parameter &quot;SuppressionValue&quot;. If >0 all results with the value or below will be set to 0.';
-COMMENT ON COLUMN t_rif40_studies.extract_permitted IS 'Is extract permitted from the database: 0/1. Only a RIF MANAGER may change this value. This user is still permitted to create and run a RIF study and to view the results. Geolevel access is rectricted by the RIF40_GEOLEVELS.RESTRICTED Inforamtion Governance restrictions (0/1). If 1 (Yes) then a) students cannot access this geolevel and b) if the system parameter ExtractControl=1 then the user must be granted permission by a RIF_MANAGER to extract from the database the results, data extract and maps tables. All students must be granted permission by a RIF_MANAGER for any extract if the system parameter ExtractControl=1. This is enforced by the RIF application.';
-COMMENT ON COLUMN t_rif40_studies.transfer_permitted IS 'Is transfer permitted from the Secure or Private Network: 0/1. This is for purely documentatary purposes only. Only a RIF MANAGER may change this value. The value defaults to the same as EXTRACT_PERMITTED. Only geolevels where RIF40_GEOLEVELS.RESTRICTED=0 may be transferred.';
-COMMENT ON COLUMN t_rif40_studies.authorised_by IS 'Who authorised extract and/or transfer. Must be a RIF MANAGER.';
-COMMENT ON COLUMN t_rif40_studies.authorised_on IS 'When was the extract and/or transfer authorised';
-COMMENT ON COLUMN t_rif40_studies.authorised_notes IS 'IG authorisation notes. Must be filled in if EXTRACT_PERMITTED=1.';
-COMMENT ON COLUMN t_rif40_studies.audsid IS 'Link to Oracle audit subsystem. On Postgres is &quot;backend PID.Julian day.Seconds from midnight.uSeconds (backend start time)&quot;. This can be correlated to the logging messages.';
-*/
+--comments
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF studies' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'study_id'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Username', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'username'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Geography (e.g EW2001)', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'geography'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Project running the study. The user must be allocated to the project.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'project'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Study name', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'study_name'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Study summary', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'summary'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Study description', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'description'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Study other notes', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'other_notes'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Extract table. Must only contain A-Z0-9_ and start with a letter.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'extract_table'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Map table. Must only contain A-Z0-9_ and start with a letter.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'map_table'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Study date', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'study_date'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Study type: 1 - disease mapping, 11 - Risk Analysis (many areas, one band), 12 - Risk Analysis (point sources), 13 - Risk Analysis (exposure covariates), 14 - Risk Analysis (coverage shapefile), 15 - Risk Analysis (exposure shapefile)', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'study_type'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Study state - C: created, not verfied; V: verified, but no other work done; E - extracted imported or created, but no results or maps created; R: results computed; U: upgraded record from V3.1 RIF (has an indeterminate state; probably R.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'study_state'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Comparison area geolevel name. Must be a valid GEOLEVEL_NAME for the study GEOGRPAHY in T_RIF40_GEOLEVELS, with COMPAREA=1', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'comparison_geolevel_name'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Study area geolevel name', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'study_geolevel_name'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Denominator table name. May be &quot;DUMMY&quot; if extract created outside of the RIF. Note the old RIF allowed studies to have different denominators between investigations; this capability has been removed to simplify the extract SQL and to allow a single rotated high performance extract table to be used for all investigations in a study. The extract table is then based on the standard rotated denominator (i.e. in age_sex_group, total format rather than M0 .. M5-9 ... etc) with one extract column per covariate and investigation. Multiple investigations may use a different numerator (1 per investigation).', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'denom_tab'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Name of table to be used in direct standardisation. COMPARISON_GEOLEVEL_NAME must be NULL. May be &quot;DUMMY&quot; if extract created outside of the RIF. Note the old RIF allowed studies to have different denominators between investigations; this capability has been removed to simplify the extract SQL and to allow a single rotated high performance extract table to be used for all investigations in a study. The extract table is then based on the standard rotated denominator (i.e. in age_sex_group, total format rather than M0 ... M5-9 ... etc) with one extract column per covariate and investigation. Multiple investigations may use a different numerator (1 per investigation).', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'direct_stand_tab'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Suppress results with low cell counts below this value. If the role RIF_NO_SUPRESSION is granted and the user is not a RIF_STUDENT then SUPPRESSION_VALUE=0; otherwise is equals the parameter &quot;SuppressionValue&quot;. If >0 all results with the value or below will be set to 0.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'suppression_value'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Is extract permitted from the database: 0/1. Only a RIF MANAGER may change this value. This user is still permitted to create and run a RIF study and to view the results. Geolevel access is rectricted by the RIF40_GEOLEVELS.RESTRICTED Inforamtion Governance restrictions (0/1). If 1 (Yes) then a) students cannot access this geolevel and b) if the system parameter ExtractControl=1 then the user must be granted permission by a RIF_MANAGER to extract from the database the results, data extract and maps tables. All students must be granted permission by a RIF_MANAGER for any extract if the system parameter ExtractControl=1. This is enforced by the RIF application.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'extract_permitted'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Is transfer permitted from the Secure or Private Network: 0/1. This is for purely documentatary purposes only. Only a RIF MANAGER may change this value. The value defaults to the same as EXTRACT_PERMITTED. Only geolevels where RIF40_GEOLEVELS.RESTRICTED=0 may be transferred.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'transfer_permitted'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Who authorised extract and/or transfer. Must be a RIF MANAGER.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'authorised_by'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'When was the extract and/or transfer authorised', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'authorised_on'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'IG authorisation notes. Must be filled in if EXTRACT_PERMITTED=1.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'authorised_notes'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Link to Oracle audit subsystem. On Postgres is &quot;backend PID.Julian day.Seconds from midnight.uSeconds (backend start time)&quot;. This can be correlated to the logging messages.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'audsid'
+GO
 
+--indices
 CREATE UNIQUE INDEX [t_rif40_extract_table_uk]
   ON [rif40].[t_rif40_studies] (extract_table)
 GO
@@ -109,4 +177,3 @@ CREATE UNIQUE INDEX [t_rif40_map_table_uk]
   ON [rif40].[t_rif40_studies] (map_table)
 GO
 
---trigger

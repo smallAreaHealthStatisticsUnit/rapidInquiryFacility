@@ -1,18 +1,21 @@
 USE [sahsuland_dev]
 GO
 
---first disable foreign key references
-IF EXISTS (SELECT * FROM sys.objects 
-	WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_inv_conditions]') AND type in (N'U'))
-BEGIN
-	ALTER TABLE [rif40].[t_rif40_inv_conditions] DROP CONSTRAINT [t_rif40_inv_conditons_pgn];
-END
-GO
+
 	
 --drop table if exists
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_predefined_groups]') AND type in (N'U'))
 BEGIN
+
+	--disable foreign key references
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_inv_conditions]') AND type in (N'U'))
+	BEGIN
+		ALTER TABLE [rif40].[t_rif40_inv_conditions] DROP CONSTRAINT [t_rif40_inv_conditons_pgn];
+	END
+	GO
+
 	DROP TABLE [rif40].[rif40_predefined_groups]
 END
 GO

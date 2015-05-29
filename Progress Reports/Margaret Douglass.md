@@ -5,6 +5,13 @@
 ###May
 This month is dedicated to completing scripts necessary to create all tables and views in the rif40 schema (+ the required functions and objects needed for the creation of tables and views). 
 
+######29 May
+* Working more on adding comments to all tables and views in rif40 schema + checking that the object definitions are still the same in Peter's Postgres database.
+* Experimenting with how to identify, drop, disable foreign keys and constraints for rebuilding tables that have references to others
+* No built-in function to get current value of a sequence, so I had to write my own in order to easily set default column definitions to current value of sequences
+* Study_id datatype has changed, and that is a field used in many foreign keys.  Messy.  Still working my way through all the tables that have wrong study_id type.  stopped at t_rif40_investigations
+(select * FROM [sahsuland_dev].[INFORMATION_SCHEMA].[COLUMNS] where column_name='study_id' and data_type != 'int')
+ 
 ######28 May
 * All views are now done!  Finished rif40_num_denom, corrected typos in rif40_numerator_outcome_columns, wrote rif40_num_denom_errors and rif40_parameters
 * Completed draft functions needed for rif40_num_denom (no logging or good error handling): 
