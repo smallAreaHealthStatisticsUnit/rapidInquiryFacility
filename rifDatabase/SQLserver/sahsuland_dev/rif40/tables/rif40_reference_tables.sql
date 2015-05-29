@@ -1,6 +1,7 @@
 USE [sahsuland_dev]
 GO
 
+--drop table if exists
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_reference_tables]') AND type in (N'U'))
 BEGIN
@@ -8,6 +9,7 @@ BEGIN
 END
 GO
 
+--table definition
 CREATE TABLE [rif40].[rif40_reference_tables](
 	[table_name] [varchar](30) NOT NULL,
  CONSTRAINT [rif40_reference_tables_pk] PRIMARY KEY CLUSTERED 
@@ -17,11 +19,12 @@ CREATE TABLE [rif40].[rif40_reference_tables](
 ) ON [PRIMARY]
 GO
 
+--permissions
 GRANT SELECT ON [rif40].[rif40_reference_tables] TO public
 GO
 
-/*
-COMMENT ON TABLE rif40_reference_tables
-  IS 'List of references tables without constraints';
-COMMENT ON COLUMN rif40_reference_tables.table_name IS 'Table name';
-*/
+--comments
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'List of references tables without constraints' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_reference_tables'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Table name', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_reference_tables', @level2type=N'COLUMN',@level2name=N'table_name'
+GO

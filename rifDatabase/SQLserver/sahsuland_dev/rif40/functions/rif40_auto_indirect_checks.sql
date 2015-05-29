@@ -115,6 +115,8 @@ BEGIN
 				END;
 				IF @dmsg IS NOT NULL
 					SET @dmsg = @dmsg +')';
+				CLOSE @check_tab_curs;
+				DEALLOCATE @check_tab_curs;
 				--to log:
 --					PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_auto_indirect_checks', 'table[%]: %, geography: %; total_denominators = %; %', 
 --					j::VARCHAR, l_table_name::VARCHAR, c2_rec.geography::VARCHAR, c2_rec.total_denominators::VARCHAR, dmsg::VARCHAR);
@@ -125,6 +127,8 @@ BEGIN
 --					j::VARCHAR, l_table_name::VARCHAR, c2_rec.geography::VARCHAR);
 			FETCH NEXT FROM @geo_curs INTO @geography, @total_denominators;
 		END;
+		CLOSE @geo_curs;
+		DEALLOCATE @geo_curs;
 	END;
 	RETURN @msg;
 END;
