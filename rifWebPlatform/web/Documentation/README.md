@@ -255,18 +255,9 @@ $ karma start
 
 ### Todo's
 
-Write Tests
-Github saving overhaul
-Code Commenting
-Night Mode
-
-License
-----
-
-MIT
 
 
-**Free Software, Hell Yeah!**
+
 
 
 [initialize file]:https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebPlatform/web/dashboards/diseaseSubmission/js/v2/initialize.js 
