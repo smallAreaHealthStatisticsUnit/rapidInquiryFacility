@@ -419,9 +419,9 @@ BEGIN
 		COMMENT ON COLUMN rif40_inv_conditions.inv_id IS 'Unique investigation index: inv_id. Created by SEQUENCE rif40_inv_id_seq';
 		COMMENT ON COLUMN rif40_inv_conditions.line_number IS 'Line number';
 		COMMENT ON COLUMN rif40_inv_conditions.min_condition 
-			IS '<![CDATA[Minimum condition; if max condition is not null SQL WHERE Clause evaluates to: "WHERE <field_name> LIKE ''<min_condition>%''".]]>'; 	
+			IS 'Minimum condition; if max condition is not null SQL WHERE Clause evaluates to: &quot;WHERE &lt;field_name&gt; LIKE ''&lt;min_condition&gt;%''&quot;.'; 	
 		COMMENT ON COLUMN rif40_inv_conditions.max_condition 
-			IS '<![CDATA[Maximum condition; if max condition is not null SQL WHERE Clause evaluates to: "WHERE <field_name> BETWEEN ''<min_condition>'' AND ''<max_condition>~''".]]>'; 			
+			IS 'Maximum condition; if max condition is not null SQL WHERE Clause evaluates to: &quot;WHERE &lt;field_name&gt; BETWEEN ''&lt;min_condition&gt;'' AND ''&lt;max_condition&gt;~''&quot;.'; 	
 		-- COMMENT ON COLUMN rif40_inv_conditions.field_name IS 'Numerator table outcome field name, e.g. ICD_SAHSU_01, ICD_SAHSU'; 			
 		COMMENT ON COLUMN rif40_inv_conditions.predefined_group_name IS 'Predefined Group Name. E.g LUNG_CANCER'; 
 		COMMENT ON COLUMN rif40_inv_conditions.outcome_group_name IS 'Outcome Group Name. E.g SINGLE_VARIABLE_ICD'; 
@@ -546,9 +546,9 @@ $BODY$
 -- Comment new columns
 --
 	COMMENT ON COLUMN t_rif40_inv_conditions.min_condition 
-		IS '<![CDATA[Minimum condition; if max condition is not null SQL WHERE Clause evaluates to: "WHERE <field_name> LIKE ''<min_condition>%''".]]>'; 	
+		IS 'Minimum condition; if max condition is not null SQL WHERE Clause evaluates to: &quot;WHERE &lt;field_name&gt; LIKE ''&lt;min_condition&gt;%''&quot;.'; 	
 	COMMENT ON COLUMN t_rif40_inv_conditions.max_condition 
-		IS '<![CDATA[Maximum condition; if max condition is not null SQL WHERE Clause evaluates to: "WHERE <field_name> BETWEEN ''<min_condition>'' AND ''<max_condition>~''".]]>'; 				
+		IS 'Maximum condition; if max condition is not null SQL WHERE Clause evaluates to: &quot;WHERE &lt;field_name&gt; BETWEEN ''&lt;min_condition&gt;'' AND ''&lt;max_condition&gt;~''&quot;.'; 				
 	COMMENT ON COLUMN t_rif40_inv_conditions.predefined_group_name IS 'Predefined Group Name. E.g LUNG_CANCER'; 
 	COMMENT ON COLUMN t_rif40_inv_conditions.outcome_group_name IS 'Outcome Group Name. E.g SINGLE_VARIABLE_ICD'; 		
 END;

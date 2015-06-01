@@ -12,14 +12,20 @@
 <tr class="item-element"><td class="item-element" colspan="4">Size: medium, Select frequency: medium, Update frequency: medium</td></tr>
 <tr class="item-header-2"><td class="item-header-2" colspan="4">Columns</td></tr>
 <tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3">Type</td><td class="item-header-3">Constraints</td><td class="item-header-3">Description</td></tr>
-<tr class="item-element"><td class="item-element"><a name="Col-rif40_triggers-table_name">table_name</a></td><td class="item-element">VARCHAR (30)</td><td class="item-element"></td><td class="item-element"><span class="description">Table name</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_triggers-table_name"><span class="pk-fk-col">table_name</span></a></td><td class="item-element">VARCHAR (30)</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">Table name</span></td></tr>
 <tr class="item-element"><td class="item-element"><a name="Col-rif40_triggers-column_name">column_name</a></td><td class="item-element">VARCHAR (4000)</td><td class="item-element"></td><td class="item-element"><span class="description">Column name</span></td></tr>
-<tr class="item-element"><td class="item-element"><a name="Col-rif40_triggers-trigger_name">trigger_name</a></td><td class="item-element">VARCHAR (30)</td><td class="item-element"></td><td class="item-element"><span class="description">Trigger name</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_triggers-trigger_name"><span class="pk-col">trigger_name</span></a></td><td class="item-element">VARCHAR (30)</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">Trigger name</span></td></tr>
 <tr class="item-element"><td class="item-element"><a name="Col-rif40_triggers-trigger_type">trigger_type</a></td><td class="item-element">VARCHAR (16)</td><td class="item-element"></td><td class="item-element"><span class="description">Type type</span></td></tr>
 <tr class="item-element"><td class="item-element"><a name="Col-rif40_triggers-triggering_event">triggering_event</a></td><td class="item-element">VARCHAR (227)</td><td class="item-element"></td><td class="item-element"><span class="description">Triggering event</span></td></tr>
 <tr class="item-element"><td class="item-element"><a name="Col-rif40_triggers-when_clause">when_clause</a></td><td class="item-element">VARCHAR (4000)</td><td class="item-element"></td><td class="item-element"><span class="description">When clause</span></td></tr>
 <tr class="item-element"><td class="item-element"><a name="Col-rif40_triggers-action_type">action_type</a></td><td class="item-element">VARCHAR (11)</td><td class="item-element"></td><td class="item-element"><span class="description">Action type</span></td></tr>
 <tr class="item-element"><td class="item-element"><a name="Col-rif40_triggers-comments">comments</a></td><td class="item-element">VARCHAR (4000)</td><td class="item-element"></td><td class="item-element"><span class="description">Comments</span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Primary key</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3" colspan="2">Columns</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element">rif40_triggers_pk</td><td colspan="2" class="item-element"><a href="../objects/sahsuland-postgres8-rif40_triggers.html#Col-rif40_triggers-table_name">table_name</a>, <a href="../objects/sahsuland-postgres8-rif40_triggers.html#Col-rif40_triggers-trigger_name">trigger_name</a></td><td class="item-element"><span class="description"></span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Foreign keys</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3">Columns</td><td class="item-header-3">Referenced table</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element"><a name="FK-rif40_triggers-table_or_view_name_hide_fk">table_or_view_name_hide_fk</a></td><td class="item-element"><a href="../objects/sahsuland-postgres8-rif40_triggers.html#Col-rif40_triggers-table_name">table_name</a></td><td class="item-element"><a href="../objects/sahsuland-postgres8-rif40_tables_and_views.html#Tab-rif40_tables_and_views">rif40_tables_and_views</a></td><td class="item-element"><span class="description"></span></td></tr>
 <tr class="item-header-2"><td class="item-header-2" colspan="4">Grants</td></tr>
 <tr class="item-header-3"><td class="item-header-3">Role</td><td class="item-header-3" colspan="2">Actions</td><td class="item-header-3">&nbsp;</td></tr>
 <tr class="item-element"><td class="item-element">rif_manager</td><td colspan="2" class="item-element">select</td><td class="item-element">&nbsp;</td></tr>
@@ -28,7 +34,8 @@
 </table><p>
 <img src="../images/sahsuland-postgres8-rif40_triggers.png" usemap="#TableGraph" align="middle" alt="Schema diagram" border="0">
 <map id="TableGraph" name="TableGraph">
-<area shape="rect" id="node1" href="../objects/sahsuland-postgres8-rif40_triggers.html" target="detailFrame" title="rif40_triggers" alt="" coords="5,5,120,184"/>
+<area shape="rect" id="node1" href="../objects/sahsuland-postgres8-rif40_triggers.html" target="detailFrame" title="rif40_triggers" alt="" coords="197,5,312,184"/>
+<area shape="rect" id="node2" href="../objects/sahsuland-postgres8-rif40_tables_and_views.html" target="detailFrame" title="rif40_tables_and_views" alt="" coords="7,40,177,149"/>
 </map>
 
 </body></html>
