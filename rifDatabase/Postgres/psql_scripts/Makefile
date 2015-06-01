@@ -389,6 +389,10 @@ endif
 	$(MAKE) sahsuland_dump
 	-$(MAKE) -C ../../ERD dbms_tools
 	@echo "SAHSULAND and SAHSULAND_DEV setup"
+
+#- ERD: remake ERD	
+erd:
+	$(MAKE) -C ../../ERD clean all
 #
 # Now has Node, ERD integration, pg_restore allowed to fail on Postgres 9.4.1
 #

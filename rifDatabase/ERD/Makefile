@@ -181,7 +181,7 @@ ifeq ($(OS),Windows_NT)
 #
 # This makefile will not work on Windows
 # 
-	$(error SORRY - NEEDS LINUX: Unsupported OS: $(OS); uname -s: $(UNAME_S))
+	$(error SORRY - NEEDS LINUX	: Unsupported OS: $(OS); uname -s: $(UNAME_S))
 else
 #
 # Linux macos support
