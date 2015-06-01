@@ -763,7 +763,8 @@ final class SQLRIFContextManager
 		logSQLQuery(
 			"lookupTableQuery",
 			lookupTableQueryFormatter,
-			geography.getName());
+			geography.getName(),
+			geoLevelSelect.getName());
 	
 		PreparedStatement lookupTableStatement = null;
 		ResultSet lookupTableResultSet = null;			
@@ -1046,6 +1047,7 @@ final class SQLRIFContextManager
 					geoLevelIDQueryFormatter);
 			geoLevelIDStatement.setString(1, geography.getName());
 			geoLevelIDStatement.setString(2, geoLevelSelect.getName());
+			geoLevelIDResultSet = geoLevelIDStatement.executeQuery();
 			if (geoLevelIDResultSet.next() == false) {
 				//ERROR: no views available
 				String errorMessage
@@ -1426,8 +1428,7 @@ final class SQLRIFContextManager
 			geoLevelSelectLookupTable = getLookupTableResultSet.getString(1);			
 			
 
-			if (geoLevelSelectLookupTable == null) {
-				
+			if (geoLevelSelectLookupTable == null) {				
 				connection.commit();
 				
 				return;

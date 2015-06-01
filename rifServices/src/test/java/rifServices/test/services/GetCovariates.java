@@ -121,11 +121,12 @@ public final class GetCovariates
 						
 			AbstractCovariate firstCovariate
 				= results.get(0);
-			assertEquals("areatri1km", firstCovariate.getName());
+			assertEquals("AREATRI1KM", firstCovariate.getName());
 			
 			AbstractCovariate lastCovariate
 				= results.get(results.size() - 1);
-			assertEquals("tri_1km", lastCovariate.getName());	
+			assertEquals("TRI_1KM", lastCovariate.getName());	
+
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();

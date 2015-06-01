@@ -116,6 +116,12 @@ public final class GetGeoLevelAreaValues
 					validGeography, 
 					validGeoLevelSelectValue);
 			
+			for (GeoLevelArea geoLevelArea : geoLevelAreaValues) {
+				System.out.println("geoLevelArea=="+geoLevelArea.getName()+"==");
+				
+			}
+			
+			
 			assertEquals(17, geoLevelAreaValues.size());
 			GeoLevelArea firstResult = geoLevelAreaValues.get(0);
 			assertEquals("Abellan", firstResult.getName());			

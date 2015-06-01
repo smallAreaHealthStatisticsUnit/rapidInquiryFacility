@@ -422,23 +422,23 @@ public class AbstractRIFServiceTestCase
 
 		masterValidProject 
 			= Project.newInstance(
-				"SAHSU",
-				"SAHSU Project used for all old projects on import. Disabled after import");
+				"TEST",
+				"Test Project. Will be disabled when in production.");
 		
 		masterEmptyProject 
 			= Project.newInstance(
 				"",
-				"SAHSU Project used for all old projects on import. Disabled after import");
+				"Test Project. Will be disabled when in production.");
 
 		masterNonExistentProject 
 			= Project.newInstance(
 				"blah de blah",
-				"SAHSU Project used for all old projects on import. Disabled after import");
+				"Test Project. Will be disabled when in production.");
 
 		masterMaliciousProject 
 			= Project.newInstance(
 				maliciousFieldValue,
-				"SAHSU Project used for all old projects on import. Disabled after import");
+				"Test Project. Will be disabled when in production.");
 		
 		try {
 			initialiseService();

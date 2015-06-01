@@ -361,7 +361,7 @@ final class SQLRIFSubmissionManager
 				true, 
 				diseaseMappingStudy);
 	
-			String studyID = getCurrentStudyID(connection);
+			result = getCurrentStudyID(connection);
 			
 			connection.commit();
 
@@ -1159,28 +1159,65 @@ final class SQLRIFSubmissionManager
 		throws SQLException,
 		RIFServiceException {
 				
-		PreparedStatement statement = null;
+		PreparedStatement getOutcomeGroupNameStatement = null;
+		ResultSet getOutcomeGroupNameResultSet = null;
+		PreparedStatement addHealthCodeStatement = null;
 		try {
-			SQLInsertQueryFormatter queryFormatter
-				= new SQLInsertQueryFormatter();
-			queryFormatter.setIntoTable("rif40_inv_conditions");
-			queryFormatter.addInsertField("condition");
-				
-			statement
+			
+			SQLSelectQueryFormatter getOutcomeGroupNameQueryFormatter
+				= new SQLSelectQueryFormatter();
+			getOutcomeGroupNameQueryFormatter.addSelectField("outcome_group_name");
+			getOutcomeGroupNameQueryFormatter.addSelectField("field_name");			
+			getOutcomeGroupNameQueryFormatter.addFromTable("rif40_numerator_outcome_columns");
+			getOutcomeGroupNameQueryFormatter.addWhereParameter("geography");
+			getOutcomeGroupNameQueryFormatter.addWhereParameter("table_name");
+
+			Geography geography = diseaseMappingStudy.getGeography();
+			NumeratorDenominatorPair ndPair = investigation.getNdPair();						
+			getOutcomeGroupNameStatement
 				= createPreparedStatement(
 					connection,
-					queryFormatter);
+					getOutcomeGroupNameQueryFormatter);
+			getOutcomeGroupNameStatement.setString(1, geography.getName());
+			getOutcomeGroupNameStatement.setString(2, ndPair.getNumeratorTableName());			
+			getOutcomeGroupNameResultSet
+				= getOutcomeGroupNameStatement.executeQuery();
+			getOutcomeGroupNameResultSet.next();
+			String outcomeGroupName
+				= getOutcomeGroupNameResultSet.getString(1);
+			String fieldName
+				= getOutcomeGroupNameResultSet.getString(2);
 			
 			
-			NumeratorDenominatorPair ndPair
-				= investigation.getNdPair();
+			
+			//determine what kinds of codes the numerator table supports
 			
 			ArrayList<HealthCode> healthCodes
 				= investigation.getHealthCodes();
 			
 			//KLG: TODO: try adding one health code maximum
 			if (healthCodes.size() > 0) {
-			
+
+				for (HealthCode healthCode : healthCodes) {
+					
+					SQLInsertQueryFormatter addHealthOutcomeQueryFormatter
+						= new SQLInsertQueryFormatter();
+					addHealthOutcomeQueryFormatter.setIntoTable("rif40_inv_conditions");
+					addHealthOutcomeQueryFormatter.addInsertField("min_condition");
+					addHealthOutcomeQueryFormatter.addInsertField("outcome_group_name");				
+					addHealthOutcomeQueryFormatter.addInsertField("numer_tab");				
+					addHealthOutcomeQueryFormatter.addInsertField("field_name");				
+					
+					addHealthCodeStatement
+						= createPreparedStatement(
+							connection,
+							addHealthOutcomeQueryFormatter);
+					addHealthCodeStatement.setString(1, healthCode.getCode());
+					addHealthCodeStatement.setString(2, outcomeGroupName);
+					addHealthCodeStatement.setString(3, ndPair.getNumeratorTableName());
+					addHealthCodeStatement.setString(4, fieldName);
+					addHealthCodeStatement.executeUpdate();
+/*
 				String sqlHealthCodePhrase
 					= createSQLHealthCodePhrase(
 						connection,
@@ -1192,12 +1229,15 @@ final class SQLRIFSubmissionManager
 					//table should be expanded to include name space
 					statement.setString(1, sqlHealthCodePhrase);				
 					statement.executeUpdate();
-				//}			
+				//}		
+*/
+				}
 			}
 		}
 		finally {
-			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
+			//Cleanup database resources	
+			SQLQueryUtility.close(getOutcomeGroupNameStatement);
+			SQLQueryUtility.close(addHealthCodeStatement);
 		}		
 	}
 

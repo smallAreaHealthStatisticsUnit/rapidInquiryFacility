@@ -15,7 +15,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.ArrayList;
 import java.util.Properties;
 
 /**
@@ -159,7 +158,7 @@ public final class SQLConnectionManager
 		
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT ");
-		query.append("rif40_startup() AS rif40_init;");
+		query.append("rif40_startup(?) AS rif40_init;");
 		initialisationQuery = query.toString();
 		
 		databaseURL = generateURLText();
@@ -306,12 +305,22 @@ public final class SQLConnectionManager
 		try {
 			Class.forName(rifServiceStartupOptions.getDatabaseDriverClassName());
 
+			//note that in order to optimise the setup of connections, 
+			//we call rif40_init(boolean no_checks).  The first time we call it
+			//for a user, we let the checks occur (set flag to false)
+			//for all other times, set the flag to true, to ignore checks
+
 			//Establish read-only connections
 			for (int i = 0; i < POOLED_READ_ONLY_CONNECTIONS_PER_PERSON; i++) {
+				boolean isFirstConnectionForUser = false;
+				if (i == 0) {
+					isFirstConnectionForUser = true;
+				}
 				Connection currentConnection
 					= createConnection(
 						userID,
 						password,
+						isFirstConnectionForUser,
 						true);
 				readOnlyConnectionQueue.addConnection(currentConnection);
 			}
@@ -323,6 +332,7 @@ public final class SQLConnectionManager
 					= createConnection(
 						userID,
 						password,
+						false,
 						false);
 				writeOnlyConnectionQueue.addConnection(currentConnection);
 			}			
@@ -658,7 +668,8 @@ public final class SQLConnectionManager
 	private Connection createConnection(
 		final String userID,
 		final String password,
-		boolean isReadOnly)
+		final boolean isFirstConnectionForUser,
+		final boolean isReadOnly)
 		throws SQLException,
 		RIFServiceException {
 		
@@ -673,8 +684,8 @@ public final class SQLConnectionManager
 			//databaseProperties.setProperty("logUnclosedConnections", "true");
 			databaseProperties.setProperty("prepareThreshold", "3");
 			//KLG: @TODO this introduces a porting issue
-			int logLevel = org.postgresql.Driver.DEBUG;
-			databaseProperties.setProperty("loglevel", String.valueOf(logLevel));
+			//int logLevel = org.postgresql.Driver.DEBUG;
+			//databaseProperties.setProperty("loglevel", String.valueOf(logLevel));
 			
 			connection
 				= DriverManager.getConnection(databaseURL, databaseProperties);
@@ -689,6 +700,14 @@ public final class SQLConnectionManager
 				= SQLQueryUtility.createPreparedStatement(
 					connection, 
 					initialisationQuery);
+			if (isFirstConnectionForUser) {	
+				//perform checks
+				statement.setBoolean(1, false);
+			}
+			else {
+				statement.setBoolean(1,  true);
+			}
+			
 			statement.execute();
 			statement.close();
 
