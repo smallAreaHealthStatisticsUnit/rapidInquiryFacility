@@ -1,6 +1,7 @@
 USE [sahsuland_dev]
 GO
 
+--drop view if exists
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_investigations]') AND type in (N'V'))
 BEGIN
@@ -8,6 +9,7 @@ BEGIN
 END
 GO
 
+--table definition
 CREATE VIEW [rif40].[rif40_investigations] AS 
  SELECT c.username,
     c.inv_id,
@@ -31,12 +33,13 @@ CREATE VIEW [rif40].[rif40_investigations] AS
   (s.grantee_username IS NOT NULL AND s.grantee_username <> '')
  GO
  
+ --permissions
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[rif40_investigations] TO [rif_user]
 GO
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[rif40_investigations] TO [rif_manager]
 GO
 
-
+--comments
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Details of each investigation in a study' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_investigations'
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Username' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_investigations', @level2type=N'COLUMN',@level2name=N'username'

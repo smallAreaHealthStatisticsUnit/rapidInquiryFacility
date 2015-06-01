@@ -1,6 +1,7 @@
 USE [sahsuland_dev]
 GO
 
+--drop view if exists
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_study_sql]') AND type in (N'V'))
 BEGIN
@@ -8,7 +9,7 @@ BEGIN
 END
 GO
 
-
+--view definition
 CREATE VIEW [rif40].[rif40_study_sql] AS 
  SELECT c.username,
     c.study_id,
@@ -24,19 +25,26 @@ CREATE VIEW [rif40].[rif40_study_sql] AS
   (s.grantee_username IS NOT NULL AND s.grantee_username <> '')
  GO
  
+--permissions
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[rif40_study_sql] TO [rif_user]
 GO
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[rif40_study_sql] TO [rif_manager]
 GO
 
-/*
-COMMENT ON VIEW rif40_study_sql
-  IS 'SQL created for study execution.';
-COMMENT ON COLUMN rif40_study_sql.username IS 'Username';
-COMMENT ON COLUMN rif40_study_sql.study_id IS 'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq';
-COMMENT ON COLUMN rif40_study_sql.statement_type IS 'Statement type: CREATE, INSERT, POST_INSERT, NUMERATOR_CHECK, DENOMINATOR_CHECK';
-COMMENT ON COLUMN rif40_study_sql.statement_number IS 'Statement number';
-COMMENT ON COLUMN rif40_study_sql.sql_text IS 'SQL text';
-COMMENT ON COLUMN rif40_study_sql.line_number IS 'Line number';
-COMMENT ON COLUMN rif40_study_sql.status IS 'Status: C(reated) or R(un)';
-*/
+--comments
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'SQL created for study execution.' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_study_sql'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Username', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_study_sql', @level2type=N'COLUMN',@level2name=N'username'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_study_sql', @level2type=N'COLUMN',@level2name=N'study_id'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Statement type: CREATE, INSERT, POST_INSERT, NUMERATOR_CHECK, DENOMINATOR_CHECK', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_study_sql', @level2type=N'COLUMN',@level2name=N'statement_type'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Statement number', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_study_sql', @level2type=N'COLUMN',@level2name=N'statement_number'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'SQL text', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_study_sql', @level2type=N'COLUMN',@level2name=N'sql_text'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Line number', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_study_sql', @level2type=N'COLUMN',@level2name=N'line_number'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Status: C(reated) or R(un)', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_study_sql', @level2type=N'COLUMN',@level2name=N'status'
+GO
