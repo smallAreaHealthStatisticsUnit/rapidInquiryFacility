@@ -1,6 +1,7 @@
 USE [sahsuland_dev]
 GO
 
+--drop table if exists
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_inv_conditions]') AND type in (N'U'))
 BEGIN
@@ -8,8 +9,9 @@ BEGIN
 END
 GO
 
+--table definition
 CREATE TABLE [rif40].[t_rif40_inv_conditions](
-	[inv_id] [integer] NOT NULL DEFAULT ([rif40].[rif40_sequence_current_value](N'rif40.rif40_inv_id_seq'),
+	[inv_id] [integer] NOT NULL DEFAULT ([rif40].[rif40_sequence_current_value](N'rif40.rif40_inv_id_seq')),
 	[study_id] [integer] NOT NULL DEFAULT ([rif40].[rif40_sequence_current_value](N'rif40.rif40_study_id_seq')),
 	[username] [varchar](90) NOT NULL DEFAULT (SUSER_SNAME()),
 	[line_number] [numeric](5, 0) NOT NULL DEFAULT ((1)),
@@ -47,16 +49,22 @@ GO
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[t_rif40_inv_conditions] TO [rif_manager]
 GO
 
-/*
-COMMENT ON TABLE t_rif40_inv_conditions
-  IS 'Lines of SQL conditions pertinent to an investigation.';
-COMMENT ON COLUMN t_rif40_inv_conditions.inv_id IS 'Unique investigation index: inv_id. Created by SEQUENCE rif40_inv_id_seq';
-COMMENT ON COLUMN t_rif40_inv_conditions.study_id IS 'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq';
-COMMENT ON COLUMN t_rif40_inv_conditions.username IS 'Username';
-COMMENT ON COLUMN t_rif40_inv_conditions.line_number IS 'Line number';
-COMMENT ON COLUMN t_rif40_inv_conditions.min_condition IS 'Minimum condition; if max condition is not null SQL WHERE Clause evaluates to: "WHERE <field_name> LIKE ''<min_condition>%''". ';
-COMMENT ON COLUMN t_rif40_inv_conditions.max_condition IS 'Maximum condition; if max condition is not null SQL WHERE Clause evaluates to: "WHERE <field_name> BETWEEN ''<min_condition> AND <max_condition>~''" ';
-COMMENT ON COLUMN t_rif40_inv_conditions.predefined_group_name IS 'Predefined Group Name. E.g LUNG_CANCER';
-COMMENT ON COLUMN t_rif40_inv_conditions.outcome_group_name IS 'Outcome Group Name. E.g SINGLE_VARIABLE_ICD';
-*/
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Lines of SQL conditions pertinent to an investigation.' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_inv_conditions'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_inv_conditions', @level2type=N'COLUMN',@level2name=N'study_id'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Unique investigation inde:inv_id. Created by SEQUENCE rif40_inv_id_seq', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_inv_conditions', @level2type=N'COLUMN',@level2name=N'inv_id'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Username', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_inv_conditions', @level2type=N'COLUMN',@level2name=N'username'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Line number', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_inv_conditions', @level2type=N'COLUMN',@level2name=N'line_number'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Minimum condition; if max condition is not null SQL WHERE Clause evaluates to: "WHERE <field_name> LIKE ''<min_condition>%''".', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_inv_conditions', @level2type=N'COLUMN',@level2name=N'min_condition'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Maximum condition; if max condition is not null SQL WHERE Clause evaluates to: "WHERE <field_name> BETWEEN ''<min_condition> AND <max_condition>~''" ', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_inv_conditions', @level2type=N'COLUMN',@level2name=N'max_condition'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Predefined Group Name. E.g LUNG_CANCER', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_inv_conditions', @level2type=N'COLUMN',@level2name=N'predefined_group_name'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Outcome Group Name. E.g SINGLE_VARIABLE_ICD', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_inv_conditions', @level2type=N'COLUMN',@level2name=N'outcome_group_name'
+GO
 

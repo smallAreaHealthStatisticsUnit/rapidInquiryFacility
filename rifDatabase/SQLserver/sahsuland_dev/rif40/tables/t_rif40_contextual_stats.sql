@@ -32,25 +32,35 @@ CONSTRAINT [t_rif40_constats_study_id_fk] FOREIGN KEY([study_id], [inv_id])
 ) ON [PRIMARY]
 GO
 
+--permissions
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[t_rif40_contextual_stats] TO [rif_user]
 GO
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[t_rif40_contextual_stats] TO [rif_manager]
 GO
 
-/*
-COMMENT ON TABLE t_rif40_contextual_stats
-  IS 'Contextual stats for results map. Also includes values used in internal calculations.';
-COMMENT ON COLUMN t_rif40_contextual_stats.username IS 'Username';
-COMMENT ON COLUMN t_rif40_contextual_stats.study_id IS 'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq';
-COMMENT ON COLUMN t_rif40_contextual_stats.inv_id IS 'Unique investigation index: inv_id. Created by SEQUENCE rif40_inv_id_seq';
-COMMENT ON COLUMN t_rif40_contextual_stats.area_id IS 'An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE';
-COMMENT ON COLUMN t_rif40_contextual_stats.area_population IS 'Total population in area';
-COMMENT ON COLUMN t_rif40_contextual_stats.area_observed IS 'Total observed in area';
-COMMENT ON COLUMN t_rif40_contextual_stats.total_comparision_population IS 'Total comparison population. Used for internal calculations.';
-COMMENT ON COLUMN t_rif40_contextual_stats.variance_high IS 'Variance (observed &gt; 100). Used for internal calculations.';
-COMMENT ON COLUMN t_rif40_contextual_stats.variance_low IS 'Variance (observed &lt;= 100). Used for internal calculations.';
-*/
+--comments
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Contextual stats for results map. Also includes values used in internal calculations.' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_contextual_stats'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Username', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_contextual_stats', @level2type=N'COLUMN',@level2name=N'username'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_contextual_stats', @level2type=N'COLUMN',@level2name=N'study_id'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Unique investigation index: inv_id. Created by SEQUENCE rif40_inv_id_seq', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_contextual_stats', @level2type=N'COLUMN',@level2name=N'inv_id'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_contextual_stats', @level2type=N'COLUMN',@level2name=N'area_id'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Total population in area', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_contextual_stats', @level2type=N'COLUMN',@level2name=N'area_population'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Total observed in area', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_contextual_stats', @level2type=N'COLUMN',@level2name=N'area_observed'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Total comparison population. Used for internal calculations.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_contextual_stats', @level2type=N'COLUMN',@level2name=N'total_comparision_population'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Variance (observed &gt; 100). Used for internal calculations.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_contextual_stats', @level2type=N'COLUMN',@level2name=N'variance_high'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Variance (observed &lt;= 100). Used for internal calculations.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_contextual_stats', @level2type=N'COLUMN',@level2name=N'variance_low'
+GO
 
+--permissions
 CREATE INDEX t_rif40_constats_inv_id_fk
   ON [rif40].[t_rif40_contextual_stats](inv_id)
 GO
@@ -58,5 +68,3 @@ GO
 CREATE INDEX t_rif40_constats_uname_bm
   ON [rif40].[t_rif40_contextual_stats](username)
 GO
-
---triggers
