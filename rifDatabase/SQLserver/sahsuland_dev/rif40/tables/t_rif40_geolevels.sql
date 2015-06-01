@@ -1,13 +1,48 @@
 USE [sahsuland_dev]
 GO
 
+--drop table if exists
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_geolevels]') AND type in (N'U'))
 BEGIN
+	--drop foreign key references
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[rif40_covariates]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='rif40_covariates_geolevel_fk')
+	BEGIN
+		ALTER TABLE [rif40].[rif40_covariates] DROP CONSTRAINT [rif40_covariates_geolevel_fk];
+	END;
+	
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_inv_covariates]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='t_rif40_inv_cov_geolevel_fk')
+	BEGIN	
+		ALTER TABLE [rif40].[t_rif40_inv_covariates] DROP CONSTRAINT [t_rif40_inv_cov_geolevel_fk];
+	END;
+	
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_studies]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='t_rif40_std_comp_geolevel_fk')
+	BEGIN	
+		ALTER TABLE [rif40].[t_rif40_studies] DROP CONSTRAINT [t_rif40_std_comp_geolevel_fk];
+	END;
+	
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_studies]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='t_rif40_std_study_geolevel_fk')
+	BEGIN
+		ALTER TABLE [rif40].[t_rif40_studies] DROP CONSTRAINT [t_rif40_std_study_geolevel_fk];
+	END;
+		
 	DROP TABLE [rif40].[t_rif40_geolevels]
 END
 GO
 
+--table definition
 CREATE TABLE [rif40].[t_rif40_geolevels](
 	[geography] [varchar](50) NOT NULL,
 	[geolevel_name] [varchar](30) NOT NULL,
@@ -22,7 +57,6 @@ CREATE TABLE [rif40].[t_rif40_geolevels](
 	[shapefile_table] [varchar](30) NULL,
 	[shapefile_area_id_column] [varchar](30) NULL,
 	[shapefile_desc_column] [varchar](30) NULL,
-	[st_simplify_tolerance] [numeric](6, 0) NULL,
 	[centroids_table] [varchar](30) NULL,
 	[centroids_area_id_column] [varchar](30) NULL,
 	[avg_npoints_geom] [numeric](12, 0) NULL,
@@ -34,8 +68,7 @@ CREATE TABLE [rif40].[t_rif40_geolevels](
 	[restricted] [numeric](1, 0) NOT NULL DEFAULT ((0)),
 	[resolution] [numeric](1, 0) NOT NULL,
 	[comparea] [numeric](1, 0) NOT NULL,
-	[LISTING] [numeric](1, 0) NOT NULL,
-	[id] [int] IDENTITY(1,1) NOT NULL,
+	[listing] [numeric](1, 0) NOT NULL,
  CONSTRAINT [t_rif40_geolevels_pk] PRIMARY KEY CLUSTERED 
 (
 	[geography] ASC,
@@ -51,13 +84,76 @@ CONSTRAINT [t_rif40_geol_restricted_ck] CHECK  (([restricted]=(1) OR [restricted
 ) ON [PRIMARY]
 GO
 
-CREATE UNIQUE INDEX [t_rif40_geolevels_uk2]
-  ON [rif40].[t_rif40_geolevels] (geography)
-GO
+--recreate foreign key references
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[rif40_covariates]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[rif40_covariates]  WITH CHECK ADD  
+	CONSTRAINT [rif40_covariates_geolevel_fk] FOREIGN KEY([geography], [geolevel_name])
+	REFERENCES [rif40].[t_rif40_geolevels] ([geography], [geolevel_name])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END;
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_inv_covariates]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[t_rif40_inv_covariates]  WITH CHECK ADD  
+	CONSTRAINT [t_rif40_inv_cov_geolevel_fk] FOREIGN KEY([geography], [study_geolevel_name])
+	REFERENCES [rif40].[t_rif40_geolevels] ([geography], [geolevel_name])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END;
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_studies]') AND type in (N'U'))		
+BEGIN
+	ALTER TABLE [rif40].[t_rif40_studies]  WITH CHECK ADD  
+	CONSTRAINT [t_rif40_std_study_geolevel_fk] FOREIGN KEY([geography], [study_geolevel_name])
+	REFERENCES [rif40].[t_rif40_geolevels] ([geography], [geolevel_name])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+	ALTER TABLE [rif40].[t_rif40_studies]  WITH CHECK ADD  
+	CONSTRAINT [t_rif40_std_comp_geolevel_fk] FOREIGN KEY([geography], [comparison_geolevel_name])
+	REFERENCES [rif40].[t_rif40_geolevels] ([geography], [geolevel_name])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END;
 
+--permissions
 GRANT SELECT, UPDATE, INSERT, DELETE ON  [rif40].[t_rif40_geolevels] TO [rif_manager]
 GO
 GRANT SELECT ON [rif40].[t_rif40_geolevels] TO public
 GO
 
---trigger
+--comments
+/*
+OMMENT ON TABLE t_rif40_geolevels
+  IS 'Geolevels: hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels are restricted to LADUA/DISTRICT level resolution or lower.';
+COMMENT ON COLUMN t_rif40_geolevels.geography IS 'Geography (e.g EW2001)';
+COMMENT ON COLUMN t_rif40_geolevels.geolevel_name IS 'Name of geolevel. This will be a column name in the numerator/denominator tables';
+COMMENT ON COLUMN t_rif40_geolevels.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
+COMMENT ON COLUMN t_rif40_geolevels.description IS 'Description';
+COMMENT ON COLUMN t_rif40_geolevels.lookup_table IS 'Lookup table name. This is used to translate codes to the common names, e.g a LADUA of 00BK is &quot;Westminster&quot;';
+COMMENT ON COLUMN t_rif40_geolevels.lookup_desc_column IS 'Lookup table description column name.';
+COMMENT ON COLUMN t_rif40_geolevels.centroidxcoordinate_column IS 'Lookup table centroid X co-ordinate column name. Can also use CENTROIDSFILE instead.';
+COMMENT ON COLUMN t_rif40_geolevels.centroidycoordinate_column IS 'Lookup table centroid Y co-ordinate column name.';
+COMMENT ON COLUMN t_rif40_geolevels.shapefile IS 'Location of the GIS shape file. NULL if PostGress/PostGIS used. Can also use SHAPEFILE_GEOMETRY instead,';
+COMMENT ON COLUMN t_rif40_geolevels.centroidsfile IS 'Location of the GIS centroids file. Can also use CENTROIDXCOORDINATE_COLUMN, CENTROIDYCOORDINATE_COLUMN instead.';
+COMMENT ON COLUMN t_rif40_geolevels.shapefile_table IS 'Table containing GIS shape file data (created using shp2pgsql).';
+COMMENT ON COLUMN t_rif40_geolevels.shapefile_area_id_column IS 'Column containing the AREA_IDs in SHAPEFILE_TABLE';
+COMMENT ON COLUMN t_rif40_geolevels.shapefile_desc_column IS 'Column containing the AREA_ID descriptions in SHAPEFILE_TABLE';
+COMMENT ON COLUMN t_rif40_geolevels.centroids_table IS 'Table containing GIS shape file data with Arc GIS calculated population weighted centroids (created using shp2pgsql). PostGIS does not support population weighted centroids.';
+COMMENT ON COLUMN t_rif40_geolevels.centroids_area_id_column IS 'Column containing the AREA_IDs in CENTROIDS_TABLE. X and Y co-ordinates ciolumns are asummed to be named after CENTROIDXCOORDINATE_COLUMN and CENTROIDYCOORDINATE_COLUMN.';
+COMMENT ON COLUMN t_rif40_geolevels.avg_npoints_geom IS 'Average number of points in a geometry object (AREA_ID). Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.';
+COMMENT ON COLUMN t_rif40_geolevels.avg_npoints_opt IS 'Average number of points in a ST_SimplifyPreserveTopology() optimsed geometry object (AREA_ID). Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.';
+COMMENT ON COLUMN t_rif40_geolevels.file_geojson_len IS 'File length estimate (in bytes) for conversion of the entire geolevel geometry to GeoJSON. Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.';
+COMMENT ON COLUMN t_rif40_geolevels.leg_geom IS 'The average length (in projection units - usually metres) of a vector leg. Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.';
+COMMENT ON COLUMN t_rif40_geolevels.leg_opt IS 'The average length (in projection units - usually metres) of a ST_SimplifyPreserveTopology() optimsed geometryvector leg. Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.';
+COMMENT ON COLUMN t_rif40_geolevels.covariate_table IS 'Name of table used for covariates at this geolevel';
+COMMENT ON COLUMN t_rif40_geolevels.restricted IS 'Is geolevel access rectricted by Inforamtion Governance restrictions (0/1). If 1 (Yes) then a) students cannot access this geolevel and b) if the system parameter ExtractControl=1 then the user must be granted permission by a RIF_MANAGER to extract from the database the results, data extract and maps tables. This is enforced by the RIF application.';
+COMMENT ON COLUMN t_rif40_geolevels.resolution IS 'Can use a map for selection at this resolution (0/1)';
+COMMENT ON COLUMN t_rif40_geolevels.comparea IS 'Able to be used as a comparison area (0/1)';
+COMMENT ON COLUMN t_rif40_geolevels.listing IS 'Able to be used in a disease map listing (0/1)';
+*/
+
+
+--index
+CREATE UNIQUE INDEX [t_rif40_geolevels_uk2]
+  ON [rif40].[t_rif40_geolevels] (geography)
+GO
+
