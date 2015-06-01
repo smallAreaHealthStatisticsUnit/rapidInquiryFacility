@@ -763,7 +763,8 @@ final class SQLRIFContextManager
 		logSQLQuery(
 			"lookupTableQuery",
 			lookupTableQueryFormatter,
-			geography.getName());
+			geography.getName(),
+			geoLevelSelect.getName());
 	
 		PreparedStatement lookupTableStatement = null;
 		ResultSet lookupTableResultSet = null;			
@@ -1427,8 +1428,7 @@ final class SQLRIFContextManager
 			geoLevelSelectLookupTable = getLookupTableResultSet.getString(1);			
 			
 
-			if (geoLevelSelectLookupTable == null) {
-				
+			if (geoLevelSelectLookupTable == null) {				
 				connection.commit();
 				
 				return;

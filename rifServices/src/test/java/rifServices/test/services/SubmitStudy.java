@@ -139,14 +139,16 @@ public final class SubmitStudy
 			SampleTestObjectGenerator sampleTestObjectGenerator
 				= new SampleTestObjectGenerator();
 			RIFStudySubmission studySubmission
-				= sampleTestObjectGenerator.createSampleRIFJobSubmissionHavingResults();
+				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			validOutputFile
 				= sampleTestObjectGenerator.generateSampleOutputFile();
 
-			rifStudySubmissionService.submitStudy(
-				validUser, 
-				studySubmission, 
-				validOutputFile);
+			String results 
+				= rifStudySubmissionService.submitStudy(
+					validUser, 
+					studySubmission, 
+					validOutputFile);
+			System.out.println("submitStudy_COMMON1=="+results+"==");
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();			

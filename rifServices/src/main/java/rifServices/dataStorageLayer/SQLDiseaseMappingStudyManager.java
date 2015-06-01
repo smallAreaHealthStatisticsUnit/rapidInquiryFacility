@@ -305,6 +305,7 @@ final class SQLDiseaseMappingStudyManager
 		ValidationPolicy validationPolicy
 			= getValidationPolicy();
 		
+		/*
 		if (getValidationPolicy() == ValidationPolicy.STRICT) {
 			GeoLevelArea geoLevelArea
 				= area.getGeoLevelArea();
@@ -314,6 +315,7 @@ final class SQLDiseaseMappingStudyManager
 				geoLevelSelect.getName(), 
 				geoLevelArea.getName());
 		}
+		*/
 		
 		GeoLevelView geoLevelView
 			= area.getGeoLevelView();
