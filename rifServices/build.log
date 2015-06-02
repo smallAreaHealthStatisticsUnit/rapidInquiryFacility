@@ -1,0 +1,30 @@
+[INFO] Error stacktraces are turned on.
+[INFO] Scanning for projects...
+[ERROR] The build could not read 1 project -> [Help 1]
+org.apache.maven.project.ProjectBuildingException: Some problems were encountered while processing the POMs:
+[ERROR] 'dependencyManagement.dependencies.dependency.systemPath' for rifGenericUILibrary:rifGenericUILibrary:jar must be omitted. This field may only be specified for a dependency with system scope. @ rifServices:rifServices:[unknown-version], /home/peterh/github/rapidInquiryFacility/rifServices/pom.xml, line 165, column 18
+
+	at org.apache.maven.project.DefaultProjectBuilder.build(DefaultProjectBuilder.java:405)
+	at org.apache.maven.DefaultMaven.collectProjects(DefaultMaven.java:663)
+	at org.apache.maven.DefaultMaven.getProjectsForMavenReactor(DefaultMaven.java:654)
+	at org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:243)
+	at org.apache.maven.DefaultMaven.execute(DefaultMaven.java:154)
+	at org.apache.maven.cli.MavenCli.execute(MavenCli.java:584)
+	at org.apache.maven.cli.MavenCli.doMain(MavenCli.java:213)
+	at org.apache.maven.cli.MavenCli.main(MavenCli.java:157)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced(Launcher.java:289)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.launch(Launcher.java:229)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode(Launcher.java:415)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.main(Launcher.java:356)
+[ERROR]   
+[ERROR]   The project rifServices:rifServices:0.0.1-SNAPSHOT (/home/peterh/github/rapidInquiryFacility/rifServices/pom.xml) has 1 error
+[ERROR]     'dependencyManagement.dependencies.dependency.systemPath' for rifGenericUILibrary:rifGenericUILibrary:jar must be omitted. This field may only be specified for a dependency with system scope. @ rifServices:rifServices:[unknown-version], /home/peterh/github/rapidInquiryFacility/rifServices/pom.xml, line 165, column 18
+[ERROR] 
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/ProjectBuildingException

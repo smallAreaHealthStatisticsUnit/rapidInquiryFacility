@@ -10,6 +10,8 @@
   <artifactId>rifServices</artifactId>
   <packaging>war</packaging>
   <name>RIF Middleware</name>
+  <url>https://localhost:8443</url>
+  <version>0.1</version>
   <description>Contains the code for the middleware used by the tools of the RIF Tool Suite</description>
   <dependencies>
 

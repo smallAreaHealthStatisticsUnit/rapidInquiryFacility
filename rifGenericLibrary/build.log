@@ -1,0 +1,63 @@
+[INFO] Error stacktraces are turned on.
+[INFO] Scanning for projects...
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building rifGenericUILibrary 0.0.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ rifGenericUILibrary ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.5.1:compile (default-compile) @ rifGenericUILibrary ---
+[INFO] Compiling 2 source files to /home/peterh/github/rapidInquiryFacility/rifGenericLibrary/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ rifGenericUILibrary ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.5.1:compile (default-compile) @ rifGenericUILibrary ---
+[INFO] Compiling 2 source files to /home/peterh/github/rapidInquiryFacility/rifGenericLibrary/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ rifGenericUILibrary ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/peterh/github/rapidInquiryFacility/rifGenericLibrary/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.5.1:testCompile (default-testCompile) @ rifGenericUILibrary ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.12.4:test (default-test) @ rifGenericUILibrary ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ rifGenericUILibrary ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ rifGenericUILibrary ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.5.1:compile (default-compile) @ rifGenericUILibrary ---
+[INFO] Compiling 2 source files to /home/peterh/github/rapidInquiryFacility/rifGenericLibrary/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ rifGenericUILibrary ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/peterh/github/rapidInquiryFacility/rifGenericLibrary/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.5.1:testCompile (default-testCompile) @ rifGenericUILibrary ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.12.4:test (default-test) @ rifGenericUILibrary ---
+[INFO] No tests to run.
+[INFO] Skipping execution of surefire because it has already been run for this configuration
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ rifGenericUILibrary ---
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ rifGenericUILibrary ---
+[INFO] Installing /home/peterh/github/rapidInquiryFacility/rifGenericLibrary/target/rifGenericUILibrary-0.0.1-SNAPSHOT.jar to /home/peterh/.m2/repository/rifGenericUILibrary/rifGenericUILibrary/0.0.1-SNAPSHOT/rifGenericUILibrary-0.0.1-SNAPSHOT.jar
+[INFO] Installing /home/peterh/github/rapidInquiryFacility/rifGenericLibrary/pom.xml to /home/peterh/.m2/repository/rifGenericUILibrary/rifGenericUILibrary/0.0.1-SNAPSHOT/rifGenericUILibrary-0.0.1-SNAPSHOT.pom
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 1.905 s
+[INFO] Finished at: 2015-06-02T14:15:21+01:00
+[INFO] Final Memory: 29M/1963M
+[INFO] ------------------------------------------------------------------------
