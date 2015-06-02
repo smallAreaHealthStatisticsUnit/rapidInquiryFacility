@@ -121,36 +121,58 @@ GRANT SELECT ON [rif40].[t_rif40_geolevels] TO public
 GO
 
 --comments
-/*
-OMMENT ON TABLE t_rif40_geolevels
-  IS 'Geolevels: hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels are restricted to LADUA/DISTRICT level resolution or lower.';
-COMMENT ON COLUMN t_rif40_geolevels.geography IS 'Geography (e.g EW2001)';
-COMMENT ON COLUMN t_rif40_geolevels.geolevel_name IS 'Name of geolevel. This will be a column name in the numerator/denominator tables';
-COMMENT ON COLUMN t_rif40_geolevels.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
-COMMENT ON COLUMN t_rif40_geolevels.description IS 'Description';
-COMMENT ON COLUMN t_rif40_geolevels.lookup_table IS 'Lookup table name. This is used to translate codes to the common names, e.g a LADUA of 00BK is &quot;Westminster&quot;';
-COMMENT ON COLUMN t_rif40_geolevels.lookup_desc_column IS 'Lookup table description column name.';
-COMMENT ON COLUMN t_rif40_geolevels.centroidxcoordinate_column IS 'Lookup table centroid X co-ordinate column name. Can also use CENTROIDSFILE instead.';
-COMMENT ON COLUMN t_rif40_geolevels.centroidycoordinate_column IS 'Lookup table centroid Y co-ordinate column name.';
-COMMENT ON COLUMN t_rif40_geolevels.shapefile IS 'Location of the GIS shape file. NULL if PostGress/PostGIS used. Can also use SHAPEFILE_GEOMETRY instead,';
-COMMENT ON COLUMN t_rif40_geolevels.centroidsfile IS 'Location of the GIS centroids file. Can also use CENTROIDXCOORDINATE_COLUMN, CENTROIDYCOORDINATE_COLUMN instead.';
-COMMENT ON COLUMN t_rif40_geolevels.shapefile_table IS 'Table containing GIS shape file data (created using shp2pgsql).';
-COMMENT ON COLUMN t_rif40_geolevels.shapefile_area_id_column IS 'Column containing the AREA_IDs in SHAPEFILE_TABLE';
-COMMENT ON COLUMN t_rif40_geolevels.shapefile_desc_column IS 'Column containing the AREA_ID descriptions in SHAPEFILE_TABLE';
-COMMENT ON COLUMN t_rif40_geolevels.centroids_table IS 'Table containing GIS shape file data with Arc GIS calculated population weighted centroids (created using shp2pgsql). PostGIS does not support population weighted centroids.';
-COMMENT ON COLUMN t_rif40_geolevels.centroids_area_id_column IS 'Column containing the AREA_IDs in CENTROIDS_TABLE. X and Y co-ordinates ciolumns are asummed to be named after CENTROIDXCOORDINATE_COLUMN and CENTROIDYCOORDINATE_COLUMN.';
-COMMENT ON COLUMN t_rif40_geolevels.avg_npoints_geom IS 'Average number of points in a geometry object (AREA_ID). Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.';
-COMMENT ON COLUMN t_rif40_geolevels.avg_npoints_opt IS 'Average number of points in a ST_SimplifyPreserveTopology() optimsed geometry object (AREA_ID). Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.';
-COMMENT ON COLUMN t_rif40_geolevels.file_geojson_len IS 'File length estimate (in bytes) for conversion of the entire geolevel geometry to GeoJSON. Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.';
-COMMENT ON COLUMN t_rif40_geolevels.leg_geom IS 'The average length (in projection units - usually metres) of a vector leg. Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.';
-COMMENT ON COLUMN t_rif40_geolevels.leg_opt IS 'The average length (in projection units - usually metres) of a ST_SimplifyPreserveTopology() optimsed geometryvector leg. Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.';
-COMMENT ON COLUMN t_rif40_geolevels.covariate_table IS 'Name of table used for covariates at this geolevel';
-COMMENT ON COLUMN t_rif40_geolevels.restricted IS 'Is geolevel access rectricted by Inforamtion Governance restrictions (0/1). If 1 (Yes) then a) students cannot access this geolevel and b) if the system parameter ExtractControl=1 then the user must be granted permission by a RIF_MANAGER to extract from the database the results, data extract and maps tables. This is enforced by the RIF application.';
-COMMENT ON COLUMN t_rif40_geolevels.resolution IS 'Can use a map for selection at this resolution (0/1)';
-COMMENT ON COLUMN t_rif40_geolevels.comparea IS 'Able to be used as a comparison area (0/1)';
-COMMENT ON COLUMN t_rif40_geolevels.listing IS 'Able to be used in a disease map listing (0/1)';
-*/
-
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Geolevels: hierarchy of level with a geography. Use this table for INSERT/UPDATE/DELETE; use RIF40_GEOLEVELS for SELECT. In RIF40_GEOLEVELS if the user has the RIF_STUDENT role the geolevels are restricted to LADUA/DISTRICT level resolution or lower.' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Geography (e.g EW2001)', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'geography'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Name of geolevel. This will be a column name in the numerator/denominator tables', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'geolevel_name'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'ID for ordering (1=lowest resolution). Up to 99 supported.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'geolevel_id'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Description', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'description'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Lookup table name. This is used to translate codes to the common names, e.g a LADUA of 00BK is &quot;Westminster&quot;', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'lookup_table'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Lookup table description column name.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'lookup_desc_column'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Lookup table centroid X co-ordinate column name. Can also use CENTROIDSFILE instead.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'centroidxcoordinate_column'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Lookup table centroid Y co-ordinate column name.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'centroidycoordinate_column'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Location of the GIS shape file. NULL if PostGress/PostGIS used. Can also use SHAPEFILE_GEOMETRY instead.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'shapefile'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Location of the GIS centroids file. Can also use CENTROIDXCOORDINATE_COLUMN, CENTROIDYCOORDINATE_COLUMN instead.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'centroidsfile'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Table containing GIS shape file data (created using shp2pgsql).', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'shapefile_table'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Column containing the AREA_IDs in SHAPEFILE_TABLE', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'shapefile_area_id_column'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Column containing the AREA_ID descriptions in SHAPEFILE_TABLE', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'shapefile_desc_column'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Table containing GIS shape file data with Arc GIS calculated population weighted centroids (created using shp2pgsql). PostGIS does not support population weighted centroids.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'centroids_table'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Column containing the AREA_IDs in CENTROIDS_TABLE. X and Y co-ordinates ciolumns are asummed to be named after CENTROIDXCOORDINATE_COLUMN and CENTROIDYCOORDINATE_COLUMN.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'centroids_area_id_column'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Average number of points in a geometry object (AREA_ID). Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'avg_npoints_geom'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Average number of points in a ST_SimplifyPreserveTopology() optimsed geometry object (AREA_ID). Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'avg_npoints_opt'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'File length estimate (in bytes) for conversion of the entire geolevel geometry to GeoJSON. Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'file_geojson_len'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The average length (in projection units - usually metres) of a vector leg. Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'leg_geom'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The average length (in projection units - usually metres) of a ST_SimplifyPreserveTopology() optimsed geometryvector leg. Used to evaluation the impact of ST_SIMPLIFY_TOLERANCE.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'leg_opt'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Name of table used for covariates at this geolevel', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'covariate_table'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Is geolevel access rectricted by Inforamtion Governance restrictions (0/1). If 1 (Yes) then a) students cannot access this geolevel and b) if the system parameter ExtractControl=1 then the user must be granted permission by a RIF_MANAGER to extract from the database the results, data extract and maps tables. This is enforced by the RIF application.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'restricted'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Can use a map for selection at this resolution (0/1)', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'resolution'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Able to be used as a comparison area (0/1)', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'comparea'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Able to be used in a disease map listing (0/1)', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_geolevels', @level2type=N'COLUMN',@level2name=N'listing'
+GO
 
 --index
 CREATE UNIQUE INDEX [t_rif40_geolevels_uk2]
