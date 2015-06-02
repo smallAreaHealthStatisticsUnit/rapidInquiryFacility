@@ -19,9 +19,15 @@ cmd() {
 		exit 1
 	fi
 }
+rm rifServices/src/main/webapp/WEB-INF/lib/*.jar
+find rifServices/target -name \*.jar  -exec rm {} \;
 #
-cmd rifGenericLibrary mvn --log-file build.log --errors --fail-at-end --file rifGenericLibrary --file rifServices validate compile package install
+cmd rifGenericLibrary mvn --log-file build.log --errors --fail-at-end --file rifGenericLibrary --file rifServices clean validate compile package install
 cmd rifGenericLibrary mvn --log-file build.log --errors --fail-at-end --file rifServices war:war
 cmd rifGenericLibrary mvn --log-file build.log --errors --fail-at-end --file rifServices war:inplace
+#
+find . -name \*.jar
+find . -name \*.war
+
 #
 # Eof

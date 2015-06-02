@@ -9,11 +9,11 @@
 [INFO] Generating webapp in source directory [/home/peterh/github/rapidInquiryFacility/rifServices/src/main/webapp]
 [INFO] Assembling webapp [rifServices] in [/home/peterh/github/rapidInquiryFacility/rifServices/src/main/webapp]
 [INFO] Processing war project
-[INFO] Webapp assembled in [38 msecs]
+[INFO] Webapp assembled in [84 msecs]
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time: 0.788 s
-[INFO] Finished at: 2015-06-02T15:13:32+01:00
+[INFO] Total time: 1.274 s
+[INFO] Finished at: 2015-06-02T15:42:21+01:00
 [INFO] Final Memory: 24M/1963M
 [INFO] ------------------------------------------------------------------------
