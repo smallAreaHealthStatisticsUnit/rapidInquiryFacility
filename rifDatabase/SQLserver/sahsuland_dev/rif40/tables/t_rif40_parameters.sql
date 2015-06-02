@@ -1,6 +1,7 @@
 USE [sahsuland_dev]
 GO
 
+--drop table if exists
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_parameters]') AND type in (N'U'))
 BEGIN
@@ -8,6 +9,7 @@ BEGIN
 END
 GO
 
+--table definition
 CREATE TABLE [rif40].[t_rif40_parameters](
 	[param_name] [varchar](30) NOT NULL,
 	[param_value] [varchar](50) NOT NULL,
@@ -19,15 +21,18 @@ CREATE TABLE [rif40].[t_rif40_parameters](
 ) ON [PRIMARY]
 GO
 
+--permissions
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[t_rif40_parameters] TO [rif_manager]
 GO
 GRANT SELECT ON [rif40].[t_rif40_parameters] TO public
 GO
 
-/*
-COMMENT ON TABLE t_rif40_parameters
-  IS 'RIF40 parameters. Use this table for INSERT/UPDATE/DELETE; use RIF40_PARAMETERS for SELECT. User needs RIF_NO_SUPPRESSION granted as a role to see unsuppressed results';
-COMMENT ON COLUMN t_rif40_parameters.param_name IS 'Parameter';
-COMMENT ON COLUMN t_rif40_parameters.param_value IS 'Value';
-COMMENT ON COLUMN t_rif40_parameters.param_description IS 'Description';
-*/
+--comments
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF40 parameters. Use this table for INSERT/UPDATE/DELETE; use RIF40_PARAMETERS for SELECT. User needs RIF_NO_SUPPRESSION granted as a role to see unsuppressed results' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_parameters'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Parameter', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_parameters', @level2type=N'COLUMN',@level2name=N'param_name'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Value', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_parameters', @level2type=N'COLUMN',@level2name=N'param_value'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Description', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_parameters', @level2type=N'COLUMN',@level2name=N'param_description'
+GO

@@ -1,6 +1,7 @@
 USE [sahsuland_dev]
 GO
 
+--drop view if exists
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_study_areas]') AND type in (N'V'))
 BEGIN
@@ -8,6 +9,7 @@ BEGIN
 END
 GO
 
+--view definition
 CREATE VIEW [rif40].[rif40_study_areas] AS 
 SELECT c.username,
     c.study_id,
@@ -20,16 +22,20 @@ SELECT c.username,
   (s.grantee_username IS NOT NULL AND s.grantee_username <> '')
  GO
  
+ --permissions
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[rif40_study_areas] TO [rif_user]
 GO
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[rif40_study_areas] TO [rif_manager]
 GO
 
-/*
-COMMENT ON VIEW rif40_study_areas
-  IS 'Links study areas and bands for a given study.';
-COMMENT ON COLUMN rif40_study_areas.username IS 'Username';
-COMMENT ON COLUMN rif40_study_areas.study_id IS 'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq';
-COMMENT ON COLUMN rif40_study_areas.area_id IS 'An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE';
-COMMENT ON COLUMN rif40_study_areas.band_id IS 'A band allocated to the area';
-*/
+--comments
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Links study areas and bands for a given study.' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_study_areas'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Username', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_study_areas', @level2type=N'COLUMN',@level2name=N'username'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_study_areas', @level2type=N'COLUMN',@level2name=N'study_id'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_study_areas', @level2type=N'COLUMN',@level2name=N'area_id'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'A band allocated to the area', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_study_areas', @level2type=N'COLUMN',@level2name=N'band_id'
+GO

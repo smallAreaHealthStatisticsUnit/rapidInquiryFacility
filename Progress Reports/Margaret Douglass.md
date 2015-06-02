@@ -2,13 +2,20 @@
 
 ##2015
 
+###June
+The goal for this month is to complete all triggers (including logging and error handling) for the rif40 tables and views and to test the tables/views/triggers to confirm everything has been set up correctly.  
+
+######1 June
+* Still fixing up the tables and views to have the correct columns, data types, and comments as in the current Postgres version.
+* Finished almost all the tables, but then realized I had skipped the comments for t_rif40_geolevels and there are tons of fields, so that will be for tomorrow.  About half of the views have comments.
+
 ###May
 This month is dedicated to completing scripts necessary to create all tables and views in the rif40 schema (+ the required functions and objects needed for the creation of tables and views). 
 
 ######29 May
 * Working more on adding comments to all tables and views in rif40 schema + checking that the object definitions are still the same in Peter's Postgres database.
-* Experimenting with how to identify, drop, disable foreign keys and constraints for rebuilding tables that have references to others
-* No built-in function to get current value of a sequence, so I had to write my own in order to easily set default column definitions to current value of sequences
+* Experimenting with how to identify, drop, disable foreign keys and constraints for rebuilding tables that have references to others in SQL Server
+* There is no built-in function to get current value of a sequence in SQL Server (really?), so I had to write my own in order to easily set default column definitions to current value of sequences
 * Study_id datatype has changed, and that is a field used in many foreign keys.  Messy.  Still working my way through all the tables that have wrong study_id type.  stopped at t_rif40_investigations
 (select * FROM [sahsuland_dev].[INFORMATION_SCHEMA].[COLUMNS] where column_name='study_id' and data_type != 'int')
  

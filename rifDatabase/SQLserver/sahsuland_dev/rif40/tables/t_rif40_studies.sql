@@ -23,6 +23,30 @@ BEGIN
 		ALTER TABLE [rif40].[t_rif40_investigations] DROP CONSTRAINT [t_rif40_inv_study_id_fk];
 	END;
 	
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[rif40_study_shares]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='rif40_study_shares_study_id_fk')
+	BEGIN
+		ALTER TABLE [rif40].[rif40_study_shares] DROP CONSTRAINT [rif40_study_shares_study_id_fk]
+	END;
+
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_comparison_areas]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='t_rif40_compareas_study_id_fk')
+	BEGIN
+		ALTER TABLE [rif40].[t_rif40_comparison_areas] DROP CONSTRAINT [t_rif40_compareas_study_id_fk]
+	END;
+	
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_study_areas]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='t_rif40_studyareas_study_id_fk')
+	BEGIN
+		ALTER TABLE [rif40].[t_rif40_study_areas] DROP CONSTRAINT [t_rif40_studyareas_study_id_fk]
+	END;
+	
 	DROP TABLE [rif40].[t_rif40_studies];
 END
 GO
@@ -86,8 +110,7 @@ CONSTRAINT [t_rif40_studies_geography_fk] FOREIGN KEY ([geography])
 ) ON [PRIMARY]
 GO
 
---recreate foreign key references -- current study_id datatype issues
-
+--recreate foreign key references
 IF EXISTS (SELECT * FROM sys.objects 
 	WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_study_sql_log]') AND type in (N'U'))
 BEGIN
@@ -98,7 +121,6 @@ BEGIN
 END
 GO
 
-/*
 IF EXISTS (SELECT * FROM sys.objects 
 	WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_investigations]') AND type in (N'U'))
 BEGIN
@@ -108,7 +130,36 @@ BEGIN
 	ON UPDATE NO ACTION ON DELETE NO ACTION;
 END
 GO
-*/
+
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[rif40_study_shares]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[rif40_study_shares]  WITH CHECK ADD  
+	CONSTRAINT [rif40_study_shares_study_id_fk] FOREIGN KEY([study_id])
+	REFERENCES [rif40].[t_rif40_studies] ([study_id])		
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
+GO
+	
+IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_comparison_areas]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[t_rif40_comparison_areas]  WITH CHECK ADD  
+	CONSTRAINT [t_rif40_compareas_study_id_fk] FOREIGN KEY([study_id])
+	REFERENCES [rif40].[t_rif40_studies] ([study_id])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
+GO
+
+IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_study_areas]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[t_rif40_study_areas]  WITH CHECK ADD  
+	CONSTRAINT [t_rif40_studyareas_study_id_fk] FOREIGN KEY([study_id])
+	REFERENCES [rif40].[t_rif40_studies] ([study_id])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
+GO
 	
 --permissions
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[t_rif40_studies] TO [rif_user]

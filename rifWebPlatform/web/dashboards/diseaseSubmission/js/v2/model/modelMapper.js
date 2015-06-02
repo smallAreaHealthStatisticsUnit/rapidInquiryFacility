@@ -15,8 +15,8 @@ RIF.modelMapper = (function (modelAccessor) {
         }(),
 
         "project": {
-          "name": accessor.getProject(),
-          "description": accessor.getDescription()
+          "name": "TEST", /*accessor.getProject()*/
+          "description": "Test Project. Will be disabled when in production." /*accessor.getDescription()*/
         },
 
         "disease_mapping_study": {
@@ -36,7 +36,9 @@ RIF.modelMapper = (function (modelAccessor) {
               "geolevel_view": {
                 name: accessor.getStudyAreaResolution()
               },
-              "geolevel_to_map": accessor.getStudyAreaResolution(),
+              "geolevel_to_map": {
+                  "name":accessor.getStudyAreaResolution(),
+              },
               "geolevel_area": ''
             },
             "map_areas": {
@@ -52,7 +54,9 @@ RIF.modelMapper = (function (modelAccessor) {
               "geolevel_view": {
                 name: accessor.getComparisonAreaResolution()
               },
-              "geolevel_to_map": accessor.getComparisonAreaResolution(),
+              "geolevel_to_map": {
+                  name: accessor.getComparisonAreaResolution(),
+              },
               "geolevel_area": ''
             },
             "map_areas": {

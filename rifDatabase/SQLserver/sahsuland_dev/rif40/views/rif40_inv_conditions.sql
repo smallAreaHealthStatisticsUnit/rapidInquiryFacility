@@ -94,6 +94,7 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Outcome Group 
 GO
 
 --this won't work:
+/*
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'''true'' if field_name exists, ''false'' if it does not', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_inv_conditions', @level2type=N'COLUMN',@level2name=N'column_exists'
 GO
-
+*/
