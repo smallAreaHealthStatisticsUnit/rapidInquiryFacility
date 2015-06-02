@@ -22,5 +22,6 @@ cmd() {
 #
 cmd rifGenericLibrary mvn --log-file build.log --errors --fail-at-end --file rifGenericLibrary --file rifServices validate compile package install
 cmd rifGenericLibrary mvn --log-file build.log --errors --fail-at-end --file rifServices war:war
+cmd rifGenericLibrary mvn --log-file build.log --errors --fail-at-end --file rifServices war:inplace
 #
 # Eof
