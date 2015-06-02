@@ -1,4 +1,8 @@
 /*
+2/6/15: Note that this trigger is not in current Postgrse version
+*/
+
+/*
  OUTCOME TRIGGER
 Check current_lookup table exists
 Check previous lookup table exists if NOT NULL 

@@ -1,5 +1,6 @@
-rif40_ErrorLog.sql (needed for triggers)
+"sqlcmd -d sahsuland_dev -i H:\SAHSU\rif_test.sql"  (use powershell to loop through long list of sql files so it will be loaded in correct/logical order)
 
+rif40_ErrorLog.sql (needed for triggers)
 
 Not dependent on anything:
 rif40_version.sql

@@ -5,9 +5,15 @@
 ###June
 The goal for this month is to complete all triggers (including logging and error handling) for the rif40 tables and views and to test the tables/views/triggers to confirm everything has been set up correctly.  
 
+######2 June
+* Finished updating and commenting all tables and views.
+* Experimented with running batch SQL on rif3 with "sqlcmd -d sahsuland_dev -i H:\SAHSU\rif_test.sql".
+* Onto triggers.  Now focusing on understanding what is in Postgres and what RH completed to understand how much needs to be done.
+* There are 65 triggers in Postgres.  RH implemented 15, but naming is inconsistent so it is not obvious which of the Postgres triggers have been implemented.  I suspect RH combined several Postgres triggers into one single trigger per table.  None of RH's triggers have been checked.
+
 ######1 June
 * Still fixing up the tables and views to have the correct columns, data types, and comments as in the current Postgres version.
-* Finished almost all the tables, but then realized I had skipped the comments for t_rif40_geolevels and there are tons of fields, so that will be for tomorrow.  About half of the views have comments.
+* Finished almost all the tables.  About half of the views have comments.
 
 ###May
 This month is dedicated to completing scripts necessary to create all tables and views in the rif40 schema (+ the required functions and objects needed for the creation of tables and views). 

@@ -30,7 +30,6 @@ declare @investigation_state_only_flag int -- MIGHT NOT WORK FOR BATCH INSERTS
  					ic.min_age_group = iv.min_age_group AND
  					ic.genders = iv.genders AND
  					ic.numer_tab = iv.numer_tab AND
- 					ic.geography = iv.geography AND
  					ic.study_id = iv.study_id AND
  					ic.inv_id = iv.inv_id AND
  					ic.classifier = iv.classifier AND
