@@ -2,19 +2,18 @@ package rifServices.dataStorageLayer;
 
 import rifServices.system.RIFDatabaseProperties;
 
+
 import rifServices.system.RIFServiceException;
-import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
 import rifServices.util.RIFDateFormat;
-import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.User;
-import rifServices.businessConceptLayer.RIFOutputOption;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.fileFormats.XMLCommentInjector;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifServices.fileFormats.RIFStudySubmissionContentHandler;
+
+import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
 
 import java.io.*;
 import java.sql.*;
@@ -23,8 +22,6 @@ import java.util.zip.ZipOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 
-import org.postgresql.copy.CopyManager;
-import org.postgresql.core.BaseConnection;
 
 
 /**
@@ -166,7 +163,8 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 				submissionZipOutputStream,
 				baseStudyName,
 				rifStudySubmission);
-			
+	
+			/*
 			writeRatesAndRisksFiles(
 				connection,
 				temporaryDirectoryPath,
@@ -182,7 +180,8 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 				rifStudySubmission);
 			
 			writeTermsAndConditionsFiles(
-				submissionZipOutputStream);		
+				submissionZipOutputStream);	
+			*/	
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
@@ -227,7 +226,11 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 		//concatenate study name length.  We need to be mindful about
 		//the length of file names we produce so that they are not too
 		//long for some operating systems to handle.
-		name = name.substring(0, BASE_FILE_STUDY_NAME_LENGTH);
+		
+		if (name.length() > BASE_FILE_STUDY_NAME_LENGTH) {
+			name = name.substring(0, BASE_FILE_STUDY_NAME_LENGTH);
+		}
+		
 		
 		//replace any spaces with underscores
 		name = name.replaceAll(" ", "_");
@@ -312,14 +315,15 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 			connection,
 			extractTableName.toString(),
 			extractFileName.toString());
-			
-		File extractFile = new File(extractFileName.toString());
-		addFileToZipFile(
-		    submissionZipOutputStream, 
-		    STUDY_EXTRACT_SUBDIRECTORY, 
-		    extractFile);
+	
+		//File extractFile = new File(extractFileName.toString());
+		//addFileToZipFile(
+		  //  submissionZipOutputStream, 
+		    //STUDY_EXTRACT_SUBDIRECTORY, 
+		    //extractFile);
 						
 		//Add extract file to zip file
+/*		
 		StringBuilder mapTableName = new StringBuilder();
 		mapTableName.append("s");
 		mapTableName.append(rifStudySubmission.getStudyID());
@@ -342,7 +346,8 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 		addFileToZipFile(
 		submissionZipOutputStream, 
 			STUDY_EXTRACT_SUBDIRECTORY, 
-		    mapFile);		
+		    mapFile);	 
+		*/
 	}
 	private void writeRatesAndRisksFiles(
 		final Connection connection,
@@ -473,31 +478,28 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 		final String outputFilePath)
 		throws Exception {
 		
-		/*
-		CopyManager copyManager = new CopyManager((BaseConnection) connection);
-		copyManager.
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		queryFormatter.addQueryPhrase(0, "COPY ");
-		queryFormatter.addQueryPhrase(tableName);
-		queryFormatter.addQueryPhrase(" TO \'");
-		queryFormatter.addQueryPhrase(outputFilePath);
-		queryFormatter.addQueryPhrase("\' DELIMITERS \',\';");
-		queryFormatter.finishLine();
 		
-		System.out.println("==========");
-		System.out.println(queryFormatter.generateQuery());
-		System.out.println("==========");
+		
+		SQLFunctionCallerQueryFormatter queryFormatter = new SQLFunctionCallerQueryFormatter();
+		queryFormatter.setSchema("rif40_dmp_pkg");
+		queryFormatter.setFunctionName("csv_dump");
+		queryFormatter.setNumberOfFunctionParameters(1);
+		
+		
+		
 		PreparedStatement statement
 			= createPreparedStatement(connection, queryFormatter);		
 		try {
-			statement.executeUpdate();
+			statement = createPreparedStatement(connection, queryFormatter);
+			statement.setString(1, tableName);
+			statement.executeQuery();
 			
 			connection.commit();
 		}
 		finally {
 			SQLQueryUtility.close(statement);
 		}
-		*/
+
 	}
 		
 	private void addDirectoryToZipFile(
