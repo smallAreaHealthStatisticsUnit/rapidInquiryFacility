@@ -97,6 +97,7 @@ final class SQLRIFSubmissionManager
 	private SQLRIFContextManager rifContextManager;
 	private SQLAgeGenderYearManager ageGenderYearManager;
 	private SQLCovariateManager covariateManager;
+	private SQLMapDataManager mapDataManager;
 	
 	// ==========================================
 	// Section Construction
@@ -110,13 +111,15 @@ final class SQLRIFSubmissionManager
 		final SQLRIFContextManager rifContextManager,
 		final SQLAgeGenderYearManager ageGenderYearManager,
 		final SQLCovariateManager covariateManager,
-		final SQLDiseaseMappingStudyManager diseaseMappingStudyManager) {
+		final SQLDiseaseMappingStudyManager diseaseMappingStudyManager,
+		final SQLMapDataManager mapDataManager) {
 
 		super(rifDatabaseProperties);		
 		this.rifContextManager = rifContextManager;
 		this.ageGenderYearManager = ageGenderYearManager;
 		this.covariateManager = covariateManager;		
 		this.diseaseMappingStudyManager = diseaseMappingStudyManager;
+		this.mapDataManager = mapDataManager;
 	}
 
 	// ==========================================
@@ -323,6 +326,7 @@ final class SQLRIFSubmissionManager
 		final User user,
 		final RIFStudySubmission studySubmission) 
 		throws RIFServiceException {
+
 		
 		//Validate parameters
 		ValidationPolicy validationPolicy = getValidationPolicy();
@@ -365,9 +369,9 @@ final class SQLRIFSubmissionManager
 			
 			connection.commit();
 
-			//System.out.println("Just added a study with id=="+result+"==");
-			//result = runStudy(connection, studyID);
-
+			System.out.println("Just added a study with id=="+result+"==");
+			runStudy(connection, result);
+			
 			return result;
 		}
 		catch(SQLException sqlException) {
@@ -383,6 +387,7 @@ final class SQLRIFSubmissionManager
 					errorMessage);
 			throw rifServiceException;			
 		}
+
 	}
 	
 	
@@ -974,6 +979,22 @@ final class SQLRIFSubmissionManager
 				
 		PreparedStatement statement = null;
 		try {
+			
+			
+			Geography geography = diseaseMappingStudy.getGeography();
+			DiseaseMappingStudyArea diseaseMappingStudyArea
+				= diseaseMappingStudy.getDiseaseMappingStudyArea();
+			
+
+			
+			
+			
+			ArrayList<MapArea> allMapAreas
+				= mapDataManager.getAllRelevantMapAreas(
+					connection,
+					geography,
+					diseaseMappingStudyArea);
+			
 			SQLInsertQueryFormatter queryFormatter
 				= new SQLInsertQueryFormatter();
 			queryFormatter.setIntoTable("rif40_study_areas");
@@ -983,12 +1004,16 @@ final class SQLRIFSubmissionManager
 			statement
 				= createPreparedStatement(
 					connection,
-					queryFormatter);
-						
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-				= diseaseMappingStudy.getDiseaseMappingStudyArea();
-			ArrayList<MapArea> mapAreas
-				= diseaseMappingStudyArea.getMapAreas();
+					queryFormatter);			
+			for (MapArea currentMapArea : allMapAreas) {
+				statement.setString(1, currentMapArea.getLabel());
+				statement.setInt(2, 1);
+				statement.executeUpdate();
+			}			
+			
+			
+/*
+			
 			for (MapArea mapArea : mapAreas) {
 				
 				//KLG:
@@ -997,9 +1022,11 @@ final class SQLRIFSubmissionManager
 				
 				//In disease mapping studies, all the areas belong to one band.
 				//Therefore, let's give it a default value of 1.
-				statement.setInt(2, 1);
+
 				statement.executeUpdate();
-			}			
+			}
+*/			
+			
 		}
 		finally {
 			//Cleanup database resources			
@@ -1019,18 +1046,46 @@ final class SQLRIFSubmissionManager
 				= new SQLInsertQueryFormatter();
 			queryFormatter.setIntoTable("rif40_comparison_areas");
 			queryFormatter.addInsertField("area_id");
-		
+			
+			
 			statement 
 				= createPreparedStatement(
 					connection,
 					queryFormatter);
 			
+			Geography geography 
+				= diseaseMappingStudy.getGeography();
+			
 			ComparisonArea comparisonArea
 				= diseaseMappingStudy.getComparisonArea();
-			ArrayList<MapArea> mapAreas
+			
+			GeoLevelSelect geoLevelSelect
+				= comparisonArea.getGeoLevelSelect();
+			GeoLevelToMap geoLevelToMap
+				= comparisonArea.getGeoLevelToMap();
+
+			ArrayList<MapArea> selectedMapAreas
 				= comparisonArea.getMapAreas();
-			for (MapArea mapArea : mapAreas) {
-				statement.setString(1, mapArea.getGeographicalIdentifier());
+
+			/*
+			 * The user may have selected areas at a higher resolution
+			 * (geo level select) but want the actual map areas that are
+			 * specified in the study to be at a much lower level.  For example,
+			 * we could specify geo level select= "district", but have a geo level
+			 * to map resolution of ward level.
+			 */
+			ArrayList<MapArea> allMapAreas
+				= mapDataManager.getAllRelevantMapAreas(
+					connection,
+					geography,
+					comparisonArea);
+			
+			for (MapArea mapArea : allMapAreas) {
+				logSQLQuery("adding to comparison area", queryFormatter, mapArea.getGeographicalIdentifier());		
+			}
+						
+			for (MapArea currentMapArea : allMapAreas) {
+				statement.setString(1, currentMapArea.getLabel());
 				statement.executeUpdate();
 			}
 		}
@@ -1164,6 +1219,8 @@ final class SQLRIFSubmissionManager
 		PreparedStatement addHealthCodeStatement = null;
 		try {
 			
+			System.out.println("SQLRIFSubmissionManager addHealthOutcomes 1");
+			
 			SQLSelectQueryFormatter getOutcomeGroupNameQueryFormatter
 				= new SQLSelectQueryFormatter();
 			getOutcomeGroupNameQueryFormatter.addSelectField("outcome_group_name");
@@ -1173,7 +1230,16 @@ final class SQLRIFSubmissionManager
 			getOutcomeGroupNameQueryFormatter.addWhereParameter("table_name");
 
 			Geography geography = diseaseMappingStudy.getGeography();
-			NumeratorDenominatorPair ndPair = investigation.getNdPair();						
+			NumeratorDenominatorPair ndPair = investigation.getNdPair();
+			
+			logSQLQuery(
+					"getOutcomeGroupName", 
+					getOutcomeGroupNameQueryFormatter,
+					geography.getName(),
+					ndPair.getNumeratorTableName());
+				
+			
+			
 			getOutcomeGroupNameStatement
 				= createPreparedStatement(
 					connection,
@@ -1188,49 +1254,51 @@ final class SQLRIFSubmissionManager
 			String fieldName
 				= getOutcomeGroupNameResultSet.getString(2);
 			
+			System.out.println("SQLRIFSubmissionManager addHealthOutcomes 2");
 			
 			
 			//determine what kinds of codes the numerator table supports
 			
 			ArrayList<HealthCode> healthCodes
 				= investigation.getHealthCodes();
+			int totalHealthCodes = healthCodes.size();
 			
 			//KLG: TODO: try adding one health code maximum
-			if (healthCodes.size() > 0) {
+			if (totalHealthCodes > 0) {
 
-				for (HealthCode healthCode : healthCodes) {
-					
-					SQLInsertQueryFormatter addHealthOutcomeQueryFormatter
-						= new SQLInsertQueryFormatter();
-					addHealthOutcomeQueryFormatter.setIntoTable("rif40_inv_conditions");
-					addHealthOutcomeQueryFormatter.addInsertField("min_condition");
-					addHealthOutcomeQueryFormatter.addInsertField("outcome_group_name");				
-					addHealthOutcomeQueryFormatter.addInsertField("numer_tab");				
-					addHealthOutcomeQueryFormatter.addInsertField("field_name");				
+				SQLInsertQueryFormatter addHealthOutcomeQueryFormatter
+					= new SQLInsertQueryFormatter();
+				addHealthOutcomeQueryFormatter.setIntoTable("rif40_inv_conditions");
+				addHealthOutcomeQueryFormatter.addInsertField("min_condition");
+				addHealthOutcomeQueryFormatter.addInsertField("outcome_group_name");				
+				addHealthOutcomeQueryFormatter.addInsertField("numer_tab");				
+				addHealthOutcomeQueryFormatter.addInsertField("field_name");				
+				addHealthOutcomeQueryFormatter.addInsertField("line_number");				
+
+				for (int i = 1; i <= totalHealthCodes; i++) {
+					HealthCode currentHealthCode = healthCodes.get(i - 1);
+										
+					logSQLQuery(
+						"add_inv_condition", 
+						addHealthOutcomeQueryFormatter, 
+						currentHealthCode.getCode(),
+						outcomeGroupName,
+						ndPair.getNumeratorTableName(),
+						fieldName,
+						String.valueOf(i));
 					
 					addHealthCodeStatement
 						= createPreparedStatement(
 							connection,
 							addHealthOutcomeQueryFormatter);
-					addHealthCodeStatement.setString(1, healthCode.getCode());
+					addHealthCodeStatement.setString(1, currentHealthCode.getCode());
 					addHealthCodeStatement.setString(2, outcomeGroupName);
 					addHealthCodeStatement.setString(3, ndPair.getNumeratorTableName());
 					addHealthCodeStatement.setString(4, fieldName);
+					addHealthCodeStatement.setInt(5, i);
+
 					addHealthCodeStatement.executeUpdate();
-/*
-				String sqlHealthCodePhrase
-					= createSQLHealthCodePhrase(
-						connection,
-						ndPair,
-						healthCodes);
-				
-				//for (HealthCode healthCode : healthCodes) {
-					//KLG: Note - we need to improve what we capture for health codes
-					//table should be expanded to include name space
-					statement.setString(1, sqlHealthCodePhrase);				
-					statement.executeUpdate();
-				//}		
-*/
+
 				}
 			}
 		}
