@@ -498,11 +498,11 @@ protected AbstractGeographicalArea() {
 				= RIFServiceMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
-					fieldName);
+					fieldName);			
 			errorMessages.add(errorMessage);
 		}
 		else {
-			try {
+			try {				
 				geoLevelToMap.checkErrors(validationPolicy);			
 			}
 			catch(RIFServiceException exception) {
