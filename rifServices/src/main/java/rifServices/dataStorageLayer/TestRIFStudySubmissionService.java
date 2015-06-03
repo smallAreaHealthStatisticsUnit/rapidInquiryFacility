@@ -3,11 +3,12 @@ package rifServices.dataStorageLayer;
 
 import rifServices.businessConceptLayer.AbstractCovariate;
 
+
 import rifServices.businessConceptLayer.AdjustableCovariate;
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.ExposureCovariate;
 import rifServices.businessConceptLayer.Geography;
-import rifServices.businessConceptLayer.GeoLevelSelect;
+import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
@@ -197,7 +198,7 @@ public final class TestRIFStudySubmissionService
 	public void checkNonExistentCovariates(
 		final User _user,
 		final Geography _geography,
-		final GeoLevelSelect _geoLevelSelect,
+		final GeoLevelToMap _geoLevelToMap,
 		final ArrayList<AbstractCovariate> _covariates) 
 		throws RIFServiceException {
 
@@ -209,7 +210,7 @@ public final class TestRIFStudySubmissionService
 			return;
 		}
 		Geography geography = Geography.createCopy(_geography);
-		GeoLevelSelect geoLevelSelect = GeoLevelSelect.createCopy(_geoLevelSelect);
+		GeoLevelToMap geoLevelToMap = GeoLevelToMap.createCopy(_geoLevelToMap);
 		ArrayList<AbstractCovariate> covariates = new ArrayList<AbstractCovariate>();	
 		for (AbstractCovariate _covariate : _covariates) {
 			if (_covariate instanceof AdjustableCovariate) {
@@ -243,8 +244,8 @@ public final class TestRIFStudySubmissionService
 				geography);
 			fieldValidationUtility.checkNullMethodParameter(
 				"checkNonExistentCovariates",
-				"geoLevelSelect",
-				geoLevelSelect);			
+				"geoLevelToMap",
+				geoLevelToMap);			
 			fieldValidationUtility.checkNullMethodParameter(
 				"checkNonExistentCovariates",
 				"covariates",
@@ -268,7 +269,7 @@ public final class TestRIFStudySubmissionService
 			sqlCovariateManager.checkNonExistentCovariates(
 				connection,
 				geography,
-				geoLevelSelect,
+				geoLevelToMap,
 				covariates); 		
 
 			sqlConnectionManager.reclaimPooledReadConnection(
