@@ -156,7 +156,8 @@ public final class RIFServiceResources {
 				sqlRIFContextManager,
 				sqlAgeGenderYearManager,
 				sqlCovariateManager,
-				sqlDiseaseMappingStudyManager);
+				sqlDiseaseMappingStudyManager,
+				sqlMapDataManager);
 
 		sqlStudyExtractManager
 			= new SQLStudyExtractManager(
