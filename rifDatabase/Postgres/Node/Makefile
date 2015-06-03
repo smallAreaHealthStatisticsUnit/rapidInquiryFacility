@@ -203,6 +203,7 @@ else
 			OS=$(UNAME_S)
 #			POSTGRES_ETC_DIR=/Library/PostgreSQL/9.3/etc/posgresql
 			PGPASS=./pgpass.sh
+			TOPOJSON=/usr/local/bin/topojson
 		else
 #
 # Unsupported OS
