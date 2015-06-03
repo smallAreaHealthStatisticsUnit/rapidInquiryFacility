@@ -262,8 +262,8 @@ final class SQLDiseaseMappingStudyManager
 			geography.getName());
 		DiseaseMappingStudyArea diseaseMappingStudyArea
 			= diseaseMappingStudy.getDiseaseMappingStudyArea();
-		GeoLevelSelect geoLevelSelect
-			= diseaseMappingStudyArea.getGeoLevelSelect();
+
+		
 		
 		checkAreaNonExistentItems(
 			connection,
@@ -276,6 +276,15 @@ final class SQLDiseaseMappingStudyManager
 			geography.getName(),
 			comparisonArea);
 
+		//we need to know the geoLevelToMap resolution to check
+		//whether we have data for investigation covariates for
+		//a given geography for that resolution.  What is important here
+		//is the geoLevelToMap of the study area; with respects to covariate
+		//analysis the geoLevelToMap of the comparison area has no meaning.
+		GeoLevelToMap geoLevelToMap
+			= diseaseMappingStudyArea.getGeoLevelToMap();		
+		System.out.println("The geolevelselect for the study area is=="+geoLevelToMap.getName()+"==");
+
 		//Check non-existent items in the investigations
 		ArrayList<Investigation> investigations
 			= diseaseMappingStudy.getInvestigations();
@@ -283,7 +292,7 @@ final class SQLDiseaseMappingStudyManager
 			investigationManager.checkNonExistentItems(
 				connection, 
 				geography,
-				geoLevelSelect,
+				geoLevelToMap,
 				investigation);
 		}
 		

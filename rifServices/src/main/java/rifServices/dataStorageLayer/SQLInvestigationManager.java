@@ -8,6 +8,7 @@ import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelSelect;
+import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
@@ -161,7 +162,7 @@ final class SQLInvestigationManager
 	public void checkNonExistentItems(
 		final Connection connection, 
 		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
+		final GeoLevelToMap geoLevelToMap,
 		final Investigation investigation)
 		throws RIFServiceException {
 		
@@ -171,7 +172,7 @@ final class SQLInvestigationManager
 		covariateManager.checkNonExistentCovariates(
 			connection, 
 			geography,
-			geoLevelSelect,
+			geoLevelToMap,
 			covariates);
 
 		//we will not check whether the health codes exist
