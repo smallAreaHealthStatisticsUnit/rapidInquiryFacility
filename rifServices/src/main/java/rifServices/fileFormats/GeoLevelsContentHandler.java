@@ -396,7 +396,7 @@ final class GeoLevelsContentHandler
 			currentGeoLevelType = CurrentGeoLevelType.GEOLEVEL_TO_MAP;
 			currentGeoLevelToMap = GeoLevelToMap.newInstance();			
 			String identifier = attributes.getValue("id");
-			currentGeoLevelView.setIdentifier(identifier);
+			currentGeoLevelToMap.setIdentifier(identifier);
 		}
 	}
 	
