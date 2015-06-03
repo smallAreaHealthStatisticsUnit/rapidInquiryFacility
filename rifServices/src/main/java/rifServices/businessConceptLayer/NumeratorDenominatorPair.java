@@ -448,16 +448,6 @@ public final class NumeratorDenominatorPair
 					numeratorTableNameLabel);
 			errorMessages.add(errorMessage);			
 		}
-		String numeratorTableDescriptionLabel
-			= RIFServiceMessages.getMessage("numeratorDenominatorPair.numeratorTableDescription.label");		
-		if (fieldValidationUtility.isEmpty(numeratorTableDescription)) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"general.validation.emptyRequiredRecordField", 
-					recordType,
-					numeratorTableDescriptionLabel);
-			errorMessages.add(errorMessage);			
-		}
 		
 		String denominatorTableNameLabel
 			= RIFServiceMessages.getMessage("numeratorDenominatorPair.denominatorTableName.label");		
@@ -469,17 +459,31 @@ public final class NumeratorDenominatorPair
 					denominatorTableNameLabel);
 			errorMessages.add(errorMessage);			
 		}
-		String denominatorTableDescriptionLabel
-			= RIFServiceMessages.getMessage("numeratorDenominatorPair.denominatorTableDescription.label");		
-		if (fieldValidationUtility.isEmpty(denominatorTableDescription)) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"general.validation.emptyRequiredRecordField", 
-					recordType,
-					denominatorTableDescriptionLabel);
-			errorMessages.add(errorMessage);			
-		}
 		
+		if (validationPolicy == ValidationPolicy.STRICT) {
+			String numeratorTableDescriptionLabel
+				= RIFServiceMessages.getMessage("numeratorDenominatorPair.numeratorTableDescription.label");		
+			if (fieldValidationUtility.isEmpty(numeratorTableDescription)) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"general.validation.emptyRequiredRecordField", 
+						recordType,
+						numeratorTableDescriptionLabel);
+				errorMessages.add(errorMessage);			
+			}
+			
+			String denominatorTableDescriptionLabel
+				= RIFServiceMessages.getMessage("numeratorDenominatorPair.denominatorTableDescription.label");		
+			if (fieldValidationUtility.isEmpty(denominatorTableDescription)) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"general.validation.emptyRequiredRecordField", 
+						recordType,
+						denominatorTableDescriptionLabel);
+				errorMessages.add(errorMessage);			
+			}
+
+		}
 		countErrors(
 			RIFServiceError.INVALID_NUMERATOR_DENOMINATOR_PAIR, 
 			errorMessages);
