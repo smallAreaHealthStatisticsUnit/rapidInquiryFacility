@@ -1,34 +1,23 @@
 package rifServices.restfulWebServices;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-
-
-
-
-
-
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-
 import javax.servlet.http.*;
 import javax.ws.rs.core.Response;
-
+import java.nio.charset.StandardCharsets;
 import org.json.JSONObject;
-
-
+import org.json.XML;
 import org.codehaus.jackson.map.ObjectMapper;
 //import com.fasterxml.jackson.databind.ObjectMapper;
-
-
-
 
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
+import rifServices.system.RIFServiceError;
 import rifServices.businessConceptLayer.*;
 import rifServices.fileFormats.RIFStudySubmissionXMLReader;
 import rifServices.fileFormats.RIFStudySubmissionXMLWriter;
@@ -1208,46 +1197,38 @@ abstract class AbstractRIFWebServiceResource {
 	protected Response submitStudy(
 		final HttpServletRequest servletRequest,
 		final String userID,
+		final String format,
 		final InputStream inputStream) {
 		
 		String result = "";
 		
 		try {
 			
-			System.out.println("submitStudy userID=="+userID+"==");
+			System.out.println("submitStudy userID=="+userID+"==format=="+format+"==");
 			if (servletRequest == null) {
 				System.out.println("submitStudy - servletRequest was null");
 			}
 			else {
 				System.out.println("submitStudy - servletRequest was not null");				
 			}
-			
-			if (inputStream == null) {
-				System.out.println("input stream is null");
-			}
-			else {
-				System.out.println("input stream is NOT null");				
-			}
+
 			
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			
+			RIFStudySubmission rifStudySubmission = null;
 			
-			
+			if (StudySubmissionFormat.JSON.matchesFormat(format)) {
+				rifStudySubmission
+					= getRIFSubmissionFromJSONSource(inputStream);
+			}
+			else {
+				rifStudySubmission
+					= getRIFSubmissionFromXMLSource(inputStream);
+			}
 
-			RIFStudySubmissionXMLReader rifStudySubmissionReader2
-				= new RIFStudySubmissionXMLReader();
-			rifStudySubmissionReader2.readFile(inputStream);
-			RIFStudySubmission rifStudySubmission
-				= rifStudySubmissionReader2.getStudySubmission();
-
-			
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();
-			
-			/*
-			 * studyAsXML = converter(studyAsJSON);
-			 */
 			
 			studySubmissionService.submitStudy(
 				user, 
@@ -1270,6 +1251,73 @@ abstract class AbstractRIFWebServiceResource {
 			servletRequest,
 			result);		
 	}
+	
+	private RIFStudySubmission getRIFSubmissionFromJSONSource(
+		final InputStream inputStream) 
+		throws RIFServiceException {
+		
+		try {
+			BufferedReader reader 
+				= new BufferedReader(
+					new InputStreamReader(inputStream, "UTF-8"));
+			
+			StringBuilder buffer = new StringBuilder();
+			String currentInputLine 
+				= reader.readLine();	
+			System.out.println("==About to print first line of JSON===");
+			System.out.println(currentInputLine);
+			System.out.println("==Finished first line of JSON===");
+			while (currentInputLine != null) {
+				buffer.append(currentInputLine);
+				currentInputLine = reader.readLine();
+			}
+			reader.close();
+			
+			String phrase = buffer.toString();
+			System.out.println("BEGIN phrase==");
+			System.out.println(phrase);
+			System.out.println("END phrase==");
+					
+			JSONObject jsonObject = new JSONObject(buffer.toString());
+			
+			String xml = XML.toString(jsonObject);
+			System.out.println("BEGIN XML result==");
+			System.out.println(xml);
+			System.out.println("END XML result==");
+
+			InputStream xmlInputStream 
+				= new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));			
+			return getRIFSubmissionFromXMLSource(xmlInputStream);			
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+			String errorMessage
+				= RIFServiceMessages.getMessage("webService.submitStudy.error.unableToConvertJSONToXML");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.UNABLE_TO_PARSE_JSON_SUBMISSION, 
+					errorMessage);
+			throw rifServiceException;		
+		}
+		
+	}
+	
+	
+	private RIFStudySubmission getRIFSubmissionFromXMLSource(
+		final InputStream inputStream) 
+		throws RIFServiceException {
+				
+		RIFStudySubmissionXMLReader rifStudySubmissionReader2
+			= new RIFStudySubmissionXMLReader();
+		rifStudySubmissionReader2.readFile(inputStream);
+		RIFStudySubmission rifStudySubmission
+			= rifStudySubmissionReader2.getStudySubmission();
+		return rifStudySubmission;
+	}
+	
+	
+	
+	
 	
 	
 	protected User createUser(
