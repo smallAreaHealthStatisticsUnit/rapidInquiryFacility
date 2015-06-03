@@ -11,8 +11,8 @@ GO
 
 --table definition
 CREATE TABLE [rif40].[rif40_version](
-	[version] [varchar](50) NOT NULL DEFAULT (sysdatetime()),
-	[schema_created] [datetime2](0) NOT NULL,
+	[version] [varchar](50) NOT NULL ,
+	[schema_created] [datetime2](0) NOT NULL DEFAULT (sysdatetime()),
 	[schema_amended] [datetime2](0) NULL,
 	[cvs_revision] [varchar](50) NOT NULL
 ) ON [PRIMARY]

@@ -1,3 +1,10 @@
+/*
+Check - single column, populate schema_amended. Prevent DELETE or INSERT
+UPDATE - update the schema_amended field
+
+error numbers/logging?
+*/
+
 USE [sahsuland_dev]
 GO
 
@@ -12,7 +19,7 @@ GO
 
 CREATE  trigger [tr_version]
 on [rif40].[rif40_version]
-for insert , update ,delete 
+AFTER insert , update ,delete 
 As
 Begin
 
@@ -20,35 +27,47 @@ Begin
 Declare  @xtype varchar(5)
 
 	IF EXISTS (SELECT * FROM DELETED)
-	BEGIN
-		SET @XTYPE = 'D'
-	END
+		SET @XTYPE = 'D';
+	
 	IF EXISTS (SELECT * FROM INSERTED)
-		BEGIN
-			IF (@XTYPE = 'D')
-		BEGIN
-			SET @XTYPE = 'U'
-		END
-	ELSE
-		BEGIN
-			SET @XTYPE = 'I'
-		END
---When Transaction is an insert 
-	IF (@XTYPE = 'I')
-		BEGIN
-		  if (SELECT COUNT(*) total FROM [rif40].[rif40_version]) > 0 
-		  begin 
-			Raiserror ('Error: RIF40_VERSION INSERT disallowed', 16,1 );
-			rollback tran
-		  end 
-		END
---When Transaction is a delete  
+	BEGIN
+		IF (@XTYPE = 'D')
+			SET @XTYPE = 'U';
+		ELSE
+			SET @XTYPE = 'I';
+		
+	END
+
+	--When Transaction is a delete  
     IF (@XTYPE = 'D')
 		begin
-			raiserror( 'Error: RIF40_VERSION DELETE disallowed',16,1)
-			rollback tran
+			raiserror( 'Error: RIF40_VERSION DELETE disallowed',16,1);
+			rollback transaction;
 		end 
-   End 
+    
+   
+   --invalid data inserted/updated
+	IF (@XTYPE = 'I' or @XTYPE = 'U') AND EXISTS (SELECT * FROM INSERTED WHERE version IS NULL OR version='')
+	BEGIN
+		Raiserror ('Error: RIF40_VERSION INSERT/UPDATE invalid data - missing version field', 16,1 );
+		rollback transaction;
+	END
+	
+	--When Transaction is an insert when table is not previously empty
+	IF (@XTYPE = 'I')
+		BEGIN
+		  if (SELECT COUNT(*) total FROM [rif40].[rif40_version]) > 1 
+		  begin 
+			Raiserror ('Error: RIF40_VERSION INSERT disallowed', 16,1 );
+			rollback transaction;
+		  end 
+		END
+
+   --When Transaction is an Update
+   IF (@XTYPE = 'U')
+   BEGIN
+		update [rif40].[rif40_version] set schema_amended=sysdatetime();
+	END
  end 
 
  

@@ -1,3 +1,8 @@
+/*
+Check username exists and is a RIF user
+Check project has not ended
+ */
+
 USE [sahsuland_dev]
 GO
 
