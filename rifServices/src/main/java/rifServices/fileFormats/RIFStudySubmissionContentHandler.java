@@ -2,6 +2,7 @@
 package rifServices.fileFormats;
 
 import rifGenericLibrary.presentationLayer.HTMLUtility;
+
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Project;
@@ -9,6 +10,7 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFOutputOption;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceMessages;
+import rifServices.util.FieldValidationUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -338,10 +340,16 @@ final public class RIFStudySubmissionContentHandler
 				String jobSubmissionTimePhrase
 					= getCurrentFieldValue();
 				Collator collator = RIFServiceMessages.getCollator();
-				if (collator.equals(jobSubmissionTimePhrase, "") == false) {
-					Date jobSubmissionTime
-						= RIFServiceMessages.getTime(jobSubmissionTimePhrase);
-					currentRIFJobSubmission.setJobSubmissionTime(jobSubmissionTime);
+				
+				currentRIFJobSubmission.setJobSubmissionTime(new Date());
+
+				FieldValidationUtility fieldValidationUtility = new FieldValidationUtility();
+				if (fieldValidationUtility.isEmpty(jobSubmissionTimePhrase) == false) {
+					if (collator.equals(jobSubmissionTimePhrase, "") == false) {
+						Date jobSubmissionTime
+							= RIFServiceMessages.getTime(jobSubmissionTimePhrase);
+						currentRIFJobSubmission.setJobSubmissionTime(jobSubmissionTime);
+					}
 				}
 			}
 			else if (isIgnoredStartTag(qualifiedName) == false) {
