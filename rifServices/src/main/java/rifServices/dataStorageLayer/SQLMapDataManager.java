@@ -1,12 +1,10 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
-
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
-
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelView;
@@ -446,6 +444,209 @@ final class SQLMapDataManager
 		
 		return results.toString();		
 	}
+	
+	public ArrayList<MapArea> getAllRelevantMapAreas(
+		final Connection connection,
+		final Geography geography,
+		final AbstractGeographicalArea geographicalArea)
+		throws RIFServiceException {
+		
+		ArrayList<MapArea> allRelevantMapAreas = new ArrayList<MapArea>();
+		
+		//GeoLevelSelect geoLevelSelect
+		//	= geographicalArea.getGeoLevelSelect();
+		GeoLevelToMap geoLevelToMap
+			= geographicalArea.getGeoLevelToMap();
+		System.out.println("GeoLevelToMap=="+geoLevelToMap.getName()+"==");
+		
+		
+		ArrayList<MapArea> selectedMapAreas
+			= geographicalArea.getMapAreas();
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		
+		try {
+			
+			/*
+			 * Step 1: Obtain the geography table; This maps the map identifier as it is known
+			 * at the GeoLevelSelect level to the map identifier as it is known at the finer
+			 * resolution of GeoLevelToMap
+			 */
+			//Obtain geography table eg: sahsuland_geography
+			String mapAreaResolutionMappingTableName
+				= getMapAreaResolutionMappingAreaTableName(
+					connection,
+					geography);
+
+			String geoLevelToMapTableName
+				= getGeoLevelLookupTableName(
+					connection,
+					geography,
+					geoLevelToMap.getName());
+			System.out.println("GeoLevelToMap=="+geoLevelToMap.getName()+"==GeoLevelToMapName=="+geoLevelToMapTableName+"==");
+			
+			/*
+			 * Example:
+			 * 
+			 * SELECT
+			 *    gid,
+			 *    level4
+			 * FROM
+			 *    mapAreaResolutionMappingTableName,  //eg: sahsuland_geography
+			 *    geoLevelToMapTableName //eg: sahsuland_level4
+			 * WHERE
+			 *    level2='01.001' OR  //iteratively read in each map area provided by
+			 *    level2='01.002' OR  //by client
+			 *    level2='01.003' OR
+			 *    ...
+			 * 
+			 * 
+			 * 
+			 * 
+			 * 			
+			 */
+			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryLine(0, "SELECT DISTINCT");
+			queryFormatter.addQueryPhrase(1, geoLevelToMapTableName);			
+			queryFormatter.addQueryPhrase(".gid,");
+			queryFormatter.addQueryPhrase(geoLevelToMapTableName);			
+			queryFormatter.addQueryPhrase(".");			
+			queryFormatter.addQueryPhrase(geoLevelToMap.getName());			
+			queryFormatter.padAndFinishLine();			
+			queryFormatter.addQueryLine(0, "FROM");
+			queryFormatter.addQueryPhrase(1, mapAreaResolutionMappingTableName);
+			queryFormatter.addQueryPhrase(",");
+			queryFormatter.addQueryPhrase(geoLevelToMapTableName);
+			queryFormatter.padAndFinishLine();			
+			queryFormatter.addQueryLine(0, "WHERE");
+			
+			queryFormatter.addQueryPhrase(1, geoLevelToMapTableName);
+			queryFormatter.addQueryPhrase(".");
+			queryFormatter.addQueryPhrase(geoLevelToMap.getName());			
+			queryFormatter.addQueryPhrase("=");
+			queryFormatter.addQueryPhrase(mapAreaResolutionMappingTableName);
+			queryFormatter.addQueryPhrase(".");			
+			queryFormatter.addQueryPhrase(geoLevelToMap.getName());			
+			
+			
+			int totalSelectedMapAreas = selectedMapAreas.size();
+			if (totalSelectedMapAreas > 0) {
+
+				queryFormatter.addQueryPhrase(" AND (");			
+				queryFormatter.padAndFinishLine();
+				
+				String geoLevelSelectLevelName = geoLevelToMap.getName();
+			
+				for (int i = 0 ; i < selectedMapAreas.size(); i++) {
+					if (i != 0) {
+						queryFormatter.padAndFinishLine();			
+						queryFormatter.addQueryPhrase(1, " OR ");
+					}
+					
+					queryFormatter.addQueryPhrase(geoLevelToMapTableName);					
+					queryFormatter.addQueryPhrase(".");
+					queryFormatter.addQueryPhrase(geoLevelSelectLevelName);
+					queryFormatter.addQueryPhrase("=\'");
+					queryFormatter.addQueryPhrase(selectedMapAreas.get(i).getIdentifier());
+					queryFormatter.addQueryPhrase("'");
+				}
+				
+				queryFormatter.addQueryPhrase(")");
+			}
+			
+			queryFormatter.addQueryPhrase(";");
+			
+			logSQLQuery(
+				"getAllRelevantMapAreas", 
+				queryFormatter, 
+				geography.getName(),
+				geoLevelToMap.getName());
+			
+			statement
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
+
+			System.out.println("SQLMapDataManager getAllRelevantMapAreas 3");
+			
+			
+			resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+				String identifier
+					= resultSet.getString(1);
+				String name
+					= resultSet.getString(2);
+				
+				MapArea mapArea
+					= MapArea.newInstance(
+						identifier, 
+						identifier, 
+						name);
+				allRelevantMapAreas.add(mapArea);
+				
+			}
+			System.out.println("SQLMapDataManager getAllRelevantMapAreas 4");
+			
+			
+		}
+		catch(SQLException sqlException) {
+			logException(sqlException);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlMapDataManager.error.unableToRetrievaAllRelevantMapAreas");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.UNABLE_TO_RETRIEVE_ALL_RELEVANT_MAP_AREAS, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+	
+		return allRelevantMapAreas;
+	}
+	
+	private String getMapAreaResolutionMappingAreaTableName(
+		final Connection connection,
+		final Geography geography) 
+		throws SQLException,
+		RIFServiceException {
+				
+		String result = "";
+				
+		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		queryFormatter.addSelectField("hierarchytable");
+		queryFormatter.addFromTable("rif40_geographies");
+		queryFormatter.addWhereParameter("geography");
+		
+		logSQLQuery(
+			"getMapAreaResolutionMappingAreaTableName", 
+			queryFormatter, 
+			geography.getName());
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement 
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
+			statement.setString(1, geography.getName());
+			resultSet = statement.executeQuery();
+			
+			resultSet.next();
+			result = resultSet.getString(1);
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		
+		return result;
+	}	
 	
 	/**
 	 * Gets the map areas.
@@ -1207,7 +1408,8 @@ final class SQLMapDataManager
 		final String geoLevelName,
 		final ArrayList<MapArea> mapAreas) 
 		throws RIFServiceException {
-		
+
+		/*
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		
@@ -1278,7 +1480,9 @@ final class SQLMapDataManager
 		finally {
 			SQLQueryUtility.close(statement);
 			SQLQueryUtility.close(resultSet);
-		}		
+		}
+		
+		*/
 	}
 
 	/**
