@@ -1518,12 +1518,14 @@ public class RIFStudySubmissionWebServiceResource
 	public Response submitStudy(
 		@Context HttpServletRequest servletRequest,
 		@FormDataParam("userID") String userID,
+		@FormDataParam("fileFormat") String fileFormat,		
 		@FormDataParam("fileField") InputStream inputStream) {
 
 			
 		return super.submitStudy(
 			servletRequest, 
 			"kgarwood", 
+			fileFormat,
 			inputStream);
 
 		//WebServiceResponseGenerator webServiceResponseGenerator
