@@ -3,10 +3,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>rapidInquiryFacility</groupId>
-  <artifactId>rifGenericUILibrary</artifactId>
+  <artifactId>rifGenericLibrary</artifactId>  
   <packaging>jar</packaging>
 
-  <name>rifGenericUILibrary</name>
+  <name>rifGenericLibrary</name>
   <url>http://maven.apache.org</url>
 
   <properties>
@@ -16,12 +16,11 @@
   <dependencies>
 
   </dependencies>
+  
   <parent>
   	<groupId>rapidInquiryFacility</groupId>
   	<artifactId>rifGeneral</artifactId>
   	<version>0.0.1-SNAPSHOT</version>
     <relativePath>../rapidInquiryFacility/pom.xml</relativePath>  
-
-
   </parent>
 </project>

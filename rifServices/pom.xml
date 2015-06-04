@@ -126,9 +126,10 @@
 
   	<dependency>
   		<groupId>rapidInquiryFacility</groupId>
-  		<artifactId>rifGenericUILibrary</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>
+  		<artifactId>rifGenericLibrary</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>  		
   	</dependency>
+
   	
   </dependencies>
   <dependencyManagement>
