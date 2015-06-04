@@ -146,23 +146,23 @@ SOURCES=$(NO_ALTER_SOURCES) test_6_middleware_1.sql test_7_middleware_2.sql
 ifeq ($(PGDATABASE),sahsuland)
 #
 TARGETS=$(SOURCES:%.sql=%.sahsuland_rpt)
-NO_ALTER_TARGETS=$(NO_ALTER_SOURCES:.sql=.rpt)
+NO_ALTER_TARGETS=$(NO_ALTER_SOURCES:.sql=.sahsuland_rpt)
 .SUFFIXES: .sql .sahsuland_rpt
 .sql.sahsuland_rpt:
 		$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f test_scripts/$< 
 #
-$(info Database is: sahsuland;  targets: $(TARGETS)) 	
+$(info Database is: sahsuland; targets: $(TARGETS); no_alter targets: $(NO_ALTER_TARGETS)) 	
 #	
 else
 ifeq ($(PGDATABASE),sahsuland_dev)
 #
 TARGETS=$(SOURCES:%.sql=%.sahsuland_dev_rpt)
-NO_ALTER_TARGETS=$(NO_ALTER_SOURCES:.sql=.rpt)
+NO_ALTER_TARGETS=$(NO_ALTER_SOURCES:.sql=.sahsuland_dev_rpt)
 .SUFFIXES: .sql .sahsuland_dev_rpt
 .sql.sahsuland_dev_rpt:
 	$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f test_scripts/$< 
 #
-$(info Database is: sahsuland_dev;  targets: $(TARGETS)) 		
+$(info Database is: sahsuland_dev;  targets: $(TARGETS); no_alter targets: $(NO_ALTER_TARGETS)) 		
 #	
 else
 $(error Unknown database: $(PGDATABASE))

@@ -613,6 +613,9 @@ DROP FUNCTION IF EXISTS rif40_trg_pkg.trgf_rif40_user_projects();
 DROP AGGREGATE IF EXISTS array_agg_mult(anyarray);
 DROP TYPE IF EXISTS rif40_goejson_type;
 
+DROP FUNCTION IF EXISTS rif_data.t_rif40_sahsu_geometry_insert();
+DROP FUNCTION IF EXISTS rif_data.t_rif40_sahsu_maptiles_insert();
+
 \echo Dropped all objects.
 
 --
