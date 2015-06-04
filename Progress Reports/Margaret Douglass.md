@@ -5,11 +5,17 @@
 ###June
 The goal for this month is to complete all triggers (including logging and error handling) for the rif40 tables and views and to test the tables/views/triggers to confirm everything has been set up correctly.  
 
+######3 June
+* Still reviewing trigger code in both SQL Server and Postgres to understand how it is all supposed to work. 
+* Looking at the differences between SQL Server and Postgres trigger code.  SQL Server triggers handle all updated/inserted/deleted rows together + they say don't use cursors inside them due to performance problems.  Postgres triggers can handle each row separately.  SQL Server does not have 'Before' triggers, only 'instead of' and 'after' triggers.
+* Writing some basic trigger-related code for rif40_version to get used to the code.
+* Custom error messages from RH need to be updated.  I wrote a procedure to remove old custom error messages.
+
 ######2 June
 * Finished updating and commenting all tables and views.
 * Experimented with running batch SQL on rif3 with "sqlcmd -d sahsuland_dev -i H:\SAHSU\rif_test.sql".
 * Onto triggers.  Now focusing on understanding what is in Postgres and what RH completed to understand how much needs to be done.
-* There are 65 triggers in Postgres.  RH implemented 15, but naming is inconsistent so it is not obvious which of the Postgres triggers have been implemented.  I suspect RH combined several Postgres triggers into one single trigger per table.  None of RH's triggers have been checked.
+* There are 65 triggers in Postgres.  RH implemented 15, but naming is inconsistent so it is not obvious which of the Postgres triggers have been implemented.  I suspect RH combined several Postgres triggers into one single trigger per table.  None of RH's triggers has been checked.
 
 ######1 June
 * Still fixing up the tables and views to have the correct columns, data types, and comments as in the current Postgres version.

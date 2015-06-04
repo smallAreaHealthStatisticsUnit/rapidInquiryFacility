@@ -370,7 +370,9 @@ devclean:
 #-           build production dump file; rebuild ERD model
 db_setup: psqlrc $(PGPASSFILE) $(PLR_DIRS)
 ifneq ($(OS),Windows_NT)
+ifneq ($(UNAME_S),Darwin)	
 	$(MAKE) -C ../../ERD veryclean dbms_tools
+endif
 endif
 	$(MAKE) -C ../Node install
 	$(MAKE) clean
