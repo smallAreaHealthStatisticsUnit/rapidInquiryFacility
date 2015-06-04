@@ -1,39 +1,39 @@
-<h1>Node Web Services API for RIF 4.0</h1>
-<h2> toTopojson </h2>
-<p>
-CONVERTS GEOJSON(MAX 1MB) TO TOPOJSON <br/>
- Only POST requests are processed <br/>
-  Expects a vaild geojson as input <br/>
-  Topojson output is echoed as plain text <br/>
- Topojson have quantization on  The level of quantization is based on map tile zoom level <br/>
- More info on quantization here: https://github.com/mbostock/topojson/wiki/Command-Line-Reference
+# Node Web Services API for RIF 4.0
+## toTopojson
+CONVERTS GEOJSON(MAX 1MB) TO TOPOJSON:
+* Only POST requests are processed 
+* Expects a vaild geojson as input 
+* Topojson output is echoed as plain text
+* Topojson have quantization on  The level of quantization is based on map tile zoom level 
 
-</p>
-<h2> simplify </h2>
-<p>
-COPY / UNZIP / SIMPLIFY FIRST SHAPEFILE FOUND IN ZIPPED FOLDER <br/>
- Only POST requests are processed <br/>
- Expects a shapefile as input <br/>
- Simplified shapefile as output  <br/>
- NOTE: ADM-ZIP is blocking <br/>
-</p>
-<br/><br/>
-<h5>The API make use of the following modules downloadable via npm:</h5>
-<ul>
-  <li>Express</li>
-  <li>ADM-ZIP</li>
-  <li>Topojson</li>
-  <li>Connect-Busboy</li>
-  <li>Mapshaper</li>
-</ul>
-<h6>To test using the request scripts the following are also needed:</h6>
-<ul>
-  <li>Request</li>
-  <li>Form-Data</li>
-</ul>
+More info on quantization here: https://github.com/mbostock/topojson/wiki/Command-Line-Reference
+
+## simplify
+COPY / UNZIP / SIMPLIFY FIRST SHAPEFILE FOUND IN ZIPPED FOLDER 
+* Only POST requests are processed
+* Expects a shapefile as input
+* Simplified shapefile as output
+NOTE: ADM-ZIP is blocking 
+
+## The API make use of the following modules downloadable via npm:
+
+* Express
+* ADM-ZIP
+* Topojson
+* Connect-Busboy
+* Mapshaper
+
+## To test using the request scripts the following are also needed:
+
+* Request
+* Form-Data
+
+```Node
 P:\Github\rapidInquiryFacility\rifNodeServices>node expressServer.js
 Listening on port 3000...
+```
 
+```Node
 P:\Github\rapidInquiryFacility\rifNodeServices>node request.js
 1
 Sending requests:1
@@ -51,4 +51,5 @@ arcs":[[132,133,134]]},{"type":"Polygon","arcs":[[-12,135,-8,-7,136,-29,-13]]},{
 cs":[[160,161,162,163,-74]]},{"type":"Polygon","arcs":[[-9,-136,11,-12,-11]]},{"type":"Polygon","arcs":[[164,-126,165,-152]]},{"type":"Polygon","arcs":[[166,167,168,169,170,-123]]}
 ,{"type":"Polygon","arcs":[[171,172,173,174]]},{"type":"Polygon","arcs":[[175,176,177,178,179,180,181,182]]},{"type":"Polygon","arcs":[[-27,183,184,185,186]]},{"type":"Polygon","ar
 cs":[[187,188,189,190]]},{"type":"Polygon","arcs":[[191,192,193,194]]},{"type":"Polygon","arcs":[[-97,195,-77,-53,196]]},{"type":"Polygon","arcs":[[197,-183,198,199]]},{"type":"Pol
-
+...
+```
