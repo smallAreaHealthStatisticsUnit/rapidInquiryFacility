@@ -529,11 +529,14 @@ $BODY$
 												   
 --						
 -- Put data back
---							
-		INSERT INTO rif40_inv_conditions(inv_id, study_id, username, line_number, outcome_group_name, min_condition)
-			VALUES (1, 1, c3_rec.username, 1, 'SAHSULAND_ICD', 'C34');
-		INSERT INTO rif40_inv_conditions(inv_id, study_id, username, line_number, outcome_group_name, min_condition)
-			VALUES (1, 1, c3_rec.username, 2, 'SAHSULAND_ICD', '162');	
+--				
+		IF c2_rec.investigations > 0 AND c2_rec.lines > 0 THEN		
+            INSERT INTO rif40_inv_conditions(inv_id, study_id, username, line_number, outcome_group_name, min_condition)
+                 VALUES (1, 1, c3_rec.username, 1, 'SAHSULAND_ICD', 'C34');
+		    INSERT INTO rif40_inv_conditions(inv_id, study_id, username, line_number, outcome_group_name, min_condition)
+			     VALUES (1, 1, c3_rec.username, 2, 'SAHSULAND_ICD', '162');	
+        END IF;
+
 	ELSIF c1_rec.column_name = 'min_condition' THEN	
 		RAISE INFO 'v4_0_alter_7.sql: t_rif40_inv_conditons already upgraded.';	
 	ELSE
