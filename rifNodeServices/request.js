@@ -36,7 +36,12 @@ var postIt = function(){
    if (err) {
       return console.error('upload failed:', err);
    }
-   console.log('Upload successful!  Server responded with:', body);
+   if (nRequests == 1) {
+		console.log('Upload #'+nRequests+' successful!  Server responded with:', body);
+    }
+	else {
+		console.log('Upload #'+nRequests+' successful!');
+	}
  });
 };
   

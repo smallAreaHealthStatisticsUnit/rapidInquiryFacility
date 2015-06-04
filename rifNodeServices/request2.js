@@ -1,7 +1,7 @@
 var FormData = require('form-data');
 var fs = require('fs');
-var inputFile = './data/geojs/26.json';
-var contentType = /*'application/zip'*/'application/json';
+var inputFile = '../rifDatabase/GeospatialData/SAHSULAND/SAHSU_GRD_Level4.shp';
+var contentType = 'application/zip';
 
 var MakeRequest = function(){
 
@@ -19,7 +19,7 @@ var MakeRequest = function(){
     var length = fs.statSync(inputFile).size;
 
      this.options = {
-        url:  'http://127.0.0.1:3000/toTopojson',
+        url:  'http://127.0.0.1:3000/simplify',
         headers:{'Content-Type': contentType},
         formData: formData, 
         'content-length':length
@@ -36,7 +36,12 @@ var postIt = function(){
    if (err) {
       return console.error('upload failed:', err);
    }
-   console.log('Upload successful!  Server responded with:', body);
+   if (nRequests == 1) {
+		console.log('Upload #'+nRequests+' successful!  Server responded with:', body);
+    }
+	else {
+		console.log('Upload #'+nRequests+' successful!');
+	}
  });
 };
   
