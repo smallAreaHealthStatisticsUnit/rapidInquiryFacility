@@ -11,16 +11,6 @@ RIF40_GEOGRAPHIES,,RIF40_GEOG_HIERARCHYTABLE,BEFORE EACH ROW,INSERT OR UPDATE OR
 	BEFORE DELETE OR INSERT OR UPDATE OF hierarchytable, postal_population_table, postal_point_column ON rif40_geographies
 	FOR EACH ROW
 	"
-RIF40_OUTCOMES,,RIF40_OUTCOMES_CHECKS,BEFORE EACH ROW,INSERT OR UPDATE OR DELETE,NEW.outcome_type IS NOT NULL OR NEW.outcome_description IS NOT NULL OR NEW.current_version IS NOT NULL OR NEW.current_lookup_table IS NOT NULL,PL/SQL     ,"rif40_outcomes_checks
-	BEFORE DELETE OR INSERT OR UPDATE OF outcome_type, outcome_description, current_version, current_sub_version,
-		previous_version, previous_sub_version, current_lookup_table, previous_lookup_table,
-		current_value_1char, current_value_2char, current_value_3char, current_value_4char, current_value_5char,
-		current_description_1char, current_description_2char, current_description_3char, current_description_4char, current_description_5char,
-		previous_value_1char, previous_value_2char, previous_value_3char, previous_value_4char, previous_value_5char,
-		previous_description_1char, previous_description_2char, previous_description_3char, previous_description_4char, previous_description_5char
-	ON rif40_outcomes
-	FOR EACH ROW
-	"
 RIF40_PREDEFINED_GROUPS,,RIF40_PREDEFINED_GROUPS_CHECKS,BEFORE EACH ROW,INSERT OR UPDATE OR DELETE,NEW.predefined_group_name IS NOT NULL OR NEW.predefined_group_description IS NOT NULL OR NEW.outcome_type IS NOT NULL OR NEW.condition IS NOT NULL,PL/SQL     ,"rif40_predefined_groups_checks
 	BEFORE DELETE OR INSERT OR UPDATE OF predefined_group_name, predefined_group_description, outcome_type, condition
 	ON rif40_predefined_groups
