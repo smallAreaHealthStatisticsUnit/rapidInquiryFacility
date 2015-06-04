@@ -39,28 +39,43 @@ Declare  @xtype varchar(5)
 	END
 
 	--When Transaction is a delete  
-    IF (@XTYPE = 'D')
-		begin
-			raiserror( 'Error: RIF40_VERSION DELETE disallowed',16,1);
+	IF (@XTYPE = 'D')
+	BEGIN
+		BEGIN TRY
+			THROW 51002,'[rif40].[rif40_version] , DELETE disallowed', 1;
 			rollback transaction;
-		end 
-    
+		END TRY
+		BEGIN CATCH
+			EXEC [rif40].[ErrorLog_proc]
+		END CATCH;
+	END
+
    
    --invalid data inserted/updated
 	IF (@XTYPE = 'I' or @XTYPE = 'U') AND EXISTS (SELECT * FROM INSERTED WHERE version IS NULL OR version='')
 	BEGIN
-		Raiserror ('Error: RIF40_VERSION INSERT/UPDATE invalid data - missing version field', 16,1 );
-		rollback transaction;
+			THROW 51004, '[rif40].[RIF40_VERSION] , INSERT/UPDATE invalid data - missing version field', 1 ;
+			rollback transaction;
 	END
 	
 	--When Transaction is an insert when table is not previously empty
 	IF (@XTYPE = 'I')
 		BEGIN
-		  if (SELECT COUNT(*) total FROM [rif40].[rif40_version]) > 1 
-		  begin 
-			Raiserror ('Error: RIF40_VERSION INSERT disallowed', 16,1 );
-			rollback transaction;
-		  end 
+			BEGIN TRY 
+			DECLARE @num_rows int;
+			SELECT @num_rows = count(*) FROM inserted;
+			if (SELECT COUNT(*) total FROM [rif40].[rif40_version]) > 1 
+			BEGIN
+				DECLARE @error_msg varchar(max);
+				SET @error_msg = '[rif40].[rif40_version] , INSERT disallowed, rows'+convert(char,@num_rows);
+				THROW 51003, @error_msg,1;
+				--rollback transaction;
+			END;
+			END TRY
+			BEGIN CATCH
+				EXEC [rif40].[ErrorLog_proc]
+			END CATCH ;		
+		   
 		END
 
    --When Transaction is an Update

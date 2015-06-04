@@ -5,10 +5,14 @@
 ###June
 The goal for this month is to complete all triggers (including logging and error handling) for the rif40 tables and views and to test the tables/views/triggers to confirm everything has been set up correctly.  
 
+######4 June
+* Looking more at T-SQL error handling in order to improve the error handling in the SQL Server trigger code.  RAISERROR code should be replaced with THROW code.  Rollback transactions is removing logs.  Maybe use "INSTEAD OF" rather than "AFTER" + rollback?
+* Still trying to get proper logging in the simple rif40_version trigger, but I have not succeeded yet.
+
 ######3 June
-* Still reviewing trigger code in both SQL Server and Postgres to understand how it is all supposed to work. 
-* Looking at the differences between SQL Server and Postgres trigger code.  SQL Server triggers handle all updated/inserted/deleted rows together + they say don't use cursors inside them due to performance problems.  Postgres triggers can handle each row separately.  SQL Server does not have 'Before' triggers, only 'instead of' and 'after' triggers.
-* Writing some basic trigger-related code for rif40_version to get used to the code.
+* Still reviewing existing trigger code in both SQL Server and Postgres to understand how it works. 
+* Looking at the differences between SQL Server and Postgres trigger code: no "before" triggers in SQL Server, must deal with all changed rows together without cursors in SQL Server whereas Postgres can process each row separately.
+* Wrote some basic trigger-related code for rif40_version to get used to the SQL Server code.
 * Custom error messages from RH need to be updated.  I wrote a procedure to remove old custom error messages.
 
 ######2 June
