@@ -33,3 +33,4 @@ rifServices/.classpath
 *.classpath
 rifServices/.classpath
 Progress Reports/Screenshots/Thumbs.db
+build.log*
