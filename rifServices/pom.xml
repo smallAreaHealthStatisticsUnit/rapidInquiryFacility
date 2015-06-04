@@ -2,20 +2,25 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>rapidInquiryFacility</groupId>
-    <artifactId>rapidInquiryFacility</artifactId>
+    <artifactId>rifGeneral</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <relativePath>../rapidInquiryFacility/pom.xml</relativePath>
+    <relativePath>../rapidInquiryFacility/pom.xml</relativePath>  
+  
   </parent>
-  <groupId>rifServices</groupId>
+  
+  <groupId>rapidInquiryFacility</groupId>
   <artifactId>rifServices</artifactId>
+  
+  <!--
   <packaging>war</packaging>
+  -->
+  <packaging>jar</packaging>
+  
   <name>RIF Middleware</name>
   <url>https://localhost:8443</url>
-  <version>0.1</version>
   <description>Contains the code for the middleware used by the tools of the RIF Tool Suite</description>
   <dependencies>
 
-	
 	<dependency>
     	<groupId>org.apache.commons</groupId>
     	<artifactId>commons-lang3</artifactId>
@@ -118,15 +123,17 @@
     	<artifactId>postgresql</artifactId>
     	<version>9.3-1102-jdbc3</version>
 	</dependency>  	
+
+  	<dependency>
+  		<groupId>rapidInquiryFacility</groupId>
+  		<artifactId>rifGenericUILibrary</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  	</dependency>
   	
   </dependencies>
   <dependencyManagement>
   	<dependencies>
-  		<dependency>
-  			<groupId>rifGenericUILibrary</groupId>
-  			<artifactId>rifGenericUILibrary</artifactId>
-  			<version>0.0.1-SNAPSHOT</version>
-  		</dependency>
+
   	</dependencies>
   </dependencyManagement>
   

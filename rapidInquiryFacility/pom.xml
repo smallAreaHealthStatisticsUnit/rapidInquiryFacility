@@ -1,14 +1,23 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>rapidInquiryFacility</groupId>
-  <artifactId>rapidInquiryFacility</artifactId>
+  <artifactId>rifGeneral</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>General RIF Tool Suite Settings</name>
   <description>This project contains the general project settings that are shared by the family of applications in the RIF Tool Suite</description>
   <properties>
+    <maven-war-plugin.version>2.4</maven-war-plugin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+  
+  <modules>
+ 	<module>../rifGenericLibrary</module>
+ 	<module>../rifServices</module>
+ 	<module>../rifStudySubmissionTool</module> 	
+ 	<module>../rifDataLoaderTool</module>
+	<module>../rifITGovernanceTool</module> 	
+  </modules>
   
   
   <dependencies>
