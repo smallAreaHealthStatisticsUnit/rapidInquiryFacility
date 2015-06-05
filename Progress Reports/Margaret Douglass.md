@@ -5,8 +5,12 @@
 ###June
 The goal for this month is to complete all triggers (including logging and error handling) for the rif40 tables and views and to test the tables/views/triggers to confirm everything has been set up correctly.  
 
+######5 June
+* Things finally are working for error handling, and I know more options for logging.  SQL Server does not have autonomous transactions for logging.  I will be careful with where to call rollbacks.
+* Fixed rif40_version triggers to have the correct error handling.  
+
 ######4 June
-* Looking more at T-SQL error handling in order to improve the error handling in the SQL Server trigger code.  RAISERROR code should be replaced with THROW code.  Rollback transactions is removing logs.  Maybe use "INSTEAD OF" rather than "AFTER" + rollback?
+* Looking more at T-SQL error handling in order to improve the error handling in the SQL Server trigger code.  RAISERROR code should be replaced with THROW code.  Rollbacking transactions is removing existing error handling logs. 
 * Still trying to get proper logging in the simple rif40_version trigger, but I have not succeeded yet.
 
 ######3 June

@@ -2,6 +2,10 @@
 Extra Custom error messages for functions in rif40.
 */
 
+EXEC sp_addmessage 51000, 16,
+	N'User %s is not a rif_user or rif_manager';
+GO
+
 EXEC sp_addmessage 51001, 16, 
    N'Function: [rif40].[rif_is_object_resolveable]: User %s must be rif40 or have rif_user or rif_manager role';
 GO
