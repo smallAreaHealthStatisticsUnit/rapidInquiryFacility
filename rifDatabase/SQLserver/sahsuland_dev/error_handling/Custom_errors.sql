@@ -136,11 +136,13 @@ GO
 -- USER PROJECTS 
 ----------------------------
 
-		 
+/*
+--This should be logged and not treated as an error:		 
 EXEC sp_addmessage 50070, 16, 
    N'Table_name:[rif40].[T_RIF40_USER_PROJECTS] , project has no end set:(%s)';
 GO
-	
+*/
+
 EXEC sp_addmessage 50071, 16, 
    N'Table_name:[rif40].[T_RIF40_USER_PROJECTS] , project ended on :(%s)';
 GO

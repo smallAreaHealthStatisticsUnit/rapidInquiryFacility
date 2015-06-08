@@ -5,6 +5,11 @@
 ###June
 The goal for this month is to complete all triggers (including logging and error handling) for the rif40 tables and views and to test the tables/views/triggers to confirm everything has been set up correctly.  
 
+######8 June
+* Set up basic logging function.  Messages are not saved at present, but the log procedure can be used in triggers.
+* Updated error handling function to experiment with adding better logging.
+* More work on triggers.  Went through rif40_user_projects, now incorporating error handling and logging.  Started on rif40_study_areas triggers.
+
 ######5 June
 * Things finally are working for error handling, and I know more options for logging.  SQL Server does not have autonomous transactions for logging.  I will be careful with where to call rollbacks.
 * Fixed rif40_version triggers to have the correct error handling.  
@@ -29,6 +34,7 @@ The goal for this month is to complete all triggers (including logging and error
 * Still fixing up the tables and views to have the correct columns, data types, and comments as in the current Postgres version.
 * Finished almost all the tables.  About half of the views have comments.
 
+---
 ###May
 This month is dedicated to completing scripts necessary to create all tables and views in the rif40 schema (+ the required functions and objects needed for the creation of tables and views). 
 

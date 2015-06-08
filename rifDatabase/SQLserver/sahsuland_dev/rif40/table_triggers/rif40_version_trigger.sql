@@ -45,7 +45,8 @@ Declare  @xtype varchar(5)
 			THROW 51002,@error_msg2, 1;
 		END TRY
 		BEGIN CATCH
-			EXEC [rif40].[ErrorLog_proc]
+			EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_version]';
+			THROW 51002,@error_msg2, 1;  --rethrow
 		END CATCH;
 	END
    
@@ -53,13 +54,14 @@ Declare  @xtype varchar(5)
 	IF (@XTYPE = 'I' or @XTYPE = 'U') AND EXISTS (SELECT * FROM INSERTED WHERE version IS NULL OR version='')
 	BEGIN
 		BEGIN TRY
+			rollback transaction;
 			DECLARE @error_msg1 varchar(max);
 			SET @error_msg1 = formatmessage(51004);  --'[rif40].[rif40_version] , INSERT disallowed, rows'+convert(char,@num_rows);
-			rollback transaction;
 			THROW 51004, @error_msg1, 1; --'[rif40].[RIF40_VERSION] , INSERT/UPDATE invalid data - missing version field', 1 ;
 		END TRY
 		BEGIN CATCH
-			EXEC [rif40].[ErrorLog_proc]
+			EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_version]';
+			THROW 51004, @error_msg1, 1; --rethrow
 		END CATCH;
 	END
 	
@@ -71,14 +73,15 @@ Declare  @xtype varchar(5)
 			SELECT @num_rows = count(*) FROM inserted;
 			if (SELECT COUNT(*) total FROM [rif40].[rif40_version]) > 1 
 			BEGIN
+				rollback transaction;
 				DECLARE @error_msg varchar(max);
 				SET @error_msg = formatmessage(51003,convert(char,@num_rows));  --'[rif40].[rif40_version] , INSERT disallowed, rows'+convert(char,@num_rows);
-				rollback transaction;
 				THROW 51003, @error_msg,1;
 			END;
 			END TRY
 			BEGIN CATCH
-				EXEC [rif40].[ErrorLog_proc]
+				EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_version]';
+				THROW 51003, @error_msg,1; --rethrow
 			END CATCH ;		
 		END
 
@@ -89,19 +92,4 @@ Declare  @xtype varchar(5)
 	END
  end 
  
- /*
---to test:
-
-use sahsuland_dev;
-
-insert into rif40.rif40_version(version, schema_created, cvs_revision)
-values('foo',convert(datetime2(0),'4/4/2010',103),'bar');
-
-update rif40.rif40_version
-set cvs_revision='ffffff';
-
-delete from rif40.rif40_version;
-
-insert into rif40.rif40_version(version, schema_created, cvs_revision)
-values('',convert(datetime2(0),'4/4/2010',103),'bar');
-*/
+ 

@@ -34,3 +34,4 @@ rifServices/.classpath
 rifServices/.classpath
 Progress Reports/Screenshots/Thumbs.db
 build.log*
+rifDatabase/SQLserver/sahsuland_dev/rif40/table_triggers/test_rif40_version_trigger.sql

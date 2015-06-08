@@ -1,3 +1,8 @@
+/*
+Saves error messages into rif40_ErrorLog table
+Also saves them in the general rif40_log program 
+*/
+
 USE [sahsuland_dev]
 GO
 
@@ -80,12 +85,12 @@ AS
              ,[Authentication]           = con.auth_scheme           
             ,[Error_User_System]         = SUSER_SNAME()
              ,[Error_User_Application]   = @UserID
- 
         FROM sys.dm_exec_sessions ses
          LEFT JOIN sys.dm_exec_connections con
              ON con.session_id = ses.session_id
-         WHERE ses.session_id = @@SPID
-             
+         WHERE ses.session_id = @@SPID;
+
+         
     END TRY
      BEGIN CATCH
          -- We even failed at the log entry so let's get basic
@@ -100,9 +105,12 @@ AS
              -100
              ,OBJECT_NAME(@@PROCID)
              ,'Error Log Procedure Errored out'
-         )
+         );
      END CATCH
- 
+
+	IF @Error_Message IS NOT NULL 
+		exec [rif40].[rif40_log] 'ERROR',null,@Error_Message;
+	
 END
  GO
  

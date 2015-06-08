@@ -20,8 +20,8 @@ CREATE  VIEW [rif40].[rif40_user_projects] AS
     b.date_ended
    FROM [rif40].[t_rif40_user_projects] a,
     [rif40].[t_rif40_projects] b
-  WHERE a.project = b.project AND a.username= SUSER_SNAME() 
-  OR  IS_MEMBER(N'[rif_manager]') = 1
+  WHERE a.project = b.project AND (a.username= SUSER_SNAME() 
+  OR  IS_MEMBER(N'[rif_manager]') = 1)
 GO
 
 --permissions

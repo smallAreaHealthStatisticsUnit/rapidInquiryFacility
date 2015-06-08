@@ -19,3 +19,9 @@ GO
 EXEC sp_addmessage 51004, 16,
 	N'Table name: [rif40].[rif40_version] , INSERT/UPDATE invalid data - missing version field';
 GO
+
+EXEC sp_addmessage 51005, 16,
+	N'Table name: [rif40].[t_rif40_user_projects] , INSERT invalid data - missing project or username fields (%s)';
+GO
+
+

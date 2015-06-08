@@ -13,9 +13,8 @@ GO
 CREATE TABLE [rif40].[t_rif40_user_projects](
 	[project] [varchar](30) NOT NULL,
 	[username] [varchar](90) NOT NULL DEFAULT (SUSER_SNAME()),
-	[grant_date] [datetime2](0) NOT NULL DEFAULT (sysdatetime()),
+	[grant_date] [datetime2](0) DEFAULT (sysdatetime()),
 	[revoke_date] [datetime2](0) NULL,
-	[rowid] [uniqueidentifier] NOT NULL,
  CONSTRAINT [t_rif40_user_projects_pk] PRIMARY KEY CLUSTERED 
 (
 	[project] ASC,

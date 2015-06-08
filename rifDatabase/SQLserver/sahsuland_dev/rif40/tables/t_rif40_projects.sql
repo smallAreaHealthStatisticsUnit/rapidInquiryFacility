@@ -31,7 +31,7 @@ GO
 CREATE TABLE [rif40].[t_rif40_projects](
 	[project] [varchar](30) NOT NULL,
 	[description] [varchar](250) NOT NULL,
-	[date_started] [datetime2](0) NOT NULL DEFAULT (sysdatetime()),
+	[date_started] [datetime2](0) DEFAULT (sysdatetime()),
 	[date_ended] [datetime2](0) NULL,
  CONSTRAINT [t_rif40_projects_pk] PRIMARY KEY CLUSTERED 
 (
