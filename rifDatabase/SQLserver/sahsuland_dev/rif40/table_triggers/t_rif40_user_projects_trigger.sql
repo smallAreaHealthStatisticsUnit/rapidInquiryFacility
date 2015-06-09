@@ -17,7 +17,7 @@ END
 GO
 
 
-CREATE trigger [tr_user_projects]
+CREATE trigger [rif40].[tr_user_projects]
 on [rif40].[t_rif40_user_projects]
 for insert , update 
 as

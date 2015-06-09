@@ -5,6 +5,9 @@
 ###June
 The goal for this month is to complete all triggers (including logging and error handling) for the rif40 tables and views and to test the tables/views/triggers to confirm everything has been set up correctly.  
 
+######9 June
+* Triggers: working on rif40_study_shares_trigger code, have not completed the delete part  
+
 ######8 June
 * Set up basic logging function.  Messages are not saved at present, but the log procedure can be used in triggers.
 * Updated error handling function to experiment with adding better logging.

@@ -16,7 +16,7 @@ BEGIN
 END
 GO
 
-CREATE  trigger [tr_version]
+CREATE  trigger [rif40].[tr_version]
 on [rif40].[rif40_version]
 AFTER insert , update ,delete 
 As

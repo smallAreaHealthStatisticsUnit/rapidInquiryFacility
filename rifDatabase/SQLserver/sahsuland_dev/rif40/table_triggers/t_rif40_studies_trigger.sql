@@ -35,7 +35,7 @@ GO
 ------------------------------
 CREATE trigger [tr_studies_checks]
 on [rif40].[t_rif40_studies]
-for insert , update 
+AFTER insert , update 
 as
 BEGIN 
 ------------------------------------------------------------------------------------------
@@ -45,13 +45,14 @@ BEGIN
 
 	 DECLARE @geolevel_name nvarchar(MAX) =
 		(
-		SELECT concat ([STUDY_ID],'-', [COMPARISON_GEOLEVEL_NAME], '-', geography )
+		SELECT concat (ic.study_id,'-', ic.COMPARISON_GEOLEVEL_NAME, '-', ic.geography )
 		 + '  '
 		FROM inserted ic 
-		where not EXISTS (SELECT 1 FROM [rif40].[t_rif40_geolevels] c 
-              WHERE ic.[geography]=c.[GEOGRAPHY] and 
-				    c.geolevel_name=ic.[COMPARISON_GEOLEVEL_NAME] and
-					c.[COMPAREA]=1)
+		LEFT OUTER JOIN ON [rif40].[t_rif40_geolevels] c
+		ON ic.[geography]=c.[GEOGRAPHY] and 
+			c.geolevel_name=ic.[COMPARISON_GEOLEVEL_NAME] and
+			c.[COMPAREA]=1
+		WHERE c.geography is null
         FOR XML PATH('')
 		 );
 

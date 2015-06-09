@@ -24,4 +24,17 @@ EXEC sp_addmessage 51005, 16,
 	N'Table name: [rif40].[t_rif40_user_projects] , INSERT invalid data - missing project or username fields (%s)';
 GO
 
+EXEC sp_addmessage 51006, 16,
+	N'Table name: [rif40].[rif40_study_shares] , UPDATE not allowed'
+GO	
+EXEC sp_addmessage 51007, 16,
+	N'Table name: [rif40].[rif40_study_shares] , INSERT invalid data - missing study_id, grantor, or grantee fields (%s)';
+GO
 
+EXEC sp_addmessage 51008, 16,
+	N'Table name: [rif40].[rif40_study_shares] , INSERT invalid data - study_id cannot be found (%s)';
+GO
+
+EXEC sp_addmessage 51009, 16,
+	N'Table name: [rif40].[rif40_study_shares] , INSERT failed - study_id not owned by grantor (%s)';
+GO
