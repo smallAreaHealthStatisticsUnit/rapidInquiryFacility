@@ -8,7 +8,7 @@
 #
 # Description:
 #
-# Rapid Enquiry Facility (RIF) - Helper script to run a windows command using Powershell. 
+# Rapid Enquiry Facility (RIF) - Helper script to copy a file in windows 
 #
 # Copyright:
 #
@@ -44,67 +44,22 @@
 #
 # Peter Hambly, SAHSU
 #
-# Helper script to run a windows command using Powershell. 
+# Args 0: file to be copied
+# Args 1: destination directory, must exist 
 #
-# Parameters:
-# 1. Log file name
-# 2. Working directory 
-# 3. Command
-# 4+. Args
-#
-# Stdout and stderr are tee'd to the log
-#
-# Returns the exit status of the command
-#
-
-Param(
-[ValidateNotNullOrEmpty()][string]$log,
-[ValidateNotNullOrEmpty()][string]$curdir,
-[ValidateNotNullOrEmpty()][string]$cmd
-)
-
-Write-Host "Log: $log"
-Write-Host "Working directory: $curdir"
-Write-Host "Command: $cmd"
-Write-Host "Arguments: $args"
-#
-# CD to working directory
-#
-Set-Location $curdir
-
-#
-# Clean up log files
-#
-If (Test-Path $log".err"){
-	Remove-Item $log".err" -verbose
-}
-If (Test-Path $log){
-	Remove-Item $log -verbose
-}
-
 Try {
-#	Invoke-expression -command "$cmd $args 2>&1 | tee $log" | Out-Null
-	$process=(Start-Process $cmd -ArgumentList $args -NoNewWindow -verbose -PassThru -Wait) 2>&1 | tee $log
+	If (Test-Path $($args[1]) ){ # Destination, assumed a directory
+		Copy-Item $($args[0]) -Destination "$($args[1])" -verbose -ErrorAction Stop
+	}
+	else {	
+		Write-Host "copy.ps1: ERROR! Please create directory: $($args[1])"
+		exit 3
+	}
 }
 Catch {
-	Write-Host "run.ps1: ERROR! in Invoke-expression"
+	Write-Host "copy.ps1: ERROR! in Copy-Item $($args[0]) to $($args[1])"
 	$error[0]
-	If (Test-Path $log){
-		rename-item -path $log -Newname $log".err" -force -verbose
-	}
 	exit 2
-}
-
-if ($process.ExitCode -ne 0) {
-	Write-Host "run.ps1: ERROR! in command execution"
-	$error[0]
-	sleep 1
-	rename-item -path $log -Newname $log".err" -force -verbose
-	exit 1
-}
-else {
-	Write-Host "run.ps1 Command $cmd ran OK."
-	exit 0
 }
 #
 # Eof

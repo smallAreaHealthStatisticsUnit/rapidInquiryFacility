@@ -7,8 +7,9 @@
 # Version hash: $Format:%H$
 #
 # Description:
-#
-# Rapid Enquiry Facility (RIF) - Helper script to run a windows command using Powershell. 
+#-
+#- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifBuild\JavaMiddleware
+#-
 #
 # Copyright:
 #
@@ -44,67 +45,61 @@
 #
 # Peter Hambly, SAHSU
 #
-# Helper script to run a windows command using Powershell. 
+TARGETS = ..\..\rifServices\target\rifServices-0.0.1-SNAPSHOT.war
 #
-# Parameters:
-# 1. Log file name
-# 2. Working directory 
-# 3. Command
-# 4+. Args
+# Run bash on Linux, Powershell on Windows_NT
 #
-# Stdout and stderr are tee'd to the log
+OS?=Unknown
+ifeq ($(OS),Windows_NT)
 #
-# Returns the exit status of the command
+# Windows support
 #
+	RUN=powershell -ExecutionPolicy ByPass -file ../Scripts/run.ps1
+	COPY=powershell -ExecutionPolicy ByPass -file ../Scripts/copy.ps1 
+	DELETE=powershell -ExecutionPolicy ByPass -file ../Scripts/delete.ps1
+	RENAME=powershell -ExecutionPolicy ByPass -file ../Scripts/rename.ps1	
+	INSTALL=powershell -ExecutionPolicy ByPass -file ../Scripts/install.ps1	
+	HELP=findstr "\#-" Makefile
+	TOMCAT_WEBAPPS = "C:\Program Files\Apache Software Foundation\Tomcat 8.0\webapps"
+	TOMCAT_RIFSERVICES = "C:\Program Files\Apache Software Foundation\Tomcat 8.0\webapps\rifServices"
+else
+#
+# Linux and Macos support
+#
+	RUN=./run.sh
+	HELP=grep "\#-" Makefile
+	COPY=cp
+	DELETE=rm -f
+	RENAME=mv -f
+	INSTALL=sudo ../Scripts/install.sh
+endif
+#
+#- all: Build rifServices.war
+all: $(TARGETS)
 
-Param(
-[ValidateNotNullOrEmpty()][string]$log,
-[ValidateNotNullOrEmpty()][string]$curdir,
-[ValidateNotNullOrEmpty()][string]$cmd
-)
-
-Write-Host "Log: $log"
-Write-Host "Working directory: $curdir"
-Write-Host "Command: $cmd"
-Write-Host "Arguments: $args"
+$(TARGETS):
+	$(RUN) build.log ..\..\rapidInquiryFacility mvn.cmd --errors clean install -Dmaven.test.skip=true
+	$(RUN) war.log ..\..\rifServices mvn.cmd --errors war:war
+	$(COPY) ..\..\rifServices\target\rifServices-0.0.1-SNAPSHOT.war .
+	$(RENAME) rifServices-0.0.1-SNAPSHOT.war rifServices.war 
+	
+#- test: Regression test Middleware
+test: $(TARGETS)
+	$(RUN) war.log ..\..\rifServices mvn.cmd --errors test
+	
+#- clean: Cleanup	
+clean:
+	$(RUN) clean.log ..\..\rapidInquiryFacility mvn.cmd --errors clean
+	$(DELETE) $(TARGETS) rifServices.war 
 #
-# CD to working directory
-#
-Set-Location $curdir
-
-#
-# Clean up log files
-#
-If (Test-Path $log".err"){
-	Remove-Item $log".err" -verbose
-}
-If (Test-Path $log){
-	Remove-Item $log -verbose
-}
-
-Try {
-#	Invoke-expression -command "$cmd $args 2>&1 | tee $log" | Out-Null
-	$process=(Start-Process $cmd -ArgumentList $args -NoNewWindow -verbose -PassThru -Wait) 2>&1 | tee $log
-}
-Catch {
-	Write-Host "run.ps1: ERROR! in Invoke-expression"
-	$error[0]
-	If (Test-Path $log){
-		rename-item -path $log -Newname $log".err" -force -verbose
-	}
-	exit 2
-}
-
-if ($process.ExitCode -ne 0) {
-	Write-Host "run.ps1: ERROR! in command execution"
-	$error[0]
-	sleep 1
-	rename-item -path $log -Newname $log".err" -force -verbose
-	exit 1
-}
-else {
-	Write-Host "run.ps1 Command $cmd ran OK."
-	exit 0
-}
+#- help: Display this help
+help:
+	$(HELP)
+	
+#- install: Install middleware to tomcat
+#-          To be added: Java utilities
+install: rifServices.war
+	$(INSTALL) rifServices.war $(TOMCAT_WEBAPPS) $(TOMCAT_RIFSERVICES)
+	
 #
 # Eof
