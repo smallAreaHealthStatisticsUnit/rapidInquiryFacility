@@ -624,66 +624,8 @@ public final class TestRIFStudySubmissionService
 		
 	}
 		
-	public void generateExtract(
-		final User _user,
-		final RIFStudySubmission _rifStudySubmission)
-		throws RIFServiceException {
-	
-		
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		RIFStudySubmission rifStudySubmission
-			= RIFStudySubmission.createCopy(_rifStudySubmission);
-		
-		SQLConnectionManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();		
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
-			return;
-		}
-		
-		Connection connection = null;
-		try {
-			
-			//Part II: Check for empty parameter values
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"generateExtract",
-				"user",
-				user);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"generateExtract",
-				"rifStudySubmission",
-				rifStudySubmission);	
-			//Check for security violations
-			validateUser(user);
 
-			//Delegate operation to a specialised manager class
-			connection 
-				= sqlConnectionManager.assignPooledReadConnection(user);
-
-			SQLStudyExtractManager sqlStudyExtractManager
-				= rifServiceResources.getSQLStudyExtractManager();
-			sqlStudyExtractManager.generateExtract(
-				connection, 
-				user, 
-				rifStudySubmission);
-
-		}
-		catch(RIFServiceException rifServiceException) {
-			logException(
-				user,
-				"generateExtract",
-				rifServiceException);	
-		}
-		finally {
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);				
-		}		
-		
-	}
-
+	/*
 	public void dumpDatabaseTableToCSVFile(
 		final User _user,
 		final String tableName,
@@ -743,5 +685,7 @@ public final class TestRIFStudySubmissionService
 				connection);				
 		}
 	}
+	*/
+	
 }
 

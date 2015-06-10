@@ -459,5 +459,9 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 		final File outputFile) 
 		throws RIFServiceException;	
 	
-
+	public void createStudyExtract(
+		final User user,
+		final String studyID)
+		throws RIFServiceException;
+		
 }

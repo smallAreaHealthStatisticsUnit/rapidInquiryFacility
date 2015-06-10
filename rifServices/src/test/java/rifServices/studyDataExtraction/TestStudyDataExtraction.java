@@ -105,23 +105,17 @@ public final class TestStudyDataExtraction
 	public void testExtract1() {
 		try {
 			User validUser = cloneValidUser();
-			String validStudyID = "19";
+			String validStudyID = "75";
 			
 			TestRIFStudyServiceBundle testRIFStudyServiceBundle
 				= getRIFServiceBundle();
 			
 			TestRIFStudySubmissionService testSubmissionService
 				= (TestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
-			
-			
-			RIFStudySubmission rifStudySubmission
-				= testSubmissionService.getRIFStudySubmission(
-					validUser, 
-					validStudyID);
 		
-			testSubmissionService.generateExtract(
+			testSubmissionService.createStudyExtract(
 				validUser, 
-				rifStudySubmission);
+				validStudyID);
 			
 		}
 		catch(RIFServiceException rifServiceException) {

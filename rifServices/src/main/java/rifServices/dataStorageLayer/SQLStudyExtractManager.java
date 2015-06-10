@@ -1,15 +1,13 @@
 package rifServices.dataStorageLayer;
 
-import rifServices.system.RIFDatabaseProperties;
 
-
+import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.RIFServiceException;
 import rifServices.util.FieldValidationUtility;
 import rifServices.util.RIFDateFormat;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.User;
-import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.fileFormats.XMLCommentInjector;
 import rifServices.fileFormats.RIFStudySubmissionContentHandler;
 
@@ -19,7 +17,6 @@ import java.io.*;
 import java.sql.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import java.util.ArrayList;
 import java.util.Date;
 
 
@@ -89,7 +86,7 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final String EXTRACT_DIRECTORY = "C://rif_scripts//extracts";
+	private static String EXTRACT_DIRECTORY;
 	private static final String STUDY_QUERY_SUBDIRECTORY = "study_query";
 	private static final String STUDY_EXTRACT_SUBDIRECTORY = "study_extract";
 	private static final String RATES_AND_RISKS_SUBDIRECTORY = "rates_and_risks";
@@ -110,8 +107,12 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 	// ==========================================
 
 	public SQLStudyExtractManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
-		super(rifDatabaseProperties);
+		final RIFServiceStartupOptions rifServiceStartupOptions) {
+
+		
+		super(rifServiceStartupOptions.getRIFDatabaseProperties());
+		
+		EXTRACT_DIRECTORY = rifServiceStartupOptions.getExtractDirectory();
 		
 	}
 
@@ -119,7 +120,7 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 	// Section Accessors and Mutators
 	// ==========================================
 	
-	public void generateExtract(
+	public void createStudyExtract(
 		final Connection connection,
 		final User user,
 		final RIFStudySubmission rifStudySubmission)
@@ -129,7 +130,6 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 		String temporaryDirectoryPath = null;
 		File temporaryDirectory = null;
 		try {
-			
 			//Establish the phrase that will be used to help name the main zip
 			//file and data files within its directories
 			String baseStudyName 
@@ -182,6 +182,9 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 			writeTermsAndConditionsFiles(
 				submissionZipOutputStream);	
 			*/	
+			submissionZipOutputStream.flush();
+			submissionZipOutputStream.close();
+			
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
@@ -304,24 +307,42 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 		extractTableName.append("_extract");
 		
 		StringBuilder extractFileName = new StringBuilder();
-		extractFileName.append(temporaryDirectoryPath);
-		extractFileName.append(File.separator);
 		extractFileName.append(STUDY_EXTRACT_SUBDIRECTORY);
 		extractFileName.append(File.separator);
 		extractFileName.append(baseStudyName);
 		extractFileName.append(".csv");
 		
+		System.out.println("SQLStudyExtract writeExtractFiles=="+extractFileName.toString()+"==");
+		
 		dumpDatabaseTableToCSVFile(
 			connection,
+			submissionZipOutputStream,
 			extractTableName.toString(),
 			extractFileName.toString());
 	
-		//File extractFile = new File(extractFileName.toString());
-		//addFileToZipFile(
-		  //  submissionZipOutputStream, 
-		    //STUDY_EXTRACT_SUBDIRECTORY, 
-		    //extractFile);
-						
+		
+		File infoGovernanceDirectory
+			= new File("C:" + File.separator + "rif_test_data" + File.separator + "information_governance");
+		File[] files = infoGovernanceDirectory.listFiles();
+		
+		for (File file : files) {
+			
+			StringBuilder zipEntryName = new StringBuilder();
+			zipEntryName.append(TERMS_CONDITIONS_SUBDIRECTORY);
+			zipEntryName.append(File.separator);
+			zipEntryName.append(file.getName());
+
+			addFileToZipFile(
+				submissionZipOutputStream,
+				zipEntryName.toString(),
+				file);
+			
+		}
+		
+		
+
+		
+		
 		//Add extract file to zip file
 /*		
 		StringBuilder mapTableName = new StringBuilder();
@@ -347,8 +368,11 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 		submissionZipOutputStream, 
 			STUDY_EXTRACT_SUBDIRECTORY, 
 		    mapFile);	 
-		*/
+		*/		
+		
 	}
+	
+	/*
 	private void writeRatesAndRisksFiles(
 		final Connection connection,
 		final String temporaryDirectoryPath,
@@ -371,12 +395,7 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 		unadjustedFileName.append(baseStudyName);
 		unadjustedFileName.append("_unadjusted.csv");
 		
-		/*
-		dumpDatabaseTableToCSVFile(
-			connection,
-			unadjustedTableName.toString(),
-			unadjustedFileName.toString());
-		*/
+
 			
 		//KLG @TODO: For now, just create an empty file
 		File unadjustedResultsFile = new File(unadjustedFileName.toString());
@@ -403,20 +422,16 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 		adjustedResultsFileName.append("_adjusted.csv");
 		
 		File adjustedResultsFile = new File(adjustedResultsFileName.toString());
-		/*
-		dumpDatabaseTableToCSVFile(
-			connection,
-			adjustedTableName.toString(),
-			adjustedFileName.toString());
-		*/		    
+	    
 		addFileToZipFile(
 		    submissionZipOutputStream, 
 		    RATES_AND_RISKS_SUBDIRECTORY, 
 		    adjustedResultsFile);
 
 	}	
+	*/
 	
-	
+	/*
 	private void writeStatisticalPostProcessingFiles(
 		final Connection connection,
 		final String temporaryDirectoryPath,		
@@ -451,7 +466,9 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 				postProcessedFile);
 		}
 	}	
-		
+	*/
+	
+	/*
 	private void writeTermsAndConditionsFiles(
 		final ZipOutputStream submissionZipOutputStream) 
 		throws Exception {
@@ -464,35 +481,68 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 				file);			
 		}		
 	}
-	
+	*/
 
 	
 	/*
 	 * General methods for writing to zip files
 	 */
 
-	
+	public void addFileToZipFile(
+		final ZipOutputStream submissionZipOutputStream,
+		final String zipEntryName,
+		final File inputFile)
+		throws Exception {
+		
+		ZipEntry rifQueryFileNameZipEntry = new ZipEntry(zipEntryName);
+		submissionZipOutputStream.putNextEntry(rifQueryFileNameZipEntry);
+				
+		byte[] BUFFER = new byte[4096 * 1024];
+		FileInputStream fileInputStream = new FileInputStream(inputFile);		
+		int bytesRead = fileInputStream.read(BUFFER);		
+		while (bytesRead != -1) {
+			submissionZipOutputStream.write(BUFFER, 0, bytesRead);			
+			bytesRead = fileInputStream.read(BUFFER);
+		}
+		submissionZipOutputStream.flush();
+		fileInputStream.close();
+		submissionZipOutputStream.closeEntry();
+	}
+
 	public void dumpDatabaseTableToCSVFile(
 		final Connection connection,
+		final ZipOutputStream submissionZipOutputStream,		
 		final String tableName,
 		final String outputFilePath)
 		throws Exception {
-		
-		
-		
+				
 		SQLFunctionCallerQueryFormatter queryFormatter = new SQLFunctionCallerQueryFormatter();
 		queryFormatter.setSchema("rif40_dmp_pkg");
 		queryFormatter.setFunctionName("csv_dump");
 		queryFormatter.setNumberOfFunctionParameters(1);
 		
 		
+		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(submissionZipOutputStream);
+		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
 		
 		PreparedStatement statement
 			= createPreparedStatement(connection, queryFormatter);		
+		ResultSet resultSet = null;
 		try {
 			statement = createPreparedStatement(connection, queryFormatter);
 			statement.setString(1, tableName);
-			statement.executeQuery();
+			resultSet = statement.executeQuery();
+			
+			System.out.println("dumpDatabaseTableToCSVFile outputFilePath=="+outputFilePath+"==");
+			ZipEntry zipEntry = new ZipEntry(outputFilePath);
+			submissionZipOutputStream.putNextEntry(zipEntry);
+			
+			while (resultSet.next()) {
+				bufferedWriter.write(resultSet.getString(1));
+			}
+
+			bufferedWriter.flush();
+			submissionZipOutputStream.closeEntry();
 			
 			connection.commit();
 		}
@@ -502,21 +552,9 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 
 	}
 		
-	private void addDirectoryToZipFile(
-	    final ZipOutputStream submissionZipOutputStream,
-	    final String zipFilePath,
-	    final File directory) 
-		throws Exception {
-				
-		File[] files = directory.listFiles();
-		for (File file : files) {
-			addFileToZipFile(
-			submissionZipOutputStream,
-			zipFilePath,
-			file);
-		}
-	}
+
 	
+	/*
     private void addFileToZipFile(
     	final ZipOutputStream submissionZipOutputStream, 
     	final String zipFilePath, 
@@ -552,7 +590,9 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 
         fileInputStream.close();
         submissionZipOutputStream.closeEntry();
-    }	
+    }
+    
+    	*/
 	
 	private ZipEntry createZipEntry(
 		String zipFilePath,

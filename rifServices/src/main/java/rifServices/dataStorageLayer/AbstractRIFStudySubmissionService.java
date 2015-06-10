@@ -1811,10 +1811,12 @@ abstract class AbstractRIFStudySubmissionService
 				= rifSubmissionManager.submitStudy(
 					connection, 
 					user, 
-					rifStudySubmission);
-
-			//RIFZipFileWriter rifZipFileWriter = new RIFZipFileWriter();
-			//rifZipFileWriter.writeZipFile(outputFile, rifStudySubmission);		
+					rifStudySubmission);	
+			
+			createStudyExtract(
+				user,
+				result);
+			
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -1832,6 +1834,94 @@ abstract class AbstractRIFStudySubmissionService
 
 		return result;
 	}
+	
+	
+	
+	public void createStudyExtract(
+		final User _user,
+		final String studyID) 
+		throws RIFServiceException {
+		
+		
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();			
+		String result;
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return;
+		}
+
+		Connection connection = null;
+		try {
+			
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"createStudyExtract",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"createStudyExtract",
+				"studyID",
+				studyID);	
+		
+			
+			//Check for security violations
+			validateUser(user);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"createStudyExtract", 
+				"studyID", 
+				studyID);
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.createStudyExtract",
+					user.getUserID(),
+					user.getIPAddress(),
+					studyID);
+			rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledWriteConnection(user);
+			
+			SQLRIFSubmissionManager sqlRIFSubmissionManager
+				= rifServiceResources.getRIFSubmissionManager();
+			RIFStudySubmission rifStudySubmission
+				= sqlRIFSubmissionManager.getRIFStudySubmission(
+					connection, 
+					user, 
+					studyID);
+			
+			SQLStudyExtractManager studyExtractManager
+				= rifServiceResources.getSQLStudyExtractManager();
+			studyExtractManager.createStudyExtract(
+				connection, 
+				user, 
+				rifStudySubmission);
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"createStudyExtract",
+				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledWriteConnection(
+				user, 
+				connection);			
+		}
+		
+	}
+	
 		
 	/**
 	 * Gets the health code taxonomy given the name space
