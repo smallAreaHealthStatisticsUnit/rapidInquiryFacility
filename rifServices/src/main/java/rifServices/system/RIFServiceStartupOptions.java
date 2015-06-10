@@ -115,6 +115,8 @@ public final class RIFServiceStartupOptions {
 	private String rScriptDirectory;
 	
 	
+	private String extractDirectory;
+	
 	private boolean useStrictValidationPolicy;
 	
 	// ==========================================
@@ -150,6 +152,9 @@ public final class RIFServiceStartupOptions {
 		rScriptDirectory
 			= RIFServiceStartupProperties.getRScriptDirectory();
 		
+		extractDirectory
+			= RIFServiceStartupProperties.getExtractDirectoryName();
+		
 		maximumMapAreasAllowedForSingleDisplay
 			= RIFServiceStartupProperties.getMaximumMapAreasAllowedForSingleDisplay();
 		
@@ -180,6 +185,11 @@ public final class RIFServiceStartupOptions {
 				isDatabaseCaseSensitive);
 		
 		return rifDatabaseProperties;
+	}
+	
+	public String getExtractDirectory() {
+		return extractDirectory;
+		
 	}
 	
 	/**

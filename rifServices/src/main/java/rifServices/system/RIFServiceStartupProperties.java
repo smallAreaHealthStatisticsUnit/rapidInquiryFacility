@@ -147,6 +147,10 @@ public final class RIFServiceStartupProperties {
     	return getProperty("rScriptDirectory");    	
     }
     
+    public static String getExtractDirectoryName() {
+    	return getProperty("extractDirectory");    	
+    }
+    
     public static DatabaseType getDatabaseType() {
     	
     	DatabaseType databaseType
