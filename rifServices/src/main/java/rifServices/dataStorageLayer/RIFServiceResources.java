@@ -161,7 +161,7 @@ public final class RIFServiceResources {
 
 		sqlStudyExtractManager
 			= new SQLStudyExtractManager(
-				rifDatabaseProperties);
+				rifServiceStartupOptions);
 		
 		sqlResultsQueryManager
 			= new SQLResultsQueryManager(
