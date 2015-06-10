@@ -176,6 +176,6 @@ GO
 
 --index
 CREATE UNIQUE INDEX [t_rif40_geolevels_uk2]
-  ON [rif40].[t_rif40_geolevels] (geography)
+  ON [rif40].[t_rif40_geolevels] (geography, geolevel_id)
 GO
 

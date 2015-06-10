@@ -38,3 +38,23 @@ GO
 EXEC sp_addmessage 51009, 16,
 	N'Table name: [rif40].[rif40_study_shares] , INSERT failed - study_id not owned by grantor (%s)';
 GO
+
+EXEC sp_addmessage 51010, 16,
+	N'Table name: [rif40].[rif40_study_shares] , INSERT failed - grantee_username does not exist in database (%s)';
+GO
+
+EXEC sp_addmessage 51011, 16,
+	N'Table name: [rif40].[rif40_study_shares] , INSERT failed - grantee_username is NOT a RIF_USER/RIF_MANAGER (%s)';
+GO
+
+EXEC sp_addmessage 51012, 16,
+	N'Table name: [rif40].[rif40_study_shares] , DELETE only allowed on own records or by RIF40_MANAGER in RIF40_STUDY_SHARES (%s)';
+GO
+
+EXEC sp_addmessage 51013, 16,
+	N'Table name: [rif40].[tr_studies_checks] , INSERT/UPDATE failed - new study username is not current user (%s)';
+GO
+
+EXEC sp_addmessage 51014, 16,
+	N'Table name: [rif40].[tr_studies_checks] , UPDATE failed - UPDATE not allowed on T_RIF40_STUDIES by user (%s)';
+GO

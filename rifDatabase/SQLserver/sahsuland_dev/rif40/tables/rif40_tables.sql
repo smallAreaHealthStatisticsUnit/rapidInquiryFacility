@@ -22,34 +22,29 @@ BEGIN
 		WHERE object_id = OBJECT_ID(N'[rif40].[rif40_table_outcomes]') AND type in (N'U'))
 	BEGIN
 		ALTER TABLE [rif40].[rif40_table_outcomes] DROP CONSTRAINT [rif40_outcome_numer_tab_fk];
-	END
-	GO
+	END;
 	IF EXISTS (SELECT * FROM sys.objects 
 		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_num_denom]') AND type in (N'U'))
 	BEGIN
 		ALTER TABLE [rif40].[t_rif40_num_denom] DROP CONSTRAINT [t_rif40_num_denom_numer_fk];
 		ALTER TABLE [rif40].[t_rif40_num_denom] DROP CONSTRAINT [t_rif40_num_denom_denom_fk];
-	END
-	GO
+	END;
 	IF EXISTS (SELECT * FROM sys.objects 
 		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_studies]') AND type in (N'U'))
 	BEGIN
 		ALTER TABLE [rif40].[t_rif40_studies] DROP CONSTRAINT [t_rif40_stud_denom_tab_fk];
 		ALTER TABLE [rif40].[t_rif40_studies] DROP CONSTRAINT [t_rif40_stud_direct_stand_fk];
-	END
-	GO
+	END;
 	IF EXISTS (SELECT * FROM sys.objects 
 		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_investigations]') AND type in (N'U'))
 	BEGIN
 		ALTER TABLE [rif40].[t_rif40_investigations] DROP CONSTRAINT [t_rif40_inv_numer_tab_fk];
-	END
-	GO
+	END;
 	IF EXISTS (SELECT * FROM sys.objects 
 		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_fdw_tables]') AND type in (N'U'))
 	BEGIN
 		ALTER TABLE [rif40].[t_rif40_fdw_tables] DROP CONSTRAINT [t_rif40_fdw_tables_tn_fk];
-	END
-	GO
+	END;
 
 	DROP TABLE [rif40].[rif40_tables]
 END
@@ -83,14 +78,14 @@ CONSTRAINT [rif40_tables_theme_fk] FOREIGN KEY([theme])
 	REFERENCES [rif40].[rif40_health_study_themes] ([theme])	
 	ON UPDATE NO ACTION ON DELETE NO ACTION,
 CONSTRAINT [rif40_tab_asg_ck] CHECK  
-	(([age_sex_group_field_name] IS NOT NULL AND [age_group_field_name] IS NULL AND [sex_field_name] IS NULL 
-	OR [age_sex_group_field_name] IS NULL AND [age_group_field_name] IS NOT NULL AND [sex_field_name] IS NOT NULL)),
+	(([age_sex_group_field_name] IS NOT NULL AND [age_group_field_name] IS NULL AND [sex_field_name] IS NULL )
+	OR ([age_sex_group_field_name] IS NULL AND [age_group_field_name] IS NOT NULL AND [sex_field_name] IS NOT NULL)),
 CONSTRAINT [rif40_tab_automatic_ck] CHECK  
-	(([automatic]=(0) OR [automatic]=(1) AND [isnumerator]=(1) OR [automatic]=(1) AND [isindirectdenominator]=(1))),
+	([automatic]=(0) OR ([automatic]=(1) AND [isnumerator]=(1)) OR ([automatic]=(1) AND [isindirectdenominator]=(1))),
 CONSTRAINT [rif40_tab_exclusive_ck] CHECK  
-	(([isnumerator]=(1) AND [isdirectdenominator]=(0) AND [isindirectdenominator]=(0) OR [isnumerator]=(0) 
-	AND [isdirectdenominator]=(1) AND [isindirectdenominator]=(0) OR [isnumerator]=(0) AND [isdirectdenominator]=(0) 
-	AND [isindirectdenominator]=(1))),
+	(([isnumerator]=(1) AND [isdirectdenominator]=(0) AND [isindirectdenominator]=(0)) OR 
+	([isnumerator]=(0) AND [isdirectdenominator]=(1) AND [isindirectdenominator]=(0)) OR 
+	([isnumerator]=(0) AND [isdirectdenominator]=(0) AND [isindirectdenominator]=(1))),
 CONSTRAINT [rif40_tab_isdirectdenom_ck] CHECK  
 	(([isdirectdenominator]=(1) OR [isdirectdenominator]=(0)))	,
 CONSTRAINT [rif40_tab_isindirectdenom_ck] CHECK  

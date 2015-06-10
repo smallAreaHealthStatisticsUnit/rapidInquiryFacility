@@ -9,13 +9,21 @@ Check - EXTRACT_TABLE Oracle name.
 Check - Comparison area geolevel name. Must be a valid GEOLEVEL_NAME for the study GEOGRPAHY in T_RIF40_GEOLEVELS, with COMPAREA=1
 Check - DENOM_TAB, DIRECT_STAND_TAB are valid Oracle names and appropriate denominators, and user has access.
 Check - Study area resolution (GEOLEVEL_ID) >= comparision area resolution (GEOLEVEL_ID)  [i.e study area has the same or higher resolution]
+
 Check - suppression_value - Suppress results with low cell counts below this value. If the role RIF_NO_SUPRESSION is granted and the user is not a RIF_STUDENT then SUPPRESSION_VALUE=0; otherwise is equals the parameter "SuppressionValue". If >0 all results with the value or below will be set to 0.
 Check - extract_permitted - Is extract permitted from the database: 0/1. Only a RIF MANAGER may change this value. This user is still permitted to create and run a RIF study and to view the results. Geolevel access is rectricted by the RIF40_GEOLEVELS.RESTRICTED Inforamtion Governance restrictions (0/1). If 1 (Yes) then a) students cannot access this geolevel and b) if the system parameter ExtractControl=1 then the user must be granted permission by a RIF_MANAGER to extract from the database the results, data extract and maps tables. All students must be granted permission by a RIF_MANAGER for any extract if the system parameter ExtractControl=1. This is enforced by the RIF application.
+
 Check - authorised_by - must be a RIF MANAGER.
+
 Check - transfer_permitted - Is transfer permitted from the Secure or Private Network: 0/1. This is for purely documentatary purposes only. Only a RIF MANAGER may change this value. The value defaults to the same as EXTRACT_PERMITTED. Only geolevels where RIF40_GEOLEVELS.RESTRICTED=0 may be transferred
+
 Check - authorised_notes -IG authorisation notes. Must be filled in if EXTRACT_PERMITTED=1
+
 Delayed RIF40_TABLES denominator and direct standardisation checks:
 Check - Column <TABLE_NAME>.TOTAL_FIELD, SEX_FIELD_NAME, AGE_GROUP_FIELD_NAME, AGE_SEX_GROUP_FIELD_NAME exists
+
+IF USER = NEW.username (i.e. not initial RIF40 INSERT) THEN
+	grant to all shared users if not already granted
 */
 
 USE [sahsuland_dev]
@@ -33,11 +41,141 @@ GO
 ------------------------------
 -- create trigger code 
 ------------------------------
-CREATE trigger [tr_studies_checks]
+CREATE trigger [rif40].[tr_studies_checks]
 on [rif40].[t_rif40_studies]
-AFTER insert , update 
+AFTER insert , update , delete
 as
 BEGIN 
+--------------------------------------
+--to  Determine the type of transaction 
+---------------------------------------
+Declare  @XTYPE varchar(5);
+
+
+	IF EXISTS (SELECT * FROM DELETED)
+	BEGIN
+		SET @XTYPE = 'D'
+	END;
+	
+	IF EXISTS (SELECT * FROM INSERTED)
+	BEGIN
+		IF (@XTYPE = 'D')
+			SET @XTYPE = 'U'
+		ELSE 
+			SET @XTYPE = 'I'
+	END
+
+--check is new username = current user? for update and insert
+IF (@XTYPE = 'U'  OR @XTYPE = 'I')
+BEGIN
+	DECLARE @not_user VARCHAR(max) = (
+		SELECT username
+		FROM inserted
+		WHERE username != SUSER_NAME()
+		FOR XML PATH(''));
+	IF @not_user IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg1 = formatmessage(51013, @not_user);
+		THROW 51013, @err_msg1, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+		THROW 51013, @err_msg1, 1;
+	END CATCH;
+END;
+
+IF @XTYPE = 'U'
+BEGIN	
+	--UPDATE not allowed except for IG admin and state changes.
+	
+	DECLARE @is_state_change	int, @is_ig_update int;
+
+	SET @is_state_change = (
+		SELECT a.study_id 
+		FROM inserted a, deleted b
+		where a.study_state != b.study_state
+		and a.study_id=b.study_id
+		and a.username=b.username
+		and a.geography=b.geography
+		and a.project=b.project
+		and a.study_name=b.study_name
+		and a.extract_table=b.extract_table
+		and a.map_table=b.map_table
+		and a.study_date=b.study_date
+		and a.study_type=b.study_type
+		and a.comparison_geolevel_name=b.comparison_geolevel_name
+		and a.study_geolevel_name=b.study_geolevel_name
+		and a.denom_tab=b.denom_tab
+		and a.direct_stand_tab=b.direct_stand_tab
+		and a.suppression_value=b.suppression_value
+		and a.extract_permitted=b.extract_permitted
+		and a.transfer_permitted=b.transfer_permitted
+		and a.authorised_by=b.authorised_by
+		and a.authorised_on=b.authorised_on
+		and a.authorised_notes=b.authorised_notes
+		and a.audsid=b.audsid
+		FOR XML PATH(''));
+	
+	SET @is_ig_update = ( 
+		SELECT a.study_id
+		FROM inserted a, deleted b
+		where a.study_id=b.study_id
+		and a.username=b.username
+		and a.geography=b.geography
+		and a.project=b.project
+		and a.study_name=b.study_name
+		and a.extract_table=b.extract_table
+		and a.map_table=b.map_table
+		and a.study_date=b.study_date
+		and a.study_type=b.study_type
+		and a.comparison_geolevel_name=b.comparison_geolevel_name
+		and a.study_geolevel_name=b.study_geolevel_name
+		and a.denom_tab=b.denom_tab
+		and a.direct_stand_tab=b.direct_stand_tab
+		and a.suppression_value=b.suppression_value
+		and a.audsid=b.audsid
+		and (a.extract_permitted!=b.extract_permitted
+		or a.transfer_permitted!=b.transfer_permitted
+		or a.authorised_by!=b.authorised_by
+		or a.authorised_on!=b.authorised_on
+		or a.authorised_notes!=b.authorised_notes)
+		FOR XML PATH(''));
+
+	IF @is_state_change NOT NULL AND @is_ig_update NOT NULL 
+	BEGIN
+		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', 'doing a state change and IG update at the same time?';
+	END;
+
+		
+	IF @is_state_change NOT NULL 
+		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', 'UPDATE state changes allowed on T-RIF40_STUDIES by user';
+	ELSE
+	BEGIN
+		--only rif_manager can make IG changes
+		DECLARE @not_rif_manager VARCHAR(max) = (
+			SELECT study_id, username
+			from inserted
+			WHERE [rif40].[rif40_has_role](username,'rif_manager') = 0
+			FOR XML PATH(''));	
+		
+		IF @not_rif_manager IS NOT NULL
+		BEGIN TRY
+			rollback;
+			DECLARE @err_msg2 VARCHAR(max) = formatmessage(51014, @not_rif_manager);
+			THROW 51014, @err_msg2, 1;
+		END TRY
+		BEGIN CATCH
+			EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+			THROW 51014, @err_msg2, 1;
+		END CATCH;
+		ELSE
+		BEGIN
+		
+		
+		END
+END;
+	
 ------------------------------------------------------------------------------------------
 --Check - Comparison area geolevel name. 
 --Must be a valid GEOLEVEL_NAME for the study GEOGRPAHY in T_RIF40_GEOLEVELS, with COMPAREA=1
