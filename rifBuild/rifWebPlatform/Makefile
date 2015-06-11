@@ -8,7 +8,7 @@
 #
 # Description:
 #-
-#- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifBuild\JavaMiddleware
+#- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifBuild\rifWebPlatform
 #-
 #
 # Copyright:
@@ -45,7 +45,8 @@
 #
 # Peter Hambly, SAHSU
 #
-TARGETS = ..\..\rifServices\target\rifServices-0.0.1-SNAPSHOT.war
+# 
+TARGETS = rifWebPlatform.zip
 #
 # Run bash on Linux, Powershell on Windows_NT
 #
@@ -60,8 +61,7 @@ ifeq ($(OS),Windows_NT)
 	RENAME=powershell -ExecutionPolicy ByPass -file ../Scripts/rename.ps1	
 	INSTALL=powershell -ExecutionPolicy ByPass -file ../Scripts/install.ps1	
 	HELP=findstr "\#-" Makefile
-	TOMCAT_WEBAPPS = "C:\Program Files\Apache Software Foundation\Tomcat 8.0\webapps"
-	TOMCAT_RIFSERVICES = "C:\Program Files\Apache Software Foundation\Tomcat 8.0\webapps\rifServices"
+	TOMCAT_RIF4 = "C:\Program Files\Apache Software Foundation\Tomcat 8.0\webapps\RIF4"
 else
 #
 # Linux and Macos support
@@ -72,36 +72,30 @@ else
 	DELETE=rm -f
 	RENAME=mv -f
 	INSTALL=sudo ../Scripts/install.sh
-	TOMCAT_WEBAPPS = 
-	TOMCAT_RIFSERVICES = 
+	TOMCAT_RIF4 =
 endif
 #
-#- all: Build rifServices.war
+#- all: Build rifWebPlatform zipfile
 all: $(TARGETS)
 
 $(TARGETS):
-	$(RUN) build.log ..\..\rapidInquiryFacility mvn.cmd --errors clean install -Dmaven.test.skip=true
-	$(RUN) war.log ..\..\rifServices mvn.cmd --errors war:war
-	$(COPY) ..\..\rifServices\target\rifServices-0.0.1-SNAPSHOT.war .
-	$(RENAME) rifServices-0.0.1-SNAPSHOT.war rifServices.war 
 	
-#- test: Regression test Middleware
-test: $(TARGETS)
-	$(RUN) war.log ..\..\rifServices mvn.cmd --errors test
+#- test: Dummy target
+test:
 	
-#- clean: Cleanup	
+#- clean: Remove rifWebPlatform zipfile	
 clean:
-	$(RUN) clean.log ..\..\rapidInquiryFacility mvn.cmd --errors clean
-	$(DELETE) $(TARGETS) rifServices.war 
+	$(DELETE) $(TARGETS)
+
 #
 #- help: Display this help
 help:
 	$(HELP)
 	
-#- install: Install middleware to tomcat
-#-          To be added: Java utilities
-install: rifServices.war
-	$(INSTALL) rifServices.war $(TOMCAT_WEBAPPS) $(TOMCAT_RIFSERVICES)
+#- install: Install and unzip rifWebPlatform zipfile to tomcat webapps/RIF4 directory
+#-          
+install: 
+	$(INSTALL) rifWebPlatform.zip $(TOMCAT_RIF4)
 	
 #
 # Eof

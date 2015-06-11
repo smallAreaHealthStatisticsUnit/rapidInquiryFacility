@@ -47,6 +47,8 @@
 # Args 0: File to be installed. If file is a zip file, unzipped to install directory
 # Args 1: Install directory, must exist 
 # Args 2: Unpack tree base directory [OPTIONAL]
+# Args 3: Log file (privileged second run)
+# Args 4: Error file (privileged second run)
 #
 # Check runs as administrator
 #
@@ -188,7 +190,7 @@ function Write-ErrorFeedback(){
 }
 
 function DoElevatedOperations {
-	Write-Feedback "install.ps1 PRIVILEGED"
+	Write-Feedback "install.ps1 Running PRIVILEGED"
 	Write-Feedback "install.ps1 log: $Log"	
 	Write-Feedback "install.ps1 errors: $Err" 		
 	Write-Feedback "install.ps1 installFile: $installFile" 
@@ -211,14 +213,16 @@ function DoElevatedOperations {
 # Remove old install war file
 #
 	$old_war=$installDir+"\"+([io.fileinfo]$installFile).basename+".war";
-	if (Test-Path $old_war){
+	if (Test-Path $old_war) {
 		Write-Feedback "install.ps1 clean old_war: $old_war" 
 		Remove-Item $old_war -verbose -ErrorAction Stop;
 	}
 	else {
 		Write-Feedback "install.ps1 No old_war: $old_war" 
 	}
-
+	if (Test-Path $old_war) {
+	}
+	
 #
 # Copy file to destination
 #	
@@ -226,13 +230,31 @@ function DoElevatedOperations {
 		Copy-Item $installFile -Destination $installDir -verbose -ErrorAction Stop
 	}
 	else {	
-		Write-Feedback "install.ps1: ERROR! Please create directory: $installDir"
+		Write-ErrorFeedback "install.ps1: ERROR! Please create directory: $installDir"
 		Throw "install.ps1: ERROR! Please create directory: $installDir"
 	}
 	Write-Feedback "install.ps1: $installFile installed OK."	
 
+#
+# Check if WAR expansion directory has been re-created by tomcat
+#
+	$i=1;
+	for(; $i -le 21; $i++){
+		if (Test-Path $installTree) {
+		
+			Write-Feedback "install.ps1: WAR expanded after $i seconds"
+			Return;
+		}
+		Start-Sleep -Seconds 1;
+        Write-Feedback "install.ps1: Waiting: $i seconds for WAR expansion"		
+	}
+	Write-ErrorFeedback "install.ps1: ERROR! WAR not expanded after $i seconds"
+	Throw "install.ps1: ERROR! WAR not expanded after $i seconds"
 }
 
+#
+# Main Try/Catch block
+#
 Try {
 	DoElevatedOperations
 }

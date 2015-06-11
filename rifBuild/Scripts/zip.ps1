@@ -8,7 +8,7 @@
 #
 # Description:
 #
-# Rapid Enquiry Facility (RIF) - Helper script to rename a file in windows 
+# Rapid Enquiry Facility (RIF) - Helper script to zip a directory in windows 
 #
 # Copyright:
 #
@@ -44,23 +44,9 @@
 #
 # Peter Hambly, SAHSU
 #
-# Args 0: file to be renamed, may contain path 
-# Args 1: destination file, may exist 
+# Args 0: Zip file
+# Args 1: Directory to be zipped, must exist 
 #
-Try {
-	If (Test-Path $($args[1]) ){ # Destination, assumed a file
-		Write-Error "rename.ps1: ERROR! Target is a directory: $($args[1]), expecting a file"
-		exit 3
-	}
-	else {	
-			Rename-Item -Path $($args[0]) -Newname "$($args[1])" -Force -verbose -ErrorAction Stop
 
-	}
-}
-Catch {
-	Write-Error "rename.ps1: ERROR! in Rename-Item"
-	$error[0]
-	exit 2
-}
 #
 # Eof

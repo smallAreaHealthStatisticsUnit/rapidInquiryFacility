@@ -52,12 +52,12 @@ Try {
 		Copy-Item $($args[0]) -Destination "$($args[1])" -verbose -ErrorAction Stop
 	}
 	else {	
-		Write-Host "copy.ps1: ERROR! Please create directory: $($args[1])"
+		Write-Error "copy.ps1: ERROR! Please create directory: $($args[1])"
 		exit 3
 	}
 }
 Catch {
-	Write-Host "copy.ps1: ERROR! in Copy-Item $($args[0]) to $($args[1])"
+	Write-Error "copy.ps1: ERROR! in Copy-Item $($args[0]) to $($args[1])"
 	$error[0]
 	exit 2
 }

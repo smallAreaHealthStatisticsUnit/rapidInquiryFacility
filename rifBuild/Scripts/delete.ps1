@@ -55,7 +55,7 @@ for ( $i = 0; $i -lt $args.count; $i++ ) {
 			Remove-Item $args[$i] -verbose
 		}
 		Catch {
-			Write-Host "delete.ps1: ERROR! in Remove-Item[$i]: $($args[$i]) [IGNORED]"
+			Write-Error "delete.ps1: ERROR! in Remove-Item[$i]: $($args[$i]) [IGNORED]"
 			$error[0]
 		}
 	}

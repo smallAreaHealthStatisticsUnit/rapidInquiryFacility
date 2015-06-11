@@ -87,7 +87,7 @@ Try {
 	$process=(Start-Process $cmd -ArgumentList $args -NoNewWindow -verbose -PassThru -Wait) 2>&1 | tee $log
 }
 Catch {
-	Write-Host "run.ps1: ERROR! in Invoke-expression"
+	Write-Error "run.ps1: ERROR! in Invoke-expression"
 	$error[0]
 	If (Test-Path $log){
 		rename-item -path $log -Newname $log".err" -force -verbose
@@ -96,7 +96,7 @@ Catch {
 }
 
 if ($process.ExitCode -ne 0) {
-	Write-Host "run.ps1: ERROR! in command execution"
+	Write-Error "run.ps1: ERROR! in command execution"
 	$error[0]
 	sleep 1
 	rename-item -path $log -Newname $log".err" -force -verbose

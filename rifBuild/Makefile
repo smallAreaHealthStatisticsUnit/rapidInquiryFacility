@@ -8,7 +8,7 @@
 #
 # Description:
 #-
-#- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifBuild\JavaMiddleware
+#- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifBuild
 #-
 #
 # Copyright:
@@ -54,14 +54,12 @@ ifeq ($(OS),Windows_NT)
 #
 # Windows support
 #
-	RUN=powershell -ExecutionPolicy ByPass -file ../Scripts/run.ps1
-	COPY=powershell -ExecutionPolicy ByPass -file ../Scripts/copy.ps1 
-	DELETE=powershell -ExecutionPolicy ByPass -file ../Scripts/delete.ps1
-	RENAME=powershell -ExecutionPolicy ByPass -file ../Scripts/rename.ps1	
-	INSTALL=powershell -ExecutionPolicy ByPass -file ../Scripts/install.ps1	
+	RUN=powershell -ExecutionPolicy ByPass -file Scripts/run.ps1
+	COPY=powershell -ExecutionPolicy ByPass -file Scripts/copy.ps1 
+	DELETE=powershell -ExecutionPolicy ByPass -file Scripts/delete.ps1
+	RENAME=powershell -ExecutionPolicy ByPass -file Scripts/rename.ps1	
+	INSTALL=powershell -ExecutionPolicy ByPass -file Scripts/install.ps1	
 	HELP=findstr "\#-" Makefile
-	TOMCAT_WEBAPPS = "C:\Program Files\Apache Software Foundation\Tomcat 8.0\webapps"
-	TOMCAT_RIFSERVICES = "C:\Program Files\Apache Software Foundation\Tomcat 8.0\webapps\rifServices"
 else
 #
 # Linux and Macos support
@@ -71,37 +69,32 @@ else
 	COPY=cp
 	DELETE=rm -f
 	RENAME=mv -f
-	INSTALL=sudo ../Scripts/install.sh
-	TOMCAT_WEBAPPS = 
-	TOMCAT_RIFSERVICES = 
+	INSTALL=sudo Scripts/install.sh
 endif
 #
-#- all: Build rifServices.war
-all: $(TARGETS)
-
-$(TARGETS):
-	$(RUN) build.log ..\..\rapidInquiryFacility mvn.cmd --errors clean install -Dmaven.test.skip=true
-	$(RUN) war.log ..\..\rifServices mvn.cmd --errors war:war
-	$(COPY) ..\..\rifServices\target\rifServices-0.0.1-SNAPSHOT.war .
-	$(RENAME) rifServices-0.0.1-SNAPSHOT.war rifServices.war 
+#- all: Build JavaMiddleware
+all: 
+	$(MAKE) -C JavaMiddleware
+	$(MAKE) -C rifWebPlatform 
 	
-#- test: Regression test Middleware
-test: $(TARGETS)
-	$(RUN) war.log ..\..\rifServices mvn.cmd --errors test
+#- test: Regression test JavaMiddleware
+test:
+	$(MAKE) -C JavaMiddleware test
 	
-#- clean: Cleanup	
+#- clean: Cleanup JavaMiddleware	
 clean:
-	$(RUN) clean.log ..\..\rapidInquiryFacility mvn.cmd --errors clean
-	$(DELETE) $(TARGETS) rifServices.war 
+	$(MAKE) -C JavaMiddleware clean 
+	$(MAKE) -C rifWebPlatform install
+	
 #
 #- help: Display this help
 help:
 	$(HELP)
 	
-#- install: Install middleware to tomcat
-#-          To be added: Java utilities
-install: rifServices.war
-	$(INSTALL) rifServices.war $(TOMCAT_WEBAPPS) $(TOMCAT_RIFSERVICES)
+#- install: Install JavaMiddleware, to be added: Java utilities
+install: 
+	$(MAKE) -C JavaMiddleware install
+	$(MAKE) -C rifWebPlatform install	
 	
 #
 # Eof
