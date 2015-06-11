@@ -62,36 +62,38 @@ ifeq ($(OS),Windows_NT)
 	HELP=findstr "\#-" Makefile
 	TOMCAT_WEBAPPS = "C:\Program Files\Apache Software Foundation\Tomcat 8.0\webapps"
 	TOMCAT_RIFSERVICES = "C:\Program Files\Apache Software Foundation\Tomcat 8.0\webapps\rifServices"
+	MVN = mvn.cmd 
 else
 #
 # Linux and Macos support
 #
-	RUN=./run.sh
+	RUN=../Scripts/run.sh
 	HELP=grep "\#-" Makefile
 	COPY=cp
 	DELETE=rm -f
 	RENAME=mv -f
 	INSTALL=sudo ../Scripts/install.sh
-	TOMCAT_WEBAPPS = 
-	TOMCAT_RIFSERVICES = 
+	TOMCAT_WEBAPPS = "/var/lib/tomcat6/webapps"
+	TOMCAT_RIFSERVICES =  "/var/lib/tomcat6/webapps/rifServices"
+	MVN = mvn
 endif
 #
 #- all: Build rifServices.war
 all: $(TARGETS)
 
 $(TARGETS):
-	$(RUN) build.log ..\..\rapidInquiryFacility mvn.cmd --errors clean install -Dmaven.test.skip=true
-	$(RUN) war.log ..\..\rifServices mvn.cmd --errors war:war
-	$(COPY) ..\..\rifServices\target\rifServices-0.0.1-SNAPSHOT.war .
+	$(RUN) build.log ../../rapidInquiryFacility $(MVN) --errors clean install -Dmaven.test.skip=true
+	$(RUN) war.log ../../rifServices $(MVN) --errors war:war
+	$(COPY) ../../rifServices/target/rifServices-0.0.1-SNAPSHOT.war .
 	$(RENAME) rifServices-0.0.1-SNAPSHOT.war rifServices.war 
 	
 #- test: Regression test Middleware
 test: $(TARGETS)
-	$(RUN) war.log ..\..\rifServices mvn.cmd --errors test
+	$(RUN) war.log ../../rifServices $(MVN) --errors test
 	
 #- clean: Cleanup	
 clean:
-	$(RUN) clean.log ..\..\rapidInquiryFacility mvn.cmd --errors clean
+	$(RUN) clean.log ../../rapidInquiryFacility mvn.cmd --errors clean
 	$(DELETE) $(TARGETS) rifServices.war 
 #
 #- help: Display this help
