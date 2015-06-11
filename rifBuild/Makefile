@@ -84,7 +84,7 @@ test:
 #- clean: Cleanup JavaMiddleware	
 clean:
 	$(MAKE) -C JavaMiddleware clean 
-	$(MAKE) -C rifWebPlatform install
+	$(MAKE) -C rifWebPlatform clean
 	
 #
 #- help: Display this help

@@ -1,3 +1,5 @@
+#!/bin/sh
+#
 # ************************************************************************
 #
 # GIT Header
@@ -7,9 +9,8 @@
 # Version hash: $Format:%H$
 #
 # Description:
-#-
-#- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifBuild\rifWebPlatform
-#-
+#
+# Rapid Enquiry Facility (RIF) - Helper script to zip a directory in Linux/MacOS 
 #
 # Copyright:
 #
@@ -45,60 +46,10 @@
 #
 # Peter Hambly, SAHSU
 #
-# 
-TARGETS = rifWebPlatform.zip
+# Args 0: Zip file
+# Args 1: Directory to be zipped, must exist 
 #
-# Run bash on Linux, Powershell on Windows_NT
-#
-OS?=Unknown
-ifeq ($(OS),Windows_NT)
-#
-# Windows support
-#
-	RUN=powershell -ExecutionPolicy ByPass -file ../Scripts/run.ps1
-	COPY=powershell -ExecutionPolicy ByPass -file ../Scripts/copy.ps1 
-	DELETE=powershell -ExecutionPolicy ByPass -file ../Scripts/delete.ps1
-	RENAME=powershell -ExecutionPolicy ByPass -file ../Scripts/rename.ps1	
-	INSTALL=powershell -ExecutionPolicy ByPass -file ../Scripts/install.ps1	
-	ZIP=powershell -ExecutionPolicy ByPass -file ../Scripts/zip.ps1		
-	HELP=findstr "\#-" Makefile
-	TOMCAT_RIF4 = "C:\Program Files\Apache Software Foundation\Tomcat 8.0\webapps\RIF4"
-else
-#
-# Linux and Macos support
-#
-	RUN=./run.sh
-	HELP=grep "\#-" Makefile
-	COPY=cp
-	DELETE=rm -f
-	RENAME=mv -f
-	INSTALL=sudo ../Scripts/install.sh
-	ZIP=../Scripts/zip.sh
-	TOMCAT_RIF4 =
-endif
-#
-#- all: Build rifWebPlatform zipfile
-all: $(TARGETS)
 
-$(TARGETS):
-	$(ZIP) $@ ../../rifWebPlatform/web
-	
-#- test: Dummy target
-test:
-	
-#- clean: Remove rifWebPlatform zipfile	
-clean:
-	$(DELETE) $(TARGETS)
-
-#
-#- help: Display this help
-help:
-	$(HELP)
-	
-#- install: Install and unzip rifWebPlatform zipfile to tomcat webapps/RIF4 directory
-#-          
-install: 
-	$(INSTALL) rifWebPlatform.zip $(TOMCAT_RIF4)
-	
+exit 1
 #
 # Eof

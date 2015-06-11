@@ -1,3 +1,5 @@
+#!/bin/sh
+#
 # ************************************************************************
 #
 # GIT Header
@@ -7,9 +9,8 @@
 # Version hash: $Format:%H$
 #
 # Description:
-#-
-#- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifBuild\rifWebPlatform
-#-
+#
+# Rapid Enquiry Facility (RIF) - Helper script to run a Unix command using bash. 
 #
 # Copyright:
 #
@@ -45,60 +46,94 @@
 #
 # Peter Hambly, SAHSU
 #
-# 
-TARGETS = rifWebPlatform.zip
+# Helper script to run a windows command using Powershell. 
 #
-# Run bash on Linux, Powershell on Windows_NT
+# Parameters:
+# 1. Log file name
+# 2. Working directory 
+# 3. Command
+# 4+. Args
 #
-OS?=Unknown
-ifeq ($(OS),Windows_NT)
+# Stdout and stderr are tee to the log
 #
-# Windows support
+# Returns the exit status of the command
 #
-	RUN=powershell -ExecutionPolicy ByPass -file ../Scripts/run.ps1
-	COPY=powershell -ExecutionPolicy ByPass -file ../Scripts/copy.ps1 
-	DELETE=powershell -ExecutionPolicy ByPass -file ../Scripts/delete.ps1
-	RENAME=powershell -ExecutionPolicy ByPass -file ../Scripts/rename.ps1	
-	INSTALL=powershell -ExecutionPolicy ByPass -file ../Scripts/install.ps1	
-	ZIP=powershell -ExecutionPolicy ByPass -file ../Scripts/zip.ps1		
-	HELP=findstr "\#-" Makefile
-	TOMCAT_RIF4 = "C:\Program Files\Apache Software Foundation\Tomcat 8.0\webapps\RIF4"
-else
+LOG=$1
+WD=$2
+CMD=$3
+shift;shift;shift
+ARGS=$*
+MODULE=`basename $0`
 #
-# Linux and Macos support
+# cmd() function
 #
-	RUN=./run.sh
-	HELP=grep "\#-" Makefile
-	COPY=cp
-	DELETE=rm -f
-	RENAME=mv -f
-	INSTALL=sudo ../Scripts/install.sh
-	ZIP=../Scripts/zip.sh
-	TOMCAT_RIF4 =
-endif
-#
-#- all: Build rifWebPlatform zipfile
-all: $(TARGETS)
-
-$(TARGETS):
-	$(ZIP) $@ ../../rifWebPlatform/web
-	
-#- test: Dummy target
-test:
-	
-#- clean: Remove rifWebPlatform zipfile	
-clean:
-	$(DELETE) $(TARGETS)
+cmd() {
+	echo "UNIX [`pwd`]> $CMD $ARGS"
+	$CMD $ARGS 
+	cmd_status=$?
+	if [ $cmd_status != "0" ]; then
+		echo "$MODULE: $CMD failed with status: $cmd_status"
+	fi		
+	echo $cmd_status > $LOG.status
+}
 
 #
-#- help: Display this help
-help:
-	$(HELP)
-	
-#- install: Install and unzip rifWebPlatform zipfile to tomcat webapps/RIF4 directory
-#-          
-install: 
-	$(INSTALL) rifWebPlatform.zip $(TOMCAT_RIF4)
-	
+# Check working directory exists, cd to it
+#
+if [ ! -d $WD ]; then	
+	echo "$MODULE: run directory $WD not found"
+	exit 2
+fi
+cd $WD
+
+#
+# Remove old log files, create
+#
+if [ -f $LOG ]; then
+	cmd rm -f $LOG 
+fi
+if [ -f $LOG.err ]; then
+	cmd rm -f $LOG.err 
+fi
+if [ -f $LOG.status ]; then
+	cmd rm -f $LOG.status 
+fi
+touch $LOG
+if [ ! -w $LOG ]; then	
+	echo "$MODULE: log file $LOG not writeable"
+	exit 3
+fi
+
+#
+# Run command
+#
+(cmd) | 2>&1 tee -a $LOG
+#
+# Check status file
+#
+if [ ! -f $LOG.status ]; then	
+	echo "$MODULE: run status file $LOG.status not found" >> $LOG
+	exit 4
+fi
+if [ ! -s $LOG.status ]; then	
+	echo "$MODULE: run status file $LOG.status zero sized" >> $LOG
+	rm -f $LOG.status
+	exit 5
+fi
+
+#
+# Extract status
+#
+EXIT_STATUS=`cat $LOG.status`
+EXIT_STATUS=${EXIT_STATUS:=9999}
+if [ $EXIT_STATUS = "9999" ]; then
+	echo "$MODULE: run status file $LOG.status not found/zero sized" >> $LOG
+elif [ $EXIT_STATUS != "0" ]; then
+	mv -f $LOG $LOG.err
+	rm -f $LOG.status
+	exit 6
+fi
+rm -f $LOG.status
+exit 0
 #
 # Eof

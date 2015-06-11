@@ -47,6 +47,77 @@
 # Args 0: Zip file
 # Args 1: Directory to be zipped, must exist 
 #
+Param(
+	[ValidateNotNullOrEmpty()][string]$zipFile,
+	[ValidateNotNullOrEmpty()][string]$zipDir
+)
+#
+# Setup log if required
+#
+if (!$log) {
+	$log=$(get-location).Path + "\install.log"
+}
+if (!$err) {
+	$err=$(get-location).Path + "\install.err"
+}
+#
+# Clean up log files
+#
+If (Test-Path $log".err"){
+	Remove-Item $log".err" -verbose
+}
+If (Test-Path $log){
+	Remove-Item $log -verbose
+}
+If (Test-Path $err){
+	Remove-Item $err -verbose
+}
+
+function Write-Feedback(){
+    param
+    (
+        [Parameter(Position=0,ValueFromPipeline=$true)]
+        [string]$msg,
+        [string]$BackgroundColor = "Black",
+        [string]$ForegroundColor = "Yellow"
+    )
+
+    Write-Host -BackgroundColor $BackgroundColor -ForegroundColor $ForegroundColor $msg;
+    $msg | Out-File $log -Append -Width 180;
+}
+function Write-ErrorFeedback(){
+    param
+    (
+        [Parameter(Position=0,ValueFromPipeline=$true)]
+        [string]$msg,
+        [string]$BackgroundColor = "Black",
+        [string]$ForegroundColor = "Red"
+    )
+
+    Write-Host -BackgroundColor $BackgroundColor -ForegroundColor $ForegroundColor $msg;
+    $msg | Out-File $err -Append -Width 180;
+}
+
+function DoZip {
+	Write-Feedback "zip.ps1 log: $Log"	
+	Write-Feedback "zip.ps1 errors: $Err" 		
+	Write-Feedback "zip.ps1 zipFile: $zipFile" 
+	Write-Feedback "zip.ps1 zipDir: $zipDir"
+}
+
+#
+# Main Try/Catch block
+#
+Try {
+	DoZip
+}
+Catch {
+    write-ErrorFeedback "zip.ps1: ERROR! in DoZip(); Caught an exception:" 
+    write-ErrorFeedback "Exception Type: $($_.Exception.GetType().FullName)" 
+    write-ErrorFeedback "Exception Message: $($_.Exception.Message)" 
+#
+	exit 1
+}
 
 #
 # Eof
