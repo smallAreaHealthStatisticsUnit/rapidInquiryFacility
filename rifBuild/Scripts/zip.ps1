@@ -103,6 +103,10 @@ function DoZip {
 	Write-Feedback "zip.ps1 errors: $Err" 		
 	Write-Feedback "zip.ps1 zipFile: $zipFile" 
 	Write-Feedback "zip.ps1 zipDir: $zipDir"
+#	
+	set-content $zipFile ("PK" + [char]5 + [char]6 + ("$([char]0)" * 18)) 
+	$Zip = (new-object -com shell.application).NameSpace($zipFile) 
+	Get-ChildItem $zipDir | foreach {$zip.CopyHere($_.fullname)} 
 }
 
 #
