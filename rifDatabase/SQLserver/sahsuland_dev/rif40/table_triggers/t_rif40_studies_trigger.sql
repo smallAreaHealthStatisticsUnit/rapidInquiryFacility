@@ -66,7 +66,7 @@ Declare  @XTYPE varchar(5);
 	END
 
 --check is new username = current user? for update and insert
-IF (@XTYPE = 'U'  OR @XTYPE = 'I')
+IF (@XTYPE = 'I' or @XTYPE = 'U')
 BEGIN
 	DECLARE @not_user VARCHAR(max) = (
 		SELECT username
@@ -87,8 +87,8 @@ END;
 
 IF @XTYPE = 'U'
 BEGIN	
-	--UPDATE not allowed except for IG admin and state changes.
 	
+	--UPDATE not allowed except for IG admin and state changes.
 	DECLARE @is_state_change	int, @is_ig_update int;
 
 	SET @is_state_change = (
@@ -96,7 +96,6 @@ BEGIN
 		FROM inserted a, deleted b
 		where a.study_state != b.study_state
 		and a.study_id=b.study_id
-		and a.username=b.username
 		and a.geography=b.geography
 		and a.project=b.project
 		and a.study_name=b.study_name
@@ -121,7 +120,6 @@ BEGIN
 		SELECT a.study_id
 		FROM inserted a, deleted b
 		where a.study_id=b.study_id
-		and a.username=b.username
 		and a.geography=b.geography
 		and a.project=b.project
 		and a.study_name=b.study_name
@@ -147,10 +145,30 @@ BEGIN
 		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', 'doing a state change and IG update at the same time?';
 	END;
 
-		
-	IF @is_state_change NOT NULL 
-		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', 'UPDATE state changes allowed on T-RIF40_STUDIES by user';
-	ELSE
+	IF @is_state_change NOT NULL BEGIN
+
+	--check if new username = old username for the study
+		DECLARE @not_first_user VARCHAR(max) = (
+			SELECT a.username as new_user, b.username as original_user
+			FROM inserted a, deleted b
+			WHERE a.study_id=b.study_id
+			and a.username != b.username
+			FOR XML PATH(''));
+		IF @not_first_user IS NOT NULL
+		BEGIN TRY
+			rollback;
+			DECLARE @err_msg4 = formatmessage(51016, @not_first_user);
+			THROW 51016, @err_msg4, 1;
+		END TRY
+		BEGIN CATCH
+			EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+			THROW 51016, @err_msg4, 1;
+		END CATCH;
+		ELSE	
+			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', 'UPDATE state changes allowed on T-RIF40_STUDIES by user';
+	END;
+	
+	IF @is_ig_update IS NOT NULL
 	BEGIN
 		--only rif_manager can make IG changes
 		DECLARE @not_rif_manager VARCHAR(max) = (
@@ -168,13 +186,46 @@ BEGIN
 		BEGIN CATCH
 			EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
 			THROW 51014, @err_msg2, 1;
-		END CATCH;
+		END CATCH
 		ELSE
-		BEGIN
-		
-		
+		BEGIN 
+			DECLARE @log_msg1 = 'UPDATE IG changes allowed on T_RIF40_STUDIES by USER '+SUSER_NAME();
+			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', @log_msg1;
 		END
+	END
+	
+	IF @is_state_change IS NULL AND @is_ig_update IS NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg3 = formatmessage(51015, SUSER_NAME());
+		THROW 51015, @err_msg3, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+		THROW 51015, @err_msg3, 1;
+	END CATCH;
+	
 END;
+
+IF @XTYPE = 'D'
+BEGIN
+	DECLARE @not_user VARCHAR(max) = (
+		SELECT username as original_owner
+		FROM inserted
+		WHERE username != SUSER_NAME()
+		FOR XML PATH(''));
+	IF @not_user IS NOT NULL
+	BEGIN TRY
+		rollback
+		DECLARE @err_msg5 = formatmessage(51017,@not_user);
+		THROW 51017, @err_msg5, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+		THROW 51017, @err_msg5, 1;
+	END CATCH;
+END;	
+
 	
 ------------------------------------------------------------------------------------------
 --Check - Comparison area geolevel name. 
@@ -195,9 +246,16 @@ END;
 		 );
 
 	IF @geolevel_name IS NOT NULL
-		BEGIN
-			RAISERROR('Geolevel name not found ,studyid-comparison_geolevel_name-geography: %s', 16, 1, @geolevel_name) with log;
-		END;
+		BEGIN TRY
+			rollback;
+			DECLARE @err_msg6 = formatmessage(51018, @geolevel_name);
+			THROW 51018, @err_msg6, 1;
+		END TRY
+		BEGIN CATCH
+			EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+			THROW 51018, @err_msg6, 1;
+		END CATCH;
+
 -----------------------------------------------------------------------------------------------------------
 -- Check - STUDY_GEOLEVEL_NAME. Must be a valid GEOLEVEL_NAME for the study GEOGRPAHY in T_RIF40_GEOLEVELS
 -----------------------------------------------------------------------------------------------------------
@@ -207,17 +265,24 @@ END;
 		SELECT concat ([STUDY_ID],'-', [STUDY_GEOLEVEL_NAME], '-', geography )
 		 + '  '
 		FROM inserted ic 
-		where not EXISTS (SELECT 1 FROM [rif40].[t_rif40_geolevels] c 
-              WHERE ic.[geography]=c.[GEOGRAPHY] and 
-				    c.geolevel_name=ic.[STUDY_GEOLEVEL_NAME] 
-						)
-        FOR XML PATH('')
-		 );
+		LEFT OUTER JOIN ON [rif40].[t_rif40_geolevels] c 
+		ON ic.[geography]=c.[GEOGRAPHY] and 
+			c.geolevel_name=ic.[STUDY_GEOLEVEL_NAME] 
+		WHERE c.geography is null
+		FOR XML PATH('')
+		);
 
 	IF @geolevel_name2 IS NOT NULL
-		BEGIN
-			RAISERROR('Geolevel name not found ,studyid-study_geolevel_name-geography: %s', 16, 1, @geolevel_name2) with log;
-		END;
+		BEGIN TRY
+			rollback;
+			DECLARE @err_msg7 = formatmessage(51019, @geolevel_name2);
+			THROW 51019, @err_msg7, 1;
+		END TRY
+		BEGIN CATCH
+			EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+			THROW 51019, @err_msg7, 1;
+		END CATCH;
+
 -------------------------------------
 -- Check -  direct denominator
 ------------------------------------

@@ -58,3 +58,22 @@ GO
 EXEC sp_addmessage 51014, 16,
 	N'Table name: [rif40].[tr_studies_checks] , UPDATE failed - UPDATE not allowed on T_RIF40_STUDIES by user (%s)';
 GO
+
+EXEC sp_addmessage 51015, 16,
+	N'Table name: [rif40].[tr_studies_checks] , UPDATE failed - non IG UPDATE not allowed on T_RIF40_STUDIES by user: (%s)'
+GO
+
+EXEC sp_addmessage 51016, 16,
+	N'Table name: [rif40].[tr_studies_checks] , UPDATE failed - new study username is not same as original study username: (%s)';
+GO	
+
+EXEC sp_addmessage 51017, 16,
+	N'Table name: [rif40].[tr_studies_checks] , DELETE failed - DELETE only allowed on own records in T_RIF40_STUDIES: (%s)';
+GO	
+
+EXEC sp_addmessage 51018, 16,
+	N'Table name: [rif40].[tr_studies_checks] , Geolevel name not found ,studyid-comparison_geolevel_name-geography: %s';
+GO	
+
+EXEC sp_addmessage 51019, 16,
+	N'Table name: [rif40].[tr_studies_checks] , Geolevel name not found ,studyid-study_geolevel_name-geography: %s';
