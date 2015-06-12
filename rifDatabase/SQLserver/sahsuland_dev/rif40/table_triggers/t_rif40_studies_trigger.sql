@@ -290,39 +290,62 @@ END;
 DECLARE @direct_denom nvarchar(MAX) =
  (
 SELECT a.TABLE_NAME + '  '
-FROM [rif40].[rif40_tables] a
-WHERE table_name IN (select direct_stand_tab from [rif40].[t_rif40_studies] where direct_stand_tab is not null)
-and a.ISDIRECTDENOMINATOR <>1
+FROM [rif40].[rif40_tables] a, inserted b
+WHERE a.table_name=b.direct_stand_tab
+AND a.ISDIRECTDENOMINATOR <>1
  FOR XML PATH('')
-)
+);
 
 IF @direct_denom IS NOT NULL
-		BEGIN
-			RAISERROR('direct standardisation table: %s is not a direct denominator table: %s', 16, 1, @direct_denom) with log;
-		END;
+BEGIN TRY
+	rollback;
+	DECLARE @err_msg8 = formatmessage(51020, @direct_denom);
+	THROW 51020, @err_msg8, 1;
+END TRY
+BEGIN CATCH
+	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+	THROW 51020, @err_msg8, 1;
+END CATCH;
+ELSE
+BEGIN
+	DECLARE @log_msg8 = @direct_denom+' is a direct denominator table';
+	EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', @log_msg8;
+END;
 
 DECLARE @indirect_denom nvarchar(MAX) =
  (
 SELECT a.TABLE_NAME + '  '
-FROM [rif40].[rif40_tables] a
-WHERE table_name IN (select direct_stand_tab from [rif40].[t_rif40_studies] where direct_stand_tab is not null)
+FROM [rif40].[rif40_tables] a, inserted b
+WHERE a.table_name=b.denom_tab
 and a.ISINDIRECTDENOMINATOR <>1
  FOR XML PATH('')
 )
 
 IF @indirect_denom IS NOT NULL
-		BEGIN
-			RAISERROR('study %s denominator: %s is not a denominator table: %s', 16, 1, @indirect_denom) with log;
-		END;
+BEGIN TRY
+	rollback;
+	DECLARE @err_msg9 = formatmessage(51021, @indirect_denom);
+	THROW 51021, @err_msg9, 1;
+END TRY
+BEGIN CATCH
+	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+	THROW 51021, @err_msg9, 1;
+END CATCH;
+
+	
 ------------------------------
 -- max/min age group is null-- NEED TO FINISH 
 ------------------------------
 DECLARE @min_age nvarchar(MAX) =
  (
 SELECT a.TABLE_NAME + '  '
-FROM [rif40].[rif40_tables] a
-LEFT OUTER JOIN [rif40].[rif40_age_groups] g ON (g.age_group_id  = a.age_group_id)
-WHERE table_name IN (select direct_stand_tab from [rif40].[t_rif40_studies] where direct_stand_tab is not null)
+FROM [rif40].[rif40_tables] a, inserted b
+LEFT OUTER JOIN [rif40].[rif40_age_groups] g ON (g.age_group_id  = a.age_group_id and g.offset is not null)
+WHERE a.table_name=b.denom_tab
+and g.offset is null --?
+)
+
+
 GROUP BY a.TABLE_NAME,a.year_start, a.year_stop, a.isindirectdenominator, a.isdirectdenominator, a.isnumerator,
 a.age_sex_group_field_name, a.sex_field_name, a.age_group_field_name, a.total_field
 having MAX(g.offset) is  null or MIN(g.offset) is  null 

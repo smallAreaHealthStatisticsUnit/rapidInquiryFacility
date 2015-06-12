@@ -77,3 +77,9 @@ GO
 
 EXEC sp_addmessage 51019, 16,
 	N'Table name: [rif40].[tr_studies_checks] , Geolevel name not found ,studyid-study_geolevel_name-geography: %s';
+
+EXEC sp_addmessage 51020, 16,
+	N'Table name: [rif40].[tr_studies_checks] , direct standardisation table is not a direct denominator table: %s';
+
+EXEC sp_addmessage 51021, 16,
+	N'Table name: [rif40].[tr_studies_checks] , denominator table is not a valid denominator table: %s';

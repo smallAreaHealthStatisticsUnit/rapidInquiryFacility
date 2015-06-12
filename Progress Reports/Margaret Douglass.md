@@ -5,6 +5,9 @@
 ###June
 The goal for this month is to complete all triggers (including logging and error handling) for the rif40 tables and views and to test the tables/views/triggers to confirm everything has been set up correctly.  
 
+######12 June
+* Slowly sorting out more of the t_rif40_studies_trigger code. 
+
 ######11 June
 * More trigger work.  Still working on t_rif40_studies_trigger
 
