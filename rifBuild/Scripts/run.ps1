@@ -88,7 +88,8 @@ Try {
 }
 Catch {
 	Write-Error "run.ps1: ERROR! in Invoke-expression"
-	$error[0]
+    write-Error "Exception Type: $($_.Exception.GetType().FullName)" 
+    write-Error "Exception Message: $($_.Exception.Message)" 
 	If (Test-Path $log){
 		rename-item -path $log -Newname $log".err" -force -verbose
 	}
@@ -96,8 +97,7 @@ Catch {
 }
 
 if ($process.ExitCode -ne 0) {
-	Write-Error "run.ps1: ERROR! in command execution"
-	$error[0]
+	Write-Error "run.ps1: ERROR! $process.ExitCode in command execution"
 	sleep 1
 	rename-item -path $log -Newname $log".err" -force -verbose
 	exit 1

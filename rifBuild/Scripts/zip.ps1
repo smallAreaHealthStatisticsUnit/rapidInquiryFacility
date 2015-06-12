@@ -57,9 +57,7 @@ Param(
 if (!$log) {
 	$log=$(get-location).Path + "\install.log"
 }
-if (!$err) {
-	$err=$(get-location).Path + "\install.err"
-}
+
 #
 # Clean up log files
 #
@@ -68,9 +66,6 @@ If (Test-Path $log".err"){
 }
 If (Test-Path $log){
 	Remove-Item $log -verbose
-}
-If (Test-Path $err){
-	Remove-Item $err -verbose
 }
 
 function Write-Feedback(){
@@ -95,7 +90,7 @@ function Write-ErrorFeedback(){
     )
 
     Write-Host -BackgroundColor $BackgroundColor -ForegroundColor $ForegroundColor $msg;
-    $msg | Out-File $err -Append -Width 180;
+    $msg | Out-File $log -Append -Width 180;
 }
 
 function DoZip {
@@ -104,9 +99,40 @@ function DoZip {
 	Write-Feedback "zip.ps1 zipFile: $zipFile" 
 	Write-Feedback "zip.ps1 zipDir: $zipDir"
 #	
-	set-content $zipFile ("PK" + [char]5 + [char]6 + ("$([char]0)" * 18)) 
-	$Zip = (new-object -com shell.application).NameSpace($zipFile) 
-	Get-ChildItem $zipDir | foreach {$zip.CopyHere($_.fullname)} 
+	if(-not (test-path($zipFile))) {
+		set-content $zipFile ("PK" + [char]5 + [char]6 + ("$([char]0)" * 18)) 
+		(dir $zipFile).IsReadOnly = $false    		
+	}
+	if(-not (test-path($zipFile))) {
+			Throw "zip.ps1: ERROR! Cannot create $zipFile"
+	}
+
+	$shellApplication=new-object -com shell.application -verbose -ErrorAction Stop
+
+ 	$Zip = $shellApplication.NameSpace($zipFile)
+	$7zip = "C:\Program Files\7-Zip\7z.exe"
+	if (-not ($Zip)) {
+		if (test-path($7zip)) {
+			Write-Feedback "zip.ps1: Using 7zip"
+		}
+		else {
+			Throw "zip.ps1: ERROR! No ZIP program installed; install 7-zip"
+		}
+	}		
+	Get-ChildItem $zipDir | foreach {
+		$file = $_.fullname
+		Write-Feedback "zip.ps1: Add: $file"
+		if ($Zip) {
+			$Zip.CopyHere($_.fullname)
+		}
+		elseif (test-path($7zip)) {
+			$args = "a $zipFile $file"
+			$process=(Start-Process $7zip -ArgumentList $args -NoNewWindow -verbose -PassThru -Wait) 2>&1 | tee $log
+			if ($process.ExitCode -ne 0) {
+				Throw "zip.ps1: ERROR! $process.ExitCode in $7zip $args"
+			}
+		}
+	} 
 }
 
 #
@@ -119,6 +145,9 @@ Catch {
     write-ErrorFeedback "zip.ps1: ERROR! in DoZip(); Caught an exception:" 
     write-ErrorFeedback "Exception Type: $($_.Exception.GetType().FullName)" 
     write-ErrorFeedback "Exception Message: $($_.Exception.Message)" 
+	If (Test-Path $log){
+		rename-item -path $log -Newname $log".err" -force -verbose
+	}	
 #
 	exit 1
 }

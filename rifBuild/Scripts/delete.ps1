@@ -56,7 +56,8 @@ for ( $i = 0; $i -lt $args.count; $i++ ) {
 		}
 		Catch {
 			Write-Error "delete.ps1: ERROR! in Remove-Item[$i]: $($args[$i]) [IGNORED]"
-			$error[0]
+			write-Error "Exception Type: $($_.Exception.GetType().FullName)" 
+			`write-Error "Exception Message: $($_.Exception.Message)" 
 		}
 	}
 }

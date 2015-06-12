@@ -46,7 +46,7 @@
 #
 # Args 0: File to be installed. If file is a zip file, unzipped to install directory
 # Args 1: Install directory, must exist 
-# Args 2: Unpack tree base directory [OPTIONAL]
+# Args 2: Unpack tree base directory [OPTIONAL, tomcat auto unpack only]
 # Args 3: Log file (privileged second run)
 # Args 4: Error file (privileged second run)
 #
@@ -109,8 +109,9 @@ If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 		$process = Start-Process "$PsHome\PowerShell.exe" -Verb RunAs -ArgumentList $RelaunchArgs -PassThru -Verbose
 	}
 	Catch {
-		Write-Error "install.ps1: ERROR! in Invoke-expression"
-		$error[0]
+		Write-Error "install.ps1: ERROR! in Start-Process"
+		write-Error "Exception Type: $($_.Exception.GetType().FullName)" 
+		write-Error "Exception Message: $($_.Exception.Message)" 
 		If (Test-Path $log){
 			Write-Host "install.ps1: log: $log >>>"
 			get-content -Path $log		
@@ -195,13 +196,28 @@ function DoElevatedOperations {
 	Write-Feedback "install.ps1 errors: $Err" 		
 	Write-Feedback "install.ps1 installFile: $installFile" 
 	Write-Feedback "install.ps1 installDir: $installDir" 
-
+	
+#
+# Get filename extension
+#
+	$extension = [System.IO.Path]::GetExtension($installFile)
+	Write-Feedback "install.ps1 installFile extension: $extension" 
+	
 #
 # Clean down unpack tree base directory
 #
 	If ($installTree) {
-		Write-Feedback "install.ps1 installTree: $installTree" 	
-		if (Test-Path $installTree ){
+		if ($extension -eq ".war") {
+			Write-Feedback "install.ps1 installTree: $installTree for WAR files" 
+		}
+		elseif ($extension -eq ".zip") {
+			Throw "install.ps1 installTree: $installTree not valid for ZIP files"
+		}
+		else {
+			Throw "install.ps1 installTree: $installTree not valid for $extension files"		
+		}
+		
+		if (Test-Path $installTree ) {
 			Write-Feedback "install.ps1 clean installTree: $installTree" 
 			Remove-Item $installTree -recurse -ErrorAction Stop;
 		}
@@ -212,15 +228,15 @@ function DoElevatedOperations {
 #
 # Remove old install war file
 #
-	$old_war=$installDir+"\"+([io.fileinfo]$installFile).basename+".war";
-	if (Test-Path $old_war) {
-		Write-Feedback "install.ps1 clean old_war: $old_war" 
-		Remove-Item $old_war -verbose -ErrorAction Stop;
-	}
-	else {
-		Write-Feedback "install.ps1 No old_war: $old_war" 
-	}
-	if (Test-Path $old_war) {
+	If ($installTree) {
+		$old_war=$installDir+"\"+([io.fileinfo]$installFile).basename+".war";
+		if (Test-Path $old_war) {
+			Write-Feedback "install.ps1 clean old install war file: $old_war" 
+			Remove-Item $old_war -verbose -ErrorAction Stop;
+		}
+		else {
+			Write-Feedback "install.ps1 No old install war file: $old_war" 
+		}
 	}
 	
 #
@@ -238,18 +254,68 @@ function DoElevatedOperations {
 #
 # Check if WAR expansion directory has been re-created by tomcat
 #
-	$i=1;
-	for(; $i -le 21; $i++){
-		if (Test-Path $installTree) {
-		
-			Write-Feedback "install.ps1: WAR expanded after $i seconds"
-			Return;
+	If ($installTree) {
+		$i=1;
+		for(; $i -le 21; $i++){
+			if (Test-Path $installTree) {	
+				Write-Feedback "install.ps1: WAR expanded after $i seconds"
+				Return;
+			}
+			Start-Sleep -Seconds 1;
+			Write-Feedback "install.ps1: Waiting: $i seconds for WAR expansion"		
 		}
-		Start-Sleep -Seconds 1;
-        Write-Feedback "install.ps1: Waiting: $i seconds for WAR expansion"		
+		Write-ErrorFeedback "install.ps1: ERROR! WAR not expanded after $i seconds"
+		Throw "install.ps1: ERROR! WAR not expanded after $i seconds"
 	}
-	Write-ErrorFeedback "install.ps1: ERROR! WAR not expanded after $i seconds"
-	Throw "install.ps1: ERROR! WAR not expanded after $i seconds"
+	elseif ($extension -eq ".zip") {
+#
+# CD to install directory
+#
+		Set-Location -path $installDir -verbose -ErrorAction Stop
+
+#
+# Zip
+#
+		$7zip = "C:\Program Files\7-Zip\7z.exe"
+		if (test-path($7zip)) {
+			Write-Feedback "zip.ps1: Using 7zip"
+		}
+		else {
+			Throw "zip.ps1: ERROR! No ZIP program installed; install 7-zip"
+		}	
+#		$args = "x "+$installFile		
+		Write-Feedback "install.ps1: Expanding ZIP file: $installFile in $installDir"	
+		$log2=$(get-location).Path + "\install2.log"
+#		$process2=(Start-Process $7zip -ArgumentList $args -NoNewWindow -verbose -PassThru -Wait) 2>&1 > $log2
+#
+# This doesn't capture the output; you get this instead...
+#
+# Handles  NPM(K)    PM(K)      WS(K) VM(M)   CPU(s)     Id ProcessName
+# -------  ------    -----      ----- -----   ------     -- -----------
+#      29       5     1312       2864    40     0.02  10388 7z
+#	
+# And no exit code...	
+#
+
+#
+# This does work; but us not streamed
+#
+		& "$7zip" "x" $installFile "-y"	2>&1 > $log2
+	
+		If (Test-Path $log2){
+			Write-Feedback "install.ps1: 7zip log: $log2 >>>"
+			$log_msg=get-content -Path $log2	| Out-String	
+			Write-Feedback $log_msg -ForegroundColor Yellow	
+			Write-Feedback "<<< End of 7zip."
+			Remove-Item $log2 -verbose
+		}
+		Start-Sleep -Seconds 1
+	
+		if ($LASTEXITCODE -ne 0) {
+			Throw "install.ps1: ERROR! $LASTEXITCODE in $7zip $args"
+		}
+
+	}
 }
 
 #

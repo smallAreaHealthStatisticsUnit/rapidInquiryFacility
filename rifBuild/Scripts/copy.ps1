@@ -58,7 +58,8 @@ Try {
 }
 Catch {
 	Write-Error "copy.ps1: ERROR! in Copy-Item $($args[0]) to $($args[1])"
-	$error[0]
+    write-Error "Exception Type: $($_.Exception.GetType().FullName)" 
+    write-Error "Exception Message: $($_.Exception.Message)" 
 	exit 2
 }
 #

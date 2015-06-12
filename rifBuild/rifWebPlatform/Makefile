@@ -60,6 +60,7 @@ ifeq ($(OS),Windows_NT)
 	DELETE=powershell -ExecutionPolicy ByPass -file ../Scripts/delete.ps1
 	RENAME=powershell -ExecutionPolicy ByPass -file ../Scripts/rename.ps1	
 	INSTALL=powershell -ExecutionPolicy ByPass -file ../Scripts/install.ps1	
+	MKDIR=powershell -ExecutionPolicy ByPass -file ../Scripts/mkdir.ps1	
 	ZIP=powershell -ExecutionPolicy ByPass -file ../Scripts/zip.ps1		
 	HELP=findstr "\#-" Makefile
 	TOMCAT_RIF4 = "C:\Program Files\Apache Software Foundation\Tomcat 8.0\webapps\RIF4"
@@ -72,6 +73,7 @@ else
 	COPY=cp
 	DELETE=rm -f
 	RENAME=mv -f
+	MKDIR=mkdir -p 
 	INSTALL=sudo ../Scripts/install.sh
 	ZIP=../Scripts/zip.sh
 	TOMCAT_RIF4 =
@@ -98,6 +100,7 @@ help:
 #- install: Install and unzip rifWebPlatform zipfile to tomcat webapps/RIF4 directory
 #-          
 install: 
+	$(MKDIR) $(TOMCAT_RIF4)
 	$(INSTALL) rifWebPlatform.zip $(TOMCAT_RIF4)
 	
 #
