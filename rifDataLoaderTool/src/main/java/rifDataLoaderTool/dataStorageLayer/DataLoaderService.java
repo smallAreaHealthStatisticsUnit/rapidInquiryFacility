@@ -689,7 +689,7 @@ public final class DataLoaderService
 		
 	public void loadConfiguration(
 		final User _user,
-		final TableCleaningConfiguration _tableCleaningConfiguration) 
+		final CleanWorkflowConfiguration _tableCleaningConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
 
@@ -698,8 +698,8 @@ public final class DataLoaderService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return;
 		}
-		TableCleaningConfiguration tableCleaningConfiguration
-			= TableCleaningConfiguration.createCopy(_tableCleaningConfiguration);
+		CleanWorkflowConfiguration tableCleaningConfiguration
+			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
 		
 		
 		try {
@@ -756,7 +756,7 @@ public final class DataLoaderService
 		
 	public void addLoadTableData(
 		final User _user,
-		final TableCleaningConfiguration _tableCleaningConfiguration,
+		final CleanWorkflowConfiguration _tableCleaningConfiguration,
 		final String[][] tableData)
 		throws RIFServiceException,
 		RIFServiceException {
@@ -766,8 +766,8 @@ public final class DataLoaderService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return;
 		}
-		TableCleaningConfiguration tableCleaningConfiguration
-			= TableCleaningConfiguration.createCopy(_tableCleaningConfiguration);
+		CleanWorkflowConfiguration tableCleaningConfiguration
+			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
 	
 		try {
 
@@ -833,7 +833,7 @@ public final class DataLoaderService
 
 	public RIFResultTable getLoadTableData(
 		final User _user,
-		final TableCleaningConfiguration _tableCleaningConfiguration) 
+		final CleanWorkflowConfiguration _tableCleaningConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
 		
@@ -842,8 +842,8 @@ public final class DataLoaderService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		TableCleaningConfiguration tableCleaningConfiguration
-			= TableCleaningConfiguration.createCopy(_tableCleaningConfiguration);
+		CleanWorkflowConfiguration tableCleaningConfiguration
+			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
 
 				
 		RIFResultTable results = null;
@@ -902,7 +902,7 @@ public final class DataLoaderService
 		
 	public void cleanConfiguration(
 		final User _user,
-		final TableCleaningConfiguration _tableCleaningConfiguration) 
+		final CleanWorkflowConfiguration _tableCleaningConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
 		
@@ -913,8 +913,8 @@ public final class DataLoaderService
 
 			return;
 		}
-		TableCleaningConfiguration tableCleaningConfiguration
-			= TableCleaningConfiguration.createCopy(_tableCleaningConfiguration);
+		CleanWorkflowConfiguration tableCleaningConfiguration
+			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
 		
 		
 		
@@ -970,7 +970,7 @@ public final class DataLoaderService
 	
 	public RIFResultTable getCleanedTableData(
 		final User _user,			
-		final TableCleaningConfiguration _tableCleaningConfiguration) 
+		final CleanWorkflowConfiguration _tableCleaningConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
 
@@ -979,8 +979,8 @@ public final class DataLoaderService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		TableCleaningConfiguration tableCleaningConfiguration
-			= TableCleaningConfiguration.createCopy(_tableCleaningConfiguration);
+		CleanWorkflowConfiguration tableCleaningConfiguration
+			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
 				
 		RIFResultTable result = null;
 		try {
@@ -1036,7 +1036,7 @@ public final class DataLoaderService
 	
 	public void convertConfiguration(
 		final User _user,
-		final TableConversionConfiguration _tableConversionConfiguration)
+		final ConvertWorkflowConfiguration _tableConversionConfiguration)
 		throws RIFServiceException,
 		RIFServiceException {
 		
@@ -1045,8 +1045,8 @@ public final class DataLoaderService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return;
 		}
-		TableConversionConfiguration tableConversionConfiguration
-			= TableConversionConfiguration.createCopy(_tableConversionConfiguration);
+		ConvertWorkflowConfiguration tableConversionConfiguration
+			= ConvertWorkflowConfiguration.createCopy(_tableConversionConfiguration);
 				
 		RIFResultTable result = null;
 		try {
@@ -1105,7 +1105,7 @@ public final class DataLoaderService
 	
 	public Integer getCleaningTotalBlankValues(
 		final User _user,
-		final TableCleaningConfiguration _tableCleaningConfiguration)
+		final CleanWorkflowConfiguration _tableCleaningConfiguration)
 		throws RIFServiceException,
 		RIFServiceException {
 
@@ -1114,8 +1114,8 @@ public final class DataLoaderService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		TableCleaningConfiguration tableCleaningConfiguration
-			= TableCleaningConfiguration.createCopy(_tableCleaningConfiguration);
+		CleanWorkflowConfiguration tableCleaningConfiguration
+			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
 
 		Integer result = null;
 		try {
@@ -1169,7 +1169,7 @@ public final class DataLoaderService
 		
 	public Integer getCleaningTotalChangedValues(
 		final User _user,
-		final TableCleaningConfiguration _tableCleaningConfiguration)
+		final CleanWorkflowConfiguration _tableCleaningConfiguration)
 		throws RIFServiceException,
 		RIFServiceException {
 		
@@ -1178,8 +1178,8 @@ public final class DataLoaderService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		TableCleaningConfiguration tableCleaningConfiguration
-			= TableCleaningConfiguration.createCopy(_tableCleaningConfiguration);
+		CleanWorkflowConfiguration tableCleaningConfiguration
+			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
 
 		Integer result = null;
 		try {
@@ -1233,7 +1233,7 @@ public final class DataLoaderService
 		
 	public Integer getCleaningTotalErrorValues(
 		final User _user,
-		final TableCleaningConfiguration _tableCleaningConfiguration)
+		final CleanWorkflowConfiguration _tableCleaningConfiguration)
 		throws RIFServiceException,
 		RIFServiceException {
 
@@ -1243,8 +1243,8 @@ public final class DataLoaderService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		TableCleaningConfiguration tableCleaningConfiguration
-			= TableCleaningConfiguration.createCopy(_tableCleaningConfiguration);
+		CleanWorkflowConfiguration tableCleaningConfiguration
+			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
 
 		Integer result = null;
 		try {
@@ -1298,7 +1298,7 @@ public final class DataLoaderService
 	
 	public Boolean cleaningDetectedBlankValue(
 		final User _user,
-		final TableCleaningConfiguration _tableCleaningConfiguration,
+		final CleanWorkflowConfiguration _tableCleaningConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException,
@@ -1310,8 +1310,8 @@ public final class DataLoaderService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		TableCleaningConfiguration tableCleaningConfiguration
-			= TableCleaningConfiguration.createCopy(_tableCleaningConfiguration);
+		CleanWorkflowConfiguration tableCleaningConfiguration
+			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
 
 		Boolean result = null;
 		try {
@@ -1375,7 +1375,7 @@ public final class DataLoaderService
 	
 	public Boolean cleaningDetectedChangedValue(
 		final User _user,
-		final TableCleaningConfiguration _tableCleaningConfiguration,
+		final CleanWorkflowConfiguration _tableCleaningConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException,
@@ -1387,8 +1387,8 @@ public final class DataLoaderService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		TableCleaningConfiguration tableCleaningConfiguration
-			= TableCleaningConfiguration.createCopy(_tableCleaningConfiguration);
+		CleanWorkflowConfiguration tableCleaningConfiguration
+			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
 
 		Boolean result = null;
 		try {
@@ -1452,7 +1452,7 @@ public final class DataLoaderService
 	
 	public Boolean cleaningDetectedErrorValue(
 		final User _user,
-		final TableCleaningConfiguration _tableCleaningConfiguration,
+		final CleanWorkflowConfiguration _tableCleaningConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException,
@@ -1463,8 +1463,8 @@ public final class DataLoaderService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		TableCleaningConfiguration tableCleaningConfiguration
-			= TableCleaningConfiguration.createCopy(_tableCleaningConfiguration);
+		CleanWorkflowConfiguration tableCleaningConfiguration
+			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
 
 		Boolean result = null;
 		try {
@@ -1527,7 +1527,7 @@ public final class DataLoaderService
 	
 	public String[][] getVarianceInFieldData(
 		final User _user,
-		final TableFieldCleaningConfiguration _tableFieldCleaningConfiguration)
+		final CleanWorkflowFieldConfiguration _tableFieldCleaningConfiguration)
 		throws RIFServiceException {
 	
 		//Defensively copy parameters and guard against blocked users
@@ -1535,8 +1535,8 @@ public final class DataLoaderService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
-		TableFieldCleaningConfiguration tableFieldCleaningConfiguration
-			= TableFieldCleaningConfiguration.createCopy(_tableFieldCleaningConfiguration);
+		CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration
+			= CleanWorkflowFieldConfiguration.createCopy(_tableFieldCleaningConfiguration);
 
 		String[][] results = new String[0][0];
 		try {

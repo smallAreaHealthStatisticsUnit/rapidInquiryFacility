@@ -2,7 +2,7 @@ package rifDataLoaderTool.fileFormats;
 
 import java.io.ByteArrayOutputStream;
 
-import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
 
 
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
@@ -82,7 +82,7 @@ public final class FieldVarianceReport {
 	// ==========================================
 
 	public String getHTML(
-		final TableFieldCleaningConfiguration tableFieldCleaningConfiguration,
+		final CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration,
 		final String[][] varianceData) {
 		
 		HTMLUtility htmlUtility = new HTMLUtility();

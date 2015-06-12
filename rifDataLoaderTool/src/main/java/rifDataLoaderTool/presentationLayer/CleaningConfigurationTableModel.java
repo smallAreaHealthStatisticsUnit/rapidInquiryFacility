@@ -1,7 +1,7 @@
 package rifDataLoaderTool.presentationLayer;
 
-import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
-import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
@@ -74,7 +74,7 @@ public final class CleaningConfigurationTableModel
 	// Section Properties
 	// ==========================================
 	
-	private TableCleaningConfiguration tableCleaningConfiguration;
+	private CleanWorkflowConfiguration tableCleaningConfiguration;
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -95,7 +95,7 @@ public final class CleaningConfigurationTableModel
 		return 4;
 	}
 
-	public TableFieldCleaningConfiguration getRow(
+	public CleanWorkflowFieldConfiguration getRow(
 		final int rowIndex) {
 		
 		return tableCleaningConfiguration.getFieldCleaningConfiguration(rowIndex);
@@ -138,7 +138,7 @@ public final class CleaningConfigurationTableModel
 		
 		Object result = null;
 
-		TableFieldCleaningConfiguration tableFieldCleaningConfiguration
+		CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration
 			= tableCleaningConfiguration.getFieldCleaningConfiguration(rowIndex);
 		
 		if (columnIndex == ORIGINAL_FIELD_NAME_COLUMN) {
@@ -167,7 +167,7 @@ public final class CleaningConfigurationTableModel
 		return result;
 	}
 
-	public void setData(final TableCleaningConfiguration tableCleaningConfiguration) {
+	public void setData(final CleanWorkflowConfiguration tableCleaningConfiguration) {
 		this.tableCleaningConfiguration = tableCleaningConfiguration;
 		fireTableDataChanged();
 	}

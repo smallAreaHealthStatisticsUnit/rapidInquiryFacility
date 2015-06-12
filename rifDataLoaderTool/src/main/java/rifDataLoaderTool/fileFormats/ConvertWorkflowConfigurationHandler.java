@@ -1,16 +1,16 @@
-package rifDataLoaderTool.presentationLayer;
+package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
+import rifDataLoaderTool.businessConceptLayer.ConvertWorkflowConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
+import rifDataLoaderTool.businessConceptLayer.CleaningRule;
 
 
 
+import rifGenericLibrary.presentationLayer.HTMLUtility;
 
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
-import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
-
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionListener;
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 
 /**
  *
@@ -62,7 +62,8 @@ import javax.swing.event.ListSelectionListener;
  *
  */
 
-public final class CleaningConfigurationTable {
+public final class ConvertWorkflowConfigurationHandler 
+	extends AbstractWorkflowConfigurationHandler {
 
 	// ==========================================
 	// Section Constants
@@ -71,50 +72,40 @@ public final class CleaningConfigurationTable {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private JTable table;
-	
-	private CleaningConfigurationTableModel cleaningConfigurationTableModel;
+	private ConvertWorkflowConfiguration convertWorkflowConfiguration;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public CleaningConfigurationTable(
-		final UserInterfaceFactory userInterfaceFactory) {
+	public ConvertWorkflowConfigurationHandler() {
+		convertWorkflowConfiguration 
+			= ConvertWorkflowConfiguration.newInstance();
 		
-		cleaningConfigurationTableModel
-			= new CleaningConfigurationTableModel();
-		table = userInterfaceFactory.createTable(cleaningConfigurationTableModel);
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	
-	public void addListSelectionListener(final ListSelectionListener listSelectionListener) {
-		ListSelectionModel listSelectionModel
-			= table.getSelectionModel();
-		listSelectionModel.addListSelectionListener(listSelectionListener);
+
+	public ConvertWorkflowConfiguration getConvertWorkflowConfiguration() {
+		return convertWorkflowConfiguration;		
 	}
 	
-	public JTable getTable() {
-		return table;
-	}
+	public String getHTML(
+		final ConvertWorkflowConfiguration convertWorkflowConfiguration) {
+			
+		return "";
+	}	
 	
-	public void setData(
-		final CleanWorkflowConfiguration tableCleaningConfiguration) {
+	public void writeXML(
+		final ConvertWorkflowConfiguration convertWorkflowConfiguration) {
 		
-		cleaningConfigurationTableModel.setData(tableCleaningConfiguration);
+		
+		
 	}
 	
-	public CleanWorkflowFieldConfiguration getSelectedTableFieldCleaningConfiguration() {
-		int selectedRow = table.getSelectedRow();
-		if (selectedRow == -1) {
-			return null;
-		}
-		
-		return cleaningConfigurationTableModel.getRow(selectedRow);		
-	}
+	
 	
 	// ==========================================
 	// Section Errors and Validation

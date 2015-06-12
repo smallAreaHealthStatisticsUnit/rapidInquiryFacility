@@ -1,22 +1,16 @@
-package rifDataLoaderTool.presentationLayer;
+package rifDataLoaderTool.presentationLayer.batch;
 
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifServices.system.RIFServiceException;
 
-
-
-
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
-import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
-
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionListener;
+import java.text.Collator;
 
 /**
  *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -62,8 +56,16 @@ import javax.swing.event.ListSelectionListener;
  *
  */
 
-public final class CleaningConfigurationTable {
+public class DataLoaderBatchTool {
 
+	public static void main(String[] arguments) {
+		
+		DataLoaderBatchTool dataLoaderBatchTool
+			= new DataLoaderBatchTool();
+		dataLoaderBatchTool.run(arguments);
+	}
+	
+	
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -71,55 +73,74 @@ public final class CleaningConfigurationTable {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private JTable table;
-	
-	private CleaningConfigurationTableModel cleaningConfigurationTableModel;
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public CleaningConfigurationTable(
-		final UserInterfaceFactory userInterfaceFactory) {
-		
-		cleaningConfigurationTableModel
-			= new CleaningConfigurationTableModel();
-		table = userInterfaceFactory.createTable(cleaningConfigurationTableModel);
+	public DataLoaderBatchTool() {
+
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	
-	public void addListSelectionListener(final ListSelectionListener listSelectionListener) {
-		ListSelectionModel listSelectionModel
-			= table.getSelectionModel();
-		listSelectionModel.addListSelectionListener(listSelectionListener);
-	}
-	
-	public JTable getTable() {
-		return table;
-	}
-	
-	public void setData(
-		final CleanWorkflowConfiguration tableCleaningConfiguration) {
+
+	public void run(final String[] commandLineArguments) {
 		
-		cleaningConfigurationTableModel.setData(tableCleaningConfiguration);
-	}
-	
-	public CleanWorkflowFieldConfiguration getSelectedTableFieldCleaningConfiguration() {
-		int selectedRow = table.getSelectedRow();
-		if (selectedRow == -1) {
-			return null;
+		try {
+			validateCommandLineArguments(commandLineArguments);
+
+			
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
 		}
 		
-		return cleaningConfigurationTableModel.getRow(selectedRow);		
+		//the last argument should be the file name
+		
+		
+		
+		
+		
 	}
 	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
 
+	private void validateCommandLineArguments(
+		final String[] commandLineArguments) 
+		throws RIFServiceException {
+		
+		int totalArguments = commandLineArguments.length;
+		
+		if (totalArguments == 0) {
+			//ERROR: must at least specify an input XML file
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage("");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.NO_COMMAND_LINE_ARGUMENTS_SPECIFIED,
+					errorMessage);
+			throw rifServiceException;
+		}
+		
+		String configurationFilePath
+			= commandLineArguments[totalArguments - 1];
+		if (configurationFilePath.startsWith("-")) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage("");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.ILLEGAL_CONFIGURATION_FILE_SPECIFIED,
+					errorMessage);
+			throw rifServiceException;			
+		}
+		
+	}
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

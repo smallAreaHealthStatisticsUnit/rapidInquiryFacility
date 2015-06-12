@@ -6,10 +6,10 @@ import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.businessConceptLayer.CleaningStepQueryGeneratorAPI;
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.DataSource;
-import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
-import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
 import rifGenericLibrary.dataStorageLayer.SQLCountQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLFieldVarianceQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
@@ -80,7 +80,7 @@ public final class CleanStepManager
 	// Section Properties
 	// ==========================================
 	private RIFDataLoaderStartupOptions startupOptions;
-	private CleaningStepQueryGeneratorAPI queryGenerator;
+	private CleanWorkflowQueryGeneratorAPI queryGenerator;
 	
 	private TableIntegrityChecker tableIntegrityChecker;
 
@@ -90,7 +90,7 @@ public final class CleanStepManager
 
 	public CleanStepManager(
 		final RIFDataLoaderStartupOptions startupOptions,
-		final CleaningStepQueryGeneratorAPI queryGenerator) {
+		final CleanWorkflowQueryGeneratorAPI queryGenerator) {
 
 		this.startupOptions = startupOptions;
 		this.queryGenerator = queryGenerator;
@@ -106,7 +106,7 @@ public final class CleanStepManager
 	
 	public RIFResultTable getCleanedTableData(
 		final Connection connection,
-		final TableCleaningConfiguration tableCleaningConfiguration) 
+		final CleanWorkflowConfiguration tableCleaningConfiguration) 
 		throws RIFServiceException {
 			
 		
@@ -115,7 +115,7 @@ public final class CleanStepManager
 		String coreTableName = tableCleaningConfiguration.getCoreTableName();
 		String searchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreTableName);
-		String[] fieldNames = tableCleaningConfiguration.getCleanedTableFieldNames();
+		String[] fieldNames = tableCleaningConfiguration.getCleanFieldNames();
 			
 		try {
 			resultTable 
@@ -139,7 +139,7 @@ public final class CleanStepManager
 	
 	public void createCleanedTable(
 		final Connection connection,
-		final TableCleaningConfiguration tableCleaningConfiguration) 
+		final CleanWorkflowConfiguration tableCleaningConfiguration) 
 		throws RIFServiceException {
 		
 		RIFLogger logger = RIFLogger.getLogger();
@@ -347,7 +347,7 @@ public final class CleanStepManager
 	
 	public Integer getCleaningTotalBlankValues(
 		final Connection connection,
-		final TableCleaningConfiguration tableCleaningConfiguration)
+		final CleanWorkflowConfiguration tableCleaningConfiguration)
 		throws RIFServiceException {
 		
 		SQLCountQueryFormatter queryFormatter = new SQLCountQueryFormatter();
@@ -402,7 +402,7 @@ public final class CleanStepManager
 		
 	public Integer getCleaningTotalChangedValues(
 		final Connection connection,
-		final TableCleaningConfiguration tableCleaningConfiguration)
+		final CleanWorkflowConfiguration tableCleaningConfiguration)
 		throws RIFServiceException {
 		
 		SQLCountQueryFormatter queryFormatter = new SQLCountQueryFormatter();
@@ -453,7 +453,7 @@ public final class CleanStepManager
 		
 	public Integer getCleaningTotalErrorValues(
 		final Connection connection,
-		final TableCleaningConfiguration tableCleaningConfiguration)
+		final CleanWorkflowConfiguration tableCleaningConfiguration)
 		throws RIFServiceException {
 	
 		SQLCountQueryFormatter queryFormatter = new SQLCountQueryFormatter();
@@ -505,7 +505,7 @@ public final class CleanStepManager
 	
 	public Boolean cleaningDetectedBlankValue(
 		final Connection connection,
-		final TableCleaningConfiguration tableCleaningConfiguration,
+		final CleanWorkflowConfiguration tableCleaningConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException {
@@ -564,7 +564,7 @@ public final class CleanStepManager
 	
 	public Boolean cleaningDetectedChangedValue(
 		final Connection connection,
-		final TableCleaningConfiguration tableCleaningConfiguration,
+		final CleanWorkflowConfiguration tableCleaningConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException {
@@ -626,7 +626,7 @@ public final class CleanStepManager
 	
 	public Boolean cleaningDetectedErrorValue(
 		final Connection connection,
-		final TableCleaningConfiguration tableCleaningConfiguration,
+		final CleanWorkflowConfiguration tableCleaningConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException {
@@ -684,7 +684,7 @@ public final class CleanStepManager
 	
 	public String[][] getVarianceInFieldData(
 		final Connection connection, 
-		final TableFieldCleaningConfiguration tableFieldCleaningConfiguration) 
+		final CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration) 
 		throws RIFServiceException {
 		
 		tableFieldCleaningConfiguration.checkErrors();

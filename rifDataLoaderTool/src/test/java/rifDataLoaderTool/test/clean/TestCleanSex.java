@@ -2,8 +2,8 @@ package rifDataLoaderTool.test.clean;
 
 import rifDataLoaderTool.businessConceptLayer.DataSource;
 import rifDataLoaderTool.businessConceptLayer.SexRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
-import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
 import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
 import rifDataLoaderTool.test.AbstractRIFDataLoaderTestCase;
 import rifDataLoaderTool.test.DummyDataLoaderGenerator;
@@ -75,8 +75,8 @@ public final class TestCleanSex
 	// Section Properties
 	// ==========================================
 	
-	private TableCleaningConfiguration masterTableCleaningConfiguration;
-	private TableFieldCleaningConfiguration masterSexFieldConfiguration;
+	private CleanWorkflowConfiguration masterTableCleaningConfiguration;
+	private CleanWorkflowFieldConfiguration masterSexFieldConfiguration;
 	private User testUser;
 	
 	// ==========================================
@@ -87,7 +87,7 @@ public final class TestCleanSex
 
 		String coreTableName = "hes_2002";
 		masterTableCleaningConfiguration 
-			= TableCleaningConfiguration.newInstance(coreTableName);
+			= CleanWorkflowConfiguration.newInstance(coreTableName);
 	
 		DataSource dataSource
 			= DataSource.newInstance(
@@ -100,11 +100,12 @@ public final class TestCleanSex
 		masterTableCleaningConfiguration.setDataSource(dataSource);
 		
 		masterSexFieldConfiguration
-			= TableFieldCleaningConfiguration.newInstance(
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
 				"sex", 
+				"sex",
 				SexRIFDataType.newInstance());
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(masterSexFieldConfiguration);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(masterSexFieldConfiguration);
 		
 		DummyDataLoaderGenerator dummyDataGenerator
 			= new DummyDataLoaderGenerator();
@@ -119,8 +120,8 @@ public final class TestCleanSex
 	@Test
 	public void acceptCorrectOriginalSexValues() {
 
-		TableCleaningConfiguration tableCleaningConfiguration
-			= TableCleaningConfiguration.createCopy(masterTableCleaningConfiguration);
+		CleanWorkflowConfiguration tableCleaningConfiguration
+			= CleanWorkflowConfiguration.createCopy(masterTableCleaningConfiguration);
 		
 		String[][] originalLoadTableData 
 			= { {"0"},
@@ -167,8 +168,8 @@ public final class TestCleanSex
 	@Test
 	public void acceptProperlyCleanedDataSet() {
 		
-		TableCleaningConfiguration tableCleaningConfiguration
-			= TableCleaningConfiguration.createCopy(masterTableCleaningConfiguration);
+		CleanWorkflowConfiguration tableCleaningConfiguration
+			= CleanWorkflowConfiguration.createCopy(masterTableCleaningConfiguration);
 	
 		String[][] originalLoadTableData 
 			= { {"0"}, //Row 1, legal, should go unchanged

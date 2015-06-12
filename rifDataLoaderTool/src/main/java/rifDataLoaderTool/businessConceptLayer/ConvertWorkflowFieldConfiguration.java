@@ -61,7 +61,7 @@ import rifServices.system.RIFServiceSecurityException;
  *
  */
 
-public final class TableFieldConversionConfiguration 
+public final class ConvertWorkflowFieldConfiguration 
 	extends AbstractRIFDataLoaderToolConcept {
 
 	// ==========================================
@@ -80,17 +80,17 @@ public final class TableFieldConversionConfiguration
 	// Section Construction
 	// ==========================================
 	
-	private TableFieldConversionConfiguration() {
+	private ConvertWorkflowFieldConfiguration() {
 		
 	}
 	
-	public static TableFieldConversionConfiguration newInstance(
+	public static ConvertWorkflowFieldConfiguration newInstance(
 		final String coreTableName,
 		final String convertedFieldName,
 		final RIFDataTypeInterface rifDataType) {
 		
-		TableFieldConversionConfiguration fieldConfiguration
-			= new TableFieldConversionConfiguration();
+		ConvertWorkflowFieldConfiguration fieldConfiguration
+			= new ConvertWorkflowFieldConfiguration();
 		fieldConfiguration.setCoreTableName(coreTableName);
 		fieldConfiguration.setConversionTableFieldName(convertedFieldName);
 		fieldConfiguration.setRIFDataType(rifDataType);
@@ -98,11 +98,11 @@ public final class TableFieldConversionConfiguration
 		return fieldConfiguration;
 	}
 
-	public static TableFieldConversionConfiguration createCopy(
-		final TableFieldConversionConfiguration originalFieldConfiguration) {
+	public static ConvertWorkflowFieldConfiguration createCopy(
+		final ConvertWorkflowFieldConfiguration originalFieldConfiguration) {
 		
-		TableFieldConversionConfiguration cloneFieldConfiguration
-			= new TableFieldConversionConfiguration();
+		ConvertWorkflowFieldConfiguration cloneFieldConfiguration
+			= new ConvertWorkflowFieldConfiguration();
 		cloneFieldConfiguration.setConversionTableFieldName(
 			originalFieldConfiguration.getConversionTableFieldName());
 		cloneFieldConfiguration.setCoreTableName(
@@ -114,17 +114,17 @@ public final class TableFieldConversionConfiguration
 		return cloneFieldConfiguration;		
 	}
 	
-	public static ArrayList<TableFieldConversionConfiguration> createCopy(
-		final ArrayList<TableFieldConversionConfiguration> originalFieldConfigurations) {
+	public static ArrayList<ConvertWorkflowFieldConfiguration> createCopy(
+		final ArrayList<ConvertWorkflowFieldConfiguration> originalFieldConfigurations) {
 		
 		if (originalFieldConfigurations == null) {
 			return null;
 		}
 		
-		ArrayList<TableFieldConversionConfiguration> cloneFieldConfigurations
-			= new ArrayList<TableFieldConversionConfiguration>();
-		for (TableFieldConversionConfiguration originalFieldConfiguration : originalFieldConfigurations) {
-			TableFieldConversionConfiguration cloneFieldConfiguration
+		ArrayList<ConvertWorkflowFieldConfiguration> cloneFieldConfigurations
+			= new ArrayList<ConvertWorkflowFieldConfiguration>();
+		for (ConvertWorkflowFieldConfiguration originalFieldConfiguration : originalFieldConfigurations) {
+			ConvertWorkflowFieldConfiguration cloneFieldConfiguration
 				= createCopy(originalFieldConfiguration);
 			cloneFieldConfigurations.add(cloneFieldConfiguration);
 		}

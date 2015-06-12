@@ -121,69 +121,69 @@ public interface RIFDataLoaderServiceAPI {
 	
 	public void loadConfiguration(
 		final User user,
-		final TableCleaningConfiguration tableCleaningConfiguration) 
+		final CleanWorkflowConfiguration tableCleaningConfiguration) 
 		throws RIFServiceException;
 	
 	public void addLoadTableData(
 		final User user,
-		final TableCleaningConfiguration tableCleaningConfiguration,
+		final CleanWorkflowConfiguration tableCleaningConfiguration,
 		final String[][] tableData)
 		throws RIFServiceException;
 	
 	public void cleanConfiguration(
 		final User user,
-		final TableCleaningConfiguration tableCleaningConfiguration) 
+		final CleanWorkflowConfiguration tableCleaningConfiguration) 
 		throws RIFServiceException;
 	
 	public void convertConfiguration(
 		final User user,
-		final TableConversionConfiguration tableConversionConfiguration)
+		final ConvertWorkflowConfiguration tableConversionConfiguration)
 		throws RIFServiceException;
 	
 	public Integer getCleaningTotalBlankValues(
 		final User user,
-		final TableCleaningConfiguration tableCleaningConfiguration)
+		final CleanWorkflowConfiguration tableCleaningConfiguration)
 		throws RIFServiceException;
 		
 	public Integer getCleaningTotalChangedValues(
 		final User user,
-		final TableCleaningConfiguration tableCleaningConfiguration)
+		final CleanWorkflowConfiguration tableCleaningConfiguration)
 		throws RIFServiceException;
 		
 	public Integer getCleaningTotalErrorValues(
 		final User user,
-		final TableCleaningConfiguration tableCleaningConfiguration)
+		final CleanWorkflowConfiguration tableCleaningConfiguration)
 		throws RIFServiceException;
 	
 	public Boolean cleaningDetectedBlankValue(
 		final User user,
-		final TableCleaningConfiguration tableCleaningConfiguration,
+		final CleanWorkflowConfiguration tableCleaningConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException;
 	
 	public Boolean cleaningDetectedChangedValue(
 		final User user,
-		final TableCleaningConfiguration tableCleaningConfiguration,
+		final CleanWorkflowConfiguration tableCleaningConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException;
 	
 	public Boolean cleaningDetectedErrorValue(
 		final User user,
-		final TableCleaningConfiguration tableCleaningConfiguration,
+		final CleanWorkflowConfiguration tableCleaningConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException;
 	
 	public RIFResultTable getLoadTableData(
 		final User user,
-		final TableCleaningConfiguration tableCleaningConfiguration) 
+		final CleanWorkflowConfiguration tableCleaningConfiguration) 
 		throws RIFServiceException;
 	
 	public RIFResultTable getCleanedTableData(
 		final User user,			
-		final TableCleaningConfiguration tableCleaningConfiguration) 
+		final CleanWorkflowConfiguration tableCleaningConfiguration) 
 		throws RIFServiceException;
 	
 	public void shutdown() 
@@ -191,7 +191,7 @@ public interface RIFDataLoaderServiceAPI {
 	
 	public String[][] getVarianceInFieldData(
 		final User user,
-		final TableFieldCleaningConfiguration tableFieldCleaningConfiguration)
+		final CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration)
 		throws RIFServiceException;
 
 	

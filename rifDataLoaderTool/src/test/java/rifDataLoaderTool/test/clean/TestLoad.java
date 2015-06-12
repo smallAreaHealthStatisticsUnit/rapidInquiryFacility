@@ -73,7 +73,7 @@ public final class TestLoad
 	// Section Properties
 	// ==========================================
 	
-	private TableCleaningConfiguration masterDateAgeSexTableConfiguration;
+	private CleanWorkflowConfiguration masterDateAgeSexTableConfiguration;
 	//private TableCleaningConfiguration masterTableCleaningConfiguration;
 	
 	private User testUser;
@@ -99,8 +99,8 @@ public final class TestLoad
 		 * 02-JAN-2001			5		female
 		 * 
 		 */
-		TableCleaningConfiguration tableCleaningConfiguration1
-			= TableCleaningConfiguration.createCopy(masterDateAgeSexTableConfiguration);	
+		CleanWorkflowConfiguration tableCleaningConfiguration1
+			= CleanWorkflowConfiguration.createCopy(masterDateAgeSexTableConfiguration);	
 		
 		DataSource ds = tableCleaningConfiguration1.getDataSource();
 		if (ds == null) {
@@ -156,8 +156,8 @@ public final class TestLoad
 		 * 02-JAN-2001			5		female
 		 * 
 		 */
-		TableCleaningConfiguration tableCleaningConfiguration1
-			= TableCleaningConfiguration.createCopy(masterDateAgeSexTableConfiguration);	
+		CleanWorkflowConfiguration tableCleaningConfiguration1
+			= CleanWorkflowConfiguration.createCopy(masterDateAgeSexTableConfiguration);	
 
 		String[][] tableData 
 			= { {"02 JAN 2001", "5", "M"},
@@ -235,8 +235,8 @@ public final class TestLoad
 				{"02-Jan-2001", "0", "0"},
 				{"", "0", "0"}};
 				
-		TableCleaningConfiguration tableCleaningConfiguration1
-			= TableCleaningConfiguration.createCopy(masterDateAgeSexTableConfiguration);	
+		CleanWorkflowConfiguration tableCleaningConfiguration1
+			= CleanWorkflowConfiguration.createCopy(masterDateAgeSexTableConfiguration);	
 		
 		try {
 			DataLoaderService dataLoaderService
@@ -380,8 +380,8 @@ public final class TestLoad
 				{"02-Jan-2001", "0", "0"},
 				{"", "0", "0"}};
 				
-		TableCleaningConfiguration tableCleaningConfiguration1
-			= TableCleaningConfiguration.createCopy(masterDateAgeSexTableConfiguration);	
+		CleanWorkflowConfiguration tableCleaningConfiguration1
+			= CleanWorkflowConfiguration.createCopy(masterDateAgeSexTableConfiguration);	
 		
 		try {
 			DataLoaderService dataLoaderService

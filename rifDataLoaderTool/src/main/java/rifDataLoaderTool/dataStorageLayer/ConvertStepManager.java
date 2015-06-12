@@ -95,7 +95,7 @@ public final class ConvertStepManager
 
 	public void convertConfiguration(
 		final Connection connection,
-		final TableConversionConfiguration tableConversionConfiguration)
+		final ConvertWorkflowConfiguration tableConversionConfiguration)
 		throws RIFServiceException {
 	
 		//validate parameters

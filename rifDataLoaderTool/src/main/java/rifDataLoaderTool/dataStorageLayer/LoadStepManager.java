@@ -9,8 +9,8 @@ import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.businessConceptLayer.DataSource;
 import rifDataLoaderTool.businessConceptLayer.LoadStepQueryGeneratorAPI;
-import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
-import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifServices.dataStorageLayer.SQLQueryUtility;
 import rifServices.businessConceptLayer.RIFResultTable;
@@ -101,14 +101,14 @@ public final class LoadStepManager
 	
 	public RIFResultTable getLoadTableData(
 		final Connection connection,
-		final TableCleaningConfiguration tableCleaningConfiguration) 
+		final CleanWorkflowConfiguration tableCleaningConfiguration) 
 		throws RIFServiceException {
 		
 		RIFResultTable resultTable = new RIFResultTable();
 		String coreTableName = tableCleaningConfiguration.getCoreTableName();
 		String loadTableName
 			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreTableName);
-		String[] fieldNames = tableCleaningConfiguration.getLoadTableFieldNames();
+		String[] fieldNames = tableCleaningConfiguration.getLoadFieldNames();
 		
 		try {
 			resultTable 
@@ -126,7 +126,7 @@ public final class LoadStepManager
 	
 	public void createLoadTable(
 		final Connection connection,
-		final TableCleaningConfiguration tableCleaningConfiguration,
+		final CleanWorkflowConfiguration tableCleaningConfiguration,
 		final int textFieldWidth) 
 		throws RIFServiceException {
 
@@ -214,7 +214,7 @@ public final class LoadStepManager
 	
 	public void addLoadTableData(
 		final Connection connection,
-		final TableCleaningConfiguration tableCleaningConfiguration,
+		final CleanWorkflowConfiguration tableCleaningConfiguration,
 		final String[][] tableData) 
 		throws RIFServiceException {
 		
@@ -227,9 +227,9 @@ public final class LoadStepManager
 			= new SQLInsertQueryFormatter();
 		queryFormatter.setIntoTable(loadTableName);
 		queryFormatter.addInsertField("data_source_id");
-		ArrayList<TableFieldCleaningConfiguration> fieldConfigurations
+		ArrayList<CleanWorkflowFieldConfiguration> fieldConfigurations
 			= tableCleaningConfiguration.getIncludedFieldCleaningConfigurations();
-		for (TableFieldCleaningConfiguration fieldConfiguration : fieldConfigurations) {
+		for (CleanWorkflowFieldConfiguration fieldConfiguration : fieldConfigurations) {
 			queryFormatter.addInsertField(fieldConfiguration.getLoadTableFieldName());
 		}
 
@@ -271,7 +271,7 @@ public final class LoadStepManager
 	
 	public void dropLoadTable(
 		final Connection connection,
-		final TableCleaningConfiguration tableCleaningConfiguration) 
+		final CleanWorkflowConfiguration tableCleaningConfiguration) 
 		throws RIFServiceException {
 
 		RIFLogger logger = RIFLogger.getLogger();		

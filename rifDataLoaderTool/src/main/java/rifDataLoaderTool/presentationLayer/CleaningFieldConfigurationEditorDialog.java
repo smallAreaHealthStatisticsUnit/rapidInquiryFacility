@@ -76,7 +76,7 @@ public final class CleaningFieldConfigurationEditorDialog
 	// Section Properties
 	// ==========================================
 	
-	private TableFieldCleaningConfiguration tableFieldCleaningConfiguration;
+	private CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration;
 	
 	private JLabel loadDataFieldNameLabel;	
 	private JTextField preferredCleanedFieldNameTextField;
@@ -273,7 +273,7 @@ public final class CleaningFieldConfigurationEditorDialog
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void setData(final TableFieldCleaningConfiguration tableFieldCleaningConfiguration) {
+	public void setData(final CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration) {
 		this.tableFieldCleaningConfiguration = tableFieldCleaningConfiguration;
 		RIFDataTypeInterface rifDataType = tableFieldCleaningConfiguration.getRifDataType();
 		cleaningRuleEditingPanel.setData(rifDataType);

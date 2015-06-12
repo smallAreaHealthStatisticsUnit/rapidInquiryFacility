@@ -1,22 +1,25 @@
-package rifDataLoaderTool.presentationLayer;
-
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
+package rifDataLoaderTool.fileFormats;
 
 
+import rifDataLoaderTool.businessConceptLayer.RIFWorkflowConfiguration;
+import rifServices.businessConceptLayer.User;
+import rifServices.fileFormats.RIFStudySubmissionContentHandler;
+import rifServices.fileFormats.XMLCommentInjector;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceException;
+import rifServices.system.RIFServiceMessages;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 
 
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
-import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
-
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionListener;
 
 /**
  *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -62,7 +65,7 @@ import javax.swing.event.ListSelectionListener;
  *
  */
 
-public final class CleaningConfigurationTable {
+public class RIFWorkflowReader {
 
 	// ==========================================
 	// Section Constants
@@ -71,50 +74,59 @@ public final class CleaningConfigurationTable {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private JTable table;
-	
-	private CleaningConfigurationTableModel cleaningConfigurationTableModel;
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public CleaningConfigurationTable(
-		final UserInterfaceFactory userInterfaceFactory) {
-		
-		cleaningConfigurationTableModel
-			= new CleaningConfigurationTableModel();
-		table = userInterfaceFactory.createTable(cleaningConfigurationTableModel);
+	public RIFWorkflowReader() {
+
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	
-	public void addListSelectionListener(final ListSelectionListener listSelectionListener) {
-		ListSelectionModel listSelectionModel
-			= table.getSelectionModel();
-		listSelectionModel.addListSelectionListener(listSelectionListener);
-	}
-	
-	public JTable getTable() {
-		return table;
-	}
-	
-	public void setData(
-		final CleanWorkflowConfiguration tableCleaningConfiguration) {
+
+	public String write(
+			final User user,
+			final RIFWorkflowConfiguration rifWorkflowConfiguration,
+			final File file) 
+			throws RIFServiceException {
+				
+			try {
+				FileOutputStream fileOutputStream
+					= new FileOutputStream(file);
+				
+				
+				RIFWorkflowConfigurationHandler rifWorkflowConfigurationHandler
+					= new RIFWorkflowConfigurationHandler();
+
+				ByteArrayOutputStream outputStream
+					= new ByteArrayOutputStream();
+				XMLCommentInjector commentInjector = new XMLCommentInjector();			
+				rifWorkflowConfigurationHandler.initialise(
+					fileOutputStream, 
+					commentInjector);
+				rifWorkflowConfigurationHandler.writeXML(rifWorkflowConfiguration);
+		    	String result 
+					= new String(outputStream.toByteArray(), "UTF-8");	
+		    	outputStream.close();			
+		    	return result;
+			}
+			catch(Exception exception) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"io.error.problemWritingFileContentsToString");
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.XML_FILE_PARSING_PROBLEM, 
+						errorMessage);
+				throw rifServiceException;			
+			}
+		}	
 		
-		cleaningConfigurationTableModel.setData(tableCleaningConfiguration);
-	}
 	
-	public CleanWorkflowFieldConfiguration getSelectedTableFieldCleaningConfiguration() {
-		int selectedRow = table.getSelectedRow();
-		if (selectedRow == -1) {
-			return null;
-		}
-		
-		return cleaningConfigurationTableModel.getRow(selectedRow);		
-	}
+	
 	
 	// ==========================================
 	// Section Errors and Validation

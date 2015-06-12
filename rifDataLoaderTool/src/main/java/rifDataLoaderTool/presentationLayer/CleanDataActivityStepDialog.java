@@ -12,11 +12,11 @@ import rifDataLoaderTool.businessConceptLayer.DoubleRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.ICDCodeRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.NHSNumberRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.SexRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
 import rifDataLoaderTool.businessConceptLayer.UKPostalCodeRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
 import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
-import rifDataLoaderTool.fileFormats.CleaningFieldConfigurationHandler;
+import rifDataLoaderTool.fileFormats.CleanWorkflowConfigurationHandler;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifServices.businessConceptLayer.User;
@@ -109,8 +109,8 @@ public final class CleanDataActivityStepDialog
 					"my_study_stuff1", 
 						"kgarwood");
 		
-			TableCleaningConfiguration tableCleaningConfiguration
-				= TableCleaningConfiguration.newInstance("lungs_klg_2014");
+			CleanWorkflowConfiguration tableCleaningConfiguration
+				= CleanWorkflowConfiguration.newInstance("lungs_klg_2014");
 		
 			NHSNumberRIFDataType nhsNumberRIFDataType
 				= NHSNumberRIFDataType.newInstance();		
@@ -356,12 +356,12 @@ public final class CleanDataActivityStepDialog
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void setData(final TableCleaningConfiguration tableCleaningConfiguration) {
+	public void setData(final CleanWorkflowConfiguration tableCleaningConfiguration) {
 		cleaningConfigurationTable.setData(tableCleaningConfiguration);
 	}
 	
 	private void editSelectedCleaningProperty() {		
-		TableFieldCleaningConfiguration tableFieldCleaningConfiguration		
+		CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration		
 			= cleaningConfigurationTable.getSelectedTableFieldCleaningConfiguration();
 		
 		RIFDataLoaderToolSession session
@@ -426,13 +426,13 @@ public final class CleanDataActivityStepDialog
 	//Interface: List Selection Listener
 	public void valueChanged(ListSelectionEvent event) {
 		
-		TableFieldCleaningConfiguration tableFieldCleaningConfiguration
+		CleanWorkflowFieldConfiguration cleanWorkflowFieldConfiguration
 			= cleaningConfigurationTable.getSelectedTableFieldCleaningConfiguration();
 		
-		CleaningFieldConfigurationHandler cleaningFieldConfigurationHandler
-			= new CleaningFieldConfigurationHandler();
+		CleanWorkflowConfigurationHandler cleaningFieldConfigurationHandler
+			= new CleanWorkflowConfigurationHandler();
 		String fieldInformation
-			= cleaningFieldConfigurationHandler.getHTML(tableFieldCleaningConfiguration);
+			= cleaningFieldConfigurationHandler.getHTML(cleanWorkflowFieldConfiguration);
 		
 		cleaningInformationEditorPane.setText(fieldInformation);
 		cleaningInformationEditorPane.setCaretPosition(0);

@@ -1,21 +1,12 @@
-package rifDataLoaderTool.fileFormats;
+package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
-import rifDataLoaderTool.businessConceptLayer.CleaningRule;
-
-
-
-import rifGenericLibrary.presentationLayer.HTMLUtility;
-
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -61,7 +52,7 @@ import java.util.ArrayList;
  *
  */
 
-public final class CleaningFieldConfigurationHandler {
+public class RIFDataTypeFactory {
 
 	// ==========================================
 	// Section Constants
@@ -70,45 +61,56 @@ public final class CleaningFieldConfigurationHandler {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private HashMap<String, AbstractRIFDataType> dataTypeFromName;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public CleaningFieldConfigurationHandler() {
+	public RIFDataTypeFactory() {
+		
+		dataTypeFromName = new HashMap<String, AbstractRIFDataType>();
 
+		
+		AgeRIFDataType ageRIFDataType = AgeRIFDataType.newInstance();
+		dataTypeFromName.put(ageRIFDataType.getName(), ageRIFDataType);
+		
+		DoubleRIFDataType doubleRIFDataType = DoubleRIFDataType.newInstance();
+		dataTypeFromName.put(doubleRIFDataType.getName(), doubleRIFDataType);
+		
+		DateRIFDataType dateRIFDataType = DateRIFDataType.newInstance();
+		dataTypeFromName.put(dateRIFDataType.getName(), dateRIFDataType);		
+		
+		ICDCodeRIFDataType icdCodeRIFDataType = ICDCodeRIFDataType.newInstance();
+		dataTypeFromName.put(icdCodeRIFDataType.getName(), icdCodeRIFDataType);		
+		
+		IntegerRIFDataType integerRIFDataType = IntegerRIFDataType.newInstance();
+		dataTypeFromName.put(integerRIFDataType.getName(), integerRIFDataType);
+		
+		NHSNumberRIFDataType nhsNumberRIFDataType = NHSNumberRIFDataType.newInstance();
+		dataTypeFromName.put(nhsNumberRIFDataType.getName(), nhsNumberRIFDataType);
+		
+		SexRIFDataType sexRIFDataType = SexRIFDataType.newInstance();
+		dataTypeFromName.put(sexRIFDataType.getName(), sexRIFDataType);
+		
+		TextRIFDataType textRIFDataType = TextRIFDataType.newInstance();
+		dataTypeFromName.put(textRIFDataType.getName(), textRIFDataType);
+		
+		UKPostalCodeRIFDataType ukPostalCodeRIFDataType
+			= UKPostalCodeRIFDataType.newInstance();
+		dataTypeFromName.put(ukPostalCodeRIFDataType.getName(), ukPostalCodeRIFDataType);
+		
+		YearRIFDataType yearRIFDataType = YearRIFDataType.newInstance();
+		dataTypeFromName.put(yearRIFDataType.getName(), yearRIFDataType);
+		
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public String getHTML(
-		final TableFieldCleaningConfiguration tableFieldCleaningConfiguration) {
-		
-		HTMLUtility htmlUtility = new HTMLUtility();
-    	ByteArrayOutputStream outputStream
-			= new ByteArrayOutputStream();	
-    	htmlUtility.initialise(outputStream, "UTF-8");
-    	
-		htmlUtility.beginBody();
-	
-		RIFDataTypeInterface rifDataType
-			= tableFieldCleaningConfiguration.getRifDataType();
-		ArrayList<CleaningRule> cleaningRules
-			= rifDataType.getCleaningRules();
-		htmlUtility.beginInvisibleTable();
-		for (CleaningRule cleaningRule : cleaningRules) {
-			htmlUtility.beginRow();
-			htmlUtility.writeBoldColumnValue(cleaningRule.getName());
-			htmlUtility.writeColumnValue(cleaningRule.getDescription());
-			htmlUtility.endRow();
-		}
-		htmlUtility.endTable();
-		
-		htmlUtility.endBody();
-
-		return htmlUtility.getHTML();
+	public AbstractRIFDataType getDataType(final String dataTypeName) {
+		return dataTypeFromName.get(dataTypeName);		
 	}
 	
 	// ==========================================

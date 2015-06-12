@@ -1,16 +1,19 @@
-package rifDataLoaderTool.presentationLayer;
+package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSource;
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
+import rifDataLoaderTool.businessConceptLayer.CleaningRule;
 
 
 
+import rifGenericLibrary.presentationLayer.HTMLUtility;
+import rifServices.businessConceptLayer.HealthCode;
 
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
-import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionListener;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -62,7 +65,8 @@ import javax.swing.event.ListSelectionListener;
  *
  */
 
-public final class CleaningConfigurationTable {
+public final class DataSourceConfigurationHandler 
+	extends AbstractWorkflowConfigurationHandler {
 
 	// ==========================================
 	// Section Constants
@@ -71,49 +75,84 @@ public final class CleaningConfigurationTable {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private JTable table;
-	
-	private CleaningConfigurationTableModel cleaningConfigurationTableModel;
+	ArrayList<DataSource> dataSources;
+	private DataSource currentDataSource;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public CleaningConfigurationTable(
-		final UserInterfaceFactory userInterfaceFactory) {
+	public DataSourceConfigurationHandler() {
+		setPluralRecordName("data_sources");
+		setSingularRecordName("data_source");
 		
-		cleaningConfigurationTableModel
-			= new CleaningConfigurationTableModel();
-		table = userInterfaceFactory.createTable(cleaningConfigurationTableModel);
+		dataSources = new ArrayList<DataSource>();
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
 	
-	public void addListSelectionListener(final ListSelectionListener listSelectionListener) {
-		ListSelectionModel listSelectionModel
-			= table.getSelectionModel();
-		listSelectionModel.addListSelectionListener(listSelectionListener);
-	}
-	
-	public JTable getTable() {
-		return table;
-	}
-	
-	public void setData(
-		final CleanWorkflowConfiguration tableCleaningConfiguration) {
-		
-		cleaningConfigurationTableModel.setData(tableCleaningConfiguration);
-	}
-	
-	public CleanWorkflowFieldConfiguration getSelectedTableFieldCleaningConfiguration() {
-		int selectedRow = table.getSelectedRow();
-		if (selectedRow == -1) {
-			return null;
+
+	@Override
+	public void startElement(
+		final String nameSpaceURI,
+		final String localName,
+		final String qualifiedName,
+		final Attributes attributes) 
+		throws SAXException {
+
+		if (isPluralRecordName(qualifiedName) == true) {
+			dataSources.clear();
+			activate();
 		}
-		
-		return cleaningConfigurationTableModel.getRow(selectedRow);		
+		else if (isSingularRecordName(qualifiedName) == true) {
+			currentDataSource = DataSource.newInstance();
+		}
+	}
+	
+	@Override
+	public void endElement(
+		final String nameSpaceURI,
+		final String localName,
+		final String qualifiedName) 
+		throws SAXException {
+
+		if (isPluralRecordName(qualifiedName) == true) {
+			deactivate();
+		}
+		else if (isSingularRecordName(qualifiedName) == true) {
+			dataSources.add(currentDataSource);
+		}
+		else if (equalsFieldName("name", qualifiedName) == true) {
+			currentDataSource.setSourceName(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("file", qualifiedName) == true) {
+			currentDataSource.setSourceName(getCurrentFieldValue());					
+		}
+	}
+	
+	
+	public ArrayList<DataSource> getDataSources() {
+		return dataSources;		
+	}
+	
+	public String getHTML(
+		final DataSource dataSource) {
+			
+		return "";
+	}	
+	
+	
+	public String getHTML(
+		final ArrayList<DataSource> dataSources) {
+			
+		return "";
+	}	
+	
+	public void writeXML(final ArrayList<DataSource> dataSources) {
+		this.dataSources = dataSources;
 	}
 	
 	// ==========================================

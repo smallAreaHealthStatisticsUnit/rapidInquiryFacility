@@ -80,11 +80,11 @@ public final class DummyDataLoaderGenerator {
 		return testUser;
 	}
 
-	public TableCleaningConfiguration createNumeratorTableConfiguration(
+	public CleanWorkflowConfiguration createNumeratorTableConfiguration(
 		final String coreTableName) {
 		
-		TableCleaningConfiguration masterTableCleaningConfiguration 
-			= TableCleaningConfiguration.newInstance(coreTableName);
+		CleanWorkflowConfiguration masterTableCleaningConfiguration 
+			= CleanWorkflowConfiguration.newInstance(coreTableName);
 		
 		DataSource dataSource
 			= DataSource.newInstance(
@@ -97,106 +97,119 @@ public final class DummyDataLoaderGenerator {
 		masterTableCleaningConfiguration.setDataSource(dataSource);
 		
 		
-		TableFieldCleaningConfiguration nhsNumber
-			= TableFieldCleaningConfiguration.newInstance(
+		CleanWorkflowFieldConfiguration nhsNumber
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
 				"nhs_number", 
+				"A number used to identify a patient in the UK's NHS system",
 				NHSNumberRIFDataType.newInstance());
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(nhsNumber);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(nhsNumber);
 		
-		TableFieldCleaningConfiguration birthDate
-			= TableFieldCleaningConfiguration.newInstance(
+		CleanWorkflowFieldConfiguration birthDate
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
 				"birth_date", 
+				"birth date of patient",
 				DateRIFDataType.newInstance());
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(birthDate);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(birthDate);
 		
-		TableFieldCleaningConfiguration postalCode
-			= TableFieldCleaningConfiguration.newInstance(
+		CleanWorkflowFieldConfiguration postalCode
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
 				"postal_code", 
+				"postal code",
 				UKPostalCodeRIFDataType.newInstance());
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(postalCode);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(postalCode);
 
-		TableFieldCleaningConfiguration age
-			= TableFieldCleaningConfiguration.newInstance(
+		CleanWorkflowFieldConfiguration age
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
 				"age", 
+				"age of patient",
 				AgeRIFDataType.newInstance());
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(age);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(age);
 		
-		TableFieldCleaningConfiguration sex
-			= TableFieldCleaningConfiguration.newInstance(
+		CleanWorkflowFieldConfiguration sex
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
 				"sex", 
+				"sex",
 				SexRIFDataType.newInstance());
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(sex);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(sex);
 
-		TableFieldCleaningConfiguration level1
-			= TableFieldCleaningConfiguration.newInstance(
+		CleanWorkflowFieldConfiguration level1
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
 				"level1", 
+				"Most general level of resolution",
 				TextRIFDataType.newInstance());
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(level1);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(level1);
 		
-		TableFieldCleaningConfiguration level2
-			= TableFieldCleaningConfiguration.newInstance(
+		CleanWorkflowFieldConfiguration level2
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
-				"level2", 
+				"level2",
+				"Level 2 geographical resolution",
 				TextRIFDataType.newInstance());
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(level2);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(level2);
 		
-		TableFieldCleaningConfiguration level3
-			= TableFieldCleaningConfiguration.newInstance(
+		CleanWorkflowFieldConfiguration level3
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
 				"level3", 
+				"Level 3 geographical resolution",
 				TextRIFDataType.newInstance());
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(level3);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(level3);
 
-		TableFieldCleaningConfiguration level4
-			= TableFieldCleaningConfiguration.newInstance(
+		CleanWorkflowFieldConfiguration level4
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
 				"level4", 
+				"Level 4 geographical resolution",
 				TextRIFDataType.newInstance());
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(level4);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(level4);
 
-		TableFieldCleaningConfiguration icd1
-			= TableFieldCleaningConfiguration.newInstance(
+		CleanWorkflowFieldConfiguration icd1
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
 				"icd_1", 
+				"icd code 1",
 				TextRIFDataType.newInstance());
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(icd1);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(icd1);
 		
-		TableFieldCleaningConfiguration icd2
-			= TableFieldCleaningConfiguration.newInstance(
+		CleanWorkflowFieldConfiguration icd2
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
 				"icd_2", 
+				"icd code 2",
 				TextRIFDataType.newInstance());
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(icd2);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(icd2);
 		
-		TableFieldCleaningConfiguration opcsCode1
-			= TableFieldCleaningConfiguration.newInstance(
+		CleanWorkflowFieldConfiguration opcsCode1
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
 				"opcs_code_1", 
+				"opcs code 1",
 				TextRIFDataType.newInstance());
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(opcsCode1);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(opcsCode1);
 
-		TableFieldCleaningConfiguration total
-			= TableFieldCleaningConfiguration.newInstance(
+		CleanWorkflowFieldConfiguration total
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
 				"total", 
+				"total cases",
 				IntegerRIFDataType.newInstance());
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(total);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(total);
 
 		return masterTableCleaningConfiguration;
 		
 	}
 	
-	public TableCleaningConfiguration createAgeSexBirthDateTableConfiguration() {
+	public CleanWorkflowConfiguration createAgeSexBirthDateTableConfiguration() {
 		String coreTableName = "hes_2001";
 
-		TableCleaningConfiguration masterTableCleaningConfiguration
-			= TableCleaningConfiguration.newInstance(coreTableName);
+		CleanWorkflowConfiguration masterTableCleaningConfiguration
+			= CleanWorkflowConfiguration.newInstance(coreTableName);
 
 		DataSource dataSource
 			= DataSource.newInstance(
@@ -208,27 +221,30 @@ public final class DummyDataLoaderGenerator {
 		masterTableCleaningConfiguration.setDataSource(dataSource);
 		
 		
-		TableFieldCleaningConfiguration birthDate
-			= TableFieldCleaningConfiguration.newInstance(
+		CleanWorkflowFieldConfiguration birthDate
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
 				"birth_date", 
+				"birth date",
 				DateRIFDataType.newInstance());
 		birthDate.setAllowBlankValues(true);
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(birthDate);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(birthDate);
 	
-		TableFieldCleaningConfiguration age
-			= TableFieldCleaningConfiguration.newInstance(
+		CleanWorkflowFieldConfiguration age
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
-				"age", 
+				"age",
+				"age",
 				AgeRIFDataType.newInstance());
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(age);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(age);
 	
-		TableFieldCleaningConfiguration sex
-			= TableFieldCleaningConfiguration.newInstance(
+		CleanWorkflowFieldConfiguration sex
+			= CleanWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
 				"sex", 
+				"sex", 
 				SexRIFDataType.newInstance());
-		masterTableCleaningConfiguration.addTableFieldCleaningConfiguration(sex);
+		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(sex);
 
 		return masterTableCleaningConfiguration;
 	}

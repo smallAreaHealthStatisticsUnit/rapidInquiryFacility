@@ -2,7 +2,7 @@ package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
-import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
 import rifDataLoaderTool.fileFormats.FieldVarianceReport;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifServices.system.RIFServiceException;
@@ -74,7 +74,7 @@ public final class FieldVarianceDialog
 	// ==========================================
 	private JEditorPane editorPane;
 
-	private TableFieldCleaningConfiguration tableFieldCleaningConfiguration;
+	private CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration;
 
 	// ==========================================
 	// Section Construction
@@ -120,7 +120,7 @@ public final class FieldVarianceDialog
 	// Section Accessors and Mutators
 	// ==========================================
 	public void setData(
-		final TableFieldCleaningConfiguration tableFieldCleaningConfiguration) 
+		final CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration) 
 		throws RIFServiceException {
 		
 		this.tableFieldCleaningConfiguration = tableFieldCleaningConfiguration;

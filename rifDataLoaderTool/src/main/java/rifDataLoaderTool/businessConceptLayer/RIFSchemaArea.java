@@ -1,13 +1,12 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 /**
- * API of code generation classes that can support database calls related to cleaning
- * data.  Code generator classes will be developed for both Postgresql and Microsoft
- * SQL Server databases.
+ *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -53,31 +52,36 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public interface CleaningStepQueryGeneratorAPI {
-
-	public String generateSearchReplaceTableQuery(
-		final TableCleaningConfiguration tableCleaningConfiguration);	
-	public String generateDropSearchReplaceTableQuery(
-		final TableCleaningConfiguration tableCleaningConfiguration);
-
-	public String generateValidationTableQuery(
-		final TableCleaningConfiguration tableCleaningConfiguration);
-	public String generateDropValidationTableQuery(
-		final TableCleaningConfiguration tableCleaningConfiguration);
+public enum RIFSchemaArea {
 	
-	public String generateCastingTableQuery(
-		final TableCleaningConfiguration tableCleaningConfiguration);
-	public String generateDropCastingTableQuery(
-		final TableCleaningConfiguration tableCleaningConfiguration);
-
-	public String generateDeleteAuditsQuery(
-		final TableCleaningConfiguration tableCleaningConfiguration);
-	public String generateAuditChangesQuery(
-		final TableCleaningConfiguration tableCleaningConfiguration);
-	public String generateAuditErrorsQuery(
-		final TableCleaningConfiguration tableCleaningConfiguration);
-	public String generateAuditBlanksQuery(
-		final TableCleaningConfiguration tableCleaningConfiguration);	
+	
+	COVARIATE_DATA("rifSchema.covariateData", "covariate_data"),
+	HEALTH_CODE_DATA("rifSchema.healthCodeData", "health_code_data"),
+	HEALTH_THEMES("rifSchema.healthThemes", "health_themes"),
+	HEALTH_NUMERATOR_DATA("rifSchema.healthNumeratorData", "health_numerator_data"),
+	POPULATION_DENOMINATOR_DATA("rifSchema.populationDenominatorData", "population_denominator_data"),
+	GEOMETRY_DATA("rifSchema.geometryData", "geometry_data"),
+	CONTEXTUAL_MAP_DATA("rifSchema.contextualMapData", "contextual_map_data");
+		
+	private String propertyName;
+	private String code;
+	
+	RIFSchemaArea(
+		final String propertyName,
+		final String code) {
+		
+		this.propertyName = propertyName;
+		this.code = code;
+	}
+	
+	public String getName() {
+		return RIFDataLoaderToolMessages.getMessage(propertyName);
+	}
+	
+	public String getCode() {
+		return code;
+	}
+	
 }
 
 

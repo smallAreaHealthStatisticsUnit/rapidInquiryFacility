@@ -56,11 +56,11 @@ public interface LoadStepQueryGeneratorAPI {
 
 	public String generateLoadTableQuery(
 		final int dataSourceID,
-		final TableCleaningConfiguration tableCleaningConfiguration,
+		final CleanWorkflowConfiguration tableCleaningConfiguration,
 		final int textColumnWidth);
 
 	public String generateDropLoadTableQuery(
-		final TableCleaningConfiguration tableCleaningConfiguration);
+		final CleanWorkflowConfiguration tableCleaningConfiguration);
 	
 	
 }

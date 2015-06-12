@@ -2,9 +2,10 @@ package rifDataLoaderTool.businessConceptLayer;
 
 
 /**
- * API that define the important aspects of behaviour of code generators used
- * to convert cleaned tables into table data expected by the RIF schema.
- * 
+ * API of code generation classes that can support database calls related to cleaning
+ * data.  Code generator classes will be developed for both Postgresql and Microsoft
+ * SQL Server databases.
+ *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
@@ -52,10 +53,31 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public interface ConvertStepQueryGeneratorAPI {
-	public String generateConvertTableQuery(
-		final ConvertWorkflowConfiguration tableConversionConfiguration);
+public interface CleanWorkflowQueryGeneratorAPI {
+
+	public String generateSearchReplaceTableQuery(
+		final CleanWorkflowConfiguration tableCleaningConfiguration);	
+	public String generateDropSearchReplaceTableQuery(
+		final CleanWorkflowConfiguration tableCleaningConfiguration);
+
+	public String generateValidationTableQuery(
+		final CleanWorkflowConfiguration tableCleaningConfiguration);
+	public String generateDropValidationTableQuery(
+		final CleanWorkflowConfiguration tableCleaningConfiguration);
 	
+	public String generateCastingTableQuery(
+		final CleanWorkflowConfiguration tableCleaningConfiguration);
+	public String generateDropCastingTableQuery(
+		final CleanWorkflowConfiguration tableCleaningConfiguration);
+
+	public String generateDeleteAuditsQuery(
+		final CleanWorkflowConfiguration tableCleaningConfiguration);
+	public String generateAuditChangesQuery(
+		final CleanWorkflowConfiguration tableCleaningConfiguration);
+	public String generateAuditErrorsQuery(
+		final CleanWorkflowConfiguration tableCleaningConfiguration);
+	public String generateAuditBlanksQuery(
+		final CleanWorkflowConfiguration tableCleaningConfiguration);	
 }
 
 

@@ -1,10 +1,10 @@
 package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import rifDataLoaderTool.businessConceptLayer.LoadStepQueryGeneratorAPI;
-import rifDataLoaderTool.businessConceptLayer.TableCleaningConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
 
 
-import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 
@@ -86,7 +86,7 @@ public final class PostgresLoadStepQueryGenerator
 
 	public String generateLoadTableQuery(
 		final int dataSourceIdentifier,
-		final TableCleaningConfiguration tableCleaningConfiguration,
+		final CleanWorkflowConfiguration tableCleaningConfiguration,
 		final int textColumnWidth) {
 
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
@@ -99,7 +99,7 @@ public final class PostgresLoadStepQueryGenerator
 		
 		queryFormatter.addQueryLine(1, "data_source_id INTEGER NOT NULL,");
 		queryFormatter.addQueryLine(1, "row_number SERIAL NOT NULL,");
-		ArrayList<TableFieldCleaningConfiguration> fieldCleaningConfigurations
+		ArrayList<CleanWorkflowFieldConfiguration> fieldCleaningConfigurations
 			= tableCleaningConfiguration.getIncludedFieldCleaningConfigurations();
 		int numberTableFieldConfigurations = fieldCleaningConfigurations.size();
 			
@@ -109,7 +109,7 @@ public final class PostgresLoadStepQueryGenerator
 				queryFormatter.addQueryPhrase(",");
 				queryFormatter.finishLine();				
 			}
-			TableFieldCleaningConfiguration currentTableFieldConfiguration
+			CleanWorkflowFieldConfiguration currentTableFieldConfiguration
 				= fieldCleaningConfigurations.get(i);
 			queryFormatter.addQueryPhrase(1, currentTableFieldConfiguration.getLoadTableFieldName());
 			queryFormatter.addQueryPhrase(" VARCHAR(");
@@ -124,7 +124,7 @@ public final class PostgresLoadStepQueryGenerator
 	}
 		
 	public String generateDropLoadTableQuery(
-		final TableCleaningConfiguration tableCleaningConfiguration) {
+		final CleanWorkflowConfiguration tableCleaningConfiguration) {
 
 		StringBuilder query = new StringBuilder();		
 		query.append("DROP TABLE IF EXISTS ");

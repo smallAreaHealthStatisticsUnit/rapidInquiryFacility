@@ -89,7 +89,7 @@ import rifServices.system.RIFServiceSecurityException;
  *
  */
 
-public final class TableConversionConfiguration {
+public final class ConvertWorkflowConfiguration {
 
 	// ==========================================
 	// Section Constants
@@ -99,55 +99,61 @@ public final class TableConversionConfiguration {
 	// Section Properties
 	// ==========================================
 	private String coreTableName;
-	private ArrayList<TableFieldConversionConfiguration> requiredFieldConfigurations;
-	private ArrayList<TableFieldCleaningConfiguration> extraFieldConfigurations;
+	private ArrayList<ConvertWorkflowFieldConfiguration> requiredFieldConfigurations;
+	private ArrayList<CleanWorkflowFieldConfiguration> extraFieldConfigurations;
 	
 	private HashMap<
-		TableFieldConversionConfiguration, 
-		ArrayList<TableFieldCleaningConfiguration>> cleaningFromConversionConfiguration;
+		ConvertWorkflowFieldConfiguration, 
+		ArrayList<CleanWorkflowFieldConfiguration>> cleaningFromConversionConfiguration;
 	private HashMap<
-		TableFieldConversionConfiguration,
+		ConvertWorkflowFieldConfiguration,
 		String> conversionFunctionNameFromConversionConfiguration;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private TableConversionConfiguration() {
-		requiredFieldConfigurations = new ArrayList<TableFieldConversionConfiguration>();
+	private ConvertWorkflowConfiguration() {
+		requiredFieldConfigurations = new ArrayList<ConvertWorkflowFieldConfiguration>();
 		cleaningFromConversionConfiguration 
 			= new HashMap<
-				TableFieldConversionConfiguration,
-				ArrayList<TableFieldCleaningConfiguration>>();
+				ConvertWorkflowFieldConfiguration,
+				ArrayList<CleanWorkflowFieldConfiguration>>();
 		conversionFunctionNameFromConversionConfiguration
-			= new HashMap<TableFieldConversionConfiguration, String>();
+			= new HashMap<ConvertWorkflowFieldConfiguration, String>();
 		
 		extraFieldConfigurations
-			= new ArrayList<TableFieldCleaningConfiguration>();
+			= new ArrayList<CleanWorkflowFieldConfiguration>();
 	}
 
-	public static TableConversionConfiguration newInstance(
+	public static ConvertWorkflowConfiguration newInstance(
 		final String coreTableName) {
-		TableConversionConfiguration tableConversionConfiguration
-			= new TableConversionConfiguration();
+		ConvertWorkflowConfiguration tableConversionConfiguration
+			= new ConvertWorkflowConfiguration();
 		
 		return tableConversionConfiguration;
 	}
 	
-	public static TableConversionConfiguration createCopy(
-		final TableConversionConfiguration originalConversionConfiguration) {
+	public static ConvertWorkflowConfiguration newInstance() {
+		ConvertWorkflowConfiguration tableConversionConfiguration
+			= new ConvertWorkflowConfiguration();		
+		return tableConversionConfiguration;
+	}	
+	
+	public static ConvertWorkflowConfiguration createCopy(
+		final ConvertWorkflowConfiguration originalConversionConfiguration) {
 		
 		String coreTableName
 			= originalConversionConfiguration.getCoreTableName();
-		TableConversionConfiguration cloneConversionConfiguration
-			= TableConversionConfiguration.newInstance(coreTableName);
+		ConvertWorkflowConfiguration cloneConversionConfiguration
+			= ConvertWorkflowConfiguration.newInstance(coreTableName);
 		
 		//first, make clones of conversion configurations
-		ArrayList<TableFieldConversionConfiguration> originalFieldConversionConfigurations
+		ArrayList<ConvertWorkflowFieldConfiguration> originalFieldConversionConfigurations
 			= originalConversionConfiguration.getRequiredFieldConfigurations();
-		ArrayList<TableFieldConversionConfiguration> cloneFieldConversionConfigurations
-			= new ArrayList<TableFieldConversionConfiguration>();
-		for (TableFieldConversionConfiguration originalFieldConversionConfiguration : originalFieldConversionConfigurations) {
+		ArrayList<ConvertWorkflowFieldConfiguration> cloneFieldConversionConfigurations
+			= new ArrayList<ConvertWorkflowFieldConfiguration>();
+		for (ConvertWorkflowFieldConfiguration originalFieldConversionConfiguration : originalFieldConversionConfigurations) {
 			
 			/*
 			 * for each conversion field, we have to do two things:
@@ -159,17 +165,17 @@ public final class TableConversionConfiguration {
 			 */
 			
 			//clone conversion fields
-			TableFieldConversionConfiguration cloneFieldConversionConfiguration
-				= TableFieldConversionConfiguration.createCopy(
+			ConvertWorkflowFieldConfiguration cloneFieldConversionConfiguration
+				= ConvertWorkflowFieldConfiguration.createCopy(
 					originalFieldConversionConfiguration);
 
 			//get cleaning field configurations associated with original conversion field.
-			ArrayList<TableFieldCleaningConfiguration> originalFieldCleaningConfigurations
+			ArrayList<CleanWorkflowFieldConfiguration> originalFieldCleaningConfigurations
 				= originalConversionConfiguration.getCleaningConfigurations(
 					originalFieldConversionConfiguration);
 			//clone the collection of cleaning fields
-			ArrayList<TableFieldCleaningConfiguration> cloneFieldCleaningConfigurations
-				= TableFieldCleaningConfiguration.createCopy(originalFieldCleaningConfigurations);
+			ArrayList<CleanWorkflowFieldConfiguration> cloneFieldCleaningConfigurations
+				= CleanWorkflowFieldConfiguration.createCopy(originalFieldCleaningConfigurations);
 
 			//get the name of the conversion function (if any) associated with a
 			//conversion field configuration
@@ -185,10 +191,10 @@ public final class TableConversionConfiguration {
 		}
 		
 		//make clones of extra fields
-		ArrayList<TableFieldCleaningConfiguration> originalExtraFields
+		ArrayList<CleanWorkflowFieldConfiguration> originalExtraFields
 			= originalConversionConfiguration.getExtraFields();
-		ArrayList<TableFieldCleaningConfiguration> cloneExtraFields
-			= TableFieldCleaningConfiguration.createCopy(originalExtraFields);
+		ArrayList<CleanWorkflowFieldConfiguration> cloneExtraFields
+			= CleanWorkflowFieldConfiguration.createCopy(originalExtraFields);
 		cloneConversionConfiguration.setExtraFields(cloneExtraFields);
 		
 		return cloneConversionConfiguration;		
@@ -203,32 +209,32 @@ public final class TableConversionConfiguration {
 		final String conversionTableFieldName,
 		final RIFDataTypeInterface rifDataType) {
 		
-		TableFieldConversionConfiguration fieldConversionConfiguration
-			= TableFieldConversionConfiguration.newInstance(
+		ConvertWorkflowFieldConfiguration fieldConversionConfiguration
+			= ConvertWorkflowFieldConfiguration.newInstance(
 				coreTableName, 
 				conversionTableFieldName, 
 				rifDataType);
 		requiredFieldConfigurations.add(fieldConversionConfiguration);		
 	}
 
-	public ArrayList<TableFieldConversionConfiguration> getRequiredFieldConfigurations() {
+	public ArrayList<ConvertWorkflowFieldConfiguration> getRequiredFieldConfigurations() {
 		
 		return requiredFieldConfigurations;
 	}
 
-	public ArrayList<TableFieldCleaningConfiguration> getExtraFields() {
+	public ArrayList<CleanWorkflowFieldConfiguration> getExtraFields() {
 
 		return 	extraFieldConfigurations;
 	}
 	
 	public void setExtraFields(
-		final ArrayList<TableFieldCleaningConfiguration> extraFieldConfigurations) {
+		final ArrayList<CleanWorkflowFieldConfiguration> extraFieldConfigurations) {
 		
 		this.extraFieldConfigurations = extraFieldConfigurations;
 	}
 	
-	public ArrayList<TableFieldCleaningConfiguration> getCleaningConfigurations(
-		final TableFieldConversionConfiguration fieldConversionConfiguration) {
+	public ArrayList<CleanWorkflowFieldConfiguration> getCleaningConfigurations(
+		final ConvertWorkflowFieldConfiguration fieldConversionConfiguration) {
 		
 		return cleaningFromConversionConfiguration.get(fieldConversionConfiguration);
 	}
@@ -237,8 +243,8 @@ public final class TableConversionConfiguration {
 	 * Straight mapping, no conversion function needed.
 	 */
 	public void map(
-		final TableFieldConversionConfiguration fieldConversionConfiguration,
-		final TableFieldCleaningConfiguration tableFieldCleaningConfiguration) {
+		final ConvertWorkflowFieldConfiguration fieldConversionConfiguration,
+		final CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration) {
 	
 		map(fieldConversionConfiguration,
 			tableFieldCleaningConfiguration,
@@ -249,12 +255,12 @@ public final class TableConversionConfiguration {
 	 * One to one mapping, with the help of a conversion function
 	 */
 	public void map(
-		final TableFieldConversionConfiguration fieldConversionConfiguration,
-		final TableFieldCleaningConfiguration tableFieldCleaningConfiguration,
+		final ConvertWorkflowFieldConfiguration fieldConversionConfiguration,
+		final CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration,
 		final String conversionFunctionName) {
 		
-		ArrayList<TableFieldCleaningConfiguration> cleaningFieldConfigurations
-			= new ArrayList<TableFieldCleaningConfiguration>();
+		ArrayList<CleanWorkflowFieldConfiguration> cleaningFieldConfigurations
+			= new ArrayList<CleanWorkflowFieldConfiguration>();
 		cleaningFieldConfigurations.add(tableFieldCleaningConfiguration);
 		cleaningFromConversionConfiguration.put(
 			fieldConversionConfiguration, 
@@ -270,7 +276,7 @@ public final class TableConversionConfiguration {
 
 	
 	public String getConversionFunctionName(
-		final TableFieldConversionConfiguration fieldConversionConfiguration) {
+		final ConvertWorkflowFieldConfiguration fieldConversionConfiguration) {
 		
 		return conversionFunctionNameFromConversionConfiguration.get(
 			fieldConversionConfiguration);
@@ -280,8 +286,8 @@ public final class TableConversionConfiguration {
 	 * One to many mapping, with the help of a conversion function
 	 */
 	public void map(
-		final TableFieldConversionConfiguration fieldConversionConfiguration,
-		final ArrayList<TableFieldCleaningConfiguration> tableFieldCleaningConfigurations,
+		final ConvertWorkflowFieldConfiguration fieldConversionConfiguration,
+		final ArrayList<CleanWorkflowFieldConfiguration> tableFieldCleaningConfigurations,
 		final String conversionFunctionName) {
 
 		

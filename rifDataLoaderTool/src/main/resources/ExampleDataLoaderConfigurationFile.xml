@@ -1,0 +1,174 @@
+<rif_workflow>
+
+	<data_sources>
+	
+		<!-- specify one or more data sources, which are subject to the same work flow 
+		<data_source>
+			<name>my_numerator</name>
+			<file>MyNumerator.csv</file>
+		</data_source>
+	</data_sources>
+
+	<steps>
+		<load>
+
+		</load>
+
+		<clean>
+			<!-- any field not included will not be retained in subsequent tables -->
+			<clean_field_configuration>
+				<load_field_name>
+					year
+				</load_field_name>
+				<clean_field_name>
+					year
+				</clean_field_name>
+				<description>
+					the year a health record was created
+				</description>
+				<data_type>
+					rif_integer
+				</data_type>			
+			</clean_field_configuration>
+			<clean_field_configuration>
+				<load_field_name>
+					age
+				</load_field_name>
+				<clean_field_name>
+					age
+				</clean_field_name>
+				<description>
+					age of patient
+				</description>
+				<data_type>
+					rif_age
+				</data_type>			
+			</clean_field_configuration>	
+			<clean_field_configuration>
+				<load_field_name>
+					sex
+				</load_field_name>
+				<clean_field_name>
+					sex
+				</clean_field_name>
+				<description>
+					sex of patient
+				</description>
+				<data_type>
+					rif_sex
+				</data_type>			
+			</clean_field_configuration>
+			<clean_field_configuration>
+				<load_field_name>
+					level1
+				</load_field_name>
+				<clean_field_name>
+					level1
+				</clean_field_name>
+				<description>
+					map area, expressed at the lowest resolution
+				</description>
+				<data_type>
+					rif_text
+				</data_type>			
+			</clean_field_configuration>
+			<clean_field_configuration>
+				<load_field_name>
+					level2
+				</load_field_name>
+				<clean_field_name>
+					level2
+				</clean_field_name>
+				<description>
+					map area, expressed at level 2 resolution
+				</description>
+				<data_type>
+					rif_text
+				</data_type>			
+			</clean_field_configuration>
+			<clean_field_configuration>
+				<load_field_name>
+					level3
+				</load_field_name>
+				<clean_field_name>
+					level3
+				</clean_field_name>
+				<description>
+					map area, expressed at level 3 resolution
+				</description>
+				<data_type>
+					rif_text
+				</data_type>			
+			</clean_field_configuration>		
+			<clean_field_configuration>
+				<load_field_name>
+					level4
+				</load_field_name>
+				<clean_field_name>
+					level4
+				</clean_field_name>
+				<description>
+					map area, expressed at the most detailed level of resolution
+				</description>
+				<data_type>
+					rif_text
+				</data_type>			
+			</clean_field_configuration>
+
+			<clean_field_configuration>
+				<load_field_name>
+					icd
+				</load_field_name>
+				<clean_field_name>
+					icd
+				</clean_field_name>
+				<description>
+					icd 9 or icd 10 code
+				</description>
+				<data_type>
+					rif_icd_code
+				</data_type>			
+			</clean_field_configuration>
+
+			<clean_field_configuration>
+				<load_field_name>
+					total
+				</load_field_name>
+				<clean_field_name>
+					total
+				</clean_field_name>
+				<description>
+					total number of cases
+				</description>
+				<data_type>
+					rif_integer
+				</data_type>			
+			</clean_field_configuration>		
+		</clean>
+
+		<convert>
+			<rif_table_type>
+				numerator_data
+			</rif_table_type>
+		</convert>
+
+		<combine>
+
+		</combine>
+
+		<optimise>
+
+		</optimise>
+
+		<check>
+
+		</check>
+
+		<publish>
+
+		</publish>
+		
+	</steps>
+	
+</rif_workflow>
+

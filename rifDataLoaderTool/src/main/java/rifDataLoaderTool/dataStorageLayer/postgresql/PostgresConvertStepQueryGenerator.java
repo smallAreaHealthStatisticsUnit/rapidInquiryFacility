@@ -3,9 +3,9 @@ package rifDataLoaderTool.dataStorageLayer.postgresql;
 import java.util.ArrayList;
 
 import rifDataLoaderTool.businessConceptLayer.ConvertStepQueryGeneratorAPI;
-import rifDataLoaderTool.businessConceptLayer.TableConversionConfiguration;
-import rifDataLoaderTool.businessConceptLayer.TableFieldCleaningConfiguration;
-import rifDataLoaderTool.businessConceptLayer.TableFieldConversionConfiguration;
+import rifDataLoaderTool.businessConceptLayer.ConvertWorkflowConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.ConvertWorkflowFieldConfiguration;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 
@@ -86,7 +86,7 @@ public final class PostgresConvertStepQueryGenerator
 	
 	
 	public String generateConvertTableQuery(
-		final TableConversionConfiguration tableConversionConfiguration) {
+		final ConvertWorkflowConfiguration tableConversionConfiguration) {
 
 		
 		/**
@@ -126,9 +126,9 @@ public final class PostgresConvertStepQueryGenerator
 		queryFormatter.addQueryLine(2, "data_source_id,");
 		queryFormatter.addQueryLine(2, "row_number,");
 				
-		ArrayList<TableFieldConversionConfiguration> conversionFieldConfigurations
+		ArrayList<ConvertWorkflowFieldConfiguration> conversionFieldConfigurations
 			= tableConversionConfiguration.getRequiredFieldConfigurations();
-		for (TableFieldConversionConfiguration convertionFieldConfiguration : conversionFieldConfigurations) {
+		for (ConvertWorkflowFieldConfiguration convertionFieldConfiguration : conversionFieldConfigurations) {
 			
 			addConvertQueryFragment(
 				queryFormatter,
@@ -138,9 +138,9 @@ public final class PostgresConvertStepQueryGenerator
 		}
 		//Now add on the extra fields
 		
-		ArrayList<TableFieldCleaningConfiguration> extraFields
+		ArrayList<CleanWorkflowFieldConfiguration> extraFields
 			= tableConversionConfiguration.getExtraFields();
-		for (TableFieldCleaningConfiguration extraField : extraFields) {
+		for (CleanWorkflowFieldConfiguration extraField : extraFields) {
 			queryFormatter.addQueryPhrase(",");
 			queryFormatter.finishLine();			
 			queryFormatter.addQueryPhrase(extraField.getCleanedTableFieldName());
@@ -156,8 +156,8 @@ public final class PostgresConvertStepQueryGenerator
 	private void addConvertQueryFragment(
 		final SQLGeneralQueryFormatter queryFormatter,
 		final int baseIndentationLevel,
-		final TableConversionConfiguration tableConversionConfiguration,
-		final TableFieldConversionConfiguration fieldConversionConfiguration) {
+		final ConvertWorkflowConfiguration tableConversionConfiguration,
+		final ConvertWorkflowFieldConfiguration fieldConversionConfiguration) {
 	
 		/**
 		 * cleanedTableName.postal_code AS postal_code,
@@ -172,7 +172,7 @@ public final class PostgresConvertStepQueryGenerator
 		String conversionFunctionName
 			= tableConversionConfiguration.getConversionFunctionName(
 				fieldConversionConfiguration);
-		ArrayList<TableFieldCleaningConfiguration> fieldConfigurations
+		ArrayList<CleanWorkflowFieldConfiguration> fieldConfigurations
 			= tableConversionConfiguration.getCleaningConfigurations(fieldConversionConfiguration);
 
 		if (conversionFunctionName == null) {
@@ -201,7 +201,7 @@ public final class PostgresConvertStepQueryGenerator
 	}
 
 	private String concatenateFunctionParameters(
-		final ArrayList<TableFieldCleaningConfiguration> fieldConfigurations) {
+		final ArrayList<CleanWorkflowFieldConfiguration> fieldConfigurations) {
 		
 		StringBuilder buffer = new StringBuilder();
 
