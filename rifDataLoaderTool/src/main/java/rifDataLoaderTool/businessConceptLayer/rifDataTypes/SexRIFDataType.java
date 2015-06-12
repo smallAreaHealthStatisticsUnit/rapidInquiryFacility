@@ -1,6 +1,9 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
 
+import rifDataLoaderTool.businessConceptLayer.CleaningRule;
+import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
+import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 /**

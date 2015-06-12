@@ -6,6 +6,8 @@ package rifDataLoaderTool.businessConceptLayer;
 import java.util.ArrayList;
 
 
+
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeInterface;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
 
@@ -72,7 +74,7 @@ public final class ConvertWorkflowFieldConfiguration
 	// Section Properties
 	// ==========================================
 	
-	private String coreTableName;
+	private DataSet dataSet;
 	private String conversionTableFieldName;
 	private RIFDataTypeInterface rifDataType;
 		
@@ -85,13 +87,13 @@ public final class ConvertWorkflowFieldConfiguration
 	}
 	
 	public static ConvertWorkflowFieldConfiguration newInstance(
-		final String coreTableName,
+		final DataSet dataSet,
 		final String convertedFieldName,
 		final RIFDataTypeInterface rifDataType) {
 		
 		ConvertWorkflowFieldConfiguration fieldConfiguration
 			= new ConvertWorkflowFieldConfiguration();
-		fieldConfiguration.setCoreTableName(coreTableName);
+		fieldConfiguration.setDataSet(dataSet);
 		fieldConfiguration.setConversionTableFieldName(convertedFieldName);
 		fieldConfiguration.setRIFDataType(rifDataType);
 		
@@ -101,12 +103,15 @@ public final class ConvertWorkflowFieldConfiguration
 	public static ConvertWorkflowFieldConfiguration createCopy(
 		final ConvertWorkflowFieldConfiguration originalFieldConfiguration) {
 		
+		DataSet originalDataSet = originalFieldConfiguration.getDataSet();
+		DataSet cloneDataSet = DataSet.createCopy(originalDataSet);
+		
 		ConvertWorkflowFieldConfiguration cloneFieldConfiguration
 			= new ConvertWorkflowFieldConfiguration();
 		cloneFieldConfiguration.setConversionTableFieldName(
 			originalFieldConfiguration.getConversionTableFieldName());
-		cloneFieldConfiguration.setCoreTableName(
-			originalFieldConfiguration.getCoreTableName());
+		cloneFieldConfiguration.setDataSet(cloneDataSet);
+		
 		RIFDataTypeInterface originalRIFDataType
 			= originalFieldConfiguration.getRIFDataType();
 		RIFDataTypeInterface cloneRIFDataType = originalRIFDataType.createCopy();
@@ -136,19 +141,12 @@ public final class ConvertWorkflowFieldConfiguration
 	// Section Accessors and Mutators
 	// ==========================================
 	
-	public String getCoreTableName() {
-		return coreTableName;
-	}
-
-	public void setCoreTableName(String coreTableName) {
-		this.coreTableName = coreTableName;
-	}
-
 	public String getConversionTableFieldName() {
 		return conversionTableFieldName;
 	}
 
-	public void setConversionTableFieldName(String conversionTableFieldName) {
+	public void setConversionTableFieldName(
+		final String conversionTableFieldName) {
 		this.conversionTableFieldName = conversionTableFieldName;
 	}
 
@@ -156,10 +154,20 @@ public final class ConvertWorkflowFieldConfiguration
 		return rifDataType;
 	}
 
-	public void setRIFDataType(RIFDataTypeInterface rifDataType) {
+	public void setRIFDataType(
+		final RIFDataTypeInterface rifDataType) {
+
 		this.rifDataType = rifDataType;
 	}
 
+	public DataSet getDataSet() {
+		return dataSet;
+	}
+	
+	public void setDataSet(final DataSet dataSet) {
+		this.dataSet = dataSet;
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

@@ -55,7 +55,7 @@ package rifDataLoaderTool.businessConceptLayer;
 public interface LoadStepQueryGeneratorAPI {
 
 	public String generateLoadTableQuery(
-		final int dataSourceID,
+		final int dataSetID,
 		final CleanWorkflowConfiguration tableCleaningConfiguration,
 		final int textColumnWidth);
 

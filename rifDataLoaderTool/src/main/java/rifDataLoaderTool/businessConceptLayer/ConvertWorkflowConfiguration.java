@@ -3,6 +3,7 @@ package rifDataLoaderTool.businessConceptLayer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeInterface;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
@@ -98,60 +99,70 @@ public final class ConvertWorkflowConfiguration {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String coreTableName;
+	private DataSet dataSet;
+	
+	private RIFSchemaArea rifSchemaArea;
+	
 	private ArrayList<ConvertWorkflowFieldConfiguration> requiredFieldConfigurations;
 	private ArrayList<CleanWorkflowFieldConfiguration> extraFieldConfigurations;
 	
 	private HashMap<
 		ConvertWorkflowFieldConfiguration, 
-		ArrayList<CleanWorkflowFieldConfiguration>> cleaningFromConversionConfiguration;
+		ArrayList<CleanWorkflowFieldConfiguration>> cleanFromConvertConfiguration;
 	private HashMap<
 		ConvertWorkflowFieldConfiguration,
-		String> conversionFunctionNameFromConversionConfiguration;
+		String> convertFunctionNameFromConversionConfiguration;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private ConvertWorkflowConfiguration() {
+	private ConvertWorkflowConfiguration(
+		final DataSet dataSet) {
+		
 		requiredFieldConfigurations = new ArrayList<ConvertWorkflowFieldConfiguration>();
-		cleaningFromConversionConfiguration 
+		cleanFromConvertConfiguration 
 			= new HashMap<
 				ConvertWorkflowFieldConfiguration,
 				ArrayList<CleanWorkflowFieldConfiguration>>();
-		conversionFunctionNameFromConversionConfiguration
+		convertFunctionNameFromConversionConfiguration
 			= new HashMap<ConvertWorkflowFieldConfiguration, String>();
 		
 		extraFieldConfigurations
 			= new ArrayList<CleanWorkflowFieldConfiguration>();
 	}
 
-	public static ConvertWorkflowConfiguration newInstance(
-		final String coreTableName) {
-		ConvertWorkflowConfiguration tableConversionConfiguration
-			= new ConvertWorkflowConfiguration();
-		
-		return tableConversionConfiguration;
-	}
-	
 	public static ConvertWorkflowConfiguration newInstance() {
-		ConvertWorkflowConfiguration tableConversionConfiguration
-			= new ConvertWorkflowConfiguration();		
-		return tableConversionConfiguration;
+
+		DataSet dataSet = DataSet.newInstance();
+		ConvertWorkflowConfiguration convertWorkflowFieldConfiguration
+			= new ConvertWorkflowConfiguration(dataSet);
+			
+		return convertWorkflowFieldConfiguration;
 	}	
+	
+	public static ConvertWorkflowConfiguration newInstance(
+		final DataSet dataSet) {
+		ConvertWorkflowConfiguration convertWorkflowFieldConfiguration
+			= new ConvertWorkflowConfiguration(dataSet);
+		
+		return convertWorkflowFieldConfiguration;
+	}
 	
 	public static ConvertWorkflowConfiguration createCopy(
 		final ConvertWorkflowConfiguration originalConversionConfiguration) {
 		
-		String coreTableName
-			= originalConversionConfiguration.getCoreTableName();
-		ConvertWorkflowConfiguration cloneConversionConfiguration
-			= ConvertWorkflowConfiguration.newInstance(coreTableName);
+		DataSet originalDataSet = originalConversionConfiguration.getDataSet();
+		DataSet clonedDataSet = DataSet.createCopy(originalDataSet);
+		
+
+		ConvertWorkflowConfiguration cloneConvertWorkflowConfiguration
+			= ConvertWorkflowConfiguration.newInstance(clonedDataSet);
 		
 		//first, make clones of conversion configurations
 		ArrayList<ConvertWorkflowFieldConfiguration> originalFieldConversionConfigurations
 			= originalConversionConfiguration.getRequiredFieldConfigurations();
-		ArrayList<ConvertWorkflowFieldConfiguration> cloneFieldConversionConfigurations
+		ArrayList<ConvertWorkflowFieldConfiguration> cloneConvertWorkflowFieldConfigurations
 			= new ArrayList<ConvertWorkflowFieldConfiguration>();
 		for (ConvertWorkflowFieldConfiguration originalFieldConversionConfiguration : originalFieldConversionConfigurations) {
 			
@@ -165,17 +176,17 @@ public final class ConvertWorkflowConfiguration {
 			 */
 			
 			//clone conversion fields
-			ConvertWorkflowFieldConfiguration cloneFieldConversionConfiguration
+			ConvertWorkflowFieldConfiguration cloneConvertWorkflowFieldConfiguration
 				= ConvertWorkflowFieldConfiguration.createCopy(
 					originalFieldConversionConfiguration);
 
 			//get cleaning field configurations associated with original conversion field.
-			ArrayList<CleanWorkflowFieldConfiguration> originalFieldCleaningConfigurations
+			ArrayList<CleanWorkflowFieldConfiguration> originalCleanWorkflowFieldConfigurations
 				= originalConversionConfiguration.getCleaningConfigurations(
 					originalFieldConversionConfiguration);
 			//clone the collection of cleaning fields
 			ArrayList<CleanWorkflowFieldConfiguration> cloneFieldCleaningConfigurations
-				= CleanWorkflowFieldConfiguration.createCopy(originalFieldCleaningConfigurations);
+				= CleanWorkflowFieldConfiguration.createCopy(originalCleanWorkflowFieldConfigurations);
 
 			//get the name of the conversion function (if any) associated with a
 			//conversion field configuration
@@ -183,8 +194,8 @@ public final class ConvertWorkflowConfiguration {
 				= originalConversionConfiguration.getConversionFunctionName(
 					originalFieldConversionConfiguration);
 			
-			cloneConversionConfiguration.map(
-				cloneFieldConversionConfiguration, 
+			cloneConvertWorkflowConfiguration.map(
+				cloneConvertWorkflowFieldConfiguration, 
 				cloneFieldCleaningConfigurations,
 				conversionFunctionName);
 		
@@ -195,9 +206,9 @@ public final class ConvertWorkflowConfiguration {
 			= originalConversionConfiguration.getExtraFields();
 		ArrayList<CleanWorkflowFieldConfiguration> cloneExtraFields
 			= CleanWorkflowFieldConfiguration.createCopy(originalExtraFields);
-		cloneConversionConfiguration.setExtraFields(cloneExtraFields);
+		cloneConvertWorkflowConfiguration.setExtraFields(cloneExtraFields);
 		
-		return cloneConversionConfiguration;		
+		return cloneConvertWorkflowConfiguration;		
 	}
 	
 	
@@ -205,16 +216,41 @@ public final class ConvertWorkflowConfiguration {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void addRequiredFieldConfiguration(		
-		final String conversionTableFieldName,
-		final RIFDataTypeInterface rifDataType) {
+	public String getCoreDataSetName() {
+		return dataSet.getCoreDataSetName();
+	}
+	
+	public DataSet getDataSet() {
+		return dataSet;
+	}
+	
+	public void setDataSet(final DataSet dataSet) {
+		this.dataSet = dataSet;
 		
-		ConvertWorkflowFieldConfiguration fieldConversionConfiguration
-			= ConvertWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
-				conversionTableFieldName, 
-				rifDataType);
-		requiredFieldConfigurations.add(fieldConversionConfiguration);		
+		for (ConvertWorkflowFieldConfiguration requiredFieldConfiguration : requiredFieldConfigurations) {
+			requiredFieldConfiguration.setDataSet(dataSet);
+		}
+		
+		for (CleanWorkflowFieldConfiguration extraFieldConfiguration : extraFieldConfigurations) {
+			extraFieldConfiguration.setDataSet(dataSet);
+		}
+		
+	}
+	
+	public void setRIFSchemaArea(
+		final RIFSchemaArea rifSchemaArea) {
+				
+		this.rifSchemaArea = rifSchemaArea;
+	}
+	
+	public RIFSchemaArea getRIFSchemaArea() {
+		return rifSchemaArea;
+	}
+	
+	public void addRequiredFieldConfiguration(
+		final ConvertWorkflowFieldConfiguration convertWorkflowFieldConfiguration) {
+				
+		requiredFieldConfigurations.add(convertWorkflowFieldConfiguration);		
 	}
 
 	public ArrayList<ConvertWorkflowFieldConfiguration> getRequiredFieldConfigurations() {
@@ -236,7 +272,7 @@ public final class ConvertWorkflowConfiguration {
 	public ArrayList<CleanWorkflowFieldConfiguration> getCleaningConfigurations(
 		final ConvertWorkflowFieldConfiguration fieldConversionConfiguration) {
 		
-		return cleaningFromConversionConfiguration.get(fieldConversionConfiguration);
+		return cleanFromConvertConfiguration.get(fieldConversionConfiguration);
 	}
 	
 	/*
@@ -255,30 +291,29 @@ public final class ConvertWorkflowConfiguration {
 	 * One to one mapping, with the help of a conversion function
 	 */
 	public void map(
-		final ConvertWorkflowFieldConfiguration fieldConversionConfiguration,
-		final CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration,
+		final ConvertWorkflowFieldConfiguration convertWorkflowFieldConfiguration,
+		final CleanWorkflowFieldConfiguration cleanWorkflowFieldConfiguration,
 		final String conversionFunctionName) {
 		
-		ArrayList<CleanWorkflowFieldConfiguration> cleaningFieldConfigurations
+		ArrayList<CleanWorkflowFieldConfiguration> cleanWorkflowFieldConfigurations
 			= new ArrayList<CleanWorkflowFieldConfiguration>();
-		cleaningFieldConfigurations.add(tableFieldCleaningConfiguration);
-		cleaningFromConversionConfiguration.put(
-			fieldConversionConfiguration, 
-			cleaningFieldConfigurations);
+		cleanWorkflowFieldConfigurations.add(cleanWorkflowFieldConfiguration);
+		cleanFromConvertConfiguration.put(
+			convertWorkflowFieldConfiguration, 
+			cleanWorkflowFieldConfigurations);
 
 		if (conversionFunctionName != null) {			
-			conversionFunctionNameFromConversionConfiguration.put(
-				fieldConversionConfiguration, 
+			convertFunctionNameFromConversionConfiguration.put(
+				convertWorkflowFieldConfiguration, 
 				conversionFunctionName);
-		}
-		
+		}		
 	}
 
 	
 	public String getConversionFunctionName(
 		final ConvertWorkflowFieldConfiguration fieldConversionConfiguration) {
 		
-		return conversionFunctionNameFromConversionConfiguration.get(
+		return convertFunctionNameFromConversionConfiguration.get(
 			fieldConversionConfiguration);
 	}
 	
@@ -291,28 +326,17 @@ public final class ConvertWorkflowConfiguration {
 		final String conversionFunctionName) {
 
 		
-		cleaningFromConversionConfiguration.put(
+		cleanFromConvertConfiguration.put(
 			fieldConversionConfiguration, 
 			tableFieldCleaningConfigurations);
 
 		if (conversionFunctionName != null) {			
-			conversionFunctionNameFromConversionConfiguration.put(
+			convertFunctionNameFromConversionConfiguration.put(
 				fieldConversionConfiguration, 
 				conversionFunctionName);
 		}
 	}
 		
-	public String getCoreTableName() {
-		
-		return coreTableName;
-	}
-	
-	public void setCoreTableName(
-		final String coreTableName) {
-		
-		this.coreTableName = coreTableName;
-	}
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -332,7 +356,8 @@ public final class ConvertWorkflowConfiguration {
 	
 	public String getDisplayName() {
 		String tableName
-			= RIFTemporaryTablePrefixes.CONVERT.getTableName(coreTableName);
+			= RIFTemporaryTablePrefixes.CONVERT.getTableName(
+				dataSet.getCoreDataSetName());
 		return tableName;
 	}
 	

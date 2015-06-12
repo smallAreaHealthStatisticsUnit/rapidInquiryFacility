@@ -63,37 +63,58 @@ public class RIFWorkflowConfiguration {
 	// ==========================================
 	private CleanWorkflowConfiguration cleanWorkflowConfiguration;
 	private ConvertWorkflowConfiguration convertWorkflowConfiguration;
-	
-	private ArrayList<DataSource> dataSources;
+		
+	private DataSet dataSet;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public RIFWorkflowConfiguration() {
-		cleanWorkflowConfiguration = CleanWorkflowConfiguration.newInstance();
-		convertWorkflowConfiguration = ConvertWorkflowConfiguration.newInstance();
-		
-		dataSources = new ArrayList<DataSource>();
+		dataSet = DataSet.newInstance();
+		cleanWorkflowConfiguration = CleanWorkflowConfiguration.newInstance(dataSet);
+		convertWorkflowConfiguration = ConvertWorkflowConfiguration.newInstance(dataSet);		
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 	
-	public void addDataSource(
-		final DataSource dataSource) {
+	public static RIFWorkflowConfiguration newInstance() {
+		RIFWorkflowConfiguration workflowConfiguration
+			= RIFWorkflowConfiguration.newInstance();		
+		return workflowConfiguration;
+	}
+	
+	public static RIFWorkflowConfiguration newInstance(
+		final DataSet dataSet) {
+
+		RIFWorkflowConfiguration workflowConfiguration
+			= RIFWorkflowConfiguration.newInstance(dataSet);		
+		return workflowConfiguration;
+	}
+	
+	public static RIFWorkflowConfiguration createCopy(
+		final RIFWorkflowConfiguration originalWorkflowConfiguration) {
 		
-		dataSources.add(dataSource);
+		RIFWorkflowConfiguration cloneWorkflowConfiguration
+			= RIFWorkflowConfiguration.newInstance();
+				
+		CleanWorkflowConfiguration cloneCleanWorkflowConfiguration
+			= originalWorkflowConfiguration.getCleanWorkflowConfiguration();		
+		cloneWorkflowConfiguration.setCleaningWorkflowConfiguration(cloneCleanWorkflowConfiguration);
+		
+		ConvertWorkflowConfiguration cloneConvertWorkflowConfiguration
+			= originalWorkflowConfiguration.getConvertWorkflowConfiguration();
+		cloneWorkflowConfiguration.setConvertWorkflowConfiguration(cloneConvertWorkflowConfiguration);
+		
+		return cloneWorkflowConfiguration;
 	}
-	
-	public ArrayList<DataSource> getDataSources() {
-		return dataSources;		
-	}
-	
+
 	public ConvertWorkflowConfiguration getConvertWorkflowConfiguration() {
 		return convertWorkflowConfiguration;
 	}
+	
 	
 	public void setConvertWorkflowConfiguration(
 		final ConvertWorkflowConfiguration convertWorkflowConfiguration) {
@@ -109,6 +130,13 @@ public class RIFWorkflowConfiguration {
 		final CleanWorkflowConfiguration cleanWorkflowConfiguration) {
 		
 		this.cleanWorkflowConfiguration = cleanWorkflowConfiguration;
+	}
+	
+	public void setDataSet(final DataSet dataSet) {
+		this.dataSet = dataSet;
+		
+		cleanWorkflowConfiguration.setDataSet(dataSet);
+		convertWorkflowConfiguration.setDataSet(dataSet);		
 	}
 	
 	// ==========================================

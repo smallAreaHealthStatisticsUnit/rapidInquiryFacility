@@ -1,9 +1,10 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
+import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
+import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
-
 /**
- * A data type for NHS numbers.
+ * a data type for Integers.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -52,7 +53,7 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class NHSNumberRIFDataType 
+public final class IntegerRIFDataType 
 	extends AbstractRIFDataType {
 
 	// ==========================================
@@ -62,47 +63,46 @@ public final class NHSNumberRIFDataType
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private NHSNumberRIFDataType(
-			final String identifier,
-			final String name,
-			final String description) {
+	private IntegerRIFDataType(
+		final String identifier,
+		final String name,
+		final String description) {
 
 		super(
 			identifier,
 			name, 
 			description);
 		
-		//@TODO: Find acceptable pattern
-		String validationRegularExpression
-			= "^([0-9]*)";
+		String validationRegularExpression = "^(\\d+)";
 		addValidationExpression(validationRegularExpression);
-		
+		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);		
 	}
 
-	public static NHSNumberRIFDataType newInstance() {
+	public static IntegerRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.nhsNumber.label");
+			= RIFDataLoaderMessages.getMessage("rifDataType.integer.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.nhsNumber.description");
-		NHSNumberRIFDataType nhsNumberRIFDataType
-			= new NHSNumberRIFDataType(
-				"rif_nhs_number",
+			= RIFDataLoaderMessages.getMessage("rifDataType.integer.description");
+		IntegerRIFDataType integerRIFDataType
+			= new IntegerRIFDataType(
+				"rif_integer",
 				name, 
 				description);
-
-		return nhsNumberRIFDataType;
+		
+		return integerRIFDataType;
 	}
 	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -114,13 +114,13 @@ public final class NHSNumberRIFDataType
 	// ==========================================
 	// Section Override
 	// ==========================================
-	
-	public NHSNumberRIFDataType createCopy() {
-		NHSNumberRIFDataType cloneNHSNumberRIFDataType = newInstance();
-		copyAttributes(cloneNHSNumberRIFDataType);
-		return cloneNHSNumberRIFDataType;
+
+	public IntegerRIFDataType createCopy() {
+		IntegerRIFDataType cloneIntegerRIFDataType = newInstance();
+		copyAttributes(cloneIntegerRIFDataType);
+		return cloneIntegerRIFDataType;
 	}	
-		
+	
 }
 
 

@@ -1,10 +1,11 @@
 package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 import rifDataLoaderTool.businessConceptLayer.CleaningRule;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeInterface;
 
 import javax.swing.table.AbstractTableModel;
+
 import java.util.ArrayList;
 
 

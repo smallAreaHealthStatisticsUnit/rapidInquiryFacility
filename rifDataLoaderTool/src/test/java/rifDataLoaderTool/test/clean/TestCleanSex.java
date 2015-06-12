@@ -1,9 +1,9 @@
 package rifDataLoaderTool.test.clean;
 
-import rifDataLoaderTool.businessConceptLayer.DataSource;
-import rifDataLoaderTool.businessConceptLayer.SexRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.DataSet;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.SexRIFDataType;
 import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
 import rifDataLoaderTool.test.AbstractRIFDataLoaderTestCase;
 import rifDataLoaderTool.test.DummyDataLoaderGenerator;
@@ -89,15 +89,15 @@ public final class TestCleanSex
 		masterTableCleaningConfiguration 
 			= CleanWorkflowConfiguration.newInstance(coreTableName);
 	
-		DataSource dataSource
-			= DataSource.newInstance(
+		DataSet dataSet
+			= DataSet.newInstance(
 				coreTableName,
 				false,
 				"HES file hes2001.csv", 
 					"kgarwood");
-		dataSource.setIdentifier("1");
+		dataSet.setIdentifier("1");
 	
-		masterTableCleaningConfiguration.setDataSource(dataSource);
+		masterTableCleaningConfiguration.setdataSet(dataSet);
 		
 		masterSexFieldConfiguration
 			= CleanWorkflowFieldConfiguration.newInstance(

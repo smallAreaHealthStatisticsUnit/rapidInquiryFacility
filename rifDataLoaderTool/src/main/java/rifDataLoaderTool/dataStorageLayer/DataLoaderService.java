@@ -128,7 +128,7 @@ public final class DataLoaderService
 
 	private UserManager userManager;
 	
-	private DataSourceManager dataSourceManager;
+	private DataSetManager dataSetManager;
 	private LoadStepManager loadStepManager;
 	private CleanStepManager cleanStepManager;
 	private ConvertStepManager convertStepManager;
@@ -219,7 +219,7 @@ public final class DataLoaderService
 			
 		userManager = new UserManager();
 		
-		dataSourceManager = new DataSourceManager();
+		dataSetManager = new DataSetManager();
 		
 		PostgresLoadStepQueryGenerator loadStepQueryGenerator
 			= new PostgresLoadStepQueryGenerator();
@@ -494,7 +494,7 @@ public final class DataLoaderService
 		}		
 	}
 	
-	public void clearAllDataSources(
+	public void clearAlldataSets(
 		final User _user)  
 		throws RIFServiceException,
 		RIFServiceException {
@@ -511,7 +511,7 @@ public final class DataLoaderService
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
-				"clearAllDataSources",
+				"clearAlldataSets",
 				"user",
 				user);
 
@@ -521,7 +521,7 @@ public final class DataLoaderService
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
-				= RIFDataLoaderToolMessages.getMessage("logging.clearAllDataSources",
+				= RIFDataLoaderToolMessages.getMessage("logging.clearAlldataSets",
 					user.getUserID(),
 					user.getIPAddress());
 			rifLogger.info(
@@ -532,7 +532,7 @@ public final class DataLoaderService
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(user);
 			
-			dataSourceManager.clearAllDataSources(connection);
+			dataSetManager.clearAlldataSets(connection);
 
 			sqlConnectionManager.reclaimPooledWriteConnection(
 				user, 
@@ -542,15 +542,15 @@ public final class DataLoaderService
 			//Audit failure of operation
 			logException(
 				user,
-				"clearAllDataSources",
+				"clearAlldataSets",
 				rifServiceException);
 		}		
 	
 	}	
 		
-	public void registerDataSource(
+	public void registerdataSet(
 		final User _user,
-		final DataSource _dataSource)
+		final DataSet _dataSet)
 		throws RIFServiceException,
 		RIFServiceException {
 		
@@ -559,36 +559,36 @@ public final class DataLoaderService
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return;
 		}
-		DataSource dataSource 
-			= DataSource.createCopy(_dataSource);
+		DataSet dataSet 
+			= DataSet.createCopy(_dataSet);
 
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
-				"registerDataSource",
+				"registerdataSet",
 				"user",
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
-				"registerDataSource",
-				"dataSource",
-				dataSource);
+				"registerdataSet",
+				"dataSet",
+				dataSet);
 			
 			//sortingOrder can be null, it just means that the
 			//order will be ascending lower limit
 		
 			//Check for security violations
 			validateUser(user);
-			dataSource.checkSecurityViolations();
+			dataSet.checkSecurityViolations();
 
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
-				= RIFDataLoaderToolMessages.getMessage("logging.registerDataSource",
+				= RIFDataLoaderToolMessages.getMessage("logging.registerdataSet",
 					user.getUserID(),
 					user.getIPAddress(),
-					dataSource.getDisplayName());
+					dataSet.getDisplayName());
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
@@ -597,9 +597,9 @@ public final class DataLoaderService
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(user);
 			
-			dataSourceManager.registerDataSource(
+			dataSetManager.registerDataSet(
 				connection, 
-				dataSource);
+				dataSet);
 			
 			sqlConnectionManager.reclaimPooledWriteConnection(
 				user, 
@@ -611,14 +611,14 @@ public final class DataLoaderService
 			//Audit failure of operation
 			logException(
 				user,
-				"registerDataSource",
+				"registerdataSet",
 				rifServiceException);
 		}		
 	}
 		
-	public DataSource getDataSourceFromCoreTableName(
+	public DataSet getdataSetFromCoreTableName(
 		final User _user,
-		final String coreTableName)
+		final String coreDataSetName)
 		throws RIFServiceException,
 		RIFServiceException {
 		
@@ -628,36 +628,36 @@ public final class DataLoaderService
 			return null;
 		}
 		
-		DataSource result = null;
+		DataSet result = null;
 		try {
 		
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
-				"getDataSourceFromCoreTableName",
+				"getdataSetFromCoreTableName",
 				"user",
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
-				"getDataSourceFromCoreTableName",
-				"coreTableName",
-				coreTableName);
+				"getdataSetFromCoreTableName",
+				"coreDataSetName",
+				coreDataSetName);
 			
 			
 			//Check for security violations
 			validateUser(user);
 			fieldValidationUtility.checkMaliciousMethodParameter(
-				"getDataSourceFromCoreTableName", 
-				"coreTableName", 
-				coreTableName);
+				"getdataSetFromCoreTableName", 
+				"coreDataSetName", 
+				coreDataSetName);
 			
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
-				= RIFDataLoaderToolMessages.getMessage("logging.getDataSourceFromCoreTableName",
+				= RIFDataLoaderToolMessages.getMessage("logging.getdataSetFromCoreTableName",
 					user.getUserID(),
 					user.getIPAddress(),
-					coreTableName);
+					coreDataSetName);
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
@@ -667,9 +667,9 @@ public final class DataLoaderService
 				= sqlConnectionManager.assignPooledWriteConnection(user);
 			
 			result
-				= dataSourceManager.getDataSourceFromCoreTableName(
+				= dataSetManager.getDataSetFromCoreTableName(
 					connection,
-					coreTableName);
+					coreDataSetName);
 			
 			sqlConnectionManager.reclaimPooledWriteConnection(
 				user, 
@@ -679,7 +679,7 @@ public final class DataLoaderService
 			//Audit failure of operation
 			logException(
 				user,
-				"getDataSourceFromCoreTableName",
+				"getdataSetFromCoreTableName",
 				rifServiceException);
 		}		
 		
@@ -1556,10 +1556,11 @@ public final class DataLoaderService
 			//Check for security violations
 			validateUser(user);
 
-			String coreTableName
-				= tableFieldCleaningConfiguration.getCoreTableName();
+
+			String coreDataSetName
+				= tableFieldCleaningConfiguration.getCoreDataSetName();
 			String loadTableName
-				= RIFTemporaryTablePrefixes.LOAD.getTableName(coreTableName);
+				= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
 			String fieldOfInterest
 				= tableFieldCleaningConfiguration.getLoadTableFieldName();
 			

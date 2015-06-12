@@ -1,8 +1,14 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
+import java.util.ArrayList;
+
+import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
+import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
 /**
- * A data type to represent text values.
+ * a data type for Date.  Note that unlike other data type classes, the validation expressions
+ * are not written for the POSIX regular expression languages. Here the validation patterns 
+ * show date patterns such as "dd-mmm-yyyy" etc.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -51,13 +57,13 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class TextRIFDataType 
+public final class DateRIFDataType 
 	extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -66,7 +72,7 @@ public final class TextRIFDataType
 	// Section Construction
 	// ==========================================
 
-	private TextRIFDataType(
+	private DateRIFDataType(
 		final String name,
 		final String description,
 		final String validationRegularExpression) {
@@ -76,24 +82,42 @@ public final class TextRIFDataType
 			description, 
 			validationRegularExpression);
 		
-		addValidationExpression("^(\\w+)");
 		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
-		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);			
+		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);
+		
 	}
 
-	public static TextRIFDataType newInstance() {
+	public static DateRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.text.label");
+			= RIFDataLoaderMessages.getMessage("rifDataType.date.label");
+
+		//this is the order of date formats which are used to validate RIF dates
+		String dateFormat1 = "DD Mon YYYY";
+		ArrayList<String> validationExpressions = new ArrayList<String>();
+		validationExpressions.add("DD Mon YYYY");
+		
+		StringBuilder dateFormatPatternList = new StringBuilder();
+		for (int i = 0; i < validationExpressions.size(); i++) {
+			if (i != 0) {
+				dateFormatPatternList.append(",");
+			}
+			dateFormatPatternList.append(validationExpressions.get(i));
+		}
+		
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.text.description");
-		TextRIFDataType textRIFDataType
-			= new TextRIFDataType(
-				"rif_text",
+			= RIFDataLoaderMessages.getMessage(
+				"rifDataType.date.description",
+				dateFormatPatternList.toString());
+		DateRIFDataType dateRIFDataType
+			= new DateRIFDataType(
+				"rif_date",
 				name, 
 				description);
 
-		return textRIFDataType;
+		dateRIFDataType.setValidationExpressions(validationExpressions);
+		
+		return dateRIFDataType;
 	}
 	
 	// ==========================================
@@ -111,13 +135,14 @@ public final class TextRIFDataType
 	// ==========================================
 	// Section Override
 	// ==========================================
-
-	public TextRIFDataType createCopy() {
-		TextRIFDataType cloneTextRIFDataType = newInstance();
-		copyAttributes(cloneTextRIFDataType);
-		return cloneTextRIFDataType;
-	}	
 	
+	public RIFDataTypeInterface createCopy() {
+		DateRIFDataType cloneDateRIFDataType 
+			= newInstance();
+		copyAttributes(cloneDateRIFDataType);
+		return cloneDateRIFDataType;
+	}
+		
 }
 
 

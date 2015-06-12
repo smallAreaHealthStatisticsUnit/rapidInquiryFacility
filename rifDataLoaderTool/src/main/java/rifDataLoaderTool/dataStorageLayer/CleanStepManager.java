@@ -7,7 +7,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowQueryGeneratorAPI;
-import rifDataLoaderTool.businessConceptLayer.DataSource;
+import rifDataLoaderTool.businessConceptLayer.DataSet;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
 import rifGenericLibrary.dataStorageLayer.SQLCountQueryFormatter;
@@ -112,9 +112,9 @@ public final class CleanStepManager
 		
 		
 		RIFResultTable resultTable = new RIFResultTable();
-		String coreTableName = tableCleaningConfiguration.getCoreTableName();
+		String coreDataSetName = tableCleaningConfiguration.getCoreDataSetName();
 		String searchReplaceTableName
-			= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreTableName);
+			= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName);
 		String[] fieldNames = tableCleaningConfiguration.getCleanFieldNames();
 			
 		try {
@@ -144,8 +144,8 @@ public final class CleanStepManager
 		
 		RIFLogger logger = RIFLogger.getLogger();
 		
-		String coreTableName
-			= tableCleaningConfiguration.getCoreTableName();
+		String coreDataSetName
+			= tableCleaningConfiguration.getCoreDataSetName();
 		
 		String dropSearchReplaceTableQuery
 			= queryGenerator.generateDropSearchReplaceTableQuery(tableCleaningConfiguration);		
@@ -228,9 +228,9 @@ public final class CleanStepManager
 				deleteAuditChangesQuery);
 			deleteAuditChangesStatement
 				= connection.prepareStatement(deleteAuditChangesQuery);
-			DataSource dataSource
-				= tableCleaningConfiguration.getDataSource();
-			deleteAuditChangesStatement.setInt(1, Integer.valueOf(dataSource.getIdentifier()));			
+			DataSet dataSet
+				= tableCleaningConfiguration.getDataSet();
+			deleteAuditChangesStatement.setInt(1, Integer.valueOf(dataSet.getIdentifier()));			
 			deleteAuditChangesStatement.executeUpdate();
 			
 			//First, create the table that does substitution activities
@@ -247,7 +247,7 @@ public final class CleanStepManager
 			//original load table			
 			tableIntegrityChecker.checkTotalRowsMatch(
 				connection, 
-				coreTableName,
+				coreDataSetName,
 				RIFTemporaryTablePrefixes.LOAD,
 				RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE);			
 			
@@ -268,7 +268,7 @@ public final class CleanStepManager
 			//search replace table			
 			tableIntegrityChecker.checkTotalRowsMatch(
 				connection, 
-				coreTableName,
+				coreDataSetName,
 				RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE,
 				RIFTemporaryTablePrefixes.CLEAN_VALIDATION);			
 			
@@ -286,7 +286,7 @@ public final class CleanStepManager
 			//cleaned validated data			
 			tableIntegrityChecker.checkTotalRowsMatch(
 				connection, 
-				coreTableName,
+				coreDataSetName,
 				RIFTemporaryTablePrefixes.CLEAN_VALIDATION,
 				RIFTemporaryTablePrefixes.CLEAN_CASTING);			
 			
@@ -323,7 +323,7 @@ public final class CleanStepManager
 			sqlException.printStackTrace(System.out);
 			String cleanedTableName
 				= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(
-					tableCleaningConfiguration.getCoreTableName());
+					tableCleaningConfiguration.getCoreDataSetName());
 			
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
@@ -370,11 +370,11 @@ public final class CleanStepManager
 		ResultSet resultSet = null;
 		try {
 			
-			DataSource dataSource
-				= tableCleaningConfiguration.getDataSource();
+			DataSet dataSet
+				= tableCleaningConfiguration.getDataSet();
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setInt(1, Integer.valueOf(dataSource.getIdentifier()));
+			statement.setInt(1, Integer.valueOf(dataSet.getIdentifier()));
 			statement.setString(2, "blank");
 			resultSet = statement.executeQuery();
 			resultSet.next();
@@ -422,11 +422,11 @@ public final class CleanStepManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			DataSource dataSource
-				= tableCleaningConfiguration.getDataSource();
+			DataSet dataSet
+				= tableCleaningConfiguration.getDataSet();
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setInt(1, Integer.valueOf(dataSource.getIdentifier()));
+			statement.setInt(1, Integer.valueOf(dataSet.getIdentifier()));
 			statement.setString(2, "value_changed");			
 			resultSet = statement.executeQuery();
 			resultSet.next();
@@ -474,11 +474,11 @@ public final class CleanStepManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			DataSource dataSource
-				= tableCleaningConfiguration.getDataSource();
+			DataSet dataSet
+				= tableCleaningConfiguration.getDataSet();
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setInt(1, Integer.valueOf(dataSource.getIdentifier()));
+			statement.setInt(1, Integer.valueOf(dataSet.getIdentifier()));
 			statement.setString(2, "error");			
 			resultSet = statement.executeQuery();
 			resultSet.next();
@@ -510,7 +510,7 @@ public final class CleanStepManager
 		final String targetBaseFieldName)
 		throws RIFServiceException {
 		
-		DataSource dataSource = tableCleaningConfiguration.getDataSource();
+		DataSet dataSet = tableCleaningConfiguration.getDataSet();
 		
 		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
 		queryFormatter.addSelectField("data_source_id");
@@ -534,7 +534,7 @@ public final class CleanStepManager
 		try {
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setInt(1, Integer.valueOf(dataSource.getIdentifier()));
+			statement.setInt(1, Integer.valueOf(dataSet.getIdentifier()));
 			statement.setInt(2, rowNumber);
 			statement.setString(3, targetBaseFieldName);
 			statement.setString(4, "blank");
@@ -570,7 +570,7 @@ public final class CleanStepManager
 		throws RIFServiceException {
 
 		
-		DataSource dataSource = tableCleaningConfiguration.getDataSource();
+		DataSet dataSet = tableCleaningConfiguration.getDataSet();
 		
 		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
 		queryFormatter.addSelectField("data_source_id");
@@ -594,7 +594,7 @@ public final class CleanStepManager
 		try {
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setInt(1, Integer.valueOf(dataSource.getIdentifier()));
+			statement.setInt(1, Integer.valueOf(dataSet.getIdentifier()));
 			statement.setInt(2, rowNumber);
 			statement.setString(3, targetBaseFieldName);
 			statement.setString(4, "value_changed");
@@ -631,7 +631,7 @@ public final class CleanStepManager
 		final String targetBaseFieldName)
 		throws RIFServiceException {
 
-		DataSource dataSource = tableCleaningConfiguration.getDataSource();
+		DataSet dataSet = tableCleaningConfiguration.getDataSet();
 		
 		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
 		queryFormatter.addSelectField("data_source_id");
@@ -654,7 +654,7 @@ public final class CleanStepManager
 		try {
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setInt(1, Integer.valueOf(dataSource.getIdentifier()));
+			statement.setInt(1, Integer.valueOf(dataSet.getIdentifier()));
 			statement.setInt(2, rowNumber);
 			statement.setString(3, targetBaseFieldName);
 			statement.setString(4, "error");
@@ -692,10 +692,10 @@ public final class CleanStepManager
 				
 		String fieldOfInterest
 			= tableFieldCleaningConfiguration.getLoadTableFieldName();
-		String coreTableName
-			= tableFieldCleaningConfiguration.getCoreTableName();
+		String coreDataSetName
+			= tableFieldCleaningConfiguration.getCoreDataSetName();
 		String loadTableName
-			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreTableName);
+			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
 
 		//KLG: @TODO - eliminate junk data and uncomment code below
 		//to make it obtain real data

@@ -1,21 +1,12 @@
-package rifDataLoaderTool.test.clean;
+package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
-import rifDataLoaderTool.businessConceptLayer.DataSet;
-import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
-import rifDataLoaderTool.test.AbstractRIFDataLoaderTestCase;
-import rifDataLoaderTool.test.DummyDataLoaderGenerator;
-import rifServices.system.RIFServiceException;
-import rifServices.businessConceptLayer.User;
-
-import org.junit.Test;
-import static org.junit.Assert.*;
-
+import java.util.HashMap;
 
 /**
  *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -61,8 +52,7 @@ import static org.junit.Assert.*;
  *
  */
 
-public final class TestdataSetFeatures 
-	extends AbstractRIFDataLoaderTestCase {
+public class RIFDataTypeFactory {
 
 	// ==========================================
 	// Section Constants
@@ -71,67 +61,58 @@ public final class TestdataSetFeatures
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private HashMap<String, AbstractRIFDataType> dataTypeFromName;
 	
-	private User testUser;
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public TestdataSetFeatures() {
+	public RIFDataTypeFactory() {
+		
+		dataTypeFromName = new HashMap<String, AbstractRIFDataType>();
 
-		DummyDataLoaderGenerator dummyDataGenerator
-			= new DummyDataLoaderGenerator();
-
-		testUser = dummyDataGenerator.createTestUser();
-
+		
+		AgeRIFDataType ageRIFDataType = AgeRIFDataType.newInstance();
+		dataTypeFromName.put(ageRIFDataType.getIdentifier(), ageRIFDataType);
+		
+		DoubleRIFDataType doubleRIFDataType = DoubleRIFDataType.newInstance();
+		dataTypeFromName.put(doubleRIFDataType.getIdentifier(), doubleRIFDataType);
+		
+		DateRIFDataType dateRIFDataType = DateRIFDataType.newInstance();
+		dataTypeFromName.put(dateRIFDataType.getIdentifier(), dateRIFDataType);		
+		
+		ICDCodeRIFDataType icdCodeRIFDataType = ICDCodeRIFDataType.newInstance();
+		dataTypeFromName.put(icdCodeRIFDataType.getIdentifier(), icdCodeRIFDataType);		
+		
+		IntegerRIFDataType integerRIFDataType = IntegerRIFDataType.newInstance();
+		System.out.println("RIFDataType integer=="+integerRIFDataType.getIdentifier()+"==");
+		dataTypeFromName.put(integerRIFDataType.getIdentifier(), integerRIFDataType);
+		
+		NHSNumberRIFDataType nhsNumberRIFDataType = NHSNumberRIFDataType.newInstance();
+		dataTypeFromName.put(nhsNumberRIFDataType.getIdentifier(), nhsNumberRIFDataType);
+		
+		SexRIFDataType sexRIFDataType = SexRIFDataType.newInstance();
+		dataTypeFromName.put(sexRIFDataType.getIdentifier(), sexRIFDataType);
+		
+		TextRIFDataType textRIFDataType = TextRIFDataType.newInstance();
+		dataTypeFromName.put(textRIFDataType.getIdentifier(), textRIFDataType);
+		
+		UKPostalCodeRIFDataType ukPostalCodeRIFDataType
+			= UKPostalCodeRIFDataType.newInstance();
+		dataTypeFromName.put(ukPostalCodeRIFDataType.getIdentifier(), ukPostalCodeRIFDataType);
+		
+		YearRIFDataType yearRIFDataType = YearRIFDataType.newInstance();
+		dataTypeFromName.put(yearRIFDataType.getIdentifier(), yearRIFDataType);
+		
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	@Test
-	public void test1() {
-		
-		try {
-			DataLoaderService dataLoaderService
-				= getDataLoaderService();
-			dataLoaderService.clearAlldataSets(testUser);
-			
-			DataSet originaldataSet
-				= DataSet.newInstance(
-					"hes_2001",
-					false,
-					"HES file hes2001.csv", 
-					"kev");
-			dataLoaderService.registerdataSet(
-				testUser, 
-				originaldataSet);
-			
-			DataSet retrieveddataSet
-				= dataLoaderService.getdataSetFromCoreTableName(
-					testUser, 
-					"hes_2001");
-			
-			assertEquals(
-				originaldataSet.getCoreTableName(), 
-				retrieveddataSet.getCoreTableName());
-			
-			assertEquals(
-				originaldataSet.getSourceName(),
-				retrieveddataSet.getSourceName());
-			
-			assertEquals(
-				originaldataSet.isDerivedFromExistingTable(),
-				retrieveddataSet.isDerivedFromExistingTable());
-		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printStackTrace();
-		}
-
+	public AbstractRIFDataType getDataType(final String dataTypeName) {
+		return dataTypeFromName.get(dataTypeName);		
 	}
-	
-	
 	
 	// ==========================================
 	// Section Errors and Validation

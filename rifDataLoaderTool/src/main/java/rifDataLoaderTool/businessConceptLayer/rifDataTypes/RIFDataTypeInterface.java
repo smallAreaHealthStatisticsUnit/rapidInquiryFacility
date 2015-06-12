@@ -1,16 +1,19 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
 import java.util.ArrayList;
 
+import rifDataLoaderTool.businessConceptLayer.CleaningRule;
+import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
+import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 
 /**
  * An interface for RIF data types. The purpose of this interface is to encourage
  * the rest of calling code to ignore implementation details of each specific
- * sub-class of {@link rifDataLoaderTool.businessConceptLayer.AbstractRIFDataType}.  
+ * sub-class of {@link rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType}.  
  * However, there are cases when the SQL code generators need to know which kind of 
  * data type is being processed.  For example, it has to know if a field has
- * a {@link rifDataLoaderTool.businessConceptLayer.DateRIFDataType} so it knows
+ * a {@link rifDataLoaderTool.businessConceptLayer.rifDataTypes.DateRIFDataType} so it knows
  * to call a database function instead of making a comparison using regular expressions.
  *  
  *

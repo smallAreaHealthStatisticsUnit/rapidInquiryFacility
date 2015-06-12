@@ -377,7 +377,7 @@ abstract class AbstractWorkflowConfigurationHandler
 	 */
 	protected String getCurrentFieldValue() {
 		
-		return currentFieldValue;
+		return currentFieldValue.trim();
 	}
 	
 	/**

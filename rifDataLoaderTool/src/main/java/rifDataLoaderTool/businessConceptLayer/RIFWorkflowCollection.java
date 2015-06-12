@@ -1,21 +1,14 @@
-package rifDataLoaderTool.test.clean;
+package rifDataLoaderTool.businessConceptLayer;
+
 
 import rifDataLoaderTool.businessConceptLayer.DataSet;
-import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
-import rifDataLoaderTool.test.AbstractRIFDataLoaderTestCase;
-import rifDataLoaderTool.test.DummyDataLoaderGenerator;
-import rifServices.system.RIFServiceException;
-import rifServices.businessConceptLayer.User;
-
-import org.junit.Test;
-import static org.junit.Assert.*;
-
+import java.util.ArrayList;
 
 /**
  *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -61,8 +54,7 @@ import static org.junit.Assert.*;
  *
  */
 
-public final class TestdataSetFeatures 
-	extends AbstractRIFDataLoaderTestCase {
+public class RIFWorkflowCollection {
 
 	// ==========================================
 	// Section Constants
@@ -72,66 +64,54 @@ public final class TestdataSetFeatures
 	// Section Properties
 	// ==========================================
 	
-	private User testUser;
+	private ArrayList<DataSet> dataSets;
+	private RIFWorkflowConfiguration rifWorkflowConfiguration;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public TestdataSetFeatures() {
-
-		DummyDataLoaderGenerator dummyDataGenerator
-			= new DummyDataLoaderGenerator();
-
-		testUser = dummyDataGenerator.createTestUser();
-
+	private RIFWorkflowCollection() {
+		dataSets = new ArrayList<DataSet>();
+		rifWorkflowConfiguration = RIFWorkflowConfiguration.newInstance();
 	}
 
+	public static RIFWorkflowCollection newInstance() {
+		RIFWorkflowCollection rifWorkflowCollection = new RIFWorkflowCollection();
+		return rifWorkflowCollection;
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	@Test
-	public void test1() {
-		
-		try {
-			DataLoaderService dataLoaderService
-				= getDataLoaderService();
-			dataLoaderService.clearAlldataSets(testUser);
-			
-			DataSet originaldataSet
-				= DataSet.newInstance(
-					"hes_2001",
-					false,
-					"HES file hes2001.csv", 
-					"kev");
-			dataLoaderService.registerdataSet(
-				testUser, 
-				originaldataSet);
-			
-			DataSet retrieveddataSet
-				= dataLoaderService.getdataSetFromCoreTableName(
-					testUser, 
-					"hes_2001");
-			
-			assertEquals(
-				originaldataSet.getCoreTableName(), 
-				retrieveddataSet.getCoreTableName());
-			
-			assertEquals(
-				originaldataSet.getSourceName(),
-				retrieveddataSet.getSourceName());
-			
-			assertEquals(
-				originaldataSet.isDerivedFromExistingTable(),
-				retrieveddataSet.isDerivedFromExistingTable());
-		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printStackTrace();
-		}
+	public ArrayList<DataSet> getDataSets() {
 
+		return dataSets;
 	}
 	
+	public void setDataSets(
+		final ArrayList<DataSet> dataSets) {
+		
+		this.dataSets = dataSets;
+	}
 	
+	public void addDataSet(
+		final DataSet dataSet) {
+		
+		dataSets.add(dataSet);
+	}
+	
+	public void setRIFWorkflowConfiguration(
+		final RIFWorkflowConfiguration rifWorkflowConfiguration) {
+		
+		this.rifWorkflowConfiguration = rifWorkflowConfiguration;
+	}
+	
+	public RIFWorkflowConfiguration getRIFWorkflowConfiguration() {
+
+		return rifWorkflowConfiguration;
+	}
 	
 	// ==========================================
 	// Section Errors and Validation

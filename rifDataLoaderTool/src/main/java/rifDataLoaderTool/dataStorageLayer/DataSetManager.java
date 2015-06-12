@@ -1,6 +1,6 @@
 package rifDataLoaderTool.dataStorageLayer;
 
-import rifDataLoaderTool.businessConceptLayer.DataSource;
+import rifDataLoaderTool.businessConceptLayer.DataSet;
 import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
@@ -66,7 +66,7 @@ import java.sql.*;
  *
  */
 
-public final class DataSourceManager {
+public final class DataSetManager {
 
 	// ==========================================
 	// Section Constants
@@ -80,7 +80,7 @@ public final class DataSourceManager {
 	// Section Construction
 	// ==========================================
 
-	public DataSourceManager() {
+	public DataSetManager() {
 
 	}
 
@@ -91,7 +91,7 @@ public final class DataSourceManager {
 	/*
 	 * Assume this table is created in RIF scripts?
 	 */
-	public void clearAllDataSources(
+	public void clearAlldataSets(
 		final Connection connection) 
 		throws RIFServiceException {
 
@@ -106,7 +106,7 @@ public final class DataSourceManager {
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage("dataSourceManager.error.unableToClearDataSources");
+				= RIFDataLoaderToolMessages.getMessage("dataSetManager.error.unableToCleardataSets");
 			RIFServiceException RIFServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.CLEAR_ALL_DATA_SOURCES, 
@@ -118,17 +118,17 @@ public final class DataSourceManager {
 		}		
 	}
 		
-	public void registerDataSource(
+	public void registerDataSet(
 		final Connection connection,
-		final DataSource dataSource) 
+		final DataSet dataSet) 
 		throws RIFServiceException {
 			
 		//Validate parameters
-		dataSource.checkErrors();
+		dataSet.checkErrors();
 		
-		checkDuplicateDataSource(
+		checkDuplicatedataSet(
 			connection,
-			dataSource);
+			dataSet);
 
 		//Create SQL query		
 		SQLInsertQueryFormatter queryFormatter = new SQLInsertQueryFormatter();
@@ -143,16 +143,16 @@ public final class DataSourceManager {
 		try {
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setString(1, dataSource.getCoreTableName());
-			statement.setBoolean(2, dataSource.isDerivedFromExistingTable());
-			statement.setString(3, dataSource.getSourceName());
-			statement.setString(4, dataSource.getUserID());
+			statement.setString(1, dataSet.getCoreDataSetName());
+			statement.setBoolean(2, dataSet.isDerivedFromExistingTable());
+			statement.setString(3, dataSet.getSourceName());
+			statement.setString(4, dataSet.getUserID());
 			statement.executeUpdate();
 		}
 		catch(SQLException sqlException) {
 			sqlException.printStackTrace(System.out);
 			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage("dataSourceManager.error.registerDataSource");
+				= RIFDataLoaderToolMessages.getMessage("dataSetManager.error.registerdataSet");
 			RIFServiceException RIFServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.REGISTER_DATA_SOURCE,
@@ -164,19 +164,21 @@ public final class DataSourceManager {
 		}		
 	}
 	
-	public DataSource getDataSourceFromCoreTableName(
+	public DataSet getDataSetFromCoreTableName(
 		final Connection connection,
-		final String coreTableName) 
+		final String coreDataSetName) 
 		throws RIFServiceException {
 		
 		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
 		queryFormatter.addSelectField("identifier");
+		queryFormatter.addSelectField("core_data_set");
 		queryFormatter.addSelectField("derived_from_existing_table");
 		queryFormatter.addSelectField("source_name");
 		queryFormatter.addSelectField("user_id");
+		queryFormatter.addSelectField("registration_date");
 		queryFormatter.addFromTable("data_source_registry");
 		
-		DataSource result = DataSource.newInstance();
+		DataSet result = DataSet.newInstance();
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
@@ -184,12 +186,12 @@ public final class DataSourceManager {
 			resultSet = statement.executeQuery();
 			resultSet.next();
 			
-			result.setCoreTableName(coreTableName);
-			result.setIdentifier(resultSet.getString(1));
-			result.setDerivedFromExistingTable(resultSet.getBoolean(2));
-			result.setSourceName(resultSet.getString(3));
-			result.setUserID(resultSet.getString(4));
-			result.setRegistrationDate(resultSet.getDate(5));
+			result.setCoreDataSetName(resultSet.getString(1));
+			result.setIdentifier(resultSet.getString(2));
+			result.setDerivedFromExistingTable(resultSet.getBoolean(3));
+			result.setSourceName(resultSet.getString(4));
+			result.setUserID(resultSet.getString(5));
+			result.setRegistrationDate(resultSet.getDate(6));
 		}
 		catch(SQLException sqlException) {
 			SQLQueryUtility.close(resultSet);
@@ -203,12 +205,12 @@ public final class DataSourceManager {
 	// Section Errors and Validation
 	// ==========================================
 
-	private void checkDuplicateDataSource(
+	private void checkDuplicatedataSet(
 		final Connection connection,
-		final DataSource dataSource) 
+		final DataSet dataSet) 
 			throws RIFServiceException {
 		
-		String coreTableName = dataSource.getCoreTableName();
+		String coreDataSetName = dataSet.getCoreDataSetName();
 
 		SQLRecordExistsQueryFormatter queryFormatter 
 			= new SQLRecordExistsQueryFormatter();
@@ -219,15 +221,15 @@ public final class DataSourceManager {
 		ResultSet resultSet = null;
 		try {
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setString(1, coreTableName);
+			statement.setString(1, coreDataSetName);
 			resultSet = statement.executeQuery();
 			
 			if (resultSet.next() == true) {
 				//there is already a data source with this core table name
 				String errorMessage
 					= RIFDataLoaderToolMessages.getMessage(
-						"dataSourceManager.error.dataSourceAlreadyExists",
-						coreTableName);
+						"dataSetManager.error.dataSetAlreadyExists",
+						coreDataSetName);
 				RIFServiceException RIFServiceException
 					= new RIFServiceException(
 						RIFDataLoaderToolError.DUPLICATE_DATA_SOURCE,

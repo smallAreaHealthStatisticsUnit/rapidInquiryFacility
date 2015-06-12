@@ -85,13 +85,13 @@ public final class PostgresLoadStepQueryGenerator
 	// ==========================================
 
 	public String generateLoadTableQuery(
-		final int dataSourceIdentifier,
-		final CleanWorkflowConfiguration tableCleaningConfiguration,
+		final int dataSetIdentifier,
+		final CleanWorkflowConfiguration cleanWorkflowConfiguration,
 		final int textColumnWidth) {
 
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
-		String coreTableName = tableCleaningConfiguration.getCoreTableName();
+		String coreTableName = cleanWorkflowConfiguration.getCoreDataSetName();
 		String loadTableName = RIFTemporaryTablePrefixes.LOAD.getTableName(coreTableName);
 		queryFormatter.addQueryPhrase(loadTableName);
 		queryFormatter.addQueryPhrase(" (");
@@ -100,7 +100,7 @@ public final class PostgresLoadStepQueryGenerator
 		queryFormatter.addQueryLine(1, "data_source_id INTEGER NOT NULL,");
 		queryFormatter.addQueryLine(1, "row_number SERIAL NOT NULL,");
 		ArrayList<CleanWorkflowFieldConfiguration> fieldCleaningConfigurations
-			= tableCleaningConfiguration.getIncludedFieldCleaningConfigurations();
+			= cleanWorkflowConfiguration.getIncludedFieldCleaningConfigurations();
 		int numberTableFieldConfigurations = fieldCleaningConfigurations.size();
 			
 		for (int i = 0; i < numberTableFieldConfigurations; i++) {
@@ -124,11 +124,11 @@ public final class PostgresLoadStepQueryGenerator
 	}
 		
 	public String generateDropLoadTableQuery(
-		final CleanWorkflowConfiguration tableCleaningConfiguration) {
+		final CleanWorkflowConfiguration cleanWorkflowConfiguration) {
 
 		StringBuilder query = new StringBuilder();		
 		query.append("DROP TABLE IF EXISTS ");
-		String coreTableName = tableCleaningConfiguration.getCoreTableName();
+		String coreTableName = cleanWorkflowConfiguration.getCoreDataSetName();
 		query.append(RIFTemporaryTablePrefixes.LOAD.getTableName(coreTableName));
 		return query.toString();
 			

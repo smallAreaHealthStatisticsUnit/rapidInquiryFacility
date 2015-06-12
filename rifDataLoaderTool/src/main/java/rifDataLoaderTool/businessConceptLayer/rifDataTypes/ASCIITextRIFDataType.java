@@ -1,12 +1,13 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
+import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
+import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
-
 /**
- * A data type for ICD codes from the ICD-9 or ICD-10 standard.  Support for the two different
- * standards is combined into one data type because we have observed that ICD 9 and ICD 10 
- * codes end up labelling the same table field.
  *
+ * A data type that describes ASCII text field values.  The type is used to 
+ * ensure that the characters in the field values are limited to ACII characters, as opposed
+ * to other formats such as UTF8.
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
@@ -54,7 +55,7 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class ICDCodeRIFDataType 
+public final class ASCIITextRIFDataType 
 	extends AbstractRIFDataType {
 
 	// ==========================================
@@ -64,48 +65,45 @@ public final class ICDCodeRIFDataType
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public ICDCodeRIFDataType(
-		final String identifier,
+	private ASCIITextRIFDataType(
 		final String name,
-		final String description) {
+		final String description,
+		final String validationRegularExpression) {
 
 		super(
-			identifier,
-			name,
-			description);
+			name, 
+			description, 
+			validationRegularExpression);
 		
-		//expression for ICD 9
-		addValidationExpression("^([EV])?\\d{3,3}(\\.\\d{1,2})?$");
-
-		//expression for ICD 10
-		addValidationExpression("^[A-Z]\\d{2}(\\.\\d){0,1}$");
+		addValidationExpression("^(\\w+)");
+		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);			
 	}
 
-	public static ICDCodeRIFDataType newInstance() {
+	public static ASCIITextRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.icd.label");
+			= RIFDataLoaderMessages.getMessage("rifDataType.asciiText.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.icd.description");
-		ICDCodeRIFDataType icdCodeRIFDataType
-			= new ICDCodeRIFDataType(
-				"rif_icd_code",
+			= RIFDataLoaderMessages.getMessage("rifDataType.asciiText.description");
+		ASCIITextRIFDataType asciiTextRIFDataType
+			= new ASCIITextRIFDataType(
+				"rif_ascii_text",
 				name, 
 				description);
-		
-		return icdCodeRIFDataType;
+
+		return asciiTextRIFDataType;
 	}
-		
 	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -118,12 +116,11 @@ public final class ICDCodeRIFDataType
 	// Section Override
 	// ==========================================
 
-	public RIFDataTypeInterface createCopy() {
-		ICDCodeRIFDataType cloneICDCodeRIFDataType = newInstance();
-		copyAttributes(cloneICDCodeRIFDataType);
-		return cloneICDCodeRIFDataType;
+	public ASCIITextRIFDataType createCopy() {
+		ASCIITextRIFDataType cloneASCIITextRIFDataType = newInstance();
+		copyAttributes(cloneASCIITextRIFDataType);
+		return cloneASCIITextRIFDataType;
 	}	
-		
 	
 }
 

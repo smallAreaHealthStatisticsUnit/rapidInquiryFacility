@@ -1,30 +1,11 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
+import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
+import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
+import rifDataLoaderTool.system.RIFDataLoaderMessages;
 /**
- * A data type to represent a year value.  This data type contains two parameter values which
- * define a range of two digit years that may be considered part of the 20th century.  For example,
- * suppose 72 appears in a year field.  If the limits are [25,99], then 72 would be cleaned and
- * converted to 1972.  However, if the year were 13, then it would be converted to 2013.  The years
- * may be adjusted to suit the needs of a use case.
- * 
- * <p>
- * In future, this type will probably be modified to to rely on a database function.  If this happens,
- * then the 
- * This clas <code>getCleaningFunctionParameterValues</code> method
- * would be used to construct a database call.  Most database function calls resemble the format: 
- * <code>
- * [function_name] ([load table field name], areBlanksAllowed)
- * </code>
- * 
- * <p>
- * but in this case, we would use the <code>getCleaningFunctionParameterValues</code> method to make:
- * <code>
- * clean_year(year, true, 20, 99)
- * </code>
- * <p>
- * where the method provided the phrase "20, 99" part of the construction.
+ * A data type to represent UK postal codes.
+ *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
@@ -72,7 +53,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
  *
  */
 
-public final class YearRIFDataType 
+public final class UKPostalCodeRIFDataType 
 	extends AbstractRIFDataType {
 
 	// ==========================================
@@ -82,69 +63,46 @@ public final class YearRIFDataType
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String minimum20thCenturyYear;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private YearRIFDataType(
-		final String identifier,
+	private UKPostalCodeRIFDataType(
 		final String name,
-		final String description) {
+		final String description,
+		final String validationRegularExpression) {
 
 		super(
-			identifier,
 			name, 
-			description);
+			description, 
+			validationRegularExpression);
 		
-		addValidationExpression("^(19|20)\\d{2}$");
-		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
-		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);
+		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_FUNCTION);
+		setCleaningFunctionName("is_valid_uk_postal_code");
+		setFieldCleaningPolicy(RIFFieldCleaningPolicy.CLEANING_FUNCTION);
+		setCleaningFunctionName("clean_uk_postal_code");
+		
 	}
 
-	public static YearRIFDataType newInstance() {
-		String name
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.year.label");
-		String description
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.year.description");
+	public static UKPostalCodeRIFDataType newInstance() {
 
-		YearRIFDataType yearRIFDataType
-			= new YearRIFDataType(
-				"rif_year",
+		String name
+			= RIFDataLoaderMessages.getMessage("rifDataType.ukPostalCode.label");
+		String description
+			= RIFDataLoaderMessages.getMessage("rifDataType.ukPostalCode.description");
+		UKPostalCodeRIFDataType ukPostalCodeRIFDataType
+			= new UKPostalCodeRIFDataType(
+				"rif_uk_postcode",
 				name, 
 				description);
-		
-		//cannot think of any implicit cleaning rules to add...
-		
-		return yearRIFDataType;
+
+		return ukPostalCodeRIFDataType;
 	}
 	
-	public YearRIFDataType createCopy() {
-		YearRIFDataType cloneYearRIFDataType = newInstance();
-		copyAttributes(cloneYearRIFDataType);
-		return cloneYearRIFDataType;
-	}
-
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-		
-	public String getMinimum20thCenturyYear() {
-		return minimum20thCenturyYear;
-	}
-
-	public void setMinimum20thCenturyYear(String minimum20thCenturyYear) {
-		this.minimum20thCenturyYear = minimum20thCenturyYear;
-	}	
-	
-	@Override
-	public String getCleaningFunctionParameterValues() {
-		StringBuilder buffer = new StringBuilder();
-		buffer.append(",");
-		buffer.append(minimum20thCenturyYear);
-		return buffer.toString();
-	}
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -157,7 +115,13 @@ public final class YearRIFDataType
 	// ==========================================
 	// Section Override
 	// ==========================================
-
+	
+	public RIFDataTypeInterface createCopy() {
+		UKPostalCodeRIFDataType cloneUKPostalCodeRIFDataType = newInstance();
+		copyAttributes(cloneUKPostalCodeRIFDataType);
+		return cloneUKPostalCodeRIFDataType;
+	}
+	
 }
 
 

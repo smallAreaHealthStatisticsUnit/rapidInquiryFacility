@@ -2,6 +2,7 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import java.util.ArrayList;
 
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeInterface;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
 
@@ -69,9 +70,8 @@ public final class CleanWorkflowConfiguration
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private DataSource dataSource;
+	private DataSet dataSet;
 	private ArrayList<CleanWorkflowFieldConfiguration> cleanWorkflowFieldConfigurations;
-	private String coreTableName;
 	
 	// ==========================================
 	// Section Construction
@@ -82,41 +82,39 @@ public final class CleanWorkflowConfiguration
 		cleanWorkflowFieldConfigurations 
 			= new ArrayList<CleanWorkflowFieldConfiguration>();	
 	}
-	
-	public static CleanWorkflowConfiguration newInstance(
-		final String coreTableName) {
+
+	public static CleanWorkflowConfiguration newInstance() {
+		
 		CleanWorkflowConfiguration cleanWorkflowConfiguration
 			= new CleanWorkflowConfiguration();
-		cleanWorkflowConfiguration.setCoreTableName(coreTableName);
+		DataSet dataSet = DataSet.newInstance();
+		cleanWorkflowConfiguration.setDataSet(dataSet);
+			
+		return cleanWorkflowConfiguration;
+	}
+	
+	public static CleanWorkflowConfiguration newInstance(
+		final DataSet dataSet) {
+		CleanWorkflowConfiguration cleanWorkflowConfiguration
+			= new CleanWorkflowConfiguration();
+		cleanWorkflowConfiguration.setDataSet(dataSet);
 		
 		return cleanWorkflowConfiguration;
 	}
 	
-	public static CleanWorkflowConfiguration newInstance() {
-		CleanWorkflowConfiguration cleanWorkflowConfiguration
-			= new CleanWorkflowConfiguration();
-		
-		return cleanWorkflowConfiguration;
-	}	
-	
 	public static CleanWorkflowConfiguration createCopy(
 		final CleanWorkflowConfiguration originalTableConfiguration) {
-				
+	
+		DataSet originalDataSet = originalTableConfiguration.getDataSet();	
+		DataSet clonedDataSet = DataSet.createCopy(originalDataSet);
 		CleanWorkflowConfiguration cloneTableConfiguration
-			= new CleanWorkflowConfiguration();
-		cloneTableConfiguration.setCoreTableName(originalTableConfiguration.getCoreTableName());
+			= CleanWorkflowConfiguration.newInstance(clonedDataSet);
 		ArrayList<CleanWorkflowFieldConfiguration> originalFieldConfigurations
 			= originalTableConfiguration.getIncludedFieldCleaningConfigurations();
 		ArrayList<CleanWorkflowFieldConfiguration> cloneFieldConfigurations
 			= CleanWorkflowFieldConfiguration.createCopy(originalFieldConfigurations);
 		cloneTableConfiguration.setTableFieldCleaningConfigurations(cloneFieldConfigurations);
 		
-		
-		DataSource originalDataSource
-			= originalTableConfiguration.getDataSource();
-		DataSource cloneDataSource
-			= DataSource.createCopy(originalDataSource);
-		cloneTableConfiguration.setDataSource(cloneDataSource);
 		return cloneTableConfiguration;
 	}
 	
@@ -125,33 +123,30 @@ public final class CleanWorkflowConfiguration
 	// Section Accessors and Mutators
 	// ==========================================
 	
+	public String getCoreDataSetName() {		
+		return dataSet.getCoreDataSetName();
+	}	
+	
 	public void addCleanWorkflowFieldConfiguration(
 		final CleanWorkflowFieldConfiguration cleanWorkflowFieldConfiguration) {	
 		cleanWorkflowFieldConfigurations.add(cleanWorkflowFieldConfiguration);		
 	}
 	
 	public void addFieldConfiguration(
-		final String coreTableName,
 		final String loadTableFieldName,
 		final String cleanedTableFieldName,
+		final String description,
 		final RIFDataTypeInterface rifDataType) {
 
-		CleanWorkflowFieldConfiguration	tableFieldCleaningConfiguration
+		CleanWorkflowFieldConfiguration	cleanWorkflowFieldConfiguration
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName,
+				dataSet,
 				loadTableFieldName,
 				cleanedTableFieldName,
+				description,
 				rifDataType);
-
-		cleanWorkflowFieldConfigurations.add(tableFieldCleaningConfiguration);
-	}
-	
-	public String getCoreTableName() {
-		return coreTableName;
-	}
-
-	public void setCoreTableName(final String coreTableName) {
-		this.coreTableName = coreTableName;
+		
+		cleanWorkflowFieldConfigurations.add(cleanWorkflowFieldConfiguration);
 	}
 	
 	public String[] getLoadFieldNames() {
@@ -210,22 +205,35 @@ public final class CleanWorkflowConfiguration
 	
 	@Override
 	public String getDisplayName() {
-		return coreTableName;
+		return dataSet.getDisplayName();
 	}
 	
-	public void setDataSource(
-		final DataSource dataSource) {
+	public void setDataSet(
+		final DataSet dataSet) {
 		
-		this.dataSource = dataSource;
+		this.dataSet = dataSet;
 	}
 	
-	public DataSource getDataSource() {
-		
-		return dataSource;
+	public DataSet getDataSet() {		
+		return dataSet;
 	}
 	
 	public void clearFieldConfigurations() {
 		cleanWorkflowFieldConfigurations.clear();
+	}
+	
+	public void printFields() {
+		System.out.println("Clean Workflow Configuration");
+		for (CleanWorkflowFieldConfiguration cleanWorkflowFieldConfiguration : cleanWorkflowFieldConfigurations) {
+			System.out.println(
+				"Load:"+
+				cleanWorkflowFieldConfiguration.getLoadTableFieldName() +
+				" Clean:"+ 
+				cleanWorkflowFieldConfiguration.getCleanedTableFieldName() + 
+				" description=" + 
+				cleanWorkflowFieldConfiguration.getDescription() + 
+				"==");			
+		}		
 	}
 	
 	// ==========================================

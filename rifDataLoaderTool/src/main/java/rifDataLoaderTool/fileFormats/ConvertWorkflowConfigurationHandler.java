@@ -1,16 +1,15 @@
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.ConvertWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
-import rifDataLoaderTool.businessConceptLayer.CleaningRule;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
 
 
-
-import rifGenericLibrary.presentationLayer.HTMLUtility;
-
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
 
 /**
  *
@@ -81,7 +80,7 @@ public final class ConvertWorkflowConfigurationHandler
 	public ConvertWorkflowConfigurationHandler() {
 		convertWorkflowConfiguration 
 			= ConvertWorkflowConfiguration.newInstance();
-		
+		setSingularRecordName("convert");
 	}
 
 	// ==========================================
@@ -105,6 +104,36 @@ public final class ConvertWorkflowConfigurationHandler
 		
 	}
 	
+	
+	@Override
+	public void startElement(
+		final String nameSpaceURI,
+		final String localName,
+		final String qualifiedName,
+		final Attributes attributes) 
+		throws SAXException {
+
+		if (isSingularRecordName(qualifiedName) == true) {
+			activate();
+		}
+	}
+	
+	public void endElement(
+		final String nameSpaceURI,
+		final String localName,
+		final String qualifiedName) 
+		throws SAXException {
+
+			if (isPluralRecordName(qualifiedName)) {
+				deactivate();
+			}
+			else if (equalsFieldName("rif_schema_area", qualifiedName)) {
+				RIFSchemaArea rifSchemaArea = RIFSchemaArea.getSchemaAreaFromName(getCurrentFieldValue());
+				convertWorkflowConfiguration.setRIFSchemaArea(rifSchemaArea);
+			}
+
+	
+		}
 	
 	
 	// ==========================================

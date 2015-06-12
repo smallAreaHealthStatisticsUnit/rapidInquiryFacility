@@ -1,12 +1,12 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
-import java.util.HashMap;
-
+import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
+import rifDataLoaderTool.system.RIFDataLoaderMessages;
 /**
- *
+ * a data type for double precision numeric data.
  *
  * <hr>
- * Copyright 2015 Imperial College London, developed by the Small Area
+ * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -52,7 +52,8 @@ import java.util.HashMap;
  *
  */
 
-public class RIFDataTypeFactory {
+public final class DoubleRIFDataType 
+	extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants
@@ -61,57 +62,45 @@ public class RIFDataTypeFactory {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private HashMap<String, AbstractRIFDataType> dataTypeFromName;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public RIFDataTypeFactory() {
-		
-		dataTypeFromName = new HashMap<String, AbstractRIFDataType>();
+	private DoubleRIFDataType(
+		final String identifier,
+		final String name,
+		final String description) {
 
+		super(
+			identifier,
+			name, 
+			description);
 		
-		AgeRIFDataType ageRIFDataType = AgeRIFDataType.newInstance();
-		dataTypeFromName.put(ageRIFDataType.getName(), ageRIFDataType);
-		
-		DoubleRIFDataType doubleRIFDataType = DoubleRIFDataType.newInstance();
-		dataTypeFromName.put(doubleRIFDataType.getName(), doubleRIFDataType);
-		
-		DateRIFDataType dateRIFDataType = DateRIFDataType.newInstance();
-		dataTypeFromName.put(dateRIFDataType.getName(), dateRIFDataType);		
-		
-		ICDCodeRIFDataType icdCodeRIFDataType = ICDCodeRIFDataType.newInstance();
-		dataTypeFromName.put(icdCodeRIFDataType.getName(), icdCodeRIFDataType);		
-		
-		IntegerRIFDataType integerRIFDataType = IntegerRIFDataType.newInstance();
-		dataTypeFromName.put(integerRIFDataType.getName(), integerRIFDataType);
-		
-		NHSNumberRIFDataType nhsNumberRIFDataType = NHSNumberRIFDataType.newInstance();
-		dataTypeFromName.put(nhsNumberRIFDataType.getName(), nhsNumberRIFDataType);
-		
-		SexRIFDataType sexRIFDataType = SexRIFDataType.newInstance();
-		dataTypeFromName.put(sexRIFDataType.getName(), sexRIFDataType);
-		
-		TextRIFDataType textRIFDataType = TextRIFDataType.newInstance();
-		dataTypeFromName.put(textRIFDataType.getName(), textRIFDataType);
-		
-		UKPostalCodeRIFDataType ukPostalCodeRIFDataType
-			= UKPostalCodeRIFDataType.newInstance();
-		dataTypeFromName.put(ukPostalCodeRIFDataType.getName(), ukPostalCodeRIFDataType);
-		
-		YearRIFDataType yearRIFDataType = YearRIFDataType.newInstance();
-		dataTypeFromName.put(yearRIFDataType.getName(), yearRIFDataType);
-		
+		String validationRegularExpression
+			= "^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$";
+		addValidationExpression(validationRegularExpression);
+		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);		
 	}
 
+	public static DoubleRIFDataType newInstance() {
+
+		String name
+			= RIFDataLoaderMessages.getMessage("rifDataType.double.label");
+		String description
+			= RIFDataLoaderMessages.getMessage("rifDataType.double.description");
+		DoubleRIFDataType doubleRIFDataType
+			= new DoubleRIFDataType(
+				"rif_double",
+				name, 
+				description);
+		
+		return doubleRIFDataType;
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
-	public AbstractRIFDataType getDataType(final String dataTypeName) {
-		return dataTypeFromName.get(dataTypeName);		
-	}
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -125,6 +114,12 @@ public class RIFDataTypeFactory {
 	// Section Override
 	// ==========================================
 
+	public DoubleRIFDataType createCopy() {
+		DoubleRIFDataType cloneDoubleRIFDataType = newInstance();
+		copyAttributes(cloneDoubleRIFDataType);
+		return cloneDoubleRIFDataType;
+	}
+	
 }
 
 

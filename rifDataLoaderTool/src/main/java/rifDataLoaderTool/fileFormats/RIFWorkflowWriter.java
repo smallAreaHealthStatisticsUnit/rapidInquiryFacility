@@ -1,11 +1,23 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+
+import rifDataLoaderTool.businessConceptLayer.RIFWorkflowConfiguration;
+import rifServices.fileFormats.XMLCommentInjector;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceException;
+import rifServices.system.RIFServiceMessages;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+
+
+
 /**
- * a data type for Integers.
+ *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -51,8 +63,7 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class IntegerRIFDataType 
-	extends AbstractRIFDataType {
+public class RIFWorkflowWriter {
 
 	// ==========================================
 	// Section Constants
@@ -61,45 +72,59 @@ public final class IntegerRIFDataType
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private IntegerRIFDataType(
-		final String identifier,
-		final String name,
-		final String description) {
+	public RIFWorkflowWriter() {
 
-		super(
-			identifier,
-			name, 
-			description);
-		
-		String validationRegularExpression = "^(\\d+)";
-		addValidationExpression(validationRegularExpression);
-		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
-		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);		
 	}
 
-	public static IntegerRIFDataType newInstance() {
-
-		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.integer.label");
-		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.integer.description");
-		IntegerRIFDataType integerRIFDataType
-			= new IntegerRIFDataType(
-				"rif_integer",
-				name, 
-				description);
-		
-		return integerRIFDataType;
-	}
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
+	
+	
+	public String write(
+			final RIFWorkflowConfiguration rifWorkflowConfiguration,
+			final File file) 
+			throws RIFServiceException {
+				
+			try {
+				FileOutputStream fileOutputStream
+					= new FileOutputStream(file);
+				
+				
+				RIFWorkflowConfigurationHandler rifWorkflowConfigurationHandler
+					= new RIFWorkflowConfigurationHandler();
+
+				ByteArrayOutputStream outputStream
+					= new ByteArrayOutputStream();
+				XMLCommentInjector commentInjector = new XMLCommentInjector();			
+				rifWorkflowConfigurationHandler.initialise(
+					fileOutputStream, 
+					commentInjector);
+				rifWorkflowConfigurationHandler.writeXML(rifWorkflowConfiguration);
+		    	String result 
+					= new String(outputStream.toByteArray(), "UTF-8");	
+		    	outputStream.close();			
+		    	return result;
+			}
+			catch(Exception exception) {
+				exception.printStackTrace(System.out);
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"io.error.problemWritingFileContentsToString");
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.XML_FILE_PARSING_PROBLEM, 
+						errorMessage);
+				throw rifServiceException;			
+			}
+		}	
+
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -113,12 +138,6 @@ public final class IntegerRIFDataType
 	// Section Override
 	// ==========================================
 
-	public IntegerRIFDataType createCopy() {
-		IntegerRIFDataType cloneIntegerRIFDataType = newInstance();
-		copyAttributes(cloneIntegerRIFDataType);
-		return cloneIntegerRIFDataType;
-	}	
-	
 }
 
 

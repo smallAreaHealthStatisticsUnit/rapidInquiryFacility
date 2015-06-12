@@ -90,12 +90,12 @@ public interface RIFDataLoaderServiceAPI {
 		final User user) 
 		throws RIFServiceException;
 	
-	public void registerDataSource(
+	public void registerdataSet(
 		final User user,
-		final DataSource dataSource)
+		final DataSet dataSet)
 		throws RIFServiceException;
 	
-	public DataSource getDataSourceFromCoreTableName(
+	public DataSet getdataSetFromCoreTableName(
 		final User user,
 		final String coreTableName)
 		throws RIFServiceException;

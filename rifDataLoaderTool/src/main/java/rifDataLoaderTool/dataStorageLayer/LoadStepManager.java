@@ -7,7 +7,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
-import rifDataLoaderTool.businessConceptLayer.DataSource;
+import rifDataLoaderTool.businessConceptLayer.DataSet;
 import rifDataLoaderTool.businessConceptLayer.LoadStepQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
@@ -105,7 +105,7 @@ public final class LoadStepManager
 		throws RIFServiceException {
 		
 		RIFResultTable resultTable = new RIFResultTable();
-		String coreTableName = tableCleaningConfiguration.getCoreTableName();
+		String coreTableName = tableCleaningConfiguration.getCoreDataSetName();
 		String loadTableName
 			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreTableName);
 		String[] fieldNames = tableCleaningConfiguration.getLoadFieldNames();
@@ -135,7 +135,7 @@ public final class LoadStepManager
 		RIFLogger logger = RIFLogger.getLogger();		
 
 		
-		String coreTableName = tableCleaningConfiguration.getCoreTableName();
+		String coreTableName = tableCleaningConfiguration.getCoreDataSetName();
 		int textColumnWidth
 			= startupOptions.getDataLoaderTextColumnSize();
 		PreparedStatement dropTableStatement = null;		
@@ -195,7 +195,7 @@ public final class LoadStepManager
 			sqlException.printStackTrace(System.out);
 			String createTableName
 				= RIFTemporaryTablePrefixes.LOAD.getTableName(
-					tableCleaningConfiguration.getCoreTableName());
+					tableCleaningConfiguration.getCoreDataSetName());
 			
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
@@ -220,7 +220,7 @@ public final class LoadStepManager
 		
 
 		String coreTableName 
-			= tableCleaningConfiguration.getCoreTableName();
+			= tableCleaningConfiguration.getCoreDataSetName();
 		String loadTableName
 			= generateLoadTableName(coreTableName);
 		SQLInsertQueryFormatter queryFormatter 
@@ -244,13 +244,13 @@ public final class LoadStepManager
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
 
-			DataSource dataSource = tableCleaningConfiguration.getDataSource();
-			Integer dataSourceIdentifier
-				= Integer.valueOf(dataSource.getIdentifier());
+			DataSet dataSet = tableCleaningConfiguration.getDataSet();
+			Integer dataSetIdentifier
+				= Integer.valueOf(dataSet.getIdentifier());
 
 			for (int ithRow = 0; ithRow < tableData.length; ithRow++) {				
 				
-				statement.setInt(1, dataSourceIdentifier);
+				statement.setInt(1, dataSetIdentifier);
 				for (int ithParameter = 0; ithParameter < tableData[ithRow].length; ithParameter++) {
 					statement.setString(ithParameter + 2, tableData[ithRow][ithParameter]);					
 				}
@@ -292,7 +292,7 @@ public final class LoadStepManager
 		catch(SQLException sqlException) {
 			String loadTableName
 				= RIFTemporaryTablePrefixes.LOAD.getTableName(
-					tableCleaningConfiguration.getCoreTableName());
+					tableCleaningConfiguration.getCoreDataSetName());
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"loadStepManager.error.dropLoadTable",

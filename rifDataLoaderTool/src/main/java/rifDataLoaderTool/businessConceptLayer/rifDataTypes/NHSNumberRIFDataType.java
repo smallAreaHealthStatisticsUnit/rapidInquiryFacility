@@ -1,22 +1,9 @@
-package rifDataLoaderTool.fileFormats;
+package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
-import rifDataLoaderTool.businessConceptLayer.DataSource;
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
-import rifDataLoaderTool.businessConceptLayer.CleaningRule;
-
-
-
-import rifGenericLibrary.presentationLayer.HTMLUtility;
-import rifServices.businessConceptLayer.HealthCode;
-
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
+import rifDataLoaderTool.system.RIFDataLoaderMessages;
 
 /**
- *
+ * A data type for NHS numbers.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -65,8 +52,8 @@ import org.xml.sax.SAXException;
  *
  */
 
-public final class DataSourceConfigurationHandler 
-	extends AbstractWorkflowConfigurationHandler {
+public final class NHSNumberRIFDataType 
+	extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants
@@ -75,86 +62,47 @@ public final class DataSourceConfigurationHandler
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	ArrayList<DataSource> dataSources;
-	private DataSource currentDataSource;
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public DataSourceConfigurationHandler() {
-		setPluralRecordName("data_sources");
-		setSingularRecordName("data_source");
+	private NHSNumberRIFDataType(
+			final String identifier,
+			final String name,
+			final String description) {
+
+		super(
+			identifier,
+			name, 
+			description);
 		
-		dataSources = new ArrayList<DataSource>();
+		//@TODO: Find acceptable pattern
+		String validationRegularExpression
+			= "^([0-9]*)";
+		addValidationExpression(validationRegularExpression);
+		
 	}
 
+	public static NHSNumberRIFDataType newInstance() {
+
+		String name
+			= RIFDataLoaderMessages.getMessage("rifDataType.nhsNumber.label");
+		String description
+			= RIFDataLoaderMessages.getMessage("rifDataType.nhsNumber.description");
+		NHSNumberRIFDataType nhsNumberRIFDataType
+			= new NHSNumberRIFDataType(
+				"rif_nhs_number",
+				name, 
+				description);
+
+		return nhsNumberRIFDataType;
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	
-
-	@Override
-	public void startElement(
-		final String nameSpaceURI,
-		final String localName,
-		final String qualifiedName,
-		final Attributes attributes) 
-		throws SAXException {
-
-		if (isPluralRecordName(qualifiedName) == true) {
-			dataSources.clear();
-			activate();
-		}
-		else if (isSingularRecordName(qualifiedName) == true) {
-			currentDataSource = DataSource.newInstance();
-		}
-	}
-	
-	@Override
-	public void endElement(
-		final String nameSpaceURI,
-		final String localName,
-		final String qualifiedName) 
-		throws SAXException {
-
-		if (isPluralRecordName(qualifiedName) == true) {
-			deactivate();
-		}
-		else if (isSingularRecordName(qualifiedName) == true) {
-			dataSources.add(currentDataSource);
-		}
-		else if (equalsFieldName("name", qualifiedName) == true) {
-			currentDataSource.setSourceName(getCurrentFieldValue());
-		}
-		else if (equalsFieldName("file", qualifiedName) == true) {
-			currentDataSource.setSourceName(getCurrentFieldValue());					
-		}
-	}
-	
-	
-	public ArrayList<DataSource> getDataSources() {
-		return dataSources;		
-	}
-	
-	public String getHTML(
-		final DataSource dataSource) {
-			
-		return "";
-	}	
-	
-	
-	public String getHTML(
-		final ArrayList<DataSource> dataSources) {
-			
-		return "";
-	}	
-	
-	public void writeXML(final ArrayList<DataSource> dataSources) {
-		this.dataSources = dataSources;
-	}
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -166,7 +114,13 @@ public final class DataSourceConfigurationHandler
 	// ==========================================
 	// Section Override
 	// ==========================================
-
+	
+	public NHSNumberRIFDataType createCopy() {
+		NHSNumberRIFDataType cloneNHSNumberRIFDataType = newInstance();
+		copyAttributes(cloneNHSNumberRIFDataType);
+		return cloneNHSNumberRIFDataType;
+	}	
+		
 }
 
 

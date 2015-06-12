@@ -1,11 +1,19 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.fileFormats;
+
+import rifDataLoaderTool.businessConceptLayer.DataSet;
 
 
+import rifServices.fileFormats.XMLUtility;
+
+import java.util.ArrayList;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import java.io.IOException;
 
 /**
  *
- * A generic custom data type where RIF managers can define their own data types.
- * 
+ *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
@@ -53,8 +61,8 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public final class CustomRIFDataType 
-	extends AbstractRIFDataType {
+public final class DataSetConfigurationHandler 
+	extends AbstractWorkflowConfigurationHandler {
 
 	// ==========================================
 	// Section Constants
@@ -63,40 +71,104 @@ public final class CustomRIFDataType
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	ArrayList<DataSet> dataSets;
+	private DataSet currentDataSet;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private CustomRIFDataType(
-		final String identifier,
-		final String name,
-		final String description) {
+	public DataSetConfigurationHandler() {
+		setPluralRecordName("data_sources");
+		setSingularRecordName("data_source");
 		
-		super(
-			identifier,
-			name,
-			description);
+		dataSets = new ArrayList<DataSet>();
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public static CustomRIFDataType newInstance(
-		final String identifier,
-		final String name,
-		final String description) {
-		
-		CustomRIFDataType customRIFDataType
-			= new CustomRIFDataType(
-				identifier, 
-				name, 
-				description);
-		
-		return customRIFDataType;
-	}
 
+	@Override
+	public void startElement(
+		final String nameSpaceURI,
+		final String localName,
+		final String qualifiedName,
+		final Attributes attributes) 
+		throws SAXException {
+
+		if (isPluralRecordName(qualifiedName) == true) {
+			dataSets.clear();
+			activate();
+		}
+		else if (isSingularRecordName(qualifiedName) == true) {
+			currentDataSet = DataSet.newInstance();
+		}
+	}
+	
+	@Override
+	public void endElement(
+		final String nameSpaceURI,
+		final String localName,
+		final String qualifiedName) 
+		throws SAXException {
+
+		if (isPluralRecordName(qualifiedName) == true) {
+			deactivate();
+		}
+		else if (isSingularRecordName(qualifiedName) == true) {
+			dataSets.add(currentDataSet);
+		}
+		else if (equalsFieldName("name", qualifiedName) == true) {
+			currentDataSet.setCoreDataSetName(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("file", qualifiedName) == true) {
+			currentDataSet.setSourceName(getCurrentFieldValue());					
+		}
+	}
+	
+	
+	public ArrayList<DataSet> getdataSets() {
+		return dataSets;		
+	}
+	
+	public String getHTML(
+		final DataSet dataSet) {
+			
+		return "";
+	}	
+	
+	
+	public String getHTML(
+		final ArrayList<DataSet> dataSets) {
+			
+		return "";
+	}	
+	
+	public void writeXML(final ArrayList<DataSet> dataSets) 
+		throws IOException {
+		
+		this.dataSets = dataSets;
+		
+		XMLUtility xmlUtility = getXMLUtility();
+		xmlUtility.writeRecordListStartTag("data_sources");
+		for (DataSet dataSet : dataSets) {
+			xmlUtility.writeRecordStartTag("data_source");
+			xmlUtility.writeField(
+				"data_source", 
+				"name", 
+				dataSet.getCoreDataSetName());
+			xmlUtility.writeField(
+				"data_source", 
+				"file", 
+				dataSet.getSourceName());
+			xmlUtility.writeRecordEndTag("data_source");
+		}
+		
+		xmlUtility.writeRecordListEndTag("data_sources");
+		
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -109,17 +181,6 @@ public final class CustomRIFDataType
 	// Section Override
 	// ==========================================
 
-	public RIFDataTypeInterface createCopy() {
-		CustomRIFDataType clonedCustomRIFDataType
-			= new CustomRIFDataType(
-				getIdentifier(),
-				getName(),
-				getDescription());
-		copyAttributes(clonedCustomRIFDataType);
-		
-		return clonedCustomRIFDataType;
-	}
-	
 }
 
 

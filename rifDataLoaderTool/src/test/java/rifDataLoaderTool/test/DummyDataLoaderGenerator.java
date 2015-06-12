@@ -1,6 +1,13 @@
 package rifDataLoaderTool.test;
 
 import rifDataLoaderTool.businessConceptLayer.*;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AgeRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.DateRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.IntegerRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.NHSNumberRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.SexRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.TextRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.UKPostalCodeRIFDataType;
 import rifServices.businessConceptLayer.User;
 
 /**
@@ -86,15 +93,15 @@ public final class DummyDataLoaderGenerator {
 		CleanWorkflowConfiguration masterTableCleaningConfiguration 
 			= CleanWorkflowConfiguration.newInstance(coreTableName);
 		
-		DataSource dataSource
-			= DataSource.newInstance(
+		DataSet dataSet
+			= DataSet.newInstance(
 				"hes_2001",
 				false,
 				"HES file hes2001.csv", 
 				"kgarwood");
-		dataSource.setIdentifier("1");
+		dataSet.setIdentifier("1");
 		
-		masterTableCleaningConfiguration.setDataSource(dataSource);
+		masterTableCleaningConfiguration.setdataSet(dataSet);
 		
 		
 		CleanWorkflowFieldConfiguration nhsNumber
@@ -211,14 +218,14 @@ public final class DummyDataLoaderGenerator {
 		CleanWorkflowConfiguration masterTableCleaningConfiguration
 			= CleanWorkflowConfiguration.newInstance(coreTableName);
 
-		DataSource dataSource
-			= DataSource.newInstance(
+		DataSet dataSet
+			= DataSet.newInstance(
 				"hes_2001",
 				false,
 				"HES file hes2001.csv", 
 				"kgarwood");
-		dataSource.setIdentifier("1");
-		masterTableCleaningConfiguration.setDataSource(dataSource);
+		dataSet.setIdentifier("1");
+		masterTableCleaningConfiguration.setdataSet(dataSet);
 		
 		
 		CleanWorkflowFieldConfiguration birthDate

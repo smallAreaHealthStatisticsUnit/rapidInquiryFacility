@@ -2,8 +2,9 @@ package rifDataLoaderTool.fileFormats;
 
 import java.io.ByteArrayOutputStream;
 
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
 
+import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSet;
 
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
@@ -94,10 +95,14 @@ public final class FieldVarianceReport {
 		htmlUtility.beginDocument();
 		htmlUtility.beginBody();
 		//write report title
-		String coreTableName
-			= tableFieldCleaningConfiguration.getCoreTableName();
+
+		DataSet dataSet
+			= tableFieldCleaningConfiguration.getDataSet();
+		String coreDataSetName
+			= dataSet.getCoreDataSetName();	
+		
 		String loadTableName
-			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreTableName);
+			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
 		String fieldOfInterest
 			= tableFieldCleaningConfiguration.getLoadTableFieldName();
 		String reportTitle

@@ -5,6 +5,7 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import java.util.ArrayList;
 
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeInterface;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
 
@@ -45,9 +46,9 @@ import rifServices.system.RIFServiceSecurityException;
  * 
  * <p>
  * Although most of the information used to validate field values comes from the 
- * {@link rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface}, each cleaning field configuration contains
+ * {@link rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeInterface}, each cleaning field configuration contains
  * a flag which indicates whether a value is required or not.  In one field configuration, an
- * {@link rifDataLoaderTool.businessConceptLayer.IntegerRIFDataType} might be optional whereas in another
+ * {@link rifDataLoaderTool.businessConceptLayer.rifDataTypes.IntegerRIFDataType} might be optional whereas in another
  * table column it may be required.  This scenario explains why the flag for 'allows blank' is in the field
  * configuration and not in the data type definition.
  * </p>
@@ -109,7 +110,7 @@ public final class CleanWorkflowFieldConfiguration
 	// Section Properties
 	// ==========================================
 	
-	private String coreTableName;
+	private DataSet dataSet;
 	private String loadTableFieldName;
 	private String cleanedTableFieldName;
 	private String description;
@@ -125,29 +126,72 @@ public final class CleanWorkflowFieldConfiguration
 	// Section Construction
 	// ==========================================
 
-	public CleanWorkflowFieldConfiguration(
-		final String coreTableName,
+
+	private CleanWorkflowFieldConfiguration(
+		final DataSet dataSet) {
+
+		initialise(
+			dataSet,
+			"",
+			"",
+			"",
+			null);
+	}
+	
+	
+	private CleanWorkflowFieldConfiguration(
+		final DataSet dataSet,
 		final String loadTableFieldName,
 		final String cleanedTableFieldName,
 		final String description,
 		final RIFDataTypeInterface rifDataType) {
 		
-		this.coreTableName = coreTableName;
+		initialise(
+			dataSet,
+			loadTableFieldName,
+			cleanedTableFieldName,
+			description,
+			rifDataType);
+	}
+	
+	private void initialise(
+		final DataSet dataSet,
+		final String loadTableFieldName,
+		final String cleanedTableFieldName,
+		final String description,
+		final RIFDataTypeInterface rifDataType) {
+		
+		this.dataSet = dataSet;
 		this.loadTableFieldName = loadTableFieldName;
 		this.cleanedTableFieldName = cleanedTableFieldName;
 		this.description = description;
-		this.rifDataType = rifDataType;
-		
+		this.rifDataType = rifDataType;		
+
 		applyDataTypeCleaningRules = true;
 		allowBlankValues = true;
 		includeFieldInRIFProcessing = true;
 	}
 
 	public static CleanWorkflowFieldConfiguration newInstance() {
+			
+		DataSet dataSet = DataSet.newInstance();
+		CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration
+			= new CleanWorkflowFieldConfiguration(
+				dataSet,
+				"",
+				"",
+				"",
+				null);
+			
+		return tableFieldCleaningConfiguration;
+	}	
+	
+	public static CleanWorkflowFieldConfiguration newInstance(
+		final DataSet dataSet) {
 		
 		CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration
 			= new CleanWorkflowFieldConfiguration(
-				"",
+				dataSet,
 				"",
 				"",
 				"",
@@ -157,7 +201,7 @@ public final class CleanWorkflowFieldConfiguration
 	}
 	
 	public static CleanWorkflowFieldConfiguration newInstance(
-		final String coreTableName,
+		final DataSet dataSet,
 		final String loadTableFieldName,
 		final String cleanedTableFieldName,
 		final String description,
@@ -165,46 +209,12 @@ public final class CleanWorkflowFieldConfiguration
 		
 		CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration
 			= new CleanWorkflowFieldConfiguration(
-				coreTableName,
+				dataSet,
 				loadTableFieldName,
 				cleanedTableFieldName,
 				description,
 				rifDataType);
 		
-		return tableFieldCleaningConfiguration;
-	}
-
-	public static CleanWorkflowFieldConfiguration newInstance(
-		final String coreTableName,
-		final String coreFieldName,
-		final String description) {
-			
-		TextRIFDataType rifDataType = TextRIFDataType.newInstance();
-		CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration
-			= new CleanWorkflowFieldConfiguration(
-				coreTableName,
-				coreFieldName,
-				coreFieldName,
-				description,
-				rifDataType);
-		
-		return tableFieldCleaningConfiguration;
-	}
-	
-	public static CleanWorkflowFieldConfiguration newInstance(
-		final String coreTableName,
-		final String coreFieldName,
-		final String description,
-		final RIFDataTypeInterface rifDataType) {
-				
-		CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration
-			= new CleanWorkflowFieldConfiguration(
-				coreTableName,
-				coreFieldName,
-				coreFieldName,
-				description,
-				rifDataType);
-			
 		return tableFieldCleaningConfiguration;
 	}
 	
@@ -215,7 +225,7 @@ public final class CleanWorkflowFieldConfiguration
 			return null;
 		}
 
-		String coreTableName = originalFieldConfiguration.getCoreTableName();
+		DataSet dataSet = originalFieldConfiguration.getDataSet();
 		
 		String loadTableFieldName
 			= originalFieldConfiguration.getLoadTableFieldName();
@@ -224,12 +234,12 @@ public final class CleanWorkflowFieldConfiguration
 		String cleanedTableFieldName
 			= originalFieldConfiguration.getCleanedTableFieldName();
 		RIFDataTypeInterface originalRIFDataType
-			= originalFieldConfiguration.getRifDataType();
+			= originalFieldConfiguration.getRIFDataType();
 		RIFDataTypeInterface clonedRIFDataType
 			= originalRIFDataType.createCopy();
 		CleanWorkflowFieldConfiguration cloneFieldConfiguration
 			= new CleanWorkflowFieldConfiguration(
-				coreTableName,
+				dataSet,
 				loadTableFieldName,
 				cleanedTableFieldName,
 				description,
@@ -253,24 +263,25 @@ public final class CleanWorkflowFieldConfiguration
 		}
 
 		//the core table name should be the same across all fields
-		//KLG: @TODO does the field configuration need to have it?
-		String coreTableName = originalFieldConfigurations.get(0).getCoreTableName();
-		
+		//KLG: @TODO does the field configuration need to have it?		
 		for (CleanWorkflowFieldConfiguration originalFieldConfiguration : originalFieldConfigurations) {
-			String loadTableFieldName
-				= originalFieldConfiguration.getLoadTableFieldName();
+
+			DataSet originaldataSet = originalFieldConfiguration.getDataSet();
+			DataSet clonedDataSet = DataSet.createCopy(originaldataSet);
 			
+			String loadTableFieldName
+				= originalFieldConfiguration.getLoadTableFieldName();			
 			String cleanedTableFieldName
 				= originalFieldConfiguration.getCleanedTableFieldName();
 			String originalDescription
 				= originalFieldConfiguration.getDescription();
 			RIFDataTypeInterface originalRIFDataType
-				= originalFieldConfiguration.getRifDataType();
+				= originalFieldConfiguration.getRIFDataType();
 			RIFDataTypeInterface clonedRIFDataType
 				= originalRIFDataType.createCopy();
 			CleanWorkflowFieldConfiguration cloneFieldConfiguration
 				= new CleanWorkflowFieldConfiguration(
-					coreTableName,
+					clonedDataSet,
 					loadTableFieldName,
 					cleanedTableFieldName,
 					originalDescription,
@@ -287,6 +298,21 @@ public final class CleanWorkflowFieldConfiguration
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public void setDataSet(
+		final DataSet dataSet) {
+		
+		this.dataSet = dataSet;
+	}
+	
+	public DataSet getDataSet() {
+
+		return dataSet;
+	}
+	
+	public String getCoreDataSetName() {		
+		return dataSet.getCoreDataSetName();
+	}
+	
 	public boolean includeFieldInRIFprocessing() {
 		return includeFieldInRIFProcessing;
 	}
@@ -330,16 +356,7 @@ public final class CleanWorkflowFieldConfiguration
 		
 		return true;
 	}
-	
-	public String getCoreTableName() {
-		return coreTableName;
-	}
-
-	public void setCoreTableName(String coreTableName) {
-		this.coreTableName = coreTableName;
-	}
-
-	
+		
 	public String getLoadTableFieldName() {
 		return loadTableFieldName;
 	}
@@ -367,13 +384,11 @@ public final class CleanWorkflowFieldConfiguration
 		this.cleanedTableFieldName = cleanedTableFieldName;
 	}
 
-	public RIFDataTypeInterface getRifDataType() {
+	public RIFDataTypeInterface getRIFDataType() {
 		return rifDataType;
 	}
 
-
-
-	public void setRifDataType(RIFDataTypeInterface rifDataType) {
+	public void setRIFDataType(RIFDataTypeInterface rifDataType) {
 		this.rifDataType = rifDataType;
 	}
 
@@ -381,7 +396,7 @@ public final class CleanWorkflowFieldConfiguration
 	@Override
 	public String getDisplayName() {
 		StringBuilder buffer = new StringBuilder();
-		buffer.append(coreTableName);
+		buffer.append(dataSet.getCoreDataSetName());
 		buffer.append(".");
 		buffer.append(cleanedTableFieldName);
 		

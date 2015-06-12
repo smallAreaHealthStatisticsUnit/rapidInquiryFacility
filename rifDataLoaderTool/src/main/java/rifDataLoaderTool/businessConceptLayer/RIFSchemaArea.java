@@ -1,5 +1,7 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import java.text.Collator;
+
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 /**
@@ -81,6 +83,44 @@ public enum RIFSchemaArea {
 	public String getCode() {
 		return code;
 	}
+	
+	public boolean matches(final String candidateCode) {
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		
+		return collator.equals(code, candidateCode);
+	}
+	
+	public static RIFSchemaArea getSchemaAreaFromName(final String candidateCode) {
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		
+		RIFSchemaArea result = null;
+		
+		if (COVARIATE_DATA.matches(candidateCode)) {
+			result = COVARIATE_DATA;
+		}
+		else if (HEALTH_CODE_DATA.matches(candidateCode)) {
+			result = HEALTH_CODE_DATA;
+		}
+		else if (HEALTH_THEMES.matches(candidateCode)) {
+			result = HEALTH_THEMES;
+		}
+		else if (HEALTH_NUMERATOR_DATA.matches(candidateCode)) {
+			result = HEALTH_NUMERATOR_DATA;
+		}
+		else if (POPULATION_DENOMINATOR_DATA.matches(candidateCode)) {
+			result = POPULATION_DENOMINATOR_DATA;
+		}
+		else if (GEOMETRY_DATA.matches(candidateCode)) {
+			result = GEOMETRY_DATA;
+		}
+		else if (CONTEXTUAL_MAP_DATA.matches(candidateCode)) {
+			result = GEOMETRY_DATA;
+		}
+
+		return result;
+		
+	}
+	
 	
 }
 

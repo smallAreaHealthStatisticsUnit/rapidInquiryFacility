@@ -3,6 +3,17 @@ package rifDataLoaderTool.presentationLayer;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 import rifDataLoaderTool.businessConceptLayer.*;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.ASCIITextRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AgeRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.DateRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.DoubleRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.ICDCodeRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.IntegerRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.NHSNumberRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeInterface;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.TextRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.UKPostalCodeRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.YearRIFDataType;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.OrderedListComboBox;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
@@ -275,7 +286,7 @@ public final class CleaningFieldConfigurationEditorDialog
 
 	public void setData(final CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration) {
 		this.tableFieldCleaningConfiguration = tableFieldCleaningConfiguration;
-		RIFDataTypeInterface rifDataType = tableFieldCleaningConfiguration.getRifDataType();
+		RIFDataTypeInterface rifDataType = tableFieldCleaningConfiguration.getRIFDataType();
 		cleaningRuleEditingPanel.setData(rifDataType);
 	}
 	

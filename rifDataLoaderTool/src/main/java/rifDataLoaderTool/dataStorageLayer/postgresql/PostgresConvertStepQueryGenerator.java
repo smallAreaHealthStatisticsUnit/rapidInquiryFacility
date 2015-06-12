@@ -86,7 +86,7 @@ public final class PostgresConvertStepQueryGenerator
 	
 	
 	public String generateConvertTableQuery(
-		final ConvertWorkflowConfiguration tableConversionConfiguration) {
+		final ConvertWorkflowConfiguration convertWorkflowConfiguration) {
 
 		
 		/**
@@ -107,12 +107,12 @@ public final class PostgresConvertStepQueryGenerator
 		
 		
 		
-		String coreTableName 
-			= tableConversionConfiguration.getCoreTableName();
+		String coreDataSetName 
+			= convertWorkflowConfiguration.getCoreDataSetName();
 		String cleanedTableName
-			= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreTableName);
+			= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName);
 		String convertedTableName
-			= RIFTemporaryTablePrefixes.CONVERT.getTableName(coreTableName);
+			= RIFTemporaryTablePrefixes.CONVERT.getTableName(coreDataSetName);
 		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		
@@ -127,19 +127,19 @@ public final class PostgresConvertStepQueryGenerator
 		queryFormatter.addQueryLine(2, "row_number,");
 				
 		ArrayList<ConvertWorkflowFieldConfiguration> conversionFieldConfigurations
-			= tableConversionConfiguration.getRequiredFieldConfigurations();
+			= convertWorkflowConfiguration.getRequiredFieldConfigurations();
 		for (ConvertWorkflowFieldConfiguration convertionFieldConfiguration : conversionFieldConfigurations) {
 			
 			addConvertQueryFragment(
 				queryFormatter,
 				2,
-				tableConversionConfiguration,
+				convertWorkflowConfiguration,
 				convertionFieldConfiguration);
 		}
 		//Now add on the extra fields
 		
 		ArrayList<CleanWorkflowFieldConfiguration> extraFields
-			= tableConversionConfiguration.getExtraFields();
+			= convertWorkflowConfiguration.getExtraFields();
 		for (CleanWorkflowFieldConfiguration extraField : extraFields) {
 			queryFormatter.addQueryPhrase(",");
 			queryFormatter.finishLine();			
@@ -156,7 +156,7 @@ public final class PostgresConvertStepQueryGenerator
 	private void addConvertQueryFragment(
 		final SQLGeneralQueryFormatter queryFormatter,
 		final int baseIndentationLevel,
-		final ConvertWorkflowConfiguration tableConversionConfiguration,
+		final ConvertWorkflowConfiguration convertWorkflowConfiguration,
 		final ConvertWorkflowFieldConfiguration fieldConversionConfiguration) {
 	
 		/**
@@ -170,10 +170,10 @@ public final class PostgresConvertStepQueryGenerator
 		 */
 		
 		String conversionFunctionName
-			= tableConversionConfiguration.getConversionFunctionName(
+			= convertWorkflowConfiguration.getConversionFunctionName(
 				fieldConversionConfiguration);
 		ArrayList<CleanWorkflowFieldConfiguration> fieldConfigurations
-			= tableConversionConfiguration.getCleaningConfigurations(fieldConversionConfiguration);
+			= convertWorkflowConfiguration.getCleaningConfigurations(fieldConversionConfiguration);
 
 		if (conversionFunctionName == null) {
 			//there is no function

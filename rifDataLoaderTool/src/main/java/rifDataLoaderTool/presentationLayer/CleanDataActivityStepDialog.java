@@ -4,17 +4,17 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
-import rifDataLoaderTool.businessConceptLayer.ASCIITextRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.AgeRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.DataSource;
-import rifDataLoaderTool.businessConceptLayer.DateRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.DoubleRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.ICDCodeRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.NHSNumberRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.SexRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.DataSet;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.UKPostalCodeRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.ASCIITextRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AgeRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.DateRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.DoubleRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.ICDCodeRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.NHSNumberRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.SexRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.UKPostalCodeRIFDataType;
 import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
 import rifDataLoaderTool.fileFormats.CleanWorkflowConfigurationHandler;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
@@ -102,15 +102,15 @@ public final class CleanDataActivityStepDialog
 			CleanDataActivityStepDialog dialog
 				= new CleanDataActivityStepDialog(session);
 		
-			DataSource dataSource 
-				= DataSource.newInstance(
+			DataSet dataSet 
+				= DataSet.newInstance(
 					"lungs_klg_2014", 
 					false, 
 					"my_study_stuff1", 
 						"kgarwood");
 		
 			CleanWorkflowConfiguration tableCleaningConfiguration
-				= CleanWorkflowConfiguration.newInstance("lungs_klg_2014");
+				= CleanWorkflowConfiguration.newInstance(dataSet);
 		
 			NHSNumberRIFDataType nhsNumberRIFDataType
 				= NHSNumberRIFDataType.newInstance();		
@@ -176,7 +176,7 @@ public final class CleanDataActivityStepDialog
 				"age", 
 				age);
 		
-			tableCleaningConfiguration.setDataSource(dataSource);
+			tableCleaningConfiguration.setDataSet(dataSet);
 		
 			dialog.setData(tableCleaningConfiguration);
 			dialog.show();		

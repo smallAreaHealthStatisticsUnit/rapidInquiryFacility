@@ -1,8 +1,11 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
+
 /**
- * A data type to represent UK postal codes.
+ * A data type for ICD codes from the ICD-9 or ICD-10 standard.  Support for the two different
+ * standards is combined into one data type because we have observed that ICD 9 and ICD 10 
+ * codes end up labelling the same table field.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
@@ -51,7 +54,7 @@ import rifDataLoaderTool.system.RIFDataLoaderMessages;
  *
  */
 
-public final class UKPostalCodeRIFDataType 
+public final class ICDCodeRIFDataType 
 	extends AbstractRIFDataType {
 
 	// ==========================================
@@ -61,47 +64,48 @@ public final class UKPostalCodeRIFDataType
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private UKPostalCodeRIFDataType(
+	public ICDCodeRIFDataType(
+		final String identifier,
 		final String name,
-		final String description,
-		final String validationRegularExpression) {
+		final String description) {
 
 		super(
-			name, 
-			description, 
-			validationRegularExpression);
+			identifier,
+			name,
+			description);
 		
-		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_FUNCTION);
-		setCleaningFunctionName("is_valid_uk_postal_code");
-		setFieldCleaningPolicy(RIFFieldCleaningPolicy.CLEANING_FUNCTION);
-		setCleaningFunctionName("clean_uk_postal_code");
-		
+		//expression for ICD 9
+		addValidationExpression("^([EV])?\\d{3,3}(\\.\\d{1,2})?$");
+
+		//expression for ICD 10
+		addValidationExpression("^[A-Z]\\d{2}(\\.\\d){0,1}$");
 	}
 
-	public static UKPostalCodeRIFDataType newInstance() {
+	public static ICDCodeRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.ukPostalCode.label");
+			= RIFDataLoaderMessages.getMessage("rifDataType.icd.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.ukPostalCode.description");
-		UKPostalCodeRIFDataType ukPostalCodeRIFDataType
-			= new UKPostalCodeRIFDataType(
-				"rif_uk_postcode",
+			= RIFDataLoaderMessages.getMessage("rifDataType.icd.description");
+		ICDCodeRIFDataType icdCodeRIFDataType
+			= new ICDCodeRIFDataType(
+				"rif_icd_code",
 				name, 
 				description);
-
-		return ukPostalCodeRIFDataType;
+		
+		return icdCodeRIFDataType;
 	}
+		
 	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	
+
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -113,12 +117,13 @@ public final class UKPostalCodeRIFDataType
 	// ==========================================
 	// Section Override
 	// ==========================================
-	
+
 	public RIFDataTypeInterface createCopy() {
-		UKPostalCodeRIFDataType cloneUKPostalCodeRIFDataType = newInstance();
-		copyAttributes(cloneUKPostalCodeRIFDataType);
-		return cloneUKPostalCodeRIFDataType;
-	}
+		ICDCodeRIFDataType cloneICDCodeRIFDataType = newInstance();
+		copyAttributes(cloneICDCodeRIFDataType);
+		return cloneICDCodeRIFDataType;
+	}	
+		
 	
 }
 

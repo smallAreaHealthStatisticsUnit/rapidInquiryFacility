@@ -1,25 +1,18 @@
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.ConvertWorkflowConfiguration;
 
-import rifDataLoaderTool.businessConceptLayer.DataSource;
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DateRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.DoubleRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.ICDCodeRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
-import rifDataLoaderTool.businessConceptLayer.CleaningRule;
-import rifDataLoaderTool.businessConceptLayer.AbstractRIFDataType;
-
-
-import rifGenericLibrary.presentationLayer.HTMLUtility;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeFactory;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeInterface;
 import rifServices.fileFormats.XMLUtility;
 
-import java.io.ByteArrayOutputStream;
+
+
+
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.io.IOException;
 
 import org.xml.sax.Attributes;
@@ -98,9 +91,10 @@ public final class CleanWorkflowConfigurationHandler
 	public CleanWorkflowConfigurationHandler() {
 		cleanWorkFlowConfiguration = CleanWorkflowConfiguration.newInstance();
 		rifDataTypeFactory = new RIFDataTypeFactory();
-		
-		setSingularRecordName("clean");
-		setPluralRecordName("clean_field_configuration");
+
+		setSingularRecordName("clean_field_configuration");
+		setPluralRecordName("clean");
+
 	}
 	
 	// ==========================================
@@ -146,10 +140,12 @@ public final class CleanWorkflowConfigurationHandler
 				"clean", 
 				"description", 
 				field.getDescription());
+			
+			RIFDataTypeInterface rifDataType = field.getRIFDataType();
 			xmlUtility.writeField(
 				"clean", 
-				"description", 
-				field.getRifDataType().getName());
+				"name", 
+				field.getRIFDataType().getName());
 			xmlUtility.writeRecordEndTag("clean_field_configuration");
 		}
 				
@@ -166,7 +162,6 @@ public final class CleanWorkflowConfigurationHandler
 		throws SAXException {
 
 		if (isPluralRecordName(qualifiedName) == true) {
-
 			activate();
 		}
 		else if (isSingularRecordName(qualifiedName) == true) {
@@ -195,13 +190,13 @@ public final class CleanWorkflowConfigurationHandler
 			currentCleanWorkflowFieldConfiguration.setCleanedTableFieldName(getCurrentFieldValue());
 		}
 		else if (equalsFieldName("description", qualifiedName)) {
-			currentCleanWorkflowFieldConfiguration.setCleanedTableFieldName(getCurrentFieldValue());
+			currentCleanWorkflowFieldConfiguration.setDescription(getCurrentFieldValue());
 		}		
-		else if (equalsFieldName("data_type", qualifiedName)) {
+		else if (equalsFieldName("data_type", qualifiedName)) {			
 			String dataTypeName = getCurrentFieldValue();
 			AbstractRIFDataType rifDataType 
 				= rifDataTypeFactory.getDataType(dataTypeName);
-			currentCleanWorkflowFieldConfiguration.setRifDataType(rifDataType);
+			currentCleanWorkflowFieldConfiguration.setRIFDataType(rifDataType);
 		}		
 	}
 	

@@ -17,7 +17,7 @@ import rifServices.util.FieldValidationUtility;
  * data source will typically be a text file that is either in a CSV or XML format.
  * Each data source has the following properties:
  * <ul>
- * <li><b>coreTableName</b>: the base name that will be used in the names of all temporary
+ * <li><b>coreDataSetName</b>: the base name that will be used in the names of all temporary
  * and permanent tables that are associated with this data source </li>
  * <li><b>derivedFromExistingTable</b>: a field which can indicate whether the data source
  * was imported externally or if the source is an existing published table.
@@ -80,7 +80,7 @@ import rifServices.util.FieldValidationUtility;
  *
  */
 
-public final class DataSource extends AbstractRIFDataLoaderToolConcept {
+public final class DataSet extends AbstractRIFDataLoaderToolConcept {
 
 	// ==========================================
 	// Section Constants
@@ -89,8 +89,8 @@ public final class DataSource extends AbstractRIFDataLoaderToolConcept {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String coreTableName;
-	private Boolean derivedFromExistingTable;
+	private String coreDataSetName;
+	private Boolean derivedFromExistingDataSet;
 	private String sourceName;
 	private String userID;
 	private Date registrationDate;
@@ -99,76 +99,88 @@ public final class DataSource extends AbstractRIFDataLoaderToolConcept {
 	// Section Construction
 	// ==========================================
 
-	private DataSource() {
+	private DataSet() {
 
 	}
 
 	
-	public static DataSource newInstance() {
-		DataSource dataSource = new DataSource();
-		return dataSource;		
+	public static DataSet newInstance() {
+		DataSet dataSet = new DataSet();
+		return dataSet;		
 	}
 	
-	public static DataSource newInstance(
-		final String coreTableName,
+	public static DataSet newInstance(
+		final String coreDataSetName,
 		final Boolean derivedFromExistingTable,
 		final String sourceName,
 		final String userID) {
 		
-		DataSource dataSource = new DataSource();
-		dataSource.setCoreTableName(coreTableName);
-		dataSource.setDerivedFromExistingTable(derivedFromExistingTable);
-		dataSource.setSourceName(sourceName);
-		dataSource.setUserID(userID);
+		DataSet dataSet = new DataSet();
+		dataSet.setCoreDataSetName(coreDataSetName);
+		dataSet.setDerivedFromExistingTable(derivedFromExistingTable);
+		dataSet.setSourceName(sourceName);
+		dataSet.setUserID(userID);
 		
-		return dataSource;
+		return dataSet;
 	}
 	
-	public static DataSource createCopy(
-		final DataSource originalDataSource) {
+	public static DataSet createCopy(
+		final DataSet originaldataSet) {
 		
-		if (originalDataSource == null) {
+		if (originaldataSet == null) {
 			return null;
 		}
 		
-		DataSource cloneDataSource = new DataSource();
-		cloneDataSource.setIdentifier(originalDataSource.getIdentifier());
-		cloneDataSource.setCoreTableName(originalDataSource.getCoreTableName());
-		cloneDataSource.setDerivedFromExistingTable(originalDataSource.isDerivedFromExistingTable());
+		DataSet clonedataSet = new DataSet();
+		clonedataSet.setIdentifier(originaldataSet.getIdentifier());
+		clonedataSet.setCoreDataSetName(originaldataSet.getCoreDataSetName());
+		clonedataSet.setDerivedFromExistingTable(originaldataSet.isDerivedFromExistingTable());
 		Date originalRegistrationDate
-			= originalDataSource.getRegistrationDate();
+			= originaldataSet.getRegistrationDate();
 		if (originalRegistrationDate == null) {
-			cloneDataSource.setRegistrationDate(null);
+			clonedataSet.setRegistrationDate(null);
 		}
 		else {
 			Date cloneRegistrationDate
 				= new Date(originalRegistrationDate.getTime());
-			cloneDataSource.setRegistrationDate(cloneRegistrationDate);			
+			clonedataSet.setRegistrationDate(cloneRegistrationDate);			
 		}
-		cloneDataSource.setSourceName(originalDataSource.getSourceName());
-		cloneDataSource.setUserID(originalDataSource.getUserID());
+		clonedataSet.setSourceName(originaldataSet.getSourceName());
+		clonedataSet.setUserID(originaldataSet.getUserID());
 				
-		return cloneDataSource;
+		return clonedataSet;
+	}
+	
+	public static ArrayList<DataSet> createCopy(
+		final ArrayList<DataSet> originalDataSets) {
+		
+		ArrayList<DataSet> clonedataSets = new ArrayList<DataSet>();
+		for (DataSet originalDataSet : originalDataSets) {
+			DataSet clonedataSet = DataSet.createCopy(originalDataSet);
+			clonedataSets.add(clonedataSet);
+		}
+		
+		return clonedataSets;
 	}
 	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 		
-	public String getCoreTableName() {
-		return coreTableName;
+	public String getCoreDataSetName() {
+		return coreDataSetName;
 	}
 
-	public void setCoreTableName(String coreTableName) {
-		this.coreTableName = coreTableName;
+	public void setCoreDataSetName(String coreDataSetName) {
+		this.coreDataSetName = coreDataSetName;
 	}
 
 	public boolean isDerivedFromExistingTable() {
-		return derivedFromExistingTable;
+		return derivedFromExistingDataSet;
 	}
 
 	public void setDerivedFromExistingTable(boolean derivedFromExistingTable) {
-		this.derivedFromExistingTable = derivedFromExistingTable;
+		this.derivedFromExistingDataSet = derivedFromExistingTable;
 	}
 
 	public String getSourceName() {
@@ -197,7 +209,7 @@ public final class DataSource extends AbstractRIFDataLoaderToolConcept {
 
 	public String getRecordType() {
 		String recordNameLabel
-			= RIFDataLoaderToolMessages.getMessage("dataSource.label");
+			= RIFDataLoaderToolMessages.getMessage("dataSet.label");
 		return recordNameLabel;
 	}
 	
@@ -213,18 +225,18 @@ public final class DataSource extends AbstractRIFDataLoaderToolConcept {
 			= new FieldValidationUtility();
 		String recordType = getRecordType();
 				
-		if (coreTableName != null) {
+		if (coreDataSetName != null) {
 			String codeFieldName
-				= RIFDataLoaderToolMessages.getMessage("dataSource.coreTableName.label");		
+				= RIFDataLoaderToolMessages.getMessage("dataSet.coreDataSetName.label");		
 			fieldValidationUtility.checkMaliciousCode(
 				recordType,
 				codeFieldName,
-				coreTableName);
+				coreDataSetName);
 		}
 
 		if (sourceName != null) {
 			String sourceNameFieldName
-				= RIFDataLoaderToolMessages.getMessage("dataSource.sourceName.label");
+				= RIFDataLoaderToolMessages.getMessage("dataSet.sourceName.label");
 			fieldValidationUtility.checkMaliciousCode(
 				recordType,
 				sourceNameFieldName,
@@ -233,16 +245,13 @@ public final class DataSource extends AbstractRIFDataLoaderToolConcept {
 
 		if (userID != null) {
 			String userIDFieldName
-				= RIFDataLoaderToolMessages.getMessage("dataSource.userID.label");
+				= RIFDataLoaderToolMessages.getMessage("dataSet.userID.label");
 			fieldValidationUtility.checkMaliciousCode(
 				recordType,
 				userIDFieldName,
 				userID);		
 		}
 	}
-	
-
-	
 	
 	public void checkErrors() 
 		throws RIFServiceException {
@@ -251,27 +260,27 @@ public final class DataSource extends AbstractRIFDataLoaderToolConcept {
 		
 		String recordName = getRecordType();
 		
-		String coreTableNameFieldName
-			= RIFDataLoaderToolMessages.getMessage("dataSource.coreTableName.label");		
+		String coreDataSetNameFieldName
+			= RIFDataLoaderToolMessages.getMessage("dataSet.coreDataSetName.label");		
 		String derivedFromExistingTableFieldName
-			= RIFDataLoaderToolMessages.getMessage("dataSource.derivedFromExistingTable.label");
+			= RIFDataLoaderToolMessages.getMessage("dataSet.derivedFromExistingTable.label");
 		String sourceNameFieldName
-			= RIFDataLoaderToolMessages.getMessage("dataSource.sourceName.label");
+			= RIFDataLoaderToolMessages.getMessage("dataSet.sourceName.label");
 		String registrationDateFieldName
-			= RIFDataLoaderToolMessages.getMessage("dataSource.registrationDate.label");
+			= RIFDataLoaderToolMessages.getMessage("dataSet.registrationDate.label");
 		
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
-		if (fieldValidationUtility.isEmpty(coreTableName)) {
+		if (fieldValidationUtility.isEmpty(coreDataSetName)) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordName,
-					coreTableNameFieldName);
+					coreDataSetNameFieldName);
 			errorMessages.add(errorMessage);			
 		}
 		
-		if (derivedFromExistingTable == null) {
+		if (derivedFromExistingDataSet == null) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
@@ -287,8 +296,7 @@ public final class DataSource extends AbstractRIFDataLoaderToolConcept {
 						recordName,
 						sourceNameFieldName);
 			errorMessages.add(errorMessage);			
-		}
-		
+		}	
 
 		countErrors(
 			RIFDataLoaderToolError.INVALID_DATA_SOURCE, 
@@ -305,7 +313,7 @@ public final class DataSource extends AbstractRIFDataLoaderToolConcept {
 
 	
 	public String getDisplayName() {
-		return coreTableName;
+		return coreDataSetName;
 	}
 	
 }

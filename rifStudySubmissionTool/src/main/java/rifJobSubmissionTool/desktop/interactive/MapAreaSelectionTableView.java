@@ -129,7 +129,7 @@ final class MapAreaSelectionTableView
 	/** The service. */
 	private RIFStudySubmissionAPI service;
 	/** The is data source service. */
-	private boolean isDataSourceService;
+	private boolean isdataSetService;
 	
 	//GUI Components	
 	/** The parent dialog. */
@@ -153,18 +153,18 @@ final class MapAreaSelectionTableView
 	 *
 	 * @param parentDialog the parent dialog
 	 * @param rifSession the rif session
-	 * @param isDataSourceService the is data source service
+	 * @param isdataSetService the is data source service
 	 */
 	public MapAreaSelectionTableView(
 		JDialog parentDialog,
 		RIFStudySubmissionToolSession rifSession,
-		boolean isDataSourceService) {
+		boolean isdataSetService) {
 		
 		this.parentDialog = parentDialog;
 		this.rifSession = rifSession;
 		this.service = rifSession.getRIFStudySubmissionService();
 		this.userInterfaceFactory = rifSession.getUIFactory();
-		this.isDataSourceService = isDataSourceService;
+		this.isdataSetService = isdataSetService;
 		mapAreaSelectionTable = new MapAreaSelectionTable(userInterfaceFactory);
 		
 		listNavigationButtonPanel 
@@ -364,7 +364,7 @@ final class MapAreaSelectionTableView
 	 */
 	public void deleteSelectedItems() {		
 		
-		if (isDataSourceService == false) {
+		if (isdataSetService == false) {
 			//Data are coming from the basket.  Therefore,
 			//also delete from the basket
 			ArrayList<MapArea> selectedRows
@@ -433,7 +433,7 @@ final class MapAreaSelectionTableView
 				= currentResultBatchStartIndex + RESULTS_PER_PAGE;
 		
 			ArrayList<MapArea> currentMapAreas = new ArrayList<MapArea>();
-			if (isDataSourceService) {
+			if (isdataSetService) {
 				//the source of data will be map areas returned by the service
 				currentMapAreas.addAll(getMapAreasFromService());
 			}
@@ -446,7 +446,7 @@ final class MapAreaSelectionTableView
 			//check if there are any map areas currently being displayed
 			//which are in the basket
 
-			if (isDataSourceService) {
+			if (isdataSetService) {
 				ArrayList<MapArea> mapAreasToHighlight = new ArrayList<MapArea>();
 				for (MapArea currentMapArea : currentMapAreas) {
 					if (currentMapAreaSelectionBasket.containsMapArea(currentMapArea)) {
@@ -472,7 +472,7 @@ final class MapAreaSelectionTableView
 	private MapAreaSummaryData getMapAreaSummaryData() 
 		throws RIFServiceException {
 		
-		if (isDataSourceService) {
+		if (isdataSetService) {
 			RIFStudySubmissionAPI service
 				= rifSession.getRIFStudySubmissionService();
 			User currentUser = rifSession.getUser();

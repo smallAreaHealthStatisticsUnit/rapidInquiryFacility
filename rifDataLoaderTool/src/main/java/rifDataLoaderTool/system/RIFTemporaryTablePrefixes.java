@@ -3,7 +3,7 @@ package rifDataLoaderTool.system;
 /**
  * Defines the prefixes of all the temporary and permanent tables that will be produced
  * as a data source is processed by the RIF.  The prefixes will be combined with the 
- * <code>coreTableName</code> field of the {@link rifDataLoaderTool.businessConceptLayer.DataSource}.
+ * <code>coreTableName</code> field of the {@link rifDataLoaderTool.businessConceptLayer.DataSet}.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area

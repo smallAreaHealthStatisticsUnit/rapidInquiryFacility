@@ -4,11 +4,13 @@ package rifDataLoaderTool.fileFormats;
 import rifDataLoaderTool.businessConceptLayer.RIFWorkflowConfiguration;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
 import rifDataLoaderTool.businessConceptLayer.ConvertWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataSource;
+import rifDataLoaderTool.businessConceptLayer.DataSet;
 import rifServices.fileFormats.XMLCommentInjector;
+import rifServices.fileFormats.XMLUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -92,7 +94,6 @@ final class RIFWorkflowConfigurationHandler
 // ==========================================
 	private RIFWorkflowConfiguration rifWorkflowConfiguration;
 	
-	private DataSourceConfigurationHandler dataSourceConfigurationHandler;
 	private CleanWorkflowConfigurationHandler cleanWorkflowConfigurationHandler;
 	private ConvertWorkflowConfigurationHandler convertWorkflowConfigurationHandler;
 	
@@ -106,7 +107,8 @@ final class RIFWorkflowConfigurationHandler
 		
 		setSingularRecordName("rif_workflow");
 		
-		dataSourceConfigurationHandler = new DataSourceConfigurationHandler();
+		
+		rifWorkflowConfiguration = new RIFWorkflowConfiguration();
 		cleanWorkflowConfigurationHandler = new CleanWorkflowConfigurationHandler();		
 		convertWorkflowConfigurationHandler = new ConvertWorkflowConfigurationHandler();
 	}
@@ -120,7 +122,6 @@ final class RIFWorkflowConfigurationHandler
 
 		super.initialise(outputStream, commentInjector);
 		
-		dataSourceConfigurationHandler.initialise(outputStream, commentInjector);
 		cleanWorkflowConfigurationHandler.initialise(outputStream, commentInjector);
 		convertWorkflowConfigurationHandler.initialise(outputStream, commentInjector);
 	}
@@ -130,7 +131,6 @@ final class RIFWorkflowConfigurationHandler
 		throws UnsupportedEncodingException {
 
 		super.initialise(outputStream);
-		dataSourceConfigurationHandler.initialise(outputStream);
 		cleanWorkflowConfigurationHandler.initialise(outputStream);
 		convertWorkflowConfigurationHandler.initialise(outputStream);
 	}
@@ -145,7 +145,7 @@ final class RIFWorkflowConfigurationHandler
 	 *
 	 * @return the disease mapping study
 	 */
-	public RIFWorkflowConfiguration getConfiguration() {
+	public RIFWorkflowConfiguration getRIFWorkflowConfiguration() {
 		return rifWorkflowConfiguration;
 	}
 	
@@ -158,18 +158,21 @@ final class RIFWorkflowConfigurationHandler
 	public void writeXML(
 		final RIFWorkflowConfiguration rifWorkflowConfiguration)
 		throws IOException {
-			
-		ArrayList<DataSource> dataSources
-			= rifWorkflowConfiguration.getDataSources();
-		dataSourceConfigurationHandler.writeXML(dataSources);
+		
+		XMLUtility xmlUtility = getXMLUtility();
+		xmlUtility.writeStartXML();		
+		xmlUtility.writeRecordStartTag("rif_workflow");
+
 		
 		CleanWorkflowConfiguration cleanWorkflowConfiguration
-			= cleanWorkflowConfigurationHandler.getCleanWorkflowConfiguration();
+			= rifWorkflowConfiguration.getCleanWorkflowConfiguration();
 		cleanWorkflowConfigurationHandler.writeXML(cleanWorkflowConfiguration);
 		
 		ConvertWorkflowConfiguration convertWorkflowConfiguration
-			= convertWorkflowConfigurationHandler.getConvertWorkflowConfiguration();
+			= rifWorkflowConfiguration.getConvertWorkflowConfiguration();
 		convertWorkflowConfigurationHandler.writeXML(convertWorkflowConfiguration);
+
+		xmlUtility.writeRecordEndTag("rif_workflow");
 		
 	}
 	
@@ -194,7 +197,7 @@ final class RIFWorkflowConfigurationHandler
 		final String qualifiedName,
 		final Attributes attributes) 
 		throws SAXException {
-
+		
 		if (isSingularRecordName(qualifiedName)) {
 			activate();
 		}
@@ -209,11 +212,14 @@ final class RIFWorkflowConfigurationHandler
 		}
 		else {
 			
-			//check to see if handlers could be assigned to delegate parsing
-			if (cleanWorkflowConfigurationHandler.isSingularRecordTypeApplicable(qualifiedName)) {
+			//check to see if handlers could be assigned to delegate parsing			
+			if (cleanWorkflowConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
 				assignDelegatedHandler(cleanWorkflowConfigurationHandler);
 			}
-			
+			else if (convertWorkflowConfigurationHandler.isSingularRecordTypeApplicable(qualifiedName)) {
+				assignDelegatedHandler(convertWorkflowConfigurationHandler);
+			}
+	
 			//delegate to a handler.  If not, then scan for fields relating to this handler
 			if (isDelegatedHandlerAssigned()) {
 
@@ -224,10 +230,6 @@ final class RIFWorkflowConfigurationHandler
 					localName, 
 					qualifiedName, 
 					attributes);
-			}
-			else if (isSingularRecordName(qualifiedName) == true) {
-
-				activate();
 			}
 			else {
 				assert false;

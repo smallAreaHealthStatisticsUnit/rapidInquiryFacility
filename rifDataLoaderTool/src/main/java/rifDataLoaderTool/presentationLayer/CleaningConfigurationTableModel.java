@@ -2,8 +2,7 @@ package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
-
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeInterface;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 import javax.swing.table.AbstractTableModel;
@@ -149,7 +148,7 @@ public final class CleaningConfigurationTableModel
 		}
 		else if (columnIndex == CASTED_DATA_TYPE_COLUMN) {
 			RIFDataTypeInterface rifDataType
-				= tableFieldCleaningConfiguration.getRifDataType();
+				= tableFieldCleaningConfiguration.getRIFDataType();
 			result = rifDataType.getName();
 		}
 		else if (columnIndex == HAS_CLEANING_RULES_COLUMN) {
