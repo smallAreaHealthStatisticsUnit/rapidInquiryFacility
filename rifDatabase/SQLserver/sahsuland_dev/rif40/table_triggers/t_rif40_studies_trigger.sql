@@ -334,7 +334,7 @@ END CATCH;
 
 	
 ------------------------------
--- max/min age group is null-- NEED TO FINISH 
+-- max/min age group is null
 ------------------------------
 DECLARE @min_age nvarchar(MAX) =
  (
@@ -342,70 +342,63 @@ SELECT a.TABLE_NAME + '  '
 FROM [rif40].[rif40_tables] a, inserted b
 LEFT OUTER JOIN [rif40].[rif40_age_groups] g ON (g.age_group_id  = a.age_group_id and g.offset is not null)
 WHERE a.table_name=b.denom_tab
-and g.offset is null --?
-)
-
-
-GROUP BY a.TABLE_NAME,a.year_start, a.year_stop, a.isindirectdenominator, a.isdirectdenominator, a.isnumerator,
-a.age_sex_group_field_name, a.sex_field_name, a.age_group_field_name, a.total_field
-having MAX(g.offset) is  null or MIN(g.offset) is  null 
- FOR XML PATH('')
-)
+and g.offset is null
+FOR XML PATH('')
+);
 
 IF @min_age IS NOT NULL
-		BEGIN
-			RAISERROR('study %s denominator: %s is not a denominator table: %s', 16, 1, @min_age) with log;
-		END;
+BEGIN TRY
+	rollback;
+	DECLARE @err_msg10 = formatmessage(51022, @min_age);
+	THROW 51022, @err_msg10, 1;
+END TRY
+BEGIN CATCH
+	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+	THROW 51022, @err_msg10, 1;
+END CATCH;
+ELSE
+	EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', 'T_RIF40_STUDIES year/age bands checks OK against RIF40_TABLES';
 
-
--------------------------------------------------------------------------------------------------
--- Check - Comparison area geolevel name(COMPARISON_GEOLEVEL_NAME). 
---Must be a valid GEOLEVEL_NAME for the study GEOGRPAHY in T_RIF40_GEOLEVELS, with COMPAREA=1.
---------------------------------------------------------------------------------------------------
-
-DECLARE @COMP_GEOLEVEL nvarchar(MAX) =
- (
-SELECT a.GEOLEVEL_NAME + '  '
-FROM [rif40].[t_rif40_geolevels] a
-WHERE A.GEOLEVEL_NAME IN	(select COMPARISON_GEOLEVEL_NAME from INSERTED 
-							 where COMPARISON_GEOLEVEL_NAME is not null AND COMPARISON_GEOLEVEL_NAME <>'') and 
-		a.GEOGRAPHY IN		(select GEOGRAPHY from INSERTED)
-		 FOR XML PATH('')
- 
-)
-IF @COMP_GEOLEVEL IS NOT NULL
-		BEGIN
-			RAISERROR('omparison area geolevel name: "%" not found in RIF40_GEOLEVELS: %s', 16, 1, @COMP_GEOLEVEL) with log;
-		END;
-
-DECLARE @COMP_GEOLEVEL2 nvarchar(MAX) =
+--
+-- Check - Study area resolution (GEOLEVEL_ID) >= comparison area resolution (GEOLEVEL_ID)
+--
+DECLARE @resolution_check varchar(max) = 
 (
-SELECT a.GEOLEVEL_NAME + '  '
-FROM [rif40].[t_rif40_geolevels]  a
-WHERE A.GEOLEVEL_NAME IN	(select COMPARISON_GEOLEVEL_NAME from INSERTED 
-							 where COMPARISON_GEOLEVEL_NAME is not null AND COMPARISON_GEOLEVEL_NAME <>'') and 
-		a.GEOGRAPHY IN		(select GEOGRAPHY from INSERTED) and 
-		a.COMPAREA <>1 
-		 FOR XML PATH('')
+SELECT a.study_id, a.geolevel_id as study_geolevel_id, b.geolevel_id as comparison_geolevel_id
+from (select geolevel_id, a.study_id
+from inserted a, [rif40].[t_rif40_geolevels] b
+where a.study_geolevel_name=b.geolevel_name
+and a.geography=b.geography) a,
+(select geolevel_id, a.study_id
+from inserted a, [rif40].[t_rif40_geolevels] b
+where a.comparison_geolevel_name=b.geolevel_name
+and a.geography=b.geography) b
+where a.study_id=b.study_id
+and a.geolevel_id < b.geolevel_id
+);
 
-)
-IF @COMP_GEOLEVEL IS NOT NULL
-		BEGIN
-			RAISERROR('comparison area geolevel name in RIF40_GEOLEVELS is not a comparison area: %s', 16, 1, @COMP_GEOLEVEL) with log;
-		END;
-	
-DECLARE @COMP_GEOLEVEL3 nvarchar(MAX) =
-(
-SELECT a.STUDY_ID + '  '
-FROM inserted  a
-WHERE a.COMPARISON_GEOLEVEL_NAME is null 
-		 FOR XML PATH('')
+IF @resolution_check IS NOT NULL
+BEGIN TRY
+	rollback;
+	DECLARE @err_msg11 = formatmessage(51023, @resolution_check);
+	THROW 51023, @err_msg11, 1;
+END TRY;
+BEGIN CATCH
+	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+	THROW 51023, @err_msg11, 1;
+END CATCH;
+ELSE
+	EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', 'study area geolevel id >= comparision area [i.e study area has the same or higher resolution]';
 
-)
-IF @COMP_GEOLEVEL3 IS NOT NULL
-		BEGIN
-			RAISERROR('study has NULL comparison area geolevel name: %s', 16, 1, @COMP_GEOLEVEL3) with log;
-		END;
-		
-END	
+--
+-- Check - suppression_value - Suppress results with low cell counts below this value. If the role RIF_NO_SUPRESSION is granted and the user is not a
+-- RIF_STUDENT then SUPPRESSION_VALUE=0; otherwise is equals the parameter "SuppressionValue". If >0 all results with the value or below will be set to 0.
+--
+DECLARE @suppression_check varchar(max) = 
+(    --still working on this....
+	select a.username
+	from inserted a
+	where [rif40].[rif40_has_role](username, 'rif_manager')=0
+	and [rif40].[rif40_has_role](username,'rif_no_suppression')=0
+	and [rif40].[rif40_has_role](username,'rif_student')=1
 	

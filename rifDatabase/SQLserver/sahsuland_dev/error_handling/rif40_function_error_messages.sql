@@ -55,31 +55,40 @@ EXEC sp_addmessage 51013, 16,
 	N'Table name: [rif40].[tr_studies_checks] , INSERT/UPDATE failed - new study username is not current user (%s)';
 GO
 
+--update all error messages below:
+
 EXEC sp_addmessage 51014, 16,
-	N'Table name: [rif40].[tr_studies_checks] , UPDATE failed - UPDATE not allowed on T_RIF40_STUDIES by user (%s)';
+	N'Table name: [rif40].[t_rif40_studies] , UPDATE failed - UPDATE not allowed on T_RIF40_STUDIES by user (%s)';
 GO
 
 EXEC sp_addmessage 51015, 16,
-	N'Table name: [rif40].[tr_studies_checks] , UPDATE failed - non IG UPDATE not allowed on T_RIF40_STUDIES by user: (%s)'
+	N'Table name: [rif40].[t_rif40_studies] , UPDATE failed - non IG UPDATE not allowed on T_RIF40_STUDIES by user: (%s)'
 GO
 
 EXEC sp_addmessage 51016, 16,
-	N'Table name: [rif40].[tr_studies_checks] , UPDATE failed - new study username is not same as original study username: (%s)';
+	N'Table name: [rif40].[t_rif40_studies] , UPDATE failed - new study username is not same as original study username: (%s)';
 GO	
 
 EXEC sp_addmessage 51017, 16,
-	N'Table name: [rif40].[tr_studies_checks] , DELETE failed - DELETE only allowed on own records in T_RIF40_STUDIES: (%s)';
+	N'Table name: [rif40].[t_rif40_studies] , DELETE failed - DELETE only allowed on own records in T_RIF40_STUDIES: (%s)';
 GO	
 
 EXEC sp_addmessage 51018, 16,
-	N'Table name: [rif40].[tr_studies_checks] , Geolevel name not found ,studyid-comparison_geolevel_name-geography: %s';
+	N'Table name: [rif40].[t_rif40_studies] , Geolevel name not found ,studyid-comparison_geolevel_name-geography: %s';
 GO	
 
 EXEC sp_addmessage 51019, 16,
-	N'Table name: [rif40].[tr_studies_checks] , Geolevel name not found ,studyid-study_geolevel_name-geography: %s';
+	N'Table name: [rif40].[t_rif40_studies] , Geolevel name not found ,studyid-study_geolevel_name-geography: %s';
 
 EXEC sp_addmessage 51020, 16,
-	N'Table name: [rif40].[tr_studies_checks] , direct standardisation table is not a direct denominator table: %s';
+	N'Table name: [rif40].[t_rif40_studies] , direct standardisation table is not a direct denominator table: %s';
 
 EXEC sp_addmessage 51021, 16,
-	N'Table name: [rif40].[tr_studies_checks] , denominator table is not a valid denominator table: %s';
+	N'Table name: [rif40].[t_rif40_studies] , denominator table is not a valid denominator table: %s';
+
+--new
+EXEC sp_addmessage 51022, 16,
+	N'Table name: [rif40].[t_rif40_studies] , denominator has no age group linkage: %s';
+
+EXEC sp_addmessage 51023, 16,
+	N'Table name: [rif40].[t_rif40_studies] , study area geolevel id < comparision area [i.e study area a lower resolution than the comparison area]: %s';

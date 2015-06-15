@@ -5,6 +5,11 @@
 ###June
 The goal for this month is to complete all triggers (including logging and error handling) for the rif40 tables and views and to test the tables/views/triggers to confirm everything has been set up correctly.  
 
+######15 June
+* Problems with the Windows server running the SQL Server test system.  Still needs to be sorted.  
+* Wrote more trigger code, but code could not be tested because of server problems.
+* Some error messages need to be corrected (misspelled table name)
+
 ######12 June
 * Slowly sorting out more of the t_rif40_studies_trigger code. 
 
