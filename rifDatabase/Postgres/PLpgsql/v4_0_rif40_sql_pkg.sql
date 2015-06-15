@@ -1599,6 +1599,7 @@ SELECT rif40_sql_pkg.rif40_does_role_exist('rif_student');
 \i ../PLpgsql/rif40_sql_pkg/_rif40_common_partition_create.sql
 \i ../PLpgsql/rif40_sql_pkg/rif40_startup.sql
 \i ../PLpgsql/rif40_sql_pkg/rif40_table_diff.sql
+\i ../PLpgsql/rif40_sql_pkg/rif40_sql_test.sql
 
 --
 -- Add DDL checks (now run separately)
