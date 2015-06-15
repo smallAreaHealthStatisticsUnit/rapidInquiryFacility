@@ -138,6 +138,76 @@ E.g.
 	 {01,01.015,01.015.016900,01.015.016900.3}
 	(6 rows)';
 
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_test_sql_template(test_stmt VARCHAR, test_case_title VARCHAR)
+RETURNS SETOF VARCHAR
+SECURITY INVOKER
+AS $func$
+/*
+Function: 	_rif40_test_sql_template()
+Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, test case title  
+Returns:	PL/pgsql template code 
+Description: Generate PL/pgsql template code, e.g.
+
+SELECT rif40_sql_pkg._rif40_test_sql_template(
+	'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
+	'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200') AS template;
+	
+template
+--------	
+	IF NOT (PERFORM rif40_sql_pkg.rif40_sql_test(
+		'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
+		'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
+		'{{01,01.015,01.015.016200,01.015.016200.2}
+		,{01,01.015,01.015.016200,01.015.016200.3} 
+		,{01,01.015,01.015.016200,01.015.016200.4} 
+		,{01,01.015,01.015.016900,01.015.016900.1} 
+		,{01,01.015,01.015.016900,01.015.016900.2} 
+		,{01,01.015,01.015.016900,01.015.016900.3} 
+		}'::Text[][])) THEN
+		errors:=errors+1;
+	END IF;
+		
+ */
+DECLARE 
+
+BEGIN
+	RETURN NEXT E'\t'||'IF NOT (PERFORM rif40_sql_pkg.rif40_sql_test(';
+	RETURN NEXT E'\t'||E'\t'||''''||REPLACE(test_stmt, '''', '''''')||'''';
+	RETURN NEXT E'\t'||E'\t'||''''||REPLACE(test_case_title, '''', '''''')||'''';		
+	RETURN NEXT E'\t'||E'\t'||'}''::Text[][])) THEN';
+	RETURN NEXT E'\t'||E'\t'||'errors:=errors+1;';
+	RETURN NEXT E'\t'||'END IF;'
+--
+	RETURN;
+END;
+$func$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_test_sql_template(VARCHAR, VARCHAR) IS 'Function: 	_rif40_test_sql_template()
+Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, test case title  
+Returns:	PL/pgsql template code 
+Description: Generate PL/pgsql template code, e.g.
+
+SELECT rif40_sql_pkg._rif40_test_sql_template(
+	''SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''''01.015.016900'''', ''''01.015.016200'''') ORDER BY level4'',
+	''Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200'') AS template;
+	
+template
+--------	
+	IF NOT (PERFORM rif40_sql_pkg.rif40_sql_test(
+		''SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''''01.015.016900'''', ''''01.015.016200'''') ORDER BY level4'',
+		''Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200'',
+		''{{01,01.015,01.015.016200,01.015.016200.2}
+		,{01,01.015,01.015.016200,01.015.016200.3} 
+		,{01,01.015,01.015.016200,01.015.016200.4} 
+		,{01,01.015,01.015.016900,01.015.016900.1} 
+		,{01,01.015,01.015.016900,01.015.016900.2} 
+		,{01,01.015,01.015.016900,01.015.016900.3} 
+		}''::Text[][])) THEN
+		errors:=errors+1;
+	END IF;
+	
+';
+ 
 --
 -- Test case 
 --
@@ -166,7 +236,7 @@ Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT state
 			   ii)  Add ORDER BY clause, expand * (This becomes the test case SQL)
 			        SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') ORDER BY level4;			   
 			   iii) Convert to array form (Cast to text, string ) 
-			        [the function _rif40_test_sql_to_array() will automate this]
+			        [the function rif40_sql_pkg._rif40_test_sql_template() will automate this]
 			   
 			        SELECT ''''||
 					       REPLACE(ARRAY_AGG(
@@ -375,6 +445,13 @@ Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT state
 --
 GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY, INTEGER, BOOLEAN) TO PUBLIC;
 
+--
+-- Test code generator
+--
+SELECT rif40_sql_pkg._rif40_test_sql_template(
+	'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
+	'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200') AS template;
+	
 --
 -- Test case a)
 --	
