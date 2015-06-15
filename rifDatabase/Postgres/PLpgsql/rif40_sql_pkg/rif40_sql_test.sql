@@ -64,15 +64,79 @@ $$;
 CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_reduce_dim(my_array ANYARRAY)
 RETURNS SETOF ANYARRAY
 LANGUAGE plpgsql
-AS $function$
-DECLARE s my_array%type;
+AS $func$
+/*
+Function: 	_rif40_reduce_dim()
+Parameters:	2D array 
+Returns:	Set of 1D array rows
+Description:
+			Array reduce from two to one dimension as a set of 1D array rows
+			Can then be cast to a record. Helper function for rif40_sql_test()
+E.g.
+
+	WITH a AS (
+		SELECT '{{01,01.015,01.015.016200,01.015.016200.2}
+	,{01,01.015,01.015.016200,01.015.016200.3} 
+	,{01,01.015,01.015.016200,01.015.016200.4} 
+	,{01,01.015,01.015.016900,01.015.016900.1} 
+	,{01,01.015,01.015.016900,01.015.016900.2} 
+	,{01,01.015,01.015.016900,01.015.016900.3} 
+	}'::Text[][] AS res
+	)
+	SELECT rif40_sql_pkg._rif40_reduce_dim(a.res) AS res
+	  FROM a;
+		
+						res
+	-------------------------------------------
+	 {01,01.015,01.015.016200,01.015.016200.2}
+	 {01,01.015,01.015.016200,01.015.016200.3}
+	 {01,01.015,01.015.016200,01.015.016200.4}
+	 {01,01.015,01.015.016900,01.015.016900.1}
+	 {01,01.015,01.015.016900,01.015.016900.2}
+	 {01,01.015,01.015.016900,01.015.016900.3}
+	(6 rows)
+	
+ */
+DECLARE 
+	s my_array%type;
 BEGIN
-  FOREACH s SLICE 1  IN ARRAY $1 LOOP
-      RETURN NEXT s;
-  END LOOP;
-RETURN;
+	FOREACH s SLICE 1  IN ARRAY $1 LOOP
+		RETURN NEXT s;
+	END LOOP;
+--
+	RETURN;
 END;
-$function$;
+$func$;
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_reduce_dim(ANYARRAY) IS 'Function: 	_rif40_reduce_dim()
+Parameters:	2D array 
+Returns:	Set of 1D array rows
+Description:
+			Array reduce from two to one dimension as a set of 1D array rows
+			Can then be cast to a record. Helper function for rif40_sql_test()
+E.g.
+
+	WITH a AS (
+		SELECT ''{{01,01.015,01.015.016200,01.015.016200.2}
+	,{01,01.015,01.015.016200,01.015.016200.3} 
+	,{01,01.015,01.015.016200,01.015.016200.4} 
+	,{01,01.015,01.015.016900,01.015.016900.1} 
+	,{01,01.015,01.015.016900,01.015.016900.2} 
+	,{01,01.015,01.015.016900,01.015.016900.3} 
+	}''::Text[][] AS res
+	)
+	SELECT rif40_sql_pkg._rif40_reduce_dim(a.res) AS res
+	  FROM a;
+		
+						res
+	-------------------------------------------
+	 {01,01.015,01.015.016200,01.015.016200.2}
+	 {01,01.015,01.015.016200,01.015.016200.3}
+	 {01,01.015,01.015.016200,01.015.016200.4}
+	 {01,01.015,01.015.016900,01.015.016900.1}
+	 {01,01.015,01.015.016900,01.015.016900.2}
+	 {01,01.015,01.015.016900,01.015.016900.3}
+	(6 rows)';
 
 --
 -- Test case 
@@ -101,7 +165,8 @@ Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT state
 			        SELECT * FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200');
 			   ii)  Add ORDER BY clause, expand * (This becomes the test case SQL)
 			        SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') ORDER BY level4;			   
-			   iii) Convert to array form (Cast to text, string )
+			   iii) Convert to array form (Cast to text, string ) 
+			        [the function _rif40_test_sql_to_array() will automate this]
 			   
 			        SELECT ''''||
 					       REPLACE(ARRAY_AGG(
@@ -110,17 +175,19 @@ Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT state
 					  FROM sahsuland_geography
 					 WHERE level3 IN ('01.015.016900', '01.015.016200');
 
-                     res
----------------------------------------------
- '{{01,01.015,01.015.016200,01.015.016200.2}+
- ,{01,01.015,01.015.016200,01.015.016200.3} +
- ,{01,01.015,01.015.016200,01.015.016200.4} +
- ,{01,01.015,01.015.016900,01.015.016900.1} +
- ,{01,01.015,01.015.016900,01.015.016900.2} +
- ,{01,01.015,01.015.016900,01.015.016900.3} +
- }'::Text[][]
-(1 row)
-
+										 res
+					---------------------------------------------
+					 '{{01,01.015,01.015.016200,01.015.016200.2}+
+					 ,{01,01.015,01.015.016200,01.015.016200.3} +
+					 ,{01,01.015,01.015.016200,01.015.016200.4} +
+					 ,{01,01.015,01.015.016900,01.015.016900.1} +
+					 ,{01,01.015,01.015.016900,01.015.016900.2} +
+					 ,{01,01.015,01.015.016900,01.015.016900.3} +
+					 }'::Text[][]
+					(1 row)
+					
+					Example call:
+					
 PERFORM rif40_sql_pkg.rif40_sql_test(
 	'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
 	'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
@@ -132,17 +199,7 @@ PERFORM rif40_sql_pkg.rif40_sql_test(
 	,{01,01.015,01.015.016900,01.015.016900.3} 
 	}'::Text[][]);
 
-	WITH a AS (
-		SELECT '{{01,01.015,01.015.016200,01.015.016200.2}
-	,{01,01.015,01.015.016200,01.015.016200.3} 
-	,{01,01.015,01.015.016200,01.015.016200.4} 
-	,{01,01.015,01.015.016900,01.015.016900.1} 
-	,{01,01.015,01.015.016900,01.015.016900.2} 
-	,{01,01.015,01.015.016900,01.015.016900.3} 
-	}'::Text[][] AS res
-	)
-	SEELCT rif40_sql_pkg._rif40_reduce_dim(a.res)
-	  FROM a;
+					Example expand of array to setof record
 	  
 	WITH a AS (
 		SELECT '{{01,01.015,01.015.016200,01.015.016200.2}
@@ -163,14 +220,142 @@ PERFORM rif40_sql_pkg.rif40_sql_test(
 	        (a.res)[row.series][4] AS level4
 	  FROM row, a;
 	
+WITH a AS ( /- Test data -/ 
+	SELECT '{{01,01.015,01.015.016200,01.015.016200.2}
+		,{01,01.015,01.015.016200,01.015.016200.3} 
+		,{01,01.015,01.015.016200,01.015.016200.4} 
+		,{01,01.015,01.015.016900,01.015.016900.1} 
+		,{01,01.015,01.015.016900,01.015.016900.2} 
+		,{01,01.015,01.015.016900,01.015.016900.3} 
+		}'::Text[][] AS res
+), b AS ( /- Test SQL -/
+	SELECT level1, level2, level3, level4 
+	  FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') 
+	 ORDER BY level4
+), c AS ( /- Convert to 2D array via record -/
+	SELECT REPLACE(
+				REPLACE(
+					REPLACE(
+							ARRAY_AGG(b.*)::Text, 
+							'"'::Text, ''::Text), 
+						'('::Text, '{'::Text), 
+					')'::Text, '}'::Text)::Text[][] AS res
+	FROM b
+)
+SELECT rif40_sql_pkg._rif40_reduce_dim(c.res) AS missing_data
+  FROM c
+EXCEPT 
+SELECT rif40_sql_pkg._rif40_reduce_dim(a.res)
+  FROM a;
+  
 			b) TRIGGERS
-			
-			*/
+ */
+DECLARE	
+	sql_frag 	VARCHAR;
+	sql_stmt 	VARCHAR;
+--
+	c1sqlt 		REFCURSOR;
+	c1sqlt_result_row RECORD;
+	c2sqlt 		REFCURSOR;
+	c2sqlt_result_row RECORD;	
+--
+	extra		INTEGER:=0;
+	missing	INTEGER:=0;	
+--
+	error_message VARCHAR;
+	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN
 	PERFORM rif40_sql_pkg.rif40_method4(test_stmt, test_case_title);
-
-		
-	RETURN TRUE;
+--
+	sql_frag:='WITH a AS ( /* Test data */'||E'\n'||
+'	SELECT '''||
+		results::Text||
+		'''::Text[][] AS res'||E'\n'||
+'), b AS ( /* Test SQL */'||E'\n'||
+	test_stmt||E'\n'||
+'), c AS ( /* Convert to 2D array via record */'||E'\n'||
+'	SELECT REPLACE('||E'\n'||
+'				REPLACE('||E'\n'||
+'					REPLACE('||E'\n'||
+'							ARRAY_AGG(b.*)::Text, '||E'\n'||
+'							''"''::Text, ''''::Text),'||E'\n'|| 
+'						''(''::Text, ''{''::Text),'||E'\n'|| 
+'					'')''::Text, ''}''::Text)::Text[][] AS res'||E'\n'||
+'	FROM b'||E'\n'||
+')';
+--
+-- Check for extra data
+--
+	sql_stmt:=sql_frag||E'\n'||
+'SELECT rif40_sql_pkg._rif40_reduce_dim(c.res) AS extra_data'||E'\n'||
+'  FROM c /* Test SQL data */'||E'\n'||
+'EXCEPT'||E'\n'|| 
+'SELECT rif40_sql_pkg._rif40_reduce_dim(a.res)'||E'\n'||
+'  FROM a /* Test data */';
+	PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_sql_test', 'SQL[1]> %;', 
+		sql_stmt::VARCHAR);
+	OPEN c1sqlt FOR EXECUTE sql_stmt;
+	LOOP
+		FETCH c1sqlt INTO c1sqlt_result_row;
+		IF NOT FOUND THEN EXIT; END IF;
+--
+		extra:=extra+1;
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+			'extra[%]: %', missing::VARCHAR, c1sqlt_result_row.extra_data::VARCHAR);		
+	END LOOP;
+	CLOSE c1sqlt;
+	IF extra = 0 THEN 
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+			'PASSED: no extra rows for test: %', test_case_title::VARCHAR);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+			'FAILED: % extra rows for test: %', extra::VARCHAR, test_case_title::VARCHAR);	
+	END IF;
+--
+	sql_stmt:=sql_frag||E'\n'||
+'SELECT rif40_sql_pkg._rif40_reduce_dim(a.res) AS missing_data'||E'\n'||
+'  FROM a /* Test data */'||E'\n'||
+'EXCEPT'||E'\n'|| 
+'SELECT rif40_sql_pkg._rif40_reduce_dim(c.res)'||E'\n'||
+'  FROM c /* Test SQL data */';
+	OPEN c2sqlt FOR EXECUTE sql_stmt;
+	LOOP
+		FETCH c2sqlt INTO c2sqlt_result_row;
+		IF NOT FOUND THEN EXIT; END IF;
+--
+		missing:=missing+1;
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+			'missing[%]: %', missing::VARCHAR, c2sqlt_result_row.missing_data::VARCHAR);
+	END LOOP;
+	CLOSE c2sqlt;
+	IF missing = 0 THEN 
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+			'PASSED: no missing rows for test: %', test_case_title::VARCHAR);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+			'FAILED: % missing rows for test: %', missing::VARCHAR, test_case_title::VARCHAR);	
+	END IF;
+--		
+	IF extra = 0 AND missing = 0 THEN 
+		RETURN TRUE;
+	ELSIF raise_exception_on_failure THEN
+		RAISE no_data_found;
+	ELSE
+		RETURN FALSE;	
+	END IF;
+--
+EXCEPTION
+	WHEN no_data_found THEN	
+		PERFORM rif40_log_pkg.rif40_error(-90125, 'rif40_sql_test', 
+			'Test case: % FAILED, % errors', test_case_title::VARCHAR, (extra+missing)::VARCHAR);
+	WHEN others THEN
+-- 
+-- Not supported until 9.2
+--
+		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+		error_message:='rif40_sql_test('''||coalesce(test_case_title::VARCHAR, '')||''') caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||'Detail: '||v_detail::VARCHAR;
+		RAISE WARNING '1: %', error_message;
+		RAISE;
 END;
 $func$ LANGUAGE plpgsql;
 
@@ -190,7 +375,6 @@ Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT state
 --
 GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY, INTEGER, BOOLEAN) TO PUBLIC;
 
-	
 --
 -- Test case a)
 --	
@@ -207,34 +391,21 @@ BEGIN
 		,{01,01.015,01.015.016900,01.015.016900.3} 
 		}'::Text[][]
 		/* Use defaults */);
-END;
-$$;
-
-WITH a AS (
-	SELECT '{{01,01.015,01.015.016200,01.015.016200.2}
+--
+/*
+	PERFORM rif40_sql_pkg.rif40_sql_test(
+		'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016200'') ORDER BY level4',
+		'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
+		'{{01,01.015,01.015.016200,01.015.016200.2}
 		,{01,01.015,01.015.016200,01.015.016200.3} 
 		,{01,01.015,01.015.016200,01.015.016200.4} 
 		,{01,01.015,01.015.016900,01.015.016900.1} 
 		,{01,01.015,01.015.016900,01.015.016900.2} 
 		,{01,01.015,01.015.016900,01.015.016900.3} 
-		}'::Text[][] AS res
-), b AS (
-	SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') ORDER BY level4
-), c AS ( /* Convert to 2D array via record */
-	SELECT REPLACE(
-				REPLACE(
-					REPLACE(
-							ARRAY_AGG(b.*)::Text, 
-							'"'::Text, ''::Text), 
-						'('::Text, '{'::Text), 
-					')'::Text, '}'::Text)::Text[][] AS res
-	FROM b
-)
-SELECT rif40_sql_pkg._rif40_reduce_dim(c.res)
-  FROM c
-EXCEPT 
-SELECT rif40_sql_pkg._rif40_reduce_dim(a.res)
-  FROM a;
+		}'::Text[][]
+		-* Use defaults *=); */
+END;
+$$;
   
 --
 -- Eof
