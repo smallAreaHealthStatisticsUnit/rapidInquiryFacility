@@ -330,12 +330,23 @@ DECLARE
 	c2sqlt_result_row RECORD;	
 --
 	extra		INTEGER:=0;
-	missing	INTEGER:=0;	
+	missing		INTEGER:=0;	
+--
+	v_message_text		VARCHAR;
+	v_pg_exception_hint	VARCHAR;
+	v_column_name		VARCHAR;
+	v_constraint_name	VARCHAR;
+	v_pg_datatype_name	VARCHAR;
+	v_table_name		VARCHAR;
+	v_schema_name		VARCHAR;
 --
 	error_message VARCHAR;
+	v_sqlstate 	VARCHAR;
+	v_context	VARCHAR;	
 	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN
-	PERFORM rif40_sql_pkg.rif40_method4(test_stmt, test_case_title);
+	IF UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 6)) = 'SELECT' THEN
+		PERFORM rif40_sql_pkg.rif40_method4(test_stmt, test_case_title);
 --
 	sql_frag:='WITH a AS ( /* Test data */'||E'\n'||
 '	SELECT '''||
@@ -414,18 +425,69 @@ BEGIN
 		RETURN FALSE;	
 	END IF;
 --
+	ELSE
+		OPEN c1sqlt FOR EXECUTE test_stmt;
+		FETCH c1sqlt INTO c1sqlt_result_row;
+	END IF;
+--
 EXCEPTION
 	WHEN no_data_found THEN	
 		PERFORM rif40_log_pkg.rif40_error(-90125, 'rif40_sql_test', 
 			'Test case: % FAILED, % errors', test_case_title::VARCHAR, (extra+missing)::VARCHAR);
+/*
+RETURNED_SQLSTATE		the SQLSTATE error code of the exception
+COLUMN_NAME				the name of column related to exception
+CONSTRAINT_NAME			the name of constraint related to exception
+PG_DATATYPE_NAME		the name of datatype related to exception
+MESSAGE_TEXT			the text of the exception's primary message
+TABLE_NAME				the name of table related to exception
+SCHEMA_NAME				the name of schema related to exception
+PG_EXCEPTION_DETAIL		the text of the exception's detail message, if any
+PG_EXCEPTION_HINT		the text of the exception's hint message, if any
+PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
+ */			
 	WHEN others THEN
 -- 
 -- Not supported until 9.2
 --
-		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
-		error_message:='rif40_sql_test('''||coalesce(test_case_title::VARCHAR, '')||''') caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||'Detail: '||v_detail::VARCHAR;
-		RAISE WARNING '1: %', error_message;
-		RAISE;
+		GET STACKED DIAGNOSTICS v_detail            = PG_EXCEPTION_DETAIL;
+		GET STACKED DIAGNOSTICS v_sqlstate          = RETURNED_SQLSTATE;
+		GET STACKED DIAGNOSTICS v_context           = PG_EXCEPTION_CONTEXT;
+		GET STACKED DIAGNOSTICS v_message_text      = MESSAGE_TEXT;
+		GET STACKED DIAGNOSTICS v_pg_exception_hint = PG_EXCEPTION_HINT;
+		
+		GET STACKED DIAGNOSTICS v_column_name       = COLUMN_NAME;
+		GET STACKED DIAGNOSTICS v_constraint_name   = CONSTRAINT_NAME;
+		GET STACKED DIAGNOSTICS v_pg_datatype_name  = PG_DATATYPE_NAME;
+		GET STACKED DIAGNOSTICS v_table_name        = TABLE_NAME;
+		GET STACKED DIAGNOSTICS v_schema_name       = SCHEMA_NAME;
+		
+		error_message:='rif40_sql_test('''||coalesce(test_case_title::VARCHAR, '')||''') caught: '||E'\n'||SQLERRM::VARCHAR||
+			' in SQL >>>'||E'\n'||test_stmt||';'||E'\n'||
+			'<<<'||E'\n'||'Error context and message >>>'||E'\n'||			
+			'Message:  '||v_message_text::VARCHAR||E'\n'||
+			'Hint:     '||v_pg_exception_hint::VARCHAR||E'\n'||
+			'Detail:   '||v_detail::VARCHAR||E'\n'||
+			'Context:  '||v_context::VARCHAR||E'\n'||
+			'SQLSTATE: '||v_sqlstate::VARCHAR||E'\n'||'<<< End of trace.'||E'\n';
+			IF COALESCE(v_schema_name, '') != '' AND COALESCE(v_table_name, '') != '' THEN
+				error_message:=error_message||'Object: '||v_schema_name||'.'||v_table_name;	
+			END IF;
+			IF COALESCE(v_column_name, '') != '' THEN
+				error_message:=error_message||'.'||v_column_name;	
+			END IF;
+			IF COALESCE(v_pg_datatype_name, '') != '' THEN
+				error_message:=error_message||'; datatype: '||v_pg_datatype_name;	
+			END IF;
+			IF COALESCE(v_constraint_name, '') != '' THEN
+				error_message:=error_message||'; constraint: '||v_constraint_name;	
+			END IF;			
+		RAISE WARNING '2: %', error_message;
+		IF raise_exception_on_failure THEN
+			RAISE;
+		ELSE	
+			RETURN FALSE;
+		END IF;
 END;
 $func$ LANGUAGE plpgsql;
 
@@ -456,8 +518,16 @@ SELECT rif40_sql_pkg._rif40_test_sql_template(
 -- Test case a)
 --	
 DO LANGUAGE plpgsql $$
+DECLARE
+	errors INTEGER:=0;
+--
+	error_message VARCHAR;
+--
+	v_sqlstate 	VARCHAR;
+	v_context	VARCHAR;
+	v_detail 	VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN	
-	PERFORM rif40_sql_pkg.rif40_sql_test(
+	IF NOT (rif40_sql_pkg.rif40_sql_test(
 		'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
 		'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
 		'{{01,01.015,01.015.016200,01.015.016200.2}
@@ -467,9 +537,12 @@ BEGIN
 		,{01,01.015,01.015.016900,01.015.016900.2} 
 		,{01,01.015,01.015.016900,01.015.016900.3} 
 		}'::Text[][]
-		/* Use defaults */);
+		/* Use defaults */)) THEN
+        errors:=errors+1;
+    END IF;		
 --
-/*
+/* DELIBERATE FAIL:
+
 	PERFORM rif40_sql_pkg.rif40_sql_test(
 		'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016200'') ORDER BY level4',
 		'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
@@ -481,6 +554,43 @@ BEGIN
 		,{01,01.015,01.015.016900,01.015.016900.3} 
 		}'::Text[][]
 		-* Use defaults *=); */
+
+	IF NOT (rif40_sql_pkg.rif40_sql_test(	
+		'INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
+VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST'', ''MAP_TRIGGER_TEST'', 1 /* Diease mapping */, ''LEVEL1'', ''LEVEL4'', ''SAHSULAND_POP'', NULL)
+RETURNING ''TRIGGER TEST #1 OK''',
+		'TRIGGER TEST #1: ????',
+		'{{''TRIGGER TEST #1 OK''}}'::Text[][],
+		1224 /* Expected SQLCODE */, 
+		FALSE /* Do not RAISE EXCEPTION on failure */)) THEN
+		errors:=errors+1;
+    END IF;	
+--	
+EXCEPTION
+	WHEN others THEN
+-- 
+-- Not supported until 9.2
+--
+		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+		GET STACKED DIAGNOSTICS v_sqlstate = RETURNED_SQLSTATE;
+		GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
+		error_message:='TRIGGER TEST caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||
+			'Detail: '||v_detail::VARCHAR||E'\n'||
+			'Context: '||v_context::VARCHAR||E'\n'||
+			'SQLSTATE: '||v_sqlstate::VARCHAR;
+		RAISE EXCEPTION '1: %', error_message;
+END;
+$$;
+  
+--INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
+--VALUES ('SAHSU', 'TEST', 'TRIGGER TEST #1', 'EXTRACT_TRIGGER_TEST', 'MAP_TRIGGER_TEST', 1 /* Diease mapping */, 'LEVEL1', 'LEVEL4', 'SAHSULAND_POP', NULL)
+--RETURNING 'TRIGGER TEST #1 OK';  
+--
+-- Testing stop
+--
+DO LANGUAGE plpgsql $$
+BEGIN
+	RAISE EXCEPTION 'Stop processing';
 END;
 $$;
   
