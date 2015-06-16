@@ -3,7 +3,6 @@ package rifDataLoaderTool.businessConceptLayer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeInterface;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;

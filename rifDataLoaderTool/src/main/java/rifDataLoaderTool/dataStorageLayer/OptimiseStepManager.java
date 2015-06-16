@@ -1,14 +1,21 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.dataStorageLayer;
 
+import rifDataLoaderTool.businessConceptLayer.*;
+import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifServices.dataStorageLayer.SQLQueryUtility;
+import rifServices.system.RIFServiceException;
 
-import rifDataLoaderTool.businessConceptLayer.DataSet;
-import java.util.ArrayList;
+import java.sql.*;
 
 /**
  *
- *
+ * Manages all database operations used to convert a cleaned table into tabular data
+ * expected by some part of the RIF (eg: numerator data, health codes, geospatial data etc)
+ * 
  * <hr>
- * Copyright 2015 Imperial College London, developed by the Small Area
+ * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -54,7 +61,8 @@ import java.util.ArrayList;
  *
  */
 
-public class RIFWorkflowCollection {
+public final class OptimiseStepManager 
+	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
@@ -63,56 +71,59 @@ public class RIFWorkflowCollection {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	
-	private ArrayList<DataSet> dataSets;
-	private RIFWorkflowConfiguration rifWorkflowConfiguration;
-	
+	private RIFDataLoaderStartupOptions startupOptions;
+	private ConvertStepQueryGeneratorAPI queryGenerator;	
+	private TableIntegrityChecker tableIntegrityChecker;
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private RIFWorkflowCollection() {
-		dataSets = new ArrayList<DataSet>();
-		rifWorkflowConfiguration = RIFWorkflowConfiguration.newInstance();
+	public OptimiseStepManager(
+		final RIFDataLoaderStartupOptions startupOptions,
+		final ConvertStepQueryGeneratorAPI queryGenerator) {
+
+		this.startupOptions = startupOptions;
+		this.queryGenerator = queryGenerator;
+			
+		tableIntegrityChecker = new TableIntegrityChecker();
 	}
 
-	public static RIFWorkflowCollection newInstance() {
-		RIFWorkflowCollection rifWorkflowCollection = new RIFWorkflowCollection();
-		return rifWorkflowCollection;
-	}
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public ArrayList<DataSet> getDataSets() {
-
-		return dataSets;
-	}
+	public void optimiseConfiguration(
+		final Connection connection,
+		final OptimiseWorkflowConfiguration optimiseWorkflowConfiguration)
+		throws RIFServiceException {
 	
-	public void setDataSets(
-		final ArrayList<DataSet> dataSets) {
+		//validate parameters
+		optimiseWorkflowConfiguration.checkErrors();
 		
-		this.dataSets = dataSets;
-	}
-	
-	public void addDataSet(
-		final DataSet dataSet) {
+		/*
+		String optimiseTableQuery
+			= queryGenerator.generateConvertTableQuery(optimiseWorkflowConfiguration);
 		
-		dataSets.add(dataSet);
-	}
-	
-	public void setRIFWorkflowConfiguration(
-		final RIFWorkflowConfiguration rifWorkflowConfiguration) {
+		PreparedStatement statement = null;
+		try {
+			statement = connection.prepareStatement(convertTableQuery);
+			//statement.executeUpdate();
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage("");
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}	
 		
-		this.rifWorkflowConfiguration = rifWorkflowConfiguration;
+			*/
 	}
-	
-	public RIFWorkflowConfiguration getRIFWorkflowConfiguration() {
-
-		return rifWorkflowConfiguration;
-	}
-		
 	
 	// ==========================================
 	// Section Errors and Validation

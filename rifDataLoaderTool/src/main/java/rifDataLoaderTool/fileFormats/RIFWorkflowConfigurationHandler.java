@@ -2,9 +2,17 @@
 package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.RIFWorkflowConfiguration;
+
+
+import rifDataLoaderTool.businessConceptLayer.RIFWorkflowCollection;
+import rifDataLoaderTool.businessConceptLayer.DataSet;
+
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
 import rifDataLoaderTool.businessConceptLayer.ConvertWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataSet;
+import rifDataLoaderTool.businessConceptLayer.OptimiseWorkflowConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CheckWorkflowConfiguration;
+import rifDataLoaderTool.businessConceptLayer.PublishWorkflowConfiguration;
+
 import rifServices.fileFormats.XMLCommentInjector;
 import rifServices.fileFormats.XMLUtility;
 
@@ -92,10 +100,13 @@ final class RIFWorkflowConfigurationHandler
 // ==========================================
 // Section Properties
 // ==========================================
-	private RIFWorkflowConfiguration rifWorkflowConfiguration;
+	private RIFWorkflowCollection rifWorkflowCollection;
 	
 	private CleanWorkflowConfigurationHandler cleanWorkflowConfigurationHandler;
 	private ConvertWorkflowConfigurationHandler convertWorkflowConfigurationHandler;
+	private OptimiseWorkflowConfigurationHandler optimiseWorkflowConfigurationHandler;
+	private CheckWorkflowConfigurationHandler checkWorkflowConfigurationHandler;
+	private PublishWorkflowConfigurationHandler publishWorkflowConfigurationHandler;
 	
 // ==========================================
 // Section Construction
@@ -106,11 +117,14 @@ final class RIFWorkflowConfigurationHandler
 	public RIFWorkflowConfigurationHandler() {
 		
 		setSingularRecordName("rif_workflow");
-		
-		
-		rifWorkflowConfiguration = new RIFWorkflowConfiguration();
+			
+		rifWorkflowCollection = RIFWorkflowCollection.newInstance();
 		cleanWorkflowConfigurationHandler = new CleanWorkflowConfigurationHandler();		
 		convertWorkflowConfigurationHandler = new ConvertWorkflowConfigurationHandler();
+		optimiseWorkflowConfigurationHandler = new OptimiseWorkflowConfigurationHandler();
+		checkWorkflowConfigurationHandler = new CheckWorkflowConfigurationHandler();
+		publishWorkflowConfigurationHandler = new PublishWorkflowConfigurationHandler();
+		
 	}
 
 
@@ -124,6 +138,9 @@ final class RIFWorkflowConfigurationHandler
 		
 		cleanWorkflowConfigurationHandler.initialise(outputStream, commentInjector);
 		convertWorkflowConfigurationHandler.initialise(outputStream, commentInjector);
+		optimiseWorkflowConfigurationHandler.initialise(outputStream, commentInjector);
+		checkWorkflowConfigurationHandler.initialise(outputStream, commentInjector);
+		publishWorkflowConfigurationHandler.initialise(outputStream, commentInjector);		
 	}
 
 	public void initialise(
@@ -133,6 +150,9 @@ final class RIFWorkflowConfigurationHandler
 		super.initialise(outputStream);
 		cleanWorkflowConfigurationHandler.initialise(outputStream);
 		convertWorkflowConfigurationHandler.initialise(outputStream);
+		optimiseWorkflowConfigurationHandler.initialise(outputStream);
+		checkWorkflowConfigurationHandler.initialise(outputStream);
+		publishWorkflowConfigurationHandler.initialise(outputStream);		
 	}
 	
 	
@@ -145,38 +165,61 @@ final class RIFWorkflowConfigurationHandler
 	 *
 	 * @return the disease mapping study
 	 */
-	public RIFWorkflowConfiguration getRIFWorkflowConfiguration() {
-		return rifWorkflowConfiguration;
+	public RIFWorkflowCollection getRIFWorkflowCollection() {
+		return rifWorkflowCollection;
 	}
-	
-	/**
-	 * Write xml.
-	 *
-	 * @param diseaseMappingStudy the disease mapping study
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 */
+
 	public void writeXML(
-		final RIFWorkflowConfiguration rifWorkflowConfiguration)
+		final RIFWorkflowCollection rifWorkflowCollection)
 		throws IOException {
-		
+			
 		XMLUtility xmlUtility = getXMLUtility();
 		xmlUtility.writeStartXML();		
-		xmlUtility.writeRecordStartTag("rif_workflow");
 
+		xmlUtility.writeRecordStartTag("rif_data_loader_submission");
+
+		xmlUtility.writeRecordStartTag("data_sets");
+		ArrayList<DataSet> dataSets
+			= rifWorkflowCollection.getDataSets();
+		for (DataSet dataSet : dataSets) {
+			xmlUtility.writeRecordStartTag("data_set");
+			xmlUtility.writeField(
+				"data_set", 
+				"name", 
+				dataSet.getSourceName());		
+			xmlUtility.writeRecordEndTag("data_set");			
+		}				
+		xmlUtility.writeRecordEndTag("data_sets");
 		
+		xmlUtility.writeRecordStartTag("rif_workflow");
+	
+		RIFWorkflowConfiguration rifWorkflowConfiguration
+			= rifWorkflowCollection.getRIFWorkflowConfiguration();
+				
 		CleanWorkflowConfiguration cleanWorkflowConfiguration
 			= rifWorkflowConfiguration.getCleanWorkflowConfiguration();
 		cleanWorkflowConfigurationHandler.writeXML(cleanWorkflowConfiguration);
-		
+			
 		ConvertWorkflowConfiguration convertWorkflowConfiguration
 			= rifWorkflowConfiguration.getConvertWorkflowConfiguration();
 		convertWorkflowConfigurationHandler.writeXML(convertWorkflowConfiguration);
 
-		xmlUtility.writeRecordEndTag("rif_workflow");
+		OptimiseWorkflowConfiguration optimiseWorkflowConfiguration
+			= rifWorkflowConfiguration.getOptimiseWorkflowConfiguration();
+		optimiseWorkflowConfigurationHandler.writeXML(optimiseWorkflowConfiguration);
+				
+		CheckWorkflowConfiguration checkWorkflowConfiguration
+			= rifWorkflowConfiguration.getCheckWorkflowConfiguration();
+		checkWorkflowConfigurationHandler.writeXML(checkWorkflowConfiguration);
 		
-	}
-	
-	
+		PublishWorkflowConfiguration publishWorkflowConfiguration
+			= rifWorkflowConfiguration.getPublishWorkflowConfiguration();
+		publishWorkflowConfigurationHandler.writeXML(publishWorkflowConfiguration);
+
+		xmlUtility.writeRecordEndTag("rif_workflow");		
+		xmlUtility.writeRecordEndTag("rif_data_loader_submission");		
+	}	
+		
 // ==========================================
 // Section Errors and Validation
 // ==========================================
@@ -216,10 +259,20 @@ final class RIFWorkflowConfigurationHandler
 			if (cleanWorkflowConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
 				assignDelegatedHandler(cleanWorkflowConfigurationHandler);
 			}
-			else if (convertWorkflowConfigurationHandler.isSingularRecordTypeApplicable(qualifiedName)) {
+			else if (convertWorkflowConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
 				assignDelegatedHandler(convertWorkflowConfigurationHandler);
 			}
-	
+			else if (optimiseWorkflowConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
+				assignDelegatedHandler(optimiseWorkflowConfigurationHandler);
+			}
+			else if (checkWorkflowConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
+				assignDelegatedHandler(checkWorkflowConfigurationHandler);
+			}
+			else if (publishWorkflowConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
+				assignDelegatedHandler(publishWorkflowConfigurationHandler);
+			}
+			
+			
 			//delegate to a handler.  If not, then scan for fields relating to this handler
 			if (isDelegatedHandlerAssigned()) {
 
@@ -255,6 +308,10 @@ final class RIFWorkflowConfigurationHandler
 				nameSpaceURI, 
 				localName, 
 				qualifiedName);
+			
+			RIFWorkflowConfiguration rifWorkflowConfiguration
+				= rifWorkflowCollection.getRIFWorkflowConfiguration();
+			
 			if (currentDelegatedHandler.isActive() == false) {
 				if (currentDelegatedHandler == cleanWorkflowConfigurationHandler) {
 					CleanWorkflowConfiguration cleanWorkflowConfiguration
@@ -262,10 +319,29 @@ final class RIFWorkflowConfigurationHandler
 					rifWorkflowConfiguration.setCleaningWorkflowConfiguration(cleanWorkflowConfiguration);			
 				}
 				else if (currentDelegatedHandler == convertWorkflowConfigurationHandler) {
+
 					ConvertWorkflowConfiguration convertWorkflowConfiguration
 						= convertWorkflowConfigurationHandler.getConvertWorkflowConfiguration();
 					rifWorkflowConfiguration.setConvertWorkflowConfiguration(convertWorkflowConfiguration);					
 				}
+				else if (currentDelegatedHandler == optimiseWorkflowConfigurationHandler) {
+
+					OptimiseWorkflowConfiguration optimiseWorkflowConfiguration
+						= optimiseWorkflowConfigurationHandler.getOptimiseWorkflowConfiguration();
+					rifWorkflowConfiguration.setOptimiseWorkflowConfiguration(optimiseWorkflowConfiguration);				
+				}
+				else if (currentDelegatedHandler == checkWorkflowConfigurationHandler) {
+
+					CheckWorkflowConfiguration checkWorkflowConfiguration
+						= checkWorkflowConfigurationHandler.getCheckWorkflowConfiguration();
+					rifWorkflowConfiguration.setCheckWorkflowConfiguration(checkWorkflowConfiguration);				
+				}					
+				else if (currentDelegatedHandler == publishWorkflowConfigurationHandler) {
+
+					PublishWorkflowConfiguration publishWorkflowConfiguration
+						= publishWorkflowConfigurationHandler.getPublishWorkflowConfiguration();
+					rifWorkflowConfiguration.setPublishWorkflowConfiguration(publishWorkflowConfiguration);				
+				}	
 				else {
 					assert false;
 				}				

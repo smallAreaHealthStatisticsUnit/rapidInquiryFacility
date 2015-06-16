@@ -102,7 +102,7 @@ public final class TestLoad
 		CleanWorkflowConfiguration tableCleaningConfiguration1
 			= CleanWorkflowConfiguration.createCopy(masterDateAgeSexTableConfiguration);	
 		
-		DataSet ds = tableCleaningConfiguration1.getdataSet();
+		DataSet ds = tableCleaningConfiguration1.getDataSet();
 		if (ds == null) {
 			System.out.println("ds is NULL");			
 		}

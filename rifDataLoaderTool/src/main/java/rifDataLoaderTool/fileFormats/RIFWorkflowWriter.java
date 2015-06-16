@@ -1,7 +1,9 @@
 package rifDataLoaderTool.fileFormats;
 
 
-import rifDataLoaderTool.businessConceptLayer.RIFWorkflowConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFWorkflowCollection;
+
+
 import rifServices.fileFormats.XMLCommentInjector;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceException;
@@ -88,7 +90,7 @@ public class RIFWorkflowWriter {
 	
 	
 	public String write(
-			final RIFWorkflowConfiguration rifWorkflowConfiguration,
+			final RIFWorkflowCollection rifWorkflowCollection,
 			final File file) 
 			throws RIFServiceException {
 				
@@ -106,7 +108,7 @@ public class RIFWorkflowWriter {
 				rifWorkflowConfigurationHandler.initialise(
 					fileOutputStream, 
 					commentInjector);
-				rifWorkflowConfigurationHandler.writeXML(rifWorkflowConfiguration);
+				rifWorkflowConfigurationHandler.writeXML(rifWorkflowCollection);
 		    	String result 
 					= new String(outputStream.toByteArray(), "UTF-8");	
 		    	outputStream.close();			

@@ -1,9 +1,6 @@
 package rifDataLoaderTool.businessConceptLayer;
 
 
-import rifDataLoaderTool.businessConceptLayer.DataSet;
-import java.util.ArrayList;
-
 /**
  *
  *
@@ -54,7 +51,7 @@ import java.util.ArrayList;
  *
  */
 
-public class RIFWorkflowCollection {
+public class OptimiseWorkflowFieldConfiguration {
 
 	// ==========================================
 	// Section Constants
@@ -63,56 +60,99 @@ public class RIFWorkflowCollection {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	
-	private ArrayList<DataSet> dataSets;
-	private RIFWorkflowConfiguration rifWorkflowConfiguration;
+	private DataSet dataSet;
+	private String fieldName;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private RIFWorkflowCollection() {
-		dataSets = new ArrayList<DataSet>();
-		rifWorkflowConfiguration = RIFWorkflowConfiguration.newInstance();
+	private OptimiseWorkflowFieldConfiguration() {
+		DataSet dataSet = DataSet.newInstance();
+		
+		initialise(
+			dataSet, 
+			"");
 	}
 
-	public static RIFWorkflowCollection newInstance() {
-		RIFWorkflowCollection rifWorkflowCollection = new RIFWorkflowCollection();
-		return rifWorkflowCollection;
+	private OptimiseWorkflowFieldConfiguration(
+		final DataSet dataSet,
+		final String fieldName) {
+				
+		initialise(
+			dataSet, 
+			fieldName);
+	}	
+	
+	private void initialise(
+		final DataSet dataSet,
+		final String fieldName) {
+			
+		this.dataSet = dataSet;
+		this.fieldName = fieldName;
+	}	
+	
+	public static OptimiseWorkflowFieldConfiguration newInstance() {
+		DataSet dataSet = DataSet.newInstance();
+
+		OptimiseWorkflowFieldConfiguration optimiseWorkflowFieldConfiguration
+			= new OptimiseWorkflowFieldConfiguration(
+				dataSet,
+				"");
+		return optimiseWorkflowFieldConfiguration;
 	}
+
+	public static OptimiseWorkflowFieldConfiguration newInstance(
+		final DataSet dataSet,
+		final String fieldName) {
+		
+		OptimiseWorkflowFieldConfiguration optimiseWorkflowFieldConfiguration
+			= new OptimiseWorkflowFieldConfiguration(
+				dataSet,
+				"");
+		return optimiseWorkflowFieldConfiguration;
+	}
+	
+	public static OptimiseWorkflowFieldConfiguration createCopy(
+		final OptimiseWorkflowFieldConfiguration originalOptimiseWorkflowFieldConfiguration) {
+			
+			DataSet originalDataSet
+				= originalOptimiseWorkflowFieldConfiguration.getDataSet();
+			DataSet cloneDataSet
+				= DataSet.createCopy(originalDataSet);
+						
+			OptimiseWorkflowFieldConfiguration cloneOptimiseWorkflowFieldConfiguration
+				= new OptimiseWorkflowFieldConfiguration();
+			cloneOptimiseWorkflowFieldConfiguration.setDataSet(cloneDataSet);
+			
+			String originalFieldName
+				= originalOptimiseWorkflowFieldConfiguration.getFieldName();
+			cloneOptimiseWorkflowFieldConfiguration.setFieldName(originalFieldName);
+			
+			return cloneOptimiseWorkflowFieldConfiguration;
+		}	
 	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public ArrayList<DataSet> getDataSets() {
-
-		return dataSets;
+	public DataSet getDataSet() {
+		return dataSet;
 	}
 	
-	public void setDataSets(
-		final ArrayList<DataSet> dataSets) {
-		
-		this.dataSets = dataSets;
-	}
-	
-	public void addDataSet(
+	public void setDataSet(
 		final DataSet dataSet) {
-		
-		dataSets.add(dataSet);
-	}
-	
-	public void setRIFWorkflowConfiguration(
-		final RIFWorkflowConfiguration rifWorkflowConfiguration) {
-		
-		this.rifWorkflowConfiguration = rifWorkflowConfiguration;
-	}
-	
-	public RIFWorkflowConfiguration getRIFWorkflowConfiguration() {
 
-		return rifWorkflowConfiguration;
+		this.dataSet = dataSet;
 	}
-		
+
+	public String getFieldName() {
+		return fieldName;
+	}
+
+	public void setFieldName(String fieldName) {
+		this.fieldName = fieldName;
+	}
 	
 	// ==========================================
 	// Section Errors and Validation

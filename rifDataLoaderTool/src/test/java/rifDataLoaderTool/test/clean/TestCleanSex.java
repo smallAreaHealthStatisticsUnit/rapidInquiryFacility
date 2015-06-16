@@ -84,26 +84,22 @@ public final class TestCleanSex
 	// ==========================================
 
 	public TestCleanSex() {
-
-		String coreTableName = "hes_2002";
-		masterTableCleaningConfiguration 
-			= CleanWorkflowConfiguration.newInstance(coreTableName);
 	
 		DataSet dataSet
 			= DataSet.newInstance(
-				coreTableName,
+				"hes_2002",
 				false,
 				"HES file hes2001.csv", 
-					"kgarwood");
+				"kgarwood");
 		dataSet.setIdentifier("1");
-	
-		masterTableCleaningConfiguration.setdataSet(dataSet);
+		masterTableCleaningConfiguration.setDataSet(dataSet);
 		
 		masterSexFieldConfiguration
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
 				"sex", 
 				"sex",
+				"Sex of the patient",
 				SexRIFDataType.newInstance());
 		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(masterSexFieldConfiguration);
 		

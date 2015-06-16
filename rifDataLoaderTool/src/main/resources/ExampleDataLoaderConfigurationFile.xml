@@ -1,21 +1,19 @@
-<rif_workflow>
+<rif_data_loader_submission>
 
-	<data_sources>
-	
-		<!-- specify one or more data sources, which are subject to the same work flow 
+	<data_sources>	
 		<data_source>
 			<name>my_numerator</name>
 			<file>MyNumerator.csv</file>
 		</data_source>
 	</data_sources>
 
-	<steps>
+	<rif_workflow>
 		<load>
 
 		</load>
 
 		<clean>
-			<!-- any field not included will not be retained in subsequent tables -->
+
 			<clean_field_configuration>
 				<load_field_name>
 					year
@@ -147,9 +145,9 @@
 		</clean>
 
 		<convert>
-			<rif_table_type>
-				numerator_data
-			</rif_table_type>
+			<rif_schema_area>
+				health_numerator_data
+			</rif_schema_area>
 		</convert>
 
 		<combine>
@@ -157,18 +155,40 @@
 		</combine>
 
 		<optimise>
+			<optional_indexed_field>
+					icd
+			</optional_indexed_field>
+			<optional_indexed_field>
+					level1
+			</optional_indexed_field>		
+			<optional_indexed_field>
+					level2
+			</optional_indexed_field>		
+			<optional_indexed_field>
+					level3
+			</optional_indexed_field>		
+			<optional_indexed_field>
+					level4
+			</optional_indexed_field>		
 
 		</optimise>
 
 		<check>
 
+			<!-- these fields are used to determine if a record is a duplicate -->
+			<duplicate_row_field>year</duplicate_row_field>
+			<duplicate_row_field>age_sex_group</duplicate_row_field>
+
+			<!-- these fields are used to determine if a record has been cleaned -->
+			<cleaned_row_field>year</cleaned_row_field>
+			<cleaned_row_field>age_sex_group</cleaned_row_field>
+
 		</check>
 
 		<publish>
-
+			<rif_user_role>rif_manager</rif_user_role>
 		</publish>
 		
-	</steps>
+	</rif_workflow>
 	
-</rif_workflow>
-
+</rif_data_loader_submission>

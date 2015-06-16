@@ -132,6 +132,10 @@ public final class DataLoaderService
 	private LoadStepManager loadStepManager;
 	private CleanStepManager cleanStepManager;
 	private ConvertStepManager convertStepManager;
+	private OptimiseStepManager optimiseStepManager;
+	
+	//private CheckStepManager checkStepManager;
+	//private PublishStepManager publishStepManager;
 	
 	
 	private ArrayList<DataSetConfiguration> dataSetConfigurations;

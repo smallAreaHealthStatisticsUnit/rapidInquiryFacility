@@ -1,12 +1,13 @@
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.ConvertWorkflowConfiguration;
+import rifDataLoaderTool.businessConceptLayer.CheckWorkflowConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifServices.fileFormats.XMLUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  *
@@ -58,7 +59,7 @@ import java.io.IOException;
  *
  */
 
-public final class ConvertWorkflowConfigurationHandler 
+public final class CheckWorkflowConfigurationHandler 
 	extends AbstractWorkflowConfigurationHandler {
 
 	// ==========================================
@@ -68,45 +69,53 @@ public final class ConvertWorkflowConfigurationHandler
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private ConvertWorkflowConfiguration convertWorkflowConfiguration;
+	private CheckWorkflowConfiguration checkWorkflowConfiguration;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public ConvertWorkflowConfigurationHandler() {
-		convertWorkflowConfiguration 
-			= ConvertWorkflowConfiguration.newInstance();
-		setPluralRecordName("convert");
+	public CheckWorkflowConfigurationHandler() {
+		checkWorkflowConfiguration 
+			= CheckWorkflowConfiguration.newInstance();
+		setPluralRecordName("check");
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public ConvertWorkflowConfiguration getConvertWorkflowConfiguration() {
-		return convertWorkflowConfiguration;		
+	public CheckWorkflowConfiguration getCheckWorkflowConfiguration() {
+		return checkWorkflowConfiguration;		
 	}
-	
-	public String getHTML(
-		final ConvertWorkflowConfiguration convertWorkflowConfiguration) {
-			
-		return "";
-	}	
-	
+
 	public void writeXML(
-		final ConvertWorkflowConfiguration convertWorkflowConfiguration) 
+		final CheckWorkflowConfiguration checkWorkflowConfiguration) 
 		throws IOException {
 		
 		XMLUtility xmlUtility = getXMLUtility();
-		xmlUtility.writeRecordStartTag("convert");
+		xmlUtility.writeRecordStartTag("check");
 		
-		RIFSchemaArea rifSchemaArea = convertWorkflowConfiguration.getRIFSchemaArea();
-		xmlUtility.writeField(
-				"convert", 
-				"rif_schema_area", 
-				convertWorkflowConfiguration.getRIFSchemaArea().getCode());
-		xmlUtility.writeRecordEndTag("convert");				
+		ArrayList<String> duplicateRowCheckFields
+			= checkWorkflowConfiguration.getDuplicateRowCheckFields();
+		for (String duplicateRowCheckField : duplicateRowCheckFields) {			
+			System.out.println("========================CWCH -- writeXML dup=="+duplicateRowCheckField+"==");
+			xmlUtility.writeField(
+				"check", 
+				"duplicate_row_field", 
+				duplicateRowCheckField);		
+		}
+
+		ArrayList<String> cleanedRowCheckFields
+			= checkWorkflowConfiguration.getCleanedRowCheckFields();
+		for (String cleanedRowCheckField : cleanedRowCheckFields) {
+			xmlUtility.writeField(
+				"check", 
+				"cleaned_row_field", 
+				cleanedRowCheckField);				
+		}
+		
+		xmlUtility.writeRecordEndTag("check");				
 	}
 	
 	
@@ -118,9 +127,13 @@ public final class ConvertWorkflowConfigurationHandler
 		final Attributes attributes) 
 		throws SAXException {
 
+		System.out.println("CWCH - startElement zzzzero=="+qualifiedName+"==");
+		
 		if (isPluralRecordName(qualifiedName) == true) {
+			System.out.println("CWCH - startElement 1=="+qualifiedName+"==");
 			activate();
 		}
+
 	}
 	
 	public void endElement(
@@ -129,16 +142,27 @@ public final class ConvertWorkflowConfigurationHandler
 		final String qualifiedName) 
 		throws SAXException {
 
-			if (isPluralRecordName(qualifiedName)) {
-				deactivate();
-			}
-			else if (equalsFieldName("rif_schema_area", qualifiedName)) {	
-				RIFSchemaArea rifSchemaArea = RIFSchemaArea.getSchemaAreaFromName(getCurrentFieldValue());
-				convertWorkflowConfiguration.setRIFSchemaArea(rifSchemaArea);
-			}
-
-	
+		if (isPluralRecordName(qualifiedName)) {
+			System.out.println("CWCH - endElement 1=="+qualifiedName+"==");
+			deactivate();
 		}
+		else if (equalsFieldName(
+			"duplicate_row_field", 
+			qualifiedName)) {		
+			
+			System.out.println("CWCH - endElement 2=="+qualifiedName+"==");
+
+			checkWorkflowConfiguration.addDuplicateRowCheckField(getCurrentFieldValue());				
+		}
+		else if (equalsFieldName(
+			"cleaned_row_field", 
+			qualifiedName)) {				
+
+			System.out.println("CWCH - endElement 3=="+qualifiedName+"==");
+			
+			checkWorkflowConfiguration.addCleanedRowCheckField(getCurrentFieldValue());				
+		}	
+	}
 	
 	
 	// ==========================================

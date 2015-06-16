@@ -1,10 +1,13 @@
 package rifDataLoaderTool.presentationLayer.batch;
 
+import rifDataLoaderTool.businessConceptLayer.RIFWorkflowCollection;
+import rifDataLoaderTool.fileFormats.RIFWorkflowReader;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifServices.system.RIFServiceException;
 
-import java.text.Collator;
+import java.io.File;
+
 
 /**
  *
@@ -91,6 +94,12 @@ public class DataLoaderBatchTool {
 		try {
 			validateCommandLineArguments(commandLineArguments);
 
+			File configurationFile = extractConfigurationFile(commandLineArguments);
+			RIFWorkflowReader workflowReader = new RIFWorkflowReader();
+			workflowReader.readFile(configurationFile);
+			
+			RIFWorkflowCollection rifWorkflowCollection
+				 = workflowReader.getRIFWorkflowCollection();
 			
 			
 		}
@@ -101,9 +110,17 @@ public class DataLoaderBatchTool {
 		//the last argument should be the file name
 		
 		
+	}
+	
+	
+	private File extractConfigurationFile(
+		final String[] commandLineArguments) {
 		
+		int numberOfArguments = commandLineArguments.length;
+		String filePath = commandLineArguments[numberOfArguments -1];
+		File file = new File(filePath);
 		
-		
+		return file;
 	}
 	
 	// ==========================================
@@ -119,7 +136,7 @@ public class DataLoaderBatchTool {
 		if (totalArguments == 0) {
 			//ERROR: must at least specify an input XML file
 			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage("");
+				= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.error.noArgumentsSpecified");
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.NO_COMMAND_LINE_ARGUMENTS_SPECIFIED,
@@ -131,7 +148,7 @@ public class DataLoaderBatchTool {
 			= commandLineArguments[totalArguments - 1];
 		if (configurationFilePath.startsWith("-")) {
 			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage("");
+				= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.error.noConfigurationFileSpecified");
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.ILLEGAL_CONFIGURATION_FILE_SPECIFIED,

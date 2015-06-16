@@ -1,12 +1,13 @@
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.ConvertWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifDataLoaderTool.businessConceptLayer.OptimiseWorkflowConfiguration;
+import rifDataLoaderTool.businessConceptLayer.OptimiseWorkflowFieldConfiguration;
 import rifServices.fileFormats.XMLUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  *
@@ -58,7 +59,7 @@ import java.io.IOException;
  *
  */
 
-public final class ConvertWorkflowConfigurationHandler 
+public final class OptimiseWorkflowConfigurationHandler 
 	extends AbstractWorkflowConfigurationHandler {
 
 	// ==========================================
@@ -68,45 +69,48 @@ public final class ConvertWorkflowConfigurationHandler
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private ConvertWorkflowConfiguration convertWorkflowConfiguration;
+	private OptimiseWorkflowConfiguration optimiseWorkflowConfiguration;
+	private OptimiseWorkflowFieldConfiguration currentFieldConfiguration;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public ConvertWorkflowConfigurationHandler() {
-		convertWorkflowConfiguration 
-			= ConvertWorkflowConfiguration.newInstance();
-		setPluralRecordName("convert");
+	public OptimiseWorkflowConfigurationHandler() {
+		optimiseWorkflowConfiguration 
+			= OptimiseWorkflowConfiguration.newInstance();
+		setPluralRecordName("optimise");
+		setSingularRecordName("optional_indexed_field");
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public ConvertWorkflowConfiguration getConvertWorkflowConfiguration() {
-		return convertWorkflowConfiguration;		
+	public OptimiseWorkflowConfiguration getOptimiseWorkflowConfiguration() {
+		return optimiseWorkflowConfiguration;		
 	}
 	
-	public String getHTML(
-		final ConvertWorkflowConfiguration convertWorkflowConfiguration) {
-			
-		return "";
-	}	
-	
 	public void writeXML(
-		final ConvertWorkflowConfiguration convertWorkflowConfiguration) 
+		final OptimiseWorkflowConfiguration optimiseWorkflowConfiguration) 
 		throws IOException {
 		
 		XMLUtility xmlUtility = getXMLUtility();
-		xmlUtility.writeRecordStartTag("convert");
+		xmlUtility.writeRecordStartTag("optimise");
 		
-		RIFSchemaArea rifSchemaArea = convertWorkflowConfiguration.getRIFSchemaArea();
-		xmlUtility.writeField(
-				"convert", 
-				"rif_schema_area", 
-				convertWorkflowConfiguration.getRIFSchemaArea().getCode());
-		xmlUtility.writeRecordEndTag("convert");				
+		ArrayList<OptimiseWorkflowFieldConfiguration> fieldConfigurations
+			= optimiseWorkflowConfiguration.getFieldConfigurations();
+		
+		for (OptimiseWorkflowFieldConfiguration fieldConfiguration : fieldConfigurations) {
+		
+			xmlUtility.writeField(
+				"optimise", 
+				"optional_indexed_field", 
+				fieldConfiguration.getFieldName());
+		}
+		
+		xmlUtility.writeRecordEndTag("optimise");
+		
 	}
 	
 	
@@ -118,8 +122,12 @@ public final class ConvertWorkflowConfigurationHandler
 		final Attributes attributes) 
 		throws SAXException {
 
-		if (isPluralRecordName(qualifiedName) == true) {
+		if (isPluralRecordName(qualifiedName)) {
 			activate();
+		}
+		else if (isSingularRecordName(qualifiedName)) {
+			System.out.println("OWFC - startElement 1 qualifiedName=="+qualifiedName+"==");
+			currentFieldConfiguration = OptimiseWorkflowFieldConfiguration.newInstance();
 		}
 	}
 	
@@ -132,11 +140,12 @@ public final class ConvertWorkflowConfigurationHandler
 			if (isPluralRecordName(qualifiedName)) {
 				deactivate();
 			}
-			else if (equalsFieldName("rif_schema_area", qualifiedName)) {	
-				RIFSchemaArea rifSchemaArea = RIFSchemaArea.getSchemaAreaFromName(getCurrentFieldValue());
-				convertWorkflowConfiguration.setRIFSchemaArea(rifSchemaArea);
+			else if (isSingularRecordName(qualifiedName)) {
+				System.out.println("OWFC - endElement 1 qualifiedName=="+qualifiedName+"==" + getCurrentFieldValue()+"==");
+				
+				currentFieldConfiguration.setFieldName(getCurrentFieldValue());				
+				optimiseWorkflowConfiguration.addFieldConfiguration(currentFieldConfiguration);
 			}
-
 	
 		}
 	

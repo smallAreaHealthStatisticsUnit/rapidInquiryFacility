@@ -3,6 +3,7 @@ package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFWorkflowConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFWorkflowCollection;
 
 
 import rifServices.system.RIFServiceException;
@@ -104,8 +105,10 @@ public final class RIFWorkflowReader {
 			RIFWorkflowReader rifWorkflowReader = new RIFWorkflowReader();
 			rifWorkflowReader.readFile(file);
 			
+			RIFWorkflowCollection rifWorkflowCollection
+				= rifWorkflowReader.getRIFWorkflowCollection();
 			RIFWorkflowConfiguration rifWorkflowConfiguration
-				= rifWorkflowReader.getRIFWorkflowConfiguration();
+				= rifWorkflowCollection.getRIFWorkflowConfiguration();
 			
 			
 			CleanWorkflowConfiguration cleanWorkflowConfiguration
@@ -124,9 +127,8 @@ public final class RIFWorkflowReader {
 			File outputFile = new File(outputFileName.toString());
 			
 			RIFWorkflowWriter rifWorkflowWriter = new RIFWorkflowWriter();
-			rifWorkflowWriter.write(rifWorkflowConfiguration, outputFile);
-
-			
+			rifWorkflowWriter.write(rifWorkflowCollection, outputFile);
+		
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
@@ -214,8 +216,8 @@ public final class RIFWorkflowReader {
 	}			
 	
 	
-	public RIFWorkflowConfiguration getRIFWorkflowConfiguration() {
-		return rifWorkflowConfigurationHandler.getRIFWorkflowConfiguration();
+	public RIFWorkflowCollection getRIFWorkflowCollection() {
+		return rifWorkflowConfigurationHandler.getRIFWorkflowCollection();
 	}
 	
 // ==========================================

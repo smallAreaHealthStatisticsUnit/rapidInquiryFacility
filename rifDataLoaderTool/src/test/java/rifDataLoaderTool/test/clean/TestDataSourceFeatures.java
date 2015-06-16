@@ -61,7 +61,7 @@ import static org.junit.Assert.*;
  *
  */
 
-public final class TestdataSetFeatures 
+public final class TestDataSourceFeatures 
 	extends AbstractRIFDataLoaderTestCase {
 
 	// ==========================================
@@ -77,7 +77,7 @@ public final class TestdataSetFeatures
 	// Section Construction
 	// ==========================================
 
-	public TestdataSetFeatures() {
+	public TestDataSourceFeatures() {
 
 		DummyDataLoaderGenerator dummyDataGenerator
 			= new DummyDataLoaderGenerator();
@@ -98,7 +98,7 @@ public final class TestdataSetFeatures
 				= getDataLoaderService();
 			dataLoaderService.clearAlldataSets(testUser);
 			
-			DataSet originaldataSet
+			DataSet originalDataSet
 				= DataSet.newInstance(
 					"hes_2001",
 					false,
@@ -106,24 +106,24 @@ public final class TestdataSetFeatures
 					"kev");
 			dataLoaderService.registerdataSet(
 				testUser, 
-				originaldataSet);
+				originalDataSet);
 			
-			DataSet retrieveddataSet
+			DataSet retrieveDataSet
 				= dataLoaderService.getdataSetFromCoreTableName(
 					testUser, 
 					"hes_2001");
 			
 			assertEquals(
-				originaldataSet.getCoreTableName(), 
-				retrieveddataSet.getCoreTableName());
+				originalDataSet.getCoreDataSetName(), 
+				retrieveDataSet.getCoreDataSetName());
 			
 			assertEquals(
-				originaldataSet.getSourceName(),
-				retrieveddataSet.getSourceName());
+				originalDataSet.getSourceName(),
+				retrieveDataSet.getSourceName());
 			
 			assertEquals(
-				originaldataSet.isDerivedFromExistingTable(),
-				retrieveddataSet.isDerivedFromExistingTable());
+				originalDataSet.isDerivedFromExistingTable(),
+				retrieveDataSet.isDerivedFromExistingTable());
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printStackTrace();

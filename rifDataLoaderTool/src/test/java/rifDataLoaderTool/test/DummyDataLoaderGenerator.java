@@ -88,11 +88,8 @@ public final class DummyDataLoaderGenerator {
 	}
 
 	public CleanWorkflowConfiguration createNumeratorTableConfiguration(
-		final String coreTableName) {
-		
-		CleanWorkflowConfiguration masterTableCleaningConfiguration 
-			= CleanWorkflowConfiguration.newInstance(coreTableName);
-		
+		final String coreDataSetName) {
+				
 		DataSet dataSet
 			= DataSet.newInstance(
 				"hes_2001",
@@ -100,61 +97,70 @@ public final class DummyDataLoaderGenerator {
 				"HES file hes2001.csv", 
 				"kgarwood");
 		dataSet.setIdentifier("1");
+		dataSet.setCoreDataSetName(coreDataSetName);
 		
-		masterTableCleaningConfiguration.setdataSet(dataSet);
+		CleanWorkflowConfiguration masterTableCleaningConfiguration 
+			= CleanWorkflowConfiguration.newInstance(dataSet);
 		
 		
 		CleanWorkflowFieldConfiguration nhsNumber
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
 				"nhs_number", 
+				"nhs_number",
 				"A number used to identify a patient in the UK's NHS system",
 				NHSNumberRIFDataType.newInstance());
 		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(nhsNumber);
 		
 		CleanWorkflowFieldConfiguration birthDate
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
 				"birth_date", 
+				"birth_date",
 				"birth date of patient",
 				DateRIFDataType.newInstance());
 		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(birthDate);
 		
 		CleanWorkflowFieldConfiguration postalCode
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
 				"postal_code", 
 				"postal code",
+				"UK postal code",
 				UKPostalCodeRIFDataType.newInstance());
 		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(postalCode);
 
 		CleanWorkflowFieldConfiguration age
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
 				"age", 
+				"age",
 				"age of patient",
 				AgeRIFDataType.newInstance());
 		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(age);
 		
 		CleanWorkflowFieldConfiguration sex
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
 				"sex", 
 				"sex",
+				"Sex of patient",
 				SexRIFDataType.newInstance());
 		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(sex);
 
 		CleanWorkflowFieldConfiguration level1
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
 				"level1", 
+				"level1",
 				"Most general level of resolution",
 				TextRIFDataType.newInstance());
 		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(level1);
 		
 		CleanWorkflowFieldConfiguration level2
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
+				"level2",
 				"level2",
 				"Level 2 geographical resolution",
 				TextRIFDataType.newInstance());
@@ -162,48 +168,54 @@ public final class DummyDataLoaderGenerator {
 		
 		CleanWorkflowFieldConfiguration level3
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
 				"level3", 
+				"level3",
 				"Level 3 geographical resolution",
 				TextRIFDataType.newInstance());
 		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(level3);
 
 		CleanWorkflowFieldConfiguration level4
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
 				"level4", 
+				"level4",
 				"Level 4 geographical resolution",
 				TextRIFDataType.newInstance());
 		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(level4);
 
 		CleanWorkflowFieldConfiguration icd1
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
 				"icd_1", 
+				"icd_1",
 				"icd code 1",
 				TextRIFDataType.newInstance());
 		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(icd1);
 		
 		CleanWorkflowFieldConfiguration icd2
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
 				"icd_2", 
+				"icd_2",
 				"icd code 2",
 				TextRIFDataType.newInstance());
 		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(icd2);
 		
 		CleanWorkflowFieldConfiguration opcsCode1
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
 				"opcs_code_1", 
 				"opcs code 1",
+				"OPCS field 1",
 				TextRIFDataType.newInstance());
 		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(opcsCode1);
 
 		CleanWorkflowFieldConfiguration total
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
 				"total", 
+				"total",
 				"total cases",
 				IntegerRIFDataType.newInstance());
 		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(total);
@@ -213,11 +225,6 @@ public final class DummyDataLoaderGenerator {
 	}
 	
 	public CleanWorkflowConfiguration createAgeSexBirthDateTableConfiguration() {
-		String coreTableName = "hes_2001";
-
-		CleanWorkflowConfiguration masterTableCleaningConfiguration
-			= CleanWorkflowConfiguration.newInstance(coreTableName);
-
 		DataSet dataSet
 			= DataSet.newInstance(
 				"hes_2001",
@@ -225,31 +232,35 @@ public final class DummyDataLoaderGenerator {
 				"HES file hes2001.csv", 
 				"kgarwood");
 		dataSet.setIdentifier("1");
-		masterTableCleaningConfiguration.setdataSet(dataSet);
-		
+
+		CleanWorkflowConfiguration masterTableCleaningConfiguration
+			= CleanWorkflowConfiguration.newInstance(dataSet);
 		
 		CleanWorkflowFieldConfiguration birthDate
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
 				"birth_date", 
 				"birth date",
+				"birth date of patient",
 				DateRIFDataType.newInstance());
 		birthDate.setAllowBlankValues(true);
 		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(birthDate);
 	
 		CleanWorkflowFieldConfiguration age
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
 				"age",
 				"age",
+				"age of patient",
 				AgeRIFDataType.newInstance());
 		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(age);
 	
 		CleanWorkflowFieldConfiguration sex
 			= CleanWorkflowFieldConfiguration.newInstance(
-				coreTableName, 
+				dataSet, 
 				"sex", 
 				"sex", 
+				"sex of patient",
 				SexRIFDataType.newInstance());
 		masterTableCleaningConfiguration.addCleanWorkflowFieldConfiguration(sex);
 

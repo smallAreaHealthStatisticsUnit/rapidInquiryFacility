@@ -63,7 +63,10 @@ public class RIFWorkflowConfiguration {
 	// ==========================================
 	private CleanWorkflowConfiguration cleanWorkflowConfiguration;
 	private ConvertWorkflowConfiguration convertWorkflowConfiguration;
-		
+	private OptimiseWorkflowConfiguration optimiseWorkflowConfiguration;
+	private CheckWorkflowConfiguration checkWorkflowConfiguration;
+	private PublishWorkflowConfiguration publishWorkflowConfiguration;
+	
 	private DataSet dataSet;
 	
 	// ==========================================
@@ -73,7 +76,10 @@ public class RIFWorkflowConfiguration {
 	public RIFWorkflowConfiguration() {
 		dataSet = DataSet.newInstance();
 		cleanWorkflowConfiguration = CleanWorkflowConfiguration.newInstance(dataSet);
-		convertWorkflowConfiguration = ConvertWorkflowConfiguration.newInstance(dataSet);		
+		convertWorkflowConfiguration = ConvertWorkflowConfiguration.newInstance(dataSet);	
+		optimiseWorkflowConfiguration = OptimiseWorkflowConfiguration.newInstance(dataSet);
+		checkWorkflowConfiguration = CheckWorkflowConfiguration.newInstance(dataSet);
+		publishWorkflowConfiguration = PublishWorkflowConfiguration.newInstance(dataSet);
 	}
 
 	// ==========================================
@@ -82,7 +88,7 @@ public class RIFWorkflowConfiguration {
 	
 	public static RIFWorkflowConfiguration newInstance() {
 		RIFWorkflowConfiguration workflowConfiguration
-			= RIFWorkflowConfiguration.newInstance();		
+			= new RIFWorkflowConfiguration();		
 		return workflowConfiguration;
 	}
 	
@@ -100,21 +106,51 @@ public class RIFWorkflowConfiguration {
 		RIFWorkflowConfiguration cloneWorkflowConfiguration
 			= RIFWorkflowConfiguration.newInstance();
 				
+		CleanWorkflowConfiguration originalCleanWorkflowConfiguration
+			= originalWorkflowConfiguration.getCleanWorkflowConfiguration();
 		CleanWorkflowConfiguration cloneCleanWorkflowConfiguration
-			= originalWorkflowConfiguration.getCleanWorkflowConfiguration();		
+			= CleanWorkflowConfiguration.createCopy(originalCleanWorkflowConfiguration);
 		cloneWorkflowConfiguration.setCleaningWorkflowConfiguration(cloneCleanWorkflowConfiguration);
 		
-		ConvertWorkflowConfiguration cloneConvertWorkflowConfiguration
+		ConvertWorkflowConfiguration originalConvertWorkflowConfiguration
 			= originalWorkflowConfiguration.getConvertWorkflowConfiguration();
+		ConvertWorkflowConfiguration cloneConvertWorkflowConfiguration
+			= ConvertWorkflowConfiguration.createCopy(originalConvertWorkflowConfiguration);
 		cloneWorkflowConfiguration.setConvertWorkflowConfiguration(cloneConvertWorkflowConfiguration);
+		
+		OptimiseWorkflowConfiguration originalOptimiseWorkflowConfiguration
+			= originalWorkflowConfiguration.getOptimiseWorkflowConfiguration();
+		OptimiseWorkflowConfiguration cloneOptimiseWorkflowConfiguration
+			= OptimiseWorkflowConfiguration.createCopy(originalOptimiseWorkflowConfiguration);
+		cloneWorkflowConfiguration.setOptimiseWorkflowConfiguration(cloneOptimiseWorkflowConfiguration);
+		
+		CheckWorkflowConfiguration originalCheckWorkflowConfiguration
+			= originalWorkflowConfiguration.getCheckWorkflowConfiguration();
+		CheckWorkflowConfiguration cloneCheckWorkflowConfiguration
+			= CheckWorkflowConfiguration.createCopy(originalCheckWorkflowConfiguration);
+		cloneWorkflowConfiguration.setCheckWorkflowConfiguration(cloneCheckWorkflowConfiguration);
+		
+		
+		PublishWorkflowConfiguration publishWorkflowConfiguration
+			= originalWorkflowConfiguration.getPublishWorkflowConfiguration();
+		
 		
 		return cloneWorkflowConfiguration;
 	}
 
+	public CheckWorkflowConfiguration getCheckWorkflowConfiguration() {
+		return checkWorkflowConfiguration;
+	}
+	
+	public void setCheckWorkflowConfiguration(
+		final CheckWorkflowConfiguration checkWorkflowConfiguration) {
+		
+		this.checkWorkflowConfiguration = checkWorkflowConfiguration;		
+	}
+	
 	public ConvertWorkflowConfiguration getConvertWorkflowConfiguration() {
 		return convertWorkflowConfiguration;
 	}
-	
 	
 	public void setConvertWorkflowConfiguration(
 		final ConvertWorkflowConfiguration convertWorkflowConfiguration) {
@@ -126,17 +162,39 @@ public class RIFWorkflowConfiguration {
 		return cleanWorkflowConfiguration;		
 	}
 	
+	public OptimiseWorkflowConfiguration getOptimiseWorkflowConfiguration() {
+		return optimiseWorkflowConfiguration;
+	}
+	
+	public void setOptimiseWorkflowConfiguration(
+		final OptimiseWorkflowConfiguration optimiseWorkflowConfiguration) {
+		
+		this.optimiseWorkflowConfiguration = optimiseWorkflowConfiguration;
+	}
+	
 	public void setCleaningWorkflowConfiguration(
 		final CleanWorkflowConfiguration cleanWorkflowConfiguration) {
 		
 		this.cleanWorkflowConfiguration = cleanWorkflowConfiguration;
 	}
 	
+	public void setPublishWorkflowConfiguration(
+		final PublishWorkflowConfiguration publishWorkflowConfiguration) {
+		
+		this.publishWorkflowConfiguration = publishWorkflowConfiguration;
+	}
+	
+	public PublishWorkflowConfiguration getPublishWorkflowConfiguration() {
+		return publishWorkflowConfiguration;		
+	}
+	
 	public void setDataSet(final DataSet dataSet) {
 		this.dataSet = dataSet;
 		
 		cleanWorkflowConfiguration.setDataSet(dataSet);
-		convertWorkflowConfiguration.setDataSet(dataSet);		
+		convertWorkflowConfiguration.setDataSet(dataSet);	
+		optimiseWorkflowConfiguration.setDataSet(dataSet);
+		checkWorkflowConfiguration.setDataSet(dataSet);
 	}
 	
 	// ==========================================

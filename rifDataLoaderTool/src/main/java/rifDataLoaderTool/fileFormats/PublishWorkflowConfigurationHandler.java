@@ -1,14 +1,18 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.fileFormats;
 
+import rifDataLoaderTool.businessConceptLayer.PublishWorkflowConfiguration;
+import rifServices.fileFormats.XMLUtility;
 
-import rifDataLoaderTool.businessConceptLayer.DataSet;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
  *
  *
  * <hr>
- * Copyright 2015 Imperial College London, developed by the Small Area
+ * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -54,7 +58,8 @@ import java.util.ArrayList;
  *
  */
 
-public class RIFWorkflowCollection {
+public final class PublishWorkflowConfigurationHandler 
+	extends AbstractWorkflowConfigurationHandler {
 
 	// ==========================================
 	// Section Constants
@@ -63,56 +68,71 @@ public class RIFWorkflowCollection {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	
-	private ArrayList<DataSet> dataSets;
-	private RIFWorkflowConfiguration rifWorkflowConfiguration;
+	private PublishWorkflowConfiguration publishWorkflowConfiguration;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private RIFWorkflowCollection() {
-		dataSets = new ArrayList<DataSet>();
-		rifWorkflowConfiguration = RIFWorkflowConfiguration.newInstance();
+	public PublishWorkflowConfigurationHandler() {
+		publishWorkflowConfiguration 
+			= PublishWorkflowConfiguration.newInstance();
+		setPluralRecordName("publish");
 	}
 
-	public static RIFWorkflowCollection newInstance() {
-		RIFWorkflowCollection rifWorkflowCollection = new RIFWorkflowCollection();
-		return rifWorkflowCollection;
-	}
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public ArrayList<DataSet> getDataSets() {
+	public PublishWorkflowConfiguration getPublishWorkflowConfiguration() {
+		return publishWorkflowConfiguration;		
+	}
+	
+	public void writeXML(
+		final PublishWorkflowConfiguration publishWorkflowConfiguration) 
+		throws IOException {
+		
+		XMLUtility xmlUtility = getXMLUtility();
+		xmlUtility.writeRecordStartTag("publish");
+		xmlUtility.writeField(
+			"publish", 
+			"rif_user_role", 
+			publishWorkflowConfiguration.getRIFUserRoleName());
+		
+		xmlUtility.writeRecordEndTag("publish");
+		
+	}
+	
+	
+	@Override
+	public void startElement(
+		final String nameSpaceURI,
+		final String localName,
+		final String qualifiedName,
+		final Attributes attributes) 
+		throws SAXException {
 
-		return dataSets;
-	}
-	
-	public void setDataSets(
-		final ArrayList<DataSet> dataSets) {
-		
-		this.dataSets = dataSets;
-	}
-	
-	public void addDataSet(
-		final DataSet dataSet) {
-		
-		dataSets.add(dataSet);
-	}
-	
-	public void setRIFWorkflowConfiguration(
-		final RIFWorkflowConfiguration rifWorkflowConfiguration) {
-		
-		this.rifWorkflowConfiguration = rifWorkflowConfiguration;
-	}
-	
-	public RIFWorkflowConfiguration getRIFWorkflowConfiguration() {
+		if (isPluralRecordName(qualifiedName)) {
+			activate();
+		}
 
-		return rifWorkflowConfiguration;
 	}
-		
+	
+	public void endElement(
+		final String nameSpaceURI,
+		final String localName,
+		final String qualifiedName) 
+		throws SAXException {
+
+			if (isPluralRecordName(qualifiedName)) {
+				deactivate();
+			}
+			else if (equalsFieldName("rif_user_role", qualifiedName)) {
+				publishWorkflowConfiguration.setRIFUserRoleName(getCurrentFieldValue());
+			}		
+	
+		}
+	
 	
 	// ==========================================
 	// Section Errors and Validation

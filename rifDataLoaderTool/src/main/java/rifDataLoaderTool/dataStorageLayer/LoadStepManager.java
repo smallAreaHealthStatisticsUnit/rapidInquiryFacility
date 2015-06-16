@@ -130,10 +130,7 @@ public final class LoadStepManager
 		final int textFieldWidth) 
 		throws RIFServiceException {
 
-		
-
 		RIFLogger logger = RIFLogger.getLogger();		
-
 		
 		String coreTableName = tableCleaningConfiguration.getCoreDataSetName();
 		int textColumnWidth
