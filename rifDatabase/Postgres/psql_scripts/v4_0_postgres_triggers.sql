@@ -1142,7 +1142,7 @@ CREATE TRIGGER rif40_version_checks_del
 	EXECUTE PROCEDURE rif40_trg_pkg.trigger_fct_rif40_version_checks();
 COMMENT ON TRIGGER rif40_version_checks_del ON rif40_version IS 'INSERT OR UPDATE trigger: calls rif40_trg_pkg.trigger_fct_rif40_version_checks()';
 
-\i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_investigations_checks.sql
+\i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_studies_checks.sql
 
 DROP TRIGGER IF EXISTS t_rif40_study_areas_checks ON t_rif40_study_areas CASCADE;
 CREATE OR REPLACE FUNCTION rif40_trg_pkg.trigger_fct_t_rif40_study_areas_checks() RETURNS trigger AS $BODY$
