@@ -335,7 +335,8 @@ by 3;
 					  FROM rif40_studies a
 					 WHERE a.geography           = l_geography
 					   AND a.study_geolevel_name = l_geolevel_select
-					   AND has_any_column_privilege('rif_studies.'||quote_ident(LOWER(a.extract_table)), 'SELECT'::Text) /* Can user access extract table */
+					   AND (a.extract_table IS NOT NULL AND
+					        has_any_column_privilege('rif_studies.'||quote_ident(LOWER(a.extract_table)), 'SELECT'::Text)) /* Can user access extract table */
 					), b AS (
 					SELECT a.extract_table,
 					       b.column_name,
@@ -369,7 +370,8 @@ by 3;
 					  FROM rif40_studies a
 					 WHERE a.geography           = l_geography
 					   AND a.study_geolevel_name = l_geolevel_select
-					   AND has_any_column_privilege('rif_studies.'||a.map_table, 'SELECT'::Text) /* Can user access map table */
+					   AND (a.map_table IS NOT NULL AND
+					        has_any_column_privilege('rif_studies.'||a.map_table, 'SELECT'::Text)) /* Can user access map table */
 					), b AS (
 					SELECT a.map_table,
 					       b.column_name,
