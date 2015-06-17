@@ -37,7 +37,7 @@ BEGIN
 		,{01,01.015,01.015.016900,01.015.016900.2} 
 		,{01,01.015,01.015.016900,01.015.016900.3} 
 		}'::Text[][],
-		'1224' /* Expected SQLCODE */, 
+		NULL  /* Expected SQLCODE */, 
 		FALSE /* Do not RAISE EXCEPTION on failure */)) THEN
         errors:=errors+1;
 	ELSE

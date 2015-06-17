@@ -136,7 +136,7 @@ PSQL_FLAGS=-U rif40 -d $(DBNAME) -h $(PGHOST) -w -P pager=off \
 #
 NO_ALTER_SOURCES=test_1_sahsuland_geography.sql test_2_ddl_checks.sql test_3_user_setup.sql
 SOURCES=$(NO_ALTER_SOURCES) test_6_middleware_1.sql test_4_study_id_1.sql test_5_clone_delete_test.sql \
-	test_7_middleware_2.sql test_8_triggers
+	test_7_middleware_2.sql test_8_triggers.sql
 
 #
 # Derive targets from sources

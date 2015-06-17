@@ -244,7 +244,7 @@ BEGIN
 -- Set kerberos_update falg is needed
 --	
 	IF TG_OP = 'UPDATE' THEN
-		IF strpos(OLD.username, '@PRIVATE.NET') > 0) THEN	
+		IF (strpos(OLD.username, '@PRIVATE.NET') > 0) THEN	
 			kerberos_update:=TRUE;
 		END IF;
 	END IF;
@@ -388,7 +388,7 @@ Year_stop/start, min/max_age_group removed from t_rif40_studies. Still in view
 				USER::VARCHAR		/* Username */);
 		END IF;
 	ELSIF TG_OP = 'UPDATE' AND NEW.username != USER THEN
-		IF USER = 'rif40' AND (c4_rec.total = 0 OR strpos(OLD.username, '@PRIVATE.NET') > 0) THEN 
+		IF USER = 'rif40' AND (c4_rec.total = 0 OR kerberos_update) THEN 
 			/* Allowed during build before first result is added to system or when converting Kerberos users */
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'trigger_fct_t_rif40_studies_checks', 
 				'[20200] T_RIF40_STUDIES study % new username: % is not USER: %; allowed during build before first result is added to system; Old: %',
@@ -563,7 +563,7 @@ Year_stop/start, min/max_age_group removed from t_rif40_studies. Still in view
 	END IF;
 	denom_owner:=rif40_sql_pkg.rif40_object_resolve(NEW.denom_tab::VARCHAR);
 	IF USER = 'rif40' AND (
-		c4_rec.total = 0 OR kerberos_update THEN 
+		c4_rec.total = 0 OR kerberos_update) THEN 
 		/* Allowed during build before first result is added to system or when converting Kerberos users */
 		NULL;
 	ELSIF coalesce(denom_owner::text, '') = '' THEN
@@ -1134,6 +1134,7 @@ Year_stop/start, min/max_age_group removed from t_rif40_studies. Still in view
 END;
 $BODY$
 LANGUAGE plpgsql;
+
 COMMENT ON FUNCTION rif40_trg_pkg.trigger_fct_t_rif40_studies_checks() IS 'Check - USERNAME exists.
 Check - USERNAME is Kerberos USER on INSERT.
 Check - audsid is SYS_CONTEXT(''USERENV'', ''SESSIONID'') on INSERT.

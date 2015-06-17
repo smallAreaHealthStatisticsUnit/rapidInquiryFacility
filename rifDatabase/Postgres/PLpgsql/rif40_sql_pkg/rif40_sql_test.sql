@@ -419,17 +419,19 @@ BEGIN
 				'FAILED: % missing rows for test: %', missing::VARCHAR, test_case_title::VARCHAR);	
 		END IF;
 --		
-		IF extra = 0 AND missing = 0 THEN 
+		IF error_code_expected IS NOT NULL THEN
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+				'[90131] FAILED: Test case: % no exception, expected SQLSTATE: %', 
+				test_case_title::VARCHAR, error_code_expected::VARCHAR);				
+			RETURN FALSE;	
+		ELSIF extra = 0 AND missing = 0 THEN 
 			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
 				'[90129] PASSED: Test case: % no exceptions, no errors, no missing or extra data', 
 				test_case_title::VARCHAR);			
 			RETURN TRUE;
 		ELSIF raise_exception_on_failure THEN
 			RAISE no_data_found;
-		ELSE
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-				'[90131] FAILED: Test case: % no exceptions, expected SQLSTATE: %', 
-				test_case_title::VARCHAR);				
+		ELSE /* Just failed above */
 			RETURN FALSE;	
 		END IF;
 --
@@ -459,7 +461,7 @@ BEGIN
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
 			'[90130] FAILED: Test case: % no exceptions, expected SQLSTATE: %', 
-			test_case_title::VARCHAR);		
+			test_case_title::VARCHAR, error_code_expected::VARCHAR);		
 		RETURN FALSE;		
 	END IF;
 EXCEPTION
@@ -583,7 +585,7 @@ GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRA
 --
 -- Quit here; test code below (in test_8_triggers.sql)
 --
-\q
+--\q
 
 --
 -- Test code generator
