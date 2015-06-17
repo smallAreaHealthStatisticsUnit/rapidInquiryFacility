@@ -786,9 +786,9 @@ BEGIN
 -- RAISE error
 --
 	IF l_action IS NULL THEN
-		RAISE EXCEPTION '%(): %', l_function_name, output;
+		RAISE EXCEPTION '%(): %', l_function_name, output USING DETAIL=l_error_code::Text;
 	ELSE
-		RAISE EXCEPTION '%(): %', l_function_name, output USING HINT=l_action;
+		RAISE EXCEPTION '%(): %', l_function_name, output USING HINT=l_action, DETAIL=l_error_code::Text;
 	END IF;
 END;
 $func$
