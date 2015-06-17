@@ -51,11 +51,11 @@ EXEC sp_addmessage 51012, 16,
 	N'Table name: [rif40].[rif40_study_shares] , DELETE only allowed on own records or by RIF40_MANAGER in RIF40_STUDY_SHARES (%s)';
 GO
 
-EXEC sp_addmessage 51013, 16,
-	N'Table name: [rif40].[tr_studies_checks] , INSERT/UPDATE failed - new study username is not current user (%s)';
-GO
-
 --update all error messages below:
+
+EXEC sp_addmessage 51013, 16,
+	N'Table name: [rif40].[t_rif40_studies] , INSERT/UPDATE failed - new study username is not current user (%s)';
+GO
 
 EXEC sp_addmessage 51014, 16,
 	N'Table name: [rif40].[t_rif40_studies] , UPDATE failed - UPDATE not allowed on T_RIF40_STUDIES by user (%s)';
@@ -92,3 +92,6 @@ EXEC sp_addmessage 51022, 16,
 
 EXEC sp_addmessage 51023, 16,
 	N'Table name: [rif40].[t_rif40_studies] , study area geolevel id < comparision area [i.e study area a lower resolution than the comparison area]: %s';
+
+EXEC sp_addmessage 51024, 16,
+	N'Table name: [rif40].[t_rif40_studies] , study not suppressed, but user is a RIF_STUDENT: %s';
