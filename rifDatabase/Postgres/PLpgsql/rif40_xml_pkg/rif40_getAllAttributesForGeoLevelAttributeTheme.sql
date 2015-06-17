@@ -160,12 +160,14 @@ DECLARE
 	c2_rec RECORD;
 	c3_rec RECORD;
 --
-	i		INTEGER;
+	i			INTEGER;
 	stp 		TIMESTAMP WITH TIME ZONE:=clock_timestamp();
 	etp 		TIMESTAMP WITH TIME ZONE;
 	took 		INTERVAL;
 --
-	error_message 		VARCHAR;
+	error_message 	VARCHAR;
+	v_sqlstate 		VARCHAR;
+	v_context		VARCHAR;		
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN
 --
@@ -270,10 +272,14 @@ by 3;
 		       			SELECT b.column_name,  
 					       b.ordinal_position,
 					       a.covariate_table,
-				       	       COALESCE(obj_description(quote_ident(LOWER(a.covariate_table))::regclass, 'pg_class' /* Obj id */), 
-							'[Table not found]') AS source_description,
-			    		       COALESCE(col_description(quote_ident(LOWER(a.covariate_table))::regclass /* Obj id */, 
-							b.ordinal_position /* Column number */), '[Covariate column not found]') AS name_description,
+						   CASE WHEN a.covariate_table IS NOT NULL THEN
+									COALESCE(obj_description(quote_ident(LOWER(a.covariate_table))::regclass, 'pg_class' /* Obj id */), 
+										'[Covariate table comment not found]') 
+								ELSE '[Covariate table not yet created]' END AS source_description,
+							CASE WHEN a.covariate_table IS NOT NULL THEN
+									COALESCE(col_description(quote_ident(LOWER(a.covariate_table))::regclass /* Obj id */, 
+										b.ordinal_position /* Column number */), '[Covariate column comment not found]') 
+								ELSE '[Covariate table not yet created]' END AS name_description,
 					       CASE WHEN b.numeric_precision IS NOT NULL THEN true ELSE false END is_numeric
 					  FROM a
 					LEFT OUTER JOIN information_schema.columns b ON 
@@ -301,8 +307,10 @@ by 3;
 					       b.column_name,
 					       b.ordinal_position,
 					       a.source_description,
-			    		       COALESCE(col_description((quote_ident(LOWER(a.numerator_table)))::regclass /* Obj id */, 
-							b.ordinal_position /* Column number */), '[Health column not found]') AS name_description,
+						   CASE WHEN a.numerator_table IS NOT NULL THEN
+									COALESCE(col_description((quote_ident(LOWER(a.numerator_table)))::regclass /* Obj id */, 
+										b.ordinal_position /* Column number */), '[No comment for numerator table]') 
+								ELSE '[Numerator table not yet created]' END AS name_description,
 					       CASE WHEN b.numeric_precision IS NOT NULL THEN true ELSE false END is_numeric
 					  FROM a, information_schema.columns b 
 					 WHERE quote_ident(LOWER(a.numerator_table)) = b.table_name
@@ -333,8 +341,10 @@ by 3;
 					       b.column_name,
 					       b.ordinal_position,
 					       a.source_description,
-			    		       COALESCE(col_description(('rif_studies.'||quote_ident(LOWER(a.extract_table)))::regclass /* Obj id */, 
-							b.ordinal_position /* Column number */), '[Extract column not found]') AS name_description,
+						   CASE WHEN a.extract_table IS NOT NULL THEN
+									COALESCE(col_description(('rif_studies.'||quote_ident(LOWER(a.extract_table)))::regclass /* Obj id */, 
+										b.ordinal_position /* Column number */), '[No comment for extract table]') 
+								ELSE '[Extract table not yet created]' END AS name_description,
 					       CASE WHEN b.numeric_precision IS NOT NULL THEN true ELSE false END is_numeric
 					  FROM a, information_schema.columns b 
 					 WHERE quote_ident(LOWER(a.extract_table)) = b.table_name
@@ -365,8 +375,10 @@ by 3;
 					       b.column_name,
 					       b.ordinal_position,
 					       a.source_description,
-			    		       COALESCE(col_description(('rif_studies.'||quote_ident(LOWER(a.map_table)))::regclass /* Obj id */, 
-							b.ordinal_position /* Column number */), '[Results column not found]') AS name_description,
+						   CASE WHEN a.map_table IS NOT NULL THEN
+									COALESCE(col_description(('rif_studies.'||quote_ident(LOWER(a.map_table)))::regclass /* Obj id */, 
+										b.ordinal_position /* Column number */), '[No comment for map table]')
+								ELSE '[Map table not yet created]' END AS name_description,
 					       CASE WHEN b.numeric_precision IS NOT NULL THEN true ELSE false END is_numeric
 					  FROM a, information_schema.columns b 
 					 WHERE quote_ident(LOWER(a.map_table)) = b.table_name
@@ -393,8 +405,10 @@ by 3;
 					       b.column_name,
 					       b.ordinal_position,
 					       a.source_description,
-			    		       COALESCE(col_description((quote_ident(LOWER(a.denominator_table)))::regclass /* Obj id */, 
-							b.ordinal_position /* Column number */), '[Population column not found]') AS name_description,
+						   CASE WHEN a.denominator_table IS NOT NULL THEN
+									COALESCE(col_description((quote_ident(LOWER(a.denominator_table)))::regclass /* Obj id */, 
+										b.ordinal_position /* Column number */), '[No comment for denominator table]') 
+								ELSE '[Map table not yet created]' END AS name_description,
 					       CASE WHEN b.numeric_precision IS NOT NULL THEN true ELSE false END is_numeric
 					  FROM a, information_schema.columns b 
 					 WHERE quote_ident(LOWER(a.denominator_table)) = b.table_name
@@ -421,8 +435,10 @@ by 3;
 					       b.column_name,
 					       b.ordinal_position,
 					       a.source_description,
-				    	       COALESCE(col_description(quote_ident(LOWER((a.geometry_table)))::regclass /* Obj id */, 
-							b.ordinal_position /* Column number */), '[Geometry column not found]') AS name_description,
+						   CASE WHEN a.geometry_table IS NOT NULL THEN
+									COALESCE(col_description(quote_ident(LOWER((a.geometry_table)))::regclass /* Obj id */, 
+										b.ordinal_position /* Column number */), '[No comment for Geography table]') 
+								ELSE '[Geography table not yet created]' END AS name_description,
 					       CASE WHEN b.numeric_precision IS NOT NULL THEN true ELSE false END is_numeric
 					  FROM a, information_schema.columns b 
 					 WHERE quote_ident(LOWER(a.geometry_table)) = b.table_name
@@ -458,8 +474,13 @@ by 3;
 -- Print exception to INFO, re-raise
 --
 			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
-			error_message:='rif40_getAllAttributesForGeoLevelAttributeTheme() caught: '||E'\n'||
-				SQLERRM::VARCHAR||', detail: '||v_detail::VARCHAR;
+			GET STACKED DIAGNOSTICS v_sqlstate = RETURNED_SQLSTATE;
+			GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
+			error_message:='rif40_getAllAttributesForGeoLevelAttributeTheme('||l_theme::VARCHAR||') caught: '||E'\n'||
+				SQLERRM::VARCHAR||';'||E'\n'||
+					'Detail: '||v_detail::VARCHAR||E'\n'||
+					'Context: '||v_context::VARCHAR||E'\n'||
+					'SQLSTATE: '||v_sqlstate::VARCHAR;
 			RAISE INFO '50805: %', error_message;
 --
 			RAISE;
