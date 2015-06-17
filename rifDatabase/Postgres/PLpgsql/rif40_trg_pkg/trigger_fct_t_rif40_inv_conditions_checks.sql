@@ -15,7 +15,7 @@
 -- Description:
 --
 -- Rapid Enquiry Facility (RIF) - Create trigger_fct_t_rif40_investigations_checks()
---				  INSERT/UPDATE/DELETE trigger function for T_RIF40_INVCONDITIONS
+--				  INSERT/UPDATE/DELETE trigger function for T_RIF40_INV_CONDITIONS
 --
 -- Copyright:
 --

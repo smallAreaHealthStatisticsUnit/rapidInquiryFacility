@@ -269,6 +269,11 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.does_role_exist(VARCHAR) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_does_role_exist(VARCHAR) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_rename_map_and_extract_tables(INTEGER, INTEGER);
 
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
+	VARCHAR, BOOLEAN);	
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_test_sql_template(VARCHAR, VARCHAR) ;
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_reduce_dim(ANYARRAY);
+
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_drop_user_table_or_view(VARCHAR) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_method4(VARCHAR, VARCHAR) CASCADE; 
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR);

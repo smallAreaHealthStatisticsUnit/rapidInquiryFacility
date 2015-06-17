@@ -211,8 +211,10 @@ template
 --
 -- Test case 
 --
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
+	VARCHAR, BOOLEAN);	
 CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_sql_test(test_stmt VARCHAR, test_case_title VARCHAR, results ANYARRAY,
-	error_code_expected INTEGER DEFAULT NULL, raise_exception_on_failure BOOLEAN DEFAULT TRUE)
+	error_code_expected VARCHAR DEFAULT NULL, raise_exception_on_failure BOOLEAN DEFAULT TRUE)
 RETURNS boolean
 SECURITY INVOKER
 AS $func$
@@ -220,7 +222,7 @@ AS $func$
 Function: 	rif40_sql_test()
 Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
             test case title, result arrays,
-			[negative] error code expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
+			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
 			NULL means it is expected to NOT raise an exception, raise exception on failure  
 Returns:	Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
 Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause
@@ -348,7 +350,7 @@ BEGIN
 	IF UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 6)) = 'SELECT' THEN
 		PERFORM rif40_sql_pkg.rif40_method4(test_stmt, test_case_title);
 --
-	sql_frag:='WITH a AS ( /* Test data */'||E'\n'||
+		sql_frag:='WITH a AS ( /* Test data */'||E'\n'||
 '	SELECT '''||
 		results::Text||
 		'''::Text[][] AS res'||E'\n'||
@@ -367,73 +369,110 @@ BEGIN
 --
 -- Check for extra data
 --
-	sql_stmt:=sql_frag||E'\n'||
+		sql_stmt:=sql_frag||E'\n'||
 'SELECT rif40_sql_pkg._rif40_reduce_dim(c.res) AS extra_data'||E'\n'||
 '  FROM c /* Test SQL data */'||E'\n'||
 'EXCEPT'||E'\n'|| 
 'SELECT rif40_sql_pkg._rif40_reduce_dim(a.res)'||E'\n'||
 '  FROM a /* Test data */';
-	PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_sql_test', 'SQL[1]> %;', 
-		sql_stmt::VARCHAR);
-	OPEN c1sqlt FOR EXECUTE sql_stmt;
-	LOOP
-		FETCH c1sqlt INTO c1sqlt_result_row;
-		IF NOT FOUND THEN EXIT; END IF;
+		PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_sql_test', 'SQL[1]> %;', 
+			sql_stmt::VARCHAR);
+		OPEN c1sqlt FOR EXECUTE sql_stmt;
+		LOOP
+			FETCH c1sqlt INTO c1sqlt_result_row;
+			IF NOT FOUND THEN EXIT; END IF;
 --
-		extra:=extra+1;
-		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-			'extra[%]: %', missing::VARCHAR, c1sqlt_result_row.extra_data::VARCHAR);		
-	END LOOP;
-	CLOSE c1sqlt;
-	IF extra = 0 THEN 
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
-			'PASSED: no extra rows for test: %', test_case_title::VARCHAR);
-	ELSE
-		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-			'FAILED: % extra rows for test: %', extra::VARCHAR, test_case_title::VARCHAR);	
-	END IF;
+			extra:=extra+1;
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+				'extra[%]: %', missing::VARCHAR, c1sqlt_result_row.extra_data::VARCHAR);		
+		END LOOP;
+		CLOSE c1sqlt;
+		IF extra = 0 THEN 
+			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+				'PASSED: no extra rows for test: %', test_case_title::VARCHAR);
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+				'FAILED: % extra rows for test: %', extra::VARCHAR, test_case_title::VARCHAR);	
+		END IF;
 --
-	sql_stmt:=sql_frag||E'\n'||
+		sql_stmt:=sql_frag||E'\n'||
 'SELECT rif40_sql_pkg._rif40_reduce_dim(a.res) AS missing_data'||E'\n'||
 '  FROM a /* Test data */'||E'\n'||
 'EXCEPT'||E'\n'|| 
 'SELECT rif40_sql_pkg._rif40_reduce_dim(c.res)'||E'\n'||
 '  FROM c /* Test SQL data */';
-	OPEN c2sqlt FOR EXECUTE sql_stmt;
-	LOOP
-		FETCH c2sqlt INTO c2sqlt_result_row;
-		IF NOT FOUND THEN EXIT; END IF;
+		OPEN c2sqlt FOR EXECUTE sql_stmt;
+		LOOP
+			FETCH c2sqlt INTO c2sqlt_result_row;
+			IF NOT FOUND THEN EXIT; END IF;
 --
-		missing:=missing+1;
-		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-			'missing[%]: %', missing::VARCHAR, c2sqlt_result_row.missing_data::VARCHAR);
-	END LOOP;
-	CLOSE c2sqlt;
-	IF missing = 0 THEN 
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
-			'PASSED: no missing rows for test: %', test_case_title::VARCHAR);
-	ELSE
-		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-			'FAILED: % missing rows for test: %', missing::VARCHAR, test_case_title::VARCHAR);	
-	END IF;
+			missing:=missing+1;
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+				'missing[%]: %', missing::VARCHAR, c2sqlt_result_row.missing_data::VARCHAR);
+		END LOOP;
+		CLOSE c2sqlt;
+		IF missing = 0 THEN 
+			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+				'PASSED: no missing rows for test: %', test_case_title::VARCHAR);
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+				'FAILED: % missing rows for test: %', missing::VARCHAR, test_case_title::VARCHAR);	
+		END IF;
 --		
-	IF extra = 0 AND missing = 0 THEN 
+		IF extra = 0 AND missing = 0 THEN 
+			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+				'[90129] PASSED: Test case: % no exceptions, no errors, no missing or extra data', 
+				test_case_title::VARCHAR);			
+			RETURN TRUE;
+		ELSIF raise_exception_on_failure THEN
+			RAISE no_data_found;
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+				'[90131] FAILED: Test case: % no exceptions, expected SQLSTATE: %', 
+				test_case_title::VARCHAR);				
+			RETURN FALSE;	
+		END IF;
+--
+-- Other SQL test statements (i.e. INSERT/UPDATE/DELETE for triggers) with RETURNING clause
+--
+--	ELSIF results IS NOT NULL
+--		OPEN c1sqlt FOR EXECUTE test_stmt;
+--		FETCH c1sqlt INTO c1sqlt_result_row;
+--		IF c1sqlt_result_row.???? != results THEN
+--      	...
+-- 		END IF;
+
+--
+-- Other SQL test statements (i.e. INSERT/UPDATE/DELETE for triggers)
+--
+	ELSE
+		PERFORM rif40_sql_pkg.rif40_ddl(test_stmt);
+	END IF;
+--
+	IF error_code_expected IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+			'[90129] PASSED: Test case: % no exceptions, no error expected', 
+			test_case_title::VARCHAR);		
 		RETURN TRUE;
-	ELSIF raise_exception_on_failure THEN
-		RAISE no_data_found;
+	ELSIF raise_exception_on_failure THEN		
+		RAISE no_data_found;			
 	ELSE
-		RETURN FALSE;	
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+			'[90130] FAILED: Test case: % no exceptions, expected SQLSTATE: %', 
+			test_case_title::VARCHAR);		
+		RETURN FALSE;		
 	END IF;
---
-	ELSE
-		OPEN c1sqlt FOR EXECUTE test_stmt;
-		FETCH c1sqlt INTO c1sqlt_result_row;
-	END IF;
---
 EXCEPTION
 	WHEN no_data_found THEN	
-		PERFORM rif40_log_pkg.rif40_error(-90125, 'rif40_sql_test', 
-			'Test case: % FAILED, % errors', test_case_title::VARCHAR, (extra+missing)::VARCHAR);
+		IF error_code_expected IS NULL THEN
+			PERFORM rif40_log_pkg.rif40_error(-90125, 'rif40_sql_test', 
+				'Test case: % FAILED, % errors', 
+				test_case_title::VARCHAR, (extra+missing)::VARCHAR);
+		ELSE
+			PERFORM rif40_log_pkg.rif40_error(-90127, 'rif40_sql_test', 
+				'Test case: % FAILED, % errors; expecting SQLSTATE: %; not thrown', 
+				test_case_title::VARCHAR, (extra+missing)::VARCHAR, error_code_expected::VARCHAR);	
+		END IF;
 /*
 RETURNED_SQLSTATE		the SQLSTATE error code of the exception
 COLUMN_NAME				the name of column related to exception
@@ -470,32 +509,66 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 			'Detail:   '||v_detail::VARCHAR||E'\n'||
 			'Context:  '||v_context::VARCHAR||E'\n'||
 			'SQLSTATE: '||v_sqlstate::VARCHAR||E'\n'||'<<< End of trace.'||E'\n';
-			IF COALESCE(v_schema_name, '') != '' AND COALESCE(v_table_name, '') != '' THEN
-				error_message:=error_message||'Object: '||v_schema_name||'.'||v_table_name;	
-			END IF;
-			IF COALESCE(v_column_name, '') != '' THEN
-				error_message:=error_message||'.'||v_column_name;	
-			END IF;
-			IF COALESCE(v_pg_datatype_name, '') != '' THEN
-				error_message:=error_message||'; datatype: '||v_pg_datatype_name;	
-			END IF;
-			IF COALESCE(v_constraint_name, '') != '' THEN
-				error_message:=error_message||'; constraint: '||v_constraint_name;	
-			END IF;			
-		RAISE WARNING '2: %', error_message;
-		IF raise_exception_on_failure THEN
-			RAISE;
-		ELSE	
-			RETURN FALSE;
+		IF COALESCE(v_schema_name, '') != '' AND COALESCE(v_table_name, '') != '' THEN
+			error_message:=error_message||'Object: '||v_schema_name||'.'||v_table_name;	
 		END IF;
+		IF COALESCE(v_column_name, '') != '' THEN
+			error_message:=error_message||'.'||v_column_name;	
+		END IF;
+		IF COALESCE(v_pg_datatype_name, '') != '' THEN
+			error_message:=error_message||'; datatype: '||v_pg_datatype_name;	
+		END IF;
+		IF COALESCE(v_constraint_name, '') != '' THEN
+			error_message:=error_message||'; constraint: '||v_constraint_name;	
+		END IF;			
+		RAISE WARNING '2: %', error_message;
+--
+-- Check error SQLSTATE
+--
+		BEGIN
+			IF error_code_expected IS NULL THEN
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+					'[90125] Test case: % FAILED, no error expected; got: %', 
+					test_case_title::VARCHAR, v_sqlstate::VARCHAR);		
+				IF raise_exception_on_failure THEN
+					RAISE;
+				ELSE				
+					RETURN FALSE;
+				END IF;			
+			ELSIF error_code_expected = v_sqlstate THEN
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+					'[90120] Test case: % PASSED, caught expecting SQLSTATE %', 
+					test_case_title::VARCHAR, v_sqlstate::VARCHAR);			
+				RETURN TRUE;
+			ELSE	
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+					'[90126] Test case: % FAILED, expecting SQLSTATE %; got: %', 
+					test_case_title::VARCHAR, error_code_expected::VARCHAR, v_sqlstate::VARCHAR);		
+				IF raise_exception_on_failure THEN
+					RAISE;
+				ELSE				
+					RETURN FALSE;
+				END IF;
+			END IF;
+		EXCEPTION
+			WHEN others THEN
+				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+				GET STACKED DIAGNOSTICS v_sqlstate = RETURNED_SQLSTATE;
+				GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
+				error_message:='rif40_sql_test() exception handler caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||
+					'Detail: '||v_detail::VARCHAR||E'\n'||
+					'Context: '||v_context::VARCHAR||E'\n'||
+					'SQLSTATE: '||v_sqlstate::VARCHAR;
+				RAISE EXCEPTION '3: %', error_message;			
+		END;
 END;
 $func$ LANGUAGE plpgsql;
-
+	
 COMMENT ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
-	INTEGER, BOOLEAN) IS 'Function: 	rif40_sql_test()
+	VARCHAR, BOOLEAN) IS 'Function: 	rif40_sql_test()
 Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
             test case title, result arrays,
-			[negative] error code expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
+			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
 			NULL means it is expected to NOT raise an exception, raise exception on failure  
 Returns:	Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
 Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause
@@ -505,7 +578,12 @@ Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT state
 --
 -- So can be used to test non rif user access to functions 
 --
-GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY, INTEGER, BOOLEAN) TO PUBLIC;
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY, VARCHAR, BOOLEAN) TO PUBLIC;
+
+--
+-- Quit here; test code below (in test_8_triggers.sql)
+--
+\q
 
 --
 -- Test code generator
@@ -541,31 +619,41 @@ BEGIN
         errors:=errors+1;
     END IF;		
 --
-/* DELIBERATE FAIL:
-
-	PERFORM rif40_sql_pkg.rif40_sql_test(
+-- DELIBERATE FAIL: level 3: 01.015.016900 removed
+--
+	IF (rif40_sql_pkg.rif40_sql_test(
 		'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016200'') ORDER BY level4',
-		'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
+		'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 [DELIBERATE FAIL TEST]',
 		'{{01,01.015,01.015.016200,01.015.016200.2}
 		,{01,01.015,01.015.016200,01.015.016200.3} 
 		,{01,01.015,01.015.016200,01.015.016200.4} 
 		,{01,01.015,01.015.016900,01.015.016900.1} 
 		,{01,01.015,01.015.016900,01.015.016900.2} 
 		,{01,01.015,01.015.016900,01.015.016900.3} 
-		}'::Text[][]
-		-* Use defaults *=); */
+		}'::Text[][],
+		'1224' /* Expected SQLCODE */, 
+		FALSE /* Do not RAISE EXCEPTION on failure */)) THEN
+        errors:=errors+1;
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+			'DELIBERATE FAIL TEST PASSED.');
+    END IF;		
 
 	IF NOT (rif40_sql_pkg.rif40_sql_test(	
 		'INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
-VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST'', ''MAP_TRIGGER_TEST'', 1 /* Diease mapping */, ''LEVEL1'', ''LEVEL4'', ''SAHSULAND_POP'', NULL)
-RETURNING ''TRIGGER TEST #1 OK''',
-		'TRIGGER TEST #1: ????',
-		'{{''TRIGGER TEST #1 OK''}}'::Text[][],
-		1224 /* Expected SQLCODE */, 
-		FALSE /* Do not RAISE EXCEPTION on failure */)) THEN
+VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST'', ''MAP_TRIGGER_TEST'', 1 /* Diease mapping */, ''LEVEL1'', ''LEVEL4'', ''SAHSULAND_POP'', NULL /* FAIL HERE */)',
+		'TRIGGER TEST #1: rif40_studies.suppression_value IS NULL',
+		NULL::Text[][] 	/* No results for trigger */,
+		'23502' 		/* Expected SQLCODE */, 
+		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
 		errors:=errors+1;
     END IF;	
 --	
+	IF errors = 0 THEN
+		RAISE NOTICE 'No test harness errors.';		
+	ELSE
+		RAISE EXCEPTION 'Test harness errors: %', errors;
+	END IF;
 EXCEPTION
 	WHEN others THEN
 -- 
@@ -574,7 +662,7 @@ EXCEPTION
 		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 		GET STACKED DIAGNOSTICS v_sqlstate = RETURNED_SQLSTATE;
 		GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
-		error_message:='TRIGGER TEST caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||
+		error_message:='Test harness caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||
 			'Detail: '||v_detail::VARCHAR||E'\n'||
 			'Context: '||v_context::VARCHAR||E'\n'||
 			'SQLSTATE: '||v_sqlstate::VARCHAR;
@@ -582,17 +670,14 @@ EXCEPTION
 END;
 $$;
   
---INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
---VALUES ('SAHSU', 'TEST', 'TRIGGER TEST #1', 'EXTRACT_TRIGGER_TEST', 'MAP_TRIGGER_TEST', 1 /* Diease mapping */, 'LEVEL1', 'LEVEL4', 'SAHSULAND_POP', NULL)
---RETURNING 'TRIGGER TEST #1 OK';  
 --
 -- Testing stop
 --
-DO LANGUAGE plpgsql $$
-BEGIN
-	RAISE EXCEPTION 'Stop processing';
-END;
-$$;
+--DO LANGUAGE plpgsql $$
+--BEGIN
+--	RAISE EXCEPTION 'Stop processing';
+--END;
+--$$;
   
 --
 -- Eof
