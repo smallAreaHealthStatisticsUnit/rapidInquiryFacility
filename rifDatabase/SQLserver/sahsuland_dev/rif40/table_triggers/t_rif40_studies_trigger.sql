@@ -145,11 +145,12 @@ BEGIN
 		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', 'doing a state change and IG update at the same time?';
 	END;
 
-	IF @is_state_change NOT NULL BEGIN
+	IF @is_state_change NOT NULL 
+    BEGIN
 
 	--check if new username = old username for the study
 		DECLARE @not_first_user VARCHAR(max) = (
-			SELECT a.username as new_user, b.username as original_user
+			SELECT a.study_id, a.username as new_user, b.username as original_user
 			FROM inserted a, deleted b
 			WHERE a.study_id=b.study_id
 			and a.username != b.username
@@ -257,7 +258,7 @@ END;
 		END CATCH;
 
 -----------------------------------------------------------------------------------------------------------
--- Check - STUDY_GEOLEVEL_NAME. Must be a valid GEOLEVEL_NAME for the study GEOGRPAHY in T_RIF40_GEOLEVELS
+-- Check - STUDY_GEOLEVEL_NAME. Must be a valid GEOLEVEL_NAME for the study GEOGRAPHY in T_RIF40_GEOLEVELS
 -----------------------------------------------------------------------------------------------------------
 
 	 DECLARE @geolevel_name2 nvarchar(MAX) =
@@ -393,12 +394,47 @@ ELSE
 --
 -- Check - suppression_value - Suppress results with low cell counts below this value. If the role RIF_NO_SUPRESSION is granted and the user is not a
 -- RIF_STUDENT then SUPPRESSION_VALUE=0; otherwise is equals the parameter "SuppressionValue". If >0 all results with the value or below will be set to 0.
---
-DECLARE @suppression_check varchar(max) = 
-(    --still working on this....
-	select a.username
-	from inserted a
-	where [rif40].[rif40_has_role](username, 'rif_manager')=0
-	and [rif40].[rif40_has_role](username,'rif_no_suppression')=0
-	and [rif40].[rif40_has_role](username,'rif_student')=1
-	
+
+--is this necessary, or will that be checked in the parameter table setup?
+DECLARE @suppress_student_check varchar(max) = 
+(  
+    select study_id, a.username, case when [rif40].[rif40_has_role](a.username,'rif_no_suppression')=1 then 0
+else b.param_value end as suppression_value
+from inserted a, (select param_value 
+ from [rif40].[t_rif40_paramaters]
+ where param_name='SuppressionValue') b
+where [rif40].[rif40_has_role](username,'rif_student') = 1
+and ([rif40].[rif40_has_role](a.username,'rif_no_suppression')=1 
+     or param_value is null or param_value=0)
+FOR XML PATH('')
+);
+
+IF @suppress_student_check IS NOT NULL
+BEGIN TRY
+    rollback;
+    DECLARE @err_msg12 = formatmessage(51024, @suppress_student_check);
+    THROW 51024, @err_msg12, 1;
+END TRY
+BEGIN CATCH
+   	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+	THROW 51024, @err_msg12, 1; 
+END CATCH
+ELSE
+    BEGIN
+    DECLARE @suppress_student_ok varchar(max) = 
+(  
+    select study_id, a.username, case when [rif40].[rif40_has_role](a.username,'rif_no_suppression')=1 then 0
+else b.param_value end as suppression_value
+from inserted a, (select param_value 
+ from [rif40].[t_rif40_paramaters]
+ where param_name='SuppressionValue') b
+FOR XML PATH('')
+);
+    DECLARE @log_msg12 = 'Study suppressed at: '+@supress_student_ok;
+    EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', @log_msg12;
+END;
+
+--not complete
+--IG
+
+END;
