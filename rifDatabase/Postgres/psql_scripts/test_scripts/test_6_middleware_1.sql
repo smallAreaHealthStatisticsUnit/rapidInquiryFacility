@@ -313,7 +313,7 @@ dinal_position | is_numeric
 \pset title 'Dump all attributes and themes'
 WITH a AS (
 	SELECT e.enumlabel, e.enumsortorder
-          FROM pg_type t, pg_enum e
+      FROM pg_type t, pg_enum e
  	 WHERE t.oid = e.enumtypid
 	   AND  t.typname = 'rif40_geolevelattributetheme'
 	 ORDER BY enumsortorder
