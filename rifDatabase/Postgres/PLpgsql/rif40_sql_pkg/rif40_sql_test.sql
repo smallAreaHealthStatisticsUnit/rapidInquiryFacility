@@ -530,8 +530,10 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 		BEGIN
 			IF error_code_expected IS NULL THEN
 				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-					'[90125] Test case: % FAILED, no error expected; got: %', 
-					test_case_title::VARCHAR, v_sqlstate::VARCHAR);		
+					'[90125] Test case: % FAILED, no error expected; got: %;%', 
+					test_case_title::VARCHAR, v_sqlstate::VARCHAR,
+					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
+					'Detail:   '||v_detail::VARCHAR);		
 				IF raise_exception_on_failure THEN
 					RAISE;
 				ELSE				
@@ -539,13 +541,17 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 				END IF;			
 			ELSIF error_code_expected = v_sqlstate THEN
 				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-					'[90120] Test case: % PASSED, caught expecting SQLSTATE %', 
-					test_case_title::VARCHAR, v_sqlstate::VARCHAR);			
+					'[90120] Test case: % PASSED, caught expecting SQLSTATE %;%', 
+					test_case_title::VARCHAR, v_sqlstate::VARCHAR,
+					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
+					'Detail:   '||v_detail::VARCHAR);			
 				RETURN TRUE;
 			ELSE	
 				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-					'[90126] Test case: % FAILED, expecting SQLSTATE %; got: %', 
-					test_case_title::VARCHAR, error_code_expected::VARCHAR, v_sqlstate::VARCHAR);		
+					'[90126] Test case: % FAILED, expecting SQLSTATE %; got: %;%', 
+					test_case_title::VARCHAR, error_code_expected::VARCHAR, v_sqlstate::VARCHAR,
+					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
+					'Detail:   '||v_detail::VARCHAR);		
 				IF raise_exception_on_failure THEN
 					RAISE;
 				ELSE				
