@@ -87,9 +87,26 @@ Done:
 
 #### 15th-19th June
 
+* Simple test harness for SELECT and INSERT/UPDATE/DELETE. Select uses arrays to check return data; exceptions are verified.
+* Improve exception handlers and error messages:
+
+Error context and message >>>
+Message:  rif40_sql_pkg.rif40_sql_test(): Test case: TRIGGER TEST #2: rif40_studies.suppression_value IS NULL FAILED, invalid statement type: %%SQL> INSERT;
+Hint:
+Detail:   -71065
+Context:  SQL statement "SELECT rif40_log_pkg.rif40_error(-71065, 'rif40_sql_test',
+                        'Test case: % FAILED, invalid statement type: %%SQL> %;',
+                        test_case_title::VARCHAR, UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 6))::VARCHAR, E'\n'::VARCHAR, test_stmt::VARCHAR)"
+PL/pgSQL function rif40_sql_test(character varying,character varying,anyarray,character varying,boolean) line 396 at PERFORM
+
+i.e. internal error code retuned in detail
+
+#### 22th-26th June
+
 Immediate TODO list: 
 
-* Improve test harness to check all return data, build trigger test harness to test for error conditions
+* Add control table (rif40_test_harness) for test harness, _rif40_test_sql_template() function to simplify creation, use common datatype shareable with SQL server
+  (XML or JSON; SQL server does not understand arrays)
 * Modify alter 7 so that existing conditions become rif40_error(...); /* Existing condition */ e.g.
 
 SELECT 1 AS x
