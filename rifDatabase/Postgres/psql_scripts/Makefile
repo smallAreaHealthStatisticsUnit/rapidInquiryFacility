@@ -345,6 +345,9 @@ test_no_alter:
 #- test: Run all test scripts [debug_level=1]
 debug_level_1_test:
 	$(MAKE) -C test_scripts clean all DEBUG_LEVEL=1 ECHO=all
+#- test: Run all test scripts [debug_level=1]
+debug_level_1_retest:
+	$(MAKE) -C test_scripts all DEBUG_LEVEL=1 ECHO=all	
 #- test: Run all test scripts [Verbose, debug_level=2, echo=all]
 verbose_test:
 	$(MAKE) -C test_scripts clean all VERBOSITY=verbose DEBUG_LEVEL=2 ECHO=all
