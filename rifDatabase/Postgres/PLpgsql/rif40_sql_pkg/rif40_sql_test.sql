@@ -64,153 +64,12 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_reduce_dim(my_array ANYARRAY)
-RETURNS SETOF ANYARRAY
-LANGUAGE plpgsql
-AS $func$
-/*
-Function: 	_rif40_reduce_dim()
-Parameters:	2D array 
-Returns:	Set of 1D array rows
-Description:
-			Array reduce from two to one dimension as a set of 1D array rows
-			Can then be cast to a record. Helper function for rif40_sql_test()
-E.g.
-
-	WITH a AS (
-		SELECT '{{01,01.015,01.015.016200,01.015.016200.2}
-	,{01,01.015,01.015.016200,01.015.016200.3} 
-	,{01,01.015,01.015.016200,01.015.016200.4} 
-	,{01,01.015,01.015.016900,01.015.016900.1} 
-	,{01,01.015,01.015.016900,01.015.016900.2} 
-	,{01,01.015,01.015.016900,01.015.016900.3} 
-	}'::Text[][] AS res
-	)
-	SELECT rif40_sql_pkg._rif40_reduce_dim(a.res) AS res
-	  FROM a;
-		
-						res
-	-------------------------------------------
-	 {01,01.015,01.015.016200,01.015.016200.2}
-	 {01,01.015,01.015.016200,01.015.016200.3}
-	 {01,01.015,01.015.016200,01.015.016200.4}
-	 {01,01.015,01.015.016900,01.015.016900.1}
-	 {01,01.015,01.015.016900,01.015.016900.2}
-	 {01,01.015,01.015.016900,01.015.016900.3}
-	(6 rows)
-	
- */
-DECLARE 
-	s my_array%type;
-BEGIN
-	FOREACH s SLICE 1  IN ARRAY $1 LOOP
-		RETURN NEXT s;
-	END LOOP;
 --
-	RETURN;
-END;
-$func$;
-
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_reduce_dim(ANYARRAY) IS 'Function: 	_rif40_reduce_dim()
-Parameters:	2D array 
-Returns:	Set of 1D array rows
-Description:
-			Array reduce from two to one dimension as a set of 1D array rows
-			Can then be cast to a record. Helper function for rif40_sql_test()
-E.g.
-
-	WITH a AS (
-		SELECT ''{{01,01.015,01.015.016200,01.015.016200.2}
-	,{01,01.015,01.015.016200,01.015.016200.3} 
-	,{01,01.015,01.015.016200,01.015.016200.4} 
-	,{01,01.015,01.015.016900,01.015.016900.1} 
-	,{01,01.015,01.015.016900,01.015.016900.2} 
-	,{01,01.015,01.015.016900,01.015.016900.3} 
-	}''::Text[][] AS res
-	)
-	SELECT rif40_sql_pkg._rif40_reduce_dim(a.res) AS res
-	  FROM a;
-		
-						res
-	-------------------------------------------
-	 {01,01.015,01.015.016200,01.015.016200.2}
-	 {01,01.015,01.015.016200,01.015.016200.3}
-	 {01,01.015,01.015.016200,01.015.016200.4}
-	 {01,01.015,01.015.016900,01.015.016900.1}
-	 {01,01.015,01.015.016900,01.015.016900.2}
-	 {01,01.015,01.015.016900,01.015.016900.3}
-	(6 rows)';
-
-CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_test_sql_template(test_stmt VARCHAR, test_case_title VARCHAR)
-RETURNS SETOF VARCHAR
-SECURITY INVOKER
-AS $func$
-/*
-Function: 	_rif40_test_sql_template()
-Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, test case title  
-Returns:	PL/pgsql template code 
-Description: Generate PL/pgsql template code, e.g.
-
-SELECT rif40_sql_pkg._rif40_test_sql_template(
-	'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
-	'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200') AS template;
-	
-template
---------	
-	IF NOT (PERFORM rif40_sql_pkg.rif40_sql_test(
-		'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
-		'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
-		'{{01,01.015,01.015.016200,01.015.016200.2}
-		,{01,01.015,01.015.016200,01.015.016200.3} 
-		,{01,01.015,01.015.016200,01.015.016200.4} 
-		,{01,01.015,01.015.016900,01.015.016900.1} 
-		,{01,01.015,01.015.016900,01.015.016900.2} 
-		,{01,01.015,01.015.016900,01.015.016900.3} 
-		}'::Text[][])) THEN
-		errors:=errors+1;
-	END IF;
-		
- */
-DECLARE 
-
-BEGIN
-	RETURN NEXT E'\t'||'IF NOT (PERFORM rif40_sql_pkg.rif40_sql_test(';
-	RETURN NEXT E'\t'||E'\t'||''''||REPLACE(test_stmt, '''', '''''')||'''';
-	RETURN NEXT E'\t'||E'\t'||''''||REPLACE(test_case_title, '''', '''''')||'''';		
-	RETURN NEXT E'\t'||E'\t'||'}''::Text[][])) THEN';
-	RETURN NEXT E'\t'||E'\t'||'errors:=errors+1;';
-	RETURN NEXT E'\t'||'END IF;'
+-- Include support functions
 --
-	RETURN;
-END;
-$func$ LANGUAGE plpgsql;
+\i ../PLpgsql/rif40_sql_pkg/_rif40_reduce_dim.sql
+\i ../PLpgsql/rif40_sql_pkg/_rif40_test_sql_template.sql
 
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_test_sql_template(VARCHAR, VARCHAR) IS 'Function: 	_rif40_test_sql_template()
-Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, test case title  
-Returns:	PL/pgsql template code 
-Description: Generate PL/pgsql template code, e.g.
-
-SELECT rif40_sql_pkg._rif40_test_sql_template(
-	''SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''''01.015.016900'''', ''''01.015.016200'''') ORDER BY level4'',
-	''Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200'') AS template;
-	
-template
---------	
-	IF NOT (PERFORM rif40_sql_pkg.rif40_sql_test(
-		''SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''''01.015.016900'''', ''''01.015.016200'''') ORDER BY level4'',
-		''Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200'',
-		''{{01,01.015,01.015.016200,01.015.016200.2}
-		,{01,01.015,01.015.016200,01.015.016200.3} 
-		,{01,01.015,01.015.016200,01.015.016200.4} 
-		,{01,01.015,01.015.016900,01.015.016900.1} 
-		,{01,01.015,01.015.016900,01.015.016900.2} 
-		,{01,01.015,01.015.016900,01.015.016900.3} 
-		}''::Text[][])) THEN
-		errors:=errors+1;
-	END IF;
-	
-';
- 
 --
 -- Test case 
 --
@@ -232,40 +91,13 @@ Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) stat
 Returns:	Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
 Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause
 
-			Used to check test SQL statements and triggers
-			
-			Usage:
-			
-			a) SELECT statements:
-			
-			   i)   Original SQL statement:
-			        SELECT * FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200');
-			   ii)  Add ORDER BY clause, expand * (This becomes the test case SQL)
-			        SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') ORDER BY level4;			   
-			   iii) Convert to array form (Cast to text, string ) 
-			        [the function rif40_sql_pkg._rif40_test_sql_template() will automate this]
-			   
-			        SELECT ''''||
-					       REPLACE(ARRAY_AGG(
-								(ARRAY[level1::Text, level2::Text, level3::Text, level4::Text]::Text||E'\n')::Text ORDER BY level4)::Text, 
-								'"'::Text, ''::Text)||'''::Text[][]' AS res 
-					  FROM sahsuland_geography
-					 WHERE level3 IN ('01.015.016900', '01.015.016200');
+Used to check test SQL statements and triggers
 
-										 res
-					---------------------------------------------
-					 '{{01,01.015,01.015.016200,01.015.016200.2}+
-					 ,{01,01.015,01.015.016200,01.015.016200.3} +
-					 ,{01,01.015,01.015.016200,01.015.016200.4} +
-					 ,{01,01.015,01.015.016900,01.015.016900.1} +
-					 ,{01,01.015,01.015.016900,01.015.016900.2} +
-					 ,{01,01.015,01.015.016900,01.015.016900.3} +
-					 }'::Text[][]
-					(1 row)
-					
-					Example call:
-					
-PERFORM rif40_sql_pkg.rif40_sql_test(
+Usage:
+
+a) SELECT statements:
+			
+IF NOT (rif40_sql_pkg.rif40_sql_test(
 	'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
 	'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
 	'{{01,01.015,01.015.016200,01.015.016200.2}
@@ -274,58 +106,210 @@ PERFORM rif40_sql_pkg.rif40_sql_test(
 	,{01,01.015,01.015.016900,01.015.016900.1} 
 	,{01,01.015,01.015.016900,01.015.016900.2} 
 	,{01,01.015,01.015.016900,01.015.016900.3} 
-	}'::Text[][]);
+	}'::Text[][]
+	/- Use defaults -/)) THEN
+	errors:=errors+1;
+END IF;				
 
-					Example expand of array to setof record
-	  
-	WITH a AS (
-		SELECT '{{01,01.015,01.015.016200,01.015.016200.2}
-	,{01,01.015,01.015.016200,01.015.016200.3} 
-	,{01,01.015,01.015.016200,01.015.016200.4} 
-	,{01,01.015,01.015.016900,01.015.016900.1} 
-	,{01,01.015,01.015.016900,01.015.016900.2} 
-	,{01,01.015,01.015.016900,01.015.016900.3} 
-	}'::Text[][] AS res
-	), row AS (
-		SELECT generate_series(1,array_upper(a.res, 1)) AS series
-		  FROM a
-	)
-	SELECT  row.series, 
-	        (a.res)[row.series][1] AS level1, 
-	        (a.res)[row.series][2] AS level2, 
-	        (a.res)[row.series][3] AS level3, 
-	        (a.res)[row.series][4] AS level4
-	  FROM row, a;
+psql:test_scripts/test_8_triggers.sql:276: INFO:  rif40_method4():
+Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200
+---------------------------------------------------------------------
+psql:test_scripts/test_8_triggers.sql:276: INFO:  rif40_method4():
+level1                                   | level2                                   | level3                                   | level4
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+01                                       | 01.015                                   | 01.015.016200                            | 01.015.016200.2
+01                                       | 01.015                                   | 01.015.016200                            | 01.015.016200.3
+01                                       | 01.015                                   | 01.015.016200                            | 01.015.016200.4
+01                                       | 01.015                                   | 01.015.016900                            | 01.015.016900.1
+01                                       | 01.015                                   | 01.015.016900                            | 01.015.016900.2
+01                                       | 01.015                                   | 01.015.016900                            | 01.015.016900.3
+(6 rows)
+psql:test_scripts/test_8_triggers.sql:276: INFO:  rif40_sql_test(): [71052] PASSED: no extra rows for test: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200
+psql:test_scripts/test_8_triggers.sql:276: INFO:  rif40_sql_test(): [71055] PASSED: no missing rows for test: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200
+psql:test_scripts/test_8_triggers.sql:276: INFO:  rif40_sql_test(): [71058] PASSED: Test case: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 no exceptions, no errors, no missing or extra data
+				
+i)   Original SQL statement:
+	SELECT * FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200');
+ii)  Add ORDER BY clause, expand * (This becomes the test case SQL)
+	SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') ORDER BY level4;			   
+iii) Convert results to array form (Cast to text, string ) 
+	[the function rif40_sql_pkg._rif40_test_sql_template() will automate this]
+
+	SELECT ''''||
+		   REPLACE(ARRAY_AGG(
+				(ARRAY[level1::Text, level2::Text, level3::Text, level4::Text]::Text||E'\n')::Text ORDER BY level4)::Text, 
+				'"'::Text, ''::Text)||'''::Text[][]' AS res 
+	  FROM sahsuland_geography
+	 WHERE level3 IN ('01.015.016900', '01.015.016200');
+
+						 res
+	---------------------------------------------
+	 '{{01,01.015,01.015.016200,01.015.016200.2}+
+	 ,{01,01.015,01.015.016200,01.015.016200.3} +
+	 ,{01,01.015,01.015.016200,01.015.016200.4} +
+	 ,{01,01.015,01.015.016900,01.015.016900.1} +
+	 ,{01,01.015,01.015.016900,01.015.016900.2} +
+	 ,{01,01.015,01.015.016900,01.015.016900.3} +
+	 }'::Text[][]
+	(1 row)
 	
-WITH a AS ( /- Test data -/ 
-	SELECT '{{01,01.015,01.015.016200,01.015.016200.2}
+	Example call:
+	
+	PERFORM rif40_sql_pkg.rif40_sql_test(
+		'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
+		'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
+		'{{01,01.015,01.015.016200,01.015.016200.2}
+		,{01,01.015,01.015.016200,01.015.016200.3} 
+		,{01,01.015,01.015.016200,01.015.016200.4} 
+		,{01,01.015,01.015.016900,01.015.016900.1} 
+		,{01,01.015,01.015.016900,01.015.016900.2} 
+		,{01,01.015,01.015.016900,01.015.016900.3} 
+		}'::Text[][]);
+
+	Example expand of array to setof record
+		  
+		WITH a AS (
+			SELECT '{{01,01.015,01.015.016200,01.015.016200.2}
 		,{01,01.015,01.015.016200,01.015.016200.3} 
 		,{01,01.015,01.015.016200,01.015.016200.4} 
 		,{01,01.015,01.015.016900,01.015.016900.1} 
 		,{01,01.015,01.015.016900,01.015.016900.2} 
 		,{01,01.015,01.015.016900,01.015.016900.3} 
 		}'::Text[][] AS res
-), b AS ( /- Test SQL -/
-	SELECT level1, level2, level3, level4 
-	  FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') 
-	 ORDER BY level4
-), c AS ( /- Convert to 2D array via record -/
-	SELECT REPLACE(
-				REPLACE(
+		), row AS (
+			SELECT generate_series(1,array_upper(a.res, 1)) AS series
+			  FROM a
+		)
+		SELECT  row.series, 
+				(a.res)[row.series][1] AS level1, 
+				(a.res)[row.series][2] AS level2, 
+				(a.res)[row.series][3] AS level3, 
+				(a.res)[row.series][4] AS level4
+		  FROM row, a;
+		
+	WITH a AS ( /- Test data -/ 
+		SELECT '{{01,01.015,01.015.016200,01.015.016200.2}
+			,{01,01.015,01.015.016200,01.015.016200.3} 
+			,{01,01.015,01.015.016200,01.015.016200.4} 
+			,{01,01.015,01.015.016900,01.015.016900.1} 
+			,{01,01.015,01.015.016900,01.015.016900.2} 
+			,{01,01.015,01.015.016900,01.015.016900.3} 
+			}'::Text[][] AS res
+	), b AS ( /- Test SQL -/
+		SELECT level1, level2, level3, level4 
+		  FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') 
+		 ORDER BY level4
+	), c AS ( /- Convert to 2D array via record -/
+		SELECT REPLACE(
 					REPLACE(
-							ARRAY_AGG(b.*)::Text, 
-							'"'::Text, ''::Text), 
-						'('::Text, '{'::Text), 
-					')'::Text, '}'::Text)::Text[][] AS res
-	FROM b
-)
-SELECT rif40_sql_pkg._rif40_reduce_dim(c.res) AS missing_data
-  FROM c
-EXCEPT 
-SELECT rif40_sql_pkg._rif40_reduce_dim(a.res)
-  FROM a;
-  
-			b) TRIGGERS
+						REPLACE(
+								ARRAY_AGG(b.*)::Text, 
+								'"'::Text, ''::Text), 
+							'('::Text, '{'::Text), 
+						')'::Text, '}'::Text)::Text[][] AS res
+		FROM b
+	)
+	SELECT rif40_sql_pkg._rif40_reduce_dim(c.res) AS missing_data
+	  FROM c
+	EXCEPT 
+	SELECT rif40_sql_pkg._rif40_reduce_dim(a.res)
+	  FROM a;
+
+b) TRIGGERS
+			
+These use INSERT/UPDATE OR DELETE statements. RETURNING is supported, but it must be a single 
+text value (test_value). The results array should should also be  single value. Beware that the INSERTed data from the table is not in scope, so you can return a sequence, an input value, but not trigger modified data 
+
+	IF NOT (rif40_sql_pkg.rif40_sql_test(	
+		'INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
+VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST_1'', ''MAP_TRIGGER_TEST_1'', 1 /- Disease mapping -/, ''LEVEL1'', ''LEVEL4'', NULL /- FAIL HERE -/, 0)',
+		'TRIGGER TEST #1: rif40_studies.denom_tab IS NULL',
+		NULL::Text[][] 	/- No results for trigger -/,
+		'P0001' 		/- Expected SQLCODE (P0001 - PGpsql raise_exception (from rif40_error) -/, 
+		FALSE 			/- Do not RAISE EXCEPTION on failure -/)) THEN
+		errors:=errors+1;
+    END IF;	 
+
+psql:test_scripts/test_8_triggers.sql:276: WARNING:  rif40_ddl(): SQL in error (P0001)> INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
+VALUES ('SAHSU', 'TEST', 'TRIGGER TEST #1', 'EXTRACT_TRIGGER_TEST_1', 'MAP_TRIGGER_TEST_1', 1 /- Diease mapping -/, 'LEVEL1', 'LEVEL4', NULL /- FAIL HERE -/, 0);
+psql:test_scripts/test_8_triggers.sql:276: WARNING:  71067: rif40_sql_test('TRIGGER TEST #1: rif40_studies.denom_tab IS NULL') caught:
+rif40_trg_pkg.trigger_fct_t_rif40_studies_checks(): T_RIF40_STUDIES study 140 denominator:  not found in RIF40_TABLES in SQL >>>
+INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
+VALUES ('SAHSU', 'TEST', 'TRIGGER TEST #1', 'EXTRACT_TRIGGER_TEST_1', 'MAP_TRIGGER_TEST_1', 1 /- Diease mapping -/, 'LEVEL1', 'LEVEL4', NULL /- FAIL HERE -/, 0);
+<<<
+Error context and message >>>
+Message:  rif40_trg_pkg.trigger_fct_t_rif40_studies_checks(): T_RIF40_STUDIES study 140 denominator:  not found in RIF40_TABLES
+Hint:     Consult message text
+Detail:   -20211
+Context:  SQL statement "SELECT rif40_log_pkg.rif40_error(-20211, 'trigger_fct_t_rif40_studies_checks',
+                        'T_RIF40_STUDIES study % denominator: % not found in RIF40_TABLES',
+                        NEW.study_id::VARCHAR           /- Study id -/,
+                        NEW.denom_tab::VARCHAR          /- Denominator -/)"
+PL/pgSQL function rif40_trg_pkg.trigger_fct_t_rif40_studies_checks() line 460 at PERFORM
+SQL statement "INSERT INTO t_rif40_studies (
+                                username,
+                                study_id,
+                                extract_table,
+                                study_name,
+                                summary,
+                                description,
+                                other_notes,
+                                study_date,
+                                geography,
+                                study_type,
+                                study_state,
+                                comparison_geolevel_name,
+                                denom_tab,
+                                direct_stand_tab,
+                                study_geolevel_name,
+                                map_table,
+                                suppression_value,
+                                extract_permitted,
+                                transfer_permitted,
+                                authorised_by,
+                                authorised_on,
+                                authorised_notes,
+                                audsid,
+                                project)
+                        VALUES(
+                                coalesce(NEW.username, "current_user"()),
+                                coalesce(NEW.study_id, (nextval('rif40_study_id_seq'::regclass))::integer),
+                                NEW.extract_table /- no default value -/,
+                                NEW.study_name /- no default value -/,
+                                NEW.summary /- no default value -/,
+                                NEW.description /- no default value -/,
+                                NEW.other_notes /- no default value -/,
+                                coalesce(NEW.study_date, ('now'::text)::timestamp without time zone),
+                                NEW.geography /- no default value -/,
+                                NEW.study_type /- no default value -/,
+                                coalesce(NEW.study_state, 'C'::character varying),
+                                NEW.comparison_geolevel_name /- no default value -/,
+                                NEW.denom_tab /- no default value -/,
+                                NEW.direct_stand_tab /- no default value -/,
+                                NEW.study_geolevel_name /- no default value -/,
+                                NEW.map_table /- no default value -/,
+                                NEW.suppression_value /- no default value -/,
+                                coalesce(NEW.extract_permitted, 0),
+                                coalesce(NEW.transfer_permitted, 0),
+                                NEW.authorised_by /- no default value -/,
+                                NEW.authorised_on /- no default value -/,
+                                NEW.authorised_notes /- no default value -/,
+                                coalesce(NEW.audsid, sys_context('USERENV'::character varying, 'SESSIONID'::character varying)),
+                                NEW.project /- no default value -/)"
+PL/pgSQL function rif40_trg_pkg.trgf_rif40_studies() line 8 at SQL statement
+SQL statement "INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
+VALUES ('SAHSU', 'TEST', 'TRIGGER TEST #1', 'EXTRACT_TRIGGER_TEST_1', 'MAP_TRIGGER_TEST_1', 1 /- Diease mapping -/, 'LEVEL1', 'LEVEL4', NULL /- FAIL HERE -/, 0)"
+PL/pgSQL function rif40_ddl(character varying) line 51 at EXECUTE statement
+SQL statement "SELECT rif40_sql_pkg.rif40_ddl(test_stmt)"
+PL/pgSQL function rif40_sql_test(character varying,character varying,anyarray,character varying,boolean) line 253 at PERFORM
+PL/pgSQL function inline_code_block line 157 at IF
+SQLSTATE: P0001
+<<< End of trace.
+
+psql:test_scripts/test_8_triggers.sql:276: WARNING:  rif40_sql_test(): [71069] Test case: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL PASSED, caught expecting SQLSTATE P0001;
+Message:  rif40_trg_pkg.trigger_fct_t_rif40_studies_checks(): T_RIF40_STUDIES study 140 denominator:  not found in RIF40_TABLES
+Detail:   -20211
+
  */
 DECLARE	
 	sql_frag 	VARCHAR;
@@ -442,63 +426,69 @@ BEGIN
 --
 -- Other SQL test statements (i.e. INSERT/UPDATE/DELETE for triggers) with RETURNING clause
 --
-	ELSIF results IS NOT NULL THEN
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71050] SQL[INSERT/UPDATE/DELETE; RETURNING]> %;', 
-			test_stmt::VARCHAR);	
-		OPEN c1sqlt FOR EXECUTE test_stmt;
-		FETCH c1sqlt INTO c1sqlt_result_row;
-		CLOSE c1sqlt;
-		IF error_code_expected IS NOT NULL THEN
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-				'[71059] FAILED: Test case: % no exception, expected SQLSTATE: %', 
-				test_case_title::VARCHAR, error_code_expected::VARCHAR);				
-			RETURN FALSE;	
-		ELSIF c1sqlt_result_row.test_value = results[1] THEN
-			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
-				'[71060] PASSED: Test case: % no exceptions, no errors, return value as expected: %', 
-				test_case_title::VARCHAR, results[1]::VARCHAR);			
-			RETURN TRUE;
-		ELSIF raise_exception_on_failure THEN
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-				'[71061] FAILED: Test case: % got: %, expected: %', 
-				test_case_title::VARCHAR, c1sqlt_result_row.test_value::VARCHAR, results[1]::VARCHAR);			
-			RAISE no_data_found;
-		ELSE /* Value test failed */
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-				'[71062] FAILED: Test case: % got: %, expected: %', 
-				test_case_title::VARCHAR, c1sqlt_result_row.test_value::VARCHAR, results[1]::VARCHAR);			
-			RETURN FALSE;
- 		END IF;
-	
+	ELSIF UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 6)) IN ('INSERT', 'UPDATE', 'DELETE') THEN
+		IF results IS NOT NULL THEN
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71050] SQL[INSERT/UPDATE/DELETE; RETURNING]> %;', 
+				test_stmt::VARCHAR);	
+			OPEN c1sqlt FOR EXECUTE test_stmt;
+			FETCH c1sqlt INTO c1sqlt_result_row;
+			CLOSE c1sqlt;
+			IF error_code_expected IS NOT NULL THEN
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+					'[71059] FAILED: Test case: % no exception, expected SQLSTATE: %', 
+					test_case_title::VARCHAR, error_code_expected::VARCHAR);				
+				RETURN FALSE;	
+			ELSIF c1sqlt_result_row.test_value = results[1] THEN
+				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+					'[71060] PASSED: Test case: % no exceptions, no errors, return value as expected: %', 
+					test_case_title::VARCHAR, results[1]::VARCHAR);			
+				RETURN TRUE;
+			ELSIF raise_exception_on_failure THEN
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+					'[71061] FAILED: Test case: % got: %, expected: %', 
+					test_case_title::VARCHAR, c1sqlt_result_row.test_value::VARCHAR, results[1]::VARCHAR);			
+				RAISE no_data_found;
+			ELSE /* Value test failed */
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+					'[71062] FAILED: Test case: % got: %, expected: %', 
+					test_case_title::VARCHAR, c1sqlt_result_row.test_value::VARCHAR, results[1]::VARCHAR);			
+				RETURN FALSE;
+			END IF;
+		
 --
 -- Other SQL test statements (i.e. INSERT/UPDATE/DELETE for triggers)
 --
-	ELSE
-		PERFORM rif40_sql_pkg.rif40_ddl(test_stmt);
-
-		IF error_code_expected IS NULL THEN
-			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
-				'[71063] PASSED: Test case: % no exceptions, no error expected', 
-				test_case_title::VARCHAR);		
-			RETURN TRUE;
-		ELSIF raise_exception_on_failure THEN		
-			RAISE no_data_found;			
 		ELSE
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-				'[71064] FAILED: Test case: % no exceptions, expected SQLSTATE: %', 
-				test_case_title::VARCHAR, error_code_expected::VARCHAR);		
-			RETURN FALSE;		
+			PERFORM rif40_sql_pkg.rif40_ddl(test_stmt);
+
+			IF error_code_expected IS NULL THEN
+				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+					'[71063] PASSED: Test case: % no exceptions, no error expected', 
+					test_case_title::VARCHAR);		
+				RETURN TRUE;
+			ELSIF raise_exception_on_failure THEN		
+				RAISE no_data_found;			
+			ELSE
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+					'[71064] FAILED: Test case: % no exceptions, expected SQLSTATE: %', 
+					test_case_title::VARCHAR, error_code_expected::VARCHAR);		
+				RETURN FALSE;		
+			END IF;
 		END IF;
+	ELSE
+		PERFORM rif40_log_pkg.rif40_error(-71065, 'rif40_sql_test', 
+			'Test case: % FAILED, invalid statement type: % %SQL> %;', 
+			test_case_title::VARCHAR, UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 6))::VARCHAR, E'\n'::VARCHAR, test_stmt::VARCHAR);	
 	END IF;
 --
 EXCEPTION
 	WHEN no_data_found THEN	
 		IF error_code_expected IS NULL THEN
-			PERFORM rif40_log_pkg.rif40_error(-71065, 'rif40_sql_test', 
+			PERFORM rif40_log_pkg.rif40_error(-71066, 'rif40_sql_test', 
 				'Test case: % FAILED, % errors', 
 				test_case_title::VARCHAR, (extra+missing)::VARCHAR);
 		ELSE
-			PERFORM rif40_log_pkg.rif40_error(-71066, 'rif40_sql_test', 
+			PERFORM rif40_log_pkg.rif40_error(-71067, 'rif40_sql_test', 
 				'Test case: % FAILED, % errors; expecting SQLSTATE: %; not thrown', 
 				test_case_title::VARCHAR, (extra+missing)::VARCHAR, error_code_expected::VARCHAR);	
 		END IF;
@@ -550,14 +540,14 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 		IF COALESCE(v_constraint_name, '') != '' THEN
 			error_message:=error_message||'; constraint: '||v_constraint_name;	
 		END IF;			
-		RAISE WARNING '71067: %', error_message;
+		RAISE WARNING '71068: %', error_message;
 --
 -- Check error SQLSTATE
 --
 		BEGIN
 			IF error_code_expected IS NULL THEN
 				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-					'[71068] Test case: % FAILED, no error expected; got: %;%', 
+					'[71069] Test case: % FAILED, no error expected; got: %;%', 
 					test_case_title::VARCHAR, v_sqlstate::VARCHAR,
 					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
 					'Detail:   '||v_detail::VARCHAR);		
@@ -568,14 +558,14 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 				END IF;			
 			ELSIF error_code_expected = v_sqlstate THEN
 				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-					'[71069] Test case: % PASSED, caught expecting SQLSTATE %;%', 
+					'[71070] Test case: % PASSED, caught expecting SQLSTATE %;%', 
 					test_case_title::VARCHAR, v_sqlstate::VARCHAR,
 					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
 					'Detail:   '||v_detail::VARCHAR);			
 				RETURN TRUE;
 			ELSE	
 				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-					'[71070] Test case: % FAILED, expecting SQLSTATE %; got: %;%', 
+					'[71071] Test case: % FAILED, expecting SQLSTATE %; got: %;%', 
 					test_case_title::VARCHAR, error_code_expected::VARCHAR, v_sqlstate::VARCHAR,
 					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
 					'Detail:   '||v_detail::VARCHAR);		
@@ -594,7 +584,7 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 					'Detail: '||v_detail::VARCHAR||E'\n'||
 					'Context: '||v_context::VARCHAR||E'\n'||
 					'SQLSTATE: '||v_sqlstate::VARCHAR;
-				RAISE EXCEPTION '71070: %', error_message USING DETAIL=v_detail;			
+				RAISE EXCEPTION '71072: %', error_message USING DETAIL=v_detail;			
 		END;
 END;
 $func$ LANGUAGE plpgsql;

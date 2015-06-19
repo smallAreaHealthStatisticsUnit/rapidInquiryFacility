@@ -62,7 +62,7 @@ BEGIN;
 \dS t_rif40_studies
 
 --
--- Test case a)
+-- Test test harness!
 --	
 DO LANGUAGE plpgsql $$
 DECLARE
@@ -274,7 +274,11 @@ EXCEPTION
 		RAISE EXCEPTION 'T8--08: test_8_triggers.sql: 1: %', error_message;
 END;
 $$;
-  
+ 
+--
+-- Run trigger test harness
+--
+ 
 --
 -- Testing stop
 --
