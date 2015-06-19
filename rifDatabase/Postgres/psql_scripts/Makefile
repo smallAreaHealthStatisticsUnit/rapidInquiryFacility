@@ -336,6 +336,9 @@ sahsuland_dev_dump: ../install/sahsuland_dev.dump
 #- test: Run all test scripts [Non verbose, no debug]
 test:
 	$(MAKE) -C test_scripts clean all
+#- retest: Re-run incomplete test scripts [Non verbose, no debug]
+retest:
+	$(MAKE) -C test_scripts all	
 #- test_no_alter: Run test scripts able to be run before the alter scripts [Non verbose, no debug]
 test_no_alter:
 	$(MAKE) -C test_scripts clean no_alter

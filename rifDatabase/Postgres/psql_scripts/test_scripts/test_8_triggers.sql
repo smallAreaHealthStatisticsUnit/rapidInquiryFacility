@@ -66,14 +66,74 @@ BEGIN;
 --	
 DO LANGUAGE plpgsql $$
 DECLARE
+	c1th CURSOR FOR 
+		SELECT *
+		  FROM rif40_studies 
+		 WHERE study_name LIKE 'TRIGGER TEST%';
+	c2th CURSOR FOR 
+		SELECT CURRENT_SETTING('rif40.debug_level') AS debug_level;
+	c3th CURSOR FOR 
+		SELECT COUNT(study_id) AS total_studies
+		  FROM rif40_studies 
+		 WHERE study_name LIKE 'TRIGGER TEST%';		
+	c1th_rec RECORD;
+	c2th_rec RECORD;
+	c3th_rec RECORD;	
+--
 	errors INTEGER:=0;
 --
 	error_message VARCHAR;
+--
+	rif40_pkg_functions 		VARCHAR[] := ARRAY[
+				'rif40_delete_study', 'rif40_ddl'];
+	l_function 			VARCHAR;	
+	debug_level		INTEGER;	
 --
 	v_sqlstate 	VARCHAR;
 	v_context	VARCHAR;
 	v_detail 	VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN	
+	OPEN c2th;
+	FETCH c2th INTO c2th_rec;
+	CLOSE c2th;
+--
+-- Test parameter
+--
+	IF c2th_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
+		RAISE EXCEPTION 'test_8_triggers.sql: T1-01: No -v testuser=<debug level> parameter';	
+	ELSE
+		debug_level:=LOWER(SUBSTR(c2th_rec.debug_level, 5))::INTEGER;
+		RAISE INFO 'T8--02: test_8_triggers.sql: debug level parameter="%"', debug_level::Text;
+	END IF;
+	--
+-- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
+--
+    PERFORM rif40_log_pkg.rif40_log_setup();
+	IF debug_level IS NULL THEN
+		RAISE INFO 'T8--04: NULL debug_level';
+		debug_level:=0;
+	ELSIF debug_level > 4 THEN
+		RAISE EXCEPTION 'test_8_triggers.sql: T8--03: Invalid debug level [0-4]: %', debug_level;
+	ELSIF debug_level BETWEEN 1 AND 4 THEN
+		RAISE INFO 'T8--04: test_8_triggers.sql: debug_level %', debug_level;
+        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+--
+-- Enabled debug on select rif40_sm_pkg functions
+--
+		FOREACH l_function IN ARRAY rif40_pkg_functions LOOP
+			RAISE INFO 'T8--05: test_8_triggers.sql: Enable debug for function: %', l_function;
+			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
+		END LOOP;
+	ELSE
+		RAISE INFO 'T8--04: test_8_triggers.sql: debug_level %', debug_level;
+	END IF;
+--
+-- Clear up old test cases
+--
+	FOR c1th_rec IN c1th LOOP
+		PERFORM rif40_sm_pkg.rif40_delete_study(c1th_rec.study_id);
+	END LOOP;
+--
 	IF NOT (rif40_sql_pkg.rif40_sql_test(
 		'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
 		'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
@@ -162,7 +222,7 @@ Foreign-key constraints:
 --
 	IF NOT (rif40_sql_pkg.rif40_sql_test(	
 		'INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
-VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST'', ''MAP_TRIGGER_TEST'', 1 /* Diease mapping */, ''LEVEL1'', ''LEVEL4'', NULL /* FAIL HERE */, 0)',
+VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST_1'', ''MAP_TRIGGER_TEST_1'', 1 /* Diease mapping */, ''LEVEL1'', ''LEVEL4'', NULL /* FAIL HERE */, 0)',
 		'TRIGGER TEST #1: rif40_studies.denom_tab IS NULL',
 		NULL::Text[][] 	/* No results for trigger */,
 		'P0001' 		/* Expected SQLCODE (P0001 - PGpsql raise_exception (from rif40_error) */, 
@@ -171,30 +231,47 @@ VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST'', ''MA
     END IF;	
 	IF NOT (rif40_sql_pkg.rif40_sql_test(	
 		'INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
-VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST'', ''MAP_TRIGGER_TEST'', 1 /* Diease mapping */, ''LEVEL1'', ''LEVEL4'', ''SAHSULAND_POP'', NULL /* FAIL HERE */)
+VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #2'', ''EXTRACT_TRIGGER_TEST_2'', ''MAP_TRIGGER_TEST_2'', 1 /* Diease mapping */, ''LEVEL1'', ''LEVEL4'', ''SAHSULAND_POP'', NULL /* FAIL HERE */)
 RETURNING suppression_value',
 		'TRIGGER TEST #2: rif40_studies.suppression_value IS NULL',
 		'{{0}}'::Text[][] 	/* Results for trigger - DEFAULTED value */,
 		NULL 			/* Expected SQLCODE */, 
 		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
 		errors:=errors+1;
+	ELSE	
+		PERFORM rif40_sql_pkg.rif40_ddl('DELETE FROM rif40_studies WHERE study_name = ''TRIGGER TEST #2''');
     END IF;		
+	
+--
+-- Check no TEST TIRGGER studies actually created 
+--
+	OPEN c3th;
+	FETCH c3th INTO c3th_rec;
+	CLOSE c3th;
+	IF c3th_rec.total_studies > 0 THEN
+		PERFORM rif40_sql_pkg.rif40_method4('SELECT study_id, study_name FROM rif40_studies  WHERE study_name LIKE ''TRIGGER TEST%''', 
+			'Check no TEST TIRGGER studies actually created');
+		RAISE EXCEPTION 'T8--06: test_8_triggers.sql: % TEST TIRGGER studies have been created', c3th_rec.total_studies;
+	ELSE
+		RAISE NOTICE 'T8--11: test_8_triggers.sql: No TEST TIRGGER studies actually created.';		
+	END IF;
+	
 --	
 	IF errors = 0 THEN
-		RAISE NOTICE 'No test harness errors.';		
+		RAISE NOTICE 'T8--09: test_8_triggers.sql: No test harness errors.';		
 	ELSE
-		RAISE EXCEPTION 'Test harness errors: %', errors;
+		RAISE EXCEPTION 'T8--10: test_8_triggers.sql: Test harness errors: %', errors;
 	END IF;
 EXCEPTION
 	WHEN others THEN
 		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 		GET STACKED DIAGNOSTICS v_sqlstate = RETURNED_SQLSTATE;
 		GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
-		error_message:='Test harness caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||
+		error_message:='T8--07: test_8_triggers.sql: Test harness caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||
 			'Detail: '||v_detail::VARCHAR||E'\n'||
 			'Context: '||v_context::VARCHAR||E'\n'||
 			'SQLSTATE: '||v_sqlstate::VARCHAR;
-		RAISE EXCEPTION '1: %', error_message;
+		RAISE EXCEPTION 'T8--08: test_8_triggers.sql: 1: %', error_message;
 END;
 $$;
   

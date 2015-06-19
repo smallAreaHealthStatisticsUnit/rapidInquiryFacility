@@ -213,6 +213,8 @@ template
 --
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN);	
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
+	INTEGER, BOOLEAN);		
 CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_sql_test(test_stmt VARCHAR, test_case_title VARCHAR, results ANYARRAY,
 	error_code_expected VARCHAR DEFAULT NULL, raise_exception_on_failure BOOLEAN DEFAULT TRUE)
 RETURNS boolean
@@ -426,7 +428,7 @@ BEGIN
 			RETURN FALSE;	
 		ELSIF extra = 0 AND missing = 0 THEN 
 			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
-				'[90129] PASSED: Test case: % no exceptions, no errors, no missing or extra data', 
+				'[90139] PASSED: Test case: % no exceptions, no errors, no missing or extra data', 
 				test_case_title::VARCHAR);			
 			RETURN TRUE;
 		ELSIF raise_exception_on_failure THEN
