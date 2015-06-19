@@ -85,7 +85,7 @@ DECLARE
 	error_message VARCHAR;
 --
 	rif40_pkg_functions 		VARCHAR[] := ARRAY[
-				'rif40_delete_study', 'rif40_ddl'];
+				'rif40_delete_study', 'rif40_ddl', 'rif40_sql_test'];
 	l_function 			VARCHAR;	
 	debug_level		INTEGER;	
 --
@@ -232,9 +232,9 @@ VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST_1'', ''
 	IF NOT (rif40_sql_pkg.rif40_sql_test(	
 		'INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
 VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #2'', ''EXTRACT_TRIGGER_TEST_2'', ''MAP_TRIGGER_TEST_2'', 1 /* Diease mapping */, ''LEVEL1'', ''LEVEL4'', ''SAHSULAND_POP'', NULL /* FAIL HERE */)
-RETURNING suppression_value',
+RETURNING 1::Text AS test_value',
 		'TRIGGER TEST #2: rif40_studies.suppression_value IS NULL',
-		'{{0}}'::Text[][] 	/* Results for trigger - DEFAULTED value */,
+		'{1}'::Text[][] /* Results for trigger - DEFAULTED value will not work - table is mutating and row does not exist at the point of INSERT */,
 		NULL 			/* Expected SQLCODE */, 
 		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
 		errors:=errors+1;
