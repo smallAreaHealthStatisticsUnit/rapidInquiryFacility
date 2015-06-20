@@ -557,12 +557,19 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 					RETURN FALSE;
 				END IF;			
 			ELSIF error_code_expected = v_sqlstate THEN
-				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
 					'[71070] Test case: % PASSED, caught expecting SQLSTATE %;%', 
 					test_case_title::VARCHAR, v_sqlstate::VARCHAR,
 					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
 					'Detail:   '||v_detail::VARCHAR);			
 				RETURN TRUE;
+			ELSIF v_sqlstate = 'P0001' AND error_code_expected = v_detail THEN
+				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+					'[71070] Test case: % PASSED, caught expecting SQLSTATE/RIF error code: %/%;%', 
+					test_case_title::VARCHAR, v_sqlstate::VARCHAR, error_code_expected::VARCHAR,
+					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
+					'Detail:   '||v_detail::VARCHAR);			
+				RETURN TRUE;			
 			ELSE	
 				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
 					'[71071] Test case: % FAILED, expecting SQLSTATE %; got: %;%', 

@@ -169,6 +169,21 @@ BEGIN
     END IF;		
 
 --
+-- rif40_log_pkg.rif40_error() test (and the test harness handling of RIF error codes)
+--
+	IF NOT (rif40_sql_pkg.rif40_sql_test(
+		'SELECT rif40_log_pkg.rif40_error(-90125, ''rif40_error'', ''Dummy error: %'', ''rif40_error test''::VARCHAR) AS x',
+		'rif40_log_pkg.rif40_error() test',
+		NULL::Text[][] 	/* No results for SELECT */,		
+		'-90125'	 	/* Expected SQLCODE */, 
+		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
+        errors:=errors+1;
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+			'rif40_log_pkg.rif40_error() test.');
+    END IF;		
+			
+--
 -- T_RIF40_STUDIES
 --
 /*	sahsuland_dev=> \dS t_rif40_studies

@@ -107,11 +107,16 @@ Immediate TODO list:
 
 * Add control table (rif40_test_harness) for test harness, _rif40_test_sql_template() function to simplify creation, use common datatype shareable with SQL server
   (XML or JSON; SQL server does not understand arrays)
+* Trigger test harness: ???? 
 * Modify alter 7 so that existing conditions become rif40_error(...); /* Existing condition */ e.g.
 
 SELECT 1 AS x
- WHERE rif40_error(-20199, 'Dummy error: %', 'Test'::VARCHAR);
- 
+ WHERE 1 = rif40_log_pkg.rif40_error(-90125, 'rif40_error', 'Dummy error: %', 'Test'::VARCHAR);
+
+or
+
+SELECT rif40_log_pkg.rif40_error(-90125, 'rif40_error', 'Dummy error: %', 'Test'::VARCHAR) AS x;
+
 Raises an exception!
 
 * Fix pernicious mixed content issues in JS frontend

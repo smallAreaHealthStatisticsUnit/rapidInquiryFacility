@@ -678,15 +678,17 @@ Description:	Get action for EXCEPTION HINT';
 
 \df rif40_log_pkg.rif40_get_error_code_action
 
+DROP FUNCTION IF EXISTS rif40_log_pkg.rif40_error(INTEGER, VARCHAR, VARIADIC VARCHAR[]);
+
 CREATE OR REPLACE FUNCTION rif40_log_pkg.rif40_error(l_error_code INTEGER, function_name VARCHAR, format_and_args VARIADIC VARCHAR[])
-RETURNS void
+RETURNS INTEGER
 SECURITY INVOKER
 AS $func$
 /*
 
 Function: 	rif40_error()
 Parameters:	error code, function name, format, args ...
-Returns:	Nothing
+Returns:	Nothing (RAISE EXCEPTION). The return code is to allow is use in SQL
 Description:	This is the error handler!
 
  desc rif40_error_messages
@@ -741,7 +743,7 @@ BEGIN
 		output:='';
 		format_len:=LENGTH(format);
 		IF format_len = 0 THEN
-			RETURN;
+			RETURN NULL;
 		END IF;
 --
 -- Format string
@@ -790,6 +792,8 @@ BEGIN
 	ELSE
 		RAISE EXCEPTION '%(): %', l_function_name, output USING HINT=l_action, DETAIL=l_error_code::Text;
 	END IF;
+--
+	RETURN l_error_code;
 END;
 $func$
 LANGUAGE PLPGSQL;
