@@ -8,10 +8,11 @@
 	</data_sources>
 
 	<rif_workflow>
+
 		<load>
-
+		
 		</load>
-
+		
 		<clean>
 
 			<clean_field_configuration>
@@ -145,14 +146,21 @@
 		</clean>
 
 		<convert>
+			<convert_field_configuration>
+				<clean_field_name>
+				
+				</clean_field_name>
+				<convert_field_name>
+				
+				</convert_field_name>
+			</convert_field_configuration>	
+			
+			
+			
 			<rif_schema_area>
 				health_numerator_data
 			</rif_schema_area>
 		</convert>
-
-		<combine>
-
-		</combine>
 
 		<optimise>
 			<optional_indexed_field>
@@ -174,7 +182,6 @@
 		</optimise>
 
 		<check>
-
 			<!-- these fields are used to determine if a record is a duplicate -->
 			<duplicate_row_field>year</duplicate_row_field>
 			<duplicate_row_field>age_sex_group</duplicate_row_field>

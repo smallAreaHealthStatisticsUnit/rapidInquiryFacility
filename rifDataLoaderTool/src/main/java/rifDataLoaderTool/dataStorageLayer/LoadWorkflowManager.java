@@ -3,18 +3,24 @@ package rifDataLoaderTool.dataStorageLayer;
 
 
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+
+
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifServices.system.RIFServiceException;
+
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.businessConceptLayer.DataSet;
-import rifDataLoaderTool.businessConceptLayer.LoadStepQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
+
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLCreateTableQueryFormatter;
+
 import rifServices.dataStorageLayer.SQLQueryUtility;
 import rifServices.businessConceptLayer.RIFResultTable;
-import rifServices.util.RIFLogger;
+import rifServices.system.RIFServiceException;
+
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -70,29 +76,31 @@ import java.util.ArrayList;
  *
  */
 
-public final class LoadStepManager 
+public final class LoadWorkflowManager 
 	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
 
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
 	private RIFDataLoaderStartupOptions startupOptions;
-	private LoadStepQueryGeneratorAPI queryGenerator;
-	
+
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public LoadStepManager(
-		final RIFDataLoaderStartupOptions startupOptions,
-		final LoadStepQueryGeneratorAPI queryGenerator) {
+	public LoadWorkflowManager(
+		final RIFDataLoaderStartupOptions startupOptions) {
 
+		super(startupOptions);
+		
 		this.startupOptions = startupOptions;
-		this.queryGenerator = queryGenerator;
+
 	}
 
 	// ==========================================
@@ -124,41 +132,41 @@ public final class LoadStepManager
 		return resultTable;
 	}
 	
-	public void createLoadTable(
+	public void loadConfiguration(
 		final Connection connection,
-		final CleanWorkflowConfiguration tableCleaningConfiguration,
-		final int textFieldWidth) 
+		final CleanWorkflowConfiguration cleanWorkflowConfiguration) 
 		throws RIFServiceException {
 
-		RIFLogger logger = RIFLogger.getLogger();		
+	
 		
-		String coreTableName = tableCleaningConfiguration.getCoreDataSetName();
 		int textColumnWidth
 			= startupOptions.getDataLoaderTextColumnSize();
 		PreparedStatement dropTableStatement = null;		
+		String coreDataSetName 
+			= cleanWorkflowConfiguration.getCoreDataSetName();
+		String targetLoadTable
+			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
 		try {
 			
 			//drop the table if it already exists so we can recreate it
 			//without raising a 'table already exists' exception
 			
-			String dropLoadTableQuery
-				= queryGenerator.generateDropLoadTableQuery(tableCleaningConfiguration);
-			logger.debugQuery(
-				this, 
-				"createLoadTable",
-				dropLoadTableQuery);
-
-			dropTableStatement = connection.prepareStatement(dropLoadTableQuery);
+			SQLDeleteTableQueryFormatter deleteLoadTableQueryFormatter 
+				= new SQLDeleteTableQueryFormatter();
+			logSQLQuery(
+				"delete_existing_load_table", 
+				deleteLoadTableQueryFormatter);
+			
+			deleteLoadTableQueryFormatter.setTableToDelete(targetLoadTable);
+			dropTableStatement
+				= createPreparedStatement(connection, deleteLoadTableQueryFormatter);
 			dropTableStatement.executeUpdate();	
 		}
-		catch(SQLException sqlException) {
-			String createTableName
-				= generateLoadTableName(coreTableName);
-			
+		catch(SQLException sqlException) {			
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
-					"loadStepManager.error.dropLoadTable",
-					createTableName);
+					"loadWorkflowManager.error.dropLoadTable",
+					targetLoadTable);
 			RIFServiceException RIFServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.LOAD_TABLE,
@@ -174,29 +182,45 @@ public final class LoadStepManager
 			
 			//drop the table if it already exists so we can recreate it
 			//without raising a 'table already exists' exception
+			SQLCreateTableQueryFormatter createLoadTableQueryFormatter
+				 = new SQLCreateTableQueryFormatter();
+			createLoadTableQueryFormatter.setTextFieldLength(textColumnWidth);
+			createLoadTableQueryFormatter.setTableName(targetLoadTable);
+			createLoadTableQueryFormatter.addFieldDeclaration(
+				"data_source_id", 
+				"INTEGER", 
+				false);
+			createLoadTableQueryFormatter.addFieldDeclaration(
+				"row_number", 
+				"SERIAL", 
+				false);
+						
+			ArrayList<CleanWorkflowFieldConfiguration> fieldConfigurations
+				= cleanWorkflowConfiguration.getAllFieldCleaningConfigurations();
 			
-			String createLoadTableQuery
-				= queryGenerator.generateLoadTableQuery(
-					1,
-					tableCleaningConfiguration, 
-					textColumnWidth);
-			logger.debugQuery(
-				this, 
-				"createLoadTable",
-				createLoadTableQuery);
+			for (CleanWorkflowFieldConfiguration fieldConfiguration : fieldConfigurations) {
+				createLoadTableQueryFormatter.addTextFieldDeclaration(
+					fieldConfiguration.getLoadTableFieldName(), 
+					true);
+			}
+			
+			logSQLQuery(
+				"create_load_table", 
+				createLoadTableQueryFormatter);
+			
 			createLoadTableStatement
-				= connection.prepareStatement(createLoadTableQuery);
+				= connection.prepareStatement(createLoadTableQueryFormatter.generateQuery());
 			createLoadTableStatement.executeUpdate();
 		}
 		catch(SQLException sqlException) {
 			sqlException.printStackTrace(System.out);
 			String createTableName
 				= RIFTemporaryTablePrefixes.LOAD.getTableName(
-					tableCleaningConfiguration.getCoreDataSetName());
+						cleanWorkflowConfiguration.getCoreDataSetName());
 			
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
-					"loadStepManager.error.createLoadTable",
+					"loadWorkflowManager.error.createLoadTable",
 					createTableName);
 			RIFServiceException RIFServiceException
 				= new RIFServiceException(
@@ -211,37 +235,35 @@ public final class LoadStepManager
 	
 	public void addLoadTableData(
 		final Connection connection,
-		final CleanWorkflowConfiguration tableCleaningConfiguration,
+		final CleanWorkflowConfiguration cleanWorkflowConfiguration,
 		final String[][] tableData) 
 		throws RIFServiceException {
 		
-
-		String coreTableName 
-			= tableCleaningConfiguration.getCoreDataSetName();
 		String loadTableName
-			= generateLoadTableName(coreTableName);
+			= RIFTemporaryTablePrefixes.LOAD.getTableName(
+				cleanWorkflowConfiguration.getCoreDataSetName());		
+		
 		SQLInsertQueryFormatter queryFormatter 
 			= new SQLInsertQueryFormatter();
 		queryFormatter.setIntoTable(loadTableName);
 		queryFormatter.addInsertField("data_source_id");
 		ArrayList<CleanWorkflowFieldConfiguration> fieldConfigurations
-			= tableCleaningConfiguration.getIncludedFieldCleaningConfigurations();
+			= cleanWorkflowConfiguration.getIncludedFieldCleaningConfigurations();
 		for (CleanWorkflowFieldConfiguration fieldConfiguration : fieldConfigurations) {
 			queryFormatter.addInsertField(fieldConfiguration.getLoadTableFieldName());
 		}
 
-		RIFLogger logger = RIFLogger.getLogger();		
-
+		logSQLQuery(
+			"addLoadTableData", 
+			queryFormatter);
+		
 		PreparedStatement statement = null;
 		try {
-			logger.debugQuery(
-				this, 
-				"addLoadTableData",
-				queryFormatter.generateQuery());
+
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
 
-			DataSet dataSet = tableCleaningConfiguration.getDataSet();
+			DataSet dataSet = cleanWorkflowConfiguration.getDataSet();
 			Integer dataSetIdentifier
 				= Integer.valueOf(dataSet.getIdentifier());
 
@@ -264,36 +286,33 @@ public final class LoadStepManager
 		
 	}
 	
-	
-	
 	public void dropLoadTable(
 		final Connection connection,
-		final CleanWorkflowConfiguration tableCleaningConfiguration) 
+		final CleanWorkflowConfiguration cleanWorkflowConfiguration) 
 		throws RIFServiceException {
 
-		RIFLogger logger = RIFLogger.getLogger();		
 		
+		
+		String coreDataSetName = cleanWorkflowConfiguration.getCoreDataSetName();
+		String tableToDelete
+			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);		
+				
 		PreparedStatement statement = null;
-
 		try {
-			String dropLoadTableQuery
-				= queryGenerator.generateDropLoadTableQuery(tableCleaningConfiguration);
-			logger.debugQuery(
-				this, 
-				"dropLoadTable",
-				dropLoadTableQuery);
+	
+			SQLDeleteTableQueryFormatter deleteLoadTableQueryFormatter
+				= new SQLDeleteTableQueryFormatter();
+			deleteLoadTableQueryFormatter.setTableToDelete(tableToDelete);
 
-			statement = connection.prepareStatement(dropLoadTableQuery);
+			statement 
+				= createPreparedStatement(connection, deleteLoadTableQueryFormatter);
 			statement.executeUpdate();	
 		}
 		catch(SQLException sqlException) {
-			String loadTableName
-				= RIFTemporaryTablePrefixes.LOAD.getTableName(
-					tableCleaningConfiguration.getCoreDataSetName());
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
-					"loadStepManager.error.dropLoadTable",
-					loadTableName);
+					"loadWorkflowManager.error.dropLoadTable",
+					tableToDelete);
 			RIFServiceException RIFServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.DROP_TABLE,
@@ -304,16 +323,7 @@ public final class LoadStepManager
 			SQLQueryUtility.close(statement);			
 		}	
 	}
-	
-	private String generateLoadTableName(
-		final String coreTableName) {
 		
-		String loadTableName
-			= RIFTemporaryTablePrefixes.LOAD.getTableName(
-				coreTableName);
-		return loadTableName;
-	}
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

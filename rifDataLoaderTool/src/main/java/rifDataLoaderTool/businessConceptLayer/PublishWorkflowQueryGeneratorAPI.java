@@ -1,12 +1,14 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import java.sql.Connection;
+
+import rifServices.system.RIFServiceException;
 
 /**
- * Describes the methods that are expected to be supported in vendor-specific code generators
- * involved with loading new data sources.
+ *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -52,17 +54,13 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public interface LoadStepQueryGeneratorAPI {
-
-	public String generateLoadTableQuery(
-		final int dataSetID,
-		final CleanWorkflowConfiguration tableCleaningConfiguration,
-		final int textColumnWidth);
-
-	public String generateDropLoadTableQuery(
-		final CleanWorkflowConfiguration tableCleaningConfiguration);
+public interface PublishWorkflowQueryGeneratorAPI {
 	
-	
+	public void publishConfiguration(
+		final Connection connection,
+		final PublishWorkflowConfiguration publishWorkflowConfiguration)
+		throws RIFServiceException;
+
 }
 
 

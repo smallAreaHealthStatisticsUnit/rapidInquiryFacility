@@ -1,22 +1,25 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifGenericLibrary.dataStorageLayer;
 
-import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifServices.dataStorageLayer.SQLQueryUtility;
-import rifServices.system.RIFServiceException;
 
-import java.sql.*;
+
 
 /**
  *
- * Manages all database operations used to convert a cleaned table into tabular data
- * expected by some part of the RIF (eg: numerator data, health codes, geospatial data etc)
- * 
+ *
  * <hr>
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * <p>
  * Copyright 2014 Imperial College London, developed by the Small Area
- * Health Statistics Unit. 
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ * </p>
  *
  * <pre> 
  * This file is part of the Rapid Inquiry Facility (RIF) project.
@@ -24,21 +27,23 @@ import java.sql.*;
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
-
+ *
  * RIF is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with RIF.  If not, see <http://www.gnu.org/licenses/>.
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
  * </pre>
  *
  * <hr>
  * Kevin Garwood
  * @author kgarwood
+ * @version
  */
-
 /*
  * Code Road Map:
  * --------------
@@ -61,8 +66,8 @@ import java.sql.*;
  *
  */
 
-public final class ConvertStepManager 
-	extends AbstractDataLoaderStepManager {
+public final class SQLDeleteIndexQueryFormatter 
+	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -71,55 +76,54 @@ public final class ConvertStepManager
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private RIFDataLoaderStartupOptions startupOptions;
-	private ConvertStepQueryGeneratorAPI queryGenerator;	
-	private TableIntegrityChecker tableIntegrityChecker;
-
+	/** The table that will be deleted */
+	private String indexTable;
+	private String indexTableField;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public ConvertStepManager(
-		final RIFDataLoaderStartupOptions startupOptions,
-		final ConvertStepQueryGeneratorAPI queryGenerator) {
+	/**
+	 * Instantiates a new SQL delete table query formatter.
+	 */
+	public SQLDeleteIndexQueryFormatter() {
 
-		this.startupOptions = startupOptions;
-		this.queryGenerator = queryGenerator;
-			
-		tableIntegrityChecker = new TableIntegrityChecker();
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void convertConfiguration(
-		final Connection connection,
-		final ConvertWorkflowConfiguration tableConversionConfiguration)
-		throws RIFServiceException {
-	
-		//validate parameters
-		tableConversionConfiguration.checkErrors();
-			
-		String convertTableQuery
-			= queryGenerator.generateConvertTableQuery(tableConversionConfiguration);
+	/**
+	 * Sets the target table to delete
+	 *
+	 * @param fromTable the new from table
+	 */
+	public void setIndexTable(
+		final String indexTable) {
 		
-		PreparedStatement statement = null;
-		try {
-			statement = connection.prepareStatement(convertTableQuery);
-			//statement.executeUpdate();
-		}
-		catch(SQLException sqlException) {
-			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage("");
-			RIFServiceException RIFServiceException
-				= new RIFServiceException(
-					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-		}
-		finally {
-			SQLQueryUtility.close(statement);
-		}		
+		this.indexTable = indexTable;
+	}
+	
+	public void setIndexTableField(
+		final String indexTableField) {
+		
+		this.indexTableField = indexTableField;
+	}
+	
+	@Override
+	public String generateQuery() {
+		resetAccumulatedQueryExpression();
+		addQueryPhrase(0, "DROP INDEX");
+		padAndFinishLine();
+		addQueryPhrase(1, "ind_");
+		addQueryPhrase(indexTable);
+		addQueryPhrase("_");
+		addQueryPhrase(indexTableField);
+		addQueryPhrase(";");
+
+		return super.generateQuery();		
 	}
 	
 	// ==========================================
@@ -133,7 +137,4 @@ public final class ConvertStepManager
 	// ==========================================
 	// Section Override
 	// ==========================================
-
 }
-
-

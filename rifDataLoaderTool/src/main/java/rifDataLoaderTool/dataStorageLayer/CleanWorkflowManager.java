@@ -69,7 +69,7 @@ import java.sql.*;
  *
  */
 
-public final class CleanStepManager 
+public final class CleanWorkflowManager 
 	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
@@ -79,23 +79,18 @@ public final class CleanStepManager
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private RIFDataLoaderStartupOptions startupOptions;
 	private CleanWorkflowQueryGeneratorAPI queryGenerator;
 	
-	private TableIntegrityChecker tableIntegrityChecker;
-
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public CleanStepManager(
+	public CleanWorkflowManager(
 		final RIFDataLoaderStartupOptions startupOptions,
 		final CleanWorkflowQueryGeneratorAPI queryGenerator) {
 
-		this.startupOptions = startupOptions;
+		super(startupOptions);
 		this.queryGenerator = queryGenerator;
-		
-		tableIntegrityChecker = new TableIntegrityChecker();
 	}
 
 	// ==========================================
@@ -106,16 +101,16 @@ public final class CleanStepManager
 	
 	public RIFResultTable getCleanedTableData(
 		final Connection connection,
-		final CleanWorkflowConfiguration tableCleaningConfiguration) 
+		final CleanWorkflowConfiguration cleanWorkflowConfiguration) 
 		throws RIFServiceException {
 			
 		
 		
 		RIFResultTable resultTable = new RIFResultTable();
-		String coreDataSetName = tableCleaningConfiguration.getCoreDataSetName();
+		String coreDataSetName = cleanWorkflowConfiguration.getCoreDataSetName();
 		String searchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName);
-		String[] fieldNames = tableCleaningConfiguration.getCleanFieldNames();
+		String[] fieldNames = cleanWorkflowConfiguration.getCleanFieldNames();
 			
 		try {
 			resultTable 
@@ -139,53 +134,53 @@ public final class CleanStepManager
 	
 	public void createCleanedTable(
 		final Connection connection,
-		final CleanWorkflowConfiguration tableCleaningConfiguration) 
+		final CleanWorkflowConfiguration cleanWorkflowConfiguration) 
 		throws RIFServiceException {
 		
 		RIFLogger logger = RIFLogger.getLogger();
 		
 		String coreDataSetName
-			= tableCleaningConfiguration.getCoreDataSetName();
+			= cleanWorkflowConfiguration.getCoreDataSetName();
 		
 		String dropSearchReplaceTableQuery
-			= queryGenerator.generateDropSearchReplaceTableQuery(tableCleaningConfiguration);		
+			= queryGenerator.generateDropSearchReplaceTableQuery(cleanWorkflowConfiguration);		
 		PreparedStatement dropSearchReplaceTableStatement = null;
 		
 		String createSearchReplaceTableQuery
-			= queryGenerator.generateSearchReplaceTableQuery(tableCleaningConfiguration);
+			= queryGenerator.generateSearchReplaceTableQuery(cleanWorkflowConfiguration);
 		PreparedStatement createSearchReplaceTableStatement = null;
 		
 		PreparedStatement dropValidationTableStatement = null;
 		String dropValidationTableQuery
-			= queryGenerator.generateDropValidationTableQuery(tableCleaningConfiguration);
+			= queryGenerator.generateDropValidationTableQuery(cleanWorkflowConfiguration);
 		
 		PreparedStatement createValidationTableStatement = null;
 		String createValidationTableQuery
-			= queryGenerator.generateValidationTableQuery(tableCleaningConfiguration);
+			= queryGenerator.generateValidationTableQuery(cleanWorkflowConfiguration);
 		
 		
 		PreparedStatement dropCastingTableStatement = null;
 		String dropCastingTableQuery
-			= queryGenerator.generateDropCastingTableQuery(tableCleaningConfiguration);
+			= queryGenerator.generateDropCastingTableQuery(cleanWorkflowConfiguration);
 		System.out.println(dropCastingTableQuery);
 		
 		PreparedStatement createCastingTableStatement = null;
 		String createCastingTableQuery
-			= queryGenerator.generateCastingTableQuery(tableCleaningConfiguration);
+			= queryGenerator.generateCastingTableQuery(cleanWorkflowConfiguration);
 		
 		PreparedStatement deleteAuditChangesStatement = null;
 		String deleteAuditChangesQuery
-			= queryGenerator.generateDeleteAuditsQuery(tableCleaningConfiguration);
+			= queryGenerator.generateDeleteAuditsQuery(cleanWorkflowConfiguration);
 		
 		PreparedStatement createAuditChangesStatement = null;
 		String createAuditChangesQuery
-			= queryGenerator.generateAuditChangesQuery(tableCleaningConfiguration);
+			= queryGenerator.generateAuditChangesQuery(cleanWorkflowConfiguration);
 		PreparedStatement createAuditErrorsStatement = null;
 		String createAuditErrorsQuery
-			= queryGenerator.generateAuditErrorsQuery(tableCleaningConfiguration);
+			= queryGenerator.generateAuditErrorsQuery(cleanWorkflowConfiguration);
 		PreparedStatement createAuditBlanksStatement = null;
 		String createAuditBlanksQuery
-			= queryGenerator.generateAuditBlanksQuery(tableCleaningConfiguration);
+			= queryGenerator.generateAuditBlanksQuery(cleanWorkflowConfiguration);
 		
 		
 		try {
@@ -229,7 +224,7 @@ public final class CleanStepManager
 			deleteAuditChangesStatement
 				= connection.prepareStatement(deleteAuditChangesQuery);
 			DataSet dataSet
-				= tableCleaningConfiguration.getDataSet();
+				= cleanWorkflowConfiguration.getDataSet();
 			deleteAuditChangesStatement.setInt(1, Integer.valueOf(dataSet.getIdentifier()));			
 			deleteAuditChangesStatement.executeUpdate();
 			
@@ -245,7 +240,7 @@ public final class CleanStepManager
 
 			//check that the search replace table has just as many rows as the
 			//original load table			
-			tableIntegrityChecker.checkTotalRowsMatch(
+			checkTotalRowsMatch(
 				connection, 
 				coreDataSetName,
 				RIFTemporaryTablePrefixes.LOAD,
@@ -266,7 +261,7 @@ public final class CleanStepManager
 			
 			//check that the validation table has just as many rows as the
 			//search replace table			
-			tableIntegrityChecker.checkTotalRowsMatch(
+			checkTotalRowsMatch(
 				connection, 
 				coreDataSetName,
 				RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE,
@@ -284,7 +279,7 @@ public final class CleanStepManager
 
 			//check that the casted table has just as many rows as the
 			//cleaned validated data			
-			tableIntegrityChecker.checkTotalRowsMatch(
+			checkTotalRowsMatch(
 				connection, 
 				coreDataSetName,
 				RIFTemporaryTablePrefixes.CLEAN_VALIDATION,
@@ -323,7 +318,7 @@ public final class CleanStepManager
 			sqlException.printStackTrace(System.out);
 			String cleanedTableName
 				= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(
-					tableCleaningConfiguration.getCoreDataSetName());
+					cleanWorkflowConfiguration.getCoreDataSetName());
 			
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
@@ -347,7 +342,7 @@ public final class CleanStepManager
 	
 	public Integer getCleaningTotalBlankValues(
 		final Connection connection,
-		final CleanWorkflowConfiguration tableCleaningConfiguration)
+		final CleanWorkflowConfiguration cleanWorkflowConfiguration)
 		throws RIFServiceException {
 		
 		SQLCountQueryFormatter queryFormatter = new SQLCountQueryFormatter();
@@ -371,7 +366,7 @@ public final class CleanStepManager
 		try {
 			
 			DataSet dataSet
-				= tableCleaningConfiguration.getDataSet();
+				= cleanWorkflowConfiguration.getDataSet();
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, Integer.valueOf(dataSet.getIdentifier()));
@@ -384,7 +379,7 @@ public final class CleanStepManager
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"getCleaningTotalBlankValues.error.unableToGetTotal",
-					tableCleaningConfiguration.getDisplayName());
+					cleanWorkflowConfiguration.getDisplayName());
 			RIFServiceException RIFServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
@@ -402,7 +397,7 @@ public final class CleanStepManager
 		
 	public Integer getCleaningTotalChangedValues(
 		final Connection connection,
-		final CleanWorkflowConfiguration tableCleaningConfiguration)
+		final CleanWorkflowConfiguration cleanWorkflowConfiguration)
 		throws RIFServiceException {
 		
 		SQLCountQueryFormatter queryFormatter = new SQLCountQueryFormatter();
@@ -423,7 +418,7 @@ public final class CleanStepManager
 		ResultSet resultSet = null;
 		try {
 			DataSet dataSet
-				= tableCleaningConfiguration.getDataSet();
+				= cleanWorkflowConfiguration.getDataSet();
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, Integer.valueOf(dataSet.getIdentifier()));
@@ -436,7 +431,7 @@ public final class CleanStepManager
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"getCleaningTotalChangedValues.error.unableToGetTotal",
-					tableCleaningConfiguration.getDisplayName());
+					cleanWorkflowConfiguration.getDisplayName());
 			RIFServiceException RIFServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
@@ -453,7 +448,7 @@ public final class CleanStepManager
 		
 	public Integer getCleaningTotalErrorValues(
 		final Connection connection,
-		final CleanWorkflowConfiguration tableCleaningConfiguration)
+		final CleanWorkflowConfiguration cleanWorkflowConfiguration)
 		throws RIFServiceException {
 	
 		SQLCountQueryFormatter queryFormatter = new SQLCountQueryFormatter();
@@ -475,7 +470,7 @@ public final class CleanStepManager
 		ResultSet resultSet = null;
 		try {
 			DataSet dataSet
-				= tableCleaningConfiguration.getDataSet();
+				= cleanWorkflowConfiguration.getDataSet();
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, Integer.valueOf(dataSet.getIdentifier()));
@@ -488,7 +483,7 @@ public final class CleanStepManager
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"getCleaningTotalErrorValues.error.unableToGetTotal",
-					tableCleaningConfiguration.getDisplayName());
+					cleanWorkflowConfiguration.getDisplayName());
 			RIFServiceException RIFServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
@@ -505,12 +500,12 @@ public final class CleanStepManager
 	
 	public Boolean cleaningDetectedBlankValue(
 		final Connection connection,
-		final CleanWorkflowConfiguration tableCleaningConfiguration,
+		final CleanWorkflowConfiguration cleanWorkflowConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException {
 		
-		DataSet dataSet = tableCleaningConfiguration.getDataSet();
+		DataSet dataSet = cleanWorkflowConfiguration.getDataSet();
 		
 		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
 		queryFormatter.addSelectField("data_source_id");
@@ -547,7 +542,7 @@ public final class CleanStepManager
 					"cleaningDetectedBlankValue.error.unableToGetStatus",
 					String.valueOf(rowNumber),
 					targetBaseFieldName,					
-					tableCleaningConfiguration.getDisplayName());
+					cleanWorkflowConfiguration.getDisplayName());
 			RIFServiceException RIFServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
@@ -564,13 +559,13 @@ public final class CleanStepManager
 	
 	public Boolean cleaningDetectedChangedValue(
 		final Connection connection,
-		final CleanWorkflowConfiguration tableCleaningConfiguration,
+		final CleanWorkflowConfiguration cleanWorkflowConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException {
 
 		
-		DataSet dataSet = tableCleaningConfiguration.getDataSet();
+		DataSet dataSet = cleanWorkflowConfiguration.getDataSet();
 		
 		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
 		queryFormatter.addSelectField("data_source_id");
@@ -608,7 +603,7 @@ public final class CleanStepManager
 					"cleaningDetectedChangedValue.error.unableToGetStatus",
 					String.valueOf(rowNumber),
 					targetBaseFieldName,					
-					tableCleaningConfiguration.getDisplayName());
+					cleanWorkflowConfiguration.getDisplayName());
 			RIFServiceException RIFServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
@@ -626,12 +621,12 @@ public final class CleanStepManager
 	
 	public Boolean cleaningDetectedErrorValue(
 		final Connection connection,
-		final CleanWorkflowConfiguration tableCleaningConfiguration,
+		final CleanWorkflowConfiguration cleanWorkflowConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException {
 
-		DataSet dataSet = tableCleaningConfiguration.getDataSet();
+		DataSet dataSet = cleanWorkflowConfiguration.getDataSet();
 		
 		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
 		queryFormatter.addSelectField("data_source_id");
@@ -667,7 +662,7 @@ public final class CleanStepManager
 					"cleaningDetectedErrorValue.error.unableToGetStatus",
 					String.valueOf(rowNumber),
 					targetBaseFieldName,					
-					tableCleaningConfiguration.getDisplayName());
+					cleanWorkflowConfiguration.getDisplayName());
 			RIFServiceException RIFServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 

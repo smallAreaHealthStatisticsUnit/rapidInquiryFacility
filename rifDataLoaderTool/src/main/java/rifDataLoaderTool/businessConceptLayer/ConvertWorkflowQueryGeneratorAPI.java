@@ -52,9 +52,9 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public interface ConvertStepQueryGeneratorAPI {
+public interface ConvertWorkflowQueryGeneratorAPI {
 	public String generateConvertTableQuery(
-		final ConvertWorkflowConfiguration tableConversionConfiguration);
+		final ConvertWorkflowConfiguration convertWorkflowConfiguration);
 	
 }
 

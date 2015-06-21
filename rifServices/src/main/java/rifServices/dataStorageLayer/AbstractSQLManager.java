@@ -74,7 +74,7 @@ import java.sql.*;
  *
  */
 
-abstract class AbstractSQLManager {
+public abstract class AbstractSQLManager {
 
 	// ==========================================
 	// Section Constants

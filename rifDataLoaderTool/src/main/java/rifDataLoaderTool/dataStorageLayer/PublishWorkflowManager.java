@@ -6,6 +6,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifServices.dataStorageLayer.SQLQueryUtility;
 import rifServices.system.RIFServiceException;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 
 import java.sql.*;
 
@@ -61,7 +62,7 @@ import java.sql.*;
  *
  */
 
-public final class OptimiseStepManager 
+public final class PublishWorkflowManager 
 	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
@@ -70,60 +71,83 @@ public final class OptimiseStepManager
 
 	// ==========================================
 	// Section Properties
-	// ==========================================
-	private RIFDataLoaderStartupOptions startupOptions;
-	private ConvertStepQueryGeneratorAPI queryGenerator;	
-	private TableIntegrityChecker tableIntegrityChecker;
+	// ==========================================	
 
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public OptimiseStepManager(
-		final RIFDataLoaderStartupOptions startupOptions,
-		final ConvertStepQueryGeneratorAPI queryGenerator) {
+	public PublishWorkflowManager(
+		final RIFDataLoaderStartupOptions startupOptions) {
 
-		this.startupOptions = startupOptions;
-		this.queryGenerator = queryGenerator;
-			
-		tableIntegrityChecker = new TableIntegrityChecker();
+		super(startupOptions);
+
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void optimiseConfiguration(
+	public void publishConfiguration(
 		final Connection connection,
-		final OptimiseWorkflowConfiguration optimiseWorkflowConfiguration)
+		final PublishWorkflowConfiguration publishWorkflowConfiguration)
 		throws RIFServiceException {
 	
 		//validate parameters
-		optimiseWorkflowConfiguration.checkErrors();
-		
-		/*
-		String optimiseTableQuery
-			= queryGenerator.generateConvertTableQuery(optimiseWorkflowConfiguration);
+		publishWorkflowConfiguration.checkErrors();
+			
+		String coreDataSetName 
+			= publishWorkflowConfiguration.getCoreDataSetName();
 		
 		PreparedStatement statement = null;
 		try {
-			statement = connection.prepareStatement(convertTableQuery);
-			//statement.executeUpdate();
+			establishTableAccessPrivileges(
+				connection,
+				publishWorkflowConfiguration.getCoreDataSetName(),
+				publishWorkflowConfiguration.getRIFUserRoleName());
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage("");
-			RIFServiceException RIFServiceException
+				= RIFDataLoaderToolMessages.getMessage(
+					"publishWorkflowManager.unableToPublishConfiguration",
+					coreDataSetName);
+			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
 					errorMessage);
+			throw rifServiceException;
 		}
 		finally {
 			SQLQueryUtility.close(statement);
-		}	
-		
-			*/
+		}		
 	}
+	
+	public void establishTableAccessPrivileges(
+		final Connection connection,
+		final String coreDataSetName,
+		final String rifRoleName) 
+		throws SQLException,
+		RIFServiceException {
+
+		SQLGeneralQueryFormatter queryFormatter
+			= new SQLGeneralQueryFormatter();
+		
+		//@TODO: fill in this query
+			
+		PreparedStatement statement = null;
+					
+		try {
+			statement
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
+			statement.executeUpdate();
+		}
+		finally {
+			SQLQueryUtility.close(statement);			
+		}
+	}
+		
 	
 	// ==========================================
 	// Section Errors and Validation

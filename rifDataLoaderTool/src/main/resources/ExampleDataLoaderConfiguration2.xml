@@ -1,0 +1,405 @@
+<rif_data_loader_submission>
+
+	<!--
+		RIF command line tool options
+		
+		C:> rifDataLoader -reservedFieldNames		
+		The following field names are used by the rif and may not appear in your tables:
+			"data_source_id"
+			"row_number"
+			"keep_record"
+			"total".
+			
+		C:> rifDataLoader -rifDataTypes			
+		The following data types are supported by the RIF:
+			"rif_integer_type" 			: an integer value
+			"rif_icd10_type" 			: follows ICD code convention
+			"rif_age_type" 				: a positive integer that is greater than zero and less than 120
+			"rif_sex_type" 				: 'M', 'F', '1', or '0'
+			"rif_age_sex_group_type"	: eg: 117, 118 standard rif sex age group categories
+			...
+			
+		C:> rifDataLoader -rif_requirement_types		
+		For each field you define, you must specify a "rif_requirement_type" tag that can 
+		have these values:
+			
+				"rif_required_field": field that is needed by the RIF 
+				"extra_field":        field rif manager wants but is not required in RIF
+				"ignore_field":       do not carry from load stage
+		
+		C:> rifDataLoader -rif_schema_areas		
+		You need to indicate which area of the RIF the data sources for this workflow will
+		support.  Valid RIF schema areas include:
+			"covariate_data"   				: where covariates go
+			"health_code_data" 				: eg: ICD9, ICD10, OPCS codes
+			"health_themes"    				: themes used to classify numerator tables
+			"health_numerator_data"			: numerator data for a population health study
+			"population_denominator_data"	: denominator data for a population health study
+			"geometry_data"                 : 
+			"contextual_map_data"			: used to define different geographical resolutions
+		
+		C:> rifDataLoader -required_fields health_numerator_data		
+		Please ensure that you have exactly one "convert_field_name" value for the
+		following required fields found in 'health_numerator_data':
+			* "year" (rif_integer)
+			* "age_sex_group" (rif_integer) or separate age (rif_integer) and 
+			  "sex" (rif_integer) columns	
+			
+		C:> rifDataLoader -workflowStages
+		In the "workflow" tag, you must specify values for "start_workflow_stage" and
+		"stop_workflow_stage".  Note that the valid stages you may use occur in the 
+		following order:
+			1. load
+			2. clean
+			3. convert
+			4. optimise
+			5. check
+			6. publish
+			
+			
+		OK now that you have that, let's move on...	
+		
+		This XML file has three main parts:
+		
+			"data_sources" : describes the names of files, typically CSV.  Each 
+			data source entry describes the base name that will be applied to all
+			temporary tables that are generated to support the work flow.
+			
+			"data_source_fields": describes properties of the fields that should
+			appear in each of the data sources
+			
+			"workflow" specifies the start and stop stages of the workflow.  
+		
+		
+	-->
+
+
+
+
+	<data_sources>	
+		<!-- 
+			Lists the files that we will subject to the same work flow.
+			They are assumed to have identical structures
+		 -->
+	
+		<data_source>
+			<name>
+				<!-- 
+					This is a very important field.  It is used as the base
+					name for all the temporary tables that relate to this data set
+				-->
+				my_numerator
+			</name>
+			<file>MyNumerator.csv</file>
+		</data_source>
+	</data_sources>
+	
+	<rif_schema_area>
+		<!--
+			This field tells you what area of the RIF schema the data set is 
+			meant to support
+		-->
+		numerator_data
+	</rif_schema_area>
+	
+	<rif_access_role>
+		<!-- 
+			Specify which role may have access to this table
+			eg: rif_user, rif_student, any other?
+		-->
+	</rif_access_role>
+	
+	<data_source_fields>
+		<!-- 
+			Describes the fields which should appear in each of the data sources
+			listed in the "data_sources" section 
+		-->
+	
+	
+		<field>
+			<name>year</name>
+			<description>year of health records</description>			
+			<is_required>true</is_required>
+			<is_duplicate_criterion_field>true</is_duplicate_criterion_field>
+			<field_requirement_type>
+				<!-- 
+					rif_required_field: field that is needed by the RIF 
+					extra_field:        field rif manager wants but is not required in RIF
+					ignore_field:       do not carry from load stage
+				-->			
+			</field_requirement_type>
+			<original_field_name>
+				<!--
+					name of field from original source.  In most cases it should
+					come from the header line in a CSV file.  However, if no header
+					line is supplied in the CSV file, then it can have an autonamed
+					convention eg: field1, field2, field3
+				-->					
+				field1
+			</original_field_name>
+			<rif_data_type>
+				rif_integer_type
+			</rif_data_type>
+			<convert_field_name>
+				<!-- 
+					name of field expected in the rif schema table (eg: a numerator
+					table expects that there will be a field called year.  We could try to
+					make a command line option to help show user the options they can
+					put in the XML file
+					eg: 
+						rifDataLoaderTool -requiredFieldsForSchemaArea rif_numerator
+						
+						produces
+						
+						Required fields for mapping to numerator data:
+							* "year rif_integer"
+							* "age_sex_group" (rif_integer) or separate age (rif_integer) and 
+							  "sex" (rif_integer) columns
+						
+						
+					
+				-->
+				year
+			</convert_field_name>
+			<index_field>
+				<!--
+					if true then during optimisation the RIF will create an index for the field.
+					If not specified then false
+				-->
+				true
+			</index_field>
+			
+		</field>
+	
+
+	
+		<field>
+			<name>sex</name>
+			<description>sex of patient</description>			
+			<is_required>true</is_required>
+			<is_duplicate_criterion_field>true</is_duplicate_criterion_field>
+			<field_requirement_type>
+				rif_required_field		
+			</field_requirement_type>
+			<original_field_name>
+				field2
+			</original_field_name>
+			<rif_data_type>
+				rif_sex_type
+			</rif_data_type>
+			<convert_field_name>
+				age_sex_group
+			</convert_field_name>
+			<index_field>
+				true
+			</index_field>
+			
+		</field>
+
+		<field>
+			<name>age</name>
+			<description>sex of patient</description>			
+			<is_required>true</is_required>
+			<is_duplicate_criterion_field>true</is_duplicate_criterion_field>
+			<field_requirement_type>
+				rif_required_field		
+			</field_requirement_type>
+			<original_field_name>
+				field3
+			</original_field_name>
+			<rif_data_type>
+				rif_age_type
+			</rif_data_type>
+			<convert_field_name>
+				age_sex_group
+			</convert_field_name>
+			<index_field>
+				true
+			</index_field>
+			
+		</field>
+
+		<field>
+			<name>level1</name>
+			<description>level 1 resolution</description>			
+			<is_required>true</is_required>
+			<is_duplicate_criterion_field>true</is_duplicate_criterion_field>
+			<field_requirement_type>
+				<! -- 
+					I know we need at least one resolution but projects can have
+					as many or as fewer as they like after one level right?
+					
+					I put this down as 'extra field' because it is not strictly 
+					required to appear in a numerator data table.  Am I right?
+				-->
+			
+				extra_field		
+			</field_requirement_type>
+			<original_field_name>
+				field4
+			</original_field_name>
+			<rif_data_type>
+				rif_text_type
+			</rif_data_type>
+
+
+			<! -- 
+				notice I have NOT specified convert_field_name.  Therefore level1
+				will simply be carried through
+			-->
+			
+			<index_field>
+				<!-- 
+					example of an extra field we might want to index.
+				-->
+				true
+			</index_field>
+			
+		</field>
+
+		<field>
+			<name>level2</name>
+			<description>level 2 resolution</description>			
+			<is_required>true</is_required>
+			<is_duplicate_criterion_field>true</is_duplicate_criterion_field>
+			<field_requirement_type>
+				rif_required_field		
+			</field_requirement_type>
+			<original_field_name>
+				field5
+			</original_field_name>
+			<rif_data_type>
+				rif_text_type
+			</rif_data_type>
+
+			<!-- 
+				no convert field name specified, treated as an extra field to carry through
+			-->
+
+			<index_field>
+				true
+			</index_field>
+			
+		</field>
+	
+		<field>
+			<name>level3</name>
+			<description>level 3 resolution</description>			
+			<is_required>true</is_required>
+			<is_duplicate_criterion_field>true</is_duplicate_criterion_field>
+			<field_requirement_type>
+				extra_field	
+			</field_requirement_type>
+			<original_field_name>
+				field6
+			</original_field_name>
+			<rif_data_type>
+				rif_text_type
+			</rif_data_type>
+
+			<!-- 
+				no convert field name specified, treated as an extra field to carry through
+			-->
+
+			<index_field>
+				true
+			</index_field>
+			
+		</field>
+		
+		<field>
+			<name>level4</name>
+			<description>level 4 resolution</description>			
+			<is_required>true</is_required>
+			<is_duplicate_criterion_field>true</is_duplicate_criterion_field>
+			<field_requirement_type>
+				extra_field	
+			</field_requirement_type>
+			<original_field_name>
+				field7
+			</original_field_name>
+			<rif_data_type>
+				rif_text_type
+			</rif_data_type>
+
+			<!-- 
+				no convert field name specified, treated as an extra field to carry through
+			-->
+
+			<index_field>
+				true
+			</index_field>
+			
+		</field>
+
+		
+		<field>
+			<name>icd</name>
+			<description>icd health code</description>			
+			<is_required>true</is_required>
+			<is_duplicate_criterion_field>true</is_duplicate_criterion_field>
+			<field_requirement_type>
+				extra_field	
+			</field_requirement_type>
+			<original_field_name>
+				field8
+			</original_field_name>
+			<rif_data_type>
+				rif_icd10_type
+			</rif_data_type>
+
+			<!-- 
+				no convert field name specified, treated as an extra field to carry through
+			-->
+
+			<!--
+				Let's say I've decided I don't want to index the icd code.  Therefore
+				I would not include the "index_field" tag.
+			-->
+			
+		</field>
+	
+		<field>
+			<!-- 
+				This is an example of a field that is in a CSV file but 
+				one we don't care about
+			-->
+			<name>tmp_code</name>
+			<description></description>			
+			<is_required>true</is_required>
+			<is_duplicate_criterion_field>true</is_duplicate_criterion_field>
+			<field_requirement_type>
+				extra_field	
+			</field_requirement_type>
+			<original_field_name>
+				field8
+			</original_field_name>
+			<rif_data_type>
+				rif_icd10_type
+			</rif_data_type>
+
+			<!-- 
+				no convert field name specified, treated as an extra field to carry through
+			-->
+
+			<!--
+				Let's say I've decided I don't want to index the icd code.  Therefore
+				I would not include the "index_field" tag.
+			-->
+			
+		</field>
+		
+	
+	</data_source_fields>
+	
+	<work_flow>
+		<start_workflow_stage>
+			load
+		</start_workflow_stage>
+		<start_workflow_stage>
+			pu
+		</start_workflow_stage>		
+	</work_flow>
+	
+</rif_data_loader_submission>	
+	

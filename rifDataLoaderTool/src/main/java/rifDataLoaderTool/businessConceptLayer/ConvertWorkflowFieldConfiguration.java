@@ -75,7 +75,8 @@ public final class ConvertWorkflowFieldConfiguration
 	// ==========================================
 	
 	private DataSet dataSet;
-	private String conversionTableFieldName;
+	private String cleanFieldName;
+	private String convertFieldName;
 	private RIFDataTypeInterface rifDataType;
 		
 	// ==========================================
@@ -88,13 +89,15 @@ public final class ConvertWorkflowFieldConfiguration
 	
 	public static ConvertWorkflowFieldConfiguration newInstance(
 		final DataSet dataSet,
-		final String convertedFieldName,
+		final String cleanFieldName,
+		final String convertFieldName,
 		final RIFDataTypeInterface rifDataType) {
 		
 		ConvertWorkflowFieldConfiguration fieldConfiguration
 			= new ConvertWorkflowFieldConfiguration();
 		fieldConfiguration.setDataSet(dataSet);
-		fieldConfiguration.setConversionTableFieldName(convertedFieldName);
+		fieldConfiguration.setCleanFieldName(cleanFieldName);
+		fieldConfiguration.setConvertFieldName(convertFieldName);
 		fieldConfiguration.setRIFDataType(rifDataType);
 		
 		return fieldConfiguration;
@@ -108,8 +111,8 @@ public final class ConvertWorkflowFieldConfiguration
 		
 		ConvertWorkflowFieldConfiguration cloneFieldConfiguration
 			= new ConvertWorkflowFieldConfiguration();
-		cloneFieldConfiguration.setConversionTableFieldName(
-			originalFieldConfiguration.getConversionTableFieldName());
+		cloneFieldConfiguration.setConvertFieldName(
+			originalFieldConfiguration.getConvertFieldName());
 		cloneFieldConfiguration.setDataSet(cloneDataSet);
 		
 		RIFDataTypeInterface originalRIFDataType
@@ -141,15 +144,25 @@ public final class ConvertWorkflowFieldConfiguration
 	// Section Accessors and Mutators
 	// ==========================================
 	
-	public String getConversionTableFieldName() {
-		return conversionTableFieldName;
+	public String getConvertFieldName() {
+		return convertFieldName;
 	}
 
-	public void setConversionTableFieldName(
-		final String conversionTableFieldName) {
-		this.conversionTableFieldName = conversionTableFieldName;
+	public void setConvertFieldName(
+		final String convertFieldName) {
+		this.convertFieldName = convertFieldName;
 	}
-
+	
+	public String getCleanFieldName() {
+		return cleanFieldName;
+	}
+	
+	public void setCleanFieldName(
+		final String cleanFieldName) {
+		
+		this.cleanFieldName = cleanFieldName;
+	}
+	
 	public RIFDataTypeInterface getRIFDataType() {
 		return rifDataType;
 	}
@@ -194,7 +207,7 @@ public final class ConvertWorkflowFieldConfiguration
 	//Interface: Display Name
 	
 	public String getDisplayName() {
-		return conversionTableFieldName;
+		return convertFieldName;
 	}
 	
 	// ==========================================

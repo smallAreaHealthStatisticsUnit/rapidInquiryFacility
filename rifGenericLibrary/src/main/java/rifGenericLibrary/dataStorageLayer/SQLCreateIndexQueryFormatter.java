@@ -1,15 +1,25 @@
-package rifDataLoaderTool.system;
+package rifGenericLibrary.dataStorageLayer;
 
-import rifGenericLibrary.dataStorageLayer.DatabaseType;
-import rifServices.system.RIFDatabaseProperties;
+
+
 
 /**
- * Contain a set of parameter values that will be made available to the RIF Data Loader tool
- * when it starts up.
+ *
  *
  * <hr>
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * <p>
  * Copyright 2014 Imperial College London, developed by the Small Area
- * Health Statistics Unit. 
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ * </p>
  *
  * <pre> 
  * This file is part of the Rapid Inquiry Facility (RIF) project.
@@ -17,21 +27,23 @@ import rifServices.system.RIFDatabaseProperties;
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
-
+ *
  * RIF is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with RIF.  If not, see <http://www.gnu.org/licenses/>.
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
  * </pre>
  *
  * <hr>
  * Kevin Garwood
  * @author kgarwood
+ * @version
  */
-
 /*
  * Code Road Map:
  * --------------
@@ -54,57 +66,70 @@ import rifServices.system.RIFDatabaseProperties;
  *
  */
 
-public final class RIFDataLoaderStartupOptions {
+public final class SQLCreateIndexQueryFormatter 
+	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
 
-	public static final int MAXIMUM_TABLE_NAME_WIDTH = 30;
-	public static final int MAXIMUM_DESCRIPTION_FIELD_WIDTH=200;
-	public static final int MAXIMUM_USER_ID_WIDTH = 20;
-	private static final int TEXT_FIELD_WIDTH = 30;
-	
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private DatabaseType databaseType;
+	/** The table that will be deleted */
+	private String indexTable;
+	private String indexTableField;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
-	
-	
-	public RIFDataLoaderStartupOptions() {
-		databaseType = DatabaseType.POSTGRESQL;
+
+	/**
+	 * Instantiates a new SQL delete table query formatter.
+	 */
+	public SQLCreateIndexQueryFormatter() {
+
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void setDatabaseType(
-		final DatabaseType databaseType) {
+
+	/**
+	 * Sets the target table to delete
+	 *
+	 * @param fromTable the new from table
+	 */
+	public void setIndexTable(
+		final String indexTable) {
 		
-		this.databaseType = databaseType;
+		this.indexTable = indexTable;
 	}
 	
-	public DatabaseType getDatabaseType() {
+	public void setIndexTableField(
+		final String indexTableField) {
 		
-		return databaseType;
+		this.indexTableField = indexTableField;
 	}
 	
-	public int getDataLoaderTextColumnSize() {
-		return 30;
-	}
-	
-	public RIFDatabaseProperties getRIFDatabaseProperties() {
-		
-		RIFDatabaseProperties rifDatabaseProperties
-			= RIFDatabaseProperties.newInstance(
-				databaseType, 
-				true);
-		
-		return rifDatabaseProperties;
+	@Override
+	public String generateQuery() {
+		resetAccumulatedQueryExpression();
+		addQueryPhrase(0, "CREATE INDEX");
+		padAndFinishLine();
+		addQueryPhrase(1, "ind_");
+		addQueryPhrase(indexTable);
+		addQueryPhrase("_");
+		addQueryPhrase(indexTableField);
+		padAndFinishLine();
+		addQueryPhrase(0, "ON");
+		addQueryPhrase(1, indexTable);
+		addQueryPhrase(" (");
+		addQueryPhrase(indexTableField);		
+		addQueryPhrase(")");
+		addQueryPhrase(";");
+
+		return super.generateQuery();		
 	}
 	
 	// ==========================================
@@ -118,7 +143,4 @@ public final class RIFDataLoaderStartupOptions {
 	// ==========================================
 	// Section Override
 	// ==========================================
-
 }
-
-

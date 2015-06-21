@@ -186,7 +186,19 @@ public final class OptimiseWorkflowConfiguration {
 		return fieldConfigurations;
 	}
 	
+	public String[] getIndexFieldNames() {
+		int numberOfFieldConfigurations = fieldConfigurations.size();
+		String[] indexFieldNames = new String[numberOfFieldConfigurations];
+		for (int i = 0; i < numberOfFieldConfigurations; i++) {
+			OptimiseWorkflowFieldConfiguration currentFieldConfiguration
+				= fieldConfigurations.get(i);
+			indexFieldNames[i] = currentFieldConfiguration.getFieldName();
+		}
 		
+		return indexFieldNames;
+	}
+	
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

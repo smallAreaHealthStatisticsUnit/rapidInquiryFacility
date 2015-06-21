@@ -1,18 +1,22 @@
-package rifDataLoaderTool.dataStorageLayer.postgresql;
+package rifDataLoaderTool.dataStorageLayer;
+
+import rifDataLoaderTool.businessConceptLayer.*;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifServices.dataStorageLayer.SQLQueryUtility;
+import rifServices.system.RIFServiceException;
 
 import java.util.ArrayList;
-
-import rifDataLoaderTool.businessConceptLayer.ConvertStepQueryGeneratorAPI;
-import rifDataLoaderTool.businessConceptLayer.ConvertWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.ConvertWorkflowFieldConfiguration;
-import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import java.sql.*;
 
 /**
- * Contains methods that generate Postgres-specific SQL code that supports
- * the conversion step.
  *
+ * Manages all database operations used to convert a cleaned table into tabular data
+ * expected by some part of the RIF (eg: numerator data, health codes, geospatial data etc)
+ * 
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
@@ -60,8 +64,8 @@ import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
  *
  */
 
-public final class PostgresConvertStepQueryGenerator 
-	implements ConvertStepQueryGeneratorAPI {
+public final class ConvertWorkflowManager 
+	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
@@ -71,22 +75,25 @@ public final class PostgresConvertStepQueryGenerator
 	// Section Properties
 	// ==========================================
 
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public PostgresConvertStepQueryGenerator() {
+	public ConvertWorkflowManager(
+		final RIFDataLoaderStartupOptions startupOptions) {
 
+		super(startupOptions);
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
 	
-	
-	public String generateConvertTableQuery(
-		final ConvertWorkflowConfiguration convertWorkflowConfiguration) {
+	public void convertConfiguration(
+		final Connection connection,
+		final ConvertWorkflowConfiguration convertWorkflowConfiguration)
+		throws RIFServiceException {
 
 		
 		/**
@@ -105,52 +112,71 @@ public final class PostgresConvertStepQueryGenerator
 		 * 
 		 */
 		
-		
-		
+		PreparedStatement statement = null;
 		String coreDataSetName 
 			= convertWorkflowConfiguration.getCoreDataSetName();
-		String cleanedTableName
-			= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName);
-		String convertedTableName
-			= RIFTemporaryTablePrefixes.CONVERT.getTableName(coreDataSetName);
+		try {			
+			String cleanedTableName
+				= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName);
+			String convertedTableName
+				= RIFTemporaryTablePrefixes.CONVERT.getTableName(coreDataSetName);
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		
-		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
-		queryFormatter.addQueryPhrase(convertedTableName);
-		queryFormatter.addQueryPhrase(" AS");
-		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryPhrase(1, "SELECT");
-		queryFormatter.padAndFinishLine();
+			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
+			queryFormatter.addQueryPhrase(convertedTableName);
+			queryFormatter.addQueryPhrase(" AS");
+			queryFormatter.padAndFinishLine();
+			queryFormatter.addQueryPhrase(1, "SELECT");
+			queryFormatter.padAndFinishLine();
 		
-		queryFormatter.addQueryLine(2, "data_source_id,");
-		queryFormatter.addQueryLine(2, "row_number,");
+			queryFormatter.addQueryLine(2, "data_source_id,");
+			queryFormatter.addQueryLine(2, "row_number,");
 				
-		ArrayList<ConvertWorkflowFieldConfiguration> conversionFieldConfigurations
-			= convertWorkflowConfiguration.getRequiredFieldConfigurations();
-		for (ConvertWorkflowFieldConfiguration convertionFieldConfiguration : conversionFieldConfigurations) {
+			ArrayList<ConvertWorkflowFieldConfiguration> conversionFieldConfigurations
+				= convertWorkflowConfiguration.getRequiredFieldConfigurations();
+			for (ConvertWorkflowFieldConfiguration convertionFieldConfiguration : conversionFieldConfigurations) {
 			
-			addConvertQueryFragment(
-				queryFormatter,
-				2,
-				convertWorkflowConfiguration,
-				convertionFieldConfiguration);
-		}
-		//Now add on the extra fields
+				addConvertQueryFragment(
+					queryFormatter,
+					2,
+					convertWorkflowConfiguration,
+					convertionFieldConfiguration);
+			}
+			
+			//Now add on the extra fields
 		
-		ArrayList<CleanWorkflowFieldConfiguration> extraFields
-			= convertWorkflowConfiguration.getExtraFields();
-		for (CleanWorkflowFieldConfiguration extraField : extraFields) {
-			queryFormatter.addQueryPhrase(",");
-			queryFormatter.finishLine();			
-			queryFormatter.addQueryPhrase(extraField.getCleanedTableFieldName());
+			ArrayList<CleanWorkflowFieldConfiguration> extraFields
+				= convertWorkflowConfiguration.getExtraFields();
+			for (CleanWorkflowFieldConfiguration extraField : extraFields) {
+				queryFormatter.addQueryPhrase(",");
+				queryFormatter.finishLine();			
+				queryFormatter.addQueryPhrase(extraField.getCleanedTableFieldName());
+			}
+		
+			queryFormatter.addQueryPhrase(0, "FROM");
+			queryFormatter.padAndFinishLine();
+			queryFormatter.addQueryPhrase(1, cleanedTableName);
+
+			statement	
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"convertWorkflowManager.error.unableToCreateConvertTable",
+					coreDataSetName);
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+		}
+		finally {
+			SQLQueryUtility.close(statement);
 		}
 		
-		queryFormatter.addQueryPhrase(0, "FROM");
-		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryPhrase(1, cleanedTableName);
-				
-		return queryFormatter.generateQuery();
 	}
 	
 	private void addConvertQueryFragment(
@@ -162,10 +188,6 @@ public final class PostgresConvertStepQueryGenerator
 		/**
 		 * cleanedTableName.postal_code AS postal_code,
 		 * convert_age_sex(age, sex)
-		 * 
-		 * 
-		 * 
-		 * 
 		 * 
 		 */
 		
@@ -182,7 +204,7 @@ public final class PostgresConvertStepQueryGenerator
 				fieldConfigurations.get(0).getCleanedTableFieldName());
 			queryFormatter.addQueryPhrase(" AS ");
 			queryFormatter.addQueryPhrase(
-				fieldConversionConfiguration.getConversionTableFieldName());
+				fieldConversionConfiguration.getConvertFieldName());
 		}
 		else {
 			//there is a function
@@ -195,7 +217,7 @@ public final class PostgresConvertStepQueryGenerator
 					fieldConfigurations));				
 			queryFormatter.addQueryPhrase(") AS ");
 			queryFormatter.addQueryPhrase(
-				fieldConversionConfiguration.getConversionTableFieldName());
+				fieldConversionConfiguration.getConvertFieldName());
 			queryFormatter.padAndFinishLine();
 		}
 	}
@@ -221,8 +243,7 @@ public final class PostgresConvertStepQueryGenerator
 		}
 		
 		return buffer.toString();
-	}
-	
+	}	
 	
 	// ==========================================
 	// Section Errors and Validation

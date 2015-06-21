@@ -2,11 +2,20 @@ package rifDataLoaderTool.dataStorageLayer;
 
 import java.sql.*;
 
+import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.businessConceptLayer.RIFResultTable;
+import rifServices.system.RIFDatabaseProperties;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceException;
+import rifServices.util.RIFLogger;
 import rifServices.dataStorageLayer.SQLQueryUtility;
+import rifServices.dataStorageLayer.AbstractSQLManager;
+
 
 /**
  * provides functionality common to all manager classes associated with different steps
@@ -60,7 +69,8 @@ import rifServices.dataStorageLayer.SQLQueryUtility;
  *
  */
 
-public abstract class AbstractDataLoaderStepManager {
+public abstract class AbstractDataLoaderStepManager 
+	extends AbstractSQLManager {
 
 	// ==========================================
 	// Section Constants
@@ -74,8 +84,10 @@ public abstract class AbstractDataLoaderStepManager {
 	// Section Construction
 	// ==========================================
 
-	public AbstractDataLoaderStepManager() {
-
+	public AbstractDataLoaderStepManager(
+		final RIFDataLoaderStartupOptions startupOptions) {
+		
+		super(startupOptions.getRIFDatabaseProperties());
 	}
 
 	// ==========================================
@@ -168,6 +180,112 @@ public abstract class AbstractDataLoaderStepManager {
 		}
 				
 	}
+	
+	public void checkTotalRowsMatch(
+		final Connection connection,
+		final String coreTableName,
+		final RIFTemporaryTablePrefixes firstTablePrefix,
+		final RIFTemporaryTablePrefixes secondTablePrefix) 
+		throws RIFServiceException {
+		
+		String firstTableName
+			= firstTablePrefix.getTableName(coreTableName);
+		String secondTableName
+			= secondTablePrefix.getTableName(coreTableName);
+		
+		SQLGeneralQueryFormatter queryFormatter 
+			= new SQLGeneralQueryFormatter();
+		queryFormatter.addQueryPhrase(0, "WITH");
+		queryFormatter.padAndFinishLine();
+		queryFormatter.addQueryPhrase(" firstTableCount AS");
+		queryFormatter.padAndFinishLine();
+		queryFormatter.addQueryPhrase(1, "(SELECT");
+		queryFormatter.padAndFinishLine();
+		queryFormatter.addQueryPhrase(2, "COUNT(data_source_id) AS total");
+		queryFormatter.padAndFinishLine();
+		queryFormatter.addQueryPhrase(1, "FROM");
+		queryFormatter.padAndFinishLine();
+		queryFormatter.addQueryPhrase(2, firstTableName);
+		queryFormatter.addQueryPhrase("),");
+		queryFormatter.finishLine();
+		
+		queryFormatter.addQueryPhrase(" secondTableCount AS");
+		queryFormatter.padAndFinishLine();
+		queryFormatter.addQueryPhrase(1, "(SELECT");
+		queryFormatter.padAndFinishLine();
+		queryFormatter.addQueryPhrase(2, "COUNT(data_source_id) AS total");
+		queryFormatter.padAndFinishLine();
+		queryFormatter.addQueryPhrase(1, "FROM");
+		queryFormatter.padAndFinishLine();
+		queryFormatter.addQueryPhrase(2, secondTableName);
+		queryFormatter.addQueryPhrase(")");
+		queryFormatter.padAndFinishLine();
+		
+		//now compare the two results
+		queryFormatter.addQueryPhrase(0, "SELECT");
+		queryFormatter.padAndFinishLine();
+		queryFormatter.addQueryPhrase(1, "CASE");
+		queryFormatter.padAndFinishLine();
+		queryFormatter.addQueryPhrase(2, "WHEN ");
+		queryFormatter.addQueryPhrase("firstTableCount.total = secondTableCount.total THEN TRUE");
+		queryFormatter.padAndFinishLine();
+		queryFormatter.addQueryPhrase(2, "ELSE FALSE");
+		queryFormatter.padAndFinishLine();
+		queryFormatter.addQueryPhrase(1, "END AS result");
+		queryFormatter.padAndFinishLine();
+		queryFormatter.addQueryPhrase(1, "FROM");
+		queryFormatter.padAndFinishLine();
+		queryFormatter.addQueryPhrase(2, "firstTableCount,");
+		queryFormatter.finishLine();
+		queryFormatter.addQueryPhrase(2, "secondTableCount;");
+		queryFormatter.finishLine();
+		
+		RIFLogger logger = RIFLogger.getLogger();
+		logger.debugQuery(
+			this, 
+			"checkTotalRowsMatch",
+			queryFormatter.generateQuery());
+		
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement 
+				= connection.prepareStatement(queryFormatter.generateQuery());
+			resultSet = statement.executeQuery();
+			resultSet.next();
+			Boolean result = resultSet.getBoolean(1);
+			if (result == false) {
+				String errorMessage
+					= RIFDataLoaderToolMessages.getMessage(
+						"tableIntegrityChecker.error.tablesHaveDifferentSizes",
+						firstTableName,
+						secondTableName);
+				RIFServiceException rifDataLoaderException
+					= new RIFServiceException(
+						RIFDataLoaderToolError.COMPARE_TABLE_SIZES, 
+						errorMessage);
+				throw rifDataLoaderException;
+			}
+		}
+		catch(SQLException sqlException) {
+			sqlException.printStackTrace(System.out);
+			String errorMessage	
+				= RIFDataLoaderToolMessages.getMessage("tableIntegrityChecker.error.unableToCompareTables");
+			RIFServiceException RIFServiceException
+				= new RIFServiceException(
+						RIFDataLoaderToolError.DATABASE_QUERY_FAILED,
+						errorMessage);
+			throw RIFServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+		}
+		
+	}
+	
+	
 	
 	// ==========================================
 	// Section Errors and Validation

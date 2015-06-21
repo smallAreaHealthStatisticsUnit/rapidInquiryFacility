@@ -116,7 +116,8 @@ public final class DataLoaderService
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final int TEXT_COLUMN_WIDTH = 30;
+
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -129,13 +130,13 @@ public final class DataLoaderService
 	private UserManager userManager;
 	
 	private DataSetManager dataSetManager;
-	private LoadStepManager loadStepManager;
-	private CleanStepManager cleanStepManager;
-	private ConvertStepManager convertStepManager;
-	private OptimiseStepManager optimiseStepManager;
+	private LoadWorkflowManager loadWorkflowManager;
+	private CleanWorkflowManager cleanWorkflowManager;
+	private ConvertWorkflowManager convertWorkflowManager;
+	private OptimiseWorkflowManager optimiseWorkflowManager;
 	
-	//private CheckStepManager checkStepManager;
-	//private PublishStepManager publishStepManager;
+	private CheckWorkflowManager checkWorkflowManager;
+	private PublishWorkflowManager publishWorkflowManager;
 	
 	
 	private ArrayList<DataSetConfiguration> dataSetConfigurations;
@@ -146,8 +147,7 @@ public final class DataLoaderService
 	// ==========================================
 
 	public DataLoaderService() {
-		
-		
+			
 		dataSetConfigurations 
 			= new ArrayList<DataSetConfiguration>();
 		
@@ -225,25 +225,29 @@ public final class DataLoaderService
 		
 		dataSetManager = new DataSetManager();
 		
-		PostgresLoadStepQueryGenerator loadStepQueryGenerator
-			= new PostgresLoadStepQueryGenerator();
-		loadStepManager
-			= new LoadStepManager(
-				startupOptions, 
-				loadStepQueryGenerator);
+
+		loadWorkflowManager
+			= new LoadWorkflowManager(
+				startupOptions);
 		
-		PostgresCleaningStepQueryGenerator cleaningStepQueryGenerator
+		PostgresCleaningStepQueryGenerator cleanWorkflowQueryGenerator
 			= new PostgresCleaningStepQueryGenerator();
-		cleanStepManager
-			= new CleanStepManager(
+		cleanWorkflowManager
+			= new CleanWorkflowManager(
 				startupOptions,
-				cleaningStepQueryGenerator);
-					PostgresConvertStepQueryGenerator convertStepQueryGenerator
-				= new PostgresConvertStepQueryGenerator();
-		convertStepManager
-			= new ConvertStepManager(
-				startupOptions,
-				convertStepQueryGenerator); 
+				cleanWorkflowQueryGenerator);
+					
+		convertWorkflowManager
+			= new ConvertWorkflowManager(
+				startupOptions);
+		
+		checkWorkflowManager
+			= new CheckWorkflowManager(
+				startupOptions);
+		
+		publishWorkflowManager
+			= new PublishWorkflowManager(
+				startupOptions);
 	}
 	
 	// ==========================================
@@ -739,10 +743,9 @@ public final class DataLoaderService
 				= sqlConnectionManager.assignPooledWriteConnection(
 					user);
 				
-			loadStepManager.createLoadTable(
+			loadWorkflowManager.loadConfiguration(
 				connection, 
-				tableCleaningConfiguration, 
-				TEXT_COLUMN_WIDTH);
+				tableCleaningConfiguration);
 
 			sqlConnectionManager.reclaimPooledWriteConnection(
 				user, 
@@ -815,7 +818,7 @@ public final class DataLoaderService
 				= sqlConnectionManager.assignPooledWriteConnection(
 					user);
 
-			loadStepManager.addLoadTableData(
+			loadWorkflowManager.addLoadTableData(
 				connection, 
 				tableCleaningConfiguration, 
 				tableData);
@@ -883,7 +886,7 @@ public final class DataLoaderService
 					user);
 						
 			results
-				= loadStepManager.getLoadTableData(
+				= loadWorkflowManager.getLoadTableData(
 					connection, 
 					tableCleaningConfiguration);
 			
@@ -953,7 +956,7 @@ public final class DataLoaderService
 				= sqlConnectionManager.assignPooledWriteConnection(
 					user);
 								
-			cleanStepManager.createCleanedTable(
+			cleanWorkflowManager.createCleanedTable(
 				connection, 
 				tableCleaningConfiguration);
 						
@@ -1018,7 +1021,7 @@ public final class DataLoaderService
 					user);
 								
 			result
-				= cleanStepManager.getCleanedTableData(
+				= cleanWorkflowManager.getCleanedTableData(
 					connection, 
 					tableCleaningConfiguration);
 			
@@ -1082,7 +1085,7 @@ public final class DataLoaderService
 				= sqlConnectionManager.assignPooledWriteConnection(
 					user);
 								
-			convertStepManager.convertConfiguration(
+			convertWorkflowManager.convertConfiguration(
 				connection, 
 				tableConversionConfiguration);
 					
@@ -1152,7 +1155,7 @@ public final class DataLoaderService
 				= sqlConnectionManager.assignPooledWriteConnection(
 					user);
 			result
-				= cleanStepManager.getCleaningTotalBlankValues(
+				= cleanWorkflowManager.getCleaningTotalBlankValues(
 					connection, 
 					tableCleaningConfiguration);
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -1216,7 +1219,7 @@ public final class DataLoaderService
 				= sqlConnectionManager.assignPooledWriteConnection(
 					user);
 			result
-				= cleanStepManager.getCleaningTotalChangedValues(
+				= cleanWorkflowManager.getCleaningTotalChangedValues(
 					connection, 
 					tableCleaningConfiguration);
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -1281,7 +1284,7 @@ public final class DataLoaderService
 				= sqlConnectionManager.assignPooledWriteConnection(
 					user);
 			result
-				= cleanStepManager.getCleaningTotalErrorValues(
+				= cleanWorkflowManager.getCleaningTotalErrorValues(
 					connection, 
 					tableCleaningConfiguration);
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -1356,7 +1359,7 @@ public final class DataLoaderService
 					user);
 
 			result
-				= cleanStepManager.cleaningDetectedBlankValue(
+				= cleanWorkflowManager.cleaningDetectedBlankValue(
 					connection, 
 					tableCleaningConfiguration,
 					rowNumber,
@@ -1432,7 +1435,7 @@ public final class DataLoaderService
 					user);
 
 			result
-				= cleanStepManager.cleaningDetectedChangedValue(
+				= cleanWorkflowManager.cleaningDetectedChangedValue(
 					connection, 
 					tableCleaningConfiguration,
 					rowNumber,
@@ -1508,7 +1511,7 @@ public final class DataLoaderService
 					user);
 
 			result
-				= cleanStepManager.cleaningDetectedErrorValue(
+				= cleanWorkflowManager.cleaningDetectedErrorValue(
 					connection, 
 					tableCleaningConfiguration,
 					rowNumber,
@@ -1585,7 +1588,7 @@ public final class DataLoaderService
 					user);
 
 			results
-				= cleanStepManager.getVarianceInFieldData(
+				= cleanWorkflowManager.getVarianceInFieldData(
 					connection, 
 					tableFieldCleaningConfiguration);
 			sqlConnectionManager.reclaimPooledWriteConnection(
