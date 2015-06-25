@@ -136,7 +136,7 @@ Till mid July, priority order:
   * Treatment method
 
   Deliberate errors will be introduced to the age and year fields, level 3 area id, and the date formats will change between years. There will only be one 
-  data cleaning feature per year. This is to facilitate data loader test cases. At a later duplicates will be aded.
+  data cleaning feature per year. This is to facilitate data loader test cases. At a later duplicates will be added.
   
 From August: 
 
