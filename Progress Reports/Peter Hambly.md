@@ -105,9 +105,11 @@ i.e. internal error code retuned in detail
 
 Immediate TODO list: 
 
-* Add control table (rif40_test_harness) for test harness, _rif40_test_sql_template() function to simplify creation, use common datatype shareable with SQL server
-  (XML or JSON; SQL server does not understand arrays)
-* Trigger test harness: ???? 
+* Add control table (rif40_test_harness) for test harness, _rif40_test_sql_template() function to simplify creation, add common datatype shareable with SQL server:
+  XML; SQL server does not understand arrays)
+* Trigger test harness: RIF40_COVARIATES, RIF40_ERROR_MESSAGES, RIF40_GEOGRAPHIES, RIF40_PREDEFINED_GROUPS, RIF40_STUDY_SHARES, RIF40_TABLE_OUTCOMES,
+  RIF40_TABLES, RIF40_VERSION, T_RIF40_COMPARISON_AREAS, T_RIF40_CONTEXTUAL_STATS, T_RIF40_GEOLEVELS, T_RIF40_INV_CONDITIONS, T_RIF40_INV_COVARIATES,
+  T_RIF40_INVESTIGATIONS, T_RIF40_NUM_DENOM, T_RIF40_RESULTS, T_RIF40_STUDIES, T_RIF40_STUDY_AREAS, T_RIF40_USER_PROJECTS 
 * Modify alter 7 so that existing conditions become rif40_error(...); /* Existing condition */ e.g.
 
 SELECT 1 AS x
@@ -119,16 +121,34 @@ SELECT rif40_log_pkg.rif40_error(-90125, 'rif40_error', 'Dummy error: %', 'Test'
 
 Raises an exception!
 
-* Fix pernicious mixed content issues in JS frontend
-* Test wpea-darwin remotely; using JS on httpd (i.e. minimise reverse proxy traffic) 
+Till mid July, priority order:
 
-Next few weeks:
+1. RIF batch integration
+2. Test data for RIF data loader. This will convert the existing SAHUSLAND_CANCER into individual record form; keeping the statistical 
+   properties (i.e. aggregate counts) the same. The following synthetic data will be added:
+   
+  * Zip code in the format 5N-4N; a Zip code lookup table will be provided later with SAHUSLAND co-ordinates
+  * Age
+  * Sex
+  * Date of birth
+  * Date of death
+  * Histology
+  * Treatment method
 
-* RIF batch integration
-* Complete R integration
-* Build and integrate node middleware server:
-  * GeoJSON to TopoJSON conversion; converted node program to using HTTP POST methods
-  * Secure logons using session_ids, time stamps and eliptic curve cryptography (public/private keys)
-  * Shapefile conversion to WKT (Well known test) format later 
-* Secure wpea-darwin httpd by jailing it; re-penetration test; add caching. Shields to be lowered when 
-  secure logons are integrated into the middleware and the JS frontend
+  Deliberate errors will be introduced to the age and year fields, level 3 area id, and the date formats will change between years. There will only be one 
+  data cleaning feature per year. This is to facilitate data loader test cases. At a later duplicates will be aded.
+  
+From August: 
+
+3. Complete webserver integration
+	* Fix pernicious mixed content issues in JS frontend
+	* Test wpea-darwin remotely; using JS on httpd (i.e. minimise reverse proxy traffic)  
+	* Secure wpea-darwin httpd by jailing it; re-penetration test; add caching. Shields to be lowered when 
+	  secure logons are integrated into the middleware and the JS frontend
+4. Complete R integration
+5. Integrate and test Java run study
+6. Complete build instructions
+7. Build and integrate node middleware server:
+	* GeoJSON to TopoJSON conversion; converted node program to using HTTP POST methods
+	* Secure logons using session_ids, time stamps and eliptic curve cryptography (public/private keys)
+	* Shapefile conversion to WKT (Well known test) format later 
