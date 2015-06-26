@@ -85,7 +85,7 @@ DECLARE
 	error_message VARCHAR;
 --
 	rif40_pkg_functions 		VARCHAR[] := ARRAY[
-				'rif40_delete_study', 'rif40_ddl', 'rif40_sql_test'];
+				'rif40_delete_study', 'rif40_ddl', 'rif40_sql_test', '_rif40_test_sql_template'];
 	l_function 			VARCHAR;	
 	debug_level		INTEGER;	
 --
@@ -105,7 +105,7 @@ BEGIN
 		debug_level:=LOWER(SUBSTR(c2th_rec.debug_level, 5))::INTEGER;
 		RAISE INFO 'T8--02: test_8_triggers.sql: debug level parameter="%"', debug_level::Text;
 	END IF;
-	--
+--
 -- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
 --
     PERFORM rif40_log_pkg.rif40_log_setup();
@@ -270,7 +270,20 @@ RETURNING 1::Text AS test_value',
 	ELSE
 		RAISE NOTICE 'T8--11: test_8_triggers.sql: No TEST TIRGGER studies actually created.';		
 	END IF;
-	
+
+	 IF NOT (rif40_sql_pkg.rif40_sql_test(
+			 'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
+			 'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
+'{{01,01.015,01.015.016200,01.015.016200.2}                                                                                                            
+,{01,01.015,01.015.016200,01.015.016200.3}                                                                                                             
+,{01,01.015,01.015.016200,01.015.016200.4}                                                                                                             
+,{01,01.015,01.015.016900,01.015.016900.1}                                                                                                             
+,{01,01.015,01.015.016900,01.015.016900.2}                                                                                                             
+,{01,01.015,01.015.016900,01.015.016900.3}                                                                                                             
+}'::Text[][]
+			 )) THEN
+			 errors:=errors+1;
+	 END IF;	
 --	
 	IF errors = 0 THEN
 		RAISE NOTICE 'T8--09: test_8_triggers.sql: No test harness errors.';		
@@ -290,6 +303,13 @@ EXCEPTION
 END;
 $$;
  
+--
+-- Test code generator
+--
+SELECT rif40_sql_pkg._rif40_test_sql_template(
+	'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
+	'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200') AS template;
+	
 --
 -- Run trigger test harness
 --

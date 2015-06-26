@@ -128,10 +128,10 @@ DECLARE
 	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
 BEGIN
 --
--- Must be rifupg34, rif40 or have rif_user or rif_manager role
+-- Must be rifupg34, postgres, rif40 or have rif_user or rif_manager role
 --
-	IF USER NOT IN ('postgres', 'rifupg34') AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_method4', 'User % must be rif40 or have rif_user or rif_manager role', 
+	IF USER NOT IN ('postgres', 'rifupg34', 'rif40') AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
+		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_method4', 'User % must be postgres, rif40, rifupg34 or have rif_user or rif_manager role', 
 			USER::VARCHAR);
 	END IF;
 --
@@ -170,10 +170,10 @@ BEGIN
 	FOR c1m4_rec IN c1m4(temp_table) LOOP
 		j:=j+1;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG3', 'rif40_method4', 'Column[%] %.%, length: %', 
-			j::Text, 
-			c1m4_rec.table_name, 
-			c1m4_rec.column_name, 
-			c1m4_rec.column_length::Text);
+			j::VARCHAR, 
+			c1m4_rec.table_name::VARCHAR, 
+			c1m4_rec.column_name::VARCHAR, 
+			c1m4_rec.column_length::VARCHAR);
 		display_len:=display_len+c1m4_rec.column_length+3;
 		column_len[j]:=c1m4_rec.column_length;
 		IF select_text IS NULL THEN

@@ -45,7 +45,7 @@
 -- Peter Hambly, SAHSU
 --
 -- Error codes:
--- rif40_sql_test:										71050 to 71099
+-- _rif40_test_sql_template:										71100 to 71149
 --
 \set ECHO all
 \set ON_ERROR_STOP ON
@@ -92,19 +92,188 @@ template
 		}'::Text[][])) THEN
 		errors:=errors+1;
 	END IF;
-		
+
+SELECT ''''||
+		   REPLACE(ARRAY_AGG(
+				(ARRAY[level1::Text, level2::Text, level3::Text, level4::Text]::Text||E'\n')::Text ORDER BY level4)::Text, 
+				'"'::Text, ''::Text)||'''::Text[][]' AS res 
+	  FROM sahsuland_geography
+	 WHERE level3 IN ('01.015.016900', '01.015.016200');
+	 
  */
 DECLARE 
-
+	sql_stmt 	VARCHAR;
+	drop_stmt 	VARCHAR;
+	select_text	VARCHAR:=NULL;
+	temp_table 	VARCHAR:=NULL;
+--
+	c1sqlt CURSOR(l_table VARCHAR) FOR /* Extra table/view columns */
+		SELECT table_name, column_name,
+		       CASE 													/* Work out column length */
+				WHEN numeric_precision IS NOT NULL /* bits */ AND
+				     LENGTH((2^numeric_precision)::Text) > LENGTH(column_name) AND 
+				     LENGTH((2^numeric_precision)::Text) <= 40							THEN LENGTH((2^numeric_precision)::Text)
+				WHEN numeric_precision IS NOT NULL /* bits */ AND
+				     LENGTH((2^numeric_precision)::Text) > LENGTH(column_name) AND 
+				     LENGTH((2^numeric_precision)::Text) > 40							THEN 40 /* Truncate at 40 characters */
+				WHEN datetime_precision IS NOT NULL /* bits */  AND
+				     LENGTH((2^datetime_precision)::Text) > LENGTH(column_name) AND 
+				     LENGTH((2^datetime_precision)::Text) <= 40							THEN LENGTH((2^datetime_precision)::Text)
+				WHEN datetime_precision IS NOT NULL /* bits */  AND
+				     LENGTH((2^datetime_precision)::Text) > LENGTH(column_name) AND 
+				     LENGTH((2^datetime_precision)::Text) > 40							THEN 40 /* Truncate at 40 characters */
+				WHEN character_maximum_length > LENGTH(column_name) AND 
+				     character_maximum_length <= 40 									THEN character_maximum_length
+				WHEN character_maximum_length > LENGTH(column_name) AND 
+				     character_maximum_length > 40 										THEN 40 /* Truncate at 40 characters */
+				ELSE LENGTH(column_name)
+		       END column_length
+		  FROM information_schema.columns a, pg_tables b 
+		 WHERE b.schemaname = a.table_schema
+		   AND a.table_name = b.tablename
+		   AND b.tableowner = USER
+		   AND b.tablename  = l_table; 
+	c2sqlt REFCURSOR;
+	c1sqlt_rec RECORD;
+	c2sqlt_rec RECORD;
+--
+	stp 			TIMESTAMP WITH TIME ZONE;
+	etp 			TIMESTAMP WITH TIME ZONE;
+	took 			INTERVAL;
+	j 				INTEGER:=0;
+	l_column_name	VARCHAR;
+--
+	error_message 	VARCHAR;
+	v_sqlstate 		VARCHAR;
+	v_context		VARCHAR;	
+	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN
-	RETURN NEXT E'\t'||'IF NOT (PERFORM rif40_sql_pkg.rif40_sql_test(';
-	RETURN NEXT E'\t'||E'\t'||''''||REPLACE(test_stmt, '''', '''''')||'''';
-	RETURN NEXT E'\t'||E'\t'||''''||REPLACE(test_case_title, '''', '''''')||'''';		
-	RETURN NEXT E'\t'||E'\t'||'}''::Text[][])) THEN';
+--
+-- Must be postgres, rif40 or have rif_user or rif_manager role
+--
+	IF USER NOT IN ('postgres', 'rif40') AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
+		PERFORM rif40_log_pkg.rif40_error(-71100, '_rif40_test_sql_template', 'User % must be postgres, rif40 or have rif_user or rif_manager role', 
+			USER::VARCHAR);
+	END IF;
+--
+	IF test_stmt IS NULL THEN
+		IF title IS NULL THEN
+			PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_test_sql_template', '[71101] NULL SQL statement, NULL title');
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_test_sql_template', '[71102] NULL SQL statement for: %', title::VARCHAR);
+		END IF;
+		RETURN;
+	END IF;
+	stp:=clock_timestamp();
+--
+-- Create results temporary table
+--
+	temp_table:='l_'||REPLACE(rif40_sql_pkg.sys_context(NULL, 'AUDSID'), '.', '_');
+--
+-- This could do with checking first to remove the notice:
+-- psql:v4_0_rif40_sql_pkg.sql:3601: NOTICE:  table "l_7388_2456528_62637_130282_7388" does not exist, skipping
+-- CONTEXT:  SQL statement "DROP TABLE IF EXISTS l_7388_2456528_62637_130282"
+-- PL/pgSQL function "rif40_ddl" line 32 at EXECUTE statement
+--
+	drop_stmt:='DROP TABLE IF EXISTS '||temp_table;
+	PERFORM rif40_sql_pkg.rif40_drop_user_table_or_view(temp_table);
+--
+-- SQL injection check
+--
+-- ADD
+
+--
+	sql_stmt:='CREATE TEMPORARY TABLE '||quote_ident(temp_table)||' AS '||E'\n'||test_stmt;
+	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+--
+-- Process table header
+--
+/*
+	SELECT ''''||
+		   REPLACE(
+				ARRAY_AGG(
+						(ARRAY[
+							level1::Text, level2::Text, level3::Text, level4::Text]
+							::Text||E'\n')::Text ORDER BY level4)::Text, 
+				'"'::Text, ''::Text)||'''::Text[][]' AS res 
+	  FROM sahsuland_geography
+	 WHERE level3 IN ('01.015.016900', '01.015.016200');
+				
+SELECT ''''|| REPLACE(
+                ARRAY_AGG(
+                        (ARRAY[
+                                level1::Text,
+                                level2::Text,
+                                level3::Text,
+                                level4::Text]::Text||E'\n')::Text
+                         ORDER BY level4)::Text,
+                '"'::Text, ''::Text)||'''::Text[][]' AS res
+  FROM l_10900_2457200_51137_541000
+ */
+	select_text:='SELECT ''''''''|| REPLACE('||E'\n'||
+				E'\t'||E'\t'||'ARRAY_AGG('||E'\n'||
+				E'\t'||E'\t'||E'\t'||'(ARRAY[';
+
+	FOR c1sqlt_rec IN c1sqlt(temp_table) LOOP
+		j:=j+1;
+		l_column_name:=c1sqlt_rec.column_name;
+		PERFORM rif40_log_pkg.rif40_log('DEBUG3', '_rif40_test_sql_template', '[71104] Column[%] %.%, length: %', 
+			j::VARCHAR, 
+			c1sqlt_rec.table_name::VARCHAR, 
+			c1sqlt_rec.column_name::VARCHAR, 
+			c1sqlt_rec.column_length::VARCHAR);
+		IF j = 1 THEN
+			select_text:=select_text||E'\n'||E'\t'||E'\t'||E'\t'||E'\t'||quote_ident(c1sqlt_rec.column_name)||'::Text';
+		ELSE
+			select_text:=select_text||','||E'\n'||E'\t'||E'\t'||E'\t'||E'\t'||quote_ident(c1sqlt_rec.column_name)||'::Text';
+		END IF;			
+	END LOOP;
+--
+	etp:=clock_timestamp();
+	took:=age(etp, stp);
+	PERFORM rif40_log_pkg.rif40_log('DEBUG2', '_rif40_test_sql_template', '[71105] Statement took: %', 
+		took::VARCHAR);	
+--
+	select_text:=select_text||']::Text||E''\n'')::Text'||E'\n'||E'\t'||E'\t'||E'\t'||' ORDER BY '||l_column_name||')::Text,'||E'\n'||
+		E'\t'||E'\t'||'''"''::Text, ''''::Text)||''''''::Text[][]'' AS res'||E'\n'||
+		'  FROM '||quote_ident(temp_table);	
+	sql_stmt:=select_text;
+	OPEN c2sqlt FOR EXECUTE sql_stmt;
+	FETCH c2sqlt INTO c2sqlt_rec;
+	IF NOT FOUND THEN
+		PERFORM rif40_log_pkg.rif40_error(-71105, '_rif40_test_sql_template', 
+			'No data returned for cursor c2sqlt, SQL> %, test SQL> %;',
+			sql_stmt::VARCHAR,
+			test_stmt::VARCHAR);
+	END IF;
+	CLOSE c2sqlt;
+--
+	PERFORM rif40_sql_pkg.rif40_ddl(drop_stmt);		
+--
+	RETURN NEXT E'\t'||'IF NOT (rif40_sql_pkg.rif40_sql_test(';
+	RETURN NEXT E'\t'||E'\t'||''''||REPLACE(test_stmt, '''', '''''')||''',';
+	RETURN NEXT E'\t'||E'\t'||''''||REPLACE(test_case_title, '''', '''''')||''',';		
+--
+--	RETURN NEXT E'\t'||E'\t'||'/* SQL> '||E'\n'||select_text||E'\n'||' */';
+	RETURN NEXT c2sqlt_rec.res;
+--
+	RETURN NEXT E'\t'||E'\t'||')) THEN';
 	RETURN NEXT E'\t'||E'\t'||'errors:=errors+1;';
 	RETURN NEXT E'\t'||'END IF;'
 --
 	RETURN;
+EXCEPTION
+	WHEN others THEN
+		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+		GET STACKED DIAGNOSTICS v_sqlstate = RETURNED_SQLSTATE;
+		GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
+		error_message:='_rif40_test_sql_template() exception handler caught: '||E'\n'||SQLERRM::VARCHAR||E'\n'||
+			'in SQL> '||sql_stmt||';'||E'\n'||
+			'test SQL> '||test_stmt||';'||E'\n'||			
+			'Detail: '||v_detail::VARCHAR||E'\n'||
+			'Context: '||v_context::VARCHAR||E'\n'||
+			'SQLSTATE: '||v_sqlstate::VARCHAR;
+		RAISE EXCEPTION '71103: %', error_message USING DETAIL=v_detail;			
 END;
 $func$ LANGUAGE plpgsql;
 
@@ -133,6 +302,6 @@ template
 	END IF;
 	
 ';
- 
+	
 --
 -- Eof
