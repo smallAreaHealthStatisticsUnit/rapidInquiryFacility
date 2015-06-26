@@ -1,5 +1,5 @@
 # Nan Lin Progress Report RIF4.0 
-## Principal Work Area: Middleware 
+Principal Work Area: **Java Middleware** 
 ### 2015 
 #### May
 - Continue reading RIF 3.2 manual to preciously understand the purpose, features, concepts, and business logic of RIF.  

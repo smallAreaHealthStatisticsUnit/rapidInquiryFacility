@@ -2,7 +2,7 @@
 
 ## Front End
 
-* Javaascript web platform [Frederico Fabbri](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Federico%20Fabbri.md)
+* Javascript web platform [Frederico Fabbri](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Federico%20Fabbri.md)
 
 ## Java Middleware and data loader
 

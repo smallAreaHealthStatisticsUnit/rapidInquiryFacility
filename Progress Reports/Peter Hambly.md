@@ -1,6 +1,6 @@
 # Peter Hambly Progress Report RIF 4.0
 
-Principal Work Area: Postgres Database
+Principal Work Areas: **Postgres Database, node, system integration**
 
 ## 2015
 ### May

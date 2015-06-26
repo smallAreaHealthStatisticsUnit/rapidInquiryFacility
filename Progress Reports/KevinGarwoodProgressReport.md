@@ -1,4 +1,6 @@
 #Kevin Garwood Progress Report 
+Principal Work Area: **Java Middleware** 
+
 ##May 2015
 ### Responding to ad-hoc requests for new API methods to support the web-based study submission tool
 In recent weeks, I’ve had to step up efforts to add new API methods to support various activities in the web client.  The addition of new calls is often easy and predictable but still laborious.  Sometimes I’ve had to change the code in response to discussions about whether the responsibility of an activity should rest in the middleware or in the database.
