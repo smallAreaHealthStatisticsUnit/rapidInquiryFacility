@@ -1,6 +1,31 @@
 # Nan Lin Progress Report RIF4.0 
 Principal Work Area: **Java Middleware** 
 ### 2015 
+#### June
+RIF development team decides not to distribute the whole set of ICD 10 code in case violating the WHO copyright accidentally. Instead, only a sample set of ICD 10 code, which is used in the table “sahsuland_cancer” (around one percent of the whole), will be provided in order to demonstrate RIF features. The format of such a sample file (the target) should be XML as its details can be easily understood and parsed by third parties. 
+
+
+
+A version of ICD 10 file from a WHO website is downloaded; this peculiar XML file uses Classification Markup Language (ClaML) to describe the data. This file is used as the template to generate the target. Consequently, DOM is used to extract the information that RIF is interested in the template and then generate the target also defined by ClaML.
+
+
+
+The target keeps the skeleton of the template and ignores the details that are not relevant with RIF. For example, the target has one “chapter”, a few “blocks” with “categories” related to the chapter; details about the “inclusion” and “exclusion” sections of the ICD 10 code description are excluded.  As a result, the prototype code developed last month is revised: the new version not only can parse the template but also generate the target. Actually, the code can parse any XML files defined by ClaML.
+
+
+
+In the target, the dot sign is removed from the WHO ICD 10 code in accordance with the RIF data format. The size of the target is small.
+
+
+
+The naked eye test shows the target only contains the ICD 10 code details used in RIF. 
+
+##### To do:
+- Refactor the prototype code.
+- Unit testing of the prototype code using KG’s existing test cases with possible new ones. 
+- Fit the feature into RIF properly. Export the feature as a web service. Then the Javascript snippet in the front-end web page can call the service directly; the web page can render the RIF ICD 10 code taxonomy structure successfully.
+- Use the similar way to generate a file containing the ICD 9 code used in RIF.
+
 #### May
 - Continue reading RIF 3.2 manual to preciously understand the purpose, features, concepts, and business logic of RIF.  
 - Learn the database schema to understand RIF terms, how the data is organized, what the functions of database procedures are and how they should be interfaced with the middleware. 
