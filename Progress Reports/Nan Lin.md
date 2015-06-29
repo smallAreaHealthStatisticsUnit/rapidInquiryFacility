@@ -25,6 +25,7 @@ The naked eye test shows the target only contains the ICD 10 code details used i
 - Unit testing of the prototype code using KG’s existing test cases with possible new ones. 
 - Fit the feature into RIF properly. Export the feature as a web service. Then the Javascript snippet in the front-end web page can call the service directly; the web page can render the RIF ICD 10 code taxonomy structure successfully.
 - Use the similar way to generate a file containing the ICD 9 code used in RIF.
+- Develop complete ICD 9+10 lists for inserted into the RIF build outside of Github. This is to preserve WHO's copyright and licensing conditions.
 
 #### May
 - Continue reading RIF 3.2 manual to preciously understand the purpose, features, concepts, and business logic of RIF.  
