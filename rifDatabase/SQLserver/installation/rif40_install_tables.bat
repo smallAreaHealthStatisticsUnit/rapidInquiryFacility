@@ -15,7 +15,6 @@ sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\t_rif40_num_denom.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\t_rif40_parameters.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_error_messages.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\t_rif40_user_projects.sql
-
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_age_groups.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\t_rif40_geolevels.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_covariates.sql
