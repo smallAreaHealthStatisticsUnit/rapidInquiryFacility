@@ -67,7 +67,6 @@ BEGIN
 					SET @server_name = RIGHT(@l_table_name,len(@database_name) -CHARINDEX('.',@database_name));
 					SET @database_name = LEFT(@database_name,CHARINDEX('.',@database_name)-1);
 				END
-			END
 		END
 	END 
 	
@@ -109,18 +108,16 @@ BEGIN
 	END
 	
 	
-	IF EXISTS (select * from sys.fn_my_permissions(@l_table_name, N'OBJECT') 
-where  subentity_name = N'' ) -- you have some sort of permissions
+	IF EXISTS (select * from sys.fn_my_permissions(@l_table_name, N'OBJECT') where  subentity_name = N'' ) -- you have some sort of permissions
 			RETURN 1;
 		ELSE
 			RETURN 0; -- no permission to access
 			
 	RETURN 0;
-END
-GO
+END;
 
-GRANT EXECUTE ON rif40.rif40_is_object_resolvable(varchar) TO public
-GO
+
+--GRANT EXECUTE ON rif40.rif40_is_object_resolvable(varchar) TO public;
 
 /*
 COMMENT ON FUNCTION rif40_sql_pkg.rif40_is_object_resolvable(character varying) IS 'Function: 	rif40_is_object_resolvable()

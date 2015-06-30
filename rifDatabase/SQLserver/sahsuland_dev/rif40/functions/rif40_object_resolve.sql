@@ -31,9 +31,10 @@ END
 GO
 
 --produces error:
+/*
 GRANT EXECUTE ON rif40.rif40_object_resolve(varchar) TO public
 GO
-
+*/
 /*
 COMMENT ON FUNCTION rif40_sql_pkg.rif40_object_resolve(character varying) IS 'Function: 	rif40_object_resolve()
 Parameters:	Table/view name
