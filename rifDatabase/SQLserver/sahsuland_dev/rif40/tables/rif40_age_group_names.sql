@@ -4,6 +4,23 @@ GO
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_age_group_names]') AND type in (N'U'))
 BEGIN
+
+	--first disable foreign key references
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[rif40_age_groups]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='rif40_age_group_id_fk')
+	BEGIN
+		ALTER TABLE [rif40].[rif40_age_groups] DROP CONSTRAINT [rif40_age_group_id_fk];
+	END;
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[rif40_tables]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='rif40_tables_age_group_id_fk')
+	BEGIN
+		ALTER TABLE [rif40].[rif40_tables] DROP CONSTRAINT [rif40_tables_age_group_id_fk];
+	END;
+
 	DROP TABLE [rif40].[rif40_age_group_names]
 END
 GO
@@ -17,6 +34,28 @@ CREATE TABLE [rif40].[rif40_age_group_names](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+
+
+--recreate foreign key references
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[rif40_age_groups]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[rif40_age_groups]  WITH CHECK ADD  
+	CONSTRAINT [rif40_age_group_id_fk] FOREIGN KEY([age_group_id])
+	REFERENCES [rif40].[rif40_age_group_names] ([age_group_id])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
+GO
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[rif40_tables]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[rif40_tables]  WITH CHECK ADD  
+	CONSTRAINT [rif40_tables_age_group_id_fk] FOREIGN KEY([age_group_id])
+	REFERENCES [rif40].[rif40_age_group_names] ([age_group_id])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
+GO
+
 
 GRANT SELECT, REFERENCES ON  [rif40].[rif40_age_group_names] TO public
 GO

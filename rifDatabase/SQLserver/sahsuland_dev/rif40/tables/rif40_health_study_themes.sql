@@ -4,6 +4,16 @@ GO
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_health_study_themes]') AND type in (N'U'))
 BEGIN
+
+	--first disable foreign key references
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[rif40_tables]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='rif40_tables_theme_fk')
+	BEGIN
+		ALTER TABLE [rif40].[rif40_tables] DROP CONSTRAINT [rif40_tables_theme_fk];
+	END;
+	
 	DROP TABLE [rif40].[rif40_health_study_themes]
 END
 GO
@@ -18,6 +28,18 @@ CREATE TABLE [rif40].[rif40_health_study_themes](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+
+--recreate foreign key references
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[rif40_tables]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[rif40_tables]  WITH CHECK ADD  
+	CONSTRAINT [rif40_tables_theme_fk] FOREIGN KEY([theme])
+	REFERENCES [rif40].[rif40_health_study_themes] ([theme])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
+GO
+
 
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[rif40_health_study_themes] TO [rif_manager]
 GO

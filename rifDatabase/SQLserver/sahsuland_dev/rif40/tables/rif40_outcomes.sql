@@ -4,6 +4,23 @@ GO
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_outcomes]') AND type in (N'U'))
 BEGIN
+
+	--first disable foreign key references
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[rif40_outcome_groups]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='rif40_outcome_groups_type_fk')
+	BEGIN
+		ALTER TABLE [rif40].[rif40_outcome_groups] DROP CONSTRAINT [rif40_outcome_groups_type_fk];
+	END;
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[rif40_predefined_groups]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='rif40_predefined_type_fk')
+	BEGIN	
+		ALTER TABLE [rif40].[rif40_predefined_groups] DROP CONSTRAINT [rif40_predefined_type_fk];
+	END;
+	
 	DROP TABLE [rif40].[rif40_outcomes]
 END
 GO
@@ -23,6 +40,26 @@ CREATE TABLE [rif40].[rif40_outcomes](
 CONSTRAINT [outcome_type_ck1] CHECK  
 	(([outcome_type]='BIRTHWEIGHT' OR [outcome_type]='OPCS' OR [outcome_type]='ICD-O' OR [outcome_type]='ICD' OR [outcome_type]='A&E'))
 ) ON [PRIMARY]
+GO
+
+--recreate foreign key references
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[rif40_outcome_groups]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[rif40_outcome_groups]  WITH CHECK ADD  
+	CONSTRAINT [rif40_outcome_groups_type_fk] FOREIGN KEY([outcome_type])
+	REFERENCES [rif40].[rif40_outcomes] ([outcome_type])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
+GO
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[rif40_predefined_groups]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[rif40_predefined_groups]  WITH CHECK ADD  
+	CONSTRAINT [rif40_predefined_type_fk] FOREIGN KEY([outcome_type])
+	REFERENCES [rif40].[rif40_outcomes] ([outcome_type])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
 GO
 
 GRANT SELECT ON [rif40].[rif40_outcomes] TO public

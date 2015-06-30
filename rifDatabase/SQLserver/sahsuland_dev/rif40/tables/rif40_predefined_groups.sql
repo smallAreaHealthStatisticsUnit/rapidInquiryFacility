@@ -13,10 +13,9 @@ BEGIN
 		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_inv_conditions]') AND type in (N'U'))
 	BEGIN
 		ALTER TABLE [rif40].[t_rif40_inv_conditions] DROP CONSTRAINT [t_rif40_inv_conditons_pgn];
-	END
-	GO
+	END;
 
-	DROP TABLE [rif40].[rif40_predefined_groups]
+	DROP TABLE [rif40].[rif40_predefined_groups];
 END
 GO
 

@@ -4,6 +4,37 @@ GO
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_geographies]') AND type in (N'U'))
 BEGIN
+
+	--first disable foreign key references
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_geolevels]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='t_rif40_geolevels_geog_fk')
+	BEGIN
+		ALTER TABLE [rif40].[t_rif40_geolevels] DROP CONSTRAINT [t_rif40_geolevels_geog_fk];
+	END;
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_studies]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='t_rif40_studies_geography_fk')
+	BEGIN
+		ALTER TABLE [rif40].[t_rif40_studies] DROP CONSTRAINT [t_rif40_studies_geography_fk];
+	END;	
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_inv_covariates]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='t_rif40_inv_cov_geography_fk')
+	BEGIN
+		ALTER TABLE [rif40].[t_rif40_inv_covariates] DROP CONSTRAINT [t_rif40_inv_cov_geography_fk];
+	END;	
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[rif40_covariates]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='rif40_covariates_geog_fk')
+	BEGIN
+		ALTER TABLE [rif40].[rif40_covariates] DROP CONSTRAINT [rif40_covariates_geog_fk];
+	END;
+	
 	DROP TABLE [rif40].[rif40_geographies]
 END
 GO
@@ -23,6 +54,44 @@ CONSTRAINT [rif40_geographies_pk] PRIMARY KEY CLUSTERED ( [geography] ASC ),
 CONSTRAINT [postal_population_table_ck] CHECK  (([postal_population_table] IS NOT NULL AND [postal_point_column] IS NOT NULL 
 OR [postal_population_table] IS NULL AND [postal_point_column] IS NULL))
 ) ON [PRIMARY]
+GO
+
+--recreate foreign key references
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_geolevels]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[t_rif40_geolevels]  WITH CHECK ADD  
+	CONSTRAINT [t_rif40_geolevels_geog_fk] FOREIGN KEY([geography])
+	REFERENCES [rif40].[rif40_geographies] ([geography])
+ 	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
+GO
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_studies]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[t_rif40_studies]  WITH CHECK ADD  
+	CONSTRAINT [t_rif40_studies_geography_fk] FOREIGN KEY([geography])
+	REFERENCES [rif40].[rif40_geographies] ([geography])
+ 	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
+GO
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_inv_covariates]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[t_rif40_inv_covariates]  WITH CHECK ADD  
+	CONSTRAINT [t_rif40_inv_cov_geography_fk] FOREIGN KEY([geography])
+	REFERENCES [rif40].[rif40_geographies] ([geography])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
+GO
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[rif40_covariates]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[rif40_covariates]  WITH CHECK ADD  
+	CONSTRAINT [rif40_covariates_geog_fk] FOREIGN KEY([geography])
+	REFERENCES [rif40].[rif40_geographies] ([geography])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
 GO
 
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[rif40_geographies] TO [rif_manager]

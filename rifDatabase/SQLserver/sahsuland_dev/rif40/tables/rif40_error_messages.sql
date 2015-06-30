@@ -24,7 +24,6 @@ CREATE TABLE [rif40].[rif40_error_messages](
 CONSTRAINT [rif40_error_messages_code_ck] CHECK 
 	(([error_code] in ((-1), (-4088), (-2290), (-2291))) OR ([error_code] >= (-20999) AND [error_code] <= (-20000)))
 ) ON [PRIMARY]
-END
 GO
 
 GRANT SELECT ON [rif40].[rif40_error_messages] TO public

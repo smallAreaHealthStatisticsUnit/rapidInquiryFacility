@@ -4,7 +4,6 @@ sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_age_group_names.s
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_geographies.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_health_study_themes.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_icd10.sql
-sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_health_study_themes.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_icd9.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_icd_o_3.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_opcs4.sql
@@ -19,7 +18,7 @@ sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_tables_and_views.
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_age_groups.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\t_rif40_geolevels.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_covariates.sql
-sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_outcome_group.sql
+sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_outcome_groups.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_predefined_groups.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_tables.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_table_outcomes.sql

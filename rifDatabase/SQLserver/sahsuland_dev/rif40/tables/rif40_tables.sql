@@ -19,34 +19,42 @@ BEGIN
 
 	--disable foreign keys that reference rif40_tables:
 	IF EXISTS (SELECT * FROM sys.objects 
-		WHERE object_id = OBJECT_ID(N'[rif40].[rif40_table_outcomes]') AND type in (N'U'))
+		WHERE object_id = OBJECT_ID(N'[rif40].[rif40_table_outcomes]') AND type in (N'U')
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='rif40_outcome_numer_tab_fk'))
 	BEGIN
 		ALTER TABLE [rif40].[rif40_table_outcomes] DROP CONSTRAINT [rif40_outcome_numer_tab_fk];
 	END;
 	IF EXISTS (SELECT * FROM sys.objects 
 		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_num_denom]') AND type in (N'U'))
 	BEGIN
-		ALTER TABLE [rif40].[t_rif40_num_denom] DROP CONSTRAINT [t_rif40_num_denom_numer_fk];
-		ALTER TABLE [rif40].[t_rif40_num_denom] DROP CONSTRAINT [t_rif40_num_denom_denom_fk];
+		IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name='t_rif40_num_denom_numer_fk')
+			ALTER TABLE [rif40].[t_rif40_num_denom] DROP CONSTRAINT [t_rif40_num_denom_numer_fk];
+		IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name='t_rif40_num_denom_denom_fk')
+			ALTER TABLE [rif40].[t_rif40_num_denom] DROP CONSTRAINT [t_rif40_num_denom_denom_fk];
 	END;
 	IF EXISTS (SELECT * FROM sys.objects 
 		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_studies]') AND type in (N'U'))
 	BEGIN
-		ALTER TABLE [rif40].[t_rif40_studies] DROP CONSTRAINT [t_rif40_stud_denom_tab_fk];
-		ALTER TABLE [rif40].[t_rif40_studies] DROP CONSTRAINT [t_rif40_stud_direct_stand_fk];
+		IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name='t_rif40_stud_denom_tab_fk')
+			ALTER TABLE [rif40].[t_rif40_studies] DROP CONSTRAINT [t_rif40_stud_denom_tab_fk];
+		IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name='t_rif40_stud_direct_stand_fk')
+			ALTER TABLE [rif40].[t_rif40_studies] DROP CONSTRAINT [t_rif40_stud_direct_stand_fk];
 	END;
 	IF EXISTS (SELECT * FROM sys.objects 
-		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_investigations]') AND type in (N'U'))
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_investigations]') AND type in (N'U')
+		AND	EXISTS (SELECT * FROM sys.foreign_keys WHERE name='t_rif40_inv_numer_tab_fk'))
 	BEGIN
 		ALTER TABLE [rif40].[t_rif40_investigations] DROP CONSTRAINT [t_rif40_inv_numer_tab_fk];
 	END;
 	IF EXISTS (SELECT * FROM sys.objects 
-		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_fdw_tables]') AND type in (N'U'))
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_fdw_tables]') AND type in (N'U')
+		AND EXISTS (SELECT * FROM sys.foreign_keys WHERE name='t_rif40_fdw_tables_tn_fk'))
 	BEGIN
 		ALTER TABLE [rif40].[t_rif40_fdw_tables] DROP CONSTRAINT [t_rif40_fdw_tables_tn_fk];
 	END;
 
-	DROP TABLE [rif40].[rif40_tables]
+	DROP TABLE [rif40].[rif40_tables];
 END
 GO
 

@@ -7,13 +7,21 @@ WHERE object_id = OBJECT_ID(N'[rif40].[rif40_tables_and_views]') AND type in (N'
 BEGIN
 	--drop foreign keys that reference the table
 	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[rif40_triggers]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='table_or_view_name_hide_trg_fk')
+	BEGIN
+		ALTER TABLE [rif40].[rif40_triggers] DROP CONSTRAINT [table_or_view_name_hide_trg_fk];
+	END;
+	IF EXISTS (SELECT * FROM sys.objects 
 		WHERE object_id = OBJECT_ID(N'[rif40].[rif40_columns]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='table_or_view_name_hide_fk')
 	BEGIN
 		ALTER TABLE [rif40].[rif40_columns] DROP CONSTRAINT [table_or_view_name_hide_fk];
-	END
-	GO
-
-	DROP TABLE [rif40].[rif40_tables_and_views]
+	END;
+	
+	DROP TABLE [rif40].[rif40_tables_and_views];
 END
 GO
 
@@ -29,6 +37,15 @@ CREATE TABLE [rif40].[rif40_tables_and_views](
 GO
 
 --replace foreign keys
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[rif40_triggers]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[rif40_triggers]  WITH CHECK ADD  
+	CONSTRAINT [table_or_view_name_hide_trg_fk] FOREIGN KEY([table_name])
+	REFERENCES [rif40].[rif40_tables_and_views] ([table_or_view_name_hide])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
+GO
 IF EXISTS (SELECT * FROM sys.objects 
 	WHERE object_id = OBJECT_ID(N'[rif40].[rif40_columns]') AND type in (N'U'))
 BEGIN

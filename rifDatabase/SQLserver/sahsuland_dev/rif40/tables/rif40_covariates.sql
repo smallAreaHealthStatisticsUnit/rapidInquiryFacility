@@ -4,6 +4,16 @@ GO
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_covariates]') AND type in (N'U'))
 BEGIN
+
+	--first disable foreign key references
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_inv_covariates]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='t_rif40_inv_cov_cov_name_fk')
+	BEGIN
+		ALTER TABLE [rif40].[t_rif40_inv_covariates] DROP CONSTRAINT [t_rif40_inv_cov_cov_name_fk];
+	END;
+
 	DROP TABLE [rif40].[rif40_covariates]
 END
 GO
@@ -31,6 +41,17 @@ CONSTRAINT [rif40_covariates_geolevel_fk] FOREIGN KEY([geography], [geolevel_nam
 	ON UPDATE NO ACTION ON DELETE NO ACTION,
 CONSTRAINT [rif40_covariates_listing_ck] CHECK  (([type]=(2) OR [type]=(1)))
 ) ON [PRIMARY]
+GO
+
+--recreate foreign key references
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_inv_covariates]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[t_rif40_inv_covariates]  WITH CHECK ADD  
+	CONSTRAINT [t_rif40_inv_cov_cov_name_fk] FOREIGN KEY([geography], [study_geolevel_name], [covariate_name])
+	REFERENCES [rif40].[rif40_covariates] ([geography], [geolevel_name], [covariate_name])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
 GO
 
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[rif40_covariates] TO [rif_manager]
