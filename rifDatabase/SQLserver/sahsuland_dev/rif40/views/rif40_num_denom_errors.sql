@@ -72,6 +72,7 @@ CREATE VIEW [rif40].[rif40_num_denom_errors] AS
   WHERE n.geography = d.geography
 ;
 
+
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'All possible numerator and indirect standardisation denominator pairs with error diagnostic fields. As this is a CROSS JOIN the will be a lot of output as tables are not rejected on the basis of user access or containing the correct geography geolevel fields.' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors'
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Geography', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', @level2type=N'COLUMN',@level2name=N'geography'
