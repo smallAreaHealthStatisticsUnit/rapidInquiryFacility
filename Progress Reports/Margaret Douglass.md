@@ -5,7 +5,23 @@ Principal Work Area: **Microsoft SQL server database port**
 ##2015
 
 ###June
-The goal for this month is to complete all triggers (including logging and error handling) for the rif40 tables and views and to test the tables/views/triggers to confirm everything has been set up correctly.  
+The goal for this month is to complete all triggers (including logging and error handling) for the rif40 tables and views.  I got sidetracked into creating batch installation scripts due to a change in test servers, and so the triggers are still a work in progress.
+
+######30 June
+* Working on installation script for views, fixing up errors in the create table scripts.
+* Something strange going on with rif40_num_denom_errors.sql: create view script fails if I add comments but runs fine if the view is created in one script and the comments are added in a separate script.
+* Still need to deal with setting up custom error messages, error handling functions, and logging.  Then I can return to triggers.
+
+######29 June
+* Still working on installation batch scripts to set up new sahsuland_dev database.  Views script caused tons of errors that I need to sort through.
+
+######26 June
+* A different Windows server has been found, and so the sahsuland_dev database must be entirely rebuilt.  
+* Working on putting together installation scripts.
+
+######18-25 June
+* Many delays in getting the Windows test server fixed, so no code could be tested or further developed.
+* Instead lots of time was spent discussing the Data Loader tool and related design decisions.
 
 ######17 June
 * Working on laptop (no access to SQL Server) while I wait for the Windows test server with SQL Server to be rebuilt.

@@ -1,3 +1,5 @@
+--30/6/2015: Create view script fails unless create view is run separately from create comments on view.  
+
 USE [sahsuland_dev]
 GO
 
@@ -71,7 +73,6 @@ CREATE VIEW [rif40].[rif40_num_denom_errors] AS
      LEFT JOIN [rif40].[rif40_fdw_tables] f ON n.numerator_table = f.table_name
   WHERE n.geography = d.geography
 ;
-
 
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'All possible numerator and indirect standardisation denominator pairs with error diagnostic fields. As this is a CROSS JOIN the will be a lot of output as tables are not rejected on the basis of user access or containing the correct geography geolevel fields.' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors'
 GO
