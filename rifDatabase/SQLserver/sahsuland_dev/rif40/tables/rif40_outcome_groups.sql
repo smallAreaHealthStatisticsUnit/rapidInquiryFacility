@@ -4,7 +4,24 @@ GO
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_outcome_groups]') AND type in (N'U'))
 BEGIN
-	DROP TABLE [rif40].[rif40_outcome_groups]
+
+	--first disable foreign key references
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_inv_conditions]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='t_rif40_inv_conditons_ogn')
+	BEGIN
+		ALTER TABLE [rif40].[t_rif40_inv_conditions] DROP CONSTRAINT [t_rif40_inv_conditons_ogn];
+	END;
+	IF EXISTS (SELECT * FROM sys.objects 
+		WHERE object_id = OBJECT_ID(N'[rif40].[rif40_table_outcomes]') AND type in (N'U'))
+		AND EXISTS (SELECT * FROM sys.foreign_keys 
+		WHERE name='rif40_outcome_group_name_fk')
+	BEGIN
+		ALTER TABLE [rif40].[rif40_table_outcomes] DROP CONSTRAINT [rif40_outcome_group_name_fk];
+	END;
+	
+	DROP TABLE [rif40].[rif40_outcome_groups];
 END
 GO
 
@@ -24,6 +41,26 @@ CONSTRAINT [rif40_outcome_groups_type_fk] FOREIGN KEY([outcome_type])
 CONSTRAINT [outcome_type_ck2] CHECK  
 	(([outcome_type]='BIRTHWEIGHT' OR [outcome_type]='OPCS' OR [outcome_type]='ICD-O' OR [outcome_type]='ICD' OR [outcome_type]='A&E'))
 ) ON [PRIMARY]
+GO
+
+--recreate foreign key references
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[t_rif40_inv_conditions]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[t_rif40_inv_conditions]  WITH CHECK ADD  
+	CONSTRAINT [t_rif40_inv_conditons_ogn] FOREIGN KEY([outcome_group_name])
+	REFERENCES [rif40].[rif40_outcome_groups] ([outcome_group_name])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
+GO
+IF EXISTS (SELECT * FROM sys.objects 
+	WHERE object_id = OBJECT_ID(N'[rif40].[rif40_table_outcomes]') AND type in (N'U'))
+BEGIN
+	ALTER TABLE [rif40].[rif40_table_outcomes]  WITH CHECK ADD  
+	CONSTRAINT [rif40_outcome_group_name_fk] FOREIGN KEY([outcome_group_name])
+	REFERENCES [rif40].[rif40_outcome_groups] ([outcome_group_name])
+	ON UPDATE NO ACTION ON DELETE NO ACTION;
+END
 GO
 
 GRANT SELECT ON [rif40].[rif40_outcome_groups] TO public
