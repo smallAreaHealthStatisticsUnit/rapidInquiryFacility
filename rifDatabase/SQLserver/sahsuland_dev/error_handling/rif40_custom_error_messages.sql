@@ -4,6 +4,10 @@ Custom error messages for functions in rif40.  Mostly used by the trigger functi
 
 use master;
 
+--clean up old versions:
+EXEC [sahsuland_dev].[rif40].[rif40_setup_custom_errors];
+
+--all new error messages.  They must have an id of > 50000 and the text contains 'rif40'
 EXEC sp_addmessage 50020, 16, 
    N'Table_name: [rif40].[rif40_geographies] , These HIERARCHYTABLE table/s do not exist:(%s)';
 
@@ -116,7 +120,7 @@ EXEC sp_addmessage 50098, 16,
    N'Table_name: [rif40].[t_rif40_inv_covariates], Study geolevel name not found in rif40_geolevels:(%s)';
 
 EXEC sp_addmessage 51000, 16,
-	N'User %s is not a rif_user or rif_manager';
+	N'[rif40] User %s is not a rif_user or rif_manager';
 
 EXEC sp_addmessage 51001, 16, 
    N'Function: [rif40].[rif_is_object_resolveable]: User %s must be rif40 or have rif_user or rif_manager role';
@@ -189,3 +193,8 @@ EXEC sp_addmessage 51023, 16,
 
 EXEC sp_addmessage 51024, 16,
 	N'Table name: [rif40].[t_rif40_studies] , study not suppressed, but user is a RIF_STUDENT: %s';
+
+--add more here
+	
+	
+EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';
