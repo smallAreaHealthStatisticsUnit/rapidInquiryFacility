@@ -13,7 +13,7 @@ IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_check_custom_errors]')
                   AND type IN ( N'FN', N'IF', N'TF', N'FS', N'FT' ))
-  DROP FUNCTION [rif40].[rif40_check_custom_errors]
+  DROP FUNCTION [rif40].[rif40_check_custom_errors];
  GO
 
   

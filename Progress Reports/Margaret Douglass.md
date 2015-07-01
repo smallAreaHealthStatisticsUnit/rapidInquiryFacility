@@ -4,12 +4,21 @@ Principal Work Area: **Microsoft SQL server database port**
 
 ##2015
 
+###July
+I plan to finish the trigger work that I began last month and set up a proper test suite to verify that everything has been set up correctly.  Also continue work on simple batch installation scripts so I can easily re-create the latest version of the sahsuland_dev database.
+
+######1 July
+* Working on the batch installation scripts to set up logging, error handling, and all the custom error messages.  Cleaning up the error handling code and related functions.
+* As part of installation, check if custom error codes are already used by another program.  Currently checking if any custom errors exist -- should that be changed to only the specific error codes we are going to use?
+* It is stupid that you cannot call a stored procedure from inside a function in SQL Server.  The internet agrees with me that that is stupid.  That breaks my logging, unless I manually insert rows into a log table (ick).
+* To do: install currently completed triggers.  (Don't install the triggers I haven't verified yet but that RH wrote/began to write?)
+
 ###June
 The goal for this month is to complete all triggers (including logging and error handling) for the rif40 tables and views.  I got sidetracked into creating batch installation scripts due to a change in test servers, and so the triggers are still a work in progress.
 
 ######30 June
 * Working on installation script for views, fixing up errors in the create table scripts.
-* Something strange going on with rif40_num_denom_errors.sql: create view script fails if I add comments but runs fine if the view is created in one script and the comments are added in a separate script.
+* Something strange going on with rif40_num_denom_errors.sql: create view script fails if I add comments but runs fine if the view is created in one script and the comments are added in a separate script.  Needed a 'GO'.
 * Still need to deal with setting up custom error messages, error handling functions, and logging.  Then I can return to triggers.
 
 ######29 June
