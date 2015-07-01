@@ -1,3 +1,7 @@
+/* 
+Original custom error messages from RH, slightly edited.  Now all integrated into rif40_custom_error_messages.sql
+*/
+
 use master;
 
 ------------------------------------------------

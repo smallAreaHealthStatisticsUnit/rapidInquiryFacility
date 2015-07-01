@@ -35,8 +35,10 @@ GO
 --permissions??
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[rif40_ErrorLog] TO [rif_manager]
 GO
+/*
 GRANT SELECT,INSERT ON [rif40].[rif40_ErrorLog] TO [public]
 GO
+ */
  
 --------------------------------------------
  -- create the proc 
@@ -114,4 +116,3 @@ AS
 END
  GO
  
---rif40_err_messages
