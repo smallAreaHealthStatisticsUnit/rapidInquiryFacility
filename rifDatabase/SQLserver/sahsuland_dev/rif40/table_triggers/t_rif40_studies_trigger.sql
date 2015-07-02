@@ -1,3 +1,5 @@
+--NOT COMPLETE!!
+
 /*
 trigger for  
 Check - USERNAME exists.
@@ -11,6 +13,7 @@ Check - DENOM_TAB, DIRECT_STAND_TAB are valid Oracle names and appropriate denom
 Check - Study area resolution (GEOLEVEL_ID) >= comparision area resolution (GEOLEVEL_ID)  [i.e study area has the same or higher resolution]
 
 Check - suppression_value - Suppress results with low cell counts below this value. If the role RIF_NO_SUPRESSION is granted and the user is not a RIF_STUDENT then SUPPRESSION_VALUE=0; otherwise is equals the parameter "SuppressionValue". If >0 all results with the value or below will be set to 0.
+stopped here, have not implemented the rest:
 Check - extract_permitted - Is extract permitted from the database: 0/1. Only a RIF MANAGER may change this value. This user is still permitted to create and run a RIF study and to view the results. Geolevel access is rectricted by the RIF40_GEOLEVELS.RESTRICTED Inforamtion Governance restrictions (0/1). If 1 (Yes) then a) students cannot access this geolevel and b) if the system parameter ExtractControl=1 then the user must be granted permission by a RIF_MANAGER to extract from the database the results, data extract and maps tables. All students must be granted permission by a RIF_MANAGER for any extract if the system parameter ExtractControl=1. This is enforced by the RIF application.
 
 Check - authorised_by - must be a RIF MANAGER.
@@ -232,7 +235,8 @@ END;
 --Check - Comparison area geolevel name. 
 --Must be a valid GEOLEVEL_NAME for the study GEOGRPAHY in T_RIF40_GEOLEVELS, with COMPAREA=1
 ------------------------------------------------------------------------------------------------
-
+IF (@XTYPE = 'I' or @XTYPE = 'U')
+BEGIN
 	 DECLARE @geolevel_name nvarchar(MAX) =
 		(
 		SELECT concat (ic.study_id,'-', ic.COMPARISON_GEOLEVEL_NAME, '-', ic.geography )
@@ -309,7 +313,7 @@ BEGIN CATCH
 END CATCH;
 ELSE
 BEGIN
-	DECLARE @log_msg8 = @direct_denom+' is a direct denominator table';
+	DECLARE @log_msg8 = 'direct_stand_tab is a direct denominator table';
 	EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', @log_msg8;
 END;
 
@@ -436,5 +440,6 @@ END;
 
 --not complete
 --IG
+END;
 
 END;
