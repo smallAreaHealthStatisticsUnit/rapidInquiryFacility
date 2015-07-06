@@ -195,6 +195,12 @@ EXEC sp_addmessage 51024, 16,
 	N'Table name: [rif40].[t_rif40_studies] , study not suppressed, but user is a RIF_STUDENT: %s';
 
 --add more here
+EXEC sp_addmessage 51030, 16,
+	N'Table name: [rif40].[rif40_covariates] , invalid new values: %s';
+EXEC sp_addmessage 51031, 16,
+	N'Table name: [rif40].[rif40_covariates] , No covariate table in [rif40].[t_rif40_geolevels] for geolevel: %s';
+	
+
 	
 	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';

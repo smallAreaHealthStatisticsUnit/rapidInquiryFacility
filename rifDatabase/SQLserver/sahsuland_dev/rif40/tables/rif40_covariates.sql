@@ -26,7 +26,6 @@ CREATE TABLE [rif40].[rif40_covariates](
 	[min] [numeric](9, 3) NOT NULL,
 	[max] [numeric](9, 3) NOT NULL,
 	[type] [numeric](9, 3) NOT NULL,
-	[id] [int] IDENTITY(1,1) NOT NULL,
  CONSTRAINT [rif40_covariates_pk] PRIMARY KEY CLUSTERED 
 (
 	[geography] ASC,

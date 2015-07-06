@@ -7,6 +7,9 @@ Principal Work Area: **Microsoft SQL server database port**
 ###July
 I plan to finish the trigger work that I began last month and set up a proper test suite to verify that everything has been set up correctly.  Also continue work on simple batch installation scripts so I can easily re-create the latest version of the sahsuland_dev database.
 
+######6 July
+* Working on trigger for rif40_covariates (not finished), correcting/rewriting RH's original with more error handling and logging. 
+
 ######2 July
 * Wrote batch strict to set up completed triggers (I did not install ones from RH that I have not gone through to verify and add logging/error handling)
 * Finally returning to my work on the epic t_rif40_studies trigger.sql.  Then I lost heart and left it incomplete and worked on something smaller.
