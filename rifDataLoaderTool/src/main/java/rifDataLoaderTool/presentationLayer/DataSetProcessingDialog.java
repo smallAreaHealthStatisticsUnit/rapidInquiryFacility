@@ -3,6 +3,7 @@ package rifDataLoaderTool.presentationLayer;
 import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
@@ -324,9 +325,9 @@ public final class DataSetProcessingDialog
 		DataSetConfiguration selectedDataSetConfiguration
 			= dataSetConfigurationTable.getSelectedDataSetConfiguration();
 		if (selectedDataSetConfiguration != null) {
-			RIFDataLoaderActivityStep activityStep
-				= selectedDataSetConfiguration.getLastActivityStepPerformed();
-			dataSetActivityStepButtonPanel.setCurrentActivityStep(activityStep);
+			WorkflowState workflowState
+				= selectedDataSetConfiguration.getCurrentWorkflowState();
+			dataSetActivityStepButtonPanel.setCurrentActivityStep(workflowState);
 		}
 	}
 	

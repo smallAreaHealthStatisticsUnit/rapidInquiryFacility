@@ -1,7 +1,6 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import java.sql.Connection;
-
+import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 
 /**
@@ -54,13 +53,67 @@ import rifServices.system.RIFServiceException;
  *
  */
 
-public interface PublishWorkflowQueryGeneratorAPI {
+public interface DataLoaderServiceAPI {
+	public void initialiseService()
+		throws RIFServiceException;
 	
-	public void publishConfiguration(
-		final Connection connection,
+	public void login(
+		final String userID,
+		final String password)
+		throws RIFServiceException;
+
+	public void logout(
+		final User rifManager) 
+		throws RIFServiceException;
+	
+	public void shutdownService() 
+		throws RIFServiceException;
+
+	public void loadConfiguration(
+		final User rifManager,
+		final DataSetConfiguration dataSetConfiguration) 
+		throws RIFServiceException;
+
+	public void cleanConfiguration(
+		final User rifManager,
+		final DataSetConfiguration dataSetConfiguration) 
+		throws RIFServiceException;	
+	
+	public void convertConfiguration(
+		final User rifManager,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException;
 
+	public void splitConfiguration(
+		final User rifManager,
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException;
+	
+	public void combineConfiguration(
+		final User rifManager,
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException;
+	
+	public void optimiseConfiguration(
+		final User rifManager,
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException;
+
+	public void checkConfiguration(
+		final User rifManager,
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException;
+
+	public void publishConfiguration(
+		final User rifManager,
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException;
+	
+	public String[][] getVarianceInFieldData(
+		final User rifManager,
+		final DataSetFieldConfiguration dataSetFieldConfiguration)
+		throws RIFServiceException;
+	
 }
 
 

@@ -2,7 +2,7 @@ package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.CleaningRule;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeInterface;
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 
 import javax.swing.table.AbstractTableModel;
 

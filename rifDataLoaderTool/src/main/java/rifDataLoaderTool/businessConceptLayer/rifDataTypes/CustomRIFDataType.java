@@ -1,5 +1,7 @@
 package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
+
 
 
 

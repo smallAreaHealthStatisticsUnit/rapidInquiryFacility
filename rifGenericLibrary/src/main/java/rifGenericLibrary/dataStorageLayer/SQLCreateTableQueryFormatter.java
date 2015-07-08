@@ -123,6 +123,22 @@ public final class SQLCreateTableQueryFormatter
 			isNullAllowed);
 	}
 		
+	public void addTextFieldDeclaration(
+		final String fieldName,
+		final int length,
+		final boolean isNullAllowed) {
+			
+		StringBuilder textFieldType = new StringBuilder();
+		textFieldType.append("VARCHAR(");
+		textFieldType.append(String.valueOf(length));
+		textFieldType.append(")");
+			
+		addFieldDeclaration(
+			fieldName,
+			textFieldType.toString(),
+			isNullAllowed);
+	}	
+	
 	public void addFieldDeclaration(
 		final String fieldName,
 		String dataType,

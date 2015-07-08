@@ -1,14 +1,14 @@
 package rifDataLoaderTool.fileFormats;
 
-import java.io.ByteArrayOutputStream;
 
+import rifDataLoaderTool.businessConceptLayer.RIFCheckOption;
+import rifServices.fileFormats.XMLUtility;
 
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataSet;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 
-import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifGenericLibrary.presentationLayer.HTMLUtility;
+import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  *
@@ -60,7 +60,8 @@ import rifGenericLibrary.presentationLayer.HTMLUtility;
  *
  */
 
-public final class FieldVarianceReport {
+public final class RIFCheckOptionConfigurationHandler 
+	extends AbstractDataLoaderConfigurationHandler {
 
 	// ==========================================
 	// Section Constants
@@ -69,12 +70,17 @@ public final class FieldVarianceReport {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private ArrayList<RIFCheckOption> checkOptions;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public FieldVarianceReport() {
+	public RIFCheckOptionConfigurationHandler() {
+		checkOptions = new ArrayList<RIFCheckOption>();
+		
+		setPluralRecordName("check_options");
+		setSingularRecordName("check_option");
 
 	}
 
@@ -82,65 +88,59 @@ public final class FieldVarianceReport {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public String getHTML(
-		final CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration,
-		final String[][] varianceData) {
-		
-		HTMLUtility htmlUtility = new HTMLUtility();
-    	ByteArrayOutputStream outputStream
-    		= new ByteArrayOutputStream();	
-    	htmlUtility.initialise(outputStream, "UTF-8");
-		
-		
-		htmlUtility.beginDocument();
-		htmlUtility.beginBody();
-		//write report title
-
-		DataSet dataSet
-			= tableFieldCleaningConfiguration.getDataSet();
-		String coreDataSetName
-			= dataSet.getCoreDataSetName();	
-		
-		String loadTableName
-			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
-		String fieldOfInterest
-			= tableFieldCleaningConfiguration.getLoadTableFieldName();
-		String reportTitle
-			= RIFDataLoaderToolMessages.getMessage(
-				"fieldVarianceReport.title",
-				loadTableName,
-				fieldOfInterest);
-		htmlUtility.writeHeader(1, reportTitle);
-
-		
-		htmlUtility.beginTable();
-
-		//write header row
-		htmlUtility.beginRow();
-		String valueFieldName
-			= RIFDataLoaderToolMessages.getMessage("fieldVarianceReport.value.label");
-		htmlUtility.writeBoldColumnValue(valueFieldName);
-		String frequencyFieldName
-			= RIFDataLoaderToolMessages.getMessage("fieldVarianceReport.frequency.label");
-		htmlUtility.writeBoldColumnValue(frequencyFieldName);
-		htmlUtility.endRow();
-		
-		//write data
-		for (int i = 0; i < varianceData.length; i++) {
-			htmlUtility.beginRow();
-			htmlUtility.writeColumnValue(varianceData[i][0]);
-			htmlUtility.writeColumnValue(varianceData[i][1]);
-			htmlUtility.endRow();
-		}
-				
-		htmlUtility.endTable();
-		
-		
-		htmlUtility.endBody();
-		htmlUtility.endDocument();
-		
-		return htmlUtility.getHTML();
+	public ArrayList<RIFCheckOption> getCheckOptions() {
+		return checkOptions;
 	}
+
+	public void writeXML(
+		final ArrayList<RIFCheckOption> checkOptions)
+		throws IOException {
+		
+		XMLUtility xmlUtility = getXMLUtility();
+		xmlUtility.writeRecordStartTag(getPluralRecordName());
+
+		for (RIFCheckOption checkOption : checkOptions) {
+			xmlUtility.writeRecordStartTag(getSingularRecordName());
+			xmlUtility.writeValue(checkOption.getName());
+			xmlUtility.writeRecordEndTag(getSingularRecordName());
+		}
+		xmlUtility.writeRecordEndTag(getPluralRecordName());
+
+	}
+	
+	
+	@Override
+	public void startElement(
+		final String nameSpaceURI,
+		final String localName,
+		final String qualifiedName,
+		final Attributes attributes) 
+		throws SAXException {
+		
+		if (isPluralRecordName(qualifiedName)) {
+			activate();
+		}
+
+	}
+	
+	public void endElement(
+		final String nameSpaceURI,
+		final String localName,
+		final String qualifiedName) 
+		throws SAXException {
+
+		if (isPluralRecordName(qualifiedName)) {
+			deactivate();
+		}
+		else if (isSingularRecordName(qualifiedName)) {
+			String checkOptionName
+				= getCurrentFieldValue();
+			RIFCheckOption rifCheckOption
+				= RIFCheckOption.valueOf(checkOptionName);
+			checkOptions.add(rifCheckOption);
+		}
+	}
+	
 	
 	// ==========================================
 	// Section Errors and Validation

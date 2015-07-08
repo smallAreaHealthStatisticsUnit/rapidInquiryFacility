@@ -1,13 +1,6 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.businessConceptLayer.RIFWorkflowCollection;
-import rifDataLoaderTool.businessConceptLayer.RIFWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataSet;
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.ConvertWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.OptimiseWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.PublishWorkflowConfiguration;
-
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
 
@@ -64,7 +57,7 @@ import java.util.ArrayList;
  *
  */
 
-public class RIFWorkflowEnactor {
+public class LinearWorkflowEnactor {
 
 	// ==========================================
 	// Section Constants
@@ -73,112 +66,129 @@ public class RIFWorkflowEnactor {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private DataLoaderService dataLoaderService;
+	
+	private RIFSchemaAreaPropertyManager schemaAreaPropertyManager;
+	private WorkflowValidator workflowValidator;
+	
+	private User rifManager;
+	private DataLoaderServiceAPI dataLoaderService;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public RIFWorkflowEnactor() {
-		dataLoaderService = new DataLoaderService();
+	public LinearWorkflowEnactor(
+		final User rifManager,
+		final DataLoaderServiceAPI dataLoaderService) {
+
+		this.rifManager = rifManager;
+		this.dataLoaderService = dataLoaderService;		
+		
+		schemaAreaPropertyManager
+			= new RIFSchemaAreaPropertyManager();	
+		
+		workflowValidator
+			= new WorkflowValidator(schemaAreaPropertyManager);
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void enactWorfklows(
-		final User rifManager,
-		final RIFWorkflowCollection rifWorkflowCollection) {
-		ArrayList<DataSet> dataSets
-			= rifWorkflowCollection.getDataSets();
-		RIFWorkflowConfiguration rifWorkflowConfiguration 
-			= rifWorkflowCollection.getRIFWorkflowConfiguration();
-		for (DataSet dataSet : dataSets) {
-			enactWorkflow(
-				rifManager,
-				dataSet, 
-				rifWorkflowConfiguration);
-		}		
+	public void runWorkflow(
+		final LinearWorkflow linearWorkflow) 
+		throws RIFServiceException {
+
+		workflowValidator.validateLinearWorkflow(linearWorkflow);
+				
+		ArrayList<DataSetConfiguration> dataSetConfigurations
+			= linearWorkflow.getDataSetConfigurations();
+
+		//run the workflow from start to finish for each of the
+		//data set configurations
+		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
+			try {				
+				processDataSetConfiguration(
+					dataSetConfiguration,
+					linearWorkflow);
+				
+				String finishedProcessingDataSetMessage
+					= RIFDataLoaderToolMessages.getMessage(
+						"workflowEnactor.finishedProcessingDataSet",
+						dataSetConfiguration.getDisplayName());
+				logMessage(finishedProcessingDataSetMessage);
+				
+			}
+			catch(RIFServiceException rifServiceException) {
+				logException(rifServiceException);
+			}			
+		}
 	}
 	
-	private void enactWorkflow(
-		final User rifManager,
-		final DataSet dataSet,
-		final RIFWorkflowConfiguration rifWorkflowConfiguration) {
-		
-		
-		try {
-			
-			//initialise the work flow with a given data set
-			rifWorkflowConfiguration.setDataSet(dataSet);
-			
-			
-			CleanWorkflowConfiguration cleanWorkflowConfiguration
-				= rifWorkflowConfiguration.getCleanWorkflowConfiguration();		
-			dataLoaderService.loadConfiguration(
-				rifManager, 
-				cleanWorkflowConfiguration);
-
-			dataLoaderService.cleanConfiguration(
-				rifManager, 
-				cleanWorkflowConfiguration);
-			
-			ConvertWorkflowConfiguration convertWorkflowConfiguration
-				= rifWorkflowConfiguration.getConvertWorkflowConfiguration();
-			dataLoaderService.convertConfiguration(
-				rifManager, 
-				convertWorkflowConfiguration);
-			
-			/*
-			OptimiseWorkflowConfiguration optimiseWorkflowConfiguration
-				= rifWorkflowConfiguration.getOptimiseWorkflowConfiguration();
-			dataLoaderService.optimiseConfiguration(
-				rifManager,
-				optimiseWorkflowConfiguration);
-
-			PublishWorkflowConfiguration publishWorkflowConfiguration
-				= rifWorkflowConfiguration.getPublishWorkflowConfiguration();
-			dataLoaderService.publishConfiguration(
-				rifManager,
-				publishWorkflowConfiguration);
-			*/
-			
-			
-		}
-		catch(RIFServiceException rifServiceException) {
-			
-			
-		}
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-	}
-	
-	private void load(final RIFWorkflowConfiguration rifWorkflowConfiguration)
+	private void processDataSetConfiguration(
+		final DataSetConfiguration dataSetConfiguration,
+		final LinearWorkflow linearWorkflow) 
 		throws RIFServiceException {
 		
+		linearWorkflow.resetWorkflow();
+				
+		while (linearWorkflow.hasNext()) {
+			
+			processWorkflowStep(
+				dataSetConfiguration,
+				linearWorkflow.getCurrentWorkflowState());
+
+			linearWorkflow.next();
+		}
+
+	}
+	
+	private void processWorkflowStep(
+		final DataSetConfiguration dataSetConfiguration,
+		final WorkflowState currentWorkflowState) 
+		throws RIFServiceException {
 		
-		
-		
+		if (currentWorkflowState == WorkflowState.LOAD) {
+			dataLoaderService.loadConfiguration(
+				rifManager, 
+				dataSetConfiguration);
+		}
+		else if (currentWorkflowState == WorkflowState.CLEAN) { 
+			dataLoaderService.cleanConfiguration(
+				rifManager, 
+				dataSetConfiguration);			
+		}
+		else if (currentWorkflowState == WorkflowState.CONVERT) { 
+			dataLoaderService.convertConfiguration(
+				rifManager, 
+				dataSetConfiguration);			
+		}
+		else if (currentWorkflowState == WorkflowState.OPTIMISE) { 
+			dataLoaderService.optimiseConfiguration(
+				rifManager,
+				dataSetConfiguration);			
+		}
+		else if (currentWorkflowState == WorkflowState.CHECK) { 
+			dataLoaderService.checkConfiguration(
+				rifManager,
+				dataSetConfiguration);			
+		}
+		else if (currentWorkflowState == WorkflowState.PUBLISH) { 
+			dataLoaderService.checkConfiguration(
+				rifManager,
+				dataSetConfiguration);			
+		}
 		
 	}
 	
+	private void logException(
+		final RIFServiceException rifServiceException) {
+		
+	}
 	
-	
-	
+	private void logMessage(
+		final String logMessage) {
+		
+	}
 	
 	// ==========================================
 	// Section Errors and Validation

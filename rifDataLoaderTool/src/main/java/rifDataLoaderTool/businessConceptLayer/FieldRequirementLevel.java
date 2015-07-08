@@ -1,12 +1,14 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import java.text.Collator;
+
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 /**
- * Describes the methods that are expected to be supported in vendor-specific code generators
- * involved with loading new data sources.
+ *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -52,14 +54,56 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public interface LoadWorkflowQueryGeneratorAPI {
-
-	public String generateLoadTableQuery(
-		final DataSetConfiguration dataSetConfiguration);
-
-	public String generateDropLoadTableQuery(
-		final DataSetConfiguration dataSetConfiguration);
+public enum FieldRequirementLevel {
+	REQUIRED_BY_RIF(
+		"required_by_rif",
+		"fieldRequirementLevel.requiredByRIF"),		
+	EXTRA_FIELD(
+		"extra_field",
+		"fieldRequirementLevel.extraField"),
+	IGNORE_FIELD(
+		"ignore_field",
+		"fieldRequirementLevel.ignoreField");
 	
+	private String code;
+	private String propertyName;
+	
+	private FieldRequirementLevel(
+		final String code,
+		final String propertyName) {
+		
+		this.code = code;
+		this.propertyName = propertyName;	
+	}
+	
+	public String getCode() {
+		return code;
+	}
+	
+	public String getName() {
+		String name
+			= RIFDataLoaderToolMessages.getMessage(propertyName);
+		return name;
+	}	
+	
+	public static FieldRequirementLevel getValueFromName(
+		final String code) {
+		
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		if (collator.equals(REQUIRED_BY_RIF.getCode()) == true) {
+			return REQUIRED_BY_RIF;
+		}
+		else if (collator.equals(EXTRA_FIELD.getCode()) == true) {
+			return EXTRA_FIELD;
+		}
+		else if (collator.equals(IGNORE_FIELD.getCode()) == true) {
+			return IGNORE_FIELD;
+		}
+		else {
+			assert false;
+			return null;
+		}		
+	}	
 	
 }
 

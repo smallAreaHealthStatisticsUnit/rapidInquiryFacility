@@ -5,21 +5,21 @@ package rifDataLoaderTool.dataStorageLayer;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 
 
+
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
-import rifDataLoaderTool.businessConceptLayer.DataSet;
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
-
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLCreateTableQueryFormatter;
-
 import rifServices.dataStorageLayer.SQLQueryUtility;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.system.RIFServiceException;
+
+
+
 
 
 import java.sql.*;
@@ -109,14 +109,14 @@ public final class LoadWorkflowManager
 	
 	public RIFResultTable getLoadTableData(
 		final Connection connection,
-		final CleanWorkflowConfiguration tableCleaningConfiguration) 
+		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 		
 		RIFResultTable resultTable = new RIFResultTable();
-		String coreTableName = tableCleaningConfiguration.getCoreDataSetName();
+		String coreTableName = dataSetConfiguration.getName();
 		String loadTableName
 			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreTableName);
-		String[] fieldNames = tableCleaningConfiguration.getLoadFieldNames();
+		String[] fieldNames = dataSetConfiguration.getLoadFieldNames();
 		
 		try {
 			resultTable 
@@ -134,7 +134,7 @@ public final class LoadWorkflowManager
 	
 	public void loadConfiguration(
 		final Connection connection,
-		final CleanWorkflowConfiguration cleanWorkflowConfiguration) 
+		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 
 	
@@ -143,7 +143,7 @@ public final class LoadWorkflowManager
 			= startupOptions.getDataLoaderTextColumnSize();
 		PreparedStatement dropTableStatement = null;		
 		String coreDataSetName 
-			= cleanWorkflowConfiguration.getCoreDataSetName();
+			= dataSetConfiguration.getName();
 		String targetLoadTable
 			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
 		try {
@@ -195,12 +195,12 @@ public final class LoadWorkflowManager
 				"SERIAL", 
 				false);
 						
-			ArrayList<CleanWorkflowFieldConfiguration> fieldConfigurations
-				= cleanWorkflowConfiguration.getAllFieldCleaningConfigurations();
+			ArrayList<DataSetFieldConfiguration> fieldConfigurations
+				= dataSetConfiguration.getFieldConfigurations();
 			
-			for (CleanWorkflowFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 				createLoadTableQueryFormatter.addTextFieldDeclaration(
-					fieldConfiguration.getLoadTableFieldName(), 
+					fieldConfiguration.getLoadFieldName(), 
 					true);
 			}
 			
@@ -216,7 +216,7 @@ public final class LoadWorkflowManager
 			sqlException.printStackTrace(System.out);
 			String createTableName
 				= RIFTemporaryTablePrefixes.LOAD.getTableName(
-						cleanWorkflowConfiguration.getCoreDataSetName());
+						dataSetConfiguration.getName());
 			
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
@@ -235,22 +235,22 @@ public final class LoadWorkflowManager
 	
 	public void addLoadTableData(
 		final Connection connection,
-		final CleanWorkflowConfiguration cleanWorkflowConfiguration,
+		final DataSetConfiguration dataSetConfiguration,
 		final String[][] tableData) 
 		throws RIFServiceException {
 		
 		String loadTableName
 			= RIFTemporaryTablePrefixes.LOAD.getTableName(
-				cleanWorkflowConfiguration.getCoreDataSetName());		
+					dataSetConfiguration.getName());		
 		
 		SQLInsertQueryFormatter queryFormatter 
 			= new SQLInsertQueryFormatter();
 		queryFormatter.setIntoTable(loadTableName);
 		queryFormatter.addInsertField("data_source_id");
-		ArrayList<CleanWorkflowFieldConfiguration> fieldConfigurations
-			= cleanWorkflowConfiguration.getIncludedFieldCleaningConfigurations();
-		for (CleanWorkflowFieldConfiguration fieldConfiguration : fieldConfigurations) {
-			queryFormatter.addInsertField(fieldConfiguration.getLoadTableFieldName());
+		ArrayList<DataSetFieldConfiguration> fieldConfigurations
+			= dataSetConfiguration.getFieldConfigurations();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			queryFormatter.addInsertField(fieldConfiguration.getLoadFieldName());
 		}
 
 		logSQLQuery(
@@ -262,10 +262,8 @@ public final class LoadWorkflowManager
 
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
-
-			DataSet dataSet = cleanWorkflowConfiguration.getDataSet();
 			Integer dataSetIdentifier
-				= Integer.valueOf(dataSet.getIdentifier());
+				= Integer.valueOf(dataSetConfiguration.getIdentifier());
 
 			for (int ithRow = 0; ithRow < tableData.length; ithRow++) {				
 				
@@ -288,12 +286,11 @@ public final class LoadWorkflowManager
 	
 	public void dropLoadTable(
 		final Connection connection,
-		final CleanWorkflowConfiguration cleanWorkflowConfiguration) 
+		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 
-		
-		
-		String coreDataSetName = cleanWorkflowConfiguration.getCoreDataSetName();
+
+		String coreDataSetName = dataSetConfiguration.getName();
 		String tableToDelete
 			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);		
 				

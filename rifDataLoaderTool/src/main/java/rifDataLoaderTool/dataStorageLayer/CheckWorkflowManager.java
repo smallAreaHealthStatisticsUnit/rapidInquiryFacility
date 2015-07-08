@@ -1,32 +1,14 @@
 package rifDataLoaderTool.dataStorageLayer;
 
-
-
-
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-
-
-
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifServices.system.RIFServiceException;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.businessConceptLayer.CheckWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataSet;
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
-import rifGenericLibrary.dataStorageLayer.SQLCountQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLFieldVarianceQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
-import rifServices.dataStorageLayer.SQLQueryUtility;
-import rifServices.businessConceptLayer.RIFResultTable;
-import rifServices.util.RIFLogger;
-
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 
 import java.sql.*;
-import java.util.ArrayList;
 
 
 
@@ -106,15 +88,13 @@ public final class CheckWorkflowManager
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void checkWorkflowConfiguration(
+	public void checkConfiguration(
 		final Connection connection,
-		final CheckWorkflowConfiguration checkWorkflowConfiguration) 
+		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 		
-		checkWorkflowConfiguration.checkErrors();
-		
 		String coreDataSetName 
-			= checkWorkflowConfiguration.getCoreDataSetName();
+			= dataSetConfiguration.getName();
 		PreparedStatement statement = null;
 		try {
 			
@@ -136,40 +116,31 @@ public final class CheckWorkflowManager
 			
 			
 			//add in all the fields we're promoting from converted table
-			
-			
-			
-			
-			
-			
-			
 			queryFormatter.addPaddedQueryLine(2, "row_number() OVER");
 			queryFormatter.addPaddedQueryLine(3, "(PARTITION BY");
 			
 
-			ArrayList<String> duplicateCriteriaFields
-				= checkWorkflowConfiguration.getDuplicateRowCheckFields();
-			int numberOfDuplicateCriteriaFields
-				= duplicateCriteriaFields.size();
-			for (int i = 0; i < numberOfDuplicateCriteriaFields; i++) {
+			String[] duplicateCriteriaFields
+				= dataSetConfiguration.getFieldsUsedForDuplicationChecks();
+			for (int i = 0; i < duplicateCriteriaFields.length; i++) {
 				if (i != 0) {
 					queryFormatter.addQueryPhrase(",");
 					queryFormatter.finishLine();
 				}
 				queryFormatter.addQueryPhrase(
 					4, 
-					duplicateCriteriaFields.get(i));
+					duplicateCriteriaFields[i]);
 			}			
 		
 			queryFormatter.addPaddedQueryLine(3, "ORDER BY");
-			for (int i = 0; i < numberOfDuplicateCriteriaFields; i++) {
+			for (int i = 0; i < duplicateCriteriaFields.length; i++) {
 				if (i != 0) {
 					queryFormatter.addQueryPhrase(",");
 					queryFormatter.finishLine();
 				}
 				queryFormatter.addQueryPhrase(
 					4, 
-					duplicateCriteriaFields.get(i));
+					duplicateCriteriaFields[i]);
 			}			
 			queryFormatter.addQueryPhrase(") AS duplicate_number");
 			queryFormatter.padAndFinishLine();

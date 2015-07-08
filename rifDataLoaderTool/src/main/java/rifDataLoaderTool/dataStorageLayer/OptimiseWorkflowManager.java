@@ -95,18 +95,24 @@ public final class OptimiseWorkflowManager
 
 	public void optimiseConfiguration(
 		final Connection connection,
-		final OptimiseWorkflowConfiguration optimiseWorkflowConfiguration)
+		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 	
 		//validate parameters
 		
-		optimiseWorkflowConfiguration.checkErrors();
-		checkNonExistentFields(optimiseWorkflowConfiguration);
+		dataSetConfiguration.checkErrors();
+		checkNonExistentFields(dataSetConfiguration);
 		
+
+		deleteIndices(
+			connection,
+			dataSetConfiguration.getName(),
+			dataSetConfiguration.getIndexFieldNames());			
+			
 		createIndices(
 			connection,
-			optimiseWorkflowConfiguration.getCoreDataSetName(),
-			optimiseWorkflowConfiguration.getIndexFieldNames());
+			dataSetConfiguration.getName(),
+			dataSetConfiguration.getIndexFieldNames());
 
 	}
 	
@@ -224,7 +230,7 @@ public final class OptimiseWorkflowManager
 	// ==========================================
 
 	private void checkNonExistentFields(
-		final OptimiseWorkflowConfiguration optimiseWorkflowConfiguration) 
+		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 		
 		//@TODO

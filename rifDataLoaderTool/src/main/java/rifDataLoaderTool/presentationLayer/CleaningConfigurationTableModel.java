@@ -1,8 +1,8 @@
 package rifDataLoaderTool.presentationLayer;
 
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeInterface;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 import javax.swing.table.AbstractTableModel;
@@ -73,7 +73,7 @@ public final class CleaningConfigurationTableModel
 	// Section Properties
 	// ==========================================
 	
-	private CleanWorkflowConfiguration tableCleaningConfiguration;
+	private DataSetConfiguration dataSetConfiguration;
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -87,17 +87,17 @@ public final class CleaningConfigurationTableModel
 	// ==========================================
 
 	public int getRowCount() {
-		return tableCleaningConfiguration.getFieldCount();
+		return dataSetConfiguration.getTotalFieldCount();
 	}
 
 	public int getColumnCount() {
 		return 4;
 	}
 
-	public CleanWorkflowFieldConfiguration getRow(
+	public DataSetFieldConfiguration getRow(
 		final int rowIndex) {
 		
-		return tableCleaningConfiguration.getFieldCleaningConfiguration(rowIndex);
+		return dataSetConfiguration.getFieldConfiguration(rowIndex);
 	}
 	
 	public String getColumnName(int columnIndex) {
@@ -137,22 +137,22 @@ public final class CleaningConfigurationTableModel
 		
 		Object result = null;
 
-		CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration
-			= tableCleaningConfiguration.getFieldCleaningConfiguration(rowIndex);
-		
+		DataSetFieldConfiguration dataSetFieldConfiguration	
+			= dataSetConfiguration.getFieldConfiguration(rowIndex);
+
 		if (columnIndex == ORIGINAL_FIELD_NAME_COLUMN) {
-			result = tableFieldCleaningConfiguration.getLoadTableFieldName();
+			result = dataSetFieldConfiguration.getLoadFieldName();
 		}
 		else if (columnIndex == CLEANED_FIELD_NAME_COLUMN) {
-			result = tableFieldCleaningConfiguration.getCleanedTableFieldName();
+			result = dataSetFieldConfiguration.getCleanFieldName();
 		}
 		else if (columnIndex == CASTED_DATA_TYPE_COLUMN) {
 			RIFDataTypeInterface rifDataType
-				= tableFieldCleaningConfiguration.getRIFDataType();
+				= dataSetFieldConfiguration.getRIFDataType();
 			result = rifDataType.getName();
 		}
 		else if (columnIndex == HAS_CLEANING_RULES_COLUMN) {
-			if (tableFieldCleaningConfiguration.hasCleaningRules()) {
+			if (dataSetFieldConfiguration.hasCleaningRules()) {
 				result = RIFDataLoaderToolMessages.getMessage("cleaningConfigurationTableModel.yes.label");
 			}
 			else {
@@ -166,12 +166,10 @@ public final class CleaningConfigurationTableModel
 		return result;
 	}
 
-	public void setData(final CleanWorkflowConfiguration tableCleaningConfiguration) {
-		this.tableCleaningConfiguration = tableCleaningConfiguration;
+	public void setData(final DataSetConfiguration dataSetConfiguration) {
+		this.dataSetConfiguration = dataSetConfiguration;
 		fireTableDataChanged();
 	}
-	
-
 	
 	// ==========================================
 	// Section Errors and Validation

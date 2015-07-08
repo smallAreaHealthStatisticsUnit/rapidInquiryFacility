@@ -10,7 +10,6 @@ import rifDataLoaderTool.businessConceptLayer.rifDataTypes.DoubleRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.ICDCodeRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.IntegerRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.NHSNumberRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeInterface;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.TextRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.UKPostalCodeRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.YearRIFDataType;
@@ -87,7 +86,7 @@ public final class CleaningFieldConfigurationEditorDialog
 	// Section Properties
 	// ==========================================
 	
-	private CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration;
+	private DataSetFieldConfiguration dataSetFieldConfiguration;
 	
 	private JLabel loadDataFieldNameLabel;	
 	private JTextField preferredCleanedFieldNameTextField;
@@ -284,9 +283,9 @@ public final class CleaningFieldConfigurationEditorDialog
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void setData(final CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration) {
-		this.tableFieldCleaningConfiguration = tableFieldCleaningConfiguration;
-		RIFDataTypeInterface rifDataType = tableFieldCleaningConfiguration.getRIFDataType();
+	public void setData(final DataSetFieldConfiguration dataSetFieldConfiguration) {
+		this.dataSetFieldConfiguration = dataSetFieldConfiguration;
+		RIFDataTypeInterface rifDataType = dataSetFieldConfiguration.getRIFDataType();
 		cleaningRuleEditingPanel.setData(rifDataType);
 	}
 	
@@ -295,7 +294,7 @@ public final class CleaningFieldConfigurationEditorDialog
 			= new FieldVarianceDialog(getSession());
 		
 		try {
-			fieldVarianceDialog.setData(tableFieldCleaningConfiguration);
+			fieldVarianceDialog.setData(dataSetFieldConfiguration);
 			fieldVarianceDialog.show();			
 		}
 		catch(RIFServiceException rifServiceException) {

@@ -1,5 +1,10 @@
-package rifDataLoaderTool.system;
+package rifDataLoaderTool.businessConceptLayer;
 
+import rifDataLoaderTool.system.RIFDataLoaderMessages;
+
+import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+
+import java.util.ArrayList;
 
 /**
  * Describes the sequence of steps the a RIF Manager would use to process a new data source
@@ -63,93 +68,93 @@ package rifDataLoaderTool.system;
  *
  */
 
-public enum RIFDataLoaderActivityStep {
+public enum WorkflowState {
 
 	LOAD(
 		1, 
-		"rifDataLoaderActivityStep.load.label",
-		"rifDataLoaderActivityStep.load.statusMessage",
+		"workflowState.load.label",
+		"workflowState.load.statusMessage",
 		"ld_"),
 	CLEAN(
 		2, 
-		"rifDataLoaderActivityStep.clean.label",
-		"rifDataLoaderActivityStep.clean.statusMessage",
+		"workflowState.clean.label",
+		"workflowState.clean.statusMessage",
 		"cl_"),
 	CONVERT(
 		3, 
-		"rifDataLoaderActivityStep.convert.label",
-		"rifDataLoaderActivityStep.convert.statusMessage",
+		"workflowState.convert.label",
+		"workflowState.convert.statusMessage",
 		"cv_"),
+	SPLIT(
+		4, 
+		"workflowState.split.label",
+		"workflowState.split.statusMessage",
+		"cb_"),
 	COMBINE(
 		4, 
-		"rifDataLoaderActivityStep.combine.label",
-		"rifDataLoaderActivityStep.combine.statusMessage",
-		"cb_"),
+		"workflowState.combine.label",
+		"workflowState.combine.statusMessage",
+		"cb_"),		
 	OPTIMISE(
 		5, 
-		"rifDataLoaderActivityStep.optimise.label",
-		"rifDataLoaderActivityStep.optimise.statusMessage",
+		"workflowState.optimise.label",
+		"workflowState.optimise.statusMessage",
 		"op_"),
 	CHECK(
 		6, 
-		"rifDataLoaderActivityStep.check.label",
-		"rifDataLoaderActivityStep.check.statusMessage",
+		"workflowState.check.label",
+		"workflowState.check.statusMessage",
 		"ch_"),		
 	PUBLISH(
 		7, 
-		"rifDataLoaderActivityStep.publish.label",
-		"rifDataLoaderActivityStep.publish.statusMessage",
+		"workflowState.publish.label",
+		"workflowState.publish.statusMessage",
 		"pb_"),
 	DELETE(
-		7, 
-		"rifDataLoaderActivityStep.delete.label",
-		"rifDataLoaderActivityStep.delete.statusMessage",
+		8, 
+		"workflowState.delete.label",
+		"workflowState.delete.statusMessage",
 		"dl_");
 		
-	private int stepNumber;
-	private String stepPropertyName;
+	private int stateSequenceNumber;
+	private String statePropertyName;
 	private String statusPropertyName;
-	private String statusMessage;
 	private String tablePrefix;
 	
-	private RIFDataLoaderActivityStep(
+	private WorkflowState(
 		final int stepNumber,
 		final String stepPropertyName,
 		final String statusPropertyName,
 		final String tablePrefix) {
 		
-		this.stepNumber = stepNumber;
-		this.stepPropertyName = stepPropertyName;
+		this.stateSequenceNumber = stepNumber;
+		this.statePropertyName = stepPropertyName;
 		this.statusPropertyName = statusPropertyName;
 		this.tablePrefix = tablePrefix;
 	}
 	
-	public int getStepNumber() {
-		return stepNumber;
+	public static boolean areStatesInOrder(
+		final WorkflowState startWorkState,
+		final WorkflowState endWorkState) {
+		
+		if (endWorkState.getStateSequenceNumber() >= startWorkState.getStateSequenceNumber()) {
+			return true;
+		}
+		
+		return false;		
 	}
 	
-	public String getStepName() {
-		return RIFDataLoaderMessages.getMessage(stepPropertyName);
+	public int getStateSequenceNumber() {
+		return stateSequenceNumber;
+	}
+	
+	public String getStateName() {
+		return RIFDataLoaderMessages.getMessage(statePropertyName);
 	}
 	
 	public String getCompletedStatusMessage() {
 		return RIFDataLoaderMessages.getMessage(statusPropertyName);		
 	}
-	
-	public int getTotalSteps() {
-		return 6;
-	}
-	
-	/**
-	 * Gets the first activity step.
-	 *
-	 * @return the first activity step
-	 */
-	public static RIFDataLoaderActivityStep getFirstActivityStep() {
-		
-		return LOAD;
-	}
-	
 	
 	public String getTablePrefix() {
 		return tablePrefix;
@@ -164,60 +169,19 @@ public enum RIFDataLoaderActivityStep {
 		return tableName.toString();
 	}
 	
-	/**
-	 * Gets the previous activity step.
-	 *
-	 * @return the previous activity step
-	 */
-	public RIFDataLoaderActivityStep getPreviousActivityStep() {
-
-		if (this == RIFDataLoaderActivityStep.PUBLISH) {
-			return CHECK;
-		}
-		else if (this == RIFDataLoaderActivityStep.CHECK) {
-			return OPTIMISE;
-		}
-		else if (this == RIFDataLoaderActivityStep.OPTIMISE) {
-			return COMBINE;
-		}
-		else if (this == RIFDataLoaderActivityStep.COMBINE) {
-			return CONVERT;
-		}		
-		else if (this == RIFDataLoaderActivityStep.CONVERT) {
-			return CLEAN;
-		}		
-		else {
-			//CLEAN, DELETE
-			return LOAD;
-		}
-	}
 	
-	/**
-	 * Gets the next activity step.
-	 *
-	 * @return the next activity step
-	 */
-	public RIFDataLoaderActivityStep getNextActivityStep() {
-		
-		if (this == RIFDataLoaderActivityStep.LOAD) {
-			return CLEAN;
-		}
-		else if (this == RIFDataLoaderActivityStep.CLEAN) {
-			return CONVERT;
-		}
-		else if (this == RIFDataLoaderActivityStep.CONVERT) {
-			return COMBINE;
-		}
-		else if (this == RIFDataLoaderActivityStep.COMBINE) {
-			return CHECK;
-		}
-		else if (this == RIFDataLoaderActivityStep.CHECK) {
-			return PUBLISH;
-		}
-		else {
-			//DELETE, PUBLISH
-			return LOAD;
-		}
+	public static String[] getAllStateNames() {
+		ArrayList<String> stateNames = new ArrayList<String>();
+		stateNames.add(LOAD.getStateName());
+		stateNames.add(CLEAN.getStateName());
+		stateNames.add(CONVERT.getStateName());
+		stateNames.add(OPTIMISE.getStateName());
+		stateNames.add(CHECK.getStateName());
+		stateNames.add(PUBLISH.getStateName());
+				
+		String[] results
+			= stateNames.toArray(new String[0]);
+		return results;		
 	}
 	
 }

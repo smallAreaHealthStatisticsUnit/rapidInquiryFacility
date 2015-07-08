@@ -1,6 +1,6 @@
 package rifDataLoaderTool.presentationLayer;
 
-import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
@@ -141,10 +141,10 @@ final class RIFDataLoaderToolShutdownManager
 		}
 		
 		User user = rifDataLoaderToolSession.getUser();
-		RIFDataLoaderServiceAPI service
+		DataLoaderServiceAPI service
 			= rifDataLoaderToolSession.getService();
 		try {
-			service.shutdown();
+			service.shutdownService();
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(

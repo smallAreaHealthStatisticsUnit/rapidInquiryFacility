@@ -1,11 +1,7 @@
 package rifDataLoaderTool.presentationLayer;
 
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
-
-
-
-
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 
 import javax.swing.JTable;
@@ -102,12 +98,12 @@ public final class CleaningConfigurationTable {
 	}
 	
 	public void setData(
-		final CleanWorkflowConfiguration tableCleaningConfiguration) {
+		final DataSetConfiguration dataSetConfiguration) {
 		
-		cleaningConfigurationTableModel.setData(tableCleaningConfiguration);
+		cleaningConfigurationTableModel.setData(dataSetConfiguration);
 	}
 	
-	public CleanWorkflowFieldConfiguration getSelectedTableFieldCleaningConfiguration() {
+	public DataSetFieldConfiguration getSelectedDataSetFieldConfiguration() {
 		int selectedRow = table.getSelectedRow();
 		if (selectedRow == -1) {
 			return null;

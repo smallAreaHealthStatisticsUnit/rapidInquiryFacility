@@ -1,16 +1,20 @@
-package rifDataLoaderTool.fileFormats;
+package rifDataLoaderTool.dataStorageLayer;
 
-import rifDataLoaderTool.businessConceptLayer.PublishWorkflowConfiguration;
-import rifServices.fileFormats.XMLUtility;
+import rifDataLoaderTool.businessConceptLayer.*;
+import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifServices.dataStorageLayer.SQLQueryUtility;
+import rifServices.system.RIFServiceException;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.sql.*;
 
 /**
  *
- *
+ * Manages all database operations used to convert a cleaned table into tabular data
+ * expected by some part of the RIF (eg: numerator data, health codes, geospatial data etc)
+ * 
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
@@ -58,8 +62,8 @@ import java.util.ArrayList;
  *
  */
 
-public final class PublishWorkflowConfigurationHandler 
-	extends AbstractWorkflowConfigurationHandler {
+public final class CombineWorkflowManager 
+	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
@@ -67,71 +71,33 @@ public final class PublishWorkflowConfigurationHandler
 
 	// ==========================================
 	// Section Properties
-	// ==========================================
-	private PublishWorkflowConfiguration publishWorkflowConfiguration;
-	
+	// ==========================================	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public PublishWorkflowConfigurationHandler() {
-		publishWorkflowConfiguration 
-			= PublishWorkflowConfiguration.newInstance();
-		setPluralRecordName("publish");
+	public CombineWorkflowManager(
+		final RIFDataLoaderStartupOptions startupOptions) {
+
+		super(startupOptions);
+
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public PublishWorkflowConfiguration getPublishWorkflowConfiguration() {
-		return publishWorkflowConfiguration;		
+	public void combineConfiguration(
+		final Connection connection,
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException {
+	
+		//validate parameters
+		dataSetConfiguration.checkErrors();
+			
+		//@TODO
 	}
-	
-	public void writeXML(
-		final PublishWorkflowConfiguration publishWorkflowConfiguration) 
-		throws IOException {
-		
-		XMLUtility xmlUtility = getXMLUtility();
-		xmlUtility.writeRecordStartTag("publish");
-		xmlUtility.writeField(
-			"publish", 
-			"rif_user_role", 
-			publishWorkflowConfiguration.getRIFUserRoleName());
-		
-		xmlUtility.writeRecordEndTag("publish");
-		
-	}
-	
-	
-	@Override
-	public void startElement(
-		final String nameSpaceURI,
-		final String localName,
-		final String qualifiedName,
-		final Attributes attributes) 
-		throws SAXException {
-
-		if (isPluralRecordName(qualifiedName)) {
-			activate();
-		}
-
-	}
-	
-	public void endElement(
-		final String nameSpaceURI,
-		final String localName,
-		final String qualifiedName) 
-		throws SAXException {
-
-			if (isPluralRecordName(qualifiedName)) {
-				deactivate();
-			}
-			else if (equalsFieldName("rif_user_role", qualifiedName)) {
-				publishWorkflowConfiguration.setRIFUserRoleName(getCurrentFieldValue());
-			}		
-	
-		}
 	
 	
 	// ==========================================

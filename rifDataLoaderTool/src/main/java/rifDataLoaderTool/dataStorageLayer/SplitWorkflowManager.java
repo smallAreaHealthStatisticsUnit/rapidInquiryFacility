@@ -1,25 +1,22 @@
-package rifDataLoaderTool.fileFormats;
+package rifDataLoaderTool.dataStorageLayer;
 
-
-import rifDataLoaderTool.businessConceptLayer.RIFWorkflowCollection;
-
-
-import rifServices.fileFormats.XMLCommentInjector;
-import rifServices.system.RIFServiceError;
+import rifDataLoaderTool.businessConceptLayer.*;
+import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifServices.dataStorageLayer.SQLQueryUtility;
 import rifServices.system.RIFServiceException;
-import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-
-
+import java.sql.*;
 
 /**
  *
- *
+ * Manages all database operations used to convert a cleaned table into tabular data
+ * expected by some part of the RIF (eg: numerator data, health codes, geospatial data etc)
+ * 
  * <hr>
- * Copyright 2015 Imperial College London, developed by the Small Area
+ * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -65,7 +62,8 @@ import java.io.FileOutputStream;
  *
  */
 
-public class RIFWorkflowWriter {
+public final class SplitWorkflowManager 
+	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
@@ -73,13 +71,16 @@ public class RIFWorkflowWriter {
 
 	// ==========================================
 	// Section Properties
-	// ==========================================
+	// ==========================================	
 
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public RIFWorkflowWriter() {
+	public SplitWorkflowManager(
+		final RIFDataLoaderStartupOptions startupOptions) {
+
+		super(startupOptions);
 
 	}
 
@@ -87,46 +88,17 @@ public class RIFWorkflowWriter {
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public void splitConfiguration(
+		final Connection connection,
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException {
 	
+		//validate parameters
+		dataSetConfiguration.checkErrors();
+			
+		//@TODO
+	}
 	
-	public String write(
-			final RIFWorkflowCollection rifWorkflowCollection,
-			final File file) 
-			throws RIFServiceException {
-				
-			try {
-				FileOutputStream fileOutputStream
-					= new FileOutputStream(file);
-				
-				
-				RIFWorkflowConfigurationHandler rifWorkflowConfigurationHandler
-					= new RIFWorkflowConfigurationHandler();
-
-				ByteArrayOutputStream outputStream
-					= new ByteArrayOutputStream();
-				XMLCommentInjector commentInjector = new XMLCommentInjector();			
-				rifWorkflowConfigurationHandler.initialise(
-					fileOutputStream, 
-					commentInjector);
-				rifWorkflowConfigurationHandler.writeXML(rifWorkflowCollection);
-		    	String result 
-					= new String(outputStream.toByteArray(), "UTF-8");	
-		    	outputStream.close();			
-		    	return result;
-			}
-			catch(Exception exception) {
-				exception.printStackTrace(System.out);
-				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"io.error.problemWritingFileContentsToString");
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						RIFServiceError.XML_FILE_PARSING_PROBLEM, 
-						errorMessage);
-				throw rifServiceException;			
-			}
-		}	
-
 	
 	// ==========================================
 	// Section Errors and Validation

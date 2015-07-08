@@ -1,8 +1,9 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import java.text.Collator;
-
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+
+import java.text.Collator;
+import java.util.ArrayList;
 
 /**
  *
@@ -57,13 +58,27 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 public enum RIFSchemaArea {
 	
 	
-	COVARIATE_DATA("rifSchema.covariateData", "covariate_data"),
-	HEALTH_CODE_DATA("rifSchema.healthCodeData", "health_code_data"),
-	HEALTH_THEMES("rifSchema.healthThemes", "health_themes"),
-	HEALTH_NUMERATOR_DATA("rifSchema.healthNumeratorData", "health_numerator_data"),
-	POPULATION_DENOMINATOR_DATA("rifSchema.populationDenominatorData", "population_denominator_data"),
-	GEOMETRY_DATA("rifSchema.geometryData", "geometry_data"),
-	CONTEXTUAL_MAP_DATA("rifSchema.contextualMapData", "contextual_map_data");
+	COVARIATE_DATA(
+		"rifSchemaArea.covariateData.label", 
+		"covariate_data"),
+	HEALTH_CODE_DATA(
+		"rifSchemaArea.healthCodeData.label", 
+		"health_code_data"),
+	HEALTH_THEMES(
+		"rifSchemaArea.healthThemes.label", 
+		"health_themes"),
+	HEALTH_NUMERATOR_DATA(
+		"rifSchemaArea.healthNumeratorData.label", 
+		"health_numerator_data"),
+	POPULATION_DENOMINATOR_DATA(
+		"rifSchemaArea.populationDenominatorData.label", 
+		"population_denominator_data"),
+	GEOMETRY_DATA(
+		"rifSchemaArea.geometryData.label", 
+		"geometry_data"),
+	CONTEXTUAL_MAP_DATA(
+		"rifSchemaArea.contextualMapData.label", 
+		"contextual_map_data");
 		
 	private String propertyName;
 	private String code;
@@ -89,9 +104,42 @@ public enum RIFSchemaArea {
 		
 		return collator.equals(code, candidateCode);
 	}
+
+	public static ArrayList<RIFSchemaArea> getAllSchemaAreas() {
+		
+		ArrayList<RIFSchemaArea> rifSchemaAreas 
+			= new ArrayList<RIFSchemaArea>();
+		rifSchemaAreas.add(COVARIATE_DATA);
+		rifSchemaAreas.add(HEALTH_CODE_DATA);
+		rifSchemaAreas.add(HEALTH_THEMES);
+		rifSchemaAreas.add(HEALTH_NUMERATOR_DATA);
+		rifSchemaAreas.add(POPULATION_DENOMINATOR_DATA);
+		rifSchemaAreas.add(GEOMETRY_DATA);
+		rifSchemaAreas.add(CONTEXTUAL_MAP_DATA);
+		
+		return rifSchemaAreas;
+	}
 	
-	public static RIFSchemaArea getSchemaAreaFromName(final String candidateCode) {
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+	public static String[] getAllSchemaNames() {	
+		
+		ArrayList<String> rifSchemaAreaNames 
+			= new ArrayList<String>();
+		rifSchemaAreaNames.add(COVARIATE_DATA.getName());
+		rifSchemaAreaNames.add(HEALTH_CODE_DATA.getName());
+		rifSchemaAreaNames.add(HEALTH_THEMES.getName());
+		rifSchemaAreaNames.add(HEALTH_NUMERATOR_DATA.getName());
+		rifSchemaAreaNames.add(POPULATION_DENOMINATOR_DATA.getName());
+		rifSchemaAreaNames.add(GEOMETRY_DATA.getName());
+		rifSchemaAreaNames.add(CONTEXTUAL_MAP_DATA.getName());
+		
+		String[] results
+			= rifSchemaAreaNames.toArray(new String[0]);
+		return results;
+	}
+	
+	
+	public static RIFSchemaArea getSchemaAreaFromName(
+		final String candidateCode) {
 		
 		RIFSchemaArea result = null;
 		
@@ -117,10 +165,9 @@ public enum RIFSchemaArea {
 			result = GEOMETRY_DATA;
 		}
 
-		return result;
-		
+		return result;		
 	}
-	
+
 	
 }
 

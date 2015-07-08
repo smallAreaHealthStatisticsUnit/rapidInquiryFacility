@@ -1,13 +1,21 @@
 package rifDataLoaderTool.presentationLayer.batch;
 
-import rifDataLoaderTool.businessConceptLayer.RIFWorkflowCollection;
-import rifDataLoaderTool.fileFormats.RIFWorkflowReader;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
+import rifDataLoaderTool.businessConceptLayer.LinearWorkflowEnactor;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaAreaPropertyManager;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+
+
+import rifDataLoaderTool.fileFormats.LinearWorkflowReader;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifServices.system.RIFServiceException;
+import rifServices.businessConceptLayer.User;
 
 import java.io.File;
-
+import java.text.Collator;
 
 /**
  *
@@ -63,16 +71,21 @@ public class DataLoaderBatchTool {
 
 	public static void main(String[] arguments) {
 		
-		DataLoaderBatchTool dataLoaderBatchTool
-			= new DataLoaderBatchTool();
-		dataLoaderBatchTool.run(arguments);
+		try {
+			DataLoaderBatchTool dataLoaderBatchTool
+				= new DataLoaderBatchTool();		
+			dataLoaderBatchTool.run(arguments);		
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
+		}
 	}
 	
 	
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -89,74 +102,253 @@ public class DataLoaderBatchTool {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void run(final String[] commandLineArguments) {
+	public void run(final String[] commandLineArguments) 
+		throws RIFServiceException {
 		
 		try {
-			validateCommandLineArguments(commandLineArguments);
-
-			File configurationFile = extractConfigurationFile(commandLineArguments);
-			RIFWorkflowReader workflowReader = new RIFWorkflowReader();
-			workflowReader.readFile(configurationFile);
+			if (commandLineArguments.length == 0) {
+				//ERROR: must at least one argument to specify an operation
+				String errorMessage
+					= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.error.noArgumentsSpecified");
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFDataLoaderToolError.NO_COMMAND_LINE_ARGUMENTS_SPECIFIED,
+						errorMessage);
+				throw rifServiceException;
+			}
 			
-			RIFWorkflowCollection rifWorkflowCollection
-				 = workflowReader.getRIFWorkflowCollection();
+			Collator collator = RIFDataLoaderToolMessages.getCollator();
+			String operationArgument = commandLineArguments[0].toUpperCase();
 			
+			if (collator.equals(operationArgument, "-RESERVEDFIELDNAMES")) {
+				showReservedFieldNames();
+			}
+			else if (collator.equals(operationArgument, "-RIFDATATYPES")) {
+				showSupportedRIFDataTypes();
+			}
+			else if (collator.equals(operationArgument, "-RIFREQUIREMENTTYPES")) {
+				showRIFRequirementTypes();
+			}
+			else if (collator.equals(operationArgument, "-RIFSCHEMAAREAS")) {
+				showRIFSchemaAreas();
+			}
+			else if (collator.equals(operationArgument, "-REQUIREDFIELDS")) {
+				showRequiredFieldsForSchemaArea(commandLineArguments);
+			}
+			else if (collator.equals(operationArgument, "-WORKFLOWSTAGES")) {
+				showWorkflowStages();
+			}
+			else if (collator.equals(operationArgument, "-PROCESSDATASET")) {
+				processDataSet(commandLineArguments);
+			}
+			else {
+				//unrecognised command
+				String errorMessage
+					= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.error.unknownCommandLineOption");
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFDataLoaderToolError.UNKNOWN_COMMAND_LINE_OPTION, 
+						errorMessage);
+				throw rifServiceException;				
+			}
 			
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();
 		}
 		
-		//the last argument should be the file name
-		
-		
+		//the last argument should be the file name	
 	}
 	
-	
-	private File extractConfigurationFile(
-		final String[] commandLineArguments) {
-		
-		int numberOfArguments = commandLineArguments.length;
-		String filePath = commandLineArguments[numberOfArguments -1];
-		File file = new File(filePath);
-		
-		return file;
-	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
+	private void showReservedFieldNames() {
 
-	private void validateCommandLineArguments(
+		String responseHeaderMessage
+			= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.showReservedFieldNames.response");
+		
+		String[] reservedFieldNames = new String[4];
+		reservedFieldNames[0]
+			= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.showReservedFieldNames.dataSourceID.label");
+		reservedFieldNames[1]
+			= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.showReservedFieldNames.rowNumber.label");
+		reservedFieldNames[2]
+			= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.showReservedFieldNames.keepRecord.label");
+		reservedFieldNames[3]
+			= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.showReservedFieldNames.total.label");
+
+		showOptionListResult(
+			responseHeaderMessage, 
+			reservedFieldNames);			
+	}
+	
+	private void showSupportedRIFDataTypes() {
+		
+		String responseHeaderMessage
+			= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.showSupportedRIFDataTypes.response");		
+		RIFDataTypeFactory rifDataTypeFactory
+			= new RIFDataTypeFactory();		
+		String[] supportedRIFDataTypes = rifDataTypeFactory.getDataTypeNames();
+
+		showOptionListResult(
+			responseHeaderMessage, 
+			supportedRIFDataTypes);	
+	}
+	
+	private void showRIFRequirementTypes() {
+		String responseHeaderMessage
+			= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.showRIFRequirementTypes.response");
+	
+		String[] rifRequirementTypes = new String[4];
+		rifRequirementTypes[0]
+			= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.showRIFRequirementTypes.rifRequiredField.label");
+		rifRequirementTypes[1]
+			= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.showRIFRequirementTypes.extraField.label");
+		rifRequirementTypes[2]
+			= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.showRIFRequirementTypes.fieldToIgnore.label");
+
+		showOptionListResult(
+			responseHeaderMessage, 
+			rifRequirementTypes);	
+
+	}
+	
+	private String[] showRIFSchemaAreas() {
+		String responseHeaderMessage
+			= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.showRIFSchemaAreas.response");	
+		String[] rifSchemaAreas
+			= RIFSchemaArea.getAllSchemaNames();
+		showOptionListResult(responseHeaderMessage, rifSchemaAreas);
+		return rifSchemaAreas;			
+	}
+	
+	private String[] showRequiredFieldsForSchemaArea(
 		final String[] commandLineArguments) 
 		throws RIFServiceException {
 		
-		int totalArguments = commandLineArguments.length;
-		
-		if (totalArguments == 0) {
-			//ERROR: must at least specify an input XML file
+		if (commandLineArguments.length < 2) {
+			//ERROR: command is missing the parameter that indicating the schema area
 			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.error.noArgumentsSpecified");
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataLoaderBatchTool.showRIFSchemaAreas.error.noSchemaAreaSpecified");
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFDataLoaderToolError.NO_COMMAND_LINE_ARGUMENTS_SPECIFIED,
+					RIFDataLoaderToolError.NO_SCHEMA_AREA_SPECIFIED, 
 					errorMessage);
 			throw rifServiceException;
 		}
 		
-		String configurationFilePath
-			= commandLineArguments[totalArguments - 1];
-		if (configurationFilePath.startsWith("-")) {
+		String schemaAreaCode = commandLineArguments[1];
+		
+		RIFSchemaAreaPropertyManager rifSchemaAreaPropertyManager
+			= new RIFSchemaAreaPropertyManager();
+		RIFSchemaArea rifSchemaArea
+			= RIFSchemaArea.getSchemaAreaFromName(schemaAreaCode);
+		
+		
+		String responseHeaderMessage
+			= RIFDataLoaderToolMessages.getMessage(
+				"",
+				rifSchemaArea.getName());
+		
+		String[] requiredFieldNamesForSchemaArea
+			= rifSchemaAreaPropertyManager.getRequiredConvertFieldNames(rifSchemaArea);
+		showOptionListResult(responseHeaderMessage, requiredFieldNamesForSchemaArea);
+		
+		return requiredFieldNamesForSchemaArea;
+		
+	}
+	
+	private String[] showWorkflowStages() {
+		String responseMessage
+			= RIFDataLoaderToolMessages.getMessage(
+				"dataLoaderBatchTool.showWorkflowStages.response");
+		String[] workFlowStages = WorkflowState.getAllStateNames();
+		showOptionListResult(responseMessage, workFlowStages);	
+		
+		return workFlowStages;
+		
+	}
+	
+	
+	private void showOptionListResult(
+		final String responseHeaderMessage,
+		final String[] listItems) {
+		
+		System.out.println(responseHeaderMessage);
+		for (String listItem : listItems) {
+			System.out.println("\t" + listItem);
+		}		
+	}
+	
+	
+	private void processDataSet(
+		final String[] commandLineArguments) 
+		throws RIFServiceException {
+		
+		
+		//Validate parameters
+		if (commandLineArguments.length < 2) {
+			//ERROR: command is missing the parameter that specifies the configuration XML file
 			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.error.noConfigurationFileSpecified");
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataLoaderBatchTool.processDataSet.error.noConfigurationFileSpecified");
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFDataLoaderToolError.ILLEGAL_CONFIGURATION_FILE_SPECIFIED,
+					RIFDataLoaderToolError.NO_CONFIGURATION_FILE_SPECIFIED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		
+		String configurationFilePath = commandLineArguments[2];
+		File rifWorfklowConfigurationFile = new File(configurationFilePath);
+		if (rifWorfklowConfigurationFile.exists() == false) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataLoaderBatchTool.processDataSet.error.nonExistentConfigurationFile");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.NON_EXISTENT_CONFIGURATION_FILE, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		
+		if (rifWorfklowConfigurationFile.canRead() == false) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataLoaderBatchTool.processDataSet.error.unreadableConfigurationFile");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.UNABLE_TO_READ_CONFIGURATION_FILE, 
 					errorMessage);
 			throw rifServiceException;			
 		}
 		
+		
+		/*
+		DataLoaderServiceAPI dataLoaderService = null;
+		User rifManager = null;		
+		
+		RIFWorkflowReader rifWorkflowReader
+			= new RIFWorkflowReader();
+		rifWorkflowReader.readFile(rifWorfklowConfigurationFile);
+			
+		LinearWorkflow linearWorkflow
+			= rifWorkflowReader.getLinearWorkflow();
+			
+		dataLoaderService.initialiseService();
+					
+		LinearWorkflowEnactor linearWorkflowEnactor
+			= new LinearWorkflowEnactor(
+				rifManager, 
+				dataLoaderService);
+		linearWorkflowEnactor.runWorkflow(linearWorkflow);
+		
+		*/
 	}
+		
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
 	
 	// ==========================================
 	// Section Interfaces

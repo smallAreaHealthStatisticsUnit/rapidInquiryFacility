@@ -3,8 +3,8 @@ package rifDataLoaderTool.presentationLayer;
 import rifDataLoaderTool.businessConceptLayer.CleaningRule;
 
 
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeInterface;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;

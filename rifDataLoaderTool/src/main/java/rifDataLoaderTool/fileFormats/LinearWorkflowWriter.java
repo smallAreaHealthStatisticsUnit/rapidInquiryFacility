@@ -1,8 +1,18 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.fileFormats;
+
+import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 
 
-import rifDataLoaderTool.businessConceptLayer.DataSet;
-import java.util.ArrayList;
+import rifServices.fileFormats.XMLCommentInjector;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceException;
+import rifServices.system.RIFServiceMessages;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+
+
 
 /**
  *
@@ -54,7 +64,7 @@ import java.util.ArrayList;
  *
  */
 
-public class RIFWorkflowCollection {
+public class LinearWorkflowWriter {
 
 	// ==========================================
 	// Section Constants
@@ -63,56 +73,57 @@ public class RIFWorkflowCollection {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	
-	private ArrayList<DataSet> dataSets;
-	private RIFWorkflowConfiguration rifWorkflowConfiguration;
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private RIFWorkflowCollection() {
-		dataSets = new ArrayList<DataSet>();
-		rifWorkflowConfiguration = RIFWorkflowConfiguration.newInstance();
+	public LinearWorkflowWriter() {
+
 	}
 
-	public static RIFWorkflowCollection newInstance() {
-		RIFWorkflowCollection rifWorkflowCollection = new RIFWorkflowCollection();
-		return rifWorkflowCollection;
-	}
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public ArrayList<DataSet> getDataSets() {
+	public String write(
+		final LinearWorkflow linearWorkflow,
+		final File file) 
+		throws RIFServiceException {
+				
+			try {
+				FileOutputStream fileOutputStream
+					= new FileOutputStream(file);
+				
+				
+				LinearWorkflowConfigurationHandler rifWorkflowConfigurationHandler
+					= new LinearWorkflowConfigurationHandler();
 
-		return dataSets;
-	}
-	
-	public void setDataSets(
-		final ArrayList<DataSet> dataSets) {
-		
-		this.dataSets = dataSets;
-	}
-	
-	public void addDataSet(
-		final DataSet dataSet) {
-		
-		dataSets.add(dataSet);
-	}
-	
-	public void setRIFWorkflowConfiguration(
-		final RIFWorkflowConfiguration rifWorkflowConfiguration) {
-		
-		this.rifWorkflowConfiguration = rifWorkflowConfiguration;
-	}
-	
-	public RIFWorkflowConfiguration getRIFWorkflowConfiguration() {
+				ByteArrayOutputStream outputStream
+					= new ByteArrayOutputStream();
+				XMLCommentInjector commentInjector = new XMLCommentInjector();			
+				rifWorkflowConfigurationHandler.initialise(
+					fileOutputStream, 
+					commentInjector);
+				rifWorkflowConfigurationHandler.writeXML(linearWorkflow);
+		    	String result 
+					= new String(outputStream.toByteArray(), "UTF-8");	
+		    	outputStream.close();			
+		    	return result;
+			}
+			catch(Exception exception) {
+				exception.printStackTrace(System.out);
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"io.error.problemWritingFileContentsToString");
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.XML_FILE_PARSING_PROBLEM, 
+						errorMessage);
+				throw rifServiceException;			
+			}
+		}	
 
-		return rifWorkflowConfiguration;
-	}
-		
 	
 	// ==========================================
 	// Section Errors and Validation

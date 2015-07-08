@@ -1,6 +1,6 @@
 package rifDataLoaderTool.system;
 
-import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifServices.businessConceptLayer.User;
 
@@ -64,7 +64,7 @@ public final class RIFDataLoaderToolSession {
 	// Section Properties
 	// ==========================================
 	private User user;
-	private RIFDataLoaderServiceAPI service;
+	private DataLoaderServiceAPI service;
 	private UserInterfaceFactory userInterfaceFactory;
 	
 	// ==========================================
@@ -88,11 +88,11 @@ public final class RIFDataLoaderToolSession {
 		this.user = user;
 	}
 
-	public RIFDataLoaderServiceAPI getService() {
+	public DataLoaderServiceAPI getService() {
 		return service;
 	}
 
-	public void setService(RIFDataLoaderServiceAPI service) {
+	public void setService(DataLoaderServiceAPI service) {
 		this.service = service;
 	}
 

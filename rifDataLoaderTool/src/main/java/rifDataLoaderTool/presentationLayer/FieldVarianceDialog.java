@@ -1,9 +1,12 @@
 package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
-import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
-import rifDataLoaderTool.fileFormats.FieldVarianceReport;
+
+
+import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.fileFormats.LoadFieldVarianceReport;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifServices.system.RIFServiceException;
 
@@ -74,7 +77,7 @@ public final class FieldVarianceDialog
 	// ==========================================
 	private JEditorPane editorPane;
 
-	private CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration;
+	private DataSetFieldConfiguration dataSetFieldConfiguration;
 
 	// ==========================================
 	// Section Construction
@@ -120,22 +123,22 @@ public final class FieldVarianceDialog
 	// Section Accessors and Mutators
 	// ==========================================
 	public void setData(
-		final CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration) 
+		final DataSetFieldConfiguration dataSetFieldConfiguration) 
 		throws RIFServiceException {
 		
-		this.tableFieldCleaningConfiguration = tableFieldCleaningConfiguration;
+		this.dataSetFieldConfiguration = dataSetFieldConfiguration;
 	
-		RIFDataLoaderServiceAPI service = getService();
+		DataLoaderServiceAPI service = getService();
 		
 		String[][] varianceData
 			= service.getVarianceInFieldData(
 				getCurrentUser(),
-				tableFieldCleaningConfiguration);
-		FieldVarianceReport fieldVarianceReport
-			 = new FieldVarianceReport();
+				dataSetFieldConfiguration);
+		LoadFieldVarianceReport fieldVarianceReport
+			 = new LoadFieldVarianceReport();
 		String htmlText
 			= fieldVarianceReport.getHTML(
-				tableFieldCleaningConfiguration, 
+				dataSetFieldConfiguration, 
 				varianceData);
 		editorPane.setText(htmlText);
 		editorPane.setCaretPosition(0);

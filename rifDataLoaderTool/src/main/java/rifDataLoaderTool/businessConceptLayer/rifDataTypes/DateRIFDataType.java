@@ -2,6 +2,7 @@ package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
 import java.util.ArrayList;
 
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
 import rifDataLoaderTool.system.RIFDataLoaderMessages;

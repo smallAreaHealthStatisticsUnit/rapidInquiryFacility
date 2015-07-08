@@ -1,10 +1,7 @@
-package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
+package rifDataLoaderTool.businessConceptLayer;
 
 import java.util.ArrayList;
 
-import rifDataLoaderTool.businessConceptLayer.CleaningRule;
-import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
-import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 
 /**

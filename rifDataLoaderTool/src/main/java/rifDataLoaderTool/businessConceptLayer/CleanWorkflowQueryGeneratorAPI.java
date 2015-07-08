@@ -1,6 +1,7 @@
 package rifDataLoaderTool.businessConceptLayer;
 
 
+
 /**
  * API of code generation classes that can support database calls related to cleaning
  * data.  Code generator classes will be developed for both Postgresql and Microsoft
@@ -56,28 +57,28 @@ package rifDataLoaderTool.businessConceptLayer;
 public interface CleanWorkflowQueryGeneratorAPI {
 
 	public String generateSearchReplaceTableQuery(
-		final CleanWorkflowConfiguration cleanWorkflowConfiguration);	
+		final DataSetConfiguration dataSetConfiguration);	
 	public String generateDropSearchReplaceTableQuery(
-		final CleanWorkflowConfiguration cleanWorkflowConfiguration);
+		final DataSetConfiguration dataSetConfiguration);
 
 	public String generateValidationTableQuery(
-		final CleanWorkflowConfiguration cleanWorkflowConfiguration);
+		final DataSetConfiguration dataSetConfiguration);
 	public String generateDropValidationTableQuery(
-		final CleanWorkflowConfiguration cleanWorkflowConfiguration);
+		final DataSetConfiguration dataSetConfiguration);
 	
 	public String generateCastingTableQuery(
-		final CleanWorkflowConfiguration cleanWorkflowConfiguration);
+		final DataSetConfiguration dataSetConfiguration);
 	public String generateDropCastingTableQuery(
-		final CleanWorkflowConfiguration cleanWorkflowConfiguration);
+		final DataSetConfiguration dataSetConfiguration);
 
 	public String generateDeleteAuditsQuery(
-		final CleanWorkflowConfiguration cleanWorkflowConfiguration);
+		final DataSetConfiguration dataSetConfiguration);
 	public String generateAuditChangesQuery(
-		final CleanWorkflowConfiguration cleanWorkflowConfiguration);
+		final DataSetConfiguration dataSetConfiguration);
 	public String generateAuditErrorsQuery(
-		final CleanWorkflowConfiguration cleanWorkflowConfiguration);
+		final DataSetConfiguration dataSetConfiguration);
 	public String generateAuditBlanksQuery(
-		final CleanWorkflowConfiguration cleanWorkflowConfiguration);	
+		final DataSetConfiguration dataSetConfiguration);	
 }
 
 

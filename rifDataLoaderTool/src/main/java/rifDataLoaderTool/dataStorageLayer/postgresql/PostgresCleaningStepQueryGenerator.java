@@ -5,7 +5,6 @@ import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AgeRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.DateRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.DoubleRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.IntegerRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeInterface;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.SexRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.YearRIFDataType;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
@@ -139,7 +138,7 @@ public final class PostgresCleaningStepQueryGenerator
 	 */
 	
 	public String generateSearchReplaceTableQuery(
-		final CleanWorkflowConfiguration tableCleaningConfiguration) {
+		final DataSetConfiguration dataSetConfiguration) {
 		
 		/*
 		 * Generates a search and replace table which will make changes according to
@@ -186,7 +185,7 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
 		
 		String coreDataSetName 
-			= tableCleaningConfiguration.getCoreDataSetName();
+			= dataSetConfiguration.getName();
 		String searchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
 		queryFormatter.addQueryPhrase(searchReplaceTableName);
@@ -195,19 +194,19 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.addQueryLine(1, "SELECT ");
 		queryFormatter.addQueryLine(2, "data_source_id,");
 		queryFormatter.addQueryPhrase(2, "row_number");
-		ArrayList<CleanWorkflowFieldConfiguration> cleanWorkflowFieldConfigurations
-			= tableCleaningConfiguration.getIncludedFieldCleaningConfigurations();
 		
-		int numberTableFieldConfigurations = cleanWorkflowFieldConfigurations.size();
+		ArrayList<DataSetFieldConfiguration> fieldConfigurations
+			= dataSetConfiguration.getFieldConfigurations();
+		int numberOfDataSetFieldConfigurations = fieldConfigurations.size();
 		
-		for (int i = 0; i < numberTableFieldConfigurations; i++) {
+		for (int i = 0; i < numberOfDataSetFieldConfigurations; i++) {
 			queryFormatter.finishLine(",");
-			CleanWorkflowFieldConfiguration currentTableFieldConfiguration
-				= cleanWorkflowFieldConfigurations.get(i);
+			DataSetFieldConfiguration currentDataSetFieldConfiguration
+				= fieldConfigurations.get(i);
 			addSearchReplaceQueryFragment(
 				queryFormatter,
 				2,
-				currentTableFieldConfiguration);
+				currentDataSetFieldConfiguration);
 		}
 
 		queryFormatter.finishLine();
@@ -215,7 +214,7 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.addQueryLine(1, " FROM ");
 		String loadTableName
 			= RIFTemporaryTablePrefixes.LOAD.getTableName(
-				tableCleaningConfiguration.getCoreDataSetName());
+					dataSetConfiguration.getName());
 		queryFormatter.addQueryPhrase(2, loadTableName);
 		queryFormatter.addQueryPhrase(";");
 
@@ -232,15 +231,15 @@ public final class PostgresCleaningStepQueryGenerator
 	private void addSearchReplaceQueryFragment(
 		final SQLGeneralQueryFormatter queryFormatter,
 		final int baseIndentationLevel,
-		final CleanWorkflowFieldConfiguration fieldCleaningConfiguration) {
+		final DataSetFieldConfiguration dataSetFieldConfiguration) {
 			
 		String loadTableFieldName
-			= fieldCleaningConfiguration.getLoadTableFieldName();
+			= dataSetFieldConfiguration.getLoadFieldName();
 		String cleanedTableFieldName
-			= fieldCleaningConfiguration.getCleanedTableFieldName();
+			= dataSetFieldConfiguration.getCleanFieldName();
 
 		RIFDataTypeInterface rifDataType 
-			= fieldCleaningConfiguration.getRIFDataType();
+			= dataSetFieldConfiguration.getRIFDataType();
 		RIFFieldCleaningPolicy rifFieldCleaningPolicy
 			= rifDataType.getFieldCleaningPolicy();
 		
@@ -277,7 +276,7 @@ public final class PostgresCleaningStepQueryGenerator
 					addWhenCleaningRuleAppliesStatement(
 						queryFormatter,
 						baseIndentationLevel + 1,
-						fieldCleaningConfiguration,
+						dataSetFieldConfiguration,
 						cleaningRule);
 				}
 				
@@ -318,7 +317,7 @@ public final class PostgresCleaningStepQueryGenerator
 	}
 	
 	public String generateValidationTableQuery(
-		final CleanWorkflowConfiguration cleanWorkflowConfiguration) {
+		final DataSetConfiguration dataSetConfiguration) {
 
 		/*
 		 * Generates a validation table which will either have the original
@@ -356,7 +355,7 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
 		
 		String coreDataSetName 
-			= cleanWorkflowConfiguration.getCoreDataSetName();
+			= dataSetConfiguration.getName();
 		String validationTableName
 			= RIFTemporaryTablePrefixes.CLEAN_VALIDATION.getTableName(coreDataSetName);
 		String searchReplaceTableName
@@ -367,20 +366,21 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.addQueryLine(1, "SELECT ");
 		queryFormatter.addQueryLine(2, "data_source_id,");
 		queryFormatter.addQueryPhrase(2, "row_number");
-		ArrayList<CleanWorkflowFieldConfiguration> cleanWorkflowFieldConfigurations
-			= cleanWorkflowConfiguration.getIncludedFieldCleaningConfigurations();
+		ArrayList<DataSetFieldConfiguration> fieldConfigurations
+			= dataSetConfiguration.getFieldConfigurations();
 		
-		int numberCleanWorkflowFieldConfigurations = cleanWorkflowFieldConfigurations.size();
+		int numbeOfFieldConfigurations 
+			= fieldConfigurations.size();
 		
-		for (int i = 0; i < numberCleanWorkflowFieldConfigurations; i++) {
+		for (int i = 0; i < numbeOfFieldConfigurations; i++) {
 			queryFormatter.finishLine(",");
 		
-			CleanWorkflowFieldConfiguration currentTableFieldConfiguration
-				= cleanWorkflowFieldConfigurations.get(i);
+			DataSetFieldConfiguration currentFieldConfiguration
+				= fieldConfigurations.get(i);
 			addValidationQueryFragment(
 				queryFormatter,
 				2,
-				currentTableFieldConfiguration);
+				currentFieldConfiguration);
 		}	
 		queryFormatter.finishLine();
 		queryFormatter.addQueryLine(1, "FROM");
@@ -394,7 +394,7 @@ public final class PostgresCleaningStepQueryGenerator
 	private void addValidationQueryFragment(
 		final SQLGeneralQueryFormatter queryFormatter,
 		final int baseIndentationLevel,
-		final CleanWorkflowFieldConfiguration fieldConfiguration) {
+		final DataSetFieldConfiguration fieldConfiguration) {
 
 		/*
 		 * Will produce result of the format
@@ -413,7 +413,7 @@ public final class PostgresCleaningStepQueryGenerator
 			= rifDataType.getFieldValidationPolicy();
 		
 		String cleanedFieldName
-			= fieldConfiguration.getCleanedTableFieldName();
+			= fieldConfiguration.getCleanFieldName();
 		if (fieldValidationPolicy == RIFFieldValidationPolicy.NO_VALIDATION) {
 			queryFormatter.addQueryPhrase(cleanedFieldName);
 			queryFormatter.padAndFinishLine();
@@ -423,7 +423,7 @@ public final class PostgresCleaningStepQueryGenerator
 			queryFormatter.addQueryPhrase("(");
 			queryFormatter.addQueryPhrase(cleanedFieldName);
 			queryFormatter.addQueryPhrase(",");
-			queryFormatter.addQueryPhrase(String.valueOf(fieldConfiguration.allowBlankValues()));
+			queryFormatter.addQueryPhrase(String.valueOf(fieldConfiguration.isEmptyValueAllowed()));
 			queryFormatter.addQueryPhrase(rifDataType.getValidationFunctionParameterValues());
 			queryFormatter.addQueryPhrase(") AS ");
 			queryFormatter.addQueryPhrase(cleanedFieldName);
@@ -463,9 +463,8 @@ public final class PostgresCleaningStepQueryGenerator
 					queryFormatter.padAndFinishLine();
 				}
 			}
-			
-			
-			if (fieldConfiguration.allowBlankValues()) {
+						
+			if (fieldConfiguration.isEmptyValueAllowed()) {
 				queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
 				queryFormatter.addQueryPhrase(cleanedFieldName);
 				queryFormatter.addQueryPhrase(" ='' ");
@@ -489,7 +488,7 @@ public final class PostgresCleaningStepQueryGenerator
 
 		
 	public String generateDropValidationTableQuery(
-		final CleanWorkflowConfiguration tableCleaningConfiguration) {
+		final DataSetConfiguration dataSetConfiguration) {
 
 		SQLDeleteTableQueryFormatter queryFormatter
 			= new SQLDeleteTableQueryFormatter();
@@ -503,14 +502,14 @@ public final class PostgresCleaningStepQueryGenerator
 
 		String validationTableName
 			= RIFTemporaryTablePrefixes.CLEAN_VALIDATION.getTableName(
-				tableCleaningConfiguration.getCoreDataSetName());	
+					dataSetConfiguration.getName());	
 		queryFormatter.setTableToDelete(validationTableName);
 			
 		return queryFormatter.generateQuery();		
 	}
 		
 	public String generateDeleteAuditsQuery(
-		final CleanWorkflowConfiguration tableCleaningConfiguration) {
+		final DataSetConfiguration dataSetConfiguration) {
 		
 		/*
 		 * DELETE FROM rif_audit_table
@@ -533,7 +532,7 @@ public final class PostgresCleaningStepQueryGenerator
 	}
 	
 	public String generateAuditChangesQuery(
-		final CleanWorkflowConfiguration tableCleaningConfiguration) {
+		final DataSetConfiguration dataSetConfiguration) {
 		
 		
 		/*
@@ -633,13 +632,13 @@ public final class PostgresCleaningStepQueryGenerator
 		
 		
 		String coreDataSetName 
-			= tableCleaningConfiguration.getCoreDataSetName();
+			= dataSetConfiguration.getName();
 		String loadTableName
 			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
 		String searchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
-		ArrayList<CleanWorkflowFieldConfiguration> fieldConfigurations
-			= tableCleaningConfiguration.getIncludedFieldCleaningConfigurations();
+		ArrayList<DataSetFieldConfiguration> fieldConfigurations
+			= dataSetConfiguration.getFieldConfigurations();
 		int numberOfFieldConfigurations = fieldConfigurations.size();
 		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
@@ -665,7 +664,7 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.finishLine();
 		queryFormatter.addQueryPhrase(2, "loadTable.row_number");
 
-		for (CleanWorkflowFieldConfiguration fieldConfiguration : fieldConfigurations) {
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 			
 			/*
 			 * This part is adding the query fragment like:
@@ -677,8 +676,8 @@ public final class PostgresCleaningStepQueryGenerator
 			 * 
 			 */
 			
-			String loadTableFieldName = fieldConfiguration.getLoadTableFieldName();
-			String cleanedTableFieldName = fieldConfiguration.getCleanedTableFieldName();
+			String loadTableFieldName = fieldConfiguration.getLoadFieldName();
+			String cleanedTableFieldName = fieldConfiguration.getCleanFieldName();
 			
 			queryFormatter.finishLine(",");
 			queryFormatter.addQueryPhrase(2, "CASE");
@@ -746,10 +745,10 @@ public final class PostgresCleaningStepQueryGenerator
 				queryFormatter.padAndFinishLine();
 			}
 			
-			CleanWorkflowFieldConfiguration fieldConfiguration
+			DataSetFieldConfiguration fieldConfiguration
 				= fieldConfigurations.get(i);
 			String cleanTableFieldName
-				= fieldConfiguration.getCleanedTableFieldName();
+				= fieldConfiguration.getCleanFieldName();
 			
 			queryFormatter.addQueryPhrase(1, "SELECT");
 			queryFormatter.padAndFinishLine();
@@ -779,16 +778,17 @@ public final class PostgresCleaningStepQueryGenerator
 	
 	
 	public String generateAuditErrorsQuery(
-		final CleanWorkflowConfiguration tableCleaningConfiguration) {
+		final DataSetConfiguration dataSetConfiguration) {
 
 		String coreDataSetName 
-			= tableCleaningConfiguration.getCoreDataSetName();
+			= dataSetConfiguration.getName();
 		String loadTableName
 			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
 		String cleanValidationTableName
 			= RIFTemporaryTablePrefixes.CLEAN_VALIDATION.getTableName(coreDataSetName);
-		ArrayList<CleanWorkflowFieldConfiguration> fieldConfigurations
-			= tableCleaningConfiguration.getIncludedFieldCleaningConfigurations();
+		ArrayList<DataSetFieldConfiguration> fieldConfigurations
+			= dataSetConfiguration.getFieldConfigurations();
+		
 		int numberOfFieldConfigurations = fieldConfigurations.size();
 		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
@@ -834,10 +834,10 @@ public final class PostgresCleaningStepQueryGenerator
 				queryFormatter.padAndFinishLine();
 			}
 			
-			CleanWorkflowFieldConfiguration fieldConfiguration
+			DataSetFieldConfiguration fieldConfiguration
 				= fieldConfigurations.get(i);
 			String cleanTableFieldName
-				= fieldConfiguration.getCleanedTableFieldName();
+				= fieldConfiguration.getCleanFieldName();
 			
 			queryFormatter.addQueryPhrase(1, "SELECT");
 			queryFormatter.padAndFinishLine();
@@ -865,16 +865,18 @@ public final class PostgresCleaningStepQueryGenerator
 	}
 		
 	public String generateAuditBlanksQuery(
-		final CleanWorkflowConfiguration tableCleaningConfiguration) {
+		final DataSetConfiguration dataSetConfiguration) {
 
 		String coreDataSetName 
-			= tableCleaningConfiguration.getCoreDataSetName();
+			= dataSetConfiguration.getName();
 		String loadTableName
 			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
 		String cleanValidationTableName
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
-		ArrayList<CleanWorkflowFieldConfiguration> fieldConfigurations
-			= tableCleaningConfiguration.getIncludedFieldCleaningConfigurations();
+
+		ArrayList<DataSetFieldConfiguration> fieldConfigurations
+			= dataSetConfiguration.getFieldConfigurations();
+		
 		int numberOfFieldConfigurations = fieldConfigurations.size();
 
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
@@ -919,10 +921,10 @@ public final class PostgresCleaningStepQueryGenerator
 				queryFormatter.padAndFinishLine();
 			}
 			
-			CleanWorkflowFieldConfiguration fieldConfiguration
+			DataSetFieldConfiguration fieldConfiguration
 				= fieldConfigurations.get(i);
 			String cleanTableFieldName
-				= fieldConfiguration.getCleanedTableFieldName();
+				= fieldConfiguration.getCleanFieldName();
 			
 			queryFormatter.addQueryPhrase(1, "SELECT");
 			queryFormatter.padAndFinishLine();
@@ -1059,11 +1061,11 @@ public final class PostgresCleaningStepQueryGenerator
 	private void addWhenCleaningRuleAppliesStatement(
 		final SQLGeneralQueryFormatter queryFormatter,
 		final int baseIndentationLevel,
-		final CleanWorkflowFieldConfiguration fieldCleaningConfiguration,		
+		final DataSetFieldConfiguration dataSetFieldConfiguration,
 		final CleaningRule cleaningRule) {
 		
 		String fieldName
-			= fieldCleaningConfiguration.getCleanedTableFieldName();
+			= dataSetFieldConfiguration.getCleanFieldName();
 		
 		queryFormatter.addQueryPhrase(baseIndentationLevel, "WHEN ");
 		queryFormatter.addQueryPhrase(fieldName);
@@ -1096,7 +1098,7 @@ public final class PostgresCleaningStepQueryGenerator
 	}
 	
 	public String generateDropSearchReplaceTableQuery(
-		final CleanWorkflowConfiguration tableCleaningConfiguration) {
+		final DataSetConfiguration dataSetConfiguration) {
 
 		SQLDeleteTableQueryFormatter queryFormatter = new SQLDeleteTableQueryFormatter();
 		String queryCommentLine
@@ -1104,7 +1106,7 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.addCommentLine(queryCommentLine);
 		queryFormatter.addUnderline();
 		
-		String coreDataSetName = tableCleaningConfiguration.getCoreDataSetName();
+		String coreDataSetName = dataSetConfiguration.getName();
 		String searchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
 		queryFormatter.setTableToDelete(searchReplaceTableName);
@@ -1146,7 +1148,7 @@ public final class PostgresCleaningStepQueryGenerator
 	 */
 	
 	public String generateCastingTableQuery(
-		final CleanWorkflowConfiguration tableCleaningConfiguration) {
+		final DataSetConfiguration dataSetConfiguration) {
 		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 
@@ -1170,7 +1172,7 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
 		
 		String coreDataSetName
-			= tableCleaningConfiguration.getCoreDataSetName();
+			= dataSetConfiguration.getName();
 		String castingTableName
 			= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName);
 		queryFormatter.addQueryPhrase(castingTableName);
@@ -1181,12 +1183,12 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.addQueryLine(2, "data_source_id,");
 		queryFormatter.addQueryLine(2, "row_number,");
 		
-		ArrayList<CleanWorkflowFieldConfiguration> fieldCleaningConfigurations
-			= tableCleaningConfiguration.getIncludedFieldCleaningConfigurations();
-		int numberTableFieldConfigurations = fieldCleaningConfigurations.size();
-		for (int i = 0; i < numberTableFieldConfigurations; i++) {
-			CleanWorkflowFieldConfiguration currentTableFieldConfiguration
-				= fieldCleaningConfigurations.get(i);
+		ArrayList<DataSetFieldConfiguration> fieldConfigurations
+			= dataSetConfiguration.getFieldConfigurations();
+		int numberOfFieldConfigurations = fieldConfigurations.size();
+		for (int i = 0; i < numberOfFieldConfigurations; i++) {
+			DataSetFieldConfiguration currentDataSetFieldConfiguration
+				= fieldConfigurations.get(i);
 			
 			if (i != 0) {
 				queryFormatter.addQueryPhrase(",");
@@ -1195,7 +1197,7 @@ public final class PostgresCleaningStepQueryGenerator
 			addCastingQueryFragment(
 				queryFormatter,
 				2,
-				currentTableFieldConfiguration);
+				currentDataSetFieldConfiguration);
 		}		
 		queryFormatter.finishLine();
 		queryFormatter.addQueryLine(1, "FROM ");
@@ -1217,13 +1219,13 @@ public final class PostgresCleaningStepQueryGenerator
 
 	private void addCastingQueryFragment(
 		final SQLGeneralQueryFormatter queryFormatter,
-		int baseIndentationLevel,
-		final CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration) {
+		final int baseIndentationLevel,
+		final DataSetFieldConfiguration dataSetFieldConfiguration) {
 		
 		String cleanedTableFieldName
-			= tableFieldCleaningConfiguration.getCleanedTableFieldName();
+			= dataSetFieldConfiguration.getCleanFieldName();
 		RIFDataTypeInterface rifDataType
-			= tableFieldCleaningConfiguration.getRIFDataType();
+			= dataSetFieldConfiguration.getRIFDataType();
 		
 		/*
 		 * makes this kind of fragment:
@@ -1314,7 +1316,7 @@ public final class PostgresCleaningStepQueryGenerator
 	}
 		
 	public String generateDropCastingTableQuery(
-		final CleanWorkflowConfiguration tableCleaningConfiguration) {
+		final DataSetConfiguration dataSetConfiguration) {
 
 		SQLDeleteTableQueryFormatter queryFormatter
 			= new SQLDeleteTableQueryFormatter();
@@ -1324,7 +1326,7 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.addUnderline();
 		String cleanedTableName
 			= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(
-				tableCleaningConfiguration.getCoreDataSetName());
+					dataSetConfiguration.getName());
 		queryFormatter.setTableToDelete(cleanedTableName);
 		
 		return queryFormatter.generateQuery();

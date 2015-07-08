@@ -1,15 +1,17 @@
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.DataSet;
 
-
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifServices.fileFormats.XMLUtility;
 
 import java.util.ArrayList;
+import java.io.IOException;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import java.io.IOException;
 
 /**
  *
@@ -62,7 +64,7 @@ import java.io.IOException;
  */
 
 public final class DataSetConfigurationHandler 
-	extends AbstractWorkflowConfigurationHandler {
+	extends AbstractDataLoaderConfigurationHandler {
 
 	// ==========================================
 	// Section Constants
@@ -71,23 +73,73 @@ public final class DataSetConfigurationHandler
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	ArrayList<DataSet> dataSets;
-	private DataSet currentDataSet;
+	private DataSetFieldConfigurationHandler dataSetFieldConfigurationHandler;
+	
+	private ArrayList<DataSetConfiguration> dataSetConfigurations;
+	
+	private DataSetConfiguration currentDataSetConfiguration;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public DataSetConfigurationHandler() {
-		setPluralRecordName("data_sources");
-		setSingularRecordName("data_source");
 		
-		dataSets = new ArrayList<DataSet>();
-	}
+		dataSetFieldConfigurationHandler
+			= new DataSetFieldConfigurationHandler();
+		
+		dataSetConfigurations = new ArrayList<DataSetConfiguration>();
 
+		setPluralRecordName("data_set_configurations");		
+		setSingularRecordName("data_set_configuration");
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	public ArrayList<DataSetConfiguration> getDataSetConfigurations() {
+		return dataSetConfigurations;
+	}
+	
+	public void writeXML(
+		final ArrayList<DataSetConfiguration> dataSetConfigurations) 
+		throws IOException {
+		
+		XMLUtility xmlUtility = getXMLUtility();
+		xmlUtility.writeRecordStartTag(getPluralRecordName());
+		
+		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
+			xmlUtility.writeRecordStartTag(getSingularRecordName());
+			
+			xmlUtility.writeField(
+				getSingularRecordName(), 
+				"name", 
+				dataSetConfiguration.getName());
+						
+			xmlUtility.writeField(
+				getSingularRecordName(), 
+				"description", 
+				dataSetConfiguration.getName());
+
+			xmlUtility.writeField(
+				getSingularRecordName(), 
+				"rif_schema_area", 
+				dataSetConfiguration.getRIFSchemaArea().getCode());
+			
+			xmlUtility.writeField(
+				getSingularRecordName(), 
+				"current_workflow_state", 
+				dataSetConfiguration.getCurrentWorkflowState().getStateName());
+			
+			ArrayList<DataSetFieldConfiguration> fieldConfigurations
+				= dataSetConfiguration.getFieldConfigurations();
+			dataSetFieldConfigurationHandler.writeXML(fieldConfigurations);
+			
+			xmlUtility.writeRecordEndTag(getSingularRecordName());			
+		}
+		
+		xmlUtility.writeRecordEndTag(getPluralRecordName());
+	}
 
 	@Override
 	public void startElement(
@@ -98,11 +150,40 @@ public final class DataSetConfigurationHandler
 		throws SAXException {
 
 		if (isPluralRecordName(qualifiedName) == true) {
-			dataSets.clear();
 			activate();
 		}
 		else if (isSingularRecordName(qualifiedName) == true) {
-			currentDataSet = DataSet.newInstance();
+			currentDataSetConfiguration
+				= DataSetConfiguration.newInstance();
+		}
+		else if (isDelegatedHandlerAssigned()) {
+			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
+				= getCurrentDelegatedHandler();
+			currentDelegatedHandler.startElement(
+				nameSpaceURI, 
+				localName, 
+				qualifiedName, 
+				attributes);
+		}
+		else {
+			if (dataSetFieldConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
+				assignDelegatedHandler(dataSetFieldConfigurationHandler);				
+			}
+			
+			//delegate to a handler.  If not, then scan for fields relating to this handler
+			if (isDelegatedHandlerAssigned()) {
+
+				AbstractDataLoaderConfigurationHandler currentDelegatedHandler
+					= getCurrentDelegatedHandler();
+				currentDelegatedHandler.startElement(
+					nameSpaceURI, 
+					localName, 
+					qualifiedName, 
+					attributes);
+			}
+			else {
+				assert false;
+			}
 		}
 	}
 	
@@ -113,61 +194,48 @@ public final class DataSetConfigurationHandler
 		final String qualifiedName) 
 		throws SAXException {
 
-		if (isPluralRecordName(qualifiedName) == true) {
+		if (isPluralRecordName(qualifiedName)) {
 			deactivate();
 		}
-		else if (isSingularRecordName(qualifiedName) == true) {
-			dataSets.add(currentDataSet);
-		}
-		else if (equalsFieldName("name", qualifiedName) == true) {
-			currentDataSet.setCoreDataSetName(getCurrentFieldValue());
-		}
-		else if (equalsFieldName("file", qualifiedName) == true) {
-			currentDataSet.setSourceName(getCurrentFieldValue());					
-		}
-	}
-	
-	
-	public ArrayList<DataSet> getdataSets() {
-		return dataSets;		
-	}
-	
-	public String getHTML(
-		final DataSet dataSet) {
+		else if (isDelegatedHandlerAssigned()) {
+			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
+				= getCurrentDelegatedHandler();
+			currentDelegatedHandler.endElement(
+				nameSpaceURI, 
+				localName, 
+				qualifiedName);
 			
-		return "";
-	}	
-	
-	
-	public String getHTML(
-		final ArrayList<DataSet> dataSets) {
+			if (currentDelegatedHandler.isActive() == false) {
+				if (currentDelegatedHandler == dataSetFieldConfigurationHandler) {
+					ArrayList<DataSetFieldConfiguration> fieldConfigurations
+						=  dataSetFieldConfigurationHandler.getDataSetFieldConfigurations();
+					currentDataSetConfiguration.setFieldConfigurations(fieldConfigurations);
+				}				
+			}
+			else {
+				assert false;
+			}				
 			
-		return "";
-	}	
-	
-	public void writeXML(final ArrayList<DataSet> dataSets) 
-		throws IOException {
-		
-		this.dataSets = dataSets;
-		
-		XMLUtility xmlUtility = getXMLUtility();
-		xmlUtility.writeRecordListStartTag("data_sources");
-		for (DataSet dataSet : dataSets) {
-			xmlUtility.writeRecordStartTag("data_source");
-			xmlUtility.writeField(
-				"data_source", 
-				"name", 
-				dataSet.getCoreDataSetName());
-			xmlUtility.writeField(
-				"data_source", 
-				"file", 
-				dataSet.getSourceName());
-			xmlUtility.writeRecordEndTag("data_source");
+			//handler just finished				
+			unassignDelegatedHandler();	
 		}
-		
-		xmlUtility.writeRecordListEndTag("data_sources");
-		
+		else if (equalsFieldName("name", qualifiedName)) {
+			currentDataSetConfiguration.setName(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("description", qualifiedName)) {
+			currentDataSetConfiguration.setDescription(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("rif_schema_area", qualifiedName)) {
+			RIFSchemaArea rifSchemaArea = RIFSchemaArea.valueOf(getCurrentFieldValue());
+			currentDataSetConfiguration.setRIFSchemaArea(rifSchemaArea);
+		}
+		else if (equalsFieldName("current_workflow_state", qualifiedName)) {
+			WorkflowState workflowState = WorkflowState.valueOf(getCurrentFieldValue());
+			currentDataSetConfiguration.setCurrentWorkflowState(workflowState);
+		}
 	}
+	
+	
 	
 	// ==========================================
 	// Section Errors and Validation

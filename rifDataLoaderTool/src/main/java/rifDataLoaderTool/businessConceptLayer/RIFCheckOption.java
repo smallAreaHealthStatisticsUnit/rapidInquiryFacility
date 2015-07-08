@@ -1,14 +1,15 @@
-package rifDataLoaderTool.test.clean;
+package rifDataLoaderTool.businessConceptLayer;
 
-import static org.junit.Assert.*;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
-import org.junit.Test;
+import java.util.ArrayList;
+
 
 /**
  *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -54,49 +55,59 @@ import org.junit.Test;
  *
  */
 
-public final class TestYear {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
-
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
-	public TestYear() {
-
+public enum RIFCheckOption {
+	PERCENT_EMPTY_PER_YEAR(
+		"rifCheckOption.percentEmptyPerYear.label",
+		"rifCheckOption.percentEmptyPerYear.description"),
+	PERCENT_EMPTY(
+		"rifCheckOption.percentEmpty.label",
+		"rifCheckOption.percentEmpty.description");
+		
+	private String nameProperty;
+	private String descriptionProperty;
+	
+	private RIFCheckOption(
+		final String nameProperty,
+		final String descriptionProperty) {
+		
+		this.nameProperty = nameProperty;
+		this.descriptionProperty = descriptionProperty;
 	}
-
-	@Test
-	public void test() {
-		
-		
-		
-		
-		fail("Not yet implemented");
+	
+	public String getName() {
+		String displayName
+			= RIFDataLoaderToolMessages.getMessage(nameProperty);
+		return displayName;
 	}
+	
+	public String getDescription() {
+		String displayName
+			= RIFDataLoaderToolMessages.getMessage(descriptionProperty);
+		return displayName;
+	}
+	
+	public ArrayList<RIFCheckOption> getAllCheckOptions() {
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
+		ArrayList<RIFCheckOption> allCheckOptions 
+			= new ArrayList<RIFCheckOption>();
+		allCheckOptions.add(PERCENT_EMPTY);
+		allCheckOptions.add(PERCENT_EMPTY_PER_YEAR);
+		
+		return allCheckOptions;
+	}
+	
+	public String[] getAllCheckOptionNames() {
 
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
-
+		ArrayList<String> allCheckOptionNames 
+			= new ArrayList<String>();
+		allCheckOptionNames.add(PERCENT_EMPTY.getName());
+		allCheckOptionNames.add(PERCENT_EMPTY_PER_YEAR.getName());
+	
+		String[] results
+			= allCheckOptionNames.toArray(new String[0]);
+		return results;
+	}
+	
 }
 
 

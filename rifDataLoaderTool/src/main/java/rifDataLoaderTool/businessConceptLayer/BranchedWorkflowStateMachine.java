@@ -1,5 +1,6 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import java.util.ArrayList;
 
 /**
  *
@@ -51,7 +52,7 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public class OptimiseWorkflowFieldConfiguration {
+public class BranchedWorkflowStateMachine {
 
 	// ==========================================
 	// Section Constants
@@ -60,99 +61,83 @@ public class OptimiseWorkflowFieldConfiguration {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private DataSet dataSet;
-	private String fieldName;
+	private int currentIndex;
+	private ArrayList<WorkflowState> workFlowStates;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private OptimiseWorkflowFieldConfiguration() {
-		DataSet dataSet = DataSet.newInstance();
-		
-		initialise(
-			dataSet, 
-			"");
-	}
+	public BranchedWorkflowStateMachine() {
 
-	private OptimiseWorkflowFieldConfiguration(
-		final DataSet dataSet,
-		final String fieldName) {
-				
-		initialise(
-			dataSet, 
-			fieldName);
-	}	
-	
-	private void initialise(
-		final DataSet dataSet,
-		final String fieldName) {
-			
-		this.dataSet = dataSet;
-		this.fieldName = fieldName;
-	}	
-	
-	public static OptimiseWorkflowFieldConfiguration newInstance() {
-		DataSet dataSet = DataSet.newInstance();
-
-		OptimiseWorkflowFieldConfiguration optimiseWorkflowFieldConfiguration
-			= new OptimiseWorkflowFieldConfiguration(
-				dataSet,
-				"");
-		return optimiseWorkflowFieldConfiguration;
-	}
-
-	public static OptimiseWorkflowFieldConfiguration newInstance(
-		final DataSet dataSet,
-		final String fieldName) {
-		
-		OptimiseWorkflowFieldConfiguration optimiseWorkflowFieldConfiguration
-			= new OptimiseWorkflowFieldConfiguration(
-				dataSet,
-				"");
-		return optimiseWorkflowFieldConfiguration;
 	}
 	
-	public static OptimiseWorkflowFieldConfiguration createCopy(
-		final OptimiseWorkflowFieldConfiguration originalOptimiseWorkflowFieldConfiguration) {
-			
-			DataSet originalDataSet
-				= originalOptimiseWorkflowFieldConfiguration.getDataSet();
-			DataSet cloneDataSet
-				= DataSet.createCopy(originalDataSet);
-						
-			OptimiseWorkflowFieldConfiguration cloneOptimiseWorkflowFieldConfiguration
-				= new OptimiseWorkflowFieldConfiguration();
-			cloneOptimiseWorkflowFieldConfiguration.setDataSet(cloneDataSet);
-			
-			String originalFieldName
-				= originalOptimiseWorkflowFieldConfiguration.getFieldName();
-			cloneOptimiseWorkflowFieldConfiguration.setFieldName(originalFieldName);
-			
-			return cloneOptimiseWorkflowFieldConfiguration;
-		}	
+	public void startWorkflow() {
+		workFlowStates.add(WorkflowState.CONVERT);
+	}
+	
+	public void addSplitStep() {
+		workFlowStates.add(WorkflowState.SPLIT);
+	}
+	
+	public void addCombineStep() {
+		workFlowStates.add(WorkflowState.COMBINE);		
+	}
+	
+	public void finishWorkflow() {
+		workFlowStates.add(WorkflowState.OPTIMISE);		
+	}
 	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public DataSet getDataSet() {
-		return dataSet;
+	public void first() {
+		currentIndex = 0;
+		
 	}
 	
-	public void setDataSet(
-		final DataSet dataSet) {
+	public void previous() {
+		currentIndex--;
+		if (currentIndex < 0) {
+			currentIndex = 0;
+		}
+	}
+	
+	public void next() {
+		currentIndex++;
+		int numberOfWorkflowStates = workFlowStates.size();
+		if (currentIndex == numberOfWorkflowStates) {
+			currentIndex = numberOfWorkflowStates;
+		}
+	}
+	
+	public void last() {
+		currentIndex = workFlowStates.size() - 1;		
+	}
+	
+	public WorkflowState getCurrentWorkflowState() {
 
-		this.dataSet = dataSet;
+		return workFlowStates.get(currentIndex);
+	}
+	
+	public ArrayList<WorkflowState> getAllWorkStatesInOrder() {
+		return workFlowStates;
+	}	
+	
+	
+	public String[] getAllWorkStateNamesInOrder() {
+		ArrayList<String> allWorkflowStateNames
+			= new ArrayList<String>();
+		for (WorkflowState workFlowState : workFlowStates) {
+			allWorkflowStateNames.add(workFlowState.getStateName());			
+		}
+		String[] results 
+			= allWorkflowStateNames.toArray(new String[0]);
+		return results;
+		
 	}
 
-	public String getFieldName() {
-		return fieldName;
-	}
-
-	public void setFieldName(String fieldName) {
-		this.fieldName = fieldName;
-	}
 	
 	// ==========================================
 	// Section Errors and Validation

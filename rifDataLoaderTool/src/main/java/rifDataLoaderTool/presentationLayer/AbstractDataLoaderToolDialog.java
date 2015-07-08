@@ -1,7 +1,7 @@
 package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
-import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
 import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifServices.businessConceptLayer.User;
@@ -123,7 +123,7 @@ public abstract class AbstractDataLoaderToolDialog
 		return session.getUser();
 	}
 	
-	protected RIFDataLoaderServiceAPI getService() {
+	protected DataLoaderServiceAPI getService() {
 		return session.getService();
 	}
 	

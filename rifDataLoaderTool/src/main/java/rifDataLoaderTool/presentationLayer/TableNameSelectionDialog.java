@@ -3,7 +3,7 @@ package rifDataLoaderTool.presentationLayer;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
-import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
 import rifGenericLibrary.presentationLayer.RIFGenericUIMessages;
@@ -317,7 +317,7 @@ public final class TableNameSelectionDialog
 	//Interface: Caret Listener
 	public void caretUpdate(CaretEvent event) {
 
-		RIFDataLoaderServiceAPI service
+		DataLoaderServiceAPI service
 			= session.getService();
 		User currentUser
 			= session.getUser();

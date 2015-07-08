@@ -1,12 +1,13 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import java.text.Collator;
 
 /**
- * Describes the methods that are expected to be supported in vendor-specific code generators
- * involved with loading new data sources.
+ *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -52,14 +53,62 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public interface LoadWorkflowQueryGeneratorAPI {
-
-	public String generateLoadTableQuery(
-		final DataSetConfiguration dataSetConfiguration);
-
-	public String generateDropLoadTableQuery(
-		final DataSetConfiguration dataSetConfiguration);
+public enum FieldPurpose {
+	COVARIATE(
+		"covariate", 
+		"fieldPurpose.covariate"), 
+	GEOGRAPHICAL_RESOLUTION(
+		"geographical_resolution", 
+		"fieldPurpose.geograpicalResolution"), 
+	HEALTH_CODE(
+		"health_code",
+		"fieldPurpose.healthCode"),
+	OTHER(
+		"other",
+		"fieldPurpose.other");
 	
+	private String code;
+	private String propertyName;
+	
+	private FieldPurpose(
+		final String code, 
+		final String propertyName) {
+		
+		this.code = code;
+		this.propertyName = propertyName;
+	}
+	
+	public String getCode() {
+		return code;
+	}
+	
+	public String getName() {
+		String name 
+			= RIFDataLoaderToolMessages.getMessage(propertyName);
+		return name;
+	}
+	
+	public static FieldPurpose getValueFromName(
+		final String code) {
+		
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		if (collator.equals(COVARIATE.getCode()) == true) {
+			return COVARIATE;
+		}
+		else if (collator.equals(GEOGRAPHICAL_RESOLUTION.getCode()) == true) {
+			return GEOGRAPHICAL_RESOLUTION;
+		}
+		else if (collator.equals(HEALTH_CODE.getCode()) == true) {
+			return HEALTH_CODE;
+		}
+		else if (collator.equals(OTHER.getCode()) == true) {
+			return OTHER;
+		}
+		else {
+			assert false;
+			return null;
+		}		
+	}
 	
 }
 

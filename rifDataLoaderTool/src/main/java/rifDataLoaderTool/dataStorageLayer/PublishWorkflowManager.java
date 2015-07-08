@@ -90,21 +90,21 @@ public final class PublishWorkflowManager
 
 	public void publishConfiguration(
 		final Connection connection,
-		final PublishWorkflowConfiguration publishWorkflowConfiguration)
+		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 	
 		//validate parameters
-		publishWorkflowConfiguration.checkErrors();
+		dataSetConfiguration.checkErrors();
 			
 		String coreDataSetName 
-			= publishWorkflowConfiguration.getCoreDataSetName();
+			= dataSetConfiguration.getName();
 		
+		/*
 		PreparedStatement statement = null;
 		try {
-			establishTableAccessPrivileges(
-				connection,
-				publishWorkflowConfiguration.getCoreDataSetName(),
-				publishWorkflowConfiguration.getRIFUserRoleName());
+
+			//@TODO later
+			
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
@@ -119,7 +119,9 @@ public final class PublishWorkflowManager
 		}
 		finally {
 			SQLQueryUtility.close(statement);
-		}		
+		}
+		
+		*/
 	}
 	
 	public void establishTableAccessPrivileges(

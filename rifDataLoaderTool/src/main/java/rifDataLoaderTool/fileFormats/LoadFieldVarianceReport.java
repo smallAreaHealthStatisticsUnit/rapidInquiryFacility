@@ -1,15 +1,12 @@
-package rifDataLoaderTool.test.clean;
+package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.DataSet;
-import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
-import rifDataLoaderTool.test.AbstractRIFDataLoaderTestCase;
-import rifDataLoaderTool.test.DummyDataLoaderGenerator;
-import rifServices.system.RIFServiceException;
-import rifServices.businessConceptLayer.User;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import rifGenericLibrary.presentationLayer.HTMLUtility;
 
+import java.io.ByteArrayOutputStream;
 
 /**
  *
@@ -61,8 +58,7 @@ import static org.junit.Assert.*;
  *
  */
 
-public final class TestDataSourceFeatures 
-	extends AbstractRIFDataLoaderTestCase {
+public final class LoadFieldVarianceReport {
 
 	// ==========================================
 	// Section Constants
@@ -71,18 +67,12 @@ public final class TestDataSourceFeatures
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	
-	private User testUser;
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public TestDataSourceFeatures() {
-
-		DummyDataLoaderGenerator dummyDataGenerator
-			= new DummyDataLoaderGenerator();
-
-		testUser = dummyDataGenerator.createTestUser();
+	public LoadFieldVarianceReport() {
 
 	}
 
@@ -90,48 +80,67 @@ public final class TestDataSourceFeatures
 	// Section Accessors and Mutators
 	// ==========================================
 
-	@Test
-	public void test1() {
+	/*
+	 * Field variance reports should only be used during the cleaning step.
+	 * In this case, we want to examine the variance
+	 */
+	public String getHTML(
+		final DataSetFieldConfiguration dataSetFieldConfiguration,
+		final String[][] varianceData) {
 		
-		try {
-			DataLoaderService dataLoaderService
-				= getDataLoaderService();
-			dataLoaderService.clearAlldataSets(testUser);
-			
-			DataSet originalDataSet
-				= DataSet.newInstance(
-					"hes_2001",
-					false,
-					"HES file hes2001.csv", 
-					"kev");
-			dataLoaderService.registerdataSet(
-				testUser, 
-				originalDataSet);
-			
-			DataSet retrieveDataSet
-				= dataLoaderService.getdataSetFromCoreTableName(
-					testUser, 
-					"hes_2001");
-			
-			assertEquals(
-				originalDataSet.getCoreDataSetName(), 
-				retrieveDataSet.getCoreDataSetName());
-			
-			assertEquals(
-				originalDataSet.getSourceName(),
-				retrieveDataSet.getSourceName());
-			
-			assertEquals(
-				originalDataSet.isDerivedFromExistingTable(),
-				retrieveDataSet.isDerivedFromExistingTable());
-		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printStackTrace();
-		}
+		HTMLUtility htmlUtility = new HTMLUtility();
+    	ByteArrayOutputStream outputStream
+    		= new ByteArrayOutputStream();	
+    	htmlUtility.initialise(outputStream, "UTF-8");
+		
+		
+		htmlUtility.beginDocument();
+		htmlUtility.beginBody();
+		//write report title
 
+		String coreDataSetName
+			= dataSetFieldConfiguration.getCoreDataSetName();
+				
+		String loadTableName
+			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
+		String fieldOfInterest
+			= dataSetFieldConfiguration.getLoadFieldName();
+		String reportTitle
+			= RIFDataLoaderToolMessages.getMessage(
+				"fieldVarianceReport.title",
+				loadTableName,
+				fieldOfInterest);
+		htmlUtility.writeHeader(1, reportTitle);
+
+		
+		htmlUtility.beginTable();
+
+		//write header row
+		htmlUtility.beginRow();
+		String valueFieldName
+			= RIFDataLoaderToolMessages.getMessage("fieldVarianceReport.value.label");
+		htmlUtility.writeBoldColumnValue(valueFieldName);
+		String frequencyFieldName
+			= RIFDataLoaderToolMessages.getMessage("fieldVarianceReport.frequency.label");
+		htmlUtility.writeBoldColumnValue(frequencyFieldName);
+		htmlUtility.endRow();
+		
+		//write data
+		for (int i = 0; i < varianceData.length; i++) {
+			htmlUtility.beginRow();
+			htmlUtility.writeColumnValue(varianceData[i][0]);
+			htmlUtility.writeColumnValue(varianceData[i][1]);
+			htmlUtility.endRow();
+		}
+				
+		htmlUtility.endTable();
+		
+		
+		htmlUtility.endBody();
+		htmlUtility.endDocument();
+		
+		return htmlUtility.getHTML();
 	}
-	
-	
 	
 	// ==========================================
 	// Section Errors and Validation

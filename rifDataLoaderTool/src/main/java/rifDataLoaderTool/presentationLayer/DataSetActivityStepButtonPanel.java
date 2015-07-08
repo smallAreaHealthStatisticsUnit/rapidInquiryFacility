@@ -1,8 +1,8 @@
 package rifDataLoaderTool.presentationLayer;
 
 
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.system.RIFDataLoaderActivityStep;
 
 
 
@@ -81,7 +81,7 @@ public final class DataSetActivityStepButtonPanel {
 	// Section Properties
 	// ==========================================
 	
-	private RIFDataLoaderActivityStep currentActivityStep;
+	private WorkflowState currentActivityStep;
 	
 	private JPanel panel;
 	
@@ -237,7 +237,7 @@ public final class DataSetActivityStepButtonPanel {
 	}
 	
 	public void setCurrentActivityStep(
-		final RIFDataLoaderActivityStep currentActivityStep) {
+		final WorkflowState currentActivityStep) {
 
 		//current activity step represents the state of activity that was most
 		//recently completed.  For example "LOAD" means a user finished loading a data
@@ -257,7 +257,7 @@ public final class DataSetActivityStepButtonPanel {
 		
 		
 		this.currentActivityStep = currentActivityStep;
-		if (currentActivityStep == RIFDataLoaderActivityStep.LOAD) {
+		if (currentActivityStep == WorkflowState.LOAD) {
 			//data set has been loaded 
 						
 			cleanButton.setBackground(REQUIRED_STEP_COLOUR);
@@ -277,7 +277,7 @@ public final class DataSetActivityStepButtonPanel {
 			publishButton.setBackground(REQUIRED_STEP_COLOUR);
 			publishButton.setEnabled(false);
 		}
-		else if (currentActivityStep == RIFDataLoaderActivityStep.CLEAN) {
+		else if (currentActivityStep == WorkflowState.CLEAN) {
 			
 			
 			cleanButton.setBackground(DONE_STEP_COLOUR);
@@ -299,7 +299,7 @@ public final class DataSetActivityStepButtonPanel {
 			
 			
 		}
-		else if (currentActivityStep == RIFDataLoaderActivityStep.CONVERT) {
+		else if (currentActivityStep == WorkflowState.CONVERT) {
 			
 			
 			cleanButton.setBackground(DONE_STEP_COLOUR);
@@ -323,7 +323,7 @@ public final class DataSetActivityStepButtonPanel {
 			publishButton.setEnabled(false);
 			
 		}
-		else if (currentActivityStep == RIFDataLoaderActivityStep.COMBINE) {
+		else if (currentActivityStep == WorkflowState.COMBINE) {
 
 			cleanButton.setBackground(DONE_STEP_COLOUR);
 			
@@ -343,7 +343,7 @@ public final class DataSetActivityStepButtonPanel {
 			publishButton.setEnabled(false);
 			
 		}
-		else if (currentActivityStep == RIFDataLoaderActivityStep.OPTIMISE) {
+		else if (currentActivityStep == WorkflowState.OPTIMISE) {
 
 			cleanButton.setBackground(DONE_STEP_COLOUR);
 			
@@ -364,7 +364,7 @@ public final class DataSetActivityStepButtonPanel {
 
 			
 		}
-		else if (currentActivityStep == RIFDataLoaderActivityStep.OPTIMISE) {
+		else if (currentActivityStep == WorkflowState.OPTIMISE) {
 
 
 			cleanButton.setBackground(DONE_STEP_COLOUR);
@@ -385,7 +385,7 @@ public final class DataSetActivityStepButtonPanel {
 			publishButton.setEnabled(false);			
 
 		}
-		else if (currentActivityStep == RIFDataLoaderActivityStep.CHECK) {
+		else if (currentActivityStep == WorkflowState.CHECK) {
 
 			cleanButton.setBackground(DONE_STEP_COLOUR);
 			
@@ -405,7 +405,7 @@ public final class DataSetActivityStepButtonPanel {
 			publishButton.setEnabled(false);			
 			
 		}
-		else if (currentActivityStep == RIFDataLoaderActivityStep.PUBLISH) {
+		else if (currentActivityStep == WorkflowState.PUBLISH) {
 			
 		}
 		

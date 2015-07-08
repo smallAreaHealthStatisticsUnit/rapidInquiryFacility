@@ -5,7 +5,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderServiceAPI;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
 import rifServices.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
 
@@ -157,6 +157,9 @@ public final class DataSetConfigurationTableModel
 			= dataSetConfigurations.get(rowIndex);
 
 		String result = null;
+		
+		//@TODO
+		/*
 		if (columnIndex == CREATION_DATE_COLUMN) {
 			result = dataSetConfiguration.getCreationDatePhrase();
 		}
@@ -167,26 +170,27 @@ public final class DataSetConfigurationTableModel
 			result = dataSetConfiguration.getDescription();
 		}
 		else if (columnIndex == LAST_ACTIVITY_STEP_COMPLETED_COLUMN) {
-			result = dataSetConfiguration.getLastActivityStepPerformed().getStepName();
+			result = dataSetConfiguration.getCurrentWorkflowState().getStateName();
 		}
 		else {
 			//this should never happen
 			assert(false);
 		}
-
+		*/
 		return result;
 	}
 
 	public void updateDataSetConfigurations() 
 		throws RIFServiceException {
 		
-		RIFDataLoaderServiceAPI service
+		DataLoaderServiceAPI service
 			= session.getService();
 		User currentUser
 			= session.getUser();
 		
-		dataSetConfigurations
-			= service.getDataSetConfigurations(currentUser);
+		//@TODO
+		//dataSetConfigurations
+		//	= service.getDataSetConfigurations(currentUser);
 		fireTableDataChanged();
 	}
 	
@@ -194,15 +198,16 @@ public final class DataSetConfigurationTableModel
 		final String searchPhrase) 
 		throws RIFServiceException {
 		
-		RIFDataLoaderServiceAPI service
+		DataLoaderServiceAPI service
 			= session.getService();
 		User currentUser
 			= session.getUser();
 		
-		dataSetConfigurations
-			= service.getDataSetConfigurations(
-				currentUser, 
-				searchPhrase);		
+		//TODO
+		//dataSetConfigurations
+		//	= service.getDataSetConfigurations(
+		//		currentUser, 
+		//		searchPhrase);		
 		fireTableDataChanged();
 	}
 	
@@ -223,17 +228,23 @@ public final class DataSetConfigurationTableModel
 		}
 		
 		//now remove items from list
-		RIFDataLoaderServiceAPI service
+		DataLoaderServiceAPI service
 			= session.getService();
 		User currentUser
 			= session.getUser();
 	
+		/*
+		 * @TODO 
+		 */
+		/*
 		service.deleteDataSetConfigurations(
 			currentUser, 
 			dataSetConfigurationsToDelete);
 
 		dataSetConfigurations
 			= service.getDataSetConfigurations(currentUser);
+		*/
+		
 		fireTableDataChanged();				
 	}
 	

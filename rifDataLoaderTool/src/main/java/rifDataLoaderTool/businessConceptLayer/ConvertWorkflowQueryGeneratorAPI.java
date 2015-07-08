@@ -54,7 +54,7 @@ package rifDataLoaderTool.businessConceptLayer;
 
 public interface ConvertWorkflowQueryGeneratorAPI {
 	public String generateConvertTableQuery(
-		final ConvertWorkflowConfiguration convertWorkflowConfiguration);
+		final DataSetConfiguration dataSetConfiguration);
 	
 }
 

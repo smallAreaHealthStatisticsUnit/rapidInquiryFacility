@@ -3,12 +3,13 @@ package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 import java.util.ArrayList;
 
 import rifDataLoaderTool.businessConceptLayer.CleaningRule;
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
 
 
 /**
- * The base class for classes which implement the {@link rifDataLoaderTool.businessConceptLayer.rifDataTypes.RIFDataTypeInterface} 
+ * The base class for classes which implement the {@link rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface} 
  * interface. The RIF Data Loader Tool recognises a hierarchy of Data Types it associates with table columns 
  * in the data sources (see @link rifDataLoaderTool.businessConceptLayer.dataSet}).  By associating a RIF 
  * data type with each column, the Data Loader Tool is able to apply default cleaning behaviour and default 

@@ -1,13 +1,14 @@
-package rifDataLoaderTool.test.clean;
+package rifDataLoaderTool.businessConceptLayer;
 
 
-import junit.framework.TestCase;
+import java.util.ArrayList;
+
 
 /**
  *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -53,8 +54,7 @@ import junit.framework.TestCase;
  *
  */
 
-public final class TestCleanNumeratorData 
-	extends TestCase {
+public class LinearWorkflow {
 
 	// ==========================================
 	// Section Constants
@@ -63,69 +63,102 @@ public final class TestCleanNumeratorData
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String createNumeratorTableQuery;
-	private String deleteNumeratorTableQuery;
+	private LinearWorkflowStateMachine stateMachine;
+	private WorkflowState startWorkflowState;
+	private WorkflowState stopWorkflowState;
+	
+	private ArrayList<DataSetConfiguration> dataSetConfigurations;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public TestCleanNumeratorData() {
-		//createNumeratorTable
+	private LinearWorkflow() {
+		stateMachine = LinearWorkflowStateMachine.newInstance();
+		startWorkflowState = WorkflowState.LOAD;
+		stopWorkflowState = WorkflowState.PUBLISH;
 		
-		
+		dataSetConfigurations = new ArrayList<DataSetConfiguration>();
+	}
+
+	public static LinearWorkflow newInstance() {
+		LinearWorkflow linearWorkflow = new LinearWorkflow();
+				
+		return linearWorkflow;
 	}
 	
-
-
+	
+	public static LinearWorkflow createCopy(
+		final LinearWorkflow originalWorkflow) {
+		
+		LinearWorkflow cloneWorkflow = new LinearWorkflow();
+		
+		
+		return cloneWorkflow;
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	private void populate() {
-		StringBuilder query = new StringBuilder();
-		query.append("CREATE TABLE uncleaned_numerator_table (");
-		query.append("row_number INTEGER,");
-		query.append("data_source VARCHAR(30),");
-		query.append("nhs_number VARCHAR(30),");
-		query.append("birth_date VARCHAR(30),");
-		query.append("postal_code VARCHAR(30),");
-		query.append("age VARCHAR(30),");
-		query.append("sex VARCHAR(30),");
-		query.append("level1 VARCHAR(30),");
-		query.append("level2 VARCHAR(30),");
-		query.append("level3 VARCHAR(30),");
-		query.append("level4 VARCHAR(30),");
-		query.append("icd_1 VARCHAR(30),");
-		query.append("icd_2 VARCHAR(30),");
-		query.append("opcs_code_1 VARCHAR(30),");
-		query.append("total VARCHAR(30));");
+	public void resetWorkflow() {
+		stateMachine.first();
+	}
+	
+	public WorkflowState getCurrentWorkflowState() {
+		return stateMachine.getCurrentWorkflowState();
+	}
+	
+	public boolean hasNext() {
+		WorkflowState currentWorkflowState
+			= getCurrentWorkflowState();
+		
+		if (currentWorkflowState == stopWorkflowState) {
+			return false;
+		}
+		return true;
+	}
+	
+	public void next() {
+		stateMachine.next();		
+	}
+	
+	public ArrayList<DataSetConfiguration> getDataSetConfigurations() {
+		return dataSetConfigurations;
+	}
+	
+	public void addDataSetConfiguration(
+		final DataSetConfiguration dataSetConfiguration) {
+		
+		dataSetConfigurations.add(dataSetConfiguration);
+	}
 
-		//return query.toString();
+	public void setDataSetConfigurations(
+		final ArrayList<DataSetConfiguration> dataSetConfigurations) {
+		
+		this.dataSetConfigurations = dataSetConfigurations;
 	}
 		
-	private String getDestroyTableQuery() {
-		StringBuilder query = new StringBuilder();
-		query.append("DROP TABLE ");
-		query.append("uncleaned_numerator_table");
-		query.append(";");
-		
-		return query.toString();
+	public WorkflowState getStartWorkflowState() {
+		return startWorkflowState;
 	}
 	
-	public void test1() {
-		
-		
-		
-		
-		RawTableGenerator rawTableGenerator = new RawTableGenerator();
-		rawTableGenerator.addFieldName("age");
-		
-		
-		
+	public void setStartWorkflowState(
+		final WorkflowState startWorkflowState) {
+
+		this.startWorkflowState = startWorkflowState;
 	}
 	
-	
+	public WorkflowState getStopWorkflowState() {
+		return stopWorkflowState;
+	}
+
+	public void setStopWorkflowState(
+		final WorkflowState stopWorkflowState) {
+
+		this.stopWorkflowState = stopWorkflowState;
+	}
+
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

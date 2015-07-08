@@ -4,6 +4,7 @@ package rifDataLoaderTool.dataStorageLayer;
 import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.postgresql.*;
+import rifServices.businessConceptLayer.AbstractRIFConcept;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.AbstractRIFService;
@@ -13,12 +14,7 @@ import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.dataStorageLayer.RIFServiceResources;
 import rifServices.dataStorageLayer.SQLConnectionManager;
-
-
-
-
-
-
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -33,16 +29,16 @@ import java.util.Date;
  * to them while the method is executing.
  * </li>
  * <li>
- * if the user making the request has been black listed because of a previous security incident, return
+ * if the rifManager making the request has been black listed because of a previous security incident, return
  * as soon as possible.
  * </li>
  * <li>
  * check for any null parameter values
  * </li>
  * <li>
- * check for any security violations that could occur, either in the user parameter object,
+ * check for any security violations that could occur, either in the rifManager parameter object,
  * or any text field value of any business object. If any security violation is detected, log it and
- * black list the user until further notice.
+ * black list the rifManager until further notice.
  * </li>
  * <li>
  * audit the attempt to perform the method operation
@@ -111,7 +107,7 @@ import java.util.Date;
 
 public final class DataLoaderService 
 	extends AbstractRIFService
-	implements RIFDataLoaderServiceAPI {
+	implements DataLoaderServiceAPI {
 	
 	// ==========================================
 	// Section Constants
@@ -127,11 +123,13 @@ public final class DataLoaderService
 	
 	private RIFServiceResources rifServiceResources;
 
-	private UserManager userManager;
+	private UserManager rifManagerManager;
 	
 	private DataSetManager dataSetManager;
 	private LoadWorkflowManager loadWorkflowManager;
 	private CleanWorkflowManager cleanWorkflowManager;
+	private CombineWorkflowManager combineWorkflowManager;
+	private SplitWorkflowManager splitWorkflowManager;
 	private ConvertWorkflowManager convertWorkflowManager;
 	private OptimiseWorkflowManager optimiseWorkflowManager;
 	
@@ -151,65 +149,8 @@ public final class DataLoaderService
 		dataSetConfigurations 
 			= new ArrayList<DataSetConfiguration>();
 		
-		DataSetConfiguration exampleDataSetConfiguration1
-			= new DataSetConfiguration();
-		exampleDataSetConfiguration1.setName("klg_cancer_study_2013");
-		exampleDataSetConfiguration1.setDescription("An investigation about various cancers");
-		exampleDataSetConfiguration1.setCreationDatePhrase("10-JUN-2013");
-		exampleDataSetConfiguration1.setLastActivityStepPerformed(RIFDataLoaderActivityStep.LOAD);
-		dataSetConfigurations.add(exampleDataSetConfiguration1);
-		
-		DataSetConfiguration exampleDataSetConfiguration2
-			= new DataSetConfiguration();
-		exampleDataSetConfiguration2.setName("ff_breathing_disorders");
-		exampleDataSetConfiguration2.setDescription("An investigation about respiratory problems.");
-		exampleDataSetConfiguration2.setCreationDatePhrase("10-OCT-2014");
-		exampleDataSetConfiguration2.setLastActivityStepPerformed(RIFDataLoaderActivityStep.CLEAN);
-		dataSetConfigurations.add(exampleDataSetConfiguration2);
-		
-		DataSetConfiguration exampleDataSetConfiguration3
-			= new DataSetConfiguration();
-		exampleDataSetConfiguration3.setName("js_dioxins_05082014");
-		exampleDataSetConfiguration3.setDescription("An investigation about respiratory problems.");
-		exampleDataSetConfiguration3.setCreationDatePhrase("05-AUG-2014");		
-		exampleDataSetConfiguration3.setLastActivityStepPerformed(RIFDataLoaderActivityStep.CONVERT);
-		dataSetConfigurations.add(exampleDataSetConfiguration3);
-
-		DataSetConfiguration exampleDataSetConfiguration4
-			= new DataSetConfiguration();
-		exampleDataSetConfiguration4.setName("asthma_data1");
-		exampleDataSetConfiguration4.setDescription("An investigation about asthma.");
-		exampleDataSetConfiguration4.setCreationDatePhrase("06-SEP-2012");		
-		exampleDataSetConfiguration4.setLastActivityStepPerformed(RIFDataLoaderActivityStep.COMBINE);
-		dataSetConfigurations.add(exampleDataSetConfiguration4);
-		
-		DataSetConfiguration exampleDataSetConfiguration5
-			= new DataSetConfiguration();
-		exampleDataSetConfiguration5.setName("asthma_data2");
-		exampleDataSetConfiguration5.setDescription("Another data set about asthma data.");
-		exampleDataSetConfiguration5.setCreationDatePhrase("07-OCT-2012");		
-		exampleDataSetConfiguration5.setLastActivityStepPerformed(RIFDataLoaderActivityStep.COMBINE);
-		dataSetConfigurations.add(exampleDataSetConfiguration5);
-		
-		
-		DataSetConfiguration exampleDataSetConfiguration6
-			= new DataSetConfiguration();
-		exampleDataSetConfiguration6.setName("cardiac_arrest_incidents_04052013");
-		exampleDataSetConfiguration6.setDescription("Another data set about heart attack incidents.");
-		exampleDataSetConfiguration6.setCreationDatePhrase("08-NOV-2013");		
-		exampleDataSetConfiguration6.setLastActivityStepPerformed(RIFDataLoaderActivityStep.OPTIMISE);
-		dataSetConfigurations.add(exampleDataSetConfiguration6);
-				
-		DataSetConfiguration exampleDataSetConfiguration7
-			= new DataSetConfiguration();
-		exampleDataSetConfiguration7.setName("lung_cancer_arrest_incidents_10112013");
-		exampleDataSetConfiguration7.setDescription("Another data set about lung cancer.");
-		exampleDataSetConfiguration7.setCreationDatePhrase("15-NOV-2013");		
-		exampleDataSetConfiguration7.setLastActivityStepPerformed(RIFDataLoaderActivityStep.CHECK);
-		dataSetConfigurations.add(exampleDataSetConfiguration7);
-
-		
 	}
+	
 	public void initialiseService() 
 		throws RIFServiceException {
 
@@ -221,11 +162,9 @@ public final class DataLoaderService
 		startupOptions = new RIFDataLoaderStartupOptions();
 		sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
 			
-		userManager = new UserManager();
+		rifManagerManager = new UserManager();
 		
-		dataSetManager = new DataSetManager();
-		
-
+		dataSetManager = new DataSetManager(startupOptions);
 		loadWorkflowManager
 			= new LoadWorkflowManager(
 				startupOptions);
@@ -241,6 +180,18 @@ public final class DataLoaderService
 			= new ConvertWorkflowManager(
 				startupOptions);
 		
+		combineWorkflowManager
+			= new CombineWorkflowManager(
+				startupOptions);
+				
+		splitWorkflowManager
+			= new SplitWorkflowManager(
+				startupOptions);
+		
+		optimiseWorkflowManager
+			= new OptimiseWorkflowManager(
+				startupOptions);
+				
 		checkWorkflowManager
 			= new CheckWorkflowManager(
 				startupOptions);
@@ -250,233 +201,46 @@ public final class DataLoaderService
 				startupOptions);
 	}
 	
+	public void shutdownService() 
+		throws RIFServiceException {
+		
+		//@TODO
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 	
 	public void login(
-		final String userID,
+		final String rifManagerID,
 		final String password)
 		throws RIFServiceException {
 		
 		sqlConnectionManager.login(
-			userID, 
+			rifManagerID, 
 			password);		
 	}
 		
 	public void logout(
-		final User user) 
+		final User rifManager) 
 		throws RIFServiceException {
 		
-		sqlConnectionManager.logout(user);
+		sqlConnectionManager.logout(rifManager);
 	}
 	
 	public void shutdown() throws RIFServiceException {
 		sqlConnectionManager.deregisterAllUsers();
 	}
 	
-	public void addUser(
-		final User _user,
-		final String password,
-		final RIFUserRole rifUserRole,
-		final Date _expirationDate)
-		throws RIFServiceException {
-				
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		Date expirationDate = new Date(_expirationDate.getTime()); 
-		
-		Connection connection = null;
-		try {
-			
-			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"addUser",
-				"user",
-				user);
-			fieldValidationUtility.checkNullMethodParameter(
-				"addUser",
-				"password",
-				password);
-			fieldValidationUtility.checkNullMethodParameter(
-				"addUser",
-				"rifUserRole",
-				rifUserRole);
-
-			//Check for security violations
-			validateUser(user);
-
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
-			String auditTrailMessage
-				= RIFDataLoaderToolMessages.getMessage("logging.addUser",
-					user.getUserID(),
-					user.getIPAddress());
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-		
-			//Assign pooled connection
-			connection 
-				= sqlConnectionManager.assignPooledWriteConnection(user);
-			userManager.addUser(
-				connection, 
-				user.getUserID(), 
-				password, 
-				rifUserRole, 
-				expirationDate);
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"addUser",
-				rifServiceException);
-		}		
-		finally {
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
-		}
-		
-	}
-
-	public void alterUser(
-		final User _user,
-		final String updatedPassword,
-		final RIFUserRole updatedRIFUserRole,
-		final Date _updatedExpirationDate) 
-		throws RIFServiceException {
-				
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		Date updatedExpirationDate = new Date(_updatedExpirationDate.getTime()); 
-
-		Connection connection = null;
-		try {
-	
-			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"alterUser",
-				"user",
-				user);
-			fieldValidationUtility.checkNullMethodParameter(
-				"alterUser",
-				"updatedPassword",
-				updatedPassword);
-			fieldValidationUtility.checkNullMethodParameter(
-				"alterUser",
-				"updatedRIFUserRole",
-				updatedRIFUserRole);
-
-			//Check for security violations
-			validateUser(user);
-
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
-			String auditTrailMessage
-				= RIFDataLoaderToolMessages.getMessage("logging.alterUser",
-					user.getUserID(),
-					user.getIPAddress());
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-
-			//Assign pooled connection
-			connection 
-				= sqlConnectionManager.assignPooledWriteConnection(user);
-			userManager.alterUser(
-				connection, 
-				user,
-				updatedPassword, 
-				updatedRIFUserRole, 
-				updatedExpirationDate);
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"alterUser",
-				rifServiceException);
-		}
-		finally {
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
-		}
-		
-	}
-		
-	public void deleteUser(
-		final User _user) 
-		throws RIFServiceException {
-		
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-
-		Connection connection = null;
-		try {
-	
-			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"deleteUser",
-				"user",
-				user);
-
-			//Check for security violations
-			validateUser(user);
-
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
-			String auditTrailMessage
-				= RIFDataLoaderToolMessages.getMessage("logging.deleteUser",
-					user.getUserID(),
-					user.getIPAddress());
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-
-			//Assign pooled connection
-			connection 
-				= sqlConnectionManager.assignPooledWriteConnection(user);
-			userManager.deleteUser(
-				connection, 
-				user);
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"deleteUser",
-				rifServiceException);
-		}
-		finally {
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
-		}
-		
-	}
-	
 	public ArrayList<DataSetConfiguration> getDataSetConfigurations(
-		final User user) 
+		final User rifManager) 
 		throws RIFServiceException {
 		
 		return dataSetConfigurations;
 	}
-	
-	
+		
 	public ArrayList<DataSetConfiguration> getDataSetConfigurations(
-		final User user,
+		final User rifManager,
 		final String searchPhrase) 
 		throws RIFServiceException {
 		
@@ -485,7 +249,7 @@ public final class DataLoaderService
 	}
 	
 	public boolean dataSetConfigurationExists(
-		final User user,
+		final User rifManager,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 
@@ -493,7 +257,7 @@ public final class DataLoaderService
 	}
 
 	public void deleteDataSetConfigurations(
-		final User user,
+		final User rifManager,
 		final ArrayList<DataSetConfiguration> dataSetConfigurationsToDelete) 
 		throws RIFServiceException {
 
@@ -502,14 +266,14 @@ public final class DataLoaderService
 		}		
 	}
 	
-	public void clearAlldataSets(
-		final User _user)  
+	public void clearAllDataSets(
+		final User _rifManager)  
 		throws RIFServiceException,
 		RIFServiceException {
 
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
 			return;
 		}
 
@@ -520,97 +284,97 @@ public final class DataLoaderService
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
 				"clearAlldataSets",
-				"user",
-				user);
+				"rifManager",
+				rifManager);
 
 			//Check for security violations
-			validateUser(user);
+			validateUser(rifManager);
 
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFDataLoaderToolMessages.getMessage("logging.clearAlldataSets",
-					user.getUserID(),
-					user.getIPAddress());
+					rifManager.getUserID(),
+					rifManager.getIPAddress());
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
 		
 			//Assign pooled connection
 			Connection connection 
-				= sqlConnectionManager.assignPooledWriteConnection(user);
+				= sqlConnectionManager.assignPooledWriteConnection(rifManager);
 			
-			dataSetManager.clearAlldataSets(connection);
+			dataSetManager.clearAllDataSets(connection);
 
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
+				rifManager, 
 				connection);			
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
-				user,
+				rifManager,
 				"clearAlldataSets",
 				rifServiceException);
 		}		
 	
 	}	
 		
-	public void registerdataSet(
-		final User _user,
-		final DataSet _dataSet)
-		throws RIFServiceException,
-		RIFServiceException {
+	public void registerDataSetConfiguration(
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration)
+		throws RIFServiceException {
 		
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
 			return;
 		}
-		DataSet dataSet 
-			= DataSet.createCopy(_dataSet);
+		
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
 
 		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
-				"registerdataSet",
-				"user",
-				user);
+				"registerDataSetConfiguration",
+				"rifManager",
+				rifManager);
 			fieldValidationUtility.checkNullMethodParameter(
-				"registerdataSet",
-				"dataSet",
-				dataSet);
+				"registerDataSetConfiguration",
+				"dataSetConfiguration",
+				dataSetConfiguration);
 			
 			//sortingOrder can be null, it just means that the
 			//order will be ascending lower limit
 		
 			//Check for security violations
-			validateUser(user);
-			dataSet.checkSecurityViolations();
+			validateUser(rifManager);
+			dataSetConfiguration.checkSecurityViolations();
 
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
-				= RIFDataLoaderToolMessages.getMessage("logging.registerdataSet",
-					user.getUserID(),
-					user.getIPAddress(),
-					dataSet.getDisplayName());
+				= RIFDataLoaderToolMessages.getMessage("logging.registerDataSet",
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName());
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
 
 			//Assign pooled connection
 			Connection connection 
-				= sqlConnectionManager.assignPooledWriteConnection(user);
+				= sqlConnectionManager.assignPooledWriteConnection(rifManager);
 			
-			dataSetManager.registerDataSet(
-				connection, 
-				dataSet);
+			dataSetManager.addDataSetConfiguration(
+				connection,
+				dataSetConfiguration);
 			
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
+				rifManager, 
 				connection);
 			
 		}
@@ -618,163 +382,87 @@ public final class DataLoaderService
 			rifServiceException.printStackTrace(System.out);
 			//Audit failure of operation
 			logException(
-				user,
+				rifManager,
 				"registerdataSet",
 				rifServiceException);
 		}		
 	}
 		
-	public DataSet getdataSetFromCoreTableName(
-		final User _user,
-		final String coreDataSetName)
-		throws RIFServiceException,
-		RIFServiceException {
-		
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
-			return null;
-		}
-		
-		DataSet result = null;
-		try {
-		
-			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getdataSetFromCoreTableName",
-				"user",
-				user);
-			fieldValidationUtility.checkNullMethodParameter(
-				"getdataSetFromCoreTableName",
-				"coreDataSetName",
-				coreDataSetName);
-			
-			
-			//Check for security violations
-			validateUser(user);
-			fieldValidationUtility.checkMaliciousMethodParameter(
-				"getdataSetFromCoreTableName", 
-				"coreDataSetName", 
-				coreDataSetName);
-			
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
-			String auditTrailMessage
-				= RIFDataLoaderToolMessages.getMessage("logging.getdataSetFromCoreTableName",
-					user.getUserID(),
-					user.getIPAddress(),
-					coreDataSetName);
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-			
-			//Assign pooled connection
-			Connection connection 
-				= sqlConnectionManager.assignPooledWriteConnection(user);
-			
-			result
-				= dataSetManager.getDataSetFromCoreTableName(
-					connection,
-					coreDataSetName);
-			
-			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
-				connection);
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getdataSetFromCoreTableName",
-				rifServiceException);
-		}		
-		
-		return result;
-		
-	}
 		
 	public void loadConfiguration(
-		final User _user,
-		final CleanWorkflowConfiguration _tableCleaningConfiguration) 
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
 
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
 			return;
 		}
-		CleanWorkflowConfiguration tableCleaningConfiguration
-			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
 		
 		
 		try {
-
-			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"loadConfiguration",
-				"user",
-				user);
-			fieldValidationUtility.checkNullMethodParameter(
-				"loadConfiguration",
-				"tableCleaningConfiguration",
-				tableCleaningConfiguration);
 			
+			//Check for empty parameters
+			checkCommonParameters(
+				"loadConfiguration",
+				rifManager,
+				dataSetConfiguration);
+
 			//Check for security violations
-			validateUser(user);
-			tableCleaningConfiguration.checkSecurityViolations();
+			validateUser(rifManager);
+			dataSetConfiguration.checkSecurityViolations();
 
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFDataLoaderToolMessages.getMessage("logging.loadConfiguration",
-					user.getUserID(),
-					user.getIPAddress(),
-					tableCleaningConfiguration.getDisplayName());
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName());
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
 			
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
-					user);
+						rifManager);
 				
 			loadWorkflowManager.loadConfiguration(
 				connection, 
-				tableCleaningConfiguration);
+				dataSetConfiguration);
 
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
+				rifManager, 
 				connection);
 		
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
-				user,
+				rifManager,
 				"loadConfiguration",
 				rifServiceException);
 		}		
 	}
-		
+	
 	public void addLoadTableData(
-		final User _user,
-		final CleanWorkflowConfiguration _tableCleaningConfiguration,
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration,
 		final String[][] tableData)
 		throws RIFServiceException,
 		RIFServiceException {
 		
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
 			return;
 		}
-		CleanWorkflowConfiguration tableCleaningConfiguration
-			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
 	
 		try {
 
@@ -783,20 +471,20 @@ public final class DataLoaderService
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
 				"addLoadTableData",
-				"user",
-				user);
+				"rifManager",
+				rifManager);
 			fieldValidationUtility.checkNullMethodParameter(
 				"addLoadTableData",
-				"tableCleaningConfiguration",
-				tableCleaningConfiguration);
+				"dataSetConfiguration",
+				dataSetConfiguration);
 			fieldValidationUtility.checkNullMethodParameter(
 				"addLoadTableData",
 				"tableData",
 				tableData);
 			
 			//Check for security violations
-			validateUser(user);
-			tableCleaningConfiguration.checkSecurityViolations();
+			validateUser(rifManager);
+			dataSetConfiguration.checkSecurityViolations();
 			
 			//@TODO: we obviously need something to check the array of Strings
 			//for security violations
@@ -807,31 +495,31 @@ public final class DataLoaderService
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFDataLoaderToolMessages.getMessage("logging.addLoadTableData",
-					user.getUserID(),
-					user.getIPAddress(),
-					tableCleaningConfiguration.getDisplayName());
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName());
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
 			
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
-					user);
+					rifManager);
 
 			loadWorkflowManager.addLoadTableData(
 				connection, 
-				tableCleaningConfiguration, 
+				dataSetConfiguration, 
 				tableData);
 			
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
+				rifManager, 
 				connection);
 			
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
-				user,
+				rifManager,
 				"addLoadTableData",
 				rifServiceException);
 		}		
@@ -839,18 +527,18 @@ public final class DataLoaderService
 	}
 
 	public RIFResultTable getLoadTableData(
-		final User _user,
-		final CleanWorkflowConfiguration _tableCleaningConfiguration) 
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
 		
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
 			return null;
 		}
-		CleanWorkflowConfiguration tableCleaningConfiguration
-			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
 
 				
 		RIFResultTable results = null;
@@ -861,21 +549,21 @@ public final class DataLoaderService
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
 				"getLoadTableData",
-				"user",
-				user);
+				"rifManager",
+				rifManager);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getLoadTableData",
-				"tableCleaningConfiguration",
-				tableCleaningConfiguration);
+				"dataSetConfiguration",
+				dataSetConfiguration);
 			
 
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFDataLoaderToolMessages.getMessage("logging.getLoadTableData",
-					user.getUserID(),
-					user.getIPAddress(),
-					tableCleaningConfiguration.getDisplayName());
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName());
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
@@ -883,15 +571,15 @@ public final class DataLoaderService
 			
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
-					user);
+					rifManager);
 						
 			results
 				= loadWorkflowManager.getLoadTableData(
 					connection, 
-					tableCleaningConfiguration);
+					dataSetConfiguration);
 			
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
+				rifManager, 
 				connection);
 			
 			
@@ -899,7 +587,7 @@ public final class DataLoaderService
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
-				user,
+				rifManager,
 				"getLoadTableData",
 				rifServiceException);
 		}
@@ -908,45 +596,35 @@ public final class DataLoaderService
 	}
 		
 	public void cleanConfiguration(
-		final User _user,
-		final CleanWorkflowConfiguration _tableCleaningConfiguration) 
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
 		
 		
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
-
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
 			return;
 		}
-		CleanWorkflowConfiguration tableCleaningConfiguration
-			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
-		
-		
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
 		
 		try {
-
 			
 			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
+			checkCommonParameters(
 				"cleanConfiguration",
-				"user",
-				user);
-			fieldValidationUtility.checkNullMethodParameter(
-				"cleanConfiguration",
-				"tableCleaningConfiguration",
-				tableCleaningConfiguration);
-			
+				rifManager,
+				dataSetConfiguration);
+						
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFDataLoaderToolMessages.getMessage("logging.cleanConfiguration",
-					user.getUserID(),
-					user.getIPAddress(),
-					tableCleaningConfiguration.getDisplayName());
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName());
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
@@ -954,21 +632,21 @@ public final class DataLoaderService
 			
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
-					user);
+					rifManager);
 								
 			cleanWorkflowManager.createCleanedTable(
 				connection, 
-				tableCleaningConfiguration);
+				dataSetConfiguration);
 						
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
+				rifManager, 
 				connection);
 			
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
-				user,
+				rifManager,
 				"cleanConfiguration",
 				rifServiceException);
 		}		
@@ -976,18 +654,18 @@ public final class DataLoaderService
 	}
 	
 	public RIFResultTable getCleanedTableData(
-		final User _user,			
-		final CleanWorkflowConfiguration _tableCleaningConfiguration) 
+		final User _rifManager,			
+		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
 
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
 			return null;
 		}
-		CleanWorkflowConfiguration tableCleaningConfiguration
-			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
 				
 		RIFResultTable result = null;
 		try {
@@ -997,42 +675,42 @@ public final class DataLoaderService
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
 				"getCleanedTableData",
-				"user",
-				user);
+				"rifManager",
+				rifManager);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getCleanedTableData",
-				"tableCleaningConfiguration",
-				tableCleaningConfiguration);
+				"dataSetConfiguration",
+				dataSetConfiguration);
 			
 			
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFDataLoaderToolMessages.getMessage("logging.getCleanedTableData",
-					user.getUserID(),
-					user.getIPAddress(),
-					tableCleaningConfiguration.getDisplayName());
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName());
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
 			
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
-					user);
+					rifManager);
 								
 			result
 				= cleanWorkflowManager.getCleanedTableData(
 					connection, 
-					tableCleaningConfiguration);
+					dataSetConfiguration);
 			
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
+				rifManager, 
 				connection);
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
-				user,
+				rifManager,
 				"getCleanedTableData",
 				rifServiceException);
 		}		
@@ -1040,89 +718,341 @@ public final class DataLoaderService
 		return result;
 
 	}
+
 	
-	public void convertConfiguration(
-		final User _user,
-		final ConvertWorkflowConfiguration _tableConversionConfiguration)
+	public void combineConfiguration(
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
-		
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+	
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
 			return;
 		}
-		ConvertWorkflowConfiguration tableConversionConfiguration
-			= ConvertWorkflowConfiguration.createCopy(_tableConversionConfiguration);
-				
-		RIFResultTable result = null;
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
+	
 		try {
 			
 			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
+			checkCommonParameters(
+				"combineConfiguration",
+				rifManager,
+				dataSetConfiguration);
+					
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFDataLoaderToolMessages.getMessage("logging.combineConfiguration",
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+		
+			Connection connection 
+				= sqlConnectionManager.assignPooledWriteConnection(
+					rifManager);
+							
+			combineWorkflowManager.combineConfiguration(
+				connection, 
+				dataSetConfiguration);
+					
+			sqlConnectionManager.reclaimPooledWriteConnection(
+				rifManager, 
+				connection);	
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				rifManager,
+				"combineConfiguration",
+				rifServiceException);
+		}
+	}
+	
+	public void splitConfiguration(
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration) 
+		throws RIFServiceException,
+		RIFServiceException {
+	
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
+			return;
+		}
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
+	
+		try {
+			
+			//Check for empty parameters
+			checkCommonParameters(
+				"splitConfiguration",
+				rifManager,
+				dataSetConfiguration);
+					
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFDataLoaderToolMessages.getMessage("logging.splitConfiguration",
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+		
+			Connection connection 
+				= sqlConnectionManager.assignPooledWriteConnection(
+					rifManager);
+							
+			splitWorkflowManager.splitConfiguration(
+				connection, 
+				dataSetConfiguration);
+					
+			sqlConnectionManager.reclaimPooledWriteConnection(
+				rifManager, 
+				connection);	
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				rifManager,
+				"splitConfiguration",
+				rifServiceException);
+		}
+	}
+	
+	public void convertConfiguration(
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration)
+		throws RIFServiceException,
+		RIFServiceException {
+		
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
+			return;
+		}
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
+				
+		try {
+			
+			//Check for empty parameters
+			checkCommonParameters(
 				"convertConfiguration",
-				"user",
-				user);
-			fieldValidationUtility.checkNullMethodParameter(
-				"convertConfiguration",
-				"tableConversionConfiguration",
-				tableConversionConfiguration);
+				rifManager,
+				dataSetConfiguration);
 						
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFDataLoaderToolMessages.getMessage("logging.convertConfiguration",
-					user.getUserID(),
-					user.getIPAddress(),
-					tableConversionConfiguration.getDisplayName());
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName());
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
 			
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
-					user);
+					rifManager);
 								
 			convertWorkflowManager.convertConfiguration(
 				connection, 
-				tableConversionConfiguration);
+				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
+				rifManager, 
 				connection);
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
-				user,
+				rifManager,
 				"convertConfiguration",
 				rifServiceException);
 		}		
+	}
+
+	public void optimiseConfiguration(
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration) 
+		throws RIFServiceException {
 		
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
+			return;
+		}
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
+		
+		try {
+			//Check for empty parameters
+			checkCommonParameters(
+				"optimiseConfiguration",
+				rifManager,
+				dataSetConfiguration);
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFDataLoaderToolMessages.getMessage("logging.optimiseConfiguration",
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+			
+			Connection connection 
+				= sqlConnectionManager.assignPooledWriteConnection(
+					rifManager);
+
+			optimiseWorkflowManager.optimiseConfiguration(
+				connection, 
+				dataSetConfiguration);
+					
+			sqlConnectionManager.reclaimPooledWriteConnection(
+				rifManager, 
+				connection);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				rifManager,
+				"optimiseConfiguration",
+				rifServiceException);
+		}	
+	}
+
+
+	public void checkConfiguration(
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration) 
+		throws RIFServiceException {
+		
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
+			return;
+		}
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
+		
+		try {
+			//Check for empty parameters
+			checkCommonParameters(
+				"checkConfiguration",
+				rifManager,
+				dataSetConfiguration);
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFDataLoaderToolMessages.getMessage("logging.checkConfiguration",
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+			
+			Connection connection 
+				= sqlConnectionManager.assignPooledWriteConnection(
+					rifManager);
+
+			checkWorkflowManager.checkConfiguration(
+				connection, 
+				dataSetConfiguration);
+					
+			sqlConnectionManager.reclaimPooledWriteConnection(
+				rifManager, 
+				connection);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				rifManager,
+				"checkConfiguration",
+				rifServiceException);
+		}	
 	}
 	
-	
-	
-	
-	
-	
-	
+
+	public void publishConfiguration(
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration) 
+		throws RIFServiceException {
+		
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
+			return;
+		}
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
+		
+		try {
+			//Check for empty parameters
+			checkCommonParameters(
+				"publishConfiguration",
+				rifManager,
+				dataSetConfiguration);
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFDataLoaderToolMessages.getMessage("logging.publishConfiguration",
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+			
+			Connection connection 
+				= sqlConnectionManager.assignPooledWriteConnection(
+					rifManager);
+
+			publishWorkflowManager.publishConfiguration(
+				connection, 
+				dataSetConfiguration);
+					
+			sqlConnectionManager.reclaimPooledWriteConnection(
+				rifManager, 
+				connection);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				rifManager,
+				"publishConfiguration",
+				rifServiceException);
+		}	
+	}
 	
 	public Integer getCleaningTotalBlankValues(
-		final User _user,
-		final CleanWorkflowConfiguration _tableCleaningConfiguration)
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration)
 		throws RIFServiceException,
 		RIFServiceException {
 
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
 			return null;
 		}
-		CleanWorkflowConfiguration tableCleaningConfiguration
-			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
 
 		Integer result = null;
 		try {
@@ -1132,41 +1062,41 @@ public final class DataLoaderService
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
 				"getCleaningTotalBlankValues",
-				"user",
-				user);
+				"rifManager",
+				rifManager);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getCleaningTotalBlankValues",
-				"tableCleaningConfiguration",
-				tableCleaningConfiguration);
+				"dataSetConfiguration",
+				dataSetConfiguration);
 			
 			
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFDataLoaderToolMessages.getMessage("logging.getCleaningTotalBlankValues",
-					user.getUserID(),
-					user.getIPAddress(),
-					tableCleaningConfiguration.getDisplayName());
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName());
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
 			
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
-					user);
+					rifManager);
 			result
 				= cleanWorkflowManager.getCleaningTotalBlankValues(
 					connection, 
-					tableCleaningConfiguration);
+					dataSetConfiguration);
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
+				rifManager, 
 				connection);
 			return result;
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
-				user,
+				rifManager,
 				"getCleaningTotalBlankValues",
 				rifServiceException);
 		}		
@@ -1175,18 +1105,18 @@ public final class DataLoaderService
 	}
 		
 	public Integer getCleaningTotalChangedValues(
-		final User _user,
-		final CleanWorkflowConfiguration _tableCleaningConfiguration)
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration)
 		throws RIFServiceException,
 		RIFServiceException {
 		
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
 			return null;
 		}
-		CleanWorkflowConfiguration tableCleaningConfiguration
-			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
 
 		Integer result = null;
 		try {
@@ -1196,41 +1126,41 @@ public final class DataLoaderService
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
 				"getCleaningTotalChangedValues",
-				"user",
-				user);
+				"rifManager",
+				rifManager);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getCleaningTotalChangedValues",
-				"tableCleaningConfiguration",
-				tableCleaningConfiguration);
+				"dataSetConfiguration",
+				dataSetConfiguration);
 			
 			
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFDataLoaderToolMessages.getMessage("logging.getCleaningTotalChangedValues",
-					user.getUserID(),
-					user.getIPAddress(),
-					tableCleaningConfiguration.getDisplayName());
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName());
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
 			
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
-					user);
+					rifManager);
 			result
 				= cleanWorkflowManager.getCleaningTotalChangedValues(
 					connection, 
-					tableCleaningConfiguration);
+					dataSetConfiguration);
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
+				rifManager, 
 				connection);
 			return result;
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
-				user,
+				rifManager,
 				"getCleaningTotalBlankValues",
 				rifServiceException);
 		}		
@@ -1239,19 +1169,19 @@ public final class DataLoaderService
 	}
 		
 	public Integer getCleaningTotalErrorValues(
-		final User _user,
-		final CleanWorkflowConfiguration _tableCleaningConfiguration)
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration)
 		throws RIFServiceException,
 		RIFServiceException {
 
 		
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
 			return null;
 		}
-		CleanWorkflowConfiguration tableCleaningConfiguration
-			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
 
 		Integer result = null;
 		try {
@@ -1261,41 +1191,41 @@ public final class DataLoaderService
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
 				"getCleaningTotalErrorValues",
-				"user",
-				user);
+				"rifManager",
+				rifManager);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getCleaningTotalErrorValues",
-				"tableCleaningConfiguration",
-				tableCleaningConfiguration);
+				"dataSetConfiguration",
+				dataSetConfiguration);
 			
 			
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFDataLoaderToolMessages.getMessage("logging.getCleaningTotalErrorValues",
-					user.getUserID(),
-					user.getIPAddress(),
-					tableCleaningConfiguration.getDisplayName());
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName());
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
 			
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
-					user);
+					rifManager);
 			result
 				= cleanWorkflowManager.getCleaningTotalErrorValues(
 					connection, 
-					tableCleaningConfiguration);
+					dataSetConfiguration);
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
+				rifManager, 
 				connection);
 			return result;
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
-				user,
+				rifManager,
 				"getCleaningTotalErrorValues",
 				rifServiceException);
 		}		
@@ -1304,21 +1234,21 @@ public final class DataLoaderService
 	}
 	
 	public Boolean cleaningDetectedBlankValue(
-		final User _user,
-		final CleanWorkflowConfiguration _tableCleaningConfiguration,
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException,
 		RIFServiceException {
 
 		
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
 			return null;
 		}
-		CleanWorkflowConfiguration tableCleaningConfiguration
-			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
 
 		Boolean result = null;
 		try {
@@ -1328,12 +1258,12 @@ public final class DataLoaderService
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
 				"cleaningDetectedBlankValue",
-				"user",
-				user);
+				"rifManager",
+				rifManager);
 			fieldValidationUtility.checkNullMethodParameter(
 				"cleaningDetectedBlankValue",
-				"tableCleaningConfiguration",
-				tableCleaningConfiguration);
+				"dataSetConfiguration",
+				dataSetConfiguration);
 
 			fieldValidationUtility.checkNullMethodParameter(
 				"cleaningDetectedBlankValue",
@@ -1345,9 +1275,9 @@ public final class DataLoaderService
 			String auditTrailMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"logging.cleaningDetectedBlankValue",
-					user.getUserID(),
-					user.getIPAddress(),
-					tableCleaningConfiguration.getDisplayName(),
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName(),
 					targetBaseFieldName, 
 					String.valueOf(rowNumber));
 			rifLogger.info(
@@ -1356,23 +1286,23 @@ public final class DataLoaderService
 			
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
-					user);
+					rifManager);
 
 			result
 				= cleanWorkflowManager.cleaningDetectedBlankValue(
 					connection, 
-					tableCleaningConfiguration,
+					dataSetConfiguration,
 					rowNumber,
 					targetBaseFieldName);
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
+				rifManager, 
 				connection);
 			return result;
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
-				user,
+				rifManager,
 				"cleaningDetectedBlankValue",
 				rifServiceException);
 		}		
@@ -1381,21 +1311,21 @@ public final class DataLoaderService
 	}
 	
 	public Boolean cleaningDetectedChangedValue(
-		final User _user,
-		final CleanWorkflowConfiguration _tableCleaningConfiguration,
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException,
 		RIFServiceException {
 
 		
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
 			return null;
 		}
-		CleanWorkflowConfiguration tableCleaningConfiguration
-			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
 
 		Boolean result = null;
 		try {
@@ -1405,12 +1335,12 @@ public final class DataLoaderService
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
 				"cleaningDetectedChangedValue",
-				"user",
-				user);
+				"rifManager",
+				rifManager);
 			fieldValidationUtility.checkNullMethodParameter(
 				"cleaningDetectedChangedValue",
-				"tableCleaningConfiguration",
-				tableCleaningConfiguration);
+				"dataSetConfiguration",
+				dataSetConfiguration);
 
 			fieldValidationUtility.checkNullMethodParameter(
 				"cleaningDetectedChangedValue",
@@ -1422,9 +1352,9 @@ public final class DataLoaderService
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFDataLoaderToolMessages.getMessage("logging.cleaningDetectedChangedValue",
-					user.getUserID(),
-					user.getIPAddress(),
-					tableCleaningConfiguration.getDisplayName(),
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName(),
 					targetBaseFieldName);
 			rifLogger.info(
 				getClass(),
@@ -1432,23 +1362,23 @@ public final class DataLoaderService
 			
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
-					user);
+					rifManager);
 
 			result
 				= cleanWorkflowManager.cleaningDetectedChangedValue(
 					connection, 
-					tableCleaningConfiguration,
+					dataSetConfiguration,
 					rowNumber,
 					targetBaseFieldName);
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
+				rifManager, 
 				connection);
 			return result;
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
-				user,
+				rifManager,
 				"cleaningDetectedChangedValue",
 				rifServiceException);
 		}		
@@ -1458,20 +1388,20 @@ public final class DataLoaderService
 	}
 	
 	public Boolean cleaningDetectedErrorValue(
-		final User _user,
-		final CleanWorkflowConfiguration _tableCleaningConfiguration,
+		final User _rifManager,
+		final DataSetConfiguration _dataSetConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
 		throws RIFServiceException,
 		RIFServiceException {
 				
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
 			return null;
 		}
-		CleanWorkflowConfiguration tableCleaningConfiguration
-			= CleanWorkflowConfiguration.createCopy(_tableCleaningConfiguration);
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
 
 		Boolean result = null;
 		try {
@@ -1481,12 +1411,12 @@ public final class DataLoaderService
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
 				"cleaningDetectedErrorValue",
-				"user",
-				user);
+				"rifManager",
+				rifManager);
 			fieldValidationUtility.checkNullMethodParameter(
 				"cleaningDetectedErrorValue",
-				"tableCleaningConfiguration",
-				tableCleaningConfiguration);
+				"dataSetConfiguration",
+				dataSetConfiguration);
 			
 			fieldValidationUtility.checkNullMethodParameter(
 				"cleaningDetectedErrorValue",
@@ -1495,36 +1425,26 @@ public final class DataLoaderService
 				
 			
 			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
-			String auditTrailMessage
-				= RIFDataLoaderToolMessages.getMessage("logging.cleaningDetectedErrorValue",
-					user.getUserID(),
-					user.getIPAddress(),
-					tableCleaningConfiguration.getDisplayName(),
-					targetBaseFieldName);
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
 			
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
-					user);
+					rifManager);
 
 			result
 				= cleanWorkflowManager.cleaningDetectedErrorValue(
 					connection, 
-					tableCleaningConfiguration,
+					dataSetConfiguration,
 					rowNumber,
 					targetBaseFieldName);
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
+				rifManager, 
 				connection);
 			return result;
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
-				user,
+				rifManager,
 				"cleaningDetectedErrorValue",
 				rifServiceException);
 		}		
@@ -1533,17 +1453,21 @@ public final class DataLoaderService
 	}
 	
 	public String[][] getVarianceInFieldData(
-		final User _user,
-		final CleanWorkflowFieldConfiguration _tableFieldCleaningConfiguration)
+		final User _rifManager,
+		final DataSetFieldConfiguration _dataSetFieldConfiguration)
 		throws RIFServiceException {
-	
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		
+/*		
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
 			return null;
 		}
-		CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration
-			= CleanWorkflowFieldConfiguration.createCopy(_tableFieldCleaningConfiguration);
+		
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
+		DataSetFieldConfiguration dataSetFieldConfiguration
+			=dataSetConfiguration.getFieldHavingConvertFieldName(fieldName);
 
 		String[][] results = new String[0][0];
 		try {
@@ -1553,19 +1477,18 @@ public final class DataLoaderService
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
 				"getVarianceInFieldData",
-				"user",
-				user);
+				"rifManager",
+				rifManager);
 			fieldValidationUtility.checkNullMethodParameter(
 				"getVarianceInFieldData",
-				"tableFieldCleaningConfiguration",
-				tableFieldCleaningConfiguration);
+				"dataSetFieldConfiguration",
+				dataSetFieldConfiguration);
 			
 			//Check for security violations
-			validateUser(user);
-
+			validateUser(rifManager);
 
 			String coreDataSetName
-				= tableFieldCleaningConfiguration.getCoreDataSetName();
+				= dataSetFieldConfiguration.getCoreFieldName()
 			String loadTableName
 				= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
 			String fieldOfInterest
@@ -1575,8 +1498,8 @@ public final class DataLoaderService
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFDataLoaderToolMessages.getMessage("logging.getVarianceInFieldData",
-					user.getUserID(),
-					user.getIPAddress(),
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
 					loadTableName,
 					fieldOfInterest);
 			rifLogger.info(
@@ -1585,37 +1508,71 @@ public final class DataLoaderService
 			
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
-					user);
+					rifManager);
 
 			results
 				= cleanWorkflowManager.getVarianceInFieldData(
 					connection, 
 					tableFieldCleaningConfiguration);
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
+				rifManager, 
 				connection);
 			
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
-				user,
+				rifManager,
 				"cleaningDetectedErrorValue",
 				rifServiceException);
 		}		
 
 		return results;
-	
+*/
+		return null;
 	}
-	
+		
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
 
-	//Audit failure of operation
+	private void checkCommonParameters(
+		final String methodName,
+		final User rifManager,
+		final DataSetConfiguration dataSetConfiguration) 
+		throws RIFServiceException {
+				
+		//Check for empty parameters
+		FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+		fieldValidationUtility.checkNullMethodParameter(
+			methodName,
+			"rifManager",
+			rifManager);
+		fieldValidationUtility.checkNullMethodParameter(
+			methodName,
+			"dataSetConfiguration",
+			dataSetConfiguration);
+		
+		rifManager.checkErrors(ValidationPolicy.STRICT);
+		dataSetConfiguration.checkErrors();
 
+		validateUser(rifManager);
+		dataSetConfiguration.checkSecurityViolations();
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	//Audit failure of operation
 	public void logException(
-		User user,
+		User rifManager,
 		String methodName,
 		RIFServiceException rifServiceException) {
 		
@@ -1625,7 +1582,7 @@ public final class DataLoaderService
 
 	@Override
 	public void validateUser(
-		final User user) 
+		final User rifManager) 
 		throws RIFServiceException {
 
 		//@TODO: harmonise this with the underlying AbstractRIFService call

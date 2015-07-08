@@ -1,20 +1,14 @@
 
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.RIFWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.RIFWorkflowCollection;
-
+import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
 
-
-
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
 import java.io.*;
 
 
@@ -83,58 +77,7 @@ import java.io.*;
  */
 
 
-public final class RIFWorkflowReader {
-
-	public static void main(String[] arguments) {
-		
-		
-		try {
-			StringBuilder inputFileName = new StringBuilder();
-			inputFileName.append("C:");
-			inputFileName.append(File.separator);
-			inputFileName.append("rif_test_data");
-			inputFileName.append(File.separator);
-			inputFileName.append("data_loader_tool");
-			inputFileName.append(File.separator);
-			inputFileName.append("ExampleDataLoaderConfigurationFile.xml");
-
-			
-			File file 
-				= new File(inputFileName.toString());
-		
-			RIFWorkflowReader rifWorkflowReader = new RIFWorkflowReader();
-			rifWorkflowReader.readFile(file);
-			
-			RIFWorkflowCollection rifWorkflowCollection
-				= rifWorkflowReader.getRIFWorkflowCollection();
-			RIFWorkflowConfiguration rifWorkflowConfiguration
-				= rifWorkflowCollection.getRIFWorkflowConfiguration();
-			
-			
-			CleanWorkflowConfiguration cleanWorkflowConfiguration
-				= rifWorkflowConfiguration.getCleanWorkflowConfiguration();
-			cleanWorkflowConfiguration.printFields();
-			
-			//Now write it out
-			StringBuilder outputFileName = new StringBuilder();
-			outputFileName.append("C:");
-			outputFileName.append(File.separator);
-			outputFileName.append("rif_test_data");
-			outputFileName.append(File.separator);
-			outputFileName.append("data_loader_tool");
-			outputFileName.append(File.separator);
-			outputFileName.append("ResultConfiguration.xml");
-			File outputFile = new File(outputFileName.toString());
-			
-			RIFWorkflowWriter rifWorkflowWriter = new RIFWorkflowWriter();
-			rifWorkflowWriter.write(rifWorkflowCollection, outputFile);
-		
-		}
-		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-		}
-		
-	}
+public final class LinearWorkflowReader {
 	
 // ==========================================
 // Section Constants
@@ -143,7 +86,7 @@ public final class RIFWorkflowReader {
 // ==========================================
 // Section Properties
 // ==========================================
-	private RIFWorkflowConfigurationHandler rifWorkflowConfigurationHandler;
+	private LinearWorkflowConfigurationHandler rifWorkflowConfigurationHandler;
 	
 // ==========================================
 // Section Construction
@@ -151,9 +94,9 @@ public final class RIFWorkflowReader {
     /**
      * Instantiates a new RIF job submission xml reader.
      */
-	public RIFWorkflowReader() {
+	public LinearWorkflowReader() {
 		rifWorkflowConfigurationHandler
-			= new RIFWorkflowConfigurationHandler();
+			= new LinearWorkflowConfigurationHandler();
     }
 
 // ==========================================
@@ -167,20 +110,22 @@ public final class RIFWorkflowReader {
  * @throws RIFServiceException the RIF service exception
  */
 	public void readFile(
-		final File rifWorfklowConfigurationFile) 
+		final File rifWorkflowConfigurationFile) 
 		throws RIFServiceException {
 
 		try {			
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
-			saxParser.parse(rifWorfklowConfigurationFile, rifWorkflowConfigurationHandler);
+			saxParser.parse(
+				rifWorkflowConfigurationFile, 
+				rifWorkflowConfigurationHandler);
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"io.error.problemReadingFile",
-					rifWorfklowConfigurationFile.getName());
+					rifWorkflowConfigurationFile.getName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.XML_FILE_PARSING_PROBLEM, 
@@ -215,9 +160,8 @@ public final class RIFWorkflowReader {
 		}
 	}			
 	
-	
-	public RIFWorkflowCollection getRIFWorkflowCollection() {
-		return rifWorkflowConfigurationHandler.getRIFWorkflowCollection();
+	public LinearWorkflow getLinearWorkflow() {
+		return rifWorkflowConfigurationHandler.getLinearWorkflow();
 	}
 	
 // ==========================================

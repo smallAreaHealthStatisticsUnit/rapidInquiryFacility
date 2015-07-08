@@ -92,9 +92,12 @@ public final class ConvertWorkflowManager
 	
 	public void convertConfiguration(
 		final Connection connection,
-		final ConvertWorkflowConfiguration convertWorkflowConfiguration)
+		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 
+		
+		RIFConversionFunctionFactory conversionFunctionFactory
+			= RIFConversionFunctionFactory.newInstance();
 		
 		/**
 		 * CREATE TABLE convert_my_table2001 AS 
@@ -114,7 +117,7 @@ public final class ConvertWorkflowManager
 		
 		PreparedStatement statement = null;
 		String coreDataSetName 
-			= convertWorkflowConfiguration.getCoreDataSetName();
+			= dataSetConfiguration.getName();
 		try {			
 			String cleanedTableName
 				= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName);
@@ -133,27 +136,32 @@ public final class ConvertWorkflowManager
 			queryFormatter.addQueryLine(2, "data_source_id,");
 			queryFormatter.addQueryLine(2, "row_number,");
 				
-			ArrayList<ConvertWorkflowFieldConfiguration> conversionFieldConfigurations
-				= convertWorkflowConfiguration.getRequiredFieldConfigurations();
-			for (ConvertWorkflowFieldConfiguration convertionFieldConfiguration : conversionFieldConfigurations) {
-			
-				addConvertQueryFragment(
-					queryFormatter,
-					2,
-					convertWorkflowConfiguration,
-					convertionFieldConfiguration);
+			ArrayList<DataSetFieldConfiguration> fieldConfigurations
+				= dataSetConfiguration.getFieldConfigurations();
+			for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+				FieldRequirementLevel fieldRequirementLevel
+					= fieldConfiguration.getFieldRequirementLevel();
+				if (fieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) {
+					addConvertQueryFragment(
+						queryFormatter,
+						conversionFunctionFactory,
+						2,
+						fieldConfiguration);
+				}
 			}
 			
 			//Now add on the extra fields
-		
-			ArrayList<CleanWorkflowFieldConfiguration> extraFields
-				= convertWorkflowConfiguration.getExtraFields();
-			for (CleanWorkflowFieldConfiguration extraField : extraFields) {
-				queryFormatter.addQueryPhrase(",");
-				queryFormatter.finishLine();			
-				queryFormatter.addQueryPhrase(extraField.getCleanedTableFieldName());
+			for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+				FieldRequirementLevel fieldRequirementLevel
+					= fieldConfiguration.getFieldRequirementLevel();
+				if (fieldRequirementLevel == FieldRequirementLevel.EXTRA_FIELD) {
+					queryFormatter.addQueryPhrase(",");
+					queryFormatter.finishLine();			
+					queryFormatter.addQueryPhrase(
+						fieldConfiguration.getCleanFieldName());
+				}
 			}
-		
+			
 			queryFormatter.addQueryPhrase(0, "FROM");
 			queryFormatter.padAndFinishLine();
 			queryFormatter.addQueryPhrase(1, cleanedTableName);
@@ -168,10 +176,11 @@ public final class ConvertWorkflowManager
 				= RIFDataLoaderToolMessages.getMessage(
 					"convertWorkflowManager.error.unableToCreateConvertTable",
 					coreDataSetName);
-			RIFServiceException RIFServiceException
+			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
 					errorMessage);
+			throw rifServiceException;
 		}
 		finally {
 			SQLQueryUtility.close(statement);
@@ -181,9 +190,9 @@ public final class ConvertWorkflowManager
 	
 	private void addConvertQueryFragment(
 		final SQLGeneralQueryFormatter queryFormatter,
+		final RIFConversionFunctionFactory conversionFunctionFactory,
 		final int baseIndentationLevel,
-		final ConvertWorkflowConfiguration convertWorkflowConfiguration,
-		final ConvertWorkflowFieldConfiguration fieldConversionConfiguration) {
+		final DataSetFieldConfiguration dataSetFieldConfiguration) {
 	
 		/**
 		 * cleanedTableName.postal_code AS postal_code,
@@ -191,12 +200,17 @@ public final class ConvertWorkflowManager
 		 * 
 		 */
 		
+		/*
+		 * 
+		 * KLG: @TODO FIX LATER
+		 */
+		
+		/*
 		String conversionFunctionName
-			= convertWorkflowConfiguration.getConversionFunctionName(
-				fieldConversionConfiguration);
-		ArrayList<CleanWorkflowFieldConfiguration> fieldConfigurations
-			= convertWorkflowConfiguration.getCleaningConfigurations(fieldConversionConfiguration);
-
+			= dataSetFieldConfiguration.getConversionFunctionName();		
+		RIFConversionFunction rifConversionFunction
+			= conversionFunctionFactory.getRIFConvertFunction(conversionFunctionName);
+		
 		if (conversionFunctionName == null) {
 			//there is no function
 			queryFormatter.addQueryPhrase(
@@ -204,7 +218,7 @@ public final class ConvertWorkflowManager
 				fieldConfigurations.get(0).getCleanedTableFieldName());
 			queryFormatter.addQueryPhrase(" AS ");
 			queryFormatter.addQueryPhrase(
-				fieldConversionConfiguration.getConvertFieldName());
+					dataSetFieldConfiguration.getConvertFieldName());
 		}
 		else {
 			//there is a function
@@ -217,11 +231,13 @@ public final class ConvertWorkflowManager
 					fieldConfigurations));				
 			queryFormatter.addQueryPhrase(") AS ");
 			queryFormatter.addQueryPhrase(
-				fieldConversionConfiguration.getConvertFieldName());
+				dataSetFieldConfiguration.getConvertFieldName());
 			queryFormatter.padAndFinishLine();
 		}
+		
+		*/
 	}
-
+	/*
 	private String concatenateFunctionParameters(
 		final ArrayList<CleanWorkflowFieldConfiguration> fieldConfigurations) {
 		
@@ -244,6 +260,7 @@ public final class ConvertWorkflowManager
 		
 		return buffer.toString();
 	}	
+	*/
 	
 	// ==========================================
 	// Section Errors and Validation

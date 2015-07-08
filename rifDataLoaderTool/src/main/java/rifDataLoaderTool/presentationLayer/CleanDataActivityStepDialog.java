@@ -4,9 +4,6 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
-import rifDataLoaderTool.businessConceptLayer.DataSet;
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowConfiguration;
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.ASCIITextRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AgeRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.DateRIFDataType;
@@ -15,12 +12,17 @@ import rifDataLoaderTool.businessConceptLayer.rifDataTypes.ICDCodeRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.NHSNumberRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.SexRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.UKPostalCodeRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+
 import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
-import rifDataLoaderTool.fileFormats.CleanWorkflowConfigurationHandler;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceException;
+
+import rifDataLoaderTool.fileFormats.DataSetFieldConfigurationHandler;
 
 import javax.swing.*;
 
@@ -85,112 +87,6 @@ public final class CleanDataActivityStepDialog
 	implements ListSelectionListener {
 
 	
-	public static void main(String[] arguments) {
-		
-		try {
-			
-			RIFDataLoaderToolSession session = new RIFDataLoaderToolSession();
-			User testUser = User.newInstance("kgarwood", "111.111.11.11");
-			session.setUser(testUser);
-		
-			DataLoaderService service = new DataLoaderService();
-			service.initialiseService();
-			service.login("kgarwood", "kgarwood");
-
-			session.setService(service);
-
-			CleanDataActivityStepDialog dialog
-				= new CleanDataActivityStepDialog(session);
-		
-			DataSet dataSet 
-				= DataSet.newInstance(
-					"lungs_klg_2014", 
-					false, 
-					"my_study_stuff1", 
-						"kgarwood");
-		
-			CleanWorkflowConfiguration tableCleaningConfiguration
-				= CleanWorkflowConfiguration.newInstance(dataSet);
-		
-			NHSNumberRIFDataType nhsNumberRIFDataType
-				= NHSNumberRIFDataType.newInstance();		
-			tableCleaningConfiguration.addFieldConfiguration(
-				"lungs_klg_2014", 
-				"nhs_number", 
-				"nhs_number", 
-				nhsNumberRIFDataType);
-		
-			UKPostalCodeRIFDataType ukPostalCodeRIFDataType
-				= UKPostalCodeRIFDataType.newInstance();
-			tableCleaningConfiguration.addFieldConfiguration(
-				"lungs_klg_2014", 
-				"postal_code", 
-				"postal_code", 
-				ukPostalCodeRIFDataType);
-		
-			DateRIFDataType birthDateRIFDataType
-				= DateRIFDataType.newInstance();		
-			tableCleaningConfiguration.addFieldConfiguration(
-				"lungs_klg_2014", 
-				"birth_date", 
-				"birth_date", 
-				birthDateRIFDataType);
-		
-			ICDCodeRIFDataType icdCodeRIFDataType
-				= ICDCodeRIFDataType.newInstance();
-			tableCleaningConfiguration.addFieldConfiguration(
-				"lungs_klg_2014", 
-				"icd_code", 
-				"icd_code", 
-				icdCodeRIFDataType);
-		
-			ASCIITextRIFDataType region
-				= ASCIITextRIFDataType.newInstance();
-			tableCleaningConfiguration.addFieldConfiguration(
-				"lungs_klg_2014", 
-				"region", 
-				"region", 
-				region);
-		
-			SexRIFDataType sex
-				= SexRIFDataType.newInstance();
-			tableCleaningConfiguration.addFieldConfiguration(
-				"lungs_klg_2014", 
-				"sex", 
-				"sex", 
-				sex);
-		
-			DoubleRIFDataType pm10Level
-				= DoubleRIFDataType.newInstance();
-			tableCleaningConfiguration.addFieldConfiguration(
-				"lungs_klg_2014", 
-				"pm10_level", 
-				"pm10_level", 
-				pm10Level);
-		
-			AgeRIFDataType age
-				= AgeRIFDataType.newInstance();
-			tableCleaningConfiguration.addFieldConfiguration(
-				"lungs_klg_2014", 
-				"age", 
-				"age", 
-				age);
-		
-			tableCleaningConfiguration.setDataSet(dataSet);
-		
-			dialog.setData(tableCleaningConfiguration);
-			dialog.show();		
-		
-		}
-		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(
-				null, 
-				rifServiceException.getErrorMessages());
-		}
-	}
-	
-	
-	
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -202,8 +98,6 @@ public final class CleanDataActivityStepDialog
 	private RIFDataLoaderToolShutdownManager shutDownManager;
 	
 	private JEditorPane cleaningInformationEditorPane;
-	
-
 	
 	private CleaningConfigurationTable cleaningConfigurationTable;
 	private JButton editPropertiesButton;
@@ -356,19 +250,19 @@ public final class CleanDataActivityStepDialog
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void setData(final CleanWorkflowConfiguration tableCleaningConfiguration) {
-		cleaningConfigurationTable.setData(tableCleaningConfiguration);
+	public void setData(final DataSetConfiguration dataSetConfiguration) {
+		cleaningConfigurationTable.setData(dataSetConfiguration);
 	}
 	
 	private void editSelectedCleaningProperty() {		
-		CleanWorkflowFieldConfiguration tableFieldCleaningConfiguration		
-			= cleaningConfigurationTable.getSelectedTableFieldCleaningConfiguration();
+		DataSetFieldConfiguration dataSetFieldConfiguration		
+			= cleaningConfigurationTable.getSelectedDataSetFieldConfiguration();
 		
 		RIFDataLoaderToolSession session
 			= getSession();
 		CleaningFieldConfigurationEditorDialog dialog
 			= new CleaningFieldConfigurationEditorDialog(session);
-		dialog.setData(tableFieldCleaningConfiguration);
+		dialog.setData(dataSetFieldConfiguration);
 		dialog.show();
 	}
 	
@@ -426,13 +320,15 @@ public final class CleanDataActivityStepDialog
 	//Interface: List Selection Listener
 	public void valueChanged(ListSelectionEvent event) {
 		
-		CleanWorkflowFieldConfiguration cleanWorkflowFieldConfiguration
-			= cleaningConfigurationTable.getSelectedTableFieldCleaningConfiguration();
+		DataSetFieldConfiguration dataSetFieldConfiguration
+			= cleaningConfigurationTable.getSelectedDataSetFieldConfiguration();
 		
-		CleanWorkflowConfigurationHandler cleaningFieldConfigurationHandler
-			= new CleanWorkflowConfigurationHandler();
+		DataSetFieldConfigurationHandler cleaningFieldConfigurationHandler
+			= new DataSetFieldConfigurationHandler();
 		String fieldInformation
-			= cleaningFieldConfigurationHandler.getHTML(cleanWorkflowFieldConfiguration);
+			= cleaningFieldConfigurationHandler.getHTML(
+				dataSetFieldConfiguration,
+				WorkflowState.CLEAN);
 		
 		cleaningInformationEditorPane.setText(fieldInformation);
 		cleaningInformationEditorPane.setCaretPosition(0);
