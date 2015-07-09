@@ -1,13 +1,13 @@
 package rifDataLoaderTool.presentationLayer.batch;
 
 import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
-import rifDataLoaderTool.businessConceptLayer.LinearWorkflowEnactor;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaAreaPropertyManager;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 
 
+import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
 import rifDataLoaderTool.fileFormats.LinearWorkflowReader;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
