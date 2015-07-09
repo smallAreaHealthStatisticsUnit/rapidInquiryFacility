@@ -8,7 +8,8 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.*;
 
 /**
- *
+ * Holds knowledge about what properties are expected for different parts of the
+ * RIF schema {@link rifDataLoaderTool.businessConceptLayer.RIFSchemaArea}.
  *
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area
@@ -66,7 +67,6 @@ public class RIFSchemaAreaPropertyManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private RIFSchemaArea rifSchemaArea;
 	
 	private HashMap<String, AbstractRIFDataType> dataTypeFromCovariateFieldName;
 	private HashMap<String, AbstractRIFDataType> dataTypeFromHealthCodeFieldName;

@@ -6,7 +6,14 @@ import java.util.ArrayList;
 
 
 /**
- *
+ * Describes data quality indicators that will be associated with table fields.
+ * For example, <code>PERCENT_EMPTY</code> will cause the RIF to retain data 
+ * quality statistics for how many field values of a 
+ * {@link rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration}
+ * are empty.  <code>PERCENT_EMPTY_PER_YEAR</code> will cause the RIF to make the 
+ * percentages on a per-year basis.  Note that this second option will likely only 
+ * be relevant for numerator and denominator data sets, which are guaranteed to 
+ * have a year field present in the tables.
  *
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area

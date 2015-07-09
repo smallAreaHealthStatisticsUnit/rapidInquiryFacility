@@ -6,7 +6,8 @@ import java.text.Collator;
 import java.util.ArrayList;
 
 /**
- *
+ * An enumeration that describes the intended area of the RIF schema that
+ * an imported data set will support.
  *
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area

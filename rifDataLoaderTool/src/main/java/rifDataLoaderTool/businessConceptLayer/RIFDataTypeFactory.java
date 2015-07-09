@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.ArrayList;
 
 /**
- *
+ * A convenience class that centralises the creation of data type objects.
  *
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area
@@ -82,7 +82,7 @@ public class RIFDataTypeFactory {
 	// Section Construction
 	// ==========================================
 
-	public RIFDataTypeFactory() {
+	private RIFDataTypeFactory() {
 		
 		dataTypeFromName = new HashMap<String, AbstractRIFDataType>();
 		dataTypeCodes = new ArrayList<String>();
@@ -131,6 +131,11 @@ public class RIFDataTypeFactory {
 		
 	}
 
+	public static RIFDataTypeFactory newInstance() {
+		RIFDataTypeFactory rifDataTypeFactory = new RIFDataTypeFactory();
+		return rifDataTypeFactory;
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================

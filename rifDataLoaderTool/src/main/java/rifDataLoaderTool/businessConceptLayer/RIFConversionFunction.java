@@ -11,8 +11,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.text.Collator;
 /**
- *
- *
+ * <p>
+ * Describes the properties of a function that is used to convert a cleaned
+ * data field to a field that is expected in the RIF schema.  The class was originally
+ * developed to combine the values of a year and age field in a cleaned table so
+ * that a new column <code>age_sex_group</code>, would appear in the converted table.  
+ * </p>
+ * 
+ * <p>
+ * When RIF managers are trying to import new denominator and numerator tables, their
+ * original data sets may have separate columns for <code>sex</code> and <code>age</code>.
+ * However, the RIF schema requires that these fields are combined into a single 
+ * <code>age_sex_group</code>.
+ * </p>
+ * 
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 

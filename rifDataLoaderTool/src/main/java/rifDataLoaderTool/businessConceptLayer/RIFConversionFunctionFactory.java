@@ -7,7 +7,9 @@ import rifDataLoaderTool.businessConceptLayer.rifDataTypes.DateRIFDataType;
 import java.util.HashMap;
 
 /**
- *
+ * A factory class that manufacturers instances of RIF functions that help
+ * ensure that fields from a cleaned data table map to fields in a converted stage
+ * table.
  *
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area

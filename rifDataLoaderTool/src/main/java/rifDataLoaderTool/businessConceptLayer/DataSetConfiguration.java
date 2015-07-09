@@ -11,7 +11,38 @@ import java.text.Collator;
 import java.util.ArrayList;
 
 /**
- *
+ * This is one of the major business classes that describes properties
+ * associated with the columns of a data set.  Each data set that is imported
+ * into the RIF database has the following properties:
+ * <ul>
+ * <li>
+ * <b>name</b>: used as a base identifier that can track the data set through
+ * various transformations.  In most of the work flow steps, a prefix and the
+ * name will be used to produce a temporary table.  For example, "convert_myDataSet1"
+ * will be used to hold the results of transforming the cln_cast_myDataSet1 table
+ * that is produced during the cleaning step.
+ * </li>
+ * <li>
+ * <b>version</b>: used along with name to make a unique identifier for the data set
+ * </li>
+ * <li>
+ * <b>description</b>: comments that will be used to describe the table when it is 
+ * published and is available to RIF users
+ * </li>
+ * <b>rifSchemaArea</b>: a {@link rifDataLoaderTool.businessConceptLayer.RIFSchemaArea}
+ * that describes the ultimate destination in the RIF schema where the CSV file is 
+ * supposed to go.
+ * <li>
+ * <b>currentWorkFlowState</b>: indicates the last work flow step that was successfully
+ * applied to transform the imported data set.
+ * </li>
+ * </ul>
+ * 
+ * <p>
+ * Each data set has a collection of 
+ * {@link rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration} field 
+ * configurations, each of which have their own properties.
+ * </p>
  *
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area
@@ -242,9 +273,17 @@ public class DataSetConfiguration
 		return fieldConfigurations.get(index);		
 	}
 	
+	public void addFieldConfiguration(
+		final DataSetFieldConfiguration dataSetFieldConfiguration) {
+		
+		fieldConfigurations.add(dataSetFieldConfiguration);
+		
+	}
+	
 	public void setFieldConfigurations(
-			final ArrayList<DataSetFieldConfiguration> fieldConfigurations) {
-		this.fieldConfigurations = fieldConfigurations;
+		final ArrayList<DataSetFieldConfiguration> fieldConfigurations) {
+
+			this.fieldConfigurations = fieldConfigurations;
 	}
 	
 	public String[] getConvertFieldNames() {

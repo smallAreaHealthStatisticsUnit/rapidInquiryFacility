@@ -3,8 +3,8 @@ package rifDataLoaderTool.businessConceptLayer;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 /**
- * Describes the way a field found in an initial load table will be validated.  There are three
- * options:
+ * Describes the way a field found in an initial load table will be validated.  
+ * There are three options:
  * <ul>
  * <li>
  * no validation

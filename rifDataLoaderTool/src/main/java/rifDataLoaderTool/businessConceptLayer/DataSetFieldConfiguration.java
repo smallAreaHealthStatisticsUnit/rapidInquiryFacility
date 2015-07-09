@@ -13,7 +13,16 @@ import java.util.ArrayList;
 
 
 /**
- *
+ * One of the major business classes that describes properties of columns in 
+ * an imported data set, which is represented by the 
+ * {@link rifDataLoaderTool.businessConceptLayer.DataSetConfiguration} class.
+ * Whereas most of the properties of the 
+ * {@link rifDataLoaderTool.businessConceptLayer.DataSetConfiguration} are 
+ * independent of work flow steps, the properties of this configuration class
+ * <i>are</i> usually dependent on them.  For example, the <code>clean_field_name</code>
+ * property is only relevant in the Clean work flow state.  The property
+ * <code>optimise_using_index</code> will only be relevant if the data set reaches
+ * the Optimise step of a {@link rifDataLoaderTool.businessConceptLayer.LinearWorkflow}
  *
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area
@@ -73,23 +82,142 @@ public class DataSetFieldConfiguration
 	// Section Properties
 	// ==========================================
 
+	/**
+	 * is the core data set name of the 
+	 * {@link rifDataLoaderTool.businessConceptLayer.DataSetConfiguration}
+	 * that contains this field.
+	 */
 	private String coreDataSetName;
+	
+	/*
+	 * The core field name of this field
+	 */
 	private String coreFieldName;
+	
+	/**
+	 * This description will appear as comments in the published database table.
+	 */
 	private String coreFieldDescription;
+	
+	/**
+	 * Used to transform a text-based column field value into a data type that is
+	 * recognised by the RIF database.
+	 */
 	private AbstractRIFDataType rifDataType;
 	
+	/**
+	 * The name of this field when it is imported during the load step.  In a CSV
+	 * file, the header row can provide this name.  Otherwise, if a CSV file contains
+	 * no header row, an auto-generated field name will be created.
+	 */
 	private String loadFieldName;
+	
+	/**
+	 * The name that will be used for this field after the loaded table is transformed
+	 * into a cleaned table.  Sometimes a RIF manager may want to rename the fields
+	 * that appeared in the original data set.
+	 */
 	private String cleanFieldName;
 
+	/**
+	 * The name that will be be used after the cleaned data set is transformed
+	 * into a table that is expected to be moved into the RIF database.  In many
+	 * cases, the convert field name will be the same as the cleaned field name.
+	 * This will happen when RIF managers are importing a field from an original
+	 * data set which they want to appear in a published data set but which is not
+	 * required by the RIF schema.  
+	 * 
+	 * The cleaned name and converted name may be different when a cleaned data set
+	 * is transformed into a converted one.  In this situation, there are certain
+	 * field names that are expected to appear in the converted data set result.
+	 * For example, in numerator tables, the RIF expects that a column "year" appears.
+	 * It may be called "fiscal_year" in the cleaned version, but the database
+	 * procedures that create extract files from study descriptions will expect
+	 * that a field called "year" will be in a numerator table.  We recommend that
+	 * wherever possible, load, clean and convert field names have the same value.
+	 * 
+	 */
 	private String convertFieldName;
+	
+	/**
+	 * Function that is associated with mapping a cleaned field value to 
+	 * a field in the converted table (eg: age, sex --> age_sex_group).
+	 */
+	private RIFConversionFunction rifConversionFunction;
+	
+	/**
+	 * Describes what the field does, and is used later on in validation to make
+	 * sure that imported tables have a minimum number of fields which serve a 
+	 * specific purpose.  For example, a numerator table must have at least one
+	 * health code field.  In the Convert work flow step, the
+	 * {@link rifDataLoaderTool.businessConceptLayer.WorkflowValidator},
+	 * the main class for performing validation checks that are specific to a given
+	 * work flow step, checks that at least one field is a health code.  The value
+	 * of this field is also used to check things like whether a denominator table
+	 * has at least one geographical resolution field and whether a covariate table
+	 * has at least one column with the covariate name. 
+	 * <ul>
+	 * <li>
+	 * <b>
+	 * </ul>
+	 */
 	private FieldPurpose fieldPurpose;
 
+	/**
+	 * Indicates whether this field should be indexed during the Optimise step.
+	 * This field is automatically set to "true" once a data set has been transformed
+	 * through the Convert step.  For example, if we know that a table is destined
+	 * to be mapped to a numerator table, then we know that table must contain a
+	 * field called "year" which is of 
+	 * {@link rifDataLoaderTool.businessConceptLayer.rifDataTypes.YearRIFDataType}.
+	 * If we know the table will have a year field, then we can automatically index it.
+	 * Therefore, if this configuration describes a "year" field, optimiseUsingIndex
+	 * should not ever be "false".  This kind of check is done in the Optimise
+	 * validation done by the 
+	 * {@link rifDataLoaderTool.businessConceptLayer.WorkflowValidator}.
+	 */
 	private boolean optimiseUsingIndex;
 	
+	/**
+	 * In the Check work flow step, the Data Loader Tool tries to determine whether
+	 * a given table row is a duplicate row.  In order to know whether it is or not,
+	 * it considers a set of duplicate identification fields.  If two rows have 
+	 * identical field values for each of these duplicate identification fields, then
+	 * it can identify both rows as duplicates.  It will then mark the first row as
+	 * the one to keep and all other duplicates as rows that should be discarded.
+	 */
 	private boolean isDuplicateIdentificationField;
+	
+	/**
+	 * Describes what data quality checks should appear in the published data set.
+	 * For example, the PERCENT_EMPTY 
+	 * {@link rifDataLoaderTool.businessConceptLayer.RIFCheckOption} check will 
+	 * determine how many of the rows showed an empty value for a given column.
+	 */
 	private ArrayList<RIFCheckOption> checkOptions;	
+	
+	/**
+	 * Determines whether a field can accept an empty value or not.
+	 */
 	private boolean isEmptyValueAllowed;
 	
+	/**
+	 * Tells the RIF how important a field is.  Choices include:
+	 * <ul>
+	 * <li><b>REQUIRED_BY_RIF</b>: a field that is destined to be one of the 
+	 * required fields expected in the RIF database schema.  For example,
+	 * <code>age_sex_group</code></li>
+	 * <li><b>EXTRA_FIELD</b>: a field that may be useful for scientists but
+	 * which is not needed by the RIF database procedures that create study
+	 * extracts
+	 * </li> 
+	 * <li>
+	 * <b>IGNORE_FIELD</b>: a field that may appear in the load table but which
+	 * should not be promoted through the rest of the workflow steps such as
+	 * clean, convert, optimise, check and publish.
+	 * </li>
+	 * </ul>
+	 */
 	private FieldRequirementLevel fieldRequirementLevel;
 	
 	// ==========================================
@@ -117,11 +245,14 @@ public class DataSetFieldConfiguration
 		this.coreDataSetName = parentRecordName;
 			
 		this.coreFieldName = coreFieldName;
-		coreFieldDescription = null;
-		rifDataType = TextRIFDataType.newInstance();
 		loadFieldName = coreFieldName;
-		cleanFieldName = loadFieldName;
+		cleanFieldName = coreFieldName;
+
 		convertFieldName = null;
+		
+		
+		coreFieldDescription = "";
+		rifDataType = TextRIFDataType.newInstance();
 		optimiseUsingIndex = false;
 		checkOptions = new ArrayList<RIFCheckOption>();
 			
@@ -129,11 +260,11 @@ public class DataSetFieldConfiguration
 		isDuplicateIdentificationField = false;
 		isEmptyValueAllowed = true;
 		
-		fieldRequirementLevel = FieldRequirementLevel.IGNORE_FIELD;
+		rifConversionFunction = null;
 		
+		fieldRequirementLevel = FieldRequirementLevel.IGNORE_FIELD;		
 	}
-	
-	
+
 	public static DataSetFieldConfiguration newInstance(
 		final String parentRecordName,
 		final String coreFieldName) {
@@ -167,6 +298,11 @@ public class DataSetFieldConfiguration
 			originalConfiguration.getCleanFieldName());
 		cloneConfiguration.setConvertFieldName(
 			originalConfiguration.getConvertFieldName());
+		
+		RIFConversionFunction originalRIFConversionFunction
+			= originalConfiguration.getConvertFunction();
+		cloneConfiguration.setConvertFunction(originalRIFConversionFunction);
+		
 		cloneConfiguration.setOptimiseUsingIndex(
 			originalConfiguration.optimiseUsingIndex());
 		cloneConfiguration.setEmptyValueAllowed(
@@ -280,6 +416,17 @@ public class DataSetFieldConfiguration
 		this.convertFieldName = convertFieldName;
 	}
 
+	public void setConvertFunction(
+		final RIFConversionFunction rifConversionFunction) {
+		
+		this.rifConversionFunction = rifConversionFunction;
+	}
+	
+	public RIFConversionFunction getConvertFunction() {
+		
+		return rifConversionFunction;
+	}
+	
 	public boolean optimiseUsingIndex() {
 		
 		return optimiseUsingIndex;
