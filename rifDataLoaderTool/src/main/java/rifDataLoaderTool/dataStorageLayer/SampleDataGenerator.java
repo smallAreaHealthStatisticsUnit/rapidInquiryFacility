@@ -4,11 +4,12 @@ import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.FieldPurpose;
 import rifDataLoaderTool.businessConceptLayer.FieldRequirementLevel;
+import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 import rifDataLoaderTool.businessConceptLayer.RIFConversionFunctionFactory;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AgeRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.IntegerRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+
 
 /**
  * Contains sample data set configurations designed to import data into
@@ -83,6 +84,29 @@ public class SampleDataGenerator {
 	// Section Accessors and Mutators
 	// ==========================================
 
+	
+	public LinearWorkflow createSahsulandNumeratorWorkflow() {
+		
+		/*
+		 * In this example, we produce a linear work flow that starts
+		 * at the LOAD work flow state and ends when the CONVERT state
+		 * has completed
+		 */
+		LinearWorkflow numeratorWorkflow = LinearWorkflow.newInstance();
+
+		numeratorWorkflow.setStartWorkflowState(WorkflowState.LOAD);
+		numeratorWorkflow.setStopWorkflowState(WorkflowState.CONVERT);
+		
+		//This configuration describes the CSV file we want to load.
+		//The goal of this data loading activity is to produce
+		//the sahsuland_cancer table that already comes with the RIF installation
+		DataSetConfiguration myNumeratorDataToLoad
+			= createCancerNumeratorConfiguration();
+		numeratorWorkflow.addDataSetConfiguration(myNumeratorDataToLoad);
+		
+		return numeratorWorkflow;		
+	}
+	
 	public DataSetConfiguration createCancerNumeratorConfiguration() {
 
 		RIFConversionFunctionFactory rifConversionFactory
@@ -336,7 +360,46 @@ public class SampleDataGenerator {
 		
 	}
 
-	public DataSetConfiguration getSahsulandLevel3CovariatesCovariateConfiguration() {
+	public LinearWorkflow createSahsulandCovariateWorkflow() {
+		
+		LinearWorkflow covariateWorkflow = LinearWorkflow.newInstance();
+
+		//Part I: Establish how much we will promote a data set through
+		//different workflow stages
+		
+		//We want the workflow to go all the way from the step where we
+		//load the data to the step where we publish it.  Not all work flows
+		//have to go through all the steps in the data loading process.  For
+		//example, we may want to go from LOAD --> CONVERT and 
+		//OPTIMISE --> PUBLISH so that we can use converted tables as part
+		//of a BranchedWorkflow - one that uses split and combine operations.
+		//For this example though, we use LOAD --> PUBLISH 
+		covariateWorkflow.setStartWorkflowState(WorkflowState.LOAD);
+		covariateWorkflow.setStopWorkflowState(WorkflowState.PUBLISH);
+		
+		
+		//Part II: Define which data set configurations we want to run through
+		//the work flow we established above
+				
+		//We want to apply the same work flow to covariate data taken from two
+		//files, one for level4 geographic resolution and one for level3
+		DataSetConfiguration level3CovariatesConfiguration
+			= createSahsulandLevel3CovariatesCovariateConfiguration();
+		covariateWorkflow.addDataSetConfiguration(level3CovariatesConfiguration);
+		DataSetConfiguration level4CovariatesConfiguration
+			= createSahsulandLevel4CovariatesCovariateConfiguration();
+		covariateWorkflow.addDataSetConfiguration(level4CovariatesConfiguration);
+				
+		//This work flow will be run inside 
+		//rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor
+		
+		return covariateWorkflow;
+	}
+	
+
+	
+	
+	public DataSetConfiguration createSahsulandLevel3CovariatesCovariateConfiguration() {
 		
 		/*
 		 * Here we create a data set configuration for a CSV file that will contain
@@ -348,19 +411,16 @@ public class SampleDataGenerator {
 		 * level3
 		 * ses
 		 * ethnicity
-		 */		
-		
-		RIFConversionFunctionFactory rifConversionFactory
-			= RIFConversionFunctionFactory.newInstance();
+		 */	
 		RIFDataTypeFactory rifDataTypeFactory
 			= RIFDataTypeFactory.newInstance();
 		
-		DataSetConfiguration ethnicityLevel3DataSetConfiguration
+		DataSetConfiguration sahuslandLevel3CovariatesConfiguration
 			= DataSetConfiguration.newInstance();
-		ethnicityLevel3DataSetConfiguration.setName("sahsuland_covariates_level3");
+		sahuslandLevel3CovariatesConfiguration.setName("sahsuland_covariates_level3");
 		//indicates what part of the RIF schema we are targetting by
 		//importing the data set
-		ethnicityLevel3DataSetConfiguration.setRIFSchemaArea(
+		sahuslandLevel3CovariatesConfiguration.setRIFSchemaArea(
 			RIFSchemaArea.GEOMETRY_DATA);
 		
 		DataSetFieldConfiguration yearFieldConfiguration
@@ -371,7 +431,7 @@ public class SampleDataGenerator {
 			rifDataTypeFactory.getDataType("rif_year"));
 		yearFieldConfiguration.setDuplicateIdentificationField(true);
 		yearFieldConfiguration.setCoreFieldDescription("calendar year of covariate data");				
-		ethnicityLevel3DataSetConfiguration.addFieldConfiguration(yearFieldConfiguration);
+		sahuslandLevel3CovariatesConfiguration.addFieldConfiguration(yearFieldConfiguration);
 
 
 		DataSetFieldConfiguration level3ResolutionFieldConfiguration
@@ -383,7 +443,7 @@ public class SampleDataGenerator {
 		level3ResolutionFieldConfiguration.setFieldPurpose(FieldPurpose.GEOGRAPHICAL_RESOLUTION);
 		//We will allow blank values for resolution
 		level3ResolutionFieldConfiguration.setEmptyValueAllowed(true);
-		ethnicityLevel3DataSetConfiguration.addFieldConfiguration(level3ResolutionFieldConfiguration);
+		sahuslandLevel3CovariatesConfiguration.addFieldConfiguration(level3ResolutionFieldConfiguration);
 
 		DataSetFieldConfiguration sesFieldConfiguration
 			= DataSetFieldConfiguration.newInstance(
@@ -394,7 +454,7 @@ public class SampleDataGenerator {
 		sesFieldConfiguration.setDuplicateIdentificationField(true);
 		sesFieldConfiguration.setCoreFieldDescription("socio-economic status in quintiles");				
 		sesFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
-		ethnicityLevel3DataSetConfiguration.addFieldConfiguration(sesFieldConfiguration);	
+		sahuslandLevel3CovariatesConfiguration.addFieldConfiguration(sesFieldConfiguration);	
 		
 		DataSetFieldConfiguration ethnicityFieldConfiguration
 			= DataSetFieldConfiguration.newInstance(
@@ -405,13 +465,161 @@ public class SampleDataGenerator {
 		sesFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
 		ethnicityFieldConfiguration.setDuplicateIdentificationField(true);
 		ethnicityFieldConfiguration.setCoreFieldDescription("non-white ethnicity score with categories 1,2,3");				
-		ethnicityLevel3DataSetConfiguration.addFieldConfiguration(ethnicityFieldConfiguration);
-		
-		
-		return ethnicityLevel3DataSetConfiguration;
+		sahuslandLevel3CovariatesConfiguration.addFieldConfiguration(ethnicityFieldConfiguration);
+			
+		return sahuslandLevel3CovariatesConfiguration;
 		
 	}
 
+
+	public DataSetConfiguration createSahsulandLevel4CovariatesCovariateConfiguration() {
+		
+		/*
+		 * Here we create a data set configuration for a CSV file that will contain
+		 * values for ethnicity for level4 geographical resolution.  We are anticipating
+		 * that the CSV file will map to sahsuland_covariates_level4, and will have
+		 * these fields:
+		 * 
+		 * year
+		 * level4
+		 * ses
+		 * areatri1km
+		 * near_dist
+		 * tri_1km
+		 */		
+		
+
+		RIFDataTypeFactory rifDataTypeFactory
+			= RIFDataTypeFactory.newInstance();
+		
+		DataSetConfiguration sahuslandLevel4CovariatesConfiguration
+			= DataSetConfiguration.newInstance();
+		sahuslandLevel4CovariatesConfiguration.setName("sahsuland_covariates_level4");
+		//indicates what part of the RIF schema we are targetting by
+		//importing the data set
+		sahuslandLevel4CovariatesConfiguration.setRIFSchemaArea(
+			RIFSchemaArea.GEOMETRY_DATA);
+		
+		DataSetFieldConfiguration yearFieldConfiguration
+			= DataSetFieldConfiguration.newInstance(
+				"sahsuland_covariates_level4", 
+				"year");
+		yearFieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_year"));
+		yearFieldConfiguration.setDuplicateIdentificationField(true);
+		yearFieldConfiguration.setCoreFieldDescription("calendar year of covariate data");				
+		sahuslandLevel4CovariatesConfiguration.addFieldConfiguration(yearFieldConfiguration);
+
+
+		DataSetFieldConfiguration level3ResolutionFieldConfiguration
+			= DataSetFieldConfiguration.newInstance(
+				"sahsuland_covariates_level4", 
+				"level4");
+		level3ResolutionFieldConfiguration.setCoreFieldDescription("eg: output area");				
+		level3ResolutionFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		level3ResolutionFieldConfiguration.setFieldPurpose(FieldPurpose.GEOGRAPHICAL_RESOLUTION);
+		//We will allow blank values for resolution
+		level3ResolutionFieldConfiguration.setEmptyValueAllowed(true);
+		sahuslandLevel4CovariatesConfiguration.addFieldConfiguration(level3ResolutionFieldConfiguration);
+
+		DataSetFieldConfiguration sesFieldConfiguration
+			= DataSetFieldConfiguration.newInstance(
+				"sahsuland_covariates_level4", 
+				"ses");	
+		sesFieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_integer"));
+		sesFieldConfiguration.setDuplicateIdentificationField(true);
+		sesFieldConfiguration.setCoreFieldDescription("socio-economic status in quintiles");				
+		sesFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
+		sahuslandLevel4CovariatesConfiguration.addFieldConfiguration(sesFieldConfiguration);	
+
+
+		DataSetFieldConfiguration areatri1kmFieldConfiguration
+			= DataSetFieldConfiguration.newInstance(
+				"sahsuland_covariates_level4", 
+				"areatri1km");	
+		areatri1kmFieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_integer"));
+		areatri1kmFieldConfiguration.setDuplicateIdentificationField(true);
+		areatri1kmFieldConfiguration.setCoreFieldDescription("toxic release inventory within 1km of area (0=no, 1=yes)");				
+		areatri1kmFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
+		sahuslandLevel4CovariatesConfiguration.addFieldConfiguration(areatri1kmFieldConfiguration);	
+		
+
+		DataSetFieldConfiguration nearDistFieldConfiguration
+			= DataSetFieldConfiguration.newInstance(
+				"sahsuland_covariates_level4", 
+				"areatri1km");	
+		nearDistFieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_double"));
+		nearDistFieldConfiguration.setDuplicateIdentificationField(true);
+		nearDistFieldConfiguration.setCoreFieldDescription("Distance (m) from area centroid to nearest TRI site");				
+		nearDistFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
+		sahuslandLevel4CovariatesConfiguration.addFieldConfiguration(nearDistFieldConfiguration);	
+		
+
+		DataSetFieldConfiguration tri1kmFieldConfiguration
+			= DataSetFieldConfiguration.newInstance(
+				"sahsuland_covariates_level4", 
+				"areatri1km");	
+		tri1kmFieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_integer"));
+		tri1kmFieldConfiguration.setDuplicateIdentificationField(true);
+		tri1kmFieldConfiguration.setCoreFieldDescription("Toxic Release Inventory within 1 km of area centroid (0=no, 1=yes)");				
+		tri1kmFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
+		sahuslandLevel4CovariatesConfiguration.addFieldConfiguration(tri1kmFieldConfiguration);	
+		
+		
+		DataSetFieldConfiguration ethnicityFieldConfiguration
+			= DataSetFieldConfiguration.newInstance(
+				"sahsuland_covariates_level4", 
+				"ethnicity");	
+		ethnicityFieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_integer"));
+		sesFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
+		ethnicityFieldConfiguration.setDuplicateIdentificationField(true);
+		ethnicityFieldConfiguration.setCoreFieldDescription("non-white ethnicity score with categories 1,2,3");				
+		sahuslandLevel4CovariatesConfiguration.addFieldConfiguration(ethnicityFieldConfiguration);
+		
+		
+		return sahuslandLevel4CovariatesConfiguration;
+		
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	public DataSetConfiguration getEthnicityCovariateConfiguration() {
 		
@@ -423,9 +631,6 @@ public class SampleDataGenerator {
 		 * level3
 		 * ethnicity
 		 */		
-		
-		RIFConversionFunctionFactory rifConversionFactory
-			= RIFConversionFunctionFactory.newInstance();
 		RIFDataTypeFactory rifDataTypeFactory
 			= RIFDataTypeFactory.newInstance();
 		
