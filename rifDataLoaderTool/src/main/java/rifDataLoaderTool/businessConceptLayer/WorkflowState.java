@@ -2,8 +2,6 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
 
-import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-
 import java.util.ArrayList;
 
 /**

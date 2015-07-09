@@ -3,7 +3,6 @@ package rifDataLoaderTool.businessConceptLayer;
 import java.text.Collator;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifServices.system.RIFServiceMessages;
 
 

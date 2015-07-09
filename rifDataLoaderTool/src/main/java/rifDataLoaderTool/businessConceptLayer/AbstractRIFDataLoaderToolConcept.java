@@ -1,17 +1,12 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import java.util.ArrayList;
-
-
-
-
-
-
-
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceSecurityException;
+
+import java.util.ArrayList;
+
 
 /**
  * A convenience class that is meant to hold code common to all of the business class
