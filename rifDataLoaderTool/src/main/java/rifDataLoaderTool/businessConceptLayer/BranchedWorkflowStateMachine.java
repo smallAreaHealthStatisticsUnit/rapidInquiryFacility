@@ -3,8 +3,52 @@ package rifDataLoaderTool.businessConceptLayer;
 import java.util.ArrayList;
 
 /**
+ * Describes the steps of a workflow that is used to combine or split files.
+ * In most cases, we expect users to load a single CSV file that will be transformed
+ * through these steps:
+ * <ol>
+ * <li>Load</li>
+ * <li>Clean</li>
+ * <li>Convert</li>
+ * <li>Optimise</li>
+ * <li>Check</li>
+ * <li>Publish</li>
+ * </ol>
  *
+ * This workflow is described in 
+ * {@link rifDataLoaderTool.businessConceptLayer.LinearWorkflowStateMachine}.  
+ * In cases where a group wants to combine multiple data sets or split them into
+ * separate tables, additional steps for "Split" and "Combine" are needed.  
+ * 
+ * <p>
+ * For example, we anticipate that we will need combine and split to process the 
+ * UK's HES data sets, which have millions of rows and dozens of columns.  For 
+ * example, SAHSU separates HES columns into different tables:
+ * <ul>
+ * <li>core columns: the most commonly used fields.</li>
+ * <li>extension columns: rarely used fields </li>
+ * <li>conf columns: fields that are considered highly sensitive and will be encrypted
+ * and have different access permissions </li>
+ * </ul>
  *
+ * <p>
+ * We receive files in yearly updates, so we could have many files that cover different
+ * fiscal or calendar years.  In the interests of efficiency, we may want to combine
+ * yearly records into a single table.  So given several large HES CSV files, we might
+ * first split the columns into tables having different themes and then combine multiple
+ * years of data.  
+ * </p>
+ * 
+ * <p>
+ * We anticipate that some groups may combine, split, or do some combination of the two.
+ * However, we also expect that the typical workflow will not need these two steps.
+ * Having an arbitrary sequence of repeating steps can complicate the way our design
+ * would handle both linear and branched work flows.  Therefore, we have separated
+ * split and combine and put them into their own mini-workflow that can be inserted
+ * in the linear work flow.  The inputs of a branched workflow are tables that have
+ * been converted and the outputs are tables that can be accepted by the Optimise step.
+ * </p>
+ * 
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
@@ -52,7 +96,8 @@ import java.util.ArrayList;
  *
  */
 
-public class BranchedWorkflowStateMachine {
+public class BranchedWorkflowStateMachine 
+	implements WorkflowStateMachine {
 
 	// ==========================================
 	// Section Constants
@@ -69,7 +114,7 @@ public class BranchedWorkflowStateMachine {
 	// ==========================================
 
 	public BranchedWorkflowStateMachine() {
-
+		workFlowStates = new ArrayList<WorkflowState>();
 	}
 	
 	public void startWorkflow() {
@@ -92,6 +137,15 @@ public class BranchedWorkflowStateMachine {
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public WorkflowState getFirstState() {
+		return workFlowStates.get(0);			
+	}
+	
+	public WorkflowState getLastState() {
+		int numberOfWorkFlowStates = workFlowStates.size();
+		return workFlowStates.get(numberOfWorkFlowStates - 1);		
+	}
+	
 	public void first() {
 		currentIndex = 0;
 		
@@ -138,7 +192,6 @@ public class BranchedWorkflowStateMachine {
 		
 	}
 
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

@@ -62,7 +62,8 @@ import java.util.ArrayList;
  *
  */
 
-public class LinearWorkflowStateMachine {
+public class LinearWorkflowStateMachine 
+	implements WorkflowStateMachine {
 
 	// ==========================================
 	// Section Constants
