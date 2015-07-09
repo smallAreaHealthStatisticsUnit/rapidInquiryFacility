@@ -1,7 +1,11 @@
 package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+
 import rifDataLoaderTool.businessConceptLayer.FieldPurpose;
+import rifDataLoaderTool.businessConceptLayer.RIFConversionFunction;
+import rifDataLoaderTool.businessConceptLayer.RIFConversionFunctionFactory;
+
 import rifDataLoaderTool.businessConceptLayer.FieldRequirementLevel;
 import rifDataLoaderTool.businessConceptLayer.RIFCheckOption;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
@@ -78,6 +82,7 @@ public final class DataSetFieldConfigurationHandler
 	private RIFCheckOptionConfigurationHandler rifCheckOptionConfigurationHandler;
 	
 	private RIFDataTypeFactory rifDataTypeFactory;
+	private RIFConversionFunctionFactory rifConversionFunctionFactory;
 	private ArrayList<DataSetFieldConfiguration> dataSetFieldConfigurations;
 	private DataSetFieldConfiguration currentDataSetFieldConfiguration;
 	
@@ -86,8 +91,8 @@ public final class DataSetFieldConfigurationHandler
 	// ==========================================
 
 	public DataSetFieldConfigurationHandler() {
-		rifDataTypeFactory = new RIFDataTypeFactory();
-		
+		rifDataTypeFactory = RIFDataTypeFactory.newInstance();
+		rifConversionFunctionFactory = RIFConversionFunctionFactory.newInstance();
 		rifCheckOptionConfigurationHandler
 			= new RIFCheckOptionConfigurationHandler();
 		
@@ -155,6 +160,15 @@ public final class DataSetFieldConfigurationHandler
 				getSingularRecordName(), 
 				"convert_field_name", 
 				fieldConfiguration.getConvertFieldName());
+			
+			RIFConversionFunction rifConversionFunction
+				= fieldConfiguration.getConvertFunction();
+			if (rifConversionFunction != null) {
+				xmlUtility.writeField(
+					getSingularRecordName(), 
+					"convert_field_function", 
+					rifConversionFunction.getFunctionName());
+			}
 			
 			xmlUtility.writeField(
 				getSingularRecordName(), 
@@ -273,7 +287,7 @@ public final class DataSetFieldConfigurationHandler
 			else if (equalsFieldName("rif_data_type", qualifiedName)) {
 				String dataTypeName = getCurrentFieldValue();
 				AbstractRIFDataType rifDataType 
-				= rifDataTypeFactory.getDataType(dataTypeName);
+					= rifDataTypeFactory.getDataType(dataTypeName);
 				currentDataSetFieldConfiguration.setRIFDataType(rifDataType);
 			}
 		}		
@@ -288,6 +302,12 @@ public final class DataSetFieldConfigurationHandler
 		else if (equalsFieldName("convert_field_name", qualifiedName)) {
 			currentDataSetFieldConfiguration.setConvertFieldName(
 				getCurrentFieldValue());
+		}	
+		else if (equalsFieldName("convert_field_function", qualifiedName)) {
+			String functionName = getCurrentFieldValue();	
+			RIFConversionFunction rifConversionFunction
+				= rifConversionFunctionFactory.getRIFConvertFunction(functionName);
+			currentDataSetFieldConfiguration.setConvertFunction(rifConversionFunction);
 		}	
 		else if (equalsFieldName("optimise_using_index", qualifiedName)) {
 			currentDataSetFieldConfiguration.setOptimiseUsingIndex(
