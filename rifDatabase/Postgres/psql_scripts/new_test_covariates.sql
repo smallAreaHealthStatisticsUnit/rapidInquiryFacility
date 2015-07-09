@@ -84,9 +84,9 @@ WITH a AS (
 	SELECT DISTINCT level4, tri_1km, near_dist, areatri1km 
 	  FROM sahsuland_covariates_level4
 )
-SELECT a.*, NTILE(5) OVER w1 AS tri_1km_quintiles 
+SELECT a.*, NTILE(5) OVER w1 AS near_dist_quintiles 
   FROM a 
-	WINDOW w1 AS (ORDER BY tri_1km)
+	WINDOW w1 AS (ORDER BY near_dist)
  ORDER BY 1;  
 CREATE UNIQUE INDEX sahsuland_tri_level4_pk ON sahsuland_tri_level4(level4); 
 ALTER TABLE sahsuland_tri_level4 ADD CONSTRAINT sahsuland_tri_level4_pk PRIMARY KEY USING INDEX sahsuland_tri_level4_pk;
@@ -94,6 +94,11 @@ ALTER TABLE sahsuland_tri_level4 ADD CONSTRAINT sahsuland_tri_level4_pk PRIMARY 
 \COPY sahsuland_tri_level4 TO '../../dataload_example_data/sahsuland_tri_level4.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\', HEADER);
 -- For editors' sake
  
+SELECT near_dist_quintiles, COUNT(near_dist_quintiles) AS quintile, MIN(near_dist) AS min_val, MAX(near_dist) AS max_val 
+  FROM sahsuland_tri_level4
+ GROUP BY near_dist_quintiles
+ ORDER BY 1;
+   
 DROP TABLE sahsuland_tri_level4;
 
 DROP TABLE IF EXISTS sahsuland_ses_level4;
