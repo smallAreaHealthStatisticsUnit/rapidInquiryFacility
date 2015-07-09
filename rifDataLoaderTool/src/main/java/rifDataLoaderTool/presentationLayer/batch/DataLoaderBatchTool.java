@@ -185,7 +185,7 @@ public class DataLoaderBatchTool {
 		String responseHeaderMessage
 			= RIFDataLoaderToolMessages.getMessage("dataLoaderBatchTool.showSupportedRIFDataTypes.response");		
 		RIFDataTypeFactory rifDataTypeFactory
-			= new RIFDataTypeFactory();		
+			= RIFDataTypeFactory.newInstance();		
 		String[] supportedRIFDataTypes = rifDataTypeFactory.getDataTypeNames();
 
 		showOptionListResult(
