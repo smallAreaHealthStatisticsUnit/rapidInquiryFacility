@@ -74,7 +74,7 @@ BEGIN
 END;
 $$;
 
-\echo Dropping all objects...quote_ident(l_schema)||'.'||quote_ident(l_table
+\echo Dropping all objects...
 
 --
 -- Drop all objects
