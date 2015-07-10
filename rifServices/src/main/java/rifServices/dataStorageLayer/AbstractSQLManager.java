@@ -2,11 +2,11 @@ package rifServices.dataStorageLayer;
 
 
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.system.RIFDatabaseProperties;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
 import java.sql.*;

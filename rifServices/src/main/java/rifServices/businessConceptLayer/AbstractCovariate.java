@@ -1,8 +1,8 @@
 package rifServices.businessConceptLayer;
 
+import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.AbstractRIFConcept;
 import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceSecurityException;
 import rifServices.util.FieldValidationUtility;
 
 import java.text.Collator;

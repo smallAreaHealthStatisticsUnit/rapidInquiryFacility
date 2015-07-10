@@ -1,9 +1,9 @@
 package rifServices.fileFormats;
 
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
 import java.io.File;

@@ -1,5 +1,5 @@
 
-package rifServices.util;
+package rifGenericLibrary.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

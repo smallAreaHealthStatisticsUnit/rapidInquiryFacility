@@ -3,13 +3,15 @@ package rifServices.fileFormats;
 import java.io.ByteArrayOutputStream;
 
 
+
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.User;
 
 
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
+
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;

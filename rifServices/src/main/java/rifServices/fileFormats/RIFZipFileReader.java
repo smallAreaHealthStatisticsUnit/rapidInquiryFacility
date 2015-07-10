@@ -2,9 +2,9 @@
 package rifServices.fileFormats;
 
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
 import org.xml.sax.SAXException;
@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;

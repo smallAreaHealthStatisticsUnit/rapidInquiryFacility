@@ -1,8 +1,9 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
-
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.AdjustableCovariate;
@@ -13,10 +14,8 @@ import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFDatabaseProperties;
 import rifServices.util.RIFLogger;
 
 import java.util.ArrayList;

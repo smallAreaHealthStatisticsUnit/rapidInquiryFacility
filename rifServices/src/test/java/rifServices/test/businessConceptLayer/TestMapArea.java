@@ -8,11 +8,12 @@ import java.util.ArrayList;
 
 
 
+
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.MapArea;
-import rifServices.system.RIFServiceException;
-import rifServices.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
 import rifServices.test.AbstractRIFTestCase;
 import static org.junit.Assert.*;

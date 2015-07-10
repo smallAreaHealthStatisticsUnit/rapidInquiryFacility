@@ -3,9 +3,9 @@ package rifDataLoaderTool.fileFormats;
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.fileFormats.XMLCommentInjector;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
 import java.io.ByteArrayOutputStream;

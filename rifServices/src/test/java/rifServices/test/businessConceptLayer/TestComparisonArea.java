@@ -1,15 +1,14 @@
 package rifServices.test.businessConceptLayer;
 
 
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.ComparisonArea;
-
 import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.MapArea;
-import rifServices.system.RIFServiceException;
-import rifServices.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
 import rifServices.test.AbstractRIFTestCase;
 import static org.junit.Assert.*;

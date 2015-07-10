@@ -4,8 +4,8 @@ import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.TextRIFDataType;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifServices.system.RIFServiceException;
-import rifServices.system.RIFServiceSecurityException;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.util.FieldValidationUtility;
 
 import java.util.ArrayList;

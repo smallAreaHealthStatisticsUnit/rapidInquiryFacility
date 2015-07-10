@@ -1,5 +1,6 @@
 package rifServices.test.services;
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.*;
 import rifServices.businessConceptLayer.*;
 

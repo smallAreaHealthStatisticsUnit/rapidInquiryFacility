@@ -1,5 +1,6 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
 
 
@@ -9,6 +10,7 @@ import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.*;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.*;

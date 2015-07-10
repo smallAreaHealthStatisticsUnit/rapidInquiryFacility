@@ -1,11 +1,11 @@
 package rifServices.test;
 
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
-
-import rifServices.system.RIFServiceException;
 import rifServices.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+
 import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;

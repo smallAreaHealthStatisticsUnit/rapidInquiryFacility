@@ -1,6 +1,7 @@
 
 package rifServices.businessConceptLayer;
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.*;
 import rifServices.businessConceptLayer.AbstractRIFConcept;
 

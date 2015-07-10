@@ -2,11 +2,11 @@ package rifServices.test.businessConceptLayer;
 
 
 
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
-import rifServices.system.RIFServiceSecurityException;
 import rifServices.test.AbstractRIFTestCase;
 import static org.junit.Assert.*;
 

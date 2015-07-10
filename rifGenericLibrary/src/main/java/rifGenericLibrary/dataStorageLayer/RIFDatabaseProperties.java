@@ -1,22 +1,8 @@
-package rifServices.util;
+package rifGenericLibrary.dataStorageLayer;
 
-
-
-import java.util.HashMap;
-import java.util.ArrayList;
 
 /**
- * <p>
- * This class is intended to provide a very primitive diagnostic tool to give an
- * approximate idea of how long it takes parts of the code to execute.  This is nothing
- * more than something that monitors calls to System.currentTimeMillis() values.
- * </p>
- * 
- * <p>
- * The class is designed purely to give a very rough idea of where time is being
- * spent in method calls.  It is not thread-safe and eventually we will be looking at
- * profiling tools instead.
- * 
+ *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
  * that rapidly addresses epidemiological and public health questions using 
@@ -75,93 +61,53 @@ import java.util.ArrayList;
  *
  */
 
-public final class CrudeCodeExecutionTimer {
+public class RIFDatabaseProperties {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private static final CrudeCodeExecutionTimer timer 
-		= new CrudeCodeExecutionTimer();
-	
-	private HashMap<String, Long> timeFromIthStoppingPoint;
-	private ArrayList<String> stoppingPointLabels;
-	private long startTime;
-	private long stopTime;
+	private DatabaseType databaseType;
+	private boolean isCaseSensitive;
+
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private CrudeCodeExecutionTimer() {
-		timeFromIthStoppingPoint = new HashMap<String, Long>();
-		stoppingPointLabels = new ArrayList<String>();		
+	private RIFDatabaseProperties(
+		final DatabaseType databaseType,
+		final boolean isCaseSensitive) {
+
+		this.databaseType = databaseType;
+		this.isCaseSensitive = isCaseSensitive;
 	}
 
+	public static RIFDatabaseProperties newInstance(
+		final DatabaseType databaseType,
+		final boolean isCaseSensitive) {
+		
+		RIFDatabaseProperties rifDatabaseProperties
+			= new RIFDatabaseProperties(
+				databaseType,
+				isCaseSensitive);
+		
+		return rifDatabaseProperties;
+	}
+	
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
-	public static CrudeCodeExecutionTimer getTimer() {
-		return timer;
+	public boolean isCaseSensitive() {
+		return isCaseSensitive;
 	}
 	
-	public void clearStoppingPoints() {		
-		timeFromIthStoppingPoint.clear();
-	}
-
-	public void start() {
-		startTime = System.currentTimeMillis();		
-	}
-	
-	public void addStoppingPoint(
-		final String stoppingPointLabel) {
-		
-		timeFromIthStoppingPoint.put(
-			stoppingPointLabel,
-			System.currentTimeMillis());
-		stoppingPointLabels.add(stoppingPointLabel);
-	}
-	
-	public void stop() {
-		stopTime = System.currentTimeMillis();
-	}
-	
-	
-	public void printReport() {
-		long totalTime = stopTime - startTime;
-		if (totalTime == 0) {
-			System.out.println("You forgot to set either the start time, the stop time or both.");
-			return;
-		}
-		
-		System.out.println("Total time spent:" + totalTime);
-		
-		long lastTime = startTime;		
-		for (String stoppingPointLabel : stoppingPointLabels) {
-			long stepNumberTime
-				= timeFromIthStoppingPoint.get(stoppingPointLabel);
-			long timeSinceLastStoppingPoint
-				= stepNumberTime - lastTime;
-			lastTime = stepNumberTime;
-			double percentageTime
-				= (timeSinceLastStoppingPoint * 100) / totalTime;
-			StringBuilder report = new StringBuilder();
-			report.append("At Step \'");
-			report.append(stoppingPointLabel);
-			report.append("\'.");
-			report.append("Time stamp:");
-			report.append(stepNumberTime);
-			report.append("  Time spent:");
-			report.append(timeSinceLastStoppingPoint);
-			report.append("  Percentage:");
-			report.append(percentageTime);
-			System.out.println(report.toString());
-		}
-		
+	public DatabaseType getDatabaseType() {
+		return databaseType;
 	}
 	
 	// ==========================================

@@ -128,7 +128,7 @@
  * <p>
  * Code which uses prepared statements to execute queries is contained within a try...catch...finally block.
  * Should an SQLException be generated, it is caught and audited in a log file.  An instance of 
- * {@link rifServices.system.RIFServiceException} is created with an appropriate {@link rifServices.system.RIFServiceError}
+ * {@link rifGenericLibrary.system.RIFServiceException} is created with an appropriate {@link rifServices.system.RIFServiceError}
  * error code and a collection of error messages.  The messages are meant to provide information to end-users
  * which is in plain language and which does not inadvertently disclose sensitive data.
  * </p>

@@ -5,8 +5,8 @@ import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifServices.system.RIFServiceException;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.sql.*;
 

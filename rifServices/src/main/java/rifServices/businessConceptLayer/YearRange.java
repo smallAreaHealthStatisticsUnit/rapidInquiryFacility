@@ -2,8 +2,8 @@
 package rifServices.businessConceptLayer;
 
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
 

@@ -1,6 +1,7 @@
 package rifServices.dataStorageLayer;
 
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractCovariate;
 
 
@@ -12,7 +13,6 @@ import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.system.RIFServiceException;
 import rifServices.taxonomyServices.HealthCodeProviderInterface;
 import rifServices.util.FieldValidationUtility;
 

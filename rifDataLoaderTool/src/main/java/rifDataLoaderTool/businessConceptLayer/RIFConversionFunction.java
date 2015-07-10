@@ -4,8 +4,7 @@ package rifDataLoaderTool.businessConceptLayer;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,21 +1,21 @@
-package rifServices.system;
+package rifGenericLibrary.util;
 
+
+
+import java.util.HashMap;
 import java.util.ArrayList;
 
-
 /**
- *<p>
- * The typed exception that is used by the RIF services project.  The class is 
- * designed to facilitate testing and reporting errors.  Each object may be
- * associated with multiple error messages, but it can only be given one 
- * error code.  
- * </p>
  * <p>
- * Multiple error messages are typically used in the <code>checkErrors()</code>
- * methods that appear in the business concept layer classes.  The 
- * {@link rifServices.system.RIFServiceError} is used in the automated test suites
- * so they can be precise in identifying the kind of exception that may be expected
- * by test cases that are excercising scenarios with errors.
+ * This class is intended to provide a very primitive diagnostic tool to give an
+ * approximate idea of how long it takes parts of the code to execute.  This is nothing
+ * more than something that monitors calls to System.currentTimeMillis() values.
+ * </p>
+ * 
+ * <p>
+ * The class is designed purely to give a very rough idea of where time is being
+ * spent in method calls.  It is not thread-safe and eventually we will be looking at
+ * profiling tools instead.
  * 
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -24,13 +24,11 @@ import java.util.ArrayList;
  * rates and relative risks for any given health outcome, for specified age 
  * and year ranges, for any given geographical area.
  *
- * <p>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
  * is funded by the Public Health England as part of the MRC-PHE Centre for 
  * Environment and Health. Funding for this project has also been received 
  * from the United States Centers for Disease Control and Prevention.  
- * </p>
  *
  * <pre> 
  * This file is part of the Rapid Inquiry Facility (RIF) project.
@@ -53,8 +51,8 @@ import java.util.ArrayList;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
+
 /*
  * Code Road Map:
  * --------------
@@ -77,117 +75,95 @@ import java.util.ArrayList;
  *
  */
 
-public class RIFServiceException 
-	extends Exception {
+public final class CrudeCodeExecutionTimer {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
 
-	private static final long serialVersionUID = 609449213280772202L;
-
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The error. */
-	private Object error;
+	private static final CrudeCodeExecutionTimer timer 
+		= new CrudeCodeExecutionTimer();
 	
-	/** The error messages. */
-	private ArrayList<String> errorMessages;
+	private HashMap<String, Long> timeFromIthStoppingPoint;
+	private ArrayList<String> stoppingPointLabels;
+	private long startTime;
+	private long stopTime;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	/**
-	 * Instantiates a new RIF service exception.
-	 *
-	 * @param error the error
-	 * @param errorMessage the error message
-	 */
-	public RIFServiceException(
-		final Object error,
-		final String errorMessage) {
-		
-		super(errorMessage);
-		
-		this.error = error;
-		errorMessages = new ArrayList<String>();
-		errorMessages.add(errorMessage);
-	}
-	
-	public RIFServiceException(
-		final String errorMessage) {
-			
-		super(errorMessage);
-			
-		errorMessages = new ArrayList<String>();
-		errorMessages.add(errorMessage);
-	}
-	
-
-	/**
-	 * Instantiates a new RIF service exception.
-	 *
-	 * @param error the error
-	 * @param errorMessages the error messages
-	 */
-	public RIFServiceException(
-		final Object error,
-		final ArrayList<String> errorMessages) {
-		
-		this.error = error;
-		this.errorMessages = new ArrayList<String>();
-		this.errorMessages.addAll(errorMessages);
+	private CrudeCodeExecutionTimer() {
+		timeFromIthStoppingPoint = new HashMap<String, Long>();
+		stoppingPointLabels = new ArrayList<String>();		
 	}
 
-	public RIFServiceException(
-		final ArrayList<String> errorMessages) {
-			
-		this.errorMessages = new ArrayList<String>();
-		this.errorMessages.addAll(errorMessages);
-	}	
-	
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	/**
-	 * Gets the error.
-	 *
-	 * @return the error
-	 */
-	public Object getError() {
 
-		return error;
+	public static CrudeCodeExecutionTimer getTimer() {
+		return timer;
 	}
 	
-	/**
-	 * Gets the error messages.
-	 *
-	 * @return the error messages
-	 */
-	public ArrayList<String> getErrorMessages() {
+	public void clearStoppingPoints() {		
+		timeFromIthStoppingPoint.clear();
+	}
 
-		return errorMessages;
+	public void start() {
+		startTime = System.currentTimeMillis();		
 	}
 	
-	/**
-	 * Gets the error message count.
-	 *
-	 * @return the error message count
-	 */
-	public int getErrorMessageCount() {
-
-		return errorMessages.size();
+	public void addStoppingPoint(
+		final String stoppingPointLabel) {
+		
+		timeFromIthStoppingPoint.put(
+			stoppingPointLabel,
+			System.currentTimeMillis());
+		stoppingPointLabels.add(stoppingPointLabel);
+	}
+	
+	public void stop() {
+		stopTime = System.currentTimeMillis();
 	}
 	
 	
-	public void printErrors() {
-		for (String errorMessage : errorMessages) {
-			System.out.println(errorMessage);
+	public void printReport() {
+		long totalTime = stopTime - startTime;
+		if (totalTime == 0) {
+			System.out.println("You forgot to set either the start time, the stop time or both.");
+			return;
 		}
+		
+		System.out.println("Total time spent:" + totalTime);
+		
+		long lastTime = startTime;		
+		for (String stoppingPointLabel : stoppingPointLabels) {
+			long stepNumberTime
+				= timeFromIthStoppingPoint.get(stoppingPointLabel);
+			long timeSinceLastStoppingPoint
+				= stepNumberTime - lastTime;
+			lastTime = stepNumberTime;
+			double percentageTime
+				= (timeSinceLastStoppingPoint * 100) / totalTime;
+			StringBuilder report = new StringBuilder();
+			report.append("At Step \'");
+			report.append(stoppingPointLabel);
+			report.append("\'.");
+			report.append("Time stamp:");
+			report.append(stepNumberTime);
+			report.append("  Time spent:");
+			report.append(timeSinceLastStoppingPoint);
+			report.append("  Percentage:");
+			report.append(percentageTime);
+			System.out.println(report.toString());
+		}
+		
 	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

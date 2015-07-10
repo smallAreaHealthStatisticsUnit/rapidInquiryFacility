@@ -1,9 +1,9 @@
 package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
-import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.system.RIFServiceException;
 
 import javax.swing.*;
 

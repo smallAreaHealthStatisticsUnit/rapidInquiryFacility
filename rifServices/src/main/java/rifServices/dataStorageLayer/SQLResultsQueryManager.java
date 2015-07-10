@@ -1,16 +1,15 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
-
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.*;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFDatabaseProperties;
 import rifServices.util.FieldValidationUtility;
 
 import java.sql.*;

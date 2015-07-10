@@ -6,12 +6,14 @@ import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifServices.businessConceptLayer.RIFResultTable;
-import rifServices.system.RIFDatabaseProperties;
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifGenericLibrary.system.RIFServiceException;
+import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceException;
 import rifServices.util.RIFLogger;
 import rifServices.dataStorageLayer.SQLQueryUtility;
 import rifServices.dataStorageLayer.AbstractSQLManager;
@@ -69,8 +71,7 @@ import rifServices.dataStorageLayer.AbstractSQLManager;
  *
  */
 
-public abstract class AbstractDataLoaderStepManager 
-	extends AbstractSQLManager {
+public abstract class AbstractDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
@@ -79,7 +80,8 @@ public abstract class AbstractDataLoaderStepManager
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private RIFDatabaseProperties rifDatabaseProperties;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -87,7 +89,7 @@ public abstract class AbstractDataLoaderStepManager
 	public AbstractDataLoaderStepManager(
 		final RIFDataLoaderStartupOptions startupOptions) {
 		
-		super(startupOptions.getRIFDatabaseProperties());
+		this.rifDatabaseProperties = startupOptions.getRIFDatabaseProperties();
 	}
 
 	// ==========================================
@@ -285,6 +287,77 @@ public abstract class AbstractDataLoaderStepManager
 		
 	}
 	
+	
+	protected PreparedStatement createPreparedStatement(
+		final Connection connection,
+		final AbstractSQLQueryFormatter queryFormatter) 
+		throws SQLException {
+				
+		return SQLQueryUtility.createPreparedStatement(
+			connection,
+			queryFormatter);
+
+	}
+		
+
+	protected void logSQLQuery(
+		final String queryName,
+		final AbstractSQLQueryFormatter queryFormatter,
+		final String... parameters) {
+
+		StringBuilder queryLog = new StringBuilder();
+		queryLog.append("==========================================================\n");
+		queryLog.append("QUERY NAME:");
+		queryLog.append(queryName);
+		queryLog.append("\n");
+		
+		queryLog.append("PARAMETERS:");
+		queryLog.append("\n");
+		for (int i = 0; i < parameters.length; i++) {
+			queryLog.append("\t");
+			queryLog.append(i + 1);
+			queryLog.append(":\"");
+			queryLog.append(parameters[i]);
+			queryLog.append("\"\n");			
+		}
+		queryLog.append("\n");
+		queryLog.append("SQL QUERY TEXT\n");
+		queryLog.append(queryFormatter.generateQuery());
+		queryLog.append("\n");
+		queryLog.append("==========================================================\n");
+		
+		System.out.println(queryLog.toString());	
+
+	}
+	
+	protected void logSQLException(final SQLException sqlException) {
+		sqlException.printStackTrace();
+	}
+
+	protected void logException(final Exception exception) {
+		exception.printStackTrace();
+	}
+	
+	protected void setAutoCommitOn(
+		final Connection connection,
+		final boolean isAutoCommitOn)
+		throws RIFServiceException {
+		
+		try {
+			System.out.println("Setting autocommit to=="+isAutoCommitOn+"==");
+			connection.setAutoCommit(isAutoCommitOn);			
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage("general.db.error.unableToSetCommit");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DB_UNABLE_TO_ADJUST_AUTO_COMMIT,
+					errorMessage);
+			throw rifServiceException;
+		}
+		
+	}
 	
 	
 	// ==========================================

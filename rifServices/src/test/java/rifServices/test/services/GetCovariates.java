@@ -1,11 +1,12 @@
 package rifServices.test.services;
 
 
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFSecurityViolation;
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 
 import java.util.ArrayList;
-
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -283,7 +284,7 @@ public final class GetCovariates
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}		
 
@@ -351,7 +352,7 @@ public final class GetCovariates
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}			
 	}
@@ -373,7 +374,7 @@ public final class GetCovariates
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}			
 	}
@@ -396,7 +397,7 @@ public final class GetCovariates
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}			
 	}

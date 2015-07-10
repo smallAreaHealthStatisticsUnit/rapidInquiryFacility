@@ -7,8 +7,8 @@ import rifDataLoaderTool.businessConceptLayer.RIFSchemaAreaPropertyManager;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.WorkflowValidator;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceException;
 
 import java.util.ArrayList;
 

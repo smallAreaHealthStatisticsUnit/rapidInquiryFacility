@@ -1,6 +1,7 @@
 package rifServices.test.services;
 
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.test.AbstractRIFTestCase;
 
 
@@ -9,8 +10,6 @@ import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.TestRIFStudyRetrievalService;
 import rifServices.dataStorageLayer.TestRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.TestRIFStudySubmissionService;
-import rifServices.system.RIFServiceException;
-
 import rifServices.system.RIFServiceStartupOptions;
 
 import org.junit.After;

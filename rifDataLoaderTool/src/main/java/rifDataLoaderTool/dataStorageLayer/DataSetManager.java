@@ -4,11 +4,8 @@ import rifDataLoaderTool.businessConceptLayer.CleanWorkflowQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
-
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-
-import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
@@ -19,6 +16,7 @@ import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLCreateTableQueryFormatter;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.dataStorageLayer.SQLQueryUtility;
 import rifServices.businessConceptLayer.User;
 

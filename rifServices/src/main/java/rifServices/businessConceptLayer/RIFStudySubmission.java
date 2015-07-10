@@ -1,12 +1,12 @@
 
 package rifServices.businessConceptLayer;
 
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.RIFOutputOption;
-import rifServices.system.RIFServiceException;
-import rifServices.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
 

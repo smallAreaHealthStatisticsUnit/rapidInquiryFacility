@@ -1,7 +1,8 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
-
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.Investigation;
@@ -13,9 +14,7 @@ import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFDatabaseProperties;
 import rifServices.util.RIFLogger;
 
 import java.sql.*;

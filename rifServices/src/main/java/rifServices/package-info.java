@@ -64,7 +64,7 @@
  * <p>
  * The {@link rifServices.system} package contains classes that would be used across the
  * rif services sub-package, as well as in other sub-projects.  For example, the package
- * contains {@link rifServices.system.RIFServiceException}, which is a kind of exception that
+ * contains {@link rifGenericLibrary.system.RIFServiceException}, which is a kind of exception that
  * is used in the <code>rifServices</code>, <code>rifDataLoaderTool</code> and 
  * <code>rifStudySubmissionTool</code> applications. 
  * </p>

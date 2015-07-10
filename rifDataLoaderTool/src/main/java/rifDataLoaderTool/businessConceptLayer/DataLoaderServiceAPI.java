@@ -1,7 +1,7 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceException;
 
 /**
  *

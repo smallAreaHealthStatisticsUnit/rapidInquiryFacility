@@ -1,4 +1,4 @@
-package rifServices.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer;
 
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
@@ -95,8 +95,7 @@ import java.util.Properties;
  *
  */
 
-public final class SQLConnectionManager 
-	extends AbstractSQLManager {
+public final class SQLConnectionManager {
 
 	// ==========================================
 	// Section Constants

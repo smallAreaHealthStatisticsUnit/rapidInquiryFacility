@@ -16,7 +16,7 @@ import rifDataLoaderTool.businessConceptLayer.rifDataTypes.YearRIFDataType;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.OrderedListComboBox;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 
 import javax.swing.border.LineBorder;
 import javax.swing.*;

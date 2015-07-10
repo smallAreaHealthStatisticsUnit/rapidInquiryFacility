@@ -1,12 +1,13 @@
 package rifServices.taxonomyServices;
 
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.Parameter;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
+
 
 
 

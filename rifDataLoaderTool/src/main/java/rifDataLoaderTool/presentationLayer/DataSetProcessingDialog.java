@@ -7,8 +7,8 @@ import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceException;
 
 import java.awt.*;
 import java.awt.event.ActionListener;

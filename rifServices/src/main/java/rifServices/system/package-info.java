@@ -6,7 +6,7 @@
  * for the kinds of errors we might expect the RIF to encounter.
  * </li>
  * <li>
- * {@link rifServices.system.RIFServiceException}: a checked exception for the RIF middleware
+ * {@link rifGenericLibrary.system.RIFServiceException}: a checked exception for the RIF middleware
  * </li>
  * <li>
  * {@link rifServices.system.RIFServiceMessages}: a class that reads messages from a *.properties file

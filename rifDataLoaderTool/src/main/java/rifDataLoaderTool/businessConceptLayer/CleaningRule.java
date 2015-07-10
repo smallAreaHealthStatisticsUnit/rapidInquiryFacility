@@ -2,9 +2,9 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceSecurityException;
-import rifServices.system.RIFServiceException;
 import rifServices.util.FieldValidationUtility;
 
 import java.util.ArrayList;

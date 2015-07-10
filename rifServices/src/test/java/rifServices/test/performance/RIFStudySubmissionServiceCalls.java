@@ -1,6 +1,7 @@
 package rifServices.test.performance;
 
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.test.services.AbstractRIFServiceTestCase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -14,7 +15,6 @@ import rifServices.businessConceptLayer.BoundaryRectangle;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceException;
 
 /**
  *

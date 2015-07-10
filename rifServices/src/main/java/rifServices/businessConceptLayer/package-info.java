@@ -34,7 +34,7 @@
  * <li>
  * a "checkErrors" method will check empty required fields, invalid values of individual fields and invalid combinations
  * of values from multiple fields.  The intent of checkErrors is to identify as many errors as possible, and generate 
- * a {@link rifServices.system.RIFServiceException} if there are any.
+ * a {@link rifGenericLibrary.system.RIFServiceException} if there are any.
  * </li>
  * <li>
  * 

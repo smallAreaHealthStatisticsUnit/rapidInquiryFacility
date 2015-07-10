@@ -1,8 +1,9 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
+
 
 
 import java.util.concurrent.ArrayBlockingQueue;

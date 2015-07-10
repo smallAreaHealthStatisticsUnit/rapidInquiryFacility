@@ -1,11 +1,12 @@
 package rifServices.test.services;
 
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.StudySummary;
 import rifServices.businessConceptLayer.RIFResultTable;
 
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFSecurityViolation;
 
 import static org.junit.Assert.fail;
 import org.junit.Test;
@@ -206,7 +207,7 @@ public final class GetRRValues
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
 				1);
 		}
 	}
@@ -245,7 +246,7 @@ public final class GetRRValues
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
 				1);
 		}
 	}
@@ -264,7 +265,7 @@ public final class GetRRValues
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
 				1);
 		}
 	}

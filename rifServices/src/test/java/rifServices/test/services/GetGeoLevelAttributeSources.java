@@ -2,16 +2,16 @@ package rifServices.test.services;
 
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFSecurityViolation;
 import rifServices.businessConceptLayer.StudyResultRetrievalContext;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.GeoLevelAttributeSource;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
+
 import static org.junit.Assert.*;
-
 import org.junit.Test;
-
 import java.util.ArrayList;
 
 /**
@@ -263,7 +263,7 @@ public final class GetGeoLevelAttributeSources
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}
@@ -307,7 +307,7 @@ public final class GetGeoLevelAttributeSources
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}		
@@ -329,7 +329,7 @@ public final class GetGeoLevelAttributeSources
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 		

@@ -1,9 +1,9 @@
 package rifServices.businessConceptLayer;
 
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceSecurityException;
 
 import java.util.ArrayList;
 

@@ -1,15 +1,16 @@
 
 package rifServices.fileFormats;
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
 
 
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.xml.sax.InputSource;
 
 import java.io.*;

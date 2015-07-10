@@ -1,7 +1,7 @@
 package rifDataLoaderTool.system;
 
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
-import rifServices.system.RIFDatabaseProperties;
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 
 /**
  * Contain a set of parameter values that will be made available to the RIF Data Loader tool

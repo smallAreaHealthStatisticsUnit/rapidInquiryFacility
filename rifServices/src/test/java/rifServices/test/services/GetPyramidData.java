@@ -3,8 +3,9 @@ package rifServices.test.services;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.StudyResultRetrievalContext;
 import rifServices.businessConceptLayer.GeoLevelAttributeSource;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFSecurityViolation;
 
 import static org.junit.Assert.fail;
 import org.junit.Test;
@@ -346,7 +347,7 @@ public final class GetPyramidData
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}
@@ -453,7 +454,7 @@ public final class GetPyramidData
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}
@@ -479,7 +480,7 @@ public final class GetPyramidData
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}
@@ -505,7 +506,7 @@ public final class GetPyramidData
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}
@@ -531,7 +532,7 @@ public final class GetPyramidData
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}

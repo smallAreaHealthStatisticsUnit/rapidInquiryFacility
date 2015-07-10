@@ -1,14 +1,13 @@
 package rifServices.dataStorageLayer;
 
 
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.system.RIFServiceSecurityException.SecurityThreatType;
 import rifServices.businessConceptLayer.RIFServiceInformation;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-
 import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceSecurityException;
-import rifServices.system.RIFServiceSecurityException.SecurityThreatType;
 import rifServices.util.FieldValidationUtility;
 import rifServices.util.RIFLogger;
 

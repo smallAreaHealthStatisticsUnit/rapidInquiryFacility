@@ -1,9 +1,9 @@
 
 package rifServices.taxonomyServices;
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
 import org.xml.sax.Attributes;

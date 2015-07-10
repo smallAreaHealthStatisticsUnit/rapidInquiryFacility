@@ -10,9 +10,9 @@ import java.util.Set;
 import java.util.Collections;
 import java.util.Iterator;
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.RIFLogger;
 

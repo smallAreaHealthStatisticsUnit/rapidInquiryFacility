@@ -1,6 +1,6 @@
 package rifServices.businessConceptLayer;
 
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;

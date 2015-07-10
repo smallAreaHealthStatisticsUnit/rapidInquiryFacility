@@ -7,9 +7,10 @@ package rifServices.test.services;
 import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
-
 import rifServices.fileFormats.RIFZipFileWriter;
+
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFSecurityViolation;
 
 import java.io.File;
 import java.util.ArrayList;

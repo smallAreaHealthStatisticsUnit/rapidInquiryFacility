@@ -1,7 +1,7 @@
 package rifServices.restfulWebServices;
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.*;
-import rifServices.system.RIFServiceException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;

@@ -1,16 +1,17 @@
 package rifServices.test.services;
 
-import static org.junit.Assert.assertNotNull;
-
-import static org.junit.Assert.fail;
-import org.junit.Test;
-
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFSecurityViolation;
 import rifServices.businessConceptLayer.StudySummary;
 import rifServices.businessConceptLayer.RIFResultTable;
-import rifServices.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
 import rifServices.util.FieldValidationUtility;
 import rifServices.system.RIFServiceError;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import org.junit.Test;
+
 
 /**
  *
@@ -412,7 +413,7 @@ public final class GetExtractResultsByBlock
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}
@@ -494,7 +495,7 @@ public final class GetExtractResultsByBlock
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}
@@ -521,7 +522,7 @@ public final class GetExtractResultsByBlock
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}
@@ -548,7 +549,7 @@ public final class GetExtractResultsByBlock
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}

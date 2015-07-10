@@ -1,18 +1,18 @@
 package rifServices.studyDataExtraction;
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.test.services.AbstractRIFServiceTestCase;
-
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 
 
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 import rifServices.dataStorageLayer.TestRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.TestRIFStudySubmissionService;
-
 import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
+
 import org.junit.Test;
 
 /**

@@ -1,17 +1,20 @@
 package rifServices.test.fileFormats;
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.fileFormats.*;
-
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.system.RIFServiceException;
 import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 
 
+
 import org.json.*;
+
 import static org.junit.Assert.*;
+
 import org.junit.Test;
+
 import java.io.*;
 
 /**

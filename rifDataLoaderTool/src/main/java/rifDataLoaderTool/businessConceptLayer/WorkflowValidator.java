@@ -3,7 +3,7 @@ package rifDataLoaderTool.businessConceptLayer;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.text.Collator;
 

@@ -1,6 +1,6 @@
 package rifServices.dataStorageLayer;
 
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 
 /**
  *

@@ -152,9 +152,6 @@ public enum RIFServiceError {
 	/** The invalid geolevel view. */
 	INVALID_GEOLEVEL_VIEW,
 	
-	/** The security violation. */
-	SECURITY_VIOLATION,
-	
 	/** The get covariates. */
 	GET_COVARIATES,
 	

@@ -7,7 +7,8 @@ import rifServices.businessConceptLayer.BoundaryRectangle;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFSecurityViolation;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -417,7 +418,7 @@ public final class GetMapAreasForBoundaryRectangle
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
 				1);
 		}		
 		
@@ -445,7 +446,7 @@ public final class GetMapAreasForBoundaryRectangle
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
 				1);
 		}		
 
@@ -475,7 +476,7 @@ public final class GetMapAreasForBoundaryRectangle
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
 				1);
 		}		
 	}
@@ -503,7 +504,7 @@ public final class GetMapAreasForBoundaryRectangle
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
 				1);
 		}
 
@@ -535,7 +536,7 @@ public final class GetMapAreasForBoundaryRectangle
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
 				1);
 		}		
 		*/

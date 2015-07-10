@@ -1,9 +1,8 @@
 package rifServices.dataStorageLayer;
 
-import rifServices.system.RIFServiceException;
-
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.system.RIFDatabaseProperties;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 
 /**

@@ -1,8 +1,4 @@
-package rifDataLoaderTool.businessConceptLayer;
-
-import java.sql.Connection;
-
-import rifGenericLibrary.system.RIFServiceException;
+package rifGenericLibrary.system;
 
 /**
  *
@@ -54,13 +50,6 @@ import rifGenericLibrary.system.RIFServiceException;
  *
  */
 
-public interface PublishWorkflowQueryGeneratorAPI {
-	
-	public void publishConfiguration(
-		final Connection connection,
-		final DataSetConfiguration dataSetConfiguration)
-		throws RIFServiceException;
-
+public enum RIFSecurityViolation {
+	GENERAL_SECURITY_VIOLATION
 }
-
-

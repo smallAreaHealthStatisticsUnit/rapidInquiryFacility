@@ -2,7 +2,7 @@ package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.io.*;
 import java.util.ArrayList;

@@ -4,13 +4,13 @@ package rifDataLoaderTool.dataStorageLayer;
 import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.postgresql.*;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractRIFConcept;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.AbstractRIFService;
 import rifServices.util.FieldValidationUtility;
 import rifServices.util.RIFLogger;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.dataStorageLayer.RIFServiceResources;
 import rifServices.dataStorageLayer.SQLConnectionManager;
@@ -106,7 +106,6 @@ import java.util.Date;
  */
 
 public final class DataLoaderService 
-	extends AbstractRIFService
 	implements DataLoaderServiceAPI {
 	
 	// ==========================================
@@ -118,7 +117,7 @@ public final class DataLoaderService
 	// Section Properties
 	// ==========================================
 	
-	private SQLConnectionManager sqlConnectionManager;
+
 	private RIFDataLoaderStartupOptions startupOptions;
 	
 	private RIFServiceResources rifServiceResources;
@@ -1579,8 +1578,6 @@ public final class DataLoaderService
 				
 	}
 	
-
-	@Override
 	public void validateUser(
 		final User rifManager) 
 		throws RIFServiceException {

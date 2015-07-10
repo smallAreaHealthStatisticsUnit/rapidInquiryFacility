@@ -1,16 +1,17 @@
 package rifServices.test.services;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
-import org.junit.Test;
-
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFSecurityViolation;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 import rifServices.util.FieldValidationUtility;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import org.junit.Test;
+
 
 /**
  *
@@ -261,7 +262,7 @@ public final class GetHealthCode
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
 				1);
 		}
 	}
@@ -299,7 +300,7 @@ public final class GetHealthCode
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}		
 	}
@@ -321,7 +322,7 @@ public final class GetHealthCode
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}		
 	}
@@ -343,7 +344,7 @@ public final class GetHealthCode
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}		
 	}

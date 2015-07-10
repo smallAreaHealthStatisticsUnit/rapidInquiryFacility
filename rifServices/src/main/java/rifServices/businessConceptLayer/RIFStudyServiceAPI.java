@@ -2,7 +2,7 @@ package rifServices.businessConceptLayer;
 
 import java.util.ArrayList;
 
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 
 /**
  * Defines methods that are common to both study submission and study result

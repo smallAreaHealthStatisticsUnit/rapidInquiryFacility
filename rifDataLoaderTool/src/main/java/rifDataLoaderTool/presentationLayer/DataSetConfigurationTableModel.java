@@ -6,7 +6,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
 
 import javax.swing.table.AbstractTableModel;

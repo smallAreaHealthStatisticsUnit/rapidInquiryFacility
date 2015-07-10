@@ -1,7 +1,7 @@
 package rifServices.fileFormats;
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.MapArea;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
 

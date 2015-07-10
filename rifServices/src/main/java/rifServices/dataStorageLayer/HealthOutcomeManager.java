@@ -1,15 +1,14 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.Parameter;
 import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;

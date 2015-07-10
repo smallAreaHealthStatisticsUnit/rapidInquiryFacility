@@ -3,11 +3,10 @@ package rifDataLoaderTool.test;
 
 
 import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
-
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceException;
 import rifServices.test.AbstractRIFTestCase;
 import rifServices.util.FieldValidationUtility;
 

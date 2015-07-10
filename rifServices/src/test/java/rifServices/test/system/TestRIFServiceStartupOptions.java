@@ -1,9 +1,9 @@
 package rifServices.test.system;
 
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.system.RIFServiceException;
-import rifServices.system.RIFServiceSecurityException;
 import rifServices.test.AbstractRIFTestCase;
 
 

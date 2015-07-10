@@ -6,7 +6,8 @@ import rifDataLoaderTool.businessConceptLayer.CleaningRule;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifGenericLibrary.presentationLayer.YesNoQuestionPanel;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
+
 
 
 

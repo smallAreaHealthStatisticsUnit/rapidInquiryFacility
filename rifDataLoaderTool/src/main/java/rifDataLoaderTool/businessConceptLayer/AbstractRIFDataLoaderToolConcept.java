@@ -2,8 +2,8 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
-import rifServices.system.RIFServiceException;
-import rifServices.system.RIFServiceSecurityException;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
 
 import java.util.ArrayList;
 

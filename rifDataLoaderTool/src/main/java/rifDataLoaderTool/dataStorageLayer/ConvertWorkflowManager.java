@@ -2,12 +2,12 @@ package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifServices.dataStorageLayer.SQLQueryUtility;
-import rifServices.system.RIFServiceException;
 
 import java.util.ArrayList;
 import java.sql.*;

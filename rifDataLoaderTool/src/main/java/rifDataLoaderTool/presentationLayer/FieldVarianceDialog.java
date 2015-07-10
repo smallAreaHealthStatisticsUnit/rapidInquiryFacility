@@ -8,7 +8,7 @@ import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.fileFormats.LoadFieldVarianceReport;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 
 import javax.swing.*;
 

@@ -1,8 +1,8 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.RIFLogger;
 

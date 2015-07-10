@@ -1,5 +1,6 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 import rifServices.util.FieldValidationUtility;
@@ -67,7 +68,7 @@ import java.util.ArrayList;
  *has not finished executing.  The use of PreparedStatement objects, and trigger checks that are part of the database
  *should eliminate the prospect of a malicious attack.  However, calls to the <code>checkSecurityViolations(..)</code>
  *methods are intended to identify an attack anyway.  We feel that we should not merely prevent malicious attacks but
- *log any attempts to do so.  If the method throws a {@link rifServices.businessConceptLayer.RIFServiceSecurityException},
+ *log any attempts to do so.  If the method throws a {@link rifGenericLibrary.system.RIFServiceSecurityException},
  *then this class will log it and continue to pass it to client application.
  *
  * <hr>

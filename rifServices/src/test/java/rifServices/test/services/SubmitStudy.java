@@ -2,16 +2,15 @@ package rifServices.test.services;
 
 import static org.junit.Assert.fail;
 
-
-
 import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
+
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFSecurityViolation;
 
 import java.io.File;
 import java.util.ArrayList;
-
 import org.junit.Test;
 
 /**
@@ -461,7 +460,7 @@ public final class SubmitStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
 				1);
 		}
 		finally {
@@ -714,7 +713,7 @@ public final class SubmitStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
 				1);
 		}
 		finally {
@@ -751,7 +750,7 @@ public final class SubmitStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
 				1);
 		}
 		finally {
@@ -792,7 +791,7 @@ public final class SubmitStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
 				1);
 		}
 		finally {
@@ -833,7 +832,7 @@ public final class SubmitStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
 				1);
 		}
 		finally {
@@ -876,7 +875,7 @@ public final class SubmitStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
 				1);
 		}
 		finally {
@@ -916,7 +915,7 @@ public final class SubmitStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION,
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
 				1);
 		}
 		finally {

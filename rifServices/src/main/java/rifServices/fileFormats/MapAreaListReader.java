@@ -1,13 +1,14 @@
 
 package rifServices.fileFormats;
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
 import java.io.File;
 import java.util.ArrayList;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 

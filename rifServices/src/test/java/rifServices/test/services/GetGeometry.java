@@ -1,14 +1,7 @@
 package rifServices.test.services;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-
-//import junit.framework.*;
-
-import org.junit.Test;
-
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFSecurityViolation;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.GeoLevelArea;
@@ -16,7 +9,12 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import java.util.ArrayList;
+import org.junit.Test;
+
 
 /**
  *
@@ -440,7 +438,7 @@ public final class GetGeometry
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}
@@ -566,7 +564,7 @@ public final class GetGeometry
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}
@@ -591,7 +589,7 @@ public final class GetGeometry
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}
@@ -616,7 +614,7 @@ public final class GetGeometry
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}
@@ -642,7 +640,7 @@ public final class GetGeometry
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}
@@ -669,7 +667,7 @@ public final class GetGeometry
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.SECURITY_VIOLATION, 
+				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
 				1);
 		}
 	}

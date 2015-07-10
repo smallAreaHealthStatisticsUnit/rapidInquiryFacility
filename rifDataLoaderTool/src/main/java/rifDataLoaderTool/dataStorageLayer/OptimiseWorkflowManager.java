@@ -1,17 +1,17 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifServices.dataStorageLayer.SQLQueryUtility;
-import rifServices.system.RIFServiceException;
 import rifGenericLibrary.dataStorageLayer.SQLCreateIndexQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteIndexQueryFormatter;
 
 
+
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.sql.*;
 

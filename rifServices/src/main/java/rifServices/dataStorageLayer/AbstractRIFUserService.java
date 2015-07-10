@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.BoundaryRectangle;
@@ -24,7 +25,6 @@ import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.YearRange;
 import rifServices.businessConceptLayer.StudySummary;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
 import rifServices.util.RIFLogger;

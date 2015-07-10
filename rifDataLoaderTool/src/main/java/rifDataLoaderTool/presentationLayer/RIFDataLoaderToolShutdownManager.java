@@ -4,8 +4,8 @@ import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceException;
 
 import javax.swing.JDialog;
 

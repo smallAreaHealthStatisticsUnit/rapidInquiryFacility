@@ -4,11 +4,11 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 
 
-import rifServices.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.RIFGenericUIMessages;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.system.RIFServiceException;
 
 import javax.swing.*;
 
