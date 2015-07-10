@@ -5,10 +5,13 @@ import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifServices.fileFormats.XMLCommentInjector;
 import rifServices.fileFormats.XMLUtility;
 
 import java.util.ArrayList;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -94,6 +97,16 @@ public final class DataSetConfigurationHandler
 		setSingularRecordName("data_set_configuration");
 	}
 	
+	@Override
+	public void initialise(
+		final OutputStream outputStream,
+		final XMLCommentInjector commentInjector) 
+		throws UnsupportedEncodingException {
+
+		super.initialise(outputStream, commentInjector);
+		dataSetFieldConfigurationHandler.initialise(outputStream, commentInjector);
+	}	
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
@@ -129,7 +142,7 @@ public final class DataSetConfigurationHandler
 			xmlUtility.writeField(
 				getSingularRecordName(), 
 				"current_workflow_state", 
-				dataSetConfiguration.getCurrentWorkflowState().getStateName());
+				dataSetConfiguration.getCurrentWorkflowState().getCode());
 			
 			ArrayList<DataSetFieldConfiguration> fieldConfigurations
 				= dataSetConfiguration.getFieldConfigurations();
@@ -179,7 +192,7 @@ public final class DataSetConfigurationHandler
 					nameSpaceURI, 
 					localName, 
 					qualifiedName, 
-					attributes);
+					attributes);				
 			}
 			else {
 				assert false;
@@ -197,6 +210,9 @@ public final class DataSetConfigurationHandler
 		if (isPluralRecordName(qualifiedName)) {
 			deactivate();
 		}
+		else if (isSingularRecordName(qualifiedName) == true) {
+			dataSetConfigurations.add(currentDataSetConfiguration);
+		}		
 		else if (isDelegatedHandlerAssigned()) {
 			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
 				= getCurrentDelegatedHandler();
@@ -211,13 +227,12 @@ public final class DataSetConfigurationHandler
 						=  dataSetFieldConfigurationHandler.getDataSetFieldConfigurations();
 					currentDataSetConfiguration.setFieldConfigurations(fieldConfigurations);
 				}				
+				else {
+					assert false;
+				}
+				//handler just finished				
+				unassignDelegatedHandler();	
 			}
-			else {
-				assert false;
-			}				
-			
-			//handler just finished				
-			unassignDelegatedHandler();	
 		}
 		else if (equalsFieldName("name", qualifiedName)) {
 			currentDataSetConfiguration.setName(getCurrentFieldValue());
@@ -226,13 +241,16 @@ public final class DataSetConfigurationHandler
 			currentDataSetConfiguration.setDescription(getCurrentFieldValue());
 		}
 		else if (equalsFieldName("rif_schema_area", qualifiedName)) {
-			RIFSchemaArea rifSchemaArea = RIFSchemaArea.valueOf(getCurrentFieldValue());
+			RIFSchemaArea rifSchemaArea = RIFSchemaArea.getSchemaAreaFromName(getCurrentFieldValue());
 			currentDataSetConfiguration.setRIFSchemaArea(rifSchemaArea);
 		}
 		else if (equalsFieldName("current_workflow_state", qualifiedName)) {
-			WorkflowState workflowState = WorkflowState.valueOf(getCurrentFieldValue());
+			WorkflowState workflowState = WorkflowState.getWorkflowStateFromCode(getCurrentFieldValue());
 			currentDataSetConfiguration.setCurrentWorkflowState(workflowState);
 		}
+		else {
+			assert false;
+		}		
 	}
 	
 	

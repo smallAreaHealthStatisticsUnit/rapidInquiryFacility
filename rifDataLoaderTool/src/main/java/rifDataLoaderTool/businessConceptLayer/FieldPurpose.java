@@ -92,16 +92,16 @@ public enum FieldPurpose {
 		final String code) {
 		
 		Collator collator = RIFDataLoaderToolMessages.getCollator();
-		if (collator.equals(COVARIATE.getCode()) == true) {
+		if (collator.equals(code, COVARIATE.getCode())) {
 			return COVARIATE;
 		}
-		else if (collator.equals(GEOGRAPHICAL_RESOLUTION.getCode()) == true) {
+		else if (collator.equals(code, GEOGRAPHICAL_RESOLUTION.getCode())) {
 			return GEOGRAPHICAL_RESOLUTION;
 		}
-		else if (collator.equals(HEALTH_CODE.getCode()) == true) {
+		else if (collator.equals(code, HEALTH_CODE.getCode())) {
 			return HEALTH_CODE;
 		}
-		else if (collator.equals(OTHER.getCode()) == true) {
+		else if (collator.equals(code, OTHER.getCode())) {
 			return OTHER;
 		}
 		else {

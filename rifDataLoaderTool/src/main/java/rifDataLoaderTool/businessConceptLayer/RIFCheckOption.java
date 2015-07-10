@@ -2,6 +2,7 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
+import java.text.Collator;
 import java.util.ArrayList;
 
 
@@ -64,21 +65,45 @@ import java.util.ArrayList;
 
 public enum RIFCheckOption {
 	PERCENT_EMPTY_PER_YEAR(
+		"percent_empty_per_year",
 		"rifCheckOption.percentEmptyPerYear.label",
 		"rifCheckOption.percentEmptyPerYear.description"),
 	PERCENT_EMPTY(
+		"percent_empty",
 		"rifCheckOption.percentEmpty.label",
 		"rifCheckOption.percentEmpty.description");
-		
+	
+	
+	private String code;
 	private String nameProperty;
 	private String descriptionProperty;
 	
 	private RIFCheckOption(
+		final String code,
 		final String nameProperty,
 		final String descriptionProperty) {
 		
+		this.code = code;
 		this.nameProperty = nameProperty;
 		this.descriptionProperty = descriptionProperty;
+	}
+	
+	public static RIFCheckOption getOptionFromCode(
+		final String code) {
+		
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		if (collator.equals(code, "percent_empty")) {
+			return RIFCheckOption.PERCENT_EMPTY;
+		}
+		if (collator.equals(code, "percent_empty_per_year")) {
+			return RIFCheckOption.PERCENT_EMPTY_PER_YEAR;
+		}
+		else {
+			//should never happen
+			assert false;
+			return null;
+		}
+		
 	}
 	
 	public String getName() {

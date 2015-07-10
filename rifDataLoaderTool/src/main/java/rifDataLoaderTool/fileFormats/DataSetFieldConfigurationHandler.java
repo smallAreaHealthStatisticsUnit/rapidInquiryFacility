@@ -1,20 +1,22 @@
 package rifDataLoaderTool.fileFormats;
 
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-
 import rifDataLoaderTool.businessConceptLayer.FieldPurpose;
 import rifDataLoaderTool.businessConceptLayer.RIFConversionFunction;
 import rifDataLoaderTool.businessConceptLayer.RIFConversionFunctionFactory;
-
 import rifDataLoaderTool.businessConceptLayer.FieldRequirementLevel;
 import rifDataLoaderTool.businessConceptLayer.RIFCheckOption;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifServices.fileFormats.XMLCommentInjector;
 import rifServices.fileFormats.XMLUtility;
 
 import java.util.ArrayList;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -101,6 +103,16 @@ public final class DataSetFieldConfigurationHandler
 
 		setPluralRecordName("data_set_field_configurations");		
 		setSingularRecordName("data_set_field_configuration");
+	}
+
+	@Override
+	public void initialise(
+		final OutputStream outputStream,
+		final XMLCommentInjector commentInjector) 
+		throws UnsupportedEncodingException {
+
+		super.initialise(outputStream, commentInjector);
+		rifCheckOptionConfigurationHandler.initialise(outputStream, commentInjector);
 	}
 	
 	// ==========================================
@@ -211,11 +223,14 @@ public final class DataSetFieldConfigurationHandler
 		final String qualifiedName,
 		final Attributes attributes) 
 		throws SAXException {
-
 		
 		if (isPluralRecordName(qualifiedName)) {
 			activate();
 		}
+		else if (isSingularRecordName(qualifiedName) == true) {
+			currentDataSetFieldConfiguration
+				= DataSetFieldConfiguration.newInstance();
+		}		
 		else if (isDelegatedHandlerAssigned()) {
 			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
 				= getCurrentDelegatedHandler();
@@ -255,9 +270,13 @@ public final class DataSetFieldConfigurationHandler
 		final String qualifiedName) 
 		throws SAXException {
 
+
 		if (isPluralRecordName(qualifiedName)) {
 			deactivate();
 		}
+		else if (isSingularRecordName(qualifiedName)) {
+			dataSetFieldConfigurations.add(currentDataSetFieldConfiguration);
+		}		
 		else if (isDelegatedHandlerAssigned()) {
 			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
 				= getCurrentDelegatedHandler();
@@ -272,25 +291,30 @@ public final class DataSetFieldConfigurationHandler
 						= rifCheckOptionConfigurationHandler.getCheckOptions();
 					currentDataSetFieldConfiguration.setCheckOptions(checkOptions);
 				}
+				else {
+					assert false;
+				}
+				
+				//handler just finished				
+				unassignDelegatedHandler();		
 			}
-			else if (isSingularRecordName(qualifiedName)) {
-				dataSetFieldConfigurations.add(currentDataSetFieldConfiguration);
-			}
-			else if (equalsFieldName("core_field_name", qualifiedName)) {
-				currentDataSetFieldConfiguration.setCoreFieldName(
-					getCurrentFieldValue());
-			}
-			else if (equalsFieldName("core_field_description", qualifiedName)) {
-				currentDataSetFieldConfiguration.setCoreFieldDescription(
-					getCurrentFieldValue());
-			}
-			else if (equalsFieldName("rif_data_type", qualifiedName)) {
-				String dataTypeName = getCurrentFieldValue();
-				AbstractRIFDataType rifDataType 
-					= rifDataTypeFactory.getDataType(dataTypeName);
-				currentDataSetFieldConfiguration.setRIFDataType(rifDataType);
-			}
-		}		
+	
+		
+		}
+		else if (equalsFieldName("core_field_name", qualifiedName)) {
+			currentDataSetFieldConfiguration.setCoreFieldName(
+				getCurrentFieldValue());
+		}
+		else if (equalsFieldName("core_field_description", qualifiedName)) {
+			currentDataSetFieldConfiguration.setCoreFieldDescription(
+				getCurrentFieldValue());
+		}
+		else if (equalsFieldName("rif_data_type", qualifiedName)) {
+			String dataTypeName = getCurrentFieldValue();
+			AbstractRIFDataType rifDataType 
+				= rifDataTypeFactory.getDataType(dataTypeName);
+			currentDataSetFieldConfiguration.setRIFDataType(rifDataType);
+		}
 		else if (equalsFieldName("load_field_name", qualifiedName)) {
 			currentDataSetFieldConfiguration.setLoadFieldName(
 				getCurrentFieldValue());
@@ -314,10 +338,13 @@ public final class DataSetFieldConfigurationHandler
 				Boolean.valueOf(getCurrentFieldValue()));
 		}
 		else if (equalsFieldName("field_purpose", qualifiedName)) {
+			String code = getCurrentFieldValue();
+			FieldPurpose fieldPurpose
+				= FieldPurpose.getValueFromName(code);
 			currentDataSetFieldConfiguration.setFieldPurpose(
 				FieldPurpose.getValueFromName(getCurrentFieldValue()));
 		}
-		else if (equalsFieldName("field_requirment_level", qualifiedName)) {
+		else if (equalsFieldName("field_requirement_level", qualifiedName)) {
 			currentDataSetFieldConfiguration.setFieldRequirementLevel(
 				FieldRequirementLevel.getValueFromName(getCurrentFieldValue()));
 		}		
@@ -325,7 +352,9 @@ public final class DataSetFieldConfigurationHandler
 			currentDataSetFieldConfiguration.setDuplicateIdentificationField(
 				Boolean.valueOf(getCurrentFieldValue()));
 		}
-		
+		else {
+			assert false;
+		}		
 	}
 	
 	// ==========================================

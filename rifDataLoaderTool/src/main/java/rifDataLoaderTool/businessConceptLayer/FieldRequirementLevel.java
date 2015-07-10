@@ -90,13 +90,13 @@ public enum FieldRequirementLevel {
 		final String code) {
 		
 		Collator collator = RIFDataLoaderToolMessages.getCollator();
-		if (collator.equals(REQUIRED_BY_RIF.getCode()) == true) {
+		if (collator.equals(code, REQUIRED_BY_RIF.getCode()) == true) {
 			return REQUIRED_BY_RIF;
 		}
-		else if (collator.equals(EXTRA_FIELD.getCode()) == true) {
+		else if (collator.equals(code, EXTRA_FIELD.getCode()) == true) {
 			return EXTRA_FIELD;
 		}
-		else if (collator.equals(IGNORE_FIELD.getCode()) == true) {
+		else if (collator.equals(code, IGNORE_FIELD.getCode()) == true) {
 			return IGNORE_FIELD;
 		}
 		else {

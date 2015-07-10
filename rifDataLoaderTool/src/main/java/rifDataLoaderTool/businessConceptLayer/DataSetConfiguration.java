@@ -117,8 +117,10 @@ public class DataSetConfiguration
 	private DataSetConfiguration() {
 		currentWorkflowState = WorkflowState.LOAD;
 		version = "1.0";
+		fieldConfigurations = new ArrayList<DataSetFieldConfiguration>();
 	}
-
+	
+	
 	/*
 	 * Used when imported data does not specify field names
 	 */

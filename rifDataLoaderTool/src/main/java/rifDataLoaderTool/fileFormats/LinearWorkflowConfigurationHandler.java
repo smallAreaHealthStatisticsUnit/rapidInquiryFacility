@@ -4,7 +4,6 @@ package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
-import rifDataLoaderTool.businessConceptLayer.LinearWorkflowStateMachine;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 
 
@@ -111,7 +110,7 @@ final class LinearWorkflowConfigurationHandler
 	public LinearWorkflowConfigurationHandler() {
 		
 		setSingularRecordName("linear_workflow");
-			
+		linearWorkflow = LinearWorkflow.newInstance();	
 		dataSetConfigurationHandler = new DataSetConfigurationHandler();
 	}
 
@@ -160,18 +159,18 @@ final class LinearWorkflowConfigurationHandler
 		xmlUtility.writeField(
 			"linear_workflow", 
 			"start_workflow_state",
-			linearWorkflow.getStartWorkflowState().getStateName());
+			linearWorkflow.getStartWorkflowState().getCode());
 
 		xmlUtility.writeField(
 			"linear_workflow", 
 			"stop_workflow_state", 
-			linearWorkflow.getStopWorkflowState().getStateName());		
+			linearWorkflow.getStopWorkflowState().getCode());		
 		
 		ArrayList<DataSetConfiguration> dataSetConfigurations
 			= linearWorkflow.getDataSetConfigurations();
 		dataSetConfigurationHandler.writeXML(dataSetConfigurations);
 
-		xmlUtility.writeRecordStartTag("linear_workflow");	
+		xmlUtility.writeRecordEndTag("linear_workflow");	
 	}	
 		
 // ==========================================
@@ -264,6 +263,16 @@ final class LinearWorkflowConfigurationHandler
 				unassignDelegatedHandler();				
 			}
 		}
+		else if (equalsFieldName("start_workflow_state", qualifiedName)) {
+			WorkflowState startWorkflowState
+				= WorkflowState.getWorkflowStateFromCode(getCurrentFieldValue());
+			linearWorkflow.setStartWorkflowState(startWorkflowState);
+		}			
+		else if (equalsFieldName("stop_workflow_state", qualifiedName)) {
+			WorkflowState stopWorkflowState
+				= WorkflowState.getWorkflowStateFromCode(getCurrentFieldValue());
+			linearWorkflow.setStopWorkflowState(stopWorkflowState);				
+		}			
 		else {
 			assert false;
 		}

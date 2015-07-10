@@ -1,7 +1,9 @@
 package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
+import java.text.Collator;
 import java.util.ArrayList;
 
 /**
@@ -70,62 +72,74 @@ public enum WorkflowState {
 
 	LOAD(
 		1, 
+		"load",
 		"workflowState.load.label",
 		"workflowState.load.statusMessage",
 		"ld_"),
 	CLEAN(
 		2, 
+		"clean",
 		"workflowState.clean.label",
 		"workflowState.clean.statusMessage",
 		"cl_"),
 	CONVERT(
 		3, 
+		"convert",
 		"workflowState.convert.label",
 		"workflowState.convert.statusMessage",
 		"cv_"),
 	SPLIT(
 		4, 
+		"split",
 		"workflowState.split.label",
 		"workflowState.split.statusMessage",
 		"cb_"),
 	COMBINE(
 		4, 
+		"combine",
 		"workflowState.combine.label",
 		"workflowState.combine.statusMessage",
 		"cb_"),		
 	OPTIMISE(
 		5, 
+		"optimise",
 		"workflowState.optimise.label",
 		"workflowState.optimise.statusMessage",
 		"op_"),
 	CHECK(
 		6, 
+		"check",
 		"workflowState.check.label",
 		"workflowState.check.statusMessage",
 		"ch_"),		
 	PUBLISH(
 		7, 
+		"publish",
 		"workflowState.publish.label",
 		"workflowState.publish.statusMessage",
 		"pb_"),
 	DELETE(
 		8, 
+		"delete",
 		"workflowState.delete.label",
 		"workflowState.delete.statusMessage",
 		"dl_");
 		
 	private int stateSequenceNumber;
+	private String code;
 	private String statePropertyName;
 	private String statusPropertyName;
 	private String tablePrefix;
 	
 	private WorkflowState(
 		final int stepNumber,
+		final String code,
 		final String stepPropertyName,
 		final String statusPropertyName,
 		final String tablePrefix) {
 		
 		this.stateSequenceNumber = stepNumber;
+		this.code = code;
 		this.statePropertyName = stepPropertyName;
 		this.statusPropertyName = statusPropertyName;
 		this.tablePrefix = tablePrefix;
@@ -144,6 +158,10 @@ public enum WorkflowState {
 	
 	public int getStateSequenceNumber() {
 		return stateSequenceNumber;
+	}
+	
+	public String getCode() {
+		return code;
 	}
 	
 	public String getStateName() {
@@ -180,6 +198,45 @@ public enum WorkflowState {
 		String[] results
 			= stateNames.toArray(new String[0]);
 		return results;		
+	}
+	
+	public static WorkflowState getWorkflowStateFromCode(
+		final String code) {
+		
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		if (collator.equals(code, LOAD.getCode())) {
+			return LOAD;
+		}
+		else if (collator.equals(code, CLEAN.getCode())) {
+			return CLEAN;
+		}
+		else if (collator.equals(code, CONVERT.getCode())) {
+			return CONVERT;
+		}
+		else if (collator.equals(code, SPLIT.getCode())) {
+			return SPLIT;
+		}
+		else if (collator.equals(code, COMBINE.getCode())) {
+			return COMBINE;
+		}
+		else if (collator.equals(code, OPTIMISE.getCode())) {
+			return OPTIMISE;
+		}
+		else if (collator.equals(code, CHECK.getCode())) {
+			return CHECK;
+		}
+		else if (collator.equals(code, PUBLISH.getCode())) {
+			return PUBLISH;
+		}
+		else {
+			assert false;
+			return null;
+		}
+
+		
+		
+		
+		
 	}
 	
 }

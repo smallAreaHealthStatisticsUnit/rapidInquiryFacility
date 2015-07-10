@@ -1,11 +1,15 @@
 package rifDataLoaderTool.test;
 
+import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.*;
-
+import rifDataLoaderTool.fileFormats.LinearWorkflowWriter;
+import rifDataLoaderTool.fileFormats.LinearWorkflowReader;
+import rifServices.system.RIFServiceException;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+
+import java.io.File;
 
 /**
  *
@@ -77,10 +81,59 @@ public class TestReadersAndWriters {
 	}
 
 	@Test
-	public void test() {
-		fail("Not yet implemented");
+	public void test1() {
+		SampleDataGenerator sampleDataGenerator
+			= new SampleDataGenerator();
+		LinearWorkflow numeratorWorkflow
+			= sampleDataGenerator.createSahsulandNumeratorWorkflow();
+		try {			
+			
+			File outputFile 
+				= new File("C://rif_scripts//test_data//cancer_numerator_data.xml");
+			LinearWorkflowWriter writer1 = new LinearWorkflowWriter();
+			writer1.write(numeratorWorkflow, outputFile);
+			
+			LinearWorkflowReader reader1 = new LinearWorkflowReader();
+			reader1.readFile(outputFile);
+			
+			LinearWorkflow numeratorWorkflow2
+				= reader1.getLinearWorkflow();
+			
+			File outputFile2 
+				= new File("C://rif_scripts//test_data//cancer_numerator_data2.xml");
+			LinearWorkflowWriter writer2 = new LinearWorkflowWriter();
+			writer2.write(numeratorWorkflow2, outputFile2);
+			
+			
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
+			fail();
+		}		
 	}
 
+	@Test
+	public void test2() {
+		SampleDataGenerator sampleDataGenerator
+			= new SampleDataGenerator();
+		LinearWorkflow minimalLinearWorkflow
+			= sampleDataGenerator.createMinimalLinearWorkflow();
+		try {			
+			
+			File outputFile 
+				= new File("C://rif_scripts//test_data//minimal_linear_workflow.xml");
+			LinearWorkflowWriter writer = new LinearWorkflowWriter();
+			writer.write(minimalLinearWorkflow, outputFile);
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
+			fail();
+		}		
+	}
+	
+	
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================

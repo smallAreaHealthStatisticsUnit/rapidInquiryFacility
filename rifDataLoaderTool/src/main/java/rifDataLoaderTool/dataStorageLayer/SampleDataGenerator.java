@@ -618,10 +618,22 @@ public class SampleDataGenerator {
 	
 	
 	
+	public LinearWorkflow createMinimalLinearWorkflow() {
+		
+		LinearWorkflow minimalLinearWorkflow
+			= LinearWorkflow.newInstance();
+		minimalLinearWorkflow.setStartWorkflowState(WorkflowState.LOAD);
+		minimalLinearWorkflow.setStopWorkflowState(WorkflowState.PUBLISH);
+		
+		DataSetConfiguration minimalDataSetConfiguration
+			= createMinimalDataSetConfiguration();
+		minimalLinearWorkflow.addDataSetConfiguration(minimalDataSetConfiguration);
+		
+		return minimalLinearWorkflow;
+	}
 	
 	
-	
-	public DataSetConfiguration getEthnicityCovariateConfiguration() {
+	public DataSetConfiguration createMinimalDataSetConfiguration() {
 		
 		/*
 		 * Here we create a data set configuration for a CSV file that will contain
@@ -665,6 +677,7 @@ public class SampleDataGenerator {
 		return ethnicityLevel3DataSetConfiguration;
 		
 	}	
+	
 	
 	// ==========================================
 	// Section Errors and Validation
