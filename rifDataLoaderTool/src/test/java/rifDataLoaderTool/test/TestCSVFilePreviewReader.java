@@ -1,10 +1,15 @@
-package rifDataLoaderTool.system;
+package rifDataLoaderTool.test;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
+import org.junit.Test;
 
 /**
- * Describes a source of error in the system.
+ *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -50,40 +55,49 @@ package rifDataLoaderTool.system;
  *
  */
 
-public enum RIFDataLoaderToolError {
-	INVALID_DATA_SOURCE,
-	DUPLICATE_DATA_SOURCE,
-	CLEAR_ALL_DATA_SOURCES,
-	REGISTER_DATA_SOURCE,
-	DEREGISTER_DATA_SOURCE,
-	DATA_SOURCE_EXISTS,
-	LOAD_TABLE,
-	CLEAN_TABLE,
-	DROP_TABLE,
-	CLOSE_RESOURCE,
-	DELETE_DATA_SOURCE_REGISTRY,
-	LOAD_DB_DRIVER,
-	GET_CONNECTION,
-	DATABASE_QUERY_FAILED,
-	COMPARE_TABLE_SIZES,
-	INVALID_LOAD_SOURCE, 
-	INVALID_CLEANING_RULE,
-	EMPTY_API_METHOD_PARAMETER,
-	NO_COMMAND_LINE_ARGUMENTS_SPECIFIED,
-	ILLEGAL_CONFIGURATION_FILE_SPECIFIED,
-	INVALID_DATA_SET_CONFIGURATION,
-	INVALID_DATA_SET_FIELD_CONFIGURATION,
-	IMPROPERLY_SET_CONVERSION_FUNCTION,
-	UNKNOWN_COMMAND_LINE_OPTION,
-	NO_SCHEMA_AREA_SPECIFIED,
-	NO_CONFIGURATION_FILE_SPECIFIED,
-	NON_EXISTENT_CONFIGURATION_FILE,
-	UNABLE_TO_READ_CONFIGURATION_FILE,
-	UNABLE_TO_DELETE_DATA_SET_CONFIGURATION,
-	UNABLE_TO_IMPORT_CSV_FILE,
-	UNABLE_TO_WRITE_CSV_ERROR_LOG_FILE,
-	ERRORS_DETECTED_IN_CSV_FILE
-	
+public class TestCSVFilePreviewReader extends AbstractRIFDataLoaderTestCase {
+
+	// ==========================================
+	// Section Constants
+	// ==========================================
+
+	// ==========================================
+	// Section Properties
+	// ==========================================
+
+	// ==========================================
+	// Section Construction
+	// ==========================================
+
+	public TestCSVFilePreviewReader() {
+
+	}
+
+	@Test
+	public void test1() {
+		File file = new File(".");
+		System.out.println("File location=="+file.getAbsolutePath()+"==");
+		
+		
+		
+	}
+
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
+	// ==========================================
+	// Section Interfaces
+	// ==========================================
+
+	// ==========================================
+	// Section Override
+	// ==========================================
+
 }
 
 
