@@ -156,7 +156,7 @@ public final class SQLCreateTableQueryFormatter
 		}
 		
 		if (isNullAllowed == false) {
-			fieldDeclaration.append("NOT NULL");
+			fieldDeclaration.append(" NOT NULL");
 		}
 		
 		fieldDeclarations.add(fieldDeclaration.toString());
@@ -168,6 +168,7 @@ public final class SQLCreateTableQueryFormatter
 		resetAccumulatedQueryExpression();
 		addQueryPhrase(0, "CREATE TABLE ");
 		addQueryPhrase(tableToCreate);
+		addQueryPhrase(" (");
 		padAndFinishLine();
 		
 		int numberOfFieldDeclarations = fieldDeclarations.size();
@@ -178,7 +179,7 @@ public final class SQLCreateTableQueryFormatter
 			}
 			addQueryPhrase(1, fieldDeclarations.get(i));			
 		}
-		addQueryPhrase(";");
+		addQueryPhrase(");");
 
 		return super.generateQuery();		
 	}

@@ -154,21 +154,6 @@ public final class SQLConnectionManager {
 		userIDsToBlock = new HashSet<String>();
 		writeConnections = new ConnectionQueue();
 
-		databaseURL = generateURLText();
-	}
-
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	/**
-	 * Generate url text.
-	 *
-	 * @return the string
-	 */
-	private String generateURLText() {
-		
 		StringBuilder urlText = new StringBuilder();
 		urlText.append(databaseDriverPrefix);
 		urlText.append(":");
@@ -178,9 +163,16 @@ public final class SQLConnectionManager {
 		urlText.append(port);
 		urlText.append("/");
 		urlText.append(databaseName);
-		
-		return urlText.toString();
+
+		databaseURL = urlText.toString();
 	}
+
+	
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+
+
 	
 	/**
 	 * User exists.
@@ -221,15 +213,12 @@ public final class SQLConnectionManager {
 		final String userID,
 		final String password) 
 		throws RIFServiceException {
-	
+
+		/*
+
 		if (userIDsToBlock.contains(userID)) {
 			return;
 		}
-		
-		/*
-		 * First, check whether person is already logged in.  We can do this 
-		 * by checking whether 
-		 */
 		
 		if (isLoggedIn(userID)) {
 			return;
@@ -243,10 +232,13 @@ public final class SQLConnectionManager {
 				Connection currentConnection
 					= createConnection(
 						userID,
-						password,
-						false,
-						false);
+						password);
 				writeConnections.addConnection(currentConnection);
+				
+				private Connection createConnection(
+						final String userID,
+						final String password)
+				
 			}			
 
 			registeredUserIDs.add(userID);			
@@ -283,7 +275,8 @@ public final class SQLConnectionManager {
 					errorMessage);
 			throw rifServiceException;
 		}
-		
+
+		*/
 	}
 	
 	public boolean isLoggedIn(
@@ -456,11 +449,11 @@ public final class SQLConnectionManager {
 		registeredUserIDs.clear();
 	}
 	
-	private Connection createConnection(
+	
+	public Connection createConnection(
 		final String userID,
 		final String password,
-		final boolean isFirstConnectionForUser,
-		final boolean isReadOnly)
+		final boolean isAutoCommitOn)
 		throws SQLException,
 		RIFServiceException {
 		
@@ -468,8 +461,11 @@ public final class SQLConnectionManager {
 		try {
 			
 			Properties databaseProperties = new Properties();
-			databaseProperties.setProperty("user", userID);
-			databaseProperties.setProperty("password", password);
+			
+			if (userID != null) {
+				databaseProperties.setProperty("user", userID);
+				databaseProperties.setProperty("password", password);
+			}
 			//databaseProperties.setProperty("ssl", "true");
 			//databaseProperties.setProperty("logUnclosedConnections", "true");
 			databaseProperties.setProperty("prepareThreshold", "3");
@@ -480,7 +476,7 @@ public final class SQLConnectionManager {
 			connection
 				= DriverManager.getConnection(databaseURL, databaseProperties);
 			connection.setReadOnly(false);				
-			connection.setAutoCommit(false);
+			connection.setAutoCommit(true);
 		}
 		finally {
 
