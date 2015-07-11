@@ -106,6 +106,7 @@ public class DataSetConfiguration
 	private String name;
 	private String version;
 	private String description;
+	private String filePath;
 	private RIFSchemaArea rifSchemaArea;
 	private ArrayList<DataSetFieldConfiguration> fieldConfigurations;
 	public WorkflowState currentWorkflowState;
@@ -118,6 +119,7 @@ public class DataSetConfiguration
 		currentWorkflowState = WorkflowState.LOAD;
 		version = "1.0";
 		fieldConfigurations = new ArrayList<DataSetFieldConfiguration>();
+		filePath = "";
 	}
 	
 	
@@ -191,6 +193,8 @@ public class DataSetConfiguration
 			originalDataSetConfiguration.getName());
 		cloneDataSetConfiguration.setVersion(
 			originalDataSetConfiguration.getVersion());
+		cloneDataSetConfiguration.setFilePath(
+			originalDataSetConfiguration.getFilePath());		
 		cloneDataSetConfiguration.setDescription(
 			originalDataSetConfiguration.getDescription());
 		cloneDataSetConfiguration.setCurrentWorkflowState(
@@ -231,6 +235,17 @@ public class DataSetConfiguration
 
 		this.version = version;
 	}
+	
+	public String getFilePath() {
+		return filePath;
+	}
+	
+	public void setFilePath(
+		final String filePath) {
+		
+		this.filePath = filePath;
+	}
+	
 	
 	public String getDescription() {
 		
@@ -382,14 +397,26 @@ public class DataSetConfiguration
 		if (fieldValidationUtility.isEmpty(version)) {
 			String versionFieldLabel
 				= RIFDataLoaderToolMessages.getMessage(
-					"dataSetFieldConfiguration.version.label");
+					"dataSetConfiguration.version.label");
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"general.validation.emptyRequiredField",
 					versionFieldLabel);
 			errorMessages.add(errorMessage);		
 		}
-				
+
+		
+		if (fieldValidationUtility.isEmpty(filePath)) {
+			String versionFieldLabel
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetConfiguration.filePath.label");
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"general.validation.emptyRequiredField",
+					versionFieldLabel);
+			errorMessages.add(errorMessage);		
+		}
+		
 		//description may be empty
 		if (currentWorkflowState == null) {
 			String currentWorkflowStateFieldLabel

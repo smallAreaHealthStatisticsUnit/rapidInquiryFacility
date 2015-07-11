@@ -141,6 +141,10 @@ public class SampleDataGenerator {
 		DataSetConfiguration numeratorDataSetConfiguration
 			= DataSetConfiguration.newInstance();
 		numeratorDataSetConfiguration.setName("cancer_data");
+		numeratorDataSetConfiguration.setVersion("2.0");
+		numeratorDataSetConfiguration.setFilePath("C://rif_scripts/test_data/my_cancer_numerator_data.csv");
+		numeratorDataSetConfiguration.setDescription("Improved cancer data");
+		
 		//indicates what part of the RIF schema we are targetting by
 		//importing the data set
 		numeratorDataSetConfiguration.setRIFSchemaArea(
@@ -418,6 +422,12 @@ public class SampleDataGenerator {
 		DataSetConfiguration sahuslandLevel3CovariatesConfiguration
 			= DataSetConfiguration.newInstance();
 		sahuslandLevel3CovariatesConfiguration.setName("sahsuland_covariates_level3");
+		sahuslandLevel3CovariatesConfiguration.setVersion("1.5");
+		sahuslandLevel3CovariatesConfiguration.setFilePath("C://rif_scripts/test_data/sahsuland_covariates_level3.csv");
+		sahuslandLevel3CovariatesConfiguration.setDescription("Covariate data for level3");		
+		
+		
+		
 		//indicates what part of the RIF schema we are targetting by
 		//importing the data set
 		sahuslandLevel3CovariatesConfiguration.setRIFSchemaArea(
@@ -495,6 +505,11 @@ public class SampleDataGenerator {
 		DataSetConfiguration sahuslandLevel4CovariatesConfiguration
 			= DataSetConfiguration.newInstance();
 		sahuslandLevel4CovariatesConfiguration.setName("sahsuland_covariates_level4");
+		sahuslandLevel4CovariatesConfiguration.setVersion("1.5");
+		sahuslandLevel4CovariatesConfiguration.setFilePath("C://rif_scripts/test_data/sahsuland_covariates_level4.csv");
+		sahuslandLevel4CovariatesConfiguration.setDescription("Covariate data for level4");		
+
+		
 		//indicates what part of the RIF schema we are targetting by
 		//importing the data set
 		sahuslandLevel4CovariatesConfiguration.setRIFSchemaArea(

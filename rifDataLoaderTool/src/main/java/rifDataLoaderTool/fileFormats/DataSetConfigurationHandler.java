@@ -128,7 +128,17 @@ public final class DataSetConfigurationHandler
 				getSingularRecordName(), 
 				"name", 
 				dataSetConfiguration.getName());
-						
+
+			xmlUtility.writeField(
+				getSingularRecordName(), 
+				"version", 
+				dataSetConfiguration.getVersion());
+
+			xmlUtility.writeField(
+				getSingularRecordName(), 
+				"file_path", 
+				dataSetConfiguration.getFilePath());
+			
 			xmlUtility.writeField(
 				getSingularRecordName(), 
 				"description", 
@@ -236,6 +246,12 @@ public final class DataSetConfigurationHandler
 		}
 		else if (equalsFieldName("name", qualifiedName)) {
 			currentDataSetConfiguration.setName(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("version", qualifiedName)) {
+			currentDataSetConfiguration.setVersion(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("file_path", qualifiedName)) {
+			currentDataSetConfiguration.setFilePath(getCurrentFieldValue());
 		}
 		else if (equalsFieldName("description", qualifiedName)) {
 			currentDataSetConfiguration.setDescription(getCurrentFieldValue());
