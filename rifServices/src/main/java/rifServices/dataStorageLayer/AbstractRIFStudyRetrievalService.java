@@ -1,10 +1,10 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 import rifServices.util.FieldValidationUtility;
-import rifServices.util.RIFLogger;
 
 import java.sql.Connection;
 import java.util.ArrayList;

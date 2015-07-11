@@ -7,7 +7,7 @@ import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
 
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFSecurityViolation;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -460,7 +460,7 @@ public final class SubmitStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
+				RIFGenericLibraryError.SECURITY_VIOLATION,
 				1);
 		}
 		finally {
@@ -713,7 +713,7 @@ public final class SubmitStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
+				RIFGenericLibraryError.SECURITY_VIOLATION,
 				1);
 		}
 		finally {
@@ -750,7 +750,7 @@ public final class SubmitStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
+				RIFGenericLibraryError.SECURITY_VIOLATION,
 				1);
 		}
 		finally {
@@ -791,7 +791,7 @@ public final class SubmitStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
+				RIFGenericLibraryError.SECURITY_VIOLATION,
 				1);
 		}
 		finally {
@@ -832,7 +832,7 @@ public final class SubmitStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
+				RIFGenericLibraryError.SECURITY_VIOLATION,
 				1);
 		}
 		finally {
@@ -875,7 +875,7 @@ public final class SubmitStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
+				RIFGenericLibraryError.SECURITY_VIOLATION,
 				1);
 		}
 		finally {
@@ -915,7 +915,7 @@ public final class SubmitStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
+				RIFGenericLibraryError.SECURITY_VIOLATION,
 				1);
 		}
 		finally {

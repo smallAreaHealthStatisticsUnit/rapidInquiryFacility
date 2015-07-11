@@ -9,6 +9,7 @@ import rifServices.businessConceptLayer.User;
 import rifServices.fileFormats.XMLCommentInjector;
 import rifServices.fileFormats.RIFStudySubmissionContentHandler;
 import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFDateFormat;
 

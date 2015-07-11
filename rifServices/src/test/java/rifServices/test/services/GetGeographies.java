@@ -2,7 +2,7 @@ package rifServices.test.services;
 
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFSecurityViolation;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
@@ -168,7 +168,7 @@ public final class GetGeographies
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
+				RIFGenericLibraryError.SECURITY_VIOLATION, 
 				1);
 		}
 	}
@@ -187,7 +187,7 @@ public final class GetGeographies
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
+				RIFGenericLibraryError.SECURITY_VIOLATION, 
 				1);
 		}			
 	}

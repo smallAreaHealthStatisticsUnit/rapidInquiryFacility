@@ -50,6 +50,9 @@ package rifGenericLibrary.system;
  *
  */
 
-public enum RIFSecurityViolation {
-	GENERAL_SECURITY_VIOLATION
+public enum RIFGenericLibraryError {
+	SECURITY_VIOLATION,
+	DB_UNABLE_TO_CLOSE_CONNECTIONS,
+	DB_UNABLE_CLOSE_RESOURCE,
+	DB_UNABLE_TO_ROLLBACK
 }

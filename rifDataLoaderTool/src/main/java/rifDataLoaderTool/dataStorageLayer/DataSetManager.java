@@ -13,11 +13,11 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 
 import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLCreateTableQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.dataStorageLayer.SQLQueryUtility;
 import rifServices.businessConceptLayer.User;
 
 import java.sql.*;

@@ -10,7 +10,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.fileFormats.RIFZipFileWriter;
 
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFSecurityViolation;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 
 import java.io.File;
 import java.util.ArrayList;

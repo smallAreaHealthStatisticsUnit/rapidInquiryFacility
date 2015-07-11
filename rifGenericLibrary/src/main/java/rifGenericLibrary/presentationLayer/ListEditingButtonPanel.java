@@ -2,9 +2,15 @@ package rifGenericLibrary.presentationLayer;
 
 
 import java.awt.event.ActionListener;
+
 import javax.swing.JButton;
+
 import java.util.ArrayList;
+
 import javax.swing.JPanel;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+
 import java.awt.GridBagConstraints;
 
 /**
@@ -116,31 +122,31 @@ public final class ListEditingButtonPanel {
 		panel = userInterfaceFactory.createPanel();
 		
 		String addButtonText
-			= RIFGenericUIMessages.getMessage("buttons.add.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.add.label");
 		addButton = userInterfaceFactory.createButton(addButtonText);
 		
 		String editButtonText
-			= RIFGenericUIMessages.getMessage("buttons.edit.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.edit.label");
 		editButton = userInterfaceFactory.createButton(editButtonText);
 
 		String copyButtonText
-			= RIFGenericUIMessages.getMessage("buttons.copy.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.copy.label");
 		copyButton = userInterfaceFactory.createButton(copyButtonText);
 		
 		String deleteButtonText
-			= RIFGenericUIMessages.getMessage("buttons.delete.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.delete.label");
 		deleteButton = userInterfaceFactory.createButton(deleteButtonText);
 		
 		String clearButtonText
-			= RIFGenericUIMessages.getMessage("buttons.clear.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.clear.label");
 		clearButton = userInterfaceFactory.createButton(clearButtonText);
 		
 		String importButtonText
-			= RIFGenericUIMessages.getMessage("buttons.import.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.import.label");
 		importButton = userInterfaceFactory.createButton(importButtonText);
 		
 		String exportButtonText
-			= RIFGenericUIMessages.getMessage("buttons.export.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.export.label");
 		exportButton = userInterfaceFactory.createButton(exportButtonText);
 		
 		isLeftJustified = false;

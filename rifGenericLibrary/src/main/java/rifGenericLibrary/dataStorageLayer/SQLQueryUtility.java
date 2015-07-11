@@ -1,10 +1,9 @@
-package rifServices.dataStorageLayer;
+package rifGenericLibrary.dataStorageLayer;
 
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
-import rifServices.util.RIFLogger;
+import rifGenericLibrary.util.RIFLogger;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -125,7 +124,7 @@ public final class SQLQueryUtility {
 		}
 		catch(SQLException sqlException) {			
 			String errorMessage
-				= RIFServiceMessages.getMessage("sqlConnectionManager.error.unableToCloseResource");
+				= RIFGenericLibraryMessages.getMessage("sqlConnectionManager.error.unableToCloseResource");
 			
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
@@ -135,7 +134,7 @@ public final class SQLQueryUtility {
 																
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_CLOSE_RESOURCE,
+					RIFGenericLibraryError.DB_UNABLE_CLOSE_RESOURCE,
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -161,7 +160,7 @@ public final class SQLQueryUtility {
 		catch(SQLException sqlException) {
 
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"sqlConnectionManager.error.unableToCloseResource");
 			
 			RIFLogger rifLogger = RIFLogger.getLogger();
@@ -172,7 +171,7 @@ public final class SQLQueryUtility {
 																		
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_CLOSE_RESOURCE,
+					RIFGenericLibraryError.DB_UNABLE_CLOSE_RESOURCE,
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -197,7 +196,7 @@ public final class SQLQueryUtility {
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"sqlConnectionManager.error.unableToCloseResource");
 			
 			RIFLogger rifLogger = RIFLogger.getLogger();
@@ -208,7 +207,7 @@ public final class SQLQueryUtility {
 																		
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_CLOSE_RESOURCE,
+					RIFGenericLibraryError.DB_UNABLE_CLOSE_RESOURCE,
 					errorMessage);
 			throw rifServiceException;			
 		}		
@@ -227,10 +226,10 @@ public final class SQLQueryUtility {
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
-				= RIFServiceMessages.getMessage("general.db.error.unableToRollback");
+				= RIFGenericLibraryMessages.getMessage("general.db.error.unableToRollback");
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_TO_ROLLBACK,
+					RIFGenericLibraryError.DB_UNABLE_TO_ROLLBACK,
 					errorMessage);
 			throw rifServiceException;
 		}		

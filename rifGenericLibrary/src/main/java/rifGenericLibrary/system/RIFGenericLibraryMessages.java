@@ -1,4 +1,4 @@
-package rifGenericLibrary.presentationLayer;
+package rifGenericLibrary.system;
 
 import java.text.Collator;
 import java.text.MessageFormat;
@@ -71,7 +71,7 @@ import java.util.ResourceBundle;
  *
 */
 
-public final class RIFGenericUIMessages {
+public final class RIFGenericLibraryMessages {
 
     // ==========================================
     // Section Constants

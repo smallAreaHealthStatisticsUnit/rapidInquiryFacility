@@ -7,7 +7,7 @@ import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFSecurityViolation;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -276,7 +276,7 @@ public final class GetNumeratorDenominatorPair
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
+				RIFGenericLibraryError.SECURITY_VIOLATION,
 				1);
 		}
 	}
@@ -339,7 +339,7 @@ public final class GetNumeratorDenominatorPair
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
+				RIFGenericLibraryError.SECURITY_VIOLATION,
 				1);
 		}
 	}	
@@ -361,7 +361,7 @@ public final class GetNumeratorDenominatorPair
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
+				RIFGenericLibraryError.SECURITY_VIOLATION,
 				1);
 		}
 	}	
@@ -384,7 +384,7 @@ public final class GetNumeratorDenominatorPair
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
+				RIFGenericLibraryError.SECURITY_VIOLATION,
 				1);
 		}
 	}	

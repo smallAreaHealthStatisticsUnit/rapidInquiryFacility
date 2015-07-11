@@ -1,7 +1,7 @@
 package rifServices.test.services;
 
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFSecurityViolation;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.User;
@@ -259,7 +259,7 @@ public final class GetGeoLevelToMapValues
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
+				RIFGenericLibraryError.SECURITY_VIOLATION,
 				1);
 		}
 	}
@@ -325,7 +325,7 @@ public final class GetGeoLevelToMapValues
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
+				RIFGenericLibraryError.SECURITY_VIOLATION,
 				1);
 		}
 	}
@@ -347,7 +347,7 @@ public final class GetGeoLevelToMapValues
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
+				RIFGenericLibraryError.SECURITY_VIOLATION,
 				1);
 		}
 	}
@@ -369,7 +369,7 @@ public final class GetGeoLevelToMapValues
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION,
+				RIFGenericLibraryError.SECURITY_VIOLATION,
 				1);
 		}
 	}

@@ -96,7 +96,7 @@ public final class RIFServiceSecurityException
 	public RIFServiceSecurityException(
 		final String errorMessage) {
 		
-		super(RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, errorMessage);
+		super(RIFGenericLibraryError.SECURITY_VIOLATION, errorMessage);
 		
 		//by default, assume they are malicious code fragments
 		securityThreatType = SecurityThreatType.MALICIOUS_CODE;

@@ -6,8 +6,8 @@ import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
-import rifGenericLibrary.presentationLayer.RIFGenericUIMessages;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 
 import javax.swing.*;
@@ -200,7 +200,7 @@ public final class LoadDataActivityStepDialog
 		panelGC.fill = GridBagConstraints.NONE;
 		panelGC.weightx = 0;
 		String browseButtonText
-			= RIFGenericUIMessages.getMessage("buttons.browse.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.browse.label");
 		browseSourceFileButton
 			= userInterfaceFactory.createButton(browseButtonText);
 		browseSourceFileButton.addActionListener(this);
@@ -223,7 +223,7 @@ public final class LoadDataActivityStepDialog
 		
 		panelGC.gridx++;
 		String yesText
-			= RIFGenericUIMessages.getMessage("radioButtons.yes.label");
+			= RIFGenericLibraryMessages.getMessage("radioButtons.yes.label");
 		firstLineIsHeaderRow
 			= userInterfaceFactory.createRadioButton(yesText);
 		firstLineIsHeaderRow.addActionListener(this);
@@ -231,7 +231,7 @@ public final class LoadDataActivityStepDialog
 		
 		panelGC.gridx++;
 		String noText
-			= RIFGenericUIMessages.getMessage("radioButtons.no.label");
+			= RIFGenericLibraryMessages.getMessage("radioButtons.no.label");
 		firstLineIsNotHeaderRow
 			= userInterfaceFactory.createRadioButton(noText);
 		firstLineIsNotHeaderRow.addActionListener(this);
@@ -289,7 +289,7 @@ public final class LoadDataActivityStepDialog
 		panelGC.weightx = 0;
 		panelGC.gridx++;
 		String browseButtonText
-			= RIFGenericUIMessages.getMessage("buttons.browse.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.browse.label");
 		browseSourceTableButton
 			= userInterfaceFactory.createButton(browseButtonText);
 		browseSourceTableButton.addActionListener(this);

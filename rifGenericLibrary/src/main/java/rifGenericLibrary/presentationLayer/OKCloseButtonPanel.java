@@ -3,8 +3,11 @@ package rifGenericLibrary.presentationLayer;
 
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
+
 import javax.swing.JButton;
 import javax.swing.JPanel;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 
 
@@ -127,7 +130,7 @@ public final class OKCloseButtonPanel {
 		panelGC.anchor = GridBagConstraints.SOUTHWEST;
 		
 		String okText
-			= RIFGenericUIMessages.getMessage("buttons.ok.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.ok.label");
 		okButton = userInterfaceFactory.createButton(okText);
 
 		if (includeOKButton) {
@@ -136,7 +139,7 @@ public final class OKCloseButtonPanel {
 		
 		panelGC.gridx++;
 		String closeText
-			= RIFGenericUIMessages.getMessage("buttons.close.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.close.label");
 		closeButton = userInterfaceFactory.createButton(closeText);
 		panel.add(closeButton, panelGC);		
 	}

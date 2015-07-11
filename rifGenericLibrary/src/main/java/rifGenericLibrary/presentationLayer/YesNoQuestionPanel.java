@@ -1,6 +1,9 @@
 package rifGenericLibrary.presentationLayer;
 
 import javax.swing.*;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+
 import java.awt.*;
 
 
@@ -90,11 +93,11 @@ public final class YesNoQuestionPanel {
 		questionLabel
 			= userInterfaceFactory.createLabel(questionText);
 		String yesChoiceText
-			= RIFGenericUIMessages.getMessage("radioButtons.yes.label");
+			= RIFGenericLibraryMessages.getMessage("radioButtons.yes.label");
 		yesChoice
 			= userInterfaceFactory.createRadioButton(yesChoiceText);
 		String noChoiceText
-			= RIFGenericUIMessages.getMessage("radioButtons.no.label");
+			= RIFGenericLibraryMessages.getMessage("radioButtons.no.label");
 		noChoice
 			= userInterfaceFactory.createRadioButton(noChoiceText);
 		ButtonGroup buttonGroup

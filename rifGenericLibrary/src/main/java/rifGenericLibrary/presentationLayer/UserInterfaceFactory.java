@@ -16,6 +16,8 @@ import javax.swing.table.TableModel;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+
 
 
 
@@ -409,13 +411,13 @@ public final class UserInterfaceFactory {
 	
 	public JMenu createFileMenu() {
 		String fileMenuText
-			= RIFGenericUIMessages.getMessage("menus.file.label");
+			= RIFGenericLibraryMessages.getMessage("menus.file.label");
 		return createMenu(fileMenuText);
 	}
 	
 	public JMenuItem createExitMenuItem() {
 		String exitMenuItemText
-			= RIFGenericUIMessages.getMessage("fileMenu.exit.label");
+			= RIFGenericLibraryMessages.getMessage("fileMenu.exit.label");
 		return createJMenuItem(exitMenuItemText);
 	}
 	

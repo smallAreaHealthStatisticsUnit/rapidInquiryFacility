@@ -1,9 +1,8 @@
-package rifServices.dataStorageLayer;
+package rifGenericLibrary.dataStorageLayer;
 
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceError;
-
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -130,10 +129,10 @@ public class ConnectionQueue {
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
-				= RIFServiceMessages.getMessage("sqlConnectionManager.error.unableCloseConnections");
+				= RIFGenericLibraryMessages.getMessage("sqlConnectionManager.error.unableCloseConnections");
 			RIFServiceException rifServiceException
 				 = new RIFServiceException(
-					RIFServiceError.DB_UNABLE_TO_CLOSE_CONNECTIONS, 
+					RIFGenericLibraryError.DB_UNABLE_TO_CLOSE_CONNECTIONS, 
 					errorMessage);
 			throw rifServiceException;
 		}		

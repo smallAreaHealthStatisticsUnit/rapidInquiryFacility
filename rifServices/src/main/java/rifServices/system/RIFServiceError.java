@@ -69,9 +69,7 @@ package rifServices.system;
  */
 
 public enum RIFServiceError {
-	
-	DB_UNABLE_TO_CLOSE_CONNECTIONS,
-	
+		
 	/** The db unable to load driver. */
 	DB_UNABLE_TO_LOAD_DRIVER,
 
@@ -79,10 +77,7 @@ public enum RIFServiceError {
 	
 	/** The db unable to grant connection. */
 	DB_UNABLE_TO_GRANT_CONNECTION,
-	
-	/** The db unable close resource. */
-	DB_UNABLE_CLOSE_RESOURCE,
-	
+		
 	/** The db unable register user. */
 	DB_UNABLE_REGISTER_USER,
 	
@@ -354,7 +349,6 @@ public enum RIFServiceError {
 	INVALID_ZOOM_FACTOR,
 	THRESHOLD_MAP_AREAS_PER_DISPLAY_EXCEEDED, 
 	NON_EXISTENT_STUDY,
-	DB_UNABLE_TO_ROLLBACK,
 	DB_UNABLE_TO_ADJUST_AUTO_COMMIT,
 	HEALTH_CODE_TAXONOMY_SERVICE_ERROR,
 	UNABLE_TO_PARSE_JSON_SUBMISSION,

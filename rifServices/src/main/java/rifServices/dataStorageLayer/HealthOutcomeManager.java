@@ -1,7 +1,9 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.HealthCode;
@@ -12,7 +14,6 @@ import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.util.RIFLogger;
 import rifServices.taxonomyServices.HealthCodeProviderInterface;
 import rifServices.taxonomyServices.RIFXMLTaxonomyProvider;
 

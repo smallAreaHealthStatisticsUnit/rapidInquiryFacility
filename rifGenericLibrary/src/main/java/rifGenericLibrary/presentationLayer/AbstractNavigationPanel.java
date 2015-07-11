@@ -1,7 +1,10 @@
 package rifGenericLibrary.presentationLayer;
 
 import java.awt.event.ActionListener;
+
 import javax.swing.JButton;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 /**
  * A convenience class for holding properties of navigation panels.
@@ -80,22 +83,22 @@ public abstract class AbstractNavigationPanel {
 		this.userInterfaceFactory = userInterfaceFactory;
 		
 		String firstButtonText
-			= RIFGenericUIMessages.getMessage("buttons.first.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.first.label");
 		firstButton
 			= userInterfaceFactory.createButton(firstButtonText);
 
 		String previousButtonText
-			= RIFGenericUIMessages.getMessage("buttons.previous.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.previous.label");
 		previousButton
 			= userInterfaceFactory.createButton(previousButtonText);
 
 		String nextButtonText
-			= RIFGenericUIMessages.getMessage("buttons.next.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.next.label");
 		nextButton
 			= userInterfaceFactory.createButton(nextButtonText);
 	
 		String lastButtonText
-			= RIFGenericUIMessages.getMessage("buttons.last.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.last.label");
 		lastButton
 			= userInterfaceFactory.createButton(lastButtonText);
 	}

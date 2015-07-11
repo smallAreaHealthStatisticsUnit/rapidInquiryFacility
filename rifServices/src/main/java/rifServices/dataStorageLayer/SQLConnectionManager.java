@@ -1,13 +1,15 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
+import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.User;
 
 
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.util.RIFLogger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

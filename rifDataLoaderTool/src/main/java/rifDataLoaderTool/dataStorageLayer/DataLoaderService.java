@@ -5,15 +5,13 @@ import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.postgresql.*;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.AbstractRIFConcept;
+import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
-import rifServices.dataStorageLayer.AbstractRIFService;
 import rifServices.util.FieldValidationUtility;
-import rifServices.util.RIFLogger;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.dataStorageLayer.RIFServiceResources;
-import rifServices.dataStorageLayer.SQLConnectionManager;
+import rifDataLoaderTool.dataStorageLayer.SQLConnectionManager;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 
 import java.sql.*;
@@ -123,7 +121,7 @@ public final class DataLoaderService
 	private RIFServiceResources rifServiceResources;
 
 	private UserManager rifManagerManager;
-	
+	private SQLConnectionManager sqlConnectionManager;
 	private DataSetManager dataSetManager;
 	private LoadWorkflowManager loadWorkflowManager;
 	private CleanWorkflowManager cleanWorkflowManager;
@@ -158,8 +156,18 @@ public final class DataLoaderService
 		rifServiceResources
 			= RIFServiceResources.newInstance(rifServiceStartupOptions);
 		
-		startupOptions = new RIFDataLoaderStartupOptions();
-		sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
+		String databaseDriverName = "org.postgresql.Driver";
+		String databaseDriverPrefix = "jdbc:postgresql";
+		String host = "localhost";
+		String port = "5432";
+		String databaseName = "tmp_sahsu_db";
+		sqlConnectionManager
+			= new SQLConnectionManager(
+				databaseDriverName,
+				databaseDriverPrefix,
+				host,
+				port,
+				databaseName);
 			
 		rifManagerManager = new UserManager();
 		

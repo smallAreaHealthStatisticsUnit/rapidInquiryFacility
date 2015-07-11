@@ -6,8 +6,8 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.businessConceptLayer.RIFUserRole;
 import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.dataStorageLayer.SQLQueryUtility;
 import rifServices.businessConceptLayer.User;
 
 import java.sql.*;

@@ -5,8 +5,8 @@ import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
-import rifGenericLibrary.presentationLayer.RIFGenericUIMessages;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
@@ -222,7 +222,7 @@ public final class TableNameSelectionDialog
 			= userInterfaceFactory.createGridBagConstraints();
 		
 		String searchLabelText
-			= RIFGenericUIMessages.getMessage("");
+			= RIFGenericLibraryMessages.getMessage("");
 		JLabel searchLabel
 			= userInterfaceFactory.createLabel(searchLabelText);
 		panel.add(searchLabel, panelGC);
@@ -238,7 +238,7 @@ public final class TableNameSelectionDialog
 		panelGC.fill = GridBagConstraints.NONE;
 		panelGC.weightx = 0;
 		String applyButtonText
-			= RIFGenericUIMessages.getMessage("");
+			= RIFGenericLibraryMessages.getMessage("");
 		applyButton
 			= userInterfaceFactory.createButton(applyButtonText);
 		applyButton.addActionListener(this);		
@@ -246,7 +246,7 @@ public final class TableNameSelectionDialog
 		
 		panelGC.gridx++;
 		String resetButtonText
-			= RIFGenericUIMessages.getMessage("");
+			= RIFGenericLibraryMessages.getMessage("");
 		resetButton
 			= userInterfaceFactory.createButton(resetButtonText);
 		resetButton.addActionListener(this);

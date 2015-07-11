@@ -1,11 +1,13 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 
 
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.businessConceptLayer.AgeGroup;
 import rifServices.businessConceptLayer.AgeBand;
@@ -16,7 +18,6 @@ import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearRange;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-import rifServices.util.RIFLogger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

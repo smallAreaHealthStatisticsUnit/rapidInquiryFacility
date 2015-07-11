@@ -1,19 +1,21 @@
 package rifDataLoaderTool.dataStorageLayer;
 
-import rifGenericLibrary.system.RIFServiceException;
+
 import rifServices.businessConceptLayer.User;
-
-
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.util.RIFLogger;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
+import rifGenericLibrary.util.RIFLogger;
+import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Properties;
 
@@ -100,7 +102,6 @@ public final class SQLConnectionManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final int POOLED_READ_ONLY_CONNECTIONS_PER_PERSON = 10;
 	private static final int POOLED_WRITE_CONNECTIONS_PER_PERSON = 5;
 
 	
@@ -109,27 +110,23 @@ public final class SQLConnectionManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The rif service startup options. */
-	private final RIFServiceStartupOptions rifServiceStartupOptions;
 	
-	/** The read connection from user. */
-	private final HashMap<String, ConnectionQueue> readOnlyConnectionsFromUser;
-		
+	private RIFDatabaseProperties rifDatabaseProperties;
+	
 	/** The write connection from user. */
-	private final HashMap<String, ConnectionQueue> writeConnectionsFromUser;
-	
-	
-	/** The initialisation query. */
-	private final String initialisationQuery;
-	
+	private ConnectionQueue writeConnections;
+		
 	/** The database url. */
 	private final String databaseURL;
 	
-	private final HashMap<String, Integer> suspiciousEventCounterFromUser;
-	
 	private final HashSet<String> registeredUserIDs;
 	private final HashSet<String> userIDsToBlock;
-	
+
+	private String databaseDriverClassName;
+	private String databaseDriverPrefix;
+	private String host;
+	private String port;
+	private String databaseName;
 	
 	// ==========================================
 	// Section Construction
@@ -141,25 +138,22 @@ public final class SQLConnectionManager {
 	 * @param rifServiceStartupOptions the rif service startup options
 	 */
 	public SQLConnectionManager(
-		final RIFServiceStartupOptions rifServiceStartupOptions) {
-
-		super(rifServiceStartupOptions.getRIFDatabaseProperties());
-		
-		this.rifServiceStartupOptions = rifServiceStartupOptions;
-		readOnlyConnectionsFromUser = new HashMap<String, ConnectionQueue>();
-		writeConnectionsFromUser = new HashMap<String, ConnectionQueue>();
-		
-		
-		userIDsToBlock = new HashSet<String>();
+		final String databaseDriverClassName,
+		final String databaseDriverPrefix,
+		final String host,
+		final String port,
+		final String databaseName) {
+				
+		this.databaseDriverClassName = databaseDriverClassName;
+		this.databaseDriverPrefix = databaseDriverPrefix;
+		this.host = host;
+		this.port = port;
+		this.databaseName = databaseName;
+				
 		registeredUserIDs = new HashSet<String>();
-	
-		suspiciousEventCounterFromUser = new HashMap<String, Integer>();
-		
-		StringBuilder query = new StringBuilder();
-		query.append("SELECT ");
-		query.append("rif40_startup(?) AS rif40_init;");
-		initialisationQuery = query.toString();
-		
+		userIDsToBlock = new HashSet<String>();
+		writeConnections = new ConnectionQueue();
+
 		databaseURL = generateURLText();
 	}
 
@@ -176,14 +170,14 @@ public final class SQLConnectionManager {
 	private String generateURLText() {
 		
 		StringBuilder urlText = new StringBuilder();
-		urlText.append(rifServiceStartupOptions.getDatabaseDriverPrefix());
+		urlText.append(databaseDriverPrefix);
 		urlText.append(":");
 		urlText.append("//");
-		urlText.append(rifServiceStartupOptions.getHost());
+		urlText.append(host);
 		urlText.append(":");
-		urlText.append(rifServiceStartupOptions.getPort());
+		urlText.append(port);
 		urlText.append("/");
-		urlText.append(rifServiceStartupOptions.getDatabaseName());
+		urlText.append(databaseName);
 		
 		return urlText.toString();
 	}
@@ -215,64 +209,6 @@ public final class SQLConnectionManager {
 		return userIDsToBlock.contains(userID);
 	}
 	
-	public void logSuspiciousUserEvent(
-		final User user) {
-	
-		String userID = user.getUserID();
-		
-		Integer suspiciousEventCounter
-			= suspiciousEventCounterFromUser.get(userID);
-		if (suspiciousEventCounter == null) {
-
-			//no incidents recorded yet, this is the first
-			suspiciousEventCounterFromUser.put(userID, 1);
-		}
-		else {
-			suspiciousEventCounterFromUser.put(
-				userID, 
-				(suspiciousEventCounter + 1));
-		}		
-	}
-	
-	public boolean userExceededMaximumSuspiciousEvents(
-		final User user) {
-		
-		String userID = user.getUserID();
-		Integer suspiciousEventCounter
-			= suspiciousEventCounterFromUser.get(userID);
-		if (suspiciousEventCounter == null) {
-			return false;
-		}
-		
-		if (suspiciousEventCounter < MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD) {
-			return false;
-		}
-		
-		return true;
-		
-	}
-	
-	public void addUserIDToBlock(
-		final User user) 
-		throws RIFServiceException {
-			
-		if (user == null) {
-			return;
-		}
-		
-		String userID = user.getUserID();
-		if (userID == null) {
-			return;
-		}
-		
-		
-		if (userIDsToBlock.contains(userID)) {
-			return;
-		}
-		
-		userIDsToBlock.add(userID);
-	}	
-	
 	/**
 	 * Register user.
 	 *
@@ -299,31 +235,8 @@ public final class SQLConnectionManager {
 			return;
 		}
 
-		ConnectionQueue readOnlyConnectionQueue = new ConnectionQueue();
-		ConnectionQueue writeOnlyConnectionQueue = new ConnectionQueue();
 		try {
-			Class.forName(rifServiceStartupOptions.getDatabaseDriverClassName());
-
-			//note that in order to optimise the setup of connections, 
-			//we call rif40_init(boolean no_checks).  The first time we call it
-			//for a user, we let the checks occur (set flag to false)
-			//for all other times, set the flag to true, to ignore checks
-
-			//Establish read-only connections
-			for (int i = 0; i < POOLED_READ_ONLY_CONNECTIONS_PER_PERSON; i++) {
-				boolean isFirstConnectionForUser = false;
-				if (i == 0) {
-					isFirstConnectionForUser = true;
-				}
-				Connection currentConnection
-					= createConnection(
-						userID,
-						password,
-						isFirstConnectionForUser,
-						true);
-				readOnlyConnectionQueue.addConnection(currentConnection);
-			}
-			readOnlyConnectionsFromUser.put(userID, readOnlyConnectionQueue);
+			Class.forName(databaseDriverClassName);
 			
 			//Establish write-only connections
 			for (int i = 0; i < POOLED_WRITE_CONNECTIONS_PER_PERSON; i++) {
@@ -333,11 +246,9 @@ public final class SQLConnectionManager {
 						password,
 						false,
 						false);
-				writeOnlyConnectionQueue.addConnection(currentConnection);
+				writeConnections.addConnection(currentConnection);
 			}			
-			writeConnectionsFromUser.put(userID, writeOnlyConnectionQueue);
 
-			
 			registeredUserIDs.add(userID);			
 		}
 		catch(ClassNotFoundException classNotFoundException) {
@@ -354,8 +265,7 @@ public final class SQLConnectionManager {
 		}
 		catch(SQLException sqlException) {
 			sqlException.printStackTrace(System.out);
-			readOnlyConnectionQueue.closeAllConnections();
-			writeOnlyConnectionQueue.closeAllConnections();				
+			writeConnections.closeAllConnections();				
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlConnectionManager.error.unableToRegisterUser",
@@ -386,94 +296,6 @@ public final class SQLConnectionManager {
 		return false;
 				
 	}
-		
-	/**
-	 * Assumes that user is valid.
-	 *
-	 * @param user the user
-	 * @return the connection
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public Connection assignPooledReadConnection(
-		final User user) 
-		throws RIFServiceException {
-		
-		Connection result = null;
-
-		String userID = user.getUserID();
-		if (userIDsToBlock.contains(userID)) {
-			return result;
-		}
-		
-		ConnectionQueue availableReadConnectionQueue
-			= readOnlyConnectionsFromUser.get(user.getUserID());
-
-		try {
-			Connection connection = availableReadConnectionQueue.assignConnection();
-			result = connection;
-		}
-		catch(Exception exception) {
-			//Record original exception, throw sanitised, human-readable version
-			logException(exception);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlConnectionManager.error.unableToAssignReadConnection");
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLConnectionManager.class, 
-				errorMessage, 
-				exception);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		return result;
-	}
-	
-	public void reclaimPooledReadConnection(
-		final User user, 
-		final Connection connection) 
-		throws RIFServiceException {
-		
-		try {
-			
-			if (user == null) {
-				return;
-			}
-			if (connection == null) {
-				return;
-			}
-			String userID = user.getUserID();			
-			ConnectionQueue availableReadConnections
-				= readOnlyConnectionsFromUser.get(userID);
-			availableReadConnections.reclaimConnection(connection);	
-		}			
-		catch(Exception exception) {
-			//Record original exception, throw sanitised, human-readable version
-			logException(exception);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlConnectionManager.error.unableToReclaimReadConnection");
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLConnectionManager.class, 
-				errorMessage, 
-				exception);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		
-	}
-	
 	public void reclaimPooledWriteConnection(
 		final User user, 
 		final Connection connection) 
@@ -490,9 +312,7 @@ public final class SQLConnectionManager {
 			}
 		
 			//connection.setAutoCommit(true);
-			ConnectionQueue writeOnlyConnectionQueue
-				= writeConnectionsFromUser.get(user.getUserID());
-			writeOnlyConnectionQueue.reclaimConnection(connection);			
+			writeConnections.reclaimConnection(connection);			
 		}	
 		catch(Exception exception) {
 			//Record original exception, throw sanitised, human-readable version
@@ -545,10 +365,8 @@ public final class SQLConnectionManager {
 				return result;
 			}
 			
-			ConnectionQueue writeConnectionQueue
-				= writeConnectionsFromUser.get(user.getUserID());
 			Connection connection
-				= writeConnectionQueue.assignConnection();
+				= writeConnections.assignConnection();
 			result = connection;			
 		}
 		catch(Exception exception) {
@@ -597,8 +415,6 @@ public final class SQLConnectionManager {
 		closeConnectionsForUser(userID);
 		registeredUserIDs.remove(userID);
 
-		suspiciousEventCounterFromUser.remove(userID);
-
 	}
 	
 	/**
@@ -610,19 +426,8 @@ public final class SQLConnectionManager {
 	public void closeConnectionsForUser(
 		final String userID) 
 		throws RIFServiceException {
-				
-		ConnectionQueue readOnlyConnectionQueue
-			= readOnlyConnectionsFromUser.get(userID);
-		if (readOnlyConnectionQueue != null) {
-			readOnlyConnectionQueue.closeAllConnections();
-		}
-		
-		ConnectionQueue writeConnectionQueue
-			= writeConnectionsFromUser.get(userID);
-		if (writeConnectionQueue != null) {
-			writeConnectionQueue.closeAllConnections();
-		}
-		
+
+		writeConnections.closeAllConnections();		
 	}
 
 	public void resetConnectionPoolsForUser(final User user)
@@ -637,23 +442,10 @@ public final class SQLConnectionManager {
 			return;
 		}
 		
-		//adding all the used read connections back to the available
-		//connections pool
-		ConnectionQueue readOnlyConnectionQueue
-			= readOnlyConnectionsFromUser.get(userID);	
-		if (readOnlyConnectionQueue != null) {
-			readOnlyConnectionQueue.closeAllConnections();
-			readOnlyConnectionQueue.clearConnections();
-		}
-		
 		//adding all the used write connections back to the available
 		//connections pool
-		ConnectionQueue writeConnectionQueue
-			= writeConnectionsFromUser.get(userID);
-		if (writeConnectionQueue != null) {
-			writeConnectionQueue.closeAllConnections();
-			writeConnectionQueue.clearConnections();
-		}
+		writeConnections.closeAllConnections();
+		writeConnections.clearConnections();
 	}
 	
 	public void deregisterAllUsers() throws RIFServiceException {
@@ -673,7 +465,6 @@ public final class SQLConnectionManager {
 		RIFServiceException {
 		
 		Connection connection = null;
-		PreparedStatement statement = null;
 		try {
 			
 			Properties databaseProperties = new Properties();
@@ -688,53 +479,28 @@ public final class SQLConnectionManager {
 			
 			connection
 				= DriverManager.getConnection(databaseURL, databaseProperties);
-			/*
-			Connection currentConnection 
-				= DriverManager.getConnection(
-					databaseURL,
-					userID,
-					password);
-			*/
-			statement
-				= SQLQueryUtility.createPreparedStatement(
-					connection, 
-					initialisationQuery);
-			if (isFirstConnectionForUser) {	
-				//perform checks
-				statement.setBoolean(1, false);
-			}
-			else {
-				statement.setBoolean(1,  true);
-			}
-			
-			statement.execute();
-			statement.close();
-
-			if (isReadOnly) {
-				connection.setReadOnly(true);
-			}
-			else {
-				connection.setReadOnly(false);				
-			}
+			connection.setReadOnly(false);				
 			connection.setAutoCommit(false);
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+
 		}
 
 		return connection;
-		
-		
-		
-	
-		
-		
+
 	}
 		
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
 
+	private void logException(RIFServiceException rifServiceException) {
+		
+	}
+	
+	private void logException(Exception exception) {
+		
+	}
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

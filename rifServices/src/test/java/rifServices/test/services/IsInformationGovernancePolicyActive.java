@@ -5,7 +5,7 @@ import rifServices.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFSecurityViolation;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
@@ -177,7 +177,7 @@ public final class IsInformationGovernancePolicyActive
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
+				RIFGenericLibraryError.SECURITY_VIOLATION, 
 				1);
 		}
 	}
@@ -197,7 +197,7 @@ public final class IsInformationGovernancePolicyActive
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFSecurityViolation.GENERAL_SECURITY_VIOLATION, 
+				RIFGenericLibraryError.SECURITY_VIOLATION, 
 				1);
 		}			
 	}

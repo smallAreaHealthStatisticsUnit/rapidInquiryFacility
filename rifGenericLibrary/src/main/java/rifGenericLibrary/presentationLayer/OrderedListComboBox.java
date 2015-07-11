@@ -4,7 +4,10 @@ import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Vector;
+
 import javax.swing.JComboBox;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 
 /**
@@ -78,7 +81,7 @@ public final class OrderedListComboBox {
 // ==========================================
 	/** The Constant CHOOSE_PROMPT. */
 	private static final String CHOOSE_PROMPT 
-		= RIFGenericUIMessages.getMessage("comboBox.choices.choose");
+		= RIFGenericLibraryMessages.getMessage("comboBox.choices.choose");
 
 // ==========================================
 // Section Properties

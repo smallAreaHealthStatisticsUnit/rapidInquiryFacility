@@ -9,11 +9,11 @@ import rifDataLoaderTool.businessConceptLayer.CleanWorkflowQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifGenericLibrary.dataStorageLayer.SQLCountQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFResultTable;
-import rifServices.util.RIFLogger;
 
 import java.sql.*;
 
