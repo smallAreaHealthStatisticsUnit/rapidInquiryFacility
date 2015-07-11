@@ -1,14 +1,15 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
+
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLCreateIndexQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteIndexQueryFormatter;
-
-
 
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
@@ -84,9 +85,9 @@ public final class OptimiseWorkflowManager
 	// ==========================================
 
 	public OptimiseWorkflowManager(
-		final RIFDataLoaderStartupOptions startupOptions) {
+		final RIFDatabaseProperties rifDatabaseProperties) {
 
-		super(startupOptions);
+		super(rifDatabaseProperties);
 	}
 
 	// ==========================================

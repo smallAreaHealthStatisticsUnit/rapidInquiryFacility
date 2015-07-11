@@ -1,10 +1,13 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
+
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -78,9 +81,9 @@ public final class CheckWorkflowManager
 	// ==========================================
 
 	public CheckWorkflowManager(
-		final RIFDataLoaderStartupOptions startupOptions) {
+		final RIFDatabaseProperties rifDatabaseProperties) {
 
-		super(startupOptions);
+		super(rifDatabaseProperties);
 	
 	}
 

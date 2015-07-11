@@ -66,7 +66,7 @@ import java.text.Collator;
  *
  */
 
-public abstract class AbstractRIFDataLoaderTestCase extends AbstractRIFTestCase {
+public abstract class AbstractRIFDataLoaderTestCase {
 
 	// ==========================================
 	// Section Constants

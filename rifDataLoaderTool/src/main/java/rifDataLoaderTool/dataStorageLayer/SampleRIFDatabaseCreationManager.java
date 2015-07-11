@@ -1,13 +1,10 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLCreateTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
-
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -94,8 +91,8 @@ public class SampleRIFDatabaseCreationManager {
 					"kgarwood", 
 					"kgarwood", 
 					true);
-			//fakeDatabaseCreationManager.createTables(connection);
-			fakeDatabaseCreationManager.deleteTables(connection);
+			fakeDatabaseCreationManager.createTables(connection);
+			//fakeDatabaseCreationManager.deleteTables(connection);
 			
 			
 		}
@@ -134,8 +131,36 @@ public class SampleRIFDatabaseCreationManager {
 		final Connection connection) 
 		throws RIFServiceException {
 		
+		PreparedStatement dataSetConfigurationsTableStatement = null;
 		PreparedStatement createCovariateTableStatement = null;
-		try {
+		try {			
+			createCovariatesTable(connection);
+			createDataSetConfigurationsTable(connection);
+		}
+		catch(SQLException sqlException) {
+			sqlException.printStackTrace(System.out);
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"sampleRIFDatabaseCreationManager.error.unableToInitialiseDB");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.UNABLE_TO_CREATE_FAKE_RIF_DB, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(createCovariateTableStatement);
+		}	
+	}
+	
+	private void createCovariatesTable(
+		final Connection connection) 
+		throws SQLException,
+		RIFServiceException {
+		
+		PreparedStatement statement = null;
+		try {			
+			//create covariates table
 			SQLCreateTableQueryFormatter createCovariateTableQueryFormatter
 				= new SQLCreateTableQueryFormatter();
 			createCovariateTableQueryFormatter.setTableName("rif40_covariates");
@@ -155,7 +180,7 @@ public class SampleRIFDatabaseCreationManager {
 				"min", 
 				"double precision", 
 				false);			
-			
+		
 			createCovariateTableQueryFormatter.addFieldDeclaration(
 				"max", 
 				"double precision", 
@@ -164,13 +189,66 @@ public class SampleRIFDatabaseCreationManager {
 				"type", 
 				"double precision", 
 				false);			
-			
-			createCovariateTableStatement
+		
+			statement
 				= SQLQueryUtility.createPreparedStatement(
 					connection, 
 					createCovariateTableQueryFormatter);
+		
+			statement.executeUpdate();
+		}
+		finally {
+			SQLQueryUtility.close(statement);
 			
-			createCovariateTableStatement.executeUpdate();
+		}
+	}
+
+	private void createDataSetConfigurationsTable(
+		final Connection connection) 
+		throws RIFServiceException {
+		
+		PreparedStatement createIDSequenceStatement = null;
+		PreparedStatement createDataSetConfigurationTableStatement = null;
+		PreparedStatement sequenceOwnershipStatement = null;
+		try {
+			
+			//Create a sequence that will auto-increment
+			SQLGeneralQueryFormatter createIDSequenceQueryFormatter = new SQLGeneralQueryFormatter();
+			createIDSequenceQueryFormatter.addQueryPhrase(
+				0, 
+				"CREATE SEQUENCE data_set_sequence;");
+			createIDSequenceStatement
+				= SQLQueryUtility.createPreparedStatement(
+						connection, 
+						createIDSequenceQueryFormatter);
+			createIDSequenceStatement.executeUpdate();
+			
+			//Make the 'id' field get its value from the sequence
+			SQLCreateTableQueryFormatter createDataSetConfigurationsTableFormatter 
+				= new SQLCreateTableQueryFormatter();
+			createDataSetConfigurationsTableFormatter.setTableName("data_set_configurations");
+			createDataSetConfigurationsTableFormatter.addSequenceField("id", "data_set_sequence");
+			createDataSetConfigurationsTableFormatter.addTextFieldDeclaration("core_data_set_name", 50, false);
+			createDataSetConfigurationsTableFormatter.addTextFieldDeclaration("version", 20, false);
+			createDataSetConfigurationsTableFormatter.addCreationTimestampField("creation_date");
+			createDataSetConfigurationTableStatement
+				= SQLQueryUtility.createPreparedStatement(
+					connection, 
+					createDataSetConfigurationsTableFormatter);
+			createDataSetConfigurationTableStatement.executeUpdate();
+			
+			//Ensure that the id field owns the sequence so that no other table could
+			//increment it
+			SQLGeneralQueryFormatter sequenceOwnershipQueryFormatter
+				= new SQLGeneralQueryFormatter();
+			sequenceOwnershipQueryFormatter.addQueryPhrase(0, "ALTER SEQUENCE data_set_sequence ");
+			sequenceOwnershipQueryFormatter.addQueryPhrase("OWNED BY ");
+			sequenceOwnershipQueryFormatter.addQueryPhrase("data_set_configurations.id;");
+			sequenceOwnershipStatement
+				= SQLQueryUtility.createPreparedStatement(
+					connection, 
+					sequenceOwnershipQueryFormatter);
+			sequenceOwnershipStatement.executeUpdate();			
 		}
 		catch(SQLException sqlException) {
 			sqlException.printStackTrace(System.out);
@@ -184,11 +262,12 @@ public class SampleRIFDatabaseCreationManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(createCovariateTableStatement);
+			SQLQueryUtility.close(createIDSequenceStatement);
+			SQLQueryUtility.close(createDataSetConfigurationTableStatement);
+			SQLQueryUtility.close(sequenceOwnershipStatement);		
 		}	
+		
 	}
-
-
 	
 	public void deleteTables(
 		final Connection connection) 
@@ -205,7 +284,6 @@ public class SampleRIFDatabaseCreationManager {
 					connection, 
 					deleteCovariateTableQueryFormatter);
 			
-			System.out.println("About to delete tables");
 			deleteCovariateTableStatement.executeUpdate();
 		}
 		catch(SQLException sqlException) {

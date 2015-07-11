@@ -8,24 +8,28 @@ import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLCreateTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+
+
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFResultTable;
 
-
-
-
-
-
+import org.postgresql.copy.CopyManager;
+import org.postgresql.core.BaseConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.io.File;
+import java.io.FileReader;
+
 
 /**
  *
@@ -84,12 +88,12 @@ public final class LoadWorkflowManager
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	private static final int TEXT_FIELD_WIDTH = 30;
 	
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private RIFDataLoaderStartupOptions startupOptions;
+	private DataSetManager dataSetManager;
 
 
 	// ==========================================
@@ -97,12 +101,12 @@ public final class LoadWorkflowManager
 	// ==========================================
 
 	public LoadWorkflowManager(
-		final RIFDataLoaderStartupOptions startupOptions) {
+		final RIFDatabaseProperties rifDatabaseProperties,
+		final DataSetManager dataSetManager) {
 
-		super(startupOptions);
-		
-		this.startupOptions = startupOptions;
+		super(rifDatabaseProperties);
 
+		this.dataSetManager = dataSetManager;
 	}
 
 	// ==========================================
@@ -126,7 +130,7 @@ public final class LoadWorkflowManager
 			return resultTable;
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
+			logSQLException(sqlException);
 		}
 		finally {
 			SQLQueryUtility.close(connection);
@@ -139,10 +143,6 @@ public final class LoadWorkflowManager
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 
-	
-		
-		int textColumnWidth
-			= startupOptions.getDataLoaderTextColumnSize();
 		PreparedStatement dropTableStatement = null;		
 		String coreDataSetName 
 			= dataSetConfiguration.getName();
@@ -165,6 +165,7 @@ public final class LoadWorkflowManager
 			dropTableStatement.executeUpdate();	
 		}
 		catch(SQLException sqlException) {			
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"loadWorkflowManager.error.dropLoadTable",
@@ -178,6 +179,12 @@ public final class LoadWorkflowManager
 		finally {			
 			SQLQueryUtility.close(dropTableStatement);
 		}
+
+
+		int dataSetIdentifier
+			= dataSetManager.addDataSetConfiguration(
+				connection, 
+				dataSetConfiguration);
 		
 		PreparedStatement createLoadTableStatement = null;
 		try {
@@ -186,8 +193,11 @@ public final class LoadWorkflowManager
 			//without raising a 'table already exists' exception
 			SQLCreateTableQueryFormatter createLoadTableQueryFormatter
 				 = new SQLCreateTableQueryFormatter();
-			createLoadTableQueryFormatter.setTextFieldLength(textColumnWidth);
+			createLoadTableQueryFormatter.setTextFieldLength(TEXT_FIELD_WIDTH);
 			createLoadTableQueryFormatter.setTableName(targetLoadTable);
+
+			
+			/*
 			createLoadTableQueryFormatter.addFieldDeclaration(
 				"data_source_id", 
 				"INTEGER", 
@@ -196,6 +206,7 @@ public final class LoadWorkflowManager
 				"row_number", 
 				"SERIAL", 
 				false);
+			*/	
 						
 			ArrayList<DataSetFieldConfiguration> fieldConfigurations
 				= dataSetConfiguration.getFieldConfigurations();
@@ -213,9 +224,28 @@ public final class LoadWorkflowManager
 			createLoadTableStatement
 				= connection.prepareStatement(createLoadTableQueryFormatter.generateQuery());
 			createLoadTableStatement.executeUpdate();
+			
+			
+			//now import the data from the CSV file
+			importCSVFile(
+				connection,
+				dataSetConfiguration.getFilePath(),
+				targetLoadTable);
+			
+			addDataSourceIdentifierField(
+				connection,
+				targetLoadTable,
+				dataSetIdentifier);
+			addOriginalRowNumbers(
+				connection, 
+				targetLoadTable);
+			
+			createIndices(
+				connection,
+				targetLoadTable);
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
+			logSQLException(sqlException);
 			String createTableName
 				= RIFTemporaryTablePrefixes.LOAD.getTableName(
 						dataSetConfiguration.getName());
@@ -233,6 +263,180 @@ public final class LoadWorkflowManager
 		finally {			
 			SQLQueryUtility.close(createLoadTableStatement);
 		}	
+	}
+	
+	private void importCSVFile(
+		final Connection connection,
+		final String csvFilePath,
+		final String destinationTableName)
+		throws RIFServiceException {
+		
+		
+		try {
+			
+			//COPY t FROM STDIN
+			SQLGeneralQueryFormatter queryFormatter
+				= new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryPhrase(0, "COPY ");
+			queryFormatter.addQueryPhrase(destinationTableName);
+			queryFormatter.addQueryPhrase(" FROM STDIN WITH DELIMITER ',' CSV HEADER");
+			
+			CopyManager copyManager 
+				= new CopyManager((BaseConnection) connection);
+			
+			FileReader fileReader
+				= new FileReader(new File(csvFilePath));
+			
+			copyManager.copyIn(
+				queryFormatter.generateQuery(), 
+				fileReader);
+		}
+		catch(Exception exception) {
+			logException(exception);
+		}		
+	}
+		
+	private void addDataSourceIdentifierField(
+		final Connection connection,
+		final String targetLoadTable,
+		final int dataSetIdentifier)
+		throws RIFServiceException {
+		
+		PreparedStatement statement = null;
+		try {
+			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");
+			queryFormatter.addQueryPhrase(targetLoadTable);
+			queryFormatter.addQueryPhrase(" ADD COLUMN data_set_id INTEGER DEFAULT ");
+			queryFormatter.addQueryPhrase(String.valueOf(dataSetIdentifier));
+			queryFormatter.addQueryPhrase(";");
+			
+			statement
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
+			statement.executeUpdate();
+			
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"loadWorkflowManager.error.unableToDataSetNumber",
+					targetLoadTable);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}		
+		
+		
+	}
+	
+	/**
+	 * Adding a column for row_number
+	 * @param targetLoadTable
+	 * @throws RIFServiceException
+	 */
+	private void addOriginalRowNumbers(
+		final Connection connection,
+		final String targetLoadTable) 
+		throws RIFServiceException {
+				
+		PreparedStatement statement = null;
+		try {
+			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");
+			queryFormatter.addQueryPhrase(targetLoadTable);
+			queryFormatter.addQueryPhrase(" ADD COLUMN row_number BIGSERIAL");
+		
+			statement 
+				= createPreparedStatement(connection, queryFormatter);
+			statement.executeUpdate();
+			
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"loadWorkflowManager.error.unableToAddRowNumbers",
+					targetLoadTable);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}		
+	}
+
+	private void createIndices(
+		final Connection connection,
+		final String targetLoadTable) 
+		throws RIFServiceException {
+		
+
+		PreparedStatement rowNumberIndexStatement = null;
+		PreparedStatement dataSetIndexStatement = null;
+
+		try {
+
+			SQLGeneralQueryFormatter rowNumberIndexQueryFormatter 
+				= new SQLGeneralQueryFormatter();
+			rowNumberIndexQueryFormatter.addQueryPhrase(0, "CREATE INDEX idx_");
+			rowNumberIndexQueryFormatter.addQueryPhrase("rn_");
+			rowNumberIndexQueryFormatter.addQueryPhrase(targetLoadTable);
+			rowNumberIndexQueryFormatter.addQueryPhrase(" ON ");
+			rowNumberIndexQueryFormatter.addQueryPhrase(targetLoadTable);
+			rowNumberIndexQueryFormatter.addQueryPhrase(" (row_number);");
+			
+			logSQLQuery("lwfm_create_rn_index", rowNumberIndexQueryFormatter);
+					
+			rowNumberIndexStatement
+				= createPreparedStatement(connection, rowNumberIndexQueryFormatter);
+			rowNumberIndexStatement.executeUpdate();
+			
+			SQLGeneralQueryFormatter dataSetIndexQueryFormatter = new SQLGeneralQueryFormatter();
+			dataSetIndexQueryFormatter.addQueryPhrase(0, "CREATE INDEX idx_");
+			dataSetIndexQueryFormatter.addQueryPhrase("ds_");
+			dataSetIndexQueryFormatter.addQueryPhrase(targetLoadTable);
+			dataSetIndexQueryFormatter.addQueryPhrase(" ON ");
+			dataSetIndexQueryFormatter.addQueryPhrase(targetLoadTable);
+			dataSetIndexQueryFormatter.addQueryPhrase(" (data_set_id);");
+
+			logSQLQuery("lwfm_create_ds_index", dataSetIndexQueryFormatter);
+			
+			dataSetIndexStatement
+				= createPreparedStatement(connection, dataSetIndexQueryFormatter);
+			dataSetIndexStatement.executeUpdate();
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"loadWorkflowManager.error.unableToCreateIndices",
+					targetLoadTable);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(rowNumberIndexStatement);			
+			SQLQueryUtility.close(dataSetIndexStatement);			
+		}
+		
+		
+		
+		
 	}
 	
 	public void addLoadTableData(

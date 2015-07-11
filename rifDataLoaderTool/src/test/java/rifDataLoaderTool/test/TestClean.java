@@ -1,23 +1,22 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.test;
 
-import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+
+import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
+
+import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifGenericLibrary.system.RIFServiceException;
+import rifServices.businessConceptLayer.User;
+import static org.junit.Assert.*;
 
-import java.sql.*;
+import org.junit.Test;
 
 /**
  *
- * Manages all database operations used to convert a cleaned table into tabular data
- * expected by some part of the RIF (eg: numerator data, health codes, geospatial data etc)
- * 
+ *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -63,8 +62,7 @@ import java.sql.*;
  *
  */
 
-public final class CombineWorkflowManager 
-	extends AbstractDataLoaderStepManager {
+public class TestClean extends AbstractRIFDataLoaderTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -72,35 +70,44 @@ public final class CombineWorkflowManager
 
 	// ==========================================
 	// Section Properties
-	// ==========================================	
+	// ==========================================
 
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public CombineWorkflowManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
+	public TestClean() {
 
-		super(rifDatabaseProperties);
+	}
 
+	@Test
+	public void test1() {
+		DataLoaderService dataLoaderService = new DataLoaderService();
+		
+		try {
+			User rifManager = User.newInstance("rifManager", "111.111.111.111");
+			SampleDataGenerator sampleDataGenerator
+				= new SampleDataGenerator();
+			DataSetConfiguration dataSetConfiguration
+				= sampleDataGenerator.createTest4StudyID1ExtractConfiguration();
+			
+			dataLoaderService.initialiseService();
+			
+			dataLoaderService.cleanConfiguration(
+				rifManager, 
+				dataSetConfiguration);
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
+			fail();
+		}
+		
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void combineConfiguration(
-		final Connection connection,
-		final DataSetConfiguration dataSetConfiguration)
-		throws RIFServiceException {
-	
-		//validate parameters
-		dataSetConfiguration.checkErrors();
-			
-		//@TODO
-	}
-	
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

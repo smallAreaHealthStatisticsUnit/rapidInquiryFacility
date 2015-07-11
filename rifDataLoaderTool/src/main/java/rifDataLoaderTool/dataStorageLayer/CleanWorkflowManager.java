@@ -8,6 +8,8 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLCountQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
@@ -78,24 +80,25 @@ public final class CleanWorkflowManager
 	// Section Properties
 	// ==========================================
 	private CleanWorkflowQueryGeneratorAPI queryGenerator;
+	private DataSetManager dataSetManager;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public CleanWorkflowManager(
-		final RIFDataLoaderStartupOptions startupOptions,
+		final RIFDatabaseProperties rifDatabaseProperties,
+		final DataSetManager dataSetManager,
 		final CleanWorkflowQueryGeneratorAPI queryGenerator) {
 
-		super(startupOptions);
+		super(rifDatabaseProperties);
+		this.dataSetManager = dataSetManager;
 		this.queryGenerator = queryGenerator;
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
-
 	
 	public RIFResultTable getCleanedTableData(
 		final Connection connection,
@@ -125,9 +128,7 @@ public final class CleanWorkflowManager
 		}
 		return resultTable;
 	}
-	
-	
-	
+		
 	public void createCleanedTable(
 		final Connection connection,
 		final DataSetConfiguration dataSetConfiguration) 
@@ -154,8 +155,7 @@ public final class CleanWorkflowManager
 		PreparedStatement createValidationTableStatement = null;
 		String createValidationTableQuery
 			= queryGenerator.generateValidationTableQuery(dataSetConfiguration);
-		
-		
+			
 		PreparedStatement dropCastingTableStatement = null;
 		String dropCastingTableQuery
 			= queryGenerator.generateDropCastingTableQuery(dataSetConfiguration);

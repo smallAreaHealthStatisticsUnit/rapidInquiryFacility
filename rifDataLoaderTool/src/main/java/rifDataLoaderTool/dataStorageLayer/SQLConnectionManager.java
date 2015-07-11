@@ -1,10 +1,12 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
 import rifGenericLibrary.util.RIFLogger;
@@ -102,10 +104,9 @@ public final class SQLConnectionManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final int POOLED_WRITE_CONNECTIONS_PER_PERSON = 5;
+	private static final int MAXIMUM_DATA_LOADER_CONNECTIONS = 5;
 
 	
-	private static final int MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD = 5;
 	
 	// ==========================================
 	// Section Properties
@@ -165,14 +166,40 @@ public final class SQLConnectionManager {
 		urlText.append(databaseName);
 
 		databaseURL = urlText.toString();
+		
 	}
-
 	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-
+	public void initialiseConnectionQueue(
+		final String userID,
+		final String password)
+		throws RIFServiceException {
+		
+		try {		
+			//Establish read-only connections
+			for (int i = 0; i < MAXIMUM_DATA_LOADER_CONNECTIONS; i++) {
+				Connection currentConnection
+					= createConnection(
+						userID,
+						password,
+						true);
+				writeConnections.addConnection(currentConnection);
+			}
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"sqlConnectionManager.error.unableToCreateConnections");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+	}
 	
 	/**
 	 * User exists.
@@ -189,6 +216,7 @@ public final class SQLConnectionManager {
 	public boolean isUserBlocked(
 		final User user) {
 		
+		/*
 		if (user == null) {
 			return false;
 		}
@@ -199,6 +227,9 @@ public final class SQLConnectionManager {
 		}
 		
 		return userIDsToBlock.contains(userID);
+		*/
+		
+		return false;
 	}
 	
 	/**
@@ -352,11 +383,6 @@ public final class SQLConnectionManager {
 		
 		Connection result = null;
 		try {
-			
-			String userID = user.getUserID();
-			if (userIDsToBlock.contains(userID)) {
-				return result;
-			}
 			
 			Connection connection
 				= writeConnections.assignConnection();

@@ -122,7 +122,37 @@ public final class SQLCreateTableQueryFormatter
 			textFieldType.toString(),
 			isNullAllowed);
 	}
+	
+	public void addSequenceField(
+		final String fieldName,
+		final String sequenceName) {
+				
+		StringBuilder defaultPhrase = new StringBuilder();
+		defaultPhrase.append("DEFAULT nextval('");
+		defaultPhrase.append(sequenceName);
+		defaultPhrase.append("')");
 		
+		addFieldDeclaration(
+			fieldName,
+			"INTEGER",
+			defaultPhrase.toString(),
+			false);		
+	}
+	
+	public void addCreationTimestampField(
+		final String fieldName) {
+		
+		StringBuilder timeStampFieldType = new StringBuilder();
+		timeStampFieldType.append("DATE");
+
+		addFieldDeclaration(
+			fieldName,
+			timeStampFieldType.toString(),
+			"DEFAULT CURRENT_DATE",
+			false);
+		
+	}
+	
 	public void addTextFieldDeclaration(
 		final String fieldName,
 		final int length,
@@ -138,10 +168,13 @@ public final class SQLCreateTableQueryFormatter
 			textFieldType.toString(),
 			isNullAllowed);
 	}	
+
+
 	
 	public void addFieldDeclaration(
 		final String fieldName,
 		String dataType,
+		String defaultPhrase,
 		final boolean isNullAllowed) {
 		
 		StringBuilder fieldDeclaration = new StringBuilder();
@@ -159,8 +192,25 @@ public final class SQLCreateTableQueryFormatter
 			fieldDeclaration.append(" NOT NULL");
 		}
 		
+		if (defaultPhrase != null) {
+			fieldDeclaration.append(" ");
+			fieldDeclaration.append(defaultPhrase);
+		}
+		
 		fieldDeclarations.add(fieldDeclaration.toString());
 		
+	}
+	
+	public void addFieldDeclaration(
+		final String fieldName,
+		String dataType,
+		final boolean isNullAllowed) {
+
+		addFieldDeclaration(
+			fieldName,
+			dataType,
+			null,
+			isNullAllowed);		
 	}
 	
 	@Override

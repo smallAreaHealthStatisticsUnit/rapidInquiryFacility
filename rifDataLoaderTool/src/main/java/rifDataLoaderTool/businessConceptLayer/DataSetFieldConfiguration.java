@@ -248,7 +248,7 @@ public class DataSetFieldConfiguration
 		loadFieldName = coreFieldName;
 		cleanFieldName = coreFieldName;
 
-		convertFieldName = null;
+		//convertFieldName = coreFieldName;
 		
 		
 		coreFieldDescription = "";
@@ -602,7 +602,8 @@ public class DataSetFieldConfiguration
 			
 		}
 		
-		if (fieldValidationUtility.isEmpty(coreFieldName)) {
+		/*
+		if (fieldValidationUtility.isEmpty(coreFieldDescription)) {
 
 			String coreFieldDescriptionLabel
 				= RIFDataLoaderToolMessages.getMessage(
@@ -612,7 +613,8 @@ public class DataSetFieldConfiguration
 					"general.validation.emptyRequiredField",
 					coreFieldDescriptionLabel);
 			errorMessages.add(errorMessage);		
-		}		
+		}
+		*/		
 	
 		if (rifDataType == null) {
 			String rifDataTypeLabel
@@ -633,18 +635,6 @@ public class DataSetFieldConfiguration
 				= RIFDataLoaderToolMessages.getMessage(
 					"general.validation.emptyRequiredField",
 					loadFieldNameLabel);
-			errorMessages.add(errorMessage);		
-		}
-
-
-		if (fieldValidationUtility.isEmpty(convertFieldName)) {
-			String convertFieldNameLabel
-				= RIFDataLoaderToolMessages.getMessage(
-					"dataSetFieldConfiguration.convertFieldName.label");
-			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage(
-					"general.validation.emptyRequiredField",
-					convertFieldNameLabel);
 			errorMessages.add(errorMessage);		
 		}
 		

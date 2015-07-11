@@ -143,6 +143,7 @@ public class SampleDataGenerator {
 		numeratorDataSetConfiguration.setName("cancer_data");
 		numeratorDataSetConfiguration.setVersion("2.0");
 		numeratorDataSetConfiguration.setFilePath("C://rif_scripts/test_data/my_cancer_numerator_data.csv");
+		numeratorDataSetConfiguration.setFileHasFieldNamesDefined(true);
 		numeratorDataSetConfiguration.setDescription("Improved cancer data");
 		
 		//indicates what part of the RIF schema we are targetting by
@@ -424,6 +425,7 @@ public class SampleDataGenerator {
 		sahuslandLevel3CovariatesConfiguration.setName("sahsuland_covariates_level3");
 		sahuslandLevel3CovariatesConfiguration.setVersion("1.5");
 		sahuslandLevel3CovariatesConfiguration.setFilePath("C://rif_scripts/test_data/sahsuland_covariates_level3.csv");
+		sahuslandLevel3CovariatesConfiguration.setFileHasFieldNamesDefined(true);
 		sahuslandLevel3CovariatesConfiguration.setDescription("Covariate data for level3");		
 		
 		
@@ -507,6 +509,7 @@ public class SampleDataGenerator {
 		sahuslandLevel4CovariatesConfiguration.setName("sahsuland_covariates_level4");
 		sahuslandLevel4CovariatesConfiguration.setVersion("1.5");
 		sahuslandLevel4CovariatesConfiguration.setFilePath("C://rif_scripts/test_data/sahsuland_covariates_level4.csv");
+		sahuslandLevel4CovariatesConfiguration.setFileHasFieldNamesDefined(true);
 		sahuslandLevel4CovariatesConfiguration.setDescription("Covariate data for level4");		
 
 		
@@ -602,7 +605,152 @@ public class SampleDataGenerator {
 	}
 
 	
+	public DataSetConfiguration createTest4StudyID1ExtractConfiguration() {
+		RIFDataTypeFactory rifDataTypeFactory
+		= RIFDataTypeFactory.newInstance();
 	
+		DataSetConfiguration test4Study1Configuration
+			= DataSetConfiguration.newInstance();
+		test4Study1Configuration.setName("test4_study_id1_numerator");
+		test4Study1Configuration.setFilePath("C://rif_scripts/test_data/test_4_study_id_1_extract.csv");
+		test4Study1Configuration.setFileHasFieldNamesDefined(true);
+		test4Study1Configuration.setDescription("numerator data from test 4 study 1");		
+		test4Study1Configuration.setRIFSchemaArea(RIFSchemaArea.HEALTH_NUMERATOR_DATA);
+		
+		
+
+		DataSetFieldConfiguration yearFieldConfiguration
+			= DataSetFieldConfiguration.newInstance(
+				"test4_study_id1_numerator", 
+				"year");	
+		yearFieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_year"));
+		yearFieldConfiguration.setDuplicateIdentificationField(true);
+		yearFieldConfiguration.setCoreFieldDescription("year of data");
+		yearFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
+		yearFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		test4Study1Configuration.addFieldConfiguration(yearFieldConfiguration);	
+		
+		DataSetFieldConfiguration studyOrComparisonFieldConfiguration
+		= DataSetFieldConfiguration.newInstance(
+			"test4_study_id1", 
+			"study_or_comparison");	
+		studyOrComparisonFieldConfiguration.setRIFDataType(
+		rifDataTypeFactory.getDataType("rif_text"));
+		studyOrComparisonFieldConfiguration.setDuplicateIdentificationField(true);
+		studyOrComparisonFieldConfiguration.setCoreFieldDescription("C=Comparison Area S=Study Area");
+		studyOrComparisonFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		studyOrComparisonFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		test4Study1Configuration.addFieldConfiguration(studyOrComparisonFieldConfiguration);	
+		
+		
+		DataSetFieldConfiguration studyIDFieldConfiguration
+			= DataSetFieldConfiguration.newInstance(
+				"test4_study_id1_numerator", 
+				"study_id");	
+		studyIDFieldConfiguration.setRIFDataType(
+		rifDataTypeFactory.getDataType("rif_integer"));
+		studyIDFieldConfiguration.setDuplicateIdentificationField(true);
+		studyIDFieldConfiguration.setCoreFieldDescription("study identifier");
+		studyIDFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		studyIDFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		test4Study1Configuration.addFieldConfiguration(studyIDFieldConfiguration);	
+		
+		
+		DataSetFieldConfiguration areaIDFieldConfiguration
+		= DataSetFieldConfiguration.newInstance(
+			"test4_study_id1", 
+			"area_id");	
+		areaIDFieldConfiguration.setRIFDataType(
+		rifDataTypeFactory.getDataType("rif_text"));
+		areaIDFieldConfiguration.setDuplicateIdentificationField(true);
+		areaIDFieldConfiguration.setCoreFieldDescription("area identifier");
+		areaIDFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		areaIDFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		test4Study1Configuration.addFieldConfiguration(areaIDFieldConfiguration);	
+	
+		
+		DataSetFieldConfiguration bandIDFieldConfiguration
+		= DataSetFieldConfiguration.newInstance(
+			"test4_study_id1", 
+			"band_id");	
+		bandIDFieldConfiguration.setRIFDataType(
+		rifDataTypeFactory.getDataType("rif_text"));
+		bandIDFieldConfiguration.setDuplicateIdentificationField(true);
+		bandIDFieldConfiguration.setCoreFieldDescription("area identifier");
+		bandIDFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		bandIDFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		test4Study1Configuration.addFieldConfiguration(bandIDFieldConfiguration);	
+		
+		
+		DataSetFieldConfiguration sexFieldConfiguration
+		= DataSetFieldConfiguration.newInstance(
+			"test4_study_id1", 
+			"sex");	
+		sexFieldConfiguration.setRIFDataType(
+		rifDataTypeFactory.getDataType("rif_sex"));
+		sexFieldConfiguration.setDuplicateIdentificationField(true);
+		sexFieldConfiguration.setCoreFieldDescription("sex");
+		sexFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
+		sexFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		test4Study1Configuration.addFieldConfiguration(sexFieldConfiguration);	
+		
+		
+		DataSetFieldConfiguration ageGroupFieldConfiguration
+			= DataSetFieldConfiguration.newInstance(
+			"test4_study_id1", 
+			"age_group");	
+		ageGroupFieldConfiguration.setRIFDataType(
+		rifDataTypeFactory.getDataType("rif_age"));
+		ageGroupFieldConfiguration.setDuplicateIdentificationField(true);
+		ageGroupFieldConfiguration.setCleanFieldName("age");
+		ageGroupFieldConfiguration.setConvertFieldName("age");
+		ageGroupFieldConfiguration.setCoreFieldDescription("a person's age");
+		ageGroupFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
+		ageGroupFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		test4Study1Configuration.addFieldConfiguration(ageGroupFieldConfiguration);	
+
+		
+		DataSetFieldConfiguration sesFieldConfiguration
+			= DataSetFieldConfiguration.newInstance(
+			"test4_study_id1", 
+			"ses");	
+		sesFieldConfiguration.setRIFDataType(
+		rifDataTypeFactory.getDataType("rif_integer"));
+		sesFieldConfiguration.setDuplicateIdentificationField(true);
+		sesFieldConfiguration.setCoreFieldDescription("socio economic status");
+		sesFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		sesFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
+		test4Study1Configuration.addFieldConfiguration(sesFieldConfiguration);	
+
+
+		
+		DataSetFieldConfiguration inv1FieldConfiguration
+			= DataSetFieldConfiguration.newInstance(
+			"test4_study_id1", 
+			"inv_1");	
+		sesFieldConfiguration.setRIFDataType(
+		rifDataTypeFactory.getDataType("rif_text"));
+		inv1FieldConfiguration.setDuplicateIdentificationField(true);
+		inv1FieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.IGNORE_FIELD);
+		inv1FieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		test4Study1Configuration.addFieldConfiguration(inv1FieldConfiguration);	
+			
+		DataSetFieldConfiguration totalPopFieldConfiguration
+			= DataSetFieldConfiguration.newInstance(
+			"test4_study_id1", 
+			"total_pop");	
+		sesFieldConfiguration.setRIFDataType(
+		rifDataTypeFactory.getDataType("rif_text"));
+		totalPopFieldConfiguration.setDuplicateIdentificationField(true);
+		totalPopFieldConfiguration.setCoreFieldDescription("total population");
+		totalPopFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		totalPopFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		test4Study1Configuration.addFieldConfiguration(totalPopFieldConfiguration);	
+
+		
+		return test4Study1Configuration;
+	}
 	
 	
 	

@@ -143,7 +143,12 @@ public final class DataSetConfigurationHandler
 				getSingularRecordName(), 
 				"description", 
 				dataSetConfiguration.getName());
-
+			
+			xmlUtility.writeField(
+				getSingularRecordName(), 
+				"file_has_field_names_defined", 
+				String.valueOf(dataSetConfiguration.fileHasFieldNamesDefined()));
+			
 			xmlUtility.writeField(
 				getSingularRecordName(), 
 				"rif_schema_area", 
@@ -255,6 +260,11 @@ public final class DataSetConfigurationHandler
 		}
 		else if (equalsFieldName("description", qualifiedName)) {
 			currentDataSetConfiguration.setDescription(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("file_has_field_names_defined", qualifiedName)) {
+			Boolean fileHasFieldNamesDefined
+				= Boolean.valueOf(getCurrentFieldValue());
+			currentDataSetConfiguration.setFileHasFieldNamesDefined(fileHasFieldNamesDefined);
 		}
 		else if (equalsFieldName("rif_schema_area", qualifiedName)) {
 			RIFSchemaArea rifSchemaArea = RIFSchemaArea.getSchemaAreaFromName(getCurrentFieldValue());

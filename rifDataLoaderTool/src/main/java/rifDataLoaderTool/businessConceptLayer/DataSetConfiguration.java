@@ -110,7 +110,8 @@ public class DataSetConfiguration
 	private RIFSchemaArea rifSchemaArea;
 	private ArrayList<DataSetFieldConfiguration> fieldConfigurations;
 	public WorkflowState currentWorkflowState;
-
+	private boolean fileHasFieldNamesDefined;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -120,6 +121,7 @@ public class DataSetConfiguration
 		version = "1.0";
 		fieldConfigurations = new ArrayList<DataSetFieldConfiguration>();
 		filePath = "";
+		fileHasFieldNamesDefined = false;
 	}
 	
 	
@@ -197,8 +199,12 @@ public class DataSetConfiguration
 			originalDataSetConfiguration.getFilePath());		
 		cloneDataSetConfiguration.setDescription(
 			originalDataSetConfiguration.getDescription());
+		cloneDataSetConfiguration.setFileHasFieldNamesDefined(
+			originalDataSetConfiguration.fileHasFieldNamesDefined());
 		cloneDataSetConfiguration.setCurrentWorkflowState(
 			originalDataSetConfiguration.getCurrentWorkflowState());
+		cloneDataSetConfiguration.setRIFSchemaArea(
+			originalDataSetConfiguration.getRIFSchemaArea());
 		
 		ArrayList<DataSetFieldConfiguration> originalFieldConfigurations
 			= originalDataSetConfiguration.getFieldConfigurations();
@@ -258,6 +264,17 @@ public class DataSetConfiguration
 		this.description = description;
 	}
 
+	public boolean fileHasFieldNamesDefined() {	
+		
+		return fileHasFieldNamesDefined;
+	}
+	
+	public void setFileHasFieldNamesDefined(
+		final boolean fileHasFieldNamesDefined) {
+		
+		this.fileHasFieldNamesDefined = fileHasFieldNamesDefined;
+	}
+	
 	public WorkflowState getCurrentWorkflowState() {
 		return currentWorkflowState;
 	}
@@ -334,7 +351,7 @@ public class DataSetConfiguration
 		String versionLabel
 			= RIFDataLoaderToolMessages.getMessage("dataSetConfiguration.version.label");
 		String descriptionLabel
-			= RIFServiceMessages.getMessage("dataSetConfiguration.description.label");
+			= RIFDataLoaderToolMessages.getMessage("dataSetConfiguration.description.label");
 			
 		//Check for security problems.  Ensure EVERY text field is checked
 		//These checks will throw a security exception and stop further validation
@@ -430,6 +447,7 @@ public class DataSetConfiguration
 		}
 
 		if (rifSchemaArea == null) {
+			System.out.println("DSC rifSchemaArea is NULL!!");
 			String currentWorkflowStateFieldLabel
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetConfiguration.rifSchemaArea.label");

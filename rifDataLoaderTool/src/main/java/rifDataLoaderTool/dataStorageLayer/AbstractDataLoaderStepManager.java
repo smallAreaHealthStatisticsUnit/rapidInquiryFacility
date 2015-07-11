@@ -87,9 +87,9 @@ public abstract class AbstractDataLoaderStepManager {
 	// ==========================================
 
 	public AbstractDataLoaderStepManager(
-		final RIFDataLoaderStartupOptions startupOptions) {
+		final RIFDatabaseProperties rifDatabaseProperties) {
 		
-		this.rifDatabaseProperties = startupOptions.getRIFDatabaseProperties();
+		this.rifDatabaseProperties = rifDatabaseProperties;
 	}
 
 	// ==========================================
@@ -331,11 +331,11 @@ public abstract class AbstractDataLoaderStepManager {
 	}
 	
 	protected void logSQLException(final SQLException sqlException) {
-		sqlException.printStackTrace();
+		sqlException.printStackTrace(System.out);
 	}
 
 	protected void logException(final Exception exception) {
-		exception.printStackTrace();
+		exception.printStackTrace(System.out);
 	}
 	
 	protected void setAutoCommitOn(

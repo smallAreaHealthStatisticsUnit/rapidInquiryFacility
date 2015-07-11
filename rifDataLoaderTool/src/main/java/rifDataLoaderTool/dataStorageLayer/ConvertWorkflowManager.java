@@ -1,13 +1,15 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.util.ArrayList;
 import java.sql.*;
@@ -81,9 +83,9 @@ public final class ConvertWorkflowManager
 	// ==========================================
 
 	public ConvertWorkflowManager(
-		final RIFDataLoaderStartupOptions startupOptions) {
+		final RIFDatabaseProperties rifDatabaseProperties) {
 
-		super(startupOptions);
+		super(rifDatabaseProperties);
 	}
 
 	// ==========================================

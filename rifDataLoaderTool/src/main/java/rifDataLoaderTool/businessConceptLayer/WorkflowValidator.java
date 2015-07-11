@@ -307,12 +307,38 @@ public class WorkflowValidator {
 	}
 	
 	public void validateLoad(
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException {
+		
+		ArrayList<String> errorMessages = new ArrayList<String>();
+		validateLoad(dataSetConfiguration, errorMessages);
+		
+		countErrors(
+			errorMessages, 
+			RIFDataLoaderToolError.INVALID_LOAD_STATE);
+		
+	}
+	
+	private void validateLoad(
 		final DataSetConfiguration dataSetConfiguration,
 		final ArrayList<String> errorMessages) {
 		
 		validateDataSetConfigurationProperties(
 			dataSetConfiguration,
 			errorMessages);
+	}
+	
+	
+	public void validateClean(
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException {
+		
+		ArrayList<String> errorMessages = new ArrayList<String>();
+		validateClean(dataSetConfiguration, errorMessages);
+		
+		countErrors(
+			errorMessages, 
+			RIFDataLoaderToolError.INVALID_CLEAN_STATE);
 	}
 	
 	private void validateClean(
@@ -322,6 +348,20 @@ public class WorkflowValidator {
 		validateLoad(
 			dataSetConfiguration,
 			errorMessages);
+	}
+	
+	public void validateConvert(
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException {
+		
+		ArrayList<String> errorMessages = new ArrayList<String>();
+		validateConvert(
+			dataSetConfiguration,
+			errorMessages);
+		
+		countErrors(
+			errorMessages, 
+			RIFDataLoaderToolError.INVALID_CONVERT_STATE);
 	}
 	
 	private void validateConvert(
@@ -482,6 +522,18 @@ public class WorkflowValidator {
 				
 	}
 	
+	public void validateSplit(
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException {
+		
+		ArrayList<String> errorMessages = new ArrayList<String>();
+		validateSplit(dataSetConfiguration, errorMessages);
+		
+		countErrors(
+			errorMessages, 
+			RIFDataLoaderToolError.INVALID_SPLIT_STATE);
+	}
+	
 	private void validateSplit(
 		final DataSetConfiguration dataSetConfiguration,
 		final ArrayList<String> errorMessages) {
@@ -491,6 +543,18 @@ public class WorkflowValidator {
 			errorMessages);		
 	}
 
+	public void validateCombine(
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException {
+		
+		ArrayList<String> errorMessages = new ArrayList<String>();
+		validateCombine(dataSetConfiguration, errorMessages);
+		
+		countErrors(
+			errorMessages, 
+			RIFDataLoaderToolError.INVALID_COMBINE_STATE);	
+	}
+	
 	private void validateCombine(
 		final DataSetConfiguration dataSetConfiguration,
 		final ArrayList<String> errorMessages) {
@@ -501,6 +565,18 @@ public class WorkflowValidator {
 	}
 	
 	public void validateOptimise(
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException {
+		
+		ArrayList<String> errorMessages = new ArrayList<String>();
+		validateOptimise(dataSetConfiguration, errorMessages);
+		
+		countErrors(
+			errorMessages, 
+			RIFDataLoaderToolError.INVALID_OPTIMISE_STATE);		
+	}
+	
+	private void validateOptimise(
 		final DataSetConfiguration dataSetConfiguration,
 		final ArrayList<String> errorMessages) {
 		
@@ -548,7 +624,20 @@ public class WorkflowValidator {
 		
 	}
 	
+
 	public void validateCheck(
+		final DataSetConfiguration dataSetConfiguration) 
+		throws RIFServiceException {
+		
+		ArrayList<String> errorMessages = new ArrayList<String>();
+		validateCheck(dataSetConfiguration, errorMessages);
+		
+		countErrors(
+			errorMessages,
+			RIFDataLoaderToolError.INVALID_CHECK_STATE);		
+	}
+	
+	private void validateCheck(
 		final DataSetConfiguration dataSetConfiguration,
 		final ArrayList<String> errorMessages) {
 				
@@ -582,6 +671,21 @@ public class WorkflowValidator {
 		}
 	}
 	
+	
+	public void validatePublish(
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException {
+		
+		ArrayList<String> errorMessages = new ArrayList<String>();
+		validatePublish(
+			dataSetConfiguration,
+			errorMessages);
+		
+		countErrors(
+			errorMessages,
+			RIFDataLoaderToolError.INVALID_PUBLISH_STATE);
+	}
+	
 	private void validatePublish(
 		final DataSetConfiguration dataSetConfiguration,
 		final ArrayList<String> errorMessages) {
@@ -604,6 +708,21 @@ public class WorkflowValidator {
 					errorMessages);
 			throw rifServiceException;
 		}		
+	}
+	
+	private void countErrors(
+		final ArrayList<String> errorMessages,
+		final RIFDataLoaderToolError errorCode) 
+		throws RIFServiceException {
+		
+		if (errorMessages.isEmpty() == false) {
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					errorCode, 
+					errorMessages);
+			throw rifServiceException;			
+		}
+		
 	}
 	
 	// ==========================================

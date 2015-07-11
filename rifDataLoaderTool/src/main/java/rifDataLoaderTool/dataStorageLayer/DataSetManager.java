@@ -11,12 +11,15 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 
 
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLCreateTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
 
@@ -91,53 +94,67 @@ public final class DataSetManager
 	// ==========================================
 
 	public DataSetManager(
-		final RIFDataLoaderStartupOptions startupOptions) {
+		final RIFDatabaseProperties rifDatabaseProperties) {
 		
-		super(startupOptions);
+		super(rifDatabaseProperties);
 				
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
-	public void createDataSetConfigurationTable(
-		final Connection connection) 
+	
+	public int getDataSetIdentifier(
+		final Connection connection,
+		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
-			
-		PreparedStatement createDataSetConfigurationTableStatement = null;
-		SQLCreateTableQueryFormatter queryFormatter 
-			= new SQLCreateTableQueryFormatter();
+		
+		int result = 0;
+		ResultSet resultSet = null;
+		PreparedStatement statement = null;
 		try {
-			queryFormatter.setTableName("data_set_configurations");
-			queryFormatter.addTextFieldDeclaration(
-				"core_data_set_name", 
-				false);			
-			queryFormatter.addTextFieldDeclaration(
-				"version", 
-				100, 
-				true);
+			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			queryFormatter.addSelectField("id");
+			queryFormatter.addFromTable("data_set_configurations");
+			queryFormatter.addWhereParameter("core_data_set_name");
+			queryFormatter.addWhereParameter("version");
 			
-			createDataSetConfigurationTableStatement
+			statement
 				= createPreparedStatement(connection, queryFormatter);
-			createDataSetConfigurationTableStatement.executeUpdate();
+			statement.setString(1, dataSetConfiguration.getName());
+			statement.setString(2, dataSetConfiguration.getVersion());
+			resultSet = statement.executeQuery();
+			if (resultSet.next() == false) {
+				//ERROR: non-existent data set specified
+				String errorMessage
+					= RIFDataLoaderToolMessages.getMessage("");
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFGenericLibraryError.DATABASE_QUERY_FAILED,
+						errorMessage);
+				throw rifServiceException;
+			}
+
+			result = resultSet.getInt(1);
+			return result;
 		}
 		catch(SQLException sqlException) {
+			logSQLException(sqlException);
 			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage(
-					"dataSetManager.error.unableToCreateDataSetConfigurationsTable");
+				= RIFDataLoaderToolMessages.getMessage("");
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
 					errorMessage);
-			throw rifServiceException;			
+			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(createDataSetConfigurationTableStatement);			
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 	}
 	
-	public void addDataSetConfiguration(
+	public int addDataSetConfiguration(
 		final Connection connection,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
@@ -155,10 +172,18 @@ public final class DataSetManager
 					errorMessage);
 			throw rifServiceException;
 		}
-				
+
+		int result = 0;
+
+		PreparedStatement getIdentifierStatement = null;		
 		PreparedStatement addDataSetStatement = null;
+		ResultSet resultSet = null;
 		SQLInsertQueryFormatter addDataSetQueryFormatter
 			= new SQLInsertQueryFormatter();		
+		
+		SQLGeneralQueryFormatter getIdentifierQueryFormatter
+			= new SQLGeneralQueryFormatter();
+		
 		try {
 			addDataSetQueryFormatter.setIntoTable("data_set_configurations");
 			addDataSetQueryFormatter.addInsertField("core_data_set_name");
@@ -174,8 +199,20 @@ public final class DataSetManager
 			addDataSetStatement.setString(
 				2, 
 				dataSetConfiguration.getVersion());
+			
+			addDataSetStatement.executeUpdate();
+			getIdentifierQueryFormatter.addQueryPhrase(0, "SELECT CURRVAL('data_set_sequence');");
+			getIdentifierStatement
+				= createPreparedStatement(
+					connection, 
+					getIdentifierQueryFormatter);
+			resultSet
+				= getIdentifierStatement.executeQuery();
+			resultSet.next();
+			result = resultSet.getInt(1);
 		}
 		catch(SQLException sqlException) {
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetManager.error.unableToAddDataSetConfiguration",
@@ -188,7 +225,11 @@ public final class DataSetManager
 		}
 		finally {
 			SQLQueryUtility.close(addDataSetStatement);			
+			SQLQueryUtility.close(getIdentifierStatement);			
+			SQLQueryUtility.close(resultSet);			
 		}
+		
+		return result;
 	}
 		
 	public void deleteDataSetConfiguration(
@@ -216,6 +257,7 @@ public final class DataSetManager
 				dataSetConfiguration.getVersion());
 		}
 		catch(SQLException sqlException) {
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetManager.error.unableToDeleteDataSetConfiguration",
@@ -240,10 +282,10 @@ public final class DataSetManager
 		PreparedStatement statement = null;
 		SQLRecordExistsQueryFormatter queryFormatter
 			= new SQLRecordExistsQueryFormatter();
+		queryFormatter.setFromTable("data_set_configurations");
 		queryFormatter.setLookupKeyFieldName("core_data_set_name");
 		queryFormatter.addWhereParameter("version");
-		
-		
+				
 		boolean result = false;
 		ResultSet resultSet = null;
 		try {
@@ -255,11 +297,11 @@ public final class DataSetManager
 			statement.setString(2, dataSetConfiguration.getVersion());
 			
 			resultSet = statement.executeQuery();
-			resultSet.next();
-			
-			result = resultSet.getBoolean(1);
+			result = resultSet.next();
+			return result;
 		}
 		catch(SQLException sqlException) {
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetManager.error.unableToCheckDataSetConfigurationExists",
@@ -271,7 +313,6 @@ public final class DataSetManager
 			throw rifServiceException;
 		}
 
-		return result;
 	}
 		
 	/*
@@ -291,6 +332,7 @@ public final class DataSetManager
 			statement.executeUpdate();
 		}
 		catch(SQLException sqlException) {
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage("dataSetManager.error.unableToCleardataSets");
 			RIFServiceException RIFServiceException
