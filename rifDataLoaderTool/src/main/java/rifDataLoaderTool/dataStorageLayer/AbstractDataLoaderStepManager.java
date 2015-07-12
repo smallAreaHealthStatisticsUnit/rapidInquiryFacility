@@ -2,7 +2,6 @@ package rifDataLoaderTool.dataStorageLayer;
 
 import java.sql.*;
 
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
@@ -16,7 +15,6 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-import rifServices.dataStorageLayer.AbstractSQLManager;
 
 
 /**
@@ -203,7 +201,7 @@ public abstract class AbstractDataLoaderStepManager {
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(1, "(SELECT");
 		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryPhrase(2, "COUNT(data_source_id) AS total");
+		queryFormatter.addQueryPhrase(2, "COUNT(data_set_id) AS total");
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(1, "FROM");
 		queryFormatter.padAndFinishLine();
@@ -215,7 +213,7 @@ public abstract class AbstractDataLoaderStepManager {
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(1, "(SELECT");
 		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryPhrase(2, "COUNT(data_source_id) AS total");
+		queryFormatter.addQueryPhrase(2, "COUNT(data_set_id) AS total");
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(1, "FROM");
 		queryFormatter.padAndFinishLine();

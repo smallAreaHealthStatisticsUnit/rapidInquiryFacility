@@ -2,12 +2,15 @@ package rifDataLoaderTool.dataStorageLayer;
 
 
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
+
+
 
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLCountQueryFormatter;
@@ -18,6 +21,7 @@ import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFResultTable;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 /**
  * manages database calls related to cleaning a data source.
@@ -134,6 +138,17 @@ public final class CleanWorkflowManager
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 		
+		
+		ArrayList<DataSetFieldConfiguration> fieldConfigurations
+			= dataSetConfiguration.getFieldConfigurations();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			String fieldName = fieldConfiguration.getLoadFieldName();
+			AbstractRIFDataType rifDataType
+				= fieldConfiguration.getRIFDataType();
+		}
+		
+		
+		
 		RIFLogger logger = RIFLogger.getLogger();
 		
 		String coreDataSetName
@@ -159,7 +174,6 @@ public final class CleanWorkflowManager
 		PreparedStatement dropCastingTableStatement = null;
 		String dropCastingTableQuery
 			= queryGenerator.generateDropCastingTableQuery(dataSetConfiguration);
-		System.out.println(dropCastingTableQuery);
 		
 		PreparedStatement createCastingTableStatement = null;
 		String createCastingTableQuery
@@ -182,6 +196,11 @@ public final class CleanWorkflowManager
 		
 		try {
 
+			int dataSetIdentifier
+				= dataSetManager.getDataSetIdentifier(
+					connection, 
+					dataSetConfiguration);
+			
 			/*
 			 * Delete old tables so we can recreate them.
 			 */
@@ -220,8 +239,7 @@ public final class CleanWorkflowManager
 				deleteAuditChangesQuery);
 			deleteAuditChangesStatement
 				= connection.prepareStatement(deleteAuditChangesQuery);
-			deleteAuditChangesStatement.setInt(1, 
-				Integer.valueOf(dataSetConfiguration.getIdentifier()));			
+			deleteAuditChangesStatement.setInt(1, dataSetIdentifier);			
 			deleteAuditChangesStatement.executeUpdate();
 			
 			//First, create the table that does substitution activities
@@ -360,9 +378,14 @@ public final class CleanWorkflowManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {			
+			int dataSetIdentifier
+				= dataSetManager.getDataSetIdentifier(
+					connection, 
+					dataSetConfiguration);
+			
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setInt(1, Integer.valueOf(dataSetConfiguration.getIdentifier()));
+			statement.setInt(1, dataSetIdentifier);
 			statement.setString(2, "blank");
 			resultSet = statement.executeQuery();
 			resultSet.next();
@@ -410,9 +433,13 @@ public final class CleanWorkflowManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			int dataSetIdentifier
+				= dataSetManager.getDataSetIdentifier(
+					connection, 
+					dataSetConfiguration);
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setInt(1, Integer.valueOf(dataSetConfiguration.getIdentifier()));
+			statement.setInt(1, dataSetIdentifier);
 			statement.setString(2, "value_changed");			
 			resultSet = statement.executeQuery();
 			resultSet.next();
@@ -460,9 +487,13 @@ public final class CleanWorkflowManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			int dataSetIdentifier
+				= dataSetManager.getDataSetIdentifier(
+					connection, 
+					dataSetConfiguration);
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setInt(1, Integer.valueOf(dataSetConfiguration.getIdentifier()));
+			statement.setInt(1, dataSetIdentifier);
 			statement.setString(2, "error");			
 			resultSet = statement.executeQuery();
 			resultSet.next();
@@ -514,9 +545,13 @@ public final class CleanWorkflowManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			int dataSetIdentifier
+				= dataSetManager.getDataSetIdentifier(
+					connection, 
+					dataSetConfiguration);
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setInt(1, Integer.valueOf(dataSetConfiguration.getIdentifier()));
+			statement.setInt(1, dataSetIdentifier);
 			statement.setInt(2, rowNumber);
 			statement.setString(3, targetBaseFieldName);
 			statement.setString(4, "blank");
@@ -571,9 +606,13 @@ public final class CleanWorkflowManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			int dataSetIdentifier
+				= dataSetManager.getDataSetIdentifier(
+					connection, 
+					dataSetConfiguration);
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setInt(1, Integer.valueOf(dataSetConfiguration.getIdentifier()));
+			statement.setInt(1, dataSetIdentifier);
 			statement.setInt(2, rowNumber);
 			statement.setString(3, targetBaseFieldName);
 			statement.setString(4, "value_changed");
@@ -629,9 +668,13 @@ public final class CleanWorkflowManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			int dataSetIdentifier
+				= dataSetManager.getDataSetIdentifier(
+					connection, 
+					dataSetConfiguration);
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setInt(1, Integer.valueOf(dataSetConfiguration.getIdentifier()));
+			statement.setInt(1, dataSetIdentifier);
 			statement.setInt(2, rowNumber);
 			statement.setString(3, targetBaseFieldName);
 			statement.setString(4, "error");

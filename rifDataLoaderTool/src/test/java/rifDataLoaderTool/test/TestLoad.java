@@ -96,9 +96,8 @@ public class TestLoad extends AbstractRIFDataLoaderTestCase {
 			}
 			
 			dataLoaderService.initialiseService();
-			System.out.println("TestLoad 1");
 			dataLoaderService.loadConfiguration(rifManager, dataSetConfiguration);
-			System.out.println("TestLoad 2");
+			System.out.println("LOAD FINISHED");
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();

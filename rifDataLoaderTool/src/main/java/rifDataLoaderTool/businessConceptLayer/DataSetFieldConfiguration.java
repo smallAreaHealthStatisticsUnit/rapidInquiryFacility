@@ -299,6 +299,7 @@ public class DataSetFieldConfiguration
 		cloneConfiguration.setConvertFieldName(
 			originalConfiguration.getConvertFieldName());
 		
+		cloneConfiguration.setRIFDataType(originalConfiguration.getRIFDataType());
 		RIFConversionFunction originalRIFConversionFunction
 			= originalConfiguration.getConvertFunction();
 		cloneConfiguration.setConvertFunction(originalRIFConversionFunction);

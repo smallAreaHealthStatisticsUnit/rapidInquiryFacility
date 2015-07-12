@@ -1,11 +1,9 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
@@ -97,10 +95,6 @@ public final class ConvertWorkflowManager
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 
-		
-		RIFConversionFunctionFactory conversionFunctionFactory
-			= RIFConversionFunctionFactory.newInstance();
-		
 		/**
 		 * CREATE TABLE convert_my_table2001 AS 
 		 * SELECT
@@ -116,6 +110,111 @@ public final class ConvertWorkflowManager
 		 * 
 		 * 
 		 */
+		RIFSchemaAreaPropertyManager schemaAreaPropertyManager
+			= new RIFSchemaAreaPropertyManager();
+		WorkflowValidator workflowValidator
+			= new WorkflowValidator(schemaAreaPropertyManager);
+		workflowValidator.validateConvert(dataSetConfiguration);
+		
+		PreparedStatement statement = null;
+		try {
+			String coreDataSetName = dataSetConfiguration.getName();
+			String cleanedTableName
+				= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName);
+			String convertedTableName
+				= RIFTemporaryTablePrefixes.CONVERT.getTableName(coreDataSetName);
+	
+			//Create the first part of the query used to create a converted table
+			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
+			queryFormatter.addQueryPhrase(convertedTableName);
+			queryFormatter.addQueryPhrase(" AS");
+			queryFormatter.padAndFinishLine();
+			queryFormatter.addQueryPhrase(1, "SELECT");
+			queryFormatter.padAndFinishLine();
+			queryFormatter.addQueryLine(2, "data_source_id,");
+			queryFormatter.addQueryLine(2, "row_number,");
+			
+			/*
+			processFieldsWithoutConversions(
+				queryFormatter,
+				dataSetConfiguration);
+			
+			//This is where we may have to map multiple fields from a cleaned table
+			//to a different number of fields in the convert table
+			//eg: columns age, sex in cleaned table mapping to age_sex_group in
+			//converted table.
+			processFieldsWithConversions(
+				queryFormatter,
+				dataSetConfiguration);		
+			*/
+			queryFormatter.addQueryPhrase(0, "FROM");
+			queryFormatter.padAndFinishLine();
+			queryFormatter.addQueryPhrase(1, cleanedTableName);
+
+			statement	
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);			
+			
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"convertWorkflowManager.error.unableToCreateConvertTable",
+					dataSetConfiguration.getDisplayName());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}		
+	}
+	
+	/**
+	 * For numerator and denominator tables, we need to be careful about how
+	 * to assemble the queries.  If the tables happen to have a field
+	 * called 'age_sex_group', then we just promote the field in the converted
+	 * table.  However, if it has separate fields for age and sex, they need
+	 * to be combined.
+	 */
+	private void processFieldsWithConversions(
+		final DataSetConfiguration dataSetConfiguration) {
+	
+		
+		/*
+		 * KLG: We may need a more intelligent way of figuring out
+		 * how to assemble them together.  For now, we're mainly concerned
+		 * with mapping age and sex to a single column.  If the original
+		 * data set happened to have a column called age_sex_group, then
+		 * it would not be associated with any conversion function.
+		 * 
+		 * This function assumes that 
+		 */
+		
+		DataSetFieldConfiguration ageFieldConfiguration
+			= dataSetConfiguration.getFieldHavingConvertFieldName("age");
+		DataSetFieldConfiguration sexFieldConfiguration
+			= dataSetConfiguration.getFieldHavingConvertFieldName("sex");
+		RIFConversionFunction rifConversionFunction
+			= ageFieldConfiguration.getConvertFunction();
+		rifConversionFunction.addActualParameter(ageFieldConfiguration);
+		rifConversionFunction.addActualParameter(sexFieldConfiguration);
+
+		
+		
+		
+		
+	}
+	
+	
+	private void applyNoConversionFunctions(
+		final DataSetConfiguration dataSetConfiguration) {
+		
+/*
 		
 		PreparedStatement statement = null;
 		String coreDataSetName 
@@ -144,11 +243,11 @@ public final class ConvertWorkflowManager
 				FieldRequirementLevel fieldRequirementLevel
 					= fieldConfiguration.getFieldRequirementLevel();
 				if (fieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) {
-					addConvertQueryFragment(
-						queryFormatter,
-						conversionFunctionFactory,
-						2,
-						fieldConfiguration);
+					//addConvertQueryFragment(
+					//	queryFormatter,
+					//	conversionFunctionFactory,
+					//	2,
+					//	fieldConfiguration);
 				}
 			}
 			
@@ -164,14 +263,7 @@ public final class ConvertWorkflowManager
 				}
 			}
 			
-			queryFormatter.addQueryPhrase(0, "FROM");
-			queryFormatter.padAndFinishLine();
-			queryFormatter.addQueryPhrase(1, cleanedTableName);
 
-			statement	
-				= createPreparedStatement(
-					connection, 
-					queryFormatter);
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
@@ -187,8 +279,10 @@ public final class ConvertWorkflowManager
 		finally {
 			SQLQueryUtility.close(statement);
 		}
-		
+*/		
 	}
+	
+	
 	
 	private void addConvertQueryFragment(
 		final SQLGeneralQueryFormatter queryFormatter,

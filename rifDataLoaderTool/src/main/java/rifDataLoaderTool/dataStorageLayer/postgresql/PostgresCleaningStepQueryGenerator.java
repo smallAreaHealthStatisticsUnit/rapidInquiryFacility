@@ -157,7 +157,7 @@ public final class PostgresCleaningStepQueryGenerator
 		/*
 		 * CREATE TABLE cln_srch_my_table_2001 AS 
 		 * SELECT
-		 *    data_source_id,
+		 *    data_set_id,
 		 *    row_number,
 		 *    address,
 		 *    clean_uk_postal_code(postal_code, true) AS postal_code,
@@ -192,7 +192,7 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.finishLine(" AS ");
 		
 		queryFormatter.addQueryLine(1, "SELECT ");
-		queryFormatter.addQueryLine(2, "data_source_id,");
+		queryFormatter.addQueryLine(2, "data_set_id,");
 		queryFormatter.addQueryPhrase(2, "row_number");
 		
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
@@ -222,7 +222,7 @@ public final class PostgresCleaningStepQueryGenerator
 		//add a primary key to the new temporary table
 		queryFormatter.addQueryPhrase(0, "ALTER TABLE ");
 		queryFormatter.addQueryPhrase(searchReplaceTableName);
-		queryFormatter.addQueryPhrase(" ADD PRIMARY KEY (data_source_id, row_number);");
+		queryFormatter.addQueryPhrase(" ADD PRIMARY KEY (data_set_id, row_number);");
 		
 		
 		return queryFormatter.generateQuery();
@@ -328,7 +328,7 @@ public final class PostgresCleaningStepQueryGenerator
 		 *
 		 * CREATE TABLE cln_val_my_table_2001 AS
 		 * SELECT
-		 *    data_source_id,
+		 *    data_set_id,
 		 *    row_number,
 		 *    CASE
 		 *       WHEN age ~ '^[0-9]+' THEN age
@@ -338,7 +338,7 @@ public final class PostgresCleaningStepQueryGenerator
 		 *    address AS address //no validation
 		 * FROM
 		 *    cln_srch_my_table_2001   
-		 * ALTER TABLE cln_val_my_table_2001 ADD PRIMARY KEY(data_source_id, row_number);
+		 * ALTER TABLE cln_val_my_table_2001 ADD PRIMARY KEY(data_set_id, row_number);
 		 *
 		 *
 		 */
@@ -364,7 +364,7 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.finishLine(" AS ");
 		
 		queryFormatter.addQueryLine(1, "SELECT ");
-		queryFormatter.addQueryLine(2, "data_source_id,");
+		queryFormatter.addQueryLine(2, "data_set_id,");
 		queryFormatter.addQueryPhrase(2, "row_number");
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
 			= dataSetConfiguration.getFieldConfigurations();
@@ -514,7 +514,7 @@ public final class PostgresCleaningStepQueryGenerator
 		/*
 		 * DELETE FROM rif_audit_table
 		 * WHERE
-		 *    data_source_id=?;
+		 *    data_set_id=?;
 		 */
 		SQLDeleteRowsQueryFormatter queryFormatter = new SQLDeleteRowsQueryFormatter();
 		String queryCommentLine1
@@ -526,7 +526,7 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.addCommentLine(queryCommentLine2);
 		
 		queryFormatter.setFromTable("rif_audit_table");
-		queryFormatter.addWhereParameter("data_source_id");
+		queryFormatter.addWhereParameter("data_set_id");
 		
 		return queryFormatter.generateQuery();
 	}
@@ -539,7 +539,7 @@ public final class PostgresCleaningStepQueryGenerator
 		 * We may need a new generic auditing table.  Here's the code
 		 * 
 		 * CREATE TABLE rif_audit_table (
-		 *    data_source_id INT NOT NULL,
+		 *    data_set_id INT NOT NULL,
 		 *    row_number INT NOT NULL,
 		 *    event_type VARCHAR(30) NOT NULL,
 		 *    field_name VARCHAR(30),
@@ -553,7 +553,7 @@ public final class PostgresCleaningStepQueryGenerator
 		 * 
 		 * eg: clean_scores could look like:
 		 * 
-		 * data_source_id	row_number	age		postal_code		year	...
+		 * data_set_id	row_number	age		postal_code		year	...
 		 * 1				1			0		0				1
 		 * 1				2			1		0				1
 		 * 1				3			1		1				0
@@ -565,7 +565,7 @@ public final class PostgresCleaningStepQueryGenerator
 		 * 
 		 * The goal is to add changes to the table here: 
 		 * 
-		 * data_source_id	row_number	outcome_type	field_name
+		 * data_set_id	row_number	outcome_type	field_name
 		 * 1				1			1				year
 		 * 1				2			1				age
 		 * 1				2			1				year
@@ -580,7 +580,7 @@ public final class PostgresCleaningStepQueryGenerator
 		 * 
 		 * WITH changed_scores =
 		 * (SELECT
-		 *    load_my_table_2001.data_source_id,
+		 *    load_my_table_2001.data_set_id,
 		 *    load_my_table_2001.row_number,
 		 *    CASE
 		 *       WHEN load_my_table_2001.age=cln_srch_my_table_2001.age THEN 0
@@ -597,19 +597,19 @@ public final class PostgresCleaningStepQueryGenerator
 		 *    load_my_table_2001,
 		 *    cln_val_my_table_2001
 		 * WHERE
-		 *   load_my_table_2001.data_source_id=cln_val_my_table_2001.data_source_id AND
+		 *   load_my_table_2001.data_set_id=cln_val_my_table_2001.data_set_id AND
 		 *   load_my_table_2001.row_number=cln_val_my_table_2001.row_number
 		 *   
 		 *   
 		 * INSERT_INTO cln_aud_my_table_2001 
-		 * (data_source_id,
+		 * (data_set_id,
 		 *  row_number,
 		 *  change_type,
 		 *  field_name,
 		 *  audit_time_stamp)
 		 *  FROM
 		 *  (SELECT 
-		 *     data_source_id,
+		 *     data_set_id,
 		 *     row_number,
 		 *     1, //value changed
 		 *     'age'
@@ -619,7 +619,7 @@ public final class PostgresCleaningStepQueryGenerator
 		 *      age = 1)
 		 *   UNION
 		 *   SELECT
-		 *      data_source_id,
+		 *      data_set_id,
 		 *      row_number,
 		 *      1, //value changed
 		 *      'postal_code'
@@ -660,7 +660,7 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(1, "(SELECT");
 		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryPhrase(2, "loadTable.data_source_id,");
+		queryFormatter.addQueryPhrase(2, "loadTable.data_set_id,");
 		queryFormatter.finishLine();
 		queryFormatter.addQueryPhrase(2, "loadTable.row_number");
 
@@ -707,8 +707,8 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(1, "WHERE");
 		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryPhrase(2, "loadTable.data_source_id = ");
-		queryFormatter.addQueryPhrase("searchReplaceTable.data_source_id AND");
+		queryFormatter.addQueryPhrase(2, "loadTable.data_set_id = ");
+		queryFormatter.addQueryPhrase("searchReplaceTable.data_set_id AND");
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(2, "loadTable.row_number = ");
 		queryFormatter.addQueryPhrase("searchReplaceTable.row_number)");
@@ -718,7 +718,7 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.addQueryPhrase(0, "INSERT INTO ");
 		queryFormatter.addQueryPhrase("rif_audit_table (");
 		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryLine(1, "data_source_id,");
+		queryFormatter.addQueryLine(1, "data_set_id,");
 		queryFormatter.addQueryLine(1, "row_number,");
 		queryFormatter.addQueryLine(1, "event_type,");
 		queryFormatter.addQueryLine(1, "field_name) (");
@@ -730,7 +730,7 @@ public final class PostgresCleaningStepQueryGenerator
 			 * 
 			 * UNION
 			 * SELECT
-			 *    data_source_id,
+			 *    data_set_id,
 			 *    row_number,
 			 *    'value_changed',
 			 *    'age'
@@ -752,7 +752,7 @@ public final class PostgresCleaningStepQueryGenerator
 			
 			queryFormatter.addQueryPhrase(1, "SELECT");
 			queryFormatter.padAndFinishLine();
-			queryFormatter.addQueryLine(2, "data_source_id,");
+			queryFormatter.addQueryLine(2, "data_set_id,");
 			queryFormatter.addQueryLine(2, "row_number,");
 			queryFormatter.addQueryLine(2, "'value_changed' AS event_type,");
 			queryFormatter.addQueryPhrase(2, "'");
@@ -807,7 +807,7 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.addQueryPhrase(0, "INSERT INTO ");
 		queryFormatter.addQueryPhrase("rif_audit_table (");
 		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryLine(1, "data_source_id,");
+		queryFormatter.addQueryLine(1, "data_set_id,");
 		queryFormatter.addQueryLine(1, "row_number,");
 		queryFormatter.addQueryLine(1, "event_type,");
 		queryFormatter.addQueryLine(1, "field_name) (");
@@ -819,7 +819,7 @@ public final class PostgresCleaningStepQueryGenerator
 			 * 
 			 * UNION
 			 * SELECT
-			 *    data_source_id,
+			 *    data_set_id,
 			 *    row_number,
 			 *    'error',
 			 *    'age'
@@ -841,7 +841,7 @@ public final class PostgresCleaningStepQueryGenerator
 			
 			queryFormatter.addQueryPhrase(1, "SELECT");
 			queryFormatter.padAndFinishLine();
-			queryFormatter.addQueryLine(2, "data_source_id,");
+			queryFormatter.addQueryLine(2, "data_set_id,");
 			queryFormatter.addQueryLine(2, "row_number,");
 			queryFormatter.addQueryLine(2, "'error',");
 			queryFormatter.addQueryPhrase(2, "'");
@@ -894,7 +894,7 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.addQueryPhrase(0, "INSERT INTO ");
 		queryFormatter.addQueryPhrase("rif_audit_table (");
 		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryLine(1, "data_source_id,");
+		queryFormatter.addQueryLine(1, "data_set_id,");
 		queryFormatter.addQueryLine(1, "row_number,");
 		queryFormatter.addQueryLine(1, "event_type,");
 		queryFormatter.addQueryLine(1, "field_name) (");
@@ -906,7 +906,7 @@ public final class PostgresCleaningStepQueryGenerator
 			 * 
 			 * UNION
 			 * SELECT
-			 *    data_source_id,
+			 *    data_set_id,
 			 *    row_number,
 			 *    'blank',
 			 *    'age'
@@ -928,7 +928,7 @@ public final class PostgresCleaningStepQueryGenerator
 			
 			queryFormatter.addQueryPhrase(1, "SELECT");
 			queryFormatter.padAndFinishLine();
-			queryFormatter.addQueryLine(2, "data_source_id,");
+			queryFormatter.addQueryLine(2, "data_set_id,");
 			queryFormatter.addQueryLine(2, "row_number,");
 			queryFormatter.addQueryLine(2, "'blank',");
 			queryFormatter.addQueryPhrase(2, "'");
@@ -1126,7 +1126,7 @@ public final class PostgresCleaningStepQueryGenerator
 	 * <pre>
 	 * CREATE TABLE cln_cast_my_table_2001 AS 
 	 * SELECT
-	 *    data_source_id,
+	 *    data_set_id,
 	 *    row_number,
 	 *    CASE
 	 *       WHEN age IS NULL THEN NULL
@@ -1141,7 +1141,7 @@ public final class PostgresCleaningStepQueryGenerator
 	 *    ...
 	 * FROM
 	 *    cln_val_my_table_2001;
-	 * ALTER TABLE cln_cast_my_table_2001 ADD PRIMARY KEY(data_source_id, row_number);
+	 * ALTER TABLE cln_cast_my_table_2001 ADD PRIMARY KEY(data_set_id, row_number);
 	 * </pre>
 	 * 
 	 * @return
@@ -1169,6 +1169,8 @@ public final class PostgresCleaningStepQueryGenerator
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.castQuery.comment5");
 		queryFormatter.addCommentLine(queryCommentLine5);
 
+		
+		
 		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
 		
 		String coreDataSetName
@@ -1180,7 +1182,7 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.finishLine();
 		
 		queryFormatter.addQueryLine(1, "SELECT ");
-		queryFormatter.addQueryLine(2, "data_source_id,");
+		queryFormatter.addQueryLine(2, "data_set_id,");
 		queryFormatter.addQueryLine(2, "row_number,");
 		
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
@@ -1211,8 +1213,7 @@ public final class PostgresCleaningStepQueryGenerator
 		//add a primary key to the new temporary table
 		queryFormatter.addQueryPhrase(0, "ALTER TABLE ");
 		queryFormatter.addQueryPhrase(castingTableName);
-		queryFormatter.addQueryPhrase(" ADD PRIMARY KEY (data_source_id, row_number);");
-
+		queryFormatter.addQueryPhrase(" ADD PRIMARY KEY (data_set_id, row_number);");
 		
 		return queryFormatter.generateQuery();
 	}
@@ -1249,6 +1250,7 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.addQueryPhrase(cleanedTableFieldName);
 		queryFormatter.addQueryPhrase(" = 'rif_error' THEN NULL");
 		queryFormatter.padAndFinishLine();
+			
 		if ((rifDataType instanceof IntegerRIFDataType) ||
 			(rifDataType instanceof AgeRIFDataType) ||
 			(rifDataType instanceof SexRIFDataType) ||
@@ -1310,7 +1312,7 @@ public final class PostgresCleaningStepQueryGenerator
 			queryFormatter.addQueryPhrase(cleanedTableFieldName);			
 		}
 		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryPhrase(baseIndentationLevel, " END ");		
+		queryFormatter.addQueryPhrase(baseIndentationLevel, " END AS ");		
 		queryFormatter.addQueryPhrase(cleanedTableFieldName);
 
 	}

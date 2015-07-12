@@ -115,6 +115,15 @@ public class RIFConversionFunction {
 		actualParameterValues.add(dataSetFieldConfiguration);		
 	}
 	
+	public String generateQueryFragment() {
+		StringBuilder queryFragment = new StringBuilder();
+		
+		
+		
+		
+		return queryFragment.toString();
+	}
+	
 	public void checkErrors() 
 		throws RIFServiceException {
 		

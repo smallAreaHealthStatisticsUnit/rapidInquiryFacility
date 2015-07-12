@@ -4,7 +4,6 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
 
 import java.text.Collator;
@@ -504,6 +503,32 @@ public class DataSetConfiguration
 		return null;
 		
 	}
+	
+	public ArrayList<DataSetFieldConfiguration> getFieldsWithConversionFunctions() {
+		
+		ArrayList<DataSetFieldConfiguration> fieldsWithConversionFunctions
+			= new ArrayList<DataSetFieldConfiguration>();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			if (fieldConfiguration.getConvertFunction() != null) {
+				fieldsWithConversionFunctions.add(fieldConfiguration);
+			}
+		}
+		
+		return fieldsWithConversionFunctions;		
+	}
+
+	public ArrayList<DataSetFieldConfiguration> getFieldsWithoutConversionFunctions() {
+		
+		ArrayList<DataSetFieldConfiguration> fieldsWithoutConversionFunctions
+			= new ArrayList<DataSetFieldConfiguration>();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			if (fieldConfiguration.getConvertFunction() == null) {
+				fieldsWithoutConversionFunctions.add(fieldConfiguration);
+			}
+		}
+		
+		return fieldsWithoutConversionFunctions;		
+	}	
 	
 	public int getNumberOfGeospatialFields() {
 		int numberOfCovariateFields = 0;

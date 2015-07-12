@@ -130,33 +130,16 @@ public class SampleRIFDatabaseCreationManager {
 	public void createTables(
 		final Connection connection) 
 		throws RIFServiceException {
-		
-		PreparedStatement dataSetConfigurationsTableStatement = null;
-		PreparedStatement createCovariateTableStatement = null;
-		try {			
-			createCovariatesTable(connection);
-			createDataSetConfigurationsTable(connection);
-		}
-		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
-			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage(
-					"sampleRIFDatabaseCreationManager.error.unableToInitialiseDB");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFDataLoaderToolError.UNABLE_TO_CREATE_FAKE_RIF_DB, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			SQLQueryUtility.close(createCovariateTableStatement);
-		}	
+			
+		createCovariatesTable(connection);
+		createDataSetConfigurationsTable(connection);
+		createAuditTable(connection);
+
 	}
 	
 	private void createCovariatesTable(
 		final Connection connection) 
-		throws SQLException,
-		RIFServiceException {
+		throws RIFServiceException {
 		
 		PreparedStatement statement = null;
 		try {			
@@ -196,6 +179,17 @@ public class SampleRIFDatabaseCreationManager {
 					createCovariateTableQueryFormatter);
 		
 			statement.executeUpdate();
+		}
+		catch(SQLException sqlException) {
+			sqlException.printStackTrace(System.out);
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"sampleRIFDatabaseCreationManager.error.unableToInitialiseDB");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.UNABLE_TO_CREATE_FAKE_RIF_DB, 
+					errorMessage);
+			throw rifServiceException;
 		}
 		finally {
 			SQLQueryUtility.close(statement);
@@ -267,6 +261,55 @@ public class SampleRIFDatabaseCreationManager {
 			SQLQueryUtility.close(sequenceOwnershipStatement);		
 		}	
 		
+	}
+	
+	public void createAuditTable(
+		final Connection connection) 
+		throws RIFServiceException {
+		
+		PreparedStatement statement = null;
+		try {
+			SQLCreateTableQueryFormatter queryFormatter
+				= new SQLCreateTableQueryFormatter();
+			queryFormatter.setTableName("rif_audit_table");
+
+			queryFormatter.addFieldDeclaration(
+				"data_set_id", 
+				"INTEGER", 
+				false);
+
+			queryFormatter.addFieldDeclaration(
+				"row_number", 
+				"INTEGER", 
+				false);
+			
+			queryFormatter.addTextFieldDeclaration(
+				"event_type", 
+				30, 
+				false);
+
+			queryFormatter.addTextFieldDeclaration(
+				"field_name", 
+				30, 
+				false);
+			
+			queryFormatter.addCreationTimestampField("time_stamp");
+			statement
+				= SQLQueryUtility.createPreparedStatement(
+				connection, 
+				queryFormatter);
+			statement.executeUpdate();
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"sampleRIFDatabaseCreationManager.error.unableToInitialiseDB");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}	
 	}
 	
 	public void deleteTables(
