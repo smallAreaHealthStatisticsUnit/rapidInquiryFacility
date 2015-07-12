@@ -121,6 +121,15 @@ SELECT rif40_log_pkg.rif40_error(-90125, 'rif40_error', 'Dummy error: %', 'Test'
 
 Raises an exception!
 
+#### 29th June-3rd July
+
+No work on the RIF40_COLUMNS
+
+#### 5th July-10th July
+
+* RIF covariates example data 
+* Specification for individual level SAHSULAND_CANCER example data
+
 Till mid July, priority order:
 
 1. RIF batch integration
