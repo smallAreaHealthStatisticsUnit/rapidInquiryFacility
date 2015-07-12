@@ -386,7 +386,12 @@ public class WorkflowValidator {
 		 * 
 		 */
 		String[] convertFieldNames
-			= dataSetConfiguration.getConvertFieldNames();		
+			= dataSetConfiguration.getConvertFieldNames();
+		for (String convertFieldName : convertFieldNames) {
+			System.out.println("WorkflowValidator convertField=="+convertFieldName+"==");
+			
+		}
+		
 		RIFSchemaArea rifSchemaArea
 			= dataSetConfiguration.getRIFSchemaArea();
 		

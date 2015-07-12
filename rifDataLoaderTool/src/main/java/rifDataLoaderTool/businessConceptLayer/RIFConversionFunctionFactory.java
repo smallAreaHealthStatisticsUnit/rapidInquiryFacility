@@ -93,13 +93,15 @@ public class RIFConversionFunctionFactory {
 		 * age_sex_group : IntegerRIFDataType
 		 */
 		final RIFConversionFunction ageSexConversionFunction
-			= new RIFConversionFunction();
-		ageSexConversionFunction.setSchemaName("rif40_xml_pkg");
+			= RIFConversionFunction.newInstance();
+		ageSexConversionFunction.setSupportsOneToOneConversion(false);
+		ageSexConversionFunction.setSchemaName(null);
 		ageSexConversionFunction.setFunctionName("convert_age_sex");
 		ageSexConversionFunction.defineFormalParameter(
 			"age", AgeRIFDataType.newInstance());
 		ageSexConversionFunction.defineFormalParameter(
 			"sex", SexRIFDataType.newInstance());
+		ageSexConversionFunction.setConvertFieldName("age_sex_group");
 		factory.registerConvertFunction(
 			ageSexConversionFunction.getFunctionName(), 
 			ageSexConversionFunction);
@@ -113,11 +115,12 @@ public class RIFConversionFunctionFactory {
 		 * age_sex_group : IntegerRIFDataType
 		 */
 		final RIFConversionFunction dateFormattingFunction
-			= new RIFConversionFunction();
-		dateFormattingFunction.setSchemaName("rif40_xml_pkg");
+			= RIFConversionFunction.newInstance();
+		dateFormattingFunction.setSchemaName(null);
 		dateFormattingFunction.setFunctionName("format_date");
+		dateFormattingFunction.setSupportsOneToOneConversion(true);
 		
-		ageSexConversionFunction.defineFormalParameter(
+		dateFormattingFunction.defineFormalParameter(
 			"date", DateRIFDataType.newInstance());
 		factory.registerConvertFunction(
 			ageSexConversionFunction.getFunctionName(), 
@@ -132,8 +135,9 @@ public class RIFConversionFunctionFactory {
 		 * age : AgeRIFDataType
 		 */
 		final RIFConversionFunction extractAgeFromDateFunction
-			= new RIFConversionFunction();
-		extractAgeFromDateFunction.setSchemaName("rif40_xml_pkg");
+			= RIFConversionFunction.newInstance();
+		extractAgeFromDateFunction.setSupportsOneToOneConversion(true);
+		extractAgeFromDateFunction.setSchemaName(null);
 		extractAgeFromDateFunction.setFunctionName("extract_age");
 		factory.registerConvertFunction(
 			extractAgeFromDateFunction.getFunctionName(), 

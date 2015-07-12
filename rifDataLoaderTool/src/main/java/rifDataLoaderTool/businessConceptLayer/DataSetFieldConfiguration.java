@@ -247,8 +247,7 @@ public class DataSetFieldConfiguration
 		this.coreFieldName = coreFieldName;
 		loadFieldName = coreFieldName;
 		cleanFieldName = coreFieldName;
-
-		//convertFieldName = coreFieldName;
+		convertFieldName = coreFieldName;
 		
 		
 		coreFieldDescription = "";

@@ -446,7 +446,6 @@ public class DataSetConfiguration
 		}
 
 		if (rifSchemaArea == null) {
-			System.out.println("DSC rifSchemaArea is NULL!!");
 			String currentWorkflowStateFieldLabel
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetConfiguration.rifSchemaArea.label");

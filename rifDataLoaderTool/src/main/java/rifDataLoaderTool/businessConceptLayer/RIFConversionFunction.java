@@ -5,6 +5,7 @@ import rifDataLoaderTool.businessConceptLayer.rifDataTypes.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
+import rifServices.util.FieldValidationUtility;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,19 +85,67 @@ public class RIFConversionFunction {
 	private String schemaName;
 	private String functionName;
 	private ArrayList<String> formalParameterNames;
+	
+	//eg: func(cleanFieldA, cleanFieldB) AS convertFieldName
+	private String convertFieldName;
 	private HashMap<String, AbstractRIFDataType> dataTypeFromFormalParameterName;
 	
 	private ArrayList<DataSetFieldConfiguration> actualParameterValues;
 	
+	private boolean supportsOneToOneConversion;
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public RIFConversionFunction() {
+	private RIFConversionFunction() {
 		formalParameterNames = new ArrayList<String>();
 		dataTypeFromFormalParameterName = new HashMap<String, AbstractRIFDataType>();
-
+		convertFieldName = "";
 		actualParameterValues = new ArrayList<DataSetFieldConfiguration>();
+		supportsOneToOneConversion = true;
+	}
+	
+	public static RIFConversionFunction newInstance() {
+		RIFConversionFunction rifConversionFunction
+			= new RIFConversionFunction();
+
+		return rifConversionFunction;
+	}
+	
+	public static RIFConversionFunction createCopy(
+		final RIFConversionFunction originalFunction) {
+		
+		RIFConversionFunction cloneFunction
+			= new RIFConversionFunction();
+		cloneFunction.setCode(originalFunction.getCode());
+		cloneFunction.setSchemaName(originalFunction.getSchemaName());
+		cloneFunction.setFunctionName(originalFunction.getFunctionName());
+		cloneFunction.setActualParameterValues(originalFunction.getActualParameterValues());
+		cloneFunction.setConvertFieldName(originalFunction.getConvertFieldName());
+		cloneFunction.setSupportsOneToOneConversion(originalFunction.supportsOneToOneConversion());
+		ArrayList<DataSetFieldConfiguration> originalActualParameterValues
+			= originalFunction.getActualParameterValues();
+		ArrayList<DataSetFieldConfiguration> cloneActualParameterValues
+			= DataSetFieldConfiguration.createCopy(originalActualParameterValues);
+		cloneFunction.setActualParameterValues(cloneActualParameterValues);
+
+		RIFDataTypeFactory rifDataTypeFactory = RIFDataTypeFactory.newInstance();
+		HashMap<String, AbstractRIFDataType> originalParamatersFromNames
+			= originalFunction.getDataTypesFromFormalParmaterNames();
+		HashMap<String, AbstractRIFDataType> cloneParamatersFromNames
+			= new HashMap<String, AbstractRIFDataType>();		
+		ArrayList<String> originalKeys = new ArrayList<String>();
+		originalKeys.addAll(originalParamatersFromNames.keySet());
+		for (String originalKey : originalKeys) {
+			AbstractRIFDataType originalDataType
+				= originalParamatersFromNames.get(originalKey);
+			AbstractRIFDataType cloneDataType
+				= rifDataTypeFactory.getDataType(originalDataType.getIdentifier());
+			cloneParamatersFromNames.put(originalKey, cloneDataType);
+		}
+		cloneFunction.setDataTypesFromFormalParameterNames(cloneParamatersFromNames);
+		
+		return cloneFunction;
 	}
 	
 	public void defineFormalParameter(
@@ -118,10 +167,50 @@ public class RIFConversionFunction {
 	public String generateQueryFragment() {
 		StringBuilder queryFragment = new StringBuilder();
 		
+		if (schemaName != null) {
+			queryFragment.append(schemaName);
+			queryFragment.append(".");
+		}
+		queryFragment.append(functionName);
+		queryFragment.append("(");
 		
+		int numberOfFormalParameters = formalParameterNames.size();
+		for (int i = 0; i < numberOfFormalParameters; i++) {
+			if (i != 0) {
+				queryFragment.append(",");
+			}
+
+			String currentFormalParameter
+				= formalParameterNames.get(i);
+			String cleanFieldName
+				= getCleanFieldNameFromActualParameterName(currentFormalParameter);
+			queryFragment.append(cleanFieldName);
+		}
+				
+		queryFragment.append(") AS ");
+		queryFragment.append(convertFieldName);
 		
 		
 		return queryFragment.toString();
+	}
+	
+	private String getCleanFieldNameFromActualParameterName(
+		final String actualParameterName) {
+			
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		for (DataSetFieldConfiguration actualParameterValue : actualParameterValues) {
+			String convertFieldName
+				= actualParameterValue.getConvertFieldName();
+			if (collator.equals(convertFieldName, actualParameterName)) {
+				return actualParameterValue.getCleanFieldName();
+			}
+		}
+		
+		//we should have already called checkErrors() before generating query fragment
+		//is called
+		assert false;
+		
+		return null;
 	}
 	
 	public void checkErrors() 
@@ -129,15 +218,51 @@ public class RIFConversionFunction {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		
+		FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+
+		if (fieldValidationUtility.isEmpty(code)) {
+			String codeFieldLabel
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetConfiguration.code.label");
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"general.validation.emptyRequiredField",
+					codeFieldLabel);
+			errorMessages.add(errorMessage);	
+		}
+		
+		if (fieldValidationUtility.isEmpty(schemaName)) {
+			String schemaNameFieldLabel
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetConfiguration.schemaName.label");
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"general.validation.emptyRequiredField",
+					schemaNameFieldLabel);
+			errorMessages.add(errorMessage);	
+		}
+		
+		if (fieldValidationUtility.isEmpty(functionName)) {
+			String functionNameFieldLabel
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetConfiguration.schemaName.label");
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"general.validation.emptyRequiredField",
+					functionNameFieldLabel);
+			errorMessages.add(errorMessage);	
+		}
+		
 		//check they have the same number of parameters
 		if (formalParameterNames.size() != actualParameterValues.size()) {
 			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage("");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFDataLoaderToolError.IMPROPERLY_SET_CONVERSION_FUNCTION, 
-					errorMessage);
-			throw rifServiceException;
+				= RIFDataLoaderToolMessages.getMessage(
+					"rifConversionFunction.error.unexpectedNumberOfParameters",
+					functionName,
+					String.valueOf(formalParameterNames.size()),
+					String.valueOf(actualParameterValues.size()));
+			errorMessages.add(errorMessage);
 		}
 		else {		
 			Collator collator = RIFDataLoaderToolMessages.getCollator();
@@ -147,28 +272,49 @@ public class RIFConversionFunction {
 					= formalParameterNames.get(i);
 				String formalParameterTypeIdentifier
 					= dataTypeFromFormalParameterName.get(currentFormalParameterName).getIdentifier();
-			
-				DataSetFieldConfiguration currentFieldConfiguration
-					= actualParameterValues.get(i);
-				String actualFieldName= currentFieldConfiguration.getCleanFieldName();
-				String actualParameterTypeIdentifier
-					= currentFieldConfiguration.getRIFDataType().getIdentifier();
-			
-				if (collator.equals(
-					currentFormalParameterName,
-					actualFieldName) == false) {
-				
-					//parameter names do not match
-					String errorMessage
-						= RIFDataLoaderToolMessages.getMessage("");
-					errorMessages.add(errorMessage);
-				
+
+				DataSetFieldConfiguration matchingActualParameter = null;
+				for (int j = 0; j < actualParameterValues.size(); j++) {
+					DataSetFieldConfiguration currentActualParameter
+						= actualParameterValues.get(j);
+					String currentActualParameterName
+						= currentActualParameter.getConvertFieldName();
+					if (collator.equals(
+						currentFormalParameterName, 
+						currentActualParameterName)) {
+						//match found
+						matchingActualParameter = currentActualParameter;					
+						break;
+					}
 				}
-				else if (collator.equals(
-					formalParameterTypeIdentifier,
-					actualParameterTypeIdentifier) == false) {
-				
-					//parameters have same name but do not have the same data types			
+
+				if (matchingActualParameter == null) {
+					String errorMessage
+						= RIFDataLoaderToolMessages.getMessage(
+							"rifConversionFunction.error.noMatchForFormalParameter",
+							functionName,
+							currentFormalParameterName);
+					errorMessages.add(errorMessage);
+				}
+				else {
+					//we found a matching actual parameter, but now we need to
+					//ensure the data types match
+					String actualParameterTypeIdentifier
+						= matchingActualParameter.getRIFDataType().getIdentifier();
+					
+					if (collator.equals(
+						formalParameterTypeIdentifier, 
+						actualParameterTypeIdentifier) == false) {
+
+						String errorMessage
+							= RIFDataLoaderToolMessages.getMessage(
+								"rifConversionFunction.error.incorrectParameterType",
+								functionName,
+								currentFormalParameterName,
+								formalParameterTypeIdentifier,
+								actualParameterTypeIdentifier);
+						errorMessages.add(errorMessage);
+					}				
 				}
 			}	
 		}
@@ -203,7 +349,64 @@ public class RIFConversionFunction {
 		this.functionName = functionName;
 	}
 	
+	public String getConvertFieldName() {
+		
+		return convertFieldName;
+	}
+	
+	public void setConvertFieldName(
+		final String convertFieldName) {
+		
+		this.convertFieldName = convertFieldName;
+	}
 
+	public String getCode() {
+		return code;
+	}
+	
+	public void setCode(final String code) {
+		
+		this.code = code;
+	}
+
+	public ArrayList<String> getFormalParameterNames() {
+		return formalParameterNames;
+	}
+	
+	public void setFormalParameterNames(final ArrayList<String> formalParameterNames) {
+		this.formalParameterNames = formalParameterNames;
+	}
+	
+	public ArrayList<DataSetFieldConfiguration> getActualParameterValues() {
+		return actualParameterValues;
+	}
+	
+	public void setActualParameterValues(
+		final ArrayList<DataSetFieldConfiguration> actualParameterValues) {
+		
+		this.actualParameterValues = actualParameterValues;
+	}
+
+	public boolean supportsOneToOneConversion() {
+		return supportsOneToOneConversion;
+	}
+	
+	public void setSupportsOneToOneConversion(
+		final boolean supportsOneToOneConversion) {
+		
+		this.supportsOneToOneConversion = supportsOneToOneConversion;
+	}
+
+	public HashMap<String, AbstractRIFDataType> getDataTypesFromFormalParmaterNames() {
+		return dataTypeFromFormalParameterName;
+	}
+	
+	public void setDataTypesFromFormalParameterNames(
+		final HashMap<String, AbstractRIFDataType> dataTypeFromFormalParameterName) {
+		
+		this.dataTypeFromFormalParameterName = dataTypeFromFormalParameterName;		
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

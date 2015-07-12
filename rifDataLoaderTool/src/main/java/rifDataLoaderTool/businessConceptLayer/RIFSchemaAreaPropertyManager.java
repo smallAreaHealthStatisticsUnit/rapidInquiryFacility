@@ -186,8 +186,7 @@ public class RIFSchemaAreaPropertyManager {
 		String[] requiredConvertFieldNames
 			= getRequiredConvertFieldNames(rifSchemaArea);		
 		for (String requiredConvertFieldName : requiredConvertFieldNames) {
-			boolean fieldFound = false;
-			
+			boolean fieldFound = false;			
 			for (String convertFieldName : convertFieldNames) {
 				if (collator.equals(requiredConvertFieldName, convertFieldName)) {
 					fieldFound = true;
@@ -195,12 +194,38 @@ public class RIFSchemaAreaPropertyManager {
 				}
 			}
 			if (fieldFound == false) {
-				missingRequiredFieldNames.add(requiredConvertFieldName);
+				if (collator.equals(requiredConvertFieldName, "age_sex_group")) {
+					//Check - if it's the age_sex_group field, we have a special case
+					//to consider.  There may not be an 'age_sex_group'
+					if ( listContainsItem("age", convertFieldNames) == false ||
+						 listContainsItem("sex", convertFieldNames) == false) {
+						
+						missingRequiredFieldNames.add(requiredConvertFieldName);					
+					}
+				}
+				else {
+					missingRequiredFieldNames.add(requiredConvertFieldName);					
+				}
+				
 			}
 		}
 
 		String[] results = missingRequiredFieldNames.toArray(new String[0]);
 		return results;
+	}
+	
+	private boolean listContainsItem(
+		final String searchItem,
+		final String[] listItems) {
+		
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		
+		for (String listItem : listItems) {
+			if (collator.equals(searchItem, listItem)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public String[] getRequiredConvertFieldNames(
@@ -224,12 +249,12 @@ public class RIFSchemaAreaPropertyManager {
 			requiredConvertFieldNames[5] = "type";
 		}
 		else if (rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
-			requiredConvertFieldNames = new String[6];
+			requiredConvertFieldNames = new String[2];
 			requiredConvertFieldNames[0] = "year";
 			requiredConvertFieldNames[1] = "age_sex_group";			
 		}
 		else if (rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA) {
-			requiredConvertFieldNames = new String[6];
+			requiredConvertFieldNames = new String[2];
 			requiredConvertFieldNames[0] = "year";
 			requiredConvertFieldNames[1] = "age_sex_group";			
 		}		

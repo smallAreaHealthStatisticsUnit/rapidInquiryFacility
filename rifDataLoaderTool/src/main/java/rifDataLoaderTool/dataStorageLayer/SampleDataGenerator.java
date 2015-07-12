@@ -1,11 +1,13 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.FieldPurpose;
 import rifDataLoaderTool.businessConceptLayer.FieldRequirementLevel;
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 import rifDataLoaderTool.businessConceptLayer.RIFConversionFunctionFactory;
+import rifDataLoaderTool.businessConceptLayer.RIFConversionFunction;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
@@ -607,8 +609,10 @@ public class SampleDataGenerator {
 	
 	public DataSetConfiguration createTest4StudyID1ExtractConfiguration() {
 		RIFDataTypeFactory rifDataTypeFactory
-		= RIFDataTypeFactory.newInstance();
-	
+			= RIFDataTypeFactory.newInstance();
+		RIFConversionFunctionFactory rifConversionFunctionFactory
+			= RIFConversionFunctionFactory.newInstance();
+		
 		DataSetConfiguration test4Study1Configuration
 			= DataSetConfiguration.newInstance();
 		test4Study1Configuration.setName("test4_study_id1_numerator");
@@ -617,8 +621,6 @@ public class SampleDataGenerator {
 		test4Study1Configuration.setDescription("numerator data from test 4 study 1");		
 		test4Study1Configuration.setRIFSchemaArea(RIFSchemaArea.HEALTH_NUMERATOR_DATA);
 		
-		
-
 		DataSetFieldConfiguration yearFieldConfiguration
 			= DataSetFieldConfiguration.newInstance(
 				"test4_study_id1_numerator", 
@@ -632,9 +634,9 @@ public class SampleDataGenerator {
 		test4Study1Configuration.addFieldConfiguration(yearFieldConfiguration);	
 		
 		DataSetFieldConfiguration studyOrComparisonFieldConfiguration
-		= DataSetFieldConfiguration.newInstance(
-			"test4_study_id1", 
-			"study_or_comparison");	
+			= DataSetFieldConfiguration.newInstance(
+				"test4_study_id1", 
+				"study_or_comparison");	
 		studyOrComparisonFieldConfiguration.setRIFDataType(
 		rifDataTypeFactory.getDataType("rif_text"));
 		studyOrComparisonFieldConfiguration.setDuplicateIdentificationField(true);
@@ -642,8 +644,7 @@ public class SampleDataGenerator {
 		studyOrComparisonFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
 		studyOrComparisonFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
 		test4Study1Configuration.addFieldConfiguration(studyOrComparisonFieldConfiguration);	
-		
-		
+				
 		DataSetFieldConfiguration studyIDFieldConfiguration
 			= DataSetFieldConfiguration.newInstance(
 				"test4_study_id1_numerator", 
@@ -658,22 +659,22 @@ public class SampleDataGenerator {
 		
 		
 		DataSetFieldConfiguration areaIDFieldConfiguration
-		= DataSetFieldConfiguration.newInstance(
-			"test4_study_id1", 
-			"area_id");	
+			= DataSetFieldConfiguration.newInstance(
+				"test4_study_id1", 
+				"area_id");	
 		areaIDFieldConfiguration.setRIFDataType(
 		rifDataTypeFactory.getDataType("rif_text"));
 		areaIDFieldConfiguration.setDuplicateIdentificationField(true);
 		areaIDFieldConfiguration.setCoreFieldDescription("area identifier");
 		areaIDFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
-		areaIDFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		areaIDFieldConfiguration.setFieldPurpose(FieldPurpose.GEOGRAPHICAL_RESOLUTION);
 		test4Study1Configuration.addFieldConfiguration(areaIDFieldConfiguration);	
 	
 		
 		DataSetFieldConfiguration bandIDFieldConfiguration
-		= DataSetFieldConfiguration.newInstance(
-			"test4_study_id1", 
-			"band_id");	
+			= DataSetFieldConfiguration.newInstance(
+				"test4_study_id1", 
+				"band_id");	
 		bandIDFieldConfiguration.setRIFDataType(
 		rifDataTypeFactory.getDataType("rif_text"));
 		bandIDFieldConfiguration.setDuplicateIdentificationField(true);
@@ -684,13 +685,17 @@ public class SampleDataGenerator {
 		
 		
 		DataSetFieldConfiguration sexFieldConfiguration
-		= DataSetFieldConfiguration.newInstance(
-			"test4_study_id1", 
-			"sex");	
+			= DataSetFieldConfiguration.newInstance(
+				"test4_study_id1", 
+				"sex");	
 		sexFieldConfiguration.setRIFDataType(
 		rifDataTypeFactory.getDataType("rif_sex"));
 		sexFieldConfiguration.setDuplicateIdentificationField(true);
 		sexFieldConfiguration.setCoreFieldDescription("sex");
+
+		RIFConversionFunction ageSexConversionFunction
+			= rifConversionFunctionFactory.getRIFConvertFunction("convert_age_sex");
+		sexFieldConfiguration.setConvertFunction(ageSexConversionFunction);
 		sexFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
 		sexFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
 		test4Study1Configuration.addFieldConfiguration(sexFieldConfiguration);	
@@ -698,14 +703,15 @@ public class SampleDataGenerator {
 		
 		DataSetFieldConfiguration ageGroupFieldConfiguration
 			= DataSetFieldConfiguration.newInstance(
-			"test4_study_id1", 
-			"age_group");	
+				"test4_study_id1", 
+				"age_group");	
 		ageGroupFieldConfiguration.setRIFDataType(
 		rifDataTypeFactory.getDataType("rif_age"));
 		ageGroupFieldConfiguration.setDuplicateIdentificationField(true);
 		ageGroupFieldConfiguration.setCleanFieldName("age");
 		ageGroupFieldConfiguration.setConvertFieldName("age");
 		ageGroupFieldConfiguration.setCoreFieldDescription("a person's age");
+		ageGroupFieldConfiguration.setConvertFunction(ageSexConversionFunction);
 		ageGroupFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
 		ageGroupFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
 		test4Study1Configuration.addFieldConfiguration(ageGroupFieldConfiguration);	
@@ -713,8 +719,8 @@ public class SampleDataGenerator {
 		
 		DataSetFieldConfiguration sesFieldConfiguration
 			= DataSetFieldConfiguration.newInstance(
-			"test4_study_id1", 
-			"ses");	
+				"test4_study_id1", 
+				"ses");	
 		sesFieldConfiguration.setRIFDataType(
 		rifDataTypeFactory.getDataType("rif_integer"));
 		sesFieldConfiguration.setDuplicateIdentificationField(true);
@@ -724,22 +730,22 @@ public class SampleDataGenerator {
 		test4Study1Configuration.addFieldConfiguration(sesFieldConfiguration);	
 
 
-		
+		//pretending this is an icd field, just to pass validation
 		DataSetFieldConfiguration inv1FieldConfiguration
 			= DataSetFieldConfiguration.newInstance(
-			"test4_study_id1", 
-			"inv_1");	
+				"test4_study_id1", 
+				"inv_1");	
 		sesFieldConfiguration.setRIFDataType(
 		rifDataTypeFactory.getDataType("rif_text"));
 		inv1FieldConfiguration.setDuplicateIdentificationField(true);
-		inv1FieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.IGNORE_FIELD);
-		inv1FieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		inv1FieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		inv1FieldConfiguration.setFieldPurpose(FieldPurpose.HEALTH_CODE);
 		test4Study1Configuration.addFieldConfiguration(inv1FieldConfiguration);	
 			
 		DataSetFieldConfiguration totalPopFieldConfiguration
 			= DataSetFieldConfiguration.newInstance(
-			"test4_study_id1", 
-			"total_pop");	
+				"test4_study_id1", 
+				"total_pop");	
 		sesFieldConfiguration.setRIFDataType(
 		rifDataTypeFactory.getDataType("rif_text"));
 		totalPopFieldConfiguration.setDuplicateIdentificationField(true);

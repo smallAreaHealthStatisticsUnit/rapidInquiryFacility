@@ -1,0 +1,14 @@
+CREATE OR REPLACE FUNCTION convert_age_sex(
+	age INT,
+	sex INT)
+	RETURNS INT AS 
+$$
+DECLARE
+	age_sex_code INT;
+BEGIN
+
+	age_sex_code := (sex * 100) + age;
+	RETURN age_sex_code;
+END;
+$$   LANGUAGE plpgsql;
+
