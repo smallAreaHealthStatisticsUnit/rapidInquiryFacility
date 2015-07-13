@@ -387,11 +387,7 @@ public class WorkflowValidator {
 		 */
 		String[] convertFieldNames
 			= dataSetConfiguration.getConvertFieldNames();
-		for (String convertFieldName : convertFieldNames) {
-			System.out.println("WorkflowValidator convertField=="+convertFieldName+"==");
-			
-		}
-		
+	
 		RIFSchemaArea rifSchemaArea
 			= dataSetConfiguration.getRIFSchemaArea();
 		
@@ -613,12 +609,23 @@ public class WorkflowValidator {
 		for (String requiredFieldName : requiredFieldNames) {
 
 			DataSetFieldConfiguration fieldConfiguration
-				= dataSetConfiguration.getFieldHavingConvertFieldName(requiredFieldName);		
-			//we are guaranteed that the field configuration will not be null
-			if (fieldConfiguration.optimiseUsingIndex() == false) {
+				= dataSetConfiguration.getFieldHavingConvertFieldName(requiredFieldName);	
+			if (fieldConfiguration == null) {
+				//this can only mean that the field has been synthesised from conversion
+				//For now, the only field to consider is age_sex_group
+				Collator collator = RIFDataLoaderToolMessages.getCollator();
+				if (collator.equals(requiredFieldName, "age_sex_group") == false) {
+					String errorMessage
+						= RIFDataLoaderToolMessages.getMessage(
+							"workflowValidator.error.notIndexingSynthesisedField",
+							requiredFieldName);
+					errorMessages.add(errorMessage);
+				}
+			}
+			else if (fieldConfiguration.optimiseUsingIndex() == false) {
 				//ERROR: the optimise field should always have a value of 'true'
 				//when it is a required field used to map data from the data set
-				//into a field required by the RIF schema			
+				//into a field required by the RIF schema
 				String errorMessage
 					= RIFDataLoaderToolMessages.getMessage(
 						"workflowValidator.error.notIndexingRequiredField",

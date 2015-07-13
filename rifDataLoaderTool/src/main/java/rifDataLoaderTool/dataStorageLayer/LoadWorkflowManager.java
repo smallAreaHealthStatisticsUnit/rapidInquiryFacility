@@ -240,7 +240,7 @@ public final class LoadWorkflowManager
 				connection, 
 				targetLoadTable);
 			
-			createIndices(
+			createRowNumberAndDataSetIdentifierIndices(
 				connection,
 				targetLoadTable);
 		}
@@ -375,70 +375,6 @@ public final class LoadWorkflowManager
 			SQLQueryUtility.close(statement);
 		}		
 	}
-
-	private void createIndices(
-		final Connection connection,
-		final String targetLoadTable) 
-		throws RIFServiceException {
-		
-
-		PreparedStatement rowNumberIndexStatement = null;
-		PreparedStatement dataSetIndexStatement = null;
-
-		try {
-
-			SQLGeneralQueryFormatter rowNumberIndexQueryFormatter 
-				= new SQLGeneralQueryFormatter();
-			rowNumberIndexQueryFormatter.addQueryPhrase(0, "CREATE INDEX idx_");
-			rowNumberIndexQueryFormatter.addQueryPhrase("rn_");
-			rowNumberIndexQueryFormatter.addQueryPhrase(targetLoadTable);
-			rowNumberIndexQueryFormatter.addQueryPhrase(" ON ");
-			rowNumberIndexQueryFormatter.addQueryPhrase(targetLoadTable);
-			rowNumberIndexQueryFormatter.addQueryPhrase(" (row_number);");
-			
-			logSQLQuery("lwfm_create_rn_index", rowNumberIndexQueryFormatter);
-					
-			rowNumberIndexStatement
-				= createPreparedStatement(connection, rowNumberIndexQueryFormatter);
-			rowNumberIndexStatement.executeUpdate();
-			
-			SQLGeneralQueryFormatter dataSetIndexQueryFormatter = new SQLGeneralQueryFormatter();
-			dataSetIndexQueryFormatter.addQueryPhrase(0, "CREATE INDEX idx_");
-			dataSetIndexQueryFormatter.addQueryPhrase("ds_");
-			dataSetIndexQueryFormatter.addQueryPhrase(targetLoadTable);
-			dataSetIndexQueryFormatter.addQueryPhrase(" ON ");
-			dataSetIndexQueryFormatter.addQueryPhrase(targetLoadTable);
-			dataSetIndexQueryFormatter.addQueryPhrase(" (data_set_id);");
-
-			logSQLQuery("lwfm_create_ds_index", dataSetIndexQueryFormatter);
-			
-			dataSetIndexStatement
-				= createPreparedStatement(connection, dataSetIndexQueryFormatter);
-			dataSetIndexStatement.executeUpdate();
-		}
-		catch(SQLException sqlException) {
-			logSQLException(sqlException);
-			
-			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage(
-					"loadWorkflowManager.error.unableToCreateIndices",
-					targetLoadTable);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			SQLQueryUtility.close(rowNumberIndexStatement);			
-			SQLQueryUtility.close(dataSetIndexStatement);			
-		}
-		
-		
-		
-		
-	}
-	
 	public void addLoadTableData(
 		final Connection connection,
 		final DataSetConfiguration dataSetConfiguration,

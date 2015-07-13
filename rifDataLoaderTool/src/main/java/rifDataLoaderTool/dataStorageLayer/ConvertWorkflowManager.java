@@ -122,7 +122,7 @@ public final class ConvertWorkflowManager
 		try {
 			String coreDataSetName = dataSetConfiguration.getName();
 			String cleanedTableName
-				= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName);
+				= RIFTemporaryTablePrefixes.CLEAN_FINAL.getTableName(coreDataSetName);
 			String convertedTableName
 				= RIFTemporaryTablePrefixes.CONVERT.getTableName(coreDataSetName);
 	

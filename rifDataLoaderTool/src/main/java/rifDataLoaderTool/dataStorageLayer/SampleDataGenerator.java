@@ -631,6 +631,8 @@ public class SampleDataGenerator {
 		yearFieldConfiguration.setCoreFieldDescription("year of data");
 		yearFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
 		yearFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		
+		//@TODO Note: if it's a field required by the RIF, then it should always be optimised right?
 		test4Study1Configuration.addFieldConfiguration(yearFieldConfiguration);	
 		
 		DataSetFieldConfiguration studyOrComparisonFieldConfiguration
@@ -699,8 +701,7 @@ public class SampleDataGenerator {
 		sexFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
 		sexFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
 		test4Study1Configuration.addFieldConfiguration(sexFieldConfiguration);	
-		
-		
+			
 		DataSetFieldConfiguration ageGroupFieldConfiguration
 			= DataSetFieldConfiguration.newInstance(
 				"test4_study_id1", 

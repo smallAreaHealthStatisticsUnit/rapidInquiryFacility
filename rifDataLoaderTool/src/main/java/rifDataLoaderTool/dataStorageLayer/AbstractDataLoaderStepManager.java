@@ -2,6 +2,7 @@ package rifDataLoaderTool.dataStorageLayer;
 
 import java.sql.*;
 
+
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
@@ -9,8 +10,11 @@ import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
+
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.system.RIFServiceError;
@@ -269,7 +273,7 @@ public abstract class AbstractDataLoaderStepManager {
 			}
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
+			logSQLException(sqlException);
 			String errorMessage	
 				= RIFDataLoaderToolMessages.getMessage("tableIntegrityChecker.error.unableToCompareTables");
 			RIFServiceException RIFServiceException
@@ -284,6 +288,142 @@ public abstract class AbstractDataLoaderStepManager {
 		}
 		
 	}
+	
+	protected void deleteTable(
+		final Connection connection,
+		final String targetTableName) 
+		throws RIFServiceException {
+		
+		SQLDeleteTableQueryFormatter queryFormatter 
+			= new SQLDeleteTableQueryFormatter();
+		queryFormatter.setTableToDelete(targetTableName);
+		PreparedStatement statement = null;
+		try {
+			statement
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
+			statement.executeUpdate();		
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"abstractDataLoaderStepManager.error.unableToDeleteTable",
+					targetTableName);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}		
+	}
+	
+	protected void copyTable(
+		final Connection connection,
+		final String sourceTableName,
+		final String destinationTableName) 
+		throws RIFServiceException {
+		
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		PreparedStatement statement = null;
+		try {
+			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
+			
+			queryFormatter.addQueryPhrase(destinationTableName);
+			queryFormatter.addQueryPhrase(" AS ");
+			queryFormatter.finishLine();
+			queryFormatter.addQueryPhrase("SELECT * FROM ");
+			queryFormatter.addQueryPhrase(sourceTableName);
+			
+			statement
+				= createPreparedStatement(connection, queryFormatter);
+			statement.executeUpdate();			
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			logSQLQuery(
+				"createOptimiseTable", 
+				queryFormatter);
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"abstractDataLoaderStepManager.error.unableToCopyTable",
+					sourceTableName,
+					destinationTableName);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+
+	}
+
+	protected void createRowNumberAndDataSetIdentifierIndices(
+		final Connection connection,
+		final String targetTable) 
+		throws RIFServiceException {
+		
+
+		PreparedStatement rowNumberIndexStatement = null;
+		PreparedStatement dataSetIndexStatement = null;
+
+		try {
+
+			SQLGeneralQueryFormatter rowNumberIndexQueryFormatter 
+				= new SQLGeneralQueryFormatter();
+			rowNumberIndexQueryFormatter.addQueryPhrase(0, "CREATE INDEX idx_");
+			rowNumberIndexQueryFormatter.addQueryPhrase("rn_");
+			rowNumberIndexQueryFormatter.addQueryPhrase(targetTable);
+			rowNumberIndexQueryFormatter.addQueryPhrase(" ON ");
+			rowNumberIndexQueryFormatter.addQueryPhrase(targetTable);
+			rowNumberIndexQueryFormatter.addQueryPhrase(" (row_number);");
+			
+			logSQLQuery("lwfm_create_rn_index", rowNumberIndexQueryFormatter);
+					
+			rowNumberIndexStatement
+				= createPreparedStatement(connection, rowNumberIndexQueryFormatter);
+			rowNumberIndexStatement.executeUpdate();
+			
+			SQLGeneralQueryFormatter dataSetIndexQueryFormatter = new SQLGeneralQueryFormatter();
+			dataSetIndexQueryFormatter.addQueryPhrase(0, "CREATE INDEX idx_");
+			dataSetIndexQueryFormatter.addQueryPhrase("ds_");
+			dataSetIndexQueryFormatter.addQueryPhrase(targetTable);
+			dataSetIndexQueryFormatter.addQueryPhrase(" ON ");
+			dataSetIndexQueryFormatter.addQueryPhrase(targetTable);
+			dataSetIndexQueryFormatter.addQueryPhrase(" (data_set_id);");
+
+			logSQLQuery("lwfm_create_ds_index", dataSetIndexQueryFormatter);
+			
+			dataSetIndexStatement
+				= createPreparedStatement(connection, dataSetIndexQueryFormatter);
+			dataSetIndexStatement.executeUpdate();
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"abstractDataLoaderStepManager.error.unableToCreateCommonIndices",
+					targetTable);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(rowNumberIndexStatement);			
+			SQLQueryUtility.close(dataSetIndexStatement);			
+		}		
+	}
+	
 	
 	
 	protected PreparedStatement createPreparedStatement(

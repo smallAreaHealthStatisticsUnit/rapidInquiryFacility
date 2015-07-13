@@ -8,7 +8,6 @@ import rifDataLoaderTool.dataStorageLayer.SQLConnectionManager;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
 import rifServices.util.FieldValidationUtility;
-import rifServices.dataStorageLayer.RIFServiceResources;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
@@ -17,7 +16,6 @@ import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Main implementation of the {@link rifDataLoaderTool.dataStorageLayer.DataLoaderService}.
@@ -116,12 +114,6 @@ public final class DataLoaderService
 	// Section Properties
 	// ==========================================
 	
-
-	private RIFDataLoaderStartupOptions startupOptions;
-	
-	private RIFServiceResources rifServiceResources;
-
-	private UserManager rifManagerManager;
 	private SQLConnectionManager sqlConnectionManager;
 	private DataSetManager dataSetManager;
 	private LoadWorkflowManager loadWorkflowManager;
@@ -169,7 +161,7 @@ public final class DataLoaderService
 				databaseName);
 		sqlConnectionManager.initialiseConnectionQueue("kgarwood", "kgarwood");
 			
-		rifManagerManager = new UserManager();
+	
 		RIFDatabaseProperties rifDatabaseProperties 
 			= RIFDatabaseProperties.newInstance(
 				DatabaseType.POSTGRESQL, 
@@ -421,18 +413,14 @@ public final class DataLoaderService
 		workFlowValidator.validateLoad(dataSetConfiguration);
 		
 		
-		try {
-			System.out.println("DataLoaderService -loadConfiguration02");
-			
+		try {			
 			//Check for empty parameters
 			checkCommonParameters(
 				"loadConfiguration",
 				rifManager,
 				dataSetConfiguration);
 			
-			
-			System.out.println("DataLoaderService -loadConfiguration03");
-			
+						
 			//Check for security violations
 			validateUser(rifManager);
 			dataSetConfiguration.checkSecurityViolations();
@@ -452,15 +440,9 @@ public final class DataLoaderService
 				= sqlConnectionManager.assignPooledWriteConnection(
 						rifManager);
 			
-			if (connection == null) {
-				System.out.println("DLS connection is null!!");
-			}
-			
-			System.out.println("DataLoaderService -loadConfiguration1");
 			loadWorkflowManager.loadConfiguration(
 				connection, 
 				dataSetConfiguration);
-			System.out.println("DataLoaderService -loadConfiguration2");
 
 			sqlConnectionManager.reclaimPooledWriteConnection(
 				rifManager, 
@@ -932,7 +914,8 @@ public final class DataLoaderService
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
-				= RIFDataLoaderToolMessages.getMessage("logging.optimiseConfiguration",
+				= RIFDataLoaderToolMessages.getMessage(
+					"logging.optimiseConfiguration",
 					rifManager.getUserID(),
 					rifManager.getIPAddress(),
 					dataSetConfiguration.getDisplayName());
@@ -1569,7 +1552,6 @@ public final class DataLoaderService
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 	
-		System.out.println("DLS - checkCommonParameters 1");
 		//Check for empty parameters
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
@@ -1577,13 +1559,11 @@ public final class DataLoaderService
 			methodName,
 			"rifManager",
 			rifManager);
-		System.out.println("DLS - checkCommonParameters 2");
 		fieldValidationUtility.checkNullMethodParameter(
 			methodName,
 			"dataSetConfiguration",
 			dataSetConfiguration);
 		
-		System.out.println("DLS - checkCommonParameters 3");
 		rifManager.checkErrors(ValidationPolicy.STRICT);
 
 		//validateUser(rifManager);

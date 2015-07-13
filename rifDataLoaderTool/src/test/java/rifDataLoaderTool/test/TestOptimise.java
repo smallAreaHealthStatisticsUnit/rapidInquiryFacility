@@ -1,25 +1,22 @@
-package rifGenericLibrary.dataStorageLayer;
+package rifDataLoaderTool.test;
 
 
+import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
+import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 
+import rifGenericLibrary.system.RIFServiceException;
+import rifServices.businessConceptLayer.User;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 /**
  *
  *
  * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2014 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
+ * Copyright 2015 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. 
  *
  * <pre> 
  * This file is part of the Rapid Inquiry Facility (RIF) project.
@@ -27,23 +24,21 @@ package rifGenericLibrary.dataStorageLayer;
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+
  * RIF is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
+ * along with RIF.  If not, see <http://www.gnu.org/licenses/>.
  * </pre>
  *
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
+
 /*
  * Code Road Map:
  * --------------
@@ -66,8 +61,7 @@ package rifGenericLibrary.dataStorageLayer;
  *
  */
 
-public final class SQLDeleteIndexQueryFormatter 
-	extends AbstractSQLQueryFormatter {
+public class TestOptimise extends AbstractRIFDataLoaderTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -76,56 +70,51 @@ public final class SQLDeleteIndexQueryFormatter
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/** The table that will be deleted */
-	private String indexTable;
-	private String indexTableField;
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	/**
-	 * Instantiates a new SQL delete table query formatter.
-	 */
-	public SQLDeleteIndexQueryFormatter() {
+	public TestOptimise() {
 
+	}
+
+	@Test
+	public void test1() {
+		DataLoaderService dataLoaderService = new DataLoaderService();
+		
+		try {
+			User rifManager = User.newInstance("rifManager", "111.111.111.111");
+			SampleDataGenerator sampleDataGenerator
+				= new SampleDataGenerator();
+			DataSetConfiguration dataSetConfiguration
+				= sampleDataGenerator.createTest4StudyID1ExtractConfiguration();
+
+			dataLoaderService.initialiseService();	
+			dataLoaderService.loadConfiguration(
+				rifManager, 
+				dataSetConfiguration);
+			dataLoaderService.cleanConfiguration(
+				rifManager, 
+				dataSetConfiguration);
+			dataLoaderService.convertConfiguration(
+				rifManager, 
+				dataSetConfiguration);
+			dataLoaderService.optimiseConfiguration(
+				rifManager, 
+				dataSetConfiguration);
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
+			fail();
+		}
+		
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	/**
-	 * Sets the target table to delete
-	 *
-	 * @param fromTable the new from table
-	 */
-	public void setIndexTable(
-		final String indexTable) {
-		
-		this.indexTable = indexTable;
-	}
-	
-	public void setIndexTableField(
-		final String indexTableField) {
-		
-		this.indexTableField = indexTableField;
-	}
-	
-	@Override
-	public String generateQuery() {
-		resetAccumulatedQueryExpression();
-		addQueryPhrase(0, "DROP INDEX IF EXISTS");
-		padAndFinishLine();
-		addQueryPhrase(1, "ind_");
-		addQueryPhrase(indexTable);
-		addQueryPhrase("_");
-		addQueryPhrase(indexTableField);
-		addQueryPhrase(";");
-
-		return super.generateQuery();		
-	}
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -137,4 +126,7 @@ public final class SQLDeleteIndexQueryFormatter
 	// ==========================================
 	// Section Override
 	// ==========================================
+
 }
+
+

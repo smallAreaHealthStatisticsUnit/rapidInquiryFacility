@@ -60,6 +60,7 @@ public enum RIFTemporaryTablePrefixes {
 	CLEAN_CASTING("cln_cast_"), //cast cleaned fields to correct data types
 	CLEAN_AUDIT_WITH("tp1_"),
 	CLEAN_AUDIT("audit_clean_"),
+	CLEAN_FINAL("clean_"),
 	CONVERT("convert_"),
 	COMBINE("combine_"),
 	OPTIMISE("optimise_"),

@@ -91,13 +91,14 @@ public class TestConvert extends AbstractRIFDataLoaderTestCase {
 				= new SampleDataGenerator();
 			DataSetConfiguration dataSetConfiguration
 				= sampleDataGenerator.createTest4StudyID1ExtractConfiguration();
-			
-			DataSetFieldConfiguration ageFieldConfiguration
-				= dataSetConfiguration.getFieldHavingConvertFieldName("age");
-			RIFConversionFunction rifConversionFunction
-				= ageFieldConfiguration.getConvertFunction();
-			
-			dataLoaderService.initialiseService();			
+		
+			dataLoaderService.initialiseService();	
+			dataLoaderService.loadConfiguration(
+				rifManager, 
+				dataSetConfiguration);
+			dataLoaderService.cleanConfiguration(
+				rifManager, 
+				dataSetConfiguration);			
 			dataLoaderService.convertConfiguration(
 				rifManager, 
 				dataSetConfiguration);

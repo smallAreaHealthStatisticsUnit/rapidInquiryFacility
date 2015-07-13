@@ -1,20 +1,20 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLCreateIndexQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteIndexQueryFormatter;
-
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.sql.*;
+import java.text.Collator;
 
 /**
  *
@@ -102,9 +102,32 @@ public final class OptimiseWorkflowManager
 		//validate parameters
 		
 		dataSetConfiguration.checkErrors();
-		checkNonExistentFields(dataSetConfiguration);
 		
-
+		RIFSchemaAreaPropertyManager schemaAreaPropertyManager	
+			= new RIFSchemaAreaPropertyManager();
+		WorkflowValidator workflowValidator 
+			= new WorkflowValidator(schemaAreaPropertyManager);
+		workflowValidator.validateOptimise(dataSetConfiguration);
+		
+		//create a new table for optimise
+		String coreDataSetName
+			= dataSetConfiguration.getName();
+		String convertTableName
+			= RIFTemporaryTablePrefixes.CONVERT.getTableName(coreDataSetName);
+		String optimiseTableName
+			= RIFTemporaryTablePrefixes.OPTIMISE.getTableName(coreDataSetName);
+		deleteTable(
+			connection, 
+			optimiseTableName);
+		copyTable(
+			connection,
+			convertTableName,
+			optimiseTableName);
+		
+		
+		
+		
+		
 		deleteIndices(
 			connection,
 			dataSetConfiguration.getName(),
@@ -114,6 +137,10 @@ public final class OptimiseWorkflowManager
 			connection,
 			dataSetConfiguration.getName(),
 			dataSetConfiguration.getIndexFieldNames());
+		
+		createRowNumberAndDataSetIdentifierIndices(
+			connection,
+			optimiseTableName);
 
 	}
 	
@@ -128,35 +155,37 @@ public final class OptimiseWorkflowManager
 		try {
 
 			String targetTable
-				= RIFTemporaryTablePrefixes.CONVERT.getTableName(coreDataSetName);
+				= RIFTemporaryTablePrefixes.OPTIMISE.getTableName(coreDataSetName);
 	
 			for (String indexFieldName : indexFieldNames) {
 				currentIndexFieldName = indexFieldName;
-				
-				SQLCreateIndexQueryFormatter queryFormatter
-					= new SQLCreateIndexQueryFormatter();
-				queryFormatter.setIndexTable(targetTable);				
-				queryFormatter.setIndexTableField(indexFieldName);
+	
+				if (excludeFromIndexableFields(indexFieldName) == false) {					
+					SQLCreateIndexQueryFormatter queryFormatter
+						= new SQLCreateIndexQueryFormatter();
+					queryFormatter.setIndexTable(targetTable);				
+					queryFormatter.setIndexTableField(indexFieldName);
 
-				logSQLQuery(
-					"createIndices", 
-					queryFormatter, 
-					targetTable,
-					indexFieldName);
+					logSQLQuery(
+						"createIndices", 
+						queryFormatter, 
+						targetTable,
+						indexFieldName);
 				
-				statement 
-					= createPreparedStatement(
-						connection, 
-						queryFormatter);
-				statement.executeQuery();
+					statement 
+						= createPreparedStatement(
+							connection, 
+							queryFormatter);
+					statement.executeUpdate();
 				
-				SQLQueryUtility.close(statement);				
+					SQLQueryUtility.close(statement);				
+				
+				}
 			}
-			
-			connection.commit();
-			
+						
 		}
 		catch(SQLException sqlException) {
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"optimiseWorkflowManager.error.unableToCreateIndex",
@@ -174,6 +203,21 @@ public final class OptimiseWorkflowManager
 		
 	}
 		
+	private boolean excludeFromIndexableFields(
+		final String fieldName) {
+		
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		if (collator.equals(fieldName, "sex")) {
+			return true;
+		}
+		else if (collator.equals(fieldName, "age")) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
 	private void deleteIndices(
 		final Connection connection,
 		final String coreDataSetName,
@@ -185,34 +229,37 @@ public final class OptimiseWorkflowManager
 		try {
 
 			String targetTable
-				= RIFTemporaryTablePrefixes.CONVERT.getTableName(coreDataSetName);
+				= RIFTemporaryTablePrefixes.OPTIMISE.getTableName(coreDataSetName);
 	
 			for (String indexFieldName : indexFieldNames) {
 				currentFieldName = indexFieldName;
-				SQLDeleteIndexQueryFormatter queryFormatter
-					= new SQLDeleteIndexQueryFormatter();
-				queryFormatter.setIndexTable(targetTable);				
-				queryFormatter.setIndexTableField(indexFieldName);
+			
+				if (excludeFromIndexableFields(indexFieldName) == false) {					
+			
+					SQLDeleteIndexQueryFormatter queryFormatter
+						= new SQLDeleteIndexQueryFormatter();
+					queryFormatter.setIndexTable(targetTable);				
+					queryFormatter.setIndexTableField(indexFieldName);
 
-				logSQLQuery(
-					"deleteIndices", 
-					queryFormatter, 
-					targetTable,
-					indexFieldName);
+					logSQLQuery(
+						"deleteIndices", 
+						queryFormatter, 
+						targetTable,
+						indexFieldName);
 				
-				statement 
-					= createPreparedStatement(
-						connection, 
-						queryFormatter);
-				statement.executeQuery();
+					statement 
+						= createPreparedStatement(
+							connection, 
+							queryFormatter);
+					statement.executeUpdate();
 				
-				SQLQueryUtility.close(statement);				
+					SQLQueryUtility.close(statement);			
+				}
 			}
-			
-			connection.commit();
-			
+						
 		}
 		catch(SQLException sqlException) {
+			logSQLException(sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"optimiseWorkflowManager.error.unableToDeleteIndex",

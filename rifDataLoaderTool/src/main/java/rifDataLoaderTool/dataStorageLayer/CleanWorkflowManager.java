@@ -7,7 +7,6 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
 
 
@@ -299,7 +298,23 @@ public final class CleanWorkflowManager
 				RIFTemporaryTablePrefixes.CLEAN_VALIDATION,
 				RIFTemporaryTablePrefixes.CLEAN_CASTING);			
 			
+			String cleanCastingTableName
+				= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName);
+			String finalCleaningTableName
+				= RIFTemporaryTablePrefixes.CLEAN_FINAL.getTableName(coreDataSetName);
+			deleteTable(
+				connection, 
+				finalCleaningTableName);
 			
+			copyTable(
+				connection,
+				cleanCastingTableName,
+				finalCleaningTableName);
+			
+			createRowNumberAndDataSetIdentifierIndices(
+				connection,
+				finalCleaningTableName);
+					
 			//Fourth, add audit trail messages for errors, changed values and blanks
 
 			logger.debugQuery(

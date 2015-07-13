@@ -488,6 +488,10 @@ public class DataSetFieldConfiguration
 		final FieldRequirementLevel fieldRequirementLevel) {
 		
 		this.fieldRequirementLevel = fieldRequirementLevel;
+		
+		if (fieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) {
+			optimiseUsingIndex = true;
+		}
 	}
 	
 	public boolean hasCleaningRules() {
