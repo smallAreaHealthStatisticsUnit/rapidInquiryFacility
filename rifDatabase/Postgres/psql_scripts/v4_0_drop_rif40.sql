@@ -185,6 +185,11 @@ DROP TABLE IF EXISTS rif40_triggers;
 DROP SEQUENCE IF EXISTS rif40_inv_id_seq CASCADE;
 DROP SEQUENCE IF EXISTS rif40_study_id_seq CASCADE;
 
+DROP SEQUENCE IF EXISTS rif40_test_id_seq; 
+DROP SEQUENCE IF EXISTS rif40_test_run_id_seq;
+DROP TABLE IF EXISTS rif40_test_harness;
+DROP TABLE IF EXISTS rif40_test_runs;
+
 --
 -- Functions
 --

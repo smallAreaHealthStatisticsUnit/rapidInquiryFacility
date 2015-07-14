@@ -897,21 +897,6 @@ SELECT * FROM rif40_inv_conditions LIMIT 20;
 \i ../PLpgsql/rif40_sql_pkg/rif40_startup.sql
 
 --
--- Reload triggers (including fixes for test harness)
---
-\i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_studies_checks.sql
-
---
--- Reload log package
---
-\i ../PLpgsql/v4_0_rif40_log_pkg.sql
-
---
--- Load test harness
---
-\i ../PLpgsql/rif40_sql_pkg/rif40_sql_test.sql
-
---
 -- Testing stop
 --
 --DO LANGUAGE plpgsql $$
