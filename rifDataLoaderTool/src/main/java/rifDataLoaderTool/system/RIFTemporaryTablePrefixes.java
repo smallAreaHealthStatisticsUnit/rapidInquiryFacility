@@ -65,7 +65,9 @@ public enum RIFTemporaryTablePrefixes {
 	COMBINE("combine_"),
 	OPTIMISE("optimise_"),
 	CHECK("check_"),
-	PUBLISH("publish_");
+	PUBLISH("publish_"),
+	EMPTY_CHECK("dq_empty_"),
+	EMPTY_PER_YEAR_CHECK("dq_empty_yr_");
 	
 	private String tablePrefix;
 	

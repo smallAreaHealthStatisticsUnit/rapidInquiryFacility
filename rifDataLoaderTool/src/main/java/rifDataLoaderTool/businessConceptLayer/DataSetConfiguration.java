@@ -529,6 +529,54 @@ public class DataSetConfiguration
 		return fieldsWithoutConversionFunctions;		
 	}	
 	
+	public ArrayList<DataSetFieldConfiguration> getFieldsWithEmptyFieldCheck() {
+		ArrayList<DataSetFieldConfiguration> fieldsWithEmptyFieldCheck
+			= new ArrayList<DataSetFieldConfiguration>();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			if (fieldSupportsFieldCheck(
+				fieldConfiguration, 
+				RIFCheckOption.PERCENT_EMPTY)) {
+
+				fieldsWithEmptyFieldCheck.add(fieldConfiguration);
+			}
+		}
+	
+		return fieldsWithEmptyFieldCheck;	
+	}
+	
+	
+	public ArrayList<DataSetFieldConfiguration> getFieldsWithEmptyPerYearFieldCheck() {
+		ArrayList<DataSetFieldConfiguration> fieldsWithEmptyPerYearFieldCheck
+			= new ArrayList<DataSetFieldConfiguration>();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			if (fieldSupportsFieldCheck(
+				fieldConfiguration, 
+				RIFCheckOption.PERCENT_EMPTY_PER_YEAR)) {
+
+				fieldsWithEmptyPerYearFieldCheck.add(fieldConfiguration);
+			}
+		}
+	
+		return fieldsWithEmptyPerYearFieldCheck;	
+	}
+	
+	
+	
+	private boolean fieldSupportsFieldCheck(
+		final DataSetFieldConfiguration dataSetFieldConfiguration, 
+		final RIFCheckOption targetCheckOption) {
+		
+		ArrayList<RIFCheckOption> rifCheckOptions
+			= dataSetFieldConfiguration.getCheckOptions();
+		for (RIFCheckOption rifCheckOption : rifCheckOptions) {
+			if (targetCheckOption == rifCheckOption) {
+				return true;
+			}
+		}
+	
+		return false;
+	}
+		
 	public int getNumberOfGeospatialFields() {
 		int numberOfCovariateFields = 0;
 				

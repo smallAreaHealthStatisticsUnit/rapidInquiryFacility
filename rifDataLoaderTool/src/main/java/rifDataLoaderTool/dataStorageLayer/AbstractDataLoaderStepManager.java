@@ -289,6 +289,48 @@ public abstract class AbstractDataLoaderStepManager {
 		
 	}
 	
+	protected void addPrimaryKey(
+		final Connection connection,
+		final String targetTableName,
+		final String primaryKeyFieldPhrase)
+		throws RIFServiceException {
+		
+		PreparedStatement statement = null;		
+		try {
+			SQLGeneralQueryFormatter queryFormatter
+				= new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryPhrase("ALTER TABLE ");
+			queryFormatter.addQueryPhrase(targetTableName);
+			queryFormatter.addQueryPhrase(" ADD PRIMARY KEY (");
+			queryFormatter.addQueryPhrase(primaryKeyFieldPhrase);
+			queryFormatter.addQueryPhrase(")");
+			
+			statement
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
+			statement.executeUpdate();		
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"abstractDataLoaderStepManager.error.unableToAddPrimaryKeys",
+					targetTableName);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}		
+		
+		
+		
+	}
+	
 	protected void deleteTable(
 		final Connection connection,
 		final String targetTableName) 
@@ -364,7 +406,7 @@ public abstract class AbstractDataLoaderStepManager {
 		}
 
 	}
-
+/*
 	protected void createRowNumberAndDataSetIdentifierIndices(
 		final Connection connection,
 		final String targetTable) 
@@ -423,7 +465,7 @@ public abstract class AbstractDataLoaderStepManager {
 			SQLQueryUtility.close(dataSetIndexStatement);			
 		}		
 	}
-	
+*/	
 	
 	
 	protected PreparedStatement createPreparedStatement(

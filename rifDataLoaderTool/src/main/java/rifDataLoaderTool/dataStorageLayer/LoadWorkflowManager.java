@@ -239,10 +239,12 @@ public final class LoadWorkflowManager
 			addOriginalRowNumbers(
 				connection, 
 				targetLoadTable);
-			
-			createRowNumberAndDataSetIdentifierIndices(
+	
+			addPrimaryKey(
 				connection,
-				targetLoadTable);
+				targetLoadTable,
+				"data_set_id, row_number");
+
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);

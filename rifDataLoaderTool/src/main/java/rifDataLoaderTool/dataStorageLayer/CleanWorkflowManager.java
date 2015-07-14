@@ -311,9 +311,10 @@ public final class CleanWorkflowManager
 				cleanCastingTableName,
 				finalCleaningTableName);
 			
-			createRowNumberAndDataSetIdentifierIndices(
+			addPrimaryKey(
 				connection,
-				finalCleaningTableName);
+				finalCleaningTableName,
+				"data_set_id, row_number");
 					
 			//Fourth, add audit trail messages for errors, changed values and blanks
 

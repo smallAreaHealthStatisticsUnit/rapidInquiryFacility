@@ -1,11 +1,11 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.FieldPurpose;
 import rifDataLoaderTool.businessConceptLayer.FieldRequirementLevel;
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
+import rifDataLoaderTool.businessConceptLayer.RIFCheckOption;
 import rifDataLoaderTool.businessConceptLayer.RIFConversionFunctionFactory;
 import rifDataLoaderTool.businessConceptLayer.RIFConversionFunction;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
@@ -668,6 +668,7 @@ public class SampleDataGenerator {
 		rifDataTypeFactory.getDataType("rif_text"));
 		areaIDFieldConfiguration.setDuplicateIdentificationField(true);
 		areaIDFieldConfiguration.setCoreFieldDescription("area identifier");
+		areaIDFieldConfiguration.addCheckOption(RIFCheckOption.PERCENT_EMPTY);
 		areaIDFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
 		areaIDFieldConfiguration.setFieldPurpose(FieldPurpose.GEOGRAPHICAL_RESOLUTION);
 		test4Study1Configuration.addFieldConfiguration(areaIDFieldConfiguration);	
@@ -679,8 +680,8 @@ public class SampleDataGenerator {
 				"band_id");	
 		bandIDFieldConfiguration.setRIFDataType(
 		rifDataTypeFactory.getDataType("rif_text"));
-		bandIDFieldConfiguration.setDuplicateIdentificationField(true);
-		bandIDFieldConfiguration.setCoreFieldDescription("area identifier");
+		bandIDFieldConfiguration.setCoreFieldDescription("band identifier");
+		bandIDFieldConfiguration.addCheckOption(RIFCheckOption.PERCENT_EMPTY);
 		bandIDFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
 		bandIDFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
 		test4Study1Configuration.addFieldConfiguration(bandIDFieldConfiguration);	
@@ -724,7 +725,6 @@ public class SampleDataGenerator {
 				"ses");	
 		sesFieldConfiguration.setRIFDataType(
 		rifDataTypeFactory.getDataType("rif_integer"));
-		sesFieldConfiguration.setDuplicateIdentificationField(true);
 		sesFieldConfiguration.setCoreFieldDescription("socio economic status");
 		sesFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
 		sesFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
@@ -738,7 +738,6 @@ public class SampleDataGenerator {
 				"inv_1");	
 		sesFieldConfiguration.setRIFDataType(
 		rifDataTypeFactory.getDataType("rif_text"));
-		inv1FieldConfiguration.setDuplicateIdentificationField(true);
 		inv1FieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
 		inv1FieldConfiguration.setFieldPurpose(FieldPurpose.HEALTH_CODE);
 		test4Study1Configuration.addFieldConfiguration(inv1FieldConfiguration);	

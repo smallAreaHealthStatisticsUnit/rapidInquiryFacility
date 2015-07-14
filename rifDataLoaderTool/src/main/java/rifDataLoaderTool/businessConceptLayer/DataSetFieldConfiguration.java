@@ -443,12 +443,20 @@ public class DataSetFieldConfiguration
 		return checkOptions;
 	}
 	
+	public void addCheckOption(
+		final RIFCheckOption rifCheckOption) {
+		
+		checkOptions.add(rifCheckOption);
+	}
+	
+	
 	public void setCheckOptions(
 		final ArrayList<RIFCheckOption> checkOptions) {
 		
 		this.checkOptions = checkOptions;
 	}
 
+	
 	public FieldPurpose getFieldPurpose() {
 		return fieldPurpose;		
 	}

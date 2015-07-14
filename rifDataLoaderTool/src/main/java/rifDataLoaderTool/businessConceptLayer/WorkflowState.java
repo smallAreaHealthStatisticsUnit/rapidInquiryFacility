@@ -70,56 +70,68 @@ import java.util.ArrayList;
 
 public enum WorkflowState {
 
+	START(
+		1,
+		"start",
+		"workflowState.start.label",
+		"workflowState.start.statusMessage",		
+		null),
 	LOAD(
-		1, 
+		2, 
 		"load",
 		"workflowState.load.label",
 		"workflowState.load.statusMessage",
 		"ld_"),
 	CLEAN(
-		2, 
+		3, 
 		"clean",
 		"workflowState.clean.label",
 		"workflowState.clean.statusMessage",
 		"cl_"),
 	CONVERT(
-		3, 
+		4, 
 		"convert",
 		"workflowState.convert.label",
 		"workflowState.convert.statusMessage",
 		"cv_"),
 	SPLIT(
-		4, 
+		5, 
 		"split",
 		"workflowState.split.label",
 		"workflowState.split.statusMessage",
 		"cb_"),
 	COMBINE(
-		4, 
+		6, 
 		"combine",
 		"workflowState.combine.label",
 		"workflowState.combine.statusMessage",
 		"cb_"),		
 	OPTIMISE(
-		5, 
+		7, 
 		"optimise",
 		"workflowState.optimise.label",
 		"workflowState.optimise.statusMessage",
 		"op_"),
 	CHECK(
-		6, 
+		8, 
 		"check",
 		"workflowState.check.label",
 		"workflowState.check.statusMessage",
 		"ch_"),		
 	PUBLISH(
-		7, 
+		9, 
 		"publish",
 		"workflowState.publish.label",
 		"workflowState.publish.statusMessage",
 		"pb_"),
+	STOP(
+		10,
+		"stop",
+		"workflowState.stop.label",
+		"workflowState.stop.statusMessage",		
+		null),
 	DELETE(
-		8, 
+		11, 
 		"delete",
 		"workflowState.delete.label",
 		"workflowState.delete.statusMessage",

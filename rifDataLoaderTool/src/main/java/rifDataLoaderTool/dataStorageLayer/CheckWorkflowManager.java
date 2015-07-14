@@ -1,17 +1,22 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
-
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.text.Collator;
 
 
 
@@ -95,16 +100,54 @@ public final class CheckWorkflowManager
 		final Connection connection,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
+
 		
 		String coreDataSetName 
 			= dataSetConfiguration.getName();
+		String optimiseTableName
+			= RIFTemporaryTablePrefixes.OPTIMISE.getTableName(coreDataSetName);
+		String checkTableName
+			= RIFTemporaryTablePrefixes.CHECK.getTableName(coreDataSetName);
+		deleteTable(
+			connection, 
+			checkTableName);
+
+		createCheckTable(
+			connection, 
+			dataSetConfiguration);
+		
+		//createEmptyFieldCheckDataQualityTable(
+		//	connection,
+		//	dataSetConfiguration);
+
+		createEmptyPerYearFieldCheckDataQualityTable(
+			connection,
+			dataSetConfiguration);
+		
+		//createDataQualityTable(
+		//	connection,
+		//	dataSetConfiguration);
+		
+	}
+
+	private void createCheckTable(
+		final Connection connection,
+		final DataSetConfiguration dataSetConfiguration) 
+		throws RIFServiceException {
+				
+		String coreDataSetName 
+			= dataSetConfiguration.getName();
+		String optimiseTableName
+			= RIFTemporaryTablePrefixes.OPTIMISE.getTableName(coreDataSetName);
+		String checkTableName
+			= RIFTemporaryTablePrefixes.CHECK.getTableName(coreDataSetName);
+		deleteTable(
+			connection, 
+			checkTableName);
+
 		PreparedStatement statement = null;
 		try {
 			
-			String convertTableName
-				= RIFTemporaryTablePrefixes.CONVERT.getTableName(coreDataSetName);
-			String checkTableName
-				= RIFTemporaryTablePrefixes.CHECK.getTableName(coreDataSetName);
 				
 			SQLGeneralQueryFormatter queryFormatter 
 				= new SQLGeneralQueryFormatter();
@@ -114,8 +157,8 @@ public final class CheckWorkflowManager
 			queryFormatter.addPaddedQueryLine(0, "AS");
 			queryFormatter.addPaddedQueryLine(0, "WITH duplicate_rows AS");
 			queryFormatter.addPaddedQueryLine(1, "(SELECT");
-			queryFormatter.addQueryLine(2, "data_source_id");
-			queryFormatter.addQueryLine(2, "row_number");
+			queryFormatter.addQueryLine(2, "data_set_id,");
+			queryFormatter.addQueryLine(2, "row_number,");
 			
 			
 			//add in all the fields we're promoting from converted table
@@ -124,7 +167,8 @@ public final class CheckWorkflowManager
 			
 
 			String[] duplicateCriteriaFields
-				= dataSetConfiguration.getFieldsUsedForDuplicationChecks();
+				=getDuplicateIdentificationFieldNames(dataSetConfiguration);
+			
 			for (int i = 0; i < duplicateCriteriaFields.length; i++) {
 				if (i != 0) {
 					queryFormatter.addQueryPhrase(",");
@@ -134,7 +178,7 @@ public final class CheckWorkflowManager
 					4, 
 					duplicateCriteriaFields[i]);
 			}			
-		
+			queryFormatter.finishLine();
 			queryFormatter.addPaddedQueryLine(3, "ORDER BY");
 			for (int i = 0; i < duplicateCriteriaFields.length; i++) {
 				if (i != 0) {
@@ -146,45 +190,556 @@ public final class CheckWorkflowManager
 					duplicateCriteriaFields[i]);
 			}			
 			queryFormatter.addQueryPhrase(") AS duplicate_number");
+			
+			addOptimiseFields(
+				dataSetConfiguration, 
+				2, 
+				queryFormatter);
 			queryFormatter.padAndFinishLine();
 			
+			queryFormatter.addPaddedQueryLine(1, "FROM");
+			queryFormatter.addQueryPhrase(2, optimiseTableName);		
+			queryFormatter.addQueryPhrase(")");
+			queryFormatter.padAndFinishLine();
 			queryFormatter.addPaddedQueryLine(0, "SELECT");
-			queryFormatter.addQueryLine(1, "duplicate_clusters.data_source_id");
-			queryFormatter.addQueryLine(1, "duplicate_clusters.row_number");
+			queryFormatter.addQueryLine(1, "data_set_id,");
+			queryFormatter.addQueryLine(1, "row_number,");
 
 			//add in all the fields we're promoting from converted table
-			
-			
-			
+	
 			queryFormatter.addPaddedQueryLine(1, "CASE");
 			queryFormatter.addPaddedQueryLine(
 				2, 
-				"WHEN duplicate_clusters.duplicate_number=1 THEN 'Y'");
+				"WHEN duplicate_number=1 THEN 'Y'");
 			queryFormatter.addPaddedQueryLine(
 				2,
 				"ELSE 'N'");
-			queryFormatter.addPaddedQueryLine(1, "END AS keep_record");
+			queryFormatter.addQueryPhrase(1, "END AS keep_record");
+			addOptimiseFields(
+				dataSetConfiguration, 
+				1, 
+				queryFormatter);
+			queryFormatter.padAndFinishLine();
 			queryFormatter.addPaddedQueryLine(0, "FROM");
-			queryFormatter.addPaddedQueryLine(1, "duplicate_clusters;");
+			queryFormatter.addPaddedQueryLine(1, "duplicate_rows;");
 			
+			logSQLQuery(
+				"checkConfiguration", 
+				queryFormatter);
+						
 			statement 
 				= createPreparedStatement(connection, queryFormatter);
 			statement.executeUpdate();
-			
+
+			addPrimaryKey(
+				connection,
+				checkTableName,
+				"data_set_id, row_number");
 		}
 		catch(SQLException sqlException) {
+			logSQLException(sqlException);
 			String errorMessage
-				= RIFDataLoaderMessages.getMessage("");
+				= RIFDataLoaderMessages.getMessage(
+					"checkWorkflowManager.error.unableToCreateCheckedTable",
+					checkTableName);
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
+		}		
+		
+	}
+	
+	private String[] getDuplicateIdentificationFieldNames(
+		final DataSetConfiguration dataSetConfiguration) {
+		
+
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+
+		ArrayList<String> filteredDuplicateCriteriaFields
+			= new ArrayList<String>();
+		
+		String[] duplicateCriteriaFields
+			= dataSetConfiguration.getFieldsUsedForDuplicationChecks();
+		for (String duplicateCriterionField : duplicateCriteriaFields) {
+			if ((collator.equals(duplicateCriterionField, "age") == false) &&
+				(collator.equals(duplicateCriterionField, "sex") == false)) {
+				
+				filteredDuplicateCriteriaFields.add(duplicateCriterionField);			
+			}			
 		}
 		
+		RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
+		if ( (rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) ||
+			 (rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA)) {
+			filteredDuplicateCriteriaFields.add("age_sex_group");
+		}
+
+		String[] results = filteredDuplicateCriteriaFields.toArray(new String[0]);
+		return results;		
+	}
+	
+	private void addOptimiseFields(
+		final DataSetConfiguration dataSetConfiguration,
+		final int indentationLevel,
+		final AbstractSQLQueryFormatter queryFormatter) {
 		
 		
+		ArrayList<DataSetFieldConfiguration> fieldConfigurations
+			= dataSetConfiguration.getFieldConfigurations();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			if (excludeFieldFromChecks(fieldConfiguration) == false) {
+				String convertFieldName 
+					= fieldConfiguration.getConvertFieldName();
+				queryFormatter.addQueryPhrase(",");				
+				queryFormatter.padAndFinishLine();				
+				queryFormatter.addQueryPhrase(
+					indentationLevel, 
+					convertFieldName);
+			}
+		}
 		
+		RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
+		if ((rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) ||
+			(rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA)) {
+			
+			queryFormatter.addQueryPhrase(",");				
+			queryFormatter.padAndFinishLine();				
+			queryFormatter.addQueryPhrase(
+				indentationLevel, 
+				"age_sex_group");			
+		}
+
+	}
+
+	private void createEmptyFieldCheckDataQualityTable(
+		final Connection connection,
+		final DataSetConfiguration dataSetConfiguration) 
+		throws RIFServiceException {
+
+		String coreDataSetName = dataSetConfiguration.getName();
+		
+		String emptyFieldsDataQualityTableName
+			= RIFTemporaryTablePrefixes.EMPTY_CHECK.getTableName(coreDataSetName);
+		deleteTable(
+			connection, 
+			emptyFieldsDataQualityTableName);
+		
+		PreparedStatement statement = null;
+		try {
+
+			
+			/*
+			 * Trying to create a table such as:
+			 * 
+			 * CREATE TABLE dq_my_data_set_empty AS
+			 * WITH
+			 *    summary AS
+			 *       (SELECT
+			 *           COUNT(data_set_id) AS total_rows
+			 *        FROM
+			 *           check_my_data_set)
+			 *    tmp_field1_empty AS
+			 *       (SELECT
+			 *           COUNT(data_set_id) AS total_empty_rows
+			 *        FROM
+			 *           check_my_data_set
+			 *        WHERE
+			 *           field1 IS NULL),
+			 *    tmp_field2_empty AS
+			 *       (SELECT
+			 *           COUNT(data_set_id) AS total_empty_rows
+			 *        FROM
+			 *           check_my_data_set
+			 *        WHERE
+			 *           field2 IS NULL)
+			 * 
+			 * CREATE TABLE dq_my_data_set AS
+			 * SELECT
+			 *    data_set_id,
+			 *    (tmp_field1_empty.total_empty_rows / summary.total_rows) * 100 AS field1,
+			 *    (tmp_field2_empty.total_empty_rows / summary.total_rows) * 100 AS field2,
+			 * FROM
+			 *    summary,
+			 *    tmp_field1_empty,
+			 *    tmp_field2_empty
+			 */
+			
+			
+			String checkTableName
+				= RIFTemporaryTablePrefixes.CHECK.getTableName(coreDataSetName);
+		
+		
+			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
+			queryFormatter.addQueryPhrase(emptyFieldsDataQualityTableName);
+			queryFormatter.addQueryPhrase(" AS ");
+			queryFormatter.finishLine();
+		
+			queryFormatter.addPaddedQueryLine(0, "WITH");
+			queryFormatter.addQueryPhrase(1, "identifiers AS");
+			queryFormatter.padAndFinishLine();
+			queryFormatter.addQueryPhrase(2, "(SELECT ");
+			queryFormatter.finishLine();
+			queryFormatter.addPaddedQueryLine(3, "DISTINCT(data_set_id) AS id");
+			queryFormatter.addQueryPhrase(2, "FROM");
+			queryFormatter.addQueryPhrase(3, checkTableName);
+			queryFormatter.addQueryPhrase("),");
+			queryFormatter.finishLine();
+			
+			queryFormatter.addQueryPhrase(1, "summary AS");
+			queryFormatter.padAndFinishLine();
+			queryFormatter.addPaddedQueryLine(2, "(SELECT");
+			queryFormatter.addPaddedQueryLine(3, "COUNT(data_set_id) AS total_rows");		
+			queryFormatter.addPaddedQueryLine(2, "FROM");
+			queryFormatter.addQueryPhrase(3, checkTableName);
+			queryFormatter.addQueryPhrase(")");
+		
+			//do for each field
+			ArrayList<DataSetFieldConfiguration> fieldsWithEmptyFieldCheck
+				= dataSetConfiguration.getFieldsWithEmptyFieldCheck();
+			for (DataSetFieldConfiguration fieldWithEmptyFieldCheck : fieldsWithEmptyFieldCheck) {
+				queryFormatter.addQueryPhrase(",");
+				queryFormatter.padAndFinishLine();
+
+				String convertFieldName
+					= fieldWithEmptyFieldCheck.getConvertFieldName();
+				queryFormatter.addQueryPhrase(1, "tmp_");
+				queryFormatter.addQueryPhrase(convertFieldName);
+				queryFormatter.addQueryPhrase("_empty AS");
+				queryFormatter.padAndFinishLine();
+				queryFormatter.addPaddedQueryLine(2, "(SELECT");
+				queryFormatter.addPaddedQueryLine(3, "COUNT(data_set_id) AS total_empty_rows");
+				queryFormatter.addPaddedQueryLine(2, "FROM");
+				queryFormatter.addPaddedQueryLine(3, checkTableName);
+				queryFormatter.addPaddedQueryLine(2, "WHERE");
+				queryFormatter.addQueryPhrase(3, convertFieldName);
+				queryFormatter.addQueryPhrase(" IS NULL)");
+			}
+			queryFormatter.finishLine();
+			queryFormatter.addPaddedQueryLine(1, "SELECT");
+			queryFormatter.addQueryPhrase(2, "id AS data_set_id");
+		
+			for (DataSetFieldConfiguration fieldWithEmptyFieldCheck : fieldsWithEmptyFieldCheck) {
+				queryFormatter.addQueryPhrase(",");
+				queryFormatter.finishLine();
+		
+				String convertFieldName
+					= fieldWithEmptyFieldCheck.getConvertFieldName();
+		
+				queryFormatter.addQueryPhrase(2, "(tmp_");
+				queryFormatter.addQueryPhrase(convertFieldName);
+				queryFormatter.addQueryPhrase("_empty.total_empty_rows / summary.total_rows) ");
+				queryFormatter.addQueryPhrase("* 100 AS ");
+				queryFormatter.addQueryPhrase(convertFieldName);
+			}
+			queryFormatter.finishLine();
+			queryFormatter.addPaddedQueryLine(1, "FROM");
+			queryFormatter.addQueryLine(2, "identifiers,");
+			queryFormatter.addQueryPhrase(2, "summary");
+			for (DataSetFieldConfiguration fieldWithEmptyFieldCheck : fieldsWithEmptyFieldCheck) {
+				queryFormatter.addQueryPhrase(",");
+				queryFormatter.finishLine();
+
+				String convertFieldName
+					= fieldWithEmptyFieldCheck.getConvertFieldName();
+				queryFormatter.addQueryPhrase(2, "tmp_");
+				queryFormatter.addQueryPhrase(convertFieldName);
+				queryFormatter.addQueryPhrase("_empty");
+			}
+		
+			logSQLQuery(
+				"createEmptyFieldCheckDataQualityTable", 
+				queryFormatter);
+			
+			statement
+				= createPreparedStatement(connection, queryFormatter);
+			statement.executeUpdate();
+
+			addPrimaryKey(
+				connection,
+				emptyFieldsDataQualityTableName,
+				"data_set_id, row_number");
+
+			
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"checkWorkflowManager.error.unableToCreateEmptyCheckTable",
+					emptyFieldsDataQualityTableName);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+
+	}
+
+
+	private void createEmptyPerYearFieldCheckDataQualityTable(
+		final Connection connection,
+		final DataSetConfiguration dataSetConfiguration) 
+		throws RIFServiceException {
+
+		String coreDataSetName = dataSetConfiguration.getName();
+		
+		String emptyPerYearFieldsDataQualityTableName
+			= RIFTemporaryTablePrefixes.EMPTY_PER_YEAR_CHECK.getTableName(coreDataSetName);
+		deleteTable(
+			connection, 
+			emptyPerYearFieldsDataQualityTableName);
+		
+		PreparedStatement statement = null;
+		try {
+
+			
+			/*
+			 * Trying to create a table such as:
+			 * 
+			 * CREATE TABLE dq_my_data_set_empty_yr AS
+			 * WITH
+			 *    summary AS
+			 *       (SELECT
+			 *           year,
+			 *           COUNT(data_set_id) AS total_rows
+			 *        FROM
+			 *           check_my_data_set
+			 *        GROUP BY
+			 *           year)
+			 *    tmp_field1_empty_yr AS
+			 *       (SELECT
+			 *           year,
+			 *           COUNT(data_set_id) AS total_empty_rows
+			 *        FROM
+			 *           check_my_data_set
+			 *        WHERE
+			 *           field1 IS NULL
+			 *        GROUP BY
+			 *           year),
+			 *    tmp_field2_empty_yr AS
+			 *       (SELECT
+			 *           year,
+			 *           COUNT(data_set_id) AS total_empty_rows
+			 *        FROM
+			 *           check_my_data_set
+			 *        WHERE
+			 *           field2 IS NULL
+			 *        GROUP BY
+			 *           year)
+			 * 
+			 * CREATE TABLE dq_my_data_set AS
+			 * SELECT
+			 *    data_set_id,
+			 *    year,
+			 *    (tmp_field1_empty_yr.total_empty_rows / summary.total_rows) * 100 AS field1,
+			 *    (tmp_field2_empty_yr.total_empty_rows / summary.total_rows) * 100 AS field2,
+			 * FROM
+			 *    summary,
+			 *    tmp_field1_empty_yr,
+			 *    tmp_field2_empty_yr
+			 * WHERE
+			 *    summary.year = tmp_field1_empty_yr.year AND
+			 *    summary.year = tmp_field2_empty_yr.year
+			 * ORDER BY
+			 *    year
+			 *    
+			 */
+			
+			
+			String checkTableName
+				= RIFTemporaryTablePrefixes.CHECK.getTableName(coreDataSetName);
+		
+		
+			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
+			queryFormatter.addQueryPhrase(emptyPerYearFieldsDataQualityTableName);
+			queryFormatter.addQueryPhrase(" AS ");
+			queryFormatter.finishLine();
+		
+			queryFormatter.addPaddedQueryLine(0, "WITH");
+			queryFormatter.addQueryPhrase(1, "identifiers AS");
+			queryFormatter.padAndFinishLine();
+			queryFormatter.addQueryPhrase(2, "(SELECT ");
+			queryFormatter.finishLine();
+			queryFormatter.addPaddedQueryLine(3, "DISTINCT(data_set_id) AS id");
+			queryFormatter.addPaddedQueryLine(2, "FROM");
+			queryFormatter.addQueryPhrase(3, checkTableName);
+			queryFormatter.addQueryPhrase("),");
+			queryFormatter.finishLine();
+			
+			queryFormatter.addQueryPhrase(1, "summary AS");
+			queryFormatter.padAndFinishLine();
+			queryFormatter.addPaddedQueryLine(2, "(SELECT");			
+			queryFormatter.addPaddedQueryLine(3, "year,");		
+			queryFormatter.addPaddedQueryLine(3, "COUNT(data_set_id) AS total_rows");		
+			queryFormatter.addPaddedQueryLine(2, "FROM");
+			queryFormatter.addQueryPhrase(3, checkTableName);
+			queryFormatter.finishLine();
+			queryFormatter.addPaddedQueryLine(2, "GROUP BY");
+			queryFormatter.addQueryPhrase(3, "year)");
+		
+			//do for each field
+			ArrayList<DataSetFieldConfiguration> fieldsWithEmptyPerYearFieldCheck
+				= dataSetConfiguration.getFieldsWithEmptyFieldCheck();
+			for (DataSetFieldConfiguration fieldWithEmptyPerYearFieldCheck : fieldsWithEmptyPerYearFieldCheck) {
+				queryFormatter.addQueryPhrase(",");
+				queryFormatter.padAndFinishLine();
+
+				String convertFieldName
+					= fieldWithEmptyPerYearFieldCheck.getConvertFieldName();
+				queryFormatter.addQueryPhrase(1, "tmp_");
+				queryFormatter.addQueryPhrase(convertFieldName);
+				queryFormatter.addQueryPhrase("_empty_yr AS");
+				queryFormatter.padAndFinishLine();
+				queryFormatter.addPaddedQueryLine(2, "(SELECT");
+				queryFormatter.addPaddedQueryLine(3, "year,");
+				queryFormatter.addPaddedQueryLine(3, "COUNT(data_set_id) AS total_empty_rows");
+				queryFormatter.addPaddedQueryLine(2, "FROM");
+				queryFormatter.addPaddedQueryLine(3, checkTableName);
+				queryFormatter.addPaddedQueryLine(2, "WHERE");
+				queryFormatter.addQueryPhrase(3, convertFieldName);
+				queryFormatter.addQueryPhrase(" IS NULL");
+				queryFormatter.finishLine();
+				queryFormatter.addPaddedQueryLine(2, "GROUP BY");
+				queryFormatter.addQueryPhrase(3, "year)");
+			}
+			queryFormatter.finishLine();
+			queryFormatter.addPaddedQueryLine(1, "SELECT");
+			queryFormatter.addQueryLine(2, "id AS data_set_id,");
+			queryFormatter.addQueryPhrase(2, "summary.year");		
+			for (DataSetFieldConfiguration fieldWithEmptyPerYearFieldCheck : fieldsWithEmptyPerYearFieldCheck) {
+				queryFormatter.addQueryPhrase(",");
+				queryFormatter.finishLine();
+		
+				String convertFieldName
+					= fieldWithEmptyPerYearFieldCheck.getConvertFieldName();
+		
+				queryFormatter.addQueryPhrase(2, "(COALESCE(tmp_");
+				queryFormatter.addQueryPhrase(convertFieldName);
+				queryFormatter.addQueryPhrase("_empty_yr.total_empty_rows, 0) / summary.total_rows) ");
+				queryFormatter.addQueryPhrase("* 100 AS ");
+				queryFormatter.addQueryPhrase(convertFieldName);
+			}
+			queryFormatter.finishLine();
+			queryFormatter.addPaddedQueryLine(1, "FROM");
+			queryFormatter.addQueryLine(2, "identifiers,");
+			queryFormatter.addQueryPhrase(2, "summary");
+			
+			for (int i = 0; i < fieldsWithEmptyPerYearFieldCheck.size(); i++) {
+				DataSetFieldConfiguration fieldWithEmptyPerYearFieldCheck
+					= fieldsWithEmptyPerYearFieldCheck.get(i);
+				
+				//if (i != 0) {
+				//	queryFormatter.addQueryPhrase(",");					
+				//}
+				queryFormatter.finishLine();
+
+				String convertFieldName
+					= fieldWithEmptyPerYearFieldCheck.getConvertFieldName();
+				queryFormatter.addQueryPhrase(3, "LEFT JOIN tmp_");
+				queryFormatter.addQueryPhrase(convertFieldName);
+				queryFormatter.addQueryPhrase("_empty_yr ON ");
+				queryFormatter.addQueryPhrase("summary.year=tmp_");
+				queryFormatter.addQueryPhrase(convertFieldName);
+				queryFormatter.addQueryPhrase("_empty_yr.year");
+			}
+
+			queryFormatter.finishLine();
+			queryFormatter.addPaddedQueryLine(1, "ORDER BY");
+			queryFormatter.addPaddedQueryLine(2, "summary.year");
+			
+/*			
+			queryFormatter.finishLine();
+			queryFormatter.addPaddedQueryLine(1, "FROM");
+			queryFormatter.addQueryLine(2, "identifiers,");
+			queryFormatter.addQueryPhrase(2, "summary");
+			for (DataSetFieldConfiguration fieldWithEmptyPerYearFieldCheck : fieldsWithEmptyPerYearFieldCheck) {
+				queryFormatter.addQueryPhrase(",");
+				queryFormatter.finishLine();
+
+				String convertFieldName
+					= fieldWithEmptyPerYearFieldCheck.getConvertFieldName();
+				queryFormatter.addQueryPhrase(2, "tmp_");
+				queryFormatter.addQueryPhrase(convertFieldName);
+				queryFormatter.addQueryPhrase("_empty_yr");
+			}
+			queryFormatter.finishLine();
+			queryFormatter.addPaddedQueryLine(1, "WHERE");
+			
+			for (int i = 0; i < fieldsWithEmptyPerYearFieldCheck.size(); i++) {
+				if (i != 0) {
+					queryFormatter.addQueryPhrase(" AND");
+					queryFormatter.padAndFinishLine();
+				}
+
+				DataSetFieldConfiguration fieldWithEmptyPerYearFieldCheck
+					= fieldsWithEmptyPerYearFieldCheck.get(i);
+				String convertFieldName
+					= fieldWithEmptyPerYearFieldCheck.getConvertFieldName();
+				queryFormatter.addQueryPhrase(2, "summary.year=");
+				queryFormatter.addQueryPhrase("tmp_");
+				queryFormatter.addQueryPhrase(convertFieldName);
+				queryFormatter.addQueryPhrase("_empty_yr.year");				
+			}
+			queryFormatter.finishLine();
+			
+			queryFormatter.addPaddedQueryLine(1, "ORDER BY");
+			queryFormatter.addPaddedQueryLine(2, "summary.year");
+*/			
+			logSQLQuery(
+				"createEmptyFieldCheckDataQualityTable", 
+				queryFormatter);
+			
+			statement
+				= createPreparedStatement(connection, queryFormatter);
+			statement.executeUpdate();
+			
+			addPrimaryKey(
+				connection,
+				emptyPerYearFieldsDataQualityTableName,
+				"data_set_id, year");
+
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"checkWorkflowManager.error.unableToCreateEmptyCheckTable",
+					emptyPerYearFieldsDataQualityTableName);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+	}
+	
+	private boolean excludeFieldFromChecks(
+		final DataSetFieldConfiguration dataSetFieldConfiguration) {
+		
+		String convertFieldName
+			= dataSetFieldConfiguration.getConvertFieldName();
+		Collator collator
+			= RIFDataLoaderToolMessages.getCollator();
+		if (collator.equals(convertFieldName, "age")) {
+			return true;
+		}
+		else if (collator.equals(convertFieldName, "sex")) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 	
 	// ==========================================

@@ -108,7 +108,7 @@ public class LinearWorkflowStateMachine
 	// ==========================================
 
 	public void first() {
-		currentWorkflowState = WorkflowState.LOAD;
+		currentWorkflowState = WorkflowState.START;
 	}
 	
 	public void previous() {
@@ -124,10 +124,13 @@ public class LinearWorkflowStateMachine
 		}		
 		else if (currentWorkflowState == WorkflowState.CONVERT) {
 			currentWorkflowState = WorkflowState.CLEAN;
-		}		
-		else {
-			//CLEAN, DELETE
+		}
+		else if (currentWorkflowState == WorkflowState.CLEAN) {
 			currentWorkflowState = WorkflowState.LOAD;
+		}
+		else {
+			//DELETE
+			currentWorkflowState = WorkflowState.START;
 		}		
 	}
 
@@ -140,22 +143,21 @@ public class LinearWorkflowStateMachine
 			currentWorkflowState = WorkflowState.CONVERT;
 		}
 		else if (currentWorkflowState == WorkflowState.CONVERT) {
-			currentWorkflowState = WorkflowState.COMBINE;
+			currentWorkflowState = WorkflowState.OPTIMISE;
 		}
-		else if (currentWorkflowState == WorkflowState.COMBINE) {
+		else if (currentWorkflowState == WorkflowState.OPTIMISE) {
 			currentWorkflowState = WorkflowState.CHECK;
 		}
 		else if (currentWorkflowState == WorkflowState.CHECK) {
 			currentWorkflowState = WorkflowState.PUBLISH;
 		}
-		else {
-			//DELETE, PUBLISH
-			currentWorkflowState = WorkflowState.LOAD;
+		else if (currentWorkflowState == WorkflowState.PUBLISH) {
+			currentWorkflowState = WorkflowState.STOP;
 		}		
 	}
 	
 	public void last() {
-		currentWorkflowState = WorkflowState.PUBLISH;		
+		currentWorkflowState = WorkflowState.STOP;		
 	}
 	
 	public WorkflowState getCurrentWorkflowState() {
@@ -166,12 +168,14 @@ public class LinearWorkflowStateMachine
 	public ArrayList<WorkflowState> getAllWorkStatesInOrder() {
 		ArrayList<WorkflowState> allWorkflowStates
 			= new ArrayList<WorkflowState>();
+		allWorkflowStates.add(WorkflowState.START);
 		allWorkflowStates.add(WorkflowState.LOAD);
 		allWorkflowStates.add(WorkflowState.CLEAN);
 		allWorkflowStates.add(WorkflowState.CONVERT);
 		allWorkflowStates.add(WorkflowState.OPTIMISE);
 		allWorkflowStates.add(WorkflowState.CHECK);
 		allWorkflowStates.add(WorkflowState.PUBLISH);
+		allWorkflowStates.add(WorkflowState.STOP);
 		
 		return allWorkflowStates;
 	}
@@ -180,12 +184,14 @@ public class LinearWorkflowStateMachine
 	public String[] getAllWorkStateNamesInOrder() {
 		ArrayList<String> allWorkflowStateNames
 			= new ArrayList<String>();
+		allWorkflowStateNames.add(WorkflowState.START.getStateName());
 		allWorkflowStateNames.add(WorkflowState.LOAD.getStateName());
 		allWorkflowStateNames.add(WorkflowState.CLEAN.getStateName());
 		allWorkflowStateNames.add(WorkflowState.CONVERT.getStateName());
 		allWorkflowStateNames.add(WorkflowState.OPTIMISE.getStateName());
 		allWorkflowStateNames.add(WorkflowState.CHECK.getStateName());
 		allWorkflowStateNames.add(WorkflowState.PUBLISH.getStateName());
+		allWorkflowStateNames.add(WorkflowState.STOP.getStateName());
 		
 		String[] results 
 			= allWorkflowStateNames.toArray(new String[0]);

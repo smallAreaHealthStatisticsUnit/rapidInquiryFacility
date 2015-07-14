@@ -138,9 +138,10 @@ public final class OptimiseWorkflowManager
 			dataSetConfiguration.getName(),
 			dataSetConfiguration.getIndexFieldNames());
 		
-		createRowNumberAndDataSetIdentifierIndices(
+		addPrimaryKey(
 			connection,
-			optimiseTableName);
+			optimiseTableName,
+			"data_set_id, row_number");
 
 	}
 	
