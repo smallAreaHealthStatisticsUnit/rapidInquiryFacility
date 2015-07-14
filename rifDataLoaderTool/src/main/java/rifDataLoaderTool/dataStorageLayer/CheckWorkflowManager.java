@@ -7,6 +7,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
@@ -235,6 +236,13 @@ public final class CheckWorkflowManager
 				connection,
 				checkTableName,
 				"data_set_id, row_number");
+			
+			addComments(
+				connection,
+				checkTableName,
+				dataSetConfiguration,
+				WorkflowState.CHECK);
+			
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);

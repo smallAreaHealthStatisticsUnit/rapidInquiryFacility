@@ -1,25 +1,31 @@
 package rifDataLoaderTool.dataStorageLayer;
 
-import java.sql.*;
-
-
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
+
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+
+import rifServices.businessConceptLayer.RIFResultTable;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
-
-import rifServices.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
 
+import java.sql.*;
+import java.util.ArrayList;
+import java.text.Collator;
 
 /**
  * provides functionality common to all manager classes associated with different steps
@@ -288,6 +294,223 @@ public abstract class AbstractDataLoaderStepManager {
 		}
 		
 	}
+	
+	protected void addComments(
+		final Connection connection,
+		final String targetTable,
+		final DataSetConfiguration dataSetConfiguration,
+		final WorkflowState workflowState) 
+		throws RIFServiceException {
+		
+		PreparedStatement statement = null;
+		try {
+			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryPhrase(0, "COMMENT ON TABLE ");
+			queryFormatter.addQueryPhrase(targetTable);
+			queryFormatter.addQueryPhrase(" IS ");
+			queryFormatter.addQueryPhrase("'");
+			queryFormatter.addQueryPhrase(dataSetConfiguration.getDescription());
+			queryFormatter.addQueryPhrase("'");
+			
+			statement
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
+			statement.executeUpdate();
+
+			//add data_set_id, row_number
+			addRIFGeneratedFieldDescriptions(
+				connection, 
+				targetTable,
+				dataSetConfiguration,
+				workflowState);
+			
+			RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
+			ArrayList<DataSetFieldConfiguration> fieldConfigurations
+				= dataSetConfiguration.getFieldConfigurations();
+			for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+				
+				System.out.println("Blah 1");
+				if (excludeFieldFromConsideration(
+					rifSchemaArea, 
+					fieldConfiguration,
+					workflowState) == false) {
+
+					System.out.println("Blah 2 fieldname=="+fieldConfiguration.getCoreFieldName()+"==");
+
+					
+					
+					addCommentToTableField(
+						connection,
+						targetTable,
+						fieldConfiguration,
+						workflowState);
+				}
+			}
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"abstractDataLoaderStepManager.error.unableToAddComments",
+					targetTable);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;			
+		}		
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+	}
+
+	private void addRIFGeneratedFieldDescriptions(
+		final Connection connection, 
+		final String targetTable,
+		final DataSetConfiguration dataSetConfiguration,
+		final WorkflowState workflowState) 
+		throws SQLException, 
+		RIFServiceException {
+		
+		String rowNumberFieldDescription
+			= RIFDataLoaderToolMessages.getMessage(
+				"dataSetFieldConfiguration.rowNumber.description");
+
+		addCommentToTableField(
+			connection,
+			targetTable,
+			"row_number",
+			rowNumberFieldDescription);
+
+		String dataSetIdentifierFieldDescription
+			= RIFDataLoaderToolMessages.getMessage(
+				"dataSetFieldConfiguration.dataSetIdentifier.description");
+		addCommentToTableField(
+			connection,
+			targetTable,
+			"data_set_id",
+			dataSetIdentifierFieldDescription);
+		
+		RIFSchemaArea rifSchemaArea
+			= dataSetConfiguration.getRIFSchemaArea();
+		if ((rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) ||
+			(rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA)) {
+			
+			String ageSexGroupFieldDescription
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetFieldConfiguration.ageSexGroup.description");
+			addCommentToTableField(
+				connection,
+				targetTable,
+				"age_sex_group",
+				ageSexGroupFieldDescription);			
+		}
+		
+		if (workflowState.getStateSequenceNumber() >= WorkflowState.CHECK.getStateSequenceNumber()) {
+			
+			String keepDescription
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetFieldConfiguration.keep.description");
+			addCommentToTableField(
+				connection,
+				targetTable,
+				"keep_record",
+				keepDescription);			
+			
+		}
+		
+	}
+	
+	private boolean excludeFieldFromConsideration(
+		final RIFSchemaArea rifSchemaArea,
+		final DataSetFieldConfiguration dataSetFieldConfiguration,
+		final WorkflowState workflowState) {
+		
+		if (workflowState.getStateSequenceNumber() >= WorkflowState.CONVERT.getStateSequenceNumber()) {
+			String convertFieldName = dataSetFieldConfiguration.getConvertFieldName();
+			
+			Collator collator = RIFDataLoaderToolMessages.getCollator();			
+			if (collator.equals(convertFieldName, "age") ||
+			   collator.equals(convertFieldName, "sex")) {
+				
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	private void addCommentToTableField(
+		final Connection connection,
+		final String targetTable,
+		final DataSetFieldConfiguration dataSetFieldConfiguration,
+		final WorkflowState workflowState)
+		throws SQLException,
+		RIFServiceException {
+		
+		String fieldName = "";
+		if (workflowState == WorkflowState.LOAD) {
+			fieldName = dataSetFieldConfiguration.getLoadFieldName();
+		}
+		else if (workflowState == WorkflowState.CLEAN) {
+			fieldName = dataSetFieldConfiguration.getCleanFieldName();
+		}
+		else {
+			fieldName = dataSetFieldConfiguration.getConvertFieldName();				
+		}
+		addCommentToTableField(
+			connection,
+			targetTable,
+			fieldName,
+			dataSetFieldConfiguration.getCoreFieldDescription());
+	}
+	
+	private void addCommentToTableField(
+		final Connection connection,
+		final String targetTable,
+		final String fieldName,
+		final String fieldDescription)
+		throws SQLException,
+		RIFServiceException {
+		
+		PreparedStatement statement = null;
+		try {
+			//Note: we're trying to comment a field name but that field may
+			//have different names depending on the stage of the work flow
+			//we've just completed.  This could happen if, for example,
+			//we've loaded a CSV file with no header and then try to assign
+			//field names we'd like to give the auto-named fields (eg: field1
+			//could become year)
+						
+			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryPhrase(0, "COMMENT ON COLUMN ");
+			queryFormatter.addQueryPhrase(targetTable);
+			queryFormatter.addQueryPhrase(".");
+			queryFormatter.addQueryPhrase(fieldName);
+			
+			queryFormatter.addQueryPhrase(" IS ");
+			queryFormatter.addQueryPhrase("'");
+			queryFormatter.addQueryPhrase(fieldDescription);
+			queryFormatter.addQueryPhrase("'");
+			
+			
+			logSQLQuery("addCommentToTableField", queryFormatter);
+			
+			statement
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
+			statement.executeUpdate();			
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+		
+	}
+	
+	
+	
 	
 	protected void addPrimaryKey(
 		final Connection connection,

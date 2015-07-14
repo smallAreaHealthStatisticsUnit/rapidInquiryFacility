@@ -289,6 +289,7 @@ public class DataSetFieldConfiguration
 			= new DataSetFieldConfiguration("", "");
 		cloneConfiguration.setCoreDataSetName(
 			originalConfiguration.getCoreDataSetName());
+		cloneConfiguration.setCoreFieldDescription(originalConfiguration.getCoreFieldDescription());
 		cloneConfiguration.setCoreFieldName(
 			originalConfiguration.getCoreFieldName());
 		cloneConfiguration.setLoadFieldName(
