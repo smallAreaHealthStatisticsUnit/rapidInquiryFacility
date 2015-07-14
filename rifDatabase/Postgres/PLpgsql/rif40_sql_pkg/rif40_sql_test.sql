@@ -412,6 +412,15 @@ BEGIN
 				'[71154] missing[%]: %', missing::VARCHAR, c2sqlt_result_row.missing_data::VARCHAR);
 		END LOOP;
 		CLOSE c2sqlt;
+		
+--
+-- Reverse effects of test
+-- 
+		ROLLBACK TO SAVEPOINT rif40_sql_test;
+		
+--
+-- Check for missing
+--
 		IF missing = 0 THEN 
 			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
 				'[71155] PASSED: no missing rows for test: %', test_case_title::VARCHAR);
@@ -445,6 +454,15 @@ BEGIN
 			OPEN c1sqlt FOR EXECUTE test_stmt;
 			FETCH c1sqlt INTO c1sqlt_result_row;
 			CLOSE c1sqlt;
+				
+--
+-- Reverse effects of test
+-- 
+			ROLLBACK TO SAVEPOINT rif40_sql_test;
+		
+--
+-- Check for errors (or rather the lack of them)
+--		
 			IF error_code_expected IS NOT NULL THEN
 				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
 					'[71159] FAILED: Test case: % no exception, expected SQLSTATE: %', 
@@ -472,7 +490,15 @@ BEGIN
 --
 		ELSE
 			PERFORM rif40_sql_pkg.rif40_ddl(test_stmt);
-
+				
+--
+-- Reverse effects of test
+-- 
+			ROLLBACK TO SAVEPOINT rif40_sql_test;
+	
+--
+-- Check for errors (or rather the lack of them)
+--			
 			IF error_code_expected IS NULL THEN
 				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
 					'[71163] PASSED: Test case: % no exceptions, no error expected', 
@@ -492,14 +518,13 @@ BEGIN
 			'Test case: % FAILED, invalid statement type: % %SQL> %;', 
 			test_case_title::VARCHAR, UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 6))::VARCHAR, E'\n'::VARCHAR, test_stmt::VARCHAR);	
 	END IF;
-
---
--- Reverse effects of test
--- 
-  	ROLLBACK TO SAVEPOINT rif40_sql_test;
 --
 EXCEPTION
 	WHEN no_data_found THEN	
+--
+-- Reverse effects of test
+-- 
+		ROLLBACK TO SAVEPOINT rif40_sql_test;	
 		IF error_code_expected IS NULL THEN
 			PERFORM rif40_log_pkg.rif40_error(-71166, 'rif40_sql_test', 
 				'Test case: % FAILED, % errors', 
@@ -522,6 +547,10 @@ PG_EXCEPTION_HINT		the text of the exception's hint message, if any
 PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
  */			
 	WHEN others THEN
+--
+-- Reverse effects of test
+-- 
+		ROLLBACK TO SAVEPOINT rif40_sql_test;		
 -- 
 -- Not supported until 9.2
 --
@@ -570,12 +599,7 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 					'Detail:   '||v_detail::VARCHAR);		
 				IF raise_exception_on_failure THEN
 					RAISE;
-				ELSE	
---
--- Reverse effects of test
--- 
-					ROLLBACK TO SAVEPOINT rif40_sql_test;
-				
+				ELSE					
 					RETURN FALSE;
 				END IF;			
 			ELSIF error_code_expected = v_sqlstate THEN
@@ -583,24 +607,14 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 					'[71170] Test case: % PASSED, caught expecting SQLSTATE %;%', 
 					test_case_title::VARCHAR, v_sqlstate::VARCHAR,
 					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
-					'Detail:   '||v_detail::VARCHAR);
---
--- Reverse effects of test
--- 
-				ROLLBACK TO SAVEPOINT rif40_sql_test;
-							
+					'Detail:   '||v_detail::VARCHAR);							
 				RETURN TRUE;
 			ELSIF v_sqlstate = 'P0001' AND error_code_expected = v_detail THEN
 				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
 					'[71170] Test case: % PASSED, caught expecting SQLSTATE/RIF error code: %/%;%', 
 					test_case_title::VARCHAR, v_sqlstate::VARCHAR, error_code_expected::VARCHAR,
 					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
-					'Detail:   '||v_detail::VARCHAR);	
---
--- Reverse effects of test
--- 
-				ROLLBACK TO SAVEPOINT rif40_sql_test;
-							
+					'Detail:   '||v_detail::VARCHAR);								
 				RETURN TRUE;			
 			ELSE	
 				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
@@ -610,17 +624,12 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 					'Detail:   '||v_detail::VARCHAR);		
 				IF raise_exception_on_failure THEN
 					RAISE;
-				ELSE	
---
--- Reverse effects of test
--- 
-					ROLLBACK TO SAVEPOINT rif40_sql_test;
-						
+				ELSE							
 					RETURN FALSE;
 				END IF;
 			END IF;
 		EXCEPTION
-			WHEN others THEN
+			WHEN others THEN			
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 				GET STACKED DIAGNOSTICS v_sqlstate = RETURNED_SQLSTATE;
 				GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
