@@ -130,6 +130,15 @@ No work on the RIF40_COLUMNS
 * RIF covariates example data 
 * Specification for individual level SAHSULAND_CANCER example data
 
+#### 13th - 14th July
+
+* Test harness tables (alter_8.sql)
+
+#### 15th July - 31st July
+
+* Caving in Slovenia: https://en.wikipedia.org/wiki/Migovec_System 
+  and: https://www.union.ic.ac.uk/rcc/caving/slovenia/intro/slov_intro.php 
+
 Till mid July, priority order:
 
 1. RIF batch integration

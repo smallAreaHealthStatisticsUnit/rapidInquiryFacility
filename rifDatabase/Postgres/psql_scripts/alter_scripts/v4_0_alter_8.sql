@@ -59,20 +59,71 @@
 
 /*
 
-Alter script #8:
+Alter script #8: test harness support
 
-* Create test harness tables: rif40_test_runs, rif40_test_harness
+1. Create test harness tables: rif40_test_runs, rif40_test_harness and related sequences
+2. Add "Test harness" to RIF40_TABLES_AND_VIEWS classes
+3. Add to RIF40_TABLES_AND_VIEWS, RIF40_COLUMNS
+
+TODO:
+
+4. Integrate into rif40_sql_pkg.rif40_sql_test() to:
+   - Add test harness support
+   - Auto register test cases
+   - Auto register error and informational messages in RIF40_ERROR_MESSAGES
+5. Check serial behaviour access savepoints/transactions
+6. Integrate test harness support into test 8 (and 1)
+   - Check transaction control using savepoints is correct 
+7. Create run function rif40_sql_pkg.rif40_sql_test_run(test_run_title DEFAULT NULL - all)
+8. Create test dump to dump test harness to common CSV file, excluding array data
+
+Intended transactional control:
+
+BEGIN -* Test harness transaction *-;
+
+-- Setup
+
+-- Call rif40_sql_pkg.rif40_sql_test(); e.g.
+
+	IF NOT (rif40_sql_pkg.rif40_sql_test(	
+		'INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
+VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #2'', ''EXTRACT_TRIGGER_TEST_2'', ''MAP_TRIGGER_TEST_2'', 1 -* Diease mapping *-, ''LEVEL1'', ''LEVEL4'', ''SAHSULAND_POP'', NULL -* FAIL HERE *-)
+RETURNING 1::Text AS test_value',
+		'TRIGGER TEST #2: rif40_studies.suppression_value IS NULL',
+		'{1}'::Text[][] -* Results for trigger - DEFAULTED value will not work - table is mutating and row does not exist at the point of INSERT *-,
+		NULL 			-* Expected SQLCODE *-, 
+		FALSE 			-* Do not RAISE EXCEPTION on failure *-)) THEN
+		errors:=errors+1;
+	ELSE	
+		PERFORM rif40_sql_pkg.rif40_ddl('DELETE FROM rif40_studies WHERE study_name = ''TRIGGER TEST #2''');
+    END IF;	
+In rif40_sql_pkg.rif40_sql_test()
+- Auto register test case
+- Create savepoint: currval('rif40_test_run_id_seq'::regclass) if raise_exception_on_failure is FALSE
+- Run test case
+- On error, if raise_exception_on_failure is FALSE, catch, rollback to savepoint, update rif40_test_runs, rif40_test_harness
+ 
+-- Update rif40_test_runs, rif40_test_harness
+ 
+END -* Test harness transaction: COMMIT test harness results *-;
+
+IF errors RAISE exception
 
  */
 BEGIN;
 
-DROP SEQUENCE IF EXISTS rif40_test_id_seq; 
-DROP SEQUENCE IF EXISTS rif40_test_run_id_seq;
+--
+-- 1. Create test harness tables: rif40_test_runs, rif40_test_harness and related sequences
+--
 DROP TABLE IF EXISTS rif40_test_harness;
 DROP TABLE IF EXISTS rif40_test_runs;
+DROP SEQUENCE IF EXISTS rif40_test_id_seq; 
+DROP SEQUENCE IF EXISTS rif40_test_run_id_seq;
 
 CREATE SEQUENCE rif40_test_id_seq; 
 CREATE SEQUENCE rif40_test_run_id_seq;
+COMMENT ON SEQUENCE rif40_test_id_seq IS 'Artificial primary key for: RIF40_TEST_HARNESS';
+COMMENT ON SEQUENCE rif40_test_run_id_seq IS 'Artificial primary key for: RIF40_TEST_RUNS';
 
 CREATE TABLE rif40_test_runs (
 	test_run_id 					INTEGER NOT NULL DEFAULT (nextval('rif40_test_run_id_seq'::regclass))::integer, 
@@ -88,6 +139,7 @@ CREATE TABLE rif40_test_runs (
 	);
 
 GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_test_runs TO rif_manager, notarifuser;
+GRANT SELECT ON TABLE rif40_test_runs TO rif_user;
 	
 COMMENT ON TABLE rif40_test_runs IS 'Test harness test run information';		
 COMMENT ON COLUMN rif40_test_runs.test_run_id IS 'Unique investigation index: test_run_id. Created by SEQUENCE rif40_test_run_id_seq';
@@ -110,7 +162,7 @@ CREATE TABLE rif40_test_harness (
 	results 					Text[][],
 	results_xml 				XML,	
 	pass 						BOOLEAN,
-	test_run_id					INTEGER,
+	test_run_id					INTEGER DEFAULT (currval('rif40_test_run_id_seq'::regclass))::integer,
 	test_date					TIMESTAMP WITH TIME ZONE,
 	time_taken					NUMERIC,
 	CONSTRAINT rif40_test_harness_pk PRIMARY KEY (test_id),
@@ -120,6 +172,7 @@ CREATE TABLE rif40_test_harness (
 CREATE UNIQUE INDEX rif40_test_harness_uk ON rif40_test_harness(test_case_title);
 
 GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_test_harness TO rif_manager, notarifuser;
+GRANT SELECT ON TABLE rif40_test_harness TO rif_user; 
 		
 COMMENT ON TABLE rif40_test_harness IS 'Test harness test cases and last run information';		
 COMMENT ON COLUMN rif40_test_harness.test_id IS 'Unique investigation index: test_id. Created by SEQUENCE rif40_test_id_seq';
@@ -135,6 +188,56 @@ COMMENT ON COLUMN rif40_test_harness.test_run_id IS 'Test run id for test. Forei
 COMMENT ON COLUMN rif40_test_harness.test_date IS 'Test date';
 COMMENT ON COLUMN rif40_test_harness.time_taken IS 'Time taken for test (seconds)';
 
+--
+-- 2. Add "Test harness" to RIF40_TABLES_AND_VIEWS classes
+--
+ALTER TABLE rif40_tables_and_views
+      DROP CONSTRAINT class_ck; 
+ALTER TABLE rif40_tables_and_views
+      ADD CONSTRAINT class_ck 
+	  CHECK (class::text = ANY (ARRAY[
+			'Test harness'::character varying, 
+			'Configuration'::character varying, 
+			'Documentation'::character varying, 
+			'Lookup'::character varying, 
+			'Other'::character varying, 
+			'Results'::character varying, 
+			'SQL Generator'::character varying, 
+			'Study Setup'::character varying]::text[]));
+
+--
+-- 3. Add to RIF40_TABLES_AND_VIEWS, RIF40_COLUMNS
+--
+INSERT INTO rif40_tables_and_views (class, table_or_view, comments, table_or_view_name_hide)
+SELECT 'Test harness' AS class, 'TABLE' AS table_or_view, 
+       obj_description(b.oid) AS comments, UPPER(b.relname) AS table_or_view_name_hide
+  FROM pg_class b
+ WHERE b.relname = 'rif40_test_runs'
+   AND b.relkind = 'r'
+   AND NOT EXISTS (SELECT 1 FROM rif40_tables_and_views WHERE table_or_view_name_hide IN ('RIF40_TEST_RUNS'));  
+INSERT INTO rif40_tables_and_views (class, table_or_view, comments, table_or_view_name_hide)
+SELECT 'Test harness' AS class, 'TABLE' AS table_or_view, 
+       obj_description(b.oid) AS comments, UPPER(b.relname) AS table_or_view_name_hide
+  FROM pg_class b
+ WHERE b.relname = 'rif40_test_harness'
+   AND b.relkind = 'r'
+   AND NOT EXISTS (SELECT 1 FROM rif40_tables_and_views WHERE table_or_view_name_hide IN ('RIF40_TEST_HARNESS'));  
+   
+INSERT INTO rif40_columns (table_or_view_name_hide, column_name_hide, nullable, oracle_data_type, comments)   		 
+SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_name_hide, 
+      CASE WHEN d.attnotnull THEN 'NOT NULL' ELSE 'NULL' END AS nullable, t.typname AS oracle_data_type,
+       col_description(b.oid, d.attnum) AS comments
+  FROM pg_class b, pg_attribute d, pg_type t
+ WHERE b.relname::regclass = d.attrelid
+   AND d.atttypid = t.oid
+   AND b.relname IN ('rif40_test_runs', 'rif40_test_harness')
+   AND b.relkind = 'r'
+   AND col_description(b.oid, d.attnum) IS NOT NULL
+   AND d.attname NOT IN (
+		SELECT LOWER(column_name_hide) AS column_name
+ 		  FROM rif40_columns
+		 WHERE table_or_view_name_hide IN ('RIF40_TEST_RUNS', 'RIF40_TEST_HARNESS')); 
+		 
 --
 -- Reload triggers (including fixes for test harness)
 --

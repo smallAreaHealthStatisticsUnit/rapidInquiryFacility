@@ -191,7 +191,7 @@ BEGIN
 			IF (c8_rec.has_user_select = FALSE OR c8_rec.has_rif_user_select = FALSE OR c8_rec.has_rif_manager_select = FALSE) AND c8_rec.has_public_select = FALSE THEN
 				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_h', '[70401]: Missing grant SELECT on % to rif_user(%) and rif_manager(%); user(%); public(%)', 
 					c8_rec.table_or_view::VARCHAR, c8_rec.has_rif_user_select::VARCHAR, c8_rec.has_rif_manager_select::VARCHAR, 
-					c8_rec.has_user_select::VARCHAR, c8_rec.has_public_select);
+					c8_rec.has_user_select::VARCHAR, c8_rec.has_public_select::VARCHAR);
 				IF c8_rec.has_rif_user_select = FALSE THEN
 					PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_h', '[70402]: Required SQL> GRANT SELECT ON % TO rif_user;', 
 					c8_rec.table_or_view::VARCHAR);

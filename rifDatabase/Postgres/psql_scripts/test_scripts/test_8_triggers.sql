@@ -311,7 +311,7 @@ SELECT rif40_sql_pkg._rif40_test_sql_template(
 	'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200') AS template;
 	
 --
--- Run trigger test harness
+-- Re-run trigger test harness
 --
  
 --
@@ -327,7 +327,7 @@ SELECT rif40_sql_pkg._rif40_test_sql_template(
 --
 END;
 
-\echo Test 8: Trigger test harness (added in alter_7) OK    
+\echo Test 8: Trigger test harness (added in alter_8) OK    
 
 --
 -- Eof
