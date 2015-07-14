@@ -336,6 +336,18 @@ DECLARE
 	v_context	VARCHAR;	
 	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN
+--
+-- Auto register test case
+--
+
+--
+-- Create savepoint: rif40_sql_test
+--
+	SAVEPOINT rif40_sql_test;
+	
+--
+-- Do test
+--
 	IF UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 6)) = 'SELECT' THEN
 		PERFORM rif40_sql_pkg.rif40_method4(test_stmt, test_case_title);
 --
@@ -480,6 +492,11 @@ BEGIN
 			'Test case: % FAILED, invalid statement type: % %SQL> %;', 
 			test_case_title::VARCHAR, UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 6))::VARCHAR, E'\n'::VARCHAR, test_stmt::VARCHAR);	
 	END IF;
+
+--
+-- Reverse effects of test
+-- 
+  	ROLLBACK TO SAVEPOINT rif40_sql_test;
 --
 EXCEPTION
 	WHEN no_data_found THEN	
@@ -553,7 +570,12 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 					'Detail:   '||v_detail::VARCHAR);		
 				IF raise_exception_on_failure THEN
 					RAISE;
-				ELSE				
+				ELSE	
+--
+-- Reverse effects of test
+-- 
+					ROLLBACK TO SAVEPOINT rif40_sql_test;
+				
 					RETURN FALSE;
 				END IF;			
 			ELSIF error_code_expected = v_sqlstate THEN
@@ -561,14 +583,24 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 					'[71170] Test case: % PASSED, caught expecting SQLSTATE %;%', 
 					test_case_title::VARCHAR, v_sqlstate::VARCHAR,
 					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
-					'Detail:   '||v_detail::VARCHAR);			
+					'Detail:   '||v_detail::VARCHAR);
+--
+-- Reverse effects of test
+-- 
+				ROLLBACK TO SAVEPOINT rif40_sql_test;
+							
 				RETURN TRUE;
 			ELSIF v_sqlstate = 'P0001' AND error_code_expected = v_detail THEN
 				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
 					'[71170] Test case: % PASSED, caught expecting SQLSTATE/RIF error code: %/%;%', 
 					test_case_title::VARCHAR, v_sqlstate::VARCHAR, error_code_expected::VARCHAR,
 					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
-					'Detail:   '||v_detail::VARCHAR);			
+					'Detail:   '||v_detail::VARCHAR);	
+--
+-- Reverse effects of test
+-- 
+				ROLLBACK TO SAVEPOINT rif40_sql_test;
+							
 				RETURN TRUE;			
 			ELSE	
 				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
@@ -578,7 +610,12 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 					'Detail:   '||v_detail::VARCHAR);		
 				IF raise_exception_on_failure THEN
 					RAISE;
-				ELSE				
+				ELSE	
+--
+-- Reverse effects of test
+-- 
+					ROLLBACK TO SAVEPOINT rif40_sql_test;
+						
 					RETURN FALSE;
 				END IF;
 			END IF;

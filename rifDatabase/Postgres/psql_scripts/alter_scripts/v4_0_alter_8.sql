@@ -99,9 +99,10 @@ RETURNING 1::Text AS test_value',
     END IF;	
 In rif40_sql_pkg.rif40_sql_test()
 - Auto register test case
-- Create savepoint: currval('rif40_test_run_id_seq'::regclass) if raise_exception_on_failure is FALSE
+- Create savepoint
 - Run test case
-- On error, if raise_exception_on_failure is FALSE, catch, rollback to savepoint, update rif40_test_runs, rif40_test_harness
+- On error, if raise_exception_on_failure is FALSE, catch
+- On success, rollback to savepoint, update rif40_test_runs, rif40_test_harness
  
 -- Update rif40_test_runs, rif40_test_harness
  
