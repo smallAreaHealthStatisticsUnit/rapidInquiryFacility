@@ -2,7 +2,8 @@ package rifDataLoaderTool.test;
 
 
 
-import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
+import rifDataLoaderTool.dataStorageLayer.TestDataLoaderService;
+
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
@@ -75,7 +76,10 @@ public abstract class AbstractRIFDataLoaderTestCase {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private DataLoaderService dataLoaderService;
+	
+	private User rifManager;
+	
+	private TestDataLoaderService dataLoaderService;
 
 	/** The test user. */
 	private User validAdministrationUser;
@@ -108,25 +112,29 @@ public abstract class AbstractRIFDataLoaderTestCase {
 			= fieldValidationUtility.getTestMaliciousFieldValue();		
 		maliciousAdministrationUser = User.newInstance(maliciousFieldValue, "11.111.11.228");
 		
-		
+		rifManager = User.newInstance("kgarwood", "111.111.111.111");		
 	}
 
 	@Before
 	public void setUp() {
-		dataLoaderService = new DataLoaderService();
+		dataLoaderService = new TestDataLoaderService();
 		try {
-			dataLoaderService.initialiseService();			
+			dataLoaderService.initialiseService();	
+			dataLoaderService.clearAllDataSets(rifManager);
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();
 		}
-		
-		
-
 	}
 
 	@After
 	public void tearDown() {
+		try {
+			dataLoaderService.closeAllConnectionsForUser(rifManager);	
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
+		}
 
 		
 	}		
@@ -136,7 +144,11 @@ public abstract class AbstractRIFDataLoaderTestCase {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	protected DataLoaderService getDataLoaderService() {
+	protected User getRIFManager() {
+		return rifManager;		
+	}
+	
+	protected TestDataLoaderService getDataLoaderService() {
 
 		return dataLoaderService;
 	}

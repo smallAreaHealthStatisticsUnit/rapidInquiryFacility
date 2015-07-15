@@ -1,17 +1,9 @@
-package rifDataLoaderTool.test;
+package rifDataLoaderTool.dataStorageLayer;
 
+import java.sql.Connection;
 
-import rifDataLoaderTool.dataStorageLayer.AbstractDataLoaderService;
-import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
-import rifDataLoaderTool.dataStorageLayer.TestDataLoaderService;
-import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.RIFConversionFunction;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
-import static org.junit.Assert.*;
-
-import org.junit.Test;
 
 /**
  *
@@ -63,7 +55,8 @@ import org.junit.Test;
  *
  */
 
-public class TestConvert extends AbstractRIFDataLoaderTestCase {
+public class TestDataLoaderService 
+	extends AbstractDataLoaderService {
 
 	// ==========================================
 	// Section Constants
@@ -77,44 +70,54 @@ public class TestConvert extends AbstractRIFDataLoaderTestCase {
 	// Section Construction
 	// ==========================================
 
-	public TestConvert() {
+	public TestDataLoaderService() {
 
-	}
-
-	@Test
-	public void test1() {
-		
-		User rifManager = getRIFManager();
-		TestDataLoaderService dataLoaderService
-			= getDataLoaderService();
-		try {
-			SampleDataGenerator sampleDataGenerator
-				= new SampleDataGenerator();
-			DataSetConfiguration dataSetConfiguration
-				= sampleDataGenerator.createTest4StudyID1ExtractConfiguration();
-		
-			dataLoaderService.initialiseService();	
-			dataLoaderService.loadConfiguration(
-				rifManager, 
-				dataSetConfiguration);
-			dataLoaderService.cleanConfiguration(
-				rifManager, 
-				dataSetConfiguration);			
-			dataLoaderService.convertConfiguration(
-				rifManager, 
-				dataSetConfiguration);
-		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printErrors();
-			fail();
-		}
-		
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	/**
+	 * Migrate this later on to a test method
+	 * @param methodName
+	 * @param rifManager
+	 * @param dataSetConfiguration
+	 * @throws RIFServiceException
+	 */
+	public void clearAllDataSets(final User rifManager) {	
+		//Defensively copy parameters and guard against blocked rifManagers
 
+		Boolean result = null;
+		try {
+			SQLConnectionManager sqlConnectionManager
+				= getSQLConnectionManger();
+			Connection connection 
+				= sqlConnectionManager.assignPooledWriteConnection(
+					rifManager);
+		
+			DataSetManager dataSetManager = getDataSetManager();
+			dataSetManager.clearAllDataSets(connection);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				rifManager,
+				"cleaningDetectedErrorValue",
+				rifServiceException);
+		}
+	}
+	
+	public void closeAllConnectionsForUser(
+		final User user) 
+		throws RIFServiceException {
+		
+		SQLConnectionManager sqlConnectionManager
+			= getSQLConnectionManger();
+		sqlConnectionManager.closeConnectionsForUser(user.getUserID());
+	}
+	
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

@@ -1,9 +1,9 @@
 package rifDataLoaderTool.test;
 
 
-import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
-
+import rifDataLoaderTool.dataStorageLayer.AbstractDataLoaderService;
 import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
+import rifDataLoaderTool.dataStorageLayer.TestDataLoaderService;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifGenericLibrary.system.RIFServiceException;
@@ -82,17 +82,16 @@ public class TestClean extends AbstractRIFDataLoaderTestCase {
 
 	@Test
 	public void test1() {
-		DataLoaderService dataLoaderService = new DataLoaderService();
 		
+		User rifManager = getRIFManager();
+		TestDataLoaderService dataLoaderService
+			= getDataLoaderService();
 		try {
-			User rifManager = User.newInstance("rifManager", "111.111.111.111");
 			SampleDataGenerator sampleDataGenerator
 				= new SampleDataGenerator();
 			DataSetConfiguration dataSetConfiguration
 				= sampleDataGenerator.createTest4StudyID1ExtractConfiguration();
-			
-			dataLoaderService.initialiseService();
-			
+						
 			dataLoaderService.cleanConfiguration(
 				rifManager, 
 				dataSetConfiguration);
