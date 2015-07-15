@@ -169,12 +169,44 @@ public final class SQLCreateTableQueryFormatter
 			isNullAllowed);
 	}	
 
+	public void addTextFieldDeclaration(
+		final String fieldName,
+		final int length,
+		final String defaultTextValue,
+		final boolean isNullAllowed) {
+				
+		StringBuilder textFieldType = new StringBuilder();
+		textFieldType.append("VARCHAR(");
+		textFieldType.append(String.valueOf(length));
+		textFieldType.append(")");
+			
+		if (defaultTextValue != null) {
+			StringBuilder defaultPhrase = new StringBuilder();
+			defaultPhrase.append("DEFAULT");
+			defaultPhrase.append(" '");
+			defaultPhrase.append(defaultTextValue);
+			defaultPhrase.append("'");	
 
+			addFieldDeclaration(
+				fieldName,
+				textFieldType.toString(),
+				defaultPhrase.toString(),
+				isNullAllowed);			
+		}
+		else {
+
+			addFieldDeclaration(
+				fieldName,
+				textFieldType.toString(),
+				null,
+				isNullAllowed);
+		}
+	}	
 	
 	public void addFieldDeclaration(
 		final String fieldName,
-		String dataType,
-		String defaultPhrase,
+		final String dataType,
+		final String defaultPhrase,
 		final boolean isNullAllowed) {
 		
 		StringBuilder fieldDeclaration = new StringBuilder();
