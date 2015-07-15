@@ -1,0 +1,244 @@
+<!ENTITY % rubric.simple "#PCDATA | Reference | Term">
+<!ENTITY % rubric.complex "%rubric.simple; | Para | Include | IncludeDescendants| Fragment | List | Table">
+<!ELEMENT ClaML (
+Meta*,
+Identifier*,
+Title,
+Authors?,
+Variants?,
+ClassKinds,
+UsageKinds?,
+RubricKinds,
+Modifier*,
+ModifierClass*,
+Class*)
+>
+<!ATTLIST ClaML
+version CDATA #REQUIRED
+>
+<!ELEMENT Variants (Variant+)>
+<!ELEMENT Variant (#PCDATA)>
+<!ATTLIST Variant
+name ID #REQUIRED
+>
+<!ELEMENT Meta EMPTY>
+<!ATTLIST Meta
+name CDATA #REQUIRED
+value CDATA #REQUIRED
+variants IDREFS #IMPLIED
+>
+<!ELEMENT Identifier EMPTY>
+<!ATTLIST Identifier
+authority NMTOKEN #IMPLIED
+uid CDATA #REQUIRED
+>
+<!ELEMENT Title (#PCDATA)>
+<!ATTLIST Title
+name NMTOKEN #REQUIRED
+version CDATA #IMPLIED
+date CDATA #IMPLIED
+>
+<!ELEMENT Authors (Author* )>
+<!ELEMENT Author (#PCDATA)>
+<!ATTLIST Author
+name ID #REQUIRED
+>
+<!ELEMENT ClassKinds (ClassKind+)>
+<!ELEMENT RubricKinds (RubricKind+)>
+<!ELEMENT UsageKinds (UsageKind+)>
+
+<!ELEMENT ClassKind (Display*)>
+<!ATTLIST ClassKind
+name ID #REQUIRED
+>
+<!ELEMENT RubricKind (Display*)>
+<!ATTLIST RubricKind
+name ID #REQUIRED
+inherited (true|false) "false"
+>
+<!ELEMENT UsageKind EMPTY>
+<!ATTLIST UsageKind
+name ID #REQUIRED
+mark CDATA #REQUIRED
+>
+<!ELEMENT Display (#PCDATA)>
+<!ATTLIST Display
+xml:lang NMTOKEN #REQUIRED
+variants IDREF #IMPLIED
+>
+<!ELEMENT Modifier (
+Meta*,
+SubClass*,
+Rubric*,
+History*)
+>
+<!ATTLIST Modifier
+code NMTOKEN #REQUIRED
+variants IDREFS #IMPLIED
+>
+<!ELEMENT ModifierClass (
+Meta*,
+SuperClass,
+SubClass*,
+Rubric*,
+History*)
+>
+<!ATTLIST ModifierClass
+modifier NMTOKEN #REQUIRED
+code NMTOKEN #REQUIRED
+usage IDREF #IMPLIED
+variants IDREFS #IMPLIED
+>
+<!ELEMENT Class (
+Meta*,
+SuperClass*,
+SubClass*,
+ModifiedBy*,
+ExcludeModifier*,
+Rubric*,
+History*)
+>
+<!ATTLIST Class
+code NMTOKEN #REQUIRED
+kind IDREF #REQUIRED
+usage IDREF #IMPLIED
+variants IDREFS #IMPLIED
+>
+<!ELEMENT ModifiedBy (
+Meta*,
+ValidModifierClass*)
+>
+<!ATTLIST ModifiedBy
+code NMTOKEN #REQUIRED
+all (true|false) "true"
+position CDATA #IMPLIED
+variants IDREFS #IMPLIED
+>
+<!ELEMENT ExcludeModifier EMPTY>
+<!ATTLIST ExcludeModifier
+code NMTOKEN #REQUIRED
+variants IDREFS #IMPLIED
+>
+<!ELEMENT ValidModifierClass EMPTY>
+<!ATTLIST ValidModifierClass
+code NMTOKEN #REQUIRED
+variants IDREFS #IMPLIED
+>
+<!ELEMENT Rubric (
+Label+,
+History*)
+>
+<!ATTLIST Rubric
+id ID #IMPLIED
+kind IDREF #REQUIRED
+usage IDREF #IMPLIED
+>
+<!ELEMENT Label (%rubric.complex;)*>
+<!ATTLIST Label
+xml:lang NMTOKEN #REQUIRED
+xml:space (default|preserve) "default"
+variants IDREFS #IMPLIED
+>
+<!ELEMENT History (#PCDATA)>
+<!ATTLIST History
+author IDREF #REQUIRED
+date NMTOKEN #REQUIRED
+>
+<!ELEMENT SuperClass EMPTY>
+<!ATTLIST SuperClass
+code NMTOKEN #REQUIRED
+variants IDREFS #IMPLIED
+>
+<!ELEMENT SubClass EMPTY>
+<!ATTLIST SubClass
+code NMTOKEN #REQUIRED
+variants IDREFS #IMPLIED
+>
+<!ELEMENT Reference (#PCDATA)>
+<!ATTLIST Reference
+class CDATA #IMPLIED
+authority NMTOKEN #IMPLIED
+uid NMTOKEN #IMPLIED
+code NMTOKEN #IMPLIED
+usage IDREF #IMPLIED
+variants IDREFS #IMPLIED
+>
+<!ELEMENT Para (%rubric.simple;)*>
+<!ATTLIST Para
+class CDATA #IMPLIED
+>
+<!ELEMENT Fragment (%rubric.simple;)*>
+<!ATTLIST Fragment
+class CDATA #IMPLIED
+usage IDREF #IMPLIED
+type (item | list) "item"
+>
+<!ELEMENT Include EMPTY>
+<!ATTLIST Include
+class CDATA #IMPLIED
+rubric IDREF #REQUIRED
+>
+<!ELEMENT IncludeDescendants EMPTY>
+<!ATTLIST IncludeDescendants
+code NMTOKEN #REQUIRED
+kind IDREF #REQUIRED
+>
+<!ELEMENT List (ListItem+)>
+<!ATTLIST List
+class CDATA #IMPLIED
+>
+<!ELEMENT ListItem (
+%rubric.simple;
+| Para
+| Include
+| List
+| Table)*
+>
+<!ATTLIST ListItem
+class CDATA #IMPLIED
+>
+<!ELEMENT Table (
+Caption?,
+THead?,
+TBody?,
+TFoot?)
+>
+<!ATTLIST Table
+class CDATA #IMPLIED
+>
+<!ELEMENT Caption (%rubric.simple;)*>
+<!ATTLIST Caption
+class CDATA #IMPLIED
+>
+<!ELEMENT THead (Row+)>
+<!ATTLIST THead
+class CDATA #IMPLIED
+>
+<!ELEMENT TBody (Row+)>
+<!ATTLIST TBody
+class CDATA #IMPLIED
+>
+<!ELEMENT TFoot (Row+)>
+<!ATTLIST TFoot
+class CDATA #IMPLIED
+>
+<!ELEMENT Row (Cell*)>
+<!ATTLIST Row
+class CDATA #IMPLIED
+>
+<!ELEMENT Cell (
+%rubric.simple;
+| Para
+| Include
+| List
+| Table)*
+>
+<!ATTLIST Cell
+class CDATA #IMPLIED
+rowspan CDATA #IMPLIED
+colspan CDATA #IMPLIED
+>
+<!ELEMENT Term (#PCDATA)>
+<!ATTLIST Term
+class CDATA #IMPLIED
+>

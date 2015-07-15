@@ -15,6 +15,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.taxonomyServices.HealthCodeProviderInterface;
+import rifServices.taxonomyServices.ICD10ClaMLTaxonomyProvider;
 import rifServices.taxonomyServices.RIFXMLTaxonomyProvider;
 
 import java.util.ArrayList;
@@ -189,6 +190,30 @@ final class HealthOutcomeManager {
 				rifServiceException);
 		}
 
+		//Add by Nan Lin 15/07/2015.
+		try {			
+			StringBuilder icd10ClaMLCodesFileLocation = new StringBuilder();
+			icd10ClaMLCodesFileLocation.append(targetPathValue);
+			icd10ClaMLCodesFileLocation.append(File.separator);
+			icd10ClaMLCodesFileLocation.append("ExampleClaMLICD10Codes.xml");
+	
+			ICD10ClaMLTaxonomyProvider icd10ClaMLCodeProvider = new ICD10ClaMLTaxonomyProvider();
+			ArrayList<Parameter> paras = new ArrayList<Parameter>();
+			Parameter inputFilePara = Parameter.newInstance();
+			inputFilePara.setName("icd10_ClaML_file");
+			inputFilePara.setValue(icd10ClaMLCodesFileLocation.toString());
+			paras.add(inputFilePara);
+	
+			icd10ClaMLCodeProvider.initialise(paras);
+			healthCodeProviders.add(icd10ClaMLCodeProvider);	
+		}
+		catch(RIFServiceException rifServiceException) {
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			rifLogger.error(
+				HealthOutcomeManager.class, 
+				"constructor", 
+				rifServiceException);
+		}
 		
 		/*
 		ICD9TaxonomyProvider icd9TaxonomyProvider 
