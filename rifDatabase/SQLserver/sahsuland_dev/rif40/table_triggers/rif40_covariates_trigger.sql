@@ -56,9 +56,12 @@ END CATCH;
 DECLARE @no_covar_table NVARCHAR(MAX)= 
 ( 
  SELECT geolevel_name
- FROM   inserted  
- WHERE  geolevel_name not in (select geolevel_name from [rif40].[t_rif40_geolevels] where covariate_table is not null and covariate_table <> '' 
-	and [rif40].[rif40_is_object_resolvable](covariate_table) = 1)
+ FROM   inserted  a
+ WHERE  not exists 
+		(select 1 from  [rif40].[t_rif40_geolevels] b
+		where covariate_table is not null and covariate_table <> '' 
+		and b.geolevel_name=a.geolevel_name
+		and [rif40].[rif40_is_object_resolvable](covariate_table) = 1)
  FOR XML PATH('') 
 ); 
 
@@ -73,102 +76,112 @@ BEGIN CATCH
 		THROW 51031, @err_msg2, 1;
 END CATCH ;
 
---we actually only want the records that fail this...
-DECLARE @col_found NVARCHAR(MAX) = 
+DECLARE @col_not_found NVARCHAR(MAX) = 
 (
-	SELECT a.geolevel_name, b.covariate_table, a.covariate_name
-	FROM inserted a, [rif40].[t_rif40_geolevels] b, [INFORMATION_SCHEMA].[COLUMNS] c
+	SELECT b.covariate_table, a.covariate_name
+	FROM inserted a, [rif40].[t_rif40_geolevels] b
 	WHERE a.geolevel_name=b.geolevel_name 
-	AND c.table_name=b.covariate_table
-	AND c.column_name=a.covariate_name
-
-
-
-	EXEC [rif40].[rif_log] 'DEBUG1', '[rif40].[tr_covariates_check]', '<T_RIF40_GEOLEVELS.COVARIATE_TABLE>.<COVARIATE_NAME> column exists.';
+	and not exists 
+		(select 1 from [INFORMATION_SCHEMA].[COLUMNS] c 
+		where c.table_name=b.covariate_table
+		and c.column_name=a.covariate_name)
+	FOR XML PATH ('')
+);
+IF @col_not_found IS NOT NULL
+BEGIN TRY
+	rollback;
+	DECLARE @err_msg3 VARCHAR(MAX) = formatmessage(51032, @col_not_found);
+	THROW 51032, @err_msg3, 1;
+END TRY
+BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_covariates]';
+		THROW 51032, @err_msg3, 1;
+END CATCH ;
 
 
 --------------------------------
 -- MIN value is greater than MAX
 --------------------------------
-DECLARE @min NVARCHAR(MAX)= 
+DECLARE @min_check NVARCHAR(MAX)= 
 ( 
- SELECT cast(min as varchar(20)) , ':' ,covariate_name + '  '
+ SELECT min, max, geolevel_name, covariate_name
  FROM   inserted  
  WHERE   min>=max 
  FOR XML PATH('') 
 );
+IF @min_check IS NOT NULL 
 BEGIN TRY
-IF @min IS NOT NULL 
-	BEGIN 
-		RAISERROR(50010,16,1,@min); 
-		rollback 
-	END;
+	rollback;
+	DECLARE @err_msg4 VARCHAR(MAX) = formatmessage(51033, @min_check);
+	THROW 51033, @err_msg4, 1;
 END TRY
 BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc]
-END CATCH 
+	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_covariates]';
+	THROW 51033, @err_msg3, 1;
+END CATCH;	
+		
 -----------------------------------
 -- Type is 1 and MAX is not INT
 -----------------------------------
-DECLARE @type NVARCHAR(MAX)= --- NEED TO TEST THIS : type field has acheck constraint
+DECLARE @max_type_check NVARCHAR(MAX)= 
 ( 
- SELECT cast(max as varchar(20)), ':' ,covariate_name + '  '
+ SELECT max, geolevel_name, covariate_name
  FROM   inserted  
  WHERE   type=1 and round(max,0)<>max 
  FOR XML PATH('') 
 ); 
+IF @max_type_check IS NOT NULL 
 BEGIN TRY
-IF @type IS NOT NULL 
-	BEGIN 
-		raiserror(50011,16,1,@type); 
-		rollback
-	END;
+	rollback;
+	DECLARE @err_msg5 VARCHAR(MAX) = formatmessage(51034, @min_check);
+	THROW 51034, @err_msg5, 1;
 END TRY
 BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc]
-END CATCH 
+	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_covariates]';
+	THROW 51034, @err_msg5, 1;
+END CATCH;	
+
 -----------------------------------
 -- Type is 1 and MIN is not INT
 -----------------------------------	
-DECLARE @type2 NVARCHAR(MAX)= --- NEED TO TEST THIS : type field has acheck constraint
+DECLARE @min_type_check NVARCHAR(MAX)= 
 ( 
- SELECT cast(min as varchar(20)), ':' ,covariate_name + '  '
+ SELECT min, geolevel_name, covariate_name
  FROM   inserted  
- WHERE   type=1 and round(min,0)<>min -- DID IT WORK ?
+ WHERE   type=1 and round(min,0)<>min 
  FOR XML PATH('') 
 ); 
+IF @min_type_check IS NOT NULL 
 BEGIN TRY
-IF @type2 IS NOT NULL 
-	BEGIN 
-		raiserror(50012,16,1,@type2); 
-		rollback
-	END;
+	rollback;
+	DECLARE @err_msg6 VARCHAR(MAX) = formatmessage(51035, @min_check);
+	THROW 51035, @err_msg6, 1;
 END TRY
 BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc]
-END CATCH 
+	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_covariates]';
+	THROW 51035, @err_msg6, 1;
+END CATCH;	
 -----------------------------------
 -- Type is 1 and MIN <0
 -----------------------------------
-DECLARE @type3 NVARCHAR(MAX)= --- NEED TO TEST THIS : type field has a check constraint
+DECLARE @min_value_check NVARCHAR(MAX)= 
 ( 
- SELECT min ,geolevel_name, ':' ,covariate_name + '  '
+ SELECT min ,geolevel_name,covariate_name
  FROM   inserted  
  WHERE   type=1 and min<0 
  FOR XML PATH('') 
-); 
+);
+IF @min_value_check IS NOT NULL 
 BEGIN TRY
-IF @type3 IS NOT NULL 
-	BEGIN 
-		raiserror(50013,16,1,@type3); 
-		rollback
-	END;
+	rollback;
+	DECLARE @err_msg7 VARCHAR(MAX) = formatmessage(51036, @min_check);
+	THROW 51036, @err_msg7, 1;
 END TRY
 BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc]
-END CATCH 
-
-
+	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_covariates]';
+	THROW 51036, @err_msg7, 1;
+END CATCH;	
+END;
 -------------------------------------------------------------------------------------
 -- end of trigger code 
 -------------------------------------------------------------------------------------

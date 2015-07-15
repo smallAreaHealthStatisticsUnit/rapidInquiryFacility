@@ -88,8 +88,9 @@ BEGIN
 		SELECT 
 			convert(varchar,i.STUDY_ID) + ', '
 			FROM inserted i
-			LEFT OUTER JOIN [rif40].[t_rif40_studies] b ON i.study_id=b.study_id
-			WHERE b.study_id IS NULL
+			WHERE NOT EXISTS (select 1
+			FROM [rif40].[t_rif40_studies] b 
+			WHERE i.study_id=b.study_id)
 			FOR XML PATH('')
 		);
 	
@@ -111,8 +112,9 @@ BEGIN
 		SELECT 
 			grantor, a.study_id
 			from inserted a
-			LEFT OUTER JOIN t_rif40_studies b ON b.username=a.grantor and b.study_id=a.study_id
-			WHERE b.study_id is null
+			WHERE NOT EXISTS (select 1
+			FROM [rif40].[t_rif40_studies] b 
+			WHERE b.username=a.grantor and b.study_id=a.study_id)
 			FOR XML PATH('')
 		);
 	IF @GRANTOR IS NOT NULL
@@ -138,8 +140,8 @@ BEGIN
 	DECLARE @invalid_grantee varchar(max) = (
 		SELECT a.study_id, a.grantee_username
 		FROM inserted a
-		LEFT OUTER JOIN [sys].[database_principals] b ON a.grantee_username=b.name
-		WHERE b.name IS NULL
+		WHERE NOT EXISTS (select 1
+		FROM [sys].[database_principals] b WHERE a.grantee_username=b.name)
 		FOR XML PATH('')
 	);
 	IF @invalid_grantee IS NOT NULL

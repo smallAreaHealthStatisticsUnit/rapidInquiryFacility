@@ -7,6 +7,14 @@ Principal Work Area: **Microsoft SQL server database port**
 ###July
 I plan to finish the trigger work that I began last month and set up a proper test suite to verify that everything has been set up correctly.  Also continue work on simple batch installation scripts so I can easily re-create the latest version of the sahsuland_dev database.
 
+######15 July
+* Finishing up the fake cancer data.  Verifying with Kevin that it is what he wants before copying it over to Github.
+* Making some actual progress on triggers.  Finished rif40_covariates_triggers.sql
+
+######14 July
+* Creating fake cancer data for Kevin to practice 'loading' and which can be aggregated to form the current sahsuland_cancer table (so we don't break existing test code).  Rather slow code since the table must be very large. 
+* Back to triggers.  
+
 ######6 July
 * Working on trigger for rif40_covariates (not finished), correcting/rewriting RH's original with more error handling and logging. 
 
@@ -19,6 +27,7 @@ I plan to finish the trigger work that I began last month and set up a proper te
 * As part of installation, check if custom error codes are already used by another program.  Currently checking if any custom errors exist -- should that be changed to only the specific error codes we are going to use?
 * It is stupid that you cannot call a stored procedure from inside a function in SQL Server.  That breaks my logging, unless I manually insert rows into a log table (ick).
 
+---
 ###June
 The goal for this month is to complete all triggers (including logging and error handling) for the rif40 tables and views.  I got sidetracked into creating batch installation scripts due to a change in test servers, and so the triggers are still a work in progress.
 

@@ -194,13 +194,23 @@ EXEC sp_addmessage 51023, 16,
 EXEC sp_addmessage 51024, 16,
 	N'Table name: [rif40].[t_rif40_studies] , study not suppressed, but user is a RIF_STUDENT: %s';
 
---add more here
+
 EXEC sp_addmessage 51030, 16,
 	N'Table name: [rif40].[rif40_covariates] , invalid new values: %s';
 EXEC sp_addmessage 51031, 16,
 	N'Table name: [rif40].[rif40_covariates] , No covariate table in [rif40].[t_rif40_geolevels] for geolevel: %s';
-	
+EXEC sp_addmessage 51032, 16,
+	N'Table name: [rif40].[rif40_covariates] , <T_RIF40_GEOLEVELS.COVARIATE_TABLE>.<COVARIATE_NAME> column does not exist: %s';
+EXEC sp_addmessage 51033, 16,
+	N'Table name: [rif40].[rif40_covariates] , min >= max for covariate : %s';
+EXEC sp_addmessage 51034, 16,
+	N'Table name: [rif40].[rif40_covariates] , RIF40_COVARIATES type = 1 (integer score) and max is not an integer: %s';
+EXEC sp_addmessage 51035, 16,
+	N'Table name: [rif40].[rif40_covariates] , RIF40_COVARIATES type = 1 (integer score) and min is not an integer: %s';
+EXEC sp_addmessage 51036, 16,
+	N'Table name: [rif40].[rif40_covariates] , RIF40_COVARIATES type = 1 (integer score) and min <0: %s';
 
-	
-	
+
+--add more here	
+
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';
