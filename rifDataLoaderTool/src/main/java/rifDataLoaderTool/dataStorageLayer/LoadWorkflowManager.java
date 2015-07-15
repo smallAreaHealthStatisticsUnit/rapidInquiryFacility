@@ -10,6 +10,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
@@ -143,43 +144,16 @@ public final class LoadWorkflowManager
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 
+		
 		PreparedStatement dropTableStatement = null;		
 		String coreDataSetName 
 			= dataSetConfiguration.getName();
 		String targetLoadTable
 			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
-		try {
 			
-			//drop the table if it already exists so we can recreate it
-			//without raising a 'table already exists' exception
-			
-			SQLDeleteTableQueryFormatter deleteLoadTableQueryFormatter 
-				= new SQLDeleteTableQueryFormatter();
-			logSQLQuery(
-				"delete_existing_load_table", 
-				deleteLoadTableQueryFormatter);
-			
-			deleteLoadTableQueryFormatter.setTableToDelete(targetLoadTable);
-			dropTableStatement
-				= createPreparedStatement(connection, deleteLoadTableQueryFormatter);
-			dropTableStatement.executeUpdate();	
-		}
-		catch(SQLException sqlException) {			
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage(
-					"loadWorkflowManager.error.dropLoadTable",
-					targetLoadTable);
-			RIFServiceException RIFServiceException
-				= new RIFServiceException(
-					RIFDataLoaderToolError.LOAD_TABLE,
-					errorMessage);
-			throw RIFServiceException;
-		}
-		finally {			
-			SQLQueryUtility.close(dropTableStatement);
-		}
-
+		deleteTable(
+			connection, 
+			targetLoadTable);
 
 		int dataSetIdentifier
 			= dataSetManager.addDataSetConfiguration(
@@ -196,18 +170,6 @@ public final class LoadWorkflowManager
 			createLoadTableQueryFormatter.setTextFieldLength(TEXT_FIELD_WIDTH);
 			createLoadTableQueryFormatter.setTableName(targetLoadTable);
 
-			
-			/*
-			createLoadTableQueryFormatter.addFieldDeclaration(
-				"data_source_id", 
-				"INTEGER", 
-				false);
-			createLoadTableQueryFormatter.addFieldDeclaration(
-				"row_number", 
-				"SERIAL", 
-				false);
-			*/	
-						
 			ArrayList<DataSetFieldConfiguration> fieldConfigurations
 				= dataSetConfiguration.getFieldConfigurations();
 			
@@ -244,7 +206,11 @@ public final class LoadWorkflowManager
 				connection,
 				targetLoadTable,
 				"data_set_id, row_number");
-
+			
+			updateLastCompletedWorkState(
+				connection,
+				dataSetConfiguration,
+				WorkflowState.LOAD);
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
@@ -256,11 +222,11 @@ public final class LoadWorkflowManager
 				= RIFDataLoaderToolMessages.getMessage(
 					"loadWorkflowManager.error.createLoadTable",
 					createTableName);
-			RIFServiceException RIFServiceException
+			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.LOAD_TABLE,
 					errorMessage);
-			throw RIFServiceException;
+			throw rifServiceException;
 		}
 		finally {			
 			SQLQueryUtility.close(createLoadTableStatement);

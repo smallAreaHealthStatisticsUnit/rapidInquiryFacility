@@ -1,9 +1,6 @@
 package rifDataLoaderTool.businessConceptLayer;
 
 
-import java.util.ArrayList;
-
-
 /**
  * A main business class that describes the typical workflow expected by the RIF
  * database.  The workflow is designed to process a collection of data set 
@@ -143,8 +140,8 @@ public class LinearWorkflow
 	}
 
 	public void initialise() {
-		setStartWorkflowState(WorkflowState.LOAD);
-		setStopWorkflowState(WorkflowState.PUBLISH);
+		setStartWorkflowState(WorkflowState.START);
+		setStopWorkflowState(WorkflowState.STOP);
 	}
 	
 	public static LinearWorkflow newInstance() {

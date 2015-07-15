@@ -135,8 +135,11 @@ public class LinearWorkflowStateMachine
 	}
 
 	public void next() {
-		
-		if (currentWorkflowState == WorkflowState.LOAD) {
+
+		if (currentWorkflowState == WorkflowState.START) {
+			currentWorkflowState = WorkflowState.LOAD;
+		}
+		else if (currentWorkflowState == WorkflowState.LOAD) {
 			currentWorkflowState = WorkflowState.CLEAN;
 		}
 		else if (currentWorkflowState == WorkflowState.CLEAN) {

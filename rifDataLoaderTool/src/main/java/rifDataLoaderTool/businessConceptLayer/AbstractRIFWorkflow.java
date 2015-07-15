@@ -129,19 +129,18 @@ public abstract class AbstractRIFWorkflow {
 	public WorkflowState getCurrentWorkflowState() {
 		return workflowStateMachine.getCurrentWorkflowState();
 	}
-	
-	public boolean hasNext() {
+
+	public boolean next() {
+		workflowStateMachine.next();	
+		
 		WorkflowState currentWorkflowState
 			= getCurrentWorkflowState();
-		
-		if (currentWorkflowState == stopWorkflowState) {
+		if (currentWorkflowState.getStateSequenceNumber() > stopWorkflowState.getStateSequenceNumber()) {
 			return false;
 		}
-		return true;
-	}
-	
-	public void next() {
-		workflowStateMachine.next();		
+		else {
+			return true;
+		}
 	}
 	
 	// ==========================================

@@ -116,7 +116,7 @@ public class DataSetConfiguration
 	// ==========================================
 
 	private DataSetConfiguration() {
-		currentWorkflowState = WorkflowState.LOAD;
+		currentWorkflowState = WorkflowState.START;
 		version = "1.0";
 		fieldConfigurations = new ArrayList<DataSetFieldConfiguration>();
 		filePath = "";

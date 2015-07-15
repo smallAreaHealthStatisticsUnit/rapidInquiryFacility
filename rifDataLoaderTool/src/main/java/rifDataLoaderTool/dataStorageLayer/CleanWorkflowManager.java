@@ -7,6 +7,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
 
 
@@ -132,7 +133,7 @@ public final class CleanWorkflowManager
 		return resultTable;
 	}
 		
-	public void createCleanedTable(
+	public void cleanConfiguration(
 		final Connection connection,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
@@ -145,8 +146,6 @@ public final class CleanWorkflowManager
 			AbstractRIFDataType rifDataType
 				= fieldConfiguration.getRIFDataType();
 		}
-		
-		
 		
 		RIFLogger logger = RIFLogger.getLogger();
 		
@@ -247,6 +246,10 @@ public final class CleanWorkflowManager
 				this, 
 				"createCleanedTable",
 				createSearchReplaceTableQuery);
+			
+			String searchReplaceTableName
+				= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
+			deleteTable(connection, searchReplaceTableName);
 			createSearchReplaceTableStatement
 				= connection.prepareStatement(createSearchReplaceTableQuery);
 			createSearchReplaceTableStatement.executeUpdate();
@@ -302,6 +305,7 @@ public final class CleanWorkflowManager
 				= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName);
 			String finalCleaningTableName
 				= RIFTemporaryTablePrefixes.CLEAN_FINAL.getTableName(coreDataSetName);
+
 			deleteTable(
 				connection, 
 				finalCleaningTableName);
@@ -310,7 +314,7 @@ public final class CleanWorkflowManager
 				connection,
 				cleanCastingTableName,
 				finalCleaningTableName);
-			
+
 			addPrimaryKey(
 				connection,
 				finalCleaningTableName,
@@ -343,6 +347,23 @@ public final class CleanWorkflowManager
 			createAuditBlanksStatement
 				= connection.prepareStatement(createAuditBlanksQuery);
 			createAuditBlanksStatement.executeUpdate();			
+			
+			
+			//clean-up
+			deleteTable(
+				connection, 
+				cleanCastingTableName);
+			String cleanSearchReplaceTableName
+				= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);			
+			deleteTable(
+				connection, 
+				cleanSearchReplaceTableName);
+						
+			updateLastCompletedWorkState(
+				connection,
+				dataSetConfiguration,
+				WorkflowState.CLEAN);
+			
 		}
 		catch(SQLException sqlException) {
 			sqlException.printStackTrace(System.out);

@@ -106,8 +106,7 @@ public class WorkflowValidator {
 		detectException(
 			errorMessages,
 			RIFDataLoaderToolError.INVALID_DATA_SET_CONFIGURATION);
-		
-		
+				
 		//Check that the states in the work flow and in each data set are valid
 		WorkflowState startWorkflowState
 			= linearWorkflow.getStartWorkflowState();
@@ -118,10 +117,10 @@ public class WorkflowValidator {
 			startWorkflowState,
 			stopWorkflowState,
 			errorMessages);
-
+		
 		checkDataSetsHaveSameState(
 			dataSetConfigurations,
-			errorMessages);
+			errorMessages);		
 		
 		//By now we can assume that all of the states are the same
 		//We must ensure that the common state is not SPLIT, COMBINE or PUBLISH.
@@ -133,23 +132,21 @@ public class WorkflowValidator {
 		if (commonWorkflowState == WorkflowState.SPLIT) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
-					"");
+					"workflowValidator.error.illegalCurrentStateInLinearWorkflow");
 			errorMessages.add(errorMessage);
 		}
 		else if (commonWorkflowState == WorkflowState.COMBINE) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
-					"");
+					"workflowValidator.error.illegalCurrentStateInLinearWorkflow");
 			errorMessages.add(errorMessage);			
 		}
 		else if (commonWorkflowState == WorkflowState.PUBLISH) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
-					"");
+					"workflowValidator.error.illegalCurrentStateInLinearWorkflow");
 			errorMessages.add(errorMessage);						
 		}		
-
-		
 		
 		//The common current state of the data set configurations must be
 		//the same as starting state of the workflow
@@ -161,22 +158,22 @@ public class WorkflowValidator {
 		if (commonWorkflowState != expectedStartStateOfDataSets) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
-					"");
+					"workflowValidator.error.workflowAndDataSetsNeedSameStartingState",
+					expectedStartStateOfDataSets.getStateName(),
+					commonWorkflowState.getStateName());
 			errorMessages.add(errorMessage);			
 		}
-		
+
 		detectException(
 			errorMessages,
 			RIFDataLoaderToolError.INVALID_DATA_SET_CONFIGURATION);
-
-
 		
 		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {			
 			validateDataSetConfiguration(
 				stopWorkflowState,
 				dataSetConfiguration);				
 		}
-		
+
 		detectException(
 			errorMessages,
 			RIFDataLoaderToolError.INVALID_DATA_SET_CONFIGURATION);
@@ -246,6 +243,8 @@ public class WorkflowValidator {
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 		
+		System.out.println("validateDataSetConfiguration state=="+workFlowState.getStateName()+"==");
+		
 		ArrayList<String> errorMessages
 			= new ArrayList<String>();
 		
@@ -289,14 +288,10 @@ public class WorkflowValidator {
 				dataSetConfiguration, 
 				errorMessages);
 		}
-		
-		if (errorMessages.isEmpty() == false) {
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFDataLoaderToolError.INVALID_DATA_SET_CONFIGURATION, 
-					errorMessages);
-			throw rifServiceException;
-		}						
+
+		countErrors(
+			errorMessages, 
+			RIFDataLoaderToolError.INVALID_DATA_SET_CONFIGURATION);					
 	}
 	
 	private void validateDataSetConfigurationProperties(

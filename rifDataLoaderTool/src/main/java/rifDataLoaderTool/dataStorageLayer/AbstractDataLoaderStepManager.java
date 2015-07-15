@@ -2,6 +2,7 @@ package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 
+
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
@@ -13,12 +14,7 @@ import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
@@ -330,16 +326,11 @@ public abstract class AbstractDataLoaderStepManager {
 				= dataSetConfiguration.getFieldConfigurations();
 			for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 				
-				System.out.println("Blah 1");
 				if (excludeFieldFromConsideration(
 					rifSchemaArea, 
 					fieldConfiguration,
 					workflowState) == false) {
 
-					System.out.println("Blah 2 fieldname=="+fieldConfiguration.getCoreFieldName()+"==");
-
-					
-					
 					addCommentToTableField(
 						connection,
 						targetTable,
@@ -629,7 +620,52 @@ public abstract class AbstractDataLoaderStepManager {
 		}
 
 	}
-/*
+
+	protected void updateLastCompletedWorkState(
+		final Connection connection,
+		final DataSetConfiguration dataSetConfiguration,
+		final WorkflowState workFlowState) 
+		throws RIFServiceException {
+				
+		SQLUpdateQueryFormatter queryFormatter = new SQLUpdateQueryFormatter();
+		PreparedStatement statement = null;
+		try {
+			
+			queryFormatter.setUpdateTable("data_set_configurations");
+			queryFormatter.addUpdateField("current_workflow_state");
+			queryFormatter.addWhereParameter("core_data_set_name");
+			
+			logSQLQuery("update state", queryFormatter);
+			statement
+				= createPreparedStatement(
+					connection, 
+					queryFormatter);
+
+			statement.setString(
+				1,
+				workFlowState.getCode());
+			statement.setString(
+				2, 
+				dataSetConfiguration.getName());
+	
+			statement.executeUpdate();
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetManager.error.unableToUpdateLastCompletedState",
+					dataSetConfiguration.getDisplayName());
+			RIFServiceException rifServiceException 
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}		
+	}
+	
+	
+	/*
 	protected void createRowNumberAndDataSetIdentifierIndices(
 		final Connection connection,
 		final String targetTable) 
@@ -747,7 +783,6 @@ public abstract class AbstractDataLoaderStepManager {
 		throws RIFServiceException {
 		
 		try {
-			System.out.println("Setting autocommit to=="+isAutoCommitOn+"==");
 			connection.setAutoCommit(isAutoCommitOn);			
 		}
 		catch(SQLException sqlException) {

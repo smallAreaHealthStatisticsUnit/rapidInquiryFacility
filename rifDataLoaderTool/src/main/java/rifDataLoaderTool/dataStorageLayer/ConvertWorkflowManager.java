@@ -1,7 +1,6 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
@@ -125,7 +124,10 @@ public final class ConvertWorkflowManager
 				= RIFTemporaryTablePrefixes.CLEAN_FINAL.getTableName(coreDataSetName);
 			String convertedTableName
 				= RIFTemporaryTablePrefixes.CONVERT.getTableName(coreDataSetName);
-	
+			deleteTable(
+				connection, 
+				convertedTableName);
+			
 			//Create the first part of the query used to create a converted table
 			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
@@ -162,6 +164,12 @@ public final class ConvertWorkflowManager
 					connection, 
 					queryFormatter);	
 			statement.executeUpdate();
+					
+			updateLastCompletedWorkState(
+				connection,
+				dataSetConfiguration,
+				WorkflowState.CONVERT);
+			
 			
 		}
 		catch(SQLException sqlException) {

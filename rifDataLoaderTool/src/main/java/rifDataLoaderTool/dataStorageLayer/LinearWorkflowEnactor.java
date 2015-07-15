@@ -83,6 +83,7 @@ public class LinearWorkflowEnactor {
 	// Section Construction
 	// ==========================================
 
+	
 	public LinearWorkflowEnactor(
 		final User rifManager,
 		final DataLoaderServiceAPI dataLoaderService) {
@@ -104,30 +105,31 @@ public class LinearWorkflowEnactor {
 		final LinearWorkflow linearWorkflow) 
 		throws RIFServiceException {
 
-		workflowValidator.validateLinearWorkflow(linearWorkflow);
-				
 		ArrayList<DataSetConfiguration> dataSetConfigurations
-			= linearWorkflow.getDataSetConfigurations();
+			= linearWorkflow.getDataSetConfigurations();		
+
+		workflowValidator.validateLinearWorkflow(linearWorkflow);
 
 		//run the workflow from start to finish for each of the
 		//data set configurations
-		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
-			try {				
+		try {			
+			for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
 				processDataSetConfiguration(
 					dataSetConfiguration,
 					linearWorkflow);
-				
+	
 				String finishedProcessingDataSetMessage
 					= RIFDataLoaderToolMessages.getMessage(
 						"workflowEnactor.finishedProcessingDataSet",
 						dataSetConfiguration.getDisplayName());
 				logMessage(finishedProcessingDataSetMessage);
-				
+
 			}
-			catch(RIFServiceException rifServiceException) {
-				logException(rifServiceException);
-			}			
 		}
+		catch(RIFServiceException rifServiceException) {
+			logException(rifServiceException);
+		}			
+
 	}
 	
 	private void processDataSetConfiguration(
@@ -137,13 +139,10 @@ public class LinearWorkflowEnactor {
 		
 		linearWorkflow.resetWorkflow();
 				
-		while (linearWorkflow.hasNext()) {
-			
+		while (linearWorkflow.next()) {			
 			processWorkflowStep(
 				dataSetConfiguration,
 				linearWorkflow.getCurrentWorkflowState());
-
-			linearWorkflow.next();
 		}
 
 	}
@@ -154,31 +153,43 @@ public class LinearWorkflowEnactor {
 		throws RIFServiceException {
 		
 		if (currentWorkflowState == WorkflowState.LOAD) {
+			System.out.println("processWorkflowStep LOAD for " + 
+				dataSetConfiguration.getDisplayName()+"==");
 			dataLoaderService.loadConfiguration(
 				rifManager, 
 				dataSetConfiguration);
 		}
 		else if (currentWorkflowState == WorkflowState.CLEAN) { 
+			System.out.println("processWorkflowStep CLEAN for " + 
+					dataSetConfiguration.getDisplayName()+"==");
 			dataLoaderService.cleanConfiguration(
 				rifManager, 
 				dataSetConfiguration);			
 		}
 		else if (currentWorkflowState == WorkflowState.CONVERT) { 
+			System.out.println("processWorkflowStep CONVERT for " + 
+				dataSetConfiguration.getDisplayName()+"==");
 			dataLoaderService.convertConfiguration(
 				rifManager, 
 				dataSetConfiguration);			
 		}
 		else if (currentWorkflowState == WorkflowState.OPTIMISE) { 
+			System.out.println("processWorkflowStep OPTIMISE for " + 
+				dataSetConfiguration.getDisplayName()+"==");
 			dataLoaderService.optimiseConfiguration(
 				rifManager,
 				dataSetConfiguration);			
 		}
 		else if (currentWorkflowState == WorkflowState.CHECK) { 
+			System.out.println("processWorkflowStep CHECK for " + 
+				dataSetConfiguration.getDisplayName()+"==");
 			dataLoaderService.checkConfiguration(
 				rifManager,
 				dataSetConfiguration);			
 		}
 		else if (currentWorkflowState == WorkflowState.PUBLISH) { 
+			System.out.println("processWorkflowStep PUBLISH for " + 
+				dataSetConfiguration.getDisplayName()+"==");
 			dataLoaderService.checkConfiguration(
 				rifManager,
 				dataSetConfiguration);			

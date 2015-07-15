@@ -607,6 +607,17 @@ public class SampleDataGenerator {
 	}
 
 	
+	public LinearWorkflow getLinearWorkflowTest4StudyID1() {
+		LinearWorkflow linearWorkflow = LinearWorkflow.newInstance();
+		DataSetConfiguration dataSetConfiguration
+			= createTest4StudyID1ExtractConfiguration();
+		linearWorkflow.addDataSetConfiguration(dataSetConfiguration);
+		
+		linearWorkflow.initialise();
+		
+		return linearWorkflow;		
+	}
+	
 	public DataSetConfiguration createTest4StudyID1ExtractConfiguration() {
 		RIFDataTypeFactory rifDataTypeFactory
 			= RIFDataTypeFactory.newInstance();
@@ -757,35 +768,7 @@ public class SampleDataGenerator {
 		
 		return test4Study1Configuration;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+		
 	
 	public LinearWorkflow createMinimalLinearWorkflow() {
 		

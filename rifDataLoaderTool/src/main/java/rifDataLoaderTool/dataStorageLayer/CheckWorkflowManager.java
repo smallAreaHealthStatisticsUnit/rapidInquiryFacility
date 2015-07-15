@@ -129,6 +129,12 @@ public final class CheckWorkflowManager
 		//	connection,
 		//	dataSetConfiguration);
 		
+		updateLastCompletedWorkState(
+			connection,
+			dataSetConfiguration,
+			WorkflowState.CHECK);
+		
+		
 	}
 
 	private void createCheckTable(

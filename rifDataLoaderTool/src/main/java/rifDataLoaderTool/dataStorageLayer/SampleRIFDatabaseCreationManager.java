@@ -1,5 +1,6 @@
 package rifDataLoaderTool.dataStorageLayer;
 
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
@@ -225,10 +226,18 @@ public class SampleRIFDatabaseCreationManager {
 			createDataSetConfigurationsTableFormatter.addTextFieldDeclaration("core_data_set_name", 50, false);
 			createDataSetConfigurationsTableFormatter.addTextFieldDeclaration("version", 20, false);
 			createDataSetConfigurationsTableFormatter.addCreationTimestampField("creation_date");
+			String startCode = WorkflowState.START.getCode();
+			createDataSetConfigurationsTableFormatter.addTextFieldDeclaration(
+				"current_workflow_state", 
+				20, 
+				startCode,
+				false);
+			
 			createDataSetConfigurationTableStatement
 				= SQLQueryUtility.createPreparedStatement(
 					connection, 
 					createDataSetConfigurationsTableFormatter);
+			
 			createDataSetConfigurationTableStatement.executeUpdate();
 			
 			//Ensure that the id field owns the sequence so that no other table could

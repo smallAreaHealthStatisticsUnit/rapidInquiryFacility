@@ -1,7 +1,8 @@
 package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.*;
-import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
+
+import rifDataLoaderTool.dataStorageLayer.ProductionDataLoaderService;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
@@ -79,7 +80,7 @@ public final class DataSetProcessingDialog
 			User testUser = User.newInstance("kgarwood", "111.111.11.11");
 			session.setUser(testUser);
 			
-			DataLoaderService service = new DataLoaderService();
+			ProductionDataLoaderService service = new ProductionDataLoaderService();
 			session.setService(service);
 			
 			DataSetProcessingDialog dialog = new DataSetProcessingDialog(session);

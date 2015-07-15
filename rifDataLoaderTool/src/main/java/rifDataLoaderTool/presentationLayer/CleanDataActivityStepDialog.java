@@ -15,7 +15,7 @@ import rifDataLoaderTool.businessConceptLayer.rifDataTypes.UKPostalCodeRIFDataTy
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-import rifDataLoaderTool.dataStorageLayer.DataLoaderService;
+import rifDataLoaderTool.dataStorageLayer.AbstractDataLoaderService;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifGenericLibrary.system.RIFServiceException;

@@ -7,10 +7,7 @@ import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLCreateIndexQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteIndexQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
-import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.sql.*;
@@ -142,6 +139,11 @@ public final class OptimiseWorkflowManager
 			connection,
 			optimiseTableName,
 			"data_set_id, row_number");
+				
+		updateLastCompletedWorkState(
+			connection,
+			dataSetConfiguration,
+			WorkflowState.OPTIMISE);
 
 	}
 	

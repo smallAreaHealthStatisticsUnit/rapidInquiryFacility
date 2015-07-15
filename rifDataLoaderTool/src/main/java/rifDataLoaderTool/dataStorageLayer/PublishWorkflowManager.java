@@ -1,11 +1,9 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
@@ -99,32 +97,10 @@ public final class PublishWorkflowManager
 		//validate parameters
 		dataSetConfiguration.checkErrors();
 			
-		String coreDataSetName 
-			= dataSetConfiguration.getName();
-		
-		/*
-		PreparedStatement statement = null;
-		try {
-
-			//@TODO later
-			
-		}
-		catch(SQLException sqlException) {
-			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage(
-					"publishWorkflowManager.unableToPublishConfiguration",
-					coreDataSetName);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			SQLQueryUtility.close(statement);
-		}
-		
-		*/
+		updateLastCompletedWorkState(
+			connection,
+			dataSetConfiguration,
+			WorkflowState.CHECK);
 	}
 	
 	public void establishTableAccessPrivileges(
