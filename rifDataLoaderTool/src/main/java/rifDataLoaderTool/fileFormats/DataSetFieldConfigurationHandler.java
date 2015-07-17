@@ -1,11 +1,14 @@
 package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.FieldPurpose;
 import rifDataLoaderTool.businessConceptLayer.RIFConversionFunction;
 import rifDataLoaderTool.businessConceptLayer.RIFConversionFunctionFactory;
 import rifDataLoaderTool.businessConceptLayer.FieldRequirementLevel;
+import rifDataLoaderTool.businessConceptLayer.FieldChangeAuditLevel;
+
 import rifDataLoaderTool.businessConceptLayer.RIFCheckOption;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
@@ -203,6 +206,15 @@ public final class DataSetFieldConfigurationHandler
 				getSingularRecordName(), 
 				"field_requirement_level", 
 				fieldRequirementLevel.getCode());
+
+			FieldChangeAuditLevel fieldChangeAuditLevel
+				= fieldConfiguration.getFieldChangeAuditLevel();
+			xmlUtility.writeField(
+				getSingularRecordName(), 
+				"field_change_audit_level", 
+				fieldChangeAuditLevel.getCode());
+			
+			
 			FieldPurpose fieldPurpose
 				= fieldConfiguration.getFieldPurpose();
 			xmlUtility.writeField(
@@ -348,6 +360,10 @@ public final class DataSetFieldConfigurationHandler
 			currentDataSetFieldConfiguration.setFieldRequirementLevel(
 				FieldRequirementLevel.getValueFromName(getCurrentFieldValue()));
 		}		
+		else if (equalsFieldName("field_change_audit_level", qualifiedName)) {
+			currentDataSetFieldConfiguration.setFieldChangeAuditLevel(
+				FieldChangeAuditLevel.getValueFromName(getCurrentFieldValue()));
+		}
 		else if (equalsFieldName("is_duplicate_identification_field", qualifiedName)) {
 			currentDataSetFieldConfiguration.setDuplicateIdentificationField(
 				Boolean.valueOf(getCurrentFieldValue()));

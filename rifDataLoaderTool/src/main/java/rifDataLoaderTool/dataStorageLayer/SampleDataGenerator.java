@@ -785,6 +785,35 @@ public class SampleDataGenerator {
 	}
 	
 	
+	public LinearWorkflow testDataCleaning1Workflow() {
+		LinearWorkflow linearWorkflow = LinearWorkflow.newInstance();
+		
+
+		linearWorkflow.addDataSetConfiguration(createDataCleaning1Configuration());
+		
+		return linearWorkflow;		
+	}
+	
+	private DataSetConfiguration createDataCleaning1Configuration() {
+		
+		
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.newInstance();
+		dataSetConfiguration.setName("test_cleaning1");
+		dataSetConfiguration.setFilePath("C://rif_scripts//test_data//test_cleaning1_2015.csv");
+		
+		DataSetFieldConfiguration idFieldConfiguration
+			= DataSetFieldConfiguration.newInstance("test_cleaning1", "id");
+		
+		
+		
+		
+		
+		return dataSetConfiguration;
+	}
+	
+	
+	
 	public DataSetConfiguration createMinimalDataSetConfiguration() {
 		
 		/*

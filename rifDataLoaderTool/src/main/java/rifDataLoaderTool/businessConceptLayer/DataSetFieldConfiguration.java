@@ -220,6 +220,8 @@ public class DataSetFieldConfiguration
 	 */
 	private FieldRequirementLevel fieldRequirementLevel;
 	
+	private FieldChangeAuditLevel fieldChangeAuditLevel;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -261,7 +263,8 @@ public class DataSetFieldConfiguration
 		
 		rifConversionFunction = null;
 		
-		fieldRequirementLevel = FieldRequirementLevel.IGNORE_FIELD;		
+		fieldRequirementLevel = FieldRequirementLevel.IGNORE_FIELD;	
+		fieldChangeAuditLevel = FieldChangeAuditLevel.INCLUDE_FIELD_CHANGE_DESCRIPTION;
 	}
 
 	public static DataSetFieldConfiguration newInstance(
@@ -315,7 +318,10 @@ public class DataSetFieldConfiguration
 				
 		cloneConfiguration.setFieldRequirementLevel(
 			originalConfiguration.getFieldRequirementLevel());
-	
+		cloneConfiguration.setFieldChangeAuditLevel(
+			originalConfiguration.getFieldChangeAuditLevel());
+
+		
 		ArrayList<RIFCheckOption> originalCheckOptions
 			= originalConfiguration.getCheckOptions();
 		cloneConfiguration.setCheckOptions(originalCheckOptions);	
@@ -503,6 +509,16 @@ public class DataSetFieldConfiguration
 		}
 	}
 	
+	public FieldChangeAuditLevel getFieldChangeAuditLevel() {
+		return fieldChangeAuditLevel;
+	}
+	
+	public void setFieldChangeAuditLevel(
+		final FieldChangeAuditLevel fieldChangeAuditLevel) {
+		
+		this.fieldChangeAuditLevel = fieldChangeAuditLevel;
+	}
+	
 	public boolean hasCleaningRules() {
 		
 		ArrayList<CleaningRule> cleaningRules
@@ -660,7 +676,33 @@ public class DataSetFieldConfiguration
 					"general.validation.emptyRequiredField",
 					fieldPurposeLabel);
 			errorMessages.add(errorMessage);			
-		}		
+		}	
+		
+		
+		if (fieldRequirementLevel == null) {
+			String fieldPurposeLabel
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetFieldConfiguration.fieldRequirementLevel.label");
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"general.validation.emptyRequiredField",
+					fieldPurposeLabel);
+			errorMessages.add(errorMessage);			
+		}	
+
+		
+		if (fieldChangeAuditLevel == null) {
+			String fieldPurposeLabel
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetFieldConfiguration.fieldChangeAuditLevel.label");
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"general.validation.emptyRequiredField",
+					fieldPurposeLabel);
+			errorMessages.add(errorMessage);			
+		}	
+		
+		
 	}
 	
 	
