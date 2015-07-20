@@ -5,7 +5,13 @@ Principal Work Area: **Microsoft SQL server database port**
 ##2015
 
 ###July
-I plan to finish the trigger work that I began last month and set up a proper test suite to verify that everything has been set up correctly.  Also continue work on simple batch installation scripts so I can easily re-create the latest version of the sahsuland_dev database.
+I plan to finish the trigger work that I began last month and begin to set up a proper test suite to verify that everything has been set up correctly.  Also continue work on simple batch installation scripts so I can easily re-create the latest version of the sahsuland_dev database.
+
+######20 July
+* Back to triggers.  Working on rif40_tables_trigger.
+
+######16 July
+* Adding more fields to the fake cancer dataset and inserting more typical errors.  Sent Kevin a copy for his thoughts.
 
 ######15 July
 * Finishing up the fake cancer data.  Verifying with Kevin that it is what he wants before copying it over to Github.
