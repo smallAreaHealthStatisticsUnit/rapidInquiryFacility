@@ -28,7 +28,7 @@ GO
 ------------------------------
 CREATE trigger [rif40].[tr_rif40_tables_checks]
 on [rif40].[rif40_tables]
-BEFORE insert , update 
+FOR insert , update 
 as
 BEGIN 
 --------------------------------------
@@ -53,11 +53,7 @@ Declare  @XTYPE varchar(5);
 --Check if column <TABLE_NAME>.TOTAL_FIELD exists
 IF (@XTYPE = 'U' or @XTYPE = 'I') 
 BEGIN
-
---WHEN (((((((((new.table_name IS NOT NULL) AND ((new.table_name)::text <> ''::text)) OR ((new.isdirectdenominator IS NOT NULL) AND ((new.isdirectdenominator)::text <> ''::text))) OR ((new.table_name IS NOT NULL) AND ((new.table_name)::text <> ''::text))) OR ((new.total_field IS NOT NULL) AND ((new.total_field)::text <> ''::text))) OR ((new.sex_field_name IS NOT NULL) AND ((new.sex_field_name)::text <> ''::text))) OR ((new.age_group_field_name IS NOT NULL) AND ((new.age_group_field_name)::text <> ''::text))) OR ((new.age_sex_group_field_name IS NOT NULL) AND ((new.age_sex_group_field_name)::text <> ''::text))))
- 
-
-	declare @total_col_check varchar(max) = (
+	declare @total_field_check varchar(max) = (
 	SELECT table_name, total_field
 	FROM   inserted  b
 	where 
@@ -84,7 +80,36 @@ BEGIN
 	ELSE
 		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[rif40_tables]', 'RIF40_TABLES TOTAL_FIELD column found in table';
 		
-	
-END;
 
+	-- Check direct standardised denominators exist system wide
+	DECLARE @dsd_table_missing VARCHAR(MAX) = (
+		SELECT table_name
+		FROM inserted b
+		WHERE isdirectdenominator = 1
+		AND (table_name is null or table_name = ''
+		OR not exists (
+		select 1
+		FROM INFORMATION_SCHEMA.TABLES a
+		where a.table_name=b.table_name))		
+		FOR XML PATH(''));
+	
+	IF @dsd_table_missing IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg2 VARCHAR(MAX)=formatmessage(51038, @dsd_table_missing);
+		THROW 51038, @err_msg2, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_tables]';
+		THROW 51038, @err_msg2, 1;
+	END CATCH;	
+
+	DECLARE @check_values VARCHAR(MAX) = (
+		SELECT 1
+		FROM inserted
+		WHERE [rif40].[rif40_check_table_values] (table_name, total_field, sex_field_name, age_group_field_name, age_sex_group_field_name) = 0
+	);
+	
+		
+END;
 END;

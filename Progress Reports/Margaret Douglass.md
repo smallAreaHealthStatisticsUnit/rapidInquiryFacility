@@ -7,6 +7,10 @@ Principal Work Area: **Microsoft SQL server database port**
 ###July
 I plan to finish the trigger work that I began last month and begin to set up a proper test suite to verify that everything has been set up correctly.  Also continue work on simple batch installation scripts so I can easily re-create the latest version of the sahsuland_dev database.
 
+######21 July
+* Wrote functions rif40_db_name_check and rif40_check_table_values necessary for rif40_tables trigger.  
+* Finished rif40_tables trigger
+
 ######20 July
 * Back to triggers.  Working on rif40_tables_trigger.
 

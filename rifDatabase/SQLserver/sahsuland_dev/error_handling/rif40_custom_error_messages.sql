@@ -209,8 +209,20 @@ EXEC sp_addmessage 51035, 16,
 	N'Table name: [rif40].[rif40_covariates] , RIF40_COVARIATES type = 1 (integer score) and min is not an integer: %s';
 EXEC sp_addmessage 51036, 16,
 	N'Table name: [rif40].[rif40_covariates] , RIF40_COVARIATES type = 1 (integer score) and min <0: %s';
-
-
+EXEC sp_addmessage 51037, 16,
+	N'Table name: [rif40].[rif40_tables] , RIF40_TABLES TOTAL_FIELD column not found in table: %s';
+EXEC sp_addmessage 51038, 16,
+	N'Table name: [rif40].[rif40_tables] , RIF40_TABLES direct standardised denominator TABLE_NAME not found: %s';
+	
 --add more here	
+
+
+EXEC sp_addmessage 51050, 16,
+	N'Table name: [rif40].[rif40_db_name_check] , Invalid Oracle/Postgres/SQL Server name contains NON alphanumeric characters: %s';
+EXEC sp_addmessage 51051, 16,
+	N'Table name: [rif40].[rif40_db_name_check] , Invalid Database name exceeds maximum length: %s';
+EXEC sp_addmessage 51052, 16,
+	N'Table name: [rif40].[rif40_db_name_check] , Invalid Database name, first character must be a letter: %s';
+	
 
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';

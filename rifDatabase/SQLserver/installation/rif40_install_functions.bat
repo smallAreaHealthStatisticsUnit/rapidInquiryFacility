@@ -5,3 +5,4 @@ sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\functions\rif40_is_object_reso
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\functions\rif40_num_denom_validate.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\functions\rif40_object_resolve.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\functions\rif40_sequence_current_value.sql
+sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\functions\rif40_db_name_check.sql
