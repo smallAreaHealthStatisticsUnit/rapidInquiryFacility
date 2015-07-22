@@ -7,6 +7,10 @@ Principal Work Area: **Microsoft SQL server database port**
 ###July
 I plan to finish the trigger work that I began last month and begin to set up a proper test suite to verify that everything has been set up correctly.  Also continue work on simple batch installation scripts so I can easily re-create the latest version of the sahsuland_dev database.
 
+######22 July
+* Finished rif40_table_outcomes, rif40_error_messages, rif40_geographies, t_rif40_contextual_stats triggers
+* Worked on the more complex t_rif40_comparison_areas trigger.  The code is syntactically correct/accepted by the database, but I need to check it with test data to make certain it is doing the correct thing.
+
 ######21 July
 * Wrote functions rif40_db_name_check and rif40_check_table_values necessary for rif40_tables trigger.  
 * Finished rif40_tables trigger

@@ -6,14 +6,6 @@ Check - USER is Kerberos USER on INSERT.
 Check - UPDATE not allowed.
 Check - DELETE only allowed on own records.
 */
-/*
-Trigger for [dbo].[T_RIF40_CONTEXTUAL_STATS]
-CANT WE DO THESE WITH PERMISSION ?
-Check - USER exists.
-Check - USER is Kerberos USER on INSERT.
-Check - UPDATE not allowed.
-Check - DELETE only allowed on own records.
-*/
 
 USE [sahsuland_dev]
 GO
@@ -49,50 +41,75 @@ Declare  @xtype varchar(5)
 		BEGIN
 			SET @XTYPE = 'I'
 		END
-------------------------------------------------
---When Transaction is an Update  then rollback 
--------------------------------------------------
-	IF (@XTYPE = 'U')
-		BEGIN
-		 	Raiserror (50088, 16,1 );
-			rollback tran
-		  end 
+		
+--check if it is during a build, then insert and update are fine
+DECLARE @has_studies_check VARCHAR(MAX) = 
+(
+	SELECT count(study_id) as total
+	FROM [rif40].[t_rif40_results]
+);
 
---Entered username is not current user 
-DECLARE @user nvarchar(MAX) =
+IF (@has_studies_check=0 AND SUSER_SNAME() = 'RIF40' AND (@XTYPE='U' OR @XTYPE='I'))
+	RETURN;
+	
+--Entered username is not current user on insert
+IF (@XTYPE = 'I') 
+BEGIN
+	DECLARE @new_user_check nvarchar(MAX) =
     (
     SELECT 
-		USERNAME + ', '
+		USERNAME, study_id, inv_id, area_id
         FROM inserted
         WHERE username <> SUSER_SNAME() 
         FOR XML PATH('')
     );
-BEGIN TRY 
-	IF @user IS NOT NULL
-	BEGIN
-		RAISERROR(50089, 16, 1, @user) with log;
-	END;
-END TRY 
-BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc]
-END CATCH 
+	
+	IF @new_user_check IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg2 VARCHAR(MAX) = formatmessage(51047, @new_user_check);
+		THROW 51047, @err_msg2, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_contextual_stats]';
+		THROW 51047, @err_msg2, 1;
+	END CATCH;	
+END;
+	
+------------------------------------------------
+--When Transaction is an Update  then rollback
+-------------------------------------------------
+IF (@XTYPE = 'U')
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg1 VARCHAR(MAX) = formatmessage(51046);
+		THROW 51046, @err_msg1, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_contextual_stats]';
+		THROW 51046, @err_msg1, 1;
+	END CATCH;	
 
 --Delete allowed on own record only 
-	DECLARE @user2 nvarchar(MAX) =
+IF (@XTYPE='D')
+BEGIN
+	DECLARE @old_user_check nvarchar(MAX) =
     (
     SELECT 
-		USERNAME + ', '
-        FROM deleted
-        WHERE username not in (select username from inserted)
+		USERNAME, study_id, inv_id, area_id
+        FROM deleted a
+		WHERE username <> SUSER_SNAME() 
         FOR XML PATH('')
     );
-BEGIN TRY 
-	IF @user2 IS NOT NULL and  @XTYPE = 'D'
-	BEGIN
-		RAISERROR(50090, 16, 1, @user) with log;
-	END;
-END TRY 
-BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc]
-END CATCH 
-END
+	IF @old_user_check IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg3 VARCHAR(MAX) = formatmessage(51048, @old_user_check);
+		THROW 51048, @err_msg3, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_contextual_stats]';
+		THROW 51048, @err_msg3, 1;
+	END CATCH;	
+END;
+END;

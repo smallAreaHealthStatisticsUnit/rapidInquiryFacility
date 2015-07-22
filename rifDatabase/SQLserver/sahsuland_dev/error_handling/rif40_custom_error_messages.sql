@@ -228,10 +228,23 @@ EXEC sp_addmessage 51041, 16,
 	N'Table name: [rif40].[rif40_table_outcomes] , RIF40_TABLE_OUTCOMES outcome group numerator table is not a numerator: %s';
 
 EXEC sp_addmessage 51042, 16,
-	N'Table name: [rif40].[if40_error_messages] , RIF40_ERROR_MESSAGES table_name not found: %s';
+	N'Table name: [rif40].[rif40_error_messages] , RIF40_ERROR_MESSAGES table_name not found: %s';
+
+EXEC sp_addmessage 51043, 16,
+	N'Table name: [rif40].[t_rif40_comparison_areas], T_RIF40_COMPARISON_AREAS no study_id found';
 	
+EXEC sp_addmessage 51044, 16,
+	N'Table name: [rif40].[t_rif40_comparison_areas], T_RIF40_COMPARISON_AREAS comparison_study_area, hierarchy values not defined for study_id: %s';
+EXEC sp_addmessage 51045, 16,
+	N'Table name: [rif40].[t_rif40_comparison_areas], T_RIF40_COMPARISON_AREAS study_id found areas not in hierarchy table: %s';
 
-
+EXEC sp_addmessage 51046, 16,
+	N'Table name: [rif40].[t_rif40_contextual_stats], UPDATE not allowed on T_RIF40_CONTEXTUAL_STATS';
+EXEC sp_addmessage 51047, 16,
+	N'Table name: [rif40].[t_rif40_contextual_stats], T_RIF40_CONTEXTUAL_STATS study: new username is not current USER: %s';
+EXEC sp_addmessage 51048, 16,
+	N'Table name: [rif40].[t_rif40_contextual_stats], DELETE only allowed on own records in T_RIF40_CONTEXTUAL_STATS, record owned by: %s';
+	
 EXEC sp_addmessage 51050, 16,
 	N'Table name: [rif40].[rif40_db_name_check] , Invalid Oracle/Postgres/SQL Server name contains NON alphanumeric characters: %s';
 EXEC sp_addmessage 51051, 16,
