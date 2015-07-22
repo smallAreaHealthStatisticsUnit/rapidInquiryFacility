@@ -15,7 +15,7 @@ create trigger [tr_error_msg_checks]
   for insert , update 
   as
   begin
-	 DECLARE @tablelist nvarchar(MAX) =
+	 DECLARE @table_missing nvarchar(MAX) =
     (
     SELECT 
 		[TABLE_NAME] + ', '
@@ -24,10 +24,16 @@ create trigger [tr_error_msg_checks]
         FOR XML PATH('')
     );
 
-	IF @tablelist IS NOT NULL
-	BEGIN
-		RAISERROR('These table/s do not exist: %s', 16, 1, @tablelist) with log;
-	END;
-  
- end 
+	IF @table_missing IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg1 VARCHAR(MAX) = formatmessage(51042, @table_missing);
+		THROW 51042, @err_msg1, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_error_messages]';
+		THROW 51042, @err_msg1, 1;
+	END CATCH;	
+	
+ end ;
 GO

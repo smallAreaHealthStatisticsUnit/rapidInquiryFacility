@@ -24,47 +24,50 @@ on [rif40].[rif40_geographies]
 instead of insert, update
 as
 begin
-DECLARE @HIERARCHYTABLE nvarchar(MAX) =
+
+-- Check HIERARCHYTABLE exists.
+DECLARE @missing_hierarchytable nvarchar(MAX) =
     (
     SELECT 
-		HIERARCHYTABLE + ', '
+		HIERARCHYTABLE 
         FROM inserted
         WHERE OBJECT_ID(HIERARCHYTABLE, 'U') IS NULL
         FOR XML PATH('')
     );
-BEGIN TRY
-IF @HIERARCHYTABLE IS NOT NULL
-	BEGIN
-		RAISERROR(50020, 16, 1, @HIERARCHYTABLE) with log;
-		ROLLBACK
-	END;
-END TRY
-BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc]
-END CATCH 
---Check postal_population_table if set and expected columns-- 
 
-DECLARE @postal_pop nvarchar(MAX) =
+IF @missing_hierarchytable IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg1 VARCHAR(MAX) = formatmessage(50020, @missing_hierarchytable);
+		THROW 50020, @err_msg1, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_geographies]';
+		THROW 50020, @err_msg1, 1;
+	END CATCH;	
+
+--Check postal_population_table if set and expected columns-- 
+DECLARE @postal_pop_missing nvarchar(MAX) =
     (
     SELECT 
-		postal_population_table + ', '
+		postal_population_table 
         FROM inserted
         WHERE OBJECT_ID(postal_population_table, 'U') IS NULL
         FOR XML PATH('')
     );
-BEGIN TRY 
-IF @postal_pop IS NOT NULL
-	BEGIN
-		RAISERROR(50021, 16, 1, @postal_pop) with log;
-		ROLLBACK
-	END;
-END TRY
-BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc]
-END CATCH 
---Check postal_population_column 
+IF @postal_pop_missing IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg2 VARCHAR(MAX) = formatmessage(50021, @postal_pop_missing);
+		THROW 50021, @err_msg2, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_geographies]';
+		THROW 50021, @err_msg2, 1;
+	END CATCH;	
 
-DECLARE @postal_point_col nvarchar(MAX) =
+--Check postal_population_column + postal_population_table
+DECLARE @postal_point_col_missing nvarchar(MAX) =
 (
 	SELECT concat (postal_population_table,'-', postal_point_column )
 		 + '  '
@@ -75,20 +78,21 @@ DECLARE @postal_point_col nvarchar(MAX) =
 							on c.object_id=t.object_id 
 							where t.name =ic.POSTAL_POPULATION_TABLE and c.name=ic.POSTAL_POINT_COLUMN )
    FOR XML PATH('')
-
 );
-BEGIN TRY 
-IF @postal_point_col IS NOT NULL
-	BEGIN
-		RAISERROR(50022, 16, 1, @postal_point_col) with log;
-		ROLLBACK
-	END;
-END TRY 
-BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc]
-END CATCH 
+
+IF @postal_point_col_missing IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg3 VARCHAR(MAX) = formatmessage(50022, @postal_point_col_missing);
+		THROW 50022, @err_msg3, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_geographies]';
+		THROW 50022, @err_msg3, 1;
+	END CATCH;	
+
 --check column names MALES , FEMALES , TOTAL, XCOORDINATE, YCOORDINATE 
-DECLARE @MALES nvarchar(MAX) =
+DECLARE @MALES_missing nvarchar(MAX) =
 (
 	SELECT postal_population_table 
 		 + '  '
@@ -99,21 +103,20 @@ DECLARE @MALES nvarchar(MAX) =
 							on c.object_id=t.object_id 
 							where t.name =ic.POSTAL_POPULATION_TABLE and c.name='MALES' )
    FOR XML PATH('')
-
 );
-BEGIN TRY
-IF @MALES IS NOT NULL
-	BEGIN
-		RAISERROR(50023, 16, 1, @MALES) with log;
-		ROLLBACK
-	END;
-END TRY 
-BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc]
-END CATCH 
+IF @MALES_missing IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg4 VARCHAR(MAX) = formatmessage(50023, @MALES_missing);
+		THROW 50023, @err_msg4, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_geographies]';
+		THROW 50023, @err_msg4, 1;
+	END CATCH;	
 
---CHECK females 
-DECLARE @FEMALES nvarchar(MAX) =
+--CHECK females column
+DECLARE @FEMALES_missing nvarchar(MAX) =
 (
 	SELECT postal_population_table 
 		 + '  '
@@ -126,18 +129,19 @@ DECLARE @FEMALES nvarchar(MAX) =
    FOR XML PATH('')
 
 );
-BEGIN TRY 
-IF @FEMALES IS NOT NULL
-	BEGIN
-		RAISERROR(50024, 16, 1, @FEMALES) with log;
-		ROLLBACK
-	END;
-END TRY 
-BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc]
-END CATCH 
---CHECK TOTAL 
-DECLARE @TOTAL nvarchar(MAX) =
+IF @FEMALES_missing IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg5 VARCHAR(MAX) = formatmessage(50024, @FEMALES_missing);
+		THROW 50024, @err_msg5, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_geographies]';
+		THROW 50024, @err_msg5, 1;
+	END CATCH;	
+
+--CHECK TOTAL column
+DECLARE @TOTAL_missing nvarchar(MAX) =
 (
 	SELECT postal_population_table 
 		 + '  '
@@ -148,22 +152,20 @@ DECLARE @TOTAL nvarchar(MAX) =
 							on c.object_id=t.object_id 
 							where t.name =ic.POSTAL_POPULATION_TABLE and c.name='TOTAL' )
    FOR XML PATH('')
-
 );
-BEGIN TRY 
-IF @TOTAL IS NOT NULL
-	BEGIN
-		RAISERROR(50025, 16, 1, @TOTAL) with log;
-		ROLLBACK
-	END;
-END TRY 
-BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc]
-END CATCH 
+IF @TOTAL_missing IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg6 VARCHAR(MAX) = formatmessage(50025, @TOTAL_missing);
+		THROW 50025, @err_msg6, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_geographies]';
+		THROW 50025, @err_msg6, 1;
+	END CATCH;	
 
---XCOORDINATE
-
-DECLARE @XCOORDINATE nvarchar(MAX) =
+--Check XCOORDINATE column
+DECLARE @XCOORDINATE_missing nvarchar(MAX) =
 (
 	SELECT postal_population_table 
 		 + '  '
@@ -174,23 +176,20 @@ DECLARE @XCOORDINATE nvarchar(MAX) =
 							on c.object_id=t.object_id 
 							where t.name =ic.POSTAL_POPULATION_TABLE and c.name='XCOORDINATE' )
    FOR XML PATH('')
-
 );
-BEGIN TRY 
-IF @XCOORDINATE IS NOT NULL
-	BEGIN
-		RAISERROR(50026, 16, 1, @XCOORDINATE) with log;
-		ROLLBACK
-	END;
-END TRY 
+IF @XCOORDINATE_missing IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg7 VARCHAR(MAX) = formatmessage(50026, @XCOORDINATE_missing);
+		THROW 50026, @err_msg7, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_geographies]';
+		THROW 50026, @err_msg7, 1;
+	END CATCH;	
 
-BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc]
-END CATCH 
-
---YCOORDINATE
-
-DECLARE @YCOORDINATE nvarchar(MAX) =
+--Check YCOORDINATE column
+DECLARE @YCOORDINATE_missing nvarchar(MAX) =
 (
 	SELECT postal_population_table 
 		 + '  '
@@ -201,16 +200,67 @@ DECLARE @YCOORDINATE nvarchar(MAX) =
 							on c.object_id=t.object_id 
 							where t.name =ic.POSTAL_POPULATION_TABLE and c.name='YCOORDINATE' )
    FOR XML PATH('')
-
 );
-BEGIN TRY 
-IF @YCOORDINATE IS NOT NULL
-	BEGIN
-		RAISERROR(50027, 16, 1, @YCOORDINATE) with log;
-		ROLLBACK
-	END;
-END TRY 
-BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc]
-END CATCH 
-END
+IF @YCOORDINATE_missing IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg8 VARCHAR(MAX) = formatmessage(50027, @YCOORDINATE_missing);
+		THROW 50027, @err_msg8, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_geographies]';
+		THROW 50027, @err_msg8, 1;
+	END CATCH;	
+
+--
+--  Also check defaultcomparea, defaultstudyarea as FK is now removed
+--
+
+DECLARE @missing_defaultcomparea varchar(MAX) = 
+(
+	select geography, defaultcomparea
+	from inserted a
+	where defaultcomparea IS NOT NULL AND defaultcomparea <> ''
+	and exists (select b.geography, count(geolevel_name) t
+		from [rif40].[t_rif40_geolevels] b
+		where a.geography=b.geography
+		group by b.geography
+		having count(geolevel_name) > 0)
+	and not exists (select 1
+		from [rif40].[t_rif40_geolevels] c
+		where a.defaultcomparea=c.geolevel_name)
+	FOR XML PATH('')
+);
+IF @missing_defaultcomparea IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg9 VARCHAR(MAX) = formatmessage(50028, @missing_defaultcomparea);
+		THROW 50028, @err_msg9, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_geographies]';
+		THROW 50028, @err_msg9, 1;
+	END CATCH;	
+
+DECLARE @missing_defaultstudyarea varchar(MAX) = 
+(
+	select geography, defaultstudyarea
+	from inserted a
+	where defaultstudyarea IS NOT NULL AND defaultstudyarea <> ''
+	and not exists (select 1
+		from [rif40].[t_rif40_geolevels] b
+		where a.defaultstudyarea=b.geolevel_name)
+	FOR XML PATH('')
+);
+IF @missing_defaultstudyarea IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg10 VARCHAR(MAX) = formatmessage(50029, @missing_defaultstudyarea);
+		THROW 50029, @err_msg10, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_geographies]';
+		THROW 50029, @err_msg10, 1;
+	END CATCH;	
+	
+END;

@@ -31,7 +31,13 @@ EXEC sp_addmessage 50026, 16,
 
 EXEC sp_addmessage 50027, 16, 
    N'Table_name: [rif40].[rif40_geographies] , YCOORDINATE column does not exist in these postal_population_tables:(%s)';
+   
+EXEC sp_addmessage 50028, 16, 
+   N'Table_name: [rif40].[rif40_geographies] , Default comparision area column not found in T_RIF40_GEOLEVELS: %s';
 
+EXEC sp_addmessage 50029, 16, 
+   N'Table_name: [rif40].[rif40_geographies] , Default study area column not found in T_RIF40_GEOLEVELS: %s';
+   
 EXEC sp_addmessage 50010, 16, 
    N'Table_name: [rif40].[rif40_covariates] , These MIN values are greater than max:(%s)';
 
@@ -213,8 +219,17 @@ EXEC sp_addmessage 51037, 16,
 	N'Table name: [rif40].[rif40_tables] , RIF40_TABLES TOTAL_FIELD column not found in table: %s';
 EXEC sp_addmessage 51038, 16,
 	N'Table name: [rif40].[rif40_tables] , RIF40_TABLES direct standardised denominator TABLE_NAME not found: %s';
+
+EXEC sp_addmessage 51039, 16,
+	N'Table name: [rif40].[rif40_table_outcomes] , RIF40_TABLE_OUTCOMES outcome group numerator not found in RIF tables: %s';
+EXEC sp_addmessage 51040, 16,
+	N'Table name: [rif40].[rif40_table_outcomes] , RIF40_TABLE_OUTCOMES outcome group current_version_start_year not between start/stop years in rif40_tables: %s';
+EXEC sp_addmessage 51041, 16,
+	N'Table name: [rif40].[rif40_table_outcomes] , RIF40_TABLE_OUTCOMES outcome group numerator table is not a numerator: %s';
+
+EXEC sp_addmessage 51042, 16,
+	N'Table name: [rif40].[if40_error_messages] , RIF40_ERROR_MESSAGES table_name not found: %s';
 	
---add more here	
 
 
 EXEC sp_addmessage 51050, 16,
