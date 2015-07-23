@@ -93,7 +93,8 @@ public final class AgeRIFDataType
 		 */
 		addValidationExpression("^[0-9]{1,2}$|1[0-1][0-9]$");
 		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
-		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);
+		setFieldCleaningPolicy(RIFFieldCleaningPolicy.CLEANING_FUNCTION);
+		setCleaningFunctionName("map_age_to_rif_age_group");
 	}
 
 	public static AgeRIFDataType newInstance() {
@@ -113,6 +114,8 @@ public final class AgeRIFDataType
 		return ageRIFDataType;
 	}
 		
+	
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================

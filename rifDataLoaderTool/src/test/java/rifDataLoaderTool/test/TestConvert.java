@@ -81,33 +81,7 @@ public class TestConvert extends AbstractRIFDataLoaderTestCase {
 
 	}
 
-	@Test
 	public void test1() {
-		
-		User rifManager = getRIFManager();
-		TestDataLoaderService dataLoaderService
-			= getDataLoaderService();
-		try {
-			SampleDataGenerator sampleDataGenerator
-				= new SampleDataGenerator();
-			DataSetConfiguration dataSetConfiguration
-				= sampleDataGenerator.createTest4StudyID1ExtractConfiguration();
-		
-			dataLoaderService.initialiseService();	
-			dataLoaderService.loadConfiguration(
-				rifManager, 
-				dataSetConfiguration);
-			dataLoaderService.cleanConfiguration(
-				rifManager, 
-				dataSetConfiguration);			
-			dataLoaderService.convertConfiguration(
-				rifManager, 
-				dataSetConfiguration);
-		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printErrors();
-			fail();
-		}
 		
 	}
 

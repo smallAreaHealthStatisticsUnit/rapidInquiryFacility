@@ -25,7 +25,7 @@ import rifServices.businessConceptLayer.User;
 
 import java.sql.*;
 import java.util.ArrayList;
-
+import java.io.*;
 
 /**
  * Manages code used to store and retrieve information about data sources that are
@@ -106,6 +106,7 @@ public final class DataSetManager
 	
 	public int getDataSetIdentifier(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 		
@@ -139,7 +140,9 @@ public final class DataSetManager
 			return result;
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage("");
 			RIFServiceException rifServiceException
@@ -156,10 +159,15 @@ public final class DataSetManager
 	
 	public int addDataSetConfiguration(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 
-		if (dataSetConfigurationExists(connection, dataSetConfiguration)) {
+		if (dataSetConfigurationExists(
+			connection, 
+			logFileWriter,
+			dataSetConfiguration)) {
+			
 			//trying to add a data set configuration that already exists
 			
 			String errorMessage
@@ -212,7 +220,9 @@ public final class DataSetManager
 			result = resultSet.getInt(1);
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetManager.error.unableToAddDataSetConfiguration",
@@ -234,6 +244,7 @@ public final class DataSetManager
 		
 	public void deleteDataSetConfiguration(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 	
@@ -257,7 +268,9 @@ public final class DataSetManager
 				dataSetConfiguration.getVersion());
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetManager.error.unableToDeleteDataSetConfiguration",
@@ -276,6 +289,7 @@ public final class DataSetManager
 		
 	private boolean dataSetConfigurationExists(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 				
@@ -301,7 +315,9 @@ public final class DataSetManager
 			return result;
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetManager.error.unableToCheckDataSetConfigurationExists",
@@ -319,7 +335,8 @@ public final class DataSetManager
 	 * Assume this table is created in RIF scripts?
 	 */
 	public void clearAllDataSets(
-		final Connection connection) 
+		final Connection connection,
+		final Writer logFileWriter) 
 		throws RIFServiceException {
 
 		//Create SQL query
@@ -332,7 +349,9 @@ public final class DataSetManager
 			statement.executeUpdate();
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage("dataSetManager.error.unableToCleardataSets");
 			RIFServiceException RIFServiceException

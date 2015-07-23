@@ -135,7 +135,8 @@ public abstract class AbstractRIFWorkflow {
 		
 		WorkflowState currentWorkflowState
 			= getCurrentWorkflowState();
-		if (currentWorkflowState.getStateSequenceNumber() > stopWorkflowState.getStateSequenceNumber()) {
+		if (currentWorkflowState == WorkflowState.STOP ||
+			(currentWorkflowState.getStateSequenceNumber() > stopWorkflowState.getStateSequenceNumber())) {
 			return false;
 		}
 		else {

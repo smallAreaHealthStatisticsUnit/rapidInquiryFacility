@@ -2,6 +2,7 @@ package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 
+
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
@@ -12,6 +13,7 @@ import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.sql.*;
+import java.io.*;
 
 /**
  *
@@ -93,6 +95,7 @@ public final class SplitWorkflowManager
 
 	public void splitConfiguration(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 	

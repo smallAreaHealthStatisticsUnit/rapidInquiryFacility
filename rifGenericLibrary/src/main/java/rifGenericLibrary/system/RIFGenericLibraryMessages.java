@@ -95,7 +95,7 @@ public final class RIFGenericLibraryMessages {
 
     static {
         resourceBundle 
-        	= ResourceBundle.getBundle("RIFGenericUIMessages");
+        	= ResourceBundle.getBundle("RIFGenericLibraryMessages");
     }
 
     // ==========================================

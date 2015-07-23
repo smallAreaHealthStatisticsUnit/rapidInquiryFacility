@@ -80,9 +80,10 @@ public final class UKPostalCodeRIFDataType
 			validationRegularExpression);
 		
 		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_FUNCTION);
-		setCleaningFunctionName("is_valid_uk_postal_code");
+		setValidationFunctionName("is_valid_uk_postal_code");
 		setFieldCleaningPolicy(RIFFieldCleaningPolicy.CLEANING_FUNCTION);
 		setCleaningFunctionName("clean_uk_postal_code");
+		
 		
 	}
 

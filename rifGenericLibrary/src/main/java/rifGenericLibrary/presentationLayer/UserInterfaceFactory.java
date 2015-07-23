@@ -535,6 +535,26 @@ public final class UserInterfaceFactory {
 		
 		return splitPane;
 	}
+
+
+	/**
+	 * Creates a new UserInterface object.
+	 *
+	 * @param topComponent the top component
+	 * @param bottomComponent the bottom component
+	 * @return the j split pane
+	 */
+	public JSplitPane createLeftRightSplitPane(
+		Component leftComponent,
+		Component rightComponent) {
+		
+		JSplitPane splitPane 
+			= new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, 
+				leftComponent, 
+				rightComponent);
+		
+		return splitPane;
+	}
 	
 	/**
 	 * Creates a new UserInterface object.

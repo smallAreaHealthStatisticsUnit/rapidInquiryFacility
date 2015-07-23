@@ -6,6 +6,7 @@ import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 
 
 
+
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
@@ -28,9 +29,7 @@ import org.postgresql.core.BaseConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.io.File;
-import java.io.FileReader;
-
+import java.io.*;
 
 /**
  *
@@ -116,6 +115,7 @@ public final class LoadWorkflowManager
 	
 	public RIFResultTable getLoadTableData(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 		
@@ -131,7 +131,9 @@ public final class LoadWorkflowManager
 			return resultTable;
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 		}
 		finally {
 			SQLQueryUtility.close(connection);
@@ -140,10 +142,10 @@ public final class LoadWorkflowManager
 	}
 	
 	public void loadConfiguration(
-		final Connection connection,
+		final Connection connection,				
+		final Writer logFileWriter, 
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
-
 		
 		PreparedStatement dropTableStatement = null;		
 		String coreDataSetName 
@@ -153,11 +155,13 @@ public final class LoadWorkflowManager
 			
 		deleteTable(
 			connection, 
+			logFileWriter,
 			targetLoadTable);
 
 		int dataSetIdentifier
 			= dataSetManager.addDataSetConfiguration(
 				connection, 
+				logFileWriter,
 				dataSetConfiguration);
 		
 		PreparedStatement createLoadTableStatement = null;
@@ -180,6 +184,7 @@ public final class LoadWorkflowManager
 			}
 			
 			logSQLQuery(
+				logFileWriter,
 				"create_load_table", 
 				createLoadTableQueryFormatter);
 			
@@ -191,29 +196,36 @@ public final class LoadWorkflowManager
 			//now import the data from the CSV file
 			importCSVFile(
 				connection,
+				logFileWriter,
 				dataSetConfiguration.getFilePath(),
 				targetLoadTable);
 			
 			addDataSourceIdentifierField(
 				connection,
+				logFileWriter,
 				targetLoadTable,
 				dataSetIdentifier);
 			addOriginalRowNumbers(
 				connection, 
+				logFileWriter,
 				targetLoadTable);
 	
 			addPrimaryKey(
 				connection,
+				logFileWriter,
 				targetLoadTable,
 				"data_set_id, row_number");
 			
 			updateLastCompletedWorkState(
 				connection,
+				logFileWriter,
 				dataSetConfiguration,
 				WorkflowState.LOAD);
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String createTableName
 				= RIFTemporaryTablePrefixes.LOAD.getTableName(
 						dataSetConfiguration.getName());
@@ -235,6 +247,7 @@ public final class LoadWorkflowManager
 	
 	private void importCSVFile(
 		final Connection connection,
+		final Writer logFileWriter,
 		final String csvFilePath,
 		final String destinationTableName)
 		throws RIFServiceException {
@@ -260,12 +273,15 @@ public final class LoadWorkflowManager
 				fileReader);
 		}
 		catch(Exception exception) {
-			logException(exception);
+			logException(
+				logFileWriter,
+				exception);
 		}		
 	}
 		
 	private void addDataSourceIdentifierField(
 		final Connection connection,
+		final Writer logFileWriter,
 		final String targetLoadTable,
 		final int dataSetIdentifier)
 		throws RIFServiceException {
@@ -287,7 +303,9 @@ public final class LoadWorkflowManager
 			
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"loadWorkflowManager.error.unableToDataSetNumber",
@@ -312,6 +330,7 @@ public final class LoadWorkflowManager
 	 */
 	private void addOriginalRowNumbers(
 		final Connection connection,
+		final Writer logFileWriter,
 		final String targetLoadTable) 
 		throws RIFServiceException {
 				
@@ -328,7 +347,9 @@ public final class LoadWorkflowManager
 			
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"loadWorkflowManager.error.unableToAddRowNumbers",
@@ -345,6 +366,7 @@ public final class LoadWorkflowManager
 	}
 	public void addLoadTableData(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration,
 		final String[][] tableData) 
 		throws RIFServiceException {
@@ -364,6 +386,7 @@ public final class LoadWorkflowManager
 		}
 
 		logSQLQuery(
+			logFileWriter,
 			"addLoadTableData", 
 			queryFormatter);
 		

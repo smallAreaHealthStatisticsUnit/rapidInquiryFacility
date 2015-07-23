@@ -7,11 +7,20 @@ import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLCreateTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
+import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
+
+
+
+
+
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Properties;
 
 
 /**
@@ -70,11 +79,14 @@ public class SampleRIFDatabaseCreationManager {
 
 	public static final void main(String[] arguments) {
 		
-		try {
-			SampleRIFDatabaseCreationManager fakeDatabaseCreationManager
-				= new SampleRIFDatabaseCreationManager();
-			
-			
+		//try {
+			//RIFDataLoaderStartupOptions startupOptions
+			//	= new RIFDataLoaderStartupOptions();
+			//SampleRIFDatabaseCreationManager fakeDatabaseCreationManager
+			//	= new SampleRIFDatabaseCreationManager(startupOptions);
+			//fakeDatabaseCreationManager.createDatabase("kgarwood", "kgarwood");
+			//fakeDatabaseCreationManager.createDatabaseTables();
+/*			
 			String databaseDriverName = "org.postgresql.Driver";
 			String databaseDriverPrefix = "jdbc:postgresql";
 			String host = "localhost";
@@ -92,17 +104,14 @@ public class SampleRIFDatabaseCreationManager {
 					"kgarwood", 
 					"kgarwood", 
 					true);
-			fakeDatabaseCreationManager.createTables(connection);
+			fakeDatabaseCreationManager.createDatabaseTables(connection);
 			//fakeDatabaseCreationManager.deleteTables(connection);
+	*/		
 			
-			
-		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printErrors();
-		}
-		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
-		}
+		//}
+		//catch(RIFServiceException rifServiceException) {
+		//	rifServiceException.printErrors();
+		//}
 		
 		
 	}
@@ -114,28 +123,135 @@ public class SampleRIFDatabaseCreationManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private RIFDataLoaderStartupOptions startupOptions;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public SampleRIFDatabaseCreationManager() {
+	public SampleRIFDatabaseCreationManager(
+		final RIFDataLoaderStartupOptions startupOptions) {
 
+		this.startupOptions = startupOptions;
 	}
 	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	
-	public void createTables(
-		final Connection connection) 
+	public void createDatabase(
+		final String userID,
+		final String password)
 		throws RIFServiceException {
+		
+		PreparedStatement statement = null;
+		Connection connection = null;
+		try {
+			StringBuilder urlText = new StringBuilder();
+			urlText.append(startupOptions.getJDBCDriverPrefix());
+			urlText.append(":");
+			urlText.append("//");
+			urlText.append(startupOptions.getHost());
+			urlText.append(":");
+			urlText.append(startupOptions.getPort());
+			urlText.append("/");
+			String databaseURL = urlText.toString();	
 			
-		createCovariatesTable(connection);
-		createDataSetConfigurationsTable(connection);
-		createAuditTable(connection);
+			System.out.println("db url=="+ urlText.toString() + "==");
+			
+			//Properties databaseProperties = new Properties();
+			//databaseProperties.setProperty("user", userID);
+			//databaseProperties.setProperty("password", password);
+			
+			connection
+				= DriverManager.getConnection(databaseURL, userID, password);
+			SQLGeneralQueryFormatter queryFormatter
+				= new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryPhrase("DROP DATABASE IF EXISTS ");
+			queryFormatter.addQueryPhrase(startupOptions.getDatabaseName());
+			queryFormatter.addQueryPhrase(";");
+			queryFormatter.finishLine();
+			queryFormatter.addQueryPhrase("CREATE DATABASE ");
+			queryFormatter.addQueryPhrase(startupOptions.getDatabaseName());
+			queryFormatter.addQueryPhrase(";");
+			queryFormatter.finishLine();
 
+			System.out.println("About to create database 1...");
+			statement
+				= connection.prepareStatement(queryFormatter.generateQuery());
+			statement.executeUpdate();
+			System.out.println("About to create database 2...");
+		}
+		catch(Exception sqlException) {
+			System.out.println("About to create database 3...");			
+			sqlException.printStackTrace(System.out);
+			String errorMessage	
+				= RIFDataLoaderToolMessages.getMessage(
+					"sampleRIFDatabaseCreationManager.error.unableToInitialiseDatabase");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;			
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(connection);
+		}
+		
+	}
+		
+	public void createDatabaseTables(
+		final String userID,
+		final String password) 
+		throws RIFServiceException {
+
+		PreparedStatement statement = null;
+		Connection connection = null;		
+		try {
+			StringBuilder urlText = new StringBuilder();
+			urlText.append(startupOptions.getJDBCDriverPrefix());
+			urlText.append(":");
+			urlText.append("//");
+			urlText.append(startupOptions.getHost());
+			urlText.append(":");
+			urlText.append(startupOptions.getPort());
+			urlText.append("/");
+			urlText.append(startupOptions.getDatabaseName());
+			String databaseURL = urlText.toString();			
+			
+			connection
+				= DriverManager.getConnection(databaseURL, userID, password);
+			
+
+			System.out.println("About to create database tables 1...");
+
+			createCovariatesTable(connection);
+			createDataSetConfigurationsTable(connection);
+			createAuditChangesTable(connection);
+			createAuditFailedValidationTable(connection);		
+			
+			System.out.println("About to create database tables 2...");
+			
+		}
+		catch(Exception exception) {
+			System.out.println("About to create database tables 3...");
+			
+			exception.printStackTrace(System.out);
+			String errorMessage	
+				= RIFDataLoaderToolMessages.getMessage(
+					"sampleRIFDatabaseCreationManager.error.unableToInitialiseDatabase");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;			
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(connection);
+		}
+		
 	}
 	
 	private void createCovariatesTable(
@@ -272,7 +388,7 @@ public class SampleRIFDatabaseCreationManager {
 		
 	}
 	
-	public void createAuditTable(
+	public void createAuditChangesTable(
 		final Connection connection) 
 		throws RIFServiceException {
 		
@@ -280,7 +396,7 @@ public class SampleRIFDatabaseCreationManager {
 		try {
 			SQLCreateTableQueryFormatter queryFormatter
 				= new SQLCreateTableQueryFormatter();
-			queryFormatter.setTableName("rif_audit_table");
+			queryFormatter.setTableName("rif_change_log");
 
 			queryFormatter.addFieldDeclaration(
 				"data_set_id", 
@@ -293,15 +409,22 @@ public class SampleRIFDatabaseCreationManager {
 				false);
 			
 			queryFormatter.addTextFieldDeclaration(
-				"event_type", 
-				30, 
-				false);
-
-			queryFormatter.addTextFieldDeclaration(
 				"field_name", 
 				30, 
 				false);
+
 			
+			queryFormatter.addTextFieldDeclaration(
+				"old_value", 
+				30, 
+				true);
+
+			
+			queryFormatter.addTextFieldDeclaration(
+				"new_value", 
+				30, 
+				true);
+		
 			queryFormatter.addCreationTimestampField("time_stamp");
 			statement
 				= SQLQueryUtility.createPreparedStatement(
@@ -320,6 +443,58 @@ public class SampleRIFDatabaseCreationManager {
 			throw rifServiceException;
 		}	
 	}
+
+	
+	public void createAuditFailedValidationTable(
+		final Connection connection) 
+		throws RIFServiceException {
+		
+		PreparedStatement statement = null;
+		try {
+			SQLCreateTableQueryFormatter queryFormatter
+				= new SQLCreateTableQueryFormatter();
+			queryFormatter.setTableName("rif_failed_val_log");
+
+			queryFormatter.addFieldDeclaration(
+				"data_set_id", 
+				"INTEGER", 
+				false);
+
+			queryFormatter.addFieldDeclaration(
+				"row_number", 
+				"INTEGER", 
+				false);
+			
+			queryFormatter.addTextFieldDeclaration(
+				"field_name", 
+				30, 
+				false);
+
+			
+			queryFormatter.addTextFieldDeclaration(
+				"invalid_value", 
+				30, 
+				true);
+		
+			queryFormatter.addCreationTimestampField("time_stamp");
+			statement
+				= SQLQueryUtility.createPreparedStatement(
+				connection, 
+				queryFormatter);
+			statement.executeUpdate();
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"sampleRIFDatabaseCreationManager.error.unableToInitialiseDB");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}	
+	}
+	
 	
 	public void deleteTables(
 		final Connection connection) 

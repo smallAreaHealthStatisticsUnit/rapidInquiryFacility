@@ -3,6 +3,7 @@ package rifDataLoaderTool.dataStorageLayer;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 
 
+
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
@@ -22,6 +23,7 @@ import rifGenericLibrary.util.RIFLogger;
 import java.sql.*;
 import java.util.ArrayList;
 import java.text.Collator;
+import java.io.*;
 
 /**
  * provides functionality common to all manager classes associated with different steps
@@ -189,6 +191,7 @@ public abstract class AbstractDataLoaderStepManager {
 	
 	public void checkTotalRowsMatch(
 		final Connection connection,
+		final Writer logFileWriter,
 		final String coreTableName,
 		final RIFTemporaryTablePrefixes firstTablePrefix,
 		final RIFTemporaryTablePrefixes secondTablePrefix) 
@@ -275,7 +278,9 @@ public abstract class AbstractDataLoaderStepManager {
 			}
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage	
 				= RIFDataLoaderToolMessages.getMessage("tableIntegrityChecker.error.unableToCompareTables");
 			RIFServiceException RIFServiceException
@@ -293,6 +298,7 @@ public abstract class AbstractDataLoaderStepManager {
 	
 	protected void addComments(
 		final Connection connection,
+		final Writer logFileWriter,
 		final String targetTable,
 		final DataSetConfiguration dataSetConfiguration,
 		final WorkflowState workflowState) 
@@ -317,6 +323,7 @@ public abstract class AbstractDataLoaderStepManager {
 			//add data_set_id, row_number
 			addRIFGeneratedFieldDescriptions(
 				connection, 
+				logFileWriter,
 				targetTable,
 				dataSetConfiguration,
 				workflowState);
@@ -333,6 +340,7 @@ public abstract class AbstractDataLoaderStepManager {
 
 					addCommentToTableField(
 						connection,
+						logFileWriter,
 						targetTable,
 						fieldConfiguration,
 						workflowState);
@@ -340,7 +348,9 @@ public abstract class AbstractDataLoaderStepManager {
 			}
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"abstractDataLoaderStepManager.error.unableToAddComments",
@@ -358,6 +368,7 @@ public abstract class AbstractDataLoaderStepManager {
 
 	private void addRIFGeneratedFieldDescriptions(
 		final Connection connection, 
+		final Writer logFileWriter,
 		final String targetTable,
 		final DataSetConfiguration dataSetConfiguration,
 		final WorkflowState workflowState) 
@@ -370,6 +381,7 @@ public abstract class AbstractDataLoaderStepManager {
 
 		addCommentToTableField(
 			connection,
+			logFileWriter,
 			targetTable,
 			"row_number",
 			rowNumberFieldDescription);
@@ -379,6 +391,7 @@ public abstract class AbstractDataLoaderStepManager {
 				"dataSetFieldConfiguration.dataSetIdentifier.description");
 		addCommentToTableField(
 			connection,
+			logFileWriter,
 			targetTable,
 			"data_set_id",
 			dataSetIdentifierFieldDescription);
@@ -393,6 +406,7 @@ public abstract class AbstractDataLoaderStepManager {
 					"dataSetFieldConfiguration.ageSexGroup.description");
 			addCommentToTableField(
 				connection,
+				logFileWriter,
 				targetTable,
 				"age_sex_group",
 				ageSexGroupFieldDescription);			
@@ -405,6 +419,7 @@ public abstract class AbstractDataLoaderStepManager {
 					"dataSetFieldConfiguration.keep.description");
 			addCommentToTableField(
 				connection,
+				logFileWriter,
 				targetTable,
 				"keep_record",
 				keepDescription);			
@@ -434,6 +449,7 @@ public abstract class AbstractDataLoaderStepManager {
 	
 	private void addCommentToTableField(
 		final Connection connection,
+		final Writer logFileWriter,
 		final String targetTable,
 		final DataSetFieldConfiguration dataSetFieldConfiguration,
 		final WorkflowState workflowState)
@@ -452,6 +468,7 @@ public abstract class AbstractDataLoaderStepManager {
 		}
 		addCommentToTableField(
 			connection,
+			logFileWriter,
 			targetTable,
 			fieldName,
 			dataSetFieldConfiguration.getCoreFieldDescription());
@@ -459,6 +476,7 @@ public abstract class AbstractDataLoaderStepManager {
 	
 	private void addCommentToTableField(
 		final Connection connection,
+		final Writer logFileWriter,
 		final String targetTable,
 		final String fieldName,
 		final String fieldDescription)
@@ -486,7 +504,10 @@ public abstract class AbstractDataLoaderStepManager {
 			queryFormatter.addQueryPhrase("'");
 			
 			
-			logSQLQuery("addCommentToTableField", queryFormatter);
+			logSQLQuery(
+				logFileWriter,
+				"addCommentToTableField", 
+				queryFormatter);
 			
 			statement
 				= createPreparedStatement(
@@ -505,6 +526,7 @@ public abstract class AbstractDataLoaderStepManager {
 	
 	protected void addPrimaryKey(
 		final Connection connection,
+		final Writer logFileWriter,
 		final String targetTableName,
 		final String primaryKeyFieldPhrase)
 		throws RIFServiceException {
@@ -526,7 +548,9 @@ public abstract class AbstractDataLoaderStepManager {
 			statement.executeUpdate();		
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"abstractDataLoaderStepManager.error.unableToAddPrimaryKeys",
@@ -547,6 +571,7 @@ public abstract class AbstractDataLoaderStepManager {
 	
 	protected void deleteTable(
 		final Connection connection,
+		final Writer logFileWriter,
 		final String targetTableName) 
 		throws RIFServiceException {
 		
@@ -562,7 +587,9 @@ public abstract class AbstractDataLoaderStepManager {
 			statement.executeUpdate();		
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"abstractDataLoaderStepManager.error.unableToDeleteTable",
@@ -580,6 +607,7 @@ public abstract class AbstractDataLoaderStepManager {
 	
 	protected void copyTable(
 		final Connection connection,
+		final Writer logFileWriter,
 		final String sourceTableName,
 		final String destinationTableName) 
 		throws RIFServiceException {
@@ -600,8 +628,11 @@ public abstract class AbstractDataLoaderStepManager {
 			statement.executeUpdate();			
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter, 
+				sqlException);
 			logSQLQuery(
+				logFileWriter,
 				"createOptimiseTable", 
 				queryFormatter);
 			String errorMessage
@@ -623,6 +654,7 @@ public abstract class AbstractDataLoaderStepManager {
 
 	protected void updateLastCompletedWorkState(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration,
 		final WorkflowState workFlowState) 
 		throws RIFServiceException {
@@ -635,7 +667,10 @@ public abstract class AbstractDataLoaderStepManager {
 			queryFormatter.addUpdateField("current_workflow_state");
 			queryFormatter.addWhereParameter("core_data_set_name");
 			
-			logSQLQuery("update state", queryFormatter);
+			logSQLQuery(
+				logFileWriter,
+				"update state", 
+				queryFormatter);
 			statement
 				= createPreparedStatement(
 					connection, 
@@ -651,7 +686,9 @@ public abstract class AbstractDataLoaderStepManager {
 			statement.executeUpdate();
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter, 
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetManager.error.unableToUpdateLastCompletedState",
@@ -663,69 +700,6 @@ public abstract class AbstractDataLoaderStepManager {
 			throw rifServiceException;
 		}		
 	}
-	
-	
-	/*
-	protected void createRowNumberAndDataSetIdentifierIndices(
-		final Connection connection,
-		final String targetTable) 
-		throws RIFServiceException {
-		
-
-		PreparedStatement rowNumberIndexStatement = null;
-		PreparedStatement dataSetIndexStatement = null;
-
-		try {
-
-			SQLGeneralQueryFormatter rowNumberIndexQueryFormatter 
-				= new SQLGeneralQueryFormatter();
-			rowNumberIndexQueryFormatter.addQueryPhrase(0, "CREATE INDEX idx_");
-			rowNumberIndexQueryFormatter.addQueryPhrase("rn_");
-			rowNumberIndexQueryFormatter.addQueryPhrase(targetTable);
-			rowNumberIndexQueryFormatter.addQueryPhrase(" ON ");
-			rowNumberIndexQueryFormatter.addQueryPhrase(targetTable);
-			rowNumberIndexQueryFormatter.addQueryPhrase(" (row_number);");
-			
-			logSQLQuery("lwfm_create_rn_index", rowNumberIndexQueryFormatter);
-					
-			rowNumberIndexStatement
-				= createPreparedStatement(connection, rowNumberIndexQueryFormatter);
-			rowNumberIndexStatement.executeUpdate();
-			
-			SQLGeneralQueryFormatter dataSetIndexQueryFormatter = new SQLGeneralQueryFormatter();
-			dataSetIndexQueryFormatter.addQueryPhrase(0, "CREATE INDEX idx_");
-			dataSetIndexQueryFormatter.addQueryPhrase("ds_");
-			dataSetIndexQueryFormatter.addQueryPhrase(targetTable);
-			dataSetIndexQueryFormatter.addQueryPhrase(" ON ");
-			dataSetIndexQueryFormatter.addQueryPhrase(targetTable);
-			dataSetIndexQueryFormatter.addQueryPhrase(" (data_set_id);");
-
-			logSQLQuery("lwfm_create_ds_index", dataSetIndexQueryFormatter);
-			
-			dataSetIndexStatement
-				= createPreparedStatement(connection, dataSetIndexQueryFormatter);
-			dataSetIndexStatement.executeUpdate();
-		}
-		catch(SQLException sqlException) {
-			logSQLException(sqlException);
-			
-			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage(
-					"abstractDataLoaderStepManager.error.unableToCreateCommonIndices",
-					targetTable);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			SQLQueryUtility.close(rowNumberIndexStatement);			
-			SQLQueryUtility.close(dataSetIndexStatement);			
-		}		
-	}
-*/	
-	
 	
 	protected PreparedStatement createPreparedStatement(
 		final Connection connection,
@@ -740,9 +714,11 @@ public abstract class AbstractDataLoaderStepManager {
 		
 
 	protected void logSQLQuery(
+		final Writer logFileWriter,
 		final String queryName,
 		final AbstractSQLQueryFormatter queryFormatter,
-		final String... parameters) {
+		final String... parameters) 
+		throws RIFServiceException {
 
 		StringBuilder queryLog = new StringBuilder();
 		queryLog.append("==========================================================\n");
@@ -765,16 +741,81 @@ public abstract class AbstractDataLoaderStepManager {
 		queryLog.append("\n");
 		queryLog.append("==========================================================\n");
 		
-		System.out.println(queryLog.toString());	
+		try {
+			logFileWriter.write(queryLog.toString());	
+			logFileWriter.flush();
+		}
+		catch(IOException ioException) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"general.io.unableToWriteToFile");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.UNABLE_TO_WRITE_FILE, 
+					errorMessage);
+			throw rifServiceException;
+		}
+	}
 
+
+	protected void logSQLQuery(
+		final Writer logFileWriter,
+		final String queryName,
+		final String queryText) 
+		throws RIFServiceException {
+
+		StringBuilder queryLog = new StringBuilder();
+		
+		queryLog.append("==========================================================\n");
+		queryLog.append("QUERY NAME:");
+		queryLog.append(queryName);
+		queryLog.append("\n");
+		queryLog.append(queryText);
+		try {
+			logFileWriter.write(queryLog.toString());	
+			logFileWriter.flush();
+		}
+		catch(IOException ioException) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"general.io.unableToWriteToFile");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.UNABLE_TO_WRITE_FILE, 
+					errorMessage);
+			throw rifServiceException;
+		}
 	}
 	
-	protected void logSQLException(final SQLException sqlException) {
-		sqlException.printStackTrace(System.out);
+	
+	protected void logSQLException(
+		final Writer logFileWriter,
+		final SQLException sqlException) {
+
+		if (logFileWriter == null) {
+			sqlException.printStackTrace(System.out);
+		}
+		else {
+			PrintWriter printWriter = new PrintWriter(logFileWriter);
+			sqlException.printStackTrace(printWriter);
+			printWriter.flush();
+		}
+
 	}
 
-	protected void logException(final Exception exception) {
-		exception.printStackTrace(System.out);
+	protected void logException(
+		final Writer logFileWriter,
+		final Exception exception) {
+
+
+		if (logFileWriter == null) {
+			exception.printStackTrace(System.out);
+		}
+		else {		
+			PrintWriter printWriter = new PrintWriter(logFileWriter);
+			exception.printStackTrace(printWriter);
+			printWriter.flush();
+		}
 	}
 	
 	protected void setAutoCommitOn(

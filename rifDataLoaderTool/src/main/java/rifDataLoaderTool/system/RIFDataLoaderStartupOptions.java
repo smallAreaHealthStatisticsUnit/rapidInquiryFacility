@@ -65,6 +65,12 @@ public final class RIFDataLoaderStartupOptions {
 	public static final int MAXIMUM_USER_ID_WIDTH = 20;
 	private static final int TEXT_FIELD_WIDTH = 30;
 	
+	private String jdbcDriverPrefix;
+	private String databaseName;
+	private String port;
+	private String host;
+	
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -77,6 +83,11 @@ public final class RIFDataLoaderStartupOptions {
 	
 	public RIFDataLoaderStartupOptions() {
 		databaseType = DatabaseType.POSTGRESQL;
+		
+		jdbcDriverPrefix = "jdbc:postgresql";
+		databaseName = "tmp_sahsu_db";
+		port = "5432";
+		host = "localhost";
 	}
 
 	// ==========================================
@@ -97,6 +108,38 @@ public final class RIFDataLoaderStartupOptions {
 		return 30;
 	}
 	
+	public String getJDBCDriverPrefix() {
+		return jdbcDriverPrefix;
+	}
+
+	public void setJDBCDriverPrefix(String jdbcDriverPrefix) {
+		this.jdbcDriverPrefix = jdbcDriverPrefix;
+	}
+
+	public String getDatabaseName() {
+		return databaseName;
+	}
+
+	public void setDatabaseName(String databaseName) {
+		this.databaseName = databaseName;
+	}
+
+	public String getPort() {
+		return port;
+	}
+
+	public void setPort(String port) {
+		this.port = port;
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+	}
+
 	public RIFDatabaseProperties getRIFDatabaseProperties() {
 		
 		RIFDatabaseProperties rifDatabaseProperties

@@ -1,6 +1,7 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
+
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
@@ -12,6 +13,7 @@ import rifGenericLibrary.system.RIFServiceException;
 
 import java.sql.*;
 import java.text.Collator;
+import java.io.*;
 
 /**
  *
@@ -93,6 +95,7 @@ public final class OptimiseWorkflowManager
 
 	public void optimiseConfiguration(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 	
@@ -114,34 +117,36 @@ public final class OptimiseWorkflowManager
 		String optimiseTableName
 			= RIFTemporaryTablePrefixes.OPTIMISE.getTableName(coreDataSetName);
 		deleteTable(
-			connection, 
+			connection,
+			logFileWriter,
 			optimiseTableName);
 		copyTable(
 			connection,
+			logFileWriter,
 			convertTableName,
 			optimiseTableName);
 		
-		
-		
-		
-		
 		deleteIndices(
 			connection,
+			logFileWriter,
 			dataSetConfiguration.getName(),
 			dataSetConfiguration.getIndexFieldNames());			
 			
 		createIndices(
 			connection,
+			logFileWriter,
 			dataSetConfiguration.getName(),
 			dataSetConfiguration.getIndexFieldNames());
 		
 		addPrimaryKey(
 			connection,
+			logFileWriter,
 			optimiseTableName,
 			"data_set_id, row_number");
 				
 		updateLastCompletedWorkState(
 			connection,
+			logFileWriter,
 			dataSetConfiguration,
 			WorkflowState.OPTIMISE);
 
@@ -149,6 +154,7 @@ public final class OptimiseWorkflowManager
 	
 	private void createIndices(
 		final Connection connection,
+		final Writer logFileWriter,
 		final String coreDataSetName,
 		final String[] indexFieldNames) 
 		throws RIFServiceException {
@@ -170,6 +176,7 @@ public final class OptimiseWorkflowManager
 					queryFormatter.setIndexTableField(indexFieldName);
 
 					logSQLQuery(
+						logFileWriter,
 						"createIndices", 
 						queryFormatter, 
 						targetTable,
@@ -188,7 +195,9 @@ public final class OptimiseWorkflowManager
 						
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"optimiseWorkflowManager.error.unableToCreateIndex",
@@ -223,6 +232,7 @@ public final class OptimiseWorkflowManager
 	
 	private void deleteIndices(
 		final Connection connection,
+		final Writer logFileWriter,
 		final String coreDataSetName,
 		final String[] indexFieldNames) 
 		throws RIFServiceException {
@@ -245,6 +255,7 @@ public final class OptimiseWorkflowManager
 					queryFormatter.setIndexTableField(indexFieldName);
 
 					logSQLQuery(
+						logFileWriter,
 						"deleteIndices", 
 						queryFormatter, 
 						targetTable,
@@ -262,7 +273,9 @@ public final class OptimiseWorkflowManager
 						
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"optimiseWorkflowManager.error.unableToDeleteIndex",

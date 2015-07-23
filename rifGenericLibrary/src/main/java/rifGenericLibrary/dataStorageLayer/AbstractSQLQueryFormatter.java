@@ -82,6 +82,7 @@ public abstract class AbstractSQLQueryFormatter {
 	private DatabaseType databaseType;
 	private boolean isCaseSensitive;
 	
+	private boolean endWithSemiColon;
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -92,11 +93,17 @@ public abstract class AbstractSQLQueryFormatter {
 	public AbstractSQLQueryFormatter() {
 		isCaseSensitive = true;
 		query = new StringBuilder();
+		endWithSemiColon = true;
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	protected StringBuilder getQueryBuilder() {
+		return query;
+	}
+	
 	/**
 	 * Convert case.
 	 *
@@ -244,6 +251,14 @@ public abstract class AbstractSQLQueryFormatter {
 	
 	public String generateQuery() {
 		return query.toString();
+	}
+	
+	public boolean endWithSemiColon() {
+		return endWithSemiColon;
+	}
+	
+	public void setEndWithSemiColon(boolean endWithSemiColon) {
+		this.endWithSemiColon = endWithSemiColon;
 	}
 	
 	// ==========================================

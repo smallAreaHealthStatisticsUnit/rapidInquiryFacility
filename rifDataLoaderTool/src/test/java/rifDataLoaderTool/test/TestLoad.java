@@ -82,27 +82,6 @@ public class TestLoad extends AbstractRIFDataLoaderTestCase {
 
 	@Test
 	public void test1() {
-		User rifManager = getRIFManager();
-		TestDataLoaderService dataLoaderService
-			= getDataLoaderService();
-		try {
-			SampleDataGenerator sampleDataGenerator
-				= new SampleDataGenerator();
-			DataSetConfiguration dataSetConfiguration
-				= sampleDataGenerator.createTest4StudyID1ExtractConfiguration();
-			RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
-			if (rifSchemaArea == null) {
-				System.out.println("Blah");
-			}
-			
-			dataLoaderService.initialiseService();
-			dataLoaderService.loadConfiguration(rifManager, dataSetConfiguration);
-			System.out.println("LOAD FINISHED");
-		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printErrors();
-			fail();
-		}
 		
 	}
 

@@ -1,21 +1,13 @@
-package rifDataLoaderTool.test;
+package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
-
-import rifDataLoaderTool.dataStorageLayer.AbstractDataLoaderService;
-import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
-import rifDataLoaderTool.dataStorageLayer.TestDataLoaderService;
-import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.User;
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-
+import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
+import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
+import rifDataLoaderTool.system.RIFDataLoaderMessages;
 /**
- *
+ * a data type for Integers.
  *
  * <hr>
- * Copyright 2015 Imperial College London, developed by the Small Area
+ * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -61,7 +53,8 @@ import org.junit.Test;
  *
  */
 
-public class TestOptimise extends AbstractRIFDataLoaderTestCase {
+public final class QuintiliseRIFDataType 
+	extends AbstractRIFDataType {
 
 	// ==========================================
 	// Section Constants
@@ -70,24 +63,46 @@ public class TestOptimise extends AbstractRIFDataLoaderTestCase {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public TestOptimise() {
+	private QuintiliseRIFDataType(
+		final String identifier,
+		final String name,
+		final String description) {
 
-	}
-
-	public void test1() {
-
+		super(
+			identifier,
+			name, 
+			description);
 		
+		//String validationRegularExpression = "^(\\d+)";
+		//addValidationExpression(validationRegularExpression);
+		setFieldCleaningPolicy(RIFFieldCleaningPolicy.SQL_FRAGMENT);
+		setFieldValidationPolicy(RIFFieldValidationPolicy.NO_VALIDATION);
 	}
 
+	public static QuintiliseRIFDataType newInstance() {
+
+		String name
+			= RIFDataLoaderMessages.getMessage("rifDataType.quintilise.label");
+		String description
+			= RIFDataLoaderMessages.getMessage("rifDataType.quintilise.description");
+		QuintiliseRIFDataType integerRIFDataType
+			= new QuintiliseRIFDataType(
+				"rif_quintilise",
+				name, 
+				description);
+		
+		return integerRIFDataType;
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -100,6 +115,12 @@ public class TestOptimise extends AbstractRIFDataLoaderTestCase {
 	// Section Override
 	// ==========================================
 
+	public QuintiliseRIFDataType createCopy() {
+		QuintiliseRIFDataType cloneIntegerRIFDataType = newInstance();
+		copyAttributes(cloneIntegerRIFDataType);
+		return cloneIntegerRIFDataType;
+	}	
+	
 }
 
 

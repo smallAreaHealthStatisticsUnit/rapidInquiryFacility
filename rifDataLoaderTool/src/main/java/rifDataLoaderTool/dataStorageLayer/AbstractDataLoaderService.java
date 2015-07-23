@@ -2,6 +2,7 @@ package rifDataLoaderTool.dataStorageLayer;
 
 
 import rifDataLoaderTool.system.*;
+
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.postgresql.*;
 import rifDataLoaderTool.dataStorageLayer.SQLConnectionManager;
@@ -14,8 +15,10 @@ import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 
+import java.io.FileWriter;
 import java.sql.*;
 import java.util.ArrayList;
+import java.io.*;
 
 /**
  * Main implementation of the {@link rifDataLoaderTool.dataStorageLayer.AbstractDataLoaderService}.
@@ -117,7 +120,10 @@ public abstract class AbstractDataLoaderService
 	private SQLConnectionManager sqlConnectionManager;
 	private DataSetManager dataSetManager;
 	private LoadWorkflowManager loadWorkflowManager;
+	
+	private ChangeAuditManager changeAuditManager;
 	private CleanWorkflowManager cleanWorkflowManager;
+	
 	private CombineWorkflowManager combineWorkflowManager;
 	private SplitWorkflowManager splitWorkflowManager;
 	private ConvertWorkflowManager convertWorkflowManager;
@@ -172,12 +178,16 @@ public abstract class AbstractDataLoaderService
 				rifDatabaseProperties,
 				dataSetManager);
 		
+		changeAuditManager
+			= new ChangeAuditManager(rifDatabaseProperties);
+		
 		PostgresCleaningStepQueryGenerator cleanWorkflowQueryGenerator
 			= new PostgresCleaningStepQueryGenerator();
 		cleanWorkflowManager
 			= new CleanWorkflowManager(
 				rifDatabaseProperties,
 				dataSetManager,
+				changeAuditManager,
 				cleanWorkflowQueryGenerator);
 					
 		convertWorkflowManager
@@ -239,6 +249,10 @@ public abstract class AbstractDataLoaderService
 		return dataSetManager;
 	}
 	
+	protected ChangeAuditManager getChangeAuditManager() {
+		return changeAuditManager;
+	}
+	
 	protected SQLConnectionManager getSQLConnectionManger() {
 		return sqlConnectionManager;
 	}
@@ -279,6 +293,7 @@ public abstract class AbstractDataLoaderService
 
 	public void registerDataSetConfiguration(
 		final User _rifManager,
+		final Writer logFileWriter,
 		final DataSetConfiguration _dataSetConfiguration)
 		throws RIFServiceException {
 		
@@ -328,6 +343,7 @@ public abstract class AbstractDataLoaderService
 			
 			dataSetManager.addDataSetConfiguration(
 				connection,
+				logFileWriter,
 				dataSetConfiguration);
 			
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -348,6 +364,7 @@ public abstract class AbstractDataLoaderService
 		
 	public void loadConfiguration(
 		final User _rifManager,
+		final Writer logFileWriter,		
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
@@ -393,9 +410,9 @@ public abstract class AbstractDataLoaderService
 				= sqlConnectionManager.assignPooledWriteConnection(
 						rifManager);
 			
-			System.out.println("DataLoader Service ================doing load configuration !!!!!!!!!!!");
 			loadWorkflowManager.loadConfiguration(
 				connection, 
+				logFileWriter,
 				dataSetConfiguration);
 
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -415,6 +432,7 @@ public abstract class AbstractDataLoaderService
 	
 	public void addLoadTableData(
 		final User _rifManager,
+		final Writer logFileWriter,
 		final DataSetConfiguration _dataSetConfiguration,
 		final String[][] tableData)
 		throws RIFServiceException,
@@ -472,6 +490,7 @@ public abstract class AbstractDataLoaderService
 
 			loadWorkflowManager.addLoadTableData(
 				connection, 
+				logFileWriter,
 				dataSetConfiguration, 
 				tableData);
 			
@@ -492,6 +511,7 @@ public abstract class AbstractDataLoaderService
 
 	public RIFResultTable getLoadTableData(
 		final User _rifManager,
+		final Writer logFileWriter,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
@@ -540,6 +560,7 @@ public abstract class AbstractDataLoaderService
 			results
 				= loadWorkflowManager.getLoadTableData(
 					connection, 
+					logFileWriter,
 					dataSetConfiguration);
 			
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -561,6 +582,7 @@ public abstract class AbstractDataLoaderService
 		
 	public void cleanConfiguration(
 		final User _rifManager,
+		final Writer logFileWriter,		
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
@@ -602,6 +624,7 @@ public abstract class AbstractDataLoaderService
 
 			cleanWorkflowManager.cleanConfiguration(
 				connection, 
+				logFileWriter,
 				dataSetConfiguration);
 						
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -689,6 +712,7 @@ public abstract class AbstractDataLoaderService
 	
 	public void combineConfiguration(
 		final User _rifManager,
+		final Writer logFileWriter,		
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
@@ -726,6 +750,7 @@ public abstract class AbstractDataLoaderService
 							
 			combineWorkflowManager.combineConfiguration(
 				connection, 
+				logFileWriter,
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -744,6 +769,7 @@ public abstract class AbstractDataLoaderService
 	
 	public void splitConfiguration(
 		final User _rifManager,
+		final Writer logFileWriter,		
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
@@ -781,6 +807,7 @@ public abstract class AbstractDataLoaderService
 							
 			splitWorkflowManager.splitConfiguration(
 				connection, 
+				logFileWriter,
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -799,6 +826,7 @@ public abstract class AbstractDataLoaderService
 	
 	public void convertConfiguration(
 		final User _rifManager,
+		final Writer logFileWriter,		
 		final DataSetConfiguration _dataSetConfiguration)
 		throws RIFServiceException,
 		RIFServiceException {
@@ -836,6 +864,7 @@ public abstract class AbstractDataLoaderService
 								
 			convertWorkflowManager.convertConfiguration(
 				connection, 
+				logFileWriter,
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -854,6 +883,7 @@ public abstract class AbstractDataLoaderService
 
 	public void optimiseConfiguration(
 		final User _rifManager,
+		final Writer logFileWriter,		
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException {
 		
@@ -890,6 +920,7 @@ public abstract class AbstractDataLoaderService
 
 			optimiseWorkflowManager.optimiseConfiguration(
 				connection, 
+				logFileWriter,
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -909,6 +940,7 @@ public abstract class AbstractDataLoaderService
 
 	public void checkConfiguration(
 		final User _rifManager,
+		final Writer logFileWriter,		
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException {
 		
@@ -944,6 +976,7 @@ public abstract class AbstractDataLoaderService
 
 			checkWorkflowManager.checkConfiguration(
 				connection, 
+				logFileWriter,
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -963,6 +996,7 @@ public abstract class AbstractDataLoaderService
 
 	public void publishConfiguration(
 		final User _rifManager,
+		final Writer logFileWriter,		
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException {
 		
@@ -997,7 +1031,8 @@ public abstract class AbstractDataLoaderService
 					rifManager);
 
 			publishWorkflowManager.publishConfiguration(
-				connection, 
+				connection,
+				logFileWriter,
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -1016,6 +1051,7 @@ public abstract class AbstractDataLoaderService
 	
 	public Integer getCleaningTotalBlankValues(
 		final User _rifManager,
+		final Writer logFileWriter,
 		final DataSetConfiguration _dataSetConfiguration)
 		throws RIFServiceException,
 		RIFServiceException {
@@ -1061,6 +1097,7 @@ public abstract class AbstractDataLoaderService
 			result
 				= cleanWorkflowManager.getCleaningTotalBlankValues(
 					connection, 
+					logFileWriter,
 					dataSetConfiguration);
 			sqlConnectionManager.reclaimPooledWriteConnection(
 				rifManager, 
@@ -1080,6 +1117,7 @@ public abstract class AbstractDataLoaderService
 		
 	public Integer getCleaningTotalChangedValues(
 		final User _rifManager,
+		final Writer logFileWriter,
 		final DataSetConfiguration _dataSetConfiguration)
 		throws RIFServiceException,
 		RIFServiceException {
@@ -1125,6 +1163,7 @@ public abstract class AbstractDataLoaderService
 			result
 				= cleanWorkflowManager.getCleaningTotalChangedValues(
 					connection, 
+					logFileWriter,
 					dataSetConfiguration);
 			sqlConnectionManager.reclaimPooledWriteConnection(
 				rifManager, 
@@ -1144,6 +1183,7 @@ public abstract class AbstractDataLoaderService
 		
 	public Integer getCleaningTotalErrorValues(
 		final User _rifManager,
+		final Writer logFileWriter,
 		final DataSetConfiguration _dataSetConfiguration)
 		throws RIFServiceException,
 		RIFServiceException {
@@ -1190,6 +1230,7 @@ public abstract class AbstractDataLoaderService
 			result
 				= cleanWorkflowManager.getCleaningTotalErrorValues(
 					connection, 
+					logFileWriter,
 					dataSetConfiguration);
 			sqlConnectionManager.reclaimPooledWriteConnection(
 				rifManager, 
@@ -1209,6 +1250,7 @@ public abstract class AbstractDataLoaderService
 	
 	public Boolean cleaningDetectedBlankValue(
 		final User _rifManager,
+		final Writer logFileWriter,
 		final DataSetConfiguration _dataSetConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
@@ -1265,6 +1307,7 @@ public abstract class AbstractDataLoaderService
 			result
 				= cleanWorkflowManager.cleaningDetectedBlankValue(
 					connection, 
+					logFileWriter,
 					dataSetConfiguration,
 					rowNumber,
 					targetBaseFieldName);
@@ -1286,6 +1329,7 @@ public abstract class AbstractDataLoaderService
 	
 	public Boolean cleaningDetectedChangedValue(
 		final User _rifManager,
+		final Writer logFileWriter,
 		final DataSetConfiguration _dataSetConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
@@ -1341,6 +1385,7 @@ public abstract class AbstractDataLoaderService
 			result
 				= cleanWorkflowManager.cleaningDetectedChangedValue(
 					connection, 
+					logFileWriter,
 					dataSetConfiguration,
 					rowNumber,
 					targetBaseFieldName);
@@ -1363,6 +1408,7 @@ public abstract class AbstractDataLoaderService
 	
 	public Boolean cleaningDetectedErrorValue(
 		final User _rifManager,
+		final Writer logFileWriter,
 		final DataSetConfiguration _dataSetConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
@@ -1407,6 +1453,7 @@ public abstract class AbstractDataLoaderService
 			result
 				= cleanWorkflowManager.cleaningDetectedErrorValue(
 					connection, 
+					logFileWriter,
 					dataSetConfiguration,
 					rowNumber,
 					targetBaseFieldName);

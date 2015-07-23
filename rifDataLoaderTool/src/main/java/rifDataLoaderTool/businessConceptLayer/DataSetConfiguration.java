@@ -1,7 +1,10 @@
 package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
+
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
+
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.util.FieldValidationUtility;
@@ -309,6 +312,7 @@ public class DataSetConfiguration
 	public void addFieldConfiguration(
 		final DataSetFieldConfiguration dataSetFieldConfiguration) {
 		
+		dataSetFieldConfiguration.setCoreDataSetName(name);
 		fieldConfigurations.add(dataSetFieldConfiguration);
 		
 	}
@@ -317,6 +321,10 @@ public class DataSetConfiguration
 		final ArrayList<DataSetFieldConfiguration> fieldConfigurations) {
 
 			this.fieldConfigurations = fieldConfigurations;
+			
+			for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+				fieldConfiguration.setCoreDataSetName(name);
+			}
 	}
 	
 	public String[] getConvertFieldNames() {
@@ -399,6 +407,7 @@ public class DataSetConfiguration
 
 		
 		if (fieldValidationUtility.isEmpty(name)) {
+			System.out.println("DSC - checkEmptyFields 1");
 			String nameFieldLabel
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetFieldConfiguration.name.label");
@@ -411,6 +420,7 @@ public class DataSetConfiguration
 
 		
 		if (fieldValidationUtility.isEmpty(version)) {
+			System.out.println("DSC - checkEmptyFields 2");
 			String versionFieldLabel
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetConfiguration.version.label");
@@ -423,6 +433,8 @@ public class DataSetConfiguration
 
 		
 		if (fieldValidationUtility.isEmpty(filePath)) {
+			System.out.println("DSC - checkEmptyFields 3");
+			
 			String versionFieldLabel
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetConfiguration.filePath.label");
@@ -435,6 +447,8 @@ public class DataSetConfiguration
 		
 		//description may be empty
 		if (currentWorkflowState == null) {
+			System.out.println("DSC - checkEmptyFields 4");
+		
 			String currentWorkflowStateFieldLabel
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetConfiguration.currentWorkflowState.label");
@@ -446,6 +460,8 @@ public class DataSetConfiguration
 		}
 
 		if (rifSchemaArea == null) {
+			System.out.println("DSC - checkEmptyFields 5");
+
 			String currentWorkflowStateFieldLabel
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetConfiguration.rifSchemaArea.label");
@@ -457,6 +473,8 @@ public class DataSetConfiguration
 		}
 		
 		if (fieldConfigurations.isEmpty()) {
+			System.out.println("DSC - checkEmptyFields 6");
+
 			String currentWorkflowStateFieldLabel
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetFieldConfiguration.plural.label");
@@ -485,6 +503,28 @@ public class DataSetConfiguration
 		return numberOfCovariateFields;
 	}
 	
+	
+	public ArrayList<DataSetFieldConfiguration> getChangeAuditFields(
+		final FieldChangeAuditLevel fieldChangeAuditLevel) {
+		
+		
+		ArrayList<DataSetFieldConfiguration> changeAuditFields
+			= new ArrayList<DataSetFieldConfiguration>();
+		
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			FieldChangeAuditLevel currentFieldChangeAuditLevel
+				= fieldConfiguration.getFieldChangeAuditLevel();
+			
+			if (currentFieldChangeAuditLevel == fieldChangeAuditLevel) {
+				changeAuditFields.add(fieldConfiguration);				
+			}
+		}
+		
+		return changeAuditFields;
+		
+	}
+	
+	
 	public DataSetFieldConfiguration getFieldHavingConvertFieldName(
 		final String convertFieldName) {
 		
@@ -501,6 +541,21 @@ public class DataSetConfiguration
 
 		return null;
 		
+	}
+	
+	
+	public ArrayList<DataSetFieldConfiguration> getFieldsWithValidationChecks() {
+		
+		ArrayList<DataSetFieldConfiguration> fieldsWithValidationChecks
+			= new ArrayList<DataSetFieldConfiguration>();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			AbstractRIFDataType dataType = fieldConfiguration.getRIFDataType();
+			if (dataType.getFieldValidationPolicy() != RIFFieldValidationPolicy.NO_VALIDATION) {
+				fieldsWithValidationChecks.add(fieldConfiguration);
+			}
+		}
+		
+		return fieldsWithValidationChecks;
 	}
 	
 	public ArrayList<DataSetFieldConfiguration> getFieldsWithConversionFunctions() {

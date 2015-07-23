@@ -105,9 +105,7 @@ public final class ListEditingButtonPanel {
 	private JButton clearButton;
 	private JButton importButton;
 	private JButton exportButton;
-	
-	
-	
+		
 	// ==========================================
 	// Section Construction
 	// ==========================================

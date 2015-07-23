@@ -1,6 +1,7 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
+
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
@@ -18,7 +19,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.text.Collator;
-
+import java.io.*;
 
 
 /**
@@ -99,6 +100,7 @@ public final class CheckWorkflowManager
 
 	public void checkConfiguration(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 
@@ -111,10 +113,12 @@ public final class CheckWorkflowManager
 			= RIFTemporaryTablePrefixes.CHECK.getTableName(coreDataSetName);
 		deleteTable(
 			connection, 
+			logFileWriter,
 			checkTableName);
 
 		createCheckTable(
 			connection, 
+			logFileWriter,
 			dataSetConfiguration);
 		
 		//createEmptyFieldCheckDataQualityTable(
@@ -123,6 +127,7 @@ public final class CheckWorkflowManager
 
 		createEmptyPerYearFieldCheckDataQualityTable(
 			connection,
+			logFileWriter,
 			dataSetConfiguration);
 		
 		//createDataQualityTable(
@@ -131,6 +136,7 @@ public final class CheckWorkflowManager
 		
 		updateLastCompletedWorkState(
 			connection,
+			logFileWriter,
 			dataSetConfiguration,
 			WorkflowState.CHECK);
 		
@@ -139,6 +145,7 @@ public final class CheckWorkflowManager
 
 	private void createCheckTable(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 				
@@ -150,6 +157,7 @@ public final class CheckWorkflowManager
 			= RIFTemporaryTablePrefixes.CHECK.getTableName(coreDataSetName);
 		deleteTable(
 			connection, 
+			logFileWriter,
 			checkTableName);
 
 		PreparedStatement statement = null;
@@ -231,6 +239,7 @@ public final class CheckWorkflowManager
 			queryFormatter.addPaddedQueryLine(1, "duplicate_rows;");
 			
 			logSQLQuery(
+				logFileWriter,
 				"checkConfiguration", 
 				queryFormatter);
 						
@@ -240,18 +249,22 @@ public final class CheckWorkflowManager
 
 			addPrimaryKey(
 				connection,
+				logFileWriter,
 				checkTableName,
 				"data_set_id, row_number");
 			
 			addComments(
 				connection,
+				logFileWriter,
 				checkTableName,
 				dataSetConfiguration,
 				WorkflowState.CHECK);
 			
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderMessages.getMessage(
 					"checkWorkflowManager.error.unableToCreateCheckedTable",
@@ -329,6 +342,7 @@ public final class CheckWorkflowManager
 
 	private void createEmptyFieldCheckDataQualityTable(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 
@@ -338,6 +352,7 @@ public final class CheckWorkflowManager
 			= RIFTemporaryTablePrefixes.EMPTY_CHECK.getTableName(coreDataSetName);
 		deleteTable(
 			connection, 
+			logFileWriter,
 			emptyFieldsDataQualityTableName);
 		
 		PreparedStatement statement = null;
@@ -464,6 +479,7 @@ public final class CheckWorkflowManager
 			}
 		
 			logSQLQuery(
+				logFileWriter,
 				"createEmptyFieldCheckDataQualityTable", 
 				queryFormatter);
 			
@@ -473,13 +489,16 @@ public final class CheckWorkflowManager
 
 			addPrimaryKey(
 				connection,
+				logFileWriter,
 				emptyFieldsDataQualityTableName,
 				"data_set_id, row_number");
 
 			
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"checkWorkflowManager.error.unableToCreateEmptyCheckTable",
@@ -499,6 +518,7 @@ public final class CheckWorkflowManager
 
 	private void createEmptyPerYearFieldCheckDataQualityTable(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 
@@ -508,6 +528,7 @@ public final class CheckWorkflowManager
 			= RIFTemporaryTablePrefixes.EMPTY_PER_YEAR_CHECK.getTableName(coreDataSetName);
 		deleteTable(
 			connection, 
+			logFileWriter,
 			emptyPerYearFieldsDataQualityTableName);
 		
 		PreparedStatement statement = null;
@@ -708,6 +729,7 @@ public final class CheckWorkflowManager
 			queryFormatter.addPaddedQueryLine(2, "summary.year");
 */			
 			logSQLQuery(
+				logFileWriter,
 				"createEmptyFieldCheckDataQualityTable", 
 				queryFormatter);
 			
@@ -717,12 +739,15 @@ public final class CheckWorkflowManager
 			
 			addPrimaryKey(
 				connection,
+				logFileWriter,
 				emptyPerYearFieldsDataQualityTableName,
 				"data_set_id, year");
 
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"checkWorkflowManager.error.unableToCreateEmptyCheckTable",

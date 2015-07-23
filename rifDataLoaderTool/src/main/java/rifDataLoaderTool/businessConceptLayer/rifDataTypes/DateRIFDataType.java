@@ -83,7 +83,8 @@ public final class DateRIFDataType
 			description, 
 			validationRegularExpression);
 		
-		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_FUNCTION);
+		this.setValidationFunctionName("date_matches_format");
 		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);
 		
 	}
@@ -94,9 +95,9 @@ public final class DateRIFDataType
 			= RIFDataLoaderMessages.getMessage("rifDataType.date.label");
 
 		//this is the order of date formats which are used to validate RIF dates
-		String dateFormat1 = "DD Mon YYYY";
 		ArrayList<String> validationExpressions = new ArrayList<String>();
-		validationExpressions.add("DD Mon YYYY");
+		validationExpressions.add("MM/DD/YYYY");
+		
 		
 		StringBuilder dateFormatPatternList = new StringBuilder();
 		for (int i = 0; i < validationExpressions.size(); i++) {

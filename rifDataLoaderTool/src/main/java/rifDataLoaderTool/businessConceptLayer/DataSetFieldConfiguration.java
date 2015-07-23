@@ -607,9 +607,10 @@ public class DataSetFieldConfiguration
 			= new FieldValidationUtility();
 
 		if (fieldValidationUtility.isEmpty(coreDataSetName)) {
+			System.out.println("DSFC - is empty coreDataSetName 1");
 			String parentRecordNameLabel
 				= RIFDataLoaderToolMessages.getMessage(
-					"dataSetFieldConfiguration.rifSchemaArea.label");
+					"dataSetFieldConfiguration.coreFieldName.label");
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"general.validation.emptyRequiredField",

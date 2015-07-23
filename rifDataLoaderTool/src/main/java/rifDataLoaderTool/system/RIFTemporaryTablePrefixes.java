@@ -67,7 +67,11 @@ public enum RIFTemporaryTablePrefixes {
 	CHECK("check_"),
 	PUBLISH("publish_"),
 	EMPTY_CHECK("dq_empty_"),
-	EMPTY_PER_YEAR_CHECK("dq_empty_yr_");
+	EMPTY_PER_YEAR_CHECK("dq_empty_yr_"),
+	AUD_CHANGES("aud_chg_"),
+	AUD_FAILED_VALIDATION("aud_val_");
+	
+	
 	
 	private String tablePrefix;
 	

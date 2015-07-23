@@ -8,10 +8,7 @@ import rifDataLoaderTool.businessConceptLayer.CleanWorkflowQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
-
-
-
+import rifDataLoaderTool.dataStorageLayer.postgresql.*;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLCountQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
@@ -20,8 +17,8 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFResultTable;
 
+import java.io.*;
 import java.sql.*;
-import java.util.ArrayList;
 
 /**
  * manages database calls related to cleaning a data source.
@@ -83,7 +80,7 @@ public final class CleanWorkflowManager
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private CleanWorkflowQueryGeneratorAPI queryGenerator;
+	private ChangeAuditManager changeAuditManager;
 	private DataSetManager dataSetManager;
 	
 	// ==========================================
@@ -93,11 +90,12 @@ public final class CleanWorkflowManager
 	public CleanWorkflowManager(
 		final RIFDatabaseProperties rifDatabaseProperties,
 		final DataSetManager dataSetManager,
+		final ChangeAuditManager changeAuditManager,
 		final CleanWorkflowQueryGeneratorAPI queryGenerator) {
 
 		super(rifDatabaseProperties);
 		this.dataSetManager = dataSetManager;
-		this.queryGenerator = queryGenerator;
+		this.changeAuditManager = changeAuditManager;
 	}
 
 	// ==========================================
@@ -135,237 +133,159 @@ public final class CleanWorkflowManager
 		
 	public void cleanConfiguration(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
-		
-		
-		ArrayList<DataSetFieldConfiguration> fieldConfigurations
-			= dataSetConfiguration.getFieldConfigurations();
-		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
-			String fieldName = fieldConfiguration.getLoadFieldName();
-			AbstractRIFDataType rifDataType
-				= fieldConfiguration.getRIFDataType();
-		}
-		
+				
 		RIFLogger logger = RIFLogger.getLogger();
 		
-		String coreDataSetName
-			= dataSetConfiguration.getName();
-		
-		String dropSearchReplaceTableQuery
-			= queryGenerator.generateDropSearchReplaceTableQuery(dataSetConfiguration);	
-				
-		PreparedStatement dropSearchReplaceTableStatement = null;
-		
-		String createSearchReplaceTableQuery
-			= queryGenerator.generateSearchReplaceTableQuery(dataSetConfiguration);
-		PreparedStatement createSearchReplaceTableStatement = null;
-		
-		PreparedStatement dropValidationTableStatement = null;
-		String dropValidationTableQuery
-			= queryGenerator.generateDropValidationTableQuery(dataSetConfiguration);
-		
-		PreparedStatement createValidationTableStatement = null;
-		String createValidationTableQuery
-			= queryGenerator.generateValidationTableQuery(dataSetConfiguration);
-			
-		PreparedStatement dropCastingTableStatement = null;
-		String dropCastingTableQuery
-			= queryGenerator.generateDropCastingTableQuery(dataSetConfiguration);
-		
-		PreparedStatement createCastingTableStatement = null;
-		String createCastingTableQuery
-			= queryGenerator.generateCastingTableQuery(dataSetConfiguration);
-		
-		PreparedStatement deleteAuditChangesStatement = null;
-		String deleteAuditChangesQuery
-			= queryGenerator.generateDeleteAuditsQuery(dataSetConfiguration);
-		
-		PreparedStatement createAuditChangesStatement = null;
-		String createAuditChangesQuery
-			= queryGenerator.generateAuditChangesQuery(dataSetConfiguration);
-		PreparedStatement createAuditErrorsStatement = null;
-		String createAuditErrorsQuery
-			= queryGenerator.generateAuditErrorsQuery(dataSetConfiguration);
-		PreparedStatement createAuditBlanksStatement = null;
-		String createAuditBlanksQuery
-			= queryGenerator.generateAuditBlanksQuery(dataSetConfiguration);
-		
-		
+		PreparedStatement searchReplaceStatement = null;
+		PreparedStatement validationStatement = null;
+		PreparedStatement castingStatement = null;
 		try {
 
+			String coreDataSetName
+				= dataSetConfiguration.getName();
+			
 			int dataSetIdentifier
 				= dataSetManager.getDataSetIdentifier(
 					connection, 
+					logFileWriter,
 					dataSetConfiguration);
 			
+
 			/*
-			 * Delete old tables so we can recreate them.
+			 * Part I: Perform search and replace values to help substitute
+			 * poor field values for better ones
 			 */
+			PostgreSQLDataTypeSearchReplaceUtility searchReplaceUtility
+				= new PostgreSQLDataTypeSearchReplaceUtility();
+			String searchReplaceQuery
+				= searchReplaceUtility.generateSearchReplaceTableStatement(dataSetConfiguration);
 
-			logger.debugQuery(
-				this, 
-				"createCleanedTable",
-				dropSearchReplaceTableQuery);
-			dropSearchReplaceTableStatement
-				= connection.prepareStatement(dropSearchReplaceTableQuery);
-			dropSearchReplaceTableStatement.executeUpdate();
-
-			logger.debugQuery(
-				this, 
-				"createCleanedTable",
-				dropValidationTableQuery);
-			dropValidationTableStatement
-				= connection.prepareStatement(dropValidationTableQuery);
-			dropValidationTableStatement.executeUpdate();
-			
-
-			logger.debugQuery(
-				this, 
-				"createCleanedTable",
-				dropCastingTableQuery);
-			dropCastingTableStatement
-				= connection.prepareStatement(dropCastingTableQuery);
-			dropCastingTableStatement.executeUpdate();
-			
-			//drop previous rows in the provenance table that relate to the/
-			//data source
-
-			logger.debugQuery(
-				this, 
-				"createCleanedTable",
-				deleteAuditChangesQuery);
-			deleteAuditChangesStatement
-				= connection.prepareStatement(deleteAuditChangesQuery);
-			deleteAuditChangesStatement.setInt(1, dataSetIdentifier);			
-			deleteAuditChangesStatement.executeUpdate();
-			
-			//First, create the table that does substitution activities
-
-			logger.debugQuery(
-				this, 
-				"createCleanedTable",
-				createSearchReplaceTableQuery);
-			
-			String searchReplaceTableName
-				= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
-			deleteTable(connection, searchReplaceTableName);
-			createSearchReplaceTableStatement
-				= connection.prepareStatement(createSearchReplaceTableQuery);
-			createSearchReplaceTableStatement.executeUpdate();
-
+			logSQLQuery(
+				logFileWriter, 
+				"createCleaningSearchReplaceTable", 
+				searchReplaceQuery);
+			searchReplaceStatement
+				= connection.prepareStatement(searchReplaceQuery);
+			searchReplaceStatement.executeUpdate();
+						
 			//check that the search replace table has just as many rows as the
 			//original load table			
 			checkTotalRowsMatch(
 				connection, 
+				logFileWriter,
 				coreDataSetName,
 				RIFTemporaryTablePrefixes.LOAD,
 				RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE);			
 			
-			
-			//Second, do a validation pass which will either leave a table cell
-			//value unchanged or with 'rif_error' in it
+			/*
+			 * Part II: Now validate the results, and change the field value to 
+			 * 'rif_error' if it fails validation
+			 */
+			PostgreSQLDataTypeValidationUtility validationUtility
+				= new PostgreSQLDataTypeValidationUtility();
+			String validationQuery
+				= validationUtility.generateValidationTableStatement(dataSetConfiguration);
 
-			logger.debugQuery(
-				this, 
-				"createCleanedTable",
-				createValidationTableQuery);
-			createValidationTableStatement
-				= connection.prepareStatement(createValidationTableQuery);
-			createValidationTableStatement.executeUpdate();
+			logSQLQuery(
+				logFileWriter, 
+				"createCleaningValidationTable", 
+				validationQuery);
+			validationStatement
+				= connection.prepareStatement(validationQuery);
+			validationStatement.executeUpdate();
 
 			
-			//check that the validation table has just as many rows as the
-			//search replace table			
 			checkTotalRowsMatch(
 				connection, 
+				logFileWriter,
 				coreDataSetName,
 				RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE,
 				RIFTemporaryTablePrefixes.CLEAN_VALIDATION);			
 			
-			//Third, create the table that does casting operations
+			
+			/*
+			 * Part III: Finally, cast each field to its appropriate data type (eg: int,
+			 * double, etc).  If any of the field values have 'rif_error' then cast the
+			 * NULL value.
+			 */
+			PostgreSQLCastingUtility castingUtility = new PostgreSQLCastingUtility();
+			String castingQuery
+				= castingUtility.generateCastingTableQuery(dataSetConfiguration);
 
-			logger.debugQuery(
-				this, 
-				"createCleanedTable",
-				createCastingTableQuery);
-			createCastingTableStatement
-				= connection.prepareStatement(createCastingTableQuery);
-			createCastingTableStatement.executeUpdate();
+			logSQLQuery(
+				logFileWriter, 
+				"createCleaningCastingTable", 
+				castingQuery);
 
-			//check that the casted table has just as many rows as the
-			//cleaned validated data			
+			castingStatement
+				= connection.prepareStatement(castingQuery);
+			castingStatement.executeUpdate();
+
 			checkTotalRowsMatch(
 				connection, 
+				logFileWriter,
 				coreDataSetName,
 				RIFTemporaryTablePrefixes.CLEAN_VALIDATION,
 				RIFTemporaryTablePrefixes.CLEAN_CASTING);			
+
 			
-			String cleanCastingTableName
+			/*
+			 * Copy the contents of the casting table and call it
+			 * the final cleaning table.  Note that in future we may well
+			 * just rename the casting table.  But I'm not sure whether we may
+			 * need to retain it for other purposes.
+			 */
+			
+			String cleaningCastingTableName
 				= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName);
 			String finalCleaningTableName
 				= RIFTemporaryTablePrefixes.CLEAN_FINAL.getTableName(coreDataSetName);
-
 			deleteTable(
 				connection, 
+				logFileWriter,
 				finalCleaningTableName);
 			
 			copyTable(
 				connection,
-				cleanCastingTableName,
+				logFileWriter,
+				cleaningCastingTableName,
 				finalCleaningTableName);
 
 			addPrimaryKey(
 				connection,
+				logFileWriter,
 				finalCleaningTableName,
 				"data_set_id, row_number");
-					
-			//Fourth, add audit trail messages for errors, changed values and blanks
+		
+			/*
+			 * Part IV: Audit changes that happened between the load table
+			 * values and the search and replace values.  Also audit rows
+			 * that still failed validation, even after all the cleaning
+			 */
+			changeAuditManager.auditDataCleaningChanges(
+				connection,
+				logFileWriter,
+				dataSetConfiguration);
 
-			logger.debugQuery(
-				this, 
-				"createCleanedTable",
-				createAuditChangesQuery);
-			createAuditChangesStatement
-				= connection.prepareStatement(createAuditChangesQuery);
-			createAuditChangesStatement.executeUpdate();
+			changeAuditManager.auditValidationFailures(
+				connection,
+				logFileWriter,
+				dataSetConfiguration);
 			
-
-			logger.debugQuery(
-				this, 
-				"createCleanedTable",
-				createAuditErrorsQuery);
-			createAuditErrorsStatement
-				= connection.prepareStatement(createAuditErrorsQuery);
-			createAuditErrorsStatement.executeUpdate();
-			
-
-			logger.debugQuery(
-				this, 
-				"createCleanedTable",
-				createAuditBlanksQuery);
-			createAuditBlanksStatement
-				= connection.prepareStatement(createAuditBlanksQuery);
-			createAuditBlanksStatement.executeUpdate();			
-			
-			
-			//clean-up
-			deleteTable(
-				connection, 
-				cleanCastingTableName);
-			String cleanSearchReplaceTableName
-				= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);			
-			deleteTable(
-				connection, 
-				cleanSearchReplaceTableName);
-						
 			updateLastCompletedWorkState(
 				connection,
+				logFileWriter,
 				dataSetConfiguration,
 				WorkflowState.CLEAN);
 			
 		}
 		catch(SQLException sqlException) {
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			sqlException.printStackTrace(System.out);
 			String cleanedTableName
 				= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(
@@ -382,17 +302,16 @@ public final class CleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(dropSearchReplaceTableStatement);
-			SQLQueryUtility.close(createSearchReplaceTableStatement);
-			SQLQueryUtility.close(dropCastingTableStatement);
-			SQLQueryUtility.close(createCastingTableStatement);
-			SQLQueryUtility.close(createCastingTableStatement);
+			SQLQueryUtility.close(searchReplaceStatement);
+			SQLQueryUtility.close(validationStatement);
+			SQLQueryUtility.close(castingStatement);
 		}
 		
 	}
 	
 	public Integer getCleaningTotalBlankValues(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 		
@@ -417,7 +336,8 @@ public final class CleanWorkflowManager
 		try {			
 			int dataSetIdentifier
 				= dataSetManager.getDataSetIdentifier(
-					connection, 
+					connection,
+					logFileWriter,
 					dataSetConfiguration);
 			
 			statement 
@@ -450,6 +370,7 @@ public final class CleanWorkflowManager
 		
 	public Integer getCleaningTotalChangedValues(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 		
@@ -473,6 +394,7 @@ public final class CleanWorkflowManager
 			int dataSetIdentifier
 				= dataSetManager.getDataSetIdentifier(
 					connection, 
+					logFileWriter,
 					dataSetConfiguration);
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
@@ -503,6 +425,7 @@ public final class CleanWorkflowManager
 		
 	public Integer getCleaningTotalErrorValues(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 	
@@ -527,6 +450,7 @@ public final class CleanWorkflowManager
 			int dataSetIdentifier
 				= dataSetManager.getDataSetIdentifier(
 					connection, 
+					logFileWriter,
 					dataSetConfiguration);
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
@@ -557,6 +481,7 @@ public final class CleanWorkflowManager
 	
 	public Boolean cleaningDetectedBlankValue(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
@@ -585,6 +510,7 @@ public final class CleanWorkflowManager
 			int dataSetIdentifier
 				= dataSetManager.getDataSetIdentifier(
 					connection, 
+					logFileWriter,
 					dataSetConfiguration);
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
@@ -618,6 +544,7 @@ public final class CleanWorkflowManager
 	
 	public Boolean cleaningDetectedChangedValue(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
@@ -646,6 +573,7 @@ public final class CleanWorkflowManager
 			int dataSetIdentifier
 				= dataSetManager.getDataSetIdentifier(
 					connection, 
+					logFileWriter,
 					dataSetConfiguration);
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
@@ -681,6 +609,7 @@ public final class CleanWorkflowManager
 	
 	public Boolean cleaningDetectedErrorValue(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration,
 		final int rowNumber,
 		final String targetBaseFieldName)
@@ -708,6 +637,7 @@ public final class CleanWorkflowManager
 			int dataSetIdentifier
 				= dataSetManager.getDataSetIdentifier(
 					connection, 
+					logFileWriter,
 					dataSetConfiguration);
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());

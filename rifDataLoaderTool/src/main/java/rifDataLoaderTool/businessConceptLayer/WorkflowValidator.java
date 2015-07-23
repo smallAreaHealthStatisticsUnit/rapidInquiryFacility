@@ -94,6 +94,7 @@ public class WorkflowValidator {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		
+		System.out.println("Validate workflow 1");
 		ArrayList<DataSetConfiguration> dataSetConfigurations
 			= linearWorkflow.getDataSetConfigurations();
 		
@@ -102,6 +103,8 @@ public class WorkflowValidator {
 		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
 			dataSetConfiguration.checkEmptyFields(errorMessages);
 		}
+
+		System.out.println("Validate workflow 2");
 		
 		detectException(
 			errorMessages,
@@ -112,6 +115,16 @@ public class WorkflowValidator {
 			= linearWorkflow.getStartWorkflowState();
 		WorkflowState stopWorkflowState
 			= linearWorkflow.getStopWorkflowState();
+		
+		System.out.println("Validate workflow 3");
+		
+		if (startWorkflowState == null) {			
+			System.out.println("Validate workflow 3.1");
+		}
+		
+		if (stopWorkflowState == null) {			
+			System.out.println("Validate workflow 3.2");
+		}
 		
 		checkStartStopStatesInOrder(
 			startWorkflowState,

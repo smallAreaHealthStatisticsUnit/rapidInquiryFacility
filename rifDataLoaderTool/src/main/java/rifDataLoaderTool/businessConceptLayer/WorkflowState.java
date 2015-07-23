@@ -200,12 +200,14 @@ public enum WorkflowState {
 	
 	public static String[] getAllStateNames() {
 		ArrayList<String> stateNames = new ArrayList<String>();
+		stateNames.add(START.getStateName());		
 		stateNames.add(LOAD.getStateName());
 		stateNames.add(CLEAN.getStateName());
 		stateNames.add(CONVERT.getStateName());
 		stateNames.add(OPTIMISE.getStateName());
 		stateNames.add(CHECK.getStateName());
 		stateNames.add(PUBLISH.getStateName());
+		stateNames.add(STOP.getStateName());
 				
 		String[] results
 			= stateNames.toArray(new String[0]);
@@ -216,7 +218,10 @@ public enum WorkflowState {
 		final String code) {
 		
 		Collator collator = RIFDataLoaderToolMessages.getCollator();
-		if (collator.equals(code, LOAD.getCode())) {
+		if (collator.equals(code, START.getCode())) {
+			return START;
+		}
+		else if (collator.equals(code, LOAD.getCode())) {
 			return LOAD;
 		}
 		else if (collator.equals(code, CLEAN.getCode())) {
@@ -240,16 +245,56 @@ public enum WorkflowState {
 		else if (collator.equals(code, PUBLISH.getCode())) {
 			return PUBLISH;
 		}
+		else if (collator.equals(code, STOP.getCode())) {
+			return STOP;
+		}
 		else {
 			assert false;
 			return null;
-		}
-
-		
-		
-		
-		
+		}		
 	}
+
+	
+	public static WorkflowState getWorkflowStateFromName(
+		final String name) {
+		
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		if (collator.equals(name, START.getStateName())) {
+			return START;
+		}
+		else if (collator.equals(name, LOAD.getStateName())) {
+			return LOAD;
+		}
+		else if (collator.equals(name, CLEAN.getStateName())) {
+			return CLEAN;
+		}
+		else if (collator.equals(name, CONVERT.getStateName())) {
+			return CONVERT;
+		}
+		else if (collator.equals(name, SPLIT.getStateName())) {
+			return SPLIT;
+		}
+		else if (collator.equals(name, COMBINE.getStateName())) {
+			return COMBINE;
+		}
+		else if (collator.equals(name, OPTIMISE.getStateName())) {
+			return OPTIMISE;
+		}
+		else if (collator.equals(name, CHECK.getStateName())) {
+			return CHECK;
+		}
+		else if (collator.equals(name, PUBLISH.getStateName())) {
+			return PUBLISH;
+		}
+		else if (collator.equals(name, STOP.getStateName())) {
+			return STOP;
+		}
+		else {
+			assert false;
+			return null;
+		}		
+	}
+	
 	
 }
 

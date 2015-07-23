@@ -271,7 +271,11 @@ final class LinearWorkflowConfigurationHandler
 		else if (equalsFieldName("stop_workflow_state", qualifiedName)) {
 			WorkflowState stopWorkflowState
 				= WorkflowState.getWorkflowStateFromCode(getCurrentFieldValue());
-			linearWorkflow.setStopWorkflowState(stopWorkflowState);				
+			linearWorkflow.setStopWorkflowState(stopWorkflowState);		
+			
+			if (linearWorkflow.getStopWorkflowState() == null) {
+				System.out.println("ARGH!!!");
+			}
 		}			
 		else {
 			assert false;

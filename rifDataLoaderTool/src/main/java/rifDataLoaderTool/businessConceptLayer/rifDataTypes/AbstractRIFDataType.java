@@ -150,10 +150,12 @@ public abstract class AbstractRIFDataType implements RIFDataTypeInterface {
 	private RIFFieldValidationPolicy fieldValidationPolicy;
 	private ArrayList<String> validationExpressions;
 	private String validationFunctionName;
+	private String validationFunctionParameterPhrase;
 
 	
 	private RIFFieldCleaningPolicy fieldCleaningPolicy;	
 	private String cleaningFunctionName;
+	private String cleaningFunctionParameterPhrase;
 	private ArrayList<CleaningRule> cleaningRules;
 	
 	// ==========================================
@@ -230,6 +232,28 @@ public abstract class AbstractRIFDataType implements RIFDataTypeInterface {
 		return description;
 	}
 
+	public String getCleaningFunctionParameterPhrase() {
+		return cleaningFunctionParameterPhrase;
+	}
+	
+	public void setCleaningFunctionParameterPhrase(
+		final String cleaningFunctionParameterPhrase) {
+
+		this.cleaningFunctionParameterPhrase = cleaningFunctionParameterPhrase;
+	}
+	
+
+	public String getValidationFunctionParameterPhrase() {
+		return validationFunctionParameterPhrase;
+	}
+	
+	public void setValidationFunctionParameterPhrase(
+		final String validationFunctionParameterPhrase) {
+
+		this.validationFunctionParameterPhrase = validationFunctionParameterPhrase;
+	}
+	
+	
 	public void setDescription(
 		final String description) {
 
@@ -326,7 +350,7 @@ public abstract class AbstractRIFDataType implements RIFDataTypeInterface {
 	public String getValidationFunctionParameterValues() {
 		return "";
 	}
-	
+
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

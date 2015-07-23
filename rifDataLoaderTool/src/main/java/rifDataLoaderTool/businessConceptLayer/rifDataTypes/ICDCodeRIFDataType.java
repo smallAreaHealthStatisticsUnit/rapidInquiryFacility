@@ -1,6 +1,8 @@
 package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
+import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
+import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
 
 /**
@@ -85,6 +87,11 @@ public final class ICDCodeRIFDataType
 
 		//expression for ICD 10
 		addValidationExpression("^[A-Z]\\d{2}(\\.\\d){0,1}$");
+		
+		setCleaningFunctionName("clean_icd");
+		
+		setFieldCleaningPolicy(RIFFieldCleaningPolicy.CLEANING_FUNCTION);
+		setFieldValidationPolicy(RIFFieldValidationPolicy.NO_VALIDATION);
 	}
 
 	public static ICDCodeRIFDataType newInstance() {

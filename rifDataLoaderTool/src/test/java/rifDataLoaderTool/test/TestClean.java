@@ -1,16 +1,15 @@
 package rifDataLoaderTool.test;
 
 
-import rifDataLoaderTool.dataStorageLayer.AbstractDataLoaderService;
 import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
-import rifDataLoaderTool.dataStorageLayer.TestDataLoaderService;
-import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifDataLoaderTool.dataStorageLayer.*;
+import rifDataLoaderTool.businessConceptLayer.*;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import java.io.File;
 
 /**
  *
@@ -80,29 +79,37 @@ public class TestClean extends AbstractRIFDataLoaderTestCase {
 
 	}
 
+
 	@Test
-	public void test1() {
+	public void test2() {
 		
 		User rifManager = getRIFManager();
 		TestDataLoaderService dataLoaderService
 			= getDataLoaderService();
+		
+		File testLogFile = new File("C://rif_scripts//test_data//log1.txt");
 		try {
 			SampleDataGenerator sampleDataGenerator
 				= new SampleDataGenerator();
-			DataSetConfiguration dataSetConfiguration
-				= sampleDataGenerator.createTest4StudyID1ExtractConfiguration();
-						
-			dataLoaderService.cleanConfiguration(
-				rifManager, 
-				dataSetConfiguration);
+			LinearWorkflow linearWorkflow
+				= sampleDataGenerator.testDataCleaning1Workflow();
+			
+			LinearWorkflowEnactor workflowEnactor
+				= new LinearWorkflowEnactor(
+					rifManager, 
+					dataLoaderService);
+			workflowEnactor.runWorkflow(
+				testLogFile,
+				null,
+				linearWorkflow);			
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();
 			fail();
-		}
-		
+		}		
 	}
 
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================

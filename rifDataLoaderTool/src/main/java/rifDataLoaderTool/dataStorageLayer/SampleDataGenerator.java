@@ -1,16 +1,8 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.FieldPurpose;
-import rifDataLoaderTool.businessConceptLayer.FieldRequirementLevel;
-import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
-import rifDataLoaderTool.businessConceptLayer.RIFCheckOption;
-import rifDataLoaderTool.businessConceptLayer.RIFConversionFunctionFactory;
-import rifDataLoaderTool.businessConceptLayer.RIFConversionFunction;
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
-import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
-import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+
+import rifDataLoaderTool.businessConceptLayer.*;
 
 
 /**
@@ -787,28 +779,168 @@ public class SampleDataGenerator {
 	
 	public LinearWorkflow testDataCleaning1Workflow() {
 		LinearWorkflow linearWorkflow = LinearWorkflow.newInstance();
-		
-
 		linearWorkflow.addDataSetConfiguration(createDataCleaning1Configuration());
+		linearWorkflow.setStartWorkflowState(WorkflowState.START);
+		linearWorkflow.setStopWorkflowState(WorkflowState.STOP);
 		
 		return linearWorkflow;		
 	}
 	
-	private DataSetConfiguration createDataCleaning1Configuration() {
-		
+	public DataSetConfiguration createDataCleaning1Configuration() {		
 		
 		DataSetConfiguration dataSetConfiguration
 			= DataSetConfiguration.newInstance();
+		dataSetConfiguration.setRIFSchemaArea(RIFSchemaArea.HEALTH_NUMERATOR_DATA);
 		dataSetConfiguration.setName("test_cleaning1");
 		dataSetConfiguration.setFilePath("C://rif_scripts//test_data//test_cleaning1_2015.csv");
 		
+		RIFDataTypeFactory rifDataTypeFactory
+			= RIFDataTypeFactory.newInstance();
+		
 		DataSetFieldConfiguration idFieldConfiguration
 			= DataSetFieldConfiguration.newInstance("test_cleaning1", "id");
+		idFieldConfiguration.setEmptyValueAllowed(false);
+
+		//don't record sensitive data in the change logs
+		idFieldConfiguration.setFieldChangeAuditLevel(FieldChangeAuditLevel.NONE);
+		idFieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_text"));		
+		idFieldConfiguration.setDuplicateIdentificationField(true);
+		idFieldConfiguration.setCoreFieldDescription("patient identifier");
+		idFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		idFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		dataSetConfiguration.addFieldConfiguration(idFieldConfiguration);	
 		
 		
+		DataSetFieldConfiguration yearFieldConfiguration
+			= DataSetFieldConfiguration.newInstance("test_cleaning1", "year");
+		yearFieldConfiguration.setEmptyValueAllowed(false);
+		yearFieldConfiguration.setFieldChangeAuditLevel(FieldChangeAuditLevel.INCLUDE_FIELD_NAME_ONLY);
+		yearFieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_year"));		
+		yearFieldConfiguration.setDuplicateIdentificationField(true);
+		yearFieldConfiguration.setCoreFieldDescription("year of record");
+		yearFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
+		yearFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		dataSetConfiguration.addFieldConfiguration(yearFieldConfiguration);	
+	
+		DataSetFieldConfiguration sexFieldConfiguration
+			= DataSetFieldConfiguration.newInstance("test_cleaning1", "sex");
+		idFieldConfiguration.setEmptyValueAllowed(false);
+
+		//don't record sensitive data in the change logs
+		sexFieldConfiguration.setFieldChangeAuditLevel(
+			FieldChangeAuditLevel.INCLUDE_FIELD_CHANGE_DESCRIPTION);
+		sexFieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_sex"));		
+		sexFieldConfiguration.setDuplicateIdentificationField(true);
+		sexFieldConfiguration.setCoreFieldDescription("sex of patient");
+		sexFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		sexFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		dataSetConfiguration.addFieldConfiguration(sexFieldConfiguration);	
 		
 		
+		DataSetFieldConfiguration ageFieldConfiguration
+			= DataSetFieldConfiguration.newInstance("test_cleaning1", "age");
+		ageFieldConfiguration.setEmptyValueAllowed(false);
+
+		//every age will change because an age value is being replaced
+		//by a value from 1 to 5.  Therefore, don't bother trying to 
+		//capture this change
+		ageFieldConfiguration.setFieldChangeAuditLevel(
+			FieldChangeAuditLevel.INCLUDE_FIELD_NAME_ONLY);
+		ageFieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_age"));		
+		ageFieldConfiguration.setDuplicateIdentificationField(true);
+		ageFieldConfiguration.setCoreFieldDescription("age of patient");
+		ageFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		ageFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		dataSetConfiguration.addFieldConfiguration(ageFieldConfiguration);	
 		
+		DataSetFieldConfiguration dobFieldConfiguration
+			= DataSetFieldConfiguration.newInstance("test_cleaning1", "dob");
+		dobFieldConfiguration.setEmptyValueAllowed(false);		
+		dobFieldConfiguration.setFieldChangeAuditLevel(
+			FieldChangeAuditLevel.INCLUDE_FIELD_CHANGE_DESCRIPTION);
+		dobFieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_date"));		
+		dobFieldConfiguration.setDuplicateIdentificationField(true);
+		dobFieldConfiguration.setCoreFieldDescription("date of birth of patient");
+		dobFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		dobFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		dataSetConfiguration.addFieldConfiguration(dobFieldConfiguration);		
+		
+		DataSetFieldConfiguration postalCodeFieldConfiguration
+			= DataSetFieldConfiguration.newInstance("test_cleaning1", "postal_code");
+		postalCodeFieldConfiguration.setEmptyValueAllowed(false);		
+		postalCodeFieldConfiguration.setFieldChangeAuditLevel(
+			FieldChangeAuditLevel.NONE);
+		postalCodeFieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_uk_postcode"));		
+		postalCodeFieldConfiguration.setDuplicateIdentificationField(true);
+		postalCodeFieldConfiguration.setCoreFieldDescription("UK postal code");
+		postalCodeFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		postalCodeFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		
+		dataSetConfiguration.addFieldConfiguration(postalCodeFieldConfiguration);		
+	
+		DataSetFieldConfiguration scoreFieldConfiguration
+			= DataSetFieldConfiguration.newInstance("test_cleaning1", "score");
+		scoreFieldConfiguration.setEmptyValueAllowed(false);		
+		scoreFieldConfiguration.setFieldChangeAuditLevel(
+			FieldChangeAuditLevel.NONE);
+		scoreFieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_quintilise"));		
+		scoreFieldConfiguration.setDuplicateIdentificationField(true);
+		scoreFieldConfiguration.setCoreFieldDescription("some kind of score that needs to be quintilised");
+		scoreFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		scoreFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
+		dataSetConfiguration.addFieldConfiguration(scoreFieldConfiguration);		
+		
+		DataSetFieldConfiguration icd1FieldConfiguration
+			= DataSetFieldConfiguration.newInstance("test_cleaning1", "icd1");
+		icd1FieldConfiguration.setEmptyValueAllowed(false);		
+		icd1FieldConfiguration.setFieldChangeAuditLevel(
+			FieldChangeAuditLevel.INCLUDE_FIELD_CHANGE_DESCRIPTION);
+		icd1FieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_icd_code"));		
+		icd1FieldConfiguration.setDuplicateIdentificationField(true);
+		icd1FieldConfiguration.setCoreFieldDescription("health code");
+		icd1FieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		icd1FieldConfiguration.setFieldPurpose(FieldPurpose.HEALTH_CODE);
+		dataSetConfiguration.addFieldConfiguration(icd1FieldConfiguration);		
+		
+		
+		DataSetFieldConfiguration level1FieldConfiguration
+			= DataSetFieldConfiguration.newInstance(
+				"test_cleaning1", 
+				"level1");
+		level1FieldConfiguration.setEmptyValueAllowed(false);
+		level1FieldConfiguration.setFieldChangeAuditLevel(
+			FieldChangeAuditLevel.NONE);
+		level1FieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_text"));
+		level1FieldConfiguration.setDuplicateIdentificationField(true);
+		level1FieldConfiguration.setCoreFieldDescription("level 1 resolution");
+		level1FieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		level1FieldConfiguration.setFieldPurpose(FieldPurpose.GEOGRAPHICAL_RESOLUTION);
+		dataSetConfiguration.addFieldConfiguration(level1FieldConfiguration);
+				
+		DataSetFieldConfiguration level2FieldConfiguration
+			= DataSetFieldConfiguration.newInstance(
+				"test_cleaning1", 
+				"level2");
+		level2FieldConfiguration.setEmptyValueAllowed(false);
+		level2FieldConfiguration.setFieldChangeAuditLevel(
+			FieldChangeAuditLevel.NONE);
+		level2FieldConfiguration.setRIFDataType(
+			rifDataTypeFactory.getDataType("rif_text"));
+		level2FieldConfiguration.setDuplicateIdentificationField(true);
+		level2FieldConfiguration.setCoreFieldDescription("level 2 resolution");
+		level2FieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		level2FieldConfiguration.setFieldPurpose(FieldPurpose.GEOGRAPHICAL_RESOLUTION);
+		dataSetConfiguration.addFieldConfiguration(level2FieldConfiguration);
+				
 		return dataSetConfiguration;
 	}
 	

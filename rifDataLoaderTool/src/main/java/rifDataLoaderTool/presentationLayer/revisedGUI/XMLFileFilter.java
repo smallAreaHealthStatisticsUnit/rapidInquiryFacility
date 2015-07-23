@@ -1,15 +1,9 @@
-package rifDataLoaderTool.test;
+package rifDataLoaderTool.presentationLayer.revisedGUI;
 
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
-import rifDataLoaderTool.dataStorageLayer.AbstractDataLoaderService;
-import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
-import rifDataLoaderTool.dataStorageLayer.TestDataLoaderService;
-import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.User;
-import static org.junit.Assert.*;
-
-import org.junit.Test;
+import javax.swing.filechooser.FileFilter;
+import java.io.File;
 
 /**
  *
@@ -61,12 +55,13 @@ import org.junit.Test;
  *
  */
 
-public class TestOptimise extends AbstractRIFDataLoaderTestCase {
+public class XMLFileFilter extends FileFilter {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	private static final String XML_EXTENSION = "XML";
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -75,13 +70,8 @@ public class TestOptimise extends AbstractRIFDataLoaderTestCase {
 	// Section Construction
 	// ==========================================
 
-	public TestOptimise() {
+	public XMLFileFilter() {
 
-	}
-
-	public void test1() {
-
-		
 	}
 
 	// ==========================================
@@ -100,6 +90,28 @@ public class TestOptimise extends AbstractRIFDataLoaderTestCase {
 	// Section Override
 	// ==========================================
 
+	public boolean accept(final File candidateFile) {
+		
+		if (candidateFile.isDirectory()) {
+			return true;
+		}
+		
+		String upperCaseFilePath
+			= candidateFile.getAbsolutePath().toUpperCase();
+		if (upperCaseFilePath.endsWith(XML_EXTENSION) == true) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public String getDescription() {
+		String description
+			= RIFDataLoaderToolMessages.getMessage(
+				"io.xmlFileFilter.description");
+		return description;
+	}
+	
 }
 
 

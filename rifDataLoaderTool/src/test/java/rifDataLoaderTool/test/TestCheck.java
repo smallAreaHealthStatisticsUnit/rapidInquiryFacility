@@ -89,47 +89,6 @@ public class TestCheck extends AbstractRIFDataLoaderTestCase {
 	}
 
 
-	
-	@Test
-	public void test1() {
-
-
-		User rifManager = getRIFManager();
-		TestDataLoaderService dataLoaderService
-			= getDataLoaderService();
-		try {			
-						
-			SampleDataGenerator sampleDataGenerator
-				= new SampleDataGenerator();
-			DataSetConfiguration dataSetConfiguration
-				= sampleDataGenerator.createTest4StudyID1ExtractConfiguration();
-
-			
-			/*
-			dataLoaderService.loadConfiguration(
-				rifManager, 
-				dataSetConfiguration);
-			dataLoaderService.cleanConfiguration(
-				rifManager, 
-				dataSetConfiguration);
-			dataLoaderService.convertConfiguration(
-				rifManager, 
-				dataSetConfiguration);
-			dataLoaderService.optimiseConfiguration(
-				rifManager, 
-				dataSetConfiguration);
-			*/
-			dataLoaderService.checkConfiguration(
-				rifManager, 
-				dataSetConfiguration);
-	
-		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printErrors();
-			fail();
-		}		
-	}
-
 	@Test
 	public void test2() {
 		SampleDataGenerator sampleDataGenerator

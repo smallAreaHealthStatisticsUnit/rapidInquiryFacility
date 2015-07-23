@@ -6,11 +6,14 @@ import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaAreaPropertyManager;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.WorkflowValidator;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
 
 import java.util.ArrayList;
+import java.io.*;
 
 
 /**
@@ -73,6 +76,10 @@ public class LinearWorkflowEnactor {
 	// Section Properties
 	// ==========================================
 	
+	private File logFile;
+	private File reportFile;
+	private BufferedWriter logWriter;
+	private BufferedWriter reportWriter;
 	private RIFSchemaAreaPropertyManager schemaAreaPropertyManager;
 	private WorkflowValidator workflowValidator;
 	
@@ -101,10 +108,25 @@ public class LinearWorkflowEnactor {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
 	public void runWorkflow(
 		final LinearWorkflow linearWorkflow) 
 		throws RIFServiceException {
 
+		runWorkflow(
+			null, 
+			null, 
+			linearWorkflow);
+	}
+	
+	public void runWorkflow(
+		final File logOutputFile,
+		final File reportFile,
+		final LinearWorkflow linearWorkflow) 
+		throws RIFServiceException {
+
+		setLogFiles(logOutputFile, reportFile);
+		
 		ArrayList<DataSetConfiguration> dataSetConfigurations
 			= linearWorkflow.getDataSetConfigurations();		
 
@@ -132,17 +154,49 @@ public class LinearWorkflowEnactor {
 
 	}
 	
+	public void setLogFiles(
+		final File logFile,
+		final File reportFile)
+		throws RIFServiceException {
+		
+		try {
+			if (logFile != null) {
+				this.logFile = logFile;
+				logWriter = new BufferedWriter(new FileWriter(logFile));
+			}
+			if (reportFile != null) {
+				this.reportFile = reportFile;
+				reportWriter = new BufferedWriter(new FileWriter(reportFile));
+			}
+		}
+		catch(IOException ioException) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage("");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED,
+					errorMessage);
+			throw rifServiceException;
+		}		
+	}
+	
 	private void processDataSetConfiguration(
 		final DataSetConfiguration dataSetConfiguration,
 		final LinearWorkflow linearWorkflow) 
 		throws RIFServiceException {
-		
+
+		System.out.println("LinWorkflowEnactor processDataSetConfiguration 0");
+
 		linearWorkflow.resetWorkflow();
 				
+		System.out.println("LinWorkflowEnactor processDataSetConfiguration 1");
 		while (linearWorkflow.next()) {			
+			System.out.println("LinWorkflowEnactor processDataSetConfiguration 2");
 			processWorkflowStep(
 				dataSetConfiguration,
 				linearWorkflow.getCurrentWorkflowState());
+			System.out.println("LinWorkflowEnactor processDataSetConfiguration 3");
+
 		}
 
 	}
@@ -153,45 +207,39 @@ public class LinearWorkflowEnactor {
 		throws RIFServiceException {
 		
 		if (currentWorkflowState == WorkflowState.LOAD) {
-			System.out.println("processWorkflowStep LOAD for " + 
-				dataSetConfiguration.getDisplayName()+"==");
 			dataLoaderService.loadConfiguration(
 				rifManager, 
+				logWriter,
 				dataSetConfiguration);
 		}
 		else if (currentWorkflowState == WorkflowState.CLEAN) { 
-			System.out.println("processWorkflowStep CLEAN for " + 
-					dataSetConfiguration.getDisplayName()+"==");
 			dataLoaderService.cleanConfiguration(
 				rifManager, 
+				logWriter,
 				dataSetConfiguration);			
 		}
 		else if (currentWorkflowState == WorkflowState.CONVERT) { 
-			System.out.println("processWorkflowStep CONVERT for " + 
-				dataSetConfiguration.getDisplayName()+"==");
 			dataLoaderService.convertConfiguration(
 				rifManager, 
+				logWriter,
 				dataSetConfiguration);			
 		}
 		else if (currentWorkflowState == WorkflowState.OPTIMISE) { 
-			System.out.println("processWorkflowStep OPTIMISE for " + 
-				dataSetConfiguration.getDisplayName()+"==");
 			dataLoaderService.optimiseConfiguration(
 				rifManager,
+				logWriter,
 				dataSetConfiguration);			
 		}
 		else if (currentWorkflowState == WorkflowState.CHECK) { 
-			System.out.println("processWorkflowStep CHECK for " + 
-				dataSetConfiguration.getDisplayName()+"==");
 			dataLoaderService.checkConfiguration(
 				rifManager,
+				logWriter,
 				dataSetConfiguration);			
 		}
 		else if (currentWorkflowState == WorkflowState.PUBLISH) { 
-			System.out.println("processWorkflowStep PUBLISH for " + 
-				dataSetConfiguration.getDisplayName()+"==");
-			dataLoaderService.checkConfiguration(
+			dataLoaderService.publishConfiguration(
 				rifManager,
+				logWriter,
 				dataSetConfiguration);			
 		}
 		
@@ -203,8 +251,24 @@ public class LinearWorkflowEnactor {
 	}
 	
 	private void logMessage(
-		final String logMessage) {
+		final String logMessage) 
+		throws RIFServiceException {
 		
+		try {
+			logWriter.write(logMessage);
+			logWriter.newLine();			
+		}
+		catch(IOException ioException) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"general.io.unableToWritToFile",
+					logFile.getName());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.UNABLE_TO_WRITE_FILE, 
+					errorMessage);
+			throw rifServiceException;
+		}
 	}
 	
 	// ==========================================

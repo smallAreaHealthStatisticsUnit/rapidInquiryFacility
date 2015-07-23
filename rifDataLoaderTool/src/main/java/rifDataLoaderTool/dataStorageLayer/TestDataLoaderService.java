@@ -2,8 +2,11 @@ package rifDataLoaderTool.dataStorageLayer;
 
 import java.sql.Connection;
 
+
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
+
+import java.io.*;
 
 /**
  *
@@ -85,10 +88,12 @@ public class TestDataLoaderService
 	 * @param dataSetConfiguration
 	 * @throws RIFServiceException
 	 */
-	public void clearAllDataSets(final User rifManager) {	
+	public void clearAllDataSets(
+		final User rifManager,
+		final Writer logFileWriter) {	
 		//Defensively copy parameters and guard against blocked rifManagers
 
-		Boolean result = null;
+
 		try {
 			SQLConnectionManager sqlConnectionManager
 				= getSQLConnectionManger();
@@ -97,13 +102,21 @@ public class TestDataLoaderService
 					rifManager);
 		
 			DataSetManager dataSetManager = getDataSetManager();
-			dataSetManager.clearAllDataSets(connection);
+			dataSetManager.clearAllDataSets(
+				connection,
+				logFileWriter);
+			
+			ChangeAuditManager changeAuditManager
+				= getChangeAuditManager();
+			changeAuditManager.clearChangeLogs(
+				connection,
+				logFileWriter);			
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
 				rifManager,
-				"cleaningDetectedErrorValue",
+				"clearAllDataSets",
 				rifServiceException);
 		}
 	}

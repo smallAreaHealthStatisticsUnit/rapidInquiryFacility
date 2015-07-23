@@ -110,6 +110,8 @@ public final class SQLSelectQueryFormatter
 	/** The where like field names. */
 	private ArrayList<String> whereLikeFieldNames;
 	
+	private String ctasTable;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -125,7 +127,7 @@ public final class SQLSelectQueryFormatter
 		fromTables = new ArrayList<String>();
 		whereConditions = new ArrayList<String>();
 		orderByConditions = new ArrayList<String>();
-		
+		ctasTable = null;
 		whereLikeFieldNames = new ArrayList<String>();
 	}
 
@@ -143,6 +145,32 @@ public final class SQLSelectQueryFormatter
 		this.useDistinct = useDistinct;
 	}
 	
+	
+	public void setCTASTable(final String ctasTable) {
+		this.ctasTable = ctasTable;
+	}
+	
+	public String getCTASTable() {
+		return ctasTable;
+	}
+
+	/**
+	 * Adds the select field.
+	 *
+	 * @param selectField the select field
+	 */
+	public void addSelectField(
+		final String tableName,
+		final String selectField) {
+
+		StringBuilder selectPhrase = new StringBuilder();
+		selectPhrase.append(tableName);
+		selectPhrase.append(".");
+		selectPhrase.append(selectField);
+		
+		selectFields.add(selectPhrase.toString());		
+	}	
+	
 	/**
 	 * Adds the select field.
 	 *
@@ -154,6 +182,67 @@ public final class SQLSelectQueryFormatter
 		selectFields.add(selectField);		
 	}
 	
+	
+	/**
+	 * Adds the select field.
+	 *
+	 * @param selectField the select field
+	 */
+	public void addSelectFieldWithAlias(
+		final String selectField,
+		final String aliasName) {
+
+		StringBuilder selectFieldPhrase
+			= new StringBuilder();
+		selectFieldPhrase.append(selectField);
+		selectFieldPhrase.append(" AS ");
+		selectFieldPhrase.append(aliasName);
+		
+		selectFields.add(selectFieldPhrase.toString());		
+	}
+	
+	
+	/**
+	 * Adds the select field.
+	 *
+	 * @param selectField the select field
+	 */
+	public void addSelectFieldWithAlias(
+		final String tableName,
+		final String selectField,
+		final String aliasName) {
+
+		StringBuilder selectFieldPhrase
+			= new StringBuilder();
+		selectFieldPhrase.append(tableName);
+		selectFieldPhrase.append(".");
+		selectFieldPhrase.append(selectField);
+		selectFieldPhrase.append(" AS ");
+		selectFieldPhrase.append(aliasName);
+		
+		selectFields.add(selectFieldPhrase.toString());		
+	}
+	
+	
+	
+	/**
+	 * adds a constant value in a select statement
+	 * eg: 
+	 * @param fieldValue
+	 * @param aliasName
+	 */
+	public void addTextLiteralSelectField(
+		final String fieldValue,
+		final String aliasName) {
+		
+		StringBuilder textLiteralSelectPhrase = new StringBuilder();
+		textLiteralSelectPhrase.append("'");
+		textLiteralSelectPhrase.append(fieldValue);		
+		textLiteralSelectPhrase.append("' AS ");
+		textLiteralSelectPhrase.append(aliasName);
+		selectFields.add(textLiteralSelectPhrase.toString());
+	}
+		
 	/**
 	 * Adds the from table.
 	 *
@@ -234,6 +323,56 @@ public final class SQLSelectQueryFormatter
 
 		whereConditions.add(whereCondition.toString());
 	}
+	
+	
+	/**
+	 * Adds the where parameter.
+	 *
+	 * @param fieldName the field name
+	 */
+	public void addWhereParameterWithOperator(
+		final String tableA,
+		final String tableAField,
+		final String operator,
+		final String tableB,
+		final String tableBField) {
+		
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(tableA);
+		whereCondition.append(".");
+		whereCondition.append(tableAField);
+		whereCondition.append(" ");
+		whereCondition.append(operator);
+		whereCondition.append(" ");
+		whereCondition.append(tableB);
+		whereCondition.append(".");
+		whereCondition.append(tableBField);
+		whereConditions.add(whereCondition.toString());
+	}
+	
+	
+	
+	/**
+	 * Adds the where parameter.
+	 *
+	 * @param fieldName the field name
+	 */
+	public void addWhereParameterWithLiteralValue(
+		final String tableName,
+		final String fieldName,
+		final String literalValue) {
+		
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(tableName);
+		whereCondition.append(".");
+		whereCondition.append(fieldName);
+		whereCondition.append("='");
+		whereCondition.append(literalValue);
+		whereCondition.append("'");
+
+		whereConditions.add(whereCondition.toString());
+	}
+		
 	
 	/**
 	 * Adds the where parameter with operator.
@@ -382,6 +521,13 @@ public final class SQLSelectQueryFormatter
 	public String generateQuery() {
 
 		resetAccumulatedQueryExpression();
+		
+		if (ctasTable != null) {
+			addQueryPhrase(0, "CREATE TABLE ");
+			addQueryPhrase(ctasTable);
+			addQueryPhrase(" AS");
+			padAndFinishLine();
+		}
 		addQueryPhrase(0, "SELECT");
 		if (useDistinct == true) {
 			addQueryPhrase(" DISTINCT");
@@ -462,9 +608,12 @@ public final class SQLSelectQueryFormatter
 				addQueryPhrase(1, convertCase(orderByConditions.get(i)));
 			}
 		}
-		
-		addQueryPhrase(";");
-		finishLine();
+
+		if (endWithSemiColon() == true) {			
+			addQueryPhrase(";");
+			finishLine();
+		}
+
 				
 		return super.generateQuery();
 	}

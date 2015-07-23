@@ -1,6 +1,7 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
+
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
@@ -12,6 +13,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import java.util.ArrayList;
 import java.sql.*;
 import java.text.Collator;
+import java.io.*;
 
 /**
  *
@@ -93,6 +95,7 @@ public final class ConvertWorkflowManager
 	
 	public void convertConfiguration(
 		final Connection connection,
+		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 
@@ -126,6 +129,7 @@ public final class ConvertWorkflowManager
 				= RIFTemporaryTablePrefixes.CONVERT.getTableName(coreDataSetName);
 			deleteTable(
 				connection, 
+				logFileWriter,
 				convertedTableName);
 			
 			//Create the first part of the query used to create a converted table
@@ -137,7 +141,7 @@ public final class ConvertWorkflowManager
 			queryFormatter.addQueryPhrase(1, "SELECT");
 			queryFormatter.padAndFinishLine();
 			queryFormatter.addQueryLine(2, "data_set_id,");
-			queryFormatter.addQueryLine(2, "row_number,");
+			queryFormatter.addQueryLine(2, "row_number");
 			
 			processFieldsWithoutConversions(
 				queryFormatter,
@@ -157,7 +161,10 @@ public final class ConvertWorkflowManager
 			queryFormatter.addQueryPhrase(0, "FROM");
 			queryFormatter.padAndFinishLine();
 			queryFormatter.addQueryPhrase(1, cleanedTableName);
-			logSQLQuery("convert_configuration", queryFormatter);
+			logSQLQuery(
+				logFileWriter,
+				"convert_configuration", 
+				queryFormatter);
 						
 			statement	
 				= createPreparedStatement(
@@ -167,13 +174,16 @@ public final class ConvertWorkflowManager
 					
 			updateLastCompletedWorkState(
 				connection,
+				logFileWriter,
 				dataSetConfiguration,
 				WorkflowState.CONVERT);
 			
 			
 		}
 		catch(SQLException sqlException) {
-			logSQLException(sqlException);
+			logSQLException(
+				logFileWriter,
+				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"convertWorkflowManager.error.unableToCreateConvertTable",
@@ -197,6 +207,8 @@ public final class ConvertWorkflowManager
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
 			= dataSetConfiguration.getFieldsWithoutConversionFunctions();
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			queryFormatter.addQueryPhrase(",");
+			queryFormatter.finishLine();			
 			FieldRequirementLevel fieldRequirementLevel
 				= fieldConfiguration.getFieldRequirementLevel();
 			if (fieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) {
@@ -206,8 +218,6 @@ public final class ConvertWorkflowManager
 					fieldConfiguration);
 			}
 			else if (fieldRequirementLevel == FieldRequirementLevel.EXTRA_FIELD) {
-				queryFormatter.addQueryPhrase(",");
-				queryFormatter.finishLine();			
 				queryFormatter.addQueryPhrase(
 					indentationLevel,
 					fieldConfiguration.getCleanFieldName());				
@@ -237,8 +247,8 @@ public final class ConvertWorkflowManager
 				rifConversionFunction.addActualParameter(fieldWithConversion);
 				String queryFragment 
 					= rifConversionFunction.generateQueryFragment();
-				queryFormatter.finishLine();
 				queryFormatter.addQueryPhrase(",");
+				queryFormatter.finishLine();
 				queryFormatter.addQueryPhrase(
 					indentationLevel, 
 					queryFragment);				
@@ -261,17 +271,24 @@ public final class ConvertWorkflowManager
 				= dataSetConfiguration.getFieldHavingConvertFieldName("age");
 			DataSetFieldConfiguration sexFieldConfiguration
 				= dataSetConfiguration.getFieldHavingConvertFieldName("sex");
-			RIFConversionFunction rifConversionFunction
-				= ageFieldConfiguration.getConvertFunction();
 
-			rifConversionFunction.addActualParameter(ageFieldConfiguration);
-			rifConversionFunction.addActualParameter(sexFieldConfiguration);
-			
-			queryFormatter.addQueryPhrase(",");
-			queryFormatter.finishLine();
-			queryFormatter.addQueryPhrase(
-				indentationLevel, 
-				rifConversionFunction.generateQueryFragment());				
+			if ((ageFieldConfiguration != null) &&
+				(sexFieldConfiguration != null)) {
+				
+				RIFConversionFunctionFactory rifConversionFunctionFactory
+					= RIFConversionFunctionFactory.newInstance();
+
+				RIFConversionFunction ageSexConversionFunction
+					= rifConversionFunctionFactory.getRIFConvertFunction("convert_age_sex");
+				ageSexConversionFunction.addActualParameter(ageFieldConfiguration);
+				ageSexConversionFunction.addActualParameter(sexFieldConfiguration);
+				
+				queryFormatter.addQueryPhrase(",");
+				queryFormatter.finishLine();
+				queryFormatter.addQueryPhrase(
+					indentationLevel, 
+					ageSexConversionFunction.generateQueryFragment());				
+			}
 		}
 		else {
 			String errorMessage

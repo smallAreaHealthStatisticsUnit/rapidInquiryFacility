@@ -120,7 +120,7 @@ public abstract class AbstractRIFDataLoaderTestCase {
 		dataLoaderService = new TestDataLoaderService();
 		try {
 			dataLoaderService.initialiseService();	
-			dataLoaderService.clearAllDataSets(rifManager);
+			dataLoaderService.clearAllDataSets(rifManager, null);
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();
