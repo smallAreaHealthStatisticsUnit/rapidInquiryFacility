@@ -1,3 +1,16 @@
+/*
+<trigger_t_rif40_inv_covariates_checks_description>
+<para>
+Check - USERNAME exists.
+Check - USERNAME is Kerberos USER on INSERT.
+Check - UPDATE not allowed.
+Check - DELETE only allowed on own records.
+Check - study_geolevel_name.
+Check - Covariates a) MIN and MAX.  b) Limits c) Check access to covariate table, <covariate name> column exists d) Check score.
+</para>
+</trigger_t_rif40_inv_covariates_checks_description>
+ */
+
 USE [sahsuland_dev]
 GO
 
@@ -35,23 +48,108 @@ GO
 		BEGIN
 			SET @XTYPE = 'I'
 		END
-------------------------------------------------
---When Transaction is an Update  then rollback 
--------------------------------------------------
-	IF (@XTYPE = 'U')
+		
+		
+--check if username is correct
+IF @XTYPE = 'I' OR @XTYPE='U'
+BEGIN
+	DECLARE @different_user	VARCHAR(MAX) = 
+	(
+		SELECT username, study_id, inv_id, covariates_name
+		FROM inserted
+		WHERE username != SUSER_SNAME()
+	 FOR XML PATH('') 
+	); 
+	IF @different_user IS NOT NULL
+	BEGIN
+	DECLARE @has_studies_check VARCHAR(MAX) = 
+	(
+		SELECT count(study_id) as total
+		FROM [rif40].[t_rif40_results]
+	);
+	IF SUSER_SNAME() = 'RIF40' and @has_studies_check=0
 		BEGIN
-		 	Raiserror (50091, 16,1 );
-			rollback tran
-		  end 
-END
+			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_inv_covariates]', 't_rif40_inv_covariates insert allowed during build';
+		END;
+		ELSE
+			BEGIN TRY
+				rollback;
+				DECLARE @err_msg1 VARCHAR(MAX) = formatmessage(51068, @different_user);
+				THROW 51068, @err_msg1, 1;
+			END TRY
+			BEGIN CATCH
+				EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_inv_covariates]';
+				THROW 51068, @err_msg1, 1;
+			END CATCH;	
+	END;
+END;
 
+--updates not allowed		
+IF @XTYPE = 'U'
+BEGIN TRY
+	rollback;
+	DECLARE @err_msg2 VARCHAR(MAX) = formatmessage(50091);
+	THROW 50091, @err_msg2, 1;
+END TRY
+BEGIN CATCH
+	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_inv_covariates]';
+	THROW 50091, @err_msg2, 1;
+END CATCH;	
 
+--can only delete your own records
+IF @XTYPE = 'D'
+BEGIN
+	DECLARE @different_user_del	VARCHAR(MAX) = 
+	(
+		SELECT username, study_id, inv_id, line_number
+		FROM deleted
+		WHERE username != SUSER_SNAME()
+	 FOR XML PATH('') 
+	); 
+	IF @different_user_del IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg3 VARCHAR(MAX) = formatmessage(51069, @different_user_del);
+		THROW 51069, @err_msg3, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_inv_covariates]';
+		THROW 51069, @err_msg3, 1;
+	END CATCH;	
+	
+	RETURN;
+END;
+
+--
+-- Check study geolevel name is the same (or lower than) than study geolevel name in t_rif40_studies
+--
+--stopped here, the Postgres code doesn't make sense to me...
+DECLARE @different_study_geolevels VARCHAR(MAX) = 
+(
+
+	SELECT a.study_geolevel_name, b.geolevel_id, a.study_id
+		  FROM t_rif40_studies a, t_rif40_geolevels b
+		 WHERE currval('rif40_study_id_seq'::regclass) = study_id
+		   AND b.geolevel_name = a.study_geolevel_name
+
+	c2_ckicov CURSOR(l_geography  varchar, l_geolevel_name  varchar) FOR
+		SELECT *
+		  FROM t_rif40_geolevels
+		 WHERE l_geography     = geography
+		   AND l_geolevel_name = geolevel_name;
+		   
+SELECT a.study_geolevel_name, b.geolevel_id, a.study_id
+		  FROM t_rif40_studies a, t_rif40_geolevels b
+		 WHERE currval('rif40_study_id_seq'::regclass) = study_id
+		   AND b.geolevel_name = a.study_geolevel_name;
+		   
+		   
  ----------------------------------------
  -- check covariates : if min< expected 
  ----------------------------------------
-	 DECLARE @min nvarchar(MAX) =
+DECLARE @min_problem nvarchar(MAX) =
 		(
-		SELECT 
+		SELECT  ic.min
         cast(ic.[min] as varchar(20))+ ' '
 		FROM inserted ic 
 		where EXISTS (SELECT 1 FROM [rif40].[rif40_covariates] c 

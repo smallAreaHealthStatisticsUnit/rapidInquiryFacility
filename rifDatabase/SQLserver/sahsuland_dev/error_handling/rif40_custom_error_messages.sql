@@ -252,5 +252,41 @@ EXEC sp_addmessage 51051, 16,
 EXEC sp_addmessage 51052, 16,
 	N'Table name: [rif40].[rif40_db_name_check] , Invalid Database name, first character must be a letter: %s';
 	
+EXEC sp_addmessage 51053, 16,
+	N'Table name: [rif40].[t_rif40_geolevels], T_RIF40_GEOLEVELS COVARIATE_TABLE not found: %s';
+EXEC sp_addmessage 51054, 16,
+	N'Table name: [rif40].[t_rif40_geolevels], T_RIF40_GEOLEVELS COVARIATE_TABLE column not found for geolevel_name: %s';
+EXEC sp_addmessage 51055, 16,
+	N'Table name: [rif40].[t_rif40_geolevels], T_RIF40_GEOLEVELS COVARIATE_TABLE missing YEAR column : %s';
+EXEC sp_addmessage 51056, 16,
+	N'Table name: [rif40].[t_rif40_geolevels], T_RIF40_GEOLEVELS LOOKUP_TABLE not found for geolevel_name: %s';
+EXEC sp_addmessage 51057, 16,
+	N'Table name: [rif40].[t_rif40_geolevels], T_RIF40_GEOLEVELS LOOKUP_TABLE column not found for geolevel_name: %s';
+EXEC sp_addmessage 51058, 16,
+	N'Table name: [rif40].[t_rif40_geolevels], T_RIF40_GEOLEVELS LOOKUP_TABLE LOOKUP_DESC_COLUMN column not found for geolevel_name : %s';
+EXEC sp_addmessage 51059, 16,
+	N'Table name: [rif40].[t_rif40_geolevels], T_RIF40_GEOLEVELS CENTROIDXCOORDINATE_COLUMN column not found for geolevel_name: %s';
+EXEC sp_addmessage 51060, 16,
+	N'Table name: [rif40].[t_rif40_geolevels], T_RIF40_GEOLEVELS CENTROIDYCOORDINATE_COLUMN column not found for geolevel_name: %s';
+EXEC sp_addmessage 51061, 16,
+	N'Table name: [rif40].[t_rif40_geolevels], RIF40_GEOGRAPHIES HIERARCHYTABLE not found for geolevel_name: %s';
+EXEC sp_addmessage 51062, 16,
+	N'Table name: [rif40].[t_rif40_geolevels], RIF40_GEOGRAPHIES HIERARCHYTABLE geolevel column not found for geolevel_name: %s';
+EXEC sp_addmessage 51063, 16,
+	N'Table name: [rif40].[t_rif40_geolevels], RIF40_GEOGRAPHIES POSTAL_POPULATION_TABLE not found for geolevel_name: %s';
+EXEC sp_addmessage 51064, 16,
+	N'Table name: [rif40].[t_rif40_geolevels], RIF40_GEOGRAPHIES POSTAL_POPULATION_TABLE geolevel column not found for geolevel_name: %s';
 
+EXEC sp_addmessage 51065, 16,
+	N'Table name: [rif40].[t_rif40_inv_conditions], T_RIF40_INV_CONDITIONS insert/update failed, new username is not current user: %s';
+EXEC sp_addmessage 51066, 16,
+	N'Table name: [rif40].[t_rif40_inv_conditions], UPDATE not allowed on T_RIF40_INV_CONDITIONS';
+EXEC sp_addmessage 51067, 16,
+	N'Table name: [rif40].[t_rif40_inv_conditions], DELETE only allowed on own records in T_RIF40_INV_CONDITIONS: %s';
+
+EXEC sp_addmessage 51068, 16,
+	N'Table name: [rif40].[t_rif40_inv_covariates], T_RIF40_INV_COVARIATES insert/update failed, new username is not current user: %s';
+EXEC sp_addmessage 51069, 16,
+	N'Table name: [rif40].[t_rif40_inv_covariates], DELETE only allowed on own records in T_RIF40_INV_COVARIATESS: %s';
+	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';
