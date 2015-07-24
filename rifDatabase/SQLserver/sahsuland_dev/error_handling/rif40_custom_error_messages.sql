@@ -123,7 +123,7 @@ EXEC sp_addmessage 50097, 16,
    N'Table_name: [rif40].[t_rif40_inv_covariates], type = 1 (integer score) and min <0:(%s)';
 
 EXEC sp_addmessage 50098, 16, 
-   N'Table_name: [rif40].[t_rif40_inv_covariates], Study geolevel name not found in rif40_geolevels:(%s)';
+   N'Table_name: [rif40].[t_rif40_inv_covariates], Study geolevel name not found in t_rif40_geolevels: %s';
 
 EXEC sp_addmessage 51000, 16,
 	N'[rif40] User %s is not a rif_user or rif_manager';
@@ -288,5 +288,14 @@ EXEC sp_addmessage 51068, 16,
 	N'Table name: [rif40].[t_rif40_inv_covariates], T_RIF40_INV_COVARIATES insert/update failed, new username is not current user: %s';
 EXEC sp_addmessage 51069, 16,
 	N'Table name: [rif40].[t_rif40_inv_covariates], DELETE only allowed on own records in T_RIF40_INV_COVARIATESS: %s';
+EXEC sp_addmessage 51070, 16,
+	N'Table name: [rif40].[t_rif40_inv_covariates], T_RIF40_INV_COVARIATES study, investigation, covariate, study area geolevel name not found in T_RIF40_STUDIES for current study: %s';
+EXEC sp_addmessage 51071, 16,
+	N'Table name: [rif40].[t_rif40_inv_covariates], T_RIF40_INV_COVARIATES covariate column in covariate table cannot be accessed: %s';
+EXEC sp_addmessage 51072, 16,
+	N'Table name: [rif40].[t_rif40_inv_covariates], T_RIF40_INV_COVARIATES YEAR column in covariate table cannot be accessed: %s';	
+EXEC sp_addmessage 51073, 16,
+	N'Table name: [rif40].[t_rif40_inv_covariates], T_RIF40_INV_COVARIATES geolevel column in covariate table cannot be accessed: %s';		
+	
 	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';
