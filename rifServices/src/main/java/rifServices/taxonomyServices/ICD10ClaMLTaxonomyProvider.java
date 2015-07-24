@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -91,6 +92,9 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 	private HealthCodeTaxonomy healthCodeTaxonomy;
 	private File ICD10XmlFile;
 	private TaxonomyTerm icd10Root;
+	
+	// Using HashMap or TreeMap for the taxonomy container depends on
+	// user's requirements and the database design.
 	private HashMap<String, TaxonomyTerm> taxonomyContainer;
 	// ==========================================
 	// Section Constants
@@ -158,7 +162,7 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 		icd10Source.getDocumentElement().normalize();
 			 
 		//Build root taxonomy which contains all chapters, for the usage of getToplevel() method
-		TaxonomyTerm icd10Root = TaxonomyTerm.newInstance();
+
 		icd10Root.setLabel("ICD10");
 		icd10Root.setNameSpace(ICD10NameSpace);
 		icd10Root.setDescription("International Statistical Classification of Diseases and Related Health Problems 10th Revision");
@@ -166,7 +170,6 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 				
 		//Container containing all taxonomy. Either using HashMap or Treemap is based on database design.
 		//The key is health code so the type is String.
-		HashMap<String, TaxonomyTerm> taxonomyContainer =new HashMap<String, TaxonomyTerm>();
 				
 		NodeList metaList = icd10Source.getElementsByTagName("Meta");
 		Node chapterValues = metaList.item(0);
@@ -281,7 +284,9 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 
 	public ArrayList<HealthCode> getHealthCodes(String searchText, boolean isCaseSensitive) throws RIFServiceException {
         Pattern searchPattern;
-		
+		if(searchText ==null){
+			return null;
+		}
 		if (isCaseSensitive) {
 			searchPattern = Pattern.compile(".*"+searchText+".*");
 		}
@@ -304,7 +309,7 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 				}
 			}
 		}
-		return results;
+		return results.size()>0? results: null;
 	}
 
 	public ArrayList<HealthCode> getTopLevelCodes() throws RIFServiceException {
@@ -318,27 +323,45 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 	}
 
 	public ArrayList<HealthCode> getImmediateSubterms(HealthCode parentHealthCode) throws RIFServiceException {
+		if(parentHealthCode ==null){
+			return null;
+		}
+		if(! matchesNameSpace(parentHealthCode.getNameSpace())){
+			return null;
+		}
+		if(parentHealthCode.getNumberOfSubTerms()==0){
+			//This code is a leaf which has no children
+			return null;
+		}
 		//The container for the children of this parentHealthCode
-		ArrayList<HealthCode> children =new ArrayList<HealthCode>();
+		ArrayList<HealthCode> children =new ArrayList<HealthCode>(parentHealthCode.getNumberOfSubTerms());
 		TaxonomyTerm parentTaxonomyTerm = taxonomyContainer.get(parentHealthCode.getCode());
 		for(TaxonomyTerm term :  parentTaxonomyTerm.getSubTerms()){
 			HealthCode healthCode =transformTaxonomyTermIntoHealthCode(term);
 			children.add(healthCode);
 		}
-		return children;
+		return children.size()>0? children: null;
 	}
 
 	public HealthCode getParentHealthCode(HealthCode childHealthCode) throws RIFServiceException {
-		//How to handle if childHealthCode is wrong? E.g., not exist in the Health Taxonomy.
-		TaxonomyTerm childTaxonomyTerm = taxonomyContainer.get(childHealthCode.getCode());
-		TaxonomyTerm parentTaxonomyTerm =childTaxonomyTerm.getParentTerm();
-
-		if(parentTaxonomyTerm==null){
+		if(childHealthCode ==null){
 			return null;
 		}
-		else{
-			return transformTaxonomyTermIntoHealthCode(parentTaxonomyTerm);
+		if(! matchesNameSpace(childHealthCode.getNameSpace())){
+			return null;
 		}
+		if(childHealthCode.isTopLevelTerm()){
+			return null;
+		}
+		//How to handle if childHealthCode is wrong? E.g., not exist in the Health Taxonomy.
+		TaxonomyTerm childTaxonomyTerm = taxonomyContainer.get(childHealthCode.getCode());
+		if(childTaxonomyTerm ==null){
+			return null;
+		}
+		TaxonomyTerm parentTaxonomyTerm =childTaxonomyTerm.getParentTerm();
+
+	    return transformTaxonomyTermIntoHealthCode(parentTaxonomyTerm);
+
 	}
 
 	public HealthCode getHealthCode(String code, String nameSpace) throws RIFServiceException {
@@ -347,20 +370,19 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 		}
 		else{
 			TaxonomyTerm taxonomyTerm = taxonomyContainer.get(code);
-			if(taxonomyTerm ==null){
-				return null;
-			}
-			else{
-				return transformTaxonomyTermIntoHealthCode(taxonomyTerm);
-			}
+		    return transformTaxonomyTermIntoHealthCode(taxonomyTerm);
 		}
 	}
 
 	public boolean healthCodeExists(HealthCode healthCode) throws RIFServiceException {
-		if(healthCode.getNameSpace().equals(healthCodeTaxonomy.getNameSpace())){
+		if(matchesNameSpace(healthCode.getNameSpace())){
 			return ! (taxonomyContainer.get(healthCode.getCode())==null);
 		}
 		return false;
+	}
+	
+	public HashMap<String, TaxonomyTerm> getTaxonomyRepository(){
+		return taxonomyContainer;
 	}
 
 	// ==========================================
@@ -395,10 +417,11 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 	}
 	
 	/**
-	 * Remove the dot sign in WHO ICD 10 heathcode in order to keep data format as used in RIF database
+	 * Remove the dot sign in WHO ICD 10 healthcode in order to keep data format as used in RIF database
 	 * 
 	 * @param healthCode The code appears in WTO XML file that contain dot sign.
-	 * @return healthCode without the dot sign as used in sahsuland cancer table.
+	 * 
+	 * @return healthCode without the dot sign. (E.g., as used in sahsuland cancer table.)
 	 */
 	
 	private static String deleteDotInHealthCode(String healthCode){
@@ -411,13 +434,26 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 		}
 	}
 	
-	private boolean matchesNameSpace(String otherNameSpace){			
+	private boolean matchesNameSpace(String otherNameSpace){
+		if(otherNameSpace ==null){
+			return false;
+		}
 		String nameSpace = healthCodeTaxonomy.getNameSpace();
 		Collator collator = RIFServiceMessages.getCollator();
 		return collator.equals(nameSpace, otherNameSpace);
 	}
 	
-	private HealthCode transformTaxonomyTermIntoHealthCode(TaxonomyTerm term){
+	/**
+	 * 
+	 * @param term 
+	 *        A valid {@link TaxonomyTerm}.
+	 *        
+	 * @return The corresponding {@link HealthCode} of this term.
+	 */
+	public HealthCode transformTaxonomyTermIntoHealthCode(TaxonomyTerm term){
+		if(term ==null){
+			return null;
+		}
 		HealthCode healthCode =HealthCode.newInstance();
 		healthCode.setCode(term.getLabel());
 		healthCode.setTopLevelTerm(term.getParentTerm() ==null);
