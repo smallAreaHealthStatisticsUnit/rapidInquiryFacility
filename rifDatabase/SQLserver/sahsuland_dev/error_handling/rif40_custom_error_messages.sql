@@ -296,6 +296,12 @@ EXEC sp_addmessage 51072, 16,
 	N'Table name: [rif40].[t_rif40_inv_covariates], T_RIF40_INV_COVARIATES YEAR column in covariate table cannot be accessed: %s';	
 EXEC sp_addmessage 51073, 16,
 	N'Table name: [rif40].[t_rif40_inv_covariates], T_RIF40_INV_COVARIATES geolevel column in covariate table cannot be accessed: %s';		
+EXEC sp_addmessage 51074, 16,
+	N'Table name: [rif40].[t_rif40_inv_covariates], T_RIF40_INV_COVARIATES problem checking score: %s';
+EXEC sp_addmessage 51075, 16,
+	N'Table name: [rif40].[t_rif40_inv_covariates], T_RIF40_INV_COVARIATES covariate table''s covariate column does not have min value: %s';
+EXEC sp_addmessage 51076, 16,
+	N'Table name: [rif40].[t_rif40_inv_covariates], T_RIF40_INV_COVARIATES covariate table''s covariate column does not have max value: %s';
 	
 	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';

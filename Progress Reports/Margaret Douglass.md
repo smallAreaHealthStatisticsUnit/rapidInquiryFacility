@@ -7,6 +7,9 @@ Principal Work Area: **Microsoft SQL server database port**
 ###July
 I plan to finish the trigger work that I began last month and begin to set up a proper test suite to verify that everything has been set up correctly.  Also continue work on simple batch installation scripts so I can easily re-create the latest version of the sahsuland_dev database.
 
+######27 July
+* Finished the t_rif40_inv_covariates trigger, although with a cursor + dynamic SQL, which will perform terribly.  Started t_rif40_investigations trigger.
+
 ######24 July
 * More work on t_rif40_inv_covariates trigger.  The end is in sight, but there is some tricky dynamic SQL to sort out (/try to find clever ways to avoid).
 

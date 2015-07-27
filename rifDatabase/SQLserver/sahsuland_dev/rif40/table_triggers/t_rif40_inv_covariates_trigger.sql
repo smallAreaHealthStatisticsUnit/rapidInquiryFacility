@@ -36,7 +36,7 @@ GO
  on [rif40].[t_rif40_inv_covariates]
  for insert, update 
  as
- begin 
+ BEGIN 
 
  Declare  @xtype varchar(5)
  	IF EXISTS (SELECT * FROM DELETED)
@@ -46,8 +46,9 @@ GO
 	IF EXISTS (SELECT * FROM INSERTED)
 		BEGIN
 			IF (@XTYPE = 'D')
-		BEGIN
-			SET @XTYPE = 'U'
+			BEGIN
+				SET @XTYPE = 'U'
+			END
 		END
 	ELSE
 		BEGIN
@@ -60,7 +61,7 @@ IF @XTYPE = 'I' OR @XTYPE='U'
 BEGIN
 	DECLARE @different_user	VARCHAR(MAX) = 
 	(
-		SELECT username, study_id, inv_id, covariates_name
+		SELECT username, study_id, inv_id, covariate_name
 		FROM inserted
 		WHERE username != SUSER_SNAME()
 	 FOR XML PATH('') 
@@ -106,7 +107,7 @@ IF @XTYPE = 'D'
 BEGIN
 	DECLARE @different_user_del	VARCHAR(MAX) = 
 	(
-		SELECT username, study_id, inv_id, line_number
+		SELECT username, study_id, inv_id, covariate_name
 		FROM deleted
 		WHERE username != SUSER_SNAME()
 	 FOR XML PATH('') 
@@ -137,7 +138,7 @@ DECLARE @missing_study_geolevel VARCHAR(MAX) =
 		  FROM t_rif40_geolevels a
 		 WHERE a.geography     = b.geography
 		   AND a.geolevel_name = b.study_geolevel_name)
-	FOR XML PATH ('');
+	FOR XML PATH ('')
 );
 IF @missing_study_geolevel IS NOT NULL
 BEGIN TRY
@@ -150,12 +151,12 @@ BEGIN CATCH
 	THROW 50098, @err_msg4, 1;
 END CATCH;
 
-DECLARE @current_study INT = [rif40].[rif40_sequence_current_value] 'rif40_study_id_seq';
+DECLARE @current_study INT = [rif40].[rif40_sequence_current_value] ('rif40_study_id_seq');
 DECLARE @found_study_info VARCHAR(MAX) = 
 (
 	SELECT 1
 	FROM t_rif40_studies a, t_rif40_geolevels b
-	WHERE a.study_id=[rif40].[rif40_sequence_current_value] 'rif40_study_id_seq'
+	WHERE a.study_id=[rif40].[rif40_sequence_current_value]( 'rif40_study_id_seq')
 	AND b.geolevel_name = a.study_geolevel_name
 );
 IF @found_study_info IS NULL
@@ -173,12 +174,12 @@ DECLARE @mismatched_geolevels VARCHAR(MAX) =
 (
 	SELECT a.study_geolevel_name as new_geolevel, b.study_geolevel_name as t_rif40_studies_geolevel, b.study_id
 	from inserted a, t_rif40_studies b
-	where b.study_id=[rif40].[rif40_sequence_current_value] 'rif40_study_id_seq'
+	where b.study_id=[rif40].[rif40_sequence_current_value] ('rif40_study_id_seq')
 	and a.study_geolevel_name != b.study_geolevel_name
 );
 IF @mismatched_geolevels IS NOT NULL
 BEGIN
-	DECLARE @log_msg = 'T_RIF40_INV_COVARIATES study geolevel name != T_RIF40_STUDIES geolevel name: '+@mismatched_gelevels;
+	DECLARE @log_msg VARCHAR(MAX)= 'T_RIF40_INV_COVARIATES study geolevel name != T_RIF40_STUDIES geolevel name: '+@mismatched_geolevels;
 	EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_inv_covariate]', @log_msg;
 END;
 
@@ -332,7 +333,7 @@ DECLARE @covariate_col_missing VARCHAR(max) =
 	and a.study_geolevel_name=b.geolevel_name
 	and not exists (
 		select 1 from INFORMATION_SCHEMA.COLUMNS c
-			where c.table_name=b.covariate_name
+			where c.table_name=b.covariate_table
 			and c.column_name=a.covariate_name)
 	FOR XML PATH('')
 );
@@ -356,7 +357,7 @@ DECLARE @covariate_year_missing VARCHAR(max) =
 	and a.study_geolevel_name=b.geolevel_name
 	and not exists (
 		select 1 from INFORMATION_SCHEMA.COLUMNS c
-			where c.table_name=b.covariate_name
+			where c.table_name=b.covariate_table
 			and c.column_name='YEAR')
 	FOR XML PATH('')
 );
@@ -380,7 +381,7 @@ DECLARE @covariate_geolevel_missing VARCHAR(max) =
 	and a.study_geolevel_name=b.geolevel_name
 	and not exists (
 		select 1 from INFORMATION_SCHEMA.COLUMNS c
-			where c.table_name=b.covariate_name
+			where c.table_name=b.covariate_table
 			and c.column_name=a.study_geolevel_name)
 	FOR XML PATH('')
 );
@@ -410,18 +411,79 @@ DECLARE @cov_is_type1 VARCHAR(MAX) = (
 IF @cov_is_type1 IS NOT NULL
 BEGIN
 --need a cursor, alas
+DECLARE cov_cursor CURSOR FOR
+	SELECT a.covariate_name, b.covariate_table, a.min, a.max
+	from inserted a, [rif40].[t_rif40_geolevels] b
+	where a.geography=b.geography
+	and a.study_geolevel_name=b.geolevel_name;
+DECLARE @curs_cov_name VARCHAR(MAX), @curs_cov_table VARCHAR(MAX), @curs_min int, @curs_max int, @cov_check_sql VARCHAR(MAX);
+OPEN cov_cursor;
+FETCH cov_cursor INTO @curs_cov_name, @curs_cov_table, @curs_min, @curs_max;
+	
+WHILE @@FETCH_STATUS = 0  
+BEGIN  
+	DECLARE @cov_table_schema VARCHAR(MAX) = (
+	SELECT  sys.schemas.name AS schema_name
+	FROM    sys.objects t
+	INNER JOIN sys.schemas ON t.schema_id = sys.schemas.schema_id
+	where t.name =@curs_cov_table);
+	DECLARE  @ParmDefinition nvarchar(500) = N'@total_matchOUT int OUTPUT', @total_match int;
+	SET @cov_check_sql = 'select count(*) as total from '+@cov_table_schema+'.'+@curs_cov_table+' where '+@curs_cov_name+'='+@curs_min;
+	EXEC sp_executesql @cov_check_sql, @ParmDefinition, @total_matchOUT=@total_match OUTPUT;
 
+	IF @total_match is null
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg15 VARCHAR(MAX) = formatmessage(51074, @cov_check_sql);
+		THROW 51074, @err_msg15, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_inv_covariates]';
+		THROW 51074, @err_msg15, 1;
+	END CATCH;
 
+	IF @total_match=0
+	BEGIN TRY
+		rollback;
+		DECLARE @log_err_msg16 VARCHAR(max) = 'Covariate table='+@curs_cov_table+', covariate name='+@curs_cov_name+', min='+@curs_min+', sql='+@cov_check_sql;
+		DECLARE @err_msg16 VARCHAR(MAX) = formatmessage(51075, @log_err_msg16);
+		THROW 51075, @err_msg16, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_inv_covariates]';
+		THROW 51075, @err_msg16, 1;
+	END CATCH;
 
-DECLARE @total_leftover int;
-DECLARE @area_id_check_sql VARCHAR(MAX) = 'SELECT @total_leftover=COUNT(area_id) AS total FROM ( SELECT area_id FROM t_rif40_comparison_areas WHERE study_id = '
-	+@current_study_id +' EXCEPT SELECT lower('+@current_comp_geolevel+') FROM '+@current_hierarchytable+') a';
-DECLARE @ParmDefinition nvarchar(500) = N'@total_leftoverOUT int OUTPUT';
-EXEC sp_executesql @area_id_check_sql, @ParmDefinition, @total_leftoverOUT=@total_leftover OUTPUT;
+	SET @cov_check_sql = 'select count(*) as total from '+@cov_table_schema+'.'+@curs_cov_table+' where '+@curs_cov_name+'='+@curs_max;
+	SET @total_match = null;
+	EXEC sp_executesql @cov_check_sql, @ParmDefinition, @total_matchOUT=@total_match OUTPUT;
 
+	IF @total_match is null
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg18 VARCHAR(MAX) = formatmessage(51074, @cov_check_sql);
+		THROW 51074, @err_msg18, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_inv_covariates]';
+		THROW 51074, @err_msg18, 1;
+	END CATCH;
 
-sql_stmt:='SELECT COUNT(*) AS total FROM "'||owner||'".'||c2b_rec.covariate_table||' WHERE '||NEW.covariate_name||' = $1';
-END
+	IF @total_match=0
+	BEGIN TRY
+		rollback;
+		DECLARE @log_err_msg17 varchar(max) = 'Covariate table='+@curs_cov_table+', covariate name='+@curs_cov_name+', max='+@curs_max+', sql='+@cov_check_sql;
+		DECLARE @err_msg17 VARCHAR(MAX) = formatmessage(51076, @log_err_msg17);
+		THROW 51076, @err_msg17, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_inv_covariates]';
+		THROW 51076, @err_msg17, 1;
+	END CATCH;
+END  
 
+CLOSE cov_cursor ;
+DEALLOCATE cov_cursor ;
+END;
 
 end;
