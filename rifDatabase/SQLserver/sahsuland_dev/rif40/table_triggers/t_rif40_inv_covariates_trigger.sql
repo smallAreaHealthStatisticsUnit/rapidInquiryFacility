@@ -480,6 +480,7 @@ BEGIN
 		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_inv_covariates]';
 		THROW 51076, @err_msg17, 1;
 	END CATCH;
+	FETCH cov_cursor INTO @curs_cov_name, @curs_cov_table, @curs_min, @curs_max;
 END  
 
 CLOSE cov_cursor ;

@@ -53,14 +53,12 @@ EXEC sp_addmessage 50013, 16,
 EXEC sp_addmessage 50014, 16, 
    N'Table_name: [rif40].[rif40_covariates] , Could not Locate covariate name in T_RIF40_GEOLEVELS:(%s)';
 
-EXEC sp_addmessage 50050, 16, 
-   N'Table_name: [rif40].[t_rif40_investigations] , Not a numerator table:(%s)';
 
 EXEC sp_addmessage 50051, 16, 
-   N'Table_name: [rif40].[t_rif40_investigations] , Entred table name year start is before RIF40_TABLES year start:(%s)';
+   N'Table_name: [rif40].[t_rif40_investigations] , Entered table name year start is before RIF40_TABLES year start:(%s)';
 
 EXEC sp_addmessage 50052, 16, 
-   N'Table_name: [rif40].[t_rif40_investigations] , Entred table name year STOP is AFTER RIF40_TABLES year STOP:(%s)';
+   N'Table_name: [rif40].[t_rif40_investigations] , Entered table name year STOP is AFTER RIF40_TABLES year STOP:(%s)';
 
 EXEC sp_addmessage 50053, 16, 
    N'Table_name: [rif40].[t_rif40_investigations] , Entered  min age group before RIF40_TABLES min age group :(%s)';
@@ -287,7 +285,7 @@ EXEC sp_addmessage 51067, 16,
 EXEC sp_addmessage 51068, 16,
 	N'Table name: [rif40].[t_rif40_inv_covariates], T_RIF40_INV_COVARIATES insert/update failed, new username is not current user: %s';
 EXEC sp_addmessage 51069, 16,
-	N'Table name: [rif40].[t_rif40_inv_covariates], DELETE only allowed on own records in T_RIF40_INV_COVARIATESS: %s';
+	N'Table name: [rif40].[t_rif40_inv_covariates], DELETE only allowed on own records in T_RIF40_INV_COVARIATES: %s';
 EXEC sp_addmessage 51070, 16,
 	N'Table name: [rif40].[t_rif40_inv_covariates], T_RIF40_INV_COVARIATES study, investigation, covariate, study area geolevel name not found in T_RIF40_STUDIES for current study: %s';
 EXEC sp_addmessage 51071, 16,
@@ -303,5 +301,18 @@ EXEC sp_addmessage 51075, 16,
 EXEC sp_addmessage 51076, 16,
 	N'Table name: [rif40].[t_rif40_inv_covariates], T_RIF40_INV_COVARIATES covariate table''s covariate column does not have max value: %s';
 	
+EXEC sp_addmessage 51077, 16,
+	N'Table name: [rif40].[t_rif40_investigations] , T_RIF40_INVESTIGATIONS INSERT/UPDATE failed - new study username is not current user: %s';
+EXEC sp_addmessage 51078, 16,
+	N'Table name: [rif40].[t_rif40_investigations] , T_RIF40_INVESTIGATIONS UPDATE/DELETE only allowed on own records: %s';
+EXEC sp_addmessage 51079, 16,
+	N'Table name: [rif40].[t_rif40_investigations] , UPDATE only allowed for T_RIF40_INVESTIGATIONS.INVESTIGATION_STATE: %s';
+EXEC sp_addmessage 51080, 16,
+	N'Table name: [rif40].[t_rif40_investigations] , T_RIF40_INVESTIGATIONS numer_tab is not a numerator table: %s';
+EXEC sp_addmessage 51081, 16, 
+   N'Table_name: [rif40].[t_rif40_investigations] , Entered  max age group after RIF40_TABLES max age group : %s';
+EXEC sp_addmessage 51082, 16, 
+   N'Table_name: [rif40].[t_rif40_investigations] , Total field column does not exist in the numerator table : %s';
+
 	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';
