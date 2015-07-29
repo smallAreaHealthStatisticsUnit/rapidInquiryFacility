@@ -1,6 +1,29 @@
 # Nan Lin Progress Report RIF4.0 
 Principal Work Area: **Java Middleware** 
 ### 2015 
+#### July
+Convert the prototype code developed last month into ICD10ClaMLTaxonomyProvider class in rifServices.taxonomyServices package, which implements RIF HealthCodeProviderInterface. This class provides an interpretation of ICD 10 code service and then save results into an internal HashMap container. As a result:
+- The tree structure of the ICD 10 code is exposed: the class can return the parent and immediate children of a health code.
+- Use the label of health code as the key, the HashMap container can quickly return the corresponding taxonomy term when users provide an ICD 10 code label.
+- It provides a utility method that can transform a taxonomy term into the corresponding health code.
+- Any services that are interested in ICD 10 code can access the HashMap container.
+
+A well formatted example ClaML file containing the sample ICD 10 code from sahsuland_cancer becomes part of RIF resource files.
+
+
+Unit tests of the class. Only focus on five important methods: getTopLevelCodes(), getHealthCodes(), getHealthCode(), getParentHealthCode(), and getImmediateSubterms(). Test cases are made up of the following:
+- Normal situations: an ICD 10 code in the example file, whose position may be top, middle, or bottom.
+- Abnormal situations: an ICD 10 code excluded in the example file; not an ICD 10 code; special term “null”.
+
+Add the necessary content in the constructor section of HealthOutcomeManager class in order to add ICD10ClaMLTaxonomyProvider into the healthCodeProviders list.
+
+##### To do:
+Wrap ICD10ClaMLTaxonomyProvider into Jersey, expose the service as a RESTful web service.
+
+
+
+
+
 #### June
 RIF development team decides not to distribute the whole set of ICD 10 code in case violating the WHO copyright accidentally. Instead, only a sample set of ICD 10 code, which is used in the table “sahsuland_cancer” (around one percent of the whole), will be provided in order to demonstrate RIF features. The format of such a sample file (the target) should be XML as its details can be easily understood and parsed by third parties. 
 
