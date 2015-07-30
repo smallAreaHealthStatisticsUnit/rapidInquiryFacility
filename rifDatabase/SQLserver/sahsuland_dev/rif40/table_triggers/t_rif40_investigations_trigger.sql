@@ -25,19 +25,22 @@ create trigger [tr_investigations]
 on [rif40].[t_rif40_investigations]
 for insert , update , delete
 as
-begin 
+BEGIN 
 
 Declare  @xtype varchar(5)
  	IF EXISTS (SELECT * FROM DELETED)
-		SET @XTYPE = 'D'
+		SET @XTYPE = 'D';
+	
 	IF EXISTS (SELECT * FROM INSERTED)
 		BEGIN
 			IF (@XTYPE = 'D')
-				SET @XTYPE = 'U'
+			BEGIN
+				SET @XTYPE = 'U';
+			END
 		END
 	ELSE
 		BEGIN
-			SET @XTYPE = 'I'
+			SET @XTYPE = 'I';
 		END;
 
 DECLARE @has_studies_check VARCHAR(MAX) = 
@@ -71,7 +74,6 @@ BEGIN
 				EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_investigations]';
 				THROW 51077, @err_msg1, 1;
 			END CATCH;	
-		END;
 	END;
 END;
 
@@ -146,13 +148,13 @@ BEGIN
 DECLARE num_tab_cursor CURSOR FOR
 	SELECT numer_tab, inv_name
 	from inserted;
-DECLARE @curs_numer_tab VARCHAR(MAX), @curs_inv_name;
+DECLARE @curs_numer_tab VARCHAR(MAX), @curs_inv_name VARCHAR(MAX);
 OPEN num_tab_cursor;
 FETCH num_tab_cursor INTO @curs_numer_tab, @curs_inv_name;
 WHILE @@FETCH_STATUS = 0  
 BEGIN  
-	EXEC [rif40].[rif40_db_name_check] ('NUMER_TAB', @curs_numer_tab);
-	EXEC [rif40].[rif40_db_name_check] ('INV_NAME', @curs_inv_name);
+	EXEC [rif40].[rif40_db_name_check] 'NUMER_TAB', @curs_numer_tab;
+	EXEC [rif40].[rif40_db_name_check] 'INV_NAME', @curs_inv_name;
 	FETCH num_tab_cursor INTO @curs_numer_tab, @curs_inv_name;
 END;
 CLOSE num_tab_cursor ;
@@ -333,17 +335,17 @@ END CATCH;
 -----------------------------------------------
 --year start > year stop : just for inserted table 
 --------------------- --------------------------
-DECLARE @year_start_prob NVARCHAR(MAX)= 
+DECLARE @year_start_stop_prob NVARCHAR(MAX)= 
 ( 
 select a.YEAR_START, year_stop
 from inserted a 
 where a.YEAR_START> a.YEAR_STOP
 FOR XML PATH('') 
 );
-IF @year_start_prob IS NOT NULL
+IF @year_start_stop_prob IS NOT NULL
 BEGIN TRY
 	rollback;
-	DECLARE @err_msg11 VARCHAR(MAX) = formatmessage(50056, @year_start_prob);
+	DECLARE @err_msg11 VARCHAR(MAX) = formatmessage(50056, @year_start_stop_prob);
 	THROW 50056, @err_msg11, 1;
 END TRY
 BEGIN CATCH
@@ -354,7 +356,7 @@ END CATCH;
 --------------------------------
 -- verify column existence  
 ----------------------------------
-IF @has_studies != 0
+IF @has_studies_check != 0
 BEGIN
 	DECLARE @total_field_missing VARCHAR(MAX)=
 	(
@@ -463,31 +465,40 @@ END;
 -- Verify AGE_GROUP_ID, AGE_SEX_GROUP/AGE_GROUP/SEX_FIELD_NAMES are the same between numerator, denominator and direct standardisation tables
 -------------------------------------------------------------
 
---still thinking of the best way to deal with that....
 DECLARE @age_group_id_mismatch nvarchar(MAX) =
 (
-	select a.study_id, a.numer_tab, b.denom_tab, b.direct_stand_tab
-	from inserted a, [rif40].[t_rif40_studies] b
-	where a.study_id=b.study_id
-	
-	
-
-	select t.AGE_GROUP_ID
-	from #t1 t 
-	where t.AGE_GROUP_ID <> (select t2.AGE_GROUP_ID from #t2 t2 ) or 
-	t.AGE_GROUP_ID <> (select t3.AGE_GROUP_ID from #t3 t3)
+	select a.study_id, a.numer_tab, a.AGE_GROUP_ID as numer_age_group_id, b.denom_tab, b.age_group_id as denom_age_group_id, c.direct_stand_tab, c.age_group_id as dir_stand_age_group_id
+	from (
+		SELECT a.numer_tab, b.AGE_GROUP_ID, a.study_id
+		FROM inserted a, [rif40].[rif40_tables] b
+		WHERE b.table_name=a.numer_tab) a, 
+		(
+		select b.denom_tab, c.AGE_GROUP_ID, a.study_id
+		from inserted a, [rif40].[t_rif40_studies] b
+		left outer join [rif40].[rif40_tables] c on c.table_name=b.denom_tab and b.denom_tab is not null and b.denom_tab<>''
+		where a.study_id=b.study_id
+		) b, 
+		(
+		select b.direct_stand_tab, c.AGE_GROUP_ID, a.study_id
+		from inserted a, [rif40].[t_rif40_studies] b
+		left outer join [rif40].[rif40_tables] c on c.table_name=b.direct_stand_tab and b.direct_stand_tab is not null and b.direct_stand_tab <> ''
+		where a.study_id=b.study_id
+		) c
+	where a.study_id=b.study_id and a.study_id=c.study_id
+	and ((b.denom_tab is not null and a.age_group_id!=b.age_group_id)
+	or (c.direct_stand_tab is not null and a.age_group_id != c.age_group_id))
 	FOR XML PATH('')
-
 );
-BEGIN TRY 
-IF @age_group_id IS NOT NULL
-	BEGIN
-		RAISERROR(50060, 16, 1, @age_group_id) with log;
-		ROLLBACK
-	END;
-END TRY 
+IF @age_group_id_mismatch IS NOT NULL
+BEGIN TRY
+	rollback;
+	DECLARE @err_msg16 VARCHAR(MAX) = formatmessage(50060, @age_group_id_mismatch);
+	THROW 50060, @err_msg16, 1;
+END TRY
 BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc]
-END CATCH 
+	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_investigations]';
+	THROW 50060, @err_msg16, 1;
+END CATCH;	
 
-end 
+END;
+END; 
