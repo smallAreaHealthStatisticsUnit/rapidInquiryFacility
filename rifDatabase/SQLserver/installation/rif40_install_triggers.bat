@@ -12,3 +12,7 @@ sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\table_triggers\t_rif40_geoleve
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\table_triggers\t_rif40_inv_conditions.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\table_triggers\t_rif40_inv_covariates.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\table_triggers\t_rif40_investigations.sql
+sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\table_triggers\t_rif40_results.sql
+sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\table_triggers\t_rif40_study_areas_trigger.sql
+sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\table_triggers\t_rif40_study_sql_trigger.sql
+sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\table_triggers\t_rif40_study_sql_log_trigger.sql

@@ -314,5 +314,38 @@ EXEC sp_addmessage 51081, 16,
 EXEC sp_addmessage 51082, 16, 
    N'Table_name: [rif40].[t_rif40_investigations] , Total field column does not exist in the numerator table : %s';
 
-	
+EXEC sp_addmessage 51083, 16, 
+   N'Table_name: [rif40].[t_rif40_results] , DELETE only allowed on own records in T_RIF40_RESULTS: %s';
+EXEC sp_addmessage 51084, 16, 
+   N'Table_name: [rif40].[t_rif40_results] , T_RIF40_RESULTS insert/update failed, new username is not current user: %s';
+EXEC sp_addmessage 51085, 16, 
+   N'Table_name: [rif40].[t_rif40_results] , UPDATE not allowed on T_RIF40_RESULTS';
+EXEC sp_addmessage 51086, 16, 
+   N'Table_name: [rif40].[t_rif40_results] , Expecting NULL relative_risk with direct standardised results: %s';
+   
+EXEC sp_addmessage 51087, 16, 
+   N'Table_name: [rif40].[t_rif40_study_areas] , DELETE only allowed on own records in T_RIF40_STUDY_AREAS: %s';
+EXEC sp_addmessage 51088, 16, 
+   N'Table_name: [rif40].[t_rif40_study_areas] , T_RIF40_STUDY_AREAS insert/update failed, new username is not current user: %s';
+EXEC sp_addmessage 51089, 16, 
+   N'Table_name: [rif40].[t_rif40_study_areas] , UPDATE not allowed on T_RIF40_STUDY_AREAS';
+EXEC sp_addmessage 51090, 16, 
+   N'Table_name: [rif40].[t_rif40_study_areas] , T_RIF40_STUDY_AREAS no study found for study_id: %s';
+EXEC sp_addmessage 51091, 16, 
+   N'Table_name: [rif40].[t_rif40_study_areas] , T_RIF40_STUDY_AREAS area_ids not found in study_geolevel_name in hierarchy table: %s';
+
+EXEC sp_addmessage 51092, 16, 
+   N'Table_name: [rif40].[t_rif40_study_sql] , DELETE only allowed on own records in T_RIF40_STUDY_SQL: %s';
+EXEC sp_addmessage 51093, 16, 
+   N'Table_name: [rif40].[t_rif40_study_sql] , T_RIF40_STUDY_SQL insert/update failed, new username is not current user: %s';
+EXEC sp_addmessage 51094, 16, 
+   N'Table_name: [rif40].[t_rif40_study_sql] , UPDATE not allowed on T_RIF40_STUDY_SQL';
+   
+EXEC sp_addmessage 51095, 16, 
+   N'Table_name: [rif40].[t_rif40_study_sql_log] , DELETE only allowed on own records in T_RIF40_STUDY_SQL_LOG: %s';
+EXEC sp_addmessage 51096, 16, 
+   N'Table_name: [rif40].[t_rif40_study_sql_log] , T_RIF40_STUDY_SQL_LOG insert/update failed, new username is not current user: %s';
+EXEC sp_addmessage 51097, 16, 
+   N'Table_name: [rif40].[t_rif40_study_sql_log] , UPDATE not allowed on T_RIF40_STUDY_SQL_LOG';
+   
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';
