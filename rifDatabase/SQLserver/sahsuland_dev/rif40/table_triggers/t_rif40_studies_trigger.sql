@@ -54,7 +54,6 @@ BEGIN
 ---------------------------------------
 Declare  @XTYPE varchar(5);
 
-
 	IF EXISTS (SELECT * FROM DELETED)
 	BEGIN
 		SET @XTYPE = 'D'
@@ -66,8 +65,14 @@ Declare  @XTYPE varchar(5);
 			SET @XTYPE = 'U'
 		ELSE 
 			SET @XTYPE = 'I'
-	END
+	END;
 
+DECLARE @has_studies_check VARCHAR(MAX) = 
+(
+	SELECT count(study_id) as total
+	FROM [rif40].[t_rif40_results]
+);
+	
 --check is new username = current user? for update and insert
 IF (@XTYPE = 'I' or @XTYPE = 'U')
 BEGIN
@@ -83,7 +88,7 @@ BEGIN
 		THROW 51013, @err_msg1, 1;
 	END TRY
 	BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
 		THROW 51013, @err_msg1, 1;
 	END CATCH;
 END;
@@ -145,7 +150,7 @@ BEGIN
 
 	IF @is_state_change NOT NULL AND @is_ig_update NOT NULL 
 	BEGIN
-		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', 'doing a state change and IG update at the same time?';
+		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', 'doing a state change and IG update at the same time?';
 	END;
 
 	IF @is_state_change NOT NULL 
@@ -159,17 +164,24 @@ BEGIN
 			and a.username != b.username
 			FOR XML PATH(''));
 		IF @not_first_user IS NOT NULL
-		BEGIN TRY
-			rollback;
-			DECLARE @err_msg4 = formatmessage(51016, @not_first_user);
-			THROW 51016, @err_msg4, 1;
-		END TRY
-		BEGIN CATCH
-			EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
-			THROW 51016, @err_msg4, 1;
-		END CATCH;
+		BEGIN
+			IF @has_studies_check = 0 AND SUSER_SNAME()='RIF40'
+			BEGIN
+				EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', 't_rif40_studies insert/update allowed during build';
+			END;
+			ELSE
+			BEGIN TRY
+				rollback;
+				DECLARE @err_msg4 = formatmessage(51016, @not_first_user);
+				THROW 51016, @err_msg4, 1;
+			END TRY
+			BEGIN CATCH
+				EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+				THROW 51016, @err_msg4, 1;
+			END CATCH;
+		END;
 		ELSE	
-			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', 'UPDATE state changes allowed on T-RIF40_STUDIES by user';
+			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', 'UPDATE state changes allowed on T-RIF40_STUDIES by user';
 	END;
 	
 	IF @is_ig_update IS NOT NULL
@@ -188,13 +200,13 @@ BEGIN
 			THROW 51014, @err_msg2, 1;
 		END TRY
 		BEGIN CATCH
-			EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+			EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
 			THROW 51014, @err_msg2, 1;
 		END CATCH
 		ELSE
 		BEGIN 
 			DECLARE @log_msg1 = 'UPDATE IG changes allowed on T_RIF40_STUDIES by USER '+SUSER_NAME();
-			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', @log_msg1;
+			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @log_msg1;
 		END
 	END
 	
@@ -205,7 +217,7 @@ BEGIN
 		THROW 51015, @err_msg3, 1;
 	END TRY
 	BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
 		THROW 51015, @err_msg3, 1;
 	END CATCH;
 	
@@ -225,7 +237,7 @@ BEGIN
 		THROW 51017, @err_msg5, 1;
 	END TRY
 	BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
 		THROW 51017, @err_msg5, 1;
 	END CATCH;
 END;	
@@ -239,15 +251,16 @@ IF (@XTYPE = 'I' or @XTYPE = 'U')
 BEGIN
 	 DECLARE @geolevel_name nvarchar(MAX) =
 		(
-		SELECT concat (ic.study_id,'-', ic.COMPARISON_GEOLEVEL_NAME, '-', ic.geography )
-		 + '  '
+		SELECT ic.study_id,ic.COMPARISON_GEOLEVEL_NAME,ic.geography 
 		FROM inserted ic 
-		LEFT OUTER JOIN ON [rif40].[t_rif40_geolevels] c
-		ON ic.[geography]=c.[GEOGRAPHY] and 
+		WHERE NOT EXISTS (
+		SELECT 1 
+		FROM [rif40].[t_rif40_geolevels] c
+		WHERE ic.[geography]=c.[GEOGRAPHY] and 
 			c.geolevel_name=ic.[COMPARISON_GEOLEVEL_NAME] and
 			c.[COMPAREA]=1
-		WHERE c.geography is null
-        FOR XML PATH('')
+		)
+		FOR XML PATH('')
 		 );
 
 	IF @geolevel_name IS NOT NULL
@@ -257,7 +270,7 @@ BEGIN
 			THROW 51018, @err_msg6, 1;
 		END TRY
 		BEGIN CATCH
-			EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+			EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
 			THROW 51018, @err_msg6, 1;
 		END CATCH;
 
@@ -267,13 +280,14 @@ BEGIN
 
 	 DECLARE @geolevel_name2 nvarchar(MAX) =
 		(
-		SELECT concat ([STUDY_ID],'-', [STUDY_GEOLEVEL_NAME], '-', geography )
-		 + '  '
+		SELECT STUDY_ID,STUDY_GEOLEVEL_NAME,geography 
 		FROM inserted ic 
-		LEFT OUTER JOIN ON [rif40].[t_rif40_geolevels] c 
-		ON ic.[geography]=c.[GEOGRAPHY] and 
+		WHERE NOT EXISTS (
+			SELECT 1
+			FROM [rif40].[t_rif40_geolevels] c 
+			WHERE ic.[geography]=c.[GEOGRAPHY] and 
 			c.geolevel_name=ic.[STUDY_GEOLEVEL_NAME] 
-		WHERE c.geography is null
+		)
 		FOR XML PATH('')
 		);
 
@@ -284,7 +298,7 @@ BEGIN
 			THROW 51019, @err_msg7, 1;
 		END TRY
 		BEGIN CATCH
-			EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+			EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
 			THROW 51019, @err_msg7, 1;
 		END CATCH;
 
@@ -308,13 +322,13 @@ BEGIN TRY
 	THROW 51020, @err_msg8, 1;
 END TRY
 BEGIN CATCH
-	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
 	THROW 51020, @err_msg8, 1;
 END CATCH;
 ELSE
 BEGIN
 	DECLARE @log_msg8 = 'direct_stand_tab is a direct denominator table';
-	EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', @log_msg8;
+	EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @log_msg8;
 END;
 
 DECLARE @indirect_denom nvarchar(MAX) =
@@ -333,7 +347,7 @@ BEGIN TRY
 	THROW 51021, @err_msg9, 1;
 END TRY
 BEGIN CATCH
-	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
 	THROW 51021, @err_msg9, 1;
 END CATCH;
 
@@ -345,9 +359,12 @@ DECLARE @min_age nvarchar(MAX) =
  (
 SELECT a.TABLE_NAME + '  '
 FROM [rif40].[rif40_tables] a, inserted b
-LEFT OUTER JOIN [rif40].[rif40_age_groups] g ON (g.age_group_id  = a.age_group_id and g.offset is not null)
 WHERE a.table_name=b.denom_tab
-and g.offset is null
+AND NOT EXISTS (
+	SELECT 1
+	FROM [rif40].[rif40_age_groups] g 
+	WHERE g.age_group_id  = a.age_group_id and g.offset is not null
+)
 FOR XML PATH('')
 );
 
@@ -358,11 +375,11 @@ BEGIN TRY
 	THROW 51022, @err_msg10, 1;
 END TRY
 BEGIN CATCH
-	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
 	THROW 51022, @err_msg10, 1;
 END CATCH;
 ELSE
-	EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', 'T_RIF40_STUDIES year/age bands checks OK against RIF40_TABLES';
+	EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', 'T_RIF40_STUDIES year/age bands checks OK against RIF40_TABLES';
 
 --
 -- Check - Study area resolution (GEOLEVEL_ID) >= comparison area resolution (GEOLEVEL_ID)
@@ -389,11 +406,11 @@ BEGIN TRY
 	THROW 51023, @err_msg11, 1;
 END TRY;
 BEGIN CATCH
-	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
 	THROW 51023, @err_msg11, 1;
 END CATCH;
 ELSE
-	EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', 'study area geolevel id >= comparision area [i.e study area has the same or higher resolution]';
+	EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', 'study area geolevel id >= comparision area [i.e study area has the same or higher resolution]';
 
 --
 -- Check - suppression_value - Suppress results with low cell counts below this value. If the role RIF_NO_SUPRESSION is granted and the user is not a
@@ -407,7 +424,7 @@ else b.param_value end as suppression_value
 from inserted a, (select param_value 
  from [rif40].[t_rif40_paramaters]
  where param_name='SuppressionValue') b
-where [rif40].[rif40_has_role](username,'rif_student') = 1
+where [rif40].[rif40_has_role](a.username,'rif_student') = 1
 and ([rif40].[rif40_has_role](a.username,'rif_no_suppression')=1 
      or param_value is null or param_value=0)
 FOR XML PATH('')
@@ -420,7 +437,7 @@ BEGIN TRY
     THROW 51024, @err_msg12, 1;
 END TRY
 BEGIN CATCH
-   	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+   	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
 	THROW 51024, @err_msg12, 1; 
 END CATCH
 ELSE
@@ -435,11 +452,196 @@ from inserted a, (select param_value
 FOR XML PATH('')
 );
     DECLARE @log_msg12 = 'Study suppressed at: '+@supress_student_ok;
-    EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_studies_checks]', @log_msg12;
+    EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @log_msg12;
 END;
 
---not complete
---IG
+
+--
+-- Check - extract_permitted - Is extract permitted from the database: 0/1. Only a RIF MANAGER may change this value. This user is still permitted to create
+-- and run a RIF study and to view the results. Geolevel access is rectricted by the RIF40_GEOLEVELS.RESTRICTED Inforamtion Governance restrictions (0/1).
+-- If 1 (Yes) then a) students cannot access this geolevel and b) if the system parameter ExtractControl=1 then the user must be granted permission by a
+-- RIF_MANAGER to extract from the database the results, data extract and maps tables. All students must be granted permission by a RIF_MANAGER for any
+-- extract if the system parameter ExtractControl=1. This is enforced by the RIF application.
+--
+
+DECLARE @extractcontrol int = 
+( 
+	select param_value
+	from [rif40].[t_rif40_parameters]
+	where param_name='ExtractControl'
+);
+
+IF @extractcontrol != 0 AND @xtype='I'
+BEGIN
+	DECLARE @restricted_student_prob	VARCHAR(MAX) =
+	(
+		select study_id, geography, study_geolevel_name, username
+		from inserted a
+		where [rif40].[rif40_has_role](a.username,'rif_student')=1
+		and exists (select 1
+			from [rif40].[t_rif40_geolevels] b
+			where restricted=0
+			and b.geography=a.geography
+			and b.geolevel_name=a.study_geolevel_name)
+		FOR XML PATH('')
+	);
+	IF @restricted_student_prob IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg13 = formatmessage(51025, @restricted_student_prob);
+		THROW 51025, @err_msg13, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
+		THROW 51025, @err_msg13, 1; 
+	END CATCH;
+	
+	DECLARE @restricted_student_check	VARCHAR(MAX) =
+	(
+		select study_id, geography, study_geolevel_name, username
+		from inserted a
+		where [rif40].[rif40_has_role](a.username,'rif_student')=0
+		and exists (select 1
+			from [rif40].[t_rif40_geolevels] b
+			where restricted=0
+			and b.geography=a.geography
+			and b.geolevel_name=a.study_geolevel_name)
+		FOR XML PATH('')
+	);
+	IF @restricted_student_check IS NOT NULL
+	BEGIN
+		DECLARE @log_msg13 = 'T_RIF40_STUDIES study may be extracted, study geolevel  is not restricted for user: '+@restricted_student_check;
+		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @log_msg13;
+		
+		--is there a better way to do that:
+		UPDATE [rif40].[t_rif40_studies] a
+		set extract_permitted=1, transfer_permitted=1, authorised_by=SUSER_SNAME(), authorised_on=now(), authorised_notes='Auto authorised; study geolevel is not restricted'
+		where exists (
+		select 1
+		from inserted b
+		where a.study_id=b.study_id
+		and [rif40].[rif40_has_role](b.username,'rif_student')=0
+		and exists (select 1
+			from [rif40].[t_rif40_geolevels] c
+			where restricted=0
+			and c.geography=b.geography
+			and c.geolevel_name=b.study_geolevel_name));
+	END
+	ELSE
+	BEGIN
+		DECLARE @restricted_geolevel_check VARCHAR(MAX) = 
+		(
+			select study_id, geography, study_geolevel_name, username
+			from inserted a
+			where [rif40].[rif40_has_role](a.username,'rif_student')=0
+			and exists (select 1
+				from [rif40].[t_rif40_geolevels] b
+				where restricted!=0
+				and b.geography=a.geography
+				and b.geolevel_name=a.study_geolevel_name)
+			FOR XML PATH('')
+		);
+		IF @restricted_geolevel_check IS NOT NULL
+		BEGIN TRY
+			rollback;
+			DECLARE @err_msg14 = formatmessage(51026, @restricted_geolevel_check);
+			THROW 51026, @err_msg14, 1;
+		END TRY
+		BEGIN CATCH
+			EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
+			THROW 51026, @err_msg14, 1; 
+		END CATCH;
+	END;
 END;
+
+
+IF @extractcontrol != 0 AND @xtype='U'
+BEGIN
+	DECLARE @student_extract_prob VARCHAR(MAX)=
+	(
+		select username, study_id
+		from inserted
+		where [rif40].[rif40_has_role](username,'rif_student')=1
+		and extract_permitted=1
+		FOR XML PATH('')
+	);
+	IF @student_extract_prob IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg15 = formatmessage(51027, @student_extract_prob);
+		THROW 51027, @err_msg15, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
+		THROW 51027, @err_msg15, 1; 
+	END CATCH;
+
+	DECLARE @rif_manager_extract VARCHAR(MAX)=
+	(
+		select username, study_id
+		from inserted
+		where [rif40].[rif40_has_role](username,'rif_manager')=1
+		and extract_permitted=1
+		FOR XML PATH('')
+	);
+	IF @rif_manager_extract IS NOT NULL
+	BEGIN
+		DECLARE @log_msg15 = 'T_RIF40_STUDIES studymay be extracted, user RIF_STUDENT/RIF_MANAGER tests passed: '+@rif_manager_extract;
+		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @log_msg15;
+		
+		--is there a better way to do that:
+		UPDATE [rif40].[t_rif40_studies] a
+		set extract_permitted=1,  authorised_by=SUSER_SNAME(), authorised_on=now()
+		where exists (
+		select 1
+		from inserted b
+		where a.study_id=b.study_id
+		and b.extract_permitted=1 and [rif40].[rif40_has_role](b.username,'rif_manager')=1);
+	END
+
+	DECLARE @not_manager_extract_prob VARCHAR(MAX)=
+	(
+		select username, study_id
+		from inserted
+		where extract_permitted=1
+		and [rif40].[rif40_has_role](username,'rif_manager')=0
+		FOR XML PATH('')
+	);
+	IF @not_manager_extract_prob IS NOT NULL
+		BEGIN TRY
+		rollback;
+		DECLARE @err_msg16 = formatmessage(51028, @not_manager_extract_prob);
+		THROW 51028, @err_msg16, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
+		THROW 51028, @err_msg16, 1; 
+	END CATCH;
+	
+--
+-- Check - transfer_permitted - Is transfer permitted from the Secure or Private Network: 0/1. This is for purely documentatary purposes only. Only a
+-- RIF_MANAGER may change this value. The value defaults to the same as EXTRACT_PERMITTED. Only geolevels where RIF40_GEOLEVELS.RESTRICTED=0 may be
+-- transferred
+--
+	update [rif40].[t_rif40_studies] a
+	set transfer_permitted=0
+	where exists (select 1
+				from [rif40].[t_rif40_geolevels] b
+				where restricted=1
+				and b.geography=a.geography
+				and b.geolevel_name=a.study_geolevel_name);
+	update [rif40].[t_rif40_studies] a
+	set transfer_permitted=extract_permitted
+	where exists (select 1
+				from [rif40].[t_rif40_geolevels] b
+				where restricted!=1
+				and b.geography=a.geography
+				and b.geolevel_name=a.study_geolevel_name);
+END;
+
+--
+-- Check extract_table, map_table Oracle name, access (dependent on state)
+--
+
 
 END;

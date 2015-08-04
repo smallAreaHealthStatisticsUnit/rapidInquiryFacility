@@ -4,8 +4,17 @@ Principal Work Area: **Microsoft SQL server database port**
 
 ##2015
 
+###August
+I will finish the view triggers this month and please hopefully test.
+
+######2 August
+* Still not enjoying t_rif40_studies trigger code.  I wrote more of it, but then I decided I needed another break.  It is awful.  I will start looking at view triggers.
+
+######1 August
+* Defeated by the evilness of the t_rif40_studies trigger.  Must... get... this... done...
+
 ###July
-I plan to finish the trigger work that I began last month and begin to set up a proper test suite to verify that everything has been set up correctly.  Also continue work on simple batch installation scripts so I can easily re-create the latest version of the sahsuland_dev database.
+I plan to finish the table trigger work that I began last month and begin to set up a proper test suite to verify that everything has been set up correctly.  Also continue work on simple batch installation scripts so I can easily re-create the latest version of the sahsuland_dev database.
 
 ######31 July
 * Finished t_rif40_results, t_rif40_study_areas, t_rif40_study_sql, and t_rif40_study_sql_log triggers.  The only table trigger left is t_rif40_studies trigger.

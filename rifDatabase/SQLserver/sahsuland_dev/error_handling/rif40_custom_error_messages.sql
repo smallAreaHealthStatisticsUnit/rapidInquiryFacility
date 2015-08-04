@@ -131,10 +131,8 @@ EXEC sp_addmessage 51001, 16,
 
 EXEC sp_addmessage 51002, 16,
 	N'Table name: [rif40].[rif40_version] , DELETE disallowed';
-
 EXEC sp_addmessage 51003, 16,
 	N'Table name: [rif40].[rif40_version] , INSERT disallowed, rows %s';
-
 EXEC sp_addmessage 51004, 16,
 	N'Table name: [rif40].[rif40_version] , INSERT/UPDATE invalid data - missing version field';
 
@@ -143,61 +141,53 @@ EXEC sp_addmessage 51005, 16,
 
 EXEC sp_addmessage 51006, 16,
 	N'Table name: [rif40].[rif40_study_shares] , UPDATE not allowed'
-	
 EXEC sp_addmessage 51007, 16,
 	N'Table name: [rif40].[rif40_study_shares] , INSERT invalid data - missing study_id, grantor, or grantee fields (%s)';
-
 EXEC sp_addmessage 51008, 16,
 	N'Table name: [rif40].[rif40_study_shares] , INSERT invalid data - study_id cannot be found (%s)';
-
 EXEC sp_addmessage 51009, 16,
 	N'Table name: [rif40].[rif40_study_shares] , INSERT failed - study_id not owned by grantor (%s)';
-
 EXEC sp_addmessage 51010, 16,
 	N'Table name: [rif40].[rif40_study_shares] , INSERT failed - grantee_username does not exist in database (%s)';
-
 EXEC sp_addmessage 51011, 16,
 	N'Table name: [rif40].[rif40_study_shares] , INSERT failed - grantee_username is NOT a RIF_USER/RIF_MANAGER (%s)';
-
 EXEC sp_addmessage 51012, 16,
 	N'Table name: [rif40].[rif40_study_shares] , DELETE only allowed on own records or by RIF40_MANAGER in RIF40_STUDY_SHARES (%s)';
 
 EXEC sp_addmessage 51013, 16,
 	N'Table name: [rif40].[t_rif40_studies] , INSERT/UPDATE failed - new study username is not current user (%s)';
-
 EXEC sp_addmessage 51014, 16,
 	N'Table name: [rif40].[t_rif40_studies] , UPDATE failed - UPDATE not allowed on T_RIF40_STUDIES by user (%s)';
-
 EXEC sp_addmessage 51015, 16,
 	N'Table name: [rif40].[t_rif40_studies] , UPDATE failed - non IG UPDATE not allowed on T_RIF40_STUDIES by user: (%s)'
-
 EXEC sp_addmessage 51016, 16,
 	N'Table name: [rif40].[t_rif40_studies] , UPDATE failed - new study username is not same as original study username: (%s)';
-
 EXEC sp_addmessage 51017, 16,
 	N'Table name: [rif40].[t_rif40_studies] , DELETE failed - DELETE only allowed on own records in T_RIF40_STUDIES: (%s)';
-	
 EXEC sp_addmessage 51018, 16,
 	N'Table name: [rif40].[t_rif40_studies] , Geolevel name not found ,studyid-comparison_geolevel_name-geography: %s';
-	
 EXEC sp_addmessage 51019, 16,
 	N'Table name: [rif40].[t_rif40_studies] , Geolevel name not found ,studyid-study_geolevel_name-geography: %s';
-
 EXEC sp_addmessage 51020, 16,
 	N'Table name: [rif40].[t_rif40_studies] , direct standardisation table is not a direct denominator table: %s';
-
 EXEC sp_addmessage 51021, 16,
 	N'Table name: [rif40].[t_rif40_studies] , denominator table is not a valid denominator table: %s';
-
 EXEC sp_addmessage 51022, 16,
 	N'Table name: [rif40].[t_rif40_studies] , denominator has no age group linkage: %s';
-
 EXEC sp_addmessage 51023, 16,
 	N'Table name: [rif40].[t_rif40_studies] , study area geolevel id < comparision area [i.e study area a lower resolution than the comparison area]: %s';
-
 EXEC sp_addmessage 51024, 16,
 	N'Table name: [rif40].[t_rif40_studies] , study not suppressed, but user is a RIF_STUDENT: %s';
-
+EXEC sp_addmessage 51025, 16,
+	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study may NOT be extracted, study geolevel is not restricted but the user is a RIF_STUDENT: %s';
+EXEC sp_addmessage 51026, 16,
+	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study may NOT be extracted, study geolevel is restricted for user Requires authorisation by a RIF_MANAGER.  %s';
+EXEC sp_addmessage 51027, 16,
+	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study may not be extracted, user is a RIF_STUDENT: %s';
+EXEC sp_addmessage 51028, 16,
+	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study may not be extracted, modifying user is NOT a RIF_MANAGER: %s';
+	
+	
 
 EXEC sp_addmessage 51030, 16,
 	N'Table name: [rif40].[rif40_covariates] , invalid new values: %s';
