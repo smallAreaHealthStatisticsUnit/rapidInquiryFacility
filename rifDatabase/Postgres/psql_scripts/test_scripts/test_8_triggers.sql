@@ -79,17 +79,26 @@ DECLARE
 		SELECT COUNT(study_id) AS total_studies
 		  FROM rif40_studies 
 		 WHERE study_name LIKE 'TRIGGER TEST%';	
---
 	c4th CURSOR FOR
 	 	SELECT version() AS version, 
 		SUBSTR(version(), 12, 3)::NUMERIC as major_version, 
-		SUBSTR(version(), 16, position(', ' IN version())-16)::NUMERIC as minor_version;		 
+		SUBSTR(version(), 16, position(', ' IN version())-16)::NUMERIC as minor_version;	
+	c5th CURSOR FOR
+		SELECT *
+		  FROM rif40_test_runs
+		WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
 	c1th_rec RECORD;
 	c2th_rec RECORD;
 	c3th_rec RECORD;
-	c4th_rec RECORD;	
+	c4th_rec RECORD;
+	c5th_rec RECORD;
 --
-	errors INTEGER:=0;
+	stp TIMESTAMP WITH TIME ZONE:=clock_timestamp();
+	etp TIMESTAMP WITH TIME ZONE;
+	took INTERVAL;	
+--
+	f_errors INTEGER:=0;
+	f_tests_run INTEGER:=0;
 --
 	error_message VARCHAR;
 --
@@ -146,9 +155,13 @@ BEGIN
 	IF c4th_rec.major_version < 9.4 THEN
 		RAISE WARNING 'T8--08: test_8_triggers.sql: Postgres version %.% SAVEPOINT/ROLLBACK functionality; rif40_sql_test() is disabled',
 			c4th_rec.major_version, c4th_rec.minor_version;
-		RETURN;
+--		RETURN;
 	END IF;
 
+	INSERT INTO rif40_test_runs(test_run_title, time_taken, 
+		tests_run, number_passed, number_failed, number_test_cases_registered, number_messages_registered)
+	VALUES ('test_8_triggers.sql', 0, 0, 0, 0, 0, 0);
+	
 --
 -- Clear up old test cases
 --
@@ -167,10 +180,11 @@ BEGIN
 		,{01,01.015,01.015.016900,01.015.016900.3} 
 		}'::Text[][]
 		/* Use defaults */)) THEN
-        errors:=errors+1;
+        f_errors:=f_errors+1;
 	ELSE
 		RAISE INFO 'T8--10: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 TEST PASSED.';		
     END IF;	
+	f_tests_run:=f_tests_run+1;
 	
 --
 -- DELIBERATE FAIL: level 3: 01.015.016900 removed
@@ -187,10 +201,11 @@ BEGIN
 		}'::Text[][],
 		NULL  /* Expected SQLCODE */, 
 		FALSE /* Do not RAISE EXCEPTION on failure */)) THEN
-        errors:=errors+1;
+        f_errors:=f_errors+1;
 	ELSE
 		RAISE INFO 'T8--12: test_8_triggers.sql: DELIBERATE FAIL TEST PASSED.';
     END IF;	
+	f_tests_run:=f_tests_run+1;
 
 --
 -- rif40_log_pkg.rif40_error() test (and the test harness handling of RIF error codes)
@@ -201,10 +216,11 @@ BEGIN
 		NULL::Text[][] 	/* No results for SELECT */,		
 		'-90125'	 	/* Expected SQLCODE */, 
 		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
-        errors:=errors+1;
+        f_errors:=f_errors+1;
 	ELSE
 		RAISE INFO 'T8--14: test_8_triggers.sql: rif40_log_pkg.rif40_error() dummy error TEST PASSED.';
-    END IF;		
+    END IF;	
+	f_tests_run:=f_tests_run+1;	
 	
 --
 -- T_RIF40_STUDIES
@@ -263,12 +279,13 @@ Foreign-key constraints:
 VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST_1'', ''MAP_TRIGGER_TEST_1'', 1 /* Diease mapping */, ''LEVEL1'', ''LEVEL4'', NULL /* FAIL HERE */, 0)',
 		'T8--15: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL',
 		NULL::Text[][] 	/* No results for trigger */,
-		'P0001' 		/* Expected SQLCODE (P0001 - PGpsql raise_exception (from rif40_error) */, 
+		'-20211' 		/* Expected SQLCODE (P0001 - PGpsql raise_exception (from rif40_error) with detail: rif40_error(() code -20211 */, 
 		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
-		errors:=errors+1;
+		f_errors:=f_errors+1;
 	ELSE
 		RAISE INFO 'T8--16: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL TEST PASSED.';		
     END IF;	
+	f_tests_run:=f_tests_run+1;
 	
 	IF NOT (rif40_sql_pkg.rif40_sql_test(	
 		'INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
@@ -278,11 +295,12 @@ RETURNING 1::Text AS test_value',
 		'{1}'::Text[][] /* Results for trigger - DEFAULTED value will not work - table is mutating and row does not exist at the point of INSERT */,
 		NULL 			/* Expected SQLCODE */, 
 		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
-		errors:=errors+1;
+		f_errors:=f_errors+1;
 	ELSE	
 		PERFORM rif40_sql_pkg.rif40_ddl('DELETE FROM rif40_studies WHERE study_name = ''TRIGGER TEST #2''');
 		RAISE INFO 'T8--18: test_8_triggers.sql: TRIGGER TEST #2: rif40_studies.suppression_value IS NULL PASSED.';
     END IF;		
+	f_tests_run:=f_tests_run+1;
 	
 --
 -- Check no TEST TIRGGER studies actually created 
@@ -309,26 +327,53 @@ RETURNING 1::Text AS test_value',
 ,{01,01.015,01.015.016900,01.015.016900.3}                                                                                                             
 }'::Text[][]
 			 )) THEN
-			 errors:=errors+1;
+			 f_errors:=f_errors+1;
 	ELSE		 
 		RAISE INFO 'T8--22: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 PASSED.';
 	END IF;	
---	
-	IF errors = 0 THEN
-		RAISE NOTICE 'T8--23: test_8_triggers.sql: No test harness errors.';		
+	f_tests_run:=f_tests_run+1;
+--
+	etp:=clock_timestamp();
+	took:=age(etp, stp);
+	UPDATE rif40_test_runs
+	   SET tests_run = f_tests_run,
+	       time_taken    = EXTRACT(EPOCH FROM took)::NUMERIC
+	 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
+--
+-- Check tests_run = number_passed + number_failed
+--
+	OPEN c5th;
+	FETCH c5th INTO c5th_rec;
+	CLOSE c5th;
+	IF c5th_rec.tests_run != (c5th_rec.number_passed + c5th_rec.number_failed) THEN
+		RAISE WARNING 'T8--23: test_8_triggers.sql: Test harness error: tests_run (%) != number_passed (%) + number_failed (%)', 
+			c5th_rec.tests_run, c5th_rec.number_passed, c5th_rec.number_failed;
 	ELSE
-		RAISE EXCEPTION 'T8--24: test_8_triggers.sql: Test harness errors: %', errors;
+		RAISE INFO 'T8--24: test_8_triggers.sql: Test harness error: tests_run (%) = number_passed (%) + number_failed (%)', 
+			c5th_rec.tests_run, c5th_rec.number_passed, c5th_rec.number_failed;				
+	END IF;
+--	
+	IF f_errors = 0 THEN
+		RAISE NOTICE 'T8--25: test_8_triggers.sql: No test harness errors.';		
+	ELSE
+		RAISE EXCEPTION 'T8--26: test_8_triggers.sql: Test harness errors: %', f_errors;
 	END IF;
 EXCEPTION
 	WHEN others THEN
 		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 		GET STACKED DIAGNOSTICS v_sqlstate = RETURNED_SQLSTATE;
 		GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
-		error_message:='T8--17: test_8_triggers.sql: Test harness caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||
+		error_message:='T8--25: test_8_triggers.sql: Test harness caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||
 			'Detail: '||v_detail::VARCHAR||E'\n'||
 			'Context: '||v_context::VARCHAR||E'\n'||
 			'SQLSTATE: '||v_sqlstate::VARCHAR;
-		RAISE EXCEPTION 'T8--18: test_8_triggers.sql: 1: %', error_message;
+		IF v_sqlstate = 'P0001' AND v_detail = '-71153' THEN /* rif40_sql_test() pre 9.4 error */
+			RAISE EXCEPTION 'T8--26: test_8_triggers.sql: 1: %', error_message;				
+		ELSIF c4th_rec.major_version < 9.4 THEN
+			RAISE EXCEPTION 'T8--27: test_8_triggers.sql: 1: %', error_message;		
+		ELSE
+			RAISE EXCEPTION 'T8--28: test_8_triggers.sql: 1: %', error_message;
+		END IF;
 END;
 $$;
  
@@ -339,18 +384,19 @@ SELECT rif40_sql_pkg._rif40_test_sql_template(
 	'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
 	'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200') AS template;
 	
+SELECT * FROM rif40_test_runs
+ WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
+ 
+--
+-- Dump test harness
+--
+SELECT test_id, error_code_expected, pass, time_taken, raise_exception_on_failure, test_stmt, test_case_title
+  FROM rif40_test_harness
+ ORDER BY test_id;
+
 --
 -- Re-run trigger test harness
 --
- 
---
--- Testing stop
---
---DO LANGUAGE plpgsql $$
---BEGIN
---	RAISE EXCEPTION 'Stop processing';
---END;
---$$;
 
 --
 -- Rollback to SAVEPOINT
@@ -358,6 +404,15 @@ SELECT rif40_sql_pkg._rif40_test_sql_template(
 	
 \echo 'test_8_triggers.sql: ROLLBACK TO SAVEPOINT test_8_triggers';
 ROLLBACK TO SAVEPOINT test_8_triggers;
+ 
+--
+-- Testing stop
+--
+DO LANGUAGE plpgsql $$
+BEGIN
+	RAISE EXCEPTION 'Stop processing';
+END;
+$$;
 
 --
 -- End single transaction

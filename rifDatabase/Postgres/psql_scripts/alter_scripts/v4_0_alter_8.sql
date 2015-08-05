@@ -125,6 +125,8 @@ CREATE SEQUENCE rif40_test_id_seq;
 CREATE SEQUENCE rif40_test_run_id_seq;
 COMMENT ON SEQUENCE rif40_test_id_seq IS 'Artificial primary key for: RIF40_TEST_HARNESS';
 COMMENT ON SEQUENCE rif40_test_run_id_seq IS 'Artificial primary key for: RIF40_TEST_RUNS';
+GRANT SELECT, USAGE ON SEQUENCE rif40_test_id_seq TO rif40, rif_manager, notarifuser;
+GRANT SELECT, USAGE ON SEQUENCE rif40_test_run_id_seq TO rif40, rif_manager, notarifuser;
 
 CREATE TABLE rif40_test_runs (
 	test_run_id 					INTEGER NOT NULL DEFAULT (nextval('rif40_test_run_id_seq'::regclass))::integer, 
@@ -132,6 +134,7 @@ CREATE TABLE rif40_test_runs (
 	test_date						TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT "statement_timestamp"(),
 	time_taken						NUMERIC	NOT NULL,
 	username 						VARCHAR(90) NOT NULL DEFAULT "current_user"(),
+	tests_run						INTEGER NOT NULL,
 	number_passed					INTEGER NOT NULL,
 	number_failed					INTEGER NOT NULL,
 	number_test_cases_registered	INTEGER NOT NULL DEFAULT 0,
@@ -148,6 +151,7 @@ COMMENT ON COLUMN rif40_test_runs.test_run_title IS 'Test run title';
 COMMENT ON COLUMN rif40_test_runs.test_date IS 'Test date';
 COMMENT ON COLUMN rif40_test_runs.time_taken IS 'Time taken for test run (seconds)';
 COMMENT ON COLUMN rif40_test_runs.username IS 'user name running test run';
+COMMENT ON COLUMN rif40_test_runs.tests_run IS 'Number of tests run (should equal passed+failed!)';
 COMMENT ON COLUMN rif40_test_runs.number_passed IS 'Number of tests passed';
 COMMENT ON COLUMN rif40_test_runs.number_failed IS 'Number of tests failed';
 COMMENT ON COLUMN rif40_test_runs.number_test_cases_registered IS 'Number of test cases registered';
@@ -163,7 +167,7 @@ CREATE TABLE rif40_test_harness (
 	results 					Text[][],
 	results_xml 				XML,	
 	pass 						BOOLEAN,
-	test_run_id					INTEGER DEFAULT (currval('rif40_test_run_id_seq'::regclass))::integer,
+	test_run_id					INTEGER,
 	test_date					TIMESTAMP WITH TIME ZONE,
 	time_taken					NUMERIC,
 	CONSTRAINT rif40_test_harness_pk PRIMARY KEY (test_id),
@@ -184,7 +188,7 @@ COMMENT ON COLUMN rif40_test_harness.raise_exception_on_failure IS 'Raise except
 COMMENT ON COLUMN rif40_test_harness.register_date IS 'Date registered';
 COMMENT ON COLUMN rif40_test_harness.results IS 'Results array';
 COMMENT ON COLUMN rif40_test_harness.results_xml IS 'Results array in portable XML';
-COMMENT ON COLUMN rif40_test_harness.pass IS 'Was the test passed?';
+COMMENT ON COLUMN rif40_test_harness.pass IS 'Was the test passed? Note that some tests do fail deliberately to test the harness';
 COMMENT ON COLUMN rif40_test_harness.test_run_id IS 'Test run id for test. Foreign key to rif40_test_runs table.';
 COMMENT ON COLUMN rif40_test_harness.test_date IS 'Test date';
 COMMENT ON COLUMN rif40_test_harness.time_taken IS 'Time taken for test (seconds)';
