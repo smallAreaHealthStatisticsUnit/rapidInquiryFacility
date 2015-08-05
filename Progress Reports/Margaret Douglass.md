@@ -7,6 +7,9 @@ Principal Work Area: **Microsoft SQL server database port**
 ###August
 I will finish the view triggers this month and please hopefully test.
 
+######3 August
+* I finished the t_rif40_studies trigger!  All table triggers are now completed.  Next the view triggers.
+
 ######2 August
 * Still not enjoying t_rif40_studies trigger code.  I wrote more of it, but then I decided I needed another break.  It is awful.  I will start looking at view triggers.
 

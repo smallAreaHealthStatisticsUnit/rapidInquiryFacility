@@ -186,9 +186,9 @@ EXEC sp_addmessage 51027, 16,
 	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study may not be extracted, user is a RIF_STUDENT: %s';
 EXEC sp_addmessage 51028, 16,
 	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study may not be extracted, modifying user is NOT a RIF_MANAGER: %s';
+EXEC sp_addmessage 51029, 16,
+	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study extract table cannot be accessed: %s';
 	
-	
-
 EXEC sp_addmessage 51030, 16,
 	N'Table name: [rif40].[rif40_covariates] , invalid new values: %s';
 EXEC sp_addmessage 51031, 16,
@@ -337,5 +337,25 @@ EXEC sp_addmessage 51096, 16,
    N'Table_name: [rif40].[t_rif40_study_sql_log] , T_RIF40_STUDY_SQL_LOG insert/update failed, new username is not current user: %s';
 EXEC sp_addmessage 51097, 16, 
    N'Table_name: [rif40].[t_rif40_study_sql_log] , UPDATE not allowed on T_RIF40_STUDY_SQL_LOG';
+
+EXEC sp_addmessage 51098, 16, 
+	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study map table cannot be accessed: %s';
+EXEC sp_addmessage 51099, 16, 
+	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study denominator RIF40_TABLES total field column not found: %s';
+EXEC sp_addmessage 51100, 16, 
+	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study denominator RIF40_TABLES sex field column not found: %s';
+EXEC sp_addmessage 51101, 16, 
+	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study denominator RIF40_TABLES age group field column not found: %s';
+EXEC sp_addmessage 51102, 16, 
+	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study denominator RIF40_TABLES age sex field column not found: %s';
+EXEC sp_addmessage 51103, 16, 
+	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study direct standardisation RIF40_TABLES total field column not found: %s';
+EXEC sp_addmessage 51104, 16, 
+	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study direct standardisation RIF40_TABLES sex field column not found: %s';	
+EXEC sp_addmessage 51105, 16, 
+	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study direct standardisation RIF40_TABLES age group field column not found: %s';		
+EXEC sp_addmessage 51106, 16, 
+	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study direct standardisation RIF40_TABLES age sex group field column not found: %s';		
+
    
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';

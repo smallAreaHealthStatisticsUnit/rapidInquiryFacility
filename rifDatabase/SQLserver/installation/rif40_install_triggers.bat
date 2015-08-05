@@ -16,3 +16,4 @@ sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\table_triggers\t_rif40_results
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\table_triggers\t_rif40_study_areas_trigger.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\table_triggers\t_rif40_study_sql_trigger.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\table_triggers\t_rif40_study_sql_log_trigger.sql
+sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\table_triggers\t_rif40_studies.sql
