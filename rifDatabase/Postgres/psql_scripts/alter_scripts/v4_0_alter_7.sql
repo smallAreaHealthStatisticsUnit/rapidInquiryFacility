@@ -662,8 +662,16 @@ ALTER TABLE rif40_tables_and_views
 ALTER TABLE rif40_tables_and_views
   DROP CONSTRAINT IF EXISTS table_or_view_name_hide_pk CASCADE;
 ALTER TABLE rif40_tables_and_views
-  ADD CONSTRAINT class_ck CHECK (class IN ('Configuration', 'Documentation', 'Lookup',
-			'Other', 'Results', 'SQL Generator', 'Study Setup'));
+      ADD CONSTRAINT class_ck 
+	  CHECK (class::text = ANY (ARRAY[
+			'Test harness'::character varying, 
+			'Configuration'::character varying, 
+			'Documentation'::character varying, 
+			'Lookup'::character varying, 
+			'Other'::character varying, 
+			'Results'::character varying, 
+			'SQL Generator'::character varying, 
+			'Study Setup'::character varying]::text[]));
 ALTER TABLE rif40_tables_and_views			
   ADD CONSTRAINT table_or_view_name_hide_pk PRIMARY KEY (table_or_view_name_hide);
 ALTER TABLE rif40_tables_and_views DROP COLUMN IF EXISTS table_or_view_name_href RESTRICT;	
