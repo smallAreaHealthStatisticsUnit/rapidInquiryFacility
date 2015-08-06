@@ -76,7 +76,90 @@ $$;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN);	
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
-	INTEGER, BOOLEAN);		
+	INTEGER, BOOLEAN);	
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, ANYARRAY,
+	VARCHAR, BOOLEAN);	
+
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_sql_test_register(test_stmt VARCHAR, test_case_title VARCHAR, results ANYARRAY,
+	error_code_expected VARCHAR DEFAULT NULL, raise_exception_on_failure BOOLEAN DEFAULT TRUE)
+RETURNS INTEGER
+SECURITY INVOKER
+AS $func$
+/*
+Function: 	_rif40_sql_test_register()
+Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
+            test case title, result arrays,
+			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
+			NULL means it is expected to NOT raise an exception, raise exception on failure  
+Returns:	Test id
+Description:Autoregister test case
+ */
+DECLARE
+	c3st CURSOR (l_test_stmt 					VARCHAR, 
+			     l_test_case_title 				VARCHAR, 
+				 l_results 						Text[][], 
+				 l_error_code_expected			VARCHAR, 
+				 l_raise_exception_on_failure 	BOOLEAN) FOR
+		INSERT INTO rif40_test_harness (
+			test_stmt,
+			test_case_title,
+			error_code_expected,
+			raise_exception_on_failure,
+			results,
+			results_xml)
+		SELECT l_test_stmt, l_test_case_title, l_error_code_expected, l_raise_exception_on_failure, l_results, NULL /* l_results::XML */
+		 WHERE NOT EXISTS (
+			SELECT a.test_id
+			  FROM rif40_test_harness a
+			 WHERE a.test_case_title = l_test_case_title)
+		RETURNING *;
+	c3st_rec RECORD;
+	c5st CURSOR (l_test_case_title VARCHAR) FOR
+		SELECT a.test_case_title, a.test_id
+		  FROM rif40_test_harness a
+		 WHERE a.test_case_title = l_test_case_title;
+	c5st_rec RECORD;
+--
+	f_test_id 	INTEGER;	
+BEGIN
+	OPEN c3st(test_stmt, test_case_title, results, error_code_expected, raise_exception_on_failure);
+	FETCH c3st INTO c3st_rec;
+	CLOSE c3st;
+	OPEN c5st(test_case_title);
+	FETCH c5st INTO c5st_rec;
+	CLOSE c5st;		
+	f_test_id:=c5st_rec.test_id;	
+	IF f_test_id IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-71150, '_rif40_sql_test_register', 
+			'Test id for test case NOT FOUND: %; TEST CASE NOT INSERTED',
+			c3st_rec.test_case_title::VARCHAR);	
+	END IF;
+--	
+	IF c3st_rec.test_case_title IS NOT NULL THEN
+		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test_register', '[71151] Registered test case %: %', 
+			f_test_id::VARCHAR, test_case_title::VARCHAR);	
+		UPDATE rif40_test_runs
+		   SET number_test_cases_registered = number_test_cases_registered + 1
+		 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;	
+	ELSE	
+		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test_register', '[71152] Test case already registered %: %', 
+			f_test_id::VARCHAR, test_case_title::VARCHAR);
+	END IF;
+--
+	RETURN f_test_id;
+END;
+$func$
+LANGUAGE PLPGSQL;
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, ANYARRAY,
+	VARCHAR, BOOLEAN) IS 'Function: 	_rif40_sql_test_register()
+Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
+            test case title, result arrays,
+			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
+			NULL means it is expected to NOT raise an exception, raise exception on failure  
+Returns:	Test id
+Description:Autoregister test case';
+	
 CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_sql_test(test_stmt VARCHAR, test_case_title VARCHAR, results ANYARRAY,
 	error_code_expected VARCHAR DEFAULT NULL, raise_exception_on_failure BOOLEAN DEFAULT TRUE)
 RETURNS boolean
@@ -93,7 +176,7 @@ Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT state
 
 Used to check test SQL statements and triggers
 
-All SAVEPOINT/ROLLBACK function disabled in Postgres 9.3 (it does work on 9.4!)
+All SAVEPOINT/ROLLBACK functionality in PGpsql requires Postgres 9.3.5+ or 9.4
 
 Usage:
 
@@ -320,40 +403,11 @@ DECLARE
 	c2sqlt 				REFCURSOR;
 	c2sqlt_result_row 	RECORD;
 --
-	c3st CURSOR (l_test_stmt 					VARCHAR, 
-			     l_test_case_title 				VARCHAR, 
-				 l_results 						Text[][], 
-				 l_error_code_expected			VARCHAR, 
-				 l_raise_exception_on_failure 	BOOLEAN) FOR
-		WITH a AS (
-			SELECT a.test_case_title, a.test_id AS old_test_id
-			  FROM rif40_test_harness a
-			 WHERE a.test_case_title = l_test_case_title
-		)
-		INSERT INTO rif40_test_harness (
-			test_stmt,
-			test_case_title,
-			error_code_expected,
-			raise_exception_on_failure,
-			results,
-			results_xml)
-		SELECT l_test_stmt, l_test_case_title, l_error_code_expected, l_raise_exception_on_failure, l_results, NULL /* l_results::XML */
-		 WHERE NOT EXISTS (
-			SELECT a.test_id
-			  FROM rif40_test_harness a
-			 WHERE a.test_case_title = l_test_case_title)
-		RETURNING *;
-	c3st_rec RECORD;
 	c4st CURSOR FOR
 	 	SELECT version() AS version, 
 		       SUBSTR(version(), 12, 3)::NUMERIC as major_version, 
 		       SUBSTR(version(), 16, position(', ' IN version())-16)::NUMERIC as minor_version;
 	c4st_rec	RECORD;
-	c5st CURSOR (l_test_case_title VARCHAR) FOR
-		SELECT a.test_case_title, a.test_id
-		  FROM rif40_test_harness a
-		 WHERE a.test_case_title = l_test_case_title;
-	c5st_rec RECORD;
 --
 	f_test_id 	INTEGER;
 --	
@@ -383,7 +437,7 @@ DECLARE
 	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN
 --
--- Check Postgres version. SAVEPOINT/ROLLBACK functionality requires Postgres 9.4
+-- Check Postgres version. SAVEPOINT/ROLLBACK functionality in PGpsql requires Postgres 9.3.5+ or 9.4
 --
 	OPEN c4st;
 	FETCH c4st INTO c4st_rec;
@@ -392,52 +446,31 @@ BEGIN
 --
 -- Auto register test case
 --
-	OPEN c3st(test_stmt, test_case_title, results, error_code_expected, raise_exception_on_failure);
-	FETCH c3st INTO c3st_rec;
-	CLOSE c3st;
-	OPEN c5st(test_case_title);
-	FETCH c5st INTO c5st_rec;
-	CLOSE c5st;		
-	f_test_id:=c5st_rec.test_id;	
-	IF f_test_id IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-71150, 'rif40_sql_test', 
-			'Test id for test case NOT FOUND: %; TEST CASE NOT INSERTED',
-			c3st_rec.test_case_title::VARCHAR);	
-	END IF;
---	
-	IF c3st_rec.test_case_title IS NOT NULL THEN
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', '[71151] Registered test case %: %', 
-			f_test_id::VARCHAR, test_case_title::VARCHAR);	
-		UPDATE rif40_test_runs
-		   SET number_test_cases_registered = number_test_cases_registered + 1
-		 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;	
-	ELSE	
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', '[71152] Test case already registered %: %', 
-			f_test_id::VARCHAR, test_case_title::VARCHAR);
-	END IF;
+	f_test_id:=rif40_sql_pkg._rif40_sql_test_register(test_stmt, test_case_title, results,
+		error_code_expected, raise_exception_on_failure);
 	
 --
--- Check Postgres version. SAVEPOINT/ROLLBACK functionality requires Postgres 9.4
+-- Check Postgres version. SAVEPOINT/ROLLBACK functionality in PGpsql requires Postgres 9.3.5+ or 9.4
 --
 	OPEN c4st;
 	FETCH c4st INTO c4st_rec;
 	CLOSE c4st;
-	IF c4st_rec.major_version < 9.4 THEN
+	IF c4st_rec.major_version < 9.3 OR (c4st_rec.major_version = 9.3 AND c4st_rec.minor_version <=4) THEN
 --
 -- These can be commented out for test_8_triggers.sql on 9.3 ONLY
 -- BE CAREFUL IS YOU CHANGE THIS ERROR CODE - IT IS TESTED FOR INTO test_8_triggers.sql
 --
---		PERFORM rif40_log_pkg.rif40_error(-71153, 'rif40_sql_test', 
---			'Postgres version %.% SAVEPOINT/ROLLBACK functionality; rif40_sql_test() is disabled',
---			c4st_rec.major_version::VARCHAR, c4st_rec.minor_version::VARCHAR);
+		PERFORM rif40_log_pkg.rif40_error(-71153, 'rif40_sql_test', 
+			'Postgres version %.% SAVEPOINT/ROLLBACK functionality; rif40_sql_test() is disabled',
+			c4st_rec.major_version::VARCHAR, c4st_rec.minor_version::VARCHAR);
 	END IF;
 
 --
--- All SAVEPOINT/ROLLBACK function disabled in Postgres 9.3 (it does work on 9.4!)
+-- All SAVEPOINT/ROLLBACK functionality in PGpsql requires Postgres 9.3.5+ or 9.4
 --
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71154] SAVEPOINT; Test case %: %', 
 		f_test_id::VARCHAR, test_case_title::VARCHAR);
-	IF c4st_rec.major_version >= 9.4 THEN	
+	IF c4st_rec.major_version >= 9.4 OR (c4st_rec.major_version = 9.3 AND c4st_rec.minor_version >=5) THEN	
 		SAVEPOINT rif40_sql_test;
 	END IF;
 	
@@ -514,11 +547,11 @@ BEGIN
 		CLOSE c2sqlt;
 		
 --
--- Reverse effects of test
+-- Reverse effects of test. Requires Postgres 9.3.5+ or 9.4
 -- 
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71157] ROLLBACK TO SAVEPOINT; Test case %: %', 
 			f_test_id::VARCHAR, test_case_title::VARCHAR);
-		IF c4st_rec.major_version >= 9.4 THEN
+		IF c4st_rec.major_version >= 9.4 OR (c4st_rec.major_version = 9.3 AND c4st_rec.minor_version >=5) THEN
 			ROLLBACK TO SAVEPOINT rif40_sql_test;	
 		END IF;
 		
@@ -568,11 +601,11 @@ BEGIN
 			CLOSE c1sqlt;
 				
 --
--- Reverse effects of test
+-- Reverse effects of test. Requires Postgres 9.3.5+ or 9.4
 -- 
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71163] ROLLBACK TO SAVEPOINT; Test case %: %', 
 				f_test_id::VARCHAR, test_case_title::VARCHAR);
-			IF c4st_rec.major_version >= 9.4 THEN
+			IF c4st_rec.major_version >= 9.4 OR (c4st_rec.major_version = 9.3 AND c4st_rec.minor_version >=5) THEN
 				ROLLBACK TO SAVEPOINT rif40_sql_test;	
 			END IF;
 		
@@ -608,11 +641,11 @@ BEGIN
 			PERFORM rif40_sql_pkg.rif40_ddl(test_stmt);
 				
 --
--- Reverse effects of test
+-- Reverse effects of test. Requires Postgres 9.3.5+ or 9.4
 -- 
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71168] ROLLBACK TO SAVEPOINT; Test case %: %', 
 				f_test_id::VARCHAR, test_case_title::VARCHAR);
-			IF c4st_rec.major_version >= 9.4 THEN
+			IF c4st_rec.major_version >= 9.4 OR (c4st_rec.major_version = 9.3 AND c4st_rec.minor_version >=5) THEN
 				ROLLBACK TO SAVEPOINT rif40_sql_test;	
 			END IF;
 	
@@ -663,10 +696,10 @@ BEGIN
 EXCEPTION
 	WHEN no_data_found THEN	
 --
--- Reverse effects of test
+-- Reverse effects of test. Requires Postgres 9.3.5+ or 9.4
 -- 
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71172] ROLLBACK TO SAVEPOINT: %', test_case_title::VARCHAR);
-		IF c4st_rec.major_version >= 9.4 THEN
+		IF c4st_rec.major_version >= 9.4 OR (c4st_rec.major_version = 9.3 AND c4st_rec.minor_version >=5)THEN
 			ROLLBACK TO SAVEPOINT rif40_sql_test;	
 		END IF;
 		IF error_code_expected IS NULL THEN
@@ -692,10 +725,10 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
  */			
 	WHEN others THEN
 --
--- Reverse effects of test
+-- Reverse effects of test. Requires Postgres 9.3.5+ or 9.4
 -- 
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71175] ROLLBACK TO SAVEPOINT: %', test_case_title::VARCHAR);
-		IF c4st_rec.major_version >= 9.4 THEN
+		IF c4st_rec.major_version >= 9.4 OR (c4st_rec.major_version = 9.3 AND c4st_rec.minor_version >=5) THEN
 			ROLLBACK TO SAVEPOINT rif40_sql_test;	
 		END IF;	
 -- 
@@ -800,7 +833,7 @@ Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT state
 
 			Used to check test SQL statements and triggers
 			
-All SAVEPOINT/ROLLBACK function disabled in Postgres 9.3 (it does work on 9.4!)';
+All SAVEPOINT/ROLLBACK functionality in PGpsql requires Postgres 9.3.5+ or 9.4';
 	
 --
 -- So can be used to test non rif user access to functions 

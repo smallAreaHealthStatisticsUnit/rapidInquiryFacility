@@ -147,15 +147,15 @@ BEGIN
 	END IF;
 	
 --
--- Check Postgres version. SAVEPOINT/ROLLBACK functionality requires Postgres 9.4
+-- Check Postgres version. SAVEPOINT/ROLLBACK functionality in PGpsql requires Postgres 9.3.5+ or 9.4
 --
 	OPEN c4th;
 	FETCH c4th INTO c4th_rec;
 	CLOSE c4th;
-	IF c4th_rec.major_version < 9.4 THEN
+	IF c4th_rec.major_version < 9.3 OR (c4th_rec.major_version = 9.3 AND c4th_rec.minor_version <=4) THEN
 		RAISE WARNING 'T8--08: test_8_triggers.sql: Postgres version %.% SAVEPOINT/ROLLBACK functionality; rif40_sql_test() is disabled',
 			c4th_rec.major_version, c4th_rec.minor_version;
---		RETURN;
+		RETURN;
 	END IF;
 
 	INSERT INTO rif40_test_runs(test_run_title, time_taken, 
