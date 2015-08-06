@@ -50,7 +50,7 @@
 --
 \i ../psql_scripts/test_scripts/common_setup.sql
 
-\echo Test 8: Trigger test harness (added in alter_7)...
+\echo Test 8: Trigger test harness (added in alter_8)...
 
 \set ndebug_level '''XXXX':debug_level''''
 SET rif40.debug_level TO :ndebug_level;
@@ -60,9 +60,6 @@ SET rif40.debug_level TO :ndebug_level;
 BEGIN;
 
 \dS t_rif40_studies
-
-\echo 'test_8_triggers.sql: Create SAVEPOINT test_8_triggers';
-SAVEPOINT test_8_triggers;
 
 --
 -- Test test harness!
@@ -75,23 +72,63 @@ DECLARE
 		 WHERE study_name LIKE 'TRIGGER TEST%';
 	c2th CURSOR FOR 
 		SELECT CURRENT_SETTING('rif40.debug_level') AS debug_level;
+	c1th_rec RECORD;
+	c2th_rec RECORD;
+--
+	debug_level		INTEGER:=1;	
+BEGIN	
+	OPEN c2th;
+	FETCH c2th INTO c2th_rec;
+	CLOSE c2th;
+--
+-- Test parameter
+--
+	IF c2th_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
+		RAISE EXCEPTION 'T1-01: test_8_triggers.sql: No -v debug_level=<debug level> parameter';	
+	ELSE
+		debug_level:=LOWER(SUBSTR(c2th_rec.debug_level, 5))::INTEGER;
+		RAISE INFO 'T8--02: test_8_triggers.sql: debug level parameter="%"', debug_level::Text;
+	END IF;
+	IF debug_level = 0 THEN	
+		debug_level:=1;
+	END IF;
+	
+--
+-- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
+--
+	PERFORM rif40_sql_pkg._rif40_sql_test_log_setup(debug_level);
+		
+--
+-- Clear up old test cases
+--
+	FOR c1th_rec IN c1th LOOP
+		PERFORM rif40_sm_pkg.rif40_delete_study(c1th_rec.study_id);
+	END LOOP;
+END;
+$$;	
+
+END;
+
+--
+-- Start new transaction
+--
+BEGIN;
+\echo 'test_8_triggers.sql: Create SAVEPOINT test_8_triggers';
+SAVEPOINT test_8_triggers;
+
+DO LANGUAGE plpgsql $$
+DECLARE
 	c3th CURSOR FOR 
 		SELECT COUNT(study_id) AS total_studies
 		  FROM rif40_studies 
 		 WHERE study_name LIKE 'TRIGGER TEST%';	
-	c4th CURSOR FOR
-	 	SELECT version() AS version, 
-		SUBSTR(version(), 12, 3)::NUMERIC as major_version, 
-		RTRIM(SUBSTR(version(), 16, 2))::INTEGER as minor_version;	
 	c5th CURSOR FOR
 		SELECT *
 		  FROM rif40_test_runs
-		WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
-	c1th_rec RECORD;
-	c2th_rec RECORD;
+		WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;		 
+--
 	c3th_rec RECORD;
-	c4th_rec RECORD;
-	c5th_rec RECORD;
+	c5th_rec RECORD;	
 --
 	stp TIMESTAMP WITH TIME ZONE:=clock_timestamp();
 	etp TIMESTAMP WITH TIME ZONE;
@@ -102,74 +139,24 @@ DECLARE
 --
 	error_message VARCHAR;
 --
-	rif40_pkg_functions 		VARCHAR[] := ARRAY[
-				'rif40_delete_study', 'rif40_ddl', 'rif40_sql_test', '_rif40_test_sql_template'];
-	l_function 			VARCHAR;	
-	debug_level		INTEGER;	
+	debug_level		INTEGER:=1;	
 --
 	v_sqlstate 	VARCHAR;
 	v_context	VARCHAR;
 	v_detail 	VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
-BEGIN	
-	OPEN c2th;
-	FETCH c2th INTO c2th_rec;
-	CLOSE c2th;
---
--- Test parameter
---
-	IF c2th_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
-		RAISE EXCEPTION 'T1-01: test_8_triggers.sql: No -v testuser=<debug level> parameter';	
-	ELSE
-		debug_level:=LOWER(SUBSTR(c2th_rec.debug_level, 5))::INTEGER;
-		RAISE INFO 'T8--02: test_8_triggers.sql: debug level parameter="%"', debug_level::Text;
-	END IF;
---
--- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
---
-    PERFORM rif40_log_pkg.rif40_log_setup();
-	IF debug_level IS NULL THEN
-		RAISE INFO 'T8--03: test_8_triggers.sql: NULL debug_level';
-		debug_level:=0;
-	ELSIF debug_level > 4 THEN
-		RAISE EXCEPTION 'test_8_triggers.sql: T8--04: Invalid debug level [0-4]: %', debug_level;
-	ELSIF debug_level BETWEEN 1 AND 4 THEN
-		RAISE INFO 'T8--05: test_8_triggers.sql: debug_level %', debug_level;
-        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
---
--- Enabled debug on select rif40_sm_pkg functions
---
-		FOREACH l_function IN ARRAY rif40_pkg_functions LOOP
-			RAISE INFO 'T8--06: test_8_triggers.sql: Enable debug for function: %', l_function;
-			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
-		END LOOP;
-	ELSE
-		RAISE INFO 'T8--07: test_8_triggers.sql: debug_level %', debug_level;
-	END IF;
-	
---
--- Check Postgres version. SAVEPOINT/ROLLBACK functionality in PGpsql requires Postgres 9.3.5+ or 9.4
---
-	OPEN c4th;
-	FETCH c4th INTO c4th_rec;
-	CLOSE c4th;
-	IF c4th_rec.major_version < 9.3 OR (c4th_rec.major_version = 9.3 AND c4th_rec.minor_version <=4) THEN
-		RAISE WARNING 'T8--08: test_8_triggers.sql: Postgres version %.% SAVEPOINT/ROLLBACK functionality; rif40_sql_test() is disabled',
-			c4th_rec.major_version, c4th_rec.minor_version;
-		RETURN;
-	END IF;
-
+BEGIN
 	INSERT INTO rif40_test_runs(test_run_title, time_taken, 
 		tests_run, number_passed, number_failed, number_test_cases_registered, number_messages_registered)
 	VALUES ('test_8_triggers.sql', 0, 0, 0, 0, 0, 0);
 	
 --
--- Clear up old test cases
+-- Create dblink substranction to isolate testing from test run
 --
-	FOR c1th_rec IN c1th LOOP
-		PERFORM rif40_sm_pkg.rif40_delete_study(c1th_rec.study_id);
-	END LOOP;
+	PERFORM rif40_sql_pkg.rif40_sql_test_dblink_connect('test_8_triggers.sql', debug_level);
+	
 --
 	IF NOT (rif40_sql_pkg.rif40_sql_test(
+		'test_8_triggers.sql',
 		'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
 		'T8--09: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
 		'{{01,01.015,01.015.016200,01.015.016200.2}
@@ -190,6 +177,7 @@ BEGIN
 -- DELIBERATE FAIL: level 3: 01.015.016900 removed
 --
 	IF (rif40_sql_pkg.rif40_sql_test(
+		'test_8_triggers.sql',
 		'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016200'') ORDER BY level4',
 		'T8--11: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 [DELIBERATE FAIL TEST]',
 		'{{01,01.015,01.015.016200,01.015.016200.2}
@@ -211,6 +199,7 @@ BEGIN
 -- rif40_log_pkg.rif40_error() test (and the test harness handling of RIF error codes)
 --
 	IF NOT (rif40_sql_pkg.rif40_sql_test(
+		'test_8_triggers.sql',
 		'SELECT rif40_log_pkg.rif40_error(-90125, ''rif40_error'', ''Dummy error: %'', ''rif40_error test''::VARCHAR) AS x',
 		'T8--13: test_8_triggers.sql: rif40_log_pkg.rif40_error() test',
 		NULL::Text[][] 	/* No results for SELECT */,		
@@ -274,7 +263,8 @@ Foreign-key constraints:
 --
 -- NULL tests
 --
-	IF NOT (rif40_sql_pkg.rif40_sql_test(	
+	IF NOT (rif40_sql_pkg.rif40_sql_test(
+		'test_8_triggers.sql',	
 		'INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
 VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST_1'', ''MAP_TRIGGER_TEST_1'', 1 /* Diease mapping */, ''LEVEL1'', ''LEVEL4'', NULL /* FAIL HERE */, 0)',
 		'T8--15: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL',
@@ -287,7 +277,8 @@ VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST_1'', ''
     END IF;	
 	f_tests_run:=f_tests_run+1;
 	
-	IF NOT (rif40_sql_pkg.rif40_sql_test(	
+	IF NOT (rif40_sql_pkg.rif40_sql_test(
+		'test_8_triggers.sql',	
 		'INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
 VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #2'', ''EXTRACT_TRIGGER_TEST_2'', ''MAP_TRIGGER_TEST_2'', 1 /* Diease mapping */, ''LEVEL1'', ''LEVEL4'', ''SAHSULAND_POP'', NULL /* FAIL HERE */)
 RETURNING 1::Text AS test_value',
@@ -317,6 +308,7 @@ RETURNING 1::Text AS test_value',
 	END IF;
 
 	IF NOT (rif40_sql_pkg.rif40_sql_test(
+			 'test_8_triggers.sql',
 			 'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
 			 'T8--21: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
 '{{01,01.015,01.015.016200,01.015.016200.2}                                                                                                            
@@ -352,6 +344,9 @@ RETURNING 1::Text AS test_value',
 		RAISE INFO 'T8--24: test_8_triggers.sql: Test harness error: tests_run (%) = number_passed (%) + number_failed (%)', 
 			c5th_rec.tests_run, c5th_rec.number_passed, c5th_rec.number_failed;				
 	END IF;
+--
+	PERFORM rif40_sql_pkg.rif40_sql_test_dblink_disconnect('test_8_triggers.sql');
+	
 --	
 	IF f_errors = 0 THEN
 		RAISE NOTICE 'T8--25: test_8_triggers.sql: No test harness errors.';		
@@ -367,6 +362,12 @@ EXCEPTION
 			'Detail: '||v_detail::VARCHAR||E'\n'||
 			'Context: '||v_context::VARCHAR||E'\n'||
 			'SQLSTATE: '||v_sqlstate::VARCHAR;
+		BEGIN
+			PERFORM rif40_sql_pkg.rif40_sql_test_dblink_disconnect('test_8_triggers.sql');
+		EXCEPTION
+			WHEN others THEN		
+				RAISE WARNING 'rif40_sql_pkg.rif40_sql_test_dblink_disconnect raised: % [IGNORED]', SQLERRM;
+		END;
 		IF v_sqlstate = 'P0001' AND v_detail = '-71153' THEN /* rif40_sql_test() pre 9.4 error */
 			RAISE EXCEPTION 'T8--26: test_8_triggers.sql: 1: %', error_message;				
 --		ELSIF c4th_rec IS NOT NULL AND c4th_rec.major_version < 9.4 THEN

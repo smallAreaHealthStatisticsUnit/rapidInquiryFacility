@@ -274,9 +274,22 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.does_role_exist(VARCHAR) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_does_role_exist(VARCHAR) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_rename_map_and_extract_tables(INTEGER, INTEGER);
 
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
+	VARCHAR, BOOLEAN);	
+-- Old	
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN);	
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_test_sql_template(VARCHAR, VARCHAR) ;
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
+	INTEGER, BOOLEAN);	
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
+	VARCHAR, BOOLEAN, INTEGER);
+	
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, ANYARRAY,
+	VARCHAR, BOOLEAN);
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test_dblink_connect(VARCHAR, INTEGER);
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test_dblink_disconnect(VARCHAR);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_log_setup(INTEGER);
+	
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_reduce_dim(ANYARRAY);
 
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_drop_user_table_or_view(VARCHAR) CASCADE;
@@ -284,6 +297,7 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_method4(VARCHAR, VARCHAR) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VARCHAR);
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_range_partition(VARCHAR, VARCHAR, VARCHAR);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR);
+
 
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl_check_a();
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl_check_b();

@@ -73,13 +73,22 @@ $$;
 --
 -- Test case 
 --
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
+	VARCHAR, BOOLEAN);	
+-- Old	
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN);	
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 	INTEGER, BOOLEAN);	
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
+	VARCHAR, BOOLEAN, INTEGER);
+	
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN);	
-
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test_dblink_connect(VARCHAR, INTEGER);
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test_dblink_disconnect(VARCHAR);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_log_setup(INTEGER);
+	
 CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_sql_test_register(test_stmt VARCHAR, test_case_title VARCHAR, results ANYARRAY,
 	error_code_expected VARCHAR DEFAULT NULL, raise_exception_on_failure BOOLEAN DEFAULT TRUE)
 RETURNS INTEGER
@@ -146,10 +155,141 @@ BEGIN
 			f_test_id::VARCHAR, test_case_title::VARCHAR);
 	END IF;
 --
+	IF f_test_id IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-71153, '_rif40_sql_test_register', 
+			'Test id for test case NOT FOUND: %; TEST CASE NEVER INSERTED',
+			c3st_rec.test_case_title::VARCHAR);	
+	END IF;
+--
 	RETURN f_test_id;
 END;
 $func$
 LANGUAGE PLPGSQL;
+
+CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_sql_test_dblink_connect(connection_name VARCHAR, debug_level INTEGER DEFAULT 0)
+RETURNS void
+SECURITY INVOKER
+AS $func$
+/*
+Function: 	rif40_sql_test_dblink_connect()
+Parameters:	Connection name, debug level 
+Returns:	Nothing
+Description:Create dblink() session; 
+			run rif40_startup();
+			Initialise logging
+ */
+DECLARE
+	d0st CURSOR(l_connection_name VARCHAR) FOR
+		SELECT a.startup
+ 		  FROM dblink(l_connection_name,
+				      'WITH a AS (SELECT rif40_sql_pkg.rif40_startup() AS a) SELECT 1 AS startup FROM a;') AS a(startup INTEGER);
+	d0st_rec	RECORD;		
+	d1st CURSOR(l_connection_name VARCHAR, l_debug_level INTEGER) FOR
+		SELECT a.log_setup
+ 		  FROM dblink(l_connection_name,
+				      'WITH a AS (SELECT rif40_sql_pkg._rif40_sql_test_log_setup('||l_debug_level||') AS a) SELECT 1 AS log_setup FROM a;') AS a(log_setup INTEGER);
+	d1st_rec	RECORD;			
+BEGIN
+	PERFORM dblink_connect(connection_name, 'dbname='||current_database()||' user='||USER||' password='||USER);
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test_dblink_connect', 
+		'[71154] dblink() subtransaction for testing connected to: % as: %', 
+		current_database()::VARCHAR, USER::VARCHAR);		
+--
+-- Call rif40_startup()
+--
+	OPEN d0st(connection_name);
+	FETCH d0st INTO d0st_rec;
+	CLOSE d0st;
+--
+-- Call rif40_sql_pkg._rif40_sql_test_log_setup
+--
+	OPEN d1st(connection_name, debug_level);
+	FETCH d1st INTO d1st_rec;
+	CLOSE d1st;
+END;
+$func$
+LANGUAGE PLPGSQL;
+COMMENT ON FUNCTION rif40_sql_pkg.rif40_sql_test_dblink_connect(VARCHAR, INTEGER) IS 'Function: 	rif40_sql_test_dblink_connect()
+Parameters:	Connection name, debug level 
+Returns:	Nothing
+Description:Create dblink() session; 
+			run rif40_startup();
+			Initialise logging';
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test_dblink_connect(VARCHAR, INTEGER) TO PUBLIC;
+
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_sql_test_log_setup(debug_level INTEGER DEFAULT 0)
+RETURNS void
+SECURITY INVOKER
+AS $func$
+/*
+Function: 	_rif40_sql_test_log_setup()
+Parameters:	Debug level 
+Returns:	Nothing
+Description:Setup debug for test harness. Debug level must be 0 to 4
+ */
+DECLARE
+	rif40_pkg_functions 		VARCHAR[] := ARRAY[
+				'rif40_delete_study', 'rif40_ddl', 'rif40_sql_test', '_rif40_sql_test', '_rif40_test_sql_template', '_rif40_sql_test_register', 'rif40_sql_test_dblink_connect', 'rif40_sql_test_dblink_disconnect'];
+	l_function 			VARCHAR;	
+BEGIN
+    PERFORM rif40_log_pkg.rif40_log_setup();
+	PERFORM rif40_log_pkg.rif40_add_to_debug('_rif40_sql_test_log_setup:DEBUG1');
+	IF debug_level IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test_log_setup', 
+			'[71154]: NULL debug_level; set to 1');
+		debug_level:=1;
+	ELSIF debug_level > 4 THEN
+		PERFORM rif40_log_pkg.rif40_error(-71155, '_rif40_sql_test_log_setup', 'Invalid debug level [0-4]: %', debug_level::VARCHAR);
+	ELSIF debug_level BETWEEN 1 AND 4 THEN
+		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test_log_setup', 
+			'[71156]: debug_level %', debug_level::VARCHAR);
+        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+--
+-- Enabled debug on select rif40_sm_pkg functions
+--
+		FOREACH l_function IN ARRAY rif40_pkg_functions LOOP
+			PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test_log_setup', 
+				'[71157]: Enable debug for function: %', 
+				l_function::VARCHAR);
+			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
+		END LOOP;
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test_log_setup', 
+			'[71158]: debug_level %', debug_level::VARCHAR);
+	END IF;
+END;
+$func$
+LANGUAGE PLPGSQL;
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_sql_test_log_setup(INTEGER) IS 'Function: 	_rif40_sql_test_log_setup()
+Parameters:	Debug level 
+Returns:	Nothing
+Description:Setup debug for test harness. Debug level must be 0 to 4';
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg._rif40_sql_test_log_setup(INTEGER) TO PUBLIC;
+	
+CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_sql_test_dblink_disconnect(connection_name VARCHAR)
+RETURNS void
+SECURITY INVOKER
+AS $func$
+/*
+Function: 	rif40_sql_test_dblink_disconnect()
+Parameters:	Connection name 
+Returns:	Nothing
+Description:Release dblink() session;
+ */
+DECLARE
+BEGIN
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test_dblink_connect', 
+		'[71155] dblink() subtransaction for testing disconnected from: % as: %', 
+		current_database()::VARCHAR, USER::VARCHAR);	
+	PERFORM dblink_disconnect(connection_name);
+END;
+$func$
+LANGUAGE PLPGSQL;
+COMMENT ON FUNCTION rif40_sql_pkg.rif40_sql_test_dblink_disconnect(VARCHAR) IS 'Function: 	rif40_sql_test_dblink_disconnect()
+Parameters:	Connection name 
+Returns:	Nothing
+Description:Release dblink() session;';
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test_dblink_disconnect(VARCHAR) TO PUBLIC;
 
 COMMENT ON FUNCTION rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN) IS 'Function: 	_rif40_sql_test_register()
@@ -160,14 +300,15 @@ Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) stat
 Returns:	Test id
 Description:Autoregister test case';
 	
-CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_sql_test(test_stmt VARCHAR, test_case_title VARCHAR, results ANYARRAY,
+CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_sql_test(connection_name VARCHAR, test_stmt VARCHAR, test_case_title VARCHAR, results ANYARRAY,
 	error_code_expected VARCHAR DEFAULT NULL, raise_exception_on_failure BOOLEAN DEFAULT TRUE)
 RETURNS boolean
 SECURITY INVOKER
 AS $func$
 /*
 Function: 	rif40_sql_test()
-Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
+Parameters:	Connection name,
+			SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
             test case title, result arrays,
 			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
 			NULL means it is expected to NOT raise an exception, raise exception on failure  
@@ -175,8 +316,6 @@ Returns:	Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
 Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause
 
 Used to check test SQL statements and triggers
-
-All SAVEPOINT/ROLLBACK functionality in PGpsql requires Postgres 9.3.5+ or 9.4
 
 Usage:
 
@@ -396,28 +535,18 @@ Message:  rif40_trg_pkg.trigger_fct_t_rif40_studies_checks(): T_RIF40_STUDIES st
 Detail:   -20211
 
  */
-DECLARE	
---
-	c1sqlt 				REFCURSOR;
-	c1sqlt_result_row 	RECORD;
-	c2sqlt 				REFCURSOR;
-	c2sqlt_result_row 	RECORD;
---
-	c4st CURSOR FOR
-	 	SELECT version() AS version, 
-		       SUBSTR(version(), 12, 3)::NUMERIC as major_version, 
-		       RTRIM(SUBSTR(version(), 16, 2))::INTEGER as minor_version;
-	c4st_rec	RECORD;
---
+DECLARE			  
+	d1st CURSOR(l_connection_name VARCHAR, l_sql_stmt VARCHAR) FOR
+		SELECT a.rcode
+ 		  FROM dblink(l_connection_name,
+				      l_sql_stmt) AS a(rcode INTEGER);
+	d1st_rec	RECORD;
+--		
+	rcode 		BOOLEAN;
 	f_test_id 	INTEGER;
---	
-	sql_frag 	VARCHAR;
-	sql_stmt 	VARCHAR;
---
-	extra		INTEGER:=0;
-	missing		INTEGER:=0;	
---
-	f_pass		BOOLEAN;
+	sql_stmt	VARCHAR;
+	dblink_status	VARCHAR;
+	op			VARCHAR;
 --
 	stp TIMESTAMP WITH TIME ZONE:=clock_timestamp();
 	etp TIMESTAMP WITH TIME ZONE;
@@ -434,46 +563,160 @@ DECLARE
 	error_message VARCHAR;
 	v_sqlstate 	VARCHAR;
 	v_context	VARCHAR;	
-	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
+	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';		
 BEGIN
---
--- Check Postgres version. SAVEPOINT/ROLLBACK functionality in PGpsql requires Postgres 9.3.5+ or 9.4
---
-	OPEN c4st;
-	FETCH c4st INTO c4st_rec;
-	CLOSE c4st;
 	
 --
 -- Auto register test case
 --
 	f_test_id:=rif40_sql_pkg._rif40_sql_test_register(test_stmt, test_case_title, results,
 		error_code_expected, raise_exception_on_failure);
-	
+			
 --
--- Check Postgres version. SAVEPOINT/ROLLBACK functionality in PGpsql requires Postgres 9.3.5+ or 9.4
+-- Do test; reversing effects
+--	
+	sql_stmt:='SELECT rif40_sql_pkg._rif40_sql_test('||E'\n'||
+						coalesce(quote_literal(test_stmt), 'NULL')||'::VARCHAR /* test_stmt */,'||E'\n'||
+						coalesce(quote_literal(test_case_title), 'NULL')||'::VARCHAR /* test_case_title */,'||E'\n'||
+						coalesce(quote_literal(results), 'NULL')||'::VARCHAR[][] /* results */,'||E'\n'||
+						coalesce(quote_literal(error_code_expected), 'NULL')||'::VARCHAR /* error_code_expected */,'||E'\n'||
+						coalesce(quote_literal(raise_exception_on_failure), 'NULL')||'::BOOLEAN /* raise_exception_on_failure */,'||E'\n'||
+						coalesce(quote_literal(f_test_id), 'NULL')||'::INTEGER /* test_id */)::INTEGER AS rcode';
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71154] SQL[SELECT]> %;', 
+			sql_stmt::VARCHAR);						
+	BEGIN	
+		op='dblink (BEGIN)';		
+		PERFORM dblink(connection_name, 'BEGIN;');				
+--		
+		op='dblink open(SQL)';
+		OPEN d1st(connection_name, sql_stmt);
+		op='dblink fetch(SQL)';		
+		FETCH d1st INTO d1st_rec;
+		op='dblink close(SQL)';		
+		CLOSE d1st;
+--		
+		op='dblink (ROLLBACK)';		
+		PERFORM dblink(connection_name, 'ROLLBACK;');			
+	EXCEPTION	
+		WHEN others THEN
+-- 
+-- Not supported until 9.2
 --
-	OPEN c4st;
-	FETCH c4st INTO c4st_rec;
-	CLOSE c4st;
-	IF c4st_rec.major_version < 9.3 OR (c4st_rec.major_version = 9.3 AND c4st_rec.minor_version <=4) THEN
+			GET STACKED DIAGNOSTICS v_detail            = PG_EXCEPTION_DETAIL;
+			GET STACKED DIAGNOSTICS v_sqlstate          = RETURNED_SQLSTATE;
+			GET STACKED DIAGNOSTICS v_context           = PG_EXCEPTION_CONTEXT;
+			GET STACKED DIAGNOSTICS v_message_text      = MESSAGE_TEXT;
+			GET STACKED DIAGNOSTICS v_pg_exception_hint = PG_EXCEPTION_HINT;
+			
+			GET STACKED DIAGNOSTICS v_column_name       = COLUMN_NAME;
+			GET STACKED DIAGNOSTICS v_constraint_name   = CONSTRAINT_NAME;
+			GET STACKED DIAGNOSTICS v_pg_datatype_name  = PG_DATATYPE_NAME;
+			GET STACKED DIAGNOSTICS v_table_name        = TABLE_NAME;
+			GET STACKED DIAGNOSTICS v_schema_name       = SCHEMA_NAME;
+			
+			error_message:='rif40_sql_test('''||coalesce(test_case_title::VARCHAR, '')||''') caught: '||E'\n'||SQLERRM::VARCHAR||
+				' in SQL >>>'||E'\n'||test_stmt||';'||E'\n'||
+				'<<<'||E'\n'||
+				' in '||op||' SQL >>>'||E'\n'||COALESCE(sql_stmt, 'NULL')||';'||E'\n'||
+				'<<<'||E'\n'||				
+				'Error context and message >>>'||E'\n'||			
+				'Message:  '||v_message_text::VARCHAR||E'\n'||
+				'Hint:     '||v_pg_exception_hint::VARCHAR||E'\n'||
+				'Detail:   '||v_detail::VARCHAR||E'\n'||
+				'Context:  '||v_context::VARCHAR||E'\n'||
+				'SQLSTATE: '||v_sqlstate::VARCHAR||E'\n'||'<<< End of trace.'||E'\n';
 --
--- These can be commented out for test_8_triggers.sql on 9.3 ONLY
--- BE CAREFUL IS YOU CHANGE THIS ERROR CODE - IT IS TESTED FOR INTO test_8_triggers.sql
---
-		PERFORM rif40_log_pkg.rif40_error(-71153, 'rif40_sql_test', 
-			'Postgres version %.% SAVEPOINT/ROLLBACK functionality; rif40_sql_test() is disabled',
-			c4st_rec.major_version::VARCHAR, c4st_rec.minor_version::VARCHAR);
-	END IF;
+			PERFORM rif40_log_pkg.rif40_error(-71156, 'rif40_sql_test', 
+				'Test case: % FAILED, error in dblink_open(): %', 
+				test_case_title::VARCHAR, 
+				error_message::VARCHAR);
+			RAISE;
+	END;				
 
+	rcode:=d1st_rec.rcode;
 --
--- All SAVEPOINT/ROLLBACK functionality in PGpsql requires Postgres 9.3.5+ or 9.4
+-- Process return code
 --
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71154] SAVEPOINT; Test case %: %', 
-		f_test_id::VARCHAR, test_case_title::VARCHAR);
-	IF c4st_rec.major_version >= 9.4 OR (c4st_rec.major_version = 9.3 AND c4st_rec.minor_version >=5) THEN	
-		SAVEPOINT rif40_sql_test;
+	etp:=clock_timestamp();
+	took:=age(etp, stp);
+	UPDATE rif40_test_harness
+	   SET pass        = rcode,
+	       test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer,
+		   test_date   = statement_timestamp(),
+		   time_taken  = EXTRACT(EPOCH FROM took)::NUMERIC
+	 WHERE test_id = f_test_id;
+	IF rcode THEN
+		UPDATE rif40_test_runs
+		   SET number_passed = number_passed + 1,
+			   tests_run     = tests_run + 1
+		 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
+	ELSE
+		UPDATE rif40_test_runs
+		   SET number_failed = number_failed + 1,
+			   tests_run     = tests_run + 1
+		 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
 	END IF;
 	
+	RETURN rcode;
+END;
+$func$ LANGUAGE plpgsql;
+			
+COMMENT ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
+	VARCHAR, BOOLEAN) IS 'Function: 	rif40_sql_test()
+Parameters:	Connection name.
+			SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
+            test case title, result arrays,
+			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
+			NULL means it is expected to NOT raise an exception, raise exception on failure  
+Returns:	Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
+Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause
+
+			Used to check test SQL statements and triggers';
+			
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_sql_test(test_stmt VARCHAR, test_case_title VARCHAR, results ANYARRAY,
+	error_code_expected VARCHAR, raise_exception_on_failure BOOLEAN, f_test_id INTEGER)
+RETURNS boolean
+SECURITY INVOKER
+AS $func$
+/*
+Function: 	_rif40_sql_test()
+Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
+            test case title, result arrays,
+			[negative] error SQLSTATE expected [as part of an exception]; the first 
+			negative number in the message is assumed to be the number; 
+			NULL means it is expected to NOT raise an exception, raise exception on failure,
+			test_id
+Returns:	Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
+Description:	
+*/
+DECLARE
+--
+	c1sqlt 				REFCURSOR;
+	c1sqlt_result_row 	RECORD;
+	c2sqlt 				REFCURSOR;
+	c2sqlt_result_row 	RECORD;
+	--	
+	sql_frag 	VARCHAR;
+	sql_stmt 	VARCHAR;
+--
+	extra		INTEGER:=0;
+	missing		INTEGER:=0;	
+--
+	f_pass		BOOLEAN;
+--
+	v_message_text		VARCHAR;
+	v_pg_exception_hint	VARCHAR;
+	v_column_name		VARCHAR;
+	v_constraint_name	VARCHAR;
+	v_pg_datatype_name	VARCHAR;
+	v_table_name		VARCHAR;
+	v_schema_name		VARCHAR;
+--
+	error_message VARCHAR;
+	v_sqlstate 	VARCHAR;
+	v_context	VARCHAR;	
+	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
+BEGIN	
 --
 -- Do test
 --
@@ -547,15 +790,6 @@ BEGIN
 		CLOSE c2sqlt;
 		
 --
--- Reverse effects of test. Requires Postgres 9.3.5+ or 9.4
--- 
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71157] ROLLBACK TO SAVEPOINT; Test case %: %', 
-			f_test_id::VARCHAR, test_case_title::VARCHAR);
-		IF c4st_rec.major_version >= 9.4 OR (c4st_rec.major_version = 9.3 AND c4st_rec.minor_version >=5) THEN
-			ROLLBACK TO SAVEPOINT rif40_sql_test;	
-		END IF;
-		
---
 -- Check for missing
 --
 		IF missing = 0 THEN 
@@ -599,15 +833,6 @@ BEGIN
 			OPEN c1sqlt FOR EXECUTE test_stmt;
 			FETCH c1sqlt INTO c1sqlt_result_row;
 			CLOSE c1sqlt;
-				
---
--- Reverse effects of test. Requires Postgres 9.3.5+ or 9.4
--- 
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71163] ROLLBACK TO SAVEPOINT; Test case %: %', 
-				f_test_id::VARCHAR, test_case_title::VARCHAR);
-			IF c4st_rec.major_version >= 9.4 OR (c4st_rec.major_version = 9.3 AND c4st_rec.minor_version >=5) THEN
-				ROLLBACK TO SAVEPOINT rif40_sql_test;	
-			END IF;
 		
 --
 -- Check for errors (or rather the lack of them)
@@ -641,15 +866,6 @@ BEGIN
 			PERFORM rif40_sql_pkg.rif40_ddl(test_stmt);
 				
 --
--- Reverse effects of test. Requires Postgres 9.3.5+ or 9.4
--- 
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71168] ROLLBACK TO SAVEPOINT; Test case %: %', 
-				f_test_id::VARCHAR, test_case_title::VARCHAR);
-			IF c4st_rec.major_version >= 9.4 OR (c4st_rec.major_version = 9.3 AND c4st_rec.minor_version >=5) THEN
-				ROLLBACK TO SAVEPOINT rif40_sql_test;	
-			END IF;
-	
---
 -- Check for errors (or rather the lack of them)
 --			
 			IF error_code_expected IS NULL THEN
@@ -671,37 +887,11 @@ BEGIN
 			'Test case %: % FAILED, invalid statement type: % %SQL> %;', 
 			f_test_id::VARCHAR, test_case_title::VARCHAR, UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 6))::VARCHAR, E'\n'::VARCHAR, test_stmt::VARCHAR);	
 	END IF;
---
--- Process return code
---
-	etp:=clock_timestamp();
-	took:=age(etp, stp);
-	UPDATE rif40_test_harness
-	   SET pass        = f_pass,
-	       test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer,
-		   test_date   = statement_timestamp(),
-		   time_taken  = EXTRACT(EPOCH FROM took)::NUMERIC
-	 WHERE test_id = f_test_id;
-	IF f_pass THEN
-		UPDATE rif40_test_runs
-		   SET number_passed = number_passed + 1
-		 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
-	ELSE
-		UPDATE rif40_test_runs
-		   SET number_failed = number_failed + 1 
-		 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
-	END IF;
+
 	RETURN f_pass;
 --
 EXCEPTION
 	WHEN no_data_found THEN	
---
--- Reverse effects of test. Requires Postgres 9.3.5+ or 9.4
--- 
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71172] ROLLBACK TO SAVEPOINT: %', test_case_title::VARCHAR);
-		IF c4st_rec.major_version >= 9.4 OR (c4st_rec.major_version = 9.3 AND c4st_rec.minor_version >=5)THEN
-			ROLLBACK TO SAVEPOINT rif40_sql_test;	
-		END IF;
 		IF error_code_expected IS NULL THEN
 			PERFORM rif40_log_pkg.rif40_error(-71173, 'rif40_sql_test', 
 				'Test case: % FAILED, % errors', 
@@ -724,13 +914,6 @@ PG_EXCEPTION_HINT		the text of the exception's hint message, if any
 PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
  */			
 	WHEN others THEN
---
--- Reverse effects of test. Requires Postgres 9.3.5+ or 9.4
--- 
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71175] ROLLBACK TO SAVEPOINT: %', test_case_title::VARCHAR);
-		IF c4st_rec.major_version >= 9.4 OR (c4st_rec.major_version = 9.3 AND c4st_rec.minor_version >=5) THEN
-			ROLLBACK TO SAVEPOINT rif40_sql_test;	
-		END IF;	
 -- 
 -- Not supported until 9.2
 --
@@ -822,23 +1005,23 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 END;
 $func$ LANGUAGE plpgsql;
 	
-COMMENT ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
-	VARCHAR, BOOLEAN) IS 'Function: 	rif40_sql_test()
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
+	VARCHAR, BOOLEAN, INTEGER) IS 'Function: 	_rif40_sql_test()
 Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
             test case title, result arrays,
-			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
-			NULL means it is expected to NOT raise an exception, raise exception on failure  
+			[negative] error SQLSTATE expected [as part of an exception]; the first 
+			negative number in the message is assumed to be the number; 
+			NULL means it is expected to NOT raise an exception, raise exception on failure,
+			test_id
 Returns:	Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
 Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause
 
-			Used to check test SQL statements and triggers
-			
-All SAVEPOINT/ROLLBACK functionality in PGpsql requires Postgres 9.3.5+ or 9.4';
+			Used to check test SQL statements and triggers';
 	
 --
 -- So can be used to test non rif user access to functions 
 --
-GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY, VARCHAR, BOOLEAN) TO PUBLIC;
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, VARCHAR, BOOLEAN) TO PUBLIC;
 	
 --
 -- Test code generator
