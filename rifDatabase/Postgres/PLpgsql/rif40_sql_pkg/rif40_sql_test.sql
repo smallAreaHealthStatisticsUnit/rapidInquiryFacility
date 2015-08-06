@@ -406,7 +406,7 @@ DECLARE
 	c4st CURSOR FOR
 	 	SELECT version() AS version, 
 		       SUBSTR(version(), 12, 3)::NUMERIC as major_version, 
-		       SUBSTR(version(), 16, position(', ' IN version())-16)::NUMERIC as minor_version;
+		       RTRIM(SUBSTR(version(), 16, 2))::INTEGER as minor_version;
 	c4st_rec	RECORD;
 --
 	f_test_id 	INTEGER;

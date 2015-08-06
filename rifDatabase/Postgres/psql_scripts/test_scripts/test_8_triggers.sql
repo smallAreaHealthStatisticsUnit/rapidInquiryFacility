@@ -82,7 +82,7 @@ DECLARE
 	c4th CURSOR FOR
 	 	SELECT version() AS version, 
 		SUBSTR(version(), 12, 3)::NUMERIC as major_version, 
-		SUBSTR(version(), 16, position(', ' IN version())-16)::NUMERIC as minor_version;	
+		RTRIM(SUBSTR(version(), 16, 2))::INTEGER as minor_version;	
 	c5th CURSOR FOR
 		SELECT *
 		  FROM rif40_test_runs
@@ -369,8 +369,8 @@ EXCEPTION
 			'SQLSTATE: '||v_sqlstate::VARCHAR;
 		IF v_sqlstate = 'P0001' AND v_detail = '-71153' THEN /* rif40_sql_test() pre 9.4 error */
 			RAISE EXCEPTION 'T8--26: test_8_triggers.sql: 1: %', error_message;				
-		ELSIF c4th_rec.major_version < 9.4 THEN
-			RAISE EXCEPTION 'T8--27: test_8_triggers.sql: 1: %', error_message;		
+--		ELSIF c4th_rec IS NOT NULL AND c4th_rec.major_version < 9.4 THEN
+--			RAISE EXCEPTION 'T8--27: test_8_triggers.sql: 1: %', error_message;		
 		ELSE
 			RAISE EXCEPTION 'T8--28: test_8_triggers.sql: 1: %', error_message;
 		END IF;
