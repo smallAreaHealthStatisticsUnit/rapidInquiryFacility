@@ -357,5 +357,26 @@ EXEC sp_addmessage 51105, 16,
 EXEC sp_addmessage 51106, 16, 
 	N'Table name: [rif40].[t_rif40_studies] , T_RIF40_STUDIES study direct standardisation RIF40_TABLES age sex group field column not found: %s';		
 
-   
+EXEC sp_addmessage 51107, 16, 
+	N'View name: [rif40].[rif40_comparison_areas] , Cannot INSERT: User must have rif_user or rif_manager role, NEW.username must be USER or NULL: %s';
+EXEC sp_addmessage 51108, 16, 
+	N'View name: [rif40].[rif40_comparison_areas] , Cannot UPDATE: User is not the owner of the record: %s';
+EXEC sp_addmessage 51109, 16, 
+	N'View name: [rif40].[rif40_comparison_areas] , Cannot DELETE: User is not the owner of the record: %s';
+
+EXEC sp_addmessage 51110, 16, 
+	N'View name: [rif40].[rif40_contextual_stats], Cannot INSERT: User must have rif_user or rif_manager role, NEW.username must be USER or NULL: %s';
+EXEC sp_addmessage 51111, 16, 
+	N'View name: [rif40].[rif40_contextual_stats], Cannot UPDATE: User is not the owner of the record: %s';
+EXEC sp_addmessage 51112, 16, 
+	N'View name: [rif40].[rif40_contextual_stats], Cannot DELETE: User is not the owner of the record: %s';
+
+EXEC sp_addmessage 51113, 16, 
+	N'View name: [rif40].[rif40_fdw_tables], Cannot INSERT: User must have rif_user or rif_manager role, NEW.username must be USER or NULL: %s';
+EXEC sp_addmessage 51114, 16, 
+	N'View name: [rif40].[rif40_fdw_tables], Cannot UPDATE: User is not the owner of the record: %s';
+EXEC sp_addmessage 51115, 16, 
+	N'View name: [rif40].[rif40_fdw_tables], Cannot DELETE: User is not the owner of the record: %s';
+	
+	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';

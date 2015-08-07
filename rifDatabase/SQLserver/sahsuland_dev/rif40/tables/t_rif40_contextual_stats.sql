@@ -17,7 +17,7 @@ CREATE TABLE [rif40].[t_rif40_contextual_stats](
 	[area_id]  [integer] NOT NULL,
 	[area_population] [numeric](38, 6) NULL,
 	[area_observed] [numeric](38, 6) NULL,
-	[total_comparision_population] [numeric](38, 6) NULL,
+	[total_comparison_population] [numeric](38, 6) NULL,
 	[variance_high] [numeric](38, 6) NULL,
 	[variance_low] [numeric](38, 6) NULL,
  CONSTRAINT [t_rif40_contextual_stats_pk] PRIMARY KEY CLUSTERED 
@@ -53,7 +53,7 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Total populati
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Total observed in area', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_contextual_stats', @level2type=N'COLUMN',@level2name=N'area_observed'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Total comparison population. Used for internal calculations.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_contextual_stats', @level2type=N'COLUMN',@level2name=N'total_comparision_population'
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Total comparison population. Used for internal calculations.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_contextual_stats', @level2type=N'COLUMN',@level2name=N'total_comparison_population'
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Variance (observed &gt; 100). Used for internal calculations.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_contextual_stats', @level2type=N'COLUMN',@level2name=N'variance_high'
 GO

@@ -28,7 +28,7 @@ GO
 ------------------------------
 CREATE trigger [rif40].[tr_rif40_tables_checks]
 on [rif40].[rif40_tables]
-FOR insert , update 
+FOR insert , update , delete
 as
 BEGIN 
 --------------------------------------
