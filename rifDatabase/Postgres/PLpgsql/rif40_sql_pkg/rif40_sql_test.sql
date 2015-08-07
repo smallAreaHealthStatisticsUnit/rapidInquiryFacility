@@ -82,14 +82,19 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 	INTEGER, BOOLEAN);	
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN, INTEGER);
-	
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, ANYARRAY,
+
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN);	
+-- Old	
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, ANYARRAY,
+	VARCHAR, BOOLEAN);
+	
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test_dblink_connect(VARCHAR, INTEGER);
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test_dblink_disconnect(VARCHAR);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_log_setup(INTEGER);
 	
-CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_sql_test_register(test_stmt VARCHAR, test_case_title VARCHAR, results ANYARRAY,
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_sql_test_register(test_stmt VARCHAR, test_run_class VARCHAR, 
+	test_case_title VARCHAR, results ANYARRAY,
 	error_code_expected VARCHAR DEFAULT NULL, raise_exception_on_failure BOOLEAN DEFAULT TRUE)
 RETURNS INTEGER
 SECURITY INVOKER
@@ -97,6 +102,7 @@ AS $func$
 /*
 Function: 	_rif40_sql_test_register()
 Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
+			Test run class; usually the name of the SQL script that originally ran it,
             test case title, result arrays,
 			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
 			NULL means it is expected to NOT raise an exception, raise exception on failure  
@@ -105,18 +111,21 @@ Description:Autoregister test case
  */
 DECLARE
 	c3st CURSOR (l_test_stmt 					VARCHAR, 
+				 l_test_run_class				VARCHAR,
 			     l_test_case_title 				VARCHAR, 
 				 l_results 						Text[][], 
 				 l_error_code_expected			VARCHAR, 
 				 l_raise_exception_on_failure 	BOOLEAN) FOR
 		INSERT INTO rif40_test_harness (
 			test_stmt,
+			test_run_class,
 			test_case_title,
 			error_code_expected,
 			raise_exception_on_failure,
 			results,
 			results_xml)
-		SELECT l_test_stmt, l_test_case_title, l_error_code_expected, l_raise_exception_on_failure, l_results, NULL /* l_results::XML */
+		SELECT l_test_stmt, l_test_run_class, l_test_case_title, 
+			   l_error_code_expected, l_raise_exception_on_failure, l_results, NULL /* l_results::XML */
 		 WHERE NOT EXISTS (
 			SELECT a.test_id
 			  FROM rif40_test_harness a
@@ -131,7 +140,7 @@ DECLARE
 --
 	f_test_id 	INTEGER;	
 BEGIN
-	OPEN c3st(test_stmt, test_case_title, results, error_code_expected, raise_exception_on_failure);
+	OPEN c3st(test_stmt, test_run_class, test_case_title, results, error_code_expected, raise_exception_on_failure);
 	FETCH c3st INTO c3st_rec;
 	CLOSE c3st;
 	OPEN c5st(test_case_title);
@@ -165,6 +174,16 @@ BEGIN
 END;
 $func$
 LANGUAGE PLPGSQL;
+
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
+	VARCHAR, BOOLEAN) IS 'Function: 	_rif40_sql_test_register()
+Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement,
+			Test run class; usually the name of the SQL script that originally ran it
+            test case title, result arrays,
+			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
+			NULL means it is expected to NOT raise an exception, raise exception on failure  
+Returns:	Test id
+Description:Autoregister test case';
 
 CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_sql_test_dblink_connect(connection_name VARCHAR, debug_level INTEGER DEFAULT 0)
 RETURNS void
@@ -330,15 +349,6 @@ Parameters:	Connection name
 Returns:	Nothing
 Description:Release dblink() session;';
 GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test_dblink_disconnect(VARCHAR) TO PUBLIC;
-
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, ANYARRAY,
-	VARCHAR, BOOLEAN) IS 'Function: 	_rif40_sql_test_register()
-Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
-            test case title, result arrays,
-			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
-			NULL means it is expected to NOT raise an exception, raise exception on failure  
-Returns:	Test id
-Description:Autoregister test case';
 	
 CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_sql_test(connection_name VARCHAR, test_stmt VARCHAR, test_case_title VARCHAR, results ANYARRAY,
 	error_code_expected VARCHAR DEFAULT NULL, raise_exception_on_failure BOOLEAN DEFAULT TRUE)
@@ -609,7 +619,7 @@ BEGIN
 --
 -- Auto register test case
 --
-	f_test_id:=rif40_sql_pkg._rif40_sql_test_register(test_stmt, test_case_title, results,
+	f_test_id:=rif40_sql_pkg._rif40_sql_test_register(test_stmt, connection_name, test_case_title, results,
 		error_code_expected, raise_exception_on_failure);
 			
 --

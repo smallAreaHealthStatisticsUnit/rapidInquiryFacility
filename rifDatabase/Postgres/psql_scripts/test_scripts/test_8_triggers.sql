@@ -84,10 +84,10 @@ BEGIN
 -- Test parameter
 --
 	IF c2th_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
-		RAISE EXCEPTION 'T1-01: test_8_triggers.sql: No -v debug_level=<debug level> parameter';	
+		RAISE EXCEPTION 'T1-00: test_8_triggers.sql: No -v debug_level=<debug level> parameter';	
 	ELSE
 		debug_level:=LOWER(SUBSTR(c2th_rec.debug_level, 5))::INTEGER;
-		RAISE INFO 'T8--02: test_8_triggers.sql: debug level parameter="%"', debug_level::Text;
+		RAISE INFO 'T8--01: test_8_triggers.sql: debug level parameter="%"', debug_level::Text;
 	END IF;
 	
 --
@@ -145,15 +145,19 @@ DECLARE
 	v_context	VARCHAR;
 	v_detail 	VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN
-	INSERT INTO rif40_test_runs(test_run_title, time_taken, 
-		tests_run, number_passed, number_failed, number_test_cases_registered, number_messages_registered)
-	VALUES ('test_8_triggers.sql', 0, 0, 0, 0, 0, 0);
-	
 --
 -- Create dblink substranction to isolate testing from test run
 --
 	PERFORM rif40_sql_pkg.rif40_sql_test_dblink_connect('test_8_triggers.sql', debug_level);
-	
+--
+	etp:=clock_timestamp();
+	took:=age(etp, stp);
+	RAISE INFO 'T8--02: test_8_triggers.sql: Connection took: %', took;
+--
+	stp:=clock_timestamp();	
+	INSERT INTO rif40_test_runs(test_run_title, time_taken, 
+		tests_run, number_passed, number_failed, number_test_cases_registered, number_messages_registered)
+	VALUES ('test_8_triggers.sql', 0, 0, 0, 0, 0, 0);	
 --
 	IF NOT (rif40_sql_pkg.rif40_sql_test(
 		'test_8_triggers.sql',
@@ -397,6 +401,7 @@ SELECT * FROM rif40_test_runs
 --
 SELECT test_id, error_code_expected, pass, time_taken, raise_exception_on_failure, test_stmt, test_case_title
   FROM rif40_test_harness
+ WHERE test_run_class = 'test_8_triggers.sql'
  ORDER BY test_id;
 
 --

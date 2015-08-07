@@ -159,6 +159,7 @@ COMMENT ON COLUMN rif40_test_runs.number_messages_registered IS 'Number of error
 	
 CREATE TABLE rif40_test_harness (
 	test_id 					INTEGER NOT NULL DEFAULT (nextval('rif40_test_id_seq'::regclass))::integer, 
+	test_run_class				VARCHAR NOT NULL,	
 	test_stmt					VARCHAR NOT NULL,
 	test_case_title				VARCHAR NOT NULL,
 	error_code_expected			VARCHAR DEFAULT NULL,
@@ -181,6 +182,7 @@ GRANT SELECT ON TABLE rif40_test_harness TO rif_user;
 		
 COMMENT ON TABLE rif40_test_harness IS 'Test harness test cases and last run information';		
 COMMENT ON COLUMN rif40_test_harness.test_id IS 'Unique investigation index: test_id. Created by SEQUENCE rif40_test_id_seq';
+COMMENT ON COLUMN rif40_test_harness.test_run_class IS 'Test run class; usually the name of the SQL script that originally ran it';
 COMMENT ON COLUMN rif40_test_harness.test_stmt IS 'SQL statement for test';
 COMMENT ON COLUMN rif40_test_harness.test_case_title IS 'Test case title. Must be unique';
 COMMENT ON COLUMN rif40_test_harness.error_code_expected IS '[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number';
