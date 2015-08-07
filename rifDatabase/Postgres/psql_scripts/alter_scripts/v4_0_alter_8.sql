@@ -217,6 +217,9 @@ ALTER TABLE rif40_tables_and_views
 --
 -- 3. Add to RIF40_TABLES_AND_VIEWS, RIF40_COLUMNS
 --
+DELETE FROM rif40_columns WHERE table_or_view_name_hide IN ('RIF40_TEST_RUNS', 'RIF40_TEST_HARNESS');  
+DELETE FROM rif40_tables_and_views WHERE table_or_view_name_hide IN ('RIF40_TEST_RUNS', 'RIF40_TEST_HARNESS');
+    
 INSERT INTO rif40_tables_and_views (class, table_or_view, comments, table_or_view_name_hide)
 SELECT 'Test harness' AS class, 'TABLE' AS table_or_view, 
        obj_description(b.oid) AS comments, UPPER(b.relname) AS table_or_view_name_hide
