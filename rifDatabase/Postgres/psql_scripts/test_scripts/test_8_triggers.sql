@@ -89,9 +89,6 @@ BEGIN
 		debug_level:=LOWER(SUBSTR(c2th_rec.debug_level, 5))::INTEGER;
 		RAISE INFO 'T8--02: test_8_triggers.sql: debug level parameter="%"', debug_level::Text;
 	END IF;
-	IF debug_level = 0 THEN	
-		debug_level:=1;
-	END IF;
 	
 --
 -- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
@@ -107,6 +104,9 @@ BEGIN
 END;
 $$;	
 
+--
+-- You must commit here or you will get a lock in the dblink() sub transaction!
+--
 END;
 
 --
@@ -168,8 +168,9 @@ BEGIN
 		}'::Text[][]
 		/* Use defaults */)) THEN
         f_errors:=f_errors+1;
+		RAISE WARNING 'T8--03: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 TEST FAILED.';		
 	ELSE
-		RAISE INFO 'T8--10: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 TEST PASSED.';		
+		RAISE INFO 'T8--04: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 TEST PASSED.';		
     END IF;	
 	f_tests_run:=f_tests_run+1;
 	
@@ -190,8 +191,9 @@ BEGIN
 		NULL  /* Expected SQLCODE */, 
 		FALSE /* Do not RAISE EXCEPTION on failure */)) THEN
         f_errors:=f_errors+1;
+		RAISE INFO 'T8--05: test_8_triggers.sql: DELIBERATE FAIL TEST FAILED.';		
 	ELSE
-		RAISE INFO 'T8--12: test_8_triggers.sql: DELIBERATE FAIL TEST PASSED.';
+		RAISE INFO 'T8--06: test_8_triggers.sql: DELIBERATE FAIL TEST PASSED.';
     END IF;	
 	f_tests_run:=f_tests_run+1;
 
@@ -206,8 +208,9 @@ BEGIN
 		'-90125'	 	/* Expected SQLCODE */, 
 		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
         f_errors:=f_errors+1;
+		RAISE INFO 'T8--07: test_8_triggers.sql: rif40_log_pkg.rif40_error() dummy error TEST FAILED.';		
 	ELSE
-		RAISE INFO 'T8--14: test_8_triggers.sql: rif40_log_pkg.rif40_error() dummy error TEST PASSED.';
+		RAISE INFO 'T8--08: test_8_triggers.sql: rif40_log_pkg.rif40_error() dummy error TEST PASSED.';
     END IF;	
 	f_tests_run:=f_tests_run+1;	
 	
@@ -272,8 +275,9 @@ VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST_1'', ''
 		'-20211' 		/* Expected SQLCODE (P0001 - PGpsql raise_exception (from rif40_error) with detail: rif40_error(() code -20211 */, 
 		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
 		f_errors:=f_errors+1;
+		RAISE INFO 'T8--09: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL TEST FAILED.';		
 	ELSE
-		RAISE INFO 'T8--16: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL TEST PASSED.';		
+		RAISE INFO 'T8--10: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL TEST PASSED.';		
     END IF;	
 	f_tests_run:=f_tests_run+1;
 	
@@ -287,9 +291,10 @@ RETURNING 1::Text AS test_value',
 		NULL 			/* Expected SQLCODE */, 
 		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
 		f_errors:=f_errors+1;
+		RAISE INFO 'T8--11: test_8_triggers.sql: TRIGGER TEST #2: rif40_studies.suppression_value IS NULL FAILED.';		
 	ELSE	
 		PERFORM rif40_sql_pkg.rif40_ddl('DELETE FROM rif40_studies WHERE study_name = ''TRIGGER TEST #2''');
-		RAISE INFO 'T8--18: test_8_triggers.sql: TRIGGER TEST #2: rif40_studies.suppression_value IS NULL PASSED.';
+		RAISE INFO 'T8--12: test_8_triggers.sql: TRIGGER TEST #2: rif40_studies.suppression_value IS NULL PASSED.';
     END IF;		
 	f_tests_run:=f_tests_run+1;
 	
@@ -302,9 +307,9 @@ RETURNING 1::Text AS test_value',
 	IF c3th_rec.total_studies > 0 THEN
 		PERFORM rif40_sql_pkg.rif40_method4('SELECT study_id, study_name FROM rif40_studies  WHERE study_name LIKE ''TRIGGER TEST%''', 
 			'Check no TEST TIRGGER studies actually created');
-		RAISE EXCEPTION 'T8--19: test_8_triggers.sql: % TEST TIRGGER studies have been created', c3th_rec.total_studies;
+		RAISE EXCEPTION 'T8--13: test_8_triggers.sql: % TEST TIRGGER studies have been created', c3th_rec.total_studies;
 	ELSE
-		RAISE NOTICE 'T8--20: test_8_triggers.sql: No TEST TIRGGER studies actually created.';		
+		RAISE NOTICE 'T8--14: test_8_triggers.sql: No TEST TIRGGER studies actually created.';		
 	END IF;
 
 	IF NOT (rif40_sql_pkg.rif40_sql_test(
@@ -320,8 +325,9 @@ RETURNING 1::Text AS test_value',
 }'::Text[][]
 			 )) THEN
 			 f_errors:=f_errors+1;
+		RAISE INFO 'T8--15: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 FAILED.';			 
 	ELSE		 
-		RAISE INFO 'T8--22: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 PASSED.';
+		RAISE INFO 'T8--16: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 PASSED.';
 	END IF;	
 	f_tests_run:=f_tests_run+1;
 --
@@ -338,10 +344,10 @@ RETURNING 1::Text AS test_value',
 	FETCH c5th INTO c5th_rec;
 	CLOSE c5th;
 	IF c5th_rec.tests_run != (c5th_rec.number_passed + c5th_rec.number_failed) THEN
-		RAISE WARNING 'T8--23: test_8_triggers.sql: Test harness error: tests_run (%) != number_passed (%) + number_failed (%)', 
+		RAISE EXCEPTION 'T8--17: test_8_triggers.sql: Test harness error: tests_run (%) != number_passed (%) + number_failed (%)', 
 			c5th_rec.tests_run, c5th_rec.number_passed, c5th_rec.number_failed;
 	ELSE
-		RAISE INFO 'T8--24: test_8_triggers.sql: Test harness error: tests_run (%) = number_passed (%) + number_failed (%)', 
+		RAISE INFO 'T8--18: test_8_triggers.sql: Test harness error: tests_run (%) = number_passed (%) + number_failed (%)', 
 			c5th_rec.tests_run, c5th_rec.number_passed, c5th_rec.number_failed;				
 	END IF;
 --
@@ -349,16 +355,16 @@ RETURNING 1::Text AS test_value',
 	
 --	
 	IF f_errors = 0 THEN
-		RAISE NOTICE 'T8--25: test_8_triggers.sql: No test harness errors.';		
+		RAISE NOTICE 'T8--19: test_8_triggers.sql: No test harness errors.';		
 	ELSE
-		RAISE EXCEPTION 'T8--26: test_8_triggers.sql: Test harness errors: %', f_errors;
+		RAISE WARNING 'T8--20: test_8_triggers.sql: Test harness errors: %', f_errors;
 	END IF;
 EXCEPTION
 	WHEN others THEN
 		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 		GET STACKED DIAGNOSTICS v_sqlstate = RETURNED_SQLSTATE;
 		GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
-		error_message:='T8--25: test_8_triggers.sql: Test harness caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||
+		error_message:='T8--21: test_8_triggers.sql: Test harness caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||
 			'Detail: '||v_detail::VARCHAR||E'\n'||
 			'Context: '||v_context::VARCHAR||E'\n'||
 			'SQLSTATE: '||v_sqlstate::VARCHAR;
@@ -366,14 +372,12 @@ EXCEPTION
 			PERFORM rif40_sql_pkg.rif40_sql_test_dblink_disconnect('test_8_triggers.sql');
 		EXCEPTION
 			WHEN others THEN		
-				RAISE WARNING 'rif40_sql_pkg.rif40_sql_test_dblink_disconnect raised: % [IGNORED]', SQLERRM;
+				RAISE WARNING '8--22: rif40_sql_pkg.rif40_sql_test_dblink_disconnect raised: % [IGNORED]', SQLERRM;
 		END;
-		IF v_sqlstate = 'P0001' AND v_detail = '-71153' THEN /* rif40_sql_test() pre 9.4 error */
-			RAISE EXCEPTION 'T8--26: test_8_triggers.sql: 1: %', error_message;				
---		ELSIF c4th_rec IS NOT NULL AND c4th_rec.major_version < 9.4 THEN
---			RAISE EXCEPTION 'T8--27: test_8_triggers.sql: 1: %', error_message;		
+		IF v_sqlstate = 'P0001' AND v_detail = '-71153' THEN
+			RAISE EXCEPTION 'T8--23: test_8_triggers.sql: 1: %', error_message;					
 		ELSE
-			RAISE EXCEPTION 'T8--28: test_8_triggers.sql: 1: %', error_message;
+			RAISE EXCEPTION 'T8--24: test_8_triggers.sql: 1: %', error_message;
 		END IF;
 END;
 $$;
