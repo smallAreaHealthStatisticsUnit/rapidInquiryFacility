@@ -193,7 +193,8 @@ BEGIN
 		,{01,01.015,01.015.016900,01.015.016900.3} 
 		}'::Text[][],
 		NULL  /* Expected SQLCODE */, 
-		FALSE /* Do not RAISE EXCEPTION on failure */)) THEN
+		FALSE /* Do not RAISE EXCEPTION on failure */,
+		FALSE /* Is expected to fail */)) THEN
         f_errors:=f_errors+1;
 		RAISE INFO 'T8--05: test_8_triggers.sql: DELIBERATE FAIL TEST FAILED.';		
 	ELSE
@@ -355,13 +356,15 @@ RETURNING 1::Text AS test_value',
 			c5th_rec.tests_run, c5th_rec.number_passed, c5th_rec.number_failed;				
 	END IF;
 --
+-- Release subtransaction
+--
 	PERFORM rif40_sql_pkg.rif40_sql_test_dblink_disconnect('test_8_triggers.sql');
 	
 --	
 	IF f_errors = 0 THEN
-		RAISE NOTICE 'T8--19: test_8_triggers.sql: No test harness errors.';		
+		RAISE NOTICE 'T8--19: test_8_triggers.sql: No test harness errors; took: %.', took;		
 	ELSE
-		RAISE WARNING 'T8--20: test_8_triggers.sql: Test harness errors: %', f_errors;
+		RAISE WARNING 'T8--20: test_8_triggers.sql: Test harness errors: %; took: %.', f_errors, took;
 	END IF;
 EXCEPTION
 	WHEN others THEN
@@ -396,10 +399,7 @@ SELECT rif40_sql_pkg._rif40_test_sql_template(
 SELECT * FROM rif40_test_runs
  WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
  
---
--- Dump test harness
---
-SELECT test_id, error_code_expected, pass, time_taken, raise_exception_on_failure, test_stmt, test_case_title
+SELECT test_id, error_code_expected, pass, expected_result, time_taken, raise_exception_on_failure, test_stmt, test_case_title
   FROM rif40_test_harness
  WHERE test_run_class = 'test_8_triggers.sql'
  ORDER BY test_id;
@@ -407,7 +407,20 @@ SELECT test_id, error_code_expected, pass, time_taken, raise_exception_on_failur
 --
 -- Re-run trigger test harness
 --
+--\set VERBOSITY verbose
+SELECT rif40_sql_pkg.rif40_test_harness('test_8_triggers.sql'::VARCHAR, 1);
 
+SELECT * FROM rif40_test_runs
+ WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
+ 
+--
+-- Dump test harness
+--
+SELECT test_id, error_code_expected, pass, expected_result, time_taken, raise_exception_on_failure, test_stmt, test_case_title
+  FROM rif40_test_harness
+ WHERE test_run_class = 'test_8_triggers.sql'
+ ORDER BY test_id;
+ 
 --
 -- Rollback to SAVEPOINT
 --

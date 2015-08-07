@@ -164,6 +164,7 @@ CREATE TABLE rif40_test_harness (
 	test_case_title				VARCHAR NOT NULL,
 	error_code_expected			VARCHAR DEFAULT NULL,
 	raise_exception_on_failure 	BOOLEAN NOT NULL DEFAULT TRUE,
+	expected_result			 	BOOLEAN NOT NULL DEFAULT TRUE,
 	register_date				TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT "statement_timestamp"(),
 	results 					Text[][],
 	results_xml 				XML,	
@@ -187,6 +188,7 @@ COMMENT ON COLUMN rif40_test_harness.test_stmt IS 'SQL statement for test';
 COMMENT ON COLUMN rif40_test_harness.test_case_title IS 'Test case title. Must be unique';
 COMMENT ON COLUMN rif40_test_harness.error_code_expected IS '[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number';
 COMMENT ON COLUMN rif40_test_harness.raise_exception_on_failure IS 'Raise exception on failure. NULL means it is expected to NOT raise an exception, raise exception on failure';
+COMMENT ON COLUMN rif40_test_harness.expected_result IS 'Expected result; tests are allowed to deliberately fail!';
 COMMENT ON COLUMN rif40_test_harness.register_date IS 'Date registered';
 COMMENT ON COLUMN rif40_test_harness.results IS 'Results array';
 COMMENT ON COLUMN rif40_test_harness.results_xml IS 'Results array in portable XML';
@@ -259,6 +261,7 @@ SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_n
 -- Load test harness
 --
 \i ../PLpgsql/rif40_sql_pkg/rif40_sql_test.sql
+\i ../PLpgsql/rif40_sql_pkg/rif40_test_harness.sql
 
 --
 -- Testing stop

@@ -69,13 +69,16 @@ $$;
 --
 \i ../PLpgsql/rif40_sql_pkg/_rif40_reduce_dim.sql
 \i ../PLpgsql/rif40_sql_pkg/_rif40_test_sql_template.sql
+\i ../PLpgsql/rif40_sql_pkg/rif40_test_harness.sql
 
 --
 -- Test case 
 --
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
-	VARCHAR, BOOLEAN);	
+	VARCHAR, BOOLEAN, BOOLEAN);	
 -- Old	
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
+	VARCHAR, BOOLEAN);
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN);	
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
@@ -84,18 +87,25 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY
 	VARCHAR, BOOLEAN, INTEGER);
 
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
-	VARCHAR, BOOLEAN);	
+	VARCHAR, BOOLEAN, BOOLEAN);	
 -- Old	
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, ANYARRAY,
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
+	VARCHAR, BOOLEAN);	
+	DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN);
 	
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test_dblink_connect(VARCHAR, INTEGER);
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test_dblink_disconnect(VARCHAR);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_log_setup(INTEGER);
 	
-CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_sql_test_register(test_stmt VARCHAR, test_run_class VARCHAR, 
-	test_case_title VARCHAR, results ANYARRAY,
-	error_code_expected VARCHAR DEFAULT NULL, raise_exception_on_failure BOOLEAN DEFAULT TRUE)
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_sql_test_register(
+	test_stmt 					VARCHAR, 
+	test_run_class 				VARCHAR, 
+	test_case_title 			VARCHAR, 
+	results 					ANYARRAY,
+	error_code_expected 		VARCHAR DEFAULT NULL, 
+	raise_exception_on_failure 	BOOLEAN DEFAULT TRUE, 
+	expected_result 			BOOLEAN DEFAULT TRUE)
 RETURNS INTEGER
 SECURITY INVOKER
 AS $func$
@@ -105,7 +115,9 @@ Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) stat
 			Test run class; usually the name of the SQL script that originally ran it,
             test case title, result arrays,
 			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
-			NULL means it is expected to NOT raise an exception, raise exception on failure  
+			NULL means it is expected to NOT raise an exception, 
+			raise exception on failure,
+			expected result
 Returns:	Test id
 Description:Autoregister test case
  */
@@ -115,7 +127,8 @@ DECLARE
 			     l_test_case_title 				VARCHAR, 
 				 l_results 						Text[][], 
 				 l_error_code_expected			VARCHAR, 
-				 l_raise_exception_on_failure 	BOOLEAN) FOR
+				 l_raise_exception_on_failure 	BOOLEAN,
+				 l_expected_result				BOOLEAN) FOR
 		INSERT INTO rif40_test_harness (
 			test_stmt,
 			test_run_class,
@@ -123,9 +136,10 @@ DECLARE
 			error_code_expected,
 			raise_exception_on_failure,
 			results,
-			results_xml)
+			results_xml,
+			expected_result)
 		SELECT l_test_stmt, l_test_run_class, l_test_case_title, 
-			   l_error_code_expected, l_raise_exception_on_failure, l_results, NULL /* l_results::XML */
+			   l_error_code_expected, l_raise_exception_on_failure, l_results, NULL /* l_results::XML */, l_expected_result
 		 WHERE NOT EXISTS (
 			SELECT a.test_id
 			  FROM rif40_test_harness a
@@ -140,7 +154,7 @@ DECLARE
 --
 	f_test_id 	INTEGER;	
 BEGIN
-	OPEN c3st(test_stmt, test_run_class, test_case_title, results, error_code_expected, raise_exception_on_failure);
+	OPEN c3st(test_stmt, test_run_class, test_case_title, results, error_code_expected, raise_exception_on_failure, expected_result);
 	FETCH c3st INTO c3st_rec;
 	CLOSE c3st;
 	OPEN c5st(test_case_title);
@@ -176,12 +190,14 @@ $func$
 LANGUAGE PLPGSQL;
 
 COMMENT ON FUNCTION rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
-	VARCHAR, BOOLEAN) IS 'Function: 	_rif40_sql_test_register()
+	VARCHAR, BOOLEAN, BOOLEAN) IS 'Function: 	_rif40_sql_test_register()
 Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement,
 			Test run class; usually the name of the SQL script that originally ran it
             test case title, result arrays,
 			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
-			NULL means it is expected to NOT raise an exception, raise exception on failure  
+			NULL means it is expected to NOT raise an exception, 
+			raise exception on failure,
+			expected result  
 Returns:	Test id
 Description:Autoregister test case';
 
@@ -216,6 +232,8 @@ DECLARE
 		  FROM a
 		 WHERE a.connection_name = l_connection_name;
 	d2st_rec RECORD;
+--
+	debug_level_text	VARCHAR;
 BEGIN
 --
 -- Check connection does not exist
@@ -234,17 +252,83 @@ BEGIN
 		'[71155] dblink() subtransaction: % for testing connected to: % as: %', 
 		connection_name::VARCHAR, current_database()::VARCHAR, USER::VARCHAR);		
 --
--- Call rif40_startup()
---
-	OPEN d0st(connection_name);
-	FETCH d0st INTO d0st_rec;
-	CLOSE d0st;
+-- Enable messages - This does not work as the below example illustrates:
+-- 
+
+/*
+SELECT dblink_connect('dblink_trans',
+	'dbname='||current_database()||' user='||USER||' password='||USER||' application_name =''XX''');
+SELECT dblink_exec('dblink_trans', 'SET client_min_messages TO info');
+SELECT a.setting FROM dblink('dblink_trans',
+	'SELECT name||'':''||setting AS setting FROM pg_settings WHERE name IN (''client_min_messages'', ''application_name'', ''log_destination'')') AS a(setting Text);	
+SELECT dblink('dblink_trans','DROP TABLE IF EXISTS xxyy;');
+SELECT dblink_disconnect('dblink_trans');
+
+i.e. there is no NOTICE from:
+
+sahsuland_dev=> DROP TABLE IF EXISTS xxyy;
+NOTICE:  table "xxyy" does not exist, skipping
+DROP TABLE
+
+sahsuland_dev=> SELECT dblink_connect('dblink_trans',
+sahsuland_dev(>         'dbname='||current_database()||' user='||USER||' password='||USER||' application_name =''XX''');
+ dblink_connect
+----------------
+ OK
+(1 row)
+
+
+sahsuland_dev=> SELECT dblink_exec('dblink_trans', 'SET client_min_messages TO info');
+ dblink_exec
+-------------
+ SET
+(1 row)
+
+
+sahsuland_dev=> SELECT a.setting FROM dblink('dblink_trans',
+sahsuland_dev(>         'SELECT name||'':''||setting AS setting FROM pg_settings WHERE name IN (''client_min_messages'', ''application_name'', ''log_destination'')') AS a(setting Text);
+         setting
+--------------------------
+ application_name:XX
+ client_min_messages:info
+ log_destination:stderr
+(3 rows)
+
+
+sahsuland_dev=> SELECT dblink('dblink_trans','DROP TABLE IF EXISTS xxyy;');
+     dblink
+----------------
+ ("DROP TABLE")
+(1 row)
+
+
+sahsuland_dev=> SELECT dblink_disconnect('dblink_trans');
+ dblink_disconnect
+-------------------
+ OK
+(1 row)
+	
+ */
+	PERFORM dblink_exec(connection_name, 'SET application_name = '''||connection_name||'''');
+--	IF debug_level > 0 THEN
+--		debug_level_text:='''DEBUG'||debug_level||'''';
+--		PERFORM dblink_exec(connection_name, 'SET client_min_messages TO '||debug_level_text);
+--	ELSE
+		PERFORM dblink_exec(connection_name, 'SET client_min_messages TO info');
+--	END IF;
 --
 -- Call rif40_sql_pkg._rif40_sql_test_log_setup
 --
 	OPEN d1st(connection_name, debug_level);
 	FETCH d1st INTO d1st_rec;
 	CLOSE d1st;
+	
+--
+-- Call rif40_startup()
+--
+	OPEN d0st(connection_name);
+	FETCH d0st INTO d0st_rec;
+	CLOSE d0st;
 END;
 $func$
 LANGUAGE PLPGSQL;
@@ -268,7 +352,9 @@ Description:Setup debug for test harness. Debug level must be 0 to 4
  */
 DECLARE
 	rif40_pkg_functions 		VARCHAR[] := ARRAY[
-				'rif40_delete_study', 'rif40_ddl', 'rif40_sql_test', '_rif40_sql_test', '_rif40_test_sql_template', '_rif40_sql_test_register', 'rif40_sql_test_dblink_connect', 'rif40_sql_test_dblink_disconnect'];
+				'rif40_delete_study', 'rif40_ddl', 'rif40_sql_test', '_rif40_sql_test', '_rif40_test_sql_template', 
+				'_rif40_sql_test_register', 'rif40_sql_test_dblink_connect', 'rif40_sql_test_dblink_disconnect',
+				'rif40_test_harness', 'rif40_startup'];
 	l_function 			VARCHAR;	
 BEGIN
     PERFORM rif40_log_pkg.rif40_log_setup();
@@ -350,8 +436,14 @@ Returns:	Nothing
 Description:Release dblink() session;';
 GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test_dblink_disconnect(VARCHAR) TO PUBLIC;
 	
-CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_sql_test(connection_name VARCHAR, test_stmt VARCHAR, test_case_title VARCHAR, results ANYARRAY,
-	error_code_expected VARCHAR DEFAULT NULL, raise_exception_on_failure BOOLEAN DEFAULT TRUE)
+CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_sql_test(
+	connection_name 			VARCHAR, 
+	test_stmt 					VARCHAR, 
+	test_case_title 			VARCHAR, 
+	results 					ANYARRAY,
+	error_code_expected 		VARCHAR DEFAULT NULL, 
+	raise_exception_on_failure 	BOOLEAN DEFAULT TRUE, 
+	expected_result 			BOOLEAN DEFAULT TRUE)
 RETURNS boolean
 SECURITY INVOKER
 AS $func$
@@ -359,9 +451,12 @@ AS $func$
 Function: 	rif40_sql_test()
 Parameters:	Connection name,
 			SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
-            test case title, result arrays,
+            test case title, 
+			result arrays,
 			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
-			NULL means it is expected to NOT raise an exception, raise exception on failure  
+			NULL means it is expected to NOT raise an exception, 
+			raise exception on failure,
+			expected result [has NO effect on the return code; for test harness] 
 Returns:	Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
 Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause
 
@@ -620,7 +715,7 @@ BEGIN
 -- Auto register test case
 --
 	f_test_id:=rif40_sql_pkg._rif40_sql_test_register(test_stmt, connection_name, test_case_title, results,
-		error_code_expected, raise_exception_on_failure);
+		error_code_expected, raise_exception_on_failure, expected_result);
 			
 --
 -- Do test; reversing effects
@@ -713,16 +808,24 @@ END;
 $func$ LANGUAGE plpgsql;
 			
 COMMENT ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
-	VARCHAR, BOOLEAN) IS 'Function: 	rif40_sql_test()
+	VARCHAR, BOOLEAN, BOOLEAN) IS 'Function: 	rif40_sql_test()
 Parameters:	Connection name.
 			SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
-            test case title, result arrays,
+            test case title, 
+			result arrays,
 			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
-			NULL means it is expected to NOT raise an exception, raise exception on failure  
+			NULL means it is expected to NOT raise an exception, 
+			raise exception on failure,
+			expected result [has NO effect on the return code; for test harness]   
 Returns:	Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
 Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause
 
 			Used to check test SQL statements and triggers';
+--
+-- So can be used to test non rif user access to functions 
+--
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, VARCHAR, BOOLEAN, BOOLEAN) TO PUBLIC;
+
 			
 CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_sql_test(test_stmt VARCHAR, test_case_title VARCHAR, results ANYARRAY,
 	error_code_expected VARCHAR, raise_exception_on_failure BOOLEAN, f_test_id INTEGER)
@@ -1068,11 +1171,6 @@ Returns:	Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
 Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause
 
 			Used to check test SQL statements and triggers';
-	
---
--- So can be used to test non rif user access to functions 
---
-GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, VARCHAR, BOOLEAN) TO PUBLIC;
 	
 --
 -- Test code generator

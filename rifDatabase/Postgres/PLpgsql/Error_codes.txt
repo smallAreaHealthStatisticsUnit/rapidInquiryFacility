@@ -55,3 +55,4 @@ rif40_table_diff:									71000 to 71049
 _rif40_common_partition_create_setup:				71050 to 71099
 _rif40_test_sql_template:							71100 to 71149
 rif40_sql_test:										71150 to 71199
+rif40_test_harness:									71200 to 71249
