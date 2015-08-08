@@ -378,5 +378,12 @@ EXEC sp_addmessage 51114, 16,
 EXEC sp_addmessage 51115, 16, 
 	N'View name: [rif40].[rif40_fdw_tables], Cannot DELETE: User is not the owner of the record: %s';
 	
+EXEC sp_addmessage 51116, 16, 
+	N'View name: [rif40].[rif40_inv_conditions], Cannot INSERT: User must have rif_user or rif_manager role, NEW.username must be USER or NULL: %s';
+EXEC sp_addmessage 51117, 16, 
+	N'View name: [rif40].[rif40_inv_conditions], Cannot UPDATE: User is not the owner of the record: %s';
+EXEC sp_addmessage 51118, 16, 
+	N'View name: [rif40].[rif40_inv_conditions], Cannot DELETE: User is not the owner of the record	: %s';
+	
 	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';

@@ -44,8 +44,7 @@ BEGIN
 		select username, table_name, create_status
 		from inserted
 		where (username != SUSER_SNAME() and username is not null)
-		OR (username != 'rif40'
-		AND [rif40].[rif40_has_role](username,'rif_user') = 0
+		OR ([rif40].[rif40_has_role](username,'rif_user') = 0
 		AND [rif40].[rif40_has_role](username,'rif_manager') = 0)
 		FOR XML PATH('')
 	);

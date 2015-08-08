@@ -44,8 +44,7 @@ BEGIN
 		select username, study_id, area_id
 		from inserted
 		where (username != SUSER_SNAME() and username is not null)
-		or ( username != 'rif40'
-		AND [rif40].[rif40_has_role](username,'rif_user') = 0
+		or ([rif40].[rif40_has_role](username,'rif_user') = 0
 		AND [rif40].[rif40_has_role](username,'rif_manager') = 0)
 		FOR XML PATH('')
 	);
