@@ -2,3 +2,8 @@ sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_comparison
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_contextual_stats_trigger.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_fdw_tables_trigger.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_inv_conditions_trigger.sql
+sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_inv_covariates_trigger.sql
+sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_investigations_trigger.sql
+sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_parameters_trigger.sql
+sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_results_trigger.sql
+sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_studies_trigger.sql

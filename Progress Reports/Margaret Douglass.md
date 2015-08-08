@@ -7,6 +7,9 @@ Principal Work Area: **Microsoft SQL server database port**
 ###August
 I will finish the view triggers this month and please hopefully test.
 
+######8 August
+* More work on view triggers.  I finished the rif40_inv_conditions, rif40_inv_coviarates, rif40_investigations, rif40_parameters, rif40_results, rif40_studies triggers.
+
 ######7 August
 * Started on view triggers.  I finished the rif40_comparison_areas, rif40_contextual_stats, rif40_fdw_tables triggers.
 * I fixed the typo in the t_rif40_contextual_stats table where "total_comparison_population" was spelled "total_comparisIon_population" and updated the view code.  (typo still in Postgres version so this may cause later confusion)

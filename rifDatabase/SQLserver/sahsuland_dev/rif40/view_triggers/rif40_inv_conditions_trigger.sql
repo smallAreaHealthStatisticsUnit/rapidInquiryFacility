@@ -73,7 +73,7 @@ BEGIN
 	SELECT
 				isnull(username,SUSER_SNAME()),
 				isnull(study_id,[rif40].[rif40_sequence_current_value]('rif40_study_id_seq')),
-				isnull(study_id,[rif40].[rif40_sequence_current_value]('rif40_inv_id_seq')),
+				isnull(inv_id,[rif40].[rif40_sequence_current_value]('rif40_inv_id_seq')),
 				isnull(line_number,1),
 				outcome_group_name, 
 				min_condition, 
