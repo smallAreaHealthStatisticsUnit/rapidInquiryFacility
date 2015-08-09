@@ -74,6 +74,12 @@ Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) stat
 Returns:	PL/pgsql template code 
 Description: Generate PL/pgsql template code, e.g.
 
+
+Add support for XML:
+
+SELECT * FROM query_to_xml('SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4', 
+true /- nulls -/, true /- tableforest -/, ''::Text /- Namespace -/);
+
 SELECT rif40_sql_pkg._rif40_test_sql_template(
 	'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
 	'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200') AS template;
