@@ -7,3 +7,7 @@ sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_investigat
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_parameters_trigger.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_results_trigger.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_studies_trigger.sql
+sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_study_areas_trigger.sql
+sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_study_sql_trigger.sql
+sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_study_sql_log_trigger.sql
+sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\view_triggers\rif40_user_projects_trigger.sql

@@ -7,6 +7,10 @@ Principal Work Area: **Microsoft SQL server database port**
 ###August
 I will finish the view triggers this month and please hopefully test.
 
+######10 August
+* Continuing view trigger work.  I finished rif40_study_areas, rif40_study_sql, rif40_study_sql, rif40_user_projects triggers.
+* And that's it.  View triggers are completed.  (Wow, they were so much easier than table triggers.)  Now to figure out how to test everything sanely.
+
 ######8 August
 * More work on view triggers.  I finished the rif40_inv_conditions, rif40_inv_coviarates, rif40_investigations, rif40_parameters, rif40_results, rif40_studies triggers.
 

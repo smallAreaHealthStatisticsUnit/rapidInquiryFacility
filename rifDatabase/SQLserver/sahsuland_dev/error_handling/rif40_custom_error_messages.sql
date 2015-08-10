@@ -419,5 +419,33 @@ EXEC sp_addmessage 51132, 16,
 	N'View name: [rif40].[rif40_studies], Cannot UPDATE: User is not the owner of the record: %s';
 EXEC sp_addmessage 51133, 16, 
 	N'View name: [rif40].[rif40_studies], Cannot DELETE: User is not the owner of the record: %s';	
+
+EXEC sp_addmessage 51134, 16, 
+	N'View name: [rif40].[rif40_study_areas], Cannot INSERT: User must have rif_user or rif_manager role, NEW.username must be USER or NULL: %s';
+EXEC sp_addmessage 51135, 16, 
+	N'View name: [rif40].[rif40_study_areas], Cannot UPDATE: User is not the owner of the record: %s';
+EXEC sp_addmessage 51136, 16, 
+	N'View name: [rif40].[rif40_study_areas], Cannot DELETE: User is not the owner of the record: %s';	
+
+EXEC sp_addmessage 51137, 16, 
+	N'View name: [rif40].[rif40_study_sql], Cannot INSERT: User must have rif_user or rif_manager role, NEW.username must be USER or NULL: %s';
+EXEC sp_addmessage 51138, 16, 
+	N'View name: [rif40].[rif40_study_sql], Cannot UPDATE: User is not the owner of the record: %s';
+EXEC sp_addmessage 51139, 16, 
+	N'View name: [rif40].[rif40_study_sql], Cannot DELETE: User is not the owner of the record: %s';	
+	
+EXEC sp_addmessage 51140, 16, 
+	N'View name: [rif40].[rif40_study_sql_log], Cannot INSERT: User must have rif_user or rif_manager role, NEW.username must be USER or NULL: %s';
+EXEC sp_addmessage 51141, 16, 
+	N'View name: [rif40].[rif40_study_sql_log], Cannot UPDATE: User is not the owner of the record: %s';
+EXEC sp_addmessage 51142, 16, 
+	N'View name: [rif40].[rif40_study_sql_log], Cannot DELETE: User is not the owner of the record: %s';	
+
+EXEC sp_addmessage 51143, 16, 
+	N'View name: [rif40].[rif40_user_projects], Cannot INSERT: User must have rif_user or rif_manager role, NEW.username must be USER or NULL: %s';
+EXEC sp_addmessage 51144, 16, 
+	N'View name: [rif40].[rif40_user_projects], Cannot UPDATE: User is not the owner of the record: %s';
+EXEC sp_addmessage 51145, 16, 
+	N'View name: [rif40].[rif40_user_projects], Cannot DELETE: User is not the owner of the record: %s';	
 	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';

@@ -4,13 +4,13 @@ GO
 IF EXISTS (SELECT *  FROM sys.triggers tr
 INNER JOIN sys.tables t ON tr.parent_id = t.object_id
 WHERE t.schema_id = SCHEMA_ID(N'rif40') 
-and tr.name=N'tr_rif40_study_sql')
+and tr.name=N'tr_t_rif40_study_sql')
 BEGIN
-	DROP TRIGGER [rif40].[tr_rif40_study_sql]
+	DROP TRIGGER [rif40].[tr_t_rif40_study_sql]
 END
 GO
 
-Create trigger [tr_rif40_study_sql]
+Create trigger [tr_t_rif40_study_sql]
 on [rif40].[t_rif40_study_sql]
 for insert, update , delete
 as
