@@ -1,10 +1,10 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
@@ -97,9 +97,25 @@ public final class PublishWorkflowManager
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 	
+		System.out.println("publishConfiguration 1");
 		//validate parameters
 		dataSetConfiguration.checkErrors();
 			
+		String coreDataSetName
+			= dataSetConfiguration.getName();
+		String checkTableName
+			= RIFTemporaryTablePrefixes.CHECK.getTableName(coreDataSetName);
+
+		//Determine the prefix of the final destination table
+		RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
+		String publishTableName
+			= rifSchemaArea.getPublishedTableName(coreDataSetName);
+		renameTable(
+			connection, 
+			logFileWriter, 
+			checkTableName, 
+			publishTableName);
+		
 		updateLastCompletedWorkState(
 			connection,
 			logFileWriter,

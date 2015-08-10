@@ -11,16 +11,14 @@ import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 
-
-
-
-
-
+import java.io.File;
+import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Properties;
+import java.util.PropertyResourceBundle;
+
 
 
 /**
@@ -139,14 +137,22 @@ public class SampleRIFDatabaseCreationManager {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void createDatabase(
-		final String userID,
-		final String password)
+	public void setup()
 		throws RIFServiceException {
 		
 		PreparedStatement statement = null;
 		Connection connection = null;
 		try {
+			
+			File userLoginDetailsFile = new File("C://rif_scripts//db//RIFDatabaseProperties.txt");
+			FileReader fileReader = new FileReader(userLoginDetailsFile);
+			PropertyResourceBundle userLoginResourceBundle
+				= new PropertyResourceBundle(fileReader);
+			
+			String userID = (String) userLoginResourceBundle.getObject("userID");
+			String password = (String) userLoginResourceBundle.getObject("password");
+			
+			
 			StringBuilder urlText = new StringBuilder();
 			urlText.append(startupOptions.getJDBCDriverPrefix());
 			urlText.append(":");
@@ -181,10 +187,11 @@ public class SampleRIFDatabaseCreationManager {
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.executeUpdate();
 			System.out.println("About to create database 2...");
+			createDatabaseTables(userID, password);
 		}
-		catch(Exception sqlException) {
+		catch(Exception exception) {
 			System.out.println("About to create database 3...");			
-			sqlException.printStackTrace(System.out);
+			exception.printStackTrace(System.out);
 			String errorMessage	
 				= RIFDataLoaderToolMessages.getMessage(
 					"sampleRIFDatabaseCreationManager.error.unableToInitialiseDatabase");
@@ -219,6 +226,7 @@ public class SampleRIFDatabaseCreationManager {
 			urlText.append("/");
 			urlText.append(startupOptions.getDatabaseName());
 			String databaseURL = urlText.toString();			
+			
 			
 			connection
 				= DriverManager.getConnection(databaseURL, userID, password);

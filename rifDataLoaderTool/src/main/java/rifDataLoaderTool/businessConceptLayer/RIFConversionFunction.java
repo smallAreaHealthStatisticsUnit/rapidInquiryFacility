@@ -140,7 +140,7 @@ public class RIFConversionFunction {
 			AbstractRIFDataType originalDataType
 				= originalParamatersFromNames.get(originalKey);
 			AbstractRIFDataType cloneDataType
-				= rifDataTypeFactory.getDataType(originalDataType.getIdentifier());
+				= rifDataTypeFactory.getDataTypeFromCode(originalDataType.getIdentifier());
 			cloneParamatersFromNames.put(originalKey, cloneDataType);
 		}
 		cloneFunction.setDataTypesFromFormalParameterNames(cloneParamatersFromNames);

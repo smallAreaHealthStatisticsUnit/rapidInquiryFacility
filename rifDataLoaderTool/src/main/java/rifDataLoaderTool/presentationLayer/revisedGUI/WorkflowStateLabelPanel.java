@@ -1,4 +1,13 @@
-package rifGenericLibrary.system;
+package rifDataLoaderTool.presentationLayer.revisedGUI;
+
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+
+
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import java.awt.Color;
+import java.awt.BorderLayout;
 
 /**
  *
@@ -50,11 +59,54 @@ package rifGenericLibrary.system;
  *
  */
 
-public enum RIFGenericLibraryError {
-	SECURITY_VIOLATION,
-	DB_UNABLE_TO_CLOSE_CONNECTIONS,
-	DB_UNABLE_CLOSE_RESOURCE,
-	DB_UNABLE_TO_ROLLBACK,
-	DATABASE_QUERY_FAILED, //@TODO Purge this code from RIFServicesError
-	DUPLICATE_LIST_ITEM_NAME
+public class WorkflowStateLabelPanel 
+	extends JPanel {
+
+	// ==========================================
+	// Section Constants
+	// ==========================================
+	
+	// ==========================================
+	// Section Properties
+	// ==========================================
+
+	// ==========================================
+	// Section Construction
+	// ==========================================
+
+	public WorkflowStateLabelPanel(
+		final UserInterfaceFactory userInterfaceFactory,
+		final String stateLabel,
+		final String toolTip,
+		final Color backgroundColour) {
+
+		setLayout(new BorderLayout());
+		setBackground(backgroundColour);
+
+		JLabel label
+			= userInterfaceFactory.createHTMLLabel(3, stateLabel);
+		if (toolTip != null) {
+			label.setToolTipText(toolTip);
+		}
+		add(label, BorderLayout.WEST);
+	}
+
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
+	// ==========================================
+	// Section Interfaces
+	// ==========================================
+
+	// ==========================================
+	// Section Override
+	// ==========================================
+
 }
+
+

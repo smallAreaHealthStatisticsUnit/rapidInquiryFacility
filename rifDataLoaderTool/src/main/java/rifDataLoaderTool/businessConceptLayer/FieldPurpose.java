@@ -56,16 +56,16 @@ import java.text.Collator;
 public enum FieldPurpose {
 	COVARIATE(
 		"covariate", 
-		"fieldPurpose.covariate"), 
+		"fieldPurpose.covariate.label"), 
 	GEOGRAPHICAL_RESOLUTION(
 		"geographical_resolution", 
-		"fieldPurpose.geograpicalResolution"), 
+		"fieldPurpose.geograpicalResolution.label"), 
 	HEALTH_CODE(
 		"health_code",
-		"fieldPurpose.healthCode"),
+		"fieldPurpose.healthCode.label"),
 	OTHER(
 		"other",
-		"fieldPurpose.other");
+		"fieldPurpose.other.label");
 	
 	private String code;
 	private String propertyName;
@@ -88,7 +88,7 @@ public enum FieldPurpose {
 		return name;
 	}
 	
-	public static FieldPurpose getValueFromName(
+	public static FieldPurpose getValueFromCode(
 		final String code) {
 		
 		Collator collator = RIFDataLoaderToolMessages.getCollator();
@@ -109,6 +109,42 @@ public enum FieldPurpose {
 			return null;
 		}		
 	}
+	
+	public static String[] getNames() {
+		String[] results = new String[4];
+		results[0] = COVARIATE.getName();
+		results[1] = GEOGRAPHICAL_RESOLUTION.getName();
+		results[2] = HEALTH_CODE.getName();
+		results[3] = OTHER.getName();
+		
+		return results;
+	}
+	
+	
+	public static FieldPurpose getFieldPurposeFromName(final String name) {
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		if (collator.equals(COVARIATE.getName(), name)) {
+			return COVARIATE;
+		}
+		else if (collator.equals(GEOGRAPHICAL_RESOLUTION.getName(), name)) {
+			return GEOGRAPHICAL_RESOLUTION;
+		}
+		else if (collator.equals(GEOGRAPHICAL_RESOLUTION.getName(), name)) {
+			return GEOGRAPHICAL_RESOLUTION;
+		}
+		else if (collator.equals(HEALTH_CODE.getName(), name)) {
+			return HEALTH_CODE;
+		}
+		else if (collator.equals(OTHER.getName(), name)) {
+			return OTHER;
+		}		
+		else {
+			assert false;
+			return null;
+		}
+
+	}
+	
 	
 }
 

@@ -13,6 +13,8 @@ import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 
+import java.io.File;
+import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -20,6 +22,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Properties;
+import java.util.PropertyResourceBundle;
 
 /**
  * Responsible for managing a pool of connections for each registered user.  Connections will
@@ -173,12 +176,21 @@ public final class SQLConnectionManager {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void initialiseConnectionQueue(
-		final String userID,
-		final String password)
+	public void initialiseConnectionQueue()
 		throws RIFServiceException {
 		
 		try {		
+			
+			File userLoginDetailsFile = new File("C://rif_scripts//db//RIFDatabaseProperties.txt");
+			FileReader fileReader = new FileReader(userLoginDetailsFile);
+			PropertyResourceBundle userLoginResourceBundle
+				= new PropertyResourceBundle(fileReader);
+			
+			String userID = (String) userLoginResourceBundle.getObject("userID");
+			String password = (String) userLoginResourceBundle.getObject("password");
+			
+			
+			
 			//Establish read-only connections
 			for (int i = 0; i < MAXIMUM_DATA_LOADER_CONNECTIONS; i++) {
 				Connection currentConnection
@@ -189,7 +201,7 @@ public final class SQLConnectionManager {
 				writeConnections.addConnection(currentConnection);
 			}
 		}
-		catch(SQLException sqlException) {
+		catch(Exception sqlException) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"sqlConnectionManager.error.unableToCreateConnections");

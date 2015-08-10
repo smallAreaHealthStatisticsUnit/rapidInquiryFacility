@@ -1,6 +1,9 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.dataStorageLayer;
 
-import java.util.ArrayList;
+import rifDataLoaderTool.businessConceptLayer.*;
+
+import rifGenericLibrary.presentationLayer.HTMLUtility;
+import java.sql.*;
 
 /**
  *
@@ -52,7 +55,7 @@ import java.util.ArrayList;
  *
  */
 
-public abstract class AbstractRIFWorkflow {
+public class ReportsManager {
 
 	// ==========================================
 	// Section Constants
@@ -61,103 +64,46 @@ public abstract class AbstractRIFWorkflow {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private WorkflowStateMachine workflowStateMachine;
-	private ArrayList<DataSetConfiguration> dataSetConfigurations;
-	private WorkflowState startWorkflowState;
-	private WorkflowState stopWorkflowState;
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public AbstractRIFWorkflow() {
-		dataSetConfigurations = new ArrayList<DataSetConfiguration>();
+	public ReportsManager() {
+
 	}
 
-	abstract public void initialise();
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
-	public void replaceDataSetConfiguration(
-		final DataSetConfiguration originalDataSetConfiguration,
-		final DataSetConfiguration revisedDataSetConfiguration) {
-		
-		int index
-			= dataSetConfigurations.indexOf(originalDataSetConfiguration);
-		if (index != -1) {
-			dataSetConfigurations.set(index, revisedDataSetConfiguration);
-		}	
-		else {
-			System.out.println("AbstractWorkflow wasn't able to find original item");
-		}
-	}
-	
-	
-	public void setStateMachine(
-		final WorkflowStateMachine workflowStateMachine) {
-		
-		this.workflowStateMachine = workflowStateMachine;
-	}
-	
-	public ArrayList<DataSetConfiguration> getDataSetConfigurations() {
-		return dataSetConfigurations;
-	}
-	
-	public void addDataSetConfiguration(
+	public String generateHTMLReport(
+		final Connection connection,
 		final DataSetConfiguration dataSetConfiguration) {
 		
-		dataSetConfigurations.add(dataSetConfiguration);
-	}
+		HTMLUtility htmlUtility = new HTMLUtility();
 
-	public void setDataSetConfigurations(
-		final ArrayList<DataSetConfiguration> dataSetConfigurations) {
+		/**
+		 * Write report header including the name and description
+		 * of the data set configuration
+		 */
+		//writeReportHeader(htmlUtility, dataSetConfiguration);
 		
-		this.dataSetConfigurations = dataSetConfigurations;
-	}
+		/**
+		 * Count the number of records which were processed
+		 * the number which were considered duplicates
+		 * the number which were cleaned
+		 */
+		//writeProcessingSummary(htmlUtility, dataSetConfiguration);
 		
-	public WorkflowState getStartWorkflowState() {
-		return startWorkflowState;
-	}
-	
-	public void setStartWorkflowState(
-		final WorkflowState startWorkflowState) {
-
-		this.startWorkflowState = startWorkflowState;
-	}
-	
-	public WorkflowState getStopWorkflowState() {
-		return stopWorkflowState;
-	}
-
-	public void setStopWorkflowState(
-		final WorkflowState stopWorkflowState) {
-
-		this.stopWorkflowState = stopWorkflowState;
-	}
-	
-	public void resetWorkflow() {
-		workflowStateMachine.first();
-	}
-	
-	public WorkflowState getCurrentWorkflowState() {
-		return workflowStateMachine.getCurrentWorkflowState();
-	}
-
-	public boolean next() {
-		workflowStateMachine.next();	
+		/*
+		 * 
+		 */
 		
-		WorkflowState currentWorkflowState
-			= getCurrentWorkflowState();
-		if (currentWorkflowState == WorkflowState.STOP ||
-			(currentWorkflowState.getStateSequenceNumber() > stopWorkflowState.getStateSequenceNumber())) {
-			return false;
-		}
-		else {
-			return true;
-		}
+		
+		
+		return htmlUtility.getHTML();
 	}
+	
 	
 	// ==========================================
 	// Section Errors and Validation

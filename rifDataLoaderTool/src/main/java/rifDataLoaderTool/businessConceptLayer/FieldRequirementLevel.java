@@ -86,7 +86,18 @@ public enum FieldRequirementLevel {
 		return name;
 	}	
 	
-	public static FieldRequirementLevel getValueFromName(
+	public static String[] getNames() {
+		String[] names = new String[3];
+		names[0] = REQUIRED_BY_RIF.getName();
+		names[1] = EXTRA_FIELD.getName();
+		names[2] = IGNORE_FIELD.getName();
+		
+		return names;
+		
+	}
+	
+	
+	public static FieldRequirementLevel getValueFromCode(
 		final String code) {
 		
 		Collator collator = RIFDataLoaderToolMessages.getCollator();
@@ -104,6 +115,26 @@ public enum FieldRequirementLevel {
 			return null;
 		}		
 	}	
+
+	public static FieldRequirementLevel getValueFromName(
+		final String name) {
+			
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		if (collator.equals(name, REQUIRED_BY_RIF.getName()) == true) {
+			return REQUIRED_BY_RIF;
+		}
+		else if (collator.equals(name, EXTRA_FIELD.getName()) == true) {
+			return EXTRA_FIELD;
+		}
+		else if (collator.equals(name, IGNORE_FIELD.getName()) == true) {
+			return IGNORE_FIELD;
+		}
+		else {
+			assert false;
+			return null;
+		}		
+	}	
+	
 	
 }
 

@@ -230,6 +230,7 @@ public final class ChangeAuditManager
 			statement.executeUpdate();
 		}
 		catch(SQLException sqlException) {
+			sqlException.printStackTrace(System.out);
 			logSQLException(
 				logFileWriter,
 				sqlException);

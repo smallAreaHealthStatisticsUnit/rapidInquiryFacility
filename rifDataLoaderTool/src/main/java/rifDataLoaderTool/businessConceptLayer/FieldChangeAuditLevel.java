@@ -64,7 +64,7 @@ public enum FieldChangeAuditLevel {
 		"fieldChangeAuditLevel.includeFieldNameOnly.label"),
 	INCLUDE_FIELD_CHANGE_DESCRIPTION(
 		"include_field_change_description",
-		"ifeldChangeAuditLevel.includeFieldChangeDescription.label");
+		"fieldChangeAuditLevel.includeFieldChangeDescription.label");
 	
 	private String code;
 	private String propertyName;
@@ -87,7 +87,46 @@ public enum FieldChangeAuditLevel {
 		return name;
 	}	
 	
+	public static String[] getNames() {
+		String[] names = new String[3];
+		names[0] = NONE.getName();
+		names[1] = INCLUDE_FIELD_NAME_ONLY.getName();
+		names[2] = INCLUDE_FIELD_CHANGE_DESCRIPTION.getName();
+		
+		return names;
+	}
+
+	
 	public static FieldChangeAuditLevel getValueFromName(
+		final String code) {
+		
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		if (collator.equals(
+			code, 
+			NONE.getName()) == true) {
+
+			return NONE;
+		}
+		else if (collator.equals(
+			code, 
+			INCLUDE_FIELD_NAME_ONLY.getName()) == true) {
+
+			return INCLUDE_FIELD_NAME_ONLY;
+		}
+		else if (collator.equals(
+			code, 
+			INCLUDE_FIELD_CHANGE_DESCRIPTION.getName()) == true) {
+
+			return INCLUDE_FIELD_CHANGE_DESCRIPTION;
+		}
+		else {
+			assert false;
+			return null;
+		}		
+	}	
+	
+	
+	public static FieldChangeAuditLevel getValueFromCode(
 		final String code) {
 		
 		Collator collator = RIFDataLoaderToolMessages.getCollator();

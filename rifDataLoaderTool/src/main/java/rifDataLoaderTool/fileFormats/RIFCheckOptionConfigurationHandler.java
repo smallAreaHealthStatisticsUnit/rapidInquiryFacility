@@ -101,7 +101,7 @@ public final class RIFCheckOptionConfigurationHandler
 
 		for (RIFCheckOption checkOption : checkOptions) {
 			xmlUtility.writeRecordStartTag(getSingularRecordName());
-			xmlUtility.writeValue(checkOption.getName());
+			xmlUtility.writeValue(checkOption.getCode());
 			xmlUtility.writeRecordEndTag(getSingularRecordName());
 		}
 		xmlUtility.writeRecordEndTag(getPluralRecordName());
@@ -119,6 +119,7 @@ public final class RIFCheckOptionConfigurationHandler
 		
 		if (isPluralRecordName(qualifiedName)) {
 			activate();
+			checkOptions = new ArrayList<RIFCheckOption>();
 		}
 
 	}
@@ -136,7 +137,7 @@ public final class RIFCheckOptionConfigurationHandler
 			String checkOptionName
 				= getCurrentFieldValue();
 			RIFCheckOption rifCheckOption
-				= RIFCheckOption.valueOf(checkOptionName);
+				= RIFCheckOption.getOptionFromCode(checkOptionName);
 			checkOptions.add(rifCheckOption);
 		}
 	}

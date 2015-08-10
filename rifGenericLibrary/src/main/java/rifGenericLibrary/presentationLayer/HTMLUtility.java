@@ -281,6 +281,16 @@ public final class HTMLUtility {
 	}
 	
 	/**
+	 * Insert line space.
+	 */
+	public void insertLineBreak() {
+
+		printStream.print("<br>");
+		printStream.flush();
+	}
+		
+	
+	/**
 	 * Write paragraph.
 	 *
 	 * @param text the text

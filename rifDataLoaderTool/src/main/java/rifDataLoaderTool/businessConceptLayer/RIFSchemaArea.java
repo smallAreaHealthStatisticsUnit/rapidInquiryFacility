@@ -61,35 +61,45 @@ public enum RIFSchemaArea {
 	
 	COVARIATE_DATA(
 		"rifSchemaArea.covariateData.label", 
-		"covariate_data"),
+		"covariate_data",
+		"covar_"),
 	HEALTH_CODE_DATA(
 		"rifSchemaArea.healthCodeData.label", 
-		"health_code_data"),
+		"health_code_data",
+		"tax_"),
 	HEALTH_THEMES(
 		"rifSchemaArea.healthThemes.label", 
-		"health_themes"),
+		"health_themes",
+		"thm_"),
 	HEALTH_NUMERATOR_DATA(
 		"rifSchemaArea.healthNumeratorData.label", 
-		"health_numerator_data"),
+		"health_numerator_data",
+		"num_"),
 	POPULATION_DENOMINATOR_DATA(
 		"rifSchemaArea.populationDenominatorData.label", 
-		"population_denominator_data"),
+		"population_denominator_data",
+		"pop_"),
 	GEOMETRY_DATA(
 		"rifSchemaArea.geometryData.label", 
-		"geometry_data"),
+		"geometry_data",
+		"geom_"),
 	CONTEXTUAL_MAP_DATA(
 		"rifSchemaArea.contextualMapData.label", 
-		"contextual_map_data");
+		"contextual_map_data",
+		"cont_geom_");
 		
 	private String propertyName;
 	private String code;
+	private String tablePrefix;
 	
 	RIFSchemaArea(
 		final String propertyName,
-		final String code) {
+		final String code,
+		final String tablePrefix) {
 		
 		this.propertyName = propertyName;
 		this.code = code;
+		this.tablePrefix = tablePrefix;
 	}
 	
 	public String getName() {
@@ -98,6 +108,13 @@ public enum RIFSchemaArea {
 	
 	public String getCode() {
 		return code;
+	}
+	
+	public String getPublishedTableName(final String coreDataSetName) {
+		StringBuilder buffer = new StringBuilder();
+		buffer.append(tablePrefix);
+		buffer.append(coreDataSetName);
+		return buffer.toString();
 	}
 	
 	public boolean matches(final String candidateCode) {

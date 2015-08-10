@@ -315,6 +315,7 @@ public final class DataSetManager
 			return result;
 		}
 		catch(SQLException sqlException) {
+			sqlException.printStackTrace(System.out);
 			logSQLException(
 				logFileWriter,
 				sqlException);

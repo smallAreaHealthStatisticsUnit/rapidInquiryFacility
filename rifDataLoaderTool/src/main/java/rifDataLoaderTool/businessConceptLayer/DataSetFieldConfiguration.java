@@ -11,7 +11,6 @@ import rifServices.util.FieldValidationUtility;
 import java.util.ArrayList;
 
 
-
 /**
  * One of the major business classes that describes properties of columns in 
  * an imported data set, which is represented by the 
@@ -82,6 +81,8 @@ public class DataSetFieldConfiguration
 	// Section Properties
 	// ==========================================
 
+	private boolean isNewRecord;
+	
 	/**
 	 * is the core data set name of the 
 	 * {@link rifDataLoaderTool.businessConceptLayer.DataSetConfiguration}
@@ -244,6 +245,7 @@ public class DataSetFieldConfiguration
 		final String parentRecordName,
 		final String coreFieldName) {
 			
+		this.isNewRecord = true;
 		this.coreDataSetName = parentRecordName;
 			
 		this.coreFieldName = coreFieldName;
@@ -264,7 +266,7 @@ public class DataSetFieldConfiguration
 		rifConversionFunction = null;
 		
 		fieldRequirementLevel = FieldRequirementLevel.IGNORE_FIELD;	
-		fieldChangeAuditLevel = FieldChangeAuditLevel.INCLUDE_FIELD_CHANGE_DESCRIPTION;
+		fieldChangeAuditLevel = FieldChangeAuditLevel.INCLUDE_FIELD_CHANGE_DESCRIPTION;		
 	}
 
 	public static DataSetFieldConfiguration newInstance(
@@ -283,50 +285,58 @@ public class DataSetFieldConfiguration
 			= new DataSetFieldConfiguration();
 		return dataSetFieldConfiguration;
 	}
-		
 	
 	public static DataSetFieldConfiguration createCopy(
 		final DataSetFieldConfiguration originalConfiguration) {
 	
 		DataSetFieldConfiguration cloneConfiguration
 			= new DataSetFieldConfiguration("", "");
-		cloneConfiguration.setCoreDataSetName(
-			originalConfiguration.getCoreDataSetName());
-		cloneConfiguration.setCoreFieldDescription(originalConfiguration.getCoreFieldDescription());
-		cloneConfiguration.setCoreFieldName(
-			originalConfiguration.getCoreFieldName());
-		cloneConfiguration.setLoadFieldName(
-			originalConfiguration.getLoadFieldName());
-		cloneConfiguration.setCleanFieldName(
-			originalConfiguration.getCleanFieldName());
-		cloneConfiguration.setConvertFieldName(
-			originalConfiguration.getConvertFieldName());
+		copyInto(originalConfiguration, cloneConfiguration);
 		
-		cloneConfiguration.setRIFDataType(originalConfiguration.getRIFDataType());
+		return cloneConfiguration;
+	}	
+		
+	public static void copyInto(
+		final DataSetFieldConfiguration sourceConfiguration,
+		final DataSetFieldConfiguration destinationConfiguration) {
+	
+		destinationConfiguration.setNewRecord(sourceConfiguration.isNewRecord());
+		destinationConfiguration.setCoreDataSetName(
+				sourceConfiguration.getCoreDataSetName());
+		destinationConfiguration.setCoreFieldDescription(sourceConfiguration.getCoreFieldDescription());
+		destinationConfiguration.setCoreFieldName(
+				sourceConfiguration.getCoreFieldName());
+		destinationConfiguration.setLoadFieldName(
+				sourceConfiguration.getLoadFieldName());
+		destinationConfiguration.setCleanFieldName(
+				sourceConfiguration.getCleanFieldName());
+		destinationConfiguration.setConvertFieldName(
+				sourceConfiguration.getConvertFieldName());
+		
+		destinationConfiguration.setRIFDataType(sourceConfiguration.getRIFDataType());
+		
 		RIFConversionFunction originalRIFConversionFunction
-			= originalConfiguration.getConvertFunction();
-		cloneConfiguration.setConvertFunction(originalRIFConversionFunction);
+			= sourceConfiguration.getConvertFunction();
+		destinationConfiguration.setConvertFunction(originalRIFConversionFunction);
 		
-		cloneConfiguration.setOptimiseUsingIndex(
-			originalConfiguration.optimiseUsingIndex());
-		cloneConfiguration.setEmptyValueAllowed(
-			originalConfiguration.isEmptyValueAllowed());
-		cloneConfiguration.setFieldPurpose(
-			originalConfiguration.getFieldPurpose());
-		cloneConfiguration.setDuplicateIdentificationField(
-			originalConfiguration.isDuplicateIdentificationField());
+		destinationConfiguration.setOptimiseUsingIndex(
+			sourceConfiguration.optimiseUsingIndex());
+		destinationConfiguration.setEmptyValueAllowed(
+			sourceConfiguration.isEmptyValueAllowed());
+		destinationConfiguration.setFieldPurpose(
+			sourceConfiguration.getFieldPurpose());
+		destinationConfiguration.setDuplicateIdentificationField(
+			sourceConfiguration.isDuplicateIdentificationField());
 				
-		cloneConfiguration.setFieldRequirementLevel(
-			originalConfiguration.getFieldRequirementLevel());
-		cloneConfiguration.setFieldChangeAuditLevel(
-			originalConfiguration.getFieldChangeAuditLevel());
+		destinationConfiguration.setFieldRequirementLevel(
+			sourceConfiguration.getFieldRequirementLevel());
+		destinationConfiguration.setFieldChangeAuditLevel(
+			sourceConfiguration.getFieldChangeAuditLevel());
 
 		
 		ArrayList<RIFCheckOption> originalCheckOptions
-			= originalConfiguration.getCheckOptions();
-		cloneConfiguration.setCheckOptions(originalCheckOptions);	
-		
-		return cloneConfiguration;
+			= sourceConfiguration.getCheckOptions();
+		destinationConfiguration.setCheckOptions(originalCheckOptions);	
 		
 	}
 
@@ -349,6 +359,14 @@ public class DataSetFieldConfiguration
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public boolean isNewRecord() {
+		return isNewRecord;
+	}
+	
+	public void setNewRecord(boolean isNewRecord) {
+		this.isNewRecord = isNewRecord;		
+	}
+	
 	public String getCoreDataSetName() {
 		return coreDataSetName;
 	}
@@ -607,7 +625,6 @@ public class DataSetFieldConfiguration
 			= new FieldValidationUtility();
 
 		if (fieldValidationUtility.isEmpty(coreDataSetName)) {
-			System.out.println("DSFC - is empty coreDataSetName 1");
 			String parentRecordNameLabel
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetFieldConfiguration.coreFieldName.label");
@@ -706,12 +723,345 @@ public class DataSetFieldConfiguration
 		
 	}
 	
-	
+	/**
+	 * Assumes that they are both valid when viewed in isolation of other fields
+	 * @param anotherField
+	 * @return
+	 */
+	/*
+	public ArrayList<String> identifyDifferences(
+		final DataSetFieldConfiguration anotherField) {
+		
+		ArrayList<String> fieldValueDifferences = new ArrayList<String>();
+		
+		FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+		
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		
+		
+		String originalRecordLabelText
+			= RIFDataLoaderToolMessages.getMessage("");
+		String revisedRecordLabelText
+			= RIFDataLoaderToolMessages.getMessage("");
+		
+		//compare values for 'coreDataSetFieldName'
+		String coreDataSetLabelText
+			= RIFDataLoaderToolMessages.getMessage("");
+		String currentFieldDifferenceMessage
+			= identifyFieldDifference(
+				coreDataSetLabelText, 
+				originalRecordLabelText,
+				coreDataSetName, 
+				revisedRecordLabelText,
+				anotherField.getCoreDataSetName());
+		if (currentFieldDifferenceMessage != null) {
+			fieldValueDifferences.add(currentFieldDifferenceMessage);
+		}
+		
+		
+		//compare values for 'coreFieldName'
+		String coreFieldNameLabelText
+			= RIFDataLoaderToolMessages.getMessage("");
+		currentFieldDifferenceMessage
+			= identifyFieldDifference(
+				coreFieldNameLabelText,
+				originalRecordLabelText,
+				coreFieldName, 
+				revisedRecordLabelText,
+				anotherField.getCoreFieldName());
+		if (currentFieldDifferenceMessage != null) {
+			fieldValueDifferences.add(currentFieldDifferenceMessage);
+		}
+
+		
+		//compare values for 'coreFieldDescription'
+		String coreFieldDescriptionLabelText
+			= RIFDataLoaderToolMessages.getMessage("");
+		currentFieldDifferenceMessage
+			= identifyFieldDifference(
+				coreFieldDescriptionLabelText,
+				originalRecordLabelText,
+				coreFieldDescription, 
+				revisedRecordLabelText,
+				anotherField.getCoreFieldDescription());
+		if (currentFieldDifferenceMessage != null) {
+			fieldValueDifferences.add(currentFieldDifferenceMessage);
+		}
+		
+		
+		//compare values for 'loadFieldName'
+		String loadFieldNameLabelText
+			= RIFDataLoaderToolMessages.getMessage("");
+		currentFieldDifferenceMessage
+			= identifyFieldDifference(
+				loadFieldNameLabelText, 
+				originalRecordLabelText,
+				coreFieldDescription, 
+				revisedRecordLabelText,
+				anotherField.getCoreFieldDescription());
+		if (currentFieldDifferenceMessage != null) {
+			fieldValueDifferences.add(currentFieldDifferenceMessage);
+		}
+		
+		
+		//compare values for 'cleanFieldName'
+		String cleanFieldNameLabelText
+			= RIFDataLoaderToolMessages.getMessage("");
+		currentFieldDifferenceMessage
+			= identifyFieldDifference(
+				cleanFieldNameLabelText,
+				originalRecordLabelText,
+				cleanFieldName,
+				revisedRecordLabelText,
+				anotherField.getCleanFieldName());
+		if (currentFieldDifferenceMessage != null) {
+			fieldValueDifferences.add(currentFieldDifferenceMessage);
+		}		
+		
+		//compare values for 'convertFieldName'
+		String convertFieldNameLabelText
+			= RIFDataLoaderToolMessages.getMessage("");
+		currentFieldDifferenceMessage
+			= identifyFieldDifference(
+				convertFieldNameLabelText,
+				originalRecordLabelText,
+				convertFieldName, 
+				revisedRecordLabelText,
+				anotherField.getConvertFieldName());
+		if (currentFieldDifferenceMessage != null) {
+			fieldValueDifferences.add(currentFieldDifferenceMessage);
+		}
+		
+		//field purpose
+		String fieldPurposeLabelText
+			= RIFDataLoaderToolMessages.getMessage("");
+		FieldPurpose anotherFieldPurpose
+			= anotherField.getFieldPurpose();		
+		String nullityDifference
+			= FieldValidationUtility.compareNullities(
+				fieldPurpose, 
+				originalRecordLabelText, 
+				fieldPurposeLabelText, 
+				anotherFieldPurpose, 
+				revisedRecordLabelText, 
+				fieldPurposeLabelText);
+		if (nullityDifference != null) {
+			fieldValueDifferences.add(nullityDifference);
+		}
+		else if ((fieldPurpose != null) && (anotherFieldPurpose != null)) {
+			if (fieldPurpose.compareTo(anotherFieldPurpose) != 0) {
+				String fieldValueDifference
+					= RIFDataLoaderMessages.getMessage(
+						"",
+						fieldPurpose.getName(),
+						anotherFieldPurpose.getName());
+				fieldValueDifferences.add(fieldValueDifference);				
+			}
+		}
+		
+		String optimiseUsingIndexLabelText
+			= RIFDataLoaderToolMessages.getMessage("");
+		boolean anotherOptimiseUsingIndex
+			= anotherField.optimiseUsingIndex();
+		if (optimiseUsingIndex != anotherOptimiseUsingIndex) {
+			String fieldValueDifference
+				= RIFDataLoaderToolMessages.getMessage(
+					"", 
+					optimiseUsingIndexLabelText,
+					String.valueOf(optimiseUsingIndex),
+					String.valueOf(anotherOptimiseUsingIndex));
+			fieldValueDifferences.add(fieldValueDifference);
+		}
+
+		
+		String isDuplicateIdentificationFieldLabelText
+			= RIFDataLoaderToolMessages.getMessage("");
+		boolean anotherIsDuplicateIdentificationField
+			= anotherField.optimiseUsingIndex();
+		if (isDuplicateIdentificationField != anotherIsDuplicateIdentificationField) {
+			String fieldValueDifference
+				= RIFDataLoaderToolMessages.getMessage(
+					"", 
+					isDuplicateIdentificationFieldLabelText,
+					String.valueOf(isEmptyValueAllowed),
+					String.valueOf(anotherIsDuplicateIdentificationField));
+			fieldValueDifferences.add(fieldValueDifference);
+		}
+		
+		
+		//compare collections
+		ArrayList<RIFCheckOption> anotherRIFCheckOptionsList
+			= anotherField.getCheckOptions();
+		ArrayList<String> rifCheckOptionDifferences
+			= RIFCheckOption.identifyDifferences(
+				checkOptions, 
+				originalRecordLabelText, 
+				anotherRIFCheckOptionsList, 
+				revisedRecordLabelText);
+		fieldValueDifferences.addAll(rifCheckOptionDifferences);
+		
+		String isEmptyAllowedIndexLabelText
+			= RIFDataLoaderToolMessages.getMessage("");
+		boolean anotherIsEmptyValueAllowed
+			= anotherField.optimiseUsingIndex();
+		if (isEmptyValueAllowed != anotherOptimiseUsingIndex) {
+			String fieldValueDifference
+				= RIFDataLoaderToolMessages.getMessage(
+					"", 
+					isEmptyAllowedIndexLabelText,
+					String.valueOf(isEmptyValueAllowed),
+					String.valueOf(anotherIsEmptyValueAllowed));
+			fieldValueDifferences.add(fieldValueDifference);
+		}
+
+		//field requirement level
+		String fieldRequirementLevelLabelText
+			= RIFDataLoaderToolMessages.getMessage("");
+		FieldRequirementLevel anotherFieldRequirementLevel
+			= anotherField.getFieldRequirementLevel();		
+		nullityDifference
+			= FieldValidationUtility.compareNullities(
+				fieldRequirementLevel, 
+				originalRecordLabelText, 
+				fieldRequirementLevelLabelText, 
+				anotherFieldRequirementLevel, 
+				revisedRecordLabelText, 
+				fieldRequirementLevelLabelText);
+		if (nullityDifference != null) {
+			fieldValueDifferences.add(nullityDifference);
+		}
+		else if ((fieldRequirementLevel != null) && (anotherFieldRequirementLevel != null)) {
+			if (fieldRequirementLevel.compareTo(anotherFieldRequirementLevel) != 0) {
+				String fieldValueDifference
+					= RIFDataLoaderMessages.getMessage(
+						"",
+						fieldRequirementLevel.getName(),
+						anotherFieldRequirementLevel.getName());
+				fieldValueDifferences.add(fieldValueDifference);				
+			}
+		}
+
+		//KLG: this is a weakness in comparing two rif data type objects, which 
+		//are cast in terms of an abstract class.  For now, assume they are
+		//the same if their codes match
+		String rifDataTypeLabelText
+			= RIFDataLoaderToolMessages.getMessage("");
+		AbstractRIFDataType anotherRIFDataType
+			= anotherField.getRIFDataType();
+		nullityDifference
+			= FieldValidationUtility.compareNullities(
+				rifDataType, 
+				originalRecordLabelText, 
+				rifDataTypeLabelText, 
+				anotherRIFDataType, 
+				revisedRecordLabelText, 
+				rifDataTypeLabelText);
+		if (nullityDifference != null) {
+			fieldValueDifferences.add(nullityDifference);
+		}
+		else if ((rifDataType != null) && (anotherRIFDataType != null)) {
+			if (collator.equals(
+					rifDataType.getName(), 
+					anotherRIFDataType.getName())) {
+				String fieldValueDifference
+					= RIFDataLoaderToolMessages.getMessage(
+						"",
+						rifDataTypeLabelText,
+						rifDataType.getName(),
+						anotherRIFDataType.getName());
+				fieldValueDifferences.add(fieldValueDifference);				
+			}
+		}
+		
+		//field requirement level
+		String fieldChangeAuditLevelLabelText
+			= RIFDataLoaderToolMessages.getMessage("");
+		FieldChangeAuditLevel anotherFieldChangeAuditLevel
+			= anotherField.getFieldChangeAuditLevel();
+		nullityDifference
+			= FieldValidationUtility.compareNullities(
+				fieldRequirementLevel, 
+				originalRecordLabelText, 
+				fieldRequirementLevelLabelText, 
+				anotherFieldRequirementLevel, 
+				revisedRecordLabelText, 
+				fieldRequirementLevelLabelText);
+		if (nullityDifference != null) {
+			fieldValueDifferences.add(nullityDifference);
+		}
+		else if ((fieldChangeAuditLevel != null) && (anotherFieldChangeAuditLevel != null)) {
+			if (fieldChangeAuditLevel.compareTo(anotherFieldChangeAuditLevel) != 0) {
+				String fieldValueDifference
+					= RIFDataLoaderMessages.getMessage(
+						"",
+						fieldChangeAuditLevel.getName(),
+						anotherFieldChangeAuditLevel.getName());
+				fieldValueDifferences.add(fieldValueDifference);				
+			}
+		}
+		
+		
+		return fieldValueDifferences;
+	}
+
+	private String identifyFieldDifference(
+		final String fieldName,
+		final String originalRecordLabelText,
+		final String originalFieldValue,
+		final String revisedRecordLabelText,
+		final String revisedFieldValue) {
+		
+		String fieldDifference = null;
+		
+		String nullityDifference
+			= FieldValidationUtility.compareNullities(
+				originalFieldValue, 
+				originalRecordLabelText, 
+				fieldName, 
+				revisedFieldValue, 
+				revisedRecordLabelText, 
+				fieldName);
+		if (nullityDifference != null) {
+			//the difference is that one was null and the other was not
+			return nullityDifference;
+		}
+		
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		if (collator.equals(
+			originalFieldValue, 
+			revisedFieldValue)) {
+
+			//both values are non-null but different
+			
+			String fieldValueChangeMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"",
+					fieldName,
+					originalFieldValue,
+					revisedFieldValue);
+			
+			return fieldValueChangeMessage;
+		}
+		
+		//no difference detected
+		return null;
+		
+		
+		
+		
+		
+	}
+	*/
 	
 	public String getRecordType() {
 		String recordType
 			= RIFDataLoaderToolMessages.getMessage("dataSetFieldConfiguration.recordType");
 		return recordType;		
+	}
+	
+	public void clearCheckOptions() {
+		checkOptions.clear();
 	}
 	
 	// ==========================================

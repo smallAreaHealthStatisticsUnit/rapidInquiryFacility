@@ -1,8 +1,11 @@
 package rifDataLoaderTool.system;
 
 import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
+
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifServices.businessConceptLayer.User;
+
+import java.io.File;
 
 /**
  *
@@ -66,6 +69,7 @@ public final class RIFDataLoaderToolSession {
 	private User user;
 	private DataLoaderServiceAPI service;
 	private UserInterfaceFactory userInterfaceFactory;
+	private File currentDirectory;
 	
 	// ==========================================
 	// Section Construction
@@ -103,6 +107,15 @@ public final class RIFDataLoaderToolSession {
 	public void setUserInterfaceFactory(UserInterfaceFactory userInterfaceFactory) {
 		this.userInterfaceFactory = userInterfaceFactory;
 	}
+	
+	public File getCurrentDirectory() {
+		return currentDirectory;
+	}
+	
+	public void setCurrentDirectory(final File currentDirectory) {
+		this.currentDirectory = currentDirectory;
+	}
+	
 	
 	// ==========================================
 	// Section Errors and Validation

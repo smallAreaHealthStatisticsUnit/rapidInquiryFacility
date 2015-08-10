@@ -1,6 +1,7 @@
 package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifServices.util.FieldValidationUtility;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -117,7 +118,7 @@ public enum RIFCheckOption {
 			= RIFDataLoaderToolMessages.getMessage(descriptionProperty);
 		return displayName;
 	}
-	
+		
 	public ArrayList<RIFCheckOption> getAllCheckOptions() {
 
 		ArrayList<RIFCheckOption> allCheckOptions 
@@ -138,6 +139,59 @@ public enum RIFCheckOption {
 		String[] results
 			= allCheckOptionNames.toArray(new String[0]);
 		return results;
+	}
+	
+	public String getCode() {
+		return code;
+	}
+	
+	/*
+	 * Assume neither collection is null
+	 */
+	public static ArrayList<String> identifyDifferences(
+		final ArrayList<RIFCheckOption> rifCheckOptionsA,
+		final String recordNameA,
+		final ArrayList<RIFCheckOption> rifCheckOptionsB,
+		final String recordNameB) {
+		
+		ArrayList<String> differences = new ArrayList<String>();
+		
+		if (rifCheckOptionsA.size() != rifCheckOptionsB.size()) {
+			String differenceMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"",
+					recordNameA,
+					String.valueOf(rifCheckOptionsA.size()),
+					recordNameB,
+					String.valueOf(rifCheckOptionsB.size()));
+			differences.add(differenceMessage);
+		}
+		
+		for (RIFCheckOption rifCheckOptionA : rifCheckOptionsA) {
+			if (rifCheckOptionsB.contains(rifCheckOptionA) == false) {
+				String differenceMessage
+					= RIFDataLoaderToolMessages.getMessage(
+						"",
+						recordNameA,
+						rifCheckOptionA.getName(),
+						recordNameB);
+				differences.add(differenceMessage);
+			}
+		}
+				
+		for (RIFCheckOption rifCheckOptionB : rifCheckOptionsB) {
+			if (rifCheckOptionsA.contains(rifCheckOptionB) == false) {
+				String differenceMessage
+					= RIFDataLoaderToolMessages.getMessage(
+						"",
+						recordNameB,
+						rifCheckOptionB.getName(),
+						recordNameA);
+				differences.add(differenceMessage);
+			}
+		}
+		
+		return differences;
 	}
 	
 }

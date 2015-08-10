@@ -65,9 +65,8 @@ public class RIFDataTypeFactory {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private HashMap<String, AbstractRIFDataType> dataTypeFromName;
-	private ArrayList<String> dataTypeCodes;
-	private ArrayList<String> dataTypeNames;
+	private HashMap<String, AbstractRIFDataType> dataTypeFromCodes;
+	private HashMap<String, AbstractRIFDataType> dataTypeFromNames;
 	
 	// ==========================================
 	// Section Construction
@@ -75,65 +74,55 @@ public class RIFDataTypeFactory {
 
 	private RIFDataTypeFactory() {
 		
-		dataTypeFromName = new HashMap<String, AbstractRIFDataType>();
-		dataTypeCodes = new ArrayList<String>();
-		dataTypeNames = new ArrayList<String>();
+		dataTypeFromCodes = new HashMap<String, AbstractRIFDataType>();
+		dataTypeFromNames = new HashMap<String, AbstractRIFDataType>();
 		
 		AgeRIFDataType ageRIFDataType = AgeRIFDataType.newInstance();
-		dataTypeFromName.put(ageRIFDataType.getIdentifier(), ageRIFDataType);
-		dataTypeCodes.add(ageRIFDataType.getIdentifier());
-		dataTypeNames.add(ageRIFDataType.getName());
+		dataTypeFromCodes.put(ageRIFDataType.getIdentifier(), ageRIFDataType);
+		dataTypeFromNames.put(ageRIFDataType.getName(), ageRIFDataType);
+		
 		
 		DoubleRIFDataType doubleRIFDataType = DoubleRIFDataType.newInstance();
-		dataTypeFromName.put(doubleRIFDataType.getIdentifier(), doubleRIFDataType);
-		dataTypeCodes.add(doubleRIFDataType.getIdentifier());
-		dataTypeNames.add(doubleRIFDataType.getName());
+		dataTypeFromCodes.put(doubleRIFDataType.getIdentifier(), doubleRIFDataType);
+		dataTypeFromNames.put(doubleRIFDataType.getName(), doubleRIFDataType);
 		
 		DateRIFDataType dateRIFDataType = DateRIFDataType.newInstance();
-		dataTypeFromName.put(dateRIFDataType.getIdentifier(), dateRIFDataType);		
-		dataTypeCodes.add(dateRIFDataType.getIdentifier());
-		dataTypeNames.add(dateRIFDataType.getName());
-				
+		dataTypeFromCodes.put(dateRIFDataType.getIdentifier(), dateRIFDataType);		
+		dataTypeFromNames.put(dateRIFDataType.getName(), dateRIFDataType);		
+
 		ICDCodeRIFDataType icdCodeRIFDataType = ICDCodeRIFDataType.newInstance();
-		dataTypeFromName.put(icdCodeRIFDataType.getIdentifier(), icdCodeRIFDataType);		
-		dataTypeCodes.add(icdCodeRIFDataType.getIdentifier());
+		dataTypeFromCodes.put(icdCodeRIFDataType.getIdentifier(), icdCodeRIFDataType);		
+		dataTypeFromNames.put(icdCodeRIFDataType.getName(), icdCodeRIFDataType);		
 
 		QuintiliseRIFDataType quintiliseRIFDataType = QuintiliseRIFDataType.newInstance();
-		dataTypeFromName.put(quintiliseRIFDataType.getIdentifier(), quintiliseRIFDataType);		
-		dataTypeCodes.add(quintiliseRIFDataType.getIdentifier());		
-		dataTypeNames.add(quintiliseRIFDataType.getName());
+		dataTypeFromCodes.put(quintiliseRIFDataType.getIdentifier(), quintiliseRIFDataType);		
+		dataTypeFromNames.put(quintiliseRIFDataType.getName(), quintiliseRIFDataType);		
 				
 		IntegerRIFDataType integerRIFDataType = IntegerRIFDataType.newInstance();
-		dataTypeFromName.put(integerRIFDataType.getIdentifier(), integerRIFDataType);
-		dataTypeCodes.add(integerRIFDataType.getIdentifier());
-		dataTypeNames.add(integerRIFDataType.getName());
+		dataTypeFromCodes.put(integerRIFDataType.getIdentifier(), integerRIFDataType);
+		dataTypeFromNames.put(integerRIFDataType.getName(), integerRIFDataType);
 		
 		NHSNumberRIFDataType nhsNumberRIFDataType = NHSNumberRIFDataType.newInstance();
-		dataTypeFromName.put(nhsNumberRIFDataType.getIdentifier(), nhsNumberRIFDataType);
-		dataTypeCodes.add(nhsNumberRIFDataType.getIdentifier());
-		dataTypeNames.add(nhsNumberRIFDataType.getName());
+		dataTypeFromCodes.put(nhsNumberRIFDataType.getIdentifier(), nhsNumberRIFDataType);
+		dataTypeFromNames.put(nhsNumberRIFDataType.getName(), nhsNumberRIFDataType);
+		
 		
 		SexRIFDataType sexRIFDataType = SexRIFDataType.newInstance();
-		dataTypeFromName.put(sexRIFDataType.getIdentifier(), sexRIFDataType);
-		dataTypeCodes.add(sexRIFDataType.getIdentifier());
-		dataTypeNames.add(sexRIFDataType.getName());
+		dataTypeFromCodes.put(sexRIFDataType.getIdentifier(), sexRIFDataType);
+		dataTypeFromNames.put(sexRIFDataType.getName(), sexRIFDataType);
 		
 		TextRIFDataType textRIFDataType = TextRIFDataType.newInstance();
-		dataTypeFromName.put(textRIFDataType.getIdentifier(), textRIFDataType);
-		dataTypeCodes.add(textRIFDataType.getIdentifier());
-		dataTypeNames.add(textRIFDataType.getName());
-		
+		dataTypeFromCodes.put(textRIFDataType.getIdentifier(), textRIFDataType);
+		dataTypeFromNames.put(textRIFDataType.getName(), textRIFDataType);
+			
 		UKPostalCodeRIFDataType ukPostalCodeRIFDataType
 			= UKPostalCodeRIFDataType.newInstance();
-		dataTypeFromName.put(ukPostalCodeRIFDataType.getIdentifier(), ukPostalCodeRIFDataType);
-		dataTypeCodes.add(ukPostalCodeRIFDataType.getIdentifier());
-		dataTypeNames.add(ukPostalCodeRIFDataType.getName());
+		dataTypeFromCodes.put(ukPostalCodeRIFDataType.getIdentifier(), ukPostalCodeRIFDataType);
+		dataTypeFromNames.put(ukPostalCodeRIFDataType.getName(), ukPostalCodeRIFDataType);
 		
 		YearRIFDataType yearRIFDataType = YearRIFDataType.newInstance();
-		dataTypeFromName.put(yearRIFDataType.getIdentifier(), yearRIFDataType);
-		dataTypeCodes.add(yearRIFDataType.getIdentifier());
-		dataTypeNames.add(yearRIFDataType.getName());
-		
+		dataTypeFromCodes.put(yearRIFDataType.getIdentifier(), yearRIFDataType);
+		dataTypeFromNames.put(yearRIFDataType.getName(), yearRIFDataType);		
 	}
 
 	public static RIFDataTypeFactory newInstance() {
@@ -145,8 +134,12 @@ public class RIFDataTypeFactory {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public AbstractRIFDataType getDataType(final String dataTypeName) {
-		return dataTypeFromName.get(dataTypeName);		
+	public AbstractRIFDataType getDataTypeFromCode(final String dataTypeCode) {
+		return dataTypeFromCodes.get(dataTypeCode);		
+	}
+	
+	public AbstractRIFDataType getDataTypeFromName(final String dataTypeName) {
+		return dataTypeFromNames.get(dataTypeName);		
 	}
 	
 	public DateRIFDataType getDateType(final String dateFormat) {
@@ -158,11 +151,15 @@ public class RIFDataTypeFactory {
 	}
 	
 	public String[] getDataTypeCodes() {
-		return dataTypeCodes.toArray(new String[0]);
+		ArrayList<String> codes = new ArrayList<String>();
+		codes.addAll(dataTypeFromCodes.keySet());
+		return codes.toArray(new String[0]);
 	}
 	
 	public String[] getDataTypeNames() {
-		return dataTypeNames.toArray(new String[0]);
+		ArrayList<String> names = new ArrayList<String>();
+		names.addAll(dataTypeFromNames.keySet());
+		return names.toArray(new String[0]);
 	}	
 	
 	// ==========================================

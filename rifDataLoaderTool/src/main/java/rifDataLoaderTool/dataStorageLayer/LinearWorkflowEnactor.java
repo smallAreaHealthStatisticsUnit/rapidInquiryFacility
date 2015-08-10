@@ -147,6 +147,7 @@ public class LinearWorkflowEnactor {
 				logMessage(finishedProcessingDataSetMessage);
 
 			}
+
 		}
 		catch(RIFServiceException rifServiceException) {
 			logException(rifServiceException);
@@ -185,18 +186,12 @@ public class LinearWorkflowEnactor {
 		final LinearWorkflow linearWorkflow) 
 		throws RIFServiceException {
 
-		System.out.println("LinWorkflowEnactor processDataSetConfiguration 0");
-
 		linearWorkflow.resetWorkflow();
 				
-		System.out.println("LinWorkflowEnactor processDataSetConfiguration 1");
 		while (linearWorkflow.next()) {			
-			System.out.println("LinWorkflowEnactor processDataSetConfiguration 2");
 			processWorkflowStep(
 				dataSetConfiguration,
 				linearWorkflow.getCurrentWorkflowState());
-			System.out.println("LinWorkflowEnactor processDataSetConfiguration 3");
-
 		}
 
 	}

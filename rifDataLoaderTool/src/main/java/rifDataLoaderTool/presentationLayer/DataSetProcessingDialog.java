@@ -256,6 +256,8 @@ public final class DataSetProcessingDialog
 	}
 	
 	private void ok() {
+		
+		
 		dialog.setVisible(false);
 	}
 	
@@ -263,24 +265,19 @@ public final class DataSetProcessingDialog
 		dialog.setVisible(false);		
 	}
 	
-	/**
-	 * if the number of data set configurations is currently zero, then
-	 * desensitise all the appropriate buttons
-	 */
-	private void checkButtonStatesForEmptyList() {
-		if (dataSetConfigurationTable.isEmpty()) {
-			
-		}
-		else {
-			
-		}
-		
-	}
 	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-
+	private void validateForm() {
+		
+		
+		
+		
+		
+	}
+	
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
@@ -314,9 +311,11 @@ public final class DataSetProcessingDialog
 			deleteSelectedDataSets();
 		}
 		else if (okCloseButtonPanel.isOKButton(button)) {
+			System.out.println("DSPD -- pressing ok");
 			ok();
 		}
 		else if (okCloseButtonPanel.isCloseButton(button)) {
+			System.out.println("DSPD -- pressing close");
 			close();
 		}
 	}

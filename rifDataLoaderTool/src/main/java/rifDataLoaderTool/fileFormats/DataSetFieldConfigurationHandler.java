@@ -1,6 +1,5 @@
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.FieldPurpose;
@@ -175,6 +174,8 @@ public final class DataSetFieldConfigurationHandler
 				getSingularRecordName(), 
 				"convert_field_name", 
 				fieldConfiguration.getConvertFieldName());
+
+			
 			
 			RIFConversionFunction rifConversionFunction
 				= fieldConfiguration.getConvertFunction();
@@ -184,17 +185,18 @@ public final class DataSetFieldConfigurationHandler
 					"convert_field_function", 
 					rifConversionFunction.getFunctionName());
 			}
+			else {
+				xmlUtility.writeField(
+					getSingularRecordName(), 
+					"convert_field_function", 
+					"");				
+			}
 			
 			xmlUtility.writeField(
 				getSingularRecordName(), 
 				"optimise_using_index", 
 				String.valueOf(fieldConfiguration.optimiseUsingIndex()));
 			
-			xmlUtility.writeField(
-				getSingularRecordName(), 
-				"is_duplicate_identification_field", 
-				String.valueOf(fieldConfiguration.isDuplicateIdentificationField()));
-
 			xmlUtility.writeField(
 				getSingularRecordName(), 
 				"is_duplicate_identification_field", 
@@ -222,6 +224,10 @@ public final class DataSetFieldConfigurationHandler
 				"field_purpose", 
 				fieldPurpose.getCode());
 			
+			ArrayList<RIFCheckOption> checkOptions
+				= fieldConfiguration.getCheckOptions();			
+			rifCheckOptionConfigurationHandler.writeXML(checkOptions);
+			
 			xmlUtility.writeRecordEndTag(getSingularRecordName());			
 		}
 				
@@ -242,6 +248,7 @@ public final class DataSetFieldConfigurationHandler
 		else if (isSingularRecordName(qualifiedName) == true) {
 			currentDataSetFieldConfiguration
 				= DataSetFieldConfiguration.newInstance();
+			currentDataSetFieldConfiguration.setNewRecord(false);
 		}		
 		else if (isDelegatedHandlerAssigned()) {
 			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
@@ -253,7 +260,7 @@ public final class DataSetFieldConfigurationHandler
 				attributes);
 		}
 		else {		
-			//check to see if handlers could be assigned to delegate parsing			
+			//check to see if handlers could be assigned to delegate parsing	
 			if (rifCheckOptionConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
 				assignDelegatedHandler(rifCheckOptionConfigurationHandler);
 			}
@@ -302,6 +309,9 @@ public final class DataSetFieldConfigurationHandler
 					ArrayList<RIFCheckOption> checkOptions
 						= rifCheckOptionConfigurationHandler.getCheckOptions();
 					currentDataSetFieldConfiguration.setCheckOptions(checkOptions);
+					
+					ArrayList<RIFCheckOption> mystuff
+						= currentDataSetFieldConfiguration.getCheckOptions();
 				}
 				else {
 					assert false;
@@ -324,7 +334,7 @@ public final class DataSetFieldConfigurationHandler
 		else if (equalsFieldName("rif_data_type", qualifiedName)) {
 			String dataTypeName = getCurrentFieldValue();
 			AbstractRIFDataType rifDataType 
-				= rifDataTypeFactory.getDataType(dataTypeName);
+				= rifDataTypeFactory.getDataTypeFromCode(dataTypeName);
 			currentDataSetFieldConfiguration.setRIFDataType(rifDataType);
 		}
 		else if (equalsFieldName("load_field_name", qualifiedName)) {
@@ -350,19 +360,16 @@ public final class DataSetFieldConfigurationHandler
 				Boolean.valueOf(getCurrentFieldValue()));
 		}
 		else if (equalsFieldName("field_purpose", qualifiedName)) {
-			String code = getCurrentFieldValue();
-			FieldPurpose fieldPurpose
-				= FieldPurpose.getValueFromName(code);
 			currentDataSetFieldConfiguration.setFieldPurpose(
-				FieldPurpose.getValueFromName(getCurrentFieldValue()));
+				FieldPurpose.getValueFromCode(getCurrentFieldValue()));
 		}
 		else if (equalsFieldName("field_requirement_level", qualifiedName)) {
 			currentDataSetFieldConfiguration.setFieldRequirementLevel(
-				FieldRequirementLevel.getValueFromName(getCurrentFieldValue()));
+				FieldRequirementLevel.getValueFromCode(getCurrentFieldValue()));
 		}		
 		else if (equalsFieldName("field_change_audit_level", qualifiedName)) {
 			currentDataSetFieldConfiguration.setFieldChangeAuditLevel(
-				FieldChangeAuditLevel.getValueFromName(getCurrentFieldValue()));
+				FieldChangeAuditLevel.getValueFromCode(getCurrentFieldValue()));
 		}
 		else if (equalsFieldName("is_duplicate_identification_field", qualifiedName)) {
 			currentDataSetFieldConfiguration.setDuplicateIdentificationField(

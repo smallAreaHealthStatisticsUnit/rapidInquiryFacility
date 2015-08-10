@@ -2,10 +2,7 @@ package rifDataLoaderTool.presentationLayer.revisedGUI;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.*;
-import rifGenericLibrary.presentationLayer.ErrorDialog;
-import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
-import rifGenericLibrary.presentationLayer.OrderedListPanel;
-import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
+import rifGenericLibrary.presentationLayer.*;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.awt.event.ActionListener;
@@ -73,25 +70,7 @@ public class DataSetConfigurationEditorDialog
 	implements ActionListener,
 	ListSelectionListener {
 
-	public static void main(String[] arguments) {
-		
-		UserInterfaceFactory userInterfaceFactory
-			= new UserInterfaceFactory();
-		DataSetConfigurationEditorDialog dialog
-			= new DataSetConfigurationEditorDialog(
-				userInterfaceFactory);
 
-		DataSetConfiguration dataSetConfiguration
-			= DataSetConfiguration.newInstance(
-				"my_numerator", 
-				10);
-		dialog.setData(dataSetConfiguration);
-		
-		dialog.show();
-		
-	}
-	
-	
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -101,9 +80,14 @@ public class DataSetConfigurationEditorDialog
 	// ==========================================
 	
 	private UserInterfaceFactory userInterfaceFactory;
+	
+	private LinearWorkflow originalLinearWorkflow;
+	
 	private DataSetConfiguration originalDataSetConfiguration;
+	private DataSetConfiguration workingCopyDataSetConfiguration;
 	
 	private OrderedListPanel dataSetFieldListPanel;
+	private ListEditingButtonPanel dataSetFieldListButtonPanel;
 	
 	private JScrollPane currentFieldScrollPane;
 	
@@ -125,8 +109,7 @@ public class DataSetConfigurationEditorDialog
 	
 	
 	private OKCloseButtonPanel okCloseButtonPanel;	
-	private JButton okButton;
-	private JButton closeButton;
+
 	
 	private boolean isCancelled;
 	
@@ -153,11 +136,17 @@ public class DataSetConfigurationEditorDialog
 		    	"",
 				userInterfaceFactory,
 				true);	
+		//very important -- ensure that the list preserves the order in which the fields are
+		//made
+		dataSetFieldListPanel.setAlphabeticallySortItems(false);
+		dataSetFieldListPanel.setPrototypeListValue("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 		
 		dataSetFieldListPanel.addListSelectionListener(this);
 		
 		dataSetFieldPropertyEditorPanel
-			= new DataSetFieldPropertyEditorPanel(userInterfaceFactory);
+			= new DataSetFieldPropertyEditorPanel(
+				dialog, 
+				userInterfaceFactory);
 		
 		buildUI();
 	}
@@ -214,7 +203,7 @@ public class DataSetConfigurationEditorDialog
 			panelGC);
 		
 		dialog.getContentPane().add(panel);
-		dialog.setSize(600, 600);
+		dialog.setSize(1200, 700);
 	}
 	
 	private JPanel createUpperPanel() {
@@ -239,6 +228,10 @@ public class DataSetConfigurationEditorDialog
 			= RIFDataLoaderToolMessages.getMessage("dataSetConfiguration.filePath.label");		
 		JLabel filePathLabel
 			= userInterfaceFactory.createLabel(filePathLabelText);
+		String filePathToolTip
+			= RIFDataLoaderToolMessages.getMessage("dataSetConfiguration.filePath.toolTip");		
+		filePathLabel.setToolTipText(filePathToolTip);
+		
 		chooseFilePanel.add(
 			filePathLabel, 
 			chooseFilePanelGC);
@@ -285,6 +278,11 @@ public class DataSetConfigurationEditorDialog
 				"dataSetConfiguration.name.label");
 		JLabel nameFieldLabel
 			= userInterfaceFactory.createLabel(nameFieldLabelText);
+		String nameFieldToolTip
+			= RIFDataLoaderToolMessages.getMessage(
+				"dataSetConfiguration.name.toolTip");
+		nameFieldLabel.setToolTipText(nameFieldToolTip);
+		
 		panel.add(nameFieldLabel, panelGC);		
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
@@ -303,6 +301,11 @@ public class DataSetConfigurationEditorDialog
 				"dataSetConfiguration.version.label");
 		JLabel versionFieldLabel
 			= userInterfaceFactory.createLabel(versionFieldLabelText);
+		String versionFieldToolTip
+			= RIFDataLoaderToolMessages.getMessage(
+				"dataSetConfiguration.version.toolTip");
+		versionFieldLabel.setToolTipText(versionFieldToolTip);
+		
 		panel.add(versionFieldLabel, panelGC);		
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
@@ -319,6 +322,11 @@ public class DataSetConfigurationEditorDialog
 				"dataSetConfiguration.description.label");
 		JLabel descriptionFieldLabel
 			= userInterfaceFactory.createLabel(descriptionFieldLabelText);
+		String descriptionFieldToolTip
+			= RIFDataLoaderToolMessages.getMessage(
+				"dataSetConfiguration.description.toolTip");
+		descriptionFieldLabel.setToolTipText(descriptionFieldToolTip);
+		
 		panel.add(descriptionFieldLabel, panelGC);
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.BOTH;
@@ -339,12 +347,17 @@ public class DataSetConfigurationEditorDialog
 				"dataSetConfiguration.rifSchemaArea.label");
 		JLabel rifSchemaAreasLabel
 			= userInterfaceFactory.createLabel(rifSchemaAreasLabelText);
+		String rifSchemaAreasToolTip
+			= RIFDataLoaderToolMessages.getMessage(
+				"dataSetConfiguration.rifSchemaArea.toolTip");		
+		rifSchemaAreasLabel.setToolTipText(rifSchemaAreasToolTip);
 		panel.add(rifSchemaAreasLabel, panelGC);	
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;		
 		rifSchemaAreasComboBox
-			= userInterfaceFactory.createComboBox(RIFSchemaArea.getAllSchemaNames());		
+			= userInterfaceFactory.createComboBox(RIFSchemaArea.getAllSchemaNames());
+		rifSchemaAreasComboBox.addActionListener(this);
 		panel.add(rifSchemaAreasComboBox, panelGC);
 
 		return panel;
@@ -355,35 +368,34 @@ public class DataSetConfigurationEditorDialog
 		GridBagConstraints panelGC
 			= userInterfaceFactory.createGridBagConstraints();
 		panelGC.fill = GridBagConstraints.BOTH;
-		panelGC.weightx = 1;
 		panelGC.weighty = 1;
-		
+
+		panelGC.weightx = 0.3;
 		JPanel panel
 			= userInterfaceFactory.createPanel();
-		
 		currentFieldScrollPane
 			= userInterfaceFactory.createScrollPane(dataSetFieldPropertyEditorPanel.getPanel());
-		
-		
+				
 		JSplitPane splitPane
 			= userInterfaceFactory.createLeftRightSplitPane(
-				createDataSetFieldPanel(), 
-				currentFieldScrollPane);
-		
-		splitPane.setDividerSize(40);
+				createDataSetListArea(), 
+				createFieldEditingArea());
+
+		splitPane.setDividerLocation(0.4);
 		panel.add(splitPane, panelGC);
-		
+		panel.setBorder(LineBorder.createGrayLineBorder());
 		return panel;
 	}
 	
 	
 	
-	private JPanel createDataSetFieldPanel() {
+	private JPanel createDataSetListArea() {
 		
 		GridBagConstraints panelGC
 			= userInterfaceFactory.createGridBagConstraints();
 		JPanel panel
 			= userInterfaceFactory.createPanel();
+		panel.setMinimumSize(new Dimension(250, 400));
 		
 		panelGC.fill = GridBagConstraints.BOTH;
 		panelGC.weightx = 1;
@@ -396,39 +408,95 @@ public class DataSetConfigurationEditorDialog
 			fieldPane, 
 			panelGC);
 		
+		dataSetFieldListButtonPanel
+			= new ListEditingButtonPanel(userInterfaceFactory);
+		dataSetFieldListButtonPanel.includeAddButton(null);
+		dataSetFieldListButtonPanel.includeCopyButton(null);
+		dataSetFieldListButtonPanel.includeEditButton(null);		
+		dataSetFieldListButtonPanel.includeDeleteButton(null);
+		dataSetFieldListButtonPanel.rightJustifyButtons();
+		dataSetFieldListButtonPanel.addActionListener(this);
+		
+		panelGC.gridy++;
+		panelGC.fill = GridBagConstraints.NONE;
+		panelGC.weightx = 0;
+		panelGC.weighty = 0;
+		panel.add(dataSetFieldListButtonPanel.getPanel(), panelGC);
+		
+		return panel;
+	}
+	
+	private JPanel createFieldEditingArea() {
+		
+		GridBagConstraints panelGC
+			= userInterfaceFactory.createGridBagConstraints();
+		JPanel panel
+			= userInterfaceFactory.createBorderLayoutPanel();
+		panel.setMinimumSize(new Dimension(750, 400));
+
+		panel.add(dataSetFieldPropertyEditorPanel.getPanel(), BorderLayout.NORTH);
+		
 		return panel;
 	}
 	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
 	
 	public void setData(
-		final DataSetConfiguration dataSetConfiguration) {
+		final LinearWorkflow originalLinearWorkflow,
+		final DataSetConfiguration originalDataSetConfiguration) {
 		
-		originalDataSetConfiguration = dataSetConfiguration;
+		this.originalLinearWorkflow = originalLinearWorkflow;
+		this.originalDataSetConfiguration = originalDataSetConfiguration;
 		
-		DataSetConfiguration revisedDataSetConfiguration
+		workingCopyDataSetConfiguration
 			= DataSetConfiguration.createCopy(originalDataSetConfiguration);
-		populateForm(revisedDataSetConfiguration);
+		
+		populateFormFromWorkingCopy();
 	}
 	
-	private void populateForm(
-		final DataSetConfiguration revisedDataSetConfiguration) {
+	private void populateFormFromWorkingCopy() {
 		
-		nameTextField.setText(revisedDataSetConfiguration.getName());
-		versionTextField.setText(revisedDataSetConfiguration.getVersion());
-		descriptionTextArea.setText(revisedDataSetConfiguration.getDescription());
-		filePathTextField.setText(revisedDataSetConfiguration.getFilePath());
+		nameTextField.setText(workingCopyDataSetConfiguration.getName());
+		versionTextField.setText(workingCopyDataSetConfiguration.getVersion());
+		descriptionTextArea.setText(workingCopyDataSetConfiguration.getDescription());
+		filePathTextField.setText(workingCopyDataSetConfiguration.getFilePath());
 		
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
-			= revisedDataSetConfiguration.getFieldConfigurations();
+			= workingCopyDataSetConfiguration.getFieldConfigurations();
 		
+		dataSetFieldListPanel.removeListSelectionListener(this);
 		dataSetFieldListPanel.clearList();
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
-			dataSetFieldListPanel.addListItem(fieldConfiguration);			
+			dataSetFieldListPanel.addListItem(fieldConfiguration);					
 		}
 		
+		if (fieldConfigurations.isEmpty() == false) {
+			dataSetFieldListPanel.setSelectedItem(0);
+			
+			DataSetFieldConfiguration selectedDataSetFieldConfiguration
+				= (DataSetFieldConfiguration) dataSetFieldListPanel.getSelectedItem();
+			
+			dataSetFieldPropertyEditorPanel.setData(
+				workingCopyDataSetConfiguration, 
+				selectedDataSetFieldConfiguration);		
+		}
+		
+		dataSetFieldListPanel.addListSelectionListener(this);
+	}
+	
+	private void populateWorkingCopyFromForm() {
+		
+		//capture the general fields
+		workingCopyDataSetConfiguration.setName(nameTextField.getText().trim());
+		workingCopyDataSetConfiguration.setVersion(versionTextField.getText().trim());
+		workingCopyDataSetConfiguration.setDescription(descriptionTextArea.getText().trim());
+		workingCopyDataSetConfiguration.setFilePath(filePathTextField.getText().trim());
+		
+		//the fields are already accounted for 
+
 	}
 	
 	
@@ -436,20 +504,23 @@ public class DataSetConfigurationEditorDialog
 		dialog.setVisible(true);
 	}
 	
-	private void ok() {
+	
+	private void saveChanges() {
 		try {
-			validateForm();
-			
-			
+			populateWorkingCopyFromForm();
+			//check all errors that are independent of any other 
+			workingCopyDataSetConfiguration.checkErrors();			
+
+			DataSetConfiguration.copyInto(
+				workingCopyDataSetConfiguration, 
+				originalDataSetConfiguration);
+					
 			isCancelled = false;
-			dialog.setVisible(false);
+			dialog.setVisible(false);		
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(
-				dialog, 
-				rifServiceException.getErrorMessages());
-		}
-		
+			ErrorDialog.showError(dialog, rifServiceException.getErrorMessages());
+		}		
 	}
 	
 	private void browseForInputFile() {
@@ -469,6 +540,59 @@ public class DataSetConfigurationEditorDialog
 		filePathTextField.setText(selectedInputFile.getAbsolutePath());
 	}
 	
+
+	private void addDataSetFieldConfiguration() {
+		DataSetFieldConfiguration dataSetFieldConfiguration
+			= DataSetFieldConfiguration.newInstance();
+	}
+
+	
+	private void copyDataSetFieldConfiguration() {
+		DataSetFieldConfiguration selectedDataSetFieldConfiguration
+			= (DataSetFieldConfiguration) dataSetFieldListPanel.getSelectedItem();		
+		
+		String dialogTitle
+			= RIFDataLoaderToolMessages.getMessage("dataSetConfigurationEditorDialog.copyDataSetFieldConfiguration.title");
+		String instructionsText
+			= RIFDataLoaderToolMessages.getMessage("dataSetConfigurationEditorDialog.copyDataSetFieldConfiguration.instructions");
+		String fieldName
+			= RIFDataLoaderToolMessages.getMessage("dataSetConfigurationEditorDialog.copyDataSetFieldConfiguration.fieldName");		
+		String[] existingListItemNames
+			= dataSetFieldListPanel.getDisplayNames();
+		
+		CopyListItemNameEditorDialog dialog
+			= new CopyListItemNameEditorDialog(
+				userInterfaceFactory,
+				dialogTitle,
+				instructionsText,
+				fieldName,
+				existingListItemNames);
+		
+		dialog.show();
+		if (dialog.isCancelled()) {
+			return;
+		}
+		
+		String selectedName = dialog.getFieldName();
+		DataSetFieldConfiguration copiedDataSetFieldConfiguration
+			= DataSetFieldConfiguration.createCopy(selectedDataSetFieldConfiguration);
+		copiedDataSetFieldConfiguration.setLoadFieldName(selectedName);
+		dataSetFieldListPanel.addListItem(copiedDataSetFieldConfiguration);
+		dataSetFieldListPanel.setSelectedItem(copiedDataSetFieldConfiguration);
+		dataSetFieldListPanel.updateUI();
+		
+	}
+	
+	private void editDataSetFieldConfiguration() {
+		DataSetFieldConfiguration dataSetFieldConfiguration
+			= (DataSetFieldConfiguration) dataSetFieldListPanel.getSelectedItem();
+	}
+	
+	private void deleteDataSetFieldConfiguration() {
+		dataSetFieldListPanel.deleteSelectedListItems();	
+	}
+
+	
 	private void close() {
 		isCancelled = true;
 		dialog.setVisible(false);
@@ -480,8 +604,9 @@ public class DataSetConfigurationEditorDialog
 	
 	public DataSetConfiguration getDataSetConfiguration() {
 		
-		return originalDataSetConfiguration;
+		return workingCopyDataSetConfiguration;
 	}
+	
 	
 	public void resetForm() {
 		
@@ -490,40 +615,75 @@ public class DataSetConfigurationEditorDialog
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-	private void validateForm() 
-		throws RIFServiceException {
-		
-		
-		
-		
-	}
-	
+
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
 
 	public void actionPerformed(ActionEvent event) {
-		Object button = event.getSource();
+		Object source = event.getSource();
 		
-		if (button == okButton) {
-			ok();
+		if (okCloseButtonPanel.isOKButton(source)) {
+			saveChanges();
 		}
-		else if (button == browseButton) {
+		else if (source == rifSchemaAreasComboBox) {
+			dataSetFieldPropertyEditorPanel.updateUI();
+		}
+		else if (source == browseButton) {
 			browseForInputFile();
 		}
-		else if (button == closeButton) {
+		else if (dataSetFieldListButtonPanel.isAddButton(source)) {
+			addDataSetFieldConfiguration();
+		}
+		else if (dataSetFieldListButtonPanel.isCopyButton(source)) {
+			copyDataSetFieldConfiguration();			
+		}
+		else if (dataSetFieldListButtonPanel.isEditButton(source)) {
+			editDataSetFieldConfiguration();			
+		}
+		else if (dataSetFieldListButtonPanel.isDeleteButton(source)) {
+			deleteDataSetFieldConfiguration();			
+		}
+		
+		else if (okCloseButtonPanel.isCloseButton(source)) {
 			close();
 		}
 	}
 	
-	public void valueChanged(ListSelectionEvent event) {		
-		DataSetFieldConfiguration selectedFieldConfiguration
-			= (DataSetFieldConfiguration) dataSetFieldListPanel.getSelectedItem();
-		dataSetFieldPropertyEditorPanel.setDataFieldConfiguration(selectedFieldConfiguration);
-		
-		JScrollBar verticalScrollBar
-			= currentFieldScrollPane.getVerticalScrollBar();
-		verticalScrollBar.setValue(verticalScrollBar.getMinimum());
+	public void valueChanged(ListSelectionEvent event) {
+		//validate the currently displayed field
+		try {
+			dataSetFieldPropertyEditorPanel.saveChanges();
+
+			DataSetFieldConfiguration originalDataSetFieldConfiguration
+				= dataSetFieldPropertyEditorPanel.getOriginalDataSetFieldConfiguration();
+			
+			//Save changes happened and did not throw any exceptions
+			//It is safe to change the currently displayed field
+			DataSetFieldConfiguration selectedFieldConfiguration
+				= (DataSetFieldConfiguration) dataSetFieldListPanel.getSelectedItem();
+			if (selectedFieldConfiguration == null) {
+				//a list item may have been added or deleted
+				dataSetFieldListPanel.selectFirstItem();
+			}
+			
+			dataSetFieldPropertyEditorPanel.setData(
+				workingCopyDataSetConfiguration,
+				selectedFieldConfiguration);
+			
+			JScrollBar verticalScrollBar
+				= currentFieldScrollPane.getVerticalScrollBar();
+			verticalScrollBar.setValue(0);	
+		}
+		catch(RIFServiceException rifServiceException) {
+			//We need to go back to the previously selected item
+			DataSetFieldConfiguration previouslySelectedDataSetFieldConfiguration
+				= dataSetFieldPropertyEditorPanel.getOriginalDataSetFieldConfiguration();			
+			dataSetFieldListPanel.removeListSelectionListener(this);
+			dataSetFieldListPanel.setSelectedItem(previouslySelectedDataSetFieldConfiguration);
+			dataSetFieldListPanel.addListSelectionListener(this);
+			ErrorDialog.showError(dialog, rifServiceException.getErrorMessages());			
+		}
 	}
 	
 	// ==========================================

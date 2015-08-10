@@ -82,16 +82,19 @@ public final class CheckWorkflowManager
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private OptimiseWorkflowManager optimiseWorkflowManager;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public CheckWorkflowManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
+		final RIFDatabaseProperties rifDatabaseProperties,
+		final OptimiseWorkflowManager optimiseWorkflowManager) {
 
 		super(rifDatabaseProperties);
 	
+		this.optimiseWorkflowManager = optimiseWorkflowManager;
 	}
 
 	// ==========================================
@@ -130,10 +133,6 @@ public final class CheckWorkflowManager
 			logFileWriter,
 			dataSetConfiguration);
 		
-		//createDataQualityTable(
-		//	connection,
-		//	dataSetConfiguration);
-		
 		updateLastCompletedWorkState(
 			connection,
 			logFileWriter,
@@ -155,13 +154,19 @@ public final class CheckWorkflowManager
 			= RIFTemporaryTablePrefixes.OPTIMISE.getTableName(coreDataSetName);
 		String checkTableName
 			= RIFTemporaryTablePrefixes.CHECK.getTableName(coreDataSetName);
-		deleteTable(
-			connection, 
-			logFileWriter,
-			checkTableName);
+		
 
 		PreparedStatement statement = null;
 		try {
+			deleteTable(
+				connection, 
+				logFileWriter,
+				checkTableName);
+			
+			optimiseWorkflowManager.deleteIndices(
+				connection, 
+				logFileWriter, 
+				dataSetConfiguration, RIFTemporaryTablePrefixes.CHECK);
 			
 				
 			SQLGeneralQueryFormatter queryFormatter 
@@ -259,6 +264,12 @@ public final class CheckWorkflowManager
 				checkTableName,
 				dataSetConfiguration,
 				WorkflowState.CHECK);
+			
+			optimiseWorkflowManager.createIndices(
+				connection, 
+				logFileWriter, 
+				dataSetConfiguration, 
+				RIFTemporaryTablePrefixes.CHECK);
 			
 		}
 		catch(SQLException sqlException) {

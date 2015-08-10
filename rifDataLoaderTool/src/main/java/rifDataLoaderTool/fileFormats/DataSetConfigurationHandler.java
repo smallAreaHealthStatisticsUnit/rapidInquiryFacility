@@ -183,6 +183,7 @@ public final class DataSetConfigurationHandler
 		else if (isSingularRecordName(qualifiedName) == true) {
 			currentDataSetConfiguration
 				= DataSetConfiguration.newInstance();
+			currentDataSetConfiguration.setNewRecord(false);
 		}
 		else if (isDelegatedHandlerAssigned()) {
 			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
@@ -241,8 +242,6 @@ public final class DataSetConfigurationHandler
 					ArrayList<DataSetFieldConfiguration> fieldConfigurations
 						=  dataSetFieldConfigurationHandler.getDataSetFieldConfigurations();
 					currentDataSetConfiguration.setFieldConfigurations(fieldConfigurations);
-					System.out.println("DataSetConfigHandler == ADDING Fields");
-
 				}				
 				else {
 					assert false;
@@ -252,7 +251,6 @@ public final class DataSetConfigurationHandler
 			}
 		}
 		else if (equalsFieldName("name", qualifiedName)) {
-			System.out.println("DataSetConfigHandler == encountering name=="+getCurrentFieldValue()+"==");
 			currentDataSetConfiguration.setName(getCurrentFieldValue());
 		}
 		else if (equalsFieldName("version", qualifiedName)) {

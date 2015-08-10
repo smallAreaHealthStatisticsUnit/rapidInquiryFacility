@@ -252,6 +252,18 @@ public final class OrderedListPanel {
 	}
 	
 	/**
+	 * Removes the list selection listener.
+	 *
+	 * @param listSelectionListener the list selection listener
+	 */
+	public void removeListSelectionListener(
+		ListSelectionListener listSelectionListener) {
+		
+		list.removeListSelectionListener(listSelectionListener);
+	}
+	
+	
+	/**
 	 * Adds the list item.
 	 *
 	 * @param listItem the list item
@@ -428,6 +440,14 @@ public final class OrderedListPanel {
 		DisplayableListItemInterface selectableItem) {
 		
 		list.setSelectedValue(selectableItem.getDisplayName(), true);
+	}
+	
+	public void setPrototypeListValue(final String prototypeListValue) {
+		list.setPrototypeCellValue(prototypeListValue);
+	}
+	
+	public String[] getDisplayNames() {
+		return listItems.toArray(new String[0]);
 	}
 	
 // ==========================================

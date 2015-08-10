@@ -548,6 +548,7 @@ public abstract class AbstractDataLoaderStepManager {
 			statement.executeUpdate();		
 		}
 		catch(SQLException sqlException) {
+			sqlException.printStackTrace(System.out);
 			logSQLException(
 				logFileWriter,
 				sqlException);
@@ -603,6 +604,48 @@ public abstract class AbstractDataLoaderStepManager {
 		finally {
 			SQLQueryUtility.close(statement);
 		}		
+	}
+
+	protected void renameTable(
+		final Connection connection,
+		final Writer logFileWriter,
+		final String sourceTableName,
+		final String destinationTableName) 
+		throws RIFServiceException {
+			
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		PreparedStatement statement = null;
+		try {
+			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");
+			queryFormatter.addQueryPhrase(sourceTableName);
+			queryFormatter.addQueryPhrase(" RENAME TO ");
+			queryFormatter.addQueryPhrase(destinationTableName);
+			statement
+				= createPreparedStatement(connection, queryFormatter);
+			statement.executeUpdate();			
+		}
+		catch(SQLException sqlException) {
+			logSQLException(
+				logFileWriter, 
+				sqlException);
+			logSQLQuery(
+				logFileWriter,
+				"renameTable", 
+				queryFormatter);
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"abstractDataLoaderStepManager.error.unableToRenameTable",
+					sourceTableName,
+					destinationTableName);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
 	}
 	
 	protected void copyTable(

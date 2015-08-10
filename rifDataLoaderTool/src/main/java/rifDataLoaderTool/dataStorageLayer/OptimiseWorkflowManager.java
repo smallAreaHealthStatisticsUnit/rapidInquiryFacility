@@ -116,10 +116,14 @@ public final class OptimiseWorkflowManager
 			= RIFTemporaryTablePrefixes.CONVERT.getTableName(coreDataSetName);
 		String optimiseTableName
 			= RIFTemporaryTablePrefixes.OPTIMISE.getTableName(coreDataSetName);
+		
+		//remove any old copies of the optimise table that may have been created
+		//for this data set
 		deleteTable(
 			connection,
 			logFileWriter,
 			optimiseTableName);
+		
 		copyTable(
 			connection,
 			logFileWriter,
@@ -129,14 +133,16 @@ public final class OptimiseWorkflowManager
 		deleteIndices(
 			connection,
 			logFileWriter,
-			dataSetConfiguration.getName(),
-			dataSetConfiguration.getIndexFieldNames());			
-			
+			dataSetConfiguration,
+			RIFTemporaryTablePrefixes.OPTIMISE);			
+		
+		
+		
 		createIndices(
 			connection,
 			logFileWriter,
-			dataSetConfiguration.getName(),
-			dataSetConfiguration.getIndexFieldNames());
+			dataSetConfiguration,
+			RIFTemporaryTablePrefixes.OPTIMISE);
 		
 		addPrimaryKey(
 			connection,
@@ -152,20 +158,23 @@ public final class OptimiseWorkflowManager
 
 	}
 	
-	private void createIndices(
+	public void createIndices(
 		final Connection connection,
 		final Writer logFileWriter,
-		final String coreDataSetName,
-		final String[] indexFieldNames) 
+		final DataSetConfiguration dataSetConfiguration,
+		final RIFTemporaryTablePrefixes temporaryTableState) 
 		throws RIFServiceException {
 				
+		
+		String coreDataSetName
+			= dataSetConfiguration.getName();			
+		String targetTable
+			= temporaryTableState.getTableName(coreDataSetName);
+		String[] indexFieldNames
+			= dataSetConfiguration.getIndexFieldNames();
 		String currentIndexFieldName = null;
 		PreparedStatement statement = null;
 		try {
-
-			String targetTable
-				= RIFTemporaryTablePrefixes.OPTIMISE.getTableName(coreDataSetName);
-	
 			for (String indexFieldName : indexFieldNames) {
 				currentIndexFieldName = indexFieldName;
 	
@@ -230,20 +239,24 @@ public final class OptimiseWorkflowManager
 		}
 	}
 	
-	private void deleteIndices(
+	public void deleteIndices(
 		final Connection connection,
 		final Writer logFileWriter,
-		final String coreDataSetName,
-		final String[] indexFieldNames) 
+		final DataSetConfiguration dataSetConfiguration,
+		final RIFTemporaryTablePrefixes temporaryTableState) 
 		throws RIFServiceException {
 	
+		String coreDataSetName
+			= dataSetConfiguration.getName();			
+		String targetTable
+			= temporaryTableState.getTableName(coreDataSetName);
+		String[] indexFieldNames
+			= dataSetConfiguration.getIndexFieldNames();
+
 		String currentFieldName = null;
 		PreparedStatement statement = null;
 		try {
 
-			String targetTable
-				= RIFTemporaryTablePrefixes.OPTIMISE.getTableName(coreDataSetName);
-	
 			for (String indexFieldName : indexFieldNames) {
 				currentFieldName = indexFieldName;
 			

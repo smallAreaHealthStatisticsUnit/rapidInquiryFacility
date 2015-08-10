@@ -1,3 +1,11 @@
+
+
+--Login to PostgreSQL
+-- ensure that a database tmp_sahsu_db exists
+--Copy and paste this entire file into PG Admin's query editor
+--Press enter.  It should create all the tables and load all the functions 
+--that should appear in the demo.
+
 CREATE OR REPLACE FUNCTION convert_age_sex(
 	age INT,
 	sex INT)
@@ -195,50 +203,45 @@ $$   LANGUAGE plpgsql;
 
 
 
-CREATE OR REPLACE FUNCTION initialise_demo_database()
-	RETURNS VOID AS 
-$$
-DECLARE
+DROP TABLE IF EXISTS rif40_covariates;
+CREATE TABLE rif40_covariates (
+	geography_name VARCHAR(50),
+	geolevel_name VARCHAR(30),
+	covariate_name VARCHAR(30),
+	min DOUBLE PRECISION,
+	max DOUBLE PRECISION,
+	type DOUBLE PRECISION);
+	
+DROP TABLE IF EXISTS data_set_configurations CASCADE;
+CREATE TABLE data_set_configurations (
+	core_data_set_name VARCHAR(50) NOT NULL,
+	version VARCHAR(30) NOT NULL,
+	creation_date DATE NOT NULL DEFAULT CURRENT_DATE,
+	current_workflow_state VARCHAR(20) NOT NULL DEFAULT 'start');
 
-BEGIN
+DROP SEQUENCE IF EXISTS data_set_sequence;
+CREATE SEQUENCE data_set_sequence;
+ALTER TABLE data_set_configurations ADD COLUMN id INTEGER NOT NULL DEFAULT nextval('data_set_sequence');
 
-   DROP TABLE IF EXISTS rif40_covariates;
-   CREATE TABLE rif40_covariates (
-      geography VARCHAR(50) NOT NULL,
-      geolevel_name VARCHAR(30) NOT NULL,
-      covariate_name VARCHAR(30) NOT NULL,
-      min DOUBLE PRECISION NOT NULL,
-      max DOUBLE PRECISION NOT NULL,
-      type DOUBLE PRECISION NOT NULL);
+	
+DROP TABLE IF EXISTS rif_change_log;
+CREATE TABLE rif_change_log (
+	data_set_id INT NOT NULL,
+	row_number INT NOT NULL,
+	field_name VARCHAR(30) NOT NULL,
+	old_value VARCHAR(30) NOT NULL,
+	new_value VARCHAR(30) NOT NULL,
+	time_stamp DATE NOT NULL DEFAULT CURRENT_DATE);
 
-   DROP SEQUENCE IF EXISTS data_set_sequence CASCADE;   
-   CREATE SEQUENCE data_set_sequence;
-   DROP TABLE IF EXISTS data_set_configurations;
-   CREATE TABLE data_set_configurations (
-      id INTEGER DEFAULT next_val(data_set_sequence),
-      core_data_set_name VARCHAR(50) NOT NULL,
-      version VARCHAR(20) NOT NULL,
-      creation_date DATE DEFAULT NOW()
-   ) 
-   ALTER SEQUENCE data_set_sequence OWNED BY data_set_configurations.id;
-   
-   DROP TABLE IF EXISTS rif_change_log;
-   CREATE TABLE rif_change_log (
-      data_set_id INTEGER NOT NULL,
-      row_number INTEGER NOT NULL,
-      field_name VARCHAR(30) NOT NULL,
-      old_value VARCHAR(30) NOT NULL,      
-      new_value VARCHAR(30) NOT NULL,
-      time_stamp DATE NOT NULL DEFAULT NOW());
-   
-   DROP TABLE IF EXISTS rif_failed_val_log;
-   CREATE TABLE rif_failed_val_log (
-      data_set_id INTEGER NOT NULL,
-      row_number INTEGER NOT NULL,
-      field_name VARCHAR(30) NOT NULL,
-      invalid_value VARCHAR(30) NOT NULL,      
-      time_stamp DATE NOT NULL DEFAULT NOW());
+DROP TABLE IF EXISTS rif_failed_val_log;
+CREATE TABLE rif_failed_val_log (
+	data_set_id INT NOT NULL,
+	row_number INT NOT NULL,
+	field_name VARCHAR(30) NOT NULL,
+	invalid_value VARCHAR(30) NOT NULL,
+	time_stamp DATE NOT NULL DEFAULT CURRENT_DATE);
+	
 
-END;
-$$   LANGUAGE plpgsql;
---SELECT initialise_demo_database();
+
+
+

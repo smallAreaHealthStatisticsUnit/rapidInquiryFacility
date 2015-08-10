@@ -450,6 +450,42 @@ public final class FieldValidationUtility {
 		return false;		
 	}
 	
+	public static String compareNullities(
+		final Object fieldValueA,
+		final String recordNameA,
+		final String fieldNameA,		
+		final Object fieldValueB,
+		final String recordNameB,
+		final String fieldNameB) {
+			
+		if (hasDifferentNullity(fieldValueA, fieldValueB) == false) {
+			//fieldValueA and fieldValueB are either both null or both non-null
+			return null;
+		}
+		
+		String differenceMessage = "";
+		if (fieldValueA == null) {
+			differenceMessage
+				= RIFServiceMessages.getMessage(
+					"fieldValidationUtility.nullityDifferences.fieldLevelDifference",
+					recordNameA,
+					fieldNameA,
+					recordNameB,
+					fieldNameB);
+		}
+		else {
+			differenceMessage
+				= RIFServiceMessages.getMessage(
+					"fieldValidationUtility.nullityDifferences.fieldLevelDifference",
+					recordNameB,
+					fieldNameB,
+					recordNameA,
+					fieldNameA);
+		}		
+		
+		return differenceMessage;			
+	}
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

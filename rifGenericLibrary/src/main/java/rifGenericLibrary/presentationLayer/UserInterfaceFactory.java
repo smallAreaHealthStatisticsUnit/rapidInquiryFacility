@@ -93,6 +93,8 @@ public final class UserInterfaceFactory {
 // Section Constants
 // ==========================================
 	
+	private static final int MAXIMUM_TOOL_TIP_WIDTH = 40;
+	
 	/** Default width for text components */
 	private static final int DEFAULT_TEXT_FIELD_WIDTH = 20;
 	
@@ -150,6 +152,7 @@ public final class UserInterfaceFactory {
      * @param labelText the label text
      * @return the string
      */
+
 	public String createHTMLLabelText(
 		int headerLevel, 
 		String labelText) {
@@ -181,6 +184,62 @@ public final class UserInterfaceFactory {
     	return labelText;
     }
 
+
+	public String createHTMLToolTipText(
+		final String labelText) {
+   
+		ByteArrayOutputStream outputStream
+    		= new ByteArrayOutputStream();
+	
+    	HTMLUtility htmlUtility = new HTMLUtility();
+    	htmlUtility.initialise(outputStream, "UTF-8");
+    	htmlUtility.beginDocument();
+    	
+    	JLabel label = new JLabel("");
+    	try {    		
+        	
+        	int startIndex = 0;
+        	int numberOfLines = labelText.length()/MAXIMUM_TOOL_TIP_WIDTH;
+        	for (int i = 0; i < numberOfLines; i++) {
+        		startIndex = (MAXIMUM_TOOL_TIP_WIDTH)*i;  		
+
+        		if (i != 0) {
+        			htmlUtility.insertLineBreak();
+        		}
+        		int endIndex 
+        			= startIndex + MAXIMUM_TOOL_TIP_WIDTH;
+        		if (endIndex < labelText.length()) {
+        			String line
+        				= labelText.substring(startIndex, endIndex);
+        			htmlUtility.writeParagraph(line);
+        		}
+        		else {
+        			String line
+        				= labelText.substring(startIndex);
+        			htmlUtility.writeParagraph(line);        			
+        		}
+        		
+        	}
+
+        	htmlUtility.endDocument();
+
+        	
+    		String htmlFormattedInstructionText 
+				= new String(outputStream.toByteArray(), "UTF-8");	
+    		outputStream.close();
+    		return htmlFormattedInstructionText;
+    	}
+    	catch(Exception exception) {
+    		exception.printStackTrace(System.out);
+    		//in the event of an exception, just write instruction
+    		//text as normal
+    		label.setText(labelText);
+    	}
+    	
+    	return labelText;
+    }
+	
+	
     
     /**
      * Creates a new UserInterface object.
@@ -752,6 +811,15 @@ public final class UserInterfaceFactory {
 	public JPanel createPanel() {
 		
 		JPanel panel = new JPanel(new GridBagLayout());
+		return panel;
+	}
+	
+	public JPanel createGridLayoutPanel(
+		final int rows, 
+		final int columns) {	
+
+		GridLayout gridLayout = new GridLayout();
+		JPanel panel = new JPanel(gridLayout);
 		return panel;
 	}
 	

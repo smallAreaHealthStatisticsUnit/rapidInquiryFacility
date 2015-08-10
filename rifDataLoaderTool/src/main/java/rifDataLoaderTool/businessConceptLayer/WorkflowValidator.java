@@ -94,7 +94,6 @@ public class WorkflowValidator {
 		
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		
-		System.out.println("Validate workflow 1");
 		ArrayList<DataSetConfiguration> dataSetConfigurations
 			= linearWorkflow.getDataSetConfigurations();
 		
@@ -104,8 +103,6 @@ public class WorkflowValidator {
 			dataSetConfiguration.checkEmptyFields(errorMessages);
 		}
 
-		System.out.println("Validate workflow 2");
-		
 		detectException(
 			errorMessages,
 			RIFDataLoaderToolError.INVALID_DATA_SET_CONFIGURATION);
@@ -116,21 +113,11 @@ public class WorkflowValidator {
 		WorkflowState stopWorkflowState
 			= linearWorkflow.getStopWorkflowState();
 		
-		System.out.println("Validate workflow 3");
-		
-		if (startWorkflowState == null) {			
-			System.out.println("Validate workflow 3.1");
-		}
-		
-		if (stopWorkflowState == null) {			
-			System.out.println("Validate workflow 3.2");
-		}
-		
 		checkStartStopStatesInOrder(
 			startWorkflowState,
 			stopWorkflowState,
 			errorMessages);
-		
+
 		checkDataSetsHaveSameState(
 			dataSetConfigurations,
 			errorMessages);		
@@ -160,7 +147,7 @@ public class WorkflowValidator {
 					"workflowValidator.error.illegalCurrentStateInLinearWorkflow");
 			errorMessages.add(errorMessage);						
 		}		
-		
+
 		//The common current state of the data set configurations must be
 		//the same as starting state of the workflow
 		//work flow starting state must be the same as the common
@@ -176,7 +163,7 @@ public class WorkflowValidator {
 					commonWorkflowState.getStateName());
 			errorMessages.add(errorMessage);			
 		}
-
+		
 		detectException(
 			errorMessages,
 			RIFDataLoaderToolError.INVALID_DATA_SET_CONFIGURATION);
@@ -186,10 +173,11 @@ public class WorkflowValidator {
 				stopWorkflowState,
 				dataSetConfiguration);				
 		}
-
+		
 		detectException(
 			errorMessages,
 			RIFDataLoaderToolError.INVALID_DATA_SET_CONFIGURATION);
+		System.out.println("Validate workflow 8");
 
 	}
 

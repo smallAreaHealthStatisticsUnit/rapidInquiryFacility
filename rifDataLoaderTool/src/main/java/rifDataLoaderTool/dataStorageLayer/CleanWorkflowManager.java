@@ -137,6 +137,8 @@ public final class CleanWorkflowManager
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 				
+		
+		System.out.println("CleanWorkflowManager cleanConfiguration 1");
 		RIFLogger logger = RIFLogger.getLogger();
 		
 		PreparedStatement searchReplaceStatement = null;
@@ -179,6 +181,8 @@ public final class CleanWorkflowManager
 				coreDataSetName,
 				RIFTemporaryTablePrefixes.LOAD,
 				RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE);			
+
+			System.out.println("CleanWorkflowManager cleanConfiguration 2");
 			
 			/*
 			 * Part II: Now validate the results, and change the field value to 
@@ -205,6 +209,7 @@ public final class CleanWorkflowManager
 				RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE,
 				RIFTemporaryTablePrefixes.CLEAN_VALIDATION);			
 			
+			System.out.println("CleanWorkflowManager cleanConfiguration 3");
 			
 			/*
 			 * Part III: Finally, cast each field to its appropriate data type (eg: int,
@@ -247,19 +252,26 @@ public final class CleanWorkflowManager
 				connection, 
 				logFileWriter,
 				finalCleaningTableName);
+
+			System.out.println("CleanWorkflowManager cleanConfiguration 4");
 			
-			copyTable(
+			renameTable(
 				connection,
 				logFileWriter,
 				cleaningCastingTableName,
 				finalCleaningTableName);
 
+			System.out.println("CleanWorkflowManager cleanConfiguration 4.1");
+
+			/*
 			addPrimaryKey(
 				connection,
 				logFileWriter,
 				finalCleaningTableName,
 				"data_set_id, row_number");
-		
+			*/
+			System.out.println("CleanWorkflowManager cleanConfiguration 5");
+			
 			/*
 			 * Part IV: Audit changes that happened between the load table
 			 * values and the search and replace values.  Also audit rows
@@ -270,10 +282,19 @@ public final class CleanWorkflowManager
 				logFileWriter,
 				dataSetConfiguration);
 
+			System.out.println("CleanWorkflowManager cleanConfiguration 6");
+			
 			changeAuditManager.auditValidationFailures(
 				connection,
 				logFileWriter,
 				dataSetConfiguration);
+
+			System.out.println("CleanWorkflowManager cleanConfiguration 7");
+
+			cleanupTemporaryCleanTables(
+				connection, 
+				logFileWriter, 
+				dataSetConfiguration);		
 			
 			updateLastCompletedWorkState(
 				connection,
@@ -308,6 +329,32 @@ public final class CleanWorkflowManager
 		}
 		
 	}
+	
+	private void cleanupTemporaryCleanTables(
+		final Connection connection,
+		final Writer logFileWriter,
+		final DataSetConfiguration dataSetConfiguration) 
+		throws RIFServiceException {
+				
+		String coreDataSetName
+			= dataSetConfiguration.getName();
+		
+		String searchReplaceTableName
+			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
+
+		deleteTable(
+			connection, 
+			logFileWriter, 
+			searchReplaceTableName);
+		
+		String validationTableName
+			= RIFTemporaryTablePrefixes.CLEAN_VALIDATION.getTableName(coreDataSetName);
+		deleteTable(
+			connection, 
+			logFileWriter, 
+			validationTableName);
+	}
+	
 	
 	public Integer getCleaningTotalBlankValues(
 		final Connection connection,

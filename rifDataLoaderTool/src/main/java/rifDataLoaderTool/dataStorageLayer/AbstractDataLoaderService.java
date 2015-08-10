@@ -165,7 +165,7 @@ public abstract class AbstractDataLoaderService
 				host,
 				port,
 				databaseName);
-		sqlConnectionManager.initialiseConnectionQueue("kgarwood", "kgarwood");
+		sqlConnectionManager.initialiseConnectionQueue();
 			
 	
 		RIFDatabaseProperties rifDatabaseProperties 
@@ -208,7 +208,8 @@ public abstract class AbstractDataLoaderService
 				
 		checkWorkflowManager
 			= new CheckWorkflowManager(
-				rifDatabaseProperties);
+				rifDatabaseProperties,
+				optimiseWorkflowManager);
 		
 		publishWorkflowManager
 			= new PublishWorkflowManager(

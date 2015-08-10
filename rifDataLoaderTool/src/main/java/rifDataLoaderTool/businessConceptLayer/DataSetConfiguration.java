@@ -1,10 +1,8 @@
 package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
-
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.util.FieldValidationUtility;
@@ -105,6 +103,7 @@ public class DataSetConfiguration
 	// ==========================================
 
 	
+	private boolean isNewRecord;
 	private String name;
 	private String version;
 	private String description;
@@ -119,6 +118,7 @@ public class DataSetConfiguration
 	// ==========================================
 
 	private DataSetConfiguration() {
+		isNewRecord = true;
 		currentWorkflowState = WorkflowState.START;
 		version = "1.0";
 		fieldConfigurations = new ArrayList<DataSetFieldConfiguration>();
@@ -188,40 +188,58 @@ public class DataSetConfiguration
 		return dataSetConfiguration;		
 	}
 
+	
 	public static DataSetConfiguration createCopy(
 		final DataSetConfiguration originalDataSetConfiguration) {
-		
+
 		DataSetConfiguration cloneDataSetConfiguration
 			= new DataSetConfiguration();
-		cloneDataSetConfiguration.setName(
-			originalDataSetConfiguration.getName());
-		cloneDataSetConfiguration.setVersion(
-			originalDataSetConfiguration.getVersion());
-		cloneDataSetConfiguration.setFilePath(
-			originalDataSetConfiguration.getFilePath());		
-		cloneDataSetConfiguration.setDescription(
-			originalDataSetConfiguration.getDescription());
-		cloneDataSetConfiguration.setFileHasFieldNamesDefined(
-			originalDataSetConfiguration.fileHasFieldNamesDefined());
-		cloneDataSetConfiguration.setCurrentWorkflowState(
-			originalDataSetConfiguration.getCurrentWorkflowState());
-		cloneDataSetConfiguration.setRIFSchemaArea(
-			originalDataSetConfiguration.getRIFSchemaArea());
+		copyInto(originalDataSetConfiguration, cloneDataSetConfiguration);
+				
+		return cloneDataSetConfiguration;
+	}
+		
+	public static void copyInto(
+		final DataSetConfiguration sourceDataSetConfiguration,
+		final DataSetConfiguration destinationDataSetConfiguration) {
+		
+		destinationDataSetConfiguration.setNewRecord(
+			sourceDataSetConfiguration.isNewRecord());
+		destinationDataSetConfiguration.setName(
+			sourceDataSetConfiguration.getName());
+		destinationDataSetConfiguration.setVersion(
+			sourceDataSetConfiguration.getVersion());
+		destinationDataSetConfiguration.setFilePath(
+			sourceDataSetConfiguration.getFilePath());		
+		destinationDataSetConfiguration.setDescription(
+			sourceDataSetConfiguration.getDescription());
+		destinationDataSetConfiguration.setFileHasFieldNamesDefined(
+			sourceDataSetConfiguration.fileHasFieldNamesDefined());
+		destinationDataSetConfiguration.setCurrentWorkflowState(
+			sourceDataSetConfiguration.getCurrentWorkflowState());
+		destinationDataSetConfiguration.setRIFSchemaArea(
+			sourceDataSetConfiguration.getRIFSchemaArea());
 		
 		ArrayList<DataSetFieldConfiguration> originalFieldConfigurations
-			= originalDataSetConfiguration.getFieldConfigurations();
+			= sourceDataSetConfiguration.getFieldConfigurations();
 		ArrayList<DataSetFieldConfiguration> cloneFieldConfigurations
-			= DataSetFieldConfiguration.createCopy(originalFieldConfigurations);		
-		cloneDataSetConfiguration.setFieldConfigurations(cloneFieldConfigurations);
+			= DataSetFieldConfiguration.createCopy(originalFieldConfigurations);	
 		
-		return cloneDataSetConfiguration;
+		destinationDataSetConfiguration.setFieldConfigurations(cloneFieldConfigurations);
+
 	}
 		
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-
+	public boolean isNewRecord() {
+		return isNewRecord;
+	}
+	
+	public void setNewRecord(boolean isNewRecord) {
+		this.isNewRecord = isNewRecord;
+	}
 	
 	public String getName() {
 		
@@ -298,6 +316,24 @@ public class DataSetConfiguration
 		this.rifSchemaArea = rifSchemaArea;
 	}
 
+	public int getIndexForField(
+		final DataSetFieldConfiguration dataSetFieldConfiguration) {
+		
+		
+		return fieldConfigurations.indexOf(dataSetFieldConfiguration);
+	}
+	
+	public void replaceField(
+		final DataSetFieldConfiguration originalDataSetFieldConfiguration,
+		final DataSetFieldConfiguration revisedDataSetFieldConfiguration) {
+		
+		int index
+			= fieldConfigurations.indexOf(originalDataSetFieldConfiguration);
+		if (index != -1) {
+			fieldConfigurations.set(index, revisedDataSetFieldConfiguration);
+		}
+	}
+	
 	public ArrayList<DataSetFieldConfiguration> getFieldConfigurations() {
 		
 		return fieldConfigurations;
@@ -319,7 +355,7 @@ public class DataSetConfiguration
 	
 	public void setFieldConfigurations(
 		final ArrayList<DataSetFieldConfiguration> fieldConfigurations) {
-
+		
 			this.fieldConfigurations = fieldConfigurations;
 			
 			for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
@@ -399,6 +435,90 @@ public class DataSetConfiguration
 		
 	}
 	
+	/*
+	 * Determines whether the data set field configuration has load, clean or convert
+	 * field names that already appear in other fields.  This is expected to be used
+	 * in the context where the user has just made editing changes and we're checking
+	 * to make sure they're not using field names that are already allocated to other fields
+	 * If 'existingFieldIndex' is null, we assume that the field is a new field.  Otherwise
+	 * a non-null index will indicate that the data set field configuration already represents
+	 * a field which is already in the data set configuration. 
+	 */
+	public void checkDuplicateFieldNames(
+		final DataSetFieldConfiguration targetDataSetFieldConfiguration) 
+		throws RIFServiceException {
+	
+
+		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		
+		String targetCoreFieldName = targetDataSetFieldConfiguration.getCoreFieldName();
+		
+		ArrayList<String> errorMessages = new ArrayList<String>();
+		
+		String targetLoadFieldName
+			= targetDataSetFieldConfiguration.getLoadFieldName();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			String currentCoreFieldName
+				= fieldConfiguration.getCoreFieldName();
+			String currentLoadFieldName
+				= fieldConfiguration.getLoadFieldName();
+			if (collator.equals(currentLoadFieldName, targetLoadFieldName) &&
+				collator.equals(currentCoreFieldName, targetCoreFieldName) == false) {
+				
+				String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetFieldConfiguration.error.duplicateLoadFieldName",
+					targetLoadFieldName);
+				errorMessages.add(errorMessage);
+				
+				break;
+			}
+		}
+		
+		
+		String targetCleanFieldName
+			= targetDataSetFieldConfiguration.getCleanFieldName();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			String currentCoreFieldName
+				= fieldConfiguration.getCoreFieldName();
+			String currentCleanFieldName
+				= fieldConfiguration.getCleanFieldName();
+			if (collator.equals(currentCleanFieldName, targetCleanFieldName) &&
+				collator.equals(currentCoreFieldName, targetCoreFieldName) == false) {
+				
+				String errorMessage
+					= RIFDataLoaderToolMessages.getMessage(
+						"dataSetFieldConfiguration.error.duplicateCleanFieldName",
+						targetLoadFieldName);
+				errorMessages.add(errorMessage);				
+				break;
+			}
+		}
+		
+		String targetConvertFieldName
+			= targetDataSetFieldConfiguration.getCleanFieldName();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			String currentCoreFieldName
+				= fieldConfiguration.getCoreFieldName();
+			String currentConvertFieldName
+				= fieldConfiguration.getConvertFieldName();
+			if (collator.equals(currentConvertFieldName, targetConvertFieldName) &&
+				collator.equals(currentCoreFieldName, targetCoreFieldName) == false) {
+				
+				String errorMessage
+					= RIFDataLoaderToolMessages.getMessage(
+						"dataSetFieldConfiguration.error.duplicateConvertFieldName",
+						targetLoadFieldName);
+				errorMessages.add(errorMessage);				
+				break;
+			}
+		}
+		
+		countErrors(
+			RIFDataLoaderToolError.INVALID_DATA_SET_FIELD_CONFIGURATION, 
+			errorMessages);
+	}
+		
 	public void checkEmptyFields(
 		final ArrayList<String> errorMessages) {
 					
@@ -407,7 +527,6 @@ public class DataSetConfiguration
 
 		
 		if (fieldValidationUtility.isEmpty(name)) {
-			System.out.println("DSC - checkEmptyFields 1");
 			String nameFieldLabel
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetFieldConfiguration.name.label");
@@ -420,7 +539,6 @@ public class DataSetConfiguration
 
 		
 		if (fieldValidationUtility.isEmpty(version)) {
-			System.out.println("DSC - checkEmptyFields 2");
 			String versionFieldLabel
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetConfiguration.version.label");
@@ -433,7 +551,6 @@ public class DataSetConfiguration
 
 		
 		if (fieldValidationUtility.isEmpty(filePath)) {
-			System.out.println("DSC - checkEmptyFields 3");
 			
 			String versionFieldLabel
 				= RIFDataLoaderToolMessages.getMessage(
@@ -447,7 +564,6 @@ public class DataSetConfiguration
 		
 		//description may be empty
 		if (currentWorkflowState == null) {
-			System.out.println("DSC - checkEmptyFields 4");
 		
 			String currentWorkflowStateFieldLabel
 				= RIFDataLoaderToolMessages.getMessage(
@@ -460,7 +576,6 @@ public class DataSetConfiguration
 		}
 
 		if (rifSchemaArea == null) {
-			System.out.println("DSC - checkEmptyFields 5");
 
 			String currentWorkflowStateFieldLabel
 				= RIFDataLoaderToolMessages.getMessage(
@@ -473,7 +588,6 @@ public class DataSetConfiguration
 		}
 		
 		if (fieldConfigurations.isEmpty()) {
-			System.out.println("DSC - checkEmptyFields 6");
 
 			String currentWorkflowStateFieldLabel
 				= RIFDataLoaderToolMessages.getMessage(
@@ -523,7 +637,6 @@ public class DataSetConfiguration
 		return changeAuditFields;
 		
 	}
-	
 	
 	public DataSetFieldConfiguration getFieldHavingConvertFieldName(
 		final String convertFieldName) {

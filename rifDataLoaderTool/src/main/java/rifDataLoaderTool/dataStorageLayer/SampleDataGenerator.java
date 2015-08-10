@@ -159,7 +159,7 @@ public class SampleDataGenerator {
 		//this data type comes with transformation rules that can help
 		//validate field values so they are reasonable (eg: start with a "19" or a "20")
 		yearFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_year"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_year"));
 		//will appear as a comment in the schema for the table
 		yearFieldConfiguration.setDuplicateIdentificationField(true);
 		yearFieldConfiguration.setCoreFieldDescription("fiscal year of records");
@@ -176,7 +176,7 @@ public class SampleDataGenerator {
 				"age");
 		//the rif
 		ageFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_age"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_age"));
 		ageFieldConfiguration.setDuplicateIdentificationField(true);
 		ageFieldConfiguration.setCoreFieldDescription("age of patient");
 		ageFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
@@ -194,7 +194,7 @@ public class SampleDataGenerator {
 				"cancer_data", 
 				"sex");
 		sexFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_sex"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_sex"));
 		sexFieldConfiguration.setDuplicateIdentificationField(true);
 		sexFieldConfiguration.setCoreFieldDescription("sex of patient");
 		//We expect that there will be likely be a field called 'sex' and if it appears
@@ -306,7 +306,7 @@ public class SampleDataGenerator {
 				"cancer_data", 
 				"icd");
 		icdFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_icd_code"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_icd_code"));
 		icdFieldConfiguration.setDuplicateIdentificationField(true);
 		icdFieldConfiguration.setCoreFieldDescription("eg: super output area");				
 		icdFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
@@ -329,7 +329,7 @@ public class SampleDataGenerator {
 				"cancer_data", 
 				"health_provider_code");
 		healthProviderFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_icd_code"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_icd_code"));
 		healthProviderFieldConfiguration.setDuplicateIdentificationField(true);
 		healthProviderFieldConfiguration.setCoreFieldDescription("code for hospital where visit was recorded");				
 
@@ -434,7 +434,7 @@ public class SampleDataGenerator {
 				"sahsuland_covariates_level3", 
 				"year");
 		yearFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_year"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_year"));
 		yearFieldConfiguration.setDuplicateIdentificationField(true);
 		yearFieldConfiguration.setCoreFieldDescription("calendar year of covariate data");				
 		sahuslandLevel3CovariatesConfiguration.addFieldConfiguration(yearFieldConfiguration);
@@ -456,7 +456,7 @@ public class SampleDataGenerator {
 				"sahsuland_covariates_level3", 
 				"ses");	
 		sesFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_integer"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_integer"));
 		sesFieldConfiguration.setDuplicateIdentificationField(true);
 		sesFieldConfiguration.setCoreFieldDescription("socio-economic status in quintiles");				
 		sesFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
@@ -467,7 +467,7 @@ public class SampleDataGenerator {
 				"sahsuland_covariates_level3", 
 				"ethnicity");	
 		ethnicityFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_integer"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_integer"));
 		sesFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
 		ethnicityFieldConfiguration.setDuplicateIdentificationField(true);
 		ethnicityFieldConfiguration.setCoreFieldDescription("non-white ethnicity score with categories 1,2,3");				
@@ -517,7 +517,7 @@ public class SampleDataGenerator {
 				"sahsuland_covariates_level4", 
 				"year");
 		yearFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_year"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_year"));
 		yearFieldConfiguration.setDuplicateIdentificationField(true);
 		yearFieldConfiguration.setCoreFieldDescription("calendar year of covariate data");				
 		sahuslandLevel4CovariatesConfiguration.addFieldConfiguration(yearFieldConfiguration);
@@ -539,7 +539,7 @@ public class SampleDataGenerator {
 				"sahsuland_covariates_level4", 
 				"ses");	
 		sesFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_integer"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_integer"));
 		sesFieldConfiguration.setDuplicateIdentificationField(true);
 		sesFieldConfiguration.setCoreFieldDescription("socio-economic status in quintiles");				
 		sesFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
@@ -551,7 +551,7 @@ public class SampleDataGenerator {
 				"sahsuland_covariates_level4", 
 				"areatri1km");	
 		areatri1kmFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_integer"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_integer"));
 		areatri1kmFieldConfiguration.setDuplicateIdentificationField(true);
 		areatri1kmFieldConfiguration.setCoreFieldDescription("toxic release inventory within 1km of area (0=no, 1=yes)");				
 		areatri1kmFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
@@ -563,7 +563,7 @@ public class SampleDataGenerator {
 				"sahsuland_covariates_level4", 
 				"areatri1km");	
 		nearDistFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_double"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_double"));
 		nearDistFieldConfiguration.setDuplicateIdentificationField(true);
 		nearDistFieldConfiguration.setCoreFieldDescription("Distance (m) from area centroid to nearest TRI site");				
 		nearDistFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
@@ -575,7 +575,7 @@ public class SampleDataGenerator {
 				"sahsuland_covariates_level4", 
 				"areatri1km");	
 		tri1kmFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_integer"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_integer"));
 		tri1kmFieldConfiguration.setDuplicateIdentificationField(true);
 		tri1kmFieldConfiguration.setCoreFieldDescription("Toxic Release Inventory within 1 km of area centroid (0=no, 1=yes)");				
 		tri1kmFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
@@ -587,7 +587,7 @@ public class SampleDataGenerator {
 				"sahsuland_covariates_level4", 
 				"ethnicity");	
 		ethnicityFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_integer"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_integer"));
 		sesFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
 		ethnicityFieldConfiguration.setDuplicateIdentificationField(true);
 		ethnicityFieldConfiguration.setCoreFieldDescription("non-white ethnicity score with categories 1,2,3");				
@@ -629,7 +629,7 @@ public class SampleDataGenerator {
 				"test4_study_id1_numerator", 
 				"year");	
 		yearFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_year"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_year"));
 		yearFieldConfiguration.setDuplicateIdentificationField(true);
 		yearFieldConfiguration.setCoreFieldDescription("year of data");
 		yearFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
@@ -643,7 +643,7 @@ public class SampleDataGenerator {
 				"test4_study_id1", 
 				"study_or_comparison");	
 		studyOrComparisonFieldConfiguration.setRIFDataType(
-		rifDataTypeFactory.getDataType("rif_text"));
+		rifDataTypeFactory.getDataTypeFromCode("rif_text"));
 		studyOrComparisonFieldConfiguration.setDuplicateIdentificationField(true);
 		studyOrComparisonFieldConfiguration.setCoreFieldDescription("C=Comparison Area S=Study Area");
 		studyOrComparisonFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
@@ -655,7 +655,7 @@ public class SampleDataGenerator {
 				"test4_study_id1_numerator", 
 				"study_id");	
 		studyIDFieldConfiguration.setRIFDataType(
-		rifDataTypeFactory.getDataType("rif_integer"));
+		rifDataTypeFactory.getDataTypeFromCode("rif_integer"));
 		studyIDFieldConfiguration.setDuplicateIdentificationField(true);
 		studyIDFieldConfiguration.setCoreFieldDescription("study identifier");
 		studyIDFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
@@ -668,7 +668,7 @@ public class SampleDataGenerator {
 				"test4_study_id1", 
 				"area_id");	
 		areaIDFieldConfiguration.setRIFDataType(
-		rifDataTypeFactory.getDataType("rif_text"));
+		rifDataTypeFactory.getDataTypeFromCode("rif_text"));
 		areaIDFieldConfiguration.setDuplicateIdentificationField(true);
 		areaIDFieldConfiguration.setCoreFieldDescription("area identifier");
 		areaIDFieldConfiguration.addCheckOption(RIFCheckOption.PERCENT_EMPTY);
@@ -682,7 +682,7 @@ public class SampleDataGenerator {
 				"test4_study_id1", 
 				"band_id");	
 		bandIDFieldConfiguration.setRIFDataType(
-		rifDataTypeFactory.getDataType("rif_text"));
+		rifDataTypeFactory.getDataTypeFromCode("rif_text"));
 		bandIDFieldConfiguration.setCoreFieldDescription("band identifier");
 		bandIDFieldConfiguration.addCheckOption(RIFCheckOption.PERCENT_EMPTY);
 		bandIDFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
@@ -695,7 +695,7 @@ public class SampleDataGenerator {
 				"test4_study_id1", 
 				"sex");	
 		sexFieldConfiguration.setRIFDataType(
-		rifDataTypeFactory.getDataType("rif_sex"));
+		rifDataTypeFactory.getDataTypeFromCode("rif_sex"));
 		sexFieldConfiguration.setDuplicateIdentificationField(true);
 		sexFieldConfiguration.setCoreFieldDescription("sex");
 
@@ -711,7 +711,7 @@ public class SampleDataGenerator {
 				"test4_study_id1", 
 				"age_group");	
 		ageGroupFieldConfiguration.setRIFDataType(
-		rifDataTypeFactory.getDataType("rif_age"));
+		rifDataTypeFactory.getDataTypeFromCode("rif_age"));
 		ageGroupFieldConfiguration.setDuplicateIdentificationField(true);
 		ageGroupFieldConfiguration.setCleanFieldName("age");
 		ageGroupFieldConfiguration.setConvertFieldName("age");
@@ -727,7 +727,7 @@ public class SampleDataGenerator {
 				"test4_study_id1", 
 				"ses");	
 		sesFieldConfiguration.setRIFDataType(
-		rifDataTypeFactory.getDataType("rif_integer"));
+		rifDataTypeFactory.getDataTypeFromCode("rif_integer"));
 		sesFieldConfiguration.setCoreFieldDescription("socio economic status");
 		sesFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
 		sesFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
@@ -740,7 +740,7 @@ public class SampleDataGenerator {
 				"test4_study_id1", 
 				"inv_1");	
 		sesFieldConfiguration.setRIFDataType(
-		rifDataTypeFactory.getDataType("rif_text"));
+		rifDataTypeFactory.getDataTypeFromCode("rif_text"));
 		inv1FieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
 		inv1FieldConfiguration.setFieldPurpose(FieldPurpose.HEALTH_CODE);
 		test4Study1Configuration.addFieldConfiguration(inv1FieldConfiguration);	
@@ -750,7 +750,7 @@ public class SampleDataGenerator {
 				"test4_study_id1", 
 				"total_pop");	
 		sesFieldConfiguration.setRIFDataType(
-		rifDataTypeFactory.getDataType("rif_text"));
+		rifDataTypeFactory.getDataTypeFromCode("rif_text"));
 		totalPopFieldConfiguration.setDuplicateIdentificationField(true);
 		totalPopFieldConfiguration.setCoreFieldDescription("total population");
 		totalPopFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
@@ -804,7 +804,7 @@ public class SampleDataGenerator {
 		//don't record sensitive data in the change logs
 		idFieldConfiguration.setFieldChangeAuditLevel(FieldChangeAuditLevel.NONE);
 		idFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_text"));		
+			rifDataTypeFactory.getDataTypeFromCode("rif_text"));		
 		idFieldConfiguration.setDuplicateIdentificationField(true);
 		idFieldConfiguration.setCoreFieldDescription("patient identifier");
 		idFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
@@ -817,7 +817,7 @@ public class SampleDataGenerator {
 		yearFieldConfiguration.setEmptyValueAllowed(false);
 		yearFieldConfiguration.setFieldChangeAuditLevel(FieldChangeAuditLevel.INCLUDE_FIELD_NAME_ONLY);
 		yearFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_year"));		
+			rifDataTypeFactory.getDataTypeFromCode("rif_year"));		
 		yearFieldConfiguration.setDuplicateIdentificationField(true);
 		yearFieldConfiguration.setCoreFieldDescription("year of record");
 		yearFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
@@ -832,13 +832,19 @@ public class SampleDataGenerator {
 		sexFieldConfiguration.setFieldChangeAuditLevel(
 			FieldChangeAuditLevel.INCLUDE_FIELD_CHANGE_DESCRIPTION);
 		sexFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_sex"));		
+			rifDataTypeFactory.getDataTypeFromCode("rif_sex"));		
 		sexFieldConfiguration.setDuplicateIdentificationField(true);
 		sexFieldConfiguration.setCoreFieldDescription("sex of patient");
 		sexFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
-		sexFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
-		dataSetConfiguration.addFieldConfiguration(sexFieldConfiguration);	
+
+		RIFConversionFunctionFactory rifConversionFunctionFactory
+			= RIFConversionFunctionFactory.newInstance();
+		RIFConversionFunction ageSexConversionFunction
+			= rifConversionFunctionFactory.getRIFConvertFunction("convert_age_sex");	
+		sexFieldConfiguration.setConvertFunction(ageSexConversionFunction);		
 		
+		sexFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);		
+		dataSetConfiguration.addFieldConfiguration(sexFieldConfiguration);	
 		
 		DataSetFieldConfiguration ageFieldConfiguration
 			= DataSetFieldConfiguration.newInstance("test_cleaning1", "age");
@@ -850,11 +856,12 @@ public class SampleDataGenerator {
 		ageFieldConfiguration.setFieldChangeAuditLevel(
 			FieldChangeAuditLevel.INCLUDE_FIELD_NAME_ONLY);
 		ageFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_age"));		
+			rifDataTypeFactory.getDataTypeFromCode("rif_age"));		
 		ageFieldConfiguration.setDuplicateIdentificationField(true);
 		ageFieldConfiguration.setCoreFieldDescription("age of patient");
 		ageFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
 		ageFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		ageFieldConfiguration.setConvertFunction(ageSexConversionFunction);
 		dataSetConfiguration.addFieldConfiguration(ageFieldConfiguration);	
 		
 		DataSetFieldConfiguration dobFieldConfiguration
@@ -863,11 +870,12 @@ public class SampleDataGenerator {
 		dobFieldConfiguration.setFieldChangeAuditLevel(
 			FieldChangeAuditLevel.INCLUDE_FIELD_CHANGE_DESCRIPTION);
 		dobFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_date"));		
+			rifDataTypeFactory.getDataTypeFromCode("rif_date"));		
 		dobFieldConfiguration.setDuplicateIdentificationField(true);
 		dobFieldConfiguration.setCoreFieldDescription("date of birth of patient");
 		dobFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
 		dobFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		dobFieldConfiguration.addCheckOption(RIFCheckOption.PERCENT_EMPTY);
 		dataSetConfiguration.addFieldConfiguration(dobFieldConfiguration);		
 		
 		DataSetFieldConfiguration postalCodeFieldConfiguration
@@ -876,10 +884,12 @@ public class SampleDataGenerator {
 		postalCodeFieldConfiguration.setFieldChangeAuditLevel(
 			FieldChangeAuditLevel.NONE);
 		postalCodeFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_uk_postcode"));		
+			rifDataTypeFactory.getDataTypeFromCode("rif_uk_postcode"));		
 		postalCodeFieldConfiguration.setDuplicateIdentificationField(true);
 		postalCodeFieldConfiguration.setCoreFieldDescription("UK postal code");
 		postalCodeFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		postalCodeFieldConfiguration.addCheckOption(RIFCheckOption.PERCENT_EMPTY);
+		postalCodeFieldConfiguration.addCheckOption(RIFCheckOption.PERCENT_EMPTY_PER_YEAR);
 		postalCodeFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
 		
 		dataSetConfiguration.addFieldConfiguration(postalCodeFieldConfiguration);		
@@ -890,11 +900,12 @@ public class SampleDataGenerator {
 		scoreFieldConfiguration.setFieldChangeAuditLevel(
 			FieldChangeAuditLevel.NONE);
 		scoreFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_quintilise"));		
+			rifDataTypeFactory.getDataTypeFromCode("rif_quintilise"));		
 		scoreFieldConfiguration.setDuplicateIdentificationField(true);
 		scoreFieldConfiguration.setCoreFieldDescription("some kind of score that needs to be quintilised");
 		scoreFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
 		scoreFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
+		scoreFieldConfiguration.addCheckOption(RIFCheckOption.PERCENT_EMPTY_PER_YEAR);
 		dataSetConfiguration.addFieldConfiguration(scoreFieldConfiguration);		
 		
 		DataSetFieldConfiguration icd1FieldConfiguration
@@ -903,7 +914,7 @@ public class SampleDataGenerator {
 		icd1FieldConfiguration.setFieldChangeAuditLevel(
 			FieldChangeAuditLevel.INCLUDE_FIELD_CHANGE_DESCRIPTION);
 		icd1FieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_icd_code"));		
+			rifDataTypeFactory.getDataTypeFromCode("rif_icd_code"));		
 		icd1FieldConfiguration.setDuplicateIdentificationField(true);
 		icd1FieldConfiguration.setCoreFieldDescription("health code");
 		icd1FieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
@@ -919,8 +930,8 @@ public class SampleDataGenerator {
 		level1FieldConfiguration.setFieldChangeAuditLevel(
 			FieldChangeAuditLevel.NONE);
 		level1FieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_text"));
-		level1FieldConfiguration.setDuplicateIdentificationField(true);
+			rifDataTypeFactory.getDataTypeFromCode("rif_text"));
+		level1FieldConfiguration.setDuplicateIdentificationField(false);
 		level1FieldConfiguration.setCoreFieldDescription("level 1 resolution");
 		level1FieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
 		level1FieldConfiguration.setFieldPurpose(FieldPurpose.GEOGRAPHICAL_RESOLUTION);
@@ -934,7 +945,7 @@ public class SampleDataGenerator {
 		level2FieldConfiguration.setFieldChangeAuditLevel(
 			FieldChangeAuditLevel.NONE);
 		level2FieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_text"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_text"));
 		level2FieldConfiguration.setDuplicateIdentificationField(true);
 		level2FieldConfiguration.setCoreFieldDescription("level 2 resolution");
 		level2FieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
@@ -981,7 +992,7 @@ public class SampleDataGenerator {
 				"ethnicity_covariate_level3", 
 				"ethnicity");	
 		ethnicityFieldConfiguration.setRIFDataType(
-			rifDataTypeFactory.getDataType("rif_integer"));
+			rifDataTypeFactory.getDataTypeFromCode("rif_integer"));
 		ethnicityFieldConfiguration.setDuplicateIdentificationField(true);
 		ethnicityFieldConfiguration.setCoreFieldDescription("map areas expressed at level 3 resolution");				
 		ethnicityLevel3DataSetConfiguration.addFieldConfiguration(ethnicityFieldConfiguration);

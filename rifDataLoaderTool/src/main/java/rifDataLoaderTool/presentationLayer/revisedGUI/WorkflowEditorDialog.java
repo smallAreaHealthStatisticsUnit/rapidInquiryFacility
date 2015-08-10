@@ -1,13 +1,9 @@
 package rifDataLoaderTool.presentationLayer.revisedGUI;
 
 import rifGenericLibrary.presentationLayer.*;
-
-
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
+import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.fileFormats.*;
 import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
@@ -18,13 +14,17 @@ import rifDataLoaderTool.dataStorageLayer.SampleRIFDatabaseCreationManager;
 
 
 
+
+
+
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.*;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  *
@@ -81,7 +81,16 @@ public class WorkflowEditorDialog
 
 	public static void main(String[] arguments) {
 
+
 		try {
+
+			
+			
+			
+			//RIFDataLoaderToolSession session
+			//	= new RIFDataLoaderToolSession();
+			//session.setUser(user);
+
 			WorkflowEditorDialog workflowEditorDialog
 				= new WorkflowEditorDialog();
 			workflowEditorDialog.initialiseService();			
@@ -92,8 +101,7 @@ public class WorkflowEditorDialog
 			ErrorDialog.showError(null, rifServiceException.getErrorMessages());
 		}
 
-		
-		/*
+/*
 		try {
 			SampleDataGenerator generator = new SampleDataGenerator();
 			
@@ -106,7 +114,7 @@ public class WorkflowEditorDialog
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
 		}
-		*/
+*/
 	}
 	
 	// ==========================================
@@ -159,8 +167,9 @@ public class WorkflowEditorDialog
 	public void initialiseService() 
 		throws RIFServiceException {
 		
-		dataLoaderService = new ProductionDataLoaderService();			
-		dataLoaderService.initialiseService();		
+
+		//dataLoaderService = new ProductionDataLoaderService();			
+		//dataLoaderService.initialiseService();		
 	}
 	
 	private void buildUI() {
@@ -188,14 +197,14 @@ public class WorkflowEditorDialog
 				"dataSetConfiguration.name.plural.label");
 		String dataSetListPanelToolTipText
 			= RIFDataLoaderToolMessages.getMessage(
-				"dataSetConfiguration.name.plural.toolTipText");		
+				"dataSetConfiguration.name.plural.toolTip");		
 		dataSetConfigurationListPanel
 			= new OrderedListPanel(
 				dataSetListPanelTitleText,
 				dataSetListPanelToolTipText,
 				userInterfaceFactory,
 				true);
-
+		
 		panelGC.gridy++;				
 		panelGC.fill = GridBagConstraints.BOTH;
 		panelGC.weightx = 1;
@@ -274,6 +283,11 @@ public class WorkflowEditorDialog
 				"workflowEditorDialog.startWorkState.label");
 		JLabel startWorkflowStateLabel
 			= userInterfaceFactory.createLabel(startWorkflowStateText);
+		String startWorkflowStateToolTip
+			= RIFDataLoaderToolMessages.getMessage(
+				"workflowEditorDialog.startWorkState.toolTip");
+		startWorkflowStateLabel.setToolTipText(startWorkflowStateToolTip);
+		
 		panel.add(startWorkflowStateLabel, panelGC);
 		panelGC.gridx++;
 		startingStateComboBox
@@ -293,6 +307,10 @@ public class WorkflowEditorDialog
 				"workflowEditorDialog.stopWorkState.label");
 		JLabel stopWorkflowStateLabel
 			= userInterfaceFactory.createLabel(stopWorkflowStateText);
+		String stopWorkflowStateToolTip
+			= RIFDataLoaderToolMessages.getMessage(
+				"workflowEditorDialog.stopWorkState.toolTip");
+		stopWorkflowStateLabel.setToolTipText(stopWorkflowStateToolTip);
 		panel.add(stopWorkflowStateLabel, panelGC);
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
@@ -319,7 +337,9 @@ public class WorkflowEditorDialog
 		dataSetConfigurationListButtonPanel
 			= new ListEditingButtonPanel(userInterfaceFactory);
 		dataSetConfigurationListButtonPanel.includeAddButton(null);
+		dataSetConfigurationListButtonPanel.includeCopyButton(null);
 		dataSetConfigurationListButtonPanel.includeEditButton(null);
+		
 		dataSetConfigurationListButtonPanel.includeDeleteButton(null);
 		dataSetConfigurationListButtonPanel.rightJustifyButtons();
 		dataSetConfigurationListButtonPanel.indicateEmptyState();
@@ -397,35 +417,26 @@ public class WorkflowEditorDialog
 	private void initialiseDatabase() {
 		
 		try {
-			System.out.println("initialiseDatabase 1");
 			InitialiseDemoDatabaseDialog dialog
 				= new InitialiseDemoDatabaseDialog(userInterfaceFactory);
 			dialog.show();
-
-			System.out.println("initialiseDatabase 2");
 			
 			RIFDataLoaderStartupOptions startupOptions
 				= dialog.getDataLoaderStartupOptions();
 			
-			System.out.println("initialiseDatabase 3");
-
 			SampleRIFDatabaseCreationManager databaseCreationManager
 				= new SampleRIFDatabaseCreationManager(startupOptions);
-			databaseCreationManager.createDatabase(
-				dialog.getUserID(),
-				dialog.getPassword());
-			databaseCreationManager.createDatabaseTables(
-				dialog.getUserID(),
-				dialog.getPassword());
-
-			System.out.println("initialiseDatabase 4");
+			databaseCreationManager.setup();	
+			
+			//Show a dialog indicating that the setup has completed
+			
+			
+			
 			
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(frame, rifServiceException.getErrorMessages());
 		}
-		
-		
 		
 	}
 	
@@ -455,18 +466,14 @@ public class WorkflowEditorDialog
 			currentLinearWorkflow
 				= linearWorkflowReader.getLinearWorkflow();
 			
-			ArrayList<DataSetConfiguration> dataSetConfigurations
-				= currentLinearWorkflow.getDataSetConfigurations();
-			for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
-				dataSetConfigurationListPanel.addListItem(dataSetConfiguration);				
-			}
-			dataSetConfigurationListPanel.updateUI();
-			if (dataSetConfigurations.isEmpty()) {
-				dataSetConfigurationListButtonPanel.indicateEmptyState();
-			}
-			else {
-				dataSetConfigurationListButtonPanel.indicatePopulatedState();				
-			}
+			DataSetConfiguration dataSetConfiguration
+				= linearWorkflowReader.getLinearWorkflow().getDataSetConfigurations().get(0);
+			DataSetFieldConfiguration dobFieldConfiguration
+				= dataSetConfiguration.getFieldHavingConvertFieldName("dob");
+			
+			ArrayList<RIFCheckOption> rifCheckOptions
+				= dobFieldConfiguration.getCheckOptions();
+			populateForm();
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(
@@ -510,22 +517,29 @@ public class WorkflowEditorDialog
 	private void runWorkflow() {
 		try {
 			//validateForm();
+			
+			dataLoaderService = new ProductionDataLoaderService();			
+			dataLoaderService.initialiseService();	
+			
 			LinearWorkflowEnactor linearWorkflowEnactor
 				= new LinearWorkflowEnactor(
 					rifManager, 
 					dataLoaderService);
-			
-			WorkflowState startState = currentLinearWorkflow.getStartWorkflowState();
-			WorkflowState stopState = currentLinearWorkflow.getStopWorkflowState();
-
+						
 			File dummyFile = new File("C://rif_scripts//test_data//blah.log");
 			
 			linearWorkflowEnactor.runWorkflow(
-				null, 
 				dummyFile, 
+				null, 
 				currentLinearWorkflow);
-			System.out.println("runWorkflow 2");
-			
+
+			String workflowCompletedMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"workflowEditorDialog.info.workflowFinishedRunning");
+
+			JOptionPane.showMessageDialog(
+				frame, 
+				workflowCompletedMessage);		
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(
@@ -541,7 +555,9 @@ public class WorkflowEditorDialog
 		
 		DataSetConfigurationEditorDialog dialog
 			= new DataSetConfigurationEditorDialog(userInterfaceFactory);
-		dialog.setData(originalDataSetConfiguration);
+		dialog.setData(
+			currentLinearWorkflow, 
+			originalDataSetConfiguration);
 		dialog.show();
 		if (dialog.isCancelled() == true) {
 			return;
@@ -550,17 +566,73 @@ public class WorkflowEditorDialog
 		DataSetConfiguration revisedDataSetConfiguration
 			= dialog.getDataSetConfiguration();
 		dataSetConfigurationListPanel.addListItem(revisedDataSetConfiguration);
+		dataSetConfigurationListPanel.setSelectedItem(revisedDataSetConfiguration);
+	}
+	
+	private void copyDataSetConfiguration() {
+		
+		DataSetConfiguration selectedDataSetConfiguration
+			= (DataSetConfiguration) dataSetConfigurationListPanel.getSelectedItem();
+		if (selectedDataSetConfiguration == null) {
+			//no item in the list is selected
+			return;
+		}
+		
+		String dialogTitle
+			= RIFDataLoaderToolMessages.getMessage("workflowEditorDialog.copyDataSetConfiguration.title");
+		String instructionsText
+			= RIFDataLoaderToolMessages.getMessage("workflowEditorDialog.copyDataSetConfiguration.instructions");
+		String fieldName
+			= RIFDataLoaderToolMessages.getMessage("workflowEditorDialog.copyDataSetConfiguration.fieldName");		
+		String[] existingListItemNames
+			= dataSetConfigurationListPanel.getDisplayNames();
+		
+		CopyListItemNameEditorDialog dialog
+			= new CopyListItemNameEditorDialog(
+				userInterfaceFactory,
+				dialogTitle,
+				instructionsText,
+				fieldName,
+				existingListItemNames);
+		
+		dialog.show();
+		if (dialog.isCancelled()) {
+			return;
+		}
+		
+		String selectedName = dialog.getFieldName();
+		DataSetConfiguration copiedDataSetConfiguration
+			= DataSetConfiguration.createCopy(selectedDataSetConfiguration);
+		copiedDataSetConfiguration.setName(selectedName);
+		dataSetConfigurationListPanel.addListItem(copiedDataSetConfiguration);
+		dataSetConfigurationListPanel.setSelectedItem(copiedDataSetConfiguration);
+		dataSetConfigurationListPanel.updateUI();
 	}
 	
 	private void editDataSetConfiguration() {
 		DataSetConfiguration dataSetConfiguration
 			= (DataSetConfiguration) dataSetConfigurationListPanel.getSelectedItem();
-
+				
 		DataSetConfigurationEditorDialog dialog
 			= new DataSetConfigurationEditorDialog(userInterfaceFactory);
-		dialog.setData(dataSetConfiguration);
+		dialog.setData(
+			currentLinearWorkflow, 
+			dataSetConfiguration);
 		dialog.show();
 		
+		if (dialog.isCancelled() == false) {
+			//it means we attempted to save changes
+			DataSetConfiguration revisedDataSetConfiguration
+				= dialog.getDataSetConfiguration();
+			currentLinearWorkflow.replaceDataSetConfiguration(
+				dataSetConfiguration, 
+				revisedDataSetConfiguration);
+			//now replace the item in the list of data set configurations as well
+			dataSetConfigurationListPanel.replaceItem(
+				dataSetConfiguration, 
+				revisedDataSetConfiguration);
+		}
+				
 	}
 	
 	private void deleteSelectedDataSetConfigurations() {		
@@ -605,7 +677,7 @@ public class WorkflowEditorDialog
 		else {
 			dataSetConfigurationListButtonPanel.indicatePopulatedState();
 		}
-		
+		dataSetConfigurationListPanel.updateUI();
 	}
 	
 
@@ -665,6 +737,9 @@ public class WorkflowEditorDialog
 		else if (dataSetConfigurationListButtonPanel.isAddButton(button)) {
 			addDataSetConfiguration();
 		}
+		else if (dataSetConfigurationListButtonPanel.isCopyButton(button)) {
+			copyDataSetConfiguration();
+		}		
 		else if (dataSetConfigurationListButtonPanel.isEditButton(button)) {
 			editDataSetConfiguration();			
 		}
