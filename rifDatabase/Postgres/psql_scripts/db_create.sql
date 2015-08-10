@@ -823,6 +823,9 @@ BEGIN
 	sql_stmt:='CREATE EXTENSION IF NOT EXISTS adminpack';
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;
+	sql_stmt:='CREATE EXTENSION IF NOT EXISTS dblink';
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	EXECUTE sql_stmt;	
 	IF UPPER(CURRENT_SETTING('rif40.use_plr')) IN ('y', 'Y') THEN
 --
 -- Install PLR. PL/R is untrusted because R gives access to system commands and the

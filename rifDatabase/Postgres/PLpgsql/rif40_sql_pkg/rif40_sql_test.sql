@@ -247,7 +247,35 @@ BEGIN
 			connection_name::VARCHAR);		
 	END IF;
 --
-	PERFORM dblink_connect(connection_name, 'hostaddr='||host(inet_server_addr())||' dbname='||current_database()||' user='||USER||' password='||USER);
+-- This only works if username = password; to be replaced by Node.js
+--
+--	BEGIN
+		PERFORM dblink_connect(connection_name, 'hostaddr='||host(inet_server_addr())||' dbname='||current_database()||' user='||USER||' password='||USER||' sslmode=prefer');
+--	EXCEPTION	
+	/*
+Detail: FATAL:  no pg_hba.conf entry for host "129.31.37.103", user "pch", database "sahsuland_dev", SSL on
+FATAL:  no pg_hba.conf entry for host "129.31.37.103", user "pch", database "sahsuland_dev", SSL off
+
+Context: SQL statement "SELECT dblink_connect(connection_name, 'hostaddr='||host(inet_server_addr())||' dbname='|
+prefer')"
+PL/pgSQL function rif40_sql_test_dblink_connect(character varying,integer) line 44 at PERFORM
+SQL statement "SELECT rif40_sql_pkg.rif40_sql_test_dblink_connect('test_8_triggers.sql', debug_level)"
+PL/pgSQL function inline_code_block line 33 at PERFORM
+SQLSTATE: 08001
+Error in command execution
+	 */
+--		WHEN others THEN /* Try connection without password */
+/* This will not work:
+
+Detail: Non-superusers must provide a password in the connection string.
+Context: SQL statement "SELECT dblink_connect(connection_name, 'hostaddr='||host(inet_server_addr())||' dbname='||current_database()||' user='||USER||' sslmode=prefer')"
+PL/pgSQL function rif40_sql_test_dblink_connect(character varying,integer) line 60 at PERFORM
+SQL statement "SELECT rif40_sql_pkg.rif40_sql_test_dblink_connect('test_8_triggers.sql', debug_level)"
+PL/pgSQL function inline_code_block line 33 at PERFORM
+SQLSTATE: 2F003
+ */
+--			PERFORM dblink_connect(connection_name, 'hostaddr='||host(inet_server_addr())||' dbname='||current_database()||' user='||USER||' sslmode=prefer');				
+--	END;
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test_dblink_connect', 
 		'[71155] dblink() subtransaction: % for testing connected to: % as: %', 
 		connection_name::VARCHAR, current_database()::VARCHAR, USER::VARCHAR);		
