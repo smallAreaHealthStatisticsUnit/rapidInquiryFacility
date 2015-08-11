@@ -21,7 +21,7 @@ GO
 
 CREATE trigger [tr_geography]
 on [rif40].[rif40_geographies]
-instead of insert, update
+for insert, update
 as
 begin
 
