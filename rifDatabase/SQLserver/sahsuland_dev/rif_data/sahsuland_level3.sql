@@ -10,7 +10,7 @@ GO
 
 CREATE TABLE [rif_data].[sahsuland_level3]
 (
-  level3 varchar(6), -- level3
+  level3 varchar(15), -- level3
   name varchar(100), -- level3 name
   gid bigint -- Artificial primary key for RIF web interface
 );

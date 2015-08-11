@@ -7,9 +7,14 @@ Principal Work Area: **Microsoft SQL server database port**
 ###August
 I will finish the view triggers this month and please hopefully test.
 
+######11 August
+* Working on importing data in an automated way so I can be ready to do proper tests using Peter's test harness.
+* Creating tables in the rif_data schema and importing test data.
+
 ######10 August
 * Continuing view trigger work.  I finished rif40_study_areas, rif40_study_sql, rif40_study_sql, rif40_user_projects triggers.
 * And that's it.  View triggers are completed.  (Wow, they were so much easier than table triggers.)  Now to figure out how to test everything sanely.
+* Inserting test data from "rifDatabase/Postgres/sahsuland/data", trying to find clever ways to supply full path without hard-coding my setup
 
 ######8 August
 * More work on view triggers.  I finished the rif40_inv_conditions, rif40_inv_coviarates, rif40_investigations, rif40_parameters, rif40_results, rif40_studies triggers.
