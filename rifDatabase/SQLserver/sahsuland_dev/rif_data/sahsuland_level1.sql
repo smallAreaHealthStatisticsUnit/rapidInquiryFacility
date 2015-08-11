@@ -13,7 +13,7 @@ CREATE TABLE [rif_data].[sahsuland_level1]
 (
   level1 [varchar](5), -- level1
   name [varchar](100), -- level1 name
-  gid [bigint] -- Artifical primary key for RIF web interface
+  gid [bigint] -- Artificial primary key for RIF web interface
 );
 
 GRANT SELECT ON [rif_data].[sahsuland_level1] TO [public];
@@ -25,7 +25,7 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'level1', @leve
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'level1 name', @level0type=N'SCHEMA',@level0name=N'rif_data', @level1type=N'TABLE',@level1name=N'sahsuland_level1', @level2type=N'COLUMN',@level2name=N'name'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Artifical primary key for RIF web interface', @level0type=N'SCHEMA',@level0name=N'rif_data', @level1type=N'TABLE',@level1name=N'sahsuland_level1', @level2type=N'COLUMN',@level2name=N'gid'
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Artificial primary key for RIF web interface', @level0type=N'SCHEMA',@level0name=N'rif_data', @level1type=N'TABLE',@level1name=N'sahsuland_level1', @level2type=N'COLUMN',@level2name=N'gid'
 GO
 
 --indexes
