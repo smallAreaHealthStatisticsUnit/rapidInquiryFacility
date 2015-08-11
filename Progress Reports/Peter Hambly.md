@@ -139,25 +139,47 @@ No work on the RIF40_COLUMNS
 * Caving in Slovenia: https://en.wikipedia.org/wiki/Migovec_System 
   and: https://www.union.ic.ac.uk/rcc/caving/slovenia/intro/slov_intro.php 
 
-Till mid July, priority order:
+#### 3rd - 7th August 
 
-1. RIF batch integration
-2. Test data for RIF data loader. This will convert the existing SAHUSLAND_CANCER into individual record form; keeping the statistical 
-   properties (i.e. aggregate counts) the same. The following synthetic data will be added:
-   
-  * Zip code in the format 5N-4N; a Zip code lookup table will be provided later with SAHUSLAND co-ordinates
-  * Age
-  * Sex
-  * Date of birth
-  * Date of death
-  * Histology
-  * Treatment method
+Created test harness test data (to test the functionality); the basic principle is that each test 
+(or series of linked tests) is a single transaction. This is not possible in Plpgsql; so needs
+one of:
 
-  Deliberate errors will be introduced to the age and year fields, level 3 area id, and the date formats will change between years. There will only be one 
-  data cleaning feature per year. This is to facilitate data loader test cases. At a later duplicates will be added.
+a) dblink (tested, works, no support for debugging or output capture;
+b) Foreign data wrappers, no support for output capture;
+c) Java, considered, choose;
+d) Node.js to avoid confusion with middleware
+
+#### 10th to 14th August
+  
+Convert test data from Postgres array to XML format. 
+
+To do:
+
+* Support for Postgres debugging
+* Replace dblink test harness runner with Node.js version so that debugging and output can be controlled.
+* EXPLAIN plan support
+* Linked tests (based on the study 1 test scenario)
+* Test regime; for all rif40 schema tables
+
+  * Constraints:
+
+    a) NOT null
+    b) Check i) correct; ii) incorrect
+    c) Primary key i) correct; ii) duplicate iii) missing parent
+
+  * Access control:
+  
+    d) notarifuser access
+
+  * Business logic:
+
+    e) Triggers
   
 From August: 
 
+1. Test harness
+2. RIF batch integration
 3. Complete webserver integration
 	* Fix pernicious mixed content issues in JS frontend
 	* Test wpea-darwin remotely; using JS on httpd (i.e. minimise reverse proxy traffic)  

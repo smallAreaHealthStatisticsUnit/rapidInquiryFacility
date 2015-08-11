@@ -267,6 +267,22 @@ SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_n
 \i ../PLpgsql/rif40_sql_pkg/rif40_test_harness.sql
 
 --
+-- Load tests - for all rif40 schema tables
+--
+-- Constraints:
+--
+-- a) NOT null
+-- b) Check i) correct; ii) incorrect
+-- c) Primary key i) correct; ii) duplicate iii) missing parent
+--
+-- Access control:
+--
+-- d) notarifuser access
+--
+-- Business logic:
+--
+-- e) Triggers
+--
 -- Testing stop
 --
 --DO LANGUAGE plpgsql $$
