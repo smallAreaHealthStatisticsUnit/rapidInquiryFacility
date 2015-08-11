@@ -113,8 +113,6 @@ END;
 -- Start new transaction
 --
 BEGIN;
-\echo 'test_8_triggers.sql: Create SAVEPOINT test_8_triggers';
-SAVEPOINT test_8_triggers;
 
 DO LANGUAGE plpgsql $$
 DECLARE
@@ -159,18 +157,54 @@ BEGIN
 		tests_run, number_passed, number_failed, number_test_cases_registered, number_messages_registered)
 	VALUES ('test_8_triggers.sql', 0, 0, 0, 0, 0, 0);	
 --
-	IF NOT (rif40_sql_pkg.rif40_sql_test(
-		'test_8_triggers.sql',
-		'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
-		'T8--09: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
-		'{{01,01.015,01.015.016200,01.015.016200.2}
-		,{01,01.015,01.015.016200,01.015.016200.3} 
-		,{01,01.015,01.015.016200,01.015.016200.4} 
-		,{01,01.015,01.015.016900,01.015.016900.1} 
-		,{01,01.015,01.015.016900,01.015.016900.2} 
-		,{01,01.015,01.015.016900,01.015.016900.3} 
-		}'::Text[][]
-		/* Use defaults */)) THEN
+    IF NOT (rif40_sql_pkg.rif40_sql_test(
+				 'test_8_triggers.sql',	
+                 'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
+                 'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
+ '{{01,01.015,01.015.016200,01.015.016200.2}
+ ,{01,01.015,01.015.016200,01.015.016200.3}
+ ,{01,01.015,01.015.016200,01.015.016200.4}
+ ,{01,01.015,01.015.016900,01.015.016900.1}
+ ,{01,01.015,01.015.016900,01.015.016900.2}
+ ,{01,01.015,01.015.016900,01.015.016900.3}
+ }'::Text[][],
+ '<row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016200</level3>
+   <level4>01.015.016200.2</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016200</level3>
+   <level4>01.015.016200.3</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016200</level3>
+   <level4>01.015.016200.4</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016900</level3>
+   <level4>01.015.016900.1</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016900</level3>
+   <level4>01.015.016900.2</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016900</level3>
+   <level4>01.015.016900.3</level4>
+ </row>'::XML
+        )) THEN
         f_errors:=f_errors+1;
 		RAISE WARNING 'T8--03: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 TEST FAILED.';		
 	ELSE
@@ -192,6 +226,42 @@ BEGIN
 		,{01,01.015,01.015.016900,01.015.016900.2} 
 		,{01,01.015,01.015.016900,01.015.016900.3} 
 		}'::Text[][],
+ '<row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016200</level3>
+   <level4>01.015.016200.2</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016200</level3>
+   <level4>01.015.016200.3</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016200</level3>
+   <level4>01.015.016200.4</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016900</level3>
+   <level4>01.015.016900.1</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016900</level3>
+   <level4>01.015.016900.2</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016900</level3>
+   <level4>01.015.016900.3</level4>
+ </row>'::XML,
 		NULL  /* Expected SQLCODE */, 
 		FALSE /* Do not RAISE EXCEPTION on failure */,
 		FALSE /* Is expected to fail */)) THEN
@@ -209,7 +279,8 @@ BEGIN
 		'test_8_triggers.sql',
 		'SELECT rif40_log_pkg.rif40_error(-90125, ''rif40_error'', ''Dummy error: %'', ''rif40_error test''::VARCHAR) AS x',
 		'T8--13: test_8_triggers.sql: rif40_log_pkg.rif40_error() test',
-		NULL::Text[][] 	/* No results for SELECT */,		
+		NULL::Text[][] 	/* No results for SELECT */,	
+		NULL::XML 		/* No results for SELECT */,		
 		'-90125'	 	/* Expected SQLCODE */, 
 		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
         f_errors:=f_errors+1;
@@ -276,7 +347,8 @@ Foreign-key constraints:
 		'INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
 VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST_1'', ''MAP_TRIGGER_TEST_1'', 1 /* Diease mapping */, ''LEVEL1'', ''LEVEL4'', NULL /* FAIL HERE */, 0)',
 		'T8--15: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL',
-		NULL::Text[][] 	/* No results for trigger */,
+		NULL::Text[][] 	/* No results for trigger */,	
+		NULL::XML 		/* No results for trigger */,
 		'-20211' 		/* Expected SQLCODE (P0001 - PGpsql raise_exception (from rif40_error) with detail: rif40_error(() code -20211 */, 
 		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
 		f_errors:=f_errors+1;
@@ -293,6 +365,9 @@ VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #2'', ''EXTRACT_TRIGGER_TEST_2'', ''
 RETURNING 1::Text AS test_value',
 		'T8--17: test_8_triggers.sql: TRIGGER TEST #2: rif40_studies.suppression_value IS NULL',
 		'{1}'::Text[][] /* Results for trigger - DEFAULTED value will not work - table is mutating and row does not exist at the point of INSERT */,
+		'<row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <test_value>1</test_value>
+ </row>'::XML /* Results for trigger - DEFAULTED value will not work - table is mutating and row does not exist at the point of INSERT */,
 		NULL 			/* Expected SQLCODE */, 
 		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
 		f_errors:=f_errors+1;
@@ -317,6 +392,9 @@ RETURNING 1::Text AS test_value',
 		RAISE NOTICE 'T8--14: test_8_triggers.sql: No TEST TIRGGER studies actually created.';		
 	END IF;
 
+--
+-- Test sahsuland_geography
+--
 	IF NOT (rif40_sql_pkg.rif40_sql_test(
 			 'test_8_triggers.sql',
 			 'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
@@ -327,7 +405,43 @@ RETURNING 1::Text AS test_value',
 ,{01,01.015,01.015.016900,01.015.016900.1}                                                                                                             
 ,{01,01.015,01.015.016900,01.015.016900.2}                                                                                                             
 ,{01,01.015,01.015.016900,01.015.016900.3}                                                                                                             
-}'::Text[][]
+}'::Text[][],
+ '<row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016200</level3>
+   <level4>01.015.016200.2</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016200</level3>
+   <level4>01.015.016200.3</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016200</level3>
+   <level4>01.015.016200.4</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016900</level3>
+   <level4>01.015.016900.1</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016900</level3>
+   <level4>01.015.016900.2</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016900</level3>
+   <level4>01.015.016900.3</level4>
+ </row>'::XML
 			 )) THEN
 			 f_errors:=f_errors+1;
 		RAISE INFO 'T8--15: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 FAILED.';			 
@@ -420,13 +534,11 @@ SELECT test_id, error_code_expected, pass, expected_result, time_taken, raise_ex
   FROM rif40_test_harness
  WHERE test_run_class = 'test_8_triggers.sql'
  ORDER BY test_id;
- 
---
--- Rollback to SAVEPOINT
---
-	
-\echo 'test_8_triggers.sql: ROLLBACK TO SAVEPOINT test_8_triggers';
-ROLLBACK TO SAVEPOINT test_8_triggers;
+
+\copy (SELECT test_id, test_run_class, test_stmt, test_case_title, error_code_expected, raise_exception_on_failure, expected_result, register_date, results, results_xml, NULL AS pass, NULL AS test_run_id, NULL AS test_date, NULL AS time_taken FROM rif40_test_harness) TO ../../TestHarness/rif40_test_harness.csv WITH CSV HEADER
+
+\copy (SELECT * FROM rif40_test_harness) TO test_scripts/data/rif40_test_harness_:dbname.csv WITH CSV HEADER
+\copy (SELECT * FROM rif40_test_runs) TO test_scripts/data/rif40_test_runs_:dbname.csv WITH CSV HEADER
  
 --
 -- Testing stop

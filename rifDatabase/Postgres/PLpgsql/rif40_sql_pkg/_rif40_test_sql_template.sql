@@ -64,6 +64,8 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_test_sql_template(VARCHAR, VARCHAR);
+
 CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_test_sql_template(test_stmt VARCHAR, test_case_title VARCHAR)
 RETURNS SETOF VARCHAR
 SECURITY INVOKER
@@ -77,8 +79,14 @@ Description: Generate PL/pgsql template code, e.g.
 
 Add support for XML:
 
-SELECT * FROM query_to_xml('SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4', 
-true /- nulls -/, true /- tableforest -/, ''::Text /- Namespace -/);
+WITH a AS (
+	SELECT query_to_xml(
+'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4', 
+true /- nulls -/, true /- tableforest -/, ''::Text /- Namespace -/) AS xml_line
+)
+SELECT regexp_split_to_table(a.xml_line, '\n') AS xml_str
+  FROM a;
+  
 
 SELECT rif40_sql_pkg._rif40_test_sql_template(
 	'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
@@ -140,8 +148,23 @@ DECLARE
 		   AND b.tableowner = USER
 		   AND b.tablename  = l_table; 
 	c2sqlt REFCURSOR;
+	c3sqlt CURSOR(l_sql_stmt VARCHAR) FOR
+		WITH a AS (
+			SELECT query_to_xml(l_sql_stmt,
+						true /* include nulls */, true /* tableforest */, ''::Text /* No namespace */)::Text AS xml_line
+		), b as (
+			SELECT regexp_split_to_table(a.xml_line, '\n') AS xml_str
+			FROM a
+		)
+		SELECT xml_str AS xml_str
+		  FROM b
+		  WHERE b.xml_str IS NOT NULL AND b.xml_str != '';
+ --
 	c1sqlt_rec RECORD;
 	c2sqlt_rec RECORD;
+	c3sqlt_rec RECORD;
+--
+	xml_str			VARCHAR;
 --
 	stp 			TIMESTAMP WITH TIME ZONE;
 	etp 			TIMESTAMP WITH TIME ZONE;
@@ -261,10 +284,22 @@ SELECT ''''|| REPLACE(
 	RETURN NEXT E'\t'||E'\t'||''''||REPLACE(test_case_title, '''', '''''')||''',';		
 --
 --	RETURN NEXT E'\t'||E'\t'||'/* SQL> '||E'\n'||select_text||E'\n'||' */';
-	RETURN NEXT c2sqlt_rec.res;
+	RETURN NEXT c2sqlt_rec.res||',';
 --
+-- Now dump XML
+--
+	j:=0;
+	FOR c3sqlt_rec IN c3sqlt(test_stmt) LOOP
+		j:=j+1;	
+		IF j = 1 THEN
+			xml_str:=''''||c3sqlt_rec.xml_str||E'\n';
+		ELSE
+			xml_str:=xml_str||c3sqlt_rec.xml_str||E'\n';
+		END IF;
+	END LOOP;
+	RETURN NEXT xml_str||'''::XML';
 	RETURN NEXT E'\t'||E'\t'||')) THEN';
-	RETURN NEXT E'\t'||E'\t'||'errors:=errors+1;';
+	RETURN NEXT E'\t'||E'\t'||'f_errors:=f_errors+1;';
 	RETURN NEXT E'\t'||'END IF;'
 --
 	RETURN;
@@ -303,7 +338,44 @@ template
 		,{01,01.015,01.015.016900,01.015.016900.1} 
 		,{01,01.015,01.015.016900,01.015.016900.2} 
 		,{01,01.015,01.015.016900,01.015.016900.3} 
-		}''::Text[][])) THEN
+		}''::Text[][],
+		''<row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016200</level3>
+   <level4>01.015.016200.2</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016200</level3>
+   <level4>01.015.016200.3</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016200</level3>
+   <level4>01.015.016200.4</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016900</level3>
+   <level4>01.015.016900.1</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016900</level3>
+   <level4>01.015.016900.2</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016900</level3>
+   <level4>01.015.016900.3</level4>
+ </row>''::XML
+		)) THEN
 		errors:=errors+1;
 	END IF;
 	

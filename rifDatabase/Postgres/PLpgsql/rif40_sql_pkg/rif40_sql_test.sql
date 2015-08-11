@@ -74,9 +74,13 @@ $$;
 --
 -- Test case 
 --
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML,
+	VARCHAR, BOOLEAN, BOOLEAN);	
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY, XML,
+	VARCHAR, BOOLEAN, INTEGER);
+-- Old	
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN, BOOLEAN);	
--- Old	
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN);
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
@@ -86,9 +90,11 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN, INTEGER);
 
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML,
 	VARCHAR, BOOLEAN, BOOLEAN);	
 -- Old	
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
+	VARCHAR, BOOLEAN, BOOLEAN);	
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN);	
 	DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, ANYARRAY,
@@ -103,6 +109,7 @@ CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_sql_test_register(
 	test_run_class 				VARCHAR, 
 	test_case_title 			VARCHAR, 
 	results 					ANYARRAY,
+	results_xml					XML,
 	error_code_expected 		VARCHAR DEFAULT NULL, 
 	raise_exception_on_failure 	BOOLEAN DEFAULT TRUE, 
 	expected_result 			BOOLEAN DEFAULT TRUE)
@@ -113,7 +120,9 @@ AS $func$
 Function: 	_rif40_sql_test_register()
 Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
 			Test run class; usually the name of the SQL script that originally ran it,
-            test case title, result arrays,
+            test case title,
+ 			results 3d text array,
+			results as XML,
 			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
 			NULL means it is expected to NOT raise an exception, 
 			raise exception on failure,
@@ -126,6 +135,7 @@ DECLARE
 				 l_test_run_class				VARCHAR,
 			     l_test_case_title 				VARCHAR, 
 				 l_results 						Text[][], 
+				 l_results_xml 					XML,
 				 l_error_code_expected			VARCHAR, 
 				 l_raise_exception_on_failure 	BOOLEAN,
 				 l_expected_result				BOOLEAN) FOR
@@ -139,7 +149,7 @@ DECLARE
 			results_xml,
 			expected_result)
 		SELECT l_test_stmt, l_test_run_class, l_test_case_title, 
-			   l_error_code_expected, l_raise_exception_on_failure, l_results, NULL /* l_results::XML */, l_expected_result
+			   l_error_code_expected, l_raise_exception_on_failure, l_results, l_results_xml, l_expected_result
 		 WHERE NOT EXISTS (
 			SELECT a.test_id
 			  FROM rif40_test_harness a
@@ -154,7 +164,7 @@ DECLARE
 --
 	f_test_id 	INTEGER;	
 BEGIN
-	OPEN c3st(test_stmt, test_run_class, test_case_title, results, error_code_expected, raise_exception_on_failure, expected_result);
+	OPEN c3st(test_stmt, test_run_class, test_case_title, results, results_xml, error_code_expected, raise_exception_on_failure, expected_result);
 	FETCH c3st INTO c3st_rec;
 	CLOSE c3st;
 	OPEN c5st(test_case_title);
@@ -189,11 +199,13 @@ END;
 $func$
 LANGUAGE PLPGSQL;
 
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML,
 	VARCHAR, BOOLEAN, BOOLEAN) IS 'Function: 	_rif40_sql_test_register()
 Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement,
 			Test run class; usually the name of the SQL script that originally ran it
-            test case title, result arrays,
+            test case title, 
+			results 3d text array,
+			results as XML,
 			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
 			NULL means it is expected to NOT raise an exception, 
 			raise exception on failure,
@@ -469,6 +481,7 @@ CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_sql_test(
 	test_stmt 					VARCHAR, 
 	test_case_title 			VARCHAR, 
 	results 					ANYARRAY,
+	results_xml					XML,
 	error_code_expected 		VARCHAR DEFAULT NULL, 
 	raise_exception_on_failure 	BOOLEAN DEFAULT TRUE, 
 	expected_result 			BOOLEAN DEFAULT TRUE)
@@ -480,7 +493,8 @@ Function: 	rif40_sql_test()
 Parameters:	Connection name,
 			SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
             test case title, 
-			result arrays,
+			results 3d text array,
+			results as XML,
 			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
 			NULL means it is expected to NOT raise an exception, 
 			raise exception on failure,
@@ -742,7 +756,7 @@ BEGIN
 --
 -- Auto register test case
 --
-	f_test_id:=rif40_sql_pkg._rif40_sql_test_register(test_stmt, connection_name, test_case_title, results,
+	f_test_id:=rif40_sql_pkg._rif40_sql_test_register(test_stmt, connection_name, test_case_title, results, results_xml,
 		error_code_expected, raise_exception_on_failure, expected_result);
 			
 --
@@ -752,6 +766,7 @@ BEGIN
 						coalesce(quote_literal(test_stmt), 'NULL')||'::VARCHAR /* test_stmt */,'||E'\n'||
 						coalesce(quote_literal(test_case_title), 'NULL')||'::VARCHAR /* test_case_title */,'||E'\n'||
 						coalesce(quote_literal(results), 'NULL')||'::VARCHAR[][] /* results */,'||E'\n'||
+						coalesce(quote_literal(results_xml), 'NULL')||'::XML /* results_xml */,'||E'\n'||
 						coalesce(quote_literal(error_code_expected), 'NULL')||'::VARCHAR /* error_code_expected */,'||E'\n'||
 						coalesce(quote_literal(raise_exception_on_failure), 'NULL')||'::BOOLEAN /* raise_exception_on_failure */,'||E'\n'||
 						coalesce(quote_literal(f_test_id), 'NULL')||'::INTEGER /* test_id */)::INTEGER AS rcode';
@@ -835,12 +850,13 @@ BEGIN
 END;
 $func$ LANGUAGE plpgsql;
 			
-COMMENT ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
+COMMENT ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML,
 	VARCHAR, BOOLEAN, BOOLEAN) IS 'Function: 	rif40_sql_test()
 Parameters:	Connection name.
 			SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
             test case title, 
-			result arrays,
+			results 3d text array,
+			results as XML,
 			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
 			NULL means it is expected to NOT raise an exception, 
 			raise exception on failure,
@@ -852,18 +868,26 @@ Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT state
 --
 -- So can be used to test non rif user access to functions 
 --
-GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, VARCHAR, BOOLEAN, BOOLEAN) TO PUBLIC;
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML, VARCHAR, BOOLEAN, BOOLEAN) TO PUBLIC;
 
 			
-CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_sql_test(test_stmt VARCHAR, test_case_title VARCHAR, results ANYARRAY,
-	error_code_expected VARCHAR, raise_exception_on_failure BOOLEAN, f_test_id INTEGER)
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_sql_test(
+	test_stmt 					VARCHAR, 
+	test_case_title 			VARCHAR, 
+	results 					ANYARRAY, 
+	results_xml					XML,
+	error_code_expected 		VARCHAR, 
+	raise_exception_on_failure 	BOOLEAN, 
+	f_test_id 					INTEGER)
 RETURNS boolean
 SECURITY INVOKER
 AS $func$
 /*
 Function: 	_rif40_sql_test()
 Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
-            test case title, result arrays,
+            test case title,
+ 			results 3d text array,
+			results as XML,
 			[negative] error SQLSTATE expected [as part of an exception]; the first 
 			negative number in the message is assumed to be the number; 
 			NULL means it is expected to NOT raise an exception, raise exception on failure,
@@ -1187,10 +1211,12 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 END;
 $func$ LANGUAGE plpgsql;
 	
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY, XML,
 	VARCHAR, BOOLEAN, INTEGER) IS 'Function: 	_rif40_sql_test()
 Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
-            test case title, result arrays,
+            test case title,
+ 			results 3d text array,
+			results as XML,
 			[negative] error SQLSTATE expected [as part of an exception]; the first 
 			negative number in the message is assumed to be the number; 
 			NULL means it is expected to NOT raise an exception, raise exception on failure,
