@@ -31,7 +31,7 @@ GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[rif40_age_groups] TO [rif_manag
 GO
 
 CREATE UNIQUE INDEX [rif40_age_groups_pk2]
-ON [rif40].[rif40_age_groups] (age_group_id)
+ON [rif40].[rif40_age_groups] (age_group_id, fieldname)
 GO
 
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF age groups' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_age_groups'

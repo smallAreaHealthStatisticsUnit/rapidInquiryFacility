@@ -1,0 +1,5 @@
+ICD,International Classification of Disease,10,11th Revision - 2010,9,,RIF40_ICD10,RIF40_ICD9,ICD10_1CHAR,,ICD10_3CHAR,ICD10_4CHAR,,TEXT_1CHAR,,TEXT_3CHAR,TEXT_4CHAR,,,,ICD9_3CHAR,ICD9_4CHAR,,,,TEXT_3CHAR,TEXT_4CHAR,
+OPCS,Office of Population Censuses and Surveys [OPCS] Classification of Interventions and Procedures,4,4.6 1/11/2011,,,RIF40_OPCS4,,OPCS4_1CHAR,,OPCS4_3CHAR,OPCS4_4CHAR,,TEXT_1CHAR,,TEXT_3CHAR,TEXT_4CHAR,,,,,,,,,,,
+ICD-O,International Classification of Disease for Oncology,3,2 ?/2000,,,RIF40_ICD_O_3,,ICD_O_3_1CHAR,,,ICD_O_3_4CHAR,,TEXT_1CHAR,,,TEXT_4CHAR,,,,,,,,,,,
+A&E,A&E clinical diagnosis (3 char),Unk,N/A,,,RIF40_A_AND_E,,,,A_AND_E_3CHAR,,,,,TEXT_3CHAR,,,,,,,,,,,,
+BIRTHWEIGHT,Birthweight (e.g. low <2500g),1,,,,,,,,,,,,,,,,,,,,,,,,,
