@@ -12,7 +12,7 @@ import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
 

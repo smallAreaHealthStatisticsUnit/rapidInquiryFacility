@@ -21,7 +21,7 @@ import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.YearInterval;
 import rifServices.businessConceptLayer.YearRange;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
 import java.awt.GridBagConstraints;

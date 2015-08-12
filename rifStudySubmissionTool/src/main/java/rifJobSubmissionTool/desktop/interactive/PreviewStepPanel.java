@@ -10,7 +10,7 @@ import rifServices.businessConceptLayer.ComparisonArea;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.fileFormats.RIFStudySubmissionHTMLWriter;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
 import java.awt.GridBagConstraints;

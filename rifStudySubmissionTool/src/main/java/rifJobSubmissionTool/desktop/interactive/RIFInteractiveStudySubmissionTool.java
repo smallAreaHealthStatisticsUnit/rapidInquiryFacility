@@ -8,7 +8,7 @@ import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceStartupOptions;
 
 import java.awt.BorderLayout;

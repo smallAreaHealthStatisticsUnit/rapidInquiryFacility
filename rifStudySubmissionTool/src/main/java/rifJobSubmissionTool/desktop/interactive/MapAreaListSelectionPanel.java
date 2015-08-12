@@ -21,7 +21,7 @@ import rifServices.businessConceptLayer.User;
 import rifServices.fileFormats.MapAreaListReader;
 import rifServices.fileFormats.MapAreaListWriter;
 import rifServices.fileFormats.XMLFileFilter;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
 import java.awt.BorderLayout;

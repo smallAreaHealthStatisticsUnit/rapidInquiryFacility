@@ -9,7 +9,7 @@ import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;

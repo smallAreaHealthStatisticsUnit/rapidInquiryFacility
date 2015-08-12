@@ -10,7 +10,7 @@ import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFOutputOption;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
 import java.awt.GridBagConstraints;

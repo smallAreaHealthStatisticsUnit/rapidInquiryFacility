@@ -6,7 +6,7 @@ import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Project;

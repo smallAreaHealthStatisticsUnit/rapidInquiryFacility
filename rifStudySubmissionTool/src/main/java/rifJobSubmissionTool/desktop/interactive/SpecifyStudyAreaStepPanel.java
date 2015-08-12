@@ -5,7 +5,7 @@ import rifJobSubmissionTool.system.MapAreaSelectionBasket;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudyArea;

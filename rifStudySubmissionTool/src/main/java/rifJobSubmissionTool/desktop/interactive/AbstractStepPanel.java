@@ -3,7 +3,7 @@ package rifJobSubmissionTool.desktop.interactive;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;

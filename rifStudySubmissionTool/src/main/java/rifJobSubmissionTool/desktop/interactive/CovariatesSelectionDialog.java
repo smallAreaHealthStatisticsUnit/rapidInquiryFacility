@@ -10,7 +10,7 @@ import rifGenericLibrary.presentationLayer.OrderedListPanel;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.Geography;

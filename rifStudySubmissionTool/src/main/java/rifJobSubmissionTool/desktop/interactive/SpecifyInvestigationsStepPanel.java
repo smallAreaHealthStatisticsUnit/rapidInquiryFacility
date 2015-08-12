@@ -12,7 +12,7 @@ import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
 import java.awt.GridBagConstraints;

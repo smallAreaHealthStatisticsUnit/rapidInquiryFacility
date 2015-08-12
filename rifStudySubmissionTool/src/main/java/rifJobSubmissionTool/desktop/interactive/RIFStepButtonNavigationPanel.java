@@ -7,14 +7,11 @@ import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 
-
-
-
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.fileFormats.RIFZFileFilter;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

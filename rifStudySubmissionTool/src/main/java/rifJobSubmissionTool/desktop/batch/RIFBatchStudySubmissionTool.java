@@ -6,7 +6,7 @@ import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

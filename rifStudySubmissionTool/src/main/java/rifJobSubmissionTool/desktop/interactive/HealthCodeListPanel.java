@@ -10,7 +10,7 @@ import rifServices.businessConceptLayer.HealthCode;
 import rifServices.fileFormats.HealthCodeListReader;
 import rifServices.fileFormats.HealthCodeListWriter;
 import rifServices.fileFormats.XMLFileFilter;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
 import java.awt.GridBagConstraints;

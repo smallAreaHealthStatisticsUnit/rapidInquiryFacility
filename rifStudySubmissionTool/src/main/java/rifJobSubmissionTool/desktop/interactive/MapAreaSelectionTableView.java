@@ -17,7 +17,7 @@ import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.MapAreaSummaryData;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.util.ArrayList;
 import java.awt.*;

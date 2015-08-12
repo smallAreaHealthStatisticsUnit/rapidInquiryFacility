@@ -5,7 +5,7 @@ import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
-import rifServices.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.Geography;
