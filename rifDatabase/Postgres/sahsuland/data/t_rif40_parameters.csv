@@ -1,0 +1,17 @@
+SuppressionValue,5,Suppress results with low cell counts below this value unless the user has the RIF_NO_SUPPRESSION role
+DeleteTempBayes,1,Delete INLA Bayesian temporary files (0/1)
+Metric,Kms,Scale metric
+Geography,SAHSU,Default geography
+UsePostGIS,1,Use the PostGIS Geospatial Database instead of Shape files (0/1).
+PostGISDB,localhost:sahsuland,Name PostGIS Geospatial Database server in the form &lt;host&gt:<&lt>database&gt;
+FDWServerName,"",Name of the the Foreign Data Wrapper Server (FDW). '' disables the use of the Foreign Data Wrappers (remote health data source)
+FDWServerType,"","Type of the the Foreign Data Wrapper Server (FDW). Currently only oracle_fdw is supported. MySQL, Informix and OBDC (thence SQL Server) could potentially be supported. '' disables the use of the Foreign Data Wrappers (remote health data source)"
+FDWDBServer,"",Connector string for the the Foreign Data Wrapper Server (FDW). Currently only oracle_fdw is supported. '' disables the use of the Foreign Data Wrappers (remote health data source)
+LinuxPath,/home/EPH/group/RIF,Path to RIF files on a Linux system
+WindowsPath,G:\RIF,Path to RIF files on a Windows system
+SaTScanPrmFile,SaTScan\RIF_SaTScan.prm,"Satscan parameter file, relative to thwe RIf directory. Use Windows path sematics i.e. ""\"""
+SaTScanExeFile,SaTScan\SaTScan.exe,Satscan executable
+WinBUGSExeFile,WinBUGS14\WinBUGS14.exe,Winbugs executable
+INLAExeFile,INLA\inla.exe,Inla executable
+ExtractControl,1,Enforce extract permissions.
+Parallelisation,4,Level of Parallelisation. Only supported on Oracle; under development in PoatGres/PostGIS.

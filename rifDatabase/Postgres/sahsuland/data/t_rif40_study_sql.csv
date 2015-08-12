@@ -1,0 +1,1113 @@
+pch,1,CREATE,1,"CREATE TABLE rif_studies.s1_extract (
+	year                    SMALLINT 	NOT NULL,
+	study_or_comparison	VARCHAR(1) 	NOT NULL,
+	study_id		INTEGER 	NOT NULL,
+	area_id                 VARCHAR 	NOT NULL,
+	band_id			INTEGER,
+	sex                     SMALLINT,
+	age_group               SMALLINT,
+	ses               VARCHAR,
+	inv_1               BIGINT,
+	total_pop               DOUBLE PRECISION)",1,
+pch,1,CREATE,2,COMMENT ON TABLE rif_studies.s1_extract IS 'Study 1 extract: NO DESCRIPTION',1,
+pch,1,CREATE,3,COMMENT ON COLUMN rif_studies.s1_extract.year IS 'Year',1,
+pch,1,CREATE,4,COMMENT ON COLUMN rif_studies.s1_extract.study_or_comparison IS 'Study (S) or comparison (C) area',1,
+pch,1,CREATE,5,COMMENT ON COLUMN rif_studies.s1_extract.study_id IS 'Study ID',1,
+pch,1,CREATE,6,COMMENT ON COLUMN rif_studies.s1_extract.area_id IS 'Area ID',1,
+pch,1,CREATE,7,COMMENT ON COLUMN rif_studies.s1_extract.band_id IS 'Band ID',1,
+pch,1,CREATE,8,COMMENT ON COLUMN rif_studies.s1_extract.sex IS 'Sex',1,
+pch,1,CREATE,9,COMMENT ON COLUMN rif_studies.s1_extract.age_group IS 'Age group',1,
+pch,1,CREATE,10,COMMENT ON COLUMN rif_studies.s1_extract.total_pop IS 'Total population',1,
+pch,1,CREATE,11,COMMENT ON COLUMN rif_studies.s1_extract.SES IS 'SES',1,
+pch,1,CREATE,12,COMMENT ON COLUMN rif_studies.s1_extract.inv_1 IS 'Lung cancer',1,
+pch,1,CREATE,13,"GRANT SELECT,INSERT,TRUNCATE ON rif_studies.s1_extract TO pch",1,
+pch,1,CREATE,14,"GRANT SELECT,INSERT ON rif_studies.s1_extract TO ffabbri",1,
+pch,1,CREATE,15,"GRANT SELECT,INSERT ON rif_studies.s1_extract TO mdouglas",1,
+pch,1,CREATE,16,"GRANT SELECT,INSERT ON rif_studies.s1_extract TO pch",1,
+pch,1,INSERT,17,"INSERT INTO g_rif40_study_areas(study_id, area_id, band_id)
+SELECT study_id, area_id, band_id
+  FROM rif40_study_areas
+ WHERE study_id = $1 /* Current study ID */
+ ORDER BY study_id, area_id, band_id",1,
+pch,1,INSERT,18,"EXPLAIN (VERBOSE, FORMAT text)
+INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_study_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level4 = s.area_id 	/* Study selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, s.band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_study_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level4	/* Study geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, s.band_id, d1.age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'S' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,INSERT,19,"EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, /* TIMING, (9.2+) */ FORMAT text)
+INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_study_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level4 = s.area_id 	/* Study selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, s.band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_study_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level4	/* Study geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, s.band_id, d1.age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'S' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,INSERT,20,"INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_study_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level4 = s.area_id 	/* Study selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, s.band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_study_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level4	/* Study geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, s.band_id, d1.age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'S' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,INSERT,21,"INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_study_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level4 = s.area_id 	/* Study selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, s.band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_study_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level4	/* Study geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, s.band_id, d1.age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'S' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,POST_INSERT,64,COMMENT ON COLUMN rif_studies.s1_map.posterior_probability IS 'The posterior probability (for indirectly standarised results) or NULL (for directly standardised results)',1,
+pch,1,POST_INSERT,65,COMMENT ON COLUMN rif_studies.s1_map.residual_relative_risk IS 'The residual relative risk(for indirectly standarised results) or NULL (for directly standardised results)',1,
+pch,1,INSERT,22,"INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_study_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level4 = s.area_id 	/* Study selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, s.band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_study_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level4	/* Study geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, s.band_id, d1.age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'S' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,INSERT,23,"INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_study_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level4 = s.area_id 	/* Study selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, s.band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_study_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level4	/* Study geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, s.band_id, d1.age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'S' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,INSERT,24,"INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_study_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level4 = s.area_id 	/* Study selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, s.band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_study_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level4	/* Study geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, s.band_id, d1.age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'S' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,INSERT,25,"INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_study_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level4 = s.area_id 	/* Study selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, s.band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_study_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level4	/* Study geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, s.band_id, d1.age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'S' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,INSERT,26,"INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_study_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level4 = s.area_id 	/* Study selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, s.band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_study_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level4	/* Study geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, s.band_id, d1.age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'S' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,INSERT,27,"INSERT INTO g_rif40_comparison_areas(study_id, area_id)
+SELECT study_id, area_id
+  FROM rif40_comparison_areas
+ WHERE study_id = $1 /* Current study ID */
+ ORDER BY study_id, area_id",1,
+pch,1,INSERT,28,"EXPLAIN (VERBOSE, FORMAT text)
+INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_comparison_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level2 = s.area_id 	/* Comparison selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, NULL::INTEGER AS band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_comparison_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level2	/* Comparison geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'C' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,POST_INSERT,66,COMMENT ON COLUMN rif_studies.s1_map.smoothed_smr IS 'The smoothed SMR [fully Bayesian smoothing] (for indirectly standarised results) or NULL (for directly standardised results)',1,
+pch,1,POST_INSERT,67,COMMENT ON COLUMN rif_studies.s1_map.upper95 IS 'The upper 95% confidence interval for the relative risk (for indirectly standarised results) or the upper 95% confidence interval for the rate (for directly standardised results)',1,
+pch,1,INSERT,29,"EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, /* TIMING, (9.2+) */ FORMAT text)
+INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_comparison_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level2 = s.area_id 	/* Comparison selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, NULL::INTEGER AS band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_comparison_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level2	/* Comparison geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'C' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,INSERT,30,"INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_comparison_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level2 = s.area_id 	/* Comparison selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, NULL::INTEGER AS band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_comparison_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level2	/* Comparison geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'C' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,INSERT,31,"INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_comparison_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level2 = s.area_id 	/* Comparison selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, NULL::INTEGER AS band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_comparison_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level2	/* Comparison geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'C' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,INSERT,32,"INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_comparison_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level2 = s.area_id 	/* Comparison selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, NULL::INTEGER AS band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_comparison_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level2	/* Comparison geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'C' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,INSERT,33,"INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_comparison_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level2 = s.area_id 	/* Comparison selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, NULL::INTEGER AS band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_comparison_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level2	/* Comparison geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'C' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,INSERT,34,"INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_comparison_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level2 = s.area_id 	/* Comparison selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, NULL::INTEGER AS band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_comparison_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level2	/* Comparison geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'C' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,POST_INSERT,68,COMMENT ON COLUMN rif_studies.s1_map.posterior_probability_upper95 IS 'The upper 95% confidence interval of the posterior probability (for indirectly standarised results) or NULL (for directly standardised results)',1,
+pch,1,POST_INSERT,69,COMMENT ON COLUMN rif_studies.s1_map.residual_rr_upper95 IS 'The upper 95% confidence interval of the residual relative risk(for indirectly standarised results) or NULL (for directly standardised results)',1,
+pch,1,INSERT,35,"INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_comparison_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level2 = s.area_id 	/* Comparison selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, NULL::INTEGER AS band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_comparison_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level2	/* Comparison geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'C' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,INSERT,36,"INSERT INTO s1_extract (
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    ""icd"" LIKE 'C34%' OR ""icd"" LIKE '162%' /* Filter 1 */) /* 1 lines of conditions: study: 1, inv: 1 */
+			AND (1=1
+				        /* No year filter required for investigation 1 */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN total
+			ELSE 0
+	       END) inv_1_inv_1	/* Investigation 1 - Lung cancer */ 
+	  FROM sahsuland_cancer c, 	/* Cancer cases in SAHSU land */
+	       g_rif40_comparison_areas s 	/* Study or comparision area to be extracted */
+	 WHERE c.level2 = s.area_id 	/* Comparison selection */
+	       /* No age group filter required for denominator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2		/* Denominator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id, c.age_sex_group
+) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+, d AS (
+	SELECT d1.year, s.area_id, NULL::INTEGER AS band_id, d1.age_sex_group,
+	       c.ses,
+	       SUM(COALESCE(d1.total, 0)) AS total_pop
+	  FROM g_rif40_comparison_areas s, sahsuland_pop d1 	/* Study or comparison area to be extracted */
+		LEFT OUTER JOIN sahsuland_covariates_level4 c ON (	/* Covariates */
+			    d1.level4 = c.level4		/* Join at study geolevel */
+			AND c.year = $2)
+	 WHERE d1.year = $2		/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.level2	/* Comparison geolevel join */
+	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
+	   AND s.study_id = $1		/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id, age_sex_group, c.ses
+) /* End of denominator */
+SELECT d.year,
+       'C' AS study_or_comparison,
+       $1 AS study_id,
+       d.area_id,
+       d.band_id,
+       TRUNC(d.age_sex_group/100) AS sex,
+       MOD(d.age_sex_group, 100) AS age_group,
+       d.ses,
+       COALESCE(n1.inv_1_inv_1, 0) AS inv_1_inv_1, 
+       d.total_pop
+  FROM d			/* Denominator - SAHSU land population */
+	LEFT OUTER JOIN n1 ON ( 	/* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+		    d.area_id		 = n1.area_id
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ ORDER BY 1, 2, 3, 4, 5, 6, 7",1,
+pch,1,POST_INSERT,37,CREATE INDEX s1_extract_area_id ON rif_studies.s1_extract(area_id),1,
+pch,1,POST_INSERT,38,CREATE INDEX s1_extract_band_id ON rif_studies.s1_extract(band_id),1,
+pch,1,POST_INSERT,39,CREATE INDEX s1_extract_sex ON rif_studies.s1_extract(sex),1,
+pch,1,POST_INSERT,40,CREATE INDEX s1_extract_age_group ON rif_studies.s1_extract(age_group),1,
+pch,1,POST_INSERT,41,CREATE INDEX s1_extract_year ON rif_studies.s1_extract(year),1,
+pch,1,POST_INSERT,42,CREATE INDEX s1_extract_study_or_comparison ON rif_studies.s1_extract(study_or_comparison),1,
+pch,1,POST_INSERT,43,ANALYZE rif_studies.s1_extract,1,
+pch,1,INSERT,44,"INSERT INTO rif40_results (study_id, inv_id, band_id, genders, direct_standardisation, adjusted, observed)
+	WITH a AS (
+	SELECT study_id, band_id, sex,
+	       SUM(COALESCE(inv_1, 0)) AS inv_1_observed	/* 1 -  SAHSULAND_CANCER - Lung cancer */		  FROM s1_extract
+		 WHERE study_or_comparison = 'S'
+		 GROUP BY study_id, band_id, sex
+)
+SELECT study_id, 1 AS inv_id, band_id, 1 AS genders, 0 /* Indirect */ AS direct_standardisation, 0 /* Unadjusted */ AS adjusted, inv_1_observed AS observed
+  FROM a
+ WHERE sex = 1
+UNION
+SELECT study_id, 1 AS inv_id, band_id, 2 AS genders, 0 /* Indirect */ AS direct_standardisation, 0 /* Unadjusted */ AS adjusted, inv_1_observed AS observed
+  FROM a
+ WHERE sex = 2
+UNION
+SELECT study_id, 1 AS inv_id, band_id, 3 /* both */ AS genders, 0 /* Indirect */ AS direct_standardisation, 0 /* Unadjusted */ AS adjusted, SUM(COALESCE(inv_1_observed, 0)) AS observed
+  FROM a
+ GROUP BY study_id, band_id
+ ORDER BY 1, 2, 3, 4, 5, 6",1,
+pch,1,POST_INSERT,45,"CREATE TABLE rif_studies.s1_map
+AS
+SELECT d.area_id, d.gid, 'GID_ROWINDEX'::Text AS gid_rowindex, a.*
+  FROM rif40_results a, rif40_studies b, rif40_study_areas c, t_rif40_sahsu_geometry d
+ WHERE a.study_id      = 1 /* Current study ID */
+   AND a.study_id      = b.study_id
+   AND a.band_id       = c.band_id
+   AND c.area_id       = d.area_id
+   AND d.geolevel_name = b.study_geolevel_name /* Partition elimination */
+ LIMIT 1",1,
+pch,1,POST_INSERT,46,TRUNCATE TABLE rif_studies.s1_map,1,
+pch,1,POST_INSERT,47,"GRANT SELECT,INSERT,TRUNCATE ON rif_studies.s1_map TO pch",1,
+pch,1,POST_INSERT,48,"GRANT SELECT,INSERT ON rif_studies.s1_map TO ffabbri",1,
+pch,1,POST_INSERT,49,"GRANT SELECT,INSERT ON rif_studies.s1_map TO mdouglas",1,
+pch,1,POST_INSERT,50,"GRANT SELECT,INSERT ON rif_studies.s1_map TO pch",1,
+pch,1,POST_INSERT,51,COMMENT ON TABLE rif_studies.s1_map IS 'Study :1 map table',1,
+pch,1,POST_INSERT,52,COMMENT ON COLUMN rif_studies.s1_map.band_id IS 'A band allocated to the area',1,
+pch,1,POST_INSERT,53,COMMENT ON COLUMN rif_studies.s1_map.adjusted IS 'Covariate adjustment: Unadjusted (0) or adjusted (1)',1,
+pch,1,POST_INSERT,54,"COMMENT ON COLUMN rif_studies.s1_map.genders IS 'Genders to be investigated: 1 - males, 2 female or 3 - both'",1,
+pch,1,POST_INSERT,55,COMMENT ON COLUMN rif_studies.s1_map.relative_risk IS 'Relaitive risk (for indirectly standarised results) or NULL (for directly standardised results)',1,
+pch,1,POST_INSERT,56,COMMENT ON COLUMN rif_studies.s1_map.smoothed_relative_risk IS 'Smoothed relaive risk (for indirectly standarised results) or NULL (for directly standardised results)',1,
+pch,1,POST_INSERT,57,COMMENT ON COLUMN rif_studies.s1_map.direct_standardisation IS 'Standardisation: indirect (0) or direct (1)',1,
+pch,1,POST_INSERT,58,COMMENT ON COLUMN rif_studies.s1_map.lower95 IS 'The lower 95% confidence interval for the relative risk (for indirectly standarised results) or the lower 95% confidence interval for the rate (for directly standardised results)',1,
+pch,1,POST_INSERT,59,COMMENT ON COLUMN rif_studies.s1_map.posterior_probability_lower95 IS 'The lower 95% confidence interval of the posterior probability (for indirectly standarised results) or NULL (for directly standardised results)',1,
+pch,1,POST_INSERT,60,COMMENT ON COLUMN rif_studies.s1_map.residual_rr_lower95 IS 'The lower 95% confidence interval of the residual relative risk(for indirectly standarised results) or NULL (for directly standardised results)',1,
+pch,1,POST_INSERT,61,COMMENT ON COLUMN rif_studies.s1_map.smoothed_smr_lower95 IS 'The lower 95% confidence interval of the smoothed SMR [fully Bayesian smoothing] (for indirectly standarised results) or NULL (for directly standardised results)',1,
+pch,1,POST_INSERT,62,COMMENT ON COLUMN rif_studies.s1_map.expected IS 'The number of expected cases or the rate (for direct standardised results)',1,
+pch,1,POST_INSERT,63,COMMENT ON COLUMN rif_studies.s1_map.observed IS 'The number of observed cases',1,
+pch,1,POST_INSERT,70,COMMENT ON COLUMN rif_studies.s1_map.smoothed_smr_upper95 IS 'The upper 95% confidence interval of the smoothed SMR [fully Bayesian smoothing] (for indirectly standarised results) or NULL (for directly standardised results)',1,
+pch,1,POST_INSERT,71,COMMENT ON COLUMN rif_studies.s1_map.inv_id IS 'Unique investigation inde:inv_id. Created by SEQUENCE rif40_inv_id_seq',1,
+pch,1,POST_INSERT,72,COMMENT ON COLUMN rif_studies.s1_map.study_id IS 'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq',1,
+pch,1,POST_INSERT,73,COMMENT ON COLUMN rif_studies.s1_map.username IS 'Username',1,
+pch,1,POST_INSERT,74,"COMMENT ON COLUMN rif_studies.s1_map.gid IS 'Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'",1,
+pch,1,POST_INSERT,75,COMMENT ON COLUMN rif_studies.s1_map.gid_rowindex IS 'GID rowindex record locator unique key',1,
+pch,1,POST_INSERT,76,"COMMENT ON COLUMN rif_studies.s1_map.area_id IS 'An area id, the value of the study geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE'",1,
+pch,1,INSERT,77,"INSERT INTO rif_studies.s1_map
+SELECT d.area_id, d.gid,
+      LPAD(d.gid::Text, 10, '0'::Text)||'_'||LPAD(ROW_NUMBER() OVER(PARTITION BY d.area_id
+			ORDER BY a.band_id, a.inv_id, a.genders, a.adjusted, a.direct_standardisation /* Use default table order */)::Text, 10, '0'::Text) AS gid_rowindex,
+
+       a.*
+  FROM rif40_results a, rif40_studies b, rif40_study_areas c,t_rif40_sahsu_geometry d
+ WHERE a.study_id      = 1 /* Current study ID */
+   AND a.study_id      = b.study_id
+   AND a.study_id      = c.study_id
+   AND a.band_id       = c.band_id
+   AND c.area_id       = d.area_id
+   AND d.geolevel_name = b.study_geolevel_name /* Partition elimination */
+ ORDER BY 3 /* GID_ROWINDEX */",1,
+pch,1,POST_INSERT,78,"ALTER TABLE rif_studies.s1_map ADD CONSTRAINT s1_map_pk PRIMARY KEY (study_id, band_id, inv_id, genders, adjusted, direct_standardisation)",1,
+pch,1,POST_INSERT,79,ANALYZE rif_studies.s1_map,1,
