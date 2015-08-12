@@ -1,4 +1,4 @@
-package rifDataLoaderTool.presentationLayer.revisedGUI;
+package rifDataLoaderTool.presentationLayer;
 
 import rifGenericLibrary.presentationLayer.*;
 import rifGenericLibrary.system.RIFServiceException;

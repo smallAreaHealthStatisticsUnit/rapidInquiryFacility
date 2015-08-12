@@ -1,10 +1,9 @@
-package rifDataLoaderTool.presentationLayer.revisedGUI;
+package rifDataLoaderTool.presentationLayer;
 
-import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
-import javax.swing.*;
-
-
+import javax.swing.filechooser.FileFilter;
+import java.io.File;
 
 /**
  *
@@ -56,59 +55,35 @@ import javax.swing.*;
  *
  */
 
-public class CSVFilePreviewTable {
+public class XMLFileFilter extends FileFilter {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	private static final String XML_EXTENSION = "XML";
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private JTable table;
-	private CSVFilePreviewTableModel tableModel;
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public CSVFilePreviewTable(
-		final UserInterfaceFactory userInterfaceFactory) {
+	public XMLFileFilter() {
 
-		tableModel = new CSVFilePreviewTableModel(); 		
-		table = userInterfaceFactory.createTable(tableModel);
-		table.setFocusable(false);
-		table.setRowSelectionAllowed(false);		
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public JTable getTable() {		
-		return table;
-	}
-	
-	public void clearData() {
-		
-		setData(
-			new String[0], 
-			new String[0][0]);
-	}
-	
-	public String[] getFieldNames() {
-		return tableModel.getFieldNames();
-	}
-	
-	public String[][] getPreviewData() {
-		return tableModel.getPreviewData();
-	}
-	
-	public void setData(
-		final String[] fieldNames, 
-		final String[][] previewData) {
-		
-		tableModel.setData(fieldNames, previewData);
-		table.updateUI();
+	public static String createXMLFileName(final String fileName) {
+		if (fileName.toUpperCase().endsWith(XML_EXTENSION) == false) {
+			return fileName + "." + XML_EXTENSION.toLowerCase();
+		}
+		else {
+			return fileName;
+		}
 	}
 	
 	// ==========================================
@@ -123,6 +98,28 @@ public class CSVFilePreviewTable {
 	// Section Override
 	// ==========================================
 
+	public boolean accept(final File candidateFile) {
+		
+		if (candidateFile.isDirectory()) {
+			return true;
+		}
+		
+		String upperCaseFilePath
+			= candidateFile.getAbsolutePath().toUpperCase();
+		if (upperCaseFilePath.endsWith(XML_EXTENSION) == true) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public String getDescription() {
+		String description
+			= RIFDataLoaderToolMessages.getMessage(
+				"io.xmlFileFilter.description");
+		return description;
+	}
+	
 }
 
 

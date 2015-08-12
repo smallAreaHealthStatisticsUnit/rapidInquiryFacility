@@ -1,19 +1,19 @@
 package rifDataLoaderTool.presentationLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.businessConceptLayer.CleaningRule;
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 
-import javax.swing.table.AbstractTableModel;
 
-import java.util.ArrayList;
-
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import java.awt.Color;
+import java.awt.BorderLayout;
 
 /**
  *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -59,92 +59,42 @@ import java.util.ArrayList;
  *
  */
 
-public final class CleaningRuleTableModel 
-	extends AbstractTableModel {
+public class WorkflowStateLabelPanel 
+	extends JPanel {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final int SEARCH_VALUE_TABLE_COLUMN = 0;
-	private static final int REPLACE_VALUE_TABLE_COLUMN = 1;
 	
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private RIFDataTypeInterface rifDataType;
-	private ArrayList<CleaningRule> cleaningRules;
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public CleaningRuleTableModel() {
-		cleaningRules = new ArrayList<CleaningRule>();
-	}
+	public WorkflowStateLabelPanel(
+		final UserInterfaceFactory userInterfaceFactory,
+		final String stateLabel,
+		final String toolTip,
+		final Color backgroundColour) {
 
-	public int getRowCount() {
-		return cleaningRules.size();
-	}
+		setLayout(new BorderLayout());
+		setBackground(backgroundColour);
 
-	public int getColumnCount() {
-		return 2;
-	}
-
-	public CleaningRule getRow(final int rowIndex) {
-		return cleaningRules.get(rowIndex);		
-	}
-	
-	public String getColumnName(
-		final int columnIndex) {
-		
-		String result = "";
-		if (columnIndex == SEARCH_VALUE_TABLE_COLUMN) {
-			result = RIFDataLoaderToolMessages.getMessage("cleaningRule.searchValue.label");
+		JLabel label
+			= userInterfaceFactory.createHTMLLabel(3, stateLabel);
+		if (toolTip != null) {
+			label.setToolTipText(toolTip);
 		}
-		else if (columnIndex == REPLACE_VALUE_TABLE_COLUMN) {
-			result = RIFDataLoaderToolMessages.getMessage("cleaningRule.replaceValue.label");
-		}
-		else {
-			assert(false);
-		}
-		
-		return result;		
-	}
-	
-	public Object getValueAt(
-		final int rowIndex, 
-		final int columnIndex) {
-
-		CleaningRule cleaningRule = cleaningRules.get(rowIndex);
-		
-		String result = "";
-		if (columnIndex == SEARCH_VALUE_TABLE_COLUMN) {
-			result = cleaningRule.getSearchValue();
-		}
-		else if (columnIndex == REPLACE_VALUE_TABLE_COLUMN) {
-			result = cleaningRule.getReplaceValue();
-		}
-		else {
-			assert(false);
-		}
-		
-		return result;
+		add(label, BorderLayout.WEST);
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void setData(final RIFDataTypeInterface rifDataType) {
-		this.rifDataType = rifDataType;
-		
-		cleaningRules = rifDataType.getCleaningRules();
-		fireTableDataChanged();
-		System.out.println("CleaningRuleTableModel setData==cleaning rules total=="+cleaningRules.size()+"==");
-	}
-	
-	public void deleteRow(final int row) {
-		cleaningRules.remove(row);
-	}
-	
+
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

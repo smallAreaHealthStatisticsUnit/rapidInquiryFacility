@@ -1,25 +1,16 @@
 package rifDataLoaderTool.presentationLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolSession;
-
-
-import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
-import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.fileFormats.LoadFieldVarianceReport;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
-import rifGenericLibrary.system.RIFServiceException;
 
 import javax.swing.*;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
+
 
 /**
  *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -65,8 +56,7 @@ import java.awt.event.ActionEvent;
  *
  */
 
-public final class FieldVarianceDialog 
-	extends AbstractDataLoaderToolDialog {
+public class CSVFilePreviewTable {
 
 	// ==========================================
 	// Section Constants
@@ -75,77 +65,50 @@ public final class FieldVarianceDialog
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private JEditorPane editorPane;
-
-	private DataSetFieldConfiguration dataSetFieldConfiguration;
-
+	private JTable table;
+	private CSVFilePreviewTableModel tableModel;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public FieldVarianceDialog(
-		final RIFDataLoaderToolSession session) {
+	public CSVFilePreviewTable(
+		final UserInterfaceFactory userInterfaceFactory) {
 
-		//here we want the button panel to only show "Close"
-		//we want to leave out the "OK" button because the
-		//dialog is read only.
-		super(session, false);
-				
-		UserInterfaceFactory userInterfaceFactory
-			= session.getUserInterfaceFactory();
-		JPanel panel = userInterfaceFactory.createPanel();
-		GridBagConstraints panelGC = userInterfaceFactory.createGridBagConstraints();
-		
-		panelGC.fill = GridBagConstraints.BOTH;
-		panelGC.weightx = 1;
-		panelGC.weighty = 1;
-		editorPane = userInterfaceFactory.createHTMLEditorPane();		
-		JScrollPane scrollPane
-			= userInterfaceFactory.createScrollPane(editorPane);
-		
-		JScrollBar scrollBar = scrollPane.getVerticalScrollBar();
-		panel.add(scrollPane, panelGC);
-		
-		panelGC.gridy++;
-		panelGC.anchor = GridBagConstraints.SOUTHEAST;
-		panelGC.fill = GridBagConstraints.NONE;
-		
-		panelGC.weightx = 0;
-		panelGC.weighty = 0;
-		
-		panel.add(getOKCloseButtonPanel(), panelGC);
-		
-		setMainPanel(panel);	
-		setSize(300, 300);
+		tableModel = new CSVFilePreviewTableModel(); 		
+		table = userInterfaceFactory.createTable(tableModel);
+		table.setFocusable(false);
+		table.setRowSelectionAllowed(false);		
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void setData(
-		final DataSetFieldConfiguration dataSetFieldConfiguration) 
-		throws RIFServiceException {
-		
-		this.dataSetFieldConfiguration = dataSetFieldConfiguration;
-	
-		DataLoaderServiceAPI service = getService();
-		
-		String[][] varianceData
-			= service.getVarianceInFieldData(
-				getCurrentUser(),
-				dataSetFieldConfiguration);
-		LoadFieldVarianceReport fieldVarianceReport
-			 = new LoadFieldVarianceReport();
-		String htmlText
-			= fieldVarianceReport.getHTML(
-				dataSetFieldConfiguration, 
-				varianceData);
-		editorPane.setText(htmlText);
-		editorPane.setCaretPosition(0);
+	public JTable getTable() {		
+		return table;
 	}
 	
-	private void close() {
-		hide();
+	public void clearData() {
+		
+		setData(
+			new String[0], 
+			new String[0][0]);
+	}
+	
+	public String[] getFieldNames() {
+		return tableModel.getFieldNames();
+	}
+	
+	public String[][] getPreviewData() {
+		return tableModel.getPreviewData();
+	}
+	
+	public void setData(
+		final String[] fieldNames, 
+		final String[][] previewData) {
+		
+		tableModel.setData(fieldNames, previewData);
+		table.updateUI();
 	}
 	
 	// ==========================================
@@ -156,15 +119,6 @@ public final class FieldVarianceDialog
 	// Section Interfaces
 	// ==========================================
 
-	public void actionPerformed(ActionEvent event) {
-		Object button = event.getSource();
-		
-		if (isCloseButton(button)) {
-			close();
-		}
-	}
-
-	
 	// ==========================================
 	// Section Override
 	// ==========================================

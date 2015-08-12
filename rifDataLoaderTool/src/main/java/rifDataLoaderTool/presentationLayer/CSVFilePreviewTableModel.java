@@ -1,13 +1,6 @@
-package rifDataLoaderTool.presentationLayer.revisedGUI;
+package rifDataLoaderTool.presentationLayer;
 
-import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
-
-
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import java.awt.Color;
-import java.awt.BorderLayout;
+import javax.swing.table.AbstractTableModel;
 
 /**
  *
@@ -59,42 +52,75 @@ import java.awt.BorderLayout;
  *
  */
 
-public class WorkflowStateLabelPanel 
-	extends JPanel {
+public class CSVFilePreviewTableModel extends AbstractTableModel {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	
+
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private String[] fieldNames;
+	private String[][] previewData;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public WorkflowStateLabelPanel(
-		final UserInterfaceFactory userInterfaceFactory,
-		final String stateLabel,
-		final String toolTip,
-		final Color backgroundColour) {
-
-		setLayout(new BorderLayout());
-		setBackground(backgroundColour);
-
-		JLabel label
-			= userInterfaceFactory.createHTMLLabel(3, stateLabel);
-		if (toolTip != null) {
-			label.setToolTipText(toolTip);
-		}
-		add(label, BorderLayout.WEST);
+	public CSVFilePreviewTableModel() {
+		fieldNames = new String[0];
+		previewData = new String[0][0];		
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	public String[] getFieldNames() {
+		return fieldNames;
+	}
+	
+	public String[][] getPreviewData() {
+		return previewData;
+	}
 
+	public int getRowCount() {
+		return previewData.length;
+	}
+	
+	public int getColumnCount() {
+		return fieldNames.length;
+	}
+	
+	public void setData(
+		final String[] fieldNames, 
+		final String[][] previewData) {
+		
+		this.fieldNames = fieldNames;
+		this.previewData = previewData;
+		
+		fireTableStructureChanged();
+	}
+	
+	public Object getValueAt(
+		final int row, 
+		final int column) {
+		
+		return previewData[row][column];		
+	}
+	
+	public String getColumnName(int column) {
+		return fieldNames[column];
+	}
+	
+	public boolean isCellEditable(
+		final int row, 
+		final int column) {
+		
+		return false;
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
