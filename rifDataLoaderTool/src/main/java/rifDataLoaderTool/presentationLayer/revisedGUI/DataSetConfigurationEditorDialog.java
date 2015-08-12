@@ -68,8 +68,8 @@ import java.io.*;
 
 public class DataSetConfigurationEditorDialog 
 	implements ActionListener,
-	ListSelectionListener {
-
+	ListSelectionListener,
+	ListDataListener {
 
 	// ==========================================
 	// Section Constants
@@ -92,7 +92,6 @@ public class DataSetConfigurationEditorDialog
 	private JScrollPane currentFieldScrollPane;
 	
 	private JDialog dialog;
-	
 	
 	private JTextField nameTextField;
 	private JTextField versionTextField;
@@ -142,6 +141,7 @@ public class DataSetConfigurationEditorDialog
 		dataSetFieldListPanel.setPrototypeListValue("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 		
 		dataSetFieldListPanel.addListSelectionListener(this);
+		dataSetFieldListPanel.addListDataListener(this);
 		
 		dataSetFieldPropertyEditorPanel
 			= new DataSetFieldPropertyEditorPanel(
@@ -251,7 +251,7 @@ public class DataSetConfigurationEditorDialog
 		
 		String browseButtonText
 			= RIFDataLoaderToolMessages.getMessage(
-				"dataSetFieldConfigurationEditorPanel.filePathBrowse.label");
+				"general.buttons.browse.label");
 		browseButton
 			= userInterfaceFactory.createButton(browseButtonText);
 		browseButton.addActionListener(this);
@@ -427,9 +427,6 @@ public class DataSetConfigurationEditorDialog
 	}
 	
 	private JPanel createFieldEditingArea() {
-		
-		GridBagConstraints panelGC
-			= userInterfaceFactory.createGridBagConstraints();
 		JPanel panel
 			= userInterfaceFactory.createBorderLayoutPanel();
 		panel.setMinimumSize(new Dimension(750, 400));
@@ -454,6 +451,7 @@ public class DataSetConfigurationEditorDialog
 		workingCopyDataSetConfiguration
 			= DataSetConfiguration.createCopy(originalDataSetConfiguration);
 		
+		
 		populateFormFromWorkingCopy();
 	}
 	
@@ -463,6 +461,11 @@ public class DataSetConfigurationEditorDialog
 		versionTextField.setText(workingCopyDataSetConfiguration.getVersion());
 		descriptionTextArea.setText(workingCopyDataSetConfiguration.getDescription());
 		filePathTextField.setText(workingCopyDataSetConfiguration.getFilePath());
+		
+		RIFSchemaArea rifSchemaArea = workingCopyDataSetConfiguration.getRIFSchemaArea();
+		rifSchemaAreasComboBox.removeActionListener(this);
+		rifSchemaAreasComboBox.setSelectedItem(rifSchemaArea.getName());
+		rifSchemaAreasComboBox.addActionListener(this);
 		
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
 			= workingCopyDataSetConfiguration.getFieldConfigurations();
@@ -479,9 +482,7 @@ public class DataSetConfigurationEditorDialog
 			DataSetFieldConfiguration selectedDataSetFieldConfiguration
 				= (DataSetFieldConfiguration) dataSetFieldListPanel.getSelectedItem();
 			
-			dataSetFieldPropertyEditorPanel.setData(
-				workingCopyDataSetConfiguration, 
-				selectedDataSetFieldConfiguration);		
+			dataSetFieldPropertyEditorPanel.setDataSetConfiguration(workingCopyDataSetConfiguration);
 		}
 		
 		dataSetFieldListPanel.addListSelectionListener(this);
@@ -544,8 +545,22 @@ public class DataSetConfigurationEditorDialog
 	private void addDataSetFieldConfiguration() {
 		DataSetFieldConfiguration dataSetFieldConfiguration
 			= DataSetFieldConfiguration.newInstance();
+		String coreFieldName 
+			= DataSetFieldNameGenerator.generateCoreFieldName(workingCopyDataSetConfiguration);
+		String loadFieldName 
+			= DataSetFieldNameGenerator.generateLoadFieldName(workingCopyDataSetConfiguration);
+		String cleanFieldName 
+			= DataSetFieldNameGenerator.generateCleanFieldName(workingCopyDataSetConfiguration);
+		dataSetFieldConfiguration.setCoreFieldName(coreFieldName);
+		dataSetFieldConfiguration.setLoadFieldName(loadFieldName);
+		dataSetFieldConfiguration.setCleanFieldName(cleanFieldName);
+		
+		dataSetFieldListPanel.addListItem(dataSetFieldConfiguration);
+		dataSetFieldListPanel.setSelectedItem(dataSetFieldConfiguration);
+		updateButtonStates();
+		
+		dataSetFieldListPanel.updateUI();	
 	}
-
 	
 	private void copyDataSetFieldConfiguration() {
 		DataSetFieldConfiguration selectedDataSetFieldConfiguration
@@ -579,8 +594,8 @@ public class DataSetConfigurationEditorDialog
 		copiedDataSetFieldConfiguration.setLoadFieldName(selectedName);
 		dataSetFieldListPanel.addListItem(copiedDataSetFieldConfiguration);
 		dataSetFieldListPanel.setSelectedItem(copiedDataSetFieldConfiguration);
-		dataSetFieldListPanel.updateUI();
-		
+		updateButtonStates();
+		dataSetFieldListPanel.updateUI();		
 	}
 	
 	private void editDataSetFieldConfiguration() {
@@ -589,7 +604,8 @@ public class DataSetConfigurationEditorDialog
 	}
 	
 	private void deleteDataSetFieldConfiguration() {
-		dataSetFieldListPanel.deleteSelectedListItems();	
+		dataSetFieldListPanel.deleteSelectedListItems();
+		updateButtonStates();
 	}
 
 	
@@ -610,6 +626,15 @@ public class DataSetConfigurationEditorDialog
 	
 	public void resetForm() {
 		
+	}
+	
+	private void updateButtonStates() {
+		if (dataSetFieldListPanel.isEmpty()) {
+			dataSetFieldListButtonPanel.indicateEmptyState();
+		}
+		else {
+			dataSetFieldListButtonPanel.indicatePopulatedState();			
+		}		
 	}
 	
 	// ==========================================
@@ -668,7 +693,6 @@ public class DataSetConfigurationEditorDialog
 			}
 			
 			dataSetFieldPropertyEditorPanel.setData(
-				workingCopyDataSetConfiguration,
 				selectedFieldConfiguration);
 			
 			JScrollBar verticalScrollBar
@@ -685,6 +709,20 @@ public class DataSetConfigurationEditorDialog
 			ErrorDialog.showError(dialog, rifServiceException.getErrorMessages());			
 		}
 	}
+	
+	//Interface: List Data Listener
+	public void contentsChanged(final ListDataEvent event) {
+		updateButtonStates();
+	}
+	
+	public void intervalAdded(final ListDataEvent event) {
+		updateButtonStates();		
+	}
+	
+	public void intervalRemoved(final ListDataEvent event) {
+		updateButtonStates();		
+	}
+
 	
 	// ==========================================
 	// Section Override

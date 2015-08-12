@@ -3,18 +3,15 @@ package rifGenericLibrary.presentationLayer;
 
 
 import java.awt.GridBagConstraints;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
 
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.*;
+import javax.swing.event.*;
 
 
 /**
@@ -261,6 +258,17 @@ public final class OrderedListPanel {
 		
 		list.removeListSelectionListener(listSelectionListener);
 	}
+
+	public void addListDataListener(final ListDataListener listDataListener) {
+		ListModel<String> listModel = list.getModel();
+		listModel.addListDataListener(listDataListener);
+	}
+	
+	public void removeListDataListener(final ListDataListener listDataListener) {
+		ListModel<String> listModel = list.getModel();
+		listModel.removeListDataListener(listDataListener);
+	}
+	
 	
 	
 	/**

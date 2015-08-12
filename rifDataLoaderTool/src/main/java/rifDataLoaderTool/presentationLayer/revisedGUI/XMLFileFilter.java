@@ -77,7 +77,15 @@ public class XMLFileFilter extends FileFilter {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	public static String createXMLFileName(final String fileName) {
+		if (fileName.toUpperCase().endsWith(XML_EXTENSION) == false) {
+			return fileName + "." + XML_EXTENSION.toLowerCase();
+		}
+		else {
+			return fileName;
+		}
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

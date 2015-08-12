@@ -1068,14 +1068,8 @@ public class DataSetFieldConfiguration
 	// Section Interfaces
 	// ==========================================
 
-	public String getDisplayName() {
-		StringBuilder buffer = new StringBuilder();
-		
-		buffer.append(coreDataSetName);
-		buffer.append(".");
-		buffer.append(coreFieldName);
-		
-		return buffer.toString();
+	public String getDisplayName() {		
+		return coreFieldName;
 	}
 	
 	// ==========================================

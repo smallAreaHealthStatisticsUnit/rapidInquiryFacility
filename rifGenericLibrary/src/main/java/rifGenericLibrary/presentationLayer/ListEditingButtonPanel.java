@@ -1,17 +1,14 @@
 package rifGenericLibrary.presentationLayer;
 
-
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-
-import java.util.ArrayList;
-
-import javax.swing.JPanel;
-
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
+
+import javax.swing.JPanel;
+import javax.swing.JButton;
+import java.util.ArrayList;
 import java.awt.GridBagConstraints;
+import java.awt.event.ActionListener;
+
 
 /**
  *
@@ -398,6 +395,7 @@ public final class ListEditingButtonPanel {
 		
 		return panel;
 	}
+	
 	
 	// ==========================================
 	// Section Errors and Validation

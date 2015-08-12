@@ -8,14 +8,7 @@ import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.fileFormats.*;
 import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
 import rifDataLoaderTool.dataStorageLayer.ProductionDataLoaderService;
-
-
 import rifDataLoaderTool.dataStorageLayer.SampleRIFDatabaseCreationManager;
-
-
-
-
-
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -212,7 +205,7 @@ public class WorkflowEditorDialog
 		panel.add(
 			dataSetConfigurationListPanel.getPanel(),
 			panelGC);
-
+		
 		panelGC.gridy++;				
 		panelGC.fill = GridBagConstraints.NONE;
 		panelGC.weightx = 0;
@@ -465,14 +458,7 @@ public class WorkflowEditorDialog
 			linearWorkflowReader.readFile(workflowXMLFile);
 			currentLinearWorkflow
 				= linearWorkflowReader.getLinearWorkflow();
-			
-			DataSetConfiguration dataSetConfiguration
-				= linearWorkflowReader.getLinearWorkflow().getDataSetConfigurations().get(0);
-			DataSetFieldConfiguration dobFieldConfiguration
-				= dataSetConfiguration.getFieldHavingConvertFieldName("dob");
-			
-			ArrayList<RIFCheckOption> rifCheckOptions
-				= dobFieldConfiguration.getCheckOptions();
+
 			populateForm();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -498,9 +484,27 @@ public class WorkflowEditorDialog
 				return;
 			}
 		
-			File workflowXMLFile = fileChooser.getSelectedFile();
+			File selectedFile = fileChooser.getSelectedFile();
+			String filePath
+				= XMLFileFilter.createXMLFileName(selectedFile.getAbsolutePath());
+			File workflowXMLFile = new File(filePath);
+			
 			LinearWorkflowWriter linearWorkflowWriter
 				= new LinearWorkflowWriter();
+
+		
+			String currentStartingWorkflowStateName
+				= (String) startingStateComboBox.getSelectedItem();
+			WorkflowState currentStartWorkflowState
+				= WorkflowState.getWorkflowStateFromName(
+					currentStartingWorkflowStateName);
+			currentLinearWorkflow.setStartWorkflowState(currentStartWorkflowState);
+			String currentStoppingWorkflowStateName
+				= (String) startingStateComboBox.getSelectedItem();
+			WorkflowState currentStoppingWorkflowState
+				= WorkflowState.getWorkflowStateFromName(
+						currentStoppingWorkflowStateName);
+			currentLinearWorkflow.setStopWorkflowState(currentStoppingWorkflowState);
 
 			linearWorkflowWriter.write(
 				currentLinearWorkflow, 
@@ -550,23 +554,35 @@ public class WorkflowEditorDialog
 	}
 	
 	private void addDataSetConfiguration() {
-		DataSetConfiguration originalDataSetConfiguration
-			= DataSetConfiguration.newInstance();
+		
+		CSVFileSelectionDialog csvFileSelectionDialog
+			= new CSVFileSelectionDialog(userInterfaceFactory);
+		csvFileSelectionDialog.show();
+		if (csvFileSelectionDialog.isCancelled()) {
+			return;
+		}
+		
+		DataSetConfiguration dataSetConfiguration
+			= csvFileSelectionDialog.getDataSetConfiguration();
 		
 		DataSetConfigurationEditorDialog dialog
 			= new DataSetConfigurationEditorDialog(userInterfaceFactory);
 		dialog.setData(
 			currentLinearWorkflow, 
-			originalDataSetConfiguration);
+			dataSetConfiguration);
 		dialog.show();
 		if (dialog.isCancelled() == true) {
 			return;
 		}
-		
+
 		DataSetConfiguration revisedDataSetConfiguration
 			= dialog.getDataSetConfiguration();
+		currentLinearWorkflow.addDataSetConfiguration(revisedDataSetConfiguration);
 		dataSetConfigurationListPanel.addListItem(revisedDataSetConfiguration);
+		dataSetConfigurationListPanel.updateUI();
 		dataSetConfigurationListPanel.setSelectedItem(revisedDataSetConfiguration);
+		
+		dataSetConfigurationListButtonPanel.indicatePopulatedState();
 	}
 	
 	private void copyDataSetConfiguration() {
@@ -607,6 +623,7 @@ public class WorkflowEditorDialog
 		dataSetConfigurationListPanel.addListItem(copiedDataSetConfiguration);
 		dataSetConfigurationListPanel.setSelectedItem(copiedDataSetConfiguration);
 		dataSetConfigurationListPanel.updateUI();
+		
 	}
 	
 	private void editDataSetConfiguration() {
@@ -637,6 +654,10 @@ public class WorkflowEditorDialog
 	
 	private void deleteSelectedDataSetConfigurations() {		
 		dataSetConfigurationListPanel.deleteSelectedListItems();
+
+		if (dataSetConfigurationListPanel.isEmpty()) {
+			dataSetConfigurationListButtonPanel.indicateEmptyState();			
+		}
 	}
 	
 	
@@ -675,6 +696,7 @@ public class WorkflowEditorDialog
 			dataSetConfigurationListButtonPanel.indicateEmptyState();
 		}
 		else {
+			dataSetConfigurationListPanel.selectFirstItem();
 			dataSetConfigurationListButtonPanel.indicatePopulatedState();
 		}
 		dataSetConfigurationListPanel.updateUI();
@@ -712,7 +734,17 @@ public class WorkflowEditorDialog
 		}
 		
 	}
-	
+
+	private void updateButtonStates() {
+		System.out.println("updateButtonStates");
+		if (dataSetConfigurationListPanel.isEmpty()) {
+			dataSetConfigurationListButtonPanel.indicateEmptyState();
+		}
+		else {
+			dataSetConfigurationListButtonPanel.indicatePopulatedState();
+		}
+	}
+
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -755,7 +787,7 @@ public class WorkflowEditorDialog
 		}
 
 	}
-	
+		
 	// ==========================================
 	// Section Override
 	// ==========================================

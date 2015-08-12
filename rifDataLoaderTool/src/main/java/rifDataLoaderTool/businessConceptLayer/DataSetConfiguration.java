@@ -136,6 +136,7 @@ public class DataSetConfiguration
 		
 		DataSetConfiguration dataSetConfiguration
 			= new DataSetConfiguration();
+		dataSetConfiguration.setName(name);
 		
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
 			= new ArrayList<DataSetFieldConfiguration>();
@@ -171,6 +172,7 @@ public class DataSetConfiguration
 		
 		DataSetConfiguration dataSetConfiguration
 			= new DataSetConfiguration();
+		dataSetConfiguration.setName(name);
 		
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
 			= new ArrayList<DataSetFieldConfiguration>();
@@ -207,6 +209,7 @@ public class DataSetConfiguration
 			sourceDataSetConfiguration.isNewRecord());
 		destinationDataSetConfiguration.setName(
 			sourceDataSetConfiguration.getName());
+		
 		destinationDataSetConfiguration.setVersion(
 			sourceDataSetConfiguration.getVersion());
 		destinationDataSetConfiguration.setFilePath(
@@ -800,6 +803,18 @@ public class DataSetConfiguration
 		return results;
 		
 	}
+	
+	public String[] getCoreFieldNames() {
+		
+		ArrayList<String> coreFieldNames = new ArrayList<String>();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			coreFieldNames.add(fieldConfiguration.getCoreFieldName());
+		}
+		
+		String[] results
+			= coreFieldNames.toArray(new String[0]);
+		return results;
+	}	
 	
 	public String[] getLoadFieldNames() {
 		

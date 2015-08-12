@@ -629,11 +629,16 @@ public class DataSetFieldPropertyEditorPanel
 		return originalDataSetFieldConfiguration;
 	}
 	
+	
+	public void setDataSetConfiguration(
+		final DataSetConfiguration originalDataSetConfiguration) {
+		
+		this.originalDataSetConfiguration = originalDataSetConfiguration;
+	}
+	
 	public void setData(
-		final DataSetConfiguration originalDataSetConfiguration,
 		final DataSetFieldConfiguration dataSetFieldConfiguration) {
 				
-		this.originalDataSetConfiguration = originalDataSetConfiguration;
 		this.originalDataSetFieldConfiguration = dataSetFieldConfiguration;
 		workingCopyDataSetFieldConfiguration
 			= DataSetFieldConfiguration.createCopy(originalDataSetFieldConfiguration);

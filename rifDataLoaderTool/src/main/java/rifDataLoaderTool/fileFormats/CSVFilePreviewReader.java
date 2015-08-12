@@ -3,6 +3,7 @@ package rifDataLoaderTool.fileFormats;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.presentationLayer.HTMLUtility;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -100,11 +101,14 @@ public class CSVFilePreviewReader {
 	private String delimiterRegularExpression;
 	private int numberOfLinesToPreview;
 	
+	private ArrayList<String> firstFewLines;
+	
 	private String[] columnNames;
 	
 	//This is the LINE X: .... that goes with an annotated line entry
 	private String lineLabelText;
 	private ArrayList<String> logEntryLines;
+	private ArrayList<String[]> previewData;
 	
 	// ==========================================
 	// Section Construction
@@ -120,8 +124,11 @@ public class CSVFilePreviewReader {
 			= RIFDataLoaderToolMessages.getMessage(
 				"csvFilePreviewReader.line.label");
 		
+		firstFewLines = new ArrayList<String>();
 		columnNames = new String[0];
 		logEntryLines = new ArrayList<String>();
+		
+		previewData = new ArrayList<String[]>();
 		
 	}
 
@@ -166,8 +173,14 @@ public class CSVFilePreviewReader {
 			}
 			
 			while ( (currentLine != null) && (currentLineNumber <= numberOfLinesToPreview)) {
+				firstFewLines.add(currentLine);					
+				
 				String[] fieldValues 
 					= currentLine.split(delimiterRegularExpression);
+				if (currentLineNumber != 1) {
+					previewData.add(fieldValues);
+				}
+				
 				int currentNumberOfColumnsPerRow = fieldValues.length;
 				if (currentNumberOfColumnsPerRow != expectedNumberOfColumnsPerRow) {
 					String errorMessage
@@ -314,6 +327,38 @@ public class CSVFilePreviewReader {
 				}
 			}
 		}			
+	}
+	
+	public String getFirstFewLinesAsHTML() {
+		
+		ByteArrayOutputStream outputStream
+			= new ByteArrayOutputStream();
+		HTMLUtility htmlUtility = new HTMLUtility();
+		htmlUtility.initialise(outputStream, "UTF-8");
+	
+		htmlUtility.beginDocument();
+		htmlUtility.beginBody();
+		
+		for (String currentLine : firstFewLines) {
+			htmlUtility.writeParagraph(currentLine);
+		}
+		
+		htmlUtility.endBody();
+		htmlUtility.endDocument();
+		
+		try {
+			String htmlFormattedInstructionText 
+				= new String(outputStream.toByteArray(), "UTF-8");	
+			outputStream.close();
+			return htmlFormattedInstructionText;
+		}
+		catch(Exception exception) {
+			return "";
+		}
+	}
+	
+	public String[][] getPreviewData() {
+		return previewData.toArray(new String[0][0]);
 	}
 	
 	// ==========================================

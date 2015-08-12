@@ -105,6 +105,16 @@ public abstract class AbstractRIFWorkflow {
 		return dataSetConfigurations;
 	}
 	
+	public String[] getDataSetConfigurationNames() {
+		ArrayList<String> names = new ArrayList<String>();
+		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
+			names.add(dataSetConfiguration.getName());
+		}
+		
+		return names.toArray(new String[0]);
+	}
+	
+	
 	public void addDataSetConfiguration(
 		final DataSetConfiguration dataSetConfiguration) {
 		

@@ -196,6 +196,10 @@ public final class OKCloseButtonPanel {
 		return false;		
 	}
 
+	public void setEnableOKButton(final boolean isEnabled) {
+		okButton.setEnabled(isEnabled);
+	}
+	
 // ==========================================
 // Section Errors and Validation
 // ==========================================

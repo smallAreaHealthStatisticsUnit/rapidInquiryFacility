@@ -1,18 +1,6 @@
-package rifDataLoaderTool.fileFormats;
+package rifDataLoaderTool.presentationLayer.revisedGUI;
 
-import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
-
-
-import rifGenericLibrary.system.RIFServiceException;
-import rifServices.fileFormats.XMLCommentInjector;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-
-
+import javax.swing.table.AbstractTableModel;
 
 /**
  *
@@ -64,7 +52,7 @@ import java.io.FileOutputStream;
  *
  */
 
-public class LinearWorkflowWriter {
+public class CSVFilePreviewTableModel extends AbstractTableModel {
 
 	// ==========================================
 	// Section Constants
@@ -73,56 +61,65 @@ public class LinearWorkflowWriter {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private String[] fieldNames;
+	private String[][] previewData;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public LinearWorkflowWriter() {
-
+	public CSVFilePreviewTableModel() {
+		fieldNames = new String[0];
+		previewData = new String[0][0];		
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	public String[] getFieldNames() {
+		return fieldNames;
+	}
+	
+	public String[][] getPreviewData() {
+		return previewData;
+	}
 
-	public String write(
-		final LinearWorkflow linearWorkflow,
-		final File file) 
-		throws RIFServiceException {
-				
-			try {
-				FileOutputStream fileOutputStream
-					= new FileOutputStream(file);
-						
-				LinearWorkflowConfigurationHandler rifWorkflowConfigurationHandler
-					= new LinearWorkflowConfigurationHandler();
-
-				ByteArrayOutputStream outputStream
-					= new ByteArrayOutputStream();
-				XMLCommentInjector commentInjector = new XMLCommentInjector();			
-				rifWorkflowConfigurationHandler.initialise(
-					fileOutputStream, 
-					commentInjector);
-				rifWorkflowConfigurationHandler.writeXML(linearWorkflow);
-		    	String result 
-					= new String(outputStream.toByteArray(), "UTF-8");	
-		    	outputStream.close();			
-		    	return result;
-			}
-			catch(Exception exception) {
-				exception.printStackTrace(System.out);
-				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"io.error.problemWritingFileContentsToString");
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						RIFServiceError.XML_FILE_PARSING_PROBLEM, 
-						errorMessage);
-				throw rifServiceException;			
-			}
-		}	
-
+	public int getRowCount() {
+		return previewData.length;
+	}
+	
+	public int getColumnCount() {
+		return fieldNames.length;
+	}
+	
+	public void setData(
+		final String[] fieldNames, 
+		final String[][] previewData) {
+		
+		this.fieldNames = fieldNames;
+		this.previewData = previewData;
+		
+		fireTableStructureChanged();
+	}
+	
+	public Object getValueAt(
+		final int row, 
+		final int column) {
+		
+		return previewData[row][column];		
+	}
+	
+	public String getColumnName(int column) {
+		return fieldNames[column];
+	}
+	
+	public boolean isCellEditable(
+		final int row, 
+		final int column) {
+		
+		return false;
+	}
 	
 	// ==========================================
 	// Section Errors and Validation
