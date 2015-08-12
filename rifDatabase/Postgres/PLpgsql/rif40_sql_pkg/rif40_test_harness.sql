@@ -144,7 +144,7 @@ BEGIN
 						c2_rth_rec.test_case_title, 
 						c2_rth_rec.results,
 						c2_rth_rec.results_xml,
-						c2_rth_rec.error_code_expected, 
+						c2_rth_rec.pg_error_code_expected, 
 						c2_rth_rec.raise_exception_on_failure);
 		IF NOT f_result THEN 	/* Test failed */
 			IF NOT c2_rth_rec.expected_result THEN

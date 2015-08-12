@@ -162,7 +162,8 @@ CREATE TABLE rif40_test_harness (
 	test_run_class				VARCHAR NOT NULL,	
 	test_stmt					VARCHAR NOT NULL,
 	test_case_title				VARCHAR NOT NULL,
-	error_code_expected			VARCHAR DEFAULT NULL,
+	pg_error_code_expected		VARCHAR DEFAULT NULL,
+	mssql_error_code_expected	VARCHAR DEFAULT NULL,
 	raise_exception_on_failure 	BOOLEAN NOT NULL DEFAULT TRUE,
 	expected_result			 	BOOLEAN NOT NULL DEFAULT TRUE,
 	register_date				TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT "statement_timestamp"(),
@@ -186,7 +187,8 @@ COMMENT ON COLUMN rif40_test_harness.test_id IS 'Unique investigation index: tes
 COMMENT ON COLUMN rif40_test_harness.test_run_class IS 'Test run class; usually the name of the SQL script that originally ran it';
 COMMENT ON COLUMN rif40_test_harness.test_stmt IS 'SQL statement for test';
 COMMENT ON COLUMN rif40_test_harness.test_case_title IS 'Test case title. Must be unique';
-COMMENT ON COLUMN rif40_test_harness.error_code_expected IS '[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number';
+COMMENT ON COLUMN rif40_test_harness.pg_error_code_expected IS '[negative] Postgres error SQLSTATE expected [as part of an exception]; passed as PG_EXCEPTION_DETAIL';
+COMMENT ON COLUMN rif40_test_harness.mssql_error_code_expected IS 'Microsoft SQL server error code expected [as part of an exception].';
 COMMENT ON COLUMN rif40_test_harness.raise_exception_on_failure IS 'Raise exception on failure. NULL means it is expected to NOT raise an exception, raise exception on failure';
 COMMENT ON COLUMN rif40_test_harness.expected_result IS 'Expected result; tests are allowed to deliberately fail!';
 COMMENT ON COLUMN rif40_test_harness.register_date IS 'Date registered';

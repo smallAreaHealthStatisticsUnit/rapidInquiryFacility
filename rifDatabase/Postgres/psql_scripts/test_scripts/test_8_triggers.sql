@@ -513,7 +513,7 @@ SELECT rif40_sql_pkg._rif40_test_sql_template(
 SELECT * FROM rif40_test_runs
  WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
  
-SELECT test_id, error_code_expected, pass, expected_result, time_taken, raise_exception_on_failure, test_stmt, test_case_title
+SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise_exception_on_failure, test_stmt, test_case_title
   FROM rif40_test_harness
  WHERE test_run_class = 'test_8_triggers.sql'
  ORDER BY test_id;
@@ -530,12 +530,12 @@ SELECT * FROM rif40_test_runs
 --
 -- Dump test harness
 --
-SELECT test_id, error_code_expected, pass, expected_result, time_taken, raise_exception_on_failure, test_stmt, test_case_title
+SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise_exception_on_failure, test_stmt, test_case_title
   FROM rif40_test_harness
  WHERE test_run_class = 'test_8_triggers.sql'
  ORDER BY test_id;
 
-\copy (SELECT test_id, test_run_class, test_stmt, test_case_title, error_code_expected, raise_exception_on_failure, expected_result, register_date, results, results_xml, NULL AS pass, NULL AS test_run_id, NULL AS test_date, NULL AS time_taken FROM rif40_test_harness) TO ../../TestHarness/rif40_test_harness.csv WITH CSV HEADER
+\copy (SELECT test_id, test_run_class, test_stmt, test_case_title, pg_error_code_expected, raise_exception_on_failure, expected_result, register_date, results, results_xml, NULL AS pass, NULL AS test_run_id, NULL AS test_date, NULL AS time_taken FROM rif40_test_harness) TO ../../TestHarness/rif40_test_harness.csv WITH CSV HEADER
 
 \copy (SELECT * FROM rif40_test_harness) TO test_scripts/data/rif40_test_harness_:dbname.csv WITH CSV HEADER
 \copy (SELECT * FROM rif40_test_runs) TO test_scripts/data/rif40_test_runs_:dbname.csv WITH CSV HEADER

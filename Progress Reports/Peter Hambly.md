@@ -71,6 +71,8 @@ Done:
 * Improved make targets - made database aware
 * RIF startup procedure: added application name support, no check mode (for middleware testing) 
 
+### June
+
 #### 1st-5th June
 
 * Full regression test of database build
@@ -125,6 +127,8 @@ Raises an exception!
 
 No work on the RIF40_COLUMNS
 
+### July
+
 #### 5th July-10th July
 
 * RIF covariates example data 
@@ -139,6 +143,8 @@ No work on the RIF40_COLUMNS
 * Caving in Slovenia: https://en.wikipedia.org/wiki/Migovec_System 
   and: https://www.union.ic.ac.uk/rcc/caving/slovenia/intro/slov_intro.php 
 
+### August
+  
 #### 3rd - 7th August 
 
 Created test harness test data (to test the functionality); the basic principle is that each test 

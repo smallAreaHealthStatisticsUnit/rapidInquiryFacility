@@ -1,6 +1,5 @@
-test_id,test_run_class,test_stmt,test_case_title,error_code_expected,raise_exception_on_failure,expected_result,register_date,results,results_xml,pass,test_run_id,test_date,time_taken
-27,test_8_triggers.sql,"SELECT rif40_log_pkg.rif40_error(-90125, 'rif40_error', 'Dummy error: %', 'rif40_error test'::VARCHAR) AS x",T8--13: test_8_triggers.sql: rif40_log_pkg.rif40_error() test,-90125,f,t,2015-08-11 11:15:28.188+01,,,,,,
-25,test_8_triggers.sql,"SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') ORDER BY level4","Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200",,t,t,2015-08-11 11:15:28.188+01,"{{01,01.015,01.015.016200,01.015.016200.2},{01,01.015,01.015.016200,01.015.016200.3},{01,01.015,01.015.016200,01.015.016200.4},{01,01.015,01.015.016900,01.015.016900.1},{01,01.015,01.015.016900,01.015.016900.2},{01,01.015,01.015.016900,01.015.016900.3}}","<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+test_id,test_run_class,test_stmt,test_case_title,pg_error_code_expected,raise_exception_on_failure,expected_result,register_date,results,results_xml,pass,test_run_id,test_date,time_taken
+1,test_8_triggers.sql,"SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') ORDER BY level4","Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200",,t,t,2015-08-12 08:53:17.37+01,"{{01,01.015,01.015.016200,01.015.016200.2},{01,01.015,01.015.016200,01.015.016200.3},{01,01.015,01.015.016200,01.015.016200.4},{01,01.015,01.015.016900,01.015.016900.1},{01,01.015,01.015.016900,01.015.016900.2},{01,01.015,01.015.016900,01.015.016900.3}}","<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
    <level1>01</level1>
    <level2>01.015</level2>
    <level3>01.015.016200</level3>
@@ -36,7 +35,7 @@ test_id,test_run_class,test_stmt,test_case_title,error_code_expected,raise_excep
    <level3>01.015.016900</level3>
    <level4>01.015.016900.3</level4>
  </row>",,,,
-26,test_8_triggers.sql,"SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016200') ORDER BY level4","T8--11: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 [DELIBERATE FAIL TEST]",,f,f,2015-08-11 11:15:28.188+01,"{{01,01.015,01.015.016200,01.015.016200.2},{01,01.015,01.015.016200,01.015.016200.3},{01,01.015,01.015.016200,01.015.016200.4},{01,01.015,01.015.016900,01.015.016900.1},{01,01.015,01.015.016900,01.015.016900.2},{01,01.015,01.015.016900,01.015.016900.3}}","<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+2,test_8_triggers.sql,"SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016200') ORDER BY level4","T8--11: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 [DELIBERATE FAIL TEST]",,f,f,2015-08-12 08:53:17.37+01,"{{01,01.015,01.015.016200,01.015.016200.2},{01,01.015,01.015.016200,01.015.016200.3},{01,01.015,01.015.016200,01.015.016200.4},{01,01.015,01.015.016900,01.015.016900.1},{01,01.015,01.015.016900,01.015.016900.2},{01,01.015,01.015.016900,01.015.016900.3}}","<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
    <level1>01</level1>
    <level2>01.015</level2>
    <level3>01.015.016200</level3>
@@ -72,14 +71,15 @@ test_id,test_run_class,test_stmt,test_case_title,error_code_expected,raise_excep
    <level3>01.015.016900</level3>
    <level4>01.015.016900.3</level4>
  </row>",,,,
-28,test_8_triggers.sql,"INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
-VALUES ('SAHSU', 'TEST', 'TRIGGER TEST #1', 'EXTRACT_TRIGGER_TEST_1', 'MAP_TRIGGER_TEST_1', 1 /* Diease mapping */, 'LEVEL1', 'LEVEL4', NULL /* FAIL HERE */, 0)",T8--15: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL,-20211,f,t,2015-08-11 11:15:28.188+01,,,,,,
-29,test_8_triggers.sql,"INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
+3,test_8_triggers.sql,"SELECT rif40_log_pkg.rif40_error(-90125, 'rif40_error', 'Dummy error: %', 'rif40_error test'::VARCHAR) AS x",T8--13: test_8_triggers.sql: rif40_log_pkg.rif40_error() test,-90125,f,t,2015-08-12 08:53:17.37+01,,,,,,
+4,test_8_triggers.sql,"INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
+VALUES ('SAHSU', 'TEST', 'TRIGGER TEST #1', 'EXTRACT_TRIGGER_TEST_1', 'MAP_TRIGGER_TEST_1', 1 /* Diease mapping */, 'LEVEL1', 'LEVEL4', NULL /* FAIL HERE */, 0)",T8--15: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL,-20211,f,t,2015-08-12 08:53:17.37+01,,,,,,
+5,test_8_triggers.sql,"INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
 VALUES ('SAHSU', 'TEST', 'TRIGGER TEST #2', 'EXTRACT_TRIGGER_TEST_2', 'MAP_TRIGGER_TEST_2', 1 /* Diease mapping */, 'LEVEL1', 'LEVEL4', 'SAHSULAND_POP', NULL /* FAIL HERE */)
-RETURNING 1::Text AS test_value",T8--17: test_8_triggers.sql: TRIGGER TEST #2: rif40_studies.suppression_value IS NULL,,f,t,2015-08-11 11:15:28.188+01,{1},"<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+RETURNING 1::Text AS test_value",T8--17: test_8_triggers.sql: TRIGGER TEST #2: rif40_studies.suppression_value IS NULL,,f,t,2015-08-12 08:53:17.37+01,{1},"<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
    <test_value>1</test_value>
  </row>",,,,
-30,test_8_triggers.sql,"SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') ORDER BY level4","T8--21: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200",,t,t,2015-08-11 11:15:28.188+01,"{{01,01.015,01.015.016200,01.015.016200.2},{01,01.015,01.015.016200,01.015.016200.3},{01,01.015,01.015.016200,01.015.016200.4},{01,01.015,01.015.016900,01.015.016900.1},{01,01.015,01.015.016900,01.015.016900.2},{01,01.015,01.015.016900,01.015.016900.3}}","<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+6,test_8_triggers.sql,"SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') ORDER BY level4","T8--21: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200",,t,t,2015-08-12 08:53:17.37+01,"{{01,01.015,01.015.016200,01.015.016200.2},{01,01.015,01.015.016200,01.015.016200.3},{01,01.015,01.015.016200,01.015.016200.4},{01,01.015,01.015.016900,01.015.016900.1},{01,01.015,01.015.016900,01.015.016900.2},{01,01.015,01.015.016900,01.015.016900.3}}","<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
    <level1>01</level1>
    <level2>01.015</level2>
    <level3>01.015.016200</level3>
