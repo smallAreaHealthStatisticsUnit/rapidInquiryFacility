@@ -113,6 +113,7 @@ AS
 	IF @Error_Message IS NOT NULL 
 		exec [rif40].[rif40_log] 'ERROR',null,@Error_Message;
 	
+	
 END
  GO
  

@@ -50,6 +50,18 @@ Declare  @XTYPE varchar(5);
 			SET @XTYPE = 'I'
 	END
 
+--delete not allowed
+IF @XTYPE = 'D'
+BEGIN TRY
+	rollback;
+	DECLARE @err_msg0 VARCHAR(MAX) = formatmessage(51147);
+	THROW 51147, @err_msg0, 1;
+END TRY
+BEGIN CATCH
+	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_tables]';
+	THROW 51147, @err_msg0, 1;
+END CATCH;		
+	
 --Check if column <TABLE_NAME>.TOTAL_FIELD exists
 IF (@XTYPE = 'U' or @XTYPE = 'I') 
 BEGIN
@@ -57,8 +69,8 @@ BEGIN
 	SELECT table_name, total_field
 	FROM   inserted  b
 	where 
-		b.total_field is null or b.total_field = ''
-		or not exists (
+		b.total_field is not null and b.total_field <> ''
+		AND not exists (
 		select 1
 		from INFORMATION_SCHEMA.COLUMNS a
 		where a.table_name=b.table_name
@@ -104,12 +116,28 @@ BEGIN
 		THROW 51038, @err_msg2, 1;
 	END CATCH;	
 
-	DECLARE @check_values VARCHAR(MAX) = (
-		SELECT 1
-		FROM inserted
-		WHERE [rif40].[rif40_check_table_values] (table_name, total_field, sex_field_name, age_group_field_name, age_sex_group_field_name) = 0
-	);
+	--valid Oracle name checks:
 	
-		
+DECLARE table_name_cursor CURSOR FOR
+	SELECT table_name, total_field, sex_field_name, age_group_field_name, age_sex_group_field_name
+	from inserted;
+DECLARE @curs_table_name VARCHAR(MAX), @curs_total_field VARCHAR(MAX), @curs_sex_field_name VARCHAR(MAX), @curs_age_group_field_name VARCHAR(MAX), @curs_age_sex_group_field_name VARCHAR(MAX);
+
+OPEN table_name_cursor;
+FETCH table_name_cursor INTO @curs_table_name, @curs_total_field, @curs_sex_field_name, @curs_age_group_field_name, @curs_age_sex_group_field_name;
+WHILE @@FETCH_STATUS = 0  
+BEGIN  
+	EXEC [rif40].[rif40_db_name_check] 'TABLE_NAME', @curs_table_name;
+	EXEC [rif40].[rif40_db_name_check] 'TOTAL_FIELD', @curs_total_field;
+	EXEC [rif40].[rif40_db_name_check] 'SEX_FIELD_NAME', @curs_sex_field_name;
+	EXEC [rif40].[rif40_db_name_check] 'AGE_GROUP_NAME', @curs_age_group_field_name;
+	EXEC [rif40].[rif40_db_name_check] 'AGE_SEX_GROUP_NAME', @curs_age_sex_group_field_name;
+	FETCH table_name_cursor INTO @curs_table_name, @curs_total_field, @curs_sex_field_name, @curs_age_group_field_name, @curs_age_sex_group_field_name;
 END;
+CLOSE table_name_cursor ;
+DEALLOCATE table_name_cursor ;
+
+
+END;
+
 END;

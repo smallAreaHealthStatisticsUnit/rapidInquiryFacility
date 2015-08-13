@@ -447,5 +447,11 @@ EXEC sp_addmessage 51144, 16,
 	N'View name: [rif40].[rif40_user_projects], Cannot UPDATE: User is not the owner of the record: %s';
 EXEC sp_addmessage 51145, 16, 
 	N'View name: [rif40].[rif40_user_projects], Cannot DELETE: User is not the owner of the record: %s';	
+
+EXEC sp_addmessage 51146, 16,
+	N'Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS';
+EXEC sp_addmessage 51147, 16,
+	N'Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES';	
+
 	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';

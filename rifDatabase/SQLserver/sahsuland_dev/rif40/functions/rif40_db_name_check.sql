@@ -22,10 +22,14 @@ CREATE PROCEDURE [rif40].[rif40_db_name_check](@l_columnname VARCHAR(max), @l_va
 BEGIN
 	DECLARE @maxlen int = 30; --for Oracle
 
+	IF @l_value IS NULL
+		RETURN;
+		
 --No special characters (A-Za-z0-9_)
-    DECLARE @invalid_chars VARCHAR(max) =substring(@l_value, PATINDEX('%[^A-Za-z0-9]%', @l_value),1);
+    DECLARE @invalid_chars VARCHAR(max) =substring(@l_value, PATINDEX('%[^A-Za-z0-9_]%', @l_value),1);
 	IF @invalid_chars IS NOT NULL AND @invalid_chars <> ''
 	BEGIN TRY
+		rollback;
 		DECLARE @err_txt1 VARCHAR(max) = 'column '+@l_columnname+' value='+@l_value+' contains '+@invalid_chars;
 		DECLARE @err_msg1 VARCHAR(MAX) = formatmessage(51050, @err_txt1);
 		THROW 51050, @err_msg1, 1;
@@ -40,6 +44,7 @@ BEGIN
 --
 	IF len(@l_value) > @maxlen 
 	BEGIN TRY
+		rollback;
 		DECLARE @err_txt2 VARCHAR(max) = 'column '+@l_columnname+' value='+@l_value;
 		DECLARE @err_msg2 VARCHAR(MAX) = formatmessage(51051, @err_txt2);
 		THROW 51051, @err_msg2, 1;
@@ -54,6 +59,7 @@ BEGIN
 --
 	IF substring(@l_value, 1, 1) NOT LIKE '[A-Za-z]%'
 	BEGIN TRY
+		rollback;
 		DECLARE @err_txt3 VARCHAR(max) = 'column '+@l_columnname+' value='+@l_value;
 		DECLARE @err_msg3 VARCHAR(MAX) = formatmessage(51052, @err_txt3);
 		THROW 51052, @err_msg3, 1;

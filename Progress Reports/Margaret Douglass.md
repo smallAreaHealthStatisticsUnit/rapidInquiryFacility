@@ -7,6 +7,15 @@ Principal Work Area: **Microsoft SQL server database port**
 ###August
 I will finish the view triggers this month and please hopefully test.
 
+######13 August
+* Still importing data into SQL Server tables to test that the tables are set up correctly.  Trigger tests will require more systematic testing later.
+* Tidying up and correcting triggers code as I test them and identify issues.  I went through rif40_geographies, t_rif40_geolevels triggers, rif40_tables.
+
+######12 August
+* Still setting up basic rif_data tables.  I put the population tables into rif_data instead of separate pop schema
+* I updated some raw sahsuland/data files where the column definitions changed.  I also exported tables with data out from Postgres so I could model my SQL Server tests on those data.
+* Problem with defining indexes on function-results (substring/truncate) in SQL Server and then problems with bulk inserts with computed columns.  The inelegant solution is to use a view that excludes computed columns.
+
 ######11 August
 * Working on importing data in an automated way so I can be ready to do proper tests using Peter's test harness.
 * Creating tables in the rif_data schema and importing test data.

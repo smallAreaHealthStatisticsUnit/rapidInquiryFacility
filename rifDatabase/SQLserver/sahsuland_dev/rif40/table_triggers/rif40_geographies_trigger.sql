@@ -30,8 +30,12 @@ DECLARE @missing_hierarchytable nvarchar(MAX) =
     (
     SELECT 
 		HIERARCHYTABLE 
-        FROM inserted
-        WHERE OBJECT_ID(HIERARCHYTABLE, 'U') IS NULL
+        FROM inserted a
+		WHERE hierarchytable is null or hierarchytable = ''
+		or NOT EXISTS (
+			SELECT 1
+			FROM [INFORMATION_SCHEMA].[TABLES] b
+			WHERE b.table_name=a.hierarchytable)
         FOR XML PATH('')
     );
 
@@ -46,13 +50,17 @@ IF @missing_hierarchytable IS NOT NULL
 		THROW 50020, @err_msg1, 1;
 	END CATCH;	
 
---Check postal_population_table if set and expected columns-- 
+--If postal_population_table is set: check table exists and has expected columns
 DECLARE @postal_pop_missing nvarchar(MAX) =
     (
     SELECT 
 		postal_population_table 
-        FROM inserted
-        WHERE OBJECT_ID(postal_population_table, 'U') IS NULL
+        FROM inserted a
+        WHERE postal_population_table IS NOT NULL
+		AND NOT EXISTS (
+			SELECT 1
+			FROM [INFORMATION_SCHEMA].[TABLES] b
+			WHERE b.table_name=a.postal_population_table)
         FOR XML PATH('')
     );
 IF @postal_pop_missing IS NOT NULL
@@ -66,17 +74,17 @@ IF @postal_pop_missing IS NOT NULL
 		THROW 50021, @err_msg2, 1;
 	END CATCH;	
 
---Check postal_population_column + postal_population_table
+--Check postal_point_column + postal_population_table
 DECLARE @postal_point_col_missing nvarchar(MAX) =
 (
-	SELECT concat (postal_population_table,'-', postal_point_column )
-		 + '  '
+	SELECT postal_population_table postal_point_column 
 		FROM inserted  ic 
-		where not EXISTS (SELECT 1  
-							from sys.columns c 
-							inner join  sys.tables t 
-							on c.object_id=t.object_id 
-							where t.name =ic.POSTAL_POPULATION_TABLE and c.name=ic.POSTAL_POINT_COLUMN )
+		where postal_population_table IS NOT NULL
+		AND (postal_point_column is null or postal_point_column=''
+		or not EXISTS (SELECT 1  
+							FROM [INFORMATION_SCHEMA].[columns] c
+							WHERE c.table_name=ic.postal_population_table
+							AND c.column_name=ic.postal_point_column))
    FOR XML PATH('')
 );
 
@@ -95,13 +103,12 @@ IF @postal_point_col_missing IS NOT NULL
 DECLARE @MALES_missing nvarchar(MAX) =
 (
 	SELECT postal_population_table 
-		 + '  '
 		FROM inserted  ic 
-		where not EXISTS (SELECT 1  
-							from sys.columns c 
-							inner join  sys.tables t 
-							on c.object_id=t.object_id 
-							where t.name =ic.POSTAL_POPULATION_TABLE and c.name='MALES' )
+		where postal_population_table IS NOT NULL
+		AND not EXISTS (SELECT 1  
+							FROM [INFORMATION_SCHEMA].[columns] c
+							WHERE c.table_name=ic.postal_population_table
+							AND c.column_name='MALES')
    FOR XML PATH('')
 );
 IF @MALES_missing IS NOT NULL
@@ -119,13 +126,12 @@ IF @MALES_missing IS NOT NULL
 DECLARE @FEMALES_missing nvarchar(MAX) =
 (
 	SELECT postal_population_table 
-		 + '  '
 		FROM inserted  ic 
-		where not EXISTS (SELECT 1  
-							from sys.columns c 
-							inner join  sys.tables t 
-							on c.object_id=t.object_id 
-							where t.name =ic.POSTAL_POPULATION_TABLE and c.name='FEMALES' )
+		where postal_population_table IS NOT NULL
+		AND not EXISTS (SELECT 1  
+							FROM [INFORMATION_SCHEMA].[columns] c
+							WHERE c.table_name=ic.postal_population_table
+							AND c.column_name='FEMALES')
    FOR XML PATH('')
 
 );
@@ -144,13 +150,12 @@ IF @FEMALES_missing IS NOT NULL
 DECLARE @TOTAL_missing nvarchar(MAX) =
 (
 	SELECT postal_population_table 
-		 + '  '
 		FROM inserted  ic 
-		where not EXISTS (SELECT 1  
-							from sys.columns c 
-							inner join  sys.tables t 
-							on c.object_id=t.object_id 
-							where t.name =ic.POSTAL_POPULATION_TABLE and c.name='TOTAL' )
+		where postal_population_table IS NOT NULL
+		AND not EXISTS (SELECT 1  
+							FROM [INFORMATION_SCHEMA].[columns] c
+							WHERE c.table_name=ic.postal_population_table
+							AND c.column_name='TOTAL')
    FOR XML PATH('')
 );
 IF @TOTAL_missing IS NOT NULL
@@ -168,13 +173,12 @@ IF @TOTAL_missing IS NOT NULL
 DECLARE @XCOORDINATE_missing nvarchar(MAX) =
 (
 	SELECT postal_population_table 
-		 + '  '
 		FROM inserted  ic 
-		where not EXISTS (SELECT 1  
-							from sys.columns c 
-							inner join  sys.tables t 
-							on c.object_id=t.object_id 
-							where t.name =ic.POSTAL_POPULATION_TABLE and c.name='XCOORDINATE' )
+		where postal_population_table IS NOT NULL
+		AND not EXISTS (SELECT 1  
+							FROM [INFORMATION_SCHEMA].[columns] c
+							WHERE c.table_name=ic.postal_population_table
+							AND c.column_name='XCOORDINATE')
    FOR XML PATH('')
 );
 IF @XCOORDINATE_missing IS NOT NULL
@@ -192,13 +196,12 @@ IF @XCOORDINATE_missing IS NOT NULL
 DECLARE @YCOORDINATE_missing nvarchar(MAX) =
 (
 	SELECT postal_population_table 
-		 + '  '
 		FROM inserted  ic 
-		where not EXISTS (SELECT 1  
-							from sys.columns c 
-							inner join  sys.tables t 
-							on c.object_id=t.object_id 
-							where t.name =ic.POSTAL_POPULATION_TABLE and c.name='YCOORDINATE' )
+		where postal_population_table IS NOT NULL
+		AND not EXISTS (SELECT 1  
+							FROM [INFORMATION_SCHEMA].[columns] c
+							WHERE c.table_name=ic.postal_population_table
+							AND c.column_name='YCOORDINATE' )
    FOR XML PATH('')
 );
 IF @YCOORDINATE_missing IS NOT NULL

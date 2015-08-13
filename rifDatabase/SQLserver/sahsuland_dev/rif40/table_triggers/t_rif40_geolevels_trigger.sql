@@ -49,10 +49,15 @@ Declare  @XTYPE varchar(5);
 
 --delete not allowed
 IF @XTYPE = 'D'
-BEGIN 
+BEGIN TRY
 	rollback;
-	return;
-END;
+	DECLARE @err_msg0 VARCHAR(MAX) = formatmessage(51146);
+	THROW 51146, @err_msg0, 1;
+END TRY
+BEGIN CATCH
+	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_geolevels]';
+	THROW 51146, @err_msg0, 1;
+END CATCH;	
 
 --insert OK if during initial build
 DECLARE @has_studies_check VARCHAR(MAX) = 
@@ -67,13 +72,17 @@ BEGIN
 END;
 
 
--- check covariate table
+-- if covariates table field is not null, check that covariate table exists
 DECLARE @covariatetable_missing nvarchar(MAX) =
     (
     SELECT 
 		[COVARIATE_TABLE]
-        FROM inserted
-        WHERE OBJECT_ID([COVARIATE_TABLE], 'U') IS NULL
+        FROM inserted a
+        WHERE covariate_table is not null and covariate_table <> ''
+		AND not exists (
+			select 1
+			from information_schema.tables b
+			where b.table_name=a.covariate_table)
         FOR XML PATH('')
     );
 IF @covariatetable_missing IS NOT NULL 
@@ -93,13 +102,15 @@ DECLARE @geolevelname_missing NVARCHAR(MAX)=
 ( 
  SELECT [GEOLEVEL_NAME], covariate_table
  FROM   inserted  b
- WHERE   covariate_table is null or covariate_table = ''
-	or	not exists (
+ WHERE   covariate_table is not null and  covariate_table <> ''
+	AND not exists (
 		select 1
 		from INFORMATION_SCHEMA.COLUMNS a
 		where a.table_name=b.covariate_table
 		and a.column_name=b.GEOLEVEL_NAME
 		)
+	FOR XML PATH('')
+);
 
 IF @geolevelname_missing IS NOT NULL
 	BEGIN TRY
@@ -118,7 +129,8 @@ DECLARE @yearcol_missing nvarchar(MAX) =
     (
 	select [COVARIATE_TABLE]
 	from inserted b
-   	where not EXISTS (SELECT 1  
+   	where  covariate_table is not null and  covariate_table <> ''
+	AND not EXISTS (SELECT 1  
 		from INFORMATION_SCHEMA.COLUMNS a
 		where a.table_name=b.covariate_table
 		and a.column_name='YEAR')
@@ -136,14 +148,18 @@ IF @yearcol_missing IS NOT NULL
 	END CATCH;	
 
 -------------------------
---check lookup table 
+--check lookup table, required table
 -------------------------
 DECLARE @lookuptable_missing nvarchar(MAX) =
     (
     SELECT 
 		LOOKUP_TABLE, geolevel_name
-        FROM inserted
-        WHERE OBJECT_ID(LOOKUP_TABLE, 'U') IS NULL
+        FROM inserted a
+        WHERE lookup_table is  null or lookup_table=''
+		or NOT EXISTS (
+			SELECT 1
+			FROM information_schema.tables b
+			where b.table_name=a.lookup_table)
         FOR XML PATH('')
     );
 IF @lookuptable_missing IS NOT NULL
@@ -162,8 +178,8 @@ DECLARE @geolevelname_lookup_missing NVARCHAR(MAX)=
 ( 
  SELECT [GEOLEVEL_NAME], lookup_table
  FROM   inserted  b
- WHERE   lookup_table is null or lookup_table = ''
-	or	not exists (
+ WHERE   lookup_table is not null and lookup_table <> ''
+	and	not exists (
 		select 1
 		from INFORMATION_SCHEMA.COLUMNS a
 		where a.table_name=b.lookup_table
@@ -187,8 +203,8 @@ DECLARE @lookup_desc_missing NVARCHAR(MAX)=
 ( 
  SELECT [LOOKUP_DESC_COLUMN], lookup_table, geolevel_name
  FROM   inserted  b
- WHERE   lookup_table is null or lookup_table = ''
-	or	not exists (
+ WHERE   lookup_table is not null and lookup_table <> ''
+	and	not exists  (
 		select 1
 		from INFORMATION_SCHEMA.COLUMNS a
 		where a.table_name=b.lookup_table
@@ -214,7 +230,9 @@ DECLARE @lookup_xcoord_missing  nvarchar(MAX) =
     (
 	select LOOKUP_TABLE, CENTROIDXCOORDINATE_COLUMN, geolevel_name
 	from inserted b
-   	where not EXISTS (SELECT 1  
+   	where lookup_table is not null and lookup_table <> ''
+	AND CENTROIDXCOORDINATE_COLUMN is not null and CENTROIDXCOORDINATE_COLUMN <> ''
+	and	not exists (SELECT 1  
 			from INFORMATION_SCHEMA.COLUMNS a
 			where a.table_name=b.lookup_table
 			and a.column_name=b.CENTROIDXCOORDINATE_COLUMN)
@@ -238,7 +256,9 @@ DECLARE @lookup_ycoord_missing  nvarchar(MAX) =
     (
 	select LOOKUP_TABLE, CENTROIDYCOORDINATE_COLUMN, geolevel_name
 	from inserted b
-   	where not EXISTS (SELECT 1  
+   	where lookup_table is not null and lookup_table <> ''
+	AND CENTROIDYCOORDINATE_COLUMN is not null and CENTROIDYCOORDINATE_COLUMN <> ''
+	and	not EXISTS (SELECT 1  
 			from INFORMATION_SCHEMA.COLUMNS a
 			where a.table_name=b.lookup_table
 			and a.column_name=b.CENTROIDYCOORDINATE_COLUMN)
@@ -301,16 +321,19 @@ IF @geography_missing IS NOT NULL
 	END CATCH;	
  
   
--- Check &lt;postal_population_table&gt;.&lt;GEOLEVEL_NAME&gt; column exists if POSTAL_POPULATION_TABLE set if RIF40_GEOGAPHIES
+-- If rif40_geographies has set postal_popluation_table, check that postal_population_table.GEOLEVEL_NAME column exists
 DECLARE @postalpop_missing varchar(MAX) = 
 (
-	SELECT geolevel_name, geography
-	FROM inserted a
-	WHERE NOT EXISTS (SELECT 1
-		FROM [rif40].[rif40_geographies] b
-		WHERE a.geography=b.geography
-		AND b.postal_population_table is not null
-		AND postal_population_table <> '')
+	SELECT a.geography, c.postal_population_table
+	FROM inserted a, [rif40].[rif40_geographies] c
+	WHERE a.geography=c.geography
+	AND c.postal_population_table IS NOT NULL and c.postal_population_table <> ''
+	AND ((a.centroidxcoordinate_column IS NOT NULL AND a.centroidxcoordinate_column <> ''
+	AND a.centroidycoordinate_column IS NOT NULL AND a.centroidycoordinate_column <> '') OR
+		 (a.centroidsfile IS NOT NULL AND a.centroidsfile <> ''))
+	AND not EXISTS (SELECT 1  
+			from INFORMATION_SCHEMA.TABLES b
+			where b.table_name=c.postal_population_table)
 	FOR XML PATH('') 
    );
 IF @postalpop_missing IS NOT NULL
@@ -323,11 +346,16 @@ IF @postalpop_missing IS NOT NULL
 		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_geolevels]';
 		THROW 51063, @err_msg11, 1;
 	END CATCH;	
+
 DECLARE @geolevel_postal_missing varchar(MAX) = 
  (
 	SELECT a.geolevel_name, c.postal_population_table
 	FROM inserted a, [rif40].[rif40_geographies] c
 	WHERE a.geography=c.geography
+	AND c.postal_population_table IS NOT NULL and c.postal_population_table <> ''
+	AND ((a.centroidxcoordinate_column IS NOT NULL AND a.centroidxcoordinate_column <> ''
+	AND a.centroidycoordinate_column IS NOT NULL AND a.centroidycoordinate_column <> '') OR
+		 (a.centroidsfile IS NOT NULL AND a.centroidsfile <> ''))
 	AND not EXISTS (SELECT 1  
 			from INFORMATION_SCHEMA.COLUMNS b
 			where b.table_name=c.postal_population_table
