@@ -68,12 +68,16 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER, BOOLEAN);
+DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_create_disease_mapping_example(
+	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[]);
+-- Old	
+DROP FUNCTION IF EXISTS rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER);
 DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_create_disease_mapping_example(
 	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[],VARCHAR[],VARCHAR[]); 
 DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_create_disease_mapping_example(
 	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[][],VARCHAR[],VARCHAR[]);
-DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_create_disease_mapping_example(
-	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[]);
+
 --
 -- Error codes
 --
@@ -302,6 +306,8 @@ DECLARE
 	study_area_count	INTEGER;
 	comparison_area_count	INTEGER;
 	covariate_count		INTEGER;
+--
+	parent_test_id		INTEGER:=NULL;
 -- 
 	sql_stmt		VARCHAR;
 --
@@ -363,26 +369,27 @@ BEGIN
 --
 -- 2. INSERT INTO rif40_studies
 --
-	INSERT INTO rif40_studies (
- 		geography, project, study_name, study_type,
- 		comparison_geolevel_name, study_geolevel_name, denom_tab,            
- 		year_start, year_stop, max_age_group, min_age_group, 
- 		suppression_value, extract_permitted, transfer_permitted)
-	VALUES (
-		 geography 			/* geography */,
-		 project 			/* project */, 
-		 study_name 			/* study_name */,
-		 1 				/* study_type [disease mapping] */,
-		 c3cdm_rec.defaultcomparea	/* comparison_geolevel_name */,
-		 geolevel_map 			/* study_geolevel_name */,   
-		 denom_tab 			/* denom_tab */,            
-		 year_start			/* year_start */,       
-		 year_stop 			/* year_stop */,      
-		 c1cdm_rec.max_age_group 	/* max_age_group */, 
-		 c1cdm_rec.min_age_group 	/* min_age_group */, 
-		 c2cdm_rec.suppression_value 	/* suppression_value */, 
-		 l_extract_permitted 		/* extract_permitted */, 
-		 l_transfer_permitted		/* transfer_permitted */);
+	sql_stmt:='INSERT INTO rif40_studies ('||E'\n'||
+' 		geography, project, study_name, study_type,'||E'\n'||
+' 		comparison_geolevel_name, study_geolevel_name, denom_tab,'||E'\n'||            
+' 		year_start, year_stop, max_age_group, min_age_group,'||E'\n'|| 
+' 		suppression_value, extract_permitted, transfer_permitted)'||E'\n'||
+'	VALUES ('||E'\n'||
+'		 '''||geography||''' 					/* geography */,'||E'\n'||
+'		 '''||project||''' 						/* project */,'||E'\n'|| 
+'		 '''||study_name||''' 					/* study_name */,'||E'\n'||
+'		 1 									/* study_type [disease mapping] */,'||E'\n'||
+'		 '''||c3cdm_rec.defaultcomparea||'''	/* comparison_geolevel_name */,'||E'\n'||
+'		 '''||geolevel_map||''' 				/* study_geolevel_name */,'||E'\n'||   
+'		 '''||denom_tab||''' 					/* denom_tab */,'||E'\n'||            
+'		 '||year_start||'					/* year_start */,'||E'\n'||       
+'		 '||year_stop||' 					/* year_stop */,'||E'\n'||      
+'		 '||c1cdm_rec.max_age_group||' 	/* max_age_group */,'||E'\n'|| 
+'		 '||c1cdm_rec.min_age_group||' 	/* min_age_group */,'||E'\n'|| 
+'		 '||c2cdm_rec.suppression_value||' /* suppression_value */,'||E'\n'|| 
+'		 '||l_extract_permitted||' 		/* extract_permitted */,'||E'\n'|| 
+'		 '||l_transfer_permitted||'		/* transfer_permitted */)';
+	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id);
 	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_create_disease_mapping_example', 
 		'[56204] Created study: % % for project %',  
 		currval('rif40_study_id_seq'::regclass)::VARCHAR,
@@ -422,62 +429,47 @@ BEGIN
 	FOREACH icd IN ARRAY investigation_desc_array LOOP
 		i:=i+1;
 		l_inv_name:='INV_'||i::VARCHAR;
+		sql_stmt='INSERT INTO rif40_investigations('||E'\n';
 --
 -- Check if rif40_investigations.geography column still exists (pre alter 2)
 --
 		IF 	c5cdm_rec.column_name = 'geography' THEN
-			INSERT INTO rif40_investigations(
- 				geography, 
-				inv_name,
-				inv_description,
-				genders,
-				numer_tab, 
-				year_start,
-				year_stop, 
-				max_age_group,
-				min_age_group
-			)
-			VALUES (
-				geography, 		/* geography */
-				l_inv_name 		/* inv_name */,  
-				investigation_desc_array[i]	/* inv_description */,
-				3			/* genders [both] */,
-				numer_tab		/* numer_tab */,
-				year_start		/* year_start */,       
-				year_stop 		/* year_stop */,      
-				c1cdm_rec.max_age_group /* max_age_group */, 
-				c1cdm_rec.min_age_group /* min_age_group */);
-		ELSE
-			INSERT INTO rif40_investigations(
-/* 				geography, */
-				inv_name,
-				inv_description,
-				genders,
-				numer_tab, 
-				year_start,
-				year_stop, 
-				max_age_group,
-				min_age_group
-			)
-			VALUES (
-				/* geography, 		/- geography */
-				l_inv_name 		/* inv_name */,  
-				investigation_desc_array[i]	/* inv_description */,
-				3			/* genders [both] */,
-				numer_tab		/* numer_tab */,
-				year_start		/* year_start */,       
-				year_stop 		/* year_stop */,      
-				c1cdm_rec.max_age_group /* max_age_group */, 
-				c1cdm_rec.min_age_group /* min_age_group */);
+ 			sql_stmt=sql_stmt||
+				'	geography,'||E'\n'; 
 		END IF;
-		
+		sql_stmt=sql_stmt||
+			'	inv_name,'||E'\n'||
+			'	inv_description,'||E'\n'||
+			'	genders,'||E'\n'||
+			'	numer_tab,'||E'\n'|| 
+			'	year_start,'||E'\n'||
+			'	year_stop,'||E'\n'|| 
+			'	max_age_group,'||E'\n'||
+			'	min_age_group'||E'\n'||
+			')'||E'\n'||
+			'VALUES ('||E'\n'; 
+		IF 	c5cdm_rec.column_name = 'geography' THEN
+ 			sql_stmt=sql_stmt||
+				'	'||geography||' 		/* geography */,'||E'\n'; 
+		END IF;
+		sql_stmt=sql_stmt||
+			'	'''||l_inv_name||''' 		/* inv_name */,'||E'\n'||  
+			'	'''||investigation_desc_array[i]||'''	/* inv_description */,'||E'\n'||
+			'	3			/* genders [both] */,'||E'\n'||
+			'	'''||numer_tab||'''		/* numer_tab */,'||E'\n'||
+			'	'||year_start||'		/* year_start */,'||E'\n'||       
+			'	'||year_stop||' 		/* year_stop */,'||E'\n'||      
+			'	'||c1cdm_rec.max_age_group||' /* max_age_group */,'||E'\n'|| 
+			'	'||c1cdm_rec.min_age_group||' /* min_age_group */)';
+		parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id);
+	
 --
 -- 4. INSERT INTO rif40_inv_conditions
 --
 		sql_stmt:='INSERT INTO rif40_inv_conditions('||E'\n'||
 '			outcome_group_name, min_condition, max_condition, predefined_group_name, line_number)'||E'\n'||
 '		WITH data AS ('||E'\n'||
-'				SELECT $1 AS arr'||E'\n'||
+'				SELECT '''||condition_array::Text||'''::Text[][] AS arr'||E'\n'||
 '			), b AS ('||E'\n'||
 '				SELECT arr[i][1] AS outcome_group_name,'||E'\n'|| 
 '					   arr[i][2] AS min_condition, '||E'\n'||
@@ -489,8 +481,9 @@ BEGIN
 '		SELECT outcome_group_name, min_condition, max_condition, predefined_group_name, line_number'||E'\n'||
 '		  FROM b'||E'\n'||
 '		RETURNING outcome_group_name, min_condition, max_condition, predefined_group_name';
+		parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id, TRUE /* do_not_execute */);
 		BEGIN
-			FOR inv_cond_rec IN EXECUTE sql_stmt USING condition_array LOOP
+			FOR inv_cond_rec IN EXECUTE sql_stmt LOOP
 	--
 				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_create_disease_mapping_example', 	
 					'[56209] Created investigation: % (%): %; numerator: %; outcome_group_names: %, min/max/predefined group conditions: "%/%/%"',  
@@ -535,30 +528,21 @@ BEGIN
 	END LOOP;
  */
 	IF geolevel_map = geolevel_select THEN
-		INSERT INTO rif40_study_areas(area_id, band_id) 
-		SELECT unnest(geolevel_selection) /* at Geolevel select */ AS study_area, ROW_NUMBER() OVER() AS band_id;
+		sql_stmt:='INSERT INTO rif40_study_areas(area_id, band_id)'||E'\n'|| 
+		'SELECT unnest('||E'\n'|| 
+				''''||geolevel_selection::Text||'''::Text[]) /* at Geolevel select */ AS study_area, ROW_NUMBER() OVER() AS band_id';
 --
 -- User selection carried out at different level to mapping
 --
-	ELSE
-		BEGIN    
-			sql_stmt:='INSERT INTO rif40_study_areas(area_id, band_id)'||E'\n'||
-				'SELECT DISTINCT '||LOWER(geolevel_map)||', ROW_NUMBER() OVER() AS band_id'||E'\n'||
-				E'\t'||'  FROM '||LOWER(c3cdm_rec.hierarchytable)||E'\n'||
-				E'\t'||' WHERE '||LOWER(geolevel_select)||' IN ('||E'\n'||
-				E'\t'||'SELECT unnest($1) /* at Geolevel select */ AS study_area)';
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_create_disease_mapping_example', 	
-				'[56210] SQL> %;',
-				sql_stmt::VARCHAR);
-			EXECUTE sql_stmt USING geolevel_selection;
-  	     	EXCEPTION
-			WHEN others THEN
-				PERFORM rif40_log_pkg.rif40_error(-90912, 'rif40_create_disease_mapping_example',
-					'[56211] INSERT INTO rif40_study_areas % raised by: %',
-					sqlerrm::VARCHAR		/* Error */,
-					sql_stmt::VARCHAR		/* SQL */);      
-		END;
+	ELSE  
+		sql_stmt:='INSERT INTO rif40_study_areas(area_id, band_id)'||E'\n'||
+			'SELECT DISTINCT '||LOWER(geolevel_map)||', ROW_NUMBER() OVER() AS band_id'||E'\n'||
+			E'\t'||'  FROM '||LOWER(c3cdm_rec.hierarchytable)||E'\n'||
+			E'\t'||' WHERE '||LOWER(geolevel_select)||' IN ('||E'\n'||
+			E'\t'||'SELECT unnest('||E'\n'|| 
+				''''||geolevel_selection::Text||'''::Text[]) /* at Geolevel select */ AS study_area)';
 	END IF;
+	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id);
 	GET DIAGNOSTICS study_area_count = ROW_COUNT;
 
 --
@@ -585,19 +569,26 @@ BEGIN
 			l_area_id::VARCHAR);
 	END LOOP;
  */
-	INSERT INTO rif40_comparison_areas(area_id) SELECT unnest(comparision_area) AS comparision_area;
+	sql_stmt:='INSERT INTO rif40_comparison_areas(area_id)'||E'\n'|| 
+		'SELECT unnest('||E'\n'|| 
+				''''||comparision_area::Text||'''::Text[]) AS comparision_area';
+	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id);
 	GET DIAGNOSTICS comparison_area_count = ROW_COUNT;
 --
 -- 7. INSERT INTO rif40_inv_covariates
 --
-	INSERT INTO rif40_inv_covariates(geography, covariate_name, study_geolevel_name, min, max) 
-		WITH a AS (
-			SELECT unnest(covariate_array) AS covariate_name, geolevel_map AS study_geolevel_name, geography AS geography 
-		)
-		SELECT a.geography, a.covariate_name, a.study_geolevel_name, b.min, b.max
-		  FROM a
-			LEFT OUTER JOIN rif40_covariates b ON 
-				(a.covariate_name = b.covariate_name AND a.study_geolevel_name = b.geolevel_name AND a.geography = b.geography);
+	sql_stmt:='INSERT INTO rif40_inv_covariates(geography, covariate_name, study_geolevel_name, min, max)'||E'\n'|| 
+		'WITH a AS ('||E'\n'||
+		'	SELECT unnest('||E'\n'|| 
+		'         '''||covariate_array::Text||'''::Text[])::Text AS covariate_name,'||E'\n'||
+		'	      '''||geolevel_map||'''::Text AS study_geolevel_name,'||E'\n'||
+		'	      '''||geography||'''::Text AS geography'||E'\n'|| 
+		')'||E'\n'||
+		'SELECT a.geography, a.covariate_name, a.study_geolevel_name, b.min, b.max'||E'\n'||
+		'  FROM a'||E'\n'||
+		'	LEFT OUTER JOIN rif40_covariates b ON'||E'\n'|| 
+		'		(a.covariate_name = b.covariate_name AND a.study_geolevel_name = b.geolevel_name AND a.geography = b.geography)';
+	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id);		
 	GET DIAGNOSTICS covariate_count = ROW_COUNT;
 --
 	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_create_disease_mapping_example', 	
@@ -611,7 +602,8 @@ BEGIN
 --
 	FOR c4cdm_rec IN c4cdm LOOP
 		IF c4cdm_rec.is_rif_manager AND l_extract_permitted = 1 THEN
-			INSERT INTO rif40_study_shares(grantee_username) VALUES (c4cdm_rec.rolname);
+			sql_stmt:='INSERT INTO rif40_study_shares(grantee_username) VALUES ('''||c4cdm_rec.rolname||''')';
+			parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id);			
 			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_create_disease_mapping_example', 
 				'[56214] Shared study % to %',
 				currval('rif40_study_id_seq'::regclass)::VARCHAR,
@@ -781,6 +773,76 @@ GRANT EXECUTE ON FUNCTION rif40_sm_pkg.rif40_create_disease_mapping_example(
 GRANT EXECUTE ON FUNCTION rif40_sm_pkg.rif40_create_disease_mapping_example(
 	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[]) 
  	TO rif40;
+
+	
+CREATE OR REPLACE FUNCTION rif40_sm_pkg._rif40_create_disease_mapping_example(	
+	sql_stmt		VARCHAR,
+	study_name		VARCHAR,
+	parent_test_id	INTEGER,
+	do_not_execute	BOOLEAN DEFAULT FALSE)
+RETURNS INTEGER
+SECURITY INVOKER
+AS $func$
+/*
+Function: 	_rif40_create_disease_mapping_example()
+Parameters:	SQL statement, study name, parent_test_id, do not exexecute flag (default FALSE - i.e. do)
+Returns:	New parent_test_id
+Description:	Execute disease mapping exmaple	SQL statement, register with test harness
+ */
+DECLARE
+	f_test_id INTEGER;
+BEGIN
+--
+-- Check for NULLs
+--
+	IF study_name IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-56215, '_rif40_create_disease_mapping_example', 
+			'NULL study name');
+	ELSIF sql_stmt IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-56216, '_rif40_create_disease_mapping_example', 
+			'NULL SQL statement for study: %',
+			study_name::VARCHAR);
+	END IF;
+--
+-- Run SQL statement
+--
+	IF NOT do_not_execute THEN
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_create_disease_mapping_example', 	
+			'[56227] SQL> %;',
+			sql_stmt::VARCHAR);	
+	END IF;
+	
+--
+-- Register with test harness
+--
+	f_test_id:=rif40_sql_pkg._rif40_sql_test_register(
+			sql_stmt 		/* test_stmt */, 
+			'rif40_create_disease_mapping_example' /* connection_name */, 
+			study_name 	/* test_case_title */, 
+			NULL::Text[][] 	/* results */, 
+			NULL::XML 		/* results_xml */,
+			NULL			/* pg_error_code_expected */, 
+			FALSE			/* raise_exception_on_failure */, 
+			TRUE			/* expected_result */, 
+			parent_test_id	/* parent_test_id */);	
+
+--
+-- Return new parent_test_id
+--			
+	IF parent_test_id IS NULL THEN
+		RETURN 1 /* New parent_test_id */;
+	ELSE
+		RETURN parent_test_id + 1 /* New parent_test_id */;
+	END IF;
+END;
+$func$ LANGUAGE plpgsql;
+ 
+COMMENT ON FUNCTION rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER, BOOLEAN) IS 'Function: 	_rif40_create_disease_mapping_example()
+Parameters:	SQL statement, study name, parent_test_id, do not exexecute flag (default FALSE - i.e. do)
+Returns:	New parent_test_id
+Description:	Execute disease mapping exmaple	SQL statement, register with test harness';
 
 --
 -- Eof

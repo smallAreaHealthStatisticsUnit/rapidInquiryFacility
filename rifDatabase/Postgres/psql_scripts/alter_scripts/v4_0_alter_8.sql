@@ -156,9 +156,10 @@ COMMENT ON COLUMN rif40_test_runs.number_passed IS 'Number of tests passed';
 COMMENT ON COLUMN rif40_test_runs.number_failed IS 'Number of tests failed';
 COMMENT ON COLUMN rif40_test_runs.number_test_cases_registered IS 'Number of test cases registered';
 COMMENT ON COLUMN rif40_test_runs.number_messages_registered IS 'Number of error and informational messages registered';
-	
+
 CREATE TABLE rif40_test_harness (
 	test_id 					INTEGER NOT NULL DEFAULT (nextval('rif40_test_id_seq'::regclass))::integer, 
+	parent_test_id 				INTEGER, 		
 	test_run_class				VARCHAR NOT NULL,	
 	test_stmt					VARCHAR NOT NULL,
 	test_case_title				VARCHAR NOT NULL,
@@ -177,13 +178,14 @@ CREATE TABLE rif40_test_harness (
 	CONSTRAINT rif40_test_harness_test_run_id_fk FOREIGN KEY (test_run_id)
 		REFERENCES rif40_test_runs (test_run_id)
 	);
-CREATE UNIQUE INDEX rif40_test_harness_uk ON rif40_test_harness(test_case_title);
+CREATE UNIQUE INDEX rif40_test_harness_uk ON rif40_test_harness(test_case_title, parent_test_id);
 
 GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_test_harness TO rif_manager, notarifuser;
 GRANT SELECT ON TABLE rif40_test_harness TO rif_user; 
 		
 COMMENT ON TABLE rif40_test_harness IS 'Test harness test cases and last run information';		
 COMMENT ON COLUMN rif40_test_harness.test_id IS 'Unique investigation index: test_id. Created by SEQUENCE rif40_test_id_seq';
+COMMENT ON COLUMN rif40_test_harness.parent_test_id IS 'Parent test ID; NULL means first (test statement)';
 COMMENT ON COLUMN rif40_test_harness.test_run_class IS 'Test run class; usually the name of the SQL script that originally ran it';
 COMMENT ON COLUMN rif40_test_harness.test_stmt IS 'SQL statement for test';
 COMMENT ON COLUMN rif40_test_harness.test_case_title IS 'Test case title. Must be unique';
@@ -267,6 +269,11 @@ SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_n
 --
 \i ../PLpgsql/rif40_sql_pkg/rif40_sql_test.sql
 \i ../PLpgsql/rif40_sql_pkg/rif40_test_harness.sql
+
+--
+-- Reload rif40_create_disease_mapping_example
+--
+\i ../PLpgsql/rif40_sm_pkg/rif40_create_disease_mapping_example.sql
 
 --
 -- Load tests - for all rif40 schema tables

@@ -84,20 +84,22 @@ BEGIN
 -- Test parameter
 --
 	IF c2th_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
-		RAISE EXCEPTION 'T1-00: test_8_triggers.sql: No -v debug_level=<debug level> parameter';	
+		RAISE EXCEPTION 'T1-01: test_8_triggers.sql: No -v debug_level=<debug level> parameter';	
 	ELSE
 		debug_level:=LOWER(SUBSTR(c2th_rec.debug_level, 5))::INTEGER;
-		RAISE INFO 'T8--01: test_8_triggers.sql: debug level parameter="%"', debug_level::Text;
+		RAISE INFO 'T8--02: test_8_triggers.sql: debug level parameter="%"', debug_level::Text;
 	END IF;
 	
 --
 -- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
 --
+	RAISE INFO 'T8--03: test_8_triggers.sql: Setup logging and debug';
 	PERFORM rif40_sql_pkg._rif40_sql_test_log_setup(debug_level);
 		
 --
--- Clear up old test cases
+-- Clean up old test cases
 --
+	RAISE INFO 'T8--04: test_8_triggers.sql: Clean up old test cases';
 	FOR c1th_rec IN c1th LOOP
 		PERFORM rif40_sm_pkg.rif40_delete_study(c1th_rec.study_id);
 	END LOOP;
@@ -116,6 +118,8 @@ BEGIN;
 
 DO LANGUAGE plpgsql $$
 DECLARE
+	c2th CURSOR FOR 
+		SELECT array_agg(level3) AS level3_array FROM sahsuland_level3;
 	c3th CURSOR FOR 
 		SELECT COUNT(study_id) AS total_studies
 		  FROM rif40_studies 
@@ -125,8 +129,15 @@ DECLARE
 		  FROM rif40_test_runs
 		WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;		 
 --
+	c2th_rec RECORD;
 	c3th_rec RECORD;
 	c5th_rec RECORD;	
+--
+	condition_array				VARCHAR[4][2]:='{{"SAHSULAND_ICD", "C34", NULL, NULL}, {"SAHSULAND_ICD", "162", "1629", NULL}}';	
+										 /* investigation ICD conditions 2 dimensional array (i.e. matrix); 4 columnsxN rows:
+											outcome_group_name, min_condition, max_condition, predefined_group_name */
+	investigation_desc_array	VARCHAR[]:=array['Lung cancer'];
+	covariate_array				VARCHAR[]:=array['SES'];		
 --
 	stp TIMESTAMP WITH TIME ZONE:=clock_timestamp();
 	etp TIMESTAMP WITH TIME ZONE;
@@ -150,17 +161,46 @@ BEGIN
 --
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
-	RAISE INFO 'T8--02: test_8_triggers.sql: Connection took: %', took;
+	RAISE INFO 'T8--05: test_8_triggers.sql: Connection took: %', took;
 --
 	stp:=clock_timestamp();	
 	INSERT INTO rif40_test_runs(test_run_title, time_taken, 
 		tests_run, number_passed, number_failed, number_test_cases_registered, number_messages_registered)
 	VALUES ('test_8_triggers.sql', 0, 0, 0, 0, 0, 0);	
+
 --
+-- Create the standard test study to populate standard study 1 test and dependencies
+--
+	RAISE INFO 'T8--05: test_8_triggers.sql: Create the standard test study to populate standard study 1 test and dependencies';
+	OPEN c2th;
+	FETCH c2th INTO c2th_rec;
+	CLOSE c2th;
+	PERFORM rif40_sm_pkg.rif40_create_disease_mapping_example(
+		'SAHSU'::VARCHAR 			/* Geography */,
+		'LEVEL1'::VARCHAR			/* Geolevel view */,
+		'01'::VARCHAR				/* Geolevel area */,
+		'LEVEL4'::VARCHAR			/* Geolevel map */,
+		'LEVEL3'::VARCHAR			/* Geolevel select */,
+		c2th_rec.level3_array 		/* Geolevel selection array */,
+		'TEST'::VARCHAR 			/* project */, 
+		'SAHSULAND test 4 study_id 1 example'::VARCHAR /* study name */, 
+		'SAHSULAND_POP'::VARCHAR 	/* denominator table */, 
+		'SAHSULAND_CANCER'::VARCHAR /* numerator table */,
+ 		1989						/* year_start */, 
+		1996						/* year_stop */,
+		condition_array 			/* investigation ICD conditions 2 dimensional array (i.e. matrix); 4 columnsxN rows:
+											outcome_group_name, min_condition, max_condition, predefined_group_name */,
+		investigation_desc_array 	/* investigation description array */,
+		covariate_array				/* covariate array */);	
+		
+--
+-- Tests
+--
+	RAISE INFO 'T8--06: test_8_triggers.sql: Test harness tests';
     IF NOT (rif40_sql_pkg.rif40_sql_test(
 				 'test_8_triggers.sql',	
                  'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
-                 'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
+                 'T8--07: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
  '{{01,01.015,01.015.016200,01.015.016200.2}
  ,{01,01.015,01.015.016200,01.015.016200.3}
  ,{01,01.015,01.015.016200,01.015.016200.4}
@@ -206,9 +246,9 @@ BEGIN
  </row>'::XML
         )) THEN
         f_errors:=f_errors+1;
-		RAISE WARNING 'T8--03: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 TEST FAILED.';		
+		RAISE WARNING 'T8--08: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 TEST FAILED.';		
 	ELSE
-		RAISE INFO 'T8--04: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 TEST PASSED.';		
+		RAISE INFO 'T8--09: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 TEST PASSED.';		
     END IF;	
 	f_tests_run:=f_tests_run+1;
 	
@@ -218,7 +258,7 @@ BEGIN
 	IF (rif40_sql_pkg.rif40_sql_test(
 		'test_8_triggers.sql',
 		'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016200'') ORDER BY level4',
-		'T8--11: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 [DELIBERATE FAIL TEST]',
+		'T8--10: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 [DELIBERATE FAIL TEST]',
 		'{{01,01.015,01.015.016200,01.015.016200.2}
 		,{01,01.015,01.015.016200,01.015.016200.3} 
 		,{01,01.015,01.015.016200,01.015.016200.4} 
@@ -266,9 +306,9 @@ BEGIN
 		FALSE /* Do not RAISE EXCEPTION on failure */,
 		FALSE /* Is expected to fail */)) THEN
         f_errors:=f_errors+1;
-		RAISE INFO 'T8--05: test_8_triggers.sql: DELIBERATE FAIL TEST FAILED.';		
+		RAISE INFO 'T8--11: test_8_triggers.sql: DELIBERATE FAIL TEST FAILED.';		
 	ELSE
-		RAISE INFO 'T8--06: test_8_triggers.sql: DELIBERATE FAIL TEST PASSED.';
+		RAISE INFO 'T8--12: test_8_triggers.sql: DELIBERATE FAIL TEST PASSED.';
     END IF;	
 	f_tests_run:=f_tests_run+1;
 
@@ -284,9 +324,9 @@ BEGIN
 		'-90125'	 	/* Expected SQLCODE */, 
 		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
         f_errors:=f_errors+1;
-		RAISE INFO 'T8--07: test_8_triggers.sql: rif40_log_pkg.rif40_error() dummy error TEST FAILED.';		
+		RAISE INFO 'T8--14: test_8_triggers.sql: rif40_log_pkg.rif40_error() dummy error TEST FAILED.';		
 	ELSE
-		RAISE INFO 'T8--08: test_8_triggers.sql: rif40_log_pkg.rif40_error() dummy error TEST PASSED.';
+		RAISE INFO 'T8--15: test_8_triggers.sql: rif40_log_pkg.rif40_error() dummy error TEST PASSED.';
     END IF;	
 	f_tests_run:=f_tests_run+1;	
 	
@@ -346,15 +386,15 @@ Foreign-key constraints:
 		'test_8_triggers.sql',	
 		'INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
 VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST_1'', ''MAP_TRIGGER_TEST_1'', 1 /* Diease mapping */, ''LEVEL1'', ''LEVEL4'', NULL /* FAIL HERE */, 0)',
-		'T8--15: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL',
+		'T8--16: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL',
 		NULL::Text[][] 	/* No results for trigger */,	
 		NULL::XML 		/* No results for trigger */,
 		'-20211' 		/* Expected SQLCODE (P0001 - PGpsql raise_exception (from rif40_error) with detail: rif40_error(() code -20211 */, 
 		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
 		f_errors:=f_errors+1;
-		RAISE INFO 'T8--09: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL TEST FAILED.';		
+		RAISE INFO 'T8--17: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL TEST FAILED.';		
 	ELSE
-		RAISE INFO 'T8--10: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL TEST PASSED.';		
+		RAISE INFO 'T8--18: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL TEST PASSED.';		
     END IF;	
 	f_tests_run:=f_tests_run+1;
 	
@@ -363,7 +403,7 @@ VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST_1'', ''
 		'INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
 VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #2'', ''EXTRACT_TRIGGER_TEST_2'', ''MAP_TRIGGER_TEST_2'', 1 /* Diease mapping */, ''LEVEL1'', ''LEVEL4'', ''SAHSULAND_POP'', NULL /* FAIL HERE */)
 RETURNING 1::Text AS test_value',
-		'T8--17: test_8_triggers.sql: TRIGGER TEST #2: rif40_studies.suppression_value IS NULL',
+		'T8--19: test_8_triggers.sql: TRIGGER TEST #2: rif40_studies.suppression_value IS NULL',
 		'{1}'::Text[][] /* Results for trigger - DEFAULTED value will not work - table is mutating and row does not exist at the point of INSERT */,
 		'<row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
    <test_value>1</test_value>
@@ -371,10 +411,10 @@ RETURNING 1::Text AS test_value',
 		NULL 			/* Expected SQLCODE */, 
 		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
 		f_errors:=f_errors+1;
-		RAISE INFO 'T8--11: test_8_triggers.sql: TRIGGER TEST #2: rif40_studies.suppression_value IS NULL FAILED.';		
+		RAISE INFO 'T8--20: test_8_triggers.sql: TRIGGER TEST #2: rif40_studies.suppression_value IS NULL FAILED.';		
 	ELSE	
 		PERFORM rif40_sql_pkg.rif40_ddl('DELETE FROM rif40_studies WHERE study_name = ''TRIGGER TEST #2''');
-		RAISE INFO 'T8--12: test_8_triggers.sql: TRIGGER TEST #2: rif40_studies.suppression_value IS NULL PASSED.';
+		RAISE INFO 'T8--21: test_8_triggers.sql: TRIGGER TEST #2: rif40_studies.suppression_value IS NULL PASSED.';
     END IF;		
 	f_tests_run:=f_tests_run+1;
 	
@@ -387,9 +427,9 @@ RETURNING 1::Text AS test_value',
 	IF c3th_rec.total_studies > 0 THEN
 		PERFORM rif40_sql_pkg.rif40_method4('SELECT study_id, study_name FROM rif40_studies  WHERE study_name LIKE ''TRIGGER TEST%''', 
 			'Check no TEST TIRGGER studies actually created');
-		RAISE EXCEPTION 'T8--13: test_8_triggers.sql: % TEST TIRGGER studies have been created', c3th_rec.total_studies;
+		RAISE EXCEPTION 'T8--22: test_8_triggers.sql: % TEST TIRGGER studies have been created', c3th_rec.total_studies;
 	ELSE
-		RAISE NOTICE 'T8--14: test_8_triggers.sql: No TEST TIRGGER studies actually created.';		
+		RAISE NOTICE 'T8--23: test_8_triggers.sql: No TEST TIRGGER studies actually created.';		
 	END IF;
 
 --
@@ -398,7 +438,7 @@ RETURNING 1::Text AS test_value',
 	IF NOT (rif40_sql_pkg.rif40_sql_test(
 			 'test_8_triggers.sql',
 			 'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
-			 'T8--21: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
+			 'T8--24: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
 '{{01,01.015,01.015.016200,01.015.016200.2}                                                                                                            
 ,{01,01.015,01.015.016200,01.015.016200.3}                                                                                                             
 ,{01,01.015,01.015.016200,01.015.016200.4}                                                                                                             
@@ -444,9 +484,9 @@ RETURNING 1::Text AS test_value',
  </row>'::XML
 			 )) THEN
 			 f_errors:=f_errors+1;
-		RAISE INFO 'T8--15: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 FAILED.';			 
+		RAISE INFO 'T8--25: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 FAILED.';			 
 	ELSE		 
-		RAISE INFO 'T8--16: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 PASSED.';
+		RAISE INFO 'T8--26: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 PASSED.';
 	END IF;	
 	f_tests_run:=f_tests_run+1;
 --
@@ -463,10 +503,10 @@ RETURNING 1::Text AS test_value',
 	FETCH c5th INTO c5th_rec;
 	CLOSE c5th;
 	IF c5th_rec.tests_run != (c5th_rec.number_passed + c5th_rec.number_failed) THEN
-		RAISE EXCEPTION 'T8--17: test_8_triggers.sql: Test harness error: tests_run (%) != number_passed (%) + number_failed (%)', 
+		RAISE EXCEPTION 'T8--27: test_8_triggers.sql: Test harness error: tests_run (%) != number_passed (%) + number_failed (%)', 
 			c5th_rec.tests_run, c5th_rec.number_passed, c5th_rec.number_failed;
 	ELSE
-		RAISE INFO 'T8--18: test_8_triggers.sql: Test harness error: tests_run (%) = number_passed (%) + number_failed (%)', 
+		RAISE INFO 'T8--28: test_8_triggers.sql: Test harness error: tests_run (%) = number_passed (%) + number_failed (%)', 
 			c5th_rec.tests_run, c5th_rec.number_passed, c5th_rec.number_failed;				
 	END IF;
 --
@@ -476,16 +516,16 @@ RETURNING 1::Text AS test_value',
 	
 --	
 	IF f_errors = 0 THEN
-		RAISE NOTICE 'T8--19: test_8_triggers.sql: No test harness errors; took: %.', took;		
+		RAISE NOTICE 'T8--29: test_8_triggers.sql: No test harness errors; took: %.', took;		
 	ELSE
-		RAISE WARNING 'T8--20: test_8_triggers.sql: Test harness errors: %; took: %.', f_errors, took;
+		RAISE WARNING 'T8--30: test_8_triggers.sql: Test harness errors: %; took: %.', f_errors, took;
 	END IF;
 EXCEPTION
 	WHEN others THEN
 		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 		GET STACKED DIAGNOSTICS v_sqlstate = RETURNED_SQLSTATE;
 		GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
-		error_message:='T8--21: test_8_triggers.sql: Test harness caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||
+		error_message:='T8--31: test_8_triggers.sql: Test harness caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||
 			'Detail: '||v_detail::VARCHAR||E'\n'||
 			'Context: '||v_context::VARCHAR||E'\n'||
 			'SQLSTATE: '||v_sqlstate::VARCHAR;
@@ -493,12 +533,12 @@ EXCEPTION
 			PERFORM rif40_sql_pkg.rif40_sql_test_dblink_disconnect('test_8_triggers.sql');
 		EXCEPTION
 			WHEN others THEN		
-				RAISE WARNING '8--22: rif40_sql_pkg.rif40_sql_test_dblink_disconnect raised: % [IGNORED]', SQLERRM;
+				RAISE WARNING 'T8--32: rif40_sql_pkg.rif40_sql_test_dblink_disconnect raised: % [IGNORED]', SQLERRM;
 		END;
 		IF v_sqlstate = 'P0001' AND v_detail = '-71153' THEN
-			RAISE EXCEPTION 'T8--23: test_8_triggers.sql: 1: %', error_message;					
+			RAISE EXCEPTION 'T8--33: test_8_triggers.sql: 1: %', error_message;					
 		ELSE
-			RAISE EXCEPTION 'T8--24: test_8_triggers.sql: 1: %', error_message;
+			RAISE EXCEPTION 'T8--34: test_8_triggers.sql: 1: %', error_message;
 		END IF;
 END;
 $$;
@@ -506,23 +546,41 @@ $$;
 --
 -- Test code generator
 --
+DO LANGUAGE plpgsql $$
+BEGIN
+	RAISE INFO 'T8--35: test_8_triggers.sql: Test code generator';
+END;
+$$;
 SELECT rif40_sql_pkg._rif40_test_sql_template(
 	'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
-	'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200') AS template;
-	
+	'T8--35: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200') AS template;
+
 SELECT * FROM rif40_test_runs
  WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
+ 
+SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise_exception_on_failure, 
+	   SUBSTRING(test_stmt FROM 1 FOR 30) AS test_stmt, test_case_title
+  FROM rif40_test_harness
+ WHERE test_run_class = 'rif40_create_disease_mapping_example'
+ ORDER BY test_id;
  
 SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise_exception_on_failure, test_stmt, test_case_title
   FROM rif40_test_harness
  WHERE test_run_class = 'test_8_triggers.sql'
  ORDER BY test_id;
 
+SELECT UNNEST(dblink_get_connections()) AS connection_name;
+ 
 --
 -- Re-run trigger test harness
 --
 --\set VERBOSITY verbose
-SELECT rif40_sql_pkg.rif40_test_harness('test_8_triggers.sql'::VARCHAR, 1);
+DO LANGUAGE plpgsql $$
+BEGIN
+	RAISE INFO 'T8--36: test_8_triggers.sql: Re-run trigger test harness';
+END;
+$$;
+SELECT rif40_sql_pkg.rif40_test_harness(1);
 
 SELECT * FROM rif40_test_runs
  WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
@@ -530,6 +588,11 @@ SELECT * FROM rif40_test_runs
 --
 -- Dump test harness
 --
+DO LANGUAGE plpgsql $$
+BEGIN
+	RAISE INFO 'T8--37: test_8_triggers.sql: Dump test harness';
+END;
+$$;
 SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise_exception_on_failure, test_stmt, test_case_title
   FROM rif40_test_harness
  WHERE test_run_class = 'test_8_triggers.sql'
@@ -545,7 +608,7 @@ SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise
 --
 DO LANGUAGE plpgsql $$
 BEGIN
-	RAISE EXCEPTION 'Stop processing';
+	RAISE EXCEPTION 'T8--98: test_8_triggers.sql: Stop processing';
 END;
 $$;
 
@@ -554,9 +617,11 @@ $$;
 --
 END;
 
-\echo Test 8: Trigger test harness (added in alter_8) OK    
+DO LANGUAGE plpgsql $$
+BEGIN
+	RAISE INFO 'T8--99: test_8_triggers.sql: Test 8: Trigger test harness (added in alter_8) OK';
+END;
+$$;    
 
---
--- Eof
 --
 -- Eof

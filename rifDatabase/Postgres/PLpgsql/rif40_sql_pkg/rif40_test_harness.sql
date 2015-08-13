@@ -83,11 +83,13 @@ DECLARE
 	c1_rth CURSOR(l_test_run_class VARCHAR) FOR
 		SELECT COUNT(test_id) AS total_test_id
 		  FROM rif40_test_harness a
-		 WHERE a.test_run_class = l_test_run_class;
+		 WHERE a.test_run_class = l_test_run_class
+		   AND a.parent_test_id IS NULL;
 	c2_rth CURSOR(l_test_run_class VARCHAR) FOR
 		SELECT *
 		  FROM rif40_test_harness a
-		 WHERE a.test_run_class = l_test_run_class;		
+		 WHERE a.test_run_class = l_test_run_class
+		   AND a.parent_test_id IS NULL;		 
 	c5_rth CURSOR FOR
 		SELECT *
 		  FROM rif40_test_runs
@@ -111,15 +113,12 @@ BEGIN
 		PERFORM rif40_log_pkg.rif40_error(71200, 'rif40_test_harness', 
 			'[71200] Test harness class: %; no tests to run',
 			test_run_class::VARCHAR);	
+		RETURN 'OK';
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_test_harness', 
 			'[71201] Test harness class: %; % tests to run',
 			test_run_class::VARCHAR, c1_rth_rec.total_test_id::VARCHAR);
 	END IF;
---
--- Create dblink substranction to isolate testing from test run
---
-	PERFORM rif40_sql_pkg.rif40_sql_test_dblink_connect('test_8_triggers.sql', debug_level);
 --
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
@@ -168,7 +167,7 @@ BEGIN
 					'[71206] TEST %/%: % PASSED AS EXPECTED.',
 					f_tests_run::VARCHAR, c1_rth_rec.total_test_id::VARCHAR, c2_rth_rec.test_case_title::VARCHAR);	
 			END IF;
-		END IF;		
+		END IF;	
 	END LOOP; 
 
 --
@@ -178,23 +177,19 @@ BEGIN
 	FETCH c5_rth INTO c5_rth_rec;
 	CLOSE c5_rth;
 	IF c5_rth_rec.tests_run != (c5_rth_rec.number_passed + c5_rth_rec.number_failed) THEN
-		PERFORM rif40_log_pkg.rif40_error(71200, 'rif40_test_harness', 
-			'[71207] Test harness class: %; test harness error: tests_run (%) != number_passed (%) + number_failed (%)', 
+		PERFORM rif40_log_pkg.rif40_error(71213, 'rif40_test_harness', 
+			'[71213] Test harness class: %; test harness error: tests_run (%) != number_passed (%) + number_failed (%)', 
 			test_run_class::VARCHAR, c5_rth_rec.tests_run::VARCHAR, 
 			c5_rth_rec.number_passed::VARCHAR, c5_rth_rec.number_failed::VARCHAR);
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_test_harness', 
-			'[71208] Test harness class: %; tests_run (%) = number_passed (%) + number_failed (%)', 
+			'[71214] Test harness class: %; tests_run (%) = number_passed (%) + number_failed (%)', 
 			test_run_class::VARCHAR, c5_rth_rec.tests_run::VARCHAR, 
 			c5_rth_rec.number_passed::VARCHAR, c5_rth_rec.number_failed::VARCHAR);				
 	END IF;	
 --
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
---
--- Release subtransaction
---
-	PERFORM rif40_sql_pkg.rif40_sql_test_dblink_disconnect('test_8_triggers.sql');	
 --	
 	IF f_errors = 0 THEN
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_test_harness', 
@@ -230,17 +225,24 @@ Returns:	OK/exception
 Description:Run test harness on all test classes
  */
 DECLARE
-	c3_rth CURSOR FOR
-		SELECT DISTINCT test_run_class
-		  FROM rif40_test_harness a;
-	c3_rth_rec RECORD;
+	c3_r2th CURSOR FOR
+		SELECT test_run_class, COUNT(test_run_class) AS tests, MIN(register_date) AS min_register_date
+		  FROM rif40_test_harness a
+		 WHERE parent_test_id IS NULL
+		 GROUP BY test_run_class
+		 ORDER BY 3;
+	c3_r2th_rec RECORD;
 BEGIN
 --
 -- Loop through test classes
 -- 
-	FOR c3_rth_rec IN c3_rth LOOP
-		PERFORM rif40_sql_pkg.rif40_test_harness(c3_rth_rec.test_run_class, debug_level);
+	FOR c3_r2th_rec IN c3_r2th LOOP
+		PERFORM rif40_sql_pkg.rif40_sql_test_dblink_connect(c3_r2th_rec.test_run_class, debug_level);
+		PERFORM rif40_sql_pkg.rif40_test_harness(c3_r2th_rec.test_run_class, debug_level);
+		PERFORM rif40_sql_pkg.rif40_sql_test_dblink_disconnect(c3_r2th_rec.test_run_class);
 	END LOOP;
+	
+	RETURN 'OK';
 END;
 $func$
 LANGUAGE PLPGSQL;
