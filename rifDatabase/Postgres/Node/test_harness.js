@@ -182,8 +182,14 @@ function main() {
  *				Then _rif40_sql_test_log_setup()
  */
 function rif40_startup(p_client, p_num) {
-	var sql_stmt = 'SELECT rif40_sql_pkg.rif40_startup() AS a';
-			
+	var sql_stmt;
+		if (p_num == 1) {
+			sql_stmt = 'SELECT rif40_sql_pkg.rif40_startup() AS a';
+		}
+		else {
+			sql_stmt = 'SELECT rif40_sql_pkg.rif40_startup(TRUE /* Do not do checks */) AS a';
+		}
+		
 	// Connected OK, run SQL query
 	var query = p_client.query(sql_stmt, function(err, result) {
 		if (err) {
@@ -365,10 +371,10 @@ function rif40_sql_test(p_client1, p_client2, p_i, p_j, p_tests, p_classes, p_te
 			// Transaction start OK 
 			begin.on('end', function(result) {	
 				var test='[' + p_i + '.' + p_j + '/' + p_tests + '] ' + p_test_case_title;
-				if (j == 1) {
-					console.log('2: [' + p_i + '/' + p_classes + '] Test run class: ' + p_test_run_class + '; tests: ' + p_tests);
+				if (p_j == 1) {
+					console.log('1: [' + p_i + '/' + p_classes + '] Test run class: ' + p_test_run_class + '; tests: ' + p_tests);
 				}
-				console.log('2: ' + test);			
+				console.log('1: ' + test);			
 				console.log('2: BEGIN transaction: ' + test);			
 				var end = p_client2.query('ROLLBACK', function(err, result) {
 					if (err) {
