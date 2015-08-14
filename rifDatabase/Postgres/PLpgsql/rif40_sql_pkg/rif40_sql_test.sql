@@ -404,7 +404,7 @@ DECLARE
 	rif40_pkg_functions 		VARCHAR[] := ARRAY[
 				'rif40_delete_study', 'rif40_ddl', 'rif40_sql_test', '_rif40_sql_test', '_rif40_test_sql_template', 
 				'_rif40_sql_test_register', 'rif40_sql_test_dblink_connect', 'rif40_sql_test_dblink_disconnect',
-				'rif40_test_harness', 'rif40_startup'];
+				'rif40_test_harness', 'rif40_startup', '_rif40_sql_test_log_setup'];
 	l_function 			VARCHAR;	
 BEGIN
     PERFORM rif40_log_pkg.rif40_log_setup();

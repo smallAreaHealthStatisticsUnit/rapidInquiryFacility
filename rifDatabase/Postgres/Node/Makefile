@@ -8,7 +8,7 @@
 #
 # Description:
 #-
-#- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts
+#- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\Node
 #-
 # Copyright:
 #
@@ -117,6 +117,7 @@ DEFAULT_WINDOWS_ADMIN_USER=Administrator
 #
 DBNAME?=$(PGDATABASE)
 VERBOSITY?=$(DEFAULT_VERBOSITY)
+DEFAULT_DEBUG_LEVEL=1
 ifndef DEBUG_LEVEL
 DEBUG_LEVEL?=$(DEFAULT_DEBUG_LEVEL)
 $(info Debug level set to default: $(DEFAULT_DEBUG_LEVEL))
@@ -220,14 +221,14 @@ endif
 #.SUFFIXES: .sql .rpt
 #.sql.rpt:
 #	$(RUN) $@ "$(CURDIR)" $(PSQL) $(PSQL_FLAGS) -f $< 
-MODULES=node_modules/pg node_modules/pg-native node_modules/topojson
+MODULES=node_modules/pg node_modules/pg-native node_modules/topojson node_modules/optimist
 
-all: modules topojson_convert
+all: modules topojson_convert test_harness
 
 modules: $(MODULES)
 
 $(MODULES):
-	$(NPM) install pg pg-native topojson
+	$(NPM) install pg pg-native topojson optimist
 
 #clean:
 #	 $(DELETE) node_modules
@@ -240,6 +241,10 @@ topojson: $(TOPOJSON) ../psql_scripts/test_scripts/data/test_6_geojson_test_01.j
 
 topojson_convert:
 	$(NODE) topojson_convert.js $(PGHOST) sahsu $(PGDATABASE)
+
+test_harness:
+	$(NODE) test_harness.js --help
+	$(NODE) test_harness.js -H $(PGHOST) -D $(PGDATABASE) -U $(TESTUSER) -d $(DEBUG_LEVEL)
 	
 $(TOPOJSON):
 	@echo Building $(TOPOJSON)...

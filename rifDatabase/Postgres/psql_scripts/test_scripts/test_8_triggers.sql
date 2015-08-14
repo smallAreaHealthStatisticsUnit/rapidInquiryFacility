@@ -569,6 +569,16 @@ SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise
  WHERE test_run_class = 'test_8_triggers.sql'
  ORDER BY test_id;
 
+--
+-- End transaction so Node.js test harness can be called
+--
+END;
+
+--
+-- Start new transaction
+--
+BEGIN;
+
 SELECT UNNEST(dblink_get_connections()) AS connection_name;
  
 --
