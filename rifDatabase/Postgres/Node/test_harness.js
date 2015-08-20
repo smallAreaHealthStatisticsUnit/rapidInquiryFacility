@@ -60,8 +60,9 @@
 //
 var pg = require('pg'),
     optimist  = require('optimist'),
-    topojson  = require('topojson');
-
+    topojson  = require('topojson'),
+    escape    = require('pg-escape');
+	
 /* 
  * Function: 	pg_default()
  * Parameters: 	Postgres variable name
@@ -138,7 +139,16 @@ var conString = 'postgres://' + argv["username"] + '@' +  argv["hostname"] + '/'
 var client = null;
 var client2 = null;
 
+// Test arrays
 var test_count=0;
+var p_test_run_class = [];
+var p_test_case_title = [];	
+var p_test_stmt = []; 
+var p_results = []; 
+var p_results_xml = []; 
+var p_pg_error_code_expected = []; 
+var p_raise_exception_on_failure = []; 
+var p_test_id = [];
 
 /* 
  * Function: 	main()
@@ -249,9 +259,6 @@ function _rif40_sql_test_log_setup(p_client, p_num, p_debug_level) {
 		}
 	});	
 	
-//	client.on('drain', function(drain) {
-//		console.log('_rif40_sql_test_log_setup() done.')	
-//	});	
 }
 
 function init_test_harness(p_client2, p_num) {
@@ -278,13 +285,14 @@ function init_test_harness(p_client2, p_num) {
 }
 	
 function run_test_harness(p_client1, p_client2) {
+	var total_tests=0;
 	var end = p_client2.query('COMMIT', function(err, result) {
 		if (err) {
 			p_client2.end();
 			return console.error('2: Error in COMMIT transaction;', err);
 		}
 		else {
-			// Transaction ROLLBACK OK 
+			// Transaction COMMIT OK 
 			end.on('end', function(result) {	
 				console.log('2: COMMIT transaction;');					
 				
@@ -314,8 +322,11 @@ function run_test_harness(p_client1, p_client2) {
 							// End of query processing - process results array
 							row_count = result.rowCount;
 							for (i = 1; i <= row_count; i++) { 
-								run_test_harness_test(i, row_count, p_client1, p_client2, result.rows[i-1].test_run_class, result.rows[i-1].tests);
+								console.log('2: Class: %s Tests: %s', result.rows[i-1].test_run_class, result.rows[i-1].tests);
+								total_tests=total_tests + parseInt(result.rows[i-1].tests, 10);
 							}
+							console.log('2: Total tests %s', total_tests);
+							run_test_harness_test(p_client1, p_client2, total_tests);							
 						});	
 					}
 				});	
@@ -325,16 +336,15 @@ function run_test_harness(p_client1, p_client2) {
 	});		
 }
 
-function run_test_harness_test(p_i, p_classes, p_client1, p_client2, p_test_run_class, p_tests) {
-	
-	var sql_stmt = 'SELECT *\n' +
+function run_test_harness_test(p_client1, p_client2, p_tests) {
+
+	var sql_stmt = 'SELECT a.*\n' +
 		'  FROM rif40_test_harness a\n' +
 		' WHERE a.parent_test_id IS NULL\n' +
-		'   AND a.test_run_class = \'' + p_test_run_class + '\'\n' +
 		' ORDER BY a.test_id';
 			
 	// Connected OK, run SQL query
-	var query = p_client1.query(sql_stmt, function(err, result) {
+	var query = p_client1.query(sql_stmt, function(err, test_array) {
 		if (err) {
 			// Error handler
 			console.error('1: Error running query: ' + sql_stmt + ';', err);
@@ -346,21 +356,41 @@ function run_test_harness_test(p_i, p_classes, p_client1, p_client2, p_test_run_
 				//fired once for each row returned
 				result.addRow(row);
 			});
-			query.on('end', function(result) {	
+			query.on('end', function(test_array) {	
 				// End of query processing - process results array
-				row_count = result.rowCount;
-				for (j = 1; j <= row_count; j++) { 
-					rif40_sql_test(p_client1, p_client2, p_i, j, p_tests, p_classes, result.rows[j-1].test_run_class, result.rows[j-1].test_case_title);
-				}
+				row_count = test_array.rowCount;
+				p_test_run_class = new Array();
+				p_test_case_title = new Array(); 
+				p_test_stmt = new Array(); 
+				p_results = new Array(); 
+				p_results_xml = new Array(); 
+				p_pg_error_code_expected = new Array(); 
+				p_raise_exception_on_failure = new Array(); 
+				p_test_id = new Array(); 
+				
+				for (j = 0; j <row_count; j++) { 
+					p_test_run_class.push(test_array.rows[j].test_run_class /* Deep copy */);
+					p_test_case_title.push(test_array.rows[j].test_case_title /* Deep copy */);
+					p_test_stmt.push(test_array.rows[j].test_stmt /* Deep copy */);
+					p_results.push(test_array.rows[j].results /* Deep copy */);
+					p_results_xml.push(test_array.rows[j].results_xml /* Deep copy */);
+					p_pg_error_code_expected.push(test_array.rows[j].pg_error_code_expected /* Deep copy */);	
+					p_raise_exception_on_failure.push(test_array.rows[j].raise_exception_on_failure /* Deep copy */);
+					p_test_id.push(test_array.rows[j].test_id /* Deep copy */);					
+					}
+				rif40_sql_test(p_client1, p_client2, 1, p_tests, p_test_run_class, p_test_case_title, 
+						p_test_stmt, p_results, p_results_xml, p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id);		
 				return;
 			});	
 		}
 	});				
 }
 
-function rif40_sql_test(p_client1, p_client2, p_i, p_j, p_tests, p_classes, p_test_run_class, p_test_case_title) {	
-
+function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_test_case_title, 
+				p_test_stmt, p_results, p_results_xml, p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id) {	
+	
 	var begin = p_client2.query('BEGIN', function(err, result) {
+		var next=p_j+1;
 		if (err) {
 			p_client2.end();
 			console.error('2: Error in BEGIN transaction;', err);
@@ -369,43 +399,89 @@ function rif40_sql_test(p_client1, p_client2, p_i, p_j, p_tests, p_classes, p_te
 		}
 		else {
 			// Transaction start OK 
-			begin.on('end', function(result) {	
-				var test='[' + p_i + '.' + p_j + '/' + p_tests + '] ' + p_test_case_title;
-				if (p_j == 1) {
-					console.log('1: [' + p_i + '/' + p_classes + '] Test run class: ' + p_test_run_class + '; tests: ' + p_tests);
-				}
+			begin.on('end', function(result) {			
+				var test='[' + p_j + '/' + p_tests + ':' + p_test_run_class[p_j-1] + '] ' + p_test_case_title[p_j-1];
 				console.log('1: ' + test);			
-				console.log('2: BEGIN transaction: ' + test);			
-				var end = p_client2.query('ROLLBACK', function(err, result) {
+				console.log('2: BEGIN transaction: ' + test);		
+
+				// Run test
+				var sql_stmt = 'SELECT rif40_sql_pkg._rif40_sql_test(' + '\n' + 
+						escape.literal(p_test_stmt[p_j-1]) + '::VARCHAR /* test_stmt */,' + '\n' + 
+						escape.literal(p_test_case_title[p_j-1]) + '::VARCHAR /* test_case_title */,' + '\n';
+				if (p_results[p_j-1] === null) {
+					sql_stmt = sql_stmt +	
+						'NULL::VARCHAR[][] /* NULL results */,' + '\n';
+				}
+				else {
+					sql_stmt = sql_stmt +		
+						'\'' + escape.literal(p_results[p_j-1]) + '\'::VARCHAR[][] /* results */,' + '\n';
+				}
+				sql_stmt = sql_stmt +			
+						escape.literal(p_results_xml[p_j-1]) + '::XML /* results_xml */,' + '\n' +
+						escape.literal(p_pg_error_code_expected[p_j-1]) + '::VARCHAR /* pg_error_code_expected */,' + '\n' +
+						p_raise_exception_on_failure[p_j-1] + '::BOOLEAN /* raise_exception_on_failure */,' + '\n' +
+						p_test_id[p_j-1] + '::INTEGER /* test_id */)::INTEGER AS rcode';
+				var run = p_client2.query(sql_stmt, function(err, result) {
 					if (err) {
-						p_client2.end();
-						console.error('2: Error in ROLLBACK transaction;', err);
-						p_client1.end();			
-						process.exit(1);			
-					}
-					else {
-						// Transaction ROLLBACK OK 
-						end.on('end', function(result) {	
-							console.log('2: ROLLBACK transaction: ' + test);
-							test_count++;
-							if ((p_i == p_classes)&&(p_j == p_tests)) {
-								console.log('1: Test harness complete; ' + test_count + ' tests completed.');	
-								/*
-								p_client2.on('drain', function() {
-									console.log('2: Disconnect.');
-									p_client2.end();
-								});	
-								p_client1.on('drain', function() {
-									console.log('1: Disconnect.');					
-									p_client1.end();						
-								}); */
+						console.error('2: Error in run test; SQL> ' + sql_stmt, err);	
+						console.error('2: ROLLBACK transaction: ' + test);
+						var end = p_client2.query('ROLLBACK', function(err, result) {
+							if (err) {
+								console.error('2: Error in ROLLBACK transaction after error;', err);							
 								p_client2.end();
 								p_client1.end();			
-								process.exit(0);								
-							}							
+								process.exit(1);			
+							}
+							else {	
+								p_client2.end();
+								p_client1.end();							
+								process.exit(1);
+							}	
 						});
 					}
-				});	
+					else {
+						// Test OK 
+						run.on('end', function(result) {	
+							console.log('2: OK: ' + test);
+							
+							var end = p_client2.query('ROLLBACK', function(err, result) {
+								if (err) {
+									p_client2.end();
+									console.error('2: Error in ROLLBACK transaction;', err);
+									p_client1.end();			
+									process.exit(1);			
+								}
+								else {
+									// Transaction ROLLBACK OK 
+									end.on('end', function(result) {	
+										console.log('2: ROLLBACK transaction: ' + test);
+										test_count++;
+										if (p_j === p_tests) {
+											console.log('1: Test harness complete; ' + test_count + ' tests completed.');	
+											/*
+											p_client2.on('drain', function() {
+												console.log('2: Disconnect.');
+												p_client2.end();
+											});	
+											p_client1.on('drain', function() {
+												console.log('1: Disconnect.');					
+												p_client1.end();						
+											}); */
+											p_client2.end();
+											p_client1.end();	
+											process.exit(0);	
+										} 
+										else {
+											rif40_sql_test(p_client1, p_client2, next, p_tests, p_test_run_class, p_test_case_title, 
+													p_test_stmt, p_results, p_results_xml, p_pg_error_code_expected, 
+													p_raise_exception_on_failure, p_test_id);								
+										}							
+									});
+								}
+							});	
+						});
+					}
+				});					
 			});			
 		}
 	});

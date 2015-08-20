@@ -221,14 +221,14 @@ endif
 #.SUFFIXES: .sql .rpt
 #.sql.rpt:
 #	$(RUN) $@ "$(CURDIR)" $(PSQL) $(PSQL_FLAGS) -f $< 
-MODULES=node_modules/pg node_modules/pg-native node_modules/topojson node_modules/optimist
+MODULES=node_modules/pg node_modules/pg-native node_modules/topojson node_modules/optimist node_modules/pg-escape
 
 all: modules topojson_convert test_harness
 
 modules: $(MODULES)
 
 $(MODULES):
-	$(NPM) install pg pg-native topojson optimist
+	$(NPM) install pg pg-native topojson optimist pg-escape
 
 #clean:
 #	 $(DELETE) node_modules
