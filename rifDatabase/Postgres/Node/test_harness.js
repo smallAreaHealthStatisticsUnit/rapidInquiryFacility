@@ -414,7 +414,7 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 				}
 				else {
 					sql_stmt = sql_stmt +		
-						'\'' + escape.literal(p_results[p_j-1]) + '\'::VARCHAR[][] /* results */,' + '\n';
+						escape.literal('\'' + p_results[p_j-1] +'\'') + '::VARCHAR[][] /* results */,' + '\n';
 				}
 				sql_stmt = sql_stmt +			
 						escape.literal(p_results_xml[p_j-1]) + '::XML /* results_xml */,' + '\n' +
@@ -442,7 +442,7 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 					else {
 						// Test OK 
 						run.on('end', function(result) {	
-							console.log('2: OK: ' + test);
+							console.log('2: Test OK: ' + test + '\n' + 'SQL> ' + sql_stmt);
 							
 							var end = p_client2.query('ROLLBACK', function(err, result) {
 								if (err) {
