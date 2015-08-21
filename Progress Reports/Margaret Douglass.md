@@ -7,6 +7,19 @@ Principal Work Area: **Microsoft SQL server database port**
 ###August
 I will finish the view triggers this month and please hopefully test.
 
+######21 August
+* Continuing to insert data into tables
+* New data loading issue: rif40_triggers.csv need to be preprocessed (comments field needs to have its line breaks removed, also need to remove double quotes/use a different delimiter more consistently)
+* More data loading issues: rif40_triggers.csv also needs to be preprocessed for quote/multi-line text issues
+* The test data for rif40_error_messages is Postgres codes, not the SQL Server custom error codes
+
+######20 August
+* Back to checking and revising trigger code.  Checked t_rif40_user_projects
+
+######17-19 August
+* More checks of the SQL Server database compared to Postgres.  
+* Experimenting with clever ways to compare constraints on tables between SQL Server and Postgres.  Confirmed primary keys are on the same columns, foreign keys are between the same tables although I had problems getting column names out of Postgres (table owner issues)
+
 ######13 August
 * Still importing data into SQL Server tables to test that the tables are set up correctly.  Trigger tests will require more systematic testing later.
 * Tidying up and correcting triggers code as I test them and identify issues.  I went through rif40_geographies, t_rif40_geolevels triggers, rif40_tables.

@@ -1,4 +1,3 @@
-table_or_view_name_hide,column_name_hide,nullable,oracle_data_type,comments
 G_RIF40_COMPARISON_AREAS,AREA_ID,NOT NULL,VARCHAR2(300),"An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE"
 G_RIF40_COMPARISON_AREAS,STUDY_ID,NOT NULL,NUMBER(8),Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq
 G_RIF40_STUDY_AREAS,AREA_ID,NOT NULL,VARCHAR2(300),"An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE"
