@@ -1165,7 +1165,7 @@ BEGIN
 							c4_rth_rec.results,
 							c4_rth_rec.results_xml,
 							c4_rth_rec.pg_error_code_expected, 
-							c4_rth_rec.raise_exception_on_failure);	
+							c4_rth_rec.test_id);	
 			IF NOT f_result THEN 	/* Test failed */
 				IF NOT c4_rth_rec.expected_result THEN
 					PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 

@@ -60,8 +60,8 @@
 //
 var pg = require('pg'),
     optimist  = require('optimist'),
-    topojson  = require('topojson'),
-    escape    = require('pg-escape');
+    topojson  = require('topojson') /*,
+    escape    = require('pg-escape') */;
 	
 /* 
  * Function: 	pg_default()
@@ -149,6 +149,7 @@ var p_results_xml = [];
 var p_pg_error_code_expected = []; 
 var p_raise_exception_on_failure = []; 
 var p_test_id = [];
+var p_expected_result = [];
 
 /* 
  * Function: 	main()
@@ -354,7 +355,7 @@ function run_test_harness_test(p_client1, p_client2, p_tests) {
 		else {	
 			query.on('row', function(row) {
 				//fired once for each row returned
-				result.addRow(row);
+				test_array.addRow(row);
 			});
 			query.on('end', function(test_array) {	
 				// End of query processing - process results array
@@ -367,6 +368,7 @@ function run_test_harness_test(p_client1, p_client2, p_tests) {
 				p_pg_error_code_expected = new Array(); 
 				p_raise_exception_on_failure = new Array(); 
 				p_test_id = new Array(); 
+				p_expected_result = new Array();
 				
 				for (j = 0; j <row_count; j++) { 
 					p_test_run_class.push(test_array.rows[j].test_run_class /* Deep copy */);
@@ -376,18 +378,42 @@ function run_test_harness_test(p_client1, p_client2, p_tests) {
 					p_results_xml.push(test_array.rows[j].results_xml /* Deep copy */);
 					p_pg_error_code_expected.push(test_array.rows[j].pg_error_code_expected /* Deep copy */);	
 					p_raise_exception_on_failure.push(test_array.rows[j].raise_exception_on_failure /* Deep copy */);
-					p_test_id.push(test_array.rows[j].test_id /* Deep copy */);					
+					p_test_id.push(test_array.rows[j].test_id /* Deep copy */);		
+					p_expected_result.push(test_array.rows[j].expected_result /* Deep copy */);					
 					}
 				rif40_sql_test(p_client1, p_client2, 1, p_tests, p_test_run_class, p_test_case_title, 
-						p_test_stmt, p_results, p_results_xml, p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id);		
+						p_test_stmt, p_results, p_results_xml, p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id, p_expected_result,
+						0 /* p_passed */, 0 /* p_failed */);		
 				return;
 			});	
 		}
 	});				
 }
 
+function test_result(p_pass, p_text, p_sql_stmt,
+				p_test_stmt, p_test_case_title, p_results, p_results_xml, p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id) {
+	if (p_pass) {
+			console.log('*****************************************************************************\n' + '*\n' +
+				p_text + '\n' + 
+				'*\n' + '*****************************************************************************\n');
+	}
+	else {
+			console.log('*****************************************************************************\n' + '*\n' +
+				p_text + '\n' + 'SQL> ' + p_sql_stmt + ';' + '\n' + 
+				'*\n* [Parameter 1: p_test_stmt                 VARCHAR]\n' + p_test_stmt + '\n' + 
+				'* [Parameter 2: p_test_case_title              VARCHAR]  ' + p_test_case_title + '\n' + 
+				'* [Parameter 3: p_results                      TEXT[][]] ' + p_results + '\n' + 
+				'* [Parameter 4: p_results_xml                  XML]      ' + p_results_xml + '\n' + 
+				'* [Parameter 5: p_pg_error_code_expected       VARCHAR]  ' + p_pg_error_code_expected + '\n' + 
+				'* [Parameter 6: p_raise_exception_on_failure   BOOLEAN]  ' + p_raise_exception_on_failure + '\n' + 
+				'* [Parameter 7: p_test_id                      INTEGER]  ' + p_test_id + '\n' + 
+				'*\n' + '*****************************************************************************\n');
+	}
+}
+
 function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_test_case_title, 
-				p_test_stmt, p_results, p_results_xml, p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id) {	
+				p_test_stmt, p_results, p_results_xml, p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id, p_expected_result,
+				p_passed, p_failed) {	
 	
 	var begin = p_client2.query('BEGIN', function(err, result) {
 		var next=p_j+1;
@@ -406,22 +432,23 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 
 				// Run test
 				var sql_stmt = 'SELECT rif40_sql_pkg._rif40_sql_test(' + '\n' + 
-						escape.literal(p_test_stmt[p_j-1]) + '::VARCHAR /* test_stmt */,' + '\n' + 
-						escape.literal(p_test_case_title[p_j-1]) + '::VARCHAR /* test_case_title */,' + '\n';
-				if (p_results[p_j-1] === null) {
-					sql_stmt = sql_stmt +	
-						'NULL::VARCHAR[][] /* NULL results */,' + '\n';
-				}
-				else {
-					sql_stmt = sql_stmt +		
-						escape.literal('\'' + p_results[p_j-1] +'\'') + '::VARCHAR[][] /* results */,' + '\n';
-				}
-				sql_stmt = sql_stmt +			
-						escape.literal(p_results_xml[p_j-1]) + '::XML /* results_xml */,' + '\n' +
-						escape.literal(p_pg_error_code_expected[p_j-1]) + '::VARCHAR /* pg_error_code_expected */,' + '\n' +
-						p_raise_exception_on_failure[p_j-1] + '::BOOLEAN /* raise_exception_on_failure */,' + '\n' +
-						p_test_id[p_j-1] + '::INTEGER /* test_id */)::INTEGER AS rcode';
-				var run = p_client2.query(sql_stmt, function(err, result) {
+						'$1::VARCHAR /* test_stmt */,' + '\n' + 
+						'$2::VARCHAR /* test_case_title */,' + '\n' + 
+						'$3::Text[][] 	/* results */,' + '\n' + 
+						'$4::XML 		/* results_xml */,' + '\n' +
+						'$5::VARCHAR 	/* pg_error_code_expected */,' + '\n' +
+						'$6::BOOLEAN 	/* raise_exception_on_failure */,' + '\n' +
+						'$7::INTEGER 	/* test_id */) AS rcode';
+				var run = p_client2.query({
+							text: sql_stmt, 
+							values: [p_test_stmt[p_j-1],
+									 p_test_case_title[p_j-1], 
+									 p_results[p_j-1], 
+								     p_results_xml[p_j-1],
+									 p_pg_error_code_expected[p_j-1],
+									 p_raise_exception_on_failure[p_j-1],
+									 p_test_id[p_j-1]]}, 
+						function(err, result) {
 					if (err) {
 						console.error('2: Error in run test; SQL> ' + sql_stmt, err);	
 						console.error('2: ROLLBACK transaction: ' + test);
@@ -441,8 +468,65 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 					}
 					else {
 						// Test OK 
-						run.on('end', function(result) {	
-							console.log('2: Test OK: ' + test + '\n' + 'SQL> ' + sql_stmt);
+							run.on('row', function(row) {
+								//fired once for each row returned
+								result.addRow(row);
+							});
+						// End of run processing - process results 					
+						run.on('end', function(result) {
+							row_count = result.rowCount;	
+							if (row_count != 1) {
+									console.error('2: Test FAILED: (' + row_count + ') rows ' + test + '\n' + 'SQL> ' + sql_stmt);	
+									p_failed++;			
+							}
+							else if (!result.rows[0].rcode) {
+								if (p_expected_result[p_j-1]) /* It was expected to pass */ {
+									test_result(false, '2: Test FAILED, expected to PASS: ' + test, sql_stmt,
+											p_test_stmt[p_j-1],
+											p_test_case_title[p_j-1], 
+											p_results[p_j-1], 
+											p_results_xml[p_j-1],
+											p_pg_error_code_expected[p_j-1],
+											p_raise_exception_on_failure[p_j-1],
+											p_test_id[p_j-1]);
+									p_failed++;
+								}
+								else {
+									test_result(true, '2: Test FAILED as expected: ' + test, sql_stmt,
+											p_test_stmt[p_j-1],
+											p_test_case_title[p_j-1], 
+											p_results[p_j-1], 
+											p_results_xml[p_j-1],
+											p_pg_error_code_expected[p_j-1],
+											p_raise_exception_on_failure[p_j-1],
+											p_test_id[p_j-1]);
+									p_passed++; 										
+								}
+							}
+							else {
+								if (p_expected_result[p_j-1]) /* It was expected to pass */ {								
+									test_result(true, '2: Test OK: ' + test, sql_stmt,
+											p_test_stmt[p_j-1],
+											p_test_case_title[p_j-1], 
+											p_results[p_j-1], 
+											p_results_xml[p_j-1],
+											p_pg_error_code_expected[p_j-1],
+											p_raise_exception_on_failure[p_j-1],
+											p_test_id[p_j-1]);
+									p_passed++;
+								}
+								else {
+									test_result(false, '2: Test PASSED, expected to FAIL: ' + test, sql_stmt,
+											p_test_stmt[p_j-1],
+											p_test_case_title[p_j-1], 
+											p_results[p_j-1], 
+											p_results_xml[p_j-1],
+											p_pg_error_code_expected[p_j-1],
+											p_raise_exception_on_failure[p_j-1],
+											p_test_id[p_j-1]);
+									p_failed++;									
+								}
+							}
 							
 							var end = p_client2.query('ROLLBACK', function(err, result) {
 								if (err) {
@@ -457,7 +541,14 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 										console.log('2: ROLLBACK transaction: ' + test);
 										test_count++;
 										if (p_j === p_tests) {
-											console.log('1: Test harness complete; ' + test_count + ' tests completed.');	
+											if (p_failed > 0) {
+												console.error('1: Test harness complete; ' + test_count + ' tests completed; passed: ' + p_passed +
+													'; failed: ' + p_failed);	
+											}
+											else {
+												console.log('1: Test harness complete; ' + test_count + ' tests completed; passed: ' + p_passed +
+													'; none failed.');	
+											}													
 											/*
 											p_client2.on('drain', function() {
 												console.log('2: Disconnect.');
@@ -469,12 +560,12 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 											}); */
 											p_client2.end();
 											p_client1.end();	
-											process.exit(0);	
+											process.exit(p_failed);	
 										} 
 										else {
 											rif40_sql_test(p_client1, p_client2, next, p_tests, p_test_run_class, p_test_case_title, 
-													p_test_stmt, p_results, p_results_xml, p_pg_error_code_expected, 
-													p_raise_exception_on_failure, p_test_id);								
+													p_test_stmt, p_results, p_results_xml, p_pg_error_code_expected, p_expected_result,
+													p_raise_exception_on_failure, p_test_id, p_passed, p_failed);								
 										}							
 									});
 								}
