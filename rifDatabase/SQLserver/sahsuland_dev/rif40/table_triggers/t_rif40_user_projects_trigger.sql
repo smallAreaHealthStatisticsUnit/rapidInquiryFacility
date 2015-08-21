@@ -1,7 +1,6 @@
 /*
 Check username exists and is a RIF user
 Check project has not ended
-
  */
 
 USE [sahsuland_dev]
@@ -19,14 +18,56 @@ GO
 
 CREATE trigger [rif40].[tr_user_projects]
 on [rif40].[t_rif40_user_projects]
-for insert , update 
+for insert , update , delete
 as
 BEGIN
+	DECLARE  @XTYPE varchar(1);
+	IF EXISTS (SELECT * FROM DELETED)
+		SET @XTYPE = 'D';
+	
+	IF EXISTS (SELECT * FROM INSERTED)
+	BEGIN
+		IF (@XTYPE = 'D')
+			SET @XTYPE = 'U'
+		ELSE 
+			SET @XTYPE = 'I'
+	END;
 
--- Check that the project name and username values are filled in
+	DECLARE @num_studies INT;
+	SELECT @num_studies = count(study_id) FROM [rif40].[t_rif40_results];	
+
+-- Check that current username exists and is a RIF user
+	IF SUSER_SNAME() = 'rif40' 
+	BEGIN
+		IF (@XTYPE = 'U' or @XTYPE='I') AND @num_studies = 0
+			RETURN; -- no more checks necessary
+	END
+	ELSE
+	BEGIN
+		IF (IS_MEMBER(N'[rif_manager]') = 0 AND IS_MEMBER(N'[rif_user]') = 0)
+		BEGIN TRY
+			rollback;
+			DECLARE @err1 VARCHAR(max);
+			SET @err1 = formatmessage(51000, SUSER_SNAME());
+			THROW 51000, @err1, 1;
+		END TRY
+		BEGIN CATCH
+			EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_user_projects]';
+			THROW 51000, @err1, 1; --rethrow
+		END CATCH;		
+	END;
+	
+	IF @XTYPE = 'D'
+	BEGIN
+		DECLARE @log_msg0 VARCHAR(max) = 'T_RIF40_USER_PROJECTS user is a RIF_USER' + SUSER_SNAME();
+		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_user_projects]', @log_msg0;
+		RETURN;
+	END;
+	
+-- Check that the project name and username values are filled in (already not null constraints on table but values could be '')
 	DECLARE @missing_vals NVARCHAR(MAX)= 
 	( 
-	SELECT ic.project +' , ', ic.username+';'
+	SELECT ic.project, ic.username
 		 FROM inserted  ic
 		 WHERE ic.project is null or ic.project='' or ic.username is null or ic.username = ''
 	FOR XML PATH('') 
@@ -40,27 +81,15 @@ BEGIN
 	END TRY
 	BEGIN CATCH
 		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_user_projects]';
-		THROW 51005, @err, 1; --rethrow
+		THROW 51005, @err, 1; 
 	END CATCH;
 	
-	
--- Check that current username exists and is a RIF user
-	IF (IS_MEMBER(N'[rif_manager]') = 0 AND IS_MEMBER(N'[rif_user]') = 0)
-	BEGIN TRY
-		rollback;
-		DECLARE @err1 VARCHAR(max);
-		SET @err1 = formatmessage(51000, SUSER_SNAME());
-		THROW 51000, @err1, 1;
-	END TRY
-	BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_user_projects]';
-		THROW 51000, @err1, 1; --rethrow
-	END CATCH;
+
 	
 -- Check project has no end date + log
 	DECLARE @date_ended NVARCHAR(MAX)= 
 	( 
-	SELECT ic.project +' , '
+	SELECT ic.project
 			FROM inserted  ic, [rif40].[t_rif40_projects] p
 			WHERE ic.project = p.project and DATE_ENDED is null
 	FOR XML PATH('') 
@@ -74,7 +103,7 @@ BEGIN
 -- Check whether project has already ended + produce error if not in testing mode
 DECLARE @date_error NVARCHAR(MAX)= 
 ( 
-  SELECT ic.project+': '+cast(p.DATE_ENDED as varchar(50)) +' , '
+  SELECT ic.project, p.date_ended
 		 FROM inserted  ic , [rif40].[t_rif40_projects] p
 		 WHERE ic.project = p.project and p.date_ended < getdate()
  FOR XML PATH('') 
@@ -82,8 +111,6 @@ DECLARE @date_error NVARCHAR(MAX)=
 
 IF @date_error IS NOT NULL 
 	BEGIN
-		DECLARE @num_studies INT;
-		SELECT @num_studies = count(study_id) FROM [rif40].[t_rif40_results];
 		IF @num_studies > 0 
 		BEGIN TRY
 			rollback;
@@ -97,9 +124,9 @@ IF @date_error IS NOT NULL
 		END CATCH;
 		ELSE
 		BEGIN
-			DECLARE @err_msg VARCHAR(max) = 'project ended on : '+@date_error;
+			DECLARE @err_msg VARCHAR(max) = 'Project ended on : '+@date_error;
 			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_user_projects]', @err_msg;
 		END;
 	END;
 	
-end 
+end; 
