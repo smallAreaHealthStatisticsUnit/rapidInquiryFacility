@@ -1,20 +1,16 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-
-
-
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
-
+import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-
 import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
@@ -24,6 +20,9 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.text.Collator;
 import java.io.*;
+
+import org.postgresql.copy.CopyManager;
+import org.postgresql.core.BaseConnection;
 
 /**
  * provides functionality common to all manager classes associated with different steps
@@ -246,8 +245,7 @@ public abstract class AbstractDataLoaderStepManager {
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(2, "firstTableCount,");
 		queryFormatter.finishLine();
-		queryFormatter.addQueryPhrase(2, "secondTableCount;");
-		queryFormatter.finishLine();
+		queryFormatter.addQueryPhrase(2, "secondTableCount");
 		
 		RIFLogger logger = RIFLogger.getLogger();
 		logger.debugQuery(
@@ -457,7 +455,7 @@ public abstract class AbstractDataLoaderStepManager {
 		RIFServiceException {
 		
 		String fieldName = "";
-		if (workflowState == WorkflowState.LOAD) {
+		if (workflowState == WorkflowState.EXTRACT) {
 			fieldName = dataSetFieldConfiguration.getLoadFieldName();
 		}
 		else if (workflowState == WorkflowState.CLEAN) {
@@ -521,9 +519,6 @@ public abstract class AbstractDataLoaderStepManager {
 		
 	}
 	
-	
-	
-	
 	protected void addPrimaryKey(
 		final Connection connection,
 		final Writer logFileWriter,
@@ -531,10 +526,10 @@ public abstract class AbstractDataLoaderStepManager {
 		final String primaryKeyFieldPhrase)
 		throws RIFServiceException {
 		
+		SQLGeneralQueryFormatter queryFormatter
+			= new SQLGeneralQueryFormatter();
 		PreparedStatement statement = null;		
 		try {
-			SQLGeneralQueryFormatter queryFormatter
-				= new SQLGeneralQueryFormatter();
 			queryFormatter.addQueryPhrase("ALTER TABLE ");
 			queryFormatter.addQueryPhrase(targetTableName);
 			queryFormatter.addQueryPhrase(" ADD PRIMARY KEY (");
@@ -548,7 +543,6 @@ public abstract class AbstractDataLoaderStepManager {
 			statement.executeUpdate();		
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
 			logSQLException(
 				logFileWriter,
 				sqlException);
@@ -569,6 +563,84 @@ public abstract class AbstractDataLoaderStepManager {
 		
 		
 	}
+	
+	
+	
+	
+	protected void exportTable(
+		final Connection connection, 
+		final Writer logFileWriter,
+		final String exportDirectoryPath,
+		final RIFDataLoadingResultTheme rifDataLoaderResultTheme,
+		final String tableName) 
+		throws RIFServiceException {
+				
+		StringBuilder exportFileName = new StringBuilder();
+		exportFileName.append(exportDirectoryPath);
+		exportFileName.append(File.separator);
+		exportFileName.append(rifDataLoaderResultTheme.getSubDirectoryName());		
+		exportFileName.append(File.separator);
+		exportFileName.append(tableName);
+		exportFileName.append(".csv");
+		BufferedWriter writer = null;		
+		try {
+			SQLExportTableToCSVQueryFormatter queryFormatter
+				= new SQLExportTableToCSVQueryFormatter();
+			queryFormatter.setTableToExport(tableName);
+			queryFormatter.setOutputFileName(exportFileName.toString());
+			
+			writer = new BufferedWriter(new FileWriter(exportFileName.toString()));		
+			
+			CopyManager copyManager = new CopyManager((BaseConnection) connection);
+			copyManager.copyOut(queryFormatter.generateQuery(), writer);
+			writer.flush();
+		}
+		catch(Exception exception) {
+			logException(
+				logFileWriter,
+				exception);
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"abstractDataLoaderStepManager.error.unableToExportTable",
+					tableName);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			if (writer != null) {
+				try {
+					writer.close();					
+				}
+				catch(IOException exception) {
+					String errorMessage
+						= RIFDataLoaderToolMessages.getMessage(
+							"abstractDataLoaderStepManager.error.unableToExportTable");
+					RIFServiceException rifServiceException
+						= new RIFServiceException(
+							RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+							errorMessage);
+					throw rifServiceException;
+				}
+			}
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	protected void deleteTable(
 		final Connection connection,
@@ -835,13 +907,15 @@ public abstract class AbstractDataLoaderStepManager {
 		final Writer logFileWriter,
 		final SQLException sqlException) {
 
+		sqlException.printStackTrace(System.out);
+
 		if (logFileWriter == null) {
-			sqlException.printStackTrace(System.out);
+			//sqlException.printStackTrace(System.out);
 		}
 		else {
-			PrintWriter printWriter = new PrintWriter(logFileWriter);
-			sqlException.printStackTrace(printWriter);
-			printWriter.flush();
+			//PrintWriter printWriter = new PrintWriter(logFileWriter);
+			//sqlException.printStackTrace(printWriter);
+			//printWriter.flush();
 		}
 
 	}

@@ -101,6 +101,7 @@ public class TestClean extends AbstractRIFDataLoaderTestCase {
 			workflowEnactor.runWorkflow(
 				testLogFile,
 				null,
+				null,
 				linearWorkflow);			
 		}
 		catch(RIFServiceException rifServiceException) {

@@ -122,12 +122,11 @@ public final class SQLCreateIndexQueryFormatter
 		addQueryPhrase("_");
 		addQueryPhrase(indexTableField);
 		padAndFinishLine();
-		addQueryPhrase(0, "ON");
+		addPaddedQueryLine(0, "ON");
 		addQueryPhrase(1, indexTable);
 		addQueryPhrase(" (");
 		addQueryPhrase(indexTableField);		
 		addQueryPhrase(")");
-		addQueryPhrase(";");
 
 		return super.generateQuery();		
 	}

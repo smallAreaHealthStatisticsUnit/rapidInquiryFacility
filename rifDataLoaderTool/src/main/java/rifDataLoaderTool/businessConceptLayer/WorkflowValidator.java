@@ -249,7 +249,7 @@ public class WorkflowValidator {
 		ArrayList<String> errorMessages
 			= new ArrayList<String>();
 		
-		if (workFlowState == WorkflowState.LOAD) {
+		if (workFlowState == WorkflowState.EXTRACT) {
 			validateLoad(
 				dataSetConfiguration, 
 				errorMessages);

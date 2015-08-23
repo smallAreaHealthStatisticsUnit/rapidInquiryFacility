@@ -190,6 +190,19 @@ public class DataSetConfiguration
 		return dataSetConfiguration;		
 	}
 
+	public static ArrayList<DataSetConfiguration> createCopy(
+		final ArrayList<DataSetConfiguration> originalDataSetConfigurations) {
+		
+		ArrayList<DataSetConfiguration> cloneDataSetConfigurations
+			= new ArrayList<DataSetConfiguration>();
+		
+		for (DataSetConfiguration originalDataSetConfiguration : originalDataSetConfigurations) {
+			cloneDataSetConfigurations.add(createCopy(originalDataSetConfiguration));
+		}
+		
+		return cloneDataSetConfigurations;
+	}
+	
 	
 	public static DataSetConfiguration createCopy(
 		final DataSetConfiguration originalDataSetConfiguration) {
@@ -802,6 +815,10 @@ public class DataSetConfiguration
 			= indexFieldNames.toArray(new String[0]);		
 		return results;
 		
+	}
+	
+	public void clearFieldConfigurations() {
+		fieldConfigurations.clear();
 	}
 	
 	public String[] getCoreFieldNames() {

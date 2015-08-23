@@ -76,9 +76,6 @@ public class WorkflowEditorDialog
 
 
 		try {
-
-			
-			
 			
 			//RIFDataLoaderToolSession session
 			//	= new RIFDataLoaderToolSession();
@@ -93,21 +90,6 @@ public class WorkflowEditorDialog
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(null, rifServiceException.getErrorMessages());
 		}
-
-/*
-		try {
-			SampleDataGenerator generator = new SampleDataGenerator();
-			
-			LinearWorkflow linearWorkflow
-				= generator.testDataCleaning1Workflow();
-			LinearWorkflowWriter writer = new LinearWorkflowWriter();
-			File file = new File("C://rif_scripts//test_data//blah_numerator.xml");
-			writer.write(linearWorkflow, file);
-		}
-		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-		}
-*/
 	}
 	
 	// ==========================================
@@ -122,7 +104,8 @@ public class WorkflowEditorDialog
 	private User rifManager;
 	private DataLoaderServiceAPI dataLoaderService;
 	
-	private LinearWorkflow currentLinearWorkflow;
+	private LinearWorkflow originalLinearWorkflow;
+	private LinearWorkflow workingCopyLinearWorkflow;
 	
 	private JMenuItem initialiseDemoDatabaseMenuItem;
 	private JMenuItem loadWorkflowMenuItem;
@@ -139,6 +122,7 @@ public class WorkflowEditorDialog
 	private JButton saveWorkflowButton;
 	private JButton exitButton;
 	
+	private File currentlySelectedFile;
 	
 	private JFrame frame;
 	// ==========================================
@@ -152,8 +136,9 @@ public class WorkflowEditorDialog
 		userInterfaceFactory 
 			= new UserInterfaceFactory();
 		
-		currentLinearWorkflow = LinearWorkflow.newInstance();
+		originalLinearWorkflow = LinearWorkflow.newInstance();
 		
+		this.workingCopyLinearWorkflow = LinearWorkflow.createCopy(originalLinearWorkflow);
 		buildUI();
 	}
 
@@ -452,14 +437,14 @@ public class WorkflowEditorDialog
 				return;
 			}
 		
-			File workflowXMLFile = fileChooser.getSelectedFile();
+			currentlySelectedFile = fileChooser.getSelectedFile();
 			LinearWorkflowReader linearWorkflowReader
 				= new LinearWorkflowReader();
-			linearWorkflowReader.readFile(workflowXMLFile);
-			currentLinearWorkflow
+			linearWorkflowReader.readFile(currentlySelectedFile);
+			workingCopyLinearWorkflow
 				= linearWorkflowReader.getLinearWorkflow();
-
-			populateForm();
+			
+			populateFormFromWorkingCopy();
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(
@@ -472,43 +457,33 @@ public class WorkflowEditorDialog
 		try {
 			validateForm();			
 					
-			JFileChooser fileChooser
-				= userInterfaceFactory.createFileChooser();
-		
-			XMLFileFilter xmlFileFilter = new XMLFileFilter();
-			fileChooser.setFileFilter(xmlFileFilter);
-		
-			int result
-				= fileChooser.showSaveDialog(frame);
-			if (result != JFileChooser.APPROVE_OPTION) {
-				return;
-			}
-		
-			File selectedFile = fileChooser.getSelectedFile();
-			String filePath
-				= XMLFileFilter.createXMLFileName(selectedFile.getAbsolutePath());
-			File workflowXMLFile = new File(filePath);
+			populateWorkingCopyFromForm();
 			
-			LinearWorkflowWriter linearWorkflowWriter
-				= new LinearWorkflowWriter();
-
+			LinearWorkflow.copyInto(
+				workingCopyLinearWorkflow, 
+				originalLinearWorkflow);
+			
+			if (originalLinearWorkflow.isNewRecord()) {
+			
+				JFileChooser fileChooser
+					= userInterfaceFactory.createFileChooser();
 		
-			String currentStartingWorkflowStateName
-				= (String) startingStateComboBox.getSelectedItem();
-			WorkflowState currentStartWorkflowState
-				= WorkflowState.getWorkflowStateFromName(
-					currentStartingWorkflowStateName);
-			currentLinearWorkflow.setStartWorkflowState(currentStartWorkflowState);
-			String currentStoppingWorkflowStateName
-				= (String) startingStateComboBox.getSelectedItem();
-			WorkflowState currentStoppingWorkflowState
-				= WorkflowState.getWorkflowStateFromName(
-						currentStoppingWorkflowStateName);
-			currentLinearWorkflow.setStopWorkflowState(currentStoppingWorkflowState);
-
-			linearWorkflowWriter.write(
-				currentLinearWorkflow, 
-				workflowXMLFile);
+				XMLFileFilter xmlFileFilter = new XMLFileFilter();
+				fileChooser.setFileFilter(xmlFileFilter);
+		
+				int result
+					= fileChooser.showSaveDialog(frame);
+				if (result != JFileChooser.APPROVE_OPTION) {
+					return;
+				}
+		
+				File selectedFile = fileChooser.getSelectedFile();
+				String filePath
+					= XMLFileFilter.createXMLFileName(selectedFile.getAbsolutePath());
+				currentlySelectedFile = new File(filePath);
+			}
+			
+			writeCurrentDataToFile();
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(
@@ -518,13 +493,44 @@ public class WorkflowEditorDialog
 			
 	}
 	
+	private void writeCurrentDataToFile() 
+		throws RIFServiceException {
+				
+		LinearWorkflowWriter linearWorkflowWriter
+			= new LinearWorkflowWriter();
+
+		String currentStartingWorkflowStateName
+			= (String) startingStateComboBox.getSelectedItem();
+		WorkflowState currentStartWorkflowState
+			= WorkflowState.getWorkflowStateFromName(
+				currentStartingWorkflowStateName);
+		originalLinearWorkflow.setStartWorkflowState(currentStartWorkflowState);
+		String currentStoppingWorkflowStateName
+			= (String) startingStateComboBox.getSelectedItem();
+		WorkflowState currentStoppingWorkflowState
+			= WorkflowState.getWorkflowStateFromName(
+				currentStoppingWorkflowStateName);
+		originalLinearWorkflow.setStopWorkflowState(currentStoppingWorkflowState);
+		linearWorkflowWriter.write(
+			originalLinearWorkflow, 
+			currentlySelectedFile);		
+	}
+	
+	
 	private void runWorkflow() {
 		try {
-			//validateForm();
+			
+			
+			validateForm();			
+			populateWorkingCopyFromForm();
+
+			if (workingCopyLinearWorkflow.isNewRecord()) {
+				saveWorkflow();				
+			}
 			
 			dataLoaderService = new ProductionDataLoaderService();			
 			dataLoaderService.initialiseService();	
-			
+
 			LinearWorkflowEnactor linearWorkflowEnactor
 				= new LinearWorkflowEnactor(
 					rifManager, 
@@ -535,7 +541,8 @@ public class WorkflowEditorDialog
 			linearWorkflowEnactor.runWorkflow(
 				dummyFile, 
 				null, 
-				currentLinearWorkflow);
+				currentlySelectedFile,
+				workingCopyLinearWorkflow);
 
 			String workflowCompletedMessage
 				= RIFDataLoaderToolMessages.getMessage(
@@ -568,7 +575,7 @@ public class WorkflowEditorDialog
 		DataSetConfigurationEditorDialog dialog
 			= new DataSetConfigurationEditorDialog(userInterfaceFactory);
 		dialog.setData(
-			currentLinearWorkflow, 
+			originalLinearWorkflow, 
 			dataSetConfiguration);
 		dialog.show();
 		if (dialog.isCancelled() == true) {
@@ -577,7 +584,7 @@ public class WorkflowEditorDialog
 
 		DataSetConfiguration revisedDataSetConfiguration
 			= dialog.getDataSetConfiguration();
-		currentLinearWorkflow.addDataSetConfiguration(revisedDataSetConfiguration);
+		originalLinearWorkflow.addDataSetConfiguration(revisedDataSetConfiguration);
 		dataSetConfigurationListPanel.addListItem(revisedDataSetConfiguration);
 		dataSetConfigurationListPanel.updateUI();
 		dataSetConfigurationListPanel.setSelectedItem(revisedDataSetConfiguration);
@@ -633,7 +640,7 @@ public class WorkflowEditorDialog
 		DataSetConfigurationEditorDialog dialog
 			= new DataSetConfigurationEditorDialog(userInterfaceFactory);
 		dialog.setData(
-			currentLinearWorkflow, 
+			originalLinearWorkflow, 
 			dataSetConfiguration);
 		dialog.show();
 		
@@ -641,7 +648,7 @@ public class WorkflowEditorDialog
 			//it means we attempted to save changes
 			DataSetConfiguration revisedDataSetConfiguration
 				= dialog.getDataSetConfiguration();
-			currentLinearWorkflow.replaceDataSetConfiguration(
+			originalLinearWorkflow.replaceDataSetConfiguration(
 				dataSetConfiguration, 
 				revisedDataSetConfiguration);
 			//now replace the item in the list of data set configurations as well
@@ -665,9 +672,29 @@ public class WorkflowEditorDialog
 		System.exit(0);		
 	}
 	
+	private void populateWorkingCopyFromForm() {
+
+		String selectedStartStatePhrase
+			= (String) startingStateComboBox.getSelectedItem();
+		WorkflowState startWorkflowState
+			= WorkflowState.getWorkflowStateFromName(selectedStartStatePhrase);
+		workingCopyLinearWorkflow.setStartWorkflowState(startWorkflowState);
+		
+		String selectedStopStatePhrase
+			= (String) stoppingStateComboBox.getSelectedItem();
+		WorkflowState stopWorkflowState
+			= WorkflowState.getWorkflowStateFromName(selectedStopStatePhrase);
+		workingCopyLinearWorkflow.setStopWorkflowState(stopWorkflowState);
+		
+		ArrayList<DisplayableListItemInterface> currentListItems
+			= dataSetConfigurationListPanel.getAllItems();
+		workingCopyLinearWorkflow.clearDataSetConfigurations();
+		for (DisplayableListItemInterface currentListItem : currentListItems) {
+			workingCopyLinearWorkflow.addDataSetConfiguration((DataSetConfiguration) currentListItem);
+		}		
+	}
 	
-	
-	private void populateForm() {
+	private void populateFormFromWorkingCopy() {
 		
 		/*
 		 * Disable action listeners so that we can populate the form
@@ -675,11 +702,11 @@ public class WorkflowEditorDialog
 		 */
 		
 		WorkflowState startWorkflowState
-			= currentLinearWorkflow.getStartWorkflowState();
+			= workingCopyLinearWorkflow.getStartWorkflowState();
 		WorkflowState stopWorkflowState
-			= currentLinearWorkflow.getStopWorkflowState();
+			= workingCopyLinearWorkflow.getStopWorkflowState();
 		ArrayList<DataSetConfiguration> dataSetConfigurations
-			= currentLinearWorkflow.getDataSetConfigurations();
+			= workingCopyLinearWorkflow.getDataSetConfigurations();
 		
 		/*
 		 * Reset UI components
@@ -705,8 +732,7 @@ public class WorkflowEditorDialog
 
 	private void validateForm() 
 		throws RIFServiceException {
-		
-		
+			
 		String currentStartingWorkflowStateName
 			= (String) startingStateComboBox.getSelectedItem();
 		WorkflowState currentStartWorkflowState
@@ -715,7 +741,6 @@ public class WorkflowEditorDialog
 
 		String currentStoppingWorkflowStateName
 			= (String) stoppingStateComboBox.getSelectedItem();
-		System.out.println("Selected stop state=="+currentStoppingWorkflowStateName+"==");
 		WorkflowState currentStopWorkflowState
 			= WorkflowState.getWorkflowStateFromName(
 				currentStoppingWorkflowStateName);
@@ -736,7 +761,6 @@ public class WorkflowEditorDialog
 	}
 
 	private void updateButtonStates() {
-		System.out.println("updateButtonStates");
 		if (dataSetConfigurationListPanel.isEmpty()) {
 			dataSetConfigurationListButtonPanel.indicateEmptyState();
 		}

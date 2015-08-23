@@ -126,7 +126,7 @@ public class LinearWorkflowStateMachine
 			currentWorkflowState = WorkflowState.CLEAN;
 		}
 		else if (currentWorkflowState == WorkflowState.CLEAN) {
-			currentWorkflowState = WorkflowState.LOAD;
+			currentWorkflowState = WorkflowState.EXTRACT;
 		}
 		else {
 			//DELETE
@@ -137,9 +137,9 @@ public class LinearWorkflowStateMachine
 	public void next() {
 
 		if (currentWorkflowState == WorkflowState.START) {
-			currentWorkflowState = WorkflowState.LOAD;
+			currentWorkflowState = WorkflowState.EXTRACT;
 		}
-		else if (currentWorkflowState == WorkflowState.LOAD) {
+		else if (currentWorkflowState == WorkflowState.EXTRACT) {
 			currentWorkflowState = WorkflowState.CLEAN;
 		}
 		else if (currentWorkflowState == WorkflowState.CLEAN) {
@@ -173,7 +173,7 @@ public class LinearWorkflowStateMachine
 		ArrayList<WorkflowState> allWorkflowStates
 			= new ArrayList<WorkflowState>();
 		allWorkflowStates.add(WorkflowState.START);
-		allWorkflowStates.add(WorkflowState.LOAD);
+		allWorkflowStates.add(WorkflowState.EXTRACT);
 		allWorkflowStates.add(WorkflowState.CLEAN);
 		allWorkflowStates.add(WorkflowState.CONVERT);
 		allWorkflowStates.add(WorkflowState.OPTIMISE);
@@ -189,7 +189,7 @@ public class LinearWorkflowStateMachine
 		ArrayList<String> allWorkflowStateNames
 			= new ArrayList<String>();
 		allWorkflowStateNames.add(WorkflowState.START.getStateName());
-		allWorkflowStateNames.add(WorkflowState.LOAD.getStateName());
+		allWorkflowStateNames.add(WorkflowState.EXTRACT.getStateName());
 		allWorkflowStateNames.add(WorkflowState.CLEAN.getStateName());
 		allWorkflowStateNames.add(WorkflowState.CONVERT.getStateName());
 		allWorkflowStateNames.add(WorkflowState.OPTIMISE.getStateName());

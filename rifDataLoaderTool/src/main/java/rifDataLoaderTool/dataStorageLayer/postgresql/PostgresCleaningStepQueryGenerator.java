@@ -213,7 +213,7 @@ public final class PostgresCleaningStepQueryGenerator
 
 		queryFormatter.addQueryLine(1, " FROM ");
 		String loadTableName
-			= RIFTemporaryTablePrefixes.LOAD.getTableName(
+			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(
 					dataSetConfiguration.getName());
 		queryFormatter.addQueryPhrase(2, loadTableName);
 		queryFormatter.addQueryPhrase(";");
@@ -634,7 +634,7 @@ public final class PostgresCleaningStepQueryGenerator
 		String coreDataSetName 
 			= dataSetConfiguration.getName();
 		String loadTableName
-			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
+			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(coreDataSetName);
 		String searchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
@@ -783,7 +783,7 @@ public final class PostgresCleaningStepQueryGenerator
 		String coreDataSetName 
 			= dataSetConfiguration.getName();
 		String loadTableName
-			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
+			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(coreDataSetName);
 		String cleanValidationTableName
 			= RIFTemporaryTablePrefixes.CLEAN_VALIDATION.getTableName(coreDataSetName);
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
@@ -870,7 +870,7 @@ public final class PostgresCleaningStepQueryGenerator
 		String coreDataSetName 
 			= dataSetConfiguration.getName();
 		String loadTableName
-			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
+			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(coreDataSetName);
 		String cleanValidationTableName
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
 

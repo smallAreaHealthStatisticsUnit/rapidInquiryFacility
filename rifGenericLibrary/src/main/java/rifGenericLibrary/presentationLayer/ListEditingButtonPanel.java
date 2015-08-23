@@ -3,11 +3,18 @@ package rifGenericLibrary.presentationLayer;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 
+
+
+
 import javax.swing.JPanel;
 import javax.swing.JButton;
+import javax.swing.KeyStroke;
+
 import java.util.ArrayList;
+import java.awt.Event;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 
 
 /**
@@ -93,7 +100,7 @@ public final class ListEditingButtonPanel {
 	private UserInterfaceFactory userInterfaceFactory;
 	private ArrayList<JButton> buttonsToInclude;
 	private ArrayList<ActionListener> actionListeners;
-	
+		
 	private JPanel panel;	
 	private JButton addButton;
 	private JButton editButton;
@@ -151,6 +158,8 @@ public final class ListEditingButtonPanel {
 	// Section Accessors and Mutators
 	// ==========================================
 
+
+	
 	public void includeAddButton(
 		final String toolTipText) {
 
@@ -205,8 +214,9 @@ public final class ListEditingButtonPanel {
 
 		if (toolTipText != null) {
 			copyButton.setToolTipText(toolTipText);
-		}
 			
+			
+		}
 		buttonsToInclude.add(copyButton);		
 	}
 

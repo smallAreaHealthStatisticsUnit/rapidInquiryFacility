@@ -107,11 +107,11 @@ public class LinearWorkflowWriter {
 				rifWorkflowConfigurationHandler.writeXML(linearWorkflow);
 		    	String result 
 					= new String(outputStream.toByteArray(), "UTF-8");	
+		    	outputStream.flush();
 		    	outputStream.close();			
 		    	return result;
 			}
 			catch(Exception exception) {
-				exception.printStackTrace(System.out);
 				String errorMessage
 					= RIFServiceMessages.getMessage(
 						"io.error.problemWritingFileContentsToString");

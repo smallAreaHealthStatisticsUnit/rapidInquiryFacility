@@ -74,45 +74,6 @@ import java.util.PropertyResourceBundle;
  */
 
 public class SampleRIFDatabaseCreationManager {
-
-	public static final void main(String[] arguments) {
-		
-		//try {
-			//RIFDataLoaderStartupOptions startupOptions
-			//	= new RIFDataLoaderStartupOptions();
-			//SampleRIFDatabaseCreationManager fakeDatabaseCreationManager
-			//	= new SampleRIFDatabaseCreationManager(startupOptions);
-			//fakeDatabaseCreationManager.createDatabase("kgarwood", "kgarwood");
-			//fakeDatabaseCreationManager.createDatabaseTables();
-/*			
-			String databaseDriverName = "org.postgresql.Driver";
-			String databaseDriverPrefix = "jdbc:postgresql";
-			String host = "localhost";
-			String port = "5432";
-			String databaseName = "tmp_sahsu_db";
-			SQLConnectionManager sqlConnectionManager
-				= new SQLConnectionManager(
-					databaseDriverName,
-					databaseDriverPrefix,
-					host,
-					port,
-					databaseName);	
-			Connection connection 
-				= sqlConnectionManager.createConnection(
-					"kgarwood", 
-					"kgarwood", 
-					true);
-			fakeDatabaseCreationManager.createDatabaseTables(connection);
-			//fakeDatabaseCreationManager.deleteTables(connection);
-	*/		
-			
-		//}
-		//catch(RIFServiceException rifServiceException) {
-		//	rifServiceException.printErrors();
-		//}
-		
-		
-	}
 	
 	// ==========================================
 	// Section Constants
@@ -182,15 +143,12 @@ public class SampleRIFDatabaseCreationManager {
 			queryFormatter.addQueryPhrase(";");
 			queryFormatter.finishLine();
 
-			System.out.println("About to create database 1...");
 			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.executeUpdate();
-			System.out.println("About to create database 2...");
 			createDatabaseTables(userID, password);
 		}
 		catch(Exception exception) {
-			System.out.println("About to create database 3...");			
 			exception.printStackTrace(System.out);
 			String errorMessage	
 				= RIFDataLoaderToolMessages.getMessage(

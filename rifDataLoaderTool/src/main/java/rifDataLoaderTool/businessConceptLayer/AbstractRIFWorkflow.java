@@ -66,20 +66,55 @@ public abstract class AbstractRIFWorkflow {
 	private WorkflowState startWorkflowState;
 	private WorkflowState stopWorkflowState;
 	
+	private boolean isNewRecord;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public AbstractRIFWorkflow() {
 		dataSetConfigurations = new ArrayList<DataSetConfiguration>();
+		
+		isNewRecord = true;
 	}
 
 	abstract public void initialise();
 	
+	public static void copyAttributes(
+		final AbstractRIFWorkflow sourceWorkflow, 
+		final AbstractRIFWorkflow destinationWorkflow) {
+		
+		destinationWorkflow.setNewRecord(sourceWorkflow.isNewRecord());
+		
+		WorkflowState sourceStartWorkflowState
+			= sourceWorkflow.getStartWorkflowState();
+		destinationWorkflow.setStartWorkflowState(sourceStartWorkflowState);
+		
+		
+		WorkflowState sourceStopWorkflowState
+			= sourceWorkflow.getStopWorkflowState();
+		destinationWorkflow.setStopWorkflowState(sourceStopWorkflowState);
+		
+		ArrayList<DataSetConfiguration> sourceDataSetConfigurations
+			= sourceWorkflow.getDataSetConfigurations();
+		ArrayList<DataSetConfiguration> destinationDataSetConfigurations
+			= DataSetConfiguration.createCopy(sourceDataSetConfigurations);
+		destinationWorkflow.setDataSetConfigurations(destinationDataSetConfigurations);
+	}
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public boolean isNewRecord() {
+		return isNewRecord;
+	}
+	
+	public void setNewRecord(
+		final boolean isNewRecord) {
+
+		this.isNewRecord = isNewRecord;
+	}
+	
 	public void replaceDataSetConfiguration(
 		final DataSetConfiguration originalDataSetConfiguration,
 		final DataSetConfiguration revisedDataSetConfiguration) {
@@ -167,6 +202,10 @@ public abstract class AbstractRIFWorkflow {
 		else {
 			return true;
 		}
+	}
+	
+	public void clearDataSetConfigurations() {	
+		dataSetConfigurations.clear();
 	}
 	
 	// ==========================================

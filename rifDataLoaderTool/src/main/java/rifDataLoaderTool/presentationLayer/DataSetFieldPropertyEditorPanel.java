@@ -83,7 +83,7 @@ public class DataSetFieldPropertyEditorPanel
 	
 	private UserInterfaceFactory userInterfaceFactory;
 	
-	private Color LOAD_COLOUR = new Color(220, 220, 220);
+	private Color EXTRACT_COLOUR = new Color(220, 220, 220);
 	private Color CLEAN_COLOUR = new Color(200, 200, 200);
 	private Color CONVERT_COLOUR = new Color(180, 180, 180);
 	private Color OPTIMISE_COLOUR = new Color(150, 150, 150);
@@ -162,16 +162,16 @@ public class DataSetFieldPropertyEditorPanel
 		fieldPanelGC.fill = GridBagConstraints.BOTH;
 		fieldPanelGC.weighty = 1;
 		fieldPanelGC.weightx = 0.3;		
-		String loadPhaseLabelText
-			= RIFDataLoaderToolMessages.getMessage("workflowState.load.phaseLabel");
-		String loadPhaseToolTip
-			= RIFDataLoaderToolMessages.getMessage("workflowState.load.phaseLabel.toolTip");
+		String extractPhaseLabelText
+			= RIFDataLoaderToolMessages.getMessage("workflowState.extract.phaseLabel");
+		String extractPhaseToolTip
+			= RIFDataLoaderToolMessages.getMessage("workflowState.extract.phaseLabel.toolTip");
 		WorkflowStateLabelPanel loadLabelPanel
 			= new WorkflowStateLabelPanel(
 				userInterfaceFactory,
-				loadPhaseLabelText,
-				loadPhaseToolTip,
-				LOAD_COLOUR);
+				extractPhaseLabelText,
+				extractPhaseToolTip,
+				EXTRACT_COLOUR);
 		fieldPanel.add(loadLabelPanel, fieldPanelGC);
 		fieldPanelGC.gridx++;
 		fieldPanelGC.fill = GridBagConstraints.BOTH;
@@ -272,7 +272,7 @@ public class DataSetFieldPropertyEditorPanel
 	
 	private JPanel createLoadAttributesPanel() {
 		JPanel panel = userInterfaceFactory.createPanel();
-		panel.setBackground(LOAD_COLOUR);
+		panel.setBackground(EXTRACT_COLOUR);
 		GridBagConstraints panelGC
 			= userInterfaceFactory.createGridBagConstraints();
 
@@ -319,7 +319,7 @@ public class DataSetFieldPropertyEditorPanel
 		panelGC.weightx = 1;
 		fieldPurposeComboBox
 			= userInterfaceFactory.createComboBox(FieldPurpose.getNames());
-		fieldPurposeComboBox.setBackground(LOAD_COLOUR);
+		fieldPurposeComboBox.setBackground(EXTRACT_COLOUR);
 		fieldPurposeComboBox.addActionListener(this);
 		panel.add(fieldPurposeComboBox, panelGC);
 
@@ -347,7 +347,7 @@ public class DataSetFieldPropertyEditorPanel
 		panelGC.weightx = 1;
 		fieldRequirementLevelComboBox
 			= userInterfaceFactory.createComboBox(FieldRequirementLevel.getNames());
-		fieldRequirementLevelComboBox.setBackground(LOAD_COLOUR);
+		fieldRequirementLevelComboBox.setBackground(EXTRACT_COLOUR);
 		fieldRequirementLevelComboBox.addActionListener(this);
 		panel.add(fieldRequirementLevelComboBox, panelGC);
 
@@ -629,17 +629,21 @@ public class DataSetFieldPropertyEditorPanel
 		return originalDataSetFieldConfiguration;
 	}
 	
-	
+	/*
 	public void setDataSetConfiguration(
 		final DataSetConfiguration originalDataSetConfiguration) {
 		
 		this.originalDataSetConfiguration = originalDataSetConfiguration;
 	}
+	*/
 	
 	public void setData(
-		final DataSetFieldConfiguration dataSetFieldConfiguration) {
+		final DataSetConfiguration originalDataSetConfiguration,
+		final DataSetFieldConfiguration originalDataSetFieldConfiguration) {
 				
-		this.originalDataSetFieldConfiguration = dataSetFieldConfiguration;
+		this.originalDataSetConfiguration = originalDataSetConfiguration;
+		this.originalDataSetFieldConfiguration = originalDataSetFieldConfiguration
+				;
 		workingCopyDataSetFieldConfiguration
 			= DataSetFieldConfiguration.createCopy(originalDataSetFieldConfiguration);
 
@@ -677,9 +681,6 @@ public class DataSetFieldPropertyEditorPanel
 			= workingCopyDataSetFieldConfiguration.getFieldChangeAuditLevel();
 		fieldChangeAuditLevelComboBox.setSelectedItem(currentFieldChangeAuditLevel.getName());
 
-		
-		
-		
 		convertComboBox.setSelectedItem(workingCopyDataSetFieldConfiguration.getConvertFieldName());
 		RIFConversionFunction rifConversionFunction
 			= workingCopyDataSetFieldConfiguration.getConvertFunction();
@@ -711,7 +712,6 @@ public class DataSetFieldPropertyEditorPanel
 	}
 	
 	public void updateUI() {
-		System.out.println("DSFPEP - updateUI");
 		
 		RIFSchemaArea rifSchemaArea
 			= originalDataSetConfiguration.getRIFSchemaArea();
@@ -743,7 +743,6 @@ public class DataSetFieldPropertyEditorPanel
 				= (DefaultComboBoxModel<String>) convertComboBox.getModel();
 			comboBoxModel.removeAllElements();
 			for (String convertFieldName : convertFieldNames) {
-				System.out.println("DSFEP convertFieldName=="+convertFieldName+"==");
 				comboBoxModel.addElement(convertFieldName);
 			}			
 			convertComboBox.setEditable(false);
@@ -840,19 +839,19 @@ public class DataSetFieldPropertyEditorPanel
 		
 	public void saveChanges() 
 		throws RIFServiceException {
-
-		
+	
 		populateWorkingCopyFromForm();
 		//Perform all the validation checks that do not require referencing
 		//other fields
+		
 		workingCopyDataSetFieldConfiguration.checkErrors();
-			
+
 		//Now perform validation checks in the context of the data set configuration
 		//as a whole.  We're looking for duplicate field names at stages of load, clean and convert
 		
 		originalDataSetConfiguration.checkDuplicateFieldNames(
 			workingCopyDataSetFieldConfiguration);
-			
+		
 		//Replace the parent data set's old copy of the field configuration
 		//with the one we have scraped from the data entry form	
 		DataSetFieldConfiguration.copyInto(

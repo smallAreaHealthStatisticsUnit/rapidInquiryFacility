@@ -1,7 +1,6 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
-
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
@@ -9,6 +8,7 @@ import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
@@ -104,9 +104,9 @@ public final class CheckWorkflowManager
 	public void checkConfiguration(
 		final Connection connection,
 		final Writer logFileWriter,
+		final String exportDirectoryPath,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
-
 		
 		String coreDataSetName 
 			= dataSetConfiguration.getName();
@@ -122,16 +122,29 @@ public final class CheckWorkflowManager
 		createCheckTable(
 			connection, 
 			logFileWriter,
+			exportDirectoryPath,
 			dataSetConfiguration);
 		
-		//createEmptyFieldCheckDataQualityTable(
-		//	connection,
-		//	dataSetConfiguration);
+		
+		createEmptyFieldCheckDataQualityTable(
+			connection,
+			logFileWriter,
+			exportDirectoryPath,
+			dataSetConfiguration);
 
+		
 		createEmptyPerYearFieldCheckDataQualityTable(
 			connection,
 			logFileWriter,
+			exportDirectoryPath,
 			dataSetConfiguration);
+		
+		exportTable(
+			connection, 
+			logFileWriter, 
+			exportDirectoryPath, 
+			RIFDataLoadingResultTheme.STAGES, 
+			checkTableName);
 		
 		updateLastCompletedWorkState(
 			connection,
@@ -145,6 +158,7 @@ public final class CheckWorkflowManager
 	private void createCheckTable(
 		final Connection connection,
 		final Writer logFileWriter,
+		final String exportDirectoryPath,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 				
@@ -271,6 +285,13 @@ public final class CheckWorkflowManager
 				dataSetConfiguration, 
 				RIFTemporaryTablePrefixes.CHECK);
 			
+			exportTable(
+				connection, 
+				logFileWriter, 
+				exportDirectoryPath, 
+				RIFDataLoadingResultTheme.STAGES, 
+				checkTableName);
+			
 		}
 		catch(SQLException sqlException) {
 			logSQLException(
@@ -354,6 +375,7 @@ public final class CheckWorkflowManager
 	private void createEmptyFieldCheckDataQualityTable(
 		final Connection connection,
 		final Writer logFileWriter,
+		final String exportDirectoryPath,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 
@@ -394,8 +416,6 @@ public final class CheckWorkflowManager
 			 *           check_my_data_set
 			 *        WHERE
 			 *           field2 IS NULL)
-			 * 
-			 * CREATE TABLE dq_my_data_set AS
 			 * SELECT
 			 *    data_set_id,
 			 *    (tmp_field1_empty.total_empty_rows / summary.total_rows) * 100 AS field1,
@@ -436,59 +456,141 @@ public final class CheckWorkflowManager
 			queryFormatter.addQueryPhrase(3, checkTableName);
 			queryFormatter.addQueryPhrase(")");
 		
+			RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
+			
 			//do for each field
 			ArrayList<DataSetFieldConfiguration> fieldsWithEmptyFieldCheck
 				= dataSetConfiguration.getFieldsWithEmptyFieldCheck();
 			for (DataSetFieldConfiguration fieldWithEmptyFieldCheck : fieldsWithEmptyFieldCheck) {
+				String convertFieldName
+					= fieldWithEmptyFieldCheck.getConvertFieldName();
+				
+				if (isFieldPartOfAgeSexGroup(
+						rifSchemaArea,
+						convertFieldName)  == false) {
+				
+					queryFormatter.addQueryPhrase(",");
+					queryFormatter.padAndFinishLine();
+
+					queryFormatter.addQueryPhrase(1, "tmp_");
+					queryFormatter.addQueryPhrase(convertFieldName);
+					queryFormatter.addQueryPhrase("_empty AS");
+					queryFormatter.padAndFinishLine();
+					queryFormatter.addPaddedQueryLine(2, "(SELECT");
+					queryFormatter.addPaddedQueryLine(3, "COUNT(data_set_id) AS total_empty_rows");
+					queryFormatter.addPaddedQueryLine(2, "FROM");
+					queryFormatter.addPaddedQueryLine(3, checkTableName);
+					queryFormatter.addPaddedQueryLine(2, "WHERE");
+					queryFormatter.addQueryPhrase(3, convertFieldName);
+					queryFormatter.addQueryPhrase(" IS NULL)");
+				}
+			}
+			
+
+			if ((rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) ||
+				(rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA)) {
+
+				//there will be a field called age_sex_group
 				queryFormatter.addQueryPhrase(",");
 				queryFormatter.padAndFinishLine();
 
-				String convertFieldName
-					= fieldWithEmptyFieldCheck.getConvertFieldName();
-				queryFormatter.addQueryPhrase(1, "tmp_");
-				queryFormatter.addQueryPhrase(convertFieldName);
-				queryFormatter.addQueryPhrase("_empty AS");
+				queryFormatter.addQueryPhrase(1, "tmp_age_sex_group_empty AS ");
 				queryFormatter.padAndFinishLine();
 				queryFormatter.addPaddedQueryLine(2, "(SELECT");
 				queryFormatter.addPaddedQueryLine(3, "COUNT(data_set_id) AS total_empty_rows");
 				queryFormatter.addPaddedQueryLine(2, "FROM");
 				queryFormatter.addPaddedQueryLine(3, checkTableName);
 				queryFormatter.addPaddedQueryLine(2, "WHERE");
-				queryFormatter.addQueryPhrase(3, convertFieldName);
-				queryFormatter.addQueryPhrase(" IS NULL)");
+				queryFormatter.addQueryPhrase(3, "age_sex_group = -1)");
 			}
+						
 			queryFormatter.finishLine();
 			queryFormatter.addPaddedQueryLine(1, "SELECT");
 			queryFormatter.addQueryPhrase(2, "id AS data_set_id");
 		
 			for (DataSetFieldConfiguration fieldWithEmptyFieldCheck : fieldsWithEmptyFieldCheck) {
-				queryFormatter.addQueryPhrase(",");
-				queryFormatter.finishLine();
-		
 				String convertFieldName
 					= fieldWithEmptyFieldCheck.getConvertFieldName();
-		
-				queryFormatter.addQueryPhrase(2, "(tmp_");
-				queryFormatter.addQueryPhrase(convertFieldName);
-				queryFormatter.addQueryPhrase("_empty.total_empty_rows / summary.total_rows) ");
-				queryFormatter.addQueryPhrase("* 100 AS ");
-				queryFormatter.addQueryPhrase(convertFieldName);
+
+				
+				if (isFieldPartOfAgeSexGroup(
+					rifSchemaArea,
+					convertFieldName)  == false) {
+				
+					queryFormatter.addQueryPhrase(",");
+					queryFormatter.finishLine();
+
+					queryFormatter.addQueryPhrase(2, "tmp_");
+					queryFormatter.addQueryPhrase(convertFieldName);
+					queryFormatter.addQueryPhrase("_empty.total_empty_rows AS ");
+					queryFormatter.addQueryPhrase(convertFieldName);
+					queryFormatter.addQueryPhrase("_total,");
+					queryFormatter.finishLine();				
+					queryFormatter.addQueryPhrase(2, "(tmp_");
+					queryFormatter.addQueryPhrase(convertFieldName);
+					queryFormatter.addQueryPhrase("_empty.total_empty_rows::double precision / summary.total_rows :: double precision) ");
+					queryFormatter.addQueryPhrase("* 100 AS ");
+					queryFormatter.addQueryPhrase(convertFieldName);
+					queryFormatter.addQueryPhrase("_percent");			
+				}
 			}
+
+			if ((rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) ||
+				(rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA)) {
+
+				//there will be a field called age_sex_group
+				queryFormatter.addQueryPhrase(",");
+				queryFormatter.finishLine();
+
+				queryFormatter.addQueryPhrase(2, "tmp_age_sex_group_empty.total_empty_rows AS ");
+				queryFormatter.addQueryPhrase("age_sex_group_total,");
+				queryFormatter.finishLine();				
+				queryFormatter.addQueryPhrase(2, "(tmp_age_sex_group_empty.total_empty_rows::double precision ");
+				queryFormatter.addQueryPhrase("/ summary.total_rows :: double precision) ");
+				queryFormatter.addQueryPhrase("* 100 AS ");
+				queryFormatter.addQueryPhrase("age_sex_group_total_percent");
+			}
+			
+			queryFormatter.addQueryPhrase(",");
 			queryFormatter.finishLine();
+
+			queryFormatter.addQueryPhrase(2, "summary.total_rows AS total_rows");
+			queryFormatter.finishLine();
+
 			queryFormatter.addPaddedQueryLine(1, "FROM");
 			queryFormatter.addQueryLine(2, "identifiers,");
 			queryFormatter.addQueryPhrase(2, "summary");
 			for (DataSetFieldConfiguration fieldWithEmptyFieldCheck : fieldsWithEmptyFieldCheck) {
-				queryFormatter.addQueryPhrase(",");
-				queryFormatter.finishLine();
-
 				String convertFieldName
 					= fieldWithEmptyFieldCheck.getConvertFieldName();
-				queryFormatter.addQueryPhrase(2, "tmp_");
-				queryFormatter.addQueryPhrase(convertFieldName);
-				queryFormatter.addQueryPhrase("_empty");
+				
+				if (isFieldPartOfAgeSexGroup(
+					rifSchemaArea,
+					convertFieldName)  == false) {
+				
+					queryFormatter.addQueryPhrase(",");
+					queryFormatter.finishLine();
+
+					queryFormatter.addQueryPhrase(2, "tmp_");
+					queryFormatter.addQueryPhrase(convertFieldName);
+					queryFormatter.addQueryPhrase("_empty");
+				
+				}
 			}
-		
+
+
+			if ((rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) ||
+				(rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA)) {
+
+				queryFormatter.addQueryPhrase(",");
+				queryFormatter.finishLine();
+				queryFormatter.addQueryPhrase(2, "tmp_age_sex_group_empty");
+			}
+			
+			System.out.println("=================CheckWorkflowManager ==check empty fields===");
+			System.out.println(queryFormatter.generateQuery());
+			System.out.println("=================CheckWorkflowManager ==check empty fields===");
+			
 			logSQLQuery(
 				logFileWriter,
 				"createEmptyFieldCheckDataQualityTable", 
@@ -502,9 +604,17 @@ public final class CheckWorkflowManager
 				connection,
 				logFileWriter,
 				emptyFieldsDataQualityTableName,
-				"data_set_id, row_number");
+				"data_set_id");
 
+			exportTable(
+				connection, 
+				logFileWriter, 
+				exportDirectoryPath, 
+				RIFDataLoadingResultTheme.AUDIT_TRAIL,
+				emptyFieldsDataQualityTableName);
 			
+			System.out.println("=================CheckWorkflowManager ==check empty fields FINISHED===");
+
 		}
 		catch(SQLException sqlException) {
 			logSQLException(
@@ -526,10 +636,31 @@ public final class CheckWorkflowManager
 
 	}
 
-
+	
+	private boolean isFieldPartOfAgeSexGroup(
+		final RIFSchemaArea rifSchemaArea,
+		final String convertFieldName) {
+		
+		if ((rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) ||
+			(rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA)) {
+			
+			Collator collator = RIFDataLoaderToolMessages.getCollator();
+			
+			if (collator.equals(convertFieldName, "age") ||
+				collator.equals(convertFieldName, "sex") ||
+				collator.equals(convertFieldName, "age_sex_group")) {
+				return true;
+			}
+		}
+		
+		return false;		
+	}
+	
+	
 	private void createEmptyPerYearFieldCheckDataQualityTable(
 		final Connection connection,
 		final Writer logFileWriter,
+		final String exportDirectoryPath,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 
@@ -630,19 +761,49 @@ public final class CheckWorkflowManager
 			queryFormatter.finishLine();
 			queryFormatter.addPaddedQueryLine(2, "GROUP BY");
 			queryFormatter.addQueryPhrase(3, "year)");
-		
+
+			RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
+			
 			//do for each field
 			ArrayList<DataSetFieldConfiguration> fieldsWithEmptyPerYearFieldCheck
 				= dataSetConfiguration.getFieldsWithEmptyFieldCheck();
 			for (DataSetFieldConfiguration fieldWithEmptyPerYearFieldCheck : fieldsWithEmptyPerYearFieldCheck) {
+				String convertFieldName
+					= fieldWithEmptyPerYearFieldCheck.getConvertFieldName();
+
+				if ((isFieldPartOfAgeSexGroup(
+						rifSchemaArea,
+						convertFieldName)  == false) &&
+					(isYearField(convertFieldName) == false)) {
+
+					queryFormatter.addQueryPhrase(",");
+					queryFormatter.padAndFinishLine();
+
+					queryFormatter.addQueryPhrase(1, "tmp_");
+					queryFormatter.addQueryPhrase(convertFieldName);
+					queryFormatter.addQueryPhrase("_empty_yr AS");
+					queryFormatter.padAndFinishLine();
+					queryFormatter.addPaddedQueryLine(2, "(SELECT");
+					queryFormatter.addPaddedQueryLine(3, "year,");
+					queryFormatter.addPaddedQueryLine(3, "COUNT(data_set_id) AS total_empty_rows");
+					queryFormatter.addPaddedQueryLine(2, "FROM");
+					queryFormatter.addPaddedQueryLine(3, checkTableName);
+					queryFormatter.addPaddedQueryLine(2, "WHERE");
+					queryFormatter.addQueryPhrase(3, convertFieldName);
+					queryFormatter.addQueryPhrase(" IS NULL");
+					queryFormatter.finishLine();
+					queryFormatter.addPaddedQueryLine(2, "GROUP BY");
+					queryFormatter.addQueryPhrase(3, "year)");
+				}
+			}
+			
+			if ((rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) ||
+				(rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA)) {
+
 				queryFormatter.addQueryPhrase(",");
 				queryFormatter.padAndFinishLine();
 
-				String convertFieldName
-					= fieldWithEmptyPerYearFieldCheck.getConvertFieldName();
-				queryFormatter.addQueryPhrase(1, "tmp_");
-				queryFormatter.addQueryPhrase(convertFieldName);
-				queryFormatter.addQueryPhrase("_empty_yr AS");
+				queryFormatter.addQueryPhrase(1, "tmp_age_sex_group_empty_yr AS ");
 				queryFormatter.padAndFinishLine();
 				queryFormatter.addPaddedQueryLine(2, "(SELECT");
 				queryFormatter.addPaddedQueryLine(3, "year,");
@@ -650,95 +811,113 @@ public final class CheckWorkflowManager
 				queryFormatter.addPaddedQueryLine(2, "FROM");
 				queryFormatter.addPaddedQueryLine(3, checkTableName);
 				queryFormatter.addPaddedQueryLine(2, "WHERE");
-				queryFormatter.addQueryPhrase(3, convertFieldName);
-				queryFormatter.addQueryPhrase(" IS NULL");
+				queryFormatter.addQueryPhrase(3, "age_sex_group = -1");
 				queryFormatter.finishLine();
 				queryFormatter.addPaddedQueryLine(2, "GROUP BY");
 				queryFormatter.addQueryPhrase(3, "year)");
 			}
+			
 			queryFormatter.finishLine();
 			queryFormatter.addPaddedQueryLine(1, "SELECT");
 			queryFormatter.addQueryLine(2, "id AS data_set_id,");
 			queryFormatter.addQueryPhrase(2, "summary.year");		
 			for (DataSetFieldConfiguration fieldWithEmptyPerYearFieldCheck : fieldsWithEmptyPerYearFieldCheck) {
-				queryFormatter.addQueryPhrase(",");
-				queryFormatter.finishLine();
-		
-				String convertFieldName
-					= fieldWithEmptyPerYearFieldCheck.getConvertFieldName();
-		
-				queryFormatter.addQueryPhrase(2, "(COALESCE(tmp_");
-				queryFormatter.addQueryPhrase(convertFieldName);
-				queryFormatter.addQueryPhrase("_empty_yr.total_empty_rows, 0) / summary.total_rows) ");
-				queryFormatter.addQueryPhrase("* 100 AS ");
-				queryFormatter.addQueryPhrase(convertFieldName);
-			}
-			queryFormatter.finishLine();
-			queryFormatter.addPaddedQueryLine(1, "FROM");
-			queryFormatter.addQueryLine(2, "identifiers,");
-			queryFormatter.addQueryPhrase(2, "summary");
-			
-			for (int i = 0; i < fieldsWithEmptyPerYearFieldCheck.size(); i++) {
-				DataSetFieldConfiguration fieldWithEmptyPerYearFieldCheck
-					= fieldsWithEmptyPerYearFieldCheck.get(i);
 				
-				//if (i != 0) {
-				//	queryFormatter.addQueryPhrase(",");					
-				//}
-				queryFormatter.finishLine();
-
 				String convertFieldName
 					= fieldWithEmptyPerYearFieldCheck.getConvertFieldName();
-				queryFormatter.addQueryPhrase(3, "LEFT JOIN tmp_");
-				queryFormatter.addQueryPhrase(convertFieldName);
-				queryFormatter.addQueryPhrase("_empty_yr ON ");
-				queryFormatter.addQueryPhrase("summary.year=tmp_");
-				queryFormatter.addQueryPhrase(convertFieldName);
-				queryFormatter.addQueryPhrase("_empty_yr.year");
-			}
 
-			queryFormatter.finishLine();
-			queryFormatter.addPaddedQueryLine(1, "ORDER BY");
-			queryFormatter.addPaddedQueryLine(2, "summary.year");
+				if ((isFieldPartOfAgeSexGroup(
+						rifSchemaArea,
+						convertFieldName)  == false) &&
+					(isYearField(convertFieldName) == false)) {
+								
+					queryFormatter.addQueryPhrase(",");
+					queryFormatter.finishLine();		
+					queryFormatter.addQueryPhrase(2, "COALESCE(tmp_");
+					queryFormatter.addQueryPhrase(convertFieldName);
+					queryFormatter.addQueryPhrase("_empty_yr.total_empty_rows, 0) AS ");
+					queryFormatter.addQueryPhrase(convertFieldName);
+					queryFormatter.addQueryPhrase("_total,");
+					queryFormatter.finishLine();
+				
+					queryFormatter.addQueryPhrase(2, "(COALESCE(tmp_");
+					queryFormatter.addQueryPhrase(convertFieldName);
+					queryFormatter.addQueryPhrase("_empty_yr.total_empty_rows, 0)::double precision / summary.total_rows::double precision) ");
+					queryFormatter.addQueryPhrase("* 100 AS ");
+					queryFormatter.addQueryPhrase(convertFieldName);
+					queryFormatter.addQueryPhrase("_percent");
+
+				}
+			}
 			
-/*			
+
+			if ((rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) ||
+				(rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA)) {
+
+				queryFormatter.addQueryPhrase(",");
+				queryFormatter.finishLine();		
+				queryFormatter.addQueryPhrase(2, "COALESCE(tmp_age_sex_group_empty_yr.");
+				queryFormatter.addQueryPhrase("total_empty_rows, 0) AS ");
+				queryFormatter.addQueryPhrase("age_sex_group_total,");
+				queryFormatter.finishLine();			
+				queryFormatter.addQueryPhrase(2, "(COALESCE(tmp_age_sex_group_empty_yr.");
+				queryFormatter.addQueryPhrase("total_empty_rows, 0)::double precision / summary.total_rows::double precision) ");
+				queryFormatter.addQueryPhrase("* 100 AS ");
+				queryFormatter.addQueryPhrase("age_sex_group_percent");
+			}
+			
+			queryFormatter.addQueryPhrase(",");
 			queryFormatter.finishLine();
+			
+			queryFormatter.addQueryPhrase(2, "COALESCE(summary.total_rows, 0) AS total_rows");
+			queryFormatter.padAndFinishLine();
+			
 			queryFormatter.addPaddedQueryLine(1, "FROM");
 			queryFormatter.addQueryLine(2, "identifiers,");
 			queryFormatter.addQueryPhrase(2, "summary");
-			for (DataSetFieldConfiguration fieldWithEmptyPerYearFieldCheck : fieldsWithEmptyPerYearFieldCheck) {
-				queryFormatter.addQueryPhrase(",");
-				queryFormatter.finishLine();
-
-				String convertFieldName
-					= fieldWithEmptyPerYearFieldCheck.getConvertFieldName();
-				queryFormatter.addQueryPhrase(2, "tmp_");
-				queryFormatter.addQueryPhrase(convertFieldName);
-				queryFormatter.addQueryPhrase("_empty_yr");
-			}
-			queryFormatter.finishLine();
-			queryFormatter.addPaddedQueryLine(1, "WHERE");
 			
 			for (int i = 0; i < fieldsWithEmptyPerYearFieldCheck.size(); i++) {
-				if (i != 0) {
-					queryFormatter.addQueryPhrase(" AND");
-					queryFormatter.padAndFinishLine();
-				}
-
 				DataSetFieldConfiguration fieldWithEmptyPerYearFieldCheck
 					= fieldsWithEmptyPerYearFieldCheck.get(i);
+
 				String convertFieldName
 					= fieldWithEmptyPerYearFieldCheck.getConvertFieldName();
-				queryFormatter.addQueryPhrase(2, "summary.year=");
-				queryFormatter.addQueryPhrase("tmp_");
-				queryFormatter.addQueryPhrase(convertFieldName);
-				queryFormatter.addQueryPhrase("_empty_yr.year");				
+
+				if ((isFieldPartOfAgeSexGroup(
+						rifSchemaArea,
+						convertFieldName)  == false) &&
+					(isYearField(convertFieldName) == false)) {
+					
+					queryFormatter.finishLine();
+
+					queryFormatter.addQueryPhrase(3, "LEFT JOIN tmp_");
+					queryFormatter.addQueryPhrase(convertFieldName);
+					queryFormatter.addQueryPhrase("_empty_yr ON ");
+					queryFormatter.addQueryPhrase("summary.year=tmp_");
+					queryFormatter.addQueryPhrase(convertFieldName);
+					queryFormatter.addQueryPhrase("_empty_yr.year");
+				}
 			}
-			queryFormatter.finishLine();
+
+			if ((rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) ||
+				(rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA)) {
+
+				queryFormatter.finishLine();
+
+				queryFormatter.addQueryPhrase(3, "LEFT JOIN tmp_age_sex_group_empty_yr ON ");
+				queryFormatter.addQueryPhrase("summary.year=");
+				queryFormatter.addQueryPhrase("tmp_age_sex_group_empty_yr.year");
+			}
 			
+			queryFormatter.finishLine();
 			queryFormatter.addPaddedQueryLine(1, "ORDER BY");
 			queryFormatter.addPaddedQueryLine(2, "summary.year");
-*/			
+
+			
+			System.out.println("=================CheckWorkflowManager 2=======================");
+			System.out.println(queryFormatter.generateQuery());
+			System.out.println("=================CheckWorkflowManager 2=======================");
+
 			logSQLQuery(
 				logFileWriter,
 				"createEmptyFieldCheckDataQualityTable", 
@@ -754,6 +933,14 @@ public final class CheckWorkflowManager
 				emptyPerYearFieldsDataQualityTableName,
 				"data_set_id, year");
 
+
+			exportTable(
+				connection, 
+				logFileWriter, 
+				exportDirectoryPath, 
+				RIFDataLoadingResultTheme.AUDIT_TRAIL,
+				emptyPerYearFieldsDataQualityTableName);
+			
 		}
 		catch(SQLException sqlException) {
 			logSQLException(
@@ -772,6 +959,19 @@ public final class CheckWorkflowManager
 		finally {
 			SQLQueryUtility.close(statement);
 		}
+	}
+
+	private boolean isYearField(
+		final String convertFieldName) {
+		
+		Collator collator
+			= RIFDataLoaderToolMessages.getCollator();
+		if (collator.equals(convertFieldName, "year")) {
+			return true;
+		}
+		
+		return false;
+		
 	}
 	
 	private boolean excludeFieldFromChecks(

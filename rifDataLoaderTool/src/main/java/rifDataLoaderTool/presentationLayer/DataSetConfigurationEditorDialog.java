@@ -482,8 +482,11 @@ public class DataSetConfigurationEditorDialog
 			DataSetFieldConfiguration selectedDataSetFieldConfiguration
 				= (DataSetFieldConfiguration) dataSetFieldListPanel.getSelectedItem();
 			
-			dataSetFieldPropertyEditorPanel.setDataSetConfiguration(workingCopyDataSetConfiguration);
+			dataSetFieldPropertyEditorPanel.setData(
+				workingCopyDataSetConfiguration,
+				selectedDataSetFieldConfiguration);
 		}
+
 		
 		dataSetFieldListPanel.addListSelectionListener(this);
 	}
@@ -497,7 +500,15 @@ public class DataSetConfigurationEditorDialog
 		workingCopyDataSetConfiguration.setFilePath(filePathTextField.getText().trim());
 		
 		//the fields are already accounted for 
-
+		workingCopyDataSetConfiguration.clearFieldConfigurations();
+		
+		ArrayList<DisplayableListItemInterface> currentFields
+			= dataSetFieldListPanel.getListItems();
+		for (DisplayableListItemInterface currentField : currentFields) {
+			workingCopyDataSetConfiguration.addFieldConfiguration((DataSetFieldConfiguration) currentField);
+		}
+		
+		
 	}
 	
 	
@@ -508,14 +519,22 @@ public class DataSetConfigurationEditorDialog
 	
 	private void saveChanges() {
 		try {
+			//first, commit changes to whatever current field is being displayed
+			dataSetFieldPropertyEditorPanel.saveChanges();
+			
+			DataSetFieldConfiguration dataSetFieldConfiguration
+				= workingCopyDataSetConfiguration.getFieldHavingConvertFieldName("score");
 			populateWorkingCopyFromForm();
 			//check all errors that are independent of any other 
 			workingCopyDataSetConfiguration.checkErrors();			
-
+			
 			DataSetConfiguration.copyInto(
 				workingCopyDataSetConfiguration, 
 				originalDataSetConfiguration);
-					
+
+			DataSetFieldConfiguration dataSetFieldConfiguration2
+				= originalDataSetConfiguration.getFieldHavingConvertFieldName("score");
+						
 			isCancelled = false;
 			dialog.setVisible(false);		
 		}
@@ -604,7 +623,10 @@ public class DataSetConfigurationEditorDialog
 	}
 	
 	private void deleteDataSetFieldConfiguration() {
+		dataSetFieldListPanel.removeListSelectionListener(this);
 		dataSetFieldListPanel.deleteSelectedListItems();
+		dataSetFieldListPanel.addListSelectionListener(this);
+		dataSetFieldListPanel.selectFirstItem();
 		updateButtonStates();
 	}
 
@@ -678,6 +700,9 @@ public class DataSetConfigurationEditorDialog
 	public void valueChanged(ListSelectionEvent event) {
 		//validate the currently displayed field
 		try {
+			DataSetFieldConfiguration selectedFieldConfiguration
+				= (DataSetFieldConfiguration) dataSetFieldListPanel.getSelectedItem();
+
 			dataSetFieldPropertyEditorPanel.saveChanges();
 
 			DataSetFieldConfiguration originalDataSetFieldConfiguration
@@ -685,15 +710,14 @@ public class DataSetConfigurationEditorDialog
 			
 			//Save changes happened and did not throw any exceptions
 			//It is safe to change the currently displayed field
-			DataSetFieldConfiguration selectedFieldConfiguration
-				= (DataSetFieldConfiguration) dataSetFieldListPanel.getSelectedItem();
 			if (selectedFieldConfiguration == null) {
 				//a list item may have been added or deleted
 				dataSetFieldListPanel.selectFirstItem();
 			}
 			
 			dataSetFieldPropertyEditorPanel.setData(
-				selectedFieldConfiguration);
+					workingCopyDataSetConfiguration,
+					selectedFieldConfiguration);
 			
 			JScrollBar verticalScrollBar
 				= currentFieldScrollPane.getVerticalScrollBar();

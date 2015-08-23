@@ -88,7 +88,7 @@ public class SampleDataGenerator {
 		 */
 		LinearWorkflow numeratorWorkflow = LinearWorkflow.newInstance();
 
-		numeratorWorkflow.setStartWorkflowState(WorkflowState.LOAD);
+		numeratorWorkflow.setStartWorkflowState(WorkflowState.EXTRACT);
 		numeratorWorkflow.setStopWorkflowState(WorkflowState.CONVERT);
 		
 		//This configuration describes the CSV file we want to load.
@@ -373,7 +373,7 @@ public class SampleDataGenerator {
 		//OPTIMISE --> PUBLISH so that we can use converted tables as part
 		//of a BranchedWorkflow - one that uses split and combine operations.
 		//For this example though, we use LOAD --> PUBLISH 
-		covariateWorkflow.setStartWorkflowState(WorkflowState.LOAD);
+		covariateWorkflow.setStartWorkflowState(WorkflowState.EXTRACT);
 		covariateWorkflow.setStopWorkflowState(WorkflowState.PUBLISH);
 		
 		
@@ -766,7 +766,7 @@ public class SampleDataGenerator {
 		
 		LinearWorkflow minimalLinearWorkflow
 			= LinearWorkflow.newInstance();
-		minimalLinearWorkflow.setStartWorkflowState(WorkflowState.LOAD);
+		minimalLinearWorkflow.setStartWorkflowState(WorkflowState.EXTRACT);
 		minimalLinearWorkflow.setStopWorkflowState(WorkflowState.PUBLISH);
 		
 		DataSetConfiguration minimalDataSetConfiguration
@@ -792,7 +792,8 @@ public class SampleDataGenerator {
 			= DataSetConfiguration.newInstance();
 		dataSetConfiguration.setRIFSchemaArea(RIFSchemaArea.HEALTH_NUMERATOR_DATA);
 		dataSetConfiguration.setName("test_cleaning1");
-		dataSetConfiguration.setFilePath("C://rif_scripts//test_data//test_cleaning1_2015.csv");
+		//dataSetConfiguration.setFilePath("C://rif_scripts//test_data//test_cleaning1_2015.csv");
+		dataSetConfiguration.setFilePath("C://rif_loader_demo//num_cleaning1_2015.csv");
 		
 		RIFDataTypeFactory rifDataTypeFactory
 			= RIFDataTypeFactory.newInstance();

@@ -94,6 +94,7 @@ public final class CombineWorkflowManager
 	public void combineConfiguration(
 		final Connection connection,
 		final Writer logFileWriter,
+		final String exportDirectoryPath,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 	

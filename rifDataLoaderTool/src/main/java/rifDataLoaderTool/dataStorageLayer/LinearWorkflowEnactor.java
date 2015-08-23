@@ -6,6 +6,7 @@ import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaAreaPropertyManager;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.WorkflowValidator;
+import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFGenericLibraryError;
@@ -78,6 +79,7 @@ public class LinearWorkflowEnactor {
 	
 	private File logFile;
 	private File reportFile;
+	private File linearWorkflowFile;
 	private BufferedWriter logWriter;
 	private BufferedWriter reportWriter;
 	private RIFSchemaAreaPropertyManager schemaAreaPropertyManager;
@@ -116,16 +118,19 @@ public class LinearWorkflowEnactor {
 		runWorkflow(
 			null, 
 			null, 
+			null,
 			linearWorkflow);
 	}
 	
 	public void runWorkflow(
 		final File logOutputFile,
 		final File reportFile,
+		final File linearWorkflowFile,
 		final LinearWorkflow linearWorkflow) 
 		throws RIFServiceException {
 
 		setLogFiles(logOutputFile, reportFile);
+		this.linearWorkflowFile = linearWorkflowFile;
 		
 		ArrayList<DataSetConfiguration> dataSetConfigurations
 			= linearWorkflow.getDataSetConfigurations();		
@@ -134,25 +139,17 @@ public class LinearWorkflowEnactor {
 
 		//run the workflow from start to finish for each of the
 		//data set configurations
-		try {			
-			for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
-				processDataSetConfiguration(
-					dataSetConfiguration,
-					linearWorkflow);
+		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
+			processDataSetConfiguration(
+				dataSetConfiguration,
+				linearWorkflow);
 	
-				String finishedProcessingDataSetMessage
-					= RIFDataLoaderToolMessages.getMessage(
-						"workflowEnactor.finishedProcessingDataSet",
-						dataSetConfiguration.getDisplayName());
-				logMessage(finishedProcessingDataSetMessage);
-
-			}
-
+			String finishedProcessingDataSetMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"workflowEnactor.finishedProcessingDataSet",
+					dataSetConfiguration.getDisplayName());
+			logMessage(finishedProcessingDataSetMessage);
 		}
-		catch(RIFServiceException rifServiceException) {
-			logException(rifServiceException);
-		}			
-
 	}
 	
 	public void setLogFiles(
@@ -187,9 +184,10 @@ public class LinearWorkflowEnactor {
 		throws RIFServiceException {
 
 		linearWorkflow.resetWorkflow();
-				
+		
 		while (linearWorkflow.next()) {			
 			processWorkflowStep(
+				linearWorkflow,
 				dataSetConfiguration,
 				linearWorkflow.getCurrentWorkflowState());
 		}
@@ -197,15 +195,33 @@ public class LinearWorkflowEnactor {
 	}
 	
 	private void processWorkflowStep(
+		final LinearWorkflow linearWorkflow,
 		final DataSetConfiguration dataSetConfiguration,
 		final WorkflowState currentWorkflowState) 
 		throws RIFServiceException {
 		
-		if (currentWorkflowState == WorkflowState.LOAD) {
-			dataLoaderService.loadConfiguration(
+		System.out.println("LinearWorkflowEnactor processing step=="+currentWorkflowState.getStateName()+"==");
+		if (currentWorkflowState == WorkflowState.EXTRACT) {
+			
+			dataLoaderService.setupConfiguration(
+				rifManager, 
+				logWriter, 
+				dataSetConfiguration);
+			
+			dataLoaderService.addFileToDataSetResults(
+				rifManager,
+				logWriter,
+				linearWorkflowFile,
+				RIFDataLoadingResultTheme.AUDIT_TRAIL,
+				dataSetConfiguration);
+			
+			dataLoaderService.extractConfiguration(
 				rifManager, 
 				logWriter,
 				dataSetConfiguration);
+			
+			System.out.println("processWorkflowStep 3");
+			
 		}
 		else if (currentWorkflowState == WorkflowState.CLEAN) { 
 			dataLoaderService.cleanConfiguration(
@@ -237,7 +253,7 @@ public class LinearWorkflowEnactor {
 				logWriter,
 				dataSetConfiguration);			
 		}
-		
+
 	}
 	
 	private void logException(
@@ -251,12 +267,13 @@ public class LinearWorkflowEnactor {
 		
 		try {
 			logWriter.write(logMessage);
-			logWriter.newLine();			
+			logWriter.newLine();
+			logWriter.flush();
 		}
 		catch(IOException ioException) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
-					"general.io.unableToWritToFile",
+					"general.io.unableToWriteToFile",
 					logFile.getName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(

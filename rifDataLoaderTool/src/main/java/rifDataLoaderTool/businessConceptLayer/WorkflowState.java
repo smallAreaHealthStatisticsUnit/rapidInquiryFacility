@@ -76,12 +76,12 @@ public enum WorkflowState {
 		"workflowState.start.label",
 		"workflowState.start.statusMessage",		
 		null),
-	LOAD(
+	EXTRACT(
 		2, 
-		"load",
-		"workflowState.load.label",
-		"workflowState.load.statusMessage",
-		"ld_"),
+		"extract",
+		"workflowState.extract.label",
+		"workflowState.extract.statusMessage",
+		"ex_"),
 	CLEAN(
 		3, 
 		"clean",
@@ -201,7 +201,7 @@ public enum WorkflowState {
 	public static String[] getAllStateNames() {
 		ArrayList<String> stateNames = new ArrayList<String>();
 		stateNames.add(START.getStateName());		
-		stateNames.add(LOAD.getStateName());
+		stateNames.add(EXTRACT.getStateName());
 		stateNames.add(CLEAN.getStateName());
 		stateNames.add(CONVERT.getStateName());
 		stateNames.add(OPTIMISE.getStateName());
@@ -221,8 +221,8 @@ public enum WorkflowState {
 		if (collator.equals(code, START.getCode())) {
 			return START;
 		}
-		else if (collator.equals(code, LOAD.getCode())) {
-			return LOAD;
+		else if (collator.equals(code, EXTRACT.getCode())) {
+			return EXTRACT;
 		}
 		else if (collator.equals(code, CLEAN.getCode())) {
 			return CLEAN;
@@ -262,8 +262,8 @@ public enum WorkflowState {
 		if (collator.equals(name, START.getStateName())) {
 			return START;
 		}
-		else if (collator.equals(name, LOAD.getStateName())) {
-			return LOAD;
+		else if (collator.equals(name, EXTRACT.getStateName())) {
+			return EXTRACT;
 		}
 		else if (collator.equals(name, CLEAN.getStateName())) {
 			return CLEAN;

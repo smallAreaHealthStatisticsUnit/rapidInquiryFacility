@@ -261,8 +261,8 @@ public final class SQLCreateTableQueryFormatter
 			}
 			addQueryPhrase(1, fieldDeclarations.get(i));			
 		}
-		addQueryPhrase(");");
-
+		addQueryPhrase(")");
+		
 		return super.generateQuery();		
 	}
 	

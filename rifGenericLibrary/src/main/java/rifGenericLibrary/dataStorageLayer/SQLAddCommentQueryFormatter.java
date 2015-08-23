@@ -1,27 +1,10 @@
-package rifDataLoaderTool.dataStorageLayer;
-
-import rifDataLoaderTool.businessConceptLayer.*;
-
-
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.system.RIFServiceException;
-
-import java.sql.*;
-import java.io.*;
+package rifGenericLibrary.dataStorageLayer;
 
 /**
  *
- * Manages all database operations used to convert a cleaned table into tabular data
- * expected by some part of the RIF (eg: numerator data, health codes, geospatial data etc)
- * 
+ *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -67,8 +50,7 @@ import java.io.*;
  *
  */
 
-public final class SplitWorkflowManager 
-	extends AbstractDataLoaderStepManager {
+public class SQLAddCommentQueryFormatter extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -76,34 +58,51 @@ public final class SplitWorkflowManager
 
 	// ==========================================
 	// Section Properties
-	// ==========================================	
-
+	// ==========================================
+	private String tableName;
+	private String fieldName;
+	private String comment;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public SplitWorkflowManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
-
-		super(rifDatabaseProperties);
-
+	public SQLAddCommentQueryFormatter() {
+		comment = "";		
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void splitConfiguration(
-		final Connection connection,
-		final Writer logFileWriter,
-		final String exportDirectoryPath,
-		final DataSetConfiguration dataSetConfiguration)
-		throws RIFServiceException {
+	public void setTableName(final String tableName) {
+		this.tableName = tableName;
+	}
 	
-		//validate parameters
-		dataSetConfiguration.checkErrors();
-			
-		//@TODO
+	public void setTableFieldName(final String fieldName) {
+		this.fieldName = fieldName;
+	}
+	
+	public void setComment(final String comment) {
+		this.comment = comment;
+	}
+	
+	public String generateQuery() {
+		
+		addQueryPhrase(0, "COMMENT ON TABLE ");
+		addQueryPhrase(tableName);
+		
+		if (fieldName != null) {
+			addQueryPhrase(".");
+			addQueryPhrase(fieldName);
+		}
+		
+		addQueryPhrase(" IS ");
+		addQueryPhrase("'");
+		addQueryPhrase(comment);
+		addQueryPhrase("'");		
+				
+		return super.generateQuery();
 	}
 	
 	
@@ -118,7 +117,4 @@ public final class SplitWorkflowManager
 	// ==========================================
 	// Section Override
 	// ==========================================
-
 }
-
-

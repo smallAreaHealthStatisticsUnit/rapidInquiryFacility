@@ -1,19 +1,25 @@
-package rifDataLoaderTool.fileFormats;
+package rifGenericLibrary.dataStorageLayer;
 
-import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import java.util.ArrayList;
 
-import rifGenericLibrary.presentationLayer.HTMLUtility;
-
-import java.io.ByteArrayOutputStream;
 
 /**
  *
  *
  * <hr>
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * <p>
  * Copyright 2014 Imperial College London, developed by the Small Area
- * Health Statistics Unit. 
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ * </p>
  *
  * <pre> 
  * This file is part of the Rapid Inquiry Facility (RIF) project.
@@ -21,19 +27,22 @@ import java.io.ByteArrayOutputStream;
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
-
+ *
  * RIF is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with RIF.  If not, see <http://www.gnu.org/licenses/>.
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
  * </pre>
  *
  * <hr>
  * Kevin Garwood
  * @author kgarwood
+ * @version
  */
 
 /*
@@ -58,7 +67,8 @@ import java.io.ByteArrayOutputStream;
  *
  */
 
-public final class LoadFieldVarianceReport {
+public final class SQLImportTableFromCSVQueryFormatter 
+	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -67,79 +77,71 @@ public final class LoadFieldVarianceReport {
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	/** The into table. */
+	private String tableToImport;
+	
+	private String importFileName;
+	
+	private String delimiters;
+	
 
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public LoadFieldVarianceReport() {
-
+	/**
+	 * Instantiates a new SQL insert query formatter.
+	 */
+	public SQLImportTableFromCSVQueryFormatter() {
+		tableToImport = "";
+		importFileName = "";
+		delimiters = ",";
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	/*
-	 * Field variance reports should only be used during the cleaning step.
-	 * In this case, we want to examine the variance
+	/**
+	 * Sets the into table.
+	 *
+	 * @param intoTable the new into table
 	 */
-	public String getHTML(
-		final DataSetFieldConfiguration dataSetFieldConfiguration,
-		final String[][] varianceData) {
+	public void setTableToImport(
+		final String tableToImport) {
 		
-		HTMLUtility htmlUtility = new HTMLUtility();
-    	ByteArrayOutputStream outputStream
-    		= new ByteArrayOutputStream();	
-    	htmlUtility.initialise(outputStream, "UTF-8");
+		this.tableToImport = tableToImport;
+	}
+	
+	/**
+	 * Adds the insert field.
+	 *
+	 * @param insertField the insert field
+	 */
+	public void setDelimiters(
+		final String delimiters) {
 		
-		
-		htmlUtility.beginDocument();
-		htmlUtility.beginBody();
-		//write report title
-
-		String coreDataSetName
-			= dataSetFieldConfiguration.getCoreDataSetName();
+		this.delimiters = delimiters;
+	}
+	
+	public void setImportFileName(final String importFileName) {
+		this.importFileName = importFileName;
+	}
+	
+	@Override
+	public String generateQuery() {
 				
-		String loadTableName
-			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(coreDataSetName);
-		String fieldOfInterest
-			= dataSetFieldConfiguration.getLoadFieldName();
-		String reportTitle
-			= RIFDataLoaderToolMessages.getMessage(
-				"fieldVarianceReport.title",
-				loadTableName,
-				fieldOfInterest);
-		htmlUtility.writeHeader(1, reportTitle);
-
+		//COPY t FROM STDIN
+		resetAccumulatedQueryExpression();
+		addPaddedQueryLine(0, "COPY ");
+		addPaddedQueryLine(1, tableToImport);
+		addPaddedQueryLine(0, "FROM");
+		addQueryPhrase(1, importFileName);		
+		addQueryPhrase(" WITH DELIMITER '");
+		addQueryPhrase(delimiters);
+		addQueryPhrase("' CSV HEADER");
 		
-		htmlUtility.beginTable();
-
-		//write header row
-		htmlUtility.beginRow();
-		String valueFieldName
-			= RIFDataLoaderToolMessages.getMessage("fieldVarianceReport.value.label");
-		htmlUtility.writeBoldColumnValue(valueFieldName);
-		String frequencyFieldName
-			= RIFDataLoaderToolMessages.getMessage("fieldVarianceReport.frequency.label");
-		htmlUtility.writeBoldColumnValue(frequencyFieldName);
-		htmlUtility.endRow();
-		
-		//write data
-		for (int i = 0; i < varianceData.length; i++) {
-			htmlUtility.beginRow();
-			htmlUtility.writeColumnValue(varianceData[i][0]);
-			htmlUtility.writeColumnValue(varianceData[i][1]);
-			htmlUtility.endRow();
-		}
-				
-		htmlUtility.endTable();
-		
-		
-		htmlUtility.endBody();
-		htmlUtility.endDocument();
-		
-		return htmlUtility.getHTML();
+		return super.generateQuery();		
 	}
 	
 	// ==========================================
@@ -153,7 +155,4 @@ public final class LoadFieldVarianceReport {
 	// ==========================================
 	// Section Override
 	// ==========================================
-
 }
-
-

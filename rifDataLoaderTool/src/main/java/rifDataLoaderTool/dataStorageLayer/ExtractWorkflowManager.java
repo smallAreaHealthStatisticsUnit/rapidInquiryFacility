@@ -12,6 +12,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
@@ -82,7 +83,7 @@ import java.io.*;
  *
  */
 
-public final class LoadWorkflowManager 
+public final class ExtractWorkflowManager 
 	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
@@ -100,7 +101,7 @@ public final class LoadWorkflowManager
 	// Section Construction
 	// ==========================================
 
-	public LoadWorkflowManager(
+	public ExtractWorkflowManager(
 		final RIFDatabaseProperties rifDatabaseProperties,
 		final DataSetManager dataSetManager) {
 
@@ -113,7 +114,7 @@ public final class LoadWorkflowManager
 	// Section Accessors and Mutators
 	// ==========================================
 	
-	public RIFResultTable getLoadTableData(
+	public RIFResultTable getExtractTableData(
 		final Connection connection,
 		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration) 
@@ -122,7 +123,7 @@ public final class LoadWorkflowManager
 		RIFResultTable resultTable = new RIFResultTable();
 		String coreTableName = dataSetConfiguration.getName();
 		String loadTableName
-			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreTableName);
+			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(coreTableName);
 		String[] fieldNames = dataSetConfiguration.getLoadFieldNames();
 		
 		try {
@@ -141,56 +142,57 @@ public final class LoadWorkflowManager
 		return resultTable;
 	}
 	
-	public void loadConfiguration(
+	public void extractConfiguration(
 		final Connection connection,				
 		final Writer logFileWriter, 
+		final String exportDirectoryPath,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 		
 		PreparedStatement dropTableStatement = null;		
 		String coreDataSetName 
 			= dataSetConfiguration.getName();
-		String targetLoadTable
-			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
-			
+
+		String targetExtractTable
+			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(coreDataSetName);
 		deleteTable(
 			connection, 
 			logFileWriter,
-			targetLoadTable);
-
+			targetExtractTable);
+		
 		int dataSetIdentifier
-			= dataSetManager.addDataSetConfiguration(
+			= dataSetManager.updateDataSetRegistration(
 				connection, 
 				logFileWriter,
 				dataSetConfiguration);
 		
-		PreparedStatement createLoadTableStatement = null;
+		PreparedStatement createExtractTableStatement = null;
 		try {
 			
 			//drop the table if it already exists so we can recreate it
 			//without raising a 'table already exists' exception
-			SQLCreateTableQueryFormatter createLoadTableQueryFormatter
+			SQLCreateTableQueryFormatter createExtractTableQueryFormatter
 				 = new SQLCreateTableQueryFormatter();
-			createLoadTableQueryFormatter.setTextFieldLength(TEXT_FIELD_WIDTH);
-			createLoadTableQueryFormatter.setTableName(targetLoadTable);
+			createExtractTableQueryFormatter.setTextFieldLength(TEXT_FIELD_WIDTH);
+			createExtractTableQueryFormatter.setTableName(targetExtractTable);
 
 			ArrayList<DataSetFieldConfiguration> fieldConfigurations
 				= dataSetConfiguration.getFieldConfigurations();
 			
 			for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
-				createLoadTableQueryFormatter.addTextFieldDeclaration(
+				createExtractTableQueryFormatter.addTextFieldDeclaration(
 					fieldConfiguration.getLoadFieldName(), 
 					true);
 			}
 			
 			logSQLQuery(
 				logFileWriter,
-				"create_load_table", 
-				createLoadTableQueryFormatter);
+				"create_extract_table", 
+				createExtractTableQueryFormatter);
 			
-			createLoadTableStatement
-				= connection.prepareStatement(createLoadTableQueryFormatter.generateQuery());
-			createLoadTableStatement.executeUpdate();
+			createExtractTableStatement
+				= connection.prepareStatement(createExtractTableQueryFormatter.generateQuery());
+			createExtractTableStatement.executeUpdate();
 			
 			
 			//now import the data from the CSV file
@@ -198,41 +200,49 @@ public final class LoadWorkflowManager
 				connection,
 				logFileWriter,
 				dataSetConfiguration.getFilePath(),
-				targetLoadTable);
+				targetExtractTable);
 			
 			addDataSourceIdentifierField(
 				connection,
 				logFileWriter,
-				targetLoadTable,
+				targetExtractTable,
 				dataSetIdentifier);
 			addOriginalRowNumbers(
 				connection, 
 				logFileWriter,
-				targetLoadTable);
+				targetExtractTable);
 	
 			addPrimaryKey(
 				connection,
 				logFileWriter,
-				targetLoadTable,
+				targetExtractTable,
 				"data_set_id, row_number");
+			
+			exportTable(
+				connection, 
+				logFileWriter, 
+				exportDirectoryPath, 
+				RIFDataLoadingResultTheme.STAGES, 
+				targetExtractTable);
 			
 			updateLastCompletedWorkState(
 				connection,
 				logFileWriter,
 				dataSetConfiguration,
-				WorkflowState.LOAD);
+				WorkflowState.EXTRACT);
 		}
 		catch(SQLException sqlException) {
+			
 			logSQLException(
 				logFileWriter,
 				sqlException);
 			String createTableName
-				= RIFTemporaryTablePrefixes.LOAD.getTableName(
+				= RIFTemporaryTablePrefixes.EXTRACT.getTableName(
 						dataSetConfiguration.getName());
 			
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
-					"loadWorkflowManager.error.createLoadTable",
+					"extractWorkflowManager.error.createExtractTable",
 					createTableName);
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
@@ -241,7 +251,7 @@ public final class LoadWorkflowManager
 			throw rifServiceException;
 		}
 		finally {			
-			SQLQueryUtility.close(createLoadTableStatement);
+			SQLQueryUtility.close(createExtractTableStatement);
 		}	
 	}
 	
@@ -282,7 +292,7 @@ public final class LoadWorkflowManager
 	private void addDataSourceIdentifierField(
 		final Connection connection,
 		final Writer logFileWriter,
-		final String targetLoadTable,
+		final String targetExtractTable,
 		final int dataSetIdentifier)
 		throws RIFServiceException {
 		
@@ -290,7 +300,7 @@ public final class LoadWorkflowManager
 		try {
 			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");
-			queryFormatter.addQueryPhrase(targetLoadTable);
+			queryFormatter.addQueryPhrase(targetExtractTable);
 			queryFormatter.addQueryPhrase(" ADD COLUMN data_set_id INTEGER DEFAULT ");
 			queryFormatter.addQueryPhrase(String.valueOf(dataSetIdentifier));
 			queryFormatter.addQueryPhrase(";");
@@ -308,8 +318,8 @@ public final class LoadWorkflowManager
 				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
-					"loadWorkflowManager.error.unableToDataSetNumber",
-					targetLoadTable);
+					"extractWorkflowManager.error.unableToDataSetNumber",
+					targetExtractTable);
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
@@ -325,20 +335,20 @@ public final class LoadWorkflowManager
 	
 	/**
 	 * Adding a column for row_number
-	 * @param targetLoadTable
+	 * @param targetExtractTable
 	 * @throws RIFServiceException
 	 */
 	private void addOriginalRowNumbers(
 		final Connection connection,
 		final Writer logFileWriter,
-		final String targetLoadTable) 
+		final String targetExtractTable) 
 		throws RIFServiceException {
 				
 		PreparedStatement statement = null;
 		try {
 			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");
-			queryFormatter.addQueryPhrase(targetLoadTable);
+			queryFormatter.addQueryPhrase(targetExtractTable);
 			queryFormatter.addQueryPhrase(" ADD COLUMN row_number BIGSERIAL");
 		
 			statement 
@@ -352,8 +362,8 @@ public final class LoadWorkflowManager
 				sqlException);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
-					"loadWorkflowManager.error.unableToAddRowNumbers",
-					targetLoadTable);
+					"extractWorkflowManager.error.unableToAddRowNumbers",
+					targetExtractTable);
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
@@ -364,7 +374,7 @@ public final class LoadWorkflowManager
 			SQLQueryUtility.close(statement);
 		}		
 	}
-	public void addLoadTableData(
+	public void addExtractTableData(
 		final Connection connection,
 		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration,
@@ -372,7 +382,7 @@ public final class LoadWorkflowManager
 		throws RIFServiceException {
 		
 		String loadTableName
-			= RIFTemporaryTablePrefixes.LOAD.getTableName(
+			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(
 					dataSetConfiguration.getName());		
 		
 		SQLInsertQueryFormatter queryFormatter 
@@ -387,7 +397,7 @@ public final class LoadWorkflowManager
 
 		logSQLQuery(
 			logFileWriter,
-			"addLoadTableData", 
+			"addExtractTableData", 
 			queryFormatter);
 		
 		PreparedStatement statement = null;
@@ -408,8 +418,9 @@ public final class LoadWorkflowManager
 			}			
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
-			
+			logSQLException(
+				logFileWriter, 
+				sqlException);
 		}
 		finally {
 			SQLQueryUtility.close(statement);
@@ -417,7 +428,7 @@ public final class LoadWorkflowManager
 		
 	}
 	
-	public void dropLoadTable(
+	public void dropExtractTable(
 		final Connection connection,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
@@ -425,23 +436,25 @@ public final class LoadWorkflowManager
 
 		String coreDataSetName = dataSetConfiguration.getName();
 		String tableToDelete
-			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);		
+			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(coreDataSetName);		
 				
 		PreparedStatement statement = null;
 		try {
 	
-			SQLDeleteTableQueryFormatter deleteLoadTableQueryFormatter
+			SQLDeleteTableQueryFormatter deleteExtractTableQueryFormatter
 				= new SQLDeleteTableQueryFormatter();
-			deleteLoadTableQueryFormatter.setTableToDelete(tableToDelete);
+			deleteExtractTableQueryFormatter.setTableToDelete(tableToDelete);
 
 			statement 
-				= createPreparedStatement(connection, deleteLoadTableQueryFormatter);
+				= createPreparedStatement(
+					connection, 
+					deleteExtractTableQueryFormatter);
 			statement.executeUpdate();	
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
-					"loadWorkflowManager.error.dropLoadTable",
+					"extractWorkflowManager.error.dropExtractTable",
 					tableToDelete);
 			RIFServiceException RIFServiceException
 				= new RIFServiceException(

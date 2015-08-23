@@ -250,7 +250,16 @@ public abstract class AbstractSQLQueryFormatter {
 	
 	
 	public String generateQuery() {
-		return query.toString();
+		StringBuilder result = new StringBuilder();
+		result.append(query.toString());
+		
+		if (endWithSemiColon) {
+			result.append(";");
+		}
+		return result.toString();
+	}
+	
+	public void considerWritingSemiColon() {
 	}
 	
 	public boolean endWithSemiColon() {

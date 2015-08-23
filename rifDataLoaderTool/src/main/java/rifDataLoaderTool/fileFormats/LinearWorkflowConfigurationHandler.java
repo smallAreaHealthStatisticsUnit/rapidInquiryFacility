@@ -240,6 +240,7 @@ final class LinearWorkflowConfigurationHandler
 		
 		if (isSingularRecordName(qualifiedName)) {
 			deactivate();
+			linearWorkflow.setNewRecord(false);
 		}
 		else if (isDelegatedHandlerAssigned()) {
 			AbstractDataLoaderConfigurationHandler currentDelegatedHandler

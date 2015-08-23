@@ -152,12 +152,21 @@ public class LinearWorkflow
 	
 	
 	public static LinearWorkflow createCopy(
-		final LinearWorkflow originalWorkflow) {
+		final LinearWorkflow originalLinearWorkflow) {
 		
-		LinearWorkflow cloneWorkflow = new LinearWorkflow();
+		LinearWorkflow cloneLinearWorkflow = new LinearWorkflow();
+		copyInto(originalLinearWorkflow, cloneLinearWorkflow);
 		
+		return cloneLinearWorkflow;
+	}
+	
+	public static void copyInto(
+		final LinearWorkflow sourceLinearWorkflow, 
+		final LinearWorkflow destinationWorkflow) {
 		
-		return cloneWorkflow;
+		copyAttributes(
+			sourceLinearWorkflow, 
+			destinationWorkflow);		
 	}
 	
 	// ==========================================

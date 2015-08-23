@@ -1,7 +1,7 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-
+import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
@@ -96,6 +96,7 @@ public final class OptimiseWorkflowManager
 	public void optimiseConfiguration(
 		final Connection connection,
 		final Writer logFileWriter,
+		final String exportDirectoryPath,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 	
@@ -150,6 +151,13 @@ public final class OptimiseWorkflowManager
 			optimiseTableName,
 			"data_set_id, row_number");
 				
+		exportTable(
+			connection, 
+			logFileWriter, 
+			exportDirectoryPath, 
+			RIFDataLoadingResultTheme.STAGES, 
+			optimiseTableName);
+		
 		updateLastCompletedWorkState(
 			connection,
 			logFileWriter,

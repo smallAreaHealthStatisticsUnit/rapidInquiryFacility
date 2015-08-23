@@ -1,7 +1,7 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-
+import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
@@ -96,6 +96,7 @@ public final class ConvertWorkflowManager
 	public void convertConfiguration(
 		final Connection connection,
 		final Writer logFileWriter,
+		final String exportDirectoryPath,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 
@@ -172,6 +173,13 @@ public final class ConvertWorkflowManager
 					queryFormatter);	
 			statement.executeUpdate();
 					
+			exportTable(
+				connection, 
+				logFileWriter, 
+				exportDirectoryPath, 
+				RIFDataLoadingResultTheme.STAGES, 
+				convertedTableName);
+			
 			updateLastCompletedWorkState(
 				connection,
 				logFileWriter,

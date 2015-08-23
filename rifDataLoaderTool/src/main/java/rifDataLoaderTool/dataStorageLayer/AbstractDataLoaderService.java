@@ -2,10 +2,10 @@ package rifDataLoaderTool.dataStorageLayer;
 
 
 import rifDataLoaderTool.system.*;
-
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.postgresql.*;
 import rifDataLoaderTool.dataStorageLayer.SQLConnectionManager;
+import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
 import rifServices.util.FieldValidationUtility;
@@ -15,10 +15,16 @@ import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 
-import java.io.FileWriter;
 import java.sql.*;
 import java.util.ArrayList;
 import java.io.*;
+import java.nio.file.*;
+import java.nio.file.attribute.*;
+import java.nio.file.StandardCopyOption.*;
+
+import org.apache.commons.io.FileUtils;
+
+
 
 /**
  * Main implementation of the {@link rifDataLoaderTool.dataStorageLayer.AbstractDataLoaderService}.
@@ -119,7 +125,7 @@ public abstract class AbstractDataLoaderService
 	
 	private SQLConnectionManager sqlConnectionManager;
 	private DataSetManager dataSetManager;
-	private LoadWorkflowManager loadWorkflowManager;
+	private ExtractWorkflowManager extractWorkflowManager;
 	
 	private ChangeAuditManager changeAuditManager;
 	private CleanWorkflowManager cleanWorkflowManager;
@@ -130,10 +136,15 @@ public abstract class AbstractDataLoaderService
 	private OptimiseWorkflowManager optimiseWorkflowManager;
 	
 	private CheckWorkflowManager checkWorkflowManager;
+	
+	private PostgreSQLReportManager reportManager;
 	private PublishWorkflowManager publishWorkflowManager;
 	
+
 	
 	private ArrayList<DataSetConfiguration> dataSetConfigurations;
+	
+	private String exportDirectoryPath;
 	
 	
 	// ==========================================
@@ -144,7 +155,7 @@ public abstract class AbstractDataLoaderService
 			
 		dataSetConfigurations 
 			= new ArrayList<DataSetConfiguration>();
-		
+		exportDirectoryPath = "C:" + File.separator + "rif_scratch";
 	}
 	
 	public void initialiseService() 
@@ -173,8 +184,8 @@ public abstract class AbstractDataLoaderService
 				DatabaseType.POSTGRESQL, 
 				false);
 		dataSetManager = new DataSetManager(rifDatabaseProperties);
-		loadWorkflowManager
-			= new LoadWorkflowManager(
+		extractWorkflowManager
+			= new ExtractWorkflowManager(
 				rifDatabaseProperties,
 				dataSetManager);
 		
@@ -213,6 +224,10 @@ public abstract class AbstractDataLoaderService
 		
 		publishWorkflowManager
 			= new PublishWorkflowManager(
+				rifDatabaseProperties);
+		
+		reportManager
+			= new PostgreSQLReportManager(
 				rifDatabaseProperties);
 	}
 	
@@ -342,7 +357,7 @@ public abstract class AbstractDataLoaderService
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(rifManager);
 			
-			dataSetManager.addDataSetConfiguration(
+			dataSetManager.updateDataSetRegistration(
 				connection,
 				logFileWriter,
 				dataSetConfiguration);
@@ -353,19 +368,121 @@ public abstract class AbstractDataLoaderService
 			
 		}
 		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printStackTrace(System.out);
 			//Audit failure of operation
 			logException(
 				rifManager,
-				"registerdataSet",
+				"registerDataSetConfiguration",
 				rifServiceException);
 		}		
 	}
 		
-		
-	public void loadConfiguration(
+	public void setupConfiguration(
 		final User _rifManager,
-		final Writer logFileWriter,		
+		final Writer logFileWriter,
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException {
+
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
+			return;
+		}
+		
+		//Step 1: Create all the directories
+		ensureTemporaryDirectoriesExist(
+			rifManager, 
+			dataSetConfiguration); 		
+		//Step 2: Copy original data file
+		
+		try {			
+	
+			
+			File sourceFile = new File(dataSetConfiguration.getFilePath());		
+			String fileName = sourceFile.getName();
+			Path sourcePath = sourceFile.toPath();
+
+			StringBuilder destinationFilePath = new StringBuilder();
+			destinationFilePath.append(generateDataSetExportDirectoryPath(dataSetConfiguration));
+			destinationFilePath.append(File.separator);
+			destinationFilePath.append(RIFDataLoadingResultTheme.ORIGINAL_DATA);
+			destinationFilePath.append(File.separator);
+			destinationFilePath.append(fileName);
+			File destinationFile = new File(destinationFilePath.toString());
+			Path destinationPath = destinationFile.toPath();
+		
+			Files.copy(
+				sourcePath, 
+				destinationPath, 
+				StandardCopyOption.REPLACE_EXISTING);
+		}
+		catch(IOException ioException) {
+			logException(
+				rifManager,
+				"registerDataSetConfiguration",
+				ioException);			
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"abstractDataLoaderService.error.unableToCopyOriginalData",
+					dataSetConfiguration.getName());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.UNABLE_TO_COPY_ORIGINAL_DATA, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		
+	}
+
+	public void addFileToDataSetResults(
+		final User _rifManager,
+		final Writer logWriter,
+		final File originalFile,
+		final RIFDataLoadingResultTheme rifDataLoadingResultTheme,
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException {
+	
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
+			return;
+		}
+	
+		if (originalFile == null) {
+			return;
+		}
+
+		if (rifDataLoadingResultTheme == null) {
+			return;
+		}
+		
+		try {
+			
+			StringBuilder auditTrailPath = new StringBuilder();
+			auditTrailPath.append(generateDataSetExportDirectoryPath(dataSetConfiguration));
+			auditTrailPath.append(File.separator);
+			auditTrailPath.append(rifDataLoadingResultTheme.getSubDirectoryName());
+			auditTrailPath.append(File.separator);
+			auditTrailPath.append(originalFile.getName());
+			File copyFile = new File(auditTrailPath.toString());
+		
+			FileUtils.copyFile(originalFile, copyFile);
+				
+		}
+		catch(IOException ioException) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"abstractDataLoaderService.error.unableToCopyWorkflowFile",
+					dataSetConfiguration.getName());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.UNABLE_TO_INCLUDE_WORKFLOW_IN_RESULTS, 
+					errorMessage);
+			throw rifServiceException;
+		}
+	}
+	
+	public void extractConfiguration(
+		final User _rifManager,
+		final Writer logFileWriter,	
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
@@ -410,10 +527,11 @@ public abstract class AbstractDataLoaderService
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
 						rifManager);
-			
-			loadWorkflowManager.loadConfiguration(
+
+			extractWorkflowManager.extractConfiguration(
 				connection, 
 				logFileWriter,
+				generateDataSetExportDirectoryPath(dataSetConfiguration),
 				dataSetConfiguration);
 
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -489,7 +607,7 @@ public abstract class AbstractDataLoaderService
 				= sqlConnectionManager.assignPooledWriteConnection(
 					rifManager);
 
-			loadWorkflowManager.addLoadTableData(
+			extractWorkflowManager.addExtractTableData(
 				connection, 
 				logFileWriter,
 				dataSetConfiguration, 
@@ -559,7 +677,7 @@ public abstract class AbstractDataLoaderService
 					rifManager);
 						
 			results
-				= loadWorkflowManager.getLoadTableData(
+				= extractWorkflowManager.getExtractTableData(
 					connection, 
 					logFileWriter,
 					dataSetConfiguration);
@@ -621,11 +739,10 @@ public abstract class AbstractDataLoaderService
 				= sqlConnectionManager.assignPooledWriteConnection(
 					rifManager);
 		
-			System.out.println("DataLoader Service ================doing clean configuration !!!!!!!!!!!");
-
 			cleanWorkflowManager.cleanConfiguration(
 				connection, 
 				logFileWriter,
+				generateDataSetExportDirectoryPath(dataSetConfiguration),
 				dataSetConfiguration);
 						
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -646,6 +763,7 @@ public abstract class AbstractDataLoaderService
 	
 	public RIFResultTable getCleanedTableData(
 		final User _rifManager,			
+		final FileWriter logFileWriter,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
@@ -692,6 +810,7 @@ public abstract class AbstractDataLoaderService
 			result
 				= cleanWorkflowManager.getCleanedTableData(
 					connection, 
+					logFileWriter,
 					dataSetConfiguration);
 			
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -752,6 +871,7 @@ public abstract class AbstractDataLoaderService
 			combineWorkflowManager.combineConfiguration(
 				connection, 
 				logFileWriter,
+				generateDataSetExportDirectoryPath(dataSetConfiguration),
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -809,6 +929,7 @@ public abstract class AbstractDataLoaderService
 			splitWorkflowManager.splitConfiguration(
 				connection, 
 				logFileWriter,
+				generateDataSetExportDirectoryPath(dataSetConfiguration),
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -866,6 +987,7 @@ public abstract class AbstractDataLoaderService
 			convertWorkflowManager.convertConfiguration(
 				connection, 
 				logFileWriter,
+				generateDataSetExportDirectoryPath(dataSetConfiguration),
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -922,6 +1044,7 @@ public abstract class AbstractDataLoaderService
 			optimiseWorkflowManager.optimiseConfiguration(
 				connection, 
 				logFileWriter,
+				generateDataSetExportDirectoryPath(dataSetConfiguration),
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -978,6 +1101,7 @@ public abstract class AbstractDataLoaderService
 			checkWorkflowManager.checkConfiguration(
 				connection, 
 				logFileWriter,
+				generateDataSetExportDirectoryPath(dataSetConfiguration),
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -1034,6 +1158,7 @@ public abstract class AbstractDataLoaderService
 			publishWorkflowManager.publishConfiguration(
 				connection,
 				logFileWriter,
+				generateDataSetExportDirectoryPath(dataSetConfiguration),
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -1047,8 +1172,75 @@ public abstract class AbstractDataLoaderService
 				"publishConfiguration",
 				rifServiceException);
 			throw rifServiceException;
+		}
+		
+		publishWorkflowManager.zipReportsAndCleanupTemporaryFiles(
+			logFileWriter,
+			exportDirectoryPath,
+			dataSetConfiguration);		
+	}
+
+	
+
+	public void generateResultReports(
+		final User _rifManager,
+		final Writer logFileWriter,		
+		final File exportDirectory,
+		final DataSetConfiguration _dataSetConfiguration) 
+		throws RIFServiceException {
+		
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
+			return;
+		}
+		DataSetConfiguration dataSetConfiguration
+			= DataSetConfiguration.createCopy(_dataSetConfiguration);
+		
+		try {
+			//Check for empty parameters
+			checkCommonParameters(
+				"generateResultReports",
+				rifManager,
+				dataSetConfiguration);
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFDataLoaderToolMessages.getMessage("logging.generateResultReports",
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					dataSetConfiguration.getDisplayName());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+			
+			Connection connection 
+				= sqlConnectionManager.assignPooledWriteConnection(
+					rifManager);
+
+			reportManager.writeResults(
+				connection, 
+				logFileWriter, 
+				exportDirectory, 
+				dataSetConfiguration);
+					
+			sqlConnectionManager.reclaimPooledWriteConnection(
+				rifManager, 
+				connection);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				rifManager,
+				"generateResultReports",
+				rifServiceException);
+			throw rifServiceException;
 		}	
 	}
+	
+	
+	
 	
 	public Integer getCleaningTotalBlankValues(
 		final User _rifManager,
@@ -1554,6 +1746,87 @@ public abstract class AbstractDataLoaderService
 		return null;
 	}
 	
+	
+	
+	protected void ensureTemporaryDirectoriesExist(
+		final User _rifManager,
+		final DataSetConfiguration dataSetConfiguration) 
+		throws RIFServiceException {
+				
+		
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
+			return;
+		}
+		
+		String coreDataSetName = dataSetConfiguration.getName();
+		try {			
+			String mainScratchDirectoryPath
+				= generateDataSetExportDirectoryPath(dataSetConfiguration);
+			
+			File temporaryDirectory = new File(mainScratchDirectoryPath.toString());
+			if (temporaryDirectory.exists() == false) {
+				FileUtils.deleteDirectory(temporaryDirectory);
+				Files.createDirectory(temporaryDirectory.toPath());
+			}
+			
+		
+			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.ORIGINAL_DATA);
+			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.AUDIT_TRAIL);
+			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.RESULTS);
+			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.STAGES);
+			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.OTHER);
+		}
+		catch(IOException ioException) {
+			logException(
+				rifManager, 
+				"ensureTemporaryDirectoriesExist", 
+				ioException);
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"abstractDataLoaderStepManager.error.unableToCreateTemporaryDirectories",
+					coreDataSetName);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.UNABLE_TO_CREATE_TEMPORARY_DIRECTORIES, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		
+	}
+		
+	private void createSubDirectory(
+		final String mainScratchDirectoryPath,
+		final RIFDataLoadingResultTheme resultTheme) 
+		throws IOException {
+		
+		StringBuilder subDirectoryPath = new StringBuilder();
+		subDirectoryPath.append(mainScratchDirectoryPath);
+		subDirectoryPath.append(File.separator);
+		subDirectoryPath.append(resultTheme.getSubDirectoryName());
+		
+		File subDirectory = new File(subDirectoryPath.toString());
+		if (subDirectory.exists() == false) {
+			Files.createDirectory(subDirectory.toPath());
+		}
+		
+	}
+	
+	
+	
+	private String generateDataSetExportDirectoryPath(
+		final DataSetConfiguration dataSetConfiguration) {
+		
+		String coreDataSetName = dataSetConfiguration.getName();
+		StringBuilder dataSetExportDirectoryPath = new StringBuilder();
+		dataSetExportDirectoryPath.append(exportDirectoryPath);
+		dataSetExportDirectoryPath.append(File.separator);
+		dataSetExportDirectoryPath.append(coreDataSetName);
+		
+		return dataSetExportDirectoryPath.toString();		
+	}
+		
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -1595,9 +1868,17 @@ public abstract class AbstractDataLoaderService
 	public void logException(
 		User rifManager,
 		String methodName,
-		RIFServiceException rifServiceException) {
+		Exception exception) {
 		
-		rifServiceException.printErrors();	
+		
+		if (exception instanceof RIFServiceException) {
+			RIFServiceException rifServiceException
+				= (RIFServiceException) exception;
+			rifServiceException.printErrors();	
+		}
+		else {
+			exception.printStackTrace(System.out);
+		}
 	}
 	
 	public void validateUser(
@@ -1606,6 +1887,8 @@ public abstract class AbstractDataLoaderService
 
 		//@TODO: harmonise this with the underlying AbstractRIFService call
 	}
+	
+	
 	
 	
 	// ==========================================

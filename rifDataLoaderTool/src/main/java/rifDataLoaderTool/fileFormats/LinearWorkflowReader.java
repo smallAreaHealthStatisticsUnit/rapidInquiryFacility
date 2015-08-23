@@ -121,7 +121,6 @@ public final class LinearWorkflowReader {
 				rifWorkflowConfigurationHandler);
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"io.error.problemReadingFile",
@@ -144,10 +143,9 @@ public final class LinearWorkflowReader {
 			SAXParser saxParser = factory.newSAXParser();
 			saxParser.parse(
 				inputStream, 
-				rifWorkflowConfigurationHandler);
+				rifWorkflowConfigurationHandler);			
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"io.error.problemReadingFile",

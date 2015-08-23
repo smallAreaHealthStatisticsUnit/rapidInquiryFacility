@@ -1,10 +1,11 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
-import rifDataLoaderTool.system.RIFDataLoaderToolSession;
 
 import java.io.Writer;
+import java.io.File;
 
 /**
  *
@@ -72,7 +73,21 @@ public interface DataLoaderServiceAPI {
 	public void shutdownService() 
 		throws RIFServiceException;
 
-	public void loadConfiguration(
+	public void setupConfiguration(
+		final User rifManager,
+		final Writer logWriter,
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException;
+	
+	public void addFileToDataSetResults(
+		final User rifManager,
+		final Writer logWriter,
+		final File file,
+		final RIFDataLoadingResultTheme rifDataLoadingResultTheme,
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException;
+	
+	public void extractConfiguration(
 		final User rifManager,
 		final Writer logWriter,
 		final DataSetConfiguration dataSetConfiguration) 

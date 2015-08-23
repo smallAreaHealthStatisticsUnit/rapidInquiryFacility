@@ -9,6 +9,7 @@ import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.dataStorageLayer.postgresql.*;
+import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLCountQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
@@ -104,6 +105,7 @@ public final class CleanWorkflowManager
 	
 	public RIFResultTable getCleanedTableData(
 		final Connection connection,
+		final FileWriter logFileWriter,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 					
@@ -123,7 +125,9 @@ public final class CleanWorkflowManager
 			return resultTable;
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
+			logSQLException(
+				logFileWriter, 
+				sqlException);
 		}
 		finally {
 			SQLQueryUtility.close(connection);
@@ -134,11 +138,11 @@ public final class CleanWorkflowManager
 	public void cleanConfiguration(
 		final Connection connection,
 		final Writer logFileWriter,
+		final String exportDirectoryPath,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 				
 		
-		System.out.println("CleanWorkflowManager cleanConfiguration 1");
 		RIFLogger logger = RIFLogger.getLogger();
 		
 		PreparedStatement searchReplaceStatement = null;
@@ -172,17 +176,23 @@ public final class CleanWorkflowManager
 			searchReplaceStatement
 				= connection.prepareStatement(searchReplaceQuery);
 			searchReplaceStatement.executeUpdate();
-						
+			exportTable(
+				connection, 
+				logFileWriter, 
+				exportDirectoryPath, 
+				RIFDataLoadingResultTheme.STAGES, 
+				RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName));			
+			
+			
 			//check that the search replace table has just as many rows as the
 			//original load table			
 			checkTotalRowsMatch(
 				connection, 
 				logFileWriter,
 				coreDataSetName,
-				RIFTemporaryTablePrefixes.LOAD,
+				RIFTemporaryTablePrefixes.EXTRACT,
 				RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE);			
 
-			System.out.println("CleanWorkflowManager cleanConfiguration 2");
 			
 			/*
 			 * Part II: Now validate the results, and change the field value to 
@@ -201,6 +211,12 @@ public final class CleanWorkflowManager
 				= connection.prepareStatement(validationQuery);
 			validationStatement.executeUpdate();
 
+			exportTable(
+					connection, 
+					logFileWriter, 
+					exportDirectoryPath, 
+					RIFDataLoadingResultTheme.STAGES, 
+					RIFTemporaryTablePrefixes.CLEAN_VALIDATION.getTableName(coreDataSetName));			
 			
 			checkTotalRowsMatch(
 				connection, 
@@ -209,7 +225,6 @@ public final class CleanWorkflowManager
 				RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE,
 				RIFTemporaryTablePrefixes.CLEAN_VALIDATION);			
 			
-			System.out.println("CleanWorkflowManager cleanConfiguration 3");
 			
 			/*
 			 * Part III: Finally, cast each field to its appropriate data type (eg: int,
@@ -229,6 +244,14 @@ public final class CleanWorkflowManager
 				= connection.prepareStatement(castingQuery);
 			castingStatement.executeUpdate();
 
+			exportTable(
+				connection, 
+				logFileWriter, 
+				exportDirectoryPath, 
+				RIFDataLoadingResultTheme.STAGES, 
+				RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName));			
+			
+			
 			checkTotalRowsMatch(
 				connection, 
 				logFileWriter,
@@ -253,7 +276,6 @@ public final class CleanWorkflowManager
 				logFileWriter,
 				finalCleaningTableName);
 
-			System.out.println("CleanWorkflowManager cleanConfiguration 4");
 			
 			renameTable(
 				connection,
@@ -261,8 +283,14 @@ public final class CleanWorkflowManager
 				cleaningCastingTableName,
 				finalCleaningTableName);
 
-			System.out.println("CleanWorkflowManager cleanConfiguration 4.1");
+			exportTable(
+				connection, 
+				logFileWriter, 
+				exportDirectoryPath, 
+				RIFDataLoadingResultTheme.STAGES, 
+				finalCleaningTableName);			
 
+			
 			/*
 			addPrimaryKey(
 				connection,
@@ -270,7 +298,6 @@ public final class CleanWorkflowManager
 				finalCleaningTableName,
 				"data_set_id, row_number");
 			*/
-			System.out.println("CleanWorkflowManager cleanConfiguration 5");
 			
 			/*
 			 * Part IV: Audit changes that happened between the load table
@@ -280,21 +307,20 @@ public final class CleanWorkflowManager
 			changeAuditManager.auditDataCleaningChanges(
 				connection,
 				logFileWriter,
+				exportDirectoryPath,
 				dataSetConfiguration);
 
-			System.out.println("CleanWorkflowManager cleanConfiguration 6");
 			
 			changeAuditManager.auditValidationFailures(
 				connection,
 				logFileWriter,
+				exportDirectoryPath,
 				dataSetConfiguration);
 
-			System.out.println("CleanWorkflowManager cleanConfiguration 7");
-
-			cleanupTemporaryCleanTables(
-				connection, 
-				logFileWriter, 
-				dataSetConfiguration);		
+			//cleanupTemporaryCleanTables(
+			//	connection, 
+			//	logFileWriter, 
+			//	dataSetConfiguration);		
 			
 			updateLastCompletedWorkState(
 				connection,
@@ -307,7 +333,6 @@ public final class CleanWorkflowManager
 			logSQLException(
 				logFileWriter,
 				sqlException);
-			sqlException.printStackTrace(System.out);
 			String cleanedTableName
 				= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(
 					dataSetConfiguration.getName());
@@ -727,7 +752,7 @@ public final class CleanWorkflowManager
 		String coreDataSetName
 			= dataSetFieldConfiguration.getCoreFieldName();
 		String loadTableName
-			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
+			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(coreDataSetName);
 
 		//KLG: @TODO - eliminate junk data and uncomment code below
 		//to make it obtain real data

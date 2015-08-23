@@ -458,6 +458,18 @@ public final class OrderedListPanel {
 		return listItems.toArray(new String[0]);
 	}
 	
+	public ArrayList<DisplayableListItemInterface> getListItems() {
+
+		ArrayList<DisplayableListItemInterface> displayableItems = new ArrayList<DisplayableListItemInterface>();
+		for (String listItem : listItems) {
+			DisplayableListItemInterface displayableListItem
+				= itemFromListName.get(listItem);
+			displayableItems.add(displayableListItem);
+		}
+				
+		return displayableItems;
+	}
+	
 // ==========================================
 // Section Errors and Validation
 // ==========================================

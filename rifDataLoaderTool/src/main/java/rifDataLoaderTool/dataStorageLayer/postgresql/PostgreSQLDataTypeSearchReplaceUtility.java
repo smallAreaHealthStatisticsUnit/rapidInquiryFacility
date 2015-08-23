@@ -124,7 +124,7 @@ public class PostgreSQLDataTypeSearchReplaceUtility {
 		String coreDataSetName
 			= dataSetConfiguration.getName();
 		String loadTableName
-			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
+			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(coreDataSetName);
 		String cleanSearchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
 		

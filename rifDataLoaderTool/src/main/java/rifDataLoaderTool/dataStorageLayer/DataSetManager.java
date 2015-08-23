@@ -1,15 +1,9 @@
 package rifDataLoaderTool.dataStorageLayer;
 
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowQueryGeneratorAPI;
+
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
-import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-
 
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
@@ -17,14 +11,11 @@ import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLCreateTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.User;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.io.*;
 
 /**
@@ -156,8 +147,32 @@ public final class DataSetManager
 			SQLQueryUtility.close(statement);
 		}
 	}
-	
-	public int addDataSetConfiguration(
+
+	public int updateDataSetRegistration(
+		final Connection connection,
+		final Writer logFileWriter,
+		final DataSetConfiguration dataSetConfiguration) 
+		throws RIFServiceException {
+
+		System.out.println("updateDataSetRegistration 1");
+		deleteDataSetConfiguration(
+			connection,
+			logFileWriter,
+			dataSetConfiguration);
+		System.out.println("updateDataSetRegistration 2");
+
+		int identifier
+			= addDataSetConfiguration(
+				connection,
+				logFileWriter,
+				dataSetConfiguration);
+
+		System.out.println("updateDataSetRegistration 3");
+		
+		return identifier;
+	}
+		
+	private int addDataSetConfiguration(
 		final Connection connection,
 		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration) 
@@ -242,7 +257,7 @@ public final class DataSetManager
 		return result;
 	}
 		
-	public void deleteDataSetConfiguration(
+	private void deleteDataSetConfiguration(
 		final Connection connection,
 		final Writer logFileWriter,
 		final DataSetConfiguration dataSetConfiguration) 
@@ -256,6 +271,8 @@ public final class DataSetManager
 		
 		PreparedStatement deleteDataSetConfigurationStatement = null;
 		try {			
+			
+			System.out.println("DSM delete data set config 1");
 			deleteDataSetConfigurationStatement
 				= createPreparedStatement(
 					connection,
@@ -266,8 +283,14 @@ public final class DataSetManager
 			deleteDataSetConfigurationStatement.setString(
 				2, 
 				dataSetConfiguration.getVersion());
+			deleteDataSetConfigurationStatement.executeUpdate();
+			
+			System.out.println("DSM delete data set config 2");
+
+			logSQLQuery(logFileWriter, "deleteDataSetConfiguration", deleteDataSetStatementQueryFormatter);
 		}
 		catch(SQLException sqlException) {
+			System.out.println("Failed to delete!!");
 			logSQLException(
 				logFileWriter,
 				sqlException);
@@ -315,7 +338,6 @@ public final class DataSetManager
 			return result;
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
 			logSQLException(
 				logFileWriter,
 				sqlException);

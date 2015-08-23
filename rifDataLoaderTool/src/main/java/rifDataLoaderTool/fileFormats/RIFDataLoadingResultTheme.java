@@ -1,12 +1,10 @@
-package rifDataLoaderTool.system;
+package rifDataLoaderTool.fileFormats;
 
 /**
- * Defines the prefixes of all the temporary and permanent tables that will be produced
- * as a data source is processed by the RIF.  The prefixes will be combined with the 
- * <code>coreTableName</code> field of the {@link rifDataLoaderTool.businessConceptLayer.DataSet}.
+ *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -52,48 +50,23 @@ package rifDataLoaderTool.system;
  *
  */
 
-public enum RIFTemporaryTablePrefixes {
+public enum RIFDataLoadingResultTheme {
 
-	EXTRACT("extract_"),
-	CLEAN_SEARCH_REPLACE("cln_srch_"), //search and replace poor values
-	CLEAN_VALIDATION("cln_val_"),
-	CLEAN_CASTING("cln_cast_"), //cast cleaned fields to correct data types
-	CLEAN_AUDIT_WITH("tp1_"),
-	CLEAN_AUDIT("audit_clean_"),
-	CLEAN_FINAL("clean_"),
-	CONVERT("convert_"),
-	COMBINE("combine_"),
-	OPTIMISE("optimise_"),
-	CHECK("check_"),
-	PUBLISH("publish_"),
-	EMPTY_CHECK("dq_empty_"),
-	EMPTY_PER_YEAR_CHECK("dq_empty_yr_"),
-	AUD_CHANGES("aud_chg_"),
-	AUD_FAILED_VALIDATION("aud_val_");
+	ORIGINAL_EXTRACT("original_extract_query"),
+	ORIGINAL_DATA("original_data"),
+	STAGES("processing_stages"),
+	AUDIT_TRAIL("audit_trail"),
+	RESULTS("results"),
+	OTHER("other");
 	
+	private String subDirectoryName;
 	
-	
-	private String tablePrefix;
-	
-	private RIFTemporaryTablePrefixes(
-		final String tablePrefix) {
-		
-		this.tablePrefix = tablePrefix;
+	RIFDataLoadingResultTheme(final String subDirectoryName) {
+		this.subDirectoryName = subDirectoryName;
 	}
 	
-	public String getTablePrefix() {
-
-		return tablePrefix;
-	}
-	
-	public String getTableName(
-		final String coreTableName) {
-		
-		StringBuilder buffer = new StringBuilder();
-		buffer.append(tablePrefix);
-		buffer.append(coreTableName);
-		return buffer.toString();
-		
+	public String getSubDirectoryName() {
+		return subDirectoryName;
 	}
 }
 

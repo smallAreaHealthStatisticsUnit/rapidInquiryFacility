@@ -1,10 +1,12 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
+
+import rifDataLoaderTool.fileFormats.PostgreSQLDataLoadingScriptWriter;
+import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
@@ -12,6 +14,10 @@ import rifGenericLibrary.system.RIFServiceException;
 
 import java.sql.*;
 import java.io.*;
+import java.util.zip.*;
+import java.util.Date;
+
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -94,10 +100,10 @@ public final class PublishWorkflowManager
 	public void publishConfiguration(
 		final Connection connection,
 		final Writer logFileWriter,
+		final String exportDirectoryPath,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 	
-		System.out.println("publishConfiguration 1");
 		//validate parameters
 		dataSetConfiguration.checkErrors();
 			
@@ -110,11 +116,33 @@ public final class PublishWorkflowManager
 		RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
 		String publishTableName
 			= rifSchemaArea.getPublishedTableName(coreDataSetName);
+		deleteTable(
+			connection, 
+			logFileWriter, 
+			publishTableName);
 		renameTable(
 			connection, 
 			logFileWriter, 
 			checkTableName, 
 			publishTableName);
+		
+		exportTable(
+			connection, 
+			logFileWriter, 
+			exportDirectoryPath, 
+			RIFDataLoadingResultTheme.RESULTS,
+			publishTableName);
+		
+		//Generate the script that is supposed to be specific to SQL Server or PostgreSQL
+		PostgreSQLDataLoadingScriptWriter scriptWriter
+			= new PostgreSQLDataLoadingScriptWriter();
+		File dataLoadingScriptFile
+			= createDataLoadingScriptFileName(
+				exportDirectoryPath, 
+				dataSetConfiguration);
+		scriptWriter.writeFile(
+			dataLoadingScriptFile, 
+			dataSetConfiguration);		
 		
 		updateLastCompletedWorkState(
 			connection,
@@ -122,6 +150,29 @@ public final class PublishWorkflowManager
 			dataSetConfiguration,
 			WorkflowState.CHECK);
 	}
+	
+	
+	private File createDataLoadingScriptFileName(
+		final String exportDirectoryPath,
+		final DataSetConfiguration dataSetConfiguration) {
+		
+		String coreDataSetName = dataSetConfiguration.getName();
+		RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
+		String publishTableName
+			= rifSchemaArea.getPublishedTableName(coreDataSetName);
+		
+		StringBuilder buffer = new StringBuilder();
+		buffer.append(exportDirectoryPath);
+		buffer.append(File.separator);
+		buffer.append(RIFDataLoadingResultTheme.RESULTS.getSubDirectoryName());
+		buffer.append(File.separator);
+		buffer.append("run_");
+		buffer.append(publishTableName);
+		buffer.append(".sql");
+		
+		return new File(buffer.toString());
+	}
+	
 	
 	public void establishTableAccessPrivileges(
 		final Connection connection,
@@ -148,7 +199,113 @@ public final class PublishWorkflowManager
 			SQLQueryUtility.close(statement);			
 		}
 	}
+	
+	/**
+	 * 
+	 * @param mainExportDirectoryPath - the main directory where the output of jobs is sent
+	 * @param dataSetConfiguration
+	 * @throws RIFServiceException
+	 */
+	public void zipReportsAndCleanupTemporaryFiles(
+		final Writer logFileWriter,
+		final String mainExportDirectoryPath,
+		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException {
+
 		
+		try {			
+			StringBuilder zipFileName = new StringBuilder();
+			String coreDataSetName = dataSetConfiguration.getName();
+			
+			
+			/*
+			 * Get the directory where all the files for a given data load job have
+			 * been stored.  eg: C:\loading_jobs\cancer_data_2001
+			 */
+			StringBuilder loadJobDirectoryPath = new StringBuilder();
+			loadJobDirectoryPath.append(mainExportDirectoryPath);
+			loadJobDirectoryPath.append(File.separator);
+			loadJobDirectoryPath.append(coreDataSetName);
+			File loadJobDirectory = new File(loadJobDirectoryPath.toString());
+
+
+			/*
+			 * Eg: num_cancer_data_2001_22042015.zip
+			 */
+			zipFileName.append(mainExportDirectoryPath);
+			zipFileName.append(File.separator);			
+			RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
+			String publishTableName = rifSchemaArea.getPublishedTableName(coreDataSetName);
+			zipFileName.append(publishTableName);
+			zipFileName.append("_");
+			String datePhrase
+				= RIFDataLoaderToolMessages.getTimeStampForFileName(new Date());
+			zipFileName.append(datePhrase);
+			zipFileName.append(".zip");
+			
+			FileOutputStream fileOutputStream = new FileOutputStream(zipFileName.toString());
+			ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
+					
+			addDirectory(
+				loadJobDirectory, 
+				zipOutputStream);
+			zipOutputStream.flush();
+			zipOutputStream.close();
+			
+			FileUtils.deleteDirectory(loadJobDirectory);			
+		}
+		catch(IOException ioException) {
+			logException(
+				logFileWriter, 
+				ioException);
+			String errorMessage 
+				= RIFDataLoaderToolMessages.getMessage(
+					"publishWorkflowManager.unableToZipResults",
+					dataSetConfiguration.getName());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.UNABLE_TO_ZIP_RESULTS, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		
+		
+	}
+	
+	private void addDirectory(
+		File directory, 
+		ZipOutputStream outputStream) 
+		throws IOException {
+		
+		File[] files = directory.listFiles();
+	
+		byte[] dataBuffer = new byte[1024];
+		
+		for (int i = 0; i < files.length; i++) {
+			if (files[i].isDirectory()) {
+				addDirectory(files[i], outputStream);
+			}
+			else {
+				FileInputStream inputStream = new FileInputStream(files[i].getAbsolutePath());
+
+				StringBuilder outputDirectoryPath = new StringBuilder();
+				outputDirectoryPath.append(directory.getName());
+				outputDirectoryPath.append(File.separator);
+				outputDirectoryPath.append(files[i].getName());
+				//ZipEntry zipEntry = new ZipEntry(files[i].getAbsolutePath());
+				ZipEntry zipEntry = new ZipEntry(outputDirectoryPath.toString());
+
+				outputStream.putNextEntry(zipEntry);
+				int length = inputStream.read(dataBuffer);
+				while (length > 0) {
+					outputStream.write(dataBuffer, 0, length);					
+					length = inputStream.read(dataBuffer);
+				}
+				outputStream.closeEntry();
+				inputStream.close();
+			}
+		}		
+	}
 	
 	// ==========================================
 	// Section Errors and Validation

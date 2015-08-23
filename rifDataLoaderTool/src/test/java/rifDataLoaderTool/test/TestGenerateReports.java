@@ -1,27 +1,21 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.test;
 
-import rifDataLoaderTool.businessConceptLayer.*;
-
-
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
+import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
+import rifDataLoaderTool.dataStorageLayer.TestDataLoaderService;
+import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 import rifGenericLibrary.system.RIFServiceException;
+import rifServices.businessConceptLayer.User;
+import static org.junit.Assert.*;
 
-import java.sql.*;
+import org.junit.Test;
 import java.io.*;
 
 /**
  *
- * Manages all database operations used to convert a cleaned table into tabular data
- * expected by some part of the RIF (eg: numerator data, health codes, geospatial data etc)
- * 
+ *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -67,8 +61,7 @@ import java.io.*;
  *
  */
 
-public final class SplitWorkflowManager 
-	extends AbstractDataLoaderStepManager {
+public class TestGenerateReports extends AbstractRIFDataLoaderTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -76,37 +69,63 @@ public final class SplitWorkflowManager
 
 	// ==========================================
 	// Section Properties
-	// ==========================================	
+	// ==========================================
 
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public SplitWorkflowManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
+	public TestGenerateReports() {
 
-		super(rifDatabaseProperties);
+	}
 
+	@Test
+	public void test1() {
+
+		User rifManager = getRIFManager();
+		TestDataLoaderService dataLoaderService
+			= getDataLoaderService();
+		SampleDataGenerator sampleDataGenerator
+			= new SampleDataGenerator();
+
+		File testLogFile = new File("C://rif_scripts//test_data//log1.txt");
+		File exportDirectory = new File("C://rif_scratch");
+		try {
+			LinearWorkflow linearWorkflow
+				= sampleDataGenerator.testDataCleaning1Workflow();
+		
+			LinearWorkflowEnactor workflowEnactor
+				= new LinearWorkflowEnactor(
+				rifManager, 
+				dataLoaderService);
+			workflowEnactor.runWorkflow(
+				testLogFile,
+				null,
+				null,
+				linearWorkflow);					
+
+			/*
+			DataSetConfiguration dataSetConfiguration
+				= linearWorkflow.getDataSetConfigurations().get(0);
+			FileWriter logFileWriter = new FileWriter(testLogFile);
+			dataLoaderService.generateResultReports(
+				rifManager, 
+				logFileWriter, 
+				exportDirectory, 
+				dataSetConfiguration);
+			*/
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
+			fail();
+		}		
+		
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void splitConfiguration(
-		final Connection connection,
-		final Writer logFileWriter,
-		final String exportDirectoryPath,
-		final DataSetConfiguration dataSetConfiguration)
-		throws RIFServiceException {
-	
-		//validate parameters
-		dataSetConfiguration.checkErrors();
-			
-		//@TODO
-	}
-	
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

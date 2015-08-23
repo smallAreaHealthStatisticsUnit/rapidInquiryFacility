@@ -1,20 +1,13 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-
-
+import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 
 
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -149,6 +142,7 @@ public final class ChangeAuditManager
 	public void auditValidationFailures(
 		final Connection connection,
 		final Writer logFileWriter,
+		final String exportDirectoryPath,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 		
@@ -164,8 +158,13 @@ public final class ChangeAuditManager
 		String cleaningValidationTableName
 			= RIFTemporaryTablePrefixes.CLEAN_VALIDATION.getTableName(coreDataSetName);
 		
-		String validationFailuresTable
+		String auditValidationFailuresTable
 			= RIFTemporaryTablePrefixes.AUD_FAILED_VALIDATION.getTableName(coreDataSetName);
+		deleteTable(
+			connection, 
+			logFileWriter, 
+			auditValidationFailuresTable);
+		
 		
 		ArrayList<DataSetFieldConfiguration> fieldsWithValidationChecks
 			= dataSetConfiguration.getFieldsWithValidationChecks();
@@ -177,6 +176,7 @@ public final class ChangeAuditManager
 		 *    cln_srch_my_numerator.row_number,
 		 *    'age' AS field_name,
 		 *    cln_srch_my_numerator.age AS invalid_field_value
+		 *    current_timestamp AS time_stamp
 		 * FROM
 		 *    cln_srch_my_numerator,
 		 *    cln_val_my_numerator
@@ -190,15 +190,10 @@ public final class ChangeAuditManager
 
 		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		queryFormatter.addQueryPhrase(0, "INSERT INTO ");
-		queryFormatter.addQueryPhrase("rif_failed_val_log");
-		queryFormatter.addQueryPhrase(" (");
+		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
+		queryFormatter.addQueryPhrase(auditValidationFailuresTable);
+		queryFormatter.addQueryPhrase(" AS");		
 		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryLine(1, "data_set_id,");
-		queryFormatter.addQueryLine(1, "row_number,");
-		queryFormatter.addQueryLine(1, "field_name,");
-		queryFormatter.addQueryLine(1, "invalid_value)");
-		queryFormatter.padAndFinishLine();		
 		int numberOfFieldsWithValidationChecks = fieldsWithValidationChecks.size();
 		for (int i = 0; i < numberOfFieldsWithValidationChecks; i++) {
 			DataSetFieldConfiguration dataSetFieldConfiguration
@@ -230,7 +225,6 @@ public final class ChangeAuditManager
 			statement.executeUpdate();
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
 			logSQLException(
 				logFileWriter,
 				sqlException);
@@ -247,7 +241,12 @@ public final class ChangeAuditManager
 			SQLQueryUtility.close(statement);
 		}
 		
-		
+		exportTable(
+			connection, 
+			logFileWriter, 
+			exportDirectoryPath, 
+			RIFDataLoadingResultTheme.AUDIT_TRAIL, 
+			auditValidationFailuresTable);
 	}
 	
 	private String createFieldLevelFailures(
@@ -267,6 +266,7 @@ public final class ChangeAuditManager
 			searchReplaceTableName, 
 			cleanFieldName, 
 			"invalid_field_value");
+		queryFormatter.addSelectFieldWithAlias("current_timestamp", "time_stamp");
 		
 		queryFormatter.addFromTable(searchReplaceTableName);
 		queryFormatter.addFromTable(searchValidationTableName);
@@ -292,16 +292,23 @@ public final class ChangeAuditManager
 	public void auditDataCleaningChanges(
 		final Connection connection,
 		final Writer logFileWriter,
+		final String exportDirectoryPath,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
-
+		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.setEndWithSemiColon(false);
+
+		String coreDataSetName = dataSetConfiguration.getName();
+		String auditTableName
+			= RIFTemporaryTablePrefixes.AUD_CHANGES.getTableName(coreDataSetName);
 		PreparedStatement statement = null;		
 		try {
-			clearRowsFromAuditTrails(
+
+			deleteTable(
 				connection, 
-				logFileWriter,
-				dataSetConfiguration);
+				logFileWriter, 
+				auditTableName);
 			
 			String includeFieldOnlyQuery
 				= getIncludeFieldOnlyChangesQuery(
@@ -317,16 +324,10 @@ public final class ChangeAuditManager
 				return;
 			}
 			else {
-				queryFormatter.addQueryPhrase(0, "INSERT INTO ");
-				queryFormatter.addQueryPhrase("rif_change_log");
-				queryFormatter.addQueryPhrase(" (");
+				queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
+				queryFormatter.addQueryPhrase(auditTableName);
+				queryFormatter.addQueryPhrase(" AS");
 				queryFormatter.padAndFinishLine();
-				queryFormatter.addQueryLine(1, "data_set_id,");
-				queryFormatter.addQueryLine(1, "row_number,");
-				queryFormatter.addQueryLine(1, "field_name,");
-				queryFormatter.addQueryLine(1, "old_value,");
-				queryFormatter.addQueryLine(1, "new_value)");
-				queryFormatter.finishLine();	
 				
 				if ((includeFieldOnlyQuery != null) &&
 					(includeFieldChangeDescriptionsQuery != null)) {
@@ -359,7 +360,7 @@ public final class ChangeAuditManager
 			statement.executeUpdate();
 
 		}
-		catch(SQLException sqlException) {
+		catch(SQLException sqlException) {			
 			logSQLException(
 				logFileWriter,
 				sqlException);
@@ -375,7 +376,16 @@ public final class ChangeAuditManager
 		}
 		finally {
 			SQLQueryUtility.close(statement);
-		}		
+		}	
+		
+		
+		exportTable(
+			connection, 
+			logFileWriter, 
+			exportDirectoryPath, 
+			RIFDataLoadingResultTheme.AUDIT_TRAIL, 
+			auditTableName);
+
 	}
 	
 	private String getIncludeFieldOnlyChangesQuery(
@@ -402,6 +412,7 @@ public final class ChangeAuditManager
 		 *    'age' AS field_name,
 		 *    '' AS old_value,
 		 *    '' AS new_value,
+		 *    current_timestamp AS time_stamp
 		 * FROM
 		 *    load_test_cleaning1,
 		 *    clean_test_cleaning1
@@ -420,18 +431,19 @@ public final class ChangeAuditManager
 		 *    clean_test_cleaning1
 		 * WHERE
 		 *    load_test_cleaning1.data_set_id = clean_test_cleaning1.data_set_id AND 
-		 *    load_test_cleaning1.row_number = clean_test_cleaning1.row_number;
+		 *    load_test_cleaning1.row_number = clean_test_cleaning1.row_number
 		 */	
 		
 		String coreDataSetName
 			= dataSetConfiguration.getName();
 		String loadTableName
-			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
+			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(coreDataSetName);
 		String cleanSearchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
 		
 		SQLGeneralQueryFormatter queryFormatter 
 			= new SQLGeneralQueryFormatter();
+		queryFormatter.setEndWithSemiColon(false);
 		
 		for (int i = 0; i < numberOfAuditableChangeFields; i++) {
 			DataSetFieldConfiguration dataSetFieldConfiguration
@@ -478,13 +490,14 @@ public final class ChangeAuditManager
 		 *    'age' AS field_name,
 		 *    test_cleaning1.age AS old_value,
 		 *    test_cleaning1.age AS new_value,
+		 *    current_time_stamp AS time_stamp
 		 * FROM
 		 *    load_test_cleaning1,
 		 *    clean_test_cleaning1
 		 * WHERE
 		 *    load_test_cleaning1.data_set_id = clean_test_cleaning1.data_set_id AND 
 		 *    load_test_cleaning1.row_number = clean_test_cleaning1.row_number AND
-		 *    load_test_cleaning1.age != clean_test_cleaning1.age;
+		 *    load_test_cleaning1.age != clean_test_cleaning1.age
 		 * UNION ALL
 		 * SELECT
 		 *    data_set_id,
@@ -504,7 +517,7 @@ public final class ChangeAuditManager
 		String coreDataSetName
 			= dataSetConfiguration.getName();
 		String loadTableName
-			= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
+			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(coreDataSetName);
 		String cleanSearchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
 		
@@ -559,6 +572,7 @@ public final class ChangeAuditManager
 				cleanSearchReplaceTableName, 
 			cleanFieldName, 
 			"new_value");
+		queryFormatter.addSelectFieldWithAlias("current_timestamp", "time_stamp");
 		
 		queryFormatter.addFromTable(loadTableName);
 		queryFormatter.addFromTable(cleanSearchReplaceTableName);
@@ -609,6 +623,7 @@ public final class ChangeAuditManager
 		queryFormatter.addTextLiteralSelectField(
 			"", 
 			"new_value");
+		queryFormatter.addSelectFieldWithAlias("current_timestamp", "time_stamp");
 		
 		queryFormatter.addFromTable(loadTableName);
 		queryFormatter.addFromTable(finalCleanedTableName);
@@ -635,6 +650,7 @@ public final class ChangeAuditManager
 		return queryFormatter.generateQuery();
 	}
 
+	/*
 	private void clearRowsFromAuditTrails(
 		final Connection connection, 
 		final Writer logFileWriter,
@@ -700,6 +716,7 @@ public final class ChangeAuditManager
 		
 		
 	}
+	*/
 	
 	public int getDataSetIdentifier(
 		final Connection connection,
