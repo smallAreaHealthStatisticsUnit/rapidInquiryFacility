@@ -380,9 +380,9 @@ ifneq ($(UNAME_S),Darwin)
 	$(MAKE) -C ../../ERD veryclean dbms_tools
 endif
 endif
-	$(MAKE) -C ../Node install
 	$(MAKE) clean
 	$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
+	$(MAKE) -C ../Node install	
 	$(MAKE) sahsuland_dev PGDATABASE=sahsuland_dev
 	$(MAKE) sahsuland_dev_dump PGDATABASE=sahsuland_dev
 ifeq ($(PG_VERSION),PostgreSQL 9.4.1)
