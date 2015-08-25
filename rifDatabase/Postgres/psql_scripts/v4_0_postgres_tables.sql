@@ -550,7 +550,9 @@ CREATE TABLE rif40_outcomes (
 );
 ALTER TABLE rif40_outcomes ADD CONSTRAINT rif40_outcomes_pk PRIMARY KEY (outcome_type);
 ALTER TABLE rif40_outcomes ADD CONSTRAINT outcome_type_ck1 CHECK (outcome_type IN ('A&E', 'ICD', 'ICD-O', 'OPCS', 'BIRTHWEIGHT'));
-ALTER TABLE rif40_outcomes ADD CONSTRAINT previous_lookup_table_ck CHECK ((previous_lookup_table IS NOT NULL AND previous_version IS NOT NULL AND (
+/* Removed by later alter script...
+ALTER TABLE rif40_outcomes ADD CONSTRAINT previous_lookup_table_ck CHECK (
+		   (previous_lookup_table IS NOT NULL AND previous_version IS NOT NULL AND (
 			previous_value_1char IS NOT NULL OR
 			previous_value_2char IS NOT NULL OR
 			previous_value_3char IS NOT NULL OR
@@ -574,6 +576,7 @@ ALTER TABLE rif40_outcomes ADD CONSTRAINT previous_value_nchar_ck CHECK ((previo
 			(previous_value_3char IS NOT NULL AND previous_description_3char IS NOT NULL) OR
 			(previous_value_4char IS NOT NULL AND previous_description_4char IS NOT NULL) OR
 			(previous_value_5char IS NOT NULL AND previous_description_5char IS NOT NULL))) OR (previous_lookup_table IS NULL AND previous_version IS NULL));
+*/
 CREATE TABLE rif_data.sahsuland_cancer (
 	year smallint NOT NULL,
 	age_sex_group smallint NOT NULL,

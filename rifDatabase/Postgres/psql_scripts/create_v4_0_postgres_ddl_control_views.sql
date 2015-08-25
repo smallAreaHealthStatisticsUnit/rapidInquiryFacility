@@ -83,8 +83,8 @@ END;
 $$;
 
 CREATE TABLE "rif40_columns" (
-table_or_view_name_hide varchar(30)
-, column_name_hide varchar(30)
+table_or_view_name_hide varchar(40)
+, column_name_hide varchar(40)
 , table_or_view_name_href varchar(522)
 , column_name_href varchar(847)
 , nullable varchar(8)
@@ -96,14 +96,14 @@ CREATE TABLE "rif40_tables_and_views" (
 class varchar(13)
 , table_or_view varchar(178)
 , table_or_view_name_href varchar(413)
-, table_or_view_name_hide varchar(30)
+, table_or_view_name_hide varchar(40)
 , comments varchar(4000)
 );
 GRANT SELECT ON rif40_tables_and_views TO rif_user;
 CREATE TABLE "rif40_triggers" (
-table_name varchar(30)
+table_name varchar(40)
 , column_name varchar(4000)
-, trigger_name varchar(30)
+, trigger_name varchar(40)
 , trigger_type varchar(16)
 , triggering_event varchar(227)
 , when_clause varchar(4000)

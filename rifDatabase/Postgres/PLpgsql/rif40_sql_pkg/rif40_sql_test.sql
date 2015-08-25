@@ -1325,12 +1325,5 @@ Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT state
 			Used to check test SQL statements and triggers';
 	
 --
--- Test code generator
---
-SELECT rif40_sql_pkg._rif40_test_sql_template(
-	'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
-	'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200') AS template;
-	
---
 -- Eof
 	

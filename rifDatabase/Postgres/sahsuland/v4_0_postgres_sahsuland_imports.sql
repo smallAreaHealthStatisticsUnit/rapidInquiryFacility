@@ -88,7 +88,8 @@ $$;
 \COPY t_rif40_projects FROM '../sahsuland/data/t_rif40_projects.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY rif40_version FROM '../sahsuland/data/rif40_version.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY rif40_error_messages FROM '../sahsuland/data/rif40_error_messages.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
-\COPY rif40_outcomes FROM '../sahsuland/data/rif40_outcomes.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+\dS+ rif40_outcomes
+\COPY rif40_outcomes(outcome_type, outcome_description, current_version, current_sub_version, previous_version, previous_sub_version) FROM '../sahsuland/data/rif40_outcomes.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY rif40_icd9 FROM '../sahsuland/data/rif40_icd9.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY rif40_icd10 FROM '../sahsuland/data/rif40_icd10.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY rif40_opcs4 FROM '../sahsuland/data/rif40_opcs4.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
@@ -109,8 +110,11 @@ $$;
 \COPY rif40_age_groups FROM '../sahsuland/data/rif40_age_groups.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY t_rif40_fdw_tables FROM '../sahsuland/data/t_rif40_fdw_tables.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 
-\COPY rif40_columns FROM '../sahsuland/data/rif40_columns.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
-\COPY rif40_tables_and_views FROM '../sahsuland/data/rif40_tables_and_views.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+\dS+ rif40_columns
+\COPY rif40_columns(table_or_view_name_hide, column_name_hide, nullable, oracle_data_type, comments) FROM '../sahsuland/data/rif40_columns.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+\dS+ rif40_tables_and_views
+\COPY rif40_tables_and_views(class, table_or_view, table_or_view_name_hide, comments) FROM '../sahsuland/data/rif40_tables_and_views.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+\dS+ rif40_triggers
 \COPY rif40_triggers FROM '../sahsuland/data/rif40_triggers.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 
 --
