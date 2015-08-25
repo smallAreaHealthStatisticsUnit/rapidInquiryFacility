@@ -111,9 +111,9 @@ $$;
 \COPY t_rif40_fdw_tables FROM '../sahsuland/data/t_rif40_fdw_tables.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 
 \dS+ rif40_columns
-\COPY rif40_columns(table_or_view_name_hide, column_name_hide, nullable, oracle_data_type, comments) FROM '../sahsuland/data/rif40_columns.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+\COPY rif40_columns FROM '../sahsuland/data/rif40_columns_orig.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \dS+ rif40_tables_and_views
-\COPY rif40_tables_and_views(class, table_or_view, table_or_view_name_hide, comments) FROM '../sahsuland/data/rif40_tables_and_views.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+\COPY rif40_tables_and_views FROM '../sahsuland/data/rif40_tables_and_views_orig.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \dS+ rif40_triggers
 \COPY rif40_triggers FROM '../sahsuland/data/rif40_triggers.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 
