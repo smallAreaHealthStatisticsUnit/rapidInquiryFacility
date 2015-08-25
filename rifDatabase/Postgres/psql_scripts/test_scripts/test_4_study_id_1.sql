@@ -159,6 +159,7 @@ BEGIN
 --
 -- Call init function is case called from main build scripts
 --
+	RAISE INFO 'test_4_study_id_1.sql: T4--07: Call init function rif40_sql_pkg.rif40_startup();';
 	PERFORM rif40_sql_pkg.rif40_startup();
 --
 -- Get "SELECTED" study geolevels
@@ -166,18 +167,20 @@ BEGIN
 	OPEN c2sm;
 	FETCH c2sm INTO c2sm_rec;
 	CLOSE c2sm;
---
+
 --
 -- Delete old test studies
 --
+	RAISE INFO 'test_4_study_id_1.sql: T4--08: Delete old test studies';
 	FOR c3sm_rec IN c3sm LOOP
 		i:=i+1;
-		RAISE INFO 'test_4_study_id_1.sql: T4--07: Delete of SAHSULAND test example study: %', c3sm_rec.study_id::VARCHAR;
+		RAISE INFO 'test_4_study_id_1.sql: T4--09: Delete of SAHSULAND test example study: %', c3sm_rec.study_id::VARCHAR;
 		PERFORM rif40_sm_pkg.rif40_delete_study(c3sm_rec.study_id);
 	END LOOP;
 --
 -- Create new test study
 --
+	RAISE INFO 'test_4_study_id_1.sql: T4--10: Create new test study';
 	PERFORM rif40_sm_pkg.rif40_create_disease_mapping_example(
 		'SAHSU'::VARCHAR 			/* Geography */,
 		'LEVEL1'::VARCHAR			/* Geolevel view */,
@@ -199,6 +202,7 @@ BEGIN
 -- Dump extract/map tables to CSV via a temporary table
 -- Ordering is for githubs benefit
 --
+	RAISE INFO 'test_4_study_id_1.sql: T4--11: Dump extract/map tables to CSV via a temporary table';
 	sql_stmt[1]:='DROP TABLE IF EXISTS test_4_study_id_1_extract';
 	sql_stmt[array_length(sql_stmt, 1)+1]:='DROP TABLE IF EXISTS test_4_study_id_1_map';
 	sql_stmt[array_length(sql_stmt, 1)+1]:='DROP TABLE IF EXISTS test_4_study_id_1_bands';
@@ -234,10 +238,10 @@ BEGIN
 --
 	EXECUTE 'SELECT '||USER||'.rif40_run_study(currval(''rif40_study_id_seq''::regclass)::INTEGER)' INTO study_ran_ok;
 	IF study_ran_ok THEN
-		RAISE INFO 'test_4_study_id_1.sql: T4--08: Test 4; Study: % run OK', currval('rif40_study_id_seq'::regclass)::VARCHAR;
+		RAISE INFO 'test_4_study_id_1.sql: T4--12: Test 4; Study: % run OK', currval('rif40_study_id_seq'::regclass)::VARCHAR;
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 	ELSE
-		RAISE EXCEPTION 'test_4_study_id_1.sql: T4--09: Test 4; Study: % run failed; see trace', currval('rif40_study_id_seq'::regclass)::VARCHAR;
+		RAISE EXCEPTION 'test_4_study_id_1.sql: T4--13: Test 4; Study: % run failed; see trace', currval('rif40_study_id_seq'::regclass)::VARCHAR;
 	END IF;
 END;
 $$;
@@ -444,9 +448,9 @@ BEGIN
 	FETCH c1 INTO c1_rec;
 	CLOSE c1;
 	IF c1_rec.missing_level4 = 0 AND c1_rec.extra_level4 = 0 THEN
-		RAISE INFO 'test_4_study_id_1.sql: T4--10: Test 4.1; Study: % study area all present in test_4_study_id_1_extract', currval('rif40_study_id_seq'::regclass)::VARCHAR;
+		RAISE INFO 'test_4_study_id_1.sql: T4--14: Test 4.1; Study: % study area all present in test_4_study_id_1_extract', currval('rif40_study_id_seq'::regclass)::VARCHAR;
 	ELSE
-		RAISE WARNING 'test_4_study_id_1.sql: T4--11: Test 4.1; Study: % study area not all present in test_4_study_id_1_extract; % missing, % extra', 
+		RAISE WARNING 'test_4_study_id_1.sql: T4--15: Test 4.1; Study: % study area not all present in test_4_study_id_1_extract; % missing, % extra', 
 			currval('rif40_study_id_seq'::regclass)::VARCHAR,
 			c1_rec.missing_level4::VARCHAR,
 			c1_rec.extra_level4::VARCHAR;
@@ -459,9 +463,9 @@ BEGIN
 	FETCH c2 INTO c2_rec;
 	CLOSE c2;
 	IF c2_rec.missing_level4 = 0 AND c2_rec.extra_level4 = 0 THEN
-		RAISE INFO 'test_4_study_id_1.sql: T4--12: Test 4.2; Study: % study area all present in test_4_study_id_1_map', currval('rif40_study_id_seq'::regclass)::VARCHAR;
+		RAISE INFO 'test_4_study_id_1.sql: T4--16: Test 4.2; Study: % study area all present in test_4_study_id_1_map', currval('rif40_study_id_seq'::regclass)::VARCHAR;
 	ELSE
-		RAISE WARNING 'test_4_study_id_1.sql: T4--13: Test 4.2; Study: % study area not all present in test_4_study_id_1_map; % missing, % extra', 
+		RAISE WARNING 'test_4_study_id_1.sql: T4--17: Test 4.2; Study: % study area not all present in test_4_study_id_1_map; % missing, % extra', 
 			currval('rif40_study_id_seq'::regclass)::VARCHAR,
 			c2_rec.missing_level4::VARCHAR,
 			c2_rec.extra_level4::VARCHAR;
@@ -474,9 +478,9 @@ BEGIN
 	FETCH c3 INTO c3_rec;
 	CLOSE c3;
 	IF c3_rec.missing_level4 = 0 AND c3_rec.extra_level4 = 0 THEN
-		RAISE INFO 'test_4_study_id_1.sql: T4--14: Test 4.3; Study: % study area all present in test_4_study_id_1_bands', currval('rif40_study_id_seq'::regclass)::VARCHAR;
+		RAISE INFO 'test_4_study_id_1.sql: T4--18: Test 4.3; Study: % study area all present in test_4_study_id_1_bands', currval('rif40_study_id_seq'::regclass)::VARCHAR;
 	ELSE
-		RAISE WARNING 'test_4_study_id_1.sql: T4--15: Test 4.3; Study: % study area not all present in test_4_study_id_1_bands; % missing, % extra', 
+		RAISE WARNING 'test_4_study_id_1.sql: T4--19: Test 4.3; Study: % study area not all present in test_4_study_id_1_bands; % missing, % extra', 
 			currval('rif40_study_id_seq'::regclass)::VARCHAR,
 			c3_rec.missing_level4::VARCHAR,
 			c3_rec.extra_level4::VARCHAR;
@@ -489,9 +493,9 @@ BEGIN
 	FETCH c4 INTO c4_rec;
 	CLOSE c4;
 	IF c4_rec.missing_level4 = 0 AND c4_rec.extra_level4 = 0 THEN
-		RAISE INFO 'test_4_study_id_1.sql: T4--16: Test 4.4; Study: % study area all present in rif40_results', currval('rif40_study_id_seq'::regclass)::VARCHAR;
+		RAISE INFO 'test_4_study_id_1.sql: T4--20: Test 4.4; Study: % study area all present in rif40_results', currval('rif40_study_id_seq'::regclass)::VARCHAR;
 	ELSE
-		RAISE WARNING 'test_4_study_id_1.sql: T4--17: Test 4.4; Study: % study area not all present in rif40_results; % missing, % extra', 
+		RAISE WARNING 'test_4_study_id_1.sql: T4--21: Test 4.4; Study: % study area not all present in rif40_results; % missing, % extra', 
 			currval('rif40_study_id_seq'::regclass)::VARCHAR,
 			c4_rec.missing_level4::VARCHAR,
 			c4_rec.extra_level4::VARCHAR;
@@ -499,7 +503,7 @@ BEGIN
 	END IF;
 -- 
 	IF errors > 0 THEN
-		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--18:  Test 4.1-4; Study: % % missing/extra level4 errors', 
+		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--22:  Test 4.1-4; Study: % % missing/extra level4 errors', 
 			currval('rif40_study_id_seq'::regclass)::VARCHAR,
 			errors::VARCHAR;
 	END IF;
@@ -637,10 +641,10 @@ BEGIN
 	FETCH c1 INTO c1_rec;
 	CLOSE c1;
 	IF c1_rec.missing_diffs	= 0 AND c1_rec.extra_diffs = 0 THEN
-		RAISE INFO 'test_4_study_id_1.sql: T4--19: Test 4.5; Study: % test_4_study_id_1_extract and v_test_4_study_id_1_extract are the same', 
+		RAISE INFO 'test_4_study_id_1.sql: T4--23: Test 4.5; Study: % test_4_study_id_1_extract and v_test_4_study_id_1_extract are the same', 
 			currval('rif40_study_id_seq'::regclass)::VARCHAR;
 	ELSE
-		RAISE WARNING 'test_4_study_id_1.sql: T4--20: Test 4.5; Study: % stest_4_study_id_1_extract/v_test_4_study_id_1_extract diffs; % missing, % extra', 
+		RAISE WARNING 'test_4_study_id_1.sql: T4--24: Test 4.5; Study: % stest_4_study_id_1_extract/v_test_4_study_id_1_extract diffs; % missing, % extra', 
 			currval('rif40_study_id_seq'::regclass)::VARCHAR,
 			c1_rec.missing_diffs::VARCHAR,
 			c1_rec.extra_diffs::VARCHAR;
@@ -653,10 +657,10 @@ BEGIN
 	FETCH c2 INTO c2_rec;
 	CLOSE c2;
 	IF c2_rec.missing_diffs	= 0 AND c2_rec.extra_diffs = 0 THEN
-		RAISE INFO 'test_4_study_id_1.sql: T4--21: Test 4.6; Study: % test_4_study_id_1_map and v_test_4_study_id_1_map are the same', 
+		RAISE INFO 'test_4_study_id_1.sql: T4--25: Test 4.6; Study: % test_4_study_id_1_map and v_test_4_study_id_1_map are the same', 
 			currval('rif40_study_id_seq'::regclass)::VARCHAR;
 	ELSE
-		RAISE WARNING 'test_4_study_id_1.sql: T4--22: Test 4.6; Study: % stest_4_study_id_1_map/v_test_4_study_id_1_map diffs; % missing, % extra', 
+		RAISE WARNING 'test_4_study_id_1.sql: T4--26: Test 4.6; Study: % stest_4_study_id_1_map/v_test_4_study_id_1_map diffs; % missing, % extra', 
 			currval('rif40_study_id_seq'::regclass)::VARCHAR,
 			c2_rec.missing_diffs::VARCHAR,
 			c2_rec.extra_diffs::VARCHAR;
@@ -669,10 +673,10 @@ BEGIN
 	FETCH c3 INTO c3_rec;
 	CLOSE c3;
 	IF c3_rec.missing_diffs	= 0 AND c3_rec.extra_diffs = 0 THEN
-		RAISE INFO 'test_4_study_id_1.sql: T4--23: Test 4.7; Study: % test_4_study_id_1_bands and v_test_4_study_id_1_bands are the same', 
+		RAISE INFO 'test_4_study_id_1.sql: T4--27: Test 4.7; Study: % test_4_study_id_1_bands and v_test_4_study_id_1_bands are the same', 
 			currval('rif40_study_id_seq'::regclass)::VARCHAR;
 	ELSE
-		RAISE WARNING 'test_4_study_id_1.sql: T4--24: Test 4.7; Study: % stest_4_study_id_1_bands/v_test_4_study_id_1_bands diffs; % missing, % extra', 
+		RAISE WARNING 'test_4_study_id_1.sql: T4--28: Test 4.7; Study: % stest_4_study_id_1_bands/v_test_4_study_id_1_bands diffs; % missing, % extra', 
 			currval('rif40_study_id_seq'::regclass)::VARCHAR,
 			c3_rec.missing_diffs::VARCHAR,
 			c3_rec.extra_diffs::VARCHAR;
@@ -680,7 +684,7 @@ BEGIN
 	END IF;
 -- 
 	IF errors > 0 THEN
-		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--25: Test 4.5-7; Study: % % missing/extra diffs compared with reference', 
+		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--29: Test 4.5-7; Study: % % missing/extra diffs compared with reference', 
 			currval('rif40_study_id_seq'::regclass)::VARCHAR,
 			errors::VARCHAR;
 	END IF;
@@ -852,10 +856,10 @@ BEGIN
 -- Test parameter
 --
 	IF c4sm_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
-		RAISE EXCEPTION 'test_4_study_id_1.sql: T4--26: No -v testuser=<debug level> parameter';	
+		RAISE EXCEPTION 'test_4_study_id_1.sql: T4--30: No -v testuser=<debug level> parameter';	
 	ELSE
 		debug_level:=LOWER(SUBSTR(c4sm_rec.debug_level, 5))::INTEGER;
-		RAISE INFO 'test_4_study_id_1.sql: T4--27: debug level parameter="%"', debug_level::Text;
+		RAISE INFO 'test_4_study_id_1.sql: T4--31: debug level parameter="%"', debug_level::Text;
 	END IF;
 	PERFORM rif40_log_pkg.rif40_add_to_debug('rif40_rename_map_and_extract_tables:DEBUG'||debug_level::Text);
 --
@@ -873,19 +877,19 @@ BEGIN
 --
 	IF c1_rec.study_name IS NULL AND c2_rec.total = 1 THEN
 -- Make EXCEPTION                                                                                
-        RAISE NOTICE 'test_4_study_id_1.sql: T4--28: no study 1';
+        RAISE NOTICE 'test_4_study_id_1.sql: T4--32: no study 1';
         RETURN;
     ELSIF c1_rec.study_name IS NULL THEN
-		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--28: Test 4.8 no study 1 found; total = %', c2_rec.total::Text;
+		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--33: Test 4.8 no study 1 found; total = %', c2_rec.total::Text;
 	ELSIF c1_rec.study_name != 'SAHSULAND test 4 study_id 1 example' THEN
-		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--29: Test 4.9; Study: 1 name (%) is not test 4 example', 
+		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--34: Test 4.9; Study: 1 name (%) is not test 4 example', 
 			c1_rec.study_name;
 	END IF;
 --
 -- Check NOT study 1 - i.e. first run
 --
 	IF currval('rif40_study_id_seq'::regclass) = 1 THEN
-        RAISE INFO 'test_4_study_id_1.sql: T4--28: Only study 1 present';                                                                          
+        RAISE INFO 'test_4_study_id_1.sql: T4--35: Only study 1 present';                                                                          
 		RETURN;
 	END IF;
 --
@@ -967,7 +971,7 @@ BEGIN
 --
 	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
-	RAISE INFO 'test_4_study_id_1.sql: T4--30: Study: % renamed to study 1; rows processed: %', 
+	RAISE INFO 'test_4_study_id_1.sql: T4--36: Study: % renamed to study 1; rows processed: %', 
 			currval('rif40_study_id_seq'::regclass)::VARCHAR, 
 			rows::VARCHAR;
 --
@@ -980,9 +984,9 @@ BEGIN
 -- Check study name again
 --
 	IF c1_rec.study_name IS NULL THEN
-		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--31: Test 4.10 study 1 no longer found';
+		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--37: Test 4.10 study 1 no longer found';
 	ELSIF c1_rec.study_name != 'SAHSULAND test 4 study_id 1 example' THEN
-		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--32: Test 4.11; Study: 1 name (%) is no longer the test 4 example', 
+		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--38: Test 4.11; Study: 1 name (%) is no longer the test 4 example', 
 			c1_rec.study_name;
 	END IF;
 END;
@@ -1051,10 +1055,10 @@ BEGIN
 -- Test parameter
 --
 	IF c4sm_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
-		RAISE EXCEPTION 'test_4_study_id_1.sql: T4-33: No -v testuser=<debug level> parameter';	
+		RAISE EXCEPTION 'test_4_study_id_1.sql: T4-39: No -v testuser=<debug level> parameter';	
 	ELSE
 		debug_level:=LOWER(SUBSTR(c4sm_rec.debug_level, 5))::INTEGER;
-		RAISE INFO 'T4--34: test_4_study_id_1.sql: debug level parameter="%"', debug_level::Text;
+		RAISE INFO 'T4--40: test_4_study_id_1.sql: debug level parameter="%"', debug_level::Text;
 	END IF;
 --
 -- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
@@ -1063,22 +1067,22 @@ BEGIN
 	IF debug_level IS NULL THEN
 		debug_level:=0;
 	ELSIF debug_level > 4 THEN
-		RAISE EXCEPTION 'test_4_study_id_1.sql: T4--35: Invalid debug level [0-4]: %', debug_level;
+		RAISE EXCEPTION 'test_4_study_id_1.sql: T4--41: Invalid debug level [0-4]: %', debug_level;
 	ELSIF debug_level BETWEEN 1 AND 4 THEN
         PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
 --
 -- Enabled debug on select rif40_sm_pkg functions
 --
 		FOREACH l_function IN ARRAY rif40_pkg_functions LOOP
-			RAISE INFO 'T4--36: test_4_study_id_1.sql: Enable debug for function: %', l_function;
+			RAISE INFO 'T4--42: test_4_study_id_1.sql: Enable debug for function: %', l_function;
 			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
 		END LOOP;
 	END IF;
 --
 -- Validate 2 sahsuland_geography tables are the same
 --
-	PERFORM rif40_sql_pkg.rif40_table_diff('T4__37(s1_extract)' /* Test tag */, 's1_extract', 'v_test_4_study_id_1_extract');
-	PERFORM rif40_sql_pkg.rif40_table_diff('T4__38(s1_map)' /* Test tag */, 's1_map', 'v_test_4_study_id_1_map', 
+	PERFORM rif40_sql_pkg.rif40_table_diff('T4--43(s1_extract)' /* Test tag */, 's1_extract', 'v_test_4_study_id_1_extract');
+	PERFORM rif40_sql_pkg.rif40_table_diff('T4--44(s1_map)' /* Test tag */, 's1_map', 'v_test_4_study_id_1_map', 
                     c1sm_rec. s1_map_columns, c1sm_rec. s1_map_columns);
 --
 --	RAISE EXCEPTION 'TEST Abort';

@@ -131,10 +131,12 @@ Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) stat
 			raise exception on failure,
 			expected result,
 			parent test id
-Returns:	Test id
+Returns:	Test id, NULL if rif40_test_harness table not created yet
 Description:Autoregister test case
  */
 DECLARE
+	c1st CURSOR FOR	
+		SELECT * FROM pg_tables WHERE tablename = 'rif40_test_harness';
 	c3st CURSOR (l_test_stmt 					VARCHAR, 
 				 l_test_run_class				VARCHAR,
 			     l_test_case_title 				VARCHAR, 
@@ -162,6 +164,7 @@ DECLARE
 			 WHERE a.test_case_title = l_test_case_title
 		   AND COALESCE(a.parent_test_id, 0) = COALESCE(l_parent_test_id, 0))
 		RETURNING *;
+	c1st_rec RECORD;		
 	c3st_rec RECORD;
 	c5st CURSOR (l_test_case_title VARCHAR, l_parent_test_id INTEGER) FOR
 		SELECT a.test_case_title, a.test_id
@@ -172,6 +175,16 @@ DECLARE
 --
 	f_test_id 	INTEGER;	
 BEGIN
+	OPEN c1st;
+	FETCH c1st INTO c1st_rec;
+	CLOSE c1st;
+	IF c1st_rec.tablename IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_sql_test_register', 
+			'[71150] No test harness table NOT FOUND: %; TEST CASE NOT INSERTED',
+			test_case_title::VARCHAR);		
+		RETURN NULL;
+	END IF;
+--
 	OPEN c3st(test_stmt, test_run_class, test_case_title, 
 		results, results_xml, pg_error_code_expected, raise_exception_on_failure, expected_result, parent_test_id);
 	FETCH c3st INTO c3st_rec;
@@ -220,7 +233,7 @@ Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) stat
 			raise exception on failure,
 			expected result,
 			parent test id  
-Returns:	Test id
+Returns:	Test id, NULL if rif40_test_harness table not created yet
 Description:Autoregister test case';
 
 CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_sql_test_dblink_connect(connection_name VARCHAR, debug_level INTEGER DEFAULT 0)
