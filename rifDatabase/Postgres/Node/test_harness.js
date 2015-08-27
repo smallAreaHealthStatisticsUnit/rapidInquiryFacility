@@ -429,7 +429,7 @@ function test_result(p_pass, p_text, p_sql_stmt,
 	else {
 			console.log('*****************************************************************************\n' + '*\n' +
 				p_text + '\n' + 'SQL> ' + p_sql_stmt + ';' + '\n' + 
-				'*\n* [Parameter 1: p_test_stmt                 VARCHAR]\n' + p_test_stmt + '\n' + 
+				'*\n* [Parameter 1: p_test_stmt                 VARCHAR]\nSQL>>>' + p_test_stmt + ';\n' + 
 				'* [Parameter 2: p_test_case_title              VARCHAR]  ' + p_test_case_title + '\n' + 
 				'* [Parameter 3: p_results                      TEXT[][]] ' + p_results + '\n' + 
 				'* [Parameter 4: p_results_xml                  XML]      ' + p_results_xml + '\n' + 
@@ -461,13 +461,13 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 
 				// Run test
 				var sql_stmt = 'SELECT rif40_sql_pkg._rif40_sql_test(' + '\n' + 
-						'$1::VARCHAR /* test_stmt */,' + '\n' + 
-						'$2::VARCHAR /* test_case_title */,' + '\n' + 
+						'$1::VARCHAR 	/* test_stmt */,' + '\n' + 
+						'$2::VARCHAR 	/* test_case_title */,' + '\n' + 
 						'$3::Text[][] 	/* results */,' + '\n' + 
 						'$4::XML 		/* results_xml */,' + '\n' +
 						'$5::VARCHAR 	/* pg_error_code_expected */,' + '\n' +
 						'$6::BOOLEAN 	/* raise_exception_on_failure */,' + '\n' +
-						'$7::INTEGER 	/* test_id */) AS rcode';
+						'$7::INTEGER 	/* test_id */) AS rbool';
 
 				var run = p_client2.query({
 							text: sql_stmt, 
@@ -480,7 +480,15 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 									 p_test_id[p_j-1]]}, 
 						function(err, result) {
 					if (err) {
-						console.error('2: Error in run test; SQL> ' + sql_stmt, err);	
+						console.error('2: Error in run test; SQL> ' + sql_stmt + 
+				'*\n* [Parameter 1: p_test_stmt                 VARCHAR]\nSQL>>>' + p_test_stmt[p_j-1] + ';\n' + 
+				'* [Parameter 2: p_test_case_title              VARCHAR]  ' + p_test_case_title[p_j-1] + '\n' + 
+				'* [Parameter 3: p_results                      TEXT[][]] ' + p_results[p_j-1] + '\n' + 
+				'* [Parameter 4: p_results_xml                  XML]      ' + p_results_xml[p_j-1] + '\n' + 
+				'* [Parameter 5: p_pg_error_code_expected       VARCHAR]  ' + p_pg_error_code_expected[p_j-1] + '\n' + 
+				'* [Parameter 6: p_raise_exception_on_failure   BOOLEAN]  ' + p_raise_exception_on_failure[p_j-1] + '\n' + 
+				'* [Parameter 7: p_test_id                      INTEGER]  ' + p_test_id[p_j-1] + '\n' + 
+				'*\n' + '*****************************************************************************\n', err);	
 						console.error('2: ROLLBACK transaction: ' + test);
 						var end = p_client2.query('ROLLBACK', function(err, result) {
 							if (err) {
@@ -505,12 +513,13 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 						// End of run processing - process results 					
 						run.on('end', function(result) {
 							row_count = result.rowCount;	
+							console.log('rbool: ' + result.rows[0].rbool + '; p_expected_result[p_j-1]: ' + p_expected_result[p_j-1]);
 							if (row_count != 1) {
 									console.error('2: Test FAILED: (' + row_count + ') rows ' + test + '\n' + 'SQL> ' + sql_stmt);	
 									p_failed++;			
 							}
-							else if (!result.rows[0].rcode) {
-								if (p_expected_result[p_j-1]) /* It was expected to pass */ {
+							else if (result.rows[0].rbool == false)   /* Test failed */ {
+								if (p_expected_result[p_j-1] == true) /* It was expected to pass */ {
 									test_result(false, '2: Test FAILED, expected to PASS: ' + test, sql_stmt,
 											p_test_stmt[p_j-1],
 											p_test_case_title[p_j-1], 
@@ -533,8 +542,8 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 									p_passed++; 										
 								}
 							}
-							else {
-								if (p_expected_result[p_j-1]) /* It was expected to pass */ {								
+							else { /* Test passed */
+								if (p_expected_result[p_j-1] == true) /* It was expected to pass */ {								
 									test_result(true, '2: Test OK: ' + test, sql_stmt,
 											p_test_stmt[p_j-1],
 											p_test_case_title[p_j-1], 
@@ -592,9 +601,12 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 											p_client1.end();	
 											process.exit(p_failed);	
 										} 
-										rif40_sql_test(p_client1, p_client2, next, p_tests, p_test_run_class, p_test_case_title, 
-												p_test_stmt, p_results, p_results_xml, p_pg_error_code_expected, p_expected_result,
-												p_raise_exception_on_failure, p_test_id, p_passed, p_failed);															
+										console.log('1: Recurse; next: ' + next);
+										rif40_sql_test(p_client1, p_client2, next, p_tests, 
+												p_test_run_class, p_test_case_title, 
+												p_test_stmt, p_results, p_results_xml, 
+												p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id, p_expected_result,
+												p_passed, p_failed);															
 									});
 								}
 							});	
