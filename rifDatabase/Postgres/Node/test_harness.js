@@ -145,7 +145,7 @@ if (argv.help) return optimist.showHelp();
 
 // Create 2x Postgres clients; one for control, the second for running each test in turn.
 var conString = 'postgres://' + argv["username"] + '@'; // Use PGHOST, native authentication (i.e. same as psql)
-// If host = localhost, use IPv6 numeric notation. This prevent ENOENT errors from getaffrinfo() in Windows
+// If host = localhost, use IPv6 numeric notation. This prevent ENOENT errors from getaddrinfo() in Windows
 // when Wireless is disconnected. This is a Windows DNS issue. psql avoids this somehow.
 // You do need entries for ::1 in pgpass
 if (argv["hostname"] == 'localhost') {
