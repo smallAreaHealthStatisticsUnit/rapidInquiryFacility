@@ -82,6 +82,9 @@ function pg_default(p_var) {
 	else if (p_var == "PGUSER") {
 		p_def="";
 	}	
+	else if (p_var == "PGPORT") {
+		p_def=5432;
+	}
 	
 	if (process.env[p_var]) { 
 		return process.env[p_var];
@@ -116,6 +119,12 @@ var argv = optimist
 	  type: "string",
       default: pg_default("PGUSER") 
     })	
+    .options("P", {
+      alias: "port",
+      describe: "Postgres database port",
+	  type: "integer",
+      default: pg_default("PGPORT") 
+    })		
     .options("H", {
       alias: "hostname",
       describe: "hostname of Postgres database",
@@ -135,7 +144,21 @@ var argv = optimist
 if (argv.help) return optimist.showHelp();
 
 // Create 2x Postgres clients; one for control, the second for running each test in turn.
-var conString = 'postgres://' + argv["username"] + '@' +  argv["hostname"] + '/' + argv["database"]; // Use PGHOST, native authentication (i.e. same as psql)
+var conString = 'postgres://' + argv["username"] + '@'; // Use PGHOST, native authentication (i.e. same as psql)
+// If host = localhost, use IPv6 numeric notation. This prevent ENOENT errors from getaffrinfo() in Windows
+// when Wireless is disconnected. This is a Windows DNS issue. psql avoids this somehow.
+// You do need entries for ::1 in pgpass
+if (argv["hostname"] == 'localhost') {
+	conString=conString + '[::1]';
+}
+else {
+	conString=conString + argv["hostname"];
+}
+if (argv["port"] != 5432) {
+	conString=conString + ':' + argv["port"];
+}
+conString=conString + '/' + argv["database"] + '?application_name=db_test_harness';
+
 var client = null;
 var client2 = null;
 
@@ -165,7 +188,7 @@ function main() {
 		
 	}
 	catch(err) {
-			return console.error('1: Could create postgres client using: ' + conString, err);
+			return console.error('1: Could not create postgres client using: ' + conString, err);
 	}
 
 // Notice message event processors
