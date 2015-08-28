@@ -174,6 +174,9 @@ var p_raise_exception_on_failure = [];
 var p_test_id = [];
 var p_expected_result = [];
 
+var p_pass = [];
+var p_time_taken = [];
+
 /* 
  * Function: 	main()
  * Parameters: 	ARGV
@@ -392,6 +395,8 @@ function run_test_harness_test(p_client1, p_client2, p_tests) {
 				p_raise_exception_on_failure = new Array(); 
 				p_test_id = new Array(); 
 				p_expected_result = new Array();
+				p_pass = new Array();
+				p_time_taken = new Array();
 				
 				if (row_count > 0) {
 					for (j = 0; j <row_count; j++) { 
@@ -403,7 +408,10 @@ function run_test_harness_test(p_client1, p_client2, p_tests) {
 						p_pg_error_code_expected.push(test_array.rows[j].pg_error_code_expected /* Deep copy */);	
 						p_raise_exception_on_failure.push(test_array.rows[j].raise_exception_on_failure /* Deep copy */);
 						p_test_id.push(test_array.rows[j].test_id /* Deep copy */);		
-						p_expected_result.push(test_array.rows[j].expected_result /* Deep copy */);					
+						p_expected_result.push(test_array.rows[j].expected_result /* Deep copy */);	
+
+						p_pass.push(undefined);
+						p_time_taken.push(undefined);						
 						}
 					rif40_sql_test(p_client1, p_client2, 1, p_tests, p_test_run_class, p_test_case_title, 
 							p_test_stmt, p_results, p_results_xml, p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id, p_expected_result,
@@ -444,6 +452,7 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 				p_test_stmt, p_results, p_results_xml, p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id, p_expected_result,
 				p_passed, p_failed) {	
 	
+	var start_time=Date.now();
 	var begin = p_client2.query('BEGIN', function(err, result) {
 		var next=p_j+1;
 		if (err) {
@@ -528,6 +537,7 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 											p_pg_error_code_expected[p_j-1],
 											p_raise_exception_on_failure[p_j-1],
 											p_test_id[p_j-1]);
+									p_pass[p_j-1]=false;
 									p_failed++;
 								}
 								else {
@@ -539,6 +549,7 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 											p_pg_error_code_expected[p_j-1],
 											p_raise_exception_on_failure[p_j-1],
 											p_test_id[p_j-1]);
+									p_pass[p_j-1]=true;
 									p_passed++; 										
 								}
 							}
@@ -552,6 +563,7 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 											p_pg_error_code_expected[p_j-1],
 											p_raise_exception_on_failure[p_j-1],
 											p_test_id[p_j-1]);
+									p_pass[p_j-1]=true;
 									p_passed++;
 								}
 								else {
@@ -563,9 +575,11 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 											p_pg_error_code_expected[p_j-1],
 											p_raise_exception_on_failure[p_j-1],
 											p_test_id[p_j-1]);
+									p_pass[p_j-1]=false;										
 									p_failed++;									
 								}
 							}
+							p_time_taken[p_j-1] = (Date.now()-start_time)/1000;
 							
 							var end = p_client2.query('ROLLBACK', function(err, result) {
 								if (err) {
@@ -580,33 +594,16 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 										console.log('2: ROLLBACK transaction: ' + test);
 										test_count++;
 										if (p_j === p_tests) {
-											if (p_failed > 0) {
-												console.error('1: Test harness complete; ' + test_count + ' tests completed; passed: ' + p_passed +
-													'; failed: ' + p_failed);	
-											}
-											else {
-												console.log('1: Test harness complete; ' + test_count + ' tests completed; passed: ' + p_passed +
-													'; none failed.');	
-											}													
-											/*
-											p_client2.on('drain', function() {
-												console.log('2: Disconnect.');
-												p_client2.end();
-											});	
-											p_client1.on('drain', function() {
-												console.log('1: Disconnect.');					
-												p_client1.end();						
-											}); */
-											p_client2.end();
-											p_client1.end();	
-											process.exit(p_failed);	
-										} 
-										console.log('1: Recurse; next: ' + next);
-										rif40_sql_test(p_client1, p_client2, next, p_tests, 
-												p_test_run_class, p_test_case_title, 
-												p_test_stmt, p_results, p_results_xml, 
-												p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id, p_expected_result,
-												p_passed, p_failed);															
+											end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_test_case_title, p_test_id, p_pass, p_time_taken, 1); 
+										}
+										else {
+											console.log('1: Recurse; next: ' + next);
+											rif40_sql_test(p_client1, p_client2, next, p_tests, 
+													p_test_run_class, p_test_case_title, 
+													p_test_stmt, p_results, p_results_xml, 
+													p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id, p_expected_result,
+													p_passed, p_failed);
+										}													
 									});
 								}
 							});	
@@ -619,7 +616,73 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 
 }
 
+function end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_test_case_title, p_test_id, p_pass, p_time_taken, p_j) {
+	var update_stmt='UPDATE rif40_test_harness\n' +
+					'   SET pass       = $1,\n' + 
+					'       time_taken = $2,\n' + 
+					'       test_date  = statement_timestamp()\n' +
+					' WHERE test_id = $3';
+					
+	if (p_j == 1) {
+		if (p_failed > 0) {
+			console.error('1: Test harness complete; ' + p_tests + ' tests completed; passed: ' + p_passed +
+				'; failed: ' + p_failed);	
+		}
+		else {
+			console.log('1: Test harness complete; ' + p_tests + ' tests completed; passed: ' + p_passed +
+				'; none failed.');	
+		}
+	}
+
+	var update = p_client1.query({
+						text: update_stmt, 
+						values: [p_pass[p_j-1],
+								 p_time_taken[p_j-1],
+								 p_test_id[p_j-1]
+								]},
+				function(err, result) {
+					if (err) {
+						p_client2.end();
+						console.error('1: Error in UPDATE: ' + update_stmt + '; ', err);
+						p_client1.end();			
+						process.exit(1);			
+					}
+					else { // UPDATE OK 
+						update.on('end', function(result) {	
+							console.log('1: [' + p_j + '/' + p_tests + '] ' + p_test_case_title[p_j-1] + 
+								'; id: ' + p_test_id[p_j-1] + '; pass: ' + p_pass[p_j-1] + 
+								'; time taken: ' + p_time_taken[p_j-1] + ' S');
+								if (p_j == p_tests) {
+										var commit = p_client1.query('COMMIT', function(err, result) {
+											if (err) {
+												p_client2.end();
+												console.error('1: Error in COMMIT transaction;', err);
+												p_client1.end();			
+												process.exit(1);			
+											}
+											else {
+												// Transaction COMMIT OK 
+												commit.on('end', function(result) {	
+													console.log('1: COMMIT transaction.');
+													
+													p_client2.end();
+													p_client1.end();	
+													process.exit(p_failed);
+													});
+											}
+										});
+								}
+								else {
+									end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_test_case_title, p_test_id, p_pass, p_time_taken, p_j + 1); 
+								}
+							});
+					}
+	});		
+
+} 
+
 main();
 
 //
 // Eof
+
