@@ -237,7 +237,11 @@ install:
 	
 db_test_harness:
 	$(NODE) db_test_harness.js --help
-	$(NODE) db_test_harness.js -H $(PGHOST) -D $(PGDATABASE) -U $(TESTUSER) -d $(DEBUG_LEVEL)	
+	$(NODE) db_test_harness.js -H $(PGHOST) -D $(PGDATABASE) -U $(TESTUSER) -d $(DEBUG_LEVEL)
+	
+test: db_test_harness
+retest:
+	$(NODE) db_test_harness.js -H $(PGHOST) -D $(PGDATABASE) -U $(TESTUSER) -d $(DEBUG_LEVEL) -F	
 	
 #
 # Eof

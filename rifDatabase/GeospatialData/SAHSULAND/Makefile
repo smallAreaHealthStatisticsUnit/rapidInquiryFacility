@@ -47,6 +47,10 @@
 # Peter Hambly, SAHSU
 #
 
+#
+# To convert ESRI proj files to PostGIS SRIDs use: http://prj2epsg.org/search
+#
+
 SOURCES=SAHSU_GRD_Level1.shp SAHSU_GRD_Level2.shp SAHSU_GRD_Level3.shp SAHSU_GRD_Level4.shp SAHSU_CEN_Level4.shp 
 
 include ../Makefile.common

@@ -46,22 +46,36 @@
 //
 // Peter Hambly, SAHSU
 //
-// Usage: node topojson_convert.js <PGHOST; default: localhost> <geography; default: sahsu>
+// Usage: test_harness [options] -- [test run class]
+//
+// Version: 0.1
+//
+// RIF 4.0 Database test harness.
+//
+// Options:
+//  -d, --debug     RIF database PL/pgsql debug level      [default: 0]
+//  -D, --database  name of Postgres database              [default: "sahsuland_dev"]
+//  -U, --username  Postgres database username             [default: "pch"]
+//  -P, --port      Postgres database port                 [default: 5432]
+//  -H, --hostname  hostname of Postgres database          [default: "wpea-rif1"]
+//  -F, --failed    re-run failed tests                    [default: false]
+//  --help          display this helpful message and exit  [default: false]
+//
+// E.g.
+//
+// node db_test_harness.js -H wpea-rif1 -D sahsuland_dev -U pch -d 1
 //
 // Connects using Postgres native driver (not JDBC) as rif40.
 //
 // Uses:
 //
-// https://github.com/mbostock/topojson
 // https://github.com/brianc/node-postgres
 // https://github.com/substack/node-optimist
 //
 // See: Node Makefile for build instructions
 //
 var pg = require('pg'),
-    optimist  = require('optimist'),
-    topojson  = require('topojson') /*,
-    escape    = require('pg-escape') */;
+    optimist  = require('optimist');
 	
 /* 
  * Function: 	pg_default()
@@ -80,7 +94,7 @@ function pg_default(p_var) {
 		p_def="localhost";
 	}
 	else if (p_var == "PGUSER") {
-		p_def="";
+		p_def=process.env["USERNAME"];
 	}	
 	else if (p_var == "PGPORT") {
 		p_def=5432;
@@ -130,6 +144,12 @@ var argv = optimist
       describe: "hostname of Postgres database",
 	  type: "string",
       default: pg_default("PGHOST")
+    })
+    .options("F", {
+      alias: "failed",
+      describe: "re-run failed tests",
+	  type: "boolean",
+      default: false
     })		
     .options("help", {
       describe: "display this helpful message and exit",
@@ -288,6 +308,12 @@ function _rif40_sql_test_log_setup(p_client, p_num, p_debug_level) {
 	
 }
 
+/* 
+ * Function: 	init_test_harness()
+ * Parameters: 	Client connection, connection number (1 or 2), debug level
+ * Returns:		Nothing
+ * Description: Create 2nd client for running test cases
+ */
 function init_test_harness(p_client2, p_num) {
 // Create 2nd client for running test cases
 	try {
@@ -311,6 +337,12 @@ function init_test_harness(p_client2, p_num) {
 	}); // End of connect
 }
 	
+/* 
+ * Function: 	run_test_harness()
+ * Parameters: 	Client connection, connection number (1 or 2), debug level
+ * Returns:		Nothing
+ * Description: Run test harness
+ */
 function run_test_harness(p_client1, p_client2) {
 	var total_tests=0;
 	var end = p_client2.query('COMMIT', function(err, result) {
@@ -322,10 +354,16 @@ function run_test_harness(p_client1, p_client2) {
 			// Transaction COMMIT OK 
 			end.on('end', function(result) {	
 				console.log('2: COMMIT transaction;');					
-				
+			// Handle -F flag to re-run failed tests only	
 				var sql_stmt = 'SELECT test_run_class, COUNT(test_run_class) AS tests, MIN(register_date) AS min_register_date\n' +
 					'  FROM rif40_test_harness a\n' +
-					' WHERE parent_test_id IS NULL\n' +
+					' WHERE parent_test_id IS NULL\n';
+					
+				if (argv["failed"]) {
+					console.log('1: Processing -F flag to re-run failed tests only');
+					sql_stmt = sql_stmt + '  AND pass = FALSE\n';
+				}
+				sql_stmt = sql_stmt +
 					' GROUP BY test_run_class\n' +
 					' ORDER BY 3';
 						
@@ -344,7 +382,7 @@ function run_test_harness(p_client1, p_client2) {
 						});
 						query.on('end', function(result) {
 							p_client2.on('notice', function(msg) {
-								console.log('2: XX %s', msg);
+								console.log('2: %s', msg);
 							});			
 							// End of query processing - process results array
 							row_count = result.rowCount;
@@ -367,9 +405,13 @@ function run_test_harness_test(p_client1, p_client2, p_tests) {
 
 	var sql_stmt = 'SELECT a.*\n' +
 		'  FROM rif40_test_harness a\n' +
-		' WHERE a.parent_test_id IS NULL\n' +
+		' WHERE a.parent_test_id IS NULL\n';
+	if (argv["failed"]) {
+		sql_stmt = sql_stmt + '  AND pass = FALSE\n';
+	}
+	sql_stmt = sql_stmt +
 		' ORDER BY a.test_id';
-			
+					
 	// Connected OK, run SQL query
 	var query = p_client1.query(sql_stmt, function(err, test_array) {
 		if (err) {
@@ -624,6 +666,9 @@ function end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_t
 					' WHERE test_id = $3';
 					
 	if (p_j == 1) {
+		if (argv["failed"]) {
+				console.log('1: Ran with -F flag to re-run failed tests only');
+		}
 		if (p_failed > 0) {
 			console.error('1: Test harness complete; ' + p_tests + ' tests completed; passed: ' + p_passed +
 				'; failed: ' + p_failed);	

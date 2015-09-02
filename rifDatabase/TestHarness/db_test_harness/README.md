@@ -1,4 +1,4 @@
-# README for node.js programs
+# README for RIF node.js database test harness
 
 * node.js is required to build to geoJSON to topoJSON converter by Mike Bostock at: https://github.com/mbostock/topojson/wiki/Installation
 
@@ -6,10 +6,14 @@
 
 ## Node Installation
 
-* Install MS Visual Studio from: http://e5.onthehub.com/WebStore/ProductsByMajorVersionList.aspx?ws=9cc4656f-b735-e211-aed3-f04da23e67f6&vsro=8 (UK Universities only)
+* On Windows install MS Visual Studio; e.g. from Dreamspark
 * [Install GDAL if QGis is not installed]
 * Install Python (2.7 or later) from https://www.python.org/downloads/ (NOT 3.x.x series!)]
 * Install node.js
+
+## Install topojson
+
+[Not required at present]
 
 Then install topojson through npm:
 
@@ -96,6 +100,32 @@ pg@4.2.0 node_modules\pg
 
 * make modules - builds required modules, updates dependencies in package.json
 * db_test_harness - Runs test harness
+
+# Usage
+
+``` node
+node db_test_harness.js --help
+Usage: test_harness [options] -- [test run class]
+
+Version: 0.1
+
+RIF 4.0 Database test harness.
+
+Options:
+  -d, --debug     RIF database PL/pgsql debug level      [default: 0]
+  -D, --database  name of Postgres database              [default: "sahsuland_dev"]
+  -U, --username  Postgres database username             [default: "pch"]
+  -P, --port      Postgres database port                 [default: 5432]
+  -H, --hostname  hostname of Postgres database          [default: "wpea-rif1"]
+  -F, --failed    re-run failed tests                    [default: false]
+  --help          display this helpful message and exit  [default: false]
+```
+
+* Example
+
+``` node
+node db_test_harness.js -H wpea-rif1 -D sahsuland_dev -U pch -d 1
+```
 
 Peter Hambly, 2nd September 2015 
 

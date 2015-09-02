@@ -172,6 +172,12 @@ New node based test harness
 * CDC teleconference
 * Farr conference in St Andrews [IG]
 
+### September
+
+#### 1st to 4th September
+
+To convert ESRI proj files to PostGIS SRIDs use: http://prj2epsg.org/search
+
 To do:
 
 * EXPLAIN plan support
