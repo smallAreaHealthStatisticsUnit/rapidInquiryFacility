@@ -74,12 +74,6 @@
 //
 // See: Node Makefile for build instructions
 //
-
-//
-// Will eventually support SQL server as well
-//
-var pg = require('pg'),
-    optimist  = require('optimist');
 	
 /* 
  * Function: 	pg_default()
@@ -112,8 +106,42 @@ function pg_default(p_var) {
 	}
 }
 
+//
+// Will eventually support SQL server as well
+//
+var pg = require('pg'),
+	optimist  = require('optimist');
+var client = null; // Client 1: Master; hard to remove 
+		
+// Test arrays; replace with structure and then remove me
+var test_count=0;
+var p_test_run_class = [];
+var p_test_case_title = [];	
+var p_test_stmt = []; 
+var p_results = []; 
+var p_results_xml = []; 
+var p_pg_error_code_expected = []; 
+var p_raise_exception_on_failure = []; 
+var p_test_id = [];
+var p_expected_result = [];
+
+var p_pass = [];
+var p_time_taken = [];
+
+// Remove me
+var argv;
+
+/* 
+ * Function: 	main()
+ * Parameters: 	ARGV
+ * Returns:		Nothing
+ * Description: Create control database connecton, then run rif40_startup()
+ *				Then _rif40_sql_test_log_setup() ...
+ */	
+function main() {
+	
 // Process Args using optimist
-var argv = optimist
+	argv = optimist
     .usage("Usage: \033[1mtest_harness\033[0m [options] -- [test run class]\n\n"
 
 + "Version: 0.1\n\n"
@@ -165,61 +193,35 @@ var argv = optimist
     })
     .argv;
 
-if (argv.help) return optimist.showHelp();
-
+	if (argv.help) return optimist.showHelp();
+	
 //
 // This needs to be rewritten to handle the ::1 problem nicely
 //
 
-// Create 2x Postgres clients; one for control, the second for running each test in turn.
-var conString = 'postgres://' + argv["username"] + '@'; // Use PGHOST, native authentication (i.e. same as psql)
-// If host = localhost, use IPv6 numeric notation. This prevent ENOENT errors from getaddrinfo() in Windows
-// when Wireless is disconnected. This is a Windows DNS issue. psql avoids this somehow.
-// You do need entries for ::1 in pgpass
-if (argv["hostname"] == 'localhost') {
-	conString=conString + '[::1]';
-}
-else {
-	conString=conString + argv["hostname"];
-}
-if (argv["port"] != 5432) {
-	conString=conString + ':' + argv["port"];
-}
-conString=conString + '/' + argv["database"] + '?application_name=db_test_harness';
-
-var client = null;
-var client2 = null;
-
-// Test arrays
-var test_count=0;
-var p_test_run_class = [];
-var p_test_case_title = [];	
-var p_test_stmt = []; 
-var p_results = []; 
-var p_results_xml = []; 
-var p_pg_error_code_expected = []; 
-var p_raise_exception_on_failure = []; 
-var p_test_id = [];
-var p_expected_result = [];
-
-var p_pass = [];
-var p_time_taken = [];
-
-/* 
- * Function: 	main()
- * Parameters: 	ARGV
- * Returns:		Nothing
- * Description: Create control database connecton, then run rif40_startup()
- *				Then _rif40_sql_test_log_setup() ...
- */	
-function main() {
+	// Create 2x Postgres clients; one for control, the second for running each test in turn.
+	var conString = 'postgres://' + argv["username"] + '@'; // Use PGHOST, native authentication (i.e. same as psql)
+	// If host = localhost, use IPv6 numeric notation. This prevent ENOENT errors from getaddrinfo() in Windows
+	// when Wireless is disconnected. This is a Windows DNS issue. psql avoids this somehow.
+	// You do need entries for ::1 in pgpass
+	if (argv["hostname"] == 'localhost') {
+		conString=conString + '[::1]';
+	}
+	else {
+		conString=conString + argv["hostname"];
+	}
+	if (argv["port"] != 5432) {
+		conString=conString + ':' + argv["port"];
+	}
+	conString=conString + '/' + argv["database"] + '?application_name=db_test_harness';
+	
 	try {
 		client = new pg.Client(conString);
 		console.log('1: Connect to Postgres using: ' + conString);
 		
 	}
 	catch(err) {
-			return console.error('1: Could not create postgres client using: ' + conString, err);
+			return console.error('1: Could not create postgres 1st client [master] using: ' + conString, err);
 	}
 
 // Notice message event processors
@@ -230,23 +232,23 @@ function main() {
 // Connect to Postgres database
 	client.connect(function(err) {
 		if (err) {
-			return console.error('1: Could not connect to postgres using: ' + conString, err);
+			return console.error('1: Could not connect to postgres 1st client [master] using: ' + conString, err);
 		}
 		else {
 // Call rif40_startup; then subsequent functions in an async tree
-			rif40_startup(client, 1);
+			rif40_startup(client, 1, argv["debug"], conString);
 		} // End of else connected OK 
 	}); // End of connect
 }
 
 /* 
  * Function: 	rif40_startup()
- * Parameters: 	Client connection, connection number (1 or 2)
+ * Parameters: 	Client connection, connection number (1 or 2), debug level, connection string
  * Returns:		Nothing
  * Description: Run rif40_startup()
  *				Then _rif40_sql_test_log_setup()
  */
-function rif40_startup(p_client, p_num) {
+function rif40_startup(p_client, p_num, p_debug_level, p_conString) {
 	var sql_stmt;
 		if (p_num == 1) {
 			sql_stmt = 'SELECT rif40_sql_pkg.rif40_startup() AS a';
@@ -269,7 +271,7 @@ function rif40_startup(p_client, p_num) {
 				result.addRow(row);
 			});
 			query.on('end', function(result) {
-				_rif40_sql_test_log_setup(p_client, p_num, argv["debug"]);
+				_rif40_sql_test_log_setup(p_client, p_num, p_debug_level, p_conString);
 				return;
 			});	
 		}
@@ -278,13 +280,13 @@ function rif40_startup(p_client, p_num) {
 
 /* 
  * Function: 	_rif40_sql_test_log_setup()
- * Parameters: 	Client connection, connection number (1 or 2), debug level
+ * Parameters: 	Client connection, connection number (1 or 2), debug level, connection string
  * Returns:		Nothing
  * Description: Run _rif40_sql_test_log_setup()
  *				Then if you are the control connection (1) call init_test_harness()
  *				Otherwise can run_test_harness() using the control connection
  */
-function _rif40_sql_test_log_setup(p_client, p_num, p_debug_level) {
+function _rif40_sql_test_log_setup(p_client, p_num, p_debug_level, p_conString) {
 	var sql_stmt = 'SELECT rif40_sql_pkg._rif40_sql_test_log_setup(' + p_debug_level + ') AS a';
 			
 	// Connected OK, run SQL query
@@ -302,12 +304,15 @@ function _rif40_sql_test_log_setup(p_client, p_num, p_debug_level) {
 			});
 			query.on('end', function(result) {
 				if (p_num == 1) {
+					// Client 1 [Master] waits after test harness initialisation
 					console.log('1: Wait for client 2 initialisation');
-					init_test_harness(p_client /* client 2 */, p_num);
+					// Create 2nd client(worker thread) for running test cases
+					init_test_harness(p_debug_level, p_conString);
 				}
-				else {
+				else { // p_client is slave [2]
+					// Client 2 [slave worker] is now initialised so we can run the test harness tests
 					console.log('1: Client 2 initialised');
-					run_test_harness(client, client2);
+					run_test_harness(client, p_client); 
 				}
 				return;
 			});	
@@ -318,30 +323,32 @@ function _rif40_sql_test_log_setup(p_client, p_num, p_debug_level) {
 
 /* 
  * Function: 	init_test_harness()
- * Parameters: 	Client connection, connection number (1 or 2), debug level
+ * Parameters: 	Debug level, connection string
  * Returns:		Nothing
- * Description: Create 2nd client(worker thread) for running test cases
+ * Description: Create 2nd client (worker thread) for running test cases
  */
-function init_test_harness(p_client2, p_num) {
-// Create 2nd client for running test cases
+function init_test_harness(p_debug_level, p_conString) {
+	var client2 = null;
+	
+// Create 2nd client (worker thread) for running test cases
 	try {
-		console.log('2: Connect to Postgres using: ' + conString);		
-		client2 = new pg.Client(conString);
+		console.log('2: Connect to Postgres using: ' + p_conString);		
+		client2 = new pg.Client(p_conString);
 	}
 	catch(err) {
-			return console.error('2: Could create postgres 2nd client using: ' + conString, err);
+			return console.error('2: Could not create postgres 2nd client [slave] using: ' + p_conString, err);
 	}
 	client2.on('notice', function(msg) {
-// Suppress lcient 2 (worker thread) initialisation messages
+// Suppress client 2 (worker thread) initialisation messages; re-enabled in run_test_harness()
 //	      console.log('2: %s', msg);
 	});
 	client2.connect(function(err) {
 		if (err) {
-			return console.error('2: Could not connect to postgres using: ' + conString, err);
+			return console.error('2: Could not connect to postgres 2nd client [slave] using: ' + p_conString, err);
 		}
 		else {
 	        // Call rif40_startup; then subsequent functions in an async tree
-			rif40_startup(client2, 2);
+			rif40_startup(client2, 2, p_debug_level);
 		} // End of else connected OK 
 	}); // End of connect
 }
@@ -396,6 +403,7 @@ function run_test_harness(p_client1, p_client2) {
 							result.addRow(row);
 						});
 						query.on('end', function(result) {
+							// Re-enable client 2 [worker] debug messages
 							p_client2.on('notice', function(msg) {
 								console.log('2: %s', msg);
 							});			
@@ -423,6 +431,10 @@ function run_test_harness(p_client1, p_client2) {
  * Description: Run test harness tests:
  *
  *				Build SQL statement to run tests, handling -F flag to re-run failed tests only
+ *				Run query, push results data into results array
+ *				Run the first test using rif40_sql_test(). 
+ *				The rest of the tests are run recursively from rif40_sql_test() from query.on('end', ...) 
+ *				so the SQl statements and transactions are run in the correct order.
  */
 function run_test_harness_tests(p_client1, p_client2, p_tests) {
 
@@ -465,6 +477,7 @@ function run_test_harness_tests(p_client1, p_client2, p_tests) {
 				p_time_taken = new Array();
 				
 				if (row_count > 0) {
+					// Push results data into results array
 					for (j = 0; j <row_count; j++) { 
 						p_test_run_class.push(test_array.rows[j].test_run_class /* Deep copy */);
 						p_test_case_title.push(test_array.rows[j].test_case_title /* Deep copy */);
@@ -478,7 +491,10 @@ function run_test_harness_tests(p_client1, p_client2, p_tests) {
 
 						p_pass.push(undefined);
 						p_time_taken.push(undefined);						
-						}
+					}
+					// Run the first test using rif40_sql_test(). 
+					// The rest of the tests are run recursively from rif40_sql_test() from query.on('end', ...) 
+					// so the SQl statements and transactions are run in the correct order.
 					rif40_sql_test(p_client1, p_client2, 1, p_tests, p_test_run_class, p_test_case_title, 
 							p_test_stmt, p_results, p_results_xml, p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id, p_expected_result,
 							0 /* p_passed */, 0 /* p_failed */);
@@ -493,27 +509,13 @@ function run_test_harness_tests(p_client1, p_client2, p_tests) {
 	});				
 }
 
-function test_result(p_pass, p_text, p_sql_stmt,
-				p_test_stmt, p_test_case_title, p_results, p_results_xml, p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id) {
-	if (p_pass) {
-			console.log('*****************************************************************************\n' + '*\n' +
-				p_text + '\n' + 
-				'*\n' + '*****************************************************************************\n');
-	}
-	else {
-			console.log('*****************************************************************************\n' + '*\n' +
-				p_text + '\n' + 'SQL> ' + p_sql_stmt + ';' + '\n' + 
-				'*\n* [Parameter 1: p_test_stmt                 VARCHAR]\nSQL>>>' + p_test_stmt + ';\n' + 
-				'* [Parameter 2: p_test_case_title              VARCHAR]  ' + p_test_case_title + '\n' + 
-				'* [Parameter 3: p_results                      TEXT[][]] ' + p_results + '\n' + 
-				'* [Parameter 4: p_results_xml                  XML]      ' + p_results_xml + '\n' + 
-				'* [Parameter 5: p_pg_error_code_expected       VARCHAR]  ' + p_pg_error_code_expected + '\n' + 
-				'* [Parameter 6: p_raise_exception_on_failure   BOOLEAN]  ' + p_raise_exception_on_failure + '\n' + 
-				'* [Parameter 7: p_test_id                      INTEGER]  ' + p_test_id + '\n' + 
-				'*\n' + '*****************************************************************************\n');
-	}
-}
-
+/* 
+ * Function: 	rif40_sql_test()
+ * Parameters: 	Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
+ *              test array [to be restructured]
+ * Returns:		Nothing
+ * Description:
+ */
 function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_test_case_title, 
 				p_test_stmt, p_results, p_results_xml, p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id, p_expected_result,
 				p_passed, p_failed) {	
@@ -530,7 +532,7 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 		else {
 			// Transaction start OK 
 			begin.on('end', function(result) {			
-				var test='[' + p_j + '/' + p_tests + ':' + p_test_run_class[p_j-1] + '] ' + p_test_case_title[p_j-1];
+				var test='[' + p_j + '/' + p_tests + ']: ' + p_test_run_class[p_j-1] + '] ' + p_test_case_title[p_j-1];
 				console.log('1: ' + test);			
 				console.log('2: BEGIN transaction: ' + test);		
 
@@ -680,6 +682,27 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 		}
 	});
 
+}
+
+function test_result(p_pass, p_text, p_sql_stmt,
+				p_test_stmt, p_test_case_title, p_results, p_results_xml, p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id) {
+	if (p_pass) {
+			console.log('*****************************************************************************\n' + '*\n' +
+				p_text + '\n' + 
+				'*\n' + '*****************************************************************************\n');
+	}
+	else {
+			console.log('*****************************************************************************\n' + '*\n' +
+				p_text + '\n' + 'SQL> ' + p_sql_stmt + ';' + '\n' + 
+				'*\n* [Parameter 1: p_test_stmt                 VARCHAR]\nSQL>>>' + p_test_stmt + ';\n' + 
+				'* [Parameter 2: p_test_case_title              VARCHAR]  ' + p_test_case_title + '\n' + 
+				'* [Parameter 3: p_results                      TEXT[][]] ' + p_results + '\n' + 
+				'* [Parameter 4: p_results_xml                  XML]      ' + p_results_xml + '\n' + 
+				'* [Parameter 5: p_pg_error_code_expected       VARCHAR]  ' + p_pg_error_code_expected + '\n' + 
+				'* [Parameter 6: p_raise_exception_on_failure   BOOLEAN]  ' + p_raise_exception_on_failure + '\n' + 
+				'* [Parameter 7: p_test_id                      INTEGER]  ' + p_test_id + '\n' + 
+				'*\n' + '*****************************************************************************\n');
+	}
 }
 
 function end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_test_case_title, p_test_id, p_pass, p_time_taken, p_j) {
