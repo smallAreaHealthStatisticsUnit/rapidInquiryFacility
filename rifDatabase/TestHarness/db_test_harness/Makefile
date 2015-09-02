@@ -82,7 +82,7 @@ DEFAULT_WINDOWS_ADMIN_USER=Administrator
 #
 # Local overrides; copy Makefile.local.example to Makefile.local and edit Makefile.local
 #
--include ../psql_scripts/Makefile.local
+-include ../../Postgres/psql_scripts/Makefile.local
 
 #
 # PL/pgsql debug levels (DEBUG_LEVEL);
@@ -221,31 +221,23 @@ endif
 #.SUFFIXES: .sql .rpt
 #.sql.rpt:
 #	$(RUN) $@ "$(CURDIR)" $(PSQL) $(PSQL_FLAGS) -f $< 
-MODULES=node_modules/pg node_modules/pg-native node_modules/topojson
+MODULES=node_modules/pg node_modules/pg-native node_modules/optimist
 
-all: modules topojson_convert
+all: modules db_test_harness
 
 modules: $(MODULES)
 
 $(MODULES):
-	$(NPM) install pg pg-native topojson
+	$(NPM) install --save pg pg-native optimist
 
 #clean:
 #	 $(DELETE) node_modules
 	 
-install: $(TOPOJSON)
+install:
 	
-topojson: $(TOPOJSON) ../psql_scripts/test_scripts/data/test_6_geojson_test_01.json ../psql_scripts/test_scripts/data/test_6_sahsu_4_level4_0_0_0.json
-	$(TOPOJSON) -q 1e6 -o test_6_geojson_test_01.json ../psql_scripts/test_scripts/data/test_6_geojson_test_01.json
-	$(TOPOJSON) -q 1e6 -o test_6_sahsu_4_level4_0_0_0.json ../psql_scripts/test_scripts/data/test_6_sahsu_4_level4_0_0_0.json
-
-topojson_convert:
-	$(NODE) topojson_convert.js $(PGHOST) sahsu $(PGDATABASE)
-	
-$(TOPOJSON):
-	@echo Building $(TOPOJSON)...
-	$(NPM) install pg pg-native topojson
-	$(TOPOJSON) --version	
+db_test_harness:
+	$(NODE) db_test_harness.js --help
+	$(NODE) db_test_harness.js -H $(PGHOST) -D $(PGDATABASE) -U $(TESTUSER) -d $(DEBUG_LEVEL)	
 	
 #
 # Eof
