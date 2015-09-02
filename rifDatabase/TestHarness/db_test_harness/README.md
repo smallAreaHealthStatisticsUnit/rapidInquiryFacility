@@ -19,16 +19,22 @@ Test:
 
 make 
 
+```topojson
 C:\Users\pch\AppData\Roaming\npm\topojson.cmd -q 1e6 -o test_6_geojson_test_01.json ..\psql_scripts\test_scripts\data\test_6_geojson_test_01.json
 bounds: -6.68852598 54.6456466 -6.32507059 55.01219818 (spherical)
 pre-quantization: 0.0404m (3.63e-7°) 0.0408m (3.67e-7°)
 topology: 160 arcs, 3502 points
 prune: retained 160 / 160 arcs (100%)
+```
 
 ## Install Postgres connectors pg and pg-native
 
-first type: pg_config is test Postgres extensibility is installed, pg-native requires MS Visual Studio.
+Checks: 
 
+* Type: pg_config to test if Postgres extensibility is installed, pg-native requires MS Visual Studio.
+* check you can connect to psql without a password (i.e. using pgass/Kerberos). pg-native must be able to connect to the database to install!
+
+```npm
 P:\Github\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>npm install pg pg-native
 > libpq@1.6.4 install P:\Github\rapidInquiryFacility\rifDatabase\TestHarness\db_test_harness\node_modules\pg-native\node_modules\libpq
 > node-gyp rebuild
@@ -82,6 +88,7 @@ pg@4.2.0 node_modules\pg
 +-- pg-types@1.6.0
 +-- semver@4.2.0
 +-- pgpass@0.0.3 (split@0.3.3)
+```
 
 ## NPM (Node package manager) Make integration
 

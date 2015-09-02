@@ -160,10 +160,20 @@ d) Node.js to avoid confusion with middleware
   
 Convert test data from Postgres array to XML format. 
 
-To do:
+#### 17th to 21st August
+
+New node based test harness
 
 * Support for Postgres debugging
 * Replace dblink test harness runner with Node.js version so that debugging and output can be controlled.
+
+#### 24th to 28th August
+
+* CDC teleconference
+* Farr conference in St Andrews [IG]
+
+To do:
+
 * EXPLAIN plan support
 * Linked tests (based on the study 1 test scenario)
 * Test regime; for all rif40 schema tables
