@@ -74,6 +74,10 @@
 //
 // See: Node Makefile for build instructions
 //
+
+//
+// Will eventually support SQL server as well
+//
 var pg = require('pg'),
     optimist  = require('optimist');
 	
@@ -162,6 +166,10 @@ var argv = optimist
     .argv;
 
 if (argv.help) return optimist.showHelp();
+
+//
+// This needs to be rewritten to handle the ::1 problem nicely
+//
 
 // Create 2x Postgres clients; one for control, the second for running each test in turn.
 var conString = 'postgres://' + argv["username"] + '@'; // Use PGHOST, native authentication (i.e. same as psql)
@@ -312,7 +320,7 @@ function _rif40_sql_test_log_setup(p_client, p_num, p_debug_level) {
  * Function: 	init_test_harness()
  * Parameters: 	Client connection, connection number (1 or 2), debug level
  * Returns:		Nothing
- * Description: Create 2nd client for running test cases
+ * Description: Create 2nd client(worker thread) for running test cases
  */
 function init_test_harness(p_client2, p_num) {
 // Create 2nd client for running test cases
@@ -324,6 +332,7 @@ function init_test_harness(p_client2, p_num) {
 			return console.error('2: Could create postgres 2nd client using: ' + conString, err);
 	}
 	client2.on('notice', function(msg) {
+// Suppress lcient 2 (worker thread) initialisation messages
 //	      console.log('2: %s', msg);
 	});
 	client2.connect(function(err) {
@@ -331,7 +340,7 @@ function init_test_harness(p_client2, p_num) {
 			return console.error('2: Could not connect to postgres using: ' + conString, err);
 		}
 		else {
-	// Call rif40_startup; then subsequent functions in an async tree
+	        // Call rif40_startup; then subsequent functions in an async tree
 			rif40_startup(client2, 2);
 		} // End of else connected OK 
 	}); // End of connect
@@ -339,12 +348,18 @@ function init_test_harness(p_client2, p_num) {
 	
 /* 
  * Function: 	run_test_harness()
- * Parameters: 	Client connection, connection number (1 or 2), debug level
+ * Parameters: 	Master client (1) connection, worker thread client (2) connection
  * Returns:		Nothing
- * Description: Run test harness
+ * Description: Run test harness:
+ *
+ *              COMMIT; to complete initial on logon transaction
+ *              Build SQL statement to display tests per test_run_class, handling -F flag to re-run failed tests only
+ *				Display tests per test_run_class, total tests
+ * 			    Finally run the tests: function run_test_harness_tests()
  */
 function run_test_harness(p_client1, p_client2) {
 	var total_tests=0;
+	// COMMIT; to complete initial on logon transaction
 	var end = p_client2.query('COMMIT', function(err, result) {
 		if (err) {
 			p_client2.end();
@@ -354,18 +369,18 @@ function run_test_harness(p_client1, p_client2) {
 			// Transaction COMMIT OK 
 			end.on('end', function(result) {	
 				console.log('2: COMMIT transaction;');					
-			// Handle -F flag to re-run failed tests only	
+			    // Build SQL statement to display tests per test_run_class, handling -F flag to re-run failed tests only
 				var sql_stmt = 'SELECT test_run_class, COUNT(test_run_class) AS tests, MIN(register_date) AS min_register_date\n' +
 					'  FROM rif40_test_harness a\n' +
-					' WHERE parent_test_id IS NULL\n';
+					' WHERE parent_test_id IS NULL /* Ignore dependent tests */\n';
 					
 				if (argv["failed"]) {
 					console.log('1: Processing -F flag to re-run failed tests only');
-					sql_stmt = sql_stmt + '  AND pass = FALSE\n';
+					sql_stmt = sql_stmt + '  AND pass = FALSE /* Filter on failed tests only */\n';
 				}
 				sql_stmt = sql_stmt +
 					' GROUP BY test_run_class\n' +
-					' ORDER BY 3';
+					' ORDER BY 3 /* min_register_date */';
 						
 				// Connected OK, run SQL query
 				var query = p_client1.query(sql_stmt, function(err, result) {
@@ -384,30 +399,39 @@ function run_test_harness(p_client1, p_client2) {
 							p_client2.on('notice', function(msg) {
 								console.log('2: %s', msg);
 							});			
-							// End of query processing - process results array
+							// End of query processing - process results array - tests per class
 							row_count = result.rowCount;
 							for (i = 1; i <= row_count; i++) { 
 								console.log('2: Class: %s Tests: %s', result.rows[i-1].test_run_class, result.rows[i-1].tests);
 								total_tests=total_tests + parseInt(result.rows[i-1].tests, 10);
 							}
 							console.log('2: Total tests %s', total_tests);
-							run_test_harness_test(p_client1, p_client2, total_tests);							
+							// Finally run the tests: function run_test_harness_test()
+							run_test_harness_tests(p_client1, p_client2, total_tests);							
 						});	
 					}
-				});	
-	
+				});		
 			});
 		}
 	});		
 }
 
-function run_test_harness_test(p_client1, p_client2, p_tests) {
+/* 
+ * Function: 	run_test_harness()
+ * Parameters: 	Master client (1) connection, worker thread client (2) connection, number of tests
+ * Returns:		Nothing
+ * Description: Run test harness tests:
+ *
+ *				Build SQL statement to run tests, handling -F flag to re-run failed tests only
+ */
+function run_test_harness_tests(p_client1, p_client2, p_tests) {
 
+	// Build SQL statement to run tests, handling -F flag to re-run failed tests only
 	var sql_stmt = 'SELECT a.*\n' +
 		'  FROM rif40_test_harness a\n' +
-		' WHERE a.parent_test_id IS NULL\n';
+		' WHERE a.parent_test_id IS NULL /* Ignore dependent tests */\n';
 	if (argv["failed"]) {
-		sql_stmt = sql_stmt + '  AND pass = FALSE\n';
+		sql_stmt = sql_stmt + '  AND pass = FALSE /* Filter on failed tests only */\n';
 	}
 	sql_stmt = sql_stmt +
 		' ORDER BY a.test_id';

@@ -96,10 +96,11 @@ pg@4.2.0 node_modules\pg
 
 ## NPM (Node package manager) Make integration
 
-# Targets
+# Make targets
 
-* make modules - builds required modules, updates dependencies in package.json
+* modules - builds required modules, updates dependencies in package.json
 * db_test_harness - Runs test harness
+* retest - Rerun failed test harness tests (-F flag)
 
 # Usage
 
