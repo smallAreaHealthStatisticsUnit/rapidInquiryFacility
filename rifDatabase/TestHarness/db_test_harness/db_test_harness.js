@@ -93,6 +93,12 @@ function pg_default(p_var) {
 	}
 	else if (p_var == "PGUSER") {
 		p_def=process.env["USERNAME"];
+		if (p_def === undefined) {
+			p_def=process.env["USER"];
+			if (p_def === undefined) {
+				p_def="";
+			}
+		}
 	}	
 	else if (p_var == "PGPORT") {
 		p_def=5432;
@@ -137,7 +143,8 @@ var p_time_taken = [];
 function main() {
 	
 	var client1 = null; // Client 1: Master; hard to remove 
-
+	var p_debug_level = null;
+	
 // Process Args using optimist
 	var argv = optimist
     .usage("Usage: \033[1mtest_harness\033[0m [options] -- [test run class]\n\n"
@@ -146,7 +153,7 @@ function main() {
 + "RIF 4.0 Database test harness.")
 
     .options("d", {
-      alias: "debug",
+      alias: "debug_level",
       describe: "RIF database PL/pgsql debug level",
 	  type: "integer",
       default: 0
@@ -233,8 +240,12 @@ function main() {
 			return console.error('1: Could not connect to postgres 1st client [master] using: ' + conString, err);
 		}
 		else {
+			p_debug_level=argv["debug_level"];
+			if (argv["failed"] && p_debug_level == 0) {
+				p_debug_level=1;
+			}
 // Call rif40_startup; then subsequent functions in an async tree
-			rif40_startup(client1, 1, argv["debug"], conString, client1, argv["failed"]);
+			rif40_startup(client1, 1, p_debug_level, conString, client1, argv["failed"]);
 		} // End of else connected OK 
 	}); // End of connect
 }
@@ -255,9 +266,7 @@ function rif40_startup(p_client, p_num, p_debug_level, p_conString, p_client1, p
 		console.error(p_num + ': rif40_startup() master client (1) connection is undefined');			
 		process.exit(1);	
 	}
-	else {
-		console.log(p_num + ': rif40_startup() master client (1) connection is defined: ' + p_client1);		
-	}
+
 // Check failed flag is NOT undefined	
 	if (p_failed_flag === undefined) {
 		console.error(p_num + ': rif40_startup() failed flag is undefined');			
@@ -327,13 +336,13 @@ function _rif40_sql_test_log_setup(p_client, p_num, p_debug_level, p_conString, 
 			query.on('end', function(result) {
 				if (p_num == 1) { // p_client is master [1]
 					// Client 1 [Master] waits after test harness initialisation
-					console.log('1: Wait for client 2 initialisation');
+					console.log('1: Wait for client 2 initialisation; debug_level: ' + p_debug_level);
 					// Create 2nd client(worker thread) for running test cases
 					init_test_harness(p_client1, p_debug_level, p_conString, p_failed_flag);
 				}
 				else { // p_client is slave [2]
 					// Client 2 [slave worker] is now initialised so we can run the test harness tests
-					console.log('1: Client 2 initialised');
+					console.log('1: Client 2 initialised; debug_level: ' + p_debug_level);
 					run_test_harness(p_client1, p_client, p_failed_flag); 
 				}
 				return;
@@ -504,6 +513,8 @@ function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag) {
 				p_pass = new Array();
 				p_time_taken = new Array();
 				
+				p_rif40_test_harness = {};
+				
 				if (row_count > 0) {
 					// Push results data into results array
 					for (j = 0; j <row_count; j++) { 
@@ -516,16 +527,37 @@ function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag) {
 						p_raise_exception_on_failure.push(test_array.rows[j].raise_exception_on_failure /* Deep copy */);
 						p_test_id.push(test_array.rows[j].test_id /* Deep copy */);		
 						p_expected_result.push(test_array.rows[j].expected_result /* Deep copy */);	
-
 						p_pass.push(undefined);
 						p_time_taken.push(undefined);						
+					
+						if (p_test_case_title[j] === undefined) {
+							console.error('1: ' + test + ' run_test_harness_tests() p_test_case_title[' + j + '] is undefined');			
+							process.exit(1);							
+						}
+						p_rif40_test_harness[j] = { 
+							test_run_class: test_array.rows[j].test_run_class, 
+							test_case_title: test_array.rows[j].test_case_title, 
+							test_stmt: test_array.rows[j].test_stmt, 
+							results: test_array.rows[j].results,
+							results_xml: test_array.rows[j].results_xml,
+							pg_error_code_expected: test_array.rows[j].pg_error_code_expected, 
+							raise_exception_on_failure: test_array.rows[j].raise_exception_on_failure,
+							test_id: test_array.rows[j].test_id,
+							expected_result: test_array.rows[j].expected_result,
+							pass: undefined,
+							time_taken: undefined };	
+						if (p_rif40_test_harness[j].test_case_title === undefined) {
+							console.error('1: ' + test + ' run_test_harness_tests() p_rif40_test_harness[' + j + '].test_case_title is undefined');			
+							process.exit(1);							
+						}							
 					}
+						
 					// Run the first test using rif40_sql_test(). 
 					// The rest of the tests are run recursively from rif40_sql_test() from query.on('end', ...) 
 					// so the SQl statements and transactions are run in the correct order.
 					rif40_sql_test(p_client1, p_client2, 1, p_tests, p_test_run_class, p_test_case_title, 
 							p_test_stmt, p_results, p_results_xml, p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id, p_expected_result,
-							0 /* p_passed */, 0 /* p_failed */, p_failed_flag);
+							0 /* p_passed */, 0 /* p_failed */, p_failed_flag, p_rif40_test_harness);
 				}
 				else {
 					console.error('1: No tests to run');
@@ -546,13 +578,18 @@ function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag) {
  */
 function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_test_case_title, 
 				p_test_stmt, p_results, p_results_xml, p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id, p_expected_result,
-				p_passed, p_failed, p_failed_flag) {	
+				p_passed, p_failed, p_failed_flag, p_rif40_test_harness) {	
 
 	var test='[' + p_j + '/' + p_tests + ']: ' + p_test_run_class[p_j-1] + '] ' + p_test_case_title[p_j-1];
 
 	// Check failed flag is NOT undefined	
 	if (p_failed_flag === undefined) {
 		console.error('1: ' + test + ' rif40_sql_test() failed flag is undefined');			
+		process.exit(1);	
+	}
+	// Check p_rif40_test_harness object of arrays is NOT undefined	
+	if (p_rif40_test_harness === undefined) {
+		console.error('1: ' + test + ' rif40_sql_test() p_rif40_test_harness object of arrays is undefined');			
 		process.exit(1);	
 	}
 	
@@ -683,6 +720,8 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 								}
 							}
 							p_time_taken[p_j-1] = (Date.now()-start_time)/1000;
+							p_rif40_test_harness[p_j-1].pass = p_pass[p_j-1];
+							p_rif40_test_harness[p_j-1].time_taken = p_time_taken[p_j-1];
 							
 							var end = p_client2.query('ROLLBACK', function(err, result) {
 								if (err) {
@@ -697,7 +736,7 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 										console.log('2: ROLLBACK transaction: ' + test);
 										test_count++;
 										if (p_j === p_tests) {
-											end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_test_case_title, p_test_id, p_pass, p_time_taken, 1, p_failed_flag); 
+											end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, 1, p_failed_flag, p_rif40_test_harness); 
 										}
 										else {
 											console.log('1: Recurse; next: ' + next);
@@ -705,7 +744,7 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests, p_test_run_class, p_
 													p_test_run_class, p_test_case_title, 
 													p_test_stmt, p_results, p_results_xml, 
 													p_pg_error_code_expected, p_raise_exception_on_failure, p_test_id, p_expected_result,
-													p_passed, p_failed, p_failed_flag);
+													p_passed, p_failed, p_failed_flag, p_rif40_test_harness);
 										}													
 									});
 								}
@@ -740,18 +779,57 @@ function test_result(p_pass, p_text, p_sql_stmt,
 	}
 }
 
-function end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_test_case_title, p_test_id, p_pass, p_time_taken, p_j, p_failed_flag) {
+/* 
+ * Function: 	end_test_harness()
+ * Parameters: 	Master client (1) connection, worker thread client (2) connection, tests passed, tests failed, number of tests, 
+ *              failed flag, test harness results array 
+ * Returns:		Nothing
+ * Description: End processing for tes harness. Recursive, called for each test from test 1
+ *
+ *				Check p_failed_flag, p_rif40_test_harness are defined correctly
+ *				Summarize run 
+ * 				Do update
+ * 				Summarise result
+ *				On final test, COMMIT and exit with number of failed tests
+ *				Recurse to next test
+ */
+function end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness) {
+
+// Bindable update statement
 	var update_stmt='UPDATE rif40_test_harness\n' +
 					'   SET pass       = $1,\n' + 
 					'       time_taken = $2,\n' + 
 					'       test_date  = statement_timestamp()\n' +
 					' WHERE test_id = $3';
+					
 // Check failed flag is NOT undefined	
 	if (p_failed_flag === undefined) {
 		console.error('1: end_test_harness() failed flag is undefined');			
 		process.exit(1);	
 	}
+	// Check p_rif40_test_harness object of arrays is NOT undefined	
+	if (p_rif40_test_harness === undefined) {
+		console.error('1: ' + test + ' end_test_harness() p_rif40_test_harness object of arrays is undefined');			
+		process.exit(1);	
+	}
+	if (p_rif40_test_harness[p_j-1] === undefined) {
+		console.error('1: ' + test + ' end_test_harness() p_rif40_test_harness[' + p_j-1 + '] is undefined');			
+		process.exit(1);							
+	}		
+	if (p_rif40_test_harness[p_j-1].pass === undefined) {
+		console.error('1: ' + test + ' end_test_harness() p_rif40_test_harness[' + p_j-1 + '].pass is undefined');			
+		process.exit(1);							
+	}	
+	if (p_rif40_test_harness[p_j-1].time_taken === undefined) {
+		console.error('1: ' + test + ' end_test_harness() p_rif40_test_harness[' + p_j-1 + '].time_taken is undefined');			
+		process.exit(1);							
+	}	
+	if (p_rif40_test_harness[p_j-1].test_id === undefined) {
+		console.error('1: ' + test + ' end_test_harness() p_rif40_test_harness[' + p_j-1 + '].test_id is undefined');			
+		process.exit(1);							
+	}	
 	
+	// Summarize run
 	if (p_j == 1) {
 		if (p_failed_flag) {
 				console.log('1: Ran with -F flag to re-run failed tests only');
@@ -766,11 +844,12 @@ function end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_t
 		}
 	}
 
+	// Do update
 	var update = p_client1.query({
 						text: update_stmt, 
-						values: [p_pass[p_j-1],
-								 p_time_taken[p_j-1],
-								 p_test_id[p_j-1]
+						values: [p_rif40_test_harness[p_j-1].pass,
+								 p_rif40_test_harness[p_j-1].time_taken,
+								 p_rif40_test_harness[p_j-1].test_id
 								]},
 				function(err, result) {
 					if (err) {
@@ -781,9 +860,12 @@ function end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_t
 					}
 					else { // UPDATE OK 
 						update.on('end', function(result) {	
-							console.log('1: [' + p_j + '/' + p_tests + '] ' + p_test_case_title[p_j-1] + 
-								'; id: ' + p_test_id[p_j-1] + '; pass: ' + p_pass[p_j-1] + 
-								'; time taken: ' + p_time_taken[p_j-1] + ' S');
+						    // Summarise result
+							console.log('1: [' + p_j + '/' + p_tests + '] ' + p_rif40_test_harness[p_j-1].test_case_title + 
+								'; id: ' +  p_rif40_test_harness[p_j-1].test_id + 
+								'; pass: ' + p_rif40_test_harness[p_j-1].pass + 
+								'; time taken: ' + p_rif40_test_harness[p_j-1].time_taken + ' S');	
+								// On final test, COMMIT and exit with number of failed tests
 								if (p_j == p_tests) {
 										var commit = p_client1.query('COMMIT', function(err, result) {
 											if (err) {
@@ -799,13 +881,17 @@ function end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_t
 													
 													p_client2.end();
 													p_client1.end();	
+													
+													// Exit point on "normal" run. Fails if any tests are failed
 													process.exit(p_failed);
 													});
 											}
 										});
 								}
 								else {
-									end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_test_case_title, p_test_id, p_pass, p_time_taken, p_j + 1); 
+									// Recurse to next test
+									end_test_harness(p_client1, p_client2, p_passed, p_failed, 
+											p_tests, p_j + 1, p_failed_flag, p_rif40_test_harness); 
 								}
 							});
 					}
