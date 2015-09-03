@@ -788,19 +788,13 @@ function test_result(p_pass, p_text, p_sql_stmt,
  *
  *				Check p_failed_flag, p_rif40_test_harness are defined correctly
  *				Summarize run 
- * 				Do update
- * 				Summarise result
- *				On final test, COMMIT and exit with number of failed tests
- *				Recurse to next test
+ *				_end_test_harness() does:
+ * 					Do update
+ * 					Summarise result
+ *					On final test, COMMIT and exit with number of failed tests
+ *					Recurse to next test
  */
 function end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness) {
-
-// Bindable update statement
-	var update_stmt='UPDATE rif40_test_harness\n' +
-					'   SET pass       = $1,\n' + 
-					'       time_taken = $2,\n' + 
-					'       test_date  = statement_timestamp()\n' +
-					' WHERE test_id = $3';
 					
 // Check failed flag is NOT undefined	
 	if (p_failed_flag === undefined) {
@@ -842,8 +836,48 @@ function end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j
 			console.log('1: Test harness complete; ' + p_tests + ' tests completed; passed: ' + p_passed +
 				'; none failed.');	
 		}
+		
+		var begin = p_client1.query('BEGIN', function(err, result) {
+			if (err) {
+				p_client2.end();
+				console.error('1: Error in BEGIN transaction: results UPDATE;', err);
+				p_client1.end();			
+				process.exit(1);
+			}
+			else {
+				// Transaction start OK 
+				begin.on('end', function(result) {						
+					console.log('1: BEGIN transaction: results UPDATE');
+					_end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness);
+				});
+			}
+		});
 	}
+	else {
+		_end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness);
+	}
+}
 
+/* 
+ * Function: 	_end_test_harness()
+ * Parameters: 	Master client (1) connection, worker thread client (2) connection, tests passed, tests failed, number of tests, 
+ *              failed flag, test harness results array 
+ * Returns:		Nothing
+ * Description: Helper functions for test harness end processing; called from end_test_harness().
+ *
+ * 				Do update
+ * 				Summarise result
+ *				On final test, COMMIT and exit with number of failed tests
+ *				Recurse to next test
+ */
+function _end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness) {
+// Bindable update statement
+	var update_stmt='UPDATE rif40_test_harness\n' +
+					'   SET pass       = $1,\n' + 
+					'       time_taken = $2,\n' + 
+					'       test_date  = statement_timestamp()\n' +
+					' WHERE test_id = $3';
+					
 	// Do update
 	var update = p_client1.query({
 						text: update_stmt, 
