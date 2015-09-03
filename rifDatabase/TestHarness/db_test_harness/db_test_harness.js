@@ -117,21 +117,6 @@ function pg_default(p_var) {
 //
 var pg = require('pg'),
 	optimist  = require('optimist');
-		
-// Test arrays; replace with structure and then remove me
-var test_count=0;
-var p_test_run_class = [];
-var p_test_case_title = [];	
-var p_test_stmt = []; 
-var p_results = []; 
-var p_results_xml = []; 
-var p_pg_error_code_expected = []; 
-var p_raise_exception_on_failure = []; 
-var p_test_id = [];
-var p_expected_result = [];
-
-var p_pass = [];
-var p_time_taken = [];
 	
 /* 
  * Function: 	main()
@@ -474,6 +459,19 @@ function run_test_harness(p_client1, p_client2, p_failed_flag) {
  *				so the SQl statements and transactions are run in the correct order.
  */
 function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag) {
+	// Test arrays; 
+	var p_test_run_class = [];
+	var p_test_case_title = [];	
+	var p_test_stmt = []; 
+	var p_results = []; 
+	var p_results_xml = []; 
+	var p_pg_error_code_expected = []; 
+	var p_raise_exception_on_failure = []; 
+	var p_test_id = [];
+	var p_expected_result = [];
+
+	var p_pass = [];
+	var p_time_taken = [];
 
 	// Build SQL statement to run tests, handling -F flag to re-run failed tests only
 	var sql_stmt = 'SELECT a.*\n' +
@@ -578,7 +576,8 @@ function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag) {
 function rif40_sql_test(p_client1, p_client2, p_j, p_tests, 
 				p_passed, p_failed, p_failed_flag, p_rif40_test_harness) {	
 
-	var test='[' + p_j + '/' + p_tests + ']: ' + p_test_run_class[p_j-1] + '] ' + p_test_case_title[p_j-1];
+	var test='[' + p_j + '/' + p_tests + ']: ' + p_rif40_test_harness[p_j-1].test_run_class + '] ' + 
+			p_rif40_test_harness[p_j-1].test_case_title;
 
 	// Check failed flag is NOT undefined	
 	if (p_failed_flag === undefined) {
@@ -675,7 +674,7 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests,
 									p_failed++;			
 							}
 							else if (result.rows[0].rbool == false)   /* Test failed */ {
-								if (p_expected_result[p_j-1] == true) /* It was expected to pass */ {
+								if (p_rif40_test_harness[p_j-1].expected_result == true) /* It was expected to pass */ {
 									test_result(false, '2: Test FAILED, expected to PASS: ' + test, sql_stmt,
 											p_rif40_test_harness, p_j-1);
 									p_rif40_test_harness[p_j-1].pass = false;
@@ -689,7 +688,7 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests,
 								}
 							}
 							else { /* Test passed */
-								if (p_expected_result[p_j-1] == true) /* It was expected to pass */ {								
+								if (p_rif40_test_harness[p_j-1].expected_result == true) /* It was expected to pass */ {								
 									test_result(true, '2: Test OK: ' + test, sql_stmt,
 											p_rif40_test_harness, p_j-1);
 									p_rif40_test_harness[p_j-1].pass = true;
@@ -715,7 +714,6 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests,
 									// Transaction ROLLBACK OK 
 									end.on('end', function(result) {	
 										console.log('2: ROLLBACK transaction: ' + test);
-										test_count++;
 										if (p_j === p_tests) {
 											end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, 1, p_failed_flag, 
 													p_rif40_test_harness); 
