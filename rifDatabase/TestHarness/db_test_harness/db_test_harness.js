@@ -46,7 +46,7 @@
 //
 // Peter Hambly, SAHSU
 //
-// Usage: test_harness [options] -- [test run class]
+// Usage: test_harness [options]
 //
 // Version: 0.1
 //
@@ -59,6 +59,7 @@
 //  -P, --port      Postgres database port                 [default: 5432]
 //  -H, --hostname  hostname of Postgres database          [default: "wpea-rif1"]
 //  -F, --failed    re-run failed tests                    [default: false]
+//  -C, --class	    Test run class						   [default: NULL]
 //  --help          display this helpful message and exit  [default: false]
 //
 // E.g.
@@ -132,7 +133,13 @@ function main() {
       describe: "re-run failed tests",
 	  type: "boolean",
       default: false
-    })		
+    })	
+    .options("C", {
+      alias: "class",
+      describe: "Test run class",
+	  type: "string",
+      default: null
+    })	
     .options("help", {
       describe: "display this helpful message and exit",
       type: "boolean",
@@ -159,7 +166,7 @@ function main() {
 	
 	// Create 2x Postgres clients; one for control, the second for running each test in turn.
 	// The 2nd client is created in _rif40_sql_test_log_setup(), called from rif40_startup()
-	db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["failed"], argv["debug_level"], 1);
+	db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["failed"], argv["debug_level"], 1, argv["class"]);
 } /* End of main */
 	
 /* 
@@ -202,11 +209,11 @@ function pg_default(p_var) {
 /* 
  * Function: 	db_connect()
  * Parameters: 	Postgres PG package connection handle, database host, name, username, port, failed flag, debug level, connection number: 
-                1 - master; 2 - worker slave 
+                1 - master; 2 - worker slave, test run class [optional] 
  * Returns:		Nothing
  * Description:	Connect to database, call rif40_startup()
  */
-function db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_failed, p_debug_level, p_num) {
+function db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_failed, p_debug_level, p_num, p_test_run_class) {
 	
 	var client1 = null; // Client 1: Master; hard to remove	
 
@@ -255,7 +262,7 @@ function db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_failed, p_de
 				p_debug_level=1;
 			}
 // Call rif40_startup; then subsequent functions in an async tree
-			rif40_startup(p_pg, client1, p_num, p_debug_level, conString, client1, p_failed);
+			rif40_startup(p_pg, client1, p_num, p_debug_level, conString, client1, p_failed, p_test_run_class);
 		} // End of else connected OK 
 	}); // End of connect
 }
@@ -263,12 +270,12 @@ function db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_failed, p_de
 /* 
  * Function: 	rif40_startup()
  * Parameters: 	Postgres PG package connection handle, lient connection, connection number (1 or 2), debug level, connection string, 
-                master client (1) connection [may NOT be null], failed flag
+                master client (1) connection [may NOT be null], failed flag, test run class [optional]
  * Returns:		Nothing
  * Description: Run rif40_startup()
  *				Then _rif40_sql_test_log_setup()
  */
-function rif40_startup(p_pg, p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag) {
+function rif40_startup(p_pg, p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag, p_test_run_class) {
 	var sql_stmt;
 	
 // Check master client (1) connection is NOT undefined	
@@ -304,7 +311,7 @@ function rif40_startup(p_pg, p_client, p_num, p_debug_level, p_conString, p_clie
 				result.addRow(row);
 			});
 			query.on('end', function(result) {
-				_rif40_sql_test_log_setup(p_pg, p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag);
+				_rif40_sql_test_log_setup(p_pg, p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag, p_test_run_class);
 				return;
 			});	
 		}
@@ -314,13 +321,13 @@ function rif40_startup(p_pg, p_client, p_num, p_debug_level, p_conString, p_clie
 /* 
  * Function: 	_rif40_sql_test_log_setup()
  * Parameters: 	Postgres PG package connection handle, client connection, connection number (1 or 2), debug level, connection string, 
-                master client (1) connection [may NOT be null], failed flag
+                master client (1) connection [may NOT be null], failed flag, test run class [optional]
  * Returns:		Nothing
  * Description: Run _rif40_sql_test_log_setup()
  *				Then if you are the control connection (1) call init_test_harness()
  *				Otherwise can run_test_harness() using the control connection
  */
-function _rif40_sql_test_log_setup(p_pg, p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag) {
+function _rif40_sql_test_log_setup(p_pg, p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag, p_test_run_class) {
 	
 // Check master client (1) connection is NOT undefined	
 	if (p_client1 === undefined) {
@@ -348,12 +355,12 @@ function _rif40_sql_test_log_setup(p_pg, p_client, p_num, p_debug_level, p_conSt
 					// Client 1 [Master] waits after test harness initialisation
 					console.log('1: Wait for client 2 initialisation; debug_level: ' + p_debug_level);
 					// Create 2nd client(worker thread) for running test cases
-					init_test_harness(p_pg, p_client1, p_debug_level, p_conString, p_failed_flag);
+					init_test_harness(p_pg, p_client1, p_debug_level, p_conString, p_failed_flag, p_test_run_class);
 				}
 				else { // p_client is slave [2]
 					// Client 2 [slave worker] is now initialised so we can run the test harness tests
 					console.log('1: Client 2 initialised; debug_level: ' + p_debug_level);
-					run_test_harness(p_client1, p_client, p_failed_flag); 
+					run_test_harness(p_client1, p_client, p_failed_flag, p_test_run_class); 
 				}
 				return;
 			});	
@@ -364,11 +371,11 @@ function _rif40_sql_test_log_setup(p_pg, p_client, p_num, p_debug_level, p_conSt
 
 /* 
  * Function: 	init_test_harness()
- * Parameters: 	Postgres PG package connection handle, master client (1) connection, debug level, connection string, failed flag
+ * Parameters: 	Postgres PG package connection handle, master client (1) connection, debug level, connection string, failed flag, test run class [optional]
  * Returns:		Nothing
  * Description: Create 2nd client (worker thread) for running test cases
  */
-function init_test_harness(p_pg, p_client1, p_debug_level, p_conString, p_failed_flag) {
+function init_test_harness(p_pg, p_client1, p_debug_level, p_conString, p_failed_flag, p_test_run_class) {
 	var client2 = null;
 
 // Check master client (1) connection is NOT undefined	
@@ -395,14 +402,14 @@ function init_test_harness(p_pg, p_client1, p_debug_level, p_conString, p_failed
 		}
 		else {	
 	        // Call rif40_startup; then subsequent functions in an async tree
-			rif40_startup(p_pg, client2, 2, p_debug_level, p_conString, p_client1, p_failed_flag);
+			rif40_startup(p_pg, client2, 2, p_debug_level, p_conString, p_client1, p_failed_flag, p_test_run_class);
 		} // End of else connected OK 
 	}); // End of connect
 }
 	
 /* 
  * Function: 	run_test_harness()
- * Parameters: 	Master client (1) connection, worker thread client (2) connection, failed flag
+ * Parameters: 	Master client (1) connection, worker thread client (2) connection, failed flag, test run class [optional]
  * Returns:		Nothing
  * Description: Run test harness:
  *
@@ -411,7 +418,7 @@ function init_test_harness(p_pg, p_client1, p_debug_level, p_conString, p_failed
  *				Display tests per test_run_class, total tests
  * 			    Finally run the tests: function run_test_harness_tests()
  */
-function run_test_harness(p_client1, p_client2, p_failed_flag) {
+function run_test_harness(p_client1, p_client2, p_failed_flag, p_test_run_class) {
 	var total_tests=0;
 	// COMMIT; to complete initial on logon transaction
 	var end = p_client2.query('COMMIT', function(err, result) {
@@ -431,13 +438,26 @@ function run_test_harness(p_client1, p_client2, p_failed_flag) {
 				if (p_failed_flag) {
 					console.log('1: Processing -F flag to re-run failed tests only');
 					sql_stmt = sql_stmt + '  AND pass = FALSE /* Filter on failed tests only */\n';
+				}			
+					
+				var lp_test_run_class;	
+				if ((p_test_run_class !== undefined)&&(p_test_run_class !== null)) {
+					console.log('Only test run class: ' + p_test_run_class);
+					sql_stmt = sql_stmt + '  AND test_run_class = $1 /* Filter on test_run_class */\n';		
+					lp_test_run_class=p_test_run_class;
 				}
+				else {
+					lp_test_run_class=1
+					sql_stmt = sql_stmt + '  AND 1 = $1 /* Dummy filter for test_run_class */\n';					
+				}				
 				sql_stmt = sql_stmt +
 					' GROUP BY test_run_class\n' +
 					' ORDER BY 3 /* min_register_date */';
 						
 				// Connected OK, run SQL query
-				var query = p_client1.query(sql_stmt, function(err, result) {
+				var query = p_client1.query({
+						text: sql_stmt, 
+						values: [lp_test_run_class]}, function(err, result) {
 					if (err) {
 						// Error handler
 						console.error('1: Error running query: ' + sql_stmt + ';', err);
@@ -462,7 +482,7 @@ function run_test_harness(p_client1, p_client2, p_failed_flag) {
 							}
 							console.log('1: Total tests to run: %s', total_tests);
 							// Finally run the tests: function run_test_harness_test()
-							run_test_harness_tests(p_client1, p_client2, total_tests, p_failed_flag);							
+							run_test_harness_tests(p_client1, p_client2, total_tests, p_failed_flag, p_test_run_class);							
 						});	
 					}
 				});		
@@ -473,7 +493,7 @@ function run_test_harness(p_client1, p_client2, p_failed_flag) {
 
 /* 
  * Function: 	run_test_harness_tests()
- * Parameters: 	Master client (1) connection, worker thread client (2) connection, number of tests, failed flag
+ * Parameters: 	Master client (1) connection, worker thread client (2) connection, number of tests, failed flag, test run class [optional]
  * Returns:		Nothing
  * Description: Run test harness tests:
  *
@@ -483,7 +503,7 @@ function run_test_harness(p_client1, p_client2, p_failed_flag) {
  *				The rest of the tests are run recursively from rif40_sql_test() from query.on('end', ...) 
  *				so the SQl statements and transactions are run in the correct order.
  */
-function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag) {
+function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag, p_test_run_class_filter) {
 	// Test arrays; 
 	var p_test_run_class = [];
 	var p_test_case_title = [];	
@@ -504,12 +524,24 @@ function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag) {
 		' WHERE a.parent_test_id IS NULL /* Ignore dependent tests */\n';
 	if (p_failed_flag) {
 		sql_stmt = sql_stmt + '  AND pass = FALSE /* Filter on failed tests only */\n';
-	}
+	}	
+	
+	var lp_test_run_class;	
+	if ((p_test_run_class_filter !== undefined)&&(p_test_run_class_filter !== null)) {
+		lp_test_run_class_filter=p_test_run_class_filter
+		sql_stmt = sql_stmt + '  AND test_run_class = $1 /* Filter on test_run_class */\n';					
+	}	
+	else {
+		lp_test_run_class_filter=1
+		sql_stmt = sql_stmt + '  AND 1 = $1 /* Dummy filter for test_run_class */\n';					
+	}	
 	sql_stmt = sql_stmt +
 		' ORDER BY a.test_id';
 					
 	// Connected OK, run SQL query
-	var query = p_client1.query(sql_stmt, function(err, test_array) {
+	var query = p_client1.query({
+						text: sql_stmt, 
+						values: [lp_test_run_class_filter]}, function(err, test_array) {
 		if (err) {
 			// Error handler
 			console.error('1: Error running query: ' + sql_stmt + ';', err);
@@ -587,7 +619,7 @@ function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag) {
 					process.exit(0);					
 				}
 				else {
-					console.error('1: No tests to run');
+					console.error('1: No tests to run, SQL> ' + sql_stmt + ';\n[lp_test_run_class_filter: ' + lp_test_run_class_filter + ']');
 					process.exit(1);					
 				}
 				return;
