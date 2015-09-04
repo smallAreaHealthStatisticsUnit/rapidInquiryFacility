@@ -226,8 +226,6 @@ MODULES=node_modules/pg node_modules/pg-native node_modules/optimist
 all: modules db_test_harness
 
 modules: $(MODULES)
-
-$(MODULES):
 	$(NPM) install --save pg pg-native optimist
 
 #clean:

@@ -184,34 +184,50 @@ function main() {
     .argv;
 
 	if (argv.help) return optimist.showHelp();
-	
-//
-// This needs to be rewritten to handle the ::1 problem nicely
-//
 
 	// Create 2x Postgres clients; one for control, the second for running each test in turn.
-	var conString = 'postgres://' + argv["username"] + '@'; // Use PGHOST, native authentication (i.e. same as psql)
-	// If host = localhost, use IPv6 numeric notation. This prevent ENOENT errors from getaddrinfo() in Windows
-	// when Wireless is disconnected. This is a Windows DNS issue. psql avoids this somehow.
-	// You do need entries for ::1 in pgpass
-	if (argv["hostname"] == 'localhost') {
-		conString=conString + '[::1]';
-	}
-	else {
-		conString=conString + argv["hostname"];
-	}
-	if (argv["port"] != 5432) {
-		conString=conString + ':' + argv["port"];
-	}
-	conString=conString + '/' + argv["database"] + '?application_name=db_test_harness';
+	// The 2nd client is created in _rif40_sql_test_log_setup(), called from rif40_startup()
+	db_connect(argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["failed"], argv["debug_level"], 1);
+} /* End of main */
 
+/* 
+ * Function: 	db_connect()
+ * Parameters: 	Database host, name, username, port, failed flag, debug level, connection number: 
+                1 - master; 2 - worker slave 
+ * Returns:		Nothing
+ * Description:	Connect to database, call rif40_startup()
+ */
+function db_connect(p_hostname, p_database, p_user, p_port, p_failed, p_debug_level, p_num) {
+	
+	var client1 = null; // Client 1: Master; hard to remove	
+
+	var conString = 'postgres://' + p_user + '@' + p_hostname + ':' + p_port + '/' + p_database + '?application_name=db_test_harness';
+
+	// Use PGHOST, native authentication (i.e. same as psql)
 	try {
 		client1 = new pg.Client(conString);
-		console.log('1: Connect to Postgres using: ' + conString);
+		console.log(p_num + ': Connect to Postgres using: ' + conString);
 		
 	}
 	catch(err) {
-			return console.error('1: Could not create postgres 1st client [master] using: ' + conString, err);
+		console.error(p_num + ': Could not create postgres 1st client [master] using: ' + conString, err);
+		if (p_hostname == 'localhost') {
+			
+			// If host = localhost, use IPv6 numeric notation. This prevent ENOENT errors from getaddrinfo() in Windows
+			// when Wireless is disconnected. This is a Windows DNS issue. psql avoids this somehow.
+			// You do need entries for ::1 in pgpass			
+			conString = 'postgres://' + p_user + '@' + '[::1]' + ':' + p_port + '/' + p_database + '?application_name=db_test_harness';
+			try {
+				client1 = new pg.Client(conString);
+				console.log(p_num + ': Connect to Postgres using: ' + conString);
+				
+			}
+			catch(err) {
+				console.error(p_num + ': Could not create postgres 1st client [master] using: ' + conString, err);
+				process.exit(1);		
+			}
+		}
+		process.exit(1);		
 	}
 
 // Notice message event processors
@@ -222,15 +238,15 @@ function main() {
 // Connect to Postgres database
 	client1.connect(function(err) {
 		if (err) {
-			return console.error('1: Could not connect to postgres 1st client [master] using: ' + conString, err);
+			console.error(p_num + ': Could not connect to postgres 1st client [master] using: ' + conString, err);
+			process.exit(1);	
 		}
 		else {
-			p_debug_level=argv["debug_level"];
-			if (argv["failed"] && p_debug_level == 0) {
+			if (p_failed && p_debug_level == 0) {
 				p_debug_level=1;
 			}
 // Call rif40_startup; then subsequent functions in an async tree
-			rif40_startup(client1, 1, p_debug_level, conString, client1, argv["failed"]);
+			rif40_startup(client1, p_num, p_debug_level, conString, client1, p_failed);
 		} // End of else connected OK 
 	}); // End of connect
 }
@@ -917,6 +933,9 @@ function _end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_
 													p_client1.end();	
 													
 													// Exit point on "normal" run. Fails if any tests are failed
+													console.log('*****************************************************************************\n' + '*\n' +
+														'Test harness run has: ' + p_failed + ' errors\n' + 
+														'*\n' + '*****************************************************************************\n');
 													process.exit(p_failed);
 													});
 											}
