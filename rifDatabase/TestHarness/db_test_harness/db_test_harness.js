@@ -577,9 +577,10 @@ function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag) {
 						
 					// Run the first test using rif40_sql_test(). 
 					// The rest of the tests are run recursively from rif40_sql_test() from query.on('end', ...) 
-					// so the SQl statements and transactions are run in the correct order.
+					// so the SQL statements and transactions are run in the correct order.
+					var start_time = Date.now();
 					rif40_sql_test(p_client1, p_client2, 1, p_tests, 
-							0 /* p_passed */, 0 /* p_failed */, p_failed_flag, p_rif40_test_harness);
+							0 /* p_passed */, 0 /* p_failed */, p_failed_flag, p_rif40_test_harness, start_time);
 				}
 				else {
 					console.error('1: No tests to run');
@@ -594,7 +595,7 @@ function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag) {
 /* 
  * Function: 	rif40_sql_test()
  * Parameters: 	Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
- *              number passed, number failed, failed flag, test harness results array
+ *              number passed, number failed, failed flag, test harness results array, time of test harness start
  * Returns:		Nothing
  * Description: Begin transaction, call _rif40_sql_test() to run test:
  *
@@ -608,7 +609,7 @@ function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag) {
  * 				call: _rif40_sql_test_end(): Rollback test case, recurse to next test case
  */
 function rif40_sql_test(p_client1, p_client2, p_j, p_tests, 
-				p_passed, p_failed, p_failed_flag, p_rif40_test_harness) {	
+				p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_start_time) {	
 	
 	var test='[' + p_j + '/' + p_tests + ']: ' + p_rif40_test_harness[p_j-1].test_run_class + '] ' + 
 			p_rif40_test_harness[p_j-1].test_case_title;
@@ -646,7 +647,7 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests,
 				console.log('2: BEGIN transaction: ' + test);		
 
 				_rif40_sql_test(p_client1, p_client2, p_j, p_tests, 
-					p_passed, p_failed, p_failed_flag, p_rif40_test_harness, test);
+					p_passed, p_failed, p_failed_flag, p_rif40_test_harness, test, p_start_time);
 			});
 		}
 	});
@@ -655,7 +656,7 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests,
 /* 
  * Function: 	_rif40_sql_test()
  * Parameters: 	Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
- *              number passed, number failed, failed flag, test harness results array, textual description of test
+ *              number passed, number failed, failed flag, test harness results array, textual description of test, time of test harness start
  * Returns:		Nothing
  * Description: Run SQL test using a bind type SQL statement and rif40_sql_pkg._rif40_sql_test()
  *
@@ -667,7 +668,7 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests,
  *          Call: _rif40_sql_test_end(): Rollback test case, recurse to next test case
  */
 function _rif40_sql_test(p_client1, p_client2, p_j, p_tests, 
-				p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_test_text) {
+				p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_test_text, p_start_time) {
 			
 	// Build bind type SQL statement
 	var sql_stmt = 'SELECT rif40_sql_pkg._rif40_sql_test(' + '\n' + 
@@ -785,7 +786,7 @@ function _rif40_sql_test(p_client1, p_client2, p_j, p_tests,
 					p_rif40_test_harness[p_j-1].time_taken = (Date.now()-start_time)/1000;
 					
 					_rif40_sql_test_end(p_client1, p_client2, p_j, p_tests, 
-						p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_test_text);
+						p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_test_text, p_start_time);
 				}); /* End of process results - run.on('end', ... ) */
 			} /* End of if (err) */
 		});					
@@ -794,12 +795,12 @@ function _rif40_sql_test(p_client1, p_client2, p_j, p_tests,
 /* 
  * Function: 	_rif40_sql_test_end()
  * Parameters: 	Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
- *              number passed, number failed, failed flag, test harness results array, textual description of test
+ *              number passed, number failed, failed flag, test harness results array, textual description of test, time of test harness start
  * Returns:		Nothing
  * Description: Rollback test case, recurse to next test case
  */
 function _rif40_sql_test_end(p_client1, p_client2, p_j, p_tests, 
-				p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_test_text) {
+				p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_test_text, p_start_time) {
 					
 	var next=p_j+1;
 	
@@ -835,12 +836,12 @@ function _rif40_sql_test_end(p_client1, p_client2, p_j, p_tests,
 				console.log('2: ROLLBACK transaction: ' + p_test_text);
 				if (p_j === p_tests) {
 					end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, 1, p_failed_flag, 
-							p_rif40_test_harness); 
+							p_rif40_test_harness, p_start_time); 
 				}
 				else {
 					console.log('1: Recurse; next: ' + next);
 					rif40_sql_test(p_client1, p_client2, next, p_tests, 
-							p_passed, p_failed, p_failed_flag, p_rif40_test_harness);
+							p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_start_time);
 				}													
 			});
 		}
@@ -893,7 +894,7 @@ function test_result(p_pass, p_text, p_sql_stmt, p_rif40_test_harness, p_j) {
 /* 
  * Function: 	end_test_harness()
  * Parameters: 	Master client (1) connection, worker thread client (2) connection, tests passed, tests failed, number of tests, 
- *              failed flag, test harness results array 
+ *              failed flag, test harness results array, time of test harness start 
  * Returns:		Nothing
  * Description: End processing for tes harness. Recursive, called for each test from test 1
  *
@@ -907,7 +908,7 @@ function test_result(p_pass, p_text, p_sql_stmt, p_rif40_test_harness, p_j) {
  *					On final test, COMMIT and exit with number of failed tests
  *					Recurse to next test
  */
-function end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness) {
+function end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, p_start_time) {
 					
 // Check failed flag is NOT undefined	
 	if (p_failed_flag === undefined) {
@@ -962,29 +963,29 @@ function end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j
 				// Transaction start OK 
 				begin.on('end', function(result) {						
 					console.log('1: BEGIN transaction: results UPDATE');
-					_end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness);
+					_end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, p_start_time);
 				});
 			}
 		});
 	}
 	else {
-		_end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness);
+		_end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, p_start_time);
 	}
 }
 
 /* 
  * Function: 	_end_test_harness()
  * Parameters: 	Master client (1) connection, worker thread client (2) connection, tests passed, tests failed, number of tests, 
- *              failed flag, test harness results array 
+ *              failed flag, test harness results array, time of test harness start 
  * Returns:		Nothing
  * Description: Helper functions for test harness end processing; called from end_test_harness().
  *
- * 				Do update
+ * 				Do update to rif40_test_harness and insert into rif40_test_runs
  * 				Summarise result
  *				On final test, COMMIT and exit with number of failed tests
  *				Recurse to next test
  */
-function _end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness) {
+function _end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, p_start_time) {
 // Bindable update statement
 	var update_stmt='UPDATE rif40_test_harness\n' +
 					'   SET pass       = $1,\n' + 
@@ -992,7 +993,7 @@ function _end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_
 					'       test_date  = statement_timestamp()\n' +
 					' WHERE test_id = $3';
 					
-	// Do update
+	// Do update to rif40_test_harness
 	var update = p_client1.query({
 						text: update_stmt, 
 						values: [p_rif40_test_harness[p_j-1].pass,
@@ -1015,34 +1016,75 @@ function _end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_
 								'; time taken: ' + p_rif40_test_harness[p_j-1].time_taken + ' S');	
 								// On final test, COMMIT and exit with number of failed tests
 								if (p_j == p_tests) {
-										var commit = p_client1.query('COMMIT', function(err, result) {
-											if (err) {
-												p_client2.end();
-												console.error('1: Error in COMMIT transaction;', err);
-												p_client1.end();			
-												process.exit(1);			
-											}
-											else {
-												// Transaction COMMIT OK 
-												commit.on('end', function(result) {	
-													console.log('1: COMMIT transaction.');
-													
+										// Do insert into rif40_test_runs
+										var insert_stmt='INSERT INTO rif40_test_runs(test_run_title,\n' +
+									'		time_taken, tests_run, number_passed, number_failed,\n' +
+									'		number_test_cases_registered, number_messages_registered)\n' +
+									'VALUES (\n' +
+									'		$1, $2, $3, $4, $5,\n' +
+									'		0, 0 /* db_test_harness.js does not register */);';	
+										var p_test_run_title = 'db_test_harness.js';
+										if (p_failed_flag) {
+											p_test_run_title = p_test_run_title + ' -F';
+										}
+										var time_taken = (Date.now()-p_start_time)/1000;
+										var insert = p_client1.query({
+													text: insert_stmt, 
+													values: [p_test_run_title,
+															 time_taken,
+															 p_tests, 
+															 p_passed,
+															 p_failed]}, 				 
+											function(err, result) {
+												if (err) {
 													p_client2.end();
-													p_client1.end();	
-													
-													// Exit point on "normal" run. Fails if any tests are failed
-													console.log('*****************************************************************************\n' + '*\n' +
-														'* Test harness run had: ' + p_failed + ' error(s)\n' + 
-														'*\n' + '*****************************************************************************\n');
-													process.exit(p_failed);
+													console.error('1: Error in INSERT INTO rif40_test_runs; SQL> ' + insert_stmt + ';\n', err);
+													p_client1.end();			
+													process.exit(1);														
+												}
+												else {																	
+													// Commit
+													var commit = p_client1.query('COMMIT', function(err, result) {
+														if (err) {
+															p_client2.end();
+															console.error('1: Error in COMMIT transaction;', err);
+															p_client1.end();			
+															process.exit(1);			
+														}
+														else {
+															// Transaction COMMIT OK 
+															commit.on('end', function(result) {	
+																console.log('1: COMMIT transaction.');
+																
+																p_client2.end();
+																p_client1.end();	
+																
+																var msg;
+																if (p_failed == 0) {
+																	msg = '* Test harness run had no error(s)\n';																	
+																}
+																else if (p_failed == 1) {
+																	msg = '* Test harness run had: 1 error\n';																	
+																}
+																else {
+																	msg = '* Test harness run had: ' + p_failed + ' errors\n';
+																}
+																msg = msg + '* Total time taken: ' + time_taken + ' S\n';
+																// Exit point on "normal" run. Fails if any tests are failed
+																console.log('*****************************************************************************\n' + '*\n' +
+																	msg + 
+																	'*\n' + '*****************************************************************************\n');
+																process.exit(p_failed);
+																});
+														}
 													});
-											}
-										});
-								}
+												}
+										});										
+								} /* At last test */
 								else {
 									// Recurse to next test
 									end_test_harness(p_client1, p_client2, p_passed, p_failed, 
-											p_tests, p_j + 1, p_failed_flag, p_rif40_test_harness); 
+											p_tests, p_j + 1, p_failed_flag, p_rif40_test_harness, p_start_time); 
 								}
 							});
 					}
