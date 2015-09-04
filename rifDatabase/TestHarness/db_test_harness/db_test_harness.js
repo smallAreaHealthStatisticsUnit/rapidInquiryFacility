@@ -111,12 +111,6 @@ function pg_default(p_var) {
 		return p_def;
 	}
 }
-
-//
-// Will eventually support SQL server as well
-//
-var pg = require('pg'),
-	optimist  = require('optimist');
 	
 /* 
  * Function: 	main()
@@ -126,6 +120,9 @@ var pg = require('pg'),
  *				Then _rif40_sql_test_log_setup() ...
  */	
 function main() {
+	
+	var pg = null;
+	var optimist  = require('optimist');
 	
 	var client1 = null; // Client 1: Master; hard to remove 
 	var p_debug_level = null;
@@ -185,19 +182,31 @@ function main() {
 
 	if (argv.help) return optimist.showHelp();
 
+//
+// Load database module
+// Will eventually support SQL server as well
+//
+	try {
+		pg=require('pg');
+	}
+	catch(err) {
+		console.error('1: Could not load postgres database module.', err);				
+		process.exit(1);
+	}
+	
 	// Create 2x Postgres clients; one for control, the second for running each test in turn.
 	// The 2nd client is created in _rif40_sql_test_log_setup(), called from rif40_startup()
-	db_connect(argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["failed"], argv["debug_level"], 1);
+	db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["failed"], argv["debug_level"], 1);
 } /* End of main */
 
 /* 
  * Function: 	db_connect()
- * Parameters: 	Database host, name, username, port, failed flag, debug level, connection number: 
+ * Parameters: 	Postgres PG package connection handle, database host, name, username, port, failed flag, debug level, connection number: 
                 1 - master; 2 - worker slave 
  * Returns:		Nothing
  * Description:	Connect to database, call rif40_startup()
  */
-function db_connect(p_hostname, p_database, p_user, p_port, p_failed, p_debug_level, p_num) {
+function db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_failed, p_debug_level, p_num) {
 	
 	var client1 = null; // Client 1: Master; hard to remove	
 
@@ -205,7 +214,7 @@ function db_connect(p_hostname, p_database, p_user, p_port, p_failed, p_debug_le
 
 	// Use PGHOST, native authentication (i.e. same as psql)
 	try {
-		client1 = new pg.Client(conString);
+		client1 = new p_pg.Client(conString);
 		console.log(p_num + ': Connect to Postgres using: ' + conString);
 		
 	}
@@ -218,7 +227,7 @@ function db_connect(p_hostname, p_database, p_user, p_port, p_failed, p_debug_le
 			// You do need entries for ::1 in pgpass			
 			conString = 'postgres://' + p_user + '@' + '[::1]' + ':' + p_port + '/' + p_database + '?application_name=db_test_harness';
 			try {
-				client1 = new pg.Client(conString);
+				client1 = new p_pg.Client(conString);
 				console.log(p_num + ': Connect to Postgres using: ' + conString);
 				
 			}
@@ -246,20 +255,20 @@ function db_connect(p_hostname, p_database, p_user, p_port, p_failed, p_debug_le
 				p_debug_level=1;
 			}
 // Call rif40_startup; then subsequent functions in an async tree
-			rif40_startup(client1, p_num, p_debug_level, conString, client1, p_failed);
+			rif40_startup(p_pg, client1, p_num, p_debug_level, conString, client1, p_failed);
 		} // End of else connected OK 
 	}); // End of connect
 }
 
 /* 
  * Function: 	rif40_startup()
- * Parameters: 	Client connection, connection number (1 or 2), debug level, connection string, 
+ * Parameters: 	Postgres PG package connection handle, lient connection, connection number (1 or 2), debug level, connection string, 
                 master client (1) connection [may NOT be null], failed flag
  * Returns:		Nothing
  * Description: Run rif40_startup()
  *				Then _rif40_sql_test_log_setup()
  */
-function rif40_startup(p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag) {
+function rif40_startup(p_pg, p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag) {
 	var sql_stmt;
 	
 // Check master client (1) connection is NOT undefined	
@@ -295,7 +304,7 @@ function rif40_startup(p_client, p_num, p_debug_level, p_conString, p_client1, p
 				result.addRow(row);
 			});
 			query.on('end', function(result) {
-				_rif40_sql_test_log_setup(p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag);
+				_rif40_sql_test_log_setup(p_pg, p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag);
 				return;
 			});	
 		}
@@ -304,14 +313,14 @@ function rif40_startup(p_client, p_num, p_debug_level, p_conString, p_client1, p
 
 /* 
  * Function: 	_rif40_sql_test_log_setup()
- * Parameters: 	Client connection, connection number (1 or 2), debug level, connection string, 
+ * Parameters: 	Postgres PG package connection handle, client connection, connection number (1 or 2), debug level, connection string, 
                 master client (1) connection [may NOT be null], failed flag
  * Returns:		Nothing
  * Description: Run _rif40_sql_test_log_setup()
  *				Then if you are the control connection (1) call init_test_harness()
  *				Otherwise can run_test_harness() using the control connection
  */
-function _rif40_sql_test_log_setup(p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag) {
+function _rif40_sql_test_log_setup(p_pg, p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag) {
 	
 // Check master client (1) connection is NOT undefined	
 	if (p_client1 === undefined) {
@@ -339,7 +348,7 @@ function _rif40_sql_test_log_setup(p_client, p_num, p_debug_level, p_conString, 
 					// Client 1 [Master] waits after test harness initialisation
 					console.log('1: Wait for client 2 initialisation; debug_level: ' + p_debug_level);
 					// Create 2nd client(worker thread) for running test cases
-					init_test_harness(p_client1, p_debug_level, p_conString, p_failed_flag);
+					init_test_harness(p_pg, p_client1, p_debug_level, p_conString, p_failed_flag);
 				}
 				else { // p_client is slave [2]
 					// Client 2 [slave worker] is now initialised so we can run the test harness tests
@@ -355,11 +364,11 @@ function _rif40_sql_test_log_setup(p_client, p_num, p_debug_level, p_conString, 
 
 /* 
  * Function: 	init_test_harness()
- * Parameters: 	Master client (1) connection, debug level, connection string, failed flag
+ * Parameters: 	Postgres PG package connection handle, master client (1) connection, debug level, connection string, failed flag
  * Returns:		Nothing
  * Description: Create 2nd client (worker thread) for running test cases
  */
-function init_test_harness(p_client1, p_debug_level, p_conString, p_failed_flag) {
+function init_test_harness(p_pg, p_client1, p_debug_level, p_conString, p_failed_flag) {
 	var client2 = null;
 
 // Check master client (1) connection is NOT undefined	
@@ -371,7 +380,7 @@ function init_test_harness(p_client1, p_debug_level, p_conString, p_failed_flag)
 // Create 2nd client (worker thread) for running test cases
 	try {
 		console.log('2: Connect to Postgres using: ' + p_conString);		
-		client2 = new pg.Client(p_conString);
+		client2 = new p_pg.Client(p_conString);
 	}
 	catch(err) {
 			return console.error('2: Could not create postgres 2nd client [slave] using: ' + p_conString, err);
@@ -386,7 +395,7 @@ function init_test_harness(p_client1, p_debug_level, p_conString, p_failed_flag)
 		}
 		else {	
 	        // Call rif40_startup; then subsequent functions in an async tree
-			rif40_startup(client2, 2, p_debug_level, p_conString, p_client1, p_failed_flag);
+			rif40_startup(p_pg, client2, 2, p_debug_level, p_conString, p_client1, p_failed_flag);
 		} // End of else connected OK 
 	}); // End of connect
 }
@@ -776,7 +785,6 @@ function test_result(p_pass, p_text, p_sql_stmt, p_rif40_test_harness, p_j) {
 	if (p_pass) {
 			console.log('*****************************************************************************\n' + '*\n' +
 				'* ' + p_text + '\n' + 
-				'*\n' + 
 				'*\n' + '*****************************************************************************\n');
 	}
 	else {
