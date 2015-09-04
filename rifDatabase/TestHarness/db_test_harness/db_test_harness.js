@@ -631,13 +631,13 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests,
 
 				// Run test
 				var sql_stmt = 'SELECT rif40_sql_pkg._rif40_sql_test(' + '\n' + 
-						'$1::VARCHAR 	/* test_stmt */,' + '\n' + 
-						'$2::VARCHAR 	/* test_case_title */,' + '\n' + 
-						'$3::Text[][] 	/* results */,' + '\n' + 
-						'$4::XML 		/* results_xml */,' + '\n' +
-						'$5::VARCHAR 	/* pg_error_code_expected */,' + '\n' +
-						'$6::BOOLEAN 	/* raise_exception_on_failure */,' + '\n' +
-						'$7::INTEGER 	/* test_id */) AS rbool';
+						'$1::VARCHAR    /* test_stmt */,' + '\n' + 
+						'$2::VARCHAR    /* test_case_title */,' + '\n' + 
+						'$3::Text[][]   /* results */,' + '\n' + 
+						'$4::XML        /* results_xml */,' + '\n' +
+						'$5::VARCHAR    /* pg_error_code_expected */,' + '\n' +
+						'$6::BOOLEAN    /* raise_exception_on_failure */,' + '\n' +
+						'$7::INTEGER    /* test_id */) AS rbool';
 
 				var run = p_client2.query({
 							text: sql_stmt, 
@@ -775,12 +775,15 @@ function test_result(p_pass, p_text, p_sql_stmt, p_rif40_test_harness, p_j) {
 	
 	if (p_pass) {
 			console.log('*****************************************************************************\n' + '*\n' +
-				p_text + '\n' + 
+				'* ' + p_text + '\n' + 
+				'*\n' + 
 				'*\n' + '*****************************************************************************\n');
 	}
 	else {
 			console.log('*****************************************************************************\n' + '*\n' +
-				p_text + '\n' + 'SQL> ' + p_sql_stmt + ';' + '\n' + 
+				'* ' + p_text + '\n' + 
+				'*\n' + 
+				'SQL> ' + p_sql_stmt + ';' + '\n' + 
 				'*\n* [Parameter 1: test_stmt                 VARCHAR]\nSQL>>>' + p_rif40_test_harness[p_j].test_stmt + ';\n' + 
 				'* [Parameter 2: test_case_title              VARCHAR]  ' + p_rif40_test_harness[p_j].test_case_title + '\n' + 
 				'* [Parameter 3: results                      TEXT[][]] ' + p_rif40_test_harness[p_j].results + '\n' + 
@@ -934,7 +937,7 @@ function _end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_
 													
 													// Exit point on "normal" run. Fails if any tests are failed
 													console.log('*****************************************************************************\n' + '*\n' +
-														'Test harness run has: ' + p_failed + ' errors\n' + 
+														'* Test harness run had: ' + p_failed + ' error(s)\n' + 
 														'*\n' + '*****************************************************************************\n');
 													process.exit(p_failed);
 													});
