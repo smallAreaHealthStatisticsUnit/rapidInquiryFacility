@@ -1168,17 +1168,26 @@ BEGIN
 			c3_rth_rec.test_case_title::VARCHAR);	
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test', 
-			'[71208] Test % % depenedent tests to run',
+			'[71208] Test % % dependent tests to run',
 			c3_rth_rec.test_case_title::VARCHAR, c3_rth_rec.total_test_id::VARCHAR);	
 		FOR c4_rth_rec IN c4_rth(c3_rth_rec.test_case_title) LOOP
 			f_tests_run:=f_tests_run+1;	
+--
+-- 	test_stmt 					VARCHAR, 
+--	test_case_title 			VARCHAR, 
+--	results 					ANYARRAY, 
+--	results_xml					XML,
+--	pg_error_code_expected 		VARCHAR, 
+--	raise_exception_on_failure 	BOOLEAN, 
+--	f_test_id 					INTEGER
+--
 			f_result:=rif40_sql_pkg._rif40_sql_test(
-							c4_rth_rec.test_run_class, 
 							c4_rth_rec.test_stmt, 
 							c4_rth_rec.test_case_title, 
 							c4_rth_rec.results,
 							c4_rth_rec.results_xml,
 							c4_rth_rec.pg_error_code_expected, 
+							c4_rth_rec.raise_exception_on_failure, 							
 							c4_rth_rec.test_id);	
 			IF NOT f_result THEN 	/* Test failed */
 				IF NOT c4_rth_rec.expected_result THEN

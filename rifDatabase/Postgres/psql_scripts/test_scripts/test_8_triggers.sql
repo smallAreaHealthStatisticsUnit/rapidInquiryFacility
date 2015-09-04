@@ -590,10 +590,21 @@ BEGIN
 	RAISE INFO 'T8--36: test_8_triggers.sql: Re-run trigger test harness';
 END;
 $$;
-SELECT rif40_sql_pkg.rif40_test_harness(1);
+--SELECT rif40_sql_pkg.rif40_test_harness(1);
 
 SELECT * FROM rif40_test_runs
  WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
+END;
+
+--
+-- Run the Node.js test harness; building required modules if needed
+--
+\! make -C ../../TestHarness/db_test_harness modules test 
+
+--
+-- Start new transaction
+--
+BEGIN;
  
 --
 -- Dump test harness
@@ -608,6 +619,29 @@ SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise
  WHERE test_run_class = 'test_8_triggers.sql'
  ORDER BY test_id;
 
+SELECT test_run_class, pass, COUNT(COALESCE(pass::Text, 'Null')) AS total 
+  FROM rif40_test_harness
+ GROUP BY test_run_class, pass
+ ORDER BY test_run_class, pass;
+ 
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1th CURSOR FOR
+		SELECT COUNT(pass) AS failed
+		  FROM rif40_test_harness
+		 WHERE NOT pass;
+	c1th_rec RECORD;
+BEGIN
+	OPEN c1th;
+	FETCH c1th INTO c1th_rec;
+	CLOSE c1th;
+--		
+	IF c1th_rec.failed > 0 THEN
+		RAISE EXCEPTION 'T8--36: test_8_triggers.sql: % tests failed', c1th_rec.failed;
+	END IF;
+END;
+$$;
+ 
 \copy (SELECT test_id, test_run_class, test_stmt, test_case_title, pg_error_code_expected, raise_exception_on_failure, expected_result, register_date, results, results_xml, NULL AS pass, NULL AS test_run_id, NULL AS test_date, NULL AS time_taken FROM rif40_test_harness) TO ../../TestHarness/rif40_test_harness.csv WITH CSV HEADER
 
 \copy (SELECT * FROM rif40_test_harness) TO test_scripts/data/rif40_test_harness_:dbname.csv WITH CSV HEADER

@@ -457,10 +457,10 @@ function run_test_harness(p_client1, p_client2, p_failed_flag) {
 							// End of query processing - process results array - tests per class
 							row_count = result.rowCount;
 							for (i = 1; i <= row_count; i++) { 
-								console.log('2: Class: %s Tests: %s', result.rows[i-1].test_run_class, result.rows[i-1].tests);
+								console.log('1: Class: %s Tests: %s', result.rows[i-1].test_run_class, result.rows[i-1].tests);
 								total_tests=total_tests + parseInt(result.rows[i-1].tests, 10);
 							}
-							console.log('2: Total tests %s', total_tests);
+							console.log('1: Total tests to run: %s', total_tests);
 							// Finally run the tests: function run_test_harness_test()
 							run_test_harness_tests(p_client1, p_client2, total_tests, p_failed_flag);							
 						});	
@@ -581,6 +581,10 @@ function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag) {
 					var start_time = Date.now();
 					rif40_sql_test(p_client1, p_client2, 1, p_tests, 
 							0 /* p_passed */, 0 /* p_failed */, p_failed_flag, p_rif40_test_harness, start_time);
+				}
+				else if (p_failed_flag) {
+					console.log('1: No failed tests to run');	
+					process.exit(0);					
 				}
 				else {
 					console.error('1: No tests to run');

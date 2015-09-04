@@ -226,6 +226,8 @@ MODULES=node_modules/pg node_modules/pg-native node_modules/optimist
 all: modules db_test_harness
 
 modules: $(MODULES)
+
+node_modules/pg-native/package.json:
 	$(NPM) install --save pg pg-native optimist
 
 #clean:
@@ -236,6 +238,9 @@ install:
 db_test_harness:
 	$(NODE) db_test_harness.js --help
 	$(NODE) db_test_harness.js -H $(PGHOST) -D $(PGDATABASE) -U $(TESTUSER) -d $(DEBUG_LEVEL)
+	
+rif40_create_disease_mapping_example:
+	$(NODE) db_test_harness.js -H $(PGHOST) -D $(PGDATABASE) -U $(TESTUSER) -d $(DEBUG_LEVEL) rif40_create_disease_mapping_example	
 	
 test: db_test_harness
 retest:
