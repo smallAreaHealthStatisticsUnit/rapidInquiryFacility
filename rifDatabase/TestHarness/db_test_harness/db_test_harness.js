@@ -520,25 +520,76 @@ function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag, p_
 	var p_pass = [];
 	var p_time_taken = [];
 
-	// Build SQL statement to run tests, handling -F flag to re-run failed tests only
-	var sql_stmt = 'SELECT a.*\n' +
-		'  FROM rif40_test_harness a\n' +
-		' WHERE a.parent_test_id IS NULL /* Ignore dependent tests */\n';
+	// Build SQL statement to run tests, handling -F flag to re-run failed tests only:
+	/*
+WITH RECURSIVE a AS (
+	SELECT b.test_id AS root_test_id, b.test_id, b.parent_test_id, b.test_run_class, 0 AS level
+ 	  FROM rif40_test_harness b
+     WHERE b.test_run_class = 'rif40_create_disease_mapping_example'
+       AND b.parent_test_id IS NULL	   
+	UNION ALL
+	SELECT a.root_test_id, b.test_id, b.parent_test_id, b.test_run_class, a.level+1 AS level
+ 	  FROM a
+     JOIN rif40_test_harness b ON (b.test_run_class = a.test_run_class AND a.test_id = b.parent_test_id)
+), b AS (
+	SELECT a.*, 
+	       ROW_NUMBER() OVER(PARTITION BY root_test_id ORDER BY level, test_id) AS recursive_test_number, 
+	       COUNT(root_test_id) OVER(
+									PARTITION BY root_test_id 
+									ORDER BY level, test_id 
+									ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS recursive_test_total 
+	  FROM a
+)
+SELECT * FROM b
+ ORDER BY root_test_id, level, test_id;
+ 
+Without the "rif40_create_disease_mapping_example" filter gives:
+ 
+ root_test_id | test_id | parent_test_id |            test_run_class            | level | recursive_test_number | recursive_test_total
+--------------+---------+----------------+--------------------------------------+-------+-----------------------+----------------------
+            1 |       1 |                | rif40_create_disease_mapping_example |     0 |                     1 |                    7
+            1 |       2 |              1 | rif40_create_disease_mapping_example |     1 |                     2 |                    7
+            1 |       3 |              2 | rif40_create_disease_mapping_example |     2 |                     3 |                    7
+            1 |       4 |              3 | rif40_create_disease_mapping_example |     3 |                     4 |                    7
+            1 |       5 |              4 | rif40_create_disease_mapping_example |     4 |                     5 |                    7
+            1 |       6 |              5 | rif40_create_disease_mapping_example |     5 |                     6 |                    7
+            1 |       7 |              6 | rif40_create_disease_mapping_example |     6 |                     7 |                    7
+            8 |       8 |                | test_8_triggers.sql                  |     0 |                     1 |                    1
+            9 |       9 |                | test_8_triggers.sql                  |     0 |                     1 |                    1
+           10 |      10 |                | test_8_triggers.sql                  |     0 |                     1 |                    1
+           11 |      11 |                | test_8_triggers.sql                  |     0 |                     1 |                    1
+           12 |      12 |                | test_8_triggers.sql                  |     0 |                     1 |                    1
+           13 |      13 |                | test_8_triggers.sql                  |     0 |                     1 |                    1
+(13 rows)
+    */
+	var sql_stmt = 'WITH a AS (\n' +
+		'SELECT b.test_id AS root_test_id, b.*, 0 AS level\n' +
+		'  FROM rif40_test_harness b\n' +
+		' WHERE b.parent_test_id IS NULL /* Ignore dependent tests */\n';
 	if (p_failed_flag) {
-		sql_stmt = sql_stmt + '  AND pass = FALSE /* Filter on failed tests only */\n';
+		sql_stmt = sql_stmt + '  AND b.pass = FALSE /* Filter on failed tests only */\n';
 	}	
 	
 	var lp_test_run_class;	
 	if ((p_test_run_class_filter !== undefined)&&(p_test_run_class_filter !== null)) {
 		lp_test_run_class_filter=p_test_run_class_filter
-		sql_stmt = sql_stmt + '  AND test_run_class = $1 /* Filter on test_run_class */\n';					
+		sql_stmt = sql_stmt + '  AND b.test_run_class = $1 /* Filter on test_run_class */\n';					
 	}	
 	else {
 		lp_test_run_class_filter=1
 		sql_stmt = sql_stmt + '  AND 1 = $1 /* Dummy filter for test_run_class */\n';					
 	}	
-	sql_stmt = sql_stmt +
-		' ORDER BY a.test_id';
+	sql_stmt = sql_stmt + 		'), b AS (\n' +
+		'	SELECT a.*,\n' +
+		'	       ROW_NUMBER() OVER(PARTITION BY root_test_id ORDER BY level, test_id) AS recursive_test_number,\n' +
+		'	       COUNT(root_test_id) OVER(\n' +
+		'						PARTITION BY root_test_id\n' +
+		'						ORDER BY level, test_id\n' +
+		'						ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS recursive_test_total\n' +
+		'	  FROM a\n' +
+		')\n' +
+		'SELECT * FROM b\n' +
+		' ORDER BY root_test_id, level, test_id';
 					
 	// Connected OK, run SQL query
 	var query = p_client1.query({
@@ -569,6 +620,10 @@ function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag, p_
 				p_expected_result = new Array();
 				p_pass = new Array();
 				p_time_taken = new Array();
+				p_root_test_id = new Array(); 
+				p_level = new Array(); 
+				p_recursive_test_number = new Array(); 
+				p_recursive_test_total = new Array(); 
 				
 				p_rif40_test_harness = {};
 				
@@ -584,6 +639,10 @@ function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag, p_
 						p_raise_exception_on_failure.push(test_array.rows[j].raise_exception_on_failure /* Deep copy */);
 						p_test_id.push(test_array.rows[j].test_id /* Deep copy */);		
 						p_expected_result.push(test_array.rows[j].expected_result /* Deep copy */);	
+						p_root_test_id.push(test_array.rows[j].root_test_id /* Deep copy */);
+						p_level.push(test_array.rows[j].level /* Deep copy */);					
+						p_recursive_test_number.push(test_array.rows[j].recursive_test_number /* Deep copy */);					
+						p_recursive_test_total.push(test_array.rows[j].recursive_test_total /* Deep copy */);						
 						p_pass.push(undefined);
 						p_time_taken.push(undefined);						
 					
@@ -601,6 +660,10 @@ function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag, p_
 							raise_exception_on_failure: test_array.rows[j].raise_exception_on_failure,
 							test_id: test_array.rows[j].test_id,
 							expected_result: test_array.rows[j].expected_result,
+							level: test_array.rows[j].level,
+							root_test_id: test_array.rows[j].root_test_id,
+							recursive_test_number: test_array.rows[j].recursive_test_number,
+							recursive_test_total: test_array.rows[j].recursive_test_total,
 							pass: undefined,
 							time_taken: undefined };	
 						if (p_rif40_test_harness[j].test_case_title === undefined) {
@@ -671,24 +734,31 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests,
 		process.exit(1);							
 	}
 	
-	var begin = p_client2.query('BEGIN', function(err, result) {
-		if (err) {
-			p_client2.end();
-			console.error('2: Error in BEGIN transaction;', err);
-			p_client1.end();			
-			process.exit(1);
-		}
-		else {
-			// Transaction start OK 
-			begin.on('end', function(result) {			
-				console.log('1: ' + test);			
-				console.log('2: BEGIN transaction: ' + test);		
+	if (p_rif40_test_harness[p_j-1].level == 0) {
+		var begin = p_client2.query('BEGIN', function(err, result) {
+			if (err) {
+				p_client2.end();
+				console.error('2: Error in BEGIN transaction;', err);
+				p_client1.end();			
+				process.exit(1);
+			}
+			else {
+				// Transaction start OK 
+				begin.on('end', function(result) {			
+					console.log('1: ' + test);			
+					console.log('2: BEGIN transaction: ' + test);		
 
-				_rif40_sql_test(p_client1, p_client2, p_j, p_tests, 
-					p_passed, p_failed, p_failed_flag, p_rif40_test_harness, test, p_start_time);
-			});
-		}
-	});
+					_rif40_sql_test(p_client1, p_client2, p_j, p_tests, 
+						p_passed, p_failed, p_failed_flag, p_rif40_test_harness, test, p_start_time);
+				});
+			}
+		});
+	}
+	else {	
+		console.log('1: RECURSE level ' + p_rif40_test_harness[p_j-1].level + ': ' + test);			
+		_rif40_sql_test(p_client1, p_client2, p_j, p_tests, 
+			p_passed, p_failed, p_failed_flag, p_rif40_test_harness, test, p_start_time);
+	}
 }
 
 /* 
@@ -861,29 +931,36 @@ function _rif40_sql_test_end(p_client1, p_client2, p_j, p_tests,
 		process.exit(1);							
 	}
 	
-	var end = p_client2.query('ROLLBACK', function(err, result) {
-		if (err) {
-			p_client2.end();
-			console.error('2: Error in ROLLBACK transaction;', err);
-			p_client1.end();			
-			process.exit(1);			
-		}
-		else {
-			// Transaction ROLLBACK OK 
-			end.on('end', function(result) {	
-				console.log('2: ROLLBACK transaction: ' + p_test_text);
-				if (p_j === p_tests) {
-					end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, 1, p_failed_flag, 
-							p_rif40_test_harness, p_start_time); 
-				}
-				else {
-					console.log('1: Recurse; next: ' + next);
-					rif40_sql_test(p_client1, p_client2, next, p_tests, 
-							p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_start_time);
-				}													
-			});
-		}
-	});	/* End of rollback */					
+	if (p_rif40_test_harness[p_j-1].recursive_test_number == p_rif40_test_harness[p_j-1].recursive_test_total) {	
+		var end = p_client2.query('ROLLBACK', function(err, result) {
+			if (err) {
+				p_client2.end();
+				console.error('2: Error in ROLLBACK transaction;', err);
+				p_client1.end();			
+				process.exit(1);			
+			}
+			else {
+				// Transaction ROLLBACK OK 
+				end.on('end', function(result) {	
+					console.log('2: ROLLBACK transaction: ' + p_test_text);
+					if (p_j === p_tests) {
+						end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, 1, p_failed_flag, 
+								p_rif40_test_harness, p_start_time); 
+					}
+					else {
+						console.log('1: Recurse; next: ' + next);
+						rif40_sql_test(p_client1, p_client2, next, p_tests, 
+								p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_start_time);
+					}													
+				});
+			}
+		});	/* End of rollback */	
+	}
+	else {
+		console.log('1: DEPENDENT Recurse; next: ' + next);
+		rif40_sql_test(p_client1, p_client2, next, p_tests, 
+				p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_start_time);		
+	}
 }
 				
 /* 
