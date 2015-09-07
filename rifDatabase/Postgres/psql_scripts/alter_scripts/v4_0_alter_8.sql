@@ -174,6 +174,7 @@ CREATE TABLE rif40_test_harness (
 	test_run_id					INTEGER,
 	test_date					TIMESTAMP WITH TIME ZONE,
 	time_taken					NUMERIC,
+	pg_debug_functions			Text[],
 	CONSTRAINT rif40_test_harness_pk PRIMARY KEY (test_id),
 	CONSTRAINT rif40_test_harness_test_run_id_fk FOREIGN KEY (test_run_id)
 		REFERENCES rif40_test_runs (test_run_id)
@@ -200,6 +201,7 @@ COMMENT ON COLUMN rif40_test_harness.pass IS 'Was the test passed? Note that som
 COMMENT ON COLUMN rif40_test_harness.test_run_id IS 'Test run id for test. Foreign key to rif40_test_runs table.';
 COMMENT ON COLUMN rif40_test_harness.test_date IS 'Test date';
 COMMENT ON COLUMN rif40_test_harness.time_taken IS 'Time taken for test (seconds)';
+COMMENT ON COLUMN rif40_test_harness.pg_debug_functions IS 'Array of Postgres functions for test harness to enable debug on';
 
 --
 -- 2. Add "Test harness" to RIF40_TABLES_AND_VIEWS classes

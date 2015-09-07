@@ -584,13 +584,11 @@ SELECT UNNEST(dblink_get_connections()) AS connection_name;
 --
 -- Re-run trigger test harness
 --
---\set VERBOSITY verbose
 DO LANGUAGE plpgsql $$
 BEGIN
-	RAISE INFO 'T8--36: test_8_triggers.sql: Re-run trigger test harness';
+	RAISE INFO 'T8--36: test_8_triggers.sql: Run trigger test harness';
 END;
 $$;
---SELECT rif40_sql_pkg.rif40_test_harness(1);
 
 SELECT * FROM rif40_test_runs
  WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;

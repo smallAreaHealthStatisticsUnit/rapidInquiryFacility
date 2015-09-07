@@ -78,6 +78,7 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, 
 	VARCHAR, BOOLEAN, BOOLEAN);	
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY, XML,
 	VARCHAR, BOOLEAN, INTEGER);
+	
 -- Old	
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN, BOOLEAN);	
@@ -91,7 +92,7 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY
 	VARCHAR, BOOLEAN, INTEGER);
 
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML,
-	VARCHAR, BOOLEAN, BOOLEAN, INTEGER);	
+	VARCHAR, BOOLEAN, BOOLEAN, INTEGER, Text[]);	
 -- Old	
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML,
 	VARCHAR, BOOLEAN, BOOLEAN);	
@@ -99,8 +100,10 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR,
 	VARCHAR, BOOLEAN, BOOLEAN);	
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN);	
-	DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, ANYARRAY,
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML,
+	VARCHAR, BOOLEAN, BOOLEAN, INTEGER);	
 	
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test_dblink_connect(VARCHAR, INTEGER);
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test_dblink_disconnect(VARCHAR);
@@ -115,7 +118,8 @@ CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_sql_test_register(
 	pg_error_code_expected 		VARCHAR DEFAULT NULL, 
 	raise_exception_on_failure 	BOOLEAN DEFAULT TRUE, 
 	expected_result 			BOOLEAN DEFAULT TRUE,
-	parent_test_id				INTEGER DEFAULT NULL)
+	parent_test_id				INTEGER DEFAULT NULL,
+	pg_debug_functions			Text[] DEFAULT NULL)
 RETURNS INTEGER
 SECURITY INVOKER
 AS $func$
@@ -130,7 +134,8 @@ Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) stat
 			NULL means it is expected to NOT raise an exception, 
 			raise exception on failure,
 			expected result,
-			parent test id
+			parent test id,
+			Array of Postgres functions for test harness to enable debug on
 Returns:	Test id, NULL if rif40_test_harness table not created yet
 Description:Autoregister test case
  */
@@ -145,7 +150,8 @@ DECLARE
 				 l_pg_error_code_expected		VARCHAR, 
 				 l_raise_exception_on_failure 	BOOLEAN,
 				 l_expected_result				BOOLEAN,
-				 l_parent_test_id				INTEGER) FOR
+				 l_parent_test_id				INTEGER,
+				 l_pg_debug_functions			Text[]) FOR
 		INSERT INTO rif40_test_harness (
 			test_stmt,
 			test_run_class,
@@ -155,9 +161,11 @@ DECLARE
 			results,
 			results_xml,
 			expected_result,
-			parent_test_id)
+			parent_test_id,
+			pg_debug_functions)
 		SELECT l_test_stmt, l_test_run_class, l_test_case_title, 
-			   l_pg_error_code_expected, l_raise_exception_on_failure, l_results, l_results_xml, l_expected_result, l_parent_test_id
+			   l_pg_error_code_expected, l_raise_exception_on_failure, l_results, 
+			   l_results_xml, l_expected_result, l_parent_test_id, l_pg_debug_functions
 		 WHERE NOT EXISTS (
 			SELECT a.test_id
 			  FROM rif40_test_harness a
@@ -172,8 +180,20 @@ DECLARE
 		 WHERE a.test_case_title             = l_test_case_title
 		   AND COALESCE(a.parent_test_id, 0) = COALESCE(l_parent_test_id, 0);
 	c5st_rec RECORD;
+	c6_st CURSOR(l_function_name VARCHAR) FOR 
+		SELECT l.lanname||' function' AS object_type, 
+			COALESCE(n.nspname, r.rolname)||'.'||p.proname AS object_name 					/* Functions */
+		  FROM pg_language l, pg_type t, pg_roles r, pg_proc p
+			LEFT OUTER JOIN pg_namespace n ON (n.oid = p.pronamespace)			
+		 WHERE p.prolang    = l.oid
+		   AND p.prorettype = t.oid
+		   AND p.proowner   IN (SELECT oid FROM pg_roles WHERE rolname IN ('postgres', 'rif40'))
+		   AND p.proowner   = r.oid
+		   AND p.proname    = LOWER(l_function_name);
+	c6st_rec RECORD;	
 --
 	f_test_id 	INTEGER;	
+	l_func		VARCHAR;
 BEGIN
 	OPEN c1st;
 	FETCH c1st INTO c1st_rec;
@@ -184,9 +204,22 @@ BEGIN
 			test_case_title::VARCHAR);		
 		RETURN NULL;
 	END IF;
+	IF pg_debug_functions IS NOT NULL THEN
+		FOREACH l_func IN ARRAY pg_debug_functions LOOP
+			OPEN c6_st(l_func);
+			FETCH c6_st INTO c6st_rec;
+			IF c6st_rec.object_name IS NULL THEN
+				PERFORM rif40_log_pkg.rif40_error(-71151, '_rif40_sql_test_register', 
+					'Test case: %; debug function: % not found',
+					test_case_title::VARCHAR,
+					l_func::VARCHAR);						
+			END IF;
+			CLOSE c6_st;
+		END LOOP;
+	END IF;
 --
 	OPEN c3st(test_stmt, test_run_class, test_case_title, 
-		results, results_xml, pg_error_code_expected, raise_exception_on_failure, expected_result, parent_test_id);
+		results, results_xml, pg_error_code_expected, raise_exception_on_failure, expected_result, parent_test_id, pg_debug_functions);
 	FETCH c3st INTO c3st_rec;
 	CLOSE c3st;
 	OPEN c5st(test_case_title, parent_test_id);
@@ -194,24 +227,24 @@ BEGIN
 	CLOSE c5st;		
 	f_test_id:=c5st_rec.test_id;	
 	IF f_test_id IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-71150, '_rif40_sql_test_register', 
+		PERFORM rif40_log_pkg.rif40_error(-71152, '_rif40_sql_test_register', 
 			'Test id for test case NOT FOUND: %; TEST CASE NOT INSERTED',
 			c3st_rec.test_case_title::VARCHAR);	
 	END IF;
 --	
 	IF c3st_rec.test_case_title IS NOT NULL THEN
-		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test_register', '[71151] Registered test case %: %; parent: %', 
+		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test_register', '[71153] Registered test case %: %; parent: %', 
 			f_test_id::VARCHAR, test_case_title::VARCHAR, parent_test_id::VARCHAR);	
 		UPDATE rif40_test_runs
 		   SET number_test_cases_registered = number_test_cases_registered + 1
 		 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;	
 	ELSE	
-		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test_register', '[71152] Test case already registered %: %', 
+		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test_register', '[71154] Test case already registered %: %', 
 			f_test_id::VARCHAR, test_case_title::VARCHAR);
 	END IF;
 --
 	IF f_test_id IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-71153, '_rif40_sql_test_register', 
+		PERFORM rif40_log_pkg.rif40_error(-71155, '_rif40_sql_test_register', 
 			'Test id for test case NOT FOUND: %; TEST CASE NEVER INSERTED',
 			c3st_rec.test_case_title::VARCHAR);	
 	END IF;
@@ -222,7 +255,7 @@ $func$
 LANGUAGE PLPGSQL;
 
 COMMENT ON FUNCTION rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML,
-	VARCHAR, BOOLEAN, BOOLEAN, INTEGER) IS 'Function: 	_rif40_sql_test_register()
+	VARCHAR, BOOLEAN, BOOLEAN, INTEGER, Text[]) IS 'Function: 	_rif40_sql_test_register()
 Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement,
 			Test run class; usually the name of the SQL script that originally ran it
             test case title, 
@@ -232,7 +265,8 @@ Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) stat
 			NULL means it is expected to NOT raise an exception, 
 			raise exception on failure,
 			expected result,
-			parent test id  
+			parent test id,
+			Array of Postgres functions for test harness to enable debug on
 Returns:	Test id, NULL if rif40_test_harness table not created yet
 Description:Autoregister test case';
 
