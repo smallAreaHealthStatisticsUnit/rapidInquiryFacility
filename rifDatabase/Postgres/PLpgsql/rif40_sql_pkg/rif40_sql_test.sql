@@ -1170,6 +1170,15 @@ BEGIN
 		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test', 
 			'[71208] Test % % dependent tests to run',
 			c3_rth_rec.test_case_title::VARCHAR, c3_rth_rec.total_test_id::VARCHAR);	
+--	
+-- Causes:
+--		
+-- 2: notice: _rif40_sql_test(): [71187] Test case: SAHSULAND test 4 study_id 1 example FAILED, no error expected; got: 42P03;
+-- Message:  cursor "c4_rth" already in use
+-- Detail:
+--		
+-- Solution - move code to Node.js trest harness - also can then update
+--
 		FOR c4_rth_rec IN c4_rth(c3_rth_rec.test_case_title) LOOP
 			f_tests_run:=f_tests_run+1;	
 --
@@ -1181,6 +1190,10 @@ BEGIN
 --	raise_exception_on_failure 	BOOLEAN, 
 --	f_test_id 					INTEGER
 --
+			PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test', 
+				'[71208a] Dependent %/% test: %',
+				f_tests_run::VARCHAR, 
+				c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);
 			f_result:=rif40_sql_pkg._rif40_sql_test(
 							c4_rth_rec.test_stmt, 
 							c4_rth_rec.test_case_title, 
@@ -1212,7 +1225,17 @@ BEGIN
 						f_tests_run::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);	
 				END IF;
 			END IF;									
-		END LOOP;	
+		END LOOP;
+		IF f_errors > 0 THEN
+			PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_sql_test', 
+				'[71212a] Test % % dependent tests ran, % failed',
+				c3_rth_rec.test_case_title::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, f_errors::VARCHAR);		
+			f_pass:=FALSE;
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test', 		
+				'[71212b] Test % % dependent tests ran OK',
+				c3_rth_rec.test_case_title::VARCHAR, c3_rth_rec.total_test_id::VARCHAR);		
+		END IF;
 	END IF;		
 
 	RETURN f_pass;

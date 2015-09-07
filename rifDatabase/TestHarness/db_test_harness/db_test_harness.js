@@ -222,20 +222,22 @@ function db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_failed, p_de
 	// Use PGHOST, native authentication (i.e. same as psql)
 	try {
 		client1 = new p_pg.Client(conString);
-		console.log(p_num + ': Connect to Postgres using: ' + conString);
+		console.log(p_num + ': Connected to Postgres using: ' + conString);
 		
 	}
 	catch(err) {
 		console.error(p_num + ': Could not create postgres 1st client [master] using: ' + conString, err);
-		if (p_hostname == 'localhost') {
+		if (p_hostname === 'localhost') {
 			
 			// If host = localhost, use IPv6 numeric notation. This prevent ENOENT errors from getaddrinfo() in Windows
 			// when Wireless is disconnected. This is a Windows DNS issue. psql avoids this somehow.
 			// You do need entries for ::1 in pgpass			
+
+			console.log(p_num + ': Attempt 2 (::1 instead of localhost) to connect to Postgres using: ' + conString);
 			conString = 'postgres://' + p_user + '@' + '[::1]' + ':' + p_port + '/' + p_database + '?application_name=db_test_harness';
 			try {
 				client1 = new p_pg.Client(conString);
-				console.log(p_num + ': Connect to Postgres using: ' + conString);
+				console.log(p_num + ': Connected to Postgres using: ' + conString);
 				
 			}
 			catch(err) {
