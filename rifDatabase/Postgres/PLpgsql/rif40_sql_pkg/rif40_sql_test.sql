@@ -758,14 +758,33 @@ DECLARE
 		SELECT a.connection_name
 		  FROM a
 		 WHERE a.connection_name = l_connection_name;
+--
+	c3_rth CURSOR(l_test_case_title VARCHAR) FOR
+		SELECT a.test_case_title, COUNT(test_id) AS total_test_id
+		  FROM rif40_test_harness a
+		 WHERE a.test_case_title = l_test_case_title
+		   AND a.parent_test_id  IS NOT NULL
+		 GROUP BY a.test_case_title;	
+	c3_rth_rec RECORD;	
+	c4_rth CURSOR(l_test_case_title VARCHAR) FOR
+		SELECT *
+		  FROM rif40_test_harness a
+		 WHERE a.test_case_title = l_test_case_title
+		   AND a.parent_test_id  IS NOT NULL
+		 ORDER BY a.parent_test_id;	
+--		 
 	d2st_rec RECORD;					  
 	d1st_rec	RECORD;
+	c4_rth_rec RECORD;	
 --		
 	rcode 		BOOLEAN;
 	f_test_id 	INTEGER;
 	sql_stmt	VARCHAR;
 	dblink_status	VARCHAR;
 	op			VARCHAR;
+--
+	f_errors	INTEGER:=0;	
+	f_tests_run	INTEGER:=0;	
 --
 	stp TIMESTAMP WITH TIME ZONE:=clock_timestamp();
 	etp TIMESTAMP WITH TIME ZONE;
@@ -785,7 +804,7 @@ DECLARE
 	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';		
 BEGIN
 --
--- Check connection does not exist
+-- Check connection does exist
 --
 	OPEN d2st(connection_name);
 	FETCH d2st INTO d2st_rec;
@@ -825,6 +844,149 @@ BEGIN
 		FETCH d1st INTO d1st_rec;
 		op='dblink close(SQL)';		
 		CLOSE d1st;
+--
+		rcode:=d1st_rec.rcode;
+--
+-- Process return code
+--
+		etp:=clock_timestamp();
+		took:=age(etp, stp);
+		UPDATE rif40_test_harness
+		   SET pass        = rcode,
+			   test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer,
+			   test_date   = statement_timestamp(),
+			   time_taken  = EXTRACT(EPOCH FROM took)::NUMERIC
+		 WHERE test_id = f_test_id;
+		IF rcode THEN
+			UPDATE rif40_test_runs
+			   SET number_passed = number_passed + 1,
+				   tests_run     = tests_run + 1
+			 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
+		ELSE
+			UPDATE rif40_test_runs
+			   SET number_failed = number_failed + 1,
+				   tests_run     = tests_run + 1
+			 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
+		END IF;			
+--
+-- Do dependent tests
+--
+		OPEN c3_rth(test_case_title);
+		FETCH c3_rth INTO c3_rth_rec;
+		CLOSE c3_rth;
+		IF c3_rth_rec.total_test_id = 0 THEN
+			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+				'[71207] Test % no depenedent tests to run',
+				c3_rth_rec.test_case_title::VARCHAR);
+		ELSIF NOT rcode THEN
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+				'[71208a] Test % % dependent tests to run; halting because of error in master test',
+				c3_rth_rec.test_case_title::VARCHAR, c3_rth_rec.total_test_id::VARCHAR);		
+			RETURN rcode;
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+				'[71208] Test % % dependent tests to run',
+				c3_rth_rec.test_case_title::VARCHAR, c3_rth_rec.total_test_id::VARCHAR);	
+--	
+-- Causes:
+--		
+-- 2: notice: _rif40_sql_test(): [71187] Test case: SAHSULAND test 4 study_id 1 example FAILED, no error expected; got: 42P03;
+-- Message:  cursor "c4_rth" already in use
+-- Detail:
+--		
+-- Solution - move code to Node.js trest harness - also can then update
+--
+			FOR c4_rth_rec IN c4_rth(c3_rth_rec.test_case_title) LOOP
+				f_tests_run:=f_tests_run+1;	
+--
+-- 	test_stmt 					VARCHAR, 
+--	test_case_title 			VARCHAR, 
+--	results 					ANYARRAY, 
+--	results_xml					XML,
+--	pg_error_code_expected 		VARCHAR, 
+--	raise_exception_on_failure 	BOOLEAN, 
+--	f_test_id 					INTEGER
+--
+				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+					'[71208a] Dependent %/% test: %',
+					f_tests_run::VARCHAR, 
+					c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);
+				sql_stmt:='SELECT rif40_sql_pkg._rif40_sql_test('||E'\n'||
+									coalesce(quote_literal(c4_rth_rec.test_stmt), 'NULL')||'::VARCHAR /* test_stmt */,'||E'\n'||
+									coalesce(quote_literal(c4_rth_rec.test_case_title), 'NULL')||'::VARCHAR /* test_case_title */,'||E'\n'||
+									coalesce(quote_literal(c4_rth_rec.results), 'NULL')||'::VARCHAR[][] /* results */,'||E'\n'||
+									coalesce(quote_literal(c4_rth_rec.results_xml), 'NULL')||'::XML /* results_xml */,'||E'\n'||
+									coalesce(quote_literal(c4_rth_rec.pg_error_code_expected), 'NULL')||'::VARCHAR /* pg_error_code_expected */,'||E'\n'||
+									coalesce(quote_literal(c4_rth_rec.raise_exception_on_failure), 'NULL')||'::BOOLEAN /* raise_exception_on_failure */,'||E'\n'||
+									coalesce(quote_literal(c4_rth_rec.test_id), 'NULL')||'::INTEGER /* test_id */)::INTEGER AS rcode';
+				PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71163a] SQL[SELECT] %/%> %;',
+						f_tests_run::VARCHAR, 
+						c3_rth_rec.total_test_id::VARCHAR, 
+						sql_stmt::VARCHAR);	
+--		
+				op='dblink open(SQL) ['||f_tests_run::VARCHAR||'/'||c3_rth_rec.total_test_id::VARCHAR||']';
+				OPEN d1st(connection_name, sql_stmt);
+				op='dblink fetch(SQL) ['||f_tests_run::VARCHAR||'/'||c3_rth_rec.total_test_id::VARCHAR||']';		
+				FETCH d1st INTO d1st_rec;
+				op='dblink close(SQL) ['||f_tests_run::VARCHAR||'/'||c3_rth_rec.total_test_id::VARCHAR||']';		
+				CLOSE d1st;
+--
+-- Process return code
+--
+				etp:=clock_timestamp();
+				took:=age(etp, stp);
+				UPDATE rif40_test_harness
+				   SET pass        = d1st_rec.rcode,
+					   test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer,
+					   test_date   = statement_timestamp(),
+					   time_taken  = EXTRACT(EPOCH FROM took)::NUMERIC
+				 WHERE test_id = c4_rth_rec.test_id;
+				IF d1st_rec.rcode THEN
+					UPDATE rif40_test_runs
+					   SET number_passed = number_passed + 1,
+						   tests_run     = tests_run + 1
+					 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
+				ELSE
+					UPDATE rif40_test_runs
+					   SET number_failed = number_failed + 1,
+						   tests_run     = tests_run + 1
+					 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
+				END IF;							
+				IF NOT d1st_rec.rcode THEN 	/* Test failed */
+					IF NOT c4_rth_rec.expected_result THEN
+						PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+							'[71209] TEST %/%: % FAILED AS EXPECTED.',
+							f_tests_run::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);	
+					ELSE
+						PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+							'[71210] TEST %/%: % FAILED; EXPECTED TO PASS.',
+							f_tests_run::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);	
+						f_errors:=f_errors+1; 				
+					END IF;
+				ELSE					/* Passed */
+					IF NOT c4_rth_rec.expected_result THEN		
+						PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+							'[71211] TEST %/%: % FAILED; EXPECTED TO PASS.',
+							f_tests_run::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);
+						f_errors:=f_errors+1; 									
+					ELSE		
+						PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+							'[71212] TEST %/%: % PASSED AS EXPECTED.',
+							f_tests_run::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);	
+					END IF;
+				END IF;									
+			END LOOP;
+			IF f_errors > 0 THEN
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+					'[71212a] Test % % dependent tests ran, % failed',
+					c3_rth_rec.test_case_title::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, f_errors::VARCHAR);	
+					rcode:=FALSE;			
+			ELSE
+				PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test', 		
+					'[71212b] Test % % dependent tests ran OK',
+					c3_rth_rec.test_case_title::VARCHAR, c3_rth_rec.total_test_id::VARCHAR);		
+			END IF;
+		END IF;			
 --		
 		op='dblink (ROLLBACK)';		
 		PERFORM dblink(connection_name, 'ROLLBACK;');			
@@ -865,30 +1027,6 @@ BEGIN
 			RAISE;
 	END;				
 
-	rcode:=d1st_rec.rcode;
---
--- Process return code
---
-	etp:=clock_timestamp();
-	took:=age(etp, stp);
-	UPDATE rif40_test_harness
-	   SET pass        = rcode,
-	       test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer,
-		   test_date   = statement_timestamp(),
-		   time_taken  = EXTRACT(EPOCH FROM took)::NUMERIC
-	 WHERE test_id = f_test_id;
-	IF rcode THEN
-		UPDATE rif40_test_runs
-		   SET number_passed = number_passed + 1,
-			   tests_run     = tests_run + 1
-		 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
-	ELSE
-		UPDATE rif40_test_runs
-		   SET number_failed = number_failed + 1,
-			   tests_run     = tests_run + 1
-		 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
-	END IF;
-	
 	RETURN rcode;
 END;
 $func$ LANGUAGE plpgsql;
@@ -945,21 +1083,6 @@ DECLARE
 	c1sqlt_result_row 	RECORD;
 	c2sqlt 				REFCURSOR;
 	c2sqlt_result_row 	RECORD;
---
-	c3_rth CURSOR(l_test_case_title VARCHAR) FOR
-		SELECT a.test_case_title, COUNT(test_id) AS total_test_id
-		  FROM rif40_test_harness a
-		 WHERE a.test_case_title = l_test_case_title
-		   AND a.parent_test_id  IS NOT NULL
-		 GROUP BY a.test_case_title;	
-	c4_rth CURSOR(l_test_case_title VARCHAR) FOR
-		SELECT *
-		  FROM rif40_test_harness a
-		 WHERE a.test_case_title = l_test_case_title
-		   AND a.parent_test_id  IS NOT NULL
-		 ORDER BY a.parent_test_id;	
-	c3_rth_rec RECORD;
-	c4_rth_rec RECORD;		
 --	
 	sql_frag 	VARCHAR;
 	sql_stmt 	VARCHAR;
@@ -968,9 +1091,7 @@ DECLARE
 	missing		INTEGER:=0;	
 --
 	f_pass		BOOLEAN;
-	f_tests_run	INTEGER:=0;
 	f_result	BOOLEAN;
-	f_errors	INTEGER:=0;
 --
 	v_message_text		VARCHAR;
 	v_pg_exception_hint	VARCHAR;
@@ -1155,89 +1276,7 @@ BEGIN
 			'Test case %: % FAILED, invalid statement type: % %SQL> %;', 
 			f_test_id::VARCHAR, test_case_title::VARCHAR, UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 6))::VARCHAR, E'\n'::VARCHAR, test_stmt::VARCHAR);	
 	END IF;
-	
 --
--- Do dependent tests
---
-	OPEN c3_rth(test_case_title);
-	FETCH c3_rth INTO c3_rth_rec;
-	CLOSE c3_rth;
-	IF c3_rth_rec.total_test_id = 0 THEN
-		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test', 
-			'[71207] Test % no depenedent tests to run',
-			c3_rth_rec.test_case_title::VARCHAR);	
-	ELSE
-		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test', 
-			'[71208] Test % % dependent tests to run',
-			c3_rth_rec.test_case_title::VARCHAR, c3_rth_rec.total_test_id::VARCHAR);	
---	
--- Causes:
---		
--- 2: notice: _rif40_sql_test(): [71187] Test case: SAHSULAND test 4 study_id 1 example FAILED, no error expected; got: 42P03;
--- Message:  cursor "c4_rth" already in use
--- Detail:
---		
--- Solution - move code to Node.js trest harness - also can then update
---
-		FOR c4_rth_rec IN c4_rth(c3_rth_rec.test_case_title) LOOP
-			f_tests_run:=f_tests_run+1;	
---
--- 	test_stmt 					VARCHAR, 
---	test_case_title 			VARCHAR, 
---	results 					ANYARRAY, 
---	results_xml					XML,
---	pg_error_code_expected 		VARCHAR, 
---	raise_exception_on_failure 	BOOLEAN, 
---	f_test_id 					INTEGER
---
-			PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test', 
-				'[71208a] Dependent %/% test: %',
-				f_tests_run::VARCHAR, 
-				c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);
-			f_result:=rif40_sql_pkg._rif40_sql_test(
-							c4_rth_rec.test_stmt, 
-							c4_rth_rec.test_case_title, 
-							c4_rth_rec.results,
-							c4_rth_rec.results_xml,
-							c4_rth_rec.pg_error_code_expected, 
-							c4_rth_rec.raise_exception_on_failure, 							
-							c4_rth_rec.test_id);	
-			IF NOT f_result THEN 	/* Test failed */
-				IF NOT c4_rth_rec.expected_result THEN
-					PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test', 
-						'[71209] TEST %/%: % FAILED AS EXPECTED.',
-						f_tests_run::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);	
-				ELSE
-					PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_sql_test', 
-						'[71210] TEST %/%: % FAILED; EXPECTED TO PASS.',
-						f_tests_run::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);	
-					f_errors:=f_errors+1; 				
-				END IF;
-			ELSE					/* Passed */
-				IF NOT c4_rth_rec.expected_result THEN		
-					PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_sql_test', 
-						'[71211] TEST %/%: % FAILED; EXPECTED TO PASS.',
-						f_tests_run::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);
-					f_errors:=f_errors+1; 									
-				ELSE		
-					PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test', 
-						'[71212] TEST %/%: % PASSED AS EXPECTED.',
-						f_tests_run::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);	
-				END IF;
-			END IF;									
-		END LOOP;
-		IF f_errors > 0 THEN
-			PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_sql_test', 
-				'[71212a] Test % % dependent tests ran, % failed',
-				c3_rth_rec.test_case_title::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, f_errors::VARCHAR);		
-			f_pass:=FALSE;
-		ELSE
-			PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test', 		
-				'[71212b] Test % % dependent tests ran OK',
-				c3_rth_rec.test_case_title::VARCHAR, c3_rth_rec.total_test_id::VARCHAR);		
-		END IF;
-	END IF;		
-
 	RETURN f_pass;
 --
 EXCEPTION
