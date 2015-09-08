@@ -75,11 +75,11 @@ $$;
 \i ../PLpgsql/rif40_sql_pkg/_rif40_sql_test_log_setup.sql
 
 --
--- To be obsoleted
+-- Now obsoleted
 --
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test_dblink_connect(VARCHAR, INTEGER);
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test_dblink_disconnect(VARCHAR);
-\i ../PLpgsql/rif40_sql_pkg/_rif40_sql_test_dblink.sql
+--\i ../PLpgsql/rif40_sql_pkg/_rif40_sql_test_dblink.sql
 
 --
 -- Test case 

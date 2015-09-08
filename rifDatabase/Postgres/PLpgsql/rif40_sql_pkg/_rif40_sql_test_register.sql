@@ -85,7 +85,7 @@ CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_sql_test_register(
 	results 					ANYARRAY,
 	results_xml					XML,
 	pg_error_code_expected 		VARCHAR DEFAULT NULL, 
-	raise_exception_on_failure 	BOOLEAN DEFAULT TRUE, 
+	raise_exception_on_failure 	BOOLEAN DEFAULT FALSE, 
 	expected_result 			BOOLEAN DEFAULT TRUE,
 	parent_test_id				INTEGER DEFAULT NULL,
 	pg_debug_functions			Text[] DEFAULT NULL)
@@ -100,11 +100,11 @@ Parameters:	SQL test (SELECT or INSERT/UPDATE/DELETE with RETURNING clause) stat
  			results 3d text array,
 			results as XML,
 			[negative] Postgres error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
-			NULL means it is expected to NOT raise an exception, 
-			raise exception on failure,
-			expected result,
-			parent test id,
-			Array of Postgres functions for test harness to enable debug on
+			NULL means it is expected to NOT raise an exception; default: NULL, 
+			raise exception on failure; default: FALSE (do not halt test harness),
+			expected result; default: TRUE (pass),
+			parent test id; default: NULL,
+			Array of Postgres functions for test harness to enable debug on; default: NULL
 Returns:	Test id, NULL if rif40_test_harness table not created yet
 Description:Autoregister test case
  */
@@ -226,16 +226,16 @@ LANGUAGE PLPGSQL;
 COMMENT ON FUNCTION rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML,
 	VARCHAR, BOOLEAN, BOOLEAN, INTEGER, Text[]) IS 'Function: 	_rif40_sql_test_register()
 Parameters:	SQL test (SELECT or INSERT/UPDATE/DELETE with RETURNING clause) statement,
-			Test run class; usually the name of the SQL script that originally ran it
-            test case title, 
-			results 3d text array,
+			Test run class; usually the name of the SQL script that originally ran it,
+            test case title,
+ 			results 3d text array,
 			results as XML,
 			[negative] Postgres error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
-			NULL means it is expected to NOT raise an exception, 
-			raise exception on failure,
-			expected result,
-			parent test id,
-			Array of Postgres functions for test harness to enable debug on
+			NULL means it is expected to NOT raise an exception; default: NULL, 
+			raise exception on failure; default: FALSE (do not halt test harness),
+			expected result; default: TRUE (pass),
+			parent test id; default: NULL,
+			Array of Postgres functions for test harness to enable debug on; default: NULL
 Returns:	Test id, NULL if rif40_test_harness table not created yet
 Description:Autoregister test case';
 
