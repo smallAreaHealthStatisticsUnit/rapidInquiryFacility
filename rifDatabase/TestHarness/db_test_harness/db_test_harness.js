@@ -473,7 +473,8 @@ function run_test_harness(p_client1, p_client2, p_failed_flag, p_test_run_class)
 						query.on('end', function(result) {
 							// Re-enable client 2 [worker] debug messages
 							p_client2.on('notice', function(msg) {
-								console.log('2: %s', msg);
+								var timestamp = new Date();
+								console.log('2[%s %s] %s', timestamp.toLocaleTimeString(), timestamp.getMilliseconds(), msg);
 							});			
 							// End of query processing - process results array - tests per class
 							row_count = result.rowCount;
@@ -515,7 +516,11 @@ function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag, p_
 	var p_raise_exception_on_failure = []; 
 	var p_test_id = [];
 	var p_expected_result = [];
-
+	var p_root_test_id = []; 
+	var p_level = []; 
+	var p_recursive_test_number = []; 
+	var p_recursive_test_total = []; 
+	var p_pg_debug_functions = []; 
 	var p_pass = [];
 	var p_time_taken = [];
 
@@ -628,6 +633,7 @@ Without the "rif40_create_disease_mapping_example" filter gives:
 				p_level = new Array(); 
 				p_recursive_test_number = new Array(); 
 				p_recursive_test_total = new Array(); 
+				p_pg_debug_functions = new Array(); 
 				
 				p_rif40_test_harness = {};
 				
@@ -646,7 +652,8 @@ Without the "rif40_create_disease_mapping_example" filter gives:
 						p_root_test_id.push(test_array.rows[j].root_test_id /* Deep copy */);
 						p_level.push(test_array.rows[j].level /* Deep copy */);					
 						p_recursive_test_number.push(test_array.rows[j].recursive_test_number /* Deep copy */);					
-						p_recursive_test_total.push(test_array.rows[j].recursive_test_total /* Deep copy */);						
+						p_recursive_test_total.push(test_array.rows[j].recursive_test_total /* Deep copy */);					
+						p_pg_debug_functions.push(test_array.rows[j].pg_debug_functions /* Deep copy */);						
 						p_pass.push(undefined);
 						p_time_taken.push(undefined);						
 					
@@ -668,6 +675,7 @@ Without the "rif40_create_disease_mapping_example" filter gives:
 							root_test_id: test_array.rows[j].root_test_id,
 							recursive_test_number: test_array.rows[j].recursive_test_number,
 							recursive_test_total: test_array.rows[j].recursive_test_total,
+							pg_debug_functions: test_array.rows[j].pg_debug_functions,
 							pass: undefined,
 							time_taken: undefined };	
 						if (p_rif40_test_harness[j].test_case_title === undefined) {
@@ -790,7 +798,8 @@ function _rif40_sql_test(p_client1, p_client2, p_j, p_tests,
 			'$4::XML        /* results_xml */,' + '\n' +
 			'$5::VARCHAR    /* pg_error_code_expected */,' + '\n' +
 			'$6::BOOLEAN    /* raise_exception_on_failure */,' + '\n' +
-			'$7::INTEGER    /* test_id */) AS rbool';
+			'$7::INTEGER    /* test_id */,' + '\n' +
+			'$8::Text[]     /* pg_debug_functions */) AS rbool';
 	var start_time=Date.now();
 		
 	// Check failed flag is NOT undefined	
@@ -821,7 +830,8 @@ function _rif40_sql_test(p_client1, p_client2, p_j, p_tests,
 						 p_rif40_test_harness[p_j-1].results_xml,
 						 p_rif40_test_harness[p_j-1].pg_error_code_expected,
 						 p_rif40_test_harness[p_j-1].raise_exception_on_failure,
-						 p_rif40_test_harness[p_j-1].test_id]}, 
+						 p_rif40_test_harness[p_j-1].test_id,
+						 p_rif40_test_harness[p_j-1].pg_debug_functions]}, 
 		// Cursor execution callback function				 
 		function(err, result) {
 			// Error handler. rif40_sql_pkg._rif40_sql_test() normally catches errors and returns pass or fail;
@@ -834,7 +844,8 @@ function _rif40_sql_test(p_client1, p_client2, p_j, p_tests,
 		'* [Parameter 4: p_results_xml                  XML]      ' + p_rif40_test_harness[p_j-1].results_xml + '\n' + 
 		'* [Parameter 5: p_pg_error_code_expected       VARCHAR]  ' + p_rif40_test_harness[p_j-1].pg_error_code_expected + '\n' + 
 		'* [Parameter 6: p_raise_exception_on_failure   BOOLEAN]  ' + p_rif40_test_harness[p_j-1].raise_exception_on_failure + '\n' + 
-		'* [Parameter 7: p_test_id                      INTEGER]  ' + p_rif40_test_harness[p_j-1].test_id + '\n' + 
+		'* [Parameter 7: p_test_id                      INTEGER]  ' + p_rif40_test_harness[p_j-1].test_id + '\n' +  
+		'* [Parameter 7: p_pg_debug_functions           Text[]]   ' + p_rif40_test_harness[p_j-1].pg_debug_functions + '\n' + 
 		'*\n' + '*****************************************************************************\n', err);	
 				console.error('2: ROLLBACK transaction: ' + p_test_text);
 				var end = p_client2.query('ROLLBACK', function(err, result) {

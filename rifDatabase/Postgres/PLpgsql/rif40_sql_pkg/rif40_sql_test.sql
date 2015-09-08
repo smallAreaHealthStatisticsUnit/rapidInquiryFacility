@@ -77,7 +77,7 @@ $$;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML,
 	VARCHAR, BOOLEAN, BOOLEAN);	
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY, XML,
-	VARCHAR, BOOLEAN, INTEGER);
+	VARCHAR, BOOLEAN, INTEGER, VARCHAR);
 	
 -- Old	
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
@@ -88,9 +88,12 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN);	
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 	INTEGER, BOOLEAN);	
+
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN, INTEGER);
-
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY, XML,
+	VARCHAR, BOOLEAN, INTEGER);
+	
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML,
 	VARCHAR, BOOLEAN, BOOLEAN, INTEGER, Text[]);	
 -- Old	
@@ -910,7 +913,7 @@ BEGIN
 		CLOSE c3_rth;
 		IF c3_rth_rec.total_test_id = 0 THEN
 			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
-				'[71207] Test % no depenedent tests to run',
+				'[71207] Test % no dependent tests to run',
 				c3_rth_rec.test_case_title::VARCHAR);
 		ELSIF NOT rcode THEN
 			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
@@ -1093,7 +1096,8 @@ CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_sql_test(
 	results_xml					XML,
 	pg_error_code_expected 		VARCHAR, 
 	raise_exception_on_failure 	BOOLEAN, 
-	f_test_id 					INTEGER)
+	f_test_id 					INTEGER, 
+	pg_debug_functions			Text[] DEFAULT NULL)
 RETURNS boolean
 SECURITY INVOKER
 AS $func$
@@ -1107,7 +1111,8 @@ Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) stat
 				negative number in the message is assumed to be the number; 
 				NULL means it is expected to NOT raise an exception, 
 			raise exception on failure,
-			test_id
+			test_id,
+			Array of Postgres functions for test harness to enable debug on
 Returns:	Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
 Description:	
 */
@@ -1127,6 +1132,8 @@ DECLARE
 	f_pass		BOOLEAN;
 	f_result	BOOLEAN;
 --
+	l_pg_debug_function VARCHAR;
+--
 	v_message_text		VARCHAR;
 	v_pg_exception_hint	VARCHAR;
 	v_column_name		VARCHAR;
@@ -1140,6 +1147,18 @@ DECLARE
 	v_context	VARCHAR;	
 	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN	
+--
+-- Add test specific debug messages
+--
+	IF pg_debug_functions IS NOT NULL THEN
+		FOREACH l_pg_debug_function IN ARRAY pg_debug_functions LOOP
+			PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test', 
+				'[71158a]: Enable debug for function: %', 
+				l_pg_debug_function::VARCHAR);
+			PERFORM rif40_log_pkg.rif40_add_to_debug(l_pg_debug_function||':DEBUG1');		
+		END LOOP;
+	END IF;
+	
 --
 -- Do test
 --
@@ -1311,6 +1330,14 @@ BEGIN
 			f_test_id::VARCHAR, test_case_title::VARCHAR, UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 6))::VARCHAR, E'\n'::VARCHAR, test_stmt::VARCHAR);	
 	END IF;
 --
+-- Remove test specific debug messages
+--
+	IF pg_debug_functions IS NOT NULL THEN
+		FOREACH l_pg_debug_function IN ARRAY pg_debug_functions LOOP
+			PERFORM rif40_log_pkg.rif40_remove_from_debug(l_pg_debug_function);		
+		END LOOP;
+	END IF;	
+--
 	RETURN f_pass;
 --
 EXCEPTION
@@ -1429,7 +1456,7 @@ END;
 $func$ LANGUAGE plpgsql;
 	
 COMMENT ON FUNCTION rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY, XML,
-	VARCHAR, BOOLEAN, INTEGER) IS 'Function: 	_rif40_sql_test()
+	VARCHAR, BOOLEAN, INTEGER, Text[]) IS 'Function: 	_rif40_sql_test()
 Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
             test case title,
  			results 3d text array,
@@ -1437,7 +1464,8 @@ Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) stat
 			[negative] error SQLSTATE expected [as part of an exception]; the first 
 			negative number in the message is assumed to be the number; 
 			NULL means it is expected to NOT raise an exception, raise exception on failure,
-			test_id
+			test_id,
+			Array of Postgres functions for test harness to enable debug on
 Returns:	Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
 Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause
 
