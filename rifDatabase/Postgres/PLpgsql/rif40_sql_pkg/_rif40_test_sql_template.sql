@@ -74,45 +74,16 @@ AS $func$
 Function: 	_rif40_test_sql_template()
 Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, test case title  
 Returns:	PL/pgsql template code 
-Description: Generate PL/pgsql template code, e.g.
-
-
-Add support for XML:
-
-WITH a AS (
-	SELECT query_to_xml(
-'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4', 
-true /- nulls -/, true /- tableforest -/, ''::Text /- Namespace -/) AS xml_line
-)
-SELECT regexp_split_to_table(a.xml_line, '\n') AS xml_str
-  FROM a;
+Description: Generate PL/pgsql template code to register (but NOT execute) tests with the test harness, e.g.
   
-
 SELECT rif40_sql_pkg._rif40_test_sql_template(
 	'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
 	'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200') AS template;
 	
 template
 --------	
-	IF NOT (PERFORM rif40_sql_pkg.rif40_sql_test(
-		'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
-		'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
-		'{{01,01.015,01.015.016200,01.015.016200.2}
-		,{01,01.015,01.015.016200,01.015.016200.3} 
-		,{01,01.015,01.015.016200,01.015.016200.4} 
-		,{01,01.015,01.015.016900,01.015.016900.1} 
-		,{01,01.015,01.015.016900,01.015.016900.2} 
-		,{01,01.015,01.015.016900,01.015.016900.3} 
-		}'::Text[][])) THEN
-		errors:=errors+1;
-	END IF;
 
-SELECT ''''||
-		   REPLACE(ARRAY_AGG(
-				(ARRAY[level1::Text, level2::Text, level3::Text, level4::Text]::Text||E'\n')::Text ORDER BY level4)::Text, 
-				'"'::Text, ''::Text)||'''::Text[][]' AS res 
-	  FROM sahsuland_geography
-	 WHERE level3 IN ('01.015.016900', '01.015.016200');
+See comment below
 	 
  */
 DECLARE 
@@ -217,28 +188,6 @@ BEGIN
 --
 -- Process table header
 --
-/*
-	SELECT ''''||
-		   REPLACE(
-				ARRAY_AGG(
-						(ARRAY[
-							level1::Text, level2::Text, level3::Text, level4::Text]
-							::Text||E'\n')::Text ORDER BY level4)::Text, 
-				'"'::Text, ''::Text)||'''::Text[][]' AS res 
-	  FROM sahsuland_geography
-	 WHERE level3 IN ('01.015.016900', '01.015.016200');
-				
-SELECT ''''|| REPLACE(
-                ARRAY_AGG(
-                        (ARRAY[
-                                level1::Text,
-                                level2::Text,
-                                level3::Text,
-                                level4::Text]::Text||E'\n')::Text
-                         ORDER BY level4)::Text,
-                '"'::Text, ''::Text)||'''::Text[][]' AS res
-  FROM l_10900_2457200_51137_541000
- */
 	select_text:='SELECT ''''''''|| REPLACE('||E'\n'||
 				E'\t'||E'\t'||'ARRAY_AGG('||E'\n'||
 				E'\t'||E'\t'||E'\t'||'(ARRAY[';
@@ -283,7 +232,6 @@ SELECT ''''|| REPLACE(
 	RETURN NEXT E'\t'||E'\t'||''''||REPLACE(test_stmt, '''', '''''')||''',';
 	RETURN NEXT E'\t'||E'\t'||''''||REPLACE(test_case_title, '''', '''''')||''',';		
 --
---	RETURN NEXT E'\t'||E'\t'||'/* SQL> '||E'\n'||select_text||E'\n'||' */';
 	RETURN NEXT c2sqlt_rec.res||',';
 --
 -- Now dump XML
@@ -322,24 +270,30 @@ COMMENT ON FUNCTION rif40_sql_pkg._rif40_test_sql_template(VARCHAR, VARCHAR) IS 
 Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, test case title  
 Returns:	PL/pgsql template code 
 Description: Generate PL/pgsql template code, e.g.
-
+			
 SELECT rif40_sql_pkg._rif40_test_sql_template(
 	''SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''''01.015.016900'''', ''''01.015.016200'''') ORDER BY level4'',
 	''Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200'') AS template;
 	
 template
---------	
-	IF NOT (PERFORM rif40_sql_pkg.rif40_sql_test(
-		''SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''''01.015.016900'''', ''''01.015.016200'''') ORDER BY level4'',
-		''Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200'',
-		''{{01,01.015,01.015.016200,01.015.016200.2}
-		,{01,01.015,01.015.016200,01.015.016200.3} 
-		,{01,01.015,01.015.016200,01.015.016200.4} 
-		,{01,01.015,01.015.016900,01.015.016900.1} 
-		,{01,01.015,01.015.016900,01.015.016900.2} 
-		,{01,01.015,01.015.016900,01.015.016900.3} 
-		}''::Text[][],
-		''<row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+--------
+	
+SELECT rif40_sql_pkg._rif40_sql_test_register(
+			''SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''''01.015.016900'''', ''''01.015.016200'''') ORDER BY level4'',
+			`	/* SQL test (SELECT or INSERT/UPDATE/DELETE with RETURNING clause) statement */, 
+			''rif40_create_disease_mapping_example'' 
+				/* Test run class; usually the name of the SQL script that originally ran it */, 
+			''Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200'' 	
+				/* test case title */, 
+			''{{01,01.015,01.015.016200,01.015.016200.2}
+			,{01,01.015,01.015.016200,01.015.016200.3} 
+			,{01,01.015,01.015.016200,01.015.016200.4} 
+			,{01,01.015,01.015.016900,01.015.016900.1} 
+			,{01,01.015,01.015.016900,01.015.016900.2} 
+			,{01,01.015,01.015.016900,01.015.016900.3} 
+			}''::Text[][]
+				/* results 3d text array */, 	
+			''<row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
    <level1>01</level1>
    <level2>01.015</level2>
    <level3>01.015.016200</level3>
@@ -374,10 +328,18 @@ template
    <level2>01.015</level2>
    <level3>01.015.016900</level3>
    <level4>01.015.016900.3</level4>
- </row>''::XML
-		)) THEN
-		errors:=errors+1;
-	END IF;
+ </row>''::XML		
+				/* results as XML */,
+			NULL			
+				/* [negative] Postgres error SQLSTATE expected [as part of an exception]; 
+				   the first negative number in the message is assumed to be the number; */, 
+			FALSE			
+				/* raise exception on failure */, 
+			TRUE			
+				/* expected result TRUE == pass! */, 
+			NULL			
+				/* parent test id */,
+			NULL::Text[] /* Array of Postgres functions for test harness to enable debug on */);
 	
 ';
 	

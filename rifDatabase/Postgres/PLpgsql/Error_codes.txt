@@ -56,3 +56,9 @@ _rif40_common_partition_create_setup:				71050 to 71099
 _rif40_test_sql_template:							71100 to 71149
 rif40_sql_test:										71150 to 71199
 rif40_test_harness:									71200 to 71249
+_rif40_sql_test:									71250 to 71299
+_rif40_sql_test_register:							71300 to 71349
+_rif40_sql_test_dblink:								71350 to 71399
+_rif40_sql_test_log_setup.sql:						71400 to 71449
+
+Eof

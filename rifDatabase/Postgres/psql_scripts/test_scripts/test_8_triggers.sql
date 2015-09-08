@@ -171,6 +171,10 @@ BEGIN
 --
 -- Create the standard test study to populate standard study 1 test and dependencies
 --
+--    PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+--	PERFORM rif40_log_pkg.rif40_add_to_debug('rif40_create_disease_mapping_example:DEBUG1');
+--	PERFORM rif40_log_pkg.rif40_add_to_debug('_rif40_create_disease_mapping_example:DEBUG1');
+--	PERFORM rif40_log_pkg.rif40_add_to_debug('rif40_ddl:DEBUG1');	
 	RAISE INFO 'T8--05: test_8_triggers.sql: Create the standard test study to populate standard study 1 test and dependencies';
 	OPEN c2th;
 	FETCH c2th INTO c2th_rec;
