@@ -551,14 +551,28 @@ $$;
 -- Test code generator
 --
 DO LANGUAGE plpgsql $$
+DECLARE
+	c9th CURSOR FOR
+		SELECT rif40_sql_pkg._rif40_test_sql_template(
+			'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
+			'test_8_triggers.sql',
+			'T8--24: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200') AS template;
+	c9th_rec 	RECORD;
+--
+	sql_stmt	VARCHAR:=NULL;
 BEGIN
 	RAISE INFO 'T8--35: test_8_triggers.sql: Test code generator';
+	FOR c9th_rec IN c9th LOOP
+		IF sql_stmt IS NULL THEN	
+			sql_stmt:=c9th_rec.template;
+		ELSE
+			sql_stmt:=sql_stmt||E'\n'||c9th_rec.template;
+		END IF;
+	END LOOP;
+--
+	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 END;
 $$;
-SELECT rif40_sql_pkg._rif40_test_sql_template(
-	'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
-	'T8--35: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200') AS template;
-
 SELECT * FROM rif40_test_runs
  WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
  

@@ -64,20 +64,40 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_test_sql_template(VARCHAR, VARCHAR, VARCHAR, VARCHAR, BOOLEAN, BOOLEAN, INTEGER, Text[]);
+
+-- OLD
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_test_sql_template(VARCHAR, VARCHAR);
 
-CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_test_sql_template(test_stmt VARCHAR, test_case_title VARCHAR)
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_test_sql_template(
+	test_stmt 					VARCHAR, 
+	test_run_class				VARCHAR,
+	test_case_title 			VARCHAR, 
+	pg_error_code_expected		VARCHAR		DEFAULT NULL, 
+	raise_exception_on_failure	BOOLEAN		DEFAULT FALSE, 
+	expected_result				BOOLEAN		DEFAULT TRUE, 
+	parent_test_id				INTEGER 	DEFAULT NULL, 
+	pg_debug_functions			Text[]		DEFAULT NULL)
 RETURNS SETOF VARCHAR
 SECURITY INVOKER
 AS $func$
 /*
 Function: 	_rif40_test_sql_template()
-Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, test case title  
+Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
+			Test run class; usually the name of the SQL script that originally ran it,
+			Test case title,
+			[negative] Postgres error SQLSTATE expected [as part of an exception]; 
+				   the first negative number in the message is assumed to be the number; default NULL, 			
+			Raise exception on failure; default: FALSE,
+			Expected result TRUE == pass; default: TRUE, 
+			Parent test id; default: NULL,
+			Array of Postgres functions for test harness to enable debug on; default: NULL				
 Returns:	PL/pgsql template code 
 Description: Generate PL/pgsql template code to register (but NOT execute) tests with the test harness, e.g.
   
 SELECT rif40_sql_pkg._rif40_test_sql_template(
 	'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
+	'test_8_triggers.sql',
 	'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200') AS template;
 	
 template
@@ -158,11 +178,22 @@ BEGIN
 --
 	IF test_stmt IS NULL THEN
 		IF title IS NULL THEN
-			PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_test_sql_template', '[71101] NULL SQL statement, NULL title');
+			PERFORM rif40_log_pkg.rif40_error(-71101, '_rif40_test_sql_template', 'NULL SQL statement, NULL title');
 		ELSE
-			PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_test_sql_template', '[71102] NULL SQL statement for: %', title::VARCHAR);
+			PERFORM rif40_log_pkg.rif40_error(-71102, '_rif40_test_sql_template', 'NULL SQL statement for: %', 
+				test_case_title::VARCHAR);
 		END IF;
-		RETURN;
+	ELSIF test_run_class IS NULL THEN
+		IF test_case_title IS NULL THEN
+			PERFORM rif40_log_pkg.rif40_error(-71103, '_rif40_test_sql_template', 'NULL Test run class, NULL title');
+		ELSE
+			PERFORM rif40_log_pkg.rif40_error(-71104, '_rif40_test_sql_template', 'NULL Test run class for: %', 
+				test_case_title::VARCHAR);
+		END IF;
+	ELSE
+		IF test_case_title IS NULL THEN
+			PERFORM rif40_log_pkg.rif40_error(-71105, '_rif40_test_sql_template', 'NULL title');		
+		END IF;
 	END IF;
 	stp:=clock_timestamp();
 --
@@ -183,6 +214,14 @@ BEGIN
 -- ADD
 
 --
+	RETURN NEXT 'SELECT rif40_sql_pkg._rif40_sql_test_register(';
+	RETURN NEXT E'\t'||E'\t'||''''||REPLACE(test_stmt, '''', '''''')||'''';
+	RETURN NEXT E'\t'||E'\t'||E'\t'||'/* SQL test (SELECT or INSERT/UPDATE/DELETE with RETURNING clause) statement */,';
+	RETURN NEXT E'\t'||E'\t'||''''||REPLACE(test_run_class, '''', '''''')||'''';			
+	RETURN NEXT E'\t'||E'\t'||E'\t'||'/* Test run class; usually the name of the SQL script that originally ran it */,';
+	RETURN NEXT E'\t'||E'\t'||''''||REPLACE(test_case_title, '''', '''''')||''',';		
+	RETURN NEXT E'\t'||E'\t'||E'\t'||'/* Test case title */';
+--
 	sql_stmt:='CREATE TEMPORARY TABLE '||quote_ident(temp_table)||' AS '||E'\n'||test_stmt;
 	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
 --
@@ -195,7 +234,7 @@ BEGIN
 	FOR c1sqlt_rec IN c1sqlt(temp_table) LOOP
 		j:=j+1;
 		l_column_name:=c1sqlt_rec.column_name;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG3', '_rif40_test_sql_template', '[71104] Column[%] %.%, length: %', 
+		PERFORM rif40_log_pkg.rif40_log('DEBUG3', '_rif40_test_sql_template', '[71106] Column[%] %.%, length: %', 
 			j::VARCHAR, 
 			c1sqlt_rec.table_name::VARCHAR, 
 			c1sqlt_rec.column_name::VARCHAR, 
@@ -209,17 +248,30 @@ BEGIN
 --
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
-	PERFORM rif40_log_pkg.rif40_log('DEBUG2', '_rif40_test_sql_template', '[71105] Statement took: %', 
+	PERFORM rif40_log_pkg.rif40_log('DEBUG2', '_rif40_test_sql_template', '[71107] Statement took: %', 
 		took::VARCHAR);	
 --
 	select_text:=select_text||']::Text||E''\n'')::Text'||E'\n'||E'\t'||E'\t'||E'\t'||' ORDER BY '||l_column_name||')::Text,'||E'\n'||
 		E'\t'||E'\t'||'''"''::Text, ''''::Text)||''''''::Text[][]'' AS res'||E'\n'||
 		'  FROM '||quote_ident(temp_table);	
 	sql_stmt:=select_text;
-	OPEN c2sqlt FOR EXECUTE sql_stmt;
+	BEGIN
+		OPEN c2sqlt FOR EXECUTE sql_stmt;
+	EXCEPTION
+		WHEN others THEN
+			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+			GET STACKED DIAGNOSTICS v_sqlstate = RETURNED_SQLSTATE;
+			GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
+			error_message:='_rif40_test_sql_template() exception handler caught: '||E'\n'||SQLERRM::VARCHAR||E'\n'||
+				'in SQL> '||COALESCE(sql_stmt, 'NULL')||';'||E'\n'||		
+				'Detail: '||v_detail::VARCHAR||E'\n'||
+				'Context: '||v_context::VARCHAR||E'\n'||
+				'SQLSTATE: '||v_sqlstate::VARCHAR;
+			RAISE EXCEPTION '71108: %', error_message USING DETAIL=v_detail;	
+	END;
 	FETCH c2sqlt INTO c2sqlt_rec;
 	IF NOT FOUND THEN
-		PERFORM rif40_log_pkg.rif40_error(-71105, '_rif40_test_sql_template', 
+		PERFORM rif40_log_pkg.rif40_error(-71109, '_rif40_test_sql_template', 
 			'No data returned for cursor c2sqlt, SQL> %, test SQL> %;',
 			sql_stmt::VARCHAR,
 			test_stmt::VARCHAR);
@@ -228,27 +280,64 @@ BEGIN
 --
 	PERFORM rif40_sql_pkg.rif40_ddl(drop_stmt);		
 --
-	RETURN NEXT E'\t'||'IF NOT (rif40_sql_pkg.rif40_sql_test(';
-	RETURN NEXT E'\t'||E'\t'||''''||REPLACE(test_stmt, '''', '''''')||''',';
-	RETURN NEXT E'\t'||E'\t'||''''||REPLACE(test_case_title, '''', '''''')||''',';		
---
-	RETURN NEXT c2sqlt_rec.res||',';
+	RETURN NEXT c2sqlt_rec.res;
+	RETURN NEXT E'\t'||E'\t'||E'\t'||'/* Results 3d text array */'||',';
 --
 -- Now dump XML
 --
 	j:=0;
-	FOR c3sqlt_rec IN c3sqlt(test_stmt) LOOP
-		j:=j+1;	
-		IF j = 1 THEN
-			xml_str:=''''||c3sqlt_rec.xml_str||E'\n';
-		ELSE
-			xml_str:=xml_str||c3sqlt_rec.xml_str||E'\n';
-		END IF;
-	END LOOP;
-	RETURN NEXT xml_str||'''::XML';
-	RETURN NEXT E'\t'||E'\t'||')) THEN';
-	RETURN NEXT E'\t'||E'\t'||'f_errors:=f_errors+1;';
-	RETURN NEXT E'\t'||'END IF;'
+	BEGIN
+		FOR c3sqlt_rec IN c3sqlt(test_stmt) LOOP
+			j:=j+1;	
+			IF j = 1 THEN
+				xml_str:=''''||c3sqlt_rec.xml_str||E'\n';
+			ELSE
+				xml_str:=xml_str||c3sqlt_rec.xml_str||E'\n';
+			END IF;
+		END LOOP;
+	EXCEPTION
+		WHEN others THEN
+			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+			GET STACKED DIAGNOSTICS v_sqlstate = RETURNED_SQLSTATE;
+			GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
+			error_message:='_rif40_test_sql_template() exception handler caught: '||E'\n'||SQLERRM::VARCHAR||E'\n'||
+				'test SQL> '||COALESCE(test_stmt, 'NULL')||';'||E'\n'||			
+				'Detail: '||v_detail::VARCHAR||E'\n'||
+				'Context: '||v_context::VARCHAR||E'\n'||
+				'SQLSTATE: '||v_sqlstate::VARCHAR;
+			RAISE EXCEPTION '71110: %', error_message USING DETAIL=v_detail;	
+	END;	
+	RETURN NEXT E'\t'||E'\t'||xml_str||'''::XML';
+	RETURN NEXT E'\t'||E'\t'||E'\t'||'/* Results as XML */,';
+--
+	IF pg_error_code_expected IS NOT NULL THEN	
+		RETURN NEXT E'\t'||E'\t'||pg_error_code_expected;
+	ELSE
+		RETURN NEXT E'\t'||E'\t'||'NULL::VARCHAR';	
+	END IF;
+	RETURN NEXT E'\t'||E'\t'||E'\t'||'/* [negative] Postgres error SQLSTATE expected [as part of an exception]'; 
+	RETURN NEXT E'\t'||E'\t'||E'\t'||'   the first negative number in the message is assumed to be the number; */,';
+--	
+	RETURN NEXT E'\t'||E'\t'||raise_exception_on_failure;
+	RETURN NEXT E'\t'||E'\t'||E'\t'||'/* Raise exception on failure */,';	
+--
+	RETURN NEXT E'\t'||E'\t'||expected_result;
+	RETURN NEXT E'\t'||E'\t'||E'\t'||'/* Expected result TRUE == pass! */,';	
+--	
+	IF parent_test_id IS NOT NULL THEN	
+		RETURN NEXT E'\t'||E'\t'||parent_test_id;
+	ELSE
+		RETURN NEXT E'\t'||E'\t'||'NULL::Integer';
+	END IF;
+	RETURN NEXT E'\t'||E'\t'||E'\t'||'/* Parent test id */,';
+--	
+	IF pg_debug_functions IS NOT NULL THEN	
+		RETURN NEXT E'\t'||E'\t'||pg_debug_functions||'::Text[]';
+	ELSE
+		RETURN NEXT E'\t'||E'\t'||'NULL::Text[]';
+	END IF;
+	RETURN NEXT E'\t'||E'\t'||E'\t'||'/* Array of Postgres functions for test harness to enable debug on */';		
+	RETURN NEXT E'\t'||E'\t'||');'
 --
 	RETURN;
 EXCEPTION
@@ -257,22 +346,31 @@ EXCEPTION
 		GET STACKED DIAGNOSTICS v_sqlstate = RETURNED_SQLSTATE;
 		GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
 		error_message:='_rif40_test_sql_template() exception handler caught: '||E'\n'||SQLERRM::VARCHAR||E'\n'||
-			'in SQL> '||sql_stmt||';'||E'\n'||
-			'test SQL> '||test_stmt||';'||E'\n'||			
+			'in SQL> '||COALESCE(sql_stmt, 'NULL')||';'||E'\n'||
+			'test SQL> '||COALESCE(test_stmt, 'NULL')||';'||E'\n'||			
 			'Detail: '||v_detail::VARCHAR||E'\n'||
 			'Context: '||v_context::VARCHAR||E'\n'||
 			'SQLSTATE: '||v_sqlstate::VARCHAR;
-		RAISE EXCEPTION '71103: %', error_message USING DETAIL=v_detail;			
+		RAISE EXCEPTION '71111: %', error_message USING DETAIL=v_detail;			
 END;
 $func$ LANGUAGE plpgsql;
 
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_test_sql_template(VARCHAR, VARCHAR) IS 'Function: 	_rif40_test_sql_template()
-Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, test case title  
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_test_sql_template(VARCHAR, VARCHAR, VARCHAR, VARCHAR, BOOLEAN, BOOLEAN, INTEGER, Text[]) IS 'Function: 	_rif40_test_sql_template()
+Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
+			Test run class; usually the name of the SQL script that originally ran it,
+			Test case title,
+			[negative] Postgres error SQLSTATE expected [as part of an exception]; 
+				   the first negative number in the message is assumed to be the number; default NULL, 			
+			Raise exception on failure; default: FALSE,
+			Expected result TRUE == pass; default: TRUE, 
+			Parent test id; default: NULL,
+			Array of Postgres functions for test harness to enable debug on; default: NULL			
 Returns:	PL/pgsql template code 
 Description: Generate PL/pgsql template code, e.g.
 			
 SELECT rif40_sql_pkg._rif40_test_sql_template(
 	''SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''''01.015.016900'''', ''''01.015.016200'''') ORDER BY level4'',
+	''test_8_triggers.sql'',
 	''Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200'') AS template;
 	
 template
@@ -281,10 +379,10 @@ template
 SELECT rif40_sql_pkg._rif40_sql_test_register(
 			''SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''''01.015.016900'''', ''''01.015.016200'''') ORDER BY level4'',
 			`	/* SQL test (SELECT or INSERT/UPDATE/DELETE with RETURNING clause) statement */, 
-			''rif40_create_disease_mapping_example'' 
+			''test_8_triggers.sql'' 
 				/* Test run class; usually the name of the SQL script that originally ran it */, 
-			''Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200'' 	
-				/* test case title */, 
+			''Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200'', 	
+				/* Test case title */,
 			''{{01,01.015,01.015.016200,01.015.016200.2}
 			,{01,01.015,01.015.016200,01.015.016200.3} 
 			,{01,01.015,01.015.016200,01.015.016200.4} 
@@ -292,7 +390,7 @@ SELECT rif40_sql_pkg._rif40_sql_test_register(
 			,{01,01.015,01.015.016900,01.015.016900.2} 
 			,{01,01.015,01.015.016900,01.015.016900.3} 
 			}''::Text[][]
-				/* results 3d text array */, 	
+				/* Results 3d text array */, 	
 			''<row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
    <level1>01</level1>
    <level2>01.015</level2>
@@ -334,11 +432,11 @@ SELECT rif40_sql_pkg._rif40_sql_test_register(
 				/* [negative] Postgres error SQLSTATE expected [as part of an exception]; 
 				   the first negative number in the message is assumed to be the number; */, 
 			FALSE			
-				/* raise exception on failure */, 
+				/* Raise exception on failure */, 
 			TRUE			
-				/* expected result TRUE == pass! */, 
+				/* Expected result TRUE == pass! */, 
 			NULL			
-				/* parent test id */,
+				/* Parent test id */,
 			NULL::Text[] /* Array of Postgres functions for test harness to enable debug on */);
 	
 ';
