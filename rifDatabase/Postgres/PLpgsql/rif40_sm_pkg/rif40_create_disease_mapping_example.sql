@@ -69,7 +69,7 @@ END;
 $$;
 
 DROP FUNCTION IF EXISTS rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER, BOOLEAN);
-DROP FUNCTION IF EXISTS rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER, BOOLEAN, Text[]);
+DROP FUNCTION IF EXISTS rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER, Text[]);
 
 -- Old	
 DROP FUNCTION IF EXISTS rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER);
@@ -79,7 +79,7 @@ DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_create_disease_mapping_example(
 	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[]);	
 DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_create_disease_mapping_example(
 	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[][],VARCHAR[],VARCHAR[]);
-
+DROP FUNCTION IF EXISTS rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER, BOOLEAN, Text[]);
 
 --
 -- Error codes
@@ -394,7 +394,6 @@ BEGIN
 '		 '||l_extract_permitted||' 		/* extract_permitted */,'||E'\n'|| 
 '		 '||l_transfer_permitted||'		/* transfer_permitted */)';
 	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id, 
-		FALSE /* DO NOT EXECUTE */,
 		ARRAY['trigger_fct_t_rif40_studies_checks']);
 	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_create_disease_mapping_example', 
 		'[56204] Created study: % % for project %',  
@@ -468,7 +467,6 @@ BEGIN
 			'	'||c1cdm_rec.max_age_group||' /* max_age_group */,'||E'\n'|| 
 			'	'||c1cdm_rec.min_age_group||' /* min_age_group */)';
 		parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id, 
-			FALSE /* DO NOT EXECUTE */,
 			ARRAY['trigger_fct_t_rif40_investigations_checks']);
 	
 --
@@ -491,7 +489,6 @@ BEGIN
 			sql_stmt2||E'\n'||
 '		RETURNING outcome_group_name, min_condition, max_condition, predefined_group_name';
 		parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id, 
-			FALSE /* do_not_execute */,
 			ARRAY['trigger_fct_t_rif40_inv_conditions_checks']);
 		FOR inv_cond_rec IN EXECUTE sql_stmt2 LOOP
 --
@@ -528,7 +525,6 @@ BEGIN
 				''''||geolevel_selection::Text||'''::Text[]) /* at Geolevel select */ AS study_area)';
 	END IF;
 	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id, 
-		FALSE /* DO NOT EXECUTE */,
 		ARRAY['trigger_fct_t_rif40_study_areas_checks', 'trigger_fct_t_rif40_study_areas_checks2']);
 	GET DIAGNOSTICS study_area_count = ROW_COUNT;
 
@@ -549,7 +545,6 @@ BEGIN
 		'SELECT unnest('||E'\n'|| 
 				''''||comparision_area::Text||'''::Text[]) AS comparision_area';
 	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id, 
-		FALSE /* DO NOT EXECUTE */,
 		ARRAY['trigger_fct_t_rif40_comp_areas_checks', 'trigger_fct_t_rif40_comp_areas_checks2']);
 	GET DIAGNOSTICS comparison_area_count = ROW_COUNT;
 --
@@ -567,7 +562,6 @@ BEGIN
 		'	LEFT OUTER JOIN rif40_covariates b ON'||E'\n'|| 
 		'		(a.covariate_name = b.covariate_name AND a.study_geolevel_name = b.geolevel_name AND a.geography = b.geography)';
 	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id, 
-		FALSE /* DO NOT EXECUTE */,
 		ARRAY['trigger_fct_t_rif40_inv_covariates_checks']);		
 	GET DIAGNOSTICS covariate_count = ROW_COUNT;
 --
@@ -584,7 +578,6 @@ BEGIN
 		IF c4cdm_rec.is_rif_manager AND l_extract_permitted = 1 THEN
 			sql_stmt:='INSERT /* 7 */ INTO rif40_study_shares(grantee_username) VALUES ('''||c4cdm_rec.rolname||''')';
 			parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id, 
-				FALSE /* DO NOT EXECUTE */,
 				ARRAY['trigger_fct_rif40_study_shares_checks']);			
 			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_create_disease_mapping_example', 
 				'[56214] Shared study % to %',
@@ -761,17 +754,17 @@ CREATE OR REPLACE FUNCTION rif40_sm_pkg._rif40_create_disease_mapping_example(
 	sql_stmt				VARCHAR,
 	study_name				VARCHAR,
 	parent_test_id			INTEGER,
-	do_not_execute			BOOLEAN DEFAULT FALSE,
 	pg_debug_functions		Text[] DEFAULT NULL)
 RETURNS INTEGER
 SECURITY INVOKER
 AS $func$
 /*
 Function: 	_rif40_create_disease_mapping_example()
-Parameters:	SQL statement, study name, parent_test_id, do not exexecute flag (default FALSE - i.e. do)
+Parameters:	SQL statement, study name, parent_test_id,
+			Array of Postgres functions for test harness to enable debug on
 Returns:	New parent_test_id
 Description:	Execute disease mapping exmaple	SQL statement, register with test harness,
-			Array of Postgres functions for test harness to enable debug on
+			
  */
 DECLARE
 	f_test_id INTEGER;
@@ -790,13 +783,7 @@ BEGIN
 --
 -- Run SQL statement
 --
-	IF NOT do_not_execute THEN
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-	ELSE
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_create_disease_mapping_example', 	
-			'[56227] NO_EXECUTE SQL> %;',
-			sql_stmt::VARCHAR);	
-	END IF;
+	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 	
 --
 -- Register with test harness
@@ -824,11 +811,11 @@ BEGIN
 END;
 $func$ LANGUAGE plpgsql;
  
-COMMENT ON FUNCTION rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER, BOOLEAN, Text[]) IS 'Function: 	_rif40_create_disease_mapping_example()
-Parameters:	SQL statement, study name, parent_test_id, do not exexecute flag (default FALSE - i.e. do)
+COMMENT ON FUNCTION rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER, Text[]) IS 'Function: 	_rif40_create_disease_mapping_example()
+Parameters:	SQL statement, study name, parent_test_id,
+			Array of Postgres functions for test harness to enable debug on
 Returns:	New parent_test_id
-Description:	Execute disease mapping exmaple	SQL statement, register with test harness,
-			Array of Postgres functions for test harness to enable debug on';
+Description:	Execute disease mapping exmaple	SQL statement, register with test harness';
 
 --
 -- Eof
