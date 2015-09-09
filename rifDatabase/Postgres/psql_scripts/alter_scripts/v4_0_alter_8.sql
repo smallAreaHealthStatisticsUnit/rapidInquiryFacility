@@ -116,14 +116,10 @@ BEGIN;
 --
 -- 1. Create test harness tables: rif40_test_runs, rif40_test_harness and related sequences
 --
-DROP TABLE IF EXISTS rif40_test_harness;
-DROP TABLE IF EXISTS rif40_test_runs;
-DROP SEQUENCE IF EXISTS rif40_test_id_seq; 
+DROP TABLE IF EXISTS rif40_test_runs CASCADE;
 DROP SEQUENCE IF EXISTS rif40_test_run_id_seq;
 
-CREATE SEQUENCE rif40_test_id_seq; 
 CREATE SEQUENCE rif40_test_run_id_seq;
-COMMENT ON SEQUENCE rif40_test_id_seq IS 'Artificial primary key for: RIF40_TEST_HARNESS';
 COMMENT ON SEQUENCE rif40_test_run_id_seq IS 'Artificial primary key for: RIF40_TEST_RUNS';
 GRANT SELECT, USAGE ON SEQUENCE rif40_test_id_seq TO rif40, rif_manager, notarifuser;
 GRANT SELECT, USAGE ON SEQUENCE rif40_test_run_id_seq TO rif40, rif_manager, notarifuser;
@@ -157,6 +153,44 @@ COMMENT ON COLUMN rif40_test_runs.number_failed IS 'Number of tests failed';
 COMMENT ON COLUMN rif40_test_runs.number_test_cases_registered IS 'Number of test cases registered';
 COMMENT ON COLUMN rif40_test_runs.number_messages_registered IS 'Number of error and informational messages registered';
 
+DROP TABLE IF EXISTS rif40_test_harness_old;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1_a8 CURSOR FOR
+		SELECT table_name 
+		  FROM information_schema.tables 
+		 WHERE table_name  = 'rif40_test_harness';
+	c1_rec RECORD;
+BEGIN
+    PERFORM rif40_log_pkg.rif40_log_setup();
+	PERFORM rif40_log_pkg.rif40_add_to_debug('rif40_ddl:DEBUG1');
+	PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+--
+-- Check if column exists
+--
+	OPEN c1_a8;
+	FETCH c1_a8 INTO c1_rec;
+	CLOSE c1_a8;
+	IF c1_rec.table_name = 'rif40_test_harness' THEN
+--
+-- Re-create; remove constraints and indexes
+--
+		PERFORM rif40_sql_pkg.rif40_ddl('ALTER TABLE rif40_test_harness RENAME TO rif40_test_harness_old');
+		PERFORM rif40_sql_pkg.rif40_ddl('ALTER TABLE rif40_test_harness_old DROP CONSTRAINT IF EXISTS rif40_test_harness_pk');
+		PERFORM rif40_sql_pkg.rif40_ddl('ALTER TABLE rif40_test_harness_old DROP CONSTRAINT IF EXISTS rif40_test_harness_test_run_id_fk');
+		PERFORM rif40_sql_pkg.rif40_ddl('DROP INDEX IF EXISTS rif40_test_harness_uk');
+	ELSE
+--
+-- Does not exist - can anyway
+--
+		PERFORM rif40_sql_pkg.rif40_ddl('DROP TABLE IF EXISTS rif40_test_harness');
+		PERFORM rif40_sql_pkg.rif40_ddl('DROP SEQUENCE IF EXISTS rif40_test_id_seq'); 
+		PERFORM rif40_sql_pkg.rif40_ddl('CREATE SEQUENCE rif40_test_id_seq'); 
+		PERFORM rif40_sql_pkg.rif40_ddl('COMMENT ON SEQUENCE rif40_test_id_seq IS ''Artificial primary key for: RIF40_TEST_HARNESS''');
+	END IF;
+END;
+$$;
+		
 CREATE TABLE rif40_test_harness (
 	test_id 					INTEGER NOT NULL DEFAULT (nextval('rif40_test_id_seq'::regclass))::integer, 
 	parent_test_id 				INTEGER, 		
@@ -179,6 +213,34 @@ CREATE TABLE rif40_test_harness (
 	CONSTRAINT rif40_test_harness_test_run_id_fk FOREIGN KEY (test_run_id)
 		REFERENCES rif40_test_runs (test_run_id)
 	);
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1_a8 CURSOR FOR
+		SELECT table_name 
+		  FROM information_schema.tables 
+		 WHERE table_name  = 'rif40_test_harness_old';
+	c1_rec RECORD;
+BEGIN
+--
+-- Check if column exists
+--
+	OPEN c1_a8;
+	FETCH c1_a8 INTO c1_rec;
+	CLOSE c1_a8;
+	IF c1_rec.table_name = 'rif40_test_harness_old' THEN
+		PERFORM rif40_sql_pkg.rif40_ddl('INSERT INTO rif40_test_harness(test_id, parent_test_id, test_run_class, test_stmt, test_case_title, pg_error_code_expected,
+						mssql_error_code_expected, raise_exception_on_failure, expected_result, register_date, results,
+						results_xml, pass, test_run_id, test_date, time_taken, pg_debug_functions)
+		SELECT test_id, parent_test_id, test_run_class, test_stmt, test_case_title, pg_error_code_expected,
+			   mssql_error_code_expected, raise_exception_on_failure, expected_result, register_date, results,
+	   		   results_xml, pass, test_run_id, test_date, time_taken, pg_debug_functions
+		  FROM rif40_test_harness_old
+		 ORDER BY test_id');
+		PERFORM rif40_sql_pkg.rif40_ddl('DROP TABLE IF EXISTS rif40_test_harness_old'); 
+	END IF;
+END;
+$$;
+
 CREATE UNIQUE INDEX rif40_test_harness_uk ON rif40_test_harness(test_case_title, parent_test_id);
 
 GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_test_harness TO rif_manager, notarifuser;
@@ -302,6 +364,9 @@ SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_n
 --END;
 --$$;
 
+SELECT COUNT(test_id) AS total_tests
+  FROM rif40_test_harness;
+  
 END;
 --
 --  Eof 
