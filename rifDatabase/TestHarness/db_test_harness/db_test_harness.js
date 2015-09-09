@@ -87,6 +87,7 @@ function main() {
 	
 	var pg = null;
 	var optimist  = require('optimist');
+	var mutexjs = require('mutexjs');
 	
 	var client1 = null; // Client 1: Master; hard to remove 
 	var p_debug_level = null;

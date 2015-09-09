@@ -221,15 +221,19 @@ endif
 #.SUFFIXES: .sql .rpt
 #.sql.rpt:
 #	$(RUN) $@ "$(CURDIR)" $(PSQL) $(PSQL_FLAGS) -f $< 
-MODULES=node_modules/pg node_modules/pg-native node_modules/optimist
+MODULES=node_modules/pg node_modules/pg-native node_modules/optimist node_modules/mutexjs
+MODULE_JSON=node_modules/pg-native/package.json node_modules/pg/package.json node_modules/optimist/package.json node_modules/mutexjs/package.json
 
 all: modules db_test_harness
 
-modules: $(MODULES)
-
-node_modules/pg-native/package.json:
-	$(NPM) install --save pg pg-native optimist
-
+modules: $(MODULE_JSON) $(MODULES)
+	
+$(MODULE_JSON):
+	$(NPM) install --save pg pg-native optimist mutexjs
+	
+$(MODULES):
+	mkdir $@
+	
 #clean:
 #	 $(DELETE) node_modules
 	 
