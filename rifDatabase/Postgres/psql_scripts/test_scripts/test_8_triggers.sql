@@ -487,11 +487,10 @@ BEGIN
 	END IF;
 END;
 $$;
- 
-\copy (SELECT test_id, test_run_class, test_stmt, test_case_title, pg_error_code_expected, raise_exception_on_failure, expected_result, register_date, results, results_xml, NULL AS pass, NULL AS test_run_id, NULL AS test_date, NULL AS time_taken FROM rif40_test_harness) TO ../../TestHarness/rif40_test_harness.csv WITH CSV HEADER
 
-\copy (SELECT * FROM rif40_test_harness) TO test_scripts/data/rif40_test_harness_:dbname.csv WITH CSV HEADER
-\copy (SELECT * FROM rif40_test_runs) TO test_scripts/data/rif40_test_runs_:dbname.csv WITH CSV HEADER
+\copy (SELECT test_id, parent_test_id, test_run_class, test_stmt, test_case_title, pg_error_code_expected, mssql_error_code_expected, raise_exception_on_failure, expected_result, register_date, results, results_xml, NULL AS pass, NULL AS test_run_id, NULL AS test_date, NULL AS time_taken, pg_debug_functions FROM rif40_test_harness ORDER BY test_id) TO ../../TestHarness/rif40_test_harness.csv WITH CSV HEADER 
+\copy (SELECT * FROM rif40_test_harness ORDER BY test_id) TO test_scripts/data/rif40_test_harness_:dbname.csv WITH CSV HEADER
+\copy (SELECT * FROM rif40_test_runs ORDER BY test_run_id) TO test_scripts/data/rif40_test_runs_:dbname.csv WITH CSV HEADER
  
 --
 -- Testing stop
