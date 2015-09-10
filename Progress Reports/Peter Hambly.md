@@ -176,12 +176,27 @@ New node based test harness
 
 #### 1st to 4th September
 
-To convert ESRI proj files to PostGIS SRIDs use: http://prj2epsg.org/search
+Note: to convert ESRI proj files to PostGIS SRIDs use: http://prj2epsg.org/search
+
+Test harness refactor; Node.js version working
+  
+* EXPLAIN plan support
+* Linked tests (based on the study 1 test scenario)
+  
+#### 7th to 11th September 
+
+* Debug functions
+* Instrumnetation
+* Conversion to Mutec locked version to prevent stack overload with waterfall of cascading callback functions
+ 
+Remove old dblink version
+ 
+From August: 
+
+1. Test harness
 
 To do:
 
-* EXPLAIN plan support
-* Linked tests (based on the study 1 test scenario)
 * Test regime; for all rif40 schema tables
 
   * Constraints:
@@ -197,10 +212,7 @@ To do:
   * Business logic:
 
     e) Triggers
-  
-From August: 
-
-1. Test harness
+	
 2. RIF batch integration
 3. Complete webserver integration
 	* Fix pernicious mixed content issues in JS frontend
