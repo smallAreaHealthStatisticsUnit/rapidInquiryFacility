@@ -97,6 +97,11 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 	INTEGER, BOOLEAN);	
 	
+\q 
+
+--
+-- This function is now obsoleted
+--	
 CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_sql_test(
 	connection_name 			VARCHAR, 
 	test_stmt 					VARCHAR, 
