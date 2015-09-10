@@ -167,7 +167,8 @@ function main() {
 	
 	// Create 2x Postgres clients; one for control, the second for running each test in turn.
 	// The 2nd client is created in _rif40_sql_test_log_setup(), called from rif40_startup()
-	db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["failed"], argv["debug_level"], 1, argv["class"]);
+	db_connect(pg, mutexjs, argv["hostname"] , argv["database"], argv["username"], argv["port"], 
+			argv["failed"], argv["debug_level"], 1, argv["class"]);
 } /* End of main */
 	
 /* 
@@ -209,12 +210,13 @@ function pg_default(p_var) {
 	
 /* 
  * Function: 	db_connect()
- * Parameters: 	Postgres PG package connection handle, database host, name, username, port, failed flag, debug level, connection number: 
-                1 - master; 2 - worker slave, test run class [optional] 
+ * Parameters: 	Postgres PG package connection handle, MutexJS package handle, 
+ *				database host, name, username, port, failed flag, debug level, connection number: 
+ *               1 - master; 2 - worker slave, test run class [optional] 
  * Returns:		Nothing
  * Description:	Connect to database, call rif40_startup()
  */
-function db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_failed, p_debug_level, p_num, p_test_run_class) {
+function db_connect(p_pg, p_mutexjs, p_hostname, p_database, p_user, p_port, p_failed, p_debug_level, p_num, p_test_run_class) {
 	
 	var client1 = null; // Client 1: Master; hard to remove	
 
@@ -265,20 +267,21 @@ function db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_failed, p_de
 				p_debug_level=1;
 			}
 // Call rif40_startup; then subsequent functions in an async tree
-			rif40_startup(p_pg, client1, p_num, p_debug_level, conString, client1, p_failed, p_test_run_class);
+			rif40_startup(p_pg, p_mutexjs, client1, p_num, p_debug_level, conString, client1, p_failed, p_test_run_class);
 		} // End of else connected OK 
 	}); // End of connect
 }
 
 /* 
  * Function: 	rif40_startup()
- * Parameters: 	Postgres PG package connection handle, lient connection, connection number (1 or 2), debug level, connection string, 
-                master client (1) connection [may NOT be null], failed flag, test run class [optional]
+ * Parameters: 	Postgres PG package connection handle, MutexJS package handle, 
+ *				client connection, connection number (1 or 2), debug level, connection string, 
+ *              master client (1) connection [may NOT be null], failed flag, test run class [optional]
  * Returns:		Nothing
  * Description: Run rif40_startup()
  *				Then _rif40_sql_test_log_setup()
  */
-function rif40_startup(p_pg, p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag, p_test_run_class) {
+function rif40_startup(p_pg, p_mutexjs, p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag, p_test_run_class) {
 	var sql_stmt;
 	
 // Check master client (1) connection is NOT undefined	
@@ -314,7 +317,7 @@ function rif40_startup(p_pg, p_client, p_num, p_debug_level, p_conString, p_clie
 				result.addRow(row);
 			});
 			query.on('end', function(result) {
-				_rif40_sql_test_log_setup(p_pg, p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag, p_test_run_class);
+				_rif40_sql_test_log_setup(p_pg, p_mutexjs, p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag, p_test_run_class);
 				return;
 			});	
 		}
@@ -323,14 +326,15 @@ function rif40_startup(p_pg, p_client, p_num, p_debug_level, p_conString, p_clie
 
 /* 
  * Function: 	_rif40_sql_test_log_setup()
- * Parameters: 	Postgres PG package connection handle, client connection, connection number (1 or 2), debug level, connection string, 
-                master client (1) connection [may NOT be null], failed flag, test run class [optional]
+ * Parameters: 	Postgres PG package connection handle, MutexJS package handle, 
+ *				client connection, connection number (1 or 2), debug level, connection string, 
+ *              master client (1) connection [may NOT be null], failed flag, test run class [optional]
  * Returns:		Nothing
  * Description: Run _rif40_sql_test_log_setup()
  *				Then if you are the control connection (1) call init_test_harness()
  *				Otherwise can run_test_harness() using the control connection
  */
-function _rif40_sql_test_log_setup(p_pg, p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag, p_test_run_class) {
+function _rif40_sql_test_log_setup(p_pg, p_mutexjs, p_client, p_num, p_debug_level, p_conString, p_client1, p_failed_flag, p_test_run_class) {
 	
 // Check master client (1) connection is NOT undefined	
 	if (p_client1 === undefined) {
@@ -358,12 +362,12 @@ function _rif40_sql_test_log_setup(p_pg, p_client, p_num, p_debug_level, p_conSt
 					// Client 1 [Master] waits after test harness initialisation
 					console.log('1: Wait for client 2 initialisation; debug_level: ' + p_debug_level);
 					// Create 2nd client(worker thread) for running test cases
-					init_test_harness(p_pg, p_client1, p_debug_level, p_conString, p_failed_flag, p_test_run_class);
+					init_test_harness(p_pg, p_mutexjs, p_client1, p_debug_level, p_conString, p_failed_flag, p_test_run_class);
 				}
 				else { // p_client is slave [2]
 					// Client 2 [slave worker] is now initialised so we can run the test harness tests
 					console.log('1: Client 2 initialised; debug_level: ' + p_debug_level);
-					run_test_harness(p_client1, p_client, p_failed_flag, p_test_run_class); 
+					run_test_harness(p_mutexjs, p_client1, p_client, p_failed_flag, p_test_run_class); 
 				}
 				return;
 			});	
@@ -374,11 +378,12 @@ function _rif40_sql_test_log_setup(p_pg, p_client, p_num, p_debug_level, p_conSt
 
 /* 
  * Function: 	init_test_harness()
- * Parameters: 	Postgres PG package connection handle, master client (1) connection, debug level, connection string, failed flag, test run class [optional]
+ * Parameters: 	Postgres PG package connection handle, MutexJS package handle, 
+ *				master client (1) connection, debug level, connection string, failed flag, test run class [optional]
  * Returns:		Nothing
  * Description: Create 2nd client (worker thread) for running test cases
  */
-function init_test_harness(p_pg, p_client1, p_debug_level, p_conString, p_failed_flag, p_test_run_class) {
+function init_test_harness(p_pg, p_mutexjs, p_client1, p_debug_level, p_conString, p_failed_flag, p_test_run_class) {
 	var client2 = null;
 
 // Check master client (1) connection is NOT undefined	
@@ -405,14 +410,14 @@ function init_test_harness(p_pg, p_client1, p_debug_level, p_conString, p_failed
 		}
 		else {	
 	        // Call rif40_startup; then subsequent functions in an async tree
-			rif40_startup(p_pg, client2, 2, p_debug_level, p_conString, p_client1, p_failed_flag, p_test_run_class);
+			rif40_startup(p_pg, p_mutexjs, client2, 2, p_debug_level, p_conString, p_client1, p_failed_flag, p_test_run_class);
 		} // End of else connected OK 
 	}); // End of connect
 }
 	
 /* 
  * Function: 	run_test_harness()
- * Parameters: 	Master client (1) connection, worker thread client (2) connection, failed flag, test run class [optional]
+ * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, failed flag, test run class [optional]
  * Returns:		Nothing
  * Description: Run test harness:
  *
@@ -421,7 +426,7 @@ function init_test_harness(p_pg, p_client1, p_debug_level, p_conString, p_failed
  *				Display tests per test_run_class, total tests
  * 			    Finally run the tests: function run_test_harness_tests()
  */
-function run_test_harness(p_client1, p_client2, p_failed_flag, p_test_run_class) {
+function run_test_harness(p_mutexjs, p_client1, p_client2, p_failed_flag, p_test_run_class) {
 	var total_tests=0;
 	// COMMIT; to complete initial on logon transaction
 	var end = p_client2.query('COMMIT', function(err, result) {
@@ -485,7 +490,7 @@ function run_test_harness(p_client1, p_client2, p_failed_flag, p_test_run_class)
 							}
 							console.log('1: Total tests to run: %s', total_tests);
 							// Finally run the tests: function run_test_harness_test()
-							run_test_harness_tests(p_client1, p_client2, total_tests, p_failed_flag, p_test_run_class);							
+							run_test_harness_tests(p_mutexjs, p_client1, p_client2, total_tests, p_failed_flag, p_test_run_class);							
 						});	
 					}
 				});		
@@ -496,7 +501,8 @@ function run_test_harness(p_client1, p_client2, p_failed_flag, p_test_run_class)
 
 /* 
  * Function: 	run_test_harness_tests()
- * Parameters: 	Master client (1) connection, worker thread client (2) connection, number of tests, failed flag, test run class [optional]
+ * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, 
+ *				number of tests, failed flag, test run class [optional]
  * Returns:		Nothing
  * Description: Run test harness tests:
  *
@@ -506,7 +512,7 @@ function run_test_harness(p_client1, p_client2, p_failed_flag, p_test_run_class)
  *				The rest of the tests are run recursively from rif40_sql_test() from query.on('end', ...) 
  *				so the SQl statements and transactions are run in the correct order.
  */
-function run_test_harness_tests(p_client1, p_client2, p_tests, p_failed_flag, p_test_run_class_filter) {
+function run_test_harness_tests(p_mutexjs, p_client1, p_client2, p_tests, p_failed_flag, p_test_run_class_filter) {
 	// Test arrays; 
 	var p_test_run_class = [];
 	var p_test_case_title = [];	
@@ -689,7 +695,7 @@ Without the "rif40_create_disease_mapping_example" filter gives:
 					// The rest of the tests are run recursively from rif40_sql_test() from query.on('end', ...) 
 					// so the SQL statements and transactions are run in the correct order.
 					var start_time = Date.now();
-					rif40_sql_test(p_client1, p_client2, 1, p_tests, 
+					rif40_sql_test(p_mutexjs, p_client1, p_client2, 1, p_tests, 
 							0 /* p_passed */, 0 /* p_failed */, p_failed_flag, p_rif40_test_harness, start_time);
 				}
 				else if (p_failed_flag) {
@@ -708,7 +714,7 @@ Without the "rif40_create_disease_mapping_example" filter gives:
 
 /* 
  * Function: 	rif40_sql_test()
- * Parameters: 	Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
+ * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
  *              number passed, number failed, failed flag, test harness results array, time of test harness start
  * Returns:		Nothing
  * Description: Begin transaction, call _rif40_sql_test() to run test:
@@ -722,7 +728,7 @@ Without the "rif40_create_disease_mapping_example" filter gives:
  *					Check pass/fail against expected 
  * 				call: _rif40_sql_test_end(): Rollback test case, recurse to next test case
  */
-function rif40_sql_test(p_client1, p_client2, p_j, p_tests, 
+function rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
 				p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_start_time) {	
 	
 	var test='[' + p_j + '/' + p_tests + ']: ' + p_rif40_test_harness[p_j-1].test_run_class + '] ' + 
@@ -761,7 +767,7 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests,
 					console.log('1: ' + test);			
 					console.log('2: BEGIN transaction: ' + test);		
 
-					_rif40_sql_test(p_client1, p_client2, p_j, p_tests, 
+					_rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
 						p_passed, p_failed, p_failed_flag, p_rif40_test_harness, test, p_start_time);
 				});
 			}
@@ -769,14 +775,14 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests,
 	}
 	else {	
 		console.log('1: RECURSE level ' + p_rif40_test_harness[p_j-1].level + ': ' + test);			
-		_rif40_sql_test(p_client1, p_client2, p_j, p_tests, 
+		_rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
 			p_passed, p_failed, p_failed_flag, p_rif40_test_harness, test, p_start_time);
 	}
 }
 
 /* 
  * Function: 	_rif40_sql_test()
- * Parameters: 	Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
+ * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
  *              number passed, number failed, failed flag, test harness results array, textual description of test, time of test harness start
  * Returns:		Nothing
  * Description: Run SQL test using a bind type SQL statement and rif40_sql_pkg._rif40_sql_test()
@@ -788,7 +794,7 @@ function rif40_sql_test(p_client1, p_client2, p_j, p_tests,
  *				Check pass/fail against expected
  *          Call: _rif40_sql_test_end(): Rollback test case, recurse to next test case
  */
-function _rif40_sql_test(p_client1, p_client2, p_j, p_tests, 
+function _rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
 				p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_test_text, p_start_time) {
 			
 	// Build bind type SQL statement
@@ -909,7 +915,7 @@ function _rif40_sql_test(p_client1, p_client2, p_j, p_tests,
 					}
 					p_rif40_test_harness[p_j-1].time_taken = (Date.now()-start_time)/1000;
 					
-					_rif40_sql_test_end(p_client1, p_client2, p_j, p_tests, 
+					_rif40_sql_test_end(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
 						p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_test_text, p_start_time);
 				}); /* End of process results - run.on('end', ... ) */
 			} /* End of if (err) */
@@ -918,12 +924,12 @@ function _rif40_sql_test(p_client1, p_client2, p_j, p_tests,
 
 /* 
  * Function: 	_rif40_sql_test_end()
- * Parameters: 	Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
+ * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
  *              number passed, number failed, failed flag, test harness results array, textual description of test, time of test harness start
  * Returns:		Nothing
  * Description: Rollback test case, recurse to next test case
  */
-function _rif40_sql_test_end(p_client1, p_client2, p_j, p_tests, 
+function _rif40_sql_test_end(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
 				p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_test_text, p_start_time) {
 					
 	var next=p_j+1;
@@ -960,12 +966,40 @@ function _rif40_sql_test_end(p_client1, p_client2, p_j, p_tests,
 				end.on('end', function(result) {	
 					console.log('2: ROLLBACK transaction: ' + p_test_text);
 					if (p_j === p_tests) {
-						end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, 1, p_failed_flag, 
-								p_rif40_test_harness, p_start_time); 
+//
+// This is no longer recursive, replaced with a for loop and a Mutex lock
+//						
+
+						var k = 1;
+						for (; k <= p_j; k++) { 	
+							(function(p_k) {
+								process.nextTick(function() {						
+//									console.log('1: p_k: ' + p_k + ', p_j: ' + p_j);
+									try {
+										if (p_k > p_j) {
+											console.error('1: _rif40_sql_test_end() p_k (' + p_k + ') > p_j (' + p_j + ')');				
+											process.exit(1);
+										}
+										var p_mutex_id;
+										var mutex_name = 'db_test_harness.js-update';								
+										p_mutexjs.lock(mutex_name, function(id) {
+											p_mutex_id=id;
+//											console.log('1: Gained mutex [' + p_k + '/' + p_tests + ']: ' + mutex_name + ', id: ' + p_mutex_id);
+											end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, p_tests, p_k, p_failed_flag, 
+													p_rif40_test_harness, p_start_time, p_mutex_id); 
+										});
+									}
+									catch(err) {
+										console.error('1: _rif40_sql_test_end() Could not acquire Mutex: ' + mutex_name, err);				
+										process.exit(1);
+									}					
+								});	
+							})(k);							
+						}				
 					}
 					else {
 						console.log('1: Recurse; next: ' + next);
-						rif40_sql_test(p_client1, p_client2, next, p_tests, 
+						rif40_sql_test(p_mutexjs, p_client1, p_client2, next, p_tests, 
 								p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_start_time);
 					}													
 				});
@@ -974,7 +1008,7 @@ function _rif40_sql_test_end(p_client1, p_client2, p_j, p_tests,
 	}
 	else {
 		console.log('1: DEPENDENT Recurse; next: ' + next);
-		rif40_sql_test(p_client1, p_client2, next, p_tests, 
+		rif40_sql_test(p_mutexjs, p_client1, p_client2, next, p_tests, 
 				p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_start_time);		
 	}
 }
@@ -1033,8 +1067,8 @@ function test_result(p_pass, p_text, p_sql_stmt, p_rif40_test_harness, p_j) {
 
 /* 
  * Function: 	end_test_harness()
- * Parameters: 	Master client (1) connection, worker thread client (2) connection, tests passed, tests failed, number of tests, 
- *              failed flag, test harness results array, time of test harness start 
+ * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, tests passed, tests failed, number of tests, 
+ *              failed flag, test harness results array, time of test harness start, Mutex  
  * Returns:		Nothing
  * Description: End processing for tes harness. Recursive, called for each test from test 1
  *
@@ -1046,36 +1080,46 @@ function test_result(p_pass, p_text, p_sql_stmt, p_rif40_test_harness, p_j) {
  * 					Do update
  * 					Summarise result
  *					On final test, COMMIT and exit with number of failed tests
- *					Recurse to next test
+ *					unlock mutex to allow next test resuklt to be updated
  */
-function end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, p_start_time) {
+function end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, 
+		p_start_time, p_mutex_id) {
 					
 // Check failed flag is NOT undefined	
 	if (p_failed_flag === undefined) {
-		console.error('1: end_test_harness() failed flag is undefined');			
+		console.error('1: end_test_harness(' + p_j + ') failed flag is undefined');			
 		process.exit(1);	
 	}
 	// Check p_rif40_test_harness object of arrays is NOT undefined	
 	if (p_rif40_test_harness === undefined) {
-		console.error('1: ' + test + ' end_test_harness() p_rif40_test_harness object of arrays is undefined');			
+		console.error('1: end_test_harness(' + p_j + ') p_rif40_test_harness object of arrays is undefined');			
 		process.exit(1);	
 	}
 	if (p_rif40_test_harness[p_j-1] === undefined) {
-		console.error('1: ' + test + ' end_test_harness() p_rif40_test_harness[' + p_j-1 + '] is undefined');			
+		console.error('1: end_test_harness() p_rif40_test_harness[' + p_j-1 + '] is undefined');			
 		process.exit(1);							
 	}		
 	if (p_rif40_test_harness[p_j-1].pass === undefined) {
-		console.error('1: ' + test + ' end_test_harness() p_rif40_test_harness[' + p_j-1 + '].pass is undefined');			
+		console.error('1: end_test_harness() p_rif40_test_harness[' + p_j-1 + '].pass is undefined');			
 		process.exit(1);							
 	}	
 	if (p_rif40_test_harness[p_j-1].time_taken === undefined) {
-		console.error('1: ' + test + ' end_test_harness() p_rif40_test_harness[' + p_j-1 + '].time_taken is undefined');			
+		console.error('1: end_test_harness() p_rif40_test_harness[' + p_j-1 + '].time_taken is undefined');			
 		process.exit(1);							
 	}	
 	if (p_rif40_test_harness[p_j-1].test_id === undefined) {
-		console.error('1: ' + test + ' end_test_harness() p_rif40_test_harness[' + p_j-1 + '].test_id is undefined');			
+		console.error('1: end_test_harness() p_rif40_test_harness[' + p_j-1 + '].test_id is undefined');			
 		process.exit(1);							
 	}	
+// Check mutex defined
+	if (p_mutexjs === undefined) {
+		console.error('1: end_test_harness(' + p_j + ') p_mutexjs is undefined');			
+		process.exit(1);							
+	}	
+	if (p_mutex_id === undefined) {
+		console.error('1: end_test_harness(' + p_j + ') p_mutex_id is undefined');			
+		process.exit(1);							
+	}		
 	
 	// Summarize run
 	if (p_j == 1) {
@@ -1103,29 +1147,33 @@ function end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j
 				// Transaction start OK 
 				begin.on('end', function(result) {						
 					console.log('1: BEGIN transaction: results UPDATE');
-					_end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, p_start_time);
+
+					_end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, 
+							p_rif40_test_harness, p_start_time, p_mutex_id);
 				});
 			}
 		});
 	}
 	else {
-		_end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, p_start_time);
+		_end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, 
+					p_rif40_test_harness, p_start_time, p_mutex_id);
 	}
 }
 
 /* 
  * Function: 	_end_test_harness()
- * Parameters: 	Master client (1) connection, worker thread client (2) connection, tests passed, tests failed, number of tests, 
- *              failed flag, test harness results array, time of test harness start 
+ * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, tests passed, tests failed, number of tests, 
+ *              failed flag, test harness results array, time of test harness start, Mutex 
  * Returns:		Nothing
  * Description: Helper functions for test harness end processing; called from end_test_harness().
  *
  * 				Do update to rif40_test_harness and insert into rif40_test_runs
  * 				Summarise result
  *				On final test, COMMIT and exit with number of failed tests
- *				Recurse to next test
+ *				unlock mutex to allow next test resuklt to be updated
  */
-function _end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, p_start_time) {
+function _end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, 
+				p_start_time, p_mutex_id) {
 // Bindable update statement
 	var update_stmt='UPDATE rif40_test_harness\n' +
 					'   SET pass       = $1,\n' + 
@@ -1209,6 +1257,9 @@ function _end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_
 																p_client2.end();
 																p_client1.end();	
 																
+//																console.log('1: [' + p_j + '/' + p_tests + '] ' + ' Release mutex: ' + p_mutex_id);
+																p_mutexjs.release(p_mutex_id);
+									
 																var msg;
 																if (p_failed == 0) {
 																	msg = '* Test harness run had no error(s)\n';																	
@@ -1231,10 +1282,16 @@ function _end_test_harness(p_client1, p_client2, p_passed, p_failed, p_tests, p_
 												}
 										});										
 								} /* At last test */
+//
+// Recursion replaced by a Mutex lock
+//
 								else {
-									// Recurse to next test
-									end_test_harness(p_client1, p_client2, p_passed, p_failed, 
-											p_tests, p_j + 1, p_failed_flag, p_rif40_test_harness, p_start_time); 
+									// Release Mutex
+//									console.log('1: [' + p_j + '/' + p_tests + '] ' + ' Release mutex: ' + p_mutex_id);
+									p_mutexjs.release(p_mutex_id);
+//									// Recurse to next test
+//									end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, 
+//											p_tests, p_j + 1, p_failed_flag, p_rif40_test_harness, p_start_time); 
 								}
 							});
 					}
