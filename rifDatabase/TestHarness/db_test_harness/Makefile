@@ -223,20 +223,24 @@ MODULE_JSON=node_modules/pg-native/package.json node_modules/pg/package.json nod
 #- all: Build modules, run the complete database test harness	
 all: modules db_test_harness
 
-#- modules: Build modules using npm install --save to update dependencies in package.json
+#- modules: Build required Node.js modules using npm install --save to update dependencies in package.json
 modules: $(MODULE_JSON) $(MODULES)
 
 # Module dependency control	
 $(MODULE_JSON):
-	$(NPM) install --save pg pg-native optimist mutexjs	
+	$(NPM) update --save pg pg-native optimist mutexjs	
 $(MODULES):
 	mkdir $@
 	
 #clean:
 #	 $(DELETE) node_modules
 	 
+# No install target (dummy)	 
 install:
-
+#- update: Update required Node.js modules using npm install --save to update dependencies in package.json 
+update:
+	$(NPM) update --save pg pg-native optimist mutexjs	
+	
 #- db_test_harness: Run the complete database test harness	(same as target test)	
 db_test_harness:
 	$(NODE) db_test_harness.js -H $(PGHOST) -D $(PGDATABASE) -U $(TESTUSER) -d $(DEBUG_LEVEL)

@@ -17,7 +17,7 @@
 
 Then install topojson through npm:
 
-npm install -g topojson
+npm install topojson
 
 Test:
 
@@ -98,8 +98,11 @@ pg@4.2.0 node_modules\pg
 
 # Make targets
 
+The Makefile will building the requiored Node.js modules
+
 * all: Build modules, run the complete database test harness
-* modules: Build modules using npm install --save to update dependencies in package.json
+* modules: Build required Node.js modules using npm install --save to update dependencies in package.json
+* update: Update required Node.js modules using npm install --save to update dependencies in package.json 
 * db_test_harness: Run the complete database test harness      (same as target test)
 * rif40_create_disease_mapping_example: Run rif40_create_disease_mapping_example test (standard test 1)
 * test: Run the complete database test harness
