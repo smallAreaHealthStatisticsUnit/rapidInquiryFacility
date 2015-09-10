@@ -187,7 +187,7 @@ Test harness refactor; Node.js version working
 
 * Debug functions
 * Instrumnetation
-* Conversion to Mutec locked version to prevent stack overload with waterfall of cascading callback functions
+* Conversion to Mutex locked version to prevent stack overload with waterfall of cascading callback functions
  
 Remove old dblink version
  
