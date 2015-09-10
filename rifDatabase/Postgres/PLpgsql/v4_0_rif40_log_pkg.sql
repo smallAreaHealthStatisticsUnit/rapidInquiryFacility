@@ -332,6 +332,8 @@ DECLARE
 --
 	sql_stmt VARCHAR;
 	i INTEGER:=0;
+--
+	is_debug_enabled BOOLEAN;
 BEGIN
 --
 -- Check for NULL
@@ -353,15 +355,17 @@ BEGIN
 	OPEN c1r4d;	/* Before */
 	FETCH c1r4d INTO c1r4da_rec;
 	CLOSE c1r4d;
+	
+	is_debug_enabled:=rif40_log_pkg.rif40_is_debug_enabled('rif40_remove_from_debug', 'DEBUG4');
 --
 -- Re-process debug string
 --
 	sql_stmt:='SET rif40.debug = ''';
 	FOR c2r4d_rec IN c2r4d(function_name) LOOP
 		i:=i+1;
-		IF rif40_log_pkg.rif40_is_debug_enabled('rif40_remove_from_debug', 'DEBUG4') AND c1r4da_rec.send_debug_to_info = 'on' THEN
+		IF is_debug_enabled AND c1r4da_rec.send_debug_to_info = 'on' THEN
 			RAISE INFO 'rif40_remove_from_debug() Function %() % to %', c2r4d_rec.function_name, c2r4d_rec.old_debug_level, c2r4d_rec.new_debug_level;
-		ELSIF rif40_log_pkg.rif40_is_debug_enabled('rif40_remove_from_debug', 'DEBUG4') THEN
+		ELSIF is_debug_enabled THEN
 			RAISE DEBUG 'rif40_remove_from_debug() Function %() % to %', c2r4d_rec.function_name, c2r4d_rec.old_debug_level, c2r4d_rec.new_debug_level;
 		END IF;
 		IF i = 1 THEN
@@ -373,9 +377,9 @@ BEGIN
 	sql_stmt:=sql_stmt||'''';
 --
 	IF i > 0 THEN
-		IF rif40_log_pkg.rif40_is_debug_enabled('rif40_remove_from_debug', 'DEBUG4') AND c1r4da_rec.send_debug_to_info = 'on' THEN
+		IF is_debug_enabled AND c1r4da_rec.send_debug_to_info = 'on' THEN
 			RAISE INFO 'SQL> %;', sql_stmt;
-		ELSIF rif40_log_pkg.rif40_is_debug_enabled('rif40_remove_from_debug', 'DEBUG4') THEN
+		ELSIF is_debug_enabled THEN
 			RAISE DEBUG 'SQL> %;', sql_stmt;
 		END IF;
 		EXECUTE sql_stmt;
@@ -385,9 +389,9 @@ BEGIN
 	FETCH c1r4d INTO c1r4db_rec;
 	CLOSE c1r4d;
 --
-	IF rif40_log_pkg.rif40_is_debug_enabled('rif40_remove_from_debug', 'DEBUG4') AND c1r4db_rec.send_debug_to_info = 'on' THEN
+	IF is_debug_enabled AND c1r4db_rec.send_debug_to_info = 'on' THEN
 		RAISE INFO 'rif40_remove_from_debug() SET DEBUG from: "%" to: "%"', c1r4da_rec.debug, c1r4db_rec.debug;
-	ELSIF rif40_log_pkg.rif40_is_debug_enabled('rif40_remove_from_debug', 'DEBUG4') THEN
+	ELSIF is_debug_enabled THEN
 		RAISE DEBUG 'rif40_remove_from_debug() SET DEBUG from: "%" to: "%"', c1r4da_rec.debug, c1r4db_rec.debug;
 	END IF;
 END;
@@ -465,6 +469,7 @@ DECLARE
 	sql_stmt VARCHAR;
 	i INTEGER:=0;
 --
+	is_debug_enabled BOOLEAN;
 BEGIN
 --
 -- Check for NULL
@@ -489,15 +494,16 @@ BEGIN
 		RAISE INFO 'rif40_add_to_debug() DEFAULTED send DEBUG to INFO: %; debug function list: [%]', 
 			c1a2da_rec.send_debug_to_info, c1a2da_rec.debug;
 	END;
+	is_debug_enabled:=rif40_log_pkg.rif40_is_debug_enabled('rif40_add_to_debug', 'DEBUG4');
 --
 -- Re-process debug string
 --
 	sql_stmt:='SET rif40.debug = ''';
 	FOR c2a2d_rec IN c2a2d(debug_text) LOOP
 		i:=i+1;
-		IF rif40_log_pkg.rif40_is_debug_enabled('rif40_add_to_debug', 'DEBUG4') AND c1a2da_rec.send_debug_to_info = 'on' THEN
+		IF is_debug_enabled AND c1a2da_rec.send_debug_to_info = 'on' THEN
 			RAISE INFO 'rif40_add_to_debug() Function %() % to %', c2a2d_rec.function_name, c2a2d_rec.old_debug_level, c2a2d_rec.new_debug_level;
-		ELSIF rif40_log_pkg.rif40_is_debug_enabled('rif40_add_to_debug', 'DEBUG4') THEN
+		ELSIF is_debug_enabled THEN
 			RAISE DEBUG 'rif40_add_to_debug() Function %() % to %', c2a2d_rec.function_name, c2a2d_rec.old_debug_level, c2a2d_rec.new_debug_level;
 		END IF;
 		IF i = 1 THEN
@@ -509,9 +515,9 @@ BEGIN
 	sql_stmt:=sql_stmt||'''';
 --
 	IF i > 0 THEN
-		IF rif40_log_pkg.rif40_is_debug_enabled('rif40_add_to_debug', 'DEBUG4') AND c1a2da_rec.send_debug_to_info = 'on' THEN
+		IF is_debug_enabled AND c1a2da_rec.send_debug_to_info = 'on' THEN
 			RAISE INFO 'SQL> %;', sql_stmt;
-		ELSIF rif40_log_pkg.rif40_is_debug_enabled('rif40_add_to_debug', 'DEBUG4') THEN
+		ELSIF is_debug_enabled THEN
 			RAISE DEBUG 'SQL> %;', sql_stmt;
 		END IF;
 		EXECUTE sql_stmt;
@@ -523,9 +529,9 @@ BEGIN
 	FETCH c1a2d INTO c1a2db_rec;
 	CLOSE c1a2d;
 --
-	IF rif40_log_pkg.rif40_is_debug_enabled('rif40_add_to_debug', 'DEBUG4') AND c1a2db_rec.send_debug_to_info = 'on' THEN
+	IF is_debug_enabled AND c1a2db_rec.send_debug_to_info = 'on' THEN
 		RAISE INFO 'rif40_add_to_debug() SET DEBUG from: "%" to: "%"', c1a2da_rec.debug, c1a2db_rec.debug;
-	ELSIF rif40_log_pkg.rif40_is_debug_enabled('rif40_add_to_debug', 'DEBUG4') THEN
+	ELSIF is_debug_enabled THEN
 		RAISE DEBUG 'rif40_add_to_debug() SET DEBUG from: "%" to: "%"', c1a2da_rec.debug, c1a2db_rec.debug;
 	END IF;
 END;
