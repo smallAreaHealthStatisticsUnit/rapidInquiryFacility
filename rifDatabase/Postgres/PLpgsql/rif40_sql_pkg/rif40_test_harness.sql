@@ -67,7 +67,11 @@ $$;
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_test_harness(INTEGER); 
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_test_harness(VARCHAR, INTEGER); 
 -- DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_test_harness(VARCHAR); 
+\q 
 
+--
+-- Obsoleted
+--
 CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_test_harness(test_run_class VARCHAR, debug_level INTEGER DEFAULT 0)
 RETURNS VARCHAR
 SECURITY INVOKER

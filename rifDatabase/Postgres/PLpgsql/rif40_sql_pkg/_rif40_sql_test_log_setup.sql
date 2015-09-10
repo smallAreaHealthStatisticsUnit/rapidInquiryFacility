@@ -79,7 +79,7 @@ Description:Setup debug for test harness. Debug level must be 0 to 4
 DECLARE
 	rif40_pkg_functions 		VARCHAR[] := ARRAY[
 				'rif40_delete_study', 'rif40_ddl', '_rif40_sql_test', '_rif40_test_sql_template', '_rif40_sql_test_register',
-				'rif40_test_harness', 'rif40_startup', '_rif40_sql_test_log_setup', 'rif40_remove_from_debug'];
+				'rif40_startup', '_rif40_sql_test_log_setup', 'rif40_remove_from_debug'];
 	l_function 			VARCHAR;	
 BEGIN
     PERFORM rif40_log_pkg.rif40_log_setup();

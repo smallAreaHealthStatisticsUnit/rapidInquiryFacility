@@ -422,6 +422,11 @@ SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise
   FROM rif40_test_harness
  WHERE test_run_class = 'test_8_triggers.sql'
  ORDER BY test_id;
+ 
+--
+-- Add triggers test cases
+--
+\i test_scripts/test_8_trigger_test_cases/trgf_rif40_studies.sql
 
 --
 -- End transaction so Node.js test harness can be called
@@ -446,11 +451,6 @@ $$;
 -- Run the Node.js test harness; building required modules if needed
 --
 \! make -C ../../TestHarness/db_test_harness modules test 
-
---
--- Start new transaction
---
-BEGIN;
  
 --
 -- Dump test harness
