@@ -8,7 +8,7 @@
 #
 # Description:
 #-
-#- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\Node
+#- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\TestHarness\db_test_harness
 #-
 # Copyright:
 #
@@ -215,22 +215,20 @@ else
 	PGPASSFILE=~/.pgpass
 endif
 #
+# Module list, module package.json for dependency control
 #
-# Target extension depends on source, build rule
-#
-#.SUFFIXES: .sql .rpt
-#.sql.rpt:
-#	$(RUN) $@ "$(CURDIR)" $(PSQL) $(PSQL_FLAGS) -f $< 
 MODULES=node_modules/pg node_modules/pg-native node_modules/optimist node_modules/mutexjs
 MODULE_JSON=node_modules/pg-native/package.json node_modules/pg/package.json node_modules/optimist/package.json node_modules/mutexjs/package.json
 
+#- all: Build modules, run the complete database test harness	
 all: modules db_test_harness
 
+#- modules: Build modules using npm install --save to update dependencies in package.json
 modules: $(MODULE_JSON) $(MODULES)
-	
+
+# Module dependency control	
 $(MODULE_JSON):
-	$(NPM) install --save pg pg-native optimist mutexjs
-	
+	$(NPM) install --save pg pg-native optimist mutexjs	
 $(MODULES):
 	mkdir $@
 	
@@ -238,17 +236,26 @@ $(MODULES):
 #	 $(DELETE) node_modules
 	 
 install:
-	
+
+#- db_test_harness: Run the complete database test harness	(same as target test)	
 db_test_harness:
-	$(NODE) db_test_harness.js --help
 	$(NODE) db_test_harness.js -H $(PGHOST) -D $(PGDATABASE) -U $(TESTUSER) -d $(DEBUG_LEVEL)
 	
+#- rif40_create_disease_mapping_example: Run rif40_create_disease_mapping_example test (standard test 1)
 rif40_create_disease_mapping_example:
 	$(NODE) db_test_harness.js -H $(PGHOST) -D $(PGDATABASE) -U $(TESTUSER) -d $(DEBUG_LEVEL) -C rif40_create_disease_mapping_example	
-	
+
+#- test: Run the complete database test harness	
 test: db_test_harness
+#- retest: Re-run the failed database test harness tests (-F flag)
 retest:
 	$(NODE) db_test_harness.js -H $(PGHOST) -D $(PGDATABASE) -U $(TESTUSER) -d $(DEBUG_LEVEL) -F	
+	
+
+#- help: Display makefile help, db_test_harness.js help
+help:
+	$(HELP)
+	$(NODE) db_test_harness.js --help
 	
 #
 # Eof
