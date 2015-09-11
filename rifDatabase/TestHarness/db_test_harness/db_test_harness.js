@@ -634,6 +634,26 @@ WITH RECURSIVE a AS (
 SELECT * FROM b
  ORDER BY root_test_id, level, test_id;
  
+WITH RECURSIVE a AS (
+	SELECT b.test_id AS root_test_id, b.test_id, b.parent_test_id, b.test_run_class, 0 AS level
+ 	  FROM rif40_test_harness b
+     WHERE b.parent_test_id IS NULL	   
+	UNION ALL
+	SELECT a.root_test_id, b.test_id, b.parent_test_id, b.test_run_class, a.level+1 AS level
+ 	  FROM a
+     JOIN rif40_test_harness b ON (a.test_id = b.parent_test_id)
+), b AS (
+	SELECT a.*, 
+	       ROW_NUMBER() OVER(PARTITION BY root_test_id ORDER BY level, test_id) AS recursive_test_number, 
+	       COUNT(root_test_id) OVER(
+									PARTITION BY root_test_id 
+									ORDER BY level, test_id 
+									ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS recursive_test_total 
+	  FROM a
+)
+SELECT * FROM b
+ ORDER BY root_test_id, level, test_id;
+ 
     */
 	var sql_stmt = 'WITH RECURSIVE a AS (\n' +
 		'SELECT b.test_id AS root_test_id, b.*, 0 AS level\n' +
@@ -712,7 +732,8 @@ SELECT * FROM b
 				p_recursive_test_total = new Array(); 
 				p_pg_debug_functions = new Array(); 
 				
-				p_rif40_test_harness = {};
+				var p_rif40_test_harness = {};
+				var p_passed_or_failed = { p_passed:0 /* p_passed */, p_failed:0 /* p_failed */};
 				
 				if (row_count > 0) {
 					// Push results data into results array
@@ -786,7 +807,7 @@ SELECT * FROM b
 											p_mutex_id=id;
 //											console.log('1: Gained mutex [' + p_k + '/' + p_tests + ']: ' + mutex_name + ', id: ' + p_mutex_id);
 											rif40_sql_test(p_mutexjs, p_client1, p_client2, p_k, p_tests, 
-												0 /* p_passed */, 0 /* p_failed */, p_failed_flag, p_rif40_test_harness, start_time, p_mutex_id); 
+												p_passed_or_failed, p_failed_flag, p_rif40_test_harness, start_time, p_mutex_id); 
 										});
 									}
 									catch(err) {
@@ -815,7 +836,7 @@ SELECT * FROM b
 /* 
  * Function: 	rif40_sql_test()
  * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
- *              number passed, number failed, failed flag, test harness results array, time of test harness start, 
+ *              {number passed, number failed}, failed flag, test harness results array, time of test harness start, 
  *				Test Mutex
  * Returns:		Nothing
  * Description: Begin transaction, call _rif40_sql_test() to run test:
@@ -830,7 +851,7 @@ SELECT * FROM b
  * 				call: _rif40_sql_test_end(): Rollback test case, recurse to next test case
  */
 function rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
-				p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_start_time, p_mutex_id) {	
+				p_passed_or_failed, p_failed_flag, p_rif40_test_harness, p_start_time, p_mutex_id) {	
 	
 	var test='[' + p_j + '/' + p_tests + ']: ' + p_rif40_test_harness[p_j-1].test_run_class + '] ' + 
 			p_rif40_test_harness[p_j-1].test_case_title;
@@ -875,7 +896,7 @@ function rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 					console.log('2: BEGIN transaction: ' + test);		
 
 					_rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
-							p_passed, p_failed, p_failed_flag, p_rif40_test_harness, test, p_start_time, p_mutex_id);
+							p_passed_or_failed, p_failed_flag, p_rif40_test_harness, test, p_start_time, p_mutex_id);
 				});
 			}
 		});
@@ -883,14 +904,14 @@ function rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 	else {	
 		console.log('1: RECURSE level ' + p_rif40_test_harness[p_j-1].level + ': ' + test);			
 		_rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
-				p_passed, p_failed, p_failed_flag, p_rif40_test_harness, test, p_start_time, p_mutex_id);
+				p_passed_or_failed, p_failed_flag, p_rif40_test_harness, test, p_start_time, p_mutex_id);
 	}
 }
 
 /* 
  * Function: 	_rif40_sql_test()
  * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
- *              number passed, number failed, failed flag, test harness results array, textual description of test, time of test harness start, 
+ *              {number passed, number failed}, failed flag, test harness results array, textual description of test, time of test harness start, 
  *				Test Mutex
  * Returns:		Nothing
  * Description: Run SQL test using a bind type SQL statement and rif40_sql_pkg._rif40_sql_test()
@@ -903,7 +924,7 @@ function rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
  *          Call: _rif40_sql_test_end(): Rollback test case, recurse to next test case
  */
 function _rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
-				p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_test_text, p_start_time, p_mutex_id) {
+				p_passed_or_failed, p_failed_flag, p_rif40_test_harness, p_test_text, p_start_time, p_mutex_id) {
 // Check mutex defined
 	if (p_mutexjs === undefined) {
 		console.error('1: rif40_sql_test_end(' + p_j + ') p_mutexjs is undefined');			
@@ -999,7 +1020,7 @@ function _rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 	//								p_rif40_test_harness[p_j].expected_result);
 					if (row_count != 1) {
 							console.error('2: Test FAILED: (' + row_count + ') rows ' + p_test_text + '\n' + 'SQL> ' + sql_stmt);	
-							p_failed++;			
+							p_passed_or_failed.p_failed++;			
 					}
 					// OK - so we need to check pass/fail against expected
 					else if (result.rows[0].rbool == false)   /* Test failed */ {
@@ -1007,13 +1028,13 @@ function _rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 							test_result(false, 'Test FAILED, expected to PASS: ' + p_test_text, sql_stmt,
 									p_rif40_test_harness, p_j-1);
 							p_rif40_test_harness[p_j-1].pass = false;
-							p_failed++;
+							p_passed_or_failed.p_failed++;
 						}
 						else {
 							test_result(true, 'Test FAILED as expected: ' + p_test_text, sql_stmt,
 									p_rif40_test_harness, p_j-1);
 							p_rif40_test_harness[p_j-1].pass = true;
-							p_passed++; 										
+							p_passed_or_failed.p_passed++; 										
 						}
 					}
 					else { /* Test passed */
@@ -1021,19 +1042,19 @@ function _rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 							test_result(true, 'Test OK: ' + p_test_text, sql_stmt,
 									p_rif40_test_harness, p_j-1);
 							p_rif40_test_harness[p_j-1].pass = true;
-							p_passed++;
+							p_passed_or_failed.p_passed++;
 						}
 						else {
 							test_result(false, 'Test PASSED, expected to FAIL: ' + p_test_text, sql_stmt,
 									p_rif40_test_harness, p_j-1);
 							p_rif40_test_harness[p_j-1].pass = false;										
-							p_failed++;									
+							p_passed_or_failed.p_failed++;									
 						}
 					}
 					p_rif40_test_harness[p_j-1].time_taken = (Date.now()-start_time)/1000;
 					
 					_rif40_sql_test_end(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
-							p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_test_text, p_start_time, p_mutex_id);
+							p_passed_or_failed, p_failed_flag, p_rif40_test_harness, p_test_text, p_start_time, p_mutex_id);
 				}); /* End of process results - run.on('end', ... ) */
 			} /* End of if (err) */
 		});					
@@ -1042,13 +1063,13 @@ function _rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 /* 
  * Function: 	_rif40_sql_test_end()
  * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
- *              number passed, number failed, failed flag, test harness results array, textual description of test, time of test harness start, 
+ *              {number passed, number failed}, failed flag, test harness results array, textual description of test, time of test harness start, 
  *				Test Mutex
  * Returns:		Nothing
  * Description: Rollback test case, recurse to next test case
  */
 function _rif40_sql_test_end(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
-				p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_test_text, p_start_time, p_mutex_id) {
+				p_passed_or_failed, p_failed_flag, p_rif40_test_harness, p_test_text, p_start_time, p_mutex_id) {
 					
 	var next=p_j+1;
 	
@@ -1102,6 +1123,9 @@ function _rif40_sql_test_end(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 //						
 
 						var k = 1;
+// Now this is no longer recursive it needs to be updated - as a {} it should be passed by reference!						
+//						p_passed_or_failed.passed=0;
+//						p_passed_or_failed.failed=0;
 						for (; k <= p_j; k++) { 	
 							(function(p_k) {
 								process.nextTick(function() {						
@@ -1112,11 +1136,17 @@ function _rif40_sql_test_end(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 											process.exit(1);
 										}
 										var mutex_id;
-										var mutex_name = 'db_test_harness.js-update';								
+										var mutex_name = 'db_test_harness.js-update';	
+/*										if (p_rif40_test_harness[p_k-1].pass) {
+											p_passed_or_failed.passed++;
+										}
+										else {
+											p_passed_or_failed.failed++;
+										} */
 										p_mutexjs.lock(mutex_name, function(id) {
 											mutex_id=id;
 //											console.log('1: Gained update mutex [' + p_k + '/' + p_tests + ']: ' + mutex_name + ', id: ' + mutex_id);
-											end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, p_tests, p_k, p_failed_flag, 
+											end_test_harness(p_mutexjs, p_client1, p_client2, p_passed_or_failed, p_tests, p_k, p_failed_flag, 
 													p_rif40_test_harness, p_start_time, mutex_id); 
 										});
 									}
@@ -1138,7 +1168,7 @@ function _rif40_sql_test_end(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 	
 						console.log('1: DEPENDENT Recurse; next: ' + next);
 //						rif40_sql_test(p_mutexjs, p_client1, p_client2, next, p_tests, 
-//								p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_start_time, p_mutex_id);
+//								p_passed_or_failed, p_failed_flag, p_rif40_test_harness, p_start_time, p_mutex_id);
 					}													
 				});
 			}
@@ -1154,7 +1184,7 @@ function _rif40_sql_test_end(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 	
 		console.log('1: DEPENDENT Recurse; next: ' + next);
 //		rif40_sql_test(p_mutexjs, p_client1, p_client2, next, p_tests, 
-//				p_passed, p_failed, p_failed_flag, p_rif40_test_harness, p_start_time, p_mutex_id);		
+//				p_passed_or_failed, p_failed_flag, p_rif40_test_harness, p_start_time, p_mutex_id);		
 	}
 }
 				
@@ -1212,7 +1242,7 @@ function test_result(p_pass, p_text, p_sql_stmt, p_rif40_test_harness, p_j) {
 
 /* 
  * Function: 	end_test_harness()
- * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, tests passed, tests failed, number of tests, 
+ * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, {tests passed, tests failed}, number of tests, 
  *              failed flag, test harness results array, time of test harness start, Update Mutex  
  * Returns:		Nothing
  * Description: End processing for tes harness. Recursive, called for each test from test 1
@@ -1227,7 +1257,7 @@ function test_result(p_pass, p_text, p_sql_stmt, p_rif40_test_harness, p_j) {
  *					On final test, COMMIT and exit with number of failed tests
  *					unlock mutex to allow next test resuklt to be updated
  */
-function end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, 
+function end_test_harness(p_mutexjs, p_client1, p_client2, p_passed_or_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, 
 		p_start_time, p_mutex_id) {
 					
 // Check failed flag is NOT undefined	
@@ -1271,12 +1301,12 @@ function end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, p
 		if (p_failed_flag) {
 				console.log('1: Ran with -F flag to re-run failed tests only');
 		}
-		if (p_failed > 0) {
-			console.error('1: Test harness complete; ' + p_tests + ' tests completed; passed: ' + p_passed +
-				'; failed: ' + p_failed);	
+		if (p_passed_or_failed.p_failed > 0) {
+			console.error('1: Test harness complete; ' + p_tests + ' tests completed; passed: ' + p_passed_or_failed.p_passed +
+				'; failed: ' + p_passed_or_failed.p_failed);	
 		}
 		else {
-			console.log('1: Test harness complete; ' + p_tests + ' tests completed; passed: ' + p_passed +
+			console.log('1: Test harness complete; ' + p_tests + ' tests completed; passed: ' + p_passed_or_failed.p_passed +
 				'; none failed.');	
 		}
 		
@@ -1293,21 +1323,21 @@ function end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, p
 				begin.on('end', function(result) {						
 					console.log('1: BEGIN transaction: results UPDATE');
 
-					_end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, 
+					_end_test_harness(p_mutexjs, p_client1, p_client2, p_passed_or_failed, p_tests, p_j, p_failed_flag, 
 							p_rif40_test_harness, p_start_time, p_mutex_id);
 				});
 			}
 		});
 	}
 	else {
-		_end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, 
+		_end_test_harness(p_mutexjs, p_client1, p_client2, p_passed_or_failed, p_tests, p_j, p_failed_flag, 
 					p_rif40_test_harness, p_start_time, p_mutex_id);
 	}
 }
 
 /* 
  * Function: 	_end_test_harness()
- * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, tests passed, tests failed, number of tests, 
+ * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, {tests passed, tests failed}, number of tests, 
  *              failed flag, test harness results array, time of test harness start, Update Mutex 
  * Returns:		Nothing
  * Description: Helper functions for test harness end processing; called from end_test_harness().
@@ -1317,7 +1347,7 @@ function end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, p
  *				On final test, COMMIT and exit with number of failed tests
  *				unlock mutex to allow next test resuklt to be updated
  */
-function _end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, 
+function _end_test_harness(p_mutexjs, p_client1, p_client2, p_passed_or_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, 
 				p_start_time, p_mutex_id) {
 // Bindable update statement
 	var update_stmt='UPDATE rif40_test_harness\n' +
@@ -1355,6 +1385,7 @@ function _end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, 
 							}
 							console.log('1: [' + p_j + '/' + p_tests + '] ' + r_text + p_rif40_test_harness[p_j-1].test_case_title + 
 								'; id: ' +  p_rif40_test_harness[p_j-1].test_id + 
+								'; expected: ' + p_rif40_test_harness[p_j-1].expected_result + 
 								'; pass: ' + p_rif40_test_harness[p_j-1].pass + 
 								'; time taken: ' + p_rif40_test_harness[p_j-1].time_taken + ' S');	
 								// On final test, COMMIT and exit with number of failed tests
@@ -1376,8 +1407,8 @@ function _end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, 
 													values: [p_test_run_title,
 															 time_taken,
 															 p_tests, 
-															 p_passed,
-															 p_failed]}, 				 
+															 p_passed_or_failed.p_passed,
+															 p_passed_or_failed.p_failed]}, 				 
 											function(err, result) {
 												if (err) {
 													p_client2.end();
@@ -1406,22 +1437,30 @@ function _end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, 
 																p_mutexjs.release(p_mutex_id);
 									
 																var msg;
-																if (p_failed == 0) {
-																	msg = '* Test harness run had no error(s)\n';																	
+																if (p_passed_or_failed.p_failed == 0) {
+																	msg = '* Test harness run had no error(s); ' + p_passed_or_failed.p_passed + ' passed\n';																	
 																}
-																else if (p_failed == 1) {
-																	msg = '* Test harness run had: 1 error\n';																	
+																else if (p_passed_or_failed.p_failed == 1) {
+																	msg = '* Test harness run had: 1 error; ' + p_passed_or_failed.p_passed + ' passed\n';																	
 																}
 																else {
-																	msg = '* Test harness run had: ' + p_failed + ' errors\n';
+																	msg = '* Test harness run had: ' + p_passed_or_failed.p_failed + ' errors; ' + 
+																		p_passed_or_failed.p_passed + ' passed\n';
 																}
 																msg = msg + '* Total time taken: ' + time_taken + ' S\n';
 																// Exit point on "normal" run. Fails if any tests are failed
 																console.log('*****************************************************************************\n' + '*\n' +
 																	msg + 
 																	'*\n' + '*****************************************************************************\n');
-																process.exit(p_failed);
-																});
+																var passed_and_failed=p_passed_or_failed.p_passed + p_passed_or_failed.p_failed;
+																if (passed_and_failed === p_tests) {
+																	process.exit(p_passed_or_failed.p_failed);
+																}
+																else {
+																	console.error('1: Number of tests (' + p_tests + ') != passed+failed: (' + passed_and_failed + ')');
+																	process.exit(1);	
+																}
+															});
 														}
 													});
 												}
@@ -1435,7 +1474,7 @@ function _end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, 
 //									console.log('1: [' + p_j + '/' + p_tests + '] ' + ' Release update mutex: ' + p_mutex_id);
 									p_mutexjs.release(p_mutex_id);
 //									// Recurse to next test
-//									end_test_harness(p_mutexjs, p_client1, p_client2, p_passed, p_failed, 
+//									end_test_harness(p_mutexjs, p_client1, p_client2, p_passed_or_failed, 
 //											p_tests, p_j + 1, p_failed_flag, p_rif40_test_harness, p_start_time); 
 								}
 							});

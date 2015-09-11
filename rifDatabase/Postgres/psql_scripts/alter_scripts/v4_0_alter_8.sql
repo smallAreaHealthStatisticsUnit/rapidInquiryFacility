@@ -210,6 +210,8 @@ CREATE TABLE rif40_test_harness (
 	time_taken					NUMERIC,
 	pg_debug_functions			Text[],
 	CONSTRAINT rif40_test_harness_pk PRIMARY KEY (test_id),
+	CONSTRAINT rif40_test_harness_parent_test_id_fk FOREIGN KEY (parent_test_id)
+		REFERENCES rif40_test_harness (test_id),
 	CONSTRAINT rif40_test_harness_test_run_id_fk FOREIGN KEY (test_run_id)
 		REFERENCES rif40_test_runs (test_run_id)
 	);
