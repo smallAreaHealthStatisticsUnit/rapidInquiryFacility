@@ -1383,11 +1383,11 @@ function _end_test_harness(p_mutexjs, p_client1, p_client2, p_passed_or_failed, 
 							else {
 								r_text = '[Recursive test ' + p_rif40_test_harness[p_j-1].recursive_test_number + '/' + p_rif40_test_harness[p_j-1].recursive_test_total + '] ';
 							}
-							console.log('1: [' + p_j + '/' + p_tests + '] ' + r_text + p_rif40_test_harness[p_j-1].test_case_title + 
+							console.log('1: [' + p_j + '/' + p_tests + '] ' + r_text + 
 								'; id: ' +  p_rif40_test_harness[p_j-1].test_id + 
 								'; expected: ' + p_rif40_test_harness[p_j-1].expected_result + 
 								'; pass: ' + p_rif40_test_harness[p_j-1].pass + 
-								'; time taken: ' + p_rif40_test_harness[p_j-1].time_taken + ' S');	
+								'; time taken: ' + p_rif40_test_harness[p_j-1].time_taken + ' S; ' + p_rif40_test_harness[p_j-1].test_case_title);	
 								// On final test, COMMIT and exit with number of failed tests
 								if (p_j == p_tests) {
 										// Do insert into rif40_test_runs
