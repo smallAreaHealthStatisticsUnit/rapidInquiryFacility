@@ -106,6 +106,8 @@ BEGIN
 END;
 $$;	
 
+INSERT INTO rif40_test_runs (test_run_title) VALUES ('test_8_triggers.sql');
+
 DO LANGUAGE plpgsql $$
 DECLARE
 	c2th CURSOR FOR 
@@ -473,9 +475,9 @@ SELECT test_run_class, pass, COUNT(COALESCE(pass::Text, 'Null')) AS total
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1th CURSOR FOR
-		SELECT COUNT(pass) AS failed
+		SELECT COUNT(COALESCE(pass, FALSE)) AS failed
 		  FROM rif40_test_harness
-		 WHERE NOT pass;
+		 WHERE NOT pass OR pass IS NULL;
 	c1th_rec RECORD;
 BEGIN
 	OPEN c1th;
@@ -483,7 +485,7 @@ BEGIN
 	CLOSE c1th;
 --		
 	IF c1th_rec.failed > 0 THEN
-		RAISE EXCEPTION 'T8--18: test_8_triggers.sql: % tests failed', c1th_rec.failed;
+		RAISE EXCEPTION 'T8--18: test_8_triggers.sql: % tests failed or were not run (pass is NULL)', c1th_rec.failed;
 	END IF;
 END;
 $$;

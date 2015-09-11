@@ -140,7 +140,7 @@ DECLARE
 			  FROM rif40_test_harness a
 			 WHERE a.test_case_title = l_test_case_title
 		   AND COALESCE(a.parent_test_id, 0) = COALESCE(l_parent_test_id, 0))
-		RETURNING *;
+		RETURNING l_test_case_title AS test_case_title;
 	c1st_rec RECORD;		
 	c3st_rec RECORD;
 	c5st CURSOR (l_test_case_title VARCHAR, l_parent_test_id INTEGER) FOR

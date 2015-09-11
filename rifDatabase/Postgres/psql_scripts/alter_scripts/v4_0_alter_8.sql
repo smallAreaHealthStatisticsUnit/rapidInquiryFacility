@@ -125,16 +125,16 @@ GRANT SELECT, USAGE ON SEQUENCE rif40_test_id_seq TO rif40, rif_manager, notarif
 GRANT SELECT, USAGE ON SEQUENCE rif40_test_run_id_seq TO rif40, rif_manager, notarifuser;
 
 CREATE TABLE rif40_test_runs (
-	test_run_id 					INTEGER NOT NULL DEFAULT (nextval('rif40_test_run_id_seq'::regclass))::integer, 
+	test_run_id 					INTEGER NOT NULL 					DEFAULT (nextval('rif40_test_run_id_seq'::regclass))::integer, 
 	test_run_title					VARCHAR NOT NULL,	
-	test_date						TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT "statement_timestamp"(),
-	time_taken						NUMERIC	NOT NULL,
-	username 						VARCHAR(90) NOT NULL DEFAULT "current_user"(),
-	tests_run						INTEGER NOT NULL,
-	number_passed					INTEGER NOT NULL,
-	number_failed					INTEGER NOT NULL,
-	number_test_cases_registered	INTEGER NOT NULL DEFAULT 0,
-	number_messages_registered		INTEGER NOT NULL DEFAULT 0,
+	test_date						TIMESTAMP WITH TIME ZONE NOT NULL 	DEFAULT "statement_timestamp"(),
+	time_taken						NUMERIC	NOT NULL 					DEFAULT 0,
+	username 						VARCHAR(90) NOT NULL 				DEFAULT "current_user"(),
+	tests_run						INTEGER NOT NULL 					DEFAULT 0,
+	number_passed					INTEGER NOT NULL 					DEFAULT 0,
+	number_failed					INTEGER NOT NULL 					DEFAULT 0,
+	number_test_cases_registered	INTEGER NOT NULL 					DEFAULT 0,
+	number_messages_registered		INTEGER NOT NULL 					DEFAULT 0,
 	CONSTRAINT rif40_test_runs_pk PRIMARY KEY (test_run_id)
 	);
 

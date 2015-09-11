@@ -425,8 +425,34 @@ function init_test_harness(p_pg, p_mutexjs, p_client1, p_debug_level, p_conStrin
  *              Build SQL statement to display tests per test_run_class, handling -F flag to re-run failed tests only
  *				Display tests per test_run_class, total tests
  * 			    Finally run the tests: function run_test_harness_tests()
+ *
+ * Count query exmaple - all failed tests:
+ 
+WITH RECURSIVE a AS (
+	SELECT b.test_id AS root_test_id, b.test_id, b.parent_test_id, b.test_run_class, 0 AS level
+ 	  FROM rif40_test_harness b
+     WHERE b.parent_test_id IS NULL	 
+       AND b.pass = FALSE
+	UNION ALL
+	SELECT a.root_test_id, b.test_id, b.parent_test_id, b.test_run_class, a.level+1 AS level
+ 	  FROM a
+     JOIN rif40_test_harness b ON (b.test_run_class = a.test_run_class AND a.test_id = b.parent_test_id)
+), b AS (
+	SELECT a.*, 
+	       ROW_NUMBER() OVER(PARTITION BY root_test_id ORDER BY level, test_id) AS recursive_test_number, 
+	       COUNT(root_test_id) OVER(
+									PARTITION BY root_test_id 
+									ORDER BY level, test_id 
+									ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS recursive_test_total 
+	  FROM a
+)
+SELECT test_run_class, COUNT(test_run_class) AS tests
+  FROM b
+ GROUP BY test_run_class
+ ORDER BY test_run_class;
+ 
  */
-function run_test_harness(p_mutexjs, p_client1, p_client2, p_failed_flag, p_test_run_class) {
+function run_test_harness(p_mutexjs, p_client1, p_client2, p_failed_flag, p_test_run_class_filter) {
 	var total_tests=0;
 	// COMMIT; to complete initial on logon transaction
 	var end = p_client2.query('COMMIT', function(err, result) {
@@ -439,32 +465,46 @@ function run_test_harness(p_mutexjs, p_client1, p_client2, p_failed_flag, p_test
 			end.on('end', function(result) {	
 				console.log('2: COMMIT transaction;');					
 			    // Build SQL statement to display tests per test_run_class, handling -F flag to re-run failed tests only
-				var sql_stmt = 'SELECT test_run_class, COUNT(test_run_class) AS tests, MIN(register_date) AS min_register_date\n' +
-					'  FROM rif40_test_harness a\n'; 					
-				var lp_test_run_class;	
-				if ((p_test_run_class !== undefined)&&(p_test_run_class !== null)) {
-					console.log('Only test run class: ' + p_test_run_class);
-					sql_stmt = sql_stmt + ' WHERE test_run_class = $1 /* Filter on test_run_class */\n';		
-					lp_test_run_class=p_test_run_class;
-				}
-				else {
-					lp_test_run_class=1
-					sql_stmt = sql_stmt + ' WHERE 1 = $1 /* Dummy filter for test_run_class */\n';					
-				}	
-					
-				if (p_failed_flag) {
-					console.log('1: Processing -F flag to re-run failed tests only');
-					sql_stmt = sql_stmt + '  AND pass = FALSE /* Filter on failed tests only */\n';
-				}
-				
-				sql_stmt = sql_stmt +
-					' GROUP BY test_run_class\n' +
-					' ORDER BY 3 /* min_register_date */';
+			var sql_stmt = 'WITH RECURSIVE a AS (\n' +
+				'SELECT b.test_id AS root_test_id, b.*, 0 AS level\n' +
+				'  FROM rif40_test_harness b\n' +
+				' WHERE b.parent_test_id IS NULL /* Ignore dependent tests */\n';
+			if (p_failed_flag) {
+				sql_stmt = sql_stmt + '  AND b.pass = FALSE /* Filter on failed tests only */\n';
+			}	
+			
+			var lp_test_run_class_filter;	
+			if ((p_test_run_class_filter !== undefined)&&(p_test_run_class_filter !== null)) {
+				lp_test_run_class_filter=p_test_run_class_filter
+				sql_stmt = sql_stmt + '  AND b.test_run_class = $1 /* Filter on test_run_class */\n';					
+			}	
+			else {
+				lp_test_run_class_filter=1
+				sql_stmt = sql_stmt + '  AND 1 = $1 /* Dummy filter for test_run_class */\n';					
+			}	
+			sql_stmt = sql_stmt +
+				'UNION ALL\n' +
+				'SELECT a.root_test_id, b.*, a.level+1 AS level\n' +
+				'  FROM a\n' +
+				'		 JOIN rif40_test_harness b ON (b.test_run_class = a.test_run_class AND a.test_id = b.parent_test_id)\n' +
+				'), b AS (\n' +
+				'	SELECT a.*,\n' +
+				'	       ROW_NUMBER() OVER(PARTITION BY root_test_id ORDER BY level, test_id) AS recursive_test_number,\n' +
+				'	       COUNT(root_test_id) OVER(\n' +
+				'						PARTITION BY root_test_id\n' +
+				'						ORDER BY level, test_id\n' +
+				'						ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS recursive_test_total\n' +
+				'	  FROM a\n' +
+				')\n' +
+				'SELECT test_run_class, COUNT(test_run_class) AS tests\n' +
+				'  FROM b\n' + 
+				' GROUP BY test_run_class\n' +
+				' ORDER BY test_run_class';
 						
 				// Connected OK, run SQL query
 				var query = p_client1.query({
 						text: sql_stmt, 
-						values: [lp_test_run_class]}, function(err, result) {
+						values: [lp_test_run_class_filter]}, function(err, result) {
 					if (err) {
 						// Error handler
 						console.error('1: Error running query: ' + sql_stmt + ';', err);
@@ -490,7 +530,7 @@ function run_test_harness(p_mutexjs, p_client1, p_client2, p_failed_flag, p_test
 							}
 							console.log('1: Total tests to run: %s', total_tests);
 							// Finally run the tests: function run_test_harness_test()
-							run_test_harness_tests(p_mutexjs, p_client1, p_client2, total_tests, p_failed_flag, p_test_run_class);							
+							run_test_harness_tests(p_mutexjs, p_client1, p_client2, total_tests, p_failed_flag, p_test_run_class_filter, sql_stmt);							
 						});	
 					}
 				});		
@@ -502,7 +542,7 @@ function run_test_harness(p_mutexjs, p_client1, p_client2, p_failed_flag, p_test
 /* 
  * Function: 	run_test_harness_tests()
  * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, 
- *				number of tests, failed flag, test run class [optional]
+ *				number of tests, failed flag, test run class [optional], sql_stmt used to count tests
  * Returns:		Nothing
  * Description: Run test harness tests:
  *
@@ -512,7 +552,7 @@ function run_test_harness(p_mutexjs, p_client1, p_client2, p_failed_flag, p_test
  *				The rest of the tests are run recursively from rif40_sql_test() from query.on('end', ...) 
  *				so the SQl statements and transactions are run in the correct order.
  */
-function run_test_harness_tests(p_mutexjs, p_client1, p_client2, p_tests, p_failed_flag, p_test_run_class_filter) {
+function run_test_harness_tests(p_mutexjs, p_client1, p_client2, p_tests, p_failed_flag, p_test_run_class_filter, count_sql_stmt) {
 	// Test arrays; 
 	var p_test_run_class = [];
 	var p_test_case_title = [];	
@@ -572,6 +612,28 @@ Without the "rif40_create_disease_mapping_example" filter gives:
            12 |      12 |                | test_8_triggers.sql                  |     0 |                     1 |                    1
            13 |      13 |                | test_8_triggers.sql                  |     0 |                     1 |                    1
 (13 rows)
+
+WITH RECURSIVE a AS (
+	SELECT b.test_id AS root_test_id, b.test_id, b.parent_test_id, b.test_run_class, 0 AS level
+ 	  FROM rif40_test_harness b
+     WHERE b.parent_test_id IS NULL	 
+       AND b.pass = FALSE
+	UNION ALL
+	SELECT a.root_test_id, b.test_id, b.parent_test_id, b.test_run_class, a.level+1 AS level
+ 	  FROM a
+     JOIN rif40_test_harness b ON (b.test_run_class = a.test_run_class AND a.test_id = b.parent_test_id)
+), b AS (
+	SELECT a.*, 
+	       ROW_NUMBER() OVER(PARTITION BY root_test_id ORDER BY level, test_id) AS recursive_test_number, 
+	       COUNT(root_test_id) OVER(
+									PARTITION BY root_test_id 
+									ORDER BY level, test_id 
+									ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS recursive_test_total 
+	  FROM a
+)
+SELECT * FROM b
+ ORDER BY root_test_id, level, test_id;
+ 
     */
 	var sql_stmt = 'WITH RECURSIVE a AS (\n' +
 		'SELECT b.test_id AS root_test_id, b.*, 0 AS level\n' +
@@ -581,7 +643,7 @@ Without the "rif40_create_disease_mapping_example" filter gives:
 		sql_stmt = sql_stmt + '  AND b.pass = FALSE /* Filter on failed tests only */\n';
 	}	
 	
-	var lp_test_run_class;	
+	var lp_test_run_class_filter;	
 	if ((p_test_run_class_filter !== undefined)&&(p_test_run_class_filter !== null)) {
 		lp_test_run_class_filter=p_test_run_class_filter
 		sql_stmt = sql_stmt + '  AND b.test_run_class = $1 /* Filter on test_run_class */\n';					
@@ -591,7 +653,7 @@ Without the "rif40_create_disease_mapping_example" filter gives:
 		sql_stmt = sql_stmt + '  AND 1 = $1 /* Dummy filter for test_run_class */\n';					
 	}	
 	sql_stmt = sql_stmt +
-		'	UNION ALL\n' +
+		'UNION ALL\n' +
 		'SELECT a.root_test_id, b.*, a.level+1 AS level\n' +
 		'  FROM a\n' +
 		'		 JOIN rif40_test_harness b ON (b.test_run_class = a.test_run_class AND a.test_id = b.parent_test_id)\n' +
@@ -625,6 +687,14 @@ Without the "rif40_create_disease_mapping_example" filter gives:
 			query.on('end', function(test_array) {	
 				// End of query processing - process results array
 				row_count = test_array.rowCount;
+				
+				// Check for test counter mismatch 
+				if (row_count > p_tests) {
+					console.error('2: run_test_harness_tests() row_count (' + row_count + ') > p_tests (' + p_tests + 
+						')\n SQL>\n' + sql_stmt + ';\n\nSQL used to count>\n' + count_sql_stmt + ';\n\nlp_test_run_class_filter: ' + lp_test_run_class_filter);			
+					process.exit(1);		
+				}
+	
 				p_test_run_class = new Array();
 				p_test_case_title = new Array(); 
 				p_test_stmt = new Array(); 
@@ -764,7 +834,7 @@ function rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 	
 	var test='[' + p_j + '/' + p_tests + ']: ' + p_rif40_test_harness[p_j-1].test_run_class + '] ' + 
 			p_rif40_test_harness[p_j-1].test_case_title;
-			
+				
 	// Check failed flag is NOT undefined	
 	if (p_failed_flag === undefined) {
 		console.error('1: ' + test + ' rif40_sql_test() failed flag is undefined');			
@@ -782,6 +852,12 @@ function rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 	if (p_rif40_test_harness[p_j-1].test_stmt === undefined) {
 		console.error('2: ' + test + ' rif40_sql_test() p_rif40_test_harness[' + p_j-1 + '].p_test_stmt is undefined');			
 		process.exit(1);							
+	}
+
+// Check for test counter mismatch 
+	if (p_j > p_tests) {
+		console.error('2: ' + test + ' rif40_sql_test() p_j (' + p_j + ') > p_tests (' + p_tests + ')');			
+		process.exit(1);		
 	}
 	
 	if (p_rif40_test_harness[p_j-1].level == 0) {
