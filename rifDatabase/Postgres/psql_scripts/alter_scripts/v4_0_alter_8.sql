@@ -176,8 +176,9 @@ BEGIN
 -- Re-create; remove constraints and indexes
 --
 		PERFORM rif40_sql_pkg.rif40_ddl('ALTER TABLE rif40_test_harness RENAME TO rif40_test_harness_old');
-		PERFORM rif40_sql_pkg.rif40_ddl('ALTER TABLE rif40_test_harness_old DROP CONSTRAINT IF EXISTS rif40_test_harness_pk');
+		PERFORM rif40_sql_pkg.rif40_ddl('ALTER TABLE rif40_test_harness_old DROP CONSTRAINT IF EXISTS rif40_test_harness_parent_test_id_fk');
 		PERFORM rif40_sql_pkg.rif40_ddl('ALTER TABLE rif40_test_harness_old DROP CONSTRAINT IF EXISTS rif40_test_harness_test_run_id_fk');
+		PERFORM rif40_sql_pkg.rif40_ddl('ALTER TABLE rif40_test_harness_old DROP CONSTRAINT IF EXISTS rif40_test_harness_pk');
 		PERFORM rif40_sql_pkg.rif40_ddl('DROP INDEX IF EXISTS rif40_test_harness_uk');
 	ELSE
 --

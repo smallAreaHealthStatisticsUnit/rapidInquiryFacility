@@ -803,11 +803,7 @@ BEGIN
 --
 -- Return new parent_test_id
 --			
-	IF parent_test_id IS NULL THEN
-		RETURN 1 /* New parent_test_id */;
-	ELSE
-		RETURN parent_test_id + 1 /* New parent_test_id */;
-	END IF;
+	RETURN f_test_id;
 END;
 $func$ LANGUAGE plpgsql;
  
