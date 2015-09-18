@@ -244,14 +244,17 @@ BEGIN
 END;
 $$;
 
-CREATE UNIQUE INDEX rif40_test_harness_uk ON rif40_test_harness(test_case_title, parent_test_id);
+--
+-- Multiple inheritance of test cases is not permitted!
+--
+CREATE UNIQUE INDEX rif40_test_harness_uk ON rif40_test_harness(parent_test_id);
 
 GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_test_harness TO rif_manager, notarifuser;
 GRANT SELECT ON TABLE rif40_test_harness TO rif_user; 
 		
 COMMENT ON TABLE rif40_test_harness IS 'Test harness test cases and last run information';		
 COMMENT ON COLUMN rif40_test_harness.test_id IS 'Unique investigation index: test_id. Created by SEQUENCE rif40_test_id_seq';
-COMMENT ON COLUMN rif40_test_harness.parent_test_id IS 'Parent test ID; NULL means first (test statement)';
+COMMENT ON COLUMN rif40_test_harness.parent_test_id IS 'Parent test ID; NULL means first (test statement). Allows for a string of connected test cases. Multiple inheritance of test cases is not permitted!';
 COMMENT ON COLUMN rif40_test_harness.test_run_class IS 'Test run class; usually the name of the SQL script that originally ran it';
 COMMENT ON COLUMN rif40_test_harness.test_stmt IS 'SQL statement for test';
 COMMENT ON COLUMN rif40_test_harness.test_case_title IS 'Test case title. Must be unique';

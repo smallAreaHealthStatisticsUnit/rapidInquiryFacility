@@ -370,6 +370,26 @@ RETURNING 1::Text AS test_value',
    <level4>01.015.016900.3</level4>
  </row>'::XML);	
 --
+--
+--
+	PERFORM rif40_sql_pkg._rif40_sql_test_register('INSERT INTO rif40_test_harness
+WITH a AS (
+	SELECT test_id, parent_test_id, test_case_title
+	  FROM rif40_test_harness
+	 WHERE test_run_class = ''rif40_create_disease_mapping_example''
+	   AND parent_test_id IS NULL
+)
+SELECT b.*
+  FROM a, rif40_test_harness b
+ WHERE a.test_id = b.parent_test_id',
+ 		'test_8_triggers.sql',	
+		'T8--12: test_8_triggers.sql: Check that multiple inheritance of test cases is not permitted',
+		NULL::Text[][] 	/* No results for SELECT */,	
+		NULL::XML 		/* No results for SELECT */,		
+		'23505'	 		/* Expected SQLCODE (unique_violation) */, 
+		FALSE 			/* Do not RAISE EXCEPTION on failure */);
+
+--
 EXCEPTION
 	WHEN others THEN
 		GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
@@ -380,9 +400,9 @@ EXCEPTION
 			'Context: '||v_context::VARCHAR||E'\n'||
 			'SQLSTATE: '||v_sqlstate::VARCHAR;
 		IF v_sqlstate = 'P0001' AND v_detail = '-71153' THEN
-			RAISE EXCEPTION 'T8--33: test_8_triggers.sql: 1: %', error_message;					
+			RAISE EXCEPTION 'T8--14: test_8_triggers.sql: 1: %', error_message;					
 		ELSE
-			RAISE EXCEPTION 'T8--34: test_8_triggers.sql: 1: %', error_message;
+			RAISE EXCEPTION 'T8--15: test_8_triggers.sql: 1: %', error_message;
 		END IF;
 END;
 $$;
@@ -396,12 +416,12 @@ DECLARE
 		SELECT rif40_sql_pkg._rif40_test_sql_template(
 			'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
 			'test_8_triggers.sql',
-			'T8--14: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200') AS template;
+			'T8--16: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200') AS template;
 	c9th_rec 	RECORD;
 --
 	sql_stmt	VARCHAR:=NULL;
 BEGIN
-	RAISE INFO 'T8--15: test_8_triggers.sql: Test code generator';
+	RAISE INFO 'T8--17: test_8_triggers.sql: Test code generator';
 	FOR c9th_rec IN c9th LOOP
 		IF sql_stmt IS NULL THEN	
 			sql_stmt:=c9th_rec.template;
@@ -445,7 +465,7 @@ BEGIN;
 --
 DO LANGUAGE plpgsql $$
 BEGIN
-	RAISE INFO 'T8--16: test_8_triggers.sql: Run trigger test harness';
+	RAISE INFO 'T8--18: test_8_triggers.sql: Run trigger test harness';
 END;
 $$;
 
@@ -459,7 +479,7 @@ $$;
 --
 DO LANGUAGE plpgsql $$
 BEGIN
-	RAISE INFO 'T8--17: test_8_triggers.sql: Dump test harness';
+	RAISE INFO 'T8--19: test_8_triggers.sql: Dump test harness';
 END;
 $$;
 SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise_exception_on_failure, test_stmt, test_case_title
@@ -485,7 +505,7 @@ BEGIN
 	CLOSE c1th;
 --		
 	IF c1th_rec.failed > 0 THEN
-		RAISE EXCEPTION 'T8--18: test_8_triggers.sql: % tests failed or were not run (pass is NULL)', c1th_rec.failed;
+		RAISE EXCEPTION 'T8--20: test_8_triggers.sql: % tests failed or were not run (pass is NULL)', c1th_rec.failed;
 	END IF;
 END;
 $$;

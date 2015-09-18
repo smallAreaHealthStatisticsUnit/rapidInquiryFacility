@@ -790,8 +790,8 @@ BEGIN
 --
 	f_test_id:=rif40_sql_pkg._rif40_sql_test_register(
 			sql_stmt 		/* test_stmt */, 
-			'rif40_create_disease_mapping_example' /* connection_name */, 
-			study_name 	/* test_case_title */, 
+			'rif40_create_disease_mapping_example' /* test_run_class */, 
+			study_name 	    /* test_case_title */, 
 			NULL::Text[][] 	/* results */, 
 			NULL::XML 		/* results_xml */,
 			NULL			/* pg_error_code_expected */, 
