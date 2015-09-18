@@ -84,10 +84,12 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test_dblink_disconnect(VARCHAR);
 --
 -- Test case 
 --
-DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML,
-	VARCHAR, BOOLEAN, BOOLEAN);	
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY, XML,
+	VARCHAR, BOOLEAN, INTEGER, Text[], BOOLEAN);	
 	
--- Old	
+-- Old
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML,
+	VARCHAR, BOOLEAN, BOOLEAN);		
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN, BOOLEAN);	
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY,
@@ -96,38 +98,43 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 	VARCHAR, BOOLEAN);	
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY,
 	INTEGER, BOOLEAN);	
-	
-\q 
 
 --
--- This function is now obsoleted
+-- This function is NOT obsoleted
 --	
 CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_sql_test(
-	connection_name 			VARCHAR, 
 	test_stmt 					VARCHAR, 
 	test_case_title 			VARCHAR, 
 	results 					ANYARRAY,
 	results_xml					XML,
-	pg_error_code_expected 		VARCHAR DEFAULT NULL, 
-	raise_exception_on_failure 	BOOLEAN DEFAULT TRUE, 
-	expected_result 			BOOLEAN DEFAULT TRUE)
+	pg_error_code_expected 		VARCHAR, 
+	raise_exception_on_failure 	BOOLEAN, 
+	f_test_id 					INTEGER, 
+	pg_debug_functions			Text[], 
+	expected_result 			BOOLEAN)
 RETURNS boolean
 SECURITY INVOKER
 AS $func$
 /*
 Function: 	rif40_sql_test()
-Parameters:	Connection name,
-			SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
+Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
             test case title, 
 			results 3d text array,
 			results as XML,
 			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
 			NULL means it is expected to NOT raise an exception, 
 			raise exception on failure,
-			expected result [has NO effect on the return code; for test harness] 
-Returns:	Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
-Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause
+			test_id,
+			Array of Postgres functions for test harness to enable debug on,
+			expected result 
+Returns:	Pass (true)/Fail (false)
+Description:	Calls _rif40_sql_test() to log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement 
+				or INSERT/UPDATE/DELETE with RETURNING clause
 
+			Checks expected results against actual; pass if they match, fail if they do not.
+			
+			Exception behaviour controlled by _rif40_sql_test()
+			
 Used to check test SQL statements and triggers
 
 Usage:
@@ -255,7 +262,8 @@ iii) Convert results to array form (Cast to text, string )
 b) TRIGGERS
 			
 These use INSERT/UPDATE OR DELETE statements. RETURNING is supported, but it must be a single 
-text value (test_value). The results array should should also be  single value. Beware that the INSERTed data from the table is not in scope, so you can return a sequence, an input value, but not trigger modified data 
+text value (test_value). The results array should should also be  single value. Beware that the 
+INSERTed data from the table is not in scope, so you can return a sequence, an input value, but not trigger modified data 
 
 	IF NOT (rif40_sql_pkg.rif40_sql_test(	
 		'INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
@@ -349,309 +357,77 @@ Detail:   -20211
 
  */
 DECLARE			  
-	d1st CURSOR(l_connection_name VARCHAR, l_sql_stmt VARCHAR) FOR
-		SELECT a.rcode
- 		  FROM dblink(l_connection_name,
-				      l_sql_stmt) AS a(rcode INTEGER);
-	d2st CURSOR(l_connection_name VARCHAR) FOR
-		WITH a AS (
-			SELECT UNNEST(dblink_get_connections()) AS connection_name
-		)
-		SELECT a.connection_name
-		  FROM a
-		 WHERE a.connection_name = l_connection_name;
---
-	c3_rth CURSOR(l_test_case_title VARCHAR) FOR
-		SELECT a.test_case_title, COUNT(test_id) AS total_test_id
-		  FROM rif40_test_harness a
-		 WHERE a.test_case_title = l_test_case_title
-		   AND a.parent_test_id  IS NOT NULL
-		 GROUP BY a.test_case_title;	
-	c3_rth_rec RECORD;	
-	c4_rth CURSOR(l_test_case_title VARCHAR) FOR
-		SELECT *
-		  FROM rif40_test_harness a
-		 WHERE a.test_case_title = l_test_case_title
-		   AND a.parent_test_id  IS NOT NULL
-		 ORDER BY a.parent_test_id;	
---		 
-	d2st_rec RECORD;					  
-	d1st_rec	RECORD;
-	c4_rth_rec RECORD;	
---		
-	rcode 		BOOLEAN;
-	f_test_id 	INTEGER;
-	sql_stmt	VARCHAR;
-	dblink_status	VARCHAR;
-	op			VARCHAR;
---
-	f_errors	INTEGER:=0;	
-	f_tests_run	INTEGER:=0;	
---
-	stp TIMESTAMP WITH TIME ZONE:=clock_timestamp();
-	etp TIMESTAMP WITH TIME ZONE;
-	took INTERVAL;
---
-	v_message_text		VARCHAR;
-	v_pg_exception_hint	VARCHAR;
-	v_column_name		VARCHAR;
-	v_constraint_name	VARCHAR;
-	v_pg_datatype_name	VARCHAR;
-	v_table_name		VARCHAR;
-	v_schema_name		VARCHAR;
---
-	error_message VARCHAR;
-	v_sqlstate 	VARCHAR;
-	v_context	VARCHAR;	
-	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';		
+	actual_result 	BOOLEAN;
+	test_result 	BOOLEAN;
+--	
+	v_detail VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN
---
--- Check connection does exist
---
-	OPEN d2st(connection_name);
-	FETCH d2st INTO d2st_rec;
-	CLOSE d2st;
-	IF d2st_rec.connection_name IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-71162, 'rif40_sql_test', 
-			'dblink() subtransaction: % does not exist',
-			connection_name::VARCHAR);		
+	test_result:=rif40_sql_pkg._rif40_sql_test(
+			test_stmt, 
+			test_case_title, 
+			results, 
+			results_xml,
+			pg_error_code_expected, 
+			raise_exception_on_failure, 
+			f_test_id, 
+			pg_debug_functions);
+	IF expected_result = test_result THEN	
+		actual_result:=TRUE;
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
+			'[71150]: Test case %: %'||E'\n'||'PASSED expected result = actual (%)', 
+			f_test_id::VARCHAR, test_case_title::VARCHAR, expected_result::VARCHAR);
+	ELSE
+		actual_result:=FALSE;
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
+			'[71151]: Test case %: %'||E'\n'||'FAILED expected result (%) != actual (%)', 
+			f_test_id::VARCHAR, test_case_title::VARCHAR, expected_result::VARCHAR, actual_result::VARCHAR);
 	END IF;
-	
---
--- Auto register test case
---
-	f_test_id:=rif40_sql_pkg._rif40_sql_test_register(test_stmt, connection_name, test_case_title, results, results_xml,
-		pg_error_code_expected, raise_exception_on_failure, expected_result);
-			
---
--- Do test; reversing effects
 --	
-	sql_stmt:='SELECT rif40_sql_pkg._rif40_sql_test('||E'\n'||
-						coalesce(quote_literal(test_stmt), 'NULL')||'::VARCHAR /* test_stmt */,'||E'\n'||
-						coalesce(quote_literal(test_case_title), 'NULL')||'::VARCHAR /* test_case_title */,'||E'\n'||
-						coalesce(quote_literal(results), 'NULL')||'::VARCHAR[][] /* results */,'||E'\n'||
-						coalesce(quote_literal(results_xml), 'NULL')||'::XML /* results_xml */,'||E'\n'||
-						coalesce(quote_literal(pg_error_code_expected), 'NULL')||'::VARCHAR /* pg_error_code_expected */,'||E'\n'||
-						coalesce(quote_literal(raise_exception_on_failure), 'NULL')||'::BOOLEAN /* raise_exception_on_failure */,'||E'\n'||
-						coalesce(quote_literal(f_test_id), 'NULL')||'::INTEGER /* test_id */)::INTEGER AS rcode';
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71163] SQL[SELECT]> %;', 
-			sql_stmt::VARCHAR);						
-	BEGIN	
-		op='dblink (BEGIN)';		
-		PERFORM dblink(connection_name, 'BEGIN;');				
---		
-		op='dblink open(SQL)';
-		OPEN d1st(connection_name, sql_stmt);
-		op='dblink fetch(SQL)';		
-		FETCH d1st INTO d1st_rec;
-		op='dblink close(SQL)';		
-		CLOSE d1st;
---
-		rcode:=d1st_rec.rcode;
---
--- Process return code
---
-		etp:=clock_timestamp();
-		took:=age(etp, stp);
-		UPDATE rif40_test_harness
-		   SET pass        = rcode,
-			   test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer,
-			   test_date   = statement_timestamp(),
-			   time_taken  = EXTRACT(EPOCH FROM took)::NUMERIC
-		 WHERE test_id = f_test_id;
-		IF rcode THEN
-			UPDATE rif40_test_runs
-			   SET number_passed = number_passed + 1,
-				   tests_run     = tests_run + 1
-			 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
-		ELSE
-			UPDATE rif40_test_runs
-			   SET number_failed = number_failed + 1,
-				   tests_run     = tests_run + 1
-			 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
-		END IF;			
---
--- Do dependent tests
---
-		OPEN c3_rth(test_case_title);
-		FETCH c3_rth INTO c3_rth_rec;
-		CLOSE c3_rth;
-		IF c3_rth_rec.total_test_id = 0 THEN
-			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
-				'[71207] Test % no dependent tests to run',
-				c3_rth_rec.test_case_title::VARCHAR);
-		ELSIF NOT rcode THEN
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-				'[71208a] Test % % dependent tests to run; halting because of error in master test',
-				c3_rth_rec.test_case_title::VARCHAR, c3_rth_rec.total_test_id::VARCHAR);		
-			RETURN rcode;
-		ELSE
-			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
-				'[71208] Test % % dependent tests to run',
-				c3_rth_rec.test_case_title::VARCHAR, c3_rth_rec.total_test_id::VARCHAR);	
---	
--- Causes:
---		
--- 2: notice: _rif40_sql_test(): [71187] Test case: SAHSULAND test 4 study_id 1 example FAILED, no error expected; got: 42P03;
--- Message:  cursor "c4_rth" already in use
--- Detail:
---		
--- Solution - move code to Node.js trest harness - also can then update
---
-			FOR c4_rth_rec IN c4_rth(c3_rth_rec.test_case_title) LOOP
-				f_tests_run:=f_tests_run+1;	
---
--- 	test_stmt 					VARCHAR, 
---	test_case_title 			VARCHAR, 
---	results 					ANYARRAY, 
---	results_xml					XML,
---	pg_error_code_expected 		VARCHAR, 
---	raise_exception_on_failure 	BOOLEAN, 
---	f_test_id 					INTEGER
---
-				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
-					'[71208a] Dependent %/% test: %',
-					f_tests_run::VARCHAR, 
-					c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);
-				sql_stmt:='SELECT rif40_sql_pkg._rif40_sql_test('||E'\n'||
-									coalesce(quote_literal(c4_rth_rec.test_stmt), 'NULL')||'::VARCHAR /* test_stmt */,'||E'\n'||
-									coalesce(quote_literal(c4_rth_rec.test_case_title), 'NULL')||'::VARCHAR /* test_case_title */,'||E'\n'||
-									coalesce(quote_literal(c4_rth_rec.results), 'NULL')||'::VARCHAR[][] /* results */,'||E'\n'||
-									coalesce(quote_literal(c4_rth_rec.results_xml), 'NULL')||'::XML /* results_xml */,'||E'\n'||
-									coalesce(quote_literal(c4_rth_rec.pg_error_code_expected), 'NULL')||'::VARCHAR /* pg_error_code_expected */,'||E'\n'||
-									coalesce(quote_literal(c4_rth_rec.raise_exception_on_failure), 'NULL')||'::BOOLEAN /* raise_exception_on_failure */,'||E'\n'||
-									coalesce(quote_literal(c4_rth_rec.test_id), 'NULL')||'::INTEGER /* test_id */)::INTEGER AS rcode';
-				PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_sql_test', '[71163a] SQL[SELECT] %/%> %;',
-						f_tests_run::VARCHAR, 
-						c3_rth_rec.total_test_id::VARCHAR, 
-						sql_stmt::VARCHAR);	
---		
-				op='dblink open(SQL) ['||f_tests_run::VARCHAR||'/'||c3_rth_rec.total_test_id::VARCHAR||']';
-				OPEN d1st(connection_name, sql_stmt);
-				op='dblink fetch(SQL) ['||f_tests_run::VARCHAR||'/'||c3_rth_rec.total_test_id::VARCHAR||']';		
-				FETCH d1st INTO d1st_rec;
-				op='dblink close(SQL) ['||f_tests_run::VARCHAR||'/'||c3_rth_rec.total_test_id::VARCHAR||']';		
-				CLOSE d1st;
---
--- Process return code
---
-				etp:=clock_timestamp();
-				took:=age(etp, stp);
-				UPDATE rif40_test_harness
-				   SET pass        = d1st_rec.rcode,
-					   test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer,
-					   test_date   = statement_timestamp(),
-					   time_taken  = EXTRACT(EPOCH FROM took)::NUMERIC
-				 WHERE test_id = c4_rth_rec.test_id;
-				IF d1st_rec.rcode THEN
-					UPDATE rif40_test_runs
-					   SET number_passed = number_passed + 1,
-						   tests_run     = tests_run + 1
-					 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
-				ELSE
-					UPDATE rif40_test_runs
-					   SET number_failed = number_failed + 1,
-						   tests_run     = tests_run + 1
-					 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;
-				END IF;							
-				IF NOT d1st_rec.rcode THEN 	/* Test failed */
-					IF NOT c4_rth_rec.expected_result THEN
-						PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
-							'[71209] TEST %/%: % FAILED AS EXPECTED.',
-							f_tests_run::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);	
-					ELSE
-						PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-							'[71210] TEST %/%: % FAILED; EXPECTED TO PASS.',
-							f_tests_run::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);	
-						f_errors:=f_errors+1; 				
-					END IF;
-				ELSE					/* Passed */
-					IF NOT c4_rth_rec.expected_result THEN		
-						PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-							'[71211] TEST %/%: % FAILED; EXPECTED TO PASS.',
-							f_tests_run::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);
-						f_errors:=f_errors+1; 									
-					ELSE		
-						PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_sql_test', 
-							'[71212] TEST %/%: % PASSED AS EXPECTED.',
-							f_tests_run::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, c4_rth_rec.test_case_title::VARCHAR);	
-					END IF;
-				END IF;									
-			END LOOP;
-			IF f_errors > 0 THEN
-				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
-					'[71212a] Test % % dependent tests ran, % failed',
-					c3_rth_rec.test_case_title::VARCHAR, c3_rth_rec.total_test_id::VARCHAR, f_errors::VARCHAR);	
-					rcode:=FALSE;			
-			ELSE
-				PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test', 		
-					'[71212b] Test % % dependent tests ran OK',
-					c3_rth_rec.test_case_title::VARCHAR, c3_rth_rec.total_test_id::VARCHAR);		
-			END IF;
-		END IF;			
---		
-		op='dblink (ROLLBACK)';		
-		PERFORM dblink(connection_name, 'ROLLBACK;');			
-	EXCEPTION	
-		WHEN others THEN
+	RETURN actual_result;
+
+EXCEPTION
+	WHEN no_data_found THEN	
 -- 
 -- Not supported until 9.2
 --
-			GET STACKED DIAGNOSTICS v_detail            = PG_EXCEPTION_DETAIL;
-			GET STACKED DIAGNOSTICS v_sqlstate          = RETURNED_SQLSTATE;
-			GET STACKED DIAGNOSTICS v_context           = PG_EXCEPTION_CONTEXT;
-			GET STACKED DIAGNOSTICS v_message_text      = MESSAGE_TEXT;
-			GET STACKED DIAGNOSTICS v_pg_exception_hint = PG_EXCEPTION_HINT;
-			
-			GET STACKED DIAGNOSTICS v_column_name       = COLUMN_NAME;
-			GET STACKED DIAGNOSTICS v_constraint_name   = CONSTRAINT_NAME;
-			GET STACKED DIAGNOSTICS v_pg_datatype_name  = PG_DATATYPE_NAME;
-			GET STACKED DIAGNOSTICS v_table_name        = TABLE_NAME;
-			GET STACKED DIAGNOSTICS v_schema_name       = SCHEMA_NAME;
-			
-			error_message:='rif40_sql_test('''||coalesce(test_case_title::VARCHAR, '')||''') caught: '||E'\n'||SQLERRM::VARCHAR||
-				' in SQL >>>'||E'\n'||test_stmt||';'||E'\n'||
-				'<<<'||E'\n'||
-				' in '||op||' SQL >>>'||E'\n'||COALESCE(sql_stmt, 'NULL')||';'||E'\n'||
-				'<<<'||E'\n'||				
-				'Error context and message >>>'||E'\n'||			
-				'Message:  '||v_message_text::VARCHAR||E'\n'||
-				'Hint:     '||v_pg_exception_hint::VARCHAR||E'\n'||
-				'Detail:   '||v_detail::VARCHAR||E'\n'||
-				'Context:  '||v_context::VARCHAR||E'\n'||
-				'SQLSTATE: '||v_sqlstate::VARCHAR||E'\n'||'<<< End of trace.'||E'\n';
+		GET STACKED DIAGNOSTICS v_detail            = PG_EXCEPTION_DETAIL;
 --
-			PERFORM rif40_log_pkg.rif40_error(-71164, 'rif40_sql_test', 
-				'Test case: % FAILED, error in dblink_open(); link: %: %', 
-				test_case_title::VARCHAR,
-				connection_name::VARCHAR,
-				error_message::VARCHAR);
-			RAISE;
-	END;				
-
-	RETURN rcode;
+-- Test case failed with a different error to that expected; re-RAISE with no_data_found
+-- for rif40_sql_test() to process
+--			
+		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_sql_test', 
+			'[71152] Test case: %'||E'\n'||'FAILED with wrong SQLSTATE, expecting SQLSTATE %, got: %', 
+			test_case_title::VARCHAR, pg_error_code_expected::VARCHAR, v_detail::VARCHAR);	
+		RETURN FALSE;
+-- Un trapped error - re-RAISE
+	WHEN others THEN	
+		RAISE;		
 END;
 $func$ LANGUAGE plpgsql;
 			
-COMMENT ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML,
-	VARCHAR, BOOLEAN, BOOLEAN) IS 'Function: 	rif40_sql_test()
-Parameters:	Connection name.
-			SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
+COMMENT ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY, XML,
+	VARCHAR, BOOLEAN, INTEGER, Text[], BOOLEAN) IS 'Function: 	rif40_sql_test()
+Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
             test case title, 
 			results 3d text array,
 			results as XML,
 			[negative] error SQLSTATE expected [as part of an exception]; the first negative number in the message is assumed to be the number; 
 			NULL means it is expected to NOT raise an exception, 
 			raise exception on failure,
-			expected result [has NO effect on the return code; for test harness]   
+			test_id,
+			Array of Postgres functions for test harness to enable debug on,
+			expected result   
 Returns:	Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
-Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause
+Description:	Calls _rif40_sql_test() to log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement 
+				or INSERT/UPDATE/DELETE with RETURNING clause
 
-			Used to check test SQL statements and triggers';
+			Checks expected results against actual; pass if they match, fail if they do not.
+			
+			Exception behaviour controlled by _rif40_sql_test()';
 --
 -- So can be used to test non rif user access to functions 
 --
-GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML, VARCHAR, BOOLEAN, BOOLEAN) TO PUBLIC;
+GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY, XML, VARCHAR, BOOLEAN, INTEGER, Text[], BOOLEAN) TO PUBLIC;
 
 --
 -- Eof

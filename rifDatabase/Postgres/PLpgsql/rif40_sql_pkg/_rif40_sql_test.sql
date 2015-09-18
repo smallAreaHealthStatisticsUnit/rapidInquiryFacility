@@ -97,8 +97,19 @@ Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) stat
 			raise exception on failure,
 			test_id,
 			Array of Postgres functions for test harness to enable debug on
-Returns:	Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
-Description:	
+Returns:	Test pass (true)/Fail (false) unless raise_exception_on_failure is true
+
+			Note that this is the result of the test and is not influenced by the expected result:
+			
+			To pass:
+			
+			* No exception, results as expected;
+			* Exception as expected
+			
+			Everything else is a fail.
+Description: Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause
+
+			Used to check test SQL statements and triggers	
 */
 DECLARE
 --
@@ -413,24 +424,31 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
 					'Detail:   '||v_detail::VARCHAR);							
 				RETURN TRUE;			
-			ELSE	
+			ELSE
+--
+-- Test case failed with a different error to that expected; re-RAISE with no_data_found
+-- for rif40_sql_test() to process
+--			
 				PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_sql_test', 
 					'[71276] Test case: % FAILED, expecting SQLSTATE %; got: %;%', 
 					test_case_title::VARCHAR, pg_error_code_expected::VARCHAR, v_sqlstate::VARCHAR,
 					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
-					'Detail:   '||v_detail::VARCHAR);		
-				IF raise_exception_on_failure THEN
-					RAISE;
-				ELSE							
-					RETURN FALSE;
-				END IF;
+					'Detail:   '||v_detail::VARCHAR);	
+				RAISE EXCEPTION SQLSTATE 'P0002' /* no_data_found */ USING DETAIL=v_sqlstate;
 			END IF;
 		EXCEPTION
+--
+-- Test case failed with a different error to that expected; re-RAISE with no_data_found
+-- for rif40_sql_test() to process
+--		
+			WHEN no_data_found THEN	
+				RAISE EXCEPTION SQLSTATE 'P0002' /* no_data_found */ USING DETAIL=v_sqlstate;
+
 			WHEN others THEN			
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 				GET STACKED DIAGNOSTICS v_sqlstate = RETURNED_SQLSTATE;
 				GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
-				error_message:='rif40_sql_test() exception handler caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||
+				error_message:='_rif40_sql_test() exception handler caught: '||E'\n'||SQLERRM::VARCHAR||' in SQL (see previous trapped error)'||E'\n'||
 					'Detail: '||v_detail::VARCHAR||E'\n'||
 					'Context: '||v_context::VARCHAR||E'\n'||
 					'SQLSTATE: '||v_sqlstate::VARCHAR;
@@ -451,6 +469,15 @@ Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) stat
 			test_id,
 			Array of Postgres functions for test harness to enable debug on
 Returns:	Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
+
+			Note that this is the result of the test and is not influenced by the expected result:
+			
+			To pass:
+			
+			* No exception, results as expected;
+			* Exception as expected
+			
+			Everything else is a fail.
 Description:	Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause
 
 			Used to check test SQL statements and triggers';

@@ -487,10 +487,18 @@ SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise
  WHERE test_run_class = 'test_8_triggers.sql'
  ORDER BY test_id;
 
+SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise_exception_on_failure, test_stmt, test_case_title
+  FROM rif40_test_harness
+ WHERE test_run_class = 'trgf_rif40_studies'
+ ORDER BY test_id;
+ 
 SELECT test_run_class, pass, COUNT(COALESCE(pass::Text, 'Null')) AS total 
   FROM rif40_test_harness
  GROUP BY test_run_class, pass
  ORDER BY test_run_class, pass;
+ 
+SELECT * 
+  FROM rif40_test_runs;
  
 DO LANGUAGE plpgsql $$
 DECLARE
@@ -498,14 +506,26 @@ DECLARE
 		SELECT COUNT(COALESCE(pass, FALSE)) AS failed
 		  FROM rif40_test_harness
 		 WHERE NOT pass OR pass IS NULL;
+	c2th CURSOR FOR
+		SELECT COUNT(test_date) AS total_pass
+		  FROM rif40_test_runs
+		 WHERE tests_run > 0 
+		   AND test_date > statement_timestamp() - (10 * interval '1 minute') /* Test harness has been run in the last 10 minutes */;
 	c1th_rec RECORD;
+	c2th_rec RECORD;
 BEGIN
 	OPEN c1th;
 	FETCH c1th INTO c1th_rec;
 	CLOSE c1th;
+	OPEN c2th;
+	FETCH c2th INTO c2th_rec;
+	CLOSE c2th;	
+	IF c2th_rec.total_pass = 0 THEN
+		RAISE EXCEPTION 'T8--20: test_8_triggers.sql: Test harness has not been run sucessfully in the last 10 minutes (probable db_test_harness.js error)';
+	END IF;
 --		
 	IF c1th_rec.failed > 0 THEN
-		RAISE EXCEPTION 'T8--20: test_8_triggers.sql: % tests failed or were not run (pass is NULL)', c1th_rec.failed;
+		RAISE EXCEPTION 'T8--21: test_8_triggers.sql: % tests failed or were not run (pass is NULL)', c1th_rec.failed;
 	END IF;
 END;
 $$;

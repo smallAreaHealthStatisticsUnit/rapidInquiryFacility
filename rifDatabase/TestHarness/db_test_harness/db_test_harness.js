@@ -934,9 +934,9 @@ function _rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 		console.error('1: rif40_sql_test_end(' + p_j + ') p_mutex_id is undefined');			
 		process.exit(1);							
 	}
-	
+
 	// Build bind type SQL statement
-	var sql_stmt = 'SELECT rif40_sql_pkg._rif40_sql_test(' + '\n' + 
+	var sql_stmt = 'SELECT rif40_sql_pkg.rif40_sql_test(' + '\n' + 
 			'$1::VARCHAR    /* test_stmt */,' + '\n' + 
 			'$2::VARCHAR    /* test_case_title */,' + '\n' + 
 			'$3::Text[][]   /* results */,' + '\n' + 
@@ -944,7 +944,8 @@ function _rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 			'$5::VARCHAR    /* pg_error_code_expected */,' + '\n' +
 			'$6::BOOLEAN    /* raise_exception_on_failure */,' + '\n' +
 			'$7::INTEGER    /* test_id */,' + '\n' +
-			'$8::Text[]     /* pg_debug_functions */) AS rbool';
+			'$8::Text[]     /* pg_debug_functions */,' + '\n' +
+			'$9::BOOLEAN    /* expected_result */) AS rbool';
 	var start_time=Date.now();
 		
 	// Check failed flag is NOT undefined	
@@ -976,21 +977,23 @@ function _rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 						 p_rif40_test_harness[p_j-1].pg_error_code_expected,
 						 p_rif40_test_harness[p_j-1].raise_exception_on_failure,
 						 p_rif40_test_harness[p_j-1].test_id,
-						 p_rif40_test_harness[p_j-1].pg_debug_functions]}, 
+						 p_rif40_test_harness[p_j-1].pg_debug_functions,
+						 p_rif40_test_harness[p_j-1].expected_result]}, 
 		// Cursor execution callback function				 
 		function(err, result) {
 			// Error handler. rif40_sql_pkg._rif40_sql_test() normally catches errors and returns pass or fail;
 			// Print SQL statement, param,eters and error. This is an unhandled condition [bug!] in rif40_sql_pkg._rif40_sql_test()
 			if (err) {
 				console.error('2: Error in run test; SQL> ' + sql_stmt + 
-		'*\n* [Parameter 1: p_test_stmt                 VARCHAR]\nSQL>>>' + p_rif40_test_harness[p_j-1].test_stmt + ';\n' + 
-		'* [Parameter 2: p_test_case_title              VARCHAR]  ' + p_rif40_test_harness[p_j-1].test_case_title + '\n' + 
-		'* [Parameter 3: p_results                      TEXT[][]] ' + p_rif40_test_harness[p_j-1].results + '\n' + 
-		'* [Parameter 4: p_results_xml                  XML]      ' + p_rif40_test_harness[p_j-1].results_xml + '\n' + 
-		'* [Parameter 5: p_pg_error_code_expected       VARCHAR]  ' + p_rif40_test_harness[p_j-1].pg_error_code_expected + '\n' + 
-		'* [Parameter 6: p_raise_exception_on_failure   BOOLEAN]  ' + p_rif40_test_harness[p_j-1].raise_exception_on_failure + '\n' + 
-		'* [Parameter 7: p_test_id                      INTEGER]  ' + p_rif40_test_harness[p_j-1].test_id + '\n' +  
-		'* [Parameter 7: p_pg_debug_functions           Text[]]   ' + p_rif40_test_harness[p_j-1].pg_debug_functions + '\n' + 
+		'*\n* [Parameter 1: test_stmt                 VARCHAR]\nSQL>>>' + p_rif40_test_harness[p_j-1].test_stmt + ';\n' + 
+		'* [Parameter 2: test_case_title              VARCHAR]  ' + p_rif40_test_harness[p_j-1].test_case_title + '\n' + 
+		'* [Parameter 3: results                      TEXT[][]] ' + p_rif40_test_harness[p_j-1].results + '\n' + 
+		'* [Parameter 4: results_xml                  XML]      ' + p_rif40_test_harness[p_j-1].results_xml + '\n' + 
+		'* [Parameter 5: pg_error_code_expected       VARCHAR]  ' + p_rif40_test_harness[p_j-1].pg_error_code_expected + '\n' + 
+		'* [Parameter 6: raise_exception_on_failure   BOOLEAN]  ' + p_rif40_test_harness[p_j-1].raise_exception_on_failure + '\n' + 
+		'* [Parameter 7: test_id                      INTEGER]  ' + p_rif40_test_harness[p_j-1].test_id + '\n' +  
+		'* [Parameter 8: pg_debug_functions           Text[]]   ' + p_rif40_test_harness[p_j-1].pg_debug_functions + '\n' + 
+		'* [Parameter 9: expected_result              BOOLEAN]  ' + p_rif40_test_harness[p_j-1].expected_result + '\n' + 
 		'*\n' + '*****************************************************************************\n', err);	
 				console.error('2: ROLLBACK transaction: ' + p_test_text);
 				var end = p_client2.query('ROLLBACK', function(err, result) {
@@ -1019,37 +1022,32 @@ function _rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 	//							console.log('rbool: ' + result.rows[0].rbool + '; p_expected_result[p_j-1]: ' + 
 	//								p_rif40_test_harness[p_j].expected_result);
 					if (row_count != 1) {
-							console.error('2: Test FAILED: (' + row_count + ') rows ' + p_test_text + '\n' + 'SQL> ' + sql_stmt);	
-							p_passed_or_failed.p_failed++;			
+						console.error('2: Test FAILED: (' + row_count + ') rows ' + p_test_text + '\n' + 'SQL> ' + sql_stmt);	
+						p_passed_or_failed.p_failed++;			
 					}
 					// OK - so we need to check pass/fail against expected
 					else if (result.rows[0].rbool == false)   /* Test failed */ {
+						p_rif40_test_harness[p_j-1].pass = false;
+						p_passed_or_failed.p_failed++;
 						if (p_rif40_test_harness[p_j-1].expected_result == true) /* It was expected to pass */ {
 							test_result(false, 'Test FAILED, expected to PASS: ' + p_test_text, sql_stmt,
 									p_rif40_test_harness, p_j-1);
-							p_rif40_test_harness[p_j-1].pass = false;
-							p_passed_or_failed.p_failed++;
-						}
-						else {
-							test_result(true, 'Test FAILED as expected: ' + p_test_text, sql_stmt,
-									p_rif40_test_harness, p_j-1);
-							p_rif40_test_harness[p_j-1].pass = true;
-							p_passed_or_failed.p_passed++; 										
-						}
-					}
-					else { /* Test passed */
-						if (p_rif40_test_harness[p_j-1].expected_result == true) /* It was expected to pass */ {								
-							test_result(true, 'Test OK: ' + p_test_text, sql_stmt,
-									p_rif40_test_harness, p_j-1);
-							p_rif40_test_harness[p_j-1].pass = true;
-							p_passed_or_failed.p_passed++;
 						}
 						else {
 							test_result(false, 'Test PASSED, expected to FAIL: ' + p_test_text, sql_stmt,
+									p_rif40_test_harness, p_j-1);								
+						}						}
+					else { /* Test passed */
+						p_rif40_test_harness[p_j-1].pass = true;
+						p_passed_or_failed.p_passed++;
+						if (p_rif40_test_harness[p_j-1].expected_result == true) /* It was expected to pass */ {								
+							test_result(true, 'Test OK: ' + p_test_text, sql_stmt,
 									p_rif40_test_harness, p_j-1);
-							p_rif40_test_harness[p_j-1].pass = false;										
-							p_passed_or_failed.p_failed++;									
 						}
+						else {
+							test_result(true, 'Test FAILED as expected: ' + p_test_text, sql_stmt,
+									p_rif40_test_harness, p_j-1);									
+						}											
 					}
 					p_rif40_test_harness[p_j-1].time_taken = (Date.now()-start_time)/1000;
 					

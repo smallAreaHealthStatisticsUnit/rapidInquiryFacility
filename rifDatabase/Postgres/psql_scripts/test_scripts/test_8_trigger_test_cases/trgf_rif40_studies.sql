@@ -56,7 +56,7 @@ BEGIN
 				username,
 				geography, project, study_name, study_type,
 				comparison_geolevel_name, study_geolevel_name, denom_tab,
-				year_start, year_stop, max_age_group, min_age_group,
+				max_age_group, min_age_group,
 				suppression_value, extract_permitted, transfer_permitted)
 			VALUES (
 				 ''rif40''                               /* User name */,
@@ -67,8 +67,6 @@ BEGIN
 				 ''LEVEL2''                              /* comparison_geolevel_name */,
 				 ''LEVEL4''                              /* study_geolevel_name */,
 				 ''SAHSULAND_POP''                       /* denom_tab */,
-				 1989                                    /* year_start */,
-				 1996                                    /* year_stop */,
 				 21                                      /* max_age_group */,
 				 0                                       /* min_age_group */,
 				 5                                       /* suppression_value */,
@@ -88,7 +86,7 @@ BEGIN
 		'INSERT /* 1 */ INTO t_rif40_studies (
 				geography, project, study_name, study_type,
 				comparison_geolevel_name, study_geolevel_name, denom_tab,
-				year_start, year_stop, max_age_group, min_age_group,
+				max_age_group, min_age_group,
 				suppression_value, extract_permitted, transfer_permitted)
 			VALUES (
 				 ''SAHSU''                               /* geography */,
@@ -98,8 +96,6 @@ BEGIN
 				 ''LEVEL2''                              /* comparison_geolevel_name */,
 				 ''LEVEL4''                              /* study_geolevel_name */,
 				 ''SAHSULAND_POP''                       /* denom_tab */,
-				 1989                                    /* year_start */,
-				 1996                                    /* year_stop */,
 				 21                                      /* max_age_group */,
 				 0                                       /* min_age_group */,
 				 5                                       /* suppression_value */,
