@@ -52,11 +52,11 @@ DECLARE
 	test_id INTEGER;
 BEGIN
 	test_id:=rif40_sql_pkg._rif40_sql_test_register(
-		'INSERT /* 1 */ INTO t_rif40_studies (
+		'INSERT /* 1 */ INTO t_rif40_studies ( /* Testing test harness handles wrong error codes OK */
 				username,
 				geography, project, study_name, study_type,
+				year_start,
 				comparison_geolevel_name, study_geolevel_name, denom_tab,
-				max_age_group, min_age_group,
 				suppression_value, extract_permitted, transfer_permitted)
 			VALUES (
 				 ''rif40''                               /* User name */,
@@ -64,11 +64,10 @@ BEGIN
 				 ''TEST''                                /* project */,
 				 ''SAHSULAND test 4 study_id 1 example'' /* study_name */,
 				 1                                       /* study_type [disease mapping] */,
+				 1999									 /* Not a valid column */
 				 ''LEVEL2''                              /* comparison_geolevel_name */,
 				 ''LEVEL4''                              /* study_geolevel_name */,
 				 ''SAHSULAND_POP''                       /* denom_tab */,
-				 21                                      /* max_age_group */,
-				 0                                       /* min_age_group */,
 				 5                                       /* suppression_value */,
 				 1                                       /* extract_permitted */,
 				 1                                       /* transfer_permitted */)' /* Test stmt */,
@@ -81,12 +80,38 @@ BEGIN
 		FALSE          /* expected_result */,
 		NULL           /* parent_test_id */,
 		'{trigger_fct_t_rif40_studies_checks}'::text[] /* pg debug functions */);
+	test_id:=rif40_sql_pkg._rif40_sql_test_register(
+		'INSERT /* 1 */ INTO t_rif40_studies (
+				username,
+				geography, project, study_name, study_type,
+				comparison_geolevel_name, study_geolevel_name, denom_tab,
+				suppression_value, extract_permitted, transfer_permitted)
+			VALUES (
+				 ''rif40''                               /* User name */,
+				 ''SAHSU''                               /* geography */,
+				 ''TEST''                                /* project */,
+				 ''SAHSULAND test 4 study_id 1 example'' /* study_name */,
+				 1                                       /* study_type [disease mapping] */,
+				 ''LEVEL2''                              /* comparison_geolevel_name */,
+				 ''LEVEL4''                              /* study_geolevel_name */,
+				 ''SAHSULAND_POP''                       /* denom_tab */,
+				 5                                       /* suppression_value */,
+				 1                                       /* extract_permitted */,
+				 1                                       /* transfer_permitted */)' /* Test stmt */,
+		'trgf_rif40_studies' /* test run class */,
+		'SAHSULAND test 4 study_id 1 example - trgf_rif40_studies - 20200 T_RIF40_STUDIES study % username: % is not USER: % INSERT' /* test case title */,
+		NULL::Text[][] /* results */,
+		NULL::XML      /* results_xml */,
+		'-20200'       /* pg_error_code_expected */,
+		FALSE          /* raise_exception_on_failure */, 
+		TRUE           /* expected_result */,
+		NULL           /* parent_test_id */,
+		'{trigger_fct_t_rif40_studies_checks}'::text[] /* pg debug functions */);
 -- 
 	test_id:=rif40_sql_pkg._rif40_sql_test_register(
 		'INSERT /* 1 */ INTO t_rif40_studies (
 				geography, project, study_name, study_type,
 				comparison_geolevel_name, study_geolevel_name, denom_tab,
-				max_age_group, min_age_group,
 				suppression_value, extract_permitted, transfer_permitted)
 			VALUES (
 				 ''SAHSU''                               /* geography */,
@@ -96,8 +121,6 @@ BEGIN
 				 ''LEVEL2''                              /* comparison_geolevel_name */,
 				 ''LEVEL4''                              /* study_geolevel_name */,
 				 ''SAHSULAND_POP''                       /* denom_tab */,
-				 21                                      /* max_age_group */,
-				 0                                       /* min_age_group */,
 				 5                                       /* suppression_value */,
 				 1                                       /* extract_permitted */,
 				 1                                       /* transfer_permitted */)' /* Test stmt */,
@@ -111,18 +134,31 @@ BEGIN
 		NULL           /* parent_test_id */,
 		'{trigger_fct_t_rif40_studies_checks}'::text[] /* pg debug functions */);
 	test_id:=rif40_sql_pkg._rif40_sql_test_register(		
-		'UPDATE t_rif40_studies 
+		'UPDATE t_rif40_studies /* Testing test harness handles wrong error codes OK */
 			SET extract_permitted = 0                    /* extract_permitted */
 		  WHERE study_id = currval(''rif40_study_id_seq''::regclass)' /* Test stmt */,
 		'trgf_rif40_studies' /* test run class */,
-		'SAHSULAND test 4 study_id 1 example - trgf_rif40_studies - 20200 T_RIF40_STUDIES study % username: % is not USER: % UPDATE' /* test case title */,
+		'SAHSULAND test 4 study_id 1 example - trgf_rif40_studies - 20202 T_RIF40_STUDIES study % UPDATE state changes allowed on T_RIF40_STUDIES by user: %' /* test case title */,
 		NULL::Text[][] /* results */,
 		NULL::XML      /* results_xml */,
 		'-20200'       /* pg_error_code_expected */,
 		FALSE          /* raise_exception_on_failure */, 
 		FALSE          /* expected_result */,
 		test_id        /* parent_test_id */,
-		'{trigger_fct_t_rif40_studies_checks}'::text[] /* pg debug functions */);		
+		'{trigger_fct_t_rif40_studies_checks}'::text[] /* pg debug functions */);	
+	test_id:=rif40_sql_pkg._rif40_sql_test_register(		
+		'UPDATE t_rif40_studies 
+			SET extract_permitted = 0                    /* extract_permitted */
+		  WHERE study_id = currval(''rif40_study_id_seq''::regclass)' /* Test stmt */,
+		'trgf_rif40_studies' /* test run class */,
+		'SAHSULAND test 4 study_id 1 example - trgf_rif40_studies - 20202 T_RIF40_STUDIES study % UPDATE state changes allowed on T_RIF40_STUDIES by user: %' /* test case title */,
+		NULL::Text[][] /* results */,
+		NULL::XML      /* results_xml */,
+		'-20202'       /* pg_error_code_expected */,
+		FALSE          /* raise_exception_on_failure */, 
+		TRUE           /* expected_result */,
+		test_id        /* parent_test_id */,
+		'{trigger_fct_t_rif40_studies_checks}'::text[] /* pg debug functions */);			
 --
 -- State change by another user cannot be tested
 --

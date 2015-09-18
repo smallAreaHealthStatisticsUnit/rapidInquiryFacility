@@ -380,7 +380,7 @@ BEGIN
 		actual_result:=FALSE;
 		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_sql_test', 
 			'[71151]: Test case %: %'||E'\n'||'FAILED expected result (%) != actual (%)', 
-			f_test_id::VARCHAR, test_case_title::VARCHAR, expected_result::VARCHAR, actual_result::VARCHAR);
+			f_test_id::VARCHAR, test_case_title::VARCHAR, expected_result::VARCHAR, test_result::VARCHAR);
 	END IF;
 --	
 	RETURN actual_result;
@@ -392,13 +392,21 @@ EXCEPTION
 --
 		GET STACKED DIAGNOSTICS v_detail            = PG_EXCEPTION_DETAIL;
 --
--- Test case failed with a different error to that expected; re-RAISE with no_data_found
+-- Test case failed with a different error to that expected; was re-RAISEd with no_data_found
 -- for rif40_sql_test() to process
 --			
-		PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_sql_test', 
-			'[71152] Test case: %'||E'\n'||'FAILED with wrong SQLSTATE, expecting SQLSTATE %, got: %', 
-			test_case_title::VARCHAR, pg_error_code_expected::VARCHAR, v_detail::VARCHAR);	
-		RETURN FALSE;
+		IF expected_result THEN
+			PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_sql_test', 
+				'[71152] Test case: %'||E'\n'||'FAILED with wrong SQLSTATE, expecting SQLSTATE %, got: %', 
+				test_case_title::VARCHAR, pg_error_code_expected::VARCHAR, v_detail::VARCHAR);	
+			actual_result:=FALSE;			
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test', 
+				'[71153] Test case: %'||E'\n'||'PASSED, expected to FAIL with wrong SQLSTATE, expecting SQLSTATE %, got: %', 
+				test_case_title::VARCHAR, pg_error_code_expected::VARCHAR, v_detail::VARCHAR);
+			actual_result:=TRUE;			
+		END IF;
+		RETURN actual_result;
 -- Un trapped error - re-RAISE
 	WHEN others THEN	
 		RAISE;		

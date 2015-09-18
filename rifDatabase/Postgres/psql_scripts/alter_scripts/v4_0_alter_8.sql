@@ -261,7 +261,7 @@ COMMENT ON COLUMN rif40_test_harness.test_case_title IS 'Test case title. Must b
 COMMENT ON COLUMN rif40_test_harness.pg_error_code_expected IS '[negative] Postgres error SQLSTATE expected [as part of an exception]; passed as PG_EXCEPTION_DETAIL';
 COMMENT ON COLUMN rif40_test_harness.mssql_error_code_expected IS 'Microsoft SQL server error code expected [as part of an exception].';
 COMMENT ON COLUMN rif40_test_harness.raise_exception_on_failure IS 'Raise exception on failure. NULL means it is expected to NOT raise an exception, raise exception on failure';
-COMMENT ON COLUMN rif40_test_harness.expected_result IS 'Expected result; tests are allowed to deliberately fail!';
+COMMENT ON COLUMN rif40_test_harness.expected_result IS 'Expected result; tests are allowed to deliberately fail! If the test raises the expection pg_error_code_expected it would normally be expected to pass.';
 COMMENT ON COLUMN rif40_test_harness.register_date IS 'Date registered';
 COMMENT ON COLUMN rif40_test_harness.results IS 'Results array';
 COMMENT ON COLUMN rif40_test_harness.results_xml IS 'Results array in portable XML';

@@ -410,31 +410,37 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 				ELSE					
 					RETURN FALSE;
 				END IF;		
-			ELSIF v_sqlstate = 'P0001' AND pg_error_code_expected = v_detail THEN
+			ELSIF v_sqlstate = 'P0001' /* PL/pgSQL raise_exception */ AND pg_error_code_expected = v_detail THEN
 				PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test', 
 					'[71274] Test case: % PASSED, caught expecting SQLSTATE/RIF error code: %/%;%', 
 					test_case_title::VARCHAR, v_sqlstate::VARCHAR, pg_error_code_expected::VARCHAR,
 					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
-					'Detail:   '||v_detail::VARCHAR);								
+						'Detail:   '||v_detail::VARCHAR);								
 				RETURN TRUE;				
 			ELSIF pg_error_code_expected = v_sqlstate THEN
 				PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test', 
 					'[71275] Test case: % PASSED, caught expecting SQLSTATE %;%', 
 					test_case_title::VARCHAR, v_sqlstate::VARCHAR,
 					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
-					'Detail:   '||v_detail::VARCHAR);							
+						'Detail:   '||v_detail::VARCHAR);							
 				RETURN TRUE;			
-			ELSE
+			ELSIF v_sqlstate = 'P0001' /* PL/pgSQL raise_exception */ AND pg_error_code_expected != v_detail THEN			
 --
 -- Test case failed with a different error to that expected; re-RAISE with no_data_found
 -- for rif40_sql_test() to process
 --			
 				PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_sql_test', 
-					'[71276] Test case: % FAILED, expecting SQLSTATE %; got: %;%', 
-					test_case_title::VARCHAR, pg_error_code_expected::VARCHAR, v_sqlstate::VARCHAR,
+					'[71276] Test case: % FAILED, expecting SQLSTATE PG_EXCEPTION_DETAIL %; got: %;%', 
+					test_case_title::VARCHAR, pg_error_code_expected::VARCHAR, v_detail::VARCHAR,
 					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n'||
-					'Detail:   '||v_detail::VARCHAR);	
-				RAISE EXCEPTION SQLSTATE 'P0002' /* no_data_found */ USING DETAIL=v_sqlstate;
+						'Detail:   '||v_detail::VARCHAR||E'\n');	
+				RAISE EXCEPTION SQLSTATE 'P0002' /* no_data_found */ USING DETAIL=v_detail;
+			ELSE				
+				PERFORM rif40_log_pkg.rif40_log('WARNING', '_rif40_sql_test', 
+					'[71277] Test case: % FAILED, expecting SQLSTATE P0001; got %; expecting PG_EXCEPTION_DETAIL: %;%', 
+					test_case_title::VARCHAR, v_sqlstate::VARCHAR, pg_error_code_expected::VARCHAR, v_detail::VARCHAR,
+					E'\n'||'Message:  '||v_message_text::VARCHAR||E'\n');	
+				RAISE EXCEPTION SQLSTATE 'P0002' /* no_data_found */ USING DETAIL=v_sqlstate;			
 			END IF;
 		EXCEPTION
 --
@@ -442,7 +448,7 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 -- for rif40_sql_test() to process
 --		
 			WHEN no_data_found THEN	
-				RAISE EXCEPTION SQLSTATE 'P0002' /* no_data_found */ USING DETAIL=v_sqlstate;
+				RAISE;
 
 			WHEN others THEN			
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
@@ -452,7 +458,7 @@ PG_EXCEPTION_CONTEXT	line(s) of text describing the call stack
 					'Detail: '||v_detail::VARCHAR||E'\n'||
 					'Context: '||v_context::VARCHAR||E'\n'||
 					'SQLSTATE: '||v_sqlstate::VARCHAR;
-				RAISE EXCEPTION '71277: %', error_message USING DETAIL=v_detail;			
+				RAISE EXCEPTION '71278: %', error_message USING DETAIL=v_detail;			
 		END;
 END;
 $func$ LANGUAGE plpgsql;
