@@ -49,8 +49,6 @@ t_rif40_study_areas needs t_rif40_studies.sql
 view rif40_num_num needs many functions to be built
 view rif40_numerator_outcome_columns needs view rif40_num_denom
 
-http://stackoverflow.com/questions/3523365/execute-sql-server-scripts?rq=1
-
 Needs Triggers for rif40_predefined_groups, rif40_tables, t_rif40_comparison_areas, t_rif40_inv_conditions, t_rif40_study_sql_log, t_rif40_study_sql
 
 Raunaque left a note on rif40_table_outcomes trigger that sounds like she wasn't certain if it was right
@@ -60,11 +58,3 @@ t_rif40_num_denom_checks has foreign keys in SQL Server but not Postgres ? (keep
 
 t_rif40_studies -> default study_id not in SQL Server (based on sequence)
 
-missing:
-rif40_columns
-rif40_tables_and_views
-rif40_triggers
-
-No consistent logging or even error messages
-
-Need to look at triggers in complete script -- I think those are more up-to-date than separate files in directories (esp for error handling)
