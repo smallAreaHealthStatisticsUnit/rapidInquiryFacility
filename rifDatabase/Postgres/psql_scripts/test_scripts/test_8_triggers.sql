@@ -106,8 +106,6 @@ BEGIN
 END;
 $$;	
 
-INSERT INTO rif40_test_runs (test_run_title) VALUES ('test_8_triggers.sql');
-
 DO LANGUAGE plpgsql $$
 DECLARE
 	c2th CURSOR FOR 
@@ -468,11 +466,11 @@ BEGIN
 	RAISE INFO 'T8--18: test_8_triggers.sql: Run trigger test harness';
 END;
 $$;
-
+ 
 --
 -- Run the Node.js test harness; building required modules if needed
 --
-\! make -C ../../TestHarness/db_test_harness modules test 
+\! make -C ../../TestHarness/db_test_harness all
  
 --
 -- Dump test harness
@@ -500,6 +498,9 @@ SELECT test_run_class, pass, COUNT(COALESCE(pass::Text, 'Null')) AS total
 SELECT * 
   FROM rif40_test_runs;
  
+--
+-- Check tests and runs
+--
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1th CURSOR FOR
@@ -511,8 +512,16 @@ DECLARE
 		  FROM rif40_test_runs
 		 WHERE tests_run > 0 
 		   AND test_date > statement_timestamp() - (10 * interval '1 minute') /* Test harness has been run in the last 10 minutes */;
-	c1th_rec RECORD;
+	c3th CURSOR FOR
+		SELECT COUNT(test_date) AS total_zero
+		  FROM rif40_test_runs
+		 WHERE time_taken = 0 
+		   AND tests_run = 0 
+		   AND number_passed = 0 
+		   AND number_failed = 0;
+    c1th_rec RECORD;
 	c2th_rec RECORD;
+	c3th_rec RECORD;
 BEGIN
 	OPEN c1th;
 	FETCH c1th INTO c1th_rec;
@@ -520,13 +529,27 @@ BEGIN
 	OPEN c2th;
 	FETCH c2th INTO c2th_rec;
 	CLOSE c2th;	
+	OPEN c3th;
+	FETCH c3th INTO c3th_rec;
+	CLOSE c3th;	
+--	
+-- Check for probable db_test_harness.js error
+--
 	IF c2th_rec.total_pass = 0 THEN
 		RAISE EXCEPTION 'T8--20: test_8_triggers.sql: Test harness has not been run sucessfully in the last 10 minutes (probable db_test_harness.js error)';
 	END IF;
 --		
+-- Check for failed tests
+--
 	IF c1th_rec.failed > 0 THEN
 		RAISE EXCEPTION 'T8--21: test_8_triggers.sql: % tests failed or were not run (pass is NULL)', c1th_rec.failed;
 	END IF;
+--
+-- Check for test run fails
+--		
+	IF c3th_rec.total_zero > 0 THEN
+		RAISE EXCEPTION 'T8--22: test_8_triggers.sql: % test runs failed (time_taken, tests_run, number_passed, number_failed are all zero)', c3th_rec.total_zero;
+	END IF;	
 END;
 $$;
 

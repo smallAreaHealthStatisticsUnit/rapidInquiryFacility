@@ -221,7 +221,7 @@ MODULES=node_modules/pg node_modules/pg-native node_modules/optimist node_module
 MODULE_JSON=node_modules/pg-native/package.json node_modules/pg/package.json node_modules/optimist/package.json node_modules/mutexjs/package.json
 
 #- all: Build modules, run the complete database test harness	
-all: modules db_test_harness
+all: modules update db_test_harness
 
 #- modules: Build required Node.js modules using npm install --save to update dependencies in package.json
 modules: $(MODULE_JSON) $(MODULES)
