@@ -121,7 +121,6 @@ DROP SEQUENCE IF EXISTS rif40_test_run_id_seq;
 
 CREATE SEQUENCE rif40_test_run_id_seq;
 COMMENT ON SEQUENCE rif40_test_run_id_seq IS 'Artificial primary key for: RIF40_TEST_RUNS';
-GRANT SELECT, USAGE ON SEQUENCE rif40_test_id_seq TO rif40, rif_manager, notarifuser;
 GRANT SELECT, USAGE ON SEQUENCE rif40_test_run_id_seq TO rif40, rif_manager, notarifuser;
 
 CREATE TABLE rif40_test_runs (
@@ -188,6 +187,7 @@ BEGIN
 		PERFORM rif40_sql_pkg.rif40_ddl('DROP SEQUENCE IF EXISTS rif40_test_id_seq'); 
 		PERFORM rif40_sql_pkg.rif40_ddl('CREATE SEQUENCE rif40_test_id_seq'); 
 		PERFORM rif40_sql_pkg.rif40_ddl('COMMENT ON SEQUENCE rif40_test_id_seq IS ''Artificial primary key for: RIF40_TEST_HARNESS''');
+		PERFORM rif40_sql_pkg.rif40_ddl('GRANT SELECT, USAGE ON SEQUENCE rif40_test_id_seq TO rif40, rif_manager, notarifuser');
 	END IF;
 END;
 $$;

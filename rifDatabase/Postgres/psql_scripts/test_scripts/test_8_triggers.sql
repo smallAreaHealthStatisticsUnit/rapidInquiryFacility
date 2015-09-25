@@ -560,18 +560,19 @@ $$;
 --
 -- Testing stop
 --
-DO LANGUAGE plpgsql $$
-BEGIN
-	RAISE EXCEPTION 'T8--98: test_8_triggers.sql: Stop processing';
-END;
-$$;
-VACUUM (FULL,VERBOSE,ANALYZE) rif40_test_harness;
-VACUUM (FULL,VERBOSE,ANALYZE) rif40_test_runs;
+--DO LANGUAGE plpgsql $$
+--BEGIN
+--	RAISE EXCEPTION 'T8--98: test_8_triggers.sql: Stop processing';
+--END;
+--$$;
 
 --
 -- End single transaction
 --
 END;
+
+VACUUM (FULL,VERBOSE,ANALYZE) rif40_test_harness;
+VACUUM (FULL,VERBOSE,ANALYZE) rif40_test_runs;
 
 DO LANGUAGE plpgsql $$
 BEGIN
