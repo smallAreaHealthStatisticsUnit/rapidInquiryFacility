@@ -163,10 +163,6 @@ DROP TABLE IF EXISTS rif40_population_world;
 DROP TABLE IF EXISTS rif40_population_europe;
 DROP TABLE IF EXISTS rif40_population_us;
 
-DROP TABLE IF EXISTS rif40_predefined_groups;
-DROP TABLE IF EXISTS rif40_table_outcomes;
-DROP TABLE IF EXISTS rif40_outcome_groups;
-DROP TABLE IF EXISTS rif40_outcomes;
 DROP TABLE IF EXISTS rif40_geographies CASCADE;
 DROP TABLE IF EXISTS rif40_version;
 DROP TABLE IF EXISTS t_rif40_fdw_tables CASCADE;
@@ -178,9 +174,9 @@ DROP TABLE IF EXISTS rif40_error_messages;
 DROP TABLE IF EXISTS rif40_reference_tables;
 DROP TABLE IF EXISTS rif40_dual;
 
-DROP TABLE IF EXISTS rif40_tables_and_views;
 DROP TABLE IF EXISTS rif40_columns;
 DROP TABLE IF EXISTS rif40_triggers;
+DROP TABLE IF EXISTS rif40_tables_and_views;
 
 DROP SEQUENCE IF EXISTS rif40_inv_id_seq CASCADE;
 DROP SEQUENCE IF EXISTS rif40_study_id_seq CASCADE;
@@ -307,6 +303,8 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY
 	VARCHAR, BOOLEAN, INTEGER);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY, XML,
 	VARCHAR, BOOLEAN, INTEGER);
+
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_test_sql_template(VARCHAR, VARCHAR, VARCHAR, VARCHAR, BOOLEAN, BOOLEAN, integer, text[]);
 
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_sql_test_register(VARCHAR, VARCHAR, VARCHAR, ANYARRAY, XML,
 	VARCHAR, BOOLEAN, BOOLEAN, INTEGER, Text[]);	
@@ -550,6 +548,9 @@ DROP TABLE IF EXISTS rif_studies.s1_map;
 --
 -- grep "CREATE OR REPLACE VIEW" v4_0_postgres_views.sql | sed 's/ (/;/g' | sed 's/CREATE OR REPLACE/DROP/g' | awk -F";" '{print $1.";"}'
 --
+
+DROP VIEW IF EXISTS rif40_numerator_outcome_columns;
+
 DROP VIEW IF EXISTS rif40_comparison_areas;
 DROP VIEW IF EXISTS rif40_contextual_stats;
 DROP VIEW IF EXISTS rif40_geolevels;
@@ -565,6 +566,12 @@ DROP VIEW IF EXISTS rif40_study_sql;
 DROP VIEW IF EXISTS rif40_study_sql_log;
 DROP VIEW IF EXISTS rif40_user_projects;
 DROP VIEW IF EXISTS rif40_fdw_tables;
+
+ALTER TABLE t_rif40_inv_conditions DROP CONSTRAINT IF EXISTS t_rif40_inv_conditons_ogn;
+ALTER TABLE rif40_predefined_groups DROP CONSTRAINT IF EXISTS rif40_predefined_type_fk; 
+DROP TABLE IF EXISTS rif40_table_outcomes;
+DROP TABLE IF EXISTS rif40_outcome_groups;
+DROP TABLE IF EXISTS rif40_outcomes;
 
 DROP TABLE IF EXISTS t_rif40_parameters;
 DROP TABLE IF EXISTS t_rif40_study_sql;
@@ -583,11 +590,11 @@ DROP TABLE IF EXISTS t_rif40_studies;
 DROP TABLE IF EXISTS t_rif40_projects;
 DROP TABLE IF EXISTS t_rif40_geolevels;
 
+DROP TABLE IF EXISTS rif40_predefined_groups;
+
 DROP VIEW IF EXISTS rif40_user_version;
 DROP VIEW IF EXISTS user_role_privs;
 DROP VIEW IF EXISTS user_role_privs;
-
-DROP VIEW IF EXISTS rif40_numerator_outcome_columns;
 
 --
 -- Test data
