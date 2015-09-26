@@ -536,20 +536,24 @@ BEGIN
 -- Check for probable db_test_harness.js error
 --
 	IF c2th_rec.total_pass = 0 THEN
-		RAISE EXCEPTION 'T8--20: test_8_triggers.sql: Test harness has not been run sucessfully in the last 10 minutes (probable db_test_harness.js error)';
+		RAISE EXCEPTION 'T8--20: test_8_triggers.sql[%]: Test harness has not been run sucessfully in the last 10 minutes (probable db_test_harness.js error)',
+			current_database();
 	END IF;
 --		
 -- Check for failed tests
 --
 	IF c1th_rec.failed > 0 THEN
-		RAISE EXCEPTION 'T8--21: test_8_triggers.sql: % tests failed or were not run (pass is NULL)', c1th_rec.failed;
+		RAISE EXCEPTION 'T8--21: test_8_triggers.sql[%]: % tests failed or were not run (pass is NULL)', 
+			current_database(), c1th_rec.failed;
 	END IF;
 --
 -- Check for test run fails
 --		
 	IF c3th_rec.total_zero > 0 THEN
-		RAISE EXCEPTION 'T8--22: test_8_triggers.sql: % test runs failed (time_taken, tests_run, number_passed, number_failed are all zero)', c3th_rec.total_zero;
+		RAISE EXCEPTION 'T8--22: test_8_triggers.sql[%]: % test runs failed (time_taken, tests_run, number_passed, number_failed are all zero)',
+			current_database(), c3th_rec.total_zero;
 	END IF;	
+	RAISE INFO 'T8--23: test_8_triggers.sql[%]: All tests OK.', current_database();
 END;
 $$;
 
