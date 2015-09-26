@@ -480,12 +480,12 @@ BEGIN
 	RAISE INFO 'T8--19: test_8_triggers.sql: Dump test harness';
 END;
 $$;
-SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise_exception_on_failure, test_stmt, test_case_title
+SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise_exception_on_failure, test_case_title
   FROM rif40_test_harness
  WHERE test_run_class = 'test_8_triggers.sql'
  ORDER BY test_id;
 
-SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise_exception_on_failure, test_stmt, test_case_title
+SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise_exception_on_failure, test_case_title
   FROM rif40_test_harness
  WHERE test_run_class = 'trgf_rif40_studies'
  ORDER BY test_id;
