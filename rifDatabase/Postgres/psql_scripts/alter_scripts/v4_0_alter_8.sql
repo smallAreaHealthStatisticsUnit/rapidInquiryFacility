@@ -149,7 +149,7 @@ COMMENT ON COLUMN rif40_test_runs.username IS 'user name running test run';
 COMMENT ON COLUMN rif40_test_runs.tests_run IS 'Number of tests run (should equal passed+failed!)';
 COMMENT ON COLUMN rif40_test_runs.number_passed IS 'Number of tests passed';
 COMMENT ON COLUMN rif40_test_runs.number_failed IS 'Number of tests failed';
-COMMENT ON COLUMN rif40_test_runs.number_test_cases_registered IS 'Number of test cases registered';
+COMMENT ON COLUMN rif40_test_runs.number_test_cases_registered IS 'Number of test cases registered [OBSOLETE]';
 COMMENT ON COLUMN rif40_test_runs.number_messages_registered IS 'Number of error and informational messages registered';
 
 DROP TABLE IF EXISTS rif40_test_harness_old;
@@ -265,7 +265,7 @@ COMMENT ON COLUMN rif40_test_harness.expected_result IS 'Expected result; tests 
 COMMENT ON COLUMN rif40_test_harness.register_date IS 'Date registered';
 COMMENT ON COLUMN rif40_test_harness.results IS 'Results array';
 COMMENT ON COLUMN rif40_test_harness.results_xml IS 'Results array in portable XML';
-COMMENT ON COLUMN rif40_test_harness.pass IS 'Was the test passed? Note that some tests do fail deliberately to test the harness';
+COMMENT ON COLUMN rif40_test_harness.pass IS 'Was the test passed? Pass means the test passed with no exzception if the exception is null or if the exoected exception was caught. Note that some tests do fail deliberately to test the harness';
 COMMENT ON COLUMN rif40_test_harness.test_run_id IS 'Test run id for test. Foreign key to rif40_test_runs table.';
 COMMENT ON COLUMN rif40_test_harness.test_date IS 'Test date';
 COMMENT ON COLUMN rif40_test_harness.time_taken IS 'Time taken for test (seconds)';
