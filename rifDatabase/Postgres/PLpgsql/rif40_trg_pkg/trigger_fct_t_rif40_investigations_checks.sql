@@ -512,11 +512,16 @@ Year_stop/start, min/max_age_group removed from t_rif40_studies. Still in view
 				c1a_rec.age_group_id::VARCHAR	/* Denominator age group ID */,
 				c1b_rec.age_group_id::VARCHAR	/* Direct standardisation age group ID */);
 		END IF;
-		IF ((c1a_rec.age_sex_group_field_name IS NOT NULL AND c1a_rec.age_sex_group_field_name::text <> '') AND (c1b_rec.age_sex_group_field_name IS NOT NULL AND c1b_rec.age_sex_group_field_name::text <> '') AND
+		IF ((c1a_rec.age_sex_group_field_name IS NOT NULL AND c1a_rec.age_sex_group_field_name::text <> '') AND 
+		    (c1b_rec.age_sex_group_field_name IS NOT NULL AND c1b_rec.age_sex_group_field_name::text <> '') AND
 		    (c1c_rec.age_sex_group_field_name IS NOT NULL AND c1c_rec.age_sex_group_field_name::text <> '')) OR
-                   (
-		     ((c1a_rec.age_group_field_name IS NOT NULL AND c1a_rec.age_group_field_name::text <> '') AND (c1b_rec.age_group_field_name IS NOT NULL AND c1b_rec.age_group_field_name::text <> '') AND (c1c_rec.age_group_field_name IS NOT NULL AND c1c_rec.age_group_field_name::text <> '')) AND
-		     ((c1a_rec.sex_field_name IS NOT NULL AND c1a_rec.sex_field_name::text <> '') AND (c1b_rec.sex_field_name IS NOT NULL AND c1b_rec.sex_field_name::text <> '') AND (c1c_rec.sex_field_name IS NOT NULL AND c1c_rec.sex_field_name::text <> ''))) THEN
+           (
+		     ((c1a_rec.age_group_field_name IS NOT NULL AND c1a_rec.age_group_field_name::text <> '') AND 
+			  (c1b_rec.age_group_field_name IS NOT NULL AND c1b_rec.age_group_field_name::text <> '') AND 
+			  (c1c_rec.age_group_field_name IS NOT NULL AND c1c_rec.age_group_field_name::text <> '')) AND
+		      ((c1a_rec.sex_field_name IS NOT NULL AND c1a_rec.sex_field_name::text <> '') AND 
+			   (c1b_rec.sex_field_name IS NOT NULL AND c1b_rec.sex_field_name::text <> '') AND 
+			   (c1c_rec.sex_field_name IS NOT NULL AND c1c_rec.sex_field_name::text <> ''))) THEN
 			NULL;
 
 		ELSE
@@ -528,7 +533,7 @@ Year_stop/start, min/max_age_group removed from t_rif40_studies. Still in view
 	ELSE
 		IF c1a_rec.age_group_id != c1b_rec.age_group_id  THEN
 			PERFORM rif40_log_pkg.rif40_error(-20724, 'trigger_fct_t_rif40_investigations_checks',
-				'T_RIF40_INVESTIGATIONS study: % investigation: % age_group ID mismatch; numerator %, denominator:: %',
+				'T_RIF40_INVESTIGATIONS study: % investigation: % age_group ID mismatch; numerator %, denominator: %',
 				NEW.study_id::VARCHAR		/* Study */,
 				NEW.inv_id::VARCHAR		/* Investigation */,
 				c1a_rec.age_group_id::VARCHAR	/* Numerator age group ID */,
@@ -542,9 +547,17 @@ Year_stop/start, min/max_age_group removed from t_rif40_studies. Still in view
 
 		ELSE
 			PERFORM rif40_log_pkg.rif40_error(-20725, 'trigger_fct_t_rif40_investigations_checks',
-				'T_RIF40_INVESTIGATIONS study: % investigation: % differing AGE_SEX_GROUP/AGE_GROUP/SEX_FIELD_NAMES used',
+				'T_RIF40_INVESTIGATIONS study: % investigation: %'||E'\n'||
+				'differing AGE_SEX_GROUP/AGE_GROUP/SEX_FIELD_NAMES used, studies: %/%/%'||E'\n'||
+				'differing AGE_SEX_GROUP/AGE_GROUP/SEX_FIELD_NAMES used, denominator: %/%/%',
 				NEW.study_id::VARCHAR		/* Study */,
-				NEW.inv_id::VARCHAR		/* Investigation */);
+				NEW.inv_id::VARCHAR			/* Investigation */,
+				COALESCE(c1a_rec.age_sex_group_field_name, 'Not set ')::VARCHAR 	/* Age sex group field - studies */,
+				COALESCE(c1a_rec.age_group_field_name, 'Not set ')::VARCHAR 		/* Age group field - studies */,
+				COALESCE(c1a_rec.sex_field_name, 'Not set ')::VARCHAR 				/* Sex field - studies */,
+				COALESCE(c1b_rec.age_sex_group_field_name, 'Not set ')::VARCHAR 	/* Age sex group field - denominator */,
+				COALESCE(c1b_rec.age_group_field_name, 'Not set ')::VARCHAR 		/* Age group field - denominator */,
+				COALESCE(c1b_rec.sex_field_name, 'Not set ')::VARCHAR 				/* Sex field - denominator */);
 		END IF;
 	END IF;
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'trigger_fct_t_rif40_investigations_checks',
