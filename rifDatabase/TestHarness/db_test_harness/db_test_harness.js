@@ -367,7 +367,7 @@ function _rif40_sql_test_log_setup(p_pg, p_mutexjs, p_client, p_num, p_debug_lev
 				else { // p_client is slave [2]
 					// Client 2 [slave worker] is now initialised so we can run the test harness tests
 					console.log('1: Client 2 initialised; debug_level: ' + p_debug_level);
-					run_test_harness(p_mutexjs, p_client1, p_client, p_failed_flag, p_test_run_class); 
+					run_test_harness(p_conString, p_mutexjs, p_client1, p_client, p_failed_flag, p_test_run_class); 
 				}
 				return;
 			});	
@@ -417,7 +417,7 @@ function init_test_harness(p_pg, p_mutexjs, p_client1, p_debug_level, p_conStrin
 	
 /* 
  * Function: 	run_test_harness()
- * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, failed flag, test run class [optional]
+ * Parameters: 	Connection string, MutexJS package handle, Master client (1) connection, worker thread client (2) connection, failed flag, test run class [optional]
  * Returns:		Nothing
  * Description: Run test harness:
  *
@@ -452,7 +452,7 @@ SELECT test_run_class, COUNT(test_run_class) AS tests
  ORDER BY test_run_class;
  
  */
-function run_test_harness(p_mutexjs, p_client1, p_client2, p_failed_flag, p_test_run_class_filter) {
+function run_test_harness(p_conString, p_mutexjs, p_client1, p_client2, p_failed_flag, p_test_run_class_filter) {
 	var total_tests=0;
 	// COMMIT; to complete initial on logon transaction
 	var end = p_client2.query('COMMIT', function(err, result) {
@@ -540,7 +540,7 @@ function run_test_harness(p_mutexjs, p_client1, p_client2, p_failed_flag, p_test
 							}
 							console.log('1: Total tests to run: %s', total_tests);
 							// Finally run the tests: function run_test_harness_test()
-							run_test_harness_tests(p_mutexjs, p_client1, p_client2, total_tests, p_failed_flag, 
+							run_test_harness_tests(p_conString, p_mutexjs, p_client1, p_client2, total_tests, p_failed_flag, 
 								p_test_run_class_filter, sql_stmt, p_rif40_test_harness_results);							
 						});	
 					}
@@ -552,7 +552,7 @@ function run_test_harness(p_mutexjs, p_client1, p_client2, p_failed_flag, p_test
 
 /* 
  * Function: 	run_test_harness_tests()
- * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, 
+ * Parameters: 	Connection string, MutexJS package handle, Master client (1) connection, worker thread client (2) connection, 
  *				number of tests, failed flag, test run class [optional], sql_stmt used to count tests,
  *				results array
  * Returns:		Nothing
@@ -564,7 +564,7 @@ function run_test_harness(p_mutexjs, p_client1, p_client2, p_failed_flag, p_test
  *				The rest of the tests are run recursively from rif40_sql_test() from query.on('end', ...) 
  *				so the SQl statements and transactions are run in the correct order.
  */
-function run_test_harness_tests(p_mutexjs, p_client1, p_client2, p_tests, 
+function run_test_harness_tests(p_conString, p_mutexjs, p_client1, p_client2, p_tests, 
 			p_failed_flag, p_test_run_class_filter, count_sql_stmt, p_rif40_test_harness_results) {
 	// Test arrays; 
 	var p_test_run_class = [];
@@ -819,7 +819,7 @@ SELECT * FROM b
 										p_mutexjs.lock(mutex_name, function(id) {
 											p_mutex_id=id;
 //											console.log('1: Gained mutex [' + p_k + '/' + p_tests + ']: ' + mutex_name + ', id: ' + p_mutex_id);
-											rif40_sql_test(p_mutexjs, p_client1, p_client2, p_k, p_tests, 
+											rif40_sql_test(p_conString, p_mutexjs, p_client1, p_client2, p_k, p_tests, 
 												p_passed_or_failed, p_failed_flag, p_rif40_test_harness, start_time, p_mutex_id,
 												p_rif40_test_harness_results); 
 										});
@@ -849,7 +849,7 @@ SELECT * FROM b
 
 /* 
  * Function: 	rif40_sql_test()
- * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
+ * Parameters: 	Connection string, MutexJS package handle, Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
  *              {number passed, number failed}, failed flag, test harness results array, time of test harness start, 
  *				Test Mutex,
  *				results array
@@ -865,7 +865,7 @@ SELECT * FROM b
  *					Check pass/fail against expected 
  * 				call: _rif40_sql_test_end(): Rollback test case, recurse to next test case
  */
-function rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
+function rif40_sql_test(p_conString, p_mutexjs, p_client1, p_client2, p_j, p_tests, 
 				p_passed_or_failed, p_failed_flag, p_rif40_test_harness, p_start_time, p_mutex_id, p_rif40_test_harness_results) {	
 	
 	var test='[' + p_j + '/' + p_tests + ']: ' + p_rif40_test_harness[p_j-1].test_run_class + '] ' + 
@@ -920,7 +920,7 @@ function rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 					console.log('1: ' + test);			
 					console.log('2: BEGIN transaction: ' + test);		
 
-					_rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
+					_rif40_sql_test(p_conString, p_mutexjs, p_client1, p_client2, p_j, p_tests, 
 							p_passed_or_failed, p_failed_flag, p_rif40_test_harness, test, p_start_time, p_mutex_id,
 							p_rif40_test_harness_results);
 				});
@@ -929,7 +929,7 @@ function rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 	}
 	else {	
 		console.log('1: RECURSE level ' + p_rif40_test_harness[p_j-1].level + ': ' + test);			
-		_rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
+		_rif40_sql_test(p_conString, p_mutexjs, p_client1, p_client2, p_j, p_tests, 
 				p_passed_or_failed, p_failed_flag, p_rif40_test_harness, test, p_start_time, p_mutex_id,
 				p_rif40_test_harness_results);
 	}
@@ -937,7 +937,7 @@ function rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 
 /* 
  * Function: 	_rif40_sql_test()
- * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
+ * Parameters: 	Connection string, MutexJS package handle, Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
  *              {number passed, number failed}, failed flag, test harness results array, textual description of test, time of test harness start, 
  *				Test Mutex,
  *				results array
@@ -951,7 +951,7 @@ function rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
  *				Check pass/fail against expected
  *          Call: _rif40_sql_test_end(): Rollback test case, recurse to next test case
  */
-function _rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
+function _rif40_sql_test(p_conString, p_mutexjs, p_client1, p_client2, p_j, p_tests, 
 				p_passed_or_failed, p_failed_flag, p_rif40_test_harness, p_test_text, p_start_time, p_mutex_id,
 				p_rif40_test_harness_results) {
 // Check mutex defined
@@ -1094,7 +1094,7 @@ function _rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 					p_rif40_test_harness[p_j-1].time_taken = (Date.now()-start_time)/1000;
 					p_rif40_test_harness_results[p_rif40_test_harness[p_j-1].test_run_class].time_taken += 
 						p_rif40_test_harness[p_j-1].time_taken;
-					_rif40_sql_test_end(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
+					_rif40_sql_test_end(p_conString, p_mutexjs, p_client1, p_client2, p_j, p_tests, 
 							p_passed_or_failed, p_failed_flag, p_rif40_test_harness, p_test_text, p_start_time, p_mutex_id,
 							p_rif40_test_harness_results);
 				}); /* End of process results - run.on('end', ... ) */
@@ -1104,14 +1104,14 @@ function _rif40_sql_test(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 
 /* 
  * Function: 	_rif40_sql_test_end()
- * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
+ * Parameters: 	Connection string, MutexJS package handle, Master client (1) connection, worker thread client (2) connection, test number, number of tests, 
  *              {number passed, number failed}, failed flag, test harness results array, textual description of test, time of test harness start, 
  *				Test Mutex,
  *				results array
  * Returns:		Nothing
  * Description: Rollback test case, recurse to next test case
  */
-function _rif40_sql_test_end(p_mutexjs, p_client1, p_client2, p_j, p_tests, 
+function _rif40_sql_test_end(p_conString, p_mutexjs, p_client1, p_client2, p_j, p_tests, 
 				p_passed_or_failed, p_failed_flag, p_rif40_test_harness, p_test_text, p_start_time, p_mutex_id,
 				p_rif40_test_harness_results) {
 					
@@ -1202,7 +1202,7 @@ function _rif40_sql_test_end(p_mutexjs, p_client1, p_client2, p_j, p_tests,
 										p_mutexjs.lock(mutex_name, function(id) {
 											mutex_id=id;
 //											console.log('1: Gained update mutex [' + p_k + '/' + p_tests + ']: ' + mutex_name + ', id: ' + mutex_id);
-											end_test_harness(p_mutexjs, p_client1, p_client2, p_passed_or_failed, p_tests, p_k, p_failed_flag, 
+											end_test_harness(p_conString, p_mutexjs, p_client1, p_client2, p_passed_or_failed, p_tests, p_k, p_failed_flag, 
 													p_rif40_test_harness, p_start_time, mutex_id, p_rif40_test_harness_results); 
 										});
 									}
@@ -1298,7 +1298,7 @@ function test_result(p_pass, p_text, p_sql_stmt, p_rif40_test_harness, p_j) {
 
 /* 
  * Function: 	end_test_harness()
- * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, {tests passed, tests failed}, number of tests, 
+ * Parameters: 	Connection string, MutexJS package handle, Master client (1) connection, worker thread client (2) connection, {tests passed, tests failed}, number of tests, 
  *              failed flag, test harness results array, time of test harness start, Update Mutex,
  *				results array  
  * Returns:		Nothing
@@ -1314,7 +1314,7 @@ function test_result(p_pass, p_text, p_sql_stmt, p_rif40_test_harness, p_j) {
  *					On final test, COMMIT and exit with number of failed tests
  *					unlock mutex to allow next test resuklt to be updated
  */
-function end_test_harness(p_mutexjs, p_client1, p_client2, p_passed_or_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, 
+function end_test_harness(p_conString, p_mutexjs, p_client1, p_client2, p_passed_or_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, 
 		p_start_time, p_mutex_id, p_rif40_test_harness_results) {
 					
 // Check failed flag is NOT undefined	
@@ -1381,21 +1381,21 @@ function end_test_harness(p_mutexjs, p_client1, p_client2, p_passed_or_failed, p
 					console.log('1: BEGIN transaction: results UPDATE');
 
 					console.log('1: Test run results by test >>>');
-					_end_test_harness(p_mutexjs, p_client1, p_client2, p_passed_or_failed, p_tests, p_j, p_failed_flag, 
+					_end_test_harness(p_conString, p_mutexjs, p_client1, p_client2, p_passed_or_failed, p_tests, p_j, p_failed_flag, 
 							p_rif40_test_harness, p_start_time, p_mutex_id, p_rif40_test_harness_results);
 				});
 			}
 		});
 	}
 	else {
-		_end_test_harness(p_mutexjs, p_client1, p_client2, p_passed_or_failed, p_tests, p_j, p_failed_flag, 
+		_end_test_harness(p_conString, p_mutexjs, p_client1, p_client2, p_passed_or_failed, p_tests, p_j, p_failed_flag, 
 					p_rif40_test_harness, p_start_time, p_mutex_id, p_rif40_test_harness_results);
 	}
 }
 
 /* 
  * Function: 	_end_test_harness()
- * Parameters: 	MutexJS package handle, Master client (1) connection, worker thread client (2) connection, {tests passed, tests failed}, number of tests, 
+ * Parameters: 	Connection string, MutexJS package handle, Master client (1) connection, worker thread client (2) connection, {tests passed, tests failed}, number of tests, 
  *              failed flag, test harness results array, time of test harness start, Update Mutex,
  *				results array 
  * Returns:		Nothing
@@ -1406,7 +1406,7 @@ function end_test_harness(p_mutexjs, p_client1, p_client2, p_passed_or_failed, p
  *				On final test, COMMIT and exit with number of failed tests
  *				unlock mutex to allow next test resuklt to be updated
  */
-function _end_test_harness(p_mutexjs, p_client1, p_client2, p_passed_or_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, 
+function _end_test_harness(p_conString, p_mutexjs, p_client1, p_client2, p_passed_or_failed, p_tests, p_j, p_failed_flag, p_rif40_test_harness, 
 				p_start_time, p_mutex_id, p_rif40_test_harness_results) {
 	// Check p_rif40_test_harness_results object of arrays is NOT undefined	
 	if (p_rif40_test_harness_results === undefined) {
@@ -1573,6 +1573,7 @@ function _end_test_harness(p_mutexjs, p_client1, p_client2, p_passed_or_failed, 
 																		p_passed_or_failed.p_passed + ' passed\n';
 																}
 																msg = msg + '* Total time taken: ' + time_taken + ' S\n';
+																msg = msg + '* Connection string: ' + p_conString + '\n';
 																// Exit point on "normal" run. Fails if any tests are failed
 																console.log('*****************************************************************************\n' + '*\n' +
 																	msg + 
