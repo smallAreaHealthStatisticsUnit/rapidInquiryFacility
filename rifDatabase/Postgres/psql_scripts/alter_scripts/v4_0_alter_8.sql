@@ -328,6 +328,7 @@ SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_n
 -- Reload triggers (including fixes for test harness)
 --
 \i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_studies_checks.sql
+\i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_investigations_checks.sql
 
 --
 -- Reload log package

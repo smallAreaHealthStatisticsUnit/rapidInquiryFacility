@@ -571,6 +571,7 @@ $$;
 --
 END;
 
+\c - rif40
 VACUUM (FULL,VERBOSE,ANALYZE) rif40_test_harness;
 VACUUM (FULL,VERBOSE,ANALYZE) rif40_test_runs;
 
