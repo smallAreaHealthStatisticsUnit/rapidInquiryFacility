@@ -204,9 +204,9 @@ BEGIN
 	IF c3st_rec.test_case_title IS NOT NULL THEN
 		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test_register', '[71303] Registered test case %: %; parent: %', 
 			f_test_id::VARCHAR, test_case_title::VARCHAR, parent_test_id::VARCHAR);	
-		UPDATE rif40_test_runs
-		   SET number_test_cases_registered = number_test_cases_registered + 1
-		 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;	
+--		UPDATE rif40_test_runs
+--		   SET number_test_cases_registered = number_test_cases_registered + 1
+--		 WHERE test_run_id = (currval('rif40_test_run_id_seq'::regclass))::integer;	
 	ELSE	
 		PERFORM rif40_log_pkg.rif40_log('INFO', '_rif40_sql_test_register', '[71304] Test case already registered %: %', 
 			f_test_id::VARCHAR, test_case_title::VARCHAR);
