@@ -567,8 +567,8 @@ DROP VIEW IF EXISTS rif40_study_sql_log;
 DROP VIEW IF EXISTS rif40_user_projects;
 DROP VIEW IF EXISTS rif40_fdw_tables;
 
-ALTER TABLE t_rif40_inv_conditions DROP CONSTRAINT IF EXISTS t_rif40_inv_conditons_ogn;
-ALTER TABLE rif40_predefined_groups DROP CONSTRAINT IF EXISTS rif40_predefined_type_fk; 
+ALTER TABLE IF EXISTS t_rif40_inv_conditions DROP CONSTRAINT IF EXISTS t_rif40_inv_conditons_ogn;
+ALTER TABLE IF EXISTS rif40_predefined_groups DROP CONSTRAINT IF EXISTS rif40_predefined_type_fk; 
 DROP TABLE IF EXISTS rif40_table_outcomes;
 DROP TABLE IF EXISTS rif40_outcome_groups;
 DROP TABLE IF EXISTS rif40_outcomes;
