@@ -153,7 +153,7 @@ BEGIN
 --
 -- Verify state transition
 --
-	IF old_study_state = 'R' AND new_study_state != old_study_state THEN
+	IF old_study_state = 'U' AND new_study_state != old_study_state THEN
 		PERFORM rif40_log_pkg.rif40_error(-55000, 'rif40_verify_state_change', 
 			'Attempting to change the state (%=>%) of upgraded RIF30 study %. Please clone',
 			old_study_state::VARCHAR,
