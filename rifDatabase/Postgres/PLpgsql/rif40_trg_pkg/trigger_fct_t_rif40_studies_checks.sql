@@ -68,32 +68,6 @@ BEGIN
 END;
 $$;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 DROP TRIGGER IF EXISTS t_rif40_studies_checks ON "t_rif40_studies" CASCADE;
 
 CREATE OR REPLACE FUNCTION rif40_trg_pkg.trigger_fct_t_rif40_studies_checks() RETURNS trigger AS 
