@@ -68,10 +68,15 @@ BEGIN
 END;
 $$;
 
-DROP FUNCTION IF EXISTS rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER, BOOLEAN);
-DROP FUNCTION IF EXISTS rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER, Text[]);
+DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_create_disease_mapping_example(
+	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[], VARCHAR, VARCHAR); 
+DROP FUNCTION IF EXISTS rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER, VARCHAR, Text[]);
 
--- Old	
+-- Old
+DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_create_disease_mapping_example(
+	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[], VARCHAR); 
+DROP FUNCTION IF EXISTS rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER, Text[]);	
+DROP FUNCTION IF EXISTS rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER, BOOLEAN);
 DROP FUNCTION IF EXISTS rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER);
 DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_create_disease_mapping_example(
 	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[],VARCHAR[],VARCHAR[]); 
@@ -101,9 +106,11 @@ CREATE OR REPLACE FUNCTION rif40_sm_pkg.rif40_create_disease_mapping_example(
 	year_stop					INTEGER,
 	condition_array				VARCHAR[][],
 	investigation_desc_array 	VARCHAR[],
-	covariate_array				VARCHAR[]
+	covariate_array				VARCHAR[],
+	stop_after_table			VARCHAR DEFAULT NULL,
+	test_run_class 				VARCHAR DEFAULT 'rif40_create_disease_mapping_example'
 	)
-RETURNS void
+RETURNS INTEGER
 SECURITY INVOKER
 AS $func$
 /*
@@ -114,7 +121,9 @@ Parameters:	Geography, geolevel view, geolevel area, geolevel map, geolevel sele
 			investigation ICD conditions 2 dimensional array (i.e. matrix); 4 columnsxN rows:
 				outcome_group_name, min_condition, max_condition, predefined_group_name
 			investigation descriptions array, 
-			covariate array
+			covariate array,
+			stop after table [Halts creation after  this table - for test harness],
+			test run class
 Returns:	Nothing
 Description:	Create disease mapping exmaple
 
@@ -393,7 +402,8 @@ BEGIN
 '		 '||c2cdm_rec.suppression_value||' /* suppression_value */,'||E'\n'|| 
 '		 '||l_extract_permitted||' 		/* extract_permitted */,'||E'\n'|| 
 '		 '||l_transfer_permitted||'		/* transfer_permitted */)';
-	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id, 
+	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, 
+		parent_test_id, test_run_class,
 		ARRAY['trigger_fct_t_rif40_studies_checks']);
 	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_create_disease_mapping_example', 
 		'[56204] Created study: % % for project %',  
@@ -422,6 +432,9 @@ BEGIN
 		c2cdm_rec.suppression_value::VARCHAR,
 		l_extract_permitted::VARCHAR,
 		l_transfer_permitted::VARCHAR);
+	IF stop_after_table = 'rif40_studies' /* 1 */ THEN
+		RETURN parent_test_id;
+	END IF;	
 --	
 	OPEN c5cdm;
 	FETCH c5cdm INTO c5cdm_rec;
@@ -466,44 +479,51 @@ BEGIN
 			'	'||year_stop||' 		/* year_stop */,'||E'\n'||      
 			'	'||c1cdm_rec.max_age_group||' /* max_age_group */,'||E'\n'|| 
 			'	'||c1cdm_rec.min_age_group||' /* min_age_group */)';
-		parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id, 
+		parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, 
+			parent_test_id, test_run_class,
 			ARRAY['trigger_fct_t_rif40_investigations_checks']);
 	
 --
 -- 4. INSERT INTO rif40_inv_conditions
 --
-		sql_stmt2:='WITH data AS ('||E'\n'||
-'				SELECT '''||condition_array::Text||'''::Text[][] AS arr'||E'\n'||
-'			), b AS ('||E'\n'||
-'				SELECT arr[i][1] AS outcome_group_name,'||E'\n'|| 
-'					   arr[i][2] AS min_condition, '||E'\n'||
-'					   arr[i][3] AS max_condition, '||E'\n'||
-'					   arr[i][4] AS predefined_group_name, '||E'\n'||
-'       	           ROW_NUMBER() OVER() AS line_number'||E'\n'||
-'			      FROM data, generate_subscripts((SELECT arr FROM data), 1) i'||E'\n'||
-'			)'||E'\n'||
-'		SELECT outcome_group_name, min_condition, max_condition, predefined_group_name, line_number'||E'\n'||
-'		  FROM b';
-		sql_stmt:='INSERT /* 3 */ INTO rif40_inv_conditions('||E'\n'||
-'			outcome_group_name, min_condition, max_condition, predefined_group_name, line_number)'||E'\n'||
-			sql_stmt2||E'\n'||
-'		RETURNING outcome_group_name, min_condition, max_condition, predefined_group_name';
-		parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id, 
-			ARRAY['trigger_fct_t_rif40_inv_conditions_checks']);
-		FOR inv_cond_rec IN EXECUTE sql_stmt2 LOOP
---
-			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_create_disease_mapping_example', 	
-				'[56209] Created investigation: % (%): %; numerator: %; outcome_group_names: %, min/max/predefined group conditions: "%/%/%"',  
-				currval('rif40_inv_id_seq'::regclass)::VARCHAR,
-				l_inv_name::VARCHAR,
-				investigation_desc_array[i]::VARCHAR,
-				numer_tab::VARCHAR,
-				inv_cond_rec.outcome_group_name::VARCHAR,
-				inv_cond_rec.min_condition::VARCHAR,
-				inv_cond_rec.max_condition::VARCHAR,
-				inv_cond_rec.predefined_group_name::VARCHAR);
-		END LOOP;
+		IF stop_after_table IS NULL OR NOT stop_after_table = 'rif40_investigations' /* 2 */ THEN
+			sql_stmt2:='WITH data AS ('||E'\n'||
+	'				SELECT '''||condition_array::Text||'''::Text[][] AS arr'||E'\n'||
+	'			), b AS ('||E'\n'||
+	'				SELECT arr[i][1] AS outcome_group_name,'||E'\n'|| 
+	'					   arr[i][2] AS min_condition, '||E'\n'||
+	'					   arr[i][3] AS max_condition, '||E'\n'||
+	'					   arr[i][4] AS predefined_group_name, '||E'\n'||
+	'       	           ROW_NUMBER() OVER() AS line_number'||E'\n'||
+	'			      FROM data, generate_subscripts((SELECT arr FROM data), 1) i'||E'\n'||
+	'			)'||E'\n'||
+	'		SELECT outcome_group_name, min_condition, max_condition, predefined_group_name, line_number'||E'\n'||
+	'		  FROM b';
+			sql_stmt:='INSERT /* 3 */ INTO rif40_inv_conditions('||E'\n'||
+	'			outcome_group_name, min_condition, max_condition, predefined_group_name, line_number)'||E'\n'||
+				sql_stmt2||E'\n'||
+	'		RETURNING outcome_group_name, min_condition, max_condition, predefined_group_name';
+			parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, 
+				parent_test_id, test_run_class,
+				ARRAY['trigger_fct_t_rif40_inv_conditions_checks']);
+			FOR inv_cond_rec IN EXECUTE sql_stmt2 LOOP
+	--
+				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_create_disease_mapping_example', 	
+					'[56209] Created investigation: % (%): %; numerator: %; outcome_group_names: %, min/max/predefined group conditions: "%/%/%"',  
+					currval('rif40_inv_id_seq'::regclass)::VARCHAR,
+					l_inv_name::VARCHAR,
+					investigation_desc_array[i]::VARCHAR,
+					numer_tab::VARCHAR,
+					inv_cond_rec.outcome_group_name::VARCHAR,
+					inv_cond_rec.min_condition::VARCHAR,
+					inv_cond_rec.max_condition::VARCHAR,
+					inv_cond_rec.predefined_group_name::VARCHAR);
+			END LOOP;
+		END IF;		
 	END LOOP;
+	IF stop_after_table IN ('rif40_investigations', 'rif40_inv_conditions') /* 2,3 */ THEN
+		RETURN parent_test_id;
+	END IF;
 --
 -- 5. INSERT INTO rif40_study_areas
 --
@@ -524,10 +544,14 @@ BEGIN
 			E'\t'||'SELECT unnest('||E'\n'|| 
 				''''||geolevel_selection::Text||'''::Text[]) /* at Geolevel select */ AS study_area)';
 	END IF;
-	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id, 
+	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, 
+		parent_test_id, test_run_class, 
 		ARRAY['trigger_fct_t_rif40_study_areas_checks', 'trigger_fct_t_rif40_study_areas_checks2']);
 	GET DIAGNOSTICS study_area_count = ROW_COUNT;
-
+	IF stop_after_table = 'rif40_study_areas' /* 4 */ THEN
+		RETURN parent_test_id;
+	END IF;
+	
 --
 -- Get default comparison area, populate comparison areas [INSERT/trigger]
 --
@@ -544,9 +568,13 @@ BEGIN
 	sql_stmt:='INSERT /* 5 */ INTO rif40_comparison_areas(area_id)'||E'\n'|| 
 		'SELECT unnest('||E'\n'|| 
 				''''||comparision_area::Text||'''::Text[]) AS comparision_area';
-	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id, 
+	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, 
+		parent_test_id, test_run_class, 
 		ARRAY['trigger_fct_t_rif40_comp_areas_checks', 'trigger_fct_t_rif40_comp_areas_checks2']);
 	GET DIAGNOSTICS comparison_area_count = ROW_COUNT;
+	IF stop_after_table = 'rif40_comparison_areas' /* 5 */ THEN
+		RETURN parent_test_id;
+	END IF;
 --
 -- 7. INSERT INTO rif40_inv_covariates
 --
@@ -561,7 +589,8 @@ BEGIN
 		'  FROM a'||E'\n'||
 		'	LEFT OUTER JOIN rif40_covariates b ON'||E'\n'|| 
 		'		(a.covariate_name = b.covariate_name AND a.study_geolevel_name = b.geolevel_name AND a.geography = b.geography)';
-	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id, 
+	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, 
+		parent_test_id, test_run_class, 
 		ARRAY['trigger_fct_t_rif40_inv_covariates_checks']);		
 	GET DIAGNOSTICS covariate_count = ROW_COUNT;
 --
@@ -571,13 +600,17 @@ BEGIN
 		comparison_area_count::VARCHAR,
 		c3cdm_rec.defaultcomparea::VARCHAR,
 		covariate_count::VARCHAR);
+	IF stop_after_table = 'rif40_covariates' /* 6 */ THEN
+		RETURN parent_test_id;
+	END IF;
 --
 -- 8. INSERT INTO rif40_study_shares if any RIF DB role is a RIF manager and extraction is permitted
 --
 	FOR c4cdm_rec IN c4cdm LOOP
 		IF c4cdm_rec.is_rif_manager AND l_extract_permitted = 1 THEN
 			sql_stmt:='INSERT /* 7 */ INTO rif40_study_shares(grantee_username) VALUES ('''||c4cdm_rec.rolname||''')';
-			parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, parent_test_id, 
+			parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, 
+				parent_test_id, test_run_class, 
 				ARRAY['trigger_fct_rif40_study_shares_checks']);			
 			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_create_disease_mapping_example', 
 				'[56214] Shared study % to %',
@@ -586,18 +619,21 @@ BEGIN
 		END IF;
 	END LOOP;
 --
+	RETURN parent_test_id;
 END;
 $func$ LANGUAGE plpgsql;
 
 COMMENT ON FUNCTION rif40_sm_pkg.rif40_create_disease_mapping_example(
-	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[]) 
+	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[], VARCHAR, VARCHAR) 
 IS 'Function: 	rif40_create_disease_mapping_example()
 Parameters:	Geography, geolevel view, geolevel area, geolevel map, geolevel select, 
-		geolevel selection array, project, study name, denominator table, numerator table,
- 		year_start, year_stop,
-		investigation ICD conditions 2 dimensional array (i.e. matrix); 4 columnsxN rows:
-				outcome_group_name, min_condition, max_condition, predefined_group_name, 
-		investigation descriptions array, covariate array
+			geolevel selection array, project, study name, denominator table, numerator table,
+			year_start, year_stop,
+			investigation ICD conditions 2 dimensional array (i.e. matrix); 4 columnsxN rows:
+			outcome_group_name, min_condition, max_condition, predefined_group_name, 
+			investigation descriptions array, covariate array,
+			stop after table [Halts creation after  this table - for test harness],
+			test run class
 Returns:	Nothing
 Description:	Create disease mapping exmaple
 
@@ -743,17 +779,17 @@ study_id 		(currval(''rif40_study_id_seq''::regclass))::integer
 ';
 
 GRANT EXECUTE ON FUNCTION rif40_sm_pkg.rif40_create_disease_mapping_example(
-	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[]) 
+	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[], VARCHAR, VARCHAR) 
 	TO rif_manager;
 GRANT EXECUTE ON FUNCTION rif40_sm_pkg.rif40_create_disease_mapping_example(
-	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[]) 
+	VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR[],VARCHAR,VARCHAR,VARCHAR,VARCHAR,INTEGER,INTEGER,VARCHAR[][],VARCHAR[],VARCHAR[], VARCHAR, VARCHAR) 
  	TO rif40;
-
 	
 CREATE OR REPLACE FUNCTION rif40_sm_pkg._rif40_create_disease_mapping_example(	
 	sql_stmt				VARCHAR,
 	study_name				VARCHAR,
 	parent_test_id			INTEGER,
+	test_run_class			VARCHAR,
 	pg_debug_functions		Text[] DEFAULT NULL)
 RETURNS INTEGER
 SECURITY INVOKER
@@ -761,13 +797,14 @@ AS $func$
 /*
 Function: 	_rif40_create_disease_mapping_example()
 Parameters:	SQL statement, study name, parent_test_id,
+			test run class,
 			Array of Postgres functions for test harness to enable debug on
 Returns:	New parent_test_id
 Description:	Execute disease mapping exmaple	SQL statement, register with test harness,
 			
  */
 DECLARE
-	f_test_id INTEGER;
+	f_test_id 		INTEGER;
 BEGIN
 --
 -- Check for NULLs
@@ -790,7 +827,7 @@ BEGIN
 --
 	f_test_id:=rif40_sql_pkg._rif40_sql_test_register(
 			sql_stmt 		/* test_stmt */, 
-			'rif40_create_disease_mapping_example' /* test_run_class */, 
+			test_run_class  /* test_run_class */, 
 			study_name 	    /* test_case_title */, 
 			NULL::Text[][] 	/* results */, 
 			NULL::XML 		/* results_xml */,
@@ -807,8 +844,9 @@ BEGIN
 END;
 $func$ LANGUAGE plpgsql;
  
-COMMENT ON FUNCTION rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER, Text[]) IS 'Function: 	_rif40_create_disease_mapping_example()
+COMMENT ON FUNCTION rif40_sm_pkg._rif40_create_disease_mapping_example(VARCHAR, VARCHAR, INTEGER, VARCHAR, Text[]) IS 'Function: 	_rif40_create_disease_mapping_example()
 Parameters:	SQL statement, study name, parent_test_id,
+			test run class,
 			Array of Postgres functions for test harness to enable debug on
 Returns:	New parent_test_id
 Description:	Execute disease mapping exmaple	SQL statement, register with test harness';
