@@ -498,6 +498,8 @@ SELECT test_run_class, pass, COUNT(COALESCE(pass::Text, 'Null')) AS total
 SELECT * 
   FROM rif40_test_runs;
  
+SELECT statement_timestamp();
+ 
 --
 -- Check tests and runs
 --
