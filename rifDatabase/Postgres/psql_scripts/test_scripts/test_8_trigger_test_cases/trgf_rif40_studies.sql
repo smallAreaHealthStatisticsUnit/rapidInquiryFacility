@@ -120,7 +120,7 @@ BEGIN
 		NULL::XML      /* results_xml */,
 		'-20200'       /* pg_error_code_expected */,
 		FALSE          /* raise_exception_on_failure */, 
-		TRUE           /* expected_result */,
+		TRUE           /* expected_result: expected to failed with pg_error_code_expected */,
 		NULL           /* parent_test_id */,
 		'{trigger_fct_t_rif40_studies_checks}'::text[] /* pg debug functions */);
 -- 
@@ -177,7 +177,7 @@ BEGIN
 		NULL::XML      /* results_xml */,
 		'-20202'       /* pg_error_code_expected */,
 		FALSE          /* raise_exception_on_failure */, 
-		TRUE           /* expected_result */,
+		TRUE           /* expected_result: expected to failed with pg_error_code_expected */,
 		test_id        /* parent_test_id */,
 		'{trigger_fct_t_rif40_studies_checks}'::text[] /* pg debug functions */);	
 		
@@ -221,9 +221,102 @@ BEGIN
 		FALSE          /* raise_exception_on_failure */, 
 		TRUE           /* expected_result */,
 		test_id        /* parent_test_id */,
-		'{trigger_fct_t_rif40_studies_checks}'::text[] /* pg debug functions */);	
+		'{trigger_fct_t_rif40_studies_checks, rif40_verify_state_change}'::text[] /* pg debug functions */);	
 --
-	
+	RAISE INFO '06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone';
+	test_id:=rif40_sm_pkg.rif40_create_disease_mapping_example(
+		'SAHSU'::VARCHAR 			/* Geography */,
+		'LEVEL1'::VARCHAR			/* Geolevel view */,
+		'01'::VARCHAR				/* Geolevel area */,
+		'LEVEL4'::VARCHAR			/* Geolevel map */,
+		'LEVEL3'::VARCHAR			/* Geolevel select */,
+		c2th_rec.level3_array 		/* Geolevel selection array */,
+		'TEST'::VARCHAR 			/* project */, 
+		'06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone'::VARCHAR /* study name */, 
+		'SAHSULAND_POP'::VARCHAR 	/* denominator table */, 
+		'SAHSULAND_CANCER'::VARCHAR /* numerator table */,
+ 		1989						/* year_start */, 
+		1996						/* year_stop */,
+		condition_array 			/* investigation ICD conditions 2 dimensional array (i.e. matrix); 4 columnsxN rows:
+											outcome_group_name, min_condition, max_condition, predefined_group_name */,
+		investigation_desc_array 	/* investigation description array */,
+		covariate_array				/* covariate array */,
+		NULL						/* stop after table */,
+		'trgf_rif40_studies' 		/* test run class */);	
+	test_id:=rif40_sql_pkg._rif40_sql_test_register(		
+		'UPDATE t_rif40_studies /* Attempting to change the state (%=>%) of upgraded RIF30 study %. Please clone */
+			SET study_state = ''U''                    /* upgraded */
+		  WHERE study_id = currval(''rif40_study_id_seq''::regclass)' /* Test stmt */,
+		'trgf_rif40_studies' /* test run class */,
+		'06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone #UPDATE' /* test case title */,
+		NULL::Text[][] /* results */,
+		NULL::XML      /* results_xml */,
+		'-55002'       /* pg_error_code_expected */,
+		FALSE          /* raise_exception_on_failure */, 
+		TRUE           /* expected_result: expected to failed with pg_error_code_expected */,
+		test_id        /* parent_test_id */,
+		'{trigger_fct_t_rif40_studies_checks, rif40_verify_state_change}'::text[] /* pg debug functions */);
+--
+	RAISE INFO '07: Test rif40_sm_pkg.rif40_verify_state_change C=>V (verify study)';	
+		test_id:=rif40_sql_pkg._rif40_sql_test_register(		
+		'UPDATE t_rif40_studies /* Attempting to change the state (C=>V) of a completed study %. Please clone */
+			SET study_state = ''V''                    /* verified */
+		  WHERE study_id = currval(''rif40_study_id_seq''::regclass)' /* Test stmt */,
+		'trgf_rif40_studies' /* test run class */,
+		'08: Verify study' /* test case title */,
+		NULL::Text[][] /* results */,
+		NULL::XML      /* results_xml */,
+		NULL           /* pg_error_code_expected */,
+		FALSE          /* raise_exception_on_failure */, 
+		TRUE           /* expected_result */,
+		test_id        /* parent_test_id */,
+		'{trigger_fct_t_rif40_studies_checks, rif40_verify_state_change}'::text[] /* pg debug functions */);		
+	RAISE INFO '08: Test rif40_sm_pkg.rif40_verify_state_change V=>E (extract study)';		
+	test_id:=rif40_sql_pkg._rif40_sql_test_register(		
+		'UPDATE t_rif40_studies /* Test rif40_sm_pkg.rif40_verify_state_change C=>R */
+			SET study_state = ''E''                    /* extract */
+		  WHERE study_id = currval(''rif40_study_id_seq''::regclass)' /* Test stmt */,
+		'trgf_rif40_studies' /* test run class */,
+		'08: Test rif40_sm_pkg.rif40_verify_state_change V=>E (extract study) [needs to be run properly using rif40_run_study()]' /* test case title */,
+		NULL::Text[][] /* results */,
+		NULL::XML      /* results_xml */,
+		'-55006'       /* pg_error_code_expected */,
+		FALSE          /* raise_exception_on_failure */, 
+		TRUE           /* expected_result */,
+		test_id        /* parent_test_id */,
+		'{trigger_fct_t_rif40_studies_checks, rif40_verify_state_change}'::text[] /* pg debug functions */);	
+--
+-- Create new example, run study
+--
+	RAISE INFO '09: Test rif40_sm_pkg.rif40_verify_state_change E=>R (run study)';		
+	test_id:=rif40_sql_pkg._rif40_sql_test_register(		
+		'UPDATE t_rif40_studies /* Test rif40_sm_pkg.rif40_verify_state_change E=>R */
+			SET study_state = ''R''                    /* run */
+		  WHERE study_id = currval(''rif40_study_id_seq''::regclass)' /* Test stmt */,
+		'trgf_rif40_studies' /* test run class */,
+		'09: Test rif40_sm_pkg.rif40_verify_state_change E=>R (run study) [needs to be run properly using rif40_run_study()]' /* test case title */,
+		NULL::Text[][] /* results */,
+		NULL::XML      /* results_xml */,
+		'-55002'       /* pg_error_code_expected */,
+		FALSE          /* raise_exception_on_failure */, 
+		TRUE           /* expected_result */,
+		test_id        /* parent_test_id */,
+		'{trigger_fct_t_rif40_studies_checks, rif40_verify_state_change}'::text[] /* pg debug functions */);
+--		
+	RAISE INFO '10: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone';		
+--	test_id:=rif40_sql_pkg._rif40_sql_test_register(		
+--		'UPDATE t_rif40_studies /* Attempting to change the state (%=>%) of a completed study %. Please clone */
+--			SET study_state = ''V''                    /* verified */
+--		  WHERE study_id = currval(''rif40_study_id_seq''::regclass)' /* Test stmt */,
+--		'trgf_rif40_studies' /* test run class */,
+--		'10: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone' /* test case title */,
+--		NULL::Text[][] /* results */,
+--		NULL::XML      /* results_xml */,
+--		'-55001'       /* pg_error_code_expected */,
+--		FALSE          /* raise_exception_on_failure */, 
+--		TRUE           /* expected_result: expected to failed with pg_error_code_expected */,
+--		test_id        /* parent_test_id */,
+--		'{trigger_fct_t_rif40_studies_checks, rif40_verify_state_change}'::text[] /* pg debug functions */);		
 		
 --
 -- State change by another user cannot be tested, also update and delete checks (-20203 to 5)
