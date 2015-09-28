@@ -222,54 +222,52 @@ function db_connect(p_pg, p_mutexjs, p_hostname, p_database, p_user, p_port, p_f
 
 	var conString = 'postgres://' + p_user + '@' + p_hostname + ':' + p_port + '/' + p_database + '?application_name=db_test_harness';
 
-	// Use PGHOST, native authentication (i.e. same as psql)
-	try {
-		client1 = new p_pg.Client(conString);
-		console.log(p_num + ': Connected to Postgres using: ' + conString);
-		
-	}
-	catch(err) {
-		console.error(p_num + ': Could not create postgres 1st client [master] using: ' + conString, err);
-		if (p_hostname === 'localhost') {
-			
-			// If host = localhost, use IPv6 numeric notation. This prevent ENOENT errors from getaddrinfo() in Windows
-			// when Wireless is disconnected. This is a Windows DNS issue. psql avoids this somehow.
-			// You do need entries for ::1 in pgpass			
-
-			console.log(p_num + ': Attempt 2 (::1 instead of localhost) to connect to Postgres using: ' + conString);
-			conString = 'postgres://' + p_user + '@' + '[::1]' + ':' + p_port + '/' + p_database + '?application_name=db_test_harness';
-			try {
-				client1 = new p_pg.Client(conString);
-				console.log(p_num + ': Connected to Postgres using: ' + conString);
-				
-			}
-			catch(err) {
-				console.error(p_num + ': Could not create postgres 1st client [master] using: ' + conString, err);
-				process.exit(1);		
-			}
-		}
-		process.exit(1);		
-	}
-
-// Notice message event processors
-	client1.on('notice', function(msg) {
-		  console.log('1: %s', msg);
-	});
-		
+// Use PGHOST, native authentication (i.e. same as psql)
+	client1 = new p_pg.Client(conString);
 // Connect to Postgres database
 	client1.connect(function(err) {
 		if (err) {
-			console.error(p_num + ': Could not connect to postgres 1st client [master] using: ' + conString, err);
-			process.exit(1);	
+			console.error(p_num + ': Could not connect to postgres client ' + p_num + ' using: ' + conString, err);
+			if (p_hostname === 'localhost') {
+				
+// If host = localhost, use IPv6 numeric notation. This prevent ENOENT errors from getaddrinfo() in Windows
+// when Wireless is disconnected. This is a Windows DNS issue. psql avoids this somehow.
+// You do need entries for ::1 in pgpass			
+
+				console.log(p_num + ': Attempt 2 (::1 instead of localhost) to connect to Postgres using: ' + conString);
+				conString = 'postgres://' + p_user + '@' + '[::1]' + ':' + p_port + '/' + p_database + '?application_name=db_test_harness';
+				client1 = new p_pg.Client(conString);
+// Connect to Postgres database
+				client1.connect(function(err) {
+					if (err) {
+						console.error(p_num + ': Could not connect [2nd attempt] to postgres client ' + p_num + ' using: ' + conString, err);
+						process.exit(1);	
+					}
+					else {
+						if (p_failed && p_debug_level == 0) {
+							p_debug_level=1;
+						}
+// Call rif40_startup; then subsequent functions in an async tree
+						rif40_startup(p_pg, p_mutexjs, client1, p_num, p_debug_level, conString, client1, p_failed, p_test_run_class);
+					} // End of else connected OK 
+				}); // End of connect				
+				console.log(p_num + ': Connected to Postgres [2nd attempt] using: ' + conString);				
+			}
 		}
-		else {
+		else {			
 			if (p_failed && p_debug_level == 0) {
 				p_debug_level=1;
 			}
 // Call rif40_startup; then subsequent functions in an async tree
 			rif40_startup(p_pg, p_mutexjs, client1, p_num, p_debug_level, conString, client1, p_failed, p_test_run_class);
 		} // End of else connected OK 
-	}); // End of connect
+	}); // End of connect		
+	console.log(p_num + ': Connected to Postgres using: ' + conString);	
+
+	// Notice message event processors
+	client1.on('notice', function(msg) {
+		  console.log('1: %s', msg);
+	});
 }
 
 /* 
@@ -1541,7 +1539,14 @@ function _end_test_harness(p_conString, p_mutexjs, p_client1, p_client2, p_passe
 													p_client1.end();			
 													process.exit(1);														
 												}
-												else {																	
+												else {
+													console.log('1: INSERT INTO rif40_test_runs; SQL> ' + 
+														insert_stmt + ';\n\n\tr_test_run_title: "' + r_test_run_title + 						
+																  	  '";' + '\n\t' + 'r_time_taken: "' + r_time_taken +						
+																	  '";' + '\n\t' + 'r_tests: "' + r_tests +							
+																	  '";' + '\n\t' + 'r_passed: "' + r_passed +							
+																	  '";' + '\n\t' + 'r_failed: "' + r_failed + 
+																	  '"' + '\n\n', err);													
 													// Commit
 													var commit = p_client1.query('COMMIT', function(err, result) {
 														if (err) {
