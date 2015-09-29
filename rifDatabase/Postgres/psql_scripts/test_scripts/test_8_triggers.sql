@@ -451,13 +451,7 @@ SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise
 --
 -- End transaction so Node.js test harness can be called
 --
-END;
 
---
--- Start new transaction
---
-BEGIN;
- 
 --
 -- Re-run trigger test harness
 --
@@ -466,12 +460,19 @@ BEGIN
 	RAISE INFO 'T8--18: test_8_triggers.sql: Run trigger test harness';
 END;
 $$;
+
+END;
  
 --
 -- Run the Node.js test harness; building required modules if needed
 --
 \! make -C ../../TestHarness/db_test_harness all
- 
+
+--
+-- Start new transaction
+--
+BEGIN;
+  
 --
 -- Dump test harness
 --
