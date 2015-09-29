@@ -157,7 +157,7 @@ BEGIN
 --
 -- Do test
 --
-	IF UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 6)) = 'SELECT' THEN
+	IF UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 6)) = 'SELECT' OR UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 4)) = 'WITH' THEN
 		PERFORM rif40_sql_pkg.rif40_method4(test_stmt, test_case_title);
 --
 		sql_frag:='WITH a AS ( /* Test data */'||E'\n'||
@@ -263,7 +263,8 @@ BEGIN
 --
 -- Other SQL test statements (i.e. INSERT/UPDATE/DELETE for triggers) with RETURNING clause
 --
-	ELSIF UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 6)) IN ('INSERT', 'UPDATE', 'DELETE') THEN
+	ELSIF UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 6)) IN ('INSERT', 'UPDATE', 'DELETE') OR
+	      UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 2)) = 'DO' THEN
 		IF results IS NOT NULL THEN
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_sql_test', '[71262] SQL[INSERT/UPDATE/DELETE; RETURNING]> %;', 
 				test_stmt::VARCHAR);	
@@ -321,8 +322,9 @@ BEGIN
 		END IF;
 	ELSE
 		PERFORM rif40_log_pkg.rif40_error(-71269, '_rif40_sql_test', 
-			'Test case %: % FAILED, invalid statement type: % %SQL> %;', 
-			f_test_id::VARCHAR, test_case_title::VARCHAR, UPPER(SUBSTRING(LTRIM(test_stmt) FROM 1 FOR 6))::VARCHAR, E'\n'::VARCHAR, test_stmt::VARCHAR);	
+			'Test case %: % FAILED, invalid statement type: %SQL> %;', 
+			f_test_id::VARCHAR, test_case_title::VARCHAR, 
+			E'\n'::VARCHAR, test_stmt::VARCHAR);	
 	END IF;
 --
 -- Remove test specific debug messages

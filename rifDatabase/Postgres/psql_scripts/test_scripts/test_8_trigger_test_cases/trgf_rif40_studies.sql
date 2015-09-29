@@ -207,7 +207,7 @@ BEGIN
 											outcome_group_name, min_condition, max_condition, predefined_group_name */,
 		investigation_desc_array 	/* investigation description array */,
 		covariate_array				/* covariate array */,
-		NULL						/* stop after table */,
+		NULL						/* parent_test_id */,
 		'trgf_rif40_studies' 		/* test run class */);	
 	test_id:=rif40_sql_pkg._rif40_sql_test_register(		
 		'UPDATE t_rif40_studies /* Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone */
@@ -241,7 +241,7 @@ BEGIN
 											outcome_group_name, min_condition, max_condition, predefined_group_name */,
 		investigation_desc_array 	/* investigation description array */,
 		covariate_array				/* covariate array */,
-		NULL						/* stop after table */,
+		NULL						/* parent_test_id */,
 		'trgf_rif40_studies' 		/* test run class */);	
 	test_id:=rif40_sql_pkg._rif40_sql_test_register(		
 		'UPDATE t_rif40_studies /* Attempting to change the state (%=>%) of upgraded RIF30 study %. Please clone */
@@ -288,35 +288,67 @@ BEGIN
 --
 -- Create new example, run study
 --
-	RAISE INFO '09: Test rif40_sm_pkg.rif40_verify_state_change E=>R (run study)';		
+	RAISE INFO '09: Run study';		
+	test_id:=rif40_sql_pkg._rif40_sql_test_register(
+		'DO LANGUAGE plpgsql '||CHR(36)||CHR(36)||' /* $ x2 */
+DECLARE 
+	c9_trgf_stud CURSOR FOR
+		WITH a AS ( /* RIF40 run study returns TRUE/FALSE as to whether a study runs OK or not.
+					   This cannot be tested as the output tester runs SELECT statements a second time
+					   and this causes a state machine error */
+			SELECT rif40_sm_pkg.rif40_run_study(currval(''rif40_study_id_seq''::regclass)::INTEGER) AS study_ran_ok
+		)
+		SELECT CASE /* Process TRUE/FALSE return code into NULL (OK)/EXCEPTION FALSE; results comparator will case an exception */
+					WHEN study_ran_ok THEN NULL::Text
+					ELSE rif40_log_pkg.rif40_error(-99999, ''trgf_rif40_studies'', ''09: Run study failed'')::Text 
+			   END AS study_ran_ok
+		  FROM a;
+	c9_rec RECORD;
+BEGIN
+	OPEN c9_trgf_stud;
+	FETCH c9_trgf_stud INTO c9_rec;
+	CLOSE c9_trgf_stud;
+END;'||E'\n'||CHR(36)||CHR(36)||';',
+		'trgf_rif40_studies' /* test run class */,
+		'09: Run study' /* test case title */,		
+		NULL::Text[][] /* results */,
+		NULL::XML      /* results_xml */,
+		NULL           /* pg_error_code_expected */,
+		FALSE          /* raise_exception_on_failure */, 
+		TRUE           /* expected_result */,
+		test_id        /* parent_test_id */,
+		'{trigger_fct_t_rif40_studies_checks, rif40_verify_state_change, rif40_run_study, rif40_ddl, rif40_study_ddl_definer, 
+		  rif40_create_insert_statement, rif40_execute_insert_statement, rif40_compute_results}'::text[] /* pg debug functions */);	
+--		
+	RAISE INFO '10: Test rif40_sm_pkg.rif40_verify_state_change E=>R (run study)';		
 	test_id:=rif40_sql_pkg._rif40_sql_test_register(		
-		'UPDATE t_rif40_studies /* Test rif40_sm_pkg.rif40_verify_state_change E=>R */
+		'UPDATE t_rif40_studies /* Test rif40_sm_pkg.rif40_verify_state_change R=>R */
 			SET study_state = ''R''                    /* run */
 		  WHERE study_id = currval(''rif40_study_id_seq''::regclass)' /* Test stmt */,
 		'trgf_rif40_studies' /* test run class */,
-		'09: Test rif40_sm_pkg.rif40_verify_state_change E=>R (run study) [needs to be run properly using rif40_run_study()]' /* test case title */,
+		'10: Test rif40_sm_pkg.rif40_verify_state_change R=>R (run study)' /* test case title */,
 		NULL::Text[][] /* results */,
 		NULL::XML      /* results_xml */,
-		'-55002'       /* pg_error_code_expected */,
+		'-20202'       /* pg_error_code_expected */,
 		FALSE          /* raise_exception_on_failure */, 
 		TRUE           /* expected_result */,
 		test_id        /* parent_test_id */,
 		'{trigger_fct_t_rif40_studies_checks, rif40_verify_state_change}'::text[] /* pg debug functions */);
 --		
-	RAISE INFO '10: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone';		
---	test_id:=rif40_sql_pkg._rif40_sql_test_register(		
---		'UPDATE t_rif40_studies /* Attempting to change the state (%=>%) of a completed study %. Please clone */
---			SET study_state = ''V''                    /* verified */
---		  WHERE study_id = currval(''rif40_study_id_seq''::regclass)' /* Test stmt */,
---		'trgf_rif40_studies' /* test run class */,
---		'10: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone' /* test case title */,
---		NULL::Text[][] /* results */,
---		NULL::XML      /* results_xml */,
---		'-55001'       /* pg_error_code_expected */,
---		FALSE          /* raise_exception_on_failure */, 
---		TRUE           /* expected_result: expected to failed with pg_error_code_expected */,
---		test_id        /* parent_test_id */,
---		'{trigger_fct_t_rif40_studies_checks, rif40_verify_state_change}'::text[] /* pg debug functions */);		
+	RAISE INFO '11: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone';		
+	test_id:=rif40_sql_pkg._rif40_sql_test_register(		
+		'UPDATE t_rif40_studies /* Attempting to change the state (%=>%) of a completed study %. Please clone */
+			SET study_state = ''V''                    /* verified */
+		  WHERE study_id = currval(''rif40_study_id_seq''::regclass)' /* Test stmt */,
+		'trgf_rif40_studies' /* test run class */,
+		'11: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone' /* test case title */,
+		NULL::Text[][] /* results */,
+		NULL::XML      /* results_xml */,
+		'-55001'       /* pg_error_code_expected */,
+		FALSE          /* raise_exception_on_failure */, 
+		TRUE           /* expected_result: expected to failed with pg_error_code_expected */,
+		test_id        /* parent_test_id */,
+		'{trigger_fct_t_rif40_studies_checks, rif40_verify_state_change}'::text[] /* pg debug functions */);		
 		
 --
 -- State change by another user cannot be tested, also update and delete checks (-20203 to 5)
