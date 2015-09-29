@@ -1503,99 +1503,91 @@ function _end_test_harness(p_conString, p_mutexjs, p_client1, p_client2, p_passe
 									}
 	
 // Do array insert into rif40_test_runs
-										var insert_stmt='INSERT INTO rif40_test_runs(test_run_title,\n' +
+									var insert_stmt='INSERT INTO rif40_test_runs(test_run_title,\n' +
 									'		time_taken, tests_run, number_passed, number_failed,\n' +
 									'		number_test_cases_registered, number_messages_registered)\n' +
 									'SELECT \n' +
-									'		unnest($1::VARCHAR[]) AS test_run_title,\n' +
-									'		unnest($2::NUMERIC[]) AS time_taken,\n' +
-									'		unnest($3::INTEGER[]) AS tests_run,\n' +
-									'		unnest($4::INTEGER[]) AS number_passed,\n' +
-									'		unnest($5::INTEGER[]) AS number_failed,\n' +
+									'		unnest(\'{' + r_test_run_title + '}\'::VARCHAR[]) AS test_run_title,\n' +
+									'		unnest(\'{' + r_time_taken + '}\'::NUMERIC[]) AS time_taken,\n' +
+									'		unnest(\'{' + r_tests + '}\'::INTEGER[]) AS tests_run,\n' +
+									'		unnest(\'{' + r_passed + '}\'::INTEGER[]) AS number_passed,\n' +
+									'		unnest(\'{' + r_failed + '}\'::INTEGER[]) AS number_failed,\n' +
 									'		0::INTEGER AS number_test_cases_registered,\n' +
-									'		0::INTEGER AS number_messages_registered /* db_test_harness.js does not register */';	
+									'		0::INTEGER AS number_messages_registered /* db_test_harness.js does not register */\n' +
+									'RETURNING *';	
 										var p_test_run_title = 'db_test_harness.js';
 										if (p_failed_flag) {
 											p_test_run_title = p_test_run_title + ' -F';
-										}
+										}	
 										var time_taken = (Date.now()-p_start_time)/1000;
-										var insert = p_client1.query({
-													text: insert_stmt, 
-													values: [r_test_run_title,								
-															 r_time_taken,								
-															 r_tests,							
-															 r_passed,						
-															 r_failed]}, 				 
+										var insert = p_client1.query(insert_stmt, 				 
 											function(err, result) {
 												if (err) {
 													p_client2.end();
 													console.error('1: Error in INSERT INTO rif40_test_runs; SQL> ' + 
-														insert_stmt + ';\n\n\tr_test_run_title: "' + r_test_run_title + 						
-																  	  '";' + '\n\t' + 'r_time_taken: "' + r_time_taken +						
-																	  '";' + '\n\t' + 'r_tests: "' + r_tests +							
-																	  '";' + '\n\t' + 'r_passed: "' + r_passed +							
-																	  '";' + '\n\t' + 'r_failed: "' + r_failed + 
-																	  '"' + '\n\n', err);
+														insert_stmt + ';\n', err);
 													p_client1.end();			
 													process.exit(1);														
 												}
 												else {
-													console.log('1: INSERT INTO rif40_test_runs; SQL> ' + 
-														insert_stmt + ';\n\n\tr_test_run_title: "' + r_test_run_title + 						
-																  	  '";' + '\n\t' + 'r_time_taken: "' + r_time_taken +						
-																	  '";' + '\n\t' + 'r_tests: "' + r_tests +							
-																	  '";' + '\n\t' + 'r_passed: "' + r_passed +							
-																	  '";' + '\n\t' + 'r_failed: "' + r_failed + 
-																	  '"' + '\n\n', err);													
-													// Commit
-													var commit = p_client1.query('COMMIT', function(err, result) {
-														if (err) {
-															p_client2.end();
-															console.error('1: Error in COMMIT transaction;', err);
-															p_client1.end();			
-															process.exit(1);			
-														}
-														else {
-															// Transaction COMMIT OK 
-															commit.on('end', function(result) {	
-																console.log('1: COMMIT transaction.');
-																
+													insert.on('row', function(row) {
+														//fired once for each row returned
+														console.log('1: INSERT ROW!!!!');
+														result.addRow(row);
+													});
+													insert.on('end', function(result) {
+														console.log('1: INSERT INTO rif40_test_runs; [' + result + ' rows]; SQL> ' + 
+															insert_stmt + ';');													
+														// Commit
+														var commit = p_client1.query('COMMIT', function(err, result) {
+															if (err) {
 																p_client2.end();
-																p_client1.end();	
-																
-//																console.log('1: [' + p_j + '/' + p_tests + '] ' + ' Release update mutex: ' + p_mutex_id);
-																p_mutexjs.release(p_mutex_id);
-									
-																var msg;
-																if (p_passed_or_failed.p_failed == 0) {
-																	msg = '* Test harness run had no error(s); ' + p_passed_or_failed.p_passed + ' passed\n';																	
-																}
-																else if (p_passed_or_failed.p_failed == 1) {
-																	msg = '* Test harness run had: 1 error; ' + p_passed_or_failed.p_passed + ' passed\n';																	
-																}
-																else {
-																	msg = '* Test harness run had: ' + p_passed_or_failed.p_failed + ' errors; ' + 
-																		p_passed_or_failed.p_passed + ' passed\n';
-																}
-																msg = msg + '* Total time taken: ' + time_taken + ' S\n';
-																msg = msg + '* Connection string: ' + p_conString + '\n';
-																// Exit point on "normal" run. Fails if any tests are failed
-																console.log('*****************************************************************************\n' + '*\n' +
-																	msg + 
-																	'*\n' + '*****************************************************************************\n');
-																var passed_and_failed=p_passed_or_failed.p_passed + p_passed_or_failed.p_failed;
-																if (passed_and_failed === p_tests) {
-																	process.exit(p_passed_or_failed.p_failed);
-																}
-																else {
-																	console.error('1: Number of tests (' + p_tests + ') != passed+failed: (' + passed_and_failed + ')');
-																	process.exit(1);	
-																}
-															});
-														}
+																console.error('1: Error in COMMIT transaction;', err);
+																p_client1.end();			
+																process.exit(1);			
+															}
+															else {
+																// Transaction COMMIT OK 
+																commit.on('end', function(result) {	
+																	console.log('1: COMMIT transaction.');
+																	
+																	p_client2.end();
+																	p_client1.end();	
+																	
+	//																console.log('1: [' + p_j + '/' + p_tests + '] ' + ' Release update mutex: ' + p_mutex_id);
+																	p_mutexjs.release(p_mutex_id);
+										
+																	var msg;
+																	if (p_passed_or_failed.p_failed == 0) {
+																		msg = '* Test harness run had no error(s); ' + p_passed_or_failed.p_passed + ' passed\n';																	
+																	}
+																	else if (p_passed_or_failed.p_failed == 1) {
+																		msg = '* Test harness run had: 1 error; ' + p_passed_or_failed.p_passed + ' passed\n';																	
+																	}
+																	else {
+																		msg = '* Test harness run had: ' + p_passed_or_failed.p_failed + ' errors; ' + 
+																			p_passed_or_failed.p_passed + ' passed\n';
+																	}
+																	msg = msg + '* Total time taken: ' + time_taken + ' S\n';
+																	msg = msg + '* Connection string: ' + p_conString + '\n';
+																	// Exit point on "normal" run. Fails if any tests are failed
+																	console.log('*****************************************************************************\n' + '*\n' +
+																		msg + 
+																		'*\n' + '*****************************************************************************\n');
+																	var passed_and_failed=p_passed_or_failed.p_passed + p_passed_or_failed.p_failed;
+																	if (passed_and_failed === p_tests) {
+																		process.exit(p_passed_or_failed.p_failed);
+																	}
+																	else {
+																		console.error('1: Number of tests (' + p_tests + ') != passed+failed: (' + passed_and_failed + ')');
+																		process.exit(1);	
+																	}
+																});
+															}
+														});
 													});
 												}
-										});										
+											});												
 								} /* At last test */
 //
 // Recursion replaced by a Mutex lock
