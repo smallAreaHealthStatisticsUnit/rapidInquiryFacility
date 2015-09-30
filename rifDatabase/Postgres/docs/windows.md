@@ -30,3 +30,4 @@ Type "help" for help.
 cmd.exe /c chcp 1252
 ```
 * Or: modify the cmd shortcut to run *cmd.exe /k chcp 1252*
+
