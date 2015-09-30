@@ -3,8 +3,11 @@
 ## Database development environment
 
 Current two databases are used: *sahsuland* and *sahsuland_dev*. The installer database *sahsuland* is kept stable for long periods, 
-*sahsuland_dev* is the working database. Both *sahsuland* and *sahsuland_dev* are built with the completed alter 
-scripts. Instructions to build the *sahsuland_dev* database to include the alter scripts under development are included.
+*sahsuland_dev* is the working database. The development database *sahusland_dev* is built from psql scripts which create and 
+populate the database ojects. Then alter scripts not under development and then run and the database tested. The database is then 
+exported and then imported into *sahsuland*. The *sahsuland_dev* database can then be enhanced with the alter scripts under development.
+
+The middleware always runs against sahusland.
 
 After the move from the SAHSU private network to the main 
 Imperial network the database structure is only modified by alter scripts so that the SAHSU Private network 
@@ -38,6 +41,8 @@ On Windows:
 * Install a C/C++ compiler, suitable for use by Node.js. I used Microsoft Visual Studio 2012 
   under an Academic licence. The dependency on Node.js will be reduced by replacing the current 
   program with Node.js web services available for use by the wider RIF community.
+* Create the Postgres etc directory (e.g. C:\Program Files\PostgreSQL\9.3\etc) and grant full control 
+  to the username(s) running db_setup. This is so the build can install the psqlrc file.
 
 For more information see: [Windows installer notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/windows.md)
 
@@ -66,7 +71,19 @@ Run up a command tool, *not* in the Postgres build directory (psql_scripts):
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres>make
 make: *** No targets specified and no makefile found.  Stop.
 ```
-* Check logon to psql with a password for:
+
+#### Configuring make
+
+**Do not edit the Makefile directly; subsequent git changes will cause conflicts and you may loose 
+your changes.** Instead, in the GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts build directory, 
+copy Makefile.local.example to Makefile.local and edit Makefile.local. Beware 
+of your choice of editor on especially Windows. The RIF is developed on Windows and Linux at the same time so 
+you will have files with both Linux <CR> and Windows <CRLF> semantics. Windows Notepad in particular 
+does not understand Linux files.
+
+If you enable PL/R then the directories ? and ? must exist
+
+* Make sure psql and make run correctly on the command line (see the Windows notes). Check logon to psql with a password for:
   * postgres
 * Check Node.js is correctly installed; *cd GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node*; *make install topojson*. 
   The [Node.js install dialog]
@@ -86,40 +103,56 @@ The RIF database is built using GNU make for ease of portability. The RIF is bui
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make db_setup
 ```
    **Note that this does not apply the alter scripts under development**
+   
 * To build or rebuild the sahsuland_dev developement database. This is normally used for regression testing:
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make clean sahsuland_dev
 ```
    **Note that this does not apply the alter scripts under development**
+   
 * To build or rebuild sahsuland_dev:
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make clean sahsuland_dev
 ```
+
 * To patch sahsuland and sahsuland_dev:
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make patch
 ```
-   **Patching will be improved so that scripts are only run once; at present all patch scripts are run and designed to be run multiple times**
-#### Configuring make
 
-**Do not edit the Makefile directly; subsequent git changes will cause conflicts and you may loose 
-your changes.** Instead copy Makefile.local.example to Makefile.local and edit Makefile.local. Beware 
-of your choice of editor on especially Windows. The RIF is developed on Windows and Linux at the same time so 
-you will have files with both Linux <CR> and Windows <CRLF> semantics. Windows Notepad in particular 
-does not understand Linux files.
+* To re-patch sahsuland and sahsuland_dev:
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make repatch
+```
+
+* To patch sahsuland_dev using the alter scripts under development:
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make dev
+```
+   **Patching will be improved so that scripts are only run once; at present all patch scripts are run and 
+     designed to be run multiple times**
 
 ##### User setup
 
 For make to work it needs to be able to logon as following users:
 
-* postgres     - The database administrator
-* rif40        - The schema owner
-* &lt;user login&gt; - Your user login. This must be in lowercase and without spaces
+* postgres     - The database administrator. You will have set this password when you or the installer created 
+                 the Postgres cluster.
+* rif40        - The schema owner. You choose this password (see ENCRYPTED_RIF40_PASSWORD below)
+* &lt;user login&gt; - Your user login. This must be in lowercase and without spaces. The build scripts will 
+                 convert a mixed case username to lowercase if the Linux program tr is on the path. 
 * notarifuser  - A security test user
 
-The password for all users must be set in your local .pgpass files (see Postgres documentation for its location on various OS). 
-The postgres user password must be correct in the .pgpass file and in Makefile.local or you will be locked out of postgres. 
-The accounts apart from postgres are created by db_setup.sql.
+The password for all users must be set in your local .pgpass/pgpass.conf files (see Postgres documentation for its location on various OS). 
+The postgres user password must be correct in the .pgpass/pgpass.conf file and in Makefile.local or you will be locked out of postgres. 
+The accounts apart from postgres are created by *db_create.sql*.
+
+**IMPORTANT**
+
+* By default *&lt;user login&gt;* and *notarifuser* passwords are the same as the username. It is advisable to set
+  the *rif40* password to *rif40* for the moment as the middleware still uses hard coded passwords. This will be removed.  
+* By default Postgres uses MD5 authentication; the user password is idependent of the Windows password unless you set up
+  operating system, Kerberos or LDAP authentication 
 
 E.g. C:\Users\pch\AppData\Roaming\postgresql\pgpass.conf:
 ```
@@ -129,22 +162,174 @@ wpea-rif1:5432:*:rif40:<password>
 wpea-rif1:5432:*:notarifuser:<password>
 ```
 
-**Setting passwords in Makefile.local is in the next section**
+Once you have setup the *pgpass* file, check you can logon using psql as the database adminstrator account; *postgres*.
+```
+psql -d postgres -U postgres
+You are connected to database "postgres" as user "postgres" on host "wpea-rif1" at port "5432".
+psql (9.3.5)
+Type "help" for help.
+
+postgres=#
+```
+See the port specific instructions if you get a code page error or the shell cannot find psql.
+
+The following should normally be set in your shell environment (see port specific instructions):
+
+* PGDATABASE - sahusland_dev
+* PGHOST - localhost
+
+Makefile.local is used to set:
+
+* ENCRYPTED_POSTGRES_PASSWORD
+* ENCRYPTED_RIF40_PASSWORD
+
+The is in the form of an Md5 hash of the password with the username appended. It can be generated as follows:
+```
+SELECT 'md5'||md5('Imperial1234'||'rif40') AS password;
+              password
+-------------------------------------
+ md5a210d9711fa5ffb4f170c60676c8a63e
+(1 row)
+```
+
+The database creation script *db_create.sql* check tyo see of the current Postgres adminstrator (*postgres*) password is the 
+same as set in the Makefile, and will abort database creation if it is not.
+```
+ALTER USER postgres ENCRYPTED PASSWORD 'md5a210d9711fa5ffb4f170c60676c8a63e';
+```
+
+Once *db_create.sql* has created the user accounts, each is tested in turn to check that the .pgpass/pgpass.conf 
+file is setup correctly.
+
+**See next section for Makefile.local example**
 
 ##### Makefile.local settings
 
-Typical example:
+Typical example (Makefile.local.example):
 ```
-PGDATABASE=sahsuland_dev
-PGHOST=wpea-rif1
-DEFAULT_VERBOSITY=terse
-DEFAULT_DEBUG_LEVEL=0
-DEFAULT_ECHO=none
-DEFAULT_PSQL_USER=rif40
-DEFAULT_ENCRYPTED_POSTGRES_PASSWORD=md57bf0096f3dde481e6802bd534959821c
-DEFAULT_ENCRYPTED_RIF40_PASSWORD=md5ace96664d7641b9dd1a0a4bafc08418b
-DEFAULT_USE_PLR=Y
-DEFAULT_CREATE_SAHSULAND_ONLY=Y
+# ************************************************************************
+#
+# GIT Header
+#
+# $Format:Git ID: (%h) %ci$
+# $Id: e96a6b0aa1ba85325e1b7b0e57163d2b7707440b $
+# Version hash: $Format:%H$
+#
+# Description:
+#
+# Rapid Enquiry Facility (RIF) - Makefile.local environment overrides (example)
+#
+# Copyright:
+#
+# The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+# that rapidly addresses epidemiological and public health questions using 
+# routinely collected health and population data and generates standardised 
+# rates and relative risks for any given health outcome, for specified age 
+# and year ranges, for any given geographical area.
+#
+# Copyright 2014 Imperial College London, developed by the Small Area
+# Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+# is funded by the Public Health England as part of the MRC-PHE Centre for 
+# Environment and Health. Funding for this project has also been received 
+# from the Centers for Disease Control and Prevention.  
+#
+# This file is part of the Rapid Inquiry Facility (RIF) project.
+# RIF is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# RIF is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+# to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+# Boston, MA 02110-1301 USA
+#
+# Author:
+#
+# Peter Hambly, SAHSU
+#
+# Local overrides; copy Makefile.local.example to Makefile.local and edit Makefile.local
+#
+# Local Makefile overrides - example
+#
+# Postgres ENV variables
+#
+#PGHOST=localhost
+#
+# ENCRYPTED_POSTGRES/RIF40_PASSWORD hash comes from PGAdmin III or psql
+#
+# Postgres MD5 password format is: 
+#
+# 'md5'||md5('password'||'username'); e.g. to set the rif40 password to: Imperial1234, use psql:
+#
+# SELECT 'md5'||md5('Imperial1234'||'rif40') AS password;
+# SELECT 'md5'||md5('Imperial1234'||'postgres') AS password;
+#
+# The rif user password is always set to the username
+#
+#ENCRYPTED_POSTGRES_PASSWORD=md5913e79312c717f83cfc1626754233824
+#ENCRYPTED_RIF40_PASSWORD=md5a210d9711fa5ffb4f170c60676c8a63e
+#
+# Only set SAHSULAND_TABLESPACE_DIR if postgres has access to the directory!
+#
+# Make you escape spaces in the correct manner for the OS:
+#
+# e.g.
+#
+# Windows: SAHSULAND_TABLESPACE_DIR=\"C:rif40 database\"
+#
+#SAHSULAND_TABLESPACE_DIR=\"C:/rif40 database\"
+
+#
+# Default Windows Administrator
+#
+DEFAULT_WINDOWS_ADMIN_USER=Administrator
+
+#
+# PL/pgsql debug levels (DEBUG_LEVEL);
+#
+# 0 - Suppressed, INFO only
+# 1 - Major function calls
+# 2 - Major function calls, data
+# 3 - Reserved for future used
+# 4 - Reserved for future used
+#
+# PSQL verbosity (VERBOSITY):
+#
+# verbose	- Messages/errors with full context
+# terse 	- Just the error or message
+#
+# PSQL echo (ECHO)
+#
+# all: 		- All SQL
+# none:		- No SQL
+#
+# PSQL script user (PSQL_USER)
+#
+# - Usually rif40 (schema owner)
+#
+# Use PL/R (USE_PLR)
+#
+# - Database has PL/R extension loaded (not needed by default)
+#
+# Create SAHSULAND database only (CREATE_SAHSULAND_ONLY)
+#
+# - Do not create SAHSULAND_DEV
+#
+#VERBOSITY=terse
+#DEBUG_LEVEL=0
+#ECHO=none
+#PSQL_USER=rif40
+#USE_PLR=N
+#CREATE_SAHSULAND_ONLY=N
+
+#
+# Eof
 ```
 
 Parameters:
