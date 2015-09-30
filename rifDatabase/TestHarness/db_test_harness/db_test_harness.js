@@ -1479,11 +1479,11 @@ function _end_test_harness(p_conString, p_mutexjs, p_client1, p_client2, p_passe
 											non_runs++;
 										}
 										else {								
-											console.log('1: ' + obj + 
-												': tests: ' + p_rif40_test_harness_results[obj].tests + 
-												', passed: ' + p_rif40_test_harness_results[obj].passed + 
-												', failed: ' + p_rif40_test_harness_results[obj].failed + 
-												', time taken: ' + p_rif40_test_harness_results[obj].time_taken);	
+//											console.log('1: ' + obj + 
+//												': tests: ' + p_rif40_test_harness_results[obj].tests + 
+//												', passed: ' + p_rif40_test_harness_results[obj].passed + 
+//												', failed: ' + p_rif40_test_harness_results[obj].failed + 
+//												', time taken: ' + p_rif40_test_harness_results[obj].time_taken);	
 											r_test_run_title[l] = obj;
 											r_tests[l] = p_rif40_test_harness_results[obj].tests;
 											r_passed[l] = p_rif40_test_harness_results[obj].passed;
@@ -1503,6 +1503,36 @@ function _end_test_harness(p_conString, p_mutexjs, p_client1, p_client2, p_passe
 									}
 	
 // Do array insert into rif40_test_runs
+/*
+1: INSERT INTO rif40_test_runs; [{"command":"INSERT","rowCount":3,"oid":0,"rows":[{"test_run_id":1,"test_run_title":"rif40_create_disease_ma
+pping_example","test_date":"2015-09-29T14:09:27.311Z","time_taken":"20.166999999999998","username":"pch","tests_run":7,"number_passed":7,"nu
+mber_failed":0,"number_test_cases_registered":0,"number_messages_registered":0},{"test_run_id":2,"test_run_title":"test_8_triggers.sql","tes
+t_date":"2015-09-29T14:09:27.311Z","time_taken":"14.373999999999999","username":"pch","tests_run":8,"number_passed":8,"number_failed":0,"num
+ber_test_cases_registered":0,"number_messages_registered":0},{"test_run_id":3,"test_run_title":"trgf_rif40_studies","test_date":"2015-09-29T
+14:09:27.311Z","time_taken":"172.373","username":"pch","tests_run":26,"number_passed":26,"number_failed":0,"number_test_cases_registered":0,
+"number_messages_registered":0}],"fields":[{"name":"test_run_id","tableID":868973,"columnID":1,"dataTypeID":23,"dataTypeSize":4,"dataTypeMod
+ifier":-1,"format":"text"},{"name":"test_run_title","tableID":868973,"columnID":2,"dataTypeID":1043,"dataTypeSize":-1,"dataTypeModifier":-1,
+"format":"text"},{"name":"test_date","tableID":868973,"columnID":3,"dataTypeID":1184,"dataTypeSize":8,"dataTypeModifier":-1,"format":"text"}
+,{"name":"time_taken","tableID":868973,"columnID":4,"dataTypeID":1700,"dataTypeSize":-1,"dataTypeModifier":-1,"format":"text"},{"name":"user
+name","tableID":868973,"columnID":5,"dataTypeID":1043,"dataTypeSize":-1,"dataTypeModifier":94,"format":"text"},{"name":"tests_run","tableID"
+:868973,"columnID":6,"dataTypeID":23,"dataTypeSize":4,"dataTypeModifier":-1,"format":"text"},{"name":"number_passed","tableID":868973,"colum
+nID":7,"dataTypeID":23,"dataTypeSize":4,"dataTypeModifier":-1,"format":"text"},{"name":"number_failed","tableID":868973,"columnID":8,"dataTy
+peID":23,"dataTypeSize":4,"dataTypeModifier":-1,"format":"text"},{"name":"number_test_cases_registered","tableID":868973,"columnID":9,"dataT
+ypeID":23,"dataTypeSize":4,"dataTypeModifier":-1,"format":"text"},{"name":"number_messages_registered","tableID":868973,"columnID":10,"dataT
+ypeID":23,"dataTypeSize":4,"dataTypeModifier":-1,"format":"text"}],"_parsers":[null,null,null,null,null,null,null,null,null,null],"rowAsArra
+y":false} rows]; SQL> INSERT INTO rif40_test_runs(test_run_title,
+                time_taken, tests_run, number_passed, number_failed,
+                number_test_cases_registered, number_messages_registered)
+SELECT
+                unnest('{rif40_create_disease_mapping_example,test_8_triggers.sql,trgf_rif40_studies}'::VARCHAR[]) AS test_run_title,
+                unnest('{20.166999999999998,14.373999999999999,172.373}'::NUMERIC[]) AS time_taken,
+                unnest('{7,8,26}'::INTEGER[]) AS tests_run,
+                unnest('{7,8,26}'::INTEGER[]) AS number_passed,
+                unnest('{0,0,0}'::INTEGER[]) AS number_failed,
+                0::INTEGER AS number_test_cases_registered,
+                0::INTEGER AS number_messages_registered 
+RETURNING *;
+ */
 									var insert_stmt='INSERT INTO rif40_test_runs(test_run_title,\n' +
 									'		time_taken, tests_run, number_passed, number_failed,\n' +
 									'		number_test_cases_registered, number_messages_registered)\n' +
@@ -1532,12 +1562,28 @@ function _end_test_harness(p_conString, p_mutexjs, p_client1, p_client2, p_passe
 												else {
 													insert.on('row', function(row) {
 														//fired once for each row returned
-														console.log('1: INSERT ROW!!!!');
+//														console.log('1: INSERT ROW!!!!');
 														result.addRow(row);
 													});
 													insert.on('end', function(result) {
-														console.log('1: INSERT INTO rif40_test_runs; [' + result + ' rows]; SQL> ' + 
-															insert_stmt + ';');													
+//														console.log('1: INSERT INTO rif40_test_runs; [' + JSON.stringify(result) + ' rows]; SQL> ' + 
+//															insert_stmt + ';');															
+														if (result.rowCount === 0) {
+															p_client2.end();
+															console.error('1: No rows inserted by INSERT INTO rif40_test_runs; SQL> ' + 
+																insert_stmt + ';\n');
+															p_client1.end();			
+															process.exit(1);															
+														}		
+														else {
+															for (m = 1; m <= result.rowCount; m++) { 
+																console.log('1: ' + result.rows[m-1].test_run_title + 
+																	': tests: ' + result.rows[m-1].tests_run + 
+																	', passed: ' + result.rows[m-1].number_passed + 
+																	', failed: ' + result.rows[m-1].number_failed + 
+																	', time taken: ' + result.rows[m-1].time_taken);
+															}
+														}
 														// Commit
 														var commit = p_client1.query('COMMIT', function(err, result) {
 															if (err) {
