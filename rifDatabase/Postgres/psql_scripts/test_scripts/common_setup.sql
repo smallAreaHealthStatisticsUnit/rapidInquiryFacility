@@ -45,7 +45,7 @@
 -- Peter Hambly, SAHSU
 --
 \set ECHO :echo
-\set ON_ERROR_STOP ON
+\set ON_ERROR_STOP on
 --
 -- Check user is rif40
 --
@@ -63,7 +63,9 @@ $$;
 -- Test user account
 -- 
 \set ntestuser '''XXXX':testuser''''
+\set npgdatabase '''XXXX':pgdatabase''''
 SET rif40.testuser TO :ntestuser;
+SET rif40.pgdatabase TO :npgdatabase;
 
 DO LANGUAGE plpgsql $$
 DECLARE
@@ -71,20 +73,36 @@ DECLARE
 		SELECT CURRENT_SETTING('rif40.testuser') AS testuser;
 	c2 CURSOR(l_usename VARCHAR) FOR 
 		SELECT * FROM pg_user WHERE usename = l_usename;
+	c3 CURSOR FOR 
+		SELECT CURRENT_SETTING('rif40.pgdatabase') AS pgdatabase;		
 	c1_rec RECORD;
 	c2_rec RECORD;
+	c3_rec RECORD;
 BEGIN
 	OPEN c1;
 	FETCH c1 INTO c1_rec;
 	CLOSE c1;
+	OPEN c3;
+	FETCH c3 INTO c3_rec;
+	CLOSE c3;	
 --
--- Test parameter
+-- Test parameters
 --
 	IF c1_rec.testuser IN ('XXXX', 'XXXX:testuser') THEN
 		RAISE EXCEPTION 'common_setup.sql() C209xx: No -v testuser=<test user account> parameter';	
 	ELSE
 		RAISE INFO 'common_setup.sql() test user account parameter="%"', c1_rec.testuser;
 	END IF;
+	IF c3_rec.pgdatabase IN ('XXXX', 'XXXX:pgdatabase') THEN
+		RAISE EXCEPTION 'common_setup.sql() C209xx: No -v pgdatabase=<PG database: sahsuland/sahsuland_dev> parameter';	
+	ELSIF SUBSTR(c3_rec.pgdatabase, 5) NOT IN ('sahsuland', 'sahsuland_dev') THEN
+		RAISE EXCEPTION 'common_setup.sql() C209xx: Invalid pgdatabas parameter: %; must be sahsuland/sahsuland_dev', SUBSTR(c3_rec.pgdatabase, 5);	
+	ELSIF SUBSTR(c3_rec.pgdatabase, 5) != current_database() THEN
+		RAISE EXCEPTION 'common_setup.sql() C209xx: pgdatabas parameter: % != current: %',SUBSTR(c3_rec.pgdatabase, 5), current_database();	
+		
+	ELSE
+		RAISE INFO 'common_setup.sql() PG database parameter="%"', SUBSTR(c3_rec.pgdatabase, 5);
+	END IF;	
 --
 -- Test account exists
 --
@@ -107,7 +125,7 @@ $$;
 --
 -- Connect as testuser
 --
-\c sahsuland_dev :testuser
+\c :pgdatabase :testuser
 \conninfo
 --
 -- Run RIF startup script

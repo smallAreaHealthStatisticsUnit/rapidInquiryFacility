@@ -457,7 +457,7 @@ SELECT test_id, pg_error_code_expected, pass, expected_result, time_taken, raise
 --
 DO LANGUAGE plpgsql $$
 BEGIN
-	RAISE INFO 'T8--18: test_8_triggers.sql: Run trigger test harness';
+	RAISE INFO 'T8--18: test_8_triggers.sql: Run trigger test harness on: %', current_database();
 END;
 $$;
 
@@ -500,6 +500,8 @@ SELECT *
   FROM rif40_test_runs;
  
 SELECT statement_timestamp();
+ 
+SELECT current_database(); 
  
 --
 -- Check tests and runs

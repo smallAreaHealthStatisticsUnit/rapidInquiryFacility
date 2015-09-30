@@ -108,7 +108,7 @@ $$;
 --
 -- Connect as testuser
 --
-\c sahsuland_dev :testuser
+\c - :testuser
 --
 -- Test in a single transaction  
 --
@@ -118,7 +118,7 @@ $$;
 --
 -- Re-connect as rif40
 --
-\c sahsuland_dev rif40
+\c - rif40
 --
 -- Call common setup to run as testuser (passed parameter)
 --
