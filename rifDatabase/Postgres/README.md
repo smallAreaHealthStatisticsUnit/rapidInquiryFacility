@@ -2,8 +2,9 @@
 
 This README assumes a knowledge of how V3.1 RIF works.
 
-See docs\BUILD.md for installation instructions. The original instructions in Install.docx are no longer maintained and the contents have been moved to 
-the port specific markdown files. 
+See [BUILD notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/psql_scripts/BUILD.md) 
+for the installation instructions. The original instructions in Install.docx are no longer maintained and the contents have been moved to 
+the port specific markdown files. This file contains a description of the detailed steps used in the build.
 
 WARNING: The RIF requires Postgres 9.3 or 9.4 to work. 9.1 and 9.2 will not work. In particular PL/pgsql GET STACKED DIAGNOSTICS is used which 
 is a post 9.2 option. 

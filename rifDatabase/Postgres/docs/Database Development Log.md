@@ -1,7 +1,7 @@
 # RIF database Deveopment Log
 
 Peter Hambly.
-Last update: 25/3/2015
+Last update: 1/10/2015
 
 Current highest priority is [Urgent] and [Enhancements - GIS]
 
@@ -10,7 +10,7 @@ Current highest priority is [Urgent] and [Enhancements - GIS]
 
 ### RIF Block I
 
-Aug-Sept
+Aug-Sept 2014
 
 FF - Rif manager, leaflet geoJSON performance issues, chart prototypes
 KG - Java frontend/middleware, test cases
@@ -18,16 +18,17 @@ PH - Study extract to observed, triggers, GIS simplification
 
 ### RIF Block II
 
-Was Dec-Jan, then Mar-Apr, now Jun-Jul
+Was Dec-Jan 2015, then Mar-Apr 2015, now Jul-Aug 2015
 
 FF - Rif manager database/middleware integration; RIF study creation
      prototype, charting
 KG - Java frontend/middleware working demo, web services
 PH - TopoJSON support, GIS enhancements, partitioning
-     and related performance enhancements
-MD - Expected, R integration
+     and related performance enhancements; database test harness
 AL - R calculations from expected
-RH - SQL server port to sahsuland
+MD - SQL server port to sahsuland
+
+all completed.
 
 #### Database work queue
 
@@ -38,8 +39,14 @@ This is work in progres
 * GIS enhancements (simplification, geolevel intersection)
 * TopoJSON support
 
-May be deferred to block III:
+### RIF Block III (up to 2016; to be defined):
 
+* Completion of R integration
+* Full support for age/sex/age_sex_group)
+
+Defferred:
+
+* Remote health database support (Oracle only - to use data loader for the moment)
 * Define map table layout; create as copy from rif40_results etc
 * Error (and information) message table, error messages and call by code 
 * Freeze database for SQL server port; export Postgres DB (only) code to Sourceforge/Github [Done]
@@ -51,14 +58,6 @@ May be deferred to block III:
 	2. Holes in numerator/covariate data [after extract]
            Missing covariates, no numerators should be an error either globally or within a year.
 * Make state machine capable of handling year/age group gaps at the investigation level.
-
-### RIF Block III
-
-Aug-Sep. Expected to include:
-
-* Completion of R integration
-* Remote health database support (Oracle only)
-* Full support for age/sex/age_sex_group)
 
 ## Current Faults  
 
@@ -109,7 +108,7 @@ psql (9.3.2)
 SSL connection (cipher: DHE-RSA-AES256-SHA, bits: 256)
 Type "help" for help.
 
-CAUSE: No parameter set in postgresql.conf
+CAUSE: No parameter set in postgresql.conf [fixed by Postgres 9.3]
 
 FIX: Add rif40.* to postgresql.conf (See install.docx)
 
@@ -369,6 +368,8 @@ update_process_table=true
 
 ### Remote Health Database Support
 
+This is put on hold permanently; data will be copied in using the data loader.
+
 #### Oracle FDW (foreign data wrapper) port
 
 * Try using a dblink direct cursor to extract data from remote databases, rather than created a 
@@ -510,7 +511,7 @@ Use Slony replication (logical standby) in preference physical standby
 a) gid_rowindex (i.e 0000000001_0000000001). Where gid corresponds to gid in geometry table
    row_index is an incremental serial aggregated by gid ( starts from one for each gid). 
    GID is unique for the geolevel
-b) Remove foreign key t_rif40_inv_geography_fk from t_rif40_investigations, NUll data, remove column
+b) Remove foreign key t_rif40_inv_geography_fk from t_rif40_investigations, NULL data, remove column
 c) Add middleware support functions
 
 Completed 1/7/2014
@@ -521,3 +522,89 @@ a) Add covariates to comparision area extract
 b) GID, GID_ROWINDEX support in extracts/maps
 c) Make INV_1 INV_<inv_id> in results and results maps
 
+### Alter 3
+
+* Range partitioning (e.g. by year).
+
+### Alter 4
+
+* Hash partitioning (e.g. by study_id).
+
+### Alter 5
+
+* Zoomlevel support
+* Rebuilds all geolevel tables with full partitioning (alter #3 support):
+
+Done:
+
+1. Convert to 4326 (WGS84 GPS projection) after simplification. Optimised geometry is 
+   always in 4326.
+2. Zoomlevel support. Optimised geometry is level 6, OPTIMISED_GEOMETRY_2 is level 8,
+   OPTIMISED_GEOMETRY_3 is level 11; likewise OPTIMISED_GEOJSON (which will become a JOSN type). 
+   TOPO_OPTIMISED_GEOJSON is removed.
+3. Add t_rif40_sahsu_maptiles for zoomlevels 6, 8, 11, rif40_sahsu_maptiles for other zoomlevels.
+4. Calculate the latitude of the middle of the total map bound; use this as the latitude
+   in if40_geo_pkg.rif40_zoom_levels() for the correct m/pixel.
+5. Partition t_rif40_sahsu_maptiles; convert partition to p_ naming convention, move to
+    rif40_partitions schema, added indexes and constraints as required.
+6. Convert rif40_get_geojson_tiles to use t_rif40_sahsu_maptiles tables.
+7. Re-index partition indexes.
+8. Add support for regionINLA.txt on a per study basis as rif40_GetAdjacencyMatrix().
+
+<total area_id>
+<area_id> <total (N)> <adjacent area 1> .. <adjacent area N>
+
+9. populate_rif40_tiles() to correctly report rows inserted (using RETURNING); make
+   more efficient; create EXPLAIN PLAN version.
+10. Fix sahsuland projection (i.e. it is 27700; do the export using GDAL correctly).
+11. Use Node.js topojson_convert.js GeoJSON to topoJSON conversion.  
+12. Remove ST_SIMPLIFY_TOLERANCE from T_RIF40_GEOLEVELS; replace with m/pixel for zoomlevel.
+13. Move all geospatial data to rif_data schema.
+14. Map tiles build to warn if bounds of map at zoomlevel 6 exceeds 4x3 tiles.
+15. Map tiles build  to fail if a zoomlevel 11 maptile(bound area: 19.6x19.4km) > 10% of the area bounded by the map; 
+    i.e. the map is not projected correctly (as sahsuland was at one point). 
+	There area 1024x as many tiles at 11 compared to 6; 10% implies there could be 1 tile at zoomlevel 8.
+	This means that the Smallest geography supported is 3,804 km2 - about the size of Suffolk (1,489 square miles)
+	so the Smallest US State (Rhode Island @4,002 square km) can be supported.
+	
+Not done:
+
+16. Intersection to use shapefile SRID projection; after simplification to be tested against intersections 
+    using zoomlevel 11.
+	
+### Alter 6
+
+* PL/R support [Work in progress]
+
+### Alter 7
+
+Support for taxonomies/ontologies (e.g. ICD9, 10); removed previous table based support.
+Modify t_rif40_inv_conditions to remove SQL injection risk
+
+Done:
+
+* rif40_outcomes - list of ontologies to remain - remove all field except for:
+	outcome_type, outcome_description, current_version, current_sub_version, previous_version
+* Add new outcome_group to rif40_outcome_groups for SAHUSLAND_CANCER
+* Fix rif40_tables, rif40_table_outcomes, rif40_outcome_groups join for SAHUSLAND_CANCER
+  - Add view: rif40_numerator_outcome_columns
+  - Add checks: to rif40_inv_conditions, rif40_num_denom, rif40_num_denom_errors
+* Drop existing ontology tables (keep icd9/10 until new ontology middleware is ready)
+* Modify t_rif40_inv_conditions to remove SQL injection risk:
+  - Rename column condition to min_condition
+  - Add columns: max_condition, predefined_group_name, outcome_group_name
+  - Add foreign key constraint on rif40_predefined_groups(predefined_group_name)
+  - Add foreign key constraint on rif40_outcome_groups(outcome_group_name)
+  - Add check constraints: 
+    1. min_condition or predefined_group_name
+    2. max_condition may be null, but if set != min_condition
+* Rebuild rif40_inv_conditions:
+  - Add back condition, derive from: min_condition, max_condition, predefined_group_name, outcome_group_name
+  - Add numer_tab, field_name, column_exists and column_comments fields for enhanced information
+ * Load new rif40_create_disease_mapping_example()
+ * Load new rif40_startup() with ability to disable most checks for middleware testing
+   Note: must be run once to create TEMPORARY TABLES
+   
+### Alter 8
+
+* Database test harness

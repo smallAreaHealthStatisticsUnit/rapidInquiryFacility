@@ -396,7 +396,7 @@ endif
 	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
 	$(MAKE) sahsuland_dump
 	-$(MAKE) -C ../../ERD dbms_tools
-	@echo "SAHSULAND and SAHSULAND_DEV setup"
+	@echo "SAHSULAND and SAHSULAND_DEV setup completed OK"
 
 #- ERD: remake ERD	
 erd:
