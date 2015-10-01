@@ -72,8 +72,8 @@ Postgres is usually setup in one of three ways:
 * Secure mode on a Linux server and Active directory network. This uses remote database connections using SSL; with GSSAPI/Kerberos for 
   psql and secure LDAP for Java connectivity.
 
-Postgres can proxy users (see ident.conf examples in ????). Typically this is used to allow remote postgres administrator user authentication 
-and to logon as the schema owner (rif40).
+Postgres can proxy users (see ident.conf examples in the [build notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/build.md)). 
+Typically this is used to allow remote postgres administrator user authentication and to logon as the schema owner (rif40).
 
 
 

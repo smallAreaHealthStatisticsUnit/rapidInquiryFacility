@@ -17,7 +17,7 @@ side effects, although they must be run in numeric order.
 Once the RIF is in production alter scripts will only be able to complete successfully once and cannot then 
 be re-run.
 
-The directory structure is rifDatabase\Postgres\:
+The directory structure is *rifDatabase\Postgres\*:
 
 * conf            - Exmaples of varaious configuration files
 * etc             - Postgres psql logon script (.psqlrc)
@@ -41,8 +41,6 @@ On Windows:
 * Install a C/C++ compiler, suitable for use by Node.js. I used Microsoft Visual Studio 2012 
   under an Academic licence. The dependency on Node.js will be reduced by replacing the current 
   program with Node.js web services available for use by the wider RIF community.
-* Create the Postgres etc directory (e.g. C:\Program Files\PostgreSQL\9.3\etc) and grant full control 
-  to the username(s) running db_setup. This is so the build can install the psqlrc file.
 
 For more information see: [Windows installer notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/windows.md)
 
@@ -54,8 +52,11 @@ On Windows, Linux and MacOS
 * Install 64 bit Node.js. The 32 bit node will run into memory limitation problems will vary large 
   shapefiles. node.js is required to build to geoJSON to topoJSON converter by Mike Bostock at: 
   (https://github.com/mbostock/topojson/wiki/Installation). Node.js is available from: (http://nodejs.org/)
-* Install R; integrate R into Postgres [optional R integration](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/plr.md)
-
+* Install R; integrate R into Postgres [optional R integration](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/plr.md).
+* Create the PL/R local R_library (in $PGDATA/R_Library), e.g: *C:/Program Files/PostgreSQL/9.3/data/R_library*
+* Create the Postgres etc directory (e.g. *C:\Program Files\PostgreSQL\9.3\etc*) and grant the ability to write 
+  files (full control on Windows) to the username(s) running db_setup. This is so the build can install the psqlrc file.
+  
 For more information see: 
 
 * [Linux install from repository notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/linux_repo.md)
@@ -161,6 +162,8 @@ wpea-rif1:5432:*:pch:<password>
 wpea-rif1:5432:*:rif40:<password>
 wpea-rif1:5432:*:notarifuser:<password>
 ```
+
+See *Configuration File Examples* below.
 
 Once you have setup the *pgpass* file, check you can logon using psql as the database adminstrator account; *postgres*.
 ```
@@ -359,6 +362,259 @@ Makefiles have the following limitations:
 The Makefile has [help](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/psql_scripts/Make%20Help.md):
 
 ```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>make help
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make help
 ```
  
+#### Configuration File Examples
+
+##### Postgres user password file
+
+Postgres user password files are located in:
+
+* Windows *%APPDATA%\Roaming\postgresql\pgpass.conf*, e.g. *C:\Users\pch\AppData\Roaming\postgresql\pgpass.conf*
+* Linux/MacOS: *~/.pgpass*
+
+One line per host, database and account. Order is:
+
+* Host
+* Port
+* Database (usually *)
+* User
+* Password
+```
+localhost:5432:*:postgres:XXXXXXX
+localhost:5432:*:peterh: XXXXXXX
+wpea-pch:5432:*:peterh: XXXXXXX
+wpea-rif1:5432:*:postgres: XXXXXXX
+wpea-rif1:5432:*:pch: XXXXXXX
+```
+
+##### Authentication Setup (hba.conf)
+
+* TYPE: Connection type:
+  * local: UDP
+  * host: TCP/IP
+  * hostssl: TCP/IP with TLS
+* DATABASE: Database name      
+* USER: Username           
+* ADDRESS: Host/address mask                
+* METHOD:
+  * Non mappable:
+	  * trust: Allow with authentication (useful if you have locked yourself out by chnaginbg hte password!
+	  * reject: disallow
+	  * md5: MD5 password authentication
+	  * password: plain text password (**INSECURE: DO NOT USE**)
+	  * krb5: Kerberos 5 (**OBSOLETED: use GSSAPI**)
+	  * ldap: directory services
+	  * radius: RADIUS authentication
+	  
+  * Mappable using ident.conf (i.e. support proxying):
+	  * ident: Identification Protocol as described in RFC 1413 (**INSECURE: DO NOT USE**)
+	  * peer: Peer authentication is only available on operating systems providing the getpeereid() function, 
+			  the SO_PEERCRED socket parameter, or similar mechanisms. Currently that includes Linux, most flavors 
+			  of BSD including OS X, and Solaris.
+	  * gss: GSSAPI/Kerberos			  
+	  * pam: Linux PAM (Pluggable authentication modules)  
+	  * sspi: Windows native autentiation (NTLM V2) 
+	  * cert: Uses SSL client certificates to perform authentication. It is therefore only available for SSL connections. 
+
+```
+# PostgreSQL Client Authentication Configuration File
+# ===================================================
+#
+# Refer to the "Client Authentication" section in the PostgreSQL
+# documentation for a complete description of this file.  A short
+# synopsis follows.
+#
+# This file controls: which hosts are allowed to connect, how clients
+# are authenticated, which PostgreSQL user names they can use, which
+# databases they can access.  Records take one of these forms:
+#
+# local      DATABASE  USER  METHOD  [OPTIONS]
+# host       DATABASE  USER  ADDRESS  METHOD  [OPTIONS]
+# hostssl    DATABASE  USER  ADDRESS  METHOD  [OPTIONS]
+# hostnossl  DATABASE  USER  ADDRESS  METHOD  [OPTIONS]
+#
+# (The uppercase items must be replaced by actual values.)
+#
+# The first field is the connection type: "local" is a Unix-domain
+# socket, "host" is either a plain or SSL-encrypted TCP/IP socket,
+# "hostssl" is an SSL-encrypted TCP/IP socket, and "hostnossl" is a
+# plain TCP/IP socket.
+#
+# DATABASE can be "all", "sameuser", "samerole", "replication", a
+# database name, or a comma-separated list thereof. The "all"
+# keyword does not match "replication". Access to replication
+# must be enabled in a separate record (see example below).
+#
+# USER can be "all", a user name, a group name prefixed with "+", or a
+# comma-separated list thereof.  In both the DATABASE and USER fields
+# you can also write a file name prefixed with "@" to include names
+# from a separate file.
+#
+# ADDRESS specifies the set of hosts the record matches.  It can be a
+# host name, or it is made up of an IP address and a CIDR mask that is
+# an integer (between 0 and 32 (IPv4) or 128 (IPv6) inclusive) that
+# specifies the number of significant bits in the mask.  A host name
+# that starts with a dot (.) matches a suffix of the actual host name.
+# Alternatively, you can write an IP address and netmask in separate
+# columns to specify the set of hosts.  Instead of a CIDR-address, you
+# can write "samehost" to match any of the server's own IP addresses,
+# or "samenet" to match any address in any subnet that the server is
+# directly connected to.
+#
+# METHOD can be "trust", "reject", "md5", "password", "gss", "sspi",
+# "krb5", "ident", "peer", "pam", "ldap", "radius" or "cert".  Note that
+# "password" sends passwords in clear text; "md5" is preferred since
+# it sends encrypted passwords.
+#
+# OPTIONS are a set of options for the authentication in the format
+# NAME=VALUE.  The available options depend on the different
+# authentication methods -- refer to the "Client Authentication"
+# section in the documentation for a list of which options are
+# available for which authentication methods.
+#
+# Database and user names containing spaces, commas, quotes and other
+# special characters must be quoted.  Quoting one of the keywords
+# "all", "sameuser", "samerole" or "replication" makes the name lose
+# its special character, and just match a database or username with
+# that name.
+#
+# This file is read on server startup and when the postmaster receives
+# a SIGHUP signal.  If you edit the file on a running system, you have
+# to SIGHUP the postmaster for the changes to take effect.  You can
+# use "pg_ctl reload" to do that.
+
+# Put your actual configuration here
+# ----------------------------------
+#
+# If you want to allow non-local connections, you need to add more
+# "host" records.  In that case you will also need to make PostgreSQL
+# listen on a non-local interface via the listen_addresses
+# configuration parameter, or via the -i or -h command line switches.
+
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+# IPv4, IPv6 local connections:
+#
+host    all             postgres	127.0.0.1/32            md5
+host    all             postgres      ::1/128                 md5
+hostssl all		 postgres     146.179.138.xxx 	  255.255.255.255    md5
+#
+# Allow local connections as schema owner (usually use a proxy)
+# 
+#hostssl    sahsuland	   pop             127.0.0.1/32            md5
+#hostssl    sahsuland	   pop             ::1/128                 md5
+#hostssl    sahsuland	   gis             127.0.0.1/32            md5
+#hostssl    sahsuland	   gis             ::1/128                 md5
+#hostssl    sahsuland	   rif40           127.0.0.1/32            md5
+#hostssl    sahsuland	   rif40           ::1/128                 md5
+#
+# Active directory GSSAPI connections with pg_ident.conf maps for schema accounts
+#
+hostssl	sahsuland	all	 	127.0.0.1/32 		sspi 	map=sahsuland
+hostssl	sahsuland	all	 	::1/128 		sspi 	map=sahsuland
+hostssl	sahsuland_dev	all	 	127.0.0.1/32 		sspi 	map=sahsuland_dev
+hostssl	sahsuland_dev	all	 	::1/128 		sspi 	map=sahsuland_dev
+#
+# Allow remote access from specified IP addresses by:
+#
+# a) SSPI (Windows native GSS [Kerberos] machanism
+#
+hostssl	sahsuland	all	 	146.179.138. xxx	255.255.255.255	sspi 	map=sahsuland
+hostssl	sahsuland_dev	all	 	146.179.138. xxx	255.255.255.255	sspi 	map=sahsuland_dev
+#
+# b) LDAP (to be fixed – need to use different server
+#
+# hostssl	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapurl="ldaps:// xxx.ic.ac.uk/basedn;cn=;,o=Imperial College,c=GB" 
+# 
+# No LDAP URLs or username map on Windows
+#
+# 2014-03-12 13:44:24 GMT LOG: 00000: LDAP login failed for user "cn=pch,o=Imperial College,c=GB" on server " xxx.ic.ac.uk": Invalid Credentials 2014-03-12 13:44:24 GMT LOCATION: CheckLDAPAuth, src\backend\libpq\auth.c:2321 
+#
+#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix="uid=" ldapsuffix=",ou=phs,o=Imperial College,c=GB"	
+#
+# 2014-03-12 13:50:33 GMT LOG: 00000: LDAP login failed for user "pch@IC.AC.UK" on server " xxx.ic.ac.uk": Invalid DN Syntax 2014-03-12 13:50:33 GMT LOCATION: CheckLDAPAuth, src\backend\libpq\auth.c:2321 
+#
+#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix= ldapsuffix="@IC.AC.UK"	
+#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix= ldapsuffix=",o=Imperial College,c=GB"	
+#
+# Other databases
+# 
+hostssl	traffic		all	 	127.0.0.1/32 		sspi
+hostssl	traffic		all	 	::1/128 		sspi
+hostssl	traffic		all	 	146.179.138. xxx	255.255.255.255	sspi
+#	
+#host    all             all             127.0.0.1/32            md5
+#host    all             all             ::1/128                 md5
+# Allow replication connections from localhost, by a user with the
+# replication privilege.
+#host    replication     postgres        127.0.0.1/32            md5
+#host    replication     postgres        ::1/128                 md5
+```
+
+##### Proxy User Setup (ident.conf)
+
+One line per per system user and map in the order:
+
+* MAPNAME: map name in hba.conf (not all authentication types can proxy - e.g. md5 cannot!)       
+* SYSTEM-USERNAME: account name to proxy for         
+* PG-USERNAME: account name to authenticate as
+
+```
+# PostgreSQL User Name Maps
+# =========================
+#
+# Refer to the PostgreSQL documentation, chapter "Client
+# Authentication" for a complete description.  A short synopsis
+# follows.
+#
+# This file controls PostgreSQL user name mapping.  It maps external
+# user names to their corresponding PostgreSQL user names.  Records
+# are of the form:
+#
+# MAPNAME  SYSTEM-USERNAME  PG-USERNAME
+#
+# (The uppercase quantities must be replaced by actual values.)
+#
+# MAPNAME is the (otherwise freely chosen) map name that was used in
+# pg_hba.conf.  SYSTEM-USERNAME is the detected user name of the
+# client.  PG-USERNAME is the requested PostgreSQL user name.  The
+# existence of a record specifies that SYSTEM-USERNAME may connect as
+# PG-USERNAME.
+#
+# If SYSTEM-USERNAME starts with a slash (/), it will be treated as a
+# regular expression.  Optionally this can contain a capture (a
+# parenthesized subexpression).  The substring matching the capture
+# will be substituted for \1 (backslash-one) if present in
+# PG-USERNAME.
+#
+# Multiple maps may be specified in this file and used by pg_hba.conf.
+#
+# No map names are defined in the default configuration.  If all
+# system user names and PostgreSQL user names are the same, you don't
+# need anything in this file.
+#
+# This file is read on server startup and when the postmaster receives
+# a SIGHUP signal.  If you edit the file on a running system, you have
+# to SIGHUP the postmaster for the changes to take effect.  You can
+# use "pg_ctl reload" to do that.
+
+# Put your actual configuration here
+# ----------------------------------
+
+# MAPNAME       SYSTEM-USERNAME         PG-USERNAME
+#
+sahsuland	pch			pop
+sahsuland	pch			gis
+sahsuland	pch			rif40
+sahsuland	pch			pch
+#
+sahsuland_dev	pch			pop
+sahsuland_dev	pch			gis
+sahsuland_dev	pch			rif40
+sahsuland_dev	pch			pch
+sahsuland_dev	pch			postgres
+#
+# Eof
+```
