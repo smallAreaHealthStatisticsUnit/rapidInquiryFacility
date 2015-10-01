@@ -67,7 +67,9 @@ For more information see:
 
 ### Pre build tests
 
-Run up a command tool, *not* in the Postgres build directory (psql_scripts):
+Run up a shell/command tool, *not* in the Postgres build directory (psql_scripts). The Window sizing needs to be at least 
+132 columns wide and 50 rows high; preferably with a multi thousand line buffer. Otherwiser psql scripts may require <ENTER> 
+on scrolling:
 
 * Type *make*. Check make works correctly:
 ```

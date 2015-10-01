@@ -342,8 +342,9 @@ SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_n
 \i ../PLpgsql/rif40_sql_pkg/rif40_test_harness.sql
 
 --
--- Reload rif40_create_disease_mapping_example
+-- Reload rif40_create_disease_mapping_example, rif40_verify_state_change
 --
+\i ../PLpgsql/rif40_sm_pkg/rif40_verify_state_change.sql
 \i ../PLpgsql/rif40_sm_pkg/rif40_create_disease_mapping_example.sql
 
 --
