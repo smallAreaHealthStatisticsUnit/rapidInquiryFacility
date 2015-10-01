@@ -25,7 +25,7 @@ The directory structure is *rifDatabase\Postgres\*:
 * logs            - Logs from psql_scripts runs
 * PLpgsql         - PL/pgsql scripts
 * psql_scripts    - PSQL scripts; **Postgres database build directory**. The 
-                    [README](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/psql_scripts/README.md) 
+                    [README](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/README.md) 
 					describes the build process in detail.
 * sahsuland       - SAHSUland creation psql scripts
 * sahsuland\data  - SAHSUland data
