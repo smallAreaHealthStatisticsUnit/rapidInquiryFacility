@@ -89,12 +89,12 @@ var conString = 'postgres://rif40@'; // Use PGHOST, native authentication (i.e. 
 // If host = localhost, use IPv6 numeric notation. This prevent ENOENT errors from getaddrinfo() in Windows
 // when Wireless is disconnected. This is a Windows DNS issue. psql avoids this somehow.
 // You do need entries for ::1 in pgpass
-if (pghost == 'localhost') {
-	conString=conString + '[::1]';
-}
-else {
+//if (pghost == 'localhost') {
+//	conString=conString + '[::1]';
+//}
+//else {
 	conString=conString + pghost;
-}
+//}
 conString=conString + '/' + pgdatabase + '?application_name=topojson_convert';
 
 
